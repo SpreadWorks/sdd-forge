@@ -4,7 +4,7 @@
 
 <!-- @text-fill: この章の概要を1〜2文で記述してください。プロジェクト構成・モジュール依存の方向・主要な処理フローを踏まえること。 -->
 
-`src/bin/sdd-forge.js` がサブコマンドを各モジュール（`analyzers/`・`engine/`・`spec/`・`forge/`・`flow/`）へディスパッチし、共通ユーティリティ `lib/` を底辺として解析→生成→改善の方向で一方向に依存が流れる設計になっている。PHPソースを `analyzers/` が `analysis.json` へ変換し、`engine/populate` と `engine/tfill` がそのデータをテンプレートと組み合わせて `docs/` へ展開するパイプラインが中心的な処理フローである。
+`src/bin/sdd-forge.js` を起点としたサブコマンドディスパッチ構造を持ち、`src/lib/` の共通ユーティリティ（cli・config・process）を土台に、解析（analyzers）・エンジン（engine）・仕様管理（spec）・改善（forge/flow）の各モジュールが一方向に依存する構成となっている。主要な処理フローは「ソースコード解析（scan）→ ドキュメント初期生成（init）→ データ埋め込み（populate）→ LLM によるテキスト生成（tfill）→ 反復改善（forge）」の順に構成される。
 
 
 ## 内容
@@ -14,57 +14,54 @@
 <!-- @text-fill: このプロジェクトのディレクトリ構成を tree 形式のコードブロックで記述してください。主要ディレクトリ・ファイルの役割コメントを含めること。 -->
 
 ```
-sdd-forge/                          ← リポジトリルート / npm パッケージルート
-├── package.json                    ← パッケージ定義・サブコマンドスクリプト
-├── src/                            ← ソースコード
+sdd-forge/
+├── package.json                        # パッケージ定義・エントリポイント宣言
+├── src/
 │   ├── bin/
-│   │   └── sdd-forge.js            ← CLIエントリポイント・サブコマンドディスパッチ
-│   ├── help.js                     ← ヘルプテキスト出力
+│   │   └── sdd-forge.js                # CLI エントリポイント・サブコマンドディスパッチ
 │   ├── lib/
-│   │   ├── cli.js                  ← sourceRoot / workRoot など共通CLI補助関数
-│   │   ├── config.js               ← .sdd-forge/config.json の読み書き
-│   │   └── process.js              ← 外部プロセス実行補助
-│   ├── projects/
-│   │   ├── projects.js             ← 登録プロジェクト一覧表示
-│   │   ├── add.js                  ← プロジェクトのワークスペース登録
-│   │   └── setdefault.js           ← デフォルトプロジェクト切り替え
-│   ├── analyzers/                  ← PHPソースコード解析エンジン
-│   │   ├── scan.js                 ← 全解析モジュールの順次実行・analysis.json書き出し
-│   │   ├── analyze-controllers.js  ← コントローラ静的解析
-│   │   ├── analyze-models.js       ← モデル静的解析
-│   │   ├── analyze-shells.js       ← シェル（CLIコマンド）静的解析
-│   │   ├── analyze-routes.js       ← ルーティング定義静的解析
-│   │   ├── analyze-extras.js       ← 定数・補足情報静的解析
+│   │   ├── cli.js                      # 共通ユーティリティ（ルート検出・ファイル操作・ログ）
+│   │   ├── config.js                   # .sdd-forge/config.json 読み込み
+│   │   └── process.js                  # 子プロセス実行ラッパー
+│   ├── engine/
+│   │   ├── init.js                     # テンプレートから docs/ を初期生成
+│   │   ├── populate.js                 # @data-fill ディレクティブを解析データで置換
+│   │   ├── tfill.js                    # @text-fill ディレクティブを LLM CLI 呼び出しで解決
+│   │   ├── readme.js                   # README.md 自動生成
+│   │   ├── directive-parser.js         # Markdown からディレクティブを抽出・パース
+│   │   ├── renderers.js                # 解析データをマークダウン形式にレンダリング
+│   │   └── resolver.js                 # @data-fill キーに対応する解析データの抽出
+│   ├── analyzers/
+│   │   ├── scan.js                     # 各解析器を統括し analysis.json を生成
+│   │   ├── analyze-controllers.js      # CakePHP コントローラの静的解析
+│   │   ├── analyze-models.js           # CakePHP モデルの静的解析
+│   │   ├── analyze-shells.js           # CakePHP Shell の静的解析
+│   │   ├── analyze-routes.js           # routes.php のルート定義解析
+│   │   ├── analyze-extras.js           # 定数・設定などの補足情報解析
 │   │   └── lib/
-│   │       └── php-array-parser.js ← PHP配列構文パーサ（解析共通ライブラリ）
-│   ├── engine/                     ← ドキュメント生成エンジン
-│   │   ├── init.js                 ← テンプレートからdocs/を初期生成
-│   │   ├── populate.js             ← @data-fill ディレクティブへの解析データ挿入
-│   │   ├── tfill.js                ← @text-fill ディレクティブへのエージェント生成テキスト挿入
-│   │   ├── readme.js               ← README.md 自動生成
-│   │   ├── directive-parser.js     ← Markdownからディレクティブコメントを抽出
-│   │   ├── resolver.js             ← analysis.json データをオブジェクト配列に変換
-│   │   └── renderers.js            ← オブジェクト配列をMarkdown文字列に整形
+│   │       └── php-array-parser.js     # PHP 配列リテラルの汎用パーサー
 │   ├── spec/
-│   │   ├── spec.js                 ← featureブランチとspec.mdの初期化
-│   │   └── gate.js                 ← spec.md の未解決事項チェック
+│   │   ├── spec.js                     # feature ブランチ作成と spec.md 初期化
+│   │   └── gate.js                     # spec.md の未解決事項チェックと PASS/FAIL 判定
 │   ├── forge/
-│   │   └── forge.js                ← エージェントによるdocs/反復改善
+│   │   └── forge.js                    # populate + tfill を組み合わせた docs 反復改善
 │   ├── flow/
-│   │   └── flow.js                 ← spec作成・gate・docs反映の一括自動化
-│   └── templates/                  ← バンドルドキュメントテンプレート
-│       ├── locale/ja/
-│       │   ├── php-mvc/            ← PHP-MVCプロジェクト向けテンプレート（10章構成）
-│       │   ├── node-cli/           ← Node.js CLIツール向けテンプレート（5章構成）
-│       │   ├── prompts.json        ← tfill用プロンプト定義
-│       │   ├── sections.json       ← セクション定義
-│       │   └── messages.json       ← UIメッセージ定義
-│       ├── checks/                 ← レビュー用シェルスクリプト群
-│       └── review-checklist.md     ← レビューチェックリスト
-└── .sdd-forge/                     ← プロジェクト固有設定・生成物（gitignore対象外）
-    ├── config.json                 ← SDD設定（lang, type, agents等）
-    ├── overrides.json              ← 解析オーバーライド定義
-    └── output/                     ← 解析出力（analysis.json）
+│   │   └── flow.js                     # spec 作成・gate・docs 反映を自動実行する SDD フロー
+│   ├── projects/
+│   │   ├── projects.js                 # ワークスペース登録情報の読み書きと解決
+│   │   ├── add.js                      # プロジェクトをワークスペースに追加
+│   │   └── setdefault.js               # デフォルトプロジェクトの設定
+│   ├── templates/
+│   │   ├── locale/ja/
+│   │   │   ├── messages.json           # UI メッセージ定義（日本語）
+│   │   │   ├── prompts.json            # LLM プロンプト定義（日本語）
+│   │   │   ├── sections.json           # ドキュメントセクション定義
+│   │   │   ├── php-mvc/                # PHP-MVC プロジェクト用 docs テンプレート（10章）
+│   │   │   └── node-cli/               # Node.js CLI プロジェクト用 docs テンプレート（5章）
+│   │   ├── checks/                     # docs レビュー用シェルスクリプト
+│   │   └── review-checklist.md         # レビューチェックリスト
+│   └── help.js                         # コマンド一覧の表示
+└── docs/                               # sdd-forge 自身の生成ドキュメント
 ```
 
 
@@ -74,32 +71,32 @@ sdd-forge/                          ← リポジトリルート / npm パッケ
 
 | モジュール名 | ファイルパス | 責務 |
 |---|---|---|
-| sdd-forge（エントリポイント） | `src/bin/sdd-forge.js` | CLIサブコマンドのディスパッチ、プロジェクトコンテキスト解決 |
-| help | `src/help.js` | コマンド一覧のヘルプテキスト出力 |
-| cli | `src/lib/cli.js` | `sourceRoot()` / `workRoot()` など共通CLI補助関数 |
-| config | `src/lib/config.js` | `.sdd-forge/config.json` の読み書き |
-| process | `src/lib/process.js` | 外部プロセス実行補助（`execFileSync` ラッパー） |
-| projects | `src/projects/projects.js` | 登録済みプロジェクト一覧の表示 |
-| add | `src/projects/add.js` | プロジェクトのワークスペース登録 |
-| setdefault | `src/projects/setdefault.js` | デフォルトプロジェクトの切り替え |
-| scan | `src/analyzers/scan.js` | 全解析モジュールの順次実行と `analysis.json` 書き出し |
-| analyze-controllers | `src/analyzers/analyze-controllers.js` | PHPコントローラの静的解析 |
-| analyze-models | `src/analyzers/analyze-models.js` | PHPモデルの静的解析 |
-| analyze-shells | `src/analyzers/analyze-shells.js` | PHPシェル（CLIコマンド）の静的解析 |
-| analyze-routes | `src/analyzers/analyze-routes.js` | PHPルーティング定義の静的解析 |
-| analyze-extras | `src/analyzers/analyze-extras.js` | 定数・その他補足情報の静的解析 |
-| php-array-parser | `src/analyzers/lib/php-array-parser.js` | PHP配列構文のパース（解析モジュール共通ライブラリ） |
-| init | `src/engine/init.js` | テンプレートから `docs/` ディレクトリを初期生成 |
-| populate | `src/engine/populate.js` | `@data-fill` ディレクティブへの解析データ自動挿入 |
-| tfill | `src/engine/tfill.js` | `@text-fill` ディレクティブへのエージェント生成テキスト挿入 |
+| sdd-forge CLI | `src/bin/sdd-forge.js` | サブコマンドのディスパッチ、プロジェクトコンテキスト解決、環境変数セット |
+| help | `src/help.js` | 利用可能なコマンド一覧の表示 |
+| cli | `src/lib/cli.js` | リポジトリルート検出、ファイル読み書き、ログ出力などの共通 CLI ユーティリティ |
+| config | `src/lib/config.js` | `.sdd-forge/config.json` の読み込みと設定値アクセス |
+| process | `src/lib/process.js` | 子プロセス実行のラッパー（`execFileSync` / `spawnSync`） |
+| init | `src/engine/init.js` | テンプレートから `docs/` を初期生成 |
+| populate | `src/engine/populate.js` | `@data-fill` ディレクティブを解析データで置換 |
+| tfill | `src/engine/tfill.js` | `@text-fill` ディレクティブを LLM CLI 呼び出しで解決 |
 | readme | `src/engine/readme.js` | `README.md` の自動生成 |
-| directive-parser | `src/engine/directive-parser.js` | Markdownファイルからディレクティブコメントを抽出 |
-| resolver | `src/engine/resolver.js` | `CATEGORY_MAP` を参照して `analysis.json` データをオブジェクト配列に変換 |
-| renderers | `src/engine/renderers.js` | オブジェクト配列をMarkdown文字列に整形（table / kv / mermaid-er / bool-matrix） |
-| spec | `src/spec/spec.js` | featureブランチと `spec.md` の初期化 |
-| gate | `src/spec/gate.js` | `spec.md` の未解決事項チェック |
-| forge | `src/forge/forge.js` | エージェントを用いた `docs/` の反復改善 |
-| flow | `src/flow/flow.js` | spec作成・gate・docs反映を一括実行するSDDフロー自動化 |
+| directive-parser | `src/engine/directive-parser.js` | Markdown ファイルからディレクティブを抽出・パース |
+| renderers | `src/engine/renderers.js` | 解析データをマークダウン形式にレンダリング |
+| resolver | `src/engine/resolver.js` | `@data-fill` キーに対応する解析データの抽出ロジック |
+| scan | `src/analyzers/scan.js` | 各解析器を統括し `analysis.json` を生成 |
+| analyze-controllers | `src/analyzers/analyze-controllers.js` | CakePHP コントローラの静的解析 |
+| analyze-models | `src/analyzers/analyze-models.js` | CakePHP モデルの静的解析 |
+| analyze-shells | `src/analyzers/analyze-shells.js` | CakePHP Shell の静的解析 |
+| analyze-routes | `src/analyzers/analyze-routes.js` | `routes.php` のルート定義解析 |
+| analyze-extras | `src/analyzers/analyze-extras.js` | 定数・設定などの補足情報解析 |
+| php-array-parser | `src/analyzers/lib/php-array-parser.js` | PHP 配列リテラルの汎用パーサー（解析器共通ユーティリティ） |
+| spec | `src/spec/spec.js` | feature ブランチ作成と `spec.md` の初期化 |
+| gate | `src/spec/gate.js` | `spec.md` の未解決事項チェックと PASS/FAIL 判定 |
+| forge | `src/forge/forge.js` | `populate` / `tfill` を組み合わせたドキュメント反復改善 |
+| flow | `src/flow/flow.js` | spec 作成・gate・初期 docs 反映を自動実行する SDD フロー |
+| projects | `src/projects/projects.js` | ワークスペース登録情報の読み書きと解決 |
+| add | `src/projects/add.js` | プロジェクトをワークスペースに追加 |
+| setdefault | `src/projects/setdefault.js` | デフォルトプロジェクトの設定 |
 
 
 ### モジュール依存関係
@@ -108,76 +105,109 @@ sdd-forge/                          ← リポジトリルート / npm パッケ
 
 ```mermaid
 graph TD
-    BIN["bin/sdd-forge"]
-    PROJECTS["projects/projects"]
-    ADD["projects/add"]
-    SETDEF["projects/setdefault"]
-    HELP["help"]
+  bin["bin/sdd-forge.js"]
+  help["help.js"]
 
-    CLI["lib/cli"]
-    CFG["lib/config"]
-    PROC["lib/process"]
+  subgraph lib
+    cli["lib/cli.js"]
+    config["lib/config.js"]
+    process_["lib/process.js"]
+  end
 
-    SCAN["analyzers/scan"]
-    ACTRL["analyzers/analyze-controllers"]
-    AMODEL["analyzers/analyze-models"]
-    ASHELL["analyzers/analyze-shells"]
-    AROUTE["analyzers/analyze-routes"]
-    AEXTRA["analyzers/analyze-extras"]
-    PHP["analyzers/lib/php-array-parser"]
+  subgraph engine
+    init["engine/init.js"]
+    populate["engine/populate.js"]
+    tfill["engine/tfill.js"]
+    readme["engine/readme.js"]
+    directive_parser["engine/directive-parser.js"]
+    renderers["engine/renderers.js"]
+    resolver["engine/resolver.js"]
+  end
 
-    INIT["engine/init"]
-    POP["engine/populate"]
-    TFILL["engine/tfill"]
-    README["engine/readme"]
-    DIRP["engine/directive-parser"]
-    REND["engine/renderers"]
-    RESV["engine/resolver"]
+  subgraph analyzers
+    scan["analyzers/scan.js"]
+    ctrl["analyzers/analyze-controllers.js"]
+    model["analyzers/analyze-models.js"]
+    shell["analyzers/analyze-shells.js"]
+    route["analyzers/analyze-routes.js"]
+    extras["analyzers/analyze-extras.js"]
+    php_parser["analyzers/lib/php-array-parser.js"]
+  end
 
-    SPEC["spec/spec"]
-    GATE["spec/gate"]
-    FORGE["forge/forge"]
-    FLOW["flow/flow"]
+  subgraph spec
+    spec_js["spec/spec.js"]
+    gate["spec/gate.js"]
+  end
 
-    BIN --> PROJECTS
-    ADD --> PROJECTS
-    SETDEF --> PROJECTS
+  subgraph forge
+    forge_js["forge/forge.js"]
+  end
 
-    SCAN --> CLI
-    SCAN --> ACTRL
-    SCAN --> AMODEL
-    SCAN --> ASHELL
-    SCAN --> AROUTE
-    SCAN --> AEXTRA
-    ACTRL --> PHP
-    AMODEL --> PHP
-    ASHELL --> PHP
-    AROUTE --> PHP
-    AEXTRA --> PHP
+  subgraph flow
+    flow_js["flow/flow.js"]
+  end
 
-    INIT --> CLI
-    INIT --> CFG
-    POP --> CLI
-    POP --> DIRP
-    POP --> REND
-    POP --> RESV
-    TFILL --> CLI
-    TFILL --> CFG
-    TFILL --> DIRP
-    README --> CLI
-    README --> CFG
+  subgraph projects
+    projects_js["projects/projects.js"]
+    add_js["projects/add.js"]
+    setdefault_js["projects/setdefault.js"]
+  end
 
-    SPEC --> CLI
-    SPEC --> PROC
-    GATE --> CLI
+  bin --> scan
+  bin --> populate
+  bin --> tfill
+  bin --> init
+  bin --> readme
+  bin --> spec_js
+  bin --> gate
+  bin --> forge_js
+  bin --> flow_js
+  bin --> add_js
+  bin --> setdefault_js
 
-    FORGE --> CLI
-    FORGE --> CFG
-    FORGE --> POP
-    FORGE --> TFILL
+  init --> cli
+  init --> config
 
-    FLOW --> CLI
-    FLOW --> PROC
+  populate --> directive_parser
+  populate --> renderers
+  populate --> resolver
+  populate --> cli
+
+  tfill --> directive_parser
+  tfill --> cli
+  tfill --> config
+
+  readme --> cli
+  readme --> config
+
+  scan --> ctrl
+  scan --> model
+  scan --> shell
+  scan --> route
+  scan --> extras
+  scan --> cli
+
+  ctrl --> php_parser
+  model --> php_parser
+  shell --> php_parser
+  route --> php_parser
+  extras --> php_parser
+
+  spec_js --> cli
+  spec_js --> process_
+
+  gate --> cli
+
+  forge_js --> populate
+  forge_js --> tfill
+  forge_js --> cli
+  forge_js --> config
+
+  flow_js --> cli
+  flow_js --> process_
+
+  add_js --> projects_js
+  setdefault_js --> projects_js
 ```
 
 
@@ -185,27 +215,34 @@ graph TD
 
 <!-- @text-fill: 代表的なコマンドを実行した際のモジュール間のデータ・制御フローを説明してください。 -->
 
-`sdd-forge scan` を実行すると、`bin/sdd-forge.js` が `projects/projects.js` でプロジェクトコンテキスト（`SDD_SOURCE_ROOT` / `SDD_WORK_ROOT`）を解決した後、`analyzers/scan.js` に制御を渡す。`scan.js` は `lib/cli.js` の `sourceRoot()` で解析対象ディレクトリを決定し、各 `analyze-*.js` モジュールを順に呼び出して結果を結合、`.sdd-forge/output/analysis.json` に書き出す。
+`sdd-forge scan` を実行すると、`bin/sdd-forge.js` がプロジェクトコンテキストを `projects/projects.js` 経由で解決し（`SDD_SOURCE_ROOT` / `SDD_WORK_ROOT` を環境変数にセット）、`analyzers/scan.js` へ制御を渡す。`scan.js` は各解析器（`analyze-controllers.js` ほか）を個別に呼び出し、戻り値を1つのオブジェクトにマージして `.sdd-forge/output/analysis.json` へ書き出す。
 
-`sdd-forge populate` では、`engine/populate.js` が `analysis.json` を読み込み、`docs/` 配下の `NN_*.md` を順に処理する。各ファイルは `engine/directive-parser.js` でディレクティブを抽出し、`@data-fill` ディレクティブに対して `engine/resolver.js` の `resolve()` が `CATEGORY_MAP` を参照して `analysis.json` の対応セクションをオブジェクト配列に変換する。変換済みデータは `engine/renderers.js` の `RENDERERS` マップ（`table` / `kv` / `mermaid-er` / `bool-matrix`）でマークダウン文字列に整形され、ディレクティブ行の直後に挿入される。`@text-fill` ディレクティブはスキップされる。
+`sdd-forge populate` では `engine/populate.js` が `analysis.json` を読み込み、`docs/*.md` を順に処理する。各ファイルを `engine/directive-parser.js` の `parseDirectives()` に渡してディレクティブ一覧を取得し、`@data-fill` ディレクティブごとに `engine/resolver.js` の `resolve()` で解析データを抽出、`engine/renderers.js` の対応レンダラーがマークダウンに変換して元の行を置換する。
 
-`sdd-forge tfill --agent claude` では、`engine/tfill.js` が `analysis.json` と `.sdd-forge/config.json` を読み込み、ファイル内の全ディレクティブから `getAnalysisContext()` で必要な解析セクションを収集する。`@text-fill` ごとに `buildPrompt()` が周辺行・解析データ・プロジェクトコンテキストを結合したプロンプトを組み立て、`callAgent()` が `config.json` の `providers` 定義に従い外部 CLI（`execFileSync`）でエージェントを起動する。エージェントの標準出力から `stripPreamble()` でメタコメンタリーを除去した本文が、ディレクティブ直後に書き込まれる。
+`sdd-forge tfill` では `engine/tfill.js` が `analysis.json` と `.sdd-forge/config.json` からエージェント設定を読み込む。`docs/*.md` の各ファイルに対してデフォルトのバッチモードで動作し、ファイル全体を1つのプロンプトにまとめて `callAgent()` が `execFileSync` で LLM CLI（`claude` 等）を子プロセスとして同期呼び出しする。バッチ呼び出しで `filled === 0` になった場合はディレクティブ単位のフォールバックモードで再試行する。
 
-`sdd-forge scan:all` は `bin/sdd-forge.js` が `scan.js` と `populate.js` を順に `await import()` で連続実行する特殊フローであり、解析と `@data-fill` 充填を一括処理する。
+`sdd-forge scan:all` は `bin/sdd-forge.js` 内で特別扱いされ、`scan.js` → `populate.js` を順次 `await import()` で直列実行する複合フローである。
 
 
 ### 拡張ポイント
 
 <!-- @text-fill: 新しいコマンドや機能を追加する際に変更が必要な箇所と、拡張パターンを説明してください。 -->
 
-必要なソースコードを読み終えました。拡張ポイントのテキストを生成します。
+新しいサブコマンドを追加する場合、変更が必要な箇所は `src/bin/sdd-forge.js` と `src/help.js` の2ファイルである。
 
-新しいコマンドを追加する際の最小変更セットは 2 ファイル。`src/bin/sdd-forge.js` の `SCRIPTS` オブジェクトにコマンド名 → スクリプトパスのエントリを追加し、`src/help.js` の `commands` 配列に表示エントリを追加する。引数の自動注入が必要な場合は `INJECT` オブジェクトにも追記する。プロジェクトコンテキスト（`SDD_SOURCE_ROOT` / `SDD_WORK_ROOT`）の解決が不要な管理系コマンドは `PROJECT_MGMT` セットに追加する。
+**`src/bin/sdd-forge.js` の変更点：**
+- `SCRIPTS` オブジェクトにサブコマンド名とスクリプトの相対パスのペアを追加する
+- 引数の注入が必要な場合は `INJECT` オブジェクトにエントリを追加する
+- プロジェクトコンテキスト解決が不要なコマンドは `PROJECT_MGMT` セットに追加する
+- `scan:all` のように複数スクリプトを順次実行する複合コマンドは、`SCRIPTS` を経由せず専用の `if` ブロックとして実装する
 
-解析対象を拡張する場合は `src/analyzers/` 配下に `analyze-xxx.js` を作成し、`src/analyzers/scan.js` の `VALID_ONLY` セット・インポート・実行ブロックの 3 箇所に追記する。`scan:xxx` サブコマンドとして公開する場合は `SCRIPTS` と `INJECT` にも追加する。
+**`src/help.js` の変更点：**
+- `commands` 配列に `{ name, desc, usage }` 形式でエントリを追加する（セパレータ `{ sep: "--- xxx ---" }` で既存グループに属させるか新グループを設ける）
 
-`@data-fill` ディレクティブで参照できるカテゴリを増やすには `src/engine/resolver.js` の `CATEGORY_MAP` にエントリを追加する。`analysis.json` の構造に依存した変換ロジックをここに集約する設計になっており、テンプレート側は汎用のまま保てる。
+**新しい解析器を追加する場合：**
+- `src/analyzers/` に `analyze-xxx.js` を作成し、名前付きエクスポート `analyzeXxx(appDir)` を実装する
+- `src/analyzers/scan.js` の `VALID_ONLY` セットと `main()` 内の条件分岐に対象キーを追加する
 
-出力形式を増やすには `src/engine/renderers.js` に関数を追加し、`RENDERERS` マップに登録する。現在 `table` / `kv` / `mermaid-er` / `bool-matrix` の 4 種が実装されている。
-
-プロジェクトタイプ（`php-mvc` / `node-cli`）を追加する場合は `src/templates/locale/<lang>/<type>/` ディレクトリを作成し、`src/engine/init.js` のタイプ判定ロジックに追記する。
+**新しいドキュメントテンプレートタイプを追加する場合：**
+- `src/templates/locale/<lang>/<type>/` にテンプレートファイル群を配置する
+- `src/engine/init.js` のテンプレートタイプ解決ロジックに新タイプを追加する
