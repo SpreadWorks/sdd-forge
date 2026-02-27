@@ -201,6 +201,144 @@ function buildPrompt(directive, fileName, lines, contextData, projectContext) {
 }
 
 // ---------------------------------------------------------------------------
+// バッチモード：ファイル単位で全ディレクティブを1回の LLM 呼び出しで処理
+// ---------------------------------------------------------------------------
+
+/**
+ * テンプレートファイルの @text-fill ディレクティブ後にある既存生成コンテンツを
+ * 除去してクリーンなテンプレート状態に戻す。
+ * processTemplate の endLine 計算と同じ境界ロジックを使用する。
+ */
+function stripFillContent(text) {
+  const lines = text.split("\n");
+  const result = [];
+  let i = 0;
+  while (i < lines.length) {
+    result.push(lines[i]);
+    if (/^<!--\s*@text-fill:/.test(lines[i].trim())) {
+      i++;
+      while (i < lines.length) {
+        const ln = lines[i].trim();
+        if (ln.startsWith("#") || ln.startsWith("<!-- @")) break;
+        if (ln === "" && i + 1 < lines.length && lines[i + 1].trim() === "") break;
+        if (ln === "" && i + 1 < lines.length && lines[i + 1].trim().startsWith("#")) break;
+        if (ln === "" && i + 1 < lines.length && lines[i + 1].trim().startsWith("<!-- @")) break;
+        i++;
+      }
+    } else {
+      i++;
+    }
+  }
+  return result.join("\n");
+}
+
+/**
+ * バッチ結果のファイルで埋められたディレクティブ数をカウントする。
+ * ディレクティブ行の次の非空行が ## / <!-- @ でなければ filled と判定する。
+ */
+function countFilledInBatch(fileText) {
+  const lines = fileText.split("\n");
+  let filled = 0;
+  for (let i = 0; i < lines.length; i++) {
+    if (/^<!--\s*@text-fill:/.test(lines[i].trim())) {
+      let j = i + 1;
+      while (j < lines.length && lines[j].trim() === "") j++;
+      if (j < lines.length &&
+          !lines[j].trim().startsWith("## ") &&
+          !lines[j].trim().startsWith("<!-- @")) {
+        filled++;
+      }
+    }
+  }
+  return filled;
+}
+
+/**
+ * ファイル全体を1つのプロンプトにまとめるバッチプロンプトを構築する。
+ * ±20行ウィンドウ・解析データは不要（ファイル全体が文脈になる）。
+ */
+function buildBatchPrompt(fileName, text, projectContext) {
+  const header = ["あなたはソフトウェアプロジェクトのテクニカルドキュメントを作成しています。"];
+  if (projectContext) {
+    header.push("", "## プロジェクト情報", projectContext);
+  }
+  return [
+    ...header,
+    "",
+    `以下の ${fileName} にある <!-- @text-fill: 指示 --> ディレクティブをすべて埋めてください。`,
+    "",
+    "## 出力ルール（厳守）",
+    "- ファイルの内容全体（未変更部分も含む）をそのまま出力すること",
+    "- <!-- @text-fill: ... --> ディレクティブ行は削除せずそのまま残すこと",
+    "- 各ディレクティブ行の直後に空行を挟んで本文を挿入すること",
+    "- セクション見出し（#, ##, ###）は追加・変更・削除しないこと",
+    "- 前置き・解説・メタコメンタリーを絶対に含めないこと",
+    "- ファイルの最初の行（# で始まる見出し）から出力を開始すること",
+    "- 各ディレクティブの指示に従い3〜15行程度の本文を生成すること",
+    "- 水平線（---）を装飾目的で使わないこと",
+    "",
+    `## ${fileName}`,
+    "",
+    text,
+  ].join("\n");
+}
+
+/**
+ * ファイル内のすべての @text-fill ディレクティブを1回の LLM 呼び出しで処理する。
+ * 既存の生成済みコンテンツを stripFillContent で除去してからプロンプトを組み立てる。
+ *
+ * @returns {{ text: string, filled: number, skipped: number }}
+ */
+function processTemplateFileBatch(text, analysis, fileName, agent, timeoutMs, cwd, dryRun, _preamblePatterns, projectContext) {
+  const directives = parseDirectives(text);
+  const textFills = directives.filter((d) => d.type === "text-fill");
+
+  if (textFills.length === 0) return { text, filled: 0, skipped: 0 };
+
+  const cleanText = stripFillContent(text);
+  const prompt = buildBatchPrompt(fileName, cleanText, projectContext);
+
+  if (dryRun) {
+    console.log(`[tfill] DRY-RUN batch ${fileName}: ${textFills.length} directive(s) → 1 call (${prompt.length} chars)`);
+    return { text, filled: 0, skipped: textFills.length };
+  }
+
+  console.error(`[tfill] Batch ${fileName}: ${textFills.length} directive(s) → 1 call`);
+
+  let result;
+  try {
+    // バッチはファイル全体を返すので preamble パターンは使わない
+    result = callAgent(agent, prompt, timeoutMs, cwd, []);
+  } catch (err) {
+    const parts = [err.message];
+    if (err.signal) parts.push(`signal: ${err.signal}`);
+    if (err.stderr) parts.push(`stderr: ${String(err.stderr).slice(0, 400)}`);
+    if (err.stdout) parts.push(`stdout: ${String(err.stdout).slice(0, 200)}`);
+    console.error(`[tfill] ERROR batch ${fileName}: ${parts.join(" | ")}`);
+    return { text, filled: 0, skipped: textFills.length };
+  }
+
+  if (!result) {
+    console.error(`[tfill] WARN: empty batch response for ${fileName}`);
+    return { text, filled: 0, skipped: textFills.length };
+  }
+
+  // ファイル先頭に余分な前置きがあれば除去（最初の # 見出し行を起点にする）
+  const resultLines = result.split("\n");
+  let startIdx = 0;
+  for (let i = 0; i < Math.min(10, resultLines.length); i++) {
+    if (resultLines[i].startsWith("#")) { startIdx = i; break; }
+  }
+  const finalText = resultLines.slice(startIdx).join("\n").trimEnd() + "\n";
+
+  const filled = countFilledInBatch(finalText);
+  const skipped = textFills.length - filled;
+  console.error(`[tfill] Batch DONE ${fileName}: ${filled}/${textFills.length} filled`);
+
+  return { text: finalText, filled, skipped };
+}
+
+// ---------------------------------------------------------------------------
 // エージェント呼び出し
 // ---------------------------------------------------------------------------
 function callAgent(agent, prompt, timeoutMs, cwd, preamblePatterns) {
@@ -392,20 +530,21 @@ export function textFillFromAnalysis(root, analysis, agentName) {
 // ---------------------------------------------------------------------------
 function main() {
   const cli = parseArgs(process.argv.slice(2), {
-    flags: ["--dry-run"],
+    flags: ["--dry-run", "--per-directive"],
     options: ["--agent", "--timeout"],
-    defaults: { agent: "", dryRun: false, timeout: "120000" },
+    defaults: { agent: "", dryRun: false, timeout: "180000", perDirective: false },
   });
-  cli.timeout = Number(cli.timeout) || 120000;
+  cli.timeout = Number(cli.timeout) || 180000;
   if (cli.help) {
     console.log([
       "Usage: node sdd-forge/engine/tfill.js --agent <name> [options]",
       "",
       "Options:",
-      "  --agent <name>   AIエージェント: claude|codex (必須)",
-      "  --dry-run        変更内容を表示するだけでファイル書き込みしない",
-      "  --timeout <ms>   エージェントタイムアウト (default: 120000)",
-      "  -h, --help       このヘルプを表示",
+      "  --agent <name>      AIエージェント: claude|codex (必須)",
+      "  --dry-run           変更内容を表示するだけでファイル書き込みしない",
+      "  --per-directive     1ディレクティブ=1呼び出しの旧モード（デフォルト: ファイル単位バッチ）",
+      "  --timeout <ms>      エージェントタイムアウト (default: 180000)",
+      "  -h, --help          このヘルプを表示",
     ].join("\n"));
     return;
   }
@@ -437,10 +576,24 @@ function main() {
   let totalSkipped = 0;
   const changedFiles = new Set();
 
+  const processFn = cli.perDirective ? processTemplate : processTemplateFileBatch;
+  if (!cli.perDirective) {
+    console.error(`[tfill] Mode: batch (file-level, ${docsFiles.length} call(s)). Use --per-directive for legacy mode.`);
+  }
+
   for (const file of docsFiles) {
     const filePath = path.join(docsDir, file);
     const original = fs.readFileSync(filePath, "utf8");
-    const result = processTemplate(original, analysis, file, agent, cli.timeout, root, cli.dryRun, preamblePatterns, projectContext);
+    let result = processFn(original, analysis, file, agent, cli.timeout, root, cli.dryRun, preamblePatterns, projectContext);
+
+    // バッチモードで 0 filled になった場合は per-directive モードで再試行
+    if (!cli.perDirective && !cli.dryRun && result.filled === 0) {
+      const textFills = parseDirectives(original).filter((d) => d.type === "text-fill");
+      if (textFills.length > 0) {
+        console.error(`[tfill] Batch returned 0 filled for ${file}. Falling back to per-directive mode...`);
+        result = processTemplate(original, analysis, file, agent, cli.timeout, root, cli.dryRun, preamblePatterns, projectContext);
+      }
+    }
 
     totalFilled += result.filled;
     totalSkipped += result.skipped;
