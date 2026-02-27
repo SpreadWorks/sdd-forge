@@ -1,0 +1,9 @@
+{
+  "notDescribed": "（未記載）",
+  "helpDryRun": "差分を表示するが書き込まない",
+  "helpShow": "このヘルプを表示",
+  "readmeUpdated": "README.md updated.",
+  "readmeNoChange": "No changes detected. Skipping write.",
+  "reviewPassed": "review passed.",
+  "specGateFail": "spec:gate が失敗しました。以下を解消してください。"
+}
