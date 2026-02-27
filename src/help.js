@@ -7,6 +7,9 @@
 
 const commands = [
   { name: "help",        desc: "このヘルプを表示" },
+  { sep: "--- project ---" },
+  { name: "add",         desc: "プロジェクトを登録・初期化",                          usage: "<name> <path>" },
+  { name: "default",     desc: "デフォルトプロジェクトを変更（引数なしで一覧表示）",  usage: "[<name>]" },
   { sep: "--- spec ---" },
   { name: "spec",        desc: "spec 初期化（feature ブランチ + spec.md 作成）",  usage: '--title "機能名"' },
   { name: "gate",        desc: "spec ゲート（未解決事項チェック）",                usage: "--spec specs/NNN-xxx/spec.md" },

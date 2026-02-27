@@ -13,7 +13,7 @@ import { analyzeModels } from "./analyze-models.js";
 import { analyzeShells } from "./analyze-shells.js";
 import { analyzeRoutes } from "./analyze-routes.js";
 import { analyzeExtras } from "./analyze-extras.js";
-import { repoRoot, parseArgs } from "../lib/cli.js";
+import { repoRoot, sourceRoot, parseArgs } from "../lib/cli.js";
 
 function printHelp() {
   console.log(
@@ -47,8 +47,8 @@ function main() {
     );
   }
 
-  const root = repoRoot(import.meta.url);
-  const appDir = path.join(root, "app");
+  const root   = repoRoot(import.meta.url);
+  const appDir = path.join(sourceRoot(), "app");
 
   if (!fs.existsSync(appDir)) {
     throw new Error(`app/ directory not found: ${appDir}`);

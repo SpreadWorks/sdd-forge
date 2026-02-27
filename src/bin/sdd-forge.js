@@ -7,6 +7,7 @@
  *
  * Usage:
  *   sdd-forge <subcommand> [options]
+ *   sdd-forge --project <name> <subcommand> [options]
  *   sdd-forge help
  */
 
@@ -18,6 +19,8 @@ const PKG_DIR = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..")
 /** サブコマンド → スクリプト相対パス */
 const SCRIPTS = {
   help:          "help.js",
+  add:           "projects/add.js",
+  default:       "projects/setdefault.js",
   scan:          "analyzers/scan.js",
   "scan:ctrl":   "analyzers/scan.js",
   "scan:model":  "analyzers/scan.js",
@@ -43,11 +46,53 @@ const INJECT = {
   "scan:extra":  ["--only", "extras"],
 };
 
-const [, , subCmd, ...rest] = process.argv;
+/** プロジェクトコンテキスト解決が不要なコマンド */
+const PROJECT_MGMT = new Set(["add", "default", "help"]);
+
+// --project フラグを argv から抽出
+const rawArgs = process.argv.slice(2);
+let projectName;
+let filteredArgs = rawArgs;
+
+const projIdx = rawArgs.indexOf("--project");
+if (projIdx !== -1) {
+  projectName = rawArgs[projIdx + 1];
+  filteredArgs = [
+    ...rawArgs.slice(0, projIdx),
+    ...rawArgs.slice(projIdx + 2),
+  ];
+}
+
+const [subCmd, ...rest] = filteredArgs;
+
+// ヘルプ（引数なし / -h / --help）
+if (!subCmd || subCmd === "-h" || subCmd === "--help") {
+  const helpPath = path.join(PKG_DIR, "help.js");
+  process.argv = [process.argv[0], helpPath];
+  await import(helpPath);
+  process.exit(0);
+}
+
+// プロジェクトコンテキストの解決（管理コマンド以外）
+if (!PROJECT_MGMT.has(subCmd)) {
+  const { resolveProject, workRootFor } = await import(
+    path.join(PKG_DIR, "projects/projects.js")
+  );
+  try {
+    const project = resolveProject(projectName);
+    if (project) {
+      process.env.SDD_SOURCE_ROOT = project.path;
+      process.env.SDD_WORK_ROOT   = workRootFor(project.name);
+    }
+  } catch (err) {
+    console.error(`Error: ${err.message}`);
+    process.exit(1);
+  }
+}
 
 // scan:all: 全解析 → populate を順に実行
 if (subCmd === "scan:all") {
-  const scanPath    = path.join(PKG_DIR, "analyzers/scan.js");
+  const scanPath     = path.join(PKG_DIR, "analyzers/scan.js");
   const populatePath = path.join(PKG_DIR, "engine/populate.js");
 
   process.argv = [process.argv[0], scanPath, ...rest];
@@ -55,14 +100,6 @@ if (subCmd === "scan:all") {
 
   process.argv = [process.argv[0], populatePath];
   await import(populatePath);
-  process.exit(0);
-}
-
-// ヘルプ（引数なし / -h / --help）
-if (!subCmd || subCmd === "-h" || subCmd === "--help") {
-  const helpPath = path.join(PKG_DIR, "help.js");
-  process.argv = [process.argv[0], helpPath];
-  await import(helpPath);
   process.exit(0);
 }
 

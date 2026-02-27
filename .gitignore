@@ -2,3 +2,5 @@ AGENTS.md
 CLAUDE.md
 .claude
 node_modules
+/projects/
+/projects.json

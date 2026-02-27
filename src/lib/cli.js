@@ -9,12 +9,15 @@ import { execFileSync } from "child_process";
 import { fileURLToPath } from "url";
 
 /**
- * git rev-parse で repo root を取得。失敗時は importMetaUrl ベースで推定する。
+ * 作業ルートを返す。
+ * SDD_WORK_ROOT 環境変数が設定されている場合はそれを使用する（プロジェクトモード）。
+ * それ以外は git rev-parse でリポジトリルートを取得し、失敗時は process.cwd() を返す。
  *
- * @param {string} importMetaUrl - 呼び出し元の import.meta.url
- * @returns {string} リポジトリルートの絶対パス
+ * @param {string} [importMetaUrl] - 呼び出し元の import.meta.url（後方互換用）
+ * @returns {string} 作業ルートの絶対パス
  */
 export function repoRoot(importMetaUrl) {
+  if (process.env.SDD_WORK_ROOT) return process.env.SDD_WORK_ROOT;
   try {
     return execFileSync("git", ["rev-parse", "--show-toplevel"], {
       encoding: "utf8",
@@ -24,6 +27,18 @@ export function repoRoot(importMetaUrl) {
     // node_modules/ 内部を指すため process.cwd() を使用する
     return process.cwd();
   }
+}
+
+/**
+ * ソースルートを返す。
+ * SDD_SOURCE_ROOT 環境変数が設定されている場合はそれを使用する（プロジェクトモード）。
+ * それ以外は repoRoot() と同じ値を返す（既存動作との後方互換）。
+ *
+ * @returns {string} ソースルートの絶対パス
+ */
+export function sourceRoot() {
+  if (process.env.SDD_SOURCE_ROOT) return process.env.SDD_SOURCE_ROOT;
+  return repoRoot();
 }
 
 /**
