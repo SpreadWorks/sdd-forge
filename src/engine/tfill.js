@@ -45,6 +45,14 @@ function loadPreamblePatterns(root) {
   return entries.map((e) => new RegExp(e.pattern, e.flags || ""));
 }
 
+/**
+ * config.json の textFill.projectContext を返す。未設定なら空文字列。
+ */
+function loadProjectContext(root) {
+  const cfg = loadConfig(root);
+  return cfg.textFill?.projectContext || "";
+}
+
 // ---------------------------------------------------------------------------
 // 解析データからファイル別コンテキストを動的に選択
 // ---------------------------------------------------------------------------
@@ -148,7 +156,7 @@ function getAnalysisContext(analysis, directives) {
 // ---------------------------------------------------------------------------
 // プロンプト構築
 // ---------------------------------------------------------------------------
-function buildPrompt(directive, fileName, lines, contextData) {
+function buildPrompt(directive, fileName, lines, contextData, projectContext) {
   const directiveLine = directive.line;
 
   // ±20行のコンテキストを抽出
@@ -162,9 +170,14 @@ function buildPrompt(directive, fileName, lines, contextData) {
     ? contextJson.slice(0, 8000) + "\n... (truncated)"
     : contextJson;
 
+  const header = ["あなたはソフトウェアプロジェクトのテクニカルドキュメントを作成しています。"];
+  if (projectContext) {
+    header.push("", "## プロジェクト情報", projectContext);
+  }
+  header.push("", "以下の指示に従い、ドキュメントに挿入するマークダウンテキストを生成してください。");
+
   return [
-    "あなたはソフトウェアプロジェクトのテクニカルドキュメントを作成しています。",
-    "以下の指示に従い、ドキュメントに挿入するマークダウンテキストを生成してください。",
+    ...header,
     "",
     "## 指示",
     directive.prompt,
@@ -199,11 +212,16 @@ function callAgent(agent, prompt, timeoutMs, cwd, preamblePatterns) {
   const hasToken = args.some((a) => typeof a === "string" && a.includes("{{PROMPT}}"));
   const finalArgs = hasToken ? resolvedArgs : [...resolvedArgs, prompt];
 
+  // CLAUDECODE を外してネスト起動ガードを回避（claude CLI 呼び出し時に必要）
+  const env = { ...process.env };
+  delete env.CLAUDECODE;
+
   const result = execFileSync(agent.command, finalArgs, {
     encoding: "utf8",
     maxBuffer: 20 * 1024 * 1024,
     timeout: timeoutMs,
     cwd,
+    env,
   });
 
   return stripPreamble(result.trim(), preamblePatterns);
@@ -264,7 +282,7 @@ function stripPreamble(text, preamblePatterns) {
  * @param {boolean} dryRun     - dry-run モード
  * @returns {{ text: string, filled: number, skipped: number }}
  */
-function processTemplate(text, analysis, fileName, agent, timeoutMs, cwd, dryRun, preamblePatterns) {
+function processTemplate(text, analysis, fileName, agent, timeoutMs, cwd, dryRun, preamblePatterns, projectContext) {
   const directives = parseDirectives(text);
   const textFills = directives.filter((d) => d.type === "text-fill");
 
@@ -278,7 +296,7 @@ function processTemplate(text, analysis, fileName, agent, timeoutMs, cwd, dryRun
   // 後ろから処理して行番号のズレを防ぐ
   for (let i = textFills.length - 1; i >= 0; i--) {
     const d = textFills[i];
-    const prompt = buildPrompt(d, fileName, lines, contextData);
+    const prompt = buildPrompt(d, fileName, lines, contextData, projectContext);
 
     if (dryRun) {
       console.log(`[tfill] DRY-RUN ${fileName}:${d.line + 1}: ${d.prompt.slice(0, 80)}`);
@@ -342,6 +360,7 @@ export function textFillFromAnalysis(root, analysis, agentName) {
 
   const agent = loadAgentConfig(root, agentName);
   const preamblePatterns = loadPreamblePatterns(root);
+  const projectContext = loadProjectContext(root);
   const docsDir = path.join(root, "docs");
   const docsFiles = fs.readdirSync(docsDir)
     .filter((f) => /^\d{2}_/.test(f) && f.endsWith(".md"))
@@ -354,7 +373,7 @@ export function textFillFromAnalysis(root, analysis, agentName) {
   for (const file of docsFiles) {
     const filePath = path.join(docsDir, file);
     const original = fs.readFileSync(filePath, "utf8");
-    const result = processTemplate(original, analysis, file, agent, 120000, root, false, preamblePatterns);
+    const result = processTemplate(original, analysis, file, agent, 120000, root, false, preamblePatterns, projectContext);
 
     totalFilled += result.filled;
     totalSkipped += result.skipped;
@@ -399,15 +418,16 @@ function main() {
   const root = repoRoot(import.meta.url);
   const analysisPath = path.join(root, ".sdd-forge", "output", "analysis.json");
 
-  if (!fs.existsSync(analysisPath)) {
-    console.error(`[tfill] ERROR: analysis.json not found: ${analysisPath}`);
-    console.error("[tfill] Run 'npm run sdd:scan' first.");
-    process.exit(1);
+  let analysis = {};
+  if (fs.existsSync(analysisPath)) {
+    analysis = JSON.parse(fs.readFileSync(analysisPath, "utf8"));
+  } else {
+    console.warn(`[tfill] WARN: analysis.json not found: ${analysisPath}`);
+    console.warn("[tfill] Proceeding with empty analysis context. Run 'sdd-forge scan' if needed.");
   }
-
-  const analysis = JSON.parse(fs.readFileSync(analysisPath, "utf8"));
   const agent = loadAgentConfig(root, cli.agent);
   const preamblePatterns = loadPreamblePatterns(root);
+  const projectContext = loadProjectContext(root);
   const docsDir = path.join(root, "docs");
   const docsFiles = fs.readdirSync(docsDir)
     .filter((f) => /^\d{2}_/.test(f) && f.endsWith(".md"))
@@ -420,7 +440,7 @@ function main() {
   for (const file of docsFiles) {
     const filePath = path.join(docsDir, file);
     const original = fs.readFileSync(filePath, "utf8");
-    const result = processTemplate(original, analysis, file, agent, cli.timeout, root, cli.dryRun, preamblePatterns);
+    const result = processTemplate(original, analysis, file, agent, cli.timeout, root, cli.dryRun, preamblePatterns, projectContext);
 
     totalFilled += result.filled;
     totalSkipped += result.skipped;
