@@ -47,6 +47,7 @@ Options:
  */
 function listChapterFiles() {
   const docsDir = path.join(root, "docs");
+  if (!fs.existsSync(docsDir)) return [];
   return fs
     .readdirSync(docsDir)
     .filter((f) => /^\d{2}_.*\.md$/.test(f))
@@ -113,10 +114,9 @@ function extractManualBlock(filePath) {
 // ---------------------------------------------------------------------------
 
 const lang = sddConfig?.lang || "ja";
-const type = sddConfig?.type || "php-mvc";
-const TEMPLATE_PATH = path.join(PKG_DIR, "templates", "locale", lang, type, "readme.md");
+const type = sddConfig?.type;
 
-function generateReadme(chapters, manualContent) {
+function generateReadme(chapters, manualContent, templatePath) {
   const chapterTable = chapters
     .map(
       (ch) =>
@@ -124,7 +124,7 @@ function generateReadme(chapters, manualContent) {
     )
     .join("\n");
 
-  const template = fs.readFileSync(TEMPLATE_PATH, "utf8");
+  const template = fs.readFileSync(templatePath, "utf8");
   return template
     .replace("{{CHAPTER_TABLE}}", chapterTable)
     .replace("{{MANUAL_CONTENT}}", manualContent);
@@ -135,10 +135,21 @@ function generateReadme(chapters, manualContent) {
 // ---------------------------------------------------------------------------
 
 function main() {
+  if (!type) {
+    console.log("[readme] .sdd-forge/config.json に type が設定されていません。スキップします。");
+    return;
+  }
+
+  const templatePath = path.join(PKG_DIR, "templates", "locale", lang, type, "README.md");
+  if (!fs.existsSync(templatePath)) {
+    console.log(`[readme] テンプレートが見つかりません (type=${type})。スキップします。`);
+    return;
+  }
+
   const chapters = listChapterFiles().map(parseChapter);
   const readmePath = path.join(root, "README.md");
   const manualContent = extractManualBlock(readmePath);
-  const newContent = generateReadme(chapters, manualContent);
+  const newContent = generateReadme(chapters, manualContent, templatePath);
 
   // 差分チェック
   if (fs.existsSync(readmePath)) {
