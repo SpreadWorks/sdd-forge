@@ -14,7 +14,7 @@ const commands = [
   { name: "spec",        desc: "spec 初期化（feature ブランチ + spec.md 作成）",  usage: '--title "機能名"' },
   { name: "gate",        desc: "spec ゲート（未解決事項チェック）",                usage: "--spec specs/NNN-xxx/spec.md" },
   { sep: "--- docs ---" },
-  { name: "init",        desc: "テンプレートから docs/ を初期化",                 usage: "[--type php-mvc] [--force]" },
+  { name: "init",        desc: "テンプレートから docs/ を初期化",                 usage: "[--type <type>] [--force]" },
   { name: "forge",       desc: "docs 反復改善（AI エージェント対応）",             usage: '--prompt "内容"' },
   { name: "review",      desc: "docs レビュー（--review-cmd で設定、または npm run sdd:review）" },
   { name: "readme",      desc: "README.md 自動生成" },

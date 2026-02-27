@@ -165,7 +165,11 @@ function main() {
   const defaults = loadPackageField(root, "docsInit") || {};
   const sddConfig = loadJsonFile(path.join(root, ".sdd-forge", "config.json"));
 
-  const type = cli.type || sddConfig?.type || defaults.defaultType || "php-mvc";
+  const type = cli.type || sddConfig?.type || defaults.defaultType;
+  if (!type) {
+    console.error("[init] ERROR: type が設定されていません。.sdd-forge/config.json に \"type\" を設定するか --type オプションを指定してください。");
+    process.exit(1);
+  }
   const lang = sddConfig?.lang || "ja";
 
   console.log(`[init] type=${type} lang=${lang}`);

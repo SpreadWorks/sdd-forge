@@ -12,7 +12,6 @@ import { addProject, workRootFor } from "./projects.js";
 
 const DEFAULT_CONFIG = {
   lang: "ja",
-  type: "php-mvc",
   limits: { designTimeoutMs: 900000 },
 };
 

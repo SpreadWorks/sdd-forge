@@ -163,7 +163,7 @@ function buildPrompt(directive, fileName, lines, contextData) {
     : contextJson;
 
   return [
-    "あなたは CakePHP 2.x ベースの動画CMSのテクニカルドキュメントを作成しています。",
+    "あなたはソフトウェアプロジェクトのテクニカルドキュメントを作成しています。",
     "以下の指示に従い、ドキュメントに挿入するマークダウンテキストを生成してください。",
     "",
     "## 指示",

@@ -309,17 +309,8 @@ const CATEGORY_MAP = {
   // config
   // -----------------------------------------------------------------------
   "config.stack": () => {
-    // 静的データ: CakePHP プロジェクト共通の技術スタック
-    return [
-      { category: "言語", technology: "PHP", version: "5.5+ (Docker: 8.x)" },
-      { category: "フレームワーク", technology: "CakePHP", version: "2.x" },
-      { category: "DB", technology: "MySQL", version: "8.0" },
-      { category: "コンテナ", technology: "Docker Compose", version: "-" },
-      { category: "ビルド", technology: "Ant / Composer", version: "-" },
-      { category: "テスト", technology: "PHPUnit", version: "3.7.*" },
-      { category: "CI", technology: "Travis CI", version: "-" },
-      { category: "開発ツール", technology: "Node.js（SDD ツール群 + ソースコード解析）", version: "-" },
-    ];
+    // プロジェクト固有の技術スタックは project-overrides.json で定義してください
+    return [];
   },
 
   "config.composer": (a) => {
@@ -362,15 +353,7 @@ const CATEGORY_MAP = {
 
   "config.db": (a) => {
     if (!a.extras?.bootstrap?.environments) return [];
-    return a.extras.bootstrap.environments.map((env) => {
-      let host = "—";
-      let note = "";
-      if (env === "local") { host = "localhost:13306"; note = "Docker Compose (MySQL 8.0)"; }
-      else if (env === "dev") { host = "（社内開発サーバ）"; note = "開発環境"; }
-      else if (env === "staging") { host = "（ステージングサーバ）"; note = "テスト環境"; }
-      else if (env === "prod") { host = "（本番サーバ）"; note = "本番環境"; }
-      return { env, host, note };
-    });
+    return a.extras.bootstrap.environments.map((env) => ({ env, host: "—", note: "" }));
   },
 
   "config.constants": (a) => {
@@ -558,10 +541,8 @@ const CATEGORY_MAP = {
   // docker
   // -----------------------------------------------------------------------
   docker: () => {
-    return [
-      { service: "php", container: "civbe", port: "8080", image: "カスタム" },
-      { service: "mysql", container: "mysql8-db", port: "13306", image: "MySQL 8.0" },
-    ];
+    // プロジェクト固有のコンテナ情報は project-overrides.json で定義してください
+    return [];
   },
 };
 
