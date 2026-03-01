@@ -3,8 +3,8 @@
  * sdd-forge/engine/populate.js
  *
  * ディレクティブベースのテンプレートエンジン。
- * analysis.json を読み、テンプレート内の @data-fill ディレクティブを解決してレンダリングする。
- * @text-fill はスキップしてログ出力する（後続タスクで LLM 連携を実装予定）。
+ * analysis.json を読み、テンプレート内の @data ディレクティブを解決してレンダリングする。
+ * @text はスキップしてログ出力する（後続タスクで LLM 連携を実装予定）。
  *
  * Usage:
  *   node sdd-forge/engine/populate.js [--dry-run] [--stdout]
@@ -42,13 +42,13 @@ function processTemplate(text, analysis, fileName) {
   for (let i = directives.length - 1; i >= 0; i--) {
     const d = directives[i];
 
-    if (d.type === "text-fill") {
+    if (d.type === "text") {
       skipped++;
-      console.error(`[populate] SKIP @text-fill in ${fileName}:${d.line + 1}: ${d.prompt.slice(0, 60)}...`);
+      console.error(`[populate] SKIP @text in ${fileName}:${d.line + 1}: ${d.prompt.slice(0, 60)}...`);
       continue;
     }
 
-    if (d.type === "data-fill") {
+    if (d.type === "data") {
       const data = resolve(d.category, analysis);
       if (data === null) {
         console.error(`[populate] WARN: no data for category "${d.category}" in ${fileName}:${d.line + 1}`);
@@ -182,7 +182,7 @@ function main() {
     }
   }
 
-  console.error(`[populate] Done. ${changedFiles.size} file(s) updated. @data-fill: ${totalReplaced} replaced, @text-fill: ${totalSkipped} skipped.`);
+  console.error(`[populate] Done. ${changedFiles.size} file(s) updated. @data: ${totalReplaced} replaced, @text: ${totalSkipped} skipped.`);
 }
 
 const isDirectRun = process.argv[1] &&

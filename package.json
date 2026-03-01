@@ -1,7 +1,7 @@
 {
   "name": "sdd-forge",
   "version": "0.1.0-alpha.3",
-  "description": "Spec-Driven Development tooling for PHP-MVC documentation generation",
+  "description": "Spec-Driven Development tooling for automated documentation generation",
   "type": "module",
   "bin": {
     "sdd-forge": "./src/bin/sdd-forge.js"
@@ -15,9 +15,9 @@
   "keywords": [
     "sdd",
     "documentation",
-    "php",
-    "cakephp",
-    "spec-driven-development"
+    "spec-driven-development",
+    "source-analysis",
+    "technical-docs"
   ],
   "license": "MIT"
 }

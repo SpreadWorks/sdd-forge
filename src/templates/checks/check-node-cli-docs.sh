@@ -37,7 +37,7 @@ for f in "${required_files[@]}"; do
 done
 
 # -----------------------------------------------------------------------
-# 2. 未解決 @text-fill ディレクティブ チェック
+# 2. 未解決 @text ディレクティブ チェック
 #    ディレクティブ行の直後に（空行を挟んで）コンテンツがなければ unfilled と判定
 # -----------------------------------------------------------------------
 for f in "${required_files[@]}"; do
@@ -51,11 +51,11 @@ for f in "${required_files[@]}"; do
     # 次の非空行が「## 」レベル2見出し・別のディレクティブ・または空ならば unfilled
     # （####等のAI生成サブセクション見出しはfilled扱い）
     if [[ -z "$next_nonempty" ]] || \
-       echo "$next_nonempty" | grep -qE '^(## |<!-- @(text|data)-fill:)'; then
-      echo "[FAIL] unfilled @text-fill directive in $f (line $line_num)"
+       echo "$next_nonempty" | grep -qE '^(## |<!-- @(text|data)[\[: ])'; then
+      echo "[FAIL] unfilled @text directive in $f (line $line_num)"
       fail=1
     fi
-  done < <(grep -n '<!-- @text-fill:' "$fpath" | cut -d: -f1)
+  done < <(grep -nE '<!-- @text[\[: ]' "$fpath" | cut -d: -f1)
 done
 
 # -----------------------------------------------------------------------

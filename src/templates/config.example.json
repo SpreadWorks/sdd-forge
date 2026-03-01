@@ -1,0 +1,26 @@
+{
+  "lang": "ja",
+  "type": "node-cli",
+  "limits": {
+    "designTimeoutMs": 900000
+  },
+  "documentStyle": {
+    "purpose": "developer-guide",
+    "tone": "polite",
+    "customInstruction": ""
+  },
+  "textFill": {
+    "projectContext": "",
+    "preamblePatterns": [
+      { "pattern": "^(Here is|以下に|Based on)", "flags": "i" }
+    ]
+  },
+  "defaultAgent": "claude",
+  "providers": {
+    "claude": {
+      "name": "claude-cli",
+      "command": "claude",
+      "args": ["--model", "sonnet", "-p", "{{PROMPT}}"]
+    }
+  }
+}

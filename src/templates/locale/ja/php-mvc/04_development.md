@@ -2,7 +2,7 @@
 
 ## 説明
 
-<!-- @text-fill: この章の概要を1〜2文で記述してください。Docker セットアップ、テスト構成、SDD ツール群を踏まえること。 -->
+<!-- @text: この章の概要を1〜2文で記述してください。Docker セットアップ、テスト構成、SDD ツール群を踏まえること。 -->
 
 ## 内容
 
@@ -21,11 +21,11 @@ npm run docker:stop
 
 ### npm scripts（Docker 操作）
 
-<!-- @text-fill: package.json に定義されている Docker 操作コマンドを表形式で記述してください。 -->
+<!-- @text: package.json に定義されている Docker 操作コマンドを表形式で記述してください。 -->
 
 ### ローカル開発手順
 
-<!-- @text-fill: Docker 環境でのローカル開発手順（起動→コーディング→テスト→確認）を記述してください。 -->
+<!-- @text: Docker 環境でのローカル開発手順（起動→コーディング→テスト→確認）を記述してください。 -->
 
 ### SDD ツール
 
@@ -50,20 +50,20 @@ npm run docker:stop
 
 ### AI エージェント選択
 
-<!-- @text-fill: sdd:forge や sdd:flow で使用できる AI エージェント選択（--agent オプション）について記述してください。 -->
+<!-- @text: sdd:forge や sdd:flow で使用できる AI エージェント選択（--agent オプション）について記述してください。 -->
 
 ### テスト構成
 
-<!-- @text-fill: テストフレームワークとテスト実行方法を説明してください。 -->
+<!-- @text: テストフレームワークとテスト実行方法を説明してください。 -->
 
-<!-- @data-fill: table(tests, labels=項目|件数|ディレクトリ) -->
+<!-- @data: table(tests, labels=項目|件数|ディレクトリ) -->
 
 ### 設定定数リファレンス
 
 #### スカラー定数
 
-<!-- @data-fill: table(config.constants, labels=定数名|値|説明) -->
+<!-- @data: table(config.constants, labels=定数名|値|説明) -->
 
 #### 選択肢定数
 
-<!-- @data-fill: table(config.constants.select, labels=定数名|選択肢) -->
+<!-- @data: table(config.constants.select, labels=定数名|選択肢) -->
