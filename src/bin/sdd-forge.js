@@ -12,6 +12,7 @@
  */
 
 import { fileURLToPath } from "url";
+import { execFileSync } from "child_process";
 import path from "path";
 
 const PKG_DIR = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
@@ -88,6 +89,17 @@ if (!PROJECT_MGMT.has(subCmd)) {
     console.error(`Error: ${err.message}`);
     process.exit(1);
   }
+}
+
+// review: bash スクリプトを直接実行
+if (subCmd === "review") {
+  const scriptPath = path.join(PKG_DIR, "templates/checks/self-review-temp-docs.sh");
+  try {
+    execFileSync("bash", [scriptPath, ...rest], { stdio: "inherit", cwd: process.cwd() });
+  } catch (err) {
+    process.exit(err.status || 1);
+  }
+  process.exit(0);
 }
 
 // scan:all: 全解析 → populate を順に実行
