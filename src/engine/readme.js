@@ -13,7 +13,7 @@ import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
 import { repoRoot, parseArgs } from "../lib/cli.js";
-import { loadJsonFile } from "../lib/config.js";
+import { loadJsonFile, loadPackageField } from "../lib/config.js";
 
 // npm パッケージ: テンプレートはパッケージ自身の templates/ に同梱される
 const PKG_DIR = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
@@ -82,7 +82,7 @@ function parseChapter(filePath) {
     }
     if (inDesc) {
       // ディレクティブ行はスキップ
-      if (/<!--\s*@(text-fill|data-fill):/.test(line)) continue;
+      if (/<!--\s*@(text|data)\s*(\[[^\]]*\])?\s*:/.test(line)) continue;
       descLines.push(line);
     }
   }
@@ -116,7 +116,7 @@ function extractManualBlock(filePath) {
 const lang = sddConfig?.lang || "ja";
 const type = sddConfig?.type;
 
-function generateReadme(chapters, manualContent, templatePath) {
+function generateReadme(chapters, manualContent, templatePath, root) {
   const chapterTable = chapters
     .map(
       (ch) =>
@@ -124,10 +124,16 @@ function generateReadme(chapters, manualContent, templatePath) {
     )
     .join("\n");
 
+  const pkgName = loadPackageField(root, "name") || path.basename(root);
+  const pkgDescription = loadPackageField(root, "description") || "";
+
   const template = fs.readFileSync(templatePath, "utf8");
   return template
-    .replace("{{CHAPTER_TABLE}}", chapterTable)
-    .replace("{{MANUAL_CONTENT}}", manualContent);
+    .replace(/\{\{CHAPTER_TABLE\}\}/g, chapterTable)
+    .replace(/\{\{MANUAL_CONTENT\}\}/g, manualContent)
+    .replace(/\{\{PROJECT_NAME\}\}/g, pkgName)
+    .replace(/\{\{PACKAGE_NAME\}\}/g, pkgName)
+    .replace(/\{\{PROJECT_DESCRIPTION\}\}/g, pkgDescription);
 }
 
 // ---------------------------------------------------------------------------
@@ -149,7 +155,7 @@ function main() {
   const chapters = listChapterFiles().map(parseChapter);
   const readmePath = path.join(root, "README.md");
   const manualContent = extractManualBlock(readmePath);
-  const newContent = generateReadme(chapters, manualContent, templatePath);
+  const newContent = generateReadme(chapters, manualContent, templatePath, root);
 
   // 差分チェック
   if (fs.existsSync(readmePath)) {

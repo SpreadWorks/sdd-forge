@@ -13,13 +13,14 @@
 
 import fs from "fs";
 import path from "path";
+import readline from "readline";
 import { execFile, spawn } from "child_process";
 import { stdout as output } from "process";
 import { fileURLToPath } from "url";
 import { populateFromAnalysis } from "../engine/populate.js";
 import { textFillFromAnalysis } from "../engine/tfill.js";
 import { repoRoot, parseArgs } from "../lib/cli.js";
-import { loadJsonFile } from "../lib/config.js";
+import { loadJsonFile, loadConfig, saveContext } from "../lib/config.js";
 
 // npm パッケージとして呼ばれた場合でもサブスクリプトを直接起動できるよう
 // パッケージディレクトリを保持する
@@ -111,7 +112,7 @@ function buildAnalysisSummary(analysis) {
 
 function parseCliOptions(argv) {
   const opts = parseArgs(argv, {
-    flags: ["--verbose"],
+    flags: ["--verbose", "--auto-update-context"],
     options: ["--prompt", "--prompt-file", "--spec", "--max-runs", "--review-cmd", "--agent", "--mode"],
     aliases: { "-v": "--verbose" },
     defaults: {
@@ -120,6 +121,7 @@ function parseCliOptions(argv) {
       spec: "",
       agent: "",
       verbose: false,
+      autoUpdateContext: false,
       maxRuns: String(DEFAULT_MAX_RUNS),
       reviewCmd: DEFAULT_REVIEW_CMD,
       mode: DEFAULT_MODE,
@@ -151,6 +153,7 @@ function printHelp() {
       "  --review-cmd <cmd>     docs レビューコマンド (default: npm run sdd:review)",
       "  --agent <name>         AIエージェント: codex|claude (default: config.json の defaultAgent)",
       "  --mode <mode>          実行モード: local|assist|agent (default: local)",
+      "  --auto-update-context  review 成功後に context.json を確認なしで自動更新",
       "  -v, --verbose          エージェント実行ログを逐次表示",
       "  -h, --help             このヘルプを表示",
       "",
@@ -513,6 +516,86 @@ function buildForgePrompt({
   ].join("\n");
 }
 
+/**
+ * forge の review 成功後に projectContext を自動更新する。
+ * docs/ の各章ファイル先頭を LLM に渡し、プロジェクト概要を生成させる。
+ *
+ * @param {string} root - リポジトリルート
+ * @param {import("../lib/types.js").SddConfig} cfg
+ * @param {Object} agent - エージェント設定
+ * @param {number} timeoutMs - タイムアウト
+ * @param {boolean} autoConfirm - true なら確認なしで書き込み
+ */
+async function maybeUpdateContext(root, cfg, agent, timeoutMs, autoConfirm) {
+  const docsDir = path.join(root, "docs");
+  if (!fs.existsSync(docsDir)) return;
+
+  const files = fs.readdirSync(docsDir)
+    .filter((f) => /^\d{2}_.*\.md$/.test(f))
+    .sort();
+
+  if (files.length === 0) return;
+
+  // 各章の先頭500文字を抽出
+  const snippets = files.map((f) => {
+    const content = fs.readFileSync(path.join(docsDir, f), "utf8");
+    return `### ${f}\n${content.slice(0, 500)}`;
+  }).join("\n\n");
+
+  const lang = cfg.lang || "ja";
+  const promptText = lang === "en"
+    ? [
+        "Based on the following documentation snippets, generate a concise project overview (3-5 sentences).",
+        "Output ONLY the overview text, no preamble or meta-commentary.",
+        "",
+        snippets,
+      ].join("\n")
+    : [
+        "以下のドキュメント抜粋を基に、プロジェクト概要を3〜5文で生成してください。",
+        "概要テキストのみを出力すること（前置きやメタコメンタリーは不要）。",
+        "",
+        snippets,
+      ].join("\n");
+
+  let generated;
+  try {
+    generated = await runAgent(agent, promptText, {
+      label: "forge.context-update",
+      cwd: root,
+      timeoutMs,
+    });
+  } catch (err) {
+    output.write(`[forge] context update skipped: ${String(err.message).slice(0, 200)}\n`);
+    return;
+  }
+
+  if (!generated || generated.trim().length === 0) {
+    output.write("[forge] context update skipped: empty response.\n");
+    return;
+  }
+
+  const trimmed = generated.trim();
+  output.write("\n[forge] Generated project context:\n");
+  output.write(`${trimmed}\n\n`);
+
+  let confirmed = autoConfirm;
+  if (!confirmed) {
+    const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
+    const answer = await new Promise((resolve) => {
+      rl.question("Update context.json? (y/N): ", resolve);
+    });
+    rl.close();
+    confirmed = answer.trim().toLowerCase() === "y";
+  }
+
+  if (confirmed) {
+    saveContext(root, { projectContext: trimmed });
+    output.write("[forge] context.json updated.\n");
+  } else {
+    output.write("[forge] context.json update skipped.\n");
+  }
+}
+
 async function main() {
   const cli = parseCliOptions(process.argv.slice(2));
   if (cli.help) {
@@ -521,7 +604,7 @@ async function main() {
   }
 
   const root = repoRoot(import.meta.url);
-  const cfg = loadJsonFile(path.join(root, ".sdd-forge", "config.json"));
+  const cfg = loadConfig(root);
   const agent = resolveAgent(cfg, "docsForge", cli.agent);
   const mode = cli.mode || DEFAULT_MODE;
   const timeoutMs = Number(cfg.limits?.designTimeoutMs || 0) || undefined;
@@ -543,7 +626,7 @@ async function main() {
     if (agent) {
       const tfResult = textFillFromAnalysis(root, analysisData, cli.agent);
       if (tfResult.filled > 0) {
-        output.write(`[forge] text-fill: ${tfResult.filled} directives resolved\n`);
+        output.write(`[forge] @text: ${tfResult.filled} directives resolved\n`);
       }
     }
   }
@@ -638,6 +721,9 @@ async function main() {
     output.write(`[forge] review: ${review.ok ? "ok" : "failed"} (code=${review.code})\n`);
     if (review.ok) {
       output.write("[forge] review passed.\n");
+      if (cfg.documentStyle && agent) {
+        await maybeUpdateContext(root, cfg, agent, timeoutMs, cli.autoUpdateContext);
+      }
       const readme = await runShell(`node "${path.join(PKG_DIR, "engine", "readme.js")}"`, root);
       output.write(`[forge] README.md ${readme.ok ? "updated" : "update failed"}.\n`);
       output.write("\n=== DONE ===\n- forge completed\n");

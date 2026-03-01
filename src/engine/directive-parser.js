@@ -1,16 +1,17 @@
 /**
  * tools/engine/directive-parser.js
  *
- * テンプレート内の @data-fill / @text-fill ディレクティブを抽出する。
+ * テンプレート内の @data / @text ディレクティブを抽出する。
  *
  * ディレクティブ構文:
- *   <!-- @data-fill: <renderer>(<category>, labels=<label1>|<label2>|...) -->
- *   <!-- @text-fill: <prompt text> -->
+ *   <!-- @data: <renderer>(<category>, labels=<label1>|<label2>|...) -->
+ *   <!-- @text: <prompt text> -->
+ *   <!-- @text[id=foo, maxLines=5]: <prompt text> -->
  */
 
 /**
- * @typedef {Object} DataFillDirective
- * @property {"data-fill"} type
+ * @typedef {Object} DataDirective
+ * @property {"data"} type
  * @property {string} renderer   - table | kv | mermaid-er | bool-matrix
  * @property {string} category   - 汎用カテゴリ名
  * @property {string[]} labels   - テーブルヘッダー表示名
@@ -19,15 +20,36 @@
  */
 
 /**
- * @typedef {Object} TextFillDirective
- * @property {"text-fill"} type
+ * @typedef {Object} TextDirective
+ * @property {"text"} type
  * @property {string} prompt     - LLM に渡すプロンプト
+ * @property {Object} params     - オプショナルパラメータ (例: { id: "auth", maxLines: 5, maxChars: 500 })
  * @property {string} raw        - ディレクティブ行の全文
  * @property {number} line        - 行番号 (0-based)
  */
 
-const DATA_FILL_RE = /^<!--\s*@data-fill:\s*([\w-]+)\(([^,)]+)(?:,\s*labels=([^)]+))?\)\s*-->$/;
-const TEXT_FILL_RE = /^<!--\s*@text-fill:\s*(.+?)\s*-->$/;
+const DATA_RE = /^<!--\s*@data:\s*([\w-]+)\(([^,)]+)(?:,\s*labels=([^)]+))?\)\s*-->$/;
+const TEXT_RE = /^<!--\s*@text\s*(?:\[([^\]]*)\])?\s*:\s*(.+?)\s*-->$/;
+
+/**
+ * テキストフィルのパラメータ文字列をパースする。
+ * 例: "maxLines=5, maxChars=500" → { maxLines: 5, maxChars: 500 }
+ *
+ * @param {string|undefined} paramStr - パラメータ文字列
+ * @returns {Object} パース済みパラメータ
+ */
+function parseTextFillParams(paramStr) {
+  if (!paramStr) return {};
+  const params = {};
+  for (const pair of paramStr.split(",")) {
+    const [key, value] = pair.split("=").map((s) => s.trim());
+    if (key && value !== undefined) {
+      const num = Number(value);
+      params[key] = Number.isFinite(num) ? num : value;
+    }
+  }
+  return params;
+}
 
 /**
  * テンプレートテキストからディレクティブを抽出する。
@@ -42,11 +64,11 @@ export function parseDirectives(text) {
   for (let i = 0; i < lines.length; i++) {
     const trimmed = lines[i].trim();
 
-    const dataMatch = trimmed.match(DATA_FILL_RE);
+    const dataMatch = trimmed.match(DATA_RE);
     if (dataMatch) {
       const labels = dataMatch[3] ? dataMatch[3].split("|").map((l) => l.trim()) : [];
       directives.push({
-        type: "data-fill",
+        type: "data",
         renderer: dataMatch[1],
         category: dataMatch[2].trim(),
         labels,
@@ -56,11 +78,12 @@ export function parseDirectives(text) {
       continue;
     }
 
-    const textMatch = trimmed.match(TEXT_FILL_RE);
+    const textMatch = trimmed.match(TEXT_RE);
     if (textMatch) {
       directives.push({
-        type: "text-fill",
-        prompt: textMatch[1],
+        type: "text",
+        prompt: textMatch[2],
+        params: parseTextFillParams(textMatch[1]),
         raw: lines[i],
         line: i,
       });

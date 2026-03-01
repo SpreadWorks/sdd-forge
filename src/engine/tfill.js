@@ -2,12 +2,12 @@
 /**
  * sdd-forge/engine/tfill.js
  *
- * @text-fill ディレクティブ専用プロセッサ。
- * テンプレート内の @text-fill を LLM エージェント（claude / codex）で解決し、
+ * @text ディレクティブ専用プロセッサ。
+ * テンプレート内の @text を LLM エージェント（claude / codex）で解決し、
  * ディレクティブ直後に説明文を挿入する。
  *
  * Usage:
- *   node sdd-forge/engine/tfill.js --agent claude [--dry-run] [--timeout 60000]
+ *   node sdd-forge/engine/tfill.js --agent claude [--dry-run] [--timeout 60000] [--id <id>]
  */
 
 import fs from "fs";
@@ -16,17 +16,13 @@ import { execFileSync } from "child_process";
 import { fileURLToPath } from "url";
 import { parseDirectives } from "./directive-parser.js";
 import { repoRoot, parseArgs } from "../lib/cli.js";
-import { loadJsonFile } from "../lib/config.js";
+import { loadConfig, resolveProjectContext } from "../lib/config.js";
 
 // ---------------------------------------------------------------------------
 // 設定読み込み
 // ---------------------------------------------------------------------------
-function loadConfig(root) {
-  return loadJsonFile(path.join(root, ".sdd-forge", "config.json"));
-}
 
-function loadAgentConfig(root, agentName) {
-  const cfg = loadConfig(root);
+function loadAgentConfig(cfg, agentName) {
   const providerKey = agentName || cfg.defaultAgent;
   const provider = cfg.providers?.[providerKey];
   if (!provider) {
@@ -36,21 +32,76 @@ function loadAgentConfig(root, agentName) {
 }
 
 /**
- * config.json の textFill.preamblePatterns を RegExp 配列に変換する。
+ * config の textFill.preamblePatterns を RegExp 配列に変換する。
  */
-function loadPreamblePatterns(root) {
-  const cfg = loadConfig(root);
+function loadPreamblePatterns(cfg) {
   const entries = cfg.textFill?.preamblePatterns;
   if (!Array.isArray(entries) || entries.length === 0) return [];
   return entries.map((e) => new RegExp(e.pattern, e.flags || ""));
 }
 
+// ---------------------------------------------------------------------------
+// documentStyle → プロンプトヘッダー生成
+// ---------------------------------------------------------------------------
+
+const PURPOSE_MAP = {
+  ja: {
+    "developer-guide": "開発者向けの技術ガイド",
+    "user-guide": "利用者向けの操作ガイド",
+    "api-reference": "API リファレンス",
+  },
+  en: {
+    "developer-guide": "a developer guide",
+    "user-guide": "a user guide",
+    "api-reference": "an API reference",
+  },
+};
+
+const TONE_MAP = {
+  ja: {
+    polite: "です・ます調で記述すること",
+    formal: "だ・である調で記述すること",
+    casual: "カジュアルな口語体で記述すること",
+  },
+  en: {
+    polite: "Use a professional and approachable tone",
+    formal: "Use a formal, technical tone",
+    casual: "Use a casual, conversational tone",
+  },
+};
+
 /**
- * config.json の textFill.projectContext を返す。未設定なら空文字列。
+ * documentStyle と projectContext からプロンプトヘッダー行を生成する。
+ *
+ * @param {string} projectContext - プロジェクト概要テキスト
+ * @param {import("../lib/types.js").DocumentStyle|undefined} documentStyle
+ * @param {string} lang - "ja" | "en"
+ * @returns {string[]} ヘッダー行配列
  */
-function loadProjectContext(root) {
-  const cfg = loadConfig(root);
-  return cfg.textFill?.projectContext || "";
+function buildPromptHeader(projectContext, documentStyle, lang) {
+  const header = [];
+  if (documentStyle) {
+    const pMap = PURPOSE_MAP[lang] || PURPOSE_MAP.ja;
+    const tMap = TONE_MAP[lang] || TONE_MAP.ja;
+    const purposeLabel = pMap[documentStyle.purpose] || documentStyle.purpose;
+    if (lang === "en") {
+      header.push(`You are writing ${purposeLabel} for a software project.`);
+    } else {
+      header.push(`あなたはソフトウェアプロジェクトの${purposeLabel}を作成しています。`);
+    }
+    if (documentStyle.tone) {
+      header.push(tMap[documentStyle.tone] || documentStyle.tone);
+    }
+    if (documentStyle.customInstruction) {
+      header.push("", documentStyle.customInstruction);
+    }
+  } else {
+    header.push("あなたはソフトウェアプロジェクトのテクニカルドキュメントを作成しています。");
+  }
+  if (projectContext) {
+    header.push("", "## プロジェクト情報", projectContext);
+  }
+  return header;
 }
 
 // ---------------------------------------------------------------------------
@@ -58,8 +109,8 @@ function loadProjectContext(root) {
 // ---------------------------------------------------------------------------
 
 /**
- * @data-fill カテゴリ名 → analysis.json の必要セクションへのマッピング。
- * ファイル内の @data-fill ディレクティブのカテゴリから、@text-fill に渡す
+ * @data カテゴリ名 → analysis.json の必要セクションへのマッピング。
+ * ファイル内の @data ディレクティブのカテゴリから、@text に渡す
  * コンテキストデータを自動判定する。
  */
 const CATEGORY_TO_SECTIONS = {
@@ -108,8 +159,8 @@ const CATEGORY_TO_SECTIONS = {
 };
 
 /**
- * ファイル内の全ディレクティブから、@text-fill に必要なコンテキストデータを
- * 動的に収集する。@data-fill のカテゴリ名をキーにして analysis.json の
+ * ファイル内の全ディレクティブから、@text に必要なコンテキストデータを
+ * 動的に収集する。@data のカテゴリ名をキーにして analysis.json の
  * 対応セクションをマージする。
  */
 function getAnalysisContext(analysis, directives) {
@@ -122,8 +173,8 @@ function getAnalysisContext(analysis, directives) {
   if (analysis.shells?.summary) data.shellsSummary = analysis.shells.summary;
   if (analysis.routes?.summary) data.routesSummary = analysis.routes.summary;
 
-  // @data-fill カテゴリから必要なセクションを収集
-  const dataFills = directives.filter((d) => d.type === "data-fill");
+  // @data カテゴリから必要なセクションを収集
+  const dataFills = directives.filter((d) => d.type === "data");
   for (const d of dataFills) {
     const extractor = CATEGORY_TO_SECTIONS[d.category];
     if (extractor) {
@@ -136,7 +187,7 @@ function getAnalysisContext(analysis, directives) {
     }
   }
 
-  // extras 全キーのサマリーも含める（@text-fill のプロンプトが任意の情報を参照できるように）
+  // extras 全キーのサマリーも含める（@text のプロンプトが任意の情報を参照できるように）
   if (analysis.extras) {
     for (const [key, value] of Object.entries(analysis.extras)) {
       if (!(key in data) && value != null) {
@@ -156,7 +207,27 @@ function getAnalysisContext(analysis, directives) {
 // ---------------------------------------------------------------------------
 // プロンプト構築
 // ---------------------------------------------------------------------------
-function buildPrompt(directive, fileName, lines, contextData, projectContext) {
+
+/**
+ * ディレクティブの params から出力ルール文字列を生成する。
+ * @param {Object} params - { maxLines?: number, maxChars?: number }
+ * @returns {string} 出力ルール文字列
+ */
+function formatLimitRule(params) {
+  const parts = [];
+  if (params?.maxLines) {
+    parts.push(`${params.maxLines}行以内`);
+  }
+  if (params?.maxChars) {
+    parts.push(`${params.maxChars}文字以内`);
+  }
+  if (parts.length > 0) {
+    return `簡潔かつ正確に（${parts.join("、")}）`;
+  }
+  return "簡潔かつ正確に（3〜15行程度）";
+}
+
+function buildPrompt(directive, fileName, lines, contextData, projectContext, documentStyle, lang) {
   const directiveLine = directive.line;
 
   // ±20行のコンテキストを抽出
@@ -170,10 +241,7 @@ function buildPrompt(directive, fileName, lines, contextData, projectContext) {
     ? contextJson.slice(0, 8000) + "\n... (truncated)"
     : contextJson;
 
-  const header = ["あなたはソフトウェアプロジェクトのテクニカルドキュメントを作成しています。"];
-  if (projectContext) {
-    header.push("", "## プロジェクト情報", projectContext);
-  }
+  const header = buildPromptHeader(projectContext, documentStyle, lang);
   header.push("", "以下の指示に従い、ドキュメントに挿入するマークダウンテキストを生成してください。");
 
   return [
@@ -189,7 +257,7 @@ function buildPrompt(directive, fileName, lines, contextData, projectContext) {
     "- コードブロック（```）で全体を囲まないこと",
     "- セクション見出し（#）は含めない（挿入先に既にある）",
     "- 解析データに基づく事実のみ記述（推測は避ける）",
-    "- 簡潔かつ正確に（3〜15行程度）",
+    `- ${formatLimitRule(directive.params)}`,
     "- 1行目から本文を開始すること（空行や導入文で始めない）",
     "",
     `## 挿入先コンテキスト（${fileName}）`,
@@ -205,7 +273,7 @@ function buildPrompt(directive, fileName, lines, contextData, projectContext) {
 // ---------------------------------------------------------------------------
 
 /**
- * テンプレートファイルの @text-fill ディレクティブ後にある既存生成コンテンツを
+ * テンプレートファイルの @text ディレクティブ後にある既存生成コンテンツを
  * 除去してクリーンなテンプレート状態に戻す。
  * processTemplate の endLine 計算と同じ境界ロジックを使用する。
  */
@@ -215,7 +283,7 @@ function stripFillContent(text) {
   let i = 0;
   while (i < lines.length) {
     result.push(lines[i]);
-    if (/^<!--\s*@text-fill:/.test(lines[i].trim())) {
+    if (/^<!--\s*@text\s*(?:\[[^\]]*\])?\s*:/.test(lines[i].trim())) {
       i++;
       while (i < lines.length) {
         const ln = lines[i].trim();
@@ -240,7 +308,7 @@ function countFilledInBatch(fileText) {
   const lines = fileText.split("\n");
   let filled = 0;
   for (let i = 0; i < lines.length; i++) {
-    if (/^<!--\s*@text-fill:/.test(lines[i].trim())) {
+    if (/^<!--\s*@text\s*(?:\[[^\]]*\])?\s*:/.test(lines[i].trim())) {
       let j = i + 1;
       while (j < lines.length && lines[j].trim() === "") j++;
       if (j < lines.length &&
@@ -257,24 +325,34 @@ function countFilledInBatch(fileText) {
  * ファイル全体を1つのプロンプトにまとめるバッチプロンプトを構築する。
  * ±20行ウィンドウ・解析データは不要（ファイル全体が文脈になる）。
  */
-function buildBatchPrompt(fileName, text, projectContext) {
-  const header = ["あなたはソフトウェアプロジェクトのテクニカルドキュメントを作成しています。"];
-  if (projectContext) {
-    header.push("", "## プロジェクト情報", projectContext);
+function buildBatchPrompt(fileName, text, projectContext, textFills, documentStyle, lang) {
+  const header = buildPromptHeader(projectContext, documentStyle, lang);
+
+  // ディレクティブごとの個別制限ルールがあれば列挙
+  const perDirectiveRules = [];
+  for (const d of textFills) {
+    if (d.params && (d.params.maxLines || d.params.maxChars)) {
+      perDirectiveRules.push(`- 「${d.prompt.slice(0, 40)}…」→ ${formatLimitRule(d.params)}`);
+    }
   }
+  const defaultRule = perDirectiveRules.length === textFills.length
+    ? "" // 全ディレクティブに個別指定があればデフォルト不要
+    : "- 個別制限のないディレクティブは3〜15行程度の本文を生成すること";
+
   return [
     ...header,
     "",
-    `以下の ${fileName} にある <!-- @text-fill: 指示 --> ディレクティブをすべて埋めてください。`,
+    `以下の ${fileName} にある <!-- @text: 指示 --> ディレクティブをすべて埋めてください。`,
     "",
     "## 出力ルール（厳守）",
     "- ファイルの内容全体（未変更部分も含む）をそのまま出力すること",
-    "- <!-- @text-fill: ... --> ディレクティブ行は削除せずそのまま残すこと",
+    "- <!-- @text: ... --> ディレクティブ行は削除せずそのまま残すこと",
     "- 各ディレクティブ行の直後に空行を挟んで本文を挿入すること",
     "- セクション見出し（#, ##, ###）は追加・変更・削除しないこと",
     "- 前置き・解説・メタコメンタリーを絶対に含めないこと",
     "- ファイルの最初の行（# で始まる見出し）から出力を開始すること",
-    "- 各ディレクティブの指示に従い3〜15行程度の本文を生成すること",
+    ...(defaultRule ? [defaultRule] : []),
+    ...perDirectiveRules,
     "- 水平線（---）を装飾目的で使わないこと",
     "",
     `## ${fileName}`,
@@ -284,19 +362,19 @@ function buildBatchPrompt(fileName, text, projectContext) {
 }
 
 /**
- * ファイル内のすべての @text-fill ディレクティブを1回の LLM 呼び出しで処理する。
+ * ファイル内のすべての @text ディレクティブを1回の LLM 呼び出しで処理する。
  * 既存の生成済みコンテンツを stripFillContent で除去してからプロンプトを組み立てる。
  *
  * @returns {{ text: string, filled: number, skipped: number }}
  */
-function processTemplateFileBatch(text, analysis, fileName, agent, timeoutMs, cwd, dryRun, _preamblePatterns, projectContext) {
+function processTemplateFileBatch(text, analysis, fileName, agent, timeoutMs, cwd, dryRun, _preamblePatterns, projectContext, documentStyle, lang) {
   const directives = parseDirectives(text);
-  const textFills = directives.filter((d) => d.type === "text-fill");
+  const textFills = directives.filter((d) => d.type === "text");
 
   if (textFills.length === 0) return { text, filled: 0, skipped: 0 };
 
   const cleanText = stripFillContent(text);
-  const prompt = buildBatchPrompt(fileName, cleanText, projectContext);
+  const prompt = buildBatchPrompt(fileName, cleanText, projectContext, textFills, documentStyle, lang);
 
   if (dryRun) {
     console.log(`[tfill] DRY-RUN batch ${fileName}: ${textFills.length} directive(s) → 1 call (${prompt.length} chars)`);
@@ -409,7 +487,7 @@ function stripPreamble(text, preamblePatterns) {
 // ---------------------------------------------------------------------------
 
 /**
- * 1 ファイルの @text-fill ディレクティブをすべて処理する。
+ * 1 ファイルの @text ディレクティブをすべて処理する。
  *
  * @param {string} text        - テンプレート全文
  * @param {Object} analysis    - analysis.json
@@ -420,9 +498,12 @@ function stripPreamble(text, preamblePatterns) {
  * @param {boolean} dryRun     - dry-run モード
  * @returns {{ text: string, filled: number, skipped: number }}
  */
-function processTemplate(text, analysis, fileName, agent, timeoutMs, cwd, dryRun, preamblePatterns, projectContext) {
+function processTemplate(text, analysis, fileName, agent, timeoutMs, cwd, dryRun, preamblePatterns, projectContext, documentStyle, lang, filterId) {
   const directives = parseDirectives(text);
-  const textFills = directives.filter((d) => d.type === "text-fill");
+  let textFills = directives.filter((d) => d.type === "text");
+  if (filterId) {
+    textFills = textFills.filter((d) => d.params?.id === filterId);
+  }
 
   if (textFills.length === 0) return { text, filled: 0, skipped: 0 };
 
@@ -434,7 +515,7 @@ function processTemplate(text, analysis, fileName, agent, timeoutMs, cwd, dryRun
   // 後ろから処理して行番号のズレを防ぐ
   for (let i = textFills.length - 1; i >= 0; i--) {
     const d = textFills[i];
-    const prompt = buildPrompt(d, fileName, lines, contextData, projectContext);
+    const prompt = buildPrompt(d, fileName, lines, contextData, projectContext, documentStyle, lang);
 
     if (dryRun) {
       console.log(`[tfill] DRY-RUN ${fileName}:${d.line + 1}: ${d.prompt.slice(0, 80)}`);
@@ -458,6 +539,19 @@ function processTemplate(text, analysis, fileName, agent, timeoutMs, cwd, dryRun
       console.error(`[tfill] WARN: empty response for ${fileName}:${d.line + 1}`);
       skipped++;
       continue;
+    }
+
+    // maxLines/maxChars によるポスト処理トランケート
+    if (d.params?.maxLines) {
+      const genLines = generated.split("\n");
+      if (genLines.length > d.params.maxLines) {
+        console.error(`[tfill] WARN: truncating ${fileName}:${d.line + 1} from ${genLines.length} to ${d.params.maxLines} lines`);
+        generated = genLines.slice(0, d.params.maxLines).join("\n");
+      }
+    }
+    if (d.params?.maxChars && generated.length > d.params.maxChars) {
+      console.error(`[tfill] WARN: truncating ${fileName}:${d.line + 1} from ${generated.length} to ${d.params.maxChars} chars`);
+      generated = generated.slice(0, d.params.maxChars);
     }
 
     // 既存出力の除去（ディレクティブ直後〜次のセクション境界まで）
@@ -496,9 +590,12 @@ function processTemplate(text, analysis, fileName, agent, timeoutMs, cwd, dryRun
 export function textFillFromAnalysis(root, analysis, agentName) {
   if (!analysis) return { filled: 0, skipped: 0, files: [] };
 
-  const agent = loadAgentConfig(root, agentName);
-  const preamblePatterns = loadPreamblePatterns(root);
-  const projectContext = loadProjectContext(root);
+  const cfg = loadConfig(root);
+  const agent = loadAgentConfig(cfg, agentName);
+  const preamblePatterns = loadPreamblePatterns(cfg);
+  const projectContext = resolveProjectContext(root);
+  const documentStyle = cfg.documentStyle;
+  const lang = cfg.lang || "ja";
   const docsDir = path.join(root, "docs");
   const docsFiles = fs.readdirSync(docsDir)
     .filter((f) => /^\d{2}_/.test(f) && f.endsWith(".md"))
@@ -511,7 +608,7 @@ export function textFillFromAnalysis(root, analysis, agentName) {
   for (const file of docsFiles) {
     const filePath = path.join(docsDir, file);
     const original = fs.readFileSync(filePath, "utf8");
-    const result = processTemplate(original, analysis, file, agent, 120000, root, false, preamblePatterns, projectContext);
+    const result = processTemplate(original, analysis, file, agent, 120000, root, false, preamblePatterns, projectContext, documentStyle, lang);
 
     totalFilled += result.filled;
     totalSkipped += result.skipped;
@@ -531,8 +628,8 @@ export function textFillFromAnalysis(root, analysis, agentName) {
 function main() {
   const cli = parseArgs(process.argv.slice(2), {
     flags: ["--dry-run", "--per-directive"],
-    options: ["--agent", "--timeout"],
-    defaults: { agent: "", dryRun: false, timeout: "180000", perDirective: false },
+    options: ["--agent", "--timeout", "--id"],
+    defaults: { agent: "", dryRun: false, timeout: "180000", perDirective: false, id: "" },
   });
   cli.timeout = Number(cli.timeout) || 180000;
   if (cli.help) {
@@ -541,6 +638,7 @@ function main() {
       "",
       "Options:",
       "  --agent <name>      AIエージェント: claude|codex (必須)",
+      "  --id <id>           指定 ID の @text ディレクティブのみ処理",
       "  --dry-run           変更内容を表示するだけでファイル書き込みしない",
       "  --per-directive     1ディレクティブ=1呼び出しの旧モード（デフォルト: ファイル単位バッチ）",
       "  --timeout <ms>      エージェントタイムアウト (default: 180000)",
@@ -564,9 +662,12 @@ function main() {
     console.warn(`[tfill] WARN: analysis.json not found: ${analysisPath}`);
     console.warn("[tfill] Proceeding with empty analysis context. Run 'sdd-forge scan' if needed.");
   }
-  const agent = loadAgentConfig(root, cli.agent);
-  const preamblePatterns = loadPreamblePatterns(root);
-  const projectContext = loadProjectContext(root);
+  const cfg = loadConfig(root);
+  const agent = loadAgentConfig(cfg, cli.agent);
+  const preamblePatterns = loadPreamblePatterns(cfg);
+  const projectContext = resolveProjectContext(root);
+  const documentStyle = cfg.documentStyle;
+  const lang = cfg.lang || "ja";
   const docsDir = path.join(root, "docs");
   const docsFiles = fs.readdirSync(docsDir)
     .filter((f) => /^\d{2}_/.test(f) && f.endsWith(".md"))
@@ -576,6 +677,12 @@ function main() {
   let totalSkipped = 0;
   const changedFiles = new Set();
 
+  // --id 指定時: per-directive モードを強制
+  if (cli.id) {
+    cli.perDirective = true;
+    console.error(`[tfill] --id=${cli.id}: per-directive mode forced.`);
+  }
+
   const processFn = cli.perDirective ? processTemplate : processTemplateFileBatch;
   if (!cli.perDirective) {
     console.error(`[tfill] Mode: batch (file-level, ${docsFiles.length} call(s)). Use --per-directive for legacy mode.`);
@@ -584,14 +691,22 @@ function main() {
   for (const file of docsFiles) {
     const filePath = path.join(docsDir, file);
     const original = fs.readFileSync(filePath, "utf8");
-    let result = processFn(original, analysis, file, agent, cli.timeout, root, cli.dryRun, preamblePatterns, projectContext);
+
+    // --id 指定時: 該当 ID を持つ @text ディレクティブがないファイルはスキップ
+    if (cli.id) {
+      const directives = parseDirectives(original);
+      const hasId = directives.some((d) => d.type === "text" && d.params?.id === cli.id);
+      if (!hasId) continue;
+    }
+
+    let result = processFn(original, analysis, file, agent, cli.timeout, root, cli.dryRun, preamblePatterns, projectContext, documentStyle, lang, cli.id || undefined);
 
     // バッチモードで 0 filled になった場合は per-directive モードで再試行
     if (!cli.perDirective && !cli.dryRun && result.filled === 0) {
-      const textFills = parseDirectives(original).filter((d) => d.type === "text-fill");
+      const textFills = parseDirectives(original).filter((d) => d.type === "text");
       if (textFills.length > 0) {
         console.error(`[tfill] Batch returned 0 filled for ${file}. Falling back to per-directive mode...`);
-        result = processTemplate(original, analysis, file, agent, cli.timeout, root, cli.dryRun, preamblePatterns, projectContext);
+        result = processTemplate(original, analysis, file, agent, cli.timeout, root, cli.dryRun, preamblePatterns, projectContext, documentStyle, lang, cli.id || undefined);
       }
     }
 

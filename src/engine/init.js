@@ -62,7 +62,7 @@ function sectionEnd(lines, headingIndex) {
 
 /**
  * replace-directive: 見出し配下の directiveIndex 番目の
- * <!-- @text-fill: ... --> or <!-- @data-fill: ... --> を置換する。
+ * <!-- @text: ... --> or <!-- @data: ... --> を置換する。
  */
 function applyReplaceDirective(lines, action) {
   const hi = findHeading(lines, action.heading);
@@ -73,7 +73,7 @@ function applyReplaceDirective(lines, action) {
   const end = sectionEnd(lines, hi);
   let count = 0;
   for (let i = hi + 1; i < end; i++) {
-    if (/^\s*<!--\s*@(text-fill|data-fill):/.test(lines[i])) {
+    if (/^\s*<!--\s*@(text|data)[\s\[:]+/.test(lines[i])) {
       if (count === action.directiveIndex) {
         lines[i] = action.replacement;
         return lines;

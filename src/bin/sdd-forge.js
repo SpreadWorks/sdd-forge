@@ -20,7 +20,6 @@ const PKG_DIR = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..")
 /** サブコマンド → スクリプト相対パス */
 const SCRIPTS = {
   help:          "help.js",
-  add:           "projects/add.js",
   default:       "projects/setdefault.js",
   scan:          "analyzers/scan.js",
   "scan:ctrl":   "analyzers/scan.js",
@@ -29,13 +28,14 @@ const SCRIPTS = {
   "scan:route":  "analyzers/scan.js",
   "scan:extra":  "analyzers/scan.js",
   init:          "engine/init.js",
-  populate:      "engine/populate.js",
-  tfill:         "engine/tfill.js",
+  data:          "engine/populate.js",
+  text:          "engine/tfill.js",
   readme:        "engine/readme.js",
   spec:          "spec/spec.js",
   gate:          "spec/gate.js",
   forge:         "forge/forge.js",
   flow:          "flow/flow.js",
+  setup:         "setup/setup.js",
 };
 
 /** サブコマンドに注入する追加引数 */
@@ -48,7 +48,7 @@ const INJECT = {
 };
 
 /** プロジェクトコンテキスト解決が不要なコマンド */
-const PROJECT_MGMT = new Set(["add", "default", "help"]);
+const PROJECT_MGMT = new Set(["default", "help", "setup"]);
 
 // --project フラグを argv から抽出
 const rawArgs = process.argv.slice(2);

@@ -2,7 +2,7 @@
 
 ## 説明
 
-<!-- @text-fill: この章の概要を1〜2文で記述してください。プロジェクト構成・モジュール依存の方向・主要な処理フローを踏まえること。 -->
+<!-- @text: この章の概要を1〜2文で記述してください。プロジェクト構成・モジュール依存の方向・主要な処理フローを踏まえること。 -->
 
 `src/bin/sdd-forge.js` を起点としたサブコマンドディスパッチ構造を持ち、`src/lib/` の共通ユーティリティ（cli・config・process）を土台に、解析（analyzers）・エンジン（engine）・仕様管理（spec）・改善（forge/flow）の各モジュールが一方向に依存する構成となっている。主要な処理フローは「ソースコード解析（scan）→ ドキュメント初期生成（init）→ データ埋め込み（populate）→ LLM によるテキスト生成（tfill）→ 反復改善（forge）」の順に構成される。
 
@@ -11,7 +11,7 @@
 
 ### プロジェクト構成
 
-<!-- @text-fill: このプロジェクトのディレクトリ構成を tree 形式のコードブロックで記述してください。主要ディレクトリ・ファイルの役割コメントを含めること。 -->
+<!-- @text: このプロジェクトのディレクトリ構成を tree 形式のコードブロックで記述してください。主要ディレクトリ・ファイルの役割コメントを含めること。 -->
 
 ```
 sdd-forge/
@@ -25,12 +25,12 @@ sdd-forge/
 │   │   └── process.js                  # 子プロセス実行ラッパー
 │   ├── engine/
 │   │   ├── init.js                     # テンプレートから docs/ を初期生成
-│   │   ├── populate.js                 # @data-fill ディレクティブを解析データで置換
-│   │   ├── tfill.js                    # @text-fill ディレクティブを LLM CLI 呼び出しで解決
+│   │   ├── populate.js                 # @data ディレクティブを解析データで置換
+│   │   ├── tfill.js                    # @text ディレクティブを LLM CLI 呼び出しで解決
 │   │   ├── readme.js                   # README.md 自動生成
 │   │   ├── directive-parser.js         # Markdown からディレクティブを抽出・パース
 │   │   ├── renderers.js                # 解析データをマークダウン形式にレンダリング
-│   │   └── resolver.js                 # @data-fill キーに対応する解析データの抽出
+│   │   └── resolver.js                 # @data キーに対応する解析データの抽出
 │   ├── analyzers/
 │   │   ├── scan.js                     # 各解析器を統括し analysis.json を生成
 │   │   ├── analyze-controllers.js      # CakePHP コントローラの静的解析
@@ -44,7 +44,7 @@ sdd-forge/
 │   │   ├── spec.js                     # feature ブランチ作成と spec.md 初期化
 │   │   └── gate.js                     # spec.md の未解決事項チェックと PASS/FAIL 判定
 │   ├── forge/
-│   │   └── forge.js                    # populate + tfill を組み合わせた docs 反復改善
+│   │   └── forge.js                    # data + text を組み合わせた docs 反復改善
 │   ├── flow/
 │   │   └── flow.js                     # spec 作成・gate・docs 反映を自動実行する SDD フロー
 │   ├── projects/
@@ -67,7 +67,7 @@ sdd-forge/
 
 ### モジュール構成
 
-<!-- @text-fill: 全モジュールの一覧を表形式で記述してください。モジュール名・ファイルパス・責務を含めること。 -->
+<!-- @text: 全モジュールの一覧を表形式で記述してください。モジュール名・ファイルパス・責務を含めること。 -->
 
 | モジュール名 | ファイルパス | 責務 |
 |---|---|---|
@@ -77,12 +77,12 @@ sdd-forge/
 | config | `src/lib/config.js` | `.sdd-forge/config.json` の読み込みと設定値アクセス |
 | process | `src/lib/process.js` | 子プロセス実行のラッパー（`execFileSync` / `spawnSync`） |
 | init | `src/engine/init.js` | テンプレートから `docs/` を初期生成 |
-| populate | `src/engine/populate.js` | `@data-fill` ディレクティブを解析データで置換 |
-| tfill | `src/engine/tfill.js` | `@text-fill` ディレクティブを LLM CLI 呼び出しで解決 |
+| data | `src/engine/populate.js` | `@data` ディレクティブを解析データで置換 |
+| text | `src/engine/tfill.js` | `@text` ディレクティブを LLM CLI 呼び出しで解決 |
 | readme | `src/engine/readme.js` | `README.md` の自動生成 |
 | directive-parser | `src/engine/directive-parser.js` | Markdown ファイルからディレクティブを抽出・パース |
 | renderers | `src/engine/renderers.js` | 解析データをマークダウン形式にレンダリング |
-| resolver | `src/engine/resolver.js` | `@data-fill` キーに対応する解析データの抽出ロジック |
+| resolver | `src/engine/resolver.js` | `@data` キーに対応する解析データの抽出ロジック |
 | scan | `src/analyzers/scan.js` | 各解析器を統括し `analysis.json` を生成 |
 | analyze-controllers | `src/analyzers/analyze-controllers.js` | CakePHP コントローラの静的解析 |
 | analyze-models | `src/analyzers/analyze-models.js` | CakePHP モデルの静的解析 |
@@ -92,7 +92,7 @@ sdd-forge/
 | php-array-parser | `src/analyzers/lib/php-array-parser.js` | PHP 配列リテラルの汎用パーサー（解析器共通ユーティリティ） |
 | spec | `src/spec/spec.js` | feature ブランチ作成と `spec.md` の初期化 |
 | gate | `src/spec/gate.js` | `spec.md` の未解決事項チェックと PASS/FAIL 判定 |
-| forge | `src/forge/forge.js` | `populate` / `tfill` を組み合わせたドキュメント反復改善 |
+| forge | `src/forge/forge.js` | `data` / `text` を組み合わせたドキュメント反復改善 |
 | flow | `src/flow/flow.js` | spec 作成・gate・初期 docs 反映を自動実行する SDD フロー |
 | projects | `src/projects/projects.js` | ワークスペース登録情報の読み書きと解決 |
 | add | `src/projects/add.js` | プロジェクトをワークスペースに追加 |
@@ -101,7 +101,7 @@ sdd-forge/
 
 ### モジュール依存関係
 
-<!-- @text-fill: モジュール間の依存関係を mermaid graph で生成してください。出力は mermaid コードブロックのみ。 -->
+<!-- @text: モジュール間の依存関係を mermaid graph で生成してください。出力は mermaid コードブロックのみ。 -->
 
 ```mermaid
 graph TD
@@ -213,20 +213,20 @@ graph TD
 
 ### 主要な処理フロー
 
-<!-- @text-fill: 代表的なコマンドを実行した際のモジュール間のデータ・制御フローを説明してください。 -->
+<!-- @text: 代表的なコマンドを実行した際のモジュール間のデータ・制御フローを説明してください。 -->
 
 `sdd-forge scan` を実行すると、`bin/sdd-forge.js` がプロジェクトコンテキストを `projects/projects.js` 経由で解決し（`SDD_SOURCE_ROOT` / `SDD_WORK_ROOT` を環境変数にセット）、`analyzers/scan.js` へ制御を渡す。`scan.js` は各解析器（`analyze-controllers.js` ほか）を個別に呼び出し、戻り値を1つのオブジェクトにマージして `.sdd-forge/output/analysis.json` へ書き出す。
 
-`sdd-forge populate` では `engine/populate.js` が `analysis.json` を読み込み、`docs/*.md` を順に処理する。各ファイルを `engine/directive-parser.js` の `parseDirectives()` に渡してディレクティブ一覧を取得し、`@data-fill` ディレクティブごとに `engine/resolver.js` の `resolve()` で解析データを抽出、`engine/renderers.js` の対応レンダラーがマークダウンに変換して元の行を置換する。
+`sdd-forge data` では `engine/populate.js` が `analysis.json` を読み込み、`docs/*.md` を順に処理する。各ファイルを `engine/directive-parser.js` の `parseDirectives()` に渡してディレクティブ一覧を取得し、`@data` ディレクティブごとに `engine/resolver.js` の `resolve()` で解析データを抽出、`engine/renderers.js` の対応レンダラーがマークダウンに変換して元の行を置換する。
 
-`sdd-forge tfill` では `engine/tfill.js` が `analysis.json` と `.sdd-forge/config.json` からエージェント設定を読み込む。`docs/*.md` の各ファイルに対してデフォルトのバッチモードで動作し、ファイル全体を1つのプロンプトにまとめて `callAgent()` が `execFileSync` で LLM CLI（`claude` 等）を子プロセスとして同期呼び出しする。バッチ呼び出しで `filled === 0` になった場合はディレクティブ単位のフォールバックモードで再試行する。
+`sdd-forge text` では `engine/tfill.js` が `analysis.json` と `.sdd-forge/config.json` からエージェント設定を読み込む。`docs/*.md` の各ファイルに対してデフォルトのバッチモードで動作し、ファイル全体を1つのプロンプトにまとめて `callAgent()` が `execFileSync` で LLM CLI（`claude` 等）を子プロセスとして同期呼び出しする。バッチ呼び出しで `filled === 0` になった場合はディレクティブ単位のフォールバックモードで再試行する。
 
 `sdd-forge scan:all` は `bin/sdd-forge.js` 内で特別扱いされ、`scan.js` → `populate.js` を順次 `await import()` で直列実行する複合フローである。
 
 
 ### 拡張ポイント
 
-<!-- @text-fill: 新しいコマンドや機能を追加する際に変更が必要な箇所と、拡張パターンを説明してください。 -->
+<!-- @text: 新しいコマンドや機能を追加する際に変更が必要な箇所と、拡張パターンを説明してください。 -->
 
 新しいサブコマンドを追加する場合、変更が必要な箇所は `src/bin/sdd-forge.js` と `src/help.js` の2ファイルである。
 

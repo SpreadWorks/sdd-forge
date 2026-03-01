@@ -8,7 +8,7 @@
 const commands = [
   { name: "help",        desc: "このヘルプを表示" },
   { sep: "--- project ---" },
-  { name: "add",         desc: "プロジェクトを登録・初期化",                          usage: "<name> <path>" },
+  { name: "setup",       desc: "プロジェクト登録 + config.json 生成（対話式）",       usage: "[--name <name>] [--path <path>]" },
   { name: "default",     desc: "デフォルトプロジェクトを変更（引数なしで一覧表示）",  usage: "[<name>]" },
   { sep: "--- spec ---" },
   { name: "spec",        desc: "spec 初期化（feature ブランチ + spec.md 作成）",  usage: '--title "機能名"' },
@@ -25,9 +25,9 @@ const commands = [
   { name: "scan:shell",  desc: "Shell のみ解析" },
   { name: "scan:route",  desc: "ルートのみ解析" },
   { name: "scan:extra",  desc: "拡張情報のみ解析" },
-  { name: "populate",    desc: "@data-fill ディレクティブを解析データで解決" },
-  { name: "tfill",       desc: "@text-fill ディレクティブを AI エージェントで解決", usage: "--agent claude" },
-  { name: "scan:all",    desc: "全解析 + populate を一括実行" },
+  { name: "data",        desc: "@data ディレクティブを解析データで解決" },
+  { name: "text",        desc: "@text ディレクティブを AI エージェントで解決", usage: "--agent claude [--id <id>]" },
+  { name: "scan:all",    desc: "全解析 + data を一括実行" },
   { sep: "--- flow ---" },
   { name: "flow",        desc: "SDD フロー自動実行（spec → gate → forge → review）", usage: '--request "要望"' },
 ];
