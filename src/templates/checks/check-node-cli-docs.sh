@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-ROOT_DIR="$(cd "$(dirname "$0")/../../.." && pwd)"
-TARGET_DIR="${1:-$ROOT_DIR/docs}"
+SOURCE_ROOT="${SDD_SOURCE_ROOT:-$(pwd)}"
+TARGET_DIR="${1:-$SOURCE_ROOT/docs}"
 
 echo "# check-node-cli-docs start"
 
@@ -113,7 +113,7 @@ check_contains "05_development.md" "リリース|publish|バージョン" "relea
 # -----------------------------------------------------------------------
 # 5. README.md 存在チェック（WARN のみ）
 # -----------------------------------------------------------------------
-if [[ ! -f "$ROOT_DIR/README.md" ]]; then
+if [[ ! -f "$SOURCE_ROOT/README.md" ]]; then
   echo "WARN: README.md not found. Run 'sdd-forge readme' to generate."
 fi
 

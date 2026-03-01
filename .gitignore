@@ -1,6 +1,7 @@
 AGENTS.md
 CLAUDE.md
 .claude
+.sdd-forge/
 node_modules
 /projects/
 /projects.json

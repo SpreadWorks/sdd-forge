@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-ROOT_DIR="$(cd "$(dirname "$0")/../../.." && pwd)"
-TARGET_DIR="${1:-$ROOT_DIR/docs}"
+SOURCE_ROOT="${SDD_SOURCE_ROOT:-$(pwd)}"
+TARGET_DIR="${1:-$SOURCE_ROOT/docs}"
 
 required_files=(
   "01_architecture.md"
