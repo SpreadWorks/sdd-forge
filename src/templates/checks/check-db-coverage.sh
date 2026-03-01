@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-ROOT_DIR="$(cd "$(dirname "$0")/../../.." && pwd)"
-DB_DOC="${1:-$ROOT_DIR/docs/07_db_tables.md}"
-MODEL_DIR="$ROOT_DIR/app/Model"
+SOURCE_ROOT="${SDD_SOURCE_ROOT:-$(pwd)}"
+DB_DOC="${1:-$SOURCE_ROOT/docs/07_db_tables.md}"
+MODEL_DIR="$SOURCE_ROOT/app/Model"
 
 if [[ ! -f "$DB_DOC" ]]; then
   echo "[FAIL] missing db doc: $DB_DOC"

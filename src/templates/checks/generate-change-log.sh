@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-ROOT_DIR="$(cd "$(dirname "$0")/../../.." && pwd)"
-SPECS_DIR="$ROOT_DIR/specs"
-OUT_FILE="${1:-$ROOT_DIR/docs/change_log.md}"
+SOURCE_ROOT="${SDD_SOURCE_ROOT:-$(pwd)}"
+SPECS_DIR="$SOURCE_ROOT/specs"
+OUT_FILE="${1:-$SOURCE_ROOT/docs/change_log.md}"
 
 mkdir -p "$(dirname "$OUT_FILE")"
 

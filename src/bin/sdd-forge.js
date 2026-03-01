@@ -95,7 +95,11 @@ if (!PROJECT_MGMT.has(subCmd)) {
 if (subCmd === "review") {
   const scriptPath = path.join(PKG_DIR, "templates/checks/self-review-temp-docs.sh");
   try {
-    execFileSync("bash", [scriptPath, ...rest], { stdio: "inherit", cwd: process.cwd() });
+    execFileSync("bash", [scriptPath, ...rest], {
+      stdio: "inherit",
+      cwd: process.cwd(),
+      env: { ...process.env },
+    });
   } catch (err) {
     process.exit(err.status || 1);
   }

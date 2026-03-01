@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-ROOT_DIR="$(cd "$(dirname "$0")/../../.." && pwd)"
-DOC_FILE="${1:-$ROOT_DIR/docs/08_controller_routes.md}"
-CONTROLLER_DIR="$ROOT_DIR/app/Controller"
+SOURCE_ROOT="${SDD_SOURCE_ROOT:-$(pwd)}"
+DOC_FILE="${1:-$SOURCE_ROOT/docs/08_controller_routes.md}"
+CONTROLLER_DIR="$SOURCE_ROOT/app/Controller"
 
 if [[ ! -f "$DOC_FILE" ]]; then
   echo "[FAIL] missing doc file: $DOC_FILE"
