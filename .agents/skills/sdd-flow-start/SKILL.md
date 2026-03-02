@@ -11,11 +11,19 @@ Run this workflow for any feature or fix request.
 
 2. Choose branching strategy.
    - **Auto-detect**: Check if `.git` is a file (not directory) in the project root.
-     - If yes → already in a worktree. Use `--no-branch` (spec-only mode). Record worktree info in current-spec.
-   - **User choice** (if not in a worktree): Ask the user which strategy to use:
-     1. **Branch**（デフォルト）— `sdd-forge spec --title "..."` (existing behavior, creates feature branch)
-     2. **Worktree** — Ask for worktree path, run `sdd-forge spec --title "..." --worktree <path>`, then cd into the worktree
-     3. **Spec only** — `sdd-forge spec --title "..." --no-branch` (no branch, spec files only)
+     - If yes → already in a worktree. Skip choice, use `--no-branch` automatically.
+   - **User choice** (if not in a worktree): Present EXACTLY these 3 options:
+
+     | # | Label | Description | Command |
+     |---|---|---|---|
+     | 1 | Branch（デフォルト） | `<current-branch>` から feature ブランチを作成して作業する | `sdd-forge spec --title "..."` |
+     | 2 | Worktree | git worktree を作成して隔離環境で作業する（パスを追加質問） | `sdd-forge spec --title "..." --worktree <path>` |
+     | 3 | Spec only | ブランチを作成せず spec ファイルのみ作成する | `sdd-forge spec --title "..." --no-branch` |
+
+     - If user selects **Worktree**:
+       - Compute default path: `../<repo-basename>-wt-<NNN-slug>` (e.g. `../sdd-forge-wt-003-add-dry-run`)
+       - Ask: "Worktree パス: `<default>` でよいですか？（変更する場合は入力）"
+       - Use the user's answer or the default.
    - Ask the user: "現在のブランチ (`<current-branch>`) から分岐してよいですか？" (skip for spec-only mode)
    - The base branch is recorded in `.sdd-forge/current-spec` for close.
 
