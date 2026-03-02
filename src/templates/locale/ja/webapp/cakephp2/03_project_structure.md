@@ -1,11 +1,6 @@
-# 03. プロジェクト構成
+<!-- @extends -->
 
-## 説明
-
-<!-- @text: この章の概要を1〜2文で記述してください。主要ディレクトリ（Controller, Model, View, Console 等）の数と役割を踏まえること。 -->
-
-## 内容
-
+<!-- @block: directory-tree -->
 ### ディレクトリ構成
 
 ```text
@@ -22,11 +17,15 @@ project/
 ├── specs/              # 機能仕様
 └── sdd-forge/          # 開発ツール
 ```
+<!-- @endblock -->
 
+<!-- @block: directory-roles -->
 ### 各ディレクトリの責務
 
 <!-- @text: 主要ディレクトリ（Config/Console/Controller/Model/View/Lib/Plugin/docs/specs/tools）の責務をファイル数とともに表形式で記述してください。 -->
+<!-- @endblock -->
 
+<!-- @block: libraries -->
 ### 共通ライブラリ (Lib/)
 
 <!-- @data: table(libs, labels=クラス|ファイル|責務) -->
@@ -44,3 +43,4 @@ project/
 #### エレメント
 
 <!-- @data: table(views.elements, labels=ファイル|用途) -->
+<!-- @endblock -->

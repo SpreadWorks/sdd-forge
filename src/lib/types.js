@@ -36,15 +36,23 @@
  */
 
 /**
+ * @typedef {Object} OutputConfig
+ * @property {string[]} languages - Output languages (e.g. ["ja"], ["en", "ja"])
+ * @property {string}   default   - Default output language
+ */
+
+/**
  * @typedef {Object} SddConfig
- * @property {string} lang                    - 言語 ("ja" | "en")
- * @property {string} type                    - プロジェクト種別 ("php-mvc" | "node-cli" | ...)
- * @property {Object} [limits]                - 制限設定
- * @property {number} [limits.designTimeoutMs] - タイムアウト (ms)
- * @property {DocumentStyle} [documentStyle]  - 文書スタイル設定
- * @property {TextFillConfig} [textFill]      - text-fill 設定
- * @property {string} [defaultAgent]          - デフォルトエージェント名
- * @property {Object<string, AgentProvider>} [providers] - エージェント定義
+ * @property {string} [uiLang]                - UI language ("en" | "ja")
+ * @property {OutputConfig} [output]          - Output language configuration
+ * @property {string} lang                    - Output default language (backward compat, = output.default)
+ * @property {string} type                    - Project type ("webapp/cakephp2" | "cli" | ...)
+ * @property {Object} [limits]                - Limit settings
+ * @property {number} [limits.designTimeoutMs] - Timeout (ms)
+ * @property {DocumentStyle} [documentStyle]  - Document style settings
+ * @property {TextFillConfig} [textFill]      - text-fill settings
+ * @property {string} [defaultAgent]          - Default agent name
+ * @property {Object<string, AgentProvider>} [providers] - Agent definitions
  */
 
 /**
@@ -57,6 +65,25 @@
 // ---------------------------------------------------------------------------
 
 const VALID_TONES = new Set(["polite", "formal", "casual"]);
+
+/**
+ * 旧 type 名 → 新 type パスのエイリアスマップ。
+ * 後方互換のため、旧 config.json の type 値をそのまま使用可能にする。
+ */
+export const TYPE_ALIASES = {
+  "php-mvc": "webapp/cakephp2",
+  "node-cli": "cli/node-cli",
+};
+
+/**
+ * type 名をエイリアス解決する。エイリアスがなければそのまま返す。
+ *
+ * @param {string} type
+ * @returns {string}
+ */
+export function resolveType(type) {
+  return TYPE_ALIASES[type] || type;
+}
 
 // ---------------------------------------------------------------------------
 // バリデーション
@@ -75,12 +102,36 @@ export function validateConfig(raw) {
     throw new Error("config must be a non-null object");
   }
 
-  // lang (必須)
+  // uiLang (optional)
+  if (raw.uiLang != null && (typeof raw.uiLang !== "string" || raw.uiLang.length === 0)) {
+    errors.push("'uiLang' must be a non-empty string if provided");
+  }
+
+  // output (optional, new structure)
+  if (raw.output != null) {
+    if (typeof raw.output !== "object") {
+      errors.push("'output' must be an object");
+    } else {
+      if (!Array.isArray(raw.output.languages) || raw.output.languages.length === 0) {
+        errors.push("'output.languages' must be a non-empty array");
+      }
+      if (typeof raw.output.default !== "string" || raw.output.default.length === 0) {
+        errors.push("'output.default' must be a non-empty string");
+      }
+      if (Array.isArray(raw.output.languages) && typeof raw.output.default === "string") {
+        if (!raw.output.languages.includes(raw.output.default)) {
+          errors.push("'output.default' must be one of 'output.languages'");
+        }
+      }
+    }
+  }
+
+  // lang (required — backward compat, derived from output.default if output exists)
   if (typeof raw.lang !== "string" || raw.lang.length === 0) {
     errors.push("'lang' is required and must be a non-empty string");
   }
 
-  // type (必須)
+  // type (required)
   if (typeof raw.type !== "string" || raw.type.length === 0) {
     errors.push("'type' is required and must be a non-empty string");
   }
