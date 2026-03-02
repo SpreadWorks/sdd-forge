@@ -2,12 +2,12 @@
 /**
  * sdd-forge/setup/setup.js
  *
- * 対話式セットアップウィザード。
- * プロジェクト登録 + .sdd-forge/config.json 生成を一括で行う。
+ * Interactive setup wizard.
+ * Registers a project and generates .sdd-forge/config.json.
  *
  * Usage:
  *   sdd-forge setup
- *   sdd-forge setup --name myapp --path /path/to/src --lang ja --type node-cli --purpose developer-guide --tone polite --agent claude
+ *   sdd-forge setup --name myapp --path /path/to/src --type webapp/cakephp2
  */
 
 import fs from "fs";
@@ -17,10 +17,11 @@ import { fileURLToPath } from "url";
 import { repoRoot, parseArgs } from "../lib/cli.js";
 import { validateConfig } from "../lib/types.js";
 import { saveContext } from "../lib/config.js";
+import { createI18n } from "../lib/i18n.js";
 import { addProject, workRootFor, loadProjects } from "../projects/projects.js";
 
 // ---------------------------------------------------------------------------
-// readline ヘルパー
+// readline helpers
 // ---------------------------------------------------------------------------
 
 function ask(rl, prompt) {
@@ -29,18 +30,51 @@ function ask(rl, prompt) {
   });
 }
 
-async function askChoice(rl, prompt, choices) {
+/**
+ * Present a numbered list of choices and return the selected value.
+ *
+ * @param {readline.Interface} rl
+ * @param {string} prompt - Question text
+ * @param {{ label: string, value: string }[]} choices
+ * @param {function} t - i18n translation function
+ * @returns {Promise<string>}
+ */
+async function askChoice(rl, prompt, choices, t) {
   const lines = choices.map((c, i) => `  [${i + 1}] ${c.label}`);
   console.log(`\n${prompt}`);
   for (const line of lines) console.log(line);
-  const answer = await ask(rl, `> (1-${choices.length}): `);
+  const choicePrompt = t("common.choicePrompt", { min: 1, max: choices.length });
+  const answer = await ask(rl, choicePrompt);
   const idx = Number(answer) - 1;
   if (idx >= 0 && idx < choices.length) return choices[idx].value;
   return choices[0].value;
 }
 
+/**
+ * Present a numbered list for multi-select (comma-separated).
+ * Returns an array of selected values.
+ *
+ * @param {readline.Interface} rl
+ * @param {string} prompt
+ * @param {{ label: string, value: string }[]} choices
+ * @param {function} t
+ * @returns {Promise<string[]>}
+ */
+async function askMultiChoice(rl, prompt, choices, t) {
+  const lines = choices.map((c, i) => `  [${i + 1}] ${c.label}`);
+  console.log(`\n${prompt}`);
+  for (const line of lines) console.log(line);
+  const multiPrompt = t("setup.multiSelectPrompt");
+  const answer = await ask(rl, multiPrompt);
+  const indices = answer.split(",")
+    .map((s) => Number(s.trim()) - 1)
+    .filter((i) => i >= 0 && i < choices.length);
+  if (indices.length === 0) return [choices[0].value];
+  return [...new Set(indices.map((i) => choices[i].value))];
+}
+
 // ---------------------------------------------------------------------------
-// CLI 引数パース
+// CLI args
 // ---------------------------------------------------------------------------
 
 function parseSetupArgs(argv) {
@@ -48,13 +82,12 @@ function parseSetupArgs(argv) {
     flags: [],
     options: [
       "--name", "--path",
-      "--lang", "--type", "--purpose", "--tone",
+      "--type", "--purpose", "--tone",
       "--agent", "--project-context",
     ],
     defaults: {
       name: "",
       path: "",
-      lang: "",
       type: "",
       purpose: "",
       tone: "",
@@ -65,23 +98,38 @@ function parseSetupArgs(argv) {
 }
 
 // ---------------------------------------------------------------------------
-// プロジェクト登録 + ディレクトリ構造作成
+// Architecture → framework mapping
 // ---------------------------------------------------------------------------
 
-function registerProject(projectName, sourcePath) {
+const ARCH_FRAMEWORKS = {
+  webapp: [
+    { key: "generic", value: "webapp" },
+    { key: "cakephp2", value: "webapp/cakephp2" },
+  ],
+  cli: [
+    { key: "generic", value: "cli" },
+    { key: "node-cli", value: "cli/node-cli" },
+  ],
+  library: [],
+};
+
+// ---------------------------------------------------------------------------
+// Project registration
+// ---------------------------------------------------------------------------
+
+function registerProject(projectName, sourcePath, t) {
   const resolved = path.resolve(sourcePath);
   if (!fs.existsSync(resolved)) {
-    throw new Error(`path does not exist: ${resolved}`);
+    throw new Error(t("common.error.pathNotFound", { path: resolved }));
   }
 
   let data;
   try {
     data = addProject(projectName, resolved);
   } catch (err) {
-    // 既に登録済みならスキップ
     const existing = loadProjects();
     if (existing?.projects?.[projectName]) {
-      console.log(`[setup] project '${projectName}' already registered. skipping registration.`);
+      console.log(t("setup.messages.projectAlreadyExists", { name: projectName }));
       return { alreadyExists: true, workRoot: workRootFor(projectName) };
     }
     throw err;
@@ -89,7 +137,6 @@ function registerProject(projectName, sourcePath) {
 
   const isDefault = data.default === projectName;
 
-  // projects/<name>/ のディレクトリ構造を作成
   const workRoot = workRootFor(projectName);
   const sddDir = path.join(workRoot, ".sdd-forge");
   const outputDir = path.join(sddDir, "output");
@@ -101,16 +148,16 @@ function registerProject(projectName, sourcePath) {
   );
   fs.writeFileSync(path.join(outputDir, ".gitkeep"), "");
 
-  console.log(`[setup] project '${projectName}' registered.`);
-  console.log(`  source : ${resolved}`);
-  console.log(`  workdir: ${workRoot}`);
-  if (isDefault) console.log(`  default: yes`);
+  console.log(t("setup.messages.projectRegistered", { name: projectName }));
+  console.log(t("setup.messages.sourceDir", { path: resolved }));
+  console.log(t("setup.messages.workDir", { path: workRoot }));
+  if (isDefault) console.log(t("setup.messages.isDefault"));
 
   return { alreadyExists: false, workRoot };
 }
 
 // ---------------------------------------------------------------------------
-// メイン
+// Main
 // ---------------------------------------------------------------------------
 
 async function main() {
@@ -120,124 +167,182 @@ async function main() {
     console.log([
       "Usage: sdd-forge setup [options]",
       "",
-      "プロジェクト登録と config.json 生成を対話式で行います。",
+      "Interactive project setup wizard.",
       "",
       "Options:",
-      "  --name <name>               プロジェクト名",
-      "  --path <path>               ソースコードのパス (default: カレントディレクトリ)",
-      "  --lang <lang>               言語: ja|en",
-      "  --type <type>               プロジェクト種別: php-mvc|node-cli",
-      "  --purpose <purpose>         文書目的: developer-guide|user-guide|api-reference",
-      "  --tone <tone>               文体: polite|formal|casual",
-      "  --agent <agent>             デフォルトエージェント: claude|codex",
-      "  --project-context <text>    プロジェクト概要テキスト",
-      "  -h, --help                  このヘルプを表示",
-      "",
-      "全必須値が揃っていれば対話なしで実行されます。",
+      "  --name <name>               Project name",
+      "  --path <path>               Source code path (default: cwd)",
+      "  --type <type>               Project type: webapp|webapp/cakephp2|cli|library",
+      "  --purpose <purpose>         Document purpose: developer-guide|user-guide|api-reference",
+      "  --tone <tone>               Writing style: polite|formal|casual",
+      "  --agent <agent>             Default agent: claude|codex",
+      "  --project-context <text>    Project description text",
+      "  -h, --help                  Show this help",
     ].join("\n"));
     return;
   }
 
-  // デフォルトパスは cwd
   const defaultPath = process.cwd();
   const defaultName = path.basename(defaultPath);
 
-  // 全必須値がCLI引数で揃っているか
-  const hasAllRequired = cli.name && cli.lang && cli.type && cli.purpose && cli.tone;
+  // Non-interactive mode: all required values provided via CLI
+  const hasAllRequired = cli.name && cli.type && cli.purpose && cli.tone;
 
   let projectName = cli.name;
   let sourcePath = cli.path || defaultPath;
-  let lang = cli.lang;
+  let uiLang = "en";
+  let outputLangs = [];
+  let outputDefault = "";
   let type = cli.type;
   let purpose = cli.purpose;
   let tone = cli.tone;
   let projectContext = cli.projectContext;
   let defaultAgent = cli.agent;
 
+  // Start with English for the first question
+  let t = createI18n("en");
   let rl;
+
   if (!hasAllRequired) {
     rl = readline.createInterface({
       input: process.stdin,
       output: process.stdout,
     });
 
-    console.log("\n  SDD Forge — セットアップ");
-    console.log("  ========================\n");
+    // --- Step 1: UI language (always in English) ---
+    console.log(`\n  ${t("setup.title")}`);
+    console.log(`  ${t("setup.separator")}\n`);
 
-    // --- プロジェクト登録 ---
+    const uiLangChoices = t.raw("setup.choices.uiLang");
+    uiLang = await askChoice(rl, t("setup.questions.uiLang"), [
+      { label: uiLangChoices.en, value: "en" },
+      { label: uiLangChoices.ja, value: "ja" },
+    ], t);
+
+    // Switch to selected language for remaining questions
+    t = createI18n(uiLang);
+
+    // --- Step 2: Project registration ---
     if (!projectName) {
-      const answer = await ask(rl, `プロジェクト名 (default: ${defaultName}): `);
+      const answer = await ask(rl, t("setup.questions.projectName", { default: defaultName }));
       projectName = answer || defaultName;
     }
 
     if (!cli.path) {
-      const answer = await ask(rl, `ソースコードのパス (default: ${defaultPath}): `);
+      const answer = await ask(rl, t("setup.questions.sourcePath", { default: defaultPath }));
       sourcePath = answer || defaultPath;
     }
 
-    // --- ドキュメント設定 ---
-    if (!lang) {
-      lang = await askChoice(rl, "言語を選択してください:", [
-        { label: "ja (日本語)", value: "ja" },
-        { label: "en (English)", value: "en" },
-      ]);
+    // --- Step 3: Output language (multi-select) ---
+    const outputLangList = t.raw("setup.choices.outputLang");
+    const outputLangItems = outputLangList.map((item) => ({
+      label: item.label,
+      value: item.key,
+    }));
+    outputLangs = await askMultiChoice(rl, t("setup.questions.outputLang"), outputLangItems, t);
+
+    if (outputLangs.length === 1) {
+      outputDefault = outputLangs[0];
+    } else {
+      // Multiple languages selected — ask which is default
+      const defaultChoices = t.raw("setup.choices.outputDefault");
+      const defaultItems = outputLangs.map((lang) => ({
+        label: defaultChoices[lang] || lang,
+        value: lang,
+      }));
+      outputDefault = await askChoice(rl, t("setup.questions.outputDefault"), defaultItems, t);
     }
 
+    // --- Step 4: Hierarchical type selection ---
     if (!type) {
-      type = await askChoice(rl, "プロジェクト種別を選択してください:", [
-        { label: "php-mvc", value: "php-mvc" },
-        { label: "node-cli", value: "node-cli" },
-      ]);
+      const archLabels = t.raw("setup.choices.archType");
+      const arch = await askChoice(rl, t("setup.questions.archType"), [
+        { label: `webapp — ${archLabels.webapp}`, value: "webapp" },
+        { label: `cli — ${archLabels.cli}`, value: "cli" },
+        { label: `library — ${archLabels.library}`, value: "library" },
+      ], t);
+
+      const frameworks = ARCH_FRAMEWORKS[arch];
+      if (frameworks && frameworks.length > 0) {
+        // Build framework choices from i18n
+        const fwChoiceKey = arch === "webapp" ? "fwWebapp" : arch === "cli" ? "fwCli" : null;
+        if (fwChoiceKey) {
+          const fwLabels = t.raw(`setup.choices.${fwChoiceKey}`);
+          const fwChoices = frameworks.map((fw) => ({
+            label: `${fw.key} — ${fwLabels[fw.key] || fw.key}`,
+            value: fw.value,
+          }));
+          type = await askChoice(rl, t("setup.questions.fwType"), fwChoices, t);
+        } else {
+          type = arch;
+        }
+      } else {
+        type = arch;
+      }
     }
 
+    // --- Step 5: Document style ---
     if (!purpose) {
-      purpose = await askChoice(rl, "ドキュメントの目的を選択してください:", [
-        { label: "developer-guide (開発者向け技術ガイド)", value: "developer-guide" },
-        { label: "user-guide (利用者向け操作ガイド)", value: "user-guide" },
-        { label: "api-reference (API リファレンス)", value: "api-reference" },
-        { label: "other (自由入力)", value: "__other__" },
-      ]);
+      const purposeChoices = t.raw("setup.choices.purpose");
+      purpose = await askChoice(rl, t("setup.questions.purpose"), [
+        { label: purposeChoices["developer-guide"], value: "developer-guide" },
+        { label: purposeChoices["user-guide"], value: "user-guide" },
+        { label: purposeChoices["api-reference"], value: "api-reference" },
+        { label: purposeChoices.other, value: "__other__" },
+      ], t);
       if (purpose === "__other__") {
-        purpose = await ask(rl, "目的を入力してください: ");
+        purpose = await ask(rl, t("setup.questions.purposeCustom"));
         if (!purpose) purpose = "developer-guide";
       }
     }
 
     if (!tone) {
-      tone = await askChoice(rl, "文体を選択してください:", [
-        { label: "polite (です・ます調 / professional)", value: "polite" },
-        { label: "formal (だ・である調 / formal)", value: "formal" },
-        { label: "casual (カジュアル / conversational)", value: "casual" },
-      ]);
+      const toneChoices = t.raw("setup.choices.tone");
+      tone = await askChoice(rl, t("setup.questions.tone"), [
+        { label: toneChoices.polite, value: "polite" },
+        { label: toneChoices.formal, value: "formal" },
+        { label: toneChoices.casual, value: "casual" },
+      ], t);
     }
 
+    // --- Step 6: Project context ---
     if (!projectContext) {
-      console.log("\nプロジェクト概要を入力してください（空でも可。scan 後に自動生成できます）:");
-      projectContext = await ask(rl, "> ");
+      console.log(`\n${t("setup.questions.projectContext")}`);
+      projectContext = await ask(rl, t("setup.prompt"));
     }
 
+    // --- Step 7: Agent ---
     if (!defaultAgent) {
-      const agentChoice = await askChoice(rl, "デフォルト AI エージェントを選択してください:", [
-        { label: "claude", value: "claude" },
-        { label: "codex", value: "codex" },
-        { label: "スキップ（後で設定）", value: "" },
-      ]);
+      const agentChoices = t.raw("setup.choices.agent");
+      const agentChoice = await askChoice(rl, t("setup.questions.agent"), [
+        { label: agentChoices.claude, value: "claude" },
+        { label: agentChoices.codex, value: "codex" },
+        { label: agentChoices.skip, value: "" },
+      ], t);
       defaultAgent = agentChoice;
     }
 
     rl.close();
   } else {
-    // 非対話モード: name はあるが path 未指定ならデフォルト
+    // Non-interactive mode
     if (!sourcePath) sourcePath = defaultPath;
     if (!projectName) projectName = defaultName;
+    // Default output config for non-interactive
+    outputLangs = ["ja"];
+    outputDefault = "ja";
   }
 
-  // 1. プロジェクト登録
-  const { workRoot } = registerProject(projectName, sourcePath);
+  // 1. Register project
+  const { workRoot } = registerProject(projectName, sourcePath, t);
 
-  // 2. config オブジェクト構築
+  // 2. Build config object
   const config = {
-    lang,
+    uiLang,
+    output: {
+      languages: outputLangs,
+      default: outputDefault,
+    },
+    lang: outputDefault,
     type,
     documentStyle: {
       purpose,
@@ -272,10 +377,10 @@ async function main() {
     }
   }
 
-  // 3. バリデーション
+  // 3. Validate
   validateConfig(config);
 
-  // 4. config.json 書き込み（workRoot 配下）
+  // 4. Write config.json
   const sddDir = path.join(workRoot, ".sdd-forge");
   if (!fs.existsSync(sddDir)) {
     fs.mkdirSync(sddDir, { recursive: true });
@@ -283,29 +388,28 @@ async function main() {
 
   const configPath = path.join(sddDir, "config.json");
   fs.writeFileSync(configPath, JSON.stringify(config, null, 2) + "\n", "utf8");
-  console.log(`\n[setup] ${configPath} を生成しました。`);
+  console.log(t("setup.messages.configGenerated", { path: configPath }));
 
-  // 5. projectContext があれば context.json に書き込み
+  // 5. Write context.json if projectContext provided
   if (projectContext) {
     saveContext(workRoot, { projectContext });
-    console.log(`[setup] context.json を生成しました。`);
+    console.log(t("setup.messages.contextGenerated"));
   }
 
-  // サマリ表示
-  console.log("\n  設定サマリ:");
-  console.log(`    project: ${projectName}`);
-  console.log(`    source:  ${path.resolve(sourcePath)}`);
-  console.log(`    lang:    ${lang}`);
-  console.log(`    type:    ${type}`);
-  console.log(`    purpose: ${purpose}`);
-  console.log(`    tone:    ${tone}`);
-  if (defaultAgent) console.log(`    agent:   ${defaultAgent}`);
-  if (projectContext) console.log(`    context: ${projectContext.slice(0, 80)}${projectContext.length > 80 ? "..." : ""}`);
+  // Summary
+  console.log(`\n  ${t("setup.messages.summary")}`);
+  console.log(`    project:  ${projectName}`);
+  console.log(`    source:   ${path.resolve(sourcePath)}`);
+  console.log(`    uiLang:   ${uiLang}`);
+  console.log(`    output:   ${outputLangs.join(", ")} (default: ${outputDefault})`);
+  console.log(`    type:     ${type}`);
+  console.log(`    purpose:  ${purpose}`);
+  console.log(`    tone:     ${tone}`);
+  if (defaultAgent) console.log(`    agent:    ${defaultAgent}`);
+  if (projectContext) console.log(`    context:  ${projectContext.slice(0, 80)}${projectContext.length > 80 ? "..." : ""}`);
 
-  console.log("\n  次のステップ:");
-  console.log("    1. sdd-forge init      — docs/ テンプレートを生成");
-  console.log("    2. sdd-forge scan:all  — ソースコード解析 + data");
-  console.log("    3. sdd-forge text --agent claude — AI でテキスト生成");
+  console.log(`\n  ${t("setup.messages.nextSteps")}`);
+  console.log(`    ${t("setup.messages.step1")}`);
   console.log("");
 }
 

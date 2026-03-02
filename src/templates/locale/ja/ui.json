@@ -1,0 +1,84 @@
+{
+  "setup": {
+    "title": "SDD Forge — セットアップ",
+    "separator": "========================",
+    "questions": {
+      "uiLang": "Select your preferred language for UI messages:",
+      "projectName": "プロジェクト名 (default: {{default}}): ",
+      "sourcePath": "ソースコードのパス (default: {{default}}): ",
+      "outputLang": "出力ドキュメントの言語を選択してください（カンマ区切りで複数選択可）:",
+      "outputDefault": "デフォルト言語を選択してください:",
+      "archType": "プロジェクトのアーキテクチャを選択してください:",
+      "fwType": "フレームワークを選択してください:",
+      "purpose": "ドキュメントの目的を選択してください:",
+      "purposeCustom": "目的を入力してください: ",
+      "tone": "文体を選択してください:",
+      "projectContext": "プロジェクト概要を入力してください（空でも可。scan 後に自動生成できます）:",
+      "agent": "デフォルト AI エージェントを選択してください:"
+    },
+    "choices": {
+      "uiLang": {
+        "en": "en (English)",
+        "ja": "ja (日本語)"
+      },
+      "outputLang": [
+        { "key": "ja", "label": "日本語" },
+        { "key": "en", "label": "English" }
+      ],
+      "outputDefault": {
+        "en": "English",
+        "ja": "日本語"
+      },
+      "archType": {
+        "webapp": "Web アプリケーション",
+        "cli": "CLI ツール",
+        "library": "ライブラリ / パッケージ"
+      },
+      "fwWebapp": {
+        "generic": "汎用（フレームワーク指定なし）",
+        "cakephp2": "CakePHP 2.x"
+      },
+      "fwCli": {
+        "generic": "汎用（フレームワーク指定なし）",
+        "node-cli": "Node.js CLI"
+      },
+      "purpose": {
+        "developer-guide": "開発者向け技術ガイド",
+        "user-guide": "利用者向け操作ガイド",
+        "api-reference": "API リファレンス",
+        "other": "自由入力"
+      },
+      "tone": {
+        "polite": "です・ます調",
+        "formal": "だ・である調",
+        "casual": "カジュアル"
+      },
+      "agent": {
+        "claude": "claude",
+        "codex": "codex",
+        "skip": "スキップ（後で設定）"
+      }
+    },
+    "messages": {
+      "projectRegistered": "[setup] プロジェクト '{{name}}' を登録しました。",
+      "projectAlreadyExists": "[setup] プロジェクト '{{name}}' は既に登録済みです。スキップします。",
+      "sourceDir": "  source : {{path}}",
+      "workDir": "  workdir: {{path}}",
+      "isDefault": "  default: yes",
+      "configGenerated": "[setup] {{path}} を生成しました。",
+      "contextGenerated": "[setup] context.json を生成しました。",
+      "summary": "設定サマリ:",
+      "nextSteps": "次のステップ:",
+      "step1": "sdd-forge build  — ドキュメント一括生成（scan → init → data → text）"
+    },
+    "multiSelectPrompt": "> (カンマ区切り, 例: 1,2): ",
+    "prompt": "> "
+  },
+  "common": {
+    "choicePrompt": "> ({{min}}-{{max}}): ",
+    "error": {
+      "pathNotFound": "パスが存在しません: {{path}}",
+      "configValidation": "設定のバリデーションに失敗しました"
+    }
+  }
+}
