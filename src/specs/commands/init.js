@@ -11,8 +11,8 @@
 
 import fs from "fs";
 import path from "path";
-import { repoRoot, parseArgs } from "../lib/cli.js";
-import { runSync } from "../lib/process.js";
+import { repoRoot, parseArgs } from "../../lib/cli.js";
+import { runSync } from "../../lib/process.js";
 
 function runGit(root, args) {
   const res = runSync("git", ["-C", root, ...args]);

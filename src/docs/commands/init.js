@@ -12,12 +12,12 @@
 import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
-import { repoRoot, parseArgs } from "../lib/cli.js";
-import { loadPackageField, loadJsonFile } from "../lib/config.js";
-import { resolveType } from "../lib/types.js";
-import { callAgent, resolveAgent } from "../lib/agent.js";
-import { resolveChain, collectChapters, filterChapters } from "./template-merger.js";
-import { parseBlocks } from "./directive-parser.js";
+import { repoRoot, parseArgs } from "../../lib/cli.js";
+import { loadPackageField, loadJsonFile } from "../../lib/config.js";
+import { resolveType } from "../../lib/types.js";
+import { callAgent, resolveAgent } from "../../lib/agent.js";
+import { resolveChain, collectChapters, filterChapters } from "../lib/template-merger.js";
+import { parseBlocks } from "../lib/directive-parser.js";
 
 // ---------------------------------------------------------------------------
 // project-overrides 適用（後方互換）
@@ -319,7 +319,7 @@ function main() {
   }
 
   // テンプレートルート
-  const pkgDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
+  const pkgDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
   const templatesRoot = path.join(pkgDir, "templates", "locale", lang);
 
   // 継承チェーンの構築

@@ -13,13 +13,12 @@
 import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
-import { parseDirectives } from "./directive-parser.js";
-import { RENDERERS } from "./renderers.js";
-import { resolve as legacyResolve } from "./resolver.js";
-import { createResolver } from "./resolvers/index.js";
-import { repoRoot, parseArgs } from "../lib/cli.js";
-import { loadConfig } from "../lib/config.js";
-import { resolveType } from "../lib/types.js";
+import { parseDirectives } from "../lib/directive-parser.js";
+import { RENDERERS } from "../lib/renderers.js";
+import { createResolver } from "../lib/resolver-factory.js";
+import { repoRoot, parseArgs } from "../../lib/cli.js";
+import { loadConfig } from "../../lib/config.js";
+import { resolveType } from "../../lib/types.js";
 
 // ---------------------------------------------------------------------------
 // テンプレートファイル処理
@@ -31,11 +30,14 @@ import { resolveType } from "../lib/types.js";
  * @param {string} text     - テンプレート全文
  * @param {Object} analysis - analysis.json
  * @param {string} fileName - ログ出力用ファイル名
- * @param {function} [resolveFn] - カテゴリ解決関数（省略時は legacyResolve）
+ * @param {function} [resolveFn] - カテゴリ解決関数
  * @returns {{ text: string, replaced: number, skipped: number }}
  */
 function processTemplate(text, analysis, fileName, resolveFn) {
-  const resolve = resolveFn || legacyResolve;
+  if (!resolveFn) {
+    throw new Error("resolveFn is required — run createResolver() first");
+  }
+  const resolve = resolveFn;
   const directives = parseDirectives(text);
   if (directives.length === 0) return { text, replaced: 0, skipped: 0 };
 
@@ -163,10 +165,9 @@ async function main() {
     const resolver = await createResolver(type, root);
     resolveFn = (category, a) => resolver.resolve(category, a);
     console.error(`[populate] resolver: ${type}`);
-  } catch (_) {
-    // フォールバック: レガシーリゾルバ
-    resolveFn = legacyResolve;
-    console.error("[populate] resolver: legacy (fallback)");
+  } catch (err) {
+    console.error(`[populate] ERROR: failed to create resolver: ${err.message}`);
+    process.exit(1);
   }
 
   const docsDir = path.join(root, "docs");

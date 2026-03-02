@@ -8,7 +8,7 @@
 import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
-import { createBaseCategories } from "./base.js";
+import { createBaseCategories } from "./resolver-base.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -17,7 +17,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 // ---------------------------------------------------------------------------
 
 const FW_RESOLVER_MODULES = {
-  cakephp2: "./cakephp2.js",
+  cakephp2: "../presets/webapp/cakephp2/resolver.js",
 };
 
 // ---------------------------------------------------------------------------

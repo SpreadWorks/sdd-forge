@@ -6,7 +6,7 @@
  * デフォルトプロジェクトを変更する。引数なしで一覧表示。
  */
 
-import { setDefault, loadProjects } from "./projects.js";
+import { setDefault, loadProjects } from "../../lib/projects.js";
 
 function main() {
   const [name] = process.argv.slice(2);

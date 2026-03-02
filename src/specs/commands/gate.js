@@ -7,7 +7,7 @@
 
 import fs from "fs";
 import path from "path";
-import { repoRoot, parseArgs } from "../lib/cli.js";
+import { repoRoot, parseArgs } from "../../lib/cli.js";
 
 function checkSpecText(text) {
   const issues = [];

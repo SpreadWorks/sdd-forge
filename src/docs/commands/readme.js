@@ -12,13 +12,13 @@
 import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
-import { repoRoot, parseArgs } from "../lib/cli.js";
-import { loadJsonFile, loadPackageField } from "../lib/config.js";
-import { resolveType } from "../lib/types.js";
-import { resolveChain, resolveReadmeTemplate } from "./template-merger.js";
+import { repoRoot, parseArgs } from "../../lib/cli.js";
+import { loadJsonFile, loadPackageField } from "../../lib/config.js";
+import { resolveType } from "../../lib/types.js";
+import { resolveChain, resolveReadmeTemplate } from "../lib/template-merger.js";
 
 // npm パッケージ: テンプレートはパッケージ自身の templates/ に同梱される
-const PKG_DIR = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
+const PKG_DIR = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 
 const root = repoRoot(import.meta.url);
 const sddConfig = loadJsonFile(path.join(root, ".sdd-forge", "config.json"));

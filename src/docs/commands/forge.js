@@ -17,14 +17,14 @@ import readline from "readline";
 import { execFile, spawn } from "child_process";
 import { stdout as output } from "process";
 import { fileURLToPath } from "url";
-import { populateFromAnalysis } from "../engine/populate.js";
-import { textFillFromAnalysis } from "../engine/tfill.js";
-import { repoRoot, parseArgs } from "../lib/cli.js";
-import { loadJsonFile, loadConfig, saveContext } from "../lib/config.js";
+import { populateFromAnalysis } from "./data.js";
+import { textFillFromAnalysis } from "./text.js";
+import { repoRoot, parseArgs } from "../../lib/cli.js";
+import { loadJsonFile, loadConfig, saveContext } from "../../lib/config.js";
 
 // npm パッケージとして呼ばれた場合でもサブスクリプトを直接起動できるよう
 // パッケージディレクトリを保持する
-const PKG_DIR = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
+const PKG_DIR = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 
 const DEFAULT_AGENT_TIMEOUT_MS = 180000;
 const DEFAULT_WAIT_LOG_SEC = 1;
@@ -724,7 +724,7 @@ async function main() {
       if (cfg.documentStyle && agent) {
         await maybeUpdateContext(root, cfg, agent, timeoutMs, cli.autoUpdateContext);
       }
-      const readme = await runShell(`node "${path.join(PKG_DIR, "engine", "readme.js")}"`, root);
+      const readme = await runShell(`node "${path.join(PKG_DIR, "docs", "commands", "readme.js")}"`, root);
       output.write(`[forge] README.md ${readme.ok ? "updated" : "update failed"}.\n`);
       output.write("\n=== DONE ===\n- forge completed\n");
       return;

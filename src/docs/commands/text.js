@@ -14,9 +14,9 @@ import fs from "fs";
 import path from "path";
 import { execFileSync } from "child_process";
 import { fileURLToPath } from "url";
-import { parseDirectives } from "./directive-parser.js";
-import { repoRoot, parseArgs } from "../lib/cli.js";
-import { loadConfig, resolveProjectContext } from "../lib/config.js";
+import { parseDirectives } from "../lib/directive-parser.js";
+import { repoRoot, parseArgs } from "../../lib/cli.js";
+import { loadConfig, resolveProjectContext } from "../../lib/config.js";
 
 // ---------------------------------------------------------------------------
 // 設定読み込み
