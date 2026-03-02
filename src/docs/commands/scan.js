@@ -30,6 +30,7 @@ function leafSegment(typePath) {
 /** FW モジュールのマップ（リーフセグメント → モジュールパス） */
 const FW_MODULES = {
   cakephp2: "../presets/webapp/cakephp2/scanner.js",
+  laravel: "../presets/webapp/laravel/scanner.js",
 };
 
 function printHelp() {

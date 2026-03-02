@@ -18,6 +18,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 const FW_RESOLVER_MODULES = {
   cakephp2: "../presets/webapp/cakephp2/resolver.js",
+  laravel: "../presets/webapp/laravel/resolver.js",
 };
 
 // ---------------------------------------------------------------------------
@@ -71,8 +72,11 @@ export async function createResolver(type, root) {
   if (fwModulePath) {
     try {
       const fwModule = await import(fwModulePath);
-      if (fwModule.createCakephp2Categories) {
-        const fwCategories = fwModule.createCakephp2Categories(desc, loadOverrides);
+      // 規約: create<Leaf>Categories (例: createCakephp2Categories, createLaravelCategories)
+      const factoryName = `create${leaf.charAt(0).toUpperCase()}${leaf.slice(1)}Categories`;
+      const factory = fwModule[factoryName];
+      if (factory) {
+        const fwCategories = factory(desc, loadOverrides);
         Object.assign(categories, fwCategories);
       }
     } catch (err) {
