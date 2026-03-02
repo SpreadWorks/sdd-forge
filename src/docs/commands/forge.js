@@ -21,6 +21,8 @@ import { populateFromAnalysis } from "./data.js";
 import { textFillFromAnalysis } from "./text.js";
 import { repoRoot, parseArgs } from "../../lib/cli.js";
 import { loadJsonFile, loadConfig, saveContext } from "../../lib/config.js";
+import { resolveType } from "../../lib/types.js";
+import { createResolver } from "../lib/resolver-factory.js";
 
 // npm パッケージとして呼ばれた場合でもサブスクリプトを直接起動できるよう
 // パッケージディレクトリを保持する
@@ -619,7 +621,15 @@ async function main() {
   const analysisSummary = buildAnalysisSummary(analysisData);
   if (analysisData) {
     output.write("[forge] analysis data loaded.\n");
-    const populateResult = populateFromAnalysis(root, analysisData);
+    const type = resolveType(cfg.type || "");
+    let resolveFn = null;
+    try {
+      const resolver = await createResolver(type, root);
+      resolveFn = (category, analysis) => resolver.resolve(category, analysis);
+    } catch (err) {
+      output.write(`[forge] WARN: resolver not available (${err.message}), skipping @data population\n`);
+    }
+    const populateResult = populateFromAnalysis(root, analysisData, resolveFn);
     if (populateResult.populated) {
       output.write(`[forge] populated placeholders in: ${populateResult.files.join(", ")}\n`);
     }

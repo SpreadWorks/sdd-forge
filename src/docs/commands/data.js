@@ -106,6 +106,7 @@ function processTemplate(text, analysis, fileName, resolveFn) {
 // ---------------------------------------------------------------------------
 export function populateFromAnalysis(root, analysis, resolveFn) {
   if (!analysis) return { populated: false, files: [] };
+  if (!resolveFn) return { populated: false, files: [] };
 
   const docsDir = path.join(root, "docs");
   const changedFiles = [];
