@@ -1,6 +1,11 @@
 {
+  "uiLang": "en",
+  "output": {
+    "languages": ["ja"],
+    "default": "ja"
+  },
   "lang": "ja",
-  "type": "node-cli",
+  "type": "webapp/cakephp2",
   "limits": {
     "designTimeoutMs": 900000
   },
