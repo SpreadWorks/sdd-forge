@@ -1,6 +1,6 @@
-# {{PROJECT_NAME}}
+# sdd-forge
 
-{{PROJECT_DESCRIPTION}}
+Spec-Driven Development tooling for automated documentation generation
 
 ## 技術スタック
 
@@ -13,19 +13,24 @@
 ## クイックスタート
 
 ```bash
-npm install -g {{PACKAGE_NAME}}
-{{PACKAGE_NAME}} help
+npm install -g sdd-forge
+sdd-forge help
 ```
 
 ## ドキュメント
 
 | 章 | 概要 |
 |----|------|
-| [01. ツール概要とアーキテクチャ](docs/01_overview.md) | `sdd-forge` は、PHP-MVC プロジェクト（CakePHP 等）における「仕様と実装の乖離」および「技術ドキュメントの作成・維持コスト」という課題を解決するための Node.js CLI ツールである。ソースコード静的解析（`scan`）・テンプレート駆動のドキュメント生成（`init` / `populate` / `tfill`）・仕様ゲート管理（`spec` / `gate`）・反復改善ループ（`forge`）を単一パッケージに統合し、Spec-Driven Development（SDD）ワークフローをコマンドラインから一貫して実行できる。 |
-| [02. CLI コマンドリファレンス](docs/02_cli_commands.md) | `SCRIPTS` オブジェクトから `scan:all` を含めると 19 コマンド（エントリは 18 だが `scan:all` は別処理）が確認できます。正確な数を数えます。 |
-| [03. 設定とカスタマイズ](docs/03_configuration.md) | sdd-forge の動作は `.sdd-forge/config.json` を中心とした複数の JSON 設定ファイルによって制御され、言語・テンプレートタイプ・AIプロバイダー・タイムアウト・テキスト生成挙動など幅広い項目をカスタマイズできる。プロジェクトごとのテンプレート差し替えは `project-overrides.json`、解析結果の表現上書きは `overrides.json` で行い、関心ごとに設定を分離できる構成になっている。 |
-| [04. 内部設計](docs/04_internal_design.md) | `src/bin/sdd-forge.js` がサブコマンドを各モジュール（`analyzers/`・`engine/`・`spec/`・`forge/`・`flow/`）へディスパッチし、共通ユーティリティ `lib/` を底辺として解析→生成→改善の方向で一方向に依存が流れる設計になっている。PHPソースを `analyzers/` が `analysis.json` へ変換し、`engine/populate` と `engine/tfill` がそのデータをテンプレートと組み合わせて `docs/` へ展開するパイプラインが中心的な処理フローである。 |
-| [05. 開発・テスト・配布](docs/05_development.md) | `npm link` を使ったビルド不要のローカル開発環境、外部依存ゼロの Node.js 実装、および `npm version` と `npm publish` による npm レジストリへのリリースフローを中心に構成された章である。テストフレームワークは現時点では導入されておらず、動作確認はコマンド直接実行による手動テストで行う。 |
+| [01. ツール概要とアーキテクチャ](docs/01_overview.md) | 本章では、sdd-forge の目的・解決する課題・全体アーキテクチャ・主要コンセプトを説明します。ソースコードの自動解析によるドキュメント生成から、仕様駆動開発（SDD）ワークフローまでの全体像を把握するための入門となります。 |
+| [02. CLI コマンドリファレンス](docs/02_cli_commands.md) | `sdd-forge` は 16 個のサブコマンドで構成されており、ドキュメント生成系（`build` / `scan` / `init` / `data` / `text` / `readme` / `forge` / `review` / `changelog` / `agents`）、仕様管理系（`spec` / `gate`）、フロー自動化（`flow`）、およびプロジェクト管理系（`setup` / `default` / `help`）に分類されます。全コマンドに共通するグローバルオプションとして `--project <name>` が用意されており、複数プロジェクトを登録している場合に操作対象を明示的に切り替えることができます。 |
+| [02. 技術スタックと運用](docs/02_stack_and_ops.md) | 本プロジェクトは Node.js（>=18.0.0）上で動作する ES Modules ベースの CLI ツールです。外部依存パッケージを持たず、Node.js 組み込みモジュールのみで構成されています。 |
+| [03. 設定とカスタマイズ](docs/03_configuration.md) | sdd-forge は `.sdd-forge/` ディレクトリ配下の JSON ファイル群で動作を制御しており、出力言語・プロジェクト種別・AI プロバイダー・ドキュメントスタイルといった項目を設定できます。プロバイダーのコマンドや引数のカスタマイズ、文体や追加指示の指定を通じて、生成ドキュメントの品質や形式を柔軟に調整できます。 |
+| [03. プロジェクト構成](docs/03_project_structure.md) | 本章では sdd-forge のソースコード構成を説明します。`src/` 以下に 6 つの主要ディレクトリが存在し、コマンド実装・共通ライブラリ・テンプレート・フレームワーク別プリセットに役割が分担されています。 |
+| [04. 開発ガイド](docs/04_development.md) | 本章では、sdd-forge の開発に参加するためのローカル環境セットアップ手順と、シェルスクリプトベースのテスト構成について説明します。Node.js のみで動作するシンプルな構成のため、外部ツールの追加インストールは不要です。 |
+| [04. 内部設計](docs/04_internal_design.md) | sdd-forge は、CLIエントリポイント・ドメイン別ディスパッチャ・コマンド実装という3階層のルーティング構造を採用しており、各コマンドは `src/lib/` の共有ユーティリティへ向かって一方向に依存します。主要な処理フローは、ソースコード解析からドキュメント生成までを担う build パイプライン（scan → init → data → text → readme）と、仕様策定から実装承認までを管理する SDD フロー（spec → gate → forge → review）の2系統で構成されます。 |
+| [05. CLI コマンドリファレンス](docs/05_commands.md) | 本章では sdd-forge が提供する全 16 コマンドの使用方法・オプション・終了コードを解説します。コマンドはプロジェクト管理・ドキュメント生成・仕様管理の 3 系統に分類され、全コマンド共通の `--help` オプションおよび `--project` グローバルオプションをサポートしています。 |
+| [05. 開発・テスト・配布](docs/05_development.md) | 本章では、sdd-forge のローカル開発環境の構築手順から、テスト・動作確認の方法、ブランチ運用やリリースまでの一連のフローを説明します。外部依存ライブラリを持たないシンプルな構成のため、セットアップは最小限の手順で完了します。 |
+| [06. 設定とカスタマイズ](docs/06_config.md) | sdd-forge は `.sdd-forge/` ディレクトリ配下の JSON ファイルによってプロジェクトの解析・ドキュメント生成・AI連携の挙動を制御します。設定可能な項目は出力言語・ドキュメントスタイル・AIエージェント定義など多岐にわたり、プロジェクトの性質や運用ポリシーに合わせてカスタマイズできます。 |
 
 ## 開発ワークフロー（SDD）
 

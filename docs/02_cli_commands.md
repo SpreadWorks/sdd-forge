@@ -4,10 +4,7 @@
 
 <!-- @text: この章の概要を1〜2文で記述してください。コマンド総数・グローバルオプションの有無・サブコマンド体系を踏まえること。 -->
 
-`SCRIPTS` オブジェクトには17キーがあり、`scan:all` は別途インライン処理される。グローバルオプションは `--project <name>` のみ（`-h`/`--help` は引数なし時のヘルプ起動として扱われる）。
-
-`sdd-forge` は `sdd-forge <subcommand> [options]` の形式で、`SCRIPTS` 定義の 17 サブコマンドに加え `scan:all` を含む計 18 のサブコマンドを提供する CLI ツールである。グローバルオプションは `--project <name>`（操作対象プロジェクトの指定）のみで、サブコマンドは仕様管理・ドキュメント生成・ソースコード解析・プロジェクト管理・フロー自動化の 5 カテゴリに分類される。
-
+`sdd-forge` は 16 個のサブコマンドで構成されており、ドキュメント生成系（`build` / `scan` / `init` / `data` / `text` / `readme` / `forge` / `review` / `changelog` / `agents`）、仕様管理系（`spec` / `gate`）、フロー自動化（`flow`）、およびプロジェクト管理系（`setup` / `default` / `help`）に分類されます。全コマンドに共通するグローバルオプションとして `--project <name>` が用意されており、複数プロジェクトを登録している場合に操作対象を明示的に切り替えることができます。
 
 
 ## 内容
@@ -18,465 +15,367 @@
 
 | コマンド | 説明 | 主なオプション |
 |---|---|---|
-| `help` | コマンド一覧とヘルプを表示する。引数なし・`-h`・`--help` でも起動。 | — |
-| `add` | プロジェクトをパッケージに登録し、作業ディレクトリを初期化する。 | `<name> <path>`（位置引数、両方必須） |
-| `default` | デフォルトプロジェクトを変更する。引数なしで登録済み一覧を表示。 | `[<name>]` |
-| `spec` | 連番 feature ブランチと `specs/NNN-<slug>/spec.md` を生成する。 | `--title`（必須）`--base` `--dry-run` `--allow-dirty` |
-| `gate` | `spec.md` の未解決事項（TBD・未承認・必須セクション不足等）をチェックする。 | `--spec`（必須） |
-| `init` | パッケージ同梱テンプレートから `docs/` を初期化する。 | `--type` `--force` |
-| `forge` | `data`・`text` を自動実行後、レビューループで docs 品質を改善する。 | `--prompt` / `--prompt-file`（どちらか必須）`--spec` `--max-runs` `--agent` `--mode` `--review-cmd` `-v` |
-| `review` | `--review-cmd` で設定したコマンド（デフォルト: `npm run sdd:review`）を呼び出す docs レビューラッパー。 | — |
-| `readme` | `docs/NN_*.md` の章情報から `README.md` を自動生成する。 | `--dry-run` |
-| `scan` | PHP ソースコードを全カテゴリ解析し `.sdd-forge/output/analysis.json` を生成する。 | `--only <type>` `--stdout` |
-| `scan:ctrl` | コントローラのみ解析する（`scan --only controllers` のショートカット）。 | `--stdout` |
-| `scan:model` | モデルのみ解析する（`scan --only models` のショートカット）。 | `--stdout` |
-| `scan:shell` | Shell のみ解析する（`scan --only shells` のショートカット）。 | `--stdout` |
-| `scan:route` | ルートのみ解析する（`scan --only routes` のショートカット）。 | `--stdout` |
-| `scan:extra` | 拡張情報のみ解析する（`scan --only extras` のショートカット）。 | `--stdout` |
-| `data` | `analysis.json` を参照し、`docs/` の `@data` ディレクティブを解決・置換する。 | `--dry-run` `--stdout` |
-| `text` | AI エージェントを使い、`docs/` の `@text` ディレクティブを解決・置換する。 | `--agent`（必須）`--dry-run` `--per-directive` `--timeout` |
-| `scan:all` | `scan`（全カテゴリ）と `data` を順に一括実行する。 | — |
-| `flow` | spec 作成・gate・forge・review を自動順実行する SDD フロー補助コマンド。 | `--request`（必須）`--title` `--spec` `--agent` `--max-runs` `--forge-mode` |
-
+| `help` | コマンド一覧を表示する | なし |
+| `setup` | プロジェクトをグローバル登録し `.sdd-forge/config.json` を生成する | `--name` `--path` `--type` `--purpose` `--tone` `--agent` |
+| `default [<name>]` | デフォルトプロジェクトを確認・変更する | なし |
+| `build` | `scan → init → data → text → readme → agents` を一括実行する | `--force` `--agent <name>` |
+| `scan` | ソースコードを解析し `analysis.json` を生成する | `--legacy` `--stdout` |
+| `init` | テンプレートから `docs/` を初期化する | `--type <type>` `--force` |
+| `data` | `@data` ディレクティブを解析データで置換する | `--dry-run` `--stdout` |
+| `text` | `@text` ディレクティブを AI エージェントで解決する | `--agent <name>`（必須） `--id <id>` `--dry-run` `--per-directive` |
+| `readme` | `docs/` の章ファイルから `README.md` を生成・更新する | `--dry-run` |
+| `forge` | プロンプトを起点に `review` が PASS するまで docs を改善する | `--prompt <text>`（必須） `--spec <path>` `--mode <mode>` `--max-runs <n>` |
+| `review` | `docs/` の章ファイルの構造・未解決ディレクティブを検証する | `[<docs-dir>]` |
+| `changelog` | `specs/` から仕様インデックスを `docs/change_log.md` に出力する | `[<output-file>]` |
+| `agents` | `analysis.json` を基に `AGENTS.md` の PROJECT セクションを更新する | `--force` `--template` |
+| `spec` | feature ブランチと `specs/NNN-<slug>/spec.md` を作成する | `--title <name>`（必須） `--base <branch>` `--dry-run` |
+| `gate` | `spec.md` の未解決事項・必須セクションの有無を検証する | `--spec <path>`（必須） |
+| `flow` | `spec → gate → forge` の SDD フローを自動実行する | `--request <text>`（必須） `--spec <path>` `--agent <name>` `--forge-mode <mode>` |
 
 
 ### グローバルオプション
 
 <!-- @text: 全コマンドに共通するグローバルオプションを表形式で記述してください。 -->
 
-| オプション | 説明 | 例 |
-|---|---|---|
-| `--project <name>` | 操作対象プロジェクトを明示指定する。省略時はデフォルトプロジェクトを使用。`add` / `default` / `help` には適用されない。 | `sdd-forge --project myapp scan` |
-| `-h`, `--help` | ヘルプを表示して終了する。サブコマンドなし起動と同じ動作。 | `sdd-forge --help` |
+`sdd-forge.js` のソースコードから、グローバルオプションは `--project` のみであることが確認できました。以下が生成テキストです。
 
+---
+
+| オプション | 説明 | 対象コマンド |
+|---|---|---|
+| `--project <name>` | 操作対象のプロジェクトを名前で指定する。省略時は `projects.json` の `default` プロジェクトを使用する。 | `setup`・`default`・`help` 以外の全コマンド |
+| `-h`, `--help` | コマンド一覧を表示して終了する。 | 全コマンド（引数なし時も同様） |
+
+`--project` は `.sdd-forge/projects.json` に登録済みのプロジェクト名を指定します。複数のプロジェクトを管理している場合に、デフォルト以外のプロジェクトを一時的に対象にするために使用します。
+
+```bash
+# デフォルト以外のプロジェクトを対象に scan を実行
+sdd-forge --project myapp scan
+```
 
 
 ### 各コマンドの詳細
 
 <!-- @text: 各コマンドの使用方法・オプション・実行例を詳しく記述してください。コマンドごとにサブセクションを立てること。 -->
 
-#### `default`
+以下がソースコードの実装に基づいて生成したマークダウンテキストです。
 
-登録済みプロジェクトの一覧表示またはデフォルトプロジェクトの切り替えを行う。
+---
 
-```
-sdd-forge default          # 登録済みプロジェクト一覧を表示
-sdd-forge default <name>   # デフォルトプロジェクトを <name> に設定
-```
+#### `setup` — プロジェクト登録と設定生成
 
-引数なしで実行すると、各プロジェクトのパスとデフォルトマークを一覧表示する。指定した `<name>` が未登録の場合はエラーで終了する。
-
-#### `spec`
-
-feature ブランチと `specs/NNN-<slug>/` ディレクトリ（`spec.md` と `qa.md`）を作成する。番号は既存 `specs/` ディレクトリ・ブランチ一覧の最大値を参照して自動採番する。
+プロジェクトをグローバルに登録し、`.sdd-forge/config.json` を生成します。引数なしで起動すると対話式ウィザードが始まり、UI 言語・ソースパス・出力言語・プロジェクトタイプ・ドキュメントスタイル・AI エージェントを順番に設定します。すべての必須オプションをフラグで指定した場合は非対話モードで動作します。
 
 ```
-sdd-forge spec --title "contact-form"
-sdd-forge spec --title "contact-form" --base develop --dry-run
+sdd-forge setup [--name <name>] [--path <path>] [--type <type>] [--purpose <purpose>] [--tone <tone>] [--agent <agent>] [--project-context <text>]
 ```
 
-| オプション | 説明 | デフォルト |
+| オプション | 説明 | 選択肢 |
 |---|---|---|
-| `--title <name>` | ブランチ・ディレクトリ名に付与するスラッグ（必須） | — |
-| `--base <branch>` | ブランチ作成元 | `master` |
-| `--dry-run` | 実際の変更を行わず結果のみ表示 | `false` |
-| `--allow-dirty` | ワークツリーが dirty でも続行 | `false` |
+| `--name <name>` | プロジェクト名 | 任意文字列（省略時: カレントディレクトリ名） |
+| `--path <path>` | ソースコードのパス | 絶対・相対パス（省略時: カレントディレクトリ） |
+| `--type <type>` | プロジェクト種別 | `webapp` / `webapp/cakephp2` / `cli` / `library` |
+| `--purpose <purpose>` | ドキュメントの目的 | `developer-guide` / `user-guide` / `api-reference` |
+| `--tone <tone>` | 文体 | `polite` / `formal` / `casual` |
+| `--agent <agent>` | デフォルト AI エージェント | `claude` / `codex` |
+| `--project-context <text>` | プロジェクト概要テキスト | 任意文字列 |
 
-#### `gate`
+セットアップ完了後は `AGENTS.md` の生成・注入と `CLAUDE.md` シンボリックリンクの作成を対話的に案内します。
 
-`spec.md` の未解決項目を検出し、PASS / FAILED を返す。以下のすべての条件を満たす場合に PASS となる。
+```bash
+# 対話式
+sdd-forge setup
 
-- `TBD` / `TODO` / `FIXME` / `[NEEDS CLARIFICATION]` が存在しない
-- `- [ ]` の未チェックタスクが存在しない
-- `## Clarifications`、`## Open Questions`、`## User Confirmation` セクションが存在する
-- `## User Confirmation` 内に `- [x] User approved this spec` がある
-
-```
-sdd-forge gate --spec specs/001-contact-form/spec.md
-```
-
-| オプション | 説明 |
-|---|---|
-| `--spec <path>` | チェック対象の spec.md パス（必須） |
-
-#### `init`
-
-`templates/locale/<lang>/<type>/` のテンプレートファイルを `docs/` にコピーする。`.sdd-forge/project-overrides.json` が存在する場合は `replace-directive` / `insert-after` / `insert-before` アクションを適用してからコピーする。
-
-```
-sdd-forge init
-sdd-forge init --type php-mvc --force
+# 非対話式（全必須フラグを指定）
+sdd-forge setup --name myapp --path /src/myapp --type webapp/cakephp2 --purpose developer-guide --tone polite
 ```
 
-| オプション | 説明 |
-|---|---|
-| `--type <type>` | テンプレートタイプ。省略時は `.sdd-forge/config.json` の `type` を参照 |
-| `--force` | `docs/` に既存ファイルがある場合も上書き |
+#### `default` — デフォルトプロジェクトの変更
 
-#### `forge`
-
-`docs/` を反復改善する。各ラウンドで `data` → `text`（エージェント設定時）を実行し、その後 `--review-cmd` を実行してレビュー結果をフィードバックとして次ラウンドに渡す。レビューが PASS するか `--max-runs` に達するまで繰り返す。
+引数なしで登録済みプロジェクト一覧を表示します。プロジェクト名を指定するとそのプロジェクトをデフォルトに設定します。
 
 ```
-sdd-forge forge --prompt "コントローラ一覧の記述を追加してください"
-sdd-forge forge --prompt-file prompts/update.txt --spec specs/001-xxx/spec.md --agent claude --mode agent
+sdd-forge default [<name>]
 ```
 
-| オプション | 説明 | デフォルト |
-|---|---|---|
-| `--prompt <text>` | 開始プロンプト（`--prompt-file` と排他） | — |
-| `--prompt-file <path>` | プロンプトをファイルから読み込む | — |
-| `--spec <path>` | 入力仕様書（`spec.md`）。エージェントプロンプトに含まれる | — |
-| `--max-runs <n>` | 最大反復回数 | `5` |
-| `--review-cmd <cmd>` | レビューコマンド | `npm run sdd:review` |
-| `--agent <name>` | `config.json` の `providers` キー（例: `claude`）| config の `defaultAgent` |
-| `--mode <mode>` | `local`（決定論的パッチのみ）/ `assist`（エージェント＋ローカル）/ `agent`（エージェント必須） | `local` |
-| `-v`, `--verbose` | エージェント出力をリアルタイム表示 | `false` |
+```bash
+# 一覧表示
+sdd-forge default
 
-エージェントが追加情報を必要とする場合は `NEEDS_INPUT` を出力して中断する（終了コード 2）。
+# デフォルトを変更
+sdd-forge default myapp
+```
 
-#### `review`
+#### `build` — ドキュメント一括生成
 
-`--review-cmd`（`forge` オプション）または `npm run sdd:review` として定義するユーザー定義コマンド。`sdd-forge review` コマンド自体は存在せず、`forge` / `flow` から呼び出されるレビュースクリプトをプロジェクト側で用意する。
-
-#### `readme`
-
-`docs/NN_*.md` の章ファイルを解析し、テンプレート（`templates/locale/<lang>/<type>/README.md`）を使って `README.md` を自動生成する。既存 `README.md` の `<!-- MANUAL:START --> ... <!-- MANUAL:END -->` ブロックは上書きせず保持する。
+`scan → init → data → text → readme → agents` のパイプラインを一括実行します。`defaultAgent` が未設定の場合、`text` ステップはスキップされます。
 
 ```
-sdd-forge readme
-sdd-forge readme --dry-run
+sdd-forge build [--force] [--agent <name>]
 ```
 
 | オプション | 説明 |
 |---|---|
-| `--dry-run` | 生成内容を表示するが `README.md` には書き込まない |
+| `--force` | `init` ステップで既存ファイルを上書き |
+| `--agent <name>` | `text` ステップで使用する AI エージェントを指定（省略時: `config.json` の `defaultAgent`） |
 
-`.sdd-forge/config.json` に `type` が設定されていない場合、またはテンプレートが見つからない場合はスキップして終了する。
+```bash
+sdd-forge build
+sdd-forge build --force --agent claude
+```
 
-#### `scan`
+#### `scan` — ソースコード解析
 
-対象プロジェクトの `app/` ディレクトリを解析し、結果を `.sdd-forge/output/analysis.json` に書き込む。
+ソースコードを解析し、`.sdd-forge/output/analysis.json` を生成します。プロジェクト種別が `webapp/cakephp2` の場合は CakePHP 固有の追加解析も実行されます。
 
 ```
+sdd-forge scan [--legacy] [--stdout]
+```
+
+| オプション | 説明 |
+|---|---|
+| `--legacy` | 旧 CakePHP 固有解析器を使用する（後方互換） |
+| `--stdout` | ファイル書き込みをせず、JSON を stdout に出力する |
+
+```bash
 sdd-forge scan
-sdd-forge scan --only controllers
-sdd-forge scan --only models --stdout
+sdd-forge scan --stdout | jq '.controllers.summary'
+```
+
+#### `init` — テンプレートから docs/ を初期化
+
+プロジェクト種別のテンプレート継承チェーンをマージして `docs/` にファイルを出力します。`analysis.json` が存在する場合は不要な章を自動フィルタリングします。`.sdd-forge/custom/` ディレクトリがあれば、ブロック継承によりカスタム上書きが適用されます。
+
+```
+sdd-forge init [--type <type>] [--force]
 ```
 
 | オプション | 説明 |
 |---|---|
-| `--only <type>` | `controllers` / `models` / `shells` / `routes` / `extras` のいずれかに絞る |
-| `--stdout` | `analysis.json` へ書き込まず stdout に出力 |
+| `--type <type>` | テンプレート種別を指定（省略時: `config.json` の `type`） |
+| `--force` | 既存ファイルを上書きする |
 
-#### `scan:ctrl` / `scan:model` / `scan:shell` / `scan:route` / `scan:extra`
-
-`scan --only <category>` のショートカット。それぞれ `controllers` / `models` / `shells` / `routes` / `extras` カテゴリのみを解析する。`--stdout` オプションも同様に使用できる。
-
-```
-sdd-forge scan:ctrl
-sdd-forge scan:model --stdout
+```bash
+sdd-forge init
+sdd-forge init --force
+sdd-forge init --type webapp/cakephp2
 ```
 
-#### `data`
+#### `data` — @data ディレクティブの解決
 
-`analysis.json` を読み込み、`docs/*.md` 内の `<!-- @data: ... -->` ディレクティブをレンダリング済みテーブルやコードブロックに置換する。`@text` ディレクティブはスキップしてログ出力する。
+`docs/` 内の `<!-- @data: category -->` ディレクティブを `analysis.json` のデータで置換します。事前に `sdd-forge scan` を実行しておく必要があります。
 
 ```
+sdd-forge data [--dry-run] [--stdout]
+```
+
+| オプション | 説明 |
+|---|---|
+| `--dry-run` | ファイル書き込みをせず、変更行数のみ表示する |
+| `--stdout` | 各ファイルの変更行数を表示する |
+
+```bash
 sdd-forge data
 sdd-forge data --dry-run
 ```
 
-| オプション | 説明 |
-|---|---|
-| `--dry-run` | 変更内容を表示するが `docs/` へ書き込まない |
-| `--stdout` | 変更したファイルの行数差分を stdout に表示 |
+#### `text` — @text ディレクティブの AI 解決
 
-事前に `sdd-forge scan` を実行して `analysis.json` を生成しておく必要がある。
-
-#### `text`
-
-`docs/*.md` 内の `<!-- @text: ... -->` ディレクティブを LLM エージェントで解決し、ディレクティブ直後に説明文を挿入する。デフォルトはファイル単位バッチ（1ファイル=1呼び出し）で処理する。
+`docs/` 内の `<!-- @text: 指示 -->` ディレクティブを AI エージェントで解決し、ディレクティブ直後に生成テキストを挿入します。デフォルトはファイル単位バッチモード（1 ファイルにつき 1 回の AI 呼び出し）です。
 
 ```
+sdd-forge text --agent <name> [--id <id>] [--dry-run] [--per-directive] [--timeout <ms>]
+```
+
+| オプション | 説明 |
+|---|---|
+| `--agent <name>` | AI エージェントを指定（必須）: `claude` / `codex` |
+| `--id <id>` | 指定 ID の `@text` ディレクティブのみ処理する（`--per-directive` が強制される） |
+| `--dry-run` | ファイル書き込みをせず、プロンプト内容のみ表示する |
+| `--per-directive` | 1 ディレクティブにつき 1 回の AI 呼び出し（旧モード） |
+| `--timeout <ms>` | AI エージェントのタイムアウト（デフォルト: `180000` ms） |
+
+```bash
 sdd-forge text --agent claude
+sdd-forge text --agent claude --id overview
 sdd-forge text --agent claude --dry-run
-sdd-forge text --agent claude --per-directive --timeout 300000
 ```
 
-| オプション | 説明 | デフォルト |
-|---|---|---|
-| `--agent <name>` | `config.json` の `providers` キー（必須） | — |
-| `--dry-run` | ディレクティブを表示するが LLM を呼び出さない | `false` |
-| `--per-directive` | 1ディレクティブ=1呼び出しの旧モード | `false`（バッチモード） |
-| `--timeout <ms>` | エージェントのタイムアウト | `180000` |
+#### `readme` — README.md 自動生成
 
-バッチモードで `filled=0` になった場合は自動的に `--per-directive` モードへフォールバックする。
-
-#### `scan:all`
-
-`scan`（全カテゴリ）と `data` を順に実行するショートカット。解析と `@data` 解決を一括で行う場合に使用する。
-
-```
-sdd-forge scan:all
-```
-
-追加オプションは受け付けない。
-
-#### `flow`
-
-spec 作成 → gate → forge を連続実行する。`--spec` を省略した場合は `--request` からタイトルを自動導出して `spec` コマンドを実行する。gate が FAIL した場合は `NEEDS_INPUT` を出力して終了コード 2 で中断する。
-
-```
-sdd-forge flow --request "コントローラ一覧の章を追加する"
-sdd-forge flow --request "DB テーブル定義を更新する" --agent claude --forge-mode agent
-sdd-forge flow --request "修正を反映する" --spec specs/002-fix-tables/spec.md
-```
-
-| オプション | 説明 | デフォルト |
-|---|---|---|
-| `--request <text>` | 実装要求（必須） | — |
-| `--title <text>` | spec 用タイトル。省略時は `--request` の先頭 40 文字から自動生成 | — |
-| `--spec <path>` | 既存の `spec.md` を使用する場合に指定 | — |
-| `--agent <name>` | forge に渡す AI エージェント | — |
-| `--max-runs <n>` | forge の最大反復回数 | `5` |
-| `--forge-mode <m>` | forge の実行モード: `local` / `assist` / `agent` | `local` |
-
-
-#### `help`
-
-ヘルプを表示する。引数なし・`-h`・`--help` でも起動する。
-
-```
-sdd-forge help
-```
-
-#### `add`
-
-プロジェクトを sdd-forge に登録し、作業ディレクトリ（`projects/<name>/`）を初期化する。ソースプロジェクトに `.sdd-forge/config.json` が存在する場合はそれをコピーし、なければデフォルト設定（`lang: "ja"`）で生成する。
-
-```
-sdd-forge add <name> <path>
-
-# 例
-sdd-forge add myapp /path/to/myapp
-```
-
-| 引数 | 説明 |
-|---|---|
-| `<name>` | 登録名（プロジェクト識別子） |
-| `<path>` | ソースプロジェクトの絶対または相対パス |
-
-#### `default`
-
-デフォルトプロジェクトを変更する。引数なしで登録済みプロジェクト一覧を表示する。
-
-```
-sdd-forge default            # 一覧表示
-sdd-forge default <name>     # デフォルト変更
-```
-
-#### `spec`
-
-連番 feature ブランチを作成し、`specs/NNN-<slug>/spec.md` と `qa.md` を生成する。ワークツリーが dirty な場合はエラー（`--allow-dirty` で回避可）。
-
-```
-sdd-forge spec --title "機能名" [--base <branch>] [--dry-run] [--allow-dirty]
-
-# 例
-sdd-forge spec --title "user-auth"
-sdd-forge spec --title "fix payment" --base main --dry-run
-```
-
-| オプション | 説明 | デフォルト |
-|---|---|---|
-| `--title <name>` | spec 名（必須） | — |
-| `--base <branch>` | ブランチ作成元 | `master` |
-| `--dry-run` | 変更せず結果のみ表示 | `false` |
-| `--allow-dirty` | dirty ワークツリーでも続行 | `false` |
-
-#### `gate`
-
-`spec.md` の未解決事項をチェックする。`TBD`・`TODO`・`FIXME`・未チェックタスク（`- [ ]`）・必須セクション不足・ユーザー承認未設定を検出する。問題がなければ `gate: PASSED` を stdout に出力、問題がある場合は `gate: FAILED` を stderr に出力して終了コード 1 で終了する。
-
-```
-sdd-forge gate --spec specs/001-user-auth/spec.md
-```
-
-| オプション | 説明 |
-|---|---|
-| `--spec <path>` | チェック対象の spec.md（必須） |
-
-#### `init`
-
-パッケージ同梱のテンプレートから `docs/` を初期化する。テンプレートタイプは `--type` または `.sdd-forge/config.json` の `type` フィールドから解決する。`--force` を指定しない場合、既存ファイルがあればエラー。`.sdd-forge/project-overrides.json` が存在する場合はオーバーライドを適用する。
-
-```
-sdd-forge init [--type <type>] [--force]
-
-# 例
-sdd-forge init                       # config.json の type を使用
-sdd-forge init --type php-mvc        # テンプレートタイプを直接指定
-sdd-forge init --type php-mvc --force  # 既存ファイルを上書き
-```
-
-| オプション | 説明 | デフォルト |
-|---|---|---|
-| `--type <type>` | テンプレートタイプ | `.sdd-forge/config.json` の `type` |
-| `--force` | 既存ファイルを上書き | `false` |
-
-#### `forge`
-
-analysis.json の `data`・`text` を自動実行した後、レビューループ（最大 `--max-runs` 回）を回して docs 品質を改善する。エージェントが追加情報を必要とする場合は `NEEDS_INPUT` を出力して終了コード 2 で停止する。
-
-```
-sdd-forge forge --prompt "変更内容の要約" [options]
-
-# 例
-sdd-forge forge --prompt "コントローラ一覧を最新に更新"
-sdd-forge forge --prompt "認証フローを追記" --agent claude --mode assist
-sdd-forge forge --prompt-file prompts/task.txt --spec specs/001-auth/spec.md --max-runs 3
-```
-
-| オプション | 説明 | デフォルト |
-|---|---|---|
-| `--prompt <text>` | 開始プロンプト（`--prompt-file` と排他） | — |
-| `--prompt-file <path>` | プロンプトをファイルから読み込む | — |
-| `--spec <path>` | 参照する spec.md | — |
-| `--max-runs <n>` | 最大反復回数 | `5` |
-| `--review-cmd <cmd>` | docs レビューコマンド | `npm run sdd:review` |
-| `--agent <name>` | AI エージェント（config.json 内のプロバイダキー） | config.json の `defaultAgent` |
-| `--mode <mode>` | 実行モード: `local` / `assist` / `agent` | `local` |
-| `-v`, `--verbose` | エージェント実行ログを逐次表示 | `false` |
-
-#### `review`
-
-docs レビューを実行する。レビューコマンドは `forge --review-cmd` または `package.json` の `sdd:review` スクリプトとして定義する。`sdd-forge review` 自体は `npm run sdd:review` を呼び出すラッパーとして機能する。
-
-```
-sdd-forge review
-```
-
-#### `readme`
-
-`docs/NN_*.md` の章タイトルと説明を抽出して `README.md` を自動生成する。既存 `README.md` の `<!-- MANUAL:START -->` 〜 `<!-- MANUAL:END -->` ブロックは保持される。テンプレートは `templates/locale/<lang>/<type>/README.md` を使用する。
+`docs/` の章ファイルからプロジェクト概要テーブルを生成し `README.md` を更新します。既存 `README.md` の `<!-- MANUAL:START -->` ～ `<!-- MANUAL:END -->` ブロックは保持されます。
 
 ```
 sdd-forge readme [--dry-run]
-
-# 例
-sdd-forge readme             # README.md を生成・上書き
-sdd-forge readme --dry-run   # 差分を表示のみ
 ```
 
 | オプション | 説明 |
 |---|---|
-| `--dry-run` | 差分を表示するが書き込まない |
+| `--dry-run` | ファイル書き込みをせず、生成内容を stdout に出力する |
 
-#### `scan` / `scan:ctrl` / `scan:model` / `scan:shell` / `scan:route` / `scan:extra`
-
-PHP ソースコードを解析して `.sdd-forge/output/analysis.json` を生成する。サブコマンド `scan:*` は特定カテゴリのみを解析する。
-
-```
-sdd-forge scan                        # 全カテゴリを解析
-sdd-forge scan:ctrl                   # コントローラのみ
-sdd-forge scan:model                  # モデルのみ
-sdd-forge scan:shell                  # Shell のみ
-sdd-forge scan:route                  # ルートのみ
-sdd-forge scan:extra                  # 拡張情報のみ
-sdd-forge scan --stdout               # ファイル書き込みせず stdout に出力
+```bash
+sdd-forge readme
+sdd-forge readme --dry-run
 ```
 
-| オプション | 説明 |
-|---|---|
-| `--stdout` | `analysis.json` に書き込まず stdout に出力 |
+#### `forge` — docs 反復改善
 
-解析ログは stderr に出力され、`app/` ディレクトリが見つからない場合はエラーで終了する。
-
-#### `scan:all`
-
-`scan`（全カテゴリ）と `data` を順に実行するショートカット。
+プロンプトを起点に `review` が PASS するまで docs を改善を繰り返します。`--mode local`（デフォルト）ではローカルの決定的パッチのみ適用します。`--mode assist` / `--mode agent` では AI エージェントと連携して編集します。
 
 ```
-sdd-forge scan:all
-```
-
-#### `data`
-
-`.sdd-forge/output/analysis.json` を読み、`docs/NN_*.md` 内の `@data` ディレクティブを解析データで解決・置換する。`@text` ディレクティブはスキップされ、stderr にログを出力する。事前に `sdd-forge scan` の実行が必要。
-
-```
-sdd-forge data [--dry-run] [--stdout]
-
-# 例
-sdd-forge data
-sdd-forge data --dry-run   # 変更内容を確認のみ
-```
-
-| オプション | 説明 |
-|---|---|
-| `--dry-run` | 変更内容を表示するが書き込まない |
-| `--stdout` | 各ファイルの変更行数を stdout に表示 |
-
-#### `text`
-
-`docs/NN_*.md` 内の `@text` ディレクティブを AI エージェントで解決する。デフォルトはファイル単位のバッチモード（1 ファイル = 1 LLM 呼び出し）。バッチで 0 件の場合は自動的にディレクティブ単位モードにフォールバックする。
-
-```
-sdd-forge text --agent claude [options]
-
-# 例
-sdd-forge text --agent claude
-sdd-forge text --agent claude --dry-run
-sdd-forge text --agent claude --per-directive --timeout 300000
+sdd-forge forge --prompt "<内容>" [--spec <path>] [--max-runs <n>] [--mode <mode>] [--agent <name>] [--verbose]
 ```
 
 | オプション | 説明 | デフォルト |
 |---|---|---|
-| `--agent <name>` | AI エージェント名（必須） | — |
-| `--dry-run` | 変更内容を表示するが書き込まない | `false` |
-| `--per-directive` | 1 ディレクティブ = 1 LLM 呼び出しの旧モード | `false`（バッチモード） |
-| `--timeout <ms>` | エージェントタイムアウト（ミリ秒） | `180000` |
+| `--prompt <text>` | 改善の指示テキスト（必須、または `--prompt-file`） | — |
+| `--prompt-file <path>` | 指示テキストをファイルから読み込む | — |
+| `--spec <path>` | 仕様書 (`spec.md`) のパスを指定する | — |
+| `--max-runs <n>` | 最大反復回数 | `5` |
+| `--mode <mode>` | 実行モード: `local` / `assist` / `agent` | `local` |
+| `--agent <name>` | AI エージェントを指定 | `config.json` の `defaultAgent` |
+| `--auto-update-context` | review PASS 後に `context.json` を確認なしで自動更新 | `false` |
+| `-v, --verbose` | AI エージェントの実行ログを逐次表示 | `false` |
 
-#### `flow`
+```bash
+sdd-forge forge --prompt "コントローラの説明を充実させる"
+sdd-forge forge --prompt "追加機能を反映" --spec specs/001-my-feature/spec.md --mode assist
+```
 
-spec 作成 → gate → forge を一括実行する。`--spec` を省略すると `--request` 先頭から slug を生成して新規 spec を作成する。gate が FAIL した場合は `NEEDS_INPUT` を stdout に出力して終了コード 2 で停止する。
+#### `review` — docs 品質チェック
+
+`docs/` 内の章ファイル（`NN_*.md`）の構造を検証します。各ファイルの行数・H1 見出しの存在・未解決の `@text` ディレクティブをチェックします。
 
 ```
-sdd-forge flow --request "要望テキスト" [options]
+sdd-forge review [<docs-dir>]
+```
 
-# 例
-sdd-forge flow --request "コントローラ一覧を最新化"
-sdd-forge flow --request "認証フロー追記" --agent claude --forge-mode assist
-sdd-forge flow --request "修正対応" --spec specs/001-fix/spec.md --max-runs 3
+引数を指定しない場合は `$SDD_WORK_ROOT/docs` を対象にします。検証結果は `[FAIL]` / `[WARN]` プレフィックスで stdout に出力されます。すべてのチェックを通過した場合は終了コード `0` を返します。
+
+```bash
+sdd-forge review
+sdd-forge review /path/to/docs
+```
+
+#### `changelog` — change_log.md 生成
+
+`specs/` ディレクトリを走査して仕様インデックスを `docs/change_log.md` に出力します。既存ファイルの `<!-- MANUAL:START -->` ～ `<!-- MANUAL:END -->` ブロックは保持されます。
+
+```
+sdd-forge changelog [<output-file>]
+```
+
+引数を指定しない場合は `$SDD_WORK_ROOT/docs/change_log.md` に出力します。
+
+```bash
+sdd-forge changelog
+sdd-forge changelog docs/my-changelog.md
+```
+
+#### `agents` — AGENTS.md の PROJECT セクション更新
+
+`analysis.json` を基に `AGENTS.md` の `<!-- PROJECT:START -->` ～ `<!-- PROJECT:END -->` セクションを更新します。デフォルトでは AI エージェントによる要約生成を行います。
+
+```
+sdd-forge agents [--force] [--template]
+```
+
+| オプション | 説明 |
+|---|---|
+| `--force` | `AGENTS.md` 全体を SDD テンプレート + PROJECT + 空の Guidelines で書き直す |
+| `--template` | AI を使わず解析データから自動的に構造化テキストを生成する |
+
+```bash
+sdd-forge agents
+sdd-forge agents --template
+sdd-forge agents --force
+```
+
+#### `spec` — spec 初期化
+
+連番の feature ブランチと `specs/NNN-<slug>/spec.md` を作成します。ワークツリーが dirty な状態では `--allow-dirty` を指定しない限り実行できません。
+
+```
+sdd-forge spec --title "<機能名>" [--base <branch>] [--dry-run] [--allow-dirty]
 ```
 
 | オプション | 説明 | デフォルト |
 |---|---|---|
-| `--request <text>` | 実装要求（必須） | — |
-| `--title <text>` | spec タイトル（省略時は request 先頭を利用） | — |
-| `--spec <path>` | 既存 spec.md を使用（省略時は新規作成） | — |
-| `--agent <name>` | AI エージェント名 | — |
-| `--max-runs <n>` | forge 最大反復回数 | `5` |
-| `--forge-mode <m>` | forge モード: `local` / `assist` / `agent` | `local` |
+| `--title <name>` | 機能名（必須）。スラッグ化してブランチ名・ディレクトリ名に使用 | — |
+| `--base <branch>` | ブランチ作成元のベースブランチ | `master` |
+| `--dry-run` | 変更を行わず、生成されるブランチ名とファイルパスのみ表示 | `false` |
+| `--allow-dirty` | ワークツリーが dirty でも続行する | `false` |
+
+```bash
+sdd-forge spec --title "user-authentication"
+sdd-forge spec --title "contact-form" --dry-run
+```
+
+#### `gate` — spec ゲートチェック
+
+`spec.md` に未解決事項がないかチェックします。未チェックのタスク (`- [ ]`)・`TBD` / `TODO` / `FIXME` トークン・必須セクションの欠落・ユーザー承認の未設定を検出します。
+
+```
+sdd-forge gate --spec <path>
+```
+
+| チェック項目 | 内容 |
+|---|---|
+| 未チェックタスク | `- [ ]` 行が残っていないか |
+| 未解決トークン | `TBD` / `TODO` / `FIXME` / `[NEEDS CLARIFICATION]` |
+| 必須セクション | `## Clarifications` / `## Open Questions` / `## User Confirmation` / `## Acceptance Criteria` |
+| ユーザー承認 | `- [x] User approved this spec` が設定されているか |
+
+```bash
+sdd-forge gate --spec specs/001-user-auth/spec.md
+```
+
+PASS の場合は終了コード `0`、FAIL の場合は終了コード `1` で終了します。
+
+#### `flow` — SDD フロー自動実行
+
+`spec 作成 → gate チェック → forge 実行` の SDD フローを自動実行します。gate が FAIL の場合は `NEEDS_INPUT` を出力して終了コード `2` で停止します。
+
+```
+sdd-forge flow --request "<要望>" [--title <text>] [--spec <path>] [--agent <name>] [--max-runs <n>] [--forge-mode <mode>]
+```
+
+| オプション | 説明 | デフォルト |
+|---|---|---|
+| `--request <text>` | 実装要求テキスト（必須） | — |
+| `--title <text>` | spec 用タイトル（省略時は `--request` の先頭を利用） | — |
+| `--spec <path>` | 既存の `spec.md` を使用する場合に指定 | — |
+| `--agent <name>` | AI エージェント: `claude` / `codex` | `config.json` の `defaultAgent` |
+| `--max-runs <n>` | `forge` の最大反復回数 | `5` |
+| `--forge-mode <mode>` | `forge` の実行モード: `local` / `assist` / `agent` | `local` |
+
+```bash
+sdd-forge flow --request "ユーザー登録フォームを追加する"
+sdd-forge flow --request "ログイン機能を実装" --agent claude --forge-mode assist
+```
 
 
 ### 終了コードと出力
 
 <!-- @text: 終了コードの定義（0=成功 等）と、stdout/stderr の使い分けルールを表形式で記述してください。 -->
 
-| 終了コード | 意味 | 発生条件の例 |
-|---|---|---|
-| `0` | 成功 | コマンド正常完了（`gate: PASSED`、`scan:all` 完了、ヘルプ表示など） |
-| `1` | エラー | 設定不備・ファイル未検出・不明コマンド・`gate` FAIL・引数不足 |
-| `2` | 入力待ち | `flow` 実行中に `gate` が FAIL し未解決事項が残っている場合（`NEEDS_INPUT` 状態） |
-| サブプロセス終了コード | 伝播 | `flow` がサブプロセス（`spec`・`gate`・`forge`）の終了コードをそのまま伝播する場合 |
+sdd-forge の終了コードと出力の使い分けルールを以下の表にまとめます。
 
-`stdout` と `stderr` の使い分けは以下の通り。
+---
 
-| 出力先 | 用途 | 例 |
-|---|---|---|
-| `stdout` | 機械処理を想定した出力・最終結果・ヘルプテキスト | `gate: PASSED`、`NEEDS_INPUT`、DRY-RUN 出力サマリ、`--stdout` 指定時の JSON 解析結果、ヘルプ一覧 |
-| `stderr` | 進捗ログ・警告・エラーメッセージ | `[tfill] Batch DONE …`、`[init] copied: …`、`[populate] WARN: …`、`ERROR:` プレフィックス付きエラー |
+**終了コード**
 
-`[tfill]`・`[init]`・`[populate]`・`[analyze]` など角括弧プレフィックス付きの進捗行はすべて `stderr` に出力されるため、`stdout` をパイプ処理する場合でも混入しない。サブモジュール内の重大エラーは `[keyword] ERROR: …` 形式、警告は `[keyword] WARN: …` 形式で `stderr` に出力される。
+| コード | 意味 | 主な発生ケース |
+|--------|------|----------------|
+| `0` | 成功 | コマンドが正常に完了した場合 |
+| `1` | エラー | 不明なサブコマンド、必須引数の欠落、ファイル不在、処理失敗など |
+| `2` | 入力待ち（gate 未通過） | `flow` 実行時にゲートチェックが失敗し、ユーザーの確認・修正が必要な場合 |
+
+**stdout / stderr の使い分け**
+
+| ストリーム | 用途 | 具体例 |
+|------------|------|--------|
+| stdout | 機械可読な構造化データ・使用法・最終結果 | `scan` コマンドの JSON 出力、ヘルプ・使用方法テキスト、正常完了メッセージ |
+| stderr | 進捗・診断・警告・エラーメッセージ | 処理中のステータス（`[init] done. N files`）、WARNING / ERROR ログ、サブプロセスの診断出力 |
+
+進捗・診断メッセージはすべて stderr に書き込まれるため、stdout をパイプで受け取るスクリプトから分離して扱えます。`scan` コマンドが出力する `analysis.json` は stdout にのみ書き込まれます。
