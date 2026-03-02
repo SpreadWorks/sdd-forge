@@ -4,6 +4,7 @@
  * repoRoot / parseArgs — 全エントリポイント共通の CLI ユーティリティ。
  */
 
+import fs from "fs";
 import path from "path";
 import { execFileSync } from "child_process";
 import { fileURLToPath } from "url";
@@ -75,6 +76,40 @@ export function parseArgs(argv, spec) {
     throw new Error(`Unknown option: ${a}`);
   }
   return opts;
+}
+
+/**
+ * worktree 内で実行されているかを判定する。
+ * git worktree では .git がディレクトリではなく `gitdir: ...` を含むファイルになる。
+ *
+ * @param {string} root - リポジトリルートパス
+ * @returns {boolean}
+ */
+export function isInsideWorktree(root) {
+  const dotGit = path.join(root, ".git");
+  try {
+    return fs.statSync(dotGit).isFile();
+  } catch (_) {
+    return false;
+  }
+}
+
+/**
+ * worktree からメインリポジトリのパスを取得する。
+ * `git rev-parse --git-common-dir` で共有 .git ディレクトリを取得し、その親を返す。
+ *
+ * @param {string} root - リポジトリルートパス
+ * @returns {string} メインリポジトリの絶対パス
+ */
+export function getMainRepoPath(root) {
+  const gitCommonDir = execFileSync(
+    "git",
+    ["-C", root, "rev-parse", "--git-common-dir"],
+    { encoding: "utf8" },
+  ).trim();
+  // git-common-dir は絶対パスまたは root からの相対パスを返す
+  const abs = path.resolve(root, gitCommonDir);
+  return path.dirname(abs);
 }
 
 /** --some-flag → someFlag */

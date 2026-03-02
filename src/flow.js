@@ -11,7 +11,7 @@
 import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
-import { repoRoot, parseArgs } from "./lib/cli.js";
+import { repoRoot, parseArgs, isInsideWorktree, getMainRepoPath } from "./lib/cli.js";
 import { runSync } from "./lib/process.js";
 import { saveFlowState } from "./lib/flow-state.js";
 
@@ -86,8 +86,9 @@ function detectUserConfirmationIssue(specAbs) {
 function main() {
   const root = repoRoot(import.meta.url);
   const cli = parseArgs(process.argv.slice(2), {
-    options: ["--request", "--title", "--spec", "--agent", "--max-runs", "--forge-mode"],
-    defaults: { request: "", title: "", spec: "", agent: "", maxRuns: "5", forgeMode: "local" },
+    flags: ["--no-branch"],
+    options: ["--request", "--title", "--spec", "--agent", "--max-runs", "--forge-mode", "--worktree"],
+    defaults: { request: "", title: "", spec: "", agent: "", maxRuns: "5", forgeMode: "local", noBranch: false, worktree: "" },
   });
   if (cli.help) {
     console.log(
@@ -101,6 +102,8 @@ function main() {
         "  --agent <name>     AIエージェント: codex|claude",
         "  --max-runs <n>     docs:forge 反復回数",
         "  --forge-mode <m>   docs:forge mode: local|assist|agent (default: local)",
+        "  --no-branch        ブランチを作成せず spec のみ作成する",
+        "  --worktree <path>  git worktree を作成して spec を配置する",
       ].join("\n"),
     );
     return;
@@ -116,12 +119,15 @@ function main() {
 
   if (!specRel) {
     const title = cli.title || deriveTitle(cli.request);
-    const s = run(root, "node", [
+    const specInitArgs = [
       path.join(PKG_DIR, "specs", "commands", "init.js"),
       "--title",
       title,
       "--allow-dirty",
-    ]);
+    ];
+    if (cli.noBranch) specInitArgs.push("--no-branch");
+    if (cli.worktree) specInitArgs.push("--worktree", cli.worktree);
+    const s = run(root, "node", specInitArgs);
     process.stdout.write(s.out);
     process.stderr.write(s.err);
     if (!s.ok) {
@@ -166,11 +172,21 @@ function main() {
 
   // Save flow state after gate success
   const currentBranch = run(root, "git", ["-C", root, "rev-parse", "--abbrev-ref", "HEAD"]).out.trim();
-  saveFlowState(root, {
+  const flowState = {
     spec: specRel,
     baseBranch: baseBranchBeforeSpec,
     featureBranch: currentBranch,
-  });
+  };
+  if (cli.worktree) {
+    flowState.worktree = true;
+    flowState.worktreePath = path.resolve(cli.worktree);
+    flowState.mainRepoPath = root;
+  } else if (isInsideWorktree(root)) {
+    flowState.worktree = true;
+    flowState.worktreePath = root;
+    flowState.mainRepoPath = getMainRepoPath(root);
+  }
+  saveFlowState(root, flowState);
 
   const forgeArgs = [
     path.join(PKG_DIR, "docs", "commands", "forge.js"),

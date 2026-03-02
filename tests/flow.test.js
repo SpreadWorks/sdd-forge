@@ -30,6 +30,35 @@ describe("flow-state", () => {
     clearFlowState(tmp);
     assert.equal(loadFlowState(tmp), null);
   });
+
+  it("saves and loads flow state with worktree fields", () => {
+    tmp = createTmpDir();
+    const state = {
+      spec: "specs/001-test/spec.md",
+      baseBranch: "main",
+      featureBranch: "feature/001-test",
+      worktree: true,
+      worktreePath: "/tmp/wt-test",
+      mainRepoPath: "/tmp/main-repo",
+    };
+    saveFlowState(tmp, state);
+    const loaded = loadFlowState(tmp);
+    assert.deepEqual(loaded, state);
+    assert.equal(loaded.worktree, true);
+    assert.equal(loaded.worktreePath, "/tmp/wt-test");
+    assert.equal(loaded.mainRepoPath, "/tmp/main-repo");
+  });
+
+  it("loads legacy flow state without worktree fields", () => {
+    tmp = createTmpDir();
+    const state = { spec: "specs/001-test/spec.md", baseBranch: "main", featureBranch: "feature/001-test" };
+    saveFlowState(tmp, state);
+    const loaded = loadFlowState(tmp);
+    assert.deepEqual(loaded, state);
+    assert.equal(loaded.worktree, undefined);
+    assert.equal(loaded.worktreePath, undefined);
+    assert.equal(loaded.mainRepoPath, undefined);
+  });
 });
 
 describe("flow CLI", () => {
