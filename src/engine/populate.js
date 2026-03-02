@@ -15,8 +15,11 @@ import path from "path";
 import { fileURLToPath } from "url";
 import { parseDirectives } from "./directive-parser.js";
 import { RENDERERS } from "./renderers.js";
-import { resolve } from "./resolver.js";
+import { resolve as legacyResolve } from "./resolver.js";
+import { createResolver } from "./resolvers/index.js";
 import { repoRoot, parseArgs } from "../lib/cli.js";
+import { loadConfig } from "../lib/config.js";
+import { resolveType } from "../lib/types.js";
 
 // ---------------------------------------------------------------------------
 // テンプレートファイル処理
@@ -28,9 +31,11 @@ import { repoRoot, parseArgs } from "../lib/cli.js";
  * @param {string} text     - テンプレート全文
  * @param {Object} analysis - analysis.json
  * @param {string} fileName - ログ出力用ファイル名
+ * @param {function} [resolveFn] - カテゴリ解決関数（省略時は legacyResolve）
  * @returns {{ text: string, replaced: number, skipped: number }}
  */
-function processTemplate(text, analysis, fileName) {
+function processTemplate(text, analysis, fileName, resolveFn) {
+  const resolve = resolveFn || legacyResolve;
   const directives = parseDirectives(text);
   if (directives.length === 0) return { text, replaced: 0, skipped: 0 };
 
@@ -97,7 +102,7 @@ function processTemplate(text, analysis, fileName) {
 // ---------------------------------------------------------------------------
 // populateFromAnalysis (エクスポート用: forge.js などから呼び出し可能)
 // ---------------------------------------------------------------------------
-export function populateFromAnalysis(root, analysis) {
+export function populateFromAnalysis(root, analysis, resolveFn) {
   if (!analysis) return { populated: false, files: [] };
 
   const docsDir = path.join(root, "docs");
@@ -108,7 +113,7 @@ export function populateFromAnalysis(root, analysis) {
   for (const file of docsFiles) {
     const filePath = path.join(docsDir, file);
     const original = fs.readFileSync(filePath, "utf8");
-    const result = processTemplate(original, analysis, file);
+    const result = processTemplate(original, analysis, file, resolveFn);
 
     if (result.replaced > 0) {
       fs.writeFileSync(filePath, result.text);
@@ -122,7 +127,7 @@ export function populateFromAnalysis(root, analysis) {
 // ---------------------------------------------------------------------------
 // CLI メイン
 // ---------------------------------------------------------------------------
-function main() {
+async function main() {
   const cli = parseArgs(process.argv.slice(2), {
     flags: ["--dry-run", "--stdout"],
     defaults: { dryRun: false, stdout: false },
@@ -144,11 +149,26 @@ function main() {
 
   if (!fs.existsSync(analysisPath)) {
     console.error(`[populate] ERROR: analysis.json not found: ${analysisPath}`);
-    console.error("[populate] Run 'npm run sdd:scan' first.");
+    console.error("[populate] Run 'sdd-forge scan' first.");
     process.exit(1);
   }
 
   const analysis = JSON.parse(fs.readFileSync(analysisPath, "utf8"));
+
+  // type に基づくリゾルバを生成
+  let resolveFn;
+  try {
+    const cfg = loadConfig(root);
+    const type = resolveType(cfg.type || "php-mvc");
+    const resolver = await createResolver(type, root);
+    resolveFn = (category, a) => resolver.resolve(category, a);
+    console.error(`[populate] resolver: ${type}`);
+  } catch (_) {
+    // フォールバック: レガシーリゾルバ
+    resolveFn = legacyResolve;
+    console.error("[populate] resolver: legacy (fallback)");
+  }
+
   const docsDir = path.join(root, "docs");
   const docsFiles = fs.readdirSync(docsDir).filter((f) => /^\d{2}_/.test(f) && f.endsWith(".md")).sort();
 
@@ -159,7 +179,7 @@ function main() {
   for (const file of docsFiles) {
     const filePath = path.join(docsDir, file);
     const original = fs.readFileSync(filePath, "utf8");
-    const result = processTemplate(original, analysis, file);
+    const result = processTemplate(original, analysis, file, resolveFn);
 
     totalReplaced += result.replaced;
     totalSkipped += result.skipped;
