@@ -3,99 +3,152 @@
  * sdd-forge/analyzers/scan.js
  *
  * 全解析器を実行し、結合結果を .sdd-forge/output/analysis.json へ出力する。
- * オプション: --only controllers|models|shells|routes, --stdout
+ *
+ * 1. 汎用スキャン（generic-scan.js）で構造解析
+ * 2. FW 固有モジュール（fw/*.js）で extras を拡張
+ * 3. --legacy フラグで旧 CakePHP 固有解析器も使用可能（後方互換）
  */
 
 import fs from "fs";
 import path from "path";
-import { analyzeControllers } from "./analyze-controllers.js";
-import { analyzeModels } from "./analyze-models.js";
-import { analyzeShells } from "./analyze-shells.js";
-import { analyzeRoutes } from "./analyze-routes.js";
-import { analyzeExtras } from "./analyze-extras.js";
 import { repoRoot, sourceRoot, parseArgs } from "../lib/cli.js";
+import { loadConfig } from "../lib/config.js";
+import { resolveType } from "../lib/types.js";
+import { genericScan } from "./generic-scan.js";
+
+/**
+ * type パスからリーフセグメント（FW 名）を抽出する。
+ * 例: "webapp/cakephp2" → "cakephp2"
+ *     "webapp" → "webapp"
+ */
+function leafSegment(typePath) {
+  const parts = typePath.split("/");
+  return parts[parts.length - 1];
+}
+
+/** FW モジュールのマップ（リーフセグメント → モジュールパス） */
+const FW_MODULES = {
+  cakephp2: "./fw/cakephp2.js",
+};
 
 function printHelp() {
   console.log(
     [
-      "Usage: node sdd-forge/analyzers/scan.js [options]",
+      "Usage: sdd-forge scan [options]",
       "",
       "Options:",
-      "  --only <type>   controllers|models|shells|routes|extras のいずれか",
+      "  --legacy        旧 CakePHP 固有解析器を使用",
       "  --stdout        結果を stdout に出力（ファイル書き込みしない）",
       "  -h, --help      このヘルプを表示",
     ].join("\n"),
   );
 }
 
-const VALID_ONLY = new Set(["controllers", "models", "shells", "routes", "extras"]);
+async function runLegacy(cli, root) {
+  const appDir = path.join(sourceRoot(), "app");
+  if (!fs.existsSync(appDir)) {
+    throw new Error(`app/ directory not found: ${appDir}`);
+  }
 
-function main() {
+  const { analyzeControllers } = await import("./analyze-controllers.js");
+  const { analyzeModels } = await import("./analyze-models.js");
+  const { analyzeShells } = await import("./analyze-shells.js");
+  const { analyzeRoutes } = await import("./analyze-routes.js");
+  const { analyzeExtras } = await import("./analyze-extras.js");
+
+  const result = { analyzedAt: new Date().toISOString() };
+
+  console.error("[analyze] controllers ...");
+  result.controllers = analyzeControllers(appDir);
+  console.error(
+    `[analyze] controllers: ${result.controllers.summary.total} files, ${result.controllers.summary.totalActions} actions`,
+  );
+
+  console.error("[analyze] models ...");
+  result.models = analyzeModels(appDir);
+  console.error(
+    `[analyze] models: ${result.models.summary.total} files (fe=${result.models.summary.feModels}, logic=${result.models.summary.logicModels})`,
+  );
+
+  console.error("[analyze] shells ...");
+  result.shells = analyzeShells(appDir);
+  console.error(`[analyze] shells: ${result.shells.summary.total} files`);
+
+  console.error("[analyze] routes ...");
+  result.routes = analyzeRoutes(appDir);
+  console.error(`[analyze] routes: ${result.routes.summary.total} routes`);
+
+  console.error("[analyze] extras ...");
+  result.extras = analyzeExtras(appDir);
+  const extrasKeys = Object.keys(result.extras);
+  console.error(
+    `[analyze] extras: ${extrasKeys.length} categories (${extrasKeys.join(", ")})`,
+  );
+
+  return result;
+}
+
+async function main() {
   const cli = parseArgs(process.argv.slice(2), {
-    flags: ["--stdout"],
-    options: ["--only"],
-    defaults: { only: "", stdout: false },
+    flags: ["--stdout", "--legacy"],
+    defaults: { stdout: false, legacy: false },
   });
   if (cli.help) {
     printHelp();
     return;
   }
 
-  if (cli.only && !VALID_ONLY.has(cli.only)) {
-    throw new Error(
-      `--only must be one of: ${[...VALID_ONLY].join(", ")}`,
-    );
-  }
+  const root = repoRoot(import.meta.url);
+  const src = sourceRoot();
+  const cfg = loadConfig(root);
+  const rawType = cfg.type || "php-mvc";
+  const type = resolveType(rawType);
 
-  const root   = repoRoot(import.meta.url);
-  const appDir = path.join(sourceRoot(), "app");
+  let result;
 
-  if (!fs.existsSync(appDir)) {
-    throw new Error(`app/ directory not found: ${appDir}`);
-  }
+  if (cli.legacy) {
+    console.error("[analyze] mode: legacy (CakePHP-specific)");
+    result = await runLegacy(cli, root);
+  } else {
+    console.error(`[analyze] mode: generic (type=${type})`);
 
-  const result = { analyzedAt: new Date().toISOString() };
-  const run = !cli.only;
+    // FW 固有モジュールからスキャンデフォルトを取得
+    const leaf = leafSegment(type);
+    const fwModulePath = FW_MODULES[leaf];
+    let fwScanDefaults = {};
 
-  if (run || cli.only === "controllers") {
-    console.error("[analyze] controllers ...");
-    result.controllers = analyzeControllers(appDir);
-    console.error(
-      `[analyze] controllers: ${result.controllers.summary.total} files, ${result.controllers.summary.totalActions} actions`,
-    );
-  }
+    if (fwModulePath) {
+      try {
+        const fwModule = await import(fwModulePath);
+        if (fwModule.SCAN_DEFAULTS) {
+          fwScanDefaults = fwModule.SCAN_DEFAULTS;
+        }
+      } catch (err) {
+        console.error(`[analyze] WARN: failed to load FW module ${fwModulePath}: ${err.message}`);
+      }
+    }
 
-  if (run || cli.only === "models") {
-    console.error("[analyze] models ...");
-    result.models = analyzeModels(appDir);
-    console.error(
-      `[analyze] models: ${result.models.summary.total} files (fe=${result.models.summary.feModels}, logic=${result.models.summary.logicModels})`,
-    );
-  }
+    const scanOverrides = cfg.scan || {};
+    // FW デフォルト → config.scan で上書き
+    const mergedOverrides = { ...fwScanDefaults, ...scanOverrides };
 
-  if (run || cli.only === "shells") {
-    console.error("[analyze] shells ...");
-    result.shells = analyzeShells(appDir);
-    console.error(
-      `[analyze] shells: ${result.shells.summary.total} files`,
-    );
-  }
+    result = genericScan(src, type, mergedOverrides);
 
-  if (run || cli.only === "routes") {
-    console.error("[analyze] routes ...");
-    result.routes = analyzeRoutes(appDir);
-    console.error(
-      `[analyze] routes: ${result.routes.summary.total} routes`,
-    );
-  }
-
-  if (run || cli.only === "extras") {
-    console.error("[analyze] extras ...");
-    result.extras = analyzeExtras(appDir);
-    const extrasKeys = Object.keys(result.extras);
-    console.error(
-      `[analyze] extras: ${extrasKeys.length} categories (${extrasKeys.join(", ")})`,
-    );
+    // FW 固有 extras 拡張
+    if (fwModulePath) {
+      try {
+        const fwModule = await import(fwModulePath);
+        if (fwModule.analyzeExtras) {
+          console.error(`[analyze] FW extras: ${leaf} ...`);
+          const fwExtras = await fwModule.analyzeExtras(src, result);
+          result.extras = { ...result.extras, ...fwExtras };
+          const extrasKeys = Object.keys(result.extras);
+          console.error(`[analyze] FW extras: ${extrasKeys.length} categories (${extrasKeys.join(", ")})`);
+        }
+      } catch (err) {
+        console.error(`[analyze] WARN: FW extras failed: ${err.message}`);
+      }
+    }
   }
 
   const json = JSON.stringify(result, null, 2);
