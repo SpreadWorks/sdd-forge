@@ -14,11 +14,11 @@ import fs from "fs";
 import path from "path";
 import readline from "readline";
 import { fileURLToPath } from "url";
-import { repoRoot, parseArgs } from "../lib/cli.js";
-import { validateConfig } from "../lib/types.js";
-import { saveContext } from "../lib/config.js";
-import { createI18n } from "../lib/i18n.js";
-import { addProject, workRootFor, loadProjects } from "../projects/projects.js";
+import { repoRoot, parseArgs } from "../../lib/cli.js";
+import { validateConfig } from "../../lib/types.js";
+import { saveContext } from "../../lib/config.js";
+import { createI18n } from "../../lib/i18n.js";
+import { addProject, workRootFor, loadProjects } from "../../lib/projects.js";
 
 // ---------------------------------------------------------------------------
 // readline helpers
@@ -79,20 +79,26 @@ async function askMultiChoice(rl, prompt, choices, t) {
 
 function parseSetupArgs(argv) {
   return parseArgs(argv, {
-    flags: [],
+    flags: ["--set-default", "--no-default"],
     options: [
-      "--name", "--path",
+      "--name", "--path", "--work-root",
       "--type", "--purpose", "--tone",
       "--agent", "--project-context",
+      "--lang", "--ui-lang",
     ],
     defaults: {
       name: "",
       path: "",
+      workRoot: "",
       type: "",
       purpose: "",
       tone: "",
       agent: "",
       projectContext: "",
+      lang: "",
+      uiLang: "",
+      setDefault: false,
+      noDefault: false,
     },
   });
 }
@@ -117,7 +123,7 @@ const ARCH_FRAMEWORKS = {
 // Project registration
 // ---------------------------------------------------------------------------
 
-function registerProject(projectName, sourcePath, t) {
+function registerProject(projectName, sourcePath, workRootPath, setDefault, t) {
   const resolved = path.resolve(sourcePath);
   if (!fs.existsSync(resolved)) {
     throw new Error(t("common.error.pathNotFound", { path: resolved }));
@@ -125,7 +131,10 @@ function registerProject(projectName, sourcePath, t) {
 
   let data;
   try {
-    data = addProject(projectName, resolved);
+    data = addProject(projectName, resolved, {
+      workRoot: workRootPath || undefined,
+      setDefault,
+    });
   } catch (err) {
     const existing = loadProjects();
     if (existing?.projects?.[projectName]) {
@@ -157,6 +166,185 @@ function registerProject(projectName, sourcePath, t) {
 }
 
 // ---------------------------------------------------------------------------
+// AGENTS.md / CLAUDE.md setup
+// ---------------------------------------------------------------------------
+
+const PKG_DIR = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..", "..");
+
+/**
+ * Load the SDD section template for the given locale.
+ * Falls back to "en" if the requested locale template does not exist.
+ *
+ * @param {string} lang - Locale code
+ * @returns {string} SDD section markdown
+ */
+function loadSddTemplate(lang) {
+  const tryLangs = [lang, "en"];
+  for (const l of tryLangs) {
+    const tmplPath = path.join(PKG_DIR, "templates", "locale", l, "base", "AGENTS.sdd.md");
+    if (fs.existsSync(tmplPath)) {
+      return fs.readFileSync(tmplPath, "utf8");
+    }
+  }
+  return "";
+}
+
+/**
+ * Interactive AGENTS.md setup.
+ *
+ * @param {readline.Interface|null} rl - readline interface (null for non-interactive)
+ * @param {string} sourceDir - Resolved source directory path
+ * @param {string} lang - Output language for template selection
+ * @param {function} t - i18n translation function
+ * @param {boolean} nonInteractive - Non-interactive mode flag
+ */
+async function setupAgentsMd(rl, sourceDir, lang, t, nonInteractive) {
+  const agentsPath = path.join(sourceDir, "AGENTS.md");
+  const sddContent = loadSddTemplate(lang);
+  if (!sddContent) return;
+
+  let mode = "skip";
+  if (nonInteractive) {
+    // Non-interactive: inject if exists, generate if not
+    mode = fs.existsSync(agentsPath) ? "inject" : "rewrite";
+  } else if (rl) {
+    const choices = t.raw("setup.choices_agents");
+    mode = await askChoice(rl, t("setup.questions.rewriteAgentsMd"), [
+      { label: choices.rewrite, value: "rewrite" },
+      { label: choices.inject, value: "inject" },
+      { label: choices.skip, value: "skip" },
+    ], t);
+  }
+
+  if (mode === "rewrite") {
+    const content = sddContent + "\n\n## Project Guidelines\n\n<!-- Add project-specific guidelines here -->\n";
+    fs.writeFileSync(agentsPath, content, "utf8");
+    console.log(t("setup.messages.agentsMdGenerated"));
+  } else if (mode === "inject") {
+    if (fs.existsSync(agentsPath)) {
+      const existing = fs.readFileSync(agentsPath, "utf8");
+      const sddPattern = /<!-- SDD:START[^>]*-->[\s\S]*?<!-- SDD:END -->/;
+      let updated;
+      if (sddPattern.test(existing)) {
+        updated = existing.replace(sddPattern, sddContent.trim());
+      } else {
+        updated = existing.trimEnd() + "\n\n" + sddContent;
+      }
+      fs.writeFileSync(agentsPath, updated, "utf8");
+      console.log(t("setup.messages.agentsMdInjected"));
+      console.log(t("setup.messages.agentsMdConflictWarn"));
+    } else {
+      // File doesn't exist, fall back to rewrite
+      const content = sddContent + "\n\n## Project Guidelines\n\n<!-- Add project-specific guidelines here -->\n";
+      fs.writeFileSync(agentsPath, content, "utf8");
+      console.log(t("setup.messages.agentsMdGenerated"));
+    }
+  } else {
+    console.log(t("setup.messages.agentsMdSkipped"));
+  }
+}
+
+/**
+ * Interactive CLAUDE.md symlink setup.
+ *
+ * @param {readline.Interface|null} rl
+ * @param {string} sourceDir
+ * @param {function} t
+ * @param {boolean} nonInteractive
+ */
+async function setupClaudeMdSymlink(rl, sourceDir, t, nonInteractive) {
+  const claudePath = path.join(sourceDir, "CLAUDE.md");
+  const agentsPath = path.join(sourceDir, "AGENTS.md");
+
+  // If CLAUDE.md exists as a real file (not symlink), offer to rename to AGENTS.md
+  try {
+    const stat = fs.lstatSync(claudePath);
+    if (stat.isFile() && !stat.isSymbolicLink()) {
+      // CLAUDE.md is a real file
+      if (!fs.existsSync(agentsPath)) {
+        // No AGENTS.md yet — rename CLAUDE.md → AGENTS.md, then symlink back
+        let rename = nonInteractive;
+        if (!nonInteractive && rl) {
+          const answer = await askChoice(rl, t("setup.questions.renameClaude"), [
+            { label: t.raw("setup.choices_claudemd").yes, value: "yes" },
+            { label: t.raw("setup.choices_claudemd").no, value: "no" },
+          ], t);
+          rename = answer === "yes";
+        }
+        if (rename) {
+          fs.renameSync(claudePath, agentsPath);
+          fs.symlinkSync("AGENTS.md", claudePath);
+          console.log(t("setup.messages.claudeRenamed"));
+          return;
+        }
+      }
+      // AGENTS.md already exists or user declined rename — skip
+      console.log(t("setup.messages.claudeMdExists"));
+      return;
+    }
+  } catch (_) {
+    // path doesn't exist — proceed to create symlink
+  }
+
+  // Skip if AGENTS.md doesn't exist
+  if (!fs.existsSync(agentsPath)) return;
+
+  // If AGENTS.md exists and CLAUDE.md doesn't (or is broken symlink) → create symlink
+  try { fs.lstatSync(claudePath); fs.unlinkSync(claudePath); } catch (_) {}
+  let create = false;
+  if (nonInteractive) {
+    create = true;
+  } else if (rl) {
+    const choices = t.raw("setup.choices_claudemd");
+    const answer = await askChoice(rl, t("setup.questions.claudeMdSymlink"), [
+      { label: choices.yes, value: "yes" },
+      { label: choices.no, value: "no" },
+    ], t);
+    create = answer === "yes";
+  }
+
+  if (create) {
+    fs.symlinkSync("AGENTS.md", claudePath);
+    console.log(t("setup.messages.claudeMdCreated"));
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Skills setup
+// ---------------------------------------------------------------------------
+
+/**
+ * Deploy skill templates to .agents/skills/ and create symlinks in .claude/skills/.
+ *
+ * @param {string} workRoot - Work root directory
+ * @param {function} t - i18n translation function
+ */
+function setupSkills(workRoot, t) {
+  const agentsSkillsDir = path.join(workRoot, ".agents", "skills");
+  const claudeSkillsDir = path.join(workRoot, ".claude", "skills");
+  fs.mkdirSync(agentsSkillsDir, { recursive: true });
+  fs.mkdirSync(claudeSkillsDir, { recursive: true });
+
+  const skillNames = ["sdd-flow-start.md", "sdd-flow-close.md"];
+  const templatesDir = path.join(PKG_DIR, "templates", "skills");
+
+  for (const name of skillNames) {
+    // Copy template to .agents/skills/
+    const src = path.join(templatesDir, name);
+    const dest = path.join(agentsSkillsDir, name);
+    fs.copyFileSync(src, dest);
+
+    // Create relative symlink in .claude/skills/
+    const link = path.join(claudeSkillsDir, name);
+    const target = path.join("..", "..", ".agents", "skills", name);
+    try { fs.unlinkSync(link); } catch (_) {}
+    fs.symlinkSync(target, link);
+  }
+
+  console.log(t("setup.messages.skillsDeployed"));
+}
+
+// ---------------------------------------------------------------------------
 // Main
 // ---------------------------------------------------------------------------
 
@@ -172,11 +360,16 @@ async function main() {
       "Options:",
       "  --name <name>               Project name",
       "  --path <path>               Source code path (default: cwd)",
+      "  --work-root <path>          Output directory path",
       "  --type <type>               Project type: webapp|webapp/cakephp2|cli|library",
       "  --purpose <purpose>         Document purpose: developer-guide|user-guide|api-reference",
       "  --tone <tone>               Writing style: polite|formal|casual",
       "  --agent <agent>             Default agent: claude|codex",
       "  --project-context <text>    Project description text",
+      "  --lang <lang>               Output language(s), comma-separated (e.g. ja,en)",
+      "  --ui-lang <lang>            UI language: en|ja",
+      "  --set-default               Set as default project",
+      "  --no-default                Do not set as default project",
       "  -h, --help                  Show this help",
     ].join("\n"));
     return;
@@ -190,7 +383,9 @@ async function main() {
 
   let projectName = cli.name;
   let sourcePath = cli.path || defaultPath;
-  let uiLang = "en";
+  let workRootPath = cli.workRoot || "";
+  let setAsDefault = cli.noDefault ? false : true;
+  let uiLang = cli.uiLang || "en";
   let outputLangs = [];
   let outputDefault = "";
   let type = cli.type;
@@ -198,6 +393,12 @@ async function main() {
   let tone = cli.tone;
   let projectContext = cli.projectContext;
   let defaultAgent = cli.agent;
+
+  // Parse --lang for non-interactive use
+  if (cli.lang) {
+    outputLangs = cli.lang.split(",").map((s) => s.trim()).filter(Boolean);
+    outputDefault = outputLangs[0] || "ja";
+  }
 
   // Start with English for the first question
   let t = createI18n("en");
@@ -231,6 +432,23 @@ async function main() {
     if (!cli.path) {
       const answer = await ask(rl, t("setup.questions.sourcePath", { default: defaultPath }));
       sourcePath = answer || defaultPath;
+    }
+
+    // --- Step 2b: Output path ---
+    {
+      const answer = await ask(rl, t("setup.questions.workRoot", { default: sourcePath }));
+      workRootPath = answer || "";
+    }
+
+    // --- Step 2c: Default project ---
+    const existingProjects = loadProjects();
+    if (existingProjects && Object.keys(existingProjects.projects || {}).length > 0) {
+      const choices = t.raw("setup.choices_setDefault");
+      const answer = await askChoice(rl, t("setup.questions.setDefault"), [
+        { label: choices.yes, value: "yes" },
+        { label: choices.no, value: "no" },
+      ], t);
+      setAsDefault = answer === "yes";
     }
 
     // --- Step 3: Output language (multi-select) ---
@@ -322,18 +540,21 @@ async function main() {
       defaultAgent = agentChoice;
     }
 
-    rl.close();
+    // rl.close() is deferred to after AGENTS.md / CLAUDE.md setup
   } else {
     // Non-interactive mode
     if (!sourcePath) sourcePath = defaultPath;
     if (!projectName) projectName = defaultName;
-    // Default output config for non-interactive
-    outputLangs = ["ja"];
-    outputDefault = "ja";
+    if (cli.setDefault) setAsDefault = true;
+    // Default output config for non-interactive (use --lang if provided)
+    if (outputLangs.length === 0) {
+      outputLangs = ["ja"];
+      outputDefault = "ja";
+    }
   }
 
   // 1. Register project
-  const { workRoot } = registerProject(projectName, sourcePath, t);
+  const { workRoot } = registerProject(projectName, sourcePath, workRootPath, setAsDefault, t);
 
   // 2. Build config object
   const config = {
@@ -353,6 +574,9 @@ async function main() {
       preamblePatterns: [
         { pattern: "^(Here is|以下に|Based on)", flags: "i" },
       ],
+    },
+    flow: {
+      merge: "squash",
     },
   };
 
@@ -395,6 +619,18 @@ async function main() {
     saveContext(workRoot, { projectContext });
     console.log(t("setup.messages.contextGenerated"));
   }
+
+  // 6. AGENTS.md setup
+  await setupAgentsMd(rl, workRoot, outputDefault, t, hasAllRequired);
+
+  // 7. CLAUDE.md symlink
+  await setupClaudeMdSymlink(rl, workRoot, t, hasAllRequired);
+
+  // 8. Skills deployment
+  setupSkills(workRoot, t);
+
+  // Close readline if open
+  if (rl) rl.close();
 
   // Summary
   console.log(`\n  ${t("setup.messages.summary")}`);

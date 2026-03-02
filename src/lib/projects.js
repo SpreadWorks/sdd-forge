@@ -1,19 +1,35 @@
 /**
- * src/projects/projects.js
+ * src/lib/projects.js
  *
  * projects.json の CRUD ユーティリティ。
- * projects.json と projects/ は process.cwd() に配置する。
+ * projects.json は process.cwd() に配置する。
  */
 
 import fs from "fs";
 import path from "path";
 
 function projectsFilePath() {
-  return path.join(process.cwd(), "projects.json");
+  return path.join(process.cwd(), ".sdd-forge", "projects.json");
 }
 
+/**
+ * プロジェクトの作業ルートを返す。
+ * projects.json に workRoot が指定されていればそれを使用し、
+ * なければ path（ソースルート）を返す。
+ *
+ * @param {string} name - プロジェクト名
+ * @returns {string} 作業ルートの絶対パス
+ */
 export function workRootFor(name) {
-  return path.join(process.cwd(), "projects", name);
+  const data = loadProjects();
+  if (!data) {
+    throw new Error("projects.json not found.");
+  }
+  const project = data.projects[name];
+  if (!project) {
+    throw new Error(`Project '${name}' not found in projects.json`);
+  }
+  return project.workRoot || project.path;
 }
 
 /**
@@ -31,19 +47,39 @@ function saveProjects(data) {
 
 /**
  * プロジェクトを追加する。
- * 初回追加時はデフォルトに自動設定する。
  *
  * @param {string} name
- * @param {string} projectPath
+ * @param {string} projectPath - ソースコードの絶対パス
+ * @param {Object} [options]
+ * @param {string} [options.workRoot] - 出力先パス（省略時は projectPath と同じ）
+ * @param {boolean} [options.setDefault] - デフォルトに設定するか
  * @returns {Object} 更新後の projects データ
  */
-export function addProject(name, projectPath) {
+export function addProject(name, projectPath, options = {}) {
   const data = loadProjects() || { projects: {} };
   if (data.projects[name]) {
     throw new Error(`Project '${name}' already exists.`);
   }
-  data.projects[name] = { path: path.resolve(projectPath) };
-  if (!data.default) data.default = name;
+
+  const resolved = path.resolve(projectPath);
+  const entry = { path: resolved };
+
+  // workRoot が path と異なる場合のみ記録
+  if (options.workRoot) {
+    const resolvedWork = path.resolve(options.workRoot);
+    if (resolvedWork !== resolved) {
+      entry.workRoot = resolvedWork;
+    }
+  }
+
+  data.projects[name] = entry;
+
+  // 初回追加時 or 明示的に指定された場合、デフォルトに設定
+  const isFirst = Object.keys(data.projects).length === 1;
+  if (isFirst || options.setDefault) {
+    data.default = name;
+  }
+
   saveProjects(data);
   return data;
 }
@@ -56,7 +92,7 @@ export function addProject(name, projectPath) {
 export function setDefault(name) {
   const data = loadProjects();
   if (!data) {
-    throw new Error("projects.json not found. Run: sdd-forge add <name> <path>");
+    throw new Error("projects.json not found. Run: sdd-forge setup");
   }
   if (!data.projects[name]) {
     throw new Error(`Project '${name}' not found.`);

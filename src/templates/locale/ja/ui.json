@@ -14,7 +14,25 @@
       "purposeCustom": "目的を入力してください: ",
       "tone": "文体を選択してください:",
       "projectContext": "プロジェクト概要を入力してください（空でも可。scan 後に自動生成できます）:",
-      "agent": "デフォルト AI エージェントを選択してください:"
+      "agent": "デフォルト AI エージェントを選択してください:",
+      "workRoot": "出力先パス (default: {{default}}): ",
+      "setDefault": "このプロジェクトをデフォルトに設定しますか？",
+      "rewriteAgentsMd": "AGENTS.md を書き直しますか？（既存ファイルがある場合は上書きされます）",
+      "claudeMdSymlink": "CLAUDE.md → AGENTS.md のシンボリックリンクを作成しますか？",
+      "renameClaude": "CLAUDE.md を AGENTS.md にリネームし、シンボリックリンクに変換しますか？"
+    },
+    "choices_setDefault": {
+      "yes": "はい",
+      "no": "いいえ"
+    },
+    "choices_agents": {
+      "rewrite": "書き直す（SDD セクション + 空の Project Guidelines を生成）",
+      "inject": "既存ファイルに SDD セクションのみ追加する",
+      "skip": "スキップ（AGENTS.md を変更しない）"
+    },
+    "choices_claudemd": {
+      "yes": "作成する",
+      "no": "作成しない"
     },
     "choices": {
       "uiLang": {
@@ -67,6 +85,14 @@
       "isDefault": "  default: yes",
       "configGenerated": "[setup] {{path}} を生成しました。",
       "contextGenerated": "[setup] context.json を生成しました。",
+      "agentsMdGenerated": "[setup] AGENTS.md を生成しました。",
+      "agentsMdInjected": "[setup] AGENTS.md に SDD セクションを注入しました。",
+      "agentsMdSkipped": "[setup] AGENTS.md の更新をスキップしました。",
+      "agentsMdConflictWarn": "  ⚠ 既存内容との矛盾がないか確認してください。",
+      "claudeMdCreated": "[setup] CLAUDE.md → AGENTS.md のシンボリックリンクを作成しました。",
+      "claudeMdExists": "[setup] CLAUDE.md は既に存在するためスキップしました。",
+      "claudeRenamed": "[setup] CLAUDE.md → AGENTS.md にリネームし、CLAUDE.md をシンボリックリンク化しました。",
+      "skillsDeployed": "[setup] Skills を配置しました (.agents/skills/ + .claude/skills/)",
       "summary": "設定サマリ:",
       "nextSteps": "次のステップ:",
       "step1": "sdd-forge build  — ドキュメント一括生成（scan → init → data → text）"
