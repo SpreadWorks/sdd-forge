@@ -14,6 +14,8 @@ import path from "path";
 import { fileURLToPath } from "url";
 import { repoRoot, parseArgs } from "../lib/cli.js";
 import { loadJsonFile, loadPackageField } from "../lib/config.js";
+import { resolveType } from "../lib/types.js";
+import { resolveChain, resolveReadmeTemplate } from "./template-merger.js";
 
 // npm パッケージ: テンプレートはパッケージ自身の templates/ に同梱される
 const PKG_DIR = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
@@ -146,7 +148,23 @@ function main() {
     return;
   }
 
-  const templatePath = path.join(PKG_DIR, "templates", "locale", lang, type, "README.md");
+  const resolvedType = resolveType(type);
+  const templatesRoot = path.join(PKG_DIR, "templates", "locale", lang);
+
+  // テンプレート継承チェーンで README.md を探索
+  let templatePath = null;
+  try {
+    const chain = resolveChain(templatesRoot, resolvedType);
+    templatePath = resolveReadmeTemplate(chain, templatesRoot);
+  } catch (_) {
+    // 新構造がない場合、旧パスへフォールバック
+  }
+
+  // フォールバック: 旧フラットディレクトリ
+  if (!templatePath) {
+    templatePath = path.join(PKG_DIR, "templates", "locale", lang, type, "README.md");
+  }
+
   if (!fs.existsSync(templatePath)) {
     console.log(`[readme] テンプレートが見つかりません (type=${type})。スキップします。`);
     return;

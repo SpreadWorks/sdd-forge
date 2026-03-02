@@ -2,11 +2,18 @@
  * tools/engine/directive-parser.js
  *
  * テンプレート内の @data / @text ディレクティブを抽出する。
+ * テンプレート継承用の @block / @endblock / @extends / @parent も解析する。
  *
  * ディレクティブ構文:
  *   <!-- @data: <renderer>(<category>, labels=<label1>|<label2>|...) -->
  *   <!-- @text: <prompt text> -->
  *   <!-- @text[id=foo, maxLines=5]: <prompt text> -->
+ *
+ * ブロック継承構文:
+ *   <!-- @extends -->
+ *   <!-- @block: <name> -->
+ *   <!-- @endblock -->
+ *   <!-- @parent -->
  */
 
 /**
@@ -30,6 +37,12 @@
 
 const DATA_RE = /^<!--\s*@data:\s*([\w-]+)\(([^,)]+)(?:,\s*labels=([^)]+))?\)\s*-->$/;
 const TEXT_RE = /^<!--\s*@text\s*(?:\[([^\]]*)\])?\s*:\s*(.+?)\s*-->$/;
+
+// ブロック継承ディレクティブ
+const BLOCK_START_RE = /^<!--\s*@block:\s*([\w-]+)\s*-->$/;
+const BLOCK_END_RE   = /^<!--\s*@endblock\s*-->$/;
+const EXTENDS_RE     = /^<!--\s*@extends\s*-->$/;
+const PARENT_RE      = /^<!--\s*@parent\s*-->$/;
 
 /**
  * テキストフィルのパラメータ文字列をパースする。
@@ -92,4 +105,77 @@ export function parseDirectives(text) {
   }
 
   return directives;
+}
+
+/**
+ * テンプレートファイルのブロック継承構造を解析する。
+ *
+ * @param {string} text - テンプレート全文
+ * @returns {{
+ *   extends: boolean,
+ *   blocks: Map<string, { name: string, content: string[], hasParent: boolean, parentLine: number }>,
+ *   preamble: string[],
+ *   postamble: string[],
+ * }}
+ */
+export function parseBlocks(text) {
+  const lines = text.split("\n");
+  let hasExtends = false;
+  const blocks = new Map();
+  const preamble = [];
+  const postamble = [];
+
+  let currentBlock = null;
+  let lastBlockEndLine = -1;
+
+  for (let i = 0; i < lines.length; i++) {
+    const trimmed = lines[i].trim();
+
+    if (EXTENDS_RE.test(trimmed)) {
+      hasExtends = true;
+      continue;
+    }
+
+    const blockStart = trimmed.match(BLOCK_START_RE);
+    if (blockStart) {
+      currentBlock = {
+        name: blockStart[1],
+        content: [],
+        hasParent: false,
+        parentLine: -1,
+      };
+      continue;
+    }
+
+    if (BLOCK_END_RE.test(trimmed)) {
+      if (currentBlock) {
+        blocks.set(currentBlock.name, currentBlock);
+        lastBlockEndLine = i;
+        currentBlock = null;
+      }
+      continue;
+    }
+
+    if (currentBlock) {
+      if (PARENT_RE.test(trimmed)) {
+        currentBlock.hasParent = true;
+        currentBlock.parentLine = currentBlock.content.length;
+        currentBlock.content.push(lines[i]);
+      } else {
+        currentBlock.content.push(lines[i]);
+      }
+      continue;
+    }
+
+    // ブロック外の行
+    if (blocks.size === 0 && lastBlockEndLine === -1) {
+      // まだブロックが出現していない → preamble
+      preamble.push(lines[i]);
+    } else {
+      // 最後のブロック以降 → postamble
+      postamble.push(lines[i]);
+    }
+  }
+
+  return { extends: hasExtends, blocks, preamble, postamble };
 }
