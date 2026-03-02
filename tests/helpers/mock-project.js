@@ -1,0 +1,43 @@
+import { createTmpDir, writeJson, writeFile } from "./tmp-dir.js";
+import { join } from "path";
+
+const DEFAULT_CONFIG = {
+  type: "cli/node-cli",
+  locale: "ja",
+  uiLang: "ja",
+  docStyle: "flat",
+  preamble: "yaml",
+  scan: { include: ["src/**/*.js"], exclude: [] },
+  textFill: { projectContext: "test project", agent: "" },
+  providers: {},
+  output: {},
+};
+
+const DEFAULT_PACKAGE = {
+  name: "test-project",
+  version: "1.0.0",
+  type: "module",
+};
+
+export function createMockProject(overrides = {}) {
+  const root = createTmpDir("sdd-mock-");
+  const cfg = { ...DEFAULT_CONFIG, ...overrides.config };
+  const pkg = { ...DEFAULT_PACKAGE, ...overrides.package };
+
+  writeJson(root, ".sdd-forge/config.json", cfg);
+  writeJson(root, ".sdd-forge/context.json", overrides.context || {});
+  writeJson(root, "package.json", pkg);
+  writeFile(root, ".sdd-forge/output/.gitkeep");
+
+  if (overrides.analysis) {
+    writeJson(root, ".sdd-forge/output/analysis.json", overrides.analysis);
+  }
+
+  if (overrides.docs) {
+    for (const [name, content] of Object.entries(overrides.docs)) {
+      writeFile(root, join("docs", name), content);
+    }
+  }
+
+  return root;
+}

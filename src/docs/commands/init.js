@@ -568,6 +568,8 @@ function legacyInit(root, templateDir, cli) {
   console.log(`[init] done. ${templateFiles.length} files initialized in docs/`);
 }
 
+export { main };
+
 const isDirectRun = process.argv[1] &&
   path.resolve(process.argv[1]) === path.resolve(fileURLToPath(import.meta.url));
 if (isDirectRun) {

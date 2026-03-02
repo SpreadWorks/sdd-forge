@@ -7,6 +7,7 @@
 
 import fs from "fs";
 import path from "path";
+import { fileURLToPath } from "url";
 import { repoRoot, parseArgs } from "../../lib/cli.js";
 
 function checkSpecText(text) {
@@ -98,4 +99,10 @@ function main() {
   console.log("gate: PASSED");
 }
 
-main();
+export { main, checkSpecText };
+
+const isDirectRun = process.argv[1] &&
+  path.resolve(process.argv[1]) === path.resolve(fileURLToPath(import.meta.url));
+if (isDirectRun) {
+  main();
+}

@@ -6,6 +6,8 @@
  * デフォルトプロジェクトを変更する。引数なしで一覧表示。
  */
 
+import path from "path";
+import { fileURLToPath } from "url";
 import { setDefault, loadProjects } from "../../lib/projects.js";
 
 function main() {
@@ -34,4 +36,10 @@ function main() {
   }
 }
 
-main();
+export { main };
+
+const isDirectRun = process.argv[1] &&
+  path.resolve(process.argv[1]) === path.resolve(fileURLToPath(import.meta.url));
+if (isDirectRun) {
+  main();
+}

@@ -5,6 +5,9 @@
  * SDD ツール群のコマンド一覧を表示する。
  */
 
+import path from "path";
+import { fileURLToPath } from "url";
+
 const commands = [
   { name: "help",        desc: "このヘルプを表示" },
   { sep: "--- project ---" },
@@ -30,24 +33,34 @@ const commands = [
   { name: "flow",        desc: "SDD フロー自動実行（spec → gate → forge → review）", usage: '--request "要望"' },
 ];
 
-const maxName = Math.max(...commands.filter((c) => c.name).map((c) => c.name.length));
+function main() {
+  const maxName = Math.max(...commands.filter((c) => c.name).map((c) => c.name.length));
 
-console.log("");
-console.log("  SDD Forge — コマンド一覧");
-console.log("  ========================");
-console.log("");
+  console.log("");
+  console.log("  SDD Forge — コマンド一覧");
+  console.log("  ========================");
+  console.log("");
 
-for (const cmd of commands) {
-  if (cmd.sep) {
-    console.log(`  ${cmd.sep}`);
-    continue;
+  for (const cmd of commands) {
+    if (cmd.sep) {
+      console.log(`  ${cmd.sep}`);
+      continue;
+    }
+    const padded = cmd.name.padEnd(maxName + 2);
+    const usage = cmd.usage ? `  sdd-forge ${cmd.name} ${cmd.usage}` : "";
+    console.log(`  ${padded}${cmd.desc}`);
+    if (usage) {
+      console.log(`  ${"".padEnd(maxName + 2)}  ${usage}`);
+    }
   }
-  const padded = cmd.name.padEnd(maxName + 2);
-  const usage = cmd.usage ? `  sdd-forge ${cmd.name} ${cmd.usage}` : "";
-  console.log(`  ${padded}${cmd.desc}`);
-  if (usage) {
-    console.log(`  ${"".padEnd(maxName + 2)}  ${usage}`);
-  }
+
+  console.log("");
 }
 
-console.log("");
+export { main, commands };
+
+const isDirectRun = process.argv[1] &&
+  path.resolve(process.argv[1]) === path.resolve(fileURLToPath(import.meta.url));
+if (isDirectRun) {
+  main();
+}
