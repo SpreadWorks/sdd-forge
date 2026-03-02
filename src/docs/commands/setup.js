@@ -322,21 +322,24 @@ async function setupClaudeMdSymlink(rl, sourceDir, t, nonInteractive) {
 function setupSkills(workRoot, t) {
   const agentsSkillsDir = path.join(workRoot, ".agents", "skills");
   const claudeSkillsDir = path.join(workRoot, ".claude", "skills");
-  fs.mkdirSync(agentsSkillsDir, { recursive: true });
-  fs.mkdirSync(claudeSkillsDir, { recursive: true });
 
-  const skillNames = ["sdd-flow-start.md", "sdd-flow-close.md"];
+  const skillNames = ["sdd-flow-start", "sdd-flow-close"];
   const templatesDir = path.join(PKG_DIR, "templates", "skills");
 
   for (const name of skillNames) {
-    // Copy template to .agents/skills/
-    const src = path.join(templatesDir, name);
-    const dest = path.join(agentsSkillsDir, name);
-    fs.copyFileSync(src, dest);
+    // Copy template to .agents/skills/<name>/SKILL.md
+    const destDir = path.join(agentsSkillsDir, name);
+    fs.mkdirSync(destDir, { recursive: true });
+    fs.copyFileSync(
+      path.join(templatesDir, name, "SKILL.md"),
+      path.join(destDir, "SKILL.md"),
+    );
 
-    // Create relative symlink in .claude/skills/
-    const link = path.join(claudeSkillsDir, name);
-    const target = path.join("..", "..", ".agents", "skills", name);
+    // Create relative symlink in .claude/skills/<name>/SKILL.md
+    const linkDir = path.join(claudeSkillsDir, name);
+    fs.mkdirSync(linkDir, { recursive: true });
+    const link = path.join(linkDir, "SKILL.md");
+    const target = path.join("..", "..", "..", ".agents", "skills", name, "SKILL.md");
     try { fs.unlinkSync(link); } catch (_) {}
     fs.symlinkSync(target, link);
   }
