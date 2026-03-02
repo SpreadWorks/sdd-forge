@@ -1,0 +1,84 @@
+{
+  "setup": {
+    "title": "SDD Forge — Setup",
+    "separator": "========================",
+    "questions": {
+      "uiLang": "Select your preferred language for UI messages:",
+      "projectName": "Project name (default: {{default}}): ",
+      "sourcePath": "Source code path (default: {{default}}): ",
+      "outputLang": "Select output language(s) for generated documents (comma-separated for multiple):",
+      "outputDefault": "Which language should be the default?",
+      "archType": "Select the project architecture:",
+      "fwType": "Select the framework:",
+      "purpose": "Select the document purpose:",
+      "purposeCustom": "Enter the purpose: ",
+      "tone": "Select the writing style:",
+      "projectContext": "Enter a brief project description (optional, can be auto-generated after scan):",
+      "agent": "Select the default AI agent:"
+    },
+    "choices": {
+      "uiLang": {
+        "en": "en (English)",
+        "ja": "ja (Japanese)"
+      },
+      "outputLang": [
+        { "key": "en", "label": "English" },
+        { "key": "ja", "label": "Japanese" }
+      ],
+      "outputDefault": {
+        "en": "English",
+        "ja": "Japanese"
+      },
+      "archType": {
+        "webapp": "Web application",
+        "cli": "CLI tool",
+        "library": "Library / package"
+      },
+      "fwWebapp": {
+        "generic": "No specific framework",
+        "cakephp2": "CakePHP 2.x"
+      },
+      "fwCli": {
+        "generic": "No specific framework",
+        "node-cli": "Node.js CLI"
+      },
+      "purpose": {
+        "developer-guide": "Technical guide for developers",
+        "user-guide": "User operation guide",
+        "api-reference": "API reference",
+        "other": "Custom input"
+      },
+      "tone": {
+        "polite": "Professional",
+        "formal": "Academic / formal",
+        "casual": "Conversational"
+      },
+      "agent": {
+        "claude": "claude",
+        "codex": "codex",
+        "skip": "Skip (configure later)"
+      }
+    },
+    "messages": {
+      "projectRegistered": "[setup] project '{{name}}' registered.",
+      "projectAlreadyExists": "[setup] project '{{name}}' already registered. skipping registration.",
+      "sourceDir": "  source : {{path}}",
+      "workDir": "  workdir: {{path}}",
+      "isDefault": "  default: yes",
+      "configGenerated": "[setup] {{path}} generated.",
+      "contextGenerated": "[setup] context.json generated.",
+      "summary": "Configuration Summary:",
+      "nextSteps": "Next Steps:",
+      "step1": "sdd-forge build  — Generate docs (scan → init → data → text)"
+    },
+    "multiSelectPrompt": "> (comma-separated, e.g. 1,2): ",
+    "prompt": "> "
+  },
+  "common": {
+    "choicePrompt": "> ({{min}}-{{max}}): ",
+    "error": {
+      "pathNotFound": "path does not exist: {{path}}",
+      "configValidation": "Config validation failed"
+    }
+  }
+}
