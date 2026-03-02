@@ -1,6 +1,10 @@
 import { describe, it, beforeEach, afterEach } from "node:test";
 import assert from "node:assert/strict";
-import { parseArgs, repoRoot, sourceRoot } from "../../src/lib/cli.js";
+import fs from "fs";
+import path from "path";
+import { execFileSync } from "child_process";
+import { parseArgs, repoRoot, sourceRoot, isInsideWorktree, getMainRepoPath } from "../../src/lib/cli.js";
+import { createTmpDir, removeTmpDir } from "../helpers/tmp-dir.js";
 
 describe("parseArgs", () => {
   it("parses flags", () => {
@@ -111,5 +115,56 @@ describe("sourceRoot", () => {
     delete process.env.SDD_SOURCE_ROOT;
     process.env.SDD_WORK_ROOT = "/tmp/work";
     assert.equal(sourceRoot(), "/tmp/work");
+  });
+});
+
+describe("isInsideWorktree", () => {
+  let tmp;
+  afterEach(() => tmp && removeTmpDir(tmp));
+
+  it("returns false for a normal git repo", () => {
+    tmp = createTmpDir();
+    execFileSync("git", ["init", tmp], { encoding: "utf8" });
+    assert.equal(isInsideWorktree(tmp), false);
+  });
+
+  it("returns false for a directory without .git", () => {
+    tmp = createTmpDir();
+    assert.equal(isInsideWorktree(tmp), false);
+  });
+
+  it("returns true inside a git worktree", () => {
+    tmp = createTmpDir();
+    execFileSync("git", ["init", tmp], { encoding: "utf8" });
+    execFileSync("git", ["-C", tmp, "commit", "--allow-empty", "-m", "init"], { encoding: "utf8" });
+    const wtPath = path.join(tmp, "wt");
+    execFileSync("git", ["-C", tmp, "worktree", "add", wtPath, "-b", "wt-branch"], { encoding: "utf8" });
+    assert.equal(isInsideWorktree(wtPath), true);
+    // Cleanup worktree
+    execFileSync("git", ["-C", tmp, "worktree", "remove", wtPath], { encoding: "utf8" });
+  });
+});
+
+describe("getMainRepoPath", () => {
+  let tmp;
+  afterEach(() => tmp && removeTmpDir(tmp));
+
+  it("returns main repo path from a worktree", () => {
+    tmp = createTmpDir();
+    execFileSync("git", ["init", tmp], { encoding: "utf8" });
+    execFileSync("git", ["-C", tmp, "commit", "--allow-empty", "-m", "init"], { encoding: "utf8" });
+    const wtPath = path.join(tmp, "wt");
+    execFileSync("git", ["-C", tmp, "worktree", "add", wtPath, "-b", "wt-branch"], { encoding: "utf8" });
+    const mainPath = getMainRepoPath(wtPath);
+    assert.equal(mainPath, tmp);
+    // Cleanup worktree
+    execFileSync("git", ["-C", tmp, "worktree", "remove", wtPath], { encoding: "utf8" });
+  });
+
+  it("returns repo path for a normal repo", () => {
+    tmp = createTmpDir();
+    execFileSync("git", ["init", tmp], { encoding: "utf8" });
+    const mainPath = getMainRepoPath(tmp);
+    assert.equal(mainPath, tmp);
   });
 });

@@ -19,6 +19,9 @@ function statePath(workRoot) {
  * @property {string} spec          - spec.md の相対パス (e.g. "specs/003-xxx/spec.md")
  * @property {string} baseBranch    - 分岐元ブランチ名
  * @property {string} featureBranch - feature ブランチ名
+ * @property {boolean} [worktree]      - worktree 内で作業中かどうか
+ * @property {string}  [worktreePath]  - worktree の絶対パス
+ * @property {string}  [mainRepoPath]  - メインリポジトリの絶対パス
  */
 
 /**
