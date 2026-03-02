@@ -4,7 +4,7 @@
   "description": "Spec-Driven Development tooling for automated documentation generation",
   "type": "module",
   "bin": {
-    "sdd-forge": "./src/bin/sdd-forge.js"
+    "sdd-forge": "./src/sdd-forge.js"
   },
   "files": [
     "src/"

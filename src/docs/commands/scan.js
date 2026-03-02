@@ -11,10 +11,10 @@
 
 import fs from "fs";
 import path from "path";
-import { repoRoot, sourceRoot, parseArgs } from "../lib/cli.js";
-import { loadConfig } from "../lib/config.js";
-import { resolveType } from "../lib/types.js";
-import { genericScan } from "./generic-scan.js";
+import { repoRoot, sourceRoot, parseArgs } from "../../lib/cli.js";
+import { loadConfig } from "../../lib/config.js";
+import { resolveType } from "../../lib/types.js";
+import { genericScan } from "../lib/scanner.js";
 
 /**
  * type パスからリーフセグメント（FW 名）を抽出する。
@@ -28,7 +28,7 @@ function leafSegment(typePath) {
 
 /** FW モジュールのマップ（リーフセグメント → モジュールパス） */
 const FW_MODULES = {
-  cakephp2: "./fw/cakephp2.js",
+  cakephp2: "../presets/webapp/cakephp2/scanner.js",
 };
 
 function printHelp() {
@@ -50,11 +50,11 @@ async function runLegacy(cli, root) {
     throw new Error(`app/ directory not found: ${appDir}`);
   }
 
-  const { analyzeControllers } = await import("./analyze-controllers.js");
-  const { analyzeModels } = await import("./analyze-models.js");
-  const { analyzeShells } = await import("./analyze-shells.js");
-  const { analyzeRoutes } = await import("./analyze-routes.js");
-  const { analyzeExtras } = await import("./analyze-extras.js");
+  const { analyzeControllers } = await import("../presets/webapp/cakephp2/analyze-controllers.js");
+  const { analyzeModels } = await import("../presets/webapp/cakephp2/analyze-models.js");
+  const { analyzeShells } = await import("../presets/webapp/cakephp2/analyze-shells.js");
+  const { analyzeRoutes } = await import("../presets/webapp/cakephp2/analyze-routes.js");
+  const { analyzeExtras } = await import("../presets/webapp/cakephp2/analyze-extras.js");
 
   const result = { analyzedAt: new Date().toISOString() };
 

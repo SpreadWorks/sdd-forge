@@ -8,7 +8,7 @@
 
 import fs from "fs";
 import path from "path";
-import { stripBlockComments } from "./lib/php-array-parser.js";
+import { stripBlockComments } from "../../lib/php-array-parser.js";
 
 export function analyzeRoutes(appDir) {
   const routesPath = path.join(appDir, "Config", "routes.php");
