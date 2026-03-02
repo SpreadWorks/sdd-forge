@@ -1,0 +1,35 @@
+# 10. バッチとコンソールコマンド
+
+## 説明
+
+<!-- @block: description -->
+<!-- @text: この章の概要を1〜2文で記述してください。コマンド数、定期実行の有無を踏まえること。 -->
+<!-- @endblock -->
+
+## 内容
+
+<!-- @block: command-list -->
+### コマンド一覧
+
+<!-- @data: table(shells, labels=コマンド名|ファイル|用途) -->
+<!-- @endblock -->
+
+<!-- @block: command-deps -->
+### コマンド依存関係
+
+<!-- @text: 各コマンドが読み込んでいるクラスの依存関係を説明してください。 -->
+
+<!-- @data: table(shells.deps, labels=コマンド|依存クラス|種別) -->
+<!-- @endblock -->
+
+<!-- @block: command-flow -->
+### コマンド実行フロー
+
+<!-- @data: table(shells.flow, labels=コマンド|処理概要|メール通知|ファイル操作|トランザクション) -->
+<!-- @endblock -->
+
+<!-- @block: schedule -->
+### スケジュール実行
+
+<!-- @text: 定期実行の設定方法を説明してください。 -->
+<!-- @endblock -->
