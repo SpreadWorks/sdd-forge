@@ -19,5 +19,8 @@
     "source-analysis",
     "technical-docs"
   ],
+  "scripts": {
+    "test": "find tests -name '*.test.js' | xargs node --test"
+  },
   "license": "MIT"
 }

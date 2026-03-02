@@ -20,26 +20,6 @@ import { resolveChain, resolveReadmeTemplate } from "../lib/template-merger.js";
 // npm パッケージ: テンプレートはパッケージ自身の templates/ に同梱される
 const PKG_DIR = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 
-const root = repoRoot(import.meta.url);
-const sddConfig = loadJsonFile(path.join(root, ".sdd-forge", "config.json"));
-
-// ---------------------------------------------------------------------------
-// CLI
-// ---------------------------------------------------------------------------
-
-const cli = parseArgs(process.argv.slice(2), {
-  flags: ["--dry-run"],
-});
-
-if (cli.help) {
-  console.log(`Usage: node sdd-forge/engine/readme.js [--dry-run]
-
-Options:
-  --dry-run   差分を表示するが書き込まない
-  --help      このヘルプを表示`);
-  process.exit(0);
-}
-
 // ---------------------------------------------------------------------------
 // docs/ 解析
 // ---------------------------------------------------------------------------
@@ -47,7 +27,7 @@ Options:
 /**
  * docs/NN_*.md を番号順に取得する。
  */
-function listChapterFiles() {
+function listChapterFiles(root) {
   const docsDir = path.join(root, "docs");
   if (!fs.existsSync(docsDir)) return [];
   return fs
@@ -115,9 +95,6 @@ function extractManualBlock(filePath) {
 // テンプレート生成
 // ---------------------------------------------------------------------------
 
-const lang = sddConfig?.lang || "ja";
-const type = sddConfig?.type;
-
 function generateReadme(chapters, manualContent, templatePath, root) {
   const chapterTable = chapters
     .map(
@@ -143,6 +120,25 @@ function generateReadme(chapters, manualContent, templatePath, root) {
 // ---------------------------------------------------------------------------
 
 function main() {
+  const root = repoRoot(import.meta.url);
+  const sddConfig = loadJsonFile(path.join(root, ".sdd-forge", "config.json"));
+
+  const cli = parseArgs(process.argv.slice(2), {
+    flags: ["--dry-run"],
+  });
+
+  if (cli.help) {
+    console.log(`Usage: node sdd-forge/engine/readme.js [--dry-run]
+
+Options:
+  --dry-run   差分を表示するが書き込まない
+  --help      このヘルプを表示`);
+    process.exit(0);
+  }
+
+  const lang = sddConfig?.lang || "ja";
+  const type = sddConfig?.type;
+
   if (!type) {
     console.log("[readme] .sdd-forge/config.json に type が設定されていません。スキップします。");
     return;
@@ -170,7 +166,7 @@ function main() {
     return;
   }
 
-  const chapters = listChapterFiles().map(parseChapter);
+  const chapters = listChapterFiles(root).map(parseChapter);
   const readmePath = path.join(root, "README.md");
   const manualContent = extractManualBlock(readmePath);
   const newContent = generateReadme(chapters, manualContent, templatePath, root);
@@ -195,4 +191,10 @@ function main() {
   console.log("[readme] README.md updated.");
 }
 
-main();
+export { main };
+
+const isDirectRun = process.argv[1] &&
+  path.resolve(process.argv[1]) === path.resolve(fileURLToPath(import.meta.url));
+if (isDirectRun) {
+  main();
+}

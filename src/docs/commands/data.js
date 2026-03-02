@@ -206,6 +206,8 @@ async function main() {
   console.error(`[populate] Done. ${changedFiles.size} file(s) updated. @data: ${totalReplaced} replaced, @text: ${totalSkipped} skipped.`);
 }
 
+export { main };
+
 const isDirectRun = process.argv[1] &&
   path.resolve(process.argv[1]) === path.resolve(fileURLToPath(import.meta.url));
 if (isDirectRun) {

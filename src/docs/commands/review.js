@@ -8,6 +8,7 @@
 
 import fs from "fs";
 import path from "path";
+import { fileURLToPath } from "url";
 import { repoRoot, parseArgs } from "../../lib/cli.js";
 
 function main() {
@@ -96,4 +97,10 @@ function main() {
   console.log("docs quality check: PASSED");
 }
 
-main();
+export { main };
+
+const isDirectRun = process.argv[1] &&
+  path.resolve(process.argv[1]) === path.resolve(fileURLToPath(import.meta.url));
+if (isDirectRun) {
+  main();
+}

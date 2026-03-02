@@ -192,4 +192,10 @@ function main() {
   process.exit(forge.status);
 }
 
-main();
+export { main };
+
+const isDirectRun = process.argv[1] &&
+  path.resolve(process.argv[1]) === path.resolve(fileURLToPath(import.meta.url));
+if (isDirectRun) {
+  main();
+}

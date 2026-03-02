@@ -764,7 +764,13 @@ async function main() {
   throw new Error("forge: max runs reached but review still failing.");
 }
 
-main().catch((e) => {
-  console.error(e?.stack || String(e));
-  process.exit(1);
-});
+export { main };
+
+const isDirectRun = process.argv[1] &&
+  path.resolve(process.argv[1]) === path.resolve(fileURLToPath(import.meta.url));
+if (isDirectRun) {
+  main().catch((e) => {
+    console.error(e?.stack || String(e));
+    process.exit(1);
+  });
+}
