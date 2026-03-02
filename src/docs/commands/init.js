@@ -281,9 +281,9 @@ function aiFilterChapters(chapters, analysis, agent, root) {
 // ---------------------------------------------------------------------------
 function main() {
   const cli = parseArgs(process.argv.slice(2), {
-    flags: ["--force"],
+    flags: ["--force", "--dry-run"],
     options: ["--type"],
-    defaults: { type: "", force: false },
+    defaults: { type: "", force: false, dryRun: false },
   });
   if (cli.help) {
     console.log([
@@ -294,6 +294,7 @@ function main() {
       "Options:",
       "  --type <type>            テンプレートタイプ (default: config.json type)",
       "  --force                  既存ファイルがある場合に上書き",
+      "  --dry-run                ファイル書き込みせず対象ファイル一覧を表示",
       "  -h, --help               このヘルプを表示",
     ].join("\n"));
     return;
@@ -498,11 +499,17 @@ function main() {
       console.log(`[init] merged: ${chapter.fileName}`);
     }
 
-    const dst = path.join(docsDir, chapter.fileName);
-    fs.writeFileSync(dst, text, "utf8");
+    if (!cli.dryRun) {
+      const dst = path.join(docsDir, chapter.fileName);
+      fs.writeFileSync(dst, text, "utf8");
+    }
   }
 
-  console.log(`[init] done. ${filteredChapters.length} files initialized in docs/`);
+  if (cli.dryRun) {
+    console.log(`[init] DRY-RUN: ${filteredChapters.length} files would be initialized in docs/`);
+  } else {
+    console.log(`[init] done. ${filteredChapters.length} files initialized in docs/`);
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -554,7 +561,9 @@ function legacyInit(root, templateDir, cli) {
     const dst = path.join(docsDir, file);
 
     const actions = overrideMap.get(file);
-    if (actions) {
+    if (cli.dryRun) {
+      console.log(`[init] DRY-RUN: ${file}${actions ? ` (${actions.length} override(s))` : ""}`);
+    } else if (actions) {
       const text = fs.readFileSync(src, "utf8");
       const result = applyOverrides(text, actions);
       fs.writeFileSync(dst, result, "utf8");
@@ -565,7 +574,11 @@ function legacyInit(root, templateDir, cli) {
     }
   }
 
-  console.log(`[init] done. ${templateFiles.length} files initialized in docs/`);
+  if (cli.dryRun) {
+    console.log(`[init] DRY-RUN: ${templateFiles.length} files would be initialized in docs/`);
+  } else {
+    console.log(`[init] done. ${templateFiles.length} files initialized in docs/`);
+  }
 }
 
 export { main };

@@ -254,8 +254,9 @@ function rewriteAgentsMd(filePath, sddSection, projectSection) {
 function main() {
   const args = process.argv.slice(2);
   const opts = parseArgs(args, {
-    flags: ["--force", "--template"],
+    flags: ["--force", "--template", "--dry-run"],
     options: [],
+    defaults: { force: false, template: false, dryRun: false },
   });
 
   if (opts.help) {
@@ -267,6 +268,7 @@ function main() {
     console.log("Options:");
     console.log("  --force      AGENTS.md を全体書き直す（SDD + PROJECT + 空の Guidelines）");
     console.log("  --template   AI を使わずテンプレートベースで生成する");
+    console.log("  --dry-run    ファイル書き込みせず生成内容を stdout に出力する");
     process.exit(0);
   }
 
@@ -338,6 +340,12 @@ function main() {
 
   // Update AGENTS.md
   const agentsPath = path.join(srcRoot, "AGENTS.md");
+
+  if (opts.dryRun) {
+    console.error("[agents] DRY-RUN: would update " + agentsPath);
+    process.stdout.write(projectSection + "\n");
+    return;
+  }
 
   if (opts.force) {
     const sddSection = loadSddTemplate(lang);

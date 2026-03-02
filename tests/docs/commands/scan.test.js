@@ -49,6 +49,26 @@ describe("scan CLI", () => {
     assert.ok(analysis.analyzedAt);
   });
 
+  it("--dry-run outputs to stdout without writing file", () => {
+    tmp = createTmpDir();
+    writeJson(tmp, ".sdd-forge/config.json", {
+      lang: "ja",
+      type: "cli/node-cli",
+      scan: { include: ["src/**/*.js"], exclude: [] },
+    });
+    writeFile(tmp, "src/index.js", 'export function hello() { return "hi"; }\n');
+    fs.mkdirSync(join(tmp, ".sdd-forge/output"), { recursive: true });
+
+    const result = execFileSync("node", [CMD, "--dry-run"], {
+      encoding: "utf8",
+      env: { ...process.env, SDD_WORK_ROOT: tmp, SDD_SOURCE_ROOT: tmp },
+    });
+    const analysis = JSON.parse(result);
+    assert.ok(analysis.analyzedAt);
+    // File should NOT be written
+    assert.ok(!fs.existsSync(join(tmp, ".sdd-forge/output/analysis.json")));
+  });
+
   it("shows help with --help", () => {
     const result = execFileSync("node", [CMD, "--help"], {
       encoding: "utf8",

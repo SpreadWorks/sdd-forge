@@ -41,6 +41,7 @@ function printHelp() {
       "Options:",
       "  --legacy        旧 CakePHP 固有解析器を使用",
       "  --stdout        結果を stdout に出力（ファイル書き込みしない）",
+      "  --dry-run       --stdout と同じ（ファイル書き込みしない）",
       "  -h, --help      このヘルプを表示",
     ].join("\n"),
   );
@@ -92,8 +93,8 @@ async function runLegacy(cli, root) {
 
 async function main() {
   const cli = parseArgs(process.argv.slice(2), {
-    flags: ["--stdout", "--legacy"],
-    defaults: { stdout: false, legacy: false },
+    flags: ["--stdout", "--legacy", "--dry-run"],
+    defaults: { stdout: false, legacy: false, dryRun: false },
   });
   if (cli.help) {
     printHelp();
@@ -155,7 +156,7 @@ async function main() {
 
   const json = JSON.stringify(result, null, 2);
 
-  if (cli.stdout) {
+  if (cli.stdout || cli.dryRun) {
     process.stdout.write(json + "\n");
   } else {
     const outputDir = path.join(root, ".sdd-forge", "output");

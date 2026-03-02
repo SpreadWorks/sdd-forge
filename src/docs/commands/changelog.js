@@ -111,13 +111,16 @@ function parseDirName(dirName) {
 
 function main() {
   const args = process.argv.slice(2);
-  const opts = parseArgs(args, { flags: [], options: [] });
+  const opts = parseArgs(args, { flags: ["--dry-run"], options: [], defaults: { dryRun: false } });
 
   if (opts.help) {
-    console.log("Usage: sdd-forge changelog [<output-file>]");
+    console.log("Usage: sdd-forge changelog [--dry-run] [<output-file>]");
     console.log("");
     console.log("  specs/ を走査して change_log.md を生成する。");
     console.log("  引数なしの場合は ${SDD_SOURCE_ROOT}/docs/change_log.md に出力する。");
+    console.log("");
+    console.log("Options:");
+    console.log("  --dry-run   ファイル書き込みせず結果を stdout に出力する");
     process.exit(0);
   }
 
@@ -231,8 +234,13 @@ function main() {
   out.push(manualBlock);
   out.push("");
 
-  fs.writeFileSync(outFile, out.join("\n"));
-  console.log(`generated change log: ${outFile}`);
+  if (opts.dryRun) {
+    process.stdout.write(out.join("\n"));
+    console.error(`[changelog] DRY-RUN: would write to ${outFile}`);
+  } else {
+    fs.writeFileSync(outFile, out.join("\n"));
+    console.log(`generated change log: ${outFile}`);
+  }
 }
 
 export { main };

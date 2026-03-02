@@ -79,7 +79,7 @@ async function askMultiChoice(rl, prompt, choices, t) {
 
 function parseSetupArgs(argv) {
   return parseArgs(argv, {
-    flags: ["--set-default", "--no-default"],
+    flags: ["--set-default", "--no-default", "--dry-run"],
     options: [
       "--name", "--path", "--work-root",
       "--type", "--purpose", "--tone",
@@ -99,6 +99,7 @@ function parseSetupArgs(argv) {
       uiLang: "",
       setDefault: false,
       noDefault: false,
+      dryRun: false,
     },
   });
 }
@@ -373,6 +374,7 @@ async function main() {
       "  --ui-lang <lang>            UI language: en|ja",
       "  --set-default               Set as default project",
       "  --no-default                Do not set as default project",
+      "  --dry-run                   Show what would be done without writing files",
       "  -h, --help                  Show this help",
     ].join("\n"));
     return;
@@ -606,6 +608,22 @@ async function main() {
 
   // 3. Validate
   validateConfig(config);
+
+  if (cli.dryRun) {
+    // Close readline if open
+    if (rl) rl.close();
+
+    console.log("[setup] DRY-RUN: would write the following files:");
+    console.log(`  - ${path.join(workRoot, ".sdd-forge", "config.json")}`);
+    if (projectContext) console.log(`  - ${path.join(workRoot, ".sdd-forge", "context.json")}`);
+    console.log(`  - ${path.join(workRoot, "AGENTS.md")}`);
+    console.log(`  - ${path.join(workRoot, "CLAUDE.md")} (symlink)`);
+    console.log(`  - ${path.join(workRoot, ".agents", "skills", "sdd-flow-start", "SKILL.md")}`);
+    console.log(`  - ${path.join(workRoot, ".agents", "skills", "sdd-flow-close", "SKILL.md")}`);
+    console.log("\n[setup] DRY-RUN: config.json content:");
+    console.log(JSON.stringify(config, null, 2));
+    return;
+  }
 
   // 4. Write config.json
   const sddDir = path.join(workRoot, ".sdd-forge");
