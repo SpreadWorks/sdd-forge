@@ -11,12 +11,13 @@
 import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
-import { repoRoot, parseArgs } from "../lib/cli.js";
-import { runSync } from "../lib/process.js";
+import { repoRoot, parseArgs } from "./lib/cli.js";
+import { runSync } from "./lib/process.js";
+import { saveFlowState } from "./lib/flow-state.js";
 
 // npm パッケージとして呼ばれた場合でもサブスクリプトを直接起動できるよう
 // パッケージディレクトリを保持する
-const PKG_DIR = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
+const PKG_DIR = path.resolve(path.dirname(fileURLToPath(import.meta.url)));
 
 function run(root, cmd, args) {
   const res = runSync(cmd, args, { cwd: root });
@@ -110,10 +111,13 @@ function main() {
   }
   let specRel = cli.spec;
 
+  // Capture base branch before spec creation (spec may create a feature branch)
+  const baseBranchBeforeSpec = run(root, "git", ["-C", root, "rev-parse", "--abbrev-ref", "HEAD"]).out.trim();
+
   if (!specRel) {
     const title = cli.title || deriveTitle(cli.request);
     const s = run(root, "node", [
-      path.join(PKG_DIR, "spec", "spec.js"),
+      path.join(PKG_DIR, "specs", "commands", "init.js"),
       "--title",
       title,
       "--allow-dirty",
@@ -137,7 +141,7 @@ function main() {
   const specAbs = path.resolve(root, specRel);
   ensureRequestInSpec(specAbs, cli.request);
 
-  const gate = run(root, "node", [path.join(PKG_DIR, "spec", "gate.js"), "--spec", specRel]);
+  const gate = run(root, "node", [path.join(PKG_DIR, "specs", "commands", "gate.js"), "--spec", specRel]);
   process.stdout.write(gate.out);
   process.stderr.write(gate.err);
   if (!gate.ok) {
@@ -160,8 +164,16 @@ function main() {
     process.exit(2);
   }
 
+  // Save flow state after gate success
+  const currentBranch = run(root, "git", ["-C", root, "rev-parse", "--abbrev-ref", "HEAD"]).out.trim();
+  saveFlowState(root, {
+    spec: specRel,
+    baseBranch: baseBranchBeforeSpec,
+    featureBranch: currentBranch,
+  });
+
   const forgeArgs = [
-    path.join(PKG_DIR, "forge", "forge.js"),
+    path.join(PKG_DIR, "docs", "commands", "forge.js"),
     "--prompt",
     cli.request,
     "--spec",

@@ -42,6 +42,11 @@
  */
 
 /**
+ * @typedef {Object} FlowConfig
+ * @property {string} [merge] - Merge strategy: "squash" | "ff-only" | "merge" (default: "squash")
+ */
+
+/**
  * @typedef {Object} SddConfig
  * @property {string} [uiLang]                - UI language ("en" | "ja")
  * @property {OutputConfig} [output]          - Output language configuration
@@ -53,6 +58,7 @@
  * @property {TextFillConfig} [textFill]      - text-fill settings
  * @property {string} [defaultAgent]          - Default agent name
  * @property {Object<string, AgentProvider>} [providers] - Agent definitions
+ * @property {FlowConfig} [flow]              - Flow configuration
  */
 
 /**
@@ -150,6 +156,18 @@ export function validateConfig(raw) {
       }
       if (ds.customInstruction != null && typeof ds.customInstruction !== "string") {
         errors.push("'documentStyle.customInstruction' must be a string if provided");
+      }
+    }
+  }
+
+  // flow (省略可)
+  if (raw.flow != null) {
+    if (typeof raw.flow !== "object") {
+      errors.push("'flow' must be an object");
+    } else {
+      const validMerge = new Set(["squash", "ff-only", "merge"]);
+      if (raw.flow.merge != null && !validMerge.has(raw.flow.merge)) {
+        errors.push(`'flow.merge' must be one of: ${[...validMerge].join(", ")}`);
       }
     }
   }
