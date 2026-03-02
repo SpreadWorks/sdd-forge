@@ -114,7 +114,7 @@ function buildAnalysisSummary(analysis) {
 
 function parseCliOptions(argv) {
   const opts = parseArgs(argv, {
-    flags: ["--verbose", "--auto-update-context"],
+    flags: ["--verbose", "--auto-update-context", "--dry-run"],
     options: ["--prompt", "--prompt-file", "--spec", "--max-runs", "--review-cmd", "--agent", "--mode"],
     aliases: { "-v": "--verbose" },
     defaults: {
@@ -124,6 +124,7 @@ function parseCliOptions(argv) {
       agent: "",
       verbose: false,
       autoUpdateContext: false,
+      dryRun: false,
       maxRuns: String(DEFAULT_MAX_RUNS),
       reviewCmd: DEFAULT_REVIEW_CMD,
       mode: DEFAULT_MODE,
@@ -155,6 +156,7 @@ function printHelp() {
       "  --review-cmd <cmd>     docs レビューコマンド (default: npm run sdd:review)",
       "  --agent <name>         AIエージェント: codex|claude (default: config.json の defaultAgent)",
       "  --mode <mode>          実行モード: local|assist|agent (default: local)",
+      "  --dry-run              ファイル書き込み・review・agent 呼び出しをスキップ（1 ラウンドで終了）",
       "  --auto-update-context  review 成功後に context.json を確認なしで自動更新",
       "  -v, --verbose          エージェント実行ログを逐次表示",
       "  -h, --help             このヘルプを表示",
@@ -619,7 +621,7 @@ async function main() {
 
   const analysisData = loadAnalysisData(root);
   const analysisSummary = buildAnalysisSummary(analysisData);
-  if (analysisData) {
+  if (analysisData && !cli.dryRun) {
     output.write("[forge] analysis data loaded.\n");
     const type = resolveType(cfg.type || "");
     let resolveFn = null;
@@ -639,6 +641,8 @@ async function main() {
         output.write(`[forge] @text: ${tfResult.filled} directives resolved\n`);
       }
     }
+  } else if (analysisData && cli.dryRun) {
+    output.write("[forge] DRY-RUN: skipping @data population and @text fill\n");
   }
 
   let userPrompt = String(cli.prompt || "").trim();
@@ -658,21 +662,33 @@ async function main() {
     specText = readText(specPath).trim();
   }
 
+  const effectiveMaxRuns = cli.dryRun ? 1 : cli.maxRuns;
+
   output.write(
     [
       "",
       "=== forge ===",
-      `maxRuns: ${cli.maxRuns}`,
+      `maxRuns: ${effectiveMaxRuns}${cli.dryRun ? " (dry-run)" : ""}`,
       `mode: ${mode}`,
-      `review: ${cli.reviewCmd}`,
+      `review: ${cli.dryRun ? "(skipped)" : cli.reviewCmd}`,
       specPath ? `spec: ${path.relative(root, specPath)}` : "spec: (not set)",
       "",
     ].join("\n")
   );
 
+  if (cli.dryRun) {
+    output.write("[forge] DRY-RUN: target files:\n");
+    for (const f of getTargetFiles(root)) {
+      output.write(`  - ${f}\n`);
+    }
+    output.write("[forge] DRY-RUN: no files written, no review, no agent calls.\n");
+    output.write("\n=== DONE (dry-run) ===\n");
+    return;
+  }
+
   let reviewFeedback = "";
-  for (let round = 1; round <= cli.maxRuns; round += 1) {
-    output.write(`\n[forge] round ${round}/${cli.maxRuns}\n`);
+  for (let round = 1; round <= effectiveMaxRuns; round += 1) {
+    output.write(`\n[forge] round ${round}/${effectiveMaxRuns}\n`);
     output.write(`[forge] run mode=${mode} review='${cli.reviewCmd}'\n`);
     let usedAgent = false;
     let agentFailed = false;
@@ -685,7 +701,7 @@ async function main() {
         const prompt = buildForgePrompt({
           userPrompt,
           round,
-          maxRuns: cli.maxRuns,
+          maxRuns: effectiveMaxRuns,
           reviewFeedback,
           specPath: specPath ? path.relative(root, specPath) : "",
           specText,

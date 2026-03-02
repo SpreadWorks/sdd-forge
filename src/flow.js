@@ -86,9 +86,9 @@ function detectUserConfirmationIssue(specAbs) {
 function main() {
   const root = repoRoot(import.meta.url);
   const cli = parseArgs(process.argv.slice(2), {
-    flags: ["--no-branch"],
+    flags: ["--no-branch", "--dry-run"],
     options: ["--request", "--title", "--spec", "--agent", "--max-runs", "--forge-mode", "--worktree"],
-    defaults: { request: "", title: "", spec: "", agent: "", maxRuns: "5", forgeMode: "local", noBranch: false, worktree: "" },
+    defaults: { request: "", title: "", spec: "", agent: "", maxRuns: "5", forgeMode: "local", noBranch: false, worktree: "", dryRun: false },
   });
   if (cli.help) {
     console.log(
@@ -104,6 +104,7 @@ function main() {
         "  --forge-mode <m>   docs:forge mode: local|assist|agent (default: local)",
         "  --no-branch        ブランチを作成せず spec のみ作成する",
         "  --worktree <path>  git worktree を作成して spec を配置する",
+        "  --dry-run          全サブコマンドを dry-run モードで実行する",
       ].join("\n"),
     );
     return;
@@ -127,6 +128,7 @@ function main() {
     ];
     if (cli.noBranch) specInitArgs.push("--no-branch");
     if (cli.worktree) specInitArgs.push("--worktree", cli.worktree);
+    if (cli.dryRun) specInitArgs.push("--dry-run");
     const s = run(root, "node", specInitArgs);
     process.stdout.write(s.out);
     process.stderr.write(s.err);
@@ -201,6 +203,9 @@ function main() {
   ];
   if (cli.agent) {
     forgeArgs.push("--agent", cli.agent);
+  }
+  if (cli.dryRun) {
+    forgeArgs.push("--dry-run");
   }
   const forge = run(root, "node", forgeArgs);
   process.stdout.write(forge.out);

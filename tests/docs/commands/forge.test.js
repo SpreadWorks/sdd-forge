@@ -37,6 +37,25 @@ describe("forge CLI", () => {
     assert.match(result, /--prompt/);
   });
 
+  it("--dry-run skips writes, review, and agent calls", () => {
+    tmp = createTmpDir();
+    writeJson(tmp, ".sdd-forge/config.json", { lang: "ja", type: "cli/node-cli" });
+    writeFile(tmp, "docs/01_test.md", "# 01. Test\n\nContent\n");
+
+    const result = execFileSync("node", [
+      CMD,
+      "--prompt", "test",
+      "--dry-run",
+    ], {
+      encoding: "utf8",
+      env: { ...process.env, SDD_WORK_ROOT: tmp, SDD_SOURCE_ROOT: tmp },
+    });
+    assert.match(result, /DRY-RUN/);
+    assert.match(result, /DONE \(dry-run\)/);
+    // Review was skipped
+    assert.match(result, /review: \(skipped\)/);
+  });
+
   it("runs review in local mode and handles pass", () => {
     tmp = createTmpDir();
     writeJson(tmp, ".sdd-forge/config.json", { lang: "ja", type: "cli/node-cli" });
