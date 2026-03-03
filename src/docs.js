@@ -38,22 +38,46 @@ if (subCmd === "build") {
   const textPath     = path.join(PKG_DIR, "docs/commands/text.js");
   const readmePath   = path.join(PKG_DIR, "docs/commands/readme.js");
 
+  const isVerbose = rest.includes("--verbose");
+  const isDryRun = rest.includes("--dry-run");
   const initArgs = rest.filter((a) => a === "--force");
-  const otherArgs = rest.filter((a) => a !== "--force");
+  const otherArgs = rest.filter((a) => a !== "--force" && a !== "--verbose" && a !== "--dry-run");
 
-  // 1. scan
+  const pipelineSteps = [
+    { label: "scan", weight: 1 },
+    { label: "init", weight: 1 },
+    { label: "data", weight: 1 },
+    { label: "text", weight: 3 },
+    { label: "readme", weight: 1 },
+    { label: "agents", weight: 1 },
+  ];
+
+  // Set up progress bar for the build pipeline
+  const { createProgress } = await import(path.join(PKG_DIR, "lib/progress.js"));
+  const progress = createProgress(pipelineSteps, { verbose: isVerbose });
+
+  const dryRunArg = isDryRun ? ["--dry-run"] : [];
+
+  // 1. scan (always runs — analysis.json is internal cache, not user-facing)
+  progress.start("scan");
   process.argv = [process.argv[0], scanPath];
   await import(scanPath);
+  progress.stepDone();
 
   // 2. init
-  process.argv = [process.argv[0], initPath, ...initArgs];
+  progress.start("init");
+  process.argv = [process.argv[0], initPath, ...initArgs, ...dryRunArg];
   await import(initPath);
+  progress.stepDone();
 
   // 3. data
-  process.argv = [process.argv[0], dataPath];
+  progress.start("data");
+  process.argv = [process.argv[0], dataPath, ...dryRunArg];
   await import(dataPath);
+  progress.stepDone();
 
   // 4. text
+  progress.start("text");
   const { loadJsonFile } = await import(path.join(PKG_DIR, "lib/config.js"));
   const workRoot = process.env.SDD_WORK_ROOT || process.cwd();
   let agentArgs = [];
@@ -70,22 +94,28 @@ if (subCmd === "build") {
   }
 
   if (agentArgs.length > 0) {
-    process.argv = [process.argv[0], textPath, ...agentArgs];
+    process.argv = [process.argv[0], textPath, ...agentArgs, ...dryRunArg];
     await import(textPath);
   } else {
-    console.error("[build] WARN: no defaultAgent configured, skipping text generation.");
-    console.error("[build] Set 'defaultAgent' in config.json or use: sdd-forge text --agent <name>");
+    progress.log("[text] WARN: no defaultAgent configured, skipping text generation.");
+    progress.log("[text] Set 'defaultAgent' in config.json or use: sdd-forge text --agent <name>");
   }
+  progress.stepDone();
 
   // 5. readme
-  process.argv = [process.argv[0], readmePath];
+  progress.start("readme");
+  process.argv = [process.argv[0], readmePath, ...dryRunArg];
   await import(readmePath);
+  progress.stepDone();
 
   // 6. agents (template-based in build, AI requires explicit `sdd-forge agents`)
+  progress.start("agents");
   const agentsPath = path.join(PKG_DIR, "docs/commands/agents.js");
-  process.argv = [process.argv[0], agentsPath, "--template"];
+  process.argv = [process.argv[0], agentsPath, "--template", ...dryRunArg];
   await import(agentsPath);
+  progress.stepDone();
 
+  progress.done();
   process.exit(0);
 }
 

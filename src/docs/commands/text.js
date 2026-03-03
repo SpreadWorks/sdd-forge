@@ -17,6 +17,9 @@ import { fileURLToPath } from "url";
 import { parseDirectives } from "../lib/directive-parser.js";
 import { repoRoot, parseArgs } from "../../lib/cli.js";
 import { loadConfig, resolveProjectContext } from "../../lib/config.js";
+import { createLogger } from "../../lib/progress.js";
+
+const logger = createLogger("text");
 
 // ---------------------------------------------------------------------------
 // 設定読み込み
@@ -377,11 +380,11 @@ function processTemplateFileBatch(text, analysis, fileName, agent, timeoutMs, cw
   const prompt = buildBatchPrompt(fileName, cleanText, projectContext, textFills, documentStyle, lang);
 
   if (dryRun) {
-    console.log(`[tfill] DRY-RUN batch ${fileName}: ${textFills.length} directive(s) → 1 call (${prompt.length} chars)`);
+    console.log(`[text] DRY-RUN batch ${fileName}: ${textFills.length} directive(s) → 1 call (${prompt.length} chars)`);
     return { text, filled: 0, skipped: textFills.length };
   }
 
-  console.error(`[tfill] Batch ${fileName}: ${textFills.length} directive(s) → 1 call`);
+  logger.verbose(`Batch ${fileName}: ${textFills.length} directive(s) → 1 call`);
 
   let result;
   try {
@@ -392,12 +395,12 @@ function processTemplateFileBatch(text, analysis, fileName, agent, timeoutMs, cw
     if (err.signal) parts.push(`signal: ${err.signal}`);
     if (err.stderr) parts.push(`stderr: ${String(err.stderr).slice(0, 400)}`);
     if (err.stdout) parts.push(`stdout: ${String(err.stdout).slice(0, 200)}`);
-    console.error(`[tfill] ERROR batch ${fileName}: ${parts.join(" | ")}`);
+    logger.log(`ERROR batch ${fileName}: ${parts.join(" | ")}`);
     return { text, filled: 0, skipped: textFills.length };
   }
 
   if (!result) {
-    console.error(`[tfill] WARN: empty batch response for ${fileName}`);
+    logger.log(`WARN: empty batch response for ${fileName}`);
     return { text, filled: 0, skipped: textFills.length };
   }
 
@@ -411,7 +414,7 @@ function processTemplateFileBatch(text, analysis, fileName, agent, timeoutMs, cw
 
   const filled = countFilledInBatch(finalText);
   const skipped = textFills.length - filled;
-  console.error(`[tfill] Batch DONE ${fileName}: ${filled}/${textFills.length} filled`);
+  logger.verbose(`Batch DONE ${fileName}: ${filled}/${textFills.length} filled`);
 
   return { text: finalText, filled, skipped };
 }
@@ -518,25 +521,25 @@ function processTemplate(text, analysis, fileName, agent, timeoutMs, cwd, dryRun
     const prompt = buildPrompt(d, fileName, lines, contextData, projectContext, documentStyle, lang);
 
     if (dryRun) {
-      console.log(`[tfill] DRY-RUN ${fileName}:${d.line + 1}: ${d.prompt.slice(0, 80)}`);
-      console.log(`[tfill]   prompt length: ${prompt.length} chars`);
+      console.log(`[text] DRY-RUN ${fileName}:${d.line + 1}: ${d.prompt.slice(0, 80)}`);
+      console.log(`[text]   prompt length: ${prompt.length} chars`);
       skipped++;
       continue;
     }
 
-    console.error(`[tfill] Processing ${fileName}:${d.line + 1}: ${d.prompt.slice(0, 60)}...`);
+    logger.verbose(`Processing ${fileName}:${d.line + 1}: ${d.prompt.slice(0, 60)}...`);
 
     let generated;
     try {
       generated = callAgent(agent, prompt, timeoutMs, cwd, preamblePatterns);
     } catch (err) {
-      console.error(`[tfill] ERROR calling agent for ${fileName}:${d.line + 1}: ${err.message.slice(0, 200)}`);
+      logger.log(`ERROR calling agent for ${fileName}:${d.line + 1}: ${err.message.slice(0, 200)}`);
       skipped++;
       continue;
     }
 
     if (!generated) {
-      console.error(`[tfill] WARN: empty response for ${fileName}:${d.line + 1}`);
+      logger.log(`WARN: empty response for ${fileName}:${d.line + 1}`);
       skipped++;
       continue;
     }
@@ -545,12 +548,12 @@ function processTemplate(text, analysis, fileName, agent, timeoutMs, cwd, dryRun
     if (d.params?.maxLines) {
       const genLines = generated.split("\n");
       if (genLines.length > d.params.maxLines) {
-        console.error(`[tfill] WARN: truncating ${fileName}:${d.line + 1} from ${genLines.length} to ${d.params.maxLines} lines`);
+        logger.log(`WARN: truncating ${fileName}:${d.line + 1} from ${genLines.length} to ${d.params.maxLines} lines`);
         generated = genLines.slice(0, d.params.maxLines).join("\n");
       }
     }
     if (d.params?.maxChars && generated.length > d.params.maxChars) {
-      console.error(`[tfill] WARN: truncating ${fileName}:${d.line + 1} from ${generated.length} to ${d.params.maxChars} chars`);
+      logger.log(`WARN: truncating ${fileName}:${d.line + 1} from ${generated.length} to ${d.params.maxChars} chars`);
       generated = generated.slice(0, d.params.maxChars);
     }
 
@@ -570,7 +573,7 @@ function processTemplate(text, analysis, fileName, agent, timeoutMs, cwd, dryRun
     const newLines = [d.raw, "", generated, ""];
     lines.splice(d.line, endLine - d.line, ...newLines);
     filled++;
-    console.error(`[tfill] FILLED ${fileName}:${d.line + 1} (${generated.split("\n").length} lines)`);
+    logger.verbose(`FILLED ${fileName}:${d.line + 1} (${generated.split("\n").length} lines)`);
   }
 
   let result = lines.join("\n");
@@ -648,7 +651,7 @@ function main() {
   }
 
   if (!cli.agent) {
-    console.error("[tfill] ERROR: --agent is required. Use --agent claude or --agent codex.");
+    logger.log("ERROR: --agent is required. Use --agent claude or --agent codex.");
     process.exit(1);
   }
 
@@ -659,8 +662,8 @@ function main() {
   if (fs.existsSync(analysisPath)) {
     analysis = JSON.parse(fs.readFileSync(analysisPath, "utf8"));
   } else {
-    console.warn(`[tfill] WARN: analysis.json not found: ${analysisPath}`);
-    console.warn("[tfill] Proceeding with empty analysis context. Run 'sdd-forge scan' if needed.");
+    logger.log(`WARN: analysis.json not found: ${analysisPath}`);
+    logger.log("Proceeding with empty analysis context. Run 'sdd-forge scan' if needed.");
   }
   const cfg = loadConfig(root);
   const agent = loadAgentConfig(cfg, cli.agent);
@@ -680,12 +683,12 @@ function main() {
   // --id 指定時: per-directive モードを強制
   if (cli.id) {
     cli.perDirective = true;
-    console.error(`[tfill] --id=${cli.id}: per-directive mode forced.`);
+    logger.verbose(`--id=${cli.id}: per-directive mode forced.`);
   }
 
   const processFn = cli.perDirective ? processTemplate : processTemplateFileBatch;
   if (!cli.perDirective) {
-    console.error(`[tfill] Mode: batch (file-level, ${docsFiles.length} call(s)). Use --per-directive for legacy mode.`);
+    logger.verbose(`Mode: batch (file-level, ${docsFiles.length} call(s)). Use --per-directive for legacy mode.`);
   }
 
   for (const file of docsFiles) {
@@ -705,7 +708,7 @@ function main() {
     if (!cli.perDirective && !cli.dryRun && result.filled === 0) {
       const textFills = parseDirectives(original).filter((d) => d.type === "text");
       if (textFills.length > 0) {
-        console.error(`[tfill] Batch returned 0 filled for ${file}. Falling back to per-directive mode...`);
+        logger.verbose(`Batch returned 0 filled for ${file}. Falling back to per-directive mode...`);
         result = processTemplate(original, analysis, file, agent, cli.timeout, root, cli.dryRun, preamblePatterns, projectContext, documentStyle, lang, cli.id || undefined);
       }
     }
@@ -717,12 +720,12 @@ function main() {
       changedFiles.add(file);
       if (!cli.dryRun) {
         fs.writeFileSync(filePath, result.text);
-        console.error(`[tfill] UPDATED: ${file}`);
+        logger.verbose(`UPDATED: ${file}`);
       }
     }
   }
 
-  console.error(`[tfill] Done. ${changedFiles.size} file(s) updated. filled: ${totalFilled}, skipped: ${totalSkipped}.`);
+  logger.log(`Done. ${changedFiles.size} file(s) updated. filled: ${totalFilled}, skipped: ${totalSkipped}.`);
 }
 
 export { main };

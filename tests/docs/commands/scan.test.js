@@ -2,7 +2,7 @@ import { describe, it, afterEach } from "node:test";
 import assert from "node:assert/strict";
 import fs from "fs";
 import { join } from "path";
-import { execFileSync } from "child_process";
+import { execFileSync, spawnSync } from "child_process";
 import { createTmpDir, removeTmpDir, writeJson, writeFile } from "../../helpers/tmp-dir.js";
 
 const CMD = join(process.cwd(), "src/docs/commands/scan.js");
@@ -26,6 +26,24 @@ describe("scan CLI", () => {
     });
     const analysis = JSON.parse(result);
     assert.ok(analysis.analyzedAt);
+  });
+
+  it("does not emit WARN or legacy prefix on stderr for node-cli type", () => {
+    tmp = createTmpDir();
+    writeJson(tmp, ".sdd-forge/config.json", {
+      lang: "ja",
+      type: "cli/node-cli",
+      scan: { include: ["src/**/*.js"], exclude: [] },
+    });
+    writeFile(tmp, "src/index.js", 'export function hello() { return "hi"; }\n');
+
+    const proc = spawnSync("node", [CMD, "--stdout"], {
+      encoding: "utf8",
+      env: { ...process.env, SDD_WORK_ROOT: tmp, SDD_SOURCE_ROOT: tmp },
+    });
+    assert.equal(proc.status, 0);
+    assert.ok(!proc.stderr.includes("WARN"), `unexpected WARN in stderr: ${proc.stderr}`);
+    assert.ok(!proc.stderr.includes("[analyze]"), `legacy [analyze] prefix found in stderr: ${proc.stderr}`);
   });
 
   it("writes analysis.json to output dir", () => {

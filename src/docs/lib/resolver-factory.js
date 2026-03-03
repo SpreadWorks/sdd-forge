@@ -10,6 +10,9 @@ import path from "path";
 import { fileURLToPath } from "url";
 import { createBaseCategories } from "./resolver-base.js";
 import { presetByLeaf } from "../presets/registry.js";
+import { createLogger } from "../../lib/progress.js";
+
+const logger = createLogger("resolver");
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -72,8 +75,8 @@ export async function createResolver(type, root) {
         const fwCategories = factory(desc, loadOverrides);
         Object.assign(categories, fwCategories);
       }
-    } catch (err) {
-      console.error(`[resolver] WARN: failed to load FW resolver ${fwModulePath}: ${err.message}`);
+    } catch (_) {
+      logger.verbose(`no FW resolver for ${leaf}, using base categories`);
     }
   }
 
@@ -88,13 +91,13 @@ export async function createResolver(type, root) {
     resolve(category, analysis) {
       const fn = categories[category];
       if (!fn) {
-        console.error(`[resolver] unknown category: ${category}`);
+        logger.verbose(`unknown category: ${category}`);
         return null;
       }
       try {
         return fn(analysis);
       } catch (err) {
-        console.error(`[resolver] error resolving "${category}": ${err.message}`);
+        logger.log(`error resolving "${category}": ${err.message}`);
         return null;
       }
     },

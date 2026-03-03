@@ -18,6 +18,9 @@ import { resolveType } from "../../lib/types.js";
 import { callAgent, resolveAgent } from "../../lib/agent.js";
 import { resolveChain, collectChapters, filterChapters } from "../lib/template-merger.js";
 import { parseBlocks } from "../lib/directive-parser.js";
+import { createLogger } from "../../lib/progress.js";
+
+const logger = createLogger("init");
 
 // ---------------------------------------------------------------------------
 // project-overrides 適用（後方互換）
@@ -270,7 +273,7 @@ function aiFilterChapters(chapters, analysis, agent, root) {
 
   const removed = chapters.filter((ch) => !selectedSet.has(ch.fileName));
   if (removed.length > 0) {
-    console.log(`[init] AI filter removed: ${removed.map((ch) => ch.fileName).join(", ")}`);
+    logger.verbose(`AI filter removed: ${removed.map((ch) => ch.fileName).join(", ")}`);
   }
 
   return filtered;
@@ -306,7 +309,7 @@ function main() {
 
   const rawType = cli.type || sddConfig?.type || defaults.defaultType;
   if (!rawType) {
-    console.error("[init] ERROR: type が設定されていません。.sdd-forge/config.json に \"type\" を設定するか --type オプションを指定してください。");
+    logger.log("ERROR: type が設定されていません。.sdd-forge/config.json に \"type\" を設定するか --type オプションを指定してください。");
     process.exit(1);
   }
 
@@ -314,9 +317,9 @@ function main() {
   const lang = sddConfig?.lang || "ja";
 
   if (type !== rawType) {
-    console.log(`[init] type=${rawType} → ${type} (alias resolved) lang=${lang}`);
+    logger.verbose(`type=${rawType} → ${type} (alias resolved) lang=${lang}`);
   } else {
-    console.log(`[init] type=${type} lang=${lang}`);
+    logger.verbose(`type=${type} lang=${lang}`);
   }
 
   // テンプレートルート
@@ -331,10 +334,10 @@ function main() {
     // 新しいテンプレート構造が存在しない場合、旧フラットディレクトリへフォールバック
     const legacyDir = path.join(templatesRoot, rawType);
     if (fs.existsSync(legacyDir)) {
-      console.log(`[init] fallback to legacy template directory: ${rawType}`);
+      logger.verbose(`fallback to legacy template directory: ${rawType}`);
       return legacyInit(root, legacyDir, cli);
     }
-    console.error(`[init] ERROR: ${err.message}`);
+    logger.log(`ERROR: ${err.message}`);
     process.exit(1);
   }
 
@@ -342,10 +345,10 @@ function main() {
   const customDir = path.join(root, ".sdd-forge", "custom");
   const hasCustom = fs.existsSync(customDir);
   if (hasCustom) {
-    console.log("[init] .sdd-forge/custom/ found, adding to chain");
+    logger.verbose(".sdd-forge/custom/ found, adding to chain");
   }
 
-  console.log(`[init] chain: ${chain.join(" → ")}${hasCustom ? " → .sdd-forge/custom" : ""}`);
+  logger.verbose(`chain: ${chain.join(" → ")}${hasCustom ? " → .sdd-forge/custom" : ""}`);
 
   // テンプレートマージ
   // collectChapters は templatesRoot 内のディレクトリのみ走査するため、
@@ -410,11 +413,11 @@ function main() {
           // @extends なし → 完全置換
           existing.content = customContent;
         }
-        console.log(`[init] custom override: ${fileName}`);
+        logger.verbose(`custom override: ${fileName}`);
       } else {
         // 新規章
         chapters.push({ fileName, content: customContent });
-        console.log(`[init] custom addition: ${fileName}`);
+        logger.verbose(`custom addition: ${fileName}`);
       }
     }
     // 再ソート
@@ -422,7 +425,7 @@ function main() {
   }
 
   if (chapters.length === 0) {
-    console.error("[init] ERROR: no template files found in chain");
+    logger.log("ERROR: no template files found in chain");
     process.exit(1);
   }
 
@@ -432,7 +435,7 @@ function main() {
   if (fs.existsSync(analysisPath)) {
     try {
       analysis = JSON.parse(fs.readFileSync(analysisPath, "utf8"));
-      console.log("[init] analysis.json found, applying chapter filter");
+      logger.verbose("analysis.json found, applying chapter filter");
     } catch (_) { /* ignore */ }
   }
 
@@ -443,13 +446,13 @@ function main() {
   if (analysis) {
     const agent = resolveAgent(sddConfig);
     if (agent) {
-      console.log("[init] AI chapter selection...");
+      logger.verbose("AI chapter selection...");
       filteredChapters = aiFilterChapters(filteredChapters, analysis, agent, root);
     }
   }
 
   const totalFiltered = chapters.length - filteredChapters.length;
-  console.log(`[init] ${filteredChapters.length} template files (${totalFiltered} filtered${totalFiltered > deterministicFiltered ? `, AI: ${totalFiltered - deterministicFiltered}` : ""})`);
+  logger.verbose(`${filteredChapters.length} template files (${totalFiltered} filtered${totalFiltered > deterministicFiltered ? `, AI: ${totalFiltered - deterministicFiltered}` : ""})`);
 
   // project-overrides を読み込み（後方互換）
   const overridesData = loadProjectOverrides(root);
@@ -458,7 +461,7 @@ function main() {
     for (const entry of overridesData.overrides) {
       overrideMap.set(entry.file, entry.actions);
     }
-    console.log(`[init] loaded project-overrides: ${overrideMap.size} file(s)`);
+    logger.verbose(`loaded project-overrides: ${overrideMap.size} file(s)`);
   }
 
   // docs/ ディレクトリの準備
@@ -471,16 +474,16 @@ function main() {
   const conflicts = fileNames.filter((f) => fs.existsSync(path.join(docsDir, f)));
 
   if (conflicts.length > 0 && !cli.force) {
-    console.error(`[init] ERROR: ${conflicts.length} file(s) already exist in docs/:`);
+    logger.log(`ERROR: ${conflicts.length} file(s) already exist in docs/:`);
     for (const f of conflicts) {
-      console.error(`  - ${f}`);
+      logger.log(`  - ${f}`);
     }
-    console.error("[init] Use --force to overwrite.");
+    logger.log("Use --force to overwrite.");
     process.exit(1);
   }
 
   if (conflicts.length > 0 && cli.force) {
-    console.log(`[init] --force: overwriting ${conflicts.length} existing file(s)`);
+    logger.verbose(`--force: overwriting ${conflicts.length} existing file(s)`);
   }
 
   // テンプレートを docs/ に出力
@@ -494,9 +497,9 @@ function main() {
     const actions = overrideMap.get(chapter.fileName);
     if (actions) {
       text = applyOverrides(text, actions);
-      console.log(`[init] merged + overrides applied: ${chapter.fileName} (${actions.length} action(s))`);
+      logger.verbose(`merged + overrides applied: ${chapter.fileName} (${actions.length} action(s))`);
     } else {
-      console.log(`[init] merged: ${chapter.fileName}`);
+      logger.verbose(`merged: ${chapter.fileName}`);
     }
 
     if (!cli.dryRun) {
@@ -506,9 +509,9 @@ function main() {
   }
 
   if (cli.dryRun) {
-    console.log(`[init] DRY-RUN: ${filteredChapters.length} files would be initialized in docs/`);
+    console.log(`DRY-RUN: ${filteredChapters.length} files would be initialized in docs/`);
   } else {
-    console.log(`[init] done. ${filteredChapters.length} files initialized in docs/`);
+    logger.verbose(`done. ${filteredChapters.length} files initialized in docs/`);
   }
 }
 
@@ -521,11 +524,11 @@ function legacyInit(root, templateDir, cli) {
     .sort();
 
   if (templateFiles.length === 0) {
-    console.error(`[init] ERROR: no template files found in ${templateDir}`);
+    logger.log(`ERROR: no template files found in ${templateDir}`);
     process.exit(1);
   }
 
-  console.log(`[init] found ${templateFiles.length} template files (legacy mode)`);
+  logger.verbose(`found ${templateFiles.length} template files (legacy mode)`);
 
   const overridesData = loadProjectOverrides(root);
   const overrideMap = new Map();
@@ -533,7 +536,7 @@ function legacyInit(root, templateDir, cli) {
     for (const entry of overridesData.overrides) {
       overrideMap.set(entry.file, entry.actions);
     }
-    console.log(`[init] loaded project-overrides: ${overrideMap.size} file(s)`);
+    logger.verbose(`loaded project-overrides: ${overrideMap.size} file(s)`);
   }
 
   const docsDir = path.join(root, "docs");
@@ -544,16 +547,16 @@ function legacyInit(root, templateDir, cli) {
   const conflicts = templateFiles.filter((f) => fs.existsSync(path.join(docsDir, f)));
 
   if (conflicts.length > 0 && !cli.force) {
-    console.error(`[init] ERROR: ${conflicts.length} file(s) already exist in docs/:`);
+    logger.log(`ERROR: ${conflicts.length} file(s) already exist in docs/:`);
     for (const f of conflicts) {
-      console.error(`  - ${f}`);
+      logger.log(`  - ${f}`);
     }
-    console.error("[init] Use --force to overwrite.");
+    logger.log("Use --force to overwrite.");
     process.exit(1);
   }
 
   if (conflicts.length > 0 && cli.force) {
-    console.log(`[init] --force: overwriting ${conflicts.length} existing file(s)`);
+    logger.verbose(`--force: overwriting ${conflicts.length} existing file(s)`);
   }
 
   for (const file of templateFiles) {
@@ -562,22 +565,22 @@ function legacyInit(root, templateDir, cli) {
 
     const actions = overrideMap.get(file);
     if (cli.dryRun) {
-      console.log(`[init] DRY-RUN: ${file}${actions ? ` (${actions.length} override(s))` : ""}`);
+      console.log(`DRY-RUN: ${file}${actions ? ` (${actions.length} override(s))` : ""}`);
     } else if (actions) {
       const text = fs.readFileSync(src, "utf8");
       const result = applyOverrides(text, actions);
       fs.writeFileSync(dst, result, "utf8");
-      console.log(`[init] copied + overrides applied: ${file} (${actions.length} action(s))`);
+      logger.verbose(`copied + overrides applied: ${file} (${actions.length} action(s))`);
     } else {
       fs.copyFileSync(src, dst);
-      console.log(`[init] copied: ${file}`);
+      logger.verbose(`copied: ${file}`);
     }
   }
 
   if (cli.dryRun) {
-    console.log(`[init] DRY-RUN: ${templateFiles.length} files would be initialized in docs/`);
+    console.log(`DRY-RUN: ${templateFiles.length} files would be initialized in docs/`);
   } else {
-    console.log(`[init] done. ${templateFiles.length} files initialized in docs/`);
+    logger.verbose(`done. ${templateFiles.length} files initialized in docs/`);
   }
 }
 
