@@ -28,7 +28,7 @@ import { createResolver } from "../lib/resolver-factory.js";
 // パッケージディレクトリを保持する
 const PKG_DIR = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 
-const DEFAULT_AGENT_TIMEOUT_MS = 600000;
+const DEFAULT_AGENT_TIMEOUT_MS = 1800000;
 const DEFAULT_WAIT_LOG_SEC = 1;
 const DEFAULT_MAX_RUNS = 3;
 const DEFAULT_REVIEW_CMD = "sdd-forge review";
