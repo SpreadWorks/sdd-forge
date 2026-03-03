@@ -17,6 +17,9 @@ import { loadConfig } from "../../lib/config.js";
 import { resolveType } from "../../lib/types.js";
 import { genericScan } from "../lib/scanner.js";
 import { presetByLeaf } from "../presets/registry.js";
+import { createLogger } from "../../lib/progress.js";
+
+const logger = createLogger("scan");
 
 /**
  * type パスからリーフセグメント（FW 名）を抽出する。
@@ -56,32 +59,26 @@ async function runLegacy(cli, root) {
 
   const result = { analyzedAt: new Date().toISOString() };
 
-  console.error("[analyze] controllers ...");
+  logger.verbose("controllers ...");
   result.controllers = analyzeControllers(appDir);
-  console.error(
-    `[analyze] controllers: ${result.controllers.summary.total} files, ${result.controllers.summary.totalActions} actions`,
-  );
+  logger.verbose(`controllers: ${result.controllers.summary.total} files, ${result.controllers.summary.totalActions} actions`);
 
-  console.error("[analyze] models ...");
+  logger.verbose("models ...");
   result.models = analyzeModels(appDir);
-  console.error(
-    `[analyze] models: ${result.models.summary.total} files (fe=${result.models.summary.feModels}, logic=${result.models.summary.logicModels})`,
-  );
+  logger.verbose(`models: ${result.models.summary.total} files (fe=${result.models.summary.feModels}, logic=${result.models.summary.logicModels})`);
 
-  console.error("[analyze] shells ...");
+  logger.verbose("shells ...");
   result.shells = analyzeShells(appDir);
-  console.error(`[analyze] shells: ${result.shells.summary.total} files`);
+  logger.verbose(`shells: ${result.shells.summary.total} files`);
 
-  console.error("[analyze] routes ...");
+  logger.verbose("routes ...");
   result.routes = analyzeRoutes(appDir);
-  console.error(`[analyze] routes: ${result.routes.summary.total} routes`);
+  logger.verbose(`routes: ${result.routes.summary.total} routes`);
 
-  console.error("[analyze] extras ...");
+  logger.verbose("extras ...");
   result.extras = analyzeExtras(appDir);
   const extrasKeys = Object.keys(result.extras);
-  console.error(
-    `[analyze] extras: ${extrasKeys.length} categories (${extrasKeys.join(", ")})`,
-  );
+  logger.verbose(`extras: ${extrasKeys.length} categories (${extrasKeys.join(", ")})`);
 
   return result;
 }
@@ -105,10 +102,10 @@ async function main() {
   let result;
 
   if (cli.legacy) {
-    console.error("[analyze] mode: legacy (CakePHP-specific)");
+    logger.verbose("mode: legacy (CakePHP-specific)");
     result = await runLegacy(cli, root);
   } else {
-    console.error(`[analyze] mode: generic (type=${type})`);
+    logger.verbose(`mode: generic (type=${type})`);
 
     // FW 固有モジュールからスキャンデフォルトを取得
     const leaf = leafSegment(type);
@@ -122,8 +119,8 @@ async function main() {
         if (fwModule.SCAN_DEFAULTS) {
           fwScanDefaults = fwModule.SCAN_DEFAULTS;
         }
-      } catch (err) {
-        console.error(`[analyze] WARN: failed to load FW module ${fwModulePath}: ${err.message}`);
+      } catch (_) {
+        logger.verbose(`no FW scanner for ${leaf}, using generic defaults`);
       }
     }
 
@@ -138,14 +135,14 @@ async function main() {
       try {
         const fwModule = await import(fwModulePath);
         if (fwModule.analyzeExtras) {
-          console.error(`[analyze] FW extras: ${leaf} ...`);
+          logger.verbose(`FW extras: ${leaf} ...`);
           const fwExtras = await fwModule.analyzeExtras(src, result);
           result.extras = { ...result.extras, ...fwExtras };
           const extrasKeys = Object.keys(result.extras);
-          console.error(`[analyze] FW extras: ${extrasKeys.length} categories (${extrasKeys.join(", ")})`);
+          logger.verbose(`FW extras: ${extrasKeys.length} categories (${extrasKeys.join(", ")})`);
         }
-      } catch (err) {
-        console.error(`[analyze] WARN: FW extras failed: ${err.message}`);
+      } catch (_) {
+        // no FW extras — already handled above
       }
     }
   }
@@ -161,7 +158,7 @@ async function main() {
     }
     const outputPath = path.join(outputDir, "analysis.json");
     fs.writeFileSync(outputPath, json + "\n");
-    console.error(`[analyze] output: ${path.relative(root, outputPath)}`);
+    logger.log(`output: ${path.relative(root, outputPath)}`);
   }
 }
 

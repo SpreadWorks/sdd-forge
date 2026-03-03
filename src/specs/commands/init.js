@@ -72,6 +72,21 @@ function ensureBaseBranch(root, base) {
   }
 }
 
+/**
+ * Detect the default base branch (main or master).
+ */
+function detectBaseBranch(root) {
+  for (const candidate of ["main", "master"]) {
+    try {
+      runGit(root, ["rev-parse", "--verify", candidate]);
+      return candidate;
+    } catch (_) {
+      // try next
+    }
+  }
+  return "main"; // fallback
+}
+
 function createQaTemplate() {
   return [
     "# Clarification Q&A",
@@ -129,7 +144,7 @@ function main() {
   const opts = parseArgs(process.argv.slice(2), {
     flags: ["--dry-run", "--allow-dirty", "--no-branch"],
     options: ["--title", "--base", "--worktree"],
-    defaults: { title: "", base: "master", dryRun: false, allowDirty: false, noBranch: false, worktree: "" },
+    defaults: { title: "", base: "", dryRun: false, allowDirty: false, noBranch: false, worktree: "" },
   });
   if (opts.help) {
     console.log(
@@ -138,7 +153,7 @@ function main() {
         "",
         "Options:",
         "  --title <name>      連番の後ろに付与する短い名前（必須）",
-        "  --base <branch>     ブランチ作成元 (default: master)",
+        "  --base <branch>     ブランチ作成元 (default: auto-detect main/master)",
         "  --dry-run           変更せず結果のみ表示",
         "  --allow-dirty       ワークツリーが dirty でも続行する",
         "  --no-branch         ブランチを作成せず spec のみ作成する",
@@ -150,8 +165,8 @@ function main() {
   if (!opts.title) {
     throw new Error("--title is required");
   }
-  opts.base = opts.base || "master";
   const root = repoRoot(import.meta.url);
+  opts.base = opts.base || detectBaseBranch(root);
 
   // Determine branching strategy
   const inWorktree = isInsideWorktree(root);

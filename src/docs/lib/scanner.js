@@ -12,6 +12,9 @@
 
 import fs from "fs";
 import path from "path";
+import { createLogger } from "../../lib/progress.js";
+
+const logger = createLogger("scan");
 
 // ---------------------------------------------------------------------------
 // デフォルトスキャン設定（type ごと）
@@ -465,44 +468,44 @@ export function genericScan(sourceRoot, type, scanOverrides) {
   const result = { analyzedAt: new Date().toISOString() };
 
   if (scanCfg.controllers) {
-    console.error("[analyze] controllers ...");
+    logger.verbose("controllers ...");
     result.controllers = analyzeControllers(sourceRoot, scanCfg);
     if (result.controllers) {
-      console.error(
-        `[analyze] controllers: ${result.controllers.summary.total} files, ${result.controllers.summary.totalActions} actions`,
+      logger.verbose(
+        `controllers: ${result.controllers.summary.total} files, ${result.controllers.summary.totalActions} actions`,
       );
     }
   }
 
   if (scanCfg.models) {
-    console.error("[analyze] models ...");
+    logger.verbose("models ...");
     result.models = analyzeModels(sourceRoot, scanCfg);
     if (result.models) {
-      console.error(
-        `[analyze] models: ${result.models.summary.total} files (fe=${result.models.summary.feModels}, logic=${result.models.summary.logicModels})`,
+      logger.verbose(
+        `models: ${result.models.summary.total} files (fe=${result.models.summary.feModels}, logic=${result.models.summary.logicModels})`,
       );
     }
   }
 
   if (scanCfg.shells) {
-    console.error("[analyze] shells ...");
+    logger.verbose("shells ...");
     result.shells = analyzeShells(sourceRoot, scanCfg);
     if (result.shells) {
-      console.error(`[analyze] shells: ${result.shells.summary.total} files`);
+      logger.verbose(`shells: ${result.shells.summary.total} files`);
     }
   }
 
   if (scanCfg.routes) {
-    console.error("[analyze] routes ...");
+    logger.verbose("routes ...");
     result.routes = analyzeRoutes(sourceRoot, scanCfg);
-    console.error(`[analyze] routes: ${result.routes.summary.total} routes`);
+    logger.verbose(`routes: ${result.routes.summary.total} routes`);
   }
 
-  console.error("[analyze] extras ...");
+  logger.verbose("extras ...");
   result.extras = analyzeExtras(sourceRoot, scanCfg);
   const extrasKeys = Object.keys(result.extras);
   if (extrasKeys.length > 0) {
-    console.error(`[analyze] extras: ${extrasKeys.length} categories (${extrasKeys.join(", ")})`);
+    logger.verbose(`extras: ${extrasKeys.length} categories (${extrasKeys.join(", ")})`);
   }
 
   return result;

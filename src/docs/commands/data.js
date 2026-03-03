@@ -19,6 +19,9 @@ import { createResolver } from "../lib/resolver-factory.js";
 import { repoRoot, parseArgs } from "../../lib/cli.js";
 import { loadConfig } from "../../lib/config.js";
 import { resolveType } from "../../lib/types.js";
+import { createLogger } from "../../lib/progress.js";
+
+const logger = createLogger("data");
 
 // ---------------------------------------------------------------------------
 // テンプレートファイル処理
@@ -51,20 +54,20 @@ function processTemplate(text, analysis, fileName, resolveFn) {
 
     if (d.type === "text") {
       skipped++;
-      console.error(`[populate] SKIP @text in ${fileName}:${d.line + 1}: ${d.prompt.slice(0, 60)}...`);
+      logger.verbose(`SKIP @text in ${fileName}:${d.line + 1}: ${d.prompt.slice(0, 60)}...`);
       continue;
     }
 
     if (d.type === "data") {
       const data = resolve(d.category, analysis);
       if (data === null) {
-        console.error(`[populate] WARN: no data for category "${d.category}" in ${fileName}:${d.line + 1}`);
+        logger.log(`WARN: no data for category "${d.category}" in ${fileName}:${d.line + 1}`);
         continue;
       }
 
       const renderer = RENDERERS[d.renderer];
       if (!renderer) {
-        console.error(`[populate] WARN: unknown renderer "${d.renderer}" in ${fileName}:${d.line + 1}`);
+        logger.log(`WARN: unknown renderer "${d.renderer}" in ${fileName}:${d.line + 1}`);
         continue;
       }
 
@@ -151,8 +154,8 @@ async function main() {
   const analysisPath = path.join(root, ".sdd-forge", "output", "analysis.json");
 
   if (!fs.existsSync(analysisPath)) {
-    console.error(`[populate] ERROR: analysis.json not found: ${analysisPath}`);
-    console.error("[populate] Run 'sdd-forge scan' first.");
+    logger.log(`ERROR: analysis.json not found: ${analysisPath}`);
+    logger.log("Run 'sdd-forge scan' first.");
     process.exit(1);
   }
 
@@ -165,9 +168,9 @@ async function main() {
     const type = resolveType(cfg.type || "php-mvc");
     const resolver = await createResolver(type, root);
     resolveFn = (category, a) => resolver.resolve(category, a);
-    console.error(`[populate] resolver: ${type}`);
+    logger.verbose(`resolver: ${type}`);
   } catch (err) {
-    console.error(`[populate] ERROR: failed to create resolver: ${err.message}`);
+    logger.log(`ERROR: failed to create resolver: ${err.message}`);
     process.exit(1);
   }
 
@@ -192,19 +195,20 @@ async function main() {
       const linesAfter = result.text.split("\n").length;
 
       if (cli.dryRun || cli.stdout) {
-        console.log(`[populate] ${file}: ${linesBefore} → ${linesAfter} lines (${linesAfter - linesBefore > 0 ? "+" : ""}${linesAfter - linesBefore})`);
+        console.log(`[data] ${file}: ${linesBefore} → ${linesAfter} lines (${linesAfter - linesBefore > 0 ? "+" : ""}${linesAfter - linesBefore})`);
       }
 
       if (!cli.dryRun) {
         fs.writeFileSync(filePath, result.text);
-        console.error(`[populate] UPDATED: ${file}`);
+        logger.verbose(`UPDATED: ${file}`);
       } else {
-        console.error(`[populate] DRY-RUN: ${file} would be updated`);
+        logger.verbose(`DRY-RUN: ${file} would be updated`);
       }
     }
   }
 
-  console.error(`[populate] Done. ${changedFiles.size} file(s) updated. @data: ${totalReplaced} replaced, @text: ${totalSkipped} skipped.`);
+  const verb = cli.dryRun ? "would update" : "updated";
+  logger.log(`Done. ${changedFiles.size} file(s) ${verb}. @data: ${totalReplaced} replaced, @text: ${totalSkipped} skipped.`);
 }
 
 export { main };

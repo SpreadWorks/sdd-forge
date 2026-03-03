@@ -16,6 +16,9 @@ import { repoRoot, parseArgs } from "../../lib/cli.js";
 import { loadJsonFile, loadPackageField } from "../../lib/config.js";
 import { resolveType } from "../../lib/types.js";
 import { resolveChain, resolveReadmeTemplate } from "../lib/template-merger.js";
+import { createLogger } from "../../lib/progress.js";
+
+const logger = createLogger("readme");
 
 // npm パッケージ: テンプレートはパッケージ自身の templates/ に同梱される
 const PKG_DIR = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
@@ -162,7 +165,7 @@ Options:
   }
 
   if (!fs.existsSync(templatePath)) {
-    console.log(`[readme] テンプレートが見つかりません (type=${type})。スキップします。`);
+    logger.log(`テンプレートが見つかりません (type=${type})。スキップします。`);
     return;
   }
 
@@ -175,20 +178,20 @@ Options:
   if (fs.existsSync(readmePath)) {
     const current = fs.readFileSync(readmePath, "utf8");
     if (current === newContent) {
-      console.log("[readme] No changes detected. Skipping write.");
+      logger.log("No changes detected. Skipping write.");
       return;
     }
   }
 
   if (cli.dryRun) {
-    console.log("[readme] --dry-run: would write README.md");
+    logger.log("--dry-run: would write README.md");
     console.log("---");
     console.log(newContent);
     return;
   }
 
   fs.writeFileSync(readmePath, newContent, "utf8");
-  console.log("[readme] README.md updated.");
+  logger.log("README.md updated.");
 }
 
 export { main };
