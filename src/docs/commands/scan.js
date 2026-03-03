@@ -31,6 +31,7 @@ function leafSegment(typePath) {
 const FW_MODULES = {
   cakephp2: "../presets/webapp/cakephp2/scanner.js",
   laravel: "../presets/webapp/laravel/scanner.js",
+  symfony: "../presets/webapp/symfony/scanner.js",
 };
 
 function printHelp() {

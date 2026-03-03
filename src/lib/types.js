@@ -79,6 +79,7 @@ const VALID_TONES = new Set(["polite", "formal", "casual"]);
 export const TYPE_ALIASES = {
   "php-mvc": "webapp/cakephp2",
   "laravel": "webapp/laravel",
+  "symfony": "webapp/symfony",
   "node-cli": "cli/node-cli",
 };
 

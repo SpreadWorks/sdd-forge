@@ -19,6 +19,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const FW_RESOLVER_MODULES = {
   cakephp2: "../presets/webapp/cakephp2/resolver.js",
   laravel: "../presets/webapp/laravel/resolver.js",
+  symfony: "../presets/webapp/symfony/resolver.js",
 };
 
 // ---------------------------------------------------------------------------
