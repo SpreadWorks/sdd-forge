@@ -12,6 +12,7 @@
  */
 
 import fs from "fs";
+import os from "os";
 import path from "path";
 import readline from "readline";
 import { execFile, spawn } from "child_process";
@@ -28,11 +29,12 @@ import { createResolver } from "../lib/resolver-factory.js";
 // パッケージディレクトリを保持する
 const PKG_DIR = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 
-const DEFAULT_AGENT_TIMEOUT_MS = 1800000;
+const DEFAULT_AGENT_TIMEOUT_MS = 300000;
 const DEFAULT_WAIT_LOG_SEC = 1;
 const DEFAULT_MAX_RUNS = 3;
 const DEFAULT_REVIEW_CMD = "sdd-forge review";
 const DEFAULT_MODE = "local";
+const DEFAULT_CONCURRENCY = 3;
 
 function getTargetFiles(root) {
   const docsDir = path.join(root, "docs");
@@ -152,8 +154,8 @@ function printHelp() {
       "  --prompt <text>        開始プロンプト",
       "  --prompt-file <path>   開始プロンプトファイル",
       "  --spec <path>          入力仕様書（spec.md）",
-      "  --max-runs <n>         反復回数 (default: 5)",
-      "  --review-cmd <cmd>     docs レビューコマンド (default: npm run sdd:review)",
+      "  --max-runs <n>         反復回数 (default: 3)",
+      "  --review-cmd <cmd>     docs レビューコマンド (default: sdd-forge review)",
       "  --agent <name>         AIエージェント: codex|claude (default: config.json の defaultAgent)",
       "  --mode <mode>          実行モード: local|assist|agent (default: local)",
       "  --dry-run              ファイル書き込み・review・agent 呼び出しをスキップ（1 ラウンドで終了）",
@@ -161,27 +163,59 @@ function printHelp() {
       "  -v, --verbose          エージェント実行ログを逐次表示",
       "  -h, --help             このヘルプを表示",
       "",
-      "NEEDS_INPUT:",
-      "  追加情報が必要な場合、AI は次形式で出力すること:",
-      "  NEEDS_INPUT",
-      "  - 質問1",
-      "  - 質問2",
+      "Per-file mode:",
+      "  provider に systemPromptFlag が設定されている場合、ファイルごとに非同期で agent を呼び出します。",
+      "  同時実行数は config.json の limits.concurrency で設定可能（default: 3）。",
       "",
     ].join("\n")
   );
 }
 
-function buildArgs(agent, prompt) {
+function buildArgs(agent, prompt, systemPrompt) {
   const args = Array.isArray(agent.args) ? [...agent.args] : [];
+
+  // Prepend system prompt flag if provider supports it and systemPrompt given
+  const flag = agent.systemPromptFlag;
+  let prefix = [];
+  let cleanupFile;
+  if (flag && systemPrompt) {
+    if (flag === "--system-prompt-file") {
+      // Write to temp file for providers that require file-based system prompts
+      const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "sdd-forge-"));
+      const tmpFile = path.join(tmpDir, "system-prompt.md");
+      fs.writeFileSync(tmpFile, systemPrompt, "utf8");
+      prefix = [flag, tmpFile];
+      cleanupFile = tmpFile;
+    } else {
+      prefix = [flag, systemPrompt];
+    }
+  }
+
   const hasToken = args.some(
     (a) => typeof a === "string" && a.includes("{{PROMPT}}")
   );
+  let finalArgs;
   if (hasToken) {
-    return args.map((a) =>
+    finalArgs = args.map((a) =>
       typeof a === "string" ? a.replaceAll("{{PROMPT}}", prompt) : a
     );
+  } else {
+    finalArgs = [...args, prompt];
   }
-  return [...args, prompt];
+
+  // If systemPromptFlag not set but systemPrompt given, prepend to prompt
+  if (!flag && systemPrompt) {
+    const combined = systemPrompt + "\n\n" + prompt;
+    if (hasToken) {
+      finalArgs = (Array.isArray(agent.args) ? [...agent.args] : []).map((a) =>
+        typeof a === "string" ? a.replaceAll("{{PROMPT}}", combined) : a
+      );
+    } else {
+      finalArgs = [...(Array.isArray(agent.args) ? [...agent.args] : []), combined];
+    }
+  }
+
+  return { args: [...prefix, ...finalArgs], cleanupFile };
 }
 
 function runAgent(agent, prompt, options = {}) {
@@ -198,7 +232,13 @@ function runAgent(agent, prompt, options = {}) {
     options.label || agent?.name || agent?.command || "agent"
   );
   const streamOutput = options.streamOutput === true;
-  const args = buildArgs(agent, prompt);
+  const { args, cleanupFile } = buildArgs(agent, prompt, options.systemPrompt);
+
+  function cleanup() {
+    if (cleanupFile) {
+      try { fs.unlinkSync(cleanupFile); fs.rmdirSync(path.dirname(cleanupFile)); } catch (_) {}
+    }
+  }
 
   return new Promise((resolve, reject) => {
     const ticker =
@@ -239,12 +279,14 @@ function runAgent(agent, prompt, options = {}) {
       child.on("error", (err) => {
         if (ticker) clearInterval(ticker);
         clearTimeout(timeoutTimer);
+        cleanup();
         reject(new Error(`Agent failed: ${agent.command}\n${err.message}`));
       });
 
       child.on("close", (code, signal) => {
         if (ticker) clearInterval(ticker);
         clearTimeout(timeoutTimer);
+        cleanup();
         if (code === 0 && !signal) {
           resolve(stdoutBuf.trim());
           return;
@@ -272,6 +314,7 @@ function runAgent(agent, prompt, options = {}) {
       { maxBuffer: 20 * 1024 * 1024, timeout: timeoutMs, cwd: runCwd },
       (err, stdout, stderr) => {
         if (ticker) clearInterval(ticker);
+        cleanup();
         if (err) {
           const timedOut = err.killed === true;
           reject(
@@ -476,6 +519,57 @@ function summarizeNeedsInput(reviewOut) {
   return uniq.slice(0, 8);
 }
 
+/**
+ * Build the system prompt (shared across all files in a round).
+ * Contains: role, rules, user request, spec, analysis summary.
+ */
+function buildForgeSystemPrompt({
+  userPrompt,
+  specPath,
+  specText,
+  analysisSummary,
+}) {
+  const specBlock = specPath
+    ? ["[SPEC_PATH]", specPath, "", "[SPEC_CONTENT]", specText || "(empty)", ""]
+    : [];
+  return [
+    "あなたは docs-forge です。指定されたドキュメントファイルの品質を改善してください。",
+    "",
+    "[USER_PROMPT]",
+    userPrompt,
+    "",
+    ...specBlock,
+    "[RULES]",
+    "- 編集対象は指定された TARGET_FILE のみ",
+    "- 推測は避け、ソースコードの事実を優先",
+    "- 変更は必要最小限にする",
+    "- 説明文は簡潔で主語を明確にする",
+    "- 不明な場合は編集せずスキップする",
+    "",
+    ...(analysisSummary
+      ? ["[SOURCE_ANALYSIS]", analysisSummary, ""]
+      : []),
+  ].join("\n");
+}
+
+/**
+ * Build the user prompt for a single file.
+ */
+function buildForgeFilePrompt({ targetFile, round, maxRuns, reviewFeedback }) {
+  return [
+    `round: ${round}/${maxRuns}`,
+    "",
+    "[TARGET_FILE]",
+    targetFile,
+    "",
+    "[PREVIOUS_REVIEW_FEEDBACK]",
+    reviewFeedback || "なし",
+  ].join("\n");
+}
+
+/**
+ * Build a combined prompt (for providers without system prompt support).
+ */
 function buildForgePrompt({
   userPrompt,
   round,
@@ -504,13 +598,10 @@ function buildForgePrompt({
     "",
     "[RULES]",
     "- 編集対象は TARGET_FILES のみ",
-    "- 推測は避け、app/ sdd-forge/ specs/ の事実を優先",
-    "- 既存の指摘を潰すために必要な最小限の変更を行う",
-    "- 変更後に説明文は簡潔で主語を明確にする",
-    "- 追加情報が必要で確定できない場合は、編集せず次だけを出力する:",
-    "  NEEDS_INPUT",
-    "  - 質問1",
-    "  - 質問2",
+    "- 推測は避け、ソースコードの事実を優先",
+    "- 変更は必要最小限にする",
+    "- 説明文は簡潔で主語を明確にする",
+    "- 不明な場合は編集せずスキップする",
     "",
     ...(analysisSummary
       ? ["[SOURCE_ANALYSIS]", analysisSummary, ""]
@@ -518,6 +609,63 @@ function buildForgePrompt({
     "[PREVIOUS_REVIEW_FEEDBACK]",
     reviewFeedback || "なし",
   ].join("\n");
+}
+
+/**
+ * Run agent for each file with concurrency control.
+ * Returns an array of { file, ok, error? } results.
+ */
+async function runPerFile({ agent, targetFiles, systemPrompt, round, maxRuns, reviewFeedback, root, timeoutMs, concurrency, verbose }) {
+  const results = [];
+  let running = 0;
+  let idx = 0;
+
+  return new Promise((resolve) => {
+    function next() {
+      // All dispatched and all done
+      if (idx >= targetFiles.length && running === 0) {
+        resolve(results);
+        return;
+      }
+
+      // Dispatch up to concurrency limit
+      while (running < concurrency && idx < targetFiles.length) {
+        const file = targetFiles[idx++];
+        running++;
+
+        const filePrompt = buildForgeFilePrompt({
+          targetFile: file,
+          round,
+          maxRuns,
+          reviewFeedback,
+        });
+
+        output.write(`[forge] start: ${file}\n`);
+
+        runAgent(agent, filePrompt, {
+          label: `forge:${path.basename(file)}`,
+          cwd: root,
+          timeoutMs,
+          streamOutput: verbose,
+          systemPrompt,
+        })
+          .then(() => {
+            output.write(`[forge] done: ${file}\n`);
+            results.push({ file, ok: true });
+          })
+          .catch((e) => {
+            output.write(`[forge] failed: ${file} — ${String(e.message || e).slice(0, 200)}\n`);
+            results.push({ file, ok: false, error: e.message });
+          })
+          .finally(() => {
+            running--;
+            next();
+          });
+      }
+    }
+
+    next();
+  });
 }
 
 /**
@@ -686,6 +834,8 @@ async function main() {
     return;
   }
 
+  const concurrency = Number(cfg.limits?.concurrency || 0) || DEFAULT_CONCURRENCY;
+
   let reviewFeedback = "";
   for (let round = 1; round <= effectiveMaxRuns; round += 1) {
     output.write(`\n[forge] round ${round}/${effectiveMaxRuns}\n`);
@@ -698,45 +848,70 @@ async function main() {
           output.write("[forge] assist mode: agent not configured, run local-only.\n");
         }
       } else {
-        const prompt = buildForgePrompt({
-          userPrompt,
-          round,
-          maxRuns: effectiveMaxRuns,
-          reviewFeedback,
-          specPath: specPath ? path.relative(root, specPath) : "",
-          specText,
-          analysisSummary,
-          targetFiles: getTargetFiles(root),
-        });
-        try {
-          const out = await runAgent(agent, prompt, {
-            label: "forge.generate",
-            cwd: root,
-            timeoutMs,
-            streamOutput: cli.verbose,
-          });
-          usedAgent = true;
+        const targetFiles = getTargetFiles(root);
+        const usePerFile = !!agent.systemPromptFlag;
 
-          const needsInput = extractNeedsInput(out);
-          if (needsInput.length > 0) {
-            output.write("\n[forge] NEEDS_INPUT detected.\n");
-            output.write("追加情報が必要です。以下に回答してください:\n");
-            for (const q of needsInput) {
-              output.write(`- ${q}\n`);
+        if (usePerFile) {
+          // Per-file async processing with system prompt separation
+          const systemPrompt = buildForgeSystemPrompt({
+            userPrompt,
+            specPath: specPath ? path.relative(root, specPath) : "",
+            specText,
+            analysisSummary,
+          });
+
+          output.write(`[forge] per-file mode: ${targetFiles.length} files, concurrency=${concurrency}\n`);
+
+          const results = await runPerFile({
+            agent,
+            targetFiles,
+            systemPrompt,
+            round,
+            maxRuns: effectiveMaxRuns,
+            reviewFeedback,
+            root,
+            timeoutMs,
+            concurrency,
+            verbose: cli.verbose,
+          });
+
+          const succeeded = results.filter((r) => r.ok).length;
+          const failed = results.filter((r) => !r.ok).length;
+          output.write(`[forge] per-file done: ${succeeded} ok, ${failed} failed\n`);
+
+          if (succeeded > 0) usedAgent = true;
+          if (failed > 0 && succeeded === 0) agentFailed = true;
+        } else {
+          // Legacy: single prompt with all files
+          const prompt = buildForgePrompt({
+            userPrompt,
+            round,
+            maxRuns: effectiveMaxRuns,
+            reviewFeedback,
+            specPath: specPath ? path.relative(root, specPath) : "",
+            specText,
+            analysisSummary,
+            targetFiles,
+          });
+          try {
+            await runAgent(agent, prompt, {
+              label: "forge.generate",
+              cwd: root,
+              timeoutMs,
+              streamOutput: cli.verbose,
+            });
+            usedAgent = true;
+          } catch (e) {
+            agentFailed = true;
+            if (mode === "agent") {
+              throw e;
             }
-            process.exitCode = 2;
-            return;
+            output.write(
+              `[forge] agent step failed. continue with local pipeline.\n${String(
+                e instanceof Error ? e.message : e
+              ).slice(0, 500)}\n`,
+            );
           }
-        } catch (e) {
-          agentFailed = true;
-          if (mode === "agent") {
-            throw e;
-          }
-          output.write(
-            `[forge] agent step failed. continue with local pipeline.\n${String(
-              e instanceof Error ? e.message : e
-            ).slice(0, 500)}\n`,
-          );
         }
       }
     }
@@ -790,7 +965,13 @@ async function main() {
   throw new Error("forge: max runs reached but review still failing.");
 }
 
-export { main };
+export {
+  main,
+  buildArgs,
+  buildForgeSystemPrompt,
+  buildForgeFilePrompt,
+  runPerFile,
+};
 
 const isDirectRun = process.argv[1] &&
   path.resolve(process.argv[1]) === path.resolve(fileURLToPath(import.meta.url));

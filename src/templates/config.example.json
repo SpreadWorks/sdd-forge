@@ -7,7 +7,8 @@
   "lang": "ja",
   "type": "webapp/cakephp2",
   "limits": {
-    "designTimeoutMs": 900000
+    "designTimeoutMs": 900000,
+    "concurrency": 3
   },
   "documentStyle": {
     "purpose": "developer-guide",
@@ -25,7 +26,8 @@
     "claude": {
       "name": "claude-cli",
       "command": "claude",
-      "args": ["--model", "sonnet", "-p", "{{PROMPT}}"]
+      "args": ["--model", "sonnet", "-p", "{{PROMPT}}"],
+      "systemPromptFlag": "--system-prompt"
     }
   }
 }

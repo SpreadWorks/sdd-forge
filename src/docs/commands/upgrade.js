@@ -147,6 +147,30 @@ function upgradeAgentsSddSection(workRoot, lang, dryRun) {
 }
 
 // ---------------------------------------------------------------------------
+// Config hints (non-destructive — just prints suggestions)
+// ---------------------------------------------------------------------------
+
+const SYSTEM_PROMPT_FLAGS = {
+  claude: "--system-prompt",
+  codex: "--system-prompt-file",
+};
+
+/**
+ * Check config.json for missing new settings and print hints.
+ */
+function checkConfigHints(config, t) {
+  if (!config.providers) return;
+
+  for (const [key, prov] of Object.entries(config.providers)) {
+    if (prov.systemPromptFlag) continue;
+    const suggested = SYSTEM_PROMPT_FLAGS[key] || SYSTEM_PROMPT_FLAGS[prov.command];
+    if (suggested) {
+      console.log(t("upgrade.hintSystemPromptFlag", { provider: key, flag: suggested }));
+    }
+  }
+}
+
+// ---------------------------------------------------------------------------
 // Main
 // ---------------------------------------------------------------------------
 
@@ -201,6 +225,9 @@ async function main() {
   } else {
     console.log(t("upgrade.agentsUnchanged"));
   }
+
+  // 3. Config hints — check for missing new settings
+  checkConfigHints(config, t);
 
   // Summary
   const hasChanges = skillResults.some((r) => r.status === "updated") || agentsStatus === "updated";

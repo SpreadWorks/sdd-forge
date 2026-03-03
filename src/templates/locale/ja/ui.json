@@ -102,7 +102,8 @@
     "agentsUnchanged": "[upgrade] AGENTS.md の SDD セクションに変更はありません。",
     "noChanges": "[upgrade] すべてのファイルは最新です。",
     "dryRunFooter": "[upgrade] DRY-RUN: ファイルは変更されませんでした。--dry-run なしで実行してください。",
-    "done": "[upgrade] アップグレード完了。"
+    "done": "[upgrade] アップグレード完了。",
+    "hintSystemPromptFlag": "[upgrade] ヒント: providers.{{provider}} に \"systemPromptFlag\": \"{{flag}}\" を追加すると、forge のファイル単位非同期処理が有効になります。"
   },
   "common": {
     "choicePrompt": "> ({{min}}-{{max}}): ",
