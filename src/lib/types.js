@@ -57,7 +57,7 @@ import { buildTypeAliases } from "../docs/presets/registry.js";
  * @property {string} type                    - Project type ("webapp/cakephp2" | "cli" | ...)
  * @property {Object} [limits]                - Limit settings
  * @property {number} [limits.designTimeoutMs] - Timeout (ms)
- * @property {number} [limits.concurrency]    - Per-file concurrency (default: 30)
+ * @property {number} [limits.concurrency]    - Per-file concurrency (default: 5)
  * @property {DocumentStyle} [documentStyle]  - Document style settings
  * @property {TextFillConfig} [textFill]      - text-fill settings
  * @property {string} [defaultAgent]          - Default agent name
