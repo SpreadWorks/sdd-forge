@@ -93,6 +93,17 @@
     "multiSelectPrompt": "> (comma-separated, e.g. 1,2): ",
     "prompt": "> "
   },
+  "upgrade": {
+    "dryRunHeader": "[upgrade] DRY-RUN: showing changes without writing files.",
+    "skillUpdated": "[upgrade] skill updated: {{name}}/SKILL.md",
+    "skillUnchanged": "[upgrade] skill unchanged: {{name}}/SKILL.md",
+    "agentsUpdated": "[upgrade] AGENTS.md SDD section updated.",
+    "agentsNotFound": "[upgrade] AGENTS.md not found or has no SDD section. Skipped.",
+    "agentsUnchanged": "[upgrade] AGENTS.md SDD section unchanged.",
+    "noChanges": "[upgrade] All files are up to date.",
+    "dryRunFooter": "[upgrade] DRY-RUN: no files were modified. Run without --dry-run to apply.",
+    "done": "[upgrade] Upgrade complete."
+  },
   "common": {
     "choicePrompt": "> ({{min}}-{{max}}): ",
     "error": {

@@ -47,12 +47,13 @@ Use this skill when implementation is complete and the user approved finalizatio
 
    - **Worktree** (`worktree: true`):
      - Ask user: "worktree を削除しますか？"
-       1. **削除（推奨）** — `git -C <mainRepoPath> worktree remove <worktreePath>` + `git -C <mainRepoPath> branch -d <featureBranch>`
+       1. **削除（推奨）** — `git -C <mainRepoPath> worktree remove <worktreePath>` + verify diff is empty + `git -C <mainRepoPath> branch -D <featureBranch>`
        2. **残す** — Skip deletion.
      - Guide: "メインリポジトリに戻ってください: `cd <mainRepoPath>`"
 
    - **Branch** (`featureBranch != baseBranch`):
-     - Delete the feature branch.
+     - Verify diff is empty: `git diff <baseBranch> <featureBranch> --stat` (should produce no output).
+     - Delete with `git branch -D <featureBranch>` (`-D` required because squash merge is not detected by `-d`).
 
    - **Spec-only**:
      - No branch/worktree cleanup needed.
