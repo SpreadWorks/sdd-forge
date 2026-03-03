@@ -5,39 +5,87 @@
  * Provides a shared interface for calling configured AI agents.
  */
 
+import fs from "fs";
+import os from "os";
+import path from "path";
 import { execFileSync } from "child_process";
 
 /**
  * Call an AI agent with a prompt and return the response.
  *
- * @param {Object} agent        - Agent config ({ command, args })
+ * When `options.systemPrompt` is provided:
+ *   - If agent.systemPromptFlag is set (e.g. "--system-prompt"),
+ *     the flag + systemPrompt are prepended to the argument list.
+ *   - If agent.systemPromptFlag is "--system-prompt-file",
+ *     a temp file is written and cleaned up after execution.
+ *   - If no systemPromptFlag but systemPrompt is given,
+ *     the system prompt is prepended to the user prompt (fallback).
+ *
+ * @param {Object} agent        - Agent config ({ command, args, systemPromptFlag? })
  * @param {string} prompt       - The prompt text
  * @param {number} [timeoutMs]  - Timeout in milliseconds (default: 120000)
  * @param {string} [cwd]        - Working directory
+ * @param {Object} [options]    - Additional options
+ * @param {string} [options.systemPrompt] - System prompt text
  * @returns {string} Agent response (trimmed)
  */
-export function callAgent(agent, prompt, timeoutMs, cwd) {
+export function callAgent(agent, prompt, timeoutMs, cwd, options) {
+  const { systemPrompt } = options || {};
   const args = Array.isArray(agent.args) ? [...agent.args] : [];
-  const resolvedArgs = args.map((a) =>
-    typeof a === "string" ? a.replaceAll("{{PROMPT}}", prompt) : a,
-  );
+
+  // Build system prompt prefix args
+  const flag = agent.systemPromptFlag;
+  let prefix = [];
+  let cleanupFile;
+  if (flag && systemPrompt) {
+    if (flag === "--system-prompt-file") {
+      const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "sdd-forge-"));
+      const tmpFile = path.join(tmpDir, "system-prompt.md");
+      fs.writeFileSync(tmpFile, systemPrompt, "utf8");
+      prefix = [flag, tmpFile];
+      cleanupFile = tmpFile;
+    } else {
+      prefix = [flag, systemPrompt];
+    }
+  }
+
+  // Combine system prompt into user prompt when no flag is available
+  let effectivePrompt = prompt;
+  if (!flag && systemPrompt) {
+    effectivePrompt = systemPrompt + "\n\n" + prompt;
+  }
 
   const hasToken = args.some((a) => typeof a === "string" && a.includes("{{PROMPT}}"));
-  const finalArgs = hasToken ? resolvedArgs : [...resolvedArgs, prompt];
+  let resolvedArgs;
+  if (hasToken) {
+    resolvedArgs = args.map((a) =>
+      typeof a === "string" ? a.replaceAll("{{PROMPT}}", effectivePrompt) : a,
+    );
+  } else {
+    resolvedArgs = [...args, effectivePrompt];
+  }
+
+  const finalArgs = [...prefix, ...resolvedArgs];
 
   // Remove CLAUDECODE env to avoid nested launch guard
   const env = { ...process.env };
   delete env.CLAUDECODE;
 
-  const result = execFileSync(agent.command, finalArgs, {
-    encoding: "utf8",
-    maxBuffer: 20 * 1024 * 1024,
-    timeout: timeoutMs || 120000,
-    cwd: cwd || process.cwd(),
-    env,
-  });
+  try {
+    const result = execFileSync(agent.command, finalArgs, {
+      encoding: "utf8",
+      maxBuffer: 20 * 1024 * 1024,
+      timeout: timeoutMs || 120000,
+      cwd: cwd || process.cwd(),
+      env,
+    });
 
-  return result.trim();
+    return result.trim();
+  } finally {
+    if (cleanupFile) {
+      try { fs.unlinkSync(cleanupFile); fs.rmdirSync(path.dirname(cleanupFile)); } catch (_) {}
+    }
+  }
 }
 
 /**

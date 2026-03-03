@@ -10,10 +10,10 @@
 
 import fs from "fs";
 import path from "path";
-import { execFileSync } from "child_process";
 import { fileURLToPath } from "url";
 import { sourceRoot, repoRoot, parseArgs } from "../../lib/cli.js";
 import { loadJsonFile, loadConfig, resolveProjectContext } from "../../lib/config.js";
+import { callAgent } from "../../lib/agent.js";
 
 const PKG_DIR = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..", "..");
 
@@ -45,44 +45,32 @@ function loadAgentConfig(cfg, agentName) {
   return provider;
 }
 
-function callAgent(agent, prompt, timeoutMs) {
-  const args = Array.isArray(agent.args) ? [...agent.args] : [];
-  const resolvedArgs = args.map((a) =>
-    typeof a === "string" ? a.replaceAll("{{PROMPT}}", prompt) : a
-  );
-  const hasToken = args.some((a) => typeof a === "string" && a.includes("{{PROMPT}}"));
-  const finalArgs = hasToken ? resolvedArgs : [...resolvedArgs, prompt];
-
-  const env = { ...process.env };
-  delete env.CLAUDECODE;
-
-  return execFileSync(agent.command, finalArgs, {
-    encoding: "utf8",
-    maxBuffer: 20 * 1024 * 1024,
-    timeout: timeoutMs,
-    env,
-  }).trim();
-}
-
 // ---------------------------------------------------------------------------
 // AI 要約プロンプト構築
 // ---------------------------------------------------------------------------
 
+/**
+ * agents コマンド用のシステムプロンプトを構築する。
+ * 出力ルール（PROJECT タグ形式、構造要件）を含む。
+ */
+function buildAgentsSystemPrompt() {
+  return [
+    "以下のソースコード解析データ (analysis.json) を要約し、AGENTS.md の Project Context セクションを生成してください。",
+    "",
+    "## 出力ルール（厳守）",
+    "- <!-- PROJECT:START --> と <!-- PROJECT:END --> タグで囲むこと",
+    "- 最初の行は `<!-- PROJECT:START — managed by sdd-forge. Do not edit manually. -->` とすること",
+    "- 最後の行は `<!-- PROJECT:END -->` とすること",
+    "- `## Project Context` の見出しで始めること",
+    "- AI エージェントがプロジェクトを理解するのに役立つ情報を構造的にまとめること",
+    "- 技術スタック、プロジェクト構造の概要、主要コンポーネント、DB 構成、利用可能なコマンドを含めること",
+    "- マークダウンのテーブルやリストを活用して読みやすくすること",
+    "- 前置き・メタコメンタリーは含めないこと",
+  ].join("\n");
+}
+
 function buildSummaryPrompt(analysis, config, srcRoot) {
   const parts = [];
-
-  parts.push("以下のソースコード解析データ (analysis.json) を要約し、AGENTS.md の Project Context セクションを生成してください。");
-  parts.push("");
-  parts.push("## 出力ルール（厳守）");
-  parts.push("- <!-- PROJECT:START --> と <!-- PROJECT:END --> タグで囲むこと");
-  parts.push("- 最初の行は `<!-- PROJECT:START — managed by sdd-forge. Do not edit manually. -->` とすること");
-  parts.push("- 最後の行は `<!-- PROJECT:END -->` とすること");
-  parts.push("- `## Project Context` の見出しで始めること");
-  parts.push("- AI エージェントがプロジェクトを理解するのに役立つ情報を構造的にまとめること");
-  parts.push("- 技術スタック、プロジェクト構造の概要、主要コンポーネント、DB 構成、利用可能なコマンドを含めること");
-  parts.push("- マークダウンのテーブルやリストを活用して読みやすくすること");
-  parts.push("- 前置き・メタコメンタリーは含めないこと");
-  parts.push("");
 
   // config info
   if (config.type) {
@@ -313,10 +301,11 @@ function main() {
     }
 
     console.error("[agents] generating PROJECT section with AI...");
+    const systemPrompt = buildAgentsSystemPrompt();
     const prompt = buildSummaryPrompt(analysis, config, srcRoot);
 
     try {
-      const result = callAgent(agent, prompt, 180000);
+      const result = callAgent(agent, prompt, 180000, undefined, { systemPrompt });
 
       // Extract PROJECT section from AI response
       const projectMatch = result.match(/<!-- PROJECT:START[^>]*-->[\s\S]*?<!-- PROJECT:END -->/);

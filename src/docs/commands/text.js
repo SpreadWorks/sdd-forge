@@ -12,12 +12,12 @@
 
 import fs from "fs";
 import path from "path";
-import { execFileSync } from "child_process";
 import { fileURLToPath } from "url";
 import { parseDirectives } from "../lib/directive-parser.js";
 import { repoRoot, parseArgs } from "../../lib/cli.js";
 import { loadConfig, resolveProjectContext } from "../../lib/config.js";
 import { createLogger } from "../../lib/progress.js";
+import { callAgent as callAgentBase } from "../../lib/agent.js";
 
 const logger = createLogger("text");
 
@@ -230,7 +230,35 @@ function formatLimitRule(params) {
   return "簡潔かつ正確に（3〜15行程度）";
 }
 
-function buildPrompt(directive, fileName, lines, contextData, projectContext, documentStyle, lang) {
+/**
+ * システムプロンプトを構築する。
+ * documentStyle + projectContext + 共通出力ルールを含む。
+ * per-directive / batch 両モードで共有し、provider のプロンプトキャッシュを活用する。
+ *
+ * @param {string} projectContext
+ * @param {import("../lib/types.js").DocumentStyle|undefined} documentStyle
+ * @param {string} lang
+ * @returns {string}
+ */
+function buildTextSystemPrompt(projectContext, documentStyle, lang) {
+  const header = buildPromptHeader(projectContext, documentStyle, lang);
+  return [
+    ...header,
+    "",
+    "以下の指示に従い、ドキュメントに挿入するマークダウンテキストを生成してください。",
+    "",
+    "## 出力ルール（厳守）",
+    "- 本文のマークダウンテキストのみを出力すること",
+    "- 前置き・メタコメンタリーは絶対に含めないこと（例: 「以下に生成します」「Based on the analysis data」「Here is the generated text」等は禁止）",
+    "- 水平線（---）を装飾目的で使わないこと",
+    "- コードブロック（```）で全体を囲まないこと",
+    "- セクション見出し（#）は含めない（挿入先に既にある）",
+    "- 解析データに基づく事実のみ記述（推測は避ける）",
+    "- 1行目から本文を開始すること（空行や導入文で始めない）",
+  ].join("\n");
+}
+
+function buildPrompt(directive, fileName, lines, contextData) {
   const directiveLine = directive.line;
 
   // ±20行のコンテキストを抽出
@@ -244,24 +272,11 @@ function buildPrompt(directive, fileName, lines, contextData, projectContext, do
     ? contextJson.slice(0, 8000) + "\n... (truncated)"
     : contextJson;
 
-  const header = buildPromptHeader(projectContext, documentStyle, lang);
-  header.push("", "以下の指示に従い、ドキュメントに挿入するマークダウンテキストを生成してください。");
-
   return [
-    ...header,
-    "",
     "## 指示",
     directive.prompt,
     "",
-    "## 出力ルール（厳守）",
-    "- 本文のマークダウンテキストのみを出力すること",
-    "- 前置き・メタコメンタリーは絶対に含めないこと（例: 「以下に生成します」「Based on the analysis data」「Here is the generated text」等は禁止）",
-    "- 水平線（---）を装飾目的で使わないこと",
-    "- コードブロック（```）で全体を囲まないこと",
-    "- セクション見出し（#）は含めない（挿入先に既にある）",
-    "- 解析データに基づく事実のみ記述（推測は避ける）",
     `- ${formatLimitRule(directive.params)}`,
-    "- 1行目から本文を開始すること（空行や導入文で始めない）",
     "",
     `## 挿入先コンテキスト（${fileName}）`,
     surroundingLines,
@@ -328,9 +343,7 @@ function countFilledInBatch(fileText) {
  * ファイル全体を1つのプロンプトにまとめるバッチプロンプトを構築する。
  * ±20行ウィンドウ・解析データは不要（ファイル全体が文脈になる）。
  */
-function buildBatchPrompt(fileName, text, projectContext, textFills, documentStyle, lang) {
-  const header = buildPromptHeader(projectContext, documentStyle, lang);
-
+function buildBatchPrompt(fileName, text, textFills) {
   // ディレクティブごとの個別制限ルールがあれば列挙
   const perDirectiveRules = [];
   for (const d of textFills) {
@@ -343,8 +356,6 @@ function buildBatchPrompt(fileName, text, projectContext, textFills, documentSty
     : "- 個別制限のないディレクティブは3〜15行程度の本文を生成すること";
 
   return [
-    ...header,
-    "",
     `以下の ${fileName} にある <!-- @text: 指示 --> ディレクティブをすべて埋めてください。`,
     "",
     "## 出力ルール（厳守）",
@@ -370,14 +381,14 @@ function buildBatchPrompt(fileName, text, projectContext, textFills, documentSty
  *
  * @returns {{ text: string, filled: number, skipped: number }}
  */
-function processTemplateFileBatch(text, analysis, fileName, agent, timeoutMs, cwd, dryRun, _preamblePatterns, projectContext, documentStyle, lang) {
+function processTemplateFileBatch(text, analysis, fileName, agent, timeoutMs, cwd, dryRun, _preamblePatterns, systemPrompt) {
   const directives = parseDirectives(text);
   const textFills = directives.filter((d) => d.type === "text");
 
   if (textFills.length === 0) return { text, filled: 0, skipped: 0 };
 
   const cleanText = stripFillContent(text);
-  const prompt = buildBatchPrompt(fileName, cleanText, projectContext, textFills, documentStyle, lang);
+  const prompt = buildBatchPrompt(fileName, cleanText, textFills);
 
   if (dryRun) {
     console.log(`[text] DRY-RUN batch ${fileName}: ${textFills.length} directive(s) → 1 call (${prompt.length} chars)`);
@@ -389,7 +400,7 @@ function processTemplateFileBatch(text, analysis, fileName, agent, timeoutMs, cw
   let result;
   try {
     // バッチはファイル全体を返すので preamble パターンは使わない
-    result = callAgent(agent, prompt, timeoutMs, cwd, []);
+    result = callAgent(agent, prompt, timeoutMs, cwd, [], systemPrompt);
   } catch (err) {
     const parts = [err.message];
     if (err.signal) parts.push(`signal: ${err.signal}`);
@@ -422,28 +433,9 @@ function processTemplateFileBatch(text, analysis, fileName, agent, timeoutMs, cw
 // ---------------------------------------------------------------------------
 // エージェント呼び出し
 // ---------------------------------------------------------------------------
-function callAgent(agent, prompt, timeoutMs, cwd, preamblePatterns) {
-  const args = Array.isArray(agent.args) ? [...agent.args] : [];
-  const resolvedArgs = args.map((a) =>
-    typeof a === "string" ? a.replaceAll("{{PROMPT}}", prompt) : a
-  );
-  // {{PROMPT}} トークンがなかった場合は末尾に追加
-  const hasToken = args.some((a) => typeof a === "string" && a.includes("{{PROMPT}}"));
-  const finalArgs = hasToken ? resolvedArgs : [...resolvedArgs, prompt];
-
-  // CLAUDECODE を外してネスト起動ガードを回避（claude CLI 呼び出し時に必要）
-  const env = { ...process.env };
-  delete env.CLAUDECODE;
-
-  const result = execFileSync(agent.command, finalArgs, {
-    encoding: "utf8",
-    maxBuffer: 20 * 1024 * 1024,
-    timeout: timeoutMs,
-    cwd,
-    env,
-  });
-
-  return stripPreamble(result.trim(), preamblePatterns);
+function callAgent(agent, prompt, timeoutMs, cwd, preamblePatterns, systemPrompt) {
+  const result = callAgentBase(agent, prompt, timeoutMs, cwd, { systemPrompt });
+  return stripPreamble(result, preamblePatterns);
 }
 
 /**
@@ -501,7 +493,7 @@ function stripPreamble(text, preamblePatterns) {
  * @param {boolean} dryRun     - dry-run モード
  * @returns {{ text: string, filled: number, skipped: number }}
  */
-function processTemplate(text, analysis, fileName, agent, timeoutMs, cwd, dryRun, preamblePatterns, projectContext, documentStyle, lang, filterId) {
+function processTemplate(text, analysis, fileName, agent, timeoutMs, cwd, dryRun, preamblePatterns, systemPrompt, filterId) {
   const directives = parseDirectives(text);
   let textFills = directives.filter((d) => d.type === "text");
   if (filterId) {
@@ -518,7 +510,7 @@ function processTemplate(text, analysis, fileName, agent, timeoutMs, cwd, dryRun
   // 後ろから処理して行番号のズレを防ぐ
   for (let i = textFills.length - 1; i >= 0; i--) {
     const d = textFills[i];
-    const prompt = buildPrompt(d, fileName, lines, contextData, projectContext, documentStyle, lang);
+    const prompt = buildPrompt(d, fileName, lines, contextData);
 
     if (dryRun) {
       console.log(`[text] DRY-RUN ${fileName}:${d.line + 1}: ${d.prompt.slice(0, 80)}`);
@@ -531,7 +523,7 @@ function processTemplate(text, analysis, fileName, agent, timeoutMs, cwd, dryRun
 
     let generated;
     try {
-      generated = callAgent(agent, prompt, timeoutMs, cwd, preamblePatterns);
+      generated = callAgent(agent, prompt, timeoutMs, cwd, preamblePatterns, systemPrompt);
     } catch (err) {
       logger.log(`ERROR calling agent for ${fileName}:${d.line + 1}: ${err.message.slice(0, 200)}`);
       skipped++;
@@ -599,6 +591,7 @@ export function textFillFromAnalysis(root, analysis, agentName) {
   const projectContext = resolveProjectContext(root);
   const documentStyle = cfg.documentStyle;
   const lang = cfg.lang || "ja";
+  const systemPrompt = buildTextSystemPrompt(projectContext, documentStyle, lang);
   const docsDir = path.join(root, "docs");
   const docsFiles = fs.readdirSync(docsDir)
     .filter((f) => /^\d{2}_/.test(f) && f.endsWith(".md"))
@@ -611,7 +604,7 @@ export function textFillFromAnalysis(root, analysis, agentName) {
   for (const file of docsFiles) {
     const filePath = path.join(docsDir, file);
     const original = fs.readFileSync(filePath, "utf8");
-    const result = processTemplate(original, analysis, file, agent, 120000, root, false, preamblePatterns, projectContext, documentStyle, lang);
+    const result = processTemplate(original, analysis, file, agent, 120000, root, false, preamblePatterns, systemPrompt);
 
     totalFilled += result.filled;
     totalSkipped += result.skipped;
@@ -671,6 +664,7 @@ function main() {
   const projectContext = resolveProjectContext(root);
   const documentStyle = cfg.documentStyle;
   const lang = cfg.lang || "ja";
+  const systemPrompt = buildTextSystemPrompt(projectContext, documentStyle, lang);
   const docsDir = path.join(root, "docs");
   const docsFiles = fs.readdirSync(docsDir)
     .filter((f) => /^\d{2}_/.test(f) && f.endsWith(".md"))
@@ -702,14 +696,14 @@ function main() {
       if (!hasId) continue;
     }
 
-    let result = processFn(original, analysis, file, agent, cli.timeout, root, cli.dryRun, preamblePatterns, projectContext, documentStyle, lang, cli.id || undefined);
+    let result = processFn(original, analysis, file, agent, cli.timeout, root, cli.dryRun, preamblePatterns, systemPrompt, cli.id || undefined);
 
     // バッチモードで 0 filled になった場合は per-directive モードで再試行
     if (!cli.perDirective && !cli.dryRun && result.filled === 0) {
       const textFills = parseDirectives(original).filter((d) => d.type === "text");
       if (textFills.length > 0) {
         logger.verbose(`Batch returned 0 filled for ${file}. Falling back to per-directive mode...`);
-        result = processTemplate(original, analysis, file, agent, cli.timeout, root, cli.dryRun, preamblePatterns, projectContext, documentStyle, lang, cli.id || undefined);
+        result = processTemplate(original, analysis, file, agent, cli.timeout, root, cli.dryRun, preamblePatterns, systemPrompt, cli.id || undefined);
       }
     }
 
