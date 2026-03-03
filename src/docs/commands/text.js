@@ -17,7 +17,7 @@ import { parseDirectives } from "../lib/directive-parser.js";
 import { repoRoot, parseArgs } from "../../lib/cli.js";
 import { loadConfig, resolveProjectContext } from "../../lib/config.js";
 import { createLogger } from "../../lib/progress.js";
-import { callAgent as callAgentBase } from "../../lib/agent.js";
+import { callAgent as callAgentBase, callAgentAsync as callAgentAsyncBase } from "../../lib/agent.js";
 
 const logger = createLogger("text");
 
@@ -381,7 +381,7 @@ function buildBatchPrompt(fileName, text, textFills) {
  *
  * @returns {{ text: string, filled: number, skipped: number }}
  */
-function processTemplateFileBatch(text, analysis, fileName, agent, timeoutMs, cwd, dryRun, _preamblePatterns, systemPrompt) {
+async function processTemplateFileBatch(text, analysis, fileName, agent, timeoutMs, cwd, dryRun, _preamblePatterns, systemPrompt) {
   const directives = parseDirectives(text);
   const textFills = directives.filter((d) => d.type === "text");
 
@@ -400,7 +400,7 @@ function processTemplateFileBatch(text, analysis, fileName, agent, timeoutMs, cw
   let result;
   try {
     // バッチはファイル全体を返すので preamble パターンは使わない
-    result = callAgent(agent, prompt, timeoutMs, cwd, [], systemPrompt);
+    result = await callAgentAsync(agent, prompt, timeoutMs, cwd, [], systemPrompt);
   } catch (err) {
     const parts = [err.message];
     if (err.signal) parts.push(`signal: ${err.signal}`);
@@ -435,6 +435,11 @@ function processTemplateFileBatch(text, analysis, fileName, agent, timeoutMs, cw
 // ---------------------------------------------------------------------------
 function callAgent(agent, prompt, timeoutMs, cwd, preamblePatterns, systemPrompt) {
   const result = callAgentBase(agent, prompt, timeoutMs, cwd, { systemPrompt });
+  return stripPreamble(result, preamblePatterns);
+}
+
+async function callAgentAsync(agent, prompt, timeoutMs, cwd, preamblePatterns, systemPrompt) {
+  const result = await callAgentAsyncBase(agent, prompt, timeoutMs, cwd, { systemPrompt });
   return stripPreamble(result, preamblePatterns);
 }
 
@@ -493,7 +498,7 @@ function stripPreamble(text, preamblePatterns) {
  * @param {boolean} dryRun     - dry-run モード
  * @returns {{ text: string, filled: number, skipped: number }}
  */
-function processTemplate(text, analysis, fileName, agent, timeoutMs, cwd, dryRun, preamblePatterns, systemPrompt, filterId) {
+async function processTemplate(text, analysis, fileName, agent, timeoutMs, cwd, dryRun, preamblePatterns, systemPrompt, filterId, concurrency) {
   const directives = parseDirectives(text);
   let textFills = directives.filter((d) => d.type === "text");
   if (filterId) {
@@ -504,37 +509,80 @@ function processTemplate(text, analysis, fileName, agent, timeoutMs, cwd, dryRun
 
   const lines = text.split("\n");
   const contextData = getAnalysisContext(analysis, directives);
+
+  if (dryRun) {
+    for (const d of textFills) {
+      const prompt = buildPrompt(d, fileName, lines, contextData);
+      console.log(`[text] DRY-RUN ${fileName}:${d.line + 1}: ${d.prompt.slice(0, 80)}`);
+      console.log(`[text]   prompt length: ${prompt.length} chars`);
+    }
+    return { text, filled: 0, skipped: textFills.length };
+  }
+
+  // Phase 1: Build all prompts upfront
+  const tasks = textFills.map((d) => ({
+    directive: d,
+    prompt: buildPrompt(d, fileName, lines, contextData),
+  }));
+
+  // Phase 2: Parallel LLM calls with concurrency control
+  const maxConcurrency = concurrency || 3;
+  const results = new Array(tasks.length);
+
+  await new Promise((resolve) => {
+    let running = 0;
+    let idx = 0;
+
+    function next() {
+      if (idx >= tasks.length && running === 0) {
+        resolve();
+        return;
+      }
+      while (running < maxConcurrency && idx < tasks.length) {
+        const taskIdx = idx++;
+        const { directive: d, prompt } = tasks[taskIdx];
+        running++;
+
+        logger.verbose(`Processing ${fileName}:${d.line + 1}: ${d.prompt.slice(0, 60)}...`);
+
+        callAgentAsync(agent, prompt, timeoutMs, cwd, preamblePatterns, systemPrompt)
+          .then((generated) => {
+            results[taskIdx] = { generated, error: null };
+          })
+          .catch((err) => {
+            results[taskIdx] = { generated: null, error: err };
+          })
+          .finally(() => {
+            running--;
+            next();
+          });
+      }
+    }
+
+    next();
+  });
+
+  // Phase 3: Apply results in reverse order (line-number shift prevention)
   let filled = 0;
   let skipped = 0;
 
-  // 後ろから処理して行番号のズレを防ぐ
   for (let i = textFills.length - 1; i >= 0; i--) {
     const d = textFills[i];
-    const prompt = buildPrompt(d, fileName, lines, contextData);
+    const { generated: rawGenerated, error } = results[i];
 
-    if (dryRun) {
-      console.log(`[text] DRY-RUN ${fileName}:${d.line + 1}: ${d.prompt.slice(0, 80)}`);
-      console.log(`[text]   prompt length: ${prompt.length} chars`);
+    if (error) {
+      logger.log(`ERROR calling agent for ${fileName}:${d.line + 1}: ${error.message.slice(0, 200)}`);
       skipped++;
       continue;
     }
 
-    logger.verbose(`Processing ${fileName}:${d.line + 1}: ${d.prompt.slice(0, 60)}...`);
-
-    let generated;
-    try {
-      generated = callAgent(agent, prompt, timeoutMs, cwd, preamblePatterns, systemPrompt);
-    } catch (err) {
-      logger.log(`ERROR calling agent for ${fileName}:${d.line + 1}: ${err.message.slice(0, 200)}`);
-      skipped++;
-      continue;
-    }
-
-    if (!generated) {
+    if (!rawGenerated) {
       logger.log(`WARN: empty response for ${fileName}:${d.line + 1}`);
       skipped++;
       continue;
     }
+
+    let generated = rawGenerated;
 
     // maxLines/maxChars によるポスト処理トランケート
     if (d.params?.maxLines) {
@@ -582,7 +630,7 @@ function processTemplate(text, analysis, fileName, agent, timeoutMs, cwd, dryRun
  * @param {string} agentName  - エージェント名 (claude, codex)
  * @returns {{ filled: number, skipped: number, files: string[] }}
  */
-export function textFillFromAnalysis(root, analysis, agentName) {
+export async function textFillFromAnalysis(root, analysis, agentName) {
   if (!analysis) return { filled: 0, skipped: 0, files: [] };
 
   const cfg = loadConfig(root);
@@ -592,6 +640,7 @@ export function textFillFromAnalysis(root, analysis, agentName) {
   const documentStyle = cfg.documentStyle;
   const lang = cfg.lang || "ja";
   const systemPrompt = buildTextSystemPrompt(projectContext, documentStyle, lang);
+  const concurrency = Number(cfg.limits?.concurrency || 0) || 3;
   const docsDir = path.join(root, "docs");
   const docsFiles = fs.readdirSync(docsDir)
     .filter((f) => /^\d{2}_/.test(f) && f.endsWith(".md"))
@@ -601,11 +650,44 @@ export function textFillFromAnalysis(root, analysis, agentName) {
   let totalFilled = 0;
   let totalSkipped = 0;
 
-  for (const file of docsFiles) {
-    const filePath = path.join(docsDir, file);
-    const original = fs.readFileSync(filePath, "utf8");
-    const result = processTemplate(original, analysis, file, agent, 120000, root, false, preamblePatterns, systemPrompt);
+  // Parallel file processing with concurrency control
+  const fileResults = new Array(docsFiles.length);
+  await new Promise((resolve) => {
+    let running = 0;
+    let idx = 0;
 
+    function next() {
+      if (idx >= docsFiles.length && running === 0) {
+        resolve();
+        return;
+      }
+      while (running < concurrency && idx < docsFiles.length) {
+        const fileIdx = idx++;
+        const file = docsFiles[fileIdx];
+        running++;
+
+        const filePath = path.join(docsDir, file);
+        const original = fs.readFileSync(filePath, "utf8");
+
+        processTemplate(original, analysis, file, agent, 120000, root, false, preamblePatterns, systemPrompt, undefined, concurrency)
+          .then((result) => {
+            fileResults[fileIdx] = { file, filePath, result };
+          })
+          .catch((err) => {
+            logger.log(`ERROR processing ${file}: ${err.message.slice(0, 200)}`);
+            fileResults[fileIdx] = { file, filePath, result: { text: original, filled: 0, skipped: 0 } };
+          })
+          .finally(() => {
+            running--;
+            next();
+          });
+      }
+    }
+
+    next();
+  });
+
+  for (const { file, filePath, result } of fileResults) {
     totalFilled += result.filled;
     totalSkipped += result.skipped;
 
@@ -621,7 +703,7 @@ export function textFillFromAnalysis(root, analysis, agentName) {
 // ---------------------------------------------------------------------------
 // CLI メイン
 // ---------------------------------------------------------------------------
-function main() {
+async function main() {
   const cli = parseArgs(process.argv.slice(2), {
     flags: ["--dry-run", "--per-directive"],
     options: ["--agent", "--timeout", "--id"],
@@ -665,6 +747,7 @@ function main() {
   const documentStyle = cfg.documentStyle;
   const lang = cfg.lang || "ja";
   const systemPrompt = buildTextSystemPrompt(projectContext, documentStyle, lang);
+  const concurrency = Number(cfg.limits?.concurrency || 0) || 3;
   const docsDir = path.join(root, "docs");
   const docsFiles = fs.readdirSync(docsDir)
     .filter((f) => /^\d{2}_/.test(f) && f.endsWith(".md"))
@@ -682,30 +765,73 @@ function main() {
 
   const processFn = cli.perDirective ? processTemplate : processTemplateFileBatch;
   if (!cli.perDirective) {
-    logger.verbose(`Mode: batch (file-level, ${docsFiles.length} call(s)). Use --per-directive for legacy mode.`);
+    logger.verbose(`Mode: batch (file-level, ${docsFiles.length} file(s), concurrency=${concurrency}). Use --per-directive for legacy mode.`);
   }
 
+  // Prepare file entries (filter for --id before parallel dispatch)
+  const fileEntries = [];
   for (const file of docsFiles) {
     const filePath = path.join(docsDir, file);
     const original = fs.readFileSync(filePath, "utf8");
 
-    // --id 指定時: 該当 ID を持つ @text ディレクティブがないファイルはスキップ
     if (cli.id) {
       const directives = parseDirectives(original);
       const hasId = directives.some((d) => d.type === "text" && d.params?.id === cli.id);
       if (!hasId) continue;
     }
 
-    let result = processFn(original, analysis, file, agent, cli.timeout, root, cli.dryRun, preamblePatterns, systemPrompt, cli.id || undefined);
+    fileEntries.push({ file, filePath, original });
+  }
 
-    // バッチモードで 0 filled になった場合は per-directive モードで再試行
-    if (!cli.perDirective && !cli.dryRun && result.filled === 0) {
-      const textFills = parseDirectives(original).filter((d) => d.type === "text");
-      if (textFills.length > 0) {
-        logger.verbose(`Batch returned 0 filled for ${file}. Falling back to per-directive mode...`);
-        result = processTemplate(original, analysis, file, agent, cli.timeout, root, cli.dryRun, preamblePatterns, systemPrompt, cli.id || undefined);
+  // Parallel file processing with concurrency control
+  const fileResults = new Array(fileEntries.length);
+  await new Promise((resolve) => {
+    let running = 0;
+    let idx = 0;
+
+    function next() {
+      if (idx >= fileEntries.length && running === 0) {
+        resolve();
+        return;
+      }
+      while (running < concurrency && idx < fileEntries.length) {
+        const fileIdx = idx++;
+        const { file, original } = fileEntries[fileIdx];
+        running++;
+
+        logger.verbose(`start: ${file}`);
+
+        processFn(original, analysis, file, agent, cli.timeout, root, cli.dryRun, preamblePatterns, systemPrompt, cli.id || undefined, concurrency)
+          .then(async (result) => {
+            // バッチモードで 0 filled になった場合は per-directive モードで再試行
+            if (!cli.perDirective && !cli.dryRun && result.filled === 0) {
+              const textFills = parseDirectives(original).filter((d) => d.type === "text");
+              if (textFills.length > 0) {
+                logger.verbose(`Batch returned 0 filled for ${file}. Falling back to per-directive mode...`);
+                result = await processTemplate(original, analysis, file, agent, cli.timeout, root, cli.dryRun, preamblePatterns, systemPrompt, cli.id || undefined, concurrency);
+              }
+            }
+            fileResults[fileIdx] = result;
+            logger.verbose(`done: ${file}`);
+          })
+          .catch((err) => {
+            logger.log(`ERROR processing ${file}: ${err.message.slice(0, 200)}`);
+            fileResults[fileIdx] = { text: original, filled: 0, skipped: 0 };
+          })
+          .finally(() => {
+            running--;
+            next();
+          });
       }
     }
+
+    next();
+  });
+
+  // Apply results
+  for (let i = 0; i < fileEntries.length; i++) {
+    const { file, filePath } = fileEntries[i];
+    const result = fileResults[i];
 
     totalFilled += result.filled;
     totalSkipped += result.skipped;
@@ -727,5 +853,8 @@ export { main };
 const isDirectRun = process.argv[1] &&
   path.resolve(process.argv[1]) === path.resolve(fileURLToPath(import.meta.url));
 if (isDirectRun) {
-  main();
+  main().catch((e) => {
+    console.error(e?.stack || String(e));
+    process.exit(1);
+  });
 }

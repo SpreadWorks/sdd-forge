@@ -8,7 +8,7 @@
 import fs from "fs";
 import os from "os";
 import path from "path";
-import { execFileSync } from "child_process";
+import { execFileSync, execFile } from "child_process";
 
 /**
  * Call an AI agent with a prompt and return the response.
@@ -86,6 +86,85 @@ export function callAgent(agent, prompt, timeoutMs, cwd, options) {
       try { fs.unlinkSync(cleanupFile); fs.rmdirSync(path.dirname(cleanupFile)); } catch (_) {}
     }
   }
+}
+
+/**
+ * Async version of callAgent. Uses execFile (callback) wrapped in a Promise.
+ *
+ * @param {Object} agent        - Agent config ({ command, args, systemPromptFlag? })
+ * @param {string} prompt       - The prompt text
+ * @param {number} [timeoutMs]  - Timeout in milliseconds (default: 120000)
+ * @param {string} [cwd]        - Working directory
+ * @param {Object} [options]    - Additional options
+ * @param {string} [options.systemPrompt] - System prompt text
+ * @returns {Promise<string>} Agent response (trimmed)
+ */
+export function callAgentAsync(agent, prompt, timeoutMs, cwd, options) {
+  const { systemPrompt } = options || {};
+  const args = Array.isArray(agent.args) ? [...agent.args] : [];
+
+  const flag = agent.systemPromptFlag;
+  let prefix = [];
+  let cleanupFile;
+  if (flag && systemPrompt) {
+    if (flag === "--system-prompt-file") {
+      const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "sdd-forge-"));
+      const tmpFile = path.join(tmpDir, "system-prompt.md");
+      fs.writeFileSync(tmpFile, systemPrompt, "utf8");
+      prefix = [flag, tmpFile];
+      cleanupFile = tmpFile;
+    } else {
+      prefix = [flag, systemPrompt];
+    }
+  }
+
+  let effectivePrompt = prompt;
+  if (!flag && systemPrompt) {
+    effectivePrompt = systemPrompt + "\n\n" + prompt;
+  }
+
+  const hasToken = args.some((a) => typeof a === "string" && a.includes("{{PROMPT}}"));
+  let resolvedArgs;
+  if (hasToken) {
+    resolvedArgs = args.map((a) =>
+      typeof a === "string" ? a.replaceAll("{{PROMPT}}", effectivePrompt) : a,
+    );
+  } else {
+    resolvedArgs = [...args, effectivePrompt];
+  }
+
+  const finalArgs = [...prefix, ...resolvedArgs];
+
+  const env = { ...process.env };
+  delete env.CLAUDECODE;
+
+  function cleanup() {
+    if (cleanupFile) {
+      try { fs.unlinkSync(cleanupFile); fs.rmdirSync(path.dirname(cleanupFile)); } catch (_) {}
+    }
+  }
+
+  return new Promise((resolve, reject) => {
+    execFile(
+      agent.command,
+      finalArgs,
+      {
+        encoding: "utf8",
+        maxBuffer: 20 * 1024 * 1024,
+        timeout: timeoutMs || 120000,
+        cwd: cwd || process.cwd(),
+        env,
+      },
+      (err, stdout) => {
+        cleanup();
+        if (err) {
+          reject(err);
+          return;
+        }
+        resolve(String(stdout).trim());
+      },
+    );
+  });
 }
 
 /**
