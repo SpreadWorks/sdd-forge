@@ -158,9 +158,17 @@ export function callAgentAsync(agent, prompt, timeoutMs, cwd, options) {
       (err, stdout, stderr) => {
         cleanup();
         if (err) {
-          err.stderr = stderr;
-          err.stdout = stdout;
-          reject(err);
+          const parts = [];
+          if (err.killed) parts.push("timeout");
+          if (err.signal) parts.push(`signal=${err.signal}`);
+          if (err.code != null) parts.push(`exit=${err.code}`);
+          if (stderr) parts.push(String(stderr).trim());
+          if (!stderr && stdout) parts.push(String(stdout).trim());
+          const error = new Error(parts.join(" | ") || "unknown error");
+          error.code = err.code;
+          error.signal = err.signal;
+          error.killed = err.killed;
+          reject(error);
           return;
         }
         resolve(String(stdout).trim());
