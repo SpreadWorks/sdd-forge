@@ -8,7 +8,7 @@
 import fs from "fs";
 import os from "os";
 import path from "path";
-import { execFileSync, execFile } from "child_process";
+import { execFileSync, spawn } from "child_process";
 
 const DEFAULT_AGENT_TIMEOUT_MS = 120000;
 
@@ -91,7 +91,11 @@ export function callAgent(agent, prompt, timeoutMs, cwd, options) {
 }
 
 /**
- * Async version of callAgent. Uses execFile (callback) wrapped in a Promise.
+ * Async version of callAgent. Uses spawn with stdio: ["ignore", "pipe", "pipe"].
+ *
+ * execFile は stdin を pipe で開くため、Claude CLI が EOF を待ち続けてハングする。
+ * spawn + stdin: "ignore" でこの問題を回避する。
+ * See: src/README.md "Agent Invocation" section
  *
  * @param {Object} agent        - Agent config ({ command, args, systemPromptFlag? })
  * @param {string} prompt       - The prompt text
@@ -140,6 +144,8 @@ export function callAgentAsync(agent, prompt, timeoutMs, cwd, options) {
   const env = { ...process.env };
   delete env.CLAUDECODE;
 
+  const timeout = timeoutMs || DEFAULT_AGENT_TIMEOUT_MS;
+
   function cleanup() {
     if (cleanupFile) {
       try { fs.unlinkSync(cleanupFile); fs.rmdirSync(path.dirname(cleanupFile)); } catch (_) {}
@@ -147,35 +153,45 @@ export function callAgentAsync(agent, prompt, timeoutMs, cwd, options) {
   }
 
   return new Promise((resolve, reject) => {
-    execFile(
-      agent.command,
-      finalArgs,
-      {
-        encoding: "utf8",
-        maxBuffer: 20 * 1024 * 1024,
-        timeout: timeoutMs || DEFAULT_AGENT_TIMEOUT_MS,
-        cwd: cwd || process.cwd(),
-        env,
-      },
-      (err, stdout, stderr) => {
-        cleanup();
-        if (err) {
-          const parts = [];
-          if (err.killed) parts.push("timeout");
-          if (err.signal) parts.push(`signal=${err.signal}`);
-          if (err.code != null) parts.push(`exit=${err.code}`);
-          if (stderr) parts.push(String(stderr).trim());
-          if (!stderr && stdout) parts.push(String(stdout).trim());
-          const error = new Error(parts.join(" | ") || "unknown error");
-          error.code = err.code;
-          error.signal = err.signal;
-          error.killed = err.killed;
-          reject(error);
-          return;
-        }
+    const child = spawn(agent.command, finalArgs, {
+      stdio: ["ignore", "pipe", "pipe"],
+      cwd: cwd || process.cwd(),
+      env,
+    });
+
+    let stdout = "";
+    let stderr = "";
+    child.stdout.on("data", (chunk) => { stdout += chunk; });
+    child.stderr.on("data", (chunk) => { stderr += chunk; });
+
+    const timer = setTimeout(() => {
+      child.kill("SIGTERM");
+    }, timeout);
+
+    child.on("close", (code, signal) => {
+      clearTimeout(timer);
+      cleanup();
+      if (code === 0 && !signal) {
         resolve(String(stdout).trim());
-      },
-    );
+        return;
+      }
+      const parts = [];
+      if (signal) parts.push(signal === "SIGTERM" ? "timeout" : `signal=${signal}`);
+      if (code != null && code !== 0) parts.push(`exit=${code}`);
+      if (stderr) parts.push(String(stderr).trim());
+      if (!stderr && stdout) parts.push(String(stdout).trim());
+      const error = new Error(parts.join(" | ") || "unknown error");
+      error.code = code;
+      error.signal = signal;
+      error.killed = signal === "SIGTERM";
+      reject(error);
+    });
+
+    child.on("error", (err) => {
+      clearTimeout(timer);
+      cleanup();
+      reject(err);
+    });
   });
 }
 

@@ -261,19 +261,13 @@ function buildTextSystemPrompt(projectContext, documentStyle, lang) {
   ].join("\n");
 }
 
-function buildPrompt(directive, fileName, lines, contextData) {
+function buildPrompt(directive, fileName, lines) {
   const directiveLine = directive.line;
 
   // ±20行のコンテキストを抽出
   const contextStart = Math.max(0, directiveLine - 20);
   const contextEnd = Math.min(lines.length, directiveLine + 21);
   const surroundingLines = lines.slice(contextStart, contextEnd).join("\n");
-
-  // 解析データ JSON（サイズ制限）
-  const contextJson = JSON.stringify(contextData, null, 2);
-  const truncatedJson = contextJson.length > 8000
-    ? contextJson.slice(0, 8000) + "\n... (truncated)"
-    : contextJson;
 
   return [
     "## 指示",
@@ -283,10 +277,23 @@ function buildPrompt(directive, fileName, lines, contextData) {
     "",
     `## 挿入先コンテキスト（${fileName}）`,
     surroundingLines,
-    "",
-    "## ソースコード解析データ",
-    truncatedJson,
   ].join("\n");
+}
+
+/**
+ * 解析データをシステムプロンプトに付与する。
+ * 同一ファイル内の複数ディレクティブで system prompt を共有し、
+ * API のプロンプトキャッシュを活用する。
+ */
+function buildFileSystemPrompt(baseSystemPrompt, contextData) {
+  if (!contextData || Object.keys(contextData).length === 0) {
+    return baseSystemPrompt;
+  }
+  const contextJson = JSON.stringify(contextData, null, 2);
+  const truncatedJson = contextJson.length > 8000
+    ? contextJson.slice(0, 8000) + "\n... (truncated)"
+    : contextJson;
+  return baseSystemPrompt + "\n\n## ソースコード解析データ\n" + truncatedJson;
 }
 
 // ---------------------------------------------------------------------------
@@ -501,12 +508,15 @@ async function processTemplate(text, analysis, fileName, agent, timeoutMs, cwd, 
 
   const lines = text.split("\n");
   const contextData = getAnalysisContext(analysis, directives);
+  // Analysis context をシステムプロンプトに含めることで、
+  // 同一ファイル内の複数ディレクティブ間でプロンプトキャッシュを活用する
+  const fileSystemPrompt = buildFileSystemPrompt(systemPrompt, contextData);
 
   if (dryRun) {
     for (const d of textFills) {
-      const prompt = buildPrompt(d, fileName, lines, contextData);
+      const prompt = buildPrompt(d, fileName, lines);
       console.log(`[text] DRY-RUN ${fileName}:${d.line + 1}: ${d.prompt.slice(0, 80)}`);
-      console.log(`[text]   prompt length: ${prompt.length} chars`);
+      console.log(`[text]   prompt length: ${prompt.length} chars, system prompt: ${fileSystemPrompt.length} chars`);
     }
     return { text, filled: 0, skipped: textFills.length };
   }
@@ -514,7 +524,7 @@ async function processTemplate(text, analysis, fileName, agent, timeoutMs, cwd, 
   // Phase 1: Build all prompts upfront
   const tasks = textFills.map((d) => ({
     directive: d,
-    prompt: buildPrompt(d, fileName, lines, contextData),
+    prompt: buildPrompt(d, fileName, lines),
   }));
 
   // Phase 2: Parallel LLM calls with concurrency control
@@ -537,7 +547,7 @@ async function processTemplate(text, analysis, fileName, agent, timeoutMs, cwd, 
 
         logger.verbose(`Processing ${fileName}:${d.line + 1}: ${d.prompt.slice(0, 60)}...`);
 
-        callAgentAsync(agent, prompt, timeoutMs, cwd, preamblePatterns, systemPrompt)
+        callAgentAsync(agent, prompt, timeoutMs, cwd, preamblePatterns, fileSystemPrompt)
           .then((generated) => {
             results[taskIdx] = { generated, error: null };
           })
