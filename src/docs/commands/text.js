@@ -526,7 +526,7 @@ async function processTemplate(text, analysis, fileName, agent, timeoutMs, cwd, 
   }));
 
   // Phase 2: Parallel LLM calls with concurrency control
-  const maxConcurrency = concurrency || 3;
+  const maxConcurrency = concurrency || 30;
   const results = new Array(tasks.length);
 
   await new Promise((resolve) => {
@@ -640,7 +640,7 @@ export async function textFillFromAnalysis(root, analysis, agentName) {
   const documentStyle = cfg.documentStyle;
   const lang = cfg.lang || "ja";
   const systemPrompt = buildTextSystemPrompt(projectContext, documentStyle, lang);
-  const concurrency = Number(cfg.limits?.concurrency || 0) || 3;
+  const concurrency = Number(cfg.limits?.concurrency || 0) || 30;
   const docsDir = path.join(root, "docs");
   const docsFiles = fs.readdirSync(docsDir)
     .filter((f) => /^\d{2}_/.test(f) && f.endsWith(".md"))
@@ -747,7 +747,7 @@ async function main() {
   const documentStyle = cfg.documentStyle;
   const lang = cfg.lang || "ja";
   const systemPrompt = buildTextSystemPrompt(projectContext, documentStyle, lang);
-  const concurrency = Number(cfg.limits?.concurrency || 0) || 3;
+  const concurrency = Number(cfg.limits?.concurrency || 0) || 30;
   const docsDir = path.join(root, "docs");
   const docsFiles = fs.readdirSync(docsDir)
     .filter((f) => /^\d{2}_/.test(f) && f.endsWith(".md"))

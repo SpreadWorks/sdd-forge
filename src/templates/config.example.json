@@ -8,7 +8,7 @@
   "type": "webapp/cakephp2",
   "limits": {
     "designTimeoutMs": 900000,
-    "concurrency": 3
+    "concurrency": 30
   },
   "documentStyle": {
     "purpose": "developer-guide",

@@ -34,7 +34,7 @@ const DEFAULT_WAIT_LOG_SEC = 1;
 const DEFAULT_MAX_RUNS = 3;
 const DEFAULT_REVIEW_CMD = "sdd-forge review";
 const DEFAULT_MODE = "local";
-const DEFAULT_CONCURRENCY = 3;
+const DEFAULT_CONCURRENCY = 30;
 
 function getTargetFiles(root) {
   const docsDir = path.join(root, "docs");
@@ -165,7 +165,7 @@ function printHelp() {
       "",
       "Per-file mode:",
       "  provider に systemPromptFlag が設定されている場合、ファイルごとに非同期で agent を呼び出します。",
-      "  同時実行数は config.json の limits.concurrency で設定可能（default: 3）。",
+      "  同時実行数は config.json の limits.concurrency で設定可能（default: 30）。",
       "",
     ].join("\n")
   );
