@@ -35,6 +35,7 @@ import { buildTypeAliases } from "../docs/presets/registry.js";
  * @property {string} command    - 実行コマンド
  * @property {string[]} args     - コマンド引数（{{PROMPT}} プレースホルダー対応）
  * @property {number} [timeoutMs] - タイムアウト (ms)
+ * @property {string} [systemPromptFlag] - system prompt フラグ (例: "--system-prompt", "--system-prompt-file")
  */
 
 /**
@@ -56,6 +57,7 @@ import { buildTypeAliases } from "../docs/presets/registry.js";
  * @property {string} type                    - Project type ("webapp/cakephp2" | "cli" | ...)
  * @property {Object} [limits]                - Limit settings
  * @property {number} [limits.designTimeoutMs] - Timeout (ms)
+ * @property {number} [limits.concurrency]    - Per-file concurrency (default: 3)
  * @property {DocumentStyle} [documentStyle]  - Document style settings
  * @property {TextFillConfig} [textFill]      - text-fill settings
  * @property {string} [defaultAgent]          - Default agent name

@@ -575,6 +575,7 @@ async function main() {
           name: "claude-cli",
           command: "claude",
           args: ["--model", "sonnet", "-p", "{{PROMPT}}"],
+          systemPromptFlag: "--system-prompt",
         },
       };
     } else if (defaultAgent === "codex") {
@@ -583,6 +584,7 @@ async function main() {
           name: "codex-cli",
           command: "codex",
           args: ["-p", "{{PROMPT}}"],
+          systemPromptFlag: "--system-prompt-file",
         },
       };
     }
