@@ -10,6 +10,8 @@ import os from "os";
 import path from "path";
 import { execFileSync, execFile } from "child_process";
 
+const DEFAULT_AGENT_TIMEOUT_MS = 120000;
+
 /**
  * Call an AI agent with a prompt and return the response.
  *
@@ -75,7 +77,7 @@ export function callAgent(agent, prompt, timeoutMs, cwd, options) {
     const result = execFileSync(agent.command, finalArgs, {
       encoding: "utf8",
       maxBuffer: 20 * 1024 * 1024,
-      timeout: timeoutMs || 120000,
+      timeout: timeoutMs || DEFAULT_AGENT_TIMEOUT_MS,
       cwd: cwd || process.cwd(),
       env,
     });
@@ -151,7 +153,7 @@ export function callAgentAsync(agent, prompt, timeoutMs, cwd, options) {
       {
         encoding: "utf8",
         maxBuffer: 20 * 1024 * 1024,
-        timeout: timeoutMs || 120000,
+        timeout: timeoutMs || DEFAULT_AGENT_TIMEOUT_MS,
         cwd: cwd || process.cwd(),
         env,
       },

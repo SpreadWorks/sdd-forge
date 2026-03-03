@@ -21,6 +21,9 @@ import { callAgent as callAgentBase, callAgentAsync as callAgentAsyncBase } from
 
 const logger = createLogger("text");
 
+const DEFAULT_CONCURRENCY = 5;
+const DEFAULT_TIMEOUT_MS = 180000;
+
 // ---------------------------------------------------------------------------
 // 設定読み込み
 // ---------------------------------------------------------------------------
@@ -397,19 +400,11 @@ async function processTemplateFileBatch(text, analysis, fileName, agent, timeout
 
   logger.verbose(`Batch ${fileName}: ${textFills.length} directive(s) → 1 call`);
 
-  let result;
-  try {
-    // バッチはファイル全体を返すので preamble パターンは使わない
-    result = await callAgentAsync(agent, prompt, timeoutMs, cwd, [], systemPrompt);
-  } catch (err) {
-    logger.log(`ERROR batch ${fileName}:`);
-    logger.log(err.message);
-    return { text, filled: 0, skipped: textFills.length };
-  }
+  // バッチはファイル全体を返すので preamble パターンは使わない
+  const result = await callAgentAsync(agent, prompt, timeoutMs, cwd, [], systemPrompt);
 
   if (!result) {
-    logger.log(`WARN: empty batch response for ${fileName}`);
-    return { text, filled: 0, skipped: textFills.length };
+    throw new Error(`empty batch response for ${fileName}`);
   }
 
   // ファイル先頭に余分な前置きがあれば除去（最初の # 見出し行を起点にする）
@@ -523,7 +518,7 @@ async function processTemplate(text, analysis, fileName, agent, timeoutMs, cwd, 
   }));
 
   // Phase 2: Parallel LLM calls with concurrency control
-  const maxConcurrency = concurrency || 30;
+  const maxConcurrency = concurrency || DEFAULT_CONCURRENCY;
   const results = new Array(tasks.length);
 
   await new Promise((resolve) => {
@@ -638,7 +633,7 @@ export async function textFillFromAnalysis(root, analysis, agentName) {
   const documentStyle = cfg.documentStyle;
   const lang = cfg.lang || "ja";
   const systemPrompt = buildTextSystemPrompt(projectContext, documentStyle, lang);
-  const concurrency = Number(cfg.limits?.concurrency || 0) || 30;
+  const concurrency = Number(cfg.limits?.concurrency || 0) || DEFAULT_CONCURRENCY;
   const docsDir = path.join(root, "docs");
   const docsFiles = fs.readdirSync(docsDir)
     .filter((f) => /^\d{2}_/.test(f) && f.endsWith(".md"))
@@ -650,6 +645,7 @@ export async function textFillFromAnalysis(root, analysis, agentName) {
 
   // Parallel file processing with concurrency control
   const fileResults = new Array(docsFiles.length);
+  const errors = [];
   await new Promise((resolve) => {
     let running = 0;
     let idx = 0;
@@ -667,14 +663,15 @@ export async function textFillFromAnalysis(root, analysis, agentName) {
         const filePath = path.join(docsDir, file);
         const original = fs.readFileSync(filePath, "utf8");
 
-        processTemplate(original, analysis, file, agent, 120000, root, false, preamblePatterns, systemPrompt, undefined, concurrency)
+        processTemplate(original, analysis, file, agent, DEFAULT_TIMEOUT_MS, root, false, preamblePatterns, systemPrompt, undefined, concurrency)
           .then((result) => {
             fileResults[fileIdx] = { file, filePath, result };
           })
           .catch((err) => {
             logger.log(`ERROR processing ${file}:`);
             logger.log(err.message);
-            fileResults[fileIdx] = { file, filePath, result: { text: original, filled: 0, skipped: 0 } };
+            errors.push(file);
+            fileResults[fileIdx] = { file, filePath, result: null };
           })
           .finally(() => {
             running--;
@@ -687,6 +684,7 @@ export async function textFillFromAnalysis(root, analysis, agentName) {
   });
 
   for (const { file, filePath, result } of fileResults) {
+    if (!result) continue;
     totalFilled += result.filled;
     totalSkipped += result.skipped;
 
@@ -696,7 +694,11 @@ export async function textFillFromAnalysis(root, analysis, agentName) {
     }
   }
 
-  return { filled: totalFilled, skipped: totalSkipped, files: changedFiles };
+  if (errors.length > 0) {
+    logger.log(`${errors.length} file(s) failed: ${errors.join(", ")}`);
+  }
+
+  return { filled: totalFilled, skipped: totalSkipped, files: changedFiles, errors };
 }
 
 // ---------------------------------------------------------------------------
@@ -706,9 +708,9 @@ async function main() {
   const cli = parseArgs(process.argv.slice(2), {
     flags: ["--dry-run", "--per-directive"],
     options: ["--agent", "--timeout", "--id"],
-    defaults: { agent: "", dryRun: false, timeout: "180000", perDirective: false, id: "" },
+    defaults: { agent: "", dryRun: false, timeout: String(DEFAULT_TIMEOUT_MS), perDirective: false, id: "" },
   });
-  cli.timeout = Number(cli.timeout) || 180000;
+  cli.timeout = Number(cli.timeout) || DEFAULT_TIMEOUT_MS;
   if (cli.help) {
     console.log([
       "Usage: node sdd-forge/engine/tfill.js --agent <name> [options]",
@@ -718,7 +720,7 @@ async function main() {
       "  --id <id>           指定 ID の @text ディレクティブのみ処理",
       "  --dry-run           変更内容を表示するだけでファイル書き込みしない",
       "  --per-directive     1ディレクティブ=1呼び出しの旧モード（デフォルト: ファイル単位バッチ）",
-      "  --timeout <ms>      エージェントタイムアウト (default: 180000)",
+      `  --timeout <ms>      エージェントタイムアウト (default: ${DEFAULT_TIMEOUT_MS})`,
       "  -h, --help          このヘルプを表示",
     ].join("\n"));
     return;
@@ -746,7 +748,7 @@ async function main() {
   const documentStyle = cfg.documentStyle;
   const lang = cfg.lang || "ja";
   const systemPrompt = buildTextSystemPrompt(projectContext, documentStyle, lang);
-  const concurrency = Number(cfg.limits?.concurrency || 0) || 30;
+  const concurrency = Number(cfg.limits?.concurrency || 0) || DEFAULT_CONCURRENCY;
   const docsDir = path.join(root, "docs");
   const docsFiles = fs.readdirSync(docsDir)
     .filter((f) => /^\d{2}_/.test(f) && f.endsWith(".md"))
@@ -784,6 +786,7 @@ async function main() {
 
   // Parallel file processing with concurrency control
   const fileResults = new Array(fileEntries.length);
+  const errors = [];
   await new Promise((resolve) => {
     let running = 0;
     let idx = 0;
@@ -816,7 +819,8 @@ async function main() {
           .catch((err) => {
             logger.log(`ERROR processing ${file}:`);
             logger.log(err.message);
-            fileResults[fileIdx] = { text: original, filled: 0, skipped: 0 };
+            errors.push(file);
+            fileResults[fileIdx] = null;
           })
           .finally(() => {
             running--;
@@ -832,6 +836,7 @@ async function main() {
   for (let i = 0; i < fileEntries.length; i++) {
     const { file, filePath } = fileEntries[i];
     const result = fileResults[i];
+    if (!result) continue;
 
     totalFilled += result.filled;
     totalSkipped += result.skipped;
@@ -845,7 +850,13 @@ async function main() {
     }
   }
 
+  if (errors.length > 0) {
+    logger.log(`${errors.length} file(s) failed: ${errors.join(", ")}`);
+  }
   logger.log(`Done. ${changedFiles.size} file(s) updated. filled: ${totalFilled}, skipped: ${totalSkipped}.`);
+  if (errors.length > 0) {
+    process.exitCode = 1;
+  }
 }
 
 export { main };
