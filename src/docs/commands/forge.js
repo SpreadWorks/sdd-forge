@@ -784,7 +784,7 @@ async function main() {
       output.write(`[forge] populated placeholders in: ${populateResult.files.join(", ")}\n`);
     }
     if (agent) {
-      const tfResult = textFillFromAnalysis(root, analysisData, cli.agent);
+      const tfResult = await textFillFromAnalysis(root, analysisData, cli.agent);
       if (tfResult.filled > 0) {
         output.write(`[forge] @text: ${tfResult.filled} directives resolved\n`);
       }
