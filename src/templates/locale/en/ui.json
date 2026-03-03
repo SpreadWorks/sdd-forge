@@ -52,14 +52,7 @@
         "cli": "CLI tool",
         "library": "Library / package"
       },
-      "fwWebapp": {
-        "generic": "No specific framework",
-        "cakephp2": "CakePHP 2.x"
-      },
-      "fwCli": {
-        "generic": "No specific framework",
-        "node-cli": "Node.js CLI"
-      },
+      "fwGeneric": "No specific framework",
       "purpose": {
         "developer-guide": "Technical guide for developers",
         "user-guide": "User operation guide",

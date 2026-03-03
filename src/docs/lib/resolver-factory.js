@@ -9,18 +9,9 @@ import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
 import { createBaseCategories } from "./resolver-base.js";
+import { presetByLeaf } from "../presets/registry.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-
-// ---------------------------------------------------------------------------
-// FW モジュールマップ
-// ---------------------------------------------------------------------------
-
-const FW_RESOLVER_MODULES = {
-  cakephp2: "../presets/webapp/cakephp2/resolver.js",
-  laravel: "../presets/webapp/laravel/resolver.js",
-  symfony: "../presets/webapp/symfony/resolver.js",
-};
 
 // ---------------------------------------------------------------------------
 // overrides.json 読み込み（キャッシュ付き）
@@ -68,7 +59,8 @@ export async function createResolver(type, root) {
 
   // FW 固有カテゴリの追加
   const leaf = type.split("/").pop();
-  const fwModulePath = FW_RESOLVER_MODULES[leaf];
+  const preset = presetByLeaf(leaf);
+  const fwModulePath = preset ? `../presets/${preset.type}/resolver.js` : null;
 
   if (fwModulePath) {
     try {
