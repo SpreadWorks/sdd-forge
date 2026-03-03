@@ -155,9 +155,11 @@ export function callAgentAsync(agent, prompt, timeoutMs, cwd, options) {
         cwd: cwd || process.cwd(),
         env,
       },
-      (err, stdout) => {
+      (err, stdout, stderr) => {
         cleanup();
         if (err) {
+          err.stderr = stderr;
+          err.stdout = stdout;
           reject(err);
           return;
         }

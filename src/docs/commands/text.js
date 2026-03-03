@@ -571,7 +571,9 @@ async function processTemplate(text, analysis, fileName, agent, timeoutMs, cwd, 
     const { generated: rawGenerated, error } = results[i];
 
     if (error) {
-      logger.log(`ERROR calling agent for ${fileName}:${d.line + 1}: ${error.message.slice(0, 200)}`);
+      const parts = [error.message.slice(0, 200)];
+      if (error.stderr) parts.push(`stderr: ${String(error.stderr).slice(0, 400)}`);
+      logger.log(`ERROR calling agent for ${fileName}:${d.line + 1}: ${parts.join(" | ")}`);
       skipped++;
       continue;
     }
