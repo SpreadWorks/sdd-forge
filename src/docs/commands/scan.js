@@ -16,6 +16,7 @@ import { repoRoot, sourceRoot, parseArgs } from "../../lib/cli.js";
 import { loadConfig } from "../../lib/config.js";
 import { resolveType } from "../../lib/types.js";
 import { genericScan } from "../lib/scanner.js";
+import { presetByLeaf } from "../presets/registry.js";
 
 /**
  * type パスからリーフセグメント（FW 名）を抽出する。
@@ -26,13 +27,6 @@ function leafSegment(typePath) {
   const parts = typePath.split("/");
   return parts[parts.length - 1];
 }
-
-/** FW モジュールのマップ（リーフセグメント → モジュールパス） */
-const FW_MODULES = {
-  cakephp2: "../presets/webapp/cakephp2/scanner.js",
-  laravel: "../presets/webapp/laravel/scanner.js",
-  symfony: "../presets/webapp/symfony/scanner.js",
-};
 
 function printHelp() {
   console.log(
@@ -118,7 +112,8 @@ async function main() {
 
     // FW 固有モジュールからスキャンデフォルトを取得
     const leaf = leafSegment(type);
-    const fwModulePath = FW_MODULES[leaf];
+    const preset = presetByLeaf(leaf);
+    const fwModulePath = preset ? `../presets/${preset.type}/scanner.js` : null;
     let fwScanDefaults = {};
 
     if (fwModulePath) {

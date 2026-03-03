@@ -4,6 +4,8 @@
  * JSDoc 型定義と config / context のバリデーション関数。
  */
 
+import { buildTypeAliases } from "../docs/presets/registry.js";
+
 // ---------------------------------------------------------------------------
 // JSDoc 型定義
 // ---------------------------------------------------------------------------
@@ -76,12 +78,7 @@ const VALID_TONES = new Set(["polite", "formal", "casual"]);
  * 旧 type 名 → 新 type パスのエイリアスマップ。
  * 後方互換のため、旧 config.json の type 値をそのまま使用可能にする。
  */
-export const TYPE_ALIASES = {
-  "php-mvc": "webapp/cakephp2",
-  "laravel": "webapp/laravel",
-  "symfony": "webapp/symfony",
-  "node-cli": "cli/node-cli",
-};
+export const TYPE_ALIASES = buildTypeAliases();
 
 /**
  * type 名をエイリアス解決する。エイリアスがなければそのまま返す。

@@ -19,6 +19,7 @@ import { validateConfig } from "../../lib/types.js";
 import { saveContext } from "../../lib/config.js";
 import { createI18n } from "../../lib/i18n.js";
 import { addProject, workRootFor, loadProjects } from "../../lib/projects.js";
+import { presetsForArch } from "../presets/registry.js";
 
 // ---------------------------------------------------------------------------
 // readline helpers
@@ -103,22 +104,6 @@ function parseSetupArgs(argv) {
     },
   });
 }
-
-// ---------------------------------------------------------------------------
-// Architecture → framework mapping
-// ---------------------------------------------------------------------------
-
-const ARCH_FRAMEWORKS = {
-  webapp: [
-    { key: "generic", value: "webapp" },
-    { key: "cakephp2", value: "webapp/cakephp2" },
-  ],
-  cli: [
-    { key: "generic", value: "cli" },
-    { key: "node-cli", value: "cli/node-cli" },
-  ],
-  library: [],
-};
 
 // ---------------------------------------------------------------------------
 // Project registration
@@ -485,20 +470,17 @@ async function main() {
         { label: `library — ${archLabels.library}`, value: "library" },
       ], t);
 
-      const frameworks = ARCH_FRAMEWORKS[arch];
-      if (frameworks && frameworks.length > 0) {
-        // Build framework choices from i18n
-        const fwChoiceKey = arch === "webapp" ? "fwWebapp" : arch === "cli" ? "fwCli" : null;
-        if (fwChoiceKey) {
-          const fwLabels = t.raw(`setup.choices.${fwChoiceKey}`);
-          const fwChoices = frameworks.map((fw) => ({
-            label: `${fw.key} — ${fwLabels[fw.key] || fw.key}`,
-            value: fw.value,
-          }));
-          type = await askChoice(rl, t("setup.questions.fwType"), fwChoices, t);
-        } else {
-          type = arch;
-        }
+      const presets = presetsForArch(arch);
+      if (presets.length > 0) {
+        const genericLabel = t.raw("setup.choices.fwGeneric");
+        const fwChoices = [
+          { label: `generic — ${genericLabel}`, value: arch },
+          ...presets.map((p) => ({
+            label: `${p.key} — ${p.label}`,
+            value: p.type,
+          })),
+        ];
+        type = await askChoice(rl, t("setup.questions.fwType"), fwChoices, t);
       } else {
         type = arch;
       }
