@@ -4,7 +4,7 @@
 
 <!-- @text: この章の概要を1〜2文で記述してください。ツールの目的・解決する課題・主要なユースケースを踏まえること。 -->
 
-本章では、sdd-forge の目的・解決する課題・全体アーキテクチャ・主要コンセプトを説明します。ソースコードの自動解析によるドキュメント生成から、仕様駆動開発（SDD）ワークフローまでの全体像を把握するための入門となります。
+本章では、sdd-forge がどのような課題を解決するツールであるか、その全体的なアーキテクチャ、および利用を開始するまでの典型的なフローを説明します。ソースコードの自動解析によるドキュメント生成と、Spec-Driven Development ワークフローの両面からツールの役割を理解できます。
 
 ## 内容
 
@@ -12,17 +12,14 @@
 
 <!-- @text: このCLIツールが解決する課題と、ターゲットユーザーを説明してください。 -->
 
-sdd-forge は、ソフトウェアプロジェクトのドキュメントがコードと乖離・陳腐化する問題を解決する CLI ツールです。
-ソースコードを自動解析して構造情報を抽出し、AI によるテキスト生成と組み合わせることで、最新のドキュメントを継続的に維持できます。
+sdd-forge は、ソースコードとドキュメントの乖離という慢性的な課題を解決するための CLI ツールです。開発が進むにつれて仕様書や設計ドキュメントが実装と食い違うことは多くのチームで発生していますが、sdd-forge はソースコードを直接解析して構造情報を抽出し、ドキュメントを自動生成・更新することでこの問題に対処します。
 
-また、機能追加・改修時には Spec-Driven Development（SDD）ワークフローをサポートします。
-spec の作成・承認・ゲートチェックから実装後のドキュメント反映まで一貫して管理することで、「実装したが仕様書がない」「ドキュメントが古い」という状況を防ぎます。
+また、機能追加や改修の際には Spec-Driven Development（SDD）フローに従って spec の作成・ゲートチェック・実装・ドキュメント更新を一貫して管理できます。
 
-主なターゲットユーザーは以下の通りです。
-
-- ドキュメントが整備されていない既存プロジェクトを抱える開発者
-- コードの変化に追従するドキュメント管理の仕組みを必要とするチーム
-- 仕様ベースの開発フローを取り入れたいプロジェクトリーダーやアーキテクト
+**ターゲットユーザー:**
+- ドキュメントの陳腐化に悩む中〜大規模プロジェクトの開発チーム
+- 設計ドキュメントと実装の整合性を継続的に保ちたいエンジニア・テックリード
+- 機能追加・改修時の仕様管理を体系化したい開発組織
 
 ### アーキテクチャ概要
 
@@ -30,42 +27,30 @@ spec の作成・承認・ゲートチェックから実装後のドキュメン
 
 ```mermaid
 flowchart TD
-    A[ソースコード / プロジェクト] --> B["sdd-forge CLI\n(sdd-forge.js)"]
+    SRC[ソースコード] --> SCAN["sdd-forge scan\nコード解析"]
+    SCAN --> JSON[".sdd-forge/output/analysis.json"]
 
-    B --> C["docs.js\nドキュメント系ディスパッチャ"]
-    B --> D["spec.js\n仕様系ディスパッチャ"]
-    B --> E["flow.js\nSDD 自動フロー"]
+    TMPL["テンプレート\nsrc/templates/"] --> INIT["sdd-forge init\ndocs/ 初期化"]
+    INIT --> DOCS["docs/\n設計ドキュメント"]
 
-    C --> C1["scan\nコード解析"]
-    C --> C2["init\nテンプレート展開"]
-    C --> C3["data\n@data 解決"]
-    C --> C4["text\n@text → AI 生成"]
-    C --> C5["readme\nREADME 生成"]
-    C --> C6["forge\ndocs 反復改善"]
-    C --> C7["review\n品質チェック"]
-    C --> C8["build\n一括パイプライン"]
+    JSON --> DATA["sdd-forge data\n@data ディレクティブ解決"]
+    DATA --> DOCS
 
-    C8 -->|順次実行| C1
-    C8 --> C2
-    C8 --> C3
-    C8 --> C4
-    C8 --> C5
+    AI["AI エージェント"] --> TEXT["sdd-forge text\n@text ディレクティブ解決"]
+    TEXT --> DOCS
 
-    D --> D1["spec\nspec.md 作成"]
-    D --> D2["gate\nゲートチェック"]
+    DOCS --> FORGE["sdd-forge forge\n反復改善"]
+    FORGE --> DOCS
 
-    E --> D1
-    E --> D2
-    E --> C6
+    DOCS --> REVIEW["sdd-forge review\n品質チェック"]
+    REVIEW -->|PASS| DONE["ドキュメント完成"]
+    REVIEW -->|FAIL| FORGE
 
-    C1 --> G[("analysis.json\n.sdd-forge/output/")]
-    G --> C3
-    C2 --> H["docs/\nマークダウン群"]
-    C3 --> H
-    C4 --> H
-    C6 --> H
-    C5 --> I["README.md"]
-    D1 --> J["specs/NNN-xxx/spec.md"]
+    REQ["機能要求"] --> SPECMD["sdd-forge spec\nspec.md 作成"]
+    SPECMD --> GATE["sdd-forge gate\nゲートチェック"]
+    GATE -->|PASS| IMPL["実装"]
+    GATE -->|FAIL| SPECMD
+    IMPL --> FORGE
 ```
 
 ### 主要コンセプト
@@ -74,58 +59,64 @@ flowchart TD
 
 | コンセプト / 用語 | 説明 |
 |---|---|
-| **SDD（Spec-Driven Development）** | 仕様（spec）の作成・承認・ゲートチェックを経てから実装を行う開発手法。実装とドキュメントの乖離を防ぎます。 |
-| **spec** | 機能追加・改修ごとに作成する仕様書（`specs/NNN-xxx/spec.md`）。目的・変更内容・ユーザー確認状態を記録します。 |
-| **gate** | spec が実装開始可能な状態かを検証するチェック処理。未解決事項や未承認状態があると FAIL となります。 |
-| **@data ディレクティブ** | ドキュメントテンプレート内に記述する特殊タグ。`sdd-forge data` 実行時に `analysis.json` の解析データで自動置換されます。 |
-| **@text ディレクティブ** | ドキュメントテンプレート内に記述する特殊タグ。`sdd-forge text` 実行時に AI がソースと文脈をもとにテキストを生成・挿入します。 |
-| **MANUAL ブロック** | `<!-- MANUAL:START -->〜<!-- MANUAL:END -->` で囲んだ手動記述領域。自動生成コマンドを実行しても上書きされません。 |
-| **analysis.json** | `sdd-forge scan` がソースコードを解析して生成する構造情報ファイル。コントローラー・モデル・ルートなどのメタデータを含みます。 |
-| **forge** | docs を反復的に改善するコマンド。プロンプトと spec を入力として AI がドキュメントを加筆・修正します。 |
-| **build** | scan → init → data → text → readme を一括実行するパイプラインコマンドです。初回セットアップや大規模更新時に利用します。 |
-| **flow** | spec 作成・ゲートチェック・forge を自動でシーケンス実行する SDD フロー自動化コマンドです。 |
+| **SDD（Spec-Driven Development）** | 仕様（spec）を先に作成・承認してから実装を行う開発手法。ドキュメントと実装の整合性を保つことを目的とします。 |
+| **spec** | 機能追加・改修ごとに作成される仕様書ファイル（`specs/NNN-xxx/spec.md`）。ゲートチェックを経て実装の起点となります。 |
+| **gate** | spec の内容が実装を開始するのに十分な品質かをチェックする関門。PASS するまで実装は禁止されます。 |
+| **analysis.json** | `sdd-forge scan` がソースコードを解析して生成する構造データ。docs 生成の基礎となります。 |
+| **@data ディレクティブ** | docs テンプレート内に記述するマーカー。`sdd-forge data` 実行時に analysis.json の内容で自動展開されます。 |
+| **@text ディレクティブ** | docs テンプレート内に記述するマーカー。`sdd-forge text` 実行時に AI が文章を生成して埋め込みます。 |
+| **MANUAL ブロック** | `<!-- MANUAL:START -->〜<!-- MANUAL:END -->` で囲まれた手動記述領域。自動上書きされません。 |
+| **forge** | AI を使って docs を反復的に改善するコマンド。変更内容のプロンプトを渡すことで docs を最新状態に保ちます。 |
+| **review** | docs の品質を自動チェックするコマンド。PASS になるまで forge との繰り返しが推奨されます。 |
+| **preset** | フレームワーク（CakePHP2、Laravel、Symfony 等）ごとの解析ロジック設定。プロジェクトの技術スタックに応じて選択します。 |
 
 ### 典型的な利用フロー
 
 <!-- @text: ユーザーがインストールしてから最初の成果物を得るまでの典型的な手順をステップ形式で説明してください。 -->
 
-**ステップ 1: インストール**
-
-sdd-forge をグローバルインストールします。
+**1. インストール**
 
 ```bash
 npm install -g sdd-forge
 ```
 
-**ステップ 2: プロジェクト登録（setup）**
+グローバルインストールにより、任意のプロジェクトディレクトリから `sdd-forge` コマンドが使用できるようになります。
 
-ドキュメント化したいプロジェクトのルートディレクトリで `sdd-forge setup` を実行します。
-対話式ウィザードに従ってプロジェクト名・種別・AI エージェントを設定すると、`.sdd-forge/config.json` が生成されます。
+**2. プロジェクト登録と初期設定**
 
 ```bash
-cd /path/to/your-project
+cd /path/to/your/project
 sdd-forge setup
 ```
 
-**ステップ 3: ドキュメント一括生成（build）**
+対話形式でプロジェクト情報（ソースルート・言語・フレームワーク等）を入力します。`.sdd-forge/` ディレクトリと設定ファイルが生成されます。
 
-`sdd-forge build` を実行すると、scan → init → data → text → readme の各ステップが順に実行され、`docs/` 以下にドキュメントが生成されます。
+**3. ソースコード解析**
+
+```bash
+sdd-forge scan
+```
+
+プロジェクトのソースコードを解析し、`.sdd-forge/output/analysis.json` を生成します。
+
+**4. ドキュメント一括生成**
 
 ```bash
 sdd-forge build
 ```
 
-**ステップ 4: 生成物の確認**
+`scan → init → data → text → readme` を順に実行し、`docs/` 配下に設計ドキュメントを生成します。初回はこのコマンド一つで最初のドキュメントセットが揃います。
 
-`docs/` 配下にマークダウン形式のドキュメントが、プロジェクトルートに `README.md` が生成されていることを確認します。
-内容に誤りがある場合は、`MANUAL` ブロックを使って手動で補足情報を追記できます。
+**5. 品質チェックと改善**
 
-**ステップ 5: 以降の運用**
-
-ソースコードを変更した際は再度 `sdd-forge build` を実行してドキュメントを最新化します。
-機能追加・改修時は `sdd-forge spec` → `sdd-forge gate` → 実装 → `sdd-forge forge` → `sdd-forge review` の SDD フローに従って進めます。
+```bash
+sdd-forge review
+sdd-forge forge --prompt "初回ドキュメント生成後の調整"
 ```
 
----
+review の結果に応じて forge を繰り返し、PASS になればドキュメントが完成です。
 
-書き込みを許可していただければ、上記内容を `docs/01_overview.md` に保存します。
+**6. 機能追加時（SDD フロー）**
+
+新機能を追加する際は `sdd-forge spec --title "<機能名>"` で spec を作成し、`sdd-forge gate` でチェックを通過してから実装を開始します。実装完了後は `sdd-forge forge` と `sdd-forge review` で docs を更新します。
+```

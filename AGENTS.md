@@ -83,6 +83,24 @@ docs の内容は以下の 3 種類で構成される:
 - 実装・修正後は SDD フローに従って forge → review を実行すること
 <!-- SDD:END -->
 
+<!-- PROJECT:START — managed by sdd-forge. Do not edit manually. -->
+## Project Context
+
+- generated_at: 2026-03-03 01:33:42 UTC
+
+### Technology Stack
+
+- type: cli/node-cli
+- Node.js: >=18.0.0
+
+### Available Commands
+
+| command | script |
+| --- | --- |
+| `npm run test` | find tests -name '*.test.js' \| xargs node --test |
+
+<!-- PROJECT:END -->
+
 
 ## Project Guidelines
 

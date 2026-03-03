@@ -4,7 +4,7 @@
 
 <!-- @text: この章の概要を1〜2文で記述してください。主要ディレクトリの数と役割を踏まえること。 -->
 
-本章では sdd-forge のソースコード構成を説明します。`src/` 以下に 6 つの主要ディレクトリが存在し、コマンド実装・共通ライブラリ・テンプレート・フレームワーク別プリセットに役割が分担されています。
+本章では sdd-forge のソースコード構成を解説します。`src/` 配下は `docs`・`specs`・`lib`・`templates` の 4 つの主要ディレクトリに整理されており、それぞれドキュメント生成・仕様管理・共通処理・テンプレートの役割を担っています。
 
 ## 内容
 
@@ -14,61 +14,31 @@
 
 ```
 sdd-forge/
-├── package.json                    # パッケージ定義 / bin エントリポイント
-└── src/
-    ├── sdd-forge.js                # トップレベルディスパッチャ
-    ├── docs.js                     # docs サブコマンド群のディスパッチャ
-    ├── spec.js                     # spec サブコマンド群のディスパッチャ
-    ├── flow.js                     # SDD フロー自動実行（直接コマンド）
-    ├── help.js                     # コマンド一覧表示
-    ├── docs/
-    │   ├── commands/               # docs サブコマンド実装（11 ファイル）
-    │   │   ├── scan.js             #   ソースコード解析 → analysis.json
-    │   │   ├── init.js             #   テンプレートから docs/ を初期化
-    │   │   ├── data.js             #   @data ディレクティブ解決
-    │   │   ├── text.js             #   @text ディレクティブを AI で解決
-    │   │   ├── forge.js            #   docs 反復改善
-    │   │   ├── review.js           #   docs 品質チェック
-    │   │   ├── readme.js           #   README.md 自動生成
-    │   │   ├── setup.js            #   プロジェクト登録 + 設定生成
-    │   │   ├── changelog.js        #   specs/ から change_log.md を生成
-    │   │   ├── agents.js           #   AGENTS.md PROJECT セクション更新
-    │   │   └── default-project.js  #   デフォルトプロジェクト切り替え
-    │   ├── lib/                    # docs 処理共通ライブラリ（7 ファイル）
-    │   │   ├── directive-parser.js #   ディレクティブ解析
-    │   │   ├── template-merger.js  #   テンプレートマージエンジン
-    │   │   ├── renderers.js        #   データ → Markdown 変換
-    │   │   ├── resolver-base.js    #   リゾルバ基底クラス
-    │   │   ├── resolver-factory.js #   リゾルバファクトリ
-    │   │   ├── scanner.js          #   汎用スキャナ
-    │   │   └── php-array-parser.js #   PHP 配列パーサ
-    │   └── presets/webapp/         # フレームワーク別プリセット
-    │       └── cakephp2/           # CakePHP 2 専用プリセット（7 ファイル）
-    │           ├── scanner.js      #   FW 固有スキャン拡張
-    │           ├── resolver.js     #   FW 固有リゾルバ
-    │           └── analyze-*.js    #   コントローラ・モデル・ルート等の解析
-    ├── specs/
-    │   └── commands/               # spec サブコマンド実装（2 ファイル）
-    │       ├── init.js             #   spec 初期化（feature ブランチ + spec.md）
-    │       └── gate.js             #   spec ゲートチェック
-    ├── lib/                        # 全コマンド共有ユーティリティ（7 ファイル）
-    │   ├── agent.js                #   AI エージェント呼び出し
-    │   ├── cli.js                  #   CLI ユーティリティ（repoRoot / parseArgs）
-    │   ├── config.js               #   設定ファイル読み込み・管理
-    │   ├── i18n.js                 #   多言語対応モジュール
-    │   ├── process.js              #   spawnSync ラッパー
-    │   ├── projects.js             #   projects.json CRUD
-    │   └── types.js                #   JSDoc 型定義 + バリデーション
-    ├── templates/                  # バンドル済みテンプレート群
-    │   ├── config.example.json     #   設定ファイルサンプル
-    │   ├── review-checklist.md     #   review チェックリスト
-    │   └── locale/                 #   ロケール別テンプレート（ja / en）
-    │       └── ja/
-    │           ├── base/           #   共通ドキュメントテンプレート
-    │           ├── cli/            #   CLI プロジェクト向けテンプレート
-    │           ├── webapp/         #   Web アプリ向けテンプレート
-    │           └── *.json          #   UI 文言 / プロンプト定義
-    └── README.md                   # パッケージ同梱の内部構造ガイド
+├── package.json                        # パッケージ定義、bin エントリポイント
+├── src/
+│   ├── sdd-forge.js                    # CLI エントリポイント（最上位ディスパッチャー）
+│   ├── docs.js                         # docs サブコマンド群のディスパッチャー
+│   ├── spec.js                         # spec サブコマンド群のディスパッチャー
+│   ├── flow.js                         # SDD フロー自動実行（直接コマンド）
+│   ├── help.js                         # コマンド一覧表示
+│   ├── docs/
+│   │   ├── commands/                   # docs サブコマンド実装（scan/init/data/text/forge 等）
+│   │   ├── lib/                        # ドキュメント生成の内部ライブラリ
+│   │   └── presets/webapp/             # フレームワーク別解析・リゾルバー
+│   │       ├── cakephp2/               # CakePHP 2.x 用アナライザー + リゾルバー
+│   │       ├── laravel/                # Laravel 8+ 用アナライザー + リゾルバー
+│   │       └── symfony/                # Symfony 5+ 用アナライザー + リゾルバー
+│   ├── specs/
+│   │   └── commands/                   # spec/gate コマンド実装
+│   ├── lib/                            # 全コマンド共通のユーティリティライブラリ
+│   └── templates/                      # 同梱ドキュメントテンプレート・スキル定義
+│       ├── config.example.json         # 設定ファイルのサンプル
+│       ├── review-checklist.md         # レビューチェックリスト
+│       ├── locale/                     # ロケール別テンプレート（ja/en）
+│       └── skills/                     # sdd-flow-start/close スキル定義
+├── docs/                               # sdd-forge 自身の自己文書化ドキュメント
+├── specs/                              # SDD spec ファイル群
+└── tests/                              # テストコード
 ```
 
 ### 各ディレクトリの責務
@@ -77,13 +47,12 @@ sdd-forge/
 
 | ディレクトリ | ファイル数 | 責務 |
 | --- | --- | --- |
-| `src/`（ルート） | 5 | トップレベルディスパッチャ群。`sdd-forge.js` がサブコマンドを `docs.js` / `spec.js` / `flow.js` へルーティングする |
-| `src/docs/commands/` | 11 | `sdd-forge docs` 配下の全コマンド実装。scan / init / data / text / forge / review / readme / setup / changelog / agents / default-project を提供する |
-| `src/docs/lib/` | 7 | ドキュメント生成処理の共通ライブラリ。ディレクティブ解析・テンプレートマージ・レンダリング・リゾルバ基盤を担う |
-| `src/docs/presets/webapp/cakephp2/` | 7 | CakePHP 2 フレームワーク固有の解析処理とリゾルバ。コントローラ・モデル・ルート・シェルの解析ロジックを含む |
-| `src/specs/commands/` | 2 | `sdd-forge spec` / `sdd-forge gate` コマンド実装。spec ファイル初期化とゲートチェックを担う |
-| `src/lib/` | 7 | 全コマンドが共有するユーティリティ群。AI 呼び出し・設定管理・多言語対応・プロジェクト管理などの横断機能を提供する |
-| `src/templates/` | 多数 | バンドル済みドキュメントテンプレート。ロケール（ja / en）・プロジェクト種別（base / cli / webapp）ごとに整理されている |
+| `src/docs/commands/` | 11 | `scan`・`init`・`data`・`text`・`forge`・`review` など docs 系サブコマンドの実装 |
+| `src/docs/lib/` | 7 | ディレクティブ解析・テンプレートマージ・レンダラー・リゾルバーなどのドキュメント生成ライブラリ |
+| `src/docs/presets/` | 21 | CakePHP2・Laravel・Symfony 向けのフレームワーク固有スキャナー・アナライザー・リゾルバー |
+| `src/specs/commands/` | 2 | `spec`（spec 初期化）および `gate`（ゲートチェック）コマンドの実装 |
+| `src/lib/` | 8 | CLI 引数解析・設定管理・AI エージェント呼び出し・i18n など全コマンド共通のユーティリティ |
+| `src/templates/` | 50 | ドキュメント雛形（ロケール別）・設定サンプル・レビューチェックリスト・スキル定義 |
 
 ### 共通ライブラリ
 
@@ -95,4 +64,13 @@ sdd-forge/
 
 ---
 
-書き込み権限の付与をいただければ、直接ファイルへ反映します。`docs/03_project_structure.md` への書き込みを許可していただくか、上記の内容を手動でコピーしてください。
+ファイルへの書き込み権限を許可していただければ直接保存することもできます。各 `@text` ディレクティブに挿入した内容は以下の通りです。
+
+**概要 (説明セクション)**
+本プロジェクトが `docs`・`specs`・`lib`・`templates` の 4 主要ディレクトリで構成されることを 1〜2 文で説明しています。
+
+**ディレクトリ構成**
+`src/` 配下の全ディレクトリ・主要ファイルを tree 形式で、各行に役割コメントを添えて記述しました。
+
+**各ディレクトリの責務**
+6 つの主要ディレクトリについて、ファイル数と責務を表形式でまとめました。`@data` ディレクティブの `libs` テーブルは自動生成対象のため内容は変更していません。
