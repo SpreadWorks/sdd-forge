@@ -653,23 +653,53 @@ export async function textFillFromAnalysis(root, analysis, agentName) {
   let totalFilled = 0;
   let totalSkipped = 0;
 
-  // Sequential file processing (processTemplate handles directive-level parallelism)
-  const fileResults = [];
+  // Batch mode: file-level parallelism (1 call per file)
+  const fileResults = new Array(docsFiles.length);
   const errors = [];
-  for (const file of docsFiles) {
-    const filePath = path.join(docsDir, file);
-    const original = fs.readFileSync(filePath, "utf8");
+  await new Promise((resolve) => {
+    let running = 0;
+    let idx = 0;
 
-    try {
-      const result = await processTemplate(original, analysis, file, agent, DEFAULT_TIMEOUT_MS, root, false, preamblePatterns, systemPrompt, undefined, concurrency);
-      fileResults.push({ file, filePath, result });
-    } catch (err) {
-      logger.log(`ERROR processing ${file}:`);
-      logger.log(err.message);
-      errors.push(file);
-      fileResults.push({ file, filePath, result: null });
+    function next() {
+      if (idx >= docsFiles.length && running === 0) {
+        resolve();
+        return;
+      }
+      while (running < concurrency && idx < docsFiles.length) {
+        const fileIdx = idx++;
+        const file = docsFiles[fileIdx];
+        running++;
+
+        const filePath = path.join(docsDir, file);
+        const original = fs.readFileSync(filePath, "utf8");
+
+        processTemplateFileBatch(original, analysis, file, agent, DEFAULT_TIMEOUT_MS, root, false, preamblePatterns, systemPrompt)
+          .then(async (result) => {
+            // バッチで 0 filled の場合は per-directive で再試行
+            if (result.filled === 0) {
+              const textFills = parseDirectives(original).filter((d) => d.type === "text");
+              if (textFills.length > 0) {
+                logger.verbose(`Batch returned 0 filled for ${file}. Falling back to per-directive mode...`);
+                result = await processTemplate(original, analysis, file, agent, DEFAULT_TIMEOUT_MS, root, false, preamblePatterns, systemPrompt, undefined, concurrency);
+              }
+            }
+            fileResults[fileIdx] = { file, filePath, result };
+          })
+          .catch((err) => {
+            logger.log(`ERROR processing ${file}:`);
+            logger.log(err.message);
+            errors.push(file);
+            fileResults[fileIdx] = { file, filePath, result: null };
+          })
+          .finally(() => {
+            running--;
+            next();
+          });
+      }
     }
-  }
+
+    next();
+  });
 
   for (const { file, filePath, result } of fileResults) {
     if (!result) continue;
