@@ -75,17 +75,28 @@ function upgradeSkills(workRoot, dryRun) {
     const srcContent = fs.readFileSync(srcPath, "utf8");
     let status = "updated";
 
-    // Compare with existing
-    if (fs.existsSync(destPath)) {
-      const existing = fs.readFileSync(destPath, "utf8");
-      if (existing === srcContent) {
-        status = "unchanged";
-        results.push({ name, status });
-        continue;
+    // Compare with existing (lstat to detect symlinks without following)
+    let isSymlink = false;
+    try {
+      const stat = fs.lstatSync(destPath);
+      isSymlink = stat.isSymbolicLink();
+      if (!isSymlink) {
+        const existing = fs.readFileSync(destPath, "utf8");
+        if (existing === srcContent) {
+          status = "unchanged";
+          results.push({ name, status });
+          continue;
+        }
       }
+    } catch (_) {
+      // file doesn't exist — will be created
     }
 
     if (!dryRun) {
+      // Remove symlink if present so we can write a real file
+      if (isSymlink) {
+        fs.unlinkSync(destPath);
+      }
       // Copy template to .agents/skills/<name>/SKILL.md
       fs.mkdirSync(path.dirname(destPath), { recursive: true });
       fs.writeFileSync(destPath, srcContent, "utf8");
