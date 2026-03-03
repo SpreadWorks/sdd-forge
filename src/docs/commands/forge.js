@@ -308,32 +308,52 @@ function runAgent(agent, prompt, options = {}) {
       return;
     }
 
-    execFile(
-      agent.command,
-      args,
-      { maxBuffer: 20 * 1024 * 1024, timeout: timeoutMs, cwd: runCwd },
-      (err, stdout, stderr) => {
-        if (ticker) clearInterval(ticker);
-        cleanup();
-        if (err) {
-          const timedOut = err.killed === true;
-          reject(
-            new Error(
-              [
-                `Agent failed: ${agent.command}`,
-                timedOut ? `Timeout: ${Math.floor(timeoutMs / 1000)}s` : "",
-                stderr ? String(stderr).slice(0, 3000) : "",
-                err.message,
-              ]
-                .filter(Boolean)
-                .join("\n")
-            )
-          );
-          return;
-        }
-        resolve(String(stdout).trim());
+    // spawn + stdin: "ignore" で Claude CLI のハング回避 (see src/README.md)
+    let stdoutBuf = "";
+    let stderrBuf = "";
+    let timedOut = false;
+    const child = spawn(agent.command, args, {
+      cwd: runCwd,
+      stdio: ["ignore", "pipe", "pipe"],
+    });
+
+    const timeoutTimer = setTimeout(() => {
+      timedOut = true;
+      child.kill("SIGTERM");
+    }, timeoutMs);
+
+    child.stdout.on("data", (chunk) => { stdoutBuf += chunk; });
+    child.stderr.on("data", (chunk) => { stderrBuf += chunk; });
+
+    child.on("error", (err) => {
+      if (ticker) clearInterval(ticker);
+      clearTimeout(timeoutTimer);
+      cleanup();
+      reject(new Error(`Agent failed: ${agent.command}\n${err.message}`));
+    });
+
+    child.on("close", (code, signal) => {
+      if (ticker) clearInterval(ticker);
+      clearTimeout(timeoutTimer);
+      cleanup();
+      if (code === 0 && !signal) {
+        resolve(stdoutBuf.trim());
+        return;
       }
-    );
+      reject(
+        new Error(
+          [
+            `Agent failed: ${agent.command}`,
+            timedOut ? `Timeout: ${Math.floor(timeoutMs / 1000)}s` : "",
+            signal ? `Signal: ${signal}` : "",
+            stderrBuf ? stderrBuf.slice(0, 3000) : "",
+            `Exit code: ${code}`,
+          ]
+            .filter(Boolean)
+            .join("\n")
+        )
+      );
+    });
   });
 }
 
