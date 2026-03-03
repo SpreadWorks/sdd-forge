@@ -357,11 +357,18 @@ function runAgent(agent, prompt, options = {}) {
   });
 }
 
-function runShell(cmd, cwd) {
+/**
+ * コマンド文字列をコマンドと引数に分割して execFile で実行する。
+ * bash に依存しない。
+ */
+function runCommand(cmdString, cwd) {
+  const parts = cmdString.match(/"[^"]*"|'[^']*'|\S+/g) || [];
+  const command = parts[0];
+  const args = parts.slice(1).map((s) => s.replace(/^["']|["']$/g, ""));
   return new Promise((resolve) => {
     execFile(
-      "bash",
-      ["-c", cmd],
+      command,
+      args,
       { cwd, maxBuffer: 20 * 1024 * 1024 },
       (err, stdout, stderr) => {
         resolve({
@@ -938,14 +945,14 @@ async function main() {
 
     // docs/ を直接編集するため generate ステップは不要
 
-    const review = await runShell(cli.reviewCmd, root);
+    const review = await runCommand(cli.reviewCmd, root);
     output.write(`[forge] review: ${review.ok ? "ok" : "failed"} (code=${review.code})\n`);
     if (review.ok) {
       output.write("[forge] review passed.\n");
       if (cfg.documentStyle && agent) {
         await maybeUpdateContext(root, cfg, agent, timeoutMs, cli.autoUpdateContext);
       }
-      const readme = await runShell(`node "${path.join(PKG_DIR, "docs", "commands", "readme.js")}"`, root);
+      const readme = await runCommand(`node "${path.join(PKG_DIR, "docs", "commands", "readme.js")}"`, root);
       output.write(`[forge] README.md ${readme.ok ? "updated" : "update failed"}.\n`);
       output.write("\n=== DONE ===\n- forge completed\n");
       return;
