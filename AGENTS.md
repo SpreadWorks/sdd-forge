@@ -110,3 +110,9 @@ docs の内容は以下の 3 種類で構成される:
 
 ### Code style
 - Do NOT add excessive fallback or defensive code. Trust internal interfaces and only validate at system boundaries (user input, external APIs). If a function is always called with valid arguments, do not add redundant null checks or try-catch blocks "just in case."
+
+### npm Publishing
+- Pre-release は `npm publish --tag alpha` で公開する
+- `--tag alpha` で公開すると `latest` タグは更新されない。npmjs.com のパッケージページは `latest` タグのバージョンを表示するため、ページを更新したい場合は `npm dist-tag add sdd-forge@<version> latest` を実行する
+- npm は一度公開したバージョン番号の再利用を許可しない
+- 公開前に `npm pack --dry-run` で含まれるファイルを確認し、機密情報・固有情報がないことをチェックする
