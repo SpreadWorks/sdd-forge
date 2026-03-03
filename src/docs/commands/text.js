@@ -402,11 +402,9 @@ async function processTemplateFileBatch(text, analysis, fileName, agent, timeout
     // バッチはファイル全体を返すので preamble パターンは使わない
     result = await callAgentAsync(agent, prompt, timeoutMs, cwd, [], systemPrompt);
   } catch (err) {
-    const parts = [err.message];
-    if (err.signal) parts.push(`signal: ${err.signal}`);
-    if (err.stderr) parts.push(`stderr: ${String(err.stderr).slice(0, 400)}`);
-    if (err.stdout) parts.push(`stdout: ${String(err.stdout).slice(0, 200)}`);
-    logger.log(`ERROR batch ${fileName}: ${parts.join(" | ")}`);
+    const detail = err.stderr ? String(err.stderr).slice(0, 500) : err.message.slice(0, 300);
+    if (err.signal) logger.log(`ERROR batch ${fileName}: signal=${err.signal} | ${detail}`);
+    else logger.log(`ERROR batch ${fileName}: ${detail}`);
     return { text, filled: 0, skipped: textFills.length };
   }
 
@@ -571,9 +569,8 @@ async function processTemplate(text, analysis, fileName, agent, timeoutMs, cwd, 
     const { generated: rawGenerated, error } = results[i];
 
     if (error) {
-      const parts = [error.message.slice(0, 200)];
-      if (error.stderr) parts.push(`stderr: ${String(error.stderr).slice(0, 400)}`);
-      logger.log(`ERROR calling agent for ${fileName}:${d.line + 1}: ${parts.join(" | ")}`);
+      const detail = error.stderr ? String(error.stderr).slice(0, 500) : error.message.slice(0, 300);
+      logger.log(`ERROR calling agent for ${fileName}:${d.line + 1}: ${detail}`);
       skipped++;
       continue;
     }
@@ -676,7 +673,8 @@ export async function textFillFromAnalysis(root, analysis, agentName) {
             fileResults[fileIdx] = { file, filePath, result };
           })
           .catch((err) => {
-            logger.log(`ERROR processing ${file}: ${err.message.slice(0, 200)}`);
+            const detail = err.stderr ? String(err.stderr).slice(0, 500) : err.message.slice(0, 300);
+            logger.log(`ERROR processing ${file}: ${detail}`);
             fileResults[fileIdx] = { file, filePath, result: { text: original, filled: 0, skipped: 0 } };
           })
           .finally(() => {
@@ -817,7 +815,8 @@ async function main() {
             logger.verbose(`done: ${file}`);
           })
           .catch((err) => {
-            logger.log(`ERROR processing ${file}: ${err.message.slice(0, 200)}`);
+            const detail = err.stderr ? String(err.stderr).slice(0, 500) : err.message.slice(0, 300);
+            logger.log(`ERROR processing ${file}: ${detail}`);
             fileResults[fileIdx] = { text: original, filled: 0, skipped: 0 };
           })
           .finally(() => {
