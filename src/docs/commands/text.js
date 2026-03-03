@@ -402,9 +402,8 @@ async function processTemplateFileBatch(text, analysis, fileName, agent, timeout
     // バッチはファイル全体を返すので preamble パターンは使わない
     result = await callAgentAsync(agent, prompt, timeoutMs, cwd, [], systemPrompt);
   } catch (err) {
-    const detail = err.stderr ? String(err.stderr).slice(0, 500) : err.message.slice(0, 300);
-    if (err.signal) logger.log(`ERROR batch ${fileName}: signal=${err.signal} | ${detail}`);
-    else logger.log(`ERROR batch ${fileName}: ${detail}`);
+    logger.log(`ERROR batch ${fileName}:`);
+    logger.log(err.message);
     return { text, filled: 0, skipped: textFills.length };
   }
 
@@ -569,8 +568,8 @@ async function processTemplate(text, analysis, fileName, agent, timeoutMs, cwd, 
     const { generated: rawGenerated, error } = results[i];
 
     if (error) {
-      const detail = error.stderr ? String(error.stderr).slice(0, 500) : error.message.slice(0, 300);
-      logger.log(`ERROR calling agent for ${fileName}:${d.line + 1}: ${detail}`);
+      logger.log(`ERROR calling agent for ${fileName}:${d.line + 1}:`);
+      logger.log(error.message);
       skipped++;
       continue;
     }
@@ -673,8 +672,8 @@ export async function textFillFromAnalysis(root, analysis, agentName) {
             fileResults[fileIdx] = { file, filePath, result };
           })
           .catch((err) => {
-            const detail = err.stderr ? String(err.stderr).slice(0, 500) : err.message.slice(0, 300);
-            logger.log(`ERROR processing ${file}: ${detail}`);
+            logger.log(`ERROR processing ${file}:`);
+            logger.log(err.message);
             fileResults[fileIdx] = { file, filePath, result: { text: original, filled: 0, skipped: 0 } };
           })
           .finally(() => {
@@ -815,8 +814,8 @@ async function main() {
             logger.verbose(`done: ${file}`);
           })
           .catch((err) => {
-            const detail = err.stderr ? String(err.stderr).slice(0, 500) : err.message.slice(0, 300);
-            logger.log(`ERROR processing ${file}: ${detail}`);
+            logger.log(`ERROR processing ${file}:`);
+            logger.log(err.message);
             fileResults[fileIdx] = { text: original, filled: 0, skipped: 0 };
           })
           .finally(() => {
