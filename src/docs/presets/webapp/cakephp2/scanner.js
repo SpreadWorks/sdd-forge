@@ -53,7 +53,7 @@ export async function analyzeExtras(sourceRoot, baseScanResult) {
   }
 
   // レガシー extras 解析器を動的 import
-  const { analyzeExtras: legacyExtras } = await import("../analyze-extras.js");
+  const { analyzeExtras: legacyExtras } = await import("./analyze-extras.js");
   const extras = legacyExtras(appDir);
 
   // composer.json があれば依存関係を追加（レガシー extras で未カバーの場合）
