@@ -653,45 +653,23 @@ export async function textFillFromAnalysis(root, analysis, agentName) {
   let totalFilled = 0;
   let totalSkipped = 0;
 
-  // Parallel file processing with concurrency control
-  const fileResults = new Array(docsFiles.length);
+  // Sequential file processing (processTemplate handles directive-level parallelism)
+  const fileResults = [];
   const errors = [];
-  await new Promise((resolve) => {
-    let running = 0;
-    let idx = 0;
+  for (const file of docsFiles) {
+    const filePath = path.join(docsDir, file);
+    const original = fs.readFileSync(filePath, "utf8");
 
-    function next() {
-      if (idx >= docsFiles.length && running === 0) {
-        resolve();
-        return;
-      }
-      while (running < concurrency && idx < docsFiles.length) {
-        const fileIdx = idx++;
-        const file = docsFiles[fileIdx];
-        running++;
-
-        const filePath = path.join(docsDir, file);
-        const original = fs.readFileSync(filePath, "utf8");
-
-        processTemplate(original, analysis, file, agent, DEFAULT_TIMEOUT_MS, root, false, preamblePatterns, systemPrompt, undefined, concurrency)
-          .then((result) => {
-            fileResults[fileIdx] = { file, filePath, result };
-          })
-          .catch((err) => {
-            logger.log(`ERROR processing ${file}:`);
-            logger.log(err.message);
-            errors.push(file);
-            fileResults[fileIdx] = { file, filePath, result: null };
-          })
-          .finally(() => {
-            running--;
-            next();
-          });
-      }
+    try {
+      const result = await processTemplate(original, analysis, file, agent, DEFAULT_TIMEOUT_MS, root, false, preamblePatterns, systemPrompt, undefined, concurrency);
+      fileResults.push({ file, filePath, result });
+    } catch (err) {
+      logger.log(`ERROR processing ${file}:`);
+      logger.log(err.message);
+      errors.push(file);
+      fileResults.push({ file, filePath, result: null });
     }
-
-    next();
-  });
+  }
 
   for (const { file, filePath, result } of fileResults) {
     if (!result) continue;
@@ -794,7 +772,9 @@ async function main() {
     fileEntries.push({ file, filePath, original });
   }
 
-  // Parallel file processing with concurrency control
+  // File-level concurrency: batch mode can parallelize files (1 call each),
+  // per-directive mode processes files sequentially to avoid concurrency² explosion
+  const fileConcurrency = cli.perDirective ? 1 : concurrency;
   const fileResults = new Array(fileEntries.length);
   const errors = [];
   await new Promise((resolve) => {
@@ -806,7 +786,7 @@ async function main() {
         resolve();
         return;
       }
-      while (running < concurrency && idx < fileEntries.length) {
+      while (running < fileConcurrency && idx < fileEntries.length) {
         const fileIdx = idx++;
         const { file, original } = fileEntries[fileIdx];
         running++;
