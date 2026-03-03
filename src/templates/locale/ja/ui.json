@@ -93,6 +93,17 @@
     "multiSelectPrompt": "> (カンマ区切り, 例: 1,2): ",
     "prompt": "> "
   },
+  "upgrade": {
+    "dryRunHeader": "[upgrade] DRY-RUN: ファイルを変更せず差分を表示します。",
+    "skillUpdated": "[upgrade] スキル更新: {{name}}/SKILL.md",
+    "skillUnchanged": "[upgrade] スキル変更なし: {{name}}/SKILL.md",
+    "agentsUpdated": "[upgrade] AGENTS.md の SDD セクションを更新しました。",
+    "agentsNotFound": "[upgrade] AGENTS.md が見つからないか SDD セクションがありません。スキップしました。",
+    "agentsUnchanged": "[upgrade] AGENTS.md の SDD セクションに変更はありません。",
+    "noChanges": "[upgrade] すべてのファイルは最新です。",
+    "dryRunFooter": "[upgrade] DRY-RUN: ファイルは変更されませんでした。--dry-run なしで実行してください。",
+    "done": "[upgrade] アップグレード完了。"
+  },
   "common": {
     "choicePrompt": "> ({{min}}-{{max}}): ",
     "error": {

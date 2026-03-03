@@ -23,6 +23,7 @@ const SCRIPTS = {
   review:   "docs/commands/review.js",
   changelog: "docs/commands/changelog.js",
   agents:   "docs/commands/agents.js",
+  upgrade:  "docs/commands/upgrade.js",
 };
 
 // Extract subcommand from argv (set by sdd-forge.js)

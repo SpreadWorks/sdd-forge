@@ -12,6 +12,7 @@ const commands = [
   { name: "help",        desc: "このヘルプを表示" },
   { sep: "--- project ---" },
   { name: "setup",       desc: "プロジェクト登録 + config.json 生成（対話式）",       usage: "[--name <name>] [--path <path>] [--type <type>]" },
+  { name: "upgrade",     desc: "テンプレート由来ファイルを最新版に更新",              usage: "[--dry-run]" },
   { name: "default",     desc: "デフォルトプロジェクトを変更（引数なしで一覧表示）",  usage: "[<name>]" },
   { sep: "--- build ---" },
   { name: "build",       desc: "ドキュメント一括生成（scan → init → data → text → readme）",  usage: "[--force] [--agent <name>]" },
