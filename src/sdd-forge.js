@@ -33,6 +33,14 @@ if (projIdx !== -1) {
 
 const [subCmd, ...rest] = filteredArgs;
 
+// version (-v / --version / -V)
+if (subCmd === "-v" || subCmd === "--version" || subCmd === "-V") {
+  const { readFileSync } = await import("fs");
+  const pkg = JSON.parse(readFileSync(path.join(PKG_DIR, "..", "package.json"), "utf8"));
+  console.log(pkg.version);
+  process.exit(0);
+}
+
 // help (no args / -h / --help)
 if (!subCmd || subCmd === "-h" || subCmd === "--help") {
   const helpPath = path.join(PKG_DIR, "help.js");
