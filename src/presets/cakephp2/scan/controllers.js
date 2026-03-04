@@ -12,7 +12,7 @@ import {
   stripBlockComments,
   extractArrayBody,
   extractQuotedStrings,
-} from "../../docs/lib/php-array-parser.js";
+} from "../../../docs/lib/php-array-parser.js";
 
 const LIFECYCLE_METHODS = new Set([
   "beforeFilter",

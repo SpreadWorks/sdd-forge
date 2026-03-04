@@ -5,33 +5,33 @@
 
 <!-- @text: Laravel のルーティング方式を説明してください。routes/web.php と routes/api.php の役割を含めること。 -->
 
-<!-- @data: table(routes, labels=メソッド|URI|コントローラ|アクション) -->
+<!-- @data: routes.list("メソッド|URI|コントローラ|アクション") -->
 <!-- @endblock -->
 
 <!-- @block: controller-config -->
 ### ミドルウェア
 
-<!-- @data: table(controllers.middleware, labels=ミドルウェア|適用コントローラ) -->
+<!-- @data: controllers.middleware("ミドルウェア|適用コントローラ") -->
 <!-- @endblock -->
 
 <!-- @block: controller-list -->
 ### コントローラ一覧
 
-<!-- @data: table(controllers, labels=コントローラ名|ファイル|主な責務) -->
+<!-- @data: controllers.list("コントローラ名|ファイル|主な責務") -->
 
 ### コントローラ–アクション一覧
 
-<!-- @data: table(controllers.actions, labels=コントローラ|アクション) -->
+<!-- @data: controllers.actions("コントローラ|アクション") -->
 <!-- @endblock -->
 
 <!-- @block: controller-deps -->
 ### Eloquent リレーション一覧
 
-<!-- @data: table(models.relations, labels=モデル|リレーション) -->
+<!-- @data: models.relations("モデル|リレーション") -->
 <!-- @endblock -->
 
 <!-- @block: components -->
 ### Artisan コマンド
 
-<!-- @data: table(commands, labels=コマンド|ファイル|説明) -->
+<!-- @data: commands.list("コマンド|ファイル|説明") -->
 <!-- @endblock -->

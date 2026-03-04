@@ -44,15 +44,15 @@ npm run docker:stop
 
 <!-- @text: テストフレームワークとテスト実行方法を説明してください。 -->
 
-<!-- @data: table(tests, labels=項目|件数|ディレクトリ) -->
+<!-- @data: tests.list("項目|件数|ディレクトリ") -->
 
 ### 設定定数リファレンス
 
 #### スカラー定数
 
-<!-- @data: table(config.constants, labels=定数名|値|説明) -->
+<!-- @data: config.constants("定数名|値|説明") -->
 
 #### 選択肢定数
 
-<!-- @data: table(config.constants.select, labels=定数名|選択肢) -->
+<!-- @data: config.constantsSelect("定数名|選択肢") -->
 <!-- @endblock -->

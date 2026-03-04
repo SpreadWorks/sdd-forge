@@ -17,13 +17,13 @@
 <!-- @block: controller-config -->
 ### 共通設定
 
-<!-- @data: kv(config.auth, labels=項目|内容) -->
+<!-- @data: config.auth("項目|内容") -->
 <!-- @endblock -->
 
 <!-- @block: controller-list -->
 ### コントローラ一覧
 
-<!-- @data: table(controllers, labels=コントローラ名|ファイル|主な責務) -->
+<!-- @data: controllers.list("コントローラ名|ファイル|主な責務") -->
 <!-- @endblock -->
 
 <!-- @block: controller-deps -->
@@ -31,11 +31,11 @@
 
 <!-- @text: コントローラが宣言しているモデル依存の概要を説明してください。 -->
 
-<!-- @data: table(controllers.deps, labels=コントローラ|使用モデル) -->
+<!-- @data: controllers.deps("コントローラ|使用モデル") -->
 <!-- @endblock -->
 
 <!-- @block: components -->
 ### コンポーネント
 
-<!-- @data: table(views.components, labels=コンポーネント|責務) -->
+<!-- @data: views.components("コンポーネント|責務") -->
 <!-- @endblock -->

@@ -7,13 +7,13 @@
 
 ### AppModel 共通処理
 
-<!-- @data: kv(libs.appmodel, labels=機能|説明) -->
+<!-- @data: libs.appmodel("機能|説明") -->
 
 ### SQL テンプレートファイル
 
-<!-- @data: table(libs.sql, labels=ファイル|行数|パラメータ|参照テーブル) -->
+<!-- @data: libs.sql("ファイル|行数|パラメータ|参照テーブル") -->
 
 ### ビヘイビア
 
-<!-- @data: table(libs.behaviors, labels=ビヘイビア|メソッド|説明) -->
+<!-- @data: libs.behaviors("ビヘイビア|メソッド|説明") -->
 <!-- @endblock -->

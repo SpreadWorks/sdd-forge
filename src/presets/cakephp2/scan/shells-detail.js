@@ -6,7 +6,7 @@
 
 import fs from "fs";
 import path from "path";
-import { stripBlockComments } from "../../docs/lib/php-array-parser.js";
+import { stripBlockComments } from "../../../docs/lib/php-array-parser.js";
 
 // ---------------------------------------------------------------------------
 // Shell 実行フロー詳細解析

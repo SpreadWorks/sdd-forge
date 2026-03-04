@@ -75,7 +75,7 @@ describe("review CLI", () => {
     tmp = createTmpDir();
     const lines = ["# 01. Test", ""];
     for (let i = 0; i < 10; i++) lines.push(`Line ${i}`);
-    lines.push("<!-- @data: table(controllers, labels=Name|Actions) -->");
+    lines.push('<!-- @data: controllers.list("Name|Actions") -->');
     lines.push(""); // empty line = unfilled
     for (let i = 0; i < 5; i++) lines.push(`More ${i}`);
     writeFile(tmp, "docs/01_test.md", lines.join("\n"));

@@ -11,7 +11,7 @@
 <!-- @block: stack -->
 ### 技術スタック
 
-<!-- @data: table(config.stack, labels=カテゴリ|技術|バージョン) -->
+<!-- @data: config.stack("カテゴリ|技術|バージョン") -->
 <!-- @endblock -->
 
 <!-- @block: dependencies -->
