@@ -73,18 +73,15 @@ function ensureBaseBranch(root, base) {
 }
 
 /**
- * Detect the default base branch (main or master).
+ * Detect the default base branch.
+ * Uses the current branch (HEAD).
  */
 function detectBaseBranch(root) {
-  for (const candidate of ["main", "master"]) {
-    try {
-      runGit(root, ["rev-parse", "--verify", candidate]);
-      return candidate;
-    } catch (_) {
-      // try next
-    }
+  try {
+    return runGit(root, ["rev-parse", "--abbrev-ref", "HEAD"]).trim();
+  } catch (_) {
+    return "main";
   }
-  return "main"; // fallback
 }
 
 function createQaTemplate() {
@@ -153,7 +150,7 @@ function main() {
         "",
         "Options:",
         "  --title <name>      連番の後ろに付与する短い名前（必須）",
-        "  --base <branch>     ブランチ作成元 (default: auto-detect main/master)",
+        "  --base <branch>     ブランチ作成元 (default: current branch)",
         "  --dry-run           変更せず結果のみ表示",
         "  --allow-dirty       ワークツリーが dirty でも続行する",
         "  --no-branch         ブランチを作成せず spec のみ作成する",
@@ -195,6 +192,7 @@ function main() {
     const mode = useWorktree ? "worktree" : skipBranch ? "spec-only" : "branch";
     const lines = [
       `[dry-run] mode: ${mode}`,
+      `[dry-run] base: ${opts.base}`,
       `[dry-run] branch: ${branchName}`,
       `[dry-run] spec dir: specs/${specDirName}`,
       `[dry-run] spec file: specs/${specDirName}/spec.md`,
@@ -206,11 +204,8 @@ function main() {
     return;
   }
 
-  if (useWorktree) {
-    // Create worktree with new branch
-    const absPath = path.resolve(opts.worktree);
-    runGit(root, ["worktree", "add", absPath, "-b", branchName, opts.base]);
-    // Create spec files inside worktree
+  // Helper: write spec files
+  function writeSpecFiles() {
     fs.mkdirSync(specDir, { recursive: true });
     if (!fs.existsSync(specPath)) {
       fs.writeFileSync(specPath, createSpecTemplate({ branchName, specDirName }));
@@ -218,10 +213,31 @@ function main() {
     if (!fs.existsSync(qaPath)) {
       fs.writeFileSync(qaPath, createQaTemplate());
     }
+  }
+
+  // Helper: write current-spec state
+  function writeCurrentSpec(extra) {
+    const currentSpecPath = path.join(root, ".sdd-forge", "current-spec");
+    const state = {
+      spec: `specs/${specDirName}/spec.md`,
+      baseBranch: opts.base,
+      featureBranch: branchName,
+      ...extra,
+    };
+    fs.mkdirSync(path.dirname(currentSpecPath), { recursive: true });
+    fs.writeFileSync(currentSpecPath, JSON.stringify(state, null, 2) + "\n");
+  }
+
+  if (useWorktree) {
+    // Create worktree with new branch
+    const absPath = path.resolve(opts.worktree);
+    runGit(root, ["worktree", "add", absPath, "-b", branchName, opts.base]);
+    writeSpecFiles();
+    writeCurrentSpec({ worktree: true, worktreePath: absPath });
     console.log(
       [
         `created worktree: ${absPath}`,
-        `created branch: ${branchName}`,
+        `created branch: ${branchName} (from ${opts.base})`,
         `created spec: specs/${specDirName}/spec.md`,
         `created qa: specs/${specDirName}/qa.md`,
         "",
@@ -234,13 +250,8 @@ function main() {
     );
   } else if (skipBranch) {
     // Spec-only: no branch creation
-    fs.mkdirSync(specDir, { recursive: true });
-    if (!fs.existsSync(specPath)) {
-      fs.writeFileSync(specPath, createSpecTemplate({ branchName, specDirName }));
-    }
-    if (!fs.existsSync(qaPath)) {
-      fs.writeFileSync(qaPath, createQaTemplate());
-    }
+    writeSpecFiles();
+    writeCurrentSpec();
     console.log(
       [
         `created spec: ${path.relative(root, specPath)}`,
@@ -255,22 +266,17 @@ function main() {
   } else {
     // Default: create branch
     runGit(root, ["checkout", "-b", branchName, opts.base]);
-    fs.mkdirSync(specDir, { recursive: true });
-    if (!fs.existsSync(specPath)) {
-      fs.writeFileSync(specPath, createSpecTemplate({ branchName, specDirName }));
-    }
-    if (!fs.existsSync(qaPath)) {
-      fs.writeFileSync(qaPath, createQaTemplate());
-    }
+    writeSpecFiles();
+    writeCurrentSpec();
     console.log(
       [
-        `created branch: ${branchName}`,
+        `created branch: ${branchName} (from ${opts.base})`,
         `created spec: ${path.relative(root, specPath)}`,
         `created qa: ${path.relative(root, qaPath)}`,
         "",
         "next:",
         `1) fill ${path.relative(root, specPath)}`,
-        `2) run: npm run sdd:gate -- --spec ${path.relative(root, specPath)}`,
+        `2) run: sdd-forge gate --spec ${path.relative(root, specPath)}`,
         `3) start implementation`,
       ].join("\n"),
     );
