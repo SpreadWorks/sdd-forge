@@ -115,7 +115,8 @@ function ensureProjectDirs(workRoot) {
   const outputDir = path.join(sddDir, "output");
   const docsDir = path.join(workRoot, "docs");
   const specsDir = path.join(workRoot, "specs");
-  [sddDir, outputDir, docsDir, specsDir].forEach((d) =>
+  const tmpDir = path.join(workRoot, ".tmp");
+  [sddDir, outputDir, docsDir, specsDir, tmpDir].forEach((d) =>
     fs.mkdirSync(d, { recursive: true }),
   );
   fs.writeFileSync(path.join(outputDir, ".gitkeep"), "");
@@ -130,6 +131,18 @@ function ensureGitignore(workRoot) {
     fs.appendFileSync(gitignorePath, `\n${entry}\n`);
   } else {
     fs.writeFileSync(gitignorePath, `${entry}\n`);
+  }
+
+  // .tmp をプロジェクトルートの .gitignore に追加
+  const rootGitignore = path.join(workRoot, ".gitignore");
+  const tmpEntry = ".tmp";
+  if (fs.existsSync(rootGitignore)) {
+    const content = fs.readFileSync(rootGitignore, "utf8");
+    if (!content.split("\n").some((l) => l.trim() === tmpEntry)) {
+      fs.appendFileSync(rootGitignore, `\n${tmpEntry}\n`);
+    }
+  } else {
+    fs.writeFileSync(rootGitignore, `${tmpEntry}\n`);
   }
 }
 
@@ -589,7 +602,7 @@ async function main() {
         codex: {
           name: "codex-cli",
           command: "codex",
-          args: ["exec", "--full-auto", "-C", "/tmp", "--skip-git-repo-check", "{{PROMPT}}"],
+          args: ["exec", "--full-auto", "-C", ".tmp", "{{PROMPT}}"],
         },
       };
     }
