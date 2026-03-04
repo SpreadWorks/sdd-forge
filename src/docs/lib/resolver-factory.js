@@ -63,20 +63,21 @@ export async function createResolver(type, root) {
   // FW 固有カテゴリの追加
   const leaf = type.split("/").pop();
   const preset = presetByLeaf(leaf);
-  const fwModulePath = preset ? `../presets/${preset.type}/resolver.js` : null;
 
-  if (fwModulePath) {
-    try {
-      const fwModule = await import(fwModulePath);
-      // 規約: create<Leaf>Categories (例: createCakephp2Categories, createLaravelCategories)
-      const factoryName = `create${leaf.charAt(0).toUpperCase()}${leaf.slice(1)}Categories`;
-      const factory = fwModule[factoryName];
-      if (factory) {
-        const fwCategories = factory(desc, loadOverrides);
-        Object.assign(categories, fwCategories);
+  if (preset?.dir) {
+    const resolvePath = path.join(preset.dir, "resolve.js");
+    if (fs.existsSync(resolvePath)) {
+      try {
+        const fwModule = await import(resolvePath);
+        const factoryName = `create${leaf.charAt(0).toUpperCase()}${leaf.slice(1)}Categories`;
+        const factory = fwModule[factoryName];
+        if (factory) {
+          const fwCategories = factory(desc, loadOverrides);
+          Object.assign(categories, fwCategories);
+        }
+      } catch (_) {
+        logger.verbose(`no FW resolver for ${leaf}, using base categories`);
       }
-    } catch (_) {
-      logger.verbose(`no FW resolver for ${leaf}, using base categories`);
     }
   }
 

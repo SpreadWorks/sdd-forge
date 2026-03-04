@@ -16,27 +16,31 @@ import { parseBlocks } from "./directive-parser.js";
 
 /**
  * type パス（例: "webapp/cakephp2"）を継承チェーンに展開する。
- * 各セグメントが templates ディレクトリに存在することを検証する。
+ * 各エントリは絶対パスで返される。
+ *
+ * base → arch 層は templatesRoot 内、FW 固有層は presetTemplateDir から解決する。
  *
  * @param {string} templatesRoot - テンプレートルート（例: .../locale/ja/）
  * @param {string} typePath - 型パス（例: "webapp/cakephp2"）
- * @returns {string[]} 継承チェーン（例: ["base", "webapp", "webapp/cakephp2"]）
+ * @param {string|null} [presetTemplateDir] - プリセットのテンプレートディレクトリ（例: .../presets/cakephp2/templates/ja/）
+ * @returns {string[]} 継承チェーン（絶対パスの配列）
  */
-export function resolveChain(templatesRoot, typePath) {
+export function resolveChain(templatesRoot, typePath, presetTemplateDir) {
   const segments = typePath.split("/").filter(Boolean);
-  const chain = ["base"];
+  const chain = [path.join(templatesRoot, "base")];
 
-  let accumulated = "";
-  for (const seg of segments) {
-    accumulated = accumulated ? accumulated + "/" + seg : seg;
-    if (accumulated !== "base") {
-      chain.push(accumulated);
-    }
+  // arch 層（例: "webapp"）を共有テンプレートから追加
+  if (segments.length >= 1 && segments[0] !== "base") {
+    chain.push(path.join(templatesRoot, segments[0]));
+  }
+
+  // FW 固有層をプリセットテンプレートから追加
+  if (segments.length >= 2 && presetTemplateDir) {
+    chain.push(presetTemplateDir);
   }
 
   // ディレクトリ存在検証
-  for (const entry of chain) {
-    const dir = path.join(templatesRoot, entry);
+  for (const dir of chain) {
     if (!fs.existsSync(dir)) {
       throw new Error(`Template directory not found: ${dir}`);
     }
@@ -111,15 +115,14 @@ function mergeTexts(parentText, childText) {
  * 継承チェーンに沿ってテンプレートファイルをマージする。
  *
  * @param {string} fileName - テンプレートファイル名（例: "01_overview.md"）
- * @param {string[]} chain - 継承チェーン（例: ["base", "webapp", "webapp/cakephp2"]）
- * @param {string} templatesRoot - テンプレートルート
+ * @param {string[]} chain - 継承チェーン（絶対パスの配列）
  * @returns {string|null} マージ結果。空ファイルの場合は null（削除マーク）。
  */
-export function mergeFile(fileName, chain, templatesRoot) {
+export function mergeFile(fileName, chain) {
   let result = null;
 
-  for (const entry of chain) {
-    const filePath = path.join(templatesRoot, entry, fileName);
+  for (const dir of chain) {
+    const filePath = path.join(dir, fileName);
     if (!fs.existsSync(filePath)) continue;
 
     const content = fs.readFileSync(filePath, "utf8");
@@ -150,15 +153,13 @@ export function mergeFile(fileName, chain, templatesRoot) {
  * ソート済みリストを返す。
  * 空ファイル（削除マーク）はスキップ。
  *
- * @param {string[]} chain - 継承チェーン
- * @param {string} templatesRoot - テンプレートルート
+ * @param {string[]} chain - 継承チェーン（絶対パスの配列）
  * @returns {{ fileName: string, content: string }[]}
  */
-export function collectChapters(chain, templatesRoot) {
+export function collectChapters(chain) {
   // 全チェーンから章ファイル名を収集
   const allFiles = new Set();
-  for (const entry of chain) {
-    const dir = path.join(templatesRoot, entry);
+  for (const dir of chain) {
     if (!fs.existsSync(dir)) continue;
     const files = fs.readdirSync(dir).filter((f) => /^\d{2}_.*\.md$/.test(f));
     for (const f of files) allFiles.add(f);
@@ -169,7 +170,7 @@ export function collectChapters(chain, templatesRoot) {
   const chapters = [];
 
   for (const fileName of sorted) {
-    const content = mergeFile(fileName, chain, templatesRoot);
+    const content = mergeFile(fileName, chain);
     if (content !== null) {
       chapters.push({ fileName, content });
     }
@@ -182,14 +183,13 @@ export function collectChapters(chain, templatesRoot) {
  * 継承チェーンから README.md テンプレートを解決する。
  * 最も具体的な（リーフに近い）README.md を使用する。
  *
- * @param {string[]} chain - 継承チェーン
- * @param {string} templatesRoot - テンプレートルート
+ * @param {string[]} chain - 継承チェーン（絶対パスの配列）
  * @returns {string|null} README テンプレートパス、見つからなければ null
  */
-export function resolveReadmeTemplate(chain, templatesRoot) {
+export function resolveReadmeTemplate(chain) {
   // リーフから順に探索
   for (let i = chain.length - 1; i >= 0; i--) {
-    const p = path.join(templatesRoot, chain[i], "README.md");
+    const p = path.join(chain[i], "README.md");
     if (fs.existsSync(p)) return p;
   }
   return null;
@@ -204,18 +204,17 @@ export function resolveReadmeTemplate(chain, templatesRoot) {
  * analysis.json の該当セクションが空 or 存在しない → スキップ。
  *
  * @param {{ fileName: string, content: string }[]} chapters
- * @param {string[]} chain - 継承チェーン
- * @param {string} templatesRoot
+ * @param {string[]} chain - 継承チェーン（絶対パスの配列）
  * @param {Object|null} analysis - analysis.json（null なら全章を含める）
  * @returns {{ fileName: string, content: string }[]}
  */
-export function filterChapters(chapters, chain, templatesRoot, analysis) {
+export function filterChapters(chapters, chain, analysis) {
   if (!analysis) return chapters;
 
   // 全チェーンの chapters.json をマージ（後勝ち）
   const requirements = {};
-  for (const entry of chain) {
-    const chaptersJsonPath = path.join(templatesRoot, entry, "chapters.json");
+  for (const dir of chain) {
+    const chaptersJsonPath = path.join(dir, "chapters.json");
     if (!fs.existsSync(chaptersJsonPath)) continue;
     const data = JSON.parse(fs.readFileSync(chaptersJsonPath, "utf8"));
     Object.assign(requirements, data);

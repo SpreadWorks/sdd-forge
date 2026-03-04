@@ -16,6 +16,7 @@ import { repoRoot, parseArgs } from "../../lib/cli.js";
 import { loadJsonFile, loadPackageField } from "../../lib/config.js";
 import { resolveType } from "../../lib/types.js";
 import { resolveChain, resolveReadmeTemplate } from "../lib/template-merger.js";
+import { presetByLeaf } from "../../lib/presets.js";
 import { createLogger } from "../../lib/progress.js";
 import { createI18n } from "../../lib/i18n.js";
 
@@ -154,10 +155,14 @@ Options:
   const templatesRoot = path.join(PKG_DIR, "templates", "locale", lang);
 
   // テンプレート継承チェーンで README.md を探索
+  const leaf = resolvedType.split("/").pop();
+  const preset = presetByLeaf(leaf);
+  const presetTemplateDir = preset?.dir ? path.join(preset.dir, "templates", lang) : null;
+
   let templatePath = null;
   try {
-    const chain = resolveChain(templatesRoot, resolvedType);
-    templatePath = resolveReadmeTemplate(chain, templatesRoot);
+    const chain = resolveChain(templatesRoot, resolvedType, presetTemplateDir);
+    templatePath = resolveReadmeTemplate(chain);
   } catch (_) {
     // 新構造がない場合、旧パスへフォールバック
   }

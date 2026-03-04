@@ -1,0 +1,13 @@
+{
+  "arch": "cli",
+  "label": "Node.js CLI",
+  "aliases": [],
+  "scan": {
+    "modules": {
+      "dir": "src",
+      "pattern": "*.js",
+      "subDirs": true,
+      "lang": "js"
+    }
+  }
+}
