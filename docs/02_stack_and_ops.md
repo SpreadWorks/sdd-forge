@@ -4,7 +4,7 @@
 
 <!-- @text: この章の概要を1〜2文で記述してください。使用言語・フレームワーク・主要ツールのバージョンを踏まえること。 -->
 
-本章では、sdd-forge が動作するために必要な技術スタックと、日常的な運用・デプロイ手順を説明します。Node.js 18 以上を実行環境とする純粋な ES モジュール CLI ツールであり、外部フレームワークや npm 依存パッケージを持たない軽量な構成です。
+本章では、sdd-forge が採用する技術スタックおよびリリース・運用の手順を説明します。Node.js（>=18.0.0）をランタイムとし、外部依存パッケージを持たないピュアな ES modules 製 CLI ツールとして構成されています。
 
 ## 内容
 
@@ -19,65 +19,22 @@
 
 <!-- @text: プロジェクトの依存パッケージ管理方法を説明してください。 -->
 
-sdd-forge は外部 npm パッケージへの依存を持たない設計になっています。`package.json` の `dependencies` および `devDependencies` はいずれも空であり、Node.js 標準ライブラリ（`fs`、`path`、`child_process` 等）のみを使用しています。
-
-これにより、インストール後すぐに利用を開始でき、依存関係の脆弱性やバージョン競合といった問題が発生しません。パッケージ管理は npm を使用しており、`npm install -g sdd-forge` によるグローバルインストールが標準的な利用方法です。
-
-テストの実行には Node.js 組み込みのテストランナー（`node --test`）を使用しているため、テスト用の追加パッケージも不要です。
+sdd-forge は外部依存パッケージを持たず、Node.js 組み込みモジュールのみで動作します。そのため `npm install` による依存解決は不要で、`package.json` はメタデータ・bin エントリ・`files` フィールドの管理に使用します。モジュールシステムは ES modules（`"type": "module"`）を採用しており、すべての `import`/`export` は ESM 構文で記述します。npm に公開されるファイルは `files` フィールドで `["src/"]` に限定されており、`src/` ディレクトリと `package.json`・`README.md`・`LICENSE` のみがパッケージに含まれます。
 
 ### デプロイフロー
 
 <!-- @text: デプロイの手順とフローを説明してください。 -->
 
-sdd-forge は npm パッケージとして配布されるため、デプロイとはすなわち npm へのパッケージ公開を指します。
+sdd-forge は npm パッケージとして公開されます。リリースはユーザーが明示的に指示した場合のみ実行し、以下の手順で行います。
 
-**公開手順:**
+1. `npm pack --dry-run` を実行し、公開対象ファイル（`src/`・`package.json`・`README.md`・`LICENSE`）に機密情報が含まれていないことを確認します。
+2. `npm publish --tag alpha` でパッケージを公開します。このままでは `latest` タグは更新されません。
+3. `npm dist-tag add sdd-forge@<version> latest` を実行して `latest` タグを更新し、npmjs.com のパッケージページに反映させます。
 
-1. `package.json` の `version` フィールドを更新します（例: `0.1.0-alpha.3` → `0.1.0-alpha.4`）
-2. `npm publish` を実行してパッケージを npm レジストリに公開します
-3. 利用者は `npm install -g sdd-forge` または `npm update -g sdd-forge` で最新版を取得できます
-
-公開対象ファイルは `package.json` の `files` フィールドで `src/` ディレクトリのみに限定されており、テストや設定ファイルは含まれません。
+一度公開したバージョン番号の再利用はできないため、公開前にバージョンを慎重に確認してください。また、短時間に連続して publish するとnpm レジストリのレート制限に抵触する場合があります。
 
 ### 運用フロー
 
 <!-- @text: 運用手順を説明してください。 -->
 
-sdd-forge を導入済みのプロジェクトでの日常的な運用フローを説明します。
-
-**ドキュメントの定期更新:**
-
-ソースコードに変更が加わった場合は、以下の手順でドキュメントを最新の状態に保ちます。
-
-```bash
-sdd-forge scan          # ソースコードを再解析
-sdd-forge data          # @data ディレクティブを更新
-sdd-forge forge --prompt "変更内容の要約"  # AI でドキュメントを改善
-sdd-forge review        # 品質チェック（PASS になるまで繰り返す）
-```
-
-**機能追加・改修時（SDD フロー）:**
-
-新機能や改修の際は必ず SDD フローを経て実装します。
-
-```bash
-sdd-forge spec --title "<機能名>"   # spec 作成・ブランチ切り替え
-sdd-forge gate --spec specs/NNN-xxx/spec.md  # ゲートチェック（PASS まで繰り返す）
-# 実装作業
-sdd-forge forge --prompt "<変更内容>"  # docs 更新
-sdd-forge review                        # 品質チェック
-```
-
-**ドキュメント全体の再生成:**
-
-初期構築時やテンプレートを更新した場合は `sdd-forge build` で一括再生成できます。
-```
-
----
-
-各ディレクティブの直後に挿入した内容の概要です。
-
-- **説明**: Node.js 18+ の ES モジュール CLI ツールで外部依存ゼロという特徴を端的に示す1〜2文
-- **依存パッケージ**: `dependencies`/`devDependencies` が空である事実を説明し、標準ライブラリのみ・node --test 使用という構成を記述
-- **デプロイフロー**: npm publish による公開フロー（バージョン更新→publish→利用者側の update）と `files` による配布対象の絞り込みを記述
-- **運用フロー**: ドキュメント定期更新（scan→data→forge→review）と機能追加時の SDD フロー、全体再生成の3パターンを記述
+日常的な運用は sdd-forge の CLI コマンドを通じて行います。ドキュメントの一括更新は `sdd-forge build` で実行し、ソースコードとの鮮度差異が生じた場合も同コマンドで解消できます。テストは `npm run test`（内部的に `find tests -name '*.test.js' | xargs node --test` を実行）で行います。機能追加・修正時は SDD フローに従い、`sdd-forge spec` → `sdd-forge gate` → 実装 → `sdd-forge forge` → `sdd-forge review` の順で進めてください。実装変更後は必ず `sdd-forge forge` と `sdd-forge review` を実行し、docs とソースコードの整合性を維持することが重要です。

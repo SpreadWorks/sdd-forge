@@ -6,20 +6,31 @@
  * デフォルトプロジェクトを変更する。引数なしで一覧表示。
  */
 
+import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
 import { setDefault, loadProjects } from "../../lib/projects.js";
+import { createI18n } from "../../lib/i18n.js";
+
+function loadUiLang() {
+  try {
+    const home = process.env.HOME || process.env.USERPROFILE;
+    const raw = JSON.parse(fs.readFileSync(path.join(home, ".sdd-forge", "config.json"), "utf8"));
+    return raw.uiLang || "en";
+  } catch (_) { return "en"; }
+}
 
 function main() {
   const [name] = process.argv.slice(2);
+  const t = createI18n(loadUiLang(), { domain: "messages" });
 
   if (!name) {
     const data = loadProjects();
     if (!data) {
-      console.error("No projects registered. Run: sdd-forge add <name> <path>");
+      console.error(t("default.noProjects"));
       process.exit(1);
     }
-    console.log("Registered projects:");
+    console.log(t("default.registered"));
     for (const [n, p] of Object.entries(data.projects)) {
       const mark = n === data.default ? " (default)" : "";
       console.log(`  ${n}${mark}  →  ${p.path}`);
@@ -29,7 +40,7 @@ function main() {
 
   try {
     setDefault(name);
-    console.log(`Default project set to '${name}'.`);
+    console.log(t("default.setDefault", { name }));
   } catch (err) {
     console.error(`Error: ${err.message}`);
     process.exit(1);

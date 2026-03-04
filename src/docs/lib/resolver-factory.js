@@ -9,7 +9,7 @@ import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
 import { createBaseCategories } from "./resolver-base.js";
-import { presetByLeaf } from "../presets/registry.js";
+import { presetByLeaf } from "../../lib/presets.js";
 import { createLogger } from "../../lib/progress.js";
 
 const logger = createLogger("resolver");

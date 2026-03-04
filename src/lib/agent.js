@@ -103,10 +103,12 @@ export function callAgent(agent, prompt, timeoutMs, cwd, options) {
  * @param {string} [cwd]        - Working directory
  * @param {Object} [options]    - Additional options
  * @param {string} [options.systemPrompt] - System prompt text
+ * @param {function} [options.onStdout] - Streaming callback for stdout chunks
+ * @param {function} [options.onStderr] - Streaming callback for stderr chunks
  * @returns {Promise<string>} Agent response (trimmed)
  */
 export function callAgentAsync(agent, prompt, timeoutMs, cwd, options) {
-  const { systemPrompt } = options || {};
+  const { systemPrompt, onStdout, onStderr } = options || {};
   const args = Array.isArray(agent.args) ? [...agent.args] : [];
 
   const flag = agent.systemPromptFlag;
@@ -161,8 +163,14 @@ export function callAgentAsync(agent, prompt, timeoutMs, cwd, options) {
 
     let stdout = "";
     let stderr = "";
-    child.stdout.on("data", (chunk) => { stdout += chunk; });
-    child.stderr.on("data", (chunk) => { stderr += chunk; });
+    child.stdout.on("data", (chunk) => {
+      stdout += chunk;
+      if (onStdout) onStdout(String(chunk));
+    });
+    child.stderr.on("data", (chunk) => {
+      stderr += chunk;
+      if (onStderr) onStderr(String(chunk));
+    });
 
     const timer = setTimeout(() => {
       child.kill("SIGTERM");

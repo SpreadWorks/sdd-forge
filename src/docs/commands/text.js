@@ -18,6 +18,7 @@ import { repoRoot, parseArgs } from "../../lib/cli.js";
 import { loadConfig, resolveProjectContext } from "../../lib/config.js";
 import { createLogger } from "../../lib/progress.js";
 import { callAgent as callAgentBase, callAgentAsync as callAgentAsyncBase } from "../../lib/agent.js";
+import { createI18n } from "../../lib/i18n.js";
 
 const logger = createLogger("text");
 
@@ -50,32 +51,6 @@ function loadPreamblePatterns(cfg) {
 // documentStyle → プロンプトヘッダー生成
 // ---------------------------------------------------------------------------
 
-const PURPOSE_MAP = {
-  ja: {
-    "developer-guide": "開発者向けの技術ガイド",
-    "user-guide": "利用者向けの操作ガイド",
-    "api-reference": "API リファレンス",
-  },
-  en: {
-    "developer-guide": "a developer guide",
-    "user-guide": "a user guide",
-    "api-reference": "an API reference",
-  },
-};
-
-const TONE_MAP = {
-  ja: {
-    polite: "です・ます調で記述すること",
-    formal: "だ・である調で記述すること",
-    casual: "カジュアルな口語体で記述すること",
-  },
-  en: {
-    polite: "Use a professional and approachable tone",
-    formal: "Use a formal, technical tone",
-    casual: "Use a casual, conversational tone",
-  },
-};
-
 /**
  * documentStyle と projectContext からプロンプトヘッダー行を生成する。
  *
@@ -85,27 +60,24 @@ const TONE_MAP = {
  * @returns {string[]} ヘッダー行配列
  */
 function buildPromptHeader(projectContext, documentStyle, lang) {
+  const t = createI18n(lang || "ja", { domain: "prompts" });
   const header = [];
   if (documentStyle) {
-    const pMap = PURPOSE_MAP[lang] || PURPOSE_MAP.ja;
-    const tMap = TONE_MAP[lang] || TONE_MAP.ja;
-    const purposeLabel = pMap[documentStyle.purpose] || documentStyle.purpose;
-    if (lang === "en") {
-      header.push(`You are writing ${purposeLabel} for a software project.`);
-    } else {
-      header.push(`あなたはソフトウェアプロジェクトの${purposeLabel}を作成しています。`);
-    }
+    const purposes = t.raw("text.purposes") || {};
+    const tones = t.raw("text.tones") || {};
+    const purposeLabel = purposes[documentStyle.purpose] || documentStyle.purpose;
+    header.push(t("text.roleTemplate", { purpose: purposeLabel }));
     if (documentStyle.tone) {
-      header.push(tMap[documentStyle.tone] || documentStyle.tone);
+      header.push(tones[documentStyle.tone] || documentStyle.tone);
     }
     if (documentStyle.customInstruction) {
       header.push("", documentStyle.customInstruction);
     }
   } else {
-    header.push("あなたはソフトウェアプロジェクトのテクニカルドキュメントを作成しています。");
+    header.push(t("text.defaultRole"));
   }
   if (projectContext) {
-    header.push("", "## プロジェクト情報", projectContext);
+    header.push("", t("text.projectInfoHeading"), projectContext);
   }
   return header;
 }
@@ -222,15 +194,15 @@ function getAnalysisContext(analysis, directives) {
 function formatLimitRule(params) {
   const parts = [];
   if (params?.maxLines) {
-    parts.push(`${params.maxLines}行以内`);
+    parts.push(`max ${params.maxLines} lines`);
   }
   if (params?.maxChars) {
-    parts.push(`${params.maxChars}文字以内`);
+    parts.push(`max ${params.maxChars} chars`);
   }
   if (parts.length > 0) {
-    return `簡潔かつ正確に（${parts.join("、")}）`;
+    return `Concise and accurate (${parts.join(", ")})`;
   }
-  return "簡潔かつ正確に（3〜15行程度）";
+  return "Concise and accurate (3–15 lines)";
 }
 
 /**
@@ -244,20 +216,16 @@ function formatLimitRule(params) {
  * @returns {string}
  */
 function buildTextSystemPrompt(projectContext, documentStyle, lang) {
+  const t = createI18n(lang || "ja", { domain: "prompts" });
   const header = buildPromptHeader(projectContext, documentStyle, lang);
+  const outputRules = t.raw("text.outputRules") || [];
   return [
     ...header,
     "",
-    "以下の指示に従い、ドキュメントに挿入するマークダウンテキストを生成してください。",
+    t("text.instruction"),
     "",
-    "## 出力ルール（厳守）",
-    "- 本文のマークダウンテキストのみを出力すること",
-    "- 前置き・メタコメンタリーは絶対に含めないこと（例: 「以下に生成します」「Based on the analysis data」「Here is the generated text」等は禁止）",
-    "- 水平線（---）を装飾目的で使わないこと",
-    "- コードブロック（```）で全体を囲まないこと",
-    "- セクション見出し（#）は含めない（挿入先に既にある）",
-    "- 解析データに基づく事実のみ記述（推測は避ける）",
-    "- 1行目から本文を開始すること（空行や導入文で始めない）",
+    "## Output Rules (strict)",
+    ...outputRules.map((r) => `- ${r}`),
   ].join("\n");
 }
 
@@ -270,12 +238,12 @@ function buildPrompt(directive, fileName, lines) {
   const surroundingLines = lines.slice(contextStart, contextEnd).join("\n");
 
   return [
-    "## 指示",
+    "## Instructions",
     directive.prompt,
     "",
     `- ${formatLimitRule(directive.params)}`,
     "",
-    `## 挿入先コンテキスト（${fileName}）`,
+    `## Insertion Context (${fileName})`,
     surroundingLines,
   ].join("\n");
 }
@@ -285,15 +253,16 @@ function buildPrompt(directive, fileName, lines) {
  * 同一ファイル内の複数ディレクティブで system prompt を共有し、
  * API のプロンプトキャッシュを活用する。
  */
-function buildFileSystemPrompt(baseSystemPrompt, contextData) {
+function buildFileSystemPrompt(baseSystemPrompt, contextData, lang) {
   if (!contextData || Object.keys(contextData).length === 0) {
     return baseSystemPrompt;
   }
+  const t = createI18n(lang || "ja", { domain: "prompts" });
   const contextJson = JSON.stringify(contextData, null, 2);
   const truncatedJson = contextJson.length > 8000
     ? contextJson.slice(0, 8000) + "\n... (truncated)"
     : contextJson;
-  return baseSystemPrompt + "\n\n## ソースコード解析データ\n" + truncatedJson;
+  return baseSystemPrompt + "\n\n" + t("text.analysisDataHeading") + "\n" + truncatedJson;
 }
 
 // ---------------------------------------------------------------------------
@@ -353,31 +322,29 @@ function countFilledInBatch(fileText) {
  * ファイル全体を1つのプロンプトにまとめるバッチプロンプトを構築する。
  * ±20行ウィンドウ・解析データは不要（ファイル全体が文脈になる）。
  */
-function buildBatchPrompt(fileName, text, textFills) {
+function buildBatchPrompt(fileName, text, textFills, lang) {
+  const t = createI18n(lang || "ja", { domain: "prompts" });
+  const batchRules = t.raw("text.batchRules") || [];
+
   // ディレクティブごとの個別制限ルールがあれば列挙
   const perDirectiveRules = [];
   for (const d of textFills) {
     if (d.params && (d.params.maxLines || d.params.maxChars)) {
-      perDirectiveRules.push(`- 「${d.prompt.slice(0, 40)}…」→ ${formatLimitRule(d.params)}`);
+      perDirectiveRules.push(`- "${d.prompt.slice(0, 40)}..." → ${formatLimitRule(d.params)}`);
     }
   }
   const defaultRule = perDirectiveRules.length === textFills.length
     ? "" // 全ディレクティブに個別指定があればデフォルト不要
-    : "- 個別制限のないディレクティブは3〜15行程度の本文を生成すること";
+    : `- ${t("text.batchDefaultLimit")}`;
 
   return [
-    `以下の ${fileName} にある <!-- @text: 指示 --> ディレクティブをすべて埋めてください。`,
+    t("text.batchInstruction", { fileName }),
     "",
-    "## 出力ルール（厳守）",
-    "- ファイルの内容全体（未変更部分も含む）をそのまま出力すること",
-    "- <!-- @text: ... --> ディレクティブ行は削除せずそのまま残すこと",
-    "- 各ディレクティブ行の直後に空行を挟んで本文を挿入すること",
-    "- セクション見出し（#, ##, ###）は追加・変更・削除しないこと",
-    "- 前置き・解説・メタコメンタリーを絶対に含めないこと",
-    "- ファイルの最初の行（# で始まる見出し）から出力を開始すること",
+    "## Output Rules (strict)",
+    ...batchRules.map((r) => `- ${r}`),
     ...(defaultRule ? [defaultRule] : []),
     ...perDirectiveRules,
-    "- 水平線（---）を装飾目的で使わないこと",
+    `- ${t("text.batchNoHr")}`,
     "",
     `## ${fileName}`,
     "",
@@ -391,14 +358,14 @@ function buildBatchPrompt(fileName, text, textFills) {
  *
  * @returns {{ text: string, filled: number, skipped: number }}
  */
-async function processTemplateFileBatch(text, analysis, fileName, agent, timeoutMs, cwd, dryRun, _preamblePatterns, systemPrompt) {
+async function processTemplateFileBatch(text, analysis, fileName, agent, timeoutMs, cwd, dryRun, _preamblePatterns, systemPrompt, _filterId, _concurrency, lang) {
   const directives = parseDirectives(text);
   const textFills = directives.filter((d) => d.type === "text");
 
   if (textFills.length === 0) return { text, filled: 0, skipped: 0 };
 
   const cleanText = stripFillContent(text);
-  const prompt = buildBatchPrompt(fileName, cleanText, textFills);
+  const prompt = buildBatchPrompt(fileName, cleanText, textFills, lang);
 
   if (dryRun) {
     console.log(`[text] DRY-RUN batch ${fileName}: ${textFills.length} directive(s) → 1 call (${prompt.length} chars)`);
@@ -497,7 +464,7 @@ function stripPreamble(text, preamblePatterns) {
  * @param {boolean} dryRun     - dry-run モード
  * @returns {{ text: string, filled: number, skipped: number }}
  */
-async function processTemplate(text, analysis, fileName, agent, timeoutMs, cwd, dryRun, preamblePatterns, systemPrompt, filterId, concurrency) {
+async function processTemplate(text, analysis, fileName, agent, timeoutMs, cwd, dryRun, preamblePatterns, systemPrompt, filterId, concurrency, lang) {
   const directives = parseDirectives(text);
   let textFills = directives.filter((d) => d.type === "text");
   if (filterId) {
@@ -510,7 +477,7 @@ async function processTemplate(text, analysis, fileName, agent, timeoutMs, cwd, 
   const contextData = getAnalysisContext(analysis, directives);
   // Analysis context をシステムプロンプトに含めることで、
   // 同一ファイル内の複数ディレクティブ間でプロンプトキャッシュを活用する
-  const fileSystemPrompt = buildFileSystemPrompt(systemPrompt, contextData);
+  const fileSystemPrompt = buildFileSystemPrompt(systemPrompt, contextData, lang);
 
   if (dryRun) {
     for (const d of textFills) {
@@ -673,14 +640,13 @@ export async function textFillFromAnalysis(root, analysis, agentName) {
         const filePath = path.join(docsDir, file);
         const original = fs.readFileSync(filePath, "utf8");
 
-        processTemplateFileBatch(original, analysis, file, agent, DEFAULT_TIMEOUT_MS, root, false, preamblePatterns, systemPrompt)
-          .then(async (result) => {
-            // バッチで 0 filled の場合は per-directive で再試行
+        processTemplateFileBatch(original, analysis, file, agent, DEFAULT_TIMEOUT_MS, root, false, preamblePatterns, systemPrompt, undefined, undefined, lang)
+          .then((result) => {
             if (result.filled === 0) {
               const textFills = parseDirectives(original).filter((d) => d.type === "text");
               if (textFills.length > 0) {
-                logger.verbose(`Batch returned 0 filled for ${file}. Falling back to per-directive mode...`);
-                result = await processTemplate(original, analysis, file, agent, DEFAULT_TIMEOUT_MS, root, false, preamblePatterns, systemPrompt, undefined, concurrency);
+                errors.push(file);
+                logger.log(`Batch returned 0 filled for ${file} (${textFills.length} directives). Re-run with --per-directive for retry.`);
               }
             }
             fileResults[fileIdx] = { file, filePath, result };
@@ -823,14 +789,13 @@ async function main() {
 
         logger.verbose(`start: ${file}`);
 
-        processFn(original, analysis, file, agent, cli.timeout, root, cli.dryRun, preamblePatterns, systemPrompt, cli.id || undefined, concurrency)
-          .then(async (result) => {
-            // バッチモードで 0 filled になった場合は per-directive モードで再試行
+        processFn(original, analysis, file, agent, cli.timeout, root, cli.dryRun, preamblePatterns, systemPrompt, cli.id || undefined, concurrency, lang)
+          .then((result) => {
             if (!cli.perDirective && !cli.dryRun && result.filled === 0) {
               const textFills = parseDirectives(original).filter((d) => d.type === "text");
               if (textFills.length > 0) {
-                logger.verbose(`Batch returned 0 filled for ${file}. Falling back to per-directive mode...`);
-                result = await processTemplate(original, analysis, file, agent, cli.timeout, root, cli.dryRun, preamblePatterns, systemPrompt, cli.id || undefined, concurrency);
+                errors.push(file);
+                logger.log(`Batch returned 0 filled for ${file} (${textFills.length} directives). Re-run with --per-directive for retry.`);
               }
             }
             fileResults[fileIdx] = result;
@@ -879,7 +844,7 @@ async function main() {
   }
 }
 
-export { main };
+export { main, stripFillContent, countFilledInBatch, processTemplateFileBatch };
 
 const isDirectRun = process.argv[1] &&
   path.resolve(process.argv[1]) === path.resolve(fileURLToPath(import.meta.url));

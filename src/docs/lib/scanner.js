@@ -431,7 +431,7 @@ function analyzeExtras(sourceRoot, scanCfg) {
         require: composer.require || {},
         requireDev: composer["require-dev"] || {},
       };
-    } catch (_) { /* ignore */ }
+    } catch (_) { /* malformed composer.json — non-critical, skip deps */ }
   }
 
   // package.json があれば依存関係を抽出
@@ -443,7 +443,7 @@ function analyzeExtras(sourceRoot, scanCfg) {
         dependencies: pkg.dependencies || {},
         devDependencies: pkg.devDependencies || {},
       };
-    } catch (_) { /* ignore */ }
+    } catch (_) { /* malformed package.json — non-critical, skip deps */ }
   }
 
   return extras;

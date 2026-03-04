@@ -44,7 +44,7 @@ describe("readme CLI", () => {
       encoding: "utf8",
       env: { ...process.env, SDD_WORK_ROOT: tmp, SDD_SOURCE_ROOT: tmp },
     });
-    assert.match(result, /type.*設定されていません/);
+    assert.match(result, /type.*not set|type.*設定されていません/);
   });
 
   it("dry-run does not write README", () => {

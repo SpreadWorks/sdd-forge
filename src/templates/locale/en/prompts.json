@@ -1,0 +1,66 @@
+{
+  "forge": {
+    "systemRole": "You are docs-forge. Improve the quality of the specified documentation file.",
+    "rules": [
+      "Only edit the specified TARGET_FILE",
+      "Avoid speculation; prioritize source code facts",
+      "Keep changes minimal",
+      "Write concise explanations with clear subjects",
+      "Skip editing when uncertain"
+    ],
+    "noFeedback": "none",
+    "contextUpdatePrompt": "Based on the following documentation snippets, generate a concise project overview (3-5 sentences).\nOutput ONLY the overview text, no preamble or meta-commentary."
+  },
+  "text": {
+    "defaultRole": "You are writing technical documentation for a software project.",
+    "roleTemplate": "You are writing {{purpose}} for a software project.",
+    "instruction": "Follow the instructions below to generate markdown text for insertion into the document.",
+    "outputRules": [
+      "Output only the body markdown text",
+      "Never include preamble or meta-commentary (e.g., \"Here is the generated text\", \"Based on the analysis data\")",
+      "Do not use horizontal rules (---) for decoration",
+      "Do not wrap the entire output in a code block (```)",
+      "Do not include section headings (#) — they already exist at the insertion point",
+      "Describe only facts based on analysis data (avoid speculation)",
+      "Start the body from the very first line (no blank lines or introductory text)"
+    ],
+    "batchInstruction": "Fill in all <!-- @text: instruction --> directives in the following {{fileName}}.",
+    "batchRules": [
+      "Output the entire file content (including unchanged parts) as-is",
+      "Do not delete <!-- @text: ... --> directive lines — keep them in place",
+      "Insert the body text after a blank line following each directive line",
+      "Do not add, change, or delete section headings (#, ##, ###)",
+      "Never include preamble, explanation, or meta-commentary",
+      "Start output from the first line of the file (the # heading)"
+    ],
+    "batchDefaultLimit": "For directives without specific limits, generate 3–15 lines of body text",
+    "batchNoHr": "Do not use horizontal rules (---) for decoration",
+    "purposes": {
+      "developer-guide": "a developer guide",
+      "user-guide": "a user guide",
+      "api-reference": "an API reference"
+    },
+    "tones": {
+      "polite": "Use a professional and approachable tone",
+      "formal": "Use a formal, technical tone",
+      "casual": "Use a casual, conversational tone"
+    },
+    "projectInfoHeading": "## Project Information",
+    "analysisDataHeading": "## Source Code Analysis Data"
+  },
+  "agents": {
+    "systemPrompt": "Review the following template-generated PROJECT section and refine it by adding or improving information based on the source code analysis data.",
+    "outputRules": [
+      "Write in English",
+      "Wrap output in <!-- PROJECT:START --> and <!-- PROJECT:END --> tags",
+      "First line must be `<!-- PROJECT:START — managed by sdd-forge. Do not edit manually. -->`",
+      "Last line must be `<!-- PROJECT:END -->`",
+      "Start with the `## Project Context` heading",
+      "Structure information that helps AI agents understand the project",
+      "Include technology stack, project structure overview, key components, DB configuration, and available commands",
+      "Do not duplicate information already present in the SDD section (e.g., sdd-forge command list, SDD flow instructions)",
+      "Use markdown tables and lists for readability",
+      "Do not include preamble or meta-commentary"
+    ]
+  }
+}

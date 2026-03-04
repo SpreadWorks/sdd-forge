@@ -14,6 +14,7 @@ import { fileURLToPath } from "url";
 import { repoRoot, parseArgs, isInsideWorktree, getMainRepoPath } from "./lib/cli.js";
 import { runSync } from "./lib/process.js";
 import { saveFlowState } from "./lib/flow-state.js";
+import { createI18n } from "./lib/i18n.js";
 
 // npm パッケージとして呼ばれた場合でもサブスクリプトを直接起動できるよう
 // パッケージディレクトリを保持する
@@ -135,14 +136,21 @@ function main() {
     if (!s.ok) {
       process.exit(s.status);
     }
+    let uiLang = "en";
+    try {
+      const raw = JSON.parse(fs.readFileSync(path.join(root, ".sdd-forge", "config.json"), "utf8"));
+      uiLang = raw.uiLang || "en";
+    } catch (_) { /* config optional */ }
+    const t = createI18n(uiLang, { domain: "messages" });
+
     specRel = parseCreatedSpecPath(s.out);
     if (!specRel) {
       specRel = fallbackLatestSpec(root);
       if (!specRel) {
-        console.error("flow: failed to parse created spec path.");
+        console.error(t("flow.failedParse"));
         process.exit(1);
       }
-      console.warn(`flow: fallback spec path used: ${specRel}`);
+      console.warn(t("flow.fallbackSpec", { path: specRel }));
     }
   }
 
@@ -157,13 +165,13 @@ function main() {
     const needsApproval = lines.some((l) =>
       l.toLowerCase().includes("user confirmation is required"),
     );
-    console.log("NEEDS_INPUT");
-    console.log("- sdd:gate が失敗しました。以下を解消してください。");
+    console.log(t("flow.needsInput"));
+    console.log(t("flow.gateFailed"));
     if (needsApproval || detectUserConfirmationIssue(specAbs)) {
-      console.log("- この仕様で実装して問題ないか、ユーザー確認を先に取ってください。");
-      console.log("- 承認後、spec.md の `## User Confirmation` に `- [x] User approved this spec` を設定してください。");
+      console.log(t("flow.needsApproval"));
+      console.log(t("flow.approvalInstruction"));
     } else if (lines.length === 0) {
-      console.log("- spec の未解決事項を解消してください。");
+      console.log(t("flow.unresolvedItems"));
     } else {
       for (const l of lines.slice(0, 8)) {
         console.log(l);

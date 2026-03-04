@@ -17,6 +17,7 @@ import { loadJsonFile, loadPackageField } from "../../lib/config.js";
 import { resolveType } from "../../lib/types.js";
 import { resolveChain, resolveReadmeTemplate } from "../lib/template-merger.js";
 import { createLogger } from "../../lib/progress.js";
+import { createI18n } from "../../lib/i18n.js";
 
 const logger = createLogger("readme");
 
@@ -142,8 +143,10 @@ Options:
   const lang = sddConfig?.lang || "ja";
   const type = sddConfig?.type;
 
+  const t = createI18n(sddConfig?.uiLang || "en", { domain: "messages" });
+
   if (!type) {
-    console.log("[readme] .sdd-forge/config.json に type が設定されていません。スキップします。");
+    console.log(t("readme.noType"));
     return;
   }
 
@@ -165,7 +168,7 @@ Options:
   }
 
   if (!fs.existsSync(templatePath)) {
-    logger.log(`テンプレートが見つかりません (type=${type})。スキップします。`);
+    logger.log(t("readme.noTemplate", { type }));
     return;
   }
 
@@ -178,20 +181,20 @@ Options:
   if (fs.existsSync(readmePath)) {
     const current = fs.readFileSync(readmePath, "utf8");
     if (current === newContent) {
-      logger.log("No changes detected. Skipping write.");
+      logger.log(t("readme.noChanges"));
       return;
     }
   }
 
   if (cli.dryRun) {
-    logger.log("--dry-run: would write README.md");
+    logger.log(t("readme.dryRun"));
     console.log("---");
     console.log(newContent);
     return;
   }
 
   fs.writeFileSync(readmePath, newContent, "utf8");
-  logger.log("README.md updated.");
+  logger.log(t("readme.updated"));
 }
 
 export { main };

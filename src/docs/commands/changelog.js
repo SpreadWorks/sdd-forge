@@ -10,6 +10,7 @@ import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
 import { sourceRoot, repoRoot, parseArgs } from "../../lib/cli.js";
+import { createI18n } from "../../lib/i18n.js";
 
 /**
  * パイプ文字をエスケープし、空白を正規化する。
@@ -234,12 +235,19 @@ function main() {
   out.push(manualBlock);
   out.push("");
 
+  let uiLang = "en";
+  try {
+    const raw = JSON.parse(fs.readFileSync(path.join(root, ".sdd-forge", "config.json"), "utf8"));
+    uiLang = raw.uiLang || "en";
+  } catch (_) { /* config optional */ }
+  const t = createI18n(uiLang, { domain: "messages" });
+
   if (opts.dryRun) {
     process.stdout.write(out.join("\n"));
-    console.error(`[changelog] DRY-RUN: would write to ${outFile}`);
+    console.error(t("changelog.dryRun", { path: outFile }));
   } else {
     fs.writeFileSync(outFile, out.join("\n"));
-    console.log(`generated change log: ${outFile}`);
+    console.log(t("changelog.generated", { path: outFile }));
   }
 }
 
