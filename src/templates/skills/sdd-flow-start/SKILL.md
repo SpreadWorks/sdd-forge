@@ -1,3 +1,8 @@
+---
+name: sdd-flow-start
+description: Run the SDD workflow for any feature or fix request. Use for spec creation, gate check, implementation, and finalization.
+---
+
 # SDD Flow Start
 
 Run this workflow for any feature or fix request.
