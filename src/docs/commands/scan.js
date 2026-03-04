@@ -51,11 +51,11 @@ async function runLegacy(cli, root) {
     throw new Error(`app/ directory not found: ${appDir}`);
   }
 
-  const { analyzeControllers } = await import("../presets/webapp/cakephp2/analyze-controllers.js");
-  const { analyzeModels } = await import("../presets/webapp/cakephp2/analyze-models.js");
-  const { analyzeShells } = await import("../presets/webapp/cakephp2/analyze-shells.js");
-  const { analyzeRoutes } = await import("../presets/webapp/cakephp2/analyze-routes.js");
-  const { analyzeExtras } = await import("../presets/webapp/cakephp2/analyze-extras.js");
+  const { analyzeControllers } = await import("../../presets/cakephp2/scan/controllers.js");
+  const { analyzeModels } = await import("../../presets/cakephp2/scan/models.js");
+  const { analyzeShells } = await import("../../presets/cakephp2/scan/shells.js");
+  const { analyzeRoutes } = await import("../../presets/cakephp2/scan/routes.js");
+  const { analyzeExtras } = await import("../../presets/cakephp2/scan/extras.js");
 
   const result = { analyzedAt: new Date().toISOString() };
 
@@ -181,42 +181,33 @@ async function main() {
   } else {
     logger.verbose(`mode: generic (type=${type})`);
 
-    // FW 固有モジュールからスキャンデフォルトを取得
+    // preset からスキャン設定を取得
     const leaf = leafSegment(type);
     const preset = presetByLeaf(leaf);
-    const fwModulePath = preset ? `../presets/${preset.type}/scanner.js` : null;
-    let fwScanDefaults = {};
-
-    if (fwModulePath) {
-      try {
-        const fwModule = await import(fwModulePath);
-        if (fwModule.SCAN_DEFAULTS) {
-          fwScanDefaults = fwModule.SCAN_DEFAULTS;
-        }
-      } catch (_) {
-        logger.verbose(`no FW scanner for ${leaf}, using generic defaults`);
-      }
-    }
+    const presetScan = preset?.scan || {};
 
     const scanOverrides = cfg.scan || {};
-    // FW デフォルト → config.scan で上書き
-    const mergedOverrides = { ...fwScanDefaults, ...scanOverrides };
+    // preset.scan → config.scan で上書き
+    const scanCfg = { ...presetScan, ...scanOverrides };
 
-    result = genericScan(src, type, mergedOverrides);
+    result = genericScan(src, scanCfg);
 
     // FW 固有 extras 拡張
-    if (fwModulePath) {
-      try {
-        const fwModule = await import(fwModulePath);
-        if (fwModule.analyzeExtras) {
-          logger.verbose(`FW extras: ${leaf} ...`);
-          const fwExtras = await fwModule.analyzeExtras(src, result);
-          result.extras = { ...result.extras, ...fwExtras };
-          const extrasKeys = Object.keys(result.extras);
-          logger.verbose(`FW extras: ${extrasKeys.length} categories (${extrasKeys.join(", ")})`);
+    if (preset?.dir) {
+      const extrasPath = path.join(preset.dir, "scan", "extras.js");
+      if (fs.existsSync(extrasPath)) {
+        try {
+          const fwModule = await import(extrasPath);
+          if (fwModule.analyzeExtras) {
+            logger.verbose(`FW extras: ${leaf} ...`);
+            const fwExtras = await fwModule.analyzeExtras(src, result);
+            result.extras = { ...result.extras, ...fwExtras };
+            const extrasKeys = Object.keys(result.extras);
+            logger.verbose(`FW extras: ${extrasKeys.length} categories (${extrasKeys.join(", ")})`);
+          }
+        } catch (err) {
+          logger.verbose(`FW extras failed for ${leaf}: ${err.message}`);
         }
-      } catch (_) {
-        // no FW extras — already handled above
       }
     }
   }

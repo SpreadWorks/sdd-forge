@@ -19,6 +19,7 @@ import { callAgent, resolveAgent } from "../../lib/agent.js";
 import { resolveChain, collectChapters, filterChapters } from "../lib/template-merger.js";
 import { parseBlocks } from "../lib/directive-parser.js";
 import { summaryToText } from "../lib/forge-prompts.js";
+import { presetByLeaf } from "../../lib/presets.js";
 import { createLogger } from "../../lib/progress.js";
 import { createI18n } from "../../lib/i18n.js";
 
@@ -304,9 +305,13 @@ function main() {
   const templatesRoot = path.join(pkgDir, "templates", "locale", lang);
 
   // 継承チェーンの構築
+  const leaf = type.split("/").pop();
+  const preset = presetByLeaf(leaf);
+  const presetTemplateDir = preset?.dir ? path.join(preset.dir, "templates", lang) : null;
+
   let chain;
   try {
-    chain = resolveChain(templatesRoot, type);
+    chain = resolveChain(templatesRoot, type, presetTemplateDir);
   } catch (err) {
     // 新しいテンプレート構造が存在しない場合、旧フラットディレクトリへフォールバック
     const legacyDir = path.join(templatesRoot, rawType);
@@ -328,9 +333,8 @@ function main() {
   logger.verbose(`chain: ${chain.join(" → ")}${hasCustom ? " → .sdd-forge/custom" : ""}`);
 
   // テンプレートマージ
-  // collectChapters は templatesRoot 内のディレクトリのみ走査するため、
-  // custom ディレクトリは別途マージする
-  const chapters = collectChapters(chain, templatesRoot);
+  // custom ディレクトリは継承チェーン外のため別途マージする
+  const chapters = collectChapters(chain);
 
   // .sdd-forge/custom/ のテンプレートを追加マージ
   if (hasCustom) {
@@ -416,7 +420,7 @@ function main() {
     } catch (_) { /* malformed analysis.json — non-critical, skip chapter filter */ }
   }
 
-  let filteredChapters = filterChapters(chapters, chain, templatesRoot, analysis);
+  let filteredChapters = filterChapters(chapters, chain, analysis);
   const deterministicFiltered = chapters.length - filteredChapters.length;
 
   // AI 章選別（analysis + agent が揃っている場合）

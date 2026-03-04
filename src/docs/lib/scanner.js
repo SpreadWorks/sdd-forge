@@ -17,63 +17,6 @@ import { createLogger } from "../../lib/progress.js";
 const logger = createLogger("scan");
 
 // ---------------------------------------------------------------------------
-// デフォルトスキャン設定（type ごと）
-// ---------------------------------------------------------------------------
-
-/**
- * 汎用のスキャンデフォルト設定。
- * FW 固有のデフォルトは fw/*.js の SCAN_DEFAULTS で提供され、
- * scan.js が動的にマージする。
- *
- * 旧 type 名 ("php-mvc", "node-cli") の後方互換もここで維持する。
- */
-const SCAN_DEFAULTS = {
-  // --- 旧 type 名（後方互換） ---
-  "php-mvc": {
-    controllers: {
-      dir: "app/Controller",
-      pattern: "*Controller.php",
-      exclude: ["AppController.php"],
-      lang: "php",
-    },
-    models: {
-      dir: "app/Model",
-      pattern: "*.php",
-      exclude: ["AppModel.php"],
-      subDirs: true,
-      lang: "php",
-    },
-    shells: {
-      dir: "app/Console/Command",
-      pattern: "*Shell.php",
-      exclude: ["AppShell.php"],
-      lang: "php",
-    },
-    routes: {
-      file: "app/Config/routes.php",
-      lang: "php",
-    },
-  },
-  "node-cli": {
-    modules: {
-      dir: "src",
-      pattern: "*.js",
-      subDirs: true,
-      lang: "js",
-    },
-  },
-  // --- 新 type パス ---
-  "cli": {
-    modules: {
-      dir: "src",
-      pattern: "*.js",
-      subDirs: true,
-      lang: "js",
-    },
-  },
-};
-
-// ---------------------------------------------------------------------------
 // ファイル探索
 // ---------------------------------------------------------------------------
 
@@ -514,15 +457,10 @@ function isCategoryEntry(value) {
  * 汎用スキャンを実行する。
  *
  * @param {string} sourceRoot - ソースコードのルートディレクトリ
- * @param {string} type - プロジェクトタイプ (php-mvc, node-cli, ...)
- * @param {Object} [scanOverrides] - config.json の scan セクション（部分上書き用）
+ * @param {Object} scanCfg - マージ済みスキャン設定（preset.scan + config.scan）
  * @returns {Object} analysis.json 互換のオブジェクト
  */
-export function genericScan(sourceRoot, type, scanOverrides) {
-  // type は "cli/node-cli" のようなパスの場合がある。リーフでもフォールバック
-  const leaf = type.includes("/") ? type.split("/").pop() : type;
-  const defaults = SCAN_DEFAULTS[type] || SCAN_DEFAULTS[leaf] || {};
-  const scanCfg = { ...defaults, ...scanOverrides };
+export function genericScan(sourceRoot, scanCfg) {
 
   const result = { analyzedAt: new Date().toISOString() };
 
