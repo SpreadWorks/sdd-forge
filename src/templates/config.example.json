@@ -32,7 +32,7 @@
     "codex": {
       "name": "codex-cli",
       "command": "codex",
-      "args": ["exec", "--full-auto", "-C", "/tmp", "--skip-git-repo-check", "{{PROMPT}}"]
+      "args": ["exec", "--full-auto", "-C", ".tmp", "{{PROMPT}}"]
     }
   }
 }
