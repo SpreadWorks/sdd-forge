@@ -375,7 +375,14 @@ async function processTemplateFileBatch(text, analysis, fileName, agent, timeout
   logger.verbose(`Batch ${fileName}: ${textFills.length} directive(s) → 1 call`);
 
   // バッチはファイル全体を返すので preamble パターンは使わない
-  const result = await callAgentAsync(agent, prompt, timeoutMs, cwd, [], systemPrompt);
+  // 空レスポンスが返る場合は1回だけリトライする
+  let result = await callAgentAsync(agent, prompt, timeoutMs, cwd, [], systemPrompt);
+
+  if (!result) {
+    logger.verbose(`empty response for ${fileName}, retrying after 3s...`);
+    await new Promise((r) => setTimeout(r, 3000));
+    result = await callAgentAsync(agent, prompt, timeoutMs, cwd, [], systemPrompt);
+  }
 
   if (!result) {
     throw new Error(`empty batch response for ${fileName}`);
