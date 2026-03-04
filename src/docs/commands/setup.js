@@ -589,8 +589,7 @@ async function main() {
         codex: {
           name: "codex-cli",
           command: "codex",
-          args: ["-p", "{{PROMPT}}"],
-          systemPromptFlag: "--system-prompt-file",
+          args: ["exec", "--full-auto", "{{PROMPT}}"],
         },
       };
     }

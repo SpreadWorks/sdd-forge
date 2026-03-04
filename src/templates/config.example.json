@@ -28,6 +28,11 @@
       "command": "claude",
       "args": ["--model", "sonnet", "-p", "{{PROMPT}}"],
       "systemPromptFlag": "--system-prompt"
+    },
+    "codex": {
+      "name": "codex-cli",
+      "command": "codex",
+      "args": ["exec", "--full-auto", "{{PROMPT}}"]
     }
   }
 }
