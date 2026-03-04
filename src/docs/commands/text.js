@@ -17,7 +17,7 @@ import { parseDirectives } from "../lib/directive-parser.js";
 import { repoRoot, parseArgs } from "../../lib/cli.js";
 import { loadConfig, resolveProjectContext } from "../../lib/config.js";
 import { createLogger } from "../../lib/progress.js";
-import { callAgent as callAgentBase, callAgentAsync as callAgentAsyncBase } from "../../lib/agent.js";
+import { callAgent as callAgentBase, callAgentAsync as callAgentAsyncBase, ensureAgentWorkDir } from "../../lib/agent.js";
 import { createI18n } from "../../lib/i18n.js";
 
 const logger = createLogger("text");
@@ -734,6 +734,9 @@ async function main() {
   }
   const cfg = loadConfig(root);
   const agent = loadAgentConfig(cfg, cli.agent);
+
+  ensureAgentWorkDir(agent, root);
+
   const preamblePatterns = loadPreamblePatterns(cfg);
   const projectContext = resolveProjectContext(root);
   const documentStyle = cfg.documentStyle;
