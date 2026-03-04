@@ -23,5 +23,5 @@
 <!-- @block: libraries -->
 ### 共通ライブラリ
 
-<!-- @data: table(libs, labels=クラス|ファイル|責務) -->
+<!-- @data: libs.list("クラス|ファイル|責務") -->
 <!-- @endblock -->

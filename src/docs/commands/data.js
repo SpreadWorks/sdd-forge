@@ -14,7 +14,7 @@ import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
 import { parseDirectives } from "../lib/directive-parser.js";
-import { RENDERERS } from "../lib/renderers.js";
+// RENDERERS は DataSource メソッドが直接レンダリングするため不要
 import { createResolver } from "../lib/resolver-factory.js";
 import { repoRoot, parseArgs } from "../../lib/cli.js";
 import { loadConfig } from "../../lib/config.js";
@@ -34,7 +34,7 @@ const logger = createLogger("data");
  * @param {string} text     - テンプレート全文
  * @param {Object} analysis - analysis.json
  * @param {string} fileName - ログ出力用ファイル名
- * @param {function} [resolveFn] - カテゴリ解決関数
+ * @param {function} [resolveFn] - (source, method, analysis, labels) => rendered string
  * @returns {{ text: string, replaced: number, skipped: number }}
  */
 function processTemplate(text, analysis, fileName, resolveFn) {
@@ -60,23 +60,10 @@ function processTemplate(text, analysis, fileName, resolveFn) {
     }
 
     if (d.type === "data") {
-      const data = resolve(d.category, analysis);
-      if (data === null) {
-        logger.log(`WARN: no data for category "${d.category}" in ${fileName}:${d.line + 1}`);
+      const rendered = resolve(d.source, d.method, analysis, d.labels);
+      if (rendered === null || rendered === undefined) {
+        logger.log(`WARN: no data for "${d.source}.${d.method}" in ${fileName}:${d.line + 1}`);
         continue;
-      }
-
-      const renderer = RENDERERS[d.renderer];
-      if (!renderer) {
-        logger.log(`WARN: unknown renderer "${d.renderer}" in ${fileName}:${d.line + 1}`);
-        continue;
-      }
-
-      let rendered;
-      if (d.renderer === "mermaid-er") {
-        rendered = renderer(data);
-      } else {
-        rendered = renderer(data, d.labels);
       }
 
       // 以前のレンダリング結果を除去（ディレクティブ直後のテーブル/コードブロックを除去）
@@ -176,7 +163,7 @@ async function main() {
     const cfg = loadConfig(root);
     const type = resolveType(cfg.type || "php-mvc");
     const resolver = await createResolver(type, root);
-    resolveFn = (category, a) => resolver.resolve(category, a);
+    resolveFn = (source, method, a, labels) => resolver.resolve(source, method, a, labels);
     logger.verbose(`resolver: ${type}`);
   } catch (err) {
     logger.log(t("data.resolverFailed", { message: err.message }));

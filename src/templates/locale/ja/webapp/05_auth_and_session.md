@@ -13,7 +13,7 @@
 
 <!-- @text: 認証方式の概要を説明してください。認証コンポーネント設定を含めること。 -->
 
-<!-- @data: kv(config.auth, labels=項目|設定値) -->
+<!-- @data: config.auth("項目|設定値") -->
 <!-- @endblock -->
 
 <!-- @block: acl -->
@@ -21,7 +21,7 @@
 
 <!-- @text: アクセス制御の定義と、ロールベースのアクセス制御ルールを説明してください。 -->
 
-<!-- @data: table(config.acl, labels=ロール|group_id|権限) -->
+<!-- @data: config.acl("ロール|group_id|権限") -->
 <!-- @endblock -->
 
 <!-- @block: session -->

@@ -23,11 +23,11 @@
 <!-- @block: db-env -->
 ### 環境別接続設定
 
-<!-- @data: table(config.db, labels=環境|DB ホスト|備考) -->
+<!-- @data: config.db("環境|DB ホスト|備考") -->
 <!-- @endblock -->
 
 <!-- @block: er-diagram -->
 ### ER 図（主要テーブル）
 
-<!-- @data: mermaid-er(models.er) -->
+<!-- @data: models.er("") -->
 <!-- @endblock -->

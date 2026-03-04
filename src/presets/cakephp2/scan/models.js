@@ -15,7 +15,7 @@ import {
   extractQuotedStrings,
   camelToSnake,
   pluralize,
-} from "../../docs/lib/php-array-parser.js";
+} from "../../../docs/lib/php-array-parser.js";
 
 const RELATION_TYPES = [
   "belongsTo",

@@ -8,7 +8,7 @@
 
 import fs from "fs";
 import path from "path";
-import { stripBlockComments } from "../../docs/lib/php-array-parser.js";
+import { stripBlockComments } from "../../../docs/lib/php-array-parser.js";
 
 const LIFECYCLE_METHODS = new Set([
   "startup",

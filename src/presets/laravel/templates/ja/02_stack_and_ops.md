@@ -3,23 +3,23 @@
 <!-- @block: dependencies -->
 ### PHP 依存パッケージ (composer.json)
 
-<!-- @data: table(config.composer, labels=パッケージ|バージョン|用途) -->
+<!-- @data: config.composer("パッケージ|バージョン|用途") -->
 
 ### docker-compose.yml 構成
 
-<!-- @data: table(docker, labels=サービス|コンテナ名|ポート|イメージ) -->
+<!-- @data: docker.list("サービス|コンテナ名|ポート|イメージ") -->
 
 ### ミドルウェア
 
-<!-- @data: table(config.middleware, labels=クラス|ファイル|用途) -->
+<!-- @data: config.middleware("クラス|ファイル|用途") -->
 
 ### サービスプロバイダ
 
-<!-- @data: table(config.providers, labels=プロバイダ|ファイル|register|boot) -->
+<!-- @data: config.providers("プロバイダ|ファイル|register|boot") -->
 
 ### 設定ファイル
 
-<!-- @data: table(config.files, labels=ファイル|主要キー) -->
+<!-- @data: config.files("ファイル|主要キー") -->
 <!-- @endblock -->
 
 <!-- @block: deploy -->

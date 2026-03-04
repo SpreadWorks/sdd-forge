@@ -11,13 +11,13 @@
 <!-- @block: table-list -->
 ### テーブル一覧
 
-<!-- @data: table(tables, labels=テーブル名|DB|主な用途) -->
+<!-- @data: tables.list("テーブル名|DB|主な用途") -->
 <!-- @endblock -->
 
 <!-- @block: fk -->
 ### 外部キー関係（FK）
 
-<!-- @data: table(tables.fk, labels=親テーブル|子テーブル|FK カラム|備考) -->
+<!-- @data: tables.fk("親テーブル|子テーブル|FK カラム|備考") -->
 <!-- @endblock -->
 
 <!-- @block: indexes -->

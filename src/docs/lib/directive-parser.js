@@ -5,7 +5,7 @@
  * テンプレート継承用の @block / @endblock / @extends も解析する。
  *
  * ディレクティブ構文:
- *   <!-- @data: <renderer>(<category>, labels=<label1>|<label2>|...) -->
+ *   <!-- @data: <source>.<method>("<label1>|<label2>|...") -->
  *   <!-- @text: <prompt text> -->
  *   <!-- @text[id=foo, maxLines=5]: <prompt text> -->
  *
@@ -18,11 +18,11 @@
 /**
  * @typedef {Object} DataDirective
  * @property {"data"} type
- * @property {string} renderer   - table | kv | mermaid-er | bool-matrix
- * @property {string} category   - 汎用カテゴリ名
+ * @property {string} source     - DataSource 名 (e.g. "controllers")
+ * @property {string} method     - メソッド名 (e.g. "list")
  * @property {string[]} labels   - テーブルヘッダー表示名
  * @property {string} raw        - ディレクティブ行の全文
- * @property {number} line        - 行番号 (0-based)
+ * @property {number} line       - 行番号 (0-based)
  */
 
 /**
@@ -34,7 +34,9 @@
  * @property {number} line        - 行番号 (0-based)
  */
 
-const DATA_RE = /^<!--\s*@data:\s*([\w-]+)\(([^,)]+)(?:,\s*labels=([^)]+))?\)\s*-->$/;
+// <!-- @data: source.method("label1|label2|...") -->
+// source は "config.constants" のようにドットを含むことがある（最後のドットで分割）
+const DATA_RE = /^<!--\s*@data:\s*([\w.-]+)\.([\w-]+)\("([^"]*)"\)\s*-->$/;
 const TEXT_RE = /^<!--\s*@text\s*(?:\[([^\]]*)\])?\s*:\s*(.+?)\s*-->$/;
 
 // ブロック継承ディレクティブ
@@ -80,8 +82,8 @@ export function parseDirectives(text) {
       const labels = dataMatch[3] ? dataMatch[3].split("|").map((l) => l.trim()) : [];
       directives.push({
         type: "data",
-        renderer: dataMatch[1],
-        category: dataMatch[2].trim(),
+        source: dataMatch[1],
+        method: dataMatch[2],
         labels,
         raw: lines[i],
         line: i,
