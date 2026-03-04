@@ -1,3 +1,8 @@
+---
+name: sdd-flow-close
+description: Finalize the SDD workflow after implementation is complete. Use for documentation update, review, commit, merge, and cleanup.
+---
+
 # SDD Flow Close
 
 Use this skill when implementation is complete and the user approved finalization.
