@@ -450,6 +450,63 @@ function analyzeExtras(sourceRoot, scanCfg) {
 }
 
 // ---------------------------------------------------------------------------
+// 汎用カテゴリアナライザ
+// ---------------------------------------------------------------------------
+
+/**
+ * ハンドラが未登録のカテゴリを汎用的に解析する。
+ * scanCfg のエントリ（{ dir, pattern, exclude?, subDirs?, lang? }）に基づき
+ * ファイル一覧 + パース結果を返す。
+ */
+function analyzeGenericCategory(sourceRoot, categoryKey, categoryCfg) {
+  const dir = path.join(sourceRoot, categoryCfg.dir);
+  const files = findFiles(dir, categoryCfg.pattern, categoryCfg.exclude, categoryCfg.subDirs);
+
+  const items = [];
+  for (const f of files) {
+    const parsed = parseFile(f.absPath, categoryCfg.lang);
+    items.push({
+      file: path.join(categoryCfg.dir, f.relPath),
+      className: parsed.className,
+      methods: parsed.methods,
+    });
+  }
+
+  const totalMethods = items.reduce((s, i) => s + i.methods.length, 0);
+  return {
+    [categoryKey]: items,
+    summary: { total: items.length, totalMethods },
+  };
+}
+
+// ---------------------------------------------------------------------------
+// カテゴリハンドラレジストリ
+// ---------------------------------------------------------------------------
+
+/**
+ * 既知カテゴリのハンドラマップ。
+ * キーは scanCfg のカテゴリ名、値は (sourceRoot, scanCfg) => result の関数。
+ */
+const CATEGORY_HANDLERS = {
+  controllers: analyzeControllers,
+  models: analyzeModels,
+  shells: analyzeShells,
+  routes: analyzeRoutes,
+};
+
+// カテゴリとして扱わないキー
+const RESERVED_KEYS = new Set(["extras"]);
+
+/**
+ * scanCfg のエントリがカテゴリ定義かどうかを判定する。
+ * カテゴリ定義は dir または file プロパティを持つオブジェクト。
+ */
+function isCategoryEntry(value) {
+  return value && typeof value === "object" && !Array.isArray(value)
+    && (value.dir != null || value.file != null);
+}
+
+// ---------------------------------------------------------------------------
 // エクスポート
 // ---------------------------------------------------------------------------
 
@@ -462,43 +519,28 @@ function analyzeExtras(sourceRoot, scanCfg) {
  * @returns {Object} analysis.json 互換のオブジェクト
  */
 export function genericScan(sourceRoot, type, scanOverrides) {
-  const defaults = SCAN_DEFAULTS[type] || {};
+  // type は "cli/node-cli" のようなパスの場合がある。リーフでもフォールバック
+  const leaf = type.includes("/") ? type.split("/").pop() : type;
+  const defaults = SCAN_DEFAULTS[type] || SCAN_DEFAULTS[leaf] || {};
   const scanCfg = { ...defaults, ...scanOverrides };
 
   const result = { analyzedAt: new Date().toISOString() };
 
-  if (scanCfg.controllers) {
-    logger.verbose("controllers ...");
-    result.controllers = analyzeControllers(sourceRoot, scanCfg);
-    if (result.controllers) {
-      logger.verbose(
-        `controllers: ${result.controllers.summary.total} files, ${result.controllers.summary.totalActions} actions`,
-      );
-    }
-  }
+  for (const key of Object.keys(scanCfg)) {
+    if (RESERVED_KEYS.has(key)) continue;
+    if (!CATEGORY_HANDLERS[key] && !isCategoryEntry(scanCfg[key])) continue;
 
-  if (scanCfg.models) {
-    logger.verbose("models ...");
-    result.models = analyzeModels(sourceRoot, scanCfg);
-    if (result.models) {
-      logger.verbose(
-        `models: ${result.models.summary.total} files (fe=${result.models.summary.feModels}, logic=${result.models.summary.logicModels})`,
-      );
-    }
-  }
+    logger.verbose(`${key} ...`);
 
-  if (scanCfg.shells) {
-    logger.verbose("shells ...");
-    result.shells = analyzeShells(sourceRoot, scanCfg);
-    if (result.shells) {
-      logger.verbose(`shells: ${result.shells.summary.total} files`);
+    if (CATEGORY_HANDLERS[key]) {
+      result[key] = CATEGORY_HANDLERS[key](sourceRoot, scanCfg);
+    } else {
+      result[key] = analyzeGenericCategory(sourceRoot, key, scanCfg[key]);
     }
-  }
 
-  if (scanCfg.routes) {
-    logger.verbose("routes ...");
-    result.routes = analyzeRoutes(sourceRoot, scanCfg);
-    logger.verbose(`routes: ${result.routes.summary.total} routes`);
+    if (result[key]?.summary?.total != null) {
+      logger.verbose(`${key}: ${result[key].summary.total} files`);
+    }
   }
 
   logger.verbose("extras ...");
