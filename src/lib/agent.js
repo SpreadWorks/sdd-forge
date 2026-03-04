@@ -204,6 +204,26 @@ export function callAgentAsync(agent, prompt, timeoutMs, cwd, options) {
 }
 
 /**
+ * agent args の -C <dir> を検証し、プロジェクト内ならディレクトリを自動作成する。
+ * プロジェクト外のパスが指定された場合はエラーを投げる。
+ *
+ * @param {Object} agent       - Agent config ({ args })
+ * @param {string} projectRoot - プロジェクトルートの絶対パス
+ */
+export function ensureAgentWorkDir(agent, projectRoot) {
+  const args = agent.args;
+  if (!Array.isArray(args)) return;
+  const cdIdx = args.indexOf("-C");
+  if (cdIdx < 0 || !args[cdIdx + 1]) return;
+
+  const resolved = path.resolve(projectRoot, args[cdIdx + 1]);
+  if (!resolved.startsWith(projectRoot + path.sep)) {
+    throw new Error(`-C path must be inside project root: ${args[cdIdx + 1]}`);
+  }
+  fs.mkdirSync(resolved, { recursive: true });
+}
+
+/**
  * Resolve agent config from SddConfig.
  *
  * @param {Object} cfg       - SddConfig object

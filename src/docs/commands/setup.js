@@ -21,6 +21,7 @@ import { createI18n } from "../../lib/i18n.js";
 import { addProject, workRootFor, loadProjects } from "../../lib/projects.js";
 import { presetsForArch } from "../../lib/presets.js";
 import { loadSddTemplate, updateSddSection } from "../../lib/agents-md.js";
+import { ensureAgentWorkDir } from "../../lib/agent.js";
 
 // ---------------------------------------------------------------------------
 // readline helpers
@@ -115,8 +116,7 @@ function ensureProjectDirs(workRoot) {
   const outputDir = path.join(sddDir, "output");
   const docsDir = path.join(workRoot, "docs");
   const specsDir = path.join(workRoot, "specs");
-  const tmpDir = path.join(workRoot, ".tmp");
-  [sddDir, outputDir, docsDir, specsDir, tmpDir].forEach((d) =>
+  [sddDir, outputDir, docsDir, specsDir].forEach((d) =>
     fs.mkdirSync(d, { recursive: true }),
   );
   fs.writeFileSync(path.join(outputDir, ".gitkeep"), "");
@@ -137,8 +137,10 @@ function ensureGitignore(workRoot) {
   const rootGitignore = path.join(workRoot, ".gitignore");
   const tmpEntry = ".tmp";
   if (fs.existsSync(rootGitignore)) {
-    const content = fs.readFileSync(rootGitignore, "utf8");
-    if (!content.split("\n").some((l) => l.trim() === tmpEntry)) {
+    const lines = fs.readFileSync(rootGitignore, "utf8").split("\n");
+    const hasTmp = lines.some((l) => l.trim() === tmpEntry);
+    const hasNegation = lines.some((l) => l.trim() === `!${tmpEntry}`);
+    if (!hasTmp && !hasNegation) {
       fs.appendFileSync(rootGitignore, `\n${tmpEntry}\n`);
     }
   } else {
@@ -636,6 +638,11 @@ async function main() {
   const configPath = path.join(sddDir, "config.json");
   fs.writeFileSync(configPath, JSON.stringify(config, null, 2) + "\n", "utf8");
   console.log(t("setup.messages.configGenerated", { path: configPath }));
+
+  // 4b. Ensure agent work directories (-C <dir>)
+  for (const provider of Object.values(config.providers || {})) {
+    ensureAgentWorkDir(provider, workRoot);
+  }
 
   // 5. Write context.json if projectContext provided
   if (projectContext) {
