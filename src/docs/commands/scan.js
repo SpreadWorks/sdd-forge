@@ -87,40 +87,64 @@ async function runLegacy(cli, root) {
  * analysis から AI 向けサマリーを構築する。
  * 各セクションの summary + 代表的な詳細（件数制限付き）を含む。
  */
-function buildSummary(analysis) {
-  const s = { analyzedAt: analysis.analyzedAt };
 
-  if (analysis.controllers) {
-    const c = analysis.controllers;
-    s.controllers = {
+// 既知カテゴリのサマリー構築関数
+const SUMMARY_BUILDERS = {
+  controllers(c) {
+    return {
       ...c.summary,
       top: c.controllers.slice(0, 10).map((x) => ({
         className: x.className,
         actions: x.actions.slice(0, 8),
       })),
     };
-  }
-  if (analysis.models) {
-    const m = analysis.models;
-    s.models = { ...m.summary };
-  }
-  if (analysis.shells) {
-    const sh = analysis.shells;
-    s.shells = {
+  },
+  models(m) {
+    return { ...m.summary };
+  },
+  shells(sh) {
+    return {
       ...sh.summary,
       items: sh.shells.map((x) => ({
         className: x.className,
         methods: x.publicMethods,
       })),
     };
+  },
+  routes(r) {
+    return { ...r.summary };
+  },
+};
+
+const SUMMARY_SKIP_KEYS = new Set(["analyzedAt", "extras", "files"]);
+
+function buildSummary(analysis) {
+  const s = { analyzedAt: analysis.analyzedAt };
+
+  for (const key of Object.keys(analysis)) {
+    if (SUMMARY_SKIP_KEYS.has(key)) continue;
+    if (!analysis[key]?.summary) continue;
+
+    if (SUMMARY_BUILDERS[key]) {
+      s[key] = SUMMARY_BUILDERS[key](analysis[key]);
+    } else {
+      // 汎用カテゴリ: summary + 先頭 10 件の items
+      const data = analysis[key];
+      const items = data[key] || [];
+      s[key] = {
+        ...data.summary,
+        items: items.slice(0, 10).map((x) => ({
+          file: x.file,
+          className: x.className,
+          methods: (x.methods || []).slice(0, 8),
+        })),
+      };
+    }
   }
-  if (analysis.routes) {
-    s.routes = { ...analysis.routes.summary };
-  }
+
   if (analysis.extras) {
     const e = analysis.extras;
     s.extras = {};
-    // 軽量メタデータのみ抽出（大きい配列は除外）
     const pick = ["composerDeps", "packageDeps", "appController", "constants", "appModel"];
     for (const k of pick) {
       if (e[k]) s.extras[k] = e[k];
