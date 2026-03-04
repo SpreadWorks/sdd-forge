@@ -589,7 +589,7 @@ async function main() {
         codex: {
           name: "codex-cli",
           command: "codex",
-          args: ["exec", "--full-auto", "{{PROMPT}}"],
+          args: ["exec", "--full-auto", "-C", "/tmp", "--skip-git-repo-check", "{{PROMPT}}"],
         },
       };
     }
