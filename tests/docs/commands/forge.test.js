@@ -7,75 +7,11 @@ const { join } = path;
 import { execFileSync } from "child_process";
 import { createTmpDir, removeTmpDir, writeJson, writeFile } from "../../helpers/tmp-dir.js";
 import {
-  buildArgs,
   buildForgeSystemPrompt,
   buildForgeFilePrompt,
-} from "../../../src/docs/commands/forge.js";
+} from "../../../src/docs/lib/forge-prompts.js";
 
 const CMD = join(process.cwd(), "src/docs/commands/forge.js");
-
-describe("buildArgs", () => {
-  it("replaces {{PROMPT}} in args with prompt text", () => {
-    const agent = { command: "echo", args: ["-p", "{{PROMPT}}"] };
-    const { args, cleanupFile } = buildArgs(agent, "hello");
-    assert.deepEqual(args, ["-p", "hello"]);
-    assert.equal(cleanupFile, undefined);
-  });
-
-  it("appends prompt when no {{PROMPT}} token", () => {
-    const agent = { command: "echo", args: ["-p"] };
-    const { args } = buildArgs(agent, "hello");
-    assert.deepEqual(args, ["-p", "hello"]);
-  });
-
-  it("prepends --system-prompt flag when systemPromptFlag is set", () => {
-    const agent = {
-      command: "echo",
-      args: ["-p", "{{PROMPT}}"],
-      systemPromptFlag: "--system-prompt",
-    };
-    const { args, cleanupFile } = buildArgs(agent, "user-prompt", "sys-prompt");
-    assert.equal(args[0], "--system-prompt");
-    assert.equal(args[1], "sys-prompt");
-    assert.equal(args[2], "-p");
-    assert.equal(args[3], "user-prompt");
-    assert.equal(cleanupFile, undefined);
-  });
-
-  it("writes temp file for --system-prompt-file flag", () => {
-    const agent = {
-      command: "echo",
-      args: ["-p", "{{PROMPT}}"],
-      systemPromptFlag: "--system-prompt-file",
-    };
-    const { args, cleanupFile } = buildArgs(agent, "user-prompt", "sys-prompt");
-    assert.equal(args[0], "--system-prompt-file");
-    assert.ok(fs.existsSync(args[1]), "temp file should exist");
-    assert.equal(fs.readFileSync(args[1], "utf8"), "sys-prompt");
-    assert.equal(cleanupFile, args[1]);
-    // Cleanup
-    fs.unlinkSync(cleanupFile);
-    fs.rmdirSync(path.dirname(cleanupFile));
-  });
-
-  it("combines system+user prompt when no systemPromptFlag", () => {
-    const agent = { command: "echo", args: ["-p", "{{PROMPT}}"] };
-    const { args } = buildArgs(agent, "user-prompt", "sys-prompt");
-    assert.equal(args[0], "-p");
-    assert.ok(args[1].includes("sys-prompt"));
-    assert.ok(args[1].includes("user-prompt"));
-  });
-
-  it("skips system prompt prefix when systemPrompt is empty", () => {
-    const agent = {
-      command: "echo",
-      args: ["-p", "{{PROMPT}}"],
-      systemPromptFlag: "--system-prompt",
-    };
-    const { args } = buildArgs(agent, "user-prompt", "");
-    assert.deepEqual(args, ["-p", "user-prompt"]);
-  });
-});
 
 describe("buildForgeSystemPrompt", () => {
   it("includes user prompt and rules", () => {
@@ -111,6 +47,26 @@ describe("buildForgeSystemPrompt", () => {
     });
     assert.ok(result.includes("[SOURCE_ANALYSIS]"));
     assert.ok(result.includes("Controllers: 5 files"));
+  });
+
+  it("loads rules from prompts.json for given lang", () => {
+    const ja = buildForgeSystemPrompt({
+      lang: "ja",
+      userPrompt: "test",
+      specPath: "",
+      specText: "",
+      analysisSummary: "",
+    });
+    assert.ok(ja.includes("推測は避け"));
+
+    const en = buildForgeSystemPrompt({
+      lang: "en",
+      userPrompt: "test",
+      specPath: "",
+      specText: "",
+      analysisSummary: "",
+    });
+    assert.ok(en.includes("Avoid speculation"));
   });
 });
 

@@ -1,5 +1,5 @@
 /**
- * sdd-forge/presets/registry.js
+ * sdd-forge/lib/presets.js
  *
  * Central registry for all framework presets.
  * All consumers derive their preset data from this single source.

@@ -18,7 +18,9 @@ import { resolveType } from "../../lib/types.js";
 import { callAgent, resolveAgent } from "../../lib/agent.js";
 import { resolveChain, collectChapters, filterChapters } from "../lib/template-merger.js";
 import { parseBlocks } from "../lib/directive-parser.js";
+import { summaryToText } from "../lib/forge-prompts.js";
 import { createLogger } from "../../lib/progress.js";
+import { createI18n } from "../../lib/i18n.js";
 
 const logger = createLogger("init");
 
@@ -170,32 +172,6 @@ function stripBlockDirectives(text) {
 /**
  * analysis.json のサマリを構築する。
  */
-function buildAnalysisSummary(analysis) {
-  const lines = [];
-
-  if (analysis.controllers?.summary) {
-    const s = analysis.controllers.summary;
-    lines.push(`Controllers: ${s.total} files`);
-  }
-  if (analysis.models?.summary) {
-    const s = analysis.models.summary;
-    lines.push(`Models: ${s.total} files (logic: ${s.logic || 0})`);
-  }
-  if (analysis.shells?.summary) {
-    const s = analysis.shells.summary;
-    lines.push(`Shells: ${s.total} files`);
-  }
-  if (analysis.routes?.summary) {
-    const s = analysis.routes.summary;
-    lines.push(`Routes: ${s.total} routes`);
-  }
-  if (analysis.extras) {
-    const keys = Object.keys(analysis.extras);
-    lines.push(`Extras: ${keys.join(", ")}`);
-  }
-
-  return lines.join("\n");
-}
 
 /**
  * AI エージェントで章の取捨選択を行う。
@@ -207,7 +183,7 @@ function buildAnalysisSummary(analysis) {
  * @returns {{ fileName: string, content: string }[]}
  */
 function aiFilterChapters(chapters, analysis, agent, root) {
-  const summary = buildAnalysisSummary(analysis);
+  const summary = summaryToText(analysis);
   const chapterList = chapters.map((ch) => {
     // 章タイトル（最初の # 行）を抽出
     const titleMatch = ch.content.match(/^#\s+(.+)$/m);
@@ -306,10 +282,11 @@ function main() {
   const root = repoRoot(import.meta.url);
   const defaults = loadPackageField(root, "docsInit") || {};
   const sddConfig = loadJsonFile(path.join(root, ".sdd-forge", "config.json"));
+  const t = createI18n(sddConfig?.uiLang || "en", { domain: "messages" });
 
   const rawType = cli.type || sddConfig?.type || defaults.defaultType;
   if (!rawType) {
-    logger.log("ERROR: type が設定されていません。.sdd-forge/config.json に \"type\" を設定するか --type オプションを指定してください。");
+    logger.log(t("init.noType"));
     process.exit(1);
   }
 
@@ -425,7 +402,7 @@ function main() {
   }
 
   if (chapters.length === 0) {
-    logger.log("ERROR: no template files found in chain");
+    logger.log(t("init.noTemplates"));
     process.exit(1);
   }
 
@@ -436,18 +413,24 @@ function main() {
     try {
       analysis = JSON.parse(fs.readFileSync(analysisPath, "utf8"));
       logger.verbose("analysis.json found, applying chapter filter");
-    } catch (_) { /* ignore */ }
+    } catch (_) { /* malformed analysis.json — non-critical, skip chapter filter */ }
   }
 
   let filteredChapters = filterChapters(chapters, chain, templatesRoot, analysis);
   const deterministicFiltered = chapters.length - filteredChapters.length;
 
-  // AI 章選別（analysis.json + agent が揃っている場合）
+  // AI 章選別（analysis + agent が揃っている場合）
   if (analysis) {
     const agent = resolveAgent(sddConfig);
     if (agent) {
       logger.verbose("AI chapter selection...");
-      filteredChapters = aiFilterChapters(filteredChapters, analysis, agent, root);
+      // summary.json があればそちらを使う（軽量）
+      const summaryPath = path.join(root, ".sdd-forge", "output", "summary.json");
+      let summaryData = analysis;
+      if (fs.existsSync(summaryPath)) {
+        try { summaryData = JSON.parse(fs.readFileSync(summaryPath, "utf8")); } catch (_) { /* fallback to analysis */ }
+      }
+      filteredChapters = aiFilterChapters(filteredChapters, summaryData, agent, root);
     }
   }
 
@@ -474,11 +457,11 @@ function main() {
   const conflicts = fileNames.filter((f) => fs.existsSync(path.join(docsDir, f)));
 
   if (conflicts.length > 0 && !cli.force) {
-    logger.log(`ERROR: ${conflicts.length} file(s) already exist in docs/:`);
+    logger.log(t("init.conflictsExist", { count: conflicts.length }));
     for (const f of conflicts) {
       logger.log(`  - ${f}`);
     }
-    logger.log("Use --force to overwrite.");
+    logger.log(t("init.useForce"));
     process.exit(1);
   }
 
@@ -547,11 +530,11 @@ function legacyInit(root, templateDir, cli) {
   const conflicts = templateFiles.filter((f) => fs.existsSync(path.join(docsDir, f)));
 
   if (conflicts.length > 0 && !cli.force) {
-    logger.log(`ERROR: ${conflicts.length} file(s) already exist in docs/:`);
+    logger.log(t("init.conflictsExist", { count: conflicts.length }));
     for (const f of conflicts) {
       logger.log(`  - ${f}`);
     }
-    logger.log("Use --force to overwrite.");
+    logger.log(t("init.useForce"));
     process.exit(1);
   }
 

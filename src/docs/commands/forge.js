@@ -12,10 +12,9 @@
  */
 
 import fs from "fs";
-import os from "os";
 import path from "path";
 import readline from "readline";
-import { execFile, spawn } from "child_process";
+import { execFile } from "child_process";
 import { stdout as output } from "process";
 import { fileURLToPath } from "url";
 import { populateFromAnalysis } from "./data.js";
@@ -24,6 +23,22 @@ import { repoRoot, parseArgs } from "../../lib/cli.js";
 import { loadJsonFile, loadConfig, saveContext } from "../../lib/config.js";
 import { resolveType } from "../../lib/types.js";
 import { createResolver } from "../lib/resolver-factory.js";
+import { callAgentAsync } from "../../lib/agent.js";
+import { createI18n } from "../../lib/i18n.js";
+import {
+  summaryToText,
+  buildForgeSystemPrompt,
+  buildForgeFilePrompt,
+  buildForgePrompt,
+  buildContextUpdatePrompt,
+} from "../lib/forge-prompts.js";
+import {
+  FALLBACK_PATCH_ORDER,
+  summarizeReview,
+  parseReviewMisses,
+  patchGeneratedForMisses,
+  summarizeNeedsInput,
+} from "../lib/review-parser.js";
 
 // npm パッケージとして呼ばれた場合でもサブスクリプトを直接起動できるよう
 // パッケージディレクトリを保持する
@@ -45,17 +60,9 @@ function getTargetFiles(root) {
     .map((f) => `docs/${f}`);
 }
 
-const FALLBACK_PATCH_ORDER = Object.freeze([
-  "controllers",
-  "tables",
-  "headings",
-  "sections",
-]);
-
 function readText(p) {
   return fs.existsSync(p) ? fs.readFileSync(p, "utf8") : "";
 }
-
 
 function resolveAgent(cfg, role, cliAgent) {
   const providerKey = cliAgent || cfg.agents?.[role]?.provider || cfg.defaultAgent;
@@ -79,39 +86,14 @@ function loadAnalysisData(root) {
   }
 }
 
-function buildAnalysisSummary(analysis) {
-  if (!analysis) return "";
-  const parts = [];
-  if (analysis.controllers) {
-    const c = analysis.controllers;
-    parts.push(`Controllers: ${c.summary.total} files, ${c.summary.totalActions} actions`);
-    for (const ctrl of c.controllers.slice(0, 10)) {
-      parts.push(`  - ${ctrl.className}: ${ctrl.actions.length} actions [${ctrl.actions.slice(0, 5).join(", ")}${ctrl.actions.length > 5 ? " ..." : ""}]`);
-    }
-    if (c.controllers.length > 10) {
-      parts.push(`  ... and ${c.controllers.length - 10} more`);
-    }
+function loadSummaryData(root) {
+  const p = path.join(root, ".sdd-forge", "output", "summary.json");
+  if (!fs.existsSync(p)) return null;
+  try {
+    return JSON.parse(fs.readFileSync(p, "utf8"));
+  } catch (_) {
+    return null;
   }
-  if (analysis.models) {
-    const m = analysis.models;
-    parts.push(`Models: ${m.summary.total} files (fe=${m.summary.feModels}, logic=${m.summary.logicModels})`);
-    if (m.summary.dbGroups) {
-      for (const [db, models] of Object.entries(m.summary.dbGroups)) {
-        parts.push(`  DB[${db}]: ${models.length} models`);
-      }
-    }
-  }
-  if (analysis.shells) {
-    const s = analysis.shells;
-    parts.push(`Shells: ${s.summary.total} files`);
-    for (const sh of s.shells) {
-      parts.push(`  - ${sh.className}: [${sh.publicMethods.join(", ")}]`);
-    }
-  }
-  if (analysis.routes) {
-    parts.push(`Routes: ${analysis.routes.summary.total} explicit routes`);
-  }
-  return parts.join("\n");
 }
 
 function parseCliOptions(argv) {
@@ -171,192 +153,6 @@ function printHelp() {
   );
 }
 
-function buildArgs(agent, prompt, systemPrompt) {
-  const args = Array.isArray(agent.args) ? [...agent.args] : [];
-
-  // Prepend system prompt flag if provider supports it and systemPrompt given
-  const flag = agent.systemPromptFlag;
-  let prefix = [];
-  let cleanupFile;
-  if (flag && systemPrompt) {
-    if (flag === "--system-prompt-file") {
-      // Write to temp file for providers that require file-based system prompts
-      const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "sdd-forge-"));
-      const tmpFile = path.join(tmpDir, "system-prompt.md");
-      fs.writeFileSync(tmpFile, systemPrompt, "utf8");
-      prefix = [flag, tmpFile];
-      cleanupFile = tmpFile;
-    } else {
-      prefix = [flag, systemPrompt];
-    }
-  }
-
-  const hasToken = args.some(
-    (a) => typeof a === "string" && a.includes("{{PROMPT}}")
-  );
-  let finalArgs;
-  if (hasToken) {
-    finalArgs = args.map((a) =>
-      typeof a === "string" ? a.replaceAll("{{PROMPT}}", prompt) : a
-    );
-  } else {
-    finalArgs = [...args, prompt];
-  }
-
-  // If systemPromptFlag not set but systemPrompt given, prepend to prompt
-  if (!flag && systemPrompt) {
-    const combined = systemPrompt + "\n\n" + prompt;
-    if (hasToken) {
-      finalArgs = (Array.isArray(agent.args) ? [...agent.args] : []).map((a) =>
-        typeof a === "string" ? a.replaceAll("{{PROMPT}}", combined) : a
-      );
-    } else {
-      finalArgs = [...(Array.isArray(agent.args) ? [...agent.args] : []), combined];
-    }
-  }
-
-  return { args: [...prefix, ...finalArgs], cleanupFile };
-}
-
-function runAgent(agent, prompt, options = {}) {
-  const requestedTimeoutMs = Number(
-    options.timeoutMs ?? agent?.timeoutMs ?? DEFAULT_AGENT_TIMEOUT_MS
-  );
-  const timeoutMs =
-    Number.isFinite(requestedTimeoutMs) && requestedTimeoutMs > 0
-      ? requestedTimeoutMs
-      : DEFAULT_AGENT_TIMEOUT_MS;
-  const waitLogSec = Number(options.waitLogSec ?? DEFAULT_WAIT_LOG_SEC);
-  const runCwd = options.cwd ? path.resolve(String(options.cwd)) : undefined;
-  const label = String(
-    options.label || agent?.name || agent?.command || "agent"
-  );
-  const streamOutput = options.streamOutput === true;
-  const { args, cleanupFile } = buildArgs(agent, prompt, options.systemPrompt);
-
-  function cleanup() {
-    if (cleanupFile) {
-      try { fs.unlinkSync(cleanupFile); fs.rmdirSync(path.dirname(cleanupFile)); } catch (_) {}
-    }
-  }
-
-  return new Promise((resolve, reject) => {
-    const ticker =
-      waitLogSec > 0 && !streamOutput
-        ? setInterval(() => output.write("."), waitLogSec * 1000)
-        : null;
-
-    output.write(
-      `[agent] ${label} started (timeout: ${Math.floor(timeoutMs / 1000)}s)\n`
-    );
-
-    if (streamOutput) {
-      let stdoutBuf = "";
-      let stderrBuf = "";
-      let timedOut = false;
-      const child = spawn(agent.command, args, {
-        cwd: runCwd,
-        stdio: ["ignore", "pipe", "pipe"],
-      });
-
-      const timeoutTimer = setTimeout(() => {
-        timedOut = true;
-        child.kill("SIGTERM");
-      }, timeoutMs);
-
-      child.stdout?.on("data", (chunk) => {
-        const text = String(chunk);
-        stdoutBuf += text;
-        output.write(text);
-      });
-
-      child.stderr?.on("data", (chunk) => {
-        const text = String(chunk);
-        stderrBuf += text;
-        output.write(text);
-      });
-
-      child.on("error", (err) => {
-        if (ticker) clearInterval(ticker);
-        clearTimeout(timeoutTimer);
-        cleanup();
-        reject(new Error(`Agent failed: ${agent.command}\n${err.message}`));
-      });
-
-      child.on("close", (code, signal) => {
-        if (ticker) clearInterval(ticker);
-        clearTimeout(timeoutTimer);
-        cleanup();
-        if (code === 0 && !signal) {
-          resolve(stdoutBuf.trim());
-          return;
-        }
-        reject(
-          new Error(
-            [
-              `Agent failed: ${agent.command}`,
-              timedOut ? `Timeout: ${Math.floor(timeoutMs / 1000)}s` : "",
-              signal ? `Signal: ${signal}` : "",
-              stderrBuf ? stderrBuf.slice(0, 4000) : "",
-              `Exit code: ${code}`,
-            ]
-              .filter(Boolean)
-              .join("\n")
-          )
-        );
-      });
-      return;
-    }
-
-    // spawn + stdin: "ignore" で Claude CLI のハング回避 (see src/README.md)
-    let stdoutBuf = "";
-    let stderrBuf = "";
-    let timedOut = false;
-    const child = spawn(agent.command, args, {
-      cwd: runCwd,
-      stdio: ["ignore", "pipe", "pipe"],
-    });
-
-    const timeoutTimer = setTimeout(() => {
-      timedOut = true;
-      child.kill("SIGTERM");
-    }, timeoutMs);
-
-    child.stdout.on("data", (chunk) => { stdoutBuf += chunk; });
-    child.stderr.on("data", (chunk) => { stderrBuf += chunk; });
-
-    child.on("error", (err) => {
-      if (ticker) clearInterval(ticker);
-      clearTimeout(timeoutTimer);
-      cleanup();
-      reject(new Error(`Agent failed: ${agent.command}\n${err.message}`));
-    });
-
-    child.on("close", (code, signal) => {
-      if (ticker) clearInterval(ticker);
-      clearTimeout(timeoutTimer);
-      cleanup();
-      if (code === 0 && !signal) {
-        resolve(stdoutBuf.trim());
-        return;
-      }
-      reject(
-        new Error(
-          [
-            `Agent failed: ${agent.command}`,
-            timedOut ? `Timeout: ${Math.floor(timeoutMs / 1000)}s` : "",
-            signal ? `Signal: ${signal}` : "",
-            stderrBuf ? stderrBuf.slice(0, 3000) : "",
-            `Exit code: ${code}`,
-          ]
-            .filter(Boolean)
-            .join("\n")
-        )
-      );
-    });
-  });
-}
-
 /**
  * コマンド文字列をコマンドと引数に分割して execFile で実行する。
  * bash に依存しない。
@@ -382,267 +178,36 @@ function runCommand(cmdString, cwd) {
   });
 }
 
-function extractNeedsInput(out) {
-  const text = String(out || "");
-  const idx = text.indexOf("NEEDS_INPUT");
-  if (idx < 0) return [];
-  const tail = text.slice(idx).split("\n");
-  const qs = [];
-  for (const line of tail.slice(1)) {
-    const s = line.trim();
-    if (s.startsWith("- ")) {
-      qs.push(s.slice(2).trim());
-      continue;
-    }
-    if (s.length === 0) continue;
-    break;
-  }
-  return qs.filter(Boolean);
-}
-
-function summarizeReview(outputText) {
-  const lines = String(outputText || "")
-    .split("\n")
-    .map((x) => x.trim())
-    .filter(Boolean);
-  const fails = lines.filter((l) => l.includes("[FAIL]"));
-  const coverage = lines.filter(
-    (l) =>
-      l.includes("Controller coverage:") ||
-      l.includes("DB table coverage:") ||
-      l.includes("quality check:")
-  );
-  const picked = [...fails.slice(0, 40), ...coverage].join("\n");
-  return picked || "(no parsed failures)";
-}
-
-function parseReviewMisses(outputText) {
-  const controllers = [];
-  const tables = [];
-  const headings = [];
-  const sections = [];
-  const lines = String(outputText || "").split("\n");
-  for (const raw of lines) {
-    const line = raw.trim();
-    const ctrl = line.match(/^\[MISS\]\s+([A-Za-z0-9_]+)$/);
-    if (ctrl?.[1]) {
-      controllers.push(ctrl[1]);
-      continue;
-    }
-    const table = line.match(/^\[MISS\]\s+table\s+([a-zA-Z0-9_]+)/);
-    if (table?.[1]) {
-      tables.push(table[1]);
-      continue;
-    }
-    const heading = line.match(/^\[FAIL\]\s+missing heading:\s+(.+)/i);
-    if (heading?.[1]) {
-      headings.push(heading[1].trim());
-      continue;
-    }
-    const section = line.match(/^\[FAIL\]\s+missing section:\s+(.+)/i);
-    if (section?.[1]) {
-      sections.push(section[1].trim());
-    }
-  }
-  const sortUniq = (arr) => [...new Set(arr)].sort((a, b) => a.localeCompare(b));
-  return {
-    controllers: sortUniq(controllers),
-    tables: sortUniq(tables),
-    headings: sortUniq(headings),
-    sections: sortUniq(sections),
-  };
-}
-
-function ensureSection(text, heading) {
-  if (text.includes(heading)) return text;
-  return `${text.trimEnd()}\n\n${heading}\n\n`;
-}
-
-function patchGeneratedForMisses(root, misses, analysisData) {
-  let changed = false;
-  const touched = [];
-
-  // analysis データで populate 済みの場合、コントローラ・テーブルの「未整理」追記はスキップ
-  // （本体テーブルに統合済みのため）
-  const hasControllerData = !!analysisData?.controllers;
-  const hasModelData = !!analysisData?.models;
-
-  if (misses.controllers.length > 0 && !hasControllerData) {
-    const p = path.join(
-      root,
-      "docs/08_controller_routes.md"
-    );
-    let s = readText(p);
-    if (s) {
-      s = ensureSection(s, "### 未整理コントローラ（自動補完）");
-      for (const ctrl of misses.controllers) {
-        if (!s.includes(ctrl)) {
-          s += `- \`${ctrl}Controller\`\n`;
-          changed = true;
-        }
-      }
-      fs.writeFileSync(p, s.endsWith("\n") ? s : `${s}\n`);
-      touched.push(path.relative(root, p));
-    }
-  }
-
-  if (misses.tables.length > 0 && !hasModelData) {
-    const p = path.join(
-      root,
-      "docs/07_db_tables.md"
-    );
-    let s = readText(p);
-    if (s) {
-      s = ensureSection(s, "### 未整理テーブル（自動補完）");
-      for (const t of misses.tables) {
-        if (!s.includes(t)) {
-          s += `- \`${t}\`\n`;
-          changed = true;
-        }
-      }
-      fs.writeFileSync(p, s.endsWith("\n") ? s : `${s}\n`);
-      touched.push(path.relative(root, p));
-    }
-  }
-
-  if (misses.headings.length > 0 || misses.sections.length > 0) {
-    const p = path.join(root, "docs/04_development.md");
-    let s = readText(p);
-    if (s) {
-      if (misses.sections.length > 0) {
-        s = ensureSection(s, "### 未整理項目（自動補完）");
-        for (const section of misses.sections) {
-          const bullet = `- ${section}`;
-          if (!s.includes(bullet)) {
-            s += `${bullet}\n`;
-            changed = true;
-          }
-        }
-      }
-      if (misses.headings.length > 0) {
-        s = ensureSection(s, "### 未整理見出し（自動補完）");
-        for (const heading of misses.headings) {
-          const bullet = `- ${heading}`;
-          if (!s.includes(bullet)) {
-            s += `${bullet}\n`;
-            changed = true;
-          }
-        }
-      }
-      fs.writeFileSync(p, s.endsWith("\n") ? s : `${s}\n`);
-      touched.push(path.relative(root, p));
-    }
-  }
-
-  return { changed, touched };
-}
-
-function summarizeNeedsInput(reviewOut) {
-  const lines = reviewOut
-    .split("\n")
-    .map((x) => x.trim())
-    .filter((x) => x.startsWith("[FAIL]") || x.startsWith("[MISS]"));
-  const uniq = [...new Set(lines)];
-  return uniq.slice(0, 8);
-}
-
 /**
- * Build the system prompt (shared across all files in a round).
- * Contains: role, rules, user request, spec, analysis summary.
+ * Thin wrapper around callAgentAsync that adds forge-specific UI:
+ * label logging and a progress ticker.
  */
-function buildForgeSystemPrompt({
-  userPrompt,
-  specPath,
-  specText,
-  analysisSummary,
-}) {
-  const specBlock = specPath
-    ? ["[SPEC_PATH]", specPath, "", "[SPEC_CONTENT]", specText || "(empty)", ""]
-    : [];
-  return [
-    "あなたは docs-forge です。指定されたドキュメントファイルの品質を改善してください。",
-    "",
-    "[USER_PROMPT]",
-    userPrompt,
-    "",
-    ...specBlock,
-    "[RULES]",
-    "- 編集対象は指定された TARGET_FILE のみ",
-    "- 推測は避け、ソースコードの事実を優先",
-    "- 変更は必要最小限にする",
-    "- 説明文は簡潔で主語を明確にする",
-    "- 不明な場合は編集せずスキップする",
-    "",
-    ...(analysisSummary
-      ? ["[SOURCE_ANALYSIS]", analysisSummary, ""]
-      : []),
-  ].join("\n");
-}
+async function invokeAgent(agent, prompt, { cwd, timeoutMs, systemPrompt, verbose, label }) {
+  const timeout = timeoutMs || Number(agent?.timeoutMs) || DEFAULT_AGENT_TIMEOUT_MS;
+  const displayLabel = label || agent?.name || agent?.command || "agent";
 
-/**
- * Build the user prompt for a single file.
- */
-function buildForgeFilePrompt({ targetFile, round, maxRuns, reviewFeedback }) {
-  return [
-    `round: ${round}/${maxRuns}`,
-    "",
-    "[TARGET_FILE]",
-    targetFile,
-    "",
-    "[PREVIOUS_REVIEW_FEEDBACK]",
-    reviewFeedback || "なし",
-  ].join("\n");
-}
+  output.write(`[agent] ${displayLabel} started (timeout: ${Math.floor(timeout / 1000)}s)\n`);
 
-/**
- * Build a combined prompt (for providers without system prompt support).
- */
-function buildForgePrompt({
-  userPrompt,
-  round,
-  maxRuns,
-  reviewFeedback,
-  specPath,
-  specText,
-  analysisSummary,
-  targetFiles,
-}) {
-  const files = targetFiles.map((f) => `- ${f}`).join("\n");
-  const specBlock = specPath
-    ? ["[SPEC_PATH]", specPath, "", "[SPEC_CONTENT]", specText || "(empty)", ""]
-    : [];
-  return [
-    "あなたは docs-forge です。docs 品質を改善してください。",
-    "",
-    `round: ${round}/${maxRuns}`,
-    "",
-    "[USER_PROMPT]",
-    userPrompt,
-    "",
-    ...specBlock,
-    "[TARGET_FILES]",
-    files,
-    "",
-    "[RULES]",
-    "- 編集対象は TARGET_FILES のみ",
-    "- 推測は避け、ソースコードの事実を優先",
-    "- 変更は必要最小限にする",
-    "- 説明文は簡潔で主語を明確にする",
-    "- 不明な場合は編集せずスキップする",
-    "",
-    ...(analysisSummary
-      ? ["[SOURCE_ANALYSIS]", analysisSummary, ""]
-      : []),
-    "[PREVIOUS_REVIEW_FEEDBACK]",
-    reviewFeedback || "なし",
-  ].join("\n");
+  const ticker = !verbose
+    ? setInterval(() => output.write("."), DEFAULT_WAIT_LOG_SEC * 1000)
+    : null;
+
+  try {
+    return await callAgentAsync(agent, prompt, timeout, cwd, {
+      systemPrompt,
+      onStdout: verbose ? (chunk) => output.write(chunk) : undefined,
+      onStderr: verbose ? (chunk) => output.write(chunk) : undefined,
+    });
+  } finally {
+    if (ticker) clearInterval(ticker);
+  }
 }
 
 /**
  * Run agent for each file with concurrency control.
  * Returns an array of { file, ok, error? } results.
  */
-async function runPerFile({ agent, targetFiles, systemPrompt, round, maxRuns, reviewFeedback, root, timeoutMs, concurrency, verbose }) {
+async function runPerFile({ agent, targetFiles, systemPrompt, lang, round, maxRuns, reviewFeedback, root, timeoutMs, concurrency, verbose }) {
   const results = [];
   let running = 0;
   let idx = 0;
@@ -661,6 +226,7 @@ async function runPerFile({ agent, targetFiles, systemPrompt, round, maxRuns, re
         running++;
 
         const filePrompt = buildForgeFilePrompt({
+          lang,
           targetFile: file,
           round,
           maxRuns,
@@ -669,11 +235,11 @@ async function runPerFile({ agent, targetFiles, systemPrompt, round, maxRuns, re
 
         output.write(`[forge] start: ${file}\n`);
 
-        runAgent(agent, filePrompt, {
+        invokeAgent(agent, filePrompt, {
           label: `forge:${path.basename(file)}`,
           cwd: root,
           timeoutMs,
-          streamOutput: verbose,
+          verbose,
           systemPrompt,
         })
           .then(() => {
@@ -698,12 +264,6 @@ async function runPerFile({ agent, targetFiles, systemPrompt, round, maxRuns, re
 /**
  * forge の review 成功後に projectContext を自動更新する。
  * docs/ の各章ファイル先頭を LLM に渡し、プロジェクト概要を生成させる。
- *
- * @param {string} root - リポジトリルート
- * @param {import("../lib/types.js").SddConfig} cfg
- * @param {Object} agent - エージェント設定
- * @param {number} timeoutMs - タイムアウト
- * @param {boolean} autoConfirm - true なら確認なしで書き込み
  */
 async function maybeUpdateContext(root, cfg, agent, timeoutMs, autoConfirm) {
   const docsDir = path.join(root, "docs");
@@ -721,24 +281,11 @@ async function maybeUpdateContext(root, cfg, agent, timeoutMs, autoConfirm) {
     return `### ${f}\n${content.slice(0, 500)}`;
   }).join("\n\n");
 
-  const lang = cfg.lang || "ja";
-  const promptText = lang === "en"
-    ? [
-        "Based on the following documentation snippets, generate a concise project overview (3-5 sentences).",
-        "Output ONLY the overview text, no preamble or meta-commentary.",
-        "",
-        snippets,
-      ].join("\n")
-    : [
-        "以下のドキュメント抜粋を基に、プロジェクト概要を3〜5文で生成してください。",
-        "概要テキストのみを出力すること（前置きやメタコメンタリーは不要）。",
-        "",
-        snippets,
-      ].join("\n");
+  const promptText = buildContextUpdatePrompt({ lang: cfg.lang, snippets });
 
   let generated;
   try {
-    generated = await runAgent(agent, promptText, {
+    generated = await invokeAgent(agent, promptText, {
       label: "forge.context-update",
       cwd: root,
       timeoutMs,
@@ -784,6 +331,8 @@ async function main() {
 
   const root = repoRoot(import.meta.url);
   const cfg = loadConfig(root);
+  const lang = cfg.lang || "ja";
+  const t = createI18n(cfg.uiLang || "en", { domain: "messages" });
   const agent = resolveAgent(cfg, "docsForge", cli.agent);
   const mode = cli.mode || DEFAULT_MODE;
   const timeoutMs = Number(cfg.limits?.designTimeoutMs || 0) || undefined;
@@ -795,7 +344,7 @@ async function main() {
   }
 
   const analysisData = loadAnalysisData(root);
-  const analysisSummary = buildAnalysisSummary(analysisData);
+  const analysisSummary = summaryToText(loadSummaryData(root) || analysisData);
   if (analysisData && !cli.dryRun) {
     output.write("[forge] analysis data loaded.\n");
     const type = resolveType(cfg.type || "");
@@ -825,14 +374,14 @@ async function main() {
     userPrompt = readText(path.resolve(root, cli.promptFile)).trim();
   }
   if (!userPrompt) {
-    throw new Error("prompt is required. use --prompt or --prompt-file");
+    throw new Error(t("forge.promptRequired"));
   }
   let specPath = "";
   let specText = "";
   if (cli.spec) {
     specPath = path.resolve(root, cli.spec);
     if (!fs.existsSync(specPath)) {
-      throw new Error(`spec not found: ${specPath}`);
+      throw new Error(t("forge.specNotFound", { path: specPath }));
     }
     specText = readText(specPath).trim();
   }
@@ -881,6 +430,7 @@ async function main() {
         if (usePerFile) {
           // Per-file async processing with system prompt separation
           const systemPrompt = buildForgeSystemPrompt({
+            lang,
             userPrompt,
             specPath: specPath ? path.relative(root, specPath) : "",
             specText,
@@ -893,6 +443,7 @@ async function main() {
             agent,
             targetFiles,
             systemPrompt,
+            lang,
             round,
             maxRuns: effectiveMaxRuns,
             reviewFeedback,
@@ -911,6 +462,7 @@ async function main() {
         } else {
           // Legacy: single prompt with all files
           const prompt = buildForgePrompt({
+            lang,
             userPrompt,
             round,
             maxRuns: effectiveMaxRuns,
@@ -921,11 +473,11 @@ async function main() {
             targetFiles,
           });
           try {
-            await runAgent(agent, prompt, {
+            await invokeAgent(agent, prompt, {
               label: "forge.generate",
               cwd: root,
               timeoutMs,
-              streamOutput: cli.verbose,
+              verbose: cli.verbose,
             });
             usedAgent = true;
           } catch (e) {
@@ -978,8 +530,8 @@ async function main() {
         "[forge] no local patch candidates found after agent failure.\n"
       );
     } else if (mode === "local" && !usedAgent) {
-      output.write("[forge] NEEDS_INPUT\n");
-      output.write("- docs:review の失敗原因を解消するための追加情報が必要です。\n");
+      output.write(t("forge.needsInput") + "\n");
+      output.write(t("forge.reviewFeedback") + "\n");
       const lines = summarizeNeedsInput(reviewOut);
       for (const line of lines) {
         output.write(`- ${line}\n`);
@@ -992,13 +544,7 @@ async function main() {
   throw new Error("forge: max runs reached but review still failing.");
 }
 
-export {
-  main,
-  buildArgs,
-  buildForgeSystemPrompt,
-  buildForgeFilePrompt,
-  runPerFile,
-};
+export { main };
 
 const isDirectRun = process.argv[1] &&
   path.resolve(process.argv[1]) === path.resolve(fileURLToPath(import.meta.url));

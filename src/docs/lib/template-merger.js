@@ -3,7 +3,7 @@
  *
  * テンプレート継承エンジン。
  * ディレクトリ階層をもとに base → leaf の継承チェーンを構築し、
- * @block / @endblock / @extends / @parent ディレクティブでブロック単位のマージを行う。
+ * @block / @endblock / @extends ディレクティブでブロック単位のマージを行う。
  */
 
 import fs from "fs";
@@ -80,18 +80,8 @@ function mergeTexts(parentText, childText) {
     if (!childBlock) {
       // 子にブロックなし → 親をそのまま使用
       resultLines.push(...parentBlock.content);
-    } else if (childBlock.hasParent) {
-      // 子に @parent がある → 親の内容を @parent 位置に挿入
-      for (let i = 0; i < childBlock.content.length; i++) {
-        if (i === childBlock.parentLine) {
-          // @parent の位置に親の内容を展開
-          resultLines.push(...parentBlock.content);
-        } else {
-          resultLines.push(childBlock.content[i]);
-        }
-      }
     } else {
-      // 子にブロックあるが @parent なし → 子で完全置換
+      // 子にブロックあり → 子で完全置換
       resultLines.push(...childBlock.content);
     }
 
@@ -102,11 +92,7 @@ function mergeTexts(parentText, childText) {
   for (const [name, childBlock] of child.blocks) {
     if (!parent.blocks.has(name)) {
       resultLines.push(`<!-- @block: ${name} -->`);
-      // @parent があっても親ブロックがないので無視（子の内容のみ）
-      for (let i = 0; i < childBlock.content.length; i++) {
-        if (i === childBlock.parentLine) continue; // @parent をスキップ
-        resultLines.push(childBlock.content[i]);
-      }
+      resultLines.push(...childBlock.content);
       resultLines.push("<!-- @endblock -->");
     }
   }

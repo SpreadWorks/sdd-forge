@@ -9,6 +9,7 @@ import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
 import { repoRoot, parseArgs } from "../../lib/cli.js";
+import { createI18n } from "../../lib/i18n.js";
 
 function checkSpecText(text) {
   const issues = [];
@@ -86,17 +87,24 @@ function main() {
     throw new Error(`spec not found: ${specPath}`);
   }
 
+  let uiLang = "en";
+  try {
+    const raw = JSON.parse(fs.readFileSync(path.join(root, ".sdd-forge", "config.json"), "utf8"));
+    uiLang = raw.uiLang || "en";
+  } catch (_) { /* config optional */ }
+  const t = createI18n(uiLang, { domain: "messages" });
+
   const text = fs.readFileSync(specPath, "utf8");
   const issues = checkSpecText(text);
   if (issues.length > 0) {
-    console.error("gate: FAILED");
+    console.error(t("gate.failed"));
     for (const i of issues) {
       console.error(`- ${i}`);
     }
     process.exit(1);
   }
 
-  console.log("gate: PASSED");
+  console.log(t("gate.passed"));
 }
 
 export { main, checkSpecText };

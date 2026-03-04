@@ -3,9 +3,9 @@
  * src/docs/commands/agents.js
  *
  * AGENTS.md を更新する。
- *   デフォルト: AI エージェントで analysis.json を要約し PROJECT セクションを生成
- *   --template: AI を使わずテンプレートベースで生成
- *   --force:    SDD + PROJECT + 空の Guidelines で全体を書き直す
+ *   デフォルト: SDD テンプレ差し替え + PROJECT テンプレ生成 → AI 精査・追記
+ *   --sdd:     SDD セクションのみテンプレートで差し替え（AI なし）
+ *   --project: PROJECT テンプレ生成 → AI 精査・追記
  */
 
 import fs from "fs";
@@ -14,20 +14,10 @@ import { fileURLToPath } from "url";
 import { sourceRoot, repoRoot, parseArgs } from "../../lib/cli.js";
 import { loadJsonFile, loadConfig, resolveProjectContext } from "../../lib/config.js";
 import { callAgent } from "../../lib/agent.js";
+import { createI18n } from "../../lib/i18n.js";
+import { loadSddTemplate, updateSddSection } from "../../lib/agents-md.js";
 
 const PKG_DIR = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..", "..");
-
-// ---------------------------------------------------------------------------
-// SDD テンプレート読み込み
-// ---------------------------------------------------------------------------
-
-function loadSddTemplate(lang) {
-  for (const l of [lang, "en"]) {
-    const p = path.join(PKG_DIR, "templates", "locale", l, "base", "AGENTS.sdd.md");
-    if (fs.existsSync(p)) return fs.readFileSync(p, "utf8");
-  }
-  return "";
-}
 
 // ---------------------------------------------------------------------------
 // AI エージェント呼び出し
@@ -46,35 +36,43 @@ function loadAgentConfig(cfg, agentName) {
 }
 
 // ---------------------------------------------------------------------------
-// AI 要約プロンプト構築
+// AI プロンプト構築
 // ---------------------------------------------------------------------------
 
 /**
  * agents コマンド用のシステムプロンプトを構築する。
  * 出力ルール（PROJECT タグ形式、構造要件）を含む。
  */
-function buildAgentsSystemPrompt() {
+function buildAgentsSystemPrompt(lang) {
+  const t = createI18n(lang || "ja", { domain: "prompts" });
+  const rules = t.raw("agents.outputRules") || [];
   return [
-    "以下のソースコード解析データ (analysis.json) を要約し、AGENTS.md の Project Context セクションを生成してください。",
+    t("agents.systemPrompt"),
     "",
-    "## 出力ルール（厳守）",
-    "- <!-- PROJECT:START --> と <!-- PROJECT:END --> タグで囲むこと",
-    "- 最初の行は `<!-- PROJECT:START — managed by sdd-forge. Do not edit manually. -->` とすること",
-    "- 最後の行は `<!-- PROJECT:END -->` とすること",
-    "- `## Project Context` の見出しで始めること",
-    "- AI エージェントがプロジェクトを理解するのに役立つ情報を構造的にまとめること",
-    "- 技術スタック、プロジェクト構造の概要、主要コンポーネント、DB 構成、利用可能なコマンドを含めること",
-    "- マークダウンのテーブルやリストを活用して読みやすくすること",
-    "- 前置き・メタコメンタリーは含めないこと",
+    "## Output Rules (strict)",
+    ...rules.map((r) => `- ${r}`),
   ].join("\n");
 }
 
-function buildSummaryPrompt(analysis, config, srcRoot) {
+/**
+ * テンプレート出力をベースに AI に精査・追記させるプロンプトを構築する。
+ */
+function buildRefinePrompt(templateOutput, summary, config, srcRoot, sddSection) {
   const parts = [];
+
+  if (sddSection) {
+    parts.push("## SDD Section (already present — do not duplicate)");
+    parts.push(sddSection);
+    parts.push("");
+  }
+
+  parts.push("## Current PROJECT Section (template-generated)");
+  parts.push(templateOutput);
+  parts.push("");
 
   // config info
   if (config.type) {
-    parts.push(`## プロジェクト設定`);
+    parts.push("## Project Config");
     parts.push(`- type: ${config.type}`);
     const ctx = resolveProjectContext(repoRoot());
     if (ctx) parts.push(`- context: ${ctx}`);
@@ -91,18 +89,12 @@ function buildSummaryPrompt(analysis, config, srcRoot) {
         parts.push(JSON.stringify(pkg.scripts, null, 2));
         parts.push("");
       }
-    } catch (_) { /* ignore */ }
+    } catch (_) { /* malformed package.json — non-critical, skip scripts section */ }
   }
 
-  // analysis.json (truncated)
-  parts.push("## analysis.json");
-  const analysisJson = JSON.stringify(analysis, null, 2);
-  if (analysisJson.length > 30000) {
-    parts.push(analysisJson.slice(0, 30000));
-    parts.push("... (truncated)");
-  } else {
-    parts.push(analysisJson);
-  }
+  // summary.json
+  parts.push("## Analysis Summary");
+  parts.push(JSON.stringify(summary, null, 2));
 
   return parts.join("\n");
 }
@@ -135,7 +127,7 @@ function generateProjectSectionTemplate(analysis, config, srcRoot) {
       try {
         const pkg = JSON.parse(fs.readFileSync(pkgPath, "utf8"));
         if (pkg.engines?.node) lines.push(`- Node.js: ${pkg.engines.node}`);
-      } catch (_) { /* ignore */ }
+      } catch (_) { /* malformed package.json — non-critical, skip engine info */ }
     }
 
     lines.push("");
@@ -186,7 +178,7 @@ function generateProjectSectionTemplate(analysis, config, srcRoot) {
         }
         lines.push("");
       }
-    } catch (_) { /* ignore */ }
+    } catch (_) { /* malformed package.json — non-critical, skip commands table */ }
   }
 
   lines.push("<!-- PROJECT:END -->");
@@ -199,8 +191,7 @@ function generateProjectSectionTemplate(analysis, config, srcRoot) {
 
 function updateProjectSection(filePath, projectSection) {
   if (!fs.existsSync(filePath)) {
-    console.error(`Error: ${filePath} not found. Run 'sdd-forge setup' first.`);
-    process.exit(1);
+    throw new Error(`${filePath} not found. Run 'sdd-forge setup' first.`);
   }
 
   const content = fs.readFileSync(filePath, "utf8");
@@ -221,20 +212,6 @@ function updateProjectSection(filePath, projectSection) {
   fs.writeFileSync(filePath, updated, "utf8");
 }
 
-function rewriteAgentsMd(filePath, sddSection, projectSection) {
-  const parts = [
-    sddSection.trim(),
-    "",
-    projectSection,
-    "",
-    "## Project Guidelines",
-    "",
-    "<!-- Add project-specific guidelines here -->",
-    "",
-  ];
-  fs.writeFileSync(filePath, parts.join("\n"), "utf8");
-}
-
 // ---------------------------------------------------------------------------
 // Main
 // ---------------------------------------------------------------------------
@@ -242,56 +219,92 @@ function rewriteAgentsMd(filePath, sddSection, projectSection) {
 function main() {
   const args = process.argv.slice(2);
   const opts = parseArgs(args, {
-    flags: ["--force", "--template", "--dry-run"],
+    flags: ["--dry-run", "--sdd", "--project"],
     options: [],
-    defaults: { force: false, template: false, dryRun: false },
+    defaults: { dryRun: false, sdd: false, project: false },
   });
 
   if (opts.help) {
-    console.log("Usage: sdd-forge agents [--force] [--template]");
+    console.log("Usage: sdd-forge agents [--sdd] [--project] [--dry-run]");
     console.log("");
-    console.log("  analysis.json から AGENTS.md を更新する。");
-    console.log("  デフォルトで AI エージェントを使用して PROJECT セクションを要約生成する。");
+    console.log("  AGENTS.md の SDD/PROJECT セクションを更新する。");
+    console.log("  デフォルトで両セクションを更新する（PROJECT は AI で精査・追記）。");
     console.log("");
     console.log("Options:");
-    console.log("  --force      AGENTS.md を全体書き直す（SDD + PROJECT + 空の Guidelines）");
-    console.log("  --template   AI を使わずテンプレートベースで生成する");
-    console.log("  --dry-run    ファイル書き込みせず生成内容を stdout に出力する");
+    console.log("  --sdd       SDD セクションのみテンプレートで更新");
+    console.log("  --project   PROJECT セクションのみ更新（テンプレート + AI 精査）");
+    console.log("  --dry-run   ファイル書き込みせず生成内容を stdout に出力");
     process.exit(0);
   }
 
   const workRoot = repoRoot();
   const srcRoot = sourceRoot();
 
-  // Load analysis.json
-  const analysisPath = path.join(workRoot, ".sdd-forge", "output", "analysis.json");
-  let analysis;
-  try {
-    analysis = loadJsonFile(analysisPath);
-  } catch (err) {
-    console.error(`Error: ${analysisPath} not found.`);
-    console.error("Run 'sdd-forge scan' first.");
-    process.exit(1);
-  }
-
-  // Load config.json
+  // Load config.json (needed for uiLang and lang)
   let config = {};
   try {
     config = loadJsonFile(path.join(workRoot, ".sdd-forge", "config.json"));
   } catch (_) {
-    // config is optional for template mode
+    // config is optional for --sdd mode
   }
 
   const lang = config.lang || config.output?.default || "en";
+  const t = createI18n(config.uiLang || "en", { domain: "messages" });
 
-  // Generate PROJECT section
-  let projectSection;
+  // Flag logic: --sdd → SDD only, --project → PROJECT only, neither → both
+  const updateSdd = opts.sdd || !opts.project;
+  const updateProject = opts.project || !opts.sdd;
 
-  if (opts.template) {
-    projectSection = generateProjectSectionTemplate(analysis, config, srcRoot);
-    console.error("[agents] template mode: generating from analysis.json without AI");
-  } else {
-    // AI mode (default)
+  const agentsPath = path.join(srcRoot, "AGENTS.md");
+
+  // Load SDD template (needed for both SDD update and PROJECT context)
+  const sddSection = loadSddTemplate(lang);
+
+  // --- SDD section ---
+  if (updateSdd) {
+    if (!sddSection) {
+      console.error(t("agents.sddTemplateNotFound"));
+      process.exit(1);
+    }
+    if (opts.dryRun) {
+      console.error(t("agents.dryRun", { path: agentsPath }));
+      process.stdout.write(sddSection);
+      if (updateProject) process.stdout.write("\n\n");
+    } else {
+      updateSddSection(agentsPath, sddSection);
+      console.log(t("agents.sddUpdated", { path: agentsPath }));
+    }
+  }
+
+  // --- PROJECT section ---
+  if (updateProject) {
+    const outputDir = path.join(workRoot, ".sdd-forge", "output");
+
+    // Load analysis.json (for template generation)
+    const analysisPath = path.join(outputDir, "analysis.json");
+    let analysis;
+    try {
+      analysis = loadJsonFile(analysisPath);
+    } catch (err) {
+      console.error(t("agents.analysisNotFound", { path: analysisPath }));
+      process.exit(1);
+    }
+
+    // Load summary.json (for AI prompt — lighter than full analysis)
+    const summaryPath = path.join(outputDir, "summary.json");
+    let summary;
+    try {
+      summary = loadJsonFile(summaryPath);
+    } catch (_) {
+      // fallback: use full analysis if summary not yet generated
+      summary = analysis;
+    }
+
+    // Generate template skeleton
+    const templateOutput = generateProjectSectionTemplate(analysis, config, srcRoot);
+
+    // AI refinement
+    let projectSection;
     let agent;
     try {
       agent = loadAgentConfig(config);
@@ -300,9 +313,9 @@ function main() {
       process.exit(1);
     }
 
-    console.error("[agents] generating PROJECT section with AI...");
-    const systemPrompt = buildAgentsSystemPrompt();
-    const prompt = buildSummaryPrompt(analysis, config, srcRoot);
+    console.error(t("agents.refining"));
+    const systemPrompt = buildAgentsSystemPrompt(lang);
+    const prompt = buildRefinePrompt(templateOutput, summary, config, srcRoot, sddSection);
 
     try {
       const result = callAgent(agent, prompt, 180000, undefined, { systemPrompt });
@@ -324,29 +337,15 @@ function main() {
       process.exit(1);
     }
 
-    console.error("[agents] AI summary generated.");
-  }
+    console.error(t("agents.generated"));
 
-  // Update AGENTS.md
-  const agentsPath = path.join(srcRoot, "AGENTS.md");
-
-  if (opts.dryRun) {
-    console.error("[agents] DRY-RUN: would update " + agentsPath);
-    process.stdout.write(projectSection + "\n");
-    return;
-  }
-
-  if (opts.force) {
-    const sddSection = loadSddTemplate(lang);
-    if (!sddSection) {
-      console.error("Error: SDD template not found.");
-      process.exit(1);
+    if (opts.dryRun) {
+      if (!updateSdd) console.error(t("agents.dryRun", { path: agentsPath }));
+      process.stdout.write(projectSection + "\n");
+    } else {
+      updateProjectSection(agentsPath, projectSection);
+      console.log(t("agents.updated", { path: agentsPath }));
     }
-    rewriteAgentsMd(agentsPath, sddSection, projectSection);
-    console.log(`[agents] rewrote ${agentsPath}`);
-  } else {
-    updateProjectSection(agentsPath, projectSection);
-    console.log(`[agents] updated PROJECT section in ${agentsPath}`);
   }
 }
 
@@ -355,5 +354,10 @@ export { main };
 const isDirectRun = process.argv[1] &&
   path.resolve(process.argv[1]) === path.resolve(fileURLToPath(import.meta.url));
 if (isDirectRun) {
-  main();
+  try {
+    main();
+  } catch (err) {
+    console.error(`Error: ${err.message}`);
+    process.exit(1);
+  }
 }

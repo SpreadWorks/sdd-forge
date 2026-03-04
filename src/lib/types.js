@@ -4,7 +4,7 @@
  * JSDoc 型定義と config / context のバリデーション関数。
  */
 
-import { buildTypeAliases } from "../docs/presets/registry.js";
+import { buildTypeAliases } from "./presets.js";
 
 // ---------------------------------------------------------------------------
 // JSDoc 型定義

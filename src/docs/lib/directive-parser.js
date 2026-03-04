@@ -2,7 +2,7 @@
  * tools/engine/directive-parser.js
  *
  * テンプレート内の @data / @text ディレクティブを抽出する。
- * テンプレート継承用の @block / @endblock / @extends / @parent も解析する。
+ * テンプレート継承用の @block / @endblock / @extends も解析する。
  *
  * ディレクティブ構文:
  *   <!-- @data: <renderer>(<category>, labels=<label1>|<label2>|...) -->
@@ -13,7 +13,6 @@
  *   <!-- @extends -->
  *   <!-- @block: <name> -->
  *   <!-- @endblock -->
- *   <!-- @parent -->
  */
 
 /**
@@ -42,7 +41,6 @@ const TEXT_RE = /^<!--\s*@text\s*(?:\[([^\]]*)\])?\s*:\s*(.+?)\s*-->$/;
 const BLOCK_START_RE = /^<!--\s*@block:\s*([\w-]+)\s*-->$/;
 const BLOCK_END_RE   = /^<!--\s*@endblock\s*-->$/;
 const EXTENDS_RE     = /^<!--\s*@extends\s*-->$/;
-const PARENT_RE      = /^<!--\s*@parent\s*-->$/;
 
 /**
  * テキストフィルのパラメータ文字列をパースする。
@@ -113,7 +111,7 @@ export function parseDirectives(text) {
  * @param {string} text - テンプレート全文
  * @returns {{
  *   extends: boolean,
- *   blocks: Map<string, { name: string, content: string[], hasParent: boolean, parentLine: number }>,
+ *   blocks: Map<string, { name: string, content: string[] }>,
  *   preamble: string[],
  *   postamble: string[],
  * }}
@@ -141,8 +139,6 @@ export function parseBlocks(text) {
       currentBlock = {
         name: blockStart[1],
         content: [],
-        hasParent: false,
-        parentLine: -1,
       };
       continue;
     }
@@ -157,13 +153,7 @@ export function parseBlocks(text) {
     }
 
     if (currentBlock) {
-      if (PARENT_RE.test(trimmed)) {
-        currentBlock.hasParent = true;
-        currentBlock.parentLine = currentBlock.content.length;
-        currentBlock.content.push(lines[i]);
-      } else {
-        currentBlock.content.push(lines[i]);
-      }
+      currentBlock.content.push(lines[i]);
       continue;
     }
 

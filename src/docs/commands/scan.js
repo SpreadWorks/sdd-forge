@@ -16,7 +16,7 @@ import { repoRoot, sourceRoot, parseArgs } from "../../lib/cli.js";
 import { loadConfig } from "../../lib/config.js";
 import { resolveType } from "../../lib/types.js";
 import { genericScan } from "../lib/scanner.js";
-import { presetByLeaf } from "../presets/registry.js";
+import { presetByLeaf } from "../../lib/presets.js";
 import { createLogger } from "../../lib/progress.js";
 
 const logger = createLogger("scan");
@@ -83,6 +83,56 @@ async function runLegacy(cli, root) {
   return result;
 }
 
+/**
+ * analysis から AI 向けサマリーを構築する。
+ * 各セクションの summary + 代表的な詳細（件数制限付き）を含む。
+ */
+function buildSummary(analysis) {
+  const s = { analyzedAt: analysis.analyzedAt };
+
+  if (analysis.controllers) {
+    const c = analysis.controllers;
+    s.controllers = {
+      ...c.summary,
+      top: c.controllers.slice(0, 10).map((x) => ({
+        className: x.className,
+        actions: x.actions.slice(0, 8),
+      })),
+    };
+  }
+  if (analysis.models) {
+    const m = analysis.models;
+    s.models = { ...m.summary };
+  }
+  if (analysis.shells) {
+    const sh = analysis.shells;
+    s.shells = {
+      ...sh.summary,
+      items: sh.shells.map((x) => ({
+        className: x.className,
+        methods: x.publicMethods,
+      })),
+    };
+  }
+  if (analysis.routes) {
+    s.routes = { ...analysis.routes.summary };
+  }
+  if (analysis.extras) {
+    const e = analysis.extras;
+    s.extras = {};
+    // 軽量メタデータのみ抽出（大きい配列は除外）
+    const pick = ["composerDeps", "packageDeps", "appController", "constants", "appModel"];
+    for (const k of pick) {
+      if (e[k]) s.extras[k] = e[k];
+    }
+  }
+  if (analysis.files) {
+    s.files = analysis.files;
+  }
+
+  return s;
+}
+
 async function main() {
   const cli = parseArgs(process.argv.slice(2), {
     flags: ["--stdout", "--legacy", "--dry-run"],
@@ -147,7 +197,7 @@ async function main() {
     }
   }
 
-  const json = JSON.stringify(result, null, 2);
+  const json = JSON.stringify(result);
 
   if (cli.stdout || cli.dryRun) {
     process.stdout.write(json + "\n");
@@ -159,6 +209,11 @@ async function main() {
     const outputPath = path.join(outputDir, "analysis.json");
     fs.writeFileSync(outputPath, json + "\n");
     logger.log(`output: ${path.relative(root, outputPath)}`);
+
+    const summary = buildSummary(result);
+    const summaryPath = path.join(outputDir, "summary.json");
+    fs.writeFileSync(summaryPath, JSON.stringify(summary) + "\n");
+    logger.log(`output: ${path.relative(root, summaryPath)}`);
   }
 }
 

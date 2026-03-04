@@ -1,0 +1,89 @@
+{
+  "review": {
+    "noChapters": "[FAIL] no chapter files found in {{dir}}",
+    "foundChapters": "Found {{count}} chapter file(s)",
+    "missingFile": "[FAIL] missing file: {{path}}",
+    "tooShort": "[FAIL] too short ({{lines}} lines): {{file}}",
+    "missingH1": "[FAIL] missing H1 heading: {{file}}",
+    "unfilledText": "[WARN] {{count}} unfilled @text directive(s): {{file}}",
+    "unfilledData": "[FAIL] {{count}} unfilled @data directive(s): {{file}}",
+    "manualMismatch": "[WARN] MANUAL block mismatch ({{starts}} START, {{ends}} END): {{file}}",
+    "analysisNotFound": "[WARN] analysis.json not found. Run 'sdd-forge scan' to generate.",
+    "analysisStale": "[WARN] analysis.json may be stale ({{file}} is newer). Run 'sdd-forge scan' to refresh.",
+    "readmeNotFound": "[WARN] README.md not found. Run 'sdd-forge readme' to generate.",
+    "failed": "docs quality check: FAILED",
+    "passed": "docs quality check: PASSED"
+  },
+  "agents": {
+    "noAgent": "No default agent configured. Set 'defaultAgent' in config.json or run 'sdd-forge setup'.",
+    "unknownProvider": "Unknown agent provider: {{key}}. Available: {{available}}",
+    "notFound": "{{path}} not found. Run 'sdd-forge setup' first.",
+    "analysisNotFound": "{{path}} not found.\nRun 'sdd-forge scan' first.",
+    "refining": "[agents] refining PROJECT section with AI...",
+    "generated": "[agents] AI refinement completed.",
+    "dryRun": "[agents] DRY-RUN: would update {{path}}",
+    "sddTemplateNotFound": "SDD template not found.",
+    "updated": "[agents] updated PROJECT section in {{path}}",
+    "sddUpdated": "[agents] updated SDD section in {{path}}"
+  },
+  "gate": {
+    "failed": "gate: FAILED",
+    "passed": "gate: PASSED"
+  },
+  "changelog": {
+    "dryRun": "[changelog] DRY-RUN: would write to {{path}}",
+    "generated": "generated change log: {{path}}"
+  },
+  "readme": {
+    "noType": "[readme] type is not set in .sdd-forge/config.json. Skipping.",
+    "noTemplate": "Template not found (type={{type}}). Skipping.",
+    "noChanges": "No changes detected. Skipping write.",
+    "dryRun": "--dry-run: would write README.md",
+    "updated": "README.md updated."
+  },
+  "data": {
+    "analysisNotFound": "ERROR: analysis.json not found: {{path}}",
+    "runScanFirst": "Run 'sdd-forge scan' first.",
+    "resolverFailed": "ERROR: failed to create resolver: {{message}}",
+    "done": "Done. {{count}} file(s) {{verb}}. @data: {{replaced}} replaced, @text: {{skipped}} skipped."
+  },
+  "default": {
+    "noProjects": "No projects registered. Run: sdd-forge add <name> <path>",
+    "registered": "Registered projects:",
+    "setDefault": "Default project set to '{{name}}'."
+  },
+  "flow": {
+    "failedParse": "flow: failed to parse created spec path.",
+    "fallbackSpec": "flow: fallback spec path used: {{path}}",
+    "needsInput": "NEEDS_INPUT",
+    "gateFailed": "- sdd:gate failed. Resolve the following issues.",
+    "needsApproval": "- Please get user confirmation before proceeding with this spec.",
+    "approvalInstruction": "- After approval, set `- [x] User approved this spec` in `## User Confirmation` of spec.md.",
+    "unresolvedItems": "- Resolve open items in the spec."
+  },
+  "dispatcher": {
+    "unknownCommand": "sdd-forge: unknown command '{{cmd}}'",
+    "runHelp": "Run: sdd-forge help",
+    "unknownDocsCommand": "sdd-forge docs: unknown command '{{cmd}}'",
+    "unknownSpecCommand": "sdd-forge spec: unknown command '{{cmd}}'",
+    "textNoAgent": "[text] WARN: no defaultAgent configured, skipping text generation.",
+    "textSetAgent": "[text] Set 'defaultAgent' in config.json or use: sdd-forge text --agent <name>"
+  },
+  "forge": {
+    "promptRequired": "prompt is required. use --prompt or --prompt-file",
+    "specNotFound": "spec not found: {{path}}",
+    "needsInput": "[forge] NEEDS_INPUT",
+    "reviewFeedback": "- docs:review failed. Additional information is needed to resolve the issue."
+  },
+  "init": {
+    "overridesDeprecated": "[init] WARN: project-overrides.json is deprecated. Use block inheritance (.sdd-forge/custom/) instead.",
+    "noType": "ERROR: type is not set. Set \"type\" in .sdd-forge/config.json or use --type option.",
+    "noTemplates": "ERROR: no template files found in chain",
+    "conflictsExist": "ERROR: {{count}} file(s) already exist in docs/:",
+    "useForce": "Use --force to overwrite.",
+    "aiFilterFailed": "[init] WARN: AI chapter selection failed: {{message}}",
+    "aiResponseInvalid": "[init] WARN: AI response is not valid JSON, skipping AI filter.",
+    "aiResponseNotArray": "[init] WARN: AI response is not an array, skipping AI filter.",
+    "aiFilterEmpty": "[init] WARN: AI selected 0 chapters, ignoring AI filter."
+  }
+}

@@ -19,7 +19,8 @@ import { validateConfig } from "../../lib/types.js";
 import { saveContext } from "../../lib/config.js";
 import { createI18n } from "../../lib/i18n.js";
 import { addProject, workRootFor, loadProjects } from "../../lib/projects.js";
-import { presetsForArch } from "../presets/registry.js";
+import { presetsForArch } from "../../lib/presets.js";
+import { loadSddTemplate, updateSddSection } from "../../lib/agents-md.js";
 
 // ---------------------------------------------------------------------------
 // readline helpers
@@ -109,12 +110,51 @@ function parseSetupArgs(argv) {
 // Project registration
 // ---------------------------------------------------------------------------
 
+function ensureProjectDirs(workRoot) {
+  const sddDir = path.join(workRoot, ".sdd-forge");
+  const outputDir = path.join(sddDir, "output");
+  const docsDir = path.join(workRoot, "docs");
+  const specsDir = path.join(workRoot, "specs");
+  [sddDir, outputDir, docsDir, specsDir].forEach((d) =>
+    fs.mkdirSync(d, { recursive: true }),
+  );
+  fs.writeFileSync(path.join(outputDir, ".gitkeep"), "");
+}
+
+function ensureGitignore(workRoot) {
+  const gitignorePath = path.join(workRoot, ".sdd-forge", ".gitignore");
+  const entry = "projects.json";
+  if (fs.existsSync(gitignorePath)) {
+    const content = fs.readFileSync(gitignorePath, "utf8");
+    if (content.split("\n").some((l) => l.trim() === entry)) return;
+    fs.appendFileSync(gitignorePath, `\n${entry}\n`);
+  } else {
+    fs.writeFileSync(gitignorePath, `${entry}\n`);
+  }
+}
+
 function registerProject(projectName, sourcePath, workRootPath, setDefault, t) {
   const resolved = path.resolve(sourcePath);
   if (!fs.existsSync(resolved)) {
     throw new Error(t("common.error.pathNotFound", { path: resolved }));
   }
 
+  const resolvedWork = workRootPath ? path.resolve(workRootPath) : resolved;
+  const isLocal = resolved === process.cwd() && resolvedWork === resolved;
+  const existingData = loadProjects();
+
+  // Local single-project: skip projects.json
+  if (isLocal && !existingData) {
+    ensureProjectDirs(resolved);
+    console.log(t("setup.messages.projectRegistered", { name: projectName }));
+    console.log(t("setup.messages.sourceDir", { path: resolved }));
+    console.log(t("setup.messages.workDir", { path: resolved }));
+    return { alreadyExists: false, workRoot: resolved };
+  }
+
+  // Multi-project or remote path: record in projects.json
+  // Ensure .sdd-forge directory exists before addProject writes projects.json
+  fs.mkdirSync(path.join(process.cwd(), ".sdd-forge"), { recursive: true });
   let data;
   try {
     data = addProject(projectName, resolved, {
@@ -131,17 +171,9 @@ function registerProject(projectName, sourcePath, workRootPath, setDefault, t) {
   }
 
   const isDefault = data.default === projectName;
-
   const workRoot = workRootFor(projectName);
-  const sddDir = path.join(workRoot, ".sdd-forge");
-  const outputDir = path.join(sddDir, "output");
-  const docsDir = path.join(workRoot, "docs");
-  const specsDir = path.join(workRoot, "specs");
-
-  [sddDir, outputDir, docsDir, specsDir].forEach((d) =>
-    fs.mkdirSync(d, { recursive: true }),
-  );
-  fs.writeFileSync(path.join(outputDir, ".gitkeep"), "");
+  ensureProjectDirs(workRoot);
+  ensureGitignore(process.cwd());
 
   console.log(t("setup.messages.projectRegistered", { name: projectName }));
   console.log(t("setup.messages.sourceDir", { path: resolved }));
@@ -156,24 +188,6 @@ function registerProject(projectName, sourcePath, workRootPath, setDefault, t) {
 // ---------------------------------------------------------------------------
 
 const PKG_DIR = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..", "..");
-
-/**
- * Load the SDD section template for the given locale.
- * Falls back to "en" if the requested locale template does not exist.
- *
- * @param {string} lang - Locale code
- * @returns {string} SDD section markdown
- */
-function loadSddTemplate(lang) {
-  const tryLangs = [lang, "en"];
-  for (const l of tryLangs) {
-    const tmplPath = path.join(PKG_DIR, "templates", "locale", l, "base", "AGENTS.sdd.md");
-    if (fs.existsSync(tmplPath)) {
-      return fs.readFileSync(tmplPath, "utf8");
-    }
-  }
-  return "";
-}
 
 /**
  * Interactive AGENTS.md setup.
@@ -208,15 +222,7 @@ async function setupAgentsMd(rl, sourceDir, lang, t, nonInteractive) {
     console.log(t("setup.messages.agentsMdGenerated"));
   } else if (mode === "inject") {
     if (fs.existsSync(agentsPath)) {
-      const existing = fs.readFileSync(agentsPath, "utf8");
-      const sddPattern = /<!-- SDD:START[^>]*-->[\s\S]*?<!-- SDD:END -->/;
-      let updated;
-      if (sddPattern.test(existing)) {
-        updated = existing.replace(sddPattern, sddContent.trim());
-      } else {
-        updated = existing.trimEnd() + "\n\n" + sddContent;
-      }
-      fs.writeFileSync(agentsPath, updated, "utf8");
+      updateSddSection(agentsPath, sddContent);
       console.log(t("setup.messages.agentsMdInjected"));
       console.log(t("setup.messages.agentsMdConflictWarn"));
     } else {

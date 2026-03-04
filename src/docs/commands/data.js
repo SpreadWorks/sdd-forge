@@ -20,6 +20,7 @@ import { repoRoot, parseArgs } from "../../lib/cli.js";
 import { loadConfig } from "../../lib/config.js";
 import { resolveType } from "../../lib/types.js";
 import { createLogger } from "../../lib/progress.js";
+import { createI18n } from "../../lib/i18n.js";
 
 const logger = createLogger("data");
 
@@ -151,11 +152,19 @@ async function main() {
   }
 
   const root = repoRoot(import.meta.url);
+
+  let uiLang = "en";
+  try {
+    const raw = JSON.parse(fs.readFileSync(path.join(root, ".sdd-forge", "config.json"), "utf8"));
+    uiLang = raw.uiLang || "en";
+  } catch (_) { /* config read handled below */ }
+  const t = createI18n(uiLang, { domain: "messages" });
+
   const analysisPath = path.join(root, ".sdd-forge", "output", "analysis.json");
 
   if (!fs.existsSync(analysisPath)) {
-    logger.log(`ERROR: analysis.json not found: ${analysisPath}`);
-    logger.log("Run 'sdd-forge scan' first.");
+    logger.log(t("data.analysisNotFound", { path: analysisPath }));
+    logger.log(t("data.runScanFirst"));
     process.exit(1);
   }
 
@@ -170,7 +179,7 @@ async function main() {
     resolveFn = (category, a) => resolver.resolve(category, a);
     logger.verbose(`resolver: ${type}`);
   } catch (err) {
-    logger.log(`ERROR: failed to create resolver: ${err.message}`);
+    logger.log(t("data.resolverFailed", { message: err.message }));
     process.exit(1);
   }
 
@@ -208,7 +217,7 @@ async function main() {
   }
 
   const verb = cli.dryRun ? "would update" : "updated";
-  logger.log(`Done. ${changedFiles.size} file(s) ${verb}. @data: ${totalReplaced} replaced, @text: ${totalSkipped} skipped.`);
+  logger.log(t("data.done", { count: changedFiles.size, verb, replaced: totalReplaced, skipped: totalSkipped }));
 }
 
 export { main };
