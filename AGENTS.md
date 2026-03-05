@@ -92,7 +92,7 @@ docs の内容は以下の 3 種類で構成される:
 <!-- PROJECT:START — managed by sdd-forge. Do not edit manually. -->
 ## Project Context
 
-- **generated_at:** 2026-03-05 15:09:06 UTC
+- **generated_at:** 2026-03-05 16:02:16 UTC
 - **package:** `sdd-forge` v0.1.0-alpha.20（npmjs.com 公開済み）
 - **概要:** ソースコード解析による自動ドキュメント生成と、Spec-Driven Development ワークフローを提供する Node.js CLI ツール。外部依存なし（Node.js 組み込みモジュールのみ使用）。
 
@@ -194,11 +194,11 @@ sdd-forge <subCmd> [args]
 
 | コンポーネント | ファイル | 役割 |
 |---|---|---|
-| AI エージェント呼び出し | `src/lib/agent.js` | `callAgent`（sync）/ `callAgentAsync`（spawn）で AI CLI を実行。systemPromptFlag に応じて引数構築・tempfile 管理を行う |
+| AI エージェント呼び出し | `src/lib/agent.js` | `callAgent`（sync・execFileSync）/ `callAgentAsync`（spawn・ストリーミング対応）で AI CLI を実行。`systemPromptFlag` に応じて引数構築・tempfile 管理を行う。デフォルトタイムアウト 120 秒 |
 | プリセット管理 | `src/lib/presets.js` | `src/presets/*/preset.json` を自動検出・登録 |
 | 設定管理 | `src/lib/config.js` | `.sdd-forge/config.json` と `context.json` の読み書き・バリデーション |
 | プロジェクト管理 | `src/lib/projects.js` | `.sdd-forge/projects.json` によるマルチプロジェクト管理 |
-| スキャナー | `src/docs/lib/scanner.js` | PHP/JS ファイル解析・クラス/メソッド抽出（91 モジュール・262 メソッドを解析可能） |
+| スキャナー | `src/docs/lib/scanner.js` | JS/PHP ファイル解析・クラス/メソッド抽出。解析結果: 91 モジュール・262 メソッド |
 | ディレクティブパーサー | `src/docs/lib/directive-parser.js` | `{{data}}` / `{{text}}` ディレクティブ解析 |
 | リゾルバーファクトリー | `src/docs/lib/resolver-factory.js` | `createResolver()` でプリセット固有のデータリゾルバーを生成 |
 | テンプレートマージャー | `src/docs/lib/template-merger.js` | docs テンプレートとソース解析結果のマージ |
@@ -222,7 +222,7 @@ sdd-forge <subCmd> [args]
 
 | フィールド | 説明 |
 |---|---|
-| `type` | プロジェクト種別（例: `webapp/cakephp2`, `cli/node-cli`, `webapp/laravel`, `webapp/symfony`） |
+| `type` | プロジェクト種別（例: `cli/node-cli`, `webapp/cakephp2`, `webapp/laravel`, `webapp/symfony`） |
 | `lang` | ドキュメント出力言語（`ja` / `en`） |
 | `uiLang` | UI メッセージ言語（`ja` / `en`） |
 | `defaultAgent` | デフォルト AI エージェント名 |
@@ -236,11 +236,12 @@ sdd-forge <subCmd> [args]
 
 | type 値 | 説明 |
 |---|---|
+| `cli/node-cli` | Node.js CLI ツール（本プロジェクト自身） |
 | `webapp/cakephp2` | CakePHP 2.x Web アプリ |
 | `webapp/laravel` | Laravel Web アプリ |
 | `webapp/symfony` | Symfony Web アプリ |
-| `cli/node-cli` | Node.js CLI ツール（本プロジェクト自身） |
 | `cli` | CLI 共通（アーキテクチャ層） |
+| `webapp` | Web アプリ共通（アーキテクチャ層） |
 | `base` | 共通基盤（アーキテクチャ層） |
 | `library` | ライブラリ共通（アーキテクチャ層） |
 

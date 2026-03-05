@@ -1,6 +1,6 @@
 # <!-- {{data: project.name("")}} -->sdd-forge<!-- {{/data}} -->
 
-[![npm version](https://img.shields.io/npm/v/<!-- {{data: project.name("")}} -->sdd-forge<!-- {{/data}} -->.svg)](https://www.npmjs.com/package/<!-- {{data: project.name("")}} -->sdd-forge<!-- {{/data}} -->)
+[![npm version](https://img.shields.io/npm/v/sdd-forge.svg)](https://www.npmjs.com/package/sdd-forge)
 
 **ソースコード解析 + AI で、プロジェクトドキュメントを自動生成・維持する CLI ツール。**
 
