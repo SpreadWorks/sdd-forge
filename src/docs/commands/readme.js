@@ -146,6 +146,12 @@ Options:
     `<!-- MANUAL:START -->\n${manualContent}<!-- MANUAL:END -->`,
   );
   resolved = resolveDataDirectives(resolved, resolveFn);
+
+  // README は公開ファイルなので inline @data タグを除去
+  resolved = resolved
+    .replace(/<!--\s*@data:\s*[\w.-]+\.[\w-]+\("[^"]*"\)\s*-->/g, "")
+    .replace(/<!--\s*@enddata\s*-->/g, "");
+
   const newContent = resolved.endsWith("\n") ? resolved : resolved + "\n";
 
   // 差分チェック
