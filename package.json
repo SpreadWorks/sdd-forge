@@ -2,6 +2,10 @@
   "name": "sdd-forge",
   "version": "0.1.0-alpha.21",
   "description": "Spec-Driven Development tooling for automated documentation generation",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/SpreadWorks/sdd-forge.git"
+  },
   "type": "module",
   "bin": {
     "sdd-forge": "./src/sdd-forge.js"

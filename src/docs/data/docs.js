@@ -13,6 +13,18 @@ export default class DocsSource extends DataSource {
   init(ctx) {
     super.init(ctx);
     this._root = ctx.root;
+    this._repoUrl = this._resolveRepoUrl();
+  }
+
+  _resolveRepoUrl() {
+    const pkgPath = path.join(this._root, "package.json");
+    if (!fs.existsSync(pkgPath)) return null;
+    const pkg = JSON.parse(fs.readFileSync(pkgPath, "utf8"));
+    const repo = pkg.repository;
+    if (!repo) return null;
+    const url = typeof repo === "string" ? repo : repo.url;
+    if (!url) return null;
+    return url.replace(/^git\+/, "").replace(/\.git$/, "");
   }
 
   /** Chapter table: lists docs/NN_*.md files with title and description. */
@@ -53,7 +65,10 @@ export default class DocsSource extends DataSource {
         ? firstSentence.slice(0, 117) + "…"
         : firstSentence;
 
-      return [`[${title}](docs/${f})`, description];
+      const link = this._repoUrl
+        ? `${this._repoUrl}/blob/main/docs/${f}`
+        : `docs/${f}`;
+      return [`[${title}](${link})`, description];
     });
 
     const hdr = labels.length >= 2 ? labels : ["章", "概要"];
