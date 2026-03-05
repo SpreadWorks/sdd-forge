@@ -105,6 +105,31 @@
     "done": "[upgrade] Upgrade complete.",
     "hintSystemPromptFlag": "[upgrade] Hint: Add \"systemPromptFlag\": \"{{flag}}\" to providers.{{provider}} to enable per-file async processing in forge."
   },
+  "help": {
+    "title": "Commands",
+    "usage": "Usage: sdd-forge <command> [options]",
+    "runHelp": "Run \u001b[1msdd-forge <command> --help\u001b[0m for details.",
+    "commands": {
+      "help": "Show this help",
+      "setup": "Register project + generate config (interactive)",
+      "upgrade": "Update template-derived files to latest version",
+      "default": "Change default project",
+      "build": "Generate docs (scan → init → data → text → readme)",
+      "init": "Initialize docs/ from templates",
+      "forge": "Iterative docs improvement (AI agent)",
+      "review": "Docs quality check",
+      "changelog": "Generate change_log.md from specs/",
+      "agents": "Update AGENTS.md PROJECT section",
+      "readme": "Auto-generate README.md",
+      "scan": "Source code analysis → analysis.json",
+      "data": "Resolve @data directives with analysis data",
+      "text": "Resolve @text directives with AI",
+      "spec": "Initialize spec (feature branch + spec.md)",
+      "gate": "Spec gate (open issues check)",
+      "flow": "Run SDD flow automatically",
+      "presets list": "Show preset inheritance tree"
+    }
+  },
   "common": {
     "choicePrompt": "> ({{min}}-{{max}}): ",
     "error": {

@@ -2,41 +2,44 @@
 /**
  * sdd-forge/help.js
  *
- * SDD ツール群のコマンド一覧を表示する。
+ * Display available commands.
+ * Language is determined by .sdd-forge/config.json uiLang, defaulting to "en".
  */
 
 import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
+import { createI18n } from "./lib/i18n.js";
 
 const PKG_DIR = path.resolve(path.dirname(fileURLToPath(import.meta.url)));
 
-const commands = [
-  { name: "help",        desc: "このヘルプを表示" },
+/** Command layout — name keys correspond to ui.json help.commands.* */
+const LAYOUT = [
+  { name: "help" },
   { section: "Project" },
-  { name: "setup",       desc: "プロジェクト登録 + 設定生成（対話式）" },
-  { name: "upgrade",     desc: "テンプレート由来ファイルを最新版に更新" },
-  { name: "default",     desc: "デフォルトプロジェクトを変更" },
+  { name: "setup" },
+  { name: "upgrade" },
+  { name: "default" },
   { section: "Build" },
-  { name: "build",       desc: "ドキュメント一括生成（scan → init → data → text → readme）" },
+  { name: "build" },
   { section: "Docs" },
-  { name: "init",        desc: "テンプレートから docs/ を初期化" },
-  { name: "forge",       desc: "docs 反復改善（AI エージェント対応）" },
-  { name: "review",      desc: "docs 品質チェック" },
-  { name: "changelog",   desc: "specs/ から change_log.md を生成" },
-  { name: "agents",      desc: "AGENTS.md の PROJECT セクションを更新" },
-  { name: "readme",      desc: "README.md 自動生成" },
+  { name: "init" },
+  { name: "forge" },
+  { name: "review" },
+  { name: "changelog" },
+  { name: "agents" },
+  { name: "readme" },
   { section: "Scan" },
-  { name: "scan",        desc: "ソースコード解析 → analysis.json" },
-  { name: "data",        desc: "@data ディレクティブを解析データで解決" },
-  { name: "text",        desc: "@text ディレクティブを AI で解決" },
+  { name: "scan" },
+  { name: "data" },
+  { name: "text" },
   { section: "Spec" },
-  { name: "spec",        desc: "spec 初期化（feature ブランチ + spec.md）" },
-  { name: "gate",        desc: "spec ゲート（未解決事項チェック）" },
+  { name: "spec" },
+  { name: "gate" },
   { section: "Flow" },
-  { name: "flow",        desc: "SDD フロー自動実行" },
+  { name: "flow" },
   { section: "Info" },
-  { name: "presets list", desc: "プリセット継承ツリーを表示" },
+  { name: "presets list" },
 ];
 
 function getVersion() {
@@ -48,14 +51,32 @@ function getVersion() {
   }
 }
 
+function detectUiLang() {
+  try {
+    const configPath = path.join(process.cwd(), ".sdd-forge", "config.json");
+    const raw = JSON.parse(fs.readFileSync(configPath, "utf8"));
+    return raw.uiLang || "en";
+  } catch (_) {
+    return "en";
+  }
+}
+
 function main() {
+  const lang = detectUiLang();
+  const t = createI18n(lang, { domain: "ui" });
   const version = getVersion();
+
+  const commands = LAYOUT.map((entry) => {
+    if (entry.section) return entry;
+    return { name: entry.name, desc: t(`help.commands.${entry.name}`) };
+  });
+
   const maxName = Math.max(...commands.filter((c) => c.name).map((c) => c.name.length));
 
   console.log("");
-  console.log(`  \x1b[1mSDD Forge\x1b[0m v${version} — コマンド一覧`);
+  console.log(`  \x1b[1mSDD Forge\x1b[0m v${version} — ${t("help.title")}`);
   console.log("");
-  console.log("  Usage: sdd-forge <command> [options]");
+  console.log(`  ${t("help.usage")}`);
   console.log("");
 
   for (const cmd of commands) {
@@ -69,11 +90,11 @@ function main() {
   }
 
   console.log("");
-  console.log("  Run \x1b[1msdd-forge <command> --help\x1b[0m for details.");
+  console.log(`  ${t("help.runHelp")}`);
   console.log("");
 }
 
-export { main, commands };
+export { main, LAYOUT as commands };
 
 const isDirectRun = process.argv[1] &&
   path.resolve(process.argv[1]) === path.resolve(fileURLToPath(import.meta.url));
