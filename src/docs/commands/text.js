@@ -760,7 +760,7 @@ async function main() {
 
   const processFn = cli.perDirective ? processTemplate : processTemplateFileBatch;
   if (!cli.perDirective) {
-    logger.verbose(`Mode: batch (file-level, ${docsFiles.length} file(s), concurrency=${concurrency}). Use --per-directive for legacy mode.`);
+    logger.verbose(`Mode: batch (file-level, ${docsFiles.length} file(s), concurrency=${concurrency}). Use --per-directive for single-call mode.`);
   }
 
   // Prepare file entries (filter for --id before parallel dispatch)

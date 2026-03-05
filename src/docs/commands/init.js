@@ -3,7 +3,6 @@
  * sdd-forge/engine/init.js
  *
  * テンプレート継承チェーンをもとにテンプレートをマージし docs/ に出力する。
- * project-overrides.json のプロジェクト固有ディレクティブも適用する（後方互換）。
  *
  * Usage:
  *   node sdd-forge/engine/init.js [--type php-mvc] [--force]
@@ -25,130 +24,6 @@ import { createI18n } from "../../lib/i18n.js";
 const logger = createLogger("init");
 
 // ---------------------------------------------------------------------------
-// project-overrides 適用（後方互換）
-// ---------------------------------------------------------------------------
-
-/**
- * project-overrides.json を読み込む。存在しなければ null を返す。
- */
-function loadProjectOverrides(root) {
-  const p = path.join(root, ".sdd-forge", "project-overrides.json");
-  if (!fs.existsSync(p)) return null;
-  console.warn("[init] WARN: project-overrides.json is deprecated. Use block inheritance (.sdd-forge/custom/) instead.");
-  return JSON.parse(fs.readFileSync(p, "utf8"));
-}
-
-/**
- * 見出しレベル（# の数）を返す。見出し行でなければ 0。
- */
-function headingLevelOf(line) {
-  const m = line.match(/^(#{1,6})\s/);
-  return m ? m[1].length : 0;
-}
-
-/**
- * lines 配列から heading 文字列に一致する行のインデックスを返す。
- * 見つからなければ -1。
- */
-function findHeading(lines, heading) {
-  for (let i = 0; i < lines.length; i++) {
-    if (lines[i].trim() === heading) return i;
-  }
-  return -1;
-}
-
-/**
- * heading が占めるセクションの終了行（次の同レベル以上見出しの直前、
- * またはファイル末尾）のインデックスを返す。
- */
-function sectionEnd(lines, headingIndex) {
-  const level = headingLevelOf(lines[headingIndex]);
-  for (let i = headingIndex + 1; i < lines.length; i++) {
-    const l = headingLevelOf(lines[i]);
-    if (l > 0 && l <= level) return i;
-  }
-  return lines.length;
-}
-
-/**
- * replace-directive: 見出し配下の directiveIndex 番目の
- * <!-- @text: ... --> or <!-- @data: ... --> を置換する。
- */
-function applyReplaceDirective(lines, action) {
-  const hi = findHeading(lines, action.heading);
-  if (hi === -1) {
-    console.warn(`[init] WARN: heading not found: ${action.heading}`);
-    return lines;
-  }
-  const end = sectionEnd(lines, hi);
-  let count = 0;
-  for (let i = hi + 1; i < end; i++) {
-    if (/^\s*<!--\s*@(text|data)[\s\[:]+/.test(lines[i])) {
-      if (count === action.directiveIndex) {
-        lines[i] = action.replacement;
-        return lines;
-      }
-      count++;
-    }
-  }
-  console.warn(`[init] WARN: directive index ${action.directiveIndex} not found under ${action.heading}`);
-  return lines;
-}
-
-/**
- * insert-after: heading セクション末尾（次の同レベル見出しの直前）に
- * content 行を挿入する。
- */
-function applyInsertAfter(lines, action) {
-  const hi = findHeading(lines, action.heading);
-  if (hi === -1) {
-    console.warn(`[init] WARN: heading not found: ${action.heading}`);
-    return lines;
-  }
-  const end = sectionEnd(lines, hi);
-  lines.splice(end, 0, ...action.content);
-  return lines;
-}
-
-/**
- * insert-before: heading の直前に content 行を挿入する。
- */
-function applyInsertBefore(lines, action) {
-  const hi = findHeading(lines, action.heading);
-  if (hi === -1) {
-    console.warn(`[init] WARN: heading not found: ${action.heading}`);
-    return lines;
-  }
-  lines.splice(hi, 0, ...action.content);
-  return lines;
-}
-
-/**
- * アクション配列を逆順で適用する（挿入系の行番号ずれを防ぐため）。
- */
-function applyOverrides(text, actions) {
-  let lines = text.split("\n");
-  // 逆順で適用（後方の挿入が前方のインデックスに影響しない）
-  for (let i = actions.length - 1; i >= 0; i--) {
-    const action = actions[i];
-    switch (action.type) {
-      case "replace-directive":
-        lines = applyReplaceDirective(lines, action);
-        break;
-      case "insert-after":
-        lines = applyInsertAfter(lines, action);
-        break;
-      case "insert-before":
-        lines = applyInsertBefore(lines, action);
-        break;
-      default:
-        console.warn(`[init] WARN: unknown action type: ${action.type}`);
-    }
-  }
-  return lines.join("\n");
-}
-
-// ---------------------------------------------------------------------------
 // ブロックディレクティブ除去
 // ---------------------------------------------------------------------------
 
@@ -168,10 +43,6 @@ function stripBlockDirectives(text) {
 // ---------------------------------------------------------------------------
 // AI 章選別
 // ---------------------------------------------------------------------------
-
-/**
- * analysis.json のサマリを構築する。
- */
 
 /**
  * AI エージェントで章の取捨選択を行う。
@@ -268,7 +139,7 @@ function main() {
     console.log([
       "Usage: node sdd-forge/engine/init.js [options]",
       "",
-      "テンプレートを docs/ にコピーし、project-overrides を適用する。",
+      "テンプレートを docs/ にコピーする。",
       "",
       "Options:",
       "  --type <type>            テンプレートタイプ (default: config.json type)",
@@ -311,26 +182,7 @@ function main() {
   // プロジェクトローカルテンプレート
   const projectLocalDir = path.join(root, ".sdd-forge", "templates", lang, "docs");
 
-  // .sdd-forge/custom/ → .sdd-forge/templates/{lang}/docs/ マイグレーション案内
-  const legacyCustomDir = path.join(root, ".sdd-forge", "custom");
-  if (fs.existsSync(legacyCustomDir)) {
-    logger.log(`WARN: .sdd-forge/custom/ is deprecated. Move files to .sdd-forge/templates/${lang}/docs/ instead.`);
-  }
-
-  let chain;
-  try {
-    chain = resolveChain(templatesRoot, type, presetTemplateDir, projectLocalDir);
-  } catch (err) {
-    // 新しいテンプレート構造が存在しない場合、旧フラットディレクトリへフォールバック
-    const legacyDir = path.join(templatesRoot, rawType);
-    if (fs.existsSync(legacyDir)) {
-      logger.verbose(`fallback to legacy template directory: ${rawType}`);
-      return legacyInit(root, legacyDir, cli);
-    }
-    logger.log(`ERROR: ${err.message}`);
-    process.exit(1);
-  }
-
+  const chain = resolveChain(templatesRoot, type, presetTemplateDir, projectLocalDir);
   logger.verbose(`chain: ${chain.join(" → ")}`);
 
   // テンプレートマージ（project-local は resolveChain 経由でチェーンに含まれる）
@@ -363,7 +215,7 @@ function main() {
       const summaryPath = path.join(root, ".sdd-forge", "output", "summary.json");
       let summaryData = analysis;
       if (fs.existsSync(summaryPath)) {
-        try { summaryData = JSON.parse(fs.readFileSync(summaryPath, "utf8")); } catch (_) { /* fallback to analysis */ }
+        try { summaryData = JSON.parse(fs.readFileSync(summaryPath, "utf8")); } catch (_) { /* use analysis */ }
       }
       filteredChapters = aiFilterChapters(filteredChapters, summaryData, agent, root);
     }
@@ -371,16 +223,6 @@ function main() {
 
   const totalFiltered = chapters.length - filteredChapters.length;
   logger.verbose(`${filteredChapters.length} template files (${totalFiltered} filtered${totalFiltered > deterministicFiltered ? `, AI: ${totalFiltered - deterministicFiltered}` : ""})`);
-
-  // project-overrides を読み込み（後方互換）
-  const overridesData = loadProjectOverrides(root);
-  const overrideMap = new Map();
-  if (overridesData) {
-    for (const entry of overridesData.overrides) {
-      overrideMap.set(entry.file, entry.actions);
-    }
-    logger.verbose(`loaded project-overrides: ${overrideMap.size} file(s)`);
-  }
 
   // docs/ ディレクトリの準備
   const docsDir = path.join(root, "docs");
@@ -411,14 +253,7 @@ function main() {
     // ブロックディレクティブを除去
     text = stripBlockDirectives(text);
 
-    // project-overrides 適用（後方互換）
-    const actions = overrideMap.get(chapter.fileName);
-    if (actions) {
-      text = applyOverrides(text, actions);
-      logger.verbose(`merged + overrides applied: ${chapter.fileName} (${actions.length} action(s))`);
-    } else {
-      logger.verbose(`merged: ${chapter.fileName}`);
-    }
+    logger.verbose(`merged: ${chapter.fileName}`);
 
     if (!cli.dryRun) {
       const dst = path.join(docsDir, chapter.fileName);
@@ -430,75 +265,6 @@ function main() {
     console.log(`DRY-RUN: ${filteredChapters.length} files would be initialized in docs/`);
   } else {
     logger.verbose(`done. ${filteredChapters.length} files initialized in docs/`);
-  }
-}
-
-// ---------------------------------------------------------------------------
-// レガシーフォールバック（旧フラットテンプレート構造）
-// ---------------------------------------------------------------------------
-function legacyInit(root, templateDir, cli) {
-  const templateFiles = fs.readdirSync(templateDir)
-    .filter((f) => /^\d{2}_.*\.md$/.test(f))
-    .sort();
-
-  if (templateFiles.length === 0) {
-    logger.log(`ERROR: no template files found in ${templateDir}`);
-    process.exit(1);
-  }
-
-  logger.verbose(`found ${templateFiles.length} template files (legacy mode)`);
-
-  const overridesData = loadProjectOverrides(root);
-  const overrideMap = new Map();
-  if (overridesData) {
-    for (const entry of overridesData.overrides) {
-      overrideMap.set(entry.file, entry.actions);
-    }
-    logger.verbose(`loaded project-overrides: ${overrideMap.size} file(s)`);
-  }
-
-  const docsDir = path.join(root, "docs");
-  if (!fs.existsSync(docsDir)) {
-    fs.mkdirSync(docsDir, { recursive: true });
-  }
-
-  const conflicts = templateFiles.filter((f) => fs.existsSync(path.join(docsDir, f)));
-
-  if (conflicts.length > 0 && !cli.force) {
-    logger.log(t("init.conflictsExist", { count: conflicts.length }));
-    for (const f of conflicts) {
-      logger.log(`  - ${f}`);
-    }
-    logger.log(t("init.useForce"));
-    process.exit(1);
-  }
-
-  if (conflicts.length > 0 && cli.force) {
-    logger.verbose(`--force: overwriting ${conflicts.length} existing file(s)`);
-  }
-
-  for (const file of templateFiles) {
-    const src = path.join(templateDir, file);
-    const dst = path.join(docsDir, file);
-
-    const actions = overrideMap.get(file);
-    if (cli.dryRun) {
-      console.log(`DRY-RUN: ${file}${actions ? ` (${actions.length} override(s))` : ""}`);
-    } else if (actions) {
-      const text = fs.readFileSync(src, "utf8");
-      const result = applyOverrides(text, actions);
-      fs.writeFileSync(dst, result, "utf8");
-      logger.verbose(`copied + overrides applied: ${file} (${actions.length} action(s))`);
-    } else {
-      fs.copyFileSync(src, dst);
-      logger.verbose(`copied: ${file}`);
-    }
-  }
-
-  if (cli.dryRun) {
-    console.log(`DRY-RUN: ${templateFiles.length} files would be initialized in docs/`);
-  } else {
-    logger.verbose(`done. ${templateFiles.length} files initialized in docs/`);
   }
 }
 

@@ -53,7 +53,7 @@ import { buildTypeAliases } from "./presets.js";
  * @typedef {Object} SddConfig
  * @property {string} [uiLang]                - UI language ("en" | "ja")
  * @property {OutputConfig} [output]          - Output language configuration
- * @property {string} lang                    - Output default language (backward compat, = output.default)
+ * @property {string} lang                    - Output default language (= output.default)
  * @property {string} type                    - Project type ("webapp/cakephp2" | "cli" | ...)
  * @property {Object} [limits]                - Limit settings
  * @property {number} [limits.designTimeoutMs] - Timeout (ms)
@@ -77,8 +77,8 @@ import { buildTypeAliases } from "./presets.js";
 const VALID_TONES = new Set(["polite", "formal", "casual"]);
 
 /**
- * 旧 type 名 → 新 type パスのエイリアスマップ。
- * 後方互換のため、旧 config.json の type 値をそのまま使用可能にする。
+ * type 名 → 正規パスのエイリアスマップ。
+ * 短縮名（例: "cakephp2"）を正規パス（例: "webapp/cakephp2"）に解決する。
  */
 export const TYPE_ALIASES = buildTypeAliases();
 
@@ -133,7 +133,7 @@ export function validateConfig(raw) {
     }
   }
 
-  // lang (required — backward compat, derived from output.default if output exists)
+  // lang (required)
   if (typeof raw.lang !== "string" || raw.lang.length === 0) {
     errors.push("'lang' is required and must be a non-empty string");
   }
