@@ -1,6 +1,6 @@
-# {{PROJECT_NAME}}
+# <!-- @data: project.name("") --><!-- @enddata -->
 
-[![npm version](https://img.shields.io/npm/v/{{PACKAGE_NAME}}.svg)](https://www.npmjs.com/package/{{PACKAGE_NAME}})
+[![npm version](https://img.shields.io/npm/v/<!-- @data: project.name("") --><!-- @enddata -->.svg)](https://www.npmjs.com/package/<!-- @data: project.name("") --><!-- @enddata -->)
 
 **ソースコード解析 + AI で、プロジェクトドキュメントを自動生成・維持する CLI ツール。**
 
@@ -23,23 +23,23 @@
 
 ```bash
 # npm
-npm install -g {{PACKAGE_NAME}}
+npm install -g <!-- @data: project.name("") --><!-- @enddata -->
 
 # yarn
-yarn global add {{PACKAGE_NAME}}
+yarn global add <!-- @data: project.name("") --><!-- @enddata -->
 
 # pnpm
-pnpm add -g {{PACKAGE_NAME}}
+pnpm add -g <!-- @data: project.name("") --><!-- @enddata -->
 ```
 
 ### セットアップ & ドキュメント生成
 
 ```bash
 # 1. プロジェクトを登録（インタラクティブウィザード）
-{{PACKAGE_NAME}} setup
+<!-- @data: project.name("") --><!-- @enddata --> setup
 
 # 2. ドキュメントを一括生成（scan → init → data → text → readme）
-{{PACKAGE_NAME}} build
+<!-- @data: project.name("") --><!-- @enddata --> build
 ```
 
 これだけで `docs/` と `README.md` が生成されます。
@@ -122,9 +122,8 @@ Claude Code の設定後、スキルで SDD ワークフローを実行できま
 
 ## ドキュメント
 
-| 章 | 概要 |
-|----|------|
-{{CHAPTER_TABLE}}
+<!-- @data: docs.chapters("章|概要") -->
+<!-- @enddata -->
 
 ## License
 

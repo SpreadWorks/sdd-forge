@@ -7,25 +7,25 @@
 
 ```bash
 # npm
-npm install -g {{PACKAGE_NAME}}
+npm install -g <!-- @data: project.name("") --><!-- @enddata -->
 
 # yarn
-yarn global add {{PACKAGE_NAME}}
+yarn global add <!-- @data: project.name("") --><!-- @enddata -->
 
 # pnpm
-pnpm add -g {{PACKAGE_NAME}}
+pnpm add -g <!-- @data: project.name("") --><!-- @enddata -->
 ```
 
 ### 基本コマンド
 
 ```bash
 # ヘルプ表示
-{{PACKAGE_NAME}} help
+<!-- @data: project.name("") --><!-- @enddata --> help
 
 # プロジェクトセットアップ
-{{PACKAGE_NAME}} setup
+<!-- @data: project.name("") --><!-- @enddata --> setup
 
 # ドキュメント一括生成
-{{PACKAGE_NAME}} build
+<!-- @data: project.name("") --><!-- @enddata --> build
 ```
 <!-- @endblock -->

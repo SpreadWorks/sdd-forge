@@ -18,12 +18,14 @@
 ### 共通設定
 
 <!-- @data: config.auth("項目|内容") -->
+<!-- @enddata -->
 <!-- @endblock -->
 
 <!-- @block: controller-list -->
 ### コントローラ一覧
 
 <!-- @data: controllers.list("コントローラ名|ファイル|主な責務") -->
+<!-- @enddata -->
 <!-- @endblock -->
 
 <!-- @block: controller-deps -->
@@ -32,10 +34,12 @@
 <!-- @text: コントローラが宣言しているモデル依存の概要を説明してください。 -->
 
 <!-- @data: controllers.deps("コントローラ|使用モデル") -->
+<!-- @enddata -->
 <!-- @endblock -->
 
 <!-- @block: components -->
 ### コンポーネント
 
 <!-- @data: views.components("コンポーネント|責務") -->
+<!-- @enddata -->
 <!-- @endblock -->

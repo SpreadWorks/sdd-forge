@@ -12,6 +12,7 @@
 ### ロジッククラス一覧
 
 <!-- @data: models.logic("クラス名|ファイル|責務") -->
+<!-- @enddata -->
 <!-- @endblock -->
 
 <!-- @block: logic-structure -->
@@ -20,6 +21,7 @@
 <!-- @text: ロジッククラスの継承パターンと共通メソッドの役割を説明してください。 -->
 
 <!-- @data: models.logicMethods("クラス|継承元|主要メソッド") -->
+<!-- @enddata -->
 <!-- @endblock -->
 
 <!-- @block: external-integration -->
@@ -32,6 +34,7 @@
 ### モデル間の依存関係
 
 <!-- @data: models.relations("モデル|関連 (belongsTo / hasMany / hasOne)") -->
+<!-- @enddata -->
 
 <!-- @text: 主要なモデル間の関連パターンを説明してください。 -->
 <!-- @endblock -->

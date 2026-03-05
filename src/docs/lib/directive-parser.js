@@ -6,6 +6,7 @@
  *
  * ディレクティブ構文:
  *   <!-- @data: <source>.<method>("<label1>|<label2>|...") -->
+ *   <!-- @enddata -->
  *   <!-- @text: <prompt text> -->
  *   <!-- @text[id=foo, maxLines=5]: <prompt text> -->
  *
@@ -23,6 +24,9 @@
  * @property {string[]} labels   - テーブルヘッダー表示名
  * @property {string} raw        - ディレクティブ行の全文
  * @property {number} line       - 行番号 (0-based)
+ * @property {number} endLine    - @enddata の行番号 (0-based)
+ * @property {boolean} inline    - @data と @enddata が同一行か
+ * @property {string} fullRaw    - インラインの場合、行全体
  */
 
 /**
@@ -38,6 +42,10 @@
 // source は "config.constants" のようにドットを含むことがある（最後のドットで分割）
 const DATA_RE = /^<!--\s*@data:\s*([\w.-]+)\.([\w-]+)\("([^"]*)"\)\s*-->$/;
 const TEXT_RE = /^<!--\s*@text\s*(?:\[([^\]]*)\])?\s*:\s*(.+?)\s*-->$/;
+const ENDDATA_RE = /^<!--\s*@enddata\s*-->$/;
+
+// インライン検出用: 1行内に @data と @enddata がある
+const INLINE_DATA_RE = /<!--\s*@data:\s*([\w.-]+)\.([\w-]+)\("([^"]*)"\)\s*-->([\s\S]*?)<!--\s*@enddata\s*-->/;
 
 // ブロック継承ディレクティブ
 const BLOCK_START_RE = /^<!--\s*@block:\s*([\w-]+)\s*-->$/;
@@ -68,7 +76,7 @@ function parseTextFillParams(paramStr) {
  * テンプレートテキストからディレクティブを抽出する。
  *
  * @param {string} text - テンプレート全文
- * @returns {Array<DataFillDirective|TextFillDirective>}
+ * @returns {Array<DataDirective|TextDirective>}
  */
 export function parseDirectives(text) {
   const lines = text.split("\n");
@@ -77,8 +85,43 @@ export function parseDirectives(text) {
   for (let i = 0; i < lines.length; i++) {
     const trimmed = lines[i].trim();
 
+    // インライン @data チェック（1行内に @data と @enddata がある、複数対応）
+    const inlineGlobal = new RegExp(INLINE_DATA_RE.source, "g");
+    const inlineMatches = [...lines[i].matchAll(inlineGlobal)];
+    if (inlineMatches.length > 0) {
+      for (const m of inlineMatches) {
+        const labels = m[3] ? m[3].split("|").map((l) => l.trim()) : [];
+        directives.push({
+          type: "data",
+          source: m[1],
+          method: m[2],
+          labels,
+          raw: m[0],
+          line: i,
+          endLine: i,
+          inline: true,
+          fullRaw: lines[i],
+        });
+      }
+      continue;
+    }
+
+    // ブロック @data チェック
     const dataMatch = trimmed.match(DATA_RE);
     if (dataMatch) {
+      // @enddata を探す
+      let endLine = -1;
+      for (let j = i + 1; j < lines.length; j++) {
+        if (ENDDATA_RE.test(lines[j].trim())) {
+          endLine = j;
+          break;
+        }
+        // 次の @data が先に来たら閉じなし（エラー扱い）
+        if (DATA_RE.test(lines[j].trim()) || INLINE_DATA_RE.test(lines[j])) {
+          break;
+        }
+      }
+
       const labels = dataMatch[3] ? dataMatch[3].split("|").map((l) => l.trim()) : [];
       directives.push({
         type: "data",
@@ -87,6 +130,9 @@ export function parseDirectives(text) {
         labels,
         raw: lines[i],
         line: i,
+        endLine,
+        inline: false,
+        fullRaw: null,
       });
       continue;
     }
