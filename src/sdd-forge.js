@@ -50,7 +50,7 @@ if (!subCmd || subCmd === "-h" || subCmd === "--help") {
 }
 
 /** Commands that skip project context resolution */
-const PROJECT_MGMT = new Set(["default", "help", "setup"]);
+const PROJECT_MGMT = new Set(["default", "help", "setup", "presets"]);
 
 /** Map of top-level subcommands to dispatcher scripts */
 const DISPATCHERS = {
@@ -73,6 +73,8 @@ const DISPATCHERS = {
   gate:     "spec",
   // flow → flow.js
   flow:     "flow",
+  // presets → presets-cmd.js
+  presets:  "presets-cmd",
   // help
   help:     "help",
 };
@@ -105,7 +107,7 @@ const dispatcherPath = path.join(PKG_DIR, `${dispatcherName}.js`);
 
 // Dispatchers (docs, spec) receive subCmd to route internally.
 // Direct commands (flow) receive only rest args.
-const DIRECT_COMMANDS = new Set(["flow"]);
+const DIRECT_COMMANDS = new Set(["flow", "presets-cmd"]);
 if (DIRECT_COMMANDS.has(dispatcherName)) {
   process.argv = [process.argv[0], dispatcherPath, ...rest];
 } else {
