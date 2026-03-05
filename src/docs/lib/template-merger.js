@@ -9,6 +9,7 @@
 import fs from "fs";
 import path from "path";
 import { parseBlocks } from "./directive-parser.js";
+import { presetByLeaf } from "../../lib/presets.js";
 
 // ---------------------------------------------------------------------------
 // 継承チェーン解決
@@ -16,29 +17,31 @@ import { parseBlocks } from "./directive-parser.js";
 
 /**
  * type パス（例: "webapp/cakephp2"）を継承チェーンに展開する。
- * 各エントリは絶対パスで返される。
+ * base → arch → leaf preset → project-local の順でテンプレートディレクトリを返す。
  *
- * base → arch 層は templatesRoot 内、FW 固有層は presetTemplateDir から解決する。
- * projectLocalDir が存在すれば最終層として追加する。
- *
- * @param {string} templatesRoot - テンプレートルート（例: .../locale/ja/）
  * @param {string} typePath - 型パス（例: "webapp/cakephp2"）
- * @param {string|null} [presetTemplateDir] - プリセットのテンプレートディレクトリ（例: .../presets/cakephp2/templates/ja/）
- * @param {string|null} [projectLocalDir] - プロジェクトローカルテンプレートディレクトリ（例: .sdd-forge/templates/ja/docs/）
+ * @param {string} lang - ロケール（例: "ja"）
+ * @param {string|null} [projectLocalDir] - プロジェクトローカルテンプレート（例: .sdd-forge/templates/ja/docs/）
  * @returns {string[]} 継承チェーン（絶対パスの配列）
  */
-export function resolveChain(templatesRoot, typePath, presetTemplateDir, projectLocalDir) {
+export function resolveChain(typePath, lang, projectLocalDir) {
   const segments = typePath.split("/").filter(Boolean);
-  const chain = [path.join(templatesRoot, "base")];
+  const chain = [];
 
-  // arch 層（例: "webapp"）を共有テンプレートから追加
+  // base 層
+  const base = presetByLeaf("base");
+  if (base) chain.push(path.join(base.dir, "templates", lang));
+
+  // arch 層（例: "webapp"）
   if (segments.length >= 1 && segments[0] !== "base") {
-    chain.push(path.join(templatesRoot, segments[0]));
+    const arch = presetByLeaf(segments[0]);
+    if (arch) chain.push(path.join(arch.dir, "templates", lang));
   }
 
-  // FW 固有層をプリセットテンプレートから追加
-  if (segments.length >= 2 && presetTemplateDir) {
-    chain.push(presetTemplateDir);
+  // leaf preset 層（例: "cakephp2"）
+  if (segments.length >= 2) {
+    const leaf = presetByLeaf(segments[segments.length - 1]);
+    if (leaf?.dir) chain.push(path.join(leaf.dir, "templates", lang));
   }
 
   // ディレクトリ存在検証（組み込み層のみ）

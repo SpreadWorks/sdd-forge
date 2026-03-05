@@ -17,7 +17,6 @@ import { resolveType } from "../../lib/types.js";
 import { callAgent, resolveAgent } from "../../lib/agent.js";
 import { resolveChain, collectChapters, filterChapters } from "../lib/template-merger.js";
 import { summaryToText } from "../lib/forge-prompts.js";
-import { presetByLeaf } from "../../lib/presets.js";
 import { createLogger } from "../../lib/progress.js";
 import { createI18n } from "../../lib/i18n.js";
 
@@ -170,19 +169,9 @@ function main() {
     logger.verbose(`type=${type} lang=${lang}`);
   }
 
-  // テンプレートルート
-  const pkgDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
-  const templatesRoot = path.join(pkgDir, "templates", "locale", lang);
-
   // 継承チェーンの構築
-  const leaf = type.split("/").pop();
-  const preset = presetByLeaf(leaf);
-  const presetTemplateDir = preset?.dir ? path.join(preset.dir, "templates", lang) : null;
-
-  // プロジェクトローカルテンプレート
   const projectLocalDir = path.join(root, ".sdd-forge", "templates", lang, "docs");
-
-  const chain = resolveChain(templatesRoot, type, presetTemplateDir, projectLocalDir);
+  const chain = resolveChain(type, lang, projectLocalDir);
   logger.verbose(`chain: ${chain.join(" → ")}`);
 
   // テンプレートマージ（project-local は resolveChain 経由でチェーンに含まれる）

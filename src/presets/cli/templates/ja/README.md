@@ -34,4 +34,4 @@ pnpm add -g <!-- @data: project.name("") --><!-- @enddata -->
 <!-- @endblock -->
 
 <!-- MANUAL:START -->
-{{MANUAL_CONTENT}}<!-- MANUAL:END -->
+<!-- MANUAL:END -->

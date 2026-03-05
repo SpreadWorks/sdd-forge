@@ -66,8 +66,7 @@
     "runHelp": "Run: sdd-forge help",
     "unknownDocsCommand": "sdd-forge docs: unknown command '{{cmd}}'",
     "unknownSpecCommand": "sdd-forge spec: unknown command '{{cmd}}'",
-    "textNoAgent": "[text] WARN: no defaultAgent configured, skipping text generation.",
-    "textSetAgent": "[text] Set 'defaultAgent' in config.json or use: sdd-forge text --agent <name>"
+    "textNoAgent": "[text] WARN: no defaultAgent configured, skipping text generation."
   },
   "forge": {
     "promptRequired": "prompt is required. use --prompt or --prompt-file",
@@ -76,7 +75,6 @@
     "reviewFeedback": "- docs:review failed. Additional information is needed to resolve the issue."
   },
   "init": {
-    "overridesDeprecated": "[init] WARN: project-overrides.json is deprecated. Use block inheritance (.sdd-forge/custom/) instead.",
     "noType": "ERROR: type is not set. Set \"type\" in .sdd-forge/config.json or use --type option.",
     "noTemplates": "ERROR: no template files found in chain",
     "conflictsExist": "ERROR: {{count}} file(s) already exist in docs/:",

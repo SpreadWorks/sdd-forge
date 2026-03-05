@@ -130,4 +130,4 @@ Claude Code の設定後、スキルで SDD ワークフローを実行できま
 MIT
 
 <!-- MANUAL:START -->
-{{MANUAL_CONTENT}}<!-- MANUAL:END -->
+<!-- MANUAL:END -->

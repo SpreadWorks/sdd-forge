@@ -20,4 +20,4 @@
 <!-- @enddata -->
 
 <!-- MANUAL:START -->
-{{MANUAL_CONTENT}}<!-- MANUAL:END -->
+<!-- MANUAL:END -->

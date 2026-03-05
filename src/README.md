@@ -37,21 +37,23 @@ src/
 │   ├── i18n.js               #   国際化（メッセージ・UI テキスト）
 │   └── types.js              #   型定義・定数
 │
+├── presets/                  # プリセット（テンプレート + DataSource + スキャン設定）
+│   ├── base/templates/ja/   #   共通章テンプレート（全タイプ共通）
+│   ├── webapp/templates/ja/ #   Web アプリ用章テンプレート
+│   ├── cli/templates/ja/    #   CLI ツール用章テンプレート
+│   ├── library/templates/ja/#   ライブラリ用章テンプレート
+│   ├── cakephp2/            #   CakePHP 2.x（templates + data + scan）
+│   ├── laravel/             #   Laravel 8+
+│   ├── symfony/             #   Symfony 5+
+│   └── node-cli/            #   Node.js CLI
 └── templates/                # 静的データ（npm publish に含まれる）
     ├── config.example.json   #   .sdd-forge/config.json のサンプル
     ├── review-checklist.md   #   レビュー観点チェックリスト
-    └── locale/               #   言語別テンプレート・メッセージ
+    └── locale/               #   言語別メッセージ
         ├── en/               #     English
         └── ja/               #     日本語
-            ├── base/         #       共通章テンプレート（全プロジェクトタイプ共通）
-            ├── webapp/       #       Web アプリ用章テンプレート
-            │   └── cakephp2/ #         CakePHP 2.x オーバーライド
-            ├── cli/          #       CLI ツール用章テンプレート
-            │   └── node-cli/ #         Node.js CLI オーバーライド
-            ├── library/      #       ライブラリ用章テンプレート
             ├── messages.json #       CLI メッセージ
             ├── prompts.json  #       AI プロンプトテンプレート
-            ├── sections.json #       セクション定義
             └── ui.json       #       UI テキスト
 ```
 

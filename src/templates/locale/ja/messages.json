@@ -66,8 +66,7 @@
     "runHelp": "sdd-forge help を実行してください",
     "unknownDocsCommand": "sdd-forge docs: 不明なコマンド '{{cmd}}'",
     "unknownSpecCommand": "sdd-forge spec: 不明なコマンド '{{cmd}}'",
-    "textNoAgent": "[text] WARN: defaultAgent が未設定のため、テキスト生成をスキップします。",
-    "textSetAgent": "[text] config.json の 'defaultAgent' を設定するか sdd-forge text --agent <name> を使用してください。"
+    "textNoAgent": "[text] WARN: defaultAgent が未設定のため、テキスト生成をスキップします。"
   },
   "forge": {
     "promptRequired": "prompt が必要です。--prompt または --prompt-file を指定してください。",
@@ -76,7 +75,6 @@
     "reviewFeedback": "- docs:review の失敗原因を解消するための追加情報が必要です。"
   },
   "init": {
-    "overridesDeprecated": "[init] WARN: project-overrides.json は非推奨です。ブロック継承 (.sdd-forge/custom/) を使用してください。",
     "noType": "ERROR: type が設定されていません。.sdd-forge/config.json に \"type\" を設定するか --type オプションを指定してください。",
     "noTemplates": "ERROR: テンプレートファイルがチェーン内に見つかりません",
     "conflictsExist": "ERROR: {{count}} 件のファイルが docs/ に既に存在します:",

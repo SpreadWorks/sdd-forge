@@ -116,6 +116,7 @@ docs の内容は以下の 3 種類で構成される:
 
 ### Code style
 - Do NOT add excessive fallback or defensive code. Trust internal interfaces and only validate at system boundaries (user input, external APIs). If a function is always called with valid arguments, do not add redundant null checks or try-catch blocks "just in case."
+- While the version is alpha, do NOT write legacy/backward-compatibility fallback code. Breaking changes are expected — old formats and deprecated paths should be removed, not preserved.
 
 ### npm Publishing
 - **リリース（`npm publish` / `npm dist-tag`）はユーザーが明示的に指示した場合のみ実行すること。自己判断でリリースしてはならない。**

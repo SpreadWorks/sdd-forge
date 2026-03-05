@@ -15,4 +15,4 @@ npm install <!-- @data: project.name("") --><!-- @enddata -->
 <!-- @enddata -->
 
 <!-- MANUAL:START -->
-{{MANUAL_CONTENT}}<!-- MANUAL:END -->
+<!-- MANUAL:END -->
