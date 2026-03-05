@@ -112,7 +112,7 @@ if (subCmd === "build") {
   // 6. agents (template-based in build, AI requires explicit `sdd-forge agents`)
   progress.start("agents");
   const agentsPath = path.join(PKG_DIR, "docs/commands/agents.js");
-  process.argv = [process.argv[0], agentsPath, "--template", ...dryRunArg];
+  process.argv = [process.argv[0], agentsPath, "--sdd", ...dryRunArg];
   await import(agentsPath);
   progress.stepDone();
 
