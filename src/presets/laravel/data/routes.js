@@ -1,20 +1,21 @@
 /**
  * RoutesSource — Laravel routes DataSource.
  *
- * Combines scan (source code extraction) and resolve (Markdown rendering)
- * into a single self-contained class.
+ * Extends the webapp parent RoutesSource with Laravel-specific
+ * scan logic and resolve methods.
  *
  * Available methods (called via @data directives):
  *   routes.list("Method|URI|Controller|Action")
  *   routes.api("Method|URI|Controller|Action")
  */
 
-import { DataSource } from "../../../docs/lib/data-source.js";
+import RoutesSource from "../../webapp/data/routes.js";
 import { analyzeRoutes } from "../scan/routes.js";
 
-class RoutesSource extends DataSource {
-  scan(sourceRoot) {
-    return analyzeRoutes(sourceRoot);
+export default class LaravelRoutesSource extends RoutesSource {
+  scan(sourceRoot, scanCfg) {
+    const result = analyzeRoutes(sourceRoot);
+    return { laravelRoutes: result.routes, laravelRoutesSummary: result.summary };
   }
 
   /** All routes table. */
@@ -44,5 +45,3 @@ class RoutesSource extends DataSource {
     return this.toMarkdownTable(rows, labels);
   }
 }
-
-export default new RoutesSource();

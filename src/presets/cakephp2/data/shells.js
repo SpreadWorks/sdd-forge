@@ -1,32 +1,18 @@
 /**
  * ShellsSource — CakePHP 2.x shells DataSource.
  *
+ * Extends webapp ShellsSource with CakePHP-specific resolve methods.
+ * Scan is delegated to the parent class.
+ *
  * Available methods (called via @data directives):
- *   shells.list("Class|File|Description")
+ *   shells.list("Class|File|Description")            — inherited
  *   shells.deps("Shell|Dependency|Type")
  *   shells.flow("Class|Flow|Mail|File Ops|Transaction")
  */
 
-import { DataSource } from "../../../docs/lib/data-source.js";
-import { analyzeShells } from "../scan/shells.js";
+import ShellsSource from "../../webapp/data/shells.js";
 
-class ShellsSource extends DataSource {
-  scan(sourceRoot) {
-    return analyzeShells(sourceRoot);
-  }
-
-  /** Shell command list. */
-  list(analysis, labels) {
-    const items = analysis.shells.shells;
-    if (items.length === 0) return null;
-    const rows = this.toRows(items, (s) => [
-      s.className,
-      s.file,
-      this.desc("shells", s.className),
-    ]);
-    return this.toMarkdownTable(rows, labels);
-  }
-
+export default class CakephpShellsSource extends ShellsSource {
   /** Shell → dependency table (App::uses). */
   deps(analysis, labels) {
     const rows = [];
@@ -54,5 +40,3 @@ class ShellsSource extends DataSource {
     return this.toMarkdownTable(rows, labels);
   }
 }
-
-export default new ShellsSource();

@@ -1,19 +1,19 @@
 /**
  * ControllersSource — CakePHP 2.x controllers DataSource.
  *
- * Combines scan (source code extraction) and resolve (Markdown rendering)
- * into a single self-contained class.
+ * Extends webapp ControllersSource with CakePHP-specific scan logic
+ * and resolve methods (csv, actions).
  *
  * Available methods (called via @data directives):
- *   controllers.list("Name|File|Description")
- *   controllers.deps("Controller|Models")
+ *   controllers.list("Name|File|Description")       — inherited
+ *   controllers.deps("Controller|Models")            — inherited
  *   controllers.csv("Name|CSV Import|CSV Export|Excel Export")
  *   controllers.actions("Action|Logic|Output Type")
  */
 
 import fs from "fs";
 import path from "path";
-import { DataSource } from "../../../docs/lib/data-source.js";
+import ControllersSource from "../../webapp/data/controllers.js";
 import {
   stripBlockComments,
   extractArrayBody,
@@ -31,9 +31,12 @@ const LIFECYCLE_METHODS = new Set([
   "shutdownProcess",
 ]);
 
-class ControllersSource extends DataSource {
-  scan(sourceRoot) {
-    const controllerDir = path.join(sourceRoot, "Controller");
+export default class CakephpControllersSource extends ControllersSource {
+  scan(sourceRoot, scanCfg) {
+    const cfg = scanCfg.controllers;
+    if (!cfg) return { controllers: [], summary: {} };
+
+    const controllerDir = path.join(sourceRoot, cfg.dir);
     if (!fs.existsSync(controllerDir)) return { controllers: [], summary: {} };
 
     const files = fs
@@ -71,7 +74,7 @@ class ControllersSource extends DataSource {
       }
 
       controllers.push({
-        file: path.relative(path.resolve(sourceRoot, ".."), filePath),
+        file: path.join(cfg.dir, file),
         className,
         parentClass,
         components,
@@ -89,26 +92,6 @@ class ControllersSource extends DataSource {
         totalActions: controllers.reduce((s, c) => s + c.actions.length, 0),
       },
     };
-  }
-
-  /** Controller list table. */
-  list(analysis, labels) {
-    const rows = this.toRows(analysis.controllers.controllers, (c) => [
-      c.className,
-      c.file,
-      this.desc("controllers", c.className),
-    ]);
-    return this.toMarkdownTable(rows, labels);
-  }
-
-  /** Controller → Model dependency table. */
-  deps(analysis, labels) {
-    const items = analysis.controllers.controllers.filter((c) => c.uses.length > 0);
-    const rows = this.toRows(items, (c) => [
-      c.className,
-      c.uses.join(", "),
-    ]);
-    return this.toMarkdownTable(rows, labels);
   }
 
   /** CSV import/export capabilities table (from overrides.json). */
@@ -138,5 +121,3 @@ class ControllersSource extends DataSource {
     return this.toMarkdownTable(rows, labels);
   }
 }
-
-export default new ControllersSource();

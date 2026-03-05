@@ -13,8 +13,8 @@ sdd-forge の動作は `.sdd-forge/config.json`（主設定）と `.sdd-forge/co
 | ファイル | 配置場所 | 役割 | 手動編集 |
 |---|---|---|---|
 | `config.json` | `.sdd-forge/config.json` | プロジェクト種別・出力言語・AIプロバイダー・ドキュメントスタイルを定義するメイン設定ファイル | ○ |
-| `context.json` | `.sdd-forge/context.json` | プロジェクト概要テキストを保存するファイル。`config.json` の `textFill.projectContext` より優先して参照される | ○ |
-| `projects.json` | `.sdd-forge/projects.json`（コマンド実行ディレクトリ） | マルチプロジェクト構成時のプロジェクト登録一覧。`sdd-forge setup` で自動生成される | ○ |
+| `context.json` | `.sdd-forge/context.json` | プロジェクト概要テキストを保存するファイル。`config.json` の `textFill.projectContext` より優先して参照されます | ○ |
+| `projects.json` | `.sdd-forge/projects.json` | マルチプロジェクト構成時のプロジェクト登録一覧。`sdd-forge setup` で自動生成されます | ○ |
 
 ### 設定項目リファレンス
 
@@ -83,7 +83,7 @@ sdd-forge の動作は `.sdd-forge/config.json`（主設定）と `.sdd-forge/co
 
 **プロジェクト概要テキストの管理**
 
-`.sdd-forge/context.json` にプロジェクト概要を記述しておくと、ドキュメント生成時のコンテキストとして参照されます。`setup` の対話ステップで入力した内容がここに保存されます。手動で直接編集することも可能です。
+`.sdd-forge/context.json` にプロジェクト概要を記述しておくと、ドキュメント生成時のコンテキストとして参照されます。`sdd-forge setup` の対話ステップで入力した内容がここに保存されます。手動で直接編集することも可能です。
 
 ```json
 {

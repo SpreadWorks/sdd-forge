@@ -1,18 +1,19 @@
 /**
  * TablesSource — CakePHP 2.x tables DataSource.
  *
+ * Extends webapp TablesSource with CakePHP-specific DB name resolution,
+ * FK column naming, and contents/staging sync mapping.
+ *
  * Available methods (called via @data directives):
- *   tables.list("Table|DB|Description")
- *   tables.fk("Parent|Child|FK Column|Type")
+ *   tables.list("Table|DB|Description")              — overrides parent
+ *   tables.fk("Parent|Child|FK Column|Type")         — overrides parent
  *   tables.sync("CMS Table|FE Model|FE Staging Model")
  */
 
-import { DataSource } from "../../../docs/lib/data-source.js";
+import TablesSource from "../../webapp/data/tables.js";
 import {
   camelToSnake,
-  pluralize,
 } from "../../../docs/lib/php-array-parser.js";
-import { analyzeModels } from "../scan/models.js";
 
 const DB_CONFIG_MAP = {
   default: "cms",
@@ -27,11 +28,7 @@ function resolveDbName(useDbConfig) {
   return DB_CONFIG_MAP[useDbConfig] || useDbConfig;
 }
 
-class TablesSource extends DataSource {
-  scan(sourceRoot) {
-    return analyzeModels(sourceRoot);
-  }
-
+export default class CakephpTablesSource extends TablesSource {
   /** Table list with CakePHP DB name resolution. */
   list(analysis, labels) {
     const models = analysis.models.models.filter((m) => !m.isLogic && !m.isFe);
@@ -120,5 +117,3 @@ class TablesSource extends DataSource {
     return this.toMarkdownTable(rows, labels);
   }
 }
-
-export default new TablesSource();

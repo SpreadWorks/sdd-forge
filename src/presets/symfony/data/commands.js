@@ -1,7 +1,7 @@
 /**
  * CommandsSource — Symfony console commands DataSource.
  *
- * Uses shells from generic scan (no specific scan function).
+ * Symfony-only category using DataSource directly (no scan).
  *
  * Available methods (called via @data directives):
  *   commands.list("Name|File|Description")
@@ -9,12 +9,7 @@
 
 import { DataSource } from "../../../docs/lib/data-source.js";
 
-class CommandsSource extends DataSource {
-  scan() {
-    // Commands use the generic shell scan; no dedicated scanner.
-    return {};
-  }
-
+export default class CommandsSource extends DataSource {
   /** Console commands list table. */
   list(analysis, labels) {
     const shells = analysis.shells?.shells || [];
@@ -27,5 +22,3 @@ class CommandsSource extends DataSource {
     return this.toMarkdownTable(rows, labels);
   }
 }
-
-export default new CommandsSource();

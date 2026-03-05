@@ -1,20 +1,12 @@
-#!/usr/bin/env node
 /**
- * sdd-forge/analyzers/generic-scan.js
+ * sdd-forge/docs/lib/scanner.js
  *
- * 汎用ソースコード解析器。
- * config.json の scan 設定に基づき、ファイルシステムの構造的事実
- * （ファイル一覧・クラス名・public メソッド名）を抽出する。
- *
- * フレームワーク固有の意味解釈は行わない。
- * analysis.json の出力構造は既存の resolver/renderer と互換。
+ * 汎用ソースコード解析ユーティリティ。
+ * ファイル探索・言語別パーサなど、DataSource の scan() で使われる共通機能を提供する。
  */
 
 import fs from "fs";
 import path from "path";
-import { createLogger } from "../../lib/progress.js";
-
-const logger = createLogger("scan");
 
 // ---------------------------------------------------------------------------
 // ファイル探索
@@ -34,7 +26,7 @@ function patternToRegex(pattern) {
 /**
  * dir 配下からパターンに一致するファイルを再帰的に探索する。
  */
-function findFiles(baseDir, pattern, excludeList, subDirs) {
+export function findFiles(baseDir, pattern, excludeList, subDirs) {
   const regex = patternToRegex(pattern);
   const excludeSet = new Set(excludeList || []);
   const results = [];
@@ -68,7 +60,7 @@ function findFiles(baseDir, pattern, excludeList, subDirs) {
 /**
  * PHP ファイルからクラス名・親クラス・public メソッド・プロパティを抽出する。
  */
-function parsePHPFile(filePath) {
+export function parsePHPFile(filePath) {
   const content = fs.readFileSync(filePath, "utf8");
 
   // クラス定義
@@ -137,7 +129,7 @@ function parsePHPFile(filePath) {
 /**
  * JS ファイルからエクスポートされた関数/クラスを抽出する。
  */
-function parseJSFile(filePath) {
+export function parseJSFile(filePath) {
   const content = fs.readFileSync(filePath, "utf8");
   const className = path.basename(filePath, ".js");
 
@@ -161,7 +153,7 @@ function parseJSFile(filePath) {
   return { className, parentClass: "", methods, properties: {}, relations: {}, content };
 }
 
-function parseFile(filePath, lang) {
+export function parseFile(filePath, lang) {
   if (lang === "php") return parsePHPFile(filePath);
   if (lang === "js") return parseJSFile(filePath);
   // デフォルト: ファイル名のみ
@@ -176,45 +168,14 @@ function parseFile(filePath, lang) {
 }
 
 // ---------------------------------------------------------------------------
-// コントローラ解析
+// ユーティリティ
 // ---------------------------------------------------------------------------
 
-function analyzeControllers(sourceRoot, scanCfg) {
-  const cfg = scanCfg.controllers;
-  if (!cfg) return null;
-
-  const dir = path.join(sourceRoot, cfg.dir);
-  const files = findFiles(dir, cfg.pattern, cfg.exclude, cfg.subDirs);
-
-  const controllers = [];
-  for (const f of files) {
-    const parsed = parseFile(f.absPath, cfg.lang);
-    controllers.push({
-      file: path.join(cfg.dir, f.relPath),
-      className: parsed.className,
-      parentClass: parsed.parentClass,
-      components: parsed.properties.components || [],
-      uses: parsed.properties.uses || [],
-      actions: parsed.methods.filter((m) => !m.startsWith("_")),
-    });
-  }
-
-  const totalActions = controllers.reduce((s, c) => s + c.actions.length, 0);
-  return {
-    controllers,
-    summary: { total: controllers.length, totalActions },
-  };
-}
-
-// ---------------------------------------------------------------------------
-// モデル解析
-// ---------------------------------------------------------------------------
-
-function camelToSnake(str) {
+export function camelToSnake(str) {
   return str.replace(/([a-z])([A-Z])/g, "$1_$2").toLowerCase();
 }
 
-function pluralize(str) {
+export function pluralize(str) {
   if (str.endsWith("y") && !/[aeiou]y$/i.test(str)) {
     return str.slice(0, -1) + "ies";
   }
@@ -224,148 +185,21 @@ function pluralize(str) {
   return str + "s";
 }
 
-function analyzeModels(sourceRoot, scanCfg) {
-  const cfg = scanCfg.models;
-  if (!cfg) return null;
-
-  const dir = path.join(sourceRoot, cfg.dir);
-  const files = findFiles(dir, cfg.pattern, cfg.exclude, cfg.subDirs !== false);
-
-  const models = [];
-  const dbGroups = {};
-
-  for (const f of files) {
-    const parsed = parseFile(f.absPath, cfg.lang);
-    const isLogic = f.relPath.includes("Logic");
-    const isFe = parsed.className.startsWith("Fe");
-    const useTable = parsed.properties.useTable || null;
-    const useDbConfig = parsed.properties.useDbConfig || null;
-    const tableName = useTable || pluralize(camelToSnake(parsed.className));
-    const dbKey = useDbConfig || "default";
-
-    if (!dbGroups[dbKey]) dbGroups[dbKey] = [];
-    dbGroups[dbKey].push(parsed.className);
-
-    models.push({
-      file: path.join(cfg.dir, f.relPath),
-      className: parsed.className,
-      parentClass: parsed.parentClass,
-      isLogic,
-      isFe,
-      useTable,
-      useDbConfig,
-      primaryKey: parsed.properties.primaryKey || null,
-      displayField: parsed.properties.displayField || null,
-      tableName,
-      relations: parsed.relations,
-      validateFields: parsed.properties.validate
-        ? (Array.isArray(parsed.properties.validate) ? parsed.properties.validate : [])
-        : [],
-      actsAs: parsed.properties.actsAs || [],
-    });
-  }
-
-  const feModels = models.filter((m) => m.isFe).length;
-  const logicModels = models.filter((m) => m.isLogic).length;
-
-  return {
-    models,
-    summary: { total: models.length, feModels, logicModels, dbGroups },
-  };
+/**
+ * scanCfg のエントリがカテゴリ定義かどうかを判定する。
+ * カテゴリ定義は dir または file プロパティを持つオブジェクト。
+ */
+export function isCategoryEntry(value) {
+  return value && typeof value === "object" && !Array.isArray(value)
+    && (value.dir != null || value.file != null);
 }
 
-// ---------------------------------------------------------------------------
-// シェル/コマンド解析
-// ---------------------------------------------------------------------------
-
-function analyzeShells(sourceRoot, scanCfg) {
-  const cfg = scanCfg.shells;
-  if (!cfg) return null;
-
-  const dir = path.join(sourceRoot, cfg.dir);
-  const files = findFiles(dir, cfg.pattern, cfg.exclude, cfg.subDirs);
-
-  const shells = [];
-  for (const f of files) {
-    const parsed = parseFile(f.absPath, cfg.lang);
-    const hasMain = parsed.methods.includes("main");
-    shells.push({
-      file: path.join(cfg.dir, f.relPath),
-      className: parsed.className,
-      publicMethods: parsed.methods.filter((m) => !m.startsWith("_")),
-      hasMain,
-      appUses: [],  // 汎用版では App::uses の CakePHP 固有解析は行わない
-    });
-  }
-
-  return {
-    shells,
-    summary: {
-      total: shells.length,
-      withMain: shells.filter((s) => s.hasMain).length,
-    },
-  };
-}
-
-// ---------------------------------------------------------------------------
-// ルート解析
-// ---------------------------------------------------------------------------
-
-function analyzeRoutes(sourceRoot, scanCfg) {
-  const cfg = scanCfg.routes;
-  if (!cfg) return { routes: [], summary: { total: 0, controllers: [] } };
-
-  const filePath = path.join(sourceRoot, cfg.file);
-  if (!fs.existsSync(filePath)) {
-    return { routes: [], summary: { total: 0, controllers: [] } };
-  }
-
-  const content = fs.readFileSync(filePath, "utf8");
-  const routes = [];
-  const controllersSet = new Set();
-
-  if (cfg.lang === "php") {
-    // Router::connect / Route::get 等の汎用パターン
-    const routeRegex =
-      /(?:Router::connect|Route::(?:get|post|put|delete|any|match))\s*\(\s*['"]([^'"]+)['"]/g;
-    let m;
-    while ((m = routeRegex.exec(content)) !== null) {
-      const pattern = m[1];
-      // controller/action の抽出を試みる
-      const ctrlMatch = content
-        .slice(m.index, m.index + 500)
-        .match(/['"]controller['"]\s*=>\s*['"](\w+)['"]/);
-      const actionMatch = content
-        .slice(m.index, m.index + 500)
-        .match(/['"]action['"]\s*=>\s*['"](\w+)['"]/);
-
-      const controller = ctrlMatch ? ctrlMatch[1] : "";
-      const action = actionMatch ? actionMatch[1] : "";
-
-      if (controller) controllersSet.add(controller);
-      routes.push({
-        pattern,
-        controller,
-        action,
-        raw: content.slice(m.index, content.indexOf("\n", m.index)).trim(),
-      });
-    }
-  }
-
-  return {
-    routes,
-    summary: { total: routes.length, controllers: [...controllersSet] },
-  };
-}
-
-// ---------------------------------------------------------------------------
-// extras（汎用版）
-// ---------------------------------------------------------------------------
-
-function analyzeExtras(sourceRoot, scanCfg) {
+/**
+ * composer.json / package.json から依存関係を抽出する。
+ */
+export function analyzeExtras(sourceRoot) {
   const extras = {};
 
-  // composer.json があれば依存関係を抽出
   const composerPath = path.join(sourceRoot, "composer.json");
   if (fs.existsSync(composerPath)) {
     try {
@@ -377,7 +211,6 @@ function analyzeExtras(sourceRoot, scanCfg) {
     } catch (_) { /* malformed composer.json — non-critical, skip deps */ }
   }
 
-  // package.json があれば依存関係を抽出
   const pkgPath = path.join(sourceRoot, "package.json");
   if (fs.existsSync(pkgPath)) {
     try {
@@ -390,103 +223,4 @@ function analyzeExtras(sourceRoot, scanCfg) {
   }
 
   return extras;
-}
-
-// ---------------------------------------------------------------------------
-// 汎用カテゴリアナライザ
-// ---------------------------------------------------------------------------
-
-/**
- * ハンドラが未登録のカテゴリを汎用的に解析する。
- * scanCfg のエントリ（{ dir, pattern, exclude?, subDirs?, lang? }）に基づき
- * ファイル一覧 + パース結果を返す。
- */
-function analyzeGenericCategory(sourceRoot, categoryKey, categoryCfg) {
-  const dir = path.join(sourceRoot, categoryCfg.dir);
-  const files = findFiles(dir, categoryCfg.pattern, categoryCfg.exclude, categoryCfg.subDirs);
-
-  const items = [];
-  for (const f of files) {
-    const parsed = parseFile(f.absPath, categoryCfg.lang);
-    items.push({
-      file: path.join(categoryCfg.dir, f.relPath),
-      className: parsed.className,
-      methods: parsed.methods,
-    });
-  }
-
-  const totalMethods = items.reduce((s, i) => s + i.methods.length, 0);
-  return {
-    [categoryKey]: items,
-    summary: { total: items.length, totalMethods },
-  };
-}
-
-// ---------------------------------------------------------------------------
-// カテゴリハンドラレジストリ
-// ---------------------------------------------------------------------------
-
-/**
- * 既知カテゴリのハンドラマップ。
- * キーは scanCfg のカテゴリ名、値は (sourceRoot, scanCfg) => result の関数。
- */
-const CATEGORY_HANDLERS = {
-  controllers: analyzeControllers,
-  models: analyzeModels,
-  shells: analyzeShells,
-  routes: analyzeRoutes,
-};
-
-// カテゴリとして扱わないキー
-const RESERVED_KEYS = new Set(["extras"]);
-
-/**
- * scanCfg のエントリがカテゴリ定義かどうかを判定する。
- * カテゴリ定義は dir または file プロパティを持つオブジェクト。
- */
-function isCategoryEntry(value) {
-  return value && typeof value === "object" && !Array.isArray(value)
-    && (value.dir != null || value.file != null);
-}
-
-// ---------------------------------------------------------------------------
-// エクスポート
-// ---------------------------------------------------------------------------
-
-/**
- * 汎用スキャンを実行する。
- *
- * @param {string} sourceRoot - ソースコードのルートディレクトリ
- * @param {Object} scanCfg - マージ済みスキャン設定（preset.scan + config.scan）
- * @returns {Object} analysis.json 互換のオブジェクト
- */
-export function genericScan(sourceRoot, scanCfg) {
-
-  const result = { analyzedAt: new Date().toISOString() };
-
-  for (const key of Object.keys(scanCfg)) {
-    if (RESERVED_KEYS.has(key)) continue;
-    if (!CATEGORY_HANDLERS[key] && !isCategoryEntry(scanCfg[key])) continue;
-
-    logger.verbose(`${key} ...`);
-
-    if (CATEGORY_HANDLERS[key]) {
-      result[key] = CATEGORY_HANDLERS[key](sourceRoot, scanCfg);
-    } else {
-      result[key] = analyzeGenericCategory(sourceRoot, key, scanCfg[key]);
-    }
-
-    if (result[key]?.summary?.total != null) {
-      logger.verbose(`${key}: ${result[key].summary.total} files`);
-    }
-  }
-
-  logger.verbose("extras ...");
-  result.extras = analyzeExtras(sourceRoot, scanCfg);
-  const extrasKeys = Object.keys(result.extras);
-  if (extrasKeys.length > 0) {
-    logger.verbose(`extras: ${extrasKeys.length} categories (${extrasKeys.join(", ")})`);
-  }
-
-  return result;
 }

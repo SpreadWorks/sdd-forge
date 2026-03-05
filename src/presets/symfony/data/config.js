@@ -1,8 +1,7 @@
 /**
  * ConfigSource — Symfony configuration DataSource.
  *
- * Combines scan (source code extraction) and resolve (Markdown rendering)
- * into a single self-contained class.
+ * Symfony-only category using Scannable(DataSource) directly.
  *
  * Available methods (called via @data directives):
  *   config.composer("Package|Version|Description")
@@ -13,10 +12,11 @@
  */
 
 import { DataSource } from "../../../docs/lib/data-source.js";
+import { Scannable } from "../../../docs/lib/scan-source.js";
 import { analyzeConfig } from "../scan/config.js";
 
-class ConfigSource extends DataSource {
-  scan(sourceRoot) {
+export default class ConfigSource extends Scannable(DataSource) {
+  scan(sourceRoot, scanCfg) {
     return analyzeConfig(sourceRoot);
   }
 
@@ -80,5 +80,3 @@ class ConfigSource extends DataSource {
     return this.toMarkdownTable(rows, labels);
   }
 }
-
-export default new ConfigSource();

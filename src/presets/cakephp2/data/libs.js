@@ -1,6 +1,8 @@
 /**
  * LibsSource — CakePHP 2.x libraries DataSource.
  *
+ * CakePHP-only category: extends Scannable(DataSource) directly.
+ *
  * Available methods (called via @data directives):
  *   libs.list("Class|File|Description")
  *   libs.errors("Class|File|Description")
@@ -9,21 +11,22 @@
  *   libs.appmodel("Method|Description")
  */
 
+import path from "path";
 import { DataSource } from "../../../docs/lib/data-source.js";
+import { Scannable } from "../../../docs/lib/scan-source.js";
 import {
   analyzeLibraries,
   analyzeBehaviors,
   analyzeSqlFiles,
 } from "../scan/views.js";
-import { analyzeAppModel } from "../scan/base-classes.js";
 
-class LibsSource extends DataSource {
-  scan(sourceRoot) {
+export default class CakephpLibsSource extends Scannable(DataSource) {
+  scan(sourceRoot, scanCfg) {
+    const appDir = path.join(sourceRoot, "app");
     return {
-      libraries: analyzeLibraries(sourceRoot),
-      behaviors: analyzeBehaviors(sourceRoot),
-      sqlFiles: analyzeSqlFiles(sourceRoot),
-      appModel: analyzeAppModel(sourceRoot),
+      libraries: analyzeLibraries(appDir),
+      behaviors: analyzeBehaviors(appDir),
+      sqlFiles: analyzeSqlFiles(appDir),
     };
   }
 
@@ -94,5 +97,3 @@ class LibsSource extends DataSource {
     return this.toMarkdownTable(rows, labels);
   }
 }
-
-export default new LibsSource();

@@ -1,8 +1,7 @@
 /**
  * EntitiesSource — Symfony Doctrine entities DataSource.
  *
- * Combines scan (source code extraction) and resolve (Markdown rendering)
- * into a single self-contained class.
+ * Symfony-only category using Scannable(DataSource) directly.
  *
  * Available methods (called via @data directives):
  *   entities.relations("Entity|Associations")
@@ -10,11 +9,13 @@
  */
 
 import { DataSource } from "../../../docs/lib/data-source.js";
+import { Scannable } from "../../../docs/lib/scan-source.js";
 import { analyzeEntities } from "../scan/entities.js";
 
-class EntitiesSource extends DataSource {
-  scan(sourceRoot) {
-    return analyzeEntities(sourceRoot);
+export default class EntitiesSource extends Scannable(DataSource) {
+  scan(sourceRoot, scanCfg) {
+    const result = analyzeEntities(sourceRoot);
+    return { symfonyEntities: result.entities };
   }
 
   /** Entity relations table (grouped by relation type). */
@@ -59,5 +60,3 @@ class EntitiesSource extends DataSource {
     return this.toMarkdownTable(rows, labels);
   }
 }
-
-export default new EntitiesSource();

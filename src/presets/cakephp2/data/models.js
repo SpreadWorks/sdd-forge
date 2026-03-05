@@ -1,19 +1,23 @@
 /**
  * ModelsSource — CakePHP 2.x models DataSource.
  *
+ * Extends webapp ModelsSource with CakePHP-specific scan logic
+ * and resolve methods (logic, er, logicMethods).
+ *
  * Available methods (called via @data directives):
+ *   models.relations("Model|Associations")           — overrides parent (filters isLogic/isFe)
  *   models.logic("Class|File|Description")
- *   models.relations("Model|Associations")
  *   models.er("Parent|Child|Type")
  *   models.logicMethods("Class|Extends|Methods")
  */
 
-import { DataSource } from "../../../docs/lib/data-source.js";
+import path from "path";
+import ModelsSource from "../../webapp/data/models.js";
 import { analyzeModels } from "../scan/models.js";
 
-class ModelsSource extends DataSource {
-  scan(sourceRoot) {
-    return analyzeModels(sourceRoot);
+export default class CakephpModelsSource extends ModelsSource {
+  scan(sourceRoot, scanCfg) {
+    return analyzeModels(path.join(sourceRoot, "app"));
   }
 
   /** Logic class list. */
@@ -30,7 +34,7 @@ class ModelsSource extends DataSource {
     return this.toMarkdownTable(rows, labels);
   }
 
-  /** Model association summary. */
+  /** Model association summary (excludes isLogic and isFe models). */
   relations(analysis, labels) {
     const models = analysis.models.models.filter((m) => !m.isLogic && !m.isFe);
     const rows = [];
@@ -107,5 +111,3 @@ class ModelsSource extends DataSource {
     return this.toMarkdownTable(rows, labels);
   }
 }
-
-export default new ModelsSource();
