@@ -16,7 +16,7 @@
 - **AI ドキュメント生成** — テンプレートの `{{text}}` ディレクティブを AI が自動展開
 - **テンプレート継承** — base → arch → preset → project-local の 4 層継承でカスタマイズ可能
 - **SDD ワークフロー** — spec → gate → 実装 → forge → review の開発サイクルをコマンドで管理
-- **Claude Code 連携** — `/sdd-flow-start` `/sdd-flow-close` スキルでワークフローを自動実行
+- **AI エージェント連携** — Claude Code（スキル）・Codex CLI に対応
 - **マルチプリセット** — Node.js CLI / CakePHP2 / Laravel / Symfony に対応
 
 ## クイックスタート
@@ -88,13 +88,24 @@ pnpm add -g <!-- {{data: project.name("")}} -->sdd-forge<!-- {{/data}} -->
   review        品質チェック（PASS するまで繰り返し）
 ```
 
-### Claude Code との連携
+### AI エージェントとの連携
 
-Claude Code の設定後、スキルで SDD ワークフローを実行できます:
+#### Claude Code
+
+スキルで SDD ワークフローを実行できます:
 
 ```
 /sdd-flow-start   — spec 作成 → gate → 実装を開始
 /sdd-flow-close   — forge → review → commit → merge で終了
+```
+
+#### Codex CLI
+
+`$` プロンプトからワークフローを実行できます:
+
+```
+$sdd-flow-start   — spec 作成 → gate → 実装を開始
+$sdd-flow-close   — forge → review → commit → merge で終了
 ```
 
 ## 設定
