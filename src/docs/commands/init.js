@@ -228,7 +228,7 @@ function main() {
       logger.log(`  - ${f}`);
     }
     logger.log(t("init.useForce"));
-    process.exit(1);
+    return;
   }
 
   if (conflicts.length > 0 && cli.force) {

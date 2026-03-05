@@ -59,22 +59,31 @@ if (subCmd === "build") {
 
   const dryRunArg = isDryRun ? ["--dry-run"] : [];
 
+  // Import all pipeline modules (main() is exported, not auto-executed)
+  const { main: scanMain } = await import(scanPath);
+  const { main: initMain } = await import(initPath);
+  const { main: dataMain } = await import(dataPath);
+  const { main: textMain } = await import(textPath);
+  const { main: readmeMain } = await import(readmePath);
+  const agentsPath = path.join(PKG_DIR, "docs/commands/agents.js");
+  const { main: agentsMain } = await import(agentsPath);
+
   // 1. scan (always runs — analysis.json is internal cache, not user-facing)
   progress.start("scan");
   process.argv = [process.argv[0], scanPath];
-  await import(scanPath);
+  await scanMain();
   progress.stepDone();
 
   // 2. init
   progress.start("init");
   process.argv = [process.argv[0], initPath, ...initArgs, ...dryRunArg];
-  await import(initPath);
+  await initMain();
   progress.stepDone();
 
   // 3. data
   progress.start("data");
   process.argv = [process.argv[0], dataPath, ...dryRunArg];
-  await import(dataPath);
+  await dataMain();
   progress.stepDone();
 
   // 4. text
@@ -96,7 +105,7 @@ if (subCmd === "build") {
 
   if (agentArgs.length > 0) {
     process.argv = [process.argv[0], textPath, ...agentArgs, ...dryRunArg];
-    await import(textPath);
+    await textMain();
   } else {
     progress.log("[text] WARN: no defaultAgent configured, skipping text generation.");
     progress.log("[text] Set 'defaultAgent' in config.json or use: sdd-forge text --agent <name>");
@@ -106,14 +115,13 @@ if (subCmd === "build") {
   // 5. readme
   progress.start("readme");
   process.argv = [process.argv[0], readmePath, ...dryRunArg];
-  await import(readmePath);
+  await readmeMain();
   progress.stepDone();
 
   // 6. agents
   progress.start("agents");
-  const agentsPath = path.join(PKG_DIR, "docs/commands/agents.js");
   process.argv = [process.argv[0], agentsPath, ...dryRunArg];
-  await import(agentsPath);
+  await agentsMain();
   progress.stepDone();
 
   progress.done();
