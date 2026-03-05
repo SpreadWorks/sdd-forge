@@ -8,7 +8,7 @@
 
 ### インストール
 
-```bash
+<pre>
 # npm
 npm install -g <!-- @data: project.name("") --><!-- @enddata -->
 
@@ -17,13 +17,13 @@ yarn global add <!-- @data: project.name("") --><!-- @enddata -->
 
 # pnpm
 pnpm add -g <!-- @data: project.name("") --><!-- @enddata -->
-```
+</pre>
 
 ### 基本コマンド
 
-```bash
+<pre>
 <!-- @data: project.name("") --><!-- @enddata --> help
-```
+</pre>
 <!-- @endblock -->
 
 <!-- @block: docs -->
