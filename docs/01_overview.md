@@ -4,7 +4,7 @@
 
 <!-- {{text: この章の概要を1〜2文で記述してください。ツールの目的・解決する課題・主要なユースケースを踏まえること。}} -->
 
-本章では、`sdd-forge` が何を解決するツールであるか、その全体アーキテクチャ、および利用者が最初の成果物を得るまでの典型的なフローを説明します。ソースコード解析による自動ドキュメント生成と、Spec-Driven Development（SDD）ワークフローという2つの主要ユースケースを中心に解説します。
+sdd-forge は、ソースコードを解析してプロジェクトドキュメントを自動生成する Node.js CLI ツールです。また、機能追加・改修時に Spec-Driven Development（SDD）ワークフローに沿って仕様策定から実装・レビューまでを一貫してサポートします。
 
 ## 内容
 
@@ -12,15 +12,9 @@
 
 <!-- {{text: このCLIツールが解決する課題と、ターゲットユーザーを説明してください。}} -->
 
-`sdd-forge` は、既存ソースコードに対して「ドキュメントが存在しない・古い・属人的になっている」という課題を解消するために設計されたCLIツールです。ソースコードを解析して構造情報を自動抽出し、テンプレートとAIを組み合わせてプロジェクトドキュメントを自動生成します。
+ソフトウェア開発において「ドキュメントが陳腐化する」「仕様と実装が乖離する」という課題を解決するために作られたツールです。ソースコードを静的解析して docs/ 配下のドキュメントを自動生成・更新することで、常にコードと同期されたドキュメントを維持できます。また、機能追加・改修の際には SDD フローに従って spec（仕様書）を作成し、ゲートチェックをパスしてから実装に進む規律ある開発プロセスを提供します。
 
-また、機能追加・改修の際には Spec-Driven Development（SDD）ワークフローを提供します。仕様書（spec）を先に作成し、AIによるゲートチェックを通過してから実装に進む開発フローを強制することで、曖昧な仕様による手戻りを防ぎます。
-
-**ターゲットユーザー:**
-
-- 既存プロジェクトのドキュメント整備を効率化したいエンジニア・テックリード
-- AIを活用した仕様駆動開発フローを導入したいチーム
-- CakePHP 2.x・Laravel・Symfony・Node.js CLI などのプロジェクトを保守・開発している開発者
+主なターゲットユーザーは、レガシーコードベースを抱えるチームや、ドキュメント管理コストを削減したい開発チームです。CakePHP 2.x・Laravel・Symfony・Node.js CLI などのプリセットが用意されており、対象フレームワークにあわせてすぐに利用を開始できます。
 
 ### アーキテクチャ概要
 
@@ -30,104 +24,87 @@
 flowchart TD
     CLI["sdd-forge CLI\nsdd-forge.js"]
 
-    CLI --> DOCS["docs.js\n（ドキュメント系ディスパッチャ）"]
-    CLI --> SPEC["spec.js\n（SDD系ディスパッチャ）"]
-    CLI --> FLOW["flow.js\n（SDDフロー自動実行）"]
+    CLI --> DOCS["docs.js\nbuild / scan / init / data / text\nreadme / forge / review / changelog / agents / setup"]
+    CLI --> SPEC["spec.js\nspec / gate"]
+    CLI --> FLOW["flow.js\nSDD フロー自動実行"]
 
-    DOCS --> SCAN["scan\nソースコード解析"]
-    DOCS --> INIT["init\nテンプレートからdocs/初期化"]
-    DOCS --> DATA["data\n{{data}}ディレクティブ解決"]
-    DOCS --> TEXT["text\n{{text}}ディレクティブ解決（AI）"]
-    DOCS --> FORGE["forge\ndocs反復改善（AI）"]
-    DOCS --> REVIEW["review\ndocs品質チェック（AI）"]
-    DOCS --> README["readme\nREADME.md自動生成"]
-    DOCS --> AGENTS["agents\nAGENTS.mdのPROJECTセクション更新"]
+    DOCS --> SCANNER["scanner.js\nソースコード解析"]
+    DOCS --> DP["directive-parser.js\n{{data}} / {{text}} 解決"]
+    DOCS --> TM["template-merger.js\nテンプレートマージ"]
+    DOCS --> AGENT["agent.js\nAI エージェント呼び出し"]
 
-    SPEC --> SPEC_INIT["spec\nspec.md作成・ブランチ作成"]
-    SPEC --> GATE["gate\nゲートチェック（AI）"]
+    SCANNER --> ANALYSIS[".sdd-forge/output/analysis.json\nsummary.json"]
+    DP --> RESOLVER["resolver-factory.js\nプリセット固有データ解決"]
+    RESOLVER --> ANALYSIS
 
-    SCAN --> ANALYSIS[".sdd-forge/output/analysis.json\nsummary.json"]
-    ANALYSIS --> DATA
-    ANALYSIS --> TEXT
-    ANALYSIS --> FORGE
-    ANALYSIS --> AGENTS
+    AGENT --> AI["外部 AI CLI\n（providers 設定）"]
+    AI --> DOCS_OUT["docs/\n自動生成ドキュメント"]
 
-    INIT --> DOCS_DIR["docs/（マークダウンファイル群）"]
-    DATA --> DOCS_DIR
-    TEXT --> DOCS_DIR
-    FORGE --> DOCS_DIR
+    SPEC --> GATE["gate.js\nゲートチェック"]
+    SPEC --> SPECINIT["init.js\nspec.md 作成"]
 
-    SPEC_INIT --> SPEC_FILE["specs/NNN-xxx/spec.md"]
-    GATE --> SPEC_FILE
+    FLOW --> SPEC
+    FLOW --> DOCS
+    FLOW --> AGENT
 
-    PRESET["presets/\n（FW別設定・テンプレート）"] --> SCAN
-    PRESET --> INIT
     CONFIG[".sdd-forge/config.json\ncontext.json"] --> CLI
+    PRESETS["src/presets/\nFW 別プリセット"] --> RESOLVER
+    PRESETS --> SCANNER
 ```
 
 ### 主要コンセプト
 
 <!-- {{text: このツールを理解するうえで重要なコンセプト・用語を表形式で説明してください。}} -->
 
-| 用語 | 説明 |
+| コンセプト・用語 | 説明 |
 |---|---|
-| **SDD（Spec-Driven Development）** | 実装前に仕様書（spec）を作成し、AIゲートチェックを通過してから実装を進める開発手法。`sdd-forge` が採用するワークフローの中心概念。 |
-| **spec** | 機能追加・改修ごとに `specs/NNN-xxx/spec.md` として作成される仕様書ファイル。SDD フローの起点となる。 |
-| **gate** | spec の内容が実装可能な水準に達しているかをAIが評価するチェック機構。PASS しない限り実装に進めない。 |
-| **プリセット** | フレームワーク・プロジェクト種別ごとのスキャン設定・テンプレートのセット（例: `webapp/cakephp2`、`cli/node-cli`）。 |
-| **{{data}} ディレクティブ** | docs/ 内のマークダウンに記述するプレースホルダー。`sdd-forge data` 実行時に `analysis.json` の解析データで自動置換される。 |
-| **{{text}} ディレクティブ** | docs/ 内のマークダウンに記述するプレースホルダー。`sdd-forge text` 実行時にAIが文章を生成して埋め込む。 |
-| **MANUAL ブロック** | `<!-- MANUAL:START -->〜<!-- MANUAL:END -->` で囲まれた手動記述エリア。自動生成による上書きから保護される。 |
-| **forge** | `sdd-forge forge` によるdocs反復改善コマンド。AIがソースコードと現在のdocsを参照し、内容を更新・補完する。 |
-| **analysis.json / summary.json** | `sdd-forge scan` が生成するソースコード解析結果。`summary.json` はAIへの入力に最適化した軽量版。 |
-| **プロジェクトコンテキスト** | `.sdd-forge/context.json` に保存されるプロジェクト固有の背景情報。AIへのプロンプトに自動付与される。 |
+| SDD（Spec-Driven Development） | 仕様書（spec.md）を先に作成し、ゲートチェックをパスしてから実装に進む開発手法。仕様と実装の乖離を防ぐ |
+| spec | 機能追加・改修ごとに作成される仕様書ファイル（`specs/NNN-xxx/spec.md`）。`sdd-forge spec` コマンドで生成される |
+| gate | spec の品質チェック。未解決事項がある場合は FAIL となり、実装に進めない |
+| docs/ | プロジェクトの設計・構造・ビジネスロジックをまとめた知識ベース。sdd-forge により自動生成・維持される |
+| `{{data}}` ディレクティブ | docs テンプレート内に記述する、ソースコード解析結果を埋め込む指示子 |
+| `{{text}}` ディレクティブ | docs テンプレート内に記述する、AI が説明文を生成する指示子 |
+| MANUAL ブロック | `<!-- MANUAL:START -->〜<!-- MANUAL:END -->` で囲まれた手動記述領域。自動生成では上書きされない |
+| プリセット | フレームワーク別の解析設定・テンプレートセット（`src/presets/` 配下）。`type` 値で指定する |
+| forge | docs を反復改善するコマンド（`sdd-forge forge`）。AI がソース解析結果をもとにドキュメントを更新する |
+| analysis.json / summary.json | `sdd-forge scan` が出力するソースコード解析結果。summary.json は AI 入力用の軽量版 |
+| provider | AI エージェントの設定。使用する CLI コマンド・引数・systemPromptFlag などを `config.json` で定義する |
 
 ### 典型的な利用フロー
 
 <!-- {{text: ユーザーがインストールしてから最初の成果物を得るまでの典型的な手順をステップ形式で説明してください。}} -->
 
-**ステップ 1: インストール**
+**1. インストール**
 
 ```bash
 npm install -g sdd-forge
 ```
 
-グローバルインストールにより、任意のプロジェクトディレクトリで `sdd-forge` コマンドが使用できるようになります。
+**2. プロジェクトのセットアップ**
 
-**ステップ 2: プロジェクト登録と設定生成**
+ドキュメント化したいプロジェクトのルートディレクトリで `setup` コマンドを実行します。プロジェクト種別（`type`）・言語（`lang`）・使用する AI エージェントなどの設定が対話形式で生成されます。
 
 ```bash
 cd /path/to/your-project
 sdd-forge setup
 ```
 
-対話形式でプロジェクト種別（`type`）・言語（`lang`）・AIエージェント設定などを入力します。`.sdd-forge/config.json` と `.sdd-forge/context.json` が生成されます。
+**3. ソースコード解析**
 
-**ステップ 3: ソースコード解析**
+ソースコードを解析し、`.sdd-forge/output/analysis.json` と `summary.json` を生成します。
 
 ```bash
 sdd-forge scan
 ```
 
-プロジェクトのソースコードを解析し、`.sdd-forge/output/analysis.json` および `summary.json` を生成します。
+**4. docs の一括生成**
 
-**ステップ 4: ドキュメント一括生成**
+テンプレート初期化・データ解決・AI によるテキスト生成・README 更新までを一括で実行します。
 
 ```bash
 sdd-forge build
 ```
 
-`scan → init → data → text → readme` のパイプラインを順次実行し、`docs/` 配下にマークダウンドキュメント群を生成します。これが最初の成果物となります。
+**5. 生成されたドキュメントを確認**
 
-**ステップ 5: 内容確認と手動補完**
-
-生成された `docs/` のファイルを確認し、業務背景・外部仕様など自動生成では補えない情報を `<!-- MANUAL:START -->〜<!-- MANUAL:END -->` ブロック内に追記します。
-
-**ステップ 6: 反復改善（任意）**
-
-```bash
-sdd-forge forge --prompt "追加したい観点や修正指示"
-sdd-forge review
-```
-
-`forge` でAIによる追記・改善を行い、`review` で品質チェックを実施します。`review` が PASS するまで繰り返します。
+`docs/` ディレクトリに `01_overview.md` などのドキュメントファイルが生成されています。内容を確認し、MANUAL ブロックに補足情報を追記することで、自動生成と手動記述を組み合わせた知識ベースを構築できます。
