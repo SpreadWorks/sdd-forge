@@ -21,7 +21,7 @@
 
 ### インストール
 
-<pre>
+```bash
 # npm
 npm install -g <!-- @data: project.name("") -->sdd-forge<!-- @enddata -->
 
@@ -30,17 +30,17 @@ yarn global add <!-- @data: project.name("") -->sdd-forge<!-- @enddata -->
 
 # pnpm
 pnpm add -g <!-- @data: project.name("") -->sdd-forge<!-- @enddata -->
-</pre>
+```
 
 ### セットアップ & ドキュメント生成
 
-<pre>
+```bash
 # 1. プロジェクトを登録（インタラクティブウィザード）
 <!-- @data: project.name("") -->sdd-forge<!-- @enddata --> setup
 
 # 2. ドキュメントを一括生成（scan → init → data → text → readme）
 <!-- @data: project.name("") -->sdd-forge<!-- @enddata --> build
-</pre>
+```
 
 これだけで `docs/` と `README.md` が生成されます。
 
@@ -125,11 +125,11 @@ Claude Code の設定後、スキルで SDD ワークフローを実行できま
 <!-- @data: docs.chapters("章|概要") -->
 | 章 | 概要 |
 | --- | --- |
-| [01. ツール概要とアーキテクチャ](docs/01_overview.md) |  |
-| [02. CLI コマンドリファレンス](docs/02_cli_commands.md) |  |
-| [03. 設定とカスタマイズ](docs/03_configuration.md) |  |
-| [04. 内部設計](docs/04_internal_design.md) |  |
-| [05. 開発・テスト・配布](docs/05_development.md) |  |
+| [01. ツール概要とアーキテクチャ](docs/01_overview.md) | 本章では、`sdd-forge` が何を解決するツールであるか、その全体アーキテクチャ、および利用者が最初の成果物を得るまでの典型的なフローを説明します。 |
+| [02. CLI コマンドリファレンス](docs/02_cli_commands.md) | `sdd-forge` は 18 のサブコマンドを提供し、Project / Build / Docs / Scan / Spec / Flow の 6 グループに分類されます。 |
+| [03. 設定とカスタマイズ](docs/03_configuration.md) | sdd-forge は `.sdd-forge/` ディレクトリ配下の JSON ファイル群によって動作を制御します。 |
+| [04. 内部設計](docs/04_internal_design.md) | 本章では、sdd-forge の内部アーキテクチャとして、CLI エントリポイントから各コマンド実装への3段階ルーティング構造・モジュール間の依存方向・代表的な処理フロー（scan / forge）を解説します。 |
+| [05. 開発・テスト・配布](docs/05_development.md) | 本章では、sdd-forge 自身の開発に必要なローカル環境のセットアップ・テスト実行・npm パッケージのリリース手順を説明します。 |
 <!-- @enddata -->
 
 ## License
