@@ -35,6 +35,8 @@ const commands = [
   { name: "gate",        desc: "spec ゲート（未解決事項チェック）" },
   { section: "Flow" },
   { name: "flow",        desc: "SDD フロー自動実行" },
+  { section: "Info" },
+  { name: "presets list", desc: "プリセット継承ツリーを表示" },
 ];
 
 function getVersion() {
