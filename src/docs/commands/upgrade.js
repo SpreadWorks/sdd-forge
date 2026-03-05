@@ -18,8 +18,9 @@ import { fileURLToPath } from "url";
 import { repoRoot, parseArgs } from "../../lib/cli.js";
 import { loadConfig } from "../../lib/config.js";
 import { createI18n } from "../../lib/i18n.js";
+import { PRESETS_DIR } from "../../lib/presets.js";
 
-const PKG_DIR = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..", "..");
+const PKG_DIR = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 
 // ---------------------------------------------------------------------------
 // CLI args
@@ -42,9 +43,8 @@ function parseUpgradeArgs(argv) {
  * Falls back to "en" if the requested locale template does not exist.
  */
 function loadSddTemplate(lang) {
-  const tryLangs = [lang, "en"];
-  for (const l of tryLangs) {
-    const tmplPath = path.join(PKG_DIR, "templates", "locale", l, "base", "AGENTS.sdd.md");
+  for (const l of [lang, "en"]) {
+    const tmplPath = path.join(PRESETS_DIR, "base", "templates", l, "AGENTS.sdd.md");
     if (fs.existsSync(tmplPath)) {
       return fs.readFileSync(tmplPath, "utf8");
     }

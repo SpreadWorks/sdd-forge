@@ -7,9 +7,7 @@
 
 import fs from "fs";
 import path from "path";
-import { fileURLToPath } from "url";
-
-const PKG_DIR = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
+import { PRESETS_DIR } from "./presets.js";
 
 /**
  * SDD セクションテンプレートを読み込む。
@@ -20,7 +18,7 @@ const PKG_DIR = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..")
  */
 export function loadSddTemplate(lang) {
   for (const l of [lang, "en"]) {
-    const p = path.join(PKG_DIR, "templates", "locale", l, "base", "AGENTS.sdd.md");
+    const p = path.join(PRESETS_DIR, "base", "templates", l, "AGENTS.sdd.md");
     if (fs.existsSync(p)) return fs.readFileSync(p, "utf8");
   }
   return "";

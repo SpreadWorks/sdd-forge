@@ -16,16 +16,12 @@ import { repoRoot, parseArgs } from "../../lib/cli.js";
 import { loadJsonFile } from "../../lib/config.js";
 import { resolveType } from "../../lib/types.js";
 import { resolveChain, mergeFile } from "../lib/template-merger.js";
-import { presetByLeaf } from "../../lib/presets.js";
 import { createResolver } from "../lib/resolver-factory.js";
 import { parseDirectives } from "../lib/directive-parser.js";
 import { createLogger } from "../../lib/progress.js";
 import { createI18n } from "../../lib/i18n.js";
 
 const logger = createLogger("readme");
-
-// npm パッケージ: テンプレートはパッケージ自身の templates/ に同梱される
-const PKG_DIR = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 
 // ---------------------------------------------------------------------------
 // docs/ 解析 (removed — now handled by DocsSource DataSource)
@@ -115,15 +111,8 @@ Options:
   }
 
   const resolvedType = resolveType(type);
-  const templatesRoot = path.join(PKG_DIR, "templates", "locale", lang);
-
-  // テンプレート継承チェーンで README.md をマージ
-  const leaf = resolvedType.split("/").pop();
-  const preset = presetByLeaf(leaf);
-  const presetTemplateDir = preset?.dir ? path.join(preset.dir, "templates", lang) : null;
   const projectLocalDir = path.join(root, ".sdd-forge", "templates", lang, "docs");
-
-  const chain = resolveChain(templatesRoot, resolvedType, presetTemplateDir, projectLocalDir);
+  const chain = resolveChain(resolvedType, lang, projectLocalDir);
   const merged = mergeFile("README.md", chain);
   if (!merged) {
     logger.log(t("readme.noTemplate", { type }));
@@ -151,8 +140,11 @@ Options:
   const readmePath = path.join(root, "README.md");
   const manualContent = extractManualBlock(readmePath);
 
-  // MANUAL_CONTENT は @data 外の仕組みなので個別に処理
-  let resolved = templateContent.replace(/\{\{MANUAL_CONTENT\}\}/g, manualContent);
+  // MANUAL ブロック内に既存コンテンツを挿入
+  let resolved = templateContent.replace(
+    /<!-- MANUAL:START -->\n<!-- MANUAL:END -->/,
+    `<!-- MANUAL:START -->\n${manualContent}<!-- MANUAL:END -->`,
+  );
   resolved = resolveDataDirectives(resolved, resolveFn);
   const newContent = resolved.endsWith("\n") ? resolved : resolved + "\n";
 

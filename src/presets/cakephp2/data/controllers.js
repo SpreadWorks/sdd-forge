@@ -94,7 +94,7 @@ export default class CakephpControllersSource extends ControllersSource {
     };
   }
 
-  /** CSV import/export capabilities table (from overrides.json). */
+  /** CSV import/export capabilities table. */
   csv(analysis, labels) {
     const csvMap = this.overrides().controllersCsv || {};
     const entries = Object.entries(csvMap).sort(([a], [b]) => a.localeCompare(b));

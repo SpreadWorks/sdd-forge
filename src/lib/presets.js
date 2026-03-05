@@ -10,12 +10,12 @@ import path from "path";
 import { fileURLToPath } from "url";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const PRESETS_DIR = path.resolve(__dirname, "..", "presets");
+export const PRESETS_DIR = path.resolve(__dirname, "..", "presets");
 
 /**
  * Discover all presets by scanning src/presets/{key}/preset.json.
- * Each preset gets: { key, dir, arch, label, aliases, scan, type }.
- * `type` is derived as `${arch}/${key}` for backward compatibility.
+ * Each preset gets: { key, dir, arch, label, aliases, scan, type, isArch }.
+ * Arch-layer presets (base, webapp, cli, library) have isArch=true.
  */
 function discoverPresets() {
   if (!fs.existsSync(PRESETS_DIR)) return [];
@@ -26,14 +26,16 @@ function discoverPresets() {
       const manifestPath = path.join(PRESETS_DIR, d.name, "preset.json");
       if (!fs.existsSync(manifestPath)) return null;
       const manifest = JSON.parse(fs.readFileSync(manifestPath, "utf8"));
+      const isArch = manifest.arch === d.name || d.name === "base";
       return {
         key: d.name,
-        type: `${manifest.arch}/${d.name}`,
+        type: isArch ? d.name : `${manifest.arch}/${d.name}`,
         dir: path.join(PRESETS_DIR, d.name),
         arch: manifest.arch,
         label: manifest.label,
         aliases: manifest.aliases || [],
         scan: manifest.scan || {},
+        isArch,
       };
     })
     .filter(Boolean);
@@ -47,7 +49,7 @@ export const PRESETS = discoverPresets();
  * @param {string} arch - "webapp" | "cli" | "library"
  */
 export function presetsForArch(arch) {
-  return PRESETS.filter((p) => p.arch === arch);
+  return PRESETS.filter((p) => p.arch === arch && !p.isArch);
 }
 
 /**
@@ -61,12 +63,14 @@ export function presetByLeaf(leaf) {
 
 /**
  * Build a TYPE_ALIASES-compatible object mapping aliases → canonical type paths.
+ * Excludes arch-layer presets (base, webapp, cli, library).
  *
  * @returns {Record<string, string>}
  */
 export function buildTypeAliases() {
   const aliases = {};
   for (const p of PRESETS) {
+    if (p.isArch) continue;
     aliases[p.key] = p.type;
     for (const alias of p.aliases) {
       aliases[alias] = p.type;

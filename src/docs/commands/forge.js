@@ -456,7 +456,7 @@ async function main() {
           if (succeeded > 0) usedAgent = true;
           if (failed > 0 && succeeded === 0) agentFailed = true;
         } else {
-          // Legacy: single prompt with all files
+          // Single-call mode: all files in one prompt (agent lacks systemPromptFlag)
           const prompt = buildForgePrompt({
             lang,
             userPrompt,
