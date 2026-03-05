@@ -1,6 +1,6 @@
-# sdd-forge
+# <!-- @data: project.name("") -->sdd-forge<!-- @enddata -->
 
-[![npm version](https://img.shields.io/npm/v/sdd-forge.svg)](https://www.npmjs.com/package/sdd-forge)
+[![npm version](https://img.shields.io/npm/v/<!-- @data: project.name("") -->sdd-forge<!-- @enddata -->.svg)](https://www.npmjs.com/package/<!-- @data: project.name("") -->sdd-forge<!-- @enddata -->)
 
 **ソースコード解析 + AI で、プロジェクトドキュメントを自動生成・維持する CLI ツール。**
 
@@ -23,23 +23,23 @@
 
 ```bash
 # npm
-npm install -g sdd-forge
+npm install -g <!-- @data: project.name("") -->sdd-forge<!-- @enddata -->
 
 # yarn
-yarn global add sdd-forge
+yarn global add <!-- @data: project.name("") -->sdd-forge<!-- @enddata -->
 
 # pnpm
-pnpm add -g sdd-forge
+pnpm add -g <!-- @data: project.name("") -->sdd-forge<!-- @enddata -->
 ```
 
 ### セットアップ & ドキュメント生成
 
 ```bash
 # 1. プロジェクトを登録（インタラクティブウィザード）
-sdd-forge setup
+<!-- @data: project.name("") -->sdd-forge<!-- @enddata --> setup
 
 # 2. ドキュメントを一括生成（scan → init → data → text → readme）
-sdd-forge build
+<!-- @data: project.name("") -->sdd-forge<!-- @enddata --> build
 ```
 
 これだけで `docs/` と `README.md` が生成されます。
@@ -122,7 +122,7 @@ Claude Code の設定後、スキルで SDD ワークフローを実行できま
 
 ## ドキュメント
 
-
+<!-- @data: docs.chapters("章|概要") -->
 | 章 | 概要 |
 | --- | --- |
 | [01. ツール概要とアーキテクチャ](docs/01_overview.md) |  |
@@ -130,7 +130,7 @@ Claude Code の設定後、スキルで SDD ワークフローを実行できま
 | [03. 設定とカスタマイズ](docs/03_configuration.md) |  |
 | [04. 内部設計](docs/04_internal_design.md) |  |
 | [05. 開発・テスト・配布](docs/05_development.md) |  |
-
+<!-- @enddata -->
 
 ## License
 
