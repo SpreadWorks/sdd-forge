@@ -21,7 +21,7 @@
 
 ### インストール
 
-```bash
+<pre>
 # npm
 npm install -g <!-- {{data: project.name("")}} --><!-- {{/data}} -->
 
@@ -30,17 +30,17 @@ yarn global add <!-- {{data: project.name("")}} --><!-- {{/data}} -->
 
 # pnpm
 pnpm add -g <!-- {{data: project.name("")}} --><!-- {{/data}} -->
-```
+</pre>
 
 ### セットアップ & ドキュメント生成
 
-```bash
+<pre>
 # 1. プロジェクトを登録（インタラクティブウィザード）
 <!-- {{data: project.name("")}} --><!-- {{/data}} --> setup
 
 # 2. ドキュメントを一括生成（scan → init → data → text → readme）
 <!-- {{data: project.name("")}} --><!-- {{/data}} --> build
-```
+</pre>
 
 これだけで `docs/` と `README.md` が生成されます。
 

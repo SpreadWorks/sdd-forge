@@ -66,8 +66,8 @@ function resolveDataDirectives(text, resolveFn) {
     if (rendered === null || rendered === undefined) continue;
 
     if (d.inline) {
-      const openTag = d.raw.match(/\{\{data:\s*[\w.-]+\.[\w-]+\("[^"]*"\)\s*\}\}/)[0];
-      const endTag = "{{/data}}";
+      const openTag = d.raw.match(/<!--\s*\{\{data:\s*[\w.-]+\.[\w-]+\("[^"]*"\)\}\}\s*-->/)[0];
+      const endTag = "<!-- {{/data}} -->";
       lines[d.line] = lines[d.line].replace(d.raw, `${openTag}${rendered}${endTag}`);
     } else if (d.endLine >= 0) {
       const endDataLine = lines[d.endLine];
