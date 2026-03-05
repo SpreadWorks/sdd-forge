@@ -21,7 +21,7 @@
 
 ### インストール
 
-```bash
+<pre>
 # npm
 npm install -g <!-- @data: project.name("") -->sdd-forge<!-- @enddata -->
 
@@ -30,17 +30,17 @@ yarn global add <!-- @data: project.name("") -->sdd-forge<!-- @enddata -->
 
 # pnpm
 pnpm add -g <!-- @data: project.name("") -->sdd-forge<!-- @enddata -->
-```
+</pre>
 
 ### セットアップ & ドキュメント生成
 
-```bash
+<pre>
 # 1. プロジェクトを登録（インタラクティブウィザード）
 <!-- @data: project.name("") -->sdd-forge<!-- @enddata --> setup
 
 # 2. ドキュメントを一括生成（scan → init → data → text → readme）
 <!-- @data: project.name("") -->sdd-forge<!-- @enddata --> build
-```
+</pre>
 
 これだけで `docs/` と `README.md` が生成されます。
 

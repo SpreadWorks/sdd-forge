@@ -5,9 +5,9 @@
 
 ## インストール
 
-```bash
+<pre>
 npm install <!-- @data: project.name("") --><!-- @enddata -->
-```
+</pre>
 
 ## ドキュメント
 
