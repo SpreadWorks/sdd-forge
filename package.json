@@ -1,6 +1,6 @@
 {
   "name": "sdd-forge",
-  "version": "0.1.0-alpha.18",
+  "version": "0.1.0-alpha.19",
   "description": "Spec-Driven Development tooling for automated documentation generation",
   "type": "module",
   "bin": {
