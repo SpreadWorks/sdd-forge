@@ -4,3 +4,6 @@
 node_modules
 /projects/
 /projects.json
+
+.agents/
+.claude/

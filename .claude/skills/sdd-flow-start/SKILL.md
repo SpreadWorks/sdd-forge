@@ -1,1 +1,0 @@
-../../../.agents/skills/sdd-flow-start/SKILL.md
