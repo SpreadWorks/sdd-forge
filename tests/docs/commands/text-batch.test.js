@@ -9,17 +9,17 @@ describe("processTemplateFileBatch", () => {
   let tmp;
   afterEach(() => tmp && removeTmpDir(tmp));
 
-  it("fills @text directives using echo agent", async () => {
+  it("fills {{text}} directives using echo agent", async () => {
     tmp = createTmpDir();
 
     const templateContent = [
       "# Test Document",
       "",
       "## Overview",
-      "<!-- @text: describe the overview -->",
+      "<!-- {{text: describe the overview}} -->",
       "",
       "## Details",
-      "<!-- @text: describe the details -->",
+      "<!-- {{text: describe the details}} -->",
       "",
     ].join("\n");
 
@@ -28,11 +28,11 @@ describe("processTemplateFileBatch", () => {
     const agent = {
       command: "echo",
       args: [templateContent.replace(
-        "<!-- @text: describe the overview -->\n",
-        "<!-- @text: describe the overview -->\n\nThis is the overview.\n"
+        "<!-- {{text: describe the overview}} -->\n",
+        "<!-- {{text: describe the overview}} -->\n\nThis is the overview.\n"
       ).replace(
-        "<!-- @text: describe the details -->\n",
-        "<!-- @text: describe the details -->\n\nThese are the details.\n"
+        "<!-- {{text: describe the details}} -->\n",
+        "<!-- {{text: describe the details}} -->\n\nThese are the details.\n"
       )],
     };
 
@@ -62,7 +62,7 @@ describe("processTemplateFileBatch", () => {
     const templateContent = [
       "# Test Document",
       "## Section",
-      "<!-- @text: describe -->",
+      "<!-- {{text: describe}} -->",
       "",
     ].join("\n");
 

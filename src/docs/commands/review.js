@@ -78,10 +78,10 @@ function main() {
       fail = 1;
     }
 
-    // Unfilled @text directive check
+    // Unfilled {{text}} directive check
     let unfilled = 0;
     for (let i = 0; i < lines.length; i++) {
-      if (/^\s*<!-- @text/.test(lines[i])) {
+      if (/<!--\s*\{\{text\b/.test(lines[i])) {
         const nextLine = (lines[i + 1] || "").trim();
         if (nextLine === "") {
           unfilled++;
@@ -93,14 +93,14 @@ function main() {
     }
   }
 
-  // Unfilled @data directive check (FAIL)
+  // Unfilled {{data}} directive check (FAIL)
   for (const f of chapterFiles) {
     const filePath = path.join(targetDir, f);
     const content = fs.readFileSync(filePath, "utf8");
     const lines = content.split("\n");
     let unfilledData = 0;
     for (let i = 0; i < lines.length; i++) {
-      if (/^\s*<!--\s*@data\s*:/.test(lines[i])) {
+      if (/<!--\s*\{\{data\s*:/.test(lines[i])) {
         const nextLine = (lines[i + 1] || "").trim();
         if (nextLine === "") {
           unfilledData++;

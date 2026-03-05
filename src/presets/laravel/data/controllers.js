@@ -4,7 +4,7 @@
  * Extends the webapp parent ControllersSource with Laravel-specific
  * scan logic and resolve methods.
  *
- * Available methods (called via @data directives):
+ * Available methods (called via {{data}} directives):
  *   controllers.list("Name|File|Description")
  *   controllers.actions("Controller|Action")
  *   controllers.middleware("Middleware|Controllers")

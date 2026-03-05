@@ -1,7 +1,7 @@
 /**
  * ProjectSource — common DataSource for project metadata.
  *
- * Provides package.json values (name, description, version) as @data directives.
+ * Provides package.json values (name, description, version) as {{data}} directives.
  * Available for all project types.
  */
 

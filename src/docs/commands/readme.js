@@ -44,11 +44,11 @@ function extractManualBlock(filePath) {
 }
 
 // ---------------------------------------------------------------------------
-// テンプレート処理 (@data ディレクティブ解決)
+// テンプレート処理 ({{data}} ディレクティブ解決)
 // ---------------------------------------------------------------------------
 
 /**
- * テンプレート内の @data ディレクティブを解決する。
+ * テンプレート内の {{data}} ディレクティブを解決する。
  * processTemplate と同じロジックだが readme.js 用に独立。
  */
 function resolveDataDirectives(text, resolveFn) {
@@ -66,8 +66,8 @@ function resolveDataDirectives(text, resolveFn) {
     if (rendered === null || rendered === undefined) continue;
 
     if (d.inline) {
-      const openTag = d.raw.match(/<!--\s*@data:\s*[\w.-]+\.[\w-]+\("[^"]*"\)\s*-->/)[0];
-      const endTag = "<!-- @enddata -->";
+      const openTag = d.raw.match(/\{\{data:\s*[\w.-]+\.[\w-]+\("[^"]*"\)\s*\}\}/)[0];
+      const endTag = "{{/data}}";
       lines[d.line] = lines[d.line].replace(d.raw, `${openTag}${rendered}${endTag}`);
     } else if (d.endLine >= 0) {
       const endDataLine = lines[d.endLine];
@@ -127,7 +127,7 @@ Options:
     .replace(/([^\n])\n(## )/g, "$1\n\n$2")
     .replace(/([^\n])\n(### )/g, "$1\n\n$2");
 
-  // @data ディレクティブを解決
+  // {{data}} ディレクティブを解決
   let resolveFn;
   try {
     const resolver = await createResolver(resolvedType, root);

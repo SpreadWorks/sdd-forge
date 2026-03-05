@@ -4,7 +4,7 @@
  * Extends the webapp parent RoutesSource with Laravel-specific
  * scan logic and resolve methods.
  *
- * Available methods (called via @data directives):
+ * Available methods (called via {{data}} directives):
  *   routes.list("Method|URI|Controller|Action")
  *   routes.api("Method|URI|Controller|Action")
  */

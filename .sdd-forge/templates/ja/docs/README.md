@@ -1,6 +1,6 @@
-# <!-- @data: project.name("") --><!-- @enddata -->
+# <!-- {{data: project.name("")}} --><!-- {{/data}} -->
 
-[![npm version](https://img.shields.io/npm/v/<!-- @data: project.name("") --><!-- @enddata -->.svg)](https://www.npmjs.com/package/<!-- @data: project.name("") --><!-- @enddata -->)
+[![npm version](https://img.shields.io/npm/v/<!-- {{data: project.name("")}} --><!-- {{/data}} -->.svg)](https://www.npmjs.com/package/<!-- {{data: project.name("")}} --><!-- {{/data}} -->)
 
 **ソースコード解析 + AI で、プロジェクトドキュメントを自動生成・維持する CLI ツール。**
 
@@ -11,7 +11,7 @@
 
 - **ゼロ依存** — Node.js 18+ のみで動作。npm 依存パッケージなし
 - **ソースコード自動解析** — コントローラ・モデル・ルート・設定ファイルを静的解析し、構造データを抽出
-- **AI ドキュメント生成** — テンプレートの `@text` ディレクティブを AI が自動展開
+- **AI ドキュメント生成** — テンプレートの `{{text}}` ディレクティブを AI が自動展開
 - **テンプレート継承** — base → arch → preset → project-local の 4 層継承でカスタマイズ可能
 - **SDD ワークフロー** — spec → gate → 実装 → forge → review の開発サイクルをコマンドで管理
 - **Claude Code 連携** — `/sdd-flow-start` `/sdd-flow-close` スキルでワークフローを自動実行
@@ -23,23 +23,23 @@
 
 ```bash
 # npm
-npm install -g <!-- @data: project.name("") --><!-- @enddata -->
+npm install -g <!-- {{data: project.name("")}} --><!-- {{/data}} -->
 
 # yarn
-yarn global add <!-- @data: project.name("") --><!-- @enddata -->
+yarn global add <!-- {{data: project.name("")}} --><!-- {{/data}} -->
 
 # pnpm
-pnpm add -g <!-- @data: project.name("") --><!-- @enddata -->
+pnpm add -g <!-- {{data: project.name("")}} --><!-- {{/data}} -->
 ```
 
 ### セットアップ & ドキュメント生成
 
 ```bash
 # 1. プロジェクトを登録（インタラクティブウィザード）
-<!-- @data: project.name("") --><!-- @enddata --> setup
+<!-- {{data: project.name("")}} --><!-- {{/data}} --> setup
 
 # 2. ドキュメントを一括生成（scan → init → data → text → readme）
-<!-- @data: project.name("") --><!-- @enddata --> build
+<!-- {{data: project.name("")}} --><!-- {{/data}} --> build
 ```
 
 これだけで `docs/` と `README.md` が生成されます。
@@ -54,8 +54,8 @@ pnpm add -g <!-- @data: project.name("") --><!-- @enddata -->
 | `build` | ドキュメント生成パイプラインを一括実行 |
 | `scan` | ソースコード解析 → `analysis.json` |
 | `init` | テンプレートから `docs/` を初期化 |
-| `data` | `@data` ディレクティブを解析データで解決 |
-| `text` | `@text` ディレクティブを AI で解決 |
+| `data` | `{{data}}` ディレクティブを解析データで解決 |
+| `text` | `{{text}}` ディレクティブを AI で解決 |
 | `readme` | `docs/` から `README.md` を自動生成 |
 | `forge` | AI によるドキュメント反復改善 |
 | `review` | ドキュメント品質チェック |
@@ -122,8 +122,8 @@ Claude Code の設定後、スキルで SDD ワークフローを実行できま
 
 ## ドキュメント
 
-<!-- @data: docs.chapters("章|概要") -->
-<!-- @enddata -->
+<!-- {{data: docs.chapters("章|概要")}} -->
+<!-- {{/data}} -->
 
 ## License
 

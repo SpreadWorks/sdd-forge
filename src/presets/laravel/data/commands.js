@@ -3,7 +3,7 @@
  *
  * Uses shells data from the generic scan (no preset-specific scan).
  *
- * Available methods (called via @data directives):
+ * Available methods (called via {{data}} directives):
  *   commands.list("Name|File|Description")
  */
 

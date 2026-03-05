@@ -24,10 +24,10 @@
       "Describe only facts based on analysis data (avoid speculation)",
       "Start the body from the very first line (no blank lines or introductory text)"
     ],
-    "batchInstruction": "Fill in all <!-- @text: instruction --> directives in the following {{fileName}}.",
+    "batchInstruction": "Fill in all {{text: instruction}} directives in the following {{fileName}}.",
     "batchRules": [
       "Output the entire file content (including unchanged parts) as-is",
-      "Do not delete <!-- @text: ... --> directive lines — keep them in place",
+      "Do not delete {{text: ...}} directive lines — keep them in place",
       "Insert the body text after a blank line following each directive line",
       "Do not add, change, or delete section headings (#, ##, ###)",
       "Never include preamble, explanation, or meta-commentary",

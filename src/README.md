@@ -148,7 +148,7 @@ main();
 
 1. `docs/presets/<type>/<framework>/` ディレクトリを作成
 2. `scanner.js` — フレームワーク固有のスキャン拡張
-3. `resolver.js` — `@data` ディレクティブのデータ解決ロジック
+3. `resolver.js` — `{{data}}` ディレクティブのデータ解決ロジック
 4. `analyze-*.js` — 個別カテゴリの解析スクリプト（必要に応じて）
 5. `templates/locale/<lang>/<type>/<framework>/` に章テンプレートのオーバーライドを配置
 

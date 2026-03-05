@@ -4,7 +4,7 @@
  * Extends the webapp parent ModelsSource with Laravel-specific
  * scan logic and resolve methods.
  *
- * Available methods (called via @data directives):
+ * Available methods (called via {{data}} directives):
  *   models.relations("Model|Associations")
  *   models.scopes("Model|Scope")
  *   models.casts("Model|Attribute|Cast Type")

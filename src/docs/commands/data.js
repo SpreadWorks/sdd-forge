@@ -3,8 +3,8 @@
  * sdd-forge/engine/populate.js
  *
  * ディレクティブベースのテンプレートエンジン。
- * analysis.json を読み、テンプレート内の @data ディレクティブを解決してレンダリングする。
- * @text はスキップしてログ出力する（後続タスクで LLM 連携を実装予定）。
+ * analysis.json を読み、テンプレート内の {{data}} ディレクティブを解決してレンダリングする。
+ * {{text}} はスキップしてログ出力する（後続タスクで LLM 連携を実装予定）。
  *
  * Usage:
  *   node sdd-forge/engine/populate.js [--dry-run] [--stdout]
@@ -55,7 +55,7 @@ function processTemplate(text, analysis, fileName, resolveFn) {
 
     if (d.type === "text") {
       skipped++;
-      logger.verbose(`SKIP @text in ${fileName}:${d.line + 1}: ${d.prompt.slice(0, 60)}...`);
+      logger.verbose(`SKIP {{text}} in ${fileName}:${d.line + 1}: ${d.prompt.slice(0, 60)}...`);
       continue;
     }
 
@@ -67,19 +67,19 @@ function processTemplate(text, analysis, fileName, resolveFn) {
       }
 
       if (d.inline) {
-        // インライン: d.raw は完全なマッチ文字列（<!-- @data: ... -->old<!-- @enddata -->）
+        // インライン: d.raw は完全なマッチ文字列（{{data: ...}}old{{/data}}）
         // openTag 部分を抽出し、内容を差し替える
-        const openTag = d.raw.match(/<!--\s*@data:\s*[\w.-]+\.[\w-]+\("[^"]*"\)\s*-->/)[0];
-        const endTag = "<!-- @enddata -->";
+        const openTag = d.raw.match(/\{\{data:\s*[\w.-]+\.[\w-]+\("[^"]*"\)\s*\}\}/)[0];
+        const endTag = "{{/data}}";
         lines[d.line] = lines[d.line].replace(d.raw, `${openTag}${rendered}${endTag}`);
       } else if (d.endLine >= 0) {
-        // ブロック: @data 行と @enddata 行の間を置換
+        // ブロック: {{data}} 行と {{/data}} 行の間を置換
         const endDataLine = lines[d.endLine];
         const newLines = [d.raw, rendered, endDataLine];
         lines.splice(d.line, d.endLine - d.line + 1, ...newLines);
       } else {
-        // @enddata がない — スキップ
-        logger.log(`WARN: missing @enddata for "${d.source}.${d.method}" in ${fileName}:${d.line + 1}`);
+        // {{/data}} がない — スキップ
+        logger.log(`WARN: missing {{/data}} for "${d.source}.${d.method}" in ${fileName}:${d.line + 1}`);
         continue;
       }
       replaced++;

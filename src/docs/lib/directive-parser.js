@@ -1,14 +1,14 @@
 /**
  * tools/engine/directive-parser.js
  *
- * テンプレート内の @data / @text ディレクティブを抽出する。
+ * テンプレート内の {{data}} / {{text}} ディレクティブを抽出する。
  * テンプレート継承用の @block / @endblock / @extends も解析する。
  *
  * ディレクティブ構文:
- *   <!-- @data: <source>.<method>("<label1>|<label2>|...") -->
- *   <!-- @enddata -->
- *   <!-- @text: <prompt text> -->
- *   <!-- @text[id=foo, maxLines=5]: <prompt text> -->
+ *   <!-- {{data: <source>.<method>("<label1>|<label2>|...")}} -->
+ *   <!-- {{/data}} -->
+ *   <!-- {{text: <prompt text>}} -->
+ *   <!-- {{text[id=foo, maxLines=5]: <prompt text>}} -->
  *
  * ブロック継承構文:
  *   <!-- @extends -->
@@ -24,8 +24,8 @@
  * @property {string[]} labels   - テーブルヘッダー表示名
  * @property {string} raw        - ディレクティブ行の全文
  * @property {number} line       - 行番号 (0-based)
- * @property {number} endLine    - @enddata の行番号 (0-based)
- * @property {boolean} inline    - @data と @enddata が同一行か
+ * @property {number} endLine    - {{/data}} の行番号 (0-based)
+ * @property {boolean} inline    - {{data}} と {{/data}} が同一行か
  * @property {string} fullRaw    - インラインの場合、行全体
  */
 
@@ -38,14 +38,14 @@
  * @property {number} line        - 行番号 (0-based)
  */
 
-// <!-- @data: source.method("label1|label2|...") -->
+// <!-- {{data: source.method("label1|label2|...")}} -->
 // source は "config.constants" のようにドットを含むことがある（最後のドットで分割）
-const DATA_RE = /^<!--\s*@data:\s*([\w.-]+)\.([\w-]+)\("([^"]*)"\)\s*-->$/;
-const TEXT_RE = /^<!--\s*@text\s*(?:\[([^\]]*)\])?\s*:\s*(.+?)\s*-->$/;
-const ENDDATA_RE = /^<!--\s*@enddata\s*-->$/;
+const DATA_RE = /^<!--\s*\{\{data:\s*([\w.-]+)\.([\w-]+)\("([^"]*)"\)\}\}\s*-->$/;
+const TEXT_RE = /^<!--\s*\{\{text\s*(?:\[([^\]]*)\])?\s*:\s*(.+?)\}\}\s*-->$/;
+const ENDDATA_RE = /^<!--\s*\{\{\/data\}\}\s*-->$/;
 
-// インライン検出用: 1行内に @data と @enddata がある
-const INLINE_DATA_RE = /<!--\s*@data:\s*([\w.-]+)\.([\w-]+)\("([^"]*)"\)\s*-->([\s\S]*?)<!--\s*@enddata\s*-->/;
+// インライン検出用: 1行内に {{data ...}} と {{/data}} がある
+const INLINE_DATA_RE = /<!--\s*\{\{data:\s*([\w.-]+)\.([\w-]+)\("([^"]*)"\)\}\}\s*-->([\s\S]*?)<!--\s*\{\{\/data\}\}\s*-->/;
 
 // ブロック継承ディレクティブ
 const BLOCK_START_RE = /^<!--\s*@block:\s*([\w-]+)\s*-->$/;
@@ -85,7 +85,7 @@ export function parseDirectives(text) {
   for (let i = 0; i < lines.length; i++) {
     const trimmed = lines[i].trim();
 
-    // インライン @data チェック（1行内に @data と @enddata がある、複数対応）
+    // インライン {{data}} チェック（1行内に {{data}} と {{/data}} がある、複数対応）
     const inlineGlobal = new RegExp(INLINE_DATA_RE.source, "g");
     const inlineMatches = [...lines[i].matchAll(inlineGlobal)];
     if (inlineMatches.length > 0) {
@@ -106,17 +106,17 @@ export function parseDirectives(text) {
       continue;
     }
 
-    // ブロック @data チェック
+    // ブロック {{data}} チェック
     const dataMatch = trimmed.match(DATA_RE);
     if (dataMatch) {
-      // @enddata を探す
+      // {{/data}} を探す
       let endLine = -1;
       for (let j = i + 1; j < lines.length; j++) {
         if (ENDDATA_RE.test(lines[j].trim())) {
           endLine = j;
           break;
         }
-        // 次の @data が先に来たら閉じなし（エラー扱い）
+        // 次の {{data}} が先に来たら閉じなし（エラー扱い）
         if (DATA_RE.test(lines[j].trim()) || INLINE_DATA_RE.test(lines[j])) {
           break;
         }

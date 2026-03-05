@@ -4,7 +4,7 @@
  * Extends the webapp parent TablesSource with Symfony-specific
  * scan logic and resolve methods.
  *
- * Available methods (called via @data directives):
+ * Available methods (called via {{data}} directives):
  *   tables.list("Name|Columns|Description")
  *   tables.columns("Table|Column|Type|Nullable")
  *   tables.fk("Table|Column|References")

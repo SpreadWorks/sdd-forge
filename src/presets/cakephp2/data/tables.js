@@ -4,7 +4,7 @@
  * Extends webapp TablesSource with CakePHP-specific DB name resolution,
  * FK column naming, and contents/staging sync mapping.
  *
- * Available methods (called via @data directives):
+ * Available methods (called via {{data}} directives):
  *   tables.list("Table|DB|Description")              — overrides parent
  *   tables.fk("Parent|Child|FK Column|Type")         — overrides parent
  *   tables.sync("CMS Table|FE Model|FE Staging Model")

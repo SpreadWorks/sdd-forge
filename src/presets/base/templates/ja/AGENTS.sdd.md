@@ -14,8 +14,8 @@ docs の内容は以下の 3 種類で構成される:
 
 | 種類 | 生成元 | 説明 |
 |---|---|---|
-| 解析データ | `@data` ディレクティブ | ソースコードから自動抽出された構造情報 |
-| AI 生成テキスト | `@text` ディレクティブ | AI がソースと文脈から生成した説明文 |
+| 解析データ | `{{data}}` ディレクティブ | ソースコードから自動抽出された構造情報 |
+| AI 生成テキスト | `{{text}}` ディレクティブ | AI がソースと文脈から生成した説明文 |
 | 手動記述 | `MANUAL` ブロック | 人間が記述した運用手順・業務背景・外部仕様 |
 
 #### 鮮度チェック
@@ -69,8 +69,8 @@ docs の内容は以下の 3 種類で構成される:
 | `sdd-forge build` | ドキュメント一括生成（scan → init → data → text → readme） |
 | `sdd-forge scan` | ソースコード解析 → analysis.json |
 | `sdd-forge init` | テンプレートから docs/ を初期化 |
-| `sdd-forge data` | @data ディレクティブを解析データで解決 |
-| `sdd-forge text --agent <name>` | @text ディレクティブを AI で解決 |
+| `sdd-forge data` | {{data}} ディレクティブを解析データで解決 |
+| `sdd-forge text --agent <name>` | {{text}} ディレクティブを AI で解決 |
 | `sdd-forge readme` | README.md 自動生成 |
 | `sdd-forge forge --prompt "<内容>"` | docs 反復改善 |
 | `sdd-forge review` | docs 品質チェック |

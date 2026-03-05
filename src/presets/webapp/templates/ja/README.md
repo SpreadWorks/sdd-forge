@@ -1,23 +1,23 @@
-# <!-- @data: project.name("") --><!-- @enddata -->
+# <!-- {{data: project.name("")}} --><!-- {{/data}} -->
 
-<!-- @data: project.description("") -->
-<!-- @enddata -->
+<!-- {{data: project.description("")}} -->
+<!-- {{/data}} -->
 
 ## 技術スタック
 
 | カテゴリ | 技術 |
 |----------|------|
-<!-- @data: config.stack("") -->
-<!-- @enddata -->
+<!-- {{data: config.stack("")}} -->
+<!-- {{/data}} -->
 
 ## クイックスタート
 
-<!-- @text: このプロジェクトの環境構築と起動手順を説明してください。 -->
+<!-- {{text: このプロジェクトの環境構築と起動手順を説明してください。}} -->
 
 ## ドキュメント
 
-<!-- @data: docs.chapters("章|概要") -->
-<!-- @enddata -->
+<!-- {{data: docs.chapters("章|概要")}} -->
+<!-- {{/data}} -->
 
 <!-- MANUAL:START -->
 <!-- MANUAL:END -->
