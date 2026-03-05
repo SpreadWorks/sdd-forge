@@ -139,9 +139,9 @@ function createSpecTemplate({ branchName, specDirName }) {
 
 function main() {
   const opts = parseArgs(process.argv.slice(2), {
-    flags: ["--dry-run", "--allow-dirty", "--no-branch"],
-    options: ["--title", "--base", "--worktree"],
-    defaults: { title: "", base: "", dryRun: false, allowDirty: false, noBranch: false, worktree: "" },
+    flags: ["--dry-run", "--allow-dirty", "--no-branch", "--worktree"],
+    options: ["--title", "--base"],
+    defaults: { title: "", base: "", dryRun: false, allowDirty: false, noBranch: false, worktree: false },
   });
   if (opts.help) {
     console.log(
@@ -154,7 +154,7 @@ function main() {
         "  --dry-run           変更せず結果のみ表示",
         "  --allow-dirty       ワークツリーが dirty でも続行する",
         "  --no-branch         ブランチを作成せず spec のみ作成する",
-        "  --worktree <path>   git worktree を作成して spec を配置する",
+        "  --worktree          git worktree を作成して spec を配置する (.sdd-forge/worktree/<branch>/)",
       ].join("\n"),
     );
     return;
@@ -168,7 +168,7 @@ function main() {
   // Determine branching strategy
   const inWorktree = isInsideWorktree(root);
   const skipBranch = opts.noBranch || inWorktree;
-  const useWorktree = !skipBranch && !!opts.worktree;
+  const useWorktree = !skipBranch && opts.worktree;
 
   if (!opts.dryRun && !opts.allowDirty) {
     ensureClean(root);
@@ -183,7 +183,10 @@ function main() {
   const specDirName = `${idx}-${slug}`;
 
   // Determine where spec files live
-  const specRoot = useWorktree ? path.resolve(opts.worktree) : root;
+  const worktreePath = useWorktree
+    ? path.join(root, ".sdd-forge", "worktree", branchName.replace(/\//g, "-"))
+    : null;
+  const specRoot = useWorktree ? worktreePath : root;
   const specDir = path.join(specRoot, "specs", specDirName);
   const specPath = path.join(specDir, "spec.md");
   const qaPath = path.join(specDir, "qa.md");
@@ -198,7 +201,7 @@ function main() {
       `[dry-run] spec file: specs/${specDirName}/spec.md`,
     ];
     if (useWorktree) {
-      lines.push(`[dry-run] worktree: ${specRoot}`);
+      lines.push(`[dry-run] worktree: ${worktreePath}`);
     }
     console.log(lines.join("\n"));
     return;
@@ -230,7 +233,7 @@ function main() {
 
   if (useWorktree) {
     // Create worktree with new branch
-    const absPath = path.resolve(opts.worktree);
+    const absPath = worktreePath;
     runGit(root, ["worktree", "add", absPath, "-b", branchName, opts.base]);
     writeSpecFiles();
     writeCurrentSpec({ worktree: true, worktreePath: absPath });

@@ -108,14 +108,14 @@ describe("spec init CLI", () => {
     execFileSync("git", ["-C", tmp, "checkout", "-b", "main"], { encoding: "utf8" });
     execFileSync("git", ["-C", tmp, "commit", "--allow-empty", "-m", "init"], { encoding: "utf8" });
 
-    const wtPath = join(tmp, "my-worktree");
-    const result = execFileSync("node", [CMD, "--title", "wt-feat", "--base", "main", "--worktree", wtPath, "--allow-dirty"], {
+    const result = execFileSync("node", [CMD, "--title", "wt-feat", "--base", "main", "--worktree", "--allow-dirty"], {
       encoding: "utf8",
       env: { ...process.env, SDD_WORK_ROOT: tmp },
     });
 
     assert.match(result, /created worktree/);
     assert.match(result, /created branch/);
+    const wtPath = join(tmp, ".sdd-forge", "worktree", "feature-001-wt-feat");
     assert.ok(fs.existsSync(join(wtPath, "specs/001-wt-feat/spec.md")));
     assert.ok(fs.existsSync(join(wtPath, "specs/001-wt-feat/qa.md")));
 
@@ -129,8 +129,7 @@ describe("spec init CLI", () => {
     execFileSync("git", ["-C", tmp, "checkout", "-b", "main"], { encoding: "utf8" });
     execFileSync("git", ["-C", tmp, "commit", "--allow-empty", "-m", "init"], { encoding: "utf8" });
 
-    const wtPath = join(tmp, "wt-dry");
-    const result = execFileSync("node", [CMD, "--title", "test-wt", "--base", "main", "--worktree", wtPath, "--dry-run"], {
+    const result = execFileSync("node", [CMD, "--title", "test-wt", "--base", "main", "--worktree", "--dry-run"], {
       encoding: "utf8",
       env: { ...process.env, SDD_WORK_ROOT: tmp },
     });

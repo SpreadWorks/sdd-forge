@@ -2,7 +2,7 @@
 
 <!-- @text: この章の概要を1〜2文で記述してください。設定ファイルの種類・設定可能な項目の範囲・カスタマイズポイントを踏まえること。 -->
 
-sdd-forge の動作は `.sdd-forge/config.json`（主設定）と `.sdd-forge/context.json`（プロジェクト概要）の2ファイルで制御します。プロジェクト種別・出力言語・AIプロバイダー・ドキュメントスタイルなどをこれらのファイルで設定でき、`sdd-forge setup` を実行すると対話形式で初期値が生成されます。
+sdd-forge の動作は `.sdd-forge/config.json`（主設定）と `.sdd-forge/context.json`（プロジェクト概要）の 2 ファイルで制御します。プロジェクト種別・出力言語・AI プロバイダー・ドキュメントスタイルなどを設定でき、`sdd-forge setup` を実行すると対話形式で初期ファイルが生成されます。
 
 ## 内容
 
@@ -12,7 +12,7 @@ sdd-forge の動作は `.sdd-forge/config.json`（主設定）と `.sdd-forge/co
 
 | ファイル | 配置場所 | 役割 | 手動編集 |
 |---|---|---|---|
-| `config.json` | `.sdd-forge/config.json` | プロジェクト種別・出力言語・AIプロバイダー・ドキュメントスタイルを定義するメイン設定ファイル | ○ |
+| `config.json` | `.sdd-forge/config.json` | プロジェクト種別・出力言語・AI プロバイダー・ドキュメントスタイルを定義するメイン設定ファイル | ○ |
 | `context.json` | `.sdd-forge/context.json` | プロジェクト概要テキストを保存するファイル。`config.json` の `textFill.projectContext` より優先して参照されます | ○ |
 | `projects.json` | `.sdd-forge/projects.json` | マルチプロジェクト構成時のプロジェクト登録一覧。`sdd-forge setup` で自動生成されます | ○ |
 
@@ -31,26 +31,41 @@ sdd-forge の動作は `.sdd-forge/config.json`（主設定）と `.sdd-forge/co
 | `output.default` | `string` | — | `output.languages` のうちデフォルトとする言語コード |
 | `documentStyle.purpose` | `string` | — | ドキュメントの目的。`"developer-guide"`・`"user-guide"`・`"api-reference"` または任意の文字列 |
 | `documentStyle.tone` | `string` | — | 文体。`"polite"`（丁寧）・`"formal"`（硬め）・`"casual"`（カジュアル）のいずれか |
-| `documentStyle.customInstruction` | `string` | なし | AIに与える追加指示。ドキュメント生成時のプロンプトに付加されます |
+| `documentStyle.customInstruction` | `string` | なし | AI に与える追加指示。ドキュメント生成時のプロンプトに付加されます |
 | `textFill.projectContext` | `string` | `""` | プロジェクト概要テキスト。`context.json` が存在する場合はそちらが優先されます |
-| `textFill.preamblePatterns` | `{ pattern: string, flags?: string }[]` | `[{ pattern: "^(Here is\|以下に\|Based on)", flags: "i" }]` | LLM出力から除去する前置き文のパターン（正規表現） |
-| `defaultAgent` | `string` | — | 使用するAIプロバイダー名。`providers` に定義したキーを指定します |
+| `textFill.preamblePatterns` | `{ pattern: string, flags?: string }[]` | `[{ pattern: "^(Here is\|以下に\|Based on)", flags: "i" }]` | LLM 出力から除去する前置き文のパターン（正規表現） |
+| `defaultAgent` | `string` | — | 使用する AI プロバイダー名。`providers` に定義したキーを指定します |
 | `providers.<name>.name` | `string` | — | プロバイダーの表示名 |
 | `providers.<name>.command` | `string` | — | 実行するコマンド名（必須）。例: `"claude"`、`"codex"` |
 | `providers.<name>.args` | `string[]` | — | コマンド引数の配列（必須）。`{{PROMPT}}` プレースホルダーを使用できます |
-| `providers.<name>.timeoutMs` | `number` | `120000` | AIコマンドのタイムアウト時間（ミリ秒） |
+| `providers.<name>.timeoutMs` | `number` | `120000` | AI コマンドのタイムアウト時間（ミリ秒） |
 | `providers.<name>.systemPromptFlag` | `string` | なし | システムプロンプトを渡すフラグ。`"--system-prompt"` または `"--system-prompt-file"` |
 | `flow.merge` | `string` | `"squash"` | `sdd-forge flow` でブランチをマージする際の戦略。`"squash"`・`"ff-only"`・`"merge"` のいずれか |
 | `limits.designTimeoutMs` | `number` | — | ドキュメント設計フェーズのタイムアウト（ミリ秒） |
-| `limits.concurrency` | `number` | `5` | ファイルごとのAI並列実行数 |
+| `limits.concurrency` | `number` | `5` | ファイルごとの AI 並列実行数 |
+
+`context.json` のフィールドは以下のとおりです。
+
+| フィールド名 | 型 | 説明 |
+|---|---|---|
+| `projectContext` | `string` | プロジェクト概要テキスト。`config.json` の `textFill.projectContext` より優先して参照されます |
+
+`projects.json` のフィールドは以下のとおりです。
+
+| フィールド名 | 型 | 説明 |
+|---|---|---|
+| `projects` | `object` | プロジェクト名をキーとするエントリのマップ |
+| `projects.<name>.path` | `string` | 解析対象プロジェクトのソースコードルート（絶対パス） |
+| `projects.<name>.workRoot` | `string` | 出力先パス。省略時は `path` と同じ値が使われます |
+| `default` | `string` | `--project` 未指定時に使用するデフォルトプロジェクト名 |
 
 ### カスタマイズポイント
 
 <!-- @text: ユーザーがカスタマイズできる項目（プロバイダー・テンプレート・コマンド等）を説明してください。カスタマイズ例を含めること。 -->
 
-**AIプロバイダーの切り替え**
+**AI プロバイダーの切り替え**
 
-`providers` に任意のコマンドを登録し、`defaultAgent` でそれを指定することで使用するAIを切り替えられます。`args` 内の `{{PROMPT}}` にプロンプト文字列が挿入されます。`{{PROMPT}}` を省略した場合はコマンドの末尾に追加されます。
+`providers` に任意のコマンドを登録し、`defaultAgent` でそのキーを指定することで使用する AI を切り替えられます。`args` 内の `{{PROMPT}}` にプロンプト文字列が挿入されます。`{{PROMPT}}` を省略した場合はコマンドの末尾に追加されます。
 
 ```json
 {
@@ -59,7 +74,7 @@ sdd-forge の動作は `.sdd-forge/config.json`（主設定）と `.sdd-forge/co
     "claude": {
       "name": "claude-cli",
       "command": "claude",
-      "args": ["--model", "opus", "-p", "{{PROMPT}}"],
+      "args": ["--model", "sonnet", "-p", "{{PROMPT}}"],
       "systemPromptFlag": "--system-prompt",
       "timeoutMs": 180000
     }
@@ -69,7 +84,7 @@ sdd-forge の動作は `.sdd-forge/config.json`（主設定）と `.sdd-forge/co
 
 **ドキュメントスタイルのカスタマイズ**
 
-`documentStyle.customInstruction` にAIへの追加指示を記述することで、生成されるドキュメントの内容や観点を調整できます。
+`documentStyle.customInstruction` に AI への追加指示を記述することで、生成されるドキュメントの内容や表現を調整できます。
 
 ```json
 {

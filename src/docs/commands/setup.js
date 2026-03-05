@@ -133,18 +133,21 @@ function ensureGitignore(workRoot) {
     fs.writeFileSync(gitignorePath, `${entry}\n`);
   }
 
-  // .tmp をプロジェクトルートの .gitignore に追加
+  // プロジェクトルートの .gitignore にエントリを追加
   const rootGitignore = path.join(workRoot, ".gitignore");
-  const tmpEntry = ".tmp";
+  const rootEntries = [".tmp", ".sdd-forge/worktree"];
   if (fs.existsSync(rootGitignore)) {
     const lines = fs.readFileSync(rootGitignore, "utf8").split("\n");
-    const hasTmp = lines.some((l) => l.trim() === tmpEntry);
-    const hasNegation = lines.some((l) => l.trim() === `!${tmpEntry}`);
-    if (!hasTmp && !hasNegation) {
-      fs.appendFileSync(rootGitignore, `\n${tmpEntry}\n`);
+    const toAdd = rootEntries.filter((entry) => {
+      const has = lines.some((l) => l.trim() === entry);
+      const negated = lines.some((l) => l.trim() === `!${entry}`);
+      return !has && !negated;
+    });
+    if (toAdd.length) {
+      fs.appendFileSync(rootGitignore, `\n${toAdd.join("\n")}\n`);
     }
   } else {
-    fs.writeFileSync(rootGitignore, `${tmpEntry}\n`);
+    fs.writeFileSync(rootGitignore, `${rootEntries.join("\n")}\n`);
   }
 }
 

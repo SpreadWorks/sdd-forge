@@ -22,13 +22,9 @@ Run this workflow for any feature or fix request.
      | # | Label | Description | Command |
      |---|---|---|---|
      | 1 | Branch（デフォルト） | `<current-branch>` から feature ブランチを作成して作業する | `sdd-forge spec --title "..." --base <current-branch>` |
-     | 2 | Worktree | git worktree を作成して隔離環境で作業する（パスを追加質問） | `sdd-forge spec --title "..." --base <current-branch> --worktree <path>` |
+     | 2 | Worktree | git worktree を作成して隔離環境で作業する（`.sdd-forge/worktree/` 配下に自動配置） | `sdd-forge spec --title "..." --base <current-branch> --worktree` |
      | 3 | Spec only | ブランチを作成せず spec ファイルのみ作成する | `sdd-forge spec --title "..." --no-branch` |
 
-     - If user selects **Worktree**:
-       - Compute default path: `../<repo-basename>-wt-<NNN-slug>` (e.g. `../sdd-forge-wt-003-add-dry-run`)
-       - Ask: "Worktree パス: `<default>` でよいですか？（変更する場合は入力）"
-       - Use the user's answer or the default.
    - Ask the user: "現在のブランチ (`<current-branch>`) から分岐してよいですか？" (skip for spec-only mode)
      - If yes → use `--base <current-branch>`.
      - If no → ask which branch to use as base and use `--base <user-specified-branch>`.
@@ -75,6 +71,6 @@ Record clarifications in `spec.md` under `## Clarifications (Q&A)` and `## Open 
 ```bash
 sdd-forge spec --title "<short-title>" --base <branch>
 sdd-forge spec --title "<short-title>" --no-branch
-sdd-forge spec --title "<short-title>" --base <branch> --worktree <path>
+sdd-forge spec --title "<short-title>" --base <branch> --worktree
 sdd-forge gate --spec specs/NNN-xxx/spec.md
 ```
