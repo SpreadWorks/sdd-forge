@@ -46,15 +46,15 @@ src/
 │   ├── laravel/             #   Laravel 8+
 │   ├── symfony/             #   Symfony 5+
 │   └── node-cli/            #   Node.js CLI
+├── locale/                   # 言語別メッセージ
+│   ├── en/                   #   English
+│   └── ja/                   #   日本語
+│       ├── messages.json     #     CLI メッセージ
+│       ├── prompts.json      #     AI プロンプトテンプレート
+│       └── ui.json           #     UI テキスト
 └── templates/                # 静的データ（npm publish に含まれる）
     ├── config.example.json   #   .sdd-forge/config.json のサンプル
-    ├── review-checklist.md   #   レビュー観点チェックリスト
-    └── locale/               #   言語別メッセージ
-        ├── en/               #     English
-        └── ja/               #     日本語
-            ├── messages.json #       CLI メッセージ
-            ├── prompts.json  #       AI プロンプトテンプレート
-            └── ui.json       #       UI テキスト
+    └── review-checklist.md   #   レビュー観点チェックリスト
 ```
 
 ## Command Routing

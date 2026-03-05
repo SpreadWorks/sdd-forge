@@ -25,9 +25,9 @@ describe("npm pack contents", () => {
     assert.match(packOutput, /src\/lib\/i18n\.js/);
   });
 
-  it("includes template files", () => {
+  it("includes locale files", () => {
     assert.ok(packOutput, "pack output required");
-    assert.match(packOutput, /src\/templates\/locale\//);
+    assert.match(packOutput, /src\/locale\//);
   });
 
   it("does NOT include tests/", () => {

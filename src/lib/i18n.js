@@ -16,7 +16,7 @@ import path from "path";
 import { fileURLToPath } from "url";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const DEFAULT_LOCALE_DIR = path.resolve(__dirname, "..", "templates", "locale");
+const DEFAULT_LOCALE_DIR = path.resolve(__dirname, "..", "locale");
 
 // ---------------------------------------------------------------------------
 // Helpers
