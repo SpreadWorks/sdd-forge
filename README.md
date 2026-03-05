@@ -2,6 +2,8 @@
 
 [![npm version](https://img.shields.io/npm/v/sdd-forge.svg)](https://www.npmjs.com/package/sdd-forge)
 
+> **Alpha版:** このツールは現在アルファ版です。API・コマンド体系・設定フォーマットは予告なく変更される可能性があります。本番環境での利用はお控えください。
+
 **ソースコード解析 + AI で、プロジェクトドキュメントを自動生成・維持する CLI ツール。**
 
 コードベースを静的解析し、テンプレートと AI を組み合わせて `docs/` を自動生成します。
@@ -125,11 +127,11 @@ Claude Code の設定後、スキルで SDD ワークフローを実行できま
 <!-- {{data: docs.chapters("章|概要")}} -->
 | 章 | 概要 |
 | --- | --- |
-| [01. ツール概要とアーキテクチャ](docs/01_overview.md) | sdd-forge は、ソースコードを解析してプロジェクトドキュメントを自動生成する Node.js CLI ツールです。 |
-| [02. CLI コマンドリファレンス](docs/02_cli_commands.md) | sdd-forge は `help`・`setup`・`build`・`scan`・`data`・`text`・`init`・`forge`・`review`・`changelog`・`agents`・`readme`・`spec`・… |
-| [03. 設定とカスタマイズ](docs/03_configuration.md) | 本章では、sdd-forge が読み込む設定ファイルの構成と各設定項目の意味、AIプロバイダーやドキュメントスタイルといったカスタマイズポイントについて説明します。 |
-| [04. 内部設計](docs/04_internal_design.md) | 本章では sdd-forge の内部設計として、ディレクトリ・モジュール構成、モジュール間の依存関係、および代表的なコマンド実行時の処理フローを説明します。 |
-| [05. 開発・テスト・配布](docs/05_development.md) | 本章では、ローカル開発環境の構築方法からテストの実行手順、npm レジストリへのリリースまでの一連の開発サイクルを説明します。 |
+| [01. ツール概要とアーキテクチャ](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/01_overview.md) | sdd-forge は、ソースコードを解析してプロジェクトドキュメントを自動生成する Node.js CLI ツールです。 |
+| [02. CLI コマンドリファレンス](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/02_cli_commands.md) | sdd-forge は `help`・`setup`・`build`・`scan`・`data`・`text`・`init`・`forge`・`review`・`changelog`・`agents`・`readme`・`spec`・… |
+| [03. 設定とカスタマイズ](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/03_configuration.md) | 本章では、sdd-forge が読み込む設定ファイルの構成と各設定項目の意味、AIプロバイダーやドキュメントスタイルといったカスタマイズポイントについて説明します。 |
+| [04. 内部設計](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/04_internal_design.md) | 本章では sdd-forge の内部設計として、ディレクトリ・モジュール構成、モジュール間の依存関係、および代表的なコマンド実行時の処理フローを説明します。 |
+| [05. 開発・テスト・配布](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/05_development.md) | 本章では、ローカル開発環境の構築方法からテストの実行手順、npm レジストリへのリリースまでの一連の開発サイクルを説明します。 |
 <!-- {{/data}} -->
 
 ## License
