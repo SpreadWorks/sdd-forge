@@ -87,9 +87,9 @@ function detectUserConfirmationIssue(specAbs) {
 function main() {
   const root = repoRoot(import.meta.url);
   const cli = parseArgs(process.argv.slice(2), {
-    flags: ["--no-branch", "--dry-run"],
-    options: ["--request", "--title", "--spec", "--agent", "--max-runs", "--forge-mode", "--worktree"],
-    defaults: { request: "", title: "", spec: "", agent: "", maxRuns: "5", forgeMode: "local", noBranch: false, worktree: "", dryRun: false },
+    flags: ["--no-branch", "--dry-run", "--worktree"],
+    options: ["--request", "--title", "--spec", "--agent", "--max-runs", "--forge-mode"],
+    defaults: { request: "", title: "", spec: "", agent: "", maxRuns: "5", forgeMode: "local", noBranch: false, worktree: false, dryRun: false },
   });
   if (cli.help) {
     console.log(
@@ -104,7 +104,7 @@ function main() {
         "  --max-runs <n>     docs:forge 反復回数",
         "  --forge-mode <m>   docs:forge mode: local|assist|agent (default: local)",
         "  --no-branch        ブランチを作成せず spec のみ作成する",
-        "  --worktree <path>  git worktree を作成して spec を配置する",
+        "  --worktree         git worktree を作成して spec を配置する (.sdd-forge/worktree/<branch>/)",
         "  --dry-run          全サブコマンドを dry-run モードで実行する",
       ].join("\n"),
     );
@@ -128,7 +128,7 @@ function main() {
       "--allow-dirty",
     ];
     if (cli.noBranch) specInitArgs.push("--no-branch");
-    if (cli.worktree) specInitArgs.push("--worktree", cli.worktree);
+    if (cli.worktree) specInitArgs.push("--worktree");
     if (cli.dryRun) specInitArgs.push("--dry-run");
     const s = run(root, "node", specInitArgs);
     process.stdout.write(s.out);
@@ -188,8 +188,11 @@ function main() {
     featureBranch: currentBranch,
   };
   if (cli.worktree) {
+    // Read worktree path from current-spec (written by spec init)
+    const currentSpecPath = path.join(root, ".sdd-forge", "current-spec");
+    const currentSpec = JSON.parse(fs.readFileSync(currentSpecPath, "utf8"));
     flowState.worktree = true;
-    flowState.worktreePath = path.resolve(cli.worktree);
+    flowState.worktreePath = currentSpec.worktreePath;
     flowState.mainRepoPath = root;
   } else if (isInsideWorktree(root)) {
     flowState.worktree = true;

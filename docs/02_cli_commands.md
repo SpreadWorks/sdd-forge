@@ -4,7 +4,7 @@
 
 <!-- @text: この章の概要を1〜2文で記述してください。コマンド総数・グローバルオプションの有無・サブコマンド体系を踏まえること。 -->
 
-`sdd-forge <サブコマンド>` 形式で呼び出す 16 のコマンドを網羅したリファレンスです。全コマンドに共通するグローバルオプション（`--project`・`--help`・`--version`）を持ち、内部的には `docs.js` / `spec.js` / `flow.js` の 3 つのディスパッチャーにルーティングされます。
+本章では `sdd-forge` が提供する全 16 コマンドの仕様を説明します。コマンドはドキュメント生成系（`build` / `scan` / `init` / `data` / `text` / `forge` / `review` / `readme` / `changelog` / `agents`）・spec 管理系（`spec` / `gate` / `flow`）・プロジェクト管理系（`setup`）・補助系（`help` / `default`）に分類され、グローバルオプションとして環境変数 `SDD_SOURCE_ROOT` / `SDD_WORK_ROOT` によるプロジェクトコンテキストの切り替えに対応しています。
 
 ## 内容
 
@@ -16,36 +16,39 @@
 |---|---|---|
 | `help` | コマンド一覧を表示する | なし |
 | `setup` | プロジェクトを登録し設定ファイルを生成する | `--name` `--path` `--type` `--purpose` `--dry-run` |
-| `default` | デフォルトプロジェクトを切り替える | `--name` |
 | `build` | ドキュメント生成パイプラインを一括実行する（scan → init → data → text → readme） | なし |
 | `scan` | ソースコードを解析し `analysis.json` / `summary.json` を生成する | `--stdout` `--dry-run` |
 | `init` | テンプレートから `docs/` 配下の章ファイルを初期化する | `--type` `--force` |
 | `data` | `@data` ディレクティブを解析データで解決する | `--dry-run` `--stdout` |
 | `text` | `@text` ディレクティブを AI エージェントで解決する | `--agent` `--id` `--dry-run` `--per-directive` |
-| `readme` | `docs/` の内容をもとに `README.md` を自動生成する | なし |
-| `forge` | プロンプトをもとに `docs/` を反復的に改善する | `--prompt` `--spec` `--max-runs` `--mode` `--dry-run` |
-| `review` | `docs/` 配下の章ファイルの構造を検証する | なし |
-| `changelog` | `specs/` の spec をもとに `change_log.md` を生成する | なし |
+| `forge` | プロンプトを起点に `docs/` を反復的に改善する | `--prompt` `--spec` `--max-runs` `--mode` `--dry-run` |
+| `review` | `docs/` 章ファイルの基本構造を検証する | なし |
+| `changelog` | `specs/` から `change_log.md` を生成する | なし |
 | `agents` | `AGENTS.md` の PROJECT セクションを更新する | `--sdd` `--project` `--dry-run` |
-| `spec` | feature ブランチを作成し `spec.md` / `qa.md` を初期化する | `--title` `--base` `--no-branch` `--worktree` |
+| `readme` | `docs/` をもとに `README.md` を自動生成する | なし |
+| `spec` | feature ブランチと `spec.md` / `qa.md` を初期化する | `--title` `--base` `--no-branch` `--worktree` `--dry-run` |
 | `gate` | `spec.md` の未解決項目を検出する | `--spec` |
-| `flow` | spec 作成 → gate → forge を自動実行する | `--request` `--spec` `--agent` `--forge-mode` |
+| `flow` | spec 作成 → gate → forge を自動実行する | `--request` `--spec` `--agent` `--forge-mode` `--dry-run` |
+| `default` | デフォルトプロジェクトを設定・表示する | なし |
 
 ### グローバルオプション
 
 <!-- @text: 全コマンドに共通するグローバルオプションを表形式で記述してください。 -->
 
-| オプション | 説明 |
-|---|---|
-| `--project <name>` | 操作対象プロジェクトを名前で指定します。複数プロジェクトを登録している場合に使用します。省略時はデフォルトプロジェクトが使用されます。 |
-| `-h`, `--help` | ヘルプを表示して終了します。サブコマンドなしで `sdd-forge` を実行した場合も同じ動作をします。 |
-| `-v`, `-V`, `--version` | インストールされている sdd-forge のバージョンを表示して終了します。 |
+コマンドライン引数としてのグローバルフラグはありませんが、以下の環境変数がすべてのコマンドに適用されるプロジェクトコンテキストを制御します。
+
+| 環境変数 | 説明 | デフォルト |
+|---|---|---|
+| `SDD_SOURCE_ROOT` | 解析対象ソースコードのルートパス | `.sdd-forge/config.json` の `path` |
+| `SDD_WORK_ROOT` | `.sdd-forge/` 出力ディレクトリのパス | `.sdd-forge/` |
+
+これらの環境変数を設定するとコマンド実行時のプロジェクトコンテキストが上書きされます。複数プロジェクトを切り替えながら操作する場合や CI 環境での実行時に使用してください。
 
 ### 各コマンドの詳細
 
 <!-- @text: 各コマンドの使用方法・オプション・実行例を詳しく記述してください。コマンドごとにサブセクションを立てること。 -->
 
-各コマンドの使用方法・オプション・実行例を以下のサブセクションに示します。`--dry-run` オプションが利用できるコマンドでは、ファイルへの書き込みを行わず実行内容を事前確認できます。
+各コマンドの詳細仕様・オプション・実行例を以下のサブセクションに記載します。オプション未指定時の動作はコマンドごとに異なりますので、初回利用時は `--dry-run` で動作を確認してから実行することを推奨します。
 
 #### setup
 
@@ -261,15 +264,17 @@ sdd-forge flow --request "バグ修正" --spec specs/004-fix/spec.md --forge-mod
 
 **終了コード**
 
-| 終了コード | 説明 | 該当コマンド |
+| コード | 意味 | 該当コマンド例 |
 |---|---|---|
-| `0` | 正常終了 | 全コマンド |
-| `1` | 検証エラー・不明なオプション・プロジェクト解決失敗などの異常終了 | 全コマンド（`review`・`gate` での検証 FAIL を含む） |
-| `2` | `flow` コマンドで `gate` が FAIL し処理を中断した場合 | `flow` |
+| `0` | 正常終了 | すべてのコマンド |
+| `1` | 検証失敗（FAIL）または実行エラー | `review`・`gate`・`data`・`text` など |
+| `2` | gate FAIL による flow の早期停止 | `flow` |
 
 **stdout / stderr の使い分け**
 
 | 出力先 | 内容 |
 |---|---|
-| stdout | 正常な処理結果・`--stdout` / `--dry-run` モードでの変換結果・バージョン文字列・ヘルプテキスト |
-| stderr | エラーメッセージ・警告・不明なコマンドの通知 |
+| stdout | `--stdout` / `--dry-run` 指定時の変換結果・JSON 出力など、パイプで後続処理に渡すことを想定したデータ |
+| stderr | 進捗メッセージ・警告・エラー詳細など、人間向けのステータス情報 |
+
+`--dry-run` を指定した場合はファイルへの書き込みを行わず、変換結果を stdout に出力します。スクリプトや CI パイプラインで `sdd-forge` を利用する場合は stderr を無視し、終了コードのみで成否を判定できます。
