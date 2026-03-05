@@ -105,6 +105,31 @@
     "done": "[upgrade] アップグレード完了。",
     "hintSystemPromptFlag": "[upgrade] ヒント: providers.{{provider}} に \"systemPromptFlag\": \"{{flag}}\" を追加すると、forge のファイル単位非同期処理が有効になります。"
   },
+  "help": {
+    "title": "コマンド一覧",
+    "usage": "Usage: sdd-forge <command> [options]",
+    "runHelp": "Run \u001b[1msdd-forge <command> --help\u001b[0m for details.",
+    "commands": {
+      "help": "このヘルプを表示",
+      "setup": "プロジェクト登録 + 設定生成（対話式）",
+      "upgrade": "テンプレート由来ファイルを最新版に更新",
+      "default": "デフォルトプロジェクトを変更",
+      "build": "ドキュメント一括生成（scan → init → data → text → readme）",
+      "init": "テンプレートから docs/ を初期化",
+      "forge": "docs 反復改善（AI エージェント対応）",
+      "review": "docs 品質チェック",
+      "changelog": "specs/ から change_log.md を生成",
+      "agents": "AGENTS.md の PROJECT セクションを更新",
+      "readme": "README.md 自動生成",
+      "scan": "ソースコード解析 → analysis.json",
+      "data": "@data ディレクティブを解析データで解決",
+      "text": "@text ディレクティブを AI で解決",
+      "spec": "spec 初期化（feature ブランチ + spec.md）",
+      "gate": "spec ゲート（未解決事項チェック）",
+      "flow": "SDD フロー自動実行",
+      "presets list": "プリセット継承ツリーを表示"
+    }
+  },
   "common": {
     "choicePrompt": "> ({{min}}-{{max}}): ",
     "error": {
