@@ -37,50 +37,11 @@ function printHelp() {
       "Usage: sdd-forge scan [options]",
       "",
       "Options:",
-      "  --legacy        旧 CakePHP 固有解析器を使用",
       "  --stdout        結果を stdout に出力（ファイル書き込みしない）",
       "  --dry-run       --stdout と同じ（ファイル書き込みしない）",
       "  -h, --help      このヘルプを表示",
     ].join("\n"),
   );
-}
-
-async function runLegacy(cli, root) {
-  const appDir = path.join(sourceRoot(), "app");
-  if (!fs.existsSync(appDir)) {
-    throw new Error(`app/ directory not found: ${appDir}`);
-  }
-
-  const { analyzeControllers } = await import("../../presets/cakephp2/scan/controllers.js");
-  const { analyzeModels } = await import("../../presets/cakephp2/scan/models.js");
-  const { analyzeShells } = await import("../../presets/cakephp2/scan/shells.js");
-  const { analyzeRoutes } = await import("../../presets/cakephp2/scan/routes.js");
-  const { analyzeExtras } = await import("../../presets/cakephp2/scan/extras.js");
-
-  const result = { analyzedAt: new Date().toISOString() };
-
-  logger.verbose("controllers ...");
-  result.controllers = analyzeControllers(appDir);
-  logger.verbose(`controllers: ${result.controllers.summary.total} files, ${result.controllers.summary.totalActions} actions`);
-
-  logger.verbose("models ...");
-  result.models = analyzeModels(appDir);
-  logger.verbose(`models: ${result.models.summary.total} files (fe=${result.models.summary.feModels}, logic=${result.models.summary.logicModels})`);
-
-  logger.verbose("shells ...");
-  result.shells = analyzeShells(appDir);
-  logger.verbose(`shells: ${result.shells.summary.total} files`);
-
-  logger.verbose("routes ...");
-  result.routes = analyzeRoutes(appDir);
-  logger.verbose(`routes: ${result.routes.summary.total} routes`);
-
-  logger.verbose("extras ...");
-  result.extras = analyzeExtras(appDir);
-  const extrasKeys = Object.keys(result.extras);
-  logger.verbose(`extras: ${extrasKeys.length} categories (${extrasKeys.join(", ")})`);
-
-  return result;
 }
 
 /**
@@ -159,8 +120,8 @@ function buildSummary(analysis) {
 
 async function main() {
   const cli = parseArgs(process.argv.slice(2), {
-    flags: ["--stdout", "--legacy", "--dry-run"],
-    defaults: { stdout: false, legacy: false, dryRun: false },
+    flags: ["--stdout", "--dry-run"],
+    defaults: { stdout: false, dryRun: false },
   });
   if (cli.help) {
     printHelp();
@@ -173,41 +134,34 @@ async function main() {
   const rawType = cfg.type || "php-mvc";
   const type = resolveType(rawType);
 
-  let result;
+  logger.verbose(`mode: generic (type=${type})`);
 
-  if (cli.legacy) {
-    logger.verbose("mode: legacy (CakePHP-specific)");
-    result = await runLegacy(cli, root);
-  } else {
-    logger.verbose(`mode: generic (type=${type})`);
+  // preset からスキャン設定を取得
+  const leaf = leafSegment(type);
+  const preset = presetByLeaf(leaf);
+  const presetScan = preset?.scan || {};
 
-    // preset からスキャン設定を取得
-    const leaf = leafSegment(type);
-    const preset = presetByLeaf(leaf);
-    const presetScan = preset?.scan || {};
+  const scanOverrides = cfg.scan || {};
+  // preset.scan → config.scan で上書き
+  const scanCfg = { ...presetScan, ...scanOverrides };
 
-    const scanOverrides = cfg.scan || {};
-    // preset.scan → config.scan で上書き
-    const scanCfg = { ...presetScan, ...scanOverrides };
+  const result = genericScan(src, scanCfg);
 
-    result = genericScan(src, scanCfg);
-
-    // FW 固有 extras 拡張
-    if (preset?.dir) {
-      const extrasPath = path.join(preset.dir, "scan", "extras.js");
-      if (fs.existsSync(extrasPath)) {
-        try {
-          const fwModule = await import(extrasPath);
-          if (fwModule.analyzeExtras) {
-            logger.verbose(`FW extras: ${leaf} ...`);
-            const fwExtras = await fwModule.analyzeExtras(src, result);
-            result.extras = { ...result.extras, ...fwExtras };
-            const extrasKeys = Object.keys(result.extras);
-            logger.verbose(`FW extras: ${extrasKeys.length} categories (${extrasKeys.join(", ")})`);
-          }
-        } catch (err) {
-          logger.verbose(`FW extras failed for ${leaf}: ${err.message}`);
+  // FW 固有 extras 拡張
+  if (preset?.dir) {
+    const extrasPath = path.join(preset.dir, "scan", "extras.js");
+    if (fs.existsSync(extrasPath)) {
+      try {
+        const fwModule = await import(extrasPath);
+        if (fwModule.analyzeExtras) {
+          logger.verbose(`FW extras: ${leaf} ...`);
+          const fwExtras = await fwModule.analyzeExtras(src, result);
+          result.extras = { ...result.extras, ...fwExtras };
+          const extrasKeys = Object.keys(result.extras);
+          logger.verbose(`FW extras: ${extrasKeys.length} categories (${extrasKeys.join(", ")})`);
         }
+      } catch (err) {
+        logger.verbose(`FW extras failed for ${leaf}: ${err.message}`);
       }
     }
   }
