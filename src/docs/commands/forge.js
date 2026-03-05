@@ -65,13 +65,9 @@ function readText(p) {
 }
 
 function resolveAgent(cfg, role, cliAgent) {
-  const providerKey = cliAgent || cfg.agents?.[role]?.provider || cfg.defaultAgent;
+  const providerKey = cliAgent || cfg.defaultAgent;
   if (cfg.providers?.[providerKey]) {
     return cfg.providers[providerKey];
-  }
-  const legacy = cfg.agents?.[role];
-  if (legacy?.command) {
-    return legacy;
   }
   return null;
 }
