@@ -1,41 +1,31 @@
-# {{PROJECT_NAME}}
+<!-- @extends -->
 
-{{PROJECT_DESCRIPTION}}
-
-## 技術スタック
-
-| カテゴリ | 技術 |
-|----------|------|
-| 言語 | Node.js (ES Modules) |
-| 配布 | npm |
-| テスト | — |
-
+<!-- @block: quickstart -->
 ## クイックスタート
 
+### インストール
+
 ```bash
+# npm
 npm install -g {{PACKAGE_NAME}}
+
+# yarn
+yarn global add {{PACKAGE_NAME}}
+
+# pnpm
+pnpm add -g {{PACKAGE_NAME}}
+```
+
+### 基本コマンド
+
+```bash
+# ヘルプ表示
 {{PACKAGE_NAME}} help
+
+# プロジェクトセットアップ
+{{PACKAGE_NAME}} setup
+
+# ドキュメント一括生成
+{{PACKAGE_NAME}} build
 ```
-
-## ドキュメント
-
-| 章 | 概要 |
-|----|------|
-{{CHAPTER_TABLE}}
-
-## 開発ワークフロー（SDD）
-
-本プロジェクトは Spec-Driven Development（SDD）を採用しています。
-
-```
-1. sdd-forge spec --title "..."   — 仕様ファイル作成
-2. sdd-forge gate --spec ...      — 仕様ゲート（未解決事項がなければ PASS）
-3. 実装
-4. sdd-forge forge --prompt "..."  — ドキュメント自動更新
-5. sdd-forge review               — ドキュメントレビュー
-```
-
-詳細は [CLAUDE.md](CLAUDE.md) の「SDDフロー」セクションを参照してください。
-
-<!-- MANUAL:START -->
-{{MANUAL_CONTENT}}<!-- MANUAL:END -->
+<!-- @endblock -->

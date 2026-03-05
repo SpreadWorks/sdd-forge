@@ -84,27 +84,23 @@ function detectBaseBranch(root) {
   }
 }
 
-function createQaTemplate() {
-  return [
-    "# Clarification Q&A",
-    "",
-    "- Q: ",
-    "  - A: ",
-    "",
-    "## Confirmation",
-    "- Before implementation, ask the user:",
-    '  - "この仕様で実装して問題ないですか？"',
-    "- If approved, update `spec.md` -> `## User Confirmation` with checked state.",
-    "",
-  ].join("\n");
-}
+const DEFAULT_QA_TEMPLATE = [
+  "# Clarification Q&A",
+  "",
+  "- Q: ",
+  "  - A: ",
+  "",
+  "## Confirmation",
+  "- Before implementation, ask the user:",
+  '  - "この仕様で実装して問題ないですか？"',
+  "- If approved, update `spec.md` -> `## User Confirmation` with checked state.",
+  "",
+].join("\n");
 
-function createSpecTemplate({ branchName, specDirName }) {
-  const today = new Date().toISOString().slice(0, 10);
-  return `# Feature Specification: ${specDirName}
+const DEFAULT_SPEC_TEMPLATE = `# Feature Specification: {{SPEC_DIR}}
 
-**Feature Branch**: \`${branchName}\`
-**Created**: ${today}
+**Feature Branch**: \`{{BRANCH_NAME}}\`
+**Created**: {{DATE}}
 **Status**: Draft
 **Input**: User request
 
@@ -135,6 +131,30 @@ function createSpecTemplate({ branchName, specDirName }) {
 ## Open Questions
 - [ ]
 `;
+
+/**
+ * Load project-local template if it exists, otherwise return the default.
+ */
+function loadLocalTemplate(root, lang, fileName, fallback) {
+  const localPath = path.join(root, ".sdd-forge", "templates", lang, "specs", fileName);
+  if (fs.existsSync(localPath)) {
+    return fs.readFileSync(localPath, "utf8");
+  }
+  return fallback;
+}
+
+function createQaTemplate(root, lang) {
+  return loadLocalTemplate(root, lang, "qa.md", DEFAULT_QA_TEMPLATE);
+}
+
+function createSpecTemplate({ branchName, specDirName }, root, lang) {
+  const template = loadLocalTemplate(root, lang, "spec.md", DEFAULT_SPEC_TEMPLATE);
+  const today = new Date().toISOString().slice(0, 10);
+  return template
+    .replace(/\{\{BRANCH_NAME\}\}/g, branchName)
+    .replace(/\{\{SPEC_DIR\}\}/g, specDirName)
+    .replace(/\{\{DATE\}\}/g, today)
+    .replace(/\{\{STATUS\}\}/g, "Draft");
 }
 
 function main() {
@@ -163,6 +183,9 @@ function main() {
     throw new Error("--title is required");
   }
   const root = repoRoot(import.meta.url);
+  const configPath = path.join(root, ".sdd-forge", "config.json");
+  const sddConfig = fs.existsSync(configPath) ? JSON.parse(fs.readFileSync(configPath, "utf8")) : null;
+  const lang = sddConfig?.lang || "ja";
   opts.base = opts.base || detectBaseBranch(root);
 
   // Determine branching strategy
@@ -211,10 +234,10 @@ function main() {
   function writeSpecFiles() {
     fs.mkdirSync(specDir, { recursive: true });
     if (!fs.existsSync(specPath)) {
-      fs.writeFileSync(specPath, createSpecTemplate({ branchName, specDirName }));
+      fs.writeFileSync(specPath, createSpecTemplate({ branchName, specDirName }, root, lang));
     }
     if (!fs.existsSync(qaPath)) {
-      fs.writeFileSync(qaPath, createQaTemplate());
+      fs.writeFileSync(qaPath, createQaTemplate(root, lang));
     }
   }
 

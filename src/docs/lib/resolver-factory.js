@@ -107,6 +107,10 @@ export async function createResolver(type, root) {
     dataSources = await loadDataSources(path.join(preset.dir, "data"), ctx, dataSources);
   }
 
+  // プロジェクトローカルの DataSource（.sdd-forge/data/）
+  const projectDataDir = path.join(root, ".sdd-forge", "data");
+  dataSources = await loadDataSources(projectDataDir, ctx, dataSources);
+
   return {
     /**
      * source.method でデータを解決し、レンダリング済み Markdown を返す。

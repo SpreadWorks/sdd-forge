@@ -2,30 +2,36 @@
 
 {{PROJECT_DESCRIPTION}}
 
+<!-- @block: quickstart -->
 ## クイックスタート
 
+### インストール
+
 ```bash
+# npm
 npm install -g {{PACKAGE_NAME}}
-{{PACKAGE_NAME}} help
+
+# yarn
+yarn global add {{PACKAGE_NAME}}
+
+# pnpm
+pnpm add -g {{PACKAGE_NAME}}
 ```
 
+### 基本コマンド
+
+```bash
+{{PACKAGE_NAME}} help
+```
+<!-- @endblock -->
+
+<!-- @block: docs -->
 ## ドキュメント
 
 | 章 | 概要 |
 |----|------|
 {{CHAPTER_TABLE}}
-
-## 開発ワークフロー（SDD）
-
-本プロジェクトは Spec-Driven Development（SDD）を採用しています。
-
-```
-1. sdd-forge spec --title "..."   — 仕様ファイル作成
-2. sdd-forge gate --spec ...      — 仕様ゲート（未解決事項がなければ PASS）
-3. 実装
-4. sdd-forge forge --prompt "..."  — ドキュメント自動更新
-5. sdd-forge review               — ドキュメントレビュー
-```
+<!-- @endblock -->
 
 <!-- MANUAL:START -->
 {{MANUAL_CONTENT}}<!-- MANUAL:END -->
