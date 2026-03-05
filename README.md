@@ -127,14 +127,9 @@ Claude Code の設定後、スキルで SDD ワークフローを実行できま
 | --- | --- |
 | [01. ツール概要とアーキテクチャ](docs/01_overview.md) |  |
 | [02. CLI コマンドリファレンス](docs/02_cli_commands.md) |  |
-| [02. 技術スタックと運用](docs/02_stack_and_ops.md) |  |
 | [03. 設定とカスタマイズ](docs/03_configuration.md) |  |
-| [03. プロジェクト構成](docs/03_project_structure.md) |  |
-| [04. 開発ガイド](docs/04_development.md) |  |
 | [04. 内部設計](docs/04_internal_design.md) |  |
-| [05. CLI コマンドリファレンス](docs/05_commands.md) |  |
 | [05. 開発・テスト・配布](docs/05_development.md) |  |
-| [06. 設定とカスタマイズ](docs/06_config.md) |  |
 <!-- @enddata -->
 
 ## License
