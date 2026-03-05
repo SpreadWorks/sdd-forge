@@ -3,7 +3,7 @@
  *
  * Symfony-only category using Scannable(DataSource) directly.
  *
- * Available methods (called via @data directives):
+ * Available methods (called via {{data}} directives):
  *   entities.relations("Entity|Associations")
  *   entities.columns("Entity|Column|Type|Nullable|Key")
  */

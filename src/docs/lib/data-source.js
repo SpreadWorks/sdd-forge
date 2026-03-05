@@ -1,11 +1,11 @@
 /**
- * DataSource — base class for OOP-based @data directive resolvers.
+ * DataSource — base class for OOP-based {{data}} directive resolvers.
  *
  * Each preset category (e.g. controllers, models, tables) extends this class
  * and implements one or more named resolver methods.
  *
  * Directive syntax:
- *   <!-- @data: controllers.list("Name|File|Description") -->
+ *   {{data: controllers.list("Name|File|Description")}}
  *   Calls controllersSource.list(analysis, ["Name", "File", "Description"])
  */
 export class DataSource {

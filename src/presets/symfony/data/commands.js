@@ -3,7 +3,7 @@
  *
  * Symfony-only category using DataSource directly (no scan).
  *
- * Available methods (called via @data directives):
+ * Available methods (called via {{data}} directives):
  *   commands.list("Name|File|Description")
  */
 

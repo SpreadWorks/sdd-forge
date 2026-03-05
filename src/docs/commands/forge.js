@@ -349,7 +349,7 @@ async function main() {
       const resolver = await createResolver(type, root);
       resolveFn = (category, analysis) => resolver.resolve(category, analysis);
     } catch (err) {
-      output.write(`[forge] WARN: resolver not available (${err.message}), skipping @data population\n`);
+      output.write(`[forge] WARN: resolver not available (${err.message}), skipping {{data}} population\n`);
     }
     const populateResult = populateFromAnalysis(root, analysisData, resolveFn);
     if (populateResult.populated) {
@@ -358,11 +358,11 @@ async function main() {
     if (agent) {
       const tfResult = await textFillFromAnalysis(root, analysisData, cli.agent);
       if (tfResult.filled > 0) {
-        output.write(`[forge] @text: ${tfResult.filled} directives resolved\n`);
+        output.write(`[forge] {{text}}: ${tfResult.filled} directives resolved\n`);
       }
     }
   } else if (analysisData && cli.dryRun) {
-    output.write("[forge] DRY-RUN: skipping @data population and @text fill\n");
+    output.write("[forge] DRY-RUN: skipping {{data}} population and {{text}} fill\n");
   }
 
   let userPrompt = String(cli.prompt || "").trim();

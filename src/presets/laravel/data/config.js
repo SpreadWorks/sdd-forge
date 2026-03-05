@@ -4,7 +4,7 @@
  * Combines scan (source code extraction) and resolve (Markdown rendering)
  * into a single self-contained class.
  *
- * Available methods (called via @data directives):
+ * Available methods (called via {{data}} directives):
  *   config.composer("Package|Version|Description")
  *   config.env("Key|Default|Description")
  *   config.providers("Name|File|Register|Boot")

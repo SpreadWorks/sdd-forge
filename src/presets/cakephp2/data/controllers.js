@@ -4,7 +4,7 @@
  * Extends webapp ControllersSource with CakePHP-specific scan logic
  * and resolve methods (csv, actions).
  *
- * Available methods (called via @data directives):
+ * Available methods (called via {{data}} directives):
  *   controllers.list("Name|File|Description")       — inherited
  *   controllers.deps("Controller|Models")            — inherited
  *   controllers.csv("Name|CSV Import|CSV Export|Excel Export")

@@ -3,7 +3,7 @@
  *
  * Symfony-only category using Scannable(DataSource) directly.
  *
- * Available methods (called via @data directives):
+ * Available methods (called via {{data}} directives):
  *   config.composer("Package|Version|Description")
  *   config.env("Key|Default|Description")
  *   config.bundles("Bundle|FullName|Description")

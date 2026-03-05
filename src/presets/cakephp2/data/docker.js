@@ -3,7 +3,7 @@
  *
  * CakePHP-only category: extends DataSource directly (no scan needed).
  *
- * Available methods (called via @data directives):
+ * Available methods (called via {{data}} directives):
  *   docker.list("...")
  */
 

@@ -1,7 +1,7 @@
-# <!-- @data: project.name("") --><!-- @enddata -->
+# <!-- {{data: project.name("")}} --><!-- {{/data}} -->
 
-<!-- @data: project.description("") -->
-<!-- @enddata -->
+<!-- {{data: project.description("")}} -->
+<!-- {{/data}} -->
 
 <!-- @block: quickstart -->
 ## クイックスタート
@@ -10,27 +10,27 @@
 
 <pre>
 # npm
-npm install -g <!-- @data: project.name("") --><!-- @enddata -->
+npm install -g <!-- {{data: project.name("")}} --><!-- {{/data}} -->
 
 # yarn
-yarn global add <!-- @data: project.name("") --><!-- @enddata -->
+yarn global add <!-- {{data: project.name("")}} --><!-- {{/data}} -->
 
 # pnpm
-pnpm add -g <!-- @data: project.name("") --><!-- @enddata -->
+pnpm add -g <!-- {{data: project.name("")}} --><!-- {{/data}} -->
 </pre>
 
 ### 基本コマンド
 
 <pre>
-<!-- @data: project.name("") --><!-- @enddata --> help
+<!-- {{data: project.name("")}} --><!-- {{/data}} --> help
 </pre>
 <!-- @endblock -->
 
 <!-- @block: docs -->
 ## ドキュメント
 
-<!-- @data: docs.chapters("章|概要") -->
-<!-- @enddata -->
+<!-- {{data: docs.chapters("章|概要")}} -->
+<!-- {{/data}} -->
 <!-- @endblock -->
 
 <!-- MANUAL:START -->

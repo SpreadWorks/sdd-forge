@@ -7,16 +7,16 @@
 
 ### AppModel 共通処理
 
-<!-- @data: libs.appmodel("機能|説明") -->
-<!-- @enddata -->
+<!-- {{data: libs.appmodel("機能|説明")}} -->
+<!-- {{/data}} -->
 
 ### SQL テンプレートファイル
 
-<!-- @data: libs.sql("ファイル|行数|パラメータ|参照テーブル") -->
-<!-- @enddata -->
+<!-- {{data: libs.sql("ファイル|行数|パラメータ|参照テーブル")}} -->
+<!-- {{/data}} -->
 
 ### ビヘイビア
 
-<!-- @data: libs.behaviors("ビヘイビア|メソッド|説明") -->
-<!-- @enddata -->
+<!-- {{data: libs.behaviors("ビヘイビア|メソッド|説明")}} -->
+<!-- {{/data}} -->
 <!-- @endblock -->

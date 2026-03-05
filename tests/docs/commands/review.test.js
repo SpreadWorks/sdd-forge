@@ -71,11 +71,11 @@ describe("review CLI", () => {
     }
   });
 
-  it("fails when @data directive is unfilled", () => {
+  it("fails when {{data}} directive is unfilled", () => {
     tmp = createTmpDir();
     const lines = ["# 01. Test", ""];
     for (let i = 0; i < 10; i++) lines.push(`Line ${i}`);
-    lines.push('<!-- @data: controllers.list("Name|Actions") -->');
+    lines.push('<!-- {{data: controllers.list("Name|Actions")}} -->');
     lines.push(""); // empty line = unfilled
     for (let i = 0; i < 5; i++) lines.push(`More ${i}`);
     writeFile(tmp, "docs/01_test.md", lines.join("\n"));
@@ -87,7 +87,7 @@ describe("review CLI", () => {
       });
       assert.fail("should have exited non-zero");
     } catch (err) {
-      assert.match(err.stdout, /unfilled @data/);
+      assert.match(err.stdout, /unfilled \{\{data\}\}/);
     }
   });
 

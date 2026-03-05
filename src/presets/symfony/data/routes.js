@@ -4,7 +4,7 @@
  * Extends the webapp parent RoutesSource with Symfony-specific
  * scan logic and resolve methods.
  *
- * Available methods (called via @data directives):
+ * Available methods (called via {{data}} directives):
  *   routes.list("Methods|Path|Controller|Name")
  *   routes.attribute("Methods|Path|Controller|Name")
  *   routes.yaml("Methods|Path|Controller|Name")

@@ -4,7 +4,7 @@
  * Extends webapp ShellsSource with CakePHP-specific resolve methods.
  * Scan is delegated to the parent class.
  *
- * Available methods (called via @data directives):
+ * Available methods (called via {{data}} directives):
  *   shells.list("Class|File|Description")            — inherited
  *   shells.deps("Shell|Dependency|Type")
  *   shells.flow("Class|Flow|Mail|File Ops|Transaction")

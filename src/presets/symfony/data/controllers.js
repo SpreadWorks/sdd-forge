@@ -4,7 +4,7 @@
  * Extends the webapp parent ControllersSource with Symfony-specific
  * scan logic and resolve methods.
  *
- * Available methods (called via @data directives):
+ * Available methods (called via {{data}} directives):
  *   controllers.list("Name|File|Description")
  *   controllers.actions("Controller|Action")
  *   controllers.di("Controller|Dependency")

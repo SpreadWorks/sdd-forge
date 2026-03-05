@@ -5,8 +5,8 @@
     "missingFile": "[FAIL] ファイルが見つかりません: {{path}}",
     "tooShort": "[FAIL] 行数不足 ({{lines}} 行): {{file}}",
     "missingH1": "[FAIL] H1 見出しがありません: {{file}}",
-    "unfilledText": "[WARN] 未埋め @text ディレクティブ {{count}} 件: {{file}}",
-    "unfilledData": "[FAIL] 未埋め @data ディレクティブ {{count}} 件: {{file}}",
+    "unfilledText": "[WARN] 未埋め {{text}} ディレクティブ {{count}} 件: {{file}}",
+    "unfilledData": "[FAIL] 未埋め {{data}} ディレクティブ {{count}} 件: {{file}}",
     "manualMismatch": "[WARN] MANUAL block mismatch ({{starts}} START, {{ends}} END): {{file}}",
     "analysisNotFound": "[WARN] analysis.json が見つかりません。'sdd-forge scan' を実行してください。",
     "analysisStale": "[WARN] analysis.json が古い可能性があります ({{file}} の方が新しい)。'sdd-forge scan' で更新してください。",
@@ -45,7 +45,7 @@
     "analysisNotFound": "ERROR: analysis.json が見つかりません: {{path}}",
     "runScanFirst": "'sdd-forge scan' を先に実行してください。",
     "resolverFailed": "ERROR: リゾルバの作成に失敗: {{message}}",
-    "done": "完了。{{count}} ファイル {{verb}}。@data: {{replaced}} 件置換、@text: {{skipped}} 件スキップ。"
+    "done": "完了。{{count}} ファイル {{verb}}。{{data}}: {{replaced}} 件置換、{{text}}: {{skipped}} 件スキップ。"
   },
   "default": {
     "noProjects": "プロジェクトが登録されていません。sdd-forge add <name> <path> を実行してください。",

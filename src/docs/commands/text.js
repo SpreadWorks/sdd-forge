@@ -2,8 +2,8 @@
 /**
  * sdd-forge/engine/tfill.js
  *
- * @text ディレクティブ専用プロセッサ。
- * テンプレート内の @text を LLM エージェント（claude / codex）で解決し、
+ * {{text}} ディレクティブ専用プロセッサ。
+ * テンプレート内の {{text}} を LLM エージェント（claude / codex）で解決し、
  * ディレクティブ直後に説明文を挿入する。
  *
  * Usage:
@@ -87,8 +87,8 @@ function buildPromptHeader(projectContext, documentStyle, lang) {
 // ---------------------------------------------------------------------------
 
 /**
- * @data カテゴリ名 → analysis.json の必要セクションへのマッピング。
- * ファイル内の @data ディレクティブのカテゴリから、@text に渡す
+ * {{data}} カテゴリ名 → analysis.json の必要セクションへのマッピング。
+ * ファイル内の {{data}} ディレクティブのカテゴリから、{{text}} に渡す
  * コンテキストデータを自動判定する。
  */
 const CATEGORY_TO_SECTIONS = {
@@ -137,8 +137,8 @@ const CATEGORY_TO_SECTIONS = {
 };
 
 /**
- * ファイル内の全ディレクティブから、@text に必要なコンテキストデータを
- * 動的に収集する。@data のカテゴリ名をキーにして analysis.json の
+ * ファイル内の全ディレクティブから、{{text}} に必要なコンテキストデータを
+ * 動的に収集する。{{data}} のカテゴリ名をキーにして analysis.json の
  * 対応セクションをマージする。
  */
 function getAnalysisContext(analysis, directives) {
@@ -151,7 +151,7 @@ function getAnalysisContext(analysis, directives) {
   if (analysis.shells?.summary) data.shellsSummary = analysis.shells.summary;
   if (analysis.routes?.summary) data.routesSummary = analysis.routes.summary;
 
-  // @data カテゴリから必要なセクションを収集
+  // {{data}} カテゴリから必要なセクションを収集
   const dataFills = directives.filter((d) => d.type === "data");
   for (const d of dataFills) {
     const extractor = CATEGORY_TO_SECTIONS[d.category];
@@ -165,7 +165,7 @@ function getAnalysisContext(analysis, directives) {
     }
   }
 
-  // extras 全キーのサマリーも含める（@text のプロンプトが任意の情報を参照できるように）
+  // extras 全キーのサマリーも含める（{{text}} のプロンプトが任意の情報を参照できるように）
   if (analysis.extras) {
     for (const [key, value] of Object.entries(analysis.extras)) {
       if (!(key in data) && value != null) {
@@ -270,7 +270,7 @@ function buildFileSystemPrompt(baseSystemPrompt, contextData, lang) {
 // ---------------------------------------------------------------------------
 
 /**
- * テンプレートファイルの @text ディレクティブ後にある既存生成コンテンツを
+ * テンプレートファイルの {{text}} ディレクティブ後にある既存生成コンテンツを
  * 除去してクリーンなテンプレート状態に戻す。
  * processTemplate の endLine 計算と同じ境界ロジックを使用する。
  */
@@ -280,11 +280,11 @@ function stripFillContent(text) {
   let i = 0;
   while (i < lines.length) {
     result.push(lines[i]);
-    if (/^<!--\s*@text\s*(?:\[[^\]]*\])?\s*:/.test(lines[i].trim())) {
+    if (/^<!--\s*\{\{text\s*(?:\[[^\]]*\])?\s*:/.test(lines[i].trim())) {
       i++;
       while (i < lines.length) {
         const ln = lines[i].trim();
-        if (ln.startsWith("#") || ln.startsWith("<!-- @")) break;
+        if (ln.startsWith("#") || ln.startsWith("<!-- {{")) break;
         if (ln === "" && i + 1 < lines.length && lines[i + 1].trim() === "") break;
         if (ln === "" && i + 1 < lines.length && lines[i + 1].trim().startsWith("#")) break;
         if (ln === "" && i + 1 < lines.length && lines[i + 1].trim().startsWith("<!-- @")) break;
@@ -305,12 +305,12 @@ function countFilledInBatch(fileText) {
   const lines = fileText.split("\n");
   let filled = 0;
   for (let i = 0; i < lines.length; i++) {
-    if (/^<!--\s*@text\s*(?:\[[^\]]*\])?\s*:/.test(lines[i].trim())) {
+    if (/^<!--\s*\{\{text\s*(?:\[[^\]]*\])?\s*:/.test(lines[i].trim())) {
       let j = i + 1;
       while (j < lines.length && lines[j].trim() === "") j++;
       if (j < lines.length &&
           !lines[j].trim().startsWith("## ") &&
-          !lines[j].trim().startsWith("<!-- @")) {
+          !lines[j].trim().startsWith("<!-- {{")) {
         filled++;
       }
     }
@@ -353,7 +353,7 @@ function buildBatchPrompt(fileName, text, textFills, lang) {
 }
 
 /**
- * ファイル内のすべての @text ディレクティブを1回の LLM 呼び出しで処理する。
+ * ファイル内のすべての {{text}} ディレクティブを1回の LLM 呼び出しで処理する。
  * 既存の生成済みコンテンツを stripFillContent で除去してからプロンプトを組み立てる。
  *
  * @returns {{ text: string, filled: number, skipped: number }}
@@ -460,7 +460,7 @@ function stripPreamble(text, preamblePatterns) {
 // ---------------------------------------------------------------------------
 
 /**
- * 1 ファイルの @text ディレクティブをすべて処理する。
+ * 1 ファイルの {{text}} ディレクティブをすべて処理する。
  *
  * @param {string} text        - テンプレート全文
  * @param {Object} analysis    - analysis.json
@@ -579,7 +579,7 @@ async function processTemplate(text, analysis, fileName, agent, timeoutMs, cwd, 
     while (endLine < lines.length) {
       const ln = lines[endLine].trim();
       // 次の見出し、ディレクティブ、または空行+見出し/ディレクティブで停止
-      if (ln.startsWith("#") || ln.startsWith("<!-- @")) break;
+      if (ln.startsWith("#") || ln.startsWith("<!-- {{")) break;
       if (ln === "" && endLine + 1 < lines.length && lines[endLine + 1].trim() === "") break;
       if (ln === "" && endLine + 1 < lines.length && lines[endLine + 1].trim().startsWith("#")) break;
       if (ln === "" && endLine + 1 < lines.length && lines[endLine + 1].trim().startsWith("<!-- @")) break;
@@ -708,7 +708,7 @@ async function main() {
       "",
       "Options:",
       "  --agent <name>      AIエージェント: claude|codex (必須)",
-      "  --id <id>           指定 ID の @text ディレクティブのみ処理",
+      "  --id <id>           指定 ID の {{text}} ディレクティブのみ処理",
       "  --dry-run           変更内容を表示するだけでファイル書き込みしない",
       "  --per-directive     1ディレクティブ=1呼び出しの旧モード（デフォルト: ファイル単位バッチ）",
       `  --timeout <ms>      エージェントタイムアウト (default: ${DEFAULT_TIMEOUT_MS})`,

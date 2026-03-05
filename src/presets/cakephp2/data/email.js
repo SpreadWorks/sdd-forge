@@ -3,7 +3,7 @@
  *
  * CakePHP-only category: extends Scannable(DataSource) directly.
  *
- * Available methods (called via @data directives):
+ * Available methods (called via {{data}} directives):
  *   email.list("File|Subjects|CC/Transport")
  */
 

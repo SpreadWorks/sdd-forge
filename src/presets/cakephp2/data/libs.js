@@ -3,7 +3,7 @@
  *
  * CakePHP-only category: extends Scannable(DataSource) directly.
  *
- * Available methods (called via @data directives):
+ * Available methods (called via {{data}} directives):
  *   libs.list("Class|File|Description")
  *   libs.errors("Class|File|Description")
  *   libs.behaviors("Class|Methods|Description")

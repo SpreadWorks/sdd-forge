@@ -4,7 +4,7 @@
  * Extends webapp ModelsSource with CakePHP-specific scan logic
  * and resolve methods (logic, er, logicMethods).
  *
- * Available methods (called via @data directives):
+ * Available methods (called via {{data}} directives):
  *   models.relations("Model|Associations")           — overrides parent (filters isLogic/isFe)
  *   models.logic("Class|File|Description")
  *   models.er("Parent|Child|Type")
