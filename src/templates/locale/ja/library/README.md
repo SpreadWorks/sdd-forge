@@ -1,18 +1,18 @@
-# {{PROJECT_NAME}}
+# <!-- @data: project.name("") --><!-- @enddata -->
 
-{{PROJECT_DESCRIPTION}}
+<!-- @data: project.description("") -->
+<!-- @enddata -->
 
 ## インストール
 
 ```bash
-npm install {{PACKAGE_NAME}}
+npm install <!-- @data: project.name("") --><!-- @enddata -->
 ```
 
 ## ドキュメント
 
-| 章 | 概要 |
-|----|------|
-{{CHAPTER_TABLE}}
+<!-- @data: docs.chapters("章|概要") -->
+<!-- @enddata -->
 
 <!-- MANUAL:START -->
 {{MANUAL_CONTENT}}<!-- MANUAL:END -->

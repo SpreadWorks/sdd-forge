@@ -12,6 +12,7 @@
 ### コマンド一覧
 
 <!-- @data: shells.list("コマンド名|ファイル|用途") -->
+<!-- @enddata -->
 <!-- @endblock -->
 
 <!-- @block: command-deps -->
@@ -20,12 +21,14 @@
 <!-- @text: 各コマンドが読み込んでいるクラスの依存関係を説明してください。 -->
 
 <!-- @data: shells.deps("コマンド|依存クラス|種別") -->
+<!-- @enddata -->
 <!-- @endblock -->
 
 <!-- @block: command-flow -->
 ### コマンド実行フロー
 
 <!-- @data: shells.flow("コマンド|処理概要|メール通知|ファイル操作|トランザクション") -->
+<!-- @enddata -->
 <!-- @endblock -->
 
 <!-- @block: schedule -->

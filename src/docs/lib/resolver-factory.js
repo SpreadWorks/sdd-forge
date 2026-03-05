@@ -93,12 +93,19 @@ const PRESETS_DIR = path.resolve(
 export async function createResolver(type, root) {
   const desc = descFactory(root);
   const loadOverrides = () => loadOverridesFor(root);
-  const ctx = { desc, loadOverrides };
+  const ctx = { desc, loadOverrides, root };
+
+  // 共通 DataSource（project, docs など全 type で利用可能）
+  const commonDataDir = path.resolve(
+    path.dirname(new URL(import.meta.url).pathname),
+    "../data",
+  );
+  let dataSources = await loadDataSources(commonDataDir, ctx);
 
   // 親 preset (webapp, cli) のロード
   const arch = type.split("/")[0];
   const parentDataDir = path.join(PRESETS_DIR, arch, "data");
-  let dataSources = await loadDataSources(parentDataDir, ctx);
+  dataSources = await loadDataSources(parentDataDir, ctx, dataSources);
 
   // 子 preset のロード（親を override）
   const leaf = type.split("/").pop();

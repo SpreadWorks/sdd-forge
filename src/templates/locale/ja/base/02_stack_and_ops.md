@@ -12,6 +12,7 @@
 ### 技術スタック
 
 <!-- @data: config.stack("カテゴリ|技術|バージョン") -->
+<!-- @enddata -->
 <!-- @endblock -->
 
 <!-- @block: dependencies -->

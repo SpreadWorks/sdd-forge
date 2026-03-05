@@ -14,6 +14,7 @@
 <!-- @text: 認証方式の概要を説明してください。認証コンポーネント設定を含めること。 -->
 
 <!-- @data: config.auth("項目|設定値") -->
+<!-- @enddata -->
 <!-- @endblock -->
 
 <!-- @block: acl -->
@@ -22,6 +23,7 @@
 <!-- @text: アクセス制御の定義と、ロールベースのアクセス制御ルールを説明してください。 -->
 
 <!-- @data: config.acl("ロール|group_id|権限") -->
+<!-- @enddata -->
 <!-- @endblock -->
 
 <!-- @block: session -->

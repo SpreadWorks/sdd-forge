@@ -4,22 +4,27 @@
 ### PHP 依存パッケージ (composer.json)
 
 <!-- @data: config.composer("パッケージ|バージョン|用途") -->
+<!-- @enddata -->
 
 ### docker-compose.yml 構成
 
 <!-- @data: docker.list("サービス|コンテナ名|ポート|イメージ") -->
+<!-- @enddata -->
 
 ### ミドルウェア
 
 <!-- @data: config.middleware("クラス|ファイル|用途") -->
+<!-- @enddata -->
 
 ### サービスプロバイダ
 
 <!-- @data: config.providers("プロバイダ|ファイル|register|boot") -->
+<!-- @enddata -->
 
 ### 設定ファイル
 
 <!-- @data: config.files("ファイル|主要キー") -->
+<!-- @enddata -->
 <!-- @endblock -->
 
 <!-- @block: deploy -->

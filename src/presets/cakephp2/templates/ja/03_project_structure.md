@@ -29,18 +29,22 @@ project/
 ### 共通ライブラリ (Lib/)
 
 <!-- @data: libs.list("クラス|ファイル|責務") -->
+<!-- @enddata -->
 
 ### View 層
 
 #### ヘルパー
 
 <!-- @data: views.helpers("ヘルパー|継承元|責務") -->
+<!-- @enddata -->
 
 #### レイアウト
 
 <!-- @data: views.layouts("ファイル|用途") -->
+<!-- @enddata -->
 
 #### エレメント
 
 <!-- @data: views.elements("ファイル|用途") -->
+<!-- @enddata -->
 <!-- @endblock -->

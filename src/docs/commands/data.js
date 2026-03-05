@@ -66,23 +66,22 @@ function processTemplate(text, analysis, fileName, resolveFn) {
         continue;
       }
 
-      // 以前のレンダリング結果を除去（ディレクティブ直後のテーブル/コードブロックを除去）
-      // 次の区切り行（見出し、ディレクティブ、空行2連続）までを除去
-      let endLine = d.line + 1;
-      while (endLine < lines.length) {
-        const ln = lines[endLine].trim();
-        // 次の見出し、ディレクティブ、または空行で停止
-        if (ln.startsWith("#") || ln.startsWith("<!-- @")) break;
-        if (ln === "" && endLine + 1 < lines.length && lines[endLine + 1].trim() === "") break;
-        if (ln === "" && endLine + 1 < lines.length && lines[endLine + 1].trim().startsWith("#")) break;
-        if (ln === "" && endLine + 1 < lines.length && lines[endLine + 1].trim().startsWith("<!-- @")) break;
-        // テーブル行、コードブロック行、テキスト行を全て除去対象
-        endLine++;
+      if (d.inline) {
+        // インライン: d.raw は完全なマッチ文字列（<!-- @data: ... -->old<!-- @enddata -->）
+        // openTag 部分を抽出し、内容を差し替える
+        const openTag = d.raw.match(/<!--\s*@data:\s*[\w.-]+\.[\w-]+\("[^"]*"\)\s*-->/)[0];
+        const endTag = "<!-- @enddata -->";
+        lines[d.line] = lines[d.line].replace(d.raw, `${openTag}${rendered}${endTag}`);
+      } else if (d.endLine >= 0) {
+        // ブロック: @data 行と @enddata 行の間を置換
+        const endDataLine = lines[d.endLine];
+        const newLines = [d.raw, rendered, endDataLine];
+        lines.splice(d.line, d.endLine - d.line + 1, ...newLines);
+      } else {
+        // @enddata がない — スキップ
+        logger.log(`WARN: missing @enddata for "${d.source}.${d.method}" in ${fileName}:${d.line + 1}`);
+        continue;
       }
-
-      // ディレクティブ行 + 既存データ行を新しいレンダリング結果に置換
-      const newLines = [d.raw, rendered];
-      lines.splice(d.line, endLine - d.line, ...newLines);
       replaced++;
     }
   }

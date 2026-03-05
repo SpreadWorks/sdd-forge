@@ -1,6 +1,7 @@
-# {{PROJECT_NAME}}
+# <!-- @data: project.name("") --><!-- @enddata -->
 
-{{PROJECT_DESCRIPTION}}
+<!-- @data: project.description("") -->
+<!-- @enddata -->
 
 <!-- @block: quickstart -->
 ## クイックスタート
@@ -9,28 +10,27 @@
 
 ```bash
 # npm
-npm install -g {{PACKAGE_NAME}}
+npm install -g <!-- @data: project.name("") --><!-- @enddata -->
 
 # yarn
-yarn global add {{PACKAGE_NAME}}
+yarn global add <!-- @data: project.name("") --><!-- @enddata -->
 
 # pnpm
-pnpm add -g {{PACKAGE_NAME}}
+pnpm add -g <!-- @data: project.name("") --><!-- @enddata -->
 ```
 
 ### 基本コマンド
 
 ```bash
-{{PACKAGE_NAME}} help
+<!-- @data: project.name("") --><!-- @enddata --> help
 ```
 <!-- @endblock -->
 
 <!-- @block: docs -->
 ## ドキュメント
 
-| 章 | 概要 |
-|----|------|
-{{CHAPTER_TABLE}}
+<!-- @data: docs.chapters("章|概要") -->
+<!-- @enddata -->
 <!-- @endblock -->
 
 <!-- MANUAL:START -->

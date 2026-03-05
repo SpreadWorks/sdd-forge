@@ -13,10 +13,12 @@ import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
 import { repoRoot, parseArgs } from "../../lib/cli.js";
-import { loadJsonFile, loadPackageField } from "../../lib/config.js";
+import { loadJsonFile } from "../../lib/config.js";
 import { resolveType } from "../../lib/types.js";
 import { resolveChain, mergeFile } from "../lib/template-merger.js";
 import { presetByLeaf } from "../../lib/presets.js";
+import { createResolver } from "../lib/resolver-factory.js";
+import { parseDirectives } from "../lib/directive-parser.js";
 import { createLogger } from "../../lib/progress.js";
 import { createI18n } from "../../lib/i18n.js";
 
@@ -26,64 +28,8 @@ const logger = createLogger("readme");
 const PKG_DIR = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 
 // ---------------------------------------------------------------------------
-// docs/ 解析
+// docs/ 解析 (removed — now handled by DocsSource DataSource)
 // ---------------------------------------------------------------------------
-
-/**
- * docs/NN_*.md を番号順に取得する。
- */
-function listChapterFiles(root) {
-  const docsDir = path.join(root, "docs");
-  if (!fs.existsSync(docsDir)) return [];
-  return fs
-    .readdirSync(docsDir)
-    .filter((f) => /^\d{2}_.*\.md$/.test(f))
-    .sort()
-    .map((f) => path.join(docsDir, f));
-}
-
-/**
- * 章ファイルからタイトルと説明を抽出する。
- *
- * - タイトル: 先頭の `# NN. ...` 行
- * - 説明: `## 説明` 〜 `## 内容` 間のテキスト（ディレクティブ行を除く）
- */
-function parseChapter(filePath) {
-  const content = fs.readFileSync(filePath, "utf8");
-  const lines = content.split("\n");
-
-  // タイトル抽出
-  const titleLine = lines.find((l) => /^# \d{2}\./.test(l));
-  const title = titleLine ? titleLine.replace(/^# /, "") : path.basename(filePath, ".md");
-
-  // 説明抽出: ## 説明 〜 ## 内容
-  let inDesc = false;
-  const descLines = [];
-  for (const line of lines) {
-    if (/^## 説明/.test(line)) {
-      inDesc = true;
-      continue;
-    }
-    if (inDesc && /^## /.test(line)) {
-      break;
-    }
-    if (inDesc) {
-      // ディレクティブ行はスキップ
-      if (/<!--\s*@(text|data)\s*(\[[^\]]*\])?\s*:/.test(line)) continue;
-      descLines.push(line);
-    }
-  }
-
-  const rawDescription = descLines.join(" ").replace(/\s+/g, " ").trim() || "（未記載）";
-  // README テーブル向けに先頭の1文（句点まで）を抽出、最大120文字
-  const firstSentence = rawDescription.match(/^[^。]*。/)?.[0] || rawDescription;
-  const description = firstSentence.length > 120
-    ? firstSentence.slice(0, 117) + "…"
-    : firstSentence;
-  const fileName = path.basename(filePath);
-
-  return { title, description, fileName };
-}
 
 // ---------------------------------------------------------------------------
 // MANUAL ブロック保持
@@ -102,33 +48,46 @@ function extractManualBlock(filePath) {
 }
 
 // ---------------------------------------------------------------------------
-// テンプレート生成
+// テンプレート処理 (@data ディレクティブ解決)
 // ---------------------------------------------------------------------------
 
-function generateReadme(chapters, manualContent, templateContent, root) {
-  const chapterTable = chapters
-    .map(
-      (ch) =>
-        `| [${ch.title}](docs/${ch.fileName}) | ${ch.description.split("\n")[0]} |`,
-    )
-    .join("\n");
+/**
+ * テンプレート内の @data ディレクティブを解決する。
+ * processTemplate と同じロジックだが readme.js 用に独立。
+ */
+function resolveDataDirectives(text, resolveFn) {
+  const directives = parseDirectives(text);
+  if (directives.length === 0) return text;
 
-  const pkgName = loadPackageField(root, "name") || path.basename(root);
-  const pkgDescription = loadPackageField(root, "description") || "";
+  const lines = text.split("\n");
 
-  return templateContent
-    .replace(/\{\{CHAPTER_TABLE\}\}/g, chapterTable)
-    .replace(/\{\{MANUAL_CONTENT\}\}/g, manualContent)
-    .replace(/\{\{PROJECT_NAME\}\}/g, pkgName)
-    .replace(/\{\{PACKAGE_NAME\}\}/g, pkgName)
-    .replace(/\{\{PROJECT_DESCRIPTION\}\}/g, pkgDescription);
+  // 後ろから処理
+  for (let i = directives.length - 1; i >= 0; i--) {
+    const d = directives[i];
+    if (d.type !== "data") continue;
+
+    const rendered = resolveFn(d.source, d.method, {}, d.labels);
+    if (rendered === null || rendered === undefined) continue;
+
+    if (d.inline) {
+      const openTag = d.raw.match(/<!--\s*@data:\s*[\w.-]+\.[\w-]+\("[^"]*"\)\s*-->/)[0];
+      const endTag = "<!-- @enddata -->";
+      lines[d.line] = lines[d.line].replace(d.raw, `${openTag}${rendered}${endTag}`);
+    } else if (d.endLine >= 0) {
+      const endDataLine = lines[d.endLine];
+      const newLines = [d.raw, rendered, endDataLine];
+      lines.splice(d.line, d.endLine - d.line + 1, ...newLines);
+    }
+  }
+
+  return lines.join("\n");
 }
 
 // ---------------------------------------------------------------------------
 // main
 // ---------------------------------------------------------------------------
 
-function main() {
+async function main() {
   const root = repoRoot(import.meta.url);
   const sddConfig = loadJsonFile(path.join(root, ".sdd-forge", "config.json"));
 
@@ -164,40 +123,38 @@ Options:
   const presetTemplateDir = preset?.dir ? path.join(preset.dir, "templates", lang) : null;
   const projectLocalDir = path.join(root, ".sdd-forge", "templates", lang, "docs");
 
-  let templateContent = null;
-  try {
-    const chain = resolveChain(templatesRoot, resolvedType, presetTemplateDir, projectLocalDir);
-    const merged = mergeFile("README.md", chain);
-    // マージ後のブロックディレクティブを除去
-    if (merged) {
-      templateContent = merged
-        .replace(/^<!-- @block: [\w-]+ -->\n?/gm, "")
-        .replace(/^<!-- @endblock -->\n?/gm, "")
-        .replace(/\n{3,}/g, "\n\n")
-        .replace(/([^\n])\n(## )/g, "$1\n\n$2")
-        .replace(/([^\n])\n(### )/g, "$1\n\n$2");
-    }
-  } catch (_) {
-    // 新構造がない場合、旧パスへフォールバック
-  }
-
-  // フォールバック: 旧フラットディレクトリ
-  if (!templateContent) {
-    const fallbackPath = path.join(PKG_DIR, "templates", "locale", lang, type, "README.md");
-    if (fs.existsSync(fallbackPath)) {
-      templateContent = fs.readFileSync(fallbackPath, "utf8");
-    }
-  }
-
-  if (!templateContent) {
+  const chain = resolveChain(templatesRoot, resolvedType, presetTemplateDir, projectLocalDir);
+  const merged = mergeFile("README.md", chain);
+  if (!merged) {
     logger.log(t("readme.noTemplate", { type }));
     return;
   }
 
-  const chapters = listChapterFiles(root).map(parseChapter);
+  // マージ後のブロックディレクティブを除去
+  const templateContent = merged
+    .replace(/^<!-- @block: [\w-]+ -->\n?/gm, "")
+    .replace(/^<!-- @endblock -->\n?/gm, "")
+    .replace(/\n{3,}/g, "\n\n")
+    .replace(/([^\n])\n(## )/g, "$1\n\n$2")
+    .replace(/([^\n])\n(### )/g, "$1\n\n$2");
+
+  // @data ディレクティブを解決
+  let resolveFn;
+  try {
+    const resolver = await createResolver(resolvedType, root);
+    resolveFn = (source, method, a, labels) => resolver.resolve(source, method, a, labels);
+  } catch (err) {
+    logger.log(`resolver error: ${err.message}`);
+    return;
+  }
+
   const readmePath = path.join(root, "README.md");
   const manualContent = extractManualBlock(readmePath);
-  const newContent = generateReadme(chapters, manualContent, templateContent, root);
+
+  // MANUAL_CONTENT は @data 外の仕組みなので個別に処理
+  let resolved = templateContent.replace(/\{\{MANUAL_CONTENT\}\}/g, manualContent);
+  resolved = resolveDataDirectives(resolved, resolveFn);
+  const newContent = resolved.endsWith("\n") ? resolved : resolved + "\n";
 
   // 差分チェック
   if (fs.existsSync(readmePath)) {
@@ -224,5 +181,5 @@ export { main };
 const isDirectRun = process.argv[1] &&
   path.resolve(process.argv[1]) === path.resolve(fileURLToPath(import.meta.url));
 if (isDirectRun) {
-  main();
+  main().catch((err) => { console.error(err.message); process.exit(1); });
 }

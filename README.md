@@ -1,6 +1,6 @@
-# sdd-forge
+# <!-- @data: project.name("") -->sdd-forge<!-- @enddata -->
 
-[![npm version](https://img.shields.io/npm/v/sdd-forge.svg)](https://www.npmjs.com/package/sdd-forge)
+[![npm version](https://img.shields.io/npm/v/<!-- @data: project.name("") -->sdd-forge<!-- @enddata -->.svg)](https://www.npmjs.com/package/<!-- @data: project.name("") -->sdd-forge<!-- @enddata -->)
 
 **ソースコード解析 + AI で、プロジェクトドキュメントを自動生成・維持する CLI ツール。**
 
@@ -23,23 +23,23 @@
 
 ```bash
 # npm
-npm install -g sdd-forge
+npm install -g <!-- @data: project.name("") -->sdd-forge<!-- @enddata -->
 
 # yarn
-yarn global add sdd-forge
+yarn global add <!-- @data: project.name("") -->sdd-forge<!-- @enddata -->
 
 # pnpm
-pnpm add -g sdd-forge
+pnpm add -g <!-- @data: project.name("") -->sdd-forge<!-- @enddata -->
 ```
 
 ### セットアップ & ドキュメント生成
 
 ```bash
 # 1. プロジェクトを登録（インタラクティブウィザード）
-sdd-forge setup
+<!-- @data: project.name("") -->sdd-forge<!-- @enddata --> setup
 
 # 2. ドキュメントを一括生成（scan → init → data → text → readme）
-sdd-forge build
+<!-- @data: project.name("") -->sdd-forge<!-- @enddata --> build
 ```
 
 これだけで `docs/` と `README.md` が生成されます。
@@ -122,18 +122,20 @@ Claude Code の設定後、スキルで SDD ワークフローを実行できま
 
 ## ドキュメント
 
+<!-- @data: docs.chapters("章|概要") -->
 | 章 | 概要 |
-|----|------|
-| [01. ツール概要とアーキテクチャ](docs/01_overview.md) | 本章では、sdd-forge がどのような課題を解決する CLI ツールであるか、およびその内部アーキテクチャの全体像を説明します。 |
-| [02. CLI コマンドリファレンス](docs/02_cli_commands.md) | 本章では `sdd-forge` が提供する全 16 コマンドの仕様を説明します。 |
-| [02. 技術スタックと運用](docs/02_stack_and_ops.md) | 本章では、sdd-forge が採用する技術スタックと日常的な運用手順を説明します。 |
-| [03. 設定とカスタマイズ](docs/03_configuration.md) | （未記載） |
-| [03. プロジェクト構成](docs/03_project_structure.md) | 本章では `src/` 以下に配置された 7 つの主要ディレクトリ（`docs/commands/`、`docs/lib/`、`specs/commands/`、`lib/`、`presets/`、`templates/`、エントリー… |
-| [04. 開発ガイド](docs/04_development.md) | 本章では、sdd-forge のローカル開発環境の構築手順とコーディングから動作確認までの開発フローを説明します。 |
-| [04. 内部設計](docs/04_internal_design.md) | 本章では sdd-forge の内部構造を説明します。 |
-| [05. CLI コマンドリファレンス](docs/05_commands.md) | 本章では `sdd-forge` が提供する 16 のサブコマンドすべての仕様を解説します。 |
-| [05. 開発・テスト・配布](docs/05_development.md) | 本章では、sdd-forge のローカル開発環境のセットアップから、テスト実行、npm レジストリへの公開までの一連のフローを説明します。 |
-| [06. 設定とカスタマイズ](docs/06_config.md) | sdd-forge は `.sdd-forge/` ディレクトリ配下の JSON ファイル群によって動作を制御します。 |
+| --- | --- |
+| [01. ツール概要とアーキテクチャ](docs/01_overview.md) |  |
+| [02. CLI コマンドリファレンス](docs/02_cli_commands.md) |  |
+| [02. 技術スタックと運用](docs/02_stack_and_ops.md) |  |
+| [03. 設定とカスタマイズ](docs/03_configuration.md) |  |
+| [03. プロジェクト構成](docs/03_project_structure.md) |  |
+| [04. 開発ガイド](docs/04_development.md) |  |
+| [04. 内部設計](docs/04_internal_design.md) |  |
+| [05. CLI コマンドリファレンス](docs/05_commands.md) |  |
+| [05. 開発・テスト・配布](docs/05_development.md) |  |
+| [06. 設定とカスタマイズ](docs/06_config.md) |  |
+<!-- @enddata -->
 
 ## License
 

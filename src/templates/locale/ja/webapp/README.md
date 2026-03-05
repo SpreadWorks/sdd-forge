@@ -1,12 +1,14 @@
-# {{PROJECT_NAME}}
+# <!-- @data: project.name("") --><!-- @enddata -->
 
-{{PROJECT_DESCRIPTION}}
+<!-- @data: project.description("") -->
+<!-- @enddata -->
 
 ## 技術スタック
 
 | カテゴリ | 技術 |
 |----------|------|
 <!-- @data: config.stack("") -->
+<!-- @enddata -->
 
 ## クイックスタート
 
@@ -14,9 +16,8 @@
 
 ## ドキュメント
 
-| 章 | 概要 |
-|----|------|
-{{CHAPTER_TABLE}}
+<!-- @data: docs.chapters("章|概要") -->
+<!-- @enddata -->
 
 <!-- MANUAL:START -->
 {{MANUAL_CONTENT}}<!-- MANUAL:END -->
