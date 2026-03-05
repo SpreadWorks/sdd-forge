@@ -19,13 +19,15 @@ import { parseBlocks } from "./directive-parser.js";
  * 各エントリは絶対パスで返される。
  *
  * base → arch 層は templatesRoot 内、FW 固有層は presetTemplateDir から解決する。
+ * projectLocalDir が存在すれば最終層として追加する。
  *
  * @param {string} templatesRoot - テンプレートルート（例: .../locale/ja/）
  * @param {string} typePath - 型パス（例: "webapp/cakephp2"）
  * @param {string|null} [presetTemplateDir] - プリセットのテンプレートディレクトリ（例: .../presets/cakephp2/templates/ja/）
+ * @param {string|null} [projectLocalDir] - プロジェクトローカルテンプレートディレクトリ（例: .sdd-forge/templates/ja/docs/）
  * @returns {string[]} 継承チェーン（絶対パスの配列）
  */
-export function resolveChain(templatesRoot, typePath, presetTemplateDir) {
+export function resolveChain(templatesRoot, typePath, presetTemplateDir, projectLocalDir) {
   const segments = typePath.split("/").filter(Boolean);
   const chain = [path.join(templatesRoot, "base")];
 
@@ -39,11 +41,16 @@ export function resolveChain(templatesRoot, typePath, presetTemplateDir) {
     chain.push(presetTemplateDir);
   }
 
-  // ディレクトリ存在検証
+  // ディレクトリ存在検証（組み込み層のみ）
   for (const dir of chain) {
     if (!fs.existsSync(dir)) {
       throw new Error(`Template directory not found: ${dir}`);
     }
+  }
+
+  // プロジェクトローカル層（存在する場合のみ追加）
+  if (projectLocalDir && fs.existsSync(projectLocalDir)) {
+    chain.push(projectLocalDir);
   }
 
   return chain;

@@ -15,7 +15,7 @@ import { fileURLToPath } from "url";
 import { repoRoot, parseArgs } from "../../lib/cli.js";
 import { loadJsonFile, loadPackageField } from "../../lib/config.js";
 import { resolveType } from "../../lib/types.js";
-import { resolveChain, resolveReadmeTemplate } from "../lib/template-merger.js";
+import { resolveChain, mergeFile } from "../lib/template-merger.js";
 import { presetByLeaf } from "../../lib/presets.js";
 import { createLogger } from "../../lib/progress.js";
 import { createI18n } from "../../lib/i18n.js";
@@ -74,7 +74,12 @@ function parseChapter(filePath) {
     }
   }
 
-  const description = descLines.join("\n").trim() || "（未記載）";
+  const rawDescription = descLines.join(" ").replace(/\s+/g, " ").trim() || "（未記載）";
+  // README テーブル向けに先頭の1文（句点まで）を抽出、最大120文字
+  const firstSentence = rawDescription.match(/^[^。]*。/)?.[0] || rawDescription;
+  const description = firstSentence.length > 120
+    ? firstSentence.slice(0, 117) + "…"
+    : firstSentence;
   const fileName = path.basename(filePath);
 
   return { title, description, fileName };
@@ -100,7 +105,7 @@ function extractManualBlock(filePath) {
 // テンプレート生成
 // ---------------------------------------------------------------------------
 
-function generateReadme(chapters, manualContent, templatePath, root) {
+function generateReadme(chapters, manualContent, templateContent, root) {
   const chapterTable = chapters
     .map(
       (ch) =>
@@ -111,8 +116,7 @@ function generateReadme(chapters, manualContent, templatePath, root) {
   const pkgName = loadPackageField(root, "name") || path.basename(root);
   const pkgDescription = loadPackageField(root, "description") || "";
 
-  const template = fs.readFileSync(templatePath, "utf8");
-  return template
+  return templateContent
     .replace(/\{\{CHAPTER_TABLE\}\}/g, chapterTable)
     .replace(/\{\{MANUAL_CONTENT\}\}/g, manualContent)
     .replace(/\{\{PROJECT_NAME\}\}/g, pkgName)
@@ -154,25 +158,38 @@ Options:
   const resolvedType = resolveType(type);
   const templatesRoot = path.join(PKG_DIR, "templates", "locale", lang);
 
-  // テンプレート継承チェーンで README.md を探索
+  // テンプレート継承チェーンで README.md をマージ
   const leaf = resolvedType.split("/").pop();
   const preset = presetByLeaf(leaf);
   const presetTemplateDir = preset?.dir ? path.join(preset.dir, "templates", lang) : null;
+  const projectLocalDir = path.join(root, ".sdd-forge", "templates", lang, "docs");
 
-  let templatePath = null;
+  let templateContent = null;
   try {
-    const chain = resolveChain(templatesRoot, resolvedType, presetTemplateDir);
-    templatePath = resolveReadmeTemplate(chain);
+    const chain = resolveChain(templatesRoot, resolvedType, presetTemplateDir, projectLocalDir);
+    const merged = mergeFile("README.md", chain);
+    // マージ後のブロックディレクティブを除去
+    if (merged) {
+      templateContent = merged
+        .replace(/^<!-- @block: [\w-]+ -->\n?/gm, "")
+        .replace(/^<!-- @endblock -->\n?/gm, "")
+        .replace(/\n{3,}/g, "\n\n")
+        .replace(/([^\n])\n(## )/g, "$1\n\n$2")
+        .replace(/([^\n])\n(### )/g, "$1\n\n$2");
+    }
   } catch (_) {
     // 新構造がない場合、旧パスへフォールバック
   }
 
   // フォールバック: 旧フラットディレクトリ
-  if (!templatePath) {
-    templatePath = path.join(PKG_DIR, "templates", "locale", lang, type, "README.md");
+  if (!templateContent) {
+    const fallbackPath = path.join(PKG_DIR, "templates", "locale", lang, type, "README.md");
+    if (fs.existsSync(fallbackPath)) {
+      templateContent = fs.readFileSync(fallbackPath, "utf8");
+    }
   }
 
-  if (!fs.existsSync(templatePath)) {
+  if (!templateContent) {
     logger.log(t("readme.noTemplate", { type }));
     return;
   }
@@ -180,7 +197,7 @@ Options:
   const chapters = listChapterFiles(root).map(parseChapter);
   const readmePath = path.join(root, "README.md");
   const manualContent = extractManualBlock(readmePath);
-  const newContent = generateReadme(chapters, manualContent, templatePath, root);
+  const newContent = generateReadme(chapters, manualContent, templateContent, root);
 
   // 差分チェック
   if (fs.existsSync(readmePath)) {

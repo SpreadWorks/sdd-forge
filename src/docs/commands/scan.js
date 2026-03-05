@@ -185,6 +185,10 @@ async function main() {
     );
   }
 
+  // プロジェクトローカルの DataSource（.sdd-forge/data/）
+  const projectDataDir = path.join(root, ".sdd-forge", "data");
+  dataSources = await loadScanSources(projectDataDir, dataSources);
+
   // スキャン実行
   const result = { analyzedAt: new Date().toISOString() };
 

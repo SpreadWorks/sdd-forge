@@ -17,7 +17,6 @@ import { loadPackageField, loadJsonFile } from "../../lib/config.js";
 import { resolveType } from "../../lib/types.js";
 import { callAgent, resolveAgent } from "../../lib/agent.js";
 import { resolveChain, collectChapters, filterChapters } from "../lib/template-merger.js";
-import { parseBlocks } from "../lib/directive-parser.js";
 import { summaryToText } from "../lib/forge-prompts.js";
 import { presetByLeaf } from "../../lib/presets.js";
 import { createLogger } from "../../lib/progress.js";
@@ -309,9 +308,18 @@ function main() {
   const preset = presetByLeaf(leaf);
   const presetTemplateDir = preset?.dir ? path.join(preset.dir, "templates", lang) : null;
 
+  // プロジェクトローカルテンプレート
+  const projectLocalDir = path.join(root, ".sdd-forge", "templates", lang, "docs");
+
+  // .sdd-forge/custom/ → .sdd-forge/templates/{lang}/docs/ マイグレーション案内
+  const legacyCustomDir = path.join(root, ".sdd-forge", "custom");
+  if (fs.existsSync(legacyCustomDir)) {
+    logger.log(`WARN: .sdd-forge/custom/ is deprecated. Move files to .sdd-forge/templates/${lang}/docs/ instead.`);
+  }
+
   let chain;
   try {
-    chain = resolveChain(templatesRoot, type, presetTemplateDir);
+    chain = resolveChain(templatesRoot, type, presetTemplateDir, projectLocalDir);
   } catch (err) {
     // 新しいテンプレート構造が存在しない場合、旧フラットディレクトリへフォールバック
     const legacyDir = path.join(templatesRoot, rawType);
@@ -323,87 +331,10 @@ function main() {
     process.exit(1);
   }
 
-  // .sdd-forge/custom/ を継承チェーンに追加
-  const customDir = path.join(root, ".sdd-forge", "custom");
-  const hasCustom = fs.existsSync(customDir);
-  if (hasCustom) {
-    logger.verbose(".sdd-forge/custom/ found, adding to chain");
-  }
+  logger.verbose(`chain: ${chain.join(" → ")}`);
 
-  logger.verbose(`chain: ${chain.join(" → ")}${hasCustom ? " → .sdd-forge/custom" : ""}`);
-
-  // テンプレートマージ
-  // custom ディレクトリは継承チェーン外のため別途マージする
+  // テンプレートマージ（project-local は resolveChain 経由でチェーンに含まれる）
   const chapters = collectChapters(chain);
-
-  // .sdd-forge/custom/ のテンプレートを追加マージ
-  if (hasCustom) {
-    const customFiles = fs.readdirSync(customDir).filter((f) => /^\d{2}_.*\.md$/.test(f));
-    for (const fileName of customFiles) {
-      const customPath = path.join(customDir, fileName);
-      const customContent = fs.readFileSync(customPath, "utf8");
-      if (customContent.trim() === "") continue; // 空ファイルはスキップ
-
-      const existing = chapters.find((ch) => ch.fileName === fileName);
-      if (existing) {
-        // 既存章にカスタムオーバーライドを適用
-        const child = parseBlocks(customContent);
-        if (child.extends) {
-          // @extends あり → ブロックマージ
-          const mergedLines = [];
-          const parent = parseBlocks(existing.content);
-
-          // preamble
-          mergedLines.push(...parent.preamble);
-
-          // blocks
-          for (const [name, parentBlock] of parent.blocks) {
-            const childBlock = child.blocks.get(name);
-            mergedLines.push(`<!-- @block: ${name} -->`);
-            if (!childBlock) {
-              mergedLines.push(...parentBlock.content);
-            } else if (childBlock.hasParent) {
-              for (let i = 0; i < childBlock.content.length; i++) {
-                if (i === childBlock.parentLine) {
-                  mergedLines.push(...parentBlock.content);
-                } else {
-                  mergedLines.push(childBlock.content[i]);
-                }
-              }
-            } else {
-              mergedLines.push(...childBlock.content);
-            }
-            mergedLines.push("<!-- @endblock -->");
-          }
-
-          // child-only blocks
-          for (const [name, childBlock] of child.blocks) {
-            if (!parent.blocks.has(name)) {
-              mergedLines.push(`<!-- @block: ${name} -->`);
-              for (let i = 0; i < childBlock.content.length; i++) {
-                if (i === childBlock.parentLine) continue;
-                mergedLines.push(childBlock.content[i]);
-              }
-              mergedLines.push("<!-- @endblock -->");
-            }
-          }
-
-          mergedLines.push(...parent.postamble);
-          existing.content = mergedLines.join("\n");
-        } else {
-          // @extends なし → 完全置換
-          existing.content = customContent;
-        }
-        logger.verbose(`custom override: ${fileName}`);
-      } else {
-        // 新規章
-        chapters.push({ fileName, content: customContent });
-        logger.verbose(`custom addition: ${fileName}`);
-      }
-    }
-    // 再ソート
-    chapters.sort((a, b) => a.fileName.localeCompare(b.fileName));
-  }
 
   if (chapters.length === 0) {
     logger.log(t("init.noTemplates"));
