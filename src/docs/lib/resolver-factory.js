@@ -3,6 +3,8 @@
  *
  * リゾルバファクトリ。
  * type に応じて DataSource モジュールをロードし、リゾルバを返す。
+ * 親 preset (webapp/cli) → 子 preset (cakephp2/laravel/...) の順でロードし、
+ * 子が親を override する。
  */
 
 import fs from "fs";
@@ -17,13 +19,14 @@ const logger = createLogger("resolver");
 // ---------------------------------------------------------------------------
 
 /**
- * preset の data/ ディレクトリから DataSource モジュールを動的にロードする。
+ * data/ ディレクトリから DataSource クラスをロードし、インスタンス化する。
  * @param {string} dataDir - data/ ディレクトリの絶対パス
  * @param {{ desc: function, loadOverrides: function }} ctx
+ * @param {Map<string, DataSource>} existing - 既存の DataSource マップ（親から継承）
  * @returns {Promise<Map<string, DataSource>>} name → DataSource instance
  */
-async function loadDataSources(dataDir, ctx) {
-  const sources = new Map();
+async function loadDataSources(dataDir, ctx, existing) {
+  const sources = new Map(existing || []);
   if (!fs.existsSync(dataDir)) return sources;
 
   const files = fs.readdirSync(dataDir).filter((f) => f.endsWith(".js"));
@@ -31,10 +34,11 @@ async function loadDataSources(dataDir, ctx) {
     const name = path.basename(file, ".js");
     try {
       const mod = await import(path.join(dataDir, file));
-      const source = mod.default;
-      if (source && typeof source.scan === "function") {
-        source.init(ctx);
-        sources.set(name, source);
+      const Source = mod.default;
+      if (typeof Source === "function") {
+        const instance = new Source();
+        instance.init(ctx);
+        sources.set(name, instance);
       }
     } catch (err) {
       logger.verbose(`failed to load DataSource ${name}: ${err.message}`);
@@ -73,8 +77,14 @@ function descFactory(root) {
 // ファクトリ
 // ---------------------------------------------------------------------------
 
+const PRESETS_DIR = path.resolve(
+  path.dirname(new URL(import.meta.url).pathname),
+  "../../presets",
+);
+
 /**
  * type に基づいてリゾルバを生成する。
+ * 親 preset → 子 preset の順で DataSource をロードし、子が親を override する。
  *
  * @param {string} type - 解決済み type パス（例: "webapp/cakephp2"）
  * @param {string} root - プロジェクトルート（overrides.json のパス解決用）
@@ -85,25 +95,21 @@ export async function createResolver(type, root) {
   const loadOverrides = () => loadOverridesFor(root);
   const ctx = { desc, loadOverrides };
 
+  // 親 preset (webapp, cli) のロード
+  const arch = type.split("/")[0];
+  const parentDataDir = path.join(PRESETS_DIR, arch, "data");
+  let dataSources = await loadDataSources(parentDataDir, ctx);
+
+  // 子 preset のロード（親を override）
   const leaf = type.split("/").pop();
   const preset = presetByLeaf(leaf);
-
-  // DataSource モジュールのロード
-  let dataSources = new Map();
-
   if (preset?.dir) {
-    dataSources = await loadDataSources(path.join(preset.dir, "data"), ctx);
+    dataSources = await loadDataSources(path.join(preset.dir, "data"), ctx, dataSources);
   }
 
   return {
     /**
      * source.method でデータを解決し、レンダリング済み Markdown を返す。
-     *
-     * @param {string} source - DataSource 名 (e.g. "controllers")
-     * @param {string} method - メソッド名 (e.g. "list")
-     * @param {Object} analysis - analysis.json の全体オブジェクト
-     * @param {string[]} labels - テーブルヘッダー
-     * @returns {string|null}
      */
     resolve(source, method, analysis, labels) {
       const ds = dataSources.get(source);

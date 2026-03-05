@@ -1,8 +1,8 @@
 /**
  * RoutesSource — Symfony routes DataSource.
  *
- * Combines scan (source code extraction) and resolve (Markdown rendering)
- * into a single self-contained class.
+ * Extends the webapp parent RoutesSource with Symfony-specific
+ * scan logic and resolve methods.
  *
  * Available methods (called via @data directives):
  *   routes.list("Methods|Path|Controller|Name")
@@ -10,12 +10,13 @@
  *   routes.yaml("Methods|Path|Controller|Name")
  */
 
-import { DataSource } from "../../../docs/lib/data-source.js";
+import RoutesSource from "../../webapp/data/routes.js";
 import { analyzeRoutes } from "../scan/routes.js";
 
-class RoutesSource extends DataSource {
-  scan(sourceRoot) {
-    return analyzeRoutes(sourceRoot);
+export default class SymfonyRoutesSource extends RoutesSource {
+  scan(sourceRoot, scanCfg) {
+    const result = analyzeRoutes(sourceRoot);
+    return { symfonyRoutes: result.routes, symfonyRoutesSummary: result.summary };
   }
 
   /** All routes table. */
@@ -61,5 +62,3 @@ class RoutesSource extends DataSource {
     return this.toMarkdownTable(rows, labels);
   }
 }
-
-export default new RoutesSource();

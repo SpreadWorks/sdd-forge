@@ -103,4 +103,51 @@ describe("scan CLI", () => {
     });
     assert.match(result, /--stdout/);
   });
+
+  it("scans webapp/cakephp2 with parent-child DataSource inheritance", () => {
+    tmp = createTmpDir();
+    writeJson(tmp, ".sdd-forge/config.json", {
+      lang: "ja",
+      type: "webapp/cakephp2",
+    });
+    writeFile(tmp, "app/Controller/UsersController.php", [
+      "<?php",
+      "class UsersController extends AppController {",
+      "  public $uses = array('User');",
+      "  public function index() {}",
+      "  public function view() {}",
+      "}",
+    ].join("\n"));
+
+    const result = execFileSync("node", [CMD, "--stdout"], {
+      encoding: "utf8",
+      env: { ...process.env, SDD_WORK_ROOT: tmp, SDD_SOURCE_ROOT: tmp },
+    });
+    const analysis = JSON.parse(result);
+    assert.ok(analysis.analyzedAt);
+    // CakePHP controllers DataSource overrides webapp parent
+    assert.ok(analysis.controllers, "controllers category should exist");
+    assert.equal(analysis.controllers.summary.total, 1);
+    assert.equal(analysis.controllers.controllers[0].className, "UsersController");
+  });
+
+  it("includes extras from universal analyzeExtras", () => {
+    tmp = createTmpDir();
+    writeJson(tmp, ".sdd-forge/config.json", {
+      lang: "ja",
+      type: "cli/node-cli",
+    });
+    writeJson(tmp, "package.json", {
+      dependencies: { "express": "^4.0.0" },
+    });
+
+    const result = execFileSync("node", [CMD, "--stdout"], {
+      encoding: "utf8",
+      env: { ...process.env, SDD_WORK_ROOT: tmp, SDD_SOURCE_ROOT: tmp },
+    });
+    const analysis = JSON.parse(result);
+    assert.ok(analysis.extras);
+    assert.ok(analysis.extras.packageDeps);
+    assert.deepEqual(analysis.extras.packageDeps.dependencies, { "express": "^4.0.0" });
+  });
 });

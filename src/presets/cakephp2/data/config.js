@@ -1,6 +1,8 @@
 /**
  * ConfigSource — CakePHP 2.x configuration DataSource.
  *
+ * CakePHP-only category: extends Scannable(DataSource) directly.
+ *
  * Available methods (called via @data directives):
  *   config.stack("...")
  *   config.db("Env|Host|Note")
@@ -13,21 +15,31 @@
  *   config.assets("Library|Version|File")
  */
 
+import path from "path";
 import { DataSource } from "../../../docs/lib/data-source.js";
+import { Scannable } from "../../../docs/lib/scan-source.js";
 import { analyzeConstants, analyzeBootstrap } from "../scan/config.js";
 import { analyzeAppController, analyzeAppModel } from "../scan/base-classes.js";
 import { analyzeAssets } from "../scan/assets.js";
-import { analyzeAcl } from "../scan/security.js";
+import { analyzeAcl, analyzePermissionComponent } from "../scan/security.js";
+import { analyzeLogicClasses, analyzeTitlesGraphMapping, analyzeComposerDeps } from "../scan/business.js";
+import { analyzeShellDetails } from "../scan/shells-detail.js";
 
-class ConfigSource extends DataSource {
-  scan(sourceRoot) {
+export default class CakephpConfigSource extends Scannable(DataSource) {
+  scan(sourceRoot, scanCfg) {
+    const appDir = path.join(sourceRoot, "app");
     return {
-      constants: analyzeConstants(sourceRoot),
-      bootstrap: analyzeBootstrap(sourceRoot),
-      appController: analyzeAppController(sourceRoot),
-      appModel: analyzeAppModel(sourceRoot),
-      assets: analyzeAssets(sourceRoot),
-      acl: analyzeAcl(sourceRoot),
+      constants: analyzeConstants(appDir),
+      bootstrap: analyzeBootstrap(appDir),
+      appController: analyzeAppController(appDir),
+      appModel: analyzeAppModel(appDir),
+      assets: analyzeAssets(appDir),
+      acl: analyzeAcl(appDir),
+      permissionComponent: analyzePermissionComponent(appDir),
+      logicClasses: analyzeLogicClasses(appDir),
+      titlesGraphMapping: analyzeTitlesGraphMapping(appDir),
+      composerDeps: analyzeComposerDeps(appDir),
+      shellDetails: analyzeShellDetails(appDir),
     };
   }
 
@@ -162,5 +174,3 @@ class ConfigSource extends DataSource {
     return this.toMarkdownTable(rows, labels);
   }
 }
-
-export default new ConfigSource();

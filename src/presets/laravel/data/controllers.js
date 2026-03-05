@@ -1,8 +1,8 @@
 /**
  * ControllersSource — Laravel controllers DataSource.
  *
- * Combines scan (source code extraction) and resolve (Markdown rendering)
- * into a single self-contained class.
+ * Extends the webapp parent ControllersSource with Laravel-specific
+ * scan logic and resolve methods.
  *
  * Available methods (called via @data directives):
  *   controllers.list("Name|File|Description")
@@ -10,12 +10,13 @@
  *   controllers.middleware("Middleware|Controllers")
  */
 
-import { DataSource } from "../../../docs/lib/data-source.js";
+import ControllersSource from "../../webapp/data/controllers.js";
 import { analyzeControllers } from "../scan/controllers.js";
 
-class ControllersSource extends DataSource {
-  scan(sourceRoot) {
-    return analyzeControllers(sourceRoot);
+export default class LaravelControllersSource extends ControllersSource {
+  scan(sourceRoot, scanCfg) {
+    const result = analyzeControllers(sourceRoot);
+    return { laravelControllers: result.controllers };
   }
 
   /** Controller list table. */
@@ -66,5 +67,3 @@ class ControllersSource extends DataSource {
     return this.toMarkdownTable(rows, labels);
   }
 }
-
-export default new ControllersSource();

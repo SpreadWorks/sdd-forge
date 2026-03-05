@@ -1,12 +1,10 @@
 #!/usr/bin/env node
 /**
- * sdd-forge/analyzers/scan.js
+ * sdd-forge/docs/commands/scan.js
  *
- * 全解析器を実行し、結合結果を .sdd-forge/output/analysis.json へ出力する。
- *
- * 1. 汎用スキャン（generic-scan.js）で構造解析
- * 2. FW 固有モジュール（fw/*.js）で extras を拡張
- * 3. --legacy フラグで旧 CakePHP 固有解析器も使用可能（後方互換）
+ * DataSource ベースのスキャンパイプライン。
+ * 親 preset (webapp/cli) → 子 preset の順で DataSource をロードし、
+ * 各 DataSource の scan() を実行して analysis.json を生成する。
  */
 
 import fs from "fs";
@@ -15,21 +13,16 @@ import { fileURLToPath } from "url";
 import { repoRoot, sourceRoot, parseArgs } from "../../lib/cli.js";
 import { loadConfig } from "../../lib/config.js";
 import { resolveType } from "../../lib/types.js";
-import { genericScan } from "../lib/scanner.js";
+import { analyzeExtras } from "../lib/scanner.js";
 import { presetByLeaf } from "../../lib/presets.js";
 import { createLogger } from "../../lib/progress.js";
 
 const logger = createLogger("scan");
 
-/**
- * type パスからリーフセグメント（FW 名）を抽出する。
- * 例: "webapp/cakephp2" → "cakephp2"
- *     "webapp" → "webapp"
- */
-function leafSegment(typePath) {
-  const parts = typePath.split("/");
-  return parts[parts.length - 1];
-}
+const PRESETS_DIR = path.resolve(
+  path.dirname(fileURLToPath(import.meta.url)),
+  "../../presets",
+);
 
 function printHelp() {
   console.log(
@@ -44,12 +37,45 @@ function printHelp() {
   );
 }
 
-/**
- * analysis から AI 向けサマリーを構築する。
- * 各セクションの summary + 代表的な詳細（件数制限付き）を含む。
- */
+// ---------------------------------------------------------------------------
+// DataSource ローダ（scan 用）
+// ---------------------------------------------------------------------------
 
-// 既知カテゴリのサマリー構築関数
+/**
+ * data/ ディレクトリから DataSource クラスをロードし、
+ * scan() メソッドを持つもののみインスタンス化して返す。
+ *
+ * @param {string} dataDir - data/ ディレクトリの絶対パス
+ * @param {Map<string, Object>} existing - 親 preset から継承済みの Map
+ * @returns {Promise<Map<string, Object>>} name → DataSource instance
+ */
+async function loadScanSources(dataDir, existing) {
+  const sources = new Map(existing || []);
+  if (!fs.existsSync(dataDir)) return sources;
+
+  const files = fs.readdirSync(dataDir).filter((f) => f.endsWith(".js"));
+  for (const file of files) {
+    const name = path.basename(file, ".js");
+    try {
+      const mod = await import(path.join(dataDir, file));
+      const Source = mod.default;
+      if (typeof Source === "function") {
+        const instance = new Source();
+        if (typeof instance.scan === "function") {
+          sources.set(name, instance);
+        }
+      }
+    } catch (err) {
+      logger.verbose(`failed to load DataSource ${name}: ${err.message}`);
+    }
+  }
+  return sources;
+}
+
+// ---------------------------------------------------------------------------
+// サマリー構築
+// ---------------------------------------------------------------------------
+
 const SUMMARY_BUILDERS = {
   controllers(c) {
     return {
@@ -118,6 +144,10 @@ function buildSummary(analysis) {
   return s;
 }
 
+// ---------------------------------------------------------------------------
+// メイン
+// ---------------------------------------------------------------------------
+
 async function main() {
   const cli = parseArgs(process.argv.slice(2), {
     flags: ["--stdout", "--dry-run"],
@@ -134,38 +164,60 @@ async function main() {
   const rawType = cfg.type || "php-mvc";
   const type = resolveType(rawType);
 
-  logger.verbose(`mode: generic (type=${type})`);
+  logger.verbose(`type=${type}`);
 
   // preset からスキャン設定を取得
-  const leaf = leafSegment(type);
+  const leaf = type.split("/").pop();
+  const arch = type.split("/")[0];
   const preset = presetByLeaf(leaf);
   const presetScan = preset?.scan || {};
-
   const scanOverrides = cfg.scan || {};
-  // preset.scan → config.scan で上書き
   const scanCfg = { ...presetScan, ...scanOverrides };
 
-  const result = genericScan(src, scanCfg);
+  // DataSource ロード: 親 preset → 子 preset（子が親を override）
+  const parentDataDir = path.join(PRESETS_DIR, arch, "data");
+  let dataSources = await loadScanSources(parentDataDir);
 
-  // FW 固有 extras 拡張
   if (preset?.dir) {
-    const extrasPath = path.join(preset.dir, "scan", "extras.js");
-    if (fs.existsSync(extrasPath)) {
-      try {
-        const fwModule = await import(extrasPath);
-        if (fwModule.analyzeExtras) {
-          logger.verbose(`FW extras: ${leaf} ...`);
-          const fwExtras = await fwModule.analyzeExtras(src, result);
-          result.extras = { ...result.extras, ...fwExtras };
-          const extrasKeys = Object.keys(result.extras);
-          logger.verbose(`FW extras: ${extrasKeys.length} categories (${extrasKeys.join(", ")})`);
-        }
-      } catch (err) {
-        logger.verbose(`FW extras failed for ${leaf}: ${err.message}`);
+    dataSources = await loadScanSources(
+      path.join(preset.dir, "data"),
+      dataSources,
+    );
+  }
+
+  // スキャン実行
+  const result = { analyzedAt: new Date().toISOString() };
+
+  for (const [name, source] of dataSources) {
+    logger.verbose(`${name} ...`);
+    const data = source.scan(src, scanCfg);
+    if (data == null) continue;
+
+    if (data.summary) {
+      // プライマリカテゴリ → analysis[name]
+      result[name] = data;
+      if (data.summary.total != null) {
+        logger.verbose(`${name}: ${data.summary.total} items`);
       }
+    } else {
+      // エクストラカテゴリ → analysis.extras にマージ
+      if (!result.extras) result.extras = {};
+      Object.assign(result.extras, data);
     }
   }
 
+  // 汎用 extras（composer.json / package.json）
+  logger.verbose("extras ...");
+  const universalExtras = analyzeExtras(src);
+  // DataSource extras が汎用 extras を override（FW 固有の方が詳細）
+  result.extras = { ...universalExtras, ...(result.extras || {}) };
+
+  const extrasKeys = Object.keys(result.extras);
+  if (extrasKeys.length > 0) {
+    logger.verbose(`extras: ${extrasKeys.length} categories (${extrasKeys.join(", ")})`);
+  }
+
+  // 出力
   const json = JSON.stringify(result);
 
   if (cli.stdout || cli.dryRun) {

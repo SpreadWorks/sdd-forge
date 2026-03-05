@@ -1,16 +1,21 @@
 /**
  * TestsSource — CakePHP 2.x test structure DataSource.
  *
+ * CakePHP-only category: extends Scannable(DataSource) directly.
+ *
  * Available methods (called via @data directives):
  *   tests.list("Item|Count|Directory")
  */
 
+import path from "path";
 import { DataSource } from "../../../docs/lib/data-source.js";
+import { Scannable } from "../../../docs/lib/scan-source.js";
 import { analyzeTestStructure } from "../scan/testing.js";
 
-class TestsSource extends DataSource {
-  scan(sourceRoot) {
-    return analyzeTestStructure(sourceRoot);
+export default class CakephpTestsSource extends Scannable(DataSource) {
+  scan(sourceRoot, scanCfg) {
+    const appDir = path.join(sourceRoot, "app");
+    return { testStructure: analyzeTestStructure(appDir) };
   }
 
   /** Test structure summary. */
@@ -25,5 +30,3 @@ class TestsSource extends DataSource {
     return this.toMarkdownTable(rows, labels);
   }
 }
-
-export default new TestsSource();

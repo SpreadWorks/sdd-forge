@@ -9,12 +9,7 @@
 
 import { DataSource } from "../../../docs/lib/data-source.js";
 
-class CommandsSource extends DataSource {
-  scan() {
-    // No preset-specific scan; relies on shells from genericScan.
-    return {};
-  }
-
+export default class CommandsSource extends DataSource {
   /** Artisan commands list table. */
   list(analysis, labels) {
     const shells = analysis.shells?.shells || [];
@@ -27,5 +22,3 @@ class CommandsSource extends DataSource {
     return this.toMarkdownTable(rows, labels);
   }
 }
-
-export default new CommandsSource();

@@ -2,7 +2,7 @@
  * DataSource — base class for OOP-based @data directive resolvers.
  *
  * Each preset category (e.g. controllers, models, tables) extends this class
- * and implements scan() + one or more named resolver methods.
+ * and implements one or more named resolver methods.
  *
  * Directive syntax:
  *   <!-- @data: controllers.list("Name|File|Description") -->
@@ -37,15 +37,6 @@ export class DataSource {
   }
 
   /**
-   * Extract raw data from source code.
-   * @param {string} sourceRoot - absolute path to the source directory
-   * @returns {Object} extracted data to be stored in analysis.json
-   */
-  scan(sourceRoot) {
-    throw new Error(`${this.constructor.name}.scan() must be implemented`);
-  }
-
-  /**
    * Convert items to row arrays using a mapper function.
    * @param {Array} items - source items
    * @param {Function} mapper - (item) => [col1, col2, ...]
@@ -62,9 +53,12 @@ export class DataSource {
    * @returns {string} Markdown table
    */
   toMarkdownTable(rows, labels) {
-    const header = `| ${labels.join(" | ")} |`;
+    const escape = (v) => String(v ?? "—").replace(/\|/g, "\\|");
+    const header = `| ${labels.map(escape).join(" | ")} |`;
     const sep = `| ${labels.map(() => "---").join(" | ")} |`;
-    const body = rows.map((r) => `| ${r.join(" | ")} |`).join("\n");
+    const body = rows
+      .map((r) => `| ${r.map(escape).join(" | ")} |`)
+      .join("\n");
     return [header, sep, body].join("\n");
   }
 }

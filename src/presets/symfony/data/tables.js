@@ -1,8 +1,8 @@
 /**
  * TablesSource — Symfony migrations DataSource.
  *
- * Combines scan (source code extraction) and resolve (Markdown rendering)
- * into a single self-contained class.
+ * Extends the webapp parent TablesSource with Symfony-specific
+ * scan logic and resolve methods.
  *
  * Available methods (called via @data directives):
  *   tables.list("Name|Columns|Description")
@@ -10,12 +10,13 @@
  *   tables.fk("Table|Column|References")
  */
 
-import { DataSource } from "../../../docs/lib/data-source.js";
+import TablesSource from "../../webapp/data/tables.js";
 import { analyzeMigrations } from "../scan/migrations.js";
 
-class TablesSource extends DataSource {
-  scan(sourceRoot) {
-    return analyzeMigrations(sourceRoot);
+export default class SymfonyTablesSource extends TablesSource {
+  scan(sourceRoot, scanCfg) {
+    const result = analyzeMigrations(sourceRoot);
+    return { migrations: result.tables, migrationsSummary: result.summary };
   }
 
   /** Table list table. */
@@ -58,5 +59,3 @@ class TablesSource extends DataSource {
     return this.toMarkdownTable(rows, labels);
   }
 }
-
-export default new TablesSource();

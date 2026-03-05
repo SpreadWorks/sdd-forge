@@ -1,6 +1,8 @@
 /**
  * ViewsSource — CakePHP 2.x views DataSource.
  *
+ * CakePHP-only category: extends Scannable(DataSource) directly.
+ *
  * Available methods (called via @data directives):
  *   views.helpers("Class|Extends|Description")
  *   views.layouts("File|Description")
@@ -8,19 +10,22 @@
  *   views.components("Method|Description")
  */
 
+import path from "path";
 import { DataSource } from "../../../docs/lib/data-source.js";
+import { Scannable } from "../../../docs/lib/scan-source.js";
 import {
   analyzeHelpers,
   analyzeLayouts,
   analyzeElements,
 } from "../scan/views.js";
 
-class ViewsSource extends DataSource {
-  scan(sourceRoot) {
+export default class CakephpViewsSource extends Scannable(DataSource) {
+  scan(sourceRoot, scanCfg) {
+    const appDir = path.join(sourceRoot, "app");
     return {
-      helpers: analyzeHelpers(sourceRoot),
-      layouts: analyzeLayouts(sourceRoot),
-      elements: analyzeElements(sourceRoot),
+      helpers: analyzeHelpers(appDir),
+      layouts: analyzeLayouts(appDir),
+      elements: analyzeElements(appDir),
     };
   }
 
@@ -74,5 +79,3 @@ class ViewsSource extends DataSource {
     return this.toMarkdownTable(rows, labels);
   }
 }
-
-export default new ViewsSource();

@@ -1,8 +1,8 @@
 /**
  * ModelsSource — Laravel Eloquent models DataSource.
  *
- * Combines scan (source code extraction) and resolve (Markdown rendering)
- * into a single self-contained class.
+ * Extends the webapp parent ModelsSource with Laravel-specific
+ * scan logic and resolve methods.
  *
  * Available methods (called via @data directives):
  *   models.relations("Model|Associations")
@@ -10,12 +10,13 @@
  *   models.casts("Model|Attribute|Cast Type")
  */
 
-import { DataSource } from "../../../docs/lib/data-source.js";
+import ModelsSource from "../../webapp/data/models.js";
 import { analyzeModels } from "../scan/models.js";
 
-class ModelsSource extends DataSource {
-  scan(sourceRoot) {
-    return analyzeModels(sourceRoot);
+export default class LaravelModelsSource extends ModelsSource {
+  scan(sourceRoot, scanCfg) {
+    const result = analyzeModels(sourceRoot);
+    return { laravelModels: result.models };
   }
 
   /** Model relations table. */
@@ -68,5 +69,3 @@ class ModelsSource extends DataSource {
     return this.toMarkdownTable(rows, labels);
   }
 }
-
-export default new ModelsSource();

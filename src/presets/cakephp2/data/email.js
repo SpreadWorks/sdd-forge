@@ -1,16 +1,21 @@
 /**
  * EmailSource — CakePHP 2.x email notifications DataSource.
  *
+ * CakePHP-only category: extends Scannable(DataSource) directly.
+ *
  * Available methods (called via @data directives):
  *   email.list("File|Subjects|CC/Transport")
  */
 
+import path from "path";
 import { DataSource } from "../../../docs/lib/data-source.js";
+import { Scannable } from "../../../docs/lib/scan-source.js";
 import { analyzeEmailNotifications } from "../scan/notifications.js";
 
-class EmailSource extends DataSource {
-  scan(sourceRoot) {
-    return analyzeEmailNotifications(sourceRoot);
+export default class CakephpEmailSource extends Scannable(DataSource) {
+  scan(sourceRoot, scanCfg) {
+    const appDir = path.join(sourceRoot, "app");
+    return { emailNotifications: analyzeEmailNotifications(appDir) };
   }
 
   /** Email notification usage list. */
@@ -30,5 +35,3 @@ class EmailSource extends DataSource {
     return this.toMarkdownTable(rows, labels);
   }
 }
-
-export default new EmailSource();

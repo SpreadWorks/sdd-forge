@@ -1,8 +1,8 @@
 /**
  * ControllersSource — Symfony controllers DataSource.
  *
- * Combines scan (source code extraction) and resolve (Markdown rendering)
- * into a single self-contained class.
+ * Extends the webapp parent ControllersSource with Symfony-specific
+ * scan logic and resolve methods.
  *
  * Available methods (called via @data directives):
  *   controllers.list("Name|File|Description")
@@ -10,12 +10,13 @@
  *   controllers.di("Controller|Dependency")
  */
 
-import { DataSource } from "../../../docs/lib/data-source.js";
+import ControllersSource from "../../webapp/data/controllers.js";
 import { analyzeControllers } from "../scan/controllers.js";
 
-class ControllersSource extends DataSource {
-  scan(sourceRoot) {
-    return analyzeControllers(sourceRoot);
+export default class SymfonyControllersSource extends ControllersSource {
+  scan(sourceRoot, scanCfg) {
+    const result = analyzeControllers(sourceRoot);
+    return { symfonyControllers: result.controllers };
   }
 
   /** Controller list table. */
@@ -61,5 +62,3 @@ class ControllersSource extends DataSource {
     return this.toMarkdownTable(rows, labels);
   }
 }
-
-export default new ControllersSource();

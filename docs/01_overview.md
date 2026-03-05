@@ -75,7 +75,7 @@ flowchart TD
 | **summary.json** | analysis.json の軽量版。AI に渡すコマンドはこちらを優先して使用します |
 | **forge** | docs の内容を AI で反復的に改善するコマンド。実装後の docs 更新にも使用します |
 | **review** | docs の品質（一貫性・網羅性・正確性）を自動チェックするコマンドです |
-| **preset** | CakePHP 2.x など、フレームワーク固有の解析ロジックをまとめた拡張モジュールです |
+| **preset** | CakePHP 2.x・Laravel・Symfony など、フレームワーク固有の解析ロジックをまとめた拡張モジュールです |
 
 ### 典型的な利用フロー
 
