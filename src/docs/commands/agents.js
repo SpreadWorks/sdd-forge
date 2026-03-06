@@ -225,15 +225,15 @@ function main() {
   });
 
   if (opts.help) {
-    console.log("Usage: sdd-forge agents [--sdd] [--project] [--dry-run]");
-    console.log("");
-    console.log("  AGENTS.md の SDD/PROJECT セクションを更新する。");
-    console.log("  デフォルトで両セクションを更新する（PROJECT は AI で精査・追記）。");
-    console.log("");
-    console.log("Options:");
-    console.log("  --sdd       SDD セクションのみテンプレートで更新");
-    console.log("  --project   PROJECT セクションのみ更新（テンプレート + AI 精査）");
-    console.log("  --dry-run   ファイル書き込みせず生成内容を stdout に出力");
+    let uiLang = "en";
+    try { uiLang = JSON.parse(fs.readFileSync(path.join(repoRoot(), ".sdd-forge", "config.json"), "utf8")).uiLang || "en"; } catch (_) {}
+    const tu = createI18n(uiLang);
+    const h = tu.raw("help.cmdHelp.agents");
+    const o = h.options;
+    console.log([
+      h.usage, "", `  ${h.desc}`, `  ${h.descDetail}`, "", "Options:",
+      `  ${o.sdd}`, `  ${o.project}`, `  ${o.dryRun}`,
+    ].join("\n"));
     process.exit(0);
   }
 

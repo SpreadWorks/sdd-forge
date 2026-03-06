@@ -16,6 +16,7 @@ import { resolveType } from "../../lib/types.js";
 import { analyzeExtras } from "../lib/scanner.js";
 import { presetByLeaf } from "../../lib/presets.js";
 import { createLogger } from "../../lib/progress.js";
+import { createI18n } from "../../lib/i18n.js";
 
 const logger = createLogger("scan");
 
@@ -24,15 +25,19 @@ const PRESETS_DIR = path.resolve(
   "../../presets",
 );
 
-function printHelp() {
+function printHelp(t) {
+  const h = t.raw("help.cmdHelp.scan");
+  const opts = h.options;
   console.log(
     [
-      "Usage: sdd-forge scan [options]",
+      h.usage,
+      "",
+      h.desc,
       "",
       "Options:",
-      "  --stdout        結果を stdout に出力（ファイル書き込みしない）",
-      "  --dry-run       --stdout と同じ（ファイル書き込みしない）",
-      "  -h, --help      このヘルプを表示",
+      `  ${opts.stdout}`,
+      `  ${opts.dryRun}`,
+      `  ${opts.help}`,
     ].join("\n"),
   );
 }
@@ -154,7 +159,10 @@ async function main() {
     defaults: { stdout: false, dryRun: false },
   });
   if (cli.help) {
-    printHelp();
+    const root = repoRoot(import.meta.url);
+    let uiLang = "en";
+    try { uiLang = JSON.parse(fs.readFileSync(path.join(root, ".sdd-forge", "config.json"), "utf8")).uiLang || "en"; } catch (_) {}
+    printHelp(createI18n(uiLang));
     return;
   }
 

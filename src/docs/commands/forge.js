@@ -124,27 +124,18 @@ function parseCliOptions(argv) {
 }
 
 function printHelp() {
+  let uiLang = "en";
+  try { uiLang = JSON.parse(fs.readFileSync(path.join(repoRoot(import.meta.url), ".sdd-forge", "config.json"), "utf8")).uiLang || "en"; } catch (_) {}
+  const tu = createI18n(uiLang);
+  const h = tu.raw("help.cmdHelp.forge");
+  const o = h.options;
   output.write(
     [
-      "Usage: node sdd-forge/forge/forge.js --prompt \"...\" [options]",
-      "",
-      "Options:",
-      "  --prompt <text>        開始プロンプト",
-      "  --prompt-file <path>   開始プロンプトファイル",
-      "  --spec <path>          入力仕様書（spec.md）",
-      "  --max-runs <n>         反復回数 (default: 3)",
-      "  --review-cmd <cmd>     docs レビューコマンド (default: sdd-forge review)",
-      "  --agent <name>         AIエージェント: codex|claude (default: config.json の defaultAgent)",
-      "  --mode <mode>          実行モード: local|assist|agent (default: local)",
-      "  --dry-run              ファイル書き込み・review・agent 呼び出しをスキップ（1 ラウンドで終了）",
-      "  --auto-update-context  review 成功後に context.json を確認なしで自動更新",
-      "  -v, --verbose          エージェント実行ログを逐次表示",
-      "  -h, --help             このヘルプを表示",
-      "",
-      "Per-file mode:",
-      "  provider に systemPromptFlag が設定されている場合、ファイルごとに非同期で agent を呼び出します。",
-      "  同時実行数は config.json の limits.concurrency で設定可能（default: 5）。",
-      "",
+      h.usage, "", "Options:",
+      `  ${o.prompt}`, `  ${o.promptFile}`, `  ${o.spec}`, `  ${o.maxRuns}`,
+      `  ${o.reviewCmd}`, `  ${o.agent}`, `  ${o.mode}`, `  ${o.dryRun}`,
+      `  ${o.autoUpdateContext}`, `  ${o.verbose}`, `  ${o.help}`,
+      "", "Per-file mode:", `  ${h.perFileNote}`, "",
     ].join("\n")
   );
 }

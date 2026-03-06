@@ -128,6 +128,116 @@
       "gate": "spec ゲート（未解決事項チェック）",
       "flow": "SDD フロー自動実行",
       "presets list": "プリセット継承ツリーを表示"
+    },
+    "cmdHelp": {
+      "scan": {
+        "usage": "Usage: sdd-forge scan [options]",
+        "desc": "ソースコードを解析し analysis.json / summary.json を生成する。",
+        "options": {
+          "stdout": "--stdout        結果を stdout に出力（ファイル書き込みしない）",
+          "dryRun": "--dry-run       --stdout と同じ（ファイル書き込みしない）",
+          "help": "-h, --help      このヘルプを表示"
+        }
+      },
+      "init": {
+        "usage": "Usage: sdd-forge init [options]",
+        "desc": "テンプレートを docs/ にコピーする。",
+        "options": {
+          "type": "--type <type>            テンプレートタイプ (default: config.json type)",
+          "force": "--force                  既存ファイルがある場合に上書き",
+          "dryRun": "--dry-run                ファイル書き込みせず対象ファイル一覧を表示",
+          "help": "-h, --help               このヘルプを表示"
+        }
+      },
+      "data": {
+        "usage": "Usage: sdd-forge data [options]",
+        "desc": "{{data}} ディレクティブを解析データで解決する。",
+        "options": {
+          "dryRun": "--dry-run   変更内容を表示するだけでファイル書き込みしない",
+          "stdout": "--stdout    各ファイルの変更行数を表示",
+          "help": "-h, --help  このヘルプを表示"
+        }
+      },
+      "text": {
+        "usage": "Usage: sdd-forge text --agent <name> [options]",
+        "desc": "{{text}} ディレクティブを AI で解決する。",
+        "options": {
+          "agent": "--agent <name>      AIエージェント: claude|codex (必須)",
+          "id": "--id <id>           指定 ID の {{text}} ディレクティブのみ処理",
+          "dryRun": "--dry-run           変更内容を表示するだけでファイル書き込みしない",
+          "perDirective": "--per-directive     1ディレクティブ=1呼び出しの旧モード（デフォルト: ファイル単位バッチ）",
+          "timeout": "--timeout <ms>      エージェントタイムアウト (default: {{default}})",
+          "help": "-h, --help          このヘルプを表示"
+        }
+      },
+      "forge": {
+        "usage": "Usage: sdd-forge forge --prompt \"...\" [options]",
+        "desc": "docs を AI エージェントで反復改善する。",
+        "options": {
+          "prompt": "--prompt <text>        開始プロンプト",
+          "promptFile": "--prompt-file <path>   開始プロンプトファイル",
+          "spec": "--spec <path>          入力仕様書（spec.md）",
+          "maxRuns": "--max-runs <n>         反復回数 (default: 3)",
+          "reviewCmd": "--review-cmd <cmd>     docs レビューコマンド (default: sdd-forge review)",
+          "agent": "--agent <name>         AIエージェント: codex|claude (default: config.json の defaultAgent)",
+          "mode": "--mode <mode>          実行モード: local|assist|agent (default: local)",
+          "dryRun": "--dry-run              ファイル書き込み・review・agent 呼び出しをスキップ（1 ラウンドで終了）",
+          "autoUpdateContext": "--auto-update-context  review 成功後に context.json を確認なしで自動更新",
+          "verbose": "-v, --verbose          エージェント実行ログを逐次表示",
+          "help": "-h, --help             このヘルプを表示"
+        },
+        "perFileNote": "provider に systemPromptFlag が設定されている場合、ファイルごとに非同期で agent を呼び出します。\n同時実行数は config.json の limits.concurrency で設定可能（default: 5）。"
+      },
+      "review": {
+        "usage": "Usage: sdd-forge review [<docs-dir>]",
+        "desc": "docs/ 配下の章ファイル（NN_*.md）を検証する。",
+        "descDetail": "引数なしの場合は ${SDD_WORK_ROOT}/docs を対象とする。"
+      },
+      "changelog": {
+        "usage": "Usage: sdd-forge changelog [--dry-run] [<output-file>]",
+        "desc": "specs/ を走査して change_log.md を生成する。",
+        "descDetail": "引数なしの場合は ${SDD_SOURCE_ROOT}/docs/change_log.md に出力する。",
+        "options": {
+          "dryRun": "--dry-run   ファイル書き込みせず結果を stdout に出力する"
+        }
+      },
+      "agents": {
+        "usage": "Usage: sdd-forge agents [--sdd] [--project] [--dry-run]",
+        "desc": "AGENTS.md の SDD/PROJECT セクションを更新する。",
+        "descDetail": "デフォルトで両セクションを更新する（PROJECT は AI で精査・追記）。",
+        "options": {
+          "sdd": "--sdd       SDD セクションのみテンプレートで更新",
+          "project": "--project   PROJECT セクションのみ更新（テンプレート + AI 精査）",
+          "dryRun": "--dry-run   ファイル書き込みせず生成内容を stdout に出力"
+        }
+      },
+      "spec": {
+        "usage": "Usage: sdd-forge spec --title <name> [options]",
+        "desc": "spec を初期化する（feature ブランチ + spec.md）。",
+        "options": {
+          "title": "--title <name>      連番の後ろに付与する短い名前（必須）",
+          "base": "--base <branch>     ブランチ作成元 (default: current branch)",
+          "dryRun": "--dry-run           変更せず結果のみ表示",
+          "allowDirty": "--allow-dirty       ワークツリーが dirty でも続行する",
+          "noBranch": "--no-branch         ブランチを作成せず spec のみ作成する",
+          "worktree": "--worktree          git worktree を作成して spec を配置する (.sdd-forge/worktree/<branch>/)"
+        }
+      },
+      "flow": {
+        "usage": "Usage: sdd-forge flow --request \"...\" [options]",
+        "desc": "SDD フローを自動実行する。",
+        "options": {
+          "request": "--request <text>   実装要求（必須）",
+          "title": "--title <text>     spec 用タイトル（省略時は request 先頭を利用）",
+          "spec": "--spec <path>      既存 spec.md を使う",
+          "agent": "--agent <name>     AIエージェント: codex|claude",
+          "maxRuns": "--max-runs <n>     docs:forge 反復回数",
+          "forgeMode": "--forge-mode <m>   docs:forge mode: local|assist|agent (default: local)",
+          "noBranch": "--no-branch        ブランチを作成せず spec のみ作成する",
+          "worktree": "--worktree         git worktree を作成して spec を配置する (.sdd-forge/worktree/<branch>/)",
+          "dryRun": "--dry-run          全サブコマンドを dry-run モードで実行する"
+        }
+      }
     }
   },
   "common": {

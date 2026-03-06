@@ -14,6 +14,7 @@ import path from "path";
 import { fileURLToPath } from "url";
 import { repoRoot, parseArgs, isInsideWorktree } from "../../lib/cli.js";
 import { runSync } from "../../lib/process.js";
+import { createI18n } from "../../lib/i18n.js";
 
 function runGit(root, args) {
   const res = runSync("git", ["-C", root, ...args]);
@@ -84,18 +85,22 @@ function detectBaseBranch(root) {
   }
 }
 
-const DEFAULT_QA_TEMPLATE = [
-  "# Clarification Q&A",
-  "",
-  "- Q: ",
-  "  - A: ",
-  "",
-  "## Confirmation",
-  "- Before implementation, ask the user:",
-  '  - "この仕様で実装して問題ないですか？"',
-  "- If approved, update `spec.md` -> `## User Confirmation` with checked state.",
-  "",
-].join("\n");
+function buildQaTemplate(lang) {
+  const t = createI18n(lang, { domain: "messages" });
+  const prompt = t("spec.qaConfirmationPrompt");
+  return [
+    "# Clarification Q&A",
+    "",
+    "- Q: ",
+    "  - A: ",
+    "",
+    "## Confirmation",
+    "- Before implementation, ask the user:",
+    `  - "${prompt}"`,
+    "- If approved, update `spec.md` -> `## User Confirmation` with checked state.",
+    "",
+  ].join("\n");
+}
 
 const DEFAULT_SPEC_TEMPLATE = `# Feature Specification: {{SPEC_DIR}}
 
@@ -144,7 +149,7 @@ function loadLocalTemplate(root, lang, fileName, fallback) {
 }
 
 function createQaTemplate(root, lang) {
-  return loadLocalTemplate(root, lang, "qa.md", DEFAULT_QA_TEMPLATE);
+  return loadLocalTemplate(root, lang, "qa.md", buildQaTemplate(lang));
 }
 
 function createSpecTemplate({ branchName, specDirName }, root, lang) {
@@ -164,17 +169,16 @@ function main() {
     defaults: { title: "", base: "", dryRun: false, allowDirty: false, noBranch: false, worktree: false },
   });
   if (opts.help) {
+    let uiLang = "en";
+    try { uiLang = JSON.parse(fs.readFileSync(path.join(repoRoot(import.meta.url), ".sdd-forge", "config.json"), "utf8")).uiLang || "en"; } catch (_) {}
+    const tu = createI18n(uiLang);
+    const h = tu.raw("help.cmdHelp.spec");
+    const o = h.options;
     console.log(
       [
-        "Usage: node sdd-forge/spec/spec.js --title <name> [options]",
-        "",
-        "Options:",
-        "  --title <name>      連番の後ろに付与する短い名前（必須）",
-        "  --base <branch>     ブランチ作成元 (default: current branch)",
-        "  --dry-run           変更せず結果のみ表示",
-        "  --allow-dirty       ワークツリーが dirty でも続行する",
-        "  --no-branch         ブランチを作成せず spec のみ作成する",
-        "  --worktree          git worktree を作成して spec を配置する (.sdd-forge/worktree/<branch>/)",
+        h.usage, "", "Options:",
+        `  ${o.title}`, `  ${o.base}`, `  ${o.dryRun}`,
+        `  ${o.allowDirty}`, `  ${o.noBranch}`, `  ${o.worktree}`,
       ].join("\n"),
     );
     return;

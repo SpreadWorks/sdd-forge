@@ -135,17 +135,12 @@ function main() {
     defaults: { type: "", force: false, dryRun: false },
   });
   if (cli.help) {
-    console.log([
-      "Usage: node sdd-forge/engine/init.js [options]",
-      "",
-      "テンプレートを docs/ にコピーする。",
-      "",
-      "Options:",
-      "  --type <type>            テンプレートタイプ (default: config.json type)",
-      "  --force                  既存ファイルがある場合に上書き",
-      "  --dry-run                ファイル書き込みせず対象ファイル一覧を表示",
-      "  -h, --help               このヘルプを表示",
-    ].join("\n"));
+    let uiLang = "en";
+    try { uiLang = JSON.parse(fs.readFileSync(path.join(repoRoot(import.meta.url), ".sdd-forge", "config.json"), "utf8")).uiLang || "en"; } catch (_) {}
+    const tu = createI18n(uiLang);
+    const h = tu.raw("help.cmdHelp.init");
+    const o = h.options;
+    console.log([h.usage, "", h.desc, "", "Options:", `  ${o.type}`, `  ${o.force}`, `  ${o.dryRun}`, `  ${o.help}`].join("\n"));
     return;
   }
 

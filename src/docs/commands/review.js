@@ -24,10 +24,12 @@ function main() {
   const opts = parseArgs(args, { flags: [], options: [] });
 
   if (opts.help) {
-    console.log("Usage: sdd-forge review [<docs-dir>]");
+    const tu = createI18n(loadUiLang(repoRoot()));
+    const h = tu.raw("help.cmdHelp.review");
+    console.log(h.usage);
     console.log("");
-    console.log("  docs/ 配下の章ファイル（NN_*.md）を検証する。");
-    console.log("  引数なしの場合は ${SDD_WORK_ROOT}/docs を対象とする。");
+    console.log(`  ${h.desc}`);
+    console.log(`  ${h.descDetail}`);
     process.exit(0);
   }
 

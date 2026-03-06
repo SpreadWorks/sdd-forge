@@ -28,11 +28,22 @@
   },
   "gate": {
     "failed": "gate: FAILED",
-    "passed": "gate: PASSED"
+    "passed": "gate: PASSED",
+    "approvalPattern": "User approved this spec|この仕様で実装して問題ない"
+  },
+  "spec": {
+    "qaConfirmationPrompt": "この仕様で実装して問題ないですか？"
   },
   "changelog": {
     "dryRun": "[changelog] DRY-RUN: {{path}} に書き込み予定",
-    "generated": "変更ログを生成しました: {{path}}"
+    "generated": "変更ログを生成しました: {{path}}",
+    "heading": "# Change Log",
+    "sectionDescription": "## 説明",
+    "descriptionBody": "`specs/` を一次情報として、仕様のインデックスと概要を記録する。\n本ファイルは `sdd-forge changelog` で自動更新される。",
+    "sectionContents": "## 内容",
+    "sectionTimestamp": "### 更新日時",
+    "sectionLatestIndex": "### シリーズ最新インデックス",
+    "sectionAllSpecs": "### 全spec一覧"
   },
   "readme": {
     "noType": "[readme] .sdd-forge/config.json に type が設定されていません。スキップします。",

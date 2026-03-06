@@ -115,20 +115,29 @@ function main() {
   const opts = parseArgs(args, { flags: ["--dry-run"], options: [], defaults: { dryRun: false } });
 
   if (opts.help) {
-    console.log("Usage: sdd-forge changelog [--dry-run] [<output-file>]");
-    console.log("");
-    console.log("  specs/ を走査して change_log.md を生成する。");
-    console.log("  引数なしの場合は ${SDD_SOURCE_ROOT}/docs/change_log.md に出力する。");
-    console.log("");
-    console.log("Options:");
-    console.log("  --dry-run   ファイル書き込みせず結果を stdout に出力する");
+    let uiLang = "en";
+    try { uiLang = JSON.parse(fs.readFileSync(path.join(repoRoot(), ".sdd-forge", "config.json"), "utf8")).uiLang || "en"; } catch (_) {}
+    const tu = createI18n(uiLang);
+    const h = tu.raw("help.cmdHelp.changelog");
+    const o = h.options;
+    console.log([h.usage, "", `  ${h.desc}`, `  ${h.descDetail}`, "", "Options:", `  ${o.dryRun}`].join("\n"));
     process.exit(0);
   }
 
+  const root = repoRoot();
   const srcRoot = sourceRoot();
   const specsDir = path.join(srcRoot, "specs");
   const outFileArg = args.find((a) => !a.startsWith("-"));
-  const outFile = outFileArg || path.join(repoRoot(), "docs", "change_log.md");
+  const outFile = outFileArg || path.join(root, "docs", "change_log.md");
+
+  let lang = "ja";
+  let uiLang = "en";
+  try {
+    const raw = JSON.parse(fs.readFileSync(path.join(root, ".sdd-forge", "config.json"), "utf8"));
+    lang = raw.lang || "ja";
+    uiLang = raw.uiLang || "en";
+  } catch (_) {}
+  const t = createI18n(lang, { domain: "messages" });
 
   // Ensure output directory exists
   fs.mkdirSync(path.dirname(outFile), { recursive: true });
@@ -192,20 +201,19 @@ function main() {
   const out = [];
 
   out.push("<!-- AUTO-GEN:START -->");
-  out.push("# Change Log");
+  out.push(t("changelog.heading"));
   out.push("");
-  out.push("## 説明");
+  out.push(t("changelog.sectionDescription"));
   out.push("");
-  out.push("`specs/` を一次情報として、仕様のインデックスと概要を記録する。");
-  out.push("本ファイルは `npm run sdd:init` で自動更新される。");
+  out.push(t("changelog.descriptionBody"));
   out.push("");
-  out.push("## 内容");
+  out.push(t("changelog.sectionContents"));
   out.push("");
-  out.push("### 更新日時");
+  out.push(t("changelog.sectionTimestamp"));
   out.push("");
   out.push(`- generated_at: ${now}`);
   out.push("");
-  out.push("### シリーズ最新インデックス");
+  out.push(t("changelog.sectionLatestIndex"));
   out.push("");
   out.push("| series | latest | status | created | spec |");
   out.push("| --- | --- | --- | --- | --- |");
@@ -213,7 +221,7 @@ function main() {
     out.push(`| \`${e.series}\` | \`${e.dirName}\` | ${e.status} | ${e.created} | [spec](../specs/${e.dirName}/spec.md) |`);
   }
   out.push("");
-  out.push("### 全spec一覧");
+  out.push(t("changelog.sectionAllSpecs"));
   out.push("");
   out.push("| dir | status | created | title | summary | files |");
   out.push("| --- | --- | --- | --- | --- | --- |");
@@ -235,19 +243,14 @@ function main() {
   out.push(manualBlock);
   out.push("");
 
-  let uiLang = "en";
-  try {
-    const raw = JSON.parse(fs.readFileSync(path.join(root, ".sdd-forge", "config.json"), "utf8"));
-    uiLang = raw.uiLang || "en";
-  } catch (_) { /* config optional */ }
-  const t = createI18n(uiLang, { domain: "messages" });
+  const tu = createI18n(uiLang, { domain: "messages" });
 
   if (opts.dryRun) {
     process.stdout.write(out.join("\n"));
-    console.error(t("changelog.dryRun", { path: outFile }));
+    console.error(tu("changelog.dryRun", { path: outFile }));
   } else {
     fs.writeFileSync(outFile, out.join("\n"));
-    console.log(t("changelog.generated", { path: outFile }));
+    console.log(tu("changelog.generated", { path: outFile }));
   }
 }
 

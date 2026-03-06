@@ -92,20 +92,16 @@ function main() {
     defaults: { request: "", title: "", spec: "", agent: "", maxRuns: "5", forgeMode: "local", noBranch: false, worktree: false, dryRun: false },
   });
   if (cli.help) {
+    let uiLang = "en";
+    try { uiLang = JSON.parse(fs.readFileSync(path.join(root, ".sdd-forge", "config.json"), "utf8")).uiLang || "en"; } catch (_) {}
+    const tu = createI18n(uiLang);
+    const h = tu.raw("help.cmdHelp.flow");
+    const o = h.options;
     console.log(
       [
-        "Usage: node sdd-forge/flow/flow.js --request \"...\" [options]",
-        "",
-        "Options:",
-        "  --request <text>   実装要求（必須）",
-        "  --title <text>     spec 用タイトル（省略時は request 先頭を利用）",
-        "  --spec <path>      既存 spec.md を使う",
-        "  --agent <name>     AIエージェント: codex|claude",
-        "  --max-runs <n>     docs:forge 反復回数",
-        "  --forge-mode <m>   docs:forge mode: local|assist|agent (default: local)",
-        "  --no-branch        ブランチを作成せず spec のみ作成する",
-        "  --worktree         git worktree を作成して spec を配置する (.sdd-forge/worktree/<branch>/)",
-        "  --dry-run          全サブコマンドを dry-run モードで実行する",
+        h.usage, "", "Options:",
+        `  ${o.request}`, `  ${o.title}`, `  ${o.spec}`, `  ${o.agent}`,
+        `  ${o.maxRuns}`, `  ${o.forgeMode}`, `  ${o.noBranch}`, `  ${o.worktree}`, `  ${o.dryRun}`,
       ].join("\n"),
     );
     return;

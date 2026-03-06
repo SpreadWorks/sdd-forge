@@ -49,8 +49,7 @@ function checkSpecText(text) {
     const end = nextHeading ? start + 1 + (nextHeading.index ?? 0) : text.length;
     const block = start >= 0 ? text.slice(start, end) : "";
     const hasApproval =
-      /-\s*\[\s*x\s*\]\s*User approved this spec\b/i.test(block) ||
-      /-\s*\[\s*x\s*\]\s*この仕様で実装して問題ない\b/i.test(block);
+      /-\s*\[\s*x\s*\]\s*(?:User approved this spec|この仕様で実装して問題ない)\b/i.test(block);
     if (!hasApproval) {
       issues.push(
         "user confirmation is required: set `- [x] User approved this spec` in ## User Confirmation",

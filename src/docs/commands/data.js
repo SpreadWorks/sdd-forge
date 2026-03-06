@@ -126,14 +126,12 @@ async function main() {
     defaults: { dryRun: false, stdout: false },
   });
   if (cli.help) {
-    console.log([
-      "Usage: node sdd-forge/engine/populate.js [options]",
-      "",
-      "Options:",
-      "  --dry-run   変更内容を表示するだけでファイル書き込みしない",
-      "  --stdout    各ファイルの変更行数を表示",
-      "  -h, --help  このヘルプを表示",
-    ].join("\n"));
+    let uiLang = "en";
+    try { uiLang = JSON.parse(fs.readFileSync(path.join(repoRoot(import.meta.url), ".sdd-forge", "config.json"), "utf8")).uiLang || "en"; } catch (_) {}
+    const tu = createI18n(uiLang);
+    const h = tu.raw("help.cmdHelp.data");
+    const o = h.options;
+    console.log([h.usage, "", h.desc, "", "Options:", `  ${o.dryRun}`, `  ${o.stdout}`, `  ${o.help}`].join("\n"));
     return;
   }
 

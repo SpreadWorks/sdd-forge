@@ -128,6 +128,116 @@
       "gate": "Spec gate (open issues check)",
       "flow": "Run SDD flow automatically",
       "presets list": "Show preset inheritance tree"
+    },
+    "cmdHelp": {
+      "scan": {
+        "usage": "Usage: sdd-forge scan [options]",
+        "desc": "Analyze source code and generate analysis.json / summary.json.",
+        "options": {
+          "stdout": "--stdout        Print result to stdout (no file write)",
+          "dryRun": "--dry-run       Same as --stdout (no file write)",
+          "help": "-h, --help      Show this help"
+        }
+      },
+      "init": {
+        "usage": "Usage: sdd-forge init [options]",
+        "desc": "Copy templates to docs/.",
+        "options": {
+          "type": "--type <type>            Template type (default: config.json type)",
+          "force": "--force                  Overwrite existing files",
+          "dryRun": "--dry-run                Show target files without writing",
+          "help": "-h, --help               Show this help"
+        }
+      },
+      "data": {
+        "usage": "Usage: sdd-forge data [options]",
+        "desc": "Resolve {{data}} directives with analysis data.",
+        "options": {
+          "dryRun": "--dry-run   Show changes without writing files",
+          "stdout": "--stdout    Show line change counts per file",
+          "help": "-h, --help  Show this help"
+        }
+      },
+      "text": {
+        "usage": "Usage: sdd-forge text --agent <name> [options]",
+        "desc": "Resolve {{text}} directives with AI.",
+        "options": {
+          "agent": "--agent <name>      AI agent: claude|codex (required)",
+          "id": "--id <id>           Process only the {{text}} directive with this ID",
+          "dryRun": "--dry-run           Show changes without writing files",
+          "perDirective": "--per-directive     Legacy mode: one AI call per directive (default: batch per file)",
+          "timeout": "--timeout <ms>      Agent timeout (default: {{default}})",
+          "help": "-h, --help          Show this help"
+        }
+      },
+      "forge": {
+        "usage": "Usage: sdd-forge forge --prompt \"...\" [options]",
+        "desc": "Iteratively improve docs with an AI agent.",
+        "options": {
+          "prompt": "--prompt <text>        Initial prompt",
+          "promptFile": "--prompt-file <path>   Initial prompt file",
+          "spec": "--spec <path>          Input specification (spec.md)",
+          "maxRuns": "--max-runs <n>         Iteration count (default: 3)",
+          "reviewCmd": "--review-cmd <cmd>     Docs review command (default: sdd-forge review)",
+          "agent": "--agent <name>         AI agent: codex|claude (default: config.json defaultAgent)",
+          "mode": "--mode <mode>          Execution mode: local|assist|agent (default: local)",
+          "dryRun": "--dry-run              Skip file writes, review, and agent calls (1 round)",
+          "autoUpdateContext": "--auto-update-context  Auto-update context.json after review passes",
+          "verbose": "-v, --verbose          Stream agent execution logs",
+          "help": "-h, --help             Show this help"
+        },
+        "perFileNote": "When the provider has systemPromptFlag set, the agent is called asynchronously per file.\nConcurrency is configurable via config.json limits.concurrency (default: 5)."
+      },
+      "review": {
+        "usage": "Usage: sdd-forge review [<docs-dir>]",
+        "desc": "Validate chapter files (NN_*.md) in docs/.",
+        "descDetail": "Defaults to ${SDD_WORK_ROOT}/docs when no argument is given."
+      },
+      "changelog": {
+        "usage": "Usage: sdd-forge changelog [--dry-run] [<output-file>]",
+        "desc": "Scan specs/ and generate change_log.md.",
+        "descDetail": "Defaults to ${SDD_SOURCE_ROOT}/docs/change_log.md when no argument is given.",
+        "options": {
+          "dryRun": "--dry-run   Print result to stdout without writing file"
+        }
+      },
+      "agents": {
+        "usage": "Usage: sdd-forge agents [--sdd] [--project] [--dry-run]",
+        "desc": "Update SDD/PROJECT sections in AGENTS.md.",
+        "descDetail": "Updates both sections by default (PROJECT is refined by AI).",
+        "options": {
+          "sdd": "--sdd       Update SDD section only (from template)",
+          "project": "--project   Update PROJECT section only (template + AI refinement)",
+          "dryRun": "--dry-run   Print generated content to stdout without writing"
+        }
+      },
+      "spec": {
+        "usage": "Usage: sdd-forge spec --title <name> [options]",
+        "desc": "Initialize a spec (feature branch + spec.md).",
+        "options": {
+          "title": "--title <name>      Short name appended after sequence number (required)",
+          "base": "--base <branch>     Branch to create from (default: current branch)",
+          "dryRun": "--dry-run           Show results without making changes",
+          "allowDirty": "--allow-dirty       Continue even if worktree is dirty",
+          "noBranch": "--no-branch         Create spec only without creating a branch",
+          "worktree": "--worktree          Create a git worktree for the spec (.sdd-forge/worktree/<branch>/)"
+        }
+      },
+      "flow": {
+        "usage": "Usage: sdd-forge flow --request \"...\" [options]",
+        "desc": "Run the SDD flow automatically.",
+        "options": {
+          "request": "--request <text>   Implementation request (required)",
+          "title": "--title <text>     Spec title (defaults to start of request)",
+          "spec": "--spec <path>      Use existing spec.md",
+          "agent": "--agent <name>     AI agent: codex|claude",
+          "maxRuns": "--max-runs <n>     docs:forge iteration count",
+          "forgeMode": "--forge-mode <m>   docs:forge mode: local|assist|agent (default: local)",
+          "noBranch": "--no-branch        Create spec only without creating a branch",
+          "worktree": "--worktree         Create a git worktree for the spec (.sdd-forge/worktree/<branch>/)",
+          "dryRun": "--dry-run          Run all subcommands in dry-run mode"
+        }
+      }
     }
   },
   "common": {

@@ -703,16 +703,17 @@ async function main() {
   });
   cli.timeout = Number(cli.timeout) || DEFAULT_TIMEOUT_MS;
   if (cli.help) {
+    let uiLang = "en";
+    try { uiLang = JSON.parse(fs.readFileSync(path.join(repoRoot(import.meta.url), ".sdd-forge", "config.json"), "utf8")).uiLang || "en"; } catch (_) {}
+    const tu = createI18n(uiLang);
+    const h = tu.raw("help.cmdHelp.text");
+    const o = h.options;
     console.log([
-      "Usage: node sdd-forge/engine/tfill.js --agent <name> [options]",
-      "",
-      "Options:",
-      "  --agent <name>      AIエージェント: claude|codex (必須)",
-      "  --id <id>           指定 ID の {{text}} ディレクティブのみ処理",
-      "  --dry-run           変更内容を表示するだけでファイル書き込みしない",
-      "  --per-directive     1ディレクティブ=1呼び出しの旧モード（デフォルト: ファイル単位バッチ）",
-      `  --timeout <ms>      エージェントタイムアウト (default: ${DEFAULT_TIMEOUT_MS})`,
-      "  -h, --help          このヘルプを表示",
+      h.usage, "", "Options:",
+      `  ${tu("help.cmdHelp.text.options.agent")}`,
+      `  ${o.id}`, `  ${o.dryRun}`, `  ${o.perDirective}`,
+      `  ${tu("help.cmdHelp.text.options.timeout", { default: DEFAULT_TIMEOUT_MS })}`,
+      `  ${o.help}`,
     ].join("\n"));
     return;
   }
