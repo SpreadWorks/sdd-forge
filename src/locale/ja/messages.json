@@ -7,7 +7,6 @@
     "missingH1": "[FAIL] H1 見出しがありません: {{file}}",
     "unfilledText": "[WARN] 未埋め {{text}} ディレクティブ {{count}} 件: {{file}}",
     "unfilledData": "[FAIL] 未埋め {{data}} ディレクティブ {{count}} 件: {{file}}",
-    "manualMismatch": "[WARN] MANUAL block mismatch ({{starts}} START, {{ends}} END): {{file}}",
     "analysisNotFound": "[WARN] analysis.json が見つかりません。'sdd-forge scan' を実行してください。",
     "analysisStale": "[WARN] analysis.json が古い可能性があります ({{file}} の方が新しい)。'sdd-forge scan' で更新してください。",
     "readmeNotFound": "[WARN] README.md が見つかりません。'sdd-forge readme' を実行してください。",
@@ -22,9 +21,7 @@
     "refining": "[agents] AI で PROJECT セクションを精査中...",
     "generated": "[agents] AI 精査を完了しました。",
     "dryRun": "[agents] DRY-RUN: {{path}} を更新予定",
-    "sddTemplateNotFound": "SDD テンプレートが見つかりません。",
-    "updated": "[agents] {{path}} の PROJECT セクションを更新しました",
-    "sddUpdated": "[agents] {{path}} の SDD セクションを更新しました"
+    "updated": "[agents] {{path}} を更新しました"
   },
   "gate": {
     "failed": "gate: FAILED",

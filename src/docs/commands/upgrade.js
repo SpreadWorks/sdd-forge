@@ -187,7 +187,7 @@ async function main() {
       "Updated files:",
       "  .agents/skills/*/SKILL.md        Skill templates",
       "  .claude/skills/*/SKILL.md        Symlinks to .agents/skills/",
-      "  AGENTS.md (SDD section only)     <!-- SDD:START --> ... <!-- SDD:END -->",
+      "  AGENTS.md (SDD section only)     Legacy <!-- SDD:START/END --> migration",
       "",
       "Options:",
       "  --dry-run    Show what would change without writing files",

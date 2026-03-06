@@ -1,4 +1,3 @@
-<!-- SDD:START — managed by sdd-forge. Do not edit manually. -->
 ## SDD (Spec-Driven Development)
 
 本プロジェクトは sdd-forge による Spec-Driven Development を採用している。
@@ -10,13 +9,12 @@
 
 **docs とソースコードに矛盾がある場合はソースコードを正とする。**
 
-docs の内容は以下の 3 種類で構成される:
+docs の内容は以下の 2 種類で構成される:
 
 | 種類 | 生成元 | 説明 |
 |---|---|---|
 | 解析データ | `{{data}}` ディレクティブ | ソースコードから自動抽出された構造情報 |
 | AI 生成テキスト | `{{text}}` ディレクティブ | AI がソースと文脈から生成した説明文 |
-| 手動記述 | `MANUAL` ブロック | 人間が記述した運用手順・業務背景・外部仕様 |
 
 #### 鮮度チェック
 
@@ -75,7 +73,7 @@ docs の内容は以下の 3 種類で構成される:
 | `sdd-forge forge --prompt "<内容>"` | docs 反復改善 |
 | `sdd-forge review` | docs 品質チェック |
 | `sdd-forge changelog` | specs/ から change_log.md を生成 |
-| `sdd-forge agents` | AGENTS.md の PROJECT セクションを更新 |
+| `sdd-forge agents` | AGENTS.md を更新 |
 | `sdd-forge spec --title "<名前>"` | spec 初期化（feature ブランチ + spec.md） |
 | `sdd-forge gate --spec <path>` | spec ゲートチェック |
 | `sdd-forge flow --request "<要望>"` | SDD フロー自動実行 |
@@ -83,8 +81,7 @@ docs の内容は以下の 3 種類で構成される:
 ### docs/ 編集ルール
 
 - docs/ の内容は原則としてソースコード解析から自動生成される
-- 手動で情報を追加する場合は `<!-- MANUAL:START -->` 〜 `<!-- MANUAL:END -->` 内に記載すること
-- MANUAL ブロック外は `sdd-forge init` / `sdd-forge forge` 実行時に上書きされる可能性がある
+- `{{data}}` / `{{text}}` ディレクティブの内部は自動生成で上書きされる
+- ディレクティブの外に記述した内容は上書きされない
 - docs/ のファイルは `NN_name.md` の連番で管理する
 - 実装・修正後は SDD フローに従って forge → review を実行すること
-<!-- SDD:END -->

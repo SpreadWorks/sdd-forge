@@ -142,16 +142,6 @@ function main() {
   // Ensure output directory exists
   fs.mkdirSync(path.dirname(outFile), { recursive: true });
 
-  // Preserve existing MANUAL block
-  let manualBlock = "<!-- MANUAL:START -->\n<!-- MANUAL:END -->";
-  if (fs.existsSync(outFile)) {
-    const existing = fs.readFileSync(outFile, "utf8");
-    const manualMatch = existing.match(/<!-- MANUAL:START -->[\s\S]*?<!-- MANUAL:END -->/);
-    if (manualMatch) {
-      manualBlock = manualMatch[0];
-    }
-  }
-
   // Collect spec entries
   const entries = [];
 
@@ -239,8 +229,6 @@ function main() {
   }
 
   out.push("<!-- AUTO-GEN:END -->");
-  out.push("");
-  out.push(manualBlock);
   out.push("");
 
   const tu = createI18n(uiLang, { domain: "messages" });

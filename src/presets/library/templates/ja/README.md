@@ -13,6 +13,3 @@ npm install <!-- {{data: project.name("")}} --><!-- {{/data}} -->
 
 <!-- {{data: docs.chapters("章|概要")}} -->
 <!-- {{/data}} -->
-
-<!-- MANUAL:START -->
-<!-- MANUAL:END -->

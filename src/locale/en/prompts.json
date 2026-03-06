@@ -52,9 +52,7 @@
     "systemPrompt": "Review the following template-generated PROJECT section and refine it by adding or improving information based on the source code analysis data.",
     "outputRules": [
       "Write in English",
-      "Wrap output in <!-- PROJECT:START --> and <!-- PROJECT:END --> tags",
-      "First line must be `<!-- PROJECT:START — managed by sdd-forge. Do not edit manually. -->`",
-      "Last line must be `<!-- PROJECT:END -->`",
+      "Output the refined PROJECT section content directly (no wrapping tags)",
       "Start with the `## Project Context` heading",
       "Structure information that helps AI agents understand the project",
       "Include technology stack, project structure overview, key components, DB configuration, and available commands",

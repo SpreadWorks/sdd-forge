@@ -148,6 +148,3 @@ $sdd-flow-close   — forge → review → commit → merge で終了
 ## License
 
 MIT
-
-<!-- MANUAL:START -->
-<!-- MANUAL:END -->

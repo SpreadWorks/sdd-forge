@@ -32,6 +32,3 @@ pnpm add -g <!-- {{data: project.name("")}} --><!-- {{/data}} -->
 <!-- {{data: docs.chapters("章|概要")}} -->
 <!-- {{/data}} -->
 <!-- @endblock -->
-
-<!-- MANUAL:START -->
-<!-- MANUAL:END -->

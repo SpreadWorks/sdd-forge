@@ -18,6 +18,3 @@
 
 <!-- {{data: docs.chapters("章|概要")}} -->
 <!-- {{/data}} -->
-
-<!-- MANUAL:START -->
-<!-- MANUAL:END -->

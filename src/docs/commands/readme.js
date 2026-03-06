@@ -28,22 +28,6 @@ const logger = createLogger("readme");
 // ---------------------------------------------------------------------------
 
 // ---------------------------------------------------------------------------
-// MANUAL ブロック保持
-// ---------------------------------------------------------------------------
-
-/**
- * 既存 README.md から MANUAL ブロックの内容を抽出する。
- */
-function extractManualBlock(filePath) {
-  if (!fs.existsSync(filePath)) return "";
-  const content = fs.readFileSync(filePath, "utf8");
-  const match = content.match(
-    /<!-- MANUAL:START -->\n([\s\S]*?)<!-- MANUAL:END -->/,
-  );
-  return match ? match[1] : "";
-}
-
-// ---------------------------------------------------------------------------
 // テンプレート処理 ({{data}} ディレクティブ解決)
 // ---------------------------------------------------------------------------
 
@@ -138,14 +122,8 @@ Options:
   }
 
   const readmePath = path.join(root, "README.md");
-  const manualContent = extractManualBlock(readmePath);
 
-  // MANUAL ブロック内に既存コンテンツを挿入
-  let resolved = templateContent.replace(
-    /<!-- MANUAL:START -->\n<!-- MANUAL:END -->/,
-    `<!-- MANUAL:START -->\n${manualContent}<!-- MANUAL:END -->`,
-  );
-  resolved = resolveDataDirectives(resolved, resolveFn);
+  let resolved = resolveDataDirectives(templateContent, resolveFn);
   const newContent = resolved.endsWith("\n") ? resolved : resolved + "\n";
 
   // 差分チェック

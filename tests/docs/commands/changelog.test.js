@@ -79,19 +79,11 @@ describe("changelog CLI", () => {
     assert.ok(!fs.existsSync(outFile), "change_log.md should NOT be created in dry-run");
   });
 
-  it("preserves MANUAL block from existing file", () => {
+  it("overwrites existing file without MANUAL blocks", () => {
     tmp = createTmpDir();
     fs.mkdirSync(join(tmp, "docs"), { recursive: true });
     const outFile = join(tmp, "docs", "change_log.md");
-    const existing = [
-      "<!-- AUTO-GEN:START -->",
-      "old content",
-      "<!-- AUTO-GEN:END -->",
-      "",
-      "<!-- MANUAL:START -->",
-      "My custom notes",
-      "<!-- MANUAL:END -->",
-    ].join("\n");
+    const existing = "old content\n";
     fs.writeFileSync(outFile, existing);
 
     execFileSync("node", [CMD], {
@@ -100,6 +92,7 @@ describe("changelog CLI", () => {
     });
 
     const content = fs.readFileSync(outFile, "utf8");
-    assert.match(content, /My custom notes/);
+    assert.ok(!content.includes("old content"));
+    assert.match(content, /AUTO-GEN:START/);
   });
 });

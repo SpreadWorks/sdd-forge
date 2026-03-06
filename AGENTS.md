@@ -1,4 +1,4 @@
-<!-- SDD:START — managed by sdd-forge. Do not edit manually. -->
+<!-- {{data: agents.sdd("")}} -->
 ## SDD (Spec-Driven Development)
 
 本プロジェクトは sdd-forge による Spec-Driven Development を採用している。
@@ -10,13 +10,12 @@
 
 **docs とソースコードに矛盾がある場合はソースコードを正とする。**
 
-docs の内容は以下の 3 種類で構成される:
+docs の内容は以下の 2 種類で構成される:
 
 | 種類 | 生成元 | 説明 |
 |---|---|---|
 | 解析データ | `{{data}}` ディレクティブ | ソースコードから自動抽出された構造情報 |
 | AI 生成テキスト | `{{text}}` ディレクティブ | AI がソースと文脈から生成した説明文 |
-| 手動記述 | `MANUAL` ブロック | 人間が記述した運用手順・業務背景・外部仕様 |
 
 #### 鮮度チェック
 
@@ -75,7 +74,7 @@ docs の内容は以下の 3 種類で構成される:
 | `sdd-forge forge --prompt "<内容>"` | docs 反復改善 |
 | `sdd-forge review` | docs 品質チェック |
 | `sdd-forge changelog` | specs/ から change_log.md を生成 |
-| `sdd-forge agents` | AGENTS.md の PROJECT セクションを更新 |
+| `sdd-forge agents` | AGENTS.md を更新 |
 | `sdd-forge spec --title "<名前>"` | spec 初期化（feature ブランチ + spec.md） |
 | `sdd-forge gate --spec <path>` | spec ゲートチェック |
 | `sdd-forge flow --request "<要望>"` | SDD フロー自動実行 |
@@ -83,189 +82,31 @@ docs の内容は以下の 3 種類で構成される:
 ### docs/ 編集ルール
 
 - docs/ の内容は原則としてソースコード解析から自動生成される
-- 手動で情報を追加する場合は `<!-- MANUAL:START -->` 〜 `<!-- MANUAL:END -->` 内に記載すること
-- MANUAL ブロック外は `sdd-forge init` / `sdd-forge forge` 実行時に上書きされる可能性がある
+- `{{data}}` / `{{text}}` ディレクティブの内部は自動生成で上書きされる
+- ディレクティブの外に記述した内容は上書きされない
 - docs/ のファイルは `NN_name.md` の連番で管理する
 - 実装・修正後は SDD フローに従って forge → review を実行すること
-<!-- SDD:END -->
+<!-- {{/data}} -->
 
-<!-- PROJECT:START — managed by sdd-forge. Do not edit manually. -->
+<!-- {{data: agents.project("")}} -->
 ## Project Context
 
-- **generated_at:** 2026-03-05 16:02:16 UTC
-- **package:** `sdd-forge` v0.1.0-alpha.20（npmjs.com 公開済み）
-- **概要:** ソースコード解析による自動ドキュメント生成と、Spec-Driven Development ワークフローを提供する Node.js CLI ツール。外部依存なし（Node.js 組み込みモジュールのみ使用）。
+- **generated_at:** 2026-03-06 00:00:00 UTC
+- **package:** `sdd-forge` v0.1.0-alpha.22
+- **description:** Spec-Driven Development tooling for automated documentation generation
 
----
+### Technology Stack
 
-### 技術スタック
+- type: cli/node-cli
+- Node.js: >=18.0.0
 
-| 項目 | 内容 |
-|---|---|
-| ランタイム | Node.js >=18.0.0 |
-| モジュール形式 | ES Modules (`"type": "module"`) |
-| 外部依存 | なし（Node.js 標準ライブラリのみ） |
-| CLI エントリ | `src/sdd-forge.js`（bin: `sdd-forge`） |
-| テストフレームワーク | Node.js 組み込みテストランナー（`node --test`） |
-| npm 公開ファイル | `src/`・`docs/`（`files` フィールドで指定） |
-| ライセンス | MIT |
+### Available Commands
 
----
+| command | script |
+| --- | --- |
+| `npm run test` | find tests -name '*.test.js' \| xargs node --test |
 
-### プロジェクト構造
-
-```
-sdd-forge/
-├── package.json
-├── src/
-│   ├── sdd-forge.js        ← CLI エントリポイント・トップレベルディスパッチャ
-│   ├── docs.js             ← docs サブコマンド群のディスパッチャ
-│   ├── spec.js             ← spec サブコマンド群のディスパッチャ
-│   ├── flow.js             ← SDD フロー自動実行（直接コマンド）
-│   ├── help.js             ← ヘルプ表示
-│   ├── presets-cmd.js      ← presets サブコマンド
-│   ├── docs/
-│   │   ├── commands/       ← scan, init, data, text, readme, forge, review,
-│   │   │                      changelog, agents, setup, default-project, upgrade
-│   │   ├── lib/            ← scanner, directive-parser, template-merger,
-│   │   │                      renderers, forge-prompts, data-source,
-│   │   │                      resolver-factory, scan-source, review-parser 等
-│   │   └── data/           ← docs/project データ定義
-│   ├── specs/
-│   │   └── commands/       ← init（spec 作成）, gate（ゲートチェック）
-│   ├── lib/                ← 共有ライブラリ
-│   │   ├── agent.js        ← AI エージェント呼び出し（sync/async）
-│   │   ├── agents-md.js    ← AGENTS.md セクション管理
-│   │   ├── cli.js          ← 引数パース・リポジトリルート解決
-│   │   ├── config.js       ← .sdd-forge/config.json 読み書き
-│   │   ├── flow-state.js   ← フロー状態管理
-│   │   ├── i18n.js         ← 多言語対応ユーティリティ
-│   │   ├── presets.js      ← プリセット自動検出（preset.json から）
-│   │   ├── process.js      ← 子プロセス実行ラッパー
-│   │   ├── progress.js     ← プログレス表示
-│   │   ├── projects.js     ← projects.json CRUD（マルチプロジェクト管理）
-│   │   └── types.js        ← JSDoc 型定義・config/context バリデーション
-│   ├── presets/            ← FW 別プリセット（preset.json + scan/ + data/ + templates/）
-│   │   ├── base/           ← 共通基盤（アーキテクチャ層）
-│   │   ├── webapp/         ← Web アプリ共通（アーキテクチャ層）
-│   │   ├── cakephp2/       ← CakePHP 2.x プリセット
-│   │   ├── laravel/        ← Laravel プリセット
-│   │   ├── symfony/        ← Symfony プリセット
-│   │   ├── cli/            ← CLI 共通（アーキテクチャ層）
-│   │   ├── node-cli/       ← Node.js CLI プリセット（本プロジェクト自身もこれを使用）
-│   │   └── library/        ← ライブラリ共通（アーキテクチャ層）
-│   └── templates/          ← バンドル済みテンプレート・スキル定義
-├── docs/                   ← 本プロジェクト自身のドキュメント（sdd-forge で生成）
-├── tests/                  ← テストスイート（Node.js test runner）
-│   ├── dispatchers.test.js
-│   ├── flow.test.js
-│   ├── lib/
-│   ├── docs/
-│   ├── specs/
-│   └── presets/
-└── specs/                  ← SDD spec ファイル（NNN-xxx/spec.md 形式）
-```
-
----
-
-### ディスパッチアーキテクチャ
-
-3 段階ルーティング構造：
-
-```
-sdd-forge <subCmd> [args]
-    │
-    ├─ docs.js ── build / scan / init / data / text / readme
-    │              forge / review / changelog / agents / setup / upgrade
-    │
-    ├─ spec.js ── spec / gate
-    │
-    ├─ flow.js ── （直接コマンド: SDD フロー自動実行）
-    │
-    └─ presets-cmd.js ── presets
-```
-
-- `--project <name>` フラグでマルチプロジェクト対応（`projects.json` で管理）
-- プロジェクトコンテキストは環境変数 `SDD_SOURCE_ROOT` / `SDD_WORK_ROOT` で伝播
-
----
-
-### 主要コンポーネント
-
-| コンポーネント | ファイル | 役割 |
-|---|---|---|
-| AI エージェント呼び出し | `src/lib/agent.js` | `callAgent`（sync・execFileSync）/ `callAgentAsync`（spawn・ストリーミング対応）で AI CLI を実行。`systemPromptFlag` に応じて引数構築・tempfile 管理を行う。デフォルトタイムアウト 120 秒 |
-| プリセット管理 | `src/lib/presets.js` | `src/presets/*/preset.json` を自動検出・登録 |
-| 設定管理 | `src/lib/config.js` | `.sdd-forge/config.json` と `context.json` の読み書き・バリデーション |
-| プロジェクト管理 | `src/lib/projects.js` | `.sdd-forge/projects.json` によるマルチプロジェクト管理 |
-| スキャナー | `src/docs/lib/scanner.js` | JS/PHP ファイル解析・クラス/メソッド抽出。解析結果: 91 モジュール・262 メソッド |
-| ディレクティブパーサー | `src/docs/lib/directive-parser.js` | `{{data}}` / `{{text}}` ディレクティブ解析 |
-| リゾルバーファクトリー | `src/docs/lib/resolver-factory.js` | `createResolver()` でプリセット固有のデータリゾルバーを生成 |
-| テンプレートマージャー | `src/docs/lib/template-merger.js` | docs テンプレートとソース解析結果のマージ |
-| フォージプロンプト | `src/docs/lib/forge-prompts.js` | `summaryToText()` など AI 向けプロンプト構築 |
-| AGENTS.md 管理 | `src/lib/agents-md.js` | `SDD` / `PROJECT` セクション単位での注入・更新 |
-
----
-
-### 設定ファイル（`.sdd-forge/`）
-
-| ファイル | 説明 |
-|---|---|
-| `config.json` | プロジェクト設定（`type`, `lang`, `providers`, `documentStyle` 等） |
-| `context.json` | プロジェクトコンテキスト文字列（`projectContext`） |
-| `projects.json` | マルチプロジェクト登録情報 |
-| `current-spec` | 現在作業中の spec パス（フロー終了時に削除） |
-| `output/analysis.json` | `sdd-forge scan` の出力（コンパクト JSON） |
-| `output/summary.json` | `analysis.json` の軽量版（AI 入力用に優先使用。なければ analysis にフォールバック） |
-
-#### config.json の主要フィールド
-
-| フィールド | 説明 |
-|---|---|
-| `type` | プロジェクト種別（例: `cli/node-cli`, `webapp/cakephp2`, `webapp/laravel`, `webapp/symfony`） |
-| `lang` | ドキュメント出力言語（`ja` / `en`） |
-| `uiLang` | UI メッセージ言語（`ja` / `en`） |
-| `defaultAgent` | デフォルト AI エージェント名 |
-| `providers` | AI エージェント定義（`command`, `args`, `systemPromptFlag`） |
-| `documentStyle` | ドキュメントスタイル（`purpose`, `tone`, `customInstruction`） |
-| `flow.merge` | マージ戦略（`squash` / `ff-only` / `merge`） |
-
----
-
-### 対応プリセット（`type` 値）
-
-| type 値 | 説明 |
-|---|---|
-| `cli/node-cli` | Node.js CLI ツール（本プロジェクト自身） |
-| `webapp/cakephp2` | CakePHP 2.x Web アプリ |
-| `webapp/laravel` | Laravel Web アプリ |
-| `webapp/symfony` | Symfony Web アプリ |
-| `cli` | CLI 共通（アーキテクチャ層） |
-| `webapp` | Web アプリ共通（アーキテクチャ層） |
-| `base` | 共通基盤（アーキテクチャ層） |
-| `library` | ライブラリ共通（アーキテクチャ層） |
-
-エイリアス（短縮形）も使用可能（例: `cakephp2` → `webapp/cakephp2`）。
-
----
-
-### 利用可能なコマンド
-
-| コマンド | スクリプト |
-|---|---|
-| `npm run test` | `find tests -name '*.test.js' \| xargs node --test` |
-
----
-
-### npm 公開に関する注意
-
-- Pre-release は `npm publish --tag alpha` で公開する
-- `--tag alpha` のみでは `latest` タグが更新されないため、公開後に `npm dist-tag add sdd-forge@<version> latest` を実行する
-- 公開前に `npm pack --dry-run` で含まれるファイルを確認すること
-- npm はバージョン番号の再利用不可（unpublish 後 24 時間は再登録不可）
-
-<!-- PROJECT:END -->
-
+<!-- {{/data}} -->
 
 ## Project Guidelines
 

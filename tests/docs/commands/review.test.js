@@ -91,21 +91,6 @@ describe("review CLI", () => {
     }
   });
 
-  it("warns on MANUAL block mismatch", () => {
-    tmp = createTmpDir();
-    const lines = ["# 01. Test", ""];
-    for (let i = 0; i < 15; i++) lines.push(`Line ${i}`);
-    lines.push("<!-- MANUAL:START -->");
-    lines.push("Manual content");
-    // Missing MANUAL:END
-    writeFile(tmp, "docs/01_test.md", lines.join("\n"));
-
-    const result = execFileSync("node", [CMD], {
-      encoding: "utf8",
-      env: { ...process.env, SDD_WORK_ROOT: tmp },
-    });
-    assert.match(result, /MANUAL block mismatch/);
-  });
 
   it("warns when analysis.json is missing", () => {
     tmp = createTmpDir();

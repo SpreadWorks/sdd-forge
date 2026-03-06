@@ -20,7 +20,7 @@ import { saveContext } from "../../lib/config.js";
 import { createI18n } from "../../lib/i18n.js";
 import { addProject, workRootFor, loadProjects } from "../../lib/projects.js";
 import { presetsForArch } from "../../lib/presets.js";
-import { loadSddTemplate, updateSddSection } from "../../lib/agents-md.js";
+import { loadSddTemplate } from "../../lib/agents-md.js";
 import { ensureAgentWorkDir } from "../../lib/agent.js";
 
 // ---------------------------------------------------------------------------
@@ -218,37 +218,33 @@ const PKG_DIR = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..",
  */
 async function setupAgentsMd(rl, sourceDir, lang, t, nonInteractive) {
   const agentsPath = path.join(sourceDir, "AGENTS.md");
+  // Check template exists
   const sddContent = loadSddTemplate(lang);
   if (!sddContent) return;
 
+  const agentsTemplate = [
+    '<!-- {{data: agents.sdd("")}} -->',
+    '<!-- {{/data}} -->',
+    '',
+    '<!-- {{data: agents.project("")}} -->',
+    '<!-- {{/data}} -->',
+    '',
+  ].join("\n");
+
   let mode = "skip";
   if (nonInteractive) {
-    // Non-interactive: inject if exists, generate if not
-    mode = fs.existsSync(agentsPath) ? "inject" : "rewrite";
+    mode = fs.existsSync(agentsPath) ? "skip" : "rewrite";
   } else if (rl) {
     const choices = t.raw("setup.choices_agents");
     mode = await askChoice(rl, t("setup.questions.rewriteAgentsMd"), [
       { label: choices.rewrite, value: "rewrite" },
-      { label: choices.inject, value: "inject" },
       { label: choices.skip, value: "skip" },
     ], t);
   }
 
   if (mode === "rewrite") {
-    const content = sddContent + "\n\n## Project Guidelines\n\n<!-- Add project-specific guidelines here -->\n";
-    fs.writeFileSync(agentsPath, content, "utf8");
+    fs.writeFileSync(agentsPath, agentsTemplate, "utf8");
     console.log(t("setup.messages.agentsMdGenerated"));
-  } else if (mode === "inject") {
-    if (fs.existsSync(agentsPath)) {
-      updateSddSection(agentsPath, sddContent);
-      console.log(t("setup.messages.agentsMdInjected"));
-      console.log(t("setup.messages.agentsMdConflictWarn"));
-    } else {
-      // File doesn't exist, fall back to rewrite
-      const content = sddContent + "\n\n## Project Guidelines\n\n<!-- Add project-specific guidelines here -->\n";
-      fs.writeFileSync(agentsPath, content, "utf8");
-      console.log(t("setup.messages.agentsMdGenerated"));
-    }
   } else {
     console.log(t("setup.messages.agentsMdSkipped"));
   }

@@ -1,0 +1,137 @@
+/**
+ * AgentsSource — DataSource for AGENTS.md section generation.
+ *
+ * Provides SDD template and PROJECT section skeleton as {{data}} directives.
+ */
+
+import fs from "fs";
+import path from "path";
+import { DataSource } from "../lib/data-source.js";
+import { PRESETS_DIR } from "../../lib/presets.js";
+import { loadJsonFile } from "../../lib/config.js";
+
+export default class AgentsSource extends DataSource {
+  init(ctx) {
+    super.init(ctx);
+    this._root = ctx.root;
+  }
+
+  /** Return SDD section template for the configured language. */
+  sdd(_analysis, _labels) {
+    const lang = this._lang();
+    for (const l of [lang, "en"]) {
+      const p = path.join(PRESETS_DIR, "base", "templates", l, "AGENTS.sdd.md");
+      if (fs.existsSync(p)) return fs.readFileSync(p, "utf8");
+    }
+    return null;
+  }
+
+  /** Generate PROJECT section skeleton from analysis data. */
+  project(analysis, _labels) {
+    if (!analysis) return null;
+
+    const config = this._loadConfig();
+    const srcRoot = this._root;
+    const lines = [];
+
+    lines.push("## Project Context");
+    lines.push("");
+    lines.push(`- **generated_at:** ${new Date().toISOString().replace("T", " ").replace(/\.\d+Z$/, " UTC")}`);
+
+    // Package info
+    const pkg = this._loadPkg();
+    if (pkg) {
+      const parts = [];
+      if (pkg.name) parts.push(`\`${pkg.name}\``);
+      if (pkg.version) parts.push(`v${pkg.version}`);
+      if (parts.length > 0) lines.push(`- **package:** ${parts.join(" ")}`);
+      if (pkg.description) lines.push(`- **description:** ${pkg.description}`);
+    }
+
+    lines.push("");
+
+    if (config.type) {
+      lines.push("### Technology Stack");
+      lines.push("");
+      lines.push(`- type: ${config.type}`);
+
+      if (analysis.extras?.composerDeps?.require) {
+        const req = analysis.extras.composerDeps.require;
+        if (req.php) lines.push(`- PHP: ${req.php}`);
+      }
+
+      if (pkg?.engines?.node) lines.push(`- Node.js: ${pkg.engines.node}`);
+      lines.push("");
+    }
+
+    // Structure summary
+    const ctrl = analysis.controllers?.summary;
+    const mdl = analysis.models?.summary;
+    const sh = analysis.shells?.summary;
+    const rt = analysis.routes?.summary;
+
+    if (ctrl || mdl || sh || rt) {
+      lines.push("### Structure Summary");
+      lines.push("");
+      lines.push("| category | count | details |");
+      lines.push("| --- | --- | --- |");
+      if (ctrl) lines.push(`| Controllers | ${ctrl.total} | ${ctrl.totalActions} actions |`);
+      if (mdl) lines.push(`| Models | ${mdl.total} | FE: ${mdl.feModels || 0}, Logic: ${mdl.logicModels || 0} |`);
+      if (sh) lines.push(`| Shells | ${sh.total} | ${sh.withMain || 0} with main() |`);
+      if (rt) lines.push(`| Routes | ${rt.total} | ${(rt.controllers || []).length} controllers |`);
+      lines.push("");
+    }
+
+    // Database groups
+    if (mdl?.dbGroups) {
+      const groups = Object.entries(mdl.dbGroups).filter(([, v]) => v.length > 0);
+      if (groups.length > 0) {
+        lines.push("### Database Groups");
+        lines.push("");
+        lines.push("| connection | models |");
+        lines.push("| --- | --- |");
+        for (const [name, models] of groups) {
+          lines.push(`| ${name} | ${models.length} |`);
+        }
+        lines.push("");
+      }
+    }
+
+    // Available commands (from package.json scripts)
+    if (pkg?.scripts && Object.keys(pkg.scripts).length > 0) {
+      lines.push("### Available Commands");
+      lines.push("");
+      lines.push("| command | script |");
+      lines.push("| --- | --- |");
+      for (const [name, script] of Object.entries(pkg.scripts)) {
+        lines.push(`| \`npm run ${name}\` | ${script.replace(/\|/g, "\\|")} |`);
+      }
+      lines.push("");
+    }
+
+    return lines.join("\n");
+  }
+
+  _lang() {
+    const config = this._loadConfig();
+    return config.lang || config.output?.default || "en";
+  }
+
+  _loadConfig() {
+    try {
+      return loadJsonFile(path.join(this._root, ".sdd-forge", "config.json"));
+    } catch (_) {
+      return {};
+    }
+  }
+
+  _loadPkg() {
+    const pkgPath = path.join(this._root, "package.json");
+    if (!fs.existsSync(pkgPath)) return null;
+    try {
+      return JSON.parse(fs.readFileSync(pkgPath, "utf8"));
+    } catch (_) {
+      return null;
+    }
+  }
+}

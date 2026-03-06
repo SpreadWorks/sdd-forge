@@ -7,7 +7,6 @@
     "missingH1": "[FAIL] missing H1 heading: {{file}}",
     "unfilledText": "[WARN] {{count}} unfilled {{text}} directive(s): {{file}}",
     "unfilledData": "[FAIL] {{count}} unfilled {{data}} directive(s): {{file}}",
-    "manualMismatch": "[WARN] MANUAL block mismatch ({{starts}} START, {{ends}} END): {{file}}",
     "analysisNotFound": "[WARN] analysis.json not found. Run 'sdd-forge scan' to generate.",
     "analysisStale": "[WARN] analysis.json may be stale ({{file}} is newer). Run 'sdd-forge scan' to refresh.",
     "readmeNotFound": "[WARN] README.md not found. Run 'sdd-forge readme' to generate.",
@@ -22,9 +21,7 @@
     "refining": "[agents] refining PROJECT section with AI...",
     "generated": "[agents] AI refinement completed.",
     "dryRun": "[agents] DRY-RUN: would update {{path}}",
-    "sddTemplateNotFound": "SDD template not found.",
-    "updated": "[agents] updated PROJECT section in {{path}}",
-    "sddUpdated": "[agents] updated SDD section in {{path}}"
+    "updated": "[agents] updated {{path}}"
   },
   "gate": {
     "failed": "gate: FAILED",

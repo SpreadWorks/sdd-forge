@@ -115,17 +115,6 @@ function main() {
     }
   }
 
-  // MANUAL block matching check (WARN)
-  for (const f of chapterFiles) {
-    const filePath = path.join(targetDir, f);
-    const content = fs.readFileSync(filePath, "utf8");
-    const starts = (content.match(/<!--\s*MANUAL:START\s*-->/g) || []).length;
-    const ends = (content.match(/<!--\s*MANUAL:END\s*-->/g) || []).length;
-    if (starts !== ends) {
-      console.log(t("review.manualMismatch", { starts, ends, file: f }));
-    }
-  }
-
   // analysis.json existence and freshness check (WARN)
   const analysisPath = path.join(workRoot, ".sdd-forge", "output", "analysis.json");
   if (!fs.existsSync(analysisPath)) {

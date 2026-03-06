@@ -26,8 +26,7 @@
       "no": "No"
     },
     "choices_agents": {
-      "rewrite": "Rewrite (generate SDD section + empty Project Guidelines)",
-      "inject": "Inject SDD section into existing file",
+      "rewrite": "Generate (create AGENTS.md with {{data}} directives)",
       "skip": "Skip (do not modify AGENTS.md)"
     },
     "choices_claudemd": {
@@ -79,9 +78,7 @@
       "configGenerated": "[setup] {{path}} generated.",
       "contextGenerated": "[setup] context.json generated.",
       "agentsMdGenerated": "[setup] AGENTS.md generated.",
-      "agentsMdInjected": "[setup] SDD section injected into AGENTS.md.",
       "agentsMdSkipped": "[setup] AGENTS.md update skipped.",
-      "agentsMdConflictWarn": "  ⚠ Please review for conflicts with existing content.",
       "claudeMdCreated": "[setup] Created symlink CLAUDE.md → AGENTS.md.",
       "claudeMdExists": "[setup] CLAUDE.md already exists, skipped.",
       "claudeRenamed": "[setup] Renamed CLAUDE.md → AGENTS.md and created CLAUDE.md as symlink.",
@@ -202,12 +199,10 @@
         }
       },
       "agents": {
-        "usage": "Usage: sdd-forge agents [--sdd] [--project] [--dry-run]",
-        "desc": "Update SDD/PROJECT sections in AGENTS.md.",
-        "descDetail": "Updates both sections by default (PROJECT is refined by AI).",
+        "usage": "Usage: sdd-forge agents [--dry-run]",
+        "desc": "Update AGENTS.md by resolving {{data}} directives.",
+        "descDetail": "Resolves agents.sdd and agents.project directives (PROJECT is refined by AI).",
         "options": {
-          "sdd": "--sdd       Update SDD section only (from template)",
-          "project": "--project   Update PROJECT section only (template + AI refinement)",
           "dryRun": "--dry-run   Print generated content to stdout without writing"
         }
       },
