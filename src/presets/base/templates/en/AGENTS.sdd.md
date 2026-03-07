@@ -29,10 +29,10 @@ If skills are unavailable, follow these steps in order:
 
 1. Decide branch strategy (**always confirm with user before creating spec**)
    - Inside a worktree: automatically use `--no-branch` (no confirmation needed)
-   - Otherwise, present these options:
-     - **Branch** (default): create feature branch from current branch -> `sdd-forge spec --title "..."`
-     - **Worktree**: create isolated environment with git worktree -> `sdd-forge spec --title "..." --worktree <path>`
-     - **Spec only**: create spec without branch -> `sdd-forge spec --title "..." --no-branch`
+   - Otherwise, present these numbered options:
+     1. **Branch** (default): create feature branch from current branch
+     2. **Worktree**: create isolated environment with git worktree
+     3. **Spec only**: create spec without branch
 2. `sdd-forge spec --title "<feature-name>"` to create spec (use existing spec if available)
 3. Present spec summary and confirm with user: "OK to implement with this spec?"
 4. After approval, update `spec.md` `## User Confirmation` (`- [x] User approved this spec`)
@@ -52,9 +52,9 @@ If skills are unavailable, follow these steps in order:
 After implementation is complete, run the `/sdd-flow-close` skill.
 If skills are unavailable, present the user with these options:
 
-**Options:**
-- **commit+merge**: Commit → merge to base branch → delete `.sdd-forge/current-spec`
-- **docs+commit+merge**: Update docs → commit → merge to base branch → delete `.sdd-forge/current-spec`
+**Present these numbered options:**
+1. **commit+merge**: Commit → merge to base branch → delete `.sdd-forge/current-spec`
+2. **docs+commit+merge**: Update docs → commit → merge to base branch → delete `.sdd-forge/current-spec`
 
 **For docs+commit+merge:**
 1. `sdd-forge forge --prompt "<summary of changes>" --spec specs/NNN-xxx/spec.md` (update docs)

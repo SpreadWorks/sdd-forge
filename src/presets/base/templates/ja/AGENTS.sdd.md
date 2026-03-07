@@ -29,10 +29,10 @@ docs の内容は以下の 2 種類で構成される:
 
 1. ブランチ戦略を決定する（**spec 作成前に必ずユーザーに確認すること**）
    - worktree 内の場合は自動で `--no-branch` を付与（確認不要）
-   - それ以外では以下の選択肢を提示すること:
-     - **Branch**（デフォルト）: 現在のブランチから feature ブランチを作成 → `sdd-forge spec --title "..."`
-     - **Worktree**: git worktree で隔離環境を作成 → `sdd-forge spec --title "..." --worktree <path>`
-     - **Spec only**: ブランチを作成せず spec のみ → `sdd-forge spec --title "..." --no-branch`
+   - それ以外では以下の番号付き選択肢を提示すること:
+     1. **Branch**（デフォルト）: 現在のブランチから feature ブランチを作成
+     2. **Worktree**: git worktree で隔離環境を作成
+     3. **Spec only**: ブランチを作成せず spec のみ
 2. `sdd-forge spec --title "<機能名>"` で spec を作成（既存 spec がある場合はそれを使用）
 3. 仕様要約を提示し、ユーザーに「この仕様で実装して問題ないか」確認する
 4. 承認後、`spec.md` の `## User Confirmation` を更新（`- [x] User approved this spec`）
@@ -52,9 +52,9 @@ docs の内容は以下の 2 種類で構成される:
 実装完了後は `/sdd-flow-close` スキルを実行すること。
 スキルが利用できない環境では、以下の手順でユーザーに選択肢を提示すること。
 
-**選択肢:**
-- **commit+merge**: コミット → base ブランチにマージ → `.sdd-forge/current-spec` 削除
-- **docs+commit+merge**: docs 更新 → コミット → base ブランチにマージ → `.sdd-forge/current-spec` 削除
+**以下の番号付き選択肢を提示すること:**
+1. **commit+merge**: コミット → base ブランチにマージ → `.sdd-forge/current-spec` 削除
+2. **docs+commit+merge**: docs 更新 → コミット → base ブランチにマージ → `.sdd-forge/current-spec` 削除
 
 **docs+commit+merge の場合:**
 1. `sdd-forge forge --prompt "<変更内容の要約>" --spec specs/NNN-xxx/spec.md`（docs 更新）
