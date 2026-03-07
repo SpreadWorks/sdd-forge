@@ -50,9 +50,10 @@ function stripBlockDirectives(text) {
  * @param {Object} analysis
  * @param {Object} agent - エージェント設定
  * @param {string} root
+ * @param {string} purpose - documentStyle.purpose
  * @returns {{ fileName: string, content: string }[]}
  */
-function aiFilterChapters(chapters, analysis, agent, root) {
+function aiFilterChapters(chapters, analysis, agent, root, purpose) {
   const summary = summaryToText(analysis);
   const chapterList = chapters.map((ch) => {
     // 章タイトル（最初の # 行）を抽出
@@ -65,6 +66,7 @@ function aiFilterChapters(chapters, analysis, agent, root) {
     "You are selecting documentation chapters for a software project.",
     "Based on the source code analysis summary below, determine which chapters are relevant.",
     "",
+    ...(purpose ? ["## Documentation Purpose", purpose, ""] : []),
     "## Analysis Summary",
     summary,
     "",
@@ -211,7 +213,13 @@ function main() {
       if (fs.existsSync(summaryPath)) {
         try { summaryData = JSON.parse(fs.readFileSync(summaryPath, "utf8")); } catch (_) { /* use analysis */ }
       }
-      filteredChapters = aiFilterChapters(filteredChapters, summaryData, agent, root);
+      filteredChapters = aiFilterChapters(
+        filteredChapters,
+        summaryData,
+        agent,
+        root,
+        sddConfig?.documentStyle?.purpose || "",
+      );
     }
   }
 

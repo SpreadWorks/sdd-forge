@@ -63,4 +63,47 @@ describe("init CLI", () => {
     });
     assert.match(result, /--type/);
   });
+
+  it("passes documentStyle.purpose to AI chapter-selection prompt", () => {
+    tmp = createTmpDir();
+    const promptCapture = join(tmp, "prompt.txt");
+    writeJson(tmp, ".sdd-forge/config.json", {
+      lang: "ja",
+      type: "cli/node-cli",
+      documentStyle: { purpose: "user-guide", tone: "polite" },
+      defaultAgent: "capture",
+      providers: {
+        capture: {
+          command: "node",
+          args: [
+            "-e",
+            "const fs=require('fs');const prompt=process.argv[process.argv.length-1]||'';fs.writeFileSync(process.env.PROMPT_CAPTURE,prompt,'utf8');process.stdout.write('[\"01_overview.md\"]');",
+            "{{PROMPT}}",
+          ],
+        },
+      },
+    });
+    writeJson(tmp, "package.json", { name: "test-proj" });
+    writeJson(tmp, ".sdd-forge/output/analysis.json", {
+      analyzedAt: "2026-01-01",
+      files: { summary: { total: 1 } },
+    });
+    writeJson(tmp, ".sdd-forge/output/summary.json", {
+      files: { summary: { total: 1 } },
+    });
+
+    execFileSync("node", [CMD, "--type", "cli/node-cli"], {
+      encoding: "utf8",
+      env: {
+        ...process.env,
+        SDD_WORK_ROOT: tmp,
+        SDD_SOURCE_ROOT: tmp,
+        PROMPT_CAPTURE: promptCapture,
+      },
+    });
+
+    const prompt = fs.readFileSync(promptCapture, "utf8");
+    assert.match(prompt, /## Documentation Purpose/);
+    assert.match(prompt, /user-guide/);
+  });
 });
