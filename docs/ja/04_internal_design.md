@@ -1,14 +1,14 @@
-# 04. Internal Design
+# 04. 内部設計
 
-## Overview
+## 概要
 
 <!-- {{text: Describe the purpose of this chapter in 1–2 sentences. Cover the project structure, direction of module dependencies, and key processing flows.}} -->
 
 本章では sdd-forge の内部アーキテクチャを解説する。ディレクトリ構成、モジュール間の依存関係、および代表的なコマンド実行時の処理フローを体系的に示す。
 
-## Contents
+## 目次
 
-### Project Structure
+### プロジェクト構造
 
 <!-- {{text: Describe the directory structure of this project in a tree-format code block. Include role comments for major directories and files.}} -->
 
@@ -46,7 +46,7 @@ sdd-forge/
 └── specs/                             # SDD spec ファイル
 ```
 
-### Module Composition
+### モジュール構成
 
 <!-- {{text: List all modules in a table format. Include module name, file path, and responsibilities.}} -->
 
@@ -89,7 +89,7 @@ sdd-forge/
 | renderers | `src/docs/lib/renderers.js` | マークダウン出力レンダリング |
 | concurrency | `src/docs/lib/concurrency.js` | ファイル並列処理ユーティリティ |
 
-### Module Dependencies
+### モジュール依存関係
 
 <!-- {{text: Generate a dependency graph between modules using a mermaid graph. Output only the mermaid code block.}} -->
 
@@ -157,7 +157,7 @@ graph TD
     PRESETS --> CLI
 ```
 
-### Key Processing Flows
+### 主要な処理フロー
 
 <!-- {{text: Explain the data and control flow between modules when a representative command is executed.}} -->
 
@@ -184,7 +184,7 @@ graph TD
 **7. readme フェーズ**
 `docs/commands/readme.js` が `docs/lib/forge-prompts.js` の `summaryToText()` で docs 全体のサマリーを構築し、`lib/agent.js` 経由で README.md を生成する。
 
-### Extension Points
+### 拡張ポイント
 
 <!-- {{text: Explain which parts need to be modified when adding new commands or features, and describe the extension patterns.}} -->
 

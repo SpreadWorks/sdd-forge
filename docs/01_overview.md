@@ -1,110 +1,87 @@
-# 01. ツール概要とアーキテクチャ
+# 01. Tool Overview and Architecture
 
-## 説明
+## Description
 
-<!-- {{text: この章の概要を1〜2文で記述してください。ツールの目的・解決する課題・主要なユースケースを踏まえること。}} -->
+<!-- {{text: Write a 1-2 sentence overview of this chapter. Cover the tool's purpose, the problems it solves, and its primary use cases.}} -->
 
-sdd-forge は、ソースコードを解析してプロジェクトドキュメントを自動生成する Node.js CLI ツールです。また、機能追加・改修時に Spec-Driven Development（SDD）ワークフローに沿って仕様策定から実装・レビューまでを一貫してサポートします。
+This chapter provides an overview of sdd-forge — a CLI tool that automates documentation generation from source code analysis and enforces a Spec-Driven Development (SDD) workflow for feature additions and changes. It covers the tool's core purpose, the problems it addresses, its architectural design, and the typical steps for getting started.
 
-## 内容
+## Contents
 
-### ツールの目的
+### Purpose of the Tool
 
-<!-- {{text: このCLIツールが解決する課題と、ターゲットユーザーを説明してください。}} -->
+<!-- {{text: Explain the problems this CLI tool solves and the target users it is designed for.}} -->
 
-ソフトウェア開発において「ドキュメントが陳腐化する」「仕様と実装が乖離する」という課題を解決するために作られたツールです。ソースコードを静的解析して docs/ 配下のドキュメントを自動生成・更新することで、常にコードと同期されたドキュメントを維持できます。また、機能追加・改修の際には SDD フローに従って spec（仕様書）を作成し、ゲートチェックをパスしてから実装に進む規律ある開発プロセスを提供します。
+Development teams frequently face two compounding problems: documentation that quickly falls out of sync with source code, and feature development that proceeds without a clearly reviewed specification. sdd-forge addresses both by automating the extraction of structural information from source code and generating living documentation from it, while also providing a gate-based workflow that requires a written, approved spec before any implementation begins.
 
-主なターゲットユーザーは、レガシーコードベースを抱えるチームや、ドキュメント管理コストを削減したい開発チームです。CakePHP 2.x・Laravel・Symfony・Node.js CLI などのプリセットが用意されており、対象フレームワークにあわせてすぐに利用を開始できます。
+The primary target users are software developers and technical leads who maintain codebases where documentation accuracy matters — particularly projects with multiple contributors or frequent iterative changes. The tool is especially valuable when onboarding new team members, conducting architecture reviews, or managing ongoing feature work where traceability between a spec and the resulting implementation is required.
 
-### アーキテクチャ概要
+### Architecture Overview
 
-<!-- {{text: ツール全体のアーキテクチャを mermaid flowchart で生成してください。入力・処理・出力の流れ、主要モジュールの関係を含めること。出力は mermaid コードブロックのみ。}} -->
+<!-- {{text: Generate a mermaid flowchart of the overall tool architecture. Include the flow of input, processing, and output, as well as the relationships between major modules. Output only the mermaid code block.}} -->
 
 ```mermaid
 flowchart TD
-    CLI["sdd-forge CLI\nsdd-forge.js"]
+    CLI["sdd-forge.js\n(CLI Entry Point)"]
+    CLI --> DOCS["docs.js\n(Docs Dispatcher)"]
+    CLI --> SPEC["spec.js\n(Spec Dispatcher)"]
+    CLI --> FLOW["flow.js\n(SDD Flow)"]
+    CLI --> HELP["help.js"]
 
-    CLI --> DOCS["docs.js\nbuild / scan / init / data / text\nreadme / forge / review / changelog / agents / setup"]
-    CLI --> SPEC["spec.js\nspec / gate"]
-    CLI --> FLOW["flow.js\nSDD フロー自動実行"]
+    DOCS --> CMD_DOCS["docs/commands/\nscan · init · data · text\nreadme · forge · review\nchangelog · agents · setup"]
+    SPEC --> CMD_SPEC["specs/commands/\nspec · gate"]
 
-    DOCS --> SCANNER["scanner.js\nソースコード解析"]
-    DOCS --> DP["directive-parser.js\n{{data}} / {{text}} 解決"]
-    DOCS --> TM["template-merger.js\nテンプレートマージ"]
-    DOCS --> AGENT["agent.js\nAI エージェント呼び出し"]
+    CMD_DOCS --> LIB["docs/lib/\nscanner · directive-parser\ntemplate-merger · renderers\ndata-source · resolver-factory"]
+    CMD_DOCS --> AGENT["lib/agent.js\n(AI Agent Calls)"]
 
-    SCANNER --> ANALYSIS[".sdd-forge/output/analysis.json\nsummary.json"]
-    DP --> RESOLVER["resolver-factory.js\nプリセット固有データ解決"]
-    RESOLVER --> ANALYSIS
+    LIB --> ANALYSIS[".sdd-forge/output/\nanalysis.json\nsummary.json"]
+    AGENT --> DOCS_OUT["docs/\n(Generated Documentation)"]
+    CMD_SPEC --> SPECS_OUT["specs/NNN-xxx/\nspec.md"]
+    FLOW --> SPECS_OUT
+    FLOW --> DOCS_OUT
 
-    AGENT --> AI["外部 AI CLI\n（providers 設定）"]
-    AI --> DOCS_OUT["docs/\n自動生成ドキュメント"]
-
-    SPEC --> GATE["gate.js\nゲートチェック"]
-    SPEC --> SPECINIT["init.js\nspec.md 作成"]
-
-    FLOW --> SPEC
-    FLOW --> DOCS
-    FLOW --> AGENT
-
-    CONFIG[".sdd-forge/config.json\ncontext.json"] --> CLI
-    PRESETS["src/presets/\nFW 別プリセット"] --> RESOLVER
-    PRESETS --> SCANNER
+    SOURCE["Source Code\n(src/, controllers/, etc.)"] --> CMD_DOCS
+    CONFIG[".sdd-forge/config.json\n(Project Config)"] --> CLI
 ```
 
-### 主要コンセプト
+### Key Concepts
 
-<!-- {{text: このツールを理解するうえで重要なコンセプト・用語を表形式で説明してください。}} -->
+<!-- {{text: Explain the important concepts and terminology needed to understand this tool in table format.}} -->
 
-| コンセプト・用語 | 説明 |
+| Concept | Description |
 |---|---|
-| SDD（Spec-Driven Development） | 仕様書（spec.md）を先に作成し、ゲートチェックをパスしてから実装に進む開発手法。仕様と実装の乖離を防ぐ |
-| spec | 機能追加・改修ごとに作成される仕様書ファイル（`specs/NNN-xxx/spec.md`）。`sdd-forge spec` コマンドで生成される |
-| gate | spec の品質チェック。未解決事項がある場合は FAIL となり、実装に進めない |
-| docs/ | プロジェクトの設計・構造・ビジネスロジックをまとめた知識ベース。sdd-forge により自動生成・維持される |
-| `{{data}}` ディレクティブ | docs テンプレート内に記述する、ソースコード解析結果を埋め込む指示子 |
-| `{{text}}` ディレクティブ | docs テンプレート内に記述する、AI が説明文を生成する指示子 |
-| MANUAL ブロック | `<!-- MANUAL:START -->〜<!-- MANUAL:END -->` で囲まれた手動記述領域。自動生成では上書きされない |
-| プリセット | フレームワーク別の解析設定・テンプレートセット（`src/presets/` 配下）。`type` 値で指定する |
-| forge | docs を反復改善するコマンド（`sdd-forge forge`）。AI がソース解析結果をもとにドキュメントを更新する |
-| analysis.json / summary.json | `sdd-forge scan` が出力するソースコード解析結果。summary.json は AI 入力用の軽量版 |
-| provider | AI エージェントの設定。使用する CLI コマンド・引数・systemPromptFlag などを `config.json` で定義する |
+| **SDD (Spec-Driven Development)** | A development workflow where a spec document is authored, reviewed, and approved via a gate check before any implementation begins. |
+| **Spec** | A structured markdown document (`spec.md`) that defines the intent, scope, and acceptance criteria for a single feature or fix. Stored under `specs/NNN-xxx/`. |
+| **Gate Check** | A validation step run by `sdd-forge gate` that confirms a spec is sufficiently complete before allowing implementation to proceed. |
+| **Directive** | A placeholder marker in documentation templates. `{{data}}` is resolved from source analysis; `{{text}}` is resolved by an AI agent. |
+| **Preset** | A project-type profile (e.g., `webapp/cakephp2`, `cli/node-cli`) that determines which files are scanned and which doc templates are applied. |
+| **`analysis.json`** | The full structured output of `sdd-forge scan`, containing extracted information about controllers, models, routes, and other source constructs. |
+| **`summary.json`** | A compact, AI-optimised subset of `analysis.json` used as the primary input for text-generation commands. |
+| **Forge** | The iterative doc improvement process (`sdd-forge forge`) in which AI refines documentation based on current source analysis and context. |
+| **Provider / Agent** | An AI backend configuration (e.g., Claude CLI) defined in `config.json` under `providers`, used for text generation and review. |
+| **`.sdd-forge/`** | The project-local working directory that holds configuration, scan output, flow state, and project registration data. |
 
-### 典型的な利用フロー
+### Typical Usage Flow
 
-<!-- {{text: ユーザーがインストールしてから最初の成果物を得るまでの典型的な手順をステップ形式で説明してください。}} -->
+<!-- {{text: Explain the typical steps a user takes from installation to obtaining their first output, in a step-by-step format.}} -->
 
-**1. インストール**
-
-```bash
+**Step 1 — Install**
+Install sdd-forge globally via npm:
+```
 npm install -g sdd-forge
 ```
 
-**2. プロジェクトのセットアップ**
+**Step 2 — Set up your project**
+Run `sdd-forge setup` in your project root. This registers the project and generates `.sdd-forge/config.json`, where you configure the project type, output language, and AI provider.
 
-ドキュメント化したいプロジェクトのルートディレクトリで `setup` コマンドを実行します。プロジェクト種別（`type`）・言語（`lang`）・使用する AI エージェントなどの設定が対話形式で生成されます。
+**Step 3 — Scan your source code**
+Run `sdd-forge scan` to analyze your source files. This produces `.sdd-forge/output/analysis.json` and `summary.json`, which serve as the data foundation for all documentation.
 
-```bash
-cd /path/to/your-project
-sdd-forge setup
-```
+**Step 4 — Build the documentation**
+Run `sdd-forge build` to initialize doc templates from the appropriate preset, populate `{{data}}` directives with analysis results, and invoke the AI agent to resolve `{{text}}` directives. The output is written to `docs/`.
 
-**3. ソースコード解析**
+**Step 5 — Review the output**
+Run `sdd-forge review` to quality-check the generated documentation. Address any flagged issues and re-run until the review passes.
 
-ソースコードを解析し、`.sdd-forge/output/analysis.json` と `summary.json` を生成します。
-
-```bash
-sdd-forge scan
-```
-
-**4. docs の一括生成**
-
-テンプレート初期化・データ解決・AI によるテキスト生成・README 更新までを一括で実行します。
-
-```bash
-sdd-forge build
-```
-
-**5. 生成されたドキュメントを確認**
-
-`docs/` ディレクトリに `01_overview.md` などのドキュメントファイルが生成されています。内容を確認し、MANUAL ブロックに補足情報を追記することで、自動生成と手動記述を組み合わせた知識ベースを構築できます。
+**Step 6 — Develop features with SDD**
+When adding a new feature, run `sdd-forge spec --title "Feature Name"` to create a spec. Follow the SDD flow: refine the spec, pass the gate check, implement, then run `sdd-forge forge` and `sdd-forge review` to keep documentation current.

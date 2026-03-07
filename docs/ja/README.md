@@ -4,9 +4,9 @@
 Spec-Driven Development tooling for automated documentation generation
 <!-- {{/data}} -->
 
-## Quick Start
+## クイックスタート
 
-### Installation
+### インストール
 
 <pre>
 # npm
@@ -19,26 +19,26 @@ yarn global add <!-- {{data: project.name("")}} -->sdd-forge<!-- {{/data}} -->
 pnpm add -g <!-- {{data: project.name("")}} -->sdd-forge<!-- {{/data}} -->
 </pre>
 
-### Basic Commands
+### 基本コマンド
 
 <pre>
-# Show help
+# ヘルプを表示
 <!-- {{data: project.name("")}} -->sdd-forge<!-- {{/data}} --> help
 
-# Project setup
+# プロジェクトのセットアップ
 <!-- {{data: project.name("")}} -->sdd-forge<!-- {{/data}} --> setup
 
-# Generate all documentation
+# すべてのドキュメントを生成
 <!-- {{data: project.name("")}} -->sdd-forge<!-- {{/data}} --> build
 </pre>
 
-## Documentation
+## ドキュメント
 
 <!-- {{data: docs.chapters("Chapter|Overview")}} -->
-| Chapter | Overview |
+| チャプター | 概要 |
 | --- | --- |
-| [01. Tool Overview and Architecture](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/01_overview.md) |  |
-| [02. CLI Command Reference](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/02_cli_commands.md) |  |
-| [03. Configuration and Customization](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/03_configuration.md) |  |
-| [04. Internal Design](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/04_internal_design.md) |  |
+| [01. ツール概要とアーキテクチャ](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/01_overview.md) |  |
+| [02. CLI コマンドリファレンス](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/02_cli_commands.md) |  |
+| [03. 設定とカスタマイズ](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/03_configuration.md) |  |
+| [04. 内部設計](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/04_internal_design.md) |  |
 <!-- {{/data}} -->
