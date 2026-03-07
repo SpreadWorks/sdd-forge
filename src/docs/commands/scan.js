@@ -10,6 +10,7 @@
 import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
+import { runIfDirect } from "../../lib/entrypoint.js";
 import { repoRoot, sourceRoot, parseArgs } from "../../lib/cli.js";
 import { loadConfig, loadUiLang, sddDataDir, sddOutputDir } from "../../lib/config.js";
 import { resolveType } from "../../lib/types.js";
@@ -204,8 +205,4 @@ async function main() {
 
 export { main };
 
-const isDirectRun = process.argv[1] &&
-  path.resolve(process.argv[1]) === path.resolve(fileURLToPath(import.meta.url));
-if (isDirectRun) {
-  main();
-}
+runIfDirect(import.meta.url, main);

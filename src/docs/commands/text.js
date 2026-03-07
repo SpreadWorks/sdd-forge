@@ -12,7 +12,7 @@
 
 import fs from "fs";
 import path from "path";
-import { fileURLToPath } from "url";
+import { runIfDirect } from "../../lib/entrypoint.js";
 import { parseDirectives } from "../lib/directive-parser.js";
 import {
   getAnalysisContext,
@@ -42,6 +42,56 @@ function loadPreamblePatterns(cfg) {
   return entries.map((e) => new RegExp(e.pattern, e.flags || ""));
 }
 
+function shouldStopGeneratedBlock(lines, idx) {
+  const ln = lines[idx].trim();
+  if (ln.startsWith("#") || ln.startsWith("<!-- {{")) return true;
+  if (ln === "" && idx + 1 < lines.length && lines[idx + 1].trim() === "") return true;
+  if (ln === "" && idx + 1 < lines.length && lines[idx + 1].trim().startsWith("#")) return true;
+  if (ln === "" && idx + 1 < lines.length && lines[idx + 1].trim().startsWith("<!-- @")) return true;
+  return false;
+}
+
+function findGeneratedBlockEnd(lines, startLine) {
+  let endLine = startLine;
+  while (endLine < lines.length) {
+    if (shouldStopGeneratedBlock(lines, endLine)) break;
+    endLine++;
+  }
+  return endLine;
+}
+
+async function mapWithConcurrency(items, concurrency, worker) {
+  const limit = Math.max(1, Number(concurrency) || 1);
+  const results = new Array(items.length);
+  await new Promise((resolve) => {
+    let running = 0;
+    let idx = 0;
+    function next() {
+      if (idx >= items.length && running === 0) {
+        resolve();
+        return;
+      }
+      while (running < limit && idx < items.length) {
+        const itemIdx = idx++;
+        running++;
+        Promise.resolve(worker(items[itemIdx], itemIdx))
+          .then((value) => {
+            results[itemIdx] = { value, error: null };
+          })
+          .catch((error) => {
+            results[itemIdx] = { value: null, error };
+          })
+          .finally(() => {
+            running--;
+            next();
+          });
+      }
+    }
+    next();
+  });
+  return results;
+}
+
 // ---------------------------------------------------------------------------
 // バッチモード：ファイル単位で全ディレクティブを1回の LLM 呼び出しで処理
 // ---------------------------------------------------------------------------
@@ -59,14 +109,7 @@ function stripFillContent(text) {
     result.push(lines[i]);
     if (/^<!--\s*\{\{text\s*(?:\[[^\]]*\])?\s*:/.test(lines[i].trim())) {
       i++;
-      while (i < lines.length) {
-        const ln = lines[i].trim();
-        if (ln.startsWith("#") || ln.startsWith("<!-- {{")) break;
-        if (ln === "" && i + 1 < lines.length && lines[i + 1].trim() === "") break;
-        if (ln === "" && i + 1 < lines.length && lines[i + 1].trim().startsWith("#")) break;
-        if (ln === "" && i + 1 < lines.length && lines[i + 1].trim().startsWith("<!-- @")) break;
-        i++;
-      }
+      i = findGeneratedBlockEnd(lines, i);
     } else {
       i++;
     }
@@ -246,39 +289,10 @@ async function processTemplate(text, analysis, fileName, agent, timeoutMs, cwd, 
 
   // Phase 2: Parallel LLM calls with concurrency control
   const maxConcurrency = concurrency || DEFAULT_CONCURRENCY;
-  const results = new Array(tasks.length);
-
-  await new Promise((resolve) => {
-    let running = 0;
-    let idx = 0;
-
-    function next() {
-      if (idx >= tasks.length && running === 0) {
-        resolve();
-        return;
-      }
-      while (running < maxConcurrency && idx < tasks.length) {
-        const taskIdx = idx++;
-        const { directive: d, prompt } = tasks[taskIdx];
-        running++;
-
-        logger.verbose(`Processing ${fileName}:${d.line + 1}: ${d.prompt.slice(0, 60)}...`);
-
-        callAgentAsync(agent, prompt, timeoutMs, cwd, preamblePatterns, fileSystemPrompt)
-          .then((generated) => {
-            results[taskIdx] = { generated, error: null };
-          })
-          .catch((err) => {
-            results[taskIdx] = { generated: null, error: err };
-          })
-          .finally(() => {
-            running--;
-            next();
-          });
-      }
-    }
-
-    next();
+  const results = await mapWithConcurrency(tasks, maxConcurrency, async ({ directive: d, prompt }) => {
+    logger.verbose(`Processing ${fileName}:${d.line + 1}: ${d.prompt.slice(0, 60)}...`);
+    const generated = await callAgentAsync(agent, prompt, timeoutMs, cwd, preamblePatterns, fileSystemPrompt);
+    return { generated };
   });
 
   // Phase 3: Apply results in reverse order (line-number shift prevention)
@@ -287,7 +301,8 @@ async function processTemplate(text, analysis, fileName, agent, timeoutMs, cwd, 
 
   for (let i = textFills.length - 1; i >= 0; i--) {
     const d = textFills[i];
-    const { generated: rawGenerated, error } = results[i];
+    const { value, error } = results[i] || {};
+    const rawGenerated = value?.generated || null;
 
     if (error) {
       logger.log(`ERROR calling agent for ${fileName}:${d.line + 1}:`);
@@ -318,16 +333,7 @@ async function processTemplate(text, analysis, fileName, agent, timeoutMs, cwd, 
     }
 
     // 既存出力の除去（ディレクティブ直後〜次のセクション境界まで）
-    let endLine = d.line + 1;
-    while (endLine < lines.length) {
-      const ln = lines[endLine].trim();
-      // 次の見出し、ディレクティブ、または空行+見出し/ディレクティブで停止
-      if (ln.startsWith("#") || ln.startsWith("<!-- {{")) break;
-      if (ln === "" && endLine + 1 < lines.length && lines[endLine + 1].trim() === "") break;
-      if (ln === "" && endLine + 1 < lines.length && lines[endLine + 1].trim().startsWith("#")) break;
-      if (ln === "" && endLine + 1 < lines.length && lines[endLine + 1].trim().startsWith("<!-- @")) break;
-      endLine++;
-    }
+    const endLine = findGeneratedBlockEnd(lines, d.line + 1);
 
     // ディレクティブ行を残して、既存内容を生成テキストに置換
     const newLines = [d.raw, "", generated, ""];
@@ -371,54 +377,32 @@ export async function textFillFromAnalysis(root, analysis, agentName) {
   let totalSkipped = 0;
 
   // Batch mode: file-level parallelism (1 call per file)
-  const fileResults = new Array(docsFiles.length);
   const errors = [];
-  await new Promise((resolve) => {
-    let running = 0;
-    let idx = 0;
-
-    function next() {
-      if (idx >= docsFiles.length && running === 0) {
-        resolve();
-        return;
-      }
-      while (running < concurrency && idx < docsFiles.length) {
-        const fileIdx = idx++;
-        const file = docsFiles[fileIdx];
-        running++;
-
-        const filePath = path.join(docsDir, file);
-        const original = fs.readFileSync(filePath, "utf8");
-
-        processTemplateFileBatch(original, analysis, file, agent, DEFAULT_TIMEOUT_MS, root, false, preamblePatterns, systemPrompt, undefined, undefined, lang)
-          .then((result) => {
-            if (result.filled === 0) {
-              const textFills = parseDirectives(original).filter((d) => d.type === "text");
-              if (textFills.length > 0) {
-                errors.push(file);
-                logger.log(`Batch returned 0 filled for ${file} (${textFills.length} directives). Re-run with --per-directive for retry.`);
-              }
-            }
-            fileResults[fileIdx] = { file, filePath, result };
-          })
-          .catch((err) => {
-            logger.log(`ERROR processing ${file}:`);
-            logger.log(err.message);
-            errors.push(file);
-            fileResults[fileIdx] = { file, filePath, result: null };
-          })
-          .finally(() => {
-            running--;
-            next();
-          });
-      }
-    }
-
-    next();
+  const fileResults = await mapWithConcurrency(docsFiles, concurrency, async (file) => {
+    const filePath = path.join(docsDir, file);
+    const original = fs.readFileSync(filePath, "utf8");
+    const result = await processTemplateFileBatch(original, analysis, file, agent, DEFAULT_TIMEOUT_MS, root, false, preamblePatterns, systemPrompt, undefined, undefined, lang);
+    return { file, filePath, original, result };
   });
 
-  for (const { file, filePath, result } of fileResults) {
+  for (let i = 0; i < fileResults.length; i++) {
+    const entry = fileResults[i];
+    if (entry?.error) {
+      const file = docsFiles[i];
+      logger.log(`ERROR processing ${file}:`);
+      logger.log(entry.error.message);
+      errors.push(file);
+      continue;
+    }
+    const { file, filePath, original, result } = entry.value;
     if (!result) continue;
+    if (result.filled === 0) {
+      const textFills = parseDirectives(original).filter((d) => d.type === "text");
+      if (textFills.length > 0) {
+        errors.push(file);
+        logger.log(`Batch returned 0 filled for ${file} (${textFills.length} directives). Re-run with --per-directive for retry.`);
+      }
+    }
     totalFilled += result.filled;
     totalSkipped += result.skipped;
 
@@ -523,57 +507,35 @@ async function main() {
   // File-level concurrency: batch mode can parallelize files (1 call each),
   // per-directive mode processes files sequentially to avoid concurrency² explosion
   const fileConcurrency = cli.perDirective ? 1 : concurrency;
-  const fileResults = new Array(fileEntries.length);
   const errors = [];
-  await new Promise((resolve) => {
-    let running = 0;
-    let idx = 0;
-
-    function next() {
-      if (idx >= fileEntries.length && running === 0) {
-        resolve();
-        return;
-      }
-      while (running < fileConcurrency && idx < fileEntries.length) {
-        const fileIdx = idx++;
-        const { file, original } = fileEntries[fileIdx];
-        running++;
-
-        logger.verbose(`start: ${file}`);
-
-        processFn(original, analysis, file, agent, cli.timeout, root, cli.dryRun, preamblePatterns, systemPrompt, cli.id || undefined, concurrency, lang)
-          .then((result) => {
-            if (!cli.perDirective && !cli.dryRun && result.filled === 0) {
-              const textFills = parseDirectives(original).filter((d) => d.type === "text");
-              if (textFills.length > 0) {
-                errors.push(file);
-                logger.log(`Batch returned 0 filled for ${file} (${textFills.length} directives). Re-run with --per-directive for retry.`);
-              }
-            }
-            fileResults[fileIdx] = result;
-            logger.verbose(`done: ${file}`);
-          })
-          .catch((err) => {
-            logger.log(`ERROR processing ${file}:`);
-            logger.log(err.message);
-            errors.push(file);
-            fileResults[fileIdx] = null;
-          })
-          .finally(() => {
-            running--;
-            next();
-          });
-      }
-    }
-
-    next();
+  const fileResults = await mapWithConcurrency(fileEntries, fileConcurrency, async (entry) => {
+    const { file, original } = entry;
+    logger.verbose(`start: ${file}`);
+    const result = await processFn(original, analysis, file, agent, cli.timeout, root, cli.dryRun, preamblePatterns, systemPrompt, cli.id || undefined, concurrency, lang);
+    logger.verbose(`done: ${file}`);
+    return { ...entry, result };
   });
 
   // Apply results
   for (let i = 0; i < fileEntries.length; i++) {
-    const { file, filePath } = fileEntries[i];
-    const result = fileResults[i];
+    const resultEntry = fileResults[i];
+    if (resultEntry?.error) {
+      const { file } = fileEntries[i];
+      logger.log(`ERROR processing ${file}:`);
+      logger.log(resultEntry.error.message);
+      errors.push(file);
+      continue;
+    }
+    const { file, filePath, original, result } = resultEntry.value;
     if (!result) continue;
+
+    if (!cli.perDirective && !cli.dryRun && result.filled === 0) {
+      const textFills = parseDirectives(original).filter((d) => d.type === "text");
+      if (textFills.length > 0) {
+        errors.push(file);
+        logger.log(`Batch returned 0 filled for ${file} (${textFills.length} directives). Re-run with --per-directive for retry.`);
+      }
+    }
 
     totalFilled += result.filled;
     totalSkipped += result.skipped;
@@ -598,11 +560,4 @@ async function main() {
 
 export { main, stripFillContent, countFilledInBatch, processTemplateFileBatch };
 
-const isDirectRun = process.argv[1] &&
-  path.resolve(process.argv[1]) === path.resolve(fileURLToPath(import.meta.url));
-if (isDirectRun) {
-  main().catch((e) => {
-    console.error(e?.stack || String(e));
-    process.exit(1);
-  });
-}
+runIfDirect(import.meta.url, main);

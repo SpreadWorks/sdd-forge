@@ -16,7 +16,7 @@ import path from "path";
 import readline from "readline";
 import { execFile } from "child_process";
 import { stdout as output } from "process";
-import { fileURLToPath } from "url";
+import { runIfDirect } from "../../lib/entrypoint.js";
 import { populateFromAnalysis } from "./data.js";
 import { textFillFromAnalysis } from "./text.js";
 import { PKG_DIR, repoRoot, parseArgs } from "../../lib/cli.js";
@@ -546,11 +546,4 @@ async function main() {
 
 export { main };
 
-const isDirectRun = process.argv[1] &&
-  path.resolve(process.argv[1]) === path.resolve(fileURLToPath(import.meta.url));
-if (isDirectRun) {
-  main().catch((e) => {
-    console.error(e?.stack || String(e));
-    process.exit(1);
-  });
-}
+runIfDirect(import.meta.url, main);

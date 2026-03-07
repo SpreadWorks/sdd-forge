@@ -12,7 +12,7 @@
 
 import fs from "fs";
 import path from "path";
-import { fileURLToPath } from "url";
+import { runIfDirect } from "../../lib/entrypoint.js";
 import { parseDirectives } from "../lib/directive-parser.js";
 // RENDERERS は DataSource メソッドが直接レンダリングするため不要
 import { createResolver } from "../lib/resolver-factory.js";
@@ -210,8 +210,4 @@ async function main() {
 
 export { main };
 
-const isDirectRun = process.argv[1] &&
-  path.resolve(process.argv[1]) === path.resolve(fileURLToPath(import.meta.url));
-if (isDirectRun) {
-  main();
-}
+runIfDirect(import.meta.url, main);

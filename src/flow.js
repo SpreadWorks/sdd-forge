@@ -10,9 +10,9 @@
 
 import fs from "fs";
 import path from "path";
-import { fileURLToPath } from "url";
+import { runIfDirect } from "./lib/entrypoint.js";
 import { PKG_DIR, repoRoot, parseArgs, isInsideWorktree, getMainRepoPath } from "./lib/cli.js";
-import { loadUiLang, sddConfigPath, sddDir } from "./lib/config.js";
+import { loadUiLang, sddDir } from "./lib/config.js";
 import { runSync } from "./lib/process.js";
 import { saveFlowState } from "./lib/flow-state.js";
 import { createI18n } from "./lib/i18n.js";
@@ -83,6 +83,7 @@ function detectUserConfirmationIssue(specAbs) {
 
 function main() {
   const root = repoRoot(import.meta.url);
+  const t = createI18n(loadUiLang(root), { domain: "messages" });
   const cli = parseArgs(process.argv.slice(2), {
     flags: ["--no-branch", "--dry-run", "--worktree"],
     options: ["--request", "--title", "--spec", "--agent", "--max-runs", "--forge-mode"],
@@ -127,13 +128,6 @@ function main() {
     if (!s.ok) {
       process.exit(s.status);
     }
-    let uiLang = "en";
-    try {
-      const raw = JSON.parse(fs.readFileSync(sddConfigPath(root), "utf8"));
-      uiLang = raw.uiLang || "en";
-    } catch (_) { /* config optional */ }
-    const t = createI18n(uiLang, { domain: "messages" });
-
     specRel = parseCreatedSpecPath(s.out);
     if (!specRel) {
       specRel = fallbackLatestSpec(root);
@@ -217,8 +211,4 @@ function main() {
 
 export { main };
 
-const isDirectRun = process.argv[1] &&
-  path.resolve(process.argv[1]) === path.resolve(fileURLToPath(import.meta.url));
-if (isDirectRun) {
-  main();
-}
+runIfDirect(import.meta.url, main);

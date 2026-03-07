@@ -32,6 +32,16 @@ const args = process.argv.slice(2);
 const subCmd = args[0];
 const rest = args.slice(1);
 
+async function runCommandMain(mainFn, scriptPath, argv) {
+  const prevArgv = process.argv;
+  process.argv = [prevArgv[0], scriptPath, ...argv];
+  try {
+    await mainFn();
+  } finally {
+    process.argv = prevArgv;
+  }
+}
+
 // build: scan → init → data → text → readme pipeline
 if (subCmd === "build") {
   const scanPath     = path.join(PKG_DIR, "docs/commands/scan.js");
@@ -71,20 +81,17 @@ if (subCmd === "build") {
 
   // 1. scan (always runs — analysis.json is internal cache, not user-facing)
   progress.start("scan");
-  process.argv = [process.argv[0], scanPath];
-  await scanMain();
+  await runCommandMain(scanMain, scanPath, []);
   progress.stepDone();
 
   // 2. init
   progress.start("init");
-  process.argv = [process.argv[0], initPath, ...initArgs, ...dryRunArg];
-  await initMain();
+  await runCommandMain(initMain, initPath, [...initArgs, ...dryRunArg]);
   progress.stepDone();
 
   // 3. data
   progress.start("data");
-  process.argv = [process.argv[0], dataPath, ...dryRunArg];
-  await dataMain();
+  await runCommandMain(dataMain, dataPath, [...dryRunArg]);
   progress.stepDone();
 
   // 4. text
@@ -105,8 +112,7 @@ if (subCmd === "build") {
   }
 
   if (agentArgs.length > 0) {
-    process.argv = [process.argv[0], textPath, ...agentArgs, ...dryRunArg];
-    await textMain();
+    await runCommandMain(textMain, textPath, [...agentArgs, ...dryRunArg]);
   } else {
     progress.log("[text] WARN: no defaultAgent configured, skipping text generation.");
     progress.log("[text] Set 'defaultAgent' in config.json or use: sdd-forge text --agent <name>");
@@ -115,14 +121,12 @@ if (subCmd === "build") {
 
   // 5. readme
   progress.start("readme");
-  process.argv = [process.argv[0], readmePath, ...dryRunArg];
-  await readmeMain();
+  await runCommandMain(readmeMain, readmePath, [...dryRunArg]);
   progress.stepDone();
 
   // 6. agents
   progress.start("agents");
-  process.argv = [process.argv[0], agentsPath, ...dryRunArg];
-  await agentsMain();
+  await runCommandMain(agentsMain, agentsPath, [...dryRunArg]);
   progress.stepDone();
 
   // 7. Multi-language: generate non-default languages
@@ -145,8 +149,7 @@ if (subCmd === "build") {
       const translatePath = path.join(PKG_DIR, "docs/commands/translate.js");
       const { main: translateMain } = await import(translatePath);
       progress.log(`[build] Translating to: ${nonDefaultLangs.join(", ")}`);
-      process.argv = [process.argv[0], translatePath, ...dryRunArg];
-      await translateMain();
+      await runCommandMain(translateMain, translatePath, [...dryRunArg]);
     } else {
       // Generate mode: run init → data → text → readme for each non-default language
       for (const lang of nonDefaultLangs) {
@@ -154,35 +157,29 @@ if (subCmd === "build") {
         progress.log(`[build] Generating ${lang}...`);
 
         // init for this language
-        process.argv = [process.argv[0], initPath, "--lang", lang, "--docs-dir", langDocsDir, ...initArgs, ...dryRunArg];
-        await initMain();
+        await runCommandMain(initMain, initPath, ["--lang", lang, "--docs-dir", langDocsDir, ...initArgs, ...dryRunArg]);
 
         // data for this language
-        process.argv = [process.argv[0], dataPath, "--docs-dir", langDocsDir, ...dryRunArg];
-        await dataMain();
+        await runCommandMain(dataMain, dataPath, ["--docs-dir", langDocsDir, ...dryRunArg]);
 
         // text for this language
         if (agentArgs.length > 0) {
-          process.argv = [process.argv[0], textPath, "--lang", lang, "--docs-dir", langDocsDir, ...agentArgs, ...dryRunArg];
-          await textMain();
+          await runCommandMain(textMain, textPath, ["--lang", lang, "--docs-dir", langDocsDir, ...agentArgs, ...dryRunArg]);
         }
 
         // readme for this language
         const langReadmePath = path.join(langDocsDir, "README.md");
-        process.argv = [process.argv[0], readmePath, "--lang", lang, "--output", langReadmePath, ...dryRunArg];
-        await readmeMain();
+        await runCommandMain(readmeMain, readmePath, ["--lang", lang, "--output", langReadmePath, ...dryRunArg]);
       }
     }
 
     // Resolve lang.links across all files (default + non-default)
     progress.log("[build] Resolving lang.links...");
-    process.argv = [process.argv[0], dataPath, ...dryRunArg];
-    await dataMain();
+    await runCommandMain(dataMain, dataPath, [...dryRunArg]);
     for (const lang of nonDefaultLangs) {
       const langDocsDir = path.join(docsDir, lang);
       if (fs.existsSync(langDocsDir)) {
-        process.argv = [process.argv[0], dataPath, "--docs-dir", langDocsDir, ...dryRunArg];
-        await dataMain();
+        await runCommandMain(dataMain, dataPath, ["--docs-dir", langDocsDir, ...dryRunArg]);
       }
     }
   }

@@ -11,7 +11,7 @@
 
 import fs from "fs";
 import path from "path";
-import { fileURLToPath } from "url";
+import { runIfDirect } from "../../lib/entrypoint.js";
 import { repoRoot, parseArgs } from "../../lib/cli.js";
 import { loadConfig } from "../../lib/config.js";
 import { resolveOutputConfig } from "../../lib/types.js";
@@ -203,11 +203,4 @@ Options:
 
 export { main };
 
-const isDirectRun = process.argv[1] &&
-  path.resolve(process.argv[1]) === path.resolve(fileURLToPath(import.meta.url));
-if (isDirectRun) {
-  main().catch((e) => {
-    console.error(e?.stack || String(e));
-    process.exit(1);
-  });
-}
+runIfDirect(import.meta.url, main);

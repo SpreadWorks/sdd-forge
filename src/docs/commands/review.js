@@ -8,7 +8,7 @@
 
 import fs from "fs";
 import path from "path";
-import { fileURLToPath } from "url";
+import { runIfDirect } from "../../lib/entrypoint.js";
 import { repoRoot, parseArgs } from "../../lib/cli.js";
 import { loadUiLang, sddConfigPath, sddOutputDir } from "../../lib/config.js";
 import { createI18n } from "../../lib/i18n.js";
@@ -180,8 +180,4 @@ function main() {
 
 export { main };
 
-const isDirectRun = process.argv[1] &&
-  path.resolve(process.argv[1]) === path.resolve(fileURLToPath(import.meta.url));
-if (isDirectRun) {
-  main();
-}
+runIfDirect(import.meta.url, main);

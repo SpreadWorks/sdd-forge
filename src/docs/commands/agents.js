@@ -9,7 +9,7 @@
 
 import fs from "fs";
 import path from "path";
-import { fileURLToPath } from "url";
+import { runIfDirect } from "../../lib/entrypoint.js";
 import { PKG_DIR, sourceRoot, repoRoot, parseArgs } from "../../lib/cli.js";
 import { loadJsonFile, loadUiLang, sddConfigPath, sddOutputDir, resolveProjectContext } from "../../lib/config.js";
 import { callAgent, loadAgentConfig } from "../../lib/agent.js";
@@ -244,8 +244,4 @@ async function main() {
 
 export { main };
 
-const isDirectRun = process.argv[1] &&
-  path.resolve(process.argv[1]) === path.resolve(fileURLToPath(import.meta.url));
-if (isDirectRun) {
-  main().catch((err) => { console.error(`Error: ${err.message}`); process.exit(1); });
-}
+runIfDirect(import.meta.url, main);
