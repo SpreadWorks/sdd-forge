@@ -10,7 +10,9 @@ import os from "os";
 import path from "path";
 import { execFileSync, spawn } from "child_process";
 
-const DEFAULT_AGENT_TIMEOUT_MS = 120000;
+export const DEFAULT_AGENT_TIMEOUT_MS = 120000;
+export const LONG_AGENT_TIMEOUT_MS = 300000;
+export const MID_AGENT_TIMEOUT_MS = 180000;
 
 /**
  * Call an AI agent with a prompt and return the response.
@@ -201,6 +203,26 @@ export function callAgentAsync(agent, prompt, timeoutMs, cwd, options) {
       reject(err);
     });
   });
+}
+
+/**
+ * Load agent config from SddConfig by provider name.
+ *
+ * @param {Object} cfg       - SddConfig object
+ * @param {string} [agentName] - Agent name override (defaults to cfg.defaultAgent)
+ * @returns {Object} Agent config object
+ * @throws {Error} If no agent is configured or provider is unknown
+ */
+export function loadAgentConfig(cfg, agentName) {
+  const providerKey = agentName || cfg.defaultAgent;
+  if (!providerKey) {
+    throw new Error("No default agent configured. Set 'defaultAgent' in config.json or run 'sdd-forge setup'.");
+  }
+  const provider = cfg.providers?.[providerKey];
+  if (!provider) {
+    throw new Error(`Unknown agent provider: ${providerKey}. Available: ${Object.keys(cfg.providers || {}).join(", ")}`);
+  }
+  return provider;
 }
 
 /**

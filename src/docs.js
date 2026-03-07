@@ -6,10 +6,9 @@
  */
 
 import fs from "fs";
-import { fileURLToPath } from "url";
 import path from "path";
-
-const PKG_DIR = path.resolve(path.dirname(fileURLToPath(import.meta.url)));
+import { PKG_DIR } from "./lib/cli.js";
+import { sddConfigPath } from "./lib/config.js";
 
 /** Subcommand → script mapping */
 const SCRIPTS = {
@@ -94,7 +93,7 @@ if (subCmd === "build") {
   const workRoot = process.env.SDD_WORK_ROOT || process.cwd();
   let agentArgs = [];
   try {
-    const cfg = loadJsonFile(path.join(workRoot, ".sdd-forge", "config.json"));
+    const cfg = loadJsonFile(sddConfigPath(workRoot));
     const agentName = otherArgs.includes("--agent")
       ? otherArgs[otherArgs.indexOf("--agent") + 1]
       : cfg.defaultAgent;
@@ -129,7 +128,7 @@ if (subCmd === "build") {
   // 7. Multi-language: generate non-default languages
   let cfg;
   try {
-    cfg = loadJsonFile(path.join(workRoot, ".sdd-forge", "config.json"));
+    cfg = loadJsonFile(sddConfigPath(workRoot));
   } catch (_) {
     cfg = {};
   }

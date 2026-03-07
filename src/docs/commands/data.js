@@ -17,7 +17,7 @@ import { parseDirectives } from "../lib/directive-parser.js";
 // RENDERERS は DataSource メソッドが直接レンダリングするため不要
 import { createResolver } from "../lib/resolver-factory.js";
 import { repoRoot, parseArgs } from "../../lib/cli.js";
-import { loadConfig } from "../../lib/config.js";
+import { loadConfig, loadUiLang, sddConfigPath, sddOutputDir } from "../../lib/config.js";
 import { resolveType } from "../../lib/types.js";
 import { createLogger } from "../../lib/progress.js";
 import { createI18n } from "../../lib/i18n.js";
@@ -127,9 +127,7 @@ async function main() {
     defaults: { dryRun: false, stdout: false, docsDir: "" },
   });
   if (cli.help) {
-    let uiLang = "en";
-    try { uiLang = JSON.parse(fs.readFileSync(path.join(repoRoot(import.meta.url), ".sdd-forge", "config.json"), "utf8")).uiLang || "en"; } catch (_) {}
-    const tu = createI18n(uiLang);
+    const tu = createI18n(loadUiLang(repoRoot(import.meta.url)));
     const h = tu.raw("help.cmdHelp.data");
     const o = h.options;
     console.log([h.usage, "", h.desc, "", "Options:", `  ${o.dryRun}`, `  ${o.stdout}`, `  ${o.help}`].join("\n"));
@@ -138,14 +136,9 @@ async function main() {
 
   const root = repoRoot(import.meta.url);
 
-  let uiLang = "en";
-  try {
-    const raw = JSON.parse(fs.readFileSync(path.join(root, ".sdd-forge", "config.json"), "utf8"));
-    uiLang = raw.uiLang || "en";
-  } catch (_) { /* config read handled below */ }
-  const t = createI18n(uiLang, { domain: "messages" });
+  const t = createI18n(loadUiLang(root), { domain: "messages" });
 
-  const analysisPath = path.join(root, ".sdd-forge", "output", "analysis.json");
+  const analysisPath = path.join(sddOutputDir(root), "analysis.json");
 
   if (!fs.existsSync(analysisPath)) {
     logger.log(t("data.analysisNotFound", { path: analysisPath }));

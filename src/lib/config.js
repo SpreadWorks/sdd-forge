@@ -41,6 +41,44 @@ export function loadPackageField(root, field) {
 }
 
 // ---------------------------------------------------------------------------
+// .sdd-forge パスヘルパー
+// ---------------------------------------------------------------------------
+
+const SDD_DIR_NAME = ".sdd-forge";
+
+export function sddDir(root) {
+  return path.join(root, SDD_DIR_NAME);
+}
+
+export function sddConfigPath(root) {
+  return path.join(root, SDD_DIR_NAME, "config.json");
+}
+
+export function sddOutputDir(root) {
+  return path.join(root, SDD_DIR_NAME, "output");
+}
+
+export function sddDataDir(root) {
+  return path.join(root, SDD_DIR_NAME, "data");
+}
+
+/**
+ * .sdd-forge/config.json から uiLang を読み込む。
+ * ファイルが存在しないかパースに失敗した場合は "en" を返す。
+ *
+ * @param {string} root - リポジトリルート
+ * @returns {string}
+ */
+export function loadUiLang(root) {
+  try {
+    const raw = JSON.parse(fs.readFileSync(sddConfigPath(root), "utf8"));
+    return raw.uiLang || "en";
+  } catch (_) {
+    return "en";
+  }
+}
+
+// ---------------------------------------------------------------------------
 // SDD 設定管理
 // ---------------------------------------------------------------------------
 
@@ -51,7 +89,7 @@ export function loadPackageField(root, field) {
  * @returns {import("./types.js").SddConfig}
  */
 export function loadConfig(root) {
-  const raw = loadJsonFile(path.join(root, ".sdd-forge", "config.json"));
+  const raw = loadJsonFile(sddConfigPath(root));
   return validateConfig(raw);
 }
 
@@ -62,7 +100,7 @@ export function loadConfig(root) {
  * @returns {import("./types.js").SddContext}
  */
 export function loadContext(root) {
-  const ctxPath = path.join(root, ".sdd-forge", "context.json");
+  const ctxPath = path.join(sddDir(root), "context.json");
   if (!fs.existsSync(ctxPath)) return {};
   const raw = JSON.parse(fs.readFileSync(ctxPath, "utf8"));
   return validateContext(raw);
@@ -75,7 +113,7 @@ export function loadContext(root) {
  * @param {import("./types.js").SddContext} data - 書き込むデータ
  */
 export function saveContext(root, data) {
-  const ctxPath = path.join(root, ".sdd-forge", "context.json");
+  const ctxPath = path.join(sddDir(root), "context.json");
   const dir = path.dirname(ctxPath);
   if (!fs.existsSync(dir)) {
     fs.mkdirSync(dir, { recursive: true });
@@ -94,7 +132,7 @@ export function resolveProjectContext(root) {
   const ctx = loadContext(root);
   if (ctx.projectContext) return ctx.projectContext;
 
-  const cfgPath = path.join(root, ".sdd-forge", "config.json");
+  const cfgPath = sddConfigPath(root);
   if (fs.existsSync(cfgPath)) {
     try {
       const cfg = JSON.parse(fs.readFileSync(cfgPath, "utf8"));

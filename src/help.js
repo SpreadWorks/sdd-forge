@@ -9,9 +9,9 @@
 import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
+import { PKG_DIR } from "./lib/cli.js";
+import { loadUiLang } from "./lib/config.js";
 import { createI18n } from "./lib/i18n.js";
-
-const PKG_DIR = path.resolve(path.dirname(fileURLToPath(import.meta.url)));
 
 /** Command layout — name keys correspond to ui.json help.commands.* */
 const LAYOUT = [
@@ -52,18 +52,8 @@ function getVersion() {
   }
 }
 
-function detectUiLang() {
-  try {
-    const configPath = path.join(process.cwd(), ".sdd-forge", "config.json");
-    const raw = JSON.parse(fs.readFileSync(configPath, "utf8"));
-    return raw.uiLang || "en";
-  } catch (_) {
-    return "en";
-  }
-}
-
 function main() {
-  const lang = detectUiLang();
+  const lang = loadUiLang(process.cwd());
   const t = createI18n(lang, { domain: "ui" });
   const version = getVersion();
 

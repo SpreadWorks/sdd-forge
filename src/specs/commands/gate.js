@@ -9,6 +9,7 @@ import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
 import { repoRoot, parseArgs } from "../../lib/cli.js";
+import { loadUiLang, sddConfigPath } from "../../lib/config.js";
 import { createI18n } from "../../lib/i18n.js";
 
 /**
@@ -119,12 +120,7 @@ function main() {
     throw new Error(`spec not found: ${specPath}`);
   }
 
-  let uiLang = "en";
-  try {
-    const raw = JSON.parse(fs.readFileSync(path.join(root, ".sdd-forge", "config.json"), "utf8"));
-    uiLang = raw.uiLang || "en";
-  } catch (_) { /* config optional */ }
-  const t = createI18n(uiLang, { domain: "messages" });
+  const t = createI18n(loadUiLang(root), { domain: "messages" });
 
   const phase = cli.phase === "post" ? "post" : "pre";
   const text = fs.readFileSync(specPath, "utf8");

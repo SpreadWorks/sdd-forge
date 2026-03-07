@@ -10,30 +10,12 @@
 import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
-import { sourceRoot, repoRoot, parseArgs } from "../../lib/cli.js";
-import { loadJsonFile, resolveProjectContext } from "../../lib/config.js";
-import { callAgent } from "../../lib/agent.js";
+import { PKG_DIR, sourceRoot, repoRoot, parseArgs } from "../../lib/cli.js";
+import { loadJsonFile, loadUiLang, sddConfigPath, sddOutputDir, resolveProjectContext } from "../../lib/config.js";
+import { callAgent, loadAgentConfig } from "../../lib/agent.js";
 import { createI18n } from "../../lib/i18n.js";
 import { createResolver } from "../lib/resolver-factory.js";
 import { parseDirectives } from "../lib/directive-parser.js";
-
-const PKG_DIR = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..", "..");
-
-// ---------------------------------------------------------------------------
-// AI エージェント呼び出し
-// ---------------------------------------------------------------------------
-
-function loadAgentConfig(cfg, agentName) {
-  const providerKey = agentName || cfg.defaultAgent;
-  if (!providerKey) {
-    throw new Error("No default agent configured. Set 'defaultAgent' in config.json or run 'sdd-forge setup'.");
-  }
-  const provider = cfg.providers?.[providerKey];
-  if (!provider) {
-    throw new Error(`Unknown agent provider: ${providerKey}. Available: ${Object.keys(cfg.providers || {}).join(", ")}`);
-  }
-  return provider;
-}
 
 // ---------------------------------------------------------------------------
 // AI プロンプト構築
@@ -161,9 +143,7 @@ async function main() {
   });
 
   if (opts.help) {
-    let uiLang = "en";
-    try { uiLang = JSON.parse(fs.readFileSync(path.join(repoRoot(), ".sdd-forge", "config.json"), "utf8")).uiLang || "en"; } catch (_) {}
-    const tu = createI18n(uiLang);
+    const tu = createI18n(loadUiLang(repoRoot()));
     const h = tu.raw("help.cmdHelp.agents");
     const o = h.options;
     console.log([
@@ -178,7 +158,7 @@ async function main() {
 
   let config = {};
   try {
-    config = loadJsonFile(path.join(workRoot, ".sdd-forge", "config.json"));
+    config = loadJsonFile(sddConfigPath(workRoot));
   } catch (_) {}
 
   const lang = config.lang || config.output?.default || "en";
@@ -191,7 +171,7 @@ async function main() {
   }
 
   // Load analysis
-  const outputDir = path.join(workRoot, ".sdd-forge", "output");
+  const outputDir = sddOutputDir(workRoot);
   const analysisPath = path.join(outputDir, "analysis.json");
   let analysis;
   try {

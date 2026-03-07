@@ -14,29 +14,24 @@ import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
 import { parseDirectives } from "../lib/directive-parser.js";
+import {
+  getAnalysisContext,
+  buildTextSystemPrompt,
+  buildPrompt,
+  buildFileSystemPrompt,
+  buildBatchPrompt,
+  formatLimitRule,
+} from "../lib/text-prompts.js";
 import { repoRoot, parseArgs } from "../../lib/cli.js";
-import { loadConfig, resolveProjectContext } from "../../lib/config.js";
+import { loadConfig, loadUiLang, sddOutputDir, resolveProjectContext } from "../../lib/config.js";
 import { createLogger } from "../../lib/progress.js";
-import { callAgent as callAgentBase, callAgentAsync as callAgentAsyncBase, ensureAgentWorkDir } from "../../lib/agent.js";
+import { callAgent as callAgentBase, callAgentAsync as callAgentAsyncBase, ensureAgentWorkDir, loadAgentConfig, MID_AGENT_TIMEOUT_MS } from "../../lib/agent.js";
 import { createI18n } from "../../lib/i18n.js";
 
 const logger = createLogger("text");
 
 const DEFAULT_CONCURRENCY = 5;
-const DEFAULT_TIMEOUT_MS = 180000;
-
-// ---------------------------------------------------------------------------
-// 設定読み込み
-// ---------------------------------------------------------------------------
-
-function loadAgentConfig(cfg, agentName) {
-  const providerKey = agentName || cfg.defaultAgent;
-  const provider = cfg.providers?.[providerKey];
-  if (!provider) {
-    throw new Error(`Unknown agent provider: ${providerKey}. Available: ${Object.keys(cfg.providers || {}).join(", ")}`);
-  }
-  return provider;
-}
+const DEFAULT_TIMEOUT_MS = MID_AGENT_TIMEOUT_MS;
 
 /**
  * config の textFill.preamblePatterns を RegExp 配列に変換する。
@@ -45,224 +40,6 @@ function loadPreamblePatterns(cfg) {
   const entries = cfg.textFill?.preamblePatterns;
   if (!Array.isArray(entries) || entries.length === 0) return [];
   return entries.map((e) => new RegExp(e.pattern, e.flags || ""));
-}
-
-// ---------------------------------------------------------------------------
-// documentStyle → プロンプトヘッダー生成
-// ---------------------------------------------------------------------------
-
-/**
- * documentStyle と projectContext からプロンプトヘッダー行を生成する。
- *
- * @param {string} projectContext - プロジェクト概要テキスト
- * @param {import("../lib/types.js").DocumentStyle|undefined} documentStyle
- * @param {string} lang - "ja" | "en"
- * @returns {string[]} ヘッダー行配列
- */
-function buildPromptHeader(projectContext, documentStyle, lang) {
-  const t = createI18n(lang || "ja", { domain: "prompts" });
-  const header = [];
-  if (documentStyle) {
-    const purposes = t.raw("text.purposes") || {};
-    const tones = t.raw("text.tones") || {};
-    const purposeLabel = purposes[documentStyle.purpose] || documentStyle.purpose;
-    header.push(t("text.roleTemplate", { purpose: purposeLabel }));
-    if (documentStyle.tone) {
-      header.push(tones[documentStyle.tone] || documentStyle.tone);
-    }
-    if (documentStyle.customInstruction) {
-      header.push("", documentStyle.customInstruction);
-    }
-  } else {
-    header.push(t("text.defaultRole"));
-  }
-  if (projectContext) {
-    header.push("", t("text.projectInfoHeading"), projectContext);
-  }
-  return header;
-}
-
-// ---------------------------------------------------------------------------
-// 解析データからファイル別コンテキストを動的に選択
-// ---------------------------------------------------------------------------
-
-/**
- * {{data}} カテゴリ名 → analysis.json の必要セクションへのマッピング。
- * ファイル内の {{data}} ディレクティブのカテゴリから、{{text}} に渡す
- * コンテキストデータを自動判定する。
- */
-const CATEGORY_TO_SECTIONS = {
-  // controllers.*
-  controllers:             (a) => ({ controllers: a.controllers }),
-  "controllers.deps":      (a) => ({ controllers: a.controllers }),
-  "controllers.csv":       (a) => ({ controllers: a.controllers }),
-  "controllers.actions":   (a) => ({ titlesGraphMapping: a.extras?.titlesGraphMapping }),
-  // tables / models
-  tables:                  (a) => ({ models: a.models }),
-  "tables.fk":             (a) => ({ models: a.models }),
-  "tables.sync":           (a) => ({ models: a.models }),
-  "models.logic":          (a) => ({ logicClasses: a.extras?.logicClasses }),
-  "models.logic.methods":  (a) => ({ logicClasses: a.extras?.logicClasses }),
-  "models.relations":      (a) => ({ models: a.models }),
-  "models.er":             (a) => ({ models: a.models }),
-  // shells
-  shells:                  (a) => ({ shells: a.shells }),
-  "shells.deps":           (a) => ({ shells: a.shells }),
-  "shells.flow":           (a) => ({ shellDetails: a.extras?.shellDetails }),
-  // config
-  "config.stack":          ()  => ({}),
-  "config.composer":       (a) => ({ composerDeps: a.extras?.composerDeps }),
-  "config.assets":         (a) => ({ assets: a.extras?.assets }),
-  "config.bootstrap":      (a) => ({ bootstrap: a.extras?.bootstrap }),
-  "config.db":             (a) => ({ bootstrap: a.extras?.bootstrap }),
-  "config.constants":      (a) => ({ constants: a.extras?.constants }),
-  "config.constants.select":(a) => ({ constants: a.extras?.constants }),
-  "config.auth":           (a) => ({ appController: a.extras?.appController }),
-  "config.acl":            (a) => ({ acl: a.extras?.acl }),
-  // views
-  "views.helpers":         (a) => ({ helpers: a.extras?.helpers }),
-  "views.layouts":         (a) => ({ layouts: a.extras?.layouts }),
-  "views.elements":        (a) => ({ elements: a.extras?.elements }),
-  "views.components":      (a) => ({ permissionComponent: a.extras?.permissionComponent }),
-  // libs
-  libs:                    (a) => ({ libraries: a.extras?.libraries }),
-  "libs.errors":           (a) => ({ libraries: a.extras?.libraries }),
-  "libs.behaviors":        (a) => ({ behaviors: a.extras?.behaviors }),
-  "libs.sql":              (a) => ({ sqlFiles: a.extras?.sqlFiles }),
-  "libs.appmodel":         (a) => ({ appModel: a.extras?.appModel }),
-  // email / tests / docker
-  email:                   (a) => ({ emailNotifications: a.extras?.emailNotifications }),
-  tests:                   (a) => ({ testStructure: a.extras?.testStructure }),
-  docker:                  ()  => ({}),
-};
-
-/**
- * ファイル内の全ディレクティブから、{{text}} に必要なコンテキストデータを
- * 動的に収集する。{{data}} のカテゴリ名をキーにして analysis.json の
- * 対応セクションをマージする。
- */
-function getAnalysisContext(analysis, directives) {
-  if (!analysis) return {};
-  const data = {};
-
-  // サマリーは常に含める（章の概要生成等に必要）
-  if (analysis.controllers?.summary) data.controllersSummary = analysis.controllers.summary;
-  if (analysis.models?.summary) data.modelsSummary = analysis.models.summary;
-  if (analysis.shells?.summary) data.shellsSummary = analysis.shells.summary;
-  if (analysis.routes?.summary) data.routesSummary = analysis.routes.summary;
-
-  // {{data}} カテゴリから必要なセクションを収集
-  const dataFills = directives.filter((d) => d.type === "data");
-  for (const d of dataFills) {
-    const extractor = CATEGORY_TO_SECTIONS[d.category];
-    if (extractor) {
-      const section = extractor(analysis);
-      for (const [key, value] of Object.entries(section)) {
-        if (value != null && !(key in data)) {
-          data[key] = value;
-        }
-      }
-    }
-  }
-
-  // extras 全キーのサマリーも含める（{{text}} のプロンプトが任意の情報を参照できるように）
-  if (analysis.extras) {
-    for (const [key, value] of Object.entries(analysis.extras)) {
-      if (!(key in data) && value != null) {
-        // 大きなオブジェクトはサマリー化
-        if (Array.isArray(value)) {
-          data[key] = { _count: value.length, _sample: value.slice(0, 3) };
-        } else if (typeof value === "object") {
-          data[key] = value;
-        }
-      }
-    }
-  }
-
-  return data;
-}
-
-// ---------------------------------------------------------------------------
-// プロンプト構築
-// ---------------------------------------------------------------------------
-
-/**
- * ディレクティブの params から出力ルール文字列を生成する。
- * @param {Object} params - { maxLines?: number, maxChars?: number }
- * @returns {string} 出力ルール文字列
- */
-function formatLimitRule(params) {
-  const parts = [];
-  if (params?.maxLines) {
-    parts.push(`max ${params.maxLines} lines`);
-  }
-  if (params?.maxChars) {
-    parts.push(`max ${params.maxChars} chars`);
-  }
-  if (parts.length > 0) {
-    return `Concise and accurate (${parts.join(", ")})`;
-  }
-  return "Concise and accurate (3–15 lines)";
-}
-
-/**
- * システムプロンプトを構築する。
- * documentStyle + projectContext + 共通出力ルールを含む。
- * per-directive / batch 両モードで共有し、provider のプロンプトキャッシュを活用する。
- *
- * @param {string} projectContext
- * @param {import("../lib/types.js").DocumentStyle|undefined} documentStyle
- * @param {string} lang
- * @returns {string}
- */
-function buildTextSystemPrompt(projectContext, documentStyle, lang) {
-  const t = createI18n(lang || "ja", { domain: "prompts" });
-  const header = buildPromptHeader(projectContext, documentStyle, lang);
-  const outputRules = t.raw("text.outputRules") || [];
-  return [
-    ...header,
-    "",
-    t("text.instruction"),
-    "",
-    "## Output Rules (strict)",
-    ...outputRules.map((r) => `- ${r}`),
-  ].join("\n");
-}
-
-function buildPrompt(directive, fileName, lines) {
-  const directiveLine = directive.line;
-
-  // ±20行のコンテキストを抽出
-  const contextStart = Math.max(0, directiveLine - 20);
-  const contextEnd = Math.min(lines.length, directiveLine + 21);
-  const surroundingLines = lines.slice(contextStart, contextEnd).join("\n");
-
-  return [
-    "## Instructions",
-    directive.prompt,
-    "",
-    `- ${formatLimitRule(directive.params)}`,
-    "",
-    `## Insertion Context (${fileName})`,
-    surroundingLines,
-  ].join("\n");
-}
-
-/**
- * 解析データをシステムプロンプトに付与する。
- * 同一ファイル内の複数ディレクティブで system prompt を共有し、
- * API のプロンプトキャッシュを活用する。
- */
-function buildFileSystemPrompt(baseSystemPrompt, contextData, lang) {
-  if (!contextData || Object.keys(contextData).length === 0) {
-    return baseSystemPrompt;
-  }
-  const t = createI18n(lang || "ja", { domain: "prompts" });
-  const contextJson = JSON.stringify(contextData, null, 2);
-  const truncatedJson = contextJson.length > 8000
-    ? contextJson.slice(0, 8000) + "\n... (truncated)"
-    : contextJson;
-  return baseSystemPrompt + "\n\n" + t("text.analysisDataHeading") + "\n" + truncatedJson;
 }
 
 // ---------------------------------------------------------------------------
@@ -316,40 +93,6 @@ function countFilledInBatch(fileText) {
     }
   }
   return filled;
-}
-
-/**
- * ファイル全体を1つのプロンプトにまとめるバッチプロンプトを構築する。
- * ±20行ウィンドウ・解析データは不要（ファイル全体が文脈になる）。
- */
-function buildBatchPrompt(fileName, text, textFills, lang) {
-  const t = createI18n(lang || "ja", { domain: "prompts" });
-  const batchRules = t.raw("text.batchRules") || [];
-
-  // ディレクティブごとの個別制限ルールがあれば列挙
-  const perDirectiveRules = [];
-  for (const d of textFills) {
-    if (d.params && (d.params.maxLines || d.params.maxChars)) {
-      perDirectiveRules.push(`- "${d.prompt.slice(0, 40)}..." → ${formatLimitRule(d.params)}`);
-    }
-  }
-  const defaultRule = perDirectiveRules.length === textFills.length
-    ? "" // 全ディレクティブに個別指定があればデフォルト不要
-    : `- ${t("text.batchDefaultLimit")}`;
-
-  return [
-    t("text.batchInstruction", { fileName }),
-    "",
-    "## Output Rules (strict)",
-    ...batchRules.map((r) => `- ${r}`),
-    ...(defaultRule ? [defaultRule] : []),
-    ...perDirectiveRules,
-    `- ${t("text.batchNoHr")}`,
-    "",
-    `## ${fileName}`,
-    "",
-    text,
-  ].join("\n");
 }
 
 /**
@@ -703,9 +446,7 @@ async function main() {
   });
   cli.timeout = Number(cli.timeout) || DEFAULT_TIMEOUT_MS;
   if (cli.help) {
-    let uiLang = "en";
-    try { uiLang = JSON.parse(fs.readFileSync(path.join(repoRoot(import.meta.url), ".sdd-forge", "config.json"), "utf8")).uiLang || "en"; } catch (_) {}
-    const tu = createI18n(uiLang);
+    const tu = createI18n(loadUiLang(repoRoot(import.meta.url)));
     const h = tu.raw("help.cmdHelp.text");
     const o = h.options;
     console.log([
@@ -724,7 +465,7 @@ async function main() {
   }
 
   const root = repoRoot(import.meta.url);
-  const analysisPath = path.join(root, ".sdd-forge", "output", "analysis.json");
+  const analysisPath = path.join(sddOutputDir(root), "analysis.json");
 
   let analysis = {};
   if (fs.existsSync(analysisPath)) {

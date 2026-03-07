@@ -5,10 +5,8 @@
  * Spec dispatcher. Routes spec-related subcommands.
  */
 
-import { fileURLToPath } from "url";
 import path from "path";
-
-const PKG_DIR = path.resolve(path.dirname(fileURLToPath(import.meta.url)));
+import { PKG_DIR } from "./lib/cli.js";
 
 const SCRIPTS = {
   spec: "specs/commands/init.js",

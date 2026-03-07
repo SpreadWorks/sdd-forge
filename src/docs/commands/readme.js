@@ -13,7 +13,7 @@ import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
 import { repoRoot, parseArgs } from "../../lib/cli.js";
-import { loadJsonFile } from "../../lib/config.js";
+import { loadJsonFile, sddConfigPath } from "../../lib/config.js";
 import { resolveType } from "../../lib/types.js";
 import { resolveChain, resolveChainWithFallback, mergeFile } from "../lib/template-merger.js";
 import { createResolver } from "../lib/resolver-factory.js";
@@ -69,7 +69,7 @@ function resolveDataDirectives(text, resolveFn) {
 
 async function main() {
   const root = repoRoot(import.meta.url);
-  const sddConfig = loadJsonFile(path.join(root, ".sdd-forge", "config.json"));
+  const sddConfig = loadJsonFile(sddConfigPath(root));
 
   const cli = parseArgs(process.argv.slice(2), {
     flags: ["--dry-run"],

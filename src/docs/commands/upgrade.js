@@ -15,12 +15,11 @@
 import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
-import { repoRoot, parseArgs } from "../../lib/cli.js";
+import { PKG_DIR, repoRoot, parseArgs } from "../../lib/cli.js";
 import { loadConfig } from "../../lib/config.js";
 import { createI18n } from "../../lib/i18n.js";
 import { PRESETS_DIR } from "../../lib/presets.js";
 
-const PKG_DIR = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 
 // ---------------------------------------------------------------------------
 // CLI args

@@ -10,15 +10,9 @@ import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
 import { repoRoot, parseArgs } from "../../lib/cli.js";
+import { loadUiLang, sddConfigPath, sddOutputDir } from "../../lib/config.js";
 import { createI18n } from "../../lib/i18n.js";
 import { resolveOutputConfig } from "../../lib/types.js";
-
-function loadUiLang(root) {
-  try {
-    const raw = JSON.parse(fs.readFileSync(path.join(root, ".sdd-forge", "config.json"), "utf8"));
-    return raw.uiLang || "en";
-  } catch (_) { return "en"; }
-}
 
 function main() {
   const args = process.argv.slice(2);
@@ -117,7 +111,7 @@ function main() {
   }
 
   // analysis.json existence and freshness check (WARN)
-  const analysisPath = path.join(workRoot, ".sdd-forge", "output", "analysis.json");
+  const analysisPath = path.join(sddOutputDir(workRoot), "analysis.json");
   if (!fs.existsSync(analysisPath)) {
     console.log(t("review.analysisNotFound"));
   } else {
@@ -139,7 +133,7 @@ function main() {
 
   // Multi-language: check non-default language directories
   try {
-    const cfgRaw = JSON.parse(fs.readFileSync(path.join(workRoot, ".sdd-forge", "config.json"), "utf8"));
+    const cfgRaw = JSON.parse(fs.readFileSync(sddConfigPath(workRoot), "utf8"));
     const outputCfg = resolveOutputConfig(cfgRaw);
     if (outputCfg.isMultiLang) {
       const docsBase = path.join(workRoot, "docs");

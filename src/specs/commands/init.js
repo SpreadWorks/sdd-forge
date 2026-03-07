@@ -13,6 +13,7 @@ import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
 import { repoRoot, parseArgs, isInsideWorktree } from "../../lib/cli.js";
+import { loadUiLang, sddConfigPath, sddDir } from "../../lib/config.js";
 import { runSync } from "../../lib/process.js";
 import { createI18n } from "../../lib/i18n.js";
 
@@ -169,9 +170,7 @@ function main() {
     defaults: { title: "", base: "", dryRun: false, allowDirty: false, noBranch: false, worktree: false },
   });
   if (opts.help) {
-    let uiLang = "en";
-    try { uiLang = JSON.parse(fs.readFileSync(path.join(repoRoot(import.meta.url), ".sdd-forge", "config.json"), "utf8")).uiLang || "en"; } catch (_) {}
-    const tu = createI18n(uiLang);
+    const tu = createI18n(loadUiLang(repoRoot(import.meta.url)));
     const h = tu.raw("help.cmdHelp.spec");
     const o = h.options;
     console.log(
@@ -187,7 +186,7 @@ function main() {
     throw new Error("--title is required");
   }
   const root = repoRoot(import.meta.url);
-  const configPath = path.join(root, ".sdd-forge", "config.json");
+  const configPath = sddConfigPath(root);
   const sddConfig = fs.existsSync(configPath) ? JSON.parse(fs.readFileSync(configPath, "utf8")) : null;
   const lang = sddConfig?.lang || "ja";
   opts.base = opts.base || detectBaseBranch(root);
@@ -211,7 +210,7 @@ function main() {
 
   // Determine where spec files live
   const worktreePath = useWorktree
-    ? path.join(root, ".sdd-forge", "worktree", branchName.replace(/\//g, "-"))
+    ? path.join(sddDir(root), "worktree", branchName.replace(/\//g, "-"))
     : null;
   const specRoot = useWorktree ? worktreePath : root;
   const specDir = path.join(specRoot, "specs", specDirName);
@@ -247,7 +246,7 @@ function main() {
 
   // Helper: write current-spec state
   function writeCurrentSpec(extra) {
-    const currentSpecPath = path.join(root, ".sdd-forge", "current-spec");
+    const currentSpecPath = path.join(sddDir(root), "current-spec");
     const state = {
       spec: `specs/${specDirName}/spec.md`,
       baseBranch: opts.base,

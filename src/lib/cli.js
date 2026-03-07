@@ -10,6 +10,12 @@ import { execFileSync } from "child_process";
 import { fileURLToPath } from "url";
 
 /**
+ * sdd-forge パッケージの src/ ディレクトリの絶対パス。
+ * lib/ から1階層上が src/ であることを利用して解決する。
+ */
+export const PKG_DIR = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
+
+/**
  * 作業ルートを返す。
  * SDD_WORK_ROOT 環境変数が設定されている場合はそれを使用する（プロジェクトモード）。
  * それ以外は git rev-parse でリポジトリルートを取得し、失敗時は process.cwd() を返す。

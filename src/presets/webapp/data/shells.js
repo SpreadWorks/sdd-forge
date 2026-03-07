@@ -40,6 +40,16 @@ export default class ShellsSource extends Scannable(DataSource) {
     };
   }
 
+  summarize(data) {
+    return {
+      ...data.summary,
+      items: data.shells.map((x) => ({
+        className: x.className,
+        methods: x.publicMethods,
+      })),
+    };
+  }
+
   /** Shell/command list. */
   list(analysis, labels) {
     const items = analysis.shells?.shells || [];

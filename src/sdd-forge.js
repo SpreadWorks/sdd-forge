@@ -14,8 +14,7 @@
 
 import { fileURLToPath } from "url";
 import path from "path";
-
-const PKG_DIR = path.resolve(path.dirname(fileURLToPath(import.meta.url)));
+import { PKG_DIR } from "./lib/cli.js";
 
 // --project flag extraction
 const rawArgs = process.argv.slice(2);

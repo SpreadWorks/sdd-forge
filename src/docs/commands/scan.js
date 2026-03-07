@@ -11,9 +11,10 @@ import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
 import { repoRoot, sourceRoot, parseArgs } from "../../lib/cli.js";
-import { loadConfig } from "../../lib/config.js";
+import { loadConfig, loadUiLang, sddDataDir, sddOutputDir } from "../../lib/config.js";
 import { resolveType } from "../../lib/types.js";
 import { analyzeExtras } from "../lib/scanner.js";
+import { loadDataSources } from "../lib/data-source-loader.js";
 import { presetByLeaf } from "../../lib/presets.js";
 import { createLogger } from "../../lib/progress.js";
 import { createI18n } from "../../lib/i18n.js";
@@ -42,85 +43,39 @@ function printHelp(t) {
   );
 }
 
-// ---------------------------------------------------------------------------
-// DataSource ローダ（scan 用）
-// ---------------------------------------------------------------------------
-
-/**
- * data/ ディレクトリから DataSource クラスをロードし、
- * scan() メソッドを持つもののみインスタンス化して返す。
- *
- * @param {string} dataDir - data/ ディレクトリの絶対パス
- * @param {Map<string, Object>} existing - 親 preset から継承済みの Map
- * @returns {Promise<Map<string, Object>>} name → DataSource instance
- */
-async function loadScanSources(dataDir, existing) {
-  const sources = new Map(existing || []);
-  if (!fs.existsSync(dataDir)) return sources;
-
-  const files = fs.readdirSync(dataDir).filter((f) => f.endsWith(".js"));
-  for (const file of files) {
-    const name = path.basename(file, ".js");
-    try {
-      const mod = await import(path.join(dataDir, file));
-      const Source = mod.default;
-      if (typeof Source === "function") {
-        const instance = new Source();
-        if (typeof instance.scan === "function") {
-          sources.set(name, instance);
-        }
-      }
-    } catch (err) {
-      logger.verbose(`failed to load DataSource ${name}: ${err.message}`);
-    }
-  }
-  return sources;
+/** Load DataSources that have a scan() method */
+function loadScanSources(dataDir, existing) {
+  return loadDataSources(dataDir, {
+    existing,
+    onInstance: (instance) => typeof instance.scan === "function",
+  });
 }
 
 // ---------------------------------------------------------------------------
 // サマリー構築
 // ---------------------------------------------------------------------------
 
-const SUMMARY_BUILDERS = {
-  controllers(c) {
-    return {
-      ...c.summary,
-      top: c.controllers.slice(0, 10).map((x) => ({
-        className: x.className,
-        actions: x.actions.slice(0, 8),
-      })),
-    };
-  },
-  models(m) {
-    return { ...m.summary };
-  },
-  shells(sh) {
-    return {
-      ...sh.summary,
-      items: sh.shells.map((x) => ({
-        className: x.className,
-        methods: x.publicMethods,
-      })),
-    };
-  },
-  routes(r) {
-    return { ...r.summary };
-  },
-};
-
 const SUMMARY_SKIP_KEYS = new Set(["analyzedAt", "extras", "files"]);
 
-function buildSummary(analysis) {
+/**
+ * Build a compact summary from analysis data.
+ * If a DataSource has a summarize() method, use it. Otherwise, use a generic fallback.
+ *
+ * @param {Object} analysis - Full analysis data
+ * @param {Map<string, Object>} dataSources - DataSource instances from scan
+ */
+function buildSummary(analysis, dataSources) {
   const s = { analyzedAt: analysis.analyzedAt };
 
   for (const key of Object.keys(analysis)) {
     if (SUMMARY_SKIP_KEYS.has(key)) continue;
     if (!analysis[key]?.summary) continue;
 
-    if (SUMMARY_BUILDERS[key]) {
-      s[key] = SUMMARY_BUILDERS[key](analysis[key]);
+    const source = dataSources.get(key);
+    if (source && typeof source.summarize === "function") {
+      s[key] = source.summarize(analysis[key]);
     } else {
-      // 汎用カテゴリ: summary + 先頭 10 件の items
+      // Generic: summary + first 10 items
       const data = analysis[key];
       const items = data[key] || [];
       s[key] = {
@@ -160,9 +115,7 @@ async function main() {
   });
   if (cli.help) {
     const root = repoRoot(import.meta.url);
-    let uiLang = "en";
-    try { uiLang = JSON.parse(fs.readFileSync(path.join(root, ".sdd-forge", "config.json"), "utf8")).uiLang || "en"; } catch (_) {}
-    printHelp(createI18n(uiLang));
+    printHelp(createI18n(loadUiLang(root)));
     return;
   }
 
@@ -193,8 +146,7 @@ async function main() {
     );
   }
 
-  // プロジェクトローカルの DataSource（.sdd-forge/data/）
-  const projectDataDir = path.join(root, ".sdd-forge", "data");
+  const projectDataDir = sddDataDir(root);
   dataSources = await loadScanSources(projectDataDir, dataSources);
 
   // スキャン実行
@@ -235,7 +187,7 @@ async function main() {
   if (cli.stdout || cli.dryRun) {
     process.stdout.write(json + "\n");
   } else {
-    const outputDir = path.join(root, ".sdd-forge", "output");
+    const outputDir = sddOutputDir(root);
     if (!fs.existsSync(outputDir)) {
       fs.mkdirSync(outputDir, { recursive: true });
     }
@@ -243,7 +195,7 @@ async function main() {
     fs.writeFileSync(outputPath, json + "\n");
     logger.log(`output: ${path.relative(root, outputPath)}`);
 
-    const summary = buildSummary(result);
+    const summary = buildSummary(result, dataSources);
     const summaryPath = path.join(outputDir, "summary.json");
     fs.writeFileSync(summaryPath, JSON.stringify(summary) + "\n");
     logger.log(`output: ${path.relative(root, summaryPath)}`);

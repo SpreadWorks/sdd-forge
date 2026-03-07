@@ -14,7 +14,7 @@ import fs from "fs";
 import path from "path";
 import readline from "readline";
 import { fileURLToPath } from "url";
-import { repoRoot, parseArgs } from "../../lib/cli.js";
+import { PKG_DIR, repoRoot, parseArgs } from "../../lib/cli.js";
 import { validateConfig } from "../../lib/types.js";
 import { saveContext } from "../../lib/config.js";
 import { createI18n } from "../../lib/i18n.js";
@@ -204,8 +204,6 @@ function registerProject(projectName, sourcePath, workRootPath, setDefault, t) {
 // ---------------------------------------------------------------------------
 // AGENTS.md / CLAUDE.md setup
 // ---------------------------------------------------------------------------
-
-const PKG_DIR = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..", "..");
 
 /**
  * Interactive AGENTS.md setup.

@@ -19,11 +19,11 @@ import { stdout as output } from "process";
 import { fileURLToPath } from "url";
 import { populateFromAnalysis } from "./data.js";
 import { textFillFromAnalysis } from "./text.js";
-import { repoRoot, parseArgs } from "../../lib/cli.js";
-import { loadJsonFile, loadConfig, saveContext } from "../../lib/config.js";
+import { PKG_DIR, repoRoot, parseArgs } from "../../lib/cli.js";
+import { loadJsonFile, loadConfig, loadUiLang, sddOutputDir, saveContext } from "../../lib/config.js";
 import { resolveType } from "../../lib/types.js";
 import { createResolver } from "../lib/resolver-factory.js";
-import { callAgentAsync } from "../../lib/agent.js";
+import { callAgentAsync, LONG_AGENT_TIMEOUT_MS } from "../../lib/agent.js";
 import { createI18n } from "../../lib/i18n.js";
 import {
   summaryToText,
@@ -40,11 +40,7 @@ import {
   summarizeNeedsInput,
 } from "../lib/review-parser.js";
 
-// npm パッケージとして呼ばれた場合でもサブスクリプトを直接起動できるよう
-// パッケージディレクトリを保持する
-const PKG_DIR = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
-
-const DEFAULT_AGENT_TIMEOUT_MS = 300000;
+const DEFAULT_AGENT_TIMEOUT_MS = LONG_AGENT_TIMEOUT_MS;
 const DEFAULT_WAIT_LOG_SEC = 1;
 const DEFAULT_MAX_RUNS = 3;
 const DEFAULT_REVIEW_CMD = "sdd-forge review";
@@ -73,7 +69,7 @@ function resolveAgent(cfg, role, cliAgent) {
 }
 
 function loadAnalysisData(root) {
-  const p = path.join(root, ".sdd-forge", "output", "analysis.json");
+  const p = path.join(sddOutputDir(root), "analysis.json");
   if (!fs.existsSync(p)) return null;
   try {
     return JSON.parse(fs.readFileSync(p, "utf8"));
@@ -83,7 +79,7 @@ function loadAnalysisData(root) {
 }
 
 function loadSummaryData(root) {
-  const p = path.join(root, ".sdd-forge", "output", "summary.json");
+  const p = path.join(sddOutputDir(root), "summary.json");
   if (!fs.existsSync(p)) return null;
   try {
     return JSON.parse(fs.readFileSync(p, "utf8"));
@@ -124,9 +120,7 @@ function parseCliOptions(argv) {
 }
 
 function printHelp() {
-  let uiLang = "en";
-  try { uiLang = JSON.parse(fs.readFileSync(path.join(repoRoot(import.meta.url), ".sdd-forge", "config.json"), "utf8")).uiLang || "en"; } catch (_) {}
-  const tu = createI18n(uiLang);
+  const tu = createI18n(loadUiLang(repoRoot(import.meta.url)));
   const h = tu.raw("help.cmdHelp.forge");
   const o = h.options;
   output.write(

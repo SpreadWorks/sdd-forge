@@ -10,6 +10,7 @@ import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
 import { sourceRoot, repoRoot, parseArgs } from "../../lib/cli.js";
+import { loadUiLang, sddConfigPath } from "../../lib/config.js";
 import { createI18n } from "../../lib/i18n.js";
 
 /**
@@ -115,9 +116,7 @@ function main() {
   const opts = parseArgs(args, { flags: ["--dry-run"], options: [], defaults: { dryRun: false } });
 
   if (opts.help) {
-    let uiLang = "en";
-    try { uiLang = JSON.parse(fs.readFileSync(path.join(repoRoot(), ".sdd-forge", "config.json"), "utf8")).uiLang || "en"; } catch (_) {}
-    const tu = createI18n(uiLang);
+    const tu = createI18n(loadUiLang(repoRoot()));
     const h = tu.raw("help.cmdHelp.changelog");
     const o = h.options;
     console.log([h.usage, "", `  ${h.desc}`, `  ${h.descDetail}`, "", "Options:", `  ${o.dryRun}`].join("\n"));
@@ -133,7 +132,7 @@ function main() {
   let lang = "ja";
   let uiLang = "en";
   try {
-    const raw = JSON.parse(fs.readFileSync(path.join(root, ".sdd-forge", "config.json"), "utf8"));
+    const raw = JSON.parse(fs.readFileSync(sddConfigPath(root), "utf8"));
     lang = raw.lang || "ja";
     uiLang = raw.uiLang || "en";
   } catch (_) {}

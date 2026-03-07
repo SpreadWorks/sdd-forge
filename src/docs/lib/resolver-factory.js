@@ -9,42 +9,19 @@
 
 import fs from "fs";
 import path from "path";
+import { sddDir, sddDataDir } from "../../lib/config.js";
+import { loadDataSources as loadDataSourcesBase } from "./data-source-loader.js";
 import { presetByLeaf } from "../../lib/presets.js";
 import { createLogger } from "../../lib/progress.js";
 
 const logger = createLogger("resolver");
 
-// ---------------------------------------------------------------------------
-// DataSource ローダ
-// ---------------------------------------------------------------------------
-
-/**
- * data/ ディレクトリから DataSource クラスをロードし、インスタンス化する。
- * @param {string} dataDir - data/ ディレクトリの絶対パス
- * @param {{ desc: function, loadOverrides: function }} ctx
- * @param {Map<string, DataSource>} existing - 既存の DataSource マップ（親から継承）
- * @returns {Promise<Map<string, DataSource>>} name → DataSource instance
- */
-async function loadDataSources(dataDir, ctx, existing) {
-  const sources = new Map(existing || []);
-  if (!fs.existsSync(dataDir)) return sources;
-
-  const files = fs.readdirSync(dataDir).filter((f) => f.endsWith(".js"));
-  for (const file of files) {
-    const name = path.basename(file, ".js");
-    try {
-      const mod = await import(path.join(dataDir, file));
-      const Source = mod.default;
-      if (typeof Source === "function") {
-        const instance = new Source();
-        instance.init(ctx);
-        sources.set(name, instance);
-      }
-    } catch (err) {
-      logger.verbose(`failed to load DataSource ${name}: ${err.message}`);
-    }
-  }
-  return sources;
+/** Load DataSources and call init(ctx) on each instance */
+function loadDataSources(dataDir, ctx, existing) {
+  return loadDataSourcesBase(dataDir, {
+    existing,
+    onInstance: (instance) => { instance.init(ctx); },
+  });
 }
 
 // ---------------------------------------------------------------------------
@@ -56,7 +33,7 @@ let _overridesRoot = null;
 
 function loadOverridesFor(root) {
   if (_overridesCache && _overridesRoot === root) return _overridesCache;
-  const overridesPath = path.join(root, ".sdd-forge", "overrides.json");
+  const overridesPath = path.join(sddDir(root), "overrides.json");
   if (fs.existsSync(overridesPath)) {
     _overridesCache = JSON.parse(fs.readFileSync(overridesPath, "utf8"));
   } else {
@@ -114,8 +91,7 @@ export async function createResolver(type, root) {
     dataSources = await loadDataSources(path.join(preset.dir, "data"), ctx, dataSources);
   }
 
-  // プロジェクトローカルの DataSource（.sdd-forge/data/）
-  const projectDataDir = path.join(root, ".sdd-forge", "data");
+  const projectDataDir = sddDataDir(root);
   dataSources = await loadDataSources(projectDataDir, ctx, dataSources);
 
   return {

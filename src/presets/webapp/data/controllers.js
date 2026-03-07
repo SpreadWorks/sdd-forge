@@ -38,6 +38,16 @@ export default class ControllersSource extends Scannable(DataSource) {
     };
   }
 
+  summarize(data) {
+    return {
+      ...data.summary,
+      top: data.controllers.slice(0, 10).map((x) => ({
+        className: x.className,
+        actions: x.actions.slice(0, 8),
+      })),
+    };
+  }
+
   /** Controller list table. */
   list(analysis, labels) {
     const items = analysis.controllers?.controllers || [];

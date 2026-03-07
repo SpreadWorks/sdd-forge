@@ -15,12 +15,12 @@ import { fileURLToPath } from "url";
 import { repoRoot, parseArgs } from "../../lib/cli.js";
 import { loadConfig } from "../../lib/config.js";
 import { resolveOutputConfig } from "../../lib/types.js";
-import { callAgentAsync, resolveAgent } from "../../lib/agent.js";
+import { callAgentAsync, resolveAgent, LONG_AGENT_TIMEOUT_MS } from "../../lib/agent.js";
 import { createLogger } from "../../lib/progress.js";
 import { createI18n } from "../../lib/i18n.js";
 
 const logger = createLogger("translate");
-const DEFAULT_TIMEOUT_MS = 300000;
+const DEFAULT_TIMEOUT_MS = LONG_AGENT_TIMEOUT_MS;
 
 /**
  * Translate a Markdown document from one language to another via AI agent.

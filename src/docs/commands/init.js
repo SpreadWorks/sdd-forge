@@ -12,7 +12,7 @@ import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
 import { repoRoot, parseArgs } from "../../lib/cli.js";
-import { loadPackageField, loadJsonFile } from "../../lib/config.js";
+import { loadPackageField, loadJsonFile, loadUiLang, sddConfigPath, sddOutputDir } from "../../lib/config.js";
 import { resolveType } from "../../lib/types.js";
 import { callAgent, resolveAgent } from "../../lib/agent.js";
 import { resolveChain, resolveChainWithFallback, collectChapters, filterChapters } from "../lib/template-merger.js";
@@ -135,9 +135,7 @@ function main() {
     defaults: { type: "", force: false, dryRun: false, lang: "", docsDir: "" },
   });
   if (cli.help) {
-    let uiLang = "en";
-    try { uiLang = JSON.parse(fs.readFileSync(path.join(repoRoot(import.meta.url), ".sdd-forge", "config.json"), "utf8")).uiLang || "en"; } catch (_) {}
-    const tu = createI18n(uiLang);
+    const tu = createI18n(loadUiLang(repoRoot(import.meta.url)));
     const h = tu.raw("help.cmdHelp.init");
     const o = h.options;
     console.log([h.usage, "", h.desc, "", "Options:", `  ${o.type}`, `  ${o.force}`, `  ${o.dryRun}`, `  ${o.help}`].join("\n"));
@@ -146,7 +144,7 @@ function main() {
 
   const root = repoRoot(import.meta.url);
   const defaults = loadPackageField(root, "docsInit") || {};
-  const sddConfig = loadJsonFile(path.join(root, ".sdd-forge", "config.json"));
+  const sddConfig = loadJsonFile(sddConfigPath(root));
   const t = createI18n(sddConfig?.uiLang || "en", { domain: "messages" });
 
   const rawType = cli.type || sddConfig?.type || defaults.defaultType;
@@ -190,7 +188,7 @@ function main() {
   }
 
   // analysis.json があれば決定的フィルタを適用
-  const analysisPath = path.join(root, ".sdd-forge", "output", "analysis.json");
+  const analysisPath = path.join(sddOutputDir(root), "analysis.json");
   let analysis = null;
   if (fs.existsSync(analysisPath)) {
     try {
@@ -208,7 +206,7 @@ function main() {
     if (agent) {
       logger.verbose("AI chapter selection...");
       // summary.json があればそちらを使う（軽量）
-      const summaryPath = path.join(root, ".sdd-forge", "output", "summary.json");
+      const summaryPath = path.join(sddOutputDir(root), "summary.json");
       let summaryData = analysis;
       if (fs.existsSync(summaryPath)) {
         try { summaryData = JSON.parse(fs.readFileSync(summaryPath, "utf8")); } catch (_) { /* use analysis */ }

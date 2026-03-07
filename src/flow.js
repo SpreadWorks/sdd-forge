@@ -11,14 +11,11 @@
 import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
-import { repoRoot, parseArgs, isInsideWorktree, getMainRepoPath } from "./lib/cli.js";
+import { PKG_DIR, repoRoot, parseArgs, isInsideWorktree, getMainRepoPath } from "./lib/cli.js";
+import { loadUiLang, sddConfigPath, sddDir } from "./lib/config.js";
 import { runSync } from "./lib/process.js";
 import { saveFlowState } from "./lib/flow-state.js";
 import { createI18n } from "./lib/i18n.js";
-
-// npm パッケージとして呼ばれた場合でもサブスクリプトを直接起動できるよう
-// パッケージディレクトリを保持する
-const PKG_DIR = path.resolve(path.dirname(fileURLToPath(import.meta.url)));
 
 function run(root, cmd, args) {
   const res = runSync(cmd, args, { cwd: root });
@@ -92,9 +89,7 @@ function main() {
     defaults: { request: "", title: "", spec: "", agent: "", maxRuns: "5", forgeMode: "local", noBranch: false, worktree: false, dryRun: false },
   });
   if (cli.help) {
-    let uiLang = "en";
-    try { uiLang = JSON.parse(fs.readFileSync(path.join(root, ".sdd-forge", "config.json"), "utf8")).uiLang || "en"; } catch (_) {}
-    const tu = createI18n(uiLang);
+    const tu = createI18n(loadUiLang(root));
     const h = tu.raw("help.cmdHelp.flow");
     const o = h.options;
     console.log(
@@ -134,7 +129,7 @@ function main() {
     }
     let uiLang = "en";
     try {
-      const raw = JSON.parse(fs.readFileSync(path.join(root, ".sdd-forge", "config.json"), "utf8"));
+      const raw = JSON.parse(fs.readFileSync(sddConfigPath(root), "utf8"));
       uiLang = raw.uiLang || "en";
     } catch (_) { /* config optional */ }
     const t = createI18n(uiLang, { domain: "messages" });
@@ -185,7 +180,7 @@ function main() {
   };
   if (cli.worktree) {
     // Read worktree path from current-spec (written by spec init)
-    const currentSpecPath = path.join(root, ".sdd-forge", "current-spec");
+    const currentSpecPath = path.join(sddDir(root), "current-spec");
     const currentSpec = JSON.parse(fs.readFileSync(currentSpecPath, "utf8"));
     flowState.worktree = true;
     flowState.worktreePath = currentSpec.worktreePath;
