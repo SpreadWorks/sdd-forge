@@ -120,6 +120,98 @@ describe("checkSpecText", () => {
     const issues = checkSpecText(text);
     assert.deepEqual(issues, []);
   });
+
+  it("pre phase skips unchecked items in Acceptance Criteria", () => {
+    const text = [
+      "# Spec",
+      "## Clarifications (Q&A)",
+      "## Open Questions",
+      "## User Confirmation",
+      "- [x] User approved this spec",
+      "## Acceptance Criteria",
+      "- [ ] feature works",
+      "- [ ] tests pass",
+    ].join("\n");
+    const issues = checkSpecText(text, { phase: "pre" });
+    assert.deepEqual(issues, []);
+  });
+
+  it("pre phase skips unchecked items in Status section", () => {
+    const text = [
+      "# Spec",
+      "## Status",
+      "- [x] Spec created",
+      "- [ ] Implementation complete",
+      "## Clarifications (Q&A)",
+      "## Open Questions",
+      "## User Confirmation",
+      "- [x] User approved this spec",
+      "## Acceptance Criteria",
+      "- [ ] done",
+    ].join("\n");
+    const issues = checkSpecText(text, { phase: "pre" });
+    assert.deepEqual(issues, []);
+  });
+
+  it("post phase detects unchecked items in Acceptance Criteria", () => {
+    const text = [
+      "# Spec",
+      "## Clarifications (Q&A)",
+      "## Open Questions",
+      "## User Confirmation",
+      "- [x] User approved this spec",
+      "## Acceptance Criteria",
+      "- [ ] feature works",
+    ].join("\n");
+    const issues = checkSpecText(text, { phase: "post" });
+    assert.ok(issues.some((i) => i.includes("unchecked task")));
+  });
+
+  it("pre phase still detects unchecked items in Open Questions", () => {
+    const text = [
+      "# Spec",
+      "## Clarifications (Q&A)",
+      "## Open Questions",
+      "- [ ] unresolved question",
+      "## User Confirmation",
+      "- [x] User approved this spec",
+      "## Acceptance Criteria",
+      "- [ ] done",
+    ].join("\n");
+    const issues = checkSpecText(text, { phase: "pre" });
+    assert.ok(issues.some((i) => i.includes("unchecked task")));
+  });
+
+  it("default phase is pre (skips Acceptance Criteria unchecked)", () => {
+    const text = [
+      "# Spec",
+      "## Clarifications (Q&A)",
+      "## Open Questions",
+      "## User Confirmation",
+      "- [x] User approved this spec",
+      "## Acceptance Criteria",
+      "- [ ] not done yet",
+    ].join("\n");
+    // No opts passed = default pre
+    const issues = checkSpecText(text);
+    assert.deepEqual(issues, []);
+  });
+
+  it("ignores unresolved tokens inside table rows", () => {
+    const text = [
+      "# Spec",
+      "| Phase | TODO |",
+      "| --- | --- |",
+      "| pre | skip TODO items |",
+      "## Clarifications (Q&A)",
+      "## Open Questions",
+      "## User Confirmation",
+      "- [x] User approved this spec",
+      "## Acceptance Criteria",
+    ].join("\n");
+    const issues = checkSpecText(text);
+    assert.deepEqual(issues, []);
+  });
 });
 
 describe("gate CLI", () => {

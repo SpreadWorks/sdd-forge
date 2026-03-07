@@ -50,13 +50,21 @@ If skills are unavailable, follow these steps in order:
 ### Closing
 
 After implementation is complete, run the `/sdd-flow-close` skill.
-If skills are unavailable, run these manually:
+If skills are unavailable, present the user with these options:
 
+**Options:**
+- **commit+merge**: Commit → merge to base branch → delete `.sdd-forge/current-spec`
+- **docs+commit+merge**: Update docs → commit → merge to base branch → delete `.sdd-forge/current-spec`
+
+**For docs+commit+merge:**
 1. `sdd-forge forge --prompt "<summary of changes>" --spec specs/NNN-xxx/spec.md` (update docs)
-2. `sdd-forge review` (quality check - repeat until PASS)
-3. Commit on feature branch
-4. Merge to base branch
-5. Delete `.sdd-forge/current-spec`
+2. `sdd-forge review` (quality check — repeat until PASS)
+
+**Common steps (after selection):**
+1. `sdd-forge gate --spec specs/NNN-xxx/spec.md --phase post` (verify all checklist items)
+2. Commit on feature branch
+3. Merge to base branch (per `config.flow.merge`: squash / ff-only / merge)
+4. Delete `.sdd-forge/current-spec`
 
 ### sdd-forge Commands
 
@@ -75,7 +83,7 @@ If skills are unavailable, run these manually:
 | `sdd-forge changelog` | Generate change_log.md from specs/ |
 | `sdd-forge agents` | Update AGENTS.md |
 | `sdd-forge spec --title "<name>"` | Initialize spec (feature branch + spec.md) |
-| `sdd-forge gate --spec <path>` | Spec gate check |
+| `sdd-forge gate --spec <path>` | Spec gate check (`--phase pre/post`) |
 | `sdd-forge flow --request "<request>"` | Auto-run SDD flow |
 
 ### docs/ Editing Rules

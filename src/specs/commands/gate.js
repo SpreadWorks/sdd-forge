@@ -11,9 +11,29 @@ import { fileURLToPath } from "url";
 import { repoRoot, parseArgs } from "../../lib/cli.js";
 import { createI18n } from "../../lib/i18n.js";
 
-function checkSpecText(text) {
+/**
+ * Detect which section a line belongs to by scanning headings above it.
+ * Returns the last ## heading name encountered before lineIdx.
+ */
+function sectionAt(lines, lineIdx) {
+  for (let i = lineIdx - 1; i >= 0; i--) {
+    const m = lines[i].match(/^\s*##\s+(.+)/);
+    if (m) return m[1].trim();
+  }
+  return "";
+}
+
+/**
+ * @param {string} text
+ * @param {{ phase?: "pre"|"post" }} [opts]
+ */
+function checkSpecText(text, opts) {
+  const phase = opts?.phase || "pre";
   const issues = [];
   const lines = text.split("\n");
+
+  /** Sections where unchecked items are ignored in pre phase */
+  const PRE_SKIP_SECTIONS = /^(Status|Acceptance Criteria|User Scenarios\s*&?\s*Testing)/i;
 
   const unresolvedPatterns = [
     /\[NEEDS CLARIFICATION\]/i,
@@ -22,6 +42,9 @@ function checkSpecText(text) {
     /\bFIXME\b/i,
   ];
   for (const [idx, line] of lines.entries()) {
+    // Skip unresolved token check inside code/table cells containing example patterns
+    if (/^\s*\|/.test(line)) continue;
+
     for (const p of unresolvedPatterns) {
       if (p.test(line)) {
         issues.push(`line ${idx + 1}: unresolved token (${line.trim()})`);
@@ -29,6 +52,10 @@ function checkSpecText(text) {
       }
     }
     if (/^\s*-\s*\[\s\]\s+/.test(line)) {
+      if (phase === "pre") {
+        const section = sectionAt(lines, idx);
+        if (PRE_SKIP_SECTIONS.test(section)) continue;
+      }
       issues.push(`line ${idx + 1}: unchecked task/question (${line.trim()})`);
     }
   }
@@ -72,11 +99,17 @@ function checkSpecText(text) {
 function main() {
   const root = repoRoot(import.meta.url);
   const cli = parseArgs(process.argv.slice(2), {
-    options: ["--spec"],
-    defaults: { spec: "" },
+    options: ["--spec", "--phase"],
+    defaults: { spec: "", phase: "pre" },
   });
   if (cli.help) {
-    console.log("Usage: node sdd-forge/spec/gate.js --spec specs/NNN-name/spec.md");
+    console.log("Usage: sdd-forge gate --spec specs/NNN-name/spec.md [--phase pre|post]");
+    console.log("");
+    console.log("Options:");
+    console.log("  --spec <path>   Path to spec.md (required)");
+    console.log("  --phase <phase> Check phase: pre (default) or post");
+    console.log("    pre:  Skip unchecked items in Status and Acceptance Criteria");
+    console.log("    post: Check all unchecked items");
     return;
   }
   if (!cli.spec) throw new Error("--spec is required");
@@ -93,8 +126,9 @@ function main() {
   } catch (_) { /* config optional */ }
   const t = createI18n(uiLang, { domain: "messages" });
 
+  const phase = cli.phase === "post" ? "post" : "pre";
   const text = fs.readFileSync(specPath, "utf8");
-  const issues = checkSpecText(text);
+  const issues = checkSpecText(text, { phase });
   if (issues.length > 0) {
     console.error(t("gate.failed"));
     for (const i of issues) {
