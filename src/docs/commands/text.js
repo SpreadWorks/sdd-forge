@@ -698,8 +698,8 @@ export async function textFillFromAnalysis(root, analysis, agentName) {
 async function main() {
   const cli = parseArgs(process.argv.slice(2), {
     flags: ["--dry-run", "--per-directive"],
-    options: ["--agent", "--timeout", "--id"],
-    defaults: { agent: "", dryRun: false, timeout: String(DEFAULT_TIMEOUT_MS), perDirective: false, id: "" },
+    options: ["--agent", "--timeout", "--id", "--lang", "--docs-dir"],
+    defaults: { agent: "", dryRun: false, timeout: String(DEFAULT_TIMEOUT_MS), perDirective: false, id: "", lang: "", docsDir: "" },
   });
   cli.timeout = Number(cli.timeout) || DEFAULT_TIMEOUT_MS;
   if (cli.help) {
@@ -741,10 +741,10 @@ async function main() {
   const preamblePatterns = loadPreamblePatterns(cfg);
   const projectContext = resolveProjectContext(root);
   const documentStyle = cfg.documentStyle;
-  const lang = cfg.lang || "ja";
+  const lang = cli.lang || cfg.lang || "ja";
   const systemPrompt = buildTextSystemPrompt(projectContext, documentStyle, lang);
   const concurrency = Number(cfg.limits?.concurrency || 0) || DEFAULT_CONCURRENCY;
-  const docsDir = path.join(root, "docs");
+  const docsDir = cli.docsDir ? path.resolve(root, cli.docsDir) : path.join(root, "docs");
   const docsFiles = fs.readdirSync(docsDir)
     .filter((f) => /^\d{2}_/.test(f) && f.endsWith(".md"))
     .sort();

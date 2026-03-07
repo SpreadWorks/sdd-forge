@@ -15,7 +15,7 @@ import { fileURLToPath } from "url";
 import { repoRoot, parseArgs } from "../../lib/cli.js";
 import { loadJsonFile } from "../../lib/config.js";
 import { resolveType } from "../../lib/types.js";
-import { resolveChain, mergeFile } from "../lib/template-merger.js";
+import { resolveChain, resolveChainWithFallback, mergeFile } from "../lib/template-merger.js";
 import { createResolver } from "../lib/resolver-factory.js";
 import { parseDirectives } from "../lib/directive-parser.js";
 import { createLogger } from "../../lib/progress.js";
@@ -73,6 +73,8 @@ async function main() {
 
   const cli = parseArgs(process.argv.slice(2), {
     flags: ["--dry-run"],
+    options: ["--lang", "--output"],
+    defaults: { lang: "", output: "" },
   });
 
   if (cli.help) {
@@ -84,7 +86,7 @@ Options:
     process.exit(0);
   }
 
-  const lang = sddConfig?.lang || "ja";
+  const lang = cli.lang || sddConfig?.lang || "ja";
   const type = sddConfig?.type;
 
   const t = createI18n(sddConfig?.uiLang || "en", { domain: "messages" });
@@ -96,7 +98,19 @@ Options:
 
   const resolvedType = resolveType(type);
   const projectLocalDir = path.join(root, ".sdd-forge", "templates", lang, "docs");
-  const chain = resolveChain(resolvedType, lang, projectLocalDir);
+  const outputConfig = sddConfig?.output;
+  const fallbackLangs = outputConfig?.languages?.filter((l) => l !== lang) || [];
+  let chain;
+  if (fallbackLangs.length > 0) {
+    const { resolveAgent: resolveAgentFn } = await import("../../lib/agent.js");
+    chain = resolveChainWithFallback(resolvedType, lang, projectLocalDir, {
+      fallbackLangs,
+      agent: resolveAgentFn(sddConfig),
+      root,
+    });
+  } else {
+    chain = resolveChain(resolvedType, lang, projectLocalDir);
+  }
   const merged = mergeFile("README.md", chain);
   if (!merged) {
     logger.log(t("readme.noTemplate", { type }));
@@ -121,7 +135,7 @@ Options:
     return;
   }
 
-  const readmePath = path.join(root, "README.md");
+  const readmePath = cli.output ? path.resolve(root, cli.output) : path.join(root, "README.md");
 
   let resolved = resolveDataDirectives(templateContent, resolveFn);
   const newContent = resolved.endsWith("\n") ? resolved : resolved + "\n";

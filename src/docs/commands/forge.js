@@ -493,6 +493,25 @@ async function main() {
       }
       const readme = await runCommand(`node "${path.join(PKG_DIR, "docs", "commands", "readme.js")}"`, root);
       output.write(`[forge] README.md ${readme.ok ? "updated" : "update failed"}.\n`);
+
+      // Multi-language: update non-default languages after review pass
+      try {
+        const { resolveOutputConfig } = await import("../../lib/types.js");
+        const outputCfg = resolveOutputConfig(cfg);
+        if (outputCfg.isMultiLang) {
+          const nonDefaultLangs = outputCfg.languages.filter((l) => l !== outputCfg.default);
+          if (outputCfg.mode === "translate") {
+            output.write(`[forge] Re-translating to: ${nonDefaultLangs.join(", ")}\n`);
+            const translateCmd = `node "${path.join(PKG_DIR, "docs", "commands", "translate.js")}" --force`;
+            await runCommand(translateCmd, root);
+          }
+          // In generate mode, non-default langs would need separate forge runs
+          // which is out of scope for this iteration
+        }
+      } catch (_) {
+        // multi-lang not configured — skip
+      }
+
       output.write("\n=== DONE ===\n- forge completed\n");
       return;
     }

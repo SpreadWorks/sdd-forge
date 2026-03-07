@@ -123,7 +123,8 @@ export function populateFromAnalysis(root, analysis, resolveFn) {
 async function main() {
   const cli = parseArgs(process.argv.slice(2), {
     flags: ["--dry-run", "--stdout"],
-    defaults: { dryRun: false, stdout: false },
+    options: ["--docs-dir"],
+    defaults: { dryRun: false, stdout: false, docsDir: "" },
   });
   if (cli.help) {
     let uiLang = "en";
@@ -167,8 +168,11 @@ async function main() {
     process.exit(1);
   }
 
-  const docsDir = path.join(root, "docs");
+  const docsDir = cli.docsDir ? path.resolve(root, cli.docsDir) : path.join(root, "docs");
   const docsFiles = fs.readdirSync(docsDir).filter((f) => /^\d{2}_/.test(f) && f.endsWith(".md")).sort();
+
+  // Determine relative path prefix for lang.links context
+  const docsDirRel = path.relative(root, docsDir).replace(/\\/g, "/");
 
   const changedFiles = new Set();
   let totalReplaced = 0;
@@ -177,7 +181,14 @@ async function main() {
   for (const file of docsFiles) {
     const filePath = path.join(docsDir, file);
     const original = fs.readFileSync(filePath, "utf8");
-    const result = processTemplate(original, analysis, file, resolveFn);
+    // Inject file path context for lang.links resolver
+    const wrappedResolveFn = (source, method, a, labels) => {
+      if (source === "lang" && method === "links") {
+        return resolveFn(source, method, a, [`${docsDirRel}/${file}`]);
+      }
+      return resolveFn(source, method, a, labels);
+    };
+    const result = processTemplate(original, analysis, file, wrappedResolveFn);
 
     totalReplaced += result.replaced;
     totalSkipped += result.skipped;

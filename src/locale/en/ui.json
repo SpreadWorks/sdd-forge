@@ -118,6 +118,7 @@
       "changelog": "Generate change_log.md from specs/",
       "agents": "Update AGENTS.md PROJECT section",
       "readme": "Auto-generate README.md",
+      "translate": "Translate docs to non-default languages",
       "scan": "Source code analysis → analysis.json",
       "data": "Resolve {{data}} directives with analysis data",
       "text": "Resolve {{text}} directives with AI",

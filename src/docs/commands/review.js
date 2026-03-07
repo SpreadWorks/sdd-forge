@@ -11,6 +11,7 @@ import path from "path";
 import { fileURLToPath } from "url";
 import { repoRoot, parseArgs } from "../../lib/cli.js";
 import { createI18n } from "../../lib/i18n.js";
+import { resolveOutputConfig } from "../../lib/types.js";
 
 function loadUiLang(root) {
   try {
@@ -134,6 +135,45 @@ function main() {
   // README.md check (warn only)
   if (!fs.existsSync(path.join(workRoot, "README.md"))) {
     console.log(t("review.readmeNotFound"));
+  }
+
+  // Multi-language: check non-default language directories
+  try {
+    const cfgRaw = JSON.parse(fs.readFileSync(path.join(workRoot, ".sdd-forge", "config.json"), "utf8"));
+    const outputCfg = resolveOutputConfig(cfgRaw);
+    if (outputCfg.isMultiLang) {
+      const docsBase = path.join(workRoot, "docs");
+      const nonDefaultLangs = outputCfg.languages.filter((l) => l !== outputCfg.default);
+      for (const lang of nonDefaultLangs) {
+        const langDir = path.join(docsBase, lang);
+        if (!fs.existsSync(langDir)) {
+          console.log(`WARN: docs/${lang}/ directory missing for configured language '${lang}'`);
+          continue;
+        }
+        const langFiles = fs.readdirSync(langDir)
+          .filter((f) => /^[0-9]{2}_.*\.md$/.test(f))
+          .sort();
+        if (langFiles.length === 0) {
+          console.log(`WARN: docs/${lang}/ has no chapter files`);
+          continue;
+        }
+        for (const f of langFiles) {
+          const filePath = path.join(langDir, f);
+          const content = fs.readFileSync(filePath, "utf8");
+          const lines = content.split("\n");
+          if (lines.length < MIN_LINES) {
+            console.log(t("review.tooShort", { lines: lines.length, file: `${lang}/${f}` }));
+            fail = 1;
+          }
+          if (!lines.some((line) => /^# /.test(line))) {
+            console.log(t("review.missingH1", { file: `${lang}/${f}` }));
+            fail = 1;
+          }
+        }
+      }
+    }
+  } catch (_) {
+    // config not available — skip multi-lang check
   }
 
   if (fail !== 0) {

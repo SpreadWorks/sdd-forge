@@ -118,6 +118,7 @@
       "changelog": "specs/ から change_log.md を生成",
       "agents": "AGENTS.md の PROJECT セクションを更新",
       "readme": "README.md 自動生成",
+      "translate": "ドキュメントを非デフォルト言語に翻訳",
       "scan": "ソースコード解析 → analysis.json",
       "data": "{{data}} ディレクティブを解析データで解決",
       "text": "{{text}} ディレクティブを AI で解決",

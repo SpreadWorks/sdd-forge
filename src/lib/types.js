@@ -42,6 +42,7 @@ import { buildTypeAliases } from "./presets.js";
  * @typedef {Object} OutputConfig
  * @property {string[]} languages - Output languages (e.g. ["ja"], ["en", "ja"])
  * @property {string}   default   - Default output language
+ * @property {"translate"|"generate"} [mode] - How non-default languages are produced
  */
 
 /**
@@ -130,6 +131,10 @@ export function validateConfig(raw) {
           errors.push("'output.default' must be one of 'output.languages'");
         }
       }
+      const validModes = new Set(["translate", "generate"]);
+      if (raw.output.mode != null && !validModes.has(raw.output.mode)) {
+        errors.push(`'output.mode' must be one of: ${[...validModes].join(", ")}`);
+      }
     }
   }
 
@@ -198,6 +203,25 @@ export function validateConfig(raw) {
   }
 
   return /** @type {SddConfig} */ (raw);
+}
+
+/**
+ * config から多言語出力設定を抽出する。
+ * 単一言語の場合も統一的に扱えるようにする。
+ *
+ * @param {SddConfig} cfg
+ * @returns {{ languages: string[], default: string, mode: "translate"|"generate", isMultiLang: boolean }}
+ */
+export function resolveOutputConfig(cfg) {
+  const languages = cfg.output?.languages || [cfg.lang || "ja"];
+  const defaultLang = cfg.output?.default || cfg.lang || "ja";
+  const mode = cfg.output?.mode || "translate";
+  return {
+    languages,
+    default: defaultLang,
+    mode,
+    isMultiLang: languages.length >= 2,
+  };
 }
 
 /**

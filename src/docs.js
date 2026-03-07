@@ -5,6 +5,7 @@
  * Docs dispatcher. Routes docs-related subcommands to scripts under docs/commands/.
  */
 
+import fs from "fs";
 import { fileURLToPath } from "url";
 import path from "path";
 
@@ -12,18 +13,19 @@ const PKG_DIR = path.resolve(path.dirname(fileURLToPath(import.meta.url)));
 
 /** Subcommand → script mapping */
 const SCRIPTS = {
-  default:  "docs/commands/default-project.js",
-  scan:     "docs/commands/scan.js",
-  init:     "docs/commands/init.js",
-  data:     "docs/commands/data.js",
-  text:     "docs/commands/text.js",
-  readme:   "docs/commands/readme.js",
-  forge:    "docs/commands/forge.js",
-  setup:    "docs/commands/setup.js",
-  review:   "docs/commands/review.js",
-  changelog: "docs/commands/changelog.js",
-  agents:   "docs/commands/agents.js",
-  upgrade:  "docs/commands/upgrade.js",
+  default:    "docs/commands/default-project.js",
+  scan:       "docs/commands/scan.js",
+  init:       "docs/commands/init.js",
+  data:       "docs/commands/data.js",
+  text:       "docs/commands/text.js",
+  readme:     "docs/commands/readme.js",
+  forge:      "docs/commands/forge.js",
+  setup:      "docs/commands/setup.js",
+  review:     "docs/commands/review.js",
+  changelog:  "docs/commands/changelog.js",
+  agents:     "docs/commands/agents.js",
+  upgrade:    "docs/commands/upgrade.js",
+  translate:  "docs/commands/translate.js",
 };
 
 // Extract subcommand from argv (set by sdd-forge.js)
@@ -123,6 +125,68 @@ if (subCmd === "build") {
   process.argv = [process.argv[0], agentsPath, ...dryRunArg];
   await agentsMain();
   progress.stepDone();
+
+  // 7. Multi-language: generate non-default languages
+  let cfg;
+  try {
+    cfg = loadJsonFile(path.join(workRoot, ".sdd-forge", "config.json"));
+  } catch (_) {
+    cfg = {};
+  }
+
+  const { resolveOutputConfig } = await import(path.join(PKG_DIR, "lib/types.js"));
+  const outputCfg = resolveOutputConfig(cfg);
+
+  if (outputCfg.isMultiLang) {
+    const nonDefaultLangs = outputCfg.languages.filter((l) => l !== outputCfg.default);
+    const docsDir = path.join(workRoot, "docs");
+
+    if (outputCfg.mode === "translate") {
+      // Translate mode: translate default docs to non-default languages
+      const translatePath = path.join(PKG_DIR, "docs/commands/translate.js");
+      const { main: translateMain } = await import(translatePath);
+      progress.log(`[build] Translating to: ${nonDefaultLangs.join(", ")}`);
+      process.argv = [process.argv[0], translatePath, ...dryRunArg];
+      await translateMain();
+    } else {
+      // Generate mode: run init → data → text → readme for each non-default language
+      for (const lang of nonDefaultLangs) {
+        const langDocsDir = path.join(docsDir, lang);
+        progress.log(`[build] Generating ${lang}...`);
+
+        // init for this language
+        process.argv = [process.argv[0], initPath, "--lang", lang, "--docs-dir", langDocsDir, ...initArgs, ...dryRunArg];
+        await initMain();
+
+        // data for this language
+        process.argv = [process.argv[0], dataPath, "--docs-dir", langDocsDir, ...dryRunArg];
+        await dataMain();
+
+        // text for this language
+        if (agentArgs.length > 0) {
+          process.argv = [process.argv[0], textPath, "--lang", lang, "--docs-dir", langDocsDir, ...agentArgs, ...dryRunArg];
+          await textMain();
+        }
+
+        // readme for this language
+        const langReadmePath = path.join(langDocsDir, "README.md");
+        process.argv = [process.argv[0], readmePath, "--lang", lang, "--output", langReadmePath, ...dryRunArg];
+        await readmeMain();
+      }
+    }
+
+    // Resolve lang.links across all files (default + non-default)
+    progress.log("[build] Resolving lang.links...");
+    process.argv = [process.argv[0], dataPath, ...dryRunArg];
+    await dataMain();
+    for (const lang of nonDefaultLangs) {
+      const langDocsDir = path.join(docsDir, lang);
+      if (fs.existsSync(langDocsDir)) {
+        process.argv = [process.argv[0], dataPath, "--docs-dir", langDocsDir, ...dryRunArg];
+        await dataMain();
+      }
+    }
+  }
 
   progress.done();
   process.exit(0);

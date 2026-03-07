@@ -10,6 +10,7 @@ import fs from "fs";
 import path from "path";
 import { parseBlocks } from "./directive-parser.js";
 import { presetByLeaf } from "../../lib/presets.js";
+import { callAgent, resolveAgent } from "../../lib/agent.js";
 
 // ---------------------------------------------------------------------------
 // 継承チェーン解決
@@ -45,18 +46,121 @@ export function resolveChain(typePath, lang, projectLocalDir) {
   }
 
   // ディレクトリ存在検証（組み込み層のみ）
-  for (const dir of chain) {
-    if (!fs.existsSync(dir)) {
-      throw new Error(`Template directory not found: ${dir}`);
-    }
+  const missing = chain.filter((dir) => !fs.existsSync(dir));
+  if (missing.length > 0 && missing.length === chain.length) {
+    throw new Error(`Template directory not found: ${missing[0]}`);
   }
+  // Remove missing directories from chain (fallback handles them)
+  const validChain = chain.filter((dir) => fs.existsSync(dir));
 
   // プロジェクトローカル層（存在する場合のみ追加）
   if (projectLocalDir && fs.existsSync(projectLocalDir)) {
-    chain.push(projectLocalDir);
+    validChain.push(projectLocalDir);
   }
 
-  return chain;
+  return validChain;
+}
+
+/**
+ * 指定言語のテンプレートチェーンを構築する。テンプレートが見つからない場合、
+ * fallbackLangs の順で他言語テンプレートを探し、AI 翻訳して一時ディレクトリに展開する。
+ *
+ * @param {string} typePath - 型パス
+ * @param {string} lang - ターゲット言語
+ * @param {string|null} projectLocalDir - プロジェクトローカルテンプレート
+ * @param {Object} [opts]
+ * @param {string[]} [opts.fallbackLangs] - フォールバック言語リスト
+ * @param {Object} [opts.agent] - AI エージェント設定（翻訳用）
+ * @param {string} [opts.root] - プロジェクトルート
+ * @returns {string[]} 継承チェーン
+ */
+export function resolveChainWithFallback(typePath, lang, projectLocalDir, opts) {
+  try {
+    const chain = resolveChain(typePath, lang, projectLocalDir);
+    if (chain.length > 0) return chain;
+  } catch (_) {
+    // fall through to fallback
+  }
+
+  const { fallbackLangs, agent, root } = opts || {};
+  if (!fallbackLangs || fallbackLangs.length === 0) {
+    throw new Error(`No templates found for language '${lang}' and no fallback languages configured`);
+  }
+
+  // Try each fallback language
+  for (const fbLang of fallbackLangs) {
+    if (fbLang === lang) continue;
+    try {
+      const fbChain = resolveChain(typePath, fbLang, null);
+      if (fbChain.length === 0) continue;
+
+      if (!agent) {
+        // No agent available — use source language templates as-is
+        return fbChain;
+      }
+
+      // Translate templates on-the-fly to a temp directory
+      const tmpDir = path.join(root || process.cwd(), ".sdd-forge", "tmp", `templates-${lang}`);
+      fs.mkdirSync(tmpDir, { recursive: true });
+
+      const chapters = collectChapters(fbChain);
+      for (const ch of chapters) {
+        const translated = translateTemplate(ch.content, fbLang, lang, agent, root);
+        fs.writeFileSync(path.join(tmpDir, ch.fileName), translated, "utf8");
+      }
+
+      // Also translate README.md if exists
+      const readmeTpl = resolveReadmeTemplate(fbChain);
+      if (readmeTpl) {
+        const readmeContent = fs.readFileSync(readmeTpl, "utf8");
+        const translated = translateTemplate(readmeContent, fbLang, lang, agent, root);
+        fs.writeFileSync(path.join(tmpDir, "README.md"), translated, "utf8");
+      }
+
+      // Return chain with just the translated temp dir
+      if (projectLocalDir && fs.existsSync(projectLocalDir)) {
+        return [tmpDir, projectLocalDir];
+      }
+      return [tmpDir];
+    } catch (_) {
+      continue;
+    }
+  }
+
+  throw new Error(`No templates found for language '${lang}' in any fallback language`);
+}
+
+/**
+ * テンプレートを翻訳する。ディレクティブは保持し、Markdown のテキスト部分のみ翻訳する。
+ *
+ * @param {string} content - テンプレート内容
+ * @param {string} fromLang - 元言語
+ * @param {string} toLang - ターゲット言語
+ * @param {Object} agent - AI エージェント設定
+ * @param {string} [root] - プロジェクトルート
+ * @returns {string}
+ */
+function translateTemplate(content, fromLang, toLang, agent, root) {
+  const prompt = [
+    `Translate the following Markdown template from ${fromLang} to ${toLang}.`,
+    "",
+    "Rules:",
+    "- Preserve ALL directives exactly as-is: {{data: ...}}, {{text: ...}}, {{/data}}, <!-- @block -->, <!-- @endblock -->, <!-- @extends -->",
+    "- Translate ONLY: Markdown headings (#), static text, table headers in data directive labels",
+    "- For {{text: ...}} directives, translate the prompt text inside them",
+    "- Do NOT add or remove any lines",
+    "- Output ONLY the translated template, no explanation",
+    "",
+    "Template:",
+    content,
+  ].join("\n");
+
+  try {
+    return callAgent(agent, prompt, 60000, root);
+  } catch (err) {
+    // Translation failed — return original
+    return content;
+  }
 }
 
 // ---------------------------------------------------------------------------

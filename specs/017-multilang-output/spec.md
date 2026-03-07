@@ -2,9 +2,9 @@
 
 ## Status
 - [x] Spec created
-- [ ] User approved this spec
-- [ ] Implementation started
-- [ ] Implementation complete
+- [x] User approved this spec
+- [x] Implementation started
+- [x] Implementation complete
 
 ## Summary
 
@@ -158,6 +158,33 @@ This means preset authors only need to maintain templates in **one language**.
 
 If the configured language has no matching template directory → **error immediately**.
 No fallback is attempted.
+
+## User Confirmation
+
+- [x] User approved this spec
+
+## Clarifications
+
+- `en/` テンプレートはこの spec 内で同時に追加する
+- help テキスト i18n は直近コミットで対応済み
+- 実装は全体を一度に行う（段階的分割なし）
+
+## Open Questions
+
+None — all questions resolved.
+
+## Acceptance Criteria
+
+- [x] `output.languages`, `output.default`, `output.mode` 設定が config から読み込める
+- [x] デフォルト言語ドキュメントが `docs/` に出力される
+- [x] 非デフォルト言語ドキュメントが `docs/{lang}/` に出力される
+- [x] `translate` モードで `sdd-forge translate` が動作する
+- [x] `generate` モードで各言語が独立生成される
+- [x] `{{data: lang.links}}` で言語切替リンクが挿入される
+- [x] テンプレートフォールバック（他言語テンプレートからAI翻訳）が動作する
+- [x] `en/` テンプレートが追加されている
+- [x] `build` コマンドが多言語出力に対応している
+- [x] 単一言語設定時は既存動作と互換
 
 ## Prerequisites
 

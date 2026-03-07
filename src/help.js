@@ -29,6 +29,7 @@ const LAYOUT = [
   { name: "changelog" },
   { name: "agents" },
   { name: "readme" },
+  { name: "translate" },
   { section: "Scan" },
   { name: "scan" },
   { name: "data" },

@@ -66,6 +66,7 @@ const DISPATCHERS = {
   changelog: "docs",
   agents:   "docs",
   upgrade:  "docs",
+  translate: "docs",
   setup:    "docs",
   default:  "docs",
   // spec subcommands → spec.js dispatcher

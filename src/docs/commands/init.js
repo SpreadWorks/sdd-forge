@@ -15,7 +15,7 @@ import { repoRoot, parseArgs } from "../../lib/cli.js";
 import { loadPackageField, loadJsonFile } from "../../lib/config.js";
 import { resolveType } from "../../lib/types.js";
 import { callAgent, resolveAgent } from "../../lib/agent.js";
-import { resolveChain, collectChapters, filterChapters } from "../lib/template-merger.js";
+import { resolveChain, resolveChainWithFallback, collectChapters, filterChapters } from "../lib/template-merger.js";
 import { summaryToText } from "../lib/forge-prompts.js";
 import { createLogger } from "../../lib/progress.js";
 import { createI18n } from "../../lib/i18n.js";
@@ -131,8 +131,8 @@ function aiFilterChapters(chapters, analysis, agent, root) {
 function main() {
   const cli = parseArgs(process.argv.slice(2), {
     flags: ["--force", "--dry-run"],
-    options: ["--type"],
-    defaults: { type: "", force: false, dryRun: false },
+    options: ["--type", "--lang", "--docs-dir"],
+    defaults: { type: "", force: false, dryRun: false, lang: "", docsDir: "" },
   });
   if (cli.help) {
     let uiLang = "en";
@@ -156,7 +156,7 @@ function main() {
   }
 
   const type = resolveType(rawType);
-  const lang = sddConfig?.lang || "ja";
+  const lang = cli.lang || sddConfig?.lang || "ja";
 
   if (type !== rawType) {
     logger.verbose(`type=${rawType} → ${type} (alias resolved) lang=${lang}`);
@@ -164,9 +164,21 @@ function main() {
     logger.verbose(`type=${type} lang=${lang}`);
   }
 
-  // 継承チェーンの構築
+  // 継承チェーンの構築（多言語フォールバック対応）
   const projectLocalDir = path.join(root, ".sdd-forge", "templates", lang, "docs");
-  const chain = resolveChain(type, lang, projectLocalDir);
+  const outputConfig = sddConfig?.output;
+  const fallbackLangs = outputConfig?.languages?.filter((l) => l !== lang) || [];
+  const agent = resolveAgent(sddConfig);
+  let chain;
+  if (fallbackLangs.length > 0) {
+    chain = resolveChainWithFallback(type, lang, projectLocalDir, {
+      fallbackLangs,
+      agent,
+      root,
+    });
+  } else {
+    chain = resolveChain(type, lang, projectLocalDir);
+  }
   logger.verbose(`chain: ${chain.join(" → ")}`);
 
   // テンプレートマージ（project-local は resolveChain 経由でチェーンに含まれる）
@@ -209,7 +221,7 @@ function main() {
   logger.verbose(`${filteredChapters.length} template files (${totalFiltered} filtered${totalFiltered > deterministicFiltered ? `, AI: ${totalFiltered - deterministicFiltered}` : ""})`);
 
   // docs/ ディレクトリの準備
-  const docsDir = path.join(root, "docs");
+  const docsDir = cli.docsDir ? path.resolve(root, cli.docsDir) : path.join(root, "docs");
   if (!fs.existsSync(docsDir)) {
     fs.mkdirSync(docsDir, { recursive: true });
   }
