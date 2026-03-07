@@ -69,6 +69,7 @@ describe("init CLI", () => {
     const promptCapture = join(tmp, "prompt.txt");
     writeJson(tmp, ".sdd-forge/config.json", {
       lang: "ja",
+      output: { languages: ["ja"], default: "ja" },
       type: "cli/node-cli",
       documentStyle: { purpose: "user-guide", tone: "polite" },
       defaultAgent: "capture",
