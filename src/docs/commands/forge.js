@@ -19,6 +19,7 @@ import { stdout as output } from "process";
 import { runIfDirect } from "../../lib/entrypoint.js";
 import { populateFromAnalysis } from "./data.js";
 import { textFillFromAnalysis } from "./text.js";
+import { mapWithConcurrency } from "../lib/concurrency.js";
 import { PKG_DIR, repoRoot, parseArgs } from "../../lib/cli.js";
 import { loadJsonFile, loadConfig, loadUiLang, sddOutputDir, saveContext } from "../../lib/config.js";
 import { resolveType } from "../../lib/types.js";
@@ -181,56 +182,36 @@ async function invokeAgent(agent, prompt, { cwd, timeoutMs, systemPrompt, verbos
  * Returns an array of { file, ok, error? } results.
  */
 async function runPerFile({ agent, targetFiles, systemPrompt, lang, round, maxRuns, reviewFeedback, root, timeoutMs, concurrency, verbose }) {
-  const results = [];
-  let running = 0;
-  let idx = 0;
+  const raw = await mapWithConcurrency(targetFiles, concurrency, async (file) => {
+    const filePrompt = buildForgeFilePrompt({
+      lang,
+      targetFile: file,
+      round,
+      maxRuns,
+      reviewFeedback,
+    });
 
-  return new Promise((resolve) => {
-    function next() {
-      // All dispatched and all done
-      if (idx >= targetFiles.length && running === 0) {
-        resolve(results);
-        return;
-      }
+    output.write(`[forge] start: ${file}\n`);
 
-      // Dispatch up to concurrency limit
-      while (running < concurrency && idx < targetFiles.length) {
-        const file = targetFiles[idx++];
-        running++;
+    await invokeAgent(agent, filePrompt, {
+      label: `forge:${path.basename(file)}`,
+      cwd: root,
+      timeoutMs,
+      verbose,
+      systemPrompt,
+    });
 
-        const filePrompt = buildForgeFilePrompt({
-          lang,
-          targetFile: file,
-          round,
-          maxRuns,
-          reviewFeedback,
-        });
+    output.write(`[forge] done: ${file}\n`);
+    return { file, ok: true };
+  });
 
-        output.write(`[forge] start: ${file}\n`);
-
-        invokeAgent(agent, filePrompt, {
-          label: `forge:${path.basename(file)}`,
-          cwd: root,
-          timeoutMs,
-          verbose,
-          systemPrompt,
-        })
-          .then(() => {
-            output.write(`[forge] done: ${file}\n`);
-            results.push({ file, ok: true });
-          })
-          .catch((e) => {
-            output.write(`[forge] failed: ${file} — ${String(e.message || e).slice(0, 200)}\n`);
-            results.push({ file, ok: false, error: e.message });
-          })
-          .finally(() => {
-            running--;
-            next();
-          });
-      }
+  return raw.map((r, i) => {
+    if (r.error) {
+      const file = targetFiles[i];
+      output.write(`[forge] failed: ${file} — ${String(r.error.message || r.error).slice(0, 200)}\n`);
+      return { file, ok: false, error: r.error.message };
     }
-
-    next();
+    return r.value;
   });
 }
 

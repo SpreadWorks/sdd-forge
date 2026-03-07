@@ -6,6 +6,7 @@
 
 import fs from "fs";
 import path from "path";
+import { findFiles } from "../../../docs/lib/scanner.js";
 
 /**
  * コントローラディレクトリを再帰的に走査し、コントローラ情報を返す。
@@ -17,24 +18,11 @@ export function analyzeControllers(sourceRoot) {
   const baseDir = path.join(sourceRoot, "app", "Http", "Controllers");
   if (!fs.existsSync(baseDir)) return { controllers: [], summary: { total: 0, totalActions: 0 } };
 
-  const controllers = [];
-  walk(baseDir, baseDir, controllers);
+  const files = findFiles(baseDir, "*.php", ["Controller.php"], true);
+  const controllers = files.map((f) => parseController(f.absPath, f.relPath));
 
   const totalActions = controllers.reduce((s, c) => s + c.actions.length, 0);
   return { controllers, summary: { total: controllers.length, totalActions } };
-}
-
-function walk(dir, baseDir, results) {
-  if (!fs.existsSync(dir)) return;
-  for (const ent of fs.readdirSync(dir, { withFileTypes: true })) {
-    if (ent.isDirectory()) {
-      walk(path.join(dir, ent.name), baseDir, results);
-    } else if (ent.isFile() && ent.name.endsWith(".php") && ent.name !== "Controller.php") {
-      const abs = path.join(dir, ent.name);
-      const rel = path.relative(baseDir, abs);
-      results.push(parseController(abs, rel));
-    }
-  }
 }
 
 function parseController(filePath, relPath) {

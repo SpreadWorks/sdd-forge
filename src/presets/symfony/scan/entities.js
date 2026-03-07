@@ -6,6 +6,7 @@
 
 import fs from "fs";
 import path from "path";
+import { findFiles, camelToSnake } from "../../../docs/lib/scanner.js";
 
 /**
  * @param {string} sourceRoot - プロジェクトルート
@@ -15,32 +16,18 @@ export function analyzeEntities(sourceRoot) {
   const baseDir = path.join(sourceRoot, "src", "Entity");
   if (!fs.existsSync(baseDir)) return { entities: [], summary: { total: 0 } };
 
+  const files = findFiles(baseDir, "*.php", [], true);
   const entities = [];
-  walk(baseDir, baseDir, entities);
+  for (const f of files) {
+    const content = fs.readFileSync(f.absPath, "utf8");
+    if (/#\[ORM\\Entity/.test(content) || /#\[ORM\\Table/.test(content)) {
+      entities.push(parseEntity(f.absPath, f.relPath));
+    }
+  }
 
   return { entities, summary: { total: entities.length } };
 }
 
-function walk(dir, baseDir, results) {
-  if (!fs.existsSync(dir)) return;
-  for (const ent of fs.readdirSync(dir, { withFileTypes: true })) {
-    if (ent.isDirectory()) {
-      walk(path.join(dir, ent.name), baseDir, results);
-    } else if (ent.isFile() && ent.name.endsWith(".php")) {
-      const abs = path.join(dir, ent.name);
-      const content = fs.readFileSync(abs, "utf8");
-      // Doctrine エンティティ: #[ORM\Entity] attribute
-      if (/#\[ORM\\Entity/.test(content) || /#\[ORM\\Table/.test(content)) {
-        const rel = path.relative(baseDir, abs);
-        results.push(parseEntity(abs, rel));
-      }
-    }
-  }
-}
-
-function camelToSnake(str) {
-  return str.replace(/([a-z])([A-Z])/g, "$1_$2").toLowerCase();
-}
 
 function parseEntity(filePath, relPath) {
   const content = fs.readFileSync(filePath, "utf8");

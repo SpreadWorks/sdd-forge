@@ -13,7 +13,7 @@
 import fs from "fs";
 import path from "path";
 import { runIfDirect } from "../../lib/entrypoint.js";
-import { parseDirectives } from "../lib/directive-parser.js";
+import { parseDirectives, replaceBlockDirective } from "../lib/directive-parser.js";
 // RENDERERS は DataSource メソッドが直接レンダリングするため不要
 import { createResolver } from "../lib/resolver-factory.js";
 import { repoRoot, parseArgs } from "../../lib/cli.js";
@@ -74,9 +74,7 @@ function processTemplate(text, analysis, fileName, resolveFn) {
         lines[d.line] = lines[d.line].replace(d.raw, `${openTag}${rendered}${endTag}`);
       } else if (d.endLine >= 0) {
         // ブロック: {{data}} 行と {{/data}} 行の間を置換
-        const endDataLine = lines[d.endLine];
-        const newLines = [d.raw, rendered, endDataLine];
-        lines.splice(d.line, d.endLine - d.line + 1, ...newLines);
+        replaceBlockDirective(lines, d, rendered);
       } else {
         // {{/data}} がない — スキップ
         logger.log(`WARN: missing {{/data}} for "${d.source}.${d.method}" in ${fileName}:${d.line + 1}`);

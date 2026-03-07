@@ -6,6 +6,7 @@
 
 import fs from "fs";
 import path from "path";
+import { findFiles } from "../../../docs/lib/scanner.js";
 
 /**
  * @param {string} sourceRoot - プロジェクトルート
@@ -145,24 +146,15 @@ function parseAttributeRoutes(sourceRoot) {
   const controllerDir = path.join(sourceRoot, "src", "Controller");
   if (!fs.existsSync(controllerDir)) return [];
 
+  const files = findFiles(controllerDir, "*.php", [], true);
   const routes = [];
-  walkControllers(controllerDir, controllerDir, routes);
-  return routes;
-}
-
-function walkControllers(dir, baseDir, routes) {
-  if (!fs.existsSync(dir)) return;
-  for (const ent of fs.readdirSync(dir, { withFileTypes: true })) {
-    if (ent.isDirectory()) {
-      walkControllers(path.join(dir, ent.name), baseDir, routes);
-    } else if (ent.isFile() && ent.name.endsWith(".php")) {
-      const abs = path.join(dir, ent.name);
-      const content = fs.readFileSync(abs, "utf8");
-      if (/#\[Route/.test(content)) {
-        routes.push(...extractAttributeRoutes(content));
-      }
+  for (const f of files) {
+    const content = fs.readFileSync(f.absPath, "utf8");
+    if (/#\[Route/.test(content)) {
+      routes.push(...extractAttributeRoutes(content));
     }
   }
+  return routes;
 }
 
 function extractAttributeRoutes(content) {

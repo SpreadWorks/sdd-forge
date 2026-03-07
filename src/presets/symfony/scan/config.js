@@ -5,6 +5,7 @@
 
 import fs from "fs";
 import path from "path";
+import { parseComposer, parseEnvFile } from "../../lib/composer-utils.js";
 
 /**
  * @param {string} sourceRoot - プロジェクトルート
@@ -17,7 +18,7 @@ export function analyzeConfig(sourceRoot) {
   extras.composerDeps = parseComposer(sourceRoot);
 
   // .env
-  extras.envKeys = parseEnvFile(sourceRoot);
+  extras.envKeys = parseEnvFile(sourceRoot, [".env", ".env.example"]);
 
   // config/packages/*.yaml
   extras.configFiles = parseConfigPackages(sourceRoot);
@@ -34,42 +35,6 @@ export function analyzeConfig(sourceRoot) {
   return extras;
 }
 
-function parseComposer(sourceRoot) {
-  const composerPath = path.join(sourceRoot, "composer.json");
-  if (!fs.existsSync(composerPath)) return { require: {}, requireDev: {} };
-  try {
-    const composer = JSON.parse(fs.readFileSync(composerPath, "utf8"));
-    return {
-      require: composer.require || {},
-      requireDev: composer["require-dev"] || {},
-    };
-  } catch (_) {
-    return { require: {}, requireDev: {} };
-  }
-}
-
-function parseEnvFile(sourceRoot) {
-  // .env or .env.example
-  let envPath = path.join(sourceRoot, ".env");
-  if (!fs.existsSync(envPath)) {
-    envPath = path.join(sourceRoot, ".env.example");
-  }
-  if (!fs.existsSync(envPath)) return [];
-  const content = fs.readFileSync(envPath, "utf8");
-  const keys = [];
-
-  for (const line of content.split("\n")) {
-    const trimmed = line.trim();
-    if (!trimmed || trimmed.startsWith("#")) continue;
-    const match = trimmed.match(/^([A-Z_][A-Z0-9_]*)=/);
-    if (match) {
-      const value = trimmed.slice(match[0].length);
-      keys.push({ key: match[1], defaultValue: value });
-    }
-  }
-
-  return keys;
-}
 
 function parseConfigPackages(sourceRoot) {
   const configDir = path.join(sourceRoot, "config", "packages");

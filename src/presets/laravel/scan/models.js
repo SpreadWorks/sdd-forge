@@ -6,6 +6,7 @@
 
 import fs from "fs";
 import path from "path";
+import { findFiles, camelToSnake, pluralize } from "../../../docs/lib/scanner.js";
 
 /**
  * @param {string} sourceRoot - プロジェクトルート
@@ -19,38 +20,18 @@ export function analyzeModels(sourceRoot) {
   }
   if (!fs.existsSync(baseDir)) return { models: [], summary: { total: 0 } };
 
+  const files = findFiles(baseDir, "*.php", [], true);
   const models = [];
-  walk(baseDir, baseDir, models);
+  for (const f of files) {
+    const content = fs.readFileSync(f.absPath, "utf8");
+    if (/extends\s+Model\b/.test(content) || /use\s+HasFactory\b/.test(content)) {
+      models.push(parseModel(f.absPath, f.relPath, baseDir));
+    }
+  }
 
   return { models, summary: { total: models.length } };
 }
 
-function walk(dir, baseDir, results) {
-  if (!fs.existsSync(dir)) return;
-  for (const ent of fs.readdirSync(dir, { withFileTypes: true })) {
-    if (ent.isDirectory()) {
-      walk(path.join(dir, ent.name), baseDir, results);
-    } else if (ent.isFile() && ent.name.endsWith(".php")) {
-      const abs = path.join(dir, ent.name);
-      const content = fs.readFileSync(abs, "utf8");
-      // Model クラスを判定: extends Model か HasFactory を使用
-      if (/extends\s+Model\b/.test(content) || /use\s+HasFactory\b/.test(content)) {
-        const rel = path.relative(baseDir, abs);
-        results.push(parseModel(abs, rel, baseDir));
-      }
-    }
-  }
-}
-
-function camelToSnake(str) {
-  return str.replace(/([a-z])([A-Z])/g, "$1_$2").toLowerCase();
-}
-
-function pluralize(str) {
-  if (str.endsWith("y") && !/[aeiou]y$/i.test(str)) return str.slice(0, -1) + "ies";
-  if (/(?:s|x|sh|ch)$/.test(str)) return str + "es";
-  return str + "s";
-}
 
 function parseModel(filePath, relPath, baseDir) {
   const content = fs.readFileSync(filePath, "utf8");

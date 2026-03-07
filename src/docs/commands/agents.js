@@ -15,7 +15,7 @@ import { loadJsonFile, loadUiLang, sddConfigPath, sddOutputDir, resolveProjectCo
 import { callAgent, loadAgentConfig } from "../../lib/agent.js";
 import { createI18n } from "../../lib/i18n.js";
 import { createResolver } from "../lib/resolver-factory.js";
-import { parseDirectives } from "../lib/directive-parser.js";
+import { parseDirectives, replaceBlockDirective } from "../lib/directive-parser.js";
 
 // ---------------------------------------------------------------------------
 // AI プロンプト構築
@@ -100,9 +100,7 @@ function resolveAgentsDirectives(text, resolveFn) {
     if (d.source === "agents" && d.method === "project") projectContent = rendered;
 
     if (d.endLine >= 0) {
-      const endDataLine = lines[d.endLine];
-      const newLines = [d.raw, rendered, endDataLine];
-      lines.splice(d.line, d.endLine - d.line + 1, ...newLines);
+      replaceBlockDirective(lines, d, rendered);
     }
   }
 
@@ -121,9 +119,7 @@ function replaceProjectContent(text, refined) {
     if (d.type !== "data" || d.source !== "agents" || d.method !== "project") continue;
     if (d.endLine < 0) continue;
 
-    const endDataLine = lines[d.endLine];
-    const newLines = [d.raw, refined, endDataLine];
-    lines.splice(d.line, d.endLine - d.line + 1, ...newLines);
+    replaceBlockDirective(lines, d, refined);
     break;
   }
 

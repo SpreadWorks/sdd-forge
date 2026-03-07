@@ -17,7 +17,7 @@ import { loadJsonFile, sddConfigPath } from "../../lib/config.js";
 import { resolveType } from "../../lib/types.js";
 import { resolveChain, resolveChainWithFallback, mergeFile } from "../lib/template-merger.js";
 import { createResolver } from "../lib/resolver-factory.js";
-import { parseDirectives } from "../lib/directive-parser.js";
+import { parseDirectives, replaceBlockDirective } from "../lib/directive-parser.js";
 import { createLogger } from "../../lib/progress.js";
 import { createI18n } from "../../lib/i18n.js";
 
@@ -54,9 +54,7 @@ function resolveDataDirectives(text, resolveFn) {
       const endTag = "<!-- {{/data}} -->";
       lines[d.line] = lines[d.line].replace(d.raw, `${openTag}${rendered}${endTag}`);
     } else if (d.endLine >= 0) {
-      const endDataLine = lines[d.endLine];
-      const newLines = [d.raw, rendered, endDataLine];
-      lines.splice(d.line, d.endLine - d.line + 1, ...newLines);
+      replaceBlockDirective(lines, d, rendered);
     }
   }
 

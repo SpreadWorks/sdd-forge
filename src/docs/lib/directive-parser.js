@@ -164,6 +164,20 @@ export function parseDirectives(text) {
  *   postamble: string[],
  * }}
  */
+/**
+ * ブロックディレクティブの内容を置換する。
+ * lines 配列を直接変更する（splice）。
+ *
+ * @param {string[]} lines - ファイルの行配列
+ * @param {DataDirective} d - ディレクティブ
+ * @param {string} content - 新しい内容
+ */
+export function replaceBlockDirective(lines, d, content) {
+  const endDataLine = lines[d.endLine];
+  const newLines = [d.raw, content, endDataLine];
+  lines.splice(d.line, d.endLine - d.line + 1, ...newLines);
+}
+
 export function parseBlocks(text) {
   const lines = text.split("\n");
   let hasExtends = false;
