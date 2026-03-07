@@ -13,7 +13,7 @@ describe("agents CLI", () => {
 
   it("exits non-zero when AGENTS.md is missing", () => {
     tmp = createTmpDir();
-    writeJson(tmp, ".sdd-forge/config.json", { lang: "ja", type: "cli" });
+    writeJson(tmp, ".sdd-forge/config.json", { lang: "ja", type: "cli", output: { languages: ["ja"], default: "ja" } });
     writeJson(tmp, ".sdd-forge/output/analysis.json", { analyzedAt: "2026-01-01" });
 
     try {
@@ -23,13 +23,13 @@ describe("agents CLI", () => {
       });
       assert.fail("should exit non-zero");
     } catch (err) {
-      assert.match(err.stderr, /not found/i);
+      assert.match(err.stderr, /not found|見つかりません/i);
     }
   });
 
   it("exits non-zero when analysis.json is missing", () => {
     tmp = createTmpDir();
-    writeJson(tmp, ".sdd-forge/config.json", { lang: "ja", type: "cli" });
+    writeJson(tmp, ".sdd-forge/config.json", { lang: "ja", type: "cli", output: { languages: ["ja"], default: "ja" } });
     writeFile(tmp, "AGENTS.md", [
       '<!-- {{data: agents.sdd("")}} -->',
       '<!-- {{/data}} -->',
@@ -48,7 +48,7 @@ describe("agents CLI", () => {
 
   it("exits non-zero when no agent configured (for project directive)", () => {
     tmp = createTmpDir();
-    writeJson(tmp, ".sdd-forge/config.json", { lang: "ja", type: "cli" });
+    writeJson(tmp, ".sdd-forge/config.json", { lang: "ja", type: "cli", output: { languages: ["ja"], default: "ja" } });
     writeJson(tmp, ".sdd-forge/output/analysis.json", {
       analyzedAt: "2026-01-01",
       files: { summary: { total: 5 } },
@@ -78,7 +78,7 @@ describe("agents CLI", () => {
 
   it("resolves sdd directive when no project directive exists", () => {
     tmp = createTmpDir();
-    writeJson(tmp, ".sdd-forge/config.json", { lang: "ja", type: "cli" });
+    writeJson(tmp, ".sdd-forge/config.json", { lang: "ja", type: "cli", output: { languages: ["ja"], default: "ja" } });
     writeJson(tmp, ".sdd-forge/output/analysis.json", {
       analyzedAt: "2026-01-01",
       files: { summary: { total: 5 } },

@@ -55,6 +55,16 @@ if (subCmd === "build") {
   const initArgs = rest.filter((a) => a === "--force");
   const otherArgs = rest.filter((a) => a !== "--force" && a !== "--verbose" && a !== "--dry-run");
 
+  // Detect multi-lang to include translate step
+  const { loadJsonFile: loadJsonForSteps } = await import(path.join(PKG_DIR, "lib/config.js"));
+  const { resolveOutputConfig: resolveOutputForSteps } = await import(path.join(PKG_DIR, "lib/types.js"));
+  let hasTranslateStep = false;
+  try {
+    const stepCfg = loadJsonForSteps(sddConfigPath(process.env.SDD_WORK_ROOT || process.cwd()));
+    const stepOutput = resolveOutputForSteps(stepCfg);
+    hasTranslateStep = stepOutput.isMultiLang;
+  } catch (_) {}
+
   const pipelineSteps = [
     { label: "scan", weight: 1 },
     { label: "init", weight: 1 },
@@ -62,11 +72,15 @@ if (subCmd === "build") {
     { label: "text", weight: 3 },
     { label: "readme", weight: 1 },
     { label: "agents", weight: 1 },
+    ...(hasTranslateStep ? [{ label: "translate", weight: 2 }] : []),
   ];
 
   // Set up progress bar for the build pipeline
   const { createProgress } = await import(path.join(PKG_DIR, "lib/progress.js"));
-  const progress = createProgress(pipelineSteps, { verbose: isVerbose });
+  const progress = createProgress(pipelineSteps, {
+    verbose: isVerbose,
+    title: "Generating docs with SDD Forge...",
+  });
 
   const dryRunArg = isDryRun ? ["--dry-run"] : [];
 
@@ -141,6 +155,7 @@ if (subCmd === "build") {
   const outputCfg = resolveOutputConfig(cfg);
 
   if (outputCfg.isMultiLang) {
+    progress.start("translate");
     const nonDefaultLangs = outputCfg.languages.filter((l) => l !== outputCfg.default);
     const docsDir = path.join(workRoot, "docs");
 
@@ -182,6 +197,7 @@ if (subCmd === "build") {
         await runCommandMain(dataMain, dataPath, ["--docs-dir", langDocsDir, ...dryRunArg]);
       }
     }
+    progress.stepDone();
   }
 
   progress.done();

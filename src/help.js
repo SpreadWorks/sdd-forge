@@ -3,14 +3,14 @@
  * sdd-forge/help.js
  *
  * Display available commands.
- * Language is determined by .sdd-forge/config.json uiLang, defaulting to "en".
+ * Language is determined by .sdd-forge/config.json lang, defaulting to "en".
  */
 
 import fs from "fs";
 import path from "path";
 import { runIfDirect } from "./lib/entrypoint.js";
 import { PKG_DIR } from "./lib/cli.js";
-import { loadUiLang } from "./lib/config.js";
+import { loadLang } from "./lib/config.js";
 import { createI18n } from "./lib/i18n.js";
 
 /** Command layout — name keys correspond to ui.json help.commands.* */
@@ -53,7 +53,7 @@ function getVersion() {
 }
 
 function main() {
-  const lang = loadUiLang(process.cwd());
+  const lang = loadLang(process.cwd());
   const t = createI18n(lang, { domain: "ui" });
   const version = getVersion();
 

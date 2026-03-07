@@ -12,7 +12,7 @@ import fs from "fs";
 import path from "path";
 import { runIfDirect } from "../../lib/entrypoint.js";
 import { repoRoot, parseArgs } from "../../lib/cli.js";
-import { loadPackageField, loadJsonFile, loadUiLang, sddConfigPath, sddOutputDir, resolveDocLang } from "../../lib/config.js";
+import { loadPackageField, loadJsonFile, loadLang, sddConfigPath, sddOutputDir } from "../../lib/config.js";
 import { resolveType } from "../../lib/types.js";
 import { callAgent, resolveAgent } from "../../lib/agent.js";
 import { resolveChain, resolveChainWithFallback, collectChapters, filterChapters } from "../lib/template-merger.js";
@@ -137,7 +137,7 @@ function main() {
     defaults: { type: "", force: false, dryRun: false, lang: "", docsDir: "" },
   });
   if (cli.help) {
-    const tu = createI18n(loadUiLang(repoRoot(import.meta.url)));
+    const tu = createI18n(loadLang(repoRoot(import.meta.url)));
     const h = tu.raw("help.cmdHelp.init");
     const o = h.options;
     console.log([h.usage, "", h.desc, "", "Options:", `  ${o.type}`, `  ${o.force}`, `  ${o.dryRun}`, `  ${o.help}`].join("\n"));
@@ -147,7 +147,7 @@ function main() {
   const root = repoRoot(import.meta.url);
   const defaults = loadPackageField(root, "docsInit") || {};
   const sddConfig = loadJsonFile(sddConfigPath(root));
-  const t = createI18n(sddConfig?.uiLang || "en", { domain: "messages" });
+  const t = createI18n(sddConfig?.lang || "en", { domain: "messages" });
 
   const rawType = cli.type || sddConfig?.type || defaults.defaultType;
   if (!rawType) {
@@ -156,7 +156,7 @@ function main() {
   }
 
   const type = resolveType(rawType);
-  const lang = cli.lang || resolveDocLang(sddConfig);
+  const lang = cli.lang || sddConfig?.output?.default;
 
   if (type !== rawType) {
     logger.verbose(`type=${rawType} → ${type} (alias resolved) lang=${lang}`);

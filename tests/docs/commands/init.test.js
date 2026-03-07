@@ -13,7 +13,7 @@ describe("init CLI", () => {
 
   it("creates docs/ from template", () => {
     tmp = createTmpDir();
-    writeJson(tmp, ".sdd-forge/config.json", { lang: "ja", type: "cli/node-cli" });
+    writeJson(tmp, ".sdd-forge/config.json", { lang: "ja", type: "cli/node-cli", output: { languages: ["ja"], default: "ja" } });
     writeJson(tmp, "package.json", { name: "test-proj" });
     writeJson(tmp, ".sdd-forge/output/analysis.json", {
       analyzedAt: "2026-01-01",
@@ -33,7 +33,7 @@ describe("init CLI", () => {
 
   it("--dry-run shows files without writing", () => {
     tmp = createTmpDir();
-    writeJson(tmp, ".sdd-forge/config.json", { lang: "ja", type: "cli/node-cli" });
+    writeJson(tmp, ".sdd-forge/config.json", { lang: "ja", type: "cli/node-cli", output: { languages: ["ja"], default: "ja" } });
     writeJson(tmp, "package.json", { name: "test-proj" });
     writeJson(tmp, ".sdd-forge/output/analysis.json", {
       analyzedAt: "2026-01-01",
@@ -55,7 +55,7 @@ describe("init CLI", () => {
 
   it("shows help with --help", () => {
     tmp = createTmpDir();
-    writeJson(tmp, ".sdd-forge/config.json", { lang: "ja", type: "cli/node-cli" });
+    writeJson(tmp, ".sdd-forge/config.json", { lang: "ja", type: "cli/node-cli", output: { languages: ["ja"], default: "ja" } });
 
     const result = execFileSync("node", [CMD, "--help"], {
       encoding: "utf8",

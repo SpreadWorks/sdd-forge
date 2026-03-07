@@ -16,6 +16,7 @@ describe("scan CLI", () => {
     writeJson(tmp, ".sdd-forge/config.json", {
       lang: "ja",
       type: "cli/node-cli",
+      output: { languages: ["ja"], default: "ja" },
       scan: { include: ["src/**/*.js"], exclude: [] },
     });
     writeFile(tmp, "src/index.js", 'export function hello() { return "hi"; }\n');
@@ -35,6 +36,7 @@ describe("scan CLI", () => {
     writeJson(tmp, ".sdd-forge/config.json", {
       lang: "ja",
       type: "cli/node-cli",
+      output: { languages: ["ja"], default: "ja" },
       scan: { include: ["src/**/*.js"], exclude: [] },
     });
     writeFile(tmp, "src/index.js", 'export function hello() { return "hi"; }\n');
@@ -53,6 +55,7 @@ describe("scan CLI", () => {
     writeJson(tmp, ".sdd-forge/config.json", {
       lang: "ja",
       type: "cli/node-cli",
+      output: { languages: ["ja"], default: "ja" },
       scan: { include: ["src/**/*.js"], exclude: [] },
     });
     fs.mkdirSync(join(tmp, ".sdd-forge/output"), { recursive: true });
@@ -81,6 +84,7 @@ describe("scan CLI", () => {
     writeJson(tmp, ".sdd-forge/config.json", {
       lang: "ja",
       type: "cli/node-cli",
+      output: { languages: ["ja"], default: "ja" },
       scan: { include: ["src/**/*.js"], exclude: [] },
     });
     writeFile(tmp, "src/index.js", 'export function hello() { return "hi"; }\n');
@@ -109,6 +113,7 @@ describe("scan CLI", () => {
     writeJson(tmp, ".sdd-forge/config.json", {
       lang: "ja",
       type: "webapp/cakephp2",
+      output: { languages: ["ja"], default: "ja" },
     });
     writeFile(tmp, "app/Controller/UsersController.php", [
       "<?php",
@@ -136,6 +141,7 @@ describe("scan CLI", () => {
     writeJson(tmp, ".sdd-forge/config.json", {
       lang: "ja",
       type: "cli/node-cli",
+      output: { languages: ["ja"], default: "ja" },
     });
     writeJson(tmp, "package.json", {
       dependencies: { "express": "^4.0.0" },

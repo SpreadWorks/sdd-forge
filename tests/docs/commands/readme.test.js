@@ -13,7 +13,7 @@ describe("readme CLI", () => {
 
   it("generates README.md from chapter files", () => {
     tmp = createTmpDir();
-    writeJson(tmp, ".sdd-forge/config.json", { lang: "ja", type: "cli/node-cli" });
+    writeJson(tmp, ".sdd-forge/config.json", { lang: "ja", type: "cli/node-cli", output: { languages: ["ja"], default: "ja" } });
     writeJson(tmp, "package.json", { name: "test-project", description: "A test" });
 
     const chapter = [
@@ -38,7 +38,7 @@ describe("readme CLI", () => {
 
   it("skips when type is not set", () => {
     tmp = createTmpDir();
-    writeJson(tmp, ".sdd-forge/config.json", { lang: "ja" });
+    writeJson(tmp, ".sdd-forge/config.json", { lang: "ja", output: { languages: ["ja"], default: "ja" } });
 
     const result = execFileSync("node", [CMD], {
       encoding: "utf8",
@@ -49,7 +49,7 @@ describe("readme CLI", () => {
 
   it("dry-run does not write README", () => {
     tmp = createTmpDir();
-    writeJson(tmp, ".sdd-forge/config.json", { lang: "ja", type: "cli/node-cli" });
+    writeJson(tmp, ".sdd-forge/config.json", { lang: "ja", type: "cli/node-cli", output: { languages: ["ja"], default: "ja" } });
     writeJson(tmp, "package.json", { name: "test" });
     writeFile(tmp, "docs/01_test.md", "# 01. Test\n## 説明\ndesc\n## 内容\ncontent\n");
 

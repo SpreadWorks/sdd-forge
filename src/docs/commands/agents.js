@@ -11,7 +11,7 @@ import fs from "fs";
 import path from "path";
 import { runIfDirect } from "../../lib/entrypoint.js";
 import { PKG_DIR, sourceRoot, repoRoot, parseArgs } from "../../lib/cli.js";
-import { loadJsonFile, loadUiLang, sddConfigPath, sddOutputDir, resolveProjectContext, resolveDocLang } from "../../lib/config.js";
+import { loadJsonFile, loadLang, sddConfigPath, sddOutputDir, resolveProjectContext } from "../../lib/config.js";
 import { callAgent, loadAgentConfig } from "../../lib/agent.js";
 import { createI18n } from "../../lib/i18n.js";
 import { createResolver } from "../lib/resolver-factory.js";
@@ -139,7 +139,7 @@ async function main() {
   });
 
   if (opts.help) {
-    const tu = createI18n(loadUiLang(repoRoot()));
+    const tu = createI18n(loadLang(repoRoot()));
     const h = tu.raw("help.cmdHelp.agents");
     const o = h.options;
     console.log([
@@ -157,8 +157,8 @@ async function main() {
     config = loadJsonFile(sddConfigPath(workRoot));
   } catch (_) {}
 
-  const lang = resolveDocLang(config);
-  const t = createI18n(config.uiLang || "en", { domain: "messages" });
+  const lang = config.lang;
+  const t = createI18n(config.lang || "en", { domain: "messages" });
 
   const agentsPath = path.join(srcRoot, "AGENTS.md");
   if (!fs.existsSync(agentsPath)) {

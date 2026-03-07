@@ -26,6 +26,7 @@ describe("validateConfig", () => {
   const validConfig = {
     lang: "ja",
     type: "cli/node-cli",
+    output: { languages: ["ja"], default: "ja" },
   };
 
   it("accepts minimal valid config", () => {
@@ -40,11 +41,15 @@ describe("validateConfig", () => {
   });
 
   it("throws when lang is missing", () => {
-    assert.throws(() => validateConfig({ type: "cli" }), /lang/);
+    assert.throws(() => validateConfig({ type: "cli", output: { languages: ["ja"], default: "ja" } }), /lang/);
   });
 
   it("throws when type is missing", () => {
-    assert.throws(() => validateConfig({ lang: "ja" }), /type/);
+    assert.throws(() => validateConfig({ lang: "ja", output: { languages: ["ja"], default: "ja" } }), /type/);
+  });
+
+  it("throws when output is missing", () => {
+    assert.throws(() => validateConfig({ lang: "ja", type: "cli" }), /output/);
   });
 
   it("validates documentStyle", () => {

@@ -13,7 +13,7 @@ import fs from "fs";
 import path from "path";
 import { runIfDirect } from "../../lib/entrypoint.js";
 import { repoRoot, parseArgs, isInsideWorktree } from "../../lib/cli.js";
-import { loadUiLang, sddConfigPath, sddDir } from "../../lib/config.js";
+import { loadLang, sddConfigPath, sddDir } from "../../lib/config.js";
 import { runSync } from "../../lib/process.js";
 import { createI18n } from "../../lib/i18n.js";
 
@@ -170,7 +170,7 @@ function main() {
     defaults: { title: "", base: "", dryRun: false, allowDirty: false, noBranch: false, worktree: false },
   });
   if (opts.help) {
-    const tu = createI18n(loadUiLang(repoRoot(import.meta.url)));
+    const tu = createI18n(loadLang(repoRoot(import.meta.url)));
     const h = tu.raw("help.cmdHelp.spec");
     const o = h.options;
     console.log(

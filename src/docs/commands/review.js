@@ -10,7 +10,7 @@ import fs from "fs";
 import path from "path";
 import { runIfDirect } from "../../lib/entrypoint.js";
 import { repoRoot, parseArgs } from "../../lib/cli.js";
-import { loadUiLang, sddConfigPath, sddOutputDir } from "../../lib/config.js";
+import { loadLang, sddConfigPath, sddOutputDir } from "../../lib/config.js";
 import { createI18n } from "../../lib/i18n.js";
 import { resolveOutputConfig } from "../../lib/types.js";
 
@@ -19,7 +19,7 @@ function main() {
   const opts = parseArgs(args, { flags: [], options: [] });
 
   if (opts.help) {
-    const tu = createI18n(loadUiLang(repoRoot()));
+    const tu = createI18n(loadLang(repoRoot()));
     const h = tu.raw("help.cmdHelp.review");
     console.log(h.usage);
     console.log("");
@@ -29,7 +29,7 @@ function main() {
   }
 
   const workRoot = repoRoot();
-  const t = createI18n(loadUiLang(workRoot), { domain: "messages" });
+  const t = createI18n(loadLang(workRoot), { domain: "messages" });
   const targetDir = args.find((a) => !a.startsWith("-")) || path.join(workRoot, "docs");
 
   // Discover chapter files (NN_*.md)

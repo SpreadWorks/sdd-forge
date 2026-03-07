@@ -114,7 +114,7 @@ export default class AgentsSource extends DataSource {
 
   _lang() {
     const config = this._loadConfig();
-    return config.lang || config.output?.default || "en";
+    return config.lang;
   }
 
   _loadConfig() {

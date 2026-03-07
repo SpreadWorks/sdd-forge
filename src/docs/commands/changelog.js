@@ -10,7 +10,7 @@ import fs from "fs";
 import path from "path";
 import { runIfDirect } from "../../lib/entrypoint.js";
 import { sourceRoot, repoRoot, parseArgs } from "../../lib/cli.js";
-import { loadUiLang, sddConfigPath, resolveDocLang } from "../../lib/config.js";
+import { loadLang, sddConfigPath } from "../../lib/config.js";
 import { createI18n } from "../../lib/i18n.js";
 
 /**
@@ -116,7 +116,7 @@ function main() {
   const opts = parseArgs(args, { flags: ["--dry-run"], options: [], defaults: { dryRun: false } });
 
   if (opts.help) {
-    const tu = createI18n(loadUiLang(repoRoot()));
+    const tu = createI18n(loadLang(repoRoot()));
     const h = tu.raw("help.cmdHelp.changelog");
     const o = h.options;
     console.log([h.usage, "", `  ${h.desc}`, `  ${h.descDetail}`, "", "Options:", `  ${o.dryRun}`].join("\n"));
@@ -130,11 +130,9 @@ function main() {
   const outFile = outFileArg || path.join(root, "docs", "change_log.md");
 
   let lang = "ja";
-  let uiLang = "en";
   try {
     const raw = JSON.parse(fs.readFileSync(sddConfigPath(root), "utf8"));
-    lang = resolveDocLang(raw);
-    uiLang = raw.uiLang || "en";
+    lang = raw.output?.default || raw.lang || "ja";
   } catch (_) {}
   const t = createI18n(lang, { domain: "messages" });
 
@@ -230,7 +228,7 @@ function main() {
   out.push("<!-- AUTO-GEN:END -->");
   out.push("");
 
-  const tu = createI18n(uiLang, { domain: "messages" });
+  const tu = createI18n(lang, { domain: "messages" });
 
   if (opts.dryRun) {
     process.stdout.write(out.join("\n"));

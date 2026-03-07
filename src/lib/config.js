@@ -63,31 +63,20 @@ export function sddDataDir(root) {
 }
 
 /**
- * .sdd-forge/config.json から uiLang を読み込む。
+ * .sdd-forge/config.json から lang を読み込む。
  * ファイルが存在しないかパースに失敗した場合は "en" を返す。
+ * ヘルプ表示など、バリデーション前に言語が必要な場面で使用する。
  *
  * @param {string} root - リポジトリルート
  * @returns {string}
  */
-export function loadUiLang(root) {
+export function loadLang(root) {
   try {
     const raw = JSON.parse(fs.readFileSync(sddConfigPath(root), "utf8"));
-    return raw.uiLang || "en";
+    return raw.lang || "en";
   } catch (_) {
     return "en";
   }
-}
-
-/**
- * config から docs 生成用の言語を解決する。
- * 優先順位: config.lang → config.output.default → fallback ("ja")
- *
- * @param {Object} cfg - SddConfig オブジェクト
- * @param {string} [fallback="ja"] - フォールバック言語
- * @returns {string}
- */
-export function resolveDocLang(cfg, fallback) {
-  return cfg?.lang || cfg?.output?.default || fallback || "ja";
 }
 
 // ---------------------------------------------------------------------------

@@ -2,15 +2,14 @@ import { createTmpDir, writeJson, writeFile } from "./tmp-dir.js";
 import { join } from "path";
 
 const DEFAULT_CONFIG = {
+  lang: "ja",
   type: "cli/node-cli",
-  locale: "ja",
-  uiLang: "ja",
   docStyle: "flat",
   preamble: "yaml",
   scan: { include: ["src/**/*.js"], exclude: [] },
   textFill: { projectContext: "test project", agent: "" },
   providers: {},
-  output: {},
+  output: { languages: ["ja"], default: "ja" },
 };
 
 const DEFAULT_PACKAGE = {

@@ -17,7 +17,7 @@ import { parseDirectives, replaceBlockDirective } from "../lib/directive-parser.
 // RENDERERS は DataSource メソッドが直接レンダリングするため不要
 import { createResolver } from "../lib/resolver-factory.js";
 import { repoRoot, parseArgs } from "../../lib/cli.js";
-import { loadConfig, loadUiLang, sddConfigPath, sddOutputDir } from "../../lib/config.js";
+import { loadConfig, loadLang, sddConfigPath, sddOutputDir } from "../../lib/config.js";
 import { resolveType } from "../../lib/types.js";
 import { createLogger } from "../../lib/progress.js";
 import { createI18n } from "../../lib/i18n.js";
@@ -125,7 +125,7 @@ async function main() {
     defaults: { dryRun: false, stdout: false, docsDir: "" },
   });
   if (cli.help) {
-    const tu = createI18n(loadUiLang(repoRoot(import.meta.url)));
+    const tu = createI18n(loadLang(repoRoot(import.meta.url)));
     const h = tu.raw("help.cmdHelp.data");
     const o = h.options;
     console.log([h.usage, "", h.desc, "", "Options:", `  ${o.dryRun}`, `  ${o.stdout}`, `  ${o.help}`].join("\n"));
@@ -134,7 +134,7 @@ async function main() {
 
   const root = repoRoot(import.meta.url);
 
-  const t = createI18n(loadUiLang(root), { domain: "messages" });
+  const t = createI18n(loadLang(root), { domain: "messages" });
 
   const analysisPath = path.join(sddOutputDir(root), "analysis.json");
 

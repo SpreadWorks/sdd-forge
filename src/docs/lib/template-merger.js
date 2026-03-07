@@ -58,6 +58,9 @@ export function resolveChain(typePath, lang, projectLocalDir) {
     validChain.push(projectLocalDir);
   }
 
+  // 欠落フラグ: 呼び出し元が部分チェーンを検知できるようにする
+  validChain.incomplete = missing.length > 0;
+
   return validChain;
 }
 
@@ -75,24 +78,27 @@ export function resolveChain(typePath, lang, projectLocalDir) {
  * @returns {string[]} 継承チェーン
  */
 export function resolveChainWithFallback(typePath, lang, projectLocalDir, opts) {
+  let primaryChain;
   try {
-    const chain = resolveChain(typePath, lang, projectLocalDir);
-    if (chain.length > 0) return chain;
+    primaryChain = resolveChain(typePath, lang, projectLocalDir);
+    if (primaryChain.length > 0 && !primaryChain.incomplete) return primaryChain;
   } catch (_) {
     // fall through to fallback
   }
 
   const { fallbackLangs, agent, root } = opts || {};
   if (!fallbackLangs || fallbackLangs.length === 0) {
+    // No fallback configured — return partial chain if available
+    if (primaryChain && primaryChain.length > 0) return primaryChain;
     throw new Error(`No templates found for language '${lang}' and no fallback languages configured`);
   }
 
-  // Try each fallback language
+  // Try each fallback language — translate the FULL chain from fallback
   for (const fbLang of fallbackLangs) {
     if (fbLang === lang) continue;
     try {
       const fbChain = resolveChain(typePath, fbLang, null);
-      if (fbChain.length === 0) continue;
+      if (fbChain.length === 0 || fbChain.incomplete) continue;
 
       if (!agent) {
         // No agent available — use source language templates as-is
@@ -127,6 +133,8 @@ export function resolveChainWithFallback(typePath, lang, projectLocalDir, opts) 
     }
   }
 
+  // All fallbacks failed — return partial primary chain if available
+  if (primaryChain && primaryChain.length > 0) return primaryChain;
   throw new Error(`No templates found for language '${lang}' in any fallback language`);
 }
 

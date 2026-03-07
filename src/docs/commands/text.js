@@ -24,7 +24,7 @@ import {
   formatLimitRule,
 } from "../lib/text-prompts.js";
 import { repoRoot, parseArgs } from "../../lib/cli.js";
-import { loadConfig, loadUiLang, sddOutputDir, resolveProjectContext, resolveDocLang } from "../../lib/config.js";
+import { loadConfig, loadLang, sddOutputDir, resolveProjectContext } from "../../lib/config.js";
 import { createLogger } from "../../lib/progress.js";
 import { callAgent as callAgentBase, callAgentAsync as callAgentAsyncBase, ensureAgentWorkDir, loadAgentConfig, MID_AGENT_TIMEOUT_MS } from "../../lib/agent.js";
 import { createI18n } from "../../lib/i18n.js";
@@ -334,7 +334,7 @@ export async function textFillFromAnalysis(root, analysis, agentName) {
   const preamblePatterns = loadPreamblePatterns(cfg);
   const projectContext = resolveProjectContext(root);
   const documentStyle = cfg.documentStyle;
-  const lang = resolveDocLang(cfg);
+  const lang = cfg.output.default;
   const systemPrompt = buildTextSystemPrompt(projectContext, documentStyle, lang);
   const concurrency = Number(cfg.limits?.concurrency || 0) || DEFAULT_CONCURRENCY;
   const docsDir = path.join(root, "docs");
@@ -400,7 +400,7 @@ async function main() {
   });
   cli.timeout = Number(cli.timeout) || DEFAULT_TIMEOUT_MS;
   if (cli.help) {
-    const tu = createI18n(loadUiLang(repoRoot(import.meta.url)));
+    const tu = createI18n(loadLang(repoRoot(import.meta.url)));
     const h = tu.raw("help.cmdHelp.text");
     const o = h.options;
     console.log([
@@ -436,7 +436,7 @@ async function main() {
   const preamblePatterns = loadPreamblePatterns(cfg);
   const projectContext = resolveProjectContext(root);
   const documentStyle = cfg.documentStyle;
-  const lang = cli.lang || resolveDocLang(cfg);
+  const lang = cli.lang || cfg.output.default;
   const systemPrompt = buildTextSystemPrompt(projectContext, documentStyle, lang);
   const concurrency = Number(cfg.limits?.concurrency || 0) || DEFAULT_CONCURRENCY;
   const docsDir = cli.docsDir ? path.resolve(root, cli.docsDir) : path.join(root, "docs");

@@ -1,10 +1,9 @@
 {
-  "uiLang": "en",
+  "lang": "ja",
   "output": {
     "languages": ["ja"],
     "default": "ja"
   },
-  "lang": "ja",
   "type": "webapp/cakephp2",
   "limits": {
     "designTimeoutMs": 900000,

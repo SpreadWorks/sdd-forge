@@ -12,7 +12,7 @@ import path from "path";
 import { fileURLToPath } from "url";
 import { runIfDirect } from "../../lib/entrypoint.js";
 import { repoRoot, sourceRoot, parseArgs } from "../../lib/cli.js";
-import { loadConfig, loadUiLang, sddDataDir, sddOutputDir } from "../../lib/config.js";
+import { loadConfig, loadLang, sddDataDir, sddOutputDir } from "../../lib/config.js";
 import { resolveType } from "../../lib/types.js";
 import { analyzeExtras } from "../lib/scanner.js";
 import { loadDataSources } from "../lib/data-source-loader.js";
@@ -116,7 +116,7 @@ async function main() {
   });
   if (cli.help) {
     const root = repoRoot(import.meta.url);
-    printHelp(createI18n(loadUiLang(root)));
+    printHelp(createI18n(loadLang(root)));
     return;
   }
 

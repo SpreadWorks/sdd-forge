@@ -49,10 +49,11 @@ describe("loadConfig", () => {
 
   it("loads and validates config", () => {
     tmp = createTmpDir();
-    writeJson(tmp, ".sdd-forge/config.json", { lang: "ja", type: "cli" });
+    writeJson(tmp, ".sdd-forge/config.json", { lang: "ja", type: "cli", output: { languages: ["ja"], default: "ja" } });
     const cfg = loadConfig(tmp);
     assert.equal(cfg.lang, "ja");
     assert.equal(cfg.type, "cli");
+    assert.equal(cfg.output.default, "ja");
   });
 
   it("throws when config is missing", () => {
@@ -111,7 +112,7 @@ describe("resolveProjectContext", () => {
 
   it("returns empty string when nothing is set", () => {
     tmp = createTmpDir();
-    writeJson(tmp, ".sdd-forge/config.json", { lang: "ja", type: "cli" });
+    writeJson(tmp, ".sdd-forge/config.json", { lang: "ja", type: "cli", output: { languages: ["ja"], default: "ja" } });
     assert.equal(resolveProjectContext(tmp), "");
   });
 });

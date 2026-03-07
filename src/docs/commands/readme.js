@@ -13,7 +13,7 @@ import fs from "fs";
 import path from "path";
 import { runIfDirect } from "../../lib/entrypoint.js";
 import { repoRoot, parseArgs } from "../../lib/cli.js";
-import { loadJsonFile, sddConfigPath, resolveDocLang } from "../../lib/config.js";
+import { loadJsonFile, sddConfigPath } from "../../lib/config.js";
 import { resolveType } from "../../lib/types.js";
 import { resolveChain, resolveChainWithFallback, mergeFile } from "../lib/template-merger.js";
 import { createResolver } from "../lib/resolver-factory.js";
@@ -84,10 +84,10 @@ Options:
     process.exit(0);
   }
 
-  const lang = cli.lang || resolveDocLang(sddConfig);
+  const lang = cli.lang || sddConfig?.output?.default;
   const type = sddConfig?.type;
 
-  const t = createI18n(sddConfig?.uiLang || "en", { domain: "messages" });
+  const t = createI18n(sddConfig?.lang || "en", { domain: "messages" });
 
   if (!type) {
     console.log(t("readme.noType"));

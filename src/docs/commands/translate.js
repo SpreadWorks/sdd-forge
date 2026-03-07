@@ -96,7 +96,7 @@ Options:
   const root = repoRoot(import.meta.url);
   const cfg = loadConfig(root);
   const outputCfg = resolveOutputConfig(cfg);
-  const t = createI18n(cfg.uiLang || "en", { domain: "messages" });
+  const t = createI18n(cfg.lang, { domain: "messages" });
 
   if (!outputCfg.isMultiLang) {
     logger.log("Single language configured. Nothing to translate.");

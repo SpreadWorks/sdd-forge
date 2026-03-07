@@ -12,17 +12,17 @@ import { runIfDirect } from "../../lib/entrypoint.js";
 import { setDefault, loadProjects } from "../../lib/projects.js";
 import { createI18n } from "../../lib/i18n.js";
 
-function loadUiLang() {
+function loadLang() {
   try {
     const home = process.env.HOME || process.env.USERPROFILE;
     const raw = JSON.parse(fs.readFileSync(path.join(home, ".sdd-forge", "config.json"), "utf8"));
-    return raw.uiLang || "en";
+    return raw.lang || "en";
   } catch (_) { return "en"; }
 }
 
 function main() {
   const [name] = process.argv.slice(2);
-  const t = createI18n(loadUiLang(), { domain: "messages" });
+  const t = createI18n(loadLang(), { domain: "messages" });
 
   if (!name) {
     const data = loadProjects();

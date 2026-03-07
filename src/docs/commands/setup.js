@@ -87,7 +87,7 @@ function parseSetupArgs(argv) {
       "--name", "--path", "--work-root",
       "--type", "--purpose", "--tone",
       "--agent", "--project-context",
-      "--lang", "--ui-lang",
+      "--lang",
     ],
     defaults: {
       name: "",
@@ -99,7 +99,6 @@ function parseSetupArgs(argv) {
       agent: "",
       projectContext: "",
       lang: "",
-      uiLang: "",
       setDefault: false,
       noDefault: false,
       dryRun: false,
@@ -373,8 +372,7 @@ async function main() {
       "  --tone <tone>               Writing style: polite|formal|casual",
       "  --agent <agent>             Default agent: claude|codex",
       "  --project-context <text>    Project description text",
-      "  --lang <lang>               Output language(s), comma-separated (e.g. ja,en)",
-      "  --ui-lang <lang>            UI language: en|ja",
+      "  --lang <lang>               Operating language: en|ja (also used for output if single lang)",
       "  --set-default               Set as default project",
       "  --no-default                Do not set as default project",
       "  --dry-run                   Show what would be done without writing files",
@@ -393,7 +391,7 @@ async function main() {
   let sourcePath = cli.path || defaultPath;
   let workRootPath = cli.workRoot || "";
   let setAsDefault = cli.noDefault ? false : true;
-  let uiLang = cli.uiLang || "en";
+  let operatingLang = cli.lang || "en";
   let outputLangs = [];
   let outputDefault = "";
   let type = cli.type;
@@ -402,10 +400,9 @@ async function main() {
   let projectContext = cli.projectContext;
   let defaultAgent = cli.agent;
 
-  // Parse --lang for non-interactive use
+  // Parse --lang for non-interactive use: first value is operating lang
   if (cli.lang) {
-    outputLangs = cli.lang.split(",").map((s) => s.trim()).filter(Boolean);
-    outputDefault = outputLangs[0] || "ja";
+    operatingLang = cli.lang;
   }
 
   // Start with English for the first question
@@ -418,18 +415,18 @@ async function main() {
       output: process.stdout,
     });
 
-    // --- Step 1: UI language (always in English) ---
+    // --- Step 1: Operating language (always in English) ---
     console.log(`\n  ${t("setup.title")}`);
     console.log(`  ${t("setup.separator")}\n`);
 
-    const uiLangChoices = t.raw("setup.choices.uiLang");
-    uiLang = await askChoice(rl, t("setup.questions.uiLang"), [
-      { label: uiLangChoices.en, value: "en" },
-      { label: uiLangChoices.ja, value: "ja" },
+    const langChoices = t.raw("setup.choices.uiLang");
+    operatingLang = await askChoice(rl, t("setup.questions.uiLang"), [
+      { label: langChoices.en, value: "en" },
+      { label: langChoices.ja, value: "ja" },
     ], t);
 
     // Switch to selected language for remaining questions
-    t = createI18n(uiLang);
+    t = createI18n(operatingLang);
 
     // --- Step 2: Project registration ---
     if (!projectName) {
@@ -551,10 +548,10 @@ async function main() {
     if (!sourcePath) sourcePath = defaultPath;
     if (!projectName) projectName = defaultName;
     if (cli.setDefault) setAsDefault = true;
-    // Default output config for non-interactive (use --lang if provided)
+    // Default output config for non-interactive
     if (outputLangs.length === 0) {
-      outputLangs = ["ja"];
-      outputDefault = "ja";
+      outputLangs = [operatingLang];
+      outputDefault = operatingLang;
     }
   }
 
@@ -563,12 +560,11 @@ async function main() {
 
   // 2. Build config object
   const config = {
-    uiLang,
+    lang: operatingLang,
     output: {
       languages: outputLangs,
       default: outputDefault,
     },
-    lang: outputDefault,
     type,
     documentStyle: {
       purpose,
@@ -648,7 +644,7 @@ async function main() {
   }
 
   // 6. AGENTS.md setup
-  await setupAgentsMd(rl, workRoot, outputDefault, t, hasAllRequired);
+  await setupAgentsMd(rl, workRoot, operatingLang, t, hasAllRequired);
 
   // 7. CLAUDE.md symlink
   await setupClaudeMdSymlink(rl, workRoot, t, hasAllRequired);
@@ -663,7 +659,7 @@ async function main() {
   console.log(`\n  ${t("setup.messages.summary")}`);
   console.log(`    project:  ${projectName}`);
   console.log(`    source:   ${path.resolve(sourcePath)}`);
-  console.log(`    uiLang:   ${uiLang}`);
+  console.log(`    lang:     ${operatingLang}`);
   console.log(`    output:   ${outputLangs.join(", ")} (default: ${outputDefault})`);
   console.log(`    type:     ${type}`);
   console.log(`    purpose:  ${purpose}`);

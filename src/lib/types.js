@@ -52,9 +52,8 @@ import { buildTypeAliases } from "./presets.js";
 
 /**
  * @typedef {Object} SddConfig
- * @property {string} [uiLang]                - UI language ("en" | "ja")
- * @property {OutputConfig} [output]          - Output language configuration
- * @property {string} lang                    - Output default language (= output.default)
+ * @property {OutputConfig} output             - Output language configuration (required)
+ * @property {string} lang                    - Operating language for CLI, AGENTS.md, skills, specs
  * @property {string} type                    - Project type ("webapp/cakephp2" | "cli" | ...)
  * @property {Object} [limits]                - Limit settings
  * @property {number} [limits.designTimeoutMs] - Timeout (ms)
@@ -110,31 +109,24 @@ export function validateConfig(raw) {
     throw new Error("config must be a non-null object");
   }
 
-  // uiLang (optional)
-  if (raw.uiLang != null && (typeof raw.uiLang !== "string" || raw.uiLang.length === 0)) {
-    errors.push("'uiLang' must be a non-empty string if provided");
-  }
-
-  // output (optional, new structure)
-  if (raw.output != null) {
-    if (typeof raw.output !== "object") {
-      errors.push("'output' must be an object");
-    } else {
-      if (!Array.isArray(raw.output.languages) || raw.output.languages.length === 0) {
-        errors.push("'output.languages' must be a non-empty array");
+  // output (required)
+  if (raw.output == null || typeof raw.output !== "object") {
+    errors.push("'output' is required and must be an object");
+  } else {
+    if (!Array.isArray(raw.output.languages) || raw.output.languages.length === 0) {
+      errors.push("'output.languages' must be a non-empty array");
+    }
+    if (typeof raw.output.default !== "string" || raw.output.default.length === 0) {
+      errors.push("'output.default' must be a non-empty string");
+    }
+    if (Array.isArray(raw.output.languages) && typeof raw.output.default === "string") {
+      if (!raw.output.languages.includes(raw.output.default)) {
+        errors.push("'output.default' must be one of 'output.languages'");
       }
-      if (typeof raw.output.default !== "string" || raw.output.default.length === 0) {
-        errors.push("'output.default' must be a non-empty string");
-      }
-      if (Array.isArray(raw.output.languages) && typeof raw.output.default === "string") {
-        if (!raw.output.languages.includes(raw.output.default)) {
-          errors.push("'output.default' must be one of 'output.languages'");
-        }
-      }
-      const validModes = new Set(["translate", "generate"]);
-      if (raw.output.mode != null && !validModes.has(raw.output.mode)) {
-        errors.push(`'output.mode' must be one of: ${[...validModes].join(", ")}`);
-      }
+    }
+    const validModes = new Set(["translate", "generate"]);
+    if (raw.output.mode != null && !validModes.has(raw.output.mode)) {
+      errors.push(`'output.mode' must be one of: ${[...validModes].join(", ")}`);
     }
   }
 
@@ -213,9 +205,9 @@ export function validateConfig(raw) {
  * @returns {{ languages: string[], default: string, mode: "translate"|"generate", isMultiLang: boolean }}
  */
 export function resolveOutputConfig(cfg) {
-  const languages = cfg.output?.languages || [cfg.lang || "ja"];
-  const defaultLang = cfg.output?.default || cfg.lang || "ja";
-  const mode = cfg.output?.mode || "translate";
+  const languages = cfg.output.languages;
+  const defaultLang = cfg.output.default;
+  const mode = cfg.output.mode || "translate";
   return {
     languages,
     default: defaultLang,
