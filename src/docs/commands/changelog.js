@@ -10,7 +10,7 @@ import fs from "fs";
 import path from "path";
 import { runIfDirect } from "../../lib/entrypoint.js";
 import { sourceRoot, repoRoot, parseArgs } from "../../lib/cli.js";
-import { loadUiLang, sddConfigPath } from "../../lib/config.js";
+import { loadUiLang, sddConfigPath, resolveDocLang } from "../../lib/config.js";
 import { createI18n } from "../../lib/i18n.js";
 
 /**
@@ -133,7 +133,7 @@ function main() {
   let uiLang = "en";
   try {
     const raw = JSON.parse(fs.readFileSync(sddConfigPath(root), "utf8"));
-    lang = raw.lang || "ja";
+    lang = resolveDocLang(raw);
     uiLang = raw.uiLang || "en";
   } catch (_) {}
   const t = createI18n(lang, { domain: "messages" });

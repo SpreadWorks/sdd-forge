@@ -78,6 +78,18 @@ export function loadUiLang(root) {
   }
 }
 
+/**
+ * config から docs 生成用の言語を解決する。
+ * 優先順位: config.lang → config.output.default → fallback ("ja")
+ *
+ * @param {Object} cfg - SddConfig オブジェクト
+ * @param {string} [fallback="ja"] - フォールバック言語
+ * @returns {string}
+ */
+export function resolveDocLang(cfg, fallback) {
+  return cfg?.lang || cfg?.output?.default || fallback || "ja";
+}
+
 // ---------------------------------------------------------------------------
 // SDD 設定管理
 // ---------------------------------------------------------------------------

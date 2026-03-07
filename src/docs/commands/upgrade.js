@@ -16,7 +16,7 @@ import fs from "fs";
 import path from "path";
 import { runIfDirect } from "../../lib/entrypoint.js";
 import { PKG_DIR, repoRoot, parseArgs } from "../../lib/cli.js";
-import { loadConfig } from "../../lib/config.js";
+import { loadConfig, resolveDocLang } from "../../lib/config.js";
 import { createI18n } from "../../lib/i18n.js";
 import { loadSddTemplate } from "../../lib/agents-md.js";
 
@@ -179,7 +179,7 @@ async function main() {
 
   const workRoot = repoRoot();
   const config = loadConfig(workRoot);
-  const lang = config.lang || "en";
+  const lang = resolveDocLang(config);
   const t = createI18n(config.uiLang || "en");
   const dryRun = cli.dryRun;
 

@@ -12,7 +12,7 @@ import fs from "fs";
 import path from "path";
 import { runIfDirect } from "../../lib/entrypoint.js";
 import { repoRoot, parseArgs } from "../../lib/cli.js";
-import { loadPackageField, loadJsonFile, loadUiLang, sddConfigPath, sddOutputDir } from "../../lib/config.js";
+import { loadPackageField, loadJsonFile, loadUiLang, sddConfigPath, sddOutputDir, resolveDocLang } from "../../lib/config.js";
 import { resolveType } from "../../lib/types.js";
 import { callAgent, resolveAgent } from "../../lib/agent.js";
 import { resolveChain, resolveChainWithFallback, collectChapters, filterChapters } from "../lib/template-merger.js";
@@ -154,7 +154,7 @@ function main() {
   }
 
   const type = resolveType(rawType);
-  const lang = cli.lang || sddConfig?.lang || "ja";
+  const lang = cli.lang || resolveDocLang(sddConfig);
 
   if (type !== rawType) {
     logger.verbose(`type=${rawType} → ${type} (alias resolved) lang=${lang}`);

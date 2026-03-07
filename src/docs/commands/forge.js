@@ -21,7 +21,7 @@ import { populateFromAnalysis } from "./data.js";
 import { textFillFromAnalysis } from "./text.js";
 import { mapWithConcurrency } from "../lib/concurrency.js";
 import { PKG_DIR, repoRoot, parseArgs } from "../../lib/cli.js";
-import { loadJsonFile, loadConfig, loadUiLang, sddOutputDir, saveContext } from "../../lib/config.js";
+import { loadJsonFile, loadConfig, loadUiLang, sddOutputDir, saveContext, resolveDocLang } from "../../lib/config.js";
 import { resolveType } from "../../lib/types.js";
 import { createResolver } from "../lib/resolver-factory.js";
 import { callAgentAsync, LONG_AGENT_TIMEOUT_MS, resolveAgent } from "../../lib/agent.js";
@@ -285,7 +285,7 @@ async function main() {
 
   const root = repoRoot(import.meta.url);
   const cfg = loadConfig(root);
-  const lang = cfg.lang || "ja";
+  const lang = resolveDocLang(cfg);
   const t = createI18n(cfg.uiLang || "en", { domain: "messages" });
   const agent = resolveAgent(cfg, cli.agent);
   const mode = cli.mode || DEFAULT_MODE;

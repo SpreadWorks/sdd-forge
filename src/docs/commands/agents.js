@@ -11,7 +11,7 @@ import fs from "fs";
 import path from "path";
 import { runIfDirect } from "../../lib/entrypoint.js";
 import { PKG_DIR, sourceRoot, repoRoot, parseArgs } from "../../lib/cli.js";
-import { loadJsonFile, loadUiLang, sddConfigPath, sddOutputDir, resolveProjectContext } from "../../lib/config.js";
+import { loadJsonFile, loadUiLang, sddConfigPath, sddOutputDir, resolveProjectContext, resolveDocLang } from "../../lib/config.js";
 import { callAgent, loadAgentConfig } from "../../lib/agent.js";
 import { createI18n } from "../../lib/i18n.js";
 import { createResolver } from "../lib/resolver-factory.js";
@@ -157,7 +157,7 @@ async function main() {
     config = loadJsonFile(sddConfigPath(workRoot));
   } catch (_) {}
 
-  const lang = config.lang || config.output?.default || "en";
+  const lang = resolveDocLang(config);
   const t = createI18n(config.uiLang || "en", { domain: "messages" });
 
   const agentsPath = path.join(srcRoot, "AGENTS.md");
