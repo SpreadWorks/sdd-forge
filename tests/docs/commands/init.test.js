@@ -104,7 +104,6 @@ describe("init CLI", () => {
     });
 
     const prompt = fs.readFileSync(promptCapture, "utf8");
-    assert.match(prompt, /## Documentation Purpose/);
     assert.match(prompt, /user-guide/);
   });
 });

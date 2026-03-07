@@ -115,11 +115,10 @@ export function resolveChainWithFallback(typePath, lang, projectLocalDir, opts) 
         fs.writeFileSync(path.join(tmpDir, ch.fileName), translated, "utf8");
       }
 
-      // Also translate README.md if exists
-      const readmeTpl = resolveReadmeTemplate(fbChain);
-      if (readmeTpl) {
-        const readmeContent = fs.readFileSync(readmeTpl, "utf8");
-        const translated = translateTemplate(readmeContent, fbLang, lang, agent, root);
+      // Also translate README.md if exists (merge the full chain first)
+      const readmeMerged = mergeFile("README.md", fbChain);
+      if (readmeMerged) {
+        const translated = translateTemplate(readmeMerged, fbLang, lang, agent, root);
         fs.writeFileSync(path.join(tmpDir, "README.md"), translated, "utf8");
       }
 

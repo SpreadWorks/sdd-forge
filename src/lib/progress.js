@@ -74,7 +74,7 @@ export function createProgress(steps, { verbose = false, title = "" } = {}) {
   }
 
   function updateHeader(text) {
-    const row = title ? 2 : 1;
+    const row = title ? 3 : 1;
     process.stderr.write(
       "\x1b[s"               // save cursor
       + `\x1b[${row};1H`    // move to header row
@@ -92,6 +92,7 @@ export function createProgress(steps, { verbose = false, title = "" } = {}) {
         updateHeader(renderBar(currentIdx, doneWeight, SPINNER_FRAMES[spinnerFrame]));
       }
     }, 80);
+    spinnerTimer.unref();
   }
 
   function stopSpinner() {
@@ -108,7 +109,7 @@ export function createProgress(steps, { verbose = false, title = "" } = {}) {
       process.stderr.write("\x1b[2J\x1b[1;1H"); // clear screen
       if (title) {
         process.stderr.write("  \x1b[1m" + title + "\x1b[0m\n");
-        process.stderr.write("\n\n"); // reserve lines (bar + gap)
+        process.stderr.write("\n\n\n"); // reserve lines (blank + bar + gap)
       } else {
         process.stderr.write("\n\n"); // reserve 2 lines (header + gap)
       }
@@ -173,7 +174,7 @@ export function createProgress(steps, { verbose = false, title = "" } = {}) {
       stopSpinner();
       if (useBar) {
         const bar = "\u2588".repeat(BAR_WIDTH);
-        const row = title ? 2 : 1;
+        const row = title ? 3 : 1;
         process.stderr.write(
           "\x1b[s"
           + `\x1b[${row};1H`

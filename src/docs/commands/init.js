@@ -62,25 +62,28 @@ function aiFilterChapters(chapters, analysis, agent, root, purpose) {
     return `- ${ch.fileName}: ${title}`;
   }).join("\n");
 
+  const purposeRules = [];
+  if (purpose === "user-guide") {
+    purposeRules.push("- This is a user-guide. Exclude developer-only chapters (development setup, testing, contributing, release procedures).");
+  } else if (purpose === "developer") {
+    purposeRules.push("- This is developer documentation. Include development, testing, and contributing chapters.");
+  }
+
   const prompt = [
-    "You are selecting documentation chapters for a software project.",
-    "Based on the source code analysis summary below, determine which chapters are relevant.",
-    "",
-    ...(purpose ? ["## Documentation Purpose", purpose, ""] : []),
-    "## Analysis Summary",
+    `Select which documentation chapters to include for this project.`,
+    `The project analysis summary is:`,
     summary,
     "",
-    "## Available Chapters",
+    `Available chapters:`,
     chapterList,
     "",
-    "## Rules",
+    `Selection criteria:`,
     "- Always include overview chapters (01_*, 02_*, 03_*, 04_*).",
     "- Exclude chapters whose topic has zero data in the analysis (e.g. no shells → exclude batch/shell chapter).",
+    ...purposeRules,
     "- When in doubt, include the chapter.",
     "",
-    "## Output Format",
-    "Return ONLY a JSON array of filenames to include. No explanation, no markdown fences.",
-    'Example: ["01_overview.md", "02_stack_and_ops.md"]',
+    `Reply with ONLY a JSON array of filenames. Example: ["01_overview.md", "02_commands.md"]`,
   ].join("\n");
 
   let response;
