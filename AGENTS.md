@@ -35,7 +35,10 @@ docs の内容は以下の 2 種類で構成される:
      - **Worktree**: git worktree で隔離環境を作成 → `sdd-forge spec --title "..." --worktree <path>`
      - **Spec only**: ブランチを作成せず spec のみ → `sdd-forge spec --title "..." --no-branch`
 2. `sdd-forge spec --title "<機能名>"` で spec を作成（既存 spec がある場合はそれを使用）
-3. 仕様要約を提示し、ユーザーに「この仕様で実装して問題ないか」確認する
+3. 仕様要約を提示し、以下の番号付き選択肢を提示する:
+   1. **実装する**: 手順 4 へ進む
+   2. **仕様書を修正する**: ユーザーからフィードバックを受け取り、spec.md を修正 → 再度手順 3 へ
+   3. **その他**: ユーザーの自由入力を受け付け、内容に応じて対応する
 4. 承認後、`spec.md` の `## User Confirmation` を更新（`- [x] User approved this spec`）
 5. `sdd-forge gate --spec specs/NNN-xxx/spec.md` でゲートチェック
 6. gate が FAIL の場合、未解決事項を一問一答で解消する（この時点では実装禁止）

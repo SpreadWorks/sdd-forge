@@ -34,7 +34,10 @@ If skills are unavailable, follow these steps in order:
      2. **Worktree**: create isolated environment with git worktree
      3. **Spec only**: create spec without branch
 2. `sdd-forge spec --title "<feature-name>"` to create spec (use existing spec if available)
-3. Present spec summary and confirm with user: "OK to implement with this spec?"
+3. Present spec summary and offer these numbered options:
+   1. **Implement**: proceed to step 4
+   2. **Modify spec**: receive user feedback, update spec.md, then re-present step 3
+   3. **Other**: accept free-form input and respond accordingly
 4. After approval, update `spec.md` `## User Confirmation` (`- [x] User approved this spec`)
 5. `sdd-forge gate --spec specs/NNN-xxx/spec.md` for gate check
 6. If gate FAILs, resolve open questions one by one (no implementation at this point)
