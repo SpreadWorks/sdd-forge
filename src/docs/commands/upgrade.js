@@ -18,7 +18,7 @@ import { runIfDirect } from "../../lib/entrypoint.js";
 import { PKG_DIR, repoRoot, parseArgs } from "../../lib/cli.js";
 import { loadConfig } from "../../lib/config.js";
 import { createI18n } from "../../lib/i18n.js";
-import { PRESETS_DIR } from "../../lib/presets.js";
+import { loadSddTemplate } from "../../lib/agents-md.js";
 
 
 // ---------------------------------------------------------------------------
@@ -31,24 +31,6 @@ function parseUpgradeArgs(argv) {
     options: [],
     defaults: { dryRun: false },
   });
-}
-
-// ---------------------------------------------------------------------------
-// Template loaders
-// ---------------------------------------------------------------------------
-
-/**
- * Load the SDD section template for the given locale.
- * Falls back to "en" if the requested locale template does not exist.
- */
-function loadSddTemplate(lang) {
-  for (const l of [lang, "en"]) {
-    const tmplPath = path.join(PRESETS_DIR, "base", "templates", l, "AGENTS.sdd.md");
-    if (fs.existsSync(tmplPath)) {
-      return fs.readFileSync(tmplPath, "utf8");
-    }
-  }
-  return "";
 }
 
 // ---------------------------------------------------------------------------

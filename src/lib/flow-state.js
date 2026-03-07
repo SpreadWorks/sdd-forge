@@ -7,11 +7,12 @@
 
 import fs from "fs";
 import path from "path";
+import { sddDir } from "./config.js";
 
 const STATE_FILE = "current-spec";
 
 function statePath(workRoot) {
-  return path.join(workRoot, ".sdd-forge", STATE_FILE);
+  return path.join(sddDir(workRoot), STATE_FILE);
 }
 
 /**

@@ -23,7 +23,7 @@ import { PKG_DIR, repoRoot, parseArgs } from "../../lib/cli.js";
 import { loadJsonFile, loadConfig, loadUiLang, sddOutputDir, saveContext } from "../../lib/config.js";
 import { resolveType } from "../../lib/types.js";
 import { createResolver } from "../lib/resolver-factory.js";
-import { callAgentAsync, LONG_AGENT_TIMEOUT_MS } from "../../lib/agent.js";
+import { callAgentAsync, LONG_AGENT_TIMEOUT_MS, resolveAgent } from "../../lib/agent.js";
 import { createI18n } from "../../lib/i18n.js";
 import {
   summaryToText,
@@ -58,14 +58,6 @@ function getTargetFiles(root) {
 
 function readText(p) {
   return fs.existsSync(p) ? fs.readFileSync(p, "utf8") : "";
-}
-
-function resolveAgent(cfg, role, cliAgent) {
-  const providerKey = cliAgent || cfg.defaultAgent;
-  if (cfg.providers?.[providerKey]) {
-    return cfg.providers[providerKey];
-  }
-  return null;
 }
 
 function loadAnalysisData(root) {
@@ -314,13 +306,13 @@ async function main() {
   const cfg = loadConfig(root);
   const lang = cfg.lang || "ja";
   const t = createI18n(cfg.uiLang || "en", { domain: "messages" });
-  const agent = resolveAgent(cfg, "docsForge", cli.agent);
+  const agent = resolveAgent(cfg, cli.agent);
   const mode = cli.mode || DEFAULT_MODE;
   const timeoutMs = Number(cfg.limits?.designTimeoutMs || 0) || undefined;
 
   if (mode === "agent" && !agent) {
     throw new Error(
-      "forge: --mode=agent requires config.json agents.docsForge or providers",
+      "forge: --mode=agent requires a configured provider (defaultAgent or --agent)",
     );
   }
 
