@@ -56,18 +56,21 @@ After implementation is complete, run the `/sdd-flow-close` skill.
 If skills are unavailable, present the user with these options:
 
 **Present these numbered options:**
-1. **commit+merge**: Commit → merge to base branch → delete `.sdd-forge/current-spec`
-2. **docs+commit+merge**: Update docs → commit → merge to base branch → delete `.sdd-forge/current-spec`
+1. **docs only**: Update docs only (no commit or merge)
+2. **commit+merge**: Commit → merge to base branch → delete `.sdd-forge/current-spec`
+3. **docs+commit+merge**: Update docs → commit → merge to base branch → delete `.sdd-forge/current-spec`
+4. **commit+merge+delete branch**: Commit → merge to base branch → delete feature branch → delete `.sdd-forge/current-spec`
 
-**For docs+commit+merge:**
+**For options that include docs (1, 3):**
 1. `sdd-forge forge --prompt "<summary of changes>" --spec specs/NNN-xxx/spec.md` (update docs)
 2. `sdd-forge review` (quality check — repeat until PASS)
 
-**Common steps (after selection):**
+**Common steps for options that include commit/merge (2, 3, 4):**
 1. `sdd-forge gate --spec specs/NNN-xxx/spec.md --phase post` (verify all checklist items)
 2. Commit on feature branch
 3. Merge to base branch (per `config.flow.merge`: squash / ff-only / merge)
 4. Delete `.sdd-forge/current-spec`
+5. (option 4 only) Delete feature branch
 
 ### sdd-forge Commands
 

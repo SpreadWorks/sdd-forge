@@ -54,13 +54,24 @@ docs の内容は以下の 2 種類で構成される:
 ### 終了処理
 
 実装完了後は `/sdd-flow-close` スキルを実行すること。
-スキルが利用できない環境では、以下を手動で実行すること。
+スキルが利用できない環境では、以下の手順でユーザーに選択肢を提示すること。
 
+**以下の番号付き選択肢を提示すること:**
+1. **docs のみ**: docs 更新のみ（コミット・マージしない）
+2. **commit+merge**: コミット → base ブランチにマージ → `.sdd-forge/current-spec` 削除
+3. **docs+commit+merge**: docs 更新 → コミット → base ブランチにマージ → `.sdd-forge/current-spec` 削除
+4. **commit+merge+branch 削除**: コミット → base ブランチにマージ → feature ブランチ削除 → `.sdd-forge/current-spec` 削除
+
+**docs を含む選択肢（1, 3）の場合:**
 1. `sdd-forge forge --prompt "<変更内容の要約>" --spec specs/NNN-xxx/spec.md`（docs 更新）
 2. `sdd-forge review`（品質チェック — PASS するまで繰り返す）
-3. feature ブランチでコミット
-4. base ブランチにマージ
-5. `.sdd-forge/current-spec` を削除
+
+**コミット・マージを含む選択肢（2, 3, 4）の共通手順:**
+1. `sdd-forge gate --spec specs/NNN-xxx/spec.md --phase post`（全チェック項目の確認）
+2. feature ブランチでコミット
+3. base ブランチにマージ（`config.flow.merge` に従う: squash / ff-only / merge）
+4. `.sdd-forge/current-spec` を削除
+5. （4 の場合のみ）feature ブランチを削除
 
 ### sdd-forge コマンド
 
