@@ -326,8 +326,10 @@ function setupSkills(workRoot, t) {
   const agentsSkillsDir = path.join(workRoot, ".agents", "skills");
   const claudeSkillsDir = path.join(workRoot, ".claude", "skills");
 
-  const skillNames = ["sdd-flow-start", "sdd-flow-close"];
   const templatesDir = path.join(PKG_DIR, "templates", "skills");
+  const skillNames = fs.readdirSync(templatesDir).filter(
+    (d) => fs.existsSync(path.join(templatesDir, d, "SKILL.md")),
+  );
 
   for (const name of skillNames) {
     // Copy template to .agents/skills/<name>/SKILL.md
@@ -615,8 +617,10 @@ async function main() {
     if (projectContext) console.log(`  - ${path.join(workRoot, ".sdd-forge", "context.json")}`);
     console.log(`  - ${path.join(workRoot, "AGENTS.md")}`);
     console.log(`  - ${path.join(workRoot, "CLAUDE.md")} (symlink)`);
-    console.log(`  - ${path.join(workRoot, ".agents", "skills", "sdd-flow-start", "SKILL.md")}`);
-    console.log(`  - ${path.join(workRoot, ".agents", "skills", "sdd-flow-close", "SKILL.md")}`);
+    const skillTemplatesDir = path.join(PKG_DIR, "templates", "skills");
+    for (const name of fs.readdirSync(skillTemplatesDir).filter(d => fs.existsSync(path.join(skillTemplatesDir, d, "SKILL.md")))) {
+      console.log(`  - ${path.join(workRoot, ".agents", "skills", name, "SKILL.md")}`);
+    }
     console.log("\n[setup] DRY-RUN: config.json content:");
     console.log(JSON.stringify(config, null, 2));
     return;

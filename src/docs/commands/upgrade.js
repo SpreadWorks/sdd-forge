@@ -46,7 +46,9 @@ function upgradeSkills(workRoot, dryRun) {
   const claudeSkillsDir = path.join(workRoot, ".claude", "skills");
   const templatesDir = path.join(PKG_DIR, "templates", "skills");
 
-  const skillNames = ["sdd-flow-start", "sdd-flow-close"];
+  const skillNames = fs.readdirSync(templatesDir).filter(
+    (d) => fs.existsSync(path.join(templatesDir, d, "SKILL.md")),
+  );
   const results = [];
 
   for (const name of skillNames) {
