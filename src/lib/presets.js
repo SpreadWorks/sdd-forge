@@ -35,6 +35,7 @@ function discoverPresets() {
         label: manifest.label,
         aliases: manifest.aliases || [],
         scan: manifest.scan || {},
+        chapters: manifest.chapters || [],
         isArch,
       };
     })

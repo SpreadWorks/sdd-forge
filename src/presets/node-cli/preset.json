@@ -2,6 +2,13 @@
   "arch": "cli",
   "label": "Node.js CLI",
   "aliases": [],
+  "chapters": [
+    "overview.md",
+    "cli_commands.md",
+    "configuration.md",
+    "internal_design.md",
+    "development_testing.md"
+  ],
   "scan": {
     "modules": {
       "dir": "src",

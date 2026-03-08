@@ -15,7 +15,7 @@ import { repoRoot, parseArgs } from "../../lib/cli.js";
 import { loadPackageField, loadJsonFile, loadLang, sddConfigPath, sddOutputDir } from "../../lib/config.js";
 import { resolveType } from "../../lib/types.js";
 import { callAgent, resolveAgent } from "../../lib/agent.js";
-import { resolveChain, resolveChainWithFallback, collectChapters, filterChapters } from "../lib/template-merger.js";
+import { resolveChain, resolveChainWithFallback, collectChapters, resolveChaptersOrder } from "../lib/template-merger.js";
 import { summaryToText } from "../lib/forge-prompts.js";
 import { createLogger } from "../../lib/progress.js";
 import { createI18n } from "../../lib/i18n.js";
@@ -78,12 +78,12 @@ function aiFilterChapters(chapters, analysis, agent, root, purpose) {
     chapterList,
     "",
     `Selection criteria:`,
-    "- Always include overview chapters (01_*, 02_*, 03_*, 04_*).",
-    "- Exclude chapters whose topic has zero data in the analysis (e.g. no shells → exclude batch/shell chapter).",
+    "- Always include foundational chapters: overview, stack_and_ops, project_structure, development.",
+    "- Exclude chapters whose topic has zero data in the analysis (e.g. no shells → exclude batch_and_shell chapter, no models → exclude db_tables chapter).",
     ...purposeRules,
     "- When in doubt, include the chapter.",
     "",
-    `Reply with ONLY a JSON array of filenames. Example: ["01_overview.md", "02_commands.md"]`,
+    `Reply with ONLY a JSON array of filenames. Example: ["overview.md", "commands.md"]`,
   ].join("\n");
 
   let response;
@@ -185,32 +185,28 @@ function main() {
   logger.verbose(`chain: ${chain.join(" → ")}`);
 
   // テンプレートマージ（project-local は resolveChain 経由でチェーンに含まれる）
-  const chapters = collectChapters(chain);
+  const chaptersOrder = resolveChaptersOrder(type);
+  const chapters = collectChapters(chain, chaptersOrder);
 
   if (chapters.length === 0) {
     logger.log(t("init.noTemplates"));
     process.exit(1);
   }
 
-  // analysis.json があれば決定的フィルタを適用
+  // AI 章選別（analysis + agent が揃っている場合）
+  let filteredChapters = chapters;
   const analysisPath = path.join(sddOutputDir(root), "analysis.json");
   let analysis = null;
   if (fs.existsSync(analysisPath)) {
     try {
       analysis = JSON.parse(fs.readFileSync(analysisPath, "utf8"));
-      logger.verbose("analysis.json found, applying chapter filter");
     } catch (_) { /* malformed analysis.json — non-critical, skip chapter filter */ }
   }
 
-  let filteredChapters = filterChapters(chapters, chain, analysis);
-  const deterministicFiltered = chapters.length - filteredChapters.length;
-
-  // AI 章選別（analysis + agent が揃っている場合）
   if (analysis) {
     const agent = resolveAgent(sddConfig);
     if (agent) {
       logger.verbose("AI chapter selection...");
-      // summary.json があればそちらを使う（軽量）
       const summaryPath = path.join(sddOutputDir(root), "summary.json");
       let summaryData = analysis;
       if (fs.existsSync(summaryPath)) {
@@ -227,7 +223,7 @@ function main() {
   }
 
   const totalFiltered = chapters.length - filteredChapters.length;
-  logger.verbose(`${filteredChapters.length} template files (${totalFiltered} filtered${totalFiltered > deterministicFiltered ? `, AI: ${totalFiltered - deterministicFiltered}` : ""})`);
+  logger.verbose(`${filteredChapters.length} template files (${totalFiltered} filtered by AI)`);
 
   // docs/ ディレクトリの準備
   const docsDir = cli.docsDir ? path.resolve(root, cli.docsDir) : path.join(root, "docs");
@@ -235,13 +231,18 @@ function main() {
     fs.mkdirSync(docsDir, { recursive: true });
   }
 
-  const fileNames = filteredChapters.map((ch) => ch.fileName);
-  const conflicts = fileNames.filter((f) => fs.existsSync(path.join(docsDir, f)));
+  // 番号プレフィックス付きファイル名を生成
+  const numberedChapters = filteredChapters.map((ch, i) => {
+    const prefix = String(i + 1).padStart(2, "0");
+    return { ...ch, outputName: `${prefix}_${ch.fileName}` };
+  });
+
+  const conflicts = numberedChapters.filter((ch) => fs.existsSync(path.join(docsDir, ch.outputName)));
 
   if (conflicts.length > 0 && !cli.force) {
     logger.log(t("init.conflictsExist", { count: conflicts.length }));
-    for (const f of conflicts) {
-      logger.log(`  - ${f}`);
+    for (const ch of conflicts) {
+      logger.log(`  - ${ch.outputName}`);
     }
     logger.log(t("init.useForce"));
     return;
@@ -251,25 +252,25 @@ function main() {
     logger.verbose(`--force: overwriting ${conflicts.length} existing file(s)`);
   }
 
-  // テンプレートを docs/ に出力
-  for (const chapter of filteredChapters) {
+  // テンプレートを docs/ に出力（番号プレフィックス付き）
+  for (const chapter of numberedChapters) {
     let text = chapter.content;
 
     // ブロックディレクティブを除去
     text = stripBlockDirectives(text);
 
-    logger.verbose(`merged: ${chapter.fileName}`);
+    logger.verbose(`merged: ${chapter.fileName} → ${chapter.outputName}`);
 
     if (!cli.dryRun) {
-      const dst = path.join(docsDir, chapter.fileName);
+      const dst = path.join(docsDir, chapter.outputName);
       fs.writeFileSync(dst, text, "utf8");
     }
   }
 
   if (cli.dryRun) {
-    console.log(`DRY-RUN: ${filteredChapters.length} files would be initialized in docs/`);
+    console.log(`DRY-RUN: ${numberedChapters.length} files would be initialized in docs/`);
   } else {
-    logger.verbose(`done. ${filteredChapters.length} files initialized in docs/`);
+    logger.verbose(`done. ${numberedChapters.length} files initialized in docs/`);
   }
 }
 

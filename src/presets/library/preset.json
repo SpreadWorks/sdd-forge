@@ -1,5 +1,13 @@
 {
   "arch": "library",
   "label": "Library (shared)",
-  "aliases": []
+  "aliases": [],
+  "chapters": [
+    "overview.md",
+    "stack_and_ops.md",
+    "project_structure.md",
+    "development.md",
+    "public_api.md",
+    "usage.md"
+  ]
 }

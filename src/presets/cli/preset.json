@@ -1,5 +1,13 @@
 {
   "arch": "cli",
   "label": "CLI (shared)",
-  "aliases": []
+  "aliases": [],
+  "chapters": [
+    "overview.md",
+    "stack_and_ops.md",
+    "project_structure.md",
+    "development.md",
+    "commands.md",
+    "config.md"
+  ]
 }

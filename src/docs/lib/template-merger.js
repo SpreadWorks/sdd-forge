@@ -109,7 +109,8 @@ export function resolveChainWithFallback(typePath, lang, projectLocalDir, opts) 
       const tmpDir = path.join(root || process.cwd(), ".sdd-forge", "tmp", `templates-${lang}`);
       fs.mkdirSync(tmpDir, { recursive: true });
 
-      const chapters = collectChapters(fbChain);
+      const fbChaptersOrder = resolveChaptersOrder(typePath);
+      const chapters = collectChapters(fbChain, fbChaptersOrder);
       for (const ch of chapters) {
         const translated = translateTemplate(ch.content, fbLang, lang, agent, root);
         fs.writeFileSync(path.join(tmpDir, ch.fileName), translated, "utf8");
@@ -235,7 +236,7 @@ function mergeTexts(parentText, childText) {
 /**
  * 継承チェーンに沿ってテンプレートファイルをマージする。
  *
- * @param {string} fileName - テンプレートファイル名（例: "01_overview.md"）
+ * @param {string} fileName - テンプレートファイル名（例: "overview.md"）
  * @param {string[]} chain - 継承チェーン（絶対パスの配列）
  * @returns {string|null} マージ結果。空ファイルの場合は null（削除マーク）。
  */
@@ -269,24 +270,68 @@ export function mergeFile(fileName, chain) {
 // 章収集
 // ---------------------------------------------------------------------------
 
+const SPECIAL_FILES = new Set(["README.md", "AGENTS.sdd.md"]);
+
+/**
+ * type パスから章の順序を解決する。
+ * 継承チェーンと同じ順序（base → arch → leaf）で探索し、
+ * 最も具体的な（リーフに近い）preset の chapters を使用する。
+ *
+ * @param {string} typePath - 型パス（例: "webapp/cakephp2"）
+ * @returns {string[]} 章ファイル名の順序配列
+ */
+export function resolveChaptersOrder(typePath) {
+  const segments = typePath.split("/").filter(Boolean);
+  let chapters = [];
+
+  const base = presetByLeaf("base");
+  if (base?.chapters?.length) chapters = base.chapters;
+
+  if (segments.length >= 1 && segments[0] !== "base") {
+    const arch = presetByLeaf(segments[0]);
+    if (arch?.chapters?.length) chapters = arch.chapters;
+  }
+
+  if (segments.length >= 2) {
+    const leaf = presetByLeaf(segments[segments.length - 1]);
+    if (leaf?.chapters?.length) chapters = leaf.chapters;
+  }
+
+  return chapters;
+}
+
 /**
  * 継承チェーン全体から章ファイル名を収集・マージし、
- * ソート済みリストを返す。
+ * 順序付きリストを返す。
  * 空ファイル（削除マーク）はスキップ。
  *
  * @param {string[]} chain - 継承チェーン（絶対パスの配列）
+ * @param {string[]} [chaptersOrder] - preset.json の chapters 順序配列
  * @returns {{ fileName: string, content: string }[]}
  */
-export function collectChapters(chain) {
-  // 全チェーンから章ファイル名を収集
+export function collectChapters(chain, chaptersOrder) {
+  if (chaptersOrder && chaptersOrder.length > 0) {
+    // preset.json の chapters 順序に従う
+    const chapters = [];
+    for (const fileName of chaptersOrder) {
+      const content = mergeFile(fileName, chain);
+      if (content !== null) {
+        chapters.push({ fileName, content });
+      }
+    }
+    return chapters;
+  }
+
+  // フォールバック: 全チェーンから .md ファイルを収集してアルファベット順
   const allFiles = new Set();
   for (const dir of chain) {
     if (!fs.existsSync(dir)) continue;
-    const files = fs.readdirSync(dir).filter((f) => /^\d{2}_.*\.md$/.test(f));
+    const files = fs.readdirSync(dir).filter(
+      (f) => f.endsWith(".md") && !SPECIAL_FILES.has(f),
+    );
     for (const f of files) allFiles.add(f);
   }
 
-  // ソートしてマージ
   const sorted = [...allFiles].sort();
   const chapters = [];
 
@@ -316,48 +361,3 @@ export function resolveReadmeTemplate(chain) {
   return null;
 }
 
-// ---------------------------------------------------------------------------
-// chapters.json ベースのフィルタリング (Phase 3 準備)
-// ---------------------------------------------------------------------------
-
-/**
- * 決定的フィルタ: chapters.json の requires 条件で章をフィルタする。
- * analysis.json の該当セクションが空 or 存在しない → スキップ。
- *
- * @param {{ fileName: string, content: string }[]} chapters
- * @param {string[]} chain - 継承チェーン（絶対パスの配列）
- * @param {Object|null} analysis - analysis.json（null なら全章を含める）
- * @returns {{ fileName: string, content: string }[]}
- */
-export function filterChapters(chapters, chain, analysis) {
-  if (!analysis) return chapters;
-
-  // 全チェーンの chapters.json をマージ（後勝ち）
-  const requirements = {};
-  for (const dir of chain) {
-    const chaptersJsonPath = path.join(dir, "chapters.json");
-    if (!fs.existsSync(chaptersJsonPath)) continue;
-    const data = JSON.parse(fs.readFileSync(chaptersJsonPath, "utf8"));
-    Object.assign(requirements, data);
-  }
-
-  if (Object.keys(requirements).length === 0) return chapters;
-
-  return chapters.filter((ch) => {
-    const req = requirements[ch.fileName];
-    if (!req || !Array.isArray(req.requires)) return true;
-
-    // requires の全条件を満たすか
-    return req.requires.every((key) => {
-      const section = analysis[key];
-      if (!section) return false;
-      // 配列の場合は長さチェック
-      if (Array.isArray(section)) return section.length > 0;
-      // オブジェクトの場合はメインリストをチェック
-      if (section[key] && Array.isArray(section[key])) return section[key].length > 0;
-      // summary のチェック
-      if (section.summary && section.summary.total !== undefined) return section.summary.total > 0;
-      return true;
-    });
-  });
-}

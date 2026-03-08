@@ -1,4 +1,0 @@
-{
-  "07_db_tables.md": { "requires": ["models"] },
-  "10_batch_and_shell.md": { "requires": ["shells"] }
-}
