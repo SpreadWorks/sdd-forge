@@ -46,11 +46,11 @@ export default class DocsSource extends DataSource {
       const titleLine = lines.find((l) => /^# \d{2}\./.test(l));
       const title = titleLine ? titleLine.replace(/^# /, "") : f.replace(/\.md$/, "");
 
-      // Description: ## 説明 ~ next ##
+      // Description: ## Description / ## 説明 ~ next ##
       let inDesc = false;
       const descLines = [];
       for (const line of lines) {
-        if (/^## 説明/.test(line)) { inDesc = true; continue; }
+        if (/^## (Description|説明)/.test(line)) { inDesc = true; continue; }
         if (inDesc && /^## /.test(line)) break;
         if (inDesc) {
           if (/<!--\s*\{\{(text|data)\s*(\[[^\]]*\])?\s*:/.test(line)) continue;
@@ -60,7 +60,8 @@ export default class DocsSource extends DataSource {
       }
 
       const rawDesc = descLines.join(" ").replace(/\s+/g, " ").trim() || "";
-      const firstSentence = rawDesc.match(/^[^。]*。/)?.[0] || rawDesc;
+      // First sentence: match Japanese (。) or English (. followed by space/end)
+      const firstSentence = rawDesc.match(/^.*?[。]|^.*?\.\s/)?.[0]?.trim() || rawDesc;
       const description = firstSentence.length > 120
         ? firstSentence.slice(0, 117) + "…"
         : firstSentence;

@@ -134,16 +134,25 @@ export function formatLimitRule(params) {
 /**
  * システムプロンプトを構築する。
  */
+/** Map of language codes to display names for output language instruction. */
+const LANG_NAMES = {
+  en: "English", ja: "Japanese", zh: "Chinese", ko: "Korean",
+  fr: "French", de: "German", es: "Spanish", pt: "Portuguese",
+  it: "Italian", ru: "Russian",
+};
+
 export function buildTextSystemPrompt(projectContext, documentStyle, lang) {
   const t = createI18n(lang || "ja", { domain: "prompts" });
   const header = buildPromptHeader(projectContext, documentStyle, lang);
   const outputRules = t.raw("text.outputRules") || [];
+  const langName = LANG_NAMES[lang] || lang;
   return [
     ...header,
     "",
     t("text.instruction"),
     "",
     "## Output Rules (strict)",
+    `- Write all output in ${langName}`,
     ...outputRules.map((r) => `- ${r}`),
   ].join("\n");
 }
