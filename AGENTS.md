@@ -440,7 +440,7 @@ tests/
 - While the version is alpha, do NOT write legacy/backward-compatibility fallback code. Breaking changes are expected — old formats and deprecated paths should be removed, not preserved.
 
 ### npm Publishing
-- **リリース（`npm publish` / `npm dist-tag`）はユーザーが明示的に指示した場合のみ実行すること。自己判断でリリースしてはならない。**
+- **MUST: `npm publish` / `npm dist-tag` はユーザーがリリースの意図を明確に示した場合のみ実行すること。バージョン上げ・コミット・push の指示にリリースが含まれているとは解釈しない。リリースは別の明示的な行為であり、ユーザーが npm への公開を意図していると確信できない限り実行しない。**
 - Pre-release は `npm publish --tag alpha` で公開する
 - `--tag alpha` で公開すると `latest` タグは更新されない。npmjs.com のパッケージページは `latest` タグのバージョンを表示するため、ページを更新したい場合は `npm dist-tag add sdd-forge@<version> latest` を実行する
 - npm は一度公開したバージョン番号の再利用を許可しない

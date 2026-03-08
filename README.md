@@ -1,23 +1,23 @@
-# {{data: project.name("")}}sdd-forge{{/data}}
+# <!-- {{data: project.name("")}} -->sdd-forge<!-- {{/data}} -->
 
 [![npm version](https://img.shields.io/npm/v/sdd-forge.svg)](https://www.npmjs.com/package/sdd-forge)
 
-> **Alpha:** This tool is currently in alpha. APIs, command structure, and configuration formats may change without notice. Not recommended for production use.
+> **Alpha:** This tool is currently in alpha. The API, command structure, and configuration format may change without notice. Please avoid using it in production environments.
 
-**A CLI tool that automatically generates and maintains project documentation via source code analysis + AI.**
+**A CLI tool that automatically generates and maintains project documentation using source code analysis + AI.**
 
-Statically analyzes your codebase and combines templates with AI to auto-generate `docs/`.
+It statically analyzes your codebase and combines templates with AI to auto-generate `docs/`.
 The Spec-Driven Development (SDD) workflow also automates documentation updates when adding features or making changes.
 
 ## Features
 
-- **Zero dependencies** — Runs on Node.js 18+ only. No npm packages required
-- **Automatic source analysis** — Statically analyzes controllers, models, routes, and config files to extract structural data
+- **Zero dependencies** — Runs on Node.js 18+ only. No npm dependencies
+- **Automatic source code analysis** — Statically analyzes controllers, models, routes, and config files to extract structural data
 - **AI document generation** — AI automatically expands `{{text}}` directives in templates
-- **Template inheritance** — Four-layer inheritance (base → arch → preset → project-local) for full customization
-- **SDD workflow** — Manage the spec → gate → implement → forge → review development cycle with commands
-- **Multi-language support** — Auto-generate documentation in multiple languages via translate / generate modes
-- **AI agent integration** — Supports Claude Code (skills) and Codex CLI
+- **Template inheritance** — Customizable via 4-layer inheritance: base → arch → preset → project-local
+- **SDD workflow** — Manage the spec → gate → implement → forge → review cycle with commands
+- **Multilingual support** — Auto-generate documentation in multiple languages via translate / generate modes
+- **AI agent integration** — Compatible with Claude Code (skills) and Codex CLI
 - **Multi-preset** — Supports Node.js CLI / CakePHP2 / Laravel / Symfony
 
 ## Quick Start
@@ -26,23 +26,23 @@ The Spec-Driven Development (SDD) workflow also automates documentation updates 
 
 <pre>
 # npm
-npm install -g {{data: project.name("")}}sdd-forge{{/data}}
+npm install -g <!-- {{data: project.name("")}} -->sdd-forge<!-- {{/data}} -->
 
 # yarn
-yarn global add {{data: project.name("")}}sdd-forge{{/data}}
+yarn global add <!-- {{data: project.name("")}} -->sdd-forge<!-- {{/data}} -->
 
 # pnpm
-pnpm add -g {{data: project.name("")}}sdd-forge{{/data}}
+pnpm add -g <!-- {{data: project.name("")}} -->sdd-forge<!-- {{/data}} -->
 </pre>
 
 ### Setup & Document Generation
 
 <pre>
 # 1. Register your project (interactive wizard)
-{{data: project.name("")}}sdd-forge{{/data}} setup
+<!-- {{data: project.name("")}} -->sdd-forge<!-- {{/data}} --> setup
 
-# 2. Generate all documentation (scan → init → data → text → readme → agents → translate)
-{{data: project.name("")}}sdd-forge{{/data}} build
+# 2. Generate all documentation at once (scan → init → data → text → readme → agents → translate)
+<!-- {{data: project.name("")}} -->sdd-forge<!-- {{/data}} --> build
 </pre>
 
 This generates `docs/` and `README.md` in one step.
@@ -62,7 +62,7 @@ This generates `docs/` and `README.md` in one step.
 | `readme` | Auto-generate `README.md` from `docs/` |
 | `forge` | Iteratively improve documentation with AI |
 | `review` | Check documentation quality |
-| `translate` | Multi-language translation (default language → others) |
+| `translate` | Multilingual translation (default language → others) |
 | `upgrade` | Update preset templates to the latest version |
 
 ### SDD Workflow
@@ -81,16 +81,16 @@ This generates `docs/` and `README.md` in one step.
 |---|---|
 | `default` | Set the default project |
 | `presets` | List available presets |
-| `help` | Display command list |
+| `help` | Show command list |
 
 ## SDD Workflow
 
-The feature addition / change flow:
+The flow for adding features or making changes:
 
 ```
-  spec          Create spec (feature branch + spec.md)
+  spec          Create a spec (feature branch + spec.md)
     ↓
-  gate          Spec gate check (PASS when no open questions)
+  gate          Spec gate check (PASS if no unresolved items)
     ↓
   implement     Write code after gate PASS
     ↓
@@ -106,17 +106,17 @@ The feature addition / change flow:
 Run the SDD workflow with skills:
 
 ```
-/sdd-flow-start   — Start spec creation → gate → implementation
-/sdd-flow-close   — Finish with forge → review → commit → merge
+/sdd-flow-start   — Start: create spec → gate → implement
+/sdd-flow-close   — Finish: forge → review → commit → merge
 ```
 
 #### Codex CLI
 
-Run the workflow from prompts:
+Run the workflow from a prompt:
 
 ```
-$sdd-flow-start   — Start spec creation → gate → implementation
-$sdd-flow-close   — Finish with forge → review → commit → merge
+$sdd-flow-start   — Start: create spec → gate → implement
+$sdd-flow-close   — Finish: forge → review → commit → merge
 ```
 
 ## Configuration
