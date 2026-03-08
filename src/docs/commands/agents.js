@@ -10,12 +10,16 @@
 import fs from "fs";
 import path from "path";
 import { runIfDirect } from "../../lib/entrypoint.js";
-import { PKG_DIR, sourceRoot, repoRoot, parseArgs } from "../../lib/cli.js";
-import { loadJsonFile, loadLang, sddConfigPath, sddOutputDir, resolveProjectContext } from "../../lib/config.js";
-import { callAgent, loadAgentConfig } from "../../lib/agent.js";
+import { repoRoot, parseArgs } from "../../lib/cli.js";
+import { loadLang, sddOutputDir, resolveProjectContext } from "../../lib/config.js";
+import { callAgent, loadAgentConfig, MID_AGENT_TIMEOUT_MS } from "../../lib/agent.js";
 import { createI18n } from "../../lib/i18n.js";
 import { createResolver } from "../lib/resolver-factory.js";
-import { parseDirectives, replaceBlockDirective } from "../lib/directive-parser.js";
+import { createLogger } from "../../lib/progress.js";
+import { parseDirectives, replaceBlockDirective, resolveDataDirectives } from "../lib/directive-parser.js";
+import { resolveCommandContext, loadFullAnalysis, loadAnalysisData } from "../lib/command-context.js";
+
+const logger = createLogger("agents");
 
 // ---------------------------------------------------------------------------
 // AI プロンプト構築
@@ -80,31 +84,21 @@ function buildRefinePrompt(projectContent, summary, config, srcRoot, sddContent)
  * agents.project ディレクティブの解決結果を返す（AI 精査用）。
  */
 function resolveAgentsDirectives(text, resolveFn) {
-  const directives = parseDirectives(text);
-  if (directives.length === 0) return { text, sddContent: null, projectContent: null };
-
-  const lines = text.split("\n");
   let sddContent = null;
   let projectContent = null;
 
-  // 後ろから処理
-  for (let i = directives.length - 1; i >= 0; i--) {
-    const d = directives[i];
-    if (d.type !== "data") continue;
+  const result = resolveDataDirectives(
+    text,
+    (source, method, labels) => resolveFn(source, method, {}, labels),
+    {
+      onResolve(d, rendered) {
+        if (d.source === "agents" && d.method === "sdd") sddContent = rendered;
+        if (d.source === "agents" && d.method === "project") projectContent = rendered;
+      },
+    },
+  );
 
-    const rendered = resolveFn(d.source, d.method, {}, d.labels);
-    if (rendered === null || rendered === undefined) continue;
-
-    // Track sdd/project content
-    if (d.source === "agents" && d.method === "sdd") sddContent = rendered;
-    if (d.source === "agents" && d.method === "project") projectContent = rendered;
-
-    if (d.endLine >= 0) {
-      replaceBlockDirective(lines, d, rendered);
-    }
-  }
-
-  return { text: lines.join("\n"), sddContent, projectContent };
+  return { text: result.text, sddContent, projectContent };
 }
 
 /**
@@ -130,64 +124,46 @@ function replaceProjectContent(text, refined) {
 // Main
 // ---------------------------------------------------------------------------
 
-async function main() {
-  const args = process.argv.slice(2);
-  const opts = parseArgs(args, {
-    flags: ["--dry-run"],
-    options: [],
-    defaults: { dryRun: false },
-  });
+async function main(ctx) {
+  if (!ctx) {
+    const cli = parseArgs(process.argv.slice(2), {
+      flags: ["--dry-run"],
+      options: [],
+      defaults: { dryRun: false },
+    });
 
-  if (opts.help) {
-    const tu = createI18n(loadLang(repoRoot()));
-    const h = tu.raw("help.cmdHelp.agents");
-    const o = h.options;
-    console.log([
-      h.usage, "", `  ${h.desc}`, `  ${h.descDetail}`, "", "Options:",
-      `  ${o.dryRun}`,
-    ].join("\n"));
-    process.exit(0);
+    if (cli.help) {
+      const tu = createI18n(loadLang(repoRoot()));
+      const h = tu.raw("help.cmdHelp.agents");
+      const o = h.options;
+      console.log([
+        h.usage, "", `  ${h.desc}`, `  ${h.descDetail}`, "", "Options:",
+        `  ${o.dryRun}`,
+      ].join("\n"));
+      return;
+    }
+
+    ctx = resolveCommandContext(cli);
+    ctx.dryRun = cli.dryRun;
   }
 
-  const workRoot = repoRoot();
-  const srcRoot = sourceRoot();
-
-  let config = {};
-  try {
-    config = loadJsonFile(sddConfigPath(workRoot));
-  } catch (_) {}
-
-  const lang = config.lang;
-  const t = createI18n(config.lang || "en", { domain: "messages" });
+  const { root, srcRoot, config, lang, t } = ctx;
 
   const agentsPath = path.join(srcRoot, "AGENTS.md");
   if (!fs.existsSync(agentsPath)) {
-    console.error(t("agents.notFound", { path: agentsPath }));
-    process.exit(1);
+    throw new Error(t("agents.notFound", { path: agentsPath }));
   }
 
   // Load analysis
-  const outputDir = sddOutputDir(workRoot);
-  const analysisPath = path.join(outputDir, "analysis.json");
-  let analysis;
-  try {
-    analysis = loadJsonFile(analysisPath);
-  } catch (err) {
-    console.error(t("agents.analysisNotFound", { path: analysisPath }));
-    process.exit(1);
+  const analysis = loadFullAnalysis(root);
+  if (!analysis) {
+    throw new Error(t("agents.analysisNotFound", { path: path.join(sddOutputDir(root), "analysis.json") }));
   }
-
-  const summaryPath = path.join(outputDir, "summary.json");
-  let summary;
-  try {
-    summary = loadJsonFile(summaryPath);
-  } catch (_) {
-    summary = analysis;
-  }
+  const summary = loadAnalysisData(root);
 
   // Create resolver and resolve {{data}} directives
   const resolvedType = config.type || "base";
-  const resolver = await createResolver(resolvedType, workRoot);
+  const resolver = await createResolver(resolvedType, root);
   const resolveFn = (source, method, a, labels) => resolver.resolve(source, method, analysis, labels);
 
   let content = fs.readFileSync(agentsPath, "utf8");
@@ -196,41 +172,28 @@ async function main() {
 
   // AI refinement for PROJECT section
   if (projectContent) {
-    let agent;
-    try {
-      agent = loadAgentConfig(config);
-    } catch (err) {
-      console.error(`Error: ${err.message}`);
-      process.exit(1);
-    }
+    const agent = loadAgentConfig(config);
 
-    console.error(t("agents.refining"));
+    logger.log(t("agents.refining"));
     const systemPrompt = buildAgentsSystemPrompt(lang);
     const prompt = buildRefinePrompt(projectContent, summary, config, srcRoot, sddContent);
 
     try {
-      const result = callAgent(agent, prompt, 180000, undefined, { systemPrompt });
+      const result = callAgent(agent, prompt, MID_AGENT_TIMEOUT_MS, undefined, { systemPrompt });
 
-      // Extract the refined content (AI may wrap in tags or return plain)
-      let refined = result;
-      // Strip any leftover section markers from AI output
-      refined = refined
-        .replace(/^<!-- PROJECT:START[^>]*-->\n?/gm, "")
-        .replace(/<!-- PROJECT:END -->\n?/gm, "")
-        .trim();
+      let refined = result.trim();
 
       content = replaceProjectContent(content, refined);
     } catch (err) {
-      console.error(`Error: AI agent call failed: ${err.message}`);
-      process.exit(1);
+      throw new Error(`AI agent call failed: ${err.message}`);
     }
 
-    console.error(t("agents.generated"));
+    logger.log(t("agents.generated"));
   }
 
-  if (opts.dryRun) {
-    console.error(t("agents.dryRun", { path: agentsPath }));
-    process.stdout.write(content);
+  if (ctx.dryRun) {
+    logger.log(t("agents.dryRun", { path: agentsPath }));
+    console.log(content);
     return;
   }
 

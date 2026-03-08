@@ -35,7 +35,7 @@ describe("review CLI", () => {
       });
       assert.fail("should have exited non-zero");
     } catch (err) {
-      assert.match(err.stdout, /FAIL/);
+      assert.match(err.stderr, /no chapter files found/);
     }
   });
 

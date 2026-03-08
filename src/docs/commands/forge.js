@@ -15,14 +15,14 @@ import fs from "fs";
 import path from "path";
 import readline from "readline";
 import { execFile } from "child_process";
-import { stdout as output } from "process";
 import { runIfDirect } from "../../lib/entrypoint.js";
 import { populateFromAnalysis } from "./data.js";
 import { textFillFromAnalysis } from "./text.js";
 import { mapWithConcurrency } from "../lib/concurrency.js";
 import { PKG_DIR, repoRoot, parseArgs } from "../../lib/cli.js";
-import { loadJsonFile, loadConfig, loadLang, sddOutputDir, saveContext } from "../../lib/config.js";
+import { loadConfig, loadLang, resolveConcurrency, saveContext } from "../../lib/config.js";
 import { resolveType } from "../../lib/types.js";
+import { loadFullAnalysis, loadSummaryData, getChapterFiles, readText } from "../lib/command-context.js";
 import { createResolver } from "../lib/resolver-factory.js";
 import { callAgentAsync, LONG_AGENT_TIMEOUT_MS, resolveAgent } from "../../lib/agent.js";
 import { createI18n } from "../../lib/i18n.js";
@@ -46,39 +46,10 @@ const DEFAULT_WAIT_LOG_SEC = 1;
 const DEFAULT_MAX_RUNS = 3;
 const DEFAULT_REVIEW_CMD = "sdd-forge review";
 const DEFAULT_MODE = "local";
-const DEFAULT_CONCURRENCY = 5;
 
 function getTargetFiles(root) {
   const docsDir = path.join(root, "docs");
-  if (!fs.existsSync(docsDir)) return [];
-  return fs.readdirSync(docsDir)
-    .filter((f) => /^\d{2}_.*\.md$/.test(f))
-    .sort()
-    .map((f) => `docs/${f}`);
-}
-
-function readText(p) {
-  return fs.existsSync(p) ? fs.readFileSync(p, "utf8") : "";
-}
-
-function loadAnalysisData(root) {
-  const p = path.join(sddOutputDir(root), "analysis.json");
-  if (!fs.existsSync(p)) return null;
-  try {
-    return JSON.parse(fs.readFileSync(p, "utf8"));
-  } catch (_) {
-    return null;
-  }
-}
-
-function loadSummaryData(root) {
-  const p = path.join(sddOutputDir(root), "summary.json");
-  if (!fs.existsSync(p)) return null;
-  try {
-    return JSON.parse(fs.readFileSync(p, "utf8"));
-  } catch (_) {
-    return null;
-  }
+  return getChapterFiles(docsDir).map((f) => `docs/${f}`);
 }
 
 function parseCliOptions(argv) {
@@ -116,7 +87,7 @@ function printHelp() {
   const tu = createI18n(loadLang(repoRoot(import.meta.url)));
   const h = tu.raw("help.cmdHelp.forge");
   const o = h.options;
-  output.write(
+  console.log(
     [
       h.usage, "", "Options:",
       `  ${o.prompt}`, `  ${o.promptFile}`, `  ${o.spec}`, `  ${o.maxRuns}`,
@@ -160,17 +131,17 @@ async function invokeAgent(agent, prompt, { cwd, timeoutMs, systemPrompt, verbos
   const timeout = timeoutMs || Number(agent?.timeoutMs) || DEFAULT_AGENT_TIMEOUT_MS;
   const displayLabel = label || agent?.name || agent?.command || "agent";
 
-  output.write(`[agent] ${displayLabel} started (timeout: ${Math.floor(timeout / 1000)}s)\n`);
+  console.log(`[agent] ${displayLabel} started (timeout: ${Math.floor(timeout / 1000)}s)`);
 
   const ticker = !verbose
-    ? setInterval(() => output.write("."), DEFAULT_WAIT_LOG_SEC * 1000)
+    ? setInterval(() => process.stderr.write("."), DEFAULT_WAIT_LOG_SEC * 1000)
     : null;
 
   try {
     return await callAgentAsync(agent, prompt, timeout, cwd, {
       systemPrompt,
-      onStdout: verbose ? (chunk) => output.write(chunk) : undefined,
-      onStderr: verbose ? (chunk) => output.write(chunk) : undefined,
+      onStdout: verbose ? (chunk) => process.stderr.write(chunk) : undefined,
+      onStderr: verbose ? (chunk) => process.stderr.write(chunk) : undefined,
     });
   } finally {
     if (ticker) clearInterval(ticker);
@@ -191,7 +162,7 @@ async function runPerFile({ agent, targetFiles, systemPrompt, lang, round, maxRu
       reviewFeedback,
     });
 
-    output.write(`[forge] start: ${file}\n`);
+    console.log(`[forge] start: ${file}`);
 
     await invokeAgent(agent, filePrompt, {
       label: `forge:${path.basename(file)}`,
@@ -201,14 +172,14 @@ async function runPerFile({ agent, targetFiles, systemPrompt, lang, round, maxRu
       systemPrompt,
     });
 
-    output.write(`[forge] done: ${file}\n`);
+    console.log(`[forge] done: ${file}`);
     return { file, ok: true };
   });
 
   return raw.map((r, i) => {
     if (r.error) {
       const file = targetFiles[i];
-      output.write(`[forge] failed: ${file} — ${String(r.error.message || r.error).slice(0, 200)}\n`);
+      console.log(`[forge] failed: ${file} — ${String(r.error.message || r.error).slice(0, 200)}`);
       return { file, ok: false, error: r.error.message };
     }
     return r.value;
@@ -219,23 +190,18 @@ async function runPerFile({ agent, targetFiles, systemPrompt, lang, round, maxRu
  * forge の review 成功後に projectContext を自動更新する。
  * docs/ の各章ファイル先頭を LLM に渡し、プロジェクト概要を生成させる。
  */
-async function maybeUpdateContext(root, cfg, agent, timeoutMs, autoConfirm) {
-  const docsDir = path.join(root, "docs");
-  if (!fs.existsSync(docsDir)) return;
-
-  const files = fs.readdirSync(docsDir)
-    .filter((f) => /^\d{2}_.*\.md$/.test(f))
-    .sort();
-
+async function maybeUpdateContext(root, config, agent, timeoutMs, autoConfirm) {
+  const files = getChapterFiles(path.join(root, "docs"));
   if (files.length === 0) return;
 
   // 各章の先頭500文字を抽出
+  const docsDir = path.join(root, "docs");
   const snippets = files.map((f) => {
     const content = fs.readFileSync(path.join(docsDir, f), "utf8");
     return `### ${f}\n${content.slice(0, 500)}`;
   }).join("\n\n");
 
-  const promptText = buildContextUpdatePrompt({ lang: cfg.lang, snippets });
+  const promptText = buildContextUpdatePrompt({ lang: config.lang, snippets });
 
   let generated;
   try {
@@ -245,18 +211,17 @@ async function maybeUpdateContext(root, cfg, agent, timeoutMs, autoConfirm) {
       timeoutMs,
     });
   } catch (err) {
-    output.write(`[forge] context update skipped: ${String(err.message).slice(0, 200)}\n`);
+    console.log(`[forge] context update skipped: ${String(err.message).slice(0, 200)}`);
     return;
   }
 
   if (!generated || generated.trim().length === 0) {
-    output.write("[forge] context update skipped: empty response.\n");
+    console.log("[forge] context update skipped: empty response.");
     return;
   }
 
   const trimmed = generated.trim();
-  output.write("\n[forge] Generated project context:\n");
-  output.write(`${trimmed}\n\n`);
+  console.log(`\n[forge] Generated project context:\n${trimmed}\n`);
 
   let confirmed = autoConfirm;
   if (!confirmed) {
@@ -270,9 +235,9 @@ async function maybeUpdateContext(root, cfg, agent, timeoutMs, autoConfirm) {
 
   if (confirmed) {
     saveContext(root, { projectContext: trimmed });
-    output.write("[forge] context.json updated.\n");
+    console.log("[forge] context.json updated.");
   } else {
-    output.write("[forge] context.json update skipped.\n");
+    console.log("[forge] context.json update skipped.");
   }
 }
 
@@ -284,12 +249,12 @@ async function main() {
   }
 
   const root = repoRoot(import.meta.url);
-  const cfg = loadConfig(root);
-  const lang = cfg.output.default;
-  const t = createI18n(cfg.lang, { domain: "messages" });
-  const agent = resolveAgent(cfg, cli.agent);
+  const config = loadConfig(root);
+  const lang = config.output.default;
+  const t = createI18n(config.lang, { domain: "messages" });
+  const agent = resolveAgent(config, cli.agent);
   const mode = cli.mode || DEFAULT_MODE;
-  const timeoutMs = Number(cfg.limits?.designTimeoutMs || 0) || undefined;
+  const timeoutMs = Number(config.limits?.designTimeoutMs || 0) || undefined;
 
   if (mode === "agent" && !agent) {
     throw new Error(
@@ -297,30 +262,30 @@ async function main() {
     );
   }
 
-  const analysisData = loadAnalysisData(root);
+  const analysisData = loadFullAnalysis(root);
   const analysisSummary = summaryToText(loadSummaryData(root) || analysisData);
   if (analysisData && !cli.dryRun) {
-    output.write("[forge] analysis data loaded.\n");
-    const type = resolveType(cfg.type || "");
+    console.log("[forge] analysis data loaded.");
+    const type = resolveType(config.type || "");
     let resolveFn = null;
     try {
       const resolver = await createResolver(type, root);
       resolveFn = (category, analysis) => resolver.resolve(category, analysis);
     } catch (err) {
-      output.write(`[forge] WARN: resolver not available (${err.message}), skipping {{data}} population\n`);
+      console.log(`[forge] WARN: resolver not available (${err.message}), skipping {{data}} population`);
     }
     const populateResult = populateFromAnalysis(root, analysisData, resolveFn);
     if (populateResult.populated) {
-      output.write(`[forge] populated placeholders in: ${populateResult.files.join(", ")}\n`);
+      console.log(`[forge] populated placeholders in: ${populateResult.files.join(", ")}`);
     }
     if (agent) {
       const tfResult = await textFillFromAnalysis(root, analysisData, cli.agent);
       if (tfResult.filled > 0) {
-        output.write(`[forge] {{text}}: ${tfResult.filled} directives resolved\n`);
+        console.log(`[forge] {{text}}: ${tfResult.filled} directives resolved`);
       }
     }
   } else if (analysisData && cli.dryRun) {
-    output.write("[forge] DRY-RUN: skipping {{data}} population and {{text}} fill\n");
+    console.log("[forge] DRY-RUN: skipping {{data}} population and {{text}} fill");
   }
 
   let userPrompt = String(cli.prompt || "").trim();
@@ -342,7 +307,7 @@ async function main() {
 
   const effectiveMaxRuns = cli.dryRun ? 1 : cli.maxRuns;
 
-  output.write(
+  console.log(
     [
       "",
       "=== forge ===",
@@ -355,27 +320,27 @@ async function main() {
   );
 
   if (cli.dryRun) {
-    output.write("[forge] DRY-RUN: target files:\n");
+    console.log("[forge] DRY-RUN: target files:");
     for (const f of getTargetFiles(root)) {
-      output.write(`  - ${f}\n`);
+      console.log(`  - ${f}`);
     }
-    output.write("[forge] DRY-RUN: no files written, no review, no agent calls.\n");
-    output.write("\n=== DONE (dry-run) ===\n");
+    console.log("[forge] DRY-RUN: no files written, no review, no agent calls.");
+    console.log("\n=== DONE (dry-run) ===");
     return;
   }
 
-  const concurrency = Number(cfg.limits?.concurrency || 0) || DEFAULT_CONCURRENCY;
+  const concurrency = resolveConcurrency(config);
 
   let reviewFeedback = "";
   for (let round = 1; round <= effectiveMaxRuns; round += 1) {
-    output.write(`\n[forge] round ${round}/${effectiveMaxRuns}\n`);
-    output.write(`[forge] run mode=${mode} review='${cli.reviewCmd}'\n`);
+    console.log(`\n[forge] round ${round}/${effectiveMaxRuns}`);
+    console.log(`[forge] run mode=${mode} review='${cli.reviewCmd}'`);
     let usedAgent = false;
     let agentFailed = false;
     if (mode === "assist" || mode === "agent") {
       if (!agent) {
         if (mode === "assist") {
-          output.write("[forge] assist mode: agent not configured, run local-only.\n");
+          console.log("[forge] assist mode: agent not configured, run local-only.");
         }
       } else {
         const targetFiles = getTargetFiles(root);
@@ -391,7 +356,7 @@ async function main() {
             analysisSummary,
           });
 
-          output.write(`[forge] per-file mode: ${targetFiles.length} files, concurrency=${concurrency}\n`);
+          console.log(`[forge] per-file mode: ${targetFiles.length} files, concurrency=${concurrency}`);
 
           const results = await runPerFile({
             agent,
@@ -409,7 +374,7 @@ async function main() {
 
           const succeeded = results.filter((r) => r.ok).length;
           const failed = results.filter((r) => !r.ok).length;
-          output.write(`[forge] per-file done: ${succeeded} ok, ${failed} failed\n`);
+          console.log(`[forge] per-file done: ${succeeded} ok, ${failed} failed`);
 
           if (succeeded > 0) usedAgent = true;
           if (failed > 0 && succeeded === 0) agentFailed = true;
@@ -439,10 +404,10 @@ async function main() {
             if (mode === "agent") {
               throw e;
             }
-            output.write(
+            console.log(
               `[forge] agent step failed. continue with local pipeline.\n${String(
                 e instanceof Error ? e.message : e
-              ).slice(0, 500)}\n`,
+              ).slice(0, 500)}`,
             );
           }
         }
@@ -452,23 +417,23 @@ async function main() {
     // docs/ を直接編集するため generate ステップは不要
 
     const review = await runCommand(cli.reviewCmd, root);
-    output.write(`[forge] review: ${review.ok ? "ok" : "failed"} (code=${review.code})\n`);
+    console.log(`[forge] review: ${review.ok ? "ok" : "failed"} (code=${review.code})`);
     if (review.ok) {
-      output.write("[forge] review passed.\n");
-      if (cfg.documentStyle && agent) {
-        await maybeUpdateContext(root, cfg, agent, timeoutMs, cli.autoUpdateContext);
+      console.log("[forge] review passed.");
+      if (config.documentStyle && agent) {
+        await maybeUpdateContext(root, config, agent, timeoutMs, cli.autoUpdateContext);
       }
       const readme = await runCommand(`node "${path.join(PKG_DIR, "docs", "commands", "readme.js")}"`, root);
-      output.write(`[forge] README.md ${readme.ok ? "updated" : "update failed"}.\n`);
+      console.log(`[forge] README.md ${readme.ok ? "updated" : "update failed"}.`);
 
       // Multi-language: update non-default languages after review pass
       try {
         const { resolveOutputConfig } = await import("../../lib/types.js");
-        const outputCfg = resolveOutputConfig(cfg);
+        const outputCfg = resolveOutputConfig(config);
         if (outputCfg.isMultiLang) {
           const nonDefaultLangs = outputCfg.languages.filter((l) => l !== outputCfg.default);
           if (outputCfg.mode === "translate") {
-            output.write(`[forge] Re-translating to: ${nonDefaultLangs.join(", ")}\n`);
+            console.log(`[forge] Re-translating to: ${nonDefaultLangs.join(", ")}`);
             const translateCmd = `node "${path.join(PKG_DIR, "docs", "commands", "translate.js")}" --force`;
             await runCommand(translateCmd, root);
           }
@@ -479,35 +444,35 @@ async function main() {
         // multi-lang not configured — skip
       }
 
-      output.write("\n=== DONE ===\n- forge completed\n");
+      console.log("\n=== DONE ===\n- forge completed");
       return;
     }
 
     const reviewOut = `${review.stdout}\n${review.stderr}`;
     reviewFeedback = summarizeReview(reviewOut);
-    output.write("[forge] review failed. feedback captured.\n");
-    output.write(`${reviewFeedback}\n`);
+    console.log("[forge] review failed. feedback captured.");
+    console.log(reviewFeedback);
 
     const misses = parseReviewMisses(reviewOut);
-    output.write(
-      `[forge] parsed misses: ${FALLBACK_PATCH_ORDER.map((k) => `${k}=${(misses[k] || []).length}`).join(", ")}\n`,
+    console.log(
+      `[forge] parsed misses: ${FALLBACK_PATCH_ORDER.map((k) => `${k}=${(misses[k] || []).length}`).join(", ")}`,
     );
     const patchResult = patchGeneratedForMisses(root, misses, analysisData);
     if (patchResult.changed) {
-      output.write("[forge] local deterministic patch applied.\n");
+      console.log("[forge] local deterministic patch applied.");
       for (const file of patchResult.touched) {
-        output.write(`- patched: ${file}\n`);
+        console.log(`- patched: ${file}`);
       }
     } else if (agentFailed) {
-      output.write(
-        "[forge] no local patch candidates found after agent failure.\n"
+      console.log(
+        "[forge] no local patch candidates found after agent failure."
       );
     } else if (mode === "local" && !usedAgent) {
-      output.write(t("forge.needsInput") + "\n");
-      output.write(t("forge.reviewFeedback") + "\n");
+      console.log(t("forge.needsInput"));
+      console.log(t("forge.reviewFeedback"));
       const lines = summarizeNeedsInput(reviewOut);
       for (const line of lines) {
-        output.write(`- ${line}\n`);
+        console.log(`- ${line}`);
       }
       process.exitCode = 2;
       return;

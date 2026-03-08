@@ -14,6 +14,7 @@
 import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
+import { DEFAULT_LANG } from "./config.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const DEFAULT_LOCALE_DIR = path.resolve(__dirname, "..", "locale");
@@ -92,7 +93,7 @@ function loadMessages(lang, domain, localeDir) {
 export function createI18n(lang, options = {}) {
   const domain = options.domain || "ui";
   const localeDir = options.localeDir || DEFAULT_LOCALE_DIR;
-  const fallbackLang = options.fallbackLang || "en";
+  const fallbackLang = options.fallbackLang || DEFAULT_LANG;
 
   const messages = loadMessages(lang, domain, localeDir);
   const fallbackMessages = lang !== fallbackLang

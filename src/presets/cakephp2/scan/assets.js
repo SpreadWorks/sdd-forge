@@ -7,7 +7,7 @@
 import fs from "fs";
 import path from "path";
 
-export const JS_LIBRARY_PATTERNS = [
+const JS_LIBRARY_PATTERNS = [
   { pattern: /jquery-(\d+\.\d+\.\d+)/i, library: "jQuery" },
   { pattern: /jquery[-.]ui/i, library: "jQuery UI" },
   { pattern: /jquery[-.]cookie/i, library: "jQuery Cookie" },

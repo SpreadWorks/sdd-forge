@@ -8,7 +8,7 @@
 /**
  * Base class for scan-only modules.
  */
-export class ScanSource {
+class ScanSource {
   /**
    * Extract raw data from source code.
    * @param {string} sourceRoot - absolute path to the source directory

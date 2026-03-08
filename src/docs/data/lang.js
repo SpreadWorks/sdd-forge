@@ -5,7 +5,6 @@
  * language navigation links at the top of each document.
  */
 
-import fs from "fs";
 import path from "path";
 import { DataSource } from "../lib/data-source.js";
 import { loadJsonFile } from "../../lib/config.js";

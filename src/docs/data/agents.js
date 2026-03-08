@@ -9,6 +9,7 @@ import path from "path";
 import { DataSource } from "../lib/data-source.js";
 import { PRESETS_DIR } from "../../lib/presets.js";
 import { loadJsonFile } from "../../lib/config.js";
+import { formatUTCTimestamp } from "../../lib/cli.js";
 
 export default class AgentsSource extends DataSource {
   init(ctx) {
@@ -36,7 +37,7 @@ export default class AgentsSource extends DataSource {
 
     lines.push("## Project Context");
     lines.push("");
-    lines.push(`- **generated_at:** ${new Date().toISOString().replace("T", " ").replace(/\.\d+Z$/, " UTC")}`);
+    lines.push(`- **generated_at:** ${formatUTCTimestamp()}`);
 
     // Package info
     const pkg = this._loadPkg();

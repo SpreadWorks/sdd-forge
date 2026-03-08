@@ -171,19 +171,7 @@ export function parseFile(filePath, lang) {
 // ユーティリティ
 // ---------------------------------------------------------------------------
 
-export function camelToSnake(str) {
-  return str.replace(/([a-z])([A-Z])/g, "$1_$2").toLowerCase();
-}
-
-export function pluralize(str) {
-  if (str.endsWith("y") && !/[aeiou]y$/i.test(str)) {
-    return str.slice(0, -1) + "ies";
-  }
-  if (str.endsWith("s") || str.endsWith("x") || str.endsWith("sh") || str.endsWith("ch")) {
-    return str + "es";
-  }
-  return str + "s";
-}
+export { camelToSnake, pluralize } from "./php-array-parser.js";
 
 /**
  * scanCfg のエントリがカテゴリ定義かどうかを判定する。

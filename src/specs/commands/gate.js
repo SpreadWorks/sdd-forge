@@ -9,7 +9,7 @@ import fs from "fs";
 import path from "path";
 import { runIfDirect } from "../../lib/entrypoint.js";
 import { repoRoot, parseArgs } from "../../lib/cli.js";
-import { loadLang, sddConfigPath } from "../../lib/config.js";
+import { loadLang } from "../../lib/config.js";
 import { createI18n } from "../../lib/i18n.js";
 
 /**
@@ -130,7 +130,7 @@ function main() {
     for (const i of issues) {
       console.error(`- ${i}`);
     }
-    process.exit(1);
+    throw new Error(t("gate.failed"));
   }
 
   console.log(t("gate.passed"));

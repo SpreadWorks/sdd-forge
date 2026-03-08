@@ -13,14 +13,13 @@
 import fs from "fs";
 import path from "path";
 import { runIfDirect } from "../../lib/entrypoint.js";
-import { parseDirectives, replaceBlockDirective } from "../lib/directive-parser.js";
-// RENDERERS は DataSource メソッドが直接レンダリングするため不要
+import { resolveDataDirectives } from "../lib/directive-parser.js";
 import { createResolver } from "../lib/resolver-factory.js";
 import { repoRoot, parseArgs } from "../../lib/cli.js";
-import { loadConfig, loadLang, sddConfigPath, sddOutputDir } from "../../lib/config.js";
-import { resolveType } from "../../lib/types.js";
+import { loadLang, sddOutputDir } from "../../lib/config.js";
 import { createLogger } from "../../lib/progress.js";
 import { createI18n } from "../../lib/i18n.js";
+import { resolveCommandContext, getChapterFiles } from "../lib/command-context.js";
 
 const logger = createLogger("data");
 
@@ -41,52 +40,24 @@ function processTemplate(text, analysis, fileName, resolveFn) {
   if (!resolveFn) {
     throw new Error("resolveFn is required — run createResolver() first");
   }
-  const resolve = resolveFn;
-  const directives = parseDirectives(text);
-  if (directives.length === 0) return { text, replaced: 0, skipped: 0 };
-
-  const lines = text.split("\n");
-  let replaced = 0;
   let skipped = 0;
 
-  // 後ろから処理して行番号のズレを防ぐ
-  for (let i = directives.length - 1; i >= 0; i--) {
-    const d = directives[i];
+  const result = resolveDataDirectives(
+    text,
+    (source, method, labels) => resolveFn(source, method, analysis, labels),
+    {
+      onSkip(d) {
+        if (d.type === "text") {
+          skipped++;
+          logger.verbose(`SKIP {{text}} in ${fileName}:${d.line + 1}: ${d.prompt.slice(0, 60)}...`);
+        }
+      },
+    },
+  );
 
-    if (d.type === "text") {
-      skipped++;
-      logger.verbose(`SKIP {{text}} in ${fileName}:${d.line + 1}: ${d.prompt.slice(0, 60)}...`);
-      continue;
-    }
-
-    if (d.type === "data") {
-      const rendered = resolve(d.source, d.method, analysis, d.labels);
-      if (rendered === null || rendered === undefined) {
-        logger.log(`WARN: no data for "${d.source}.${d.method}" in ${fileName}:${d.line + 1}`);
-        continue;
-      }
-
-      if (d.inline) {
-        // インライン: d.raw は完全なマッチ文字列（{{data: ...}}old{{/data}}）
-        // openTag 部分を抽出し、内容を差し替える
-        const openTag = d.raw.match(/\{\{data:\s*[\w.-]+\.[\w-]+\("[^"]*"\)\s*\}\}/)[0];
-        const endTag = "{{/data}}";
-        lines[d.line] = lines[d.line].replace(d.raw, `${openTag}${rendered}${endTag}`);
-      } else if (d.endLine >= 0) {
-        // ブロック: {{data}} 行と {{/data}} 行の間を置換
-        replaceBlockDirective(lines, d, rendered);
-      } else {
-        // {{/data}} がない — スキップ
-        logger.log(`WARN: missing {{/data}} for "${d.source}.${d.method}" in ${fileName}:${d.line + 1}`);
-        continue;
-      }
-      replaced++;
-    }
-  }
-
-  let result = lines.join("\n");
-  if (!result.endsWith("\n")) result += "\n";
-  return { text: result, replaced, skipped };
+  let out = result.text;
+  if (!out.endsWith("\n")) out += "\n";
+  return { text: out, replaced: result.replaced, skipped };
 }
 
 // ---------------------------------------------------------------------------
@@ -99,7 +70,7 @@ export function populateFromAnalysis(root, analysis, resolveFn) {
   const docsDir = path.join(root, "docs");
   const changedFiles = [];
 
-  const docsFiles = fs.readdirSync(docsDir).filter((f) => /^\d{2}_/.test(f) && f.endsWith(".md")).sort();
+  const docsFiles = getChapterFiles(docsDir);
 
   for (const file of docsFiles) {
     const filePath = path.join(docsDir, file);
@@ -118,30 +89,32 @@ export function populateFromAnalysis(root, analysis, resolveFn) {
 // ---------------------------------------------------------------------------
 // CLI メイン
 // ---------------------------------------------------------------------------
-async function main() {
-  const cli = parseArgs(process.argv.slice(2), {
-    flags: ["--dry-run", "--stdout"],
-    options: ["--docs-dir"],
-    defaults: { dryRun: false, stdout: false, docsDir: "" },
-  });
-  if (cli.help) {
-    const tu = createI18n(loadLang(repoRoot(import.meta.url)));
-    const h = tu.raw("help.cmdHelp.data");
-    const o = h.options;
-    console.log([h.usage, "", h.desc, "", "Options:", `  ${o.dryRun}`, `  ${o.stdout}`, `  ${o.help}`].join("\n"));
-    return;
+async function main(ctx) {
+  // CLI モード: 引数をパースしてコンテキストを構築
+  if (!ctx) {
+    const cli = parseArgs(process.argv.slice(2), {
+      flags: ["--dry-run", "--stdout"],
+      options: ["--docs-dir"],
+      defaults: { dryRun: false, stdout: false, docsDir: "" },
+    });
+    if (cli.help) {
+      const tu = createI18n(loadLang(repoRoot(import.meta.url)));
+      const h = tu.raw("help.cmdHelp.data");
+      const o = h.options;
+      console.log([h.usage, "", h.desc, "", "Options:", `  ${o.dryRun}`, `  ${o.stdout}`, `  ${o.help}`].join("\n"));
+      return;
+    }
+    ctx = resolveCommandContext(cli);
+    ctx.dryRun = cli.dryRun;
+    ctx.stdout = cli.stdout;
   }
 
-  const root = repoRoot(import.meta.url);
-
-  const t = createI18n(loadLang(root), { domain: "messages" });
+  const { root, type, docsDir, t } = ctx;
 
   const analysisPath = path.join(sddOutputDir(root), "analysis.json");
 
   if (!fs.existsSync(analysisPath)) {
-    logger.log(t("data.analysisNotFound", { path: analysisPath }));
-    logger.log(t("data.runScanFirst"));
-    process.exit(1);
+    throw new Error(`${t("data.analysisNotFound", { path: analysisPath })}\n${t("data.runScanFirst")}`);
   }
 
   const analysis = JSON.parse(fs.readFileSync(analysisPath, "utf8"));
@@ -149,18 +122,14 @@ async function main() {
   // type に基づくリゾルバを生成
   let resolveFn;
   try {
-    const cfg = loadConfig(root);
-    const type = resolveType(cfg.type || "php-mvc");
-    const resolver = await createResolver(type, root);
+    const resolver = await createResolver(type, root, { docsDir });
     resolveFn = (source, method, a, labels) => resolver.resolve(source, method, a, labels);
     logger.verbose(`resolver: ${type}`);
   } catch (err) {
-    logger.log(t("data.resolverFailed", { message: err.message }));
-    process.exit(1);
+    throw new Error(t("data.resolverFailed", { message: err.message }));
   }
 
-  const docsDir = cli.docsDir ? path.resolve(root, cli.docsDir) : path.join(root, "docs");
-  const docsFiles = fs.readdirSync(docsDir).filter((f) => /^\d{2}_/.test(f) && f.endsWith(".md")).sort();
+  const docsFiles = getChapterFiles(docsDir);
 
   // Determine relative path prefix for lang.links context
   const docsDirRel = path.relative(root, docsDir).replace(/\\/g, "/");
@@ -189,11 +158,11 @@ async function main() {
       const linesBefore = original.split("\n").length;
       const linesAfter = result.text.split("\n").length;
 
-      if (cli.dryRun || cli.stdout) {
+      if (ctx.dryRun || ctx.stdout) {
         console.log(`[data] ${file}: ${linesBefore} → ${linesAfter} lines (${linesAfter - linesBefore > 0 ? "+" : ""}${linesAfter - linesBefore})`);
       }
 
-      if (!cli.dryRun) {
+      if (!ctx.dryRun) {
         fs.writeFileSync(filePath, result.text);
         logger.verbose(`UPDATED: ${file}`);
       } else {
@@ -202,7 +171,7 @@ async function main() {
     }
   }
 
-  const verb = cli.dryRun ? "would update" : "updated";
+  const verb = ctx.dryRun ? "would update" : "updated";
   logger.log(t("data.done", { count: changedFiles.size, verb, replaced: totalReplaced, skipped: totalSkipped }));
 }
 

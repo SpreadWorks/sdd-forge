@@ -18,7 +18,7 @@ const SPINNER_FRAMES = ["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", 
 let _current = null;
 
 /** Get the active progress instance (null if not in a pipeline). */
-export function getProgress() {
+function getProgress() {
   return _current;
 }
 

@@ -1,6 +1,6 @@
 {
   "name": "sdd-forge",
-  "version": "0.1.0-alpha.22",
+  "version": "0.1.0-alpha.23",
   "description": "Spec-Driven Development tooling for automated documentation generation",
   "repository": {
     "type": "git",

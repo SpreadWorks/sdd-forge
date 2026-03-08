@@ -178,6 +178,68 @@ export function replaceBlockDirective(lines, d, content) {
   lines.splice(d.line, d.endLine - d.line + 1, ...newLines);
 }
 
+/**
+ * テンプレート内の {{data}} ディレクティブを一括解決する。
+ * 逆順ループ + インライン/ブロック置換の共通処理。
+ *
+ * @param {string} text - テンプレート全文
+ * @param {function} resolveFn - (source, method, labels) => rendered string | null
+ * @param {Object} [opts]
+ * @param {function} [opts.onResolve] - (directive, rendered) => void — 解決時コールバック
+ * @param {function} [opts.onSkip] - (directive) => void — data 以外のディレクティブ時コールバック
+ * @returns {{ text: string, replaced: number }}
+ */
+export function resolveDataDirectives(text, resolveFn, opts) {
+  const { onResolve, onSkip } = opts || {};
+  const directives = parseDirectives(text);
+  if (directives.length === 0) return { text, replaced: 0 };
+
+  const lines = text.split("\n");
+  let replaced = 0;
+
+  for (let i = directives.length - 1; i >= 0; i--) {
+    const d = directives[i];
+
+    if (d.type !== "data") {
+      if (onSkip) onSkip(d);
+      continue;
+    }
+
+    const rendered = resolveFn(d.source, d.method, d.labels);
+    if (rendered === null || rendered === undefined) continue;
+
+    if (onResolve) onResolve(d, rendered);
+
+    if (d.inline) {
+      const openTag = d.raw.match(/\{\{data:\s*[\w.-]+\.[\w-]+\("[^"]*"\)\s*\}\}/)[0];
+      const endTag = "{{/data}}";
+      lines[d.line] = lines[d.line].replace(d.raw, `${openTag}${rendered}${endTag}`);
+      replaced++;
+    } else if (d.endLine >= 0) {
+      replaceBlockDirective(lines, d, rendered);
+      replaced++;
+    }
+  }
+
+  return { text: lines.join("\n"), replaced };
+}
+
+/**
+ * マージ済みテンプレートからブロック制御行を除去する。
+ * docs/ 出力時にブロックディレクティブは不要。
+ *
+ * @param {string} text - テンプレートテキスト
+ * @returns {string}
+ */
+export function stripBlockDirectives(text) {
+  return text.split("\n")
+    .filter((line) => {
+      const t = line.trim();
+      return !/^<!--\s*@(block:\s*[\w-]+|endblock|extends|parent)\s*-->$/.test(t);
+    })
+    .join("\n");
+}
+
 export function parseBlocks(text) {
   const lines = text.split("\n");
   let hasExtends = false;

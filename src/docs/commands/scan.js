@@ -11,14 +11,14 @@ import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
 import { runIfDirect } from "../../lib/entrypoint.js";
-import { repoRoot, sourceRoot, parseArgs } from "../../lib/cli.js";
-import { loadConfig, loadLang, sddDataDir, sddOutputDir } from "../../lib/config.js";
-import { resolveType } from "../../lib/types.js";
+import { repoRoot, parseArgs } from "../../lib/cli.js";
+import { loadLang, sddDataDir, sddOutputDir } from "../../lib/config.js";
 import { analyzeExtras } from "../lib/scanner.js";
 import { loadDataSources } from "../lib/data-source-loader.js";
 import { presetByLeaf } from "../../lib/presets.js";
 import { createLogger } from "../../lib/progress.js";
 import { createI18n } from "../../lib/i18n.js";
+import { resolveCommandContext } from "../lib/command-context.js";
 
 const logger = createLogger("scan");
 
@@ -109,22 +109,24 @@ function buildSummary(analysis, dataSources) {
 // メイン
 // ---------------------------------------------------------------------------
 
-async function main() {
-  const cli = parseArgs(process.argv.slice(2), {
-    flags: ["--stdout", "--dry-run"],
-    defaults: { stdout: false, dryRun: false },
-  });
-  if (cli.help) {
-    const root = repoRoot(import.meta.url);
-    printHelp(createI18n(loadLang(root)));
-    return;
+async function main(ctx) {
+  // CLI モード: 引数をパースしてコンテキストを構築
+  if (!ctx) {
+    const cli = parseArgs(process.argv.slice(2), {
+      flags: ["--stdout", "--dry-run"],
+      defaults: { stdout: false, dryRun: false },
+    });
+    if (cli.help) {
+      const root = repoRoot(import.meta.url);
+      printHelp(createI18n(loadLang(root)));
+      return;
+    }
+    ctx = resolveCommandContext(cli);
+    ctx.dryRun = cli.dryRun;
+    ctx.stdout = cli.stdout;
   }
 
-  const root = repoRoot(import.meta.url);
-  const src = sourceRoot();
-  const cfg = loadConfig(root);
-  const rawType = cfg.type || "php-mvc";
-  const type = resolveType(rawType);
+  const { root, srcRoot: src, config: cfg, type } = ctx;
 
   logger.verbose(`type=${type}`);
 
@@ -185,7 +187,7 @@ async function main() {
   // 出力
   const json = JSON.stringify(result);
 
-  if (cli.stdout || cli.dryRun) {
+  if (ctx.stdout || ctx.dryRun) {
     process.stdout.write(json + "\n");
   } else {
     const outputDir = sddOutputDir(root);

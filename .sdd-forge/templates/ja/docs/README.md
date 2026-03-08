@@ -16,6 +16,7 @@
 - **AI ドキュメント生成** — テンプレートの `{{text}}` ディレクティブを AI が自動展開
 - **テンプレート継承** — base → arch → preset → project-local の 4 層継承でカスタマイズ可能
 - **SDD ワークフロー** — spec → gate → 実装 → forge → review の開発サイクルをコマンドで管理
+- **多言語対応** — translate / generate モードで複数言語のドキュメントを自動生成
 - **AI エージェント連携** — Claude Code（スキル）・Codex CLI に対応
 - **マルチプリセット** — Node.js CLI / CakePHP2 / Laravel / Symfony に対応
 
@@ -40,7 +41,7 @@ pnpm add -g <!-- {{data: project.name("")}} --><!-- {{/data}} -->
 # 1. プロジェクトを登録（インタラクティブウィザード）
 <!-- {{data: project.name("")}} --><!-- {{/data}} --> setup
 
-# 2. ドキュメントを一括生成（scan → init → data → text → readme）
+# 2. ドキュメントを一括生成（scan → init → data → text → readme → agents → translate）
 <!-- {{data: project.name("")}} --><!-- {{/data}} --> build
 </pre>
 
@@ -61,6 +62,8 @@ pnpm add -g <!-- {{data: project.name("")}} --><!-- {{/data}} -->
 | `readme` | `docs/` から `README.md` を自動生成 |
 | `forge` | AI によるドキュメント反復改善 |
 | `review` | ドキュメント品質チェック |
+| `translate` | 多言語翻訳（デフォルト言語 → 他言語） |
+| `upgrade` | プリセットテンプレートを最新版に更新 |
 
 ### SDD ワークフロー
 
@@ -71,6 +74,14 @@ pnpm add -g <!-- {{data: project.name("")}} --><!-- {{/data}} -->
 | `flow` | SDD ワークフローを自動実行 |
 | `changelog` | specs/ から変更履歴を生成 |
 | `agents` | AGENTS.md を更新 |
+
+### プロジェクト管理
+
+| コマンド | 説明 |
+|---|---|
+| `default` | デフォルトプロジェクトを設定 |
+| `presets` | 利用可能なプリセット一覧を表示 |
+| `help` | コマンド一覧を表示 |
 
 ## SDD ワークフロー
 

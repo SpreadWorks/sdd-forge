@@ -12,32 +12,17 @@ import fs from "fs";
 import path from "path";
 import { runIfDirect } from "../../lib/entrypoint.js";
 import { repoRoot, parseArgs } from "../../lib/cli.js";
-import { loadPackageField, loadJsonFile, loadLang, sddConfigPath, sddOutputDir } from "../../lib/config.js";
+import { loadPackageField, loadLang } from "../../lib/config.js";
 import { resolveType } from "../../lib/types.js";
-import { callAgent, resolveAgent } from "../../lib/agent.js";
-import { resolveChain, resolveChainWithFallback, collectChapters, resolveChaptersOrder } from "../lib/template-merger.js";
+import { callAgent } from "../../lib/agent.js";
+import { resolveTemplates, mergeResolved, resolveChaptersOrder, translateTemplate } from "../lib/template-merger.js";
 import { summaryToText } from "../lib/forge-prompts.js";
 import { createLogger } from "../../lib/progress.js";
 import { createI18n } from "../../lib/i18n.js";
+import { resolveCommandContext, loadFullAnalysis, loadAnalysisData } from "../lib/command-context.js";
+import { stripBlockDirectives } from "../lib/directive-parser.js";
 
 const logger = createLogger("init");
-
-// ---------------------------------------------------------------------------
-// ブロックディレクティブ除去
-// ---------------------------------------------------------------------------
-
-/**
- * マージ済みテンプレートからブロック制御行を除去する。
- * docs/ 出力時にブロックディレクティブは不要。
- */
-function stripBlockDirectives(text) {
-  return text.split("\n")
-    .filter((line) => {
-      const t = line.trim();
-      return !/^<!--\s*@(block:\s*[\w-]+|endblock|extends|parent)\s*-->$/.test(t);
-    })
-    .join("\n");
-}
 
 // ---------------------------------------------------------------------------
 // AI 章選別
@@ -90,7 +75,7 @@ function aiFilterChapters(chapters, analysis, agent, root, purpose) {
   try {
     response = callAgent(agent, prompt, 60000, root);
   } catch (err) {
-    console.warn(`[init] WARN: AI chapter selection failed: ${err.message}`);
+    logger.log(`[init] WARN: AI chapter selection failed: ${err.message}`);
     return chapters;
   }
 
@@ -104,13 +89,13 @@ function aiFilterChapters(chapters, analysis, agent, root, purpose) {
   try {
     selected = JSON.parse(cleaned);
   } catch (_) {
-    console.warn("[init] WARN: AI response is not valid JSON, skipping AI filter.");
-    console.warn(`[init]   response: ${cleaned.slice(0, 200)}`);
+    logger.log("[init] WARN: AI response is not valid JSON, skipping AI filter.");
+    logger.log(`[init]   response: ${cleaned.slice(0, 200)}`);
     return chapters;
   }
 
   if (!Array.isArray(selected)) {
-    console.warn("[init] WARN: AI response is not an array, skipping AI filter.");
+    logger.log("[init] WARN: AI response is not an array, skipping AI filter.");
     return chapters;
   }
 
@@ -118,7 +103,7 @@ function aiFilterChapters(chapters, analysis, agent, root, purpose) {
   const filtered = chapters.filter((ch) => selectedSet.has(ch.fileName));
 
   if (filtered.length === 0) {
-    console.warn("[init] WARN: AI selected 0 chapters, ignoring AI filter.");
+    logger.log("[init] WARN: AI selected 0 chapters, ignoring AI filter.");
     return chapters;
   }
 
@@ -133,100 +118,88 @@ function aiFilterChapters(chapters, analysis, agent, root, purpose) {
 // ---------------------------------------------------------------------------
 // メイン処理
 // ---------------------------------------------------------------------------
-function main() {
-  const cli = parseArgs(process.argv.slice(2), {
-    flags: ["--force", "--dry-run"],
-    options: ["--type", "--lang", "--docs-dir"],
-    defaults: { type: "", force: false, dryRun: false, lang: "", docsDir: "" },
-  });
-  if (cli.help) {
-    const tu = createI18n(loadLang(repoRoot(import.meta.url)));
-    const h = tu.raw("help.cmdHelp.init");
-    const o = h.options;
-    console.log([h.usage, "", h.desc, "", "Options:", `  ${o.type}`, `  ${o.force}`, `  ${o.dryRun}`, `  ${o.help}`].join("\n"));
-    return;
-  }
-
-  const root = repoRoot(import.meta.url);
-  const defaults = loadPackageField(root, "docsInit") || {};
-  const sddConfig = loadJsonFile(sddConfigPath(root));
-  const t = createI18n(sddConfig?.lang || "en", { domain: "messages" });
-
-  const rawType = cli.type || sddConfig?.type || defaults.defaultType;
-  if (!rawType) {
-    logger.log(t("init.noType"));
-    process.exit(1);
-  }
-
-  const type = resolveType(rawType);
-  const lang = cli.lang || sddConfig?.output?.default;
-
-  if (type !== rawType) {
-    logger.verbose(`type=${rawType} → ${type} (alias resolved) lang=${lang}`);
-  } else {
-    logger.verbose(`type=${type} lang=${lang}`);
-  }
-
-  // 継承チェーンの構築（多言語フォールバック対応）
-  const projectLocalDir = path.join(root, ".sdd-forge", "templates", lang, "docs");
-  const outputConfig = sddConfig?.output;
-  const fallbackLangs = outputConfig?.languages?.filter((l) => l !== lang) || [];
-  const agent = resolveAgent(sddConfig);
-  let chain;
-  if (fallbackLangs.length > 0) {
-    chain = resolveChainWithFallback(type, lang, projectLocalDir, {
-      fallbackLangs,
-      agent,
-      root,
+function main(ctx) {
+  // CLI モード: 引数をパースしてコンテキストを構築
+  if (!ctx) {
+    const cli = parseArgs(process.argv.slice(2), {
+      flags: ["--force", "--dry-run"],
+      options: ["--type", "--lang", "--docs-dir"],
+      defaults: { type: "", force: false, dryRun: false, lang: "", docsDir: "" },
     });
-  } else {
-    chain = resolveChain(type, lang, projectLocalDir);
+    if (cli.help) {
+      const tu = createI18n(loadLang(repoRoot(import.meta.url)));
+      const h = tu.raw("help.cmdHelp.init");
+      const o = h.options;
+      console.log([h.usage, "", h.desc, "", "Options:", `  ${o.type}`, `  ${o.force}`, `  ${o.dryRun}`, `  ${o.help}`].join("\n"));
+      return;
+    }
+    ctx = resolveCommandContext(cli);
+    ctx.force = cli.force;
+    ctx.dryRun = cli.dryRun;
   }
-  logger.verbose(`chain: ${chain.join(" → ")}`);
 
-  // テンプレートマージ（project-local は resolveChain 経由でチェーンに含まれる）
+  const { root, config, outputLang: lang, docsDir, agent, t } = ctx;
+
+  let type = ctx.type;
+  if (!type) {
+    const defaults = loadPackageField(root, "docsInit") || {};
+    const rawType = config?.type || defaults.defaultType;
+    if (!rawType) {
+      throw new Error(t("init.noType"));
+    }
+    type = resolveType(rawType);
+  }
+
+  logger.verbose(`type=${type} lang=${lang}`);
+
+  // テンプレート解決（ボトムアップ方式）
+  const projectLocalDir = path.join(root, ".sdd-forge", "templates", lang, "docs");
+  const outputConfig = config?.output;
+  const fallbackLangs = outputConfig?.languages?.filter((l) => l !== lang) || [];
   const chaptersOrder = resolveChaptersOrder(type);
-  const chapters = collectChapters(chain, chaptersOrder);
+
+  const resolutions = resolveTemplates(type, lang, {
+    projectLocalDir,
+    fallbackLangs,
+    chaptersOrder,
+  });
+
+  // 解決結果からチャプターを生成（README は除外）
+  const chapters = [];
+  for (const res of resolutions) {
+    if (res.fileName === "README.md") continue;
+    let content = mergeResolved(res.sources);
+    if (content === null) continue;
+    if (res.action === "translate" && agent) {
+      content = translateTemplate(content, res.from, res.to, agent, root);
+    }
+    chapters.push({ fileName: res.fileName, content });
+  }
 
   if (chapters.length === 0) {
-    logger.log(t("init.noTemplates"));
-    process.exit(1);
+    throw new Error(t("init.noTemplates"));
   }
 
   // AI 章選別（analysis + agent が揃っている場合）
   let filteredChapters = chapters;
-  const analysisPath = path.join(sddOutputDir(root), "analysis.json");
-  let analysis = null;
-  if (fs.existsSync(analysisPath)) {
-    try {
-      analysis = JSON.parse(fs.readFileSync(analysisPath, "utf8"));
-    } catch (_) { /* malformed analysis.json — non-critical, skip chapter filter */ }
-  }
+  const analysis = loadFullAnalysis(root);
 
-  if (analysis) {
-    const agent = resolveAgent(sddConfig);
-    if (agent) {
-      logger.verbose("AI chapter selection...");
-      const summaryPath = path.join(sddOutputDir(root), "summary.json");
-      let summaryData = analysis;
-      if (fs.existsSync(summaryPath)) {
-        try { summaryData = JSON.parse(fs.readFileSync(summaryPath, "utf8")); } catch (_) { /* use analysis */ }
-      }
-      filteredChapters = aiFilterChapters(
-        filteredChapters,
-        summaryData,
-        agent,
-        root,
-        sddConfig?.documentStyle?.purpose || "",
-      );
-    }
+  if (analysis && agent) {
+    logger.verbose("AI chapter selection...");
+    const summaryData = loadAnalysisData(root);
+    filteredChapters = aiFilterChapters(
+      filteredChapters,
+      summaryData,
+      agent,
+      root,
+      config?.documentStyle?.purpose || "",
+    );
   }
 
   const totalFiltered = chapters.length - filteredChapters.length;
   logger.verbose(`${filteredChapters.length} template files (${totalFiltered} filtered by AI)`);
 
   // docs/ ディレクトリの準備
-  const docsDir = cli.docsDir ? path.resolve(root, cli.docsDir) : path.join(root, "docs");
   if (!fs.existsSync(docsDir)) {
     fs.mkdirSync(docsDir, { recursive: true });
   }
@@ -239,7 +212,7 @@ function main() {
 
   const conflicts = numberedChapters.filter((ch) => fs.existsSync(path.join(docsDir, ch.outputName)));
 
-  if (conflicts.length > 0 && !cli.force) {
+  if (conflicts.length > 0 && !ctx.force) {
     logger.log(t("init.conflictsExist", { count: conflicts.length }));
     for (const ch of conflicts) {
       logger.log(`  - ${ch.outputName}`);
@@ -248,7 +221,7 @@ function main() {
     return;
   }
 
-  if (conflicts.length > 0 && cli.force) {
+  if (conflicts.length > 0 && ctx.force) {
     logger.verbose(`--force: overwriting ${conflicts.length} existing file(s)`);
   }
 
@@ -261,13 +234,13 @@ function main() {
 
     logger.verbose(`merged: ${chapter.fileName} → ${chapter.outputName}`);
 
-    if (!cli.dryRun) {
+    if (!ctx.dryRun) {
       const dst = path.join(docsDir, chapter.outputName);
       fs.writeFileSync(dst, text, "utf8");
     }
   }
 
-  if (cli.dryRun) {
+  if (ctx.dryRun) {
     console.log(`DRY-RUN: ${numberedChapters.length} files would be initialized in docs/`);
   } else {
     logger.verbose(`done. ${numberedChapters.length} files initialized in docs/`);

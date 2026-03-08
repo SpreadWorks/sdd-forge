@@ -6,6 +6,7 @@
 
 import fs from "fs";
 import path from "path";
+import { readText } from "./command-context.js";
 
 export const FALLBACK_PATCH_ORDER = Object.freeze([
   "controllers",
@@ -88,10 +89,6 @@ export function parseReviewMisses(outputText) {
 export function ensureSection(text, heading) {
   if (text.includes(heading)) return text;
   return `${text.trimEnd()}\n\n${heading}\n\n`;
-}
-
-function readText(p) {
-  return fs.existsSync(p) ? fs.readFileSync(p, "utf8") : "";
 }
 
 export function patchGeneratedForMisses(root, misses, analysisData) {

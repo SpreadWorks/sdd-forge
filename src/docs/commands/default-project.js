@@ -11,13 +11,14 @@ import path from "path";
 import { runIfDirect } from "../../lib/entrypoint.js";
 import { setDefault, loadProjects } from "../../lib/projects.js";
 import { createI18n } from "../../lib/i18n.js";
+import { DEFAULT_LANG } from "../../lib/config.js";
 
 function loadLang() {
   try {
     const home = process.env.HOME || process.env.USERPROFILE;
     const raw = JSON.parse(fs.readFileSync(path.join(home, ".sdd-forge", "config.json"), "utf8"));
-    return raw.lang || "en";
-  } catch (_) { return "en"; }
+    return raw.lang || DEFAULT_LANG;
+  } catch (_) { return DEFAULT_LANG; }
 }
 
 function main() {
@@ -27,8 +28,7 @@ function main() {
   if (!name) {
     const data = loadProjects();
     if (!data) {
-      console.error(t("default.noProjects"));
-      process.exit(1);
+      throw new Error(t("default.noProjects"));
     }
     console.log(t("default.registered"));
     for (const [n, p] of Object.entries(data.projects)) {
@@ -42,8 +42,7 @@ function main() {
     setDefault(name);
     console.log(t("default.setDefault", { name }));
   } catch (err) {
-    console.error(`Error: ${err.message}`);
-    process.exit(1);
+    throw new Error(err.message);
   }
 }
 

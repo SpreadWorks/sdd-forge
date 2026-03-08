@@ -8,11 +8,13 @@
 import fs from "fs";
 import path from "path";
 import { DataSource } from "../lib/data-source.js";
+import { getChapterFiles } from "../lib/command-context.js";
 
 export default class DocsSource extends DataSource {
   init(ctx) {
     super.init(ctx);
     this._root = ctx.root;
+    this._docsDir = ctx.docsDir || null;
     this._repoUrl = this._resolveRepoUrl();
   }
 
@@ -29,12 +31,10 @@ export default class DocsSource extends DataSource {
 
   /** Chapter table: lists docs/NN_*.md files with title and description. */
   chapters(_analysis, labels) {
-    const docsDir = path.join(this._root, "docs");
+    const docsDir = this._docsDir || path.join(this._root, "docs");
     if (!fs.existsSync(docsDir)) return null;
 
-    const files = fs.readdirSync(docsDir)
-      .filter((f) => /^\d{2}_.*\.md$/.test(f))
-      .sort();
+    const files = getChapterFiles(docsDir);
 
     if (files.length === 0) return null;
 
@@ -50,7 +50,7 @@ export default class DocsSource extends DataSource {
       let inDesc = false;
       const descLines = [];
       for (const line of lines) {
-        if (/^## (Description|説明)/.test(line)) { inDesc = true; continue; }
+        if (/^## (Description|説明|概要)/.test(line)) { inDesc = true; continue; }
         if (inDesc && /^## /.test(line)) break;
         if (inDesc) {
           if (/<!--\s*\{\{(text|data)\s*(\[[^\]]*\])?\s*:/.test(line)) continue;
@@ -66,9 +66,12 @@ export default class DocsSource extends DataSource {
         ? firstSentence.slice(0, 117) + "…"
         : firstSentence;
 
+      const docsDirRel = this._docsDir
+        ? path.relative(this._root, this._docsDir).replace(/\\/g, "/")
+        : "docs";
       const link = this._repoUrl
-        ? `${this._repoUrl}/blob/main/docs/${f}`
-        : `docs/${f}`;
+        ? `${this._repoUrl}/blob/main/${docsDirRel}/${f}`
+        : `${docsDirRel}/${f}`;
       return [`[${title}](${link})`, description];
     });
 

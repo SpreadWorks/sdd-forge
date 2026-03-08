@@ -8,6 +8,22 @@ import fs from "fs";
 import path from "path";
 import { validateConfig, validateContext } from "./types.js";
 
+/** Default concurrency for parallel file processing. */
+export const DEFAULT_CONCURRENCY = 5;
+
+/** Default fallback language when config is unavailable or lang is unset. */
+export const DEFAULT_LANG = "en";
+
+/**
+ * Resolve concurrency from config, falling back to DEFAULT_CONCURRENCY.
+ *
+ * @param {Object} cfg - SDD config object
+ * @returns {number}
+ */
+export function resolveConcurrency(cfg) {
+  return Number(cfg.limits?.concurrency || 0) || DEFAULT_CONCURRENCY;
+}
+
 /**
  * JSON ファイルを読み込む。存在しなければ throw する。
  *
@@ -73,9 +89,9 @@ export function sddDataDir(root) {
 export function loadLang(root) {
   try {
     const raw = JSON.parse(fs.readFileSync(sddConfigPath(root), "utf8"));
-    return raw.lang || "en";
+    return raw.lang || DEFAULT_LANG;
   } catch (_) {
-    return "en";
+    return DEFAULT_LANG;
   }
 }
 

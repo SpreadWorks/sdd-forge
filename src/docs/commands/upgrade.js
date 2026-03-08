@@ -18,7 +18,6 @@ import { runIfDirect } from "../../lib/entrypoint.js";
 import { PKG_DIR, repoRoot, parseArgs } from "../../lib/cli.js";
 import { loadConfig } from "../../lib/config.js";
 import { createI18n } from "../../lib/i18n.js";
-import { loadSddTemplate } from "../../lib/agents-md.js";
 
 
 // ---------------------------------------------------------------------------
@@ -100,36 +99,6 @@ function upgradeSkills(workRoot, dryRun) {
 }
 
 // ---------------------------------------------------------------------------
-// AGENTS.md SDD section upgrade
-// ---------------------------------------------------------------------------
-
-/**
- * Upgrade the SDD section in AGENTS.md.
- * Returns "updated" | "unchanged" | "not_found".
- */
-function upgradeAgentsSddSection(workRoot, lang, dryRun) {
-  const agentsPath = path.join(workRoot, "AGENTS.md");
-  if (!fs.existsSync(agentsPath)) return "not_found";
-
-  const sddContent = loadSddTemplate(lang);
-  if (!sddContent) return "unchanged";
-
-  const existing = fs.readFileSync(agentsPath, "utf8");
-  const sddPattern = /<!-- SDD:START[^>]*-->[\s\S]*?<!-- SDD:END -->/;
-
-  if (!sddPattern.test(existing)) return "not_found";
-
-  const updated = existing.replace(sddPattern, sddContent.trim());
-  if (updated === existing) return "unchanged";
-
-  if (!dryRun) {
-    fs.writeFileSync(agentsPath, updated, "utf8");
-  }
-
-  return "updated";
-}
-
-// ---------------------------------------------------------------------------
 // Config hints (non-destructive — just prints suggestions)
 // ---------------------------------------------------------------------------
 
@@ -170,7 +139,6 @@ async function main() {
       "Updated files:",
       "  .agents/skills/*/SKILL.md        Skill templates",
       "  .claude/skills/*/SKILL.md        Symlinks to .agents/skills/",
-      "  AGENTS.md (SDD section only)     Legacy <!-- SDD:START/END --> migration",
       "",
       "Options:",
       "  --dry-run    Show what would change without writing files",
@@ -179,9 +147,8 @@ async function main() {
     return;
   }
 
-  const workRoot = repoRoot();
-  const config = loadConfig(workRoot);
-  const lang = config.lang;
+  const root = repoRoot();
+  const config = loadConfig(root);
   const t = createI18n(config.lang);
   const dryRun = cli.dryRun;
 
@@ -190,7 +157,7 @@ async function main() {
   }
 
   // 1. Skills upgrade
-  const skillResults = upgradeSkills(workRoot, dryRun);
+  const skillResults = upgradeSkills(root, dryRun);
   for (const { name, status } of skillResults) {
     if (status === "updated") {
       console.log(t("upgrade.skillUpdated", { name }));
@@ -199,21 +166,11 @@ async function main() {
     }
   }
 
-  // 2. AGENTS.md SDD section upgrade
-  const agentsStatus = upgradeAgentsSddSection(workRoot, lang, dryRun);
-  if (agentsStatus === "updated") {
-    console.log(t("upgrade.agentsUpdated"));
-  } else if (agentsStatus === "not_found") {
-    console.log(t("upgrade.agentsNotFound"));
-  } else {
-    console.log(t("upgrade.agentsUnchanged"));
-  }
-
-  // 3. Config hints — check for missing new settings
+  // 2. Config hints — check for missing new settings
   checkConfigHints(config, t);
 
   // Summary
-  const hasChanges = skillResults.some((r) => r.status === "updated") || agentsStatus === "updated";
+  const hasChanges = skillResults.some((r) => r.status === "updated");
   if (!hasChanges) {
     console.log(t("upgrade.noChanges"));
   } else if (dryRun) {

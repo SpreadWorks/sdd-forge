@@ -1,142 +1,293 @@
 /**
  * sdd-forge/engine/template-merger.js
  *
- * テンプレート継承エンジン。
- * ディレクトリ階層をもとに base → leaf の継承チェーンを構築し、
- * @block / @endblock / @extends ディレクティブでブロック単位のマージを行う。
+ * テンプレート解決エンジン（ボトムアップ方式）。
+ *
+ * ディレクトリ階層を「最も具体的な層（project-local）→ 最も汎用的な層（base）」の
+ * 順で探索し、各ファイルの正規パスと処理方法（そのまま使用 / 翻訳して使用）を決定する。
+ *
+ * @block / @endblock / @extends ディレクティブによるブロック単位マージにも対応。
  */
 
 import fs from "fs";
 import path from "path";
 import { parseBlocks } from "./directive-parser.js";
 import { presetByLeaf } from "../../lib/presets.js";
-import { callAgent, resolveAgent } from "../../lib/agent.js";
+import { callAgent } from "../../lib/agent.js";
+
+const SPECIAL_FILES = new Set(["README.md", "AGENTS.sdd.md"]);
 
 // ---------------------------------------------------------------------------
-// 継承チェーン解決
+// レイヤー構築（ボトムアップ: 最も具体的な層から）
 // ---------------------------------------------------------------------------
 
 /**
- * type パス（例: "webapp/cakephp2"）を継承チェーンに展開する。
- * base → arch → leaf preset → project-local の順でテンプレートディレクトリを返す。
+ * type パスと言語からテンプレートレイヤーを構築する。
+ * 優先度の高い順（project-local → leaf → arch → base）で返す。
  *
  * @param {string} typePath - 型パス（例: "webapp/cakephp2"）
  * @param {string} lang - ロケール（例: "ja"）
- * @param {string|null} [projectLocalDir] - プロジェクトローカルテンプレート（例: .sdd-forge/templates/ja/docs/）
- * @returns {string[]} 継承チェーン（絶対パスの配列）
+ * @param {string|null} [projectLocalDir] - プロジェクトローカルテンプレートディレクトリ
+ * @returns {string[]} レイヤーディレクトリ配列（優先度高い順）
  */
-export function resolveChain(typePath, lang, projectLocalDir) {
+export function buildLayers(typePath, lang, projectLocalDir) {
   const segments = typePath.split("/").filter(Boolean);
-  const chain = [];
+  const layers = [];
 
-  // base 層
-  const base = presetByLeaf("base");
-  if (base) chain.push(path.join(base.dir, "templates", lang));
-
-  // arch 層（例: "webapp"）
-  if (segments.length >= 1 && segments[0] !== "base") {
-    const arch = presetByLeaf(segments[0]);
-    if (arch) chain.push(path.join(arch.dir, "templates", lang));
+  // 1. project-local（最高優先）
+  if (projectLocalDir && fs.existsSync(projectLocalDir)) {
+    layers.push(projectLocalDir);
   }
 
-  // leaf preset 層（例: "cakephp2"）
+  // 2. leaf preset（例: "node-cli"）
   if (segments.length >= 2) {
     const leaf = presetByLeaf(segments[segments.length - 1]);
-    if (leaf?.dir) chain.push(path.join(leaf.dir, "templates", lang));
-  }
-
-  // ディレクトリ存在検証（組み込み層のみ）
-  const missing = chain.filter((dir) => !fs.existsSync(dir));
-  if (missing.length > 0 && missing.length === chain.length) {
-    throw new Error(`Template directory not found: ${missing[0]}`);
-  }
-  // Remove missing directories from chain (fallback handles them)
-  const validChain = chain.filter((dir) => fs.existsSync(dir));
-
-  // プロジェクトローカル層（存在する場合のみ追加）
-  if (projectLocalDir && fs.existsSync(projectLocalDir)) {
-    validChain.push(projectLocalDir);
-  }
-
-  // 欠落フラグ: 呼び出し元が部分チェーンを検知できるようにする
-  validChain.incomplete = missing.length > 0;
-
-  return validChain;
-}
-
-/**
- * 指定言語のテンプレートチェーンを構築する。テンプレートが見つからない場合、
- * fallbackLangs の順で他言語テンプレートを探し、AI 翻訳して一時ディレクトリに展開する。
- *
- * @param {string} typePath - 型パス
- * @param {string} lang - ターゲット言語
- * @param {string|null} projectLocalDir - プロジェクトローカルテンプレート
- * @param {Object} [opts]
- * @param {string[]} [opts.fallbackLangs] - フォールバック言語リスト
- * @param {Object} [opts.agent] - AI エージェント設定（翻訳用）
- * @param {string} [opts.root] - プロジェクトルート
- * @returns {string[]} 継承チェーン
- */
-export function resolveChainWithFallback(typePath, lang, projectLocalDir, opts) {
-  let primaryChain;
-  try {
-    primaryChain = resolveChain(typePath, lang, projectLocalDir);
-    if (primaryChain.length > 0 && !primaryChain.incomplete) return primaryChain;
-  } catch (_) {
-    // fall through to fallback
-  }
-
-  const { fallbackLangs, agent, root } = opts || {};
-  if (!fallbackLangs || fallbackLangs.length === 0) {
-    // No fallback configured — return partial chain if available
-    if (primaryChain && primaryChain.length > 0) return primaryChain;
-    throw new Error(`No templates found for language '${lang}' and no fallback languages configured`);
-  }
-
-  // Try each fallback language — translate the FULL chain from fallback
-  for (const fbLang of fallbackLangs) {
-    if (fbLang === lang) continue;
-    try {
-      const fbChain = resolveChain(typePath, fbLang, null);
-      if (fbChain.length === 0 || fbChain.incomplete) continue;
-
-      if (!agent) {
-        // No agent available — use source language templates as-is
-        return fbChain;
-      }
-
-      // Translate templates on-the-fly to a temp directory
-      const tmpDir = path.join(root || process.cwd(), ".sdd-forge", "tmp", `templates-${lang}`);
-      fs.mkdirSync(tmpDir, { recursive: true });
-
-      const fbChaptersOrder = resolveChaptersOrder(typePath);
-      const chapters = collectChapters(fbChain, fbChaptersOrder);
-      for (const ch of chapters) {
-        const translated = translateTemplate(ch.content, fbLang, lang, agent, root);
-        fs.writeFileSync(path.join(tmpDir, ch.fileName), translated, "utf8");
-      }
-
-      // Also translate README.md if exists (merge the full chain first)
-      const readmeMerged = mergeFile("README.md", fbChain);
-      if (readmeMerged) {
-        const translated = translateTemplate(readmeMerged, fbLang, lang, agent, root);
-        fs.writeFileSync(path.join(tmpDir, "README.md"), translated, "utf8");
-      }
-
-      // Return chain with just the translated temp dir
-      if (projectLocalDir && fs.existsSync(projectLocalDir)) {
-        return [tmpDir, projectLocalDir];
-      }
-      return [tmpDir];
-    } catch (_) {
-      continue;
+    if (leaf?.dir) {
+      const dir = path.join(leaf.dir, "templates", lang);
+      if (fs.existsSync(dir)) layers.push(dir);
     }
   }
 
-  // All fallbacks failed — return partial primary chain if available
-  if (primaryChain && primaryChain.length > 0) return primaryChain;
-  throw new Error(`No templates found for language '${lang}' in any fallback language`);
+  // 3. arch 層（例: "cli"）
+  if (segments.length >= 1 && segments[0] !== "base") {
+    const arch = presetByLeaf(segments[0]);
+    if (arch) {
+      const dir = path.join(arch.dir, "templates", lang);
+      if (fs.existsSync(dir)) layers.push(dir);
+    }
+  }
+
+  // 4. base（最低優先）
+  const base = presetByLeaf("base");
+  if (base) {
+    const dir = path.join(base.dir, "templates", lang);
+    if (fs.existsSync(dir)) layers.push(dir);
+  }
+
+  return layers;
 }
+
+// ---------------------------------------------------------------------------
+// 単一ファイル解決（ボトムアップ）
+// ---------------------------------------------------------------------------
+
+/**
+ * 1つのファイルをボトムアップで解決する。
+ * 優先度の高い層から順に探索し、@extends がなければそこで確定。
+ * @extends がある場合は上位層の親を探し続ける。
+ *
+ * @param {string} fileName - テンプレートファイル名（例: "overview.md"）
+ * @param {string[]} layers - レイヤーディレクトリ配列（優先度高い順）
+ * @returns {{ path: string, content: string, extends: boolean }[]|null}
+ *   ソース配列（優先度高い順）。削除マークなら null。ファイル未発見なら null。
+ */
+function resolveOneFile(fileName, layers) {
+  const sources = [];
+
+  for (const dir of layers) {
+    const filePath = path.join(dir, fileName);
+    if (!fs.existsSync(filePath)) continue;
+
+    const content = fs.readFileSync(filePath, "utf8");
+
+    // 空ファイル → 削除マーク
+    if (content.trim() === "") return null;
+
+    const parsed = parseBlocks(content);
+    sources.push({ path: filePath, content, extends: parsed.extends });
+
+    // @extends なし → 親不要、ここで確定
+    if (!parsed.extends) break;
+  }
+
+  return sources.length > 0 ? sources : null;
+}
+
+// ---------------------------------------------------------------------------
+// ソースマージ
+// ---------------------------------------------------------------------------
+
+/**
+ * 解決済みソース配列をマージする。
+ * ソースは優先度高い順（project-local → base）で並んでいるため、
+ * 逆順（base → project-local）で mergeTexts を適用する。
+ *
+ * @param {{ path: string, content: string, extends: boolean }[]} sources
+ * @returns {string|null} マージ結果
+ */
+export function mergeResolved(sources) {
+  if (!sources || sources.length === 0) return null;
+  if (sources.length === 1) return sources[0].content;
+
+  // base（末尾）から開始し、子を順に被せる
+  let result = sources[sources.length - 1].content;
+  for (let i = sources.length - 2; i >= 0; i--) {
+    result = mergeTexts(result, sources[i].content);
+  }
+  return result;
+}
+
+// ---------------------------------------------------------------------------
+// テンプレート解決（メインエントリポイント）
+// ---------------------------------------------------------------------------
+
+/**
+ * @typedef {Object} FileResolution
+ * @property {string} fileName - テンプレートファイル名（例: "overview.md"）
+ * @property {{ path: string, content: string, extends: boolean }[]} sources - ソース配列
+ * @property {"use"|"translate"} action - 処理方法
+ * @property {string} [from] - 翻訳元言語（action === "translate" の場合）
+ * @property {string} [to] - 翻訳先言語（action === "translate" の場合）
+ */
+
+/**
+ * 指定タイプ・言語の全テンプレートファイルを解決する。
+ * 各ファイルについて正規パスと処理方法（use / translate）を決定する。
+ *
+ * @param {string} typePath - 型パス（例: "cli/node-cli"）
+ * @param {string} lang - ターゲット言語
+ * @param {Object} [opts]
+ * @param {string|null} [opts.projectLocalDir] - プロジェクトローカルテンプレートディレクトリ
+ * @param {string[]} [opts.fallbackLangs] - フォールバック言語リスト
+ * @param {string[]} [opts.chaptersOrder] - preset.json の chapters 順序配列
+ * @returns {FileResolution[]}
+ */
+export function resolveTemplates(typePath, lang, opts = {}) {
+  const { projectLocalDir, fallbackLangs, chaptersOrder } = opts;
+
+  // ターゲット言語のレイヤー
+  const layers = buildLayers(typePath, lang, projectLocalDir);
+
+  // フォールバック言語のレイヤーセット
+  const fallbackSets = (fallbackLangs || [])
+    .filter((l) => l !== lang)
+    .map((fbLang) => ({
+      lang: fbLang,
+      layers: buildLayers(
+        typePath,
+        fbLang,
+        deriveFallbackProjectLocalDir(projectLocalDir, fbLang),
+      ),
+    }));
+
+  // 解決対象ファイル名を収集
+  const fileNames = discoverFileNames(layers, fallbackSets, chaptersOrder);
+
+  // 各ファイルを解決
+  const resolutions = [];
+  for (const fileName of fileNames) {
+    const resolution = resolveOneFileWithFallback(
+      fileName,
+      lang,
+      layers,
+      fallbackSets,
+    );
+    if (resolution) resolutions.push(resolution);
+  }
+
+  return resolutions;
+}
+
+/**
+ * 1つのファイルをターゲット言語 → フォールバック言語の順で解決する。
+ */
+function resolveOneFileWithFallback(fileName, lang, layers, fallbackSets) {
+  // ターゲット言語で解決を試みる
+  const sources = resolveOneFile(fileName, layers);
+  if (sources) {
+    return { fileName, sources, action: "use" };
+  }
+
+  // フォールバック言語で解決を試みる
+  for (const fb of fallbackSets) {
+    const fbSources = resolveOneFile(fileName, fb.layers);
+    if (fbSources) {
+      return {
+        fileName,
+        sources: fbSources,
+        action: "translate",
+        from: fb.lang,
+        to: lang,
+      };
+    }
+  }
+
+  return null;
+}
+
+/**
+ * フォールバック言語のプロジェクトローカルディレクトリを導出する。
+ */
+function deriveFallbackProjectLocalDir(projectLocalDir, fbLang) {
+  if (!projectLocalDir) return null;
+  return projectLocalDir.replace(/\/[^/]+\/docs\/?$/, `/${fbLang}/docs`);
+}
+
+/**
+ * 解決対象のファイル名一覧を収集する。
+ * chaptersOrder がある場合はそれに従い、なければ全レイヤーをスキャンする。
+ */
+function discoverFileNames(layers, fallbackSets, chaptersOrder) {
+  if (chaptersOrder && chaptersOrder.length > 0) {
+    return [...chaptersOrder, "README.md"];
+  }
+
+  // 全レイヤーをスキャンして .md ファイルを収集
+  const allFiles = new Set();
+  const allLayers = [...layers];
+  for (const fb of fallbackSets) {
+    allLayers.push(...fb.layers);
+  }
+
+  for (const dir of allLayers) {
+    if (!fs.existsSync(dir)) continue;
+    const files = fs
+      .readdirSync(dir)
+      .filter((f) => f.endsWith(".md") && !SPECIAL_FILES.has(f));
+    for (const f of files) allFiles.add(f);
+  }
+
+  const sorted = [...allFiles].sort();
+  // README.md は常に末尾に追加
+  sorted.push("README.md");
+  return sorted;
+}
+
+// ---------------------------------------------------------------------------
+// 章順序解決
+// ---------------------------------------------------------------------------
+
+/**
+ * type パスから章の順序を解決する。
+ * 継承チェーンと同じ順序（base → arch → leaf）で探索し、
+ * 最も具体的な（リーフに近い）preset の chapters を使用する。
+ *
+ * @param {string} typePath - 型パス（例: "webapp/cakephp2"）
+ * @returns {string[]} 章ファイル名の順序配列
+ */
+export function resolveChaptersOrder(typePath) {
+  const segments = typePath.split("/").filter(Boolean);
+  let chapters = [];
+
+  const base = presetByLeaf("base");
+  if (base?.chapters?.length) chapters = base.chapters;
+
+  if (segments.length >= 1 && segments[0] !== "base") {
+    const arch = presetByLeaf(segments[0]);
+    if (arch?.chapters?.length) chapters = arch.chapters;
+  }
+
+  if (segments.length >= 2) {
+    const leaf = presetByLeaf(segments[segments.length - 1]);
+    if (leaf?.chapters?.length) chapters = leaf.chapters;
+  }
+
+  return chapters;
+}
+
+// ---------------------------------------------------------------------------
+// テンプレート翻訳ユーティリティ
+// ---------------------------------------------------------------------------
 
 /**
  * テンプレートを翻訳する。ディレクティブは保持し、Markdown のテキスト部分のみ翻訳する。
@@ -148,12 +299,12 @@ export function resolveChainWithFallback(typePath, lang, projectLocalDir, opts) 
  * @param {string} [root] - プロジェクトルート
  * @returns {string}
  */
-function translateTemplate(content, fromLang, toLang, agent, root) {
+export function translateTemplate(content, fromLang, toLang, agent, root) {
   const prompt = [
     `Translate the following Markdown template from ${fromLang} to ${toLang}.`,
     "",
     "Rules:",
-    "- Preserve ALL directives exactly as-is: {{data: ...}}, {{text: ...}}, {{/data}}, <!-- @block -->, <!-- @endblock -->, <!-- @extends -->",
+    '- Preserve ALL directives exactly as-is: {{data: ...}}, {{text: ...}}, {{/data}}, <!-- @block -->, <!-- @endblock -->, <!-- @extends -->',
     "- Translate ONLY: Markdown headings (#), static text, table headers in data directive labels",
     "- For {{text: ...}} directives, translate the prompt text inside them",
     "- Do NOT add or remove any lines",
@@ -172,7 +323,7 @@ function translateTemplate(content, fromLang, toLang, agent, root) {
 }
 
 // ---------------------------------------------------------------------------
-// ブロックマージ
+// ブロックマージ（内部）
 // ---------------------------------------------------------------------------
 
 /**
@@ -228,136 +379,3 @@ function mergeTexts(parentText, childText) {
 
   return resultLines.join("\n");
 }
-
-// ---------------------------------------------------------------------------
-// ファイルマージ
-// ---------------------------------------------------------------------------
-
-/**
- * 継承チェーンに沿ってテンプレートファイルをマージする。
- *
- * @param {string} fileName - テンプレートファイル名（例: "overview.md"）
- * @param {string[]} chain - 継承チェーン（絶対パスの配列）
- * @returns {string|null} マージ結果。空ファイルの場合は null（削除マーク）。
- */
-export function mergeFile(fileName, chain) {
-  let result = null;
-
-  for (const dir of chain) {
-    const filePath = path.join(dir, fileName);
-    if (!fs.existsSync(filePath)) continue;
-
-    const content = fs.readFileSync(filePath, "utf8");
-
-    // 空ファイル → 削除マーク
-    if (content.trim() === "") {
-      return null;
-    }
-
-    if (result === null) {
-      // 最初のファイル → ベース
-      result = content;
-    } else {
-      // 後続 → マージ
-      result = mergeTexts(result, content);
-    }
-  }
-
-  return result;
-}
-
-// ---------------------------------------------------------------------------
-// 章収集
-// ---------------------------------------------------------------------------
-
-const SPECIAL_FILES = new Set(["README.md", "AGENTS.sdd.md"]);
-
-/**
- * type パスから章の順序を解決する。
- * 継承チェーンと同じ順序（base → arch → leaf）で探索し、
- * 最も具体的な（リーフに近い）preset の chapters を使用する。
- *
- * @param {string} typePath - 型パス（例: "webapp/cakephp2"）
- * @returns {string[]} 章ファイル名の順序配列
- */
-export function resolveChaptersOrder(typePath) {
-  const segments = typePath.split("/").filter(Boolean);
-  let chapters = [];
-
-  const base = presetByLeaf("base");
-  if (base?.chapters?.length) chapters = base.chapters;
-
-  if (segments.length >= 1 && segments[0] !== "base") {
-    const arch = presetByLeaf(segments[0]);
-    if (arch?.chapters?.length) chapters = arch.chapters;
-  }
-
-  if (segments.length >= 2) {
-    const leaf = presetByLeaf(segments[segments.length - 1]);
-    if (leaf?.chapters?.length) chapters = leaf.chapters;
-  }
-
-  return chapters;
-}
-
-/**
- * 継承チェーン全体から章ファイル名を収集・マージし、
- * 順序付きリストを返す。
- * 空ファイル（削除マーク）はスキップ。
- *
- * @param {string[]} chain - 継承チェーン（絶対パスの配列）
- * @param {string[]} [chaptersOrder] - preset.json の chapters 順序配列
- * @returns {{ fileName: string, content: string }[]}
- */
-export function collectChapters(chain, chaptersOrder) {
-  if (chaptersOrder && chaptersOrder.length > 0) {
-    // preset.json の chapters 順序に従う
-    const chapters = [];
-    for (const fileName of chaptersOrder) {
-      const content = mergeFile(fileName, chain);
-      if (content !== null) {
-        chapters.push({ fileName, content });
-      }
-    }
-    return chapters;
-  }
-
-  // フォールバック: 全チェーンから .md ファイルを収集してアルファベット順
-  const allFiles = new Set();
-  for (const dir of chain) {
-    if (!fs.existsSync(dir)) continue;
-    const files = fs.readdirSync(dir).filter(
-      (f) => f.endsWith(".md") && !SPECIAL_FILES.has(f),
-    );
-    for (const f of files) allFiles.add(f);
-  }
-
-  const sorted = [...allFiles].sort();
-  const chapters = [];
-
-  for (const fileName of sorted) {
-    const content = mergeFile(fileName, chain);
-    if (content !== null) {
-      chapters.push({ fileName, content });
-    }
-  }
-
-  return chapters;
-}
-
-/**
- * 継承チェーンから README.md テンプレートを解決する。
- * 最も具体的な（リーフに近い）README.md を使用する。
- *
- * @param {string[]} chain - 継承チェーン（絶対パスの配列）
- * @returns {string|null} README テンプレートパス、見つからなければ null
- */
-export function resolveReadmeTemplate(chain) {
-  // リーフから順に探索
-  for (let i = chain.length - 1; i >= 0; i--) {
-    const p = path.join(chain[i], "README.md");
-    if (fs.existsSync(p)) return p;
-  }
-  return null;
-}
-

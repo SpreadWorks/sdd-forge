@@ -24,14 +24,14 @@ import {
   formatLimitRule,
 } from "../lib/text-prompts.js";
 import { repoRoot, parseArgs } from "../../lib/cli.js";
-import { loadConfig, loadLang, sddOutputDir, resolveProjectContext } from "../../lib/config.js";
+import { loadConfig, loadLang, resolveProjectContext, resolveConcurrency, DEFAULT_CONCURRENCY } from "../../lib/config.js";
 import { createLogger } from "../../lib/progress.js";
 import { callAgent as callAgentBase, callAgentAsync as callAgentAsyncBase, ensureAgentWorkDir, loadAgentConfig, MID_AGENT_TIMEOUT_MS } from "../../lib/agent.js";
 import { createI18n } from "../../lib/i18n.js";
+import { resolveCommandContext, getChapterFiles, loadFullAnalysis } from "../lib/command-context.js";
 
 const logger = createLogger("text");
 
-const DEFAULT_CONCURRENCY = 5;
 const DEFAULT_TIMEOUT_MS = MID_AGENT_TIMEOUT_MS;
 
 /**
@@ -336,11 +336,9 @@ export async function textFillFromAnalysis(root, analysis, agentName) {
   const documentStyle = cfg.documentStyle;
   const lang = cfg.output.default;
   const systemPrompt = buildTextSystemPrompt(projectContext, documentStyle, lang);
-  const concurrency = Number(cfg.limits?.concurrency || 0) || DEFAULT_CONCURRENCY;
+  const concurrency = resolveConcurrency(cfg);
   const docsDir = path.join(root, "docs");
-  const docsFiles = fs.readdirSync(docsDir)
-    .filter((f) => /^\d{2}_/.test(f) && f.endsWith(".md"))
-    .sort();
+  const docsFiles = getChapterFiles(docsDir);
 
   const changedFiles = [];
   let totalFilled = 0;
@@ -392,70 +390,71 @@ export async function textFillFromAnalysis(root, analysis, agentName) {
 // ---------------------------------------------------------------------------
 // CLI メイン
 // ---------------------------------------------------------------------------
-async function main() {
-  const cli = parseArgs(process.argv.slice(2), {
-    flags: ["--dry-run", "--per-directive"],
-    options: ["--agent", "--timeout", "--id", "--lang", "--docs-dir"],
-    defaults: { agent: "", dryRun: false, timeout: String(DEFAULT_TIMEOUT_MS), perDirective: false, id: "", lang: "", docsDir: "" },
-  });
-  cli.timeout = Number(cli.timeout) || DEFAULT_TIMEOUT_MS;
-  if (cli.help) {
-    const tu = createI18n(loadLang(repoRoot(import.meta.url)));
-    const h = tu.raw("help.cmdHelp.text");
-    const o = h.options;
-    console.log([
-      h.usage, "", "Options:",
-      `  ${tu("help.cmdHelp.text.options.agent")}`,
-      `  ${o.id}`, `  ${o.dryRun}`, `  ${o.perDirective}`,
-      `  ${tu("help.cmdHelp.text.options.timeout", { default: DEFAULT_TIMEOUT_MS })}`,
-      `  ${o.help}`,
-    ].join("\n"));
-    return;
+async function main(ctx) {
+  // CLI モード
+  if (!ctx) {
+    const cli = parseArgs(process.argv.slice(2), {
+      flags: ["--dry-run", "--per-directive"],
+      options: ["--agent", "--timeout", "--id", "--lang", "--docs-dir"],
+      defaults: { agent: "", dryRun: false, timeout: String(DEFAULT_TIMEOUT_MS), perDirective: false, id: "", lang: "", docsDir: "" },
+    });
+    cli.timeout = Number(cli.timeout) || DEFAULT_TIMEOUT_MS;
+    if (cli.help) {
+      const tu = createI18n(loadLang(repoRoot(import.meta.url)));
+      const h = tu.raw("help.cmdHelp.text");
+      const o = h.options;
+      console.log([
+        h.usage, "", "Options:",
+        `  ${tu("help.cmdHelp.text.options.agent")}`,
+        `  ${o.id}`, `  ${o.dryRun}`, `  ${o.perDirective}`,
+        `  ${tu("help.cmdHelp.text.options.timeout", { default: DEFAULT_TIMEOUT_MS })}`,
+        `  ${o.help}`,
+      ].join("\n"));
+      return;
+    }
+
+    if (!cli.agent) {
+      throw new Error("--agent is required. Use --agent claude or --agent codex.");
+    }
+
+    ctx = resolveCommandContext(cli);
+    ctx.dryRun = cli.dryRun;
+    ctx.perDirective = cli.perDirective;
+    ctx.timeout = cli.timeout;
+    ctx.id = cli.id;
+    ctx.agentName = cli.agent;
   }
 
-  if (!cli.agent) {
-    logger.log("ERROR: --agent is required. Use --agent claude or --agent codex.");
-    process.exit(1);
-  }
+  const { root, config: cfg, docsDir } = ctx;
 
-  const root = repoRoot(import.meta.url);
-  const analysisPath = path.join(sddOutputDir(root), "analysis.json");
-
-  let analysis = {};
-  if (fs.existsSync(analysisPath)) {
-    analysis = JSON.parse(fs.readFileSync(analysisPath, "utf8"));
-  } else {
-    logger.log(`WARN: analysis.json not found: ${analysisPath}`);
-    logger.log("Proceeding with empty analysis context. Run 'sdd-forge scan' if needed.");
+  const analysis = loadFullAnalysis(root) || {};
+  if (Object.keys(analysis).length === 0) {
+    logger.log("WARN: analysis.json not found. Proceeding with empty analysis context.");
   }
-  const cfg = loadConfig(root);
-  const agent = loadAgentConfig(cfg, cli.agent);
+  const agent = ctx.agentName ? loadAgentConfig(cfg, ctx.agentName) : loadAgentConfig(cfg);
 
   ensureAgentWorkDir(agent, root);
 
   const preamblePatterns = loadPreamblePatterns(cfg);
   const projectContext = resolveProjectContext(root);
   const documentStyle = cfg.documentStyle;
-  const lang = cli.lang || cfg.output.default;
+  const lang = ctx.outputLang;
   const systemPrompt = buildTextSystemPrompt(projectContext, documentStyle, lang);
-  const concurrency = Number(cfg.limits?.concurrency || 0) || DEFAULT_CONCURRENCY;
-  const docsDir = cli.docsDir ? path.resolve(root, cli.docsDir) : path.join(root, "docs");
-  const docsFiles = fs.readdirSync(docsDir)
-    .filter((f) => /^\d{2}_/.test(f) && f.endsWith(".md"))
-    .sort();
+  const concurrency = resolveConcurrency(cfg);
+  const docsFiles = getChapterFiles(docsDir);
 
   let totalFilled = 0;
   let totalSkipped = 0;
   const changedFiles = new Set();
 
   // --id 指定時: per-directive モードを強制
-  if (cli.id) {
-    cli.perDirective = true;
-    logger.verbose(`--id=${cli.id}: per-directive mode forced.`);
+  if (ctx.id) {
+    ctx.perDirective = true;
+    logger.verbose(`--id=${ctx.id}: per-directive mode forced.`);
   }
 
-  const processFn = cli.perDirective ? processTemplate : processTemplateFileBatch;
-  if (!cli.perDirective) {
+  const processFn = ctx.perDirective ? processTemplate : processTemplateFileBatch;
+  if (!ctx.perDirective) {
     logger.verbose(`Mode: batch (file-level, ${docsFiles.length} file(s), concurrency=${concurrency}). Use --per-directive for single-call mode.`);
   }
 
@@ -465,9 +464,9 @@ async function main() {
     const filePath = path.join(docsDir, file);
     const original = fs.readFileSync(filePath, "utf8");
 
-    if (cli.id) {
+    if (ctx.id) {
       const directives = parseDirectives(original);
-      const hasId = directives.some((d) => d.type === "text" && d.params?.id === cli.id);
+      const hasId = directives.some((d) => d.type === "text" && d.params?.id === ctx.id);
       if (!hasId) continue;
     }
 
@@ -476,12 +475,12 @@ async function main() {
 
   // File-level concurrency: batch mode can parallelize files (1 call each),
   // per-directive mode processes files sequentially to avoid concurrency² explosion
-  const fileConcurrency = cli.perDirective ? 1 : concurrency;
+  const fileConcurrency = ctx.perDirective ? 1 : concurrency;
   const errors = [];
   const fileResults = await mapWithConcurrency(fileEntries, fileConcurrency, async (entry) => {
     const { file, original } = entry;
     logger.verbose(`start: ${file}`);
-    const result = await processFn(original, analysis, file, agent, cli.timeout, root, cli.dryRun, preamblePatterns, systemPrompt, cli.id || undefined, concurrency, lang);
+    const result = await processFn(original, analysis, file, agent, ctx.timeout, root, ctx.dryRun, preamblePatterns, systemPrompt, ctx.id || undefined, concurrency, lang);
     logger.verbose(`done: ${file}`);
     return { ...entry, result };
   });
@@ -499,7 +498,7 @@ async function main() {
     const { file, filePath, original, result } = resultEntry.value;
     if (!result) continue;
 
-    if (!cli.perDirective && !cli.dryRun && result.filled === 0) {
+    if (!ctx.perDirective && !ctx.dryRun && result.filled === 0) {
       const textFills = parseDirectives(original).filter((d) => d.type === "text");
       if (textFills.length > 0) {
         errors.push(file);
@@ -512,7 +511,7 @@ async function main() {
 
     if (result.filled > 0) {
       changedFiles.add(file);
-      if (!cli.dryRun) {
+      if (!ctx.dryRun) {
         fs.writeFileSync(filePath, result.text);
         logger.verbose(`UPDATED: ${file}`);
       }

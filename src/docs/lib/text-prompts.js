@@ -10,7 +10,7 @@ import { createI18n } from "../../lib/i18n.js";
 /**
  * {{data}} カテゴリ名 → analysis.json の必要セクションへのマッピング。
  */
-export const CATEGORY_TO_SECTIONS = {
+const CATEGORY_TO_SECTIONS = {
   controllers:             (a) => ({ controllers: a.controllers }),
   "controllers.deps":      (a) => ({ controllers: a.controllers }),
   "controllers.csv":       (a) => ({ controllers: a.controllers }),
@@ -91,7 +91,7 @@ export function getAnalysisContext(analysis, directives) {
 /**
  * documentStyle → プロンプトヘッダー行を生成する。
  */
-export function buildPromptHeader(projectContext, documentStyle, lang) {
+function buildPromptHeader(projectContext, documentStyle, lang) {
   const t = createI18n(lang || "ja", { domain: "prompts" });
   const header = [];
   if (documentStyle) {

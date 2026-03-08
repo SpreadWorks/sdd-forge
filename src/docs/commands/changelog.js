@@ -9,8 +9,8 @@
 import fs from "fs";
 import path from "path";
 import { runIfDirect } from "../../lib/entrypoint.js";
-import { sourceRoot, repoRoot, parseArgs } from "../../lib/cli.js";
-import { loadLang, sddConfigPath } from "../../lib/config.js";
+import { sourceRoot, repoRoot, parseArgs, formatUTCTimestamp } from "../../lib/cli.js";
+import { loadConfig, loadLang, DEFAULT_LANG } from "../../lib/config.js";
 import { createI18n } from "../../lib/i18n.js";
 
 /**
@@ -120,7 +120,7 @@ function main() {
     const h = tu.raw("help.cmdHelp.changelog");
     const o = h.options;
     console.log([h.usage, "", `  ${h.desc}`, `  ${h.descDetail}`, "", "Options:", `  ${o.dryRun}`].join("\n"));
-    process.exit(0);
+    return;
   }
 
   const root = repoRoot();
@@ -129,10 +129,10 @@ function main() {
   const outFileArg = args.find((a) => !a.startsWith("-"));
   const outFile = outFileArg || path.join(root, "docs", "change_log.md");
 
-  let lang = "ja";
+  let lang = DEFAULT_LANG;
   try {
-    const raw = JSON.parse(fs.readFileSync(sddConfigPath(root), "utf8"));
-    lang = raw.output?.default || raw.lang || "ja";
+    const cfgData = loadConfig(root);
+    lang = cfgData.output?.default || cfgData.lang || DEFAULT_LANG;
   } catch (_) {}
   const t = createI18n(lang, { domain: "messages" });
 
@@ -184,7 +184,7 @@ function main() {
   );
 
   // Generate output
-  const now = new Date().toISOString().replace("T", " ").replace(/\.\d+Z$/, " UTC");
+  const now = formatUTCTimestamp();
   const out = [];
 
   out.push("<!-- AUTO-GEN:START -->");
@@ -231,7 +231,7 @@ function main() {
   const tu = createI18n(lang, { domain: "messages" });
 
   if (opts.dryRun) {
-    process.stdout.write(out.join("\n"));
+    console.log(out.join("\n"));
     console.error(tu("changelog.dryRun", { path: outFile }));
   } else {
     fs.writeFileSync(outFile, out.join("\n"));

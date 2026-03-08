@@ -10,9 +10,10 @@ import fs from "fs";
 import path from "path";
 import { runIfDirect } from "../../lib/entrypoint.js";
 import { repoRoot, parseArgs } from "../../lib/cli.js";
-import { loadLang, sddConfigPath, sddOutputDir } from "../../lib/config.js";
+import { loadConfig, loadLang, sddOutputDir } from "../../lib/config.js";
 import { createI18n } from "../../lib/i18n.js";
 import { resolveOutputConfig } from "../../lib/types.js";
+import { getChapterFiles } from "../lib/command-context.js";
 
 function main() {
   const args = process.argv.slice(2);
@@ -25,25 +26,21 @@ function main() {
     console.log("");
     console.log(`  ${h.desc}`);
     console.log(`  ${h.descDetail}`);
-    process.exit(0);
+    return;
   }
 
-  const workRoot = repoRoot();
-  const t = createI18n(loadLang(workRoot), { domain: "messages" });
-  const targetDir = args.find((a) => !a.startsWith("-")) || path.join(workRoot, "docs");
+  const root = repoRoot();
+  const t = createI18n(loadLang(root), { domain: "messages" });
+  const targetDir = args.find((a) => !a.startsWith("-")) || path.join(root, "docs");
 
   // Discover chapter files (NN_*.md)
   let chapterFiles = [];
   if (fs.existsSync(targetDir) && fs.statSync(targetDir).isDirectory()) {
-    chapterFiles = fs
-      .readdirSync(targetDir)
-      .filter((f) => /^[0-9]{2}_.*\.md$/.test(f))
-      .sort();
+    chapterFiles = getChapterFiles(targetDir);
   }
 
   if (chapterFiles.length === 0) {
-    console.log(t("review.noChapters", { dir: targetDir }));
-    process.exit(1);
+    throw new Error(t("review.noChapters", { dir: targetDir }));
   }
 
   console.log(t("review.foundChapters", { count: chapterFiles.length }));
@@ -111,14 +108,14 @@ function main() {
   }
 
   // analysis.json existence and freshness check (WARN)
-  const analysisPath = path.join(sddOutputDir(workRoot), "analysis.json");
+  const analysisPath = path.join(sddOutputDir(root), "analysis.json");
   if (!fs.existsSync(analysisPath)) {
     console.log(t("review.analysisNotFound"));
   } else {
     const analysisMtime = fs.statSync(analysisPath).mtimeMs;
     const projectFiles = ["package.json", "composer.json"];
     for (const pf of projectFiles) {
-      const pfPath = path.join(workRoot, pf);
+      const pfPath = path.join(root, pf);
       if (fs.existsSync(pfPath) && fs.statSync(pfPath).mtimeMs > analysisMtime) {
         console.log(t("review.analysisStale", { file: pf }));
         break;
@@ -127,16 +124,16 @@ function main() {
   }
 
   // README.md check (warn only)
-  if (!fs.existsSync(path.join(workRoot, "README.md"))) {
+  if (!fs.existsSync(path.join(root, "README.md"))) {
     console.log(t("review.readmeNotFound"));
   }
 
   // Multi-language: check non-default language directories
   try {
-    const cfgRaw = JSON.parse(fs.readFileSync(sddConfigPath(workRoot), "utf8"));
+    const cfgRaw = loadConfig(root);
     const outputCfg = resolveOutputConfig(cfgRaw);
     if (outputCfg.isMultiLang) {
-      const docsBase = path.join(workRoot, "docs");
+      const docsBase = path.join(root, "docs");
       const nonDefaultLangs = outputCfg.languages.filter((l) => l !== outputCfg.default);
       for (const lang of nonDefaultLangs) {
         const langDir = path.join(docsBase, lang);
@@ -144,9 +141,7 @@ function main() {
           console.log(`WARN: docs/${lang}/ directory missing for configured language '${lang}'`);
           continue;
         }
-        const langFiles = fs.readdirSync(langDir)
-          .filter((f) => /^[0-9]{2}_.*\.md$/.test(f))
-          .sort();
+        const langFiles = getChapterFiles(langDir);
         if (langFiles.length === 0) {
           console.log(`WARN: docs/${lang}/ has no chapter files`);
           continue;
@@ -171,8 +166,7 @@ function main() {
   }
 
   if (fail !== 0) {
-    console.log(t("review.failed"));
-    process.exit(1);
+    throw new Error(t("review.failed"));
   }
 
   console.log(t("review.passed"));

@@ -13,7 +13,7 @@ import fs from "fs";
 import path from "path";
 import { runIfDirect } from "../../lib/entrypoint.js";
 import { repoRoot, parseArgs, isInsideWorktree } from "../../lib/cli.js";
-import { loadLang, sddConfigPath, sddDir } from "../../lib/config.js";
+import { loadLang, sddConfigPath, sddDir, DEFAULT_LANG } from "../../lib/config.js";
 import { runSync } from "../../lib/process.js";
 import { createI18n } from "../../lib/i18n.js";
 
@@ -188,7 +188,7 @@ function main() {
   const root = repoRoot(import.meta.url);
   const configPath = sddConfigPath(root);
   const sddConfig = fs.existsSync(configPath) ? JSON.parse(fs.readFileSync(configPath, "utf8")) : null;
-  const lang = sddConfig?.lang || "ja";
+  const lang = sddConfig?.lang || DEFAULT_LANG;
   opts.base = opts.base || detectBaseBranch(root);
 
   // Determine branching strategy

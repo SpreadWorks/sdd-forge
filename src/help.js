@@ -6,10 +6,8 @@
  * Language is determined by .sdd-forge/config.json lang, defaulting to "en".
  */
 
-import fs from "fs";
-import path from "path";
 import { runIfDirect } from "./lib/entrypoint.js";
-import { PKG_DIR } from "./lib/cli.js";
+import { getPackageVersion } from "./lib/cli.js";
 import { loadLang } from "./lib/config.js";
 import { createI18n } from "./lib/i18n.js";
 
@@ -43,19 +41,10 @@ const LAYOUT = [
   { name: "presets list" },
 ];
 
-function getVersion() {
-  try {
-    const pkg = JSON.parse(fs.readFileSync(path.join(PKG_DIR, "..", "package.json"), "utf8"));
-    return pkg.version;
-  } catch (_) {
-    return "?";
-  }
-}
-
 function main() {
   const lang = loadLang(process.cwd());
   const t = createI18n(lang, { domain: "ui" });
-  const version = getVersion();
+  const version = getPackageVersion();
 
   const commands = LAYOUT.map((entry) => {
     if (entry.section) return entry;

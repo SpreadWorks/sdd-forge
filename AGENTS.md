@@ -106,7 +106,7 @@ docs の内容は以下の 2 種類で構成される:
 <!-- {{data: agents.project("")}} -->
 ## Project Context
 
-- **generated_at:** 2026-03-07 16:08:11 UTC
+- **generated_at:** 2026-03-08 05:55:02 UTC
 - **package:** `sdd-forge` v0.1.0-alpha.22
 - **description:** Spec-Driven Development tooling for automated documentation generation
 - **repository:** https://github.com/SpreadWorks/sdd-forge.git
@@ -117,12 +117,13 @@ docs の内容は以下の 2 種類で構成される:
 | 項目 | 内容 |
 |---|---|
 | 実行環境 | Node.js >= 18.0.0 |
-| モジュール形式 | ES Modules (`"type": "module"`) |
+| モジュール形式 | ES Modules（`"type": "module"`） |
 | 外部依存 | **なし**（Node.js 組み込みモジュールのみ: `fs`, `path`, `child_process`, `os` 等） |
 | プロジェクト種別 | CLI ツール（type: `cli/node-cli`） |
 | テストフレームワーク | Node.js 組み込み `node --test` |
-| npm 公開対象 | `src/` + package.json / README.md / LICENSE |
+| npm 公開対象 | `src/` + `docs/` + package.json / README.md / LICENSE |
 | バイナリエントリ | `sdd-forge` → `./src/sdd-forge.js` |
+| 解析済みモジュール数 | 99 ファイル / 271 メソッド |
 
 ### プロジェクト構造
 
@@ -145,27 +146,29 @@ sdd-forge/
 │   │                                renderers, forge-prompts, text-prompts,
 │   │                                data-source, data-source-loader, resolver-factory,
 │   │                                review-parser, scan-source, concurrency,
-│   │                                php-array-parser
+│   │                                composer-utils, php-array-parser
 │   ├── specs/
 │   │   └── commands/             ← init（spec 作成）, gate（ゲートチェック）
 │   ├── lib/                      ← agent, agents-md, cli, config, entrypoint,
-│   │                                flow-state, i18n, presets, process, projects, types
+│   │                                flow-state, i18n, presets, process, progress,
+│   │                                projects, types
 │   ├── presets/
 │   │   ├── base/
 │   │   │   ├── preset.json
 │   │   │   └── templates/        ← docs テンプレート（ja/en）
-│   │   │       ├── ja/           ← 01_overview.md, 02_stack_and_ops.md,
-│   │   │       │                    03_project_structure.md, 04_development.md,
+│   │   │       ├── ja/           ← overview.md, stack_and_ops.md,
+│   │   │       │                    project_structure.md, development.md,
 │   │   │       │                    AGENTS.sdd.md
 │   │   │       └── en/           ← （同上）
 │   │   ├── webapp/, cli/, library/  ← アーキ層プリセット
 │   │   ├── cakephp2/, laravel/, symfony/  ← フレームワーク固有プリセット
-│   │   └── node-cli/             ← CLI プリセット
+│   │   ├── node-cli/             ← CLI プリセット
+│   │   └── lib/                  ← composer-utils.js（共有ユーティリティ）
 │   └── templates/                ← config.example.json, review-checklist.md,
 │                                    skills/sdd-flow-start/, skills/sdd-flow-close/
-├── docs/                         ← sdd-forge 自身の設計ドキュメント
+├── docs/                         ← sdd-forge 自身の設計ドキュメント（npm 公開対象）
 ├── tests/                        ← テストファイル（*.test.js）
-└── specs/                        ← SDD spec ファイル
+└── specs/                        ← SDD spec ファイル（020 件以上蓄積）
 ```
 
 ### コマンドルーティングアーキテクチャ（3 層ディスパッチ）
@@ -266,6 +269,12 @@ sdd-forge.js（エントリポイント）
 | `worktreePath` | `string?` | worktree の絶対パス |
 | `mainRepoPath` | `string?` | メインリポジトリの絶対パス |
 
+| 関数 | 説明 |
+|---|---|
+| `saveFlowState(workRoot, state)` | フロー状態を保存 |
+| `loadFlowState(workRoot)` | フロー状態を読み込み |
+| `clearFlowState(workRoot)` | フロー状態ファイルを削除 |
+
 #### `src/lib/presets.js` — プリセット自動探索
 
 `src/presets/` 配下を再帰探索し、`preset.json` を持つディレクトリを自動登録。`PRESETS` 定数として全コンシューマが参照する。
@@ -293,6 +302,7 @@ sdd-forge.js（エントリポイント）
 | `renderers.js` | マークダウン出力レンダリング |
 | `scan-source.js` | スキャン設定ローダー |
 | `concurrency.js` | ファイル並列処理ユーティリティ |
+| `composer-utils.js` | Composer（PHP）向け共有ユーティリティ |
 | `php-array-parser.js` | PHP 配列構文パーサー |
 
 ### プリセットシステム
@@ -309,6 +319,9 @@ sdd-forge.js（エントリポイント）
 | `laravel` | `webapp/laravel` | webapp | controllers, models, shells, routes（PHP） |
 | `symfony` | `webapp/symfony` | webapp | controllers, models（Entity）, shells, routes（YAML） |
 | `node-cli` | `cli/node-cli` | cli | modules（`src/**/*.js`） |
+
+**node-cli プリセット章構成（preset.json より）:**
+`overview.md`, `cli_commands.md`, `configuration.md`, `internal_design.md`, `development_testing.md`
 
 ### `.sdd-forge/config.json` スキーマ
 
@@ -374,9 +387,9 @@ tests/
 ├── help.test.js
 ├── package.test.js
 ├── docs/
-│   ├── commands/         ← agents, changelog, data, forge, init, readme,
-│   │                        review, scan, text-batch, text-helpers,
-│   │                        default-project, setup
+│   ├── commands/         ← agents, changelog, data, default-project, forge,
+│   │                        init, readme, review, scan, setup,
+│   │                        text-batch, text-helpers
 │   └── lib/              ← forge-prompts, review-parser, scanner
 ├── lib/
 │   ├── agent.test.js
@@ -406,6 +419,7 @@ tests/
 - **Claude CLI ハング対策**: `callAgentAsync()` では `spawn` + `stdin: "ignore"` を使用。`CLAUDECODE` 環境変数も削除する。
 - **SDD テンプレートパス**: `agents-md.js` は SDD セクションテンプレートを `src/presets/base/templates/{lang}/AGENTS.sdd.md` から読み込む（指定ロケールがなければ `"en"` にフォールバック）。
 - **npm リリース手順**: `npm publish --tag alpha` → `npm dist-tag add sdd-forge@<version> latest` の 2 ステップ必須（`--tag alpha` のみでは npmjs.com の表示が更新されない）。リリースはユーザーの明示的な指示がある場合のみ実行すること。
+- **npm 公開対象**: `src/` と `docs/` の両方が `files` フィールドに含まれる（package.json 参照）。
 <!-- {{/data}} -->
 
 ## Project Guidelines

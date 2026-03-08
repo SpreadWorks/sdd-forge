@@ -118,6 +118,31 @@ export function getMainRepoPath(root) {
   return path.dirname(abs);
 }
 
+/**
+ * sdd-forge パッケージのバージョン文字列を返す。
+ * package.json の読み込みに失敗した場合は "?" を返す。
+ *
+ * @returns {string}
+ */
+export function getPackageVersion() {
+  try {
+    const pkg = JSON.parse(fs.readFileSync(path.join(PKG_DIR, "..", "package.json"), "utf8"));
+    return pkg.version;
+  } catch (_) {
+    return "?";
+  }
+}
+
+/**
+ * UTC タイムスタンプ文字列を生成する。
+ *
+ * @param {Date} [date] - 日付オブジェクト（省略時は現在時刻）
+ * @returns {string} "YYYY-MM-DD HH:MM:SS UTC"
+ */
+export function formatUTCTimestamp(date) {
+  return (date || new Date()).toISOString().replace("T", " ").replace(/\.\d+Z$/, " UTC");
+}
+
 /** --some-flag → someFlag */
 function flagKey(flag) {
   return flag.replace(/^--/, "").replace(/-([a-z])/g, (_, c) => c.toUpperCase());

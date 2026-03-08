@@ -12,7 +12,6 @@
  * Project context (--project) is resolved here and passed via env vars.
  */
 
-import { fileURLToPath } from "url";
 import path from "path";
 import { PKG_DIR } from "./lib/cli.js";
 
@@ -34,9 +33,8 @@ const [subCmd, ...rest] = filteredArgs;
 
 // version (-v / --version / -V)
 if (subCmd === "-v" || subCmd === "--version" || subCmd === "-V") {
-  const { readFileSync } = await import("fs");
-  const pkg = JSON.parse(readFileSync(path.join(PKG_DIR, "..", "package.json"), "utf8"));
-  console.log(pkg.version);
+  const { getPackageVersion } = await import("./lib/cli.js");
+  console.log(getPackageVersion());
   process.exit(0);
 }
 

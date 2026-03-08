@@ -65,12 +65,14 @@ const PRESETS_DIR = path.resolve(
  *
  * @param {string} type - 解決済み type パス（例: "webapp/cakephp2"）
  * @param {string} root - プロジェクトルート（overrides.json のパス解決用）
+ * @param {Object} [opts] - 追加オプション
+ * @param {string} [opts.docsDir] - docs ディレクトリの絶対パス（非デフォルト言語用）
  * @returns {Promise<{ resolve: (source: string, method: string, analysis: Object, labels: string[]) => string|null }>}
  */
-export async function createResolver(type, root) {
+export async function createResolver(type, root, opts) {
   const desc = descFactory(root);
   const loadOverrides = () => loadOverridesFor(root);
-  const ctx = { desc, loadOverrides, root };
+  const ctx = { desc, loadOverrides, root, docsDir: opts?.docsDir };
 
   // 共通 DataSource（project, docs など全 type で利用可能）
   const commonDataDir = path.resolve(

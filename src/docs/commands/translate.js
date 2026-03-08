@@ -12,12 +12,11 @@
 import fs from "fs";
 import path from "path";
 import { runIfDirect } from "../../lib/entrypoint.js";
-import { repoRoot, parseArgs } from "../../lib/cli.js";
-import { loadConfig } from "../../lib/config.js";
+import { parseArgs } from "../../lib/cli.js";
 import { resolveOutputConfig } from "../../lib/types.js";
-import { callAgentAsync, resolveAgent, LONG_AGENT_TIMEOUT_MS } from "../../lib/agent.js";
+import { callAgentAsync, LONG_AGENT_TIMEOUT_MS } from "../../lib/agent.js";
 import { createLogger } from "../../lib/progress.js";
-import { createI18n } from "../../lib/i18n.js";
+import { resolveCommandContext, getChapterFiles, stripResponsePreamble } from "../lib/command-context.js";
 
 const logger = createLogger("translate");
 const DEFAULT_TIMEOUT_MS = LONG_AGENT_TIMEOUT_MS;
@@ -56,13 +55,7 @@ async function translateDocument(content, fromLang, toLang, agent, root) {
     throw new Error("Empty translation response");
   }
 
-  // Strip any preamble before first heading
-  const lines = result.split("\n");
-  let startIdx = 0;
-  for (let i = 0; i < Math.min(5, lines.length); i++) {
-    if (lines[i].startsWith("#")) { startIdx = i; break; }
-  }
-  return lines.slice(startIdx).join("\n").trimEnd() + "\n";
+  return stripResponsePreamble(result, 5);
 }
 
 /**
@@ -75,28 +68,33 @@ function needsTranslation(sourcePath, targetPath) {
   return srcMtime > tgtMtime;
 }
 
-async function main() {
-  const cli = parseArgs(process.argv.slice(2), {
-    flags: ["--dry-run", "--force"],
-    options: ["--lang"],
-    defaults: { dryRun: false, force: false, lang: "" },
-  });
+async function main(ctx) {
+  if (!ctx) {
+    const cli = parseArgs(process.argv.slice(2), {
+      flags: ["--dry-run", "--force"],
+      options: ["--lang"],
+      defaults: { dryRun: false, force: false, lang: "" },
+    });
 
-  if (cli.help) {
-    console.log(`Usage: sdd-forge translate [--dry-run] [--force] [--lang <lang>]
+    if (cli.help) {
+      console.log(`Usage: sdd-forge translate [--dry-run] [--force] [--lang <lang>]
 
 Options:
   --lang <lang>  Translate to specific language only
   --force        Re-translate all files regardless of mtime
   --dry-run      Show what would be translated without writing
   --help         Show this help`);
-    return;
+      return;
+    }
+
+    ctx = resolveCommandContext(cli);
+    ctx.dryRun = cli.dryRun;
+    ctx.force = cli.force;
+    ctx.targetLang = cli.lang;
   }
 
-  const root = repoRoot(import.meta.url);
-  const cfg = loadConfig(root);
+  const { root, config: cfg, docsDir, t } = ctx;
   const outputCfg = resolveOutputConfig(cfg);
-  const t = createI18n(cfg.lang, { domain: "messages" });
 
   if (!outputCfg.isMultiLang) {
     logger.log("Single language configured. Nothing to translate.");
@@ -108,27 +106,22 @@ Options:
     return;
   }
 
-  const agent = resolveAgent(cfg);
-  if (!agent) {
-    logger.log("ERROR: No agent configured. Set 'defaultAgent' in config.json.");
-    process.exit(1);
+  if (!ctx.agent) {
+    throw new Error("No agent configured. Set 'defaultAgent' in config.json.");
   }
+  const agent = ctx.agent;
 
   const defaultLang = outputCfg.default;
-  const targetLangs = cli.lang
-    ? [cli.lang]
+  const targetLangs = ctx.targetLang
+    ? [ctx.targetLang]
     : outputCfg.languages.filter((l) => l !== defaultLang);
 
-  const docsDir = path.join(root, "docs");
   if (!fs.existsSync(docsDir)) {
-    logger.log("docs/ directory not found. Run 'sdd-forge init' first.");
-    process.exit(1);
+    throw new Error("docs/ directory not found. Run 'sdd-forge init' first.");
   }
 
   // Collect source files
-  const sourceFiles = fs.readdirSync(docsDir)
-    .filter((f) => /^\d{2}_.*\.md$/.test(f))
-    .sort();
+  const sourceFiles = getChapterFiles(docsDir);
 
   // Also include README.md if it exists
   const readmePath = path.join(root, "README.md");
@@ -139,7 +132,7 @@ Options:
 
   for (const lang of targetLangs) {
     const langDir = path.join(docsDir, lang);
-    if (!cli.dryRun) {
+    if (!ctx.dryRun) {
       fs.mkdirSync(langDir, { recursive: true });
     }
 
@@ -150,13 +143,13 @@ Options:
       const sourcePath = path.join(docsDir, file);
       const targetPath = path.join(langDir, file);
 
-      if (!cli.force && !needsTranslation(sourcePath, targetPath)) {
+      if (!ctx.force && !needsTranslation(sourcePath, targetPath)) {
         logger.verbose(`SKIP (up-to-date): ${lang}/${file}`);
         totalSkipped++;
         continue;
       }
 
-      if (cli.dryRun) {
+      if (ctx.dryRun) {
         logger.log(`DRY-RUN: would translate ${file} → ${lang}/${file}`);
         totalSkipped++;
         continue;
@@ -178,8 +171,8 @@ Options:
     // Translate README.md
     if (hasReadme) {
       const targetReadme = path.join(langDir, "README.md");
-      if (cli.force || needsTranslation(readmePath, targetReadme)) {
-        if (cli.dryRun) {
+      if (ctx.force || needsTranslation(readmePath, targetReadme)) {
+        if (ctx.dryRun) {
           logger.log(`DRY-RUN: would translate README.md → ${lang}/README.md`);
         } else {
           logger.verbose(`Translating: README.md → ${lang}/README.md`);
