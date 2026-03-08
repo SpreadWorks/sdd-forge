@@ -106,8 +106,8 @@ docs の内容は以下の 2 種類で構成される:
 <!-- {{data: agents.project("")}} -->
 ## Project Context
 
-- **generated_at:** 2026-03-08 05:55:02 UTC
-- **package:** `sdd-forge` v0.1.0-alpha.22
+- **generated_at:** 2026-03-08 15:39:15 UTC
+- **package:** `sdd-forge` v0.1.0-alpha.24
 - **description:** Spec-Driven Development tooling for automated documentation generation
 - **repository:** https://github.com/SpreadWorks/sdd-forge.git
 - **license:** MIT
@@ -123,7 +123,7 @@ docs の内容は以下の 2 種類で構成される:
 | テストフレームワーク | Node.js 組み込み `node --test` |
 | npm 公開対象 | `src/` + `docs/` + package.json / README.md / LICENSE |
 | バイナリエントリ | `sdd-forge` → `./src/sdd-forge.js` |
-| 解析済みモジュール数 | 99 ファイル / 271 メソッド |
+| 解析済みモジュール数 | 99 ファイル / 269 メソッド |
 
 ### プロジェクト構造
 
@@ -146,7 +146,7 @@ sdd-forge/
 │   │                                renderers, forge-prompts, text-prompts,
 │   │                                data-source, data-source-loader, resolver-factory,
 │   │                                review-parser, scan-source, concurrency,
-│   │                                composer-utils, php-array-parser
+│   │                                command-context, php-array-parser
 │   ├── specs/
 │   │   └── commands/             ← init（spec 作成）, gate（ゲートチェック）
 │   ├── lib/                      ← agent, agents-md, cli, config, entrypoint,
@@ -198,6 +198,12 @@ sdd-forge.js（エントリポイント）
 - `--project <name>` フラグ、または `.sdd-forge/projects.json` の `default` 設定でプロジェクトを特定
 - `SDD_SOURCE_ROOT`（ソースルート）/ `SDD_WORK_ROOT`（作業ルート）環境変数を通じて各コマンドに伝達
 - `setup`, `default`, `help`, `presets` はプロジェクトコンテキスト解決をスキップ（`PROJECT_MGMT` セット）
+
+**build パイプライン:**
+
+```
+scan → init → data → text → readme → agents → [translate（多言語時のみ）]
+```
 
 ### 主要コンポーネント
 
@@ -253,6 +259,7 @@ sdd-forge.js（エントリポイント）
 | `parseArgs()` | フラグ・オプション・エイリアス・デフォルト値に対応した汎用 CLI パーサー |
 | `isInsideWorktree()` | `.git` がファイルかどうかで worktree 内を判定 |
 | `getMainRepoPath()` | worktree からメインリポジトリのパスを取得 |
+| `formatUTCTimestamp()` | UTC タイムスタンプ文字列生成（`"YYYY-MM-DD HH:MM:SS UTC"` 形式） |
 
 > `docs/commands/` 配下のファイルから `PKG_DIR` を参照する場合は `../..`（2 階層上）が `src/` を指す。
 
@@ -299,10 +306,9 @@ sdd-forge.js（エントリポイント）
 | `forge-prompts.js` | forge / agents コマンド向けプロンプト生成・`summaryToText()` |
 | `text-prompts.js` | text コマンド向けプロンプト生成 |
 | `review-parser.js` | review コマンドの結果パース |
-| `renderers.js` | マークダウン出力レンダリング |
 | `scan-source.js` | スキャン設定ローダー |
 | `concurrency.js` | ファイル並列処理ユーティリティ |
-| `composer-utils.js` | Composer（PHP）向け共有ユーティリティ |
+| `command-context.js` | コマンド実行コンテキスト解決（`resolveCommandContext()` など） |
 | `php-array-parser.js` | PHP 配列構文パーサー |
 
 ### プリセットシステム
@@ -390,7 +396,8 @@ tests/
 │   ├── commands/         ← agents, changelog, data, default-project, forge,
 │   │                        init, readme, review, scan, setup,
 │   │                        text-batch, text-helpers
-│   └── lib/              ← forge-prompts, review-parser, scanner
+│   └── lib/              ← command-context, directive-parser, forge-prompts,
+│                            resolver-factory, review-parser, scanner, template-merger
 ├── lib/
 │   ├── agent.test.js
 │   ├── cli.test.js

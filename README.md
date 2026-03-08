@@ -1,21 +1,21 @@
-# <!-- {{data: project.name("")}} -->sdd-forge<!-- {{/data}} -->
+# {{data: project.name("")}}sdd-forge{{/data}}
 
 [![npm version](https://img.shields.io/npm/v/sdd-forge.svg)](https://www.npmjs.com/package/sdd-forge)
 
-> **Alpha:** This tool is currently in alpha. APIs, command structures, and configuration formats may change without notice. Not recommended for production use.
+> **Alpha:** This tool is currently in alpha. APIs, command structure, and configuration formats may change without notice. Not recommended for production use.
 
-**A CLI tool that automatically generates and maintains project documentation using source code analysis + AI.**
+**A CLI tool that automatically generates and maintains project documentation via source code analysis + AI.**
 
 Statically analyzes your codebase and combines templates with AI to auto-generate `docs/`.
-Spec-Driven Development (SDD) workflows further automate documentation updates when adding features or making changes.
+The Spec-Driven Development (SDD) workflow also automates documentation updates when adding features or making changes.
 
 ## Features
 
 - **Zero dependencies** — Runs on Node.js 18+ only. No npm packages required
 - **Automatic source analysis** — Statically analyzes controllers, models, routes, and config files to extract structural data
 - **AI document generation** — AI automatically expands `{{text}}` directives in templates
-- **Template inheritance** — Customizable via 4-layer inheritance: base → arch → preset → project-local
-- **SDD workflow** — Manage the spec → gate → implement → forge → review cycle with commands
+- **Template inheritance** — Four-layer inheritance (base → arch → preset → project-local) for full customization
+- **SDD workflow** — Manage the spec → gate → implement → forge → review development cycle with commands
 - **Multi-language support** — Auto-generate documentation in multiple languages via translate / generate modes
 - **AI agent integration** — Supports Claude Code (skills) and Codex CLI
 - **Multi-preset** — Supports Node.js CLI / CakePHP2 / Laravel / Symfony
@@ -26,26 +26,26 @@ Spec-Driven Development (SDD) workflows further automate documentation updates w
 
 <pre>
 # npm
-npm install -g <!-- {{data: project.name("")}} -->sdd-forge<!-- {{/data}} -->
+npm install -g {{data: project.name("")}}sdd-forge{{/data}}
 
 # yarn
-yarn global add <!-- {{data: project.name("")}} -->sdd-forge<!-- {{/data}} -->
+yarn global add {{data: project.name("")}}sdd-forge{{/data}}
 
 # pnpm
-pnpm add -g <!-- {{data: project.name("")}} -->sdd-forge<!-- {{/data}} -->
+pnpm add -g {{data: project.name("")}}sdd-forge{{/data}}
 </pre>
 
 ### Setup & Document Generation
 
 <pre>
 # 1. Register your project (interactive wizard)
-<!-- {{data: project.name("")}} -->sdd-forge<!-- {{/data}} --> setup
+{{data: project.name("")}}sdd-forge{{/data}} setup
 
-# 2. Generate all documentation at once (scan → init → data → text → readme → agents → translate)
-<!-- {{data: project.name("")}} -->sdd-forge<!-- {{/data}} --> build
+# 2. Generate all documentation (scan → init → data → text → readme → agents → translate)
+{{data: project.name("")}}sdd-forge{{/data}} build
 </pre>
 
-This alone generates `docs/` and `README.md`.
+This generates `docs/` and `README.md` in one step.
 
 ## Commands
 
@@ -62,7 +62,7 @@ This alone generates `docs/` and `README.md`.
 | `readme` | Auto-generate `README.md` from `docs/` |
 | `forge` | Iteratively improve documentation with AI |
 | `review` | Check documentation quality |
-| `translate` | Multi-language translation (default language → other languages) |
+| `translate` | Multi-language translation (default language → others) |
 | `upgrade` | Update preset templates to the latest version |
 
 ### SDD Workflow
@@ -70,7 +70,7 @@ This alone generates `docs/` and `README.md`.
 | Command | Description |
 |---|---|
 | `spec` | Create a spec document + feature branch |
-| `gate` | Pre-implementation check for spec |
+| `gate` | Pre-implementation check for the spec |
 | `flow` | Automatically run the SDD workflow |
 | `changelog` | Generate change history from specs/ |
 | `agents` | Update AGENTS.md |
@@ -81,16 +81,16 @@ This alone generates `docs/` and `README.md`.
 |---|---|
 | `default` | Set the default project |
 | `presets` | List available presets |
-| `help` | Show command list |
+| `help` | Display command list |
 
 ## SDD Workflow
 
 The feature addition / change flow:
 
 ```
-  spec          Create a spec (feature branch + spec.md)
+  spec          Create spec (feature branch + spec.md)
     ↓
-  gate          Spec gate check (PASS when no open issues)
+  gate          Spec gate check (PASS when no open questions)
     ↓
   implement     Write code after gate PASS
     ↓
@@ -121,7 +121,7 @@ $sdd-flow-close   — Finish with forge → review → commit → merge
 
 ## Configuration
 
-Running `sdd-forge setup` generates `.sdd-forge/config.json`.
+`sdd-forge setup` generates `.sdd-forge/config.json`.
 
 ```jsonc
 {
@@ -149,9 +149,9 @@ You can add project-specific templates and data sources:
 <!-- {{data: docs.chapters("Chapter|Overview")}} -->
 | Chapter | Overview |
 | --- | --- |
-| [01. System Overview](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/01_overview.md) |  |
-| [02. CLI Command Reference](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/02_cli_commands.md) |  |
-| [03. Configuration and Customization](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/03_configuration.md) |  |
+| [01. System Overview](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/01_overview.md) | This chapter provides a structural overview of sdd-forge, a Node.js CLI tool that automates documentation generation … |
+| [02. CLI Command Reference](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/02_cli_commands.md) | This chapter covers all 18 subcommands available in `sdd-forge`, organized into documentation generation commands (ro… |
+| [03. Configuration and Customization](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/03_configuration.md) | This chapter covers all configuration files used by sdd-forge, the full range of options available in `.sdd-forge/con… |
 | [04. Internal Design](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/04_internal_design.md) |  |
 <!-- {{/data}} -->
 
