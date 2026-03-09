@@ -39,13 +39,14 @@ export function summarizeReview(outputText) {
     .map((x) => x.trim())
     .filter(Boolean);
   const fails = lines.filter((l) => l.includes("[FAIL]"));
+  const warns = lines.filter((l) => l.includes("[WARN]"));
   const coverage = lines.filter(
     (l) =>
       l.includes("Controller coverage:") ||
       l.includes("DB table coverage:") ||
       l.includes("quality check:")
   );
-  const picked = [...fails.slice(0, 40), ...coverage].join("\n");
+  const picked = [...fails.slice(0, 40), ...warns.slice(0, 10), ...coverage].join("\n");
   return picked || "(no parsed failures)";
 }
 

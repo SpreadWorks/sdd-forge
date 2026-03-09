@@ -15,6 +15,7 @@ import { createI18n } from "../../lib/i18n.js";
 import { resolveOutputConfig } from "../../lib/types.js";
 import { getChapterFiles } from "../lib/command-context.js";
 import { collectOutputs, compareOutputs, snapshotDir } from "./snapshot.js";
+import { parseDirectives } from "../lib/directive-parser.js";
 
 // ---------------------------------------------------------------------------
 // Generated output integrity checks
@@ -264,6 +265,40 @@ function main() {
     }
   } catch (_) {
     // config not available — skip multi-lang check
+  }
+
+  // Analysis coverage check (WARN only — does not cause FAIL)
+  if (fs.existsSync(analysisPath)) {
+    const analysis = JSON.parse(fs.readFileSync(analysisPath, "utf8"));
+    const META_KEYS = new Set(["analyzedAt", "generatedAt", "extras", "files", "root"]);
+    const analysisCategories = Object.keys(analysis).filter((k) => !META_KEYS.has(k));
+
+    if (analysisCategories.length > 0) {
+      // Collect all data directive sources referenced in docs
+      const referencedSources = new Set();
+      const allDocsFiles = [...chapterFiles.map((f) => path.join(targetDir, f))];
+      const readmePath2 = path.join(root, "README.md");
+      if (fs.existsSync(readmePath2)) allDocsFiles.push(readmePath2);
+
+      for (const fp of allDocsFiles) {
+        if (!fs.existsSync(fp)) continue;
+        const content = fs.readFileSync(fp, "utf8");
+        const directives = parseDirectives(content);
+        for (const d of directives) {
+          if (d.type === "data") referencedSources.add(d.source);
+        }
+      }
+
+      for (const cat of analysisCategories) {
+        if (!referencedSources.has(cat)) {
+          const entries = analysis[cat];
+          const count = Array.isArray(entries) ? entries.length
+            : (typeof entries === "object" && entries !== null) ? Object.keys(entries).length
+            : 1;
+          console.log(`[WARN] uncovered analysis category: ${cat} (${count} entries)`);
+        }
+      }
+    }
   }
 
   // Snapshot check (WARN only — does not cause FAIL)

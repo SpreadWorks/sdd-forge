@@ -36,6 +36,13 @@ describe("summarizeReview", () => {
     assert.ok(result.includes("[FAIL] too short"));
   });
 
+  it("extracts [WARN] lines", () => {
+    const text = "[WARN] uncovered analysis category: modules (3 entries)\n[FAIL] too short\n";
+    const result = summarizeReview(text);
+    assert.ok(result.includes("[WARN] uncovered analysis category: modules"));
+    assert.ok(result.includes("[FAIL] too short"));
+  });
+
   it("returns fallback message for empty input", () => {
     assert.equal(summarizeReview(""), "(no parsed failures)");
   });
