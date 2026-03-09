@@ -27,28 +27,45 @@ docs の内容は以下の 2 種類で構成される:
 機能追加・修正の指示を受けた場合、`/sdd-flow-start` スキルを実行すること。
 スキルが利用できない環境では、以下を必ずこの順で実行すること。
 
-1. ブランチ戦略を決定する（**spec 作成前に必ずユーザーに確認すること**）
+**原則: SDD フロー中のすべてのステップで、次の行動について必ずユーザーに確認する。AI が勝手に次のステップに進まない。**
+
+1. 進め方を選択する:
+   1. **要件を整理してから仕様書を作成する**: 対話で方針を詰めてから spec を作成
+   2. **仕様書を作成する**: 要件が明確な場合。従来通り spec から開始
+2. （1 を選んだ場合）draft フェーズで対話的に要件を詰める
+   - `specs/NNN-xxx/draft.md` に記録
+   - 1 問ずつ聞く（まとめて聞かない、勝手に回答しない）
+   - 脱線は 1 往復で解決を試み、未解決なら Open Questions に記録
+   - ユーザー承認後（`- [x] User approved this draft`）に spec に清書
+   - draft.md は specs/ に残す
+3. ブランチ戦略を決定する（**spec 作成前に必ずユーザーに確認すること**）
    - worktree 内の場合は自動で `--no-branch` を付与（確認不要）
    - それ以外では以下の番号付き選択肢を提示すること:
      1. **Branch**（デフォルト）: 現在のブランチから feature ブランチを作成
      2. **Worktree**: git worktree で隔離環境を作成
      3. **Spec only**: ブランチを作成せず spec のみ
-2. `sdd-forge spec --title "<機能名>"` で spec を作成（既存 spec がある場合はそれを使用）
-3. 仕様要約を提示し、以下の番号付き選択肢を提示する:
-   1. **実装する**: 手順 4 へ進む
-   2. **仕様書を修正する**: ユーザーからフィードバックを受け取り、spec.md を修正 → 再度手順 3 へ
+4. `sdd-forge spec --title "<機能名>"` で spec を作成（既存 spec がある場合はそれを使用）
+5. 仕様要約を提示し、以下の番号付き選択肢を提示する:
+   1. **実装する**: 手順 6 へ進む
+   2. **仕様書を修正する**: ユーザーからフィードバックを受け取り、spec.md を修正 → 再度手順 5 へ
    3. **その他**: ユーザーの自由入力を受け付け、内容に応じて対応する
-4. 承認後、`spec.md` の `## User Confirmation` を更新（`- [x] User approved this spec`）
-5. `sdd-forge gate --spec specs/NNN-xxx/spec.md` でゲートチェック
-6. gate が FAIL の場合、未解決事項を一問一答で解消する（この時点では実装禁止）
-7. 実装
-8. `sdd-forge forge --prompt "<変更内容の要約>" --spec specs/NNN-xxx/spec.md`
-9. `sdd-forge review`
+6. 承認後、`spec.md` の `## User Confirmation` を更新（`- [x] User approved this spec`）
+7. `sdd-forge gate --spec specs/NNN-xxx/spec.md` でゲートチェック
+8. gate が FAIL の場合、未解決事項を一問一答で解消する（この時点では実装禁止）
+9. テストフェーズ（gate PASS 後）
+   - analysis.json からテスト環境を自動判定
+   - テスト環境あり: テスト種別確認 → テスト観点提示 → ユーザー承認 → テストコード生成 → 実装
+   - テスト環境なし: AI が spec と実装の照合チェックを実施
+   - テスト環境の構築が必要な場合: 別 spec として扱う
+10. 実装
+11. `sdd-forge forge --prompt "<変更内容の要約>" --spec specs/NNN-xxx/spec.md`
+12. `sdd-forge review`
 
 **失敗時ポリシー:**
 - gate が PASS するまで実装・編集を開始しない
 - review が PASS するまで完了扱いにしない
 - ユーザー確認が未承認のまま実装してはならない
+- テスト観点のユーザーレビューを省略してはならない（テスト環境ありの場合）
 
 ### 終了処理
 
@@ -91,6 +108,7 @@ docs の内容は以下の 2 種類で構成される:
 | `sdd-forge spec --title "<名前>"` | spec 初期化（feature ブランチ + spec.md） |
 | `sdd-forge gate --spec <path>` | spec ゲートチェック（`--phase pre/post`） |
 | `sdd-forge flow --request "<要望>"` | SDD フロー自動実行 |
+| `sdd-forge snapshot <save\|check\|update>` | スナップショットテスト（リグレッション検出） |
 
 ### docs/ 編集ルール
 

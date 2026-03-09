@@ -207,6 +207,9 @@ export function analyzeExtras(sourceRoot) {
         dependencies: pkg.dependencies || {},
         devDependencies: pkg.devDependencies || {},
       };
+      if (pkg.scripts && Object.keys(pkg.scripts).length > 0) {
+        extras.packageScripts = pkg.scripts;
+      }
     } catch (_) { /* malformed package.json — non-critical, skip deps */ }
   }
 

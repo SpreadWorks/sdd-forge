@@ -26,6 +26,7 @@ const SCRIPTS = {
   agents:     "docs/commands/agents.js",
   upgrade:    "docs/commands/upgrade.js",
   translate:  "docs/commands/translate.js",
+  snapshot:   "docs/commands/snapshot.js",
 };
 
 // Extract subcommand from argv (set by sdd-forge.js)

@@ -14,6 +14,7 @@ import { loadConfig, loadLang, sddOutputDir } from "../../lib/config.js";
 import { createI18n } from "../../lib/i18n.js";
 import { resolveOutputConfig } from "../../lib/types.js";
 import { getChapterFiles } from "../lib/command-context.js";
+import { collectOutputs, compareOutputs, snapshotDir } from "./snapshot.js";
 
 // ---------------------------------------------------------------------------
 // Generated output integrity checks
@@ -263,6 +264,25 @@ function main() {
     }
   } catch (_) {
     // config not available — skip multi-lang check
+  }
+
+  // Snapshot check (WARN only — does not cause FAIL)
+  const snapDir = snapshotDir(root);
+  if (fs.existsSync(path.join(snapDir, "manifest.json"))) {
+    const current = collectOutputs(root);
+    const saved = JSON.parse(fs.readFileSync(path.join(snapDir, "manifest.json"), "utf8"));
+    const savedOutputs = {};
+    for (const [key, safeName] of Object.entries(saved)) {
+      const fp = path.join(snapDir, safeName);
+      if (fs.existsSync(fp)) savedOutputs[key] = fs.readFileSync(fp, "utf8");
+    }
+    const snapResult = compareOutputs(current, savedOutputs);
+    if (!snapResult.pass) {
+      console.log(`[WARN] snapshot: ${snapResult.diffs.length} diff(s) detected`);
+      for (const d of snapResult.diffs) {
+        console.log(`  [${d.type}] ${d.key}`);
+      }
+    }
   }
 
   if (fail !== 0) {

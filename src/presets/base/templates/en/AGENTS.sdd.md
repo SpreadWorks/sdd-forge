@@ -25,30 +25,47 @@ Suggest running `sdd-forge build` to the user when needed.
 ### SDD Flow
 
 When asked to add or modify features, run the `/sdd-flow-start` skill.
-If skills are unavailable, follow these steps in order:
+If skills are unavailable, follow these steps in order.
 
-1. Decide branch strategy (**always confirm with user before creating spec**)
+**Principle: At every step in the SDD flow, confirm the next action with the user. Never proceed to the next step without asking.**
+
+1. Choose approach:
+   1. **Gather requirements first**: Define requirements through dialogue before creating spec
+   2. **Create spec directly**: When requirements are clear. Start from spec as before
+2. (If 1 is chosen) Draft phase — define requirements interactively
+   - Record discussions in `specs/NNN-xxx/draft.md`
+   - Ask ONE question at a time (do not batch, do not self-answer)
+   - If digression: try to resolve in 1 exchange, otherwise record in Open Questions
+   - After user approval (`- [x] User approved this draft`), transcribe to spec
+   - Keep draft.md in specs/ (do not delete)
+3. Decide branch strategy (**always confirm with user before creating spec**)
    - Inside a worktree: automatically use `--no-branch` (no confirmation needed)
    - Otherwise, present these numbered options:
      1. **Branch** (default): create feature branch from current branch
      2. **Worktree**: create isolated environment with git worktree
      3. **Spec only**: create spec without branch
-2. `sdd-forge spec --title "<feature-name>"` to create spec (use existing spec if available)
-3. Present spec summary and offer these numbered options:
-   1. **Implement**: proceed to step 4
-   2. **Modify spec**: receive user feedback, update spec.md, then re-present step 3
+4. `sdd-forge spec --title "<feature-name>"` to create spec (use existing spec if available)
+5. Present spec summary and offer these numbered options:
+   1. **Implement**: proceed to step 6
+   2. **Modify spec**: receive user feedback, update spec.md, then re-present step 5
    3. **Other**: accept free-form input and respond accordingly
-4. After approval, update `spec.md` `## User Confirmation` (`- [x] User approved this spec`)
-5. `sdd-forge gate --spec specs/NNN-xxx/spec.md` for gate check
-6. If gate FAILs, resolve open questions one by one (no implementation at this point)
-7. Implement
-8. `sdd-forge forge --prompt "<summary of changes>" --spec specs/NNN-xxx/spec.md`
-9. `sdd-forge review`
+6. After approval, update `spec.md` `## User Confirmation` (`- [x] User approved this spec`)
+7. `sdd-forge gate --spec specs/NNN-xxx/spec.md` for gate check
+8. If gate FAILs, resolve open questions one by one (no implementation at this point)
+9. Test phase (after gate PASS)
+   - Auto-detect test environment from analysis.json
+   - If test environment exists: confirm test type → present test observations → user approval → generate tests → implement
+   - If no test environment: AI performs spec-implementation alignment check
+   - If test environment needs setup: treat as separate spec
+10. Implement
+11. `sdd-forge forge --prompt "<summary of changes>" --spec specs/NNN-xxx/spec.md`
+12. `sdd-forge review`
 
 **Failure policy:**
 - Do not start implementation until gate PASSes
 - Do not mark as complete until review PASSes
 - Never implement without user confirmation
+- Never skip test observation review when test environment exists
 
 ### Closing
 
@@ -91,6 +108,7 @@ If skills are unavailable, present the user with these options:
 | `sdd-forge spec --title "<name>"` | Initialize spec (feature branch + spec.md) |
 | `sdd-forge gate --spec <path>` | Spec gate check (`--phase pre/post`) |
 | `sdd-forge flow --request "<request>"` | Auto-run SDD flow |
+| `sdd-forge snapshot <save\|check\|update>` | Snapshot testing (regression detection) |
 
 ### docs/ Editing Rules
 

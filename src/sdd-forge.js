@@ -64,6 +64,7 @@ const DISPATCHERS = {
   agents:   "docs",
   upgrade:  "docs",
   translate: "docs",
+  snapshot: "docs",
   setup:    "docs",
   default:  "docs",
   // spec subcommands → spec.js dispatcher
