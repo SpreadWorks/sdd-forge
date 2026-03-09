@@ -1,4 +1,8 @@
-# {{data: project.name("")}}sdd-forge{{/data}}
+# <!-- {{data: project.name("")}} -->sdd-forge<!-- {{/data}} -->
+
+<!-- {{data: docs.langSwitcher("absolute")}} -->
+[English](https://github.com/SpreadWorks/sdd-forge/blob/main/README.md) | **日本語**
+<!-- {{/data}} -->
 
 [![npm version](https://img.shields.io/npm/v/sdd-forge.svg)](https://www.npmjs.com/package/sdd-forge)
 
@@ -26,23 +30,23 @@
 
 <pre>
 # npm
-npm install -g {{data: project.name("")}}sdd-forge{{/data}}
+npm install -g <!-- {{data: project.name("")}} -->sdd-forge<!-- {{/data}} -->
 
 # yarn
-yarn global add {{data: project.name("")}}sdd-forge{{/data}}
+yarn global add <!-- {{data: project.name("")}} -->sdd-forge<!-- {{/data}} -->
 
 # pnpm
-pnpm add -g {{data: project.name("")}}sdd-forge{{/data}}
+pnpm add -g <!-- {{data: project.name("")}} -->sdd-forge<!-- {{/data}} -->
 </pre>
 
 ### セットアップ & ドキュメント生成
 
 <pre>
 # 1. プロジェクトを登録（インタラクティブウィザード）
-{{data: project.name("")}}sdd-forge{{/data}} setup
+<!-- {{data: project.name("")}} -->sdd-forge<!-- {{/data}} --> setup
 
 # 2. ドキュメントを一括生成（scan → init → data → text → readme → agents → translate）
-{{data: project.name("")}}sdd-forge{{/data}} build
+<!-- {{data: project.name("")}} -->sdd-forge<!-- {{/data}} --> build
 </pre>
 
 これだけで `docs/` と `README.md` が生成されます。
@@ -149,10 +153,10 @@ $sdd-flow-close   — forge → review → commit → merge で終了
 <!-- {{data: docs.chapters("章|概要")}} -->
 | 章 | 概要 |
 | --- | --- |
-| [01. システム概要](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/ja/01_overview.md) | 本章では、ソースコード解析によるドキュメント自動生成と、Spec-Driven Development（SDD）ワークフローによる機能開発を推進する Node.js CLI ツール「sdd-forge」の構造概要を説明する。 |
-| [02. CLIコマンドリファレンス](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/ja/02_cli_commands.md) | 本章では `sdd-forge` で利用可能な全18サブコマンドを解説します。 |
-| [03. 設定とカスタマイズ](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/ja/03_configuration.md) | 本章では、sdd-forge が使用するすべての設定ファイル、`.sdd-forge/config.json` で利用可能なオプションの全範囲、および AI プロバイダー・ドキュメントスタイル・プロジェクトタイプ・マージ戦略・並列処理… |
-| [04. 内部設計](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/ja/04_internal_design.md) | 本章では、sdd-forge の内部アーキテクチャとして、ディレクトリ構成、各モジュールの責務、および3層ディスパッチ構造におけるモジュール間の依存方向を解説する。 |
+| [01. システム概要](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/ja/01_overview.md) | 本章では、sdd-forge の全体アーキテクチャについて説明する。 |
+| [02. CLIコマンドリファレンス](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/ja/02_cli_commands.md) | 本章では `sdd-forge` で利用可能な全19サブコマンドを、ルーティング層ごとに整理して解説します。 |
+| [03. 設定とカスタマイズ](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/ja/03_configuration.md) | 本章では、sdd-forge が使用するすべての設定ファイル、`.sdd-forge/config.json` で利用可能な設定オプションの全範囲、および AI プロバイダー・ドキュメントスタイル・プロジェクトタイプ・ワークフロー動作… |
+| [04. 内部設計](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/ja/04_internal_design.md) | 本章では、sdd-forge の内部アーキテクチャについて説明する。 |
 <!-- {{/data}} -->
 
 ## License

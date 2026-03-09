@@ -28,28 +28,45 @@ docs の内容は以下の 2 種類で構成される:
 機能追加・修正の指示を受けた場合、`/sdd-flow-start` スキルを実行すること。
 スキルが利用できない環境では、以下を必ずこの順で実行すること。
 
-1. ブランチ戦略を決定する（**spec 作成前に必ずユーザーに確認すること**）
+**原則: SDD フロー中のすべてのステップで、次の行動について必ずユーザーに確認する。AI が勝手に次のステップに進まない。**
+
+1. 進め方を選択する:
+   1. **要件を整理してから仕様書を作成する**: 対話で方針を詰めてから spec を作成
+   2. **仕様書を作成する**: 要件が明確な場合。従来通り spec から開始
+2. ブランチ戦略を決定する（**spec 作成前に必ずユーザーに確認すること**）
    - worktree 内の場合は自動で `--no-branch` を付与（確認不要）
    - それ以外では以下の番号付き選択肢を提示すること:
      1. **Branch**（デフォルト）: 現在のブランチから feature ブランチを作成
      2. **Worktree**: git worktree で隔離環境を作成
      3. **Spec only**: ブランチを作成せず spec のみ
-2. `sdd-forge spec --title "<機能名>"` で spec を作成（既存 spec がある場合はそれを使用）
-3. 仕様要約を提示し、以下の番号付き選択肢を提示する:
-   1. **実装する**: 手順 4 へ進む
-   2. **仕様書を修正する**: ユーザーからフィードバックを受け取り、spec.md を修正 → 再度手順 3 へ
+3. `sdd-forge spec --title "<機能名>"` で spec を作成（既存 spec がある場合はそれを使用）
+4. （1 を選んだ場合）draft フェーズで対話的に要件を詰める
+   - `specs/NNN-xxx/draft.md` に記録（手順 3 で作成されたディレクトリに配置）
+   - 1 問ずつ聞く（まとめて聞かない、勝手に回答しない）
+   - 脱線は 1 往復で解決を試み、未解決なら Open Questions に記録
+   - ユーザー承認後（`- [x] User approved this draft`）に spec に清書
+   - draft.md は specs/ に残す
+5. 仕様要約を提示し、以下の番号付き選択肢を提示する:
+   1. **実装する**: 手順 6 へ進む
+   2. **仕様書を修正する**: ユーザーからフィードバックを受け取り、spec.md を修正 → 再度手順 5 へ
    3. **その他**: ユーザーの自由入力を受け付け、内容に応じて対応する
-4. 承認後、`spec.md` の `## User Confirmation` を更新（`- [x] User approved this spec`）
-5. `sdd-forge gate --spec specs/NNN-xxx/spec.md` でゲートチェック
-6. gate が FAIL の場合、未解決事項を一問一答で解消する（この時点では実装禁止）
-7. 実装
-8. `sdd-forge forge --prompt "<変更内容の要約>" --spec specs/NNN-xxx/spec.md`
-9. `sdd-forge review`
+6. 承認後、`spec.md` の `## User Confirmation` を更新（`- [x] User approved this spec`）
+7. `sdd-forge gate --spec specs/NNN-xxx/spec.md` でゲートチェック
+8. gate が FAIL の場合、未解決事項を一問一答で解消する（この時点では実装禁止）
+9. テストフェーズ（gate PASS 後）
+   - analysis.json からテスト環境を自動判定
+   - テスト環境あり: テスト種別確認 → テスト観点提示 → ユーザー承認 → テストコード生成 → 実装
+   - テスト環境なし: AI が spec と実装の照合チェックを実施
+   - テスト環境の構築が必要な場合: 別 spec として扱う
+10. 実装
+11. `sdd-forge forge --prompt "<変更内容の要約>" --spec specs/NNN-xxx/spec.md`
+12. `sdd-forge review`
 
 **失敗時ポリシー:**
 - gate が PASS するまで実装・編集を開始しない
 - review が PASS するまで完了扱いにしない
 - ユーザー確認が未承認のまま実装してはならない
+- テスト観点のユーザーレビューを省略してはならない（テスト環境ありの場合）
 
 ### 終了処理
 
@@ -92,6 +109,7 @@ docs の内容は以下の 2 種類で構成される:
 | `sdd-forge spec --title "<名前>"` | spec 初期化（feature ブランチ + spec.md） |
 | `sdd-forge gate --spec <path>` | spec ゲートチェック（`--phase pre/post`） |
 | `sdd-forge flow --request "<要望>"` | SDD フロー自動実行 |
+| `sdd-forge snapshot <save\|check\|update>` | スナップショットテスト（リグレッション検出） |
 
 ### docs/ 編集ルール
 
@@ -106,8 +124,8 @@ docs の内容は以下の 2 種類で構成される:
 <!-- {{data: agents.project("")}} -->
 ## Project Context
 
-- **generated_at:** 2026-03-08 15:39:15 UTC
-- **package:** `sdd-forge` v0.1.0-alpha.24
+- **generated_at:** 2026-03-09 13:05:55 UTC
+- **package:** `sdd-forge` v0.1.0-alpha.27
 - **description:** Spec-Driven Development tooling for automated documentation generation
 - **repository:** https://github.com/SpreadWorks/sdd-forge.git
 - **license:** MIT
@@ -123,7 +141,7 @@ docs の内容は以下の 2 種類で構成される:
 | テストフレームワーク | Node.js 組み込み `node --test` |
 | npm 公開対象 | `src/` + `docs/` + package.json / README.md / LICENSE |
 | バイナリエントリ | `sdd-forge` → `./src/sdd-forge.js` |
-| 解析済みモジュール数 | 99 ファイル / 269 メソッド |
+| 解析済みモジュール数 | 101 ファイル / 276 メソッド |
 
 ### プロジェクト構造
 
@@ -137,16 +155,18 @@ sdd-forge/
 │   ├── flow.js                   ← SDD フロー自動実行（DIRECT_COMMAND）
 │   ├── presets-cmd.js            ← presets コマンド（DIRECT_COMMAND）
 │   ├── help.js                   ← ヘルプ表示
+│   ├── README.md                 ← 内部アーキテクチャ・コーディングルール（npm 同梱）
 │   ├── docs/
 │   │   ├── commands/             ← scan, init, data, text, readme, forge, review,
 │   │   │                            agents, changelog, setup, default-project,
-│   │   │                            upgrade, translate
+│   │   │                            snapshot, upgrade, translate
 │   │   ├── data/                 ← project.js, docs.js, agents.js, lang.js
 │   │   └── lib/                  ← scanner, directive-parser, template-merger,
-│   │                                renderers, forge-prompts, text-prompts,
-│   │                                data-source, data-source-loader, resolver-factory,
+│   │                                forge-prompts, text-prompts, data-source,
+│   │                                data-source-loader, resolver-factory,
 │   │                                review-parser, scan-source, concurrency,
-│   │                                command-context, php-array-parser
+│   │                                command-context, php-array-parser,
+│   │                                test-env-detection
 │   ├── specs/
 │   │   └── commands/             ← init（spec 作成）, gate（ゲートチェック）
 │   ├── lib/                      ← agent, agents-md, cli, config, entrypoint,
@@ -164,11 +184,15 @@ sdd-forge/
 │   │   ├── cakephp2/, laravel/, symfony/  ← フレームワーク固有プリセット
 │   │   ├── node-cli/             ← CLI プリセット
 │   │   └── lib/                  ← composer-utils.js（共有ユーティリティ）
+│   ├── locale/
+│   │   ├── ja/                   ← messages.json, prompts.json, ui.json
+│   │   └── en/                   ← （同上）
 │   └── templates/                ← config.example.json, review-checklist.md,
-│                                    skills/sdd-flow-start/, skills/sdd-flow-close/
+│                                    skills/sdd-flow-start/, skills/sdd-flow-close/,
+│                                    skills/sdd-flow-status/
 ├── docs/                         ← sdd-forge 自身の設計ドキュメント（npm 公開対象）
 ├── tests/                        ← テストファイル（*.test.js）
-└── specs/                        ← SDD spec ファイル（020 件以上蓄積）
+└── specs/                        ← SDD spec ファイル（033 件以上蓄積）
 ```
 
 ### コマンドルーティングアーキテクチャ（3 層ディスパッチ）
@@ -176,7 +200,7 @@ sdd-forge/
 ```
 sdd-forge.js（エントリポイント）
   ├─ docs.js      → docs/commands/{scan,init,data,text,readme,forge,review,
-  │                               agents,changelog,setup,upgrade,translate,...}.js
+  │                               agents,changelog,setup,snapshot,upgrade,translate,...}.js
   ├─ spec.js      → specs/commands/{init,gate}.js
   ├─ flow.js      （DIRECT_COMMAND — サブルーティングなし）
   └─ presets-cmd.js（DIRECT_COMMAND）
@@ -186,7 +210,7 @@ sdd-forge.js（エントリポイント）
 
 | サブコマンド | ディスパッチャー |
 |---|---|
-| `build`, `scan`, `init`, `data`, `text`, `readme`, `forge`, `review`, `changelog`, `agents`, `upgrade`, `translate`, `setup`, `default` | `docs.js` |
+| `build`, `scan`, `init`, `data`, `text`, `readme`, `forge`, `review`, `changelog`, `agents`, `snapshot`, `upgrade`, `translate`, `setup`, `default` | `docs.js` |
 | `spec`, `gate` | `spec.js` |
 | `flow` | `flow.js`（DIRECT_COMMAND） |
 | `presets` | `presets-cmd.js`（DIRECT_COMMAND） |
@@ -237,6 +261,8 @@ scan → init → data → text → readme → agents → [translate（多言語
 | `loadContext(root)` | `context.json` を読み込む（なければ空オブジェクト） |
 | `saveContext(root, data)` | `context.json` に書き込む |
 | `resolveProjectContext(root)` | プロジェクトコンテキスト文字列を解決（優先順: `context.json` → `config.json` の `textFill.projectContext` → 空文字列） |
+| `loadJsonFile(filePath)` | 汎用 JSON ローダー |
+| `loadPackageField(root, field)` | package.json フィールドを安全に取得 |
 
 **主要ファイルとその役割:**
 
@@ -248,6 +274,7 @@ scan → init → data → text → readme → agents → [translate（多言語
 | `.sdd-forge/output/summary.json` | AI 向け軽量版（優先使用、なければ analysis にフォールバック） |
 | `.sdd-forge/current-spec` | SDD フロー進行状態（JSON） |
 | `.sdd-forge/projects.json` | 複数プロジェクト登録情報 |
+| `.sdd-forge/snapshots/` | スナップショットテスト保存ディレクトリ |
 
 #### `src/lib/cli.js` — CLI 共通ユーティリティ
 
@@ -259,6 +286,7 @@ scan → init → data → text → readme → agents → [translate（多言語
 | `parseArgs()` | フラグ・オプション・エイリアス・デフォルト値に対応した汎用 CLI パーサー |
 | `isInsideWorktree()` | `.git` がファイルかどうかで worktree 内を判定 |
 | `getMainRepoPath()` | worktree からメインリポジトリのパスを取得 |
+| `getPackageVersion()` | package.json から sdd-forge バージョンを返す |
 | `formatUTCTimestamp()` | UTC タイムスタンプ文字列生成（`"YYYY-MM-DD HH:MM:SS UTC"` 形式） |
 
 > `docs/commands/` 配下のファイルから `PKG_DIR` を参照する場合は `../..`（2 階層上）が `src/` を指す。
@@ -279,7 +307,7 @@ scan → init → data → text → readme → agents → [translate（多言語
 | 関数 | 説明 |
 |---|---|
 | `saveFlowState(workRoot, state)` | フロー状態を保存 |
-| `loadFlowState(workRoot)` | フロー状態を読み込み |
+| `loadFlowState(workRoot)` | フロー状態を読み込み（ファイルなければ `null`） |
 | `clearFlowState(workRoot)` | フロー状態ファイルを削除 |
 
 #### `src/lib/presets.js` — プリセット自動探索
@@ -300,7 +328,7 @@ scan → init → data → text → readme → agents → [translate（多言語
 | `scanner.js` | ファイル探索・PHP/JS/YAML 解析ユーティリティ |
 | `directive-parser.js` | `{{data}}` / `{{text}}` / `@block` / `@extends` ディレクティブ解析 |
 | `template-merger.js` | テンプレート継承（`@extends` / `@block`）の解決 |
-| `data-source.js` | DataSource 基底クラス |
+| `data-source.js` | DataSource 基底クラス（`toMarkdownTable`, `toRows`, `desc` 等） |
 | `data-source-loader.js` | プリセット別 DataSource の動的ロード |
 | `resolver-factory.js` | `createResolver()` ファクトリ（data コマンドで利用） |
 | `forge-prompts.js` | forge / agents コマンド向けプロンプト生成・`summaryToText()` |
@@ -308,8 +336,22 @@ scan → init → data → text → readme → agents → [translate（多言語
 | `review-parser.js` | review コマンドの結果パース |
 | `scan-source.js` | スキャン設定ローダー |
 | `concurrency.js` | ファイル並列処理ユーティリティ |
-| `command-context.js` | コマンド実行コンテキスト解決（`resolveCommandContext()` など） |
+| `command-context.js` | コマンド実行コンテキスト解決（`resolveCommandContext()`, `loadAnalysis()` など） |
 | `php-array-parser.js` | PHP 配列構文パーサー |
+| `test-env-detection.js` | テスト環境自動判定（analysis.json から判定） |
+
+#### `src/docs/commands/snapshot.js` — スナップショットテスト
+
+リグレッション検出用のスナップショット保存・比較コマンド。
+
+| サブコマンド | 説明 |
+|---|---|
+| `sdd-forge snapshot save` | 現在の出力をスナップショットとして保存 |
+| `sdd-forge snapshot check` | 現在の出力とスナップショットを比較 |
+| `sdd-forge snapshot update` | スナップショットを現在の出力で更新 |
+
+キャプチャ対象: `.sdd-forge/output/analysis.json`、`docs/*.md`、`docs/{lang}/*.md`、`README.md`
+保存先: `.sdd-forge/snapshots/`（manifest.json を含む）
 
 ### プリセットシステム
 
@@ -322,8 +364,8 @@ scan → init → data → text → readme → agents → [translate（多言語
 | `cli` | `cli` | cli | —（isArch） |
 | `library` | `library` | library | —（isArch） |
 | `cakephp2` | `webapp/cakephp2` | webapp | controllers, models, shells, routes（PHP）/ alias: `php-mvc` |
-| `laravel` | `webapp/laravel` | webapp | controllers, models, shells, routes（PHP） |
-| `symfony` | `webapp/symfony` | webapp | controllers, models（Entity）, shells, routes（YAML） |
+| `laravel` | `webapp/laravel` | webapp | controllers, models, shells, routes, migrations（PHP） |
+| `symfony` | `webapp/symfony` | webapp | controllers, entities, routes, migrations, config（PHP, YAML） |
 | `node-cli` | `cli/node-cli` | cli | modules（`src/**/*.js`） |
 
 **node-cli プリセット章構成（preset.json より）:**
@@ -375,8 +417,16 @@ AGENTS.md は 3 セクション構成で管理される。`CLAUDE.md` は `AGENT
 | セクション | 管理方法 | テンプレート |
 |---|---|---|
 | `<!-- SDD:START/END -->` | `sdd-forge agents` で自動差し替え | `src/presets/base/templates/{lang}/AGENTS.sdd.md` |
-| `<!-- PROJECT:START/END -->` | `sdd-forge scan` 解析結果から生成 | `agents.js` データソース |
+| `<!-- PROJECT:START/END -->` | `sdd-forge agents` で生成・AI 精査 | `agents.js` データソース（analysis.json から生成） |
 | それ以外 | 手動記述（自動上書きされない） | — |
+
+**`sdd-forge agents` コマンドオプション:**
+
+| オプション | 説明 |
+|---|---|
+| `--sdd` | SDD セクションのみ更新 |
+| `--project` | PROJECT セクションのみ更新 |
+| `--dry-run` | ファイル書き込みをせず内容を確認 |
 
 ### 利用可能なコマンド
 
@@ -394,10 +444,11 @@ tests/
 ├── package.test.js
 ├── docs/
 │   ├── commands/         ← agents, changelog, data, default-project, forge,
-│   │                        init, readme, review, scan, setup,
-│   │                        text-batch, text-helpers
+│   │                        init, readme, review, scan, setup, snapshot,
+│   │                        text-batch, text-helpers, translate
 │   └── lib/              ← command-context, directive-parser, forge-prompts,
-│                            resolver-factory, review-parser, scanner, template-merger
+│                            resolver-factory, review-parser, scanner,
+│                            template-merger, test-env-detection
 ├── lib/
 │   ├── agent.test.js
 │   ├── cli.test.js
@@ -427,6 +478,7 @@ tests/
 - **SDD テンプレートパス**: `agents-md.js` は SDD セクションテンプレートを `src/presets/base/templates/{lang}/AGENTS.sdd.md` から読み込む（指定ロケールがなければ `"en"` にフォールバック）。
 - **npm リリース手順**: `npm publish --tag alpha` → `npm dist-tag add sdd-forge@<version> latest` の 2 ステップ必須（`--tag alpha` のみでは npmjs.com の表示が更新されない）。リリースはユーザーの明示的な指示がある場合のみ実行すること。
 - **npm 公開対象**: `src/` と `docs/` の両方が `files` フィールドに含まれる（package.json 参照）。
+- **テスト環境検出**: `src/docs/lib/test-env-detection.js` が analysis.json を解析してテストフレームワークを自動判定。SDD フローのテストフェーズで利用される。
 <!-- {{/data}} -->
 
 ## Project Guidelines
