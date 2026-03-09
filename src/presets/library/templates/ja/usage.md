@@ -1,3 +1,5 @@
+<\!-- {{data: docs.langSwitcher("relative")}} -->
+<\!-- {{/data}} -->
 # 06. 利用ガイド
 
 ## 説明

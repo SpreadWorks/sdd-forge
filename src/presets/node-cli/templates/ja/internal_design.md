@@ -1,3 +1,5 @@
+<\!-- {{data: docs.langSwitcher("relative")}} -->
+<\!-- {{/data}} -->
 # 04. 内部設計
 
 ## 説明

@@ -1,3 +1,5 @@
+<\!-- {{data: docs.langSwitcher("relative")}} -->
+<\!-- {{/data}} -->
 # 05. CLI コマンドリファレンス
 
 ## 説明

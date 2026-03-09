@@ -1,3 +1,5 @@
+<!-- {{data: docs.langSwitcher("relative")}} -->
+<!-- {{/data}} -->
 # 02. Technology Stack and Operations
 
 ## Description

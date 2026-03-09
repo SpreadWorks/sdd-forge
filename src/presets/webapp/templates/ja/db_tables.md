@@ -1,3 +1,5 @@
+<\!-- {{data: docs.langSwitcher("relative")}} -->
+<\!-- {{/data}} -->
 # 07. DB テーブル定義
 
 ## 説明

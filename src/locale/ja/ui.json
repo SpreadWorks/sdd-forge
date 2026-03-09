@@ -319,6 +319,18 @@
       }
     }
   },
+  "languageNames": {
+    "en": "English",
+    "ja": "日本語",
+    "zh": "中文",
+    "ko": "한국어",
+    "fr": "Français",
+    "de": "Deutsch",
+    "es": "Español",
+    "pt": "Português",
+    "it": "Italiano",
+    "ru": "Русский"
+  },
   "common": {
     "choicePrompt": "> ({{min}}-{{max}}): ",
     "error": {

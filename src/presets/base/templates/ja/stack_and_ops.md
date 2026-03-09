@@ -1,3 +1,5 @@
+<!-- {{data: docs.langSwitcher("relative")}} -->
+<!-- {{/data}} -->
 # 02. 技術スタックと運用
 
 ## 説明

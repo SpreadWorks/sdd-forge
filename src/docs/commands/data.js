@@ -146,6 +146,9 @@ async function main(ctx) {
       if (source === "lang" && method === "links") {
         return resolveFn(source, method, a, [`${docsDirRel}/${file}`]);
       }
+      if (source === "docs" && method === "langSwitcher") {
+        return resolveFn(source, method, a, [labels[0] || "relative", `${docsDirRel}/${file}`]);
+      }
       return resolveFn(source, method, a, labels);
     };
     const result = processTemplate(original, analysis, file, wrappedResolveFn);

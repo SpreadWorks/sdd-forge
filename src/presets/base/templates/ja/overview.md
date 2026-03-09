@@ -1,3 +1,5 @@
+<!-- {{data: docs.langSwitcher("relative")}} -->
+<!-- {{/data}} -->
 # 01. システム概要
 
 ## 説明

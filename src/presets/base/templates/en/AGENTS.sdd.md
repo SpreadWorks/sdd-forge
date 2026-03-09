@@ -32,19 +32,19 @@ If skills are unavailable, follow these steps in order.
 1. Choose approach:
    1. **Gather requirements first**: Define requirements through dialogue before creating spec
    2. **Create spec directly**: When requirements are clear. Start from spec as before
-2. (If 1 is chosen) Draft phase — define requirements interactively
-   - Record discussions in `specs/NNN-xxx/draft.md`
-   - Ask ONE question at a time (do not batch, do not self-answer)
-   - If digression: try to resolve in 1 exchange, otherwise record in Open Questions
-   - After user approval (`- [x] User approved this draft`), transcribe to spec
-   - Keep draft.md in specs/ (do not delete)
-3. Decide branch strategy (**always confirm with user before creating spec**)
+2. Decide branch strategy (**always confirm with user before creating spec**)
    - Inside a worktree: automatically use `--no-branch` (no confirmation needed)
    - Otherwise, present these numbered options:
      1. **Branch** (default): create feature branch from current branch
      2. **Worktree**: create isolated environment with git worktree
      3. **Spec only**: create spec without branch
-4. `sdd-forge spec --title "<feature-name>"` to create spec (use existing spec if available)
+3. `sdd-forge spec --title "<feature-name>"` to create spec (use existing spec if available)
+4. (If 1 is chosen) Draft phase — define requirements interactively
+   - Record discussions in `specs/NNN-xxx/draft.md` (in the directory created in step 3)
+   - Ask ONE question at a time (do not batch, do not self-answer)
+   - If digression: try to resolve in 1 exchange, otherwise record in Open Questions
+   - After user approval (`- [x] User approved this draft`), transcribe to spec
+   - Keep draft.md in specs/ (do not delete)
 5. Present spec summary and offer these numbered options:
    1. **Implement**: proceed to step 6
    2. **Modify spec**: receive user feedback, update spec.md, then re-present step 5

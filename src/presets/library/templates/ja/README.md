@@ -1,5 +1,8 @@
 # <!-- {{data: project.name("")}} --><!-- {{/data}} -->
 
+<!-- {{data: docs.langSwitcher("absolute")}} -->
+<!-- {{/data}} -->
+
 <!-- {{data: project.description("")}} -->
 <!-- {{/data}} -->
 

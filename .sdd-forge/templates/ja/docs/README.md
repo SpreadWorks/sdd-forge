@@ -1,5 +1,8 @@
 # <!-- {{data: project.name("")}} --><!-- {{/data}} -->
 
+<!-- {{data: docs.langSwitcher("absolute")}} -->
+<!-- {{/data}} -->
+
 [![npm version](https://img.shields.io/npm/v/sdd-forge.svg)](https://www.npmjs.com/package/sdd-forge)
 
 > **Alpha版:** このツールは現在アルファ版です。API・コマンド体系・設定フォーマットは予告なく変更される可能性があります。本番環境での利用はお控えください。

@@ -22,29 +22,9 @@ AI が勝手に次のステップに進まない。
      | 1 | 要件を整理してから仕様書を作成する | 対話で方針を詰めてから spec を作成します |
      | 2 | 仕様書を作成する | 要件が明確な場合。従来通り spec から開始します |
 
-   - If **1** → go to step 2 (draft phase).
-   - If **2** → skip to step 3 (spec creation).
+   - Remember the choice for later. Proceed to step 2 regardless.
 
-2. Draft phase (requirements definition).
-   - Create `specs/NNN-xxx/draft.md` to record discussions.
-   - AI presents choices/proposals → user selects with short answers.
-   - Ask ONE question at a time (do not batch questions, do not self-answer).
-   - If a question leads to digression:
-     1. Try to resolve in ONE exchange.
-     2. If unresolved, record in Open Questions and move on.
-     3. Open Questions are resolved during spec creation or implementation.
-   - When requirements are sufficiently defined, ask the user for approval.
-   - Update draft.md with `- [x] User approved this draft` and confirmation date.
-   - Transfer Q&A and decisions to spec (step 3).
-   - Keep `draft.md` in `specs/` (do not delete).
-
-3. Create or select spec.
-   - If no spec exists, run `sdd-forge spec --title "<short-title>"` (with appropriate flags — see step 4).
-   - If draft phase was completed, reflect draft Q&A and decisions in spec.md.
-   - Use the resulting `specs/NNN-xxx/spec.md`.
-   - The spec path is saved to `.sdd-forge/current-spec`.
-
-4. Choose branching strategy.
+2. Choose branching strategy.
    - **Auto-detect**: Check if `.git` is a file (not directory) in the project root.
      - If yes → already in a worktree. Skip choice, use `--no-branch` automatically.
    - **User choice** (if not in a worktree): Present EXACTLY these 3 options:
@@ -58,11 +38,30 @@ AI が勝手に次のステップに進まない。
    - Ask the user: "現在のブランチ (`<current-branch>`) から分岐してよいですか？" (skip for spec-only mode)
      - If yes → use `--base <current-branch>`.
      - If no → ask which branch to use as base and use `--base <user-specified-branch>`.
-   - The base branch is automatically recorded in `.sdd-forge/current-spec` by `sdd-forge spec`.
 
-5. Draft spec before coding.
+3. Create or select spec.
+   - If no spec exists, run `sdd-forge spec --title "<short-title>"` (with appropriate flags from step 2).
+   - This creates the branch, `specs/NNN-xxx/` directory, and `spec.md` skeleton.
+   - The spec path is saved to `.sdd-forge/current-spec`.
+   - The base branch is automatically recorded by `sdd-forge spec`.
+
+4. Draft phase (if step 1 chose option 1).
+   - Create `specs/NNN-xxx/draft.md` in the spec directory created in step 3.
+   - AI presents choices/proposals → user selects with short answers.
+   - Ask ONE question at a time (do not batch questions, do not self-answer).
+   - If a question leads to digression:
+     1. Try to resolve in ONE exchange.
+     2. If unresolved, record in Open Questions and move on.
+     3. Open Questions are resolved during spec filling or implementation.
+   - When requirements are sufficiently defined, ask the user for approval.
+   - Update draft.md with `- [x] User approved this draft` and confirmation date.
+   - Transfer Q&A and decisions to spec (step 5).
+   - Keep `draft.md` in `specs/` (do not delete).
+
+5. Fill spec before coding.
    - Fill Goal, Scope, Out of Scope, Requirements, Acceptance Criteria.
-   - Include "why this approach" rationale (especially if draft phase was done).
+   - If draft phase was done, reflect draft Q&A and decisions in spec.md.
+   - Include "why this approach" rationale.
    - Keep Open Questions only when clarification is still needed.
 
 6. Get explicit user approval.

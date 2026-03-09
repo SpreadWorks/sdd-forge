@@ -119,10 +119,16 @@ async function main(ctx) {
   }
 
   const readmePath = ctx.output ? path.resolve(root, ctx.output) : path.join(root, "README.md");
+  const readmeRelPath = path.relative(root, readmePath).replace(/\\/g, "/");
 
   const resolveResult = resolveDataDirectives(
     templateContent,
-    (source, method, labels) => resolveFn(source, method, {}, labels),
+    (source, method, labels) => {
+      if (source === "docs" && method === "langSwitcher") {
+        return resolveFn(source, method, {}, [labels[0] || "relative", readmeRelPath]);
+      }
+      return resolveFn(source, method, {}, labels);
+    },
   );
   let resolved = resolveResult.text;
   const newContent = resolved.endsWith("\n") ? resolved : resolved + "\n";
