@@ -4,6 +4,7 @@
 ### ルーティング設定
 
 <!-- {{text: Symfony のルーティング方式を説明してください。#[Route] attribute と config/routes.yaml の役割を含めること。}} -->
+<!-- {{/text}} -->
 
 <!-- {{data: routes.list("メソッド|パス|コントローラ|名前")}} -->
 <!-- {{/data}} -->

@@ -3,15 +3,14 @@
 ## Description
 
 <!-- {{text: Write a 1-2 sentence overview of this chapter. Include the project's architecture and whether it integrates with external systems.}} -->
-
 This chapter provides a structural overview of sdd-forge, a Node.js CLI tool that automates documentation generation through source code analysis and drives feature development via a Spec-Driven Development (SDD) workflow. The tool follows a three-layer command dispatch architecture and integrates with external AI agents (such as Claude CLI) to generate and refine documentation text.
+<!-- {{/text}} -->
 
 ## Content
 
 ### Architecture Diagram
 
 <!-- {{text: Generate a mermaid flowchart showing the project architecture. Include data flows between major components. Output only the mermaid code block.}} -->
-
 ```mermaid
 flowchart TD
     User["User (CLI)"]
@@ -70,11 +69,11 @@ flowchart TD
     SPEC_INIT --> SPECS
     GATE --> SPECS
 ```
+<!-- {{/text}} -->
 
 ### Component Responsibilities
 
 <!-- {{text: Describe the major components with their location, responsibilities, and I/O in table format.}} -->
-
 | Component | Location | Responsibility | Input | Output |
 |---|---|---|---|---|
 | CLI Entry Point | `src/sdd-forge.js` | Resolves project context; routes subcommands to the appropriate dispatcher | CLI arguments, env vars (`SDD_SOURCE_ROOT`, `SDD_WORK_ROOT`) | Dispatched command execution |
@@ -88,21 +87,21 @@ flowchart TD
 | Config Manager | `src/lib/config.js` | Loads and validates `.sdd-forge/config.json`; resolves standard paths | `.sdd-forge/` directory | Typed config object, file paths |
 | Spec Gate | `src/specs/commands/gate.js` | Validates a spec against pre/post implementation checklists | `spec.md` path, `--phase` flag | PASS / FAIL report |
 | Forge Engine | `src/docs/commands/forge.js` | Iteratively improves `docs/` by prompting the AI agent | Change summary prompt, `spec.md` path | Updated `docs/*.md` files |
+<!-- {{/text}} -->
 
 ### External Integrations
 
 <!-- {{text: If there are external system integrations, describe their purpose and connection method in table format.}} -->
-
 | System | Purpose | Connection Method | Configuration |
 |---|---|---|---|
 | AI Agent (e.g. Claude CLI) | Generates and refines documentation text for `{{text}}` directives; drives `forge`, `review`, `agents`, and `text` commands | Spawned as a child process via `execFileSync` (sync) or `spawn` (async streaming) in `src/lib/agent.js` | Defined under `providers` in `.sdd-forge/config.json`; selected by `defaultAgent` key |
 
 The AI agent is the only external integration. All other operations — file scanning, directive parsing, template merging, spec management — rely exclusively on Node.js built-in modules (`fs`, `path`, `child_process`, `os`). The agent command, arguments, timeout, and system-prompt delivery method (`--system-prompt` or `--system-prompt-file`) are all configurable per project.
+<!-- {{/text}} -->
 
 ### Environment Differences
 
 <!-- {{text: Describe the configuration differences across environments (local/staging/production).}} -->
-
 As a local CLI tool, sdd-forge does not have distinct deployment environments in the traditional sense. Configuration differences are instead expressed through per-project `.sdd-forge/config.json` settings and environment variables.
 
 | Aspect | Local Development | CI / Automated Pipeline | Multi-Project Setup |
@@ -113,3 +112,4 @@ As a local CLI tool, sdd-forge does not have distinct deployment environments in
 | Concurrency | `limits.concurrency` (default: 5) controls parallel file processing | Can be raised for faster execution on high-core machines | Independently tunable per project |
 | Timeouts | `limits.designTimeoutMs` / per-provider `timeoutMs` | Should be increased for slow CI agents; default constants: 120 s / 180 s / 300 s | Configurable per project |
 ```
+<!-- {{/text}} -->

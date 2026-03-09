@@ -83,8 +83,11 @@ describe("parseDirectives", () => {
     assert.equal(result[0].method, "list");
   });
 
-  it("parses {{text}} directive without params", () => {
-    const text = "<!-- {{text: Explain the architecture.}} -->";
+  it("parses {{text}} directive without params (with end tag)", () => {
+    const text = [
+      "<!-- {{text: Explain the architecture.}} -->",
+      "<!-- {{/text}} -->",
+    ].join("\n");
     const result = parseDirectives(text);
     assert.equal(result.length, 1);
     const d = result[0];
@@ -92,23 +95,48 @@ describe("parseDirectives", () => {
     assert.equal(d.prompt, "Explain the architecture.");
     assert.deepEqual(d.params, {});
     assert.equal(d.line, 0);
+    assert.equal(d.endLine, 1);
+  });
+
+  it("parses {{text}} directive without end tag (endLine = -1)", () => {
+    const text = "<!-- {{text: Explain the architecture.}} -->";
+    const result = parseDirectives(text);
+    assert.equal(result.length, 1);
+    assert.equal(result[0].endLine, -1);
+  });
+
+  it("parses {{text}} directive with content between tags", () => {
+    const text = [
+      "<!-- {{text: Explain the architecture.}} -->",
+      "Some generated content here.",
+      "More content.",
+      "<!-- {{/text}} -->",
+    ].join("\n");
+    const result = parseDirectives(text);
+    assert.equal(result.length, 1);
+    assert.equal(result[0].line, 0);
+    assert.equal(result[0].endLine, 3);
   });
 
   it("parses {{text}} directive with params", () => {
-    const text =
-      "<!-- {{text[id=auth, maxLines=5]: Describe authentication.}} -->";
+    const text = [
+      "<!-- {{text[id=auth, maxLines=5]: Describe authentication.}} -->",
+      "<!-- {{/text}} -->",
+    ].join("\n");
     const result = parseDirectives(text);
     assert.equal(result.length, 1);
     const d = result[0];
     assert.equal(d.type, "text");
     assert.equal(d.prompt, "Describe authentication.");
     assert.deepEqual(d.params, { id: "auth", maxLines: 5 });
+    assert.equal(d.endLine, 1);
   });
 
   it("parses mixed data and text directives", () => {
     const text = [
       "# Title",
       "<!-- {{text: Write overview.}} -->",
+      "<!-- {{/text}} -->",
       "",
       '<!-- {{data: docs.chapters("Chapter|Desc")}} -->',
       "| a | b |",
@@ -117,6 +145,7 @@ describe("parseDirectives", () => {
     const result = parseDirectives(text);
     assert.equal(result.length, 2);
     assert.equal(result[0].type, "text");
+    assert.equal(result[0].endLine, 2);
     assert.equal(result[1].type, "data");
   });
 

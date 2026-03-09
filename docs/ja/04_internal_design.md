@@ -3,15 +3,14 @@
 ## 概要
 
 <!-- {{text: Describe the purpose of this chapter in 1–2 sentences. Cover the project structure, direction of module dependencies, and key processing flows.}} -->
-
 本章では、sdd-forge の内部アーキテクチャとして、ディレクトリ構成、各モジュールの責務、および3層ディスパッチ構造におけるモジュール間の依存方向を解説する。また、CLI エントリポイントから AI 呼び出し・ファイル出力に至るまでの主要な処理フローも説明する。
+<!-- {{/text}} -->
 
 ## 目次
 
 ### プロジェクト構造
 
 <!-- {{text: Describe the directory structure of this project in a tree-format code block. Include role comments for major directories and files. Cover the top-level dispatchers under src/ (sdd-forge.js, docs.js, spec.js, flow.js), docs/commands/ (subcommand implementations), docs/lib/ (document generation libraries), lib/ (shared utilities), presets/ (preset definitions), and templates/ (bundled templates).}} -->
-
 ```
 sdd-forge/
 ├── package.json                      ← パッケージマニフェスト。bin エントリ: ./src/sdd-forge.js
@@ -71,11 +70,11 @@ sdd-forge/
     │   └── node-cli/                 ← Node.js CLI プリセット
     └── templates/                    ← バンドル済みテンプレート（config.example.json, review-checklist.md, skills/）
 ```
+<!-- {{/text}} -->
 
 ### モジュール概要
 
 <!-- {{text: List the major modules in a table format. Include module name, file path, and responsibility. Cover the dispatcher layer (sdd-forge.js, docs.js, spec.js), command layer (docs/commands/*.js, specs/commands/*.js), library layer (lib/agent.js, lib/cli.js, lib/config.js, lib/flow-state.js, lib/presets.js, lib/i18n.js), and document generation layer (docs/lib/scanner.js, directive-parser.js, template-merger.js, forge-prompts.js, text-prompts.js, review-parser.js, data-source.js, resolver-factory.js).}} -->
-
 | レイヤー | モジュール | ファイルパス | 責務 |
 |---|---|---|---|
 | **ディスパッチャー** | CLI エントリポイント | `src/sdd-forge.js` | トップレベルのサブコマンドを解析し、環境変数を通じてプロジェクトコンテキストを解決。ディスパッチャーまたは DIRECT_COMMAND へルーティング |
@@ -104,11 +103,11 @@ sdd-forge/
 | **ドキュメント生成** | review-parser | `src/docs/lib/review-parser.js` | `review` コマンドの AI 出力を構造化し、合否結果としてパース |
 | **ドキュメント生成** | data-source | `src/docs/lib/data-source.js` | すべての `{{data}}` リゾルバー実装の基底クラス |
 | **ドキュメント生成** | resolver-factory | `src/docs/lib/resolver-factory.js` | 指定プリセットに応じた DataSource を生成する `createResolver()` ファクトリ |
+<!-- {{/text}} -->
 
 ### モジュール依存関係
 
 <!-- {{text: Generate a mermaid graph showing the dependencies between modules. Reflect the three-layer dispatch structure and show the dependency direction from dispatcher → command → library. Output only the mermaid code block.}} -->
-
 ```mermaid
 graph TD
     CLI["sdd-forge.js\n(エントリポイント)"]
@@ -201,11 +200,11 @@ graph TD
     AGENT --> CONFIG
     PRESETS --> CLI_LIB
 ```
+<!-- {{/text}} -->
 
 ### 主要な処理フロー
 
 <!-- {{text: Explain the inter-module data and control flow when a representative command (build or forge) is executed, using numbered steps. Include the flow from entry point → dispatch → config loading → analysis data preparation → AI invocation → file writing.}} -->
-
 以下は `sdd-forge forge` コマンドを実行したときの制御フローとデータフローである。このコマンドは AI を活用したドキュメント更新の典型的なエンドツーエンドの流れを示している。
 
 1. **エントリポイント** — `sdd-forge.js` がサブコマンドとして `forge` を受け取る。`--project` フラグ、`.sdd-forge/projects.json`、またはカレントディレクトリからプロジェクトコンテキストを解決し、`SDD_SOURCE_ROOT` および `SDD_WORK_ROOT` 環境変数を設定した上で `docs.js` へ制御を渡す。
@@ -219,11 +218,11 @@ graph TD
 9. **レビュー（任意）** — `forge` の後、SDD ワークフローでは `sdd-forge review` の実行を推奨する。review も同様のフローをたどるが、AI レスポンスから合否結果を構造化してパースするために `review-parser.js` を使用する。
 
 `build` コマンドの場合は、同じパイプラインが `scan` → `init` → `data` → `text` → `readme` の順で逐次実行され、各ステップの出力が次のステップの入力として使われる。
+<!-- {{/text}} -->
 
 ### 拡張ポイント
 
 <!-- {{text: Explain where changes are needed and the extension patterns when adding new commands or features. Provide steps for each of the following: (1) adding a new docs subcommand, (2) adding a new spec subcommand, (3) adding a new preset, (4) adding a new DataSource ({{data}} resolver), and (5) adding a new AI prompt.}} -->
-
 **1. 新しい docs サブコマンドを追加する**
 
 1. `src/docs/commands/<name>.js` を作成する。`main(args)` 関数をエクスポートする（直接実行をサポートする場合は末尾で `main()` を呼び出す）。
@@ -259,3 +258,4 @@ graph TD
 2. プロンプトビルダーは、関連する設定と解析データを引数として受け取り、`{ system, user }` オブジェクトを返す形式にする。
 3. 対応するコマンドファイル（`forge.js`, `text.js` 等）からプロンプトビルダーを呼び出し、その結果を `lib/agent.js` の `callAgent()` または `callAgentAsync()` に渡す。
 4. プロンプトにカスタムシステムプロンプトファイル（`--system-prompt-file` 用）が必要な場合は、`ensureAgentWorkDir()` を呼び出し、呼び出し後に一時ファイルを確実に削除する。
+<!-- {{/text}} -->

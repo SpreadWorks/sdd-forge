@@ -92,6 +92,23 @@ describe("review CLI", () => {
   });
 
 
+  it("warns when {{text}} directive is unfilled (empty block)", () => {
+    tmp = createTmpDir();
+    const lines = ["# 01. Test", ""];
+    for (let i = 0; i < 10; i++) lines.push(`Line ${i}`);
+    lines.push("<!-- {{text: describe this}} -->");
+    lines.push("<!-- {{/text}} -->");
+    for (let i = 0; i < 5; i++) lines.push(`More ${i}`);
+    writeFile(tmp, "docs/01_test.md", lines.join("\n"));
+
+    const result = execFileSync("node", [CMD], {
+      encoding: "utf8",
+      env: { ...process.env, SDD_WORK_ROOT: tmp },
+    });
+    // unfilled text is a WARN, not FAIL — command should still pass
+    assert.match(result, /unfilled \{\{text\}\}/);
+  });
+
   it("warns when analysis.json is missing", () => {
     tmp = createTmpDir();
     const lines = ["# 01. Test", ""];

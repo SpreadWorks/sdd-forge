@@ -31,10 +31,12 @@
 ### デプロイフロー
 
 <!-- {{text: Laravel プロジェクトのデプロイ手順を説明してください。php artisan コマンド（migrate, config:cache, route:cache 等）を含めること。}} -->
+<!-- {{/text}} -->
 <!-- @endblock -->
 
 <!-- @block: operations -->
 ### 運用フロー
 
 <!-- {{text: Laravel プロジェクトの運用手順を説明してください。キューワーカー、スケジューラ、ログ等を含めること。}} -->
+<!-- {{/text}} -->
 <!-- @endblock -->

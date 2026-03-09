@@ -3,15 +3,14 @@
 ## Overview
 
 <!-- {{text: Describe the purpose of this chapter in 1–2 sentences. Cover the project structure, direction of module dependencies, and key processing flows.}} -->
-
 This chapter describes the internal architecture of sdd-forge, including its directory layout, module responsibilities, and the direction of dependencies across the three-layer dispatch structure. It also covers the key processing flows that connect the CLI entry point through to AI invocation and file output.
+<!-- {{/text}} -->
 
 ## Contents
 
 ### Project Structure
 
 <!-- {{text: Describe the directory structure of this project in a tree-format code block. Include role comments for major directories and files. Cover the top-level dispatchers under src/ (sdd-forge.js, docs.js, spec.js, flow.js), docs/commands/ (subcommand implementations), docs/lib/ (document generation libraries), lib/ (shared utilities), presets/ (preset definitions), and templates/ (bundled templates).}} -->
-
 ```
 sdd-forge/
 ├── package.json                      ← Package manifest; bin entry: ./src/sdd-forge.js
@@ -71,11 +70,11 @@ sdd-forge/
     │   └── node-cli/                 ← Node.js CLI preset
     └── templates/                    ← Bundled templates (config.example.json, review-checklist.md, skills/)
 ```
+<!-- {{/text}} -->
 
 ### Module Overview
 
 <!-- {{text: List the major modules in a table format. Include module name, file path, and responsibility. Cover the dispatcher layer (sdd-forge.js, docs.js, spec.js), command layer (docs/commands/*.js, specs/commands/*.js), library layer (lib/agent.js, lib/cli.js, lib/config.js, lib/flow-state.js, lib/presets.js, lib/i18n.js), and document generation layer (docs/lib/scanner.js, directive-parser.js, template-merger.js, forge-prompts.js, text-prompts.js, review-parser.js, data-source.js, resolver-factory.js).}} -->
-
 | Layer | Module | File Path | Responsibility |
 |---|---|---|---|
 | **Dispatcher** | CLI Entry Point | `src/sdd-forge.js` | Parses top-level subcommand; resolves project context via env vars; routes to dispatcher or direct command |
@@ -104,11 +103,11 @@ sdd-forge/
 | **Doc Gen** | review-parser | `src/docs/lib/review-parser.js` | Parses structured AI output from the `review` command into pass/fail results |
 | **Doc Gen** | data-source | `src/docs/lib/data-source.js` | Base class for all `{{data}}` resolver implementations |
 | **Doc Gen** | resolver-factory | `src/docs/lib/resolver-factory.js` | `createResolver()` factory that instantiates the correct DataSource for a given preset |
+<!-- {{/text}} -->
 
 ### Module Dependencies
 
 <!-- {{text: Generate a mermaid graph showing the dependencies between modules. Reflect the three-layer dispatch structure and show the dependency direction from dispatcher → command → library. Output only the mermaid code block.}} -->
-
 ```mermaid
 graph TD
     CLI["sdd-forge.js\n(Entry Point)"]
@@ -201,11 +200,11 @@ graph TD
     AGENT --> CONFIG
     PRESETS --> CLI_LIB
 ```
+<!-- {{/text}} -->
 
 ### Key Processing Flows
 
 <!-- {{text: Explain the inter-module data and control flow when a representative command (build or forge) is executed, using numbered steps. Include the flow from entry point → dispatch → config loading → analysis data preparation → AI invocation → file writing.}} -->
-
 The following steps describe the control and data flow for the `sdd-forge forge` command, which represents a complete end-to-end AI-assisted documentation update.
 
 1. **Entry point** — `sdd-forge.js` receives `forge` as the subcommand. It resolves the project context (from `--project`, `.sdd-forge/projects.json`, or the current directory), sets `SDD_SOURCE_ROOT` and `SDD_WORK_ROOT` environment variables, and forwards control to `docs.js`.
@@ -219,11 +218,11 @@ The following steps describe the control and data flow for the `sdd-forge forge`
 9. **Review (optional)** — After `forge`, the SDD workflow recommends running `sdd-forge review`, which follows a similar flow but uses `review-parser.js` to parse structured pass/fail results from the AI response.
 
 For the `build` command, the same pipeline is orchestrated sequentially: `scan` → `init` → `data` → `text` → `readme`, with each step producing output consumed by the next.
+<!-- {{/text}} -->
 
 ### Extension Points
 
 <!-- {{text: Explain where changes are needed and the extension patterns when adding new commands or features. Provide steps for each of the following: (1) adding a new docs subcommand, (2) adding a new spec subcommand, (3) adding a new preset, (4) adding a new DataSource ({{data}} resolver), and (5) adding a new AI prompt.}} -->
-
 **1. Adding a new docs subcommand**
 
 1. Create `src/docs/commands/<name>.js`. Export a `main(args)` function (or call `main()` at the bottom for direct-run support).
@@ -259,3 +258,4 @@ For the `build` command, the same pipeline is orchestrated sequentially: `scan` 
 2. The prompt builder should accept the relevant config and analysis data as arguments and return a `{ system, user }` object.
 3. Invoke the prompt builder from the corresponding command file (`forge.js`, `text.js`, etc.) and pass the result to `callAgent()` or `callAgentAsync()` in `lib/agent.js`.
 4. If the prompt requires a custom system prompt file (for `--system-prompt-file`), ensure `ensureAgentWorkDir()` is called and the temporary file is cleaned up after invocation.
+<!-- {{/text}} -->

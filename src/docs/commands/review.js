@@ -47,8 +47,8 @@ function checkOutputIntegrity(content) {
       .replace(/<!--[\s\S]*?-->/g, "")
       .replace(/`[^`]+`/g, "");
 
-    // Detect bare {{data:...}} or {{text:...}} or {{/data}} outside comments and code
-    if (/\{\{(data\s*:|text\s*[\[:]|\/data\}\})/.test(stripped)) {
+    // Detect bare {{data:...}} or {{text:...}} or {{/data}} or {{/text}} outside comments and code
+    if (/\{\{(data\s*:|text\s*[\[:]|\/data\}\}|\/text\}\})/.test(stripped)) {
       exposedDirectives++;
     }
 
@@ -131,14 +131,17 @@ function main() {
       fail = 1;
     }
 
-    // Unfilled {{text}} directive check
+    // Unfilled {{text}} directive check (block structure: start tag → content → end tag)
     let unfilled = 0;
     for (let i = 0; i < lines.length; i++) {
       if (/<!--\s*\{\{text\b/.test(lines[i])) {
-        const nextLine = (lines[i + 1] || "").trim();
-        if (nextLine === "") {
-          unfilled++;
+        // 終了タグまでの間に非空行があるかチェック
+        let hasContent = false;
+        for (let j = i + 1; j < lines.length; j++) {
+          if (/^<!--\s*\{\{\/text\}\}\s*-->$/.test(lines[j].trim())) break;
+          if (lines[j].trim() !== "") { hasContent = true; break; }
         }
+        if (!hasContent) unfilled++;
       }
     }
     if (unfilled > 0) {

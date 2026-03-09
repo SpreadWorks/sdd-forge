@@ -3,15 +3,14 @@
 ## 説明
 
 <!-- {{text: Write a 1–2 sentence overview of this chapter. Cover the total number of commands, whether global options exist, and the subcommand structure.}} -->
-
 本章では `sdd-forge` で利用可能な全18サブコマンドを解説します。ドキュメント生成コマンド（`docs.js` 経由でルーティング）、specワークフローコマンド（`spec.js` 経由でルーティング）、および直接実行コマンド（`flow`、`presets`）に分類されます。すべてのコマンドは共通のグローバルオプションを持ち、ほとんどのコマンドは実行前にプロジェクトコンテキストの解決が必要です。
+<!-- {{/text}} -->
 
 ## 目次
 
 ### コマンド一覧
 
 <!-- {{text: List all commands in a table format. Include command name, description, and main options. Commands can be identified from the modules list in the analysis data. Include both commands routed through dispatchers (docs.js, spec.js) and directly executed commands (flow, presets). Note that build is a composite command (scan → init → data → text → readme → agents → translate pipeline). Be sure to include translate (multilingual translation), upgrade (template update), and default (default project configuration).}} -->
-
 | コマンド | 説明 | 主なオプション |
 |---|---|---|
 | `build` | ドキュメント生成パイプライン全体（`scan → init → data → text → readme → agents → translate`）を一括実行する | `--project` |
@@ -33,11 +32,11 @@
 | `flow` | 自然言語のリクエストからSDDフロー全体を自動実行する | `--request` |
 | `presets` | バンドル済みのプロジェクトタイププリセット一覧を表示する | — |
 | `help` | 利用可能なサブコマンドと説明を表示する | `-h`、`--help` |
+<!-- {{/text}} -->
 
 ### グローバルオプション
 
 <!-- {{text: List global options common to all commands in a table format. Include --project, --help/-h, and --version/-v/-V. Also note that setup, default, help, and presets skip project context resolution.}} -->
-
 | オプション | エイリアス | 説明 |
 |---|---|---|
 | `--project <name>` | — | `.sdd-forge/projects.json` に登録されたプロジェクト名で対象プロジェクトを指定する。省略した場合は `projects.json` の `default` に設定されたプロジェクトが使用される。 |
@@ -45,12 +44,13 @@
 | `--version` | `-v`、`-V` | `package.json` から現在の `sdd-forge` バージョンを表示して終了する。 |
 
 > **注意:** `setup`、`default`、`help`、`presets` コマンドはプロジェクトコンテキストの解決を完全にスキップします。これらのコマンドは登録済みプロジェクトを必要とせず、`--project` フラグを無視します。
+<!-- {{/text}} -->
 
 ### コマンド詳細
 
 <!-- {{text: Describe the usage, options, and examples for each command in detail. Create a #### subsection for each command. For the build pipeline, list all steps: scan → init → data → text → readme → agents → translate. The translate command has --lang, --force, and --dry-run options.}} -->
-
 以下の各コマンドについて、目的・利用可能なオプション・代表的な使用例を解説します。AIを使って生成するコマンドには、`.sdd-forge/config.json` に有効な `defaultAgent` または `providers` エントリが必要です。ディスクへの書き込みを行うコマンドは、特記がない限り解決済みプロジェクトの `docs/` ディレクトリ内で動作します。
+<!-- {{/text}} -->
 
 #### build
 
@@ -253,7 +253,6 @@ sdd-forge -h
 ### 終了コードと出力
 
 <!-- {{text: Describe exit code definitions (0=success, 1=general error, etc.) and the rules for stdout/stderr usage in a table format. Include the fact that gate and review PASS/FAIL results are printed to stdout.}} -->
-
 | 終了コード | 意味 |
 |---|---|
 | `0` | コマンドが正常に完了した |
@@ -268,3 +267,4 @@ sdd-forge -h
 | `stderr` | 進捗インジケーター、警告、デバッグ情報、エラーメッセージ |
 
 `gate` と `review` は常にPASS/FAILの判定と各チェック項目の結果を **stdout** に出力するため、CIパイプラインでのキャプチャに適しています。コマンドが実行できない理由を示すエラーメッセージ（設定がない、引数が無効など）は **stderr** に書き込まれ、キャプチャしたstdoutには現れません。
+<!-- {{/text}} -->

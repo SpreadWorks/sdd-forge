@@ -31,10 +31,12 @@
 ### デプロイフロー
 
 <!-- {{text: Symfony プロジェクトのデプロイ手順を説明してください。bin/console コマンド（doctrine:migrations:migrate, cache:clear, assets:install 等）を含めること。}} -->
+<!-- {{/text}} -->
 <!-- @endblock -->
 
 <!-- @block: operations -->
 ### 運用フロー
 
 <!-- {{text: Symfony プロジェクトの運用手順を説明してください。Messenger ワーカー、スケジューラ、ログ（Monolog）等を含めること。}} -->
+<!-- {{/text}} -->
 <!-- @endblock -->

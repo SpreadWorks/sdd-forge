@@ -3,12 +3,13 @@ import assert from "node:assert/strict";
 import { stripFillContent, countFilledInBatch } from "../../../src/docs/commands/text.js";
 
 describe("stripFillContent", () => {
-  it("removes content after {{text}} directives", () => {
+  it("removes content between {{text}} and {{/text}} tags", () => {
     const input = [
       "# Title",
       "<!-- {{text: describe this}} -->",
       "Some generated content",
       "More content",
+      "<!-- {{/text}} -->",
       "",
       "## Next Section",
     ].join("\n");
@@ -18,6 +19,7 @@ describe("stripFillContent", () => {
     assert.ok(!result.includes("More content"));
     assert.ok(result.includes("# Title"));
     assert.ok(result.includes("<!-- {{text: describe this}} -->"));
+    assert.ok(result.includes("<!-- {{/text}} -->"));
     assert.ok(result.includes("## Next Section"));
   });
 
@@ -37,10 +39,12 @@ describe("stripFillContent", () => {
       "# Title",
       "<!-- {{text: first}} -->",
       "First content",
+      "<!-- {{/text}} -->",
       "",
       "## Section 2",
       "<!-- {{text: second}} -->",
       "Second content",
+      "<!-- {{/text}} -->",
       "",
       "## Section 3",
     ].join("\n");
@@ -56,6 +60,7 @@ describe("stripFillContent", () => {
     const input = [
       "<!-- {{text[maxLines=5]: describe this}} -->",
       "Generated text here",
+      "<!-- {{/text}} -->",
       "",
       "## Next",
     ].join("\n");
@@ -63,6 +68,18 @@ describe("stripFillContent", () => {
     const result = stripFillContent(input);
     assert.ok(!result.includes("Generated text here"));
     assert.ok(result.includes("<!-- {{text[maxLines=5]: describe this}} -->"));
+    assert.ok(result.includes("<!-- {{/text}} -->"));
+  });
+
+  it("preserves empty block (no content between tags)", () => {
+    const input = [
+      "<!-- {{text: describe this}} -->",
+      "<!-- {{/text}} -->",
+    ].join("\n");
+
+    const result = stripFillContent(input);
+    assert.ok(result.includes("<!-- {{text: describe this}} -->"));
+    assert.ok(result.includes("<!-- {{/text}} -->"));
   });
 });
 
@@ -71,6 +88,7 @@ describe("countFilledInBatch", () => {
     const input = [
       "# Title",
       "<!-- {{text: describe this}} -->",
+      "<!-- {{/text}} -->",
       "",
       "## Next Section",
     ].join("\n");
@@ -82,8 +100,8 @@ describe("countFilledInBatch", () => {
     const input = [
       "# Title",
       "<!-- {{text: describe this}} -->",
-      "",
       "This section describes the feature.",
+      "<!-- {{/text}} -->",
       "",
       "## Next Section",
     ].join("\n");
@@ -95,13 +113,13 @@ describe("countFilledInBatch", () => {
     const input = [
       "# Title",
       "<!-- {{text: first}} -->",
-      "",
       "First content here.",
+      "<!-- {{/text}} -->",
       "",
       "## Section 2",
       "<!-- {{text: second}} -->",
-      "",
       "Second content here.",
+      "<!-- {{/text}} -->",
       "",
       "## Section 3",
     ].join("\n");
@@ -109,21 +127,24 @@ describe("countFilledInBatch", () => {
     assert.strictEqual(countFilledInBatch(input), 2);
   });
 
-  it("does not count directive followed by another directive", () => {
+  it("does not count empty block", () => {
     const input = [
       "<!-- {{text: first}} -->",
+      "<!-- {{/text}} -->",
       "<!-- {{text: second}} -->",
-      "",
       "Content",
+      "<!-- {{/text}} -->",
     ].join("\n");
 
     assert.strictEqual(countFilledInBatch(input), 1);
   });
 
-  it("does not count directive followed by heading", () => {
+  it("does not count block with only blank lines", () => {
     const input = [
       "<!-- {{text: first}} -->",
-      "## Heading",
+      "",
+      "",
+      "<!-- {{/text}} -->",
     ].join("\n");
 
     assert.strictEqual(countFilledInBatch(input), 0);

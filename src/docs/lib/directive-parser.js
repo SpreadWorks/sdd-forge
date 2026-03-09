@@ -43,6 +43,7 @@
 const DATA_RE = /^<!--\s*\{\{data:\s*([\w.-]+)\.([\w-]+)\("([^"]*)"\)\}\}\s*-->$/;
 const TEXT_RE = /^<!--\s*\{\{text\s*(?:\[([^\]]*)\])?\s*:\s*(.+?)\}\}\s*-->$/;
 const ENDDATA_RE = /^<!--\s*\{\{\/data\}\}\s*-->$/;
+const ENDTEXT_RE = /^<!--\s*\{\{\/text\}\}\s*-->$/;
 
 // インライン検出用: 1行内に {{data ...}} と {{/data}} がある
 const INLINE_DATA_RE = /<!--\s*\{\{data:\s*([\w.-]+)\.([\w-]+)\("([^"]*)"\)\}\}\s*-->([\s\S]*?)<!--\s*\{\{\/data\}\}\s*-->/;
@@ -139,12 +140,26 @@ export function parseDirectives(text) {
 
     const textMatch = trimmed.match(TEXT_RE);
     if (textMatch) {
+      // {{/text}} を探す
+      let endLine = -1;
+      for (let j = i + 1; j < lines.length; j++) {
+        if (ENDTEXT_RE.test(lines[j].trim())) {
+          endLine = j;
+          break;
+        }
+        // 次の {{text}} が先に来たら閉じなし
+        if (TEXT_RE.test(lines[j].trim())) {
+          break;
+        }
+      }
+
       directives.push({
         type: "text",
         prompt: textMatch[2],
         params: parseTextFillParams(textMatch[1]),
         raw: lines[i],
         line: i,
+        endLine,
       });
       continue;
     }

@@ -3,15 +3,14 @@
 ## Description
 
 <!-- {{text: Describe the overview of this chapter in 1-2 sentences. Cover the types of configuration files, the range of configurable options, and customization points.}} -->
-
 This chapter covers all configuration files used by sdd-forge, the full range of options available in `.sdd-forge/config.json`, and the customization points for AI providers, document style, project type, merge strategy, and concurrency.
+<!-- {{/text}} -->
 
 ## Contents
 
 ### Configuration Files
 
 <!-- {{text: List all configuration files loaded by this tool in a table, including their locations and roles. Main files: .sdd-forge/config.json (project settings), .sdd-forge/context.json (project context), .sdd-forge/projects.json (multi-project management), .sdd-forge/current-spec (SDD flow state), .sdd-forge/output/analysis.json (analysis results), .sdd-forge/output/summary.json (lightweight version for AI).}} -->
-
 All configuration and state files are stored under the `.sdd-forge/` directory at the working root of your project.
 
 | File | Location | Role |
@@ -22,11 +21,11 @@ All configuration and state files are stored under the `.sdd-forge/` directory a
 | `current-spec` | `.sdd-forge/current-spec` | JSON file tracking the active SDD flow state, including spec path, base branch, feature branch, and worktree information. Deleted on flow completion. |
 | `analysis.json` | `.sdd-forge/output/analysis.json` | Full source code analysis result produced by `sdd-forge scan`. Stored without indentation for compact output. |
 | `summary.json` | `.sdd-forge/output/summary.json` | Lightweight version of `analysis.json` optimized for AI consumption. Used in preference to `analysis.json` wherever available. |
+<!-- {{/text}} -->
 
 ### Configuration Reference
 
 <!-- {{text: Describe all fields in .sdd-forge/config.json in a table format. Include field name, whether required, type, default value, and description. Main fields: output.languages (output language list), output.default (default language), output.mode (translate/generate), lang (CLI operating language), type (project type), documentStyle (purpose/tone/customInstruction), textFill (projectContext/preamblePatterns), defaultAgent, providers (AI agent definitions), flow.merge (squash/ff-only/merge), limits (concurrency/designTimeoutMs).}} -->
-
 The table below describes every supported field in `.sdd-forge/config.json`.
 
 | Field | Required | Type | Default | Description |
@@ -47,11 +46,11 @@ The table below describes every supported field in `.sdd-forge/config.json`.
 | `flow.merge` | — | `"squash"` \| `"ff-only"` \| `"merge"` | `"squash"` | Git merge strategy applied when closing an SDD flow. |
 | `limits.concurrency` | — | `number` | `5` | Maximum number of files processed in parallel during document generation. |
 | `limits.designTimeoutMs` | — | `number` | — | Timeout in milliseconds for AI agent calls during document generation. |
+<!-- {{/text}} -->
 
 ### Customization Points
 
 <!-- {{text: Explain the items users can customize. (1) AI provider settings (providers field, command/args/timeoutMs/systemPromptFlag) with configuration examples, (2) document style (purpose/tone/customInstruction), (3) preset selection (type field), (4) merge strategy (flow.merge), (5) concurrency (limits.concurrency). Include a JSON configuration example for each item.}} -->
-
 **1. AI Provider Settings**
 
 The `providers` field defines one or more named AI agents. Each entry specifies the executable command, argument list, an optional timeout, and how system prompts are passed. Use `defaultAgent` to select which provider is active by default.
@@ -124,13 +123,14 @@ Adjust `limits.concurrency` to control how many files are processed in parallel 
   }
 }
 ```
+<!-- {{/text}} -->
 
 ### Environment Variables
 
 <!-- {{text: List the environment variables referenced by the tool and their purposes in a table. SDD_SOURCE_ROOT (source code root), SDD_WORK_ROOT (working root, location of .sdd-forge/), CLAUDECODE (internal variable removed to prevent Claude CLI hangs).}} -->
-
 | Variable | Purpose |
 |---|---|
 | `SDD_SOURCE_ROOT` | Absolute path to the source code root being analyzed. When set, overrides the path resolved from `git rev-parse` or the current working directory. |
 | `SDD_WORK_ROOT` | Absolute path to the working root, i.e., the directory containing `.sdd-forge/`. When set, takes priority over the git-resolved root. |
 | `CLAUDECODE` | An internal variable that sdd-forge actively removes from the environment before spawning AI agent processes. This prevents the Claude CLI from hanging when launched as a child process. |
+<!-- {{/text}} -->

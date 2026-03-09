@@ -3,15 +3,14 @@
 ## Description
 
 <!-- {{text: Describe the overview of this chapter in 1-2 sentences. Cover the types of configuration files, the range of configurable options, and customization points.}} -->
-
 本章では、sdd-forge が使用するすべての設定ファイル、`.sdd-forge/config.json` で利用可能なオプションの全範囲、および AI プロバイダー・ドキュメントスタイル・プロジェクトタイプ・マージ戦略・並列処理数のカスタマイズポイントについて説明します。
+<!-- {{/text}} -->
 
 ## Contents
 
 ### 設定ファイル
 
 <!-- {{text: List all configuration files loaded by this tool in a table, including their locations and roles. Main files: .sdd-forge/config.json (project settings), .sdd-forge/context.json (project context), .sdd-forge/projects.json (multi-project management), .sdd-forge/current-spec (SDD flow state), .sdd-forge/output/analysis.json (analysis results), .sdd-forge/output/summary.json (lightweight version for AI).}} -->
-
 すべての設定ファイルおよびステートファイルは、プロジェクトの作業ルート直下にある `.sdd-forge/` ディレクトリに格納されます。
 
 | ファイル | 場所 | 役割 |
@@ -22,11 +21,11 @@
 | `current-spec` | `.sdd-forge/current-spec` | アクティブな SDD フローの状態（spec パス・ベースブランチ・フィーチャーブランチ・worktree 情報）を追跡する JSON ファイル。フロー完了時に削除されます。 |
 | `analysis.json` | `.sdd-forge/output/analysis.json` | `sdd-forge scan` が生成するソースコード解析結果のフルデータ。インデントなしのコンパクト形式で保存されます。 |
 | `summary.json` | `.sdd-forge/output/summary.json` | AI 向けに最適化した `analysis.json` の軽量版。利用可能な場合は `analysis.json` より優先して使用されます。 |
+<!-- {{/text}} -->
 
 ### 設定リファレンス
 
 <!-- {{text: Describe all fields in .sdd-forge/config.json in a table format. Include field name, whether required, type, default value, and description. Main fields: output.languages (output language list), output.default (default language), output.mode (translate/generate), lang (CLI operating language), type (project type), documentStyle (purpose/tone/customInstruction), textFill (projectContext/preamblePatterns), defaultAgent, providers (AI agent definitions), flow.merge (squash/ff-only/merge), limits (concurrency/designTimeoutMs).}} -->
-
 以下の表は `.sdd-forge/config.json` でサポートされるすべてのフィールドを説明します。
 
 | フィールド | 必須 | 型 | デフォルト | 説明 |
@@ -47,11 +46,11 @@
 | `flow.merge` | — | `"squash"` \| `"ff-only"` \| `"merge"` | `"squash"` | SDD フロー完了時にフィーチャーブランチをベースブランチにマージする際の Git マージ戦略。 |
 | `limits.concurrency` | — | `number` | `5` | ドキュメント生成中にファイルを並列処理する最大数。 |
 | `limits.designTimeoutMs` | — | `number` | — | ドキュメント生成中の AI エージェント呼び出しに対するタイムアウト（ミリ秒）。 |
+<!-- {{/text}} -->
 
 ### カスタマイズポイント
 
 <!-- {{text: Explain the items users can customize. (1) AI provider settings (providers field, command/args/timeoutMs/systemPromptFlag) with configuration examples, (2) document style (purpose/tone/customInstruction), (3) preset selection (type field), (4) merge strategy (flow.merge), (5) concurrency (limits.concurrency). Include a JSON configuration example for each item.}} -->
-
 **1. AI プロバイダー設定**
 
 `providers` フィールドでは、名前付きの AI エージェントを 1 つ以上定義します。各エントリには実行コマンド・引数リスト・オプションのタイムアウト・システムプロンプトの渡し方を指定します。`defaultAgent` でデフォルトで使用するプロバイダーを選択します。
@@ -124,13 +123,14 @@
   }
 }
 ```
+<!-- {{/text}} -->
 
 ### 環境変数
 
 <!-- {{text: List the environment variables referenced by the tool and their purposes in a table. SDD_SOURCE_ROOT (source code root), SDD_WORK_ROOT (working root, location of .sdd-forge/), CLAUDECODE (internal variable removed to prevent Claude CLI hangs).}} -->
-
 | 変数 | 目的 |
 |---|---|
 | `SDD_SOURCE_ROOT` | 解析対象のソースコードルートの絶対パス。設定されている場合、`git rev-parse` やカレントディレクトリから解決されるパスを上書きします。 |
 | `SDD_WORK_ROOT` | 作業ルート（`.sdd-forge/` を含むディレクトリ）の絶対パス。設定されている場合、git で解決されたルートより優先されます。 |
 | `CLAUDECODE` | sdd-forge が AI エージェントプロセスを起動する前に環境から積極的に削除する内部変数。子プロセスとして起動した際に Claude CLI がハングするのを防ぎます。 |
+<!-- {{/text}} -->

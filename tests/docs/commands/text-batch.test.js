@@ -17,9 +17,11 @@ describe("processTemplateFileBatch", () => {
       "",
       "## Overview",
       "<!-- {{text: describe the overview}} -->",
+      "<!-- {{/text}} -->",
       "",
       "## Details",
       "<!-- {{text: describe the details}} -->",
+      "<!-- {{/text}} -->",
       "",
     ].join("\n");
 
@@ -28,11 +30,11 @@ describe("processTemplateFileBatch", () => {
     const agent = {
       command: "echo",
       args: [templateContent.replace(
-        "<!-- {{text: describe the overview}} -->\n",
-        "<!-- {{text: describe the overview}} -->\n\nThis is the overview.\n"
+        "<!-- {{text: describe the overview}} -->\n<!-- {{/text}} -->",
+        "<!-- {{text: describe the overview}} -->\n\nThis is the overview.\n\n<!-- {{/text}} -->"
       ).replace(
-        "<!-- {{text: describe the details}} -->\n",
-        "<!-- {{text: describe the details}} -->\n\nThese are the details.\n"
+        "<!-- {{text: describe the details}} -->\n<!-- {{/text}} -->",
+        "<!-- {{text: describe the details}} -->\n\nThese are the details.\n\n<!-- {{/text}} -->"
       )],
     };
 
@@ -63,6 +65,7 @@ describe("processTemplateFileBatch", () => {
       "# Test Document",
       "## Section",
       "<!-- {{text: describe}} -->",
+      "<!-- {{/text}} -->",
       "",
     ].join("\n");
 

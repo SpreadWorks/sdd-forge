@@ -4,6 +4,7 @@
 
 <!-- @block: description -->
 <!-- {{text: Write a 1-2 sentence overview of this chapter. Include development environment setup and testing configuration.}} -->
+<!-- {{/text}} -->
 <!-- @endblock -->
 
 ## Content
@@ -12,12 +13,14 @@
 ### Environment Setup
 
 <!-- {{text: Describe the local development environment setup procedure.}} -->
+<!-- {{/text}} -->
 <!-- @endblock -->
 
 <!-- @block: dev-workflow -->
 ### Local Development Workflow
 
 <!-- {{text: Describe the local development procedure (start → code → test → verify).}} -->
+<!-- {{/text}} -->
 <!-- @endblock -->
 
 <!-- @block: sdd-tools -->
@@ -37,4 +40,5 @@
 ### Testing
 
 <!-- {{text: Describe the test framework and how to run tests.}} -->
+<!-- {{/text}} -->
 <!-- @endblock -->

@@ -3,15 +3,14 @@
 ## Description
 
 <!-- {{text: Write a 1–2 sentence overview of this chapter. Cover the total number of commands, whether global options exist, and the subcommand structure.}} -->
-
 This chapter covers all 18 subcommands available in `sdd-forge`, organized into documentation generation commands (routed through `docs.js`), spec workflow commands (routed through `spec.js`), and directly executed commands (`flow`, `presets`). All commands share a common set of global options, and most require a resolved project context before execution.
+<!-- {{/text}} -->
 
 ## Contents
 
 ### Command List
 
 <!-- {{text: List all commands in a table format. Include command name, description, and main options. Commands can be identified from the modules list in the analysis data. Include both commands routed through dispatchers (docs.js, spec.js) and directly executed commands (flow, presets). Note that build is a composite command (scan → init → data → text → readme → agents → translate pipeline). Be sure to include translate (multilingual translation), upgrade (template update), and default (default project configuration).}} -->
-
 | Command | Description | Key Options |
 |---|---|---|
 | `build` | Runs the full documentation pipeline (`scan → init → data → text → readme → agents → translate`) in one step | `--project` |
@@ -33,11 +32,11 @@ This chapter covers all 18 subcommands available in `sdd-forge`, organized into 
 | `flow` | Automates the full SDD flow from a natural-language request | `--request` |
 | `presets` | Lists all bundled project type presets | — |
 | `help` | Displays available subcommands and descriptions | `-h`, `--help` |
+<!-- {{/text}} -->
 
 ### Global Options
 
 <!-- {{text: List global options common to all commands in a table format. Include --project, --help/-h, and --version/-v/-V. Also note that setup, default, help, and presets skip project context resolution.}} -->
-
 | Option | Aliases | Description |
 |---|---|---|
 | `--project <name>` | — | Specifies the target project by name, as registered in `.sdd-forge/projects.json`. When omitted, the project marked as `default` in `projects.json` is used. |
@@ -45,12 +44,13 @@ This chapter covers all 18 subcommands available in `sdd-forge`, organized into 
 | `--version` | `-v`, `-V` | Prints the current `sdd-forge` version from `package.json` and exits. |
 
 > **Note:** The `setup`, `default`, `help`, and `presets` commands skip project context resolution entirely. They do not require a registered project and ignore the `--project` flag.
+<!-- {{/text}} -->
 
 ### Command Details
 
 <!-- {{text: Describe the usage, options, and examples for each command in detail. Create a #### subsection for each command. For the build pipeline, list all steps: scan → init → data → text → readme → agents → translate. The translate command has --lang, --force, and --dry-run options.}} -->
-
 Each command below is documented with its purpose, available options, and representative usage examples. Commands that involve AI generation require a valid `defaultAgent` or `providers` entry in `.sdd-forge/config.json`. Commands that modify files on disk always operate within the resolved project's `docs/` directory unless otherwise noted.
+<!-- {{/text}} -->
 
 #### build
 
@@ -253,7 +253,6 @@ sdd-forge -h
 ### Exit Codes and Output
 
 <!-- {{text: Describe exit code definitions (0=success, 1=general error, etc.) and the rules for stdout/stderr usage in a table format. Include the fact that gate and review PASS/FAIL results are printed to stdout.}} -->
-
 | Exit Code | Meaning |
 |---|---|
 | `0` | Command completed successfully |
@@ -268,3 +267,4 @@ sdd-forge -h
 | `stderr` | Progress indicators, warnings, debug information, and error messages |
 
 `gate` and `review` always print their PASS/FAIL verdict and per-item check results to **stdout**, making them suitable for capture in CI pipelines. Error messages describing why a command could not run (missing config, invalid arguments, etc.) are written to **stderr** and do not appear in captured stdout.
+<!-- {{/text}} -->

@@ -4,6 +4,7 @@
 
 <!-- @block: description -->
 <!-- {{text: Write a 1-2 sentence overview of this chapter. Include the programming language, framework, and key tool versions.}} -->
+<!-- {{/text}} -->
 <!-- @endblock -->
 
 ## Content
@@ -19,16 +20,19 @@
 ### Dependencies
 
 <!-- {{text: Describe the project's dependency management approach.}} -->
+<!-- {{/text}} -->
 <!-- @endblock -->
 
 <!-- @block: deploy -->
 ### Deployment Flow
 
 <!-- {{text: Describe the deployment procedure and flow.}} -->
+<!-- {{/text}} -->
 <!-- @endblock -->
 
 <!-- @block: operations -->
 ### Operations Flow
 
 <!-- {{text: Describe the operations procedures.}} -->
+<!-- {{/text}} -->
 <!-- @endblock -->

@@ -23,6 +23,7 @@ project/
 ### 各ディレクトリの責務
 
 <!-- {{text: 主要ディレクトリ（Config/Console/Controller/Model/View/Lib/Plugin/docs/specs/tools）の責務をファイル数とともに表形式で記述してください。}} -->
+<!-- {{/text}} -->
 <!-- @endblock -->
 
 <!-- @block: libraries -->

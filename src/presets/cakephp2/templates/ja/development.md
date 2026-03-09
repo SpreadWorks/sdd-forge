@@ -17,12 +17,14 @@ npm run docker:stop
 ### npm scripts（Docker 操作）
 
 <!-- {{text: package.json に定義されている Docker 操作コマンドを表形式で記述してください。}} -->
+<!-- {{/text}} -->
 <!-- @endblock -->
 
 <!-- @block: dev-workflow -->
 ### ローカル開発手順
 
 <!-- {{text: Docker 環境でのローカル開発手順（起動→コーディング→テスト→確認）を記述してください。}} -->
+<!-- {{/text}} -->
 
 ### ソースコード解析
 
@@ -37,12 +39,14 @@ npm run docker:stop
 ### AI エージェント選択
 
 <!-- {{text: sdd-forge の AI エージェント選択（--agent オプション）について記述してください。}} -->
+<!-- {{/text}} -->
 <!-- @endblock -->
 
 <!-- @block: testing -->
 ### テスト構成
 
 <!-- {{text: テストフレームワークとテスト実行方法を説明してください。}} -->
+<!-- {{/text}} -->
 
 <!-- {{data: tests.list("項目|件数|ディレクトリ")}} -->
 <!-- {{/data}} -->

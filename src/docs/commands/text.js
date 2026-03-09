@@ -43,23 +43,7 @@ function loadPreamblePatterns(cfg) {
   return entries.map((e) => new RegExp(e.pattern, e.flags || ""));
 }
 
-function shouldStopGeneratedBlock(lines, idx) {
-  const ln = lines[idx].trim();
-  if (ln.startsWith("#") || ln.startsWith("<!-- {{")) return true;
-  if (ln === "" && idx + 1 < lines.length && lines[idx + 1].trim() === "") return true;
-  if (ln === "" && idx + 1 < lines.length && lines[idx + 1].trim().startsWith("#")) return true;
-  if (ln === "" && idx + 1 < lines.length && lines[idx + 1].trim().startsWith("<!-- @")) return true;
-  return false;
-}
-
-function findGeneratedBlockEnd(lines, startLine) {
-  let endLine = startLine;
-  while (endLine < lines.length) {
-    if (shouldStopGeneratedBlock(lines, endLine)) break;
-    endLine++;
-  }
-  return endLine;
-}
+const ENDTEXT_LINE_RE = /^<!--\s*\{\{\/text\}\}\s*-->$/;
 
 
 // ---------------------------------------------------------------------------
@@ -79,7 +63,15 @@ function stripFillContent(text) {
     result.push(lines[i]);
     if (/^<!--\s*\{\{text\s*(?:\[[^\]]*\])?\s*:/.test(lines[i].trim())) {
       i++;
-      i = findGeneratedBlockEnd(lines, i);
+      // {{/text}} 終了タグまでスキップ
+      while (i < lines.length && !ENDTEXT_LINE_RE.test(lines[i].trim())) {
+        i++;
+      }
+      // 終了タグ自体は結果に含める
+      if (i < lines.length) {
+        result.push(lines[i]);
+        i++;
+      }
     } else {
       i++;
     }
@@ -96,13 +88,13 @@ function countFilledInBatch(fileText) {
   let filled = 0;
   for (let i = 0; i < lines.length; i++) {
     if (/^<!--\s*\{\{text\s*(?:\[[^\]]*\])?\s*:/.test(lines[i].trim())) {
-      let j = i + 1;
-      while (j < lines.length && lines[j].trim() === "") j++;
-      if (j < lines.length &&
-          !lines[j].trim().startsWith("## ") &&
-          !lines[j].trim().startsWith("<!-- {{")) {
-        filled++;
+      // 開始タグと終了タグの間に非空行があれば filled
+      let hasContent = false;
+      for (let j = i + 1; j < lines.length; j++) {
+        if (ENDTEXT_LINE_RE.test(lines[j].trim())) break;
+        if (lines[j].trim() !== "") { hasContent = true; break; }
       }
+      if (hasContent) filled++;
     }
   }
   return filled;
@@ -302,12 +294,18 @@ async function processTemplate(text, analysis, fileName, agent, timeoutMs, cwd, 
       generated = generated.slice(0, d.params.maxChars);
     }
 
-    // 既存出力の除去（ディレクティブ直後〜次のセクション境界まで）
-    const endLine = findGeneratedBlockEnd(lines, d.line + 1);
+    // 終了タグ（endLine）までの範囲を置換
+    const endLine = d.endLine;
+    if (endLine < 0) {
+      logger.log(`WARN: missing {{/text}} end tag for ${fileName}:${d.line + 1}, skipping`);
+      skipped++;
+      continue;
+    }
 
-    // ディレクティブ行を残して、既存内容を生成テキストに置換
-    const newLines = [d.raw, "", generated, ""];
-    lines.splice(d.line, endLine - d.line, ...newLines);
+    // ディレクティブ行 + 生成内容 + 終了タグ行
+    const endTag = lines[endLine];
+    const newLines = [d.raw, generated, endTag];
+    lines.splice(d.line, endLine - d.line + 1, ...newLines);
     filled++;
     logger.verbose(`FILLED ${fileName}:${d.line + 1} (${generated.split("\n").length} lines)`);
   }
