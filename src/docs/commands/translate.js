@@ -77,13 +77,13 @@ async function main(ctx) {
     });
 
     if (cli.help) {
-      console.log(`Usage: sdd-forge translate [--dry-run] [--force] [--lang <lang>]
-
-Options:
-  --lang <lang>  Translate to specific language only
-  --force        Re-translate all files regardless of mtime
-  --dry-run      Show what would be translated without writing
-  --help         Show this help`);
+      const { loadLang } = await import("../../lib/config.js");
+      const { createI18n } = await import("../../lib/i18n.js");
+      const { repoRoot } = await import("../../lib/cli.js");
+      const tu = createI18n(loadLang(repoRoot()));
+      const h = tu.raw("help.cmdHelp.translate");
+      const o = h.options;
+      console.log([h.usage, "", `  ${h.desc}`, "", "Options:", `  ${o.lang}`, `  ${o.force}`, `  ${o.dryRun}`, `  ${o.help}`].join("\n"));
       return;
     }
 

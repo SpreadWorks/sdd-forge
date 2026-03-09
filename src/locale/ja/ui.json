@@ -233,6 +233,89 @@
           "worktree": "--worktree         git worktree を作成して spec を配置する (.sdd-forge/worktree/<branch>/)",
           "dryRun": "--dry-run          全サブコマンドを dry-run モードで実行する"
         }
+      },
+      "build": {
+        "usage": "Usage: sdd-forge build [options]",
+        "desc": "ドキュメント生成パイプラインを一括実行する:",
+        "descDetail": "scan → init → data → text → readme → agents → translate",
+        "options": {
+          "agent": "--agent <name>   使用する AI エージェント (default: config.json の defaultAgent)",
+          "force": "--force          init 時に既存ファイルを上書き",
+          "dryRun": "--dry-run        全ステップをファイル書き込みなしで実行",
+          "verbose": "--verbose        各ステップの詳細出力を表示",
+          "help": "-h, --help       このヘルプを表示"
+        }
+      },
+      "default": {
+        "usage": "Usage: sdd-forge default [<name>]",
+        "desc": "デフォルトプロジェクトを変更する。",
+        "descDetail": "名前を省略すると登録済みプロジェクト一覧を表示する。"
+      },
+      "readme": {
+        "usage": "Usage: sdd-forge readme [options]",
+        "desc": "docs/ とテンプレートから README.md を自動生成する。",
+        "options": {
+          "dryRun": "--dry-run   差分を表示するが書き込まない",
+          "help": "-h, --help  このヘルプを表示"
+        }
+      },
+      "translate": {
+        "usage": "Usage: sdd-forge translate [options]",
+        "desc": "デフォルト言語のドキュメントを他言語に翻訳する。",
+        "options": {
+          "lang": "--lang <lang>  特定の言語のみ翻訳",
+          "force": "--force        mtime に関係なく全ファイルを再翻訳",
+          "dryRun": "--dry-run      書き込みせず翻訳対象を表示",
+          "help": "-h, --help     このヘルプを表示"
+        }
+      },
+      "setup": {
+        "usage": "Usage: sdd-forge setup [options]",
+        "desc": "インタラクティブなプロジェクトセットアップウィザード。",
+        "options": {
+          "name": "--name <name>               プロジェクト名",
+          "path": "--path <path>               ソースコードのパス (default: cwd)",
+          "workRoot": "--work-root <path>          出力先ディレクトリ",
+          "type": "--type <type>               プロジェクトタイプ: webapp|webapp/cakephp2|cli|library",
+          "purpose": "--purpose <purpose>         ドキュメント目的: developer-guide|user-guide|api-reference",
+          "tone": "--tone <tone>               文体: polite|formal|casual",
+          "agent": "--agent <agent>             デフォルトエージェント: claude|codex",
+          "projectContext": "--project-context <text>    プロジェクト説明テキスト",
+          "lang": "--lang <lang>               操作言語: en|ja",
+          "setDefault": "--set-default               デフォルトプロジェクトに設定",
+          "noDefault": "--no-default                デフォルトプロジェクトに設定しない",
+          "dryRun": "--dry-run                   ファイル書き込みせず内容を表示",
+          "help": "-h, --help                  このヘルプを表示"
+        }
+      },
+      "upgrade": {
+        "usage": "Usage: sdd-forge upgrade [options]",
+        "desc": "テンプレート由来のファイルをインストール済み sdd-forge のバージョンに合わせて更新する。",
+        "descDetail": "config.json や context.json は変更しない。",
+        "updatedFiles": [
+          ".agents/skills/*/SKILL.md        スキルテンプレート",
+          ".claude/skills/*/SKILL.md        .agents/skills/ へのシンボリックリンク"
+        ],
+        "options": {
+          "dryRun": "--dry-run    変更内容を表示するだけでファイル書き込みしない",
+          "help": "-h, --help   このヘルプを表示"
+        }
+      },
+      "gate": {
+        "usage": "Usage: sdd-forge gate --spec specs/NNN-name/spec.md [--phase pre|post]",
+        "desc": "spec ゲートチェック。",
+        "options": {
+          "spec": "--spec <path>   spec.md のパス（必須）",
+          "phase": "--phase <phase> チェックフェーズ: pre (default) or post"
+        },
+        "phaseDetail": {
+          "pre": "pre:  Status と Acceptance Criteria の未チェック項目をスキップ",
+          "post": "post: 全未チェック項目を検査"
+        }
+      },
+      "presets": {
+        "usage": "Usage: sdd-forge presets list",
+        "desc": "プリセット継承ツリーを表示する。"
       }
     }
   },

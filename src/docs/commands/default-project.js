@@ -22,7 +22,16 @@ function loadLang() {
 }
 
 function main() {
-  const [name] = process.argv.slice(2);
+  const args = process.argv.slice(2);
+
+  if (args.includes("-h") || args.includes("--help")) {
+    const tu = createI18n(loadLang());
+    const h = tu.raw("help.cmdHelp.default");
+    console.log([h.usage, "", `  ${h.desc}`, `  ${h.descDetail}`].join("\n"));
+    return;
+  }
+
+  const [name] = args;
   const t = createI18n(loadLang(), { domain: "messages" });
 
   if (!name) {

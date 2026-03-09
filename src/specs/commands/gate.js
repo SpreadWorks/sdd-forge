@@ -104,13 +104,15 @@ function main() {
     defaults: { spec: "", phase: "pre" },
   });
   if (cli.help) {
-    console.log("Usage: sdd-forge gate --spec specs/NNN-name/spec.md [--phase pre|post]");
-    console.log("");
-    console.log("Options:");
-    console.log("  --spec <path>   Path to spec.md (required)");
-    console.log("  --phase <phase> Check phase: pre (default) or post");
-    console.log("    pre:  Skip unchecked items in Status and Acceptance Criteria");
-    console.log("    post: Check all unchecked items");
+    const tu = createI18n(loadLang(root));
+    const h = tu.raw("help.cmdHelp.gate");
+    const o = h.options;
+    const pd = h.phaseDetail;
+    console.log([
+      h.usage, "", `  ${h.desc}`, "", "Options:",
+      `  ${o.spec}`, `  ${o.phase}`,
+      `    ${pd.pre}`, `    ${pd.post}`,
+    ].join("\n"));
     return;
   }
   if (!cli.spec) throw new Error("--spec is required");

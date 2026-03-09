@@ -360,25 +360,14 @@ async function main() {
   const cli = parseSetupArgs(process.argv.slice(2));
 
   if (cli.help) {
+    const tu = createI18n(cli.lang || DEFAULT_LANG);
+    const h = tu.raw("help.cmdHelp.setup");
+    const o = h.options;
     console.log([
-      "Usage: sdd-forge setup [options]",
-      "",
-      "Interactive project setup wizard.",
-      "",
-      "Options:",
-      "  --name <name>               Project name",
-      "  --path <path>               Source code path (default: cwd)",
-      "  --work-root <path>          Output directory path",
-      "  --type <type>               Project type: webapp|webapp/cakephp2|cli|library",
-      "  --purpose <purpose>         Document purpose: developer-guide|user-guide|api-reference",
-      "  --tone <tone>               Writing style: polite|formal|casual",
-      "  --agent <agent>             Default agent: claude|codex",
-      "  --project-context <text>    Project description text",
-      "  --lang <lang>               Operating language: en|ja (also used for output if single lang)",
-      "  --set-default               Set as default project",
-      "  --no-default                Do not set as default project",
-      "  --dry-run                   Show what would be done without writing files",
-      "  -h, --help                  Show this help",
+      h.usage, "", `  ${h.desc}`, "", "Options:",
+      `  ${o.name}`, `  ${o.path}`, `  ${o.workRoot}`, `  ${o.type}`,
+      `  ${o.purpose}`, `  ${o.tone}`, `  ${o.agent}`, `  ${o.projectContext}`,
+      `  ${o.lang}`, `  ${o.setDefault}`, `  ${o.noDefault}`, `  ${o.dryRun}`, `  ${o.help}`,
     ].join("\n"));
     return;
   }

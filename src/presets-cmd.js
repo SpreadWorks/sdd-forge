@@ -14,8 +14,14 @@ const subCmd = process.argv[2];
 if (!subCmd || subCmd === "list") {
   printTree();
 } else if (subCmd === "-h" || subCmd === "--help") {
-  console.log("Usage: sdd-forge presets list");
-  console.log("\nDisplay the preset inheritance tree.");
+  const { loadLang } = await import("./lib/config.js");
+  const { createI18n } = await import("./lib/i18n.js");
+  const { repoRoot } = await import("./lib/cli.js");
+  let lang;
+  try { lang = loadLang(repoRoot()); } catch (_) { lang = "en"; }
+  const tu = createI18n(lang);
+  const h = tu.raw("help.cmdHelp.presets");
+  console.log([h.usage, "", `  ${h.desc}`].join("\n"));
 } else {
   console.error(`sdd-forge presets: unknown command '${subCmd}'`);
   process.exit(1);

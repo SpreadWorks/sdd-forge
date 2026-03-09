@@ -15,6 +15,65 @@ import { createI18n } from "../../lib/i18n.js";
 import { resolveOutputConfig } from "../../lib/types.js";
 import { getChapterFiles } from "../lib/command-context.js";
 
+// ---------------------------------------------------------------------------
+// Generated output integrity checks
+// ---------------------------------------------------------------------------
+
+// Detect residual block directives that should have been stripped
+const RESIDUAL_BLOCK_RE = /^<!--\s*@(block:\s*[\w-]+|endblock|extends|parent)\s*-->$/;
+
+/**
+ * Check a file's content for output integrity issues.
+ *
+ * @param {string} content - File content
+ * @returns {{ exposedDirectives: number, brokenComments: boolean, residualBlocks: number }}
+ */
+function checkOutputIntegrity(content) {
+  const lines = content.split("\n");
+  let exposedDirectives = 0;
+  let residualBlocks = 0;
+  let inCodeBlock = false;
+
+  for (const line of lines) {
+    // Track fenced code blocks (``` or ~~~)
+    if (/^(`{3,}|~{3,})/.test(line.trim())) {
+      inCodeBlock = !inCodeBlock;
+      continue;
+    }
+    if (inCodeBlock) continue;
+
+    // Strip HTML comments and inline code spans before checking
+    const stripped = line
+      .replace(/<!--[\s\S]*?-->/g, "")
+      .replace(/`[^`]+`/g, "");
+
+    // Detect bare {{data:...}} or {{text:...}} or {{/data}} outside comments and code
+    if (/\{\{(data\s*:|text\s*[\[:]|\/data\}\})/.test(stripped)) {
+      exposedDirectives++;
+    }
+
+    if (RESIDUAL_BLOCK_RE.test(line.trim())) {
+      residualBlocks++;
+    }
+  }
+
+  // Check for unbalanced HTML comments (exclude code blocks)
+  let commentOpens = 0;
+  let commentCloses = 0;
+  inCodeBlock = false;
+  for (const line of lines) {
+    if (/^(`{3,}|~{3,})/.test(line.trim())) { inCodeBlock = !inCodeBlock; continue; }
+    if (inCodeBlock) continue;
+    const o = line.match(/<!--/g);
+    const c = line.match(/-->/g);
+    if (o) commentOpens += o.length;
+    if (c) commentCloses += c.length;
+  }
+  const brokenComments = commentOpens !== commentCloses;
+
+  return { exposedDirectives, brokenComments, residualBlocks };
+}
+
 function main() {
   const args = process.argv.slice(2);
   const opts = parseArgs(args, { flags: [], options: [] });
@@ -107,6 +166,30 @@ function main() {
     }
   }
 
+  // Output integrity check (chapters + README.md)
+  const integrityTargets = chapterFiles.map((f) => ({ label: f, path: path.join(targetDir, f) }));
+  const readmePath = path.join(root, "README.md");
+  if (fs.existsSync(readmePath)) {
+    integrityTargets.push({ label: "README.md", path: readmePath });
+  }
+
+  for (const target of integrityTargets) {
+    const content = fs.readFileSync(target.path, "utf8");
+    const result = checkOutputIntegrity(content);
+    if (result.exposedDirectives > 0) {
+      console.log(t("review.exposedDirective", { count: result.exposedDirectives, file: target.label }));
+      fail = 1;
+    }
+    if (result.brokenComments) {
+      console.log(t("review.brokenComment", { file: target.label }));
+      fail = 1;
+    }
+    if (result.residualBlocks > 0) {
+      console.log(t("review.residualBlock", { count: result.residualBlocks, file: target.label }));
+      fail = 1;
+    }
+  }
+
   // analysis.json existence and freshness check (WARN)
   const analysisPath = path.join(sddOutputDir(root), "analysis.json");
   if (!fs.existsSync(analysisPath)) {
@@ -150,12 +233,26 @@ function main() {
           const filePath = path.join(langDir, f);
           const content = fs.readFileSync(filePath, "utf8");
           const lines = content.split("\n");
+          const label = `${lang}/${f}`;
           if (lines.length < MIN_LINES) {
-            console.log(t("review.tooShort", { lines: lines.length, file: `${lang}/${f}` }));
+            console.log(t("review.tooShort", { lines: lines.length, file: label }));
             fail = 1;
           }
           if (!lines.some((line) => /^# /.test(line))) {
-            console.log(t("review.missingH1", { file: `${lang}/${f}` }));
+            console.log(t("review.missingH1", { file: label }));
+            fail = 1;
+          }
+          const result = checkOutputIntegrity(content);
+          if (result.exposedDirectives > 0) {
+            console.log(t("review.exposedDirective", { count: result.exposedDirectives, file: label }));
+            fail = 1;
+          }
+          if (result.brokenComments) {
+            console.log(t("review.brokenComment", { file: label }));
+            fail = 1;
+          }
+          if (result.residualBlocks > 0) {
+            console.log(t("review.residualBlock", { count: result.residualBlocks, file: label }));
             fail = 1;
           }
         }

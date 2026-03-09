@@ -10,6 +10,9 @@
     "analysisNotFound": "[WARN] analysis.json not found. Run 'sdd-forge scan' to generate.",
     "analysisStale": "[WARN] analysis.json may be stale ({{file}} is newer). Run 'sdd-forge scan' to refresh.",
     "readmeNotFound": "[WARN] README.md not found. Run 'sdd-forge readme' to generate.",
+    "exposedDirective": "[FAIL] {{count}} exposed directive(s) outside HTML comments: {{file}}",
+    "brokenComment": "[FAIL] unbalanced HTML comment (<!-- without -->): {{file}}",
+    "residualBlock": "[FAIL] {{count}} residual block directive(s) (@block/@extends/@endblock): {{file}}",
     "failed": "docs quality check: FAILED",
     "passed": "docs quality check: PASSED"
   },

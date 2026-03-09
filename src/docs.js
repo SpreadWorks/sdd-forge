@@ -35,6 +35,20 @@ const rest = args.slice(1);
 
 // build: scan → init → data → text → readme → agents → translate pipeline
 if (subCmd === "build") {
+  if (rest.includes("-h") || rest.includes("--help")) {
+    const { loadLang } = await import(path.join(PKG_DIR, "lib/config.js"));
+    const { createI18n } = await import(path.join(PKG_DIR, "lib/i18n.js"));
+    const { repoRoot } = await import(path.join(PKG_DIR, "lib/cli.js"));
+    const tu = createI18n(loadLang(repoRoot()));
+    const h = tu.raw("help.cmdHelp.build");
+    const o = h.options;
+    console.log([
+      h.usage, "", `  ${h.desc}`, `  ${h.descDetail}`, "", "Options:",
+      `  ${o.agent}`, `  ${o.force}`, `  ${o.dryRun}`, `  ${o.verbose}`, `  ${o.help}`,
+    ].join("\n"));
+    process.exit(0);
+  }
+
   const isVerbose = rest.includes("--verbose");
   const isDryRun = rest.includes("--dry-run");
   const hasForce = rest.includes("--force");

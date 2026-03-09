@@ -130,19 +130,18 @@ async function main() {
   const cli = parseUpgradeArgs(process.argv.slice(2));
 
   if (cli.help) {
+    const { loadLang } = await import("../../lib/config.js");
+    const { createI18n } = await import("../../lib/i18n.js");
+    const { repoRoot } = await import("../../lib/cli.js");
+    const tu = createI18n(loadLang(repoRoot()));
+    const h = tu.raw("help.cmdHelp.upgrade");
+    const o = h.options;
+    const files = h.updatedFiles || [];
     console.log([
-      "Usage: sdd-forge upgrade [options]",
-      "",
-      "Upgrade template-derived files to match the installed sdd-forge version.",
-      "Does NOT modify config.json or context.json.",
-      "",
+      h.usage, "", `  ${h.desc}`, `  ${h.descDetail}`, "",
       "Updated files:",
-      "  .agents/skills/*/SKILL.md        Skill templates",
-      "  .claude/skills/*/SKILL.md        Symlinks to .agents/skills/",
-      "",
-      "Options:",
-      "  --dry-run    Show what would change without writing files",
-      "  -h, --help   Show this help",
+      ...files.map((f) => `  ${f}`),
+      "", "Options:", `  ${o.dryRun}`, `  ${o.help}`,
     ].join("\n"));
     return;
   }

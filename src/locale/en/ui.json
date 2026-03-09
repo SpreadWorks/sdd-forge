@@ -233,6 +233,89 @@
           "worktree": "--worktree         Create a git worktree for the spec (.sdd-forge/worktree/<branch>/)",
           "dryRun": "--dry-run          Run all subcommands in dry-run mode"
         }
+      },
+      "build": {
+        "usage": "Usage: sdd-forge build [options]",
+        "desc": "Run the full document generation pipeline:",
+        "descDetail": "scan → init → data → text → readme → agents → translate",
+        "options": {
+          "agent": "--agent <name>   AI agent to use (default: config.json defaultAgent)",
+          "force": "--force          Overwrite existing docs/ files during init",
+          "dryRun": "--dry-run        Run all steps without writing files",
+          "verbose": "--verbose        Show detailed output for each step",
+          "help": "-h, --help       Show this help"
+        }
+      },
+      "default": {
+        "usage": "Usage: sdd-forge default [<name>]",
+        "desc": "Change the default project.",
+        "descDetail": "Lists all registered projects when no name is given."
+      },
+      "readme": {
+        "usage": "Usage: sdd-forge readme [options]",
+        "desc": "Auto-generate README.md from docs/ and templates.",
+        "options": {
+          "dryRun": "--dry-run   Show diff without writing",
+          "help": "-h, --help  Show this help"
+        }
+      },
+      "translate": {
+        "usage": "Usage: sdd-forge translate [options]",
+        "desc": "Translate default-language documents to non-default languages.",
+        "options": {
+          "lang": "--lang <lang>  Translate to specific language only",
+          "force": "--force        Re-translate all files regardless of mtime",
+          "dryRun": "--dry-run      Show what would be translated without writing",
+          "help": "-h, --help     Show this help"
+        }
+      },
+      "setup": {
+        "usage": "Usage: sdd-forge setup [options]",
+        "desc": "Interactive project setup wizard.",
+        "options": {
+          "name": "--name <name>               Project name",
+          "path": "--path <path>               Source code path (default: cwd)",
+          "workRoot": "--work-root <path>          Output directory path",
+          "type": "--type <type>               Project type: webapp|webapp/cakephp2|cli|library",
+          "purpose": "--purpose <purpose>         Document purpose: developer-guide|user-guide|api-reference",
+          "tone": "--tone <tone>               Writing style: polite|formal|casual",
+          "agent": "--agent <agent>             Default agent: claude|codex",
+          "projectContext": "--project-context <text>    Project description text",
+          "lang": "--lang <lang>               Operating language: en|ja",
+          "setDefault": "--set-default               Set as default project",
+          "noDefault": "--no-default                Do not set as default project",
+          "dryRun": "--dry-run                   Show what would be done without writing files",
+          "help": "-h, --help                  Show this help"
+        }
+      },
+      "upgrade": {
+        "usage": "Usage: sdd-forge upgrade [options]",
+        "desc": "Upgrade template-derived files to match the installed sdd-forge version.",
+        "descDetail": "Does NOT modify config.json or context.json.",
+        "updatedFiles": [
+          ".agents/skills/*/SKILL.md        Skill templates",
+          ".claude/skills/*/SKILL.md        Symlinks to .agents/skills/"
+        ],
+        "options": {
+          "dryRun": "--dry-run    Show what would change without writing files",
+          "help": "-h, --help   Show this help"
+        }
+      },
+      "gate": {
+        "usage": "Usage: sdd-forge gate --spec specs/NNN-name/spec.md [--phase pre|post]",
+        "desc": "Spec gate check.",
+        "options": {
+          "spec": "--spec <path>   Path to spec.md (required)",
+          "phase": "--phase <phase> Check phase: pre (default) or post"
+        },
+        "phaseDetail": {
+          "pre": "pre:  Skip unchecked items in Status and Acceptance Criteria",
+          "post": "post: Check all unchecked items"
+        }
+      },
+      "presets": {
+        "usage": "Usage: sdd-forge presets list",
+        "desc": "Display the preset inheritance tree."
       }
     }
   },
