@@ -1,6 +1,6 @@
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
-import { stripFillContent, countFilledInBatch } from "../../../src/docs/commands/text.js";
+import { stripFillContent, countFilledInBatch, allTextDirectivesFilled } from "../../../src/docs/commands/text.js";
 
 describe("stripFillContent", () => {
   it("removes content between {{text}} and {{/text}} tags", () => {
@@ -148,5 +148,75 @@ describe("countFilledInBatch", () => {
     ].join("\n");
 
     assert.strictEqual(countFilledInBatch(input), 0);
+  });
+});
+
+describe("allTextDirectivesFilled", () => {
+  it("returns true when no text directives exist", () => {
+    const input = "# Title\n\nSome content\n";
+    assert.strictEqual(allTextDirectivesFilled(input), true);
+  });
+
+  it("returns true when all directives are filled", () => {
+    const input = [
+      "# Title",
+      "<!-- {{text: describe overview}} -->",
+      "This is the overview.",
+      "<!-- {{/text}} -->",
+      "",
+      "<!-- {{text: describe details}} -->",
+      "These are the details.",
+      "<!-- {{/text}} -->",
+    ].join("\n");
+    assert.strictEqual(allTextDirectivesFilled(input), true);
+  });
+
+  it("returns false when any directive is empty", () => {
+    const input = [
+      "# Title",
+      "<!-- {{text: describe overview}} -->",
+      "This is the overview.",
+      "<!-- {{/text}} -->",
+      "",
+      "<!-- {{text: describe details}} -->",
+      "<!-- {{/text}} -->",
+    ].join("\n");
+    assert.strictEqual(allTextDirectivesFilled(input), false);
+  });
+
+  it("returns false when all directives are empty", () => {
+    const input = [
+      "# Title",
+      "<!-- {{text: describe overview}} -->",
+      "<!-- {{/text}} -->",
+    ].join("\n");
+    assert.strictEqual(allTextDirectivesFilled(input), false);
+  });
+
+  it("treats blank-only lines as empty", () => {
+    const input = [
+      "<!-- {{text: describe}} -->",
+      "   ",
+      "",
+      "<!-- {{/text}} -->",
+    ].join("\n");
+    assert.strictEqual(allTextDirectivesFilled(input), false);
+  });
+
+  it("handles directives with params", () => {
+    const input = [
+      "<!-- {{text[id=auth, maxLines=5]: auth system}} -->",
+      "Authentication details here.",
+      "<!-- {{/text}} -->",
+    ].join("\n");
+    assert.strictEqual(allTextDirectivesFilled(input), true);
+  });
+
+  it("returns false when endLine is missing", () => {
+    const input = [
+      "<!-- {{text: describe}} -->",
+      "Some content",
+    ].join("\n");
+    assert.strictEqual(allTextDirectivesFilled(input), false);
   });
 });

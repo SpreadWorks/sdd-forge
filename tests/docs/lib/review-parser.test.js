@@ -5,6 +5,7 @@ import {
   extractNeedsInput,
   summarizeReview,
   parseReviewMisses,
+  parseFileResults,
   ensureSection,
   summarizeNeedsInput,
 } from "../../../src/docs/lib/review-parser.js";
@@ -80,6 +81,55 @@ describe("parseReviewMisses", () => {
     const text = "[MISS] Zebra\n[MISS] Alpha\n[MISS] Zebra\n";
     const result = parseReviewMisses(text);
     assert.deepEqual(result.controllers, ["Alpha", "Zebra"]);
+  });
+});
+
+describe("parseFileResults", () => {
+  const allFiles = [
+    "docs/01_overview.md",
+    "docs/02_cli_commands.md",
+    "docs/03_configuration.md",
+  ];
+
+  it("extracts failed files from [FAIL] lines", () => {
+    const output = [
+      "3 件の章ファイルを検出",
+      "[FAIL] 行数不足 (5 行): overview.md",
+      "[FAIL] H1 見出しがありません: overview.md",
+    ].join("\n");
+    const result = parseFileResults(output, allFiles);
+    assert.deepEqual(result.failedFiles, ["docs/01_overview.md"]);
+    assert.deepEqual(result.passedFiles, ["docs/02_cli_commands.md", "docs/03_configuration.md"]);
+  });
+
+  it("matches full path file names", () => {
+    const output = "[FAIL] 行数不足 (5 行): docs/02_cli_commands.md\n";
+    const result = parseFileResults(output, allFiles);
+    assert.deepEqual(result.failedFiles, ["docs/02_cli_commands.md"]);
+  });
+
+  it("returns all files as passed when no [FAIL] lines", () => {
+    const output = "docs quality check: PASSED\n";
+    const result = parseFileResults(output, allFiles);
+    assert.deepEqual(result.passedFiles, allFiles);
+    assert.deepEqual(result.failedFiles, []);
+  });
+
+  it("returns empty arrays for empty input", () => {
+    const result = parseFileResults("", []);
+    assert.deepEqual(result.passedFiles, []);
+    assert.deepEqual(result.failedFiles, []);
+  });
+
+  it("handles multiple failed files", () => {
+    const output = [
+      "[FAIL] 行数不足 (3 行): overview.md",
+      "[FAIL] HTML コメント外に露出したディレクティブ 1 件: cli_commands.md",
+    ].join("\n");
+    const result = parseFileResults(output, allFiles);
+    assert.equal(result.failedFiles.length, 2);
+    assert.equal(result.passedFiles.length, 1);
+    assert.deepEqual(result.passedFiles, ["docs/03_configuration.md"]);
   });
 });
 

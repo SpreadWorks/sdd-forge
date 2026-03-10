@@ -35,6 +35,7 @@ import {
   FALLBACK_PATCH_ORDER,
   summarizeReview,
   parseReviewMisses,
+  parseFileResults,
   patchGeneratedForMisses,
   summarizeNeedsInput,
 } from "../lib/review-parser.js";
@@ -48,6 +49,33 @@ const DEFAULT_MODE = "local";
 function getTargetFiles(root) {
   const docsDir = path.join(root, "docs");
   return getChapterFiles(docsDir).map((f) => `docs/${f}`);
+}
+
+/**
+ * spec テキストから関連する章ファイルを推定する。
+ * 章ファイル名のキーワード（拡張子・番号接頭辞を除去）と spec テキストを
+ * 大文字小文字無視でマッチングする。
+ *
+ * @param {string} specText - spec.md の内容
+ * @param {string[]} allFiles - 全章ファイルパス (例: ["docs/01_overview.md", ...])
+ * @returns {string[]} 関連ファイルリスト（空の場合は推定失敗 = 全ファイル対象）
+ */
+function estimateRelevantFiles(specText, allFiles) {
+  if (!specText) return [];
+  const specLower = specText.toLowerCase();
+  const matched = [];
+  for (const file of allFiles) {
+    // "docs/01_overview.md" → "overview"
+    const baseName = path.basename(file, ".md").replace(/^\d+_/, "");
+    // "cli_commands" → ["cli", "commands"]
+    const keywords = baseName.split("_").filter(Boolean);
+    // All keywords must appear in spec text
+    const allMatch = keywords.every((kw) => specLower.includes(kw.toLowerCase()));
+    if (allMatch) {
+      matched.push(file);
+    }
+  }
+  return matched;
 }
 
 function parseCliOptions(argv) {
@@ -221,7 +249,7 @@ async function main() {
       console.log(`[forge] populated placeholders in: ${populateResult.files.join(", ")}`);
     }
     if (agent) {
-      const tfResult = await textFillFromAnalysis(root, analysisData, cli.agent);
+      const tfResult = await textFillFromAnalysis(root, analysisData, cli.agent, undefined);
       if (tfResult.filled > 0) {
         console.log(`[forge] {{text}}: ${tfResult.filled} directives resolved`);
       }
@@ -273,7 +301,22 @@ async function main() {
 
   const concurrency = resolveConcurrency(config);
 
+  // Spec-based file estimation: narrow target files if spec is provided
+  const allTargetFiles = getTargetFiles(root);
+  let initialTargetFiles = allTargetFiles;
+  if (specText) {
+    const estimated = estimateRelevantFiles(specText, allTargetFiles);
+    if (estimated.length > 0 && estimated.length < allTargetFiles.length) {
+      initialTargetFiles = estimated;
+      console.log(`[forge] spec-based estimation: ${estimated.length}/${allTargetFiles.length} files selected`);
+      for (const f of estimated) {
+        console.log(`  - ${f}`);
+      }
+    }
+  }
+
   let reviewFeedback = "";
+  let currentTargetFiles = initialTargetFiles;
   for (let round = 1; round <= effectiveMaxRuns; round += 1) {
     console.log(`\n[forge] round ${round}/${effectiveMaxRuns}`);
     console.log(`[forge] run mode=${mode} review='${cli.reviewCmd}'`);
@@ -285,7 +328,7 @@ async function main() {
           console.log("[forge] assist mode: agent not configured, run local-only.");
         }
       } else {
-        const targetFiles = getTargetFiles(root);
+        const targetFiles = currentTargetFiles;
         const usePerFile = !!agent.systemPromptFlag;
 
         if (usePerFile) {
@@ -392,6 +435,13 @@ async function main() {
     console.log("[forge] review failed. feedback captured.");
     console.log(reviewFeedback);
 
+    // Filter target files for next round: only keep files that failed review
+    const fileResults = parseFileResults(reviewOut, currentTargetFiles);
+    if (fileResults.passedFiles.length > 0 && fileResults.failedFiles.length > 0) {
+      console.log(`[forge] ${fileResults.passedFiles.length} file(s) passed, ${fileResults.failedFiles.length} file(s) need retry`);
+      currentTargetFiles = fileResults.failedFiles;
+    }
+
     const misses = parseReviewMisses(reviewOut);
     console.log(
       `[forge] parsed misses: ${FALLBACK_PATCH_ORDER.map((k) => `${k}=${(misses[k] || []).length}`).join(", ")}`,
@@ -421,6 +471,6 @@ async function main() {
   throw new Error("forge: max runs reached but review still failing.");
 }
 
-export { main };
+export { main, estimateRelevantFiles };
 
 runIfDirect(import.meta.url, main);

@@ -334,12 +334,39 @@ async function processTemplate(text, analysis, fileName, agent, timeoutMs, cwd, 
 // textFillFromAnalysis (エクスポート用: forge.js などから呼び出し可能)
 // ---------------------------------------------------------------------------
 /**
+ * ファイル内の全 {{text}} ディレクティブが埋まっているかチェックする。
+ * 1 つでも空のディレクティブがあれば false を返す。
+ *
+ * @param {string} text - ファイル内容
+ * @returns {boolean} 全ディレクティブが埋まっている場合 true
+ */
+function allTextDirectivesFilled(text) {
+  const directives = parseDirectives(text);
+  const textFills = directives.filter((d) => d.type === "text");
+  if (textFills.length === 0) return true;
+
+  const lines = text.split("\n");
+  for (const d of textFills) {
+    if (d.endLine < 0) return false;
+    let hasContent = false;
+    for (let j = d.line + 1; j < d.endLine; j++) {
+      if (lines[j].trim() !== "") { hasContent = true; break; }
+    }
+    if (!hasContent) return false;
+  }
+  return true;
+}
+
+/**
  * @param {string} root       - リポジトリルート
  * @param {Object} analysis   - analysis.json データ
  * @param {string} agentName  - エージェント名 (claude, codex)
+ * @param {string} [srcRoot]  - ソースルート
+ * @param {Object} [opts]     - オプション
+ * @param {boolean} [opts.force] - true の場合、埋まっているディレクティブも再処理する
  * @returns {{ filled: number, skipped: number, files: string[] }}
  */
-export async function textFillFromAnalysis(root, analysis, agentName, srcRoot) {
+export async function textFillFromAnalysis(root, analysis, agentName, srcRoot, opts) {
   if (!analysis) return { filled: 0, skipped: 0, files: [] };
 
   const cfg = loadConfig(root);
@@ -353,13 +380,31 @@ export async function textFillFromAnalysis(root, analysis, agentName, srcRoot) {
   const docsFiles = getChapterFiles(docsDir);
   const resolvedSrcRoot = srcRoot || root;
 
+  const force = opts?.force ?? false;
   const changedFiles = [];
   let totalFilled = 0;
   let totalSkipped = 0;
 
   // Batch mode: file-level parallelism (1 call per file)
   const errors = [];
-  const fileResults = await mapWithConcurrency(docsFiles, concurrency, async (file) => {
+
+  // Filter files: skip files where all {{text}} directives are already filled (unless force)
+  const targetFiles = [];
+  let skippedFileCount = 0;
+  for (const file of docsFiles) {
+    const filePath = path.join(docsDir, file);
+    const content = fs.readFileSync(filePath, "utf8");
+    if (!force && allTextDirectivesFilled(content)) {
+      skippedFileCount++;
+      continue;
+    }
+    targetFiles.push(file);
+  }
+  if (skippedFileCount > 0) {
+    logger.log(`Skipped ${skippedFileCount} file(s) with all directives filled.`);
+  }
+
+  const fileResults = await mapWithConcurrency(targetFiles, concurrency, async (file) => {
     const filePath = path.join(docsDir, file);
     const original = fs.readFileSync(filePath, "utf8");
     const result = await processTemplateFileBatch(original, analysis, file, agent, DEFAULT_TIMEOUT_MS, root, false, preamblePatterns, systemPrompt, undefined, undefined, lang, resolvedSrcRoot);
@@ -369,7 +414,7 @@ export async function textFillFromAnalysis(root, analysis, agentName, srcRoot) {
   for (let i = 0; i < fileResults.length; i++) {
     const entry = fileResults[i];
     if (entry?.error) {
-      const file = docsFiles[i];
+      const file = targetFiles[i];
       logger.log(`ERROR processing ${file}:`);
       logger.log(entry.error.message);
       errors.push(file);
@@ -539,6 +584,6 @@ async function main(ctx) {
   }
 }
 
-export { main, stripFillContent, countFilledInBatch, processTemplateFileBatch };
+export { main, stripFillContent, countFilledInBatch, processTemplateFileBatch, allTextDirectivesFilled };
 
 runIfDirect(import.meta.url, main);
