@@ -188,7 +188,7 @@ export default class DocsSource extends DataSource {
         if (inDesc && /^## /.test(line)) break;
         if (inDesc) {
           if (/<!--\s*\{\{(text|data)\s*(\[[^\]]*\])?\s*:/.test(line)) continue;
-          if (/<!--\s*\{\{\/data\}\}\s*-->/.test(line)) continue;
+          if (/<!--\s*\{\{\/(data|text)\}\}\s*-->/.test(line)) continue;
           descLines.push(line);
         }
       }
