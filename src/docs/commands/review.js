@@ -159,10 +159,12 @@ function main() {
     let unfilledData = 0;
     for (let i = 0; i < lines.length; i++) {
       if (/<!--\s*\{\{data\s*:/.test(lines[i])) {
-        const nextLine = (lines[i + 1] || "").trim();
-        if (nextLine === "") {
-          unfilledData++;
+        let hasContent = false;
+        for (let j = i + 1; j < lines.length; j++) {
+          if (/^<!--\s*\{\{\/data\}\}\s*-->$/.test(lines[j].trim())) break;
+          if (lines[j].trim() !== "") { hasContent = true; break; }
         }
+        if (!hasContent) unfilledData++;
       }
     }
     if (unfilledData > 0) {
@@ -270,7 +272,7 @@ function main() {
   // Analysis coverage check (WARN only — does not cause FAIL)
   if (fs.existsSync(analysisPath)) {
     const analysis = JSON.parse(fs.readFileSync(analysisPath, "utf8"));
-    const META_KEYS = new Set(["analyzedAt", "generatedAt", "extras", "files", "root"]);
+    const META_KEYS = new Set(["analyzedAt", "enrichedAt", "generatedAt", "extras", "files", "root"]);
     const analysisCategories = Object.keys(analysis).filter((k) => !META_KEYS.has(k));
 
     if (analysisCategories.length > 0) {

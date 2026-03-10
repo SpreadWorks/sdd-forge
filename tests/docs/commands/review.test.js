@@ -91,6 +91,24 @@ describe("review CLI", () => {
     }
   });
 
+  it("does not fail on inline {{data}} examples in prose", () => {
+    tmp = createTmpDir();
+    const lines = ["# 01. Test", ""];
+    for (let i = 0; i < 10; i++) lines.push(`Line ${i}`);
+    lines.push('Example inline syntax: `{{data: mySource.list("Col1|Col2")}}`');
+    lines.push('Example comment syntax: `<!-- {{data: mySource.list("Col1|Col2")}} -->`');
+    lines.push('Example closing syntax: `<!-- {{/data}} -->`');
+    for (let i = 0; i < 8; i++) lines.push(`More ${i}`);
+    writeFile(tmp, "docs/01_test.md", lines.join("\n"));
+
+    const result = execFileSync("node", [CMD], {
+      encoding: "utf8",
+      env: { ...process.env, SDD_WORK_ROOT: tmp },
+    });
+    assert.doesNotMatch(result, /unfilled \{\{data\}\}/);
+    assert.match(result, /PASSED/);
+  });
+
 
   it("warns when {{text}} directive is unfilled (empty block)", () => {
     tmp = createTmpDir();
@@ -201,5 +219,26 @@ describe("review CLI", () => {
     });
     assert.match(result, /uncovered analysis category: modules \(3 entries\)/);
     assert.match(result, /PASSED/); // WARN only, does not FAIL
+  });
+
+  it("does not warn for enrichedAt coverage", () => {
+    tmp = createTmpDir();
+    const lines = ["# 01. Test", ""];
+    for (let i = 0; i < 20; i++) lines.push(`Line ${i}`);
+    writeFile(tmp, "docs/01_test.md", lines.join("\n"));
+
+    writeJson(tmp, ".sdd-forge/output/analysis.json", {
+      analyzedAt: "2026-01-01",
+      enrichedAt: "2026-01-02",
+      modules: [{ name: "a" }],
+    });
+
+    const result = execFileSync("node", [CMD], {
+      encoding: "utf8",
+      env: { ...process.env, SDD_WORK_ROOT: tmp },
+    });
+    assert.doesNotMatch(result, /uncovered analysis category: enrichedAt/);
+    assert.match(result, /uncovered analysis category: modules/);
+    assert.match(result, /PASSED/);
   });
 });
