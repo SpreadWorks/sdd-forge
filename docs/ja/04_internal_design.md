@@ -4,8 +4,7 @@
 
 <!-- {{text: Describe the purpose of this chapter in 1–2 sentences. Cover the project structure, module dependency direction, and key processing flows.}} -->
 
-本章では、sdd-forge の内部アーキテクチャについて説明する。ディレクトリ構成、モジュールの責務、3層ディスパッチ構造におけるモジュール依存の方向性、および代表的なコマンドのエンドツーエンドの処理フローを取り上げる。
-<!-- {{/text}} -->
+本章では sdd-forge の内部アーキテクチャを解説し、モジュールの構成方法、モジュール間の制御・データフロー、ドキュメント生成と SDD ワークフロー実行を担う主要な処理パイプラインについて説明する。階層化されたディスパッチ構造と依存関係の方向を理解することは、ツールの拡張や修正を行うコントリビューターにとって不可欠である。
 
 ## 目次
 
@@ -15,127 +14,86 @@
 
 ```
 sdd-forge/
-├── package.json                        ← パッケージマニフェスト；バイナリエントリは src/sdd-forge.js
+├── package.json                        ← パッケージマニフェスト。bin エントリは src/sdd-forge.js を指す
 ├── src/
-│   ├── sdd-forge.js                    ← トップレベル CLI エントリポイント；docs.js / spec.js / flow.js へルーティング
-│   ├── docs.js                         ← docs サブコマンド全般のディスパッチャー（build, scan, init, data, text, …）
-│   ├── spec.js                         ← spec サブコマンドのディスパッチャー（spec, gate）
-│   ├── flow.js                         ← DIRECT_COMMAND: SDD フロー自動化（サブルーティングなし）
-│   ├── presets-cmd.js                  ← DIRECT_COMMAND: プリセット一覧・検査
-│   ├── help.js                         ← ヘルプテキスト表示
+│   ├── sdd-forge.js                    ← トップレベル CLI エントリポイント。ディスパッチャーにルーティング
+│   ├── docs.js                         ← docs 関連サブコマンドのディスパッチャー
+│   ├── spec.js                         ← spec/gate サブコマンドのディスパッチャー
+│   ├── flow.js                         ← DIRECT_COMMAND: SDD フロー自動実行（サブルーティングなし）
+│   ├── presets-cmd.js                  ← DIRECT_COMMAND: プリセット一覧表示コマンド
+│   ├── help.js                         ← コマンドヘルプ画面を描画
 │   ├── docs/
-│   │   ├── commands/                   ← docs サブコマンドの実装（1コマンド1ファイル）
-│   │   │   ├── scan.js                 ← ソース解析 → analysis.json + summary.json
-│   │   │   ├── init.js                 ← プリセットテンプレートから docs/ を初期化
-│   │   │   ├── data.js                 ← {{data}} ディレクティブを解決
-│   │   │   ├── text.js                 ← AI エージェント経由で {{text}} ディレクティブを解決
-│   │   │   ├── readme.js               ← README.md を生成
-│   │   │   ├── forge.js                ← docs の反復改善
-│   │   │   ├── review.js               ← docs 品質チェック
-│   │   │   ├── agents.js               ← AGENTS.md を更新
-│   │   │   ├── changelog.js            ← specs/ から change_log.md を生成
-│   │   │   ├── setup.js                ← プロジェクト登録 + 設定生成
-│   │   │   └── …                       ← upgrade, translate, default-project など
-│   │   └── lib/                        ← ドキュメント生成ライブラリ（コマンド間で共有）
-│   │       ├── scanner.js              ← ファイル探索、PHP/JS/YAML 解析ユーティリティ
-│   │       ├── directive-parser.js     ← {{data}}, {{text}}, @block, @extends ディレクティブの解析
-│   │       ├── template-merger.js      ← @extends / @block テンプレート継承の解決
-│   │       ├── data-source.js          ← DataSource 基底クラス
-│   │       ├── data-source-loader.js   ← プリセット別 DataSource の動的ロード
-│   │       ├── resolver-factory.js     ← data コマンドが使用する createResolver() ファクトリ
-│   │       ├── forge-prompts.js        ← forge / agents コマンド向けプロンプト生成；summaryToText()
-│   │       ├── text-prompts.js         ← text コマンド向けプロンプト生成
-│   │       ├── review-parser.js        ← review コマンドの構造化出力をパース
-│   │       ├── scan-source.js          ← スキャン設定ローダー
-│   │       ├── concurrency.js          ← ファイル並列処理ユーティリティ
-│   │       ├── command-context.js      ← resolveCommandContext() および関連ヘルパー
-│   │       └── php-array-parser.js     ← PHP 配列構文パーサー
+│   │   ├── commands/                   ← docs サブコマンドごとに 1 ファイル（scan, init, data, text,
+│   │   │                                  readme, forge, review, agents, changelog, setup,
+│   │   │                                  snapshot, upgrade, translate, default-project）
+│   │   ├── lib/                        ← ドキュメント生成ライブラリ（scanner, directive-parser,
+│   │   │                                  template-merger, data-source, resolver-factory,
+│   │   │                                  forge-prompts, text-prompts, review-parser,
+│   │   │                                  command-context, concurrency, test-env-detection, …）
+│   │   └── data/                       ← DataSource 実装（project, docs, agents, lang）
 │   ├── specs/
-│   │   └── commands/
-│   │       ├── init.js                 ← 新しい spec を作成（ブランチ + spec.md）
-│   │       └── gate.js                 ← spec のゲートチェック（pre / post フェーズ）
-│   ├── lib/                            ← 全レイヤーで共有される共通ユーティリティ
-│   │   ├── agent.js                    ← AI エージェント呼び出し（同期 + 非同期）
-│   │   ├── cli.js                      ← CLI パーサー、パス解決、PKG_DIR
-│   │   ├── config.js                   ← 設定ロード・バリデーション；.sdd-forge/ パスヘルパー
-│   │   ├── flow-state.js               ← current-spec JSON の状態管理
-│   │   ├── presets.js                  ← src/presets/ の自動探索
-│   │   ├── i18n.js                     ← 国際化ユーティリティ
-│   │   ├── projects.js                 ← マルチプロジェクトレジストリヘルパー
-│   │   ├── types.js                    ← TYPE_ALIASES と型解決
-│   │   └── …                           ← agents-md, entrypoint, process, progress
-│   ├── presets/                        ← プリセット定義（preset.json により自動探索）
-│   │   ├── base/                       ← ベースプリセット；ja/ と en/ のドキュメントテンプレート
-│   │   ├── webapp/                     ← webapp アーキプリセット
-│   │   │   ├── cakephp2/               ← CakePHP 2.x プリセット（PHP アナライザー含む）
-│   │   │   ├── laravel/                ← Laravel プリセット
-│   │   │   └── symfony/                ← Symfony プリセット
+│   │   └── commands/                   ← spec サブコマンド実装（init, gate）
+│   ├── lib/                            ← 全レイヤーで共有するユーティリティ
+│   │   ├── agent.js                    ← AI エージェント呼び出し（同期 / 非同期）
+│   │   ├── cli.js                      ← CLI 引数パース、パス解決ユーティリティ
+│   │   ├── config.js                   ← .sdd-forge/config.json の読み込みとパスヘルパー
+│   │   ├── flow-state.js               ← .sdd-forge/current-spec の状態管理
+│   │   ├── presets.js                  ← プリセットの自動探索・登録
+│   │   ├── i18n.js                     ← ロケールメッセージの読み込み
+│   │   ├── agents-md.js                ← AGENTS.md 生成ヘルパー
+│   │   └── types.js                    ← TYPE_ALIASES と型解決ユーティリティ
+│   ├── presets/                        ← プロジェクトタイプ別のプリセット定義
+│   │   ├── base/                       ← ベースプリセット（isArch）。共有ドキュメントテンプレート（ja/en）
+│   │   ├── webapp/                     ← アーキテクチャ層プリセット + FW 固有サブプリセット
+│   │   │   ├── cakephp2/               ← CakePHP 2.x アナライザーと DataSource
+│   │   │   ├── laravel/                ← Laravel アナライザー
+│   │   │   └── symfony/                ← Symfony アナライザー
 │   │   ├── cli/
-│   │   │   └── node-cli/               ← Node.js CLI プリセット
-│   │   └── library/                    ← ライブラリアーキプリセット
-│   └── templates/                      ← バンドル済みドキュメント・spec テンプレート
-│       ├── config.example.json
-│       ├── review-checklist.md
-│       └── skills/                     ← Claude スキルテンプレート（sdd-flow-start, sdd-flow-close）
-├── docs/                               ← sdd-forge 自身の設計ドキュメント（npm 公開対象）
-├── tests/                              ← テストファイル（*.test.js、Node 組み込みランナー）
-└── specs/                              ← 蓄積された SDD spec ファイル（020件以上）
+│   │   │   └── node-cli/               ← Node.js CLI プリセット。src/**/*.js モジュールをスキャン
+│   │   ├── library/                    ← ライブラリプリセット
+│   │   └── lib/                        ← プリセット共有ユーティリティ（composer-utils.js）
+│   ├── locale/
+│   │   ├── ja/                         ← 日本語メッセージバンドル（messages, prompts, ui）
+│   │   └── en/                         ← 英語メッセージバンドル
+│   └── templates/                      ← バンドル済み設定サンプル、レビューチェックリスト、
+│                                          SDD スキル定義
+├── docs/                               ← sdd-forge 自身の生成済み設計ドキュメント
+├── tests/                              ← テストファイル（*.test.js）。src/ の構造を反映
+└── specs/                              ← 開発を通じて蓄積された SDD spec ファイル
 ```
-<!-- {{/text}} -->
 
 ### モジュール概要
 
 <!-- {{text: Describe the major modules in a table format. Include module name, file path, and responsibility. Cover the dispatcher layer (sdd-forge.js, docs.js, spec.js), command layer (docs/commands/*.js, specs/commands/*.js), library layer (lib/agent.js, lib/cli.js, lib/config.js, lib/flow-state.js, lib/presets.js, lib/i18n.js), and document generation layer (docs/lib/scanner.js, directive-parser.js, template-merger.js, forge-prompts.js, text-prompts.js, review-parser.js, data-source.js, resolver-factory.js).}} -->
 
-**ディスパッチャー層**
-
-| モジュール | パス | 責務 |
+| モジュール | ファイルパス | 責務 |
 |---|---|---|
-| CLI エントリポイント | `src/sdd-forge.js` | トップレベルのサブコマンドを解析し、`SDD_SOURCE_ROOT` / `SDD_WORK_ROOT` 経由でプロジェクトコンテキストを解決して、適切なディスパッチャーまたは DIRECT_COMMAND に委譲する |
-| docs ディスパッチャー | `src/docs.js` | docs 関連サブコマンド（`build`, `scan`, `init`, `data`, `text`, `readme`, `forge`, `review`, `agents`, `changelog`, `setup`, `upgrade`, `translate`）をコマンドモジュールにルーティングする |
-| spec ディスパッチャー | `src/spec.js` | `spec` と `gate` サブコマンドをコマンドモジュールにルーティングする |
-
-**コマンド層**
-
-| モジュール | パス | 責務 |
-|---|---|---|
-| scan | `src/docs/commands/scan.js` | ソースファイルを解析し、`analysis.json` + `summary.json` を `.sdd-forge/output/` に書き出す |
-| init | `src/docs/commands/init.js` | `@extends` / `@block` 継承を通じてプリセットテンプレートから `docs/` ディレクトリを初期化する |
-| data | `src/docs/commands/data.js` | `createResolver()` を使用して docs 内の全 `{{data: …}}` ディレクティブを解決する |
-| text | `src/docs/commands/text.js` | 生成したプロンプトで AI エージェントを呼び出し、全 `{{text: …}}` ディレクティブを解決する |
-| readme | `src/docs/commands/readme.js` | docs コンテンツとプロジェクトメタデータから `README.md` を生成する |
-| forge | `src/docs/commands/forge.js` | 現在の解析データをもとに AI による docs の反復改善を実行する |
-| review | `src/docs/commands/review.js` | docs 品質チェックを実行し、構造化された合否結果をパースする |
-| agents | `src/docs/commands/agents.js` | `AGENTS.md` の `<!-- SDD -->` および `<!-- PROJECT -->` セクションを再構築する |
-| changelog | `src/docs/commands/changelog.js` | `specs/` のエントリを集約して `change_log.md` を生成する |
-| spec init | `src/specs/commands/init.js` | フィーチャーブランチを作成し、新しい `spec.md` を初期化する |
-| gate | `src/specs/commands/gate.js` | 実装前・実装後のチェックリストに対して spec を検証する |
-| flow | `src/flow.js` | DIRECT_COMMAND: SDD フロー全体（spec → gate → 実装 → forge → review）をオーケストレーションする |
-
-**ライブラリ層**
-
-| モジュール | パス | 責務 |
-|---|---|---|
-| agent | `src/lib/agent.js` | AI エージェントを同期（`callAgent`）または非同期（`callAgentAsync`）で呼び出し、プロンプト注入とタイムアウト管理を行う |
-| cli | `src/lib/cli.js` | `parseArgs()`、`PKG_DIR`、`repoRoot()`、`sourceRoot()`、`isInsideWorktree()`、タイムスタンプ生成を提供する |
-| config | `src/lib/config.js` | `.sdd-forge/config.json` をロード・バリデーションし、`.sdd-forge/` パスヘルパーと `resolveProjectContext()` を公開する |
-| flow-state | `src/lib/flow-state.js` | SDD フロー状態追跡のために `.sdd-forge/current-spec` JSON を読み書き・削除する |
-| presets | `src/lib/presets.js` | `src/presets/` 以下の `preset.json` ファイルを自動探索し、`PRESETS` 定数を公開する |
-| i18n | `src/lib/i18n.js` | ロケール文字列をロードし、CLI 出力とテンプレートで使用する翻訳ヘルパーを提供する |
-
-**ドキュメント生成層**
-
-| モジュール | パス | 責務 |
-|---|---|---|
-| scanner | `src/docs/lib/scanner.js` | ファイルシステム探索、PHP/JS/YAML 解析、コントローラー・モデル・ルート・シェルを抽出する `genericScan` |
-| directive-parser | `src/docs/lib/directive-parser.js` | Markdown ファイルを `{{data}}`、`{{text}}`、`@block`、`@extends` ディレクティブのセグメントにトークナイズする |
-| template-merger | `src/docs/lib/template-merger.js` | `@extends` / `@block` の継承チェーンを解決し、最終的なテンプレートコンテンツを生成する |
-| forge-prompts | `src/docs/lib/forge-prompts.js` | `forge` と `agents` コマンド向けのプロンプトを構築し、解析 JSON を読みやすいテキストに変換する `summaryToText()` を提供する |
-| text-prompts | `src/docs/lib/text-prompts.js` | `text` コマンド向けのディレクティブごとのプロンプトを構築する |
-| review-parser | `src/docs/lib/review-parser.js` | review AI エージェントからの構造化された合否出力をパースする |
-| data-source | `src/docs/lib/data-source.js` | プリセット固有の全 DataSource 実装が従うべきインターフェースを定義する基底クラス |
-| resolver-factory | `src/docs/lib/resolver-factory.js` | プロジェクトタイプに基づいて適切な DataSource を `data` コマンドに接続する `createResolver()` ファクトリ |
-<!-- {{/text}} -->
+| **CLI エントリポイント** | `src/sdd-forge.js` | トップレベルのサブコマンドを解析し、`SDD_SOURCE_ROOT` / `SDD_WORK_ROOT` 経由でプロジェクトコンテキストを解決して、適切なディスパッチャーまたはダイレクトコマンドに委譲する |
+| **Docs ディスパッチャー** | `src/docs.js` | docs 関連サブコマンド（`build`, `scan`, `init`, `data`, `text`, `readme`, `forge`, `review`, `changelog`, `agents`, `snapshot`, `upgrade`, `translate`, `setup`, `default`）を各実装にルーティングする |
+| **Spec ディスパッチャー** | `src/spec.js` | `spec` および `gate` サブコマンドを `specs/commands/` 配下の実装にルーティングする |
+| **Flow コマンド** | `src/flow.js` | DIRECT_COMMAND — サブルーティングを行わず、SDD ワークフロー自動実行全体を実行する |
+| **scan** | `src/docs/commands/scan.js` | アクティブなプリセットに従ってソースファイルを解析し、`analysis.json` を書き出す |
+| **init** | `src/docs/commands/init.js` | `@extends` / `@block` 継承を使ってプリセットテンプレートから `docs/` ディレクトリを初期化する |
+| **data** | `src/docs/commands/data.js` | DataSource 実装を問い合わせて docs ファイル内の `{{data}}` ディレクティブを解決する |
+| **text** | `src/docs/commands/text.js` | 設定済みの AI エージェントを呼び出して `{{text}}` ディレクティブを解決する |
+| **forge** | `src/docs/commands/forge.js` | 変更サマリーを AI にプロンプトとして与え、docs の品質を反復的に改善する |
+| **review** | `src/docs/commands/review.js` | docs に対して品質チェックリストを実行し、PASS / FAIL を報告する |
+| **spec init** | `src/specs/commands/init.js` | 新しい SDD spec ファイルと（任意で）feature ブランチを初期化する |
+| **gate** | `src/specs/commands/gate.js` | ゲートチェックリストに対して spec を検証する（`--phase pre` / `post`） |
+| **agent.js** | `src/lib/agent.js` | 設定済みの AI エージェントを呼び出す `callAgent()`（同期）と `callAgentAsync()`（非同期/ストリーミング）を提供する。`{{PROMPT}}` プレースホルダーによるプロンプト注入を管理する |
+| **cli.js** | `src/lib/cli.js` | コードベース全体で使用する `PKG_DIR`、`repoRoot()`、`sourceRoot()`、`parseArgs()`、`isInsideWorktree()`、タイムスタンプユーティリティをエクスポートする |
+| **config.js** | `src/lib/config.js` | `.sdd-forge/config.json` を読み込んで検証する。`.sdd-forge/` 成果物向けのパスヘルパーを公開する |
+| **flow-state.js** | `src/lib/flow-state.js` | `.sdd-forge/current-spec` を読み書き・削除して進行中の SDD ワークフロー状態を追跡する |
+| **presets.js** | `src/lib/presets.js` | `src/presets/` 配下の `preset.json` を自動探索し、`PRESETS` 定数を構築して検索ヘルパーを提供する |
+| **i18n.js** | `src/lib/i18n.js` | `src/locale/{lang}/` からロケールメッセージバンドルを読み込み、翻訳済み文字列を解決する |
+| **scanner.js** | `src/docs/lib/scanner.js` | `scan` ステップで使用するファイル探索と言語固有の解析ユーティリティ（PHP、JS、YAML） |
+| **directive-parser.js** | `src/docs/lib/directive-parser.js` | Markdown テンプレートファイルから `{{data}}`、`{{text}}`、`@block`、`@extends` ディレクティブを解析する |
+| **template-merger.js** | `src/docs/lib/template-merger.js` | ディレクティブ処理の前に `@extends` / `@block` テンプレート継承を解決する |
+| **forge-prompts.js** | `src/docs/lib/forge-prompts.js` | `forge` コマンドと `agents` コマンド向けのプロンプトを構築する。`summaryToText()` を含む |
+| **text-prompts.js** | `src/docs/lib/text-prompts.js` | `text` コマンド向けのディレクティブごとのプロンプトを構築する |
+| **review-parser.js** | `src/docs/lib/review-parser.js` | AI レビュー出力を構造化された PASS / FAIL 結果に解析する |
+| **data-source.js** | `src/docs/lib/data-source.js` | 全 DataSource 実装の基底クラス。`toMarkdownTable()`、`toRows()`、`desc()` を提供する |
+| **resolver-factory.js** | `src/docs/lib/resolver-factory.js` | `data` コマンド向けに DataSource インスタンスを `{{data}}` ディレクティブキーに紐付ける `createResolver()` ファクトリ |
 
 ### モジュール依存関係
 
@@ -145,128 +103,86 @@ sdd-forge/
 graph TD
     CLI["sdd-forge.js\n(エントリポイント)"]
 
-    subgraph Dispatchers
-        DOCS["docs.js"]
-        SPEC["spec.js"]
-        FLOW["flow.js\n(DIRECT_COMMAND)"]
-    end
+    CLI --> DOCS["docs.js\n(Docs ディスパッチャー)"]
+    CLI --> SPEC["spec.js\n(Spec ディスパッチャー)"]
+    CLI --> FLOW["flow.js\n(ダイレクトコマンド)"]
+    CLI --> PRESETS_CMD["presets-cmd.js\n(ダイレクトコマンド)"]
+    CLI --> HELP["help.js"]
 
-    subgraph DocsCommands["docs/commands/"]
-        SCAN["scan.js"]
-        INIT["init.js"]
-        DATA["data.js"]
-        TEXT["text.js"]
-        FORGE["forge.js"]
-        REVIEW["review.js"]
-        AGENTS["agents.js"]
-        README["readme.js"]
-        CLOG["changelog.js"]
-    end
+    DOCS --> CMD_SCAN["docs/commands/scan.js"]
+    DOCS --> CMD_INIT["docs/commands/init.js"]
+    DOCS --> CMD_DATA["docs/commands/data.js"]
+    DOCS --> CMD_TEXT["docs/commands/text.js"]
+    DOCS --> CMD_FORGE["docs/commands/forge.js"]
+    DOCS --> CMD_REVIEW["docs/commands/review.js"]
+    DOCS --> CMD_AGENTS["docs/commands/agents.js"]
+    DOCS --> CMD_OTHER["docs/commands/…"]
 
-    subgraph SpecCommands["specs/commands/"]
-        SINIT["init.js"]
-        GATE["gate.js"]
-    end
+    SPEC --> SPEC_INIT["specs/commands/init.js"]
+    SPEC --> SPEC_GATE["specs/commands/gate.js"]
 
-    subgraph Lib["lib/"]
-        AGENT["agent.js"]
-        CLIU["cli.js"]
-        CONFIG["config.js"]
-        FSTATE["flow-state.js"]
-        PRESETS["presets.js"]
-        I18N["i18n.js"]
-    end
+    CMD_SCAN --> LIB_CLI["lib/cli.js"]
+    CMD_SCAN --> LIB_CONFIG["lib/config.js"]
+    CMD_SCAN --> LIB_SCANNER["docs/lib/scanner.js"]
 
-    subgraph DocsLib["docs/lib/"]
-        SCANNER["scanner.js"]
-        DIRPARSER["directive-parser.js"]
-        TMERGER["template-merger.js"]
-        FPROMPTS["forge-prompts.js"]
-        TPROMPTS["text-prompts.js"]
-        RPARSER["review-parser.js"]
-        DS["data-source.js"]
-        RFACTORY["resolver-factory.js"]
-    end
+    CMD_DATA --> LIB_CONFIG
+    CMD_DATA --> LIB_CLI
+    CMD_DATA --> RESOLVER["docs/lib/resolver-factory.js"]
+    CMD_DATA --> DIRECTIVE["docs/lib/directive-parser.js"]
 
-    CLI --> DOCS
-    CLI --> SPEC
-    CLI --> FLOW
-    CLI --> CLIU
-    CLI --> CONFIG
+    CMD_TEXT --> LIB_AGENT["lib/agent.js"]
+    CMD_TEXT --> LIB_CONFIG
+    CMD_TEXT --> DIRECTIVE
+    CMD_TEXT --> TEXT_PROMPTS["docs/lib/text-prompts.js"]
 
-    DOCS --> SCAN
-    DOCS --> INIT
-    DOCS --> DATA
-    DOCS --> TEXT
-    DOCS --> FORGE
-    DOCS --> REVIEW
-    DOCS --> AGENTS
-    DOCS --> README
-    DOCS --> CLOG
+    CMD_FORGE --> LIB_AGENT
+    CMD_FORGE --> LIB_CONFIG
+    CMD_FORGE --> FORGE_PROMPTS["docs/lib/forge-prompts.js"]
 
-    SPEC --> SINIT
-    SPEC --> GATE
+    CMD_REVIEW --> LIB_AGENT
+    CMD_REVIEW --> REVIEW_PARSER["docs/lib/review-parser.js"]
 
-    SCAN --> SCANNER
-    SCAN --> CONFIG
-    INIT --> DIRPARSER
-    INIT --> TMERGER
-    INIT --> PRESETS
-    DATA --> RFACTORY
-    DATA --> DIRPARSER
-    DATA --> CONFIG
-    TEXT --> TPROMPTS
-    TEXT --> DIRPARSER
-    TEXT --> AGENT
-    TEXT --> CONFIG
-    FORGE --> FPROMPTS
-    FORGE --> AGENT
-    FORGE --> CONFIG
-    REVIEW --> AGENT
-    REVIEW --> RPARSER
-    REVIEW --> CONFIG
-    AGENTS --> FPROMPTS
-    AGENTS --> AGENT
-    AGENTS --> CONFIG
+    CMD_INIT --> LIB_CONFIG
+    CMD_INIT --> LIB_PRESETS["lib/presets.js"]
+    CMD_INIT --> TMPL_MERGER["docs/lib/template-merger.js"]
 
-    RFACTORY --> DS
-    FPROMPTS --> SCANNER
-    FLOW --> FSTATE
-    FLOW --> CONFIG
-    FLOW --> CLIU
-    SINIT --> FSTATE
-    SINIT --> CONFIG
-    GATE --> CONFIG
+    SPEC_INIT --> LIB_CLI
+    SPEC_INIT --> LIB_CONFIG
+    SPEC_GATE --> LIB_AGENT
+    SPEC_GATE --> LIB_CONFIG
 
-    AGENT --> CLIU
-    CONFIG --> CLIU
+    FLOW --> LIB_CLI
+    FLOW --> LIB_CONFIG
+    FLOW --> FLOW_STATE["lib/flow-state.js"]
+
+    RESOLVER --> DATA_SOURCE["docs/lib/data-source.js"]
+    LIB_AGENT --> LIB_CLI
+    LIB_CONFIG --> LIB_CLI
+    LIB_PRESETS --> LIB_CLI
 ```
-<!-- {{/text}} -->
 
 ### 主要な処理フロー
 
 <!-- {{text: Explain the inter-module data and control flow when a representative command (build or forge) is executed, using numbered steps. Include the flow from entry point → dispatch → config loading → analysis data preparation → AI call → file writing.}} -->
 
-**`sdd-forge build` — フルパイプライン実行**
+**`sdd-forge build` パイプライン**
 
-1. **エントリポイント** — `sdd-forge.js` が `build` サブコマンドを受け取り、プロジェクトコンテキストを解決（`--project` フラグまたは `.sdd-forge/projects.json` のデフォルト設定）して `SDD_SOURCE_ROOT` と `SDD_WORK_ROOT` 環境変数を設定し、`docs.js` に委譲する。
-2. **ディスパッチ** — `docs.js` が `build` を `scan → init → data → text → readme → agents → [translate]` の順次パイプラインにマッピングし、各コマンドモジュールを順番に呼び出す。
-3. **設定ロード** — 各コマンドが `src/lib/config.js` の `loadConfig(root)` を呼び出して `.sdd-forge/config.json` を読み込み、プロジェクトタイプ、出力言語、AI エージェント設定、並列処理数などを取得する。
-4. **ソース解析（`scan`）** — `scan.js` が `docs/lib/scanner.js` のユーティリティを呼び出してソースツリーを探索し、PHP/JS/YAML ファイルを解析して `.sdd-forge/output/analysis.json`（フル）と `summary.json`（AI 向け軽量版）を書き出す。
-5. **テンプレート初期化（`init`）** — `init.js` が `directive-parser.js` を使ってプリセットテンプレート内の `@extends` / `@block` ディレクティブを特定し、`template-merger.js` で `docs/` 以下の最終的な Markdown スケルトンを生成する。
-6. **データ解決（`data`）** — `data.js` が `resolver-factory.js` の `createResolver()` を呼び出してプロジェクトタイプに対応する `DataSource` を選択する。docs 内の各 `{{data: …}}` ディレクティブが `analysis.json` から抽出された構造化コンテンツで置き換えられる。
-7. **AI テキスト生成（`text`）** — `text.js` が各 `{{text: …}}` ディレクティブを読み取り、`text-prompts.js` でプロンプトを構築（`summary.json` のコンテンツとプロジェクトコンテキストを組み込み）して、`lib/agent.js` の `callAgentAsync()` を呼び出して AI レスポンスをストリーミングする。結果が docs の Markdown ファイルに書き戻される。
-8. **成果物のファイナライズ** — `readme.js` が docs コンテンツから `README.md` を組み立て、`agents.js` が `AGENTS.md` のセクションを再生成し、複数の出力言語が設定されている場合は `translate.js` が翻訳版を生成する。
+1. **エントリポイント** — `sdd-forge.js` が `build` サブコマンドを受け取り、プロジェクトコンテキストを解決し（`--project` フラグまたは `.sdd-forge/projects.json` 経由）、`SDD_SOURCE_ROOT` と `SDD_WORK_ROOT` 環境変数を設定して `docs.js` に委譲する。
+2. **ディスパッチ** — `docs.js` が `build` をシーケンシャルなパイプライン（`scan → init → data → text → readme → agents → [translate]`）にマッピングする。
+3. **scan** — `docs/commands/scan.js` が `lib/config.js` を読み込んでプロジェクトの `type` を特定し、`lib/presets.js` でアクティブなプリセットを解決し、`docs/lib/scanner.js` を通じてプリセットの言語固有アナライザーを呼び出し、`.sdd-forge/output/analysis.json` を書き出す。
+4. **init** — `docs/commands/init.js` が `lib/presets.js` でテンプレートファイルを特定し、`docs/lib/template-merger.js` で `@extends` / `@block` 継承を解決し、`docs/` にチャプタースケルトンを書き出す。
+5. **data** — `docs/commands/data.js` が各 `docs/*.md` ファイルを読み込み、`docs/lib/directive-parser.js` で `{{data}}` ディレクティブを解析し、`docs/lib/resolver-factory.js` で `DataSource` 実装を基にリゾルバーを構築し、各ディレクティブブロックをレンダリング済みの Markdown テーブルで置換する。
+6. **text** — `docs/commands/text.js` が `{{text}}` ディレクティブを解析し、`docs/lib/text-prompts.js` でディレクティブごとのプロンプトを構築し（関連するソースファイルの内容を含む）、`lib/agent.js` の `callAgentAsync()` で設定済みの AI エージェントを呼び出す。返却されたテキストはディレクティブマーカー間に注入される。
+7. **readme & agents** — `docs/commands/readme.js` と `docs/commands/agents.js` も同じパターンに従う。`docs/lib/command-context.js` で `analysis.json` を読み込み、`docs/lib/forge-prompts.js` でプロンプトを構築し、AI を呼び出して出力ファイルを書き出す。
+8. **translate**（任意）— 複数の出力言語が設定されており、`output.mode` が `translate` の場合、translate コマンドが生成済みの各ドキュメントをセカンダリ言語に再レンダリングする。
 
-**`sdd-forge forge` — docs の反復改善**
+**`sdd-forge forge` フロー**
 
-1. **エントリポイント → ディスパッチ** — 手順2まで上記と同様；`docs.js` が直接 `forge.js` に委譲する。
-2. **設定と解析データのロード** — `forge.js` が `loadConfig()` を呼び出し、`forge-prompts.js` の `summaryToText()` を使って `.sdd-forge/output/summary.json`（存在しない場合は `analysis.json` にフォールバック）を読み込んで人間が読めるテキストブロックに変換する。
-3. **プロンプト構築** — `forge-prompts.js` がサマリーテキスト、現在の docs コンテンツ、呼び出し元が指定した `--prompt` 引数、config の `documentStyle` 設定を組み合わせて単一の改善プロンプトを生成する。
-4. **AI 呼び出し** — `lib/agent.js` の `callAgentAsync()` が設定済みの AI エージェントプロセスを `stdin: "ignore"` でスポーンし、`{{PROMPT}}` プレースホルダーにプロンプトを注入（未使用の場合は末尾に追加）して、コールバック経由で出力をストリーミングする。
-5. **ファイル書き込み** — `forge.js` が AI レスポンスを受け取り、`{{text}}` / `{{data}}` ディレクティブブロック外のコンテンツを変更せずに、関連する docs の Markdown ファイルに更新内容を書き込む。
-6. **品質チェック** — `forge` の後、パイプライン（またはユーザー）が `sdd-forge review` を実行する。review チェックリストで AI エージェントを再度呼び出し、`review-parser.js` が構造化された合否結果をパースして、追加の forge 反復が必要かどうかを判定する。
-<!-- {{/text}} -->
+1. `sdd-forge.js` がプロジェクトコンテキストを解決して `docs.js` に委譲し、`docs.js` が `docs/commands/forge.js` を読み込む。
+2. `forge.js` が `lib/config.js` からエージェント設定を読み込み、`docs/lib/command-context.js` 経由で `analysis.json` を読み込む。
+3. `docs/lib/forge-prompts.js` が `--prompt` による変更サマリー、現在の docs コンテンツ、解析データを組み合わせた改善プロンプトを構築する。
+4. `lib/agent.js` の `callAgentAsync()` が AI レスポンスをストリーミングで受け取る。影響を受ける各 `{{text}}` セクションが対応する `docs/*.md` ファイルに更新される。
+5. 書き出し後、`docs/commands/review.js` を呼び出して結果を検証できる。`docs/lib/review-parser.js` が AI のチェックリスト出力を PASS または FAIL として解釈する。
 
 ### 拡張ポイント
 
@@ -274,37 +190,35 @@ graph TD
 
 **(1) 新しい docs サブコマンドの追加**
 
-1. `src/docs/commands/<name>.js` を作成し、`main(argv, env)` 関数をエクスポートする（直接実行スクリプトの場合は末尾で `main()` を呼び出す）。
-2. `src/docs.js` を開き、新しいコマンドモジュールをインポートして呼び出す `case '<name>':` ブランチをディスパッチャーのスイッチ文に追加する。
-3. `sdd-forge help` に表示されるよう `src/help.js` にサブコマンドを追加する。
-4. `build` パイプラインの一部として実行する場合は、`docs/commands/build.js`（または `docs.js` 内のインライン build ロジック）のパイプラインシーケンスの適切な位置に挿入する。
+1. `src/docs/commands/<name>.js` を作成する。`main(args)` 関数をエクスポートするか、`isDirectRun` でガードしたトップレベルの `main()` 呼び出しを使用する。
+2. `src/docs.js` を開き、サブコマンドの switch に `case '<name>':` エントリを追加して新しいモジュールをインポート・呼び出す。
+3. `src/help.js` を更新してヘルプ出力に新しいコマンドを一覧表示する。
+4. `tests/docs/commands/<name>.test.js` にテストを追加する。
 
 **(2) 新しい spec サブコマンドの追加**
 
-1. `src/specs/commands/<name>.js` に `main()` 関数を作成する。
-2. `src/spec.js` を開き、新しいモジュールへのルーティングケースを追加する。
-3. `src/help.js` に新しいサブコマンドの説明を追加する。
-4. コマンドが SDD フロー状態に関与する場合は、`src/lib/flow-state.js` の `saveFlowState()` / `loadFlowState()` を使用する。
+1. `main(args)` 関数を持つ `src/specs/commands/<name>.js` を作成する。
+2. `src/spec.js` を開き、対応するルーティングケースを追加する。
+3. `src/help.js` にコマンドを登録する。
 
 **(3) 新しいプリセットの追加**
 
-1. `src/presets/<arch>/<key>/` ディレクトリを作成し、プリセットの `type`、`arch`、`isArch`、スキャン対象、章構成を記述した `preset.json` を追加する。
-2. `src/presets/<arch>/<key>/templates/{ja,en}/` 以下に Markdown テンプレートを追加し、`@extends base` と `@block` ディレクティブを使ってベースレイアウトを継承・オーバーライドする。
-3. プリセットにカスタムのソース解析が必要な場合は、アナライザーモジュールを追加してプリセットのリゾルバーまたは `docs/lib/scanner.js` に登録する。
-4. `src/lib/presets.js` は起動時に全 `preset.json` ファイルを自動探索するため、`PRESETS` への手動登録は不要。
-5. 必要に応じて `src/lib/types.js` の `TYPE_ALIASES` に型エイリアスを追加する。
+1. `src/presets/<arch>/<key>/` 配下にディレクトリを作成する（例: `src/presets/webapp/rails/`）。
+2. `type`、`arch`、`isArch`（該当する場合）、`chapters`、`scan` ターゲットを宣言した `preset.json` ファイルを追加する。
+3. ドキュメントテンプレートを `src/presets/<arch>/<key>/templates/{ja,en}/` に配置する。
+4. プリセットがカスタムファイル解析を必要とする場合、アナライザーモジュールを `preset.json` と同じ場所に追加し、`scan` 設定から参照する。
+5. `lib/presets.js` が次回の実行時に新しいプリセットを自動探索する。手動での登録は不要。
 
 **(4) 新しい DataSource（`{{data}}` リゾルバー）の追加**
 
-1. `src/docs/data/`（または関連するプリセットディレクトリ）に `src/docs/lib/data-source.js` の `DataSource` を継承した新しいクラスを作成し、必要なリゾルバーメソッドを実装する。
-2. 対応するプロジェクトタイプに対して新しい DataSource が返されるよう `src/docs/lib/data-source-loader.js` に登録する。
-3. `resolver-factory.js` が `data-source-loader.js` を呼び出して DataSource インスタンスを取得する；`data` コマンドが `{{data: yourNamespace("…")}}` ディレクティブを見つけた際にリゾルバーが呼び出される。
-4. `tests/docs/lib/` に新しいリゾルバーの出力フォーマットをカバーするテストを追加する。
+1. `DataSource`（`src/docs/lib/data-source.js`）を継承するクラスを作成し、最低限 `toRows()` と `desc()` を実装する。
+2. ファイルを `src/docs/data/` または関連するプリセットディレクトリに配置する。
+3. `src/docs/lib/resolver-factory.js` の `createResolver()` 内に新しい DataSource キーを登録し、ディレクティブキー文字列をクラスのインスタンスにマッピングする。
+4. 対応するテンプレートファイルで `{{data: <key>}}` としてキーを参照する。
 
 **(5) 新しい AI プロンプトの追加**
 
-1. プロンプトが `forge`/`agents` フロー向けか（→ `src/docs/lib/forge-prompts.js`）、`text` ディレクティブ解決フロー向けか（→ `src/docs/lib/text-prompts.js`）を判断する。
-2. 適切なプロンプトファイルにエクスポートされたビルダー関数（例: `buildMyFeaturePrompt(context)`）を追加し、解析データ、config 設定、呼び出し元から渡された引数からプロンプト文字列を構築する。
-3. 関連するコマンドモジュール（`forge.js`、`agents.js`、または `text.js`）で新しいビルダーをインポートして呼び出し、結果を `src/lib/agent.js` の `callAgent()` または `callAgentAsync()` に渡す。
-4. プロンプトにカスタムのシステムプロンプトが必要な場合は、エージェント設定の `systemPromptFlag` を設定するか、`agent.js` のドキュメントに記載の `--system-prompt-file` 引数を渡す。
-<!-- {{/text}} -->
+1. プロンプトが `forge`/`agents` フロー向けか（→ `src/docs/lib/forge-prompts.js`）、`text` ディレクティブフロー向けか（→ `src/docs/lib/text-prompts.js`）を判断する。
+2. 関連する解析データを受け取ってプロンプト文字列を返す名前付きのビルダー関数を追加する。
+3. 使用するコマンドファイルから新しいビルダーをインポートして呼び出し、結果を `lib/agent.js` の `callAgent()` または `callAgentAsync()` に渡す。
+4. プロンプトにロケール固有の文言が必要な場合、`src/locale/{ja,en}/prompts.json` にメッセージキーを追加し、`lib/i18n.js` 経由で読み込む。

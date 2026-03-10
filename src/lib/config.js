@@ -6,7 +6,7 @@
 
 import fs from "fs";
 import path from "path";
-import { validateConfig, validateContext } from "./types.js";
+import { validateConfig } from "./types.js";
 
 /** Default concurrency for parallel file processing. */
 export const DEFAULT_CONCURRENCY = 5;
@@ -110,54 +110,3 @@ export function loadConfig(root) {
   return validateConfig(raw);
 }
 
-/**
- * .sdd-forge/context.json を読み込む。ファイルがなければ空オブジェクトを返す。
- *
- * @param {string} root - リポジトリルート
- * @returns {import("./types.js").SddContext}
- */
-export function loadContext(root) {
-  const ctxPath = path.join(sddDir(root), "context.json");
-  if (!fs.existsSync(ctxPath)) return {};
-  const raw = JSON.parse(fs.readFileSync(ctxPath, "utf8"));
-  return validateContext(raw);
-}
-
-/**
- * .sdd-forge/context.json に書き込む。
- *
- * @param {string} root - リポジトリルート
- * @param {import("./types.js").SddContext} data - 書き込むデータ
- */
-export function saveContext(root, data) {
-  const ctxPath = path.join(sddDir(root), "context.json");
-  const dir = path.dirname(ctxPath);
-  if (!fs.existsSync(dir)) {
-    fs.mkdirSync(dir, { recursive: true });
-  }
-  fs.writeFileSync(ctxPath, JSON.stringify(data, null, 2) + "\n", "utf8");
-}
-
-/**
- * プロジェクトコンテキスト文字列を解決する。
- * 優先順位: context.json → config.json の textFill.projectContext → 空文字列
- *
- * @param {string} root - リポジトリルート
- * @returns {string}
- */
-export function resolveProjectContext(root) {
-  const ctx = loadContext(root);
-  if (ctx.projectContext) return ctx.projectContext;
-
-  const cfgPath = sddConfigPath(root);
-  if (fs.existsSync(cfgPath)) {
-    try {
-      const cfg = JSON.parse(fs.readFileSync(cfgPath, "utf8"));
-      if (cfg.textFill?.projectContext) return cfg.textFill.projectContext;
-    } catch (_) {
-      // ignore
-    }
-  }
-
-  return "";
-}

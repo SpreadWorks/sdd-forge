@@ -65,11 +65,6 @@ import { buildTypeAliases } from "./presets.js";
  * @property {FlowConfig} [flow]              - Flow configuration
  */
 
-/**
- * @typedef {Object} SddContext
- * @property {string} [projectContext] - プロジェクト概要テキスト
- */
-
 // ---------------------------------------------------------------------------
 // 定数
 // ---------------------------------------------------------------------------
@@ -216,18 +211,3 @@ export function resolveOutputConfig(cfg) {
   };
 }
 
-/**
- * context.json のバリデーション。
- *
- * @param {*} raw - パース済み context オブジェクト
- * @returns {SddContext} バリデーション済み context
- */
-export function validateContext(raw) {
-  if (!raw || typeof raw !== "object") {
-    throw new Error("context must be a non-null object");
-  }
-  if (raw.projectContext != null && typeof raw.projectContext !== "string") {
-    throw new Error("'projectContext' must be a string");
-  }
-  return /** @type {SddContext} */ (raw);
-}

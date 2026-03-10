@@ -16,7 +16,7 @@ import readline from "readline";
 import { runIfDirect } from "../../lib/entrypoint.js";
 import { PKG_DIR, parseArgs } from "../../lib/cli.js";
 import { validateConfig } from "../../lib/types.js";
-import { saveContext, DEFAULT_LANG } from "../../lib/config.js";
+import { DEFAULT_LANG } from "../../lib/config.js";
 import { createI18n } from "../../lib/i18n.js";
 import { addProject, workRootFor, loadProjects } from "../../lib/projects.js";
 import { presetsForArch } from "../../lib/presets.js";
@@ -86,7 +86,7 @@ function parseSetupArgs(argv) {
     options: [
       "--name", "--path", "--work-root",
       "--type", "--purpose", "--tone",
-      "--agent", "--project-context",
+      "--agent",
       "--lang",
     ],
     defaults: {
@@ -97,7 +97,6 @@ function parseSetupArgs(argv) {
       purpose: "",
       tone: "",
       agent: "",
-      projectContext: "",
       lang: "",
       setDefault: false,
       noDefault: false,
@@ -366,7 +365,7 @@ async function main() {
     console.log([
       h.usage, "", `  ${h.desc}`, "", "Options:",
       `  ${o.name}`, `  ${o.path}`, `  ${o.workRoot}`, `  ${o.type}`,
-      `  ${o.purpose}`, `  ${o.tone}`, `  ${o.agent}`, `  ${o.projectContext}`,
+      `  ${o.purpose}`, `  ${o.tone}`, `  ${o.agent}`,
       `  ${o.lang}`, `  ${o.setDefault}`, `  ${o.noDefault}`, `  ${o.dryRun}`, `  ${o.help}`,
     ].join("\n"));
     return;
@@ -388,7 +387,6 @@ async function main() {
   let type = cli.type;
   let purpose = cli.purpose;
   let tone = cli.tone;
-  let projectContext = cli.projectContext;
   let defaultAgent = cli.agent;
 
   // Parse --lang for non-interactive use: first value is operating lang
@@ -516,13 +514,7 @@ async function main() {
       ], t);
     }
 
-    // --- Step 6: Project context ---
-    if (!projectContext) {
-      console.log(`\n${t("setup.questions.projectContext")}`);
-      projectContext = await ask(rl, t("setup.prompt"));
-    }
-
-    // --- Step 7: Agent ---
+    // --- Step 6: Agent ---
     if (!defaultAgent) {
       const agentChoices = t.raw("setup.choices.agent");
       const agentChoice = await askChoice(rl, t("setup.questions.agent"), [
@@ -562,7 +554,6 @@ async function main() {
       tone,
     },
     textFill: {
-      projectContext: "",
       preamblePatterns: [
         { pattern: "^(Here is|以下に|Based on)", flags: "i" },
       ],
@@ -603,7 +594,6 @@ async function main() {
 
     console.log("[setup] DRY-RUN: would write the following files:");
     console.log(`  - ${path.join(workRoot, ".sdd-forge", "config.json")}`);
-    if (projectContext) console.log(`  - ${path.join(workRoot, ".sdd-forge", "context.json")}`);
     console.log(`  - ${path.join(workRoot, "AGENTS.md")}`);
     console.log(`  - ${path.join(workRoot, "CLAUDE.md")} (symlink)`);
     const skillTemplatesDir = path.join(PKG_DIR, "templates", "skills");
@@ -630,13 +620,7 @@ async function main() {
     ensureAgentWorkDir(provider, workRoot);
   }
 
-  // 5. Write context.json if projectContext provided
-  if (projectContext) {
-    saveContext(workRoot, { projectContext });
-    console.log(t("setup.messages.contextGenerated"));
-  }
-
-  // 6. AGENTS.md setup
+  // 5. AGENTS.md setup
   await setupAgentsMd(rl, workRoot, operatingLang, t, hasAllRequired);
 
   // 7. CLAUDE.md symlink
@@ -658,8 +642,6 @@ async function main() {
   console.log(`    purpose:  ${purpose}`);
   console.log(`    tone:     ${tone}`);
   if (defaultAgent) console.log(`    agent:    ${defaultAgent}`);
-  if (projectContext) console.log(`    context:  ${projectContext.slice(0, 80)}${projectContext.length > 80 ? "..." : ""}`);
-
   console.log(`\n  ${t("setup.messages.nextSteps")}`);
   console.log(`    ${t("setup.messages.step1")}`);
   console.log("");

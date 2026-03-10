@@ -7,17 +7,27 @@
 
 import { createI18n } from "../../lib/i18n.js";
 
+const ANALYSIS_META_KEYS = new Set(["analyzedAt", "enrichedAt", "generatedAt", "extras", "files", "root"]);
+
 /**
  * analysis.json をプロンプト用テキストに変換する。
+ * enrichedAt がある場合は enriched entries の summary を使用する。
  *
- * @param {Object|null} summary - Parsed analysis.json
+ * @param {Object|null} analysis - Parsed analysis.json
  * @returns {string} Summary text
  */
-export function summaryToText(summary) {
-  if (!summary) return "";
+export function summaryToText(analysis) {
+  if (!analysis) return "";
+
+  // Enriched mode: collect summary from all enriched entries
+  if (analysis.enrichedAt) {
+    return enrichedSummaryToText(analysis);
+  }
+
+  // Legacy fallback: structured summary fields
   const parts = [];
-  if (summary.controllers) {
-    const c = summary.controllers;
+  if (analysis.controllers) {
+    const c = analysis.controllers;
     parts.push(`Controllers: ${c.total} files, ${c.totalActions} actions`);
     if (c.top) {
       for (const ctrl of c.top) {
@@ -26,8 +36,8 @@ export function summaryToText(summary) {
       }
     }
   }
-  if (summary.models) {
-    const m = summary.models;
+  if (analysis.models) {
+    const m = analysis.models;
     parts.push(`Models: ${m.total} files (fe=${m.feModels || 0}, logic=${m.logicModels || 0})`);
     if (m.dbGroups) {
       for (const [db, models] of Object.entries(m.dbGroups)) {
@@ -35,8 +45,8 @@ export function summaryToText(summary) {
       }
     }
   }
-  if (summary.shells) {
-    const s = summary.shells;
+  if (analysis.shells) {
+    const s = analysis.shells;
     parts.push(`Shells: ${s.total} files`);
     if (s.items) {
       for (const sh of s.items) {
@@ -44,12 +54,41 @@ export function summaryToText(summary) {
       }
     }
   }
-  if (summary.routes) {
-    parts.push(`Routes: ${summary.routes.total} explicit routes`);
+  if (analysis.routes) {
+    parts.push(`Routes: ${analysis.routes.total} explicit routes`);
   }
-  if (summary.files) {
-    parts.push(`Files: ${summary.files.summary?.total || 0} total`);
+  if (analysis.files) {
+    parts.push(`Files: ${analysis.files.summary?.total || 0} total`);
   }
+  return parts.join("\n");
+}
+
+/**
+ * enriched analysis から全カテゴリの summary を収集してテキスト化する。
+ *
+ * @param {Object} analysis - Enriched analysis.json
+ * @returns {string}
+ */
+function enrichedSummaryToText(analysis) {
+  const parts = [];
+
+  for (const cat of Object.keys(analysis)) {
+    if (ANALYSIS_META_KEYS.has(cat)) continue;
+    const data = analysis[cat];
+    if (!data || typeof data !== "object") continue;
+    const items = data[cat];
+    if (!Array.isArray(items)) continue;
+
+    const enrichedItems = items.filter((item) => item.summary);
+    if (enrichedItems.length === 0) continue;
+
+    parts.push(`${cat} (${enrichedItems.length} entries):`);
+    for (const item of enrichedItems) {
+      const name = item.file || item.name || item.className || "unknown";
+      parts.push(`  - ${name}: ${item.summary}`);
+    }
+  }
+
   return parts.join("\n");
 }
 
@@ -158,16 +197,3 @@ export function buildForgePrompt({ lang, userPrompt, round, maxRuns, reviewFeedb
   ].join("\n");
 }
 
-/**
- * Build the prompt for context update after review passes.
- *
- * @param {Object} params
- * @param {string} [params.lang]
- * @param {string} params.snippets - Document snippets text
- * @returns {string}
- */
-export function buildContextUpdatePrompt({ lang, snippets }) {
-  const t = createI18n(lang || "ja", { domain: "prompts" });
-  const instruction = t("forge.contextUpdatePrompt");
-  return [instruction, "", snippets].join("\n");
-}

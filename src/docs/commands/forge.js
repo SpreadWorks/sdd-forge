@@ -13,14 +13,13 @@
 
 import fs from "fs";
 import path from "path";
-import readline from "readline";
 import { execFile } from "child_process";
 import { runIfDirect } from "../../lib/entrypoint.js";
 import { populateFromAnalysis } from "./data.js";
 import { textFillFromAnalysis } from "./text.js";
 import { mapWithConcurrency } from "../lib/concurrency.js";
 import { PKG_DIR, repoRoot, parseArgs } from "../../lib/cli.js";
-import { loadConfig, loadLang, resolveConcurrency, saveContext } from "../../lib/config.js";
+import { loadConfig, loadLang, resolveConcurrency } from "../../lib/config.js";
 import { resolveType } from "../../lib/types.js";
 import { loadFullAnalysis, loadAnalysisData, getChapterFiles, readText } from "../lib/command-context.js";
 import { createResolver } from "../lib/resolver-factory.js";
@@ -31,7 +30,6 @@ import {
   buildForgeSystemPrompt,
   buildForgeFilePrompt,
   buildForgePrompt,
-  buildContextUpdatePrompt,
 } from "../lib/forge-prompts.js";
 import {
   FALLBACK_PATCH_ORDER,
@@ -54,7 +52,7 @@ function getTargetFiles(root) {
 
 function parseCliOptions(argv) {
   const opts = parseArgs(argv, {
-    flags: ["--verbose", "--auto-update-context", "--dry-run"],
+    flags: ["--verbose", "--dry-run"],
     options: ["--prompt", "--prompt-file", "--spec", "--max-runs", "--review-cmd", "--agent", "--mode"],
     aliases: { "-v": "--verbose" },
     defaults: {
@@ -63,7 +61,6 @@ function parseCliOptions(argv) {
       spec: "",
       agent: "",
       verbose: false,
-      autoUpdateContext: false,
       dryRun: false,
       maxRuns: String(DEFAULT_MAX_RUNS),
       reviewCmd: DEFAULT_REVIEW_CMD,
@@ -92,7 +89,7 @@ function printHelp() {
       h.usage, "", "Options:",
       `  ${o.prompt}`, `  ${o.promptFile}`, `  ${o.spec}`, `  ${o.maxRuns}`,
       `  ${o.reviewCmd}`, `  ${o.agent}`, `  ${o.mode}`, `  ${o.dryRun}`,
-      `  ${o.autoUpdateContext}`, `  ${o.verbose}`, `  ${o.help}`,
+      `  ${o.verbose}`, `  ${o.help}`,
       "", "Per-file mode:", `  ${h.perFileNote}`, "",
     ].join("\n")
   );
@@ -184,61 +181,6 @@ async function runPerFile({ agent, targetFiles, systemPrompt, lang, round, maxRu
     }
     return r.value;
   });
-}
-
-/**
- * forge の review 成功後に projectContext を自動更新する。
- * docs/ の各章ファイル先頭を LLM に渡し、プロジェクト概要を生成させる。
- */
-async function maybeUpdateContext(root, config, agent, timeoutMs, autoConfirm) {
-  const files = getChapterFiles(path.join(root, "docs"));
-  if (files.length === 0) return;
-
-  // 各章の先頭500文字を抽出
-  const docsDir = path.join(root, "docs");
-  const snippets = files.map((f) => {
-    const content = fs.readFileSync(path.join(docsDir, f), "utf8");
-    return `### ${f}\n${content.slice(0, 500)}`;
-  }).join("\n\n");
-
-  const promptText = buildContextUpdatePrompt({ lang: config.lang, snippets });
-
-  let generated;
-  try {
-    generated = await invokeAgent(agent, promptText, {
-      label: "forge.context-update",
-      cwd: root,
-      timeoutMs,
-    });
-  } catch (err) {
-    console.log(`[forge] context update skipped: ${String(err.message).slice(0, 200)}`);
-    return;
-  }
-
-  if (!generated || generated.trim().length === 0) {
-    console.log("[forge] context update skipped: empty response.");
-    return;
-  }
-
-  const trimmed = generated.trim();
-  console.log(`\n[forge] Generated project context:\n${trimmed}\n`);
-
-  let confirmed = autoConfirm;
-  if (!confirmed) {
-    const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
-    const answer = await new Promise((resolve) => {
-      rl.question("Update context.json? (y/N): ", resolve);
-    });
-    rl.close();
-    confirmed = answer.trim().toLowerCase() === "y";
-  }
-
-  if (confirmed) {
-    saveContext(root, { projectContext: trimmed });
-    console.log("[forge] context.json updated.");
-  } else {
-    console.log("[forge] context.json update skipped.");
-  }
 }
 
 async function main() {
@@ -420,9 +362,6 @@ async function main() {
     console.log(`[forge] review: ${review.ok ? "ok" : "failed"} (code=${review.code})`);
     if (review.ok) {
       console.log("[forge] review passed.");
-      if (config.documentStyle && agent) {
-        await maybeUpdateContext(root, config, agent, timeoutMs, cli.autoUpdateContext);
-      }
       const readme = await runCommand(`node "${path.join(PKG_DIR, "docs", "commands", "readme.js")}"`, root);
       console.log(`[forge] README.md ${readme.ok ? "updated" : "update failed"}.`);
 

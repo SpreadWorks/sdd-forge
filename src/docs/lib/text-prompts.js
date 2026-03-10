@@ -167,7 +167,7 @@ export function getEnrichedContext(analysis, fileName, mode, srcRoot) {
 /**
  * documentStyle → プロンプトヘッダー行を生成する。
  */
-function buildPromptHeader(projectContext, documentStyle, lang) {
+function buildPromptHeader(documentStyle, lang) {
   const t = createI18n(lang || "ja", { domain: "prompts" });
   const header = [];
   if (documentStyle) {
@@ -183,9 +183,6 @@ function buildPromptHeader(projectContext, documentStyle, lang) {
     }
   } else {
     header.push(t("text.defaultRole"));
-  }
-  if (projectContext) {
-    header.push("", t("text.projectInfoHeading"), projectContext);
   }
   return header;
 }
@@ -217,9 +214,9 @@ const LANG_NAMES = {
   it: "Italian", ru: "Russian",
 };
 
-export function buildTextSystemPrompt(projectContext, documentStyle, lang) {
+export function buildTextSystemPrompt(documentStyle, lang) {
   const t = createI18n(lang || "ja", { domain: "prompts" });
-  const header = buildPromptHeader(projectContext, documentStyle, lang);
+  const header = buildPromptHeader(documentStyle, lang);
   const outputRules = t.raw("text.outputRules") || [];
   const langName = LANG_NAMES[lang] || lang;
   return [

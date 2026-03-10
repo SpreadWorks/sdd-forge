@@ -15,7 +15,6 @@
     "customInstruction": ""
   },
   "textFill": {
-    "projectContext": "",
     "preamblePatterns": [
       { "pattern": "^(Here is|以下に|Based on)", "flags": "i" }
     ]

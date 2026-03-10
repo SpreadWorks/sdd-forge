@@ -25,7 +25,7 @@ import {
   formatLimitRule,
 } from "../lib/text-prompts.js";
 import { repoRoot, parseArgs } from "../../lib/cli.js";
-import { loadConfig, loadLang, resolveProjectContext, resolveConcurrency, DEFAULT_CONCURRENCY } from "../../lib/config.js";
+import { loadConfig, loadLang, resolveConcurrency, DEFAULT_CONCURRENCY } from "../../lib/config.js";
 import { createLogger } from "../../lib/progress.js";
 import { callAgent as callAgentBase, callAgentAsync as callAgentAsyncBase, ensureAgentWorkDir, loadAgentConfig, MID_AGENT_TIMEOUT_MS } from "../../lib/agent.js";
 import { createI18n } from "../../lib/i18n.js";
@@ -345,10 +345,9 @@ export async function textFillFromAnalysis(root, analysis, agentName, srcRoot) {
   const cfg = loadConfig(root);
   const agent = loadAgentConfig(cfg, agentName);
   const preamblePatterns = loadPreamblePatterns(cfg);
-  const projectContext = resolveProjectContext(root);
   const documentStyle = cfg.documentStyle;
   const lang = cfg.output.default;
-  const systemPrompt = buildTextSystemPrompt(projectContext, documentStyle, lang);
+  const systemPrompt = buildTextSystemPrompt(documentStyle, lang);
   const concurrency = resolveConcurrency(cfg);
   const docsDir = path.join(root, "docs");
   const docsFiles = getChapterFiles(docsDir);
@@ -450,10 +449,9 @@ async function main(ctx) {
   ensureAgentWorkDir(agent, root);
 
   const preamblePatterns = loadPreamblePatterns(cfg);
-  const projectContext = resolveProjectContext(root);
   const documentStyle = cfg.documentStyle;
   const lang = ctx.outputLang;
-  const systemPrompt = buildTextSystemPrompt(projectContext, documentStyle, lang);
+  const systemPrompt = buildTextSystemPrompt(documentStyle, lang);
   const concurrency = resolveConcurrency(cfg);
   const docsFiles = getChapterFiles(docsDir);
 

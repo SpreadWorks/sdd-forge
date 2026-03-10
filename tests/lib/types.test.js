@@ -1,6 +1,6 @@
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
-import { validateConfig, validateContext, resolveType, TYPE_ALIASES } from "../../src/lib/types.js";
+import { validateConfig, resolveType, TYPE_ALIASES } from "../../src/lib/types.js";
 
 describe("TYPE_ALIASES", () => {
   it("maps php-mvc to webapp/cakephp2", () => {
@@ -113,25 +113,5 @@ describe("validateConfig", () => {
       }),
       /output\.default/,
     );
-  });
-});
-
-describe("validateContext", () => {
-  it("accepts empty object", () => {
-    const result = validateContext({});
-    assert.deepEqual(result, {});
-  });
-
-  it("accepts valid projectContext", () => {
-    const result = validateContext({ projectContext: "test project" });
-    assert.equal(result.projectContext, "test project");
-  });
-
-  it("throws on non-object", () => {
-    assert.throws(() => validateContext(null), /non-null object/);
-  });
-
-  it("throws on non-string projectContext", () => {
-    assert.throws(() => validateContext({ projectContext: 123 }), /string/);
   });
 });

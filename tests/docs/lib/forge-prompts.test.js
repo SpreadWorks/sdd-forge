@@ -5,7 +5,6 @@ import {
   buildForgeSystemPrompt,
   buildForgeFilePrompt,
   buildForgePrompt,
-  buildContextUpdatePrompt,
 } from "../../../src/docs/lib/forge-prompts.js";
 
 describe("summaryToText", () => {
@@ -13,7 +12,7 @@ describe("summaryToText", () => {
     assert.equal(summaryToText(null), "");
   });
 
-  it("includes controller summary", () => {
+  it("includes controller summary (legacy mode)", () => {
     const summary = {
       controllers: {
         total: 3,
@@ -28,12 +27,85 @@ describe("summaryToText", () => {
     assert.ok(result.includes("UsersController"));
   });
 
-  it("includes routes summary", () => {
+  it("includes routes summary (legacy mode)", () => {
     const summary = {
       routes: { total: 5 },
     };
     const result = summaryToText(summary);
     assert.ok(result.includes("Routes: 5 explicit routes"));
+  });
+
+  it("uses enriched summaries when enrichedAt is present", () => {
+    const analysis = {
+      enrichedAt: "2026-01-01T00:00:00Z",
+      modules: {
+        summary: { total: 2 },
+        modules: [
+          { file: "src/a.js", summary: "Module A handles auth", chapter: "overview" },
+          { file: "src/b.js", summary: "Module B handles config", chapter: "configuration" },
+        ],
+      },
+    };
+    const result = summaryToText(analysis);
+    assert.ok(result.includes("modules (2 entries):"));
+    assert.ok(result.includes("src/a.js: Module A handles auth"));
+    assert.ok(result.includes("src/b.js: Module B handles config"));
+  });
+
+  it("skips entries without summary in enriched mode", () => {
+    const analysis = {
+      enrichedAt: "2026-01-01T00:00:00Z",
+      modules: {
+        summary: { total: 2 },
+        modules: [
+          { file: "src/a.js", summary: "Has summary" },
+          { file: "src/b.js" },
+        ],
+      },
+    };
+    const result = summaryToText(analysis);
+    assert.ok(result.includes("modules (1 entries):"));
+    assert.ok(result.includes("src/a.js: Has summary"));
+    assert.ok(!result.includes("src/b.js"));
+  });
+
+  it("handles multiple categories in enriched mode", () => {
+    const analysis = {
+      enrichedAt: "2026-01-01T00:00:00Z",
+      controllers: {
+        summary: { total: 1 },
+        controllers: [
+          { file: "UsersController.php", summary: "Handles users" },
+        ],
+      },
+      models: {
+        summary: { total: 1 },
+        models: [
+          { file: "User.php", summary: "User data" },
+        ],
+      },
+    };
+    const result = summaryToText(analysis);
+    assert.ok(result.includes("controllers (1 entries):"));
+    assert.ok(result.includes("models (1 entries):"));
+  });
+
+  it("skips meta keys in enriched mode", () => {
+    const analysis = {
+      enrichedAt: "2026-01-01T00:00:00Z",
+      analyzedAt: "2026-01-01T00:00:00Z",
+      extras: { foo: "bar" },
+      modules: {
+        summary: { total: 1 },
+        modules: [
+          { file: "src/a.js", summary: "A" },
+        ],
+      },
+    };
+    const result = summaryToText(analysis);
+    assert.ok(result.includes("modules"));
+    assert.ok(!result.includes("extras"));
+    assert.ok(!result.includes("analyzedAt"));
   });
 });
 
@@ -102,25 +174,5 @@ describe("buildForgePrompt", () => {
     assert.ok(result.includes("docs/01.md"));
     assert.ok(result.includes("docs/02.md"));
     assert.ok(result.includes("[TARGET_FILES]"));
-  });
-});
-
-describe("buildContextUpdatePrompt", () => {
-  it("includes instruction and snippets", () => {
-    const result = buildContextUpdatePrompt({
-      lang: "ja",
-      snippets: "### 01_overview.md\n# Overview",
-    });
-    assert.ok(result.includes("プロジェクト概要"));
-    assert.ok(result.includes("01_overview.md"));
-  });
-
-  it("works with en locale", () => {
-    const result = buildContextUpdatePrompt({
-      lang: "en",
-      snippets: "### 01_overview.md\n# Overview",
-    });
-    assert.ok(result.includes("project overview"));
-    assert.ok(result.includes("01_overview.md"));
   });
 });

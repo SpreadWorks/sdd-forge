@@ -11,7 +11,7 @@ import fs from "fs";
 import path from "path";
 import { runIfDirect } from "../../lib/entrypoint.js";
 import { repoRoot, parseArgs } from "../../lib/cli.js";
-import { loadLang, sddOutputDir, resolveProjectContext } from "../../lib/config.js";
+import { loadLang, sddOutputDir } from "../../lib/config.js";
 import { callAgent, loadAgentConfig, LONG_AGENT_TIMEOUT_MS } from "../../lib/agent.js";
 import { createI18n } from "../../lib/i18n.js";
 import { createResolver } from "../lib/resolver-factory.js";
@@ -52,8 +52,6 @@ function buildRefinePrompt(projectContent, summary, config, srcRoot, sddContent)
   if (config.type) {
     parts.push("## Project Config");
     parts.push(`- type: ${config.type}`);
-    const ctx = resolveProjectContext(repoRoot());
-    if (ctx) parts.push(`- context: ${ctx}`);
     parts.push("");
   }
 

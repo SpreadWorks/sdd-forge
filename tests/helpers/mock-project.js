@@ -7,7 +7,7 @@ const DEFAULT_CONFIG = {
   docStyle: "flat",
   preamble: "yaml",
   scan: { include: ["src/**/*.js"], exclude: [] },
-  textFill: { projectContext: "test project", agent: "" },
+  textFill: { preamblePatterns: [] },
   providers: {},
   output: { languages: ["ja"], default: "ja" },
 };
@@ -24,7 +24,6 @@ export function createMockProject(overrides = {}) {
   const pkg = { ...DEFAULT_PACKAGE, ...overrides.package };
 
   writeJson(root, ".sdd-forge/config.json", cfg);
-  writeJson(root, ".sdd-forge/context.json", overrides.context || {});
   writeJson(root, "package.json", pkg);
   writeFile(root, ".sdd-forge/output/.gitkeep");
 

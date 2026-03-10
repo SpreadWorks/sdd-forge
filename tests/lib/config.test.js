@@ -1,7 +1,7 @@
 import { describe, it, afterEach } from "node:test";
 import assert from "node:assert/strict";
 import { join } from "path";
-import { loadJsonFile, loadPackageField, loadConfig, loadContext, saveContext, resolveProjectContext } from "../../src/lib/config.js";
+import { loadJsonFile, loadPackageField, loadConfig } from "../../src/lib/config.js";
 import { createTmpDir, removeTmpDir, writeJson, writeFile } from "../helpers/tmp-dir.js";
 
 describe("loadJsonFile", () => {
@@ -59,60 +59,5 @@ describe("loadConfig", () => {
   it("throws when config is missing", () => {
     tmp = createTmpDir();
     assert.throws(() => loadConfig(tmp), /Missing file/);
-  });
-});
-
-describe("loadContext / saveContext", () => {
-  let tmp;
-  afterEach(() => tmp && removeTmpDir(tmp));
-
-  it("returns empty object when context.json is missing", () => {
-    tmp = createTmpDir();
-    const ctx = loadContext(tmp);
-    assert.deepEqual(ctx, {});
-  });
-
-  it("saves and loads context", () => {
-    tmp = createTmpDir();
-    saveContext(tmp, { projectContext: "hello" });
-    const ctx = loadContext(tmp);
-    assert.equal(ctx.projectContext, "hello");
-  });
-
-  it("creates directory if missing", () => {
-    tmp = createTmpDir();
-    saveContext(tmp, { projectContext: "test" });
-    const ctx = loadContext(tmp);
-    assert.equal(ctx.projectContext, "test");
-  });
-});
-
-describe("resolveProjectContext", () => {
-  let tmp;
-  afterEach(() => tmp && removeTmpDir(tmp));
-
-  it("returns context.json value first", () => {
-    tmp = createTmpDir();
-    writeJson(tmp, ".sdd-forge/context.json", { projectContext: "from-context" });
-    writeJson(tmp, ".sdd-forge/config.json", {
-      lang: "ja", type: "cli",
-      textFill: { projectContext: "from-config" },
-    });
-    assert.equal(resolveProjectContext(tmp), "from-context");
-  });
-
-  it("falls back to config textFill", () => {
-    tmp = createTmpDir();
-    writeJson(tmp, ".sdd-forge/config.json", {
-      lang: "ja", type: "cli",
-      textFill: { projectContext: "from-config" },
-    });
-    assert.equal(resolveProjectContext(tmp), "from-config");
-  });
-
-  it("returns empty string when nothing is set", () => {
-    tmp = createTmpDir();
-    writeJson(tmp, ".sdd-forge/config.json", { lang: "ja", type: "cli", output: { languages: ["ja"], default: "ja" } });
-    assert.equal(resolveProjectContext(tmp), "");
   });
 });

@@ -1,13 +1,12 @@
-# 02. CLIコマンドリファレンス
+# 02. CLI コマンドリファレンス
 
-## Description
+## 説明
 
 <!-- {{text: Write a 1–2 sentence overview of this chapter. Cover the total number of commands, whether global options exist, and the subcommand structure.}} -->
 
-本章では `sdd-forge` で利用可能な全19サブコマンドを、ルーティング層ごとに整理して解説します。`docs.js` 経由でディスパッチされるドキュメントコマンド、`spec.js` 経由でディスパッチされる仕様書コマンド、および直接実行される `flow` と `presets` に分類されます。`--project`・`--help`・`--version` などの少数のグローバルオプションは全コマンドに共通して適用され、各サブコマンド固有のフラグについては以降のセクションで詳述します。
-<!-- {{/text}} -->
+`sdd-forge` は、3 層ディスパッチアーキテクチャに基づいて整理された 19 のサブコマンドを提供します。トップレベルのコマンドは `docs.js`、`spec.js`、`flow.js`、または `presets-cmd.js` ディスパッチャーを経由して個別のコマンドモジュールへルーティングされます。全コマンドに共通するグローバルオプションが存在し、一部の管理コマンドはプロジェクトコンテキストの解決をスキップします。
 
-## Contents
+## 目次
 
 ### コマンド一覧
 
@@ -15,26 +14,26 @@
 
 | コマンド | 説明 | 主なオプション |
 |---|---|---|
-| `build` | ドキュメント生成パイプラインをフル実行（scan → init → data → text → readme → agents → translate） | `--project` |
-| `scan` | ソースコードを解析し `analysis.json` と `summary.json` を出力 | `--project` |
-| `init` | プリセットテンプレートから `docs/` を初期化 | `--project`, `--force` |
-| `data` | 解析データで `{{data}}` ディレクティブを解決 | `--project` |
-| `text` | AI エージェントを使用して `{{text}}` ディレクティブを解決 | `--project`, `--agent`, `--file` |
-| `readme` | docs から `README.md` を自動生成 | `--project` |
-| `forge` | AI を通じて docs の品質を反復改善 | `--project`, `--prompt`, `--spec` |
-| `review` | docs の品質チェックを実行し PASS/FAIL を報告 | `--project` |
-| `changelog` | 蓄積された spec から `change_log.md` を生成 | `--project` |
-| `agents` | `AGENTS.md` を更新（SDD テンプレート + PROJECT セクション） | `--project`, `--sdd`, `--project-only`, `--dry-run` |
-| `upgrade` | バンドル済みドキュメントテンプレートを最新プリセットバージョンに更新 | `--project`, `--force` |
-| `translate` | 追加言語のドキュメントを生成 | `--project`, `--lang`, `--force`, `--dry-run` |
-| `setup` | プロジェクトを登録し `.sdd-forge/config.json` を生成 | — |
-| `default` | `projects.json` のデフォルトプロジェクトを設定 | — |
-| `spec` | 新しい SDD spec（`spec.md`）と feature ブランチを作成 | `--title`, `--no-branch` |
-| `gate` | 実装前後の spec ゲートチェックを実行 | `--spec`, `--phase` |
-| `flow` | 機能要求に対して SDD ワークフロー全体を自動実行 | `--request` |
-| `presets` | 利用可能なプリセットとそのメタデータを一覧表示 | — |
-| `help` | コマンド一覧と使用方法のサマリーを表示 | — |
-<!-- {{/text}} -->
+| `build` | ドキュメント生成パイプラインを一括実行: `scan → init → data → text → readme → agents → translate` | `--project` |
+| `scan` | ソースコードを解析し `analysis.json` を `.sdd-forge/output/` に出力 | `--project` |
+| `init` | プリセットテンプレートから `docs/` ディレクトリを初期化 | `--project`, `--force` |
+| `data` | 解析データを使って `docs/` 内の `{{data}}` ディレクティブを解決 | `--project` |
+| `text` | AI を使って `docs/` 内の `{{text}}` ディレクティブを解決 | `--project`, `--agent` |
+| `readme` | docs のコンテンツから `README.md` を自動生成 | `--project` |
+| `forge` | AI を使って docs の品質を反復改善 | `--prompt`, `--spec`, `--project` |
+| `review` | 生成された docs の品質チェックを実行 | `--project` |
+| `changelog` | 蓄積された `specs/` エントリから `change_log.md` を生成 | `--project` |
+| `agents` | SDD セクションとプロジェクトセクションで `AGENTS.md` を更新 | `--sdd`, `--project`, `--dry-run` |
+| `snapshot` | リグレッション検出用スナップショットテスト（`save` / `check` / `update`） | `--project` |
+| `upgrade` | docs テンプレートを最新プリセットバージョンに更新 | `--project`, `--dry-run` |
+| `translate` | docs を追加言語に翻訳 | `--lang`, `--force`, `--dry-run` |
+| `setup` | プロジェクトを登録し初期設定を生成 | — |
+| `default` | 後続コマンド用のデフォルトプロジェクトを設定 | — |
+| `spec` | feature ブランチと共に新しい SDD spec ファイルを初期化 | `--title`, `--no-branch` |
+| `gate` | 実装前後に spec のゲートチェックを実行 | `--spec`, `--phase` |
+| `flow` | 要求から実装まで SDD ワークフロー全体を自動化 | `--request` |
+| `presets` | 利用可能な全プリセットとそのメタデータを一覧表示 | — |
+| `help` | コマンド一覧と使い方の概要を表示 | — |
 
 ### グローバルオプション
 
@@ -42,18 +41,11 @@
 
 | オプション | エイリアス | 説明 |
 |---|---|---|
-| `--project <name>` | — | 対象プロジェクトを名前で指定。`.sdd-forge/projects.json` の `default` エントリを上書きする。 |
-| `--help` | `-h` | CLI または特定サブコマンドのヘルプテキストを表示して終了。 |
-| `--version` | `-v`, `-V` | インストール済みの `sdd-forge` バージョンを（`package.json` から読み込んで）出力して終了。 |
+| `--project <name>` | — | 対象プロジェクトを名前で指定します。`.sdd-forge/projects.json` から検索されます。省略した場合は `projects.json` で `default` に設定されたプロジェクトが使用されます。 |
+| `--help` | `-h` | 指定したコマンドの使い方を表示して終了します。 |
+| `--version` | `-v`, `-V` | インストール済みの `sdd-forge` バージョン（`package.json` から読み込み）を表示して終了します。 |
 
-`setup`・`default`・`help`・`presets` コマンドはプロジェクトコンテキストの解決を完全にスキップします。これらのコマンドは登録済みプロジェクトを必要とせず、`.sdd-forge/config.json` の読み込みや `SDD_SOURCE_ROOT` / `SDD_WORK_ROOT` の解決を試みません。
-
-その他すべてのコマンドでは、アクティブなプロジェクトは以下の優先順位で決定されます。
-
-1. コマンドラインで渡された `--project <name>` フラグ
-2. `.sdd-forge/projects.json` の `default` フィールド
-3. 外部から設定された環境変数 `SDD_SOURCE_ROOT` および `SDD_WORK_ROOT`
-<!-- {{/text}} -->
+> **注意:** `setup`、`default`、`help`、`presets` コマンドはプロジェクトコンテキストの解決をスキップするため、プロジェクトが登録されていなくても実行できます。それ以外のコマンドはすべて、実行前にプロジェクトコンテキストから `SDD_SOURCE_ROOT` および `SDD_WORK_ROOT` 環境変数を解決します。
 
 ### コマンド詳細
 
@@ -61,229 +53,195 @@
 
 #### build
 
-ドキュメント生成パイプラインを順番に実行します。各ステップは前のステップが成功した場合にのみ実行されます。
+ドキュメント生成パイプラインを順番に実行します:
 
-**パイプラインのステップ:**
-1. `scan` — ソースコードを解析
-2. `init` — テンプレートから docs を初期化（docs が既に存在する場合はスキップ）
-3. `data` — `{{data}}` ディレクティブを解決
-4. `text` — AI を通じて `{{text}}` ディレクティブを解決
-5. `readme` — `README.md` を生成
-6. `agents` — `AGENTS.md` を更新
-7. `translate` — 追加言語のドキュメントを生成（複数の `output.languages` が設定されている場合のみ）
+```
+scan → init → data → text → readme → agents → [translate]
+```
 
-```sh
+`translate` ステップは、`.sdd-forge/config.json` で複数の出力言語が設定されている場合にのみ実行されます。各ステップは解決済みのプロジェクトコンテキストで実行されます。
+
+```bash
 sdd-forge build
 sdd-forge build --project myproject
 ```
 
 #### scan
 
-登録されたプロジェクトのソースコードを解析し、結果を `.sdd-forge/output/analysis.json` に書き込みます。AI コマンドへの優先入力として使用される軽量な `summary.json` も同じパスに生成されます。
+対象プロジェクトのソースコードを解析し、構造化された出力を `.sdd-forge/output/analysis.json` に書き込みます。スキャンの動作は `config.json` で定義されたプロジェクトタイプ（例: `cli/node-cli`、`webapp/cakephp2`）によって決まります。
 
-```sh
+```bash
 sdd-forge scan
-sdd-forge scan --project myproject
 ```
 
 #### init
 
-`@extends` / `@block` 継承を使ってプリセットテンプレートをマージし、`docs/` ディレクトリを初期化します。`docs/` が既に存在する場合、`--force` を指定しない限りファイルは上書きされません。
+設定されたプロジェクトタイプと言語に合致するプリセットテンプレートをコピーして、`docs/` ディレクトリを初期化します。既存の `docs/` ディレクトリを上書きするには `--force` を使用します。
 
-| オプション | 説明 |
-|---|---|
-| `--force` | 既存のドキュメントファイルを上書き |
-
-```sh
+```bash
 sdd-forge init
 sdd-forge init --force
 ```
 
 #### data
 
-`docs/` ファイル内のすべての `{{data: ...}}` ディレクティブを解決し、`analysis.json` から抽出した構造化データでインライン置換します。
+`analysis.json` から抽出した構造化データで置換することで、`docs/` ファイル内のすべての `{{data}}` ディレクティブを解決します。`{{data}}` / `{{/data}}` ブロック外のディレクティブはそのまま保持されます。
 
-```sh
+```bash
 sdd-forge data
-sdd-forge data --project myproject
 ```
 
 #### text
 
-設定済みの AI エージェントを呼び出し、生成されたテキストを挿入することで、`docs/` ファイル内のすべての `{{text: ...}}` ディレクティブを解決します。
+設定済みの AI エージェントを呼び出して、`docs/` ファイル内のすべての `{{text}}` ディレクティブを解決します。エージェントは周辺のドキュメントコンテキストと関連ソースコードを読み込み、セクション本文テキストを生成します。デフォルトのエージェントを上書きするには `--agent` を使用します。
 
-| オプション | 説明 |
-|---|---|
-| `--agent <name>` | デフォルトの代わりに `config.json` で定義された特定のプロバイダーを使用 |
-| `--file <path>` | すべてのファイルではなく、指定したドキュメントファイルのみを処理 |
-
-```sh
+```bash
 sdd-forge text
-sdd-forge text --file docs/01_overview.md
 sdd-forge text --agent claude
 ```
 
 #### readme
 
-ドキュメントと解析データを組み合わせてプロジェクトルートに `README.md` を生成します。出力フォーマットはプロジェクトタイプのプリセットに従います。
+アクティブなプリセットの readme テンプレートに従って `docs/` ディレクトリのコンテンツを集約し、プロジェクトルートに `README.md` を生成します。
 
-```sh
+```bash
 sdd-forge readme
-sdd-forge readme --project myproject
 ```
 
 #### forge
 
-自然言語のプロンプトに基づいて、1つまたは複数のドキュメントファイルを反復的に改善します。AI は既存のコンテンツを全面置換するのではなく、修正するよう指示されます。
+変更の概要を AI エージェントに渡すことで docs の品質を反復改善します。エージェントは `docs/` 内の影響を受けるセクションを更新します。spec ファイルで記述された変更に改善範囲を絞り込むこともできます。
 
-| オプション | 説明 |
-|---|---|
-| `--prompt <text>` | 実施する変更や改善内容の説明（必須） |
-| `--spec <path>` | 更新範囲を特定の spec コンテキストに限定 |
-
-```sh
-sdd-forge forge --prompt "概要のauthenticationフローを明確化する"
-sdd-forge forge --prompt "OAuthサポート追加後の更新" --spec specs/012-oauth/spec.md
+```bash
+sdd-forge forge --prompt "Added user authentication module"
+sdd-forge forge --prompt "Refactored routing layer" --spec specs/012-routing/spec.md
 ```
 
 #### review
 
-レビューチェックリストを使って `docs/` の品質チェックを実行し、全体の PASS または FAIL を標準出力に報告します。終了コードは結果を反映します（0 = PASS、1 = FAIL）。
+現在の `docs/` コンテンツに対してドキュメント品質チェックリストを実行し、PASS または FAIL を stdout に出力します。レビューチェックリストは `src/templates/review-checklist.md` から読み込まれます。
 
-```sh
+```bash
 sdd-forge review
-sdd-forge review --project myproject
 ```
 
 #### changelog
 
-`specs/` 配下に蓄積されたすべての spec ファイルから情報を集約して `docs/change_log.md` を生成します。
+蓄積されたすべての `specs/` ディレクトリを読み込み、実装された機能と修正の履歴をまとめた `change_log.md` を生成します。
 
-```sh
+```bash
 sdd-forge changelog
-sdd-forge changelog --project myproject
 ```
 
 #### agents
 
-`<!-- SDD:START/END -->` セクションを最新のバンドル済みテンプレートで置き換え、`<!-- PROJECT:START/END -->` セクションを解析データから再生成することで `AGENTS.md` を更新します。
+SDD セクション（`src/presets/base/templates/{lang}/AGENTS.sdd.md` から）と PROJECT セクション（`analysis.json` から生成され AI で精査）を更新して `AGENTS.md` を再生成します。どちらか一方のセクションのみ更新するには `--sdd` または `--project` を使用します。
 
-| オプション | 説明 |
-|---|---|
-| `--sdd` | SDD テンプレートセクションのみを更新 |
-| `--project-only` | PROJECT セクションのみを再生成 |
-| `--dry-run` | ディスクへの書き込みなしに変更をプレビュー |
-
-```sh
+```bash
 sdd-forge agents
 sdd-forge agents --sdd
-sdd-forge agents --dry-run
+sdd-forge agents --project --dry-run
+```
+
+#### snapshot
+
+リグレッション検出のために生成出力の現在の状態をキャプチャ・比較します。キャプチャ対象は `analysis.json`、すべての `docs/*.md` ファイル、および `README.md` です。
+
+| サブコマンド | 説明 |
+|---|---|
+| `save` | 現在の出力を名前付きスナップショットとして保存 |
+| `check` | 現在の出力と保存済みスナップショットを比較 |
+| `update` | 保存済みスナップショットを現在の出力で上書き更新 |
+
+```bash
+sdd-forge snapshot save
+sdd-forge snapshot check
+sdd-forge snapshot update
 ```
 
 #### upgrade
 
-`docs/` 内のドキュメントテンプレートファイルを、インストール済みプリセットに同梱された最新バージョンに更新します。`sdd-forge` パッケージをアップグレードした後に便利です。
+インストール済みプリセットが提供する最新バージョンに `docs/` テンプレートファイルを更新します。ディレクティブブロック外の手動記述コンテンツは保持されます。
 
-| オプション | 説明 |
-|---|---|
-| `--force` | カスタマイズされたテンプレートブロックを上書き |
-
-```sh
+```bash
 sdd-forge upgrade
-sdd-forge upgrade --force
+sdd-forge upgrade --dry-run
 ```
 
 #### translate
 
-`config.json` の `output.languages` で指定された追加出力言語のドキュメントを生成します。デフォルト言語は常に翻訳対象から除外されます。
+`config.json` で定義された 1 つ以上の追加言語に既存の `docs/` コンテンツを翻訳します。特定の言語を対象にするには `--lang`、既に翻訳済みのファイルを再翻訳するには `--force`、書き込みなしでプレビューするには `--dry-run` を使用します。
 
 | オプション | 説明 |
 |---|---|
-| `--lang <code>` | ターゲット言語コード（例: `en`、`ja`） |
-| `--force` | 翻訳済みファイルが既に存在する場合でも再生成 |
-| `--dry-run` | 書き込みを行わずに生成対象ファイルをプレビュー |
+| `--lang <code>` | 対象言語コード（例: `en`、`ja`） |
+| `--force` | 対象言語に既に存在するファイルを再翻訳 |
+| `--dry-run` | ファイルに書き込まずに翻訳をプレビュー |
 
-```sh
-sdd-forge translate
+```bash
 sdd-forge translate --lang en
-sdd-forge translate --lang en --force
+sdd-forge translate --lang ja --force
 sdd-forge translate --dry-run
 ```
 
 #### setup
 
-プロジェクトを登録して `.sdd-forge/config.json` を作成するインタラクティブなコマンド。このコマンドはプロジェクトコンテキストの解決をスキップし、通常はプロジェクトごとに一度だけ実行されます。
+ソースパス、作業ルート、プロジェクトタイプを対話形式で入力を求めて新規プロジェクトを登録し、初期の `.sdd-forge/config.json` を生成します。このコマンドはプロジェクトコンテキストの解決をスキップするため、プロジェクトが未設定の状態でも実行できます。
 
-```sh
+```bash
 sdd-forge setup
 ```
 
 #### default
 
-`.sdd-forge/projects.json` のデフォルトプロジェクトを設定します。指定されたプロジェクトは、`--project` が指定されていない場合に自動的に使用されます。
+`.sdd-forge/projects.json` にデフォルトプロジェクトを設定することで、後続のコマンドで `--project` フラグを省略できるようにします。
 
-```sh
+```bash
 sdd-forge default myproject
 ```
 
 #### spec
 
-`specs/NNN-<title>/spec.md` に新しい SDD spec ファイルを作成し、オプションで feature ブランチを作成します。`--no-branch` が指定された場合（または git worktree 内で実行している場合）、ブランチは作成されません。
+`specs/NNN-<title>/spec.md` に新しい SDD spec ファイルを作成し、デフォルトで新しい feature ブランチをチェックアウトします。git worktree 内で作業する場合は `--no-branch` を使用します。
 
-| オプション | 説明 |
-|---|---|
-| `--title <name>` | 人間が読める spec のタイトル（必須） |
-| `--no-branch` | ブランチ作成をスキップ |
-
-```sh
-sdd-forge spec --title "CSV エクスポートを追加"
-sdd-forge spec --title "ページネーションのバグを修正" --no-branch
+```bash
+sdd-forge spec --title "Add CSV export"
+sdd-forge spec --title "Fix auth bug" --no-branch
 ```
 
 #### gate
 
-実装前（pre）または実装後（post）の仕様書の完全性を検証するための構造化されたゲートチェックを spec ファイルに対して実行します。
+SDD ゲートチェックリストに対して spec ファイルを検証します。実装前の準備確認には `--phase pre`（デフォルト）を、実装後の完了確認には `--phase post` を指定して実行します。
 
-| オプション | 説明 |
-|---|---|
-| `--spec <path>` | 対象の `spec.md` へのパス（必須） |
-| `--phase <pre\|post>` | チェックフェーズ: `pre`（デフォルト）は実装前、`post` は実装後 |
-
-```sh
-sdd-forge gate --spec specs/005-csv-export/spec.md
-sdd-forge gate --spec specs/005-csv-export/spec.md --phase post
+```bash
+sdd-forge gate --spec specs/012-csv-export/spec.md
+sdd-forge gate --spec specs/012-csv-export/spec.md --phase post
 ```
 
 #### flow
 
-自由形式の機能要求に応じて、spec 作成・ゲートチェック・スキャフォールディングを含む SDD ワークフロー全体を自動実行します。フルのインタラクティブフローをツールに委譲したい場合に使用します。
+自然言語による要求に基づいて、spec 作成からゲートチェック、実装まで SDD ワークフロー全体を自動化します。サブコマンドルーティングなしのダイレクトコマンドです。
 
-| オプション | 説明 |
-|---|---|
-| `--request <text>` | 機能や修正の自然言語による説明（必須） |
-
-```sh
-sdd-forge flow --request "API にユーザーレベルのレート制限を追加する"
+```bash
+sdd-forge flow --request "Add CSV export for report data"
 ```
 
 #### presets
 
-`src/presets/` 配下で検出されたすべての利用可能なプリセットを、そのタイプ・アーキテクチャ層・サポートされるスキャンカテゴリとともに一覧表示します。
+インストール済みの `sdd-forge` パッケージで利用可能な全プリセットを、タイプ識別子・アーキテクチャ層・サポートされるエイリアスと共に一覧表示します。
 
-```sh
+```bash
 sdd-forge presets
 ```
 
 #### help
 
-利用可能なすべてのサブコマンドとその説明のサマリーを表示します。
+利用可能な全サブコマンドとその説明の概要を表示します。
 
-```sh
+```bash
 sdd-forge help
-sdd-forge --help
 sdd-forge -h
 ```
-<!-- {{/text}} -->
 
 ### 終了コードと出力
 
@@ -291,19 +249,16 @@ sdd-forge -h
 
 | 終了コード | 意味 |
 |---|---|
-| `0` | コマンドが正常に完了した |
-| `1` | 一般的なエラー（無効な引数、設定の欠落、ファイル I/O の失敗など） |
-| `1` | `gate` チェックが FAIL を返した |
-| `1` | `review` チェックが FAIL を返した |
+| `0` | コマンドが正常に完了 |
+| `1` | 一般エラー（無効な引数、設定の欠如、ファイル I/O エラーなど） |
+| `1` | ゲートチェックが FAIL を返した（実装を進めるべきでない） |
+| `1` | レビューチェックが FAIL を返した（docs の品質がチェックリストの基準を満たさなかった） |
 
-**stdout と stderr の使い分け:**
+**stdout / stderr の規約:**
 
-| ストリーム | 内容 |
+| ストリーム | 用途 |
 |---|---|
-| `stdout` | コマンドの主要な出力: 生成されたテキスト、PASS/FAIL の判定結果、ファイルパス、サマリー |
-| `stderr` | 進捗インジケーター、警告、デバッグメッセージ、非致命的な通知 |
+| `stdout` | コマンドの主要出力: 生成コンテンツ、テーブルデータ、PASS/FAIL 判定、進捗メッセージ |
+| `stderr` | コマンドの主要出力に含まれない診断メッセージ、警告、エラー詳細 |
 
-`gate` と `review` コマンドは PASS/FAIL の結果行を stdout に書き込むため、CI パイプラインやシェルスクリプトでの出力キャプチャに適しています。診断の詳細（どのチェックが失敗したか、その理由など）も、最終判定行の直前に stdout に書き込まれます。
-
-ディスク上のファイルを変更するすべてのコマンドは、完了時に影響を受けたファイルパスを stdout に出力し、後続のツールがどのファイルが変更されたかを検出できるようにします。
-<!-- {{/text}} -->
+> `gate` と `review` は PASS または FAIL の結果を `stdout` に書き込むため、スクリプトや CI パイプラインで結果をキャプチャできます。FAIL 結果に付随する詳細な診断情報は `stderr` にも出力される場合があります。
