@@ -21,7 +21,7 @@
 <!-- @block: components -->
 ### Component Responsibilities
 
-<!-- {{text: Describe the major components with their location, responsibilities, and I/O in table format.}} -->
+<!-- {{text[mode=deep]: Describe the major components with their location, responsibilities, and I/O in table format.}} -->
 <!-- {{/text}} -->
 <!-- @endblock -->
 

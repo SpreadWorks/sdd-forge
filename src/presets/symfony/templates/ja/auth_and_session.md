@@ -3,14 +3,14 @@
 <!-- @block: auth-method -->
 ### 認証方式
 
-<!-- {{text: Symfony の認証方式を説明してください。Security Bundle の設定（config/packages/security.yaml）、ファイアウォール、プロバイダ、認証器（authenticator）を含めること。}} -->
+<!-- {{text[mode=deep]: Symfony の認証方式を説明してください。Security Bundle の設定（config/packages/security.yaml）、ファイアウォール、プロバイダ、認証器（authenticator）を含めること。}} -->
 <!-- {{/text}} -->
 <!-- @endblock -->
 
 <!-- @block: acl -->
 ### 認可（Authorization）
 
-<!-- {{text: Voter、Security attribute（#[IsGranted]）、ロール階層によるアクセス制御の概要を説明してください。}} -->
+<!-- {{text[mode=deep]: Voter、Security attribute（#[IsGranted]）、ロール階層によるアクセス制御の概要を説明してください。}} -->
 <!-- {{/text}} -->
 <!-- @endblock -->
 
@@ -24,6 +24,6 @@
 <!-- @block: login-flow -->
 ### ログインフロー
 
-<!-- {{text: ログイン処理のフローを mermaid sequenceDiagram で生成してください。出力は mermaid コードブロックのみ。}} -->
+<!-- {{text[mode=deep]: ログイン処理のフローを mermaid sequenceDiagram で生成してください。出力は mermaid コードブロックのみ。}} -->
 <!-- {{/text}} -->
 <!-- @endblock -->

@@ -3,7 +3,7 @@
 <!-- @block: routing -->
 ### ルーティング設定
 
-<!-- {{text: Laravel のルーティング方式を説明してください。routes/web.php と routes/api.php の役割を含めること。}} -->
+<!-- {{text[mode=deep]: Laravel のルーティング方式を説明してください。routes/web.php と routes/api.php の役割を含めること。}} -->
 <!-- {{/text}} -->
 
 <!-- {{data: routes.list("メソッド|URI|コントローラ|アクション")}} -->

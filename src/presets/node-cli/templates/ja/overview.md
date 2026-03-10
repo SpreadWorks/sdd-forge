@@ -16,7 +16,7 @@
 
 ### アーキテクチャ概要
 
-<!-- {{text: ツール全体のアーキテクチャを mermaid flowchart で生成してください。3層ディスパッチ構造（sdd-forge.js → docs.js/spec.js → 各コマンド）と、flow.js（直接実行コマンド）を含めること。入力（ソースコード）→ 処理（scan/data/text）→ 出力（docs/, README.md）の流れと AI エージェント連携も示すこと。出力は mermaid コードブロックのみ。}} -->
+<!-- {{text[mode=deep]: ツール全体のアーキテクチャを mermaid flowchart で生成してください。3層ディスパッチ構造（sdd-forge.js → docs.js/spec.js → 各コマンド）と、flow.js（直接実行コマンド）を含めること。入力（ソースコード）→ 処理（scan/data/text）→ 出力（docs/, README.md）の流れと AI エージェント連携も示すこと。出力は mermaid コードブロックのみ。}} -->
 <!-- {{/text}} -->
 
 ### 主要コンセプト

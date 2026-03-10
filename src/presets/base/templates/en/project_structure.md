@@ -14,7 +14,7 @@
 <!-- @block: directory-tree -->
 ### Directory Layout
 
-<!-- {{text: Describe the project directory structure in a tree-format code block. Include role comments for major directories and files.}} -->
+<!-- {{text[mode=deep]: Describe the project directory structure in a tree-format code block. Include role comments for major directories and files.}} -->
 <!-- {{/text}} -->
 <!-- @endblock -->
 
