@@ -4,7 +4,8 @@
 
 <!-- {{text: Write a 1–2 sentence overview of this chapter. Cover the total number of commands, whether global options exist, and the subcommand structure.}} -->
 
-This chapter covers all 19 subcommands available in `sdd-forge`, organized by their routing layer: documentation commands dispatched through `docs.js`, specification commands dispatched through `spec.js`, and directly executed commands (`flow` and `presets`). A small set of global options — including `--project`, `--help`, and `--version` — apply across commands, while individual subcommands expose their own flags as detailed in the sections below.
+This chapter documents all 17 CLI commands provided by `sdd-forge`, organized by dispatch path: documentation commands (routed through `docs.js`), specification commands (routed through `spec.js`), and directly executed commands (`flow`, `presets`). All commands share a common set of global options, and most require a resolved project context before execution.
+
 <!-- {{/text}} -->
 
 ## Contents
@@ -15,25 +16,27 @@ This chapter covers all 19 subcommands available in `sdd-forge`, organized by th
 
 | Command | Description | Main Options |
 |---|---|---|
-| `build` | Run the full documentation pipeline (scan → init → data → text → readme → agents → translate) | `--project` |
+| `build` | Run the full documentation pipeline: `scan → init → data → text → readme → agents → [translate]` | `--project` |
 | `scan` | Analyze source code and output `analysis.json` and `summary.json` | `--project` |
-| `init` | Initialize `docs/` from preset templates | `--project`, `--force` |
-| `data` | Resolve `{{data}}` directives with analysis data | `--project` |
-| `text` | Resolve `{{text}}` directives using an AI agent | `--project`, `--agent`, `--file` |
-| `readme` | Auto-generate `README.md` from docs | `--project` |
-| `forge` | Iteratively improve docs quality via AI | `--project`, `--prompt`, `--spec` |
-| `review` | Run docs quality checks and report PASS/FAIL | `--project` |
-| `changelog` | Generate `change_log.md` from accumulated specs | `--project` |
-| `agents` | Update `AGENTS.md` (SDD template + PROJECT section) | `--project`, `--sdd`, `--project-only`, `--dry-run` |
-| `upgrade` | Update bundled doc templates to the latest preset version | `--project`, `--force` |
-| `translate` | Generate docs in additional languages | `--project`, `--lang`, `--force`, `--dry-run` |
-| `setup` | Register a project and generate `.sdd-forge/config.json` | — |
-| `default` | Set the default project in `projects.json` | — |
-| `spec` | Create a new SDD spec (`spec.md`) and feature branch | `--title`, `--no-branch` |
-| `gate` | Run spec gate checks before or after implementation | `--spec`, `--phase` |
-| `flow` | Run the full SDD workflow automatically for a feature request | `--request` |
-| `presets` | List available presets and their metadata | — |
-| `help` | Display the command list and usage summary | — |
+| `init` | Initialize `docs/` directory from preset templates | `--project`, `--force` |
+| `data` | Resolve `{{data}}` directives in docs using analysis data | `--project` |
+| `text` | Resolve `{{text}}` directives in docs using an AI agent | `--project`, `--agent`, `--file` |
+| `readme` | Auto-generate `README.md` from docs content | `--project` |
+| `forge` | Iteratively improve docs with an AI agent | `--prompt`, `--spec`, `--project` |
+| `review` | Run a quality check on generated docs | `--project` |
+| `changelog` | Generate `change_log.md` from accumulated spec files in `specs/` | `--project` |
+| `agents` | Update `AGENTS.md` (SDD section and/or PROJECT section) | `--sdd`, `--project`, `--dry-run` |
+| `snapshot` | Save, compare, or update regression snapshots | `save` \| `check` \| `update` |
+| `translate` | Translate docs into additional languages | `--lang`, `--force`, `--dry-run` |
+| `upgrade` | Update bundled doc templates to the latest preset version | `--project` |
+| `setup` | Register a project and generate initial configuration | — |
+| `default` | Set the default project for the current working directory | — |
+| `spec` | Initialize a new spec file and feature branch for SDD | `--title`, `--no-branch` |
+| `gate` | Run pre- or post-implementation gate checks against a spec | `--spec`, `--phase` |
+| `flow` | Automate the full SDD workflow for a given request | `--request` |
+| `presets` | List available presets and their configuration details | — |
+| `help` | Display the full command list and usage summary | — |
+
 <!-- {{/text}} -->
 
 ### Global Options
@@ -42,17 +45,12 @@ This chapter covers all 19 subcommands available in `sdd-forge`, organized by th
 
 | Option | Aliases | Description |
 |---|---|---|
-| `--project <name>` | — | Specify the target project by name. Overrides the `default` entry in `.sdd-forge/projects.json`. |
-| `--help` | `-h` | Display help text for the CLI or a specific subcommand and exit. |
-| `--version` | `-v`, `-V` | Print the installed `sdd-forge` version (read from `package.json`) and exit. |
+| `--project <name>` | — | Specify the target project by name, as registered in `.sdd-forge/projects.json`. When omitted, the `default` project entry is used. |
+| `--help` | `-h` | Display usage information for the given command and exit. |
+| `--version` | `-v`, `-V` | Print the installed `sdd-forge` version number and exit. |
 
-The commands `setup`, `default`, `help`, and `presets` skip project context resolution entirely. They do not require a registered project and will not attempt to load `.sdd-forge/config.json` or resolve `SDD_SOURCE_ROOT` / `SDD_WORK_ROOT`.
+The commands `setup`, `default`, `help`, and `presets` skip project context resolution entirely — they do not require a registered project or a `.sdd-forge/config.json` to be present. All other commands resolve the project context before execution, populating the `SDD_SOURCE_ROOT` and `SDD_WORK_ROOT` environment variables for downstream modules.
 
-For all other commands, the active project is determined in the following priority order:
-
-1. `--project <name>` flag passed on the command line
-2. `default` field in `.sdd-forge/projects.json`
-3. Environment variables `SDD_SOURCE_ROOT` and `SDD_WORK_ROOT` set externally
 <!-- {{/text}} -->
 
 ### Command Details
@@ -61,228 +59,210 @@ For all other commands, the active project is determined in the following priori
 
 #### build
 
-Runs the complete documentation generation pipeline in sequence. Each step is executed only if the previous step succeeds.
+Runs the complete documentation generation pipeline in the following fixed order:
 
-**Pipeline steps:**
-1. `scan` — analyze source code
-2. `init` — initialize docs from templates (skipped if docs already exist)
-3. `data` — resolve `{{data}}` directives
-4. `text` — resolve `{{text}}` directives via AI
-5. `readme` — generate `README.md`
-6. `agents` — update `AGENTS.md`
-7. `translate` — generate additional language docs (only when multiple `output.languages` are configured)
+```
+scan → init → data → text → readme → agents → [translate]
+```
 
-```sh
+The `translate` step is only executed when `output.languages` in `config.json` contains more than one language entry. All intermediate outputs are written to `.sdd-forge/output/` and `docs/` within the project root.
+
+```bash
 sdd-forge build
 sdd-forge build --project myproject
 ```
 
 #### scan
 
-Analyzes the source code of the registered project and writes the results to `.sdd-forge/output/analysis.json`. A lightweight `summary.json` (used as the preferred input for AI commands) is also generated at the same path.
+Analyzes the source code of the target project and writes two output files:
 
-```sh
+- `.sdd-forge/output/analysis.json` — full structured analysis (no indentation)
+- `.sdd-forge/output/summary.json` — lightweight version for AI consumption
+
+The scanner behavior is determined by the `type` field in `config.json` and the matching preset's scan configuration.
+
+```bash
 sdd-forge scan
-sdd-forge scan --project myproject
 ```
 
 #### init
 
-Initializes the `docs/` directory by merging preset templates with `@extends` / `@block` inheritance. If `docs/` already exists, the command will not overwrite files unless `--force` is specified.
+Initializes the `docs/` directory by copying templates from the resolved preset. If a `docs/` directory already exists, use `--force` to overwrite. Template inheritance (`@extends` / `@block`) is resolved at this stage.
 
-| Option | Description |
-|---|---|
-| `--force` | Overwrite existing doc files |
-
-```sh
+```bash
 sdd-forge init
 sdd-forge init --force
 ```
 
 #### data
 
-Resolves all `{{data: ...}}` directives in `docs/` files, replacing them inline with structured data extracted from `analysis.json`.
+Resolves all `{{data: ...}}` directives found in `docs/` files. Directive content is replaced with structured data extracted from `analysis.json`. Content outside directives is preserved.
 
-```sh
+```bash
 sdd-forge data
-sdd-forge data --project myproject
 ```
 
 #### text
 
-Resolves all `{{text: ...}}` directives in `docs/` files by calling the configured AI agent and inserting generated text.
+Resolves all `{{text: ...}}` directives in `docs/` files by invoking an AI agent. The agent is specified via `defaultAgent` in `config.json`, or overridden with `--agent`. Use `--file` to target a single document.
 
-| Option | Description |
-|---|---|
-| `--agent <name>` | Use a specific provider defined in `config.json` instead of the default |
-| `--file <path>` | Process only the specified doc file instead of all files |
-
-```sh
+```bash
 sdd-forge text
-sdd-forge text --file docs/01_overview.md
 sdd-forge text --agent claude
+sdd-forge text --file docs/01_overview.md
 ```
 
 #### readme
 
-Generates `README.md` in the project root by assembling content from the docs and analysis data. The output format follows the project type preset.
+Generates `README.md` at the project root using the resolved docs content as source material.
 
-```sh
+```bash
 sdd-forge readme
-sdd-forge readme --project myproject
 ```
 
 #### forge
 
-Iteratively improves one or more docs files based on a natural-language prompt. The AI is instructed to revise existing content rather than replace it wholesale.
+Iteratively improves `docs/` content using an AI agent. Provide a plain-language `--prompt` describing the desired improvement. Optionally pass `--spec` to include a spec file as additional context.
 
-| Option | Description |
-|---|---|
-| `--prompt <text>` | Description of the change or improvement to make (required) |
-| `--spec <path>` | Scope the update to a specific spec context |
-
-```sh
-sdd-forge forge --prompt "Clarify the authentication flow in the overview"
-sdd-forge forge --prompt "Update after adding OAuth support" --spec specs/012-oauth/spec.md
+```bash
+sdd-forge forge --prompt "Add more detail to the architecture section"
+sdd-forge forge --prompt "Reflect the new authentication module" --spec specs/012-auth/spec.md
 ```
 
 #### review
 
-Runs a quality check against `docs/` using the review checklist and reports an overall PASS or FAIL to stdout. The exit code reflects the result (0 = PASS, 1 = FAIL).
+Runs a quality check against the generated `docs/` files using the bundled review checklist (`src/templates/review-checklist.md`). Outputs a PASS or FAIL result to stdout.
 
-```sh
+```bash
 sdd-forge review
-sdd-forge review --project myproject
 ```
 
 #### changelog
 
-Generates `docs/change_log.md` by aggregating information from all accumulated spec files under `specs/`.
+Generates `docs/change_log.md` by aggregating all spec files found under `specs/`. Entries are ordered chronologically based on spec metadata.
 
-```sh
+```bash
 sdd-forge changelog
-sdd-forge changelog --project myproject
 ```
 
 #### agents
 
-Updates `AGENTS.md` by replacing the `<!-- SDD:START/END -->` section with the latest bundled template and regenerating the `<!-- PROJECT:START/END -->` section from analysis data.
+Updates `AGENTS.md` (and its symlink `CLAUDE.md`) in the project root. By default, both the `<!-- SDD:START/END -->` section (from the preset template) and the `<!-- PROJECT:START/END -->` section (generated from `analysis.json`) are updated. Use `--dry-run` to preview the output without writing to disk.
 
 | Option | Description |
 |---|---|
 | `--sdd` | Update only the SDD template section |
-| `--project-only` | Regenerate only the PROJECT section |
-| `--dry-run` | Preview changes without writing to disk |
+| `--project` | Update only the PROJECT section |
+| `--dry-run` | Preview output without writing to disk |
 
-```sh
+```bash
 sdd-forge agents
 sdd-forge agents --sdd
 sdd-forge agents --dry-run
 ```
 
-#### upgrade
+#### snapshot
 
-Updates the doc template files in `docs/` to match the latest versions shipped with the installed preset. Useful after upgrading the `sdd-forge` package.
+Manages regression snapshots for detecting unintended changes in generated output.
 
-| Option | Description |
+| Subcommand | Description |
 |---|---|
-| `--force` | Overwrite customized template blocks |
+| `save` | Save current output as a new snapshot baseline |
+| `check` | Compare current output against the saved snapshot |
+| `update` | Overwrite the saved snapshot with current output |
 
-```sh
-sdd-forge upgrade
-sdd-forge upgrade --force
+Captured files: `.sdd-forge/output/analysis.json`, `docs/*.md`, `docs/{lang}/*.md`, `README.md`. Snapshots are stored in `.sdd-forge/snapshots/` with a `manifest.json` index.
+
+```bash
+sdd-forge snapshot save
+sdd-forge snapshot check
+sdd-forge snapshot update
 ```
 
 #### translate
 
-Generates documentation in additional output languages as specified by `output.languages` in `config.json`. The default language is always excluded from translation.
+Translates the primary-language `docs/` files into each additional language listed in `output.languages`. When `output.mode` is `"generate"`, each language version is generated independently rather than translated.
 
 | Option | Description |
 |---|---|
-| `--lang <code>` | Target language code (e.g., `en`, `ja`) |
-| `--force` | Regenerate even if translated files already exist |
-| `--dry-run` | Preview which files would be generated without writing |
+| `--lang <code>` | Target a specific language code (e.g. `en`, `ja`) |
+| `--force` | Overwrite existing translated files |
+| `--dry-run` | Preview changes without writing to disk |
 
-```sh
+```bash
 sdd-forge translate
-sdd-forge translate --lang en
 sdd-forge translate --lang en --force
 sdd-forge translate --dry-run
 ```
 
+#### upgrade
+
+Updates the bundled template files in `docs/` to match the current preset version. Useful after upgrading the `sdd-forge` package to pick up new template structures.
+
+```bash
+sdd-forge upgrade
+```
+
 #### setup
 
-Interactive command that registers a project and creates `.sdd-forge/config.json`. This command skips project context resolution and is typically run once per project.
+Registers the current directory as a project and generates `.sdd-forge/config.json` with sensible defaults. Prompts for project type, language settings, and AI agent configuration. Also creates `AGENTS.md` and a `CLAUDE.md` symlink.
 
-```sh
+```bash
 sdd-forge setup
 ```
 
 #### default
 
-Sets the default project in `.sdd-forge/projects.json`. The specified project will be used automatically when `--project` is not provided.
+Sets the default project for the current working environment. The selected project name is written to the `default` field of `.sdd-forge/projects.json`.
 
-```sh
-sdd-forge default myproject
+```bash
+sdd-forge default
 ```
 
 #### spec
 
-Creates a new SDD spec file at `specs/NNN-<title>/spec.md` and optionally creates a feature branch. If `--no-branch` is passed (or if running inside a git worktree), no branch is created.
+Creates a new spec directory (e.g. `specs/NNN-feature-name/`) with a blank `spec.md`, and checks out a new feature branch unless `--no-branch` is specified. Inside a git worktree, `--no-branch` is applied automatically.
 
 | Option | Description |
 |---|---|
-| `--title <name>` | Human-readable spec title (required) |
-| `--no-branch` | Skip branch creation |
+| `--title <name>` | Title of the new spec (required) |
+| `--no-branch` | Skip feature branch creation |
 
-```sh
+```bash
 sdd-forge spec --title "Add CSV export"
 sdd-forge spec --title "Fix pagination bug" --no-branch
 ```
 
 #### gate
 
-Runs structured gate checks against a spec file to verify completeness before (pre) or after (post) implementation.
+Checks a spec file against the defined gate criteria, validating that all required fields are populated and all open questions are resolved. Use `--phase post` to run the full post-implementation checklist.
 
 | Option | Description |
 |---|---|
 | `--spec <path>` | Path to the target `spec.md` (required) |
-| `--phase <pre\|post>` | Check phase: `pre` (default) for pre-implementation, `post` for post-implementation |
+| `--phase <pre\|post>` | Gate phase to run (default: `pre`) |
 
-```sh
-sdd-forge gate --spec specs/005-csv-export/spec.md
-sdd-forge gate --spec specs/005-csv-export/spec.md --phase post
+```bash
+sdd-forge gate --spec specs/012-auth/spec.md
+sdd-forge gate --spec specs/012-auth/spec.md --phase post
 ```
 
 #### flow
 
-Runs the full SDD workflow automatically — spec creation, gate check, and scaffolding — in response to a free-form feature request. Intended for use when the full interactive flow should be delegated to the tool.
+Automates the full SDD workflow — from spec creation and gate checks through implementation guidance — based on a free-form request description. Wraps the same steps described in the SDD flow in `CLAUDE.md`.
 
-| Option | Description |
-|---|---|
-| `--request <text>` | Natural-language description of the feature or fix (required) |
-
-```sh
-sdd-forge flow --request "Add user-level rate limiting to the API"
+```bash
+sdd-forge flow --request "Add role-based access control to the admin panel"
 ```
 
 #### presets
 
-Lists all available presets detected under `src/presets/`, along with their type, architecture layer, and supported scan categories.
+Lists all available presets discovered under `src/presets/`, including their key, canonical type path, architecture layer, and supported scan categories.
 
-```sh
+```bash
 sdd-forge presets
 ```
 
-#### help
-
-Displays a summary of all available subcommands and their descriptions.
-
-```sh
-sdd-forge help
-sdd-forge --help
-sdd-forge -h
-```
 <!-- {{/text}} -->
 
 ### Exit Codes and Output
@@ -293,17 +273,15 @@ sdd-forge -h
 |---|---|
 | `0` | Command completed successfully |
 | `1` | General error (invalid arguments, missing config, file I/O failure, etc.) |
-| `1` | `gate` check returned FAIL |
-| `1` | `review` check returned FAIL |
+| `2` | Gate or review check returned FAIL (spec requirements not met or docs quality insufficient) |
 
-**stdout vs. stderr usage:**
+**stdout / stderr conventions:**
 
 | Stream | Content |
 |---|---|
-| `stdout` | Primary command output: generated text, PASS/FAIL verdicts, file paths, summaries |
-| `stderr` | Progress indicators, warnings, debug messages, and non-fatal notices |
+| `stdout` | Primary command output: generated text, table displays, PASS/FAIL results, dry-run previews |
+| `stderr` | Progress indicators, warnings, and diagnostic messages |
 
-The `gate` and `review` commands write their PASS/FAIL result lines to stdout, making them suitable for capture in CI pipelines or shell scripts. Diagnostic detail (e.g., which checks failed and why) is also written to stdout immediately before the final verdict line.
+The `gate` and `review` commands write their PASS or FAIL verdict to stdout, making them suitable for use in shell pipelines or CI scripts that inspect exit codes alongside output text. Informational messages such as "Running gate check…" or file-write confirmations are emitted to stderr and do not interfere with programmatic stdout consumers.
 
-All commands that modify files on disk print the affected file paths to stdout upon completion, allowing downstream tooling to detect which files were changed.
 <!-- {{/text}} -->

@@ -4,7 +4,8 @@
 
 <!-- {{text: Write a 1-2 sentence overview of this chapter. Include the project's architecture and whether it integrates with external systems.}} -->
 
-This chapter describes the overall architecture of sdd-forge — a Node.js CLI tool that automates documentation generation and enforces a Spec-Driven Development (SDD) workflow through a three-level command dispatch system. The tool has no third-party runtime dependencies, relying solely on Node.js built-ins, but integrates with externally configured AI agents (such as Claude CLI) for text generation, quality review, and spec-gating tasks.
+This chapter provides a high-level view of `sdd-forge`, a Node.js CLI tool built on a three-layer dispatch architecture that automates documentation generation and Spec-Driven Development workflows. The tool integrates with external AI agents (such as Claude CLI) to resolve natural-language directives, and interacts with Git for branch and worktree management during the SDD flow.
+
 <!-- {{/text}} -->
 
 ## Content
@@ -15,84 +16,86 @@ This chapter describes the overall architecture of sdd-forge — a Node.js CLI t
 
 ```mermaid
 flowchart TD
-    CLI["sdd-forge\n(CLI entry)"]
+    CLI["sdd-forge.js\n(CLI Entry Point)"]
 
-    CLI --> DOCS["docs.js\ndispatcher"]
-    CLI --> SPEC["spec.js\ndispatcher"]
-    CLI --> FLOW["flow.js\n(SDD flow)"]
+    CLI --> DOCS["docs.js\n(Docs Dispatcher)"]
+    CLI --> SPEC["spec.js\n(Spec Dispatcher)"]
+    CLI --> FLOW["flow.js\n(SDD Flow)"]
     CLI --> HELP["help.js"]
 
-    DOCS --> SCAN["scan\nsource analysis"]
-    DOCS --> INIT["init\ntemplate init"]
-    DOCS --> DATA["data\n{{data}} resolution"]
-    DOCS --> TEXT["text\n{{text}} AI generation"]
-    DOCS --> FORGE["forge\niterative improvement"]
-    DOCS --> REVIEW["review\nquality check"]
-    DOCS --> README["readme\nREADME generation"]
-    DOCS --> AGENTS["agents\nAGENTS.md update"]
+    DOCS --> SCAN["scan\n→ analysis.json"]
+    DOCS --> INIT["init\n(template → docs/)"]
+    DOCS --> DATA["data\n(resolve {{data}} directives)"]
+    DOCS --> TEXT["text\n(resolve {{text}} directives)"]
+    DOCS --> FORGE["forge / review\n(iterative doc improvement)"]
 
-    SPEC --> SINIT["spec init\ncreate spec"]
-    SPEC --> GATE["gate\ngate check"]
+    SPEC --> SPECINIT["spec init\n(spec.md + branch)"]
+    SPEC --> GATE["gate\n(pre/post gate check)"]
 
-    SCAN --> ANALYSIS[".sdd-forge/output/\nanalysis.json"]
-    SCAN --> SUMMARY[".sdd-forge/output/\nsummary.json"]
+    SCAN --> AJ[".sdd-forge/output/\nanalysis.json\nsummary.json"]
+    AJ --> DATA
+    AJ --> TEXT
 
-    ANALYSIS --> DATA
-    SUMMARY --> TEXT
-    SUMMARY --> FORGE
-    SUMMARY --> AGENTS
-
-    TEXT --> AGENT["External AI Agent\n(e.g., Claude CLI)"]
+    TEXT --> AGENT["AI Agent\n(Claude CLI / configurable)"]
     FORGE --> AGENT
-    REVIEW --> AGENT
-    GATE --> AGENT
+
+    DATA --> DOCS2["docs/*.md\n(rendered output)"]
+    TEXT --> DOCS2
+
+    GIT["Git\n(branch / worktree)"]
+    FLOW --> GIT
+    SPECINIT --> GIT
 ```
+
 <!-- {{/text}} -->
 
 ### Component Responsibilities
 
 <!-- {{text: Describe the major components with their location, responsibilities, and I/O in table format.}} -->
 
-| Component | Location | Responsibilities | Input | Output |
+| Component | Location | Responsibility | Input | Output |
 |---|---|---|---|---|
-| CLI Entry | `src/sdd-forge.js` | Top-level command routing; resolves project context via `SDD_SOURCE_ROOT` / `SDD_WORK_ROOT` env vars and `--project` flag | CLI arguments, `.sdd-forge/projects.json` | Dispatches to sub-dispatchers |
-| docs Dispatcher | `src/docs.js` | Routes all documentation subcommands (scan, init, data, text, readme, forge, review, agents, changelog, setup, etc.) | CLI args | Delegates to `src/docs/commands/*.js` |
-| spec Dispatcher | `src/spec.js` | Routes spec lifecycle subcommands (spec, gate) | CLI args | Delegates to `src/specs/commands/*.js` |
-| SDD Flow | `src/flow.js` | Automates the full SDD workflow end-to-end (spec → gate → implement → forge → review) | `--request` string | Orchestrates all SDD steps sequentially |
-| Scanner | `src/docs/lib/scanner.js` | Traverses source directories; parses PHP, JS, and YAML source files into structured data | Source root directory | `.sdd-forge/output/analysis.json`, `summary.json` |
-| Directive Parser | `src/docs/lib/directive-parser.js` | Parses `{{data}}`, `{{text}}`, `@block`, and `@extends` directives inside Markdown templates | Markdown template files | Parsed directive AST |
-| Template Merger | `src/docs/lib/template-merger.js` | Resolves `@extends` / `@block` template inheritance chains | Template files with inheritance directives | Merged Markdown template |
-| AI Agent | `src/lib/agent.js` | Invokes the configured external AI agent synchronously (`execFileSync`) or asynchronously (`spawn`) | Prompt string, agent config from `config.json` | AI-generated or reviewed text |
-| Config | `src/lib/config.js` | Loads and validates `.sdd-forge/config.json`; resolves `.sdd-forge/` file paths; manages `context.json` | `.sdd-forge/` directory | Validated config object, resolved paths |
-| Preset System | `src/lib/presets.js` | Auto-discovers `src/presets/*/preset.json` entries; builds type alias map for project type resolution | `src/presets/` directory | `PRESETS` constant used across all commands |
-| Flow State | `src/lib/flow-state.js` | Persists SDD workflow progress (current spec path, base/feature branch names, worktree info) | `.sdd-forge/current-spec` JSON file | Loaded or saved flow state object |
+| CLI Entry Point | `src/sdd-forge.js` | Parses top-level subcommands, resolves project context via env vars, routes to dispatchers | CLI args, `.sdd-forge/projects.json` | Dispatched command execution |
+| Docs Dispatcher | `src/docs.js` | Routes docs-related subcommands (`build`, `scan`, `init`, `data`, `text`, `forge`, `review`, etc.) | Subcommand + flags | Delegates to `docs/commands/*.js` |
+| Spec Dispatcher | `src/spec.js` | Routes spec-related subcommands (`spec`, `gate`) | Subcommand + flags | Delegates to `specs/commands/*.js` |
+| SDD Flow | `src/flow.js` | Automates the full SDD workflow (spec → gate → implement → forge → review) | `--request` string | Orchestrated workflow execution |
+| Scanner | `src/docs/lib/scanner.js` | Crawls source files, parses PHP/JS/YAML, extracts module structure | Source root path, preset scan config | `analysis.json`, `summary.json` |
+| Directive Parser | `src/docs/lib/directive-parser.js` | Parses `{{data}}`, `{{text}}`, `@block`, `@extends` directives from Markdown files | Markdown file content | Parsed directive AST |
+| Resolver Factory | `src/docs/lib/resolver-factory.js` | Creates data resolvers per preset for resolving `{{data}}` directives | `analysis.json`, preset type | Resolved Markdown tables/values |
+| AI Agent Caller | `src/lib/agent.js` | Calls external AI agents synchronously or asynchronously with prompt injection | Prompt string, agent config | AI-generated text |
+| Config Loader | `src/lib/config.js` | Reads and validates `.sdd-forge/config.json`, manages context and path utilities | `.sdd-forge/` directory | Validated config object, resolved paths |
+| Preset System | `src/presets/` | Provides architecture- and framework-specific scan rules and doc templates | Preset key or type string | Scan config, template files, DataSource classes |
+| Flow State Manager | `src/lib/flow-state.js` | Persists and retrieves SDD flow progress (branch, spec path, worktree info) | `.sdd-forge/current-spec` JSON | Flow state object |
+
 <!-- {{/text}} -->
 
 ### External Integrations
 
 <!-- {{text: If there are external system integrations, describe their purpose and connection method in table format.}} -->
 
-sdd-forge itself has no external runtime dependencies and communicates with the outside world only through the AI agent interface defined in `.sdd-forge/config.json`. All other processing is performed with Node.js built-in modules.
+| External System | Purpose | Connection Method | Configuration |
+|---|---|---|---|
+| AI Agent (e.g., Claude CLI) | Resolves `{{text}}` directives and iteratively improves docs via `forge` and `review` commands | Spawned as a child process via `execFileSync` (sync) or `spawn` (async) with `stdin: "ignore"` | Defined under `providers` in `.sdd-forge/config.json`; selected via `defaultAgent` |
+| Git | Creates feature branches and worktrees during the SDD flow; used for branch strategy selection | Invoked via `child_process` (`execFileSync`) | Automatic; branch strategy chosen interactively during `sdd-forge spec` or `sdd-forge flow` |
+| npm Registry | Distributes the `sdd-forge` package to end users | `npm publish` CLI (manual, operator-initiated only) | `package.json` `files` field controls published artifacts |
 
-| Integration | Purpose | Connection Method |
-|---|---|---|
-| AI Agent (e.g., Claude CLI) | Drives `{{text}}` directive resolution, iterative docs improvement (`forge`), quality review (`review`), and spec gate evaluation (`gate`) | Configured via `config.json` → `providers` map + `defaultAgent`; invoked as a child process using `execFileSync` (sync) or `spawn` + `stdin: "ignore"` (async with streaming callback) |
-| Git | Determines repository root (`git rev-parse`), manages feature branches and worktrees during the SDD flow | Invoked as a child process via Node.js `child_process`; resolved through `repoRoot()` in `src/lib/cli.js` |
 <!-- {{/text}} -->
 
 ### Environment Differences
 
 <!-- {{text: Describe the configuration differences across environments (local/staging/production).}} -->
 
-sdd-forge is a developer-facing CLI tool and does not have predefined deployment tiers such as staging or production. All runtime behavior is controlled through environment variables and the per-project `.sdd-forge/config.json` file. The following settings are the primary points of variation between different execution contexts.
+`sdd-forge` is a developer CLI tool and does not have traditional application deployment environments (local/staging/production). Instead, configuration differences arise from how the tool is installed and how each project's `.sdd-forge/config.json` is set up.
 
-| Configuration Point | Mechanism | Description |
+| Aspect | Development (source checkout) | Published Package (npm install) |
 |---|---|---|
-| Source root | `SDD_SOURCE_ROOT` env var | Overrides the source directory resolved by `git rev-parse` or `cwd`; useful when the analyzed project is separate from the working directory |
-| Work root | `SDD_WORK_ROOT` env var | Overrides the working root where `.sdd-forge/` is located; enables tool and target project to reside in different directories |
-| Multi-project selection | `--project <name>` flag | Selects a named project entry from `.sdd-forge/projects.json`; allows a single sdd-forge installation to manage multiple codebases |
-| AI agent | `config.json` → `providers` + `defaultAgent` | Specifies the command, arguments, and timeout for the external AI agent; can be swapped per environment (e.g., a faster model in CI) |
-| File processing concurrency | `config.json` → `limits.concurrency` | Controls parallel file processing (default: 5); increase for high-core CI runners, reduce for memory-constrained environments |
-| AI agent timeout | `config.json` → `limits.designTimeoutMs` | Sets the maximum wait time for AI agent calls; may need tuning in slow network or CI environments where agent startup latency is higher |
-| Output languages | `config.json` → `output.languages` + `output.default` | Determines whether documentation is generated in a single language or translated into multiple languages during the build pipeline |
+| Binary entry | `node src/sdd-forge.js` or `npm link` | `sdd-forge` via PATH (npm global or npx) |
+| Package version | `0.1.0-alpha.x` (alpha tag on npm) | `latest` tag after explicit `npm dist-tag` promotion |
+| `PKG_DIR` resolution | Points to local `src/` directory | Points to installed package `src/` directory |
+| Test execution | `npm run test` against local `tests/` | Not applicable (tests are not published) |
+| AI agent config | Defined per-project in `.sdd-forge/config.json` | Same — no environment-level override |
+| Concurrency / timeout | Configurable via `limits.concurrency` and `limits.designTimeoutMs` in `config.json` | Same |
+
+Projects analyzed by `sdd-forge` may themselves have environment-specific concerns, but the tool treats the source directory uniformly regardless of the target project's deployment environment.
+
 <!-- {{/text}} -->
