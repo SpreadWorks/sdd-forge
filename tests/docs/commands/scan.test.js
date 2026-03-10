@@ -134,6 +134,89 @@ describe("scan CLI", () => {
     assert.equal(analysis.controllers.controllers[0].className, "UsersController");
   });
 
+  it("preserves enrichment for unchanged entries on re-scan", () => {
+    tmp = createTmpDir();
+    writeJson(tmp, ".sdd-forge/config.json", {
+      lang: "ja",
+      type: "cli/node-cli",
+      output: { languages: ["ja"], default: "ja" },
+      scan: { include: ["src/**/*.js"], exclude: [] },
+    });
+    writeFile(tmp, "src/index.js", 'export function hello() { return "hi"; }\n');
+
+    // 1st scan
+    execFileSync("node", [CMD], {
+      encoding: "utf8",
+      env: { ...process.env, SDD_WORK_ROOT: tmp, SDD_SOURCE_ROOT: tmp },
+    });
+
+    const outputPath = join(tmp, ".sdd-forge/output/analysis.json");
+    const first = JSON.parse(fs.readFileSync(outputPath, "utf8"));
+    const hash = first.modules.modules[0].hash;
+    assert.ok(hash, "scan should produce hash");
+
+    // Simulate enrichment (as enrich.js would do)
+    first.modules.modules[0].summary = "A greeting function";
+    first.modules.modules[0].detail = "Returns hi";
+    first.modules.modules[0].chapter = "overview";
+    first.modules.modules[0].role = "lib";
+    first.enrichedAt = "2026-01-01T00:00:00.000Z";
+    fs.writeFileSync(outputPath, JSON.stringify(first) + "\n");
+
+    // 2nd scan (same source, no changes)
+    execFileSync("node", [CMD], {
+      encoding: "utf8",
+      env: { ...process.env, SDD_WORK_ROOT: tmp, SDD_SOURCE_ROOT: tmp },
+    });
+
+    const second = JSON.parse(fs.readFileSync(outputPath, "utf8"));
+    const item = second.modules.modules[0];
+    assert.equal(item.hash, hash, "hash should be the same");
+    assert.equal(item.summary, "A greeting function", "summary should be preserved");
+    assert.equal(item.detail, "Returns hi", "detail should be preserved");
+    assert.equal(item.chapter, "overview", "chapter should be preserved");
+    assert.equal(item.role, "lib", "role should be preserved");
+    assert.equal(second.enrichedAt, "2026-01-01T00:00:00.000Z", "enrichedAt should be preserved");
+  });
+
+  it("drops enrichment when file content changes", () => {
+    tmp = createTmpDir();
+    writeJson(tmp, ".sdd-forge/config.json", {
+      lang: "ja",
+      type: "cli/node-cli",
+      output: { languages: ["ja"], default: "ja" },
+      scan: { include: ["src/**/*.js"], exclude: [] },
+    });
+    writeFile(tmp, "src/index.js", 'export function hello() { return "hi"; }\n');
+
+    // 1st scan
+    execFileSync("node", [CMD], {
+      encoding: "utf8",
+      env: { ...process.env, SDD_WORK_ROOT: tmp, SDD_SOURCE_ROOT: tmp },
+    });
+
+    const outputPath = join(tmp, ".sdd-forge/output/analysis.json");
+    const first = JSON.parse(fs.readFileSync(outputPath, "utf8"));
+    first.modules.modules[0].summary = "Old summary";
+    first.modules.modules[0].detail = "Old detail";
+    first.enrichedAt = "2026-01-01T00:00:00.000Z";
+    fs.writeFileSync(outputPath, JSON.stringify(first) + "\n");
+
+    // Change the source file → different hash
+    writeFile(tmp, "src/index.js", 'export function goodbye() { return "bye"; }\n');
+
+    // 2nd scan
+    execFileSync("node", [CMD], {
+      encoding: "utf8",
+      env: { ...process.env, SDD_WORK_ROOT: tmp, SDD_SOURCE_ROOT: tmp },
+    });
+
+    const second = JSON.parse(fs.readFileSync(outputPath, "utf8"));
+    const item = second.modules.modules[0];
+    assert.ok(!item.summary, "summary should NOT be preserved for changed file");
+    assert.ok(!item.detail, "detail should NOT be preserved for changed file");
+  });
+
   it("includes extras from universal analyzeExtras", () => {
     tmp = createTmpDir();
     writeJson(tmp, ".sdd-forge/config.json", {

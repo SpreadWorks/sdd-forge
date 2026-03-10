@@ -190,11 +190,50 @@ function parseEnrichResponse(response) {
       try {
         return JSON.parse(match[0]);
       } catch (__) {
-        return null;
+        // Try to fix unescaped quotes inside string values.
+        // AI often outputs unescaped " inside detail/summary fields.
+        const fixed = fixUnescapedQuotes(match[0]);
+        try {
+          return JSON.parse(fixed);
+        } catch (___) {
+          return null;
+        }
       }
     }
     return null;
   }
+}
+
+/**
+ * JSON 文字列値内のエスケープされていないダブルクォーテーションを修復する。
+ * AI が detail/summary に this.desc("foo", bar) のような未エスケープ引用符を含めるケース対策。
+ *
+ * 戦略: 行単位で解析し、JSON の構造キー（"key": "value"）の value 部分内にある
+ * 未エスケープクォートを \\" に置換する。
+ */
+function fixUnescapedQuotes(json) {
+  const lines = json.split("\n");
+  const result = [];
+
+  for (const line of lines) {
+    // Match lines like:  "key": "value",
+    // Capture the value portion and fix unescaped quotes within it
+    const m = line.match(/^(\s*"(?:summary|detail)"\s*:\s*")(.*)(",?\s*)$/);
+    if (m) {
+      const [, prefix, value, suffix] = m;
+      // Escape unescaped double quotes in the value
+      // First un-escape already escaped ones to avoid double-escaping, then re-escape all
+      const fixed = value
+        .replace(/\\"/g, "\x00")      // temp-mark already-escaped quotes
+        .replace(/"/g, '\\"')          // escape all remaining quotes
+        .replace(/\x00/g, '\\"');      // restore temp-marked ones
+      result.push(prefix + fixed + suffix);
+    } else {
+      result.push(line);
+    }
+  }
+
+  return result.join("\n");
 }
 
 /**
@@ -343,6 +382,11 @@ async function main(ctx) {
 
     const enrichment = parseEnrichResponse(response);
     if (!enrichment) {
+      // Dump failed response for debugging
+      const dumpPath = path.join(sddOutputDir(root), `enrich-fail-batch${b + 1}.txt`);
+      try { fs.writeFileSync(dumpPath, response); } catch (_) { /* ignore */ }
+      logger.log(`response preview (${response.length} chars): ${response.slice(0, 200)}...`);
+      logger.log(`full response dumped to: ${path.relative(root, dumpPath)}`);
       if (totalEnriched > 0 && !ctx.dryRun && !ctx.stdout) {
         const saved = saveAnalysis(root, analysis);
         logger.log(`saved progress (${totalEnriched} entries) to ${path.relative(root, saved)}`);

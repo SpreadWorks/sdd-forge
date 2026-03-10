@@ -53,8 +53,61 @@ function loadScanSources(dataDir, existing) {
 }
 
 // ---------------------------------------------------------------------------
-// サマリー構築
+// enrichment 保持
 // ---------------------------------------------------------------------------
+
+const ENRICHED_FIELDS = ["summary", "detail", "chapter", "role"];
+
+/**
+ * 既存 analysis.json から enriched フィールドをハッシュベースで引き継ぐ。
+ * ファイルの hash が一致するエントリーのみ summary/detail/chapter/role を保持する。
+ *
+ * @param {Object} result - 新しいスキャン結果（mutate される）
+ * @param {string} outputPath - 既存 analysis.json のパス
+ * @returns {number} 保持されたエントリー数
+ */
+function preserveEnrichment(result, outputPath) {
+  let existing;
+  try {
+    existing = JSON.parse(fs.readFileSync(outputPath, "utf8"));
+  } catch (_) {
+    return 0;
+  }
+
+  let preserved = 0;
+
+  for (const cat of Object.keys(result)) {
+    const newItems = result[cat]?.[cat];
+    if (!Array.isArray(newItems)) continue;
+
+    const oldItems = existing[cat]?.[cat];
+    if (!Array.isArray(oldItems)) continue;
+
+    // hash → enriched entry lookup
+    const hashMap = new Map();
+    for (const item of oldItems) {
+      if (item.hash && item.summary) {
+        hashMap.set(item.hash, item);
+      }
+    }
+
+    for (const item of newItems) {
+      if (!item.hash) continue;
+      const prev = hashMap.get(item.hash);
+      if (!prev) continue;
+      for (const field of ENRICHED_FIELDS) {
+        if (prev[field]) item[field] = prev[field];
+      }
+      preserved++;
+    }
+  }
+
+  if (preserved > 0 && existing.enrichedAt) {
+    result.enrichedAt = existing.enrichedAt;
+  }
+
+  return preserved;
+}
 
 // ---------------------------------------------------------------------------
 // メイン
@@ -135,17 +188,25 @@ async function main(ctx) {
     logger.verbose(`extras: ${extrasKeys.length} categories (${extrasKeys.join(", ")})`);
   }
 
+  // enrichment 保持: 既存ファイルからハッシュ一致エントリーの enriched フィールドを引き継ぐ
+  const outputDir = sddOutputDir(root);
+  const outputPath = path.join(outputDir, "analysis.json");
+  if (!ctx.stdout && !ctx.dryRun) {
+    const preserved = preserveEnrichment(result, outputPath);
+    if (preserved > 0) {
+      logger.log(`preserved enrichment for ${preserved} unchanged entries`);
+    }
+  }
+
   // 出力
   const json = JSON.stringify(result);
 
   if (ctx.stdout || ctx.dryRun) {
     process.stdout.write(json + "\n");
   } else {
-    const outputDir = sddOutputDir(root);
     if (!fs.existsSync(outputDir)) {
       fs.mkdirSync(outputDir, { recursive: true });
     }
-    const outputPath = path.join(outputDir, "analysis.json");
     fs.writeFileSync(outputPath, json + "\n");
     logger.log(`output: ${path.relative(root, outputPath)}`);
   }
