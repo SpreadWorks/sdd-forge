@@ -46,6 +46,55 @@ function loadPreamblePatterns(cfg) {
 
 const ENDTEXT_LINE_RE = /^<!--\s*\{\{\/text\}\}\s*-->$/;
 
+/**
+ * Minimum line count in original to trigger shrinkage check.
+ * Very short files (< 20 lines) are exempt from shrinkage validation.
+ */
+const SHRINKAGE_MIN_LINES = 20;
+
+/**
+ * If the result has fewer than this ratio of the original lines, reject it.
+ * e.g. 0.5 = reject if result is less than 50% of original.
+ */
+const SHRINKAGE_THRESHOLD = 0.5;
+
+/**
+ * バッチ結果の品質を検証する。
+ * 行数の大幅縮小や filled 率の低さを検出してリジェクトする。
+ *
+ * @param {string} original - 元のファイル内容
+ * @param {{ text: string, filled: number, skipped: number }} result - バッチ処理結果
+ * @param {number} totalDirectives - ファイル内の {{text}} ディレクティブ総数
+ * @param {string} fileName - ファイル名（ログ用）
+ * @returns {{ ok: boolean, reason?: string }}
+ */
+function validateBatchResult(original, result, totalDirectives, fileName) {
+  const origLines = original.split("\n").length;
+  const newLines = result.text.split("\n").length;
+
+  // 縮小検出: 元ファイルが十分長く、結果がしきい値以下に縮小した場合
+  if (origLines >= SHRINKAGE_MIN_LINES && newLines < origLines * SHRINKAGE_THRESHOLD) {
+    return {
+      ok: false,
+      reason: `content shrinkage detected: ${origLines} → ${newLines} lines (${Math.round(newLines / origLines * 100)}%). Original preserved.`,
+    };
+  }
+
+  // filled 率: 複数ディレクティブがあるのに全く埋まらなかった場合
+  if (totalDirectives > 0 && result.filled === 0) {
+    return {
+      ok: false,
+      reason: `0/${totalDirectives} directives filled. Re-run with --per-directive for retry.`,
+    };
+  }
+
+  // filled 率: 半数以上が埋まらなかった場合は警告（ただし書き込みは許可）
+  if (totalDirectives > 1 && result.filled < totalDirectives * SHRINKAGE_THRESHOLD) {
+    logger.log(`WARN ${fileName}: only ${result.filled}/${totalDirectives} directives filled.`);
+  }
+
+  return { ok: true };
+}
 
 // ---------------------------------------------------------------------------
 // バッチモード：ファイル単位で全ディレクティブを1回の LLM 呼び出しで処理
@@ -415,20 +464,21 @@ export async function textFillFromAnalysis(root, analysis, agentName, srcRoot, o
     const entry = fileResults[i];
     if (entry?.error) {
       const file = targetFiles[i];
-      logger.log(`ERROR processing ${file}:`);
-      logger.log(entry.error.message);
+      logger.log(`ERROR ${file}: ${entry.error.message}`);
       errors.push(file);
       continue;
     }
     const { file, filePath, original, result } = entry.value;
     if (!result) continue;
-    if (result.filled === 0) {
-      const textFills = parseDirectives(original).filter((d) => d.type === "text");
-      if (textFills.length > 0) {
-        errors.push(file);
-        logger.log(`Batch returned 0 filled for ${file} (${textFills.length} directives). Re-run with --per-directive for retry.`);
-      }
+
+    const totalDirectives = parseDirectives(original).filter((d) => d.type === "text").length;
+    const validation = validateBatchResult(original, result, totalDirectives, file);
+    if (!validation.ok) {
+      logger.log(`REJECTED ${file}: ${validation.reason}`);
+      errors.push(file);
+      continue;
     }
+
     totalFilled += result.filled;
     totalSkipped += result.skipped;
 
@@ -547,19 +597,21 @@ async function main(ctx) {
     const resultEntry = fileResults[i];
     if (resultEntry?.error) {
       const { file } = fileEntries[i];
-      logger.log(`ERROR processing ${file}:`);
-      logger.log(resultEntry.error.message);
+      logger.log(`ERROR ${file}: ${resultEntry.error.message}`);
       errors.push(file);
       continue;
     }
     const { file, filePath, original, result } = resultEntry.value;
     if (!result) continue;
 
-    if (!ctx.perDirective && !ctx.dryRun && result.filled === 0) {
-      const textFills = parseDirectives(original).filter((d) => d.type === "text");
-      if (textFills.length > 0) {
+    // バッチモードの場合は結果を検証
+    if (!ctx.perDirective && !ctx.dryRun) {
+      const totalDirectives = parseDirectives(original).filter((d) => d.type === "text").length;
+      const validation = validateBatchResult(original, result, totalDirectives, file);
+      if (!validation.ok) {
+        logger.log(`REJECTED ${file}: ${validation.reason}`);
         errors.push(file);
-        logger.log(`Batch returned 0 filled for ${file} (${textFills.length} directives). Re-run with --per-directive for retry.`);
+        continue;
       }
     }
 
@@ -582,8 +634,9 @@ async function main(ctx) {
   if (errors.length > 0) {
     process.exitCode = 1;
   }
+  return { errors };
 }
 
-export { main, stripFillContent, countFilledInBatch, processTemplateFileBatch, allTextDirectivesFilled };
+export { main, stripFillContent, countFilledInBatch, processTemplateFileBatch, allTextDirectivesFilled, validateBatchResult };
 
 runIfDirect(import.meta.url, main);

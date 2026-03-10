@@ -1,6 +1,6 @@
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
-import { stripFillContent, countFilledInBatch, allTextDirectivesFilled } from "../../../src/docs/commands/text.js";
+import { stripFillContent, countFilledInBatch, allTextDirectivesFilled, validateBatchResult } from "../../../src/docs/commands/text.js";
 
 describe("stripFillContent", () => {
   it("removes content between {{text}} and {{/text}} tags", () => {
@@ -218,5 +218,55 @@ describe("allTextDirectivesFilled", () => {
       "Some content",
     ].join("\n");
     assert.strictEqual(allTextDirectivesFilled(input), false);
+  });
+});
+
+describe("validateBatchResult", () => {
+  function makeOriginal(lineCount) {
+    return Array.from({ length: lineCount }, (_, i) => `line ${i + 1}`).join("\n") + "\n";
+  }
+
+  it("accepts result with similar line count", () => {
+    const original = makeOriginal(100);
+    const result = { text: makeOriginal(90), filled: 3, skipped: 0 };
+    const v = validateBatchResult(original, result, 3, "test.md");
+    assert.strictEqual(v.ok, true);
+  });
+
+  it("rejects result with severe shrinkage", () => {
+    const original = makeOriginal(200);
+    const result = { text: makeOriginal(10), filled: 1, skipped: 2 };
+    const v = validateBatchResult(original, result, 3, "test.md");
+    assert.strictEqual(v.ok, false);
+    assert.ok(v.reason.includes("shrinkage"));
+  });
+
+  it("skips shrinkage check for short files", () => {
+    const original = makeOriginal(10);
+    const result = { text: makeOriginal(3), filled: 1, skipped: 0 };
+    const v = validateBatchResult(original, result, 1, "test.md");
+    assert.strictEqual(v.ok, true);
+  });
+
+  it("rejects when 0 directives filled", () => {
+    const original = makeOriginal(50);
+    const result = { text: makeOriginal(50), filled: 0, skipped: 3 };
+    const v = validateBatchResult(original, result, 3, "test.md");
+    assert.strictEqual(v.ok, false);
+    assert.ok(v.reason.includes("0/3"));
+  });
+
+  it("accepts when all directives filled", () => {
+    const original = makeOriginal(50);
+    const result = { text: makeOriginal(60), filled: 3, skipped: 0 };
+    const v = validateBatchResult(original, result, 3, "test.md");
+    assert.strictEqual(v.ok, true);
+  });
+
+  it("accepts when no directives exist", () => {
+    const original = makeOriginal(50);
+    const result = { text: makeOriginal(50), filled: 0, skipped: 0 };
+    const v = validateBatchResult(original, result, 0, "test.md");
+    assert.strictEqual(v.ok, true);
   });
 });

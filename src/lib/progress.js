@@ -52,6 +52,22 @@ export function createLogger(prefix) {
 }
 
 /**
+ * Format elapsed milliseconds as human-readable string.
+ * e.g. 1234 → "1.2s", 65432 → "1m 5s", 3661000 → "1h 1m 1s"
+ */
+function formatElapsed(ms) {
+  if (ms < 1000) return `${ms}ms`;
+  const s = Math.floor(ms / 1000);
+  if (s < 60) return `${(ms / 1000).toFixed(1)}s`;
+  const m = Math.floor(s / 60);
+  const rs = s % 60;
+  if (m < 60) return `${m}m ${rs}s`;
+  const h = Math.floor(m / 60);
+  const rm = m % 60;
+  return `${h}h ${rm}m ${rs}s`;
+}
+
+/**
  * @param {{ label: string, weight: number }[]} steps
  * @param {{ verbose?: boolean }} opts
  */
@@ -64,6 +80,8 @@ export function createProgress(steps, { verbose = false, title = "" } = {}) {
   let started = false;
   let spinnerFrame = 0;
   let spinnerTimer = null;
+  let stepStartTime = null;
+  const pipelineStartTime = Date.now();
 
   function renderBar(stepIdx, weight, spinner) {
     const pct = Math.round((weight / totalWeight) * 100);
@@ -126,6 +144,7 @@ export function createProgress(steps, { verbose = false, title = "" } = {}) {
       const idx = steps.findIndex((s) => s.label === label);
       if (idx === -1) return;
       currentIdx = idx;
+      stepStartTime = Date.now();
 
       if (useBar) {
         updateHeader(renderBar(idx, doneWeight, SPINNER_FRAMES[0]));
@@ -159,11 +178,14 @@ export function createProgress(steps, { verbose = false, title = "" } = {}) {
      */
     stepDone() {
       if (currentIdx >= 0 && currentIdx < steps.length) {
+        const label = steps[currentIdx].label;
+        const elapsed = stepStartTime ? formatElapsed(Date.now() - stepStartTime) : "";
         doneWeight += steps[currentIdx].weight;
         if (useBar) {
           stopSpinner();
           updateHeader(renderBar(currentIdx, doneWeight, "\u2713"));
         }
+        instance.log(`[${label}] done (${elapsed})`);
       }
     },
 
@@ -182,6 +204,9 @@ export function createProgress(steps, { verbose = false, title = "" } = {}) {
           + `  [${steps.length}/${steps.length}] ${bar} 100%  done \u2713`
           + "\x1b[u\n",
         );
+      }
+      if (pipelineStartTime) {
+        instance.log(`total: ${formatElapsed(Date.now() - pipelineStartTime)}`);
       }
       _current = null;
     },
