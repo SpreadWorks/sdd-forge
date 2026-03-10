@@ -98,34 +98,23 @@ function loadOutputJson(root, fileName) {
 }
 
 /**
- * analysis.json または summary.json を読み込む。
- * summary.json を優先し、なければ analysis.json にフォールバック。
+ * analysis.json を読み込む。
  *
  * @param {string} root - プロジェクトルート
  * @returns {Object|null} 解析データ、見つからなければ null
  */
 export function loadAnalysisData(root) {
-  return loadOutputJson(root, "summary.json") || loadOutputJson(root, "analysis.json");
+  return loadOutputJson(root, "analysis.json");
 }
 
 /**
- * analysis.json のみを読み込む（フルデータ）。
+ * analysis.json を読み込む。loadAnalysisData のエイリアス。
  *
  * @param {string} root - プロジェクトルート
  * @returns {Object|null}
  */
 export function loadFullAnalysis(root) {
   return loadOutputJson(root, "analysis.json");
-}
-
-/**
- * summary.json のみを読み込む（AI 向け軽量版）。
- *
- * @param {string} root - プロジェクトルート
- * @returns {Object|null}
- */
-export function loadSummaryData(root) {
-  return loadOutputJson(root, "summary.json");
 }
 
 /**

@@ -111,7 +111,7 @@
       "setup": "Register project + generate config (interactive)",
       "upgrade": "Update template-derived files to latest version",
       "default": "Change default project",
-      "build": "Generate docs (scan → init → data → text → readme)",
+      "build": "Generate docs (scan → enrich → init → data → text → readme)",
       "init": "Initialize docs/ from templates",
       "forge": "Iterative docs improvement (AI agent)",
       "review": "Docs quality check",
@@ -120,6 +120,7 @@
       "readme": "Auto-generate README.md",
       "translate": "Translate docs to non-default languages",
       "scan": "Source code analysis → analysis.json",
+      "enrich": "Enrich analysis entries with AI (summary/detail/chapter)",
       "data": "Resolve {{data}} directives with analysis data",
       "text": "Resolve {{text}} directives with AI",
       "spec": "Initialize spec (feature branch + spec.md)",
@@ -128,9 +129,19 @@
       "presets list": "Show preset inheritance tree"
     },
     "cmdHelp": {
+      "enrich": {
+        "usage": "Usage: sdd-forge enrich [options]",
+        "desc": "Enrich analysis.json entries with AI-generated summary, detail, chapter, and role.",
+        "options": {
+          "agent": "--agent <name>  AI agent to use (default: config defaultAgent)",
+          "dryRun": "--dry-run       Print result to stdout (no file write)",
+          "stdout": "--stdout        Print result to stdout (no file write)",
+          "help": "-h, --help      Show this help"
+        }
+      },
       "scan": {
         "usage": "Usage: sdd-forge scan [options]",
-        "desc": "Analyze source code and generate analysis.json / summary.json.",
+        "desc": "Analyze source code and generate analysis.json.",
         "options": {
           "stdout": "--stdout        Print result to stdout (no file write)",
           "dryRun": "--dry-run       Same as --stdout (no file write)",

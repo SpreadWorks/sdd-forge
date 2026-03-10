@@ -56,55 +56,6 @@ function loadScanSources(dataDir, existing) {
 // サマリー構築
 // ---------------------------------------------------------------------------
 
-const SUMMARY_SKIP_KEYS = new Set(["analyzedAt", "extras", "files"]);
-
-/**
- * Build a compact summary from analysis data.
- * If a DataSource has a summarize() method, use it. Otherwise, use a generic fallback.
- *
- * @param {Object} analysis - Full analysis data
- * @param {Map<string, Object>} dataSources - DataSource instances from scan
- */
-function buildSummary(analysis, dataSources) {
-  const s = { analyzedAt: analysis.analyzedAt };
-
-  for (const key of Object.keys(analysis)) {
-    if (SUMMARY_SKIP_KEYS.has(key)) continue;
-    if (!analysis[key]?.summary) continue;
-
-    const source = dataSources.get(key);
-    if (source && typeof source.summarize === "function") {
-      s[key] = source.summarize(analysis[key]);
-    } else {
-      // Generic: summary + first 10 items
-      const data = analysis[key];
-      const items = data[key] || [];
-      s[key] = {
-        ...data.summary,
-        items: items.slice(0, 10).map((x) => ({
-          file: x.file,
-          className: x.className,
-          methods: (x.methods || []).slice(0, 8),
-        })),
-      };
-    }
-  }
-
-  if (analysis.extras) {
-    const e = analysis.extras;
-    s.extras = {};
-    const pick = ["composerDeps", "packageDeps", "appController", "constants", "appModel"];
-    for (const k of pick) {
-      if (e[k]) s.extras[k] = e[k];
-    }
-  }
-  if (analysis.files) {
-    s.files = analysis.files;
-  }
-
-  return s;
-}
-
 // ---------------------------------------------------------------------------
 // メイン
 // ---------------------------------------------------------------------------
@@ -197,11 +148,6 @@ async function main(ctx) {
     const outputPath = path.join(outputDir, "analysis.json");
     fs.writeFileSync(outputPath, json + "\n");
     logger.log(`output: ${path.relative(root, outputPath)}`);
-
-    const summary = buildSummary(result, dataSources);
-    const summaryPath = path.join(outputDir, "summary.json");
-    fs.writeFileSync(summaryPath, JSON.stringify(summary) + "\n");
-    logger.log(`output: ${path.relative(root, summaryPath)}`);
   }
 }
 

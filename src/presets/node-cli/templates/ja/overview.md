@@ -21,7 +21,7 @@
 
 ### 主要コンセプト
 
-<!-- {{text: このツールを理解するうえで重要なコンセプト・用語を表形式で説明してください。必須項目: {{data}} ディレクティブ、{{text}} ディレクティブ、analysis.json / summary.json、プリセット、spec.md、ゲートチェック、SDD フロー、forge、review、フロー状態（.sdd-forge/current-spec）。}} -->
+<!-- {{text: このツールを理解するうえで重要なコンセプト・用語を表形式で説明してください。必須項目: {{data}} ディレクティブ、{{text}} ディレクティブ、analysis.json、プリセット、spec.md、ゲートチェック、SDD フロー、forge、review、フロー状態（.sdd-forge/current-spec）。}} -->
 <!-- {{/text}} -->
 
 ### 典型的な利用フロー

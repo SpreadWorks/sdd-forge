@@ -30,6 +30,7 @@ const LAYOUT = [
   { name: "translate" },
   { section: "Scan" },
   { name: "scan" },
+  { name: "enrich" },
   { name: "data" },
   { name: "text" },
   { section: "Spec" },

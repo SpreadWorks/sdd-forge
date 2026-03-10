@@ -89,9 +89,6 @@ describe("init CLI", () => {
       analyzedAt: "2026-01-01",
       files: { summary: { total: 1 } },
     });
-    writeJson(tmp, ".sdd-forge/output/summary.json", {
-      files: { summary: { total: 1 } },
-    });
 
     execFileSync("node", [CMD, "--type", "cli/node-cli"], {
       encoding: "utf8",

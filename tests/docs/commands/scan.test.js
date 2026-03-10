@@ -50,7 +50,7 @@ describe("scan CLI", () => {
     assert.ok(!proc.stderr.includes("[analyze]"), `legacy [analyze] prefix found in stderr: ${proc.stderr}`);
   });
 
-  it("writes analysis.json and summary.json with modules to output dir", () => {
+  it("writes analysis.json with modules to output dir", () => {
     tmp = createTmpDir();
     writeJson(tmp, ".sdd-forge/config.json", {
       lang: "ja",
@@ -72,11 +72,9 @@ describe("scan CLI", () => {
     assert.ok(analysis.analyzedAt);
     assert.ok(analysis.modules, "modules should be in analysis.json");
 
+    // summary.json should no longer be generated
     const summaryPath = join(tmp, ".sdd-forge/output/summary.json");
-    assert.ok(fs.existsSync(summaryPath));
-    const summary = JSON.parse(fs.readFileSync(summaryPath, "utf8"));
-    assert.ok(summary.modules, "modules should be in summary.json");
-    assert.equal(summary.modules.total, 1);
+    assert.ok(!fs.existsSync(summaryPath), "summary.json should not be generated");
   });
 
   it("--dry-run outputs to stdout without writing file", () => {

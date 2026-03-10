@@ -8,10 +8,9 @@
 import { createI18n } from "../../lib/i18n.js";
 
 /**
- * summary.json (or full analysis) をプロンプト用テキストに変換する。
- * scan 時に生成される summary.json の構造を想定。
+ * analysis.json をプロンプト用テキストに変換する。
  *
- * @param {Object|null} summary - Parsed summary.json (or analysis.json fallback)
+ * @param {Object|null} summary - Parsed analysis.json
  * @returns {string} Summary text
  */
 export function summaryToText(summary) {

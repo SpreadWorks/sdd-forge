@@ -15,6 +15,7 @@ import { resolveOutputConfig } from "./lib/types.js";
 const SCRIPTS = {
   default:    "docs/commands/default-project.js",
   scan:       "docs/commands/scan.js",
+  enrich:     "docs/commands/enrich.js",
   init:       "docs/commands/init.js",
   data:       "docs/commands/data.js",
   text:       "docs/commands/text.js",
@@ -62,6 +63,7 @@ if (subCmd === "build") {
 
   const pipelineSteps = [
     { label: "scan", weight: 1 },
+    { label: "enrich", weight: 2 },
     { label: "init", weight: 1 },
     { label: "data", weight: 1 },
     { label: "text", weight: 3 },
@@ -79,6 +81,7 @@ if (subCmd === "build") {
 
   // Import all pipeline modules
   const { main: scanMain } = await import(path.join(PKG_DIR, "docs/commands/scan.js"));
+  const { main: enrichMain } = await import(path.join(PKG_DIR, "docs/commands/enrich.js"));
   const { main: initMain } = await import(path.join(PKG_DIR, "docs/commands/init.js"));
   const { main: dataMain } = await import(path.join(PKG_DIR, "docs/commands/data.js"));
   const { main: textMain } = await import(path.join(PKG_DIR, "docs/commands/text.js"));
@@ -96,17 +99,26 @@ if (subCmd === "build") {
     await scanMain({ ...baseCtx });
     progress.stepDone();
 
-    // 2. init
+    // 2. enrich
+    progress.start("enrich");
+    if (agentName) {
+      await enrichMain({ ...baseCtx, agentName });
+    } else {
+      progress.log("[enrich] WARN: no defaultAgent configured, skipping enrich.");
+    }
+    progress.stepDone();
+
+    // 3. init
     progress.start("init");
     await initMain({ ...baseCtx, force: hasForce, dryRun: isDryRun });
     progress.stepDone();
 
-    // 3. data
+    // 4. data
     progress.start("data");
     await dataMain({ ...baseCtx, dryRun: isDryRun });
     progress.stepDone();
 
-    // 4. text
+    // 5. text
     progress.start("text");
     if (agentName) {
       await textMain({ ...baseCtx, dryRun: isDryRun, agentName });
@@ -116,17 +128,17 @@ if (subCmd === "build") {
     }
     progress.stepDone();
 
-    // 5. readme
+    // 6. readme
     progress.start("readme");
     await readmeMain({ ...baseCtx, dryRun: isDryRun });
     progress.stepDone();
 
-    // 6. agents
+    // 7. agents
     progress.start("agents");
     await agentsMain({ ...baseCtx, dryRun: isDryRun });
     progress.stepDone();
 
-    // 7. Multi-language: generate non-default languages
+    // 8. Multi-language: generate non-default languages
     if (outputCfg.isMultiLang) {
       progress.start("translate");
       const nonDefaultLangs = outputCfg.languages.filter((l) => l !== outputCfg.default);

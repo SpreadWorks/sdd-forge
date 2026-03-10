@@ -22,7 +22,7 @@ import { mapWithConcurrency } from "../lib/concurrency.js";
 import { PKG_DIR, repoRoot, parseArgs } from "../../lib/cli.js";
 import { loadConfig, loadLang, resolveConcurrency, saveContext } from "../../lib/config.js";
 import { resolveType } from "../../lib/types.js";
-import { loadFullAnalysis, loadSummaryData, getChapterFiles, readText } from "../lib/command-context.js";
+import { loadFullAnalysis, loadAnalysisData, getChapterFiles, readText } from "../lib/command-context.js";
 import { createResolver } from "../lib/resolver-factory.js";
 import { callAgentAsync, LONG_AGENT_TIMEOUT_MS, resolveAgent } from "../../lib/agent.js";
 import { createI18n } from "../../lib/i18n.js";
@@ -263,7 +263,7 @@ async function main() {
   }
 
   const analysisData = loadFullAnalysis(root);
-  const analysisSummary = summaryToText(loadSummaryData(root) || analysisData);
+  const analysisSummary = summaryToText(analysisData);
   if (analysisData && !cli.dryRun) {
     console.log("[forge] analysis data loaded.");
     const type = resolveType(config.type || "");

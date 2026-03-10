@@ -11,7 +11,7 @@
 
 ### 設定ファイル
 
-<!-- {{text: このツールが読み込む設定ファイルの一覧と、それぞれの配置場所・役割を表形式で記述してください。主要ファイル: .sdd-forge/config.json（プロジェクト設定）、.sdd-forge/context.json（プロジェクトコンテキスト）、.sdd-forge/projects.json（複数プロジェクト管理）、.sdd-forge/current-spec（SDD フロー状態）、.sdd-forge/output/analysis.json（解析結果）、.sdd-forge/output/summary.json（AI 向け軽量版）。}} -->
+<!-- {{text: このツールが読み込む設定ファイルの一覧と、それぞれの配置場所・役割を表形式で記述してください。主要ファイル: .sdd-forge/config.json（プロジェクト設定）、.sdd-forge/context.json（プロジェクトコンテキスト）、.sdd-forge/projects.json（複数プロジェクト管理）、.sdd-forge/current-spec（SDD フロー状態）、.sdd-forge/output/analysis.json（解析結果・enriched データ含む）。}} -->
 <!-- {{/text}} -->
 
 ### 設定項目リファレンス

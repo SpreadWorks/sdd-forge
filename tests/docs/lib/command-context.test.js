@@ -6,7 +6,6 @@ import {
   resolveCommandContext,
   loadAnalysisData,
   loadFullAnalysis,
-  loadSummaryData,
   getChapterFiles,
 } from "../../../src/docs/lib/command-context.js";
 import { createTmpDir, removeTmpDir, writeJson, writeFile } from "../../helpers/tmp-dir.js";
@@ -77,16 +76,7 @@ describe("loadAnalysisData", () => {
     removeTmpDir(tmp);
   });
 
-  it("prefers summary.json over analysis.json", () => {
-    tmp = createTmpDir("analysis");
-    writeJson(tmp, ".sdd-forge/output/analysis.json", { source: "analysis" });
-    writeJson(tmp, ".sdd-forge/output/summary.json", { source: "summary" });
-    const data = loadAnalysisData(tmp);
-    assert.equal(data.source, "summary");
-    removeTmpDir(tmp);
-  });
-
-  it("falls back to analysis.json when no summary", () => {
+  it("returns analysis.json data", () => {
     tmp = createTmpDir("analysis");
     writeJson(tmp, ".sdd-forge/output/analysis.json", { source: "analysis" });
     const data = loadAnalysisData(tmp);
@@ -98,10 +88,9 @@ describe("loadAnalysisData", () => {
 describe("loadFullAnalysis", () => {
   let tmp;
 
-  it("returns analysis.json only (ignores summary)", () => {
+  it("returns analysis.json data", () => {
     tmp = createTmpDir("full-analysis");
     writeJson(tmp, ".sdd-forge/output/analysis.json", { source: "analysis" });
-    writeJson(tmp, ".sdd-forge/output/summary.json", { source: "summary" });
     const data = loadFullAnalysis(tmp);
     assert.equal(data.source, "analysis");
     removeTmpDir(tmp);
@@ -111,26 +100,6 @@ describe("loadFullAnalysis", () => {
     tmp = createTmpDir("full-analysis");
     fs.mkdirSync(path.join(tmp, ".sdd-forge", "output"), { recursive: true });
     assert.equal(loadFullAnalysis(tmp), null);
-    removeTmpDir(tmp);
-  });
-});
-
-describe("loadSummaryData", () => {
-  let tmp;
-
-  it("returns summary.json only (ignores analysis)", () => {
-    tmp = createTmpDir("summary");
-    writeJson(tmp, ".sdd-forge/output/analysis.json", { source: "analysis" });
-    writeJson(tmp, ".sdd-forge/output/summary.json", { source: "summary" });
-    const data = loadSummaryData(tmp);
-    assert.equal(data.source, "summary");
-    removeTmpDir(tmp);
-  });
-
-  it("returns null when summary.json missing", () => {
-    tmp = createTmpDir("summary");
-    writeJson(tmp, ".sdd-forge/output/analysis.json", { source: "analysis" });
-    assert.equal(loadSummaryData(tmp), null);
     removeTmpDir(tmp);
   });
 });
