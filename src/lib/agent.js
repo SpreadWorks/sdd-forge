@@ -5,8 +5,8 @@
  * Provides a shared interface for calling configured AI agents.
  */
 
+import crypto from "crypto";
 import fs from "fs";
-import os from "os";
 import path from "path";
 import { execFileSync, spawn } from "child_process";
 
@@ -15,14 +15,8 @@ export const LONG_AGENT_TIMEOUT_MS = 300000;
 export const MID_AGENT_TIMEOUT_MS = 180000;
 
 function createSystemPromptPrefix(flag, systemPrompt) {
-  if (!flag || !systemPrompt) return { prefix: [], cleanupFile: null };
-  if (flag === "--system-prompt-file") {
-    const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "sdd-forge-"));
-    const tmpFile = path.join(tmpDir, "system-prompt.md");
-    fs.writeFileSync(tmpFile, systemPrompt, "utf8");
-    return { prefix: [flag, tmpFile], cleanupFile: tmpFile };
-  }
-  return { prefix: [flag, systemPrompt], cleanupFile: null };
+  if (!flag || !systemPrompt) return { prefix: [] };
+  return { prefix: [flag, systemPrompt] };
 }
 
 function resolveEffectivePrompt(prompt, systemPrompt, systemPromptFlag) {
@@ -40,22 +34,17 @@ function resolvePromptArgs(args, prompt) {
   return [...args, prompt];
 }
 
-function cleanupTempPromptFile(cleanupFile) {
-  if (!cleanupFile) return;
-  try { fs.unlinkSync(cleanupFile); fs.rmdirSync(path.dirname(cleanupFile)); } catch (_) {}
-}
-
 function buildAgentInvocation(agent, prompt, options) {
   const { systemPrompt } = options || {};
   const args = Array.isArray(agent.args) ? [...agent.args] : [];
   const flag = agent.systemPromptFlag;
-  const { prefix, cleanupFile } = createSystemPromptPrefix(flag, systemPrompt);
+  const { prefix } = createSystemPromptPrefix(flag, systemPrompt);
   const effectivePrompt = resolveEffectivePrompt(prompt, systemPrompt, flag);
   const resolvedArgs = resolvePromptArgs(args, effectivePrompt);
   const finalArgs = [...prefix, ...resolvedArgs];
   const env = { ...process.env };
   delete env.CLAUDECODE;
-  return { finalArgs, env, cleanupFile };
+  return { finalArgs, env };
 }
 
 /**
@@ -64,8 +53,6 @@ function buildAgentInvocation(agent, prompt, options) {
  * When `options.systemPrompt` is provided:
  *   - If agent.systemPromptFlag is set (e.g. "--system-prompt"),
  *     the flag + systemPrompt are prepended to the argument list.
- *   - If agent.systemPromptFlag is "--system-prompt-file",
- *     a temp file is written and cleaned up after execution.
  *   - If no systemPromptFlag but systemPrompt is given,
  *     the system prompt is prepended to the user prompt (fallback).
  *
@@ -78,21 +65,17 @@ function buildAgentInvocation(agent, prompt, options) {
  * @returns {string} Agent response (trimmed)
  */
 export function callAgent(agent, prompt, timeoutMs, cwd, options) {
-  const { finalArgs, env, cleanupFile } = buildAgentInvocation(agent, prompt, options);
+  const { finalArgs, env } = buildAgentInvocation(agent, prompt, options);
 
-  try {
-    const result = execFileSync(agent.command, finalArgs, {
-      encoding: "utf8",
-      maxBuffer: 20 * 1024 * 1024,
-      timeout: timeoutMs || DEFAULT_AGENT_TIMEOUT_MS,
-      cwd: cwd || process.cwd(),
-      env,
-    });
+  const result = execFileSync(agent.command, finalArgs, {
+    encoding: "utf8",
+    maxBuffer: 20 * 1024 * 1024,
+    timeout: timeoutMs || DEFAULT_AGENT_TIMEOUT_MS,
+    cwd: cwd || process.cwd(),
+    env,
+  });
 
-    return result.trim();
-  } finally {
-    cleanupTempPromptFile(cleanupFile);
-  }
+  return result.trim();
 }
 
 /**
@@ -114,13 +97,9 @@ export function callAgent(agent, prompt, timeoutMs, cwd, options) {
  */
 export function callAgentAsync(agent, prompt, timeoutMs, cwd, options) {
   const { systemPrompt, onStdout, onStderr } = options || {};
-  const { finalArgs, env, cleanupFile } = buildAgentInvocation(agent, prompt, { systemPrompt });
+  const { finalArgs, env } = buildAgentInvocation(agent, prompt, { systemPrompt });
 
   const timeout = timeoutMs || DEFAULT_AGENT_TIMEOUT_MS;
-
-  function cleanup() {
-    cleanupTempPromptFile(cleanupFile);
-  }
 
   return new Promise((resolve, reject) => {
     const child = spawn(agent.command, finalArgs, {
@@ -146,7 +125,6 @@ export function callAgentAsync(agent, prompt, timeoutMs, cwd, options) {
 
     child.on("close", (code, signal) => {
       clearTimeout(timer);
-      cleanup();
       if (code === 0 && !signal) {
         resolve(String(stdout).trim());
         return;
@@ -165,7 +143,6 @@ export function callAgentAsync(agent, prompt, timeoutMs, cwd, options) {
 
     child.on("error", (err) => {
       clearTimeout(timer);
-      cleanup();
       reject(err);
     });
   });
@@ -222,4 +199,46 @@ export function resolveAgent(cfg, agentName) {
   const key = agentName || cfg.defaultAgent;
   if (!key) return null;
   return cfg.providers?.[key] || null;
+}
+
+// ---------------------------------------------------------------------------
+// Agent context file utilities
+// ---------------------------------------------------------------------------
+
+/**
+ * config.agentWorkDir を解決する。
+ *
+ * @param {string} root - プロジェクトルート
+ * @param {Object} config - SddConfig
+ * @returns {string} 作業ディレクトリの絶対パス
+ */
+export function resolveWorkDir(root, config) {
+  const dir = config?.agentWorkDir || ".tmp";
+  return path.resolve(root, dir);
+}
+
+/**
+ * 作業ディレクトリに .claude/rules/ コンテキストファイルを書き込む。
+ * Claude CLI が cwd から自動で読み込む。
+ *
+ * @param {string} workDir - 作業ディレクトリの絶対パス
+ * @param {string} content - コンテキスト内容
+ * @returns {string} 書き込んだファイルの絶対パス
+ */
+export function writeAgentContext(workDir, content) {
+  const rulesDir = path.join(workDir, ".claude", "rules");
+  fs.mkdirSync(rulesDir, { recursive: true });
+  const id = crypto.randomUUID().slice(0, 8);
+  const filePath = path.join(rulesDir, `sdd-${id}.md`);
+  fs.writeFileSync(filePath, content, "utf8");
+  return filePath;
+}
+
+/**
+ * コンテキストファイルを削除する。
+ *
+ * @param {string} filePath - writeAgentContext が返したパス
+ */
+export function cleanupAgentContext(filePath) {
+  try { fs.unlinkSync(filePath); } catch (_) {}
 }

@@ -153,6 +153,11 @@ export function validateConfig(raw) {
     }
   }
 
+  // agentWorkDir (省略可)
+  if (raw.agentWorkDir != null && typeof raw.agentWorkDir !== "string") {
+    errors.push("'agentWorkDir' must be a string if provided");
+  }
+
   // flow (省略可)
   if (raw.flow != null) {
     if (typeof raw.flow !== "object") {

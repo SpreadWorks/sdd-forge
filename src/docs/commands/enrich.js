@@ -11,7 +11,7 @@ import path from "path";
 import { runIfDirect } from "../../lib/entrypoint.js";
 import { repoRoot, parseArgs } from "../../lib/cli.js";
 import { loadLang, sddOutputDir } from "../../lib/config.js";
-import { resolveAgent, callAgentAsync, LONG_AGENT_TIMEOUT_MS } from "../../lib/agent.js";
+import { resolveAgent, callAgentAsync, LONG_AGENT_TIMEOUT_MS, resolveWorkDir, writeAgentContext, cleanupAgentContext } from "../../lib/agent.js";
 import { resolveCommandContext, loadFullAnalysis } from "../lib/command-context.js";
 import { resolveChaptersOrder } from "../lib/template-merger.js";
 import { createLogger } from "../../lib/progress.js";
@@ -67,30 +67,17 @@ function collectSourceCode(items, srcRoot) {
 }
 
 /**
- * Build the prompt for the AI to enrich analysis entries.
+ * Build the context data (source code entries) for the enrich prompt.
+ * This is the large part that goes into a context file.
  *
  * @param {Object} analysis - Raw analysis data
- * @param {string[]} chapters - Chapter file names from preset
  * @param {string} srcRoot - Source root directory
- * @returns {string} Prompt text
+ * @returns {string} Context text with source code entries
  */
-function buildEnrichPrompt(analysis, chapters, srcRoot) {
+function buildEnrichContext(analysis, srcRoot) {
   const parts = [];
 
-  parts.push("You are analyzing a software project to generate documentation metadata.");
-  parts.push("For each source code entry, provide structured information in JSON format.");
-  parts.push("");
-
-  // Chapter list
-  parts.push("## Available chapters");
-  parts.push("Each entry should be assigned to one of these chapters:");
-  for (const ch of chapters) {
-    parts.push(`- ${ch.replace(/\.md$/, "")}`);
-  }
-  parts.push("");
-
-  // Categories and entries
-  parts.push("## Source code entries by category");
+  parts.push("# Source code entries by category");
   parts.push("");
 
   const categories = Object.keys(analysis).filter((k) => !META_KEYS.has(k));
@@ -102,9 +89,9 @@ function buildEnrichPrompt(analysis, chapters, srcRoot) {
 
     const enrichedItems = collectSourceCode(items, srcRoot);
 
-    parts.push(`### Category: ${cat} (${items.length} entries)`);
+    parts.push(`## Category: ${cat} (${items.length} entries)`);
     for (const item of enrichedItems) {
-      parts.push(`\n#### ${item.file || item.name || item.className || "unknown"}`);
+      parts.push(`\n### ${item.file || item.name || item.className || "unknown"}`);
       if (item.className) parts.push(`Class: ${item.className}`);
       if (item.methods?.length) parts.push(`Methods: ${item.methods.map((m) => m.name || m).join(", ")}`);
       if (item.sourceCode) {
@@ -115,6 +102,32 @@ function buildEnrichPrompt(analysis, chapters, srcRoot) {
     }
     parts.push("");
   }
+
+  return parts.join("\n");
+}
+
+/**
+ * Build the instruction prompt for the AI to enrich analysis entries.
+ * This is the small part that goes as the CLI argument.
+ *
+ * @param {string[]} chapters - Chapter file names from preset
+ * @returns {string} Prompt text (instructions + output format)
+ */
+function buildEnrichPrompt(chapters) {
+  const parts = [];
+
+  parts.push("You are analyzing a software project to generate documentation metadata.");
+  parts.push("The source code entries are provided in context files (.claude/rules/).");
+  parts.push("For each source code entry, provide structured information in JSON format.");
+  parts.push("");
+
+  // Chapter list
+  parts.push("## Available chapters");
+  parts.push("Each entry should be assigned to one of these chapters:");
+  for (const ch of chapters) {
+    parts.push(`- ${ch.replace(/\.md$/, "")}`);
+  }
+  parts.push("");
 
   // Output format instruction
   parts.push("## Output format");
@@ -257,17 +270,24 @@ async function main(ctx) {
 
   logger.log("enriching analysis with AI...");
 
-  // Build prompt
-  const prompt = buildEnrichPrompt(analysis, chapters, srcRoot);
+  // Build prompt: instructions (small CLI arg) + context (large file)
+  const prompt = buildEnrichPrompt(chapters);
+  const contextData = buildEnrichContext(analysis, srcRoot);
 
-  // Call AI
+  // Write context to work dir so Claude CLI reads it automatically
+  const workDir = resolveWorkDir(root, config);
+  const ctxFile = writeAgentContext(workDir, contextData);
+
+  // Call AI with cwd = workDir
   const timeoutMs = Number(config.limits?.designTimeoutMs || 0) || LONG_AGENT_TIMEOUT_MS;
   let response;
   try {
-    response = await callAgentAsync(agent, prompt, timeoutMs, root);
+    response = await callAgentAsync(agent, prompt, timeoutMs, workDir);
   } catch (err) {
+    cleanupAgentContext(ctxFile);
     throw new Error(`enrich: AI agent failed: ${err.message}`);
   }
+  cleanupAgentContext(ctxFile);
 
   if (!response) {
     throw new Error("enrich: AI agent returned empty response.");
@@ -307,6 +327,6 @@ async function main(ctx) {
   }
 }
 
-export { main, buildEnrichPrompt, parseEnrichResponse, mergeEnrichment };
+export { main, buildEnrichPrompt, buildEnrichContext, parseEnrichResponse, mergeEnrichment };
 
 runIfDirect(import.meta.url, main);

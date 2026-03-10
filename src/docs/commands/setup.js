@@ -558,6 +558,7 @@ async function main() {
         { pattern: "^(Here is|以下に|Based on)", flags: "i" },
       ],
     },
+    agentWorkDir: ".tmp",
     flow: {
       merge: "squash",
     },

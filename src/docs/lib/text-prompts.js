@@ -77,18 +77,6 @@ export function getAnalysisContext(analysis, directives) {
     }
   }
 
-  if (analysis.extras) {
-    for (const [key, value] of Object.entries(analysis.extras)) {
-      if (!(key in data) && value != null) {
-        if (Array.isArray(value)) {
-          data[key] = { _count: value.length, _sample: value.slice(0, 3) };
-        } else if (typeof value === "object") {
-          data[key] = value;
-        }
-      }
-    }
-  }
-
   return data;
 }
 

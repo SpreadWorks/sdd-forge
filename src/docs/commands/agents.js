@@ -17,7 +17,7 @@ import { createI18n } from "../../lib/i18n.js";
 import { createResolver } from "../lib/resolver-factory.js";
 import { createLogger } from "../../lib/progress.js";
 import { parseDirectives, replaceBlockDirective, resolveDataDirectives } from "../lib/directive-parser.js";
-import { resolveCommandContext, loadFullAnalysis, loadAnalysisData } from "../lib/command-context.js";
+import { resolveCommandContext, loadFullAnalysis, getChapterFiles, readText } from "../lib/command-context.js";
 
 const logger = createLogger("agents");
 
@@ -36,7 +36,7 @@ function buildAgentsSystemPrompt(lang) {
   ].join("\n");
 }
 
-function buildRefinePrompt(projectContent, summary, config, srcRoot, sddContent) {
+function buildRefinePrompt(projectContent, docsContent, config, srcRoot, sddContent) {
   const parts = [];
 
   if (sddContent) {
@@ -67,8 +67,10 @@ function buildRefinePrompt(projectContent, summary, config, srcRoot, sddContent)
     } catch (_) { /* skip */ }
   }
 
-  parts.push("## Analysis Summary");
-  parts.push(JSON.stringify(summary, null, 2));
+  if (docsContent) {
+    parts.push("## Generated Documentation");
+    parts.push(docsContent);
+  }
 
   return parts.join("\n");
 }
@@ -157,7 +159,13 @@ async function main(ctx) {
   if (!analysis) {
     throw new Error(t("agents.analysisNotFound", { path: path.join(sddOutputDir(root), "analysis.json") }));
   }
-  const summary = loadAnalysisData(root);
+
+  // Load generated docs as context (instead of raw analysis.json)
+  const docsDir = path.join(root, "docs");
+  const chapterFiles = getChapterFiles(docsDir);
+  const docsContent = chapterFiles.map((f) => readText(path.join(docsDir, f))).join("\n\n");
+  const readmeContent = readText(path.join(srcRoot, "README.md"));
+  const combinedDocs = [docsContent, readmeContent].filter(Boolean).join("\n\n---\n\n");
 
   // Create resolver and resolve {{data}} directives
   const resolvedType = config.type || "base";
@@ -174,7 +182,7 @@ async function main(ctx) {
 
     logger.log(t("agents.refining"));
     const systemPrompt = buildAgentsSystemPrompt(lang);
-    const prompt = buildRefinePrompt(projectContent, summary, config, srcRoot, sddContent);
+    const prompt = buildRefinePrompt(projectContent, combinedDocs, config, srcRoot, sddContent);
 
     try {
       const result = callAgent(agent, prompt, LONG_AGENT_TIMEOUT_MS, undefined, { systemPrompt });

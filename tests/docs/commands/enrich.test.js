@@ -2,12 +2,25 @@ import { describe, it } from "node:test";
 import assert from "node:assert/strict";
 import {
   buildEnrichPrompt,
+  buildEnrichContext,
   parseEnrichResponse,
   mergeEnrichment,
 } from "../../../src/docs/commands/enrich.js";
 
 describe("buildEnrichPrompt", () => {
-  it("includes chapter list and category entries", () => {
+  it("includes chapter list and output format", () => {
+    const chapters = ["overview.md", "internal_design.md"];
+    const prompt = buildEnrichPrompt(chapters);
+
+    assert.ok(prompt.includes("overview"));
+    assert.ok(prompt.includes("internal_design"));
+    assert.ok(prompt.includes("Output format"));
+    assert.ok(prompt.includes("JSON"));
+  });
+});
+
+describe("buildEnrichContext", () => {
+  it("includes category entries and source code references", () => {
     const analysis = {
       analyzedAt: "2026-01-01",
       modules: {
@@ -18,15 +31,12 @@ describe("buildEnrichPrompt", () => {
         ],
       },
     };
-    const chapters = ["overview.md", "internal_design.md"];
-    const prompt = buildEnrichPrompt(analysis, chapters, "/fake/root");
+    const context = buildEnrichContext(analysis, "/fake/root");
 
-    assert.ok(prompt.includes("overview"));
-    assert.ok(prompt.includes("internal_design"));
-    assert.ok(prompt.includes("modules"));
-    assert.ok(prompt.includes("foo.js"));
-    assert.ok(prompt.includes("baz.js"));
-    assert.ok(prompt.includes("bar")); // method name
+    assert.ok(context.includes("modules"));
+    assert.ok(context.includes("foo.js"));
+    assert.ok(context.includes("baz.js"));
+    assert.ok(context.includes("bar")); // method name
   });
 
   it("skips meta keys", () => {
@@ -35,10 +45,10 @@ describe("buildEnrichPrompt", () => {
       extras: { packageDeps: {} },
       files: { summary: { total: 10 } },
     };
-    const prompt = buildEnrichPrompt(analysis, ["overview.md"], "/fake");
+    const context = buildEnrichContext(analysis, "/fake");
 
-    assert.ok(!prompt.includes("analyzedAt"));
-    assert.ok(!prompt.includes("packageDeps"));
+    assert.ok(!context.includes("analyzedAt"));
+    assert.ok(!context.includes("packageDeps"));
   });
 
   it("handles empty categories gracefully", () => {
@@ -49,8 +59,8 @@ describe("buildEnrichPrompt", () => {
         modules: [],
       },
     };
-    const prompt = buildEnrichPrompt(analysis, ["overview.md"], "/fake");
-    assert.ok(typeof prompt === "string");
+    const context = buildEnrichContext(analysis, "/fake");
+    assert.ok(typeof context === "string");
   });
 });
 
