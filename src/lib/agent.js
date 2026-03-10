@@ -34,6 +34,27 @@ function resolvePromptArgs(args, prompt) {
   return [...args, prompt];
 }
 
+/**
+ * args から {{PROMPT}} を含む引数を除去する（stdin フォールバック用）。
+ * {{PROMPT}} の直前に -p / --print がある場合はそれも除去する。
+ */
+function stripPromptFromArgs(args) {
+  const result = [];
+  for (let i = 0; i < args.length; i++) {
+    if (typeof args[i] === "string" && args[i].includes("{{PROMPT}}")) {
+      if (result.length > 0 && ["-p", "--print"].includes(result[result.length - 1])) {
+        result.pop();
+      }
+      continue;
+    }
+    result.push(args[i]);
+  }
+  return result;
+}
+
+/** argv の合計バイト数がこの閾値を超えたら stdin 経由に切り替える */
+const ARGV_SIZE_THRESHOLD = 100_000;
+
 function buildAgentInvocation(agent, prompt, options) {
   const { systemPrompt } = options || {};
   const args = Array.isArray(agent.args) ? [...agent.args] : [];
@@ -44,7 +65,18 @@ function buildAgentInvocation(agent, prompt, options) {
   const finalArgs = [...prefix, ...resolvedArgs];
   const env = { ...process.env };
   delete env.CLAUDECODE;
-  return { finalArgs, env };
+
+  // Check total argv size; fall back to stdin if over threshold
+  const totalBytes = finalArgs.reduce((sum, a) => sum + Buffer.byteLength(String(a)), 0);
+  if (totalBytes <= ARGV_SIZE_THRESHOLD) {
+    return { finalArgs, env, stdinContent: null };
+  }
+
+  // Stdin fallback: route the prompt through stdin instead of CLI args.
+  // System prompt stays as CLI arg (small); only the prompt goes via stdin.
+  const strippedArgs = stripPromptFromArgs(args);
+  const stdinFinalArgs = [...prefix, ...strippedArgs];
+  return { finalArgs: stdinFinalArgs, env, stdinContent: effectivePrompt };
 }
 
 /**
@@ -65,7 +97,7 @@ function buildAgentInvocation(agent, prompt, options) {
  * @returns {string} Agent response (trimmed)
  */
 export function callAgent(agent, prompt, timeoutMs, cwd, options) {
-  const { finalArgs, env } = buildAgentInvocation(agent, prompt, options);
+  const { finalArgs, env, stdinContent } = buildAgentInvocation(agent, prompt, options);
 
   const result = execFileSync(agent.command, finalArgs, {
     encoding: "utf8",
@@ -73,6 +105,7 @@ export function callAgent(agent, prompt, timeoutMs, cwd, options) {
     timeout: timeoutMs || DEFAULT_AGENT_TIMEOUT_MS,
     cwd: cwd || process.cwd(),
     env,
+    ...(stdinContent != null ? { input: stdinContent } : {}),
   });
 
   return result.trim();
@@ -97,16 +130,21 @@ export function callAgent(agent, prompt, timeoutMs, cwd, options) {
  */
 export function callAgentAsync(agent, prompt, timeoutMs, cwd, options) {
   const { systemPrompt, onStdout, onStderr } = options || {};
-  const { finalArgs, env } = buildAgentInvocation(agent, prompt, { systemPrompt });
+  const { finalArgs, env, stdinContent } = buildAgentInvocation(agent, prompt, { systemPrompt });
 
   const timeout = timeoutMs || DEFAULT_AGENT_TIMEOUT_MS;
 
   return new Promise((resolve, reject) => {
     const child = spawn(agent.command, finalArgs, {
-      stdio: ["ignore", "pipe", "pipe"],
+      stdio: [stdinContent != null ? "pipe" : "ignore", "pipe", "pipe"],
       cwd: cwd || process.cwd(),
       env,
     });
+
+    if (stdinContent != null) {
+      child.stdin.write(stdinContent);
+      child.stdin.end();
+    }
 
     let stdout = "";
     let stderr = "";

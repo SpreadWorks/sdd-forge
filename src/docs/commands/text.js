@@ -27,13 +27,15 @@ import {
 import { repoRoot, parseArgs } from "../../lib/cli.js";
 import { loadConfig, loadLang, resolveConcurrency, DEFAULT_CONCURRENCY } from "../../lib/config.js";
 import { createLogger } from "../../lib/progress.js";
-import { callAgent as callAgentBase, callAgentAsync as callAgentAsyncBase, ensureAgentWorkDir, loadAgentConfig, MID_AGENT_TIMEOUT_MS } from "../../lib/agent.js";
+import { callAgent as callAgentBase, callAgentAsync as callAgentAsyncBase, ensureAgentWorkDir, loadAgentConfig, LONG_AGENT_TIMEOUT_MS, MID_AGENT_TIMEOUT_MS } from "../../lib/agent.js";
 import { createI18n } from "../../lib/i18n.js";
 import { resolveCommandContext, getChapterFiles, loadFullAnalysis } from "../lib/command-context.js";
 
 const logger = createLogger("text");
 
+/** Per-directive mode uses MID (180s), batch mode uses LONG (300s) */
 const DEFAULT_TIMEOUT_MS = MID_AGENT_TIMEOUT_MS;
+const BATCH_TIMEOUT_MS = LONG_AGENT_TIMEOUT_MS;
 
 /**
  * config の textFill.preamblePatterns を RegExp 配列に変換する。
@@ -456,7 +458,7 @@ export async function textFillFromAnalysis(root, analysis, agentName, srcRoot, o
   const fileResults = await mapWithConcurrency(targetFiles, concurrency, async (file) => {
     const filePath = path.join(docsDir, file);
     const original = fs.readFileSync(filePath, "utf8");
-    const result = await processTemplateFileBatch(original, analysis, file, agent, DEFAULT_TIMEOUT_MS, root, false, preamblePatterns, systemPrompt, undefined, undefined, lang, resolvedSrcRoot);
+    const result = await processTemplateFileBatch(original, analysis, file, agent, BATCH_TIMEOUT_MS, root, false, preamblePatterns, systemPrompt, undefined, undefined, lang, resolvedSrcRoot);
     return { file, filePath, original, result };
   });
 
@@ -561,8 +563,10 @@ async function main(ctx) {
   }
 
   const processFn = ctx.perDirective ? processTemplate : processTemplateFileBatch;
+  // Batch mode processes entire files in one LLM call; use longer timeout
   if (!ctx.perDirective) {
-    logger.verbose(`Mode: batch (file-level, ${docsFiles.length} file(s), concurrency=${concurrency}). Use --per-directive for single-call mode.`);
+    ctx.timeout = Math.max(ctx.timeout, BATCH_TIMEOUT_MS);
+    logger.verbose(`Mode: batch (file-level, ${docsFiles.length} file(s), concurrency=${concurrency}, timeout=${ctx.timeout}ms). Use --per-directive for single-call mode.`);
   }
 
   // Prepare file entries (filter for --id before parallel dispatch)

@@ -1,6 +1,6 @@
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
-import { callAgent, resolveAgent } from "../../src/lib/agent.js";
+import { callAgent, callAgentAsync, resolveAgent } from "../../src/lib/agent.js";
 
 describe("callAgent", () => {
   it("calls a command and returns trimmed output", () => {
@@ -24,6 +24,29 @@ describe("callAgent", () => {
   it("throws on failing command", () => {
     const agent = { command: "node", args: ["-e", "process.exit(1)"] };
     assert.throws(() => callAgent(agent, "test"));
+  });
+
+  it("falls back to stdin when args exceed threshold", () => {
+    // cat reads from stdin and outputs it — verifies stdin piping works
+    const agent = { command: "cat", args: [] };
+    const largePrompt = "X".repeat(200_000);
+    const result = callAgent(agent, largePrompt);
+    assert.equal(result, largePrompt);
+  });
+});
+
+describe("callAgentAsync", () => {
+  it("returns output via promise", async () => {
+    const agent = { command: "echo", args: ["{{PROMPT}}"] };
+    const result = await callAgentAsync(agent, "async-test");
+    assert.equal(result, "async-test");
+  });
+
+  it("falls back to stdin when args exceed threshold", async () => {
+    const agent = { command: "cat", args: [] };
+    const largePrompt = "Y".repeat(200_000);
+    const result = await callAgentAsync(agent, largePrompt);
+    assert.equal(result, largePrompt);
   });
 });
 
