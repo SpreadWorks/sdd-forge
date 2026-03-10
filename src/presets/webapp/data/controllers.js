@@ -28,6 +28,9 @@ export default class ControllersSource extends Scannable(DataSource) {
         components: parsed.properties.components || [],
         uses: parsed.properties.uses || [],
         actions: parsed.methods.filter((m) => !m.startsWith("_")),
+        lines: f.lines,
+        hash: f.hash,
+        mtime: f.mtime,
       });
     }
 

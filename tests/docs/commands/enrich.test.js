@@ -2,65 +2,160 @@ import { describe, it } from "node:test";
 import assert from "node:assert/strict";
 import {
   buildEnrichPrompt,
-  buildEnrichContext,
   parseEnrichResponse,
   mergeEnrichment,
+  collectEntries,
+  splitIntoBatches,
 } from "../../../src/docs/commands/enrich.js";
 
-describe("buildEnrichPrompt", () => {
-  it("includes chapter list and output format", () => {
-    const chapters = ["overview.md", "internal_design.md"];
-    const prompt = buildEnrichPrompt(chapters);
-
-    assert.ok(prompt.includes("overview"));
-    assert.ok(prompt.includes("internal_design"));
-    assert.ok(prompt.includes("Output format"));
-    assert.ok(prompt.includes("JSON"));
-  });
-});
-
-describe("buildEnrichContext", () => {
-  it("includes category entries and source code references", () => {
+describe("collectEntries", () => {
+  it("collects entries across categories with index and category", () => {
     const analysis = {
       analyzedAt: "2026-01-01",
       modules: {
         summary: { total: 2 },
         modules: [
-          { file: "src/foo.js", name: "foo.js", methods: [{ name: "bar" }] },
-          { file: "src/baz.js", name: "baz.js", methods: [] },
+          { file: "src/foo.js", name: "foo.js", lines: 100 },
+          { file: "src/bar.js", name: "bar.js", lines: 50 },
         ],
       },
     };
-    const context = buildEnrichContext(analysis, "/fake/root");
+    const entries = collectEntries(analysis);
+    assert.equal(entries.length, 2);
+    assert.equal(entries[0].category, "modules");
+    assert.equal(entries[0].index, 0);
+    assert.equal(entries[0].file, "src/foo.js");
+    assert.equal(entries[0].lines, 100);
+    assert.equal(entries[0].enriched, false);
+    assert.equal(entries[1].index, 1);
+    assert.equal(entries[1].lines, 50);
+  });
 
-    assert.ok(context.includes("modules"));
-    assert.ok(context.includes("foo.js"));
-    assert.ok(context.includes("baz.js"));
-    assert.ok(context.includes("bar")); // method name
+  it("marks entries with summary as enriched", () => {
+    const analysis = {
+      modules: {
+        modules: [
+          { file: "a.js", summary: "Already done" },
+          { file: "b.js" },
+        ],
+      },
+    };
+    const entries = collectEntries(analysis);
+    assert.equal(entries[0].enriched, true);
+    assert.equal(entries[1].enriched, false);
+  });
+
+  it("defaults lines to 0 when not present", () => {
+    const analysis = {
+      modules: { modules: [{ file: "a.js" }] },
+    };
+    const entries = collectEntries(analysis);
+    assert.equal(entries[0].lines, 0);
   });
 
   it("skips meta keys", () => {
     const analysis = {
       analyzedAt: "2026-01-01",
-      extras: { packageDeps: {} },
-      files: { summary: { total: 10 } },
-    };
-    const context = buildEnrichContext(analysis, "/fake");
-
-    assert.ok(!context.includes("analyzedAt"));
-    assert.ok(!context.includes("packageDeps"));
-  });
-
-  it("handles empty categories gracefully", () => {
-    const analysis = {
-      analyzedAt: "2026-01-01",
+      enrichedAt: "2026-01-01",
+      extras: { foo: "bar" },
       modules: {
-        summary: { total: 0 },
-        modules: [],
+        modules: [{ file: "a.js" }],
       },
     };
-    const context = buildEnrichContext(analysis, "/fake");
-    assert.ok(typeof context === "string");
+    const entries = collectEntries(analysis);
+    assert.equal(entries.length, 1);
+    assert.equal(entries[0].category, "modules");
+  });
+
+  it("handles multiple categories", () => {
+    const analysis = {
+      modules: { modules: [{ file: "a.js" }] },
+      controllers: { controllers: [{ file: "b.js" }, { file: "c.js" }] },
+    };
+    const entries = collectEntries(analysis);
+    assert.equal(entries.length, 3);
+  });
+});
+
+describe("splitIntoBatches", () => {
+  it("splits by item count when maxLines is 0", () => {
+    const entries = Array.from({ length: 5 }, (_, i) => ({ lines: 100, index: i }));
+    const batches = splitIntoBatches(entries, 0, 2);
+    assert.equal(batches.length, 3);
+    assert.equal(batches[0].length, 2);
+    assert.equal(batches[1].length, 2);
+    assert.equal(batches[2].length, 1);
+  });
+
+  it("splits by total lines", () => {
+    const entries = [
+      { lines: 100 }, { lines: 100 }, { lines: 100 },
+      { lines: 100 }, { lines: 100 },
+    ];
+    const batches = splitIntoBatches(entries, 250, 20);
+    // 100+100=200 OK, +100=300 > 250, so batch 1 = 2 items
+    assert.equal(batches.length, 3);
+    assert.equal(batches[0].length, 2);
+    assert.equal(batches[1].length, 2);
+    assert.equal(batches[2].length, 1);
+  });
+
+  it("puts a single large file in its own batch", () => {
+    const entries = [
+      { lines: 5000 }, // exceeds maxLines alone
+      { lines: 50 },
+      { lines: 50 },
+    ];
+    const batches = splitIntoBatches(entries, 3000, 20);
+    assert.equal(batches.length, 2);
+    assert.equal(batches[0].length, 1); // large file alone
+    assert.equal(batches[1].length, 2); // small files together
+  });
+
+  it("respects maxItems even when lines budget remains", () => {
+    const entries = Array.from({ length: 10 }, () => ({ lines: 10 }));
+    const batches = splitIntoBatches(entries, 99999, 3);
+    assert.equal(batches.length, 4); // 3+3+3+1
+  });
+
+  it("handles empty entries", () => {
+    const batches = splitIntoBatches([], 3000, 20);
+    assert.equal(batches.length, 0);
+  });
+});
+
+describe("buildEnrichPrompt", () => {
+  it("includes file list and chapter list", () => {
+    const chapters = ["overview.md", "internal_design.md"];
+    const batchEntries = [
+      { category: "modules", index: 0, file: "src/foo.js" },
+      { category: "modules", index: 1, file: "src/bar.js" },
+    ];
+    const prompt = buildEnrichPrompt(chapters, batchEntries);
+
+    assert.ok(prompt.includes("src/foo.js"));
+    assert.ok(prompt.includes("src/bar.js"));
+    assert.ok(prompt.includes("overview"));
+    assert.ok(prompt.includes("internal_design"));
+    assert.ok(prompt.includes("Output format"));
+    assert.ok(prompt.includes("JSON"));
+  });
+
+  it("includes category and index in file list", () => {
+    const batchEntries = [
+      { category: "modules", index: 5, file: "src/lib/config.js" },
+    ];
+    const prompt = buildEnrichPrompt(["overview.md"], batchEntries);
+    assert.ok(prompt.includes('category: "modules"'));
+    assert.ok(prompt.includes("index: 5"));
+  });
+
+  it("instructs AI to read source files", () => {
+    const prompt = buildEnrichPrompt(["overview.md"], [
+      { category: "modules", index: 0, file: "src/a.js" },
+    ]);
+    assert.ok(prompt.includes("Read"));
+    assert.ok(prompt.includes("source file"));
   });
 });
 

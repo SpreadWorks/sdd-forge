@@ -25,6 +25,9 @@ export default class ModulesSource extends Scannable(DataSource) {
         file: path.join(cfg.dir, f.relPath),
         className: parsed.className,
         methods: parsed.methods,
+        lines: f.lines,
+        hash: f.hash,
+        mtime: f.mtime,
       });
     }
 

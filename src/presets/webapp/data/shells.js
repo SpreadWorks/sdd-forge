@@ -28,6 +28,9 @@ export default class ShellsSource extends Scannable(DataSource) {
         publicMethods: parsed.methods.filter((m) => !m.startsWith("_")),
         hasMain,
         appUses: [],
+        lines: f.lines,
+        hash: f.hash,
+        mtime: f.mtime,
       });
     }
 

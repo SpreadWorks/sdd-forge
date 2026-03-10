@@ -25,7 +25,10 @@ export function analyzeModels(sourceRoot) {
   for (const f of files) {
     const content = fs.readFileSync(f.absPath, "utf8");
     if (/extends\s+Model\b/.test(content) || /use\s+HasFactory\b/.test(content)) {
-      models.push(parseModel(f.absPath, f.relPath, baseDir));
+      models.push({
+        ...parseModel(f.absPath, f.relPath, baseDir),
+        lines: f.lines, hash: f.hash, mtime: f.mtime,
+      });
     }
   }
 

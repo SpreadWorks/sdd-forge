@@ -21,7 +21,10 @@ export function analyzeEntities(sourceRoot) {
   for (const f of files) {
     const content = fs.readFileSync(f.absPath, "utf8");
     if (/#\[ORM\\Entity/.test(content) || /#\[ORM\\Table/.test(content)) {
-      entities.push(parseEntity(f.absPath, f.relPath));
+      entities.push({
+        ...parseEntity(f.absPath, f.relPath),
+        lines: f.lines, hash: f.hash, mtime: f.mtime,
+      });
     }
   }
 

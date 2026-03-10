@@ -14,6 +14,7 @@
 import fs from "fs";
 import path from "path";
 import ControllersSource from "../../webapp/data/controllers.js";
+import { getFileStats } from "../../../docs/lib/scanner.js";
 import {
   stripBlockComments,
   extractArrayBody,
@@ -80,6 +81,7 @@ export default class CakephpControllersSource extends ControllersSource {
         components,
         uses,
         actions,
+        ...getFileStats(filePath),
       });
     }
 

@@ -5,6 +5,7 @@
  * ファイル探索・言語別パーサなど、DataSource の scan() で使われる共通機能を提供する。
  */
 
+import crypto from "crypto";
 import fs from "fs";
 import path from "path";
 
@@ -24,6 +25,22 @@ function patternToRegex(pattern) {
 }
 
 /**
+ * ファイルの行数・ハッシュ・更新日時を取得する。
+ *
+ * @param {string} absPath - ファイルの絶対パス
+ * @returns {{ lines: number, hash: string, mtime: string }}
+ */
+export function getFileStats(absPath) {
+  const content = fs.readFileSync(absPath, "utf8");
+  const stat = fs.statSync(absPath);
+  return {
+    lines: content.split("\n").length,
+    hash: crypto.createHash("md5").update(content).digest("hex"),
+    mtime: stat.mtime.toISOString(),
+  };
+}
+
+/**
  * dir 配下からパターンに一致するファイルを再帰的に探索する。
  */
 export function findFiles(baseDir, pattern, excludeList, subDirs) {
@@ -39,10 +56,12 @@ export function findFiles(baseDir, pattern, excludeList, subDirs) {
         walk(path.join(dir, entry.name), path.join(relPrefix, entry.name));
       } else if (entry.isFile()) {
         if (regex.test(entry.name) && !excludeSet.has(entry.name)) {
+          const absP = path.join(dir, entry.name);
           results.push({
-            absPath: path.join(dir, entry.name),
+            absPath: absP,
             relPath: path.join(relPrefix, entry.name),
             fileName: entry.name,
+            ...getFileStats(absP),
           });
         }
       }

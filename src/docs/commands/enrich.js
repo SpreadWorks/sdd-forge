@@ -4,6 +4,9 @@
  *
  * AI で analysis.json の各エントリーに summary/detail/chapter/role を付与する。
  * scan 後に実行し、enriched analysis.json を生成する。
+ *
+ * バッチ処理: エントリーを固定サイズのバッチに分割して AI を呼び出す。
+ * レジューム: 各バッチ完了後に analysis.json を保存。既に enriched なエントリーはスキップ。
  */
 
 import fs from "fs";
@@ -11,7 +14,7 @@ import path from "path";
 import { runIfDirect } from "../../lib/entrypoint.js";
 import { repoRoot, parseArgs } from "../../lib/cli.js";
 import { loadLang, sddOutputDir } from "../../lib/config.js";
-import { resolveAgent, callAgentAsync, LONG_AGENT_TIMEOUT_MS, resolveWorkDir, writeAgentContext, cleanupAgentContext } from "../../lib/agent.js";
+import { resolveAgent, callAgentAsync, LONG_AGENT_TIMEOUT_MS } from "../../lib/agent.js";
 import { resolveCommandContext, loadFullAnalysis } from "../lib/command-context.js";
 import { resolveChaptersOrder } from "../lib/template-merger.js";
 import { createLogger } from "../../lib/progress.js";
@@ -20,6 +23,8 @@ import { createI18n } from "../../lib/i18n.js";
 const logger = createLogger("enrich");
 
 const META_KEYS = new Set(["analyzedAt", "enrichedAt", "generatedAt", "extras", "files", "root"]);
+const DEFAULT_BATCH_SIZE = 20;
+const DEFAULT_BATCH_LINES = 3000;
 
 function printHelp(t) {
   const h = t.raw("help.cmdHelp.enrich");
@@ -40,85 +45,91 @@ function printHelp(t) {
 }
 
 /**
- * Collect source code content for each entry in a category.
+ * analysis からカテゴリ横断でフラットなエントリーリストを収集する。
+ * 各エントリーには category と index を付与。
  *
- * @param {Object[]} items - Category items with file/name properties
- * @param {string} srcRoot - Source root directory
- * @returns {Object[]} Items augmented with sourceCode
+ * @param {Object} analysis - analysis.json のデータ
+ * @returns {Array<{category: string, index: number, file: string, lines: number, enriched: boolean}>}
  */
-function collectSourceCode(items, srcRoot) {
-  if (!Array.isArray(items)) return items;
-  return items.map((item) => {
-    const filePath = item.file || item.name;
-    if (!filePath) return item;
-    const absPath = path.resolve(srcRoot, filePath);
-    try {
-      const code = fs.readFileSync(absPath, "utf8");
-      // Truncate very large files to avoid context overflow
-      const MAX_CHARS = 8000;
-      const sourceCode = code.length > MAX_CHARS
-        ? code.slice(0, MAX_CHARS) + "\n... (truncated)"
-        : code;
-      return { ...item, sourceCode };
-    } catch (_) {
-      return item;
+function collectEntries(analysis) {
+  const entries = [];
+  for (const cat of Object.keys(analysis)) {
+    if (META_KEYS.has(cat)) continue;
+    const items = analysis[cat]?.[cat];
+    if (!Array.isArray(items)) continue;
+    for (let i = 0; i < items.length; i++) {
+      entries.push({
+        category: cat,
+        index: i,
+        file: items[i].file || items[i].name || `${cat}[${i}]`,
+        lines: items[i].lines || 0,
+        enriched: !!items[i].summary,
+      });
     }
-  });
+  }
+  return entries;
 }
 
 /**
- * Build the context data (source code entries) for the enrich prompt.
- * This is the large part that goes into a context file.
+ * エントリーを合計行数ベースでバッチに分割する。
+ * 1バッチあたりの合計行数が maxLines を超えないようにする。
+ * ただし1エントリーが maxLines を超える場合はそのエントリー単独で1バッチ。
  *
- * @param {Object} analysis - Raw analysis data
- * @param {string} srcRoot - Source root directory
- * @returns {string} Context text with source code entries
+ * @param {Array} entries - collectEntries の結果
+ * @param {number} maxLines - 1バッチあたりの最大合計行数
+ * @param {number} maxItems - 1バッチあたりの最大件数（フォールバック）
+ * @returns {Array<Array>} バッチの配列
  */
-function buildEnrichContext(analysis, srcRoot) {
-  const parts = [];
-
-  parts.push("# Source code entries by category");
-  parts.push("");
-
-  const categories = Object.keys(analysis).filter((k) => !META_KEYS.has(k));
-
-  for (const cat of categories) {
-    const data = analysis[cat];
-    const items = data[cat] || [];
-    if (items.length === 0) continue;
-
-    const enrichedItems = collectSourceCode(items, srcRoot);
-
-    parts.push(`## Category: ${cat} (${items.length} entries)`);
-    for (const item of enrichedItems) {
-      parts.push(`\n### ${item.file || item.name || item.className || "unknown"}`);
-      if (item.className) parts.push(`Class: ${item.className}`);
-      if (item.methods?.length) parts.push(`Methods: ${item.methods.map((m) => m.name || m).join(", ")}`);
-      if (item.sourceCode) {
-        parts.push("```");
-        parts.push(item.sourceCode);
-        parts.push("```");
-      }
+function splitIntoBatches(entries, maxLines, maxItems) {
+  if (maxLines <= 0) {
+    // 行数情報がない場合は件数ベースでフォールバック
+    const batches = [];
+    for (let i = 0; i < entries.length; i += maxItems) {
+      batches.push(entries.slice(i, i + maxItems));
     }
-    parts.push("");
+    return batches;
   }
 
-  return parts.join("\n");
+  const batches = [];
+  let current = [];
+  let currentLines = 0;
+
+  for (const entry of entries) {
+    // 現バッチに追加すると超過する場合、新バッチを開始
+    if (current.length > 0 && (currentLines + entry.lines > maxLines || current.length >= maxItems)) {
+      batches.push(current);
+      current = [];
+      currentLines = 0;
+    }
+    current.push(entry);
+    currentLines += entry.lines;
+  }
+  if (current.length > 0) {
+    batches.push(current);
+  }
+  return batches;
 }
 
 /**
- * Build the instruction prompt for the AI to enrich analysis entries.
- * This is the small part that goes as the CLI argument.
+ * バッチ用の enrich プロンプトを生成する。
+ * 対象ファイルの一覧を明示し、AI にそれぞれのソースを読ませる。
  *
  * @param {string[]} chapters - Chapter file names from preset
- * @returns {string} Prompt text (instructions + output format)
+ * @param {Array<{category: string, index: number, file: string}>} batchEntries - バッチ内のエントリー
+ * @returns {string} Prompt text
  */
-function buildEnrichPrompt(chapters) {
+function buildEnrichPrompt(chapters, batchEntries) {
   const parts = [];
 
-  parts.push("You are analyzing a software project to generate documentation metadata.");
-  parts.push("The source code entries are provided in context files (.claude/rules/).");
-  parts.push("For each source code entry, provide structured information in JSON format.");
+  parts.push("Read each of the following source files and add structured metadata.");
+  parts.push("");
+
+  // File list
+  parts.push("## Target files");
+  parts.push("");
+  for (const entry of batchEntries) {
+    parts.push(`- category: "${entry.category}", index: ${entry.index}, file: "${entry.file}"`);
+  }
   parts.push("");
 
   // Chapter list
@@ -149,8 +160,8 @@ function buildEnrichPrompt(chapters) {
   parts.push("");
   parts.push("Rules:");
   parts.push("- Return ONLY valid JSON, no markdown fences, no explanation text.");
-  parts.push("- One entry per item in the same order as provided.");
-  parts.push("- The `index` field must match the position (0-based) in the original array.");
+  parts.push("- Group entries by category in the output.");
+  parts.push("- The `index` field must match the original index provided above.");
   parts.push("- `summary` should be concise (1-2 sentences).");
   parts.push("- `detail` should capture implementation details from the source code. Do not truncate or summarize away important information.");
   parts.push("- `chapter` must be one of the available chapter names (without .md extension).");
@@ -187,18 +198,16 @@ function parseEnrichResponse(response) {
 }
 
 /**
- * Merge enrichment data into the analysis object.
+ * Merge enrichment data into the analysis object (mutates analysis).
  *
  * @param {Object} analysis - Original analysis data
  * @param {Object} enrichment - AI-generated enrichment data
- * @returns {Object} Enriched analysis
+ * @returns {Object} Enriched analysis (same reference)
  */
 function mergeEnrichment(analysis, enrichment) {
-  const result = { ...analysis };
-
   for (const cat of Object.keys(enrichment)) {
-    if (!result[cat]) continue;
-    const items = result[cat][cat];
+    if (!analysis[cat]) continue;
+    const items = analysis[cat][cat];
     if (!Array.isArray(items)) continue;
 
     const enrichedItems = enrichment[cat];
@@ -218,8 +227,21 @@ function mergeEnrichment(analysis, enrichment) {
     }
   }
 
-  result.enrichedAt = new Date().toISOString();
-  return result;
+  analysis.enrichedAt = new Date().toISOString();
+  return analysis;
+}
+
+/**
+ * analysis.json をディスクに保存する。
+ */
+function saveAnalysis(root, analysis) {
+  const outputDir = sddOutputDir(root);
+  if (!fs.existsSync(outputDir)) {
+    fs.mkdirSync(outputDir, { recursive: true });
+  }
+  const outputPath = path.join(outputDir, "analysis.json");
+  fs.writeFileSync(outputPath, JSON.stringify(analysis) + "\n");
+  return outputPath;
 }
 
 // ---------------------------------------------------------------------------
@@ -268,65 +290,91 @@ async function main(ctx) {
     return;
   }
 
-  logger.log("enriching analysis with AI...");
+  // Collect entries and filter out already-enriched ones (resume)
+  const allEntries = collectEntries(analysis);
+  const pending = allEntries.filter((e) => !e.enriched);
 
-  // Build prompt: instructions (small CLI arg) + context (large file)
-  const prompt = buildEnrichPrompt(chapters);
-  const contextData = buildEnrichContext(analysis, srcRoot);
-
-  // Write context to work dir so Claude CLI reads it automatically
-  const workDir = resolveWorkDir(root, config);
-  const ctxFile = writeAgentContext(workDir, contextData);
-
-  // Call AI with cwd = workDir
-  const timeoutMs = Number(config.limits?.designTimeoutMs || 0) || LONG_AGENT_TIMEOUT_MS;
-  let response;
-  try {
-    response = await callAgentAsync(agent, prompt, timeoutMs, workDir);
-  } catch (err) {
-    cleanupAgentContext(ctxFile);
-    throw new Error(`enrich: AI agent failed: ${err.message}`);
-  }
-  cleanupAgentContext(ctxFile);
-
-  if (!response) {
-    throw new Error("enrich: AI agent returned empty response.");
+  if (pending.length === 0) {
+    logger.log("all entries already enriched, skipping.");
+    return;
   }
 
-  // Parse response
-  const enrichment = parseEnrichResponse(response);
-  if (!enrichment) {
-    logger.log("WARN: failed to parse AI response as JSON.");
-    if (ctx.stdout) process.stdout.write(response + "\n");
-    throw new Error("enrich: could not parse AI response. Raw output may be available with --stdout.");
-  }
-
-  // Merge
-  const enriched = mergeEnrichment(analysis, enrichment);
-
-  // Count enriched entries
-  const categories = Object.keys(enrichment);
-  const totalEntries = categories.reduce((sum, cat) => {
-    return sum + (Array.isArray(enrichment[cat]) ? enrichment[cat].length : 0);
-  }, 0);
-  logger.log(`enriched ${totalEntries} entries across ${categories.length} categories`);
-
-  // Output
-  const json = JSON.stringify(enriched);
-
-  if (ctx.stdout || ctx.dryRun) {
-    process.stdout.write(json + "\n");
+  const skipped = allEntries.length - pending.length;
+  if (skipped > 0) {
+    logger.log(`resuming: ${skipped} already enriched, ${pending.length} remaining`);
   } else {
-    const outputDir = sddOutputDir(root);
-    if (!fs.existsSync(outputDir)) {
-      fs.mkdirSync(outputDir, { recursive: true });
+    logger.log(`enriching ${pending.length} entries with AI...`);
+  }
+
+  // Split into batches (lines-based with item count fallback)
+  const maxItems = Number(config.limits?.enrichBatchSize || 0) || DEFAULT_BATCH_SIZE;
+  const maxLines = Number(config.limits?.enrichBatchLines || 0) || DEFAULT_BATCH_LINES;
+  const hasLines = pending.some((e) => e.lines > 0);
+  const batches = splitIntoBatches(pending, hasLines ? maxLines : 0, maxItems);
+
+  const timeoutMs = Number(config.limits?.designTimeoutMs || 0) || LONG_AGENT_TIMEOUT_MS;
+  let totalEnriched = 0;
+
+  for (let b = 0; b < batches.length; b++) {
+    const batch = batches[b];
+    logger.log(`batch ${b + 1}/${batches.length} (${batch.length} entries)`);
+
+    const prompt = buildEnrichPrompt(chapters, batch);
+
+    let response;
+    try {
+      response = await callAgentAsync(agent, prompt, timeoutMs, root);
+    } catch (err) {
+      // Save progress before failing
+      if (totalEnriched > 0 && !ctx.dryRun && !ctx.stdout) {
+        const saved = saveAnalysis(root, analysis);
+        logger.log(`saved progress (${totalEnriched} entries) to ${path.relative(root, saved)}`);
+      }
+      throw new Error(`enrich: AI agent failed at batch ${b + 1}/${batches.length}: ${err.message}`);
     }
-    const outputPath = path.join(outputDir, "analysis.json");
-    fs.writeFileSync(outputPath, json + "\n");
+
+    if (!response) {
+      if (totalEnriched > 0 && !ctx.dryRun && !ctx.stdout) {
+        const saved = saveAnalysis(root, analysis);
+        logger.log(`saved progress (${totalEnriched} entries) to ${path.relative(root, saved)}`);
+      }
+      throw new Error(`enrich: AI agent returned empty response at batch ${b + 1}/${batches.length}.`);
+    }
+
+    const enrichment = parseEnrichResponse(response);
+    if (!enrichment) {
+      if (totalEnriched > 0 && !ctx.dryRun && !ctx.stdout) {
+        const saved = saveAnalysis(root, analysis);
+        logger.log(`saved progress (${totalEnriched} entries) to ${path.relative(root, saved)}`);
+      }
+      throw new Error(`enrich: could not parse AI response at batch ${b + 1}/${batches.length}.`);
+    }
+
+    // Merge batch results into analysis (mutates)
+    mergeEnrichment(analysis, enrichment);
+
+    const batchCount = Object.values(enrichment).reduce(
+      (sum, arr) => sum + (Array.isArray(arr) ? arr.length : 0), 0,
+    );
+    totalEnriched += batchCount;
+
+    // Save after each batch (resume point)
+    if (!ctx.dryRun && !ctx.stdout) {
+      saveAnalysis(root, analysis);
+    }
+  }
+
+  logger.log(`enriched ${totalEnriched} entries in ${batches.length} batches`);
+
+  // Final output
+  if (ctx.stdout || ctx.dryRun) {
+    process.stdout.write(JSON.stringify(analysis) + "\n");
+  } else {
+    const outputPath = saveAnalysis(root, analysis);
     logger.log(`output: ${path.relative(root, outputPath)}`);
   }
 }
 
-export { main, buildEnrichPrompt, buildEnrichContext, parseEnrichResponse, mergeEnrichment };
+export { main, buildEnrichPrompt, parseEnrichResponse, mergeEnrichment, collectEntries, splitIntoBatches, DEFAULT_BATCH_SIZE, DEFAULT_BATCH_LINES };
 
 runIfDirect(import.meta.url, main);

@@ -19,7 +19,10 @@ export function analyzeControllers(sourceRoot) {
   if (!fs.existsSync(baseDir)) return { controllers: [], summary: { total: 0, totalActions: 0 } };
 
   const files = findFiles(baseDir, "*.php", [".gitkeep"], true);
-  const controllers = files.map((f) => parseController(f.absPath, f.relPath));
+  const controllers = files.map((f) => ({
+    ...parseController(f.absPath, f.relPath),
+    lines: f.lines, hash: f.hash, mtime: f.mtime,
+  }));
 
   const totalActions = controllers.reduce((s, c) => s + c.actions.length, 0);
   return { controllers, summary: { total: controllers.length, totalActions } };

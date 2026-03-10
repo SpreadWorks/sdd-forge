@@ -49,6 +49,9 @@ export default class ModelsSource extends Scannable(DataSource) {
           ? (Array.isArray(parsed.properties.validate) ? parsed.properties.validate : [])
           : [],
         actsAs: parsed.properties.actsAs || [],
+        lines: f.lines,
+        hash: f.hash,
+        mtime: f.mtime,
       });
     }
 

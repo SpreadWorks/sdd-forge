@@ -8,6 +8,7 @@
 
 import fs from "fs";
 import path from "path";
+import { getFileStats } from "../../../docs/lib/scanner.js";
 import {
   stripBlockComments,
   extractArrayBody,
@@ -105,6 +106,7 @@ export function analyzeModels(appDir) {
         relations,
         validateFields,
         actsAs,
+        ...getFileStats(filePath),
       });
     }
   }
