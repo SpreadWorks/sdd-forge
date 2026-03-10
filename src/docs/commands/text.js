@@ -17,6 +17,7 @@ import { parseDirectives } from "../lib/directive-parser.js";
 import { mapWithConcurrency } from "../lib/concurrency.js";
 import {
   getAnalysisContext,
+  getEnrichedContext,
   buildTextSystemPrompt,
   buildPrompt,
   buildFileSystemPrompt,
@@ -106,14 +107,22 @@ function countFilledInBatch(fileText) {
  *
  * @returns {{ text: string, filled: number, skipped: number }}
  */
-async function processTemplateFileBatch(text, analysis, fileName, agent, timeoutMs, cwd, dryRun, _preamblePatterns, systemPrompt, _filterId, _concurrency, lang) {
+async function processTemplateFileBatch(text, analysis, fileName, agent, timeoutMs, cwd, dryRun, _preamblePatterns, systemPrompt, _filterId, _concurrency, lang, srcRoot) {
   const directives = parseDirectives(text);
   const textFills = directives.filter((d) => d.type === "text");
 
   if (textFills.length === 0) return { text, filled: 0, skipped: 0 };
 
+  // Determine the deepest mode across all directives in this file
+  const hasDeep = textFills.some((d) => d.params?.mode === "deep");
+  const batchMode = hasDeep ? "deep" : "light";
+  const enriched = getEnrichedContext(analysis, fileName, batchMode, srcRoot);
+
   const cleanText = stripFillContent(text);
-  const prompt = buildBatchPrompt(fileName, cleanText, textFills, lang);
+  let prompt = buildBatchPrompt(fileName, cleanText, textFills, lang);
+  if (enriched) {
+    prompt = enriched + "\n\n" + prompt;
+  }
 
   if (dryRun) {
     console.log(`[text] DRY-RUN batch ${fileName}: ${textFills.length} directive(s) → 1 call (${prompt.length} chars)`);
@@ -219,7 +228,7 @@ function stripPreamble(text, preamblePatterns) {
  * @param {boolean} dryRun     - dry-run モード
  * @returns {{ text: string, filled: number, skipped: number }}
  */
-async function processTemplate(text, analysis, fileName, agent, timeoutMs, cwd, dryRun, preamblePatterns, systemPrompt, filterId, concurrency, lang) {
+async function processTemplate(text, analysis, fileName, agent, timeoutMs, cwd, dryRun, preamblePatterns, systemPrompt, filterId, concurrency, lang, srcRoot) {
   const directives = parseDirectives(text);
   let textFills = directives.filter((d) => d.type === "text");
   if (filterId) {
@@ -236,18 +245,24 @@ async function processTemplate(text, analysis, fileName, agent, timeoutMs, cwd, 
 
   if (dryRun) {
     for (const d of textFills) {
+      const mode = d.params?.mode || "light";
       const prompt = buildPrompt(d, fileName, lines);
-      console.log(`[text] DRY-RUN ${fileName}:${d.line + 1}: ${d.prompt.slice(0, 80)}`);
+      console.log(`[text] DRY-RUN ${fileName}:${d.line + 1} [${mode}]: ${d.prompt.slice(0, 80)}`);
       console.log(`[text]   prompt length: ${prompt.length} chars, system prompt: ${fileSystemPrompt.length} chars`);
     }
     return { text, filled: 0, skipped: textFills.length };
   }
 
-  // Phase 1: Build all prompts upfront
-  const tasks = textFills.map((d) => ({
-    directive: d,
-    prompt: buildPrompt(d, fileName, lines),
-  }));
+  // Phase 1: Build all prompts upfront (with enriched context per mode)
+  const tasks = textFills.map((d) => {
+    const mode = d.params?.mode || "light";
+    let prompt = buildPrompt(d, fileName, lines);
+    const enriched = getEnrichedContext(analysis, fileName, mode, srcRoot);
+    if (enriched) {
+      prompt = enriched + "\n\n" + prompt;
+    }
+    return { directive: d, prompt };
+  });
 
   // Phase 2: Parallel LLM calls with concurrency control
   const maxConcurrency = concurrency || DEFAULT_CONCURRENCY;
@@ -324,7 +339,7 @@ async function processTemplate(text, analysis, fileName, agent, timeoutMs, cwd, 
  * @param {string} agentName  - エージェント名 (claude, codex)
  * @returns {{ filled: number, skipped: number, files: string[] }}
  */
-export async function textFillFromAnalysis(root, analysis, agentName) {
+export async function textFillFromAnalysis(root, analysis, agentName, srcRoot) {
   if (!analysis) return { filled: 0, skipped: 0, files: [] };
 
   const cfg = loadConfig(root);
@@ -337,6 +352,7 @@ export async function textFillFromAnalysis(root, analysis, agentName) {
   const concurrency = resolveConcurrency(cfg);
   const docsDir = path.join(root, "docs");
   const docsFiles = getChapterFiles(docsDir);
+  const resolvedSrcRoot = srcRoot || root;
 
   const changedFiles = [];
   let totalFilled = 0;
@@ -347,7 +363,7 @@ export async function textFillFromAnalysis(root, analysis, agentName) {
   const fileResults = await mapWithConcurrency(docsFiles, concurrency, async (file) => {
     const filePath = path.join(docsDir, file);
     const original = fs.readFileSync(filePath, "utf8");
-    const result = await processTemplateFileBatch(original, analysis, file, agent, DEFAULT_TIMEOUT_MS, root, false, preamblePatterns, systemPrompt, undefined, undefined, lang);
+    const result = await processTemplateFileBatch(original, analysis, file, agent, DEFAULT_TIMEOUT_MS, root, false, preamblePatterns, systemPrompt, undefined, undefined, lang, resolvedSrcRoot);
     return { file, filePath, original, result };
   });
 
@@ -423,7 +439,7 @@ async function main(ctx) {
     ctx.agentName = cli.agent;
   }
 
-  const { root, config: cfg, docsDir } = ctx;
+  const { root, srcRoot, config: cfg, docsDir } = ctx;
 
   const analysis = loadFullAnalysis(root) || {};
   if (Object.keys(analysis).length === 0) {
@@ -478,7 +494,7 @@ async function main(ctx) {
   const fileResults = await mapWithConcurrency(fileEntries, fileConcurrency, async (entry) => {
     const { file, original } = entry;
     logger.verbose(`start: ${file}`);
-    const result = await processFn(original, analysis, file, agent, ctx.timeout, root, ctx.dryRun, preamblePatterns, systemPrompt, ctx.id || undefined, concurrency, lang);
+    const result = await processFn(original, analysis, file, agent, ctx.timeout, root, ctx.dryRun, preamblePatterns, systemPrompt, ctx.id || undefined, concurrency, lang, srcRoot);
     logger.verbose(`done: ${file}`);
     return { ...entry, result };
   });

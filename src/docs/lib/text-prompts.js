@@ -5,7 +5,11 @@
  * text.js から分離。
  */
 
+import fs from "fs";
+import path from "path";
 import { createI18n } from "../../lib/i18n.js";
+
+const ANALYSIS_META_KEYS = new Set(["analyzedAt", "enrichedAt", "generatedAt", "extras", "files", "root"]);
 
 /**
  * {{data}} カテゴリ名 → analysis.json の必要セクションへのマッピング。
@@ -86,6 +90,78 @@ export function getAnalysisContext(analysis, directives) {
   }
 
   return data;
+}
+
+/**
+ * ファイル名から章名を抽出する。
+ * "01_overview.md" → "overview"
+ */
+function chapterNameFromFile(fileName) {
+  return fileName.replace(/^\d+_/, "").replace(/\.md$/, "");
+}
+
+/**
+ * enriched analysis から章に該当するエントリのコンテキストを構築する。
+ *
+ * @param {Object} analysis - analysis.json (enrichedAt あり)
+ * @param {string} fileName - 章ファイル名 (e.g. "01_overview.md")
+ * @param {string} mode - "light" or "deep"
+ * @param {string} [srcRoot] - ソースルート（deep モード時に使用）
+ * @returns {string|null} enriched コンテキスト文字列、なければ null
+ */
+export function getEnrichedContext(analysis, fileName, mode, srcRoot) {
+  if (!analysis?.enrichedAt) return null;
+
+  const chapterName = chapterNameFromFile(fileName);
+  const entries = [];
+
+  for (const cat of Object.keys(analysis)) {
+    if (ANALYSIS_META_KEYS.has(cat)) continue;
+    const data = analysis[cat];
+    if (!data || typeof data !== "object") continue;
+    const items = data[cat];
+    if (!Array.isArray(items)) continue;
+
+    for (const item of items) {
+      if (item.chapter === chapterName && (item.summary || item.detail)) {
+        entries.push(item);
+      }
+    }
+  }
+
+  if (entries.length === 0) return null;
+
+  const parts = [];
+  parts.push(`## Enriched Analysis (${entries.length} entries for chapter: ${chapterName})`);
+
+  for (const entry of entries) {
+    const name = entry.file || entry.name || entry.className || "unknown";
+    parts.push(`\n### ${name}`);
+    if (entry.role) parts.push(`Role: ${entry.role}`);
+    if (entry.summary) parts.push(`Summary: ${entry.summary}`);
+    if (entry.detail) parts.push(`Detail: ${entry.detail}`);
+
+    if (mode === "deep" && srcRoot) {
+      const filePath = entry.file || entry.name;
+      if (filePath) {
+        try {
+          const absPath = path.resolve(srcRoot, filePath);
+          let code = fs.readFileSync(absPath, "utf8");
+          const MAX_CHARS = 8000;
+          if (code.length > MAX_CHARS) {
+            code = code.slice(0, MAX_CHARS) + "\n... (truncated)";
+          }
+          parts.push("```");
+          parts.push(code);
+          parts.push("```");
+        } catch (_) {
+          // File not found, skip
+        }
+      }
+    }
+  }
+
+  return parts.join("\n");
 }
 
 /**
