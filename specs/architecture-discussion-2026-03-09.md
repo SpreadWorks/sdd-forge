@@ -104,18 +104,42 @@ node-cli プリセットでは全ファイルが `modules` という単一カテ
    - scan 時に `modules` をもっと細かいカテゴリに分ければ、テンプレートのディレクティブだけで解決可能
    - これは課題4（`genericScan` のカテゴリ粒度）に帰着する
 
+5. **`modules` 細分化の方針（追加議論 2026-03-10）**
+
+   `genericScan` は既に削除済みで、現在は DataSource ベース。問題は「ハードコード」ではなく「粒度」。
+
+   **webapp 系（CakePHP 等）**: カテゴリが `controllers`, `models`, `shells`, `routes`, `tables` と細かく分かれている。各カテゴリに対応する DataSource がある。preset.json の scan 設定がそのまま章との対応になる。**問題なし。**
+
+   **node-cli 系**: scan 設定が `{ modules: { dir: "src", pattern: "*.js", subDirs: true } }` のみ。101ファイルが全部 `modules` に入る。5つの章（cli_commands, configuration, internal_design 等）のどれに対応するか分からない。
+
+   **preset.json で分割を定義するのは無理** — フォルダ構成はプロジェクトごとに異なるため、汎用的な分割ルールを定義できない。
+
+   **解決策: `init` 時に AI で振り分け**
+   - `init` は既に AI を使って章選別をしている（`aiFilterChapters()`）
+   - 同じタイミングで、各モジュールをどの章に振り分けるかも AI に判定させる
+   - 結果をマッピングファイル（`.sdd-forge/output/chapter-mapping.json` 等）に保存
+   - 後続ステップ（text, forge, review）がマッピングを参照
+   - 再 scan 時は差分（新規追加モジュール）だけ AI に聞く
+
+   **2層構造のマッピング**:
+   - webapp 系: テンプレートのディレクティブから決定論的に解決（AI 不要）
+   - cli/library 系: `modules` のような粗いカテゴリだけ AI で振り分け
+
 ### まとめ: 根本解決の道筋
 
 ```
-scan の粒度を上げる（modules を細分化）
+[webapp 系]
+テンプレートのディレクティブ = 章とカテゴリのマッピング（既存、AI 不要）
+
+[cli/library 系]
+init 時に AI がモジュール → 章のマッピングを生成
   ↓
-テンプレートのディレクティブ = 章とカテゴリのマッピング（既存）
+マッピングをファイルに保存
   ↓
-init 時にテンプレートをパースしてマッピングを抽出
-  ↓
+[共通]
 各ステップ（text, forge, review）がマッピングを利用
   ↓
-- text: 関連カテゴリだけをプロンプトに含める → プロンプト削減
+- text: 関連カテゴリ/モジュールだけをプロンプトに含める → プロンプト削減
 - docs.chapters(): カテゴリのサマリーから概要を決定論的に生成 → {{text}} 依存解消
 - review: マッピングとディレクティブの照合でカバレッジチェック
 - review-parser: マッピングから動的にパッチ先を解決 → ハードコード解消
