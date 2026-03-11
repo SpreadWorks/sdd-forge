@@ -204,13 +204,9 @@ function main(ctx) {
     fs.mkdirSync(docsDir, { recursive: true });
   }
 
-  // 番号プレフィックス付きファイル名を生成
-  const numberedChapters = filteredChapters.map((ch, i) => {
-    const prefix = String(i + 1).padStart(2, "0");
-    return { ...ch, outputName: `${prefix}_${ch.fileName}` };
-  });
+  const outputChapters = filteredChapters.map((ch) => ({ ...ch, outputName: ch.fileName }));
 
-  const conflicts = numberedChapters.filter((ch) => fs.existsSync(path.join(docsDir, ch.outputName)));
+  const conflicts = outputChapters.filter((ch) => fs.existsSync(path.join(docsDir, ch.outputName)));
 
   if (conflicts.length > 0 && !ctx.force) {
     logger.log(t("messages:init.conflictsExist", { count: conflicts.length }));
@@ -225,8 +221,7 @@ function main(ctx) {
     logger.verbose(`--force: overwriting ${conflicts.length} existing file(s)`);
   }
 
-  // テンプレートを docs/ に出力（番号プレフィックス付き）
-  for (const chapter of numberedChapters) {
+  for (const chapter of outputChapters) {
     let text = chapter.content;
 
     // ブロックディレクティブを除去
@@ -241,9 +236,9 @@ function main(ctx) {
   }
 
   if (ctx.dryRun) {
-    console.log(`DRY-RUN: ${numberedChapters.length} files would be initialized in docs/`);
+    console.log(`DRY-RUN: ${outputChapters.length} files would be initialized in docs/`);
   } else {
-    logger.verbose(`done. ${numberedChapters.length} files initialized in docs/`);
+    logger.verbose(`done. ${outputChapters.length} files initialized in docs/`);
   }
 }
 

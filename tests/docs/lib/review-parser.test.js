@@ -86,9 +86,9 @@ describe("parseReviewMisses", () => {
 
 describe("parseFileResults", () => {
   const allFiles = [
-    "docs/01_overview.md",
-    "docs/02_cli_commands.md",
-    "docs/03_configuration.md",
+    "docs/overview.md",
+    "docs/cli_commands.md",
+    "docs/configuration.md",
   ];
 
   it("extracts failed files from [FAIL] lines", () => {
@@ -98,14 +98,14 @@ describe("parseFileResults", () => {
       "[FAIL] H1 見出しがありません: overview.md",
     ].join("\n");
     const result = parseFileResults(output, allFiles);
-    assert.deepEqual(result.failedFiles, ["docs/01_overview.md"]);
-    assert.deepEqual(result.passedFiles, ["docs/02_cli_commands.md", "docs/03_configuration.md"]);
+    assert.deepEqual(result.failedFiles, ["docs/overview.md"]);
+    assert.deepEqual(result.passedFiles, ["docs/cli_commands.md", "docs/configuration.md"]);
   });
 
   it("matches full path file names", () => {
-    const output = "[FAIL] 行数不足 (5 行): docs/02_cli_commands.md\n";
+    const output = "[FAIL] 行数不足 (5 行): docs/cli_commands.md\n";
     const result = parseFileResults(output, allFiles);
-    assert.deepEqual(result.failedFiles, ["docs/02_cli_commands.md"]);
+    assert.deepEqual(result.failedFiles, ["docs/cli_commands.md"]);
   });
 
   it("returns all files as passed when no [FAIL] lines", () => {
@@ -129,7 +129,7 @@ describe("parseFileResults", () => {
     const result = parseFileResults(output, allFiles);
     assert.equal(result.failedFiles.length, 2);
     assert.equal(result.passedFiles.length, 1);
-    assert.deepEqual(result.passedFiles, ["docs/03_configuration.md"]);
+    assert.deepEqual(result.passedFiles, ["docs/configuration.md"]);
   });
 });
 

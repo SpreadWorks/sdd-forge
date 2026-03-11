@@ -426,9 +426,10 @@ export async function textFillFromAnalysis(root, analysis, agentName, srcRoot, o
   const documentStyle = cfg.documentStyle;
   const lang = cfg.output.default;
   const systemPrompt = buildTextSystemPrompt(documentStyle, lang);
+  const type = cfg.type || undefined;
   const concurrency = resolveConcurrency(cfg);
   const docsDir = path.join(root, "docs");
-  const docsFiles = getChapterFiles(docsDir);
+  const docsFiles = getChapterFiles(docsDir, { type });
   const resolvedSrcRoot = srcRoot || root;
 
   const force = opts?.force ?? false;
@@ -550,7 +551,7 @@ async function main(ctx) {
   const lang = ctx.outputLang;
   const systemPrompt = buildTextSystemPrompt(documentStyle, lang);
   const concurrency = resolveConcurrency(cfg);
-  const docsFiles = getChapterFiles(docsDir);
+  const docsFiles = getChapterFiles(docsDir, { type: ctx.type });
 
   let totalFilled = 0;
   let totalSkipped = 0;

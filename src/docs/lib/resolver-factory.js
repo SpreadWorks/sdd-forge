@@ -72,7 +72,7 @@ const PRESETS_DIR = path.resolve(
 export async function createResolver(type, root, opts) {
   const desc = descFactory(root);
   const loadOverrides = () => loadOverridesFor(root);
-  const ctx = { desc, loadOverrides, root, docsDir: opts?.docsDir };
+  const ctx = { desc, loadOverrides, root, docsDir: opts?.docsDir, type };
 
   // 共通 DataSource（project, docs など全 type で利用可能）
   const commonDataDir = path.resolve(

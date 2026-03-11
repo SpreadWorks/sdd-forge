@@ -187,14 +187,12 @@ export function parseFileResults(outputText, allFiles) {
     const match = trimmed.match(/:\s*([\w/.-]+\.md)\s*$/);
     if (match) {
       const fileName = match[1];
-      const fileBase = fileName.replace(/^\d+_/, "");
       for (const f of allFiles) {
         if (f === fileName || f.endsWith(`/${fileName}`) || fileName.endsWith(`/${f}`)) {
           failedSet.add(f);
         } else {
-          // basename match without number prefix: "overview.md" matches "docs/01_overview.md"
-          const fBase = f.split("/").pop().replace(/^\d+_/, "");
-          if (fBase === fileBase) {
+          const fBase = f.split("/").pop();
+          if (fBase === path.basename(fileName)) {
             failedSet.add(f);
           }
         }

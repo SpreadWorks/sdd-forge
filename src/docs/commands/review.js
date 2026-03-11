@@ -3,7 +3,7 @@
  * src/docs/commands/review.js
  *
  * docs 品質チェック。
- * 章ファイル（NN_*.md）の基本構造を検証する。
+ * 章ファイルの基本構造を検証する。
  */
 
 import fs from "fs";
@@ -108,11 +108,13 @@ function main() {
   const root = repoRoot();
   const t = translate();
   const targetDir = args.find((a) => !a.startsWith("-")) || path.join(root, "docs");
+  const config = loadConfig(root);
+  const type = config.type;
 
-  // Discover chapter files (NN_*.md)
+  // Discover chapter files
   let chapterFiles = [];
   if (fs.existsSync(targetDir) && fs.statSync(targetDir).isDirectory()) {
-    chapterFiles = getChapterFiles(targetDir);
+    chapterFiles = getChapterFiles(targetDir, { type });
   }
 
   if (chapterFiles.length === 0) {
@@ -241,8 +243,7 @@ function main() {
 
   // Multi-language: check non-default language directories
   try {
-    const cfgRaw = loadConfig(root);
-    const outputCfg = resolveOutputConfig(cfgRaw);
+    const outputCfg = resolveOutputConfig(config);
     if (outputCfg.isMultiLang) {
       const docsBase = path.join(root, "docs");
       const nonDefaultLangs = outputCfg.languages.filter((l) => l !== outputCfg.default);
@@ -252,7 +253,7 @@ function main() {
           console.log(`WARN: docs/${lang}/ directory missing for configured language '${lang}'`);
           continue;
         }
-        const langFiles = getChapterFiles(langDir);
+        const langFiles = getChapterFiles(langDir, { type });
         if (langFiles.length === 0) {
           console.log(`WARN: docs/${lang}/ has no chapter files`);
           continue;

@@ -63,14 +63,14 @@ function processTemplate(text, analysis, fileName, resolveFn) {
 // ---------------------------------------------------------------------------
 // populateFromAnalysis (エクスポート用: forge.js などから呼び出し可能)
 // ---------------------------------------------------------------------------
-export function populateFromAnalysis(root, analysis, resolveFn) {
+export function populateFromAnalysis(root, analysis, resolveFn, opts) {
   if (!analysis) return { populated: false, files: [] };
   if (!resolveFn) return { populated: false, files: [] };
 
   const docsDir = path.join(root, "docs");
   const changedFiles = [];
 
-  const docsFiles = getChapterFiles(docsDir);
+  const docsFiles = getChapterFiles(docsDir, { type: opts?.type });
 
   for (const file of docsFiles) {
     const filePath = path.join(docsDir, file);
@@ -129,7 +129,7 @@ async function main(ctx) {
     throw new Error(t("messages:data.resolverFailed", { message: err.message }));
   }
 
-  const docsFiles = getChapterFiles(docsDir);
+  const docsFiles = getChapterFiles(docsDir, { type });
 
   // Determine relative path prefix for lang.links context
   const docsDirRel = path.relative(root, docsDir).replace(/\\/g, "/");

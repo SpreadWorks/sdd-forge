@@ -46,18 +46,18 @@ const DEFAULT_MAX_RUNS = 3;
 const DEFAULT_REVIEW_CMD = "sdd-forge review";
 const DEFAULT_MODE = "local";
 
-function getTargetFiles(root) {
+function getTargetFiles(root, type) {
   const docsDir = path.join(root, "docs");
-  return getChapterFiles(docsDir).map((f) => `docs/${f}`);
+  return getChapterFiles(docsDir, { type }).map((f) => `docs/${f}`);
 }
 
 /**
  * spec テキストから関連する章ファイルを推定する。
- * 章ファイル名のキーワード（拡張子・番号接頭辞を除去）と spec テキストを
+ * 章ファイル名のキーワード（拡張子除去）と spec テキストを
  * 大文字小文字無視でマッチングする。
  *
  * @param {string} specText - spec.md の内容
- * @param {string[]} allFiles - 全章ファイルパス (例: ["docs/01_overview.md", ...])
+ * @param {string[]} allFiles - 全章ファイルパス (例: ["docs/overview.md", ...])
  * @returns {string[]} 関連ファイルリスト（空の場合は推定失敗 = 全ファイル対象）
  */
 function estimateRelevantFiles(specText, allFiles) {
@@ -65,8 +65,8 @@ function estimateRelevantFiles(specText, allFiles) {
   const specLower = specText.toLowerCase();
   const matched = [];
   for (const file of allFiles) {
-    // "docs/01_overview.md" → "overview"
-    const baseName = path.basename(file, ".md").replace(/^\d+_/, "");
+    // "docs/overview.md" → "overview"
+    const baseName = path.basename(file, ".md");
     // "cli_commands" → ["cli", "commands"]
     const keywords = baseName.split("_").filter(Boolean);
     // All keywords must appear in spec text
@@ -220,6 +220,7 @@ async function main() {
 
   const root = repoRoot(import.meta.url);
   const config = loadConfig(root);
+  const type = resolveType(config.type || "");
   const lang = config.output.default;
   const t = translate();
   const agent = resolveAgent(config, cli.agent);
@@ -236,7 +237,6 @@ async function main() {
   const analysisSummary = summaryToText(analysisData);
   if (analysisData && !cli.dryRun) {
     console.log("[forge] analysis data loaded.");
-    const type = resolveType(config.type || "");
     let resolveFn = null;
     try {
       const resolver = await createResolver(type, root);
@@ -244,7 +244,7 @@ async function main() {
     } catch (err) {
       console.log(`[forge] WARN: resolver not available (${err.message}), skipping {{data}} population`);
     }
-    const populateResult = populateFromAnalysis(root, analysisData, resolveFn);
+    const populateResult = populateFromAnalysis(root, analysisData, resolveFn, { type });
     if (populateResult.populated) {
       console.log(`[forge] populated placeholders in: ${populateResult.files.join(", ")}`);
     }
@@ -291,7 +291,7 @@ async function main() {
 
   if (cli.dryRun) {
     console.log("[forge] DRY-RUN: target files:");
-    for (const f of getTargetFiles(root)) {
+    for (const f of getTargetFiles(root, type)) {
       console.log(`  - ${f}`);
     }
     console.log("[forge] DRY-RUN: no files written, no review, no agent calls.");
@@ -302,7 +302,7 @@ async function main() {
   const concurrency = resolveConcurrency(config);
 
   // Spec-based file estimation: narrow target files if spec is provided
-  const allTargetFiles = getTargetFiles(root);
+  const allTargetFiles = getTargetFiles(root, type);
   let initialTargetFiles = allTargetFiles;
   if (specText) {
     const estimated = estimateRelevantFiles(specText, allTargetFiles);

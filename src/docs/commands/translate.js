@@ -119,7 +119,7 @@ async function main(ctx) {
   }
 
   // Collect source files
-  const sourceFiles = getChapterFiles(docsDir);
+  const sourceFiles = getChapterFiles(docsDir, { type: ctx.type });
 
   // Also include README.md if it exists
   const readmePath = path.join(root, "README.md");

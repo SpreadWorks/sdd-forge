@@ -12,6 +12,7 @@ import { loadJsonFile, sddConfigPath, sddOutputDir, DEFAULT_LANG } from "../../l
 import { resolveType, validateConfig } from "../../lib/types.js";
 import { resolveAgent } from "../../lib/agent.js";
 import { translate } from "../../lib/i18n.js";
+import { resolveChaptersOrder } from "./template-merger.js";
 
 /**
  * @typedef {Object} CommandContext
@@ -119,15 +120,32 @@ export function loadFullAnalysis(root) {
 
 /**
  * docs ディレクトリから章ファイル一覧を取得する。
+ * type が指定された場合は preset の chapters 順で返す。
+ * フォールバック: *.md をアルファベット順（README.md, AGENTS.sdd.md 除外）。
  *
  * @param {string} docsDir - docs ディレクトリの絶対パス
- * @returns {string[]} NN_*.md ファイル名の配列（ソート済み）
+ * @param {Object} [options]
+ * @param {string} [options.type] - プロジェクトタイプ（例: "cli/node-cli"）
+ * @returns {string[]} ファイル名の配列（順序付き）
  */
-export function getChapterFiles(docsDir) {
+export function getChapterFiles(docsDir, options) {
   if (!fs.existsSync(docsDir)) return [];
+
+  const type = options?.type;
+  const EXCLUDE = new Set(["README.md", "AGENTS.sdd.md"]);
+
+  if (type) {
+    const chapters = resolveChaptersOrder(type);
+    if (chapters.length > 0) {
+      const existing = chapters.filter((f) => fs.existsSync(path.join(docsDir, f)));
+      if (existing.length > 0) return existing;
+    }
+  }
+
+  // Fallback: all *.md files alphabetically (excluding special files)
   return fs
     .readdirSync(docsDir)
-    .filter((f) => /^\d{2}_.*\.md$/.test(f))
+    .filter((f) => f.endsWith(".md") && !EXCLUDE.has(f))
     .sort();
 }
 

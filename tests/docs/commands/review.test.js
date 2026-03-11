@@ -5,17 +5,23 @@ import { execFileSync } from "child_process";
 import { createTmpDir, removeTmpDir, writeFile, writeJson } from "../../helpers/tmp-dir.js";
 
 const CMD = join(process.cwd(), "src/docs/commands/review.js");
+const MIN_CONFIG = { lang: "en", type: "cli/node-cli", output: { languages: ["en"], default: "en" } };
+
+function setupTmp() {
+  const tmp = createTmpDir();
+  writeJson(tmp, ".sdd-forge/config.json", MIN_CONFIG);
+  return tmp;
+}
 
 describe("review CLI", () => {
   let tmp;
   afterEach(() => tmp && removeTmpDir(tmp));
 
   it("passes with valid chapter files", () => {
-    tmp = createTmpDir();
-    // Create a chapter with >15 lines and an H1
+    tmp = setupTmp();
     const lines = ["# 01. Introduction", ""];
     for (let i = 0; i < 20; i++) lines.push(`Line ${i}`);
-    writeFile(tmp, "docs/01_intro.md", lines.join("\n"));
+    writeFile(tmp, "docs/intro.md", lines.join("\n"));
 
     const result = execFileSync("node", [CMD], {
       encoding: "utf8",
@@ -25,7 +31,7 @@ describe("review CLI", () => {
   });
 
   it("fails when no chapter files found", () => {
-    tmp = createTmpDir();
+    tmp = setupTmp();
     writeFile(tmp, "docs/.gitkeep", "");
 
     try {
@@ -40,8 +46,8 @@ describe("review CLI", () => {
   });
 
   it("fails when chapter is too short", () => {
-    tmp = createTmpDir();
-    writeFile(tmp, "docs/01_short.md", "# 01. Short\nOnly two lines\n");
+    tmp = setupTmp();
+    writeFile(tmp, "docs/short.md", "# 01. Short\nOnly two lines\n");
 
     try {
       execFileSync("node", [CMD], {
@@ -55,10 +61,10 @@ describe("review CLI", () => {
   });
 
   it("fails when chapter has no H1 heading", () => {
-    tmp = createTmpDir();
+    tmp = setupTmp();
     const lines = ["No heading here", ""];
     for (let i = 0; i < 20; i++) lines.push(`Line ${i}`);
-    writeFile(tmp, "docs/01_noheading.md", lines.join("\n"));
+    writeFile(tmp, "docs/noheading.md", lines.join("\n"));
 
     try {
       execFileSync("node", [CMD], {
@@ -72,14 +78,14 @@ describe("review CLI", () => {
   });
 
   it("fails when {{data}} directive is unfilled", () => {
-    tmp = createTmpDir();
+    tmp = setupTmp();
     const lines = ["# 01. Test", ""];
     for (let i = 0; i < 10; i++) lines.push(`Line ${i}`);
     lines.push('<!-- {{data: controllers.list("Name|Actions")}} -->');
     lines.push(""); // empty line = unfilled
     lines.push('<!-- {{/data}} -->');
     for (let i = 0; i < 5; i++) lines.push(`More ${i}`);
-    writeFile(tmp, "docs/01_test.md", lines.join("\n"));
+    writeFile(tmp, "docs/test.md", lines.join("\n"));
 
     try {
       execFileSync("node", [CMD], {
@@ -93,14 +99,14 @@ describe("review CLI", () => {
   });
 
   it("does not fail on inline {{data}} examples in prose", () => {
-    tmp = createTmpDir();
+    tmp = setupTmp();
     const lines = ["# 01. Test", ""];
     for (let i = 0; i < 10; i++) lines.push(`Line ${i}`);
     lines.push('Example inline syntax: `{{data: mySource.list("Col1|Col2")}}`');
     lines.push('Example comment syntax: `<!-- {{data: mySource.list("Col1|Col2")}} -->`');
     lines.push('Example closing syntax: `<!-- {{/data}} -->`');
     for (let i = 0; i < 8; i++) lines.push(`More ${i}`);
-    writeFile(tmp, "docs/01_test.md", lines.join("\n"));
+    writeFile(tmp, "docs/test.md", lines.join("\n"));
 
     const result = execFileSync("node", [CMD], {
       encoding: "utf8",
@@ -112,13 +118,13 @@ describe("review CLI", () => {
 
 
   it("warns when {{text}} directive is unfilled (empty block)", () => {
-    tmp = createTmpDir();
+    tmp = setupTmp();
     const lines = ["# 01. Test", ""];
     for (let i = 0; i < 10; i++) lines.push(`Line ${i}`);
     lines.push("<!-- {{text: describe this}} -->");
     lines.push("<!-- {{/text}} -->");
     for (let i = 0; i < 5; i++) lines.push(`More ${i}`);
-    writeFile(tmp, "docs/01_test.md", lines.join("\n"));
+    writeFile(tmp, "docs/test.md", lines.join("\n"));
 
     const result = execFileSync("node", [CMD], {
       encoding: "utf8",
@@ -129,10 +135,10 @@ describe("review CLI", () => {
   });
 
   it("warns when analysis.json is missing", () => {
-    tmp = createTmpDir();
+    tmp = setupTmp();
     const lines = ["# 01. Test", ""];
     for (let i = 0; i < 20; i++) lines.push(`Line ${i}`);
-    writeFile(tmp, "docs/01_test.md", lines.join("\n"));
+    writeFile(tmp, "docs/test.md", lines.join("\n"));
 
     const result = execFileSync("node", [CMD], {
       encoding: "utf8",
@@ -142,14 +148,14 @@ describe("review CLI", () => {
   });
 
   it("warns when analysis category is not covered by any directive", () => {
-    tmp = createTmpDir();
+    tmp = setupTmp();
     const lines = ["# 01. Test", ""];
     for (let i = 0; i < 10; i++) lines.push(`Line ${i}`);
     lines.push('<!-- {{data: project.name("")}} -->');
     lines.push("test-project");
     lines.push("<!-- {{/data}} -->");
     for (let i = 0; i < 5; i++) lines.push(`More ${i}`);
-    writeFile(tmp, "docs/01_test.md", lines.join("\n"));
+    writeFile(tmp, "docs/test.md", lines.join("\n"));
 
     // analysis has "modules" and "controllers" but docs only reference "project"
     writeJson(tmp, ".sdd-forge/output/analysis.json", {
@@ -168,14 +174,14 @@ describe("review CLI", () => {
   });
 
   it("does not warn when all analysis categories are covered", () => {
-    tmp = createTmpDir();
+    tmp = setupTmp();
     const lines = ["# 01. Test", ""];
     for (let i = 0; i < 10; i++) lines.push(`Line ${i}`);
     lines.push('<!-- {{data: modules.list("")}} -->');
     lines.push("mod list here");
     lines.push("<!-- {{/data}} -->");
     for (let i = 0; i < 5; i++) lines.push(`More ${i}`);
-    writeFile(tmp, "docs/01_test.md", lines.join("\n"));
+    writeFile(tmp, "docs/test.md", lines.join("\n"));
 
     writeJson(tmp, ".sdd-forge/output/analysis.json", {
       analyzedAt: "2026-01-01",
@@ -191,10 +197,10 @@ describe("review CLI", () => {
   });
 
   it("skips coverage check when analysis.json does not exist", () => {
-    tmp = createTmpDir();
+    tmp = setupTmp();
     const lines = ["# 01. Test", ""];
     for (let i = 0; i < 20; i++) lines.push(`Line ${i}`);
-    writeFile(tmp, "docs/01_test.md", lines.join("\n"));
+    writeFile(tmp, "docs/test.md", lines.join("\n"));
 
     const result = execFileSync("node", [CMD], {
       encoding: "utf8",
@@ -204,10 +210,10 @@ describe("review CLI", () => {
   });
 
   it("coverage warning does not cause FAIL", () => {
-    tmp = createTmpDir();
+    tmp = setupTmp();
     const lines = ["# 01. Test", ""];
     for (let i = 0; i < 20; i++) lines.push(`Line ${i}`);
-    writeFile(tmp, "docs/01_test.md", lines.join("\n"));
+    writeFile(tmp, "docs/test.md", lines.join("\n"));
 
     writeJson(tmp, ".sdd-forge/output/analysis.json", {
       analyzedAt: "2026-01-01",
@@ -223,10 +229,10 @@ describe("review CLI", () => {
   });
 
   it("does not warn for enrichedAt coverage", () => {
-    tmp = createTmpDir();
+    tmp = setupTmp();
     const lines = ["# 01. Test", ""];
     for (let i = 0; i < 20; i++) lines.push(`Line ${i}`);
-    writeFile(tmp, "docs/01_test.md", lines.join("\n"));
+    writeFile(tmp, "docs/test.md", lines.join("\n"));
 
     writeJson(tmp, ".sdd-forge/output/analysis.json", {
       analyzedAt: "2026-01-01",
