@@ -25,6 +25,21 @@ import { parseDirectives } from "../lib/directive-parser.js";
 const RESIDUAL_BLOCK_RE = /^<!--\s*@(block:\s*[\w-]+|endblock|extends|parent)\s*-->$/;
 
 /**
+ * Strip inline code spans from a line.
+ * Returns the line with backtick-enclosed content removed.
+ */
+function stripInlineCode(line) {
+  return line.replace(/`[^`]+`/g, "");
+}
+
+/**
+ * Test if a line matches a pattern, ignoring inline code spans.
+ */
+function testIgnoringInlineCode(line, regex) {
+  return regex.test(stripInlineCode(line));
+}
+
+/**
  * Check a file's content for output integrity issues.
  *
  * @param {string} content - File content
@@ -135,8 +150,12 @@ function main() {
 
     // Unfilled {{text}} directive check (block structure: start tag → content → end tag)
     let unfilled = 0;
-    for (let i = 0; i < lines.length; i++) {
-      if (/<!--\s*\{\{text\b/.test(lines[i])) {
+    {
+      let inFence = false;
+      for (let i = 0; i < lines.length; i++) {
+        if (/^(`{3,}|~{3,})/.test(lines[i].trim())) { inFence = !inFence; continue; }
+        if (inFence) continue;
+        if (!testIgnoringInlineCode(lines[i], /<!--\s*\{\{text\b/)) continue;
         // 終了タグまでの間に非空行があるかチェック
         let hasContent = false;
         for (let j = i + 1; j < lines.length; j++) {
@@ -157,15 +176,17 @@ function main() {
     const content = fs.readFileSync(filePath, "utf8");
     const lines = content.split("\n");
     let unfilledData = 0;
+    let inFence = false;
     for (let i = 0; i < lines.length; i++) {
-      if (/<!--\s*\{\{data\s*:/.test(lines[i])) {
-        let hasContent = false;
-        for (let j = i + 1; j < lines.length; j++) {
-          if (/^<!--\s*\{\{\/data\}\}\s*-->$/.test(lines[j].trim())) break;
-          if (lines[j].trim() !== "") { hasContent = true; break; }
-        }
-        if (!hasContent) unfilledData++;
+      if (/^(`{3,}|~{3,})/.test(lines[i].trim())) { inFence = !inFence; continue; }
+      if (inFence) continue;
+      if (!testIgnoringInlineCode(lines[i], /<!--\s*\{\{data\s*:/)) continue;
+      let hasContent = false;
+      for (let j = i + 1; j < lines.length; j++) {
+        if (/^<!--\s*\{\{\/data\}\}\s*-->$/.test(lines[j].trim())) break;
+        if (lines[j].trim() !== "") { hasContent = true; break; }
       }
+      if (!hasContent) unfilledData++;
     }
     if (unfilledData > 0) {
       console.log(t("messages:review.unfilledData", { count: unfilledData, file: f }));

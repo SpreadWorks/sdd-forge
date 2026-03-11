@@ -77,6 +77,7 @@ describe("review CLI", () => {
     for (let i = 0; i < 10; i++) lines.push(`Line ${i}`);
     lines.push('<!-- {{data: controllers.list("Name|Actions")}} -->');
     lines.push(""); // empty line = unfilled
+    lines.push('<!-- {{/data}} -->');
     for (let i = 0; i < 5; i++) lines.push(`More ${i}`);
     writeFile(tmp, "docs/01_test.md", lines.join("\n"));
 
