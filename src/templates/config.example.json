@@ -4,9 +4,9 @@
     "languages": ["ja"],
     "default": "ja"
   },
-  "type": "webapp/cakephp2",
+  "type": "cakephp2",
   "limits": {
-    "designTimeoutMs": 900000,
+    "agentTimeout": 300,
     "concurrency": 5
   },
   "documentStyle": {

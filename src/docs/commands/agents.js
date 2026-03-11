@@ -12,8 +12,9 @@ import path from "path";
 import { runIfDirect } from "../../lib/entrypoint.js";
 import { parseArgs } from "../../lib/cli.js";
 import { sddOutputDir } from "../../lib/config.js";
-import { callAgent, loadAgentConfig, LONG_AGENT_TIMEOUT_MS } from "../../lib/agent.js";
+import { callAgent, loadAgentConfig, DEFAULT_AGENT_TIMEOUT } from "../../lib/agent.js";
 import { translate } from "../../lib/i18n.js";
+import { resolveType } from "../../lib/types.js";
 import { createResolver } from "../lib/resolver-factory.js";
 import { createLogger } from "../../lib/progress.js";
 import { parseDirectives, replaceBlockDirective, resolveDataDirectives } from "../lib/directive-parser.js";
@@ -168,7 +169,7 @@ async function main(ctx) {
   const combinedDocs = [docsContent, readmeContent].filter(Boolean).join("\n\n---\n\n");
 
   // Create resolver and resolve {{data}} directives
-  const resolvedType = config.type || "base";
+  const resolvedType = resolveType(config.type || "base");
   const resolver = await createResolver(resolvedType, root, { configChapters: config.chapters });
   const resolveFn = (source, method, a, labels) => resolver.resolve(source, method, analysis, labels);
 
@@ -185,7 +186,7 @@ async function main(ctx) {
     const prompt = buildRefinePrompt(projectContent, combinedDocs, config, srcRoot, sddContent);
 
     try {
-      const result = callAgent(agent, prompt, LONG_AGENT_TIMEOUT_MS, undefined, { systemPrompt });
+      const result = callAgent(agent, prompt, DEFAULT_AGENT_TIMEOUT * 1000, undefined, { systemPrompt });
 
       let refined = result.trim();
 

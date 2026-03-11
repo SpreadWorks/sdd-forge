@@ -27,15 +27,15 @@ import {
 import { repoRoot, parseArgs } from "../../lib/cli.js";
 import { loadConfig, resolveConcurrency, DEFAULT_CONCURRENCY } from "../../lib/config.js";
 import { createLogger } from "../../lib/progress.js";
-import { callAgent as callAgentBase, callAgentAsync as callAgentAsyncBase, ensureAgentWorkDir, loadAgentConfig, LONG_AGENT_TIMEOUT_MS, MID_AGENT_TIMEOUT_MS } from "../../lib/agent.js";
+import { callAgent as callAgentBase, callAgentAsync as callAgentAsyncBase, ensureAgentWorkDir, loadAgentConfig, DEFAULT_AGENT_TIMEOUT } from "../../lib/agent.js";
 import { translate } from "../../lib/i18n.js";
 import { resolveCommandContext, getChapterFiles, loadFullAnalysis } from "../lib/command-context.js";
+import { resolveType } from "../../lib/types.js";
 
 const logger = createLogger("text");
 
 /** Per-directive mode uses MID (180s), batch mode uses LONG (300s) */
-const DEFAULT_TIMEOUT_MS = MID_AGENT_TIMEOUT_MS;
-const BATCH_TIMEOUT_MS = LONG_AGENT_TIMEOUT_MS;
+const DEFAULT_TIMEOUT_MS = DEFAULT_AGENT_TIMEOUT * 1000;
 
 /**
  * config の textFill.preamblePatterns を RegExp 配列に変換する。
@@ -426,7 +426,7 @@ export async function textFillFromAnalysis(root, analysis, agentName, srcRoot, o
   const documentStyle = cfg.documentStyle;
   const lang = cfg.output.default;
   const systemPrompt = buildTextSystemPrompt(documentStyle, lang);
-  const type = cfg.type || undefined;
+  const type = cfg.type ? resolveType(cfg.type) : undefined;
   const concurrency = resolveConcurrency(cfg);
   const docsDir = path.join(root, "docs");
   const docsFiles = getChapterFiles(docsDir, { type, configChapters: cfg.chapters });
@@ -459,7 +459,7 @@ export async function textFillFromAnalysis(root, analysis, agentName, srcRoot, o
   const fileResults = await mapWithConcurrency(targetFiles, concurrency, async (file) => {
     const filePath = path.join(docsDir, file);
     const original = fs.readFileSync(filePath, "utf8");
-    const result = await processTemplateFileBatch(original, analysis, file, agent, BATCH_TIMEOUT_MS, root, false, preamblePatterns, systemPrompt, undefined, undefined, lang, resolvedSrcRoot);
+    const result = await processTemplateFileBatch(original, analysis, file, agent, DEFAULT_TIMEOUT_MS, root, false, preamblePatterns, systemPrompt, undefined, undefined, lang, resolvedSrcRoot);
     return { file, filePath, original, result };
   });
 
@@ -563,10 +563,10 @@ async function main(ctx) {
     logger.verbose(`--id=${ctx.id}: per-directive mode forced.`);
   }
 
+  const configTimeout = cfg.limits?.agentTimeout ? Number(cfg.limits.agentTimeout) * 1000 : undefined;
   const processFn = ctx.perDirective ? processTemplate : processTemplateFileBatch;
-  // Batch mode processes entire files in one LLM call; use longer timeout
   if (!ctx.perDirective) {
-    ctx.timeout = Math.max(ctx.timeout, BATCH_TIMEOUT_MS);
+    if (!ctx.timeout) ctx.timeout = configTimeout || DEFAULT_TIMEOUT_MS;
     logger.verbose(`Mode: batch (file-level, ${docsFiles.length} file(s), concurrency=${concurrency}, timeout=${ctx.timeout}ms). Use --per-directive for single-call mode.`);
   }
 

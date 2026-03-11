@@ -10,9 +10,8 @@ import fs from "fs";
 import path from "path";
 import { execFileSync, spawn } from "child_process";
 
-export const DEFAULT_AGENT_TIMEOUT_MS = 120000;
-export const LONG_AGENT_TIMEOUT_MS = 300000;
-export const MID_AGENT_TIMEOUT_MS = 180000;
+/** Default agent timeout in seconds. */
+export const DEFAULT_AGENT_TIMEOUT = 300;
 
 function createSystemPromptPrefix(flag, systemPrompt) {
   if (!flag || !systemPrompt) return { prefix: [] };
@@ -90,7 +89,7 @@ function buildAgentInvocation(agent, prompt, options) {
  *
  * @param {Object} agent        - Agent config ({ command, args, systemPromptFlag? })
  * @param {string} prompt       - The prompt text
- * @param {number} [timeoutMs]  - Timeout in milliseconds (default: 120000)
+ * @param {number} [timeoutMs]  - Timeout in milliseconds (default: DEFAULT_AGENT_TIMEOUT * 1000)
  * @param {string} [cwd]        - Working directory
  * @param {Object} [options]    - Additional options
  * @param {string} [options.systemPrompt] - System prompt text
@@ -102,7 +101,7 @@ export function callAgent(agent, prompt, timeoutMs, cwd, options) {
   const result = execFileSync(agent.command, finalArgs, {
     encoding: "utf8",
     maxBuffer: 20 * 1024 * 1024,
-    timeout: timeoutMs || DEFAULT_AGENT_TIMEOUT_MS,
+    timeout: timeoutMs || DEFAULT_AGENT_TIMEOUT * 1000,
     cwd: cwd || process.cwd(),
     env,
     ...(stdinContent != null ? { input: stdinContent } : {}),
@@ -120,7 +119,7 @@ export function callAgent(agent, prompt, timeoutMs, cwd, options) {
  *
  * @param {Object} agent        - Agent config ({ command, args, systemPromptFlag? })
  * @param {string} prompt       - The prompt text
- * @param {number} [timeoutMs]  - Timeout in milliseconds (default: 120000)
+ * @param {number} [timeoutMs]  - Timeout in milliseconds (default: DEFAULT_AGENT_TIMEOUT * 1000)
  * @param {string} [cwd]        - Working directory
  * @param {Object} [options]    - Additional options
  * @param {string} [options.systemPrompt] - System prompt text
@@ -132,7 +131,7 @@ export function callAgentAsync(agent, prompt, timeoutMs, cwd, options) {
   const { systemPrompt, onStdout, onStderr } = options || {};
   const { finalArgs, env, stdinContent } = buildAgentInvocation(agent, prompt, { systemPrompt });
 
-  const timeout = timeoutMs || DEFAULT_AGENT_TIMEOUT_MS;
+  const timeout = timeoutMs || DEFAULT_AGENT_TIMEOUT * 1000;
 
   return new Promise((resolve, reject) => {
     const child = spawn(agent.command, finalArgs, {

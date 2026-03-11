@@ -12,7 +12,7 @@ import { runIfDirect } from "../../lib/entrypoint.js";
 import { repoRoot, parseArgs } from "../../lib/cli.js";
 import { loadConfig, sddOutputDir } from "../../lib/config.js";
 import { translate } from "../../lib/i18n.js";
-import { resolveOutputConfig } from "../../lib/types.js";
+import { resolveOutputConfig, resolveType } from "../../lib/types.js";
 import { getChapterFiles } from "../lib/command-context.js";
 import { collectOutputs, compareOutputs, snapshotDir } from "./snapshot.js";
 import { parseDirectives } from "../lib/directive-parser.js";
@@ -109,7 +109,7 @@ function main() {
   const t = translate();
   const targetDir = args.find((a) => !a.startsWith("-")) || path.join(root, "docs");
   const config = loadConfig(root);
-  const type = config.type;
+  const type = resolveType(config.type || "");
 
   // Discover chapter files
   let chapterFiles = [];

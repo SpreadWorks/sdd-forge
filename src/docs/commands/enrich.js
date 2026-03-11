@@ -14,7 +14,7 @@ import path from "path";
 import { runIfDirect } from "../../lib/entrypoint.js";
 import { parseArgs } from "../../lib/cli.js";
 import { sddOutputDir } from "../../lib/config.js";
-import { resolveAgent, callAgentAsync, LONG_AGENT_TIMEOUT_MS } from "../../lib/agent.js";
+import { resolveAgent, callAgentAsync, DEFAULT_AGENT_TIMEOUT } from "../../lib/agent.js";
 import { resolveCommandContext, loadFullAnalysis } from "../lib/command-context.js";
 import { resolveChaptersOrder } from "../lib/template-merger.js";
 import { createLogger } from "../../lib/progress.js";
@@ -352,7 +352,7 @@ async function main(ctx) {
   const hasLines = pending.some((e) => e.lines > 0);
   const batches = splitIntoBatches(pending, hasLines ? maxLines : 0, maxItems);
 
-  const timeoutMs = Number(config.limits?.designTimeoutMs || 0) || LONG_AGENT_TIMEOUT_MS;
+  const timeoutMs = config.limits?.agentTimeout ? Number(config.limits.agentTimeout) * 1000 : DEFAULT_AGENT_TIMEOUT * 1000;
   let totalEnriched = 0;
 
   for (let b = 0; b < batches.length; b++) {

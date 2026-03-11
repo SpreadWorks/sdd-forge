@@ -23,7 +23,7 @@ import { loadConfig, resolveConcurrency } from "../../lib/config.js";
 import { resolveType } from "../../lib/types.js";
 import { loadFullAnalysis, loadAnalysisData, getChapterFiles, readText } from "../lib/command-context.js";
 import { createResolver } from "../lib/resolver-factory.js";
-import { callAgentAsync, LONG_AGENT_TIMEOUT_MS, resolveAgent } from "../../lib/agent.js";
+import { callAgentAsync, DEFAULT_AGENT_TIMEOUT, resolveAgent } from "../../lib/agent.js";
 import { translate } from "../../lib/i18n.js";
 import {
   summaryToText,
@@ -40,7 +40,7 @@ import {
   summarizeNeedsInput,
 } from "../lib/review-parser.js";
 
-const DEFAULT_AGENT_TIMEOUT_MS = LONG_AGENT_TIMEOUT_MS;
+const DEFAULT_TIMEOUT_MS = DEFAULT_AGENT_TIMEOUT * 1000;
 const DEFAULT_WAIT_LOG_SEC = 1;
 const DEFAULT_MAX_RUNS = 3;
 const DEFAULT_REVIEW_CMD = "sdd-forge review";
@@ -153,7 +153,7 @@ function runCommand(cmdString, cwd) {
  * label logging and a progress ticker.
  */
 async function invokeAgent(agent, prompt, { cwd, timeoutMs, systemPrompt, verbose, label }) {
-  const timeout = timeoutMs || Number(agent?.timeoutMs) || DEFAULT_AGENT_TIMEOUT_MS;
+  const timeout = timeoutMs || Number(agent?.timeoutMs) || DEFAULT_TIMEOUT_MS;
   const displayLabel = label || agent?.name || agent?.command || "agent";
 
   console.log(`[agent] ${displayLabel} started (timeout: ${Math.floor(timeout / 1000)}s)`);
@@ -225,7 +225,7 @@ async function main() {
   const t = translate();
   const agent = resolveAgent(config, cli.agent);
   const mode = cli.mode || DEFAULT_MODE;
-  const timeoutMs = Number(config.limits?.designTimeoutMs || 0) || undefined;
+  const timeoutMs = config.limits?.agentTimeout ? Number(config.limits.agentTimeout) * 1000 : undefined;
 
   if (mode === "agent" && !agent) {
     throw new Error(

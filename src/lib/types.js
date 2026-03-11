@@ -56,7 +56,7 @@ import { buildTypeAliases } from "./presets.js";
  * @property {string} lang                    - Operating language for CLI, AGENTS.md, skills, specs
  * @property {string} type                    - Project type ("webapp/cakephp2" | "cli" | ...)
  * @property {Object} [limits]                - Limit settings
- * @property {number} [limits.designTimeoutMs] - Timeout (ms)
+ * @property {number} [limits.agentTimeout] - Agent timeout in seconds
  * @property {number} [limits.concurrency]    - Per-file concurrency (default: 5)
  * @property {DocumentStyle} [documentStyle]  - Document style settings
  * @property {TextFillConfig} [textFill]      - text-fill settings
