@@ -49,16 +49,22 @@
     "analysisDataHeading": "## Source Code Analysis Data"
   },
   "agents": {
-    "systemPrompt": "Review the following template-generated PROJECT section and refine it by adding or improving information based on the source code analysis data.",
+    "systemPrompt": "You are a technical writer generating the PROJECT section of AGENTS.md.\nAGENTS.md is loaded into AI context at session start. It must be concise to preserve context window for actual work.",
     "outputRules": [
       "Write in English",
       "Output the refined PROJECT section content directly (no wrapping tags)",
       "Start with the `## Project Context` heading",
-      "Structure information that helps AI agents understand the project",
-      "Include technology stack, project structure overview, key components, DB configuration, and available commands",
-      "Do not duplicate information already present in the SDD section (e.g., sdd-forge command list, SDD flow instructions)",
+      "Keep the total PROJECT section under 150 lines",
+      "Priority: project structure > key components > commands/scripts",
+      "Include: technology stack (language, runtime, dependencies), directory structure (abbreviated), entry points and command routing, key file paths AI needs to navigate the codebase, package.json scripts",
+      "Exclude: operational procedures (release flow, deploy steps), historical context ('X was removed', 'Y is deprecated'), design philosophy or architectural rationale, detailed module descriptions (AI can read source directly), information duplicated in the SDD section",
+      "Trusted sources are ONLY: analysis.json data (via PROJECT skeleton), package.json, and source code structure",
+      "The 'Generated Documentation' is provided for structural context only — do NOT copy or paraphrase sentences from it",
+      "If information cannot be verified from source code or package.json, do NOT include it — policies, historical notes, deprecation plans, and design philosophy are OUT OF SCOPE",
+      "Do not list every module — only those essential for code navigation",
       "Use markdown tables and lists for readability",
       "Do not include preamble or meta-commentary"
-    ]
+    ],
+    "refineInstruction": "Refine the PROJECT section below.\n\nRules:\n1. Keep total output under 150 lines.\n2. Only state facts verifiable from the skeleton data and package.json below.\n3. The 'Generated Documentation' is for structural understanding only — do not extract or repeat its prose. If a fact appears only in docs and not in source/package.json, omit it.\n4. Omit: design philosophy, deprecation plans, historical notes, operational procedures, per-module implementation details.\n5. Focus on: what an AI agent needs to navigate and modify this codebase correctly."
   }
 }

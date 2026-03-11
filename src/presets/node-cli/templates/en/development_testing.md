@@ -23,21 +23,12 @@ npm link          # Register as global command
 
 ### Branch Strategy and Commit Conventions
 
-<!-- {{text: Describe branch management (main/development roles, squash merge policy) and commit message format.}} -->
+<!-- {{text: Describe branch management and commit message format. Extract from merge settings and commit conventions in the source code.}} -->
 <!-- {{/text}} -->
-
-### SDD Workflow
-
-| Command | Description |
-| --- | --- |
-| `sdd-forge spec --title "..."` | Initialize spec |
-| `sdd-forge gate --spec ...` | Spec gate check |
-| `sdd-forge forge --prompt "..."` | Iterative docs improvement |
-| `sdd-forge review` | Docs review |
 
 ### Testing
 
-<!-- {{text[mode=deep]: Describe the testing strategy, framework used, and how to run tests. Include fixture structure.}} -->
+<!-- {{text[mode=deep]: Describe the testing strategy, framework used, and how to run tests. Extract from the test directory structure and test runner configuration in the source code.}} -->
 <!-- {{/text}} -->
 
 ### Release Flow
@@ -48,10 +39,10 @@ npm version minor   # 0.1.0 → 0.2.0
 npm publish         # Publish to npm registry
 ```
 
-<!-- {{text: Describe the release procedure from squash merge into main to npm publish.}} -->
+<!-- {{text: Describe the release procedure. Derive from publish settings and npm scripts in the source code.}} -->
 <!-- {{/text}} -->
 
 ### Technology Stack and Dependencies
 
-<!-- {{text: Describe the programming language, runtime version requirements, and npm dependency policy (zero dependencies, etc.).}} -->
+<!-- {{text: Describe the programming language, runtime version requirements, and dependency policy. Extract from package.json.}} -->
 <!-- {{/text}} -->

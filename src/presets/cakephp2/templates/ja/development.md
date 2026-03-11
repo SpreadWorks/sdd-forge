@@ -25,21 +25,6 @@ npm run docker:stop
 
 <!-- {{text: Docker 環境でのローカル開発手順（起動→コーディング→テスト→確認）を記述してください。}} -->
 <!-- {{/text}} -->
-
-### ソースコード解析
-
-| コマンド | 説明 |
-| --- | --- |
-| `sdd-forge scan` | 全解析 |
-| `sdd-forge scan:ctrl` | コントローラ解析 |
-| `sdd-forge scan:model` | モデル解析 |
-| `sdd-forge scan:shell` | Shell 解析 |
-| `sdd-forge scan:route` | ルート解析 |
-
-### AI エージェント選択
-
-<!-- {{text: sdd-forge の AI エージェント選択（--agent オプション）について記述してください。}} -->
-<!-- {{/text}} -->
 <!-- @endblock -->
 
 <!-- @block: testing -->

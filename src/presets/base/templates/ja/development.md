@@ -25,19 +25,6 @@
 <!-- {{/text}} -->
 <!-- @endblock -->
 
-<!-- @block: sdd-tools -->
-### SDD ツール
-
-| コマンド | 説明 |
-| --- | --- |
-| `sdd-forge spec --title "..."` | spec 初期化（feature ブランチ + spec.md 作成） |
-| `sdd-forge gate --spec ...` | spec ゲート（未解決事項チェック） |
-| `sdd-forge init` | docs 初期化（テンプレートから docs/ を生成） |
-| `sdd-forge review` | docs レビュー（構造・内容・網羅性チェック） |
-| `sdd-forge forge --prompt "..."` | docs 反復改善 |
-| `sdd-forge flow --request "..."` | SDD フロー自動実行 |
-<!-- @endblock -->
-
 <!-- @block: scripts -->
 ### 利用可能なスクリプト
 

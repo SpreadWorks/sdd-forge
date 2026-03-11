@@ -25,19 +25,6 @@
 <!-- {{/text}} -->
 <!-- @endblock -->
 
-<!-- @block: sdd-tools -->
-### SDD Tools
-
-| Command | Description |
-| --- | --- |
-| `sdd-forge spec --title "..."` | Initialize spec (create feature branch + spec.md) |
-| `sdd-forge gate --spec ...` | Spec gate (check unresolved items) |
-| `sdd-forge init` | Initialize docs (generate docs/ from templates) |
-| `sdd-forge review` | Review docs (structure, content, coverage check) |
-| `sdd-forge forge --prompt "..."` | Iteratively improve docs |
-| `sdd-forge flow --request "..."` | Run SDD flow automatically |
-<!-- @endblock -->
-
 <!-- @block: scripts -->
 ### Available Scripts
 

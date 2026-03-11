@@ -7,9 +7,11 @@ description: Finalize the SDD workflow after implementation is complete. Use for
 
 Use this skill when implementation is complete and the user approved finalization.
 
-## Step 0: Present Options
+## CRITICAL: Step 0 — Present Options FIRST
 
-**Always start by presenting these options to the user:**
+**STOP. Do NOT proceed to any other step. You MUST present the options below and wait for the user's response before doing anything else. Do NOT read files, run commands, or take any action until the user selects an option.**
+
+終了処理の範囲を選んでください:
 
 | # | Label |
 |---|---|
@@ -19,7 +21,7 @@ Use this skill when implementation is complete and the user approved finalizatio
 | 4 | コミット+マージ |
 | 5 | コミット+マージ+ブランチ削除 |
 
-Wait for the user's selection, then execute only the applicable steps below.
+**After presenting this table, output NOTHING else. Wait for the user to reply with their selection number.**
 
 ## Applicable Steps per Option
 

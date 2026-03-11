@@ -11,20 +11,20 @@
 
 ### Purpose
 
-<!-- {{text: Describe the problem this CLI tool solves and its target users. The two main features are: (1) automated documentation generation based on source code analysis ({{data}}/{{text}} directives), and (2) Spec-Driven Development workflow (spec → gate → implement → forge → review).}} -->
+<!-- {{text: Describe the problem this CLI tool solves and its target users. Derive the purpose from package.json and README.}} -->
 <!-- {{/text}} -->
 
 ### Architecture Overview
 
-<!-- {{text[mode=deep]: Generate a mermaid flowchart showing the tool's overall architecture. Include the 3-layer dispatch structure (sdd-forge.js → docs.js/spec.js → individual commands) and flow.js (direct execution command). Show the flow from input (source code) → processing (scan/data/text) → output (docs/, README.md) and AI agent integration. Output only the mermaid code block.}} -->
+<!-- {{text[mode=deep]: Generate a mermaid flowchart showing the tool's overall architecture. Include the dispatch structure from entry point to subcommands and the main processing flow (input → processing → output). Output only the mermaid code block.}} -->
 <!-- {{/text}} -->
 
 ### Key Concepts
 
-<!-- {{text: Explain the key concepts and terminology needed to understand this tool in table format. Required items: {{data}} directives, {{text}} directives, analysis.json, presets, spec.md, gate check, SDD flow, forge, review, flow state (.sdd-forge/current-spec).}} -->
+<!-- {{text: Explain the key concepts and terminology needed to understand this tool in table format. Extract the main concepts from source code.}} -->
 <!-- {{/text}} -->
 
 ### Typical Usage Flow
 
-<!-- {{text: Describe the typical steps from installation to first output in step format. Steps: npm install → sdd-forge setup → sdd-forge build (runs scan/init/data/text/readme/agents/translate in sequence) → sdd-forge review → start SDD flow.}} -->
+<!-- {{text: Describe the typical steps from installation to first output in step format. Derive the steps from help output and command definitions in the source code.}} -->
 <!-- {{/text}} -->
