@@ -2,6 +2,9 @@
 <!-- {{/data}} -->
 # 01. システム概要
 
+<!-- {{data: project.description("")}} -->
+<!-- {{/data}} -->
+
 ## 説明
 
 <!-- @block: description -->

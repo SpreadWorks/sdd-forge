@@ -178,8 +178,9 @@ export default class DocsSource extends DataSource {
       const content = fs.readFileSync(path.join(docsDir, f), "utf8");
       const lines = content.split("\n");
 
-      // Title: first # NN. line
-      const titleLine = lines.find((l) => /^# \d{2}\./.test(l));
+      // Title: first # NN. line, fallback to first # line
+      const titleLine = lines.find((l) => /^# \d{2}\./.test(l))
+        || lines.find((l) => /^# /.test(l));
       const title = titleLine ? titleLine.replace(/^# /, "") : f.replace(/\.md$/, "");
 
       // Description: ## Description / ## 説明 ~ next ##
@@ -191,6 +192,7 @@ export default class DocsSource extends DataSource {
         if (inDesc) {
           if (/<!--\s*\{\{(text|data)\s*(\[[^\]]*\])?\s*:/.test(line)) continue;
           if (/<!--\s*\{\{\/(data|text)\}\}\s*-->/.test(line)) continue;
+          if (/<!--\s*@(block|endblock|extends|parent)/.test(line)) continue;
           descLines.push(line);
         }
       }

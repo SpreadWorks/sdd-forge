@@ -44,4 +44,13 @@ export default class ProjectSource extends DataSource {
     const pkg = this._pkg();
     return pkg?.version || "0.0.0";
   }
+
+  /** package.json scripts as a markdown table. */
+  scripts(_analysis, labels) {
+    const pkg = this._pkg();
+    if (!pkg?.scripts || Object.keys(pkg.scripts).length === 0) return null;
+    const rows = Object.entries(pkg.scripts).map(([name, cmd]) => [name, `\`${cmd}\``]);
+    const hdr = labels.length >= 2 ? labels : ["Script", "Command"];
+    return this.toMarkdownTable(rows, hdr);
+  }
 }

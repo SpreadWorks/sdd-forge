@@ -38,6 +38,13 @@
 | `sdd-forge flow --request "..."` | Run SDD flow automatically |
 <!-- @endblock -->
 
+<!-- @block: scripts -->
+### Available Scripts
+
+<!-- {{data: project.scripts("Script|Command")}} -->
+<!-- {{/data}} -->
+<!-- @endblock -->
+
 <!-- @block: testing -->
 ### Testing
 
