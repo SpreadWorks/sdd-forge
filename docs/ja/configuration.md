@@ -1,157 +1,141 @@
 # 03. 設定とカスタマイズ
 
-## 概要
+## 説明
 
-<!-- {{text: Write a 1–2 sentence overview of this chapter. Cover the types of configuration files, the range of configurable options, and customization points.}} -->
+<!-- {{text: Write a 1-2 sentence overview of this chapter. Include the types of config files, range of configurable items, and customization points.}} -->
 
-本章では、プロジェクトタイプや出力言語設定から AI プロバイダー定義、ドキュメントスタイルの設定に至るまで、sdd-forge の動作を制御する設定ファイルについて説明します。`.sdd-forge/config.json` の完全なリファレンスに加え、AI エージェント、プリセット選択、マージ戦略、並列処理動作のカスタマイズ方法についても解説します。
+本章では、sdd-forge が読み込む設定ファイルと、プロジェクトの動作を調整するために利用可能なすべてのオプションについて説明する。設定可能な項目には、出力言語、ドキュメントスタイル、AI エージェントプロバイダー、並列処理数の上限、SDD フロー設定などが含まれる。
 <!-- {{/text}} -->
 
-## 目次
+## 内容
 
 ### 設定ファイル
 
-<!-- {{text: List all configuration files loaded by this tool in a table, including their location and role. Key files: .sdd-forge/config.json (project settings), .sdd-forge/projects.json (multi-project management), .sdd-forge/current-spec (SDD flow state), .sdd-forge/output/analysis.json (analysis results, including enriched data).}} -->
-
-以下のファイルは、sdd-forge が通常の操作中に作成・読み込みます。パスはいずれもリポジトリルート（または `workRoot` として渡したディレクトリ）からの相対パスです。
+<!-- {{text: List all configuration files this tool reads, including their locations and roles, in table format. Extract from file reading logic in the source code.}} -->
 
 | ファイル | 場所 | 役割 |
 |---|---|---|
-| `config.json` | `.sdd-forge/config.json` | プロジェクトの主設定ファイル。必須フィールドはコマンド実行のたびに検証されます。 |
-| `projects.json` | `.sdd-forge/projects.json` | `sdd-forge setup` によって作成されるマルチプロジェクトレジストリ。プロジェクト名とソース・作業ルートのパスを対応付けます。 |
-| `current-spec` | `.sdd-forge/current-spec` | アクティブな SDD フローの状態（spec パス、ブランチ名、worktree 情報）を追跡する JSON ファイル。フローのクローズ時に削除されます。 |
-| `context.json` | `.sdd-forge/context.json` | 任意のプロジェクトコンテキスト文字列を記述するオプションファイル。存在する場合、`config.json` の `textFill.projectContext` より優先されます。 |
-| `analysis.json` | `.sdd-forge/output/analysis.json` | `sdd-forge scan` が生成するソースコードの完全な解析結果。`sdd-forge enrich` 実行後は、各エントリに `summary`、`detail`、`chapter`、`role` フィールドが付与されます。 |
-| スナップショット | `.sdd-forge/snapshots/` | `sdd-forge snapshot` によるリグレッション検出用に保存されたドキュメントのスナップショット。 |
+| `config.json` | `.sdd-forge/config.json` | プロジェクトのメイン設定。`loadConfig()` を通じてすべてのコマンド実行時に読み込まれ、バリデーションされる。ほとんどの sdd-forge コマンドを実行する前に必須。 |
+| `projects.json` | `.sdd-forge/projects.json` | マルチプロジェクトレジストリ。プロジェクト名をソースパスおよびオプションのワークルートにマッピングする。`resolveProject()` によって読み込まれ、アクティブなプロジェクトを特定する。`sdd-forge setup` によって作成・更新される。 |
+| `package.json` | `<repo-root>/package.json` | `loadPackageField()` を通じてパッケージメタデータ（プロジェクト名やバージョンなど）を読み込む。sdd-forge による変更はない。 |
+| `preset.json` | `src/presets/<key>/preset.json` | sdd-forge にバンドルされたプリセットマニフェスト。起動時に自動探索され、`config.json` の `type` フィールドの解決に使用される。 |
 <!-- {{/text}} -->
 
 ### 設定リファレンス
 
-<!-- {{text[mode=deep]: Document all fields in .sdd-forge/config.json in a table. Include field name, whether it is required, type, default value, and description. Key fields: output.languages (list of output languages), output.default (default language), output.mode (translate/generate), lang (CLI operating language), type (project type), documentStyle (purpose/tone/customInstruction), textFill (preamblePatterns), defaultAgent, providers (AI agent definitions), flow.merge (squash/ff-only/merge), limits (concurrency/designTimeoutMs).}} -->
+<!-- {{text[mode=deep]: Describe all configuration fields in table format. Include field name, required/optional, type, default value, and description. Extract from validation logic and default value definitions in the source code.}} -->
 
-すべてのフィールドは起動時に `src/lib/types.js` の `validateConfig()` によって検証されます。必須フィールドが不足している場合、コマンドは検証エラーの一覧を表示して終了します。
+以下の表は `.sdd-forge/config.json` で受け付けるすべてのフィールドを網羅している。**必須**と記載されたフィールドは必ず指定すること。値が欠損または不正な場合、`validateConfig()` はすべての違反箇所をまとめたエラーメッセージをスローする。
 
-| フィールド | 必須 | 型 | デフォルト | 説明 |
+| フィールド | 必須/任意 | 型 | デフォルト | 説明 |
 |---|---|---|---|---|
-| `output.languages` | ✅ | `string[]` | — | 生成ドキュメントの出力言語リスト。例: `["en"]` または `["en", "ja"]`。空にはできません。 |
-| `output.default` | ✅ | `string` | — | 主たる出力言語。`output.languages` に含まれる値のいずれかでなければなりません。 |
-| `output.mode` | — | `"translate"` \| `"generate"` | `"translate"` | デフォルト以外の言語の生成方法。`translate` はデフォルト言語の出力を AI で翻訳します。`generate` は各言語に対して生成パイプライン全体を独立して実行します。 |
-| `lang` | ✅ | `string` | — | CLI、AGENTS.md、スキルプロンプト、spec ファイルの動作言語。代表的な値: `"en"` または `"ja"`。 |
-| `type` | ✅ | `string` | — | プリセットを選択するプロジェクトタイプ。例: `"cli/node-cli"`、`"webapp/cakephp2"`、`"webapp/laravel"`。`"cakephp2"` のような短いエイリアスは `TYPE_ALIASES` によって自動的に解決されます。 |
-| `documentStyle.purpose` | — | `string` | — | ドキュメントの対象読者と目的を記述します。例: `"user-guide"`、`"developer-guide"`、`"api-reference"`。 |
-| `documentStyle.tone` | — | `"polite"` \| `"formal"` \| `"casual"` | — | AI が生成するすべてのテキストに適用する文体。 |
-| `documentStyle.customInstruction` | — | `string` | — | テキスト生成時に AI へ渡す追加の自由記述指示。 |
-| `textFill.projectContext` | — | `string` | — | AI に背景情報として提供するプロジェクトの簡単な説明。`.sdd-forge/context.json` が存在する場合はそちらが優先されます。 |
-| `textFill.preamblePatterns` | — | `object[]` | — | `{ pattern, flags }` オブジェクトの配列。一致するプレフィックスを AI の出力から取り除き、定型的な書き出しを除去します。 |
-| `defaultAgent` | — | `string` | — | コマンドラインで `--agent` が指定されていない場合に使用するプロバイダーエントリのキー。 |
-| `providers.<key>.command` | — | `string` | — | 指定した AI プロバイダーを呼び出す実行ファイル。例: `"claude"`。 |
-| `providers.<key>.args` | — | `string[]` | — | プロバイダーコマンドの引数リスト。プロンプトの挿入位置として `{{PROMPT}}` プレースホルダーを使用します。省略した場合はプロンプトが末尾に自動追加されます。 |
-| `providers.<key>.timeoutMs` | — | `number` | `120000` | 呼び出しごとのタイムアウト（ミリ秒）。 |
-| `providers.<key>.systemPromptFlag` | — | `string` | — | システムプロンプトを渡すフラグ。例: `"--system-prompt"`。 |
-| `flow.merge` | — | `"squash"` \| `"ff-only"` \| `"merge"` | `"squash"` | SDD フローがフィーチャーブランチをクローズする際に使用する Git マージ戦略。 |
-| `limits.concurrency` | — | `number` | `5` | `text`、`data`、`enrich` コマンド実行中に並列処理するファイルの最大数。 |
-| `limits.designTimeoutMs` | — | `number` | — | 長時間実行されるデザインフェーズのエージェント呼び出しに対する全体タイムアウト（ミリ秒）。 |
-| `chapters` | — | `string[]` | — | `preset.json` で定義された章の順序を上書きします。ここに列挙したファイル名（パスなし）のみが指定順で生成されます。 |
-| `agentWorkDir` | — | `string` | — | `-C <dir>` で AI エージェントに渡す作業ディレクトリ。エージェントが特定の場所から相対インポートを解決する必要がある場合に有効です。 |
-| `uiLang` | — | `"en"` \| `"ja"` | — | インタラクティブな CLI プロンプトと進捗メッセージの言語。デフォルトは `lang` の値です。 |
+| `output` | 必須 | object | — | 出力設定のトップレベルブロック。 |
+| `output.languages` | 必須 | string[] | — | 出力言語の空でないリスト（例: `["ja"]` や `["en", "ja"]`）。 |
+| `output.default` | 必須 | string | — | メインの出力言語。`output.languages` のいずれかの値でなければならない。 |
+| `output.mode` | 任意 | `"translate"` \| `"generate"` | `"translate"` | デフォルト以外の言語ドキュメントの生成方法。`"translate"` は翻訳ステップに委譲し、`"generate"` は各言語ごとに独立して AI 生成を実行する。 |
+| `lang` | 必須 | string | `"en"` | CLI メッセージ、AGENTS.md、スキルファイル、spec ドキュメントの動作言語。ファイルが存在しないか解析不能な場合は `"en"` にフォールバックする（`loadLang()` で使用）。 |
+| `type` | 必須 | string | — | プロジェクトタイプの識別子。正規パス（例: `"webapp/cakephp2"`）または登録済みエイリアス（例: `"cakephp2"`）を受け付ける。`buildTypeAliases()` の `TYPE_ALIASES` によって解決される。 |
+| `limits.agentTimeout` | 任意 | number | — | 単一の AI エージェント呼び出しを中止するまでの最大待機時間（**秒**単位）。 |
+| `limits.concurrency` | 任意 | number | `5` | スキャンおよびテキスト補完フェーズで並列処理するファイル数。`resolveConcurrency()` によって解決され、`DEFAULT_CONCURRENCY = 5` にフォールバックする。 |
+| `documentStyle.purpose` | 任意 | string | — | 生成されるドキュメントの対象読者とスタイル。受け付ける値は `"developer-guide"`、`"user-guide"`、`"api-reference"` またはカスタム文字列。 |
+| `documentStyle.tone` | 任意 | string | — | AI 生成テキストに適用する文体。`"polite"`、`"formal"`、`"casual"` のいずれかでなければならない。 |
+| `documentStyle.customInstruction` | 任意 | string | — | `text` および `forge` フェーズで AI プロンプトに追記される自由形式の追加指示。 |
+| `defaultAgent` | 任意 | string | — | `--agent` フラグが指定されていない場合に使用する `providers` 内のプロバイダー名キー。 |
+| `providers.<key>.command` | 条件付き必須 | string | — | このエージェントプロバイダーに対して実行するコマンド（例: `"claude"`）。`providers` ブロックが存在する場合は必須。 |
+| `providers.<key>.args` | 条件付き必須 | string[] | — | プロバイダーコマンドに渡す引数。`{{PROMPT}}` プレースホルダーは実行時に実際のプロンプトに置換される。 |
+| `providers.<key>.timeoutMs` | 任意 | number | — | プロバイダーごとのタイムアウト（ミリ秒単位）。このプロバイダーに対しては `limits.agentTimeout` より優先される。 |
+| `providers.<key>.systemPromptFlag` | 任意 | string | — | システムプロンプトをプロバイダー CLI に渡すためのフラグ（例: `"--system-prompt"`）。 |
+| `flow.merge` | 任意 | `"squash"` \| `"ff-only"` \| `"merge"` | `"squash"` | `sdd-flow-close` がフィーチャーブランチをベースにマージする際の Git マージ戦略。 |
+| `chapters` | 任意 | string[] | — | `docs/` の章ファイル順序をプロジェクトレベルで上書きする設定。エントリは拡張子なしの章ファイル名。プリセットの `preset.json` で定義された順序を上書きする。 |
+| `agentWorkDir` | 任意 | string | — | エージェントサブプロセス実行時に設定するワーキングディレクトリ。エージェント CLI を特定のパスから実行する必要がある場合に有用。 |
+| `textFill.projectContext` | 任意 | string | — | `text` および `forge` フェーズで AI プロンプトに追加コンテキストとして注入される自由形式のプロジェクト説明。 |
+| `textFill.preamblePatterns` | 任意 | object[] | — | AI 生成出力から不要なプレフィックスを除去するために使用する正規表現パターンのリスト（各エントリに `pattern` とオプションの `flags` フィールドを持つ）。 |
 <!-- {{/text}} -->
 
 ### カスタマイズポイント
 
-<!-- {{text[mode=deep]: Explain the items users can customize. (1) AI provider settings (providers field: command/args/timeoutMs/systemPromptFlag) with configuration examples, (2) document style (purpose/tone/customInstruction), (3) preset selection (type field), (4) merge strategy (flow.merge), (5) concurrency (limits.concurrency). Include a JSON configuration example for each item.}} -->
+<!-- {{text[mode=deep]: Describe items that users can customize. Extract configurable items from the source code and include configuration examples for each.}} -->
 
-#### 1. AI プロバイダー設定
+**ドキュメントスタイル**
 
-`providers` マップを使用すると、1 つ以上の AI エージェントを登録し、`--agent` で切り替えることができます。`args` 内の `{{PROMPT}}` プレースホルダーは生成されたプロンプトの挿入位置を示します。プレースホルダーがない場合、プロンプトは末尾に自動追加されます。
+`documentStyle` を使用して、すべての AI 生成ドキュメントのトーンとフォーカスを制御する。`purpose` フィールドは各章のフレーミングを方向付け、`tone` は文体の格式を調整し、`customInstruction` はすべての AI 呼び出しに任意のガイダンスを追記する。
 
 ```json
-{
-  "defaultAgent": "claude",
-  "providers": {
-    "claude": {
-      "command": "claude",
-      "args": ["--model", "sonnet", "-p", "{{PROMPT}}"],
-      "timeoutMs": 180000,
-      "systemPromptFlag": "--system-prompt"
-    }
+"documentStyle": {
+  "purpose": "developer-guide",
+  "tone": "formal",
+  "customInstruction": "Always include concrete code examples where relevant."
+}
+```
+
+**AI エージェントプロバイダー**
+
+sdd-forge はすべての LLM 呼び出しを外部 CLI コマンドに委譲する。`providers` 以下に 1 つ以上のプロバイダーを定義し、`defaultAgent` でデフォルトを選択する。`args` の `{{PROMPT}}` プレースホルダーは実行時に生成されたプロンプトに置換される。
+
+```json
+"defaultAgent": "claude",
+"providers": {
+  "claude": {
+    "command": "claude",
+    "args": ["--print", "{{PROMPT}}"],
+    "timeoutMs": 120000
   }
 }
 ```
 
-> **注意:** `--system-prompt-file` フラグは Claude CLI に存在しないため、使用してはなりません。プロンプトが 100,000 バイトを超える場合、`sdd-forge` は OS の `ARG_MAX` 制限を回避するために自動的に stdin 経由での送信に切り替えます。
+**出力言語**
 
-#### 2. ドキュメントスタイル
-
-`documentStyle` オブジェクトは、AI が生成するすべての章にわたって文体と目的を制御します。`customInstruction` には任意の自由記述指示を設定でき、すべての生成プロンプトに追記されます。
+ドキュメントを生成するすべての言語を宣言する。`output.default` でメイン言語を設定する。`output.mode` が `"translate"` の場合はデフォルト言語のドキュメントが翻訳され、`"generate"` の場合は各言語ごとに独立して AI 生成が実行される。
 
 ```json
-{
-  "documentStyle": {
-    "purpose": "user-guide",
-    "tone": "polite",
-    "customInstruction": "専門用語を避け、抽象的な説明よりも具体的な例を優先してください。"
-  }
+"output": {
+  "languages": ["en", "ja"],
+  "default": "en",
+  "mode": "translate"
 }
 ```
 
-`tone` に指定できる値は `"polite"`、`"formal"`、`"casual"` です。
+**章の順序**
 
-#### 3. プリセット選択
-
-`type` フィールドはスキャンとドキュメント生成を担うプリセットを選択します。短いエイリアスは自動的に解決されるため、`"cakephp2"` と `"webapp/cakephp2"` は同等です。
+`chapters` 配列に章ファイル名（拡張子なし）を列挙することで、プリセットの章の並び順を上書きできる。列挙した章のみが、指定した順序で出力に含まれる。
 
 ```json
-{
-  "type": "cli/node-cli"
+"chapters": ["overview", "architecture", "cli_commands", "configuration", "development"]
+```
+
+**並列処理数とタイムアウト**
+
+`limits` 以下で並列処理やエージェント呼び出しの上限を調整する。`concurrency` を下げると大規模なコードベースでのメモリ消費を抑えられ、`agentTimeout` を上げると応答の遅いプロバイダーに対応できる。
+
+```json
+"limits": {
+  "concurrency": 3,
+  "agentTimeout": 180
 }
 ```
 
-組み込みタイプには `"cli/node-cli"`、`"webapp/cakephp2"`、`"webapp/laravel"`、`"webapp/symfony"` などがあります。全リストは `sdd-forge presets` を実行して確認できます。
+**SDD フローのマージ戦略**
 
-#### 4. マージ戦略
-
-`flow.merge` フィールドは、SDD フローのクローズ時にフィーチャーブランチを統合する方法を決定します。
+SDD フロー終了時にフィーチャーブランチをベースブランチにマージする方法を選択する。デフォルトの `"squash"` は、フィーチャーブランチの履歴を単一のコミットにまとめる。
 
 ```json
-{
-  "flow": {
-    "merge": "squash"
-  }
+"flow": {
+  "merge": "squash"
 }
 ```
-
-| 値 | 動作 |
-|---|---|
-| `"squash"` | フィーチャーブランチのすべてのコミットをベースブランチ上の 1 つのコミットに圧縮します（デフォルト）。 |
-| `"ff-only"` | ファストフォワードのみ。ベースブランチが分岐している場合は失敗します。 |
-| `"merge"` | ブランチの完全な履歴を保持した標準マージコミットを作成します。 |
-
-#### 5. 並列処理数
-
-`limits.concurrency` は `text`、`data`、`enrich` コマンド実行中に同時処理するファイル数の上限を設定します。CPU コア数の多いマシンでは増やし、AI のレート制限が問題になる場合は減らしてください。
-
-```json
-{
-  "limits": {
-    "concurrency": 10
-  }
-}
-```
-
-デフォルト値は `5` です。`1` に設定するとすべての AI 呼び出しが直列化されます。
 <!-- {{/text}} -->
 
 ### 環境変数
 
-<!-- {{text[mode=deep]: List all environment variables referenced by the tool and their purpose in a table. SDD_SOURCE_ROOT (source code root), SDD_WORK_ROOT (work root, location of .sdd-forge/), CLAUDECODE (internal variable removed to prevent Claude CLI hang).}} -->
+<!-- {{text[mode=deep]: List all environment variables referenced by the tool and their purposes in table format. Extract from process.env references in the source code.}} -->
 
-sdd-forge は起動時に以下の環境変数を読み込みます。これらはリポジトリ自体から解決されるパスより優先されるため、ソースコードと `.sdd-forge/` ディレクトリが異なる場所に存在する CI パイプラインやモノリポ構成で有効です。
+以下の環境変数は sdd-forge が実行時に読み込むまたは管理するものである。ユーザーが `.env` ファイルで設定するものではなく、トップレベルのディスパッチャーとサブコマンド実装の間でコンテキストを受け渡すために内部的に使用される。
 
-| 変数 | 使用箇所 | 説明 |
-|---|---|---|
-| `SDD_SOURCE_ROOT` | `src/lib/cli.js` → `sourceRoot()` | sdd-forge がスキャン・ドキュメント化するソースコードへの絶対パス。設定されている場合、`git rev-parse` で検出されたリポジトリルートを上書きします。 |
-| `SDD_WORK_ROOT` | `src/lib/cli.js` → `repoRoot()` | 作業ルート（`.sdd-forge/` を含むディレクトリ）への絶対パス。設定されている場合、`git rev-parse` と `process.cwd()` の両方を上書きします。設定ファイルと出力ファイルをソースツリーの外に置く場合に指定します。 |
-| `CLAUDECODE` | `src/lib/agent.js` → `callAgentAsync()` | Claude CLI を起動する前に子プロセスの環境から**削除**されます。この変数が設定されたままだと Claude CLI が入力待ちでハングするため、削除することで問題を防いでいます。手動で設定・管理する必要はありません。 |
+| 変数 | 設定元 | 参照元 | 目的 |
+|---|---|---|---|
+| `SDD_SOURCE_ROOT` | `src/sdd-forge.js` | `src/lib/cli.js` | 解析対象プロジェクトのソースコードルートの絶対パス。`projects.json` からプロジェクトが解決された際に自動的に設定される。存在する場合、サブコマンドのデフォルトパス検出を上書きする。 |
+| `SDD_WORK_ROOT` | `src/sdd-forge.js` | `src/lib/cli.js` | ワーキングディレクトリ（`.sdd-forge/` と `docs/` を含むディレクトリ）の絶対パス。プロジェクトモードでは `SDD_SOURCE_ROOT` と同時に設定される。存在する場合、git ベースのリポジトリルート検出を上書きする。 |
+| `CLAUDECODE` | — | `src/lib/agent.js` | AI エージェントのサブプロセスを起動する前に、子プロセスの環境から明示的に**削除**される。これにより、Claude CLI 自身のセッション状態がエージェント呼び出しに漏れ込むことを防ぐ。 |
 
-`SDD_SOURCE_ROOT` も `SDD_WORK_ROOT` も設定されていない場合、`repoRoot()` は `git rev-parse --show-toplevel` にフォールバックし、さらに `process.cwd()` にフォールバックします。そのため、標準的な単一リポジトリ構成では環境変数の設定は不要です。
+単一プロジェクト構成（`projects.json` なし）では、`SDD_SOURCE_ROOT` と `SDD_WORK_ROOT` は設定されず、sdd-forge は git ルート検出を使用してカレントワーキングディレクトリからパスを解決する。
 <!-- {{/text}} -->

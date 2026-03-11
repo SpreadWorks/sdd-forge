@@ -41,10 +41,9 @@ pnpm add -g <!-- {{data: project.name("")}} -->sdd-forge<!-- {{/data}} -->
 <!-- {{data: docs.chapters("Chapter|Description")}} -->
 | Chapter | Description |
 | --- | --- |
-| [01. System Overview](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/overview.md) | This chapter describes the high-level architecture of sdd-forge, a Node.js CLI tool that automates documentation gene… |
-| [02. CLI Command Reference](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/cli_commands.md) | This chapter provides a complete reference for all sdd-forge CLI commands, covering the 19 subcommands available acro… |
-| [03. Configuration and Customization](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/configuration.md) |  |
-| [04. Internal Design](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/internal_design.md) | This chapter describes the internal architecture of sdd-forge, covering the three-level dispatch structure that route… |
-| [05. Development, Testing & Distribution](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/development_testing.md) | This chapter covers everything you need to work on sdd-forge itself — from cloning the repository and wiring up a loc… |
+| [01. Tool Overview and Architecture](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/overview.md) | This chapter introduces `sdd-forge`, a CLI tool that automates technical documentation generation by analysing your s… |
+| [02. CLI Command Reference](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/cli_commands.md) | This chapter covers all 20 commands available in `sdd-forge`, organized across six functional categories: Project, Bu… |
+| [03. Configuration and Customization](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/configuration.md) | This chapter describes the configuration files that sdd-forge reads and the full range of options available for tailo… |
+| [05. Development, Testing, and Distribution](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/development_testing.md) | This chapter covers the local development setup for sdd-forge, the testing approach using Node.js's built-in test run… |
 <!-- {{/data}} -->
 

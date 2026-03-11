@@ -417,7 +417,7 @@ function allTextDirectivesFilled(text) {
  * @param {boolean} [opts.force] - true の場合、埋まっているディレクティブも再処理する
  * @returns {{ filled: number, skipped: number, files: string[] }}
  */
-export async function textFillFromAnalysis(root, analysis, agentName, srcRoot, opts) {
+export async function textFillFromAnalysis(root, analysis, agentName, srcRoot) {
   if (!analysis) return { filled: 0, skipped: 0, files: [] };
 
   const cfg = loadConfig(root);
@@ -432,7 +432,6 @@ export async function textFillFromAnalysis(root, analysis, agentName, srcRoot, o
   const docsFiles = getChapterFiles(docsDir, { type, configChapters: cfg.chapters });
   const resolvedSrcRoot = srcRoot || root;
 
-  const force = opts?.force ?? false;
   const changedFiles = [];
   let totalFilled = 0;
   let totalSkipped = 0;
@@ -440,13 +439,13 @@ export async function textFillFromAnalysis(root, analysis, agentName, srcRoot, o
   // Batch mode: file-level parallelism (1 call per file)
   const errors = [];
 
-  // Filter files: skip files where all {{text}} directives are already filled (unless force)
+  // Filter files: skip files where all {{text}} directives are already filled
   const targetFiles = [];
   let skippedFileCount = 0;
   for (const file of docsFiles) {
     const filePath = path.join(docsDir, file);
     const content = fs.readFileSync(filePath, "utf8");
-    if (!force && allTextDirectivesFilled(content)) {
+    if (allTextDirectivesFilled(content)) {
       skippedFileCount++;
       continue;
     }

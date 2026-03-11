@@ -214,7 +214,7 @@ sdd-forge/
     ├── presets/                  ← プリセット定義（preset.json で自動探索）
     │   ├── base/                 ← 基底テンプレート・AGENTS.sdd.md
     │   ├── cli/ → node-cli/      ← Node.js CLI プリセット
-    │   ├── webapp/ → cakephp2/ laravel/ symfony/  ← Web フレームワーク別
+    │   ├── webapp/ → cakephp2/ laravel/ symfony/
     │   └── library/              ← ライブラリ用プリセット
     ├── locale/
     │   ├── en/                   ← 英語メッセージ（ui.json, messages.json, prompts.json）

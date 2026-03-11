@@ -44,7 +44,7 @@ pnpm add -g <!-- {{data: project.name("")}} --><!-- {{/data}} -->
 # 1. プロジェクトを登録（インタラクティブウィザード）
 <!-- {{data: project.name("")}} --><!-- {{/data}} --> setup
 
-# 2. ドキュメントを一括生成（scan → init → data → text → readme → agents → translate）
+# 2. ドキュメントを一括生成（scan → enrich → init → data → text → readme → agents → translate）
 <!-- {{data: project.name("")}} --><!-- {{/data}} --> build
 </pre>
 

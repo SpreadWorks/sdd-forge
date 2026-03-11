@@ -1,74 +1,64 @@
-# 05. Development, Testing & Distribution
+# 05. Development, Testing, and Distribution
 
 ## Description
 
-<!-- {{text: Write a 1–2 sentence overview of this chapter. Cover local development environment setup, testing strategy, and release flow.}} -->
+<!-- {{text: Write a 1-2 sentence overview of this chapter. Include local development environment setup, testing strategy, and release flow.}} -->
 
-This chapter covers everything you need to work on sdd-forge itself — from cloning the repository and wiring up a local development environment, to running the built-in test suite, and publishing a new version to the npm registry.
+This chapter covers the local development setup for sdd-forge, the testing approach using Node.js's built-in test runner, and the step-by-step release flow for publishing to the npm registry.
 
 <!-- {{/text}} -->
 
-## Contents
+## Content
 
-### Local Development Environment Setup
+### Local Development Setup
 
 ```bash
 git clone <repository>
 cd <project>
-npm link          # Register as a global command
-<command> help    # Verify it works
+npm link          # Register as global command
+<command> help    # Verify installation
 ```
 
-<!-- {{text: Explain how to run the tool itself during development and how changes are reflected immediately.}} -->
+<!-- {{text: Explain how to run the tool itself during development and how changes are immediately reflected.}} -->
 
-Because sdd-forge is a pure Node.js CLI with no build step, changes to any file under `src/` take effect the next time you invoke the command — no compilation or restart is needed. Running `npm link` once registers the `sdd-forge` binary globally, so you can test commands directly from any directory just as end users would. The binary entry point is `src/sdd-forge.js`, which is loaded via the `bin` field in `package.json`. To verify your environment is wired up correctly, run `sdd-forge help` and confirm the command list is displayed without errors.
+Because sdd-forge is a CLI tool distributed as a Node.js package, running `npm link` in the project root registers the `sdd-forge` binary globally by creating a symlink to `src/sdd-forge.js`. Since Node.js resolves the symlink at runtime, any edits made to files under `src/` take effect immediately on the next command invocation — no rebuild or reinstall step is required. You can verify the linked version is active by running `sdd-forge help` and confirming the expected command list appears.
 
 <!-- {{/text}} -->
 
 ### Branch Strategy and Commit Conventions
 
-<!-- {{text: Explain branch management (roles of main/development, squash merge policy) and the commit message format.}} -->
+<!-- {{text: Describe branch management and commit message format. Extract from merge settings and commit conventions in the source code.}} -->
 
-The `main` branch always reflects the latest published state. Feature work and bug fixes are developed on short-lived feature branches, then integrated into `main` via **squash merge** (`flow.merge: "squash"` in `.sdd-forge/config.json`). Squash merging keeps the commit history on `main` linear and readable, with one commit per logical change. Commit messages are written in **English**. Do not add `Signed-off-by` trailers or `Co-authored-by` lines. Aim for a concise imperative subject line (e.g., `Add enrich command to build pipeline`) that describes the intent of the change rather than the mechanical details.
+Feature branches are typically created via `sdd-forge spec --title "<feature-name>"`, which provisions a dedicated branch alongside the spec file as part of the SDD workflow. For hotfixes or standalone changes, a short-lived branch from the base branch is recommended.
+
+Commit messages must be written in **English**. Use the imperative mood and keep the subject line concise (e.g., `Add snapshot check subcommand`). Sign-off lines (`Signed-off-by:`) and `Co-authored-by:` trailers must not be included. Amending published commits should be avoided; create a new commit to address review feedback instead.
 
 <!-- {{/text}} -->
 
-### SDD Workflow
-
-| Command | Description |
-| --- | --- |
-| `sdd-forge spec --title "..."` | Initialize spec |
-| `sdd-forge gate --spec ...` | Spec gate check |
-| `sdd-forge forge --prompt "..."` | Iterative docs improvement |
-| `sdd-forge review` | Docs review |
-
 ### Testing
 
-<!-- {{text[mode=deep]: Explain the testing strategy, frameworks used, and how to run tests. Include fixture structure as well.}} -->
+<!-- {{text[mode=deep]: Describe the testing strategy, framework used, and how to run tests. Extract from the test directory structure and test runner configuration in the source code.}} -->
 
-sdd-forge uses the **Node.js built-in test runner** (`node:test`) — no third-party test framework is installed. This is consistent with the project's zero-external-dependency policy.
+sdd-forge uses the **Node.js built-in test runner** (`node:test`), which requires no external test framework dependency. Test files follow the `*.test.js` naming convention and are located under the `tests/` directory at the project root.
 
-**Running the test suite:**
+Run the full test suite with:
 
 ```bash
-npm run test
+npm test
 # Expands to: find tests -name '*.test.js' | xargs node --test
 ```
 
-All 44 test files live under the `tests/` directory and mirror the `src/` structure:
+In addition to unit tests, the `sdd-forge snapshot` command provides **regression detection** for deterministic command outputs. It captures `analysis.json`, all `docs/*.md` files (including subdirectories), and `README.md` into `.sdd-forge/snapshots/`, then compares them on subsequent runs to detect unintended changes.
 
-| Directory | Coverage area |
-| --- | --- |
-| `tests/dispatchers.test.js` | Top-level command routing |
-| `tests/docs/commands/` | Individual docs subcommands (scan, init, data, text, forge, review, …) |
-| `tests/docs/lib/` | Shared library modules (directive-parser, scanner, resolver-factory, …) |
-| `tests/lib/` | Core utilities (cli, config, agent, i18n, projects, types, …) |
-| `tests/presets/` | Framework-specific analyzers (Laravel, Symfony) |
-| `tests/specs/commands/` | spec `init` and `gate` commands |
+```bash
+sdd-forge snapshot save    # Capture current outputs as baseline
+sdd-forge snapshot check   # Diff current outputs against baseline (exits 1 on diff)
+sdd-forge snapshot update  # Refresh baseline with current outputs
+```
 
-**Test helpers** (`tests/helpers/`) provide `mock-project.js` for setting up in-memory project fixtures and `tmp-dir.js` for creating isolated temporary directories.
+The `test-env-detection.js` utility automatically identifies the test environment from `analysis.json` by inspecting `devDependencies` (for Jest, Mocha, Vitest, AVA, TAP, Jasmine, PHPUnit, and Pest) and the `scripts.test` field. This information is consumed by the SDD gate flow to surface relevant test observations before implementation begins.
 
-**Important policy:** tests exist to verify that scripts behave correctly. If a test fails, investigate whether the test scenario itself is valid first; if it is, fix the production code — never adjust a test just to make it pass.
+When a test fails, the correct response is to verify the test scenario's validity first; only modify test code if the scenario itself is wrong. If the scenario is valid, fix the production code.
 
 <!-- {{/text}} -->
 
@@ -80,29 +70,26 @@ npm version minor   # 0.1.0 → 0.2.0
 npm publish         # Publish to npm registry
 ```
 
-<!-- {{text: Explain the release procedure from squash merging development → main through to npm publish.}} -->
+<!-- {{text: Describe the release procedure. Derive from publish settings and npm scripts in the source code.}} -->
 
-Once a feature branch has been reviewed and approved, it is squash-merged into `main`. After merging, bump the version in `package.json` using `npm version patch|minor|major`, which also creates a Git tag automatically.
-
-Publishing to the npm registry is a **two-step process** for pre-release versions:
+Publishing sdd-forge requires a deliberate **two-step process** because the package is currently distributed as a pre-release under the `alpha` dist-tag:
 
 ```bash
-npm publish --tag alpha           # Publish under the "alpha" dist-tag
-npm dist-tag add sdd-forge@<version> latest   # Promote to "latest"
+npm pack --dry-run                              # Verify no sensitive files are included
+npm publish --tag alpha                         # Publish with alpha tag (latest not updated yet)
+npm dist-tag add sdd-forge@<version> latest     # Promote to latest on npmjs.com
 ```
 
-The first command publishes the package without updating the `latest` tag on npmjs.com. The second command explicitly moves `latest` to the new version so that the package page and `npm install sdd-forge` reflect the release. **Never skip the second step** — omitting it leaves the npmjs.com page showing a stale version.
-
-Before publishing, always run `npm pack --dry-run` to confirm that no sensitive files (`.env`, credentials, etc.) are included in the tarball. Note that npm does not allow re-publishing the same version number once it has been released.
+Skipping the second step leaves the `latest` tag pointing at an older version, which means the npmjs.com package page will not reflect the new release. Only `src/`, `package.json`, `README.md`, and `LICENSE` are included in the published artifact (controlled by the `files` field in `package.json`). Once a version is published, npm does not allow re-publishing the same version number even after an unpublish for 24 hours, so always verify the version bump before publishing.
 
 <!-- {{/text}} -->
 
-### Tech Stack and Dependencies
+### Technology Stack and Dependencies
 
-<!-- {{text: Explain the language used, runtime version requirements, and npm dependency policy (e.g., zero dependencies).}} -->
+<!-- {{text: Describe the programming language, runtime version requirements, and dependency policy. Extract from package.json.}} -->
 
-sdd-forge is written entirely in **JavaScript (ES Modules)** with `"type": "module"` in `package.json`. The minimum supported runtime is **Node.js 18.0.0**, which provides all built-in APIs the project relies on — `fs`, `path`, `child_process`, `os`, `crypto`, and `node:test`.
+sdd-forge is written in **JavaScript** using the **ES Modules** format (`"type": "module"` in `package.json`) and requires **Node.js >=18.0.0**. The minimum version is chosen to ensure availability of the built-in test runner, the `fs.readdirSync` `withFileTypes` option, and stable ESM support.
 
-The project maintains a **strict zero-external-dependencies policy**: the `dependencies` field in `package.json` is empty. This makes installation instant, eliminates supply-chain risk, and keeps the published package self-contained. If a new capability is needed, the first choice is always a Node.js built-in; adding a third-party package requires explicit justification and is considered a last resort.
+The project maintains a strict **zero external dependency** policy: only Node.js built-in modules (`fs`, `path`, `child_process`, etc.) are used throughout `src/`. Adding third-party packages is prohibited. This policy keeps the installation footprint minimal, eliminates supply-chain risk, and ensures the tool works in air-gapped environments where npm access may be restricted.
 
 <!-- {{/text}} -->

@@ -2,13 +2,13 @@
 
 ## 概要
 
-<!-- {{text: Write a 1–2 sentence overview of this chapter. Cover local development environment setup, testing strategy, and release flow.}} -->
+<!-- {{text: Write a 1-2 sentence overview of this chapter. Include local development environment setup, testing strategy, and release flow.}} -->
 
-この章では、sdd-forge 自体の開発に必要なすべての内容を解説します。リポジトリのクローンとローカル開発環境の構築から、組み込みテストスイートの実行、npm レジストリへの新バージョン公開までを網羅します。
+この章では、sdd-forge のローカル開発環境のセットアップ、Node.js 組み込みテストランナーを使用したテスト戦略、および npm レジストリへの公開リリースフローについて説明します。
 
 <!-- {{/text}} -->
 
-## 目次
+## 内容
 
 ### ローカル開発環境のセットアップ
 
@@ -16,59 +16,49 @@
 git clone <repository>
 cd <project>
 npm link          # グローバルコマンドとして登録
-<command> help    # 動作確認
+<command> help    # インストール確認
 ```
 
-<!-- {{text: Explain how to run the tool itself during development and how changes are reflected immediately.}} -->
+<!-- {{text: Explain how to run the tool itself during development and how changes are immediately reflected.}} -->
 
-sdd-forge はビルドステップのない純粋な Node.js CLI であるため、`src/` 配下のファイルへの変更は次回コマンド実行時に即座に反映されます。コンパイルや再起動は不要です。`npm link` を一度実行することで `sdd-forge` バイナリがグローバルに登録され、エンドユーザーと同様にどのディレクトリからでも直接コマンドをテストできます。バイナリのエントリポイントは `src/sdd-forge.js` であり、`package.json` の `bin` フィールドを通じて読み込まれます。環境が正しく構築されているか確認するには、`sdd-forge help` を実行してコマンド一覧がエラーなく表示されることを確認してください。
+sdd-forge は Node.js パッケージとして配布される CLI ツールであるため、プロジェクトルートで `npm link` を実行すると、`src/sdd-forge.js` へのシンボリックリンクが作成され、`sdd-forge` バイナリがグローバルに登録されます。Node.js は実行時にシンボリックリンクを解決するため、`src/` 以下のファイルへの編集は次回コマンド実行時に即座に反映されます。リビルドや再インストールは不要です。`sdd-forge help` を実行してコマンド一覧が表示されることを確認し、リンクされたバージョンが有効であることを検証してください。
 
 <!-- {{/text}} -->
 
 ### ブランチ戦略とコミット規約
 
-<!-- {{text: Explain branch management (roles of main/development, squash merge policy) and the commit message format.}} -->
+<!-- {{text: Describe branch management and commit message format. Extract from merge settings and commit conventions in the source code.}} -->
 
-`main` ブランチは常に最新の公開済み状態を反映します。機能追加やバグ修正は短命な feature ブランチで開発し、**squash merge**（`.sdd-forge/config.json` の `flow.merge: "squash"`）によって `main` に統合します。squash merge により `main` のコミット履歴が線形で読みやすく保たれ、論理的な変更ごとに 1 つのコミットが記録されます。コミットメッセージは**英語**で記述します。`Signed-off-by` トレーラーや `Co-authored-by` 行は付けないでください。変更の機械的な詳細ではなく意図を表す、簡潔な命令形の件名行（例: `Add enrich command to build pipeline`）を心がけてください。
+フィーチャーブランチは通常 `sdd-forge spec --title "<機能名>"` で作成します。このコマンドは SDD ワークフローの一環として、spec ファイルとともに専用ブランチを自動的に用意します。ホットフィックスや単独の変更には、ベースブランチからの短命ブランチの使用を推奨します。
+
+コミットメッセージは**英語**で記述すること。命令形を使用し、件名行は簡潔にまとめてください（例: `Add snapshot check subcommand`）。`Signed-off-by:` 行や `Co-authored-by:` トレーラーは含めないこと。公開済みのコミットへの amend は避け、レビューフィードバックへの対応は新しいコミットで行うこと。
 
 <!-- {{/text}} -->
 
-### SDD ワークフロー
-
-| コマンド | 説明 |
-| --- | --- |
-| `sdd-forge spec --title "..."` | spec の初期化 |
-| `sdd-forge gate --spec ...` | spec ゲートチェック |
-| `sdd-forge forge --prompt "..."` | docs の反復改善 |
-| `sdd-forge review` | docs レビュー |
-
 ### テスト
 
-<!-- {{text[mode=deep]: Explain the testing strategy, frameworks used, and how to run tests. Include fixture structure as well.}} -->
+<!-- {{text[mode=deep]: Describe the testing strategy, framework used, and how to run tests. Extract from the test directory structure and test runner configuration in the source code.}} -->
 
-sdd-forge は **Node.js 組み込みテストランナー**（`node:test`）を使用しており、サードパーティのテストフレームワークは一切インストールされていません。これはプロジェクトの外部依存ゼロ方針と一致しています。
+sdd-forge は **Node.js 組み込みテストランナー** (`node:test`) を使用しており、外部テストフレームワークへの依存は不要です。テストファイルは `*.test.js` の命名規則に従い、プロジェクトルートの `tests/` ディレクトリ以下に配置されています。
 
-**テストスイートの実行:**
+テストスイート全体を実行するには:
 
 ```bash
-npm run test
+npm test
 # 展開後: find tests -name '*.test.js' | xargs node --test
 ```
 
-44 個のテストファイルはすべて `tests/` ディレクトリ以下に配置されており、`src/` の構造を反映しています。
+ユニットテストに加え、`sdd-forge snapshot` コマンドは決定論的なコマンド出力の**リグレッション検出**を提供します。`analysis.json`、すべての `docs/*.md` ファイル（サブディレクトリを含む）、および `README.md` を `.sdd-forge/snapshots/` にキャプチャし、後続の実行時に比較して意図しない変更を検出します。
 
-| ディレクトリ | カバー範囲 |
-| --- | --- |
-| `tests/dispatchers.test.js` | トップレベルのコマンドルーティング |
-| `tests/docs/commands/` | docs サブコマンド個別（scan, init, data, text, forge, review, …） |
-| `tests/docs/lib/` | 共有ライブラリモジュール（directive-parser, scanner, resolver-factory, …） |
-| `tests/lib/` | コアユーティリティ（cli, config, agent, i18n, projects, types, …） |
-| `tests/presets/` | フレームワーク固有のアナライザー（Laravel, Symfony） |
-| `tests/specs/commands/` | spec の `init` コマンドと `gate` コマンド |
+```bash
+sdd-forge snapshot save    # 現在の出力をベースラインとして保存
+sdd-forge snapshot check   # 現在の出力とベースラインを比較（差分あり時は終了コード 1）
+sdd-forge snapshot update  # 現在の出力でベースラインを更新
+```
 
-**テストヘルパー**（`tests/helpers/`）には、インメモリのプロジェクトフィクスチャをセットアップするための `mock-project.js` と、独立した一時ディレクトリを作成するための `tmp-dir.js` が用意されています。
+`test-env-detection.js` ユーティリティは、`analysis.json` から `devDependencies`（Jest、Mocha、Vitest、AVA、TAP、Jasmine、PHPUnit、Pest）と `scripts.test` フィールドを検査することで、テスト環境を自動的に識別します。この情報は SDD ゲートフローで利用され、実装開始前に関連するテスト観点を提示します。
 
-**重要なポリシー:** テストはスクリプトが正しく動作するかを検証するために存在します。テストが失敗した場合、まずテストシナリオ自体が妥当かどうかを確認し、妥当であればプロダクトコードを修正してください。テストを通過させるためだけにテストを修正することは禁止です。
+テストが失敗した場合は、まずテストシナリオの妥当性を確認してください。テストコードを修正するのはシナリオ自体が誤っている場合のみです。シナリオが妥当であれば、プロダクションコードを修正してください。
 
 <!-- {{/text}} -->
 
@@ -77,32 +67,29 @@ npm run test
 ```bash
 npm version patch   # 0.1.0 → 0.1.1
 npm version minor   # 0.1.0 → 0.2.0
-npm publish         # npm レジストリに公開
+npm publish         # npm レジストリへ公開
 ```
 
-<!-- {{text: Explain the release procedure from squash merging development → main through to npm publish.}} -->
+<!-- {{text: Describe the release procedure. Derive from publish settings and npm scripts in the source code.}} -->
 
-feature ブランチのレビューと承認が完了したら、`main` に squash merge します。マージ後、`npm version patch|minor|major` を使用して `package.json` のバージョンを更新します。このコマンドは Git タグも自動的に作成します。
-
-プレリリースバージョンの npm レジストリへの公開は**2 ステップ**で行います。
+sdd-forge の公開は、現在パッケージが `alpha` dist-tag のプレリリースとして配布されているため、意図的な **2 ステップのプロセス**が必要です:
 
 ```bash
-npm publish --tag alpha           # "alpha" dist-tag として公開
-npm dist-tag add sdd-forge@<version> latest   # "latest" に昇格
+npm pack --dry-run                              # 機密ファイルが含まれていないことを確認
+npm publish --tag alpha                         # alpha タグで公開（latest はまだ更新されない）
+npm dist-tag add sdd-forge@<version> latest     # npmjs.com の latest に昇格
 ```
 
-最初のコマンドは npmjs.com の `latest` タグを更新せずにパッケージを公開します。2 番目のコマンドで `latest` を新バージョンに明示的に移動することで、パッケージページと `npm install sdd-forge` にリリースが反映されます。**2 番目のステップを省略しないでください** — 省略すると npmjs.com ページに古いバージョンが表示されたままになります。
-
-公開前には必ず `npm pack --dry-run` を実行し、機密ファイル（`.env`、認証情報など）がターボールに含まれていないことを確認してください。npm は一度リリースされたバージョン番号の再公開を許可しないことに注意してください。
+2 番目のステップをスキップすると `latest` タグが古いバージョンを指したままとなり、npmjs.com のパッケージページに新しいリリースが反映されません。公開されるアーティファクトには `src/`、`package.json`、`README.md`、`LICENSE` のみが含まれます（`package.json` の `files` フィールドで制御）。一度公開されたバージョンは、unpublish 後 24 時間は同じバージョン番号を再公開できないため、公開前に必ずバージョンバンプを確認してください。
 
 <!-- {{/text}} -->
 
 ### 技術スタックと依存関係
 
-<!-- {{text: Explain the language used, runtime version requirements, and npm dependency policy (e.g., zero dependencies).}} -->
+<!-- {{text: Describe the programming language, runtime version requirements, and dependency policy. Extract from package.json.}} -->
 
-sdd-forge は `package.json` に `"type": "module"` を指定した **JavaScript（ES Modules）** で全体が記述されています。サポートする最小ランタイムバージョンは **Node.js 18.0.0** であり、プロジェクトが依存するすべての組み込み API（`fs`、`path`、`child_process`、`os`、`crypto`、`node:test`）が利用可能です。
+sdd-forge は **ES Modules** 形式（`package.json` の `"type": "module"`）を使用した **JavaScript** で記述されており、**Node.js >=18.0.0** が必要です。最小バージョンは、組み込みテストランナー、`fs.readdirSync` の `withFileTypes` オプション、および安定した ESM サポートの可用性を確保するために選択されています。
 
-プロジェクトは**外部依存ゼロの方針**を厳守しており、`package.json` の `dependencies` フィールドは空です。これにより、インストールが即座に完了し、サプライチェーンリスクが排除され、公開パッケージが自己完結した状態を保てます。新しい機能が必要な場合、最初の選択肢は常に Node.js 組み込みモジュールです。サードパーティパッケージの追加は明確な正当性が求められ、最終手段とみなされます。
+本プロジェクトは**外部依存ゼロ**ポリシーを厳格に維持しており、`src/` 全体を通じて Node.js 組み込みモジュール（`fs`、`path`、`child_process` 等）のみを使用しています。サードパーティパッケージの追加は禁止されています。このポリシーによりインストールのフットプリントを最小限に抑え、サプライチェーンリスクを排除し、npm アクセスが制限される可能性のあるエアギャップ環境でもツールが動作することを保証します。
 
 <!-- {{/text}} -->
