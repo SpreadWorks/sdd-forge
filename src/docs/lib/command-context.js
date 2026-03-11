@@ -120,22 +120,24 @@ export function loadFullAnalysis(root) {
 
 /**
  * docs ディレクトリから章ファイル一覧を取得する。
- * type が指定された場合は preset の chapters 順で返す。
+ * config.chapters > preset の chapters 順で返す。
  * フォールバック: *.md をアルファベット順（README.md, AGENTS.sdd.md 除外）。
  *
  * @param {string} docsDir - docs ディレクトリの絶対パス
  * @param {Object} [options]
  * @param {string} [options.type] - プロジェクトタイプ（例: "cli/node-cli"）
+ * @param {string[]} [options.configChapters] - config.json の chapters 配列（最優先）
  * @returns {string[]} ファイル名の配列（順序付き）
  */
 export function getChapterFiles(docsDir, options) {
   if (!fs.existsSync(docsDir)) return [];
 
   const type = options?.type;
+  const configChapters = options?.configChapters;
   const EXCLUDE = new Set(["README.md", "AGENTS.sdd.md"]);
 
-  if (type) {
-    const chapters = resolveChaptersOrder(type);
+  if (type || configChapters?.length) {
+    const chapters = resolveChaptersOrder(type || "base", configChapters);
     if (chapters.length > 0) {
       const existing = chapters.filter((f) => fs.existsSync(path.join(docsDir, f)));
       if (existing.length > 0) return existing;

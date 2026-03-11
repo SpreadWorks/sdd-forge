@@ -322,8 +322,9 @@ async function main(ctx) {
     return;
   }
 
-  // Get chapter list from preset
-  const chapters = resolveChaptersOrder(type);
+  // Get chapter list from preset (config.chapters overrides preset)
+  const configChapters = config?.chapters;
+  const chapters = resolveChaptersOrder(type, configChapters);
   if (chapters.length === 0) {
     logger.log("WARN: no chapters defined in preset, skipping enrich.");
     return;

@@ -153,6 +153,15 @@ export function validateConfig(raw) {
     }
   }
 
+  // chapters (省略可)
+  if (raw.chapters != null) {
+    if (!Array.isArray(raw.chapters)) {
+      errors.push("'chapters' must be an array of strings");
+    } else if (raw.chapters.some((c) => typeof c !== "string")) {
+      errors.push("'chapters' entries must be strings");
+    }
+  }
+
   // agentWorkDir (省略可)
   if (raw.agentWorkDir != null && typeof raw.agentWorkDir !== "string") {
     errors.push("'agentWorkDir' must be a string if provided");

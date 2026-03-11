@@ -46,9 +46,9 @@ const DEFAULT_MAX_RUNS = 3;
 const DEFAULT_REVIEW_CMD = "sdd-forge review";
 const DEFAULT_MODE = "local";
 
-function getTargetFiles(root, type) {
+function getTargetFiles(root, type, configChapters) {
   const docsDir = path.join(root, "docs");
-  return getChapterFiles(docsDir, { type }).map((f) => `docs/${f}`);
+  return getChapterFiles(docsDir, { type, configChapters }).map((f) => `docs/${f}`);
 }
 
 /**
@@ -239,12 +239,12 @@ async function main() {
     console.log("[forge] analysis data loaded.");
     let resolveFn = null;
     try {
-      const resolver = await createResolver(type, root);
+      const resolver = await createResolver(type, root, { configChapters: config.chapters });
       resolveFn = (category, analysis) => resolver.resolve(category, analysis);
     } catch (err) {
       console.log(`[forge] WARN: resolver not available (${err.message}), skipping {{data}} population`);
     }
-    const populateResult = populateFromAnalysis(root, analysisData, resolveFn, { type });
+    const populateResult = populateFromAnalysis(root, analysisData, resolveFn, { type, configChapters: config.chapters });
     if (populateResult.populated) {
       console.log(`[forge] populated placeholders in: ${populateResult.files.join(", ")}`);
     }
@@ -291,7 +291,7 @@ async function main() {
 
   if (cli.dryRun) {
     console.log("[forge] DRY-RUN: target files:");
-    for (const f of getTargetFiles(root, type)) {
+    for (const f of getTargetFiles(root, type, config.chapters)) {
       console.log(`  - ${f}`);
     }
     console.log("[forge] DRY-RUN: no files written, no review, no agent calls.");
@@ -302,7 +302,7 @@ async function main() {
   const concurrency = resolveConcurrency(config);
 
   // Spec-based file estimation: narrow target files if spec is provided
-  const allTargetFiles = getTargetFiles(root, type);
+  const allTargetFiles = getTargetFiles(root, type, config.chapters);
   let initialTargetFiles = allTargetFiles;
   if (specText) {
     const estimated = estimateRelevantFiles(specText, allTargetFiles);

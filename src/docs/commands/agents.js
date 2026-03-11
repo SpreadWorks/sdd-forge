@@ -162,14 +162,14 @@ async function main(ctx) {
 
   // Load generated docs as context (instead of raw analysis.json)
   const docsDir = path.join(root, "docs");
-  const chapterFiles = getChapterFiles(docsDir, { type: ctx.type });
+  const chapterFiles = getChapterFiles(docsDir, { type: ctx.type, configChapters: ctx.config?.chapters });
   const docsContent = chapterFiles.map((f) => readText(path.join(docsDir, f))).join("\n\n");
   const readmeContent = readText(path.join(srcRoot, "README.md"));
   const combinedDocs = [docsContent, readmeContent].filter(Boolean).join("\n\n---\n\n");
 
   // Create resolver and resolve {{data}} directives
   const resolvedType = config.type || "base";
-  const resolver = await createResolver(resolvedType, root);
+  const resolver = await createResolver(resolvedType, root, { configChapters: config.chapters });
   const resolveFn = (source, method, a, labels) => resolver.resolve(source, method, analysis, labels);
 
   let content = fs.readFileSync(agentsPath, "utf8");

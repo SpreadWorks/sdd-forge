@@ -6,22 +6,22 @@
 
 [![npm version](https://img.shields.io/npm/v/sdd-forge.svg)](https://www.npmjs.com/package/sdd-forge)
 
-> **アルファリリース:** 本ツールは現在アルファ版です。API・コマンド構造・設定フォーマットは予告なく変更される場合があります。本番環境での使用は推奨しません。
+> **Alpha:** このツールは現在アルファ版です。API・コマンド構造・設定フォーマットは予告なく変更される場合があります。本番環境での使用は推奨しません。
 
-**ソースコード解析 + AI を活用してプロジェクトドキュメントを自動生成・維持管理する CLI ツールです。**
+**ソースコード解析 + AI を使ってプロジェクトドキュメントを自動生成・維持管理する CLI ツールです。**
 
 コードベースを静的解析し、テンプレートと AI を組み合わせて `docs/` を自動生成します。
-Spec-Driven Development（SDD）ワークフローにより、機能追加・修正時のドキュメント更新も自動化できます。
+Spec-Driven Development（SDD）ワークフローにより、機能追加・修正時のドキュメント更新も自動化されます。
 
 ## 特徴
 
 - **ゼロ依存** — Node.js 18+ のみで動作。npm パッケージ不要
-- **ソース自動解析** — コントローラー・モデル・ルート・設定ファイルを静的解析し、構造データを抽出
-- **AI ドキュメント生成** — テンプレートの `{{text}}` ディレクティブを AI が自動展開
-- **テンプレート継承** — 4 層継承（base → arch → preset → project-local）で柔軟なカスタマイズが可能
+- **ソースコード自動解析** — コントローラー・モデル・ルート・設定ファイルを静的解析し、構造データを抽出
+- **AI ドキュメント生成** — テンプレート内の `{{text}}` ディレクティブを AI が自動展開
+- **テンプレート継承** — カスタマイズのための 4 層継承（base → arch → preset → project-local）
 - **SDD ワークフロー** — spec → gate → 実装 → forge → review の開発サイクルをコマンドで管理
 - **多言語対応** — translate / generate モードで複数言語のドキュメントを自動生成
-- **AI エージェント統合** — Claude Code（スキル）および Codex CLI に対応
+- **AI エージェント連携** — Claude Code（スキル）および Codex CLI に対応
 - **マルチプリセット** — Node.js CLI / CakePHP2 / Laravel / Symfony をサポート
 
 ## クイックスタート
@@ -39,13 +39,13 @@ yarn global add <!-- {{data: project.name("")}} -->sdd-forge<!-- {{/data}} -->
 pnpm add -g <!-- {{data: project.name("")}} -->sdd-forge<!-- {{/data}} -->
 </pre>
 
-### セットアップとドキュメント生成
+### セットアップ & ドキュメント生成
 
 <pre>
-# 1. プロジェクトを登録する（対話式ウィザード）
+# 1. プロジェクトを登録（対話式ウィザード）
 <!-- {{data: project.name("")}} -->sdd-forge<!-- {{/data}} --> setup
 
-# 2. 全ドキュメントを生成する（scan → init → data → text → readme → agents → translate）
+# 2. 全ドキュメントを生成（scan → init → data → text → readme → agents → translate）
 <!-- {{data: project.name("")}} -->sdd-forge<!-- {{/data}} --> build
 </pre>
 
@@ -58,24 +58,24 @@ pnpm add -g <!-- {{data: project.name("")}} -->sdd-forge<!-- {{/data}} -->
 | コマンド | 説明 |
 |---|---|
 | `setup` | プロジェクト登録 + 設定ファイル生成 |
-| `build` | ドキュメント生成パイプラインの全工程を実行 |
+| `build` | ドキュメント生成パイプラインを全実行 |
 | `scan` | ソースコード解析 → `analysis.json` |
 | `init` | テンプレートから `docs/` を初期化 |
 | `data` | 解析データで `{{data}}` ディレクティブを解決 |
 | `text` | AI で `{{text}}` ディレクティブを解決 |
 | `readme` | `docs/` から `README.md` を自動生成 |
-| `forge` | AI によるドキュメントの反復改善 |
+| `forge` | AI でドキュメントを反復改善 |
 | `review` | ドキュメント品質チェック |
-| `translate` | 多言語翻訳（デフォルト言語 → その他言語） |
+| `translate` | 多言語翻訳（デフォルト言語 → 他言語） |
 | `upgrade` | プリセットテンプレートを最新版に更新 |
 
 ### SDD ワークフロー
 
 | コマンド | 説明 |
 |---|---|
-| `spec` | 仕様書 + フィーチャーブランチを作成 |
+| `spec` | 仕様書 + フィーチャーブランチの作成 |
 | `gate` | 仕様書の実装前ゲートチェック |
-| `flow` | SDD ワークフローを自動実行 |
+| `flow` | SDD ワークフローの自動実行 |
 | `changelog` | specs/ から変更履歴を生成 |
 | `agents` | AGENTS.md を更新 |
 
@@ -84,26 +84,26 @@ pnpm add -g <!-- {{data: project.name("")}} -->sdd-forge<!-- {{/data}} -->
 | コマンド | 説明 |
 |---|---|
 | `default` | デフォルトプロジェクトを設定 |
-| `presets` | 利用可能なプリセット一覧を表示 |
+| `presets` | 利用可能なプリセットを一覧表示 |
 | `help` | コマンド一覧を表示 |
 
 ## SDD ワークフロー
 
-機能追加・修正時の開発フロー:
+機能追加・修正のフロー:
 
 ```
-  spec          仕様書を作成（フィーチャーブランチ + spec.md）
+  spec          仕様書作成（フィーチャーブランチ + spec.md）
     ↓
-  gate          仕様書のゲートチェック（未解決事項がなければ PASS）
+  gate          仕様書ゲートチェック（未解決事項がなければ PASS）
     ↓
-  implement     gate PASS 後にコーディング開始
+  implement     gate PASS 後にコーディング
     ↓
-  forge         ドキュメントを自動更新
+  forge         ドキュメントの自動更新
     ↓
-  review        品質チェック（PASS するまで繰り返す）
+  review        品質チェック（PASS まで繰り返す）
 ```
 
-### AI エージェント統合
+### AI エージェント連携
 
 #### Claude Code
 
@@ -125,7 +125,7 @@ $sdd-flow-close   — forge → review → コミット → マージで完了
 
 ## 設定
 
-`sdd-forge setup` を実行すると `.sdd-forge/config.json` が生成されます。
+`sdd-forge setup` により `.sdd-forge/config.json` が生成されます。
 
 ```jsonc
 {
@@ -138,12 +138,12 @@ $sdd-flow-close   — forge → review → コミット → マージで完了
 
 ### カスタマイズ
 
-プロジェクト固有のテンプレートやデータソースを追加できます:
+プロジェクト固有のテンプレートとデータソースを追加:
 
 ```
 .sdd-forge/
 ├── templates/{lang}/
-│   ├── docs/      ← 章テンプレートと README のオーバーライド
+│   ├── docs/      ← 章テンプレート / README オーバーライド
 │   └── specs/     ← spec.md / qa.md テンプレート
 └── data/          ← カスタムデータソースモジュール
 ```

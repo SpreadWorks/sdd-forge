@@ -114,7 +114,7 @@ function main() {
   // Discover chapter files
   let chapterFiles = [];
   if (fs.existsSync(targetDir) && fs.statSync(targetDir).isDirectory()) {
-    chapterFiles = getChapterFiles(targetDir, { type });
+    chapterFiles = getChapterFiles(targetDir, { type, configChapters: config.chapters });
   }
 
   if (chapterFiles.length === 0) {
@@ -253,7 +253,7 @@ function main() {
           console.log(`WARN: docs/${lang}/ directory missing for configured language '${lang}'`);
           continue;
         }
-        const langFiles = getChapterFiles(langDir, { type });
+        const langFiles = getChapterFiles(langDir, { type, configChapters: config.chapters });
         if (langFiles.length === 0) {
           console.log(`WARN: docs/${lang}/ has no chapter files`);
           continue;

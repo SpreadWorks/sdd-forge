@@ -6,22 +6,22 @@
 
 [![npm version](https://img.shields.io/npm/v/sdd-forge.svg)](https://www.npmjs.com/package/sdd-forge)
 
-> **Alpha Release:** This tool is currently in alpha. APIs, command structure, and configuration formats may change without notice. Not recommended for production use.
+> **Alpha:** This tool is currently in alpha. APIs, command structures, and configuration formats may change without notice. Not recommended for production use.
 
 **A CLI tool that automatically generates and maintains project documentation using source code analysis + AI.**
 
 Statically analyzes your codebase and combines templates with AI to auto-generate `docs/`.
-The Spec-Driven Development (SDD) workflow also automates documentation updates when adding or modifying features.
+The Spec-Driven Development (SDD) workflow also automates documentation updates during feature additions and modifications.
 
 ## Features
 
 - **Zero dependencies** — Runs on Node.js 18+ only. No npm packages required
-- **Automatic source analysis** — Statically analyzes controllers, models, routes, and config files to extract structural data
+- **Automatic source code analysis** — Statically analyzes controllers, models, routes, and config files to extract structural data
 - **AI documentation generation** — AI automatically expands `{{text}}` directives in templates
-- **Template inheritance** — Four-layer inheritance (base → arch → preset → project-local) for flexible customization
-- **SDD workflow** — Manage the spec → gate → implement → forge → review development cycle with commands
-- **Multi-language support** — Auto-generate documentation in multiple languages via translate / generate modes
-- **AI agent integration** — Supports Claude Code (skills) and Codex CLI
+- **Template inheritance** — 4-layer inheritance (base → arch → preset → project-local) for customization
+- **SDD workflow** — Manage the development cycle of spec → gate → implement → forge → review with commands
+- **Multi-language support** — Auto-generate documentation in multiple languages with translate/generate modes
+- **AI agent integration** — Compatible with Claude Code (skills) and Codex CLI
 - **Multi-preset** — Supports Node.js CLI / CakePHP2 / Laravel / Symfony
 
 ## Quick Start
@@ -73,9 +73,9 @@ This generates `docs/` and `README.md` in one step.
 
 | Command | Description |
 |---|---|
-| `spec` | Create a spec document + feature branch |
-| `gate` | Pre-implementation check for spec documents |
-| `flow` | Run the SDD workflow automatically |
+| `spec` | Create spec document + feature branch |
+| `gate` | Pre-implementation check for spec |
+| `flow` | Automatically run the SDD workflow |
 | `changelog` | Generate change history from specs/ |
 | `agents` | Update AGENTS.md |
 
@@ -85,20 +85,20 @@ This generates `docs/` and `README.md` in one step.
 |---|---|
 | `default` | Set the default project |
 | `presets` | List available presets |
-| `help` | Show command list |
+| `help` | Display command list |
 
 ## SDD Workflow
 
-Feature development and modification flow:
+Feature addition/modification flow:
 
 ```
-  spec          Create a spec document (feature branch + spec.md)
+  spec          Create spec (feature branch + spec.md)
     ↓
-  gate          Spec gate check (PASS when no unresolved items)
+  gate          Spec gate check (PASS if no unresolved issues)
     ↓
-  implement     Start coding after gate PASS
+  implement     Code after gate PASS
     ↓
-  forge         Automatically update documentation
+  forge         Auto-update documentation
     ↓
   review        Quality check (repeat until PASS)
 ```
@@ -107,7 +107,7 @@ Feature development and modification flow:
 
 #### Claude Code
 
-Run the SDD workflow using skills:
+Run the SDD workflow with skills:
 
 ```
 /sdd-flow-start   — Start spec creation → gate → implementation
@@ -125,7 +125,7 @@ $sdd-flow-close   — Finish with forge → review → commit → merge
 
 ## Configuration
 
-Running `sdd-forge setup` generates `.sdd-forge/config.json`.
+`sdd-forge setup` generates `.sdd-forge/config.json`.
 
 ```jsonc
 {
@@ -138,12 +138,12 @@ Running `sdd-forge setup` generates `.sdd-forge/config.json`.
 
 ### Customization
 
-You can add project-specific templates and data sources:
+Add project-specific templates and data sources:
 
 ```
 .sdd-forge/
 ├── templates/{lang}/
-│   ├── docs/      ← Chapter template and README overrides
+│   ├── docs/      ← Chapter templates / README overrides
 │   └── specs/     ← spec.md / qa.md templates
 └── data/          ← Custom data source modules
 ```

@@ -259,13 +259,18 @@ function discoverFileNames(layers, fallbackSets, chaptersOrder) {
 
 /**
  * type パスから章の順序を解決する。
- * 継承チェーンと同じ順序（base → arch → leaf）で探索し、
+ * configChapters が指定されている場合はそれを最優先（プリセットを完全上書き）。
+ * それ以外は継承チェーン（base → arch → leaf）で探索し、
  * 最も具体的な（リーフに近い）preset の chapters を使用する。
  *
  * @param {string} typePath - 型パス（例: "webapp/cakephp2"）
+ * @param {string[]} [configChapters] - config.json の chapters 配列（最優先）
  * @returns {string[]} 章ファイル名の順序配列
  */
-export function resolveChaptersOrder(typePath) {
+export function resolveChaptersOrder(typePath, configChapters) {
+  // config.json の chapters が定義されていればプリセットを完全上書き
+  if (configChapters?.length) return configChapters;
+
   const segments = typePath.split("/").filter(Boolean);
   let chapters = [];
 

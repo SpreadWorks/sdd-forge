@@ -70,7 +70,8 @@ async function main(ctx) {
   const fallbackLangs = outputConfig?.languages?.filter((l) => l !== lang) || [];
 
   // ボトムアップでテンプレート解決
-  const chaptersOrder = resolveChaptersOrder(type);
+  const configChapters = config?.chapters;
+  const chaptersOrder = resolveChaptersOrder(type, configChapters);
   const resolutions = resolveTemplates(type, lang, {
     projectLocalDir,
     fallbackLangs,
@@ -109,7 +110,7 @@ async function main(ctx) {
   const resolverDocsDir = readmeOutputPath ? path.dirname(readmeOutputPath) : undefined;
   let resolveFn;
   try {
-    const resolver = await createResolver(type, root, { docsDir: resolverDocsDir });
+    const resolver = await createResolver(type, root, { docsDir: resolverDocsDir, configChapters: config?.chapters });
     resolveFn = resolver.resolve.bind(resolver);
   } catch (err) {
     logger.log(`resolver error: ${err.message}`);

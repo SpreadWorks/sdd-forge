@@ -156,7 +156,8 @@ function main(ctx) {
   const projectLocalDir = path.join(root, ".sdd-forge", "templates", lang, "docs");
   const outputConfig = config?.output;
   const fallbackLangs = outputConfig?.languages?.filter((l) => l !== lang) || [];
-  const chaptersOrder = resolveChaptersOrder(type);
+  const configChapters = config?.chapters;
+  const chaptersOrder = resolveChaptersOrder(type, configChapters);
 
   const resolutions = resolveTemplates(type, lang, {
     projectLocalDir,
@@ -180,11 +181,19 @@ function main(ctx) {
     throw new Error(t("messages:init.noTemplates"));
   }
 
-  // AI 章選別（analysis + agent が揃っている場合）
+  // AI 章選別
+  // config.chapters が定義されている場合のルール:
+  //   AI:あり + ユーザー明示:あり → ドキュメント生成する、章リスト表示する
+  //   AI:なし + ユーザー明示:あり → ドキュメント生成する、章リスト表示する
+  //   AI:あり + ユーザー明示:なし → ドキュメント生成しない、章リスト表示しない
+  // → config.chapters が唯一の真実。AI フィルタリングの結果は無視される。
+  // config.chapters が未定義の場合は従来通りプリセット + AI フィルタリング。
   let filteredChapters = chapters;
   const analysis = loadFullAnalysis(root);
 
-  if (analysis && agent) {
+  if (configChapters?.length) {
+    logger.verbose("config.chapters defined — skipping AI chapter filter");
+  } else if (analysis && agent) {
     logger.verbose("AI chapter selection...");
     const summaryData = loadAnalysisData(root);
     filteredChapters = aiFilterChapters(

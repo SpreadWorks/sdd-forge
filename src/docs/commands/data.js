@@ -70,7 +70,7 @@ export function populateFromAnalysis(root, analysis, resolveFn, opts) {
   const docsDir = path.join(root, "docs");
   const changedFiles = [];
 
-  const docsFiles = getChapterFiles(docsDir, { type: opts?.type });
+  const docsFiles = getChapterFiles(docsDir, { type: opts?.type, configChapters: opts?.configChapters });
 
   for (const file of docsFiles) {
     const filePath = path.join(docsDir, file);
@@ -122,14 +122,14 @@ async function main(ctx) {
   // type に基づくリゾルバを生成
   let resolveFn;
   try {
-    const resolver = await createResolver(type, root, { docsDir });
+    const resolver = await createResolver(type, root, { docsDir, configChapters: ctx.config?.chapters });
     resolveFn = (source, method, a, labels) => resolver.resolve(source, method, a, labels);
     logger.verbose(`resolver: ${type}`);
   } catch (err) {
     throw new Error(t("messages:data.resolverFailed", { message: err.message }));
   }
 
-  const docsFiles = getChapterFiles(docsDir, { type });
+  const docsFiles = getChapterFiles(docsDir, { type, configChapters: ctx.config?.chapters });
 
   // Determine relative path prefix for lang.links context
   const docsDirRel = path.relative(root, docsDir).replace(/\\/g, "/");
