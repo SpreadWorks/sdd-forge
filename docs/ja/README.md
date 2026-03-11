@@ -153,10 +153,11 @@ $sdd-flow-close   — forge → review → commit → merge で終了
 <!-- {{data: docs.chapters("章|概要")}} -->
 | 章 | 概要 |
 | --- | --- |
-| [01. システム概要](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/ja/overview.md) | 本章では、Spec-Driven Development を通じてドキュメント生成を自動化する Node.js CLI ツール「sdd-forge」の概要を説明します。 |
-| [02. CLI コマンドリファレンス](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/ja/cli_commands.md) |  |
-| [03. 設定とカスタマイズ](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/ja/configuration.md) | 本章では、sdd-forge の動作を制御する設定ファイル、各ファイルで利用可能なすべての設定オプション、および AI プロバイダー・ドキュメントスタイル・プロジェクトタイプ・パイプライン設定に関する主要なカスタマイズポイントについて… |
-| [04. 内部設計](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/ja/internal_design.md) |  |
+| [01. システム概要](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/ja/overview.md) | この章では、Spec-Driven Development を通じてドキュメント生成を自動化する Node.js CLI ツール「sdd-forge」の高レベルアーキテクチャについて説明します。 |
+| [02. CLIコマンドリファレンス](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/ja/cli_commands.md) | 本章では、sdd-forge CLIコマンドの完全なリファレンスを提供します。 |
+| [03. 設定とカスタマイズ](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/ja/configuration.md) | 本章では、プロジェクトタイプや出力言語設定から AI プロバイダー定義、ドキュメントスタイルの設定まで、sdd-forge の動作を制御する設定ファイルについて説明します。 |
+| [04. 内部設計](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/ja/internal_design.md) | この章では sdd-forge の内部アーキテクチャを説明します。 |
+| [05. 開発・テスト・配布](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/ja/development_testing.md) | 本章では、sdd-forge 自体の開発に必要なすべてを網羅します — リポジトリのクローンとローカル開発環境の構築から、組み込みテストスイートの実行、そして npm レジストリへの新バージョン公開まで。 |
 <!-- {{/data}} -->
 
 ## License

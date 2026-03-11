@@ -4,7 +4,7 @@
 
 <!-- {{text: Write a 1-2 sentence overview of this chapter. Include the project's architecture and whether it integrates with external systems.}} -->
 
-本章では、Spec-Driven Development を通じてドキュメント生成を自動化する Node.js CLI ツール「sdd-forge」の概要を説明します。3 層コマンドディスパッチアーキテクチャ、AI 支援ビルドパイプライン、ソース解析のエンリッチメントと構造化プロジェクトドキュメント生成に使用する外部 AI エージェント連携について解説します。
+この章では、Spec-Driven Development を通じてドキュメント生成を自動化する Node.js CLI ツール「sdd-forge」の高レベルアーキテクチャについて説明します。3 層のコマンドディスパッチシステムがビルドパイプラインをどのようにオーケストレーションするか、各コンポーネントがローカルファイルシステムとどのように連携するか、そして Claude CLI などの外部 AI エージェントとのインテグレーション方法を解説します。
 <!-- {{/text}} -->
 
 ## 内容
@@ -15,54 +15,61 @@
 
 ```mermaid
 flowchart TD
-    CLI["sdd-forge.js\n(CLI エントリポイント)"]
-    DOCS_D["docs.js\n(ディスパッチャー)"]
-    SPEC_D["spec.js\n(ディスパッチャー)"]
-    FLOW_D["flow.js\n(ダイレクトコマンド)"]
+    User["ユーザー: sdd-forge &lt;subcommand&gt;"]
+    Entry["sdd-forge.js\n(エントリポイント & ルーター)"]
+    Docs["docs.js\n(Docs ディスパッチャー)"]
+    Spec["spec.js\n(Spec ディスパッチャー)"]
+    Flow["flow.js\n(SDD フロー)"]
 
-    SCAN["scan"]
-    ENRICH["enrich"]
-    INIT["init"]
-    DATA["data"]
-    TEXT["text"]
-    README["readme"]
-    AGENTS["agents"]
-    GATE["gate"]
-    SPEC_CMD["spec"]
+    subgraph DocsCmds["docs/commands/"]
+        Scan["scan"]
+        Enrich["enrich"]
+        Init["init"]
+        Data["data"]
+        Text["text"]
+        Readme["readme"]
+        Agents["agents"]
+        Forge["forge"]
+        Review["review"]
+    end
 
-    AI["AI エージェント\n(例: Claude CLI)"]
-    CONFIG[".sdd-forge/config.json"]
-    ANALYSIS[".sdd-forge/output/analysis.json"]
-    DOCS_DIR["docs/*.md"]
-    SRC["ソースファイル"]
+    subgraph SpecCmds["specs/commands/"]
+        SpecInit["spec init"]
+        Gate["gate"]
+    end
 
-    CLI --> DOCS_D
-    CLI --> SPEC_D
-    CLI --> FLOW_D
-    CONFIG --> CLI
+    subgraph Storage[".sdd-forge/"]
+        Config["config.json"]
+        Analysis["output/analysis.json"]
+        CurrentSpec["current-spec"]
+        Snapshots["snapshots/"]
+    end
 
-    DOCS_D --> SCAN
-    DOCS_D --> ENRICH
-    DOCS_D --> INIT
-    DOCS_D --> DATA
-    DOCS_D --> TEXT
-    DOCS_D --> README
-    DOCS_D --> AGENTS
+    subgraph Output["プロジェクト出力"]
+        DocsDir["docs/*.md"]
+        ReadmeMd["README.md"]
+        AgentsMd["AGENTS.md"]
+    end
 
-    SPEC_D --> SPEC_CMD
-    SPEC_D --> GATE
+    AI["AI エージェント\n(Claude CLI / カスタム)"]
 
-    SRC --> SCAN
-    SCAN --> ANALYSIS
-    ANALYSIS --> ENRICH
-    ENRICH --> AI
-    AI --> ANALYSIS
-
-    ANALYSIS --> DATA
-    DATA --> DOCS_DIR
-    ANALYSIS --> TEXT
-    TEXT --> AI
-    AI --> DOCS_DIR
+    User --> Entry
+    Entry --> Docs
+    Entry --> Spec
+    Entry --> Flow
+    Docs --> DocsCmds
+    Spec --> SpecCmds
+    Scan -->|"書き込み"| Analysis
+    Analysis -->|"読み込み"| Enrich
+    Enrich -->|"エンリッチ"| Analysis
+    Init -->|"書き込み"| DocsDir
+    Data -->|"{{data}} を解決"| DocsDir
+    Text -->|"呼び出し"| AI
+    AI -->|"{{text}} を補完"| DocsDir
+    Readme -->|"書き込み"| ReadmeMd
+    Agents -->|"書き込み"| AgentsMd
+    Config -->|"全コマンドが参照"| DocsCmds
+    Flow -->|"管理"| CurrentSpec
 ```
 <!-- {{/text}} -->
 
@@ -70,51 +77,55 @@ flowchart TD
 
 <!-- {{text[mode=deep]: Describe the major components with their location, responsibilities, and I/O in table format.}} -->
 
-| コンポーネント | 配置場所 | 責務 | 入力 | 出力 |
+| コンポーネント | 場所 | 責務 | 入力 | 出力 |
 |---|---|---|---|---|
-| CLI エントリポイント | `src/sdd-forge.js` | トップレベルのサブコマンドルーティング。`--project` フラグまたは `projects.json` を通じてプロジェクトコンテキストを解決し、`SDD_SOURCE_ROOT` / `SDD_WORK_ROOT` 環境変数を設定する | CLI 引数、`.sdd-forge/projects.json` | docs.js、spec.js、flow.js、または help.js へ委譲 |
-| docs ディスパッチャー | `src/docs.js` | ドキュメント関連のサブコマンド（`build`、`scan`、`enrich`、`init`、`data`、`text`、`readme`、`forge`、`review`、`changelog`、`agents`、`snapshot` など）をルーティングする | サブコマンド名 + 引数 | `src/docs/commands/*.js` へ委譲 |
-| spec ディスパッチャー | `src/spec.js` | `spec` および `gate` サブコマンドをルーティングする | サブコマンド名 + 引数 | `src/specs/commands/*.js` へ委譲 |
-| flow | `src/flow.js` | SDD ワークフロー全体をエンドツーエンドで自動実行する（DIRECT_COMMAND — サブルーティングなし） | フローリクエスト文字列、spec パス | オーケストレーションされた SDD ステップの実行 |
-| scan | `src/docs/commands/scan.js` | ソースファイルを走査し、言語固有のアナライザーを使用してモジュール・メソッド・ルート・設定構造を抽出する | 設定済みスキャンパス配下のソースファイル | `.sdd-forge/output/analysis.json` |
-| enrich | `src/docs/commands/enrich.js` | AI をバッチ実行して各 analysis エントリに `summary`、`detail`、`chapter`、`role` フィールドを付与する。再開可能性のため処理済みエントリはスキップする | `analysis.json` | エンリッチメントフィールドが追加された `analysis.json` |
-| init | `src/docs/commands/init.js` | `@extends` / `@block` テンプレート継承を適用しながら、プリセットテンプレートから `docs/` を初期化する | プリセットテンプレート、`config.json` | ディレクティブを含む `docs/*.md` ファイルのスキャフォールド |
-| data | `src/docs/commands/data.js` | アクティブなプリセットからロードした DataSource クラスを照会して `{{data}}` ディレクティブを解決する | `analysis.json`、`{{data}}` ディレクティブを含む doc ファイル | テーブルとリストが解決された `docs/*.md` |
-| text | `src/docs/commands/text.js` | ソースを考慮したプロンプトで設定済み AI エージェントを呼び出し、`{{text}}` ディレクティブを解決する | `{{text}}` ディレクティブを含む doc ファイル、`analysis.json`、ソースファイル | AI 生成テキストが埋め込まれた `docs/*.md` |
-| forge | `src/docs/commands/forge.js` | 変更されたセクションに対して AI 生成を再実行することで、既存の `docs/*.md` コンテンツを反復的に改善する | `docs/*.md`、`analysis.json`、変更プロンプト | 改善された `docs/*.md` |
-| review | `src/docs/commands/review.js` | チェックリストに照らしてドキュメント品質をチェックし、AI 出力を構造化された PASS/FAIL レポートにパースする | `docs/*.md`、レビューチェックリストテンプレート | 基準ごとの PASS/FAIL を含むレビュー結果 |
-| gate | `src/specs/commands/gate.js` | 実装前（pre）または実装後（post）に spec ファイルの完全性を検証する | `specs/NNN-xxx/spec.md` | 未解決項目を含む PASS/FAIL レポート |
-| agent | `src/lib/agent.js` | AI CLI サブプロセスの呼び出しを同期（`execFileSync`）または非同期（`spawn`）でラップし、`{{PROMPT}}` プレースホルダーを通じてプロンプトを注入する | プロンプト文字列、`config.json` からのエージェント設定 | AI 生成テキスト文字列 |
-| config | `src/lib/config.js` | `.sdd-forge/config.json` を読み込み検証する。`.sdd-forge/` 配下のすべてのリソースに対するパスヘルパーを提供する | `.sdd-forge/config.json`、`.sdd-forge/context.json` | 検証済み設定オブジェクト、解決済みファイルパス |
-| presets | `src/lib/presets.js` | `src/presets/` 配下の `preset.json` ファイルを自動検出し、`PRESETS` 定数とルックアップヘルパーを公開する | `src/presets/**/preset.json` | init、data、scan が使用するプリセットレジストリ |
-| flow-state | `src/lib/flow-state.js` | SDD ワークフローの進行状態（現在の spec パス、ブランチ名、worktree 状態）を `.sdd-forge/current-spec` に永続化する | JSON 状態オブジェクト | `.sdd-forge/current-spec` ファイル |
+| **エントリポイント** | `src/sdd-forge.js` | CLI 引数解析、プロジェクトコンテキスト解決、ディスパッチャーへのサブコマンドルーティング | 生の `process.argv`、`.sdd-forge/projects.json` | `SDD_SOURCE_ROOT` / `SDD_WORK_ROOT` 環境変数を設定し、ディスパッチャーに委譲 |
+| **Docs ディスパッチャー** | `src/docs.js` | docs サブコマンドのルーティング、進捗追跡付きのフルビルドパイプラインのオーケストレーション | サブコマンド名 + 引数 | 個別の `docs/commands/*.js` スクリプトに委譲 |
+| **Spec ディスパッチャー** | `src/spec.js` | `spec` および `gate` サブコマンドのルーティング | サブコマンド名 + 引数 | `specs/commands/init.js` または `gate.js` に委譲 |
+| **フローランナー** | `src/flow.js` | エンドツーエンドの SDD ワークフロー（spec → gate → 実装 → forge → review）を自動化 | `--request` フラグとフロー状態 | `.sdd-forge/current-spec` 状態ファイル; AI エージェント呼び出し |
+| **スキャナー** | `src/docs/commands/scan.js` | プリセット設定に従いソースファイルを再帰的にスキャンして構造メタデータを抽出 | `srcRoot` 配下のソースファイル | `.sdd-forge/output/analysis.json` |
+| **エンリッチ** | `src/docs/commands/enrich.js` | AI エージェントを呼び出して各解析エントリに `summary`、`detail`、`chapter`、`role` フィールドを付与。バッチ再開に対応 | `analysis.json` | エンリッチフィールドがインプレースで追加された更新済み `analysis.json` |
+| **Init** | `src/docs/commands/init.js` | プリセットテンプレートを `docs/` にコピーして初期章ファイル構造を作成 | `src/presets/{key}/templates/{lang}/` のプリセットテンプレート | `docs/*.md` 章ファイル |
+| **データリゾルバー** | `src/docs/commands/data.js` | `analysis.json` の構造化データを使って章ファイル内の `{{data}}` ディレクティブを解決 | `docs/*.md`、`analysis.json` | データテーブルが注入された更新済み `docs/*.md` |
+| **テキストジェネレーター** | `src/docs/commands/text.js` | ソースコンテキストと共に AI エージェントを呼び出して `{{text}}` ディレクティブを解決。light モードと deep モードに対応 | `docs/*.md`、ソースファイル、`analysis.json` | AI 生成テキストが補完された更新済み `docs/*.md` |
+| **Readme ジェネレーター** | `src/docs/commands/readme.js` | 生成された章ファイルから `README.md` を組み立て | `docs/*.md` | `README.md` |
+| **Agents アップデーター** | `src/docs/commands/agents.js` | プリセットテンプレートと `analysis.json` をもとに `AGENTS.md` の SDD セクションと PROJECT セクションを再生成 | プリセット AGENTS テンプレート、`analysis.json` | `AGENTS.md`; `CLAUDE.md` シンボリックリンクを作成 |
+| **Forge** | `src/docs/commands/forge.js` | AI フィードバックループを使って既存の `docs/*.md` ファイルを反復的に改善 | `docs/*.md`、変更サマリーのプロンプト | 更新済み `docs/*.md` |
+| **レビュー** | `src/docs/commands/review.js` | チェックリストに対してドキュメントの品質を評価し、合否を報告 | `docs/*.md`、レビューチェックリスト | コンソールレポート; 構造化された合否結果 |
+| **Gate** | `src/specs/commands/gate.js` | 実装前（pre）または実装後（post）に spec ファイルの完全性を検証 | `specs/NNN-xxx/spec.md` | PASS/FAIL コンソールレポート; FAIL 時はフローをブロック |
+| **エージェント呼び出し** | `src/lib/agent.js` | 外部 AI CLI 呼び出しをラップ。同期・非同期モード、大きなプロンプト向けの stdin フォールバック、タイムアウト管理を処理 | プロンプト文字列、`config.json` のエージェント設定 | 文字列として返される AI 生成テキスト |
+| **設定ローダー** | `src/lib/config.js` | `.sdd-forge/config.json` を読み込んで検証; sdd-forge が管理するすべてのファイルのパスを解決 | `.sdd-forge/config.json` | 検証済み設定オブジェクト; 解決済みファイルパス |
+| **コマンドコンテキスト** | `src/docs/lib/command-context.js` | すべてのパイプラインコマンドが使用する共有 `CommandContext` オブジェクトを構築 | CLI 引数、環境変数、`config.json` | `root`、`srcRoot`、`config`、`lang`、`agent`、`t()` などを持つ `CommandContext` |
+| **プリセットシステム** | `src/lib/presets.js` + `src/presets/` | `preset.json` ファイルを自動探索し、プロジェクトタイプをスキャン対象とテンプレートセットにマッピング | `src/presets/**/preset.json` | `PRESETS` 定数; 型エイリアスマップ |
 <!-- {{/text}} -->
 
-### 外部連携
+### 外部インテグレーション
 
 <!-- {{text: If there are external system integrations, describe their purpose and connection method in table format.}} -->
 
-sdd-forge は、ローカルファイルシステム以外の外部サービスやネットワークへの実行時依存を持ちません。唯一の外部連携ポイントは AI エージェント CLI（通常は Claude CLI）であり、複数のコマンドからサブプロセスとして呼び出されます。
-
-| 連携先 | 使用するコマンド | 目的 | 接続方式 |
+| 外部システム | 目的 | 接続方法 | 設定 |
 |---|---|---|---|
-| AI エージェント CLI（例: Claude CLI） | `enrich`、`text`、`forge`、`review`、`agents` | ドキュメントの文章を生成・改善する。analysis エントリにセマンティックなメタデータを付与する | `child_process.spawn`（非同期）または `execFileSync`（同期）でサブプロセスとして起動。設定済みの `args` 配列内の `{{PROMPT}}` プレースホルダーにプロンプトテキストを注入する |
+| **Claude CLI** | `{{text}}` ディレクティブの AI テキスト生成、エンリッチアノテーション、forge による改善、AGENTS.md 生成 | `execFileSync`（同期）または `spawn`（非同期）で子プロセスとして起動 | `.sdd-forge/config.json` の `providers.claude`: `command`、`args`、オプションの `timeoutMs` および `systemPromptFlag` |
+| **カスタム AI エージェント** | Claude の代替となる任意の AI CLI ツール（ローカルモデルラッパーなど） | 同じ子プロセス機構を使用。コマンドと引数は完全に設定可能 | `config.json` の `providers.<name>` エントリ; `defaultAgent` でアクティブなプロバイダーを選択 |
+| **npm レジストリ** | パッケージ配布; sdd-forge は npmjs.com に `sdd-forge` として公開 | `npm publish` CLI; タグ管理には `npm dist-tag` | `package.json` の `files`、`bin`、`version` フィールド |
+| **Git** | SDD フロー中のブランチおよびワークツリー管理; コミットおよびマージ操作 | システムの `git` バイナリへの `child_process` 呼び出し | `config.json` の `flow.merge`（`squash` / `ff-only` / `merge`）で設定 |
 
-エージェントのバイナリ、引数、タイムアウト値はすべて `.sdd-forge/config.json` の `providers` および `defaultAgent` フィールドで定義されており、ツールレベルでエージェントに依存しない設計となっています。
+すべての外部インテグレーションはオペレーティングシステムのプロセスモデルを通じて呼び出されます。sdd-forge 自体には **npm の実行時依存関係はなく**、Node.js 組み込みモジュールのみを使用しています。
 <!-- {{/text}} -->
 
-### 環境ごとの差異
+### 環境の違い
 
 <!-- {{text: Describe the configuration differences across environments (local/staging/production).}} -->
 
-sdd-forge は開発者向け CLI ツールであり、従来のローカル/ステージング/本番環境というデプロイモデルには従いません。設定の差異はプロジェクトごとに `.sdd-forge/config.json` と環境変数で管理されます。
+sdd-forge はローカルの開発者向け CLI ツールであり、従来のステージングやプロダクションサーバー環境はありません。代わりに「環境」は、異なるプロジェクト設定やオペレーターのコンテキストに対応します。
 
-| 側面 | インタラクティブな開発者利用 | CI / 自動化パイプライン |
+| コンテキスト | 説明 | 主な設定 |
 |---|---|---|
-| プロジェクト解決 | `--project <name>` フラグ、または `projects.json` の `default` エントリ | `SDD_SOURCE_ROOT` および `SDD_WORK_ROOT` 環境変数 |
-| AI エージェント | ローカルマシンに設定済みエージェント CLI がインストールされ認証されている必要がある | 同様の要件。CI 環境の `PATH` にエージェント CLI が存在する必要がある |
-| タイムアウト | デフォルト値が適用される: 120 秒（標準）、180 秒（中）、300 秒（長） | 処理が遅い CI ランナー向けに `config.json` の `limits.designTimeoutMs` で延長可能 |
-| 出力言語 | `config.json` の `output.languages` および `output.default` で制御 | 差異なし。同じ設定ファイルを使用する |
-| 並列処理数 | デフォルトは 5 並列ファイル操作（`limits.concurrency`） | リソースが制約された環境では低い値に調整可能 |
-| Worktree モード | `sdd-forge spec` または `EnterWorktree` を通じてインタラクティブに利用可能 | 利用可能。worktree パスは `.sdd-forge/current-spec` で追跡される |
+| **シングルプロジェクト（ローカル）** | 開発者がプロジェクトリポジトリ内で直接 sdd-forge を実行 | `.sdd-forge/config.json` がプロジェクトルートに存在; `projects.json` は不要 |
+| **マルチプロジェクト（グローバル）** | `--project <name>` を使って一箇所から複数プロジェクトを管理 | `.sdd-forge/projects.json` に各プロジェクトの `path` と `workRoot` をリスト; `SDD_WORK_ROOT` / `SDD_SOURCE_ROOT` 環境変数はプロジェクトごとに自動設定 |
+| **ワークツリーモード** | 分離された機能開発のため Git ワークツリー内で SDD フローを実行 | フロー状態は `.sdd-forge/current-spec` に保存; `isInsideWorktree()` 検出がブランチ処理を自動調整 |
+| **CI / 非インタラクティブ** | インタラクティブなプロンプトを想定しない自動実行（パイプラインなど） | エージェントタイムアウトが適用される（`DEFAULT_AGENT_TIMEOUT_MS` = 120 秒、最大 `LONG_AGENT_TIMEOUT_MS` = 300 秒）; CLI のハングを防ぐため `CLAUDECODE` 環境変数をクリア |
+| **多言語出力** | 複数の出力言語（例: `["en", "ja"]`）で設定されたプロジェクト | `config.json` の `output.languages`、`output.default`、`output.mode`; ビルドパイプラインに `translate` ステップが自動追加 |
+
+`config.json` の `lang` フィールドは CLI のインタラクション言語および生成される AGENTS.md とスキルファイルの言語を制御します。これはドキュメント出力の言語を管理する `output.languages` とは独立しています。
 <!-- {{/text}} -->

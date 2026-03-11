@@ -4,69 +4,65 @@
 
 <!-- {{text: Write a 1–2 sentence overview of this chapter. Cover the types of configuration files, the range of configurable options, and customization points.}} -->
 
-This chapter describes the configuration files that control sdd-forge's behavior, the full set of configurable options available in each file, and the key customization points for AI providers, document style, project types, and pipeline settings. Understanding these files gives you precise control over how documentation is generated, how multiple projects are managed, and how the SDD flow operates.
-
+This chapter covers the configuration files that control how sdd-forge operates, from project type and output language settings to AI provider definitions and document style preferences. You will find a complete reference for `.sdd-forge/config.json` along with guidance on customizing AI agents, preset selection, merge strategies, and parallel processing behavior.
 <!-- {{/text}} -->
 
 ## Contents
 
 ### Configuration Files
 
-<!-- {{text: List all configuration files loaded by this tool in a table, including their locations and roles. Key files: .sdd-forge/config.json (project settings), .sdd-forge/projects.json (multi-project management), .sdd-forge/current-spec (SDD flow state), .sdd-forge/output/analysis.json (analysis results including enriched data).}} -->
+<!-- {{text: List all configuration files loaded by this tool in a table, including their location and role. Key files: .sdd-forge/config.json (project settings), .sdd-forge/projects.json (multi-project management), .sdd-forge/current-spec (SDD flow state), .sdd-forge/output/analysis.json (analysis results, including enriched data).}} -->
 
-The following files are read or written by sdd-forge during normal operation. All paths are relative to the working root of the project (the directory that contains `.sdd-forge/`).
+The following files are created and read by sdd-forge during normal operation. All paths are relative to the repository root (or the directory passed as `workRoot`).
 
 | File | Location | Role |
 |---|---|---|
-| `config.json` | `.sdd-forge/config.json` | Primary project configuration. Defines output languages, project type, AI providers, document style, and pipeline limits. Required for all doc-generation commands. |
-| `projects.json` | `.sdd-forge/projects.json` | Multi-project registry. Created by `sdd-forge setup`. Maps named projects to their source and work-root paths and tracks the default project. |
-| `current-spec` | `.sdd-forge/current-spec` | SDD flow state. Stores the active spec path, base/feature branch names, and worktree location while a spec-driven development flow is in progress. Deleted on flow completion. |
-| `analysis.json` | `.sdd-forge/output/analysis.json` | Full source-code analysis produced by `sdd-forge scan`. After `sdd-forge enrich`, each entry is augmented with `summary`, `detail`, `chapter`, and `role` fields used by downstream doc-generation steps. |
-| `context.json` | `.sdd-forge/context.json` | Optional project context string used to supplement AI prompts. Written by `saveContext()` and read by `resolveProjectContext()`. |
-
+| `config.json` | `.sdd-forge/config.json` | Primary project configuration. Required fields are validated on every command run. |
+| `projects.json` | `.sdd-forge/projects.json` | Multi-project registry created by `sdd-forge setup`. Maps project names to source and work root paths. |
+| `current-spec` | `.sdd-forge/current-spec` | JSON file that tracks the active SDD flow state (spec path, branch names, worktree info). Deleted when a flow is closed. |
+| `context.json` | `.sdd-forge/context.json` | Optional free-form project context string. Takes precedence over `config.json`'s `textFill.projectContext` when present. |
+| `analysis.json` | `.sdd-forge/output/analysis.json` | Full source-code analysis produced by `sdd-forge scan`. After running `sdd-forge enrich`, each entry gains `summary`, `detail`, `chapter`, and `role` fields. |
+| Snapshots | `.sdd-forge/snapshots/` | Saved document snapshots for regression detection via `sdd-forge snapshot`. |
 <!-- {{/text}} -->
 
 ### Configuration Reference
 
-<!-- {{text[mode=deep]: Describe all fields in .sdd-forge/config.json in a table. Include field name, whether it is required, type, default value, and description. Key fields: output.languages (list of output languages), output.default (default language), output.mode (translate/generate), lang (CLI operating language), type (project type), documentStyle (purpose/tone/customInstruction), textFill (preamblePatterns), defaultAgent, providers (AI agent definitions), flow.merge (squash/ff-only/merge), limits (concurrency/designTimeoutMs).}} -->
+<!-- {{text[mode=deep]: Document all fields in .sdd-forge/config.json in a table. Include field name, whether it is required, type, default value, and description. Key fields: output.languages (list of output languages), output.default (default language), output.mode (translate/generate), lang (CLI operating language), type (project type), documentStyle (purpose/tone/customInstruction), textFill (preamblePatterns), defaultAgent, providers (AI agent definitions), flow.merge (squash/ff-only/merge), limits (concurrency/designTimeoutMs).}} -->
 
-The table below covers every field accepted by `.sdd-forge/config.json`. Fields marked **Required** will cause a validation error and abort the command if omitted or set to an invalid value.
+All fields are validated by `validateConfig()` in `src/lib/types.js` at startup. Required fields must be present or the command will exit with a list of validation errors.
 
 | Field | Required | Type | Default | Description |
 |---|---|---|---|---|
-| `output.languages` | ✅ | `string[]` | — | Non-empty list of output languages for generated docs (e.g. `["en"]`, `["ja", "en"]`). |
+| `output.languages` | ✅ | `string[]` | — | List of output languages for generated documents. Example: `["en"]` or `["en", "ja"]`. Must be non-empty. |
 | `output.default` | ✅ | `string` | — | The primary output language. Must be one of the values in `output.languages`. |
-| `output.mode` | — | `"translate"` \| `"generate"` | `"translate"` | How non-default languages are produced. `translate` passes the default-language output to the AI for translation; `generate` re-runs the full generation pipeline in the target language. |
-| `lang` | ✅ | `string` | — | Operating language for the CLI, AGENTS.md, skills, and spec files (e.g. `"en"`, `"ja"`). |
-| `type` | ✅ | `string` | — | Project type that selects the active preset (e.g. `"cli/node-cli"`, `"webapp/cakephp2"`, `"webapp/laravel"`). Type aliases such as `"node-cli"` are automatically resolved to their canonical form. |
-| `documentStyle.purpose` | — | `string` | — | Intended audience and purpose of the generated docs (e.g. `"developer-guide"`, `"user-guide"`). Required when `documentStyle` is present. |
-| `documentStyle.tone` | — | `"polite"` \| `"formal"` \| `"casual"` | — | Writing tone applied to AI-generated text. Required when `documentStyle` is present. |
-| `documentStyle.customInstruction` | — | `string` | — | Additional free-text instruction injected into AI prompts to further tailor the generated content. |
-| `textFill.projectContext` | — | `string` | — | Background description of the project, used to supplement AI generation prompts when source code alone is insufficient. Superseded by `context.json` when both exist. |
-| `textFill.preamblePatterns` | — | `object[]` | — | List of `{ pattern, flags }` objects defining regex patterns that sdd-forge strips from the beginning of AI responses (e.g. to remove boilerplate disclaimers). |
-| `defaultAgent` | — | `string` | — | Key of the provider entry in `providers` to use when no `--agent` flag is supplied. |
-| `providers.<name>.command` | — | `string` | — | Executable to invoke for this AI provider (e.g. `"claude"`). Required per provider. |
-| `providers.<name>.args` | — | `string[]` | — | Argument list passed to the command. Use `{{PROMPT}}` as a placeholder for prompt injection; if absent the prompt is appended at the end. Required per provider. |
-| `providers.<name>.timeoutMs` | — | `number` | `120000` | Per-invocation timeout in milliseconds for this provider. |
-| `providers.<name>.systemPromptFlag` | — | `string` | `"--system-prompt"` | CLI flag used to pass a system prompt to the provider (e.g. `"--system-prompt"`). |
-| `flow.merge` | — | `"squash"` \| `"ff-only"` \| `"merge"` | `"squash"` | Git merge strategy used when the SDD flow merges the feature branch back to the base branch. |
-| `limits.concurrency` | — | `number` | `5` | Number of source files processed in parallel during scan and enrich steps. |
-| `limits.designTimeoutMs` | — | `number` | — | Overall timeout (ms) for long-running design-phase AI calls. |
-| `chapters` | — | `string[]` | — | Ordered list of chapter file names that overrides the preset's default chapter order for this project. |
-| `agentWorkDir` | — | `string` | — | Working directory passed to the AI agent via `-C <dir>`. Must be a valid path if specified. |
-| `uiLang` | — | `"en"` \| `"ja"` | — | Language used for CLI progress messages and UI output, independent of the doc output language. |
-
+| `output.mode` | — | `"translate"` \| `"generate"` | `"translate"` | How non-default languages are produced. `translate` passes the default-language output through the AI for translation; `generate` runs the full generation pipeline independently for each language. |
+| `lang` | ✅ | `string` | — | Operating language for the CLI, AGENTS.md, skill prompts, and spec files. Typical values: `"en"` or `"ja"`. |
+| `type` | ✅ | `string` | — | Project type that selects the preset. Examples: `"cli/node-cli"`, `"webapp/cakephp2"`, `"webapp/laravel"`. Short aliases such as `"cakephp2"` are resolved automatically via `TYPE_ALIASES`. |
+| `documentStyle.purpose` | — | `string` | — | Describes the intended audience and purpose of the docs. Examples: `"user-guide"`, `"developer-guide"`, `"api-reference"`. |
+| `documentStyle.tone` | — | `"polite"` \| `"formal"` \| `"casual"` | — | Writing tone applied to all AI-generated text. |
+| `documentStyle.customInstruction` | — | `string` | — | Additional free-text instructions passed to the AI during text generation. |
+| `textFill.projectContext` | — | `string` | — | A short description of the project supplied to the AI as background context. Overridden by `.sdd-forge/context.json` when that file exists. |
+| `textFill.preamblePatterns` | — | `object[]` | — | Array of `{ pattern, flags }` objects. Matching prefixes are stripped from AI output to remove boilerplate openers. |
+| `defaultAgent` | — | `string` | — | Key of the provider entry to use when `--agent` is not specified on the command line. |
+| `providers.<key>.command` | — | `string` | — | Executable to invoke for the named AI provider. Example: `"claude"`. |
+| `providers.<key>.args` | — | `string[]` | — | Argument list for the provider command. Use `{{PROMPT}}` as a placeholder; if omitted, the prompt is appended automatically. |
+| `providers.<key>.timeoutMs` | — | `number` | `120000` | Per-call timeout in milliseconds. |
+| `providers.<key>.systemPromptFlag` | — | `string` | — | Flag used to pass a system prompt. Example: `"--system-prompt"`. |
+| `flow.merge` | — | `"squash"` \| `"ff-only"` \| `"merge"` | `"squash"` | Git merge strategy used by the SDD flow when closing a feature branch. |
+| `limits.concurrency` | — | `number` | `5` | Maximum number of files processed in parallel during `text`, `data`, and `enrich` commands. |
+| `limits.designTimeoutMs` | — | `number` | — | Overall timeout in milliseconds for long-running design-phase agent calls. |
+| `chapters` | — | `string[]` | — | Overrides the chapter order defined in `preset.json`. Only the filenames listed here (without path) will be generated and in the specified order. |
+| `agentWorkDir` | — | `string` | — | Working directory passed to the AI agent via `-C <dir>`. Useful when the agent needs to resolve relative imports from a specific location. |
+| `uiLang` | — | `"en"` \| `"ja"` | — | Language for interactive CLI prompts and progress messages. Defaults to the value of `lang`. |
 <!-- {{/text}} -->
 
 ### Customization Points
 
-<!-- {{text[mode=deep]: Explain the items users can customize. (1) AI provider settings (providers field, command/args/timeoutMs/systemPromptFlag) with configuration examples, (2) document style (purpose/tone/customInstruction), (3) preset selection (type field), (4) merge strategy (flow.merge), (5) concurrency (limits.concurrency). Include JSON configuration examples for each item.}} -->
+<!-- {{text[mode=deep]: Explain the items users can customize. (1) AI provider settings (providers field: command/args/timeoutMs/systemPromptFlag) with configuration examples, (2) document style (purpose/tone/customInstruction), (3) preset selection (type field), (4) merge strategy (flow.merge), (5) concurrency (limits.concurrency). Include a JSON configuration example for each item.}} -->
 
-sdd-forge exposes five principal customization areas. Each is configured in `.sdd-forge/config.json`.
+#### 1. AI Provider Settings
 
-**1. AI Provider Settings**
-
-The `providers` map lets you define one or more AI backends. The `defaultAgent` key selects which provider is used by default. Each provider entry requires a `command` and an `args` array; the special placeholder `{{PROMPT}}` marks where the generated prompt is injected into the argument list.
+The `providers` map lets you register one or more AI agents and select among them with `--agent`. The `{{PROMPT}}` placeholder in `args` marks where the generated prompt is injected; if the placeholder is absent, the prompt is appended at the end.
 
 ```json
 {
@@ -74,7 +70,7 @@ The `providers` map lets you define one or more AI backends. The `defaultAgent` 
   "providers": {
     "claude": {
       "command": "claude",
-      "args": ["--system-prompt", "You are a documentation assistant.", "{{PROMPT}}"],
+      "args": ["--model", "sonnet", "-p", "{{PROMPT}}"],
       "timeoutMs": 180000,
       "systemPromptFlag": "--system-prompt"
     }
@@ -82,27 +78,27 @@ The `providers` map lets you define one or more AI backends. The `defaultAgent` 
 }
 ```
 
-> **Note:** There is no `--system-prompt-file` option in Claude CLI. Very long system prompts passed via `--system-prompt` may hit the OS `ARG_MAX` limit; keep system prompts concise.
+> **Note:** The `--system-prompt-file` flag does not exist in the Claude CLI and must not be used. When the prompt exceeds 100,000 bytes, `sdd-forge` automatically switches to stdin delivery to stay within the OS `ARG_MAX` limit.
 
-**2. Document Style**
+#### 2. Document Style
 
-The `documentStyle` object controls the purpose and tone of AI-generated text. Add a `customInstruction` string to inject project-specific writing guidance.
+The `documentStyle` object controls tone and purpose across all AI-generated chapters. `customInstruction` accepts any free-text directive and is appended to every generation prompt.
 
 ```json
 {
   "documentStyle": {
-    "purpose": "developer-guide",
-    "tone": "formal",
-    "customInstruction": "Always include code examples when describing API methods."
+    "purpose": "user-guide",
+    "tone": "polite",
+    "customInstruction": "Avoid jargon and prefer concrete examples over abstract descriptions."
   }
 }
 ```
 
-Valid tone values are `polite`, `formal`, and `casual`. The `purpose` field is a free string and is forwarded verbatim to AI prompts.
+Valid `tone` values are `"polite"`, `"formal"`, and `"casual"`.
 
-**3. Preset Selection**
+#### 3. Preset Selection
 
-The `type` field selects the documentation preset that determines which source files are scanned and which chapters are generated. Set it to a canonical type path or a supported alias.
+The `type` field selects which preset drives scanning and document generation. Short aliases are resolved automatically, so `"cakephp2"` and `"webapp/cakephp2"` are equivalent.
 
 ```json
 {
@@ -110,11 +106,11 @@ The `type` field selects the documentation preset that determines which source f
 }
 ```
 
-Supported aliases resolve automatically (for example, `"node-cli"` → `"cli/node-cli"`, `"php-mvc"` → `"webapp/cakephp2"`). Run `sdd-forge presets` to list all available presets and their keys.
+Available built-in types include `"cli/node-cli"`, `"webapp/cakephp2"`, `"webapp/laravel"`, and `"webapp/symfony"`. Run `sdd-forge presets` to see the full list.
 
-**4. Merge Strategy**
+#### 4. Merge Strategy
 
-The `flow.merge` field controls how the feature branch is merged into the base branch when the SDD flow completes.
+The `flow.merge` field determines how feature branches are integrated when the SDD flow closes.
 
 ```json
 {
@@ -124,41 +120,38 @@ The `flow.merge` field controls how the feature branch is merged into the base b
 }
 ```
 
-| Value | Behavior |
+| Value | Behaviour |
 |---|---|
-| `squash` | Squash all commits into one before merging (default). |
-| `ff-only` | Fast-forward only; fails if a fast-forward merge is not possible. |
-| `merge` | Standard merge commit. |
+| `"squash"` | Squashes all commits on the feature branch into a single commit on the base branch (default). |
+| `"ff-only"` | Fast-forward only; fails if the base has diverged. |
+| `"merge"` | Standard merge commit preserving full branch history. |
 
-**5. Concurrency**
+#### 5. Concurrency
 
-The `limits.concurrency` field controls how many source files are processed in parallel during the `scan` and `enrich` pipeline steps. Increase it on machines with ample CPU/memory, or lower it to reduce load.
+`limits.concurrency` caps the number of files processed simultaneously during `text`, `data`, and `enrich` commands. Increase it on machines with many CPU cores or reduce it if AI rate limits are a concern.
 
 ```json
 {
   "limits": {
-    "concurrency": 10,
-    "designTimeoutMs": 300000
+    "concurrency": 10
   }
 }
 ```
 
-The default concurrency is `5`. The optional `designTimeoutMs` sets the timeout for long-running AI design calls; if omitted, the built-in per-command timeout constants apply (`120 s` / `180 s` / `300 s` depending on the operation).
-
+The default value is `5`. Setting this to `1` effectively serialises all AI calls.
 <!-- {{/text}} -->
 
 ### Environment Variables
 
-<!-- {{text[mode=deep]: List the environment variables referenced by the tool and their purposes in a table. SDD_SOURCE_ROOT (source code root), SDD_WORK_ROOT (working root, location of .sdd-forge/), CLAUDECODE (internal variable deleted to prevent Claude CLI hangs).}} -->
+<!-- {{text[mode=deep]: List all environment variables referenced by the tool and their purpose in a table. SDD_SOURCE_ROOT (source code root), SDD_WORK_ROOT (work root, location of .sdd-forge/), CLAUDECODE (internal variable removed to prevent Claude CLI hang).}} -->
 
-sdd-forge reads and writes the following environment variables at runtime. These are typically set automatically by the top-level dispatcher (`sdd-forge.js`) before invoking sub-commands, but they can also be set manually for advanced use cases such as running sub-commands directly or in CI pipelines.
+sdd-forge reads the following environment variables at startup. They take precedence over paths resolved from the repository itself, making them useful in CI pipelines or monorepo setups where the source code and the `.sdd-forge/` directory live in different locations.
 
-| Variable | Direction | Description |
+| Variable | Used by | Description |
 |---|---|---|
-| `SDD_SOURCE_ROOT` | Read | Absolute path to the source code root of the project being analyzed. Used by `sourceRoot()` in `src/lib/cli.js`. When set, it takes precedence over the value derived from `git rev-parse` or `process.cwd()`. |
-| `SDD_WORK_ROOT` | Read | Absolute path to the working root — the directory that contains `.sdd-forge/`. Used by `repoRoot()` in `src/lib/cli.js`. When set, it takes precedence over git-based resolution. In git worktrees the two roots may differ from each other. |
-| `CLAUDECODE` | Deleted | An internal Claude CLI variable that, when present, causes the CLI to hang waiting for input. `callAgentAsync()` explicitly removes this variable from the child process environment before spawning the AI agent to prevent deadlocks. |
+| `SDD_SOURCE_ROOT` | `src/lib/cli.js` → `sourceRoot()` | Absolute path to the source code that sdd-forge should scan and document. When set, overrides the repository root detected by `git rev-parse`. |
+| `SDD_WORK_ROOT` | `src/lib/cli.js` → `repoRoot()` | Absolute path to the working root — the directory that contains `.sdd-forge/`. When set, overrides both `git rev-parse` and `process.cwd()`. Set this when the config and output files should reside outside the source tree. |
+| `CLAUDECODE` | `src/lib/agent.js` → `callAgentAsync()` | Detected and **deleted** from the child process environment before spawning the Claude CLI. Leaving this variable set causes the Claude CLI to hang waiting for input; removing it prevents the issue. You do not need to set or manage this variable manually. |
 
-`SDD_SOURCE_ROOT` and `SDD_WORK_ROOT` are the primary mechanism by which the main dispatcher communicates project context to every sub-command without requiring each command to re-resolve the project path independently.
-
+When neither `SDD_SOURCE_ROOT` nor `SDD_WORK_ROOT` is set, `repoRoot()` falls back to `git rev-parse --show-toplevel` and then to `process.cwd()`, so standard single-repository setups require no environment configuration at all.
 <!-- {{/text}} -->
