@@ -10,8 +10,8 @@ import fs from "fs";
 import path from "path";
 import { runIfDirect } from "../../lib/entrypoint.js";
 import { sourceRoot, repoRoot, parseArgs, formatUTCTimestamp } from "../../lib/cli.js";
-import { loadConfig, loadLang, DEFAULT_LANG } from "../../lib/config.js";
-import { createI18n } from "../../lib/i18n.js";
+import { loadConfig, DEFAULT_LANG } from "../../lib/config.js";
+import { translate } from "../../lib/i18n.js";
 
 /**
  * パイプ文字をエスケープし、空白を正規化する。
@@ -116,8 +116,8 @@ function main() {
   const opts = parseArgs(args, { flags: ["--dry-run"], options: [], defaults: { dryRun: false } });
 
   if (opts.help) {
-    const tu = createI18n(loadLang(repoRoot()));
-    const h = tu.raw("help.cmdHelp.changelog");
+    const tu = translate();
+    const h = tu.raw("ui:help.cmdHelp.changelog");
     const o = h.options;
     console.log([h.usage, "", `  ${h.desc}`, `  ${h.descDetail}`, "", "Options:", `  ${o.dryRun}`].join("\n"));
     return;
@@ -134,7 +134,7 @@ function main() {
     const cfgData = loadConfig(root);
     lang = cfgData.output?.default || cfgData.lang || DEFAULT_LANG;
   } catch (_) {}
-  const t = createI18n(lang, { domain: "messages" });
+  const t = translate();
 
   // Ensure output directory exists
   fs.mkdirSync(path.dirname(outFile), { recursive: true });
@@ -188,19 +188,19 @@ function main() {
   const out = [];
 
   out.push("<!-- AUTO-GEN:START -->");
-  out.push(t("changelog.heading"));
+  out.push(t("messages:changelog.heading"));
   out.push("");
-  out.push(t("changelog.sectionDescription"));
+  out.push(t("messages:changelog.sectionDescription"));
   out.push("");
-  out.push(t("changelog.descriptionBody"));
+  out.push(t("messages:changelog.descriptionBody"));
   out.push("");
-  out.push(t("changelog.sectionContents"));
+  out.push(t("messages:changelog.sectionContents"));
   out.push("");
-  out.push(t("changelog.sectionTimestamp"));
+  out.push(t("messages:changelog.sectionTimestamp"));
   out.push("");
   out.push(`- generated_at: ${now}`);
   out.push("");
-  out.push(t("changelog.sectionLatestIndex"));
+  out.push(t("messages:changelog.sectionLatestIndex"));
   out.push("");
   out.push("| series | latest | status | created | spec |");
   out.push("| --- | --- | --- | --- | --- |");
@@ -208,7 +208,7 @@ function main() {
     out.push(`| \`${e.series}\` | \`${e.dirName}\` | ${e.status} | ${e.created} | [spec](../specs/${e.dirName}/spec.md) |`);
   }
   out.push("");
-  out.push(t("changelog.sectionAllSpecs"));
+  out.push(t("messages:changelog.sectionAllSpecs"));
   out.push("");
   out.push("| dir | status | created | title | summary | files |");
   out.push("| --- | --- | --- | --- | --- | --- |");
@@ -228,14 +228,12 @@ function main() {
   out.push("<!-- AUTO-GEN:END -->");
   out.push("");
 
-  const tu = createI18n(lang, { domain: "messages" });
-
   if (opts.dryRun) {
     console.log(out.join("\n"));
-    console.error(tu("changelog.dryRun", { path: outFile }));
+    console.error(t("messages:changelog.dryRun", { path: outFile }));
   } else {
     fs.writeFileSync(outFile, out.join("\n"));
-    console.log(tu("changelog.generated", { path: outFile }));
+    console.log(t("messages:changelog.generated", { path: outFile }));
   }
 }
 

@@ -77,11 +77,9 @@ async function main(ctx) {
     });
 
     if (cli.help) {
-      const { loadLang } = await import("../../lib/config.js");
-      const { createI18n } = await import("../../lib/i18n.js");
-      const { repoRoot } = await import("../../lib/cli.js");
-      const tu = createI18n(loadLang(repoRoot()));
-      const h = tu.raw("help.cmdHelp.translate");
+      const { translate: tr } = await import("../../lib/i18n.js");
+      const t = tr();
+      const h = t.raw("ui:help.cmdHelp.translate");
       const o = h.options;
       console.log([h.usage, "", `  ${h.desc}`, "", "Options:", `  ${o.lang}`, `  ${o.force}`, `  ${o.dryRun}`, `  ${o.help}`].join("\n"));
       return;

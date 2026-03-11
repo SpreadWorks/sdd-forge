@@ -12,13 +12,13 @@ import fs from "fs";
 import path from "path";
 import { runIfDirect } from "../../lib/entrypoint.js";
 import { repoRoot, parseArgs } from "../../lib/cli.js";
-import { loadPackageField, loadLang } from "../../lib/config.js";
+import { loadPackageField } from "../../lib/config.js";
 import { resolveType } from "../../lib/types.js";
 import { callAgent } from "../../lib/agent.js";
 import { resolveTemplates, mergeResolved, resolveChaptersOrder, translateTemplate } from "../lib/template-merger.js";
 import { summaryToText } from "../lib/forge-prompts.js";
 import { createLogger } from "../../lib/progress.js";
-import { createI18n } from "../../lib/i18n.js";
+import { translate } from "../../lib/i18n.js";
 import { resolveCommandContext, loadFullAnalysis, loadAnalysisData } from "../lib/command-context.js";
 import { stripBlockDirectives } from "../lib/directive-parser.js";
 
@@ -127,8 +127,8 @@ function main(ctx) {
       defaults: { type: "", force: false, dryRun: false, lang: "", docsDir: "" },
     });
     if (cli.help) {
-      const tu = createI18n(loadLang(repoRoot(import.meta.url)));
-      const h = tu.raw("help.cmdHelp.init");
+      const tu = translate();
+      const h = tu.raw("ui:help.cmdHelp.init");
       const o = h.options;
       console.log([h.usage, "", h.desc, "", "Options:", `  ${o.type}`, `  ${o.force}`, `  ${o.dryRun}`, `  ${o.help}`].join("\n"));
       return;
@@ -145,7 +145,7 @@ function main(ctx) {
     const defaults = loadPackageField(root, "docsInit") || {};
     const rawType = config?.type || defaults.defaultType;
     if (!rawType) {
-      throw new Error(t("init.noType"));
+      throw new Error(t("messages:init.noType"));
     }
     type = resolveType(rawType);
   }
@@ -177,7 +177,7 @@ function main(ctx) {
   }
 
   if (chapters.length === 0) {
-    throw new Error(t("init.noTemplates"));
+    throw new Error(t("messages:init.noTemplates"));
   }
 
   // AI 章選別（analysis + agent が揃っている場合）
@@ -213,11 +213,11 @@ function main(ctx) {
   const conflicts = numberedChapters.filter((ch) => fs.existsSync(path.join(docsDir, ch.outputName)));
 
   if (conflicts.length > 0 && !ctx.force) {
-    logger.log(t("init.conflictsExist", { count: conflicts.length }));
+    logger.log(t("messages:init.conflictsExist", { count: conflicts.length }));
     for (const ch of conflicts) {
       logger.log(`  - ${ch.outputName}`);
     }
-    logger.log(t("init.useForce"));
+    logger.log(t("messages:init.useForce"));
     return;
   }
 

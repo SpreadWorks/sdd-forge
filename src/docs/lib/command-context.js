@@ -11,7 +11,7 @@ import { repoRoot, sourceRoot } from "../../lib/cli.js";
 import { loadJsonFile, sddConfigPath, sddOutputDir, DEFAULT_LANG } from "../../lib/config.js";
 import { resolveType, validateConfig } from "../../lib/types.js";
 import { resolveAgent } from "../../lib/agent.js";
-import { createI18n } from "../../lib/i18n.js";
+import { translate } from "../../lib/i18n.js";
 
 /**
  * @typedef {Object} CommandContext
@@ -65,7 +65,7 @@ export function resolveCommandContext(cli, overrides) {
   const agentName = o.agent || cli?.agent || undefined;
   const agent = resolveAgent(config, agentName);
 
-  const t = createI18n(lang, { domain: "messages" });
+  const t = translate();
 
   return {
     root,

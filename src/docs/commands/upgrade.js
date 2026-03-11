@@ -17,7 +17,7 @@ import path from "path";
 import { runIfDirect } from "../../lib/entrypoint.js";
 import { PKG_DIR, repoRoot, parseArgs } from "../../lib/cli.js";
 import { loadConfig } from "../../lib/config.js";
-import { createI18n } from "../../lib/i18n.js";
+import { translate } from "../../lib/i18n.js";
 
 
 // ---------------------------------------------------------------------------
@@ -117,7 +117,7 @@ function checkConfigHints(config, t) {
     if (prov.systemPromptFlag) continue;
     const suggested = SYSTEM_PROMPT_FLAGS[key] || SYSTEM_PROMPT_FLAGS[prov.command];
     if (suggested) {
-      console.log(t("upgrade.hintSystemPromptFlag", { provider: key, flag: suggested }));
+      console.log(t("ui:upgrade.hintSystemPromptFlag", { provider: key, flag: suggested }));
     }
   }
 }
@@ -130,11 +130,9 @@ async function main() {
   const cli = parseUpgradeArgs(process.argv.slice(2));
 
   if (cli.help) {
-    const { loadLang } = await import("../../lib/config.js");
-    const { createI18n } = await import("../../lib/i18n.js");
-    const { repoRoot } = await import("../../lib/cli.js");
-    const tu = createI18n(loadLang(repoRoot()));
-    const h = tu.raw("help.cmdHelp.upgrade");
+    const { translate: tr } = await import("../../lib/i18n.js");
+    const tu = tr();
+    const h = tu.raw("ui:help.cmdHelp.upgrade");
     const o = h.options;
     const files = h.updatedFiles || [];
     console.log([
@@ -148,20 +146,20 @@ async function main() {
 
   const root = repoRoot();
   const config = loadConfig(root);
-  const t = createI18n(config.lang);
+  const t = translate();
   const dryRun = cli.dryRun;
 
   if (dryRun) {
-    console.log(t("upgrade.dryRunHeader"));
+    console.log(t("ui:upgrade.dryRunHeader"));
   }
 
   // 1. Skills upgrade
   const skillResults = upgradeSkills(root, dryRun);
   for (const { name, status } of skillResults) {
     if (status === "updated") {
-      console.log(t("upgrade.skillUpdated", { name }));
+      console.log(t("ui:upgrade.skillUpdated", { name }));
     } else {
-      console.log(t("upgrade.skillUnchanged", { name }));
+      console.log(t("ui:upgrade.skillUnchanged", { name }));
     }
   }
 
@@ -171,11 +169,11 @@ async function main() {
   // Summary
   const hasChanges = skillResults.some((r) => r.status === "updated");
   if (!hasChanges) {
-    console.log(t("upgrade.noChanges"));
+    console.log(t("ui:upgrade.noChanges"));
   } else if (dryRun) {
-    console.log(t("upgrade.dryRunFooter"));
+    console.log(t("ui:upgrade.dryRunFooter"));
   } else {
-    console.log(t("upgrade.done"));
+    console.log(t("ui:upgrade.done"));
   }
 }
 

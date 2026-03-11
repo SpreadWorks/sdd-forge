@@ -6,40 +6,29 @@
  * デフォルトプロジェクトを変更する。引数なしで一覧表示。
  */
 
-import fs from "fs";
-import path from "path";
 import { runIfDirect } from "../../lib/entrypoint.js";
 import { setDefault, loadProjects } from "../../lib/projects.js";
-import { createI18n } from "../../lib/i18n.js";
-import { DEFAULT_LANG } from "../../lib/config.js";
-
-function loadLang() {
-  try {
-    const home = process.env.HOME || process.env.USERPROFILE;
-    const raw = JSON.parse(fs.readFileSync(path.join(home, ".sdd-forge", "config.json"), "utf8"));
-    return raw.lang || DEFAULT_LANG;
-  } catch (_) { return DEFAULT_LANG; }
-}
+import { translate } from "../../lib/i18n.js";
 
 function main() {
   const args = process.argv.slice(2);
 
   if (args.includes("-h") || args.includes("--help")) {
-    const tu = createI18n(loadLang());
-    const h = tu.raw("help.cmdHelp.default");
+    const t = translate();
+    const h = t.raw("ui:help.cmdHelp.default");
     console.log([h.usage, "", `  ${h.desc}`, `  ${h.descDetail}`].join("\n"));
     return;
   }
 
   const [name] = args;
-  const t = createI18n(loadLang(), { domain: "messages" });
+  const t = translate();
 
   if (!name) {
     const data = loadProjects();
     if (!data) {
-      throw new Error(t("default.noProjects"));
+      throw new Error(t("messages:default.noProjects"));
     }
-    console.log(t("default.registered"));
+    console.log(t("messages:default.registered"));
     for (const [n, p] of Object.entries(data.projects)) {
       const mark = n === data.default ? " (default)" : "";
       console.log(`  ${n}${mark}  →  ${p.path}`);
@@ -49,7 +38,7 @@ function main() {
 
   try {
     setDefault(name);
-    console.log(t("default.setDefault", { name }));
+    console.log(t("messages:default.setDefault", { name }));
   } catch (err) {
     throw new Error(err.message);
   }

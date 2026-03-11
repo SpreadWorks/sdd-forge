@@ -12,12 +12,12 @@ import path from "path";
 import { fileURLToPath } from "url";
 import { runIfDirect } from "../../lib/entrypoint.js";
 import { repoRoot, parseArgs } from "../../lib/cli.js";
-import { loadLang, sddDataDir, sddOutputDir } from "../../lib/config.js";
+import { sddDataDir, sddOutputDir } from "../../lib/config.js";
 import { analyzeExtras } from "../lib/scanner.js";
 import { loadDataSources } from "../lib/data-source-loader.js";
 import { presetByLeaf } from "../../lib/presets.js";
 import { createLogger } from "../../lib/progress.js";
-import { createI18n } from "../../lib/i18n.js";
+import { translate } from "../../lib/i18n.js";
 import { resolveCommandContext } from "../lib/command-context.js";
 
 const logger = createLogger("scan");
@@ -27,8 +27,9 @@ const PRESETS_DIR = path.resolve(
   "../../presets",
 );
 
-function printHelp(t) {
-  const h = t.raw("help.cmdHelp.scan");
+function printHelp() {
+  const t = translate();
+  const h = t.raw("ui:help.cmdHelp.scan");
   const opts = h.options;
   console.log(
     [
@@ -121,8 +122,7 @@ async function main(ctx) {
       defaults: { stdout: false, dryRun: false },
     });
     if (cli.help) {
-      const root = repoRoot(import.meta.url);
-      printHelp(createI18n(loadLang(root)));
+      printHelp();
       return;
     }
     ctx = resolveCommandContext(cli);

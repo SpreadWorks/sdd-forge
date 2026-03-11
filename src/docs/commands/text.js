@@ -25,10 +25,10 @@ import {
   formatLimitRule,
 } from "../lib/text-prompts.js";
 import { repoRoot, parseArgs } from "../../lib/cli.js";
-import { loadConfig, loadLang, resolveConcurrency, DEFAULT_CONCURRENCY } from "../../lib/config.js";
+import { loadConfig, resolveConcurrency, DEFAULT_CONCURRENCY } from "../../lib/config.js";
 import { createLogger } from "../../lib/progress.js";
 import { callAgent as callAgentBase, callAgentAsync as callAgentAsyncBase, ensureAgentWorkDir, loadAgentConfig, LONG_AGENT_TIMEOUT_MS, MID_AGENT_TIMEOUT_MS } from "../../lib/agent.js";
-import { createI18n } from "../../lib/i18n.js";
+import { translate } from "../../lib/i18n.js";
 import { resolveCommandContext, getChapterFiles, loadFullAnalysis } from "../lib/command-context.js";
 
 const logger = createLogger("text");
@@ -510,14 +510,14 @@ async function main(ctx) {
     });
     cli.timeout = Number(cli.timeout) || DEFAULT_TIMEOUT_MS;
     if (cli.help) {
-      const tu = createI18n(loadLang(repoRoot(import.meta.url)));
-      const h = tu.raw("help.cmdHelp.text");
+      const t = translate();
+      const h = t.raw("ui:help.cmdHelp.text");
       const o = h.options;
       console.log([
         h.usage, "", "Options:",
-        `  ${tu("help.cmdHelp.text.options.agent")}`,
+        `  ${t("ui:help.cmdHelp.text.options.agent")}`,
         `  ${o.id}`, `  ${o.dryRun}`, `  ${o.perDirective}`,
-        `  ${tu("help.cmdHelp.text.options.timeout", { default: DEFAULT_TIMEOUT_MS })}`,
+        `  ${t("ui:help.cmdHelp.text.options.timeout", { default: DEFAULT_TIMEOUT_MS })}`,
         `  ${o.help}`,
       ].join("\n"));
       return;

@@ -13,9 +13,9 @@ import fs from "fs";
 import path from "path";
 import { runIfDirect } from "../../lib/entrypoint.js";
 import { repoRoot, parseArgs, isInsideWorktree } from "../../lib/cli.js";
-import { loadLang, sddConfigPath, sddDir, DEFAULT_LANG } from "../../lib/config.js";
+import { sddConfigPath, sddDir, DEFAULT_LANG } from "../../lib/config.js";
 import { runSync } from "../../lib/process.js";
-import { createI18n } from "../../lib/i18n.js";
+import { translate } from "../../lib/i18n.js";
 
 function runGit(root, args) {
   const res = runSync("git", ["-C", root, ...args]);
@@ -86,9 +86,9 @@ function detectBaseBranch(root) {
   }
 }
 
-function buildQaTemplate(lang) {
-  const t = createI18n(lang, { domain: "messages" });
-  const prompt = t("spec.qaConfirmationPrompt");
+function buildQaTemplate() {
+  const t = translate();
+  const prompt = t("messages:spec.qaConfirmationPrompt");
   return [
     "# Clarification Q&A",
     "",
@@ -150,7 +150,7 @@ function loadLocalTemplate(root, lang, fileName, fallback) {
 }
 
 function createQaTemplate(root, lang) {
-  return loadLocalTemplate(root, lang, "qa.md", buildQaTemplate(lang));
+  return loadLocalTemplate(root, lang, "qa.md", buildQaTemplate());
 }
 
 function createSpecTemplate({ branchName, specDirName }, root, lang) {
@@ -170,8 +170,8 @@ function main() {
     defaults: { title: "", base: "", dryRun: false, allowDirty: false, noBranch: false, worktree: false },
   });
   if (opts.help) {
-    const tu = createI18n(loadLang(repoRoot(import.meta.url)));
-    const h = tu.raw("help.cmdHelp.spec");
+    const tu = translate();
+    const h = tu.raw("ui:help.cmdHelp.spec");
     const o = h.options;
     console.log(
       [

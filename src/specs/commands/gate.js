@@ -9,8 +9,7 @@ import fs from "fs";
 import path from "path";
 import { runIfDirect } from "../../lib/entrypoint.js";
 import { repoRoot, parseArgs } from "../../lib/cli.js";
-import { loadLang } from "../../lib/config.js";
-import { createI18n } from "../../lib/i18n.js";
+import { translate } from "../../lib/i18n.js";
 
 /**
  * Detect which section a line belongs to by scanning headings above it.
@@ -104,8 +103,8 @@ function main() {
     defaults: { spec: "", phase: "pre" },
   });
   if (cli.help) {
-    const tu = createI18n(loadLang(root));
-    const h = tu.raw("help.cmdHelp.gate");
+    const tu = translate();
+    const h = tu.raw("ui:help.cmdHelp.gate");
     const o = h.options;
     const pd = h.phaseDetail;
     console.log([
@@ -122,20 +121,20 @@ function main() {
     throw new Error(`spec not found: ${specPath}`);
   }
 
-  const t = createI18n(loadLang(root), { domain: "messages" });
+  const t = translate();
 
   const phase = cli.phase === "post" ? "post" : "pre";
   const text = fs.readFileSync(specPath, "utf8");
   const issues = checkSpecText(text, { phase });
   if (issues.length > 0) {
-    console.error(t("gate.failed"));
+    console.error(t("messages:gate.failed"));
     for (const i of issues) {
       console.error(`- ${i}`);
     }
-    throw new Error(t("gate.failed"));
+    throw new Error(t("messages:gate.failed"));
   }
 
-  console.log(t("gate.passed"));
+  console.log(t("messages:gate.passed"));
 }
 
 export { main, checkSpecText };

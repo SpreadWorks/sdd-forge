@@ -10,10 +10,10 @@
 import fs from "fs";
 import path from "path";
 import { runIfDirect } from "../../lib/entrypoint.js";
-import { repoRoot, parseArgs } from "../../lib/cli.js";
-import { loadLang, sddOutputDir } from "../../lib/config.js";
+import { parseArgs } from "../../lib/cli.js";
+import { sddOutputDir } from "../../lib/config.js";
 import { callAgent, loadAgentConfig, LONG_AGENT_TIMEOUT_MS } from "../../lib/agent.js";
-import { createI18n } from "../../lib/i18n.js";
+import { translate } from "../../lib/i18n.js";
 import { createResolver } from "../lib/resolver-factory.js";
 import { createLogger } from "../../lib/progress.js";
 import { parseDirectives, replaceBlockDirective, resolveDataDirectives } from "../lib/directive-parser.js";
@@ -25,11 +25,11 @@ const logger = createLogger("agents");
 // AI プロンプト構築
 // ---------------------------------------------------------------------------
 
-function buildAgentsSystemPrompt(lang) {
-  const t = createI18n(lang || "ja", { domain: "prompts" });
-  const rules = t.raw("agents.outputRules") || [];
+function buildAgentsSystemPrompt() {
+  const t = translate();
+  const rules = t.raw("prompts:agents.outputRules") || [];
   return [
-    t("agents.systemPrompt"),
+    t("prompts:agents.systemPrompt"),
     "",
     "## Output Rules (strict)",
     ...rules.map((r) => `- ${r}`),
@@ -133,8 +133,8 @@ async function main(ctx) {
     });
 
     if (cli.help) {
-      const tu = createI18n(loadLang(repoRoot()));
-      const h = tu.raw("help.cmdHelp.agents");
+      const tu = translate();
+      const h = tu.raw("ui:help.cmdHelp.agents");
       const o = h.options;
       console.log([
         h.usage, "", `  ${h.desc}`, `  ${h.descDetail}`, "", "Options:",
@@ -151,13 +151,13 @@ async function main(ctx) {
 
   const agentsPath = path.join(srcRoot, "AGENTS.md");
   if (!fs.existsSync(agentsPath)) {
-    throw new Error(t("agents.notFound", { path: agentsPath }));
+    throw new Error(t("messages:agents.notFound", { path: agentsPath }));
   }
 
   // Load analysis
   const analysis = loadFullAnalysis(root);
   if (!analysis) {
-    throw new Error(t("agents.analysisNotFound", { path: path.join(sddOutputDir(root), "analysis.json") }));
+    throw new Error(t("messages:agents.analysisNotFound", { path: path.join(sddOutputDir(root), "analysis.json") }));
   }
 
   // Load generated docs as context (instead of raw analysis.json)
@@ -180,8 +180,8 @@ async function main(ctx) {
   if (projectContent) {
     const agent = loadAgentConfig(config);
 
-    logger.log(t("agents.refining"));
-    const systemPrompt = buildAgentsSystemPrompt(lang);
+    logger.log(t("messages:agents.refining"));
+    const systemPrompt = buildAgentsSystemPrompt();
     const prompt = buildRefinePrompt(projectContent, combinedDocs, config, srcRoot, sddContent);
 
     try {
@@ -194,17 +194,17 @@ async function main(ctx) {
       throw new Error(`AI agent call failed: ${err.message}`);
     }
 
-    logger.log(t("agents.generated"));
+    logger.log(t("messages:agents.generated"));
   }
 
   if (ctx.dryRun) {
-    logger.log(t("agents.dryRun", { path: agentsPath }));
+    logger.log(t("messages:agents.dryRun", { path: agentsPath }));
     console.log(content);
     return;
   }
 
   fs.writeFileSync(agentsPath, content, "utf8");
-  console.log(t("agents.updated", { path: agentsPath }));
+  console.log(t("messages:agents.updated", { path: agentsPath }));
 }
 
 export { main };

@@ -8,8 +8,7 @@
 
 import { runIfDirect } from "./lib/entrypoint.js";
 import { getPackageVersion } from "./lib/cli.js";
-import { loadLang } from "./lib/config.js";
-import { createI18n } from "./lib/i18n.js";
+import { translate } from "./lib/i18n.js";
 
 /** Command layout — name keys correspond to ui.json help.commands.* */
 const LAYOUT = [
@@ -43,21 +42,20 @@ const LAYOUT = [
 ];
 
 function main() {
-  const lang = loadLang(process.cwd());
-  const t = createI18n(lang, { domain: "ui" });
+  const t = translate();
   const version = getPackageVersion();
 
   const commands = LAYOUT.map((entry) => {
     if (entry.section) return entry;
-    return { name: entry.name, desc: t(`help.commands.${entry.name}`) };
+    return { name: entry.name, desc: t(`ui:help.commands.${entry.name}`) };
   });
 
   const maxName = Math.max(...commands.filter((c) => c.name).map((c) => c.name.length));
 
   console.log("");
-  console.log(`  \x1b[1mSDD Forge\x1b[0m v${version} — ${t("help.title")}`);
+  console.log(`  \x1b[1mSDD Forge\x1b[0m v${version} — ${t("ui:help.title")}`);
   console.log("");
-  console.log(`  ${t("help.usage")}`);
+  console.log(`  ${t("ui:help.usage")}`);
   console.log("");
 
   for (const cmd of commands) {
@@ -71,7 +69,7 @@ function main() {
   }
 
   console.log("");
-  console.log(`  ${t("help.runHelp")}`);
+  console.log(`  ${t("ui:help.runHelp")}`);
   console.log("");
 }
 

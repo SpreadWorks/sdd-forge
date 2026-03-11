@@ -45,11 +45,9 @@ async function main(ctx) {
     });
 
     if (cli.help) {
-      const { loadLang } = await import("../../lib/config.js");
-      const { createI18n } = await import("../../lib/i18n.js");
-      const { repoRoot } = await import("../../lib/cli.js");
-      const tu = createI18n(loadLang(repoRoot()));
-      const h = tu.raw("help.cmdHelp.readme");
+      const { translate: tr } = await import("../../lib/i18n.js");
+      const t = tr();
+      const h = t.raw("ui:help.cmdHelp.readme");
       const o = h.options;
       console.log([h.usage, "", `  ${h.desc}`, "", "Options:", `  ${o.dryRun}`, `  ${o.help}`].join("\n"));
       return;
@@ -63,7 +61,7 @@ async function main(ctx) {
   const { root, config, outputLang: lang, type, t } = ctx;
 
   if (!type) {
-    console.log(t("readme.noType"));
+    console.log(t("messages:readme.noType"));
     return;
   }
 
@@ -81,13 +79,13 @@ async function main(ctx) {
 
   const readmeRes = resolutions.find((r) => r.fileName === "README.md");
   if (!readmeRes) {
-    logger.log(t("readme.noTemplate", { type }));
+    logger.log(t("messages:readme.noTemplate", { type }));
     return;
   }
 
   let merged = mergeResolved(readmeRes.sources);
   if (!merged) {
-    logger.log(t("readme.noTemplate", { type }));
+    logger.log(t("messages:readme.noTemplate", { type }));
     return;
   }
 
@@ -137,20 +135,20 @@ async function main(ctx) {
   if (fs.existsSync(readmePath)) {
     const current = fs.readFileSync(readmePath, "utf8");
     if (current === newContent) {
-      logger.log(t("readme.noChanges"));
+      logger.log(t("messages:readme.noChanges"));
       return;
     }
   }
 
   if (ctx.dryRun) {
-    logger.log(t("readme.dryRun"));
+    logger.log(t("messages:readme.dryRun"));
     console.log("---");
     console.log(newContent);
     return;
   }
 
   fs.writeFileSync(readmePath, newContent, "utf8");
-  logger.log(t("readme.updated"));
+  logger.log(t("messages:readme.updated"));
 }
 
 export { main };

@@ -10,8 +10,8 @@ import fs from "fs";
 import path from "path";
 import { runIfDirect } from "../../lib/entrypoint.js";
 import { repoRoot, parseArgs } from "../../lib/cli.js";
-import { loadConfig, loadLang, sddOutputDir } from "../../lib/config.js";
-import { createI18n } from "../../lib/i18n.js";
+import { loadConfig, sddOutputDir } from "../../lib/config.js";
+import { translate } from "../../lib/i18n.js";
 import { resolveOutputConfig } from "../../lib/types.js";
 import { getChapterFiles } from "../lib/command-context.js";
 import { collectOutputs, compareOutputs, snapshotDir } from "./snapshot.js";
@@ -81,8 +81,8 @@ function main() {
   const opts = parseArgs(args, { flags: [], options: [] });
 
   if (opts.help) {
-    const tu = createI18n(loadLang(repoRoot()));
-    const h = tu.raw("help.cmdHelp.review");
+    const tu = translate();
+    const h = tu.raw("ui:help.cmdHelp.review");
     console.log(h.usage);
     console.log("");
     console.log(`  ${h.desc}`);
@@ -91,7 +91,7 @@ function main() {
   }
 
   const root = repoRoot();
-  const t = createI18n(loadLang(root), { domain: "messages" });
+  const t = translate();
   const targetDir = args.find((a) => !a.startsWith("-")) || path.join(root, "docs");
 
   // Discover chapter files (NN_*.md)
@@ -101,10 +101,10 @@ function main() {
   }
 
   if (chapterFiles.length === 0) {
-    throw new Error(t("review.noChapters", { dir: targetDir }));
+    throw new Error(t("messages:review.noChapters", { dir: targetDir }));
   }
 
-  console.log(t("review.foundChapters", { count: chapterFiles.length }));
+  console.log(t("messages:review.foundChapters", { count: chapterFiles.length }));
 
   const MIN_LINES = 15;
   let fail = 0;
@@ -113,7 +113,7 @@ function main() {
     const filePath = path.join(targetDir, f);
 
     if (!fs.existsSync(filePath)) {
-      console.log(t("review.missingFile", { path: filePath }));
+      console.log(t("messages:review.missingFile", { path: filePath }));
       fail = 1;
       continue;
     }
@@ -123,13 +123,13 @@ function main() {
 
     // Line count check
     if (lines.length < MIN_LINES) {
-      console.log(t("review.tooShort", { lines: lines.length, file: f }));
+      console.log(t("messages:review.tooShort", { lines: lines.length, file: f }));
       fail = 1;
     }
 
     // H1 heading check
     if (!lines.some((line) => /^# /.test(line))) {
-      console.log(t("review.missingH1", { file: f }));
+      console.log(t("messages:review.missingH1", { file: f }));
       fail = 1;
     }
 
@@ -147,7 +147,7 @@ function main() {
       }
     }
     if (unfilled > 0) {
-      console.log(t("review.unfilledText", { count: unfilled, file: f }));
+      console.log(t("messages:review.unfilledText", { count: unfilled, file: f }));
     }
   }
 
@@ -168,7 +168,7 @@ function main() {
       }
     }
     if (unfilledData > 0) {
-      console.log(t("review.unfilledData", { count: unfilledData, file: f }));
+      console.log(t("messages:review.unfilledData", { count: unfilledData, file: f }));
       fail = 1;
     }
   }
@@ -184,15 +184,15 @@ function main() {
     const content = fs.readFileSync(target.path, "utf8");
     const result = checkOutputIntegrity(content);
     if (result.exposedDirectives > 0) {
-      console.log(t("review.exposedDirective", { count: result.exposedDirectives, file: target.label }));
+      console.log(t("messages:review.exposedDirective", { count: result.exposedDirectives, file: target.label }));
       fail = 1;
     }
     if (result.brokenComments) {
-      console.log(t("review.brokenComment", { file: target.label }));
+      console.log(t("messages:review.brokenComment", { file: target.label }));
       fail = 1;
     }
     if (result.residualBlocks > 0) {
-      console.log(t("review.residualBlock", { count: result.residualBlocks, file: target.label }));
+      console.log(t("messages:review.residualBlock", { count: result.residualBlocks, file: target.label }));
       fail = 1;
     }
   }
@@ -200,14 +200,14 @@ function main() {
   // analysis.json existence and freshness check (WARN)
   const analysisPath = path.join(sddOutputDir(root), "analysis.json");
   if (!fs.existsSync(analysisPath)) {
-    console.log(t("review.analysisNotFound"));
+    console.log(t("messages:review.analysisNotFound"));
   } else {
     const analysisMtime = fs.statSync(analysisPath).mtimeMs;
     const projectFiles = ["package.json", "composer.json"];
     for (const pf of projectFiles) {
       const pfPath = path.join(root, pf);
       if (fs.existsSync(pfPath) && fs.statSync(pfPath).mtimeMs > analysisMtime) {
-        console.log(t("review.analysisStale", { file: pf }));
+        console.log(t("messages:review.analysisStale", { file: pf }));
         break;
       }
     }
@@ -215,7 +215,7 @@ function main() {
 
   // README.md check (warn only)
   if (!fs.existsSync(path.join(root, "README.md"))) {
-    console.log(t("review.readmeNotFound"));
+    console.log(t("messages:review.readmeNotFound"));
   }
 
   // Multi-language: check non-default language directories
@@ -242,24 +242,24 @@ function main() {
           const lines = content.split("\n");
           const label = `${lang}/${f}`;
           if (lines.length < MIN_LINES) {
-            console.log(t("review.tooShort", { lines: lines.length, file: label }));
+            console.log(t("messages:review.tooShort", { lines: lines.length, file: label }));
             fail = 1;
           }
           if (!lines.some((line) => /^# /.test(line))) {
-            console.log(t("review.missingH1", { file: label }));
+            console.log(t("messages:review.missingH1", { file: label }));
             fail = 1;
           }
           const result = checkOutputIntegrity(content);
           if (result.exposedDirectives > 0) {
-            console.log(t("review.exposedDirective", { count: result.exposedDirectives, file: label }));
+            console.log(t("messages:review.exposedDirective", { count: result.exposedDirectives, file: label }));
             fail = 1;
           }
           if (result.brokenComments) {
-            console.log(t("review.brokenComment", { file: label }));
+            console.log(t("messages:review.brokenComment", { file: label }));
             fail = 1;
           }
           if (result.residualBlocks > 0) {
-            console.log(t("review.residualBlock", { count: result.residualBlocks, file: label }));
+            console.log(t("messages:review.residualBlock", { count: result.residualBlocks, file: label }));
             fail = 1;
           }
         }
@@ -323,10 +323,10 @@ function main() {
   }
 
   if (fail !== 0) {
-    throw new Error(t("review.failed"));
+    throw new Error(t("messages:review.failed"));
   }
 
-  console.log(t("review.passed"));
+  console.log(t("messages:review.passed"));
 }
 
 export { main };

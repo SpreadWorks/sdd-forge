@@ -19,12 +19,12 @@ import { populateFromAnalysis } from "./data.js";
 import { textFillFromAnalysis } from "./text.js";
 import { mapWithConcurrency } from "../lib/concurrency.js";
 import { PKG_DIR, repoRoot, parseArgs } from "../../lib/cli.js";
-import { loadConfig, loadLang, resolveConcurrency } from "../../lib/config.js";
+import { loadConfig, resolveConcurrency } from "../../lib/config.js";
 import { resolveType } from "../../lib/types.js";
 import { loadFullAnalysis, loadAnalysisData, getChapterFiles, readText } from "../lib/command-context.js";
 import { createResolver } from "../lib/resolver-factory.js";
 import { callAgentAsync, LONG_AGENT_TIMEOUT_MS, resolveAgent } from "../../lib/agent.js";
-import { createI18n } from "../../lib/i18n.js";
+import { translate } from "../../lib/i18n.js";
 import {
   summaryToText,
   buildForgeSystemPrompt,
@@ -109,8 +109,8 @@ function parseCliOptions(argv) {
 }
 
 function printHelp() {
-  const tu = createI18n(loadLang(repoRoot(import.meta.url)));
-  const h = tu.raw("help.cmdHelp.forge");
+  const t = translate();
+  const h = t.raw("ui:help.cmdHelp.forge");
   const o = h.options;
   console.log(
     [
@@ -221,7 +221,7 @@ async function main() {
   const root = repoRoot(import.meta.url);
   const config = loadConfig(root);
   const lang = config.output.default;
-  const t = createI18n(config.lang, { domain: "messages" });
+  const t = translate();
   const agent = resolveAgent(config, cli.agent);
   const mode = cli.mode || DEFAULT_MODE;
   const timeoutMs = Number(config.limits?.designTimeoutMs || 0) || undefined;
@@ -263,14 +263,14 @@ async function main() {
     userPrompt = readText(path.resolve(root, cli.promptFile)).trim();
   }
   if (!userPrompt) {
-    throw new Error(t("forge.promptRequired"));
+    throw new Error(t("messages:forge.promptRequired"));
   }
   let specPath = "";
   let specText = "";
   if (cli.spec) {
     specPath = path.resolve(root, cli.spec);
     if (!fs.existsSync(specPath)) {
-      throw new Error(t("forge.specNotFound", { path: specPath }));
+      throw new Error(t("messages:forge.specNotFound", { path: specPath }));
     }
     specText = readText(specPath).trim();
   }
@@ -457,8 +457,8 @@ async function main() {
         "[forge] no local patch candidates found after agent failure."
       );
     } else if (mode === "local" && !usedAgent) {
-      console.log(t("forge.needsInput"));
-      console.log(t("forge.reviewFeedback"));
+      console.log(t("messages:forge.needsInput"));
+      console.log(t("messages:forge.reviewFeedback"));
       const lines = summarizeNeedsInput(reviewOut);
       for (const line of lines) {
         console.log(`- ${line}`);

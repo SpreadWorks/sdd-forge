@@ -12,10 +12,10 @@ import fs from "fs";
 import path from "path";
 import { runIfDirect } from "./lib/entrypoint.js";
 import { PKG_DIR, repoRoot, parseArgs, isInsideWorktree, getMainRepoPath } from "./lib/cli.js";
-import { loadLang, sddDir } from "./lib/config.js";
+import { sddDir } from "./lib/config.js";
 import { runSync } from "./lib/process.js";
 import { saveFlowState } from "./lib/flow-state.js";
-import { createI18n } from "./lib/i18n.js";
+import { translate } from "./lib/i18n.js";
 
 function run(root, cmd, args) {
   const res = runSync(cmd, args, { cwd: root });
@@ -83,15 +83,14 @@ function detectUserConfirmationIssue(specAbs) {
 
 function main() {
   const root = repoRoot(import.meta.url);
-  const t = createI18n(loadLang(root), { domain: "messages" });
+  const t = translate();
   const cli = parseArgs(process.argv.slice(2), {
     flags: ["--no-branch", "--dry-run", "--worktree"],
     options: ["--request", "--title", "--spec", "--agent", "--max-runs", "--forge-mode"],
     defaults: { request: "", title: "", spec: "", agent: "", maxRuns: "5", forgeMode: "local", noBranch: false, worktree: false, dryRun: false },
   });
   if (cli.help) {
-    const tu = createI18n(loadLang(root));
-    const h = tu.raw("help.cmdHelp.flow");
+    const h = t.raw("ui:help.cmdHelp.flow");
     const o = h.options;
     console.log(
       [
@@ -132,10 +131,10 @@ function main() {
     if (!specRel) {
       specRel = fallbackLatestSpec(root);
       if (!specRel) {
-        console.error(t("flow.failedParse"));
+        console.error(t("messages:flow.failedParse"));
         process.exit(1);
       }
-      console.warn(t("flow.fallbackSpec", { path: specRel }));
+      console.warn(t("messages:flow.fallbackSpec", { path: specRel }));
     }
   }
 
@@ -150,13 +149,13 @@ function main() {
     const needsApproval = lines.some((l) =>
       l.toLowerCase().includes("user confirmation is required"),
     );
-    console.log(t("flow.needsInput"));
-    console.log(t("flow.gateFailed"));
+    console.log(t("messages:flow.needsInput"));
+    console.log(t("messages:flow.gateFailed"));
     if (needsApproval || detectUserConfirmationIssue(specAbs)) {
-      console.log(t("flow.needsApproval"));
-      console.log(t("flow.approvalInstruction"));
+      console.log(t("messages:flow.needsApproval"));
+      console.log(t("messages:flow.approvalInstruction"));
     } else if (lines.length === 0) {
-      console.log(t("flow.unresolvedItems"));
+      console.log(t("messages:flow.unresolvedItems"));
     } else {
       for (const l of lines.slice(0, 8)) {
         console.log(l);

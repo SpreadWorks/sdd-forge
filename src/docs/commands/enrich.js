@@ -12,13 +12,13 @@
 import fs from "fs";
 import path from "path";
 import { runIfDirect } from "../../lib/entrypoint.js";
-import { repoRoot, parseArgs } from "../../lib/cli.js";
-import { loadLang, sddOutputDir } from "../../lib/config.js";
+import { parseArgs } from "../../lib/cli.js";
+import { sddOutputDir } from "../../lib/config.js";
 import { resolveAgent, callAgentAsync, LONG_AGENT_TIMEOUT_MS } from "../../lib/agent.js";
 import { resolveCommandContext, loadFullAnalysis } from "../lib/command-context.js";
 import { resolveChaptersOrder } from "../lib/template-merger.js";
 import { createLogger } from "../../lib/progress.js";
-import { createI18n } from "../../lib/i18n.js";
+import { translate } from "../../lib/i18n.js";
 
 const logger = createLogger("enrich");
 
@@ -26,8 +26,9 @@ const META_KEYS = new Set(["analyzedAt", "enrichedAt", "generatedAt", "extras", 
 const DEFAULT_BATCH_SIZE = 20;
 const DEFAULT_BATCH_LINES = 3000;
 
-function printHelp(t) {
-  const h = t.raw("help.cmdHelp.enrich");
+function printHelp() {
+  const t = translate();
+  const h = t.raw("ui:help.cmdHelp.enrich");
   const opts = h.options;
   console.log(
     [
@@ -295,8 +296,7 @@ async function main(ctx) {
       defaults: { stdout: false, dryRun: false },
     });
     if (cli.help) {
-      const root = repoRoot(import.meta.url);
-      printHelp(createI18n(loadLang(root), { domain: "ui" }));
+      printHelp();
       return;
     }
     ctx = resolveCommandContext(cli);

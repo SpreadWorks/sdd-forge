@@ -16,9 +16,9 @@ import { runIfDirect } from "../../lib/entrypoint.js";
 import { resolveDataDirectives } from "../lib/directive-parser.js";
 import { createResolver } from "../lib/resolver-factory.js";
 import { repoRoot, parseArgs } from "../../lib/cli.js";
-import { loadLang, sddOutputDir } from "../../lib/config.js";
+import { sddOutputDir } from "../../lib/config.js";
 import { createLogger } from "../../lib/progress.js";
-import { createI18n } from "../../lib/i18n.js";
+import { translate } from "../../lib/i18n.js";
 import { resolveCommandContext, getChapterFiles } from "../lib/command-context.js";
 
 const logger = createLogger("data");
@@ -98,8 +98,8 @@ async function main(ctx) {
       defaults: { dryRun: false, stdout: false, docsDir: "" },
     });
     if (cli.help) {
-      const tu = createI18n(loadLang(repoRoot(import.meta.url)));
-      const h = tu.raw("help.cmdHelp.data");
+      const t = translate();
+      const h = t.raw("ui:help.cmdHelp.data");
       const o = h.options;
       console.log([h.usage, "", h.desc, "", "Options:", `  ${o.dryRun}`, `  ${o.stdout}`, `  ${o.help}`].join("\n"));
       return;
@@ -114,7 +114,7 @@ async function main(ctx) {
   const analysisPath = path.join(sddOutputDir(root), "analysis.json");
 
   if (!fs.existsSync(analysisPath)) {
-    throw new Error(`${t("data.analysisNotFound", { path: analysisPath })}\n${t("data.runScanFirst")}`);
+    throw new Error(`${t("messages:data.analysisNotFound", { path: analysisPath })}\n${t("messages:data.runScanFirst")}`);
   }
 
   const analysis = JSON.parse(fs.readFileSync(analysisPath, "utf8"));
@@ -126,7 +126,7 @@ async function main(ctx) {
     resolveFn = (source, method, a, labels) => resolver.resolve(source, method, a, labels);
     logger.verbose(`resolver: ${type}`);
   } catch (err) {
-    throw new Error(t("data.resolverFailed", { message: err.message }));
+    throw new Error(t("messages:data.resolverFailed", { message: err.message }));
   }
 
   const docsFiles = getChapterFiles(docsDir);
@@ -175,7 +175,7 @@ async function main(ctx) {
   }
 
   const verb = ctx.dryRun ? "would update" : "updated";
-  logger.log(t("data.done", { count: changedFiles.size, verb, replaced: totalReplaced, skipped: totalSkipped }));
+  logger.log(t("messages:data.done", { count: changedFiles.size, verb, replaced: totalReplaced, skipped: totalSkipped }));
 }
 
 export { main };
