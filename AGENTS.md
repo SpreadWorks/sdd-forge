@@ -10,85 +10,90 @@
 
 **docs とソースコードに矛盾がある場合はソースコードを正とする。**
 
-docs の内容は以下の 2 種類で構成される:
+docs の内容は以下の 3 種類で構成される:
 
 | 種類 | 生成元 | 説明 |
 |---|---|---|
 | 解析データ | `{{data}}` ディレクティブ | ソースコードから自動抽出された構造情報 |
 | AI 生成テキスト | `{{text}}` ディレクティブ | AI がソースと文脈から生成した説明文 |
+| ユーザー独自情報 | ユーザーからの情報 | ソースコードからで取得出来ない運用情報などをディレクティブ外に記述 |
 
 #### 鮮度チェック
 
-作業開始前に docs/ 内のファイルとソースコードの更新日時を比較すること。
-ソースコードの方が新しい場合、docs の情報が古い可能性がある。
-必要に応じて `sdd-forge build` の実行をユーザーに提案すること。
+作業開始前に docs/ とソースコードの更新日時を比較すること。
+ソースが新しい場合は `sdd-forge build` の実行をユーザーに提案すること。
 
 ### SDD フロー
 
 機能追加・修正の指示を受けた場合、`/sdd-flow-start` スキルを実行すること。
 スキルが利用できない環境では、以下を必ずこの順で実行すること。
 
-**原則: SDD フロー中のすべてのステップで、次の行動について必ずユーザーに確認する。AI が勝手に次のステップに進まない。**
+**原則: 各ステップで次の行動を必ずユーザーに確認する。AI が勝手に次のステップに進まない。**
 
-1. 進め方を選択する:
-   1. **要件を整理してから仕様書を作成する**: 対話で方針を詰めてから spec を作成
-   2. **仕様書を作成する**: 要件が明確な場合。従来通り spec から開始
-2. ブランチ戦略を決定する（**spec 作成前に必ずユーザーに確認すること**）
-   - worktree 内の場合は自動で `--no-branch` を付与（確認不要）
-   - それ以外では以下の番号付き選択肢を提示すること:
-     1. **Branch**（デフォルト）: 現在のブランチから feature ブランチを作成
-     2. **Worktree**: git worktree で隔離環境を作成
-     3. **Spec only**: ブランチを作成せず spec のみ
-3. `sdd-forge spec --title "<機能名>"` で spec を作成（既存 spec がある場合はそれを使用）
-4. （1 を選んだ場合）draft フェーズで対話的に要件を詰める
-   - `specs/NNN-xxx/draft.md` に記録（手順 3 で作成されたディレクトリに配置）
-   - 1 問ずつ聞く（まとめて聞かない、勝手に回答しない）
-   - 脱線は 1 往復で解決を試み、未解決なら Open Questions に記録
-   - ユーザー承認後（`- [x] User approved this draft`）に spec に清書
-   - draft.md は specs/ に残す
-5. 仕様要約を提示し、以下の番号付き選択肢を提示する:
-   1. **実装する**: 手順 6 へ進む
-   2. **仕様書を修正する**: ユーザーからフィードバックを受け取り、spec.md を修正 → 再度手順 5 へ
-   3. **その他**: ユーザーの自由入力を受け付け、内容に応じて対応する
-6. 承認後、`spec.md` の `## User Confirmation` を更新（`- [x] User approved this spec`）
-7. `sdd-forge gate --spec specs/NNN-xxx/spec.md` でゲートチェック
-8. gate が FAIL の場合、未解決事項を一問一答で解消する（この時点では実装禁止）
-9. テストフェーズ（gate PASS 後）
-   - analysis.json からテスト環境を自動判定
-   - テスト環境あり: テスト種別確認 → テスト観点提示 → ユーザー承認 → テストコード生成 → 実装
-   - テスト環境なし: AI が spec と実装の照合チェックを実施
-   - テスト環境の構築が必要な場合: 別 spec として扱う
+1. 進め方をユーザーに確認
+2. ブランチ戦略をユーザーに確認
+3. `sdd-forge spec --title "<機能名>"` で spec 作成（既存があればそれを使用）
+4. （要件整理を選択した場合）draft フェーズ（→ AI 動作ルール参照）
+5. 仕様要約を提示しユーザーに確認
+6. 承認後、`spec.md` の `## User Confirmation` を更新
+7. `sdd-forge gate --spec specs/NNN-xxx/spec.md`
+8. gate FAIL 時は未解決事項を一問一答で解消
+9. テストフェーズ（→ AI 動作ルール参照）
 10. 実装
 11. `sdd-forge forge --prompt "<変更内容の要約>" --spec specs/NNN-xxx/spec.md`
 12. `sdd-forge review`
 
+**ユーザーに提示する選択肢:**
+
+ステップ 1 — 進め方:
+1. **要件整理**
+2. **仕様書作成**
+
+ステップ 2 — ブランチ戦略:
+1. **Branch**
+2. **Worktree**
+3. **Spec only**
+
+ステップ 5 — 仕様レビュー:
+1. **実装する**
+2. **仕様書を修正する**
+3. **その他**
+
+**AI 動作ルール:**
+
+| ステップ | ルール |
+|---|---|
+| 2 | worktree 内は自動で `--no-branch`（ユーザー確認不要） |
+| 4 | `specs/NNN-xxx/draft.md` に記録。1 問ずつ聞く（まとめない、自答しない）。脱線は 1 往復で解決、未解決は Open Questions へ。承認後に spec へ清書、draft.md は残す |
+| 5 (修正) | フィードバック → spec.md 修正 → ステップ 5 に戻る |
+| 8 | 一問一答で解消（実装禁止） |
+| 9 | analysis.json からテスト環境を自動判定。あり: テスト観点提示 → ユーザー承認 → テストコード生成。なし: AI が spec と実装の照合チェック。構築が必要: 別 spec |
+
 **失敗時ポリシー:**
-- gate が PASS するまで実装・編集を開始しない
-- review が PASS するまで完了扱いにしない
-- ユーザー確認が未承認のまま実装してはならない
-- テスト観点のユーザーレビューを省略してはならない（テスト環境ありの場合）
+- gate PASS まで実装禁止
+- review PASS まで完了扱い禁止
+- ユーザー未承認のまま実装禁止
+- テスト観点のユーザーレビュー省略禁止（テスト環境ありの場合）
 
 ### 終了処理
 
 実装完了後は `/sdd-flow-close` スキルを実行すること。
-スキルが利用できない環境では、以下の手順でユーザーに選択肢を提示すること。
+スキルが利用できない場合は以下の番号付き選択肢をユーザーに提示:
 
-**以下の番号付き選択肢を提示すること:**
-1. **docs のみ**: docs 更新のみ（コミット・マージしない）
-2. **commit+merge**: コミット → base ブランチにマージ → `.sdd-forge/current-spec` 削除
-3. **docs+commit+merge**: docs 更新 → コミット → base ブランチにマージ → `.sdd-forge/current-spec` 削除
-4. **commit+merge+branch 削除**: コミット → base ブランチにマージ → feature ブランチ削除 → `.sdd-forge/current-spec` 削除
+1. **ドキュメント更新+コミット+マージ+ブランチ削除**
+2. **ドキュメント更新**
+3. **コミット**
+4. **コミット+マージ**
+5. **コミット+マージ+ブランチ削除**
 
-**docs を含む選択肢（1, 3）の場合:**
-1. `sdd-forge forge --prompt "<変更内容の要約>" --spec specs/NNN-xxx/spec.md`（docs 更新）
-2. `sdd-forge review`（品質チェック — PASS するまで繰り返す）
+選択に応じて以下を実行する:
 
-**コミット・マージを含む選択肢（2, 3, 4）の共通手順:**
-1. `sdd-forge gate --spec specs/NNN-xxx/spec.md --phase post`（全チェック項目の確認）
-2. feature ブランチでコミット
-3. base ブランチにマージ（`config.flow.merge` に従う: squash / ff-only / merge）
-4. `.sdd-forge/current-spec` を削除
-5. （4 の場合のみ）feature ブランチを削除
+| 処理 | 対象の選択肢 | 手順 |
+|---|---|---|
+| docs 更新 | 1, 2 | `sdd-forge forge` → `sdd-forge review`（PASS まで繰り返す） |
+| コミット | 1, 3, 4, 5 | `sdd-forge gate --phase post` → feature ブランチでコミット |
+| マージ | 1, 4, 5 | base ブランチにマージ（`config.flow.merge`）→ `.sdd-forge/current-spec` 削除 |
+| ブランチ削除 | 1, 5 | feature ブランチを削除 |
 
 ### sdd-forge コマンド
 
@@ -99,8 +104,8 @@ docs の内容は以下の 2 種類で構成される:
 | `sdd-forge build` | ドキュメント一括生成（scan → init → data → text → readme） |
 | `sdd-forge scan` | ソースコード解析 → analysis.json |
 | `sdd-forge init` | テンプレートから docs/ を初期化 |
-| `sdd-forge data` | {{data}} ディレクティブを解析データで解決 |
-| `sdd-forge text --agent <name>` | {{text}} ディレクティブを AI で解決 |
+| `sdd-forge data` | `{{data}}` ディレクティブを解析データで解決 |
+| `sdd-forge text --agent <name>` | `{{text}}` ディレクティブを AI で解決 |
 | `sdd-forge readme` | README.md 自動生成 |
 | `sdd-forge forge --prompt "<内容>"` | docs 反復改善 |
 | `sdd-forge review` | docs 品質チェック |
@@ -113,19 +118,19 @@ docs の内容は以下の 2 種類で構成される:
 
 ### docs/ 編集ルール
 
-- docs/ の内容は原則としてソースコード解析から自動生成される
+- docs/ は原則としてソースコード解析から自動生成される
 - `{{data}}` / `{{text}}` ディレクティブの内部は自動生成で上書きされる
 - ディレクティブの外に記述した内容は上書きされない
-- docs/ のファイルは `NN_name.md` の連番で管理する
-- 実装・修正後は SDD フローに従って forge → review を実行すること
+- 章の並び順は `preset.json` の `chapters` 配列で定義される
+- 実装・修正後は SDD フローに従い forge → review を実行すること
 
 <!-- {{/data}} -->
 
 <!-- {{data: agents.project("")}} -->
 ## Project Context
 
-- **generated_at:** 2026-03-09 13:05:55 UTC
-- **package:** `sdd-forge` v0.1.0-alpha.27
+- **generated_at:** 2026-03-11 06:40:54 UTC
+- **package:** `sdd-forge` v0.1.0-alpha.28
 - **description:** Spec-Driven Development tooling for automated documentation generation
 - **repository:** https://github.com/SpreadWorks/sdd-forge.git
 - **license:** MIT
@@ -159,7 +164,7 @@ sdd-forge/
 │   ├── docs/
 │   │   ├── commands/             ← scan, init, data, text, readme, forge, review,
 │   │   │                            agents, changelog, setup, default-project,
-│   │   │                            snapshot, upgrade, translate
+│   │   │                            snapshot, upgrade, translate, enrich
 │   │   ├── data/                 ← project.js, docs.js, agents.js, lang.js
 │   │   └── lib/                  ← scanner, directive-parser, template-merger,
 │   │                                forge-prompts, text-prompts, data-source,
@@ -191,8 +196,13 @@ sdd-forge/
 │                                    skills/sdd-flow-start/, skills/sdd-flow-close/,
 │                                    skills/sdd-flow-status/
 ├── docs/                         ← sdd-forge 自身の設計ドキュメント（npm 公開対象）
-├── tests/                        ← テストファイル（*.test.js）
-└── specs/                        ← SDD spec ファイル（033 件以上蓄積）
+│   ├── 01_overview.md
+│   ├── 02_cli_commands.md
+│   ├── 03_configuration.md
+│   ├── 04_internal_design.md
+│   └── ja/                       ← 日本語版
+├── tests/                        ← テストファイル（*.test.js、45 ファイル）
+└── specs/                        ← SDD spec ファイル（041 件蓄積）
 ```
 
 ### コマンドルーティングアーキテクチャ（3 層ディスパッチ）
@@ -200,7 +210,8 @@ sdd-forge/
 ```
 sdd-forge.js（エントリポイント）
   ├─ docs.js      → docs/commands/{scan,init,data,text,readme,forge,review,
-  │                               agents,changelog,setup,snapshot,upgrade,translate,...}.js
+  │                               agents,changelog,setup,snapshot,upgrade,translate,
+  │                               enrich,default-project,...}.js
   ├─ spec.js      → specs/commands/{init,gate}.js
   ├─ flow.js      （DIRECT_COMMAND — サブルーティングなし）
   └─ presets-cmd.js（DIRECT_COMMAND）
@@ -210,7 +221,7 @@ sdd-forge.js（エントリポイント）
 
 | サブコマンド | ディスパッチャー |
 |---|---|
-| `build`, `scan`, `init`, `data`, `text`, `readme`, `forge`, `review`, `changelog`, `agents`, `snapshot`, `upgrade`, `translate`, `setup`, `default` | `docs.js` |
+| `build`, `scan`, `enrich`, `init`, `data`, `text`, `readme`, `forge`, `review`, `changelog`, `agents`, `snapshot`, `upgrade`, `translate`, `setup`, `default` | `docs.js` |
 | `spec`, `gate` | `spec.js` |
 | `flow` | `flow.js`（DIRECT_COMMAND） |
 | `presets` | `presets-cmd.js`（DIRECT_COMMAND） |
@@ -226,8 +237,10 @@ sdd-forge.js（エントリポイント）
 **build パイプライン:**
 
 ```
-scan → init → data → text → readme → agents → [translate（多言語時のみ）]
+scan → enrich（★）→ init → data → text → readme → agents → [translate（多言語時のみ）]
 ```
+
+> ★ `enrich` は AI が analysis.json の各エントリに `summary` / `detail` / `chapter` / `role` フィールドを一括付与する新ステップ。バッチ処理 + 再開可能。
 
 ### 主要コンポーネント
 
@@ -242,7 +255,7 @@ scan → init → data → text → readme → agents → [translate（多言語
 | `ensureAgentWorkDir()` | `-C <dir>` 引数のパス検証・自動作成 |
 
 - `{{PROMPT}}` プレースホルダーで引数リストにプロンプトを注入（未使用の場合は末尾に追加）
-- `systemPromptFlag`: `"--system-prompt"` または `"--system-prompt-file"`（一時ファイル書き込み対応）
+- `systemPromptFlag`: `"--system-prompt"`（`--system-prompt-file` は**存在しない** — 削除済み）
 - `CLAUDECODE` 環境変数を削除して Claude CLI のハングを防止（`stdin: "ignore"` で EOF 問題を回避）
 - タイムアウト定数: `DEFAULT_AGENT_TIMEOUT_MS`=120s / `MID_AGENT_TIMEOUT_MS`=180s / `LONG_AGENT_TIMEOUT_MS`=300s
 
@@ -270,8 +283,8 @@ scan → init → data → text → readme → agents → [translate（多言語
 |---|---|
 | `.sdd-forge/config.json` | プロジェクト設定（バリデーションあり） |
 | `.sdd-forge/context.json` | プロジェクトコンテキスト文字列 |
-| `.sdd-forge/output/analysis.json` | `sdd-forge scan` の解析結果（フル、インデントなし） |
-| `.sdd-forge/output/summary.json` | AI 向け軽量版（優先使用、なければ analysis にフォールバック） |
+| `.sdd-forge/output/analysis.json` | `sdd-forge scan` の解析結果（フル）。enrich 後は各エントリに `summary` / `detail` / `chapter` / `role` が付与される |
+| `.sdd-forge/output/summary.json` | AI 向け軽量版（廃止予定。enrich の `summary`/`detail` フィールドが役割を吸収） |
 | `.sdd-forge/current-spec` | SDD フロー進行状態（JSON） |
 | `.sdd-forge/projects.json` | 複数プロジェクト登録情報 |
 | `.sdd-forge/snapshots/` | スナップショットテスト保存ディレクトリ |
@@ -321,6 +334,17 @@ scan → init → data → text → readme → agents → [translate（多言語
 | `presetByLeaf(leaf)` | キー名（`"cakephp2"` 等）でプリセットを検索 |
 | `buildTypeAliases()` | エイリアス → 正規 type パスのマップ生成 |
 
+#### `src/docs/commands/enrich.js` — AI エンリッチメント（新規）
+
+analysis.json の各エントリに AI が役割情報を一括付与するコマンド。
+
+| 項目 | 内容 |
+|---|---|
+| 付与フィールド | `summary`（概要）/ `detail`（詳細説明）/ `chapter`（対応章）/ `role`（役割分類） |
+| 処理方式 | バッチ処理（デフォルト: 20 エントリ / 3000 行単位）+ 中断再開可能 |
+| スキップ条件 | 既に enrich 済みのエントリは再実行時にスキップ |
+| パイプライン位置 | `scan` の直後（`scan → enrich → init → ...`） |
+
 #### `src/docs/lib/` — ドキュメント生成ライブラリ群
 
 | ファイル | 役割 |
@@ -338,7 +362,7 @@ scan → init → data → text → readme → agents → [translate（多言語
 | `concurrency.js` | ファイル並列処理ユーティリティ |
 | `command-context.js` | コマンド実行コンテキスト解決（`resolveCommandContext()`, `loadAnalysis()` など） |
 | `php-array-parser.js` | PHP 配列構文パーサー |
-| `test-env-detection.js` | テスト環境自動判定（analysis.json から判定） |
+| `test-env-detection.js` | テスト環境自動判定（analysis.json から判定）。対応フレームワーク: jest / mocha / vitest / ava / tap / jasmine / node:test / phpunit / pest |
 
 #### `src/docs/commands/snapshot.js` — スナップショットテスト
 
@@ -437,18 +461,19 @@ AGENTS.md は 3 セクション構成で管理される。`CLAUDE.md` は `AGENT
 ### テスト構造
 
 ```
-tests/
+tests/                            ← 45 ファイル
 ├── dispatchers.test.js
 ├── flow.test.js
 ├── help.test.js
 ├── package.test.js
 ├── docs/
-│   ├── commands/         ← agents, changelog, data, default-project, forge,
-│   │                        init, readme, review, scan, setup, snapshot,
-│   │                        text-batch, text-helpers, translate
-│   └── lib/              ← command-context, directive-parser, forge-prompts,
-│                            resolver-factory, review-parser, scanner,
-│                            template-merger, test-env-detection
+│   ├── commands/                 ← agents, changelog, data, default-project, enrich,
+│   │                                forge, forge-selective, init, readme, review,
+│   │                                scan, setup, snapshot, text-batch
+│   ├── data/                     ← docs-lang-switcher
+│   └── lib/                      ← command-context, directive-parser, forge-prompts,
+│                                    resolver-factory, review-parser, scanner,
+│                                    template-merger, test-env-detection, text-prompts
 ├── lib/
 │   ├── agent.test.js
 │   ├── cli.test.js
@@ -458,10 +483,10 @@ tests/
 │   ├── projects.test.js
 │   └── types.test.js
 ├── presets/
-│   ├── laravel/          ← analyzers, integration, scan
-│   └── symfony/          ← analyzers, integration, scan
+│   ├── laravel/                  ← analyzers, integration, scan
+│   └── symfony/                  ← analyzers, integration, scan
 ├── specs/
-│   └── commands/         ← gate, init
+│   └── commands/                 ← gate, init
 └── helpers/
     ├── mock-project.js
     └── tmp-dir.js
@@ -471,53 +496,43 @@ tests/
 
 - **外部依存なし**: Node.js 組み込みモジュールのみ使用。依存追加は原則禁止。
 - **alpha 版ポリシー**: 後方互換コードは書かない。破壊的変更を許容し、旧フォーマット・非推奨パスは削除する。
-- **scan 既知課題**: `src/docs/lib/scanner.js` の `genericScan` が controllers/models/shells/routes をハードコード。`node-cli` プリセットの `modules` カテゴリが無視される問題あり（要改修）。
 - **`PKG_DIR` 解決**: `docs/commands/` 配下のファイルは `../..`（2 階層上）が `src/` を指す。
-- **summary.json 優先**: AI に渡す解析データは `.sdd-forge/output/summary.json` を優先し、存在しなければ `analysis.json` にフォールバック。
+- **summary.json 廃止予定**: enrich 導入後は `analysis.json` の各エントリ内 `summary`/`detail` フィールドが役割を吸収。`summaryToText()`（`src/docs/lib/forge-prompts.js`）は enrich 導入後に見直し。
+- **`--system-prompt-file` は存在しない**: Claude CLI にこのオプションはない（過去に誤追加→削除済み）。長い system prompt を `--system-prompt` 引数で渡すと OS の ARG_MAX 制限でエラーになる問題は未解決。
 - **Claude CLI ハング対策**: `callAgentAsync()` では `spawn` + `stdin: "ignore"` を使用。`CLAUDECODE` 環境変数も削除する。
 - **SDD テンプレートパス**: `agents-md.js` は SDD セクションテンプレートを `src/presets/base/templates/{lang}/AGENTS.sdd.md` から読み込む（指定ロケールがなければ `"en"` にフォールバック）。
 - **npm リリース手順**: `npm publish --tag alpha` → `npm dist-tag add sdd-forge@<version> latest` の 2 ステップ必須（`--tag alpha` のみでは npmjs.com の表示が更新されない）。リリースはユーザーの明示的な指示がある場合のみ実行すること。
 - **npm 公開対象**: `src/` と `docs/` の両方が `files` フィールドに含まれる（package.json 参照）。
-- **テスト環境検出**: `src/docs/lib/test-env-detection.js` が analysis.json を解析してテストフレームワークを自動判定。SDD フローのテストフェーズで利用される。
+- **テスト環境検出**: `src/docs/lib/test-env-detection.js` が analysis.json を解析してテストフレームワークを自動判定。対応フレームワーク: jest / mocha / vitest / ava / tap / jasmine / node:test（JS）、phpunit / pest（PHP）。
+- **enrich バッチ再開**: `enrich.js` は途中で中断しても再実行時に既処理エントリをスキップして継続できる。
 <!-- {{/data}} -->
 
-## Product Philosophy
+## 設計思想
 
-sdd-forge は**テンプレート穴埋めツールではなく、コードとドキュメントの同期エンジン**である。
+sdd-forge は**コードとドキュメントの同期エンジン**である。
 
-### 設計原則
+1. **構成の安定性** — `{{text}}` ディレクティブが「どこに何を書くか」を定義し、AI はその枠内で書く。AI に段落構成を任せない。
+2. **差分更新** — コード変更時に影響する章だけを再生成する。全体再生成ではなく部分的な再実行。
+3. **ソースコードの中身を AI に渡す** — メタデータだけでなくソースコード本体を参照して意味のあるドキュメントを生成する。
+4. **docs は AI の行動制約** — AGENTS.md に反映された docs は、AI が既存設計から逸脱しないガードレールとして機能する。
+5. **テンプレートは知識体系の定義** — プリセットが「何を知る必要があるか」を定義する。
 
-1. **構成の安定性が最大の価値** — AI にドキュメントの段落構成を任せない。テンプレートの `{{text}}` ディレクティブが「どこに何を書くか」を定義し、AI はその枠内で書く。生成ごとに構成がブレないことが Claude Code 等との差別化。
+## プロジェクトルール
 
-2. **差分更新が最大の武器** — コード変更時に影響する章だけを再生成する。全体再生成ではなく、変更ファイルの検知 → 影響章の特定 → 部分的な text 再実行。このサイクルが仕組みとして回り続けることに価値がある。
+### コミット
+- コミットメッセージは英語で書く
+- sign-off 行や co-authored-by トレーラーを付けない
 
-3. **AI はソースコードを読むべき** — メタデータ（クラス名、メソッド数）だけでなく、ソースコードの中身を AI に渡して意味のあるドキュメントを書かせる。enrich ステップで全体像から各エントリーに情報を付与し、text ステップで関連ソースを参照する。
+### テスト
+- **MUST: テストはスクリプトが正しく動作するかを検証するために存在する。テストを通すためにテストコードを修正してはならない。** テストが失敗した場合、まずテストのシナリオが妥当かを確認し、妥当であればプロダクトコードを修正する。セットアップの変更は実際の利用条件の変化に基づく場合のみ許可する。
 
-4. **docs は AI の行動制約として機能する** — AGENTS.md / CLAUDE.md に反映された docs は、AI コーディングツールが既存設計から逸脱しないガードレールになる。ドキュメントは「読むもの」であると同時に「AI の行動を制約するもの」。
+### コードスタイル
+- 過剰な防御コードを書かない。内部インターフェースは信頼し、バリデーションはシステム境界（ユーザー入力、外部 API）でのみ行う。
+- alpha 版では後方互換コードを書かない。旧フォーマット・非推奨パスは保持せず削除する。
 
-5. **テンプレートは知識体系の定義** — プリセットは「webapp ならこれを知る必要がある」「CLI ツールならこれを知る必要がある」という知識体系を定義する。ドメイン知識は不要。
-
-### 実装判断の指針
-
-- 新機能を作る時は**同期の観点**を優先する（コード変更 → docs 追従のサイクルが回るか？）
-- 全体再生成より**差分対応**を優先する設計にする
-- AI に渡すコンテキストには**ソースコードの中身**を含める（メタデータだけでは不十分）
-- `{{text}}` の粒度を粗くする提案には慎重になる（構成の安定性が損なわれる）
-
-## Project Guidelines
-
-### Commits
-- Write all commit messages in English.
-- Do NOT append sign-off lines or co-authored-by trailers to commit messages.
-
-### Code style
-- Do NOT add excessive fallback or defensive code. Trust internal interfaces and only validate at system boundaries (user input, external APIs). If a function is always called with valid arguments, do not add redundant null checks or try-catch blocks "just in case."
-- While the version is alpha, do NOT write legacy/backward-compatibility fallback code. Breaking changes are expected — old formats and deprecated paths should be removed, not preserved.
-
-### npm Publishing
-- **MUST: `npm publish` / `npm dist-tag` はユーザーがリリースの意図を明確に示した場合のみ実行すること。バージョン上げ・コミット・push の指示にリリースが含まれているとは解釈しない。リリースは別の明示的な行為であり、ユーザーが npm への公開を意図していると確信できない限り実行しない。**
-- Pre-release は `npm publish --tag alpha` で公開する
-- `--tag alpha` で公開すると `latest` タグは更新されない。npmjs.com のパッケージページは `latest` タグのバージョンを表示するため、ページを更新したい場合は `npm dist-tag add sdd-forge@<version> latest` を実行する
-- npm は一度公開したバージョン番号の再利用を許可しない
-- npm レジストリには publish のレート制限がある。短時間に連続で publish するとブロックされるため、不必要な publish を避けること
-- 公開前に `npm pack --dry-run` で含まれるファイルを確認し、機密情報・固有情報がないことをチェックする
+### npm 公開
+- **MUST: `npm publish` / `npm dist-tag` はユーザーがリリースの意図を明示した場合のみ実行する。バージョン上げ・コミット・push の指示はリリース指示ではない。**
+- pre-release は `npm publish --tag alpha` で公開する
+- `latest` タグ更新が必要な場合は `npm dist-tag add sdd-forge@<version> latest` を実行する
+- npm は公開済みバージョン番号の再利用を許可しない
+- 公開前に `npm pack --dry-run` で機密情報がないことを確認する
