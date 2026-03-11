@@ -6,19 +6,19 @@
 
 [![npm version](https://img.shields.io/npm/v/sdd-forge.svg)](https://www.npmjs.com/package/sdd-forge)
 
-> **アルファ版:** このツールは現在アルファ版です。API・コマンド構造・設定フォーマットは予告なく変更される場合があります。本番環境での使用は推奨しません。
+> **アルファリリース:** 本ツールは現在アルファ版です。API・コマンド構造・設定フォーマットは予告なく変更される場合があります。本番環境での使用は推奨しません。
 
-**ソースコード解析 + AI を使ってプロジェクトドキュメントを自動生成・維持管理する CLI ツール。**
+**ソースコード解析 + AI を活用してプロジェクトドキュメントを自動生成・維持管理する CLI ツールです。**
 
 コードベースを静的解析し、テンプレートと AI を組み合わせて `docs/` を自動生成します。
-Spec-Driven Development（SDD）ワークフローにより、機能追加や変更時のドキュメント更新も自動化されます。
+Spec-Driven Development（SDD）ワークフローにより、機能追加・修正時のドキュメント更新も自動化できます。
 
-## 機能
+## 特徴
 
-- **ゼロ依存** — Node.js 18+ のみで動作。npm パッケージは不要
+- **ゼロ依存** — Node.js 18+ のみで動作。npm パッケージ不要
 - **ソース自動解析** — コントローラー・モデル・ルート・設定ファイルを静的解析し、構造データを抽出
-- **AI ドキュメント生成** — テンプレート内の `{{text}}` ディレクティブを AI が自動展開
-- **テンプレート継承** — base → arch → preset → project-local の 4 層継承でカスタマイズ可能
+- **AI ドキュメント生成** — テンプレートの `{{text}}` ディレクティブを AI が自動展開
+- **テンプレート継承** — 4 層継承（base → arch → preset → project-local）で柔軟なカスタマイズが可能
 - **SDD ワークフロー** — spec → gate → 実装 → forge → review の開発サイクルをコマンドで管理
 - **多言語対応** — translate / generate モードで複数言語のドキュメントを自動生成
 - **AI エージェント統合** — Claude Code（スキル）および Codex CLI に対応
@@ -39,13 +39,13 @@ yarn global add <!-- {{data: project.name("")}} -->sdd-forge<!-- {{/data}} -->
 pnpm add -g <!-- {{data: project.name("")}} -->sdd-forge<!-- {{/data}} -->
 </pre>
 
-### セットアップ & ドキュメント生成
+### セットアップとドキュメント生成
 
 <pre>
-# 1. プロジェクトを登録する（インタラクティブウィザード）
+# 1. プロジェクトを登録する（対話式ウィザード）
 <!-- {{data: project.name("")}} -->sdd-forge<!-- {{/data}} --> setup
 
-# 2. すべてのドキュメントを生成する（scan → init → data → text → readme → agents → translate）
+# 2. 全ドキュメントを生成する（scan → init → data → text → readme → agents → translate）
 <!-- {{data: project.name("")}} -->sdd-forge<!-- {{/data}} --> build
 </pre>
 
@@ -58,23 +58,23 @@ pnpm add -g <!-- {{data: project.name("")}} -->sdd-forge<!-- {{/data}} -->
 | コマンド | 説明 |
 |---|---|
 | `setup` | プロジェクト登録 + 設定ファイル生成 |
-| `build` | ドキュメント生成パイプラインを一括実行 |
+| `build` | ドキュメント生成パイプラインの全工程を実行 |
 | `scan` | ソースコード解析 → `analysis.json` |
 | `init` | テンプレートから `docs/` を初期化 |
-| `data` | `{{data}}` ディレクティブを解析データで解決 |
-| `text` | `{{text}}` ディレクティブを AI で解決 |
+| `data` | 解析データで `{{data}}` ディレクティブを解決 |
+| `text` | AI で `{{text}}` ディレクティブを解決 |
 | `readme` | `docs/` から `README.md` を自動生成 |
-| `forge` | AI を使ってドキュメントを反復改善 |
-| `review` | ドキュメントの品質チェック |
+| `forge` | AI によるドキュメントの反復改善 |
+| `review` | ドキュメント品質チェック |
 | `translate` | 多言語翻訳（デフォルト言語 → その他言語） |
-| `upgrade` | プリセットテンプレートを最新バージョンに更新 |
+| `upgrade` | プリセットテンプレートを最新版に更新 |
 
 ### SDD ワークフロー
 
 | コマンド | 説明 |
 |---|---|
-| `spec` | spec + feature ブランチを作成 |
-| `gate` | 実装前の spec ゲートチェック |
+| `spec` | 仕様書 + フィーチャーブランチを作成 |
+| `gate` | 仕様書の実装前ゲートチェック |
 | `flow` | SDD ワークフローを自動実行 |
 | `changelog` | specs/ から変更履歴を生成 |
 | `agents` | AGENTS.md を更新 |
@@ -89,14 +89,14 @@ pnpm add -g <!-- {{data: project.name("")}} -->sdd-forge<!-- {{/data}} -->
 
 ## SDD ワークフロー
 
-機能追加・修正時のフロー:
+機能追加・修正時の開発フロー:
 
 ```
-  spec          spec を作成（feature ブランチ + spec.md）
+  spec          仕様書を作成（フィーチャーブランチ + spec.md）
     ↓
-  gate          spec ゲートチェック（未解決事項がなくなれば PASS）
+  gate          仕様書のゲートチェック（未解決事項がなければ PASS）
     ↓
-  implement     gate PASS 後にコードを書く
+  implement     gate PASS 後にコーディング開始
     ↓
   forge         ドキュメントを自動更新
     ↓
@@ -110,7 +110,7 @@ pnpm add -g <!-- {{data: project.name("")}} -->sdd-forge<!-- {{/data}} -->
 スキルを使って SDD ワークフローを実行:
 
 ```
-/sdd-flow-start   — spec 作成 → gate → 実装を開始
+/sdd-flow-start   — 仕様書作成 → gate → 実装を開始
 /sdd-flow-close   — forge → review → コミット → マージで完了
 ```
 
@@ -119,7 +119,7 @@ pnpm add -g <!-- {{data: project.name("")}} -->sdd-forge<!-- {{/data}} -->
 プロンプトからワークフローを実行:
 
 ```
-$sdd-flow-start   — spec 作成 → gate → 実装を開始
+$sdd-flow-start   — 仕様書作成 → gate → 実装を開始
 $sdd-flow-close   — forge → review → コミット → マージで完了
 ```
 
