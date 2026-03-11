@@ -124,7 +124,7 @@ AI が勝手に次のステップに進まない。
 
 10. Ask user about finalization.
     - Ask: "実装内容に問題がなければ終了処理を行いますか？"
-    - If approved, run `/sdd-flow-close`.
+    - If approved, immediately invoke `/sdd-flow-close` using the Skill tool (do not wait for additional user input).
     - If the user wants changes, continue implementation.
 
 ## Hard Stops

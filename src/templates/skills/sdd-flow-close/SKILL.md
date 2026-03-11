@@ -7,6 +7,33 @@ description: Finalize the SDD workflow after implementation is complete. Use for
 
 Use this skill when implementation is complete and the user approved finalization.
 
+## Step 0: Present Options
+
+**Always start by presenting these options to the user:**
+
+| # | Label |
+|---|---|
+| 1 | ドキュメント更新+コミット+マージ+ブランチ削除 |
+| 2 | ドキュメント更新 |
+| 3 | コミット |
+| 4 | コミット+マージ |
+| 5 | コミット+マージ+ブランチ削除 |
+
+Wait for the user's selection, then execute only the applicable steps below.
+
+## Applicable Steps per Option
+
+| Step | 1 | 2 | 3 | 4 | 5 |
+|---|---|---|---|---|---|
+| 1. Load context | ✓ | ✓ | ✓ | ✓ | ✓ |
+| 2. Check current state | ✓ | ✓ | ✓ | ✓ | ✓ |
+| 3. Update documentation | ✓ | ✓ | — | — | — |
+| 4. Review documentation | ✓ | ✓ | — | — | — |
+| 5. Commit | ✓ | — | ✓ | ✓ | ✓ |
+| 6. Merge | ✓ | — | — | ✓ | ✓ |
+| 7. Clean up (branch delete) | ✓ | — | — | — | ✓ |
+| 8. Final verification | ✓ | ✓ | ✓ | ✓ | ✓ |
+
 ## Required Sequence
 
 1. Load context.
@@ -18,7 +45,7 @@ Use this skill when implementation is complete and the user approved finalizatio
    - If `worktree: true` in current-spec, confirm working in worktree directory.
 
 3. Update documentation.
-   - If `docs/` has no chapter files (`NN_*.md`):
+   - If `docs/` has no chapter files:
      - Run `sdd-forge build`.
    - If `docs/` already has chapter files:
      - Run `sdd-forge forge --prompt "<change summary>" --spec <spec-path>`.
@@ -71,7 +98,7 @@ Use this skill when implementation is complete and the user approved finalizatio
 
 ## Hard Stops
 
-- Do not merge if `sdd-forge review` FAIL.
+- Do not merge if `sdd-forge review` FAIL (when docs update is selected).
 - Do not merge if working tree is not clean.
 - Do not use destructive git commands (`reset --hard`, `push --force`).
 
