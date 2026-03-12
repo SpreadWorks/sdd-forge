@@ -2,18 +2,17 @@
  * TestsSource — CakePHP 2.x test structure DataSource.
  */
 
-import { DataSource } from "../../../docs/lib/data-source.js";
-import { Scannable } from "../../../docs/lib/scan-source.js";
+import WebappDataSource from "../../webapp/data/webapp-data-source.js";
 import { analyzeTestStructure } from "../scan/testing.js";
 
-export default class CakephpTestsSource extends Scannable(DataSource) {
+export default class CakephpTestsSource extends WebappDataSource {
   match(file) {
     return /^app\/Test\//.test(file.relPath);
   }
 
   scan(files) {
     if (files.length === 0) return null;
-    const sourceRoot = deriveSourceRoot(files);
+    const sourceRoot = this.deriveSourceRoot(files);
     const appDir = sourceRoot + "/app";
     return { testStructure: analyzeTestStructure(appDir) };
   }
@@ -28,9 +27,4 @@ export default class CakephpTestsSource extends Scannable(DataSource) {
     ];
     return this.toMarkdownTable(rows, labels);
   }
-}
-
-function deriveSourceRoot(files) {
-  const f = files[0];
-  return f.absPath.slice(0, f.absPath.length - f.relPath.length).replace(/\/$/, "");
 }

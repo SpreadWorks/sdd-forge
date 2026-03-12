@@ -2,18 +2,17 @@
  * ViewsSource — CakePHP 2.x views DataSource.
  */
 
-import { DataSource } from "../../../docs/lib/data-source.js";
-import { Scannable } from "../../../docs/lib/scan-source.js";
+import WebappDataSource from "../../webapp/data/webapp-data-source.js";
 import { analyzeHelpers, analyzeLayouts, analyzeElements } from "../scan/views.js";
 
-export default class CakephpViewsSource extends Scannable(DataSource) {
+export default class CakephpViewsSource extends WebappDataSource {
   match(file) {
     return /^app\/View\//.test(file.relPath);
   }
 
   scan(files) {
     if (files.length === 0) return null;
-    const sourceRoot = deriveSourceRoot(files);
+    const sourceRoot = this.deriveSourceRoot(files);
     const appDir = sourceRoot + "/app";
     return {
       helpers: analyzeHelpers(appDir),
@@ -54,9 +53,4 @@ export default class CakephpViewsSource extends Scannable(DataSource) {
     const rows = this.toRows(methods, (m) => [m, permDescs[m] || m]);
     return this.toMarkdownTable(rows, labels);
   }
-}
-
-function deriveSourceRoot(files) {
-  const f = files[0];
-  return f.absPath.slice(0, f.absPath.length - f.relPath.length).replace(/\/$/, "");
 }

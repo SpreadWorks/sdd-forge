@@ -2,11 +2,10 @@
  * LibsSource — CakePHP 2.x libraries DataSource.
  */
 
-import { DataSource } from "../../../docs/lib/data-source.js";
-import { Scannable } from "../../../docs/lib/scan-source.js";
+import WebappDataSource from "../../webapp/data/webapp-data-source.js";
 import { analyzeLibraries, analyzeBehaviors, analyzeSqlFiles } from "../scan/views.js";
 
-export default class CakephpLibsSource extends Scannable(DataSource) {
+export default class CakephpLibsSource extends WebappDataSource {
   match(file) {
     return /^app\/Lib\//.test(file.relPath)
       || /^app\/Model\/Behavior\//.test(file.relPath)
@@ -15,7 +14,7 @@ export default class CakephpLibsSource extends Scannable(DataSource) {
 
   scan(files) {
     if (files.length === 0) return null;
-    const sourceRoot = deriveSourceRoot(files);
+    const sourceRoot = this.deriveSourceRoot(files);
     const appDir = sourceRoot + "/app";
     return {
       libraries: analyzeLibraries(appDir),
@@ -71,9 +70,4 @@ export default class CakephpLibsSource extends Scannable(DataSource) {
     const rows = this.toRows(items, (m) => [m.name, m.description]);
     return this.toMarkdownTable(rows, labels);
   }
-}
-
-function deriveSourceRoot(files) {
-  const f = files[0];
-  return f.absPath.slice(0, f.absPath.length - f.relPath.length).replace(/\/$/, "");
 }

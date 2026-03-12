@@ -17,7 +17,7 @@ export default class CakephpModelsSource extends ModelsSource {
 
   scan(files) {
     if (files.length === 0) return null;
-    const sourceRoot = deriveSourceRoot(files);
+    const sourceRoot = this.deriveSourceRoot(files);
     return analyzeModels(sourceRoot + "/app");
   }
 
@@ -111,9 +111,4 @@ export default class CakephpModelsSource extends ModelsSource {
     });
     return this.toMarkdownTable(rows, labels);
   }
-}
-
-function deriveSourceRoot(files) {
-  const f = files[0];
-  return f.absPath.slice(0, f.absPath.length - f.relPath.length).replace(/\/$/, "");
 }

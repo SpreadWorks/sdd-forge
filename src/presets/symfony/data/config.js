@@ -11,16 +11,10 @@
  *   config.services("Autowire|Autoconfigure")
  */
 
-import { DataSource } from "../../../docs/lib/data-source.js";
-import { Scannable } from "../../../docs/lib/scan-source.js";
+import WebappDataSource from "../../webapp/data/webapp-data-source.js";
 import { analyzeConfig } from "../scan/config.js";
 
-function deriveSourceRoot(files) {
-  const f = files[0];
-  return f.absPath.slice(0, f.absPath.length - f.relPath.length).replace(/\/$/, "");
-}
-
-export default class ConfigSource extends Scannable(DataSource) {
+export default class ConfigSource extends WebappDataSource {
   match(file) {
     return file.relPath.startsWith("config/") ||
       file.fileName === ".env" ||
@@ -30,7 +24,7 @@ export default class ConfigSource extends Scannable(DataSource) {
 
   scan(files) {
     if (files.length === 0) return null;
-    const sourceRoot = deriveSourceRoot(files);
+    const sourceRoot = this.deriveSourceRoot(files);
     return analyzeConfig(sourceRoot);
   }
 

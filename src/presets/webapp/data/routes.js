@@ -6,10 +6,9 @@
  */
 
 import fs from "fs";
-import { DataSource } from "../../../docs/lib/data-source.js";
-import { Scannable } from "../../../docs/lib/scan-source.js";
+import WebappDataSource from "./webapp-data-source.js";
 
-export default class RoutesSource extends Scannable(DataSource) {
+export default class RoutesSource extends WebappDataSource {
   match(file) {
     return false;
   }

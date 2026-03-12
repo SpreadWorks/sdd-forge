@@ -5,11 +5,10 @@
  * and resolve methods.
  */
 
-import { DataSource } from "../../../docs/lib/data-source.js";
-import { Scannable } from "../../../docs/lib/scan-source.js";
+import WebappDataSource from "./webapp-data-source.js";
 import { parseFile, camelToSnake, pluralize } from "../../../docs/lib/scanner.js";
 
-export default class ModelsSource extends Scannable(DataSource) {
+export default class ModelsSource extends WebappDataSource {
   match(file) {
     return false;
   }

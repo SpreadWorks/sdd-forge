@@ -8,23 +8,17 @@
  *   entities.columns("Entity|Column|Type|Nullable|Key")
  */
 
-import { DataSource } from "../../../docs/lib/data-source.js";
-import { Scannable } from "../../../docs/lib/scan-source.js";
+import WebappDataSource from "../../webapp/data/webapp-data-source.js";
 import { analyzeEntities } from "../scan/entities.js";
 
-function deriveSourceRoot(files) {
-  const f = files[0];
-  return f.absPath.slice(0, f.absPath.length - f.relPath.length).replace(/\/$/, "");
-}
-
-export default class EntitiesSource extends Scannable(DataSource) {
+export default class EntitiesSource extends WebappDataSource {
   match(file) {
     return /\.php$/.test(file.fileName) && file.relPath.startsWith("src/Entity/");
   }
 
   scan(files) {
     if (files.length === 0) return null;
-    const sourceRoot = deriveSourceRoot(files);
+    const sourceRoot = this.deriveSourceRoot(files);
     const result = analyzeEntities(sourceRoot);
     return { symfonyEntities: result.entities };
   }

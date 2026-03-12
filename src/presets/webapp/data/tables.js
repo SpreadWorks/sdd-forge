@@ -5,10 +5,9 @@
  * Child presets override for FW-specific table analysis (migrations, etc.).
  */
 
-import { DataSource } from "../../../docs/lib/data-source.js";
-import { Scannable } from "../../../docs/lib/scan-source.js";
+import WebappDataSource from "./webapp-data-source.js";
 
-export default class TablesSource extends Scannable(DataSource) {
+export default class TablesSource extends WebappDataSource {
   /**
    * Default: no independent scan. Tables are derived from models analysis.
    * Child presets (e.g. Laravel) override to scan migrations.

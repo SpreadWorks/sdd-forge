@@ -1,11 +1,10 @@
 /**
  * ConfigSource — CakePHP 2.x configuration DataSource.
  *
- * CakePHP-only category: extends Scannable(DataSource) directly.
+ * CakePHP-only category: extends WebappDataSource.
  */
 
-import { DataSource } from "../../../docs/lib/data-source.js";
-import { Scannable } from "../../../docs/lib/scan-source.js";
+import WebappDataSource from "../../webapp/data/webapp-data-source.js";
 import { analyzeConstants, analyzeBootstrap } from "../scan/config.js";
 import { analyzeAppController, analyzeAppModel } from "../scan/base-classes.js";
 import { analyzeAssets } from "../scan/assets.js";
@@ -13,7 +12,7 @@ import { analyzeAcl, analyzePermissionComponent } from "../scan/security.js";
 import { analyzeLogicClasses, analyzeTitlesGraphMapping, analyzeComposerDeps } from "../scan/business.js";
 import { analyzeShellDetails } from "../scan/shells-detail.js";
 
-export default class CakephpConfigSource extends Scannable(DataSource) {
+export default class CakephpConfigSource extends WebappDataSource {
   match(file) {
     return /^app\/Config\//.test(file.relPath)
       || /^app\/Controller\/AppController\.php$/.test(file.relPath)
@@ -23,7 +22,7 @@ export default class CakephpConfigSource extends Scannable(DataSource) {
 
   scan(files) {
     if (files.length === 0) return null;
-    const sourceRoot = deriveSourceRoot(files);
+    const sourceRoot = this.deriveSourceRoot(files);
     const appDir = sourceRoot + "/app";
     return {
       constants: analyzeConstants(appDir),
@@ -155,9 +154,4 @@ export default class CakephpConfigSource extends Scannable(DataSource) {
     ]);
     return this.toMarkdownTable(rows, labels);
   }
-}
-
-function deriveSourceRoot(files) {
-  const f = files[0];
-  return f.absPath.slice(0, f.absPath.length - f.relPath.length).replace(/\/$/, "");
 }

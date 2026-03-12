@@ -13,11 +13,6 @@
 import RoutesSource from "../../webapp/data/routes.js";
 import { analyzeRoutes } from "../scan/routes.js";
 
-function deriveSourceRoot(files) {
-  const f = files[0];
-  return f.absPath.slice(0, f.absPath.length - f.relPath.length).replace(/\/$/, "");
-}
-
 export default class SymfonyRoutesSource extends RoutesSource {
   match(file) {
     return file.relPath.startsWith("config/routes") && /\.(yaml|yml|xml|php)$/.test(file.fileName);
@@ -25,7 +20,7 @@ export default class SymfonyRoutesSource extends RoutesSource {
 
   scan(files) {
     if (files.length === 0) return null;
-    const sourceRoot = deriveSourceRoot(files);
+    const sourceRoot = this.deriveSourceRoot(files);
     const result = analyzeRoutes(sourceRoot);
     return { symfonyRoutes: result.routes, symfonyRoutesSummary: result.summary };
   }

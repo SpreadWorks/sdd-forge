@@ -13,11 +13,6 @@
 import ControllersSource from "../../webapp/data/controllers.js";
 import { analyzeControllers } from "../scan/controllers.js";
 
-function deriveSourceRoot(files) {
-  const f = files[0];
-  return f.absPath.slice(0, f.absPath.length - f.relPath.length).replace(/\/$/, "");
-}
-
 export default class LaravelControllersSource extends ControllersSource {
   match(file) {
     return (
@@ -29,7 +24,7 @@ export default class LaravelControllersSource extends ControllersSource {
 
   scan(files) {
     if (files.length === 0) return null;
-    const sourceRoot = deriveSourceRoot(files);
+    const sourceRoot = this.deriveSourceRoot(files);
     const result = analyzeControllers(sourceRoot);
     return { laravelControllers: result.controllers };
   }
