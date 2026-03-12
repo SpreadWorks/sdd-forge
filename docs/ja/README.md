@@ -153,10 +153,9 @@ $sdd-flow-close   — forge → review → commit → merge で終了
 <!-- {{data: docs.chapters("章|概要")}} -->
 | 章 | 概要 |
 | --- | --- |
-| [01. ツール概要とアーキテクチャ](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/ja/overview.md) | この章では、ソースコードを解析して技術ドキュメントの生成を自動化し、Spec-Driven Development（SDD）ワークフローを推進する CLI ツール `sdd-forge` を紹介する。 |
-| [02. CLI コマンドリファレンス](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/ja/cli_commands.md) | 本章では `sdd-forge` で利用可能な全 20 コマンドを、Project・Build・Docs・Scan・Spec・Flow の 6 つの機能カテゴリに分けて解説する。 |
-| [03. 設定とカスタマイズ](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/ja/configuration.md) | 本章では、sdd-forge が読み込む設定ファイルと、プロジェクトの動作を調整するために利用可能なすべてのオプションについて説明する。 |
-| [05. 開発・テスト・配布](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/ja/development_testing.md) | この章では、sdd-forge のローカル開発環境のセットアップ、Node.js 組み込みテストランナーを使用したテスト戦略、および npm レジストリへの公開リリースフローについて説明します。 |
+| [01. ツール概要とアーキテクチャ](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/ja/overview.md) | この章では、ソースコード解析からドキュメントを自動生成し、Spec-Driven Development（SDD）ワークフローを提供する CLI ツール `sdd-forge` を紹介します。 |
+| [02. CLIコマンドリファレンス](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/ja/cli_commands.md) | 本章では、sdd-forge で利用可能な全20のCLIコマンドを解説します。 |
+| [03. 設定とカスタマイズ](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/ja/configuration.md) | 本章では、sdd-forge がプロジェクトに合わせた動作を行うために読み込む設定ファイルについて説明します。 |
 <!-- {{/data}} -->
 
 ## License

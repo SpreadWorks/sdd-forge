@@ -210,7 +210,7 @@ sdd-forge/
     │   ├── flow-state.js         ← SDD フロー状態永続化
     │   ├── i18n.js               ← 3層 i18n（ドメイン名前空間付き）
     │   ├── types.js              ← 型エイリアス解決・バリデーション
-    │   └── progress.js, projects.js, agents-md.js, entrypoint.js
+    │   └── progress.js, projects.js, agents-md.js, entrypoint.js, process.js
     ├── presets/                  ← プリセット定義（preset.json で自動探索）
     │   ├── base/                 ← 基底テンプレート・AGENTS.sdd.md
     │   ├── cli/ → node-cli/      ← Node.js CLI プリセット
@@ -222,7 +222,7 @@ sdd-forge/
     └── templates/                ← バンドル済みファイルテンプレート
         ├── config.example.json
         ├── review-checklist.md
-        └── skills/               ← Claude スキル定義（sdd-flow-start/close/status）
+        └── skills/               ← Claude スキル定義
 ```
 
 ### コマンドルーティング
