@@ -7,7 +7,7 @@
 
 import { createI18n } from "../../lib/i18n.js";
 
-const ANALYSIS_META_KEYS = new Set(["analyzedAt", "enrichedAt", "generatedAt", "extras", "files", "root"]);
+const ANALYSIS_META_KEYS = new Set(["analyzedAt", "enrichedAt", "generatedAt", "files", "root"]);
 
 /**
  * analysis.json をプロンプト用テキストに変換する。

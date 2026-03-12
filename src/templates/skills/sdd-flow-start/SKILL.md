@@ -87,8 +87,8 @@ AI が勝手に次のステップに進まない。
 
 8. Test phase (after gate PASS).
    - **Auto-detect test environment** from analysis.json:
-     - Check `extras.packageDeps.devDependencies` for test frameworks (jest, mocha, vitest, phpunit, etc.)
-     - Check `extras.packageScripts.test` for test command
+     - Check `package.packageDeps.devDependencies` for test frameworks (jest, mocha, vitest, phpunit, etc.)
+     - Check `package.packageScripts.test` for test command
      - Use `detectTestEnvironment()` from `src/docs/lib/test-env-detection.js`
    - **If test environment exists**:
      1. Ask user for test type:

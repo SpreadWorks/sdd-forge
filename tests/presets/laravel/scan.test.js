@@ -11,30 +11,25 @@ describe("Laravel preset.json scan config", () => {
   const preset = JSON.parse(fs.readFileSync(presetPath, "utf8"));
   const scan = preset.scan;
 
-  it("has controllers config", () => {
-    assert.ok(scan.controllers);
-    assert.equal(scan.controllers.dir, "app/Http/Controllers");
-    assert.equal(scan.controllers.lang, "php");
-    assert.equal(scan.controllers.subDirs, true);
+  it("has include array with PHP source globs", () => {
+    assert.ok(Array.isArray(scan.include));
+    assert.ok(scan.include.length > 0);
+    assert.ok(scan.include.some((g) => g.includes("app/**/*.php")));
   });
 
-  it("has models config", () => {
-    assert.ok(scan.models);
-    assert.equal(scan.models.dir, "app/Models");
-    assert.equal(scan.models.lang, "php");
+  it("includes route files", () => {
+    assert.ok(scan.include.some((g) => g.includes("routes")));
   });
 
-  it("has shells/commands config", () => {
-    assert.ok(scan.shells);
-    assert.equal(scan.shells.dir, "app/Console/Commands");
+  it("includes migration files", () => {
+    assert.ok(scan.include.some((g) => g.includes("database/migrations")));
   });
 
-  it("has routes config", () => {
-    assert.ok(scan.routes);
-    assert.equal(scan.routes.file, "routes/web.php");
+  it("includes composer.json", () => {
+    assert.ok(scan.include.includes("composer.json"));
   });
 
-  it("excludes base Controller.php", () => {
-    assert.ok(scan.controllers.exclude.includes("Controller.php"));
+  it("has exclude array", () => {
+    assert.ok(Array.isArray(scan.exclude));
   });
 });

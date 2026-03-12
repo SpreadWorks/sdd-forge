@@ -167,6 +167,20 @@ export function validateConfig(raw) {
     errors.push("'agentWorkDir' must be a string if provided");
   }
 
+  // scan (省略可)
+  if (raw.scan != null) {
+    if (typeof raw.scan !== "object") {
+      errors.push("'scan' must be an object");
+    } else {
+      if (!Array.isArray(raw.scan.include) || raw.scan.include.length === 0) {
+        errors.push("'scan.include' must be a non-empty array of strings");
+      }
+      if (raw.scan.exclude != null && !Array.isArray(raw.scan.exclude)) {
+        errors.push("'scan.exclude' must be an array of strings if provided");
+      }
+    }
+  }
+
   // flow (省略可)
   if (raw.flow != null) {
     if (typeof raw.flow !== "object") {

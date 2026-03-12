@@ -10,6 +10,17 @@
  */
 export class DataSource {
   /**
+   * このDataSourceが処理対象とするファイルかを判定する。
+   * サブクラスでオーバーライドして具体的な条件を定義する。
+   *
+   * @param {{ absPath: string, relPath: string, hash: string }} file
+   * @returns {boolean}
+   */
+  match(file) {
+    return false;
+  }
+
+  /**
    * Inject project-specific helpers (called by resolver-factory).
    * @param {{ desc: function, loadOverrides: function }} ctx
    */

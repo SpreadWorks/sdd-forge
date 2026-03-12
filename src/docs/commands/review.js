@@ -294,7 +294,7 @@ function main() {
   // Analysis coverage check (WARN only — does not cause FAIL)
   if (fs.existsSync(analysisPath)) {
     const analysis = JSON.parse(fs.readFileSync(analysisPath, "utf8"));
-    const META_KEYS = new Set(["analyzedAt", "enrichedAt", "generatedAt", "extras", "files", "root"]);
+    const META_KEYS = new Set(["analyzedAt", "enrichedAt", "generatedAt", "files", "root"]);
     const analysisCategories = Object.keys(analysis).filter((k) => !META_KEYS.has(k));
 
     if (analysisCategories.length > 0) {

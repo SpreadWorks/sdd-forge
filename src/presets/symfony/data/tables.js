@@ -13,15 +13,26 @@
 import TablesSource from "../../webapp/data/tables.js";
 import { analyzeMigrations } from "../scan/migrations.js";
 
+function deriveSourceRoot(files) {
+  const f = files[0];
+  return f.absPath.slice(0, f.absPath.length - f.relPath.length).replace(/\/$/, "");
+}
+
 export default class SymfonyTablesSource extends TablesSource {
-  scan(sourceRoot, scanCfg) {
+  match(file) {
+    return /\.php$/.test(file.fileName) && file.relPath.startsWith("migrations/");
+  }
+
+  scan(files) {
+    if (files.length === 0) return null;
+    const sourceRoot = deriveSourceRoot(files);
     const result = analyzeMigrations(sourceRoot);
     return { migrations: result.tables, migrationsSummary: result.summary };
   }
 
   /** Table list table. */
   list(analysis, labels) {
-    const tables = analysis.extras?.migrations || [];
+    const tables = analysis.tables?.migrations || [];
     if (tables.length === 0) return null;
     const rows = this.toRows(tables, (t) => [
       t.name,
@@ -33,7 +44,7 @@ export default class SymfonyTablesSource extends TablesSource {
 
   /** Table columns table. */
   columns(analysis, labels) {
-    const tables = analysis.extras?.migrations || [];
+    const tables = analysis.tables?.migrations || [];
     if (tables.length === 0) return null;
     const rows = [];
     for (const t of tables) {
@@ -47,7 +58,7 @@ export default class SymfonyTablesSource extends TablesSource {
 
   /** Foreign keys table. */
   fk(analysis, labels) {
-    const tables = analysis.extras?.migrations || [];
+    const tables = analysis.tables?.migrations || [];
     if (tables.length === 0) return null;
     const rows = [];
     for (const t of tables) {

@@ -69,14 +69,14 @@ Schema::create('users', function (Blueprint \$table) {
     const analysis = JSON.parse(result);
     assert.ok(analysis.analyzedAt);
 
-    // FW extras should be populated
-    assert.ok(analysis.extras);
-    assert.ok(analysis.extras.laravelControllers, "should have laravelControllers");
-    assert.ok(analysis.extras.laravelModels, "should have laravelModels");
-    assert.ok(analysis.extras.laravelRoutes, "should have laravelRoutes");
-    assert.ok(analysis.extras.migrations, "should have migrations");
-    assert.ok(analysis.extras.composerDeps, "should have composerDeps");
-    assert.ok(analysis.extras.envKeys, "should have envKeys");
+    // DataSource results should be at top level (no extras)
+    assert.equal(analysis.extras, undefined, "extras should not exist");
+    assert.ok(analysis.controllers?.laravelControllers, "should have laravelControllers");
+    assert.ok(analysis.models?.laravelModels, "should have laravelModels");
+    assert.ok(analysis.routes?.laravelRoutes, "should have laravelRoutes");
+    assert.ok(analysis.tables?.migrations, "should have migrations");
+    assert.ok(analysis.config?.composerDeps, "should have composerDeps");
+    assert.ok(analysis.config?.envKeys, "should have envKeys");
   });
 
   it("type alias 'laravel' resolves correctly", () => {

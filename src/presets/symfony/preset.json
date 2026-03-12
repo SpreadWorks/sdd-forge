@@ -3,27 +3,14 @@
   "label": "Symfony 5+",
   "aliases": [],
   "scan": {
-    "controllers": {
-      "dir": "src/Controller",
-      "pattern": "*.php",
-      "exclude": [".gitkeep"],
-      "lang": "php",
-      "subDirs": true
-    },
-    "models": {
-      "dir": "src/Entity",
-      "pattern": "*.php",
-      "lang": "php",
-      "subDirs": true
-    },
-    "shells": {
-      "dir": "src/Command",
-      "pattern": "*.php",
-      "lang": "php"
-    },
-    "routes": {
-      "file": "config/routes.yaml",
-      "lang": "yaml"
-    }
+    "include": [
+      "src/**/*.php",
+      "config/**/*.php",
+      "config/**/*.yaml",
+      "migrations/**/*.php",
+      "composer.json",
+      ".env"
+    ],
+    "exclude": []
   }
 }

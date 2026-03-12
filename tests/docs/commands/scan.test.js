@@ -217,12 +217,13 @@ describe("scan CLI", () => {
     assert.ok(!item.detail, "detail should NOT be preserved for changed file");
   });
 
-  it("includes extras from universal analyzeExtras", () => {
+  it("includes package data from PackageSource at top level", () => {
     tmp = createTmpDir();
     writeJson(tmp, ".sdd-forge/config.json", {
       lang: "ja",
       type: "cli/node-cli",
       output: { languages: ["ja"], default: "ja" },
+      scan: { include: ["src/**/*.js", "package.json"] },
     });
     writeJson(tmp, "package.json", {
       dependencies: { "express": "^4.0.0" },
@@ -233,8 +234,9 @@ describe("scan CLI", () => {
       env: { ...process.env, SDD_WORK_ROOT: tmp, SDD_SOURCE_ROOT: tmp },
     });
     const analysis = JSON.parse(result);
-    assert.ok(analysis.extras);
-    assert.ok(analysis.extras.packageDeps);
-    assert.deepEqual(analysis.extras.packageDeps.dependencies, { "express": "^4.0.0" });
+    assert.ok(analysis.package, "package should be at top level");
+    assert.ok(analysis.package.packageDeps);
+    assert.deepEqual(analysis.package.packageDeps.dependencies, { "express": "^4.0.0" });
+    assert.equal(analysis.extras, undefined, "extras should not exist");
   });
 });

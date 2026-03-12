@@ -11,31 +11,26 @@ describe("Symfony preset.json scan config", () => {
   const preset = JSON.parse(fs.readFileSync(presetPath, "utf8"));
   const scan = preset.scan;
 
-  it("has controllers config", () => {
-    assert.ok(scan.controllers);
-    assert.equal(scan.controllers.dir, "src/Controller");
-    assert.equal(scan.controllers.lang, "php");
-    assert.equal(scan.controllers.subDirs, true);
+  it("has include array with PHP source globs", () => {
+    assert.ok(Array.isArray(scan.include));
+    assert.ok(scan.include.length > 0);
+    assert.ok(scan.include.some((g) => g.includes("src/**/*.php")));
   });
 
-  it("has models (entities) config", () => {
-    assert.ok(scan.models);
-    assert.equal(scan.models.dir, "src/Entity");
-    assert.equal(scan.models.lang, "php");
+  it("includes config files (PHP and YAML)", () => {
+    assert.ok(scan.include.some((g) => g.includes("config") && g.includes(".php")));
+    assert.ok(scan.include.some((g) => g.includes("config") && g.includes(".yaml")));
   });
 
-  it("has shells/commands config", () => {
-    assert.ok(scan.shells);
-    assert.equal(scan.shells.dir, "src/Command");
+  it("includes migration files", () => {
+    assert.ok(scan.include.some((g) => g.includes("migrations")));
   });
 
-  it("has routes config", () => {
-    assert.ok(scan.routes);
-    assert.equal(scan.routes.file, "config/routes.yaml");
-    assert.equal(scan.routes.lang, "yaml");
+  it("includes composer.json", () => {
+    assert.ok(scan.include.includes("composer.json"));
   });
 
-  it("excludes .gitkeep", () => {
-    assert.ok(scan.controllers.exclude.includes(".gitkeep"));
+  it("has exclude array", () => {
+    assert.ok(Array.isArray(scan.exclude));
   });
 });

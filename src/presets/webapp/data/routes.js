@@ -6,25 +6,24 @@
  */
 
 import fs from "fs";
-import path from "path";
 import { DataSource } from "../../../docs/lib/data-source.js";
 import { Scannable } from "../../../docs/lib/scan-source.js";
 
 export default class RoutesSource extends Scannable(DataSource) {
-  scan(sourceRoot, scanCfg) {
-    const cfg = scanCfg.routes;
-    if (!cfg) return { routes: [], summary: { total: 0, controllers: [] } };
+  match(file) {
+    return false;
+  }
 
-    const filePath = path.join(sourceRoot, cfg.file);
-    if (!fs.existsSync(filePath)) {
-      return { routes: [], summary: { total: 0, controllers: [] } };
-    }
+  scan(files) {
+    if (files.length === 0) return { routes: [], summary: { total: 0, controllers: [] } };
 
-    const content = fs.readFileSync(filePath, "utf8");
     const routes = [];
     const controllersSet = new Set();
 
-    if (cfg.lang === "php") {
+    for (const f of files) {
+      const content = fs.readFileSync(f.absPath, "utf8");
+
+      // PHP route patterns
       const routeRegex =
         /(?:Router::connect|Route::(?:get|post|put|delete|any|match))\s*\(\s*['"]([^'"]+)['"]/g;
       let m;

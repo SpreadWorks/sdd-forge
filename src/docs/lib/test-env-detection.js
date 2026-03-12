@@ -21,10 +21,9 @@ export function detectTestEnvironment(analysis) {
   const frameworks = [];
   let testCommand = null;
 
-  // devDependencies からフレームワークを検出（extras 内またはトップレベル）
-  const extras = analysis.extras || {};
-  const devDeps = extras.packageDeps?.devDependencies || analysis.packageDeps?.devDependencies || {};
-  const composerDevDeps = extras.composerDeps?.requireDev || analysis.composerDeps?.requireDev || {};
+  // devDependencies からフレームワークを検出
+  const devDeps = analysis.package?.packageDeps?.devDependencies || {};
+  const composerDevDeps = analysis.package?.composerDeps?.requireDev || {};
 
   for (const fw of TEST_FRAMEWORKS) {
     if (devDeps[fw] || composerDevDeps[fw]) {
@@ -32,8 +31,8 @@ export function detectTestEnvironment(analysis) {
     }
   }
 
-  // scripts.test からテストコマンドを検出（extras 内またはトップレベル）
-  const scripts = extras.packageScripts || analysis.packageScripts;
+  // scripts.test からテストコマンドを検出
+  const scripts = analysis.package?.packageScripts;
   if (scripts?.test) {
     testCommand = scripts.test;
   }

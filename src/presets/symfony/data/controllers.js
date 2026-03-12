@@ -13,8 +13,19 @@
 import ControllersSource from "../../webapp/data/controllers.js";
 import { analyzeControllers } from "../scan/controllers.js";
 
+function deriveSourceRoot(files) {
+  const f = files[0];
+  return f.absPath.slice(0, f.absPath.length - f.relPath.length).replace(/\/$/, "");
+}
+
 export default class SymfonyControllersSource extends ControllersSource {
-  scan(sourceRoot, scanCfg) {
+  match(file) {
+    return /\.php$/.test(file.fileName) && file.relPath.startsWith("src/Controller/");
+  }
+
+  scan(files) {
+    if (files.length === 0) return null;
+    const sourceRoot = deriveSourceRoot(files);
     const result = analyzeControllers(sourceRoot);
     return { symfonyControllers: result.controllers };
   }
@@ -22,7 +33,7 @@ export default class SymfonyControllersSource extends ControllersSource {
   /** Controller list table. */
   list(analysis, labels) {
     const ctrls =
-      analysis.extras?.symfonyControllers ||
+      analysis.controllers?.symfonyControllers ||
       analysis.controllers?.controllers ||
       [];
     if (ctrls.length === 0) return null;
@@ -36,7 +47,7 @@ export default class SymfonyControllersSource extends ControllersSource {
 
   /** Controller actions table. */
   actions(analysis, labels) {
-    const ctrls = analysis.extras?.symfonyControllers || [];
+    const ctrls = analysis.controllers?.symfonyControllers || [];
     if (ctrls.length === 0) return null;
     const rows = [];
     for (const c of ctrls) {
@@ -50,7 +61,7 @@ export default class SymfonyControllersSource extends ControllersSource {
 
   /** Controller DI dependencies table. */
   di(analysis, labels) {
-    const ctrls = analysis.extras?.symfonyControllers || [];
+    const ctrls = analysis.controllers?.symfonyControllers || [];
     if (ctrls.length === 0) return null;
     const rows = [];
     for (const c of ctrls) {

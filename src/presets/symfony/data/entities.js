@@ -12,15 +12,26 @@ import { DataSource } from "../../../docs/lib/data-source.js";
 import { Scannable } from "../../../docs/lib/scan-source.js";
 import { analyzeEntities } from "../scan/entities.js";
 
+function deriveSourceRoot(files) {
+  const f = files[0];
+  return f.absPath.slice(0, f.absPath.length - f.relPath.length).replace(/\/$/, "");
+}
+
 export default class EntitiesSource extends Scannable(DataSource) {
-  scan(sourceRoot, scanCfg) {
+  match(file) {
+    return /\.php$/.test(file.fileName) && file.relPath.startsWith("src/Entity/");
+  }
+
+  scan(files) {
+    if (files.length === 0) return null;
+    const sourceRoot = deriveSourceRoot(files);
     const result = analyzeEntities(sourceRoot);
     return { symfonyEntities: result.entities };
   }
 
   /** Entity relations table (grouped by relation type). */
   relations(analysis, labels) {
-    const entities = analysis.extras?.symfonyEntities || [];
+    const entities = analysis.entities?.symfonyEntities || [];
     if (entities.length === 0) return null;
     const rows = [];
     for (const entity of entities) {
@@ -42,7 +53,7 @@ export default class EntitiesSource extends Scannable(DataSource) {
 
   /** Entity columns table. */
   columns(analysis, labels) {
-    const entities = analysis.extras?.symfonyEntities || [];
+    const entities = analysis.entities?.symfonyEntities || [];
     if (entities.length === 0) return null;
     const rows = [];
     for (const entity of entities) {

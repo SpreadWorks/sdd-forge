@@ -3,28 +3,12 @@
   "label": "CakePHP 2.x",
   "aliases": ["php-mvc"],
   "scan": {
-    "controllers": {
-      "dir": "app/Controller",
-      "pattern": "*Controller.php",
-      "exclude": ["AppController.php"],
-      "lang": "php"
-    },
-    "models": {
-      "dir": "app/Model",
-      "pattern": "*.php",
-      "exclude": ["AppModel.php"],
-      "subDirs": true,
-      "lang": "php"
-    },
-    "shells": {
-      "dir": "app/Console/Command",
-      "pattern": "*Shell.php",
-      "exclude": ["AppShell.php"],
-      "lang": "php"
-    },
-    "routes": {
-      "file": "app/Config/routes.php",
-      "lang": "php"
-    }
+    "include": [
+      "app/**/*.php",
+      "app/**/*.ctp",
+      "app/**/*.sql",
+      "composer.json"
+    ],
+    "exclude": []
   }
 }

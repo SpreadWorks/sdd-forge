@@ -2,7 +2,7 @@ import { describe, it, afterEach } from "node:test";
 import assert from "node:assert/strict";
 import {
   findFiles, parseFile, parseJSFile, parsePHPFile,
-  analyzeExtras, isCategoryEntry,
+  collectFiles,
 } from "../../../src/docs/lib/scanner.js";
 import { createTmpDir, removeTmpDir, writeFile } from "../../helpers/tmp-dir.js";
 
@@ -98,50 +98,36 @@ describe("scanner utilities", () => {
     });
   });
 
-  describe("analyzeExtras", () => {
-    it("extracts composer.json dependencies", () => {
+  describe("collectFiles", () => {
+    it("collects files matching include globs", () => {
       tmp = createTmpDir();
-      writeFile(tmp, "composer.json", JSON.stringify({
-        require: { "php": ">=7.4" },
-        "require-dev": { "phpunit/phpunit": "^9" },
-      }));
+      writeFile(tmp, "src/app.js", "export function app() {}");
+      writeFile(tmp, "src/lib/utils.js", "export function util() {}");
+      writeFile(tmp, "README.md", "# Readme");
 
-      const result = analyzeExtras(tmp);
-      assert.ok(result.composerDeps);
-      assert.deepEqual(result.composerDeps.require, { "php": ">=7.4" });
+      const results = collectFiles(tmp, ["src/**/*.js"]);
+      assert.equal(results.length, 2);
+      const files = results.map((r) => r.relPath);
+      assert.ok(files.includes("src/app.js"));
+      assert.ok(files.includes("src/lib/utils.js"));
     });
 
-    it("extracts package.json dependencies", () => {
+    it("excludes files matching exclude globs", () => {
       tmp = createTmpDir();
-      writeFile(tmp, "package.json", JSON.stringify({
-        dependencies: { "express": "^4" },
-      }));
+      writeFile(tmp, "src/app.js", "");
+      writeFile(tmp, "src/app.test.js", "");
 
-      const result = analyzeExtras(tmp);
-      assert.ok(result.packageDeps);
-      assert.deepEqual(result.packageDeps.dependencies, { "express": "^4" });
+      const results = collectFiles(tmp, ["src/**/*.js"], ["**/*.test.js"]);
+      assert.equal(results.length, 1);
+      assert.equal(results[0].relPath, "src/app.js");
     });
 
-    it("returns empty object when no package files exist", () => {
+    it("returns empty array when no files match", () => {
       tmp = createTmpDir();
-      const result = analyzeExtras(tmp);
-      assert.deepEqual(result, {});
-    });
-  });
+      writeFile(tmp, "src/app.js", "");
 
-  describe("isCategoryEntry", () => {
-    it("returns true for objects with dir property", () => {
-      assert.ok(isCategoryEntry({ dir: "src", pattern: "*.js" }));
-    });
-
-    it("returns true for objects with file property", () => {
-      assert.ok(isCategoryEntry({ file: "routes.php", lang: "php" }));
-    });
-
-    it("returns false for non-objects", () => {
-      assert.ok(!isCategoryEntry("string"));
-      assert.ok(!isCategoryEntry(null));
-      assert.ok(!isCategoryEntry([1, 2]));
+      const results = collectFiles(tmp, ["**/*.php"]);
+      assert.deepEqual(results, []);
     });
   });
 });

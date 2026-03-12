@@ -8,21 +8,21 @@
 import path from "path";
 import { DataSource } from "../../../docs/lib/data-source.js";
 import { Scannable } from "../../../docs/lib/scan-source.js";
-import { findFiles, parseFile } from "../../../docs/lib/scanner.js";
+import { parseFile } from "../../../docs/lib/scanner.js";
 
 export default class ModulesSource extends Scannable(DataSource) {
-  scan(sourceRoot, scanCfg) {
-    const cfg = scanCfg.modules;
-    if (!cfg) return null;
+  match(file) {
+    return /\.(js|mjs|cjs)$/.test(file.relPath);
+  }
 
-    const dir = path.join(sourceRoot, cfg.dir);
-    const files = findFiles(dir, cfg.pattern, cfg.exclude, cfg.subDirs);
+  scan(files) {
+    if (files.length === 0) return null;
 
     const items = [];
     for (const f of files) {
-      const parsed = parseFile(f.absPath, cfg.lang);
+      const parsed = parseFile(f.absPath);
       items.push({
-        file: path.join(cfg.dir, f.relPath),
+        file: f.relPath,
         className: parsed.className,
         methods: parsed.methods,
         lines: f.lines,

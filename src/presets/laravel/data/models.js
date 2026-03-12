@@ -13,15 +13,29 @@
 import ModelsSource from "../../webapp/data/models.js";
 import { analyzeModels } from "../scan/models.js";
 
+function deriveSourceRoot(files) {
+  const f = files[0];
+  return f.absPath.slice(0, f.absPath.length - f.relPath.length).replace(/\/$/, "");
+}
+
 export default class LaravelModelsSource extends ModelsSource {
-  scan(sourceRoot, scanCfg) {
+  match(file) {
+    return (
+      file.relPath.startsWith("app/Models/") &&
+      file.relPath.endsWith(".php")
+    );
+  }
+
+  scan(files) {
+    if (files.length === 0) return null;
+    const sourceRoot = deriveSourceRoot(files);
     const result = analyzeModels(sourceRoot);
     return { laravelModels: result.models };
   }
 
   /** Model relations table. */
   relations(analysis, labels) {
-    const models = analysis.extras?.laravelModels || [];
+    const models = analysis.models?.laravelModels || [];
     if (models.length === 0) return null;
     const rows = [];
     for (const model of models) {
@@ -43,7 +57,7 @@ export default class LaravelModelsSource extends ModelsSource {
 
   /** Model scopes table. */
   scopes(analysis, labels) {
-    const models = analysis.extras?.laravelModels || [];
+    const models = analysis.models?.laravelModels || [];
     if (models.length === 0) return null;
     const rows = [];
     for (const model of models) {
@@ -57,7 +71,7 @@ export default class LaravelModelsSource extends ModelsSource {
 
   /** Model attribute casts table. */
   casts(analysis, labels) {
-    const models = analysis.extras?.laravelModels || [];
+    const models = analysis.models?.laravelModels || [];
     if (models.length === 0) return null;
     const rows = [];
     for (const model of models) {

@@ -94,15 +94,15 @@ class Kernel extends BaseKernel {}
     const analysis = JSON.parse(result);
     assert.ok(analysis.analyzedAt);
 
-    // FW extras should be populated
-    assert.ok(analysis.extras);
-    assert.ok(analysis.extras.symfonyControllers, "should have symfonyControllers");
-    assert.ok(analysis.extras.symfonyEntities, "should have symfonyEntities");
-    assert.ok(analysis.extras.symfonyRoutes, "should have symfonyRoutes");
-    assert.ok(analysis.extras.migrations, "should have migrations");
-    assert.ok(analysis.extras.composerDeps, "should have composerDeps");
-    assert.ok(analysis.extras.envKeys, "should have envKeys");
-    assert.ok(analysis.extras.bundles, "should have bundles");
+    // DataSource results should be at top level (no extras)
+    assert.equal(analysis.extras, undefined, "extras should not exist");
+    assert.ok(analysis.controllers?.symfonyControllers, "should have symfonyControllers");
+    assert.ok(analysis.entities?.symfonyEntities, "should have symfonyEntities");
+    assert.ok(analysis.routes?.symfonyRoutes, "should have symfonyRoutes");
+    assert.ok(analysis.tables?.migrations, "should have migrations");
+    assert.ok(analysis.config?.composerDeps, "should have composerDeps");
+    assert.ok(analysis.config?.envKeys, "should have envKeys");
+    assert.ok(analysis.config?.bundles, "should have bundles");
   });
 
   it("type alias 'symfony' resolves correctly", () => {

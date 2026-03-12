@@ -13,7 +13,11 @@ export default class TablesSource extends Scannable(DataSource) {
    * Default: no independent scan. Tables are derived from models analysis.
    * Child presets (e.g. Laravel) override to scan migrations.
    */
-  scan(sourceRoot, scanCfg) {
+  match(file) {
+    return false;
+  }
+
+  scan(files) {
     return null;
   }
 

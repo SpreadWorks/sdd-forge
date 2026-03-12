@@ -14,15 +14,29 @@
 import TablesSource from "../../webapp/data/tables.js";
 import { analyzeMigrations } from "../scan/migrations.js";
 
+function deriveSourceRoot(files) {
+  const f = files[0];
+  return f.absPath.slice(0, f.absPath.length - f.relPath.length).replace(/\/$/, "");
+}
+
 export default class LaravelTablesSource extends TablesSource {
-  scan(sourceRoot, scanCfg) {
+  match(file) {
+    return (
+      file.relPath.startsWith("database/migrations/") &&
+      file.relPath.endsWith(".php")
+    );
+  }
+
+  scan(files) {
+    if (files.length === 0) return null;
+    const sourceRoot = deriveSourceRoot(files);
     const result = analyzeMigrations(sourceRoot);
     return { migrations: result.tables, migrationsSummary: result.summary };
   }
 
   /** Table list table. */
   list(analysis, labels) {
-    const tables = analysis.extras?.migrations || [];
+    const tables = analysis.tables?.migrations || [];
     if (tables.length === 0) return null;
     const rows = this.toRows(tables, (t) => [
       t.name,
@@ -34,7 +48,7 @@ export default class LaravelTablesSource extends TablesSource {
 
   /** Table columns detail table. */
   columns(analysis, labels) {
-    const tables = analysis.extras?.migrations || [];
+    const tables = analysis.tables?.migrations || [];
     if (tables.length === 0) return null;
     const rows = [];
     for (const t of tables) {
@@ -48,7 +62,7 @@ export default class LaravelTablesSource extends TablesSource {
 
   /** Foreign key relationships table. */
   fk(analysis, labels) {
-    const tables = analysis.extras?.migrations || [];
+    const tables = analysis.tables?.migrations || [];
     if (tables.length === 0) return null;
     const rows = [];
     for (const t of tables) {
@@ -62,7 +76,7 @@ export default class LaravelTablesSource extends TablesSource {
 
   /** Indexes table. */
   indexes(analysis, labels) {
-    const tables = analysis.extras?.migrations || [];
+    const tables = analysis.tables?.migrations || [];
     if (tables.length === 0) return null;
     const rows = [];
     for (const t of tables) {

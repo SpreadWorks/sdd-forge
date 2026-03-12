@@ -5,24 +5,23 @@
  * and resolve methods.
  */
 
-import path from "path";
 import { DataSource } from "../../../docs/lib/data-source.js";
 import { Scannable } from "../../../docs/lib/scan-source.js";
-import { findFiles, parseFile, camelToSnake, pluralize } from "../../../docs/lib/scanner.js";
+import { parseFile, camelToSnake, pluralize } from "../../../docs/lib/scanner.js";
 
 export default class ModelsSource extends Scannable(DataSource) {
-  scan(sourceRoot, scanCfg) {
-    const cfg = scanCfg.models;
-    if (!cfg) return null;
+  match(file) {
+    return false;
+  }
 
-    const dir = path.join(sourceRoot, cfg.dir);
-    const files = findFiles(dir, cfg.pattern, cfg.exclude, cfg.subDirs !== false);
+  scan(files) {
+    if (files.length === 0) return null;
 
     const models = [];
     const dbGroups = {};
 
     for (const f of files) {
-      const parsed = parseFile(f.absPath, cfg.lang);
+      const parsed = parseFile(f.absPath);
       const isLogic = f.relPath.includes("Logic");
       const isFe = parsed.className.startsWith("Fe");
       const useTable = parsed.properties.useTable || null;
@@ -34,7 +33,7 @@ export default class ModelsSource extends Scannable(DataSource) {
       dbGroups[dbKey].push(parsed.className);
 
       models.push({
-        file: path.join(cfg.dir, f.relPath),
+        file: f.relPath,
         className: parsed.className,
         parentClass: parsed.parentClass,
         isLogic,

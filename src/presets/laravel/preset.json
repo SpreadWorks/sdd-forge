@@ -3,27 +3,14 @@
   "label": "Laravel 8+",
   "aliases": [],
   "scan": {
-    "controllers": {
-      "dir": "app/Http/Controllers",
-      "pattern": "*.php",
-      "exclude": ["Controller.php"],
-      "lang": "php",
-      "subDirs": true
-    },
-    "models": {
-      "dir": "app/Models",
-      "pattern": "*.php",
-      "lang": "php",
-      "subDirs": true
-    },
-    "shells": {
-      "dir": "app/Console/Commands",
-      "pattern": "*.php",
-      "lang": "php"
-    },
-    "routes": {
-      "file": "routes/web.php",
-      "lang": "php"
-    }
+    "include": [
+      "app/**/*.php",
+      "config/**/*.php",
+      "database/migrations/**/*.php",
+      "routes/**/*.php",
+      "composer.json",
+      ".env"
+    ],
+    "exclude": []
   }
 }

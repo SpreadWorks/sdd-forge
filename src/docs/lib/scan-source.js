@@ -38,12 +38,22 @@ class ScanSource {
 export const Scannable = (Base) =>
   class extends Base {
     /**
-     * Extract raw data from source code.
-     * @param {string} sourceRoot - absolute path to the source directory
-     * @param {Object} scanCfg - scan configuration from preset.json
+     * このDataSourceが処理対象とするファイルかを判定する。
+     * サブクラスでオーバーライドして具体的な条件を定義する。
+     *
+     * @param {{ absPath: string, relPath: string, hash: string }} file
+     * @returns {boolean}
+     */
+    match(file) {
+      return false;
+    }
+
+    /**
+     * マッチしたファイルリストを受け取り解析する。
+     * @param {Array<{ absPath: string, relPath: string, hash: string, lines: number, mtime: string }>} files
      * @returns {Object} extracted data to be stored in analysis.json
      */
-    scan(sourceRoot, scanCfg) {
+    scan(files) {
       return {};
     }
   };

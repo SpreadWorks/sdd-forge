@@ -16,7 +16,7 @@ describe("scan scripts extraction", () => {
         lang: "en",
         type: "cli/node-cli",
         output: { languages: ["en"], default: "en" },
-        scan: { include: ["src/**/*.js"], exclude: [] },
+        scan: { include: ["src/**/*.js", "package.json"], exclude: [] },
       });
       writeJson(tmp, "package.json", {
         name: "test-project",
@@ -32,8 +32,8 @@ describe("scan scripts extraction", () => {
       });
       const analysis = JSON.parse(result);
 
-      assert.ok(analysis.extras?.packageScripts, "packageScripts should be in analysis.extras");
-      assert.equal(analysis.extras.packageScripts.test, "node --test");
+      assert.ok(analysis.package?.packageScripts, "packageScripts should be in analysis.package");
+      assert.equal(analysis.package.packageScripts.test, "node --test");
     } finally {
       removeTmpDir(tmp);
     }
@@ -65,7 +65,7 @@ describe("scan scripts extraction", () => {
       const analysis = JSON.parse(result);
 
       // packageScripts should not exist or be empty
-      assert.ok(!analysis.extras?.packageScripts || Object.keys(analysis.extras.packageScripts).length === 0);
+      assert.ok(!analysis.package?.packageScripts || Object.keys(analysis.package.packageScripts).length === 0);
     } finally {
       removeTmpDir(tmp);
     }
@@ -77,11 +77,13 @@ describe("test environment detection", () => {
     const { detectTestEnvironment } = await import("../../../src/docs/lib/test-env-detection.js");
 
     const analysis = {
-      packageDeps: {
-        dependencies: {},
-        devDependencies: { jest: "^29.0.0" },
+      package: {
+        packageDeps: {
+          dependencies: {},
+          devDependencies: { jest: "^29.0.0" },
+        },
+        packageScripts: { test: "jest" },
       },
-      packageScripts: { test: "jest" },
     };
 
     const result = detectTestEnvironment(analysis);
@@ -94,9 +96,11 @@ describe("test environment detection", () => {
     const { detectTestEnvironment } = await import("../../../src/docs/lib/test-env-detection.js");
 
     const analysis = {
-      packageDeps: {
-        dependencies: {},
-        devDependencies: {},
+      package: {
+        packageDeps: {
+          dependencies: {},
+          devDependencies: {},
+        },
       },
     };
 

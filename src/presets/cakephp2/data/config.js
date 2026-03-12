@@ -2,20 +2,8 @@
  * ConfigSource — CakePHP 2.x configuration DataSource.
  *
  * CakePHP-only category: extends Scannable(DataSource) directly.
- *
- * Available methods (called via {{data}} directives):
- *   config.stack("...")
- *   config.db("Env|Host|Note")
- *   config.composer("Package|Version|Description")
- *   config.bootstrap("Key|Value")
- *   config.constants("Name|Value|Description")
- *   config.constantsSelect("Name|Choices")
- *   config.auth("Key|Value")
- *   config.acl("Role|Group ID|Permissions")
- *   config.assets("Library|Version|File")
  */
 
-import path from "path";
 import { DataSource } from "../../../docs/lib/data-source.js";
 import { Scannable } from "../../../docs/lib/scan-source.js";
 import { analyzeConstants, analyzeBootstrap } from "../scan/config.js";
@@ -26,8 +14,17 @@ import { analyzeLogicClasses, analyzeTitlesGraphMapping, analyzeComposerDeps } f
 import { analyzeShellDetails } from "../scan/shells-detail.js";
 
 export default class CakephpConfigSource extends Scannable(DataSource) {
-  scan(sourceRoot, scanCfg) {
-    const appDir = path.join(sourceRoot, "app");
+  match(file) {
+    return /^app\/Config\//.test(file.relPath)
+      || /^app\/Controller\/AppController\.php$/.test(file.relPath)
+      || /^app\/Model\/AppModel\.php$/.test(file.relPath)
+      || file.fileName === "composer.json";
+  }
+
+  scan(files) {
+    if (files.length === 0) return null;
+    const sourceRoot = deriveSourceRoot(files);
+    const appDir = sourceRoot + "/app";
     return {
       constants: analyzeConstants(appDir),
       bootstrap: analyzeBootstrap(appDir),
@@ -43,24 +40,19 @@ export default class CakephpConfigSource extends Scannable(DataSource) {
     };
   }
 
-  /** Technology stack (empty for CakePHP preset). */
-  stack(analysis, labels) {
-    return null;
-  }
+  stack(analysis, labels) { return null; }
 
-  /** Database environments. */
   db(analysis, labels) {
-    if (!analysis.extras?.bootstrap?.environments) return null;
-    const envs = analysis.extras.bootstrap.environments;
+    if (!analysis.config?.bootstrap?.environments) return null;
+    const envs = analysis.config.bootstrap.environments;
     if (envs.length === 0) return null;
     const rows = this.toRows(envs, (env) => [env, "—", ""]);
     return this.toMarkdownTable(rows, labels);
   }
 
-  /** Composer dependency packages. */
   composer(analysis, labels) {
-    if (!analysis.extras?.composerDeps) return null;
-    const deps = analysis.extras.composerDeps;
+    if (!analysis.config?.composerDeps) return null;
+    const deps = analysis.config.composerDeps;
     const rows = [];
     for (const [pkg, ver] of Object.entries(deps.require)) {
       rows.push([pkg, ver, this.desc("composerDeps", pkg)]);
@@ -72,10 +64,9 @@ export default class CakephpConfigSource extends Scannable(DataSource) {
     return this.toMarkdownTable(rows, labels);
   }
 
-  /** Bootstrap configuration summary. */
   bootstrap(analysis, labels) {
-    if (!analysis.extras?.bootstrap) return null;
-    const b = analysis.extras.bootstrap;
+    if (!analysis.config?.bootstrap) return null;
+    const b = analysis.config.bootstrap;
     const rows = [];
     if (b.siteTitle) rows.push(["サイトタイトル", b.siteTitle]);
     if (b.environments?.length > 0) rows.push(["環境", b.environments.join(", ")]);
@@ -89,28 +80,24 @@ export default class CakephpConfigSource extends Scannable(DataSource) {
     return this.toMarkdownTable(rows, labels);
   }
 
-  /** Scalar constants from const.php. */
   constants(analysis, labels) {
-    if (!analysis.extras?.constants?.scalars) return null;
+    if (!analysis.config?.constants?.scalars) return null;
     const seen = new Set();
-    const items = analysis.extras.constants.scalars.filter((s) => {
+    const items = analysis.config.constants.scalars.filter((s) => {
       if (seen.has(s.name)) return false;
       seen.add(s.name);
       return true;
     });
     if (items.length === 0) return null;
     const rows = this.toRows(items, (s) => [
-      s.name,
-      s.value,
-      this.desc("constants", s.name),
+      s.name, s.value, this.desc("constants", s.name),
     ]);
     return this.toMarkdownTable(rows, labels);
   }
 
-  /** Select option constants from const.php. */
   constantsSelect(analysis, labels) {
-    if (!analysis.extras?.constants?.selectOptions) return null;
-    const items = analysis.extras.constants.selectOptions;
+    if (!analysis.config?.constants?.selectOptions) return null;
+    const items = analysis.config.constants.selectOptions;
     if (items.length === 0) return null;
     const rows = this.toRows(items, (s) => {
       const descText = this.desc("selectConstants", s.name);
@@ -120,10 +107,9 @@ export default class CakephpConfigSource extends Scannable(DataSource) {
     return this.toMarkdownTable(rows, labels);
   }
 
-  /** Authentication/authorization configuration from AppController. */
   auth(analysis, labels) {
-    if (!analysis.extras?.appController) return null;
-    const ac = analysis.extras.appController;
+    if (!analysis.config?.appController) return null;
+    const ac = analysis.config.appController;
     const rows = [];
     if (ac.components?.length > 0) rows.push(["コンポーネント", ac.components.join(", ")]);
     if (ac.authConfig?.authorize) rows.push(["認可方式", ac.authConfig.authorize]);
@@ -140,10 +126,9 @@ export default class CakephpConfigSource extends Scannable(DataSource) {
     return this.toMarkdownTable(rows, labels);
   }
 
-  /** ACL role permissions. */
   acl(analysis, labels) {
-    if (!analysis.extras?.acl) return null;
-    const acl = analysis.extras.acl;
+    if (!analysis.config?.acl) return null;
+    const acl = analysis.config.acl;
     if (!acl.aliases || acl.aliases.length === 0) return null;
     const rows = [];
     for (const alias of acl.aliases) {
@@ -161,16 +146,18 @@ export default class CakephpConfigSource extends Scannable(DataSource) {
     return this.toMarkdownTable(rows, labels);
   }
 
-  /** Frontend JS library assets. */
   assets(analysis, labels) {
-    if (!analysis.extras?.assets?.js) return null;
-    const items = analysis.extras.assets.js.filter((asset) => asset.library);
+    if (!analysis.config?.assets?.js) return null;
+    const items = analysis.config.assets.js.filter((asset) => asset.library);
     if (items.length === 0) return null;
     const rows = this.toRows(items, (asset) => [
-      asset.library,
-      asset.version || "—",
-      asset.file,
+      asset.library, asset.version || "—", asset.file,
     ]);
     return this.toMarkdownTable(rows, labels);
   }
+}
+
+function deriveSourceRoot(files) {
+  const f = files[0];
+  return f.absPath.slice(0, f.absPath.length - f.relPath.length).replace(/\/$/, "");
 }

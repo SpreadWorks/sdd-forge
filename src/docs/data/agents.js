@@ -56,8 +56,8 @@ export default class AgentsSource extends DataSource {
       lines.push("");
       lines.push(`- type: ${config.type}`);
 
-      if (analysis.extras?.composerDeps?.require) {
-        const req = analysis.extras.composerDeps.require;
+      if (analysis.package?.composerDeps?.require) {
+        const req = analysis.package.composerDeps.require;
         if (req.php) lines.push(`- PHP: ${req.php}`);
       }
 

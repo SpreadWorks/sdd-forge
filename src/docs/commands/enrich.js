@@ -22,7 +22,7 @@ import { translate } from "../../lib/i18n.js";
 
 const logger = createLogger("enrich");
 
-const META_KEYS = new Set(["analyzedAt", "enrichedAt", "generatedAt", "extras", "files", "root"]);
+const META_KEYS = new Set(["analyzedAt", "enrichedAt", "generatedAt", "files", "root"]);
 const DEFAULT_BATCH_SIZE = 20;
 const DEFAULT_BATCH_LINES = 3000;
 

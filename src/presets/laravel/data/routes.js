@@ -12,15 +12,29 @@
 import RoutesSource from "../../webapp/data/routes.js";
 import { analyzeRoutes } from "../scan/routes.js";
 
+function deriveSourceRoot(files) {
+  const f = files[0];
+  return f.absPath.slice(0, f.absPath.length - f.relPath.length).replace(/\/$/, "");
+}
+
 export default class LaravelRoutesSource extends RoutesSource {
-  scan(sourceRoot, scanCfg) {
+  match(file) {
+    return (
+      file.relPath.startsWith("routes/") &&
+      file.relPath.endsWith(".php")
+    );
+  }
+
+  scan(files) {
+    if (files.length === 0) return null;
+    const sourceRoot = deriveSourceRoot(files);
     const result = analyzeRoutes(sourceRoot);
     return { laravelRoutes: result.routes, laravelRoutesSummary: result.summary };
   }
 
   /** All routes table. */
   list(analysis, labels) {
-    const routes = analysis.extras?.laravelRoutes || [];
+    const routes = analysis.routes?.laravelRoutes || [];
     if (routes.length === 0) return null;
     const rows = this.toRows(routes, (r) => [
       r.httpMethod,
@@ -33,7 +47,7 @@ export default class LaravelRoutesSource extends RoutesSource {
 
   /** API routes only. */
   api(analysis, labels) {
-    const routes = analysis.extras?.laravelRoutes || [];
+    const routes = analysis.routes?.laravelRoutes || [];
     const apiRoutes = routes.filter((r) => r.routeType === "api");
     if (apiRoutes.length === 0) return null;
     const rows = this.toRows(apiRoutes, (r) => [

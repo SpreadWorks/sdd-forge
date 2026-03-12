@@ -3,16 +3,9 @@
  *
  * Extends webapp ControllersSource with CakePHP-specific scan logic
  * and resolve methods (csv, actions).
- *
- * Available methods (called via {{data}} directives):
- *   controllers.list("Name|File|Description")       — inherited
- *   controllers.deps("Controller|Models")            — inherited
- *   controllers.csv("Name|CSV Import|CSV Export|Excel Export")
- *   controllers.actions("Action|Logic|Output Type")
  */
 
 import fs from "fs";
-import path from "path";
 import ControllersSource from "../../webapp/data/controllers.js";
 import { getFileStats } from "../../../docs/lib/scanner.js";
 import {
@@ -33,21 +26,18 @@ const LIFECYCLE_METHODS = new Set([
 ]);
 
 export default class CakephpControllersSource extends ControllersSource {
-  scan(sourceRoot, scanCfg) {
-    const cfg = scanCfg.controllers;
-    if (!cfg) return { controllers: [], summary: {} };
+  match(file) {
+    return /Controller\.php$/.test(file.relPath)
+      && file.relPath.includes("Controller/")
+      && !/AppController\.php$/.test(file.relPath);
+  }
 
-    const controllerDir = path.join(sourceRoot, cfg.dir);
-    if (!fs.existsSync(controllerDir)) return { controllers: [], summary: {} };
-
-    const files = fs
-      .readdirSync(controllerDir)
-      .filter((f) => f.endsWith("Controller.php") && f !== "AppController.php");
+  scan(files) {
+    if (files.length === 0) return { controllers: [], summary: {} };
 
     const controllers = [];
-    for (const file of files) {
-      const filePath = path.join(controllerDir, file);
-      const raw = fs.readFileSync(filePath, "utf8");
+    for (const f of files) {
+      const raw = fs.readFileSync(f.absPath, "utf8");
       const src = stripBlockComments(raw);
 
       const classMatch = src.match(/class\s+(\w+)\s+extends\s+(\w+)/);
@@ -75,13 +65,15 @@ export default class CakephpControllersSource extends ControllersSource {
       }
 
       controllers.push({
-        file: path.join(cfg.dir, file),
+        file: f.relPath,
         className,
         parentClass,
         components,
         uses,
         actions,
-        ...getFileStats(filePath),
+        lines: f.lines,
+        hash: f.hash,
+        mtime: f.mtime,
       });
     }
 
@@ -112,8 +104,8 @@ export default class CakephpControllersSource extends ControllersSource {
 
   /** Controller actions → Logic class mapping table. */
   actions(analysis, labels) {
-    if (!analysis.extras?.titlesGraphMapping) return null;
-    const items = analysis.extras.titlesGraphMapping.filter((m) => m.logicClasses.length > 0);
+    if (!analysis.config?.titlesGraphMapping) return null;
+    const items = analysis.config.titlesGraphMapping.filter((m) => m.logicClasses.length > 0);
     if (items.length === 0) return null;
     const rows = this.toRows(items, (m) => [
       m.action,

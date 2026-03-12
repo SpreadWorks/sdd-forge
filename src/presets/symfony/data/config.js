@@ -15,15 +15,29 @@ import { DataSource } from "../../../docs/lib/data-source.js";
 import { Scannable } from "../../../docs/lib/scan-source.js";
 import { analyzeConfig } from "../scan/config.js";
 
+function deriveSourceRoot(files) {
+  const f = files[0];
+  return f.absPath.slice(0, f.absPath.length - f.relPath.length).replace(/\/$/, "");
+}
+
 export default class ConfigSource extends Scannable(DataSource) {
-  scan(sourceRoot, scanCfg) {
+  match(file) {
+    return file.relPath.startsWith("config/") ||
+      file.fileName === ".env" ||
+      file.fileName === ".env.local" ||
+      file.fileName === "composer.json";
+  }
+
+  scan(files) {
+    if (files.length === 0) return null;
+    const sourceRoot = deriveSourceRoot(files);
     return analyzeConfig(sourceRoot);
   }
 
   /** Composer dependencies table. */
   composer(analysis, labels) {
-    if (!analysis.extras?.composerDeps) return null;
-    const { require: req, requireDev } = analysis.extras.composerDeps;
+    if (!analysis.config?.composerDeps) return null;
+    const { require: req, requireDev } = analysis.config.composerDeps;
     const rows = [];
     for (const [pkg, ver] of Object.entries(req || {})) {
       rows.push([pkg, ver, this.desc("composerDeps", pkg)]);
@@ -37,7 +51,7 @@ export default class ConfigSource extends Scannable(DataSource) {
 
   /** Environment variables table. */
   env(analysis, labels) {
-    const envKeys = analysis.extras?.envKeys;
+    const envKeys = analysis.config?.envKeys;
     if (!envKeys || envKeys.length === 0) return null;
     const rows = this.toRows(envKeys, (e) => [
       e.key,
@@ -49,7 +63,7 @@ export default class ConfigSource extends Scannable(DataSource) {
 
   /** Symfony bundles table. */
   bundles(analysis, labels) {
-    const bundles = analysis.extras?.bundles;
+    const bundles = analysis.config?.bundles;
     if (!bundles || bundles.length === 0) return null;
     const rows = this.toRows(bundles, (b) => [
       b.shortName,
@@ -61,7 +75,7 @@ export default class ConfigSource extends Scannable(DataSource) {
 
   /** Config packages table. */
   packages(analysis, labels) {
-    const configFiles = analysis.extras?.configFiles;
+    const configFiles = analysis.config?.configFiles;
     if (!configFiles || configFiles.length === 0) return null;
     const rows = this.toRows(configFiles, (cf) => [
       cf.file,
@@ -72,7 +86,7 @@ export default class ConfigSource extends Scannable(DataSource) {
 
   /** Services configuration table. */
   services(analysis, labels) {
-    const services = analysis.extras?.services;
+    const services = analysis.config?.services;
     if (!services) return null;
     const rows = [
       [services.autowire ? "YES" : "NO", services.autoconfigure ? "YES" : "NO"],

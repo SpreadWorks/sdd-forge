@@ -172,9 +172,14 @@ export function parseJSFile(filePath) {
   return { className, parentClass: "", methods, properties: {}, relations: {}, content };
 }
 
+/**
+ * 拡張子から言語を自動判定してパーサーを選択する。
+ * lang 引数が明示されていれば、それを優先する。
+ */
 export function parseFile(filePath, lang) {
-  if (lang === "php") return parsePHPFile(filePath);
-  if (lang === "js") return parseJSFile(filePath);
+  const resolved = lang || detectLang(filePath);
+  if (resolved === "php") return parsePHPFile(filePath);
+  if (resolved === "js") return parseJSFile(filePath);
   // デフォルト: ファイル名のみ
   return {
     className: path.basename(filePath),
@@ -186,51 +191,102 @@ export function parseFile(filePath, lang) {
   };
 }
 
+/**
+ * ファイルの拡張子から言語を判定する。
+ */
+function detectLang(filePath) {
+  const ext = path.extname(filePath).toLowerCase();
+  if (ext === ".php") return "php";
+  if (ext === ".js" || ext === ".mjs" || ext === ".cjs") return "js";
+  if (ext === ".json") return "json";
+  return null;
+}
+
+// ---------------------------------------------------------------------------
+// glob ベースファイル収集
+// ---------------------------------------------------------------------------
+
+/**
+ * glob パターンを正規表現に変換する。
+ * - `**` → 0個以上のパスセグメント
+ * - `*` → `/` 以外の任意文字列
+ */
+export function globToRegex(pattern) {
+  let regex = "";
+  let i = 0;
+  while (i < pattern.length) {
+    if (pattern[i] === "*" && pattern[i + 1] === "*") {
+      if (pattern[i + 2] === "/") {
+        // **/ — 0個以上のディレクトリ + /
+        regex += "(?:.+/)?";
+        i += 3;
+      } else {
+        // ** (末尾) — 任意のパス
+        regex += ".*";
+        i += 2;
+      }
+    } else if (pattern[i] === "*") {
+      regex += "[^/]*";
+      i++;
+    } else if (".+^${}()|[]\\".includes(pattern[i])) {
+      regex += "\\" + pattern[i];
+      i++;
+    } else {
+      regex += pattern[i];
+      i++;
+    }
+  }
+  return new RegExp("^" + regex + "$");
+}
+
+/**
+ * sourceRoot 配下から include/exclude glob パターンに一致するファイルを収集する。
+ *
+ * @param {string} baseDir - ソースルートの絶対パス
+ * @param {string[]} include - include glob パターン配列
+ * @param {string[]} [exclude] - exclude glob パターン配列
+ * @returns {Array<{ absPath: string, relPath: string, fileName: string, hash: string, lines: number, mtime: string }>}
+ */
+export function collectFiles(baseDir, include = [], exclude = []) {
+  if (include.length === 0) return [];
+
+  const includeMatchers = include.map((p) => globToRegex(p));
+  const excludeMatchers = exclude.map((p) => globToRegex(p));
+  const results = [];
+
+  function walk(dir, relPrefix) {
+    let entries;
+    try {
+      entries = fs.readdirSync(dir, { withFileTypes: true });
+    } catch (_) {
+      return;
+    }
+    for (const entry of entries) {
+      if (entry.isDirectory()) {
+        if (entry.name === ".git" || entry.name === "node_modules" || entry.name === "vendor") continue;
+        const nextRel = relPrefix ? `${relPrefix}/${entry.name}` : entry.name;
+        walk(path.join(dir, entry.name), nextRel);
+      } else if (entry.isFile()) {
+        const relPath = relPrefix ? `${relPrefix}/${entry.name}` : entry.name;
+        if (!includeMatchers.some((m) => m.test(relPath))) continue;
+        if (excludeMatchers.some((m) => m.test(relPath))) continue;
+        const absPath = path.join(dir, entry.name);
+        results.push({
+          absPath,
+          relPath,
+          fileName: entry.name,
+          ...getFileStats(absPath),
+        });
+      }
+    }
+  }
+
+  walk(baseDir, "");
+  return results.sort((a, b) => a.relPath.localeCompare(b.relPath));
+}
+
 // ---------------------------------------------------------------------------
 // ユーティリティ
 // ---------------------------------------------------------------------------
 
 export { camelToSnake, pluralize } from "./php-array-parser.js";
-
-/**
- * scanCfg のエントリがカテゴリ定義かどうかを判定する。
- * カテゴリ定義は dir または file プロパティを持つオブジェクト。
- */
-export function isCategoryEntry(value) {
-  return value && typeof value === "object" && !Array.isArray(value)
-    && (value.dir != null || value.file != null);
-}
-
-/**
- * composer.json / package.json から依存関係を抽出する。
- */
-export function analyzeExtras(sourceRoot) {
-  const extras = {};
-
-  const composerPath = path.join(sourceRoot, "composer.json");
-  if (fs.existsSync(composerPath)) {
-    try {
-      const composer = JSON.parse(fs.readFileSync(composerPath, "utf8"));
-      extras.composerDeps = {
-        require: composer.require || {},
-        requireDev: composer["require-dev"] || {},
-      };
-    } catch (_) { /* malformed composer.json — non-critical, skip deps */ }
-  }
-
-  const pkgPath = path.join(sourceRoot, "package.json");
-  if (fs.existsSync(pkgPath)) {
-    try {
-      const pkg = JSON.parse(fs.readFileSync(pkgPath, "utf8"));
-      extras.packageDeps = {
-        dependencies: pkg.dependencies || {},
-        devDependencies: pkg.devDependencies || {},
-      };
-      if (pkg.scripts && Object.keys(pkg.scripts).length > 0) {
-        extras.packageScripts = pkg.scripts;
-      }
-    } catch (_) { /* malformed package.json — non-critical, skip deps */ }
-  }
-
-  return extras;
-}

@@ -10,11 +10,7 @@
     "development_testing.md"
   ],
   "scan": {
-    "modules": {
-      "dir": "src",
-      "pattern": "*.js",
-      "subDirs": true,
-      "lang": "js"
-    }
+    "include": ["src/**/*.js", "src/**/*.mjs", "src/**/*.cjs", "package.json"],
+    "exclude": []
   }
 }

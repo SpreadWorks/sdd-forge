@@ -3,8 +3,8 @@
  * sdd-forge/docs/commands/scan.js
  *
  * DataSource ベースのスキャンパイプライン。
- * 親 preset (webapp/cli) → 子 preset の順で DataSource をロードし、
- * 各 DataSource の scan() を実行して analysis.json を生成する。
+ * include/exclude glob パターンでファイルを一括収集し、
+ * 各 DataSource の match() で振り分けて scan() を実行する。
  */
 
 import fs from "fs";
@@ -13,7 +13,7 @@ import { fileURLToPath } from "url";
 import { runIfDirect } from "../../lib/entrypoint.js";
 import { repoRoot, parseArgs } from "../../lib/cli.js";
 import { sddDataDir, sddOutputDir } from "../../lib/config.js";
-import { analyzeExtras } from "../lib/scanner.js";
+import { collectFiles } from "../lib/scanner.js";
 import { loadDataSources } from "../lib/data-source-loader.js";
 import { presetByLeaf } from "../../lib/presets.js";
 import { createLogger } from "../../lib/progress.js";
@@ -60,8 +60,31 @@ function loadScanSources(dataDir, existing) {
 const ENRICHED_FIELDS = ["summary", "detail", "chapter", "role"];
 
 /**
+ * オブジェクト内から hash フィールドを持つエントリーを再帰的に収集する。
+ *
+ * @param {Object} obj
+ * @returns {Array<Object>} hash を持つエントリーの配列
+ */
+function collectHashEntries(obj) {
+  const entries = [];
+  if (Array.isArray(obj)) {
+    for (const item of obj) {
+      if (item && typeof item === "object" && item.hash) {
+        entries.push(item);
+      }
+    }
+  } else if (obj && typeof obj === "object") {
+    for (const key of Object.keys(obj)) {
+      if (key === "analyzedAt" || key === "enrichedAt") continue;
+      entries.push(...collectHashEntries(obj[key]));
+    }
+  }
+  return entries;
+}
+
+/**
  * 既存 analysis.json から enriched フィールドをハッシュベースで引き継ぐ。
- * ファイルの hash が一致するエントリーのみ summary/detail/chapter/role を保持する。
+ * 再帰的にハッシュを検索し、任意の深さにあるエントリーの enrichment を保持する。
  *
  * @param {Object} result - 新しいスキャン結果（mutate される）
  * @param {string} outputPath - 既存 analysis.json のパス
@@ -75,32 +98,25 @@ function preserveEnrichment(result, outputPath) {
     return 0;
   }
 
+  // 既存 analysis から hash → enriched entry のルックアップを構築
+  const hashMap = new Map();
+  for (const item of collectHashEntries(existing)) {
+    if (item.summary) {
+      hashMap.set(item.hash, item);
+    }
+  }
+
+  if (hashMap.size === 0) return 0;
+
+  // 新しい結果の全エントリーに enrichment を適用
   let preserved = 0;
-
-  for (const cat of Object.keys(result)) {
-    const newItems = result[cat]?.[cat];
-    if (!Array.isArray(newItems)) continue;
-
-    const oldItems = existing[cat]?.[cat];
-    if (!Array.isArray(oldItems)) continue;
-
-    // hash → enriched entry lookup
-    const hashMap = new Map();
-    for (const item of oldItems) {
-      if (item.hash && item.summary) {
-        hashMap.set(item.hash, item);
-      }
+  for (const item of collectHashEntries(result)) {
+    const prev = hashMap.get(item.hash);
+    if (!prev) continue;
+    for (const field of ENRICHED_FIELDS) {
+      if (prev[field]) item[field] = prev[field];
     }
-
-    for (const item of newItems) {
-      if (!item.hash) continue;
-      const prev = hashMap.get(item.hash);
-      if (!prev) continue;
-      for (const field of ENRICHED_FIELDS) {
-        if (prev[field]) item[field] = prev[field];
-      }
-      preserved++;
-    }
+    preserved++;
   }
 
   if (preserved > 0 && existing.enrichedAt) {
@@ -139,12 +155,20 @@ async function main(ctx) {
   const arch = type.split("/")[0];
   const preset = presetByLeaf(leaf);
   const presetScan = preset?.scan || {};
-  const scanOverrides = cfg.scan || {};
-  const scanCfg = { ...presetScan, ...scanOverrides };
 
-  // DataSource ロード: 親 preset → 子 preset（子が親を override）
+  // config.json に scan があれば preset を完全置換、なければ preset のデフォルトを使用
+  const scanConfig = cfg.scan || presetScan;
+
+  // glob パターンでファイルを一括収集
+  const files = collectFiles(src, scanConfig.include || [], scanConfig.exclude);
+  logger.verbose(`collected ${files.length} files`);
+
+  // DataSource ロード: base → 親 preset → 子 preset（子が親を override）
+  const baseDataDir = path.join(PRESETS_DIR, "base", "data");
+  let dataSources = await loadScanSources(baseDataDir);
+
   const parentDataDir = path.join(PRESETS_DIR, arch, "data");
-  let dataSources = await loadScanSources(parentDataDir);
+  dataSources = await loadScanSources(parentDataDir, dataSources);
 
   if (preset?.dir) {
     dataSources = await loadScanSources(
@@ -156,36 +180,27 @@ async function main(ctx) {
   const projectDataDir = sddDataDir(root);
   dataSources = await loadScanSources(projectDataDir, dataSources);
 
-  // スキャン実行
+  // DataSource の match() で振り分けて scan() を実行
   const result = { analyzedAt: new Date().toISOString() };
 
   for (const [name, source] of dataSources) {
     logger.verbose(`${name} ...`);
-    const data = source.scan(src, scanCfg);
+    const matched = files.filter((f) => source.match(f));
+    const data = source.scan(matched);
     if (data == null) continue;
 
-    if (data.summary) {
-      // プライマリカテゴリ → analysis[name]
-      result[name] = data;
-      if (data.summary.total != null) {
-        logger.verbose(`${name}: ${data.summary.total} items`);
-      }
+    // 全結果をトップレベルに DataSource 名で格納
+    result[name] = data;
+
+    // ログ出力: summary があれば total を表示
+    if (data.summary?.total != null) {
+      logger.verbose(`${name}: ${data.summary.total} items`);
     } else {
-      // エクストラカテゴリ → analysis.extras にマージ
-      if (!result.extras) result.extras = {};
-      Object.assign(result.extras, data);
+      const keys = Object.keys(data);
+      if (keys.length > 0) {
+        logger.verbose(`${name}: ${keys.join(", ")}`);
+      }
     }
-  }
-
-  // 汎用 extras（composer.json / package.json）
-  logger.verbose("extras ...");
-  const universalExtras = analyzeExtras(src);
-  // DataSource extras が汎用 extras を override（FW 固有の方が詳細）
-  result.extras = { ...universalExtras, ...(result.extras || {}) };
-
-  const extrasKeys = Object.keys(result.extras);
-  if (extrasKeys.length > 0) {
-    logger.verbose(`extras: ${extrasKeys.length} categories (${extrasKeys.join(", ")})`);
   }
 
   // enrichment 保持: 既存ファイルからハッシュ一致エントリーの enriched フィールドを引き継ぐ

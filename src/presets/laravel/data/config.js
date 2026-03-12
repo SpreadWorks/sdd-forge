@@ -16,15 +16,30 @@ import { DataSource } from "../../../docs/lib/data-source.js";
 import { Scannable } from "../../../docs/lib/scan-source.js";
 import { analyzeConfig } from "../scan/config.js";
 
+function deriveSourceRoot(files) {
+  const f = files[0];
+  return f.absPath.slice(0, f.absPath.length - f.relPath.length).replace(/\/$/, "");
+}
+
 export default class ConfigSource extends Scannable(DataSource) {
-  scan(sourceRoot, scanCfg) {
+  match(file) {
+    return (
+      (file.relPath.startsWith("config/") && file.relPath.endsWith(".php")) ||
+      file.relPath === ".env.example" ||
+      file.relPath === "composer.json"
+    );
+  }
+
+  scan(files) {
+    if (files.length === 0) return null;
+    const sourceRoot = deriveSourceRoot(files);
     return analyzeConfig(sourceRoot);
   }
 
   /** Composer dependencies table. */
   composer(analysis, labels) {
-    if (!analysis.extras?.composerDeps) return null;
-    const { require: req, requireDev } = analysis.extras.composerDeps;
+    if (!analysis.config?.composerDeps) return null;
+    const { require: req, requireDev } = analysis.config.composerDeps;
     const rows = [];
     for (const [pkg, ver] of Object.entries(req)) {
       rows.push([pkg, ver, this.desc("composerDeps", pkg)]);
@@ -38,7 +53,7 @@ export default class ConfigSource extends Scannable(DataSource) {
 
   /** Environment variables table. */
   env(analysis, labels) {
-    const envKeys = analysis.extras?.envKeys;
+    const envKeys = analysis.config?.envKeys;
     if (!envKeys || envKeys.length === 0) return null;
     const rows = this.toRows(envKeys, (e) => [
       e.key,
@@ -50,7 +65,7 @@ export default class ConfigSource extends Scannable(DataSource) {
 
   /** Service providers table. */
   providers(analysis, labels) {
-    const providers = analysis.extras?.providers;
+    const providers = analysis.config?.providers;
     if (!providers || providers.length === 0) return null;
     const rows = this.toRows(providers, (p) => [
       p.className,
@@ -63,7 +78,7 @@ export default class ConfigSource extends Scannable(DataSource) {
 
   /** HTTP middleware table. */
   middleware(analysis, labels) {
-    const mw = analysis.extras?.middleware;
+    const mw = analysis.config?.middleware;
     if (!mw || mw.length === 0) return null;
     const rows = this.toRows(mw, (m) => [
       m.className,
@@ -75,7 +90,7 @@ export default class ConfigSource extends Scannable(DataSource) {
 
   /** Config files and their top-level keys. */
   files(analysis, labels) {
-    const configFiles = analysis.extras?.configFiles;
+    const configFiles = analysis.config?.configFiles;
     if (!configFiles || configFiles.length === 0) return null;
     const rows = this.toRows(configFiles, (cf) => [
       cf.file,

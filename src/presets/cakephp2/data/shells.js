@@ -13,6 +13,12 @@
 import ShellsSource from "../../webapp/data/shells.js";
 
 export default class CakephpShellsSource extends ShellsSource {
+  match(file) {
+    return /Shell\.php$/.test(file.relPath)
+      && file.relPath.includes("Console/Command/")
+      && !/AppShell\.php$/.test(file.relPath);
+  }
+
   /** Shell → dependency table (App::uses). */
   deps(analysis, labels) {
     const rows = [];
@@ -27,8 +33,8 @@ export default class CakephpShellsSource extends ShellsSource {
 
   /** Shell execution flow detail. */
   flow(analysis, labels) {
-    if (!analysis.extras?.shellDetails) return null;
-    const items = analysis.extras.shellDetails;
+    if (!analysis.config?.shellDetails) return null;
+    const items = analysis.config.shellDetails;
     if (items.length === 0) return null;
     const rows = this.toRows(items, (s) => [
       s.className,

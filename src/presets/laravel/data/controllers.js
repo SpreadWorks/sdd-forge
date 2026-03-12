@@ -13,8 +13,23 @@
 import ControllersSource from "../../webapp/data/controllers.js";
 import { analyzeControllers } from "../scan/controllers.js";
 
+function deriveSourceRoot(files) {
+  const f = files[0];
+  return f.absPath.slice(0, f.absPath.length - f.relPath.length).replace(/\/$/, "");
+}
+
 export default class LaravelControllersSource extends ControllersSource {
-  scan(sourceRoot, scanCfg) {
+  match(file) {
+    return (
+      file.relPath.startsWith("app/Http/Controllers/") &&
+      file.relPath.endsWith(".php") &&
+      file.fileName !== "Controller.php"
+    );
+  }
+
+  scan(files) {
+    if (files.length === 0) return null;
+    const sourceRoot = deriveSourceRoot(files);
     const result = analyzeControllers(sourceRoot);
     return { laravelControllers: result.controllers };
   }
@@ -22,7 +37,7 @@ export default class LaravelControllersSource extends ControllersSource {
   /** Controller list table. */
   list(analysis, labels) {
     const ctrls =
-      analysis.extras?.laravelControllers ||
+      analysis.controllers?.laravelControllers ||
       analysis.controllers?.controllers ||
       [];
     if (ctrls.length === 0) return null;
@@ -36,7 +51,7 @@ export default class LaravelControllersSource extends ControllersSource {
 
   /** Controller actions table. */
   actions(analysis, labels) {
-    const ctrls = analysis.extras?.laravelControllers || [];
+    const ctrls = analysis.controllers?.laravelControllers || [];
     if (ctrls.length === 0) return null;
     const rows = [];
     for (const c of ctrls) {
@@ -50,7 +65,7 @@ export default class LaravelControllersSource extends ControllersSource {
 
   /** Middleware usage across controllers. */
   middleware(analysis, labels) {
-    const ctrls = analysis.extras?.laravelControllers || [];
+    const ctrls = analysis.controllers?.laravelControllers || [];
     if (ctrls.length === 0) return null;
     const mwMap = new Map();
     for (const c of ctrls) {

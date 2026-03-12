@@ -5,24 +5,23 @@
  * to add FW-specific scan logic and resolve methods.
  */
 
-import path from "path";
 import { DataSource } from "../../../docs/lib/data-source.js";
 import { Scannable } from "../../../docs/lib/scan-source.js";
-import { findFiles, parseFile } from "../../../docs/lib/scanner.js";
+import { parseFile } from "../../../docs/lib/scanner.js";
 
 export default class ControllersSource extends Scannable(DataSource) {
-  scan(sourceRoot, scanCfg) {
-    const cfg = scanCfg.controllers;
-    if (!cfg) return null;
+  match(file) {
+    return false;
+  }
 
-    const dir = path.join(sourceRoot, cfg.dir);
-    const files = findFiles(dir, cfg.pattern, cfg.exclude, cfg.subDirs);
+  scan(files) {
+    if (files.length === 0) return null;
 
     const controllers = [];
     for (const f of files) {
-      const parsed = parseFile(f.absPath, cfg.lang);
+      const parsed = parseFile(f.absPath);
       controllers.push({
-        file: path.join(cfg.dir, f.relPath),
+        file: f.relPath,
         className: parsed.className,
         parentClass: parsed.parentClass,
         components: parsed.properties.components || [],

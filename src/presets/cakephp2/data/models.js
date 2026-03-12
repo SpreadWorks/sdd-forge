@@ -3,21 +3,22 @@
  *
  * Extends webapp ModelsSource with CakePHP-specific scan logic
  * and resolve methods (logic, er, logicMethods).
- *
- * Available methods (called via {{data}} directives):
- *   models.relations("Model|Associations")           — overrides parent (filters isLogic/isFe)
- *   models.logic("Class|File|Description")
- *   models.er("Parent|Child|Type")
- *   models.logicMethods("Class|Extends|Methods")
  */
 
-import path from "path";
 import ModelsSource from "../../webapp/data/models.js";
 import { analyzeModels } from "../scan/models.js";
 
 export default class CakephpModelsSource extends ModelsSource {
-  scan(sourceRoot, scanCfg) {
-    return analyzeModels(path.join(sourceRoot, "app"));
+  match(file) {
+    return /\.php$/.test(file.relPath)
+      && file.relPath.includes("Model/")
+      && !/AppModel\.php$/.test(file.relPath);
+  }
+
+  scan(files) {
+    if (files.length === 0) return null;
+    const sourceRoot = deriveSourceRoot(files);
+    return analyzeModels(sourceRoot + "/app");
   }
 
   /** Logic class list. */
@@ -98,8 +99,8 @@ export default class CakephpModelsSource extends ModelsSource {
 
   /** Logic class public methods detail. */
   logicMethods(analysis, labels) {
-    if (!analysis.extras?.logicClasses) return null;
-    const items = analysis.extras.logicClasses;
+    if (!analysis.config?.logicClasses) return null;
+    const items = analysis.config.logicClasses;
     if (items.length === 0) return null;
     const rows = this.toRows(items, (lc) => {
       const methods = lc.methods
@@ -110,4 +111,9 @@ export default class CakephpModelsSource extends ModelsSource {
     });
     return this.toMarkdownTable(rows, labels);
   }
+}
+
+function deriveSourceRoot(files) {
+  const f = files[0];
+  return f.absPath.slice(0, f.absPath.length - f.relPath.length).replace(/\/$/, "");
 }
