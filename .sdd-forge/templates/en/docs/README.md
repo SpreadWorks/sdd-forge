@@ -1,7 +1,6 @@
-# <!-- {{data: project.name("")}} -->sdd-forge<!-- {{/data}} -->
+# <!-- {{data: project.name("")}} --><!-- {{/data}} -->
 
 <!-- {{data: docs.langSwitcher("absolute")}} -->
-**English** | [日本語](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/ja/README.md)
 <!-- {{/data}} -->
 
 [![npm version](https://img.shields.io/npm/v/sdd-forge.svg)](https://www.npmjs.com/package/sdd-forge)
@@ -55,23 +54,23 @@ sdd-forge is different.
 
 <pre>
 # npm
-npm install -g <!-- {{data: project.name("")}} -->sdd-forge<!-- {{/data}} -->
+npm install -g <!-- {{data: project.name("")}} --><!-- {{/data}} -->
 
 # yarn
-yarn global add <!-- {{data: project.name("")}} -->sdd-forge<!-- {{/data}} -->
+yarn global add <!-- {{data: project.name("")}} --><!-- {{/data}} -->
 
 # pnpm
-pnpm add -g <!-- {{data: project.name("")}} -->sdd-forge<!-- {{/data}} -->
+pnpm add -g <!-- {{data: project.name("")}} --><!-- {{/data}} -->
 </pre>
 
 ### Setup & Generate
 
 <pre>
 # 1. Register your project (interactive wizard)
-<!-- {{data: project.name("")}} -->sdd-forge<!-- {{/data}} --> setup
+<!-- {{data: project.name("")}} --><!-- {{/data}} --> setup
 
 # 2. Generate all documentation (scan → enrich → init → data → text → readme → agents → translate)
-<!-- {{data: project.name("")}} -->sdd-forge<!-- {{/data}} --> build
+<!-- {{data: project.name("")}} --><!-- {{/data}} --> build
 </pre>
 
 That's it — `docs/` and `README.md` are generated.
@@ -176,11 +175,6 @@ Add project-specific templates and data sources:
 ## Documentation
 
 <!-- {{data: docs.chapters("Chapter|Summary")}} -->
-| Chapter | Summary |
-| --- | --- |
-| [01. Tool Overview and Architecture](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/overview.md) | This chapter introduces `sdd-forge`, a CLI tool that automates documentation generation from source code analysis and… |
-| [02. CLI Command Reference](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/cli_commands.md) | This chapter documents all 20 CLI commands available in sdd-forge, covering project setup, documentation generation, … |
-| [03. Configuration and Customization](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/configuration.md) | This chapter covers the configuration files that sdd-forge reads to tailor its behavior to your project, including th… |
 <!-- {{/data}} -->
 
 ## License
