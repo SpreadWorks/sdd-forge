@@ -9,7 +9,7 @@ const GUARDRAIL_CMD = join(process.cwd(), "src/specs/commands/guardrail.js");
 const GATE_CMD = join(process.cwd(), "src/specs/commands/gate.js");
 
 // Dynamically import gate functions for unit tests
-const { buildGuardrailPrompt, parseGuardrailResponse } = await import(
+const { buildGuardrailPrompt, parseGuardrailResponse, extractExemptions } = await import(
   "../../../src/specs/commands/gate.js"
 );
 
@@ -290,5 +290,126 @@ describe("parseGuardrailResponse", () => {
     const r2 = parseGuardrailResponse("FAIL: Rule - reason with hyphen");
     assert.equal(r2.length, 1);
     assert.equal(r2[0].passed, false);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// extractExemptions unit tests
+// ---------------------------------------------------------------------------
+
+describe("extractExemptions", () => {
+  it("extracts exempted article titles", () => {
+    const spec = [
+      "# Spec",
+      "## Requirements",
+      "- R1: something",
+      "## Guardrail Exemptions",
+      "- No Hardcoded Secrets — test fixtures need dummy API keys",
+      "- Single Responsibility — intentionally bundled",
+      "## Acceptance Criteria",
+      "- done",
+    ].join("\n");
+    const exemptions = extractExemptions(spec);
+    assert.equal(exemptions.length, 2);
+    assert.ok(exemptions.includes("no hardcoded secrets"));
+    assert.ok(exemptions.includes("single responsibility"));
+  });
+
+  it("returns empty array when no exemptions section", () => {
+    const spec = "# Spec\n## Requirements\n- R1\n";
+    assert.deepEqual(extractExemptions(spec), []);
+  });
+
+  it("returns empty array when exemptions section is empty", () => {
+    const spec = "## Guardrail Exemptions\n\n## Requirements\n";
+    assert.deepEqual(extractExemptions(spec), []);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// buildGuardrailPrompt with exemptions
+// ---------------------------------------------------------------------------
+
+describe("buildGuardrailPrompt with exemptions", () => {
+  const articles = [
+    { title: "Rule A", body: "Description A" },
+    { title: "Rule B", body: "Description B" },
+    { title: "Rule C", body: "Description C" },
+  ];
+
+  it("excludes exempted articles from prompt", () => {
+    const spec = "## Guardrail Exemptions\n- Rule B — reason\n\n## Requirements\n- R1\n";
+    const prompt = buildGuardrailPrompt(spec, articles);
+    assert.ok(prompt.includes("Rule A"));
+    assert.ok(!prompt.includes("**Rule B**"));
+    assert.ok(prompt.includes("Rule C"));
+    assert.ok(prompt.includes("Exempted Articles"));
+  });
+
+  it("returns null when all articles are exempted", () => {
+    const spec = "## Guardrail Exemptions\n- Rule A — r\n- Rule B — r\n- Rule C — r\n";
+    const prompt = buildGuardrailPrompt(spec, articles);
+    assert.equal(prompt, null);
+  });
+
+  it("case-insensitive exemption matching", () => {
+    const spec = "## Guardrail Exemptions\n- rule a — reason\n";
+    const prompt = buildGuardrailPrompt(spec, articles);
+    assert.ok(!prompt.includes("**Rule A**"));
+    assert.ok(prompt.includes("Rule B"));
+  });
+});
+
+// ---------------------------------------------------------------------------
+// guardrail init: webapp type merges base + webapp articles
+// ---------------------------------------------------------------------------
+
+describe("guardrail init template merging", () => {
+  let tmp;
+  afterEach(() => tmp && removeTmpDir(tmp));
+
+  it("merges base + webapp articles for webapp type", () => {
+    tmp = createTmpDir();
+    writeJson(tmp, ".sdd-forge/config.json", {
+      lang: "en",
+      type: "webapp",
+      output: { languages: ["en"], default: "en" },
+    });
+
+    execFileSync("node", [GUARDRAIL_CMD, "init"], {
+      encoding: "utf8",
+      env: { ...process.env, SDD_WORK_ROOT: tmp },
+    });
+
+    const content = readFileSync(join(tmp, ".sdd-forge", "guardrail.md"), "utf8");
+    // base articles
+    assert.ok(content.includes("Single Responsibility"), "should have base article");
+    assert.ok(content.includes("No Hardcoded Secrets"), "should have base article");
+    // webapp articles
+    assert.ok(content.includes("Security Impact Disclosure"), "should have webapp article");
+    assert.ok(content.includes("Input Sanitization"), "should have webapp article");
+  });
+
+  it("merges base + webapp + cakephp2 articles for cakephp2 type", () => {
+    tmp = createTmpDir();
+    writeJson(tmp, ".sdd-forge/config.json", {
+      lang: "en",
+      type: "webapp/cakephp2",
+      output: { languages: ["en"], default: "en" },
+    });
+
+    execFileSync("node", [GUARDRAIL_CMD, "init"], {
+      encoding: "utf8",
+      env: { ...process.env, SDD_WORK_ROOT: tmp },
+    });
+
+    const content = readFileSync(join(tmp, ".sdd-forge", "guardrail.md"), "utf8");
+    // base
+    assert.ok(content.includes("Single Responsibility"), "should have base article");
+    // webapp
+    assert.ok(content.includes("Security Impact Disclosure"), "should have webapp article");
+    // cakephp2
+    assert.ok(content.includes("Fat Model"), "should have cakephp2 article");
+    assert.ok(content.includes("CakeSession"), "should have cakephp2 article");
   });
 });

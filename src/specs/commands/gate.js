@@ -100,6 +100,31 @@ function checkSpecText(text, opts) {
 }
 
 /**
+ * Extract exempted article titles from spec text.
+ * Looks for a `## Guardrail Exemptions` section with list items like:
+ *   - Article Title — reason
+ *
+ * @param {string} specText
+ * @returns {string[]} lowercased exempted article titles
+ */
+function extractExemptions(specText) {
+  const match = specText.match(/^\s*##\s+Guardrail Exemptions\b/im);
+  if (!match) return [];
+
+  const start = match.index + match[0].length;
+  const tail = specText.slice(start);
+  const nextHeading = tail.match(/\n\s*##\s+/m);
+  const block = nextHeading ? tail.slice(0, nextHeading.index) : tail;
+
+  const exemptions = [];
+  for (const line of block.split("\n")) {
+    const m = line.match(/^\s*-\s+(.+?)(?:\s*[—–-]\s*.*)?$/);
+    if (m) exemptions.push(m[1].trim().toLowerCase());
+  }
+  return exemptions;
+}
+
+/**
  * Build AI prompt for guardrail compliance check.
  *
  * @param {string} specText - spec.md content
@@ -107,11 +132,18 @@ function checkSpecText(text, opts) {
  * @returns {string} prompt
  */
 function buildGuardrailPrompt(specText, articles) {
-  const articleList = articles.map((a, i) =>
+  const exemptions = extractExemptions(specText);
+  const filteredArticles = articles.filter(
+    (a) => !exemptions.includes(a.title.toLowerCase())
+  );
+
+  if (filteredArticles.length === 0) return null;
+
+  const articleList = filteredArticles.map((a, i) =>
     `${i + 1}. **${a.title}**: ${a.body.trim()}`
   ).join("\n");
 
-  return [
+  const parts = [
     "You are a spec compliance checker. Check the following spec against each guardrail article.",
     "For each article, output exactly one line in this format:",
     "  PASS: <article title> — <brief reason>",
@@ -121,10 +153,19 @@ function buildGuardrailPrompt(specText, articles) {
     "",
     "## Guardrail Articles",
     articleList,
-    "",
-    "## Spec",
-    specText,
-  ].join("\n");
+  ];
+
+  if (exemptions.length > 0) {
+    parts.push("");
+    parts.push("## Exempted Articles (do NOT check these)");
+    parts.push(exemptions.map((e) => `- ${e}`).join("\n"));
+  }
+
+  parts.push("");
+  parts.push("## Spec");
+  parts.push(specText);
+
+  return parts.join("\n");
 }
 
 /**
@@ -187,6 +228,10 @@ function checkGuardrail(root, specText, t) {
   console.error(t("messages:gate.guardrailChecking"));
 
   const prompt = buildGuardrailPrompt(specText, articles);
+  if (!prompt) {
+    // All articles exempted
+    return { passed: true, results: [] };
+  }
   const response = callAgent(agent, prompt);
   const results = parseGuardrailResponse(response);
   const passed = results.length > 0 && results.every((r) => r.passed);
@@ -253,6 +298,6 @@ function main() {
   console.log(t("messages:gate.passed"));
 }
 
-export { main, checkSpecText, buildGuardrailPrompt, parseGuardrailResponse, checkGuardrail };
+export { main, checkSpecText, buildGuardrailPrompt, parseGuardrailResponse, checkGuardrail, extractExemptions };
 
 runIfDirect(import.meta.url, main);
