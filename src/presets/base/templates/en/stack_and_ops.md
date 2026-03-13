@@ -7,9 +7,9 @@
 <!-- @block: description -->
 <!-- {{text: Write a 1-2 sentence overview of this chapter. Include the programming language, framework, and key tool versions.}} -->
 <!-- {{/text}} -->
-<!-- @endblock -->
 
 ## Content
+<!-- @endblock -->
 
 <!-- @block: stack -->
 ### Technology Stack

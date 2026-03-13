@@ -7,9 +7,9 @@
 <!-- @block: description -->
 <!-- {{text: この章の概要を1〜2文で記述してください。インストール方法・要件を踏まえること。}} -->
 <!-- {{/text}} -->
-<!-- @endblock -->
 
 ## 内容
+<!-- @endblock -->
 
 <!-- @block: installation -->
 ### インストール

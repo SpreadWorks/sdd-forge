@@ -7,9 +7,9 @@
 <!-- @block: description -->
 <!-- {{text: Write a 1-2 sentence overview of this chapter. Include the total number of commands, global options, and subcommand structure.}} -->
 <!-- {{/text}} -->
-<!-- @endblock -->
 
 ## Content
+<!-- @endblock -->
 
 <!-- @block: command-list -->
 ### Command List

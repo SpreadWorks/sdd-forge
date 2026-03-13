@@ -7,9 +7,9 @@
 <!-- @block: description -->
 <!-- {{text: この章の概要を1〜2文で記述してください。主要ディレクトリの数と役割を踏まえること。}} -->
 <!-- {{/text}} -->
-<!-- @endblock -->
 
 ## 内容
+<!-- @endblock -->
 
 <!-- @block: directory-tree -->
 ### ディレクトリ構成

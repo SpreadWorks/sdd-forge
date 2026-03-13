@@ -10,9 +10,9 @@
 <!-- @block: description -->
 <!-- {{text: Write a 1-2 sentence overview of this chapter. Include the project's architecture and whether it integrates with external systems.}} -->
 <!-- {{/text}} -->
-<!-- @endblock -->
 
 ## Content
+<!-- @endblock -->
 
 <!-- @block: architecture -->
 ### Architecture Diagram

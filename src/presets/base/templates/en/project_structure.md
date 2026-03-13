@@ -7,9 +7,9 @@
 <!-- @block: description -->
 <!-- {{text: Write a 1-2 sentence overview of this chapter. Include the number of major directories and their roles.}} -->
 <!-- {{/text}} -->
-<!-- @endblock -->
 
 ## Content
+<!-- @endblock -->
 
 <!-- @block: directory-tree -->
 ### Directory Layout

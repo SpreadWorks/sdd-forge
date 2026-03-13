@@ -7,9 +7,9 @@
 <!-- @block: description -->
 <!-- {{text: この章の概要を1〜2文で記述してください。コマンド数、定期実行の有無を踏まえること。}} -->
 <!-- {{/text}} -->
-<!-- @endblock -->
 
 ## 内容
+<!-- @endblock -->
 
 <!-- @block: command-list -->
 ### コマンド一覧

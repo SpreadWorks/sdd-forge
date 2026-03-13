@@ -7,9 +7,9 @@
 <!-- @block: description -->
 <!-- {{text: この章の概要を1〜2文で記述してください。テーブル総数、FK関係を踏まえること。}} -->
 <!-- {{/text}} -->
-<!-- @endblock -->
 
 ## 内容
+<!-- @endblock -->
 
 <!-- @block: table-list -->
 ### テーブル一覧

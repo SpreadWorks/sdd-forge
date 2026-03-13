@@ -7,9 +7,9 @@
 <!-- @block: description -->
 <!-- {{text: Write a 1-2 sentence overview of this chapter. Include the types of config files, range of configurable items, and customization points.}} -->
 <!-- {{/text}} -->
-<!-- @endblock -->
 
 ## Content
+<!-- @endblock -->
 
 <!-- @block: config-files -->
 ### Configuration Files
