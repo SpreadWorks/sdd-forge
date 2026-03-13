@@ -25,19 +25,22 @@ export default class CakephpLibsSource extends WebappDataSource {
 
   list(analysis, labels) {
     if (!analysis.libs?.libraries) return null;
-    const items = analysis.libs.libraries;
+    const items = this.mergeDesc(analysis.libs.libraries, "libs");
     if (items.length === 0) return null;
-    const rows = this.toRows(items, (l) => [l.className, l.file, this.desc("libs", l.className, l.summary)]);
+    const rows = this.toRows(items, (l) => [l.className, l.file, l.summary || "—"]);
     return this.toMarkdownTable(rows, labels);
   }
 
   errors(analysis, labels) {
     if (!analysis.libs?.libraries) return null;
-    const items = analysis.libs.libraries.filter(
-      (l) => l.className === "AppError" || l.className === "AppExceptionHandler",
+    const items = this.mergeDesc(
+      analysis.libs.libraries.filter(
+        (l) => l.className === "AppError" || l.className === "AppExceptionHandler",
+      ),
+      "libs",
     );
     if (items.length === 0) return null;
-    const rows = this.toRows(items, (l) => [l.className, l.file, this.desc("libs", l.className, l.summary)]);
+    const rows = this.toRows(items, (l) => [l.className, l.file, l.summary || "—"]);
     return this.toMarkdownTable(rows, labels);
   }
 

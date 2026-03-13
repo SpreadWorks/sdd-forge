@@ -99,26 +99,28 @@ export default class CakephpConfigSource extends WebappDataSource {
   constants(analysis, labels) {
     if (!analysis.config?.constants?.scalars) return null;
     const seen = new Set();
-    const items = analysis.config.constants.scalars.filter((s) => {
-      if (seen.has(s.name)) return false;
-      seen.add(s.name);
-      return true;
-    });
+    const items = this.mergeDesc(
+      analysis.config.constants.scalars.filter((s) => {
+        if (seen.has(s.name)) return false;
+        seen.add(s.name);
+        return true;
+      }),
+      "constants", "name",
+    );
     if (items.length === 0) return null;
     const rows = this.toRows(items, (s) => [
-      s.name, s.value, this.desc("constants", s.name, s.summary),
+      s.name, s.value, s.summary || "—",
     ]);
     return this.toMarkdownTable(rows, labels);
   }
 
   constantsSelect(analysis, labels) {
     if (!analysis.config?.constants?.selectOptions) return null;
-    const items = analysis.config.constants.selectOptions;
+    const items = this.mergeDesc(analysis.config.constants.selectOptions, "selectConstants", "name");
     if (items.length === 0) return null;
     const rows = this.toRows(items, (s) => {
-      const descText = this.desc("selectConstants", s.name, s.summary);
       const opts = s.options.map((o) => `${o.key}=${o.label}`).join(", ");
-      return [s.name, `${descText}: ${opts}`];
+      return [s.name, `${s.summary || "—"}: ${opts}`];
     });
     return this.toMarkdownTable(rows, labels);
   }

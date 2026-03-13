@@ -31,12 +31,12 @@ export default class LaravelTablesSource extends TablesSource {
 
   /** Table list table. */
   list(analysis, labels) {
-    const tables = analysis.tables?.migrations || [];
+    const tables = this.mergeDesc(analysis.tables?.migrations || [], "tables", "name");
     if (tables.length === 0) return null;
     const rows = this.toRows(tables, (t) => [
       t.name,
       t.columns.length,
-      this.desc("tables", t.name, t.summary),
+      t.summary || "—",
     ]);
     return this.toMarkdownTable(rows, labels);
   }

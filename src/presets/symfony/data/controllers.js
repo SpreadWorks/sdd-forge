@@ -27,15 +27,17 @@ export default class SymfonyControllersSource extends ControllersSource {
 
   /** Controller list table. */
   list(analysis, labels) {
-    const ctrls =
+    const ctrls = this.mergeDesc(
       analysis.controllers?.symfonyControllers ||
       analysis.controllers?.controllers ||
-      [];
+      [],
+      "controllers",
+    );
     if (ctrls.length === 0) return null;
     const rows = this.toRows(ctrls, (c) => [
       c.className,
       c.file,
-      this.desc("controllers", c.className, c.summary),
+      c.summary || "—",
     ]);
     return this.toMarkdownTable(rows, labels);
   }

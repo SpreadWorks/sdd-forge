@@ -22,14 +22,14 @@ export default class TablesSource extends WebappDataSource {
 
   /** Table list (derived from model analysis). */
   list(analysis, labels) {
-    const models = analysis.models?.models || [];
+    const models = this.mergeDesc(analysis.models?.models || [], "tables", "tableName");
     if (models.length === 0) return null;
     const seen = new Set();
     const rows = [];
     for (const m of models) {
       if (!m.tableName || seen.has(m.tableName)) continue;
       seen.add(m.tableName);
-      rows.push([m.tableName, this.desc("tables", m.tableName, m.summary)]);
+      rows.push([m.tableName, m.summary || "—"]);
     }
     rows.sort((a, b) => a[0].localeCompare(b[0]));
     if (rows.length === 0) return null;

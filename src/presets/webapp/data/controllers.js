@@ -51,12 +51,12 @@ export default class ControllersSource extends WebappDataSource {
 
   /** Controller list table. */
   list(analysis, labels) {
-    const items = analysis.controllers?.controllers || [];
+    const items = this.mergeDesc(analysis.controllers?.controllers || [], "controllers");
     if (items.length === 0) return null;
     const rows = this.toRows(items, (c) => [
       c.className,
       c.file,
-      this.desc("controllers", c.className, c.summary),
+      c.summary || "—",
     ]);
     return this.toMarkdownTable(rows, labels);
   }

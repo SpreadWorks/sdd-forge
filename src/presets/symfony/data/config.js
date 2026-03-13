@@ -47,10 +47,11 @@ export default class ConfigSource extends WebappDataSource {
   env(analysis, labels) {
     const envKeys = analysis.config?.envKeys;
     if (!envKeys || envKeys.length === 0) return null;
-    const rows = this.toRows(envKeys, (e) => [
+    const items = this.mergeDesc(envKeys, "env", "key");
+    const rows = this.toRows(items, (e) => [
       e.key,
       e.defaultValue || "\u2014",
-      this.desc("env", e.key, e.summary),
+      e.summary || "—",
     ]);
     return this.toMarkdownTable(rows, labels);
   }
@@ -59,10 +60,11 @@ export default class ConfigSource extends WebappDataSource {
   bundles(analysis, labels) {
     const bundles = analysis.config?.bundles;
     if (!bundles || bundles.length === 0) return null;
-    const rows = this.toRows(bundles, (b) => [
+    const items = this.mergeDesc(bundles, "bundles", "shortName");
+    const rows = this.toRows(items, (b) => [
       b.shortName,
       b.fullName,
-      this.desc("bundles", b.shortName, b.summary),
+      b.summary || "—",
     ]);
     return this.toMarkdownTable(rows, labels);
   }

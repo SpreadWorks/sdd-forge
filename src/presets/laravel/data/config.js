@@ -49,10 +49,11 @@ export default class ConfigSource extends WebappDataSource {
   env(analysis, labels) {
     const envKeys = analysis.config?.envKeys;
     if (!envKeys || envKeys.length === 0) return null;
-    const rows = this.toRows(envKeys, (e) => [
+    const items = this.mergeDesc(envKeys, "env", "key");
+    const rows = this.toRows(items, (e) => [
       e.key,
       e.defaultValue || "\u2014",
-      this.desc("env", e.key, e.summary),
+      e.summary || "—",
     ]);
     return this.toMarkdownTable(rows, labels);
   }
@@ -74,10 +75,11 @@ export default class ConfigSource extends WebappDataSource {
   middleware(analysis, labels) {
     const mw = analysis.config?.middleware;
     if (!mw || mw.length === 0) return null;
-    const rows = this.toRows(mw, (m) => [
+    const items = this.mergeDesc(mw, "middleware");
+    const rows = this.toRows(items, (m) => [
       m.className,
       m.file,
-      this.desc("middleware", m.className, m.summary),
+      m.summary || "—",
     ]);
     return this.toMarkdownTable(rows, labels);
   }

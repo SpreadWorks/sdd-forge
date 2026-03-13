@@ -31,13 +31,16 @@ function resolveDbName(useDbConfig) {
 export default class CakephpTablesSource extends TablesSource {
   /** Table list with CakePHP DB name resolution. */
   list(analysis, labels) {
-    const models = analysis.models.models.filter((m) => !m.isLogic && !m.isFe);
+    const models = this.mergeDesc(
+      analysis.models.models.filter((m) => !m.isLogic && !m.isFe),
+      "tables", "tableName",
+    );
     const seen = new Set();
     const rows = [];
     for (const m of models) {
       if (seen.has(m.tableName)) continue;
       seen.add(m.tableName);
-      rows.push([m.tableName, resolveDbName(m.useDbConfig), this.desc("tables", m.tableName, m.summary)]);
+      rows.push([m.tableName, resolveDbName(m.useDbConfig), m.summary || "—"]);
     }
     rows.sort((a, b) => a[0].localeCompare(b[0]));
     if (rows.length === 0) return null;

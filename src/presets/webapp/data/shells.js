@@ -53,12 +53,12 @@ export default class ShellsSource extends WebappDataSource {
 
   /** Shell/command list. */
   list(analysis, labels) {
-    const items = analysis.shells?.shells || [];
+    const items = this.mergeDesc(analysis.shells?.shells || [], "shells");
     if (items.length === 0) return null;
     const rows = this.toRows(items, (s) => [
       s.className,
       s.file,
-      this.desc("shells", s.className, s.summary),
+      s.summary || "—",
     ]);
     return this.toMarkdownTable(rows, labels);
   }

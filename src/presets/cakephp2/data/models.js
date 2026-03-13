@@ -23,14 +23,17 @@ export default class CakephpModelsSource extends ModelsSource {
 
   /** Logic class list. */
   logic(analysis, labels) {
-    const items = analysis.models.models
-      .filter((m) => m.isLogic)
-      .sort((a, b) => a.className.localeCompare(b.className));
+    const items = this.mergeDesc(
+      analysis.models.models
+        .filter((m) => m.isLogic)
+        .sort((a, b) => a.className.localeCompare(b.className)),
+      "logicClasses",
+    );
     if (items.length === 0) return null;
     const rows = this.toRows(items, (m) => [
       m.className,
       m.file,
-      this.desc("logicClasses", m.className, m.summary),
+      m.summary || "—",
     ]);
     return this.toMarkdownTable(rows, labels);
   }

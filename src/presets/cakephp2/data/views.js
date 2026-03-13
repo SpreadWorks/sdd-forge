@@ -23,9 +23,9 @@ export default class CakephpViewsSource extends WebappDataSource {
 
   helpers(analysis, labels) {
     if (!analysis.views?.helpers) return null;
-    const items = analysis.views.helpers;
+    const items = this.mergeDesc(analysis.views.helpers, "helpers");
     if (items.length === 0) return null;
-    const rows = this.toRows(items, (h) => [h.className, h.extends, this.desc("helpers", h.className, h.summary)]);
+    const rows = this.toRows(items, (h) => [h.className, h.extends, h.summary || "—"]);
     return this.toMarkdownTable(rows, labels);
   }
 

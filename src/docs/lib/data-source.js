@@ -30,20 +30,40 @@ export class DataSource {
   }
 
   /**
-   * Look up a description string.
-   * Priority: overrides.json → fallback (e.g. item.summary) → "—"
+   * Look up a description string from overrides.json.
+   *
+   * For items that have a summary field (from enriched analysis),
+   * use mergeDesc() to pre-merge overrides into items instead.
    *
    * @param {string} section - overrides.json section key
    * @param {string} key - item identifier
-   * @param {string} [fallback] - fallback value (typically item.summary from enriched analysis)
    * @returns {string}
    */
-  desc(section, key, fallback) {
+  desc(section, key) {
     if (this._desc) {
-      const v = this._desc(section, key);
-      if (v !== "—") return v;
+      return this._desc(section, key);
     }
-    return fallback || "—";
+    return "—";
+  }
+
+  /**
+   * Merge override descriptions into items' summary fields.
+   * Returns a new array — originals are not mutated.
+   *
+   * @param {Array} items - analysis items (objects with a summary field)
+   * @param {string} section - overrides.json section key
+   * @param {string} [keyField='className'] - field to use as lookup key
+   * @returns {Array}
+   */
+  mergeDesc(items, section, keyField = "className") {
+    const overrides = this._loadOverrides?.() ?? {};
+    const sectionData = overrides[section];
+    if (!sectionData) return items;
+    return items.map((item) => {
+      const key = item[keyField];
+      const override = key ? sectionData[key] : undefined;
+      return override !== undefined ? { ...item, summary: override } : item;
+    });
   }
 
   /**

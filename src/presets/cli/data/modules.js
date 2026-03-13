@@ -40,12 +40,12 @@ export default class ModulesSource extends Scannable(DataSource) {
 
   /** Module list table. */
   list(analysis, labels) {
-    const items = analysis.modules?.modules || [];
+    const items = this.mergeDesc(analysis.modules?.modules || [], "modules");
     if (items.length === 0) return null;
     const rows = this.toRows(items, (m) => [
       m.className,
       m.file,
-      this.desc("modules", m.className, m.summary),
+      m.summary || "—",
     ]);
     return this.toMarkdownTable(rows, labels);
   }
