@@ -46,7 +46,7 @@ describe("setup CLI", () => {
     assert.match(output, /Setup|language|lang/i);
   });
 
-  it("skips projects.json when source is cwd (local single-project)", () => {
+  it("creates config.json and directory structure in non-interactive mode", () => {
     tmp = createTmpDir();
     writeJson(tmp, "package.json", { name: "test-proj" });
 
@@ -58,10 +58,10 @@ describe("setup CLI", () => {
     });
     assert.equal(result.status, 0, `stderr: ${result.stderr}`);
 
-    // projects.json must NOT exist
+    // projects.json must NOT exist (feature removed)
     assert.ok(
       !fs.existsSync(join(tmp, ".sdd-forge", "projects.json")),
-      "projects.json should not be created for local single-project setup",
+      "projects.json should not be created",
     );
     // config.json must exist
     assert.ok(
@@ -72,42 +72,5 @@ describe("setup CLI", () => {
     assert.ok(fs.existsSync(join(tmp, ".sdd-forge", "output", ".gitkeep")));
     assert.ok(fs.existsSync(join(tmp, "docs")));
     assert.ok(fs.existsSync(join(tmp, "specs")));
-  });
-
-  it("creates projects.json and .gitignore when --path differs from cwd", () => {
-    tmp = createTmpDir();
-    const srcDir = join(tmp, "src-project");
-    fs.mkdirSync(srcDir, { recursive: true });
-    writeJson(tmp, "package.json", { name: "test-proj" });
-
-    const result = spawnSync(
-      "node",
-      [CMD, ...NI_ARGS, "--path", srcDir],
-      {
-        encoding: "utf8",
-        cwd: tmp,
-        timeout: 10000,
-        env: { ...process.env, SDD_WORK_ROOT: tmp, SDD_SOURCE_ROOT: tmp },
-      },
-    );
-    assert.equal(result.status, 0, `stderr: ${result.stderr}`);
-
-    // projects.json must exist
-    assert.ok(
-      fs.existsSync(join(tmp, ".sdd-forge", "projects.json")),
-      "projects.json should be created when --path differs from cwd",
-    );
-
-    // .gitignore must contain projects.json
-    const gitignorePath = join(tmp, ".sdd-forge", ".gitignore");
-    assert.ok(
-      fs.existsSync(gitignorePath),
-      ".sdd-forge/.gitignore should be created",
-    );
-    const gitignoreContent = fs.readFileSync(gitignorePath, "utf8");
-    assert.ok(
-      gitignoreContent.split("\n").some((l) => l.trim() === "projects.json"),
-      ".gitignore should contain projects.json entry",
-    );
   });
 });

@@ -16,6 +16,7 @@ import { runIfDirect } from "../../lib/entrypoint.js";
 import { repoRoot, parseArgs } from "../../lib/cli.js";
 import {
   loadFlowState,
+  saveFlowState,
   updateStepStatus,
   setRequirements,
   updateRequirement,

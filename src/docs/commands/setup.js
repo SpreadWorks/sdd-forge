@@ -18,7 +18,6 @@ import { PKG_DIR, parseArgs } from "../../lib/cli.js";
 import { validateConfig } from "../../lib/types.js";
 import { DEFAULT_LANG } from "../../lib/config.js";
 import { createI18n } from "../../lib/i18n.js";
-import { addProject, workRootFor, loadProjects } from "../../lib/projects.js";
 import { presetsForArch } from "../../lib/presets.js";
 import { loadSddTemplate } from "../../lib/agents-md.js";
 import { ensureAgentWorkDir } from "../../lib/agent.js";
@@ -82,7 +81,7 @@ async function askMultiChoice(rl, prompt, choices, t) {
 
 function parseSetupArgs(argv) {
   return parseArgs(argv, {
-    flags: ["--set-default", "--no-default", "--dry-run"],
+    flags: ["--dry-run"],
     options: [
       "--name", "--path", "--work-root",
       "--type", "--purpose", "--tone",
@@ -98,8 +97,6 @@ function parseSetupArgs(argv) {
       tone: "",
       agent: "",
       lang: "",
-      setDefault: false,
-      noDefault: false,
       dryRun: false,
     },
   });
@@ -121,17 +118,6 @@ function ensureProjectDirs(workRoot) {
 }
 
 function ensureGitignore(workRoot) {
-  const gitignorePath = path.join(workRoot, ".sdd-forge", ".gitignore");
-  const entry = "projects.json";
-  if (fs.existsSync(gitignorePath)) {
-    const content = fs.readFileSync(gitignorePath, "utf8");
-    if (content.split("\n").some((l) => l.trim() === entry)) return;
-    fs.appendFileSync(gitignorePath, `\n${entry}\n`);
-  } else {
-    fs.writeFileSync(gitignorePath, `${entry}\n`);
-  }
-
-  // プロジェクトルートの .gitignore にエントリを追加
   const rootGitignore = path.join(workRoot, ".gitignore");
   const rootEntries = [".tmp", ".sdd-forge/worktree"];
   if (fs.existsSync(rootGitignore)) {
@@ -149,54 +135,21 @@ function ensureGitignore(workRoot) {
   }
 }
 
-function registerProject(projectName, sourcePath, workRootPath, setDefault, t) {
+function registerProject(projectName, sourcePath, workRootPath, t) {
   const resolved = path.resolve(sourcePath);
   if (!fs.existsSync(resolved)) {
     throw new Error(t("common.error.pathNotFound", { path: resolved }));
   }
 
-  const resolvedWork = workRootPath ? path.resolve(workRootPath) : resolved;
-  const isLocal = resolved === process.cwd() && resolvedWork === resolved;
-  const existingData = loadProjects();
-
-  // Local single-project: skip projects.json
-  if (isLocal && !existingData) {
-    ensureProjectDirs(resolved);
-    console.log(t("setup.messages.projectRegistered", { name: projectName }));
-    console.log(t("setup.messages.sourceDir", { path: resolved }));
-    console.log(t("setup.messages.workDir", { path: resolved }));
-    return { alreadyExists: false, workRoot: resolved };
-  }
-
-  // Multi-project or remote path: record in projects.json
-  // Ensure .sdd-forge directory exists before addProject writes projects.json
-  fs.mkdirSync(path.join(process.cwd(), ".sdd-forge"), { recursive: true });
-  let data;
-  try {
-    data = addProject(projectName, resolved, {
-      workRoot: workRootPath || undefined,
-      setDefault,
-    });
-  } catch (err) {
-    const existing = loadProjects();
-    if (existing?.projects?.[projectName]) {
-      console.log(t("setup.messages.projectAlreadyExists", { name: projectName }));
-      return { alreadyExists: true, workRoot: workRootFor(projectName) };
-    }
-    throw err;
-  }
-
-  const isDefault = data.default === projectName;
-  const workRoot = workRootFor(projectName);
+  const workRoot = workRootPath ? path.resolve(workRootPath) : resolved;
   ensureProjectDirs(workRoot);
-  ensureGitignore(process.cwd());
+  ensureGitignore(workRoot);
 
   console.log(t("setup.messages.projectRegistered", { name: projectName }));
   console.log(t("setup.messages.sourceDir", { path: resolved }));
   console.log(t("setup.messages.workDir", { path: workRoot }));
-  if (isDefault) console.log(t("setup.messages.isDefault"));
 
-  return { alreadyExists: false, workRoot };
+  return { workRoot };
 }
 
 // ---------------------------------------------------------------------------
@@ -366,7 +319,7 @@ async function main() {
       h.usage, "", `  ${h.desc}`, "", "Options:",
       `  ${o.name}`, `  ${o.path}`, `  ${o.workRoot}`, `  ${o.type}`,
       `  ${o.purpose}`, `  ${o.tone}`, `  ${o.agent}`,
-      `  ${o.lang}`, `  ${o.setDefault}`, `  ${o.noDefault}`, `  ${o.dryRun}`, `  ${o.help}`,
+      `  ${o.lang}`, `  ${o.dryRun}`, `  ${o.help}`,
     ].join("\n"));
     return;
   }
@@ -380,7 +333,6 @@ async function main() {
   let projectName = cli.name;
   let sourcePath = cli.path || defaultPath;
   let workRootPath = cli.workRoot || "";
-  let setAsDefault = cli.noDefault ? false : true;
   let operatingLang = cli.lang || DEFAULT_LANG;
   let outputLangs = [];
   let outputDefault = "";
@@ -432,17 +384,6 @@ async function main() {
     {
       const answer = await ask(rl, t("setup.questions.workRoot", { default: sourcePath }));
       workRootPath = answer || "";
-    }
-
-    // --- Step 2c: Default project ---
-    const existingProjects = loadProjects();
-    if (existingProjects && Object.keys(existingProjects.projects || {}).length > 0) {
-      const choices = t.raw("setup.choices_setDefault");
-      const answer = await askChoice(rl, t("setup.questions.setDefault"), [
-        { label: choices.yes, value: "yes" },
-        { label: choices.no, value: "no" },
-      ], t);
-      setAsDefault = answer === "yes";
     }
 
     // --- Step 3: Output language (multi-select) ---
@@ -530,7 +471,6 @@ async function main() {
     // Non-interactive mode
     if (!sourcePath) sourcePath = defaultPath;
     if (!projectName) projectName = defaultName;
-    if (cli.setDefault) setAsDefault = true;
     // Default output config for non-interactive
     if (outputLangs.length === 0) {
       outputLangs = [operatingLang];
@@ -539,7 +479,7 @@ async function main() {
   }
 
   // 1. Register project
-  const { workRoot } = registerProject(projectName, sourcePath, workRootPath, setAsDefault, t);
+  const { workRoot } = registerProject(projectName, sourcePath, workRootPath, t);
 
   // 2. Build config object
   const config = {

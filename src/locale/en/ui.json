@@ -16,14 +16,9 @@
       "projectContext": "Enter a brief project description (optional, can be auto-generated after scan):",
       "agent": "Select the default AI agent:",
       "workRoot": "Output path (default: {{default}}): ",
-      "setDefault": "Set this project as default?",
       "rewriteAgentsMd": "Would you like to (re)write AGENTS.md? (existing file will be overwritten)",
       "claudeMdSymlink": "Create a CLAUDE.md → AGENTS.md symlink?",
       "renameClaude": "Rename CLAUDE.md to AGENTS.md and convert to symlink?"
-    },
-    "choices_setDefault": {
-      "yes": "Yes",
-      "no": "No"
     },
     "choices_agents": {
       "rewrite": "Generate (create AGENTS.md with {{data}} directives)",
@@ -110,7 +105,6 @@
       "help": "Show this help",
       "setup": "Register project + generate config (interactive)",
       "upgrade": "Update template-derived files to latest version",
-      "default": "Change default project",
       "build": "Generate docs (scan → enrich → init → data → text → readme)",
       "init": "Initialize docs/ from templates",
       "forge": "Iterative docs improvement (AI agent)",
@@ -258,11 +252,6 @@
           "help": "-h, --help       Show this help"
         }
       },
-      "default": {
-        "usage": "Usage: sdd-forge default [<name>]",
-        "desc": "Change the default project.",
-        "descDetail": "Lists all registered projects when no name is given."
-      },
       "readme": {
         "usage": "Usage: sdd-forge readme [options]",
         "desc": "Auto-generate README.md from docs/ and templates.",
@@ -294,8 +283,6 @@
           "agent": "--agent <agent>             Default agent: claude|codex",
           "projectContext": "--project-context <text>    Project description text",
           "lang": "--lang <lang>               Operating language: en|ja",
-          "setDefault": "--set-default               Set as default project",
-          "noDefault": "--no-default                Do not set as default project",
           "dryRun": "--dry-run                   Show what would be done without writing files",
           "help": "-h, --help                  Show this help"
         }

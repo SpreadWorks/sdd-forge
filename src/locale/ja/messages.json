@@ -75,11 +75,6 @@
     "resolverFailed": "ERROR: リゾルバの作成に失敗: {{message}}",
     "done": "完了。{{count}} ファイル {{verb}}。{{data}}: {{replaced}} 件置換、{{text}}: {{skipped}} 件スキップ。"
   },
-  "default": {
-    "noProjects": "プロジェクトが登録されていません。sdd-forge add <name> <path> を実行してください。",
-    "registered": "登録済みプロジェクト:",
-    "setDefault": "デフォルトプロジェクトを '{{name}}' に設定しました。"
-  },
   "flow": {
     "failedParse": "flow: spec パスの解析に失敗しました。",
     "fallbackSpec": "flow: フォールバック spec パスを使用: {{path}}",

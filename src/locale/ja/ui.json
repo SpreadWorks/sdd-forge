@@ -16,14 +16,9 @@
       "projectContext": "プロジェクト概要を入力してください（空でも可。scan 後に自動生成できます）:",
       "agent": "デフォルト AI エージェントを選択してください:",
       "workRoot": "出力先パス (default: {{default}}): ",
-      "setDefault": "このプロジェクトをデフォルトに設定しますか？",
       "rewriteAgentsMd": "AGENTS.md を書き直しますか？（既存ファイルがある場合は上書きされます）",
       "claudeMdSymlink": "CLAUDE.md → AGENTS.md のシンボリックリンクを作成しますか？",
       "renameClaude": "CLAUDE.md を AGENTS.md にリネームし、シンボリックリンクに変換しますか？"
-    },
-    "choices_setDefault": {
-      "yes": "はい",
-      "no": "いいえ"
     },
     "choices_agents": {
       "rewrite": "生成する（{{data}} ディレクティブ付きの AGENTS.md を作成）",
@@ -110,7 +105,6 @@
       "help": "このヘルプを表示",
       "setup": "プロジェクト登録 + 設定生成（対話式）",
       "upgrade": "テンプレート由来ファイルを最新版に更新",
-      "default": "デフォルトプロジェクトを変更",
       "build": "ドキュメント一括生成（scan → enrich → init → data → text → readme）",
       "init": "テンプレートから docs/ を初期化",
       "forge": "docs 反復改善（AI エージェント対応）",
@@ -258,11 +252,6 @@
           "help": "-h, --help       このヘルプを表示"
         }
       },
-      "default": {
-        "usage": "Usage: sdd-forge default [<name>]",
-        "desc": "デフォルトプロジェクトを変更する。",
-        "descDetail": "名前を省略すると登録済みプロジェクト一覧を表示する。"
-      },
       "readme": {
         "usage": "Usage: sdd-forge readme [options]",
         "desc": "docs/ とテンプレートから README.md を自動生成する。",
@@ -294,8 +283,6 @@
           "agent": "--agent <agent>             デフォルトエージェント: claude|codex",
           "projectContext": "--project-context <text>    プロジェクト説明テキスト",
           "lang": "--lang <lang>               操作言語: en|ja",
-          "setDefault": "--set-default               デフォルトプロジェクトに設定",
-          "noDefault": "--no-default                デフォルトプロジェクトに設定しない",
           "dryRun": "--dry-run                   ファイル書き込みせず内容を表示",
           "help": "-h, --help                  このヘルプを表示"
         }

@@ -13,7 +13,6 @@ import { resolveOutputConfig } from "./lib/types.js";
 
 /** Subcommand → script mapping */
 const SCRIPTS = {
-  default:    "docs/commands/default-project.js",
   scan:       "docs/commands/scan.js",
   enrich:     "docs/commands/enrich.js",
   init:       "docs/commands/init.js",

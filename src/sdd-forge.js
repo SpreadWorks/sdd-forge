@@ -8,28 +8,13 @@
  *   spec  → src/spec.js
  *   flow  → src/flow.js
  *   help  → src/help.js
- *
- * Project context (--project) is resolved here and passed via env vars.
  */
 
 import path from "path";
 import { PKG_DIR } from "./lib/cli.js";
 
-// --project flag extraction
 const rawArgs = process.argv.slice(2);
-let projectName;
-let filteredArgs = rawArgs;
-
-const projIdx = rawArgs.indexOf("--project");
-if (projIdx !== -1) {
-  projectName = rawArgs[projIdx + 1];
-  filteredArgs = [
-    ...rawArgs.slice(0, projIdx),
-    ...rawArgs.slice(projIdx + 2),
-  ];
-}
-
-const [subCmd, ...rest] = filteredArgs;
+const [subCmd, ...rest] = rawArgs;
 
 // version (-v / --version / -V)
 if (subCmd === "-v" || subCmd === "--version" || subCmd === "-V") {
@@ -45,9 +30,6 @@ if (!subCmd || subCmd === "-h" || subCmd === "--help") {
   await import(helpPath);
   process.exit(0);
 }
-
-/** Commands that skip project context resolution */
-const PROJECT_MGMT = new Set(["default", "help", "setup", "presets"]);
 
 /** Map of top-level subcommands to dispatcher scripts */
 const DISPATCHERS = {
@@ -66,7 +48,6 @@ const DISPATCHERS = {
   translate: "docs",
   snapshot: "docs",
   setup:    "docs",
-  default:  "docs",
   // spec subcommands → spec.js dispatcher
   spec:     "spec",
   gate:     "spec",
@@ -78,23 +59,6 @@ const DISPATCHERS = {
   // help
   help:     "help",
 };
-
-// Resolve project context (skip for management commands)
-if (!PROJECT_MGMT.has(subCmd)) {
-  const { resolveProject, workRootFor } = await import(
-    path.join(PKG_DIR, "lib/projects.js")
-  );
-  try {
-    const project = resolveProject(projectName);
-    if (project) {
-      process.env.SDD_SOURCE_ROOT = project.path;
-      process.env.SDD_WORK_ROOT   = workRootFor(project.name);
-    }
-  } catch (err) {
-    console.error(`Error: ${err.message}`);
-    process.exit(1);
-  }
-}
 
 const dispatcherName = DISPATCHERS[subCmd];
 if (!dispatcherName) {

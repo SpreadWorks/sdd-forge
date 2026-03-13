@@ -16,7 +16,6 @@ const LAYOUT = [
   { section: "Project" },
   { name: "setup" },
   { name: "upgrade" },
-  { name: "default" },
   { section: "Build" },
   { name: "build" },
   { section: "Docs" },
