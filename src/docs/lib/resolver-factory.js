@@ -104,6 +104,7 @@ export async function createResolver(type, root, opts) {
       const ds = dataSources.get(source);
       if (ds && typeof ds[method] === "function") {
         try {
+          ds._currentAnalysis = analysis;
           return ds[method](analysis, labels);
         } catch (err) {
           logger.log(`error in ${source}.${method}: ${err.message}`);

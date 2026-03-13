@@ -30,13 +30,43 @@ export class DataSource {
   }
 
   /**
-   * Look up a description string from overrides.json.
+   * Look up a description string.
+   * Priority: overrides.json → enriched analysis (summary) → "—"
+   *
    * @param {string} section
    * @param {string} key
    * @returns {string}
    */
   desc(section, key) {
-    return this._desc ? this._desc(section, key) : "—";
+    if (this._desc) {
+      const v = this._desc(section, key);
+      if (v !== "—") return v;
+    }
+    return this._lookupEnriched(key) || "—";
+  }
+
+  /**
+   * Search enriched analysis for an entry matching the given key.
+   * Checks className, name, tableName, file fields across all categories.
+   *
+   * @param {string} key
+   * @returns {string|null}
+   */
+  _lookupEnriched(key) {
+    const a = this._currentAnalysis;
+    if (!a?.enrichedAt) return null;
+    for (const cat of Object.keys(a)) {
+      const data = a[cat];
+      if (!data || typeof data !== "object") continue;
+      const items = data[cat];
+      if (!Array.isArray(items)) continue;
+      for (const item of items) {
+        if (item.className === key || item.name === key || item.tableName === key) {
+          return item.summary || item.role || null;
+        }
+      }
+    }
+    return null;
   }
 
   /**
