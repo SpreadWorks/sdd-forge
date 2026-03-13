@@ -106,7 +106,7 @@ export default class CakephpConfigSource extends WebappDataSource {
     });
     if (items.length === 0) return null;
     const rows = this.toRows(items, (s) => [
-      s.name, s.value, this.desc("constants", s.name),
+      s.name, s.value, this.desc("constants", s.name, s.summary),
     ]);
     return this.toMarkdownTable(rows, labels);
   }
@@ -116,7 +116,7 @@ export default class CakephpConfigSource extends WebappDataSource {
     const items = analysis.config.constants.selectOptions;
     if (items.length === 0) return null;
     const rows = this.toRows(items, (s) => {
-      const descText = this.desc("selectConstants", s.name);
+      const descText = this.desc("selectConstants", s.name, s.summary);
       const opts = s.options.map((o) => `${o.key}=${o.label}`).join(", ");
       return [s.name, `${descText}: ${opts}`];
     });

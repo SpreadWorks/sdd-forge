@@ -56,16 +56,21 @@ function collectEntries(analysis) {
   const entries = [];
   for (const cat of Object.keys(analysis)) {
     if (META_KEYS.has(cat)) continue;
-    const items = analysis[cat]?.[cat];
-    if (!Array.isArray(items)) continue;
-    for (let i = 0; i < items.length; i++) {
-      entries.push({
-        category: cat,
-        index: i,
-        file: items[i].file || items[i].name || `${cat}[${i}]`,
-        lines: items[i].lines || 0,
-        enriched: !!items[i].summary,
-      });
+    const catData = analysis[cat];
+    if (!catData || typeof catData !== "object") continue;
+    for (const subKey of Object.keys(catData)) {
+      const items = catData[subKey];
+      if (!Array.isArray(items)) continue;
+      for (let i = 0; i < items.length; i++) {
+        entries.push({
+          category: cat,
+          subKey,
+          index: i,
+          file: items[i].file || items[i].name || `${cat}.${subKey}[${i}]`,
+          lines: items[i].lines || 0,
+          enriched: !!items[i].summary,
+        });
+      }
     }
   }
   return entries;
@@ -129,7 +134,7 @@ function buildEnrichPrompt(chapters, batchEntries) {
   parts.push("## Target files");
   parts.push("");
   for (const entry of batchEntries) {
-    parts.push(`- category: "${entry.category}", index: ${entry.index}, file: "${entry.file}"`);
+    parts.push(`- category: "${entry.category}", subKey: "${entry.subKey}", index: ${entry.index}, file: "${entry.file}"`);
   }
   parts.push("");
 
@@ -147,21 +152,23 @@ function buildEnrichPrompt(chapters, batchEntries) {
   parts.push("Return a JSON object with the following structure:");
   parts.push("```json");
   parts.push('{');
-  parts.push('  "<category>": [');
-  parts.push('    {');
-  parts.push('      "index": 0,');
-  parts.push('      "summary": "1-2 sentence summary of what this file/class does",');
-  parts.push('      "detail": "Detailed description of the implementation, key logic, patterns used. Do not omit information.",');
-  parts.push('      "chapter": "chapter_name (from the available chapters list, without .md)",');
-  parts.push('      "role": "one of: controller, model, lib, config, cli, middleware, test, migration, route, view, other"');
-  parts.push('    }');
-  parts.push('  ]');
+  parts.push('  "<category>": {');
+  parts.push('    "<subKey>": [');
+  parts.push('      {');
+  parts.push('        "index": 0,');
+  parts.push('        "summary": "1-2 sentence summary of what this file/class does",');
+  parts.push('        "detail": "Detailed description of the implementation, key logic, patterns used. Do not omit information.",');
+  parts.push('        "chapter": "chapter_name (from the available chapters list, without .md)",');
+  parts.push('        "role": "one of: controller, model, lib, config, cli, middleware, test, migration, route, view, other"');
+  parts.push('      }');
+  parts.push('    ]');
+  parts.push('  }');
   parts.push('}');
   parts.push("```");
   parts.push("");
   parts.push("Rules:");
   parts.push("- Return ONLY valid JSON, no markdown fences, no explanation text.");
-  parts.push("- Group entries by category in the output.");
+  parts.push("- Group entries by category and subKey in the output.");
   parts.push("- The `index` field must match the original index provided above.");
   parts.push("- `summary` should be concise (1-2 sentences).");
   parts.push("- `detail` should capture implementation details from the source code. Do not truncate or summarize away important information.");
@@ -247,23 +254,33 @@ function fixUnescapedQuotes(json) {
 function mergeEnrichment(analysis, enrichment) {
   for (const cat of Object.keys(enrichment)) {
     if (!analysis[cat]) continue;
-    const items = analysis[cat][cat];
-    if (!Array.isArray(items)) continue;
+    const catEnrichment = enrichment[cat];
+    if (!catEnrichment || typeof catEnrichment !== "object") continue;
 
-    const enrichedItems = enrichment[cat];
-    if (!Array.isArray(enrichedItems)) continue;
+    // Support both new format { subKey: [...] } and legacy format [...]
+    const subKeys = Array.isArray(catEnrichment)
+      ? { [cat]: catEnrichment }
+      : catEnrichment;
 
-    for (const entry of enrichedItems) {
-      const idx = entry.index;
-      if (idx == null || idx < 0 || idx >= items.length) continue;
+    for (const subKey of Object.keys(subKeys)) {
+      const items = analysis[cat][subKey];
+      if (!Array.isArray(items)) continue;
 
-      items[idx] = {
-        ...items[idx],
-        summary: entry.summary || items[idx].summary,
-        detail: entry.detail || items[idx].detail,
-        chapter: entry.chapter || items[idx].chapter,
-        role: entry.role || items[idx].role,
-      };
+      const enrichedItems = subKeys[subKey];
+      if (!Array.isArray(enrichedItems)) continue;
+
+      for (const entry of enrichedItems) {
+        const idx = entry.index;
+        if (idx == null || idx < 0 || idx >= items.length) continue;
+
+        items[idx] = {
+          ...items[idx],
+          summary: entry.summary || items[idx].summary,
+          detail: entry.detail || items[idx].detail,
+          chapter: entry.chapter || items[idx].chapter,
+          role: entry.role || items[idx].role,
+        };
+      }
     }
   }
 

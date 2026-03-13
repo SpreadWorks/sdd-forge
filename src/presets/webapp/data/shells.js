@@ -58,7 +58,7 @@ export default class ShellsSource extends WebappDataSource {
     const rows = this.toRows(items, (s) => [
       s.className,
       s.file,
-      this.desc("shells", s.className),
+      this.desc("shells", s.className, s.summary),
     ]);
     return this.toMarkdownTable(rows, labels);
   }

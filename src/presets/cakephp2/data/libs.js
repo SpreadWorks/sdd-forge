@@ -27,7 +27,7 @@ export default class CakephpLibsSource extends WebappDataSource {
     if (!analysis.libs?.libraries) return null;
     const items = analysis.libs.libraries;
     if (items.length === 0) return null;
-    const rows = this.toRows(items, (l) => [l.className, l.file, this.desc("libs", l.className)]);
+    const rows = this.toRows(items, (l) => [l.className, l.file, this.desc("libs", l.className, l.summary)]);
     return this.toMarkdownTable(rows, labels);
   }
 
@@ -37,7 +37,7 @@ export default class CakephpLibsSource extends WebappDataSource {
       (l) => l.className === "AppError" || l.className === "AppExceptionHandler",
     );
     if (items.length === 0) return null;
-    const rows = this.toRows(items, (l) => [l.className, l.file, this.desc("libs", l.className)]);
+    const rows = this.toRows(items, (l) => [l.className, l.file, this.desc("libs", l.className, l.summary)]);
     return this.toMarkdownTable(rows, labels);
   }
 

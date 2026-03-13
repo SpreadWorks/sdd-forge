@@ -36,7 +36,7 @@ export default class LaravelTablesSource extends TablesSource {
     const rows = this.toRows(tables, (t) => [
       t.name,
       t.columns.length,
-      this.desc("tables", t.name),
+      this.desc("tables", t.name, t.summary),
     ]);
     return this.toMarkdownTable(rows, labels);
   }

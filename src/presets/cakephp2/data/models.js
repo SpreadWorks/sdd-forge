@@ -30,7 +30,7 @@ export default class CakephpModelsSource extends ModelsSource {
     const rows = this.toRows(items, (m) => [
       m.className,
       m.file,
-      this.desc("logicClasses", m.className),
+      this.desc("logicClasses", m.className, m.summary),
     ]);
     return this.toMarkdownTable(rows, labels);
   }

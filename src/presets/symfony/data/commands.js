@@ -17,7 +17,7 @@ export default class CommandsSource extends DataSource {
     const rows = this.toRows(shells, (s) => [
       s.className,
       s.file,
-      this.desc("commands", s.className),
+      this.desc("commands", s.className, s.summary),
     ]);
     return this.toMarkdownTable(rows, labels);
   }

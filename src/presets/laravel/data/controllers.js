@@ -39,7 +39,7 @@ export default class LaravelControllersSource extends ControllersSource {
     const rows = this.toRows(ctrls, (c) => [
       c.className,
       c.file,
-      this.desc("controllers", c.className),
+      this.desc("controllers", c.className, c.summary),
     ]);
     return this.toMarkdownTable(rows, labels);
   }

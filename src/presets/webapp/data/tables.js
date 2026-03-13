@@ -29,7 +29,7 @@ export default class TablesSource extends WebappDataSource {
     for (const m of models) {
       if (!m.tableName || seen.has(m.tableName)) continue;
       seen.add(m.tableName);
-      rows.push([m.tableName, this.desc("tables", m.tableName)]);
+      rows.push([m.tableName, this.desc("tables", m.tableName, m.summary)]);
     }
     rows.sort((a, b) => a[0].localeCompare(b[0]));
     if (rows.length === 0) return null;

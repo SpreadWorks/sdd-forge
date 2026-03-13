@@ -45,7 +45,7 @@ export default class ModulesSource extends Scannable(DataSource) {
     const rows = this.toRows(items, (m) => [
       m.className,
       m.file,
-      this.desc("modules", m.className),
+      this.desc("modules", m.className, m.summary),
     ]);
     return this.toMarkdownTable(rows, labels);
   }

@@ -52,7 +52,7 @@ export default class ConfigSource extends WebappDataSource {
     const rows = this.toRows(envKeys, (e) => [
       e.key,
       e.defaultValue || "\u2014",
-      this.desc("env", e.key),
+      this.desc("env", e.key, e.summary),
     ]);
     return this.toMarkdownTable(rows, labels);
   }
@@ -77,7 +77,7 @@ export default class ConfigSource extends WebappDataSource {
     const rows = this.toRows(mw, (m) => [
       m.className,
       m.file,
-      this.desc("middleware", m.className),
+      this.desc("middleware", m.className, m.summary),
     ]);
     return this.toMarkdownTable(rows, labels);
   }
