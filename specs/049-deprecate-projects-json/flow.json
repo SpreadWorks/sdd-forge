@@ -1,0 +1,73 @@
+{
+  "spec": "specs/049-deprecate-projects-json/spec.md",
+  "baseBranch": "main",
+  "featureBranch": "feature/049-deprecate-projects-json",
+  "steps": [
+    {
+      "id": "approach",
+      "status": "done"
+    },
+    {
+      "id": "branch",
+      "status": "done"
+    },
+    {
+      "id": "spec",
+      "status": "done"
+    },
+    {
+      "id": "draft",
+      "status": "skipped"
+    },
+    {
+      "id": "fill-spec",
+      "status": "done"
+    },
+    {
+      "id": "approval",
+      "status": "done"
+    },
+    {
+      "id": "gate",
+      "status": "done"
+    },
+    {
+      "id": "test",
+      "status": "done"
+    },
+    {
+      "id": "implement",
+      "status": "done"
+    },
+    {
+      "id": "finalize",
+      "status": "done"
+    }
+  ],
+  "requirements": [
+    {
+      "desc": "projects.js を削除",
+      "status": "done"
+    },
+    {
+      "desc": "default-project.js を削除",
+      "status": "done"
+    },
+    {
+      "desc": "sdd-forge.js から --project フラグと resolveProject 除去",
+      "status": "done"
+    },
+    {
+      "desc": "setup.js からマルチプロジェクト分岐除去",
+      "status": "done"
+    },
+    {
+      "desc": "docs.js/help.js から default コマンド除去",
+      "status": "done"
+    },
+    {
+      "desc": "locale から default 関連メッセージ除去",
+      "status": "done"
+    }
+  ]
+}
