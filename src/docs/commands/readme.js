@@ -15,9 +15,13 @@ import { runIfDirect } from "../../lib/entrypoint.js";
 import { parseArgs } from "../../lib/cli.js";
 import { resolveTemplates, mergeResolved, resolveChaptersOrder, translateTemplate } from "../lib/template-merger.js";
 import { createResolver } from "../lib/resolver-factory.js";
-import { resolveDataDirectives, stripBlockDirectives } from "../lib/directive-parser.js";
+import { resolveDataDirectives, stripBlockDirectives, parseDirectives } from "../lib/directive-parser.js";
 import { createLogger } from "../../lib/progress.js";
-import { resolveCommandContext } from "../lib/command-context.js";
+import { resolveCommandContext, loadFullAnalysis } from "../lib/command-context.js";
+import { processTemplateFileBatch } from "./text.js";
+import { buildTextSystemPrompt } from "../lib/text-prompts.js";
+import { loadConfig, resolveConcurrency } from "../../lib/config.js";
+import { loadAgentConfig, ensureAgentWorkDir, DEFAULT_AGENT_TIMEOUT } from "../../lib/agent.js";
 
 const logger = createLogger("readme");
 
@@ -130,6 +134,32 @@ async function main(ctx) {
     },
   );
   let resolved = resolveResult.text;
+
+  // {{text}} ディレクティブを処理
+  const textDirectives = parseDirectives(resolved).filter((d) => d.type === "text");
+  if (textDirectives.length > 0 && !ctx.dryRun) {
+    try {
+      const cfg = loadConfig(root);
+      const agent = loadAgentConfig(cfg);
+      ensureAgentWorkDir(agent, root);
+      const analysis = loadFullAnalysis(root) || {};
+      const documentStyle = cfg.documentStyle;
+      const systemPrompt = buildTextSystemPrompt(documentStyle, lang);
+      const timeoutMs = DEFAULT_AGENT_TIMEOUT * 1000;
+
+      const result = await processTemplateFileBatch(
+        resolved, analysis, "README.md", agent, timeoutMs,
+        root, false, [], systemPrompt, undefined, undefined, lang, ctx.srcRoot || root,
+      );
+      if (result.filled > 0) {
+        resolved = result.text;
+        logger.log(`${result.filled} text directive(s) filled in README.`);
+      }
+    } catch (err) {
+      logger.log(`WARN: skipping {{text}} in README: ${err.message}`);
+    }
+  }
+
   const newContent = resolved.endsWith("\n") ? resolved : resolved + "\n";
 
   // 差分チェック
