@@ -240,7 +240,7 @@ async function main() {
     let resolveFn = null;
     try {
       const resolver = await createResolver(type, root, { configChapters: config.chapters });
-      resolveFn = (category, analysis) => resolver.resolve(category, analysis);
+      resolveFn = (source, method, analysis, labels) => resolver.resolve(source, method, analysis, labels);
     } catch (err) {
       console.log(`[forge] WARN: resolver not available (${err.message}), skipping {{data}} population`);
     }
