@@ -12,9 +12,17 @@ Run this workflow for any feature or fix request.
 **SDD フロー中のすべてのステップで、次の行動について必ずユーザーに確認する。**
 AI が勝手に次のステップに進まない。
 
+## Flow Progress Tracking
+
+**MUST: 各ステップの完了時に `sdd-forge flow status --step <id> --status <val>` を実行してフロー進捗を記録する。**
+
+Available step IDs: `approach`, `branch`, `spec`, `draft`, `fill-spec`, `approval`, `gate`, `test`, `implement`, `finalize`
+Available status values: `pending`, `in_progress`, `done`, `skipped`
+
 ## Required Sequence
 
 1. Choose approach.
+   - **On start**: `sdd-forge flow status --step approach --status in_progress`
    - Present EXACTLY these 2 options:
 
      | # | Label | Description |
@@ -23,8 +31,10 @@ AI が勝手に次のステップに進まない。
      | 2 | 仕様書を作成する | 要件が明確な場合。従来通り spec から開始します |
 
    - Remember the choice for later. Proceed to step 2 regardless.
+   - **On complete**: `sdd-forge flow status --step approach --status done`
 
 2. Choose branching strategy.
+   - **On start**: `sdd-forge flow status --step branch --status in_progress`
    - **Auto-detect**: Check if `.git` is a file (not directory) in the project root.
      - If yes → already in a worktree. Skip choice, use `--no-branch` automatically.
    - **User choice** (if not in a worktree): Present EXACTLY these 3 options:
@@ -38,14 +48,18 @@ AI が勝手に次のステップに進まない。
    - Ask the user: "現在のブランチ (`<current-branch>`) から分岐してよいですか？" (skip for spec-only mode)
      - If yes → use `--base <current-branch>`.
      - If no → ask which branch to use as base and use `--base <user-specified-branch>`.
+   - **On complete**: `sdd-forge flow status --step branch --status done`
 
 3. Create or select spec.
+   - **On start**: `sdd-forge flow status --step spec --status in_progress`
    - If no spec exists, run `sdd-forge spec --title "<short-title>"` (with appropriate flags from step 2).
-   - This creates the branch, `specs/NNN-xxx/` directory, and `spec.md` skeleton.
-   - The spec path is saved to `.sdd-forge/current-spec`.
+   - This creates the branch, `specs/NNN-xxx/` directory, `spec.md` skeleton, and `.sdd-forge/flow.json`.
    - The base branch is automatically recorded by `sdd-forge spec`.
+   - **On complete**: `sdd-forge flow status --step spec --status done`
 
 4. Draft phase (if step 1 chose option 1).
+   - **On start**: `sdd-forge flow status --step draft --status in_progress`
+   - **If skipped** (step 1 chose option 2): `sdd-forge flow status --step draft --status skipped`
    - Create `specs/NNN-xxx/draft.md` in the spec directory created in step 3.
    - AI presents choices/proposals → user selects with short answers.
    - Ask ONE question at a time (do not batch questions, do not self-answer).
@@ -57,14 +71,18 @@ AI が勝手に次のステップに進まない。
    - Update draft.md with `- [x] User approved this draft` and confirmation date.
    - Transfer Q&A and decisions to spec (step 5).
    - Keep `draft.md` in `specs/` (do not delete).
+   - **On complete**: `sdd-forge flow status --step draft --status done`
 
 5. Fill spec before coding.
+   - **On start**: `sdd-forge flow status --step fill-spec --status in_progress`
    - Fill Goal, Scope, Out of Scope, Requirements, Acceptance Criteria.
    - If draft phase was done, reflect draft Q&A and decisions in spec.md.
    - Include "why this approach" rationale.
    - Keep Open Questions only when clarification is still needed.
+   - **On complete**: `sdd-forge flow status --step fill-spec --status done`
 
 6. Get explicit user approval.
+   - **On start**: `sdd-forge flow status --step approval --status in_progress`
    - Summarize the spec and ask the user for confirmation.
    - Wait for approval before any implementation.
    - Present EXACTLY these options:
@@ -78,17 +96,23 @@ AI が勝手に次のステップに進まない。
    - Update `## User Confirmation` with:
      - `- [x] User approved this spec`
      - Confirmation date and short note.
+   - **On complete**: Save requirements list and mark step done:
+     - Extract Requirements from spec.md and run: `sdd-forge flow status --summary '["req 1", "req 2", ...]'`
+     - `sdd-forge flow status --step approval --status done`
 
 7. Run gate.
+   - **On start**: `sdd-forge flow status --step gate --status in_progress`
    - `sdd-forge gate --spec specs/NNN-xxx/spec.md`
    - If FAIL, resolve issues one by one via Q&A with the user.
    - If you cannot resolve an issue yourself, ask the user directly.
    - Do not proceed until PASS.
+   - **On complete**: `sdd-forge flow status --step gate --status done`
 
 8. Test phase (after gate PASS).
+   - **On start**: `sdd-forge flow status --step test --status in_progress`
    - **Auto-detect test environment** from analysis.json:
-     - Check `package.packageDeps.devDependencies` for test frameworks (jest, mocha, vitest, phpunit, etc.)
-     - Check `package.packageScripts.test` for test command
+     - Check `extras.packageDeps.devDependencies` for test frameworks (jest, mocha, vitest, phpunit, etc.)
+     - Check `extras.packageScripts.test` for test command
      - Use `detectTestEnvironment()` from `src/docs/lib/test-env-detection.js`
    - **If test environment exists**:
      1. Ask user for test type:
@@ -117,15 +141,21 @@ AI が勝手に次のステップに進まない。
      - Compare spec Requirements against actual code changes.
    - **If test environment needs to be set up**:
      - Treat as a separate spec (out of scope for current feature spec).
+   - **On complete**: `sdd-forge flow status --step test --status done`
 
 9. Implement changes.
+   - **On start**: `sdd-forge flow status --step implement --status in_progress`
    - Code only after gate PASS and test phase completion.
    - Aim to make tests pass.
+   - **Update requirements as you go**: `sdd-forge flow status --req <index> --status done` for each completed requirement.
+   - **On complete**: `sdd-forge flow status --step implement --status done`
 
 10. Ask user about finalization.
+    - **On start**: `sdd-forge flow status --step finalize --status in_progress`
     - Ask: "実装内容に問題がなければ終了処理を行いますか？"
     - If approved, immediately invoke `/sdd-flow-close` using the Skill tool (do not wait for additional user input).
     - If the user wants changes, continue implementation.
+    - **On complete**: `sdd-forge flow status --step finalize --status done`
 
 ## Hard Stops
 
@@ -153,5 +183,9 @@ sdd-forge spec --title "<short-title>" --base <branch>
 sdd-forge spec --title "<short-title>" --no-branch
 sdd-forge spec --title "<short-title>" --base <branch> --worktree
 sdd-forge gate --spec specs/NNN-xxx/spec.md
+sdd-forge flow status
+sdd-forge flow status --step <id> --status <val>
+sdd-forge flow status --summary '<JSON array>'
+sdd-forge flow status --req <index> --status <val>
 sdd-forge snapshot check
 ```

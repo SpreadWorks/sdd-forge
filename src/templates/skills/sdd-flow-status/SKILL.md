@@ -1,6 +1,6 @@
 ---
 name: sdd-flow-status
-description: Show the current SDD flow status including branch, worktree, spec summary, and commit state.
+description: Show the current SDD flow status including branch, worktree, step progress, requirements, and commit state.
 ---
 
 # SDD Flow Status
@@ -10,24 +10,32 @@ Display the current state of the SDD workflow.
 ## Procedure
 
 1. Load flow state.
-   - Read `.sdd-forge/current-spec`.
-   - If it does not exist, report "No active SDD flow." and stop.
+   - Run `sdd-forge flow status`.
+   - If it reports "no active flow", tell the user and stop.
 
-2. Gather information and display all of the following:
+2. Gather additional information and display all of the following:
 
    ### Branch & Worktree
    - Current branch: `git rev-parse --abbrev-ref HEAD`
-   - Base branch: from `current-spec` → `baseBranch`
-   - Feature branch: from `current-spec` → `featureBranch`
-   - Worktree: from `current-spec` → `worktree` (true/false)
+   - Base branch: from flow state
+   - Feature branch: from flow state
+   - Worktree: from flow state (true/false)
      - If worktree: show `worktreePath` and `mainRepoPath`
    - Mode: determine from state:
      - `worktree: true` → "Worktree"
      - `featureBranch != baseBranch` → "Branch"
      - `featureBranch == baseBranch` → "Spec only"
 
+   ### Step Progress
+   - Show the step table from `sdd-forge flow status` output.
+   - Highlight the current step (first `in_progress` or first `pending` after all `done`).
+
+   ### Requirements Progress
+   - Show the requirements table from `sdd-forge flow status` output.
+   - If no requirements are set yet, note "Requirements not yet defined (set after spec approval)".
+
    ### Spec Summary
-   - Spec path: from `current-spec` → `spec`
+   - Spec path: from flow state
    - Read the spec file and extract:
      - Title (first `# ` heading)
      - Goal (`## Goal` section — first 3 lines)
@@ -49,11 +57,29 @@ Display the current state of the SDD workflow.
    | Item | Value |
    |------|-------|
    | Mode | Branch |
-   | Feature branch | feature/025-xxx |
+   | Feature branch | feature/045-xxx |
    | Base branch | main |
-   | Spec | specs/025-xxx/spec.md |
-   | Title | Unify lang config |
+   | Spec | specs/045-xxx/spec.md |
+   | Title | Flow state step tracking |
    | User approved | Yes |
+
+   ### Steps (4/10 done)
+   | # | Step | Status |
+   |---|------|--------|
+   | 1 | approach | [x] done |
+   | 2 | branch | [x] done |
+   | 3 | spec | [x] done |
+   | 4 | draft | [x] done |
+   | 5 | fill-spec | [>] in_progress |
+   | 6 | approval | [ ] pending |
+   | ... | ... | ... |
+
+   ### Requirements (1/3 done)
+   | # | Requirement | Status |
+   |---|-------------|--------|
+   | 0 | flow.js をディスパッチャーに変更 | [x] done |
+   | 1 | status サブコマンド実装 | [>] in_progress |
+   | 2 | SKILL.md 更新 | [ ] pending |
 
    ### Commits (3 ahead of main)
    - abc1234 feat: implement xxx
@@ -61,11 +87,12 @@ Display the current state of the SDD workflow.
    - ghi9012 test: zzz
 
    ### Uncommitted Changes (2 files)
-   - M src/lib/config.js
-   - M tests/lib/config.test.js
+   - M src/lib/flow-state.js
+   - M tests/flow.test.js
    ```
 
 ## Notes
 
 - This skill is read-only. It does not modify any files or state.
 - If the spec file is missing or unreadable, show the path but note it cannot be read.
+- Use `sdd-forge flow status` as the primary data source — it reads `.sdd-forge/flow.json` internally.

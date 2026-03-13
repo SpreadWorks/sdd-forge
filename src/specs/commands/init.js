@@ -16,6 +16,7 @@ import { repoRoot, parseArgs, isInsideWorktree } from "../../lib/cli.js";
 import { sddConfigPath, sddDir, DEFAULT_LANG } from "../../lib/config.js";
 import { runSync } from "../../lib/process.js";
 import { translate } from "../../lib/i18n.js";
+import { saveFlowState, buildInitialSteps } from "../../lib/flow-state.js";
 
 function runGit(root, args) {
   const res = runSync("git", ["-C", root, ...args]);
@@ -244,17 +245,17 @@ function main() {
     }
   }
 
-  // Helper: write current-spec state
-  function writeCurrentSpec(extra) {
-    const currentSpecPath = path.join(sddDir(root), "current-spec");
+  // Helper: write flow.json state
+  function writeFlowState(extra) {
     const state = {
       spec: `specs/${specDirName}/spec.md`,
       baseBranch: opts.base,
       featureBranch: branchName,
+      steps: buildInitialSteps(),
+      requirements: [],
       ...extra,
     };
-    fs.mkdirSync(path.dirname(currentSpecPath), { recursive: true });
-    fs.writeFileSync(currentSpecPath, JSON.stringify(state, null, 2) + "\n");
+    saveFlowState(root, state);
   }
 
   if (useWorktree) {
@@ -262,7 +263,7 @@ function main() {
     const absPath = worktreePath;
     runGit(root, ["worktree", "add", absPath, "-b", branchName, opts.base]);
     writeSpecFiles();
-    writeCurrentSpec({ worktree: true, worktreePath: absPath });
+    writeFlowState({ worktree: true, worktreePath: absPath });
     console.log(
       [
         `created worktree: ${absPath}`,
@@ -280,7 +281,7 @@ function main() {
   } else if (skipBranch) {
     // Spec-only: no branch creation
     writeSpecFiles();
-    writeCurrentSpec();
+    writeFlowState();
     console.log(
       [
         `created spec: ${path.relative(root, specPath)}`,
@@ -296,7 +297,7 @@ function main() {
     // Default: create branch
     runGit(root, ["checkout", "-b", branchName, opts.base]);
     writeSpecFiles();
-    writeCurrentSpec();
+    writeFlowState();
     console.log(
       [
         `created branch: ${branchName} (from ${opts.base})`,

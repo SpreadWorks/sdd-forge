@@ -34,17 +34,18 @@ Use this skill when implementation is complete and the user approved finalizatio
 | 5. Commit | ✓ | — | ✓ | ✓ | ✓ |
 | 6. Merge | ✓ | — | — | ✓ | ✓ |
 | 7. Clean up (branch delete) | ✓ | — | — | — | ✓ |
-| 8. Final verification | ✓ | ✓ | ✓ | ✓ | ✓ |
+| 8. Archive & verify | ✓ | ✓ | ✓ | ✓ | ✓ |
 
 ## Required Sequence
 
 1. Load context.
-   - Read `.sdd-forge/current-spec` to get spec path, base branch, and worktree info.
+   - Read `.sdd-forge/flow.json` to get spec path, base branch, worktree info, and progress.
+   - Run `sdd-forge flow status` to display current state.
 
 2. Check current state.
    - `git rev-parse --abbrev-ref HEAD` — confirm on feature branch.
    - `git status --short` — check uncommitted changes.
-   - If `worktree: true` in current-spec, confirm working in worktree directory.
+   - If `worktree: true` in flow.json, confirm working in worktree directory.
 
 3. Update documentation.
    - If `docs/` has no chapter files:
@@ -61,7 +62,7 @@ Use this skill when implementation is complete and the user approved finalizatio
    - Commit with a clear message describing the changes.
 
 6. Merge into base branch.
-   Determine merge strategy based on current-spec state:
+   Determine merge strategy based on flow.json state:
 
    - **Worktree** (`worktree: true`, `worktreePath` set):
      - Commit all changes in the worktree.
@@ -77,7 +78,7 @@ Use this skill when implementation is complete and the user approved finalizatio
      - Just commit, skip merge (already on the correct branch).
 
 7. Clean up.
-   Determine cleanup strategy based on current-spec state:
+   Determine cleanup strategy based on flow.json state:
 
    - **Worktree** (`worktree: true`):
      - Ask user: "worktree を削除しますか？"
@@ -92,9 +93,8 @@ Use this skill when implementation is complete and the user approved finalizatio
    - **Spec-only**:
      - No branch/worktree cleanup needed.
 
-   - Remove `.sdd-forge/current-spec`.
-
-8. Final verification.
+8. Archive flow.json & final verification.
+   - **Move flow.json to spec folder**: Copy `.sdd-forge/flow.json` to the spec directory (e.g. `specs/NNN-xxx/flow.json`) for historical record, then delete `.sdd-forge/flow.json`.
    - `git status --short` — confirm tree is clean.
    - Report result to user.
 
@@ -110,4 +110,5 @@ Use this skill when implementation is complete and the user approved finalizatio
 sdd-forge build
 sdd-forge forge --prompt "<change summary>" --spec <spec-path>
 sdd-forge review
+sdd-forge flow status
 ```

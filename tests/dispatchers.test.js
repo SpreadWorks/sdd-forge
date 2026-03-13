@@ -30,12 +30,13 @@ describe("sdd-forge dispatcher", () => {
     }
   });
 
-  it("routes 'flow' to flow command", () => {
+  it("routes 'flow' to flow dispatcher", () => {
     try {
       execFileSync("node", [SDD_FORGE, "flow"], { encoding: "utf8" });
-      assert.fail("should exit non-zero without --request");
+      assert.fail("should exit non-zero without subcommand");
     } catch (err) {
-      assert.match(err.stderr, /--request is required/);
+      const out = `${err.stdout || ""}${err.stderr || ""}`;
+      assert.match(out, /start|status/);
     }
   });
 

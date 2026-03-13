@@ -106,7 +106,7 @@ if (!dispatcherName) {
 const dispatcherPath = path.join(PKG_DIR, `${dispatcherName}.js`);
 
 // Dispatchers (docs, spec) receive subCmd to route internally.
-// Direct commands (flow) receive only rest args.
+// Direct commands (flow, presets-cmd) receive only rest args — flow dispatches internally.
 const DIRECT_COMMANDS = new Set(["flow", "presets-cmd"]);
 if (DIRECT_COMMANDS.has(dispatcherName)) {
   process.argv = [process.argv[0], dispatcherPath, ...rest];
