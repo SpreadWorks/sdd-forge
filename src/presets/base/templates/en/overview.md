@@ -2,8 +2,8 @@
 <!-- {{/data}} -->
 # 01. System Overview
 
-<!-- {{data: project.description("")}} -->
-<!-- {{/data}} -->
+<!-- {{text: Write a 1-2 sentence overview of this project.}} -->
+<!-- {{/text}} -->
 
 ## Description
 

@@ -3,8 +3,8 @@
 <!-- {{data: docs.langSwitcher("absolute")}} -->
 <!-- {{/data}} -->
 
-<!-- {{data: project.description("")}} -->
-<!-- {{/data}} -->
+<!-- {{text: このプロジェクトの概要を1〜2文で説明してください。}} -->
+<!-- {{/text}} -->
 
 <!-- @block: quickstart -->
 ## クイックスタート

@@ -3,8 +3,8 @@
 <!-- {{data: docs.langSwitcher("absolute")}} -->
 <!-- {{/data}} -->
 
-<!-- {{data: project.description("")}} -->
-<!-- {{/data}} -->
+<!-- {{text: Write a 1-2 sentence overview of this project.}} -->
+<!-- {{/text}} -->
 
 <!-- @block: quickstart -->
 ## Quick Start
