@@ -318,7 +318,8 @@
         "desc": "spec ゲートチェック。",
         "options": {
           "spec": "--spec <path>   spec.md のパス（必須）",
-          "phase": "--phase <phase> チェックフェーズ: pre (default) or post"
+          "phase": "--phase <phase> チェックフェーズ: pre (default) or post",
+          "skipGuardrail": "--skip-guardrail  guardrail AI 整合性チェックをスキップ"
         },
         "phaseDetail": {
           "pre": "pre:  Status と Acceptance Criteria の未チェック項目をスキップ",

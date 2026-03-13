@@ -8,6 +8,11 @@ import { execFileSync } from "child_process";
 const GUARDRAIL_CMD = join(process.cwd(), "src/specs/commands/guardrail.js");
 const GATE_CMD = join(process.cwd(), "src/specs/commands/gate.js");
 
+// Dynamically import gate functions for unit tests
+const { buildGuardrailPrompt, parseGuardrailResponse } = await import(
+  "../../../src/specs/commands/gate.js"
+);
+
 // ---------------------------------------------------------------------------
 // parseGuardrailArticles unit tests
 // ---------------------------------------------------------------------------
@@ -197,5 +202,93 @@ describe("gate guardrail integration", () => {
     });
 
     assert.match(result, /PASSED/);
+  });
+
+  it("skips AI check with --skip-guardrail", () => {
+    tmp = createTmpDir();
+    writeJson(tmp, ".sdd-forge/config.json", {
+      lang: "en",
+      type: "cli/node-cli",
+      output: { languages: ["en"], default: "en" },
+      defaultAgent: "claude",
+      providers: { claude: { command: "echo", args: ["FAIL"] } },
+    });
+    writeFile(tmp, "spec.md", validSpec);
+    writeFile(tmp, ".sdd-forge/guardrail.md", [
+      "# Project Guardrail",
+      "",
+      "### Rule",
+      "Some rule.",
+    ].join("\n"));
+
+    // With --skip-guardrail, gate should pass even though agent would return FAIL
+    const result = execFileSync("node", [
+      GATE_CMD,
+      "--spec", join(tmp, "spec.md"),
+      "--skip-guardrail",
+    ], {
+      encoding: "utf8",
+      env: { ...process.env, SDD_WORK_ROOT: tmp },
+    });
+
+    assert.match(result, /PASSED/);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// buildGuardrailPrompt / parseGuardrailResponse unit tests
+// ---------------------------------------------------------------------------
+
+describe("buildGuardrailPrompt", () => {
+  it("includes all articles and spec text", () => {
+    const articles = [
+      { title: "Rule A", body: "Description A" },
+      { title: "Rule B", body: "Description B" },
+    ];
+    const prompt = buildGuardrailPrompt("spec content here", articles);
+    assert.ok(prompt.includes("Rule A"));
+    assert.ok(prompt.includes("Rule B"));
+    assert.ok(prompt.includes("spec content here"));
+    assert.ok(prompt.includes("PASS"));
+    assert.ok(prompt.includes("FAIL"));
+  });
+});
+
+describe("parseGuardrailResponse", () => {
+  it("parses PASS and FAIL lines", () => {
+    const response = [
+      "PASS: Single Responsibility — spec addresses one concern",
+      "FAIL: Unambiguous Requirements — uses vague term 'appropriate'",
+      "PASS: Complete Context — all requirements have triggers",
+    ].join("\n");
+
+    const results = parseGuardrailResponse(response);
+    assert.equal(results.length, 3);
+    assert.equal(results[0].title, "Single Responsibility");
+    assert.equal(results[0].passed, true);
+    assert.equal(results[1].title, "Unambiguous Requirements");
+    assert.equal(results[1].passed, false);
+    assert.ok(results[1].reason.includes("vague"));
+    assert.equal(results[2].title, "Complete Context");
+    assert.equal(results[2].passed, true);
+  });
+
+  it("ignores non-matching lines", () => {
+    const response = "Some preamble\nPASS: Rule — ok\nSome trailing text";
+    const results = parseGuardrailResponse(response);
+    assert.equal(results.length, 1);
+    assert.equal(results[0].title, "Rule");
+  });
+
+  it("returns empty array for empty response", () => {
+    assert.deepEqual(parseGuardrailResponse(""), []);
+  });
+
+  it("handles en-dash and hyphen separators", () => {
+    const r1 = parseGuardrailResponse("PASS: Rule – reason with en-dash");
+    assert.equal(r1.length, 1);
+    const r2 = parseGuardrailResponse("FAIL: Rule - reason with hyphen");
+    assert.equal(r2.length, 1);
+    assert.equal(r2[0].passed, false);
   });
 });

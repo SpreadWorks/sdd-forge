@@ -10,7 +10,9 @@ import path from "path";
 import { runIfDirect } from "../../lib/entrypoint.js";
 import { repoRoot, parseArgs } from "../../lib/cli.js";
 import { translate } from "../../lib/i18n.js";
-import { sddDir } from "../../lib/config.js";
+import { loadConfig, sddDir } from "../../lib/config.js";
+import { callAgent, resolveAgent } from "../../lib/agent.js";
+import { parseGuardrailArticles } from "./guardrail.js";
 
 /**
  * Detect which section a line belongs to by scanning headings above it.
@@ -97,11 +99,107 @@ function checkSpecText(text, opts) {
   return issues;
 }
 
+/**
+ * Build AI prompt for guardrail compliance check.
+ *
+ * @param {string} specText - spec.md content
+ * @param {{ title: string, body: string }[]} articles - parsed guardrail articles
+ * @returns {string} prompt
+ */
+function buildGuardrailPrompt(specText, articles) {
+  const articleList = articles.map((a, i) =>
+    `${i + 1}. **${a.title}**: ${a.body.trim()}`
+  ).join("\n");
+
+  return [
+    "You are a spec compliance checker. Check the following spec against each guardrail article.",
+    "For each article, output exactly one line in this format:",
+    "  PASS: <article title> — <brief reason>",
+    "  FAIL: <article title> — <brief reason>",
+    "",
+    "Output ONLY the result lines. No preamble, no summary.",
+    "",
+    "## Guardrail Articles",
+    articleList,
+    "",
+    "## Spec",
+    specText,
+  ].join("\n");
+}
+
+/**
+ * Parse AI response into per-article results.
+ *
+ * @param {string} response - AI response text
+ * @returns {{ title: string, passed: boolean, reason: string }[]}
+ */
+function parseGuardrailResponse(response) {
+  const results = [];
+  for (const line of response.split("\n")) {
+    const m = line.match(/^(PASS|FAIL):\s*(.+?)\s*[—–-]\s*(.+)/);
+    if (m) {
+      results.push({
+        title: m[2].trim(),
+        passed: m[1] === "PASS",
+        reason: m[3].trim(),
+      });
+    }
+  }
+  return results;
+}
+
+/**
+ * Run guardrail AI compliance check.
+ *
+ * @param {string} root - project root
+ * @param {string} specText - spec content
+ * @param {ReturnType<typeof translate>} t - i18n translator
+ * @returns {{ passed: boolean, results: { title: string, passed: boolean, reason: string }[] } | null}
+ *   null if skipped (no guardrail, no agent)
+ */
+function checkGuardrail(root, specText, t) {
+  const guardrailPath = path.join(sddDir(root), "guardrail.md");
+  if (!fs.existsSync(guardrailPath)) {
+    console.error(t("messages:gate.guardrailWarn"));
+    return null;
+  }
+
+  const guardrailText = fs.readFileSync(guardrailPath, "utf8");
+  const articles = parseGuardrailArticles(guardrailText);
+  if (articles.length === 0) {
+    return null;
+  }
+
+  let config;
+  try {
+    config = loadConfig(root);
+  } catch (_) {
+    console.error(t("messages:gate.guardrailNoAgent"));
+    return null;
+  }
+
+  const agent = resolveAgent(config);
+  if (!agent) {
+    console.error(t("messages:gate.guardrailNoAgent"));
+    return null;
+  }
+
+  console.error(t("messages:gate.guardrailChecking"));
+
+  const prompt = buildGuardrailPrompt(specText, articles);
+  const response = callAgent(agent, prompt);
+  const results = parseGuardrailResponse(response);
+  const passed = results.length > 0 && results.every((r) => r.passed);
+
+  return { passed, results };
+}
+
 function main() {
   const root = repoRoot(import.meta.url);
   const cli = parseArgs(process.argv.slice(2), {
     options: ["--spec", "--phase"],
-    defaults: { spec: "", phase: "pre" },
+    flags: ["--skip-guardrail"],
+    defaults: { spec: "", phase: "pre", skipGuardrail: false },
   });
   if (cli.help) {
     const tu = translate();
@@ -112,6 +210,7 @@ function main() {
       h.usage, "", `  ${h.desc}`, "", "Options:",
       `  ${o.spec}`, `  ${o.phase}`,
       `    ${pd.pre}`, `    ${pd.post}`,
+      `  ${o.skipGuardrail || "--skip-guardrail  Skip guardrail AI compliance check"}`,
     ].join("\n"));
     return;
   }
@@ -135,15 +234,25 @@ function main() {
     throw new Error(t("messages:gate.failed"));
   }
 
-  // Guardrail check
-  const guardrailPath = path.join(sddDir(root), "guardrail.md");
-  if (!fs.existsSync(guardrailPath)) {
-    console.error(t("messages:gate.guardrailWarn"));
+  // Guardrail AI compliance check
+  if (!cli.skipGuardrail) {
+    const result = checkGuardrail(root, text, t);
+    if (result) {
+      for (const r of result.results) {
+        const mark = r.passed ? "PASS" : "FAIL";
+        console.error(`  ${mark}: ${r.title} — ${r.reason}`);
+      }
+      if (!result.passed) {
+        console.error(t("messages:gate.guardrailFailed"));
+        throw new Error(t("messages:gate.guardrailFailed"));
+      }
+      console.error(t("messages:gate.guardrailPassed"));
+    }
   }
 
   console.log(t("messages:gate.passed"));
 }
 
-export { main, checkSpecText };
+export { main, checkSpecText, buildGuardrailPrompt, parseGuardrailResponse, checkGuardrail };
 
 runIfDirect(import.meta.url, main);

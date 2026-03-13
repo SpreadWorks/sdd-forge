@@ -318,7 +318,8 @@
         "desc": "Spec gate check.",
         "options": {
           "spec": "--spec <path>   Path to spec.md (required)",
-          "phase": "--phase <phase> Check phase: pre (default) or post"
+          "phase": "--phase <phase> Check phase: pre (default) or post",
+          "skipGuardrail": "--skip-guardrail  Skip guardrail AI compliance check"
         },
         "phaseDetail": {
           "pre": "pre:  Skip unchecked items in Status and Acceptance Criteria",
