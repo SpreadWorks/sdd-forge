@@ -41,6 +41,7 @@ function processTemplate(text, analysis, fileName, resolveFn) {
     throw new Error("resolveFn is required — run createResolver() first");
   }
   let skipped = 0;
+  let unresolved = 0;
 
   const result = resolveDataDirectives(
     text,
@@ -51,6 +52,10 @@ function processTemplate(text, analysis, fileName, resolveFn) {
           skipped++;
           logger.verbose(`SKIP {{text}} in ${fileName}:${d.line + 1}: ${d.prompt.slice(0, 60)}...`);
         }
+      },
+      onUnresolved(d) {
+        unresolved++;
+        logger.log(`UNRESOLVED {{data}} in ${fileName}:${d.line + 1}: ${d.source}.${d.method} → null`);
       },
     },
   );

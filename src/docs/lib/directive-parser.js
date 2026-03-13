@@ -202,10 +202,11 @@ export function replaceBlockDirective(lines, d, content) {
  * @param {Object} [opts]
  * @param {function} [opts.onResolve] - (directive, rendered) => void — 解決時コールバック
  * @param {function} [opts.onSkip] - (directive) => void — data 以外のディレクティブ時コールバック
+ * @param {function} [opts.onUnresolved] - (directive) => void — data ディレクティブが null 返却時コールバック
  * @returns {{ text: string, replaced: number }}
  */
 export function resolveDataDirectives(text, resolveFn, opts) {
-  const { onResolve, onSkip } = opts || {};
+  const { onResolve, onSkip, onUnresolved } = opts || {};
   const directives = parseDirectives(text);
   if (directives.length === 0) return { text, replaced: 0 };
 
@@ -221,7 +222,10 @@ export function resolveDataDirectives(text, resolveFn, opts) {
     }
 
     const rendered = resolveFn(d.source, d.method, d.labels);
-    if (rendered === null || rendered === undefined) continue;
+    if (rendered === null || rendered === undefined) {
+      if (onUnresolved) onUnresolved(d);
+      continue;
+    }
 
     if (onResolve) onResolve(d, rendered);
 
