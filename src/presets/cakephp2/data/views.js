@@ -47,10 +47,10 @@ export default class CakephpViewsSource extends WebappDataSource {
 
   components(analysis, labels) {
     if (!analysis.config?.permissionComponent) return null;
-    const methods = analysis.config.permissionComponent.methods;
-    if (!methods || methods.length === 0) return null;
-    const permDescs = this.overrides().permissionMethods || {};
-    const rows = this.toRows(methods, (m) => [m, permDescs[m] || m]);
+    const pc = analysis.config.permissionComponent;
+    const methods = pc.methods || [];
+    if (methods.length === 0) return null;
+    const rows = [["PermissionComponent", methods.join(", ")]];
     return this.toMarkdownTable(rows, labels);
   }
 }

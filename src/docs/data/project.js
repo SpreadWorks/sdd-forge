@@ -36,7 +36,7 @@ export default class ProjectSource extends DataSource {
   /** Project description. */
   description(_analysis, _labels) {
     const pkg = this._pkg();
-    return pkg?.description || "";
+    return pkg?.description || null;
   }
 
   /** Project version. */

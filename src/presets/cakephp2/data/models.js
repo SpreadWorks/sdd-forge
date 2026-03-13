@@ -94,7 +94,8 @@ export default class CakephpModelsSource extends ModelsSource {
     }
 
     if (rows.length === 0) return null;
-    return this.toMarkdownTable(rows, labels);
+    const hdr = labels.length >= 3 ? labels : ["Parent", "Child", "Relation"];
+    return this.toMarkdownTable(rows, hdr);
   }
 
   /** Logic class public methods detail. */

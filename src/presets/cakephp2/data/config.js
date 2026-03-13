@@ -39,7 +39,24 @@ export default class CakephpConfigSource extends WebappDataSource {
     };
   }
 
-  stack(analysis, labels) { return null; }
+  stack(analysis, labels) {
+    const rows = [];
+    const deps = analysis.config?.composerDeps;
+    if (deps?.require?.php) {
+      rows.push(["Language", "PHP", deps.require.php]);
+    }
+    rows.push(["Framework", "CakePHP", "2.x"]);
+    if (analysis.config?.bootstrap?.plugins?.length > 0) {
+      rows.push(["Plugins", analysis.config.bootstrap.plugins.join(", "), "—"]);
+    }
+    const assets = analysis.config?.assets?.js?.filter((a) => a.library) || [];
+    for (const a of assets) {
+      rows.push(["Frontend", a.library, a.version || "—"]);
+    }
+    if (rows.length === 0) return null;
+    const hdr = labels.length >= 3 ? labels : ["Category", "Technology", "Version"];
+    return this.toMarkdownTable(rows, hdr);
+  }
 
   db(analysis, labels) {
     if (!analysis.config?.bootstrap?.environments) return null;
