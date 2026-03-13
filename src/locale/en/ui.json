@@ -125,6 +125,7 @@
       "text": "Resolve {{text}} directives with AI",
       "spec": "Initialize spec (feature branch + spec.md)",
       "gate": "Spec gate (open issues check)",
+      "guardrail": "Manage project guardrail (principles)",
       "flow": "Run SDD flow automatically",
       "presets list": "Show preset inheritance tree"
     },
@@ -323,6 +324,12 @@
           "pre": "pre:  Skip unchecked items in Status and Acceptance Criteria",
           "post": "post: Check all unchecked items"
         }
+      },
+      "guardrail": {
+        "usage": "Usage: sdd-forge guardrail <init|update> [options]",
+        "desc": "Manage project guardrail (immutable principles).",
+        "init": "init [--force] [--dry-run]   Create guardrail.md from preset templates",
+        "update": "update [--agent <name>] [--dry-run]   AI-propose project-specific principles"
       },
       "presets": {
         "usage": "Usage: sdd-forge presets list",

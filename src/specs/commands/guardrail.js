@@ -1,0 +1,252 @@
+#!/usr/bin/env node
+/**
+ * src/specs/commands/guardrail.js
+ *
+ * Manage project guardrail (immutable principles) for spec compliance.
+ * Subcommands: init, update
+ */
+
+import fs from "fs";
+import path from "path";
+import { runIfDirect } from "../../lib/entrypoint.js";
+import { repoRoot, parseArgs } from "../../lib/cli.js";
+import { translate } from "../../lib/i18n.js";
+import { loadConfig, sddDir, sddConfigPath } from "../../lib/config.js";
+import { PRESETS_DIR, presetByLeaf } from "../../lib/presets.js";
+import { resolveType } from "../../lib/types.js";
+import { callAgent } from "../../lib/agent.js";
+
+const GUARDRAIL_FILENAME = "guardrail.md";
+
+/**
+ * Parse guardrail articles from markdown text.
+ * Articles are `###` headings followed by body text until the next `###` or EOF.
+ *
+ * @param {string} text - Markdown content of guardrail.md
+ * @returns {{ title: string, body: string }[]}
+ */
+export function parseGuardrailArticles(text) {
+  const lines = text.split("\n");
+  const articles = [];
+  let current = null;
+
+  for (const line of lines) {
+    const m = line.match(/^###\s+(.+)/);
+    if (m) {
+      if (current) {
+        current.body = current.body.join("\n");
+        articles.push(current);
+      }
+      current = { title: m[1].trim(), body: [] };
+    } else if (current) {
+      current.body.push(line);
+    }
+  }
+  if (current) {
+    current.body = current.body.join("\n");
+    articles.push(current);
+  }
+  return articles;
+}
+
+/**
+ * Build template layers for guardrail (base → arch → leaf), read and merge.
+ *
+ * @param {string} typePath - Resolved type path (e.g. "cli/node-cli")
+ * @param {string} lang - Locale code
+ * @returns {string} Merged guardrail template content
+ */
+function loadGuardrailTemplate(typePath, lang) {
+  const segments = typePath.split("/").filter(Boolean);
+  const candidates = [];
+
+  // base (lowest priority)
+  candidates.push(path.join(PRESETS_DIR, "base", "templates", lang, GUARDRAIL_FILENAME));
+  candidates.push(path.join(PRESETS_DIR, "base", "templates", "en", GUARDRAIL_FILENAME));
+
+  // arch layer
+  if (segments.length >= 1 && segments[0] !== "base") {
+    const arch = presetByLeaf(segments[0]);
+    if (arch) {
+      candidates.push(path.join(arch.dir, "templates", lang, GUARDRAIL_FILENAME));
+    }
+  }
+
+  // leaf preset
+  if (segments.length >= 2) {
+    const leaf = presetByLeaf(segments[segments.length - 1]);
+    if (leaf?.dir) {
+      candidates.push(path.join(leaf.dir, "templates", lang, GUARDRAIL_FILENAME));
+    }
+  }
+
+  // Read and merge: base content + append stack-specific articles
+  let baseContent = "";
+  const extraSections = [];
+
+  for (let i = 0; i < candidates.length; i++) {
+    const p = candidates[i];
+    if (!fs.existsSync(p)) continue;
+    const content = fs.readFileSync(p, "utf8");
+    if (!baseContent) {
+      baseContent = content;
+    } else {
+      // Extract only ### articles from stack-specific templates
+      const articles = parseGuardrailArticles(content);
+      if (articles.length > 0) {
+        for (const a of articles) {
+          extraSections.push(`### ${a.title}\n${a.body}`);
+        }
+      }
+    }
+  }
+
+  if (!baseContent) return "";
+
+  if (extraSections.length > 0) {
+    return baseContent.trimEnd() + "\n\n" + extraSections.join("\n\n").trimEnd() + "\n";
+  }
+  return baseContent;
+}
+
+function runInit(root, cli) {
+  const t = translate();
+  const guardrailPath = path.join(sddDir(root), GUARDRAIL_FILENAME);
+
+  if (fs.existsSync(guardrailPath) && !cli.force) {
+    console.error(t("messages:guardrail.alreadyExists", { path: guardrailPath }));
+    process.exit(1);
+  }
+
+  // Load config to determine type and lang
+  let lang = "en";
+  let typePath = "base";
+  try {
+    const config = loadConfig(root);
+    lang = config.lang || config.output?.default || "en";
+    if (config.type) typePath = resolveType(config.type);
+  } catch (_) {
+    // No config — use defaults
+  }
+
+  const content = loadGuardrailTemplate(typePath, lang);
+  if (!content) {
+    console.error(t("messages:guardrail.noTemplate"));
+    process.exit(1);
+  }
+
+  if (cli.dryRun) {
+    console.log(content);
+    return;
+  }
+
+  const dir = sddDir(root);
+  if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+  fs.writeFileSync(guardrailPath, content, "utf8");
+  console.log(t("messages:guardrail.created", { path: guardrailPath }));
+}
+
+async function runUpdate(root, cli) {
+  const t = translate();
+  const guardrailPath = path.join(sddDir(root), GUARDRAIL_FILENAME);
+
+  if (!fs.existsSync(guardrailPath)) {
+    console.error(t("messages:guardrail.notFound"));
+    process.exit(1);
+  }
+
+  // Load analysis.json
+  const analysisPath = path.join(sddDir(root), "output", "analysis.json");
+  if (!fs.existsSync(analysisPath)) {
+    console.error(t("messages:guardrail.analysisNotFound"));
+    process.exit(1);
+  }
+
+  let config;
+  try {
+    config = loadConfig(root);
+  } catch (_) {
+    console.error(t("messages:guardrail.noConfig"));
+    process.exit(1);
+  }
+
+  const agentName = cli.agent || config.defaultAgent;
+  if (!agentName) {
+    console.error(t("messages:guardrail.noAgent"));
+    process.exit(1);
+  }
+
+  const existing = fs.readFileSync(guardrailPath, "utf8");
+  const analysis = fs.readFileSync(analysisPath, "utf8");
+
+  const prompt = [
+    "You are a software architect. Analyze the project structure below and propose additional project-specific guardrail articles.",
+    "Each article must be a `### Heading` followed by a description paragraph.",
+    "Do NOT repeat articles that already exist.",
+    "Output ONLY the new articles in markdown format (### headings + body). No preamble.",
+    "",
+    "## Existing Guardrail",
+    existing,
+    "",
+    "## Project Analysis",
+    analysis,
+  ].join("\n");
+
+  console.error(t("messages:guardrail.updating"));
+  const result = await callAgent(agentName, prompt, config);
+
+  if (!result || !result.trim()) {
+    console.log(t("messages:guardrail.noNewArticles"));
+    return;
+  }
+
+  if (cli.dryRun) {
+    console.log(result);
+    return;
+  }
+
+  const updated = existing.trimEnd() + "\n\n" + result.trimEnd() + "\n";
+  fs.writeFileSync(guardrailPath, updated, "utf8");
+  console.log(t("messages:guardrail.updated", { path: guardrailPath }));
+}
+
+function main() {
+  const root = repoRoot(import.meta.url);
+  const subCmd = process.argv[2];
+  const argv = process.argv.slice(3);
+
+  if (subCmd === "init") {
+    const cli = parseArgs(argv, {
+      flags: ["--dry-run", "--force"],
+      defaults: { dryRun: false, force: false },
+    });
+    if (cli.help) {
+      const t = translate();
+      const h = t.raw("ui:help.cmdHelp.guardrail");
+      console.log([h.usage, "", `  ${h.desc}`, "", "Subcommands:", `  ${h.init}`, `  ${h.update}`].join("\n"));
+      return;
+    }
+    runInit(root, cli);
+  } else if (subCmd === "update") {
+    const cli = parseArgs(argv, {
+      flags: ["--dry-run"],
+      options: ["--agent"],
+      defaults: { dryRun: false, agent: "" },
+    });
+    if (cli.help) {
+      const t = translate();
+      const h = t.raw("ui:help.cmdHelp.guardrail");
+      console.log([h.usage, "", `  ${h.desc}`, "", "Subcommands:", `  ${h.init}`, `  ${h.update}`].join("\n"));
+      return;
+    }
+    return runUpdate(root, cli);
+  } else {
+    const t = translate();
+    const h = t.raw("ui:help.cmdHelp.guardrail");
+    console.log([h.usage, "", `  ${h.desc}`, "", "Subcommands:", `  ${h.init}`, `  ${h.update}`].join("\n"));
+  }
+}
+
+export { main };
+
+runIfDirect(import.meta.url, main);

@@ -125,6 +125,7 @@
       "text": "{{text}} ディレクティブを AI で解決",
       "spec": "spec 初期化（feature ブランチ + spec.md）",
       "gate": "spec ゲート（未解決事項チェック）",
+      "guardrail": "プロジェクト guardrail（原則）を管理",
       "flow": "SDD フロー自動実行",
       "presets list": "プリセット継承ツリーを表示"
     },
@@ -323,6 +324,12 @@
           "pre": "pre:  Status と Acceptance Criteria の未チェック項目をスキップ",
           "post": "post: 全未チェック項目を検査"
         }
+      },
+      "guardrail": {
+        "usage": "Usage: sdd-forge guardrail <init|update> [options]",
+        "desc": "プロジェクト guardrail（不変原則）を管理する。",
+        "init": "init [--force] [--dry-run]   プリセットテンプレートから guardrail.md を生成",
+        "update": "update [--agent <name>] [--dry-run]   AI がプロジェクト固有の原則を提案・追記"
       },
       "presets": {
         "usage": "Usage: sdd-forge presets list",

@@ -70,6 +70,7 @@ const DISPATCHERS = {
   // spec subcommands → spec.js dispatcher
   spec:     "spec",
   gate:     "spec",
+  guardrail: "spec",
   // flow → flow.js
   flow:     "flow",
   // presets → presets-cmd.js

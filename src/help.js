@@ -35,6 +35,7 @@ const LAYOUT = [
   { section: "Spec" },
   { name: "spec" },
   { name: "gate" },
+  { name: "guardrail" },
   { section: "Flow" },
   { name: "flow" },
   { section: "Info" },

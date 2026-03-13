@@ -10,6 +10,7 @@ import path from "path";
 import { runIfDirect } from "../../lib/entrypoint.js";
 import { repoRoot, parseArgs } from "../../lib/cli.js";
 import { translate } from "../../lib/i18n.js";
+import { sddDir } from "../../lib/config.js";
 
 /**
  * Detect which section a line belongs to by scanning headings above it.
@@ -132,6 +133,12 @@ function main() {
       console.error(`- ${i}`);
     }
     throw new Error(t("messages:gate.failed"));
+  }
+
+  // Guardrail check
+  const guardrailPath = path.join(sddDir(root), "guardrail.md");
+  if (!fs.existsSync(guardrailPath)) {
+    console.error(t("messages:gate.guardrailWarn"));
   }
 
   console.log(t("messages:gate.passed"));

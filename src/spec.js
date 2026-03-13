@@ -11,6 +11,7 @@ import { PKG_DIR } from "./lib/cli.js";
 const SCRIPTS = {
   spec: "specs/commands/init.js",
   gate: "specs/commands/gate.js",
+  guardrail: "specs/commands/guardrail.js",
 };
 
 const args = process.argv.slice(2);

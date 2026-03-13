@@ -29,7 +29,24 @@
   "gate": {
     "failed": "gate: FAILED",
     "passed": "gate: PASSED",
-    "approvalPattern": "User approved this spec"
+    "approvalPattern": "User approved this spec",
+    "guardrailWarn": "[WARN] .sdd-forge/guardrail.md not found. Run 'sdd-forge guardrail init' to define project principles.",
+    "guardrailNoAgent": "[WARN] No agent configured. Skipping guardrail AI compliance check.",
+    "guardrailChecking": "[gate] Checking guardrail compliance...",
+    "guardrailPassed": "[gate] Guardrail compliance: PASSED",
+    "guardrailFailed": "[gate] Guardrail compliance: FAILED"
+  },
+  "guardrail": {
+    "alreadyExists": "guardrail.md already exists: {{path}}. Use --force to overwrite.",
+    "noTemplate": "No guardrail template found.",
+    "created": "guardrail.md created: {{path}}",
+    "notFound": ".sdd-forge/guardrail.md not found. Run 'sdd-forge guardrail init' first.",
+    "analysisNotFound": "analysis.json not found. Run 'sdd-forge scan' first.",
+    "noConfig": ".sdd-forge/config.json not found. Run 'sdd-forge setup' first.",
+    "noAgent": "No agent configured. Set 'defaultAgent' in config.json or use --agent.",
+    "updating": "[guardrail] Proposing project-specific articles with AI...",
+    "noNewArticles": "[guardrail] No new articles proposed.",
+    "updated": "[guardrail] guardrail.md updated: {{path}}"
   },
   "spec": {
     "qaConfirmationPrompt": "Does this spec look good to implement?"

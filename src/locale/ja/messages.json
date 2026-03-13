@@ -29,7 +29,24 @@
   "gate": {
     "failed": "gate: FAILED",
     "passed": "gate: PASSED",
-    "approvalPattern": "User approved this spec|この仕様で実装して問題ない"
+    "approvalPattern": "User approved this spec|この仕様で実装して問題ない",
+    "guardrailWarn": "[WARN] .sdd-forge/guardrail.md が見つかりません。'sdd-forge guardrail init' でプロジェクト原則を定義してください。",
+    "guardrailNoAgent": "[WARN] エージェント未設定。guardrail の AI 整合性チェックをスキップします。",
+    "guardrailChecking": "[gate] guardrail 整合性を検証中...",
+    "guardrailPassed": "[gate] guardrail 整合性: PASSED",
+    "guardrailFailed": "[gate] guardrail 整合性: FAILED"
+  },
+  "guardrail": {
+    "alreadyExists": "guardrail.md は既に存在します: {{path}}。--force で上書きできます。",
+    "noTemplate": "guardrail テンプレートが見つかりません。",
+    "created": "guardrail.md を作成しました: {{path}}",
+    "notFound": ".sdd-forge/guardrail.md が見つかりません。先に 'sdd-forge guardrail init' を実行してください。",
+    "analysisNotFound": "analysis.json が見つかりません。先に 'sdd-forge scan' を実行してください。",
+    "noConfig": ".sdd-forge/config.json が見つかりません。先に 'sdd-forge setup' を実行してください。",
+    "noAgent": "エージェント未設定。config.json の 'defaultAgent' を設定するか --agent を指定してください。",
+    "updating": "[guardrail] AI でプロジェクト固有の原則を提案中...",
+    "noNewArticles": "[guardrail] 新規条項の提案はありませんでした。",
+    "updated": "[guardrail] guardrail.md を更新しました: {{path}}"
   },
   "spec": {
     "qaConfirmationPrompt": "この仕様で実装して問題ないですか？"
