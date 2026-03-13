@@ -103,11 +103,10 @@ pnpm add -g <!-- {{data: project.name("")}} --><!-- {{/data}} -->
 | `changelog` | specs/ から変更履歴を生成 |
 | `agents` | AGENTS.md を更新 |
 
-### プロジェクト管理
+### その他
 
 | コマンド | 説明 |
 |---|---|
-| `default` | デフォルトプロジェクトを設定 |
 | `presets` | 利用可能なプリセット一覧を表示 |
 | `help` | コマンド一覧を表示 |
 

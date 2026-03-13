@@ -4,7 +4,7 @@
 
 <!-- {{text: Write a 1-2 sentence overview of this chapter. Include the types of config files, range of configurable items, and customization points.}} -->
 
-本章では、sdd-forge がプロジェクトに合わせた動作を行うために読み込む設定ファイルについて説明します。主要な `.sdd-forge/config.json`（出力言語・プロジェクトタイプ・AIプロバイダー・スキャン設定を管理）と、複数プロジェクト登録用の `projects.json` を中心に、ドキュメントスタイル・並列処理数・章の順序・SDD フローの動作に関するカスタマイズポイントも解説します。
+本章では、sdd-forge がプロジェクトに合わせた動作を行うために読み込む設定ファイルについて説明します。主要な `.sdd-forge/config.json`（出力言語・プロジェクトタイプ・AIプロバイダー・スキャン設定を管理）を中心に、ドキュメントスタイル・並列処理数・章の順序・SDD フローの動作に関するカスタマイズポイントも解説します。
 <!-- {{/text}} -->
 
 ## Content

@@ -104,11 +104,10 @@ pnpm add -g <!-- {{data: project.name("")}} -->sdd-forge<!-- {{/data}} -->
 | `changelog` | specs/ から変更履歴を生成 |
 | `agents` | AGENTS.md を更新 |
 
-### プロジェクト管理
+### その他
 
 | コマンド | 説明 |
 |---|---|
-| `default` | デフォルトプロジェクトを設定 |
 | `presets` | 利用可能なプリセットを一覧表示 |
 | `help` | コマンド一覧を表示 |
 
@@ -175,12 +174,12 @@ $sdd-flow-close   — forge → review → コミット → マージ
 
 ## ドキュメント
 
-<!-- {{data: docs.chapters("Chapter|Summary")}} -->
-| Chapter | Summary |
+<!-- {{data: docs.chapters("章|概要")}} -->
+| 章 | 概要 |
 | --- | --- |
-| [01. Tool Overview and Architecture](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/overview.md) | This chapter introduces `sdd-forge`, a CLI tool that automates documentation generation from source code analysis and… |
-| [02. CLI Command Reference](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/cli_commands.md) | This chapter documents all 20 CLI commands available in sdd-forge, covering project setup, documentation generation, … |
-| [03. Configuration and Customization](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/configuration.md) | This chapter covers the configuration files that sdd-forge reads to tailor its behavior to your project, including th… |
+| [01. ツール概要とアーキテクチャ](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/ja/overview.md) | この章では、ソースコード解析からドキュメントを自動生成し、Spec-Driven Development（SDD）ワークフローを提供する CLI ツール `sdd-forge` を紹介します。 |
+| [02. CLIコマンドリファレンス](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/ja/cli_commands.md) | 本章では、sdd-forge で利用可能な全20のCLIコマンドを解説します。 |
+| [03. 設定とカスタマイズ](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/ja/configuration.md) | 本章では、sdd-forge がプロジェクトに合わせた動作を行うために読み込む設定ファイルについて説明します。 |
 <!-- {{/data}} -->
 
 ## ライセンス

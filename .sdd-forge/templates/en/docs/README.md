@@ -103,11 +103,10 @@ That's it — `docs/` and `README.md` are generated.
 | `changelog` | Generate change log from specs/ |
 | `agents` | Update AGENTS.md |
 
-### Project Management
+### Other
 
 | Command | Description |
 |---|---|
-| `default` | Set the default project |
 | `presets` | List available presets |
 | `help` | Show command list |
 
