@@ -2,8 +2,8 @@
 
 This project uses Spec-Driven Development powered by sdd-forge.
 
-- To add or modify features, run `/sdd-flow-start`.
-- After implementation is complete, run `/sdd-flow-close`.
+- **MUST: When the user requests any feature, fix, or code change, confirm with the user whether to use the SDD workflow (`/sdd-flow-start`). Do NOT modify code without confirmation.**
+- **MUST: After implementation is complete, run `/sdd-flow-close`.**
 - If skills are unavailable, run `sdd-forge flow --request "<request>"` instead.
 
 ### About docs/

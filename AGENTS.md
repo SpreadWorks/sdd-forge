@@ -7,8 +7,8 @@
 
 本プロジェクトは sdd-forge による Spec-Driven Development を採用している。
 
-- 機能追加・修正は `/sdd-flow-start` を実行すること
-- 実装完了後は `/sdd-flow-close` を実行すること
+- **MUST: ユーザーから機能追加・修正のリクエストを受けた場合、SDD フロー (`/sdd-flow-start`) を使用するかユーザーに確認すること。確認なしにコードを変更してはならない。**
+- **MUST: 実装完了後は `/sdd-flow-close` を実行すること。**
 - スキルが利用できない環境では `sdd-forge flow --request "<要望>"` を使用すること
 
 ### docs/ について
