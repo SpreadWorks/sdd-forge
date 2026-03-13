@@ -135,6 +135,63 @@ describe("flow status CLI", () => {
     assert.match(result, /pending/);
   });
 
+  it("displays flow status without markdown syntax", () => {
+    tmp = createTmpDir();
+    setupFlowState(tmp);
+    const result = execFileSync("node", [FLOW_CMD, "status"], {
+      encoding: "utf8",
+      env: { ...process.env, SDD_WORK_ROOT: tmp },
+    });
+    // Must not contain markdown table pipes or heading markers
+    assert.doesNotMatch(result, /^\s*\|.*\|/m);
+    assert.doesNotMatch(result, /^##\s/m);
+  });
+
+  it("archives flow.json to spec directory with --archive", () => {
+    tmp = createTmpDir();
+    setupFlowState(tmp);
+    // Create the spec directory
+    fs.mkdirSync(join(tmp, "specs", "001-test"), { recursive: true });
+    execFileSync("node", [FLOW_CMD, "status", "--archive"], {
+      encoding: "utf8",
+      env: { ...process.env, SDD_WORK_ROOT: tmp },
+    });
+    // flow.json should exist in spec dir
+    assert.ok(fs.existsSync(join(tmp, "specs", "001-test", "flow.json")));
+    // flow.json should be removed from .sdd-forge/
+    assert.ok(!fs.existsSync(join(tmp, ".sdd-forge", "flow.json")));
+  });
+
+  it("errors when --archive with no active flow", () => {
+    tmp = createTmpDir();
+    try {
+      execFileSync("node", [FLOW_CMD, "status", "--archive"], {
+        encoding: "utf8",
+        env: { ...process.env, SDD_WORK_ROOT: tmp },
+      });
+      assert.fail("should exit non-zero");
+    } catch (err) {
+      const out = `${err.stdout || ""}${err.stderr || ""}`;
+      assert.match(out, /no active flow/i);
+    }
+  });
+
+  it("errors when --archive and spec directory does not exist", () => {
+    tmp = createTmpDir();
+    setupFlowState(tmp);
+    // Do NOT create specs/001-test/
+    try {
+      execFileSync("node", [FLOW_CMD, "status", "--archive"], {
+        encoding: "utf8",
+        env: { ...process.env, SDD_WORK_ROOT: tmp },
+      });
+      assert.fail("should exit non-zero");
+    } catch (err) {
+      const out = `${err.stdout || ""}${err.stderr || ""}`;
+      assert.match(out, /spec directory/i);
+    }
+  });
+
   it("updates step status with --step and --status", () => {
     tmp = createTmpDir();
     setupFlowState(tmp);

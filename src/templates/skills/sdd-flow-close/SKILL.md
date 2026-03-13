@@ -94,7 +94,7 @@ Use this skill when implementation is complete and the user approved finalizatio
      - No branch/worktree cleanup needed.
 
 8. Archive flow.json & final verification.
-   - **Move flow.json to spec folder**: Copy `.sdd-forge/flow.json` to the spec directory (e.g. `specs/NNN-xxx/flow.json`) for historical record, then delete `.sdd-forge/flow.json`.
+   - **Archive flow.json**: Run `sdd-forge flow status --archive` to move `.sdd-forge/flow.json` to the spec directory for historical record.
    - `git status --short` — confirm tree is clean.
    - Report result to user.
 
@@ -111,4 +111,5 @@ sdd-forge build
 sdd-forge forge --prompt "<change summary>" --spec <spec-path>
 sdd-forge review
 sdd-forge flow status
+sdd-forge flow status --archive
 ```

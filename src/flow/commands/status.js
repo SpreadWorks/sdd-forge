@@ -10,6 +10,8 @@
  *        sdd-forge flow status --req <index> --status <val>
  */
 
+import fs from "fs";
+import path from "path";
 import { runIfDirect } from "../../lib/entrypoint.js";
 import { repoRoot, parseArgs } from "../../lib/cli.js";
 import {
@@ -17,6 +19,8 @@ import {
   updateStepStatus,
   setRequirements,
   updateRequirement,
+  clearFlowState,
+  flowStatePath,
   FLOW_STEPS,
 } from "../../lib/flow-state.js";
 
@@ -27,43 +31,45 @@ function displayStatus(root) {
     process.exit(1);
   }
 
+  const SEP = "────────────────────────────────";
+
   // Header
-  console.log("## Flow Status\n");
-  console.log(`| Item | Value |`);
-  console.log(`|------|-------|`);
-  console.log(`| Spec | ${state.spec} |`);
-  console.log(`| Feature branch | ${state.featureBranch} |`);
-  console.log(`| Base branch | ${state.baseBranch} |`);
+  console.log("Flow Status");
+  console.log(SEP);
+  console.log(`  Spec:             ${state.spec}`);
+  console.log(`  Feature branch:   ${state.featureBranch}`);
+  console.log(`  Base branch:      ${state.baseBranch}`);
   if (state.worktree) {
-    console.log(`| Worktree | ${state.worktreePath} |`);
+    console.log(`  Worktree:         ${state.worktreePath}`);
   }
 
   // Steps
   if (state.steps?.length) {
-    console.log("\n### Steps\n");
-    console.log("| # | Step | Status |");
-    console.log("|---|------|--------|");
+    const doneCount = state.steps.filter((s) => s.status === "done").length;
+    console.log(`\nSteps (${doneCount}/${state.steps.length} done)`);
+    console.log(SEP);
     for (let i = 0; i < state.steps.length; i++) {
       const s = state.steps[i];
-      const icon = s.status === "done" ? "[x]"
-        : s.status === "in_progress" ? "[>]"
-        : s.status === "skipped" ? "[-]"
-        : "[ ]";
-      console.log(`| ${i + 1} | ${s.id} | ${icon} ${s.status} |`);
+      const icon = s.status === "done" ? "✓"
+        : s.status === "in_progress" ? ">"
+        : s.status === "skipped" ? "-"
+        : " ";
+      const pad = String(i + 1).padStart(2);
+      console.log(`  ${pad}. ${s.id.padEnd(14)} ${icon} ${s.status}`);
     }
   }
 
   // Requirements
   if (state.requirements?.length) {
-    console.log("\n### Requirements\n");
-    console.log("| # | Requirement | Status |");
-    console.log("|---|-------------|--------|");
+    const doneCount = state.requirements.filter((r) => r.status === "done").length;
+    console.log(`\nRequirements (${doneCount}/${state.requirements.length} done)`);
+    console.log(SEP);
     for (let i = 0; i < state.requirements.length; i++) {
       const r = state.requirements[i];
-      const icon = r.status === "done" ? "[x]"
-        : r.status === "in_progress" ? "[>]"
-        : "[ ]";
-      console.log(`| ${i} | ${r.desc} | ${icon} ${r.status} |`);
+      const icon = r.status === "done" ? "✓"
+        : r.status === "in_progress" ? ">"
+        : " ";
+      console.log(`  ${i}. ${icon} ${r.desc}`);
     }
   }
 }
@@ -71,9 +77,9 @@ function displayStatus(root) {
 function main() {
   const root = repoRoot(import.meta.url);
   const cli = parseArgs(process.argv.slice(2), {
-    flags: [],
+    flags: ["--archive"],
     options: ["--step", "--status", "--summary", "--req"],
-    defaults: { step: "", status: "", summary: "", req: "" },
+    defaults: { step: "", status: "", summary: "", req: "", archive: false },
   });
 
   if (cli.help) {
@@ -86,8 +92,29 @@ function main() {
         "  --step <id> --status <val>          Update step status",
         "  --summary '<JSON array>'            Set requirements list",
         "  --req <index> --status <val>        Update requirement status",
+        "  --archive                           Move flow.json to spec directory",
       ].join("\n"),
     );
+    return;
+  }
+
+  // Archive flow.json to spec directory
+  if (cli.archive) {
+    const state = loadFlowState(root);
+    if (!state) {
+      console.error("no active flow (flow.json not found)");
+      process.exit(1);
+    }
+    const specDir = path.join(root, path.dirname(state.spec));
+    if (!fs.existsSync(specDir)) {
+      console.error(`spec directory not found: ${specDir}`);
+      process.exit(1);
+    }
+    const src = flowStatePath(root);
+    const dest = path.join(specDir, "flow.json");
+    fs.copyFileSync(src, dest);
+    clearFlowState(root);
+    console.log(`archived: ${dest}`);
     return;
   }
 

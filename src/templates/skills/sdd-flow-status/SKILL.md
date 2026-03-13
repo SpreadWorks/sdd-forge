@@ -48,47 +48,43 @@ Display the current state of the SDD workflow.
    - Last commit: `git log -1 --oneline`
 
 3. Format output.
-   - Use a clear, structured format with section headers.
+   - Use plain text with lines and indentation. Do NOT use markdown tables or headings.
    - Example:
 
    ```
-   ## SDD Flow Status
+   Flow Status
+   ────────────────────────────────
+     Mode:             Branch
+     Feature branch:   feature/045-xxx
+     Base branch:      main
+     Spec:             specs/045-xxx/spec.md
+     Title:            Flow state step tracking
+     User approved:    Yes
 
-   | Item | Value |
-   |------|-------|
-   | Mode | Branch |
-   | Feature branch | feature/045-xxx |
-   | Base branch | main |
-   | Spec | specs/045-xxx/spec.md |
-   | Title | Flow state step tracking |
-   | User approved | Yes |
+   Steps (4/10 done)
+   ────────────────────────────────
+      1. approach       ✓ done
+      2. branch         ✓ done
+      3. spec           ✓ done
+      4. draft          ✓ done
+      5. fill-spec      > in_progress
+      6. approval         pending
+      ...
 
-   ### Steps (4/10 done)
-   | # | Step | Status |
-   |---|------|--------|
-   | 1 | approach | [x] done |
-   | 2 | branch | [x] done |
-   | 3 | spec | [x] done |
-   | 4 | draft | [x] done |
-   | 5 | fill-spec | [>] in_progress |
-   | 6 | approval | [ ] pending |
-   | ... | ... | ... |
+   Requirements (1/3 done)
+   ────────────────────────────────
+     0. ✓ flow.js をディスパッチャーに変更
+     1. > status サブコマンド実装
+     2.   SKILL.md 更新
 
-   ### Requirements (1/3 done)
-   | # | Requirement | Status |
-   |---|-------------|--------|
-   | 0 | flow.js をディスパッチャーに変更 | [x] done |
-   | 1 | status サブコマンド実装 | [>] in_progress |
-   | 2 | SKILL.md 更新 | [ ] pending |
+   Commits (3 ahead of main)
+     - abc1234 feat: implement xxx
+     - def5678 fix: yyy
+     - ghi9012 test: zzz
 
-   ### Commits (3 ahead of main)
-   - abc1234 feat: implement xxx
-   - def5678 fix: yyy
-   - ghi9012 test: zzz
-
-   ### Uncommitted Changes (2 files)
-   - M src/lib/flow-state.js
-   - M tests/flow.test.js
+   Uncommitted Changes (2 files)
+     - M src/lib/flow-state.js
+     - M tests/flow.test.js
    ```
 
 ## Notes
