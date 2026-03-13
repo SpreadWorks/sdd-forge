@@ -58,50 +58,49 @@ export function parseGuardrailArticles(text) {
  */
 function loadGuardrailTemplate(typePath, lang) {
   const segments = typePath.split("/").filter(Boolean);
-  const candidates = [];
+
+  /**
+   * Resolve a single template file with lang → en fallback.
+   * Returns file content or null.
+   */
+  function readWithFallback(dir) {
+    const primary = path.join(dir, "templates", lang, GUARDRAIL_FILENAME);
+    if (fs.existsSync(primary)) return fs.readFileSync(primary, "utf8");
+    if (lang !== "en") {
+      const fallback = path.join(dir, "templates", "en", GUARDRAIL_FILENAME);
+      if (fs.existsSync(fallback)) return fs.readFileSync(fallback, "utf8");
+    }
+    return null;
+  }
 
   // base (lowest priority)
-  candidates.push(path.join(PRESETS_DIR, "base", "templates", lang, GUARDRAIL_FILENAME));
-  candidates.push(path.join(PRESETS_DIR, "base", "templates", "en", GUARDRAIL_FILENAME));
+  const baseDir = path.join(PRESETS_DIR, "base");
+  const baseContent = readWithFallback(baseDir);
+  if (!baseContent) return "";
+
+  // Collect stack-specific articles (arch → leaf)
+  const extraSections = [];
+
+  function appendArticlesFrom(dir) {
+    const content = readWithFallback(dir);
+    if (!content) return;
+    const articles = parseGuardrailArticles(content);
+    for (const a of articles) {
+      extraSections.push(`### ${a.title}\n${a.body}`);
+    }
+  }
 
   // arch layer
   if (segments.length >= 1 && segments[0] !== "base") {
     const arch = presetByLeaf(segments[0]);
-    if (arch) {
-      candidates.push(path.join(arch.dir, "templates", lang, GUARDRAIL_FILENAME));
-    }
+    if (arch) appendArticlesFrom(arch.dir);
   }
 
   // leaf preset
   if (segments.length >= 2) {
     const leaf = presetByLeaf(segments[segments.length - 1]);
-    if (leaf?.dir) {
-      candidates.push(path.join(leaf.dir, "templates", lang, GUARDRAIL_FILENAME));
-    }
+    if (leaf?.dir) appendArticlesFrom(leaf.dir);
   }
-
-  // Read and merge: base content + append stack-specific articles
-  let baseContent = "";
-  const extraSections = [];
-
-  for (let i = 0; i < candidates.length; i++) {
-    const p = candidates[i];
-    if (!fs.existsSync(p)) continue;
-    const content = fs.readFileSync(p, "utf8");
-    if (!baseContent) {
-      baseContent = content;
-    } else {
-      // Extract only ### articles from stack-specific templates
-      const articles = parseGuardrailArticles(content);
-      if (articles.length > 0) {
-        for (const a of articles) {
-          extraSections.push(`### ${a.title}\n${a.body}`);
-        }
-      }
-    }
-  }
-
-  if (!baseContent) return "";
 
   if (extraSections.length > 0) {
     return baseContent.trimEnd() + "\n\n" + extraSections.join("\n\n").trimEnd() + "\n";
