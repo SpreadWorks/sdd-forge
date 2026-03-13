@@ -6,7 +6,7 @@
     "tooShort": "[FAIL] 行数不足 ({{lines}} 行): {{file}}",
     "missingH1": "[FAIL] H1 見出しがありません: {{file}}",
     "unfilledText": "[WARN] 未埋め {{text}} ディレクティブ {{count}} 件: {{file}}",
-    "unfilledData": "[FAIL] 未埋め {{data}} ディレクティブ {{count}} 件: {{file}}",
+    "unfilledData": "[WARN] 未埋め {{data}} ディレクティブ {{count}} 件: {{file}}",
     "analysisNotFound": "[WARN] analysis.json が見つかりません。'sdd-forge scan' を実行してください。",
     "analysisStale": "[WARN] analysis.json が古い可能性があります ({{file}} の方が新しい)。'sdd-forge scan' で更新してください。",
     "readmeNotFound": "[WARN] README.md が見つかりません。'sdd-forge readme' を実行してください。",

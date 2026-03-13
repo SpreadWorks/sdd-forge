@@ -77,7 +77,7 @@ describe("review CLI", () => {
     }
   });
 
-  it("fails when {{data}} directive is unfilled", () => {
+  it("warns but does not fail when {{data}} directive is unfilled", () => {
     tmp = setupTmp();
     const lines = ["# 01. Test", ""];
     for (let i = 0; i < 10; i++) lines.push(`Line ${i}`);
@@ -87,15 +87,11 @@ describe("review CLI", () => {
     for (let i = 0; i < 5; i++) lines.push(`More ${i}`);
     writeFile(tmp, "docs/test.md", lines.join("\n"));
 
-    try {
-      execFileSync("node", [CMD], {
-        encoding: "utf8",
-        env: { ...process.env, SDD_WORK_ROOT: tmp },
-      });
-      assert.fail("should have exited non-zero");
-    } catch (err) {
-      assert.match(err.stdout, /unfilled \{\{data\}\}/);
-    }
+    const result = execFileSync("node", [CMD], {
+      encoding: "utf8",
+      env: { ...process.env, SDD_WORK_ROOT: tmp },
+    });
+    assert.match(result, /unfilled \{\{data\}\}/);
   });
 
   it("does not fail on inline {{data}} examples in prose", () => {

@@ -172,7 +172,7 @@ function main() {
     }
   }
 
-  // Unfilled {{data}} directive check (FAIL)
+  // Unfilled {{data}} directive check (WARN — data may not yet be available)
   for (const f of chapterFiles) {
     const filePath = path.join(targetDir, f);
     const content = fs.readFileSync(filePath, "utf8");
@@ -192,7 +192,6 @@ function main() {
     }
     if (unfilledData > 0) {
       console.log(t("messages:review.unfilledData", { count: unfilledData, file: f }));
-      fail = 1;
     }
   }
 
