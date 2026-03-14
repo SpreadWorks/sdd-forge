@@ -1,0 +1,48 @@
+{
+  "spec": "specs/050-restructure-cli-command-hierarchy/spec.md",
+  "baseBranch": "main",
+  "featureBranch": "feature/050-restructure-cli-command-hierarchy",
+  "steps": [
+    {
+      "id": "approach",
+      "status": "pending"
+    },
+    {
+      "id": "branch",
+      "status": "pending"
+    },
+    {
+      "id": "spec",
+      "status": "pending"
+    },
+    {
+      "id": "draft",
+      "status": "pending"
+    },
+    {
+      "id": "fill-spec",
+      "status": "pending"
+    },
+    {
+      "id": "approval",
+      "status": "pending"
+    },
+    {
+      "id": "gate",
+      "status": "pending"
+    },
+    {
+      "id": "test",
+      "status": "pending"
+    },
+    {
+      "id": "implement",
+      "status": "pending"
+    },
+    {
+      "id": "finalize",
+      "status": "done"
+    }
+  ],
+  "requirements": []
+}
