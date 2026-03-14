@@ -1,0 +1,77 @@
+{
+  "spec": "specs/052-task-specific-agent-and-model-config/spec.md",
+  "baseBranch": "main",
+  "featureBranch": "feature/052-task-specific-agent-and-model-config",
+  "steps": [
+    {
+      "id": "approach",
+      "status": "done"
+    },
+    {
+      "id": "branch",
+      "status": "done"
+    },
+    {
+      "id": "spec",
+      "status": "done"
+    },
+    {
+      "id": "draft",
+      "status": "done"
+    },
+    {
+      "id": "fill-spec",
+      "status": "done"
+    },
+    {
+      "id": "approval",
+      "status": "done"
+    },
+    {
+      "id": "gate",
+      "status": "done"
+    },
+    {
+      "id": "test",
+      "status": "done"
+    },
+    {
+      "id": "implement",
+      "status": "done"
+    },
+    {
+      "id": "finalize",
+      "status": "done"
+    }
+  ],
+  "requirements": [
+    {
+      "desc": "R1: providers に profiles 追加",
+      "status": "done"
+    },
+    {
+      "desc": "R2: commands セクション新設",
+      "status": "done"
+    },
+    {
+      "desc": "R3: resolveAgent の階層探索",
+      "status": "done"
+    },
+    {
+      "desc": "R4: 各コマンドに COMMAND_ID 定義",
+      "status": "done"
+    },
+    {
+      "desc": "R5: --agent CLI オプション廃止",
+      "status": "done"
+    },
+    {
+      "desc": "R6: setup の変更",
+      "status": "done"
+    },
+    {
+      "desc": "R7: ドキュメント整備",
+      "status": "done"
+    }
+  ]
+}
