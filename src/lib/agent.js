@@ -197,7 +197,7 @@ export function callAgentAsync(agent, prompt, timeoutMs, cwd, options) {
 export function loadAgentConfig(cfg, commandId) {
   const agent = resolveAgent(cfg, commandId);
   if (!agent) {
-    throw new Error("No default agent configured. Set 'defaultAgent' in config.json or run 'sdd-forge setup'.");
+    throw new Error("No default agent configured. Set 'agent.default' in config.json or run 'sdd-forge setup'.");
   }
   return agent;
 }
@@ -274,12 +274,18 @@ function mergeProfileArgs(provider, profileName) {
  * @returns {Object|null} Agent config object with merged args, or null if not configured
  */
 export function resolveAgent(cfg, commandId) {
-  const cmdSettings = resolveCommandSettings(cfg.commands, commandId);
+  // Support both nested (cfg.agent.*) and flat (cfg.*) layouts
+  const agentSection = cfg.agent || {};
+  const commands = agentSection.commands || cfg.commands;
+  const providers = agentSection.providers || cfg.providers;
+  const defaultAgent = agentSection.default || cfg.defaultAgent;
 
-  const agentKey = cmdSettings?.agent || cfg.defaultAgent;
+  const cmdSettings = resolveCommandSettings(commands, commandId);
+
+  const agentKey = cmdSettings?.agent || defaultAgent;
   if (!agentKey) return null;
 
-  const provider = cfg.providers?.[agentKey];
+  const provider = providers?.[agentKey];
   if (!provider) return null;
 
   // No profiles support in provider → return as-is (backward compat)

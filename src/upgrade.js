@@ -111,9 +111,10 @@ const SYSTEM_PROMPT_FLAGS = {
  * Check config.json for missing new settings and print hints.
  */
 function checkConfigHints(config, t) {
-  if (!config.providers) return;
+  const providers = config.agent?.providers || config.providers;
+  if (!providers) return;
 
-  for (const [key, prov] of Object.entries(config.providers)) {
+  for (const [key, prov] of Object.entries(providers)) {
     if (prov.systemPromptFlag) continue;
     const suggested = SYSTEM_PROMPT_FLAGS[key] || SYSTEM_PROMPT_FLAGS[prov.command];
     if (suggested) {

@@ -475,34 +475,36 @@ async function main() {
   };
 
   if (defaultAgent) {
-    config.defaultAgent = defaultAgent;
-    config.providers = {
-      claude: {
-        command: "claude",
-        args: ["-p", "{{PROMPT}}"],
-        systemPromptFlag: "--system-prompt",
-        profiles: {
-          default: [],
-          opus: ["--model", "opus"],
-          sonnet: ["--model", "sonnet"],
+    config.agent = {
+      default: defaultAgent,
+      providers: {
+        claude: {
+          command: "claude",
+          args: ["-p", "{{PROMPT}}"],
+          systemPromptFlag: "--system-prompt",
+          profiles: {
+            default: [],
+            opus: ["--model", "opus"],
+            sonnet: ["--model", "sonnet"],
+          },
+        },
+        codex: {
+          command: "codex",
+          args: ["exec", "--full-auto", "-C", ".tmp", "{{PROMPT}}"],
+          profiles: {
+            default: [],
+            o3: ["--model", "o3"],
+          },
         },
       },
-      codex: {
-        command: "codex",
-        args: ["exec", "--full-auto", "-C", ".tmp", "{{PROMPT}}"],
-        profiles: {
-          default: [],
-          o3: ["--model", "o3"],
-        },
+      commands: {
+        "docs": { agent: defaultAgent, profile: "default" },
+        "docs.review": { agent: defaultAgent, profile: "default" },
+        "docs.forge": { agent: defaultAgent, profile: "default" },
+        "spec": { agent: defaultAgent, profile: "default" },
+        "spec.gate": { agent: defaultAgent, profile: "default" },
+        "flow": { agent: defaultAgent, profile: "default" },
       },
-    };
-    config.commands = {
-      "docs": { agent: defaultAgent, profile: "default" },
-      "docs.review": { agent: defaultAgent, profile: "default" },
-      "docs.forge": { agent: defaultAgent, profile: "default" },
-      "spec": { agent: defaultAgent, profile: "default" },
-      "spec.gate": { agent: defaultAgent, profile: "default" },
-      "flow": { agent: defaultAgent, profile: "default" },
     };
   }
 
@@ -538,7 +540,7 @@ async function main() {
   console.log(t("setup.messages.configGenerated", { path: configPath }));
 
   // 4b. Ensure agent work directories (-C <dir>)
-  for (const provider of Object.values(config.providers || {})) {
+  for (const provider of Object.values(config.agent?.providers || config.providers || {})) {
     ensureAgentWorkDir(provider, workRoot);
   }
 

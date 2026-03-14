@@ -158,6 +158,31 @@ describe("052: agent command config", () => {
       assert.deepEqual(agent.args, ["--model", "o3", "{{PROMPT}}"]);
     });
 
+    it("supports nested agent section (config.agent.*)", async () => {
+      const { resolveAgent } = await import("../src/lib/agent.js");
+      const config = {
+        agent: {
+          default: "claude",
+          providers: {
+            claude: {
+              command: "claude",
+              args: ["-p", "{{PROMPT}}"],
+              profiles: {
+                default: [],
+                opus: ["--model", "opus"],
+              },
+            },
+          },
+          commands: {
+            "docs": { agent: "claude", profile: "opus" },
+          },
+        },
+      };
+      const agent = resolveAgent(config, "docs");
+      assert.equal(agent.command, "claude");
+      assert.deepEqual(agent.args, ["--model", "opus", "-p", "{{PROMPT}}"]);
+    });
+
     it("backward compat: resolveAgent(config) without COMMAND_ID", async () => {
       const { resolveAgent } = await import("../src/lib/agent.js");
       const config = {
@@ -189,23 +214,23 @@ describe("052: agent command config", () => {
       assert.equal(result.status, 0, `stderr: ${result.stderr}`);
 
       const config = JSON.parse(fs.readFileSync(join(tmp, ".sdd-forge", "config.json"), "utf8"));
-      assert.equal(config.defaultAgent, "claude");
+      assert.equal(config.agent.default, "claude");
 
-      // Both providers exist
-      assert.ok(config.providers.claude, "claude provider should exist");
-      assert.ok(config.providers.codex, "codex provider should exist");
+      // Both providers exist under agent.providers
+      assert.ok(config.agent.providers.claude, "claude provider should exist");
+      assert.ok(config.agent.providers.codex, "codex provider should exist");
 
       // Profiles exist
-      assert.ok(config.providers.claude.profiles, "claude profiles should exist");
-      assert.ok(config.providers.codex.profiles, "codex profiles should exist");
+      assert.ok(config.agent.providers.claude.profiles, "claude profiles should exist");
+      assert.ok(config.agent.providers.codex.profiles, "codex profiles should exist");
 
-      // Commands exist with default profile
-      assert.ok(config.commands, "commands section should exist");
-      const cmdKeys = Object.keys(config.commands);
+      // Commands exist with default profile under agent.commands
+      assert.ok(config.agent.commands, "commands section should exist");
+      const cmdKeys = Object.keys(config.agent.commands);
       assert.ok(cmdKeys.length > 0, "should have command entries");
       for (const key of cmdKeys) {
-        assert.equal(config.commands[key].agent, "claude", `${key} should use default agent claude`);
-        assert.equal(config.commands[key].profile, "default", `${key} should use default profile`);
+        assert.equal(config.agent.commands[key].agent, "claude", `${key} should use default agent claude`);
+        assert.equal(config.agent.commands[key].profile, "default", `${key} should use default profile`);
       }
     });
 
@@ -222,16 +247,16 @@ describe("052: agent command config", () => {
       assert.equal(result.status, 0, `stderr: ${result.stderr}`);
 
       const config = JSON.parse(fs.readFileSync(join(tmp, ".sdd-forge", "config.json"), "utf8"));
-      assert.equal(config.defaultAgent, "codex");
+      assert.equal(config.agent.default, "codex");
 
-      // Both providers exist
-      assert.ok(config.providers.claude, "claude provider should exist");
-      assert.ok(config.providers.codex, "codex provider should exist");
+      // Both providers exist under agent.providers
+      assert.ok(config.agent.providers.claude, "claude provider should exist");
+      assert.ok(config.agent.providers.codex, "codex provider should exist");
 
       // Commands use codex as default
-      for (const key of Object.keys(config.commands)) {
-        assert.equal(config.commands[key].agent, "codex", `${key} should use default agent codex`);
-        assert.equal(config.commands[key].profile, "default", `${key} should use default profile`);
+      for (const key of Object.keys(config.agent.commands)) {
+        assert.equal(config.agent.commands[key].agent, "codex", `${key} should use default agent codex`);
+        assert.equal(config.agent.commands[key].profile, "default", `${key} should use default profile`);
       }
     });
 

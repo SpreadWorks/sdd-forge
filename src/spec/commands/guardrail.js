@@ -169,7 +169,7 @@ async function runUpdate(root, cli) {
     process.exit(1);
   }
 
-  const agentName = cli.agent || config.defaultAgent;
+  const agentName = cli.agent || config.agent?.default || config.defaultAgent;
   if (!agentName) {
     console.error(t("messages:guardrail.noAgent"));
     process.exit(1);
