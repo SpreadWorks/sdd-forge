@@ -1,0 +1,48 @@
+{
+  "spec": "specs/051-skill-namespace-with-dot-separator/spec.md",
+  "baseBranch": "main",
+  "featureBranch": "feature/051-skill-namespace-with-dot-separator",
+  "steps": [
+    {
+      "id": "approach",
+      "status": "pending"
+    },
+    {
+      "id": "branch",
+      "status": "pending"
+    },
+    {
+      "id": "spec",
+      "status": "pending"
+    },
+    {
+      "id": "draft",
+      "status": "pending"
+    },
+    {
+      "id": "fill-spec",
+      "status": "pending"
+    },
+    {
+      "id": "approval",
+      "status": "pending"
+    },
+    {
+      "id": "gate",
+      "status": "pending"
+    },
+    {
+      "id": "test",
+      "status": "pending"
+    },
+    {
+      "id": "implement",
+      "status": "pending"
+    },
+    {
+      "id": "finalize",
+      "status": "done"
+    }
+  ],
+  "requirements": []
+}
