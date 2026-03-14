@@ -5,12 +5,12 @@ import { existsSync, readFileSync } from "fs";
 import { createTmpDir, removeTmpDir, writeFile, writeJson } from "../../helpers/tmp-dir.js";
 import { execFileSync } from "child_process";
 
-const GUARDRAIL_CMD = join(process.cwd(), "src/specs/commands/guardrail.js");
-const GATE_CMD = join(process.cwd(), "src/specs/commands/gate.js");
+const GUARDRAIL_CMD = join(process.cwd(), "src/spec/commands/guardrail.js");
+const GATE_CMD = join(process.cwd(), "src/spec/commands/gate.js");
 
 // Dynamically import gate functions for unit tests
 const { buildGuardrailPrompt, parseGuardrailResponse, extractExemptions } = await import(
-  "../../../src/specs/commands/gate.js"
+  "../../../src/spec/commands/gate.js"
 );
 
 // ---------------------------------------------------------------------------
@@ -22,7 +22,7 @@ describe("parseGuardrailArticles", () => {
   let parseGuardrailArticles;
 
   it("parses ### headings and body text", async () => {
-    ({ parseGuardrailArticles } = await import("../../../src/specs/commands/guardrail.js"));
+    ({ parseGuardrailArticles } = await import("../../../src/spec/commands/guardrail.js"));
     const text = [
       "# Project Guardrail",
       "",
@@ -44,14 +44,14 @@ describe("parseGuardrailArticles", () => {
   });
 
   it("returns empty array for no articles", async () => {
-    ({ parseGuardrailArticles } = await import("../../../src/specs/commands/guardrail.js"));
+    ({ parseGuardrailArticles } = await import("../../../src/spec/commands/guardrail.js"));
     const text = "# Guardrail\n\nSome intro text.\n";
     const articles = parseGuardrailArticles(text);
     assert.deepEqual(articles, []);
   });
 
   it("handles article with no body", async () => {
-    ({ parseGuardrailArticles } = await import("../../../src/specs/commands/guardrail.js"));
+    ({ parseGuardrailArticles } = await import("../../../src/spec/commands/guardrail.js"));
     const text = "### Empty Article\n### Next Article\nSome body.\n";
     const articles = parseGuardrailArticles(text);
     assert.equal(articles.length, 2);

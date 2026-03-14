@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * src/specs/commands/guardrail.js
+ * src/spec/commands/guardrail.js
  *
  * Manage project guardrail (immutable principles) for spec compliance.
  * Subcommands: init, update

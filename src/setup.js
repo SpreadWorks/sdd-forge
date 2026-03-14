@@ -13,14 +13,14 @@
 import fs from "fs";
 import path from "path";
 import readline from "readline";
-import { runIfDirect } from "../../lib/entrypoint.js";
-import { PKG_DIR, parseArgs } from "../../lib/cli.js";
-import { validateConfig } from "../../lib/types.js";
-import { DEFAULT_LANG } from "../../lib/config.js";
-import { createI18n } from "../../lib/i18n.js";
-import { presetsForArch } from "../../lib/presets.js";
-import { loadSddTemplate } from "../../lib/agents-md.js";
-import { ensureAgentWorkDir } from "../../lib/agent.js";
+import { runIfDirect } from "./lib/entrypoint.js";
+import { PKG_DIR, parseArgs } from "./lib/cli.js";
+import { validateConfig } from "./lib/types.js";
+import { DEFAULT_LANG } from "./lib/config.js";
+import { createI18n } from "./lib/i18n.js";
+import { presetsForArch } from "./lib/presets.js";
+import { loadSddTemplate } from "./lib/agents-md.js";
+import { ensureAgentWorkDir } from "./lib/agent.js";
 
 // ---------------------------------------------------------------------------
 // readline helpers

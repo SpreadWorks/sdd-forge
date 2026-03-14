@@ -12,22 +12,38 @@ describe("sdd-forge dispatcher", () => {
     assert.match(result, /コマンド一覧/);
   });
 
-  it("routes 'gate' to spec gate", () => {
+  it("routes 'docs build' through docs dispatcher", () => {
+    // build requires analysis.json etc, but should at least start the pipeline
     try {
-      execFileSync("node", [SDD_FORGE, "gate"], { encoding: "utf8" });
+      execFileSync("node", [SDD_FORGE, "docs", "build", "--help"], { encoding: "utf8" });
+    } catch (err) {
+      // --help may exit 0 or non-zero depending on implementation
+      const out = `${err.stdout || ""}${err.stderr || ""}`;
+      assert.match(out, /build/i);
+    }
+  });
+
+  it("routes 'spec gate' to spec gate", () => {
+    try {
+      execFileSync("node", [SDD_FORGE, "spec", "gate"], { encoding: "utf8" });
       assert.fail("should exit non-zero without --spec");
     } catch (err) {
       assert.match(err.stderr, /--spec is required/);
     }
   });
 
-  it("routes 'review' correctly", () => {
+  it("routes 'docs review' correctly", () => {
     try {
-      execFileSync("node", [SDD_FORGE, "review"], { encoding: "utf8" });
+      execFileSync("node", [SDD_FORGE, "docs", "review"], { encoding: "utf8" });
     } catch (err) {
       // review may fail if no docs dir, but it should have run the review command
       assert.match(err.stdout, /FAIL|Found/);
     }
+  });
+
+  it("routes 'setup --help' as independent command", () => {
+    const result = execFileSync("node", [SDD_FORGE, "setup", "--help"], { encoding: "utf8" });
+    assert.match(result, /setup/i);
   });
 
   it("routes 'flow' to flow dispatcher", () => {
@@ -37,6 +53,24 @@ describe("sdd-forge dispatcher", () => {
     } catch (err) {
       const out = `${err.stdout || ""}${err.stderr || ""}`;
       assert.match(out, /start|status/);
+    }
+  });
+
+  it("shows docs subcommand list when 'docs' has no args", () => {
+    try {
+      execFileSync("node", [SDD_FORGE, "docs"], { encoding: "utf8" });
+    } catch (err) {
+      const out = `${err.stdout || ""}${err.stderr || ""}`;
+      assert.match(out, /build|scan|forge/);
+    }
+  });
+
+  it("shows spec subcommand list when 'spec' has no args", () => {
+    try {
+      execFileSync("node", [SDD_FORGE, "spec"], { encoding: "utf8" });
+    } catch (err) {
+      const out = `${err.stdout || ""}${err.stderr || ""}`;
+      assert.match(out, /init|gate|guardrail/);
     }
   });
 
@@ -51,6 +85,17 @@ describe("sdd-forge dispatcher", () => {
       assert.fail("should exit non-zero");
     } catch (err) {
       assert.match(err.stderr, /unknown command/);
+    }
+  });
+
+  it("rejects old flat commands (build, gate)", () => {
+    for (const cmd of ["build", "gate", "scan", "review"]) {
+      try {
+        execFileSync("node", [SDD_FORGE, cmd], { encoding: "utf8" });
+        assert.fail(`'${cmd}' should exit non-zero`);
+      } catch (err) {
+        assert.match(err.stderr, /unknown command/, `'${cmd}' should show unknown command`);
+      }
     }
   });
 });

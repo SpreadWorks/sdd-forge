@@ -105,27 +105,29 @@
       "help": "このヘルプを表示",
       "setup": "プロジェクト登録 + 設定生成（対話式）",
       "upgrade": "テンプレート由来ファイルを最新版に更新",
-      "build": "ドキュメント一括生成（scan → enrich → init → data → text → readme）",
-      "init": "テンプレートから docs/ を初期化",
-      "forge": "docs 反復改善（AI エージェント対応）",
-      "review": "docs 品質チェック",
-      "changelog": "specs/ から change_log.md を生成",
-      "agents": "AGENTS.md の PROJECT セクションを更新",
-      "readme": "README.md 自動生成",
-      "translate": "ドキュメントを非デフォルト言語に翻訳",
-      "scan": "ソースコード解析 → analysis.json",
-      "enrich": "AI で analysis エントリーを拡充（summary/detail/chapter）",
-      "data": "{{data}} ディレクティブを解析データで解決",
-      "text": "{{text}} ディレクティブを AI で解決",
-      "spec": "spec 初期化（feature ブランチ + spec.md）",
-      "gate": "spec ゲート（未解決事項チェック）",
-      "guardrail": "プロジェクト guardrail（原則）を管理",
-      "flow": "SDD フロー自動実行",
+      "docs build": "ドキュメント一括生成（scan → enrich → init → data → text → readme）",
+      "docs scan": "ソースコード解析 → analysis.json",
+      "docs enrich": "AI で analysis エントリーを拡充（summary/detail/chapter）",
+      "docs init": "テンプレートから docs/ を初期化",
+      "docs data": "{{data}} ディレクティブを解析データで解決",
+      "docs text": "{{text}} ディレクティブを AI で解決",
+      "docs readme": "README.md 自動生成",
+      "docs forge": "docs 反復改善（AI エージェント対応）",
+      "docs review": "docs 品質チェック",
+      "docs translate": "ドキュメントを非デフォルト言語に翻訳",
+      "docs changelog": "specs/ から change_log.md を生成",
+      "docs agents": "AGENTS.md の PROJECT セクションを更新",
+      "docs snapshot": "スナップショットテスト（リグレッション検出）",
+      "spec init": "spec 初期化（feature ブランチ + spec.md）",
+      "spec gate": "spec ゲート（未解決事項チェック）",
+      "spec guardrail": "プロジェクト guardrail（原則）を管理",
+      "flow start": "SDD フローを開始",
+      "flow status": "フロー進捗を表示・更新",
       "presets list": "プリセット継承ツリーを表示"
     },
     "cmdHelp": {
       "enrich": {
-        "usage": "Usage: sdd-forge enrich [options]",
+        "usage": "Usage: sdd-forge docs enrich [options]",
         "desc": "AI で analysis.json の各エントリーに summary/detail/chapter/role を付与する。",
         "options": {
           "agent": "--agent <name>  使用する AI エージェント（デフォルト: config の defaultAgent）",
@@ -135,7 +137,7 @@
         }
       },
       "scan": {
-        "usage": "Usage: sdd-forge scan [options]",
+        "usage": "Usage: sdd-forge docs scan [options]",
         "desc": "ソースコードを解析し analysis.json を生成する。",
         "options": {
           "stdout": "--stdout        結果を stdout に出力（ファイル書き込みしない）",
@@ -144,7 +146,7 @@
         }
       },
       "init": {
-        "usage": "Usage: sdd-forge init [options]",
+        "usage": "Usage: sdd-forge docs init [options]",
         "desc": "テンプレートを docs/ にコピーする。",
         "options": {
           "type": "--type <type>            テンプレートタイプ (default: config.json type)",
@@ -154,7 +156,7 @@
         }
       },
       "data": {
-        "usage": "Usage: sdd-forge data [options]",
+        "usage": "Usage: sdd-forge docs data [options]",
         "desc": "{{data}} ディレクティブを解析データで解決する。",
         "options": {
           "dryRun": "--dry-run   変更内容を表示するだけでファイル書き込みしない",
@@ -163,7 +165,7 @@
         }
       },
       "text": {
-        "usage": "Usage: sdd-forge text --agent <name> [options]",
+        "usage": "Usage: sdd-forge docs text --agent <name> [options]",
         "desc": "{{text}} ディレクティブを AI で解決する。",
         "options": {
           "agent": "--agent <name>      AIエージェント: claude|codex (必須)",
@@ -175,7 +177,7 @@
         }
       },
       "forge": {
-        "usage": "Usage: sdd-forge forge --prompt \"...\" [options]",
+        "usage": "Usage: sdd-forge docs forge --prompt \"...\" [options]",
         "desc": "docs を AI エージェントで反復改善する。",
         "options": {
           "prompt": "--prompt <text>        開始プロンプト",
@@ -193,12 +195,12 @@
         "perFileNote": "provider に systemPromptFlag が設定されている場合、ファイルごとに非同期で agent を呼び出します。\n同時実行数は config.json の limits.concurrency で設定可能（default: 5）。"
       },
       "review": {
-        "usage": "Usage: sdd-forge review [<docs-dir>]",
+        "usage": "Usage: sdd-forge docs review [<docs-dir>]",
         "desc": "docs/ 配下の章ファイル（NN_*.md）を検証する。",
         "descDetail": "引数なしの場合は ${SDD_WORK_ROOT}/docs を対象とする。"
       },
       "changelog": {
-        "usage": "Usage: sdd-forge changelog [--dry-run] [<output-file>]",
+        "usage": "Usage: sdd-forge docs changelog [--dry-run] [<output-file>]",
         "desc": "specs/ を走査して change_log.md を生成する。",
         "descDetail": "引数なしの場合は ${SDD_SOURCE_ROOT}/docs/change_log.md に出力する。",
         "options": {
@@ -206,7 +208,7 @@
         }
       },
       "agents": {
-        "usage": "Usage: sdd-forge agents [--dry-run]",
+        "usage": "Usage: sdd-forge docs agents [--dry-run]",
         "desc": "AGENTS.md の {{data}} ディレクティブを解決して更新する。",
         "descDetail": "agents.sdd / agents.project ディレクティブを解決する（PROJECT は AI で精査）。",
         "options": {
@@ -214,7 +216,7 @@
         }
       },
       "spec": {
-        "usage": "Usage: sdd-forge spec --title <name> [options]",
+        "usage": "Usage: sdd-forge spec init --title <name> [options]",
         "desc": "spec を初期化する（feature ブランチ + spec.md）。",
         "options": {
           "title": "--title <name>      連番の後ろに付与する短い名前（必須）",
@@ -226,7 +228,7 @@
         }
       },
       "flow": {
-        "usage": "Usage: sdd-forge flow --request \"...\" [options]",
+        "usage": "Usage: sdd-forge flow start --request \"...\" [options]",
         "desc": "SDD フローを自動実行する。",
         "options": {
           "request": "--request <text>   実装要求（必須）",
@@ -241,7 +243,7 @@
         }
       },
       "build": {
-        "usage": "Usage: sdd-forge build [options]",
+        "usage": "Usage: sdd-forge docs build [options]",
         "desc": "ドキュメント生成パイプラインを一括実行する:",
         "descDetail": "scan → init → data → text → readme → agents → translate",
         "options": {
@@ -253,7 +255,7 @@
         }
       },
       "readme": {
-        "usage": "Usage: sdd-forge readme [options]",
+        "usage": "Usage: sdd-forge docs readme [options]",
         "desc": "docs/ とテンプレートから README.md を自動生成する。",
         "options": {
           "dryRun": "--dry-run   差分を表示するが書き込まない",
@@ -261,7 +263,7 @@
         }
       },
       "translate": {
-        "usage": "Usage: sdd-forge translate [options]",
+        "usage": "Usage: sdd-forge docs translate [options]",
         "desc": "デフォルト言語のドキュメントを他言語に翻訳する。",
         "options": {
           "lang": "--lang <lang>  特定の言語のみ翻訳",
@@ -301,7 +303,7 @@
         }
       },
       "gate": {
-        "usage": "Usage: sdd-forge gate --spec specs/NNN-name/spec.md [--phase pre|post]",
+        "usage": "Usage: sdd-forge spec gate --spec specs/NNN-name/spec.md [--phase pre|post]",
         "desc": "spec ゲートチェック。",
         "options": {
           "spec": "--spec <path>   spec.md のパス（必須）",
@@ -314,7 +316,7 @@
         }
       },
       "guardrail": {
-        "usage": "Usage: sdd-forge guardrail <init|update> [options]",
+        "usage": "Usage: sdd-forge spec guardrail <init|update> [options]",
         "desc": "プロジェクト guardrail（不変原則）を管理する。",
         "init": "init [--force] [--dry-run]   プリセットテンプレートから guardrail.md を生成",
         "update": "update [--agent <name>] [--dry-run]   AI がプロジェクト固有の原則を提案・追記"

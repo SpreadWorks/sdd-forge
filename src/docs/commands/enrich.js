@@ -335,7 +335,7 @@ async function main(ctx) {
   const agent = resolveAgent(config, agentName);
   if (!agent) {
     logger.log("WARN: no agent configured, skipping enrich.");
-    logger.log("Set 'defaultAgent' in config.json or use: sdd-forge enrich --agent <name>");
+    logger.log("Set 'defaultAgent' in config.json or use: sdd-forge docs enrich --agent <name>");
     return;
   }
 

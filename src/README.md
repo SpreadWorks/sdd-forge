@@ -68,7 +68,7 @@ sdd-forge <cmd> [args]
     │   ├─ docs.js           # 2. docs サブコマンドのルーティング
     │   │   └─ docs/commands/*.js   # 3. 実際のコマンド実装
     │   ├─ spec.js           # 2. spec サブコマンドのルーティング
-    │   │   └─ specs/commands/*.js  # 3. 実際のコマンド実装
+    │   │   └─ spec/commands/*.js   # 3. 実際のコマンド実装
     │   ├─ flow.js           # 2+3. 直接実行（ディスパッチャなし）
     │   └─ help.js           # 2+3. 直接実行
 ```

@@ -1,7 +1,7 @@
 import { describe, it, afterEach } from "node:test";
 import assert from "node:assert/strict";
 import { join } from "path";
-import { checkSpecText } from "../../../src/specs/commands/gate.js";
+import { checkSpecText } from "../../../src/spec/commands/gate.js";
 import { createTmpDir, removeTmpDir, writeFile } from "../../helpers/tmp-dir.js";
 import { execFileSync } from "child_process";
 
@@ -232,7 +232,7 @@ describe("gate CLI", () => {
     writeFile(tmp, "spec.md", specContent);
 
     const result = execFileSync("node", [
-      join(process.cwd(), "src/specs/commands/gate.js"),
+      join(process.cwd(), "src/spec/commands/gate.js"),
       "--spec", join(tmp, "spec.md"),
     ], { encoding: "utf8", env: { ...process.env, SDD_WORK_ROOT: tmp } });
     assert.match(result, /PASSED/);
@@ -244,7 +244,7 @@ describe("gate CLI", () => {
 
     try {
       execFileSync("node", [
-        join(process.cwd(), "src/specs/commands/gate.js"),
+        join(process.cwd(), "src/spec/commands/gate.js"),
         "--spec", join(tmp, "spec.md"),
       ], { encoding: "utf8", env: { ...process.env, SDD_WORK_ROOT: tmp } });
       assert.fail("should have exited non-zero");

@@ -6,7 +6,7 @@
  * Compares mtime of source vs target file; re-translates only when needed.
  *
  * Usage:
- *   sdd-forge translate [--dry-run] [--force] [--lang <lang>]
+ *   sdd-forge docs translate [--dry-run] [--force] [--lang <lang>]
  */
 
 import fs from "fs";

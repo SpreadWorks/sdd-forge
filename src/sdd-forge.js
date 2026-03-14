@@ -4,10 +4,12 @@
  *
  * sdd-forge CLI entry point.
  * Routes top-level subcommands to dedicated dispatchers:
- *   docs  → src/docs.js
- *   spec  → src/spec.js
- *   flow  → src/flow.js
- *   help  → src/help.js
+ *   docs    → src/docs.js
+ *   spec    → src/spec.js
+ *   flow    → src/flow.js
+ *   setup   → src/setup.js
+ *   upgrade → src/upgrade.js
+ *   help    → src/help.js
  */
 
 import path from "path";
@@ -31,51 +33,27 @@ if (!subCmd || subCmd === "-h" || subCmd === "--help") {
   process.exit(0);
 }
 
-/** Map of top-level subcommands to dispatcher scripts */
-const DISPATCHERS = {
-  // docs subcommands → docs.js dispatcher
-  build:    "docs",
-  scan:     "docs",
-  init:     "docs",
-  data:     "docs",
-  text:     "docs",
-  readme:   "docs",
-  forge:    "docs",
-  review:   "docs",
-  changelog: "docs",
-  agents:   "docs",
-  upgrade:  "docs",
-  translate: "docs",
-  snapshot: "docs",
-  setup:    "docs",
-  // spec subcommands → spec.js dispatcher
-  spec:     "spec",
-  gate:     "spec",
-  guardrail: "spec",
-  // flow → flow.js
-  flow:     "flow",
-  // presets → presets-cmd.js
-  presets:  "presets-cmd",
-  // help
-  help:     "help",
+/** Namespace dispatchers — receive subcommand + rest args */
+const NAMESPACE_DISPATCHERS = new Set(["docs", "spec", "flow"]);
+
+/** Independent commands — receive rest args directly */
+const INDEPENDENT = {
+  setup:   "setup",
+  upgrade: "upgrade",
+  presets: "presets-cmd",
+  help:    "help",
 };
 
-const dispatcherName = DISPATCHERS[subCmd];
-if (!dispatcherName) {
+if (NAMESPACE_DISPATCHERS.has(subCmd)) {
+  const dispatcherPath = path.join(PKG_DIR, `${subCmd}.js`);
+  process.argv = [process.argv[0], dispatcherPath, ...rest];
+  await import(dispatcherPath);
+} else if (INDEPENDENT[subCmd]) {
+  const scriptPath = path.join(PKG_DIR, `${INDEPENDENT[subCmd]}.js`);
+  process.argv = [process.argv[0], scriptPath, ...rest];
+  await import(scriptPath);
+} else {
   console.error(`sdd-forge: unknown command '${subCmd}'`);
   console.error("Run: sdd-forge help");
   process.exit(1);
 }
-
-const dispatcherPath = path.join(PKG_DIR, `${dispatcherName}.js`);
-
-// Dispatchers (docs, spec) receive subCmd to route internally.
-// Direct commands (flow, presets-cmd) receive only rest args — flow dispatches internally.
-const DIRECT_COMMANDS = new Set(["flow", "presets-cmd"]);
-if (DIRECT_COMMANDS.has(dispatcherName)) {
-  process.argv = [process.argv[0], dispatcherPath, ...rest];
-} else {
-  process.argv = [process.argv[0], dispatcherPath, subCmd, ...rest];
-}
-
-await import(dispatcherPath);

@@ -274,7 +274,7 @@ function main() {
         "next:",
         `1) cd ${absPath}`,
         `2) fill specs/${specDirName}/spec.md`,
-        `3) run: sdd-forge gate --spec specs/${specDirName}/spec.md`,
+        `3) run: sdd-forge spec gate --spec specs/${specDirName}/spec.md`,
         `4) start implementation`,
       ].join("\n"),
     );
@@ -289,7 +289,7 @@ function main() {
         "",
         "next:",
         `1) fill ${path.relative(root, specPath)}`,
-        `2) run: sdd-forge gate --spec ${path.relative(root, specPath)}`,
+        `2) run: sdd-forge spec gate --spec ${path.relative(root, specPath)}`,
         `3) start implementation`,
       ].join("\n"),
     );
@@ -306,7 +306,7 @@ function main() {
         "",
         "next:",
         `1) fill ${path.relative(root, specPath)}`,
-        `2) run: sdd-forge gate --spec ${path.relative(root, specPath)}`,
+        `2) run: sdd-forge spec gate --spec ${path.relative(root, specPath)}`,
         `3) start implementation`,
       ].join("\n"),
     );

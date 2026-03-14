@@ -20,11 +20,9 @@ const SCRIPTS = {
   text:       "docs/commands/text.js",
   readme:     "docs/commands/readme.js",
   forge:      "docs/commands/forge.js",
-  setup:      "docs/commands/setup.js",
   review:     "docs/commands/review.js",
   changelog:  "docs/commands/changelog.js",
   agents:     "docs/commands/agents.js",
-  upgrade:    "docs/commands/upgrade.js",
   translate:  "docs/commands/translate.js",
   snapshot:   "docs/commands/snapshot.js",
 };
@@ -33,6 +31,16 @@ const SCRIPTS = {
 const args = process.argv.slice(2);
 const subCmd = args[0];
 const rest = args.slice(1);
+
+// No subcommand → show available subcommands
+if (!subCmd || subCmd === "-h" || subCmd === "--help") {
+  const cmds = ["build", ...Object.keys(SCRIPTS)];
+  console.error("Usage: sdd-forge docs <command>\n");
+  console.error("Available commands:");
+  for (const c of cmds) console.error(`  ${c}`);
+  console.error("\nRun: sdd-forge docs <command> --help");
+  process.exit(subCmd ? 0 : 1);
+}
 
 // build: scan → init → data → text → readme → agents → translate pipeline
 if (subCmd === "build") {
@@ -124,7 +132,7 @@ if (subCmd === "build") {
       }
     } else {
       progress.log("[text] WARN: no defaultAgent configured, skipping text generation.");
-      progress.log("[text] Set 'defaultAgent' in config.json or use: sdd-forge text --agent <name>");
+      progress.log("[text] Set 'defaultAgent' in config.json or use: sdd-forge docs text --agent <name>");
     }
     progress.stepDone();
 

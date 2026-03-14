@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * sdd-forge/docs/commands/upgrade.js
+ * sdd-forge/upgrade.js
  *
  * Upgrade template-derived files (skills, AGENTS.md SDD section) to match
  * the currently installed sdd-forge version.
@@ -14,10 +14,10 @@
 
 import fs from "fs";
 import path from "path";
-import { runIfDirect } from "../../lib/entrypoint.js";
-import { PKG_DIR, repoRoot, parseArgs } from "../../lib/cli.js";
-import { loadConfig } from "../../lib/config.js";
-import { translate } from "../../lib/i18n.js";
+import { runIfDirect } from "./lib/entrypoint.js";
+import { PKG_DIR, repoRoot, parseArgs } from "./lib/cli.js";
+import { loadConfig } from "./lib/config.js";
+import { translate } from "./lib/i18n.js";
 
 
 // ---------------------------------------------------------------------------
@@ -130,7 +130,7 @@ async function main() {
   const cli = parseUpgradeArgs(process.argv.slice(2));
 
   if (cli.help) {
-    const { translate: tr } = await import("../../lib/i18n.js");
+    const { translate: tr } = await import("./lib/i18n.js");
     const tu = tr();
     const h = tu.raw("ui:help.cmdHelp.upgrade");
     const o = h.options;

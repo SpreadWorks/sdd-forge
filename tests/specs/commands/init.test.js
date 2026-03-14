@@ -5,7 +5,7 @@ import { join } from "path";
 import { execFileSync } from "child_process";
 import { createTmpDir, removeTmpDir } from "../../helpers/tmp-dir.js";
 
-const CMD = join(process.cwd(), "src/specs/commands/init.js");
+const CMD = join(process.cwd(), "src/spec/commands/init.js");
 
 describe("spec init CLI", () => {
   let tmp;

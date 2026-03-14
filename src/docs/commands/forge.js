@@ -43,7 +43,7 @@ import {
 const DEFAULT_TIMEOUT_MS = DEFAULT_AGENT_TIMEOUT * 1000;
 const DEFAULT_WAIT_LOG_SEC = 1;
 const DEFAULT_MAX_RUNS = 3;
-const DEFAULT_REVIEW_CMD = "sdd-forge review";
+const DEFAULT_REVIEW_CMD = "sdd-forge docs review";
 const DEFAULT_MODE = "local";
 
 function getTargetFiles(root, type, configChapters) {

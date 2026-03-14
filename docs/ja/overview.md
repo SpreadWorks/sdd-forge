@@ -1,10 +1,11 @@
 # 01. ツール概要とアーキテクチャ
 
-## 説明
+## 概要
 
 <!-- {{text: Write a 1-2 sentence overview of this chapter. Include the tool's purpose, the problem it solves, and its primary use cases.}} -->
 
-この章では、ソースコード解析からドキュメントを自動生成し、Spec-Driven Development（SDD）ワークフローを提供する CLI ツール `sdd-forge` を紹介します。ツールのコアとなる目的、3層ディスパッチアーキテクチャ、基本概念、そしてインストールから動作するドキュメントを得るまでの典型的な手順を解説します。
+この章では、ソースコードを解析してテンプレートディレクティブシステムを通じて構造化されたマークダウンを生成することでプロジェクトドキュメントを自動化する CLI ツール `sdd-forge` について説明します。また、実装を記述された仕様に沿わせるためにツールが提供する Spec-Driven Development（SDD）ワークフローについても解説します。
+
 <!-- {{/text}} -->
 
 ## 内容
@@ -13,11 +14,12 @@
 
 <!-- {{text: Describe the problem this CLI tool solves and its target users. Derive the purpose from package.json and README.}} -->
 
-ソフトウェアプロジェクトでは、コードの進化とともにドキュメントが実装と乖離していく問題が頻繁に発生します。一度書かれたドキュメントは、その後の変更に追いつけず陳腐化してしまいます。`sdd-forge` は、ソースファイルの静的解析から構造化されたドキュメントを直接生成することで、この問題を解決します。ドキュメントは記憶や推測ではなく、実際の実装に基づいた状態を維持し続けます。
+進化し続けるコードベースと並行して正確な技術ドキュメントを維持することは、開発チームにとって継続的な負担です。手書きで作成されたドキュメントは実際のソースからすぐに乖離し、新しい貢献者のオンボーディングにはプロジェクトのコンテキストを再構築するための繰り返しの手動作業が必要になります。
 
-このツールは、非trivialなコードベースを管理する開発者やチームを対象としています。特に CakePHP、Laravel、Symfony などのフレームワーク上に構築された PHP Web アプリケーションで、アーキテクチャドキュメントを最新の状態に保つことが多大な手動作業を伴う場合に有効です。コントローラー、モデル、エンティティ、マイグレーション、その他のソースアーティファクトをスキャンすることで、`sdd-forge` は既存のコードを説明する手間なく、正確な Markdown ドキュメントを生成します。
+`sdd-forge` は、ドキュメントを生成された成果物として扱うことでこの問題に対処します。プロジェクトのソースファイル（コントローラー、モデル、エンティティ、マイグレーションなど）をスキャンして構造化メタデータを抽出し、テンプレートディレクティブパイプラインを通じて事前定義されたマークダウン章にそのメタデータを描画します。各情報の配置場所を一度だけ定義すれば、あとはツールが実行のたびに内容を自動的に埋めます。
 
-ドキュメント生成に加えて、`sdd-forge` は Spec-Driven Development の規律を強制します。新しい機能追加や修正はすべて、機械的に検証可能な仕様から始まり、実装開始前にゲートチェックを通過する必要があります。これにより、要件からマージされたコードまでのトレーサブルなパスが生まれ、曖昧さや想定外のスコープ変更を減らします。
+このツールは、手動メンテナンスなしに生きたドキュメントを求める PHP Web アプリケーション（Symfony、CakePHP、Laravel）や Node.js CLI プロジェクトに携わるバックエンド開発者やテックリードを対象としています。SDD ワークフロー層は、実装開始前に仕様レビューゲートを強制したいチームをさらに支援します。
+
 <!-- {{/text}} -->
 
 ### アーキテクチャ概要
@@ -26,96 +28,84 @@
 
 ```mermaid
 flowchart TD
-    CLI["sdd-forge.js\n(CLIエントリポイント)"]
+    Entry["sdd-forge.js\n(CLI エントリポイント)"]
 
-    CLI --> DOCS["docs.js\n(docsディスパッチャー)"]
-    CLI --> SPEC["spec.js\n(specディスパッチャー)"]
-    CLI --> FLOW["flow.js\n(SDDフロー — 直接)"]
-    CLI --> PRESETS["presets-cmd.js\n(presetsリスト)"]
+    Entry --> DocsDispatcher["docs.js\n(ディスパッチャー)"]
+    Entry --> SpecDispatcher["spec.js\n(ディスパッチャー)"]
+    Entry --> FlowDirect["flow.js\n(直接コマンド)"]
+    Entry --> PresetsDirect["presets-cmd.js\n(直接コマンド)"]
 
-    DOCS --> SCAN["scan\nソースファイル → analysis.json"]
-    DOCS --> ENRICH["enrich\nAIによるanalysis拡充"]
-    DOCS --> INIT["init\nテンプレート → docs/"]
-    DOCS --> DATA["data\n{{data}}ディレクティブ解決"]
-    DOCS --> TEXT["text\nAIによる{{text}}ディレクティブ解決"]
-    DOCS --> FORGE["forge\nドキュメントの反復改善"]
-    DOCS --> REVIEW["review\nドキュメント品質チェック"]
-    DOCS --> README["readme\nREADME.md生成"]
-    DOCS --> AGENTS["agents\nAGENTS.md生成"]
-    DOCS --> CHANGELOG["changelog\nchange_log.md生成"]
-    DOCS --> SNAPSHOT["snapshot\nリグレッション検出"]
+    DocsDispatcher --> Build["build\nパイプライン"]
+    DocsDispatcher --> Individual["個別コマンド\nscan / enrich / init / data / text\nforge / review / readme / agents\nchangelog / translate / snapshot\nsetup / upgrade / default"]
 
-    SPEC --> SPEC_INIT["spec\nspec.md + ブランチ作成"]
-    SPEC --> GATE["gate\n事前/事後ゲートチェック"]
+    Build --> Scan["scan\n(ソース → analysis.json)"]
+    Scan --> Enrich["enrich\n(AI: エントリごとに役割・概要を付与)"]
+    Enrich --> Init["init\n(テンプレートマージ)"]
+    Init --> Data["data\n({{data}} ディレクティブ → テーブル)"]
+    Data --> Text["text\n({{text}} ディレクティブ → AI 文章)"]
+    Text --> Readme["readme\n(README.md 生成)"]
+    Readme --> Agents["agents\n(AGENTS.md 生成)"]
 
-    SRC["ソースファイル\n(PHP / JS / etc.)"] -->|sdd-forge scan| ANALYSIS[".sdd-forge/output/\nanalysis.json"]
-    ANALYSIS --> DATA
-    INIT -->|docs/スケルトン| DATA
-    DATA -->|解決済みテーブル| TEXT
-    TEXT -->|完成ドキュメント| FORGE
-    FORGE -->|改善済みドキュメント| REVIEW
-    REVIEW -->|PASS| OUT["docs/ — 生きたドキュメント"]
+    SpecDispatcher --> SpecInit["spec\n(ブランチ + spec.md)"]
+    SpecDispatcher --> Gate["gate\n(実装前後チェック)"]
+
+    FlowDirect --> SddFlow["SDD 自動化\n(spec → gate → build)"]
 ```
+
 <!-- {{/text}} -->
 
 ### 主要概念
 
 <!-- {{text: Explain the key concepts and terminology needed to understand this tool in table format. Extract the main concepts from source code.}} -->
 
+以下の表は、このツールとそのドキュメント全体で使用されるコアコンセプトを定義します。
+
 | 概念 | 説明 |
 |---|---|
-| `analysis.json` | `sdd-forge scan` が生成する中心的なアーティファクト。ソースファイルから抽出した構造化データ（クラス、メソッド、リレーション、カラム、ファイルメタデータ）を含み、すべての後続コマンドによって使用される。 |
-| `{{data}}` ディレクティブ | `sdd-forge data` によって解決されるテンプレートのプレースホルダー。指定された DataSource メソッド（例: `controllers.list(...)`）を呼び出し、`analysis.json` から生成された Markdown テーブルでディレクティブブロックを置き換える。 |
-| `{{text}}` ディレクティブ | `sdd-forge text` によって解決されるテンプレートのプレースホルダー。AI エージェントが周囲のコンテキストと解析データを読み取り、説明文でブロックを埋める。ディレクティブの枠は再生成をまたいで保持され、本文の内容のみが置き換えられる。 |
-| DataSource | `scan()` メソッド（ソースファイルから構造化データを抽出）と、そのデータを Markdown 出力としてフォーマットする解決メソッドを組み合わせたクラス。各プリセットは対象フレームワークの規約に合わせた DataSource を提供する。 |
-| プリセット | DataSource、ドキュメント章テンプレート、および特定のフレームワークやプロジェクトタイプ（例: `node-cli`、`symfony`、`cakephp2`）を対象とした `preset.json` マニフェストで構成される自己完結型バンドル。プリセットは実行時に自動的に探索される。 |
-| `docs/` | 生成されたドキュメントのディレクトリ。章構成はプリセットの `chapters` 配列で定義され、`data` および `text` の解決パスを通じて内容が埋められる。 |
-| `spec.md` | `sdd-forge spec --title` によって作成される構造化仕様ファイル。SDD ワークフローを駆動し、実装開始前と完了後の両方で `sdd-forge gate` によって検証される。 |
-| ゲートチェック | 仕様が完成しており、未解決の疑問点がなく、事後実装モードでは実際の変更が記載された要件と一致していることを確認する検証ステップ（`sdd-forge gate`）。事前ゲートを通過するまで実装はブロックされる。 |
-| Forge | 反復的なドキュメント改善ループ（`sdd-forge forge`）。AI エージェントが現在の `docs/` コンテンツとソースを比較し、精度・完全性・一貫性を向上させるためにセクションを書き直す。 |
-| SDD フロー | このツールが強制するエンドツーエンドの Spec-Driven Development プロセス: `spec → gate → implement → forge → review`。ガイド付き実行のために `/sdd-flow-start` および `/sdd-flow-close` スキルによってサポートされる。 |
+| **ディレクティブ** | マークダウンテンプレートに埋め込まれたマーカー。`{{data: source.method("Labels")}}` または `{{text: instruction}}` の形式をとります。ビルドパイプラインは、マーカー行自体を保持しながら、各ディレクティブの内容を生成された出力に置き換えます。 |
+| **DataSource** | 特定カテゴリのソースファイル（コントローラー、エンティティなど）をスキャンし、`{{data}}` ディレクティブ用のマークダウンテーブルを返す resolve メソッドを公開する JavaScript クラス。 |
+| **プリセット** | 特定のプロジェクトタイプ向けに DataSource 定義、章テンプレート、スキャンルールをまとめた名前付き設定バンドル（例: `symfony`、`node-cli`、`cakephp2`）。プリセットは `preset.json` を通じて自動探索されます。 |
+| **analysis.json** | `sdd-forge scan` が生成する中間 JSON ファイル。抽出されたすべてのソースメタデータを格納し、後続のすべてのパイプラインステージへの単一入力として機能します。 |
+| **enrich** | AI 支援によるパイプラインステージ。`analysis.json` の各エントリに役割、概要、章分類を付与し、下流での `{{text}}` 生成をより高度に行えるようにします。 |
+| **章** | `docs/` 内の 1 つのドキュメントセクションに対応する単一のマークダウンファイル。章の順序は `preset.json` の `chapters` 配列で定義され、`config.json` でプロジェクトごとに上書きできます。 |
+| **SDD（Spec-Driven Development）** | 実装開始前に機能仕様を作成してゲートチェックでレビューする組み込みワークフロー。コードが記述された仕様と一致していることを保証します。 |
+| **flow-state** | 現在の SDD ワークフローステップを追跡する永続化状態ファイル（`.sdd-forge/flow-state.json`）。`flow` コマンドがシェルセッションをまたいで再開できるようにします。 |
+
 <!-- {{/text}} -->
 
 ### 典型的な使用フロー
 
 <!-- {{text: Describe the typical steps from installation to first output in step format. Derive the steps from help output and command definitions in the source code.}} -->
 
-**ステップ 1 — パッケージのインストール**
+以下のステップは、インストールから完全なドキュメントセット生成までの流れを説明します。
 
-```bash
-npm install -g sdd-forge
-```
+1. **パッケージをグローバルにインストールする。**
+   ```
+   npm install -g sdd-forge
+   ```
 
-**ステップ 2 — プロジェクトの登録**
+2. **プロジェクトルートでセットアップを実行する。** `.sdd-forge/config.json` を初期化し、プロジェクトタイプに適したプリセットを選択して、`docs/` テンプレート構造と `AGENTS.md` を作成します。
+   ```
+   sdd-forge setup
+   ```
 
-プロジェクトルートから `sdd-forge setup` を実行します。これにより `.sdd-forge/config.json` が作成され、フレームワークに適したプリセットが選択され、AI エージェントにプロジェクトコンテキストを提供する `AGENTS.md` が生成されます。
+3. **ソースコードをスキャンする。** スキャナーがプロジェクトファイルを走査してメタデータ（クラス、ルート、カラム、リレーションなど）を抽出し、結果を `.sdd-forge/output/analysis.json` に書き出します。
+   ```
+   sdd-forge scan
+   ```
 
-**ステップ 3 — フルビルドパイプラインの実行**
+4. **フルビルドパイプラインを実行する。** `scan → enrich → init → data → text → readme → agents` を順番に実行し、すべての章ファイルにわたる `{{data}}` および `{{text}}` ディレクティブをすべて埋めます。
+   ```
+   sdd-forge build
+   ```
 
-```bash
-sdd-forge build
-```
+5. **生成されたドキュメントを確認する。** マークダウンファイルは `docs/` ディレクトリに書き出されます。ディレクティブブロック内の内容はビルドのたびに置き換えられますが、ディレクティブブロック*外*に記述したテキストは保持されます。
 
-`scan → enrich → init → data → text → readme → agents` の完全なパイプラインを順番に実行し、初回実行で `docs/` ディレクトリに内容を完全に生成します。
+6. *（任意）* **ドキュメントを翻訳する。** 多言語出力が設定されている場合は、次のコマンドを実行します。
+   ```
+   sdd-forge translate
+   ```
 
-**ステップ 4 — 生成されたドキュメントのレビュー**
+7. *（任意）* **新機能に SDD ワークフローを使用する。** 機能や修正を開始する際は、`sdd-forge flow --request "<説明>"` を使用して仕様ブランチを作成し、仕様を記述してゲートチェックを通過し、実装後にクロージングゲートで完了させます。
 
-`docs/` ディレクトリを開き、生成された Markdown の各章を確認します。`sdd-forge review` を実行して自動品質チェックを行い、改善が必要なセクションを特定します。
-
-**ステップ 5 — forge による改善**
-
-```bash
-sdd-forge forge --prompt "Improve the database schema overview"
-```
-
-`sdd-forge forge` を使用して特定のセクションを反復的に改善し、すべてのチェックが通過するまで `sdd-forge review` を再実行します。
-
-**ステップ 6 — SDD ワークフローで新機能を開始する**
-
-```bash
-sdd-forge spec --title "add-export-command"
-sdd-forge gate --spec specs/NNN-add-export-command/spec.md
-```
-
-コードを書く前に仕様を作成し、事前ゲートチェックを通過してから機能を実装し、`sdd-forge forge` と `sdd-forge review` でドキュメントを最新の状態に保ちながらサイクルを完了させます。
 <!-- {{/text}} -->

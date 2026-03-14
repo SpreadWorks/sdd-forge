@@ -5,7 +5,7 @@ import { join } from "path";
 import { execFileSync, spawnSync } from "child_process";
 import { createTmpDir, removeTmpDir, writeJson } from "../../helpers/tmp-dir.js";
 
-const CMD = join(process.cwd(), "src/docs/commands/setup.js");
+const CMD = join(process.cwd(), "src/setup.js");
 
 /** Non-interactive CLI args that satisfy hasAllRequired */
 const NI_ARGS = [
