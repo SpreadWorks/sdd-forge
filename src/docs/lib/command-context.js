@@ -36,7 +36,7 @@ import { resolveChaptersOrder } from "./template-merger.js";
  * @param {string} [overrides.lang] - 言語
  * @param {string} [overrides.docsDir] - docs ディレクトリ
  * @param {string} [overrides.type] - プロジェクトタイプ
- * @param {string} [overrides.agent] - エージェント名
+ * @param {string} [overrides.commandId] - COMMAND_ID for per-command agent resolution
  * @returns {CommandContext}
  */
 export function resolveCommandContext(cli, overrides) {
@@ -63,8 +63,8 @@ export function resolveCommandContext(cli, overrides) {
       ? path.resolve(root, cli.docsDir)
       : path.join(root, "docs");
 
-  const agentName = o.agent || cli?.agent || undefined;
-  const agent = resolveAgent(config, agentName);
+  const commandId = o.commandId || undefined;
+  const agent = resolveAgent(config, commandId);
 
   const t = translate();
 
@@ -77,6 +77,7 @@ export function resolveCommandContext(cli, overrides) {
     type,
     docsDir,
     agent,
+    commandId,
     t,
   };
 }

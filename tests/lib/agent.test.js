@@ -51,15 +51,18 @@ describe("callAgentAsync", () => {
 });
 
 describe("resolveAgent", () => {
-  it("returns agent config by name", () => {
+  it("resolves agent via commands config", () => {
     const cfg = {
-      providers: { claude: { command: "claude", args: [] } },
+      defaultAgent: "claude",
+      providers: { claude: { command: "claude", args: ["-p", "{{PROMPT}}"], profiles: { default: [], opus: ["--model", "opus"] } } },
+      commands: { "docs.review": { agent: "claude", profile: "opus" } },
     };
-    const result = resolveAgent(cfg, "claude");
-    assert.deepEqual(result, { command: "claude", args: [] });
+    const result = resolveAgent(cfg, "docs.review");
+    assert.equal(result.command, "claude");
+    assert.deepEqual(result.args, ["--model", "opus", "-p", "{{PROMPT}}"]);
   });
 
-  it("uses defaultAgent when name not provided", () => {
+  it("uses defaultAgent when commandId not provided", () => {
     const cfg = {
       defaultAgent: "claude",
       providers: { claude: { command: "claude", args: [] } },
@@ -71,6 +74,16 @@ describe("resolveAgent", () => {
   it("returns null when no agent configured", () => {
     const result = resolveAgent({});
     assert.equal(result, null);
+  });
+
+  it("falls back to parent command", () => {
+    const cfg = {
+      defaultAgent: "claude",
+      providers: { claude: { command: "claude", args: ["-p", "{{PROMPT}}"], profiles: { default: [], sonnet: ["--model", "sonnet"] } } },
+      commands: { "docs": { agent: "claude", profile: "sonnet" } },
+    };
+    const result = resolveAgent(cfg, "docs.forge");
+    assert.deepEqual(result.args, ["--model", "sonnet", "-p", "{{PROMPT}}"]);
   });
 
   it("returns null when provider not found", () => {

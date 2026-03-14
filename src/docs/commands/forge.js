@@ -81,13 +81,12 @@ function estimateRelevantFiles(specText, allFiles) {
 function parseCliOptions(argv) {
   const opts = parseArgs(argv, {
     flags: ["--verbose", "--dry-run"],
-    options: ["--prompt", "--prompt-file", "--spec", "--max-runs", "--review-cmd", "--agent", "--mode"],
+    options: ["--prompt", "--prompt-file", "--spec", "--max-runs", "--review-cmd", "--mode"],
     aliases: { "-v": "--verbose" },
     defaults: {
       prompt: "",
       promptFile: "",
       spec: "",
-      agent: "",
       verbose: false,
       dryRun: false,
       maxRuns: String(DEFAULT_MAX_RUNS),
@@ -116,7 +115,7 @@ function printHelp() {
     [
       h.usage, "", "Options:",
       `  ${o.prompt}`, `  ${o.promptFile}`, `  ${o.spec}`, `  ${o.maxRuns}`,
-      `  ${o.reviewCmd}`, `  ${o.agent}`, `  ${o.mode}`, `  ${o.dryRun}`,
+      `  ${o.reviewCmd}`, `  ${o.mode}`, `  ${o.dryRun}`,
       `  ${o.verbose}`, `  ${o.help}`,
       "", "Per-file mode:", `  ${h.perFileNote}`, "",
     ].join("\n")
@@ -223,7 +222,7 @@ async function main() {
   const type = resolveType(config.type || "");
   const lang = config.output.default;
   const t = translate();
-  const agent = resolveAgent(config, cli.agent);
+  const agent = resolveAgent(config, "docs.forge");
   const mode = cli.mode || DEFAULT_MODE;
   const timeoutMs = config.limits?.agentTimeout ? Number(config.limits.agentTimeout) * 1000 : undefined;
 
@@ -249,7 +248,7 @@ async function main() {
       console.log(`[forge] populated placeholders in: ${populateResult.files.join(", ")}`);
     }
     if (agent) {
-      const tfResult = await textFillFromAnalysis(root, analysisData, cli.agent, undefined);
+      const tfResult = await textFillFromAnalysis(root, analysisData, "docs.text", undefined);
       if (tfResult.filled > 0) {
         console.log(`[forge] {{text}}: ${tfResult.filled} directives resolved`);
       }

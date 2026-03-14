@@ -432,7 +432,6 @@ async function main() {
       const agentChoice = await askChoice(rl, t("setup.questions.agent"), [
         { label: agentChoices.claude, value: "claude" },
         { label: agentChoices.codex, value: "codex" },
-        { label: agentChoices.skip, value: "" },
       ], t);
       defaultAgent = agentChoice;
     }
@@ -477,24 +476,34 @@ async function main() {
 
   if (defaultAgent) {
     config.defaultAgent = defaultAgent;
-    if (defaultAgent === "claude") {
-      config.providers = {
-        claude: {
-          name: "claude-cli",
-          command: "claude",
-          args: ["--model", "sonnet", "-p", "{{PROMPT}}"],
-          systemPromptFlag: "--system-prompt",
+    config.providers = {
+      claude: {
+        command: "claude",
+        args: ["-p", "{{PROMPT}}"],
+        systemPromptFlag: "--system-prompt",
+        profiles: {
+          default: [],
+          opus: ["--model", "opus"],
+          sonnet: ["--model", "sonnet"],
         },
-      };
-    } else if (defaultAgent === "codex") {
-      config.providers = {
-        codex: {
-          name: "codex-cli",
-          command: "codex",
-          args: ["exec", "--full-auto", "-C", ".tmp", "{{PROMPT}}"],
+      },
+      codex: {
+        command: "codex",
+        args: ["exec", "--full-auto", "-C", ".tmp", "{{PROMPT}}"],
+        profiles: {
+          default: [],
+          o3: ["--model", "o3"],
         },
-      };
-    }
+      },
+    };
+    config.commands = {
+      "docs": { agent: defaultAgent, profile: "default" },
+      "docs.review": { agent: defaultAgent, profile: "default" },
+      "docs.forge": { agent: defaultAgent, profile: "default" },
+      "spec": { agent: defaultAgent, profile: "default" },
+      "spec.gate": { agent: defaultAgent, profile: "default" },
+      "flow": { agent: defaultAgent, profile: "default" },
+    };
   }
 
   // 3. Validate

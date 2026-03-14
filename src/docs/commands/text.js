@@ -417,11 +417,11 @@ function allTextDirectivesFilled(text) {
  * @param {boolean} [opts.force] - true の場合、埋まっているディレクティブも再処理する
  * @returns {{ filled: number, skipped: number, files: string[] }}
  */
-export async function textFillFromAnalysis(root, analysis, agentName, srcRoot) {
+export async function textFillFromAnalysis(root, analysis, commandId, srcRoot) {
   if (!analysis) return { filled: 0, skipped: 0, files: [] };
 
   const cfg = loadConfig(root);
-  const agent = loadAgentConfig(cfg, agentName);
+  const agent = loadAgentConfig(cfg, commandId || "docs.text");
   const preamblePatterns = loadPreamblePatterns(cfg);
   const documentStyle = cfg.documentStyle;
   const lang = cfg.output.default;
@@ -505,8 +505,8 @@ async function main(ctx) {
   if (!ctx) {
     const cli = parseArgs(process.argv.slice(2), {
       flags: ["--dry-run", "--per-directive"],
-      options: ["--agent", "--timeout", "--id", "--lang", "--docs-dir"],
-      defaults: { agent: "", dryRun: false, timeout: String(DEFAULT_TIMEOUT_MS), perDirective: false, id: "", lang: "", docsDir: "" },
+      options: ["--timeout", "--id", "--lang", "--docs-dir"],
+      defaults: { dryRun: false, timeout: String(DEFAULT_TIMEOUT_MS), perDirective: false, id: "", lang: "", docsDir: "" },
     });
     cli.timeout = Number(cli.timeout) || DEFAULT_TIMEOUT_MS;
     if (cli.help) {
@@ -515,7 +515,6 @@ async function main(ctx) {
       const o = h.options;
       console.log([
         h.usage, "", "Options:",
-        `  ${t("ui:help.cmdHelp.text.options.agent")}`,
         `  ${o.id}`, `  ${o.dryRun}`, `  ${o.perDirective}`,
         `  ${t("ui:help.cmdHelp.text.options.timeout", { default: DEFAULT_TIMEOUT_MS })}`,
         `  ${o.help}`,
@@ -523,16 +522,11 @@ async function main(ctx) {
       return;
     }
 
-    if (!cli.agent) {
-      throw new Error("--agent is required. Use --agent claude or --agent codex.");
-    }
-
-    ctx = resolveCommandContext(cli);
+    ctx = resolveCommandContext(cli, { commandId: "docs.text" });
     ctx.dryRun = cli.dryRun;
     ctx.perDirective = cli.perDirective;
     ctx.timeout = cli.timeout;
     ctx.id = cli.id;
-    ctx.agentName = cli.agent;
   }
 
   const { root, srcRoot, config: cfg, docsDir } = ctx;
@@ -541,7 +535,7 @@ async function main(ctx) {
   if (Object.keys(analysis).length === 0) {
     logger.log("WARN: analysis.json not found. Proceeding with empty analysis context.");
   }
-  const agent = ctx.agentName ? loadAgentConfig(cfg, ctx.agentName) : loadAgentConfig(cfg);
+  const agent = loadAgentConfig(cfg, ctx.commandId || "docs.text");
 
   ensureAgentWorkDir(agent, root);
 

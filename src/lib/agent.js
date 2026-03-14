@@ -186,23 +186,20 @@ export function callAgentAsync(agent, prompt, timeoutMs, cwd, options) {
 }
 
 /**
- * Load agent config from SddConfig by provider name.
+ * Load agent config from SddConfig. Throws on failure.
+ * Supports COMMAND_ID for per-command resolution (same as resolveAgent).
  *
- * @param {Object} cfg       - SddConfig object
- * @param {string} [agentName] - Agent name override (defaults to cfg.defaultAgent)
- * @returns {Object} Agent config object
+ * @param {Object} cfg         - SddConfig object
+ * @param {string} [commandId] - Dot-separated command ID (e.g. "docs.review")
+ * @returns {Object} Agent config object with merged args
  * @throws {Error} If no agent is configured or provider is unknown
  */
-export function loadAgentConfig(cfg, agentName) {
-  const providerKey = agentName || cfg.defaultAgent;
-  if (!providerKey) {
+export function loadAgentConfig(cfg, commandId) {
+  const agent = resolveAgent(cfg, commandId);
+  if (!agent) {
     throw new Error("No default agent configured. Set 'defaultAgent' in config.json or run 'sdd-forge setup'.");
   }
-  const provider = cfg.providers?.[providerKey];
-  if (!provider) {
-    throw new Error(`Unknown agent provider: ${providerKey}. Available: ${Object.keys(cfg.providers || {}).join(", ")}`);
-  }
-  return provider;
+  return agent;
 }
 
 /**
@@ -226,16 +223,75 @@ export function ensureAgentWorkDir(agent, projectRoot) {
 }
 
 /**
+ * Resolve command-specific agent settings from commands config.
+ * Lookup order: commands["docs.review"] → commands["docs"] → null.
+ *
+ * @param {Object} commands - cfg.commands object
+ * @param {string} commandId - Dot-separated command ID (e.g. "docs.review")
+ * @returns {{ agent?: string, profile?: string }|null}
+ */
+function resolveCommandSettings(commands, commandId) {
+  if (!commands || !commandId) return null;
+
+  // Exact match
+  if (commands[commandId]) return commands[commandId];
+
+  // Parent fallback: "docs.review" → "docs"
+  const dotIdx = commandId.lastIndexOf(".");
+  if (dotIdx > 0) {
+    const parent = commandId.slice(0, dotIdx);
+    if (commands[parent]) return commands[parent];
+  }
+
+  return null;
+}
+
+/**
+ * Build final args by concatenating profile args + provider base args.
+ *
+ * @param {Object} provider - Provider config ({ command, args, profiles? })
+ * @param {string} [profileName] - Profile name to look up
+ * @returns {string[]} Merged args array
+ */
+function mergeProfileArgs(provider, profileName) {
+  const baseArgs = Array.isArray(provider.args) ? [...provider.args] : [];
+  if (!profileName || !provider.profiles) return baseArgs;
+
+  const profileArgs = provider.profiles[profileName];
+  if (!Array.isArray(profileArgs) || profileArgs.length === 0) return baseArgs;
+
+  return [...profileArgs, ...baseArgs];
+}
+
+/**
  * Resolve agent config from SddConfig.
  *
- * @param {Object} cfg       - SddConfig object
- * @param {string} [agentName] - Agent name override (defaults to cfg.defaultAgent)
- * @returns {Object|null} Agent config object, or null if not configured
+ * When commandId is provided, resolves via commands config with fallback:
+ *   commands["docs.review"] → commands["docs"] → providers[defaultAgent]
+ *
+ * @param {Object} cfg         - SddConfig object
+ * @param {string} [commandId] - Dot-separated command ID (e.g. "docs.review")
+ * @returns {Object|null} Agent config object with merged args, or null if not configured
  */
-export function resolveAgent(cfg, agentName) {
-  const key = agentName || cfg.defaultAgent;
-  if (!key) return null;
-  return cfg.providers?.[key] || null;
+export function resolveAgent(cfg, commandId) {
+  const cmdSettings = resolveCommandSettings(cfg.commands, commandId);
+
+  const agentKey = cmdSettings?.agent || cfg.defaultAgent;
+  if (!agentKey) return null;
+
+  const provider = cfg.providers?.[agentKey];
+  if (!provider) return null;
+
+  // No profiles support in provider → return as-is (backward compat)
+  if (!cmdSettings && !provider.profiles) return provider;
+
+  const profileName = cmdSettings?.profile || "default";
+  const mergedArgs = mergeProfileArgs(provider, profileName);
+
+  return {
+    ...provider,
+    args: mergedArgs,
+  };
 }
 
 // ---------------------------------------------------------------------------

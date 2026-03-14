@@ -60,8 +60,7 @@
       },
       "agent": {
         "claude": "claude",
-        "codex": "codex",
-        "skip": "スキップ（後で設定）"
+        "codex": "codex"
       }
     },
     "messages": {

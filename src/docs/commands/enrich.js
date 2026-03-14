@@ -309,21 +309,18 @@ async function main(ctx) {
   if (!ctx) {
     const cli = parseArgs(process.argv.slice(2), {
       flags: ["--stdout", "--dry-run"],
-      options: { "--agent": "agent" },
       defaults: { stdout: false, dryRun: false },
     });
     if (cli.help) {
       printHelp();
       return;
     }
-    ctx = resolveCommandContext(cli);
+    ctx = resolveCommandContext(cli, { commandId: "docs.enrich" });
     ctx.dryRun = cli.dryRun;
     ctx.stdout = cli.stdout;
-    ctx.agentName = cli.agent;
   }
 
   const { root, srcRoot, config, type } = ctx;
-  const agentName = ctx.agentName || config.defaultAgent;
 
   // Load analysis
   const analysis = loadFullAnalysis(root);
@@ -332,10 +329,10 @@ async function main(ctx) {
   }
 
   // Check for AI agent
-  const agent = resolveAgent(config, agentName);
+  const agent = resolveAgent(config, ctx.commandId || "docs.enrich");
   if (!agent) {
     logger.log("WARN: no agent configured, skipping enrich.");
-    logger.log("Set 'defaultAgent' in config.json or use: sdd-forge docs enrich --agent <name>");
+    logger.log("Set 'defaultAgent' in config.json.");
     return;
   }
 

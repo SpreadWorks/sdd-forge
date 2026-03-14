@@ -220,7 +220,7 @@ function checkGuardrail(root, specText, t) {
     return null;
   }
 
-  const agent = resolveAgent(config);
+  const agent = resolveAgent(config, "spec.gate");
   if (!agent) {
     console.error(t("messages:gate.guardrailNoAgent"));
     return null;

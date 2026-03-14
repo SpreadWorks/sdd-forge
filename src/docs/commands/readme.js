@@ -140,7 +140,7 @@ async function main(ctx) {
   if (textDirectives.length > 0 && !ctx.dryRun) {
     try {
       const cfg = loadConfig(root);
-      const agent = loadAgentConfig(cfg);
+      const agent = loadAgentConfig(cfg, "docs.readme");
       ensureAgentWorkDir(agent, root);
       const analysis = loadFullAnalysis(root) || {};
       const documentStyle = cfg.documentStyle;

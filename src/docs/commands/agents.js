@@ -179,7 +179,7 @@ async function main(ctx) {
 
   // AI refinement for PROJECT section
   if (projectContent) {
-    const agent = loadAgentConfig(config);
+    const agent = loadAgentConfig(config, "docs.agents");
 
     logger.log(t("messages:agents.refining"));
     const systemPrompt = buildAgentsSystemPrompt();

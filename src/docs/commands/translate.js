@@ -85,7 +85,7 @@ async function main(ctx) {
       return;
     }
 
-    ctx = resolveCommandContext(cli);
+    ctx = resolveCommandContext(cli, { commandId: "docs.translate" });
     ctx.dryRun = cli.dryRun;
     ctx.force = cli.force;
     ctx.targetLang = cli.lang;

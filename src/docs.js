@@ -93,10 +93,7 @@ if (subCmd === "build") {
   const { main: readmeMain } = await import(path.join(PKG_DIR, "docs/commands/readme.js"));
   const { main: agentsMain } = await import(path.join(PKG_DIR, "docs/commands/agents.js"));
 
-  // Resolve agent name for text step
-  let agentName = otherArgs.includes("--agent")
-    ? otherArgs[otherArgs.indexOf("--agent") + 1]
-    : baseCtx.config.defaultAgent;
+  const hasAgent = !!baseCtx.config.defaultAgent;
 
   try {
     // 1. scan
@@ -106,8 +103,8 @@ if (subCmd === "build") {
 
     // 2. enrich
     progress.start("enrich");
-    if (agentName) {
-      await enrichMain({ ...baseCtx, agentName });
+    if (hasAgent) {
+      await enrichMain({ ...baseCtx, commandId: "docs.enrich" });
     } else {
       progress.log("[enrich] WARN: no defaultAgent configured, skipping enrich.");
     }
@@ -125,14 +122,13 @@ if (subCmd === "build") {
 
     // 5. text
     progress.start("text");
-    if (agentName) {
-      const textResult = await textMain({ ...baseCtx, dryRun: isDryRun, agentName });
+    if (hasAgent) {
+      const textResult = await textMain({ ...baseCtx, dryRun: isDryRun, commandId: "docs.text" });
       if (textResult?.errors?.length > 0) {
         progress.log(`[text] WARN: ${textResult.errors.length} file(s) had errors. Pipeline continues but docs may be incomplete.`);
       }
     } else {
       progress.log("[text] WARN: no defaultAgent configured, skipping text generation.");
-      progress.log("[text] Set 'defaultAgent' in config.json or use: sdd-forge docs text --agent <name>");
     }
     progress.stepDone();
 
@@ -164,8 +160,8 @@ if (subCmd === "build") {
 
           await initMain({ ...langCtx, force: hasForce, dryRun: isDryRun });
           await dataMain({ ...langCtx, dryRun: isDryRun });
-          if (agentName) {
-            const langTextResult = await textMain({ ...langCtx, dryRun: isDryRun, agentName });
+          if (hasAgent) {
+            const langTextResult = await textMain({ ...langCtx, dryRun: isDryRun, commandId: "docs.text" });
             if (langTextResult?.errors?.length > 0) {
               progress.log(`[text] WARN: ${lang}: ${langTextResult.errors.length} file(s) had errors.`);
             }
