@@ -200,66 +200,41 @@ async function setupAgentsMd(rl, sourceDir, lang, t, nonInteractive) {
 }
 
 /**
- * Interactive CLAUDE.md symlink setup.
+ * Setup CLAUDE.md as an independent file (no symlink).
+ * If AGENTS.md exists and CLAUDE.md does not, copy AGENTS.md content to CLAUDE.md.
+ * If CLAUDE.md already exists, leave it as-is.
  *
- * @param {readline.Interface|null} rl
  * @param {string} sourceDir
  * @param {function} t
  * @param {boolean} nonInteractive
  */
-async function setupClaudeMdSymlink(rl, sourceDir, t, nonInteractive) {
+function setupClaudeMd(sourceDir, t, nonInteractive) {
   const claudePath = path.join(sourceDir, "CLAUDE.md");
   const agentsPath = path.join(sourceDir, "AGENTS.md");
 
-  // If CLAUDE.md exists as a real file (not symlink), offer to rename to AGENTS.md
+  // If CLAUDE.md is a symlink, replace with real file
   try {
     const stat = fs.lstatSync(claudePath);
-    if (stat.isFile() && !stat.isSymbolicLink()) {
-      // CLAUDE.md is a real file
-      if (!fs.existsSync(agentsPath)) {
-        // No AGENTS.md yet — rename CLAUDE.md → AGENTS.md, then symlink back
-        let rename = nonInteractive;
-        if (!nonInteractive && rl) {
-          const answer = await askChoice(rl, t("setup.questions.renameClaude"), [
-            { label: t.raw("setup.choices_claudemd").yes, value: "yes" },
-            { label: t.raw("setup.choices_claudemd").no, value: "no" },
-          ], t);
-          rename = answer === "yes";
-        }
-        if (rename) {
-          fs.renameSync(claudePath, agentsPath);
-          fs.symlinkSync("AGENTS.md", claudePath);
-          console.log(t("setup.messages.claudeRenamed"));
-          return;
-        }
-      }
-      // AGENTS.md already exists or user declined rename — skip
+    if (stat.isSymbolicLink()) {
+      const content = fs.readFileSync(claudePath, "utf8");
+      fs.unlinkSync(claudePath);
+      fs.writeFileSync(claudePath, content, "utf8");
+      console.log(t("setup.messages.claudeMdCreated"));
+      return;
+    }
+    if (stat.isFile()) {
+      // Already a real file — skip
       console.log(t("setup.messages.claudeMdExists"));
       return;
     }
   } catch (_) {
-    // path doesn't exist — proceed to create symlink
+    // path doesn't exist — proceed
   }
 
-  // Skip if AGENTS.md doesn't exist
-  if (!fs.existsSync(agentsPath)) return;
-
-  // If AGENTS.md exists and CLAUDE.md doesn't (or is broken symlink) → create symlink
-  try { fs.lstatSync(claudePath); fs.unlinkSync(claudePath); } catch (_) {}
-  let create = false;
-  if (nonInteractive) {
-    create = true;
-  } else if (rl) {
-    const choices = t.raw("setup.choices_claudemd");
-    const answer = await askChoice(rl, t("setup.questions.claudeMdSymlink"), [
-      { label: choices.yes, value: "yes" },
-      { label: choices.no, value: "no" },
-    ], t);
-    create = answer === "yes";
-  }
-
-  if (create) {
-    fs.symlinkSync("AGENTS.md", claudePath);
+  // If AGENTS.md exists, copy its content to CLAUDE.md
+  if (fs.existsSync(agentsPath)) {
+    const content = fs.readFileSync(agentsPath, "utf8");
+    fs.writeFileSync(claudePath, content, "utf8");
     console.log(t("setup.messages.claudeMdCreated"));
   }
 }
@@ -269,7 +244,7 @@ async function setupClaudeMdSymlink(rl, sourceDir, t, nonInteractive) {
 // ---------------------------------------------------------------------------
 
 /**
- * Deploy skill templates to .agents/skills/ and create symlinks in .claude/skills/.
+ * Deploy skill templates to .agents/skills/ and .claude/skills/ by direct copy.
  *
  * @param {string} workRoot - Work root directory
  * @param {function} t - i18n translation function
@@ -284,21 +259,17 @@ function setupSkills(workRoot, t) {
   );
 
   for (const name of skillNames) {
-    // Copy template to .agents/skills/<name>/SKILL.md
-    const destDir = path.join(agentsSkillsDir, name);
-    fs.mkdirSync(destDir, { recursive: true });
-    fs.copyFileSync(
-      path.join(templatesDir, name, "SKILL.md"),
-      path.join(destDir, "SKILL.md"),
-    );
+    const src = path.join(templatesDir, name, "SKILL.md");
 
-    // Create relative symlink in .claude/skills/<name>/SKILL.md
-    const linkDir = path.join(claudeSkillsDir, name);
-    fs.mkdirSync(linkDir, { recursive: true });
-    const link = path.join(linkDir, "SKILL.md");
-    const target = path.join("..", "..", "..", ".agents", "skills", name, "SKILL.md");
-    try { fs.unlinkSync(link); } catch (_) {}
-    fs.symlinkSync(target, link);
+    // Copy to .agents/skills/<name>/SKILL.md
+    const agentsDest = path.join(agentsSkillsDir, name);
+    fs.mkdirSync(agentsDest, { recursive: true });
+    fs.copyFileSync(src, path.join(agentsDest, "SKILL.md"));
+
+    // Copy to .claude/skills/<name>/SKILL.md
+    const claudeDest = path.join(claudeSkillsDir, name);
+    fs.mkdirSync(claudeDest, { recursive: true });
+    fs.copyFileSync(src, path.join(claudeDest, "SKILL.md"));
   }
 
   console.log(t("setup.messages.skillsDeployed"));
@@ -536,10 +507,11 @@ async function main() {
     console.log("[setup] DRY-RUN: would write the following files:");
     console.log(`  - ${path.join(workRoot, ".sdd-forge", "config.json")}`);
     console.log(`  - ${path.join(workRoot, "AGENTS.md")}`);
-    console.log(`  - ${path.join(workRoot, "CLAUDE.md")} (symlink)`);
+    console.log(`  - ${path.join(workRoot, "CLAUDE.md")}`);
     const skillTemplatesDir = path.join(PKG_DIR, "templates", "skills");
     for (const name of fs.readdirSync(skillTemplatesDir).filter(d => fs.existsSync(path.join(skillTemplatesDir, d, "SKILL.md")))) {
       console.log(`  - ${path.join(workRoot, ".agents", "skills", name, "SKILL.md")}`);
+      console.log(`  - ${path.join(workRoot, ".claude", "skills", name, "SKILL.md")}`);
     }
     console.log("\n[setup] DRY-RUN: config.json content:");
     console.log(JSON.stringify(config, null, 2));
@@ -564,8 +536,8 @@ async function main() {
   // 5. AGENTS.md setup
   await setupAgentsMd(rl, workRoot, operatingLang, t, hasAllRequired);
 
-  // 7. CLAUDE.md symlink
-  await setupClaudeMdSymlink(rl, workRoot, t, hasAllRequired);
+  // 7. CLAUDE.md (independent file)
+  setupClaudeMd(workRoot, t, hasAllRequired);
 
   // 8. Skills deployment
   setupSkills(workRoot, t);

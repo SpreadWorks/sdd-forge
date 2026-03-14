@@ -1,5 +1,5 @@
 ---
-name: sdd-flow-start
+name: sdd-forge.flow-start
 description: Run the SDD workflow for any feature or fix request. Use for spec creation, gate check, implementation, and finalization.
 ---
 

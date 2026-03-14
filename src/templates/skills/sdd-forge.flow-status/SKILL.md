@@ -1,5 +1,5 @@
 ---
-name: sdd-flow-status
+name: sdd-forge.flow-status
 description: Show the current SDD flow status including branch, worktree, step progress, requirements, and commit state.
 ---
 

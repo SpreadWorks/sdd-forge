@@ -1,5 +1,5 @@
 ---
-name: sdd-flow-close
+name: sdd-forge.flow-close
 description: Finalize the SDD workflow after implementation is complete. Use for documentation update, review, commit, merge, and cleanup.
 ---
 
