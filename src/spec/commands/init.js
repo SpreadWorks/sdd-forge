@@ -247,11 +247,17 @@ function main() {
 
   // Helper: write flow.json state
   function writeFlowState(extra) {
+    const steps = buildInitialSteps();
+    // Mark completed steps: spec init covers approach, branch, spec
+    for (const id of ["approach", "branch", "spec"]) {
+      const step = steps.find((s) => s.id === id);
+      if (step) step.status = "done";
+    }
     const state = {
       spec: `specs/${specDirName}/spec.md`,
       baseBranch: opts.base,
       featureBranch: branchName,
-      steps: buildInitialSteps(),
+      steps,
       requirements: [],
       ...extra,
     };

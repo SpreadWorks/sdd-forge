@@ -13,6 +13,7 @@ import { translate } from "../../lib/i18n.js";
 import { loadConfig, sddDir } from "../../lib/config.js";
 import { callAgent, resolveAgent } from "../../lib/agent.js";
 import { parseGuardrailArticles } from "./guardrail.js";
+import { loadFlowState, updateStepStatus } from "../../lib/flow-state.js";
 
 /**
  * Detect which section a line belongs to by scanning headings above it.
@@ -294,6 +295,12 @@ function main() {
       console.error(t("messages:gate.guardrailPassed"));
     }
   }
+
+  // Update flow state if active
+  try {
+    const state = loadFlowState(root);
+    if (state) updateStepStatus(root, "gate", "done");
+  } catch (_) {}
 
   console.log(t("messages:gate.passed"));
 }
