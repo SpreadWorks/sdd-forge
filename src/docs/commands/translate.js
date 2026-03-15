@@ -14,9 +14,11 @@ import path from "path";
 import { runIfDirect } from "../../lib/entrypoint.js";
 import { parseArgs } from "../../lib/cli.js";
 import { resolveOutputConfig } from "../../lib/types.js";
+import { resolveConcurrency } from "../../lib/config.js";
 import { callAgentAsync, DEFAULT_AGENT_TIMEOUT } from "../../lib/agent.js";
 import { createLogger } from "../../lib/progress.js";
 import { resolveCommandContext, getChapterFiles, stripResponsePreamble } from "../lib/command-context.js";
+import { mapWithConcurrency } from "../lib/concurrency.js";
 
 const logger = createLogger("translate");
 const DEFAULT_TIMEOUT_MS = DEFAULT_AGENT_TIMEOUT * 1000;
@@ -91,6 +93,39 @@ function needsTranslation(sourcePath, targetPath) {
   return srcMtime > tgtMtime;
 }
 
+/**
+ * Build a flat list of translation tasks from lang × files.
+ * Filters out up-to-date files (unless force is true).
+ *
+ * @param {Object} opts
+ * @param {string[]} opts.sourceFiles - Chapter file names
+ * @param {string[]} opts.targetLangs - Target language codes
+ * @param {string} opts.docsDir - Docs directory path
+ * @param {string} opts.readmePath - README.md path
+ * @param {boolean} opts.hasReadme - Whether README.md exists
+ * @param {boolean} opts.force - Force re-translation
+ * @returns {Array<{lang: string, sourcePath: string, targetPath: string, label: string}>}
+ */
+function buildTranslationTasks({ sourceFiles, targetLangs, docsDir, readmePath, hasReadme, force }) {
+  const tasks = [];
+  for (const lang of targetLangs) {
+    const langDir = path.join(docsDir, lang);
+    for (const file of sourceFiles) {
+      const sourcePath = path.join(docsDir, file);
+      const targetPath = path.join(langDir, file);
+      if (!force && !needsTranslation(sourcePath, targetPath)) continue;
+      tasks.push({ lang, sourcePath, targetPath, label: `${file} → ${lang}/${file}` });
+    }
+    if (hasReadme) {
+      const targetReadme = path.join(langDir, "README.md");
+      if (force || needsTranslation(readmePath, targetReadme)) {
+        tasks.push({ lang, sourcePath: readmePath, targetPath: targetReadme, label: `README.md → ${lang}/README.md` });
+      }
+    }
+  }
+  return tasks;
+}
+
 async function main(ctx) {
   if (!ctx) {
     const cli = parseArgs(process.argv.slice(2), {
@@ -114,7 +149,7 @@ async function main(ctx) {
     ctx.targetLang = cli.lang;
   }
 
-  const { root, config: cfg, docsDir, t } = ctx;
+  const { root, config: cfg, docsDir } = ctx;
   const outputCfg = resolveOutputConfig(cfg);
 
   if (!outputCfg.isMultiLang) {
@@ -141,80 +176,53 @@ async function main(ctx) {
     throw new Error("docs/ directory not found. Run 'sdd-forge init' first.");
   }
 
-  // Collect source files
   const sourceFiles = getChapterFiles(docsDir, { type: ctx.type, configChapters: ctx.config?.chapters });
-
-  // Also include README.md if it exists
   const readmePath = path.join(root, "README.md");
   const hasReadme = fs.existsSync(readmePath);
 
+  const tasks = buildTranslationTasks({ sourceFiles, targetLangs, docsDir, readmePath, hasReadme, force: ctx.force });
+
+  if (ctx.dryRun) {
+    for (const t of tasks) {
+      logger.log(`DRY-RUN: would translate ${t.label}`);
+    }
+    logger.log(`Done. 0 file(s) translated, ${tasks.length} would be translated.`);
+    return;
+  }
+
+  // Ensure all target language directories exist
+  const langDirs = [...new Set(tasks.map((t) => t.lang))];
+  for (const lang of langDirs) {
+    fs.mkdirSync(path.join(docsDir, lang), { recursive: true });
+  }
+
+  const concurrency = resolveConcurrency(cfg);
+  logger.log(`Translating ${tasks.length} file(s) (concurrency=${concurrency})...`);
+
+  const results = await mapWithConcurrency(tasks, concurrency, async (task) => {
+    logger.verbose(`Translating: ${task.label}`);
+    const content = fs.readFileSync(task.sourcePath, "utf8");
+    const translated = await translateDocument(content, defaultLang, task.lang, agent, root, cfg.documentStyle);
+    fs.writeFileSync(task.targetPath, translated, "utf8");
+    logger.verbose(`DONE: ${task.label}`);
+    return task.label;
+  });
+
   let totalTranslated = 0;
-  let totalSkipped = 0;
-
-  for (const lang of targetLangs) {
-    const langDir = path.join(docsDir, lang);
-    if (!ctx.dryRun) {
-      fs.mkdirSync(langDir, { recursive: true });
-    }
-
-    logger.log(`Translating to ${lang}...`);
-
-    // Translate chapter files
-    for (const file of sourceFiles) {
-      const sourcePath = path.join(docsDir, file);
-      const targetPath = path.join(langDir, file);
-
-      if (!ctx.force && !needsTranslation(sourcePath, targetPath)) {
-        logger.verbose(`SKIP (up-to-date): ${lang}/${file}`);
-        totalSkipped++;
-        continue;
-      }
-
-      if (ctx.dryRun) {
-        logger.log(`DRY-RUN: would translate ${file} → ${lang}/${file}`);
-        totalSkipped++;
-        continue;
-      }
-
-      logger.verbose(`Translating: ${file} → ${lang}/${file}`);
-      const content = fs.readFileSync(sourcePath, "utf8");
-
-      try {
-        const translated = await translateDocument(content, defaultLang, lang, agent, root, cfg.documentStyle);
-        fs.writeFileSync(targetPath, translated, "utf8");
-        totalTranslated++;
-        logger.verbose(`DONE: ${lang}/${file}`);
-      } catch (err) {
-        logger.log(`ERROR translating ${file} to ${lang}: ${err.message}`);
-      }
-    }
-
-    // Translate README.md
-    if (hasReadme) {
-      const targetReadme = path.join(langDir, "README.md");
-      if (ctx.force || needsTranslation(readmePath, targetReadme)) {
-        if (ctx.dryRun) {
-          logger.log(`DRY-RUN: would translate README.md → ${lang}/README.md`);
-        } else {
-          logger.verbose(`Translating: README.md → ${lang}/README.md`);
-          const content = fs.readFileSync(readmePath, "utf8");
-          try {
-            const translated = await translateDocument(content, defaultLang, lang, agent, root, cfg.documentStyle);
-            fs.writeFileSync(targetReadme, translated, "utf8");
-            totalTranslated++;
-          } catch (err) {
-            logger.log(`ERROR translating README.md to ${lang}: ${err.message}`);
-          }
-        }
-      } else {
-        totalSkipped++;
-      }
+  let totalErrors = 0;
+  for (const r of results) {
+    if (r.error) {
+      totalErrors++;
+      logger.log(`ERROR: ${r.error.message}`);
+    } else {
+      totalTranslated++;
     }
   }
 
-  logger.log(`Done. ${totalTranslated} file(s) translated, ${totalSkipped} skipped.`);
+  const totalSkipped = (sourceFiles.length + (hasReadme ? 1 : 0)) * targetLangs.length - tasks.length;
+  logger.log(`Done. ${totalTranslated} file(s) translated, ${totalSkipped} skipped${totalErrors ? `, ${totalErrors} error(s)` : ""}.`);
 }
 
-export { main };
+export { main, buildTranslationTasks };
 
 runIfDirect(import.meta.url, main);
