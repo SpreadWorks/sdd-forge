@@ -11,8 +11,7 @@
     "sdd-forge": "./src/sdd-forge.js"
   },
   "files": [
-    "src/",
-    "docs/"
+    "src/"
   ],
   "engines": {
     "node": ">=18.0.0"
