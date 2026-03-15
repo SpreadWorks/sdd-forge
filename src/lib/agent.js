@@ -312,7 +312,7 @@ export function resolveAgent(cfg, commandId) {
  * @returns {string} 作業ディレクトリの絶対パス
  */
 export function resolveWorkDir(root, config) {
-  const dir = config?.agent?.workDir || config?.agentWorkDir || ".tmp";
+  const dir = config?.agent?.workDir || ".tmp";
   return path.resolve(root, dir);
 }
 

@@ -54,7 +54,6 @@ import { buildTypeAliases } from "./presets.js";
  * @property {number} [limits.agentTimeout] - Agent timeout in seconds
  * @property {number} [limits.concurrency]    - Per-file concurrency (default: 5)
  * @property {DocumentStyle} [documentStyle]  - Document style settings
- * @property {Object} [textFill]              - (deprecated) text-fill settings — moved to i18n
  * @property {string} [defaultAgent]          - Default agent name
  * @property {Object<string, AgentProvider>} [providers] - Agent definitions
  * @property {FlowConfig} [flow]              - Flow configuration
@@ -157,12 +156,9 @@ export function validateConfig(raw) {
     }
   }
 
-  // agent.workDir (省略可、旧 agentWorkDir も許容)
+  // agent.workDir (省略可)
   if (raw.agent?.workDir != null && typeof raw.agent.workDir !== "string") {
     errors.push("'agent.workDir' must be a string if provided");
-  }
-  if (raw.agentWorkDir != null && typeof raw.agentWorkDir !== "string") {
-    errors.push("'agentWorkDir' must be a string if provided");
   }
 
   // scan (省略可)
