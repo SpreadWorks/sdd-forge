@@ -463,7 +463,6 @@ async function main() {
       purpose,
       tone,
     },
-    agentWorkDir: ".tmp",
     flow: {
       merge: "squash",
     },
@@ -472,6 +471,7 @@ async function main() {
   if (defaultAgent) {
     config.agent = {
       default: defaultAgent,
+      workDir: ".tmp",
       providers: {
         claude: {
           command: "claude",

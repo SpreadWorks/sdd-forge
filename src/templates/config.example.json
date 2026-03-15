@@ -14,9 +14,9 @@
     "tone": "polite",
     "customInstruction": ""
   },
-  "agentWorkDir": ".tmp",
   "agent": {
     "default": "claude",
+    "workDir": ".tmp",
     "providers": {
       "claude": {
         "command": "claude",

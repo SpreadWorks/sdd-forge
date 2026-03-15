@@ -305,14 +305,14 @@ export function resolveAgent(cfg, commandId) {
 // ---------------------------------------------------------------------------
 
 /**
- * config.agentWorkDir を解決する。
+ * config.agent.workDir を解決する。
  *
  * @param {string} root - プロジェクトルート
  * @param {Object} config - SddConfig
  * @returns {string} 作業ディレクトリの絶対パス
  */
 export function resolveWorkDir(root, config) {
-  const dir = config?.agentWorkDir || ".tmp";
+  const dir = config?.agent?.workDir || config?.agentWorkDir || ".tmp";
   return path.resolve(root, dir);
 }
 

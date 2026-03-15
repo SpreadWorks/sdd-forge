@@ -157,7 +157,10 @@ export function validateConfig(raw) {
     }
   }
 
-  // agentWorkDir (省略可)
+  // agent.workDir (省略可、旧 agentWorkDir も許容)
+  if (raw.agent?.workDir != null && typeof raw.agent.workDir !== "string") {
+    errors.push("'agent.workDir' must be a string if provided");
+  }
   if (raw.agentWorkDir != null && typeof raw.agentWorkDir !== "string") {
     errors.push("'agentWorkDir' must be a string if provided");
   }

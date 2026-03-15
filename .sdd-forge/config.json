@@ -11,7 +11,6 @@
     "tone": "polite",
     "customInstruction": ""
   },
-  "agentWorkDir": ".tmp",
   "limits": {
     "agentTimeout": 600,
     "concurrency": 2
@@ -21,6 +20,7 @@
   },
   "agent": {
     "default": "claude",
+    "workDir": ".tmp",
     "providers": {
       "claude": {
         "command": "claude",
