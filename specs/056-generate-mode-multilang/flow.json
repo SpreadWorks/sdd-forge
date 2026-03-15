@@ -1,0 +1,69 @@
+{
+  "spec": "specs/056-generate-mode-multilang/spec.md",
+  "baseBranch": "main",
+  "featureBranch": "feature/056-generate-mode-multilang",
+  "steps": [
+    {
+      "id": "approach",
+      "status": "done"
+    },
+    {
+      "id": "branch",
+      "status": "done"
+    },
+    {
+      "id": "spec",
+      "status": "done"
+    },
+    {
+      "id": "draft",
+      "status": "done"
+    },
+    {
+      "id": "fill-spec",
+      "status": "done"
+    },
+    {
+      "id": "approval",
+      "status": "done"
+    },
+    {
+      "id": "gate",
+      "status": "done"
+    },
+    {
+      "id": "test",
+      "status": "done"
+    },
+    {
+      "id": "implement",
+      "status": "done"
+    },
+    {
+      "id": "review",
+      "status": "done"
+    },
+    {
+      "id": "finalize",
+      "status": "done"
+    }
+  ],
+  "requirements": [
+    {
+      "desc": "data.jsでoutputLangをコンテキストから取得して利用",
+      "status": "done"
+    },
+    {
+      "desc": "generateモードでinit→data→text→readmeが各言語で正しく動作",
+      "status": "done"
+    },
+    {
+      "desc": "generateモードでsdd-forge reviewがPASS",
+      "status": "done"
+    },
+    {
+      "desc": "translateモードとの品質比較レポート作成",
+      "status": "done"
+    }
+  ]
+}
