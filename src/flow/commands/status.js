@@ -119,7 +119,7 @@ function main() {
     }
     const missing = required.filter((id) => {
       const step = state.steps?.find((s) => s.id === id);
-      return !step || step.status !== "done";
+      return !step || (step.status !== "done" && step.status !== "skipped");
     });
     if (missing.length === 0) {
       console.log(`PASS: ${cli.check} prerequisites met`);

@@ -41,6 +41,19 @@ describe("flow status --check impl", () => {
     assert.match(result, /PASS/i);
   });
 
+  it("PASS when gate is done and test is skipped", () => {
+    tmp = createTmpDir();
+    const state = makeState();
+    setStepDone(state, "gate");
+    state.steps.find((s) => s.id === "test").status = "skipped";
+    saveFlowState(tmp, state);
+    const result = execFileSync("node", [FLOW_CMD, "status", "--check", "impl"], {
+      encoding: "utf8",
+      env: { ...process.env, SDD_WORK_ROOT: tmp },
+    });
+    assert.match(result, /PASS/i);
+  });
+
   it("FAIL (exit 1) when gate is not done", () => {
     tmp = createTmpDir();
     const state = makeState();
