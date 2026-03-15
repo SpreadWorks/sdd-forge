@@ -78,9 +78,9 @@ function displayStatus(root) {
 function main() {
   const root = repoRoot(import.meta.url);
   const cli = parseArgs(process.argv.slice(2), {
-    flags: ["--archive"],
-    options: ["--step", "--status", "--summary", "--req"],
-    defaults: { step: "", status: "", summary: "", req: "", archive: false },
+    flags: ["--archive", "--dry-run"],
+    options: ["--step", "--status", "--summary", "--req", "--check"],
+    defaults: { step: "", status: "", summary: "", req: "", check: "", archive: false, dryRun: false },
   });
 
   if (cli.help) {
@@ -93,9 +93,40 @@ function main() {
         "  --step <id> --status <val>          Update step status",
         "  --summary '<JSON array>'            Set requirements list",
         "  --req <index> --status <val>        Update requirement status",
+        "  --check <phase>                     Check prerequisites (e.g. --check impl)",
         "  --archive                           Move flow.json to spec directory",
+        "  --dry-run                           With --check: always exit 0",
       ].join("\n"),
     );
+    return;
+  }
+
+  // Check prerequisites
+  if (cli.check) {
+    const CHECKS = {
+      impl: ["gate", "test"],
+    };
+    const required = CHECKS[cli.check];
+    if (!required) {
+      console.error(`unknown check phase: ${cli.check}`);
+      console.error(`valid phases: ${Object.keys(CHECKS).join(", ")}`);
+      process.exit(1);
+    }
+    const state = loadFlowState(root);
+    if (!state) {
+      console.error("no active flow (flow.json not found)");
+      process.exit(cli.dryRun ? 0 : 1);
+    }
+    const missing = required.filter((id) => {
+      const step = state.steps?.find((s) => s.id === id);
+      return !step || step.status !== "done";
+    });
+    if (missing.length === 0) {
+      console.log(`PASS: ${cli.check} prerequisites met`);
+    } else {
+      console.log(`FAIL: ${cli.check} prerequisites not met — missing: ${missing.join(", ")}`);
+      if (!cli.dryRun) process.exit(1);
+    }
     return;
   }
 

@@ -11,9 +11,11 @@ import path from "path";
 import { PKG_DIR } from "./lib/cli.js";
 
 const SCRIPTS = {
-  start:  "flow/commands/start.js",
-  status: "flow/commands/status.js",
-  review: "flow/commands/review.js",
+  start:   "flow/commands/start.js",
+  status:  "flow/commands/status.js",
+  review:  "flow/commands/review.js",
+  merge:   "flow/commands/merge.js",
+  cleanup: "flow/commands/cleanup.js",
 };
 
 const args = process.argv.slice(2);
@@ -27,9 +29,11 @@ if (!subCmd || subCmd === "-h" || subCmd === "--help") {
       "Usage: sdd-forge flow <subcommand> [options]",
       "",
       "Subcommands:",
-      "  start   Run SDD flow (spec → gate → forge)",
-      "  status  Display or update flow progress",
-      "  review  Run code quality review (draft → final → apply)",
+      "  start    Run SDD flow (spec → gate → forge)",
+      "  status   Display or update flow progress",
+      "  review   Run code quality review (draft → final → apply)",
+      "  merge    Squash-merge feature branch into base branch",
+      "  cleanup  Delete feature branch and/or worktree",
       "",
       "Examples:",
       '  sdd-forge flow start --request "add login feature"',
