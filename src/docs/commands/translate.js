@@ -55,7 +55,7 @@ async function translateDocument(content, fromLang, toLang, agent, root, documen
     "- Preserve ALL Markdown formatting (headings, tables, code blocks, links)",
     "- Preserve ALL directives exactly as-is: <!-- {{data: ...}} -->, <!-- {{text: ...}} -->, <!-- {{/data}} -->",
     "- Keep inline code (`...`), file paths, and CLI command names unchanged",
-    "- DO translate: heading text, prose, table cell text, and descriptive labels inside mermaid diagrams",
+    "- DO translate: heading text, prose, table cell text (including table headers), and descriptive labels inside mermaid diagrams",
     "- DO NOT translate: code blocks (``` ... ```), variable names, function names, identifiers",
     "- Output ONLY the translated document, no commentary",
     "",
