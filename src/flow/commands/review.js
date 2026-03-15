@@ -293,10 +293,7 @@ async function main() {
     return;
   }
 
-  // In non-interactive mode, output proposals for user to decide
   console.log("Review the proposals above and in review.md.");
-  console.log("To apply: sdd-forge flow review --apply");
-  console.log("To skip:  continue to finalize.");
 }
 
 export { main, parseProposals, mergeVerdicts, formatReviewMd, resolveReviewTarget };

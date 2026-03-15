@@ -36,24 +36,19 @@ Before starting, run `sdd-forge flow status --check impl` to verify prerequisite
    - Run tests to verify: use the test command from `package.json` scripts or the project's test runner.
    - **On complete**: `sdd-forge flow status --step implement --status done`
 
-2. Review implementation (refine iteration).
+2. Review implementation.
    - **On start**: `sdd-forge flow status --step review --status in_progress`
-   - Present the implementation diff to the user for review:
-     - `git diff HEAD` (unstaged changes) or `git diff <base-branch>...HEAD` (all changes on feature branch)
-   - Run all tests and report results.
-   - Read generated documentation if applicable and check quality.
-   - Ask: "実装内容を確認してください。問題はありますか？"
-   - Present EXACTLY these options:
-
-     | # | Label | Description |
-     |---|---|---|
-     | 1 | 問題なし | 手順 3 へ進む |
-     | 2 | 修正が必要 | フィードバックを受け取り修正 → 再度手順 2 へ |
-
-   - If the user requests changes:
-     1. Apply fixes.
-     2. Re-run tests to confirm no regressions.
-     3. Re-present diff for review (iterate until approved).
+   - Ask: "コードレビューを実行しますか？"
+     - If no → `sdd-forge flow status --step review --status skipped` → Step 3 へ
+   - Run `sdd-forge flow review` to perform AI-powered code review.
+   - **If proposals exist** (APPROVED items in review.md):
+     1. Display the approved proposals to the user.
+     2. Ask: "これらの改善を適用しますか？"
+     3. If yes → Apply fixes based on proposals → Re-run tests to confirm no regressions.
+     4. If no → Skip fixes, proceed to Step 3.
+   - **If no proposals** (NO_PROPOSALS):
+     - Display: "レビューの結果、修正の必要はありませんでした"
+     - Proceed directly to Step 3 (no user confirmation needed).
    - **On complete**: `sdd-forge flow status --step review --status done`
 
 3. Ask user about finalization.
@@ -82,5 +77,6 @@ sdd-forge flow status
 sdd-forge flow status --check impl
 sdd-forge flow status --step <id> --status <val>
 sdd-forge flow status --req <index> --status <val>
+sdd-forge flow review
 sdd-forge snapshot check
 ```
