@@ -14,7 +14,7 @@ const STATE_FILE = "flow.json";
 /** SDD workflow step IDs in order. */
 export const FLOW_STEPS = [
   "approach", "branch", "spec", "draft", "fill-spec",
-  "approval", "gate", "test", "implement", "finalize",
+  "approval", "gate", "test", "implement", "review", "finalize",
 ];
 
 function statePath(workRoot) {

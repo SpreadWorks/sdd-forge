@@ -70,11 +70,11 @@ describe("flow-state", () => {
     assert.equal(loaded.mainRepoPath, "/tmp/main-repo");
   });
 
-  it("exports FLOW_STEPS constant with all 10 step IDs", () => {
-    assert.equal(FLOW_STEPS.length, 10);
+  it("exports FLOW_STEPS constant with all 11 step IDs", () => {
+    assert.equal(FLOW_STEPS.length, 11);
     assert.deepEqual(FLOW_STEPS, [
       "approach", "branch", "spec", "draft", "fill-spec",
-      "approval", "gate", "test", "implement", "finalize",
+      "approval", "gate", "test", "implement", "review", "finalize",
     ]);
   });
 });
