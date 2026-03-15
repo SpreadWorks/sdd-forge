@@ -361,12 +361,12 @@ async function main(ctx) {
   }
 
   // Split into batches (lines-based with item count fallback)
-  const maxItems = Number(config.limits?.enrichBatchSize || 0) || DEFAULT_BATCH_SIZE;
-  const maxLines = Number(config.limits?.enrichBatchLines || 0) || DEFAULT_BATCH_LINES;
+  const maxItems = Number(config.docs?.enrichBatchSize || 0) || DEFAULT_BATCH_SIZE;
+  const maxLines = Number(config.docs?.enrichBatchLines || 0) || DEFAULT_BATCH_LINES;
   const hasLines = pending.some((e) => e.lines > 0);
   const batches = splitIntoBatches(pending, hasLines ? maxLines : 0, maxItems);
 
-  const timeoutMs = config.limits?.agentTimeout ? Number(config.limits.agentTimeout) * 1000 : DEFAULT_AGENT_TIMEOUT * 1000;
+  const timeoutMs = config.agent?.timeout ? Number(config.agent.timeout) * 1000 : DEFAULT_AGENT_TIMEOUT * 1000;
   let totalEnriched = 0;
 
   for (let b = 0; b < batches.length; b++) {

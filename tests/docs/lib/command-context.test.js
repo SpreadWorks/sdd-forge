@@ -28,7 +28,7 @@ describe("resolveCommandContext", () => {
     writeJson(tmp, ".sdd-forge/config.json", {
       type: "cli/node-cli",
       lang: "ja",
-      output: { languages: ["ja"], default: "ja" },
+      docs: { languages: ["ja"], defaultLanguage: "ja" },
     });
     const ctx = resolveCommandContext(null, { root: tmp });
     assert.equal(ctx.lang, "ja");
@@ -43,7 +43,7 @@ describe("resolveCommandContext", () => {
     writeJson(tmp, ".sdd-forge/config.json", {
       type: "cli/node-cli",
       lang: "ja",
-      output: { languages: ["ja", "en"], default: "ja" },
+      docs: { languages: ["ja", "en"], defaultLanguage: "ja" },
     });
     const cli = { lang: "en", docsDir: "docs/en" };
     const ctx = resolveCommandContext(cli, { root: tmp });
@@ -57,7 +57,7 @@ describe("resolveCommandContext", () => {
     writeJson(tmp, ".sdd-forge/config.json", {
       type: "cli/node-cli",
       lang: "ja",
-      output: { languages: ["ja"], default: "ja" },
+      docs: { languages: ["ja"], defaultLanguage: "ja" },
     });
     const cli = { lang: "en" };
     const ctx = resolveCommandContext(cli, { root: tmp, lang: "fr" });

@@ -42,8 +42,8 @@ export default class LangSource extends DataSource {
    */
   links(_analysis, labels) {
     const config = this._loadConfig();
-    const languages = config.output.languages;
-    const defaultLang = config.output.default;
+    const languages = config.docs.languages;
+    const defaultLang = config.docs.defaultLanguage;
 
     if (languages.length < 2) return null;
 

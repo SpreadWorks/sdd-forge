@@ -220,11 +220,11 @@ async function main() {
   const root = repoRoot(import.meta.url);
   const config = loadConfig(root);
   const type = resolveType(config.type || "");
-  const lang = config.output.default;
+  const lang = config.docs.defaultLanguage;
   const t = translate();
   const agent = resolveAgent(config, "docs.forge");
   const mode = cli.mode || DEFAULT_MODE;
-  const timeoutMs = config.limits?.agentTimeout ? Number(config.limits.agentTimeout) * 1000 : undefined;
+  const timeoutMs = config.agent?.timeout ? Number(config.agent.timeout) * 1000 : undefined;
 
   if (mode === "agent" && !agent) {
     throw new Error(

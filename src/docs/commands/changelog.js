@@ -132,7 +132,7 @@ function main() {
   let lang = DEFAULT_LANG;
   try {
     const cfgData = loadConfig(root);
-    lang = cfgData.output?.default || cfgData.lang || DEFAULT_LANG;
+    lang = cfgData.docs?.defaultLanguage || cfgData.lang || DEFAULT_LANG;
   } catch (_) {}
   const t = translate();
 

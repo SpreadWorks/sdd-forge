@@ -454,14 +454,14 @@ async function main() {
   // 2. Build config object
   const config = {
     lang: operatingLang,
-    output: {
-      languages: outputLangs,
-      default: outputDefault,
-    },
     type,
-    documentStyle: {
-      purpose,
-      tone,
+    docs: {
+      languages: outputLangs,
+      defaultLanguage: outputDefault,
+      style: {
+        purpose,
+        tone,
+      },
     },
     flow: {
       merge: "squash",

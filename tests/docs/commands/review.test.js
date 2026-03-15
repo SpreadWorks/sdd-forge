@@ -5,7 +5,7 @@ import { execFileSync } from "child_process";
 import { createTmpDir, removeTmpDir, writeFile, writeJson } from "../../helpers/tmp-dir.js";
 
 const CMD = join(process.cwd(), "src/docs/commands/review.js");
-const MIN_CONFIG = { lang: "en", type: "cli/node-cli", output: { languages: ["en"], default: "en" } };
+const MIN_CONFIG = { lang: "en", type: "cli/node-cli", docs: { languages: ["en"], defaultLanguage: "en" } };
 
 function setupTmp() {
   const tmp = createTmpDir();

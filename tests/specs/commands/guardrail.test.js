@@ -74,7 +74,7 @@ describe("guardrail init CLI", () => {
     writeJson(tmp, ".sdd-forge/config.json", {
       lang: "en",
       type: "cli/node-cli",
-      output: { languages: ["en"], default: "en" },
+      docs: { languages: ["en"], defaultLanguage: "en" },
     });
 
     const result = execFileSync("node", [GUARDRAIL_CMD, "init"], {
@@ -93,7 +93,7 @@ describe("guardrail init CLI", () => {
     writeJson(tmp, ".sdd-forge/config.json", {
       lang: "en",
       type: "cli/node-cli",
-      output: { languages: ["en"], default: "en" },
+      docs: { languages: ["en"], defaultLanguage: "en" },
     });
     writeFile(tmp, ".sdd-forge/guardrail.md", "# Existing\n### Rule\nDo not change.\n");
 
@@ -113,7 +113,7 @@ describe("guardrail init CLI", () => {
     writeJson(tmp, ".sdd-forge/config.json", {
       lang: "en",
       type: "cli/node-cli",
-      output: { languages: ["en"], default: "en" },
+      docs: { languages: ["en"], defaultLanguage: "en" },
     });
     writeFile(tmp, ".sdd-forge/guardrail.md", "# Old content\n");
 
@@ -131,7 +131,7 @@ describe("guardrail init CLI", () => {
     writeJson(tmp, ".sdd-forge/config.json", {
       lang: "en",
       type: "cli/node-cli",
-      output: { languages: ["en"], default: "en" },
+      docs: { languages: ["en"], defaultLanguage: "en" },
     });
 
     execFileSync("node", [GUARDRAIL_CMD, "init", "--dry-run"], {
@@ -183,7 +183,7 @@ describe("gate guardrail integration", () => {
     writeJson(tmp, ".sdd-forge/config.json", {
       lang: "en",
       type: "cli/node-cli",
-      output: { languages: ["en"], default: "en" },
+      docs: { languages: ["en"], defaultLanguage: "en" },
     });
     writeFile(tmp, "spec.md", validSpec);
     writeFile(tmp, ".sdd-forge/guardrail.md", [
@@ -209,7 +209,7 @@ describe("gate guardrail integration", () => {
     writeJson(tmp, ".sdd-forge/config.json", {
       lang: "en",
       type: "cli/node-cli",
-      output: { languages: ["en"], default: "en" },
+      docs: { languages: ["en"], defaultLanguage: "en" },
       defaultAgent: "claude",
       providers: { claude: { command: "echo", args: ["FAIL"] } },
     });
@@ -373,7 +373,7 @@ describe("guardrail init template merging", () => {
     writeJson(tmp, ".sdd-forge/config.json", {
       lang: "en",
       type: "webapp",
-      output: { languages: ["en"], default: "en" },
+      docs: { languages: ["en"], defaultLanguage: "en" },
     });
 
     execFileSync("node", [GUARDRAIL_CMD, "init"], {
@@ -395,7 +395,7 @@ describe("guardrail init template merging", () => {
     writeJson(tmp, ".sdd-forge/config.json", {
       lang: "en",
       type: "webapp/cakephp2",
-      output: { languages: ["en"], default: "en" },
+      docs: { languages: ["en"], defaultLanguage: "en" },
     });
 
     execFileSync("node", [GUARDRAIL_CMD, "init"], {

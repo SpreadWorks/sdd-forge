@@ -202,7 +202,7 @@ async function main(ctx) {
   const results = await mapWithConcurrency(tasks, concurrency, async (task) => {
     logger.verbose(`Translating: ${task.label}`);
     const content = fs.readFileSync(task.sourcePath, "utf8");
-    const translated = await translateDocument(content, defaultLang, task.lang, agent, root, cfg.documentStyle);
+    const translated = await translateDocument(content, defaultLang, task.lang, agent, root, cfg.docs?.style);
     fs.writeFileSync(task.targetPath, translated, "utf8");
     logger.verbose(`DONE: ${task.label}`);
     return task.label;

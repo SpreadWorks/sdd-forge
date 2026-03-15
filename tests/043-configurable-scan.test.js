@@ -119,7 +119,7 @@ describe("scan config validation", async () => {
   const baseConfig = {
     lang: "ja",
     type: "cli/node-cli",
-    output: { languages: ["ja"], default: "ja" },
+    docs: { languages: ["ja"], defaultLanguage: "ja" },
   };
 
   it("accepts config with valid scan.include and scan.exclude", () => {
@@ -192,7 +192,7 @@ describe("scan config override", () => {
     writeJson(tmp, ".sdd-forge/config.json", {
       lang: "ja",
       type: "cli/node-cli",
-      output: { languages: ["ja"], default: "ja" },
+      docs: { languages: ["ja"], defaultLanguage: "ja" },
       scan: { include: ["lib/**/*.js"] },
     });
     writeFile(tmp, "src/index.js", 'export function inSrc() {}\n');
@@ -230,7 +230,7 @@ describe("analysis.json top-level structure (no extras)", () => {
     writeJson(tmp, ".sdd-forge/config.json", {
       lang: "ja",
       type: "cli/node-cli",
-      output: { languages: ["ja"], default: "ja" },
+      docs: { languages: ["ja"], defaultLanguage: "ja" },
       scan: { include: ["src/**/*.js", "package.json"] },
     });
     writeFile(tmp, "src/index.js", 'export function hello() {}\n');
@@ -264,7 +264,7 @@ describe("preserveEnrichment recursive hash search", () => {
     writeJson(tmp, ".sdd-forge/config.json", {
       lang: "ja",
       type: "cli/node-cli",
-      output: { languages: ["ja"], default: "ja" },
+      docs: { languages: ["ja"], defaultLanguage: "ja" },
       scan: { include: ["src/**/*.js", "package.json"] },
     });
     writeFile(tmp, "src/index.js", 'export function hello() { return "hi"; }\n');
@@ -318,7 +318,7 @@ describe("multiple DataSource match", () => {
     writeJson(tmp, ".sdd-forge/config.json", {
       lang: "ja",
       type: "webapp/cakephp2",
-      output: { languages: ["ja"], default: "ja" },
+      docs: { languages: ["ja"], defaultLanguage: "ja" },
       scan: {
         include: [
           "app/Controller/**/*Controller.php",

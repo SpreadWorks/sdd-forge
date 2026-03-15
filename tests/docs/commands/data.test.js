@@ -13,7 +13,7 @@ describe("data CLI", () => {
 
   it("runs without error on docs with no directives", () => {
     tmp = createTmpDir();
-    writeJson(tmp, ".sdd-forge/config.json", { lang: "ja", type: "cli/node-cli", output: { languages: ["ja"], default: "ja" } });
+    writeJson(tmp, ".sdd-forge/config.json", { lang: "ja", type: "cli/node-cli", docs: { languages: ["ja"], defaultLanguage: "ja" } });
     writeJson(tmp, ".sdd-forge/output/analysis.json", {
       analyzedAt: "2026-01-01",
       extras: {},
@@ -37,7 +37,7 @@ describe("data CLI", () => {
 
   it("dry-run does not modify files", () => {
     tmp = createTmpDir();
-    writeJson(tmp, ".sdd-forge/config.json", { lang: "ja", type: "cli/node-cli", output: { languages: ["ja"], default: "ja" } });
+    writeJson(tmp, ".sdd-forge/config.json", { lang: "ja", type: "cli/node-cli", docs: { languages: ["ja"], defaultLanguage: "ja" } });
     writeJson(tmp, ".sdd-forge/output/analysis.json", { analyzedAt: "2026-01-01", extras: {} });
     const original = "# 01. Test\n## 説明\nx\n## 内容\nNo directives\n";
     writeFile(tmp, "docs/01_test.md", original);
@@ -53,7 +53,7 @@ describe("data CLI", () => {
 
   it("shows help with --help", () => {
     tmp = createTmpDir();
-    writeJson(tmp, ".sdd-forge/config.json", { lang: "ja", type: "cli/node-cli", output: { languages: ["ja"], default: "ja" } });
+    writeJson(tmp, ".sdd-forge/config.json", { lang: "ja", type: "cli/node-cli", docs: { languages: ["ja"], defaultLanguage: "ja" } });
 
     // --help triggers the isDirectRun guard but may not print since parseArgs only handles it
     // inside main(). The command should not error.

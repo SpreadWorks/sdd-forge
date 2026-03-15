@@ -1,19 +1,16 @@
 {
   "lang": "ja",
-  "output": {
-    "languages": ["en", "ja"],
-    "default": "en",
-    "mode": "generate"
-  },
   "type": "node-cli",
-  "documentStyle": {
-    "purpose": "user-guide",
-    "tone": "polite",
-    "customInstruction": ""
-  },
-  "limits": {
-    "agentTimeout": 600,
-    "concurrency": 2
+  "concurrency": 2,
+  "docs": {
+    "languages": ["en", "ja"],
+    "defaultLanguage": "en",
+    "mode": "generate",
+    "style": {
+      "purpose": "user-guide",
+      "tone": "polite",
+      "customInstruction": ""
+    }
   },
   "flow": {
     "merge": "squash"
@@ -21,6 +18,7 @@
   "agent": {
     "default": "claude",
     "workDir": ".tmp",
+    "timeout": 600,
     "providers": {
       "claude": {
         "command": "claude",

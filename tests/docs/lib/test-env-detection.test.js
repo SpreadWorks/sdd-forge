@@ -15,7 +15,7 @@ describe("scan scripts extraction", () => {
       writeJson(tmp, ".sdd-forge/config.json", {
         lang: "en",
         type: "cli/node-cli",
-        output: { languages: ["en"], default: "en" },
+        docs: { languages: ["en"], defaultLanguage: "en" },
         scan: { include: ["src/**/*.js", "package.json"], exclude: [] },
       });
       writeJson(tmp, "package.json", {
@@ -49,7 +49,7 @@ describe("scan scripts extraction", () => {
       writeJson(tmp, ".sdd-forge/config.json", {
         lang: "en",
         type: "cli/node-cli",
-        output: { languages: ["en"], default: "en" },
+        docs: { languages: ["en"], defaultLanguage: "en" },
         scan: { include: ["src/**/*.js"], exclude: [] },
       });
       writeJson(tmp, "package.json", {

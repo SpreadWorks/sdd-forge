@@ -12,11 +12,11 @@ import { createTmpDir, removeTmpDir, writeJson, writeFile } from "../../helpers/
  */
 
 /** Helper: create a minimal project with given output config */
-function setupProject(tmp, outputConfig, repoUrl) {
+function setupProject(tmp, docsConfig, repoUrl) {
   const config = {
-    lang: outputConfig.default,
+    lang: docsConfig.defaultLanguage,
     type: "cli/node-cli",
-    output: outputConfig,
+    docs: docsConfig,
     scan: { include: ["src/**/*.js"], exclude: [] },
   };
   writeJson(tmp, ".sdd-forge/config.json", config);
@@ -40,7 +40,7 @@ describe("docs.langSwitcher", () => {
   });
 
   it("returns null when single language is configured", async () => {
-    setupProject(tmp, { languages: ["en"], default: "en" });
+    setupProject(tmp, { languages: ["en"], defaultLanguage: "en" });
 
     const { createResolver } = await import("../../../src/docs/lib/resolver-factory.js");
     const resolver = await createResolver("cli/node-cli", tmp, {});
@@ -51,7 +51,7 @@ describe("docs.langSwitcher", () => {
   });
 
   it("returns lang switcher with bold current lang and linked other lang (relative)", async () => {
-    setupProject(tmp, { languages: ["en", "ja"], default: "en" });
+    setupProject(tmp, { languages: ["en", "ja"], defaultLanguage: "en" });
 
     const { createResolver } = await import("../../../src/docs/lib/resolver-factory.js");
     const resolver = await createResolver("cli/node-cli", tmp, {});
@@ -68,7 +68,7 @@ describe("docs.langSwitcher", () => {
   });
 
   it("computes correct relative path from non-default lang to default", async () => {
-    setupProject(tmp, { languages: ["en", "ja"], default: "en" });
+    setupProject(tmp, { languages: ["en", "ja"], defaultLanguage: "en" });
 
     const { createResolver } = await import("../../../src/docs/lib/resolver-factory.js");
     const resolver = await createResolver("cli/node-cli", tmp, {});
@@ -84,7 +84,7 @@ describe("docs.langSwitcher", () => {
   });
 
   it("computes correct relative path for README at root", async () => {
-    setupProject(tmp, { languages: ["en", "ja"], default: "en" });
+    setupProject(tmp, { languages: ["en", "ja"], defaultLanguage: "en" });
 
     const { createResolver } = await import("../../../src/docs/lib/resolver-factory.js");
     const resolver = await createResolver("cli/node-cli", tmp, {});
@@ -98,7 +98,7 @@ describe("docs.langSwitcher", () => {
   });
 
   it("computes correct relative path for non-default lang README", async () => {
-    setupProject(tmp, { languages: ["en", "ja"], default: "en" });
+    setupProject(tmp, { languages: ["en", "ja"], defaultLanguage: "en" });
 
     const { createResolver } = await import("../../../src/docs/lib/resolver-factory.js");
     const resolver = await createResolver("cli/node-cli", tmp, {});
@@ -113,7 +113,7 @@ describe("docs.langSwitcher", () => {
 
   it("generates absolute URLs when mode is 'absolute'", async () => {
     const repoUrl = "https://github.com/TestOrg/test-project";
-    setupProject(tmp, { languages: ["en", "ja"], default: "en" }, repoUrl);
+    setupProject(tmp, { languages: ["en", "ja"], defaultLanguage: "en" }, repoUrl);
 
     const { createResolver } = await import("../../../src/docs/lib/resolver-factory.js");
     const resolver = await createResolver("cli/node-cli", tmp, {});
@@ -131,7 +131,7 @@ describe("docs.langSwitcher", () => {
 
   it("generates absolute URLs for docs chapter files", async () => {
     const repoUrl = "https://github.com/TestOrg/test-project";
-    setupProject(tmp, { languages: ["en", "ja"], default: "en" }, repoUrl);
+    setupProject(tmp, { languages: ["en", "ja"], defaultLanguage: "en" }, repoUrl);
 
     const { createResolver } = await import("../../../src/docs/lib/resolver-factory.js");
     const resolver = await createResolver("cli/node-cli", tmp, {});

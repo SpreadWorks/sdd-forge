@@ -154,8 +154,8 @@ function main(ctx) {
 
   // テンプレート解決（ボトムアップ方式）
   const projectLocalDir = path.join(root, ".sdd-forge", "templates", lang, "docs");
-  const outputConfig = config?.output;
-  const fallbackLangs = outputConfig?.languages?.filter((l) => l !== lang) || [];
+  const docsConfig = config?.docs;
+  const fallbackLangs = docsConfig?.languages?.filter((l) => l !== lang) || [];
   const configChapters = config?.chapters;
   const chaptersOrder = resolveChaptersOrder(type, configChapters);
 
@@ -201,7 +201,7 @@ function main(ctx) {
       summaryData,
       agent,
       root,
-      config?.documentStyle?.purpose || "",
+      config?.docs?.style?.purpose || "",
     );
   }
 

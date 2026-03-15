@@ -11,7 +11,7 @@ function setupProject(tmp) {
   writeJson(tmp, ".sdd-forge/config.json", {
     lang: "en",
     type: "cli/node-cli",
-    output: { languages: ["en"], default: "en" },
+    docs: { languages: ["en"], defaultLanguage: "en" },
     scan: { include: ["src/**/*.js"], exclude: [] },
   });
   writeFile(tmp, "src/index.js", 'export function hello() { return "hi"; }\n');

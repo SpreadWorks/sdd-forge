@@ -424,8 +424,8 @@ export async function textFillFromAnalysis(root, analysis, commandId, srcRoot) {
   const cfg = loadConfig(root);
   const agent = loadAgentConfig(cfg, commandId || "docs.text");
   const preamblePatterns = loadPreamblePatterns();
-  const documentStyle = cfg.documentStyle;
-  const lang = cfg.output.default;
+  const documentStyle = cfg.docs?.style;
+  const lang = cfg.docs.defaultLanguage;
   const systemPrompt = buildTextSystemPrompt(documentStyle, lang);
   const type = cfg.type ? resolveType(cfg.type) : undefined;
   const concurrency = resolveConcurrency(cfg);
@@ -541,7 +541,7 @@ async function main(ctx) {
   ensureAgentWorkDir(agent, root);
 
   const preamblePatterns = loadPreamblePatterns();
-  const documentStyle = cfg.documentStyle;
+  const documentStyle = cfg.docs?.style;
   const lang = ctx.outputLang;
   const systemPrompt = buildTextSystemPrompt(documentStyle, lang);
   const concurrency = resolveConcurrency(cfg);
@@ -557,7 +557,7 @@ async function main(ctx) {
     logger.verbose(`--id=${ctx.id}: per-directive mode forced.`);
   }
 
-  const configTimeout = cfg.limits?.agentTimeout ? Number(cfg.limits.agentTimeout) * 1000 : undefined;
+  const configTimeout = cfg.agent?.timeout ? Number(cfg.agent.timeout) * 1000 : undefined;
   const processFn = ctx.perDirective ? processTemplate : processTemplateFileBatch;
   if (!ctx.perDirective) {
     if (!ctx.timeout) ctx.timeout = configTimeout || DEFAULT_TIMEOUT_MS;

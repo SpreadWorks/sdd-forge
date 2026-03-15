@@ -15,7 +15,7 @@ describe("Laravel scan integration", () => {
     writeJson(tmp, ".sdd-forge/config.json", {
       lang: "ja",
       type: "webapp/laravel",
-      output: { languages: ["ja"], default: "ja" },
+      docs: { languages: ["ja"], defaultLanguage: "ja" },
     });
 
     // Minimal Laravel project structure
@@ -84,7 +84,7 @@ Schema::create('users', function (Blueprint \$table) {
     writeJson(tmp, ".sdd-forge/config.json", {
       lang: "ja",
       type: "laravel",
-      output: { languages: ["ja"], default: "ja" },
+      docs: { languages: ["ja"], defaultLanguage: "ja" },
     });
     writeFile(tmp, "artisan", "#!/usr/bin/env php\n");
     writeFile(tmp, "composer.json", "{}");

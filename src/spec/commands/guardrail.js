@@ -122,7 +122,7 @@ function runInit(root, cli) {
   let typePath = "base";
   try {
     const config = loadConfig(root);
-    lang = config.lang || config.output?.default || "en";
+    lang = config.lang || config.docs?.defaultLanguage || "en";
     if (config.type) typePath = resolveType(config.type);
   } catch (_) {
     // No config — use defaults

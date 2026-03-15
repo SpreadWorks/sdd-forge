@@ -21,7 +21,7 @@ export const DEFAULT_LANG = "en";
  * @returns {number}
  */
 export function resolveConcurrency(cfg) {
-  return Number(cfg.limits?.concurrency || 0) || DEFAULT_CONCURRENCY;
+  return Number(cfg.concurrency || 0) || DEFAULT_CONCURRENCY;
 }
 
 /**

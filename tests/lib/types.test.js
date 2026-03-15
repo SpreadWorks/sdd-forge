@@ -26,7 +26,7 @@ describe("validateConfig", () => {
   const validConfig = {
     lang: "ja",
     type: "cli/node-cli",
-    output: { languages: ["ja"], default: "ja" },
+    docs: { languages: ["ja"], defaultLanguage: "ja" },
   };
 
   it("accepts minimal valid config", () => {
@@ -41,29 +41,32 @@ describe("validateConfig", () => {
   });
 
   it("throws when lang is missing", () => {
-    assert.throws(() => validateConfig({ type: "cli", output: { languages: ["ja"], default: "ja" } }), /lang/);
+    assert.throws(() => validateConfig({ type: "cli", docs: { languages: ["ja"], defaultLanguage: "ja" } }), /lang/);
   });
 
   it("throws when type is missing", () => {
-    assert.throws(() => validateConfig({ lang: "ja", output: { languages: ["ja"], default: "ja" } }), /type/);
+    assert.throws(() => validateConfig({ lang: "ja", docs: { languages: ["ja"], defaultLanguage: "ja" } }), /type/);
   });
 
-  it("throws when output is missing", () => {
-    assert.throws(() => validateConfig({ lang: "ja", type: "cli" }), /output/);
+  it("throws when docs is missing", () => {
+    assert.throws(() => validateConfig({ lang: "ja", type: "cli" }), /docs/);
   });
 
-  it("validates documentStyle", () => {
+  it("validates docs.style", () => {
     const cfg = {
       ...validConfig,
-      documentStyle: { purpose: "developer-guide", tone: "polite" },
+      docs: { ...validConfig.docs, style: { purpose: "developer-guide", tone: "polite" } },
     };
     const result = validateConfig(cfg);
-    assert.equal(result.documentStyle.purpose, "developer-guide");
+    assert.equal(result.docs.style.purpose, "developer-guide");
   });
 
-  it("rejects invalid documentStyle tone", () => {
+  it("rejects invalid docs.style tone", () => {
     assert.throws(
-      () => validateConfig({ ...validConfig, documentStyle: { purpose: "x", tone: "invalid" } }),
+      () => validateConfig({
+        ...validConfig,
+        docs: { ...validConfig.docs, style: { purpose: "x", tone: "invalid" } },
+      }),
       /tone/,
     );
   });
@@ -96,22 +99,22 @@ describe("validateConfig", () => {
     );
   });
 
-  it("validates output config", () => {
+  it("validates docs config with multiple languages", () => {
     const cfg = {
       ...validConfig,
-      output: { languages: ["ja", "en"], default: "ja" },
+      docs: { languages: ["ja", "en"], defaultLanguage: "ja" },
     };
     const result = validateConfig(cfg);
-    assert.deepEqual(result.output.languages, ["ja", "en"]);
+    assert.deepEqual(result.docs.languages, ["ja", "en"]);
   });
 
-  it("rejects output.default not in languages", () => {
+  it("rejects docs.defaultLanguage not in languages", () => {
     assert.throws(
       () => validateConfig({
         ...validConfig,
-        output: { languages: ["ja"], default: "en" },
+        docs: { languages: ["ja"], defaultLanguage: "en" },
       }),
-      /output\.default/,
+      /defaultLanguage/,
     );
   });
 });

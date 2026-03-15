@@ -49,11 +49,11 @@ describe("loadConfig", () => {
 
   it("loads and validates config", () => {
     tmp = createTmpDir();
-    writeJson(tmp, ".sdd-forge/config.json", { lang: "ja", type: "cli", output: { languages: ["ja"], default: "ja" } });
+    writeJson(tmp, ".sdd-forge/config.json", { lang: "ja", type: "cli", docs: { languages: ["ja"], defaultLanguage: "ja" } });
     const cfg = loadConfig(tmp);
     assert.equal(cfg.lang, "ja");
     assert.equal(cfg.type, "cli");
-    assert.equal(cfg.output.default, "ja");
+    assert.equal(cfg.docs.defaultLanguage, "ja");
   });
 
   it("throws when config is missing", () => {

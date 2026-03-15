@@ -50,10 +50,10 @@ export default class DocsSource extends DataSource {
     if (!filePath) return null;
 
     const config = this._loadConfig();
-    if (!config?.output?.languages || config.output.languages.length < 2) return null;
+    if (!config?.docs?.languages || config.docs.languages.length < 2) return null;
 
-    const languages = config.output.languages;
-    const defaultLang = config.output.default;
+    const languages = config.docs.languages;
+    const defaultLang = config.docs.defaultLanguage;
     const currentLang = this._detectLang(filePath, defaultLang);
     const langNames = this._loadLanguageNames(config.lang || defaultLang);
 

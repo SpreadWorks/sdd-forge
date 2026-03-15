@@ -15,7 +15,7 @@ describe("Symfony scan integration", () => {
     writeJson(tmp, ".sdd-forge/config.json", {
       lang: "ja",
       type: "webapp/symfony",
-      output: { languages: ["ja"], default: "ja" },
+      docs: { languages: ["ja"], defaultLanguage: "ja" },
     });
 
     // Minimal Symfony project structure
@@ -110,7 +110,7 @@ class Kernel extends BaseKernel {}
     writeJson(tmp, ".sdd-forge/config.json", {
       lang: "ja",
       type: "symfony",
-      output: { languages: ["ja"], default: "ja" },
+      docs: { languages: ["ja"], defaultLanguage: "ja" },
     });
     writeFile(tmp, "composer.json", "{}");
     writeFile(tmp, "src/Kernel.php", `<?php

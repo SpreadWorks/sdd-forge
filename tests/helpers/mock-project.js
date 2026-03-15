@@ -4,12 +4,9 @@ import { join } from "path";
 const DEFAULT_CONFIG = {
   lang: "ja",
   type: "cli/node-cli",
-  docStyle: "flat",
-  preamble: "yaml",
   scan: { include: ["src/**/*.js"], exclude: [] },
-  textFill: { preamblePatterns: [] },
   providers: {},
-  output: { languages: ["ja"], default: "ja" },
+  docs: { languages: ["ja"], defaultLanguage: "ja" },
 };
 
 const DEFAULT_PACKAGE = {

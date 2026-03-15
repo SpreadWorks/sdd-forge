@@ -100,7 +100,7 @@ describe("forge CLI", () => {
 
   it("exits with error when no prompt given", () => {
     tmp = createTmpDir();
-    writeJson(tmp, ".sdd-forge/config.json", { lang: "ja", type: "cli/node-cli", output: { languages: ["ja"], default: "ja" } });
+    writeJson(tmp, ".sdd-forge/config.json", { lang: "ja", type: "cli/node-cli", docs: { languages: ["ja"], defaultLanguage: "ja" } });
 
     try {
       execFileSync("node", [CMD], {
@@ -115,7 +115,7 @@ describe("forge CLI", () => {
 
   it("shows help with --help", () => {
     tmp = createTmpDir();
-    writeJson(tmp, ".sdd-forge/config.json", { lang: "ja", type: "cli/node-cli", output: { languages: ["ja"], default: "ja" } });
+    writeJson(tmp, ".sdd-forge/config.json", { lang: "ja", type: "cli/node-cli", docs: { languages: ["ja"], defaultLanguage: "ja" } });
 
     const result = execFileSync("node", [CMD, "--help"], {
       encoding: "utf8",
@@ -126,7 +126,7 @@ describe("forge CLI", () => {
 
   it("--dry-run skips writes, review, and agent calls", () => {
     tmp = createTmpDir();
-    writeJson(tmp, ".sdd-forge/config.json", { lang: "ja", type: "cli/node-cli", output: { languages: ["ja"], default: "ja" } });
+    writeJson(tmp, ".sdd-forge/config.json", { lang: "ja", type: "cli/node-cli", docs: { languages: ["ja"], defaultLanguage: "ja" } });
     writeFile(tmp, "docs/01_test.md", "# 01. Test\n\nContent\n");
 
     const result = execFileSync("node", [
@@ -145,7 +145,7 @@ describe("forge CLI", () => {
 
   it("runs review in local mode and handles pass", () => {
     tmp = createTmpDir();
-    writeJson(tmp, ".sdd-forge/config.json", { lang: "ja", type: "cli/node-cli", output: { languages: ["ja"], default: "ja" } });
+    writeJson(tmp, ".sdd-forge/config.json", { lang: "ja", type: "cli/node-cli", docs: { languages: ["ja"], defaultLanguage: "ja" } });
     // Create docs that will pass review
     const lines = ["# 01. Test", ""];
     for (let i = 0; i < 20; i++) lines.push(`Content line ${i}`);
@@ -169,7 +169,7 @@ describe("forge CLI", () => {
     writeJson(tmp, ".sdd-forge/config.json", {
       lang: "ja",
       type: "cli/node-cli",
-      output: { languages: ["ja"], default: "ja" },
+      docs: { languages: ["ja"], defaultLanguage: "ja" },
       defaultAgent: "echo-agent",
       providers: {
         "echo-agent": {
@@ -203,7 +203,7 @@ describe("forge CLI", () => {
     writeJson(tmp, ".sdd-forge/config.json", {
       lang: "ja",
       type: "cli/node-cli",
-      output: { languages: ["ja"], default: "ja" },
+      docs: { languages: ["ja"], defaultLanguage: "ja" },
       defaultAgent: "echo-agent",
       providers: {
         "echo-agent": {

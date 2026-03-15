@@ -70,8 +70,8 @@ async function main(ctx) {
   }
 
   const projectLocalDir = path.join(root, ".sdd-forge", "templates", lang, "docs");
-  const outputConfig = config?.output;
-  const fallbackLangs = outputConfig?.languages?.filter((l) => l !== lang) || [];
+  const docsConfig = config?.docs;
+  const fallbackLangs = docsConfig?.languages?.filter((l) => l !== lang) || [];
 
   // ボトムアップでテンプレート解決
   const configChapters = config?.chapters;
@@ -143,7 +143,7 @@ async function main(ctx) {
       const agent = loadAgentConfig(cfg, "docs.readme");
       ensureAgentWorkDir(agent, root);
       const analysis = loadFullAnalysis(root) || {};
-      const documentStyle = cfg.documentStyle;
+      const documentStyle = cfg.docs?.style;
       const systemPrompt = buildTextSystemPrompt(documentStyle, lang);
       const timeoutMs = DEFAULT_AGENT_TIMEOUT * 1000;
 

@@ -23,7 +23,6 @@ import { buildTypeAliases } from "./presets.js";
  * @property {string} [flags] - 正規表現フラグ
  */
 
-
 /**
  * @typedef {Object} AgentProvider
  * @property {string} name       - 表示名
@@ -34,10 +33,13 @@ import { buildTypeAliases } from "./presets.js";
  */
 
 /**
- * @typedef {Object} OutputConfig
- * @property {string[]} languages - Output languages (e.g. ["ja"], ["en", "ja"])
- * @property {string}   default   - Default output language
+ * @typedef {Object} DocsConfig
+ * @property {string[]} languages            - Output languages (e.g. ["ja"], ["en", "ja"])
+ * @property {string}   defaultLanguage      - Default output language
  * @property {"translate"|"generate"} [mode] - How non-default languages are produced
+ * @property {DocumentStyle} [style]         - Document style settings
+ * @property {number} [enrichBatchSize]      - Enrich batch size
+ * @property {number} [enrichBatchLines]     - Enrich batch max lines
  */
 
 /**
@@ -47,16 +49,13 @@ import { buildTypeAliases } from "./presets.js";
 
 /**
  * @typedef {Object} SddConfig
- * @property {OutputConfig} output             - Output language configuration (required)
- * @property {string} lang                    - Operating language for CLI, AGENTS.md, skills, specs
- * @property {string} type                    - Project type ("webapp/cakephp2" | "cli" | ...)
- * @property {Object} [limits]                - Limit settings
- * @property {number} [limits.agentTimeout] - Agent timeout in seconds
- * @property {number} [limits.concurrency]    - Per-file concurrency (default: 5)
- * @property {DocumentStyle} [documentStyle]  - Document style settings
- * @property {string} [defaultAgent]          - Default agent name
+ * @property {DocsConfig} docs               - Documentation configuration (required)
+ * @property {string} lang                   - Operating language for CLI, AGENTS.md, skills, specs
+ * @property {string} type                   - Project type ("webapp/cakephp2" | "cli" | ...)
+ * @property {number} [concurrency]          - Per-file concurrency (default: 5)
+ * @property {string} [defaultAgent]         - Default agent name
  * @property {Object<string, AgentProvider>} [providers] - Agent definitions
- * @property {FlowConfig} [flow]              - Flow configuration
+ * @property {FlowConfig} [flow]             - Flow configuration
  */
 
 // ---------------------------------------------------------------------------
@@ -98,24 +97,42 @@ export function validateConfig(raw) {
     throw new Error("config must be a non-null object");
   }
 
-  // output (required)
-  if (raw.output == null || typeof raw.output !== "object") {
-    errors.push("'output' is required and must be an object");
+  // docs (required)
+  if (raw.docs == null || typeof raw.docs !== "object") {
+    errors.push("'docs' is required and must be an object");
   } else {
-    if (!Array.isArray(raw.output.languages) || raw.output.languages.length === 0) {
-      errors.push("'output.languages' must be a non-empty array");
+    if (!Array.isArray(raw.docs.languages) || raw.docs.languages.length === 0) {
+      errors.push("'docs.languages' must be a non-empty array");
     }
-    if (typeof raw.output.default !== "string" || raw.output.default.length === 0) {
-      errors.push("'output.default' must be a non-empty string");
+    if (typeof raw.docs.defaultLanguage !== "string" || raw.docs.defaultLanguage.length === 0) {
+      errors.push("'docs.defaultLanguage' must be a non-empty string");
     }
-    if (Array.isArray(raw.output.languages) && typeof raw.output.default === "string") {
-      if (!raw.output.languages.includes(raw.output.default)) {
-        errors.push("'output.default' must be one of 'output.languages'");
+    if (Array.isArray(raw.docs.languages) && typeof raw.docs.defaultLanguage === "string") {
+      if (!raw.docs.languages.includes(raw.docs.defaultLanguage)) {
+        errors.push("'docs.defaultLanguage' must be one of 'docs.languages'");
       }
     }
     const validModes = new Set(["translate", "generate"]);
-    if (raw.output.mode != null && !validModes.has(raw.output.mode)) {
-      errors.push(`'output.mode' must be one of: ${[...validModes].join(", ")}`);
+    if (raw.docs.mode != null && !validModes.has(raw.docs.mode)) {
+      errors.push(`'docs.mode' must be one of: ${[...validModes].join(", ")}`);
+    }
+
+    // docs.style (省略可)
+    if (raw.docs.style != null) {
+      const ds = raw.docs.style;
+      if (typeof ds !== "object") {
+        errors.push("'docs.style' must be an object");
+      } else {
+        if (typeof ds.purpose !== "string" || ds.purpose.length === 0) {
+          errors.push("'docs.style.purpose' must be a non-empty string");
+        }
+        if (typeof ds.tone !== "string" || !VALID_TONES.has(ds.tone)) {
+          errors.push(`'docs.style.tone' must be one of: ${[...VALID_TONES].join(", ")}`);
+        }
+        if (ds.customInstruction != null && typeof ds.customInstruction !== "string") {
+          errors.push("'docs.style.customInstruction' must be a string if provided");
+        }
+      }
     }
   }
 
@@ -129,22 +146,9 @@ export function validateConfig(raw) {
     errors.push("'type' is required and must be a non-empty string");
   }
 
-  // documentStyle (省略可)
-  if (raw.documentStyle != null) {
-    const ds = raw.documentStyle;
-    if (typeof ds !== "object") {
-      errors.push("'documentStyle' must be an object");
-    } else {
-      if (typeof ds.purpose !== "string" || ds.purpose.length === 0) {
-        errors.push("'documentStyle.purpose' must be a non-empty string");
-      }
-      if (typeof ds.tone !== "string" || !VALID_TONES.has(ds.tone)) {
-        errors.push(`'documentStyle.tone' must be one of: ${[...VALID_TONES].join(", ")}`);
-      }
-      if (ds.customInstruction != null && typeof ds.customInstruction !== "string") {
-        errors.push("'documentStyle.customInstruction' must be a string if provided");
-      }
-    }
+  // concurrency (省略可)
+  if (raw.concurrency != null && (typeof raw.concurrency !== "number" || raw.concurrency < 1)) {
+    errors.push("'concurrency' must be a positive number if provided");
   }
 
   // chapters (省略可)
@@ -159,6 +163,11 @@ export function validateConfig(raw) {
   // agent.workDir (省略可)
   if (raw.agent?.workDir != null && typeof raw.agent.workDir !== "string") {
     errors.push("'agent.workDir' must be a string if provided");
+  }
+
+  // agent.timeout (省略可)
+  if (raw.agent?.timeout != null && (typeof raw.agent.timeout !== "number" || raw.agent.timeout < 1)) {
+    errors.push("'agent.timeout' must be a positive number if provided");
   }
 
   // scan (省略可)
@@ -222,9 +231,9 @@ export function validateConfig(raw) {
  * @returns {{ languages: string[], default: string, mode: "translate"|"generate", isMultiLang: boolean }}
  */
 export function resolveOutputConfig(cfg) {
-  const languages = cfg.output.languages;
-  const defaultLang = cfg.output.default;
-  const mode = cfg.output.mode || "translate";
+  const languages = cfg.docs.languages;
+  const defaultLang = cfg.docs.defaultLanguage;
+  const mode = cfg.docs.mode || "translate";
   return {
     languages,
     default: defaultLang,
@@ -232,4 +241,3 @@ export function resolveOutputConfig(cfg) {
     isMultiLang: languages.length >= 2,
   };
 }
-
