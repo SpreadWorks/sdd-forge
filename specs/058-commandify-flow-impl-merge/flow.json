@@ -1,0 +1,105 @@
+{
+  "spec": "specs/058-commandify-flow-impl-merge/spec.md",
+  "baseBranch": "main",
+  "featureBranch": "feature/058-commandify-flow-impl-merge",
+  "steps": [
+    {
+      "id": "approach",
+      "status": "done"
+    },
+    {
+      "id": "branch",
+      "status": "done"
+    },
+    {
+      "id": "spec",
+      "status": "done"
+    },
+    {
+      "id": "draft",
+      "status": "done"
+    },
+    {
+      "id": "fill-spec",
+      "status": "done"
+    },
+    {
+      "id": "approval",
+      "status": "done"
+    },
+    {
+      "id": "gate",
+      "status": "done"
+    },
+    {
+      "id": "test",
+      "status": "done"
+    },
+    {
+      "id": "implement",
+      "status": "done"
+    },
+    {
+      "id": "review",
+      "status": "done"
+    },
+    {
+      "id": "finalize",
+      "status": "done"
+    },
+    {
+      "id": "docs-update",
+      "status": "done"
+    },
+    {
+      "id": "docs-review",
+      "status": "done"
+    },
+    {
+      "id": "commit",
+      "status": "done"
+    },
+    {
+      "id": "merge",
+      "status": "done"
+    },
+    {
+      "id": "branch-cleanup",
+      "status": "done"
+    },
+    {
+      "id": "archive",
+      "status": "done"
+    }
+  ],
+  "requirements": [
+    {
+      "desc": "flow status --check impl: gate/test done チェック",
+      "status": "done"
+    },
+    {
+      "desc": "flow merge: flow.json ベースの自動 merge",
+      "status": "done"
+    },
+    {
+      "desc": "flow cleanup: flow.json ベースの自動 cleanup",
+      "status": "done"
+    },
+    {
+      "desc": "全コマンド --dry-run 対応",
+      "status": "done"
+    },
+    {
+      "desc": "flow.js ルーティング追加",
+      "status": "done"
+    },
+    {
+      "desc": "flow-merge SKILL.md Step 0 を 2択に改修",
+      "status": "done"
+    },
+    {
+      "desc": "flow-impl SKILL.md Prerequisites に --check impl 使用",
+      "status": "done"
+    }
+  ]
+}
