@@ -111,12 +111,14 @@ function main() {
       console.error(`spec directory not found: ${specDir}`);
       process.exit(1);
     }
-    // Mark finalize as done before archiving
-    const finalizeStep = state.steps?.find((s) => s.id === "finalize");
-    if (finalizeStep && finalizeStep.status !== "done") {
-      finalizeStep.status = "done";
-      saveFlowState(root, state);
+    // Mark finalize and archive as done before archiving
+    for (const id of ["finalize", "archive"]) {
+      const step = state.steps?.find((s) => s.id === id);
+      if (step && step.status !== "done") {
+        step.status = "done";
+      }
     }
+    saveFlowState(root, state);
     const src = flowStatePath(root);
     const dest = path.join(specDir, "flow.json");
     fs.copyFileSync(src, dest);

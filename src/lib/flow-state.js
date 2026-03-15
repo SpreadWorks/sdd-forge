@@ -2,7 +2,7 @@
  * src/lib/flow-state.js
  *
  * .sdd-forge/flow.json の読み書きユーティリティ。
- * sdd-flow-start / sdd-flow-close 間の状態引き継ぎに使用。
+ * flow-plan / flow-impl / flow-merge 間の状態引き継ぎに使用。
  */
 
 import fs from "fs";
@@ -15,6 +15,7 @@ const STATE_FILE = "flow.json";
 export const FLOW_STEPS = [
   "approach", "branch", "spec", "draft", "fill-spec",
   "approval", "gate", "test", "implement", "review", "finalize",
+  "docs-update", "docs-review", "commit", "merge", "branch-cleanup", "archive",
 ];
 
 function statePath(workRoot) {

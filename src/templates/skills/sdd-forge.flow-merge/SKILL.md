@@ -1,11 +1,18 @@
 ---
-name: sdd-forge.flow-close
+name: sdd-forge.flow-merge
 description: Finalize the SDD workflow after implementation is complete. Use for documentation update, review, commit, merge, and cleanup.
 ---
 
-# SDD Flow Close
+# SDD Flow Merge
 
 Use this skill when implementation is complete and the user approved finalization.
+
+## Flow Progress Tracking
+
+**MUST: 各ステップの完了時に `sdd-forge flow status --step <id> --status <val>` を実行してフロー進捗を記録する。**
+
+Available step IDs (this skill): `docs-update`, `docs-review`, `commit`, `merge`, `branch-cleanup`, `archive`
+Available status values: `pending`, `in_progress`, `done`, `skipped`
 
 ## CRITICAL: Step 0 — Present Options FIRST
 
@@ -29,12 +36,12 @@ Use this skill when implementation is complete and the user approved finalizatio
 |---|---|---|---|---|---|
 | 1. Load context | ✓ | ✓ | ✓ | ✓ | ✓ |
 | 2. Check current state | ✓ | ✓ | ✓ | ✓ | ✓ |
-| 3. Update documentation | ✓ | ✓ | — | — | — |
-| 4. Review documentation | ✓ | ✓ | — | — | — |
-| 5. Commit | ✓ | — | ✓ | ✓ | ✓ |
-| 6. Merge | ✓ | — | — | ✓ | ✓ |
-| 7. Clean up (branch delete) | ✓ | — | — | — | ✓ |
-| 8. Archive & verify | ✓ | ✓ | ✓ | ✓ | ✓ |
+| 3. Update documentation (docs-update) | ✓ | ✓ | — | — | — |
+| 4. Review documentation (docs-review) | ✓ | ✓ | — | — | — |
+| 5. Commit (commit) | ✓ | — | ✓ | ✓ | ✓ |
+| 6. Merge (merge) | ✓ | — | — | ✓ | ✓ |
+| 7. Clean up (branch-cleanup) | ✓ | — | — | — | ✓ |
+| 8. Archive & verify (archive) | ✓ | ✓ | ✓ | ✓ | ✓ |
 
 ## Required Sequence
 
@@ -48,20 +55,30 @@ Use this skill when implementation is complete and the user approved finalizatio
    - If `worktree: true` in flow.json, confirm working in worktree directory.
 
 3. Update documentation.
+   - **On start**: `sdd-forge flow status --step docs-update --status in_progress`
    - If `docs/` has no chapter files:
      - Run `sdd-forge build`.
    - If `docs/` already has chapter files:
      - Run `sdd-forge forge --prompt "<change summary>" --spec <spec-path>`.
+   - **On complete**: `sdd-forge flow status --step docs-update --status done`
+   - **If skipped**: `sdd-forge flow status --step docs-update --status skipped`
 
 4. Review documentation.
+   - **On start**: `sdd-forge flow status --step docs-review --status in_progress`
    - `sdd-forge review`
    - If FAIL, fix issues and re-run. Do not proceed until PASS.
+   - **On complete**: `sdd-forge flow status --step docs-review --status done`
+   - **If skipped**: `sdd-forge flow status --step docs-review --status skipped`
 
 5. Commit all changes on feature branch.
+   - **On start**: `sdd-forge flow status --step commit --status in_progress`
    - Stage relevant files with `git add`.
    - Commit with a clear message describing the changes.
+   - **On complete**: `sdd-forge flow status --step commit --status done`
+   - **If skipped**: `sdd-forge flow status --step commit --status skipped`
 
 6. Merge into base branch.
+   - **On start**: `sdd-forge flow status --step merge --status in_progress`
    Determine merge strategy based on flow.json state:
 
    - **Worktree** (`worktree: true`, `worktreePath` set):
@@ -77,7 +94,11 @@ Use this skill when implementation is complete and the user approved finalizatio
    - **Spec-only** (`featureBranch == baseBranch`):
      - Just commit, skip merge (already on the correct branch).
 
+   - **On complete**: `sdd-forge flow status --step merge --status done`
+   - **If skipped**: `sdd-forge flow status --step merge --status skipped`
+
 7. Clean up.
+   - **On start**: `sdd-forge flow status --step branch-cleanup --status in_progress`
    Determine cleanup strategy based on flow.json state:
 
    - **Worktree** (`worktree: true`):
@@ -93,10 +114,15 @@ Use this skill when implementation is complete and the user approved finalizatio
    - **Spec-only**:
      - No branch/worktree cleanup needed.
 
+   - **On complete**: `sdd-forge flow status --step branch-cleanup --status done`
+   - **If skipped**: `sdd-forge flow status --step branch-cleanup --status skipped`
+
 8. Archive flow.json & final verification.
+   - **On start**: `sdd-forge flow status --step archive --status in_progress`
    - **Archive flow.json**: Run `sdd-forge flow status --archive` to move `.sdd-forge/flow.json` to the spec directory for historical record.
    - `git status --short` — confirm tree is clean.
    - Report result to user.
+   - **On complete**: Step is marked done by `--archive` command.
 
 ## Hard Stops
 
@@ -111,5 +137,6 @@ sdd-forge build
 sdd-forge forge --prompt "<change summary>" --spec <spec-path>
 sdd-forge review
 sdd-forge flow status
+sdd-forge flow status --step <id> --status <val>
 sdd-forge flow status --archive
 ```

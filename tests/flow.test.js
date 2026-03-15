@@ -4,7 +4,7 @@ import fs from "fs";
 import { join } from "path";
 import { execFileSync } from "child_process";
 import { createTmpDir, removeTmpDir } from "./helpers/tmp-dir.js";
-import { saveFlowState, loadFlowState, clearFlowState, FLOW_STEPS } from "../src/lib/flow-state.js";
+import { saveFlowState, loadFlowState, clearFlowState, buildInitialSteps, updateStepStatus, FLOW_STEPS } from "../src/lib/flow-state.js";
 
 const FLOW_CMD = join(process.cwd(), "src/flow.js");
 
@@ -70,12 +70,41 @@ describe("flow-state", () => {
     assert.equal(loaded.mainRepoPath, "/tmp/main-repo");
   });
 
-  it("exports FLOW_STEPS constant with all 11 step IDs", () => {
-    assert.equal(FLOW_STEPS.length, 11);
+  it("exports FLOW_STEPS constant with all 17 step IDs", () => {
+    assert.equal(FLOW_STEPS.length, 17);
     assert.deepEqual(FLOW_STEPS, [
       "approach", "branch", "spec", "draft", "fill-spec",
       "approval", "gate", "test", "implement", "review", "finalize",
+      "docs-update", "docs-review", "commit", "merge", "branch-cleanup", "archive",
     ]);
+  });
+
+  it("buildInitialSteps creates pending entries for all 17 steps", () => {
+    const steps = buildInitialSteps();
+    assert.equal(steps.length, 17);
+    assert.equal(steps[11].id, "docs-update");
+    assert.equal(steps[11].status, "pending");
+    assert.equal(steps[16].id, "archive");
+    assert.equal(steps[16].status, "pending");
+  });
+
+  it("updateStepStatus accepts new merge-phase step IDs", () => {
+    tmp = createTmpDir();
+    const state = {
+      spec: "specs/001-test/spec.md",
+      baseBranch: "main",
+      featureBranch: "feature/001-test",
+      steps: FLOW_STEPS.map((id) => ({ id, status: "pending" })),
+    };
+    saveFlowState(tmp, state);
+    for (const stepId of ["docs-update", "docs-review", "commit", "merge", "branch-cleanup", "archive"]) {
+      updateStepStatus(tmp, stepId, "done");
+    }
+    const loaded = loadFlowState(tmp);
+    for (const stepId of ["docs-update", "docs-review", "commit", "merge", "branch-cleanup", "archive"]) {
+      const step = loaded.steps.find((s) => s.id === stepId);
+      assert.equal(step.status, "done", `${stepId} should be done`);
+    }
   });
 });
 
