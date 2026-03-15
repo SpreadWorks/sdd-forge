@@ -1,0 +1,89 @@
+{
+  "spec": "specs/053-flow-review/spec.md",
+  "baseBranch": "main",
+  "featureBranch": "feature/053-flow-review",
+  "steps": [
+    {
+      "id": "approach",
+      "status": "done"
+    },
+    {
+      "id": "branch",
+      "status": "done"
+    },
+    {
+      "id": "spec",
+      "status": "done"
+    },
+    {
+      "id": "draft",
+      "status": "done"
+    },
+    {
+      "id": "fill-spec",
+      "status": "done"
+    },
+    {
+      "id": "approval",
+      "status": "done"
+    },
+    {
+      "id": "gate",
+      "status": "done"
+    },
+    {
+      "id": "test",
+      "status": "done"
+    },
+    {
+      "id": "implement",
+      "status": "done"
+    },
+    {
+      "id": "finalize",
+      "status": "done"
+    }
+  ],
+  "requirements": [
+    {
+      "desc": "flow review コマンド実装",
+      "status": "done"
+    },
+    {
+      "desc": "レビュー実施確認プロンプト",
+      "status": "done"
+    },
+    {
+      "desc": "draft フェーズ（提案生成）",
+      "status": "done"
+    },
+    {
+      "desc": "final フェーズ（提案検証）",
+      "status": "done"
+    },
+    {
+      "desc": "ユーザー承認インターフェース",
+      "status": "done"
+    },
+    {
+      "desc": "apply フェーズ（提案実装）",
+      "status": "done"
+    },
+    {
+      "desc": "FLOW_STEPS に review 追加",
+      "status": "done"
+    },
+    {
+      "desc": "flow.js に review ルート追加",
+      "status": "done"
+    },
+    {
+      "desc": "spec scope からレビュー対象特定",
+      "status": "done"
+    },
+    {
+      "desc": "resolveAgent の dotted ID 対応",
+      "status": "done"
+    }
+  ]
+}
