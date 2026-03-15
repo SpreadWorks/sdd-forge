@@ -65,6 +65,8 @@
 - 公開前に `npm pack --dry-run` で機密情報がないことを確認する。
 
 <!-- {{data: agents.project("")}} -->
+Now I have all the verified data. Here's the refined PROJECT section:
+
 ## Project Context
 
 - **パッケージ:** `sdd-forge` v0.1.0-alpha.30
@@ -100,7 +102,7 @@ sdd-forge/
     │       ├── command-context.js, concurrency.js
     │       └── scan-source.js, php-array-parser.js, test-env-detection.js
     ├── flow/
-    │   └── commands/         ← start.js, status.js
+    │   └── commands/         ← start.js, status.js, review.js
     ├── spec/
     │   └── commands/         ← init.js, gate.js, guardrail.js
     ├── lib/                  ← 全レイヤー共有ユーティリティ
@@ -111,7 +113,7 @@ sdd-forge/
     │   ├── flow-state.js     ← SDD フロー状態永続化
     │   ├── i18n.js           ← 3層 i18n（ドメイン名前空間付き）
     │   ├── types.js          ← 型エイリアス解決・バリデーション
-    │   └── agents-md.js, entrypoint.js, process.js, progress.js, projects.js
+    │   └── agents-md.js, entrypoint.js, process.js, progress.js
     ├── presets/              ← base/, cli/, node-cli/, cakephp2/, laravel/, symfony/, webapp/, library/
     ├── locale/               ← en/, ja/
     └── templates/            ← config.example.json, review-checklist.md, skills/
@@ -130,6 +132,7 @@ sdd-forge/
 | `sdd-forge spec guardrail` | `spec.js` | `src/spec/commands/guardrail.js` |
 | `sdd-forge flow start` | `flow.js` | `src/flow/commands/start.js` |
 | `sdd-forge flow status` | `flow.js` | `src/flow/commands/status.js` |
+| `sdd-forge flow review` | `flow.js` | `src/flow/commands/review.js` |
 | `sdd-forge setup` | 独立 | `src/setup.js` |
 | `sdd-forge upgrade` | 独立 | `src/upgrade.js` |
 | `sdd-forge presets` | 独立 | `src/presets-cmd.js` |

@@ -4,8 +4,7 @@
 
 <!-- {{text: Write a 1-2 sentence overview of this chapter. Include the tool's purpose, the problem it solves, and its primary use cases.}} -->
 
-この章では、ソースコードを解析し、テンプレートディレクティブ方式で構造化された Markdown を生成することで、プロジェクト文書を自動化する CLI ツール `sdd-forge` について説明します。あわせて、実装と文書化された仕様の整合を保つためにこのツールが提供する Spec-Driven Development（SDD）ワークフローも扱います。
-
+この章では、ソースコード解析から技術文書の生成を自動化する、Spec-Driven Development 向け CLI ツール `sdd-forge` を紹介します。ツールのアーキテクチャ、主要な概念、そしてプロジェクト設定から文書出力までの一般的な流れを扱います。
 <!-- {{/text}} -->
 
 ## 内容
@@ -14,12 +13,11 @@
 
 <!-- {{text: Describe the problem this CLI tool solves and its target users. Derive the purpose from package.json and README.}} -->
 
-変化し続けるコードベースに合わせて技術文書を正確に保つことは、開発チームにとって継続的な負担です。手作業で書かれた文書は実際のソースとすぐにずれ、プロジェクトの全体像を新しい参加者に伝えるたびに、同じ説明を繰り返す必要が生じます。
+`sdd-forge` は、絶えず変化するコードベースに対して、技術文書を正確かつ最新の状態に保ち続けるという課題を解決します。手作業で作成した文書は、時間がたつにつれて実装とのずれが生じやすく、古い情報や誤解を招く内容が増えることで、オンボーディングや保守の妨げになります。
 
-`sdd-forge` は、文書を生成物として扱うことでこの課題に対応します。コントローラー、モデル、エンティティ、マイグレーションなどのソースファイルを走査し、構造化されたメタデータを抽出して、あらかじめ定義された Markdown の各章へテンプレートディレクティブのパイプラインを通じて反映します。開発者は、各情報をどこに出すかを一度定義するだけでよく、実行のたびにツールが内容を自動で埋めます。
+このツールは、手作業で文書を書く負担を増やさずに、構造化された信頼できるプロジェクト文書を必要とする開発チームや技術リードを対象としています。`sdd-forge` はソースコードを走査し、その解析結果を AI で補強し、テンプレート駆動のパイプラインで文書を生成することで、文書が常にコードの最新状態を反映するようにします。
 
-このツールは、PHP の Web アプリケーション（Symfony、CakePHP、Laravel）や Node.js の CLI プロジェクトに取り組むバックエンド開発者や技術リードを主な対象としており、手作業で保守しなくても常に最新の文書を保ちたい場合に適しています。さらに SDD ワークフロー層により、実装に着手する前に仕様レビューの関門を設けたいチームも支援します。
-
+`sdd-forge` は外部依存を持たず（Node.js 組み込みモジュールのみ使用）、設定可能なプリセットシステムにより、CakePHP 2.x、Laravel、Symfony、汎用の webapp/library プリセットなど、複数の Web アプリケーションフレームワークに対応します。さらに、仕様管理を文書生成パイプラインと結び付ける Spec-Driven Development ワークフロー（`flow` および `spec` コマンド）も提供します。
 <!-- {{/text}} -->
 
 ### アーキテクチャ概要
@@ -27,85 +25,124 @@
 <!-- {{text[mode=deep]: Generate a mermaid flowchart showing the tool's overall architecture. Include the dispatch structure from entry point to subcommands and the main processing flow (input → processing → output). Output only the mermaid code block.}} -->
 
 ```mermaid
-flowchart TD
-    Entry["sdd-forge.js\n(CLI エントリポイント)"]
+flowchart TB
+    CLI["sdd-forge.js<br/>(CLI エントリポイント)"]
 
-    Entry --> DocsDispatcher["docs.js\n(ディスパッチャー)"]
-    Entry --> SpecDispatcher["spec.js\n(ディスパッチャー)"]
-    Entry --> FlowDirect["flow.js\n(直接コマンド)"]
-    Entry --> PresetsDirect["presets-cmd.js\n(直接コマンド)"]
+    CLI --> DOCS["docs.js<br/>(Docs ディスパッチャー)"]
+    CLI --> SPEC["spec.js<br/>(Spec ディスパッチャー)"]
+    CLI --> FLOW["flow.js<br/>(Flow ディスパッチャー)"]
+    CLI --> SETUP["setup.js"]
+    CLI --> UPGRADE["upgrade.js"]
+    CLI --> PRESETS["presets-cmd.js"]
 
-    DocsDispatcher --> Build["build\nパイプライン"]
-    DocsDispatcher --> Individual["個別コマンド\nscan / enrich / init / data / text\nforge / review / readme / agents\nchangelog / translate / snapshot\nsetup / upgrade / default"]
+    subgraph DocsCommands ["docs/commands/"]
+        SCAN["scan"]
+        ENRICH["enrich"]
+        INIT["init"]
+        DATA["data"]
+        TEXT["text"]
+        README["readme"]
+        FORGE["forge"]
+        REVIEW["review"]
+        CHANGELOG["changelog"]
+        AGENTS["agents"]
+        TRANSLATE["translate"]
+        SNAPSHOT["snapshot"]
+    end
 
-    Build --> Scan["scan\n(ソース → analysis.json)"]
-    Scan --> Enrich["enrich\n(AI: 各項目の役割と要約)"]
-    Enrich --> Init["init\n(テンプレート統合)"]
-    Init --> Data["data\n({{data}} ディレクティブ → テーブル)"]
-    Data --> Text["text\n({{text}} ディレクティブ → AI 文章)"]
-    Text --> Readme["readme\n(README.md 生成)"]
-    Readme --> Agents["agents\n(AGENTS.md 生成)"]
+    DOCS --> DocsCommands
 
-    SpecDispatcher --> SpecInit["spec\n(ブランチ + spec.md)"]
-    SpecDispatcher --> Gate["gate\n(実装前後のチェック)"]
+    subgraph SpecCommands ["spec/commands/"]
+        SPEC_INIT["init"]
+        GATE["gate"]
+        GUARDRAIL["guardrail"]
+    end
 
-    FlowDirect --> SddFlow["SDD 自動化\n(spec → gate → build)"]
+    SPEC --> SpecCommands
+
+    subgraph FlowCommands ["flow/commands/"]
+        FLOW_START["start"]
+        FLOW_STATUS["status"]
+    end
+
+    FLOW --> FlowCommands
+
+    subgraph BuildPipeline ["docs build パイプライン"]
+        direction LR
+        B_SCAN["scan"] --> B_ENRICH["enrich"] --> B_INIT["init"] --> B_DATA["data"] --> B_TEXT["text"] --> B_README["readme"] --> B_AGENTS["agents"] --> B_TRANSLATE["translate?"]
+    end
+
+    DOCS -->|"build"| BuildPipeline
+
+    subgraph SharedLibs ["lib/（共有ユーティリティ）"]
+        AGENT["agent.js"]
+        CONFIG["config.js"]
+        PRESETS_LIB["presets.js"]
+        I18N["i18n.js"]
+        TYPES["types.js"]
+        FLOW_STATE["flow-state.js"]
+    end
+
+    DocsCommands -.-> SharedLibs
+    SpecCommands -.-> SharedLibs
+    FlowCommands -.-> SharedLibs
+
+    subgraph DocsLib ["docs/lib/"]
+        SCANNER["scanner.js"]
+        DIRECTIVE["directive-parser.js"]
+        MERGER["template-merger.js"]
+        DATASOURCE["data-source.js"]
+        RESOLVER["resolver-factory.js"]
+    end
+
+    DocsCommands -.-> DocsLib
 ```
-
 <!-- {{/text}} -->
 
-### 主要概念
+### 主要な概念
 
 <!-- {{text: Explain the key concepts and terminology needed to understand this tool in table format. Extract the main concepts from source code.}} -->
 
-次の表は、このツールおよびその文書全体で使われる中核概念を定義したものです。
-
 | 概念 | 説明 |
 |---|---|
-| **Directive** | Markdown テンプレートに埋め込まれるマーカーで、`{{data: source.method("Labels")}}` または `{{text: instruction}}` の形式を取ります。ビルドパイプラインは各ディレクティブの内容を生成結果で置き換えますが、マーカー行自体はそのまま残します。 |
-| **DataSource** | 特定の種類のソースファイル（例: controllers、entities）を走査し、`{{data}}` ディレクティブ向けに Markdown テーブルを返す resolve メソッドを提供する JavaScript クラスです。 |
-| **Preset** | `symfony`、`node-cli`、`cakephp2` のような名前付き設定セットです。特定のプロジェクト種別に合わせて、DataSource 定義、章テンプレート、走査ルールをまとめたもので、`preset.json` を通じて自動検出されます。 |
-| **analysis.json** | `sdd-forge scan` が生成する中間 JSON ファイルです。抽出したすべてのソースメタデータを保持し、以降のすべてのパイプライン段階で唯一の入力となります。 |
-| **enrich** | `analysis.json` の各項目に対して、役割、要約、章分類を AI 補助で付与するパイプライン段階です。これにより、後続の `{{text}}` 生成をより適切に行えます。 |
-| **Chapter** | `docs/` 内に置かれる 1 つの Markdown ファイルで、文書の 1 セクションに対応します。章の並び順は `preset.json` の `chapters` 配列で定義され、プロジェクトごとに `config.json` で上書きできます。 |
-| **SDD (Spec-Driven Development)** | 機能仕様を実装開始前に作成し、ゲートチェックでレビューする組み込みワークフローです。これにより、コードが文書化された仕様から逸れないようにします。 |
-| **flow-state** | 現在の SDD ワークフロー段階を追跡する永続状態ファイル（`.sdd-forge/flow-state.json`）です。これにより、`flow` コマンドはシェルセッションをまたいで処理を再開できます。 |
-
+| **Preset** | フレームワークごとの設定パッケージです（例: `symfony`, `cakephp2`, `laravel`）。走査ロジック、DataSource、章テンプレート、既定設定を定義します。プリセットは `src/presets/` 以下にあり、`sdd-forge setup` の実行時に選択されます。 |
+| **DataSource** | 特定カテゴリのソースファイル（コントローラー、モデル、エンティティなど）を走査し、`{{data}}` ディレクティブを解決して、Markdown の表などの構造化データを生成するクラスです。各プリセットは独自の DataSource 実装を持ちます。 |
+| **Directive** | 文書ファイルに埋め込まれるテンプレート用マーカーです。`{{data: ...}}` ディレクティブは DataSource から構造化データ（表、一覧）を挿入します。`{{text: ...}}` ディレクティブは、AI が生成した本文を配置する箇所を示します。 |
+| **Build Pipeline** | 文書生成を端から端まで行う一連の処理です: `scan → enrich → init → data → text → readme → agents → [translate]`。`sdd-forge docs build` を実行すると、すべての手順が順番に実行されます。 |
+| **Enrichment** | 生の走査結果（analysis.json）を受け取り、各項目に役割分類、要約、章の割り当てを追加して、後続の本文生成に必要な文脈を与える AI ベースの処理です。 |
+| **Chapter** | 1 つの文書ファイルです（例: `overview.md`, `cli_commands.md`）。並び順は `preset.json` の `chapters` 配列で定義されます。章にはディレクティブが含まれ、`data` と `text` の各パイプライン処理で内容が埋められます。 |
+| **Spec-Driven Development (SDD)** | 機能開発を仕様作成（`spec init`）から始め、ゲートチェック（`spec gate`）を通過して実装へ進めるワークフローです。このライフサイクルは `flow` コマンド群が管理します。 |
+| **AGENTS.md / CLAUDE.md** | プロジェクト構造、規約、アーキテクチャに関する最新情報を AI コーディング支援ツールへ提供する、自動生成のプロジェクトコンテキストファイルです。 |
 <!-- {{/text}} -->
 
-### 典型的な利用の流れ
+### 一般的な利用の流れ
 
 <!-- {{text: Describe the typical steps from installation to first output in step format. Derive the steps from help output and command definitions in the source code.}} -->
 
-次の手順は、インストールから文書一式の初回生成までの流れを示しています。
-
-1. **パッケージをグローバルにインストールします。**
+1. **sdd-forge をインストールする** — パッケージをグローバル、または開発依存としてインストールします。
    ```
    npm install -g sdd-forge
    ```
 
-2. **プロジェクトルートで setup を実行します。** これにより `.sdd-forge/config.json` が初期化され、プロジェクト種別に適した preset が選ばれ、`docs/` のテンプレート構成と `AGENTS.md` が作成されます。
+2. **プロジェクトを初期化する** — プロジェクトルートで対話形式のセットアップウィザードを実行します。これにより `.sdd-forge/config.json` 設定ファイルが作成され、利用するフレームワークに適したプリセットが選択されます。
    ```
    sdd-forge setup
    ```
 
-3. **ソースコードを走査します。** スキャナーがプロジェクト内のファイルをたどり、メタデータ（クラス、ルート、カラム、リレーションなど）を抽出して、その結果を `.sdd-forge/output/analysis.json` に書き出します。
+3. **文書を生成する** — フルビルドパイプラインを実行し、ソースコードを走査し、解析結果を AI で補強し、すべての文書ファイルを生成します。
    ```
-   sdd-forge scan
+   sdd-forge docs build
+   ```
+   この処理では、パイプラインの各手順 `scan → enrich → init → data → text → readme → agents → [translate]` が順に実行されます。
+
+4. **出力を確認する** — 生成された文書は、プロジェクトの `docs/` ディレクトリに章ファイル一式として出力されます。各章をまとめて参照できる `README.md` の目次も生成されます。
+
+5. **個別の手順を繰り返し実行する** — 文書の特定部分だけを再生成したい場合は、個別のサブコマンドを実行します。
+   ```
+   sdd-forge docs scan      # ソースファイルを再走査する
+   sdd-forge docs enrich    # 解析結果を AI で再補強する
+   sdd-forge docs text      # 本文セクションを再生成する
    ```
 
-4. **完全な build パイプラインを実行します。** これにより `scan → enrich → init → data → text → readme → agents` が順に実行され、各章ファイル内のすべての `{{data}}` と `{{text}}` ディレクティブが埋められます。
-   ```
-   sdd-forge build
-   ```
-
-5. **生成された文書を確認します。** Markdown ファイルは `docs/` ディレクトリに出力されます。ディレクティブブロック内の内容は build のたびに置き換えられますが、ディレクティブブロックの外側に書いた文章は保持されます。
-
-6. *(任意)* **文書を翻訳します。** 多言語出力が設定されている場合は、次を実行します。
-   ```
-   sdd-forge translate
-   ```
-
-7. *(任意)* **新機能では SDD ワークフローを使います。** 機能追加や修正を始める際は、`sdd-forge flow --request "<description>"` を使って仕様用ブランチを作成し、仕様を書き、ゲートチェックを通過し、実装し、最後に終了ゲートで締めます。
-
+6. **継続的に文書を保守する** — コード変更後に `sdd-forge docs build` を再実行すると、文書を更新できます。ツールは変更を検出して影響のある部分を再生成し、文書とコードベースの同期を保ちます。
 <!-- {{/text}} -->
