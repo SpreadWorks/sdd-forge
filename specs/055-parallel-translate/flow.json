@@ -1,0 +1,77 @@
+{
+  "spec": "specs/055-parallel-translate/spec.md",
+  "baseBranch": "main",
+  "featureBranch": "feature/055-parallel-translate",
+  "steps": [
+    {
+      "id": "approach",
+      "status": "done"
+    },
+    {
+      "id": "branch",
+      "status": "done"
+    },
+    {
+      "id": "spec",
+      "status": "done"
+    },
+    {
+      "id": "draft",
+      "status": "done"
+    },
+    {
+      "id": "fill-spec",
+      "status": "done"
+    },
+    {
+      "id": "approval",
+      "status": "done"
+    },
+    {
+      "id": "gate",
+      "status": "done"
+    },
+    {
+      "id": "test",
+      "status": "done"
+    },
+    {
+      "id": "implement",
+      "status": "done"
+    },
+    {
+      "id": "review",
+      "status": "pending"
+    },
+    {
+      "id": "finalize",
+      "status": "done"
+    }
+  ],
+  "requirements": [
+    {
+      "desc": "言語×ファイルをフラット化してタスクリスト展開",
+      "status": "done"
+    },
+    {
+      "desc": "dry-run/force/mtimeフィルタで翻訳不要ファイル除外",
+      "status": "done"
+    },
+    {
+      "desc": "mapWithConcurrency+resolveConcurrencyで並列翻訳",
+      "status": "done"
+    },
+    {
+      "desc": "言語別出力ディレクトリをタスク実行前に作成",
+      "status": "done"
+    },
+    {
+      "desc": "エラー時は該当ファイルログ出力し他は継続",
+      "status": "done"
+    },
+    {
+      "desc": "translated/skippedカウントを現行形式で出力",
+      "status": "done"
+    }
+  ]
+}
