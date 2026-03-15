@@ -31,19 +31,42 @@ const DEFAULT_TIMEOUT_MS = DEFAULT_AGENT_TIMEOUT * 1000;
  * @param {string} root - Project root
  * @returns {Promise<string>} Translated content
  */
-async function translateDocument(content, fromLang, toLang, agent, root) {
+/**
+ * Map documentStyle.tone to target-language writing style instruction.
+ */
+function toneInstruction(tone, toLang) {
+  if (toLang !== "ja") return "";
+  const map = {
+    polite: "Use です/ます style (敬体).",
+    formal: "Use である style (常体).",
+    casual: "Use casual, conversational tone (口語的).",
+  };
+  return map[tone] || "";
+}
+
+async function translateDocument(content, fromLang, toLang, agent, root, documentStyle) {
+  const toneInstr = documentStyle?.tone ? toneInstruction(documentStyle.tone, toLang) : "";
+
   const systemPrompt = [
-    `You are a professional technical document translator.`,
+    `You are a professional technical document translator specializing in ${toLang}.`,
     `Translate the following Markdown document from ${fromLang} to ${toLang}.`,
     "",
-    "Rules:",
+    "## Formatting rules",
     "- Preserve ALL Markdown formatting (headings, tables, code blocks, links)",
     "- Preserve ALL directives exactly as-is: <!-- {{data: ...}} -->, <!-- {{text: ...}} -->, <!-- {{/data}} -->",
-    "- Translate prose content, headings, and descriptions naturally",
-    "- Keep code snippets, file paths, command names, and technical terms unchanged",
-    "- Maintain the same document structure and line count where possible",
+    "- Keep inline code (`...`), file paths, and CLI command names unchanged",
+    "- DO translate: heading text, prose, table cell text, and descriptive labels inside mermaid diagrams",
+    "- DO NOT translate: code blocks (``` ... ```), variable names, function names, identifiers",
     "- Output ONLY the translated document, no commentary",
-  ].join("\n");
+    "",
+    "## Translation quality rules",
+    "- Do NOT translate word-by-word. Restructure sentences to follow natural grammar and conventions of the target language.",
+    "- Avoid excessive use of loanwords/katakana when the target language has natural equivalents.",
+    "- Avoid verbose patterns such as chains of nominalizations or passive voice.",
+    "- Respect the cultural conventions and writing customs of the target language — the result should read as if originally written in that language, not as a translation.",
+    toneInstr ? `- Writing style: ${toneInstr}` : "",
+    documentStyle?.customInstruction ? `- ${documentStyle.customInstruction}` : "",
+  ].filter(Boolean).join("\n");
 
   const prompt = content;
 
@@ -157,7 +180,7 @@ async function main(ctx) {
       const content = fs.readFileSync(sourcePath, "utf8");
 
       try {
-        const translated = await translateDocument(content, defaultLang, lang, agent, root);
+        const translated = await translateDocument(content, defaultLang, lang, agent, root, cfg.documentStyle);
         fs.writeFileSync(targetPath, translated, "utf8");
         totalTranslated++;
         logger.verbose(`DONE: ${lang}/${file}`);
@@ -176,7 +199,7 @@ async function main(ctx) {
           logger.verbose(`Translating: README.md → ${lang}/README.md`);
           const content = fs.readFileSync(readmePath, "utf8");
           try {
-            const translated = await translateDocument(content, defaultLang, lang, agent, root);
+            const translated = await translateDocument(content, defaultLang, lang, agent, root, cfg.documentStyle);
             fs.writeFileSync(targetReadme, translated, "utf8");
             totalTranslated++;
           } catch (err) {
