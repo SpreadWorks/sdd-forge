@@ -38,10 +38,11 @@ const logger = createLogger("text");
 const DEFAULT_TIMEOUT_MS = DEFAULT_AGENT_TIMEOUT * 1000;
 
 /**
- * config の textFill.preamblePatterns を RegExp 配列に変換する。
+ * i18n の messages:text.preamblePatterns を RegExp 配列に変換する。
  */
-function loadPreamblePatterns(cfg) {
-  const entries = cfg.textFill?.preamblePatterns;
+function loadPreamblePatterns() {
+  const t = translate();
+  const entries = t.raw("messages:text.preamblePatterns");
   if (!Array.isArray(entries) || entries.length === 0) return [];
   return entries.map((e) => new RegExp(e.pattern, e.flags || ""));
 }
@@ -422,7 +423,7 @@ export async function textFillFromAnalysis(root, analysis, commandId, srcRoot) {
 
   const cfg = loadConfig(root);
   const agent = loadAgentConfig(cfg, commandId || "docs.text");
-  const preamblePatterns = loadPreamblePatterns(cfg);
+  const preamblePatterns = loadPreamblePatterns();
   const documentStyle = cfg.documentStyle;
   const lang = cfg.output.default;
   const systemPrompt = buildTextSystemPrompt(documentStyle, lang);
@@ -539,7 +540,7 @@ async function main(ctx) {
 
   ensureAgentWorkDir(agent, root);
 
-  const preamblePatterns = loadPreamblePatterns(cfg);
+  const preamblePatterns = loadPreamblePatterns();
   const documentStyle = cfg.documentStyle;
   const lang = ctx.outputLang;
   const systemPrompt = buildTextSystemPrompt(documentStyle, lang);

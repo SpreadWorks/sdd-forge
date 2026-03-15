@@ -14,24 +14,38 @@
     "tone": "polite",
     "customInstruction": ""
   },
-  "textFill": {
-    "preamblePatterns": [
-      { "pattern": "^(Here is|以下に|Based on)", "flags": "i" }
-    ]
-  },
   "agentWorkDir": ".tmp",
-  "defaultAgent": "claude",
-  "providers": {
-    "claude": {
-      "name": "claude-cli",
-      "command": "claude",
-      "args": ["--model", "sonnet", "-p", "{{PROMPT}}"],
-      "systemPromptFlag": "--system-prompt"
+  "agent": {
+    "default": "claude",
+    "providers": {
+      "claude": {
+        "command": "claude",
+        "args": ["-p", "{{PROMPT}}"],
+        "systemPromptFlag": "--system-prompt",
+        "profiles": {
+          "default": ["--model", "sonnet"],
+          "opus": ["--model", "opus"],
+          "sonnet": ["--model", "sonnet"]
+        }
+      },
+      "codex": {
+        "command": "codex",
+        "args": ["exec", "--full-auto", "-C", ".tmp", "{{PROMPT}}"],
+        "profiles": {
+          "default": []
+        }
+      }
     },
-    "codex": {
-      "name": "codex-cli",
-      "command": "codex",
-      "args": ["exec", "--full-auto", "-C", ".tmp", "{{PROMPT}}"]
+    "commands": {
+      "docs.enrich":       { "agent": "claude", "profile": "default" },
+      "docs.text":         { "agent": "claude", "profile": "default" },
+      "docs.forge":        { "agent": "claude", "profile": "default" },
+      "docs.readme":       { "agent": "claude", "profile": "default" },
+      "docs.agents":       { "agent": "claude", "profile": "default" },
+      "docs.translate":    { "agent": "claude", "profile": "default" },
+      "spec.gate":         { "agent": "claude", "profile": "default" },
+      "flow.review.draft": { "agent": "claude", "profile": "default" },
+      "flow.review.final": { "agent": "claude", "profile": "default" }
     }
   }
 }

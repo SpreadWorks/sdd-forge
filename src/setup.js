@@ -463,11 +463,6 @@ async function main() {
       purpose,
       tone,
     },
-    textFill: {
-      preamblePatterns: [
-        { pattern: "^(Here is|以下に|Based on)", flags: "i" },
-      ],
-    },
     agentWorkDir: ".tmp",
     flow: {
       merge: "squash",

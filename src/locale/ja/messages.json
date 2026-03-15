@@ -97,6 +97,11 @@
     "needsInput": "[forge] NEEDS_INPUT",
     "reviewFeedback": "- docs:review の失敗原因を解消するための追加情報が必要です。"
   },
+  "text": {
+    "preamblePatterns": [
+      { "pattern": "^(以下に|以下は)", "flags": "i" }
+    ]
+  },
   "init": {
     "noType": "ERROR: type が設定されていません。.sdd-forge/config.json に \"type\" を設定するか --type オプションを指定してください。",
     "noTemplates": "ERROR: テンプレートファイルがチェーン内に見つかりません",

@@ -97,6 +97,11 @@
     "needsInput": "[forge] NEEDS_INPUT",
     "reviewFeedback": "- docs:review failed. Additional information is needed to resolve the issue."
   },
+  "text": {
+    "preamblePatterns": [
+      { "pattern": "^(Here is|Based on)", "flags": "i" }
+    ]
+  },
   "init": {
     "noType": "ERROR: type is not set. Set \"type\" in .sdd-forge/config.json or use --type option.",
     "noTemplates": "ERROR: no template files found in chain",

@@ -23,11 +23,6 @@ import { buildTypeAliases } from "./presets.js";
  * @property {string} [flags] - 正規表現フラグ
  */
 
-/**
- * @typedef {Object} TextFillConfig
- * @property {string} [projectContext]       - プロジェクト概要テキスト
- * @property {PreamblePattern[]} [preamblePatterns] - LLM 出力から除去するプレフィックスパターン
- */
 
 /**
  * @typedef {Object} AgentProvider
@@ -59,7 +54,7 @@ import { buildTypeAliases } from "./presets.js";
  * @property {number} [limits.agentTimeout] - Agent timeout in seconds
  * @property {number} [limits.concurrency]    - Per-file concurrency (default: 5)
  * @property {DocumentStyle} [documentStyle]  - Document style settings
- * @property {TextFillConfig} [textFill]      - text-fill settings
+ * @property {Object} [textFill]              - (deprecated) text-fill settings — moved to i18n
  * @property {string} [defaultAgent]          - Default agent name
  * @property {Object<string, AgentProvider>} [providers] - Agent definitions
  * @property {FlowConfig} [flow]              - Flow configuration
