@@ -30,7 +30,15 @@ Available status values: `pending`, `in_progress`, `done`, `skipped`
 ## Behavior per Option
 
 - **Option 1 (すべて実行)**: Execute steps 1–8 in order without asking for each step.
-- **Option 2 (個別に選択する)**: Before each of steps 3–7, ask "実行しますか？ (y/n)" and skip if the user answers no.
+- **Option 2 (個別に選択する)**: Before each of steps 3–7, present:
+
+  | # | Label |
+  |---|---|
+  | 1 | はい |
+  | 2 | いいえ |
+  | 3 | その他 |
+
+  If 2, skip that step.
 
 ## Required Sequence
 

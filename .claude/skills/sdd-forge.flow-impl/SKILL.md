@@ -38,14 +38,28 @@ Before starting, run `sdd-forge flow status --check impl` to verify prerequisite
 
 2. Review implementation.
    - **On start**: `sdd-forge flow status --step review --status in_progress`
-   - Ask: "コードレビューを実行しますか？"
-     - If no → `sdd-forge flow status --step review --status skipped` → Step 3 へ
+   - コードレビューを実行します:
+
+     | # | Label |
+     |---|---|
+     | 1 | はい |
+     | 2 | いいえ |
+     | 3 | その他 |
+
+     - 2 → `sdd-forge flow status --step review --status skipped` → Step 3 へ
    - Run `sdd-forge flow review` to perform AI-powered code review.
    - **If proposals exist** (APPROVED items in review.md):
      1. Display the approved proposals to the user.
-     2. Ask: "これらの改善を適用しますか？"
-     3. If yes → Apply fixes based on proposals → Re-run tests to confirm no regressions.
-     4. If no → Skip fixes, proceed to Step 3.
+     2. 改善を適用します:
+
+        | # | Label |
+        |---|---|
+        | 1 | はい |
+        | 2 | いいえ |
+        | 3 | その他 |
+
+     3. If 1 → Apply fixes based on proposals → Re-run tests to confirm no regressions.
+     4. If 2 → Skip fixes, proceed to Step 3.
    - **If no proposals** (NO_PROPOSALS):
      - Display: "レビューの結果、修正の必要はありませんでした"
      - Proceed directly to Step 3 (no user confirmation needed).
@@ -53,9 +67,16 @@ Before starting, run `sdd-forge flow status --check impl` to verify prerequisite
 
 3. Ask user about finalization.
    - **On start**: `sdd-forge flow status --step finalize --status in_progress`
-   - Ask: "実装内容に問題がなければ終了処理を行いますか？"
-   - If approved, immediately invoke `/sdd-forge.flow-merge` using the Skill tool (do not wait for additional user input).
-   - If the user wants changes, go back to step 2.
+   - 終了処理を行います:
+
+     | # | Label |
+     |---|---|
+     | 1 | はい |
+     | 2 | いいえ（修正する） |
+     | 3 | その他 |
+
+   - 1 → immediately invoke `/sdd-forge.flow-merge` using the Skill tool (do not wait for additional user input).
+   - 2 → go back to step 2.
    - **On complete**: `sdd-forge flow status --step finalize --status done`
 
 ## Hard Stops
