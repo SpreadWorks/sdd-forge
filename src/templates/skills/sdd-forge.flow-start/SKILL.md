@@ -16,7 +16,7 @@ AI が勝手に次のステップに進まない。
 
 **MUST: 各ステップの完了時に `sdd-forge flow status --step <id> --status <val>` を実行してフロー進捗を記録する。**
 
-Available step IDs: `approach`, `branch`, `spec`, `draft`, `fill-spec`, `approval`, `gate`, `test`, `implement`, `finalize`
+Available step IDs: `approach`, `branch`, `spec`, `draft`, `fill-spec`, `approval`, `gate`, `test`, `implement`, `review`, `finalize`
 Available status values: `pending`, `in_progress`, `done`, `skipped`
 
 ## Required Sequence
@@ -150,7 +150,15 @@ Available status values: `pending`, `in_progress`, `done`, `skipped`
    - **Update requirements as you go**: `sdd-forge flow status --req <index> --status done` for each completed requirement.
    - **On complete**: `sdd-forge flow status --step implement --status done`
 
-10. Ask user about finalization.
+10. Code review.
+    - **On start**: `sdd-forge flow status --step review --status in_progress`
+    - Run `sdd-forge flow review` to generate improvement proposals.
+    - Show the user the approved proposals and ask whether to apply them.
+    - If the user approves, apply the changes.
+    - If no proposals or all rejected, proceed to finalization.
+    - **On complete**: `sdd-forge flow status --step review --status done`
+
+11. Ask user about finalization.
     - **On start**: `sdd-forge flow status --step finalize --status in_progress`
     - Ask: "実装内容に問題がなければ終了処理を行いますか？"
     - If approved, immediately invoke `/sdd-flow-close` using the Skill tool (do not wait for additional user input).
@@ -187,5 +195,6 @@ sdd-forge flow status
 sdd-forge flow status --step <id> --status <val>
 sdd-forge flow status --summary '<JSON array>'
 sdd-forge flow status --req <index> --status <val>
+sdd-forge flow review
 sdd-forge snapshot check
 ```
