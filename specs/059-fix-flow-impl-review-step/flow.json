@@ -1,0 +1,93 @@
+{
+  "spec": "specs/059-fix-flow-impl-review-step/spec.md",
+  "baseBranch": "main",
+  "featureBranch": "feature/059-fix-flow-impl-review-step",
+  "steps": [
+    {
+      "id": "approach",
+      "status": "done"
+    },
+    {
+      "id": "branch",
+      "status": "done"
+    },
+    {
+      "id": "spec",
+      "status": "done"
+    },
+    {
+      "id": "draft",
+      "status": "done"
+    },
+    {
+      "id": "fill-spec",
+      "status": "done"
+    },
+    {
+      "id": "approval",
+      "status": "done"
+    },
+    {
+      "id": "gate",
+      "status": "done"
+    },
+    {
+      "id": "test",
+      "status": "skipped"
+    },
+    {
+      "id": "implement",
+      "status": "done"
+    },
+    {
+      "id": "review",
+      "status": "skipped"
+    },
+    {
+      "id": "finalize",
+      "status": "done"
+    },
+    {
+      "id": "docs-update",
+      "status": "done"
+    },
+    {
+      "id": "docs-review",
+      "status": "done"
+    },
+    {
+      "id": "commit",
+      "status": "done"
+    },
+    {
+      "id": "merge",
+      "status": "done"
+    },
+    {
+      "id": "branch-cleanup",
+      "status": "done"
+    },
+    {
+      "id": "archive",
+      "status": "done"
+    }
+  ],
+  "requirements": [
+    {
+      "desc": "flow-impl SKILL.md Step 2 を sdd-forge flow review ベースに改修",
+      "status": "done"
+    },
+    {
+      "desc": "提案あり時: 表示→確認→修正→テストの流れを記述",
+      "status": "done"
+    },
+    {
+      "desc": "提案なし時: メッセージ表示→finalize直行の流れを記述",
+      "status": "done"
+    },
+    {
+      "desc": "review.js の --apply 案内出力を削除",
+      "status": "done"
+    }
+  ]
+}
