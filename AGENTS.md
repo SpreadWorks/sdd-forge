@@ -65,8 +65,6 @@
 - 公開前に `npm pack --dry-run` で機密情報がないことを確認する。
 
 <!-- {{data: agents.project("")}} -->
-Now I have all the verified data. Here's the refined PROJECT section:
-
 ## Project Context
 
 - **パッケージ:** `sdd-forge` v0.1.0-alpha.30

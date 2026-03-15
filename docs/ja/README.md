@@ -6,48 +6,48 @@
 
 [![npm version](https://img.shields.io/npm/v/sdd-forge.svg)](https://www.npmjs.com/package/sdd-forge)
 
-> **Alpha:** このツールは現在 alpha 版です。API、コマンド構成、設定フォーマットは予告なく変更される場合があります。本番利用は推奨していません。
+> **Alpha版:** このツールは現在アルファ版です。API・コマンド体系・設定フォーマットは予告なく変更される可能性があります。本番環境での利用はお控えください。
 
-**プログラムによるソースコード解析からドキュメントを生成する CLI ツールです。AI の推測ではなく、事実に基づきます。**
+**ソースコードをプログラムで解析し、AI の推測ではなく事実に基づいたドキュメントを自動生成する CLI ツール。**
 
-機械的なゲートチェックと構造化テンプレートにより、AI だけでは実現できない再現性と正確性を確保します。
-また、Spec-Driven Development（SDD）ワークフローによって、機能の追加や変更に合わせてドキュメントを常に同期できます。
+機械的なゲートチェックと構造化テンプレートにより、AI だけでは実現できない再現性と正確性を保証します。
+Spec-Driven Development（SDD）ワークフローで、機能追加・修正時のドキュメント鮮度も維持します。
 
-## なぜ sdd-forge なのか
+## Why sdd-forge?
 
-多くの AI ドキュメントツールは、AI にコードを「読ませて」ドキュメントを書かせます。
-sdd-forge はそこが違います。
+多くの AI ドキュメント生成ツールは、AI にコードを「読ませて」ドキュメントを書かせます。
+sdd-forge は違います。
 
-- **プログラム解析** — AI に読ませるのではなく、静的アナライザーが controller、model、route、config を解析します。幻覚も、見落としもありません
-- **事実と生成の分離** — `{{data}}` ディレクティブはソースコードから機械的に抽出した事実を埋め込みます。`{{text}}` ディレクティブには AI が生成した説明を入れます。信頼できる情報と推論による説明が、構造として明確に分かれます
-- **機械的なゲートチェック** — spec の完全性は AI の判断ではなく、プログラムロジックで検証します。信頼できる品質ゲートです
-- **構造の安定性** — ディレクティブが「何をどこに置くか」を定義します。AI が段落を並べ替えたり、文書構造を変えたりすることはできません
+- **プログラムによる解析** — AI にコードを読ませるのではなく、スタティックアナライザーがコントローラ・モデル・ルート・設定を解析。AI の幻覚や読み漏れがない
+- **事実と生成の分離** — `{{data}}` はソースから機械的に抽出した事実。`{{text}}` は AI が生成した説明文。どこが信頼できてどこが推測かが構造的に明確
+- **機械的なゲートチェック** — 仕様の完全性をプログラムが検証。AI の判断に依存しない品質ゲート
+- **構成の安定性** — ディレクティブが「何をどこに書くか」を定義。AI が段落構成を勝手に変えない
 
-## 機能
+## Features
 
-### 解析
+### Analyze（解析）
 
-`scan` はソースコードを静的解析し、`analysis.json` を生成します。構造を読むのは AI ではなくプログラムです。
+`scan` でソースコードを静的解析し `analysis.json` を生成。AI ではなくプログラムが構造を読み取ります。
 
-- controller、model、route、config ファイルを解析し、構造データを抽出します
-- `enrich` では、AI が全体像を俯瞰し、各エントリに役割、要約、章分類を付与します
-- プリセットシステムにより、さまざまなフレームワークやプロジェクト構成に対応できます
+- コントローラ・モデル・ルート・設定ファイルを解析し、構造データを抽出
+- `enrich` で AI が全体像を把握し、各エントリに役割・概要・章分類を付与
+- プリセットシステムで様々なフレームワーク・プロジェクト構成に対応
 
-### 生成
+### Generate（生成）
 
-`{{data}}` は事実を、`{{text}}` は AI による説明をテンプレートへ埋め込みます。`build` を 1 回実行するだけで `docs/` と `README.md` を生成できます。
+`{{data}}` で事実を、`{{text}}` で AI 説明を、テンプレートに注入。`build` 一発で `docs/` と `README.md` が完成します。
 
-- テンプレート継承 — base → arch → preset → project-local の 4 層オーバーライド
-- 多言語対応 — translate / generate モードで自動ローカライズ
-- 依存関係ゼロ — Node.js 18+ のみで動作し、npm パッケージは不要です
+- テンプレート継承 — base → arch → preset → project-local の 4 層継承でカスタマイズ可能
+- 多言語対応 — translate / generate モードで複数言語のドキュメントを自動生成
+- ゼロ依存 — Node.js 18+ のみで動作。npm 依存パッケージなし
 
-### 運用
+### Enforce（強制）
 
-`gate` は spec を機械的に検証し、`review` はドキュメント品質を確認します。SDD ワークフローによって、ドキュメントを常に最新に保てます。
+`gate` で仕様を機械チェック、`review` で品質チェック。SDD フローでドキュメントの鮮度を維持します。
 
-- gate — 未解決項目や承認漏れをプログラムで検出します。PASS するまで実装は開始できません
-- review — AI が docs とソースコードの整合性を確認します
-- AI エージェント連携 — Claude Code（skills）と Codex CLI に対応しています
+- gate — 仕様書の未解決事項・未承認をプログラムで検出。PASS するまで実装に進めない
+- review — AI がドキュメントとソースコードの整合性をチェック
+- AI エージェント連携 — Claude Code（スキル）・Codex CLI に対応
 
 ## クイックスタート
 
@@ -64,42 +64,42 @@ yarn global add <!-- {{data: project.name("")}} -->sdd-forge<!-- {{/data}} -->
 pnpm add -g <!-- {{data: project.name("")}} -->sdd-forge<!-- {{/data}} -->
 </pre>
 
-### セットアップと生成
+### セットアップ & ドキュメント生成
 
 <pre>
-# 1. プロジェクトを登録（対話ウィザード）
+# 1. プロジェクトを登録（インタラクティブウィザード）
 <!-- {{data: project.name("")}} -->sdd-forge<!-- {{/data}} --> setup
 
-# 2. すべてのドキュメントを生成（scan → enrich → init → data → text → readme → agents → translate）
+# 2. ドキュメントを一括生成（scan → enrich → init → data → text → readme → agents → translate）
 <!-- {{data: project.name("")}} -->sdd-forge<!-- {{/data}} --> build
 </pre>
 
-これで完了です。`docs/` と `README.md` が生成されます。
+これだけで `docs/` と `README.md` が生成されます。
 
-## コマンド
+## コマンド一覧
 
 ### ドキュメント生成
 
 | コマンド | 説明 |
 |---|---|
-| `setup` | プロジェクトを登録し、config を生成 |
-| `build` | ドキュメント生成パイプライン全体を実行 |
-| `scan` | ソースコードを解析して `analysis.json` を生成 |
+| `setup` | プロジェクト登録 + 設定ファイル生成 |
+| `build` | ドキュメント生成パイプラインを一括実行 |
+| `scan` | ソースコード解析 → `analysis.json` |
 | `init` | テンプレートから `docs/` を初期化 |
 | `data` | `{{data}}` ディレクティブを解析データで解決 |
 | `text` | `{{text}}` ディレクティブを AI で解決 |
-| `readme` | `docs/` から `README.md` を生成 |
-| `forge` | AI でドキュメントを反復的に改善 |
-| `review` | ドキュメント品質を確認 |
-| `translate` | docs を翻訳（既定言語 → 他言語） |
-| `upgrade` | プリセットテンプレートを最新バージョンに更新 |
+| `readme` | `docs/` から `README.md` を自動生成 |
+| `forge` | AI によるドキュメント反復改善 |
+| `review` | ドキュメント品質チェック |
+| `translate` | 多言語翻訳（デフォルト言語 → 他言語） |
+| `upgrade` | プリセットテンプレートを最新版に更新 |
 
 ### SDD ワークフロー
 
 | コマンド | 説明 |
 |---|---|
-| `spec` | spec と feature branch を作成 |
-| `gate` | 実装前の spec チェック |
+| `spec` | 仕様書 + feature ブランチを作成 |
+| `gate` | 仕様書の実装前チェック |
 | `flow` | SDD ワークフローを自動実行 |
 | `changelog` | specs/ から変更履歴を生成 |
 | `agents` | AGENTS.md を更新 |
@@ -108,81 +108,81 @@ pnpm add -g <!-- {{data: project.name("")}} -->sdd-forge<!-- {{/data}} -->
 
 | コマンド | 説明 |
 |---|---|
-| `presets` | 利用可能なプリセットを一覧表示 |
+| `presets` | 利用可能なプリセット一覧を表示 |
 | `help` | コマンド一覧を表示 |
 
 ## SDD ワークフロー
 
-機能開発の流れ:
+機能追加・修正の流れ:
 
 ```
-  spec          Create spec (feature branch + spec.md)
+  spec          仕様書を作成（feature ブランチ + spec.md）
     ↓
-  gate          Spec gate check ← verified by program (not AI)
+  gate          仕様ゲートチェック ← プログラムが検証（AI ではない）
     ↓
-  implement     Code after gate PASS
+  実装          gate PASS 後にコーディング
     ↓
-  forge         AI updates documentation
+  forge         AI がドキュメントを自動更新
     ↓
-  review        AI quality check (repeat until PASS)
+  review        AI が品質チェック（PASS するまで繰り返し）
 ```
 
-### AI エージェント連携
+### AI エージェントとの連携
 
 #### Claude Code
 
-skills 経由で SDD ワークフローを実行します:
+スキルで SDD ワークフローを実行できます:
 
 ```
-/sdd-flow-start   — create spec → gate → start implementation
-/sdd-flow-close   — forge → review → commit → merge
+/sdd-flow-start   — spec 作成 → gate → 実装を開始
+/sdd-flow-close   — forge → review → commit → merge で終了
 ```
 
 #### Codex CLI
 
-` prompt からワークフローを実行します:
+`$` プロンプトからワークフローを実行できます:
 
 ```
-$sdd-flow-start   — create spec → gate → start implementation
-$sdd-flow-close   — forge → review → commit → merge
+$sdd-flow-start   — spec 作成 → gate → 実装を開始
+$sdd-flow-close   — forge → review → commit → merge で終了
 ```
 
 ## 設定
 
-`sdd-forge setup` は `.sdd-forge/config.json` を生成します:
+`sdd-forge setup` で `.sdd-forge/config.json` が生成されます。
 
 ```jsonc
 {
-  "type": "cli/node-cli",     // project type (preset selection)
-  "lang": "en",               // documentation language
-  "defaultAgent": "claude",   // AI agent
-  "providers": { ... }        // agent settings
+  "type": "cli/node-cli",     // プロジェクトタイプ（プリセット選択）
+  "lang": "ja",               // ドキュメント言語
+  "defaultAgent": "claude",   // AI エージェント
+  "providers": { ... }        // エージェント設定
 }
 ```
 
 ### カスタマイズ
 
-プロジェクト固有のテンプレートや data source を追加できます:
+プロジェクト固有のテンプレートやデータソースを追加できます:
 
 ```
 .sdd-forge/
 ├── templates/{lang}/
-│   ├── docs/      ← chapter template & README overrides
-│   └── specs/     ← spec.md / qa.md templates
-└── data/          ← custom data source modules
+│   ├── docs/      ← 章テンプレート・README のオーバーライド
+│   └── specs/     ← spec.md / qa.md テンプレート
+└── data/          ← カスタムデータソースモジュール
 ```
 
 ## ドキュメント
 
-<!-- {{data: docs.chapters("Chapter|Summary")}} -->
+<!-- {{data: docs.chapters("章|概要")}} -->
 | 章 | 概要 |
 | --- | --- |
-| [01. ツール概要とアーキテクチャ](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/overview.md) | この章では、技術ドキュメント生成を自動化する Spec-Driven Development 向け CLI ツール sdd-forge を紹介します… |
-| [02. CLI コマンドリファレンス](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/cli_commands.md) | sdd-forge は、3 層のディスパッチ構成（`sdd-forge <namespace> <subco…`）に整理された 20 以上のコマンドを提供します |
-| [03. 設定とカスタマイズ](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/configuration.md) | sdd-forge は主に `.sdd-forge/config.json` と `preset.json` によって設定します。 |
-| [04. 内部設計](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/internal_design.md) | この章では、3 層のディレクトリ構造（`src/lib/` →…）を含む sdd-forge の内部アーキテクチャを説明します |
+| [01. ツール概要とアーキテクチャ](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/ja/overview.md) | sdd-forge は、ソースコードの静的解析と AI を組み合わせて技術ドキュメントを自動生成する CLI ツールです。 |
+| [02. CLI コマンドリファレンス](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/ja/cli_commands.md) | sdd-forge は 20 以上のサブコマンドを提供する CLI ツールで、3 層ディスパッチ構造（`sdd-forge` → 名前空間ディスパッチャー → 個別コマンド）でルーティングされます。 |
+| [03. 設定とカスタマイズ](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/ja/configuration.md) | sdd-forge はプロジェクトルート直下の `.sdd-forge/config.json` を中心に、出力言語・プロジェクト種別・ドキュメントスタイル・AI エージェント・並列数などを設定できます。 |
+| [04. 内部設計](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/ja/internal_design.md) | sdd-forge は 3 層ディスパッチ（CLI エントリ → ドメインディスパッチャー → コマンド実装）を軸に構成され、共有ライブラリ層（`src/lib/`）とドキュメント生成ライブラリ層（`src/docs/lib/`）が全… |
 <!-- {{/data}} -->
 
-## ライセンス
+## License
 
 MIT
