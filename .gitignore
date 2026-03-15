@@ -1,5 +1,6 @@
 .claude/settings.local.json
 .sdd-forge/*
+!.sdd-forge/config.json
 !.sdd-forge/templates/
 node_modules
 /projects/
