@@ -53,19 +53,23 @@ describe("callAgentAsync", () => {
 describe("resolveAgent", () => {
   it("resolves agent via commands config", () => {
     const cfg = {
-      defaultAgent: "claude",
-      providers: { claude: { command: "claude", args: ["-p", "{{PROMPT}}"], profiles: { default: [], opus: ["--model", "opus"] } } },
-      commands: { "docs.review": { agent: "claude", profile: "opus" } },
+      agent: {
+        default: "claude",
+        providers: { claude: { command: "claude", args: ["-p", "{{PROMPT}}"], profiles: { default: [], opus: ["--model", "opus"] } } },
+        commands: { "docs.review": { agent: "claude", profile: "opus" } },
+      },
     };
     const result = resolveAgent(cfg, "docs.review");
     assert.equal(result.command, "claude");
     assert.deepEqual(result.args, ["--model", "opus", "-p", "{{PROMPT}}"]);
   });
 
-  it("uses defaultAgent when commandId not provided", () => {
+  it("uses default agent when commandId not provided", () => {
     const cfg = {
-      defaultAgent: "claude",
-      providers: { claude: { command: "claude", args: [] } },
+      agent: {
+        default: "claude",
+        providers: { claude: { command: "claude", args: [] } },
+      },
     };
     const result = resolveAgent(cfg);
     assert.deepEqual(result, { command: "claude", args: [] });
@@ -78,16 +82,18 @@ describe("resolveAgent", () => {
 
   it("falls back to parent command", () => {
     const cfg = {
-      defaultAgent: "claude",
-      providers: { claude: { command: "claude", args: ["-p", "{{PROMPT}}"], profiles: { default: [], sonnet: ["--model", "sonnet"] } } },
-      commands: { "docs": { agent: "claude", profile: "sonnet" } },
+      agent: {
+        default: "claude",
+        providers: { claude: { command: "claude", args: ["-p", "{{PROMPT}}"], profiles: { default: [], sonnet: ["--model", "sonnet"] } } },
+        commands: { "docs": { agent: "claude", profile: "sonnet" } },
+      },
     };
     const result = resolveAgent(cfg, "docs.forge");
     assert.deepEqual(result.args, ["--model", "sonnet", "-p", "{{PROMPT}}"]);
   });
 
   it("returns null when provider not found", () => {
-    const cfg = { providers: {} };
+    const cfg = { agent: { providers: {} } };
     const result = resolveAgent(cfg, "nonexistent");
     assert.equal(result, null);
   });

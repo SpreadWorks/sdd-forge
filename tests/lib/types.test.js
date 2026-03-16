@@ -71,18 +71,18 @@ describe("validateConfig", () => {
     );
   });
 
-  it("validates providers", () => {
+  it("validates agent.providers", () => {
     const cfg = {
       ...validConfig,
-      providers: { claude: { command: "claude", args: ["-p", "{{PROMPT}}"] } },
+      agent: { providers: { claude: { command: "claude", args: ["-p", "{{PROMPT}}"] } } },
     };
     const result = validateConfig(cfg);
-    assert.deepEqual(result.providers.claude.args, ["-p", "{{PROMPT}}"]);
+    assert.deepEqual(result.agent.providers.claude.args, ["-p", "{{PROMPT}}"]);
   });
 
-  it("rejects provider without command", () => {
+  it("rejects agent.providers entry without command", () => {
     assert.throws(
-      () => validateConfig({ ...validConfig, providers: { bad: { args: [] } } }),
+      () => validateConfig({ ...validConfig, agent: { providers: { bad: { args: [] } } } }),
       /command/,
     );
   });

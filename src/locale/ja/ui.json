@@ -122,6 +122,9 @@
       "spec guardrail": "プロジェクト guardrail（原則）を管理",
       "flow start": "SDD フローを開始",
       "flow status": "フロー進捗を表示・更新",
+      "flow review": "AI コードレビュー",
+      "flow merge": "feature ブランチを squash-merge",
+      "flow cleanup": "feature ブランチ・worktree を削除",
       "presets list": "プリセット継承ツリーを表示"
     },
     "cmdHelp": {

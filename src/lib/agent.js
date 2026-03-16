@@ -274,11 +274,10 @@ function mergeProfileArgs(provider, profileName) {
  * @returns {Object|null} Agent config object with merged args, or null if not configured
  */
 export function resolveAgent(cfg, commandId) {
-  // Support both nested (cfg.agent.*) and flat (cfg.*) layouts
   const agentSection = cfg.agent || {};
-  const commands = agentSection.commands || cfg.commands;
-  const providers = agentSection.providers || cfg.providers;
-  const defaultAgent = agentSection.default || cfg.defaultAgent;
+  const commands = agentSection.commands;
+  const providers = agentSection.providers;
+  const defaultAgent = agentSection.default;
 
   const cmdSettings = resolveCommandSettings(commands, commandId);
 

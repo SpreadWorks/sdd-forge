@@ -48,13 +48,21 @@ import { buildTypeAliases } from "./presets.js";
  */
 
 /**
+ * @typedef {Object} AgentConfig
+ * @property {string} [default]              - Default agent provider name
+ * @property {string} [workDir]              - Working directory for agent execution
+ * @property {number} [timeout]              - Agent execution timeout in seconds
+ * @property {Object<string, AgentProvider>} [providers] - Agent provider definitions
+ * @property {Object} [commands]             - Per-command agent and profile overrides
+ */
+
+/**
  * @typedef {Object} SddConfig
  * @property {DocsConfig} docs               - Documentation configuration (required)
  * @property {string} lang                   - Operating language for CLI, AGENTS.md, skills, specs
  * @property {string} type                   - Project type ("webapp/cakephp2" | "cli" | ...)
  * @property {number} [concurrency]          - Per-file concurrency (default: 5)
- * @property {string} [defaultAgent]         - Default agent name
- * @property {Object<string, AgentProvider>} [providers] - Agent definitions
+ * @property {AgentConfig} [agent]           - AI agent invocation settings
  * @property {FlowConfig} [flow]             - Flow configuration
  */
 
@@ -196,21 +204,21 @@ export function validateConfig(raw) {
     }
   }
 
-  // providers (省略可)
-  if (raw.providers != null) {
-    if (typeof raw.providers !== "object") {
-      errors.push("'providers' must be an object");
+  // agent.providers (省略可)
+  if (raw.agent?.providers != null) {
+    if (typeof raw.agent.providers !== "object") {
+      errors.push("'agent.providers' must be an object");
     } else {
-      for (const [key, prov] of Object.entries(raw.providers)) {
+      for (const [key, prov] of Object.entries(raw.agent.providers)) {
         if (typeof prov !== "object" || prov == null) {
-          errors.push(`'providers.${key}' must be an object`);
+          errors.push(`'agent.providers.${key}' must be an object`);
           continue;
         }
         if (typeof prov.command !== "string" || prov.command.length === 0) {
-          errors.push(`'providers.${key}.command' must be a non-empty string`);
+          errors.push(`'agent.providers.${key}.command' must be a non-empty string`);
         }
         if (!Array.isArray(prov.args)) {
-          errors.push(`'providers.${key}.args' must be an array`);
+          errors.push(`'agent.providers.${key}.args' must be an array`);
         }
       }
     }

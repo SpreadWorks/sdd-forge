@@ -170,13 +170,15 @@ describe("forge CLI", () => {
       lang: "ja",
       type: "cli/node-cli",
       docs: { languages: ["ja"], defaultLanguage: "ja" },
-      defaultAgent: "echo-agent",
-      providers: {
-        "echo-agent": {
-          name: "echo-agent",
-          command: "echo",
-          args: ["{{PROMPT}}"],
-          systemPromptFlag: "--system-prompt",
+      agent: {
+        default: "echo-agent",
+        providers: {
+          "echo-agent": {
+            name: "echo-agent",
+            command: "echo",
+            args: ["{{PROMPT}}"],
+            systemPromptFlag: "--system-prompt",
+          },
         },
       },
     });
@@ -204,12 +206,14 @@ describe("forge CLI", () => {
       lang: "ja",
       type: "cli/node-cli",
       docs: { languages: ["ja"], defaultLanguage: "ja" },
-      defaultAgent: "echo-agent",
-      providers: {
-        "echo-agent": {
-          name: "echo-agent",
-          command: "echo",
-          args: ["{{PROMPT}}"],
+      agent: {
+        default: "echo-agent",
+        providers: {
+          "echo-agent": {
+            name: "echo-agent",
+            command: "echo",
+            args: ["{{PROMPT}}"],
+          },
         },
       },
     });

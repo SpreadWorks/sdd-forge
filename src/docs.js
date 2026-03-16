@@ -93,7 +93,7 @@ if (subCmd === "build") {
   const { main: readmeMain } = await import(path.join(PKG_DIR, "docs/commands/readme.js"));
   const { main: agentsMain } = await import(path.join(PKG_DIR, "docs/commands/agents.js"));
 
-  const hasAgent = !!(baseCtx.config.agent?.default || baseCtx.config.defaultAgent);
+  const hasAgent = !!baseCtx.config.agent?.default;
 
   try {
     // 1. scan

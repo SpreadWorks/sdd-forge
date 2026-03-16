@@ -71,15 +71,17 @@ describe("init CLI", () => {
       lang: "ja",
       docs: { languages: ["ja"], defaultLanguage: "ja", style: { purpose: "user-guide", tone: "polite" } },
       type: "cli/node-cli",
-      defaultAgent: "capture",
-      providers: {
-        capture: {
-          command: "node",
-          args: [
-            "-e",
-            "const fs=require('fs');const prompt=process.argv[process.argv.length-1]||'';fs.writeFileSync(process.env.PROMPT_CAPTURE,prompt,'utf8');process.stdout.write('[\"overview.md\"]');",
-            "{{PROMPT}}",
-          ],
+      agent: {
+        default: "capture",
+        providers: {
+          capture: {
+            command: "node",
+            args: [
+              "-e",
+              "const fs=require('fs');const prompt=process.argv[process.argv.length-1]||'';fs.writeFileSync(process.env.PROMPT_CAPTURE,prompt,'utf8');process.stdout.write('[\"overview.md\"]');",
+              "{{PROMPT}}",
+            ],
+          },
         },
       },
     });

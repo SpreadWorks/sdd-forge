@@ -20,145 +20,8 @@ describe("052: agent command config", () => {
   afterEach(() => tmp && removeTmpDir(tmp));
 
   describe("resolveAgent with COMMAND_ID", () => {
-    // Test resolveAgent directly by importing it
-    // We test the resolution logic with a mock config
 
     it("resolves exact command match (docs.review)", async () => {
-      const { resolveAgent } = await import("../src/lib/agent.js");
-      const config = {
-        defaultAgent: "claude",
-        providers: {
-          claude: {
-            command: "claude",
-            args: ["-p", "{{PROMPT}}"],
-            profiles: {
-              default: [],
-              opus: ["--model", "opus"],
-              sonnet: ["--model", "sonnet"],
-            },
-          },
-        },
-        commands: {
-          "docs": { agent: "claude", profile: "sonnet" },
-          "docs.review": { agent: "claude", profile: "opus" },
-        },
-      };
-      const agent = resolveAgent(config, "docs.review");
-      assert.equal(agent.command, "claude");
-      assert.deepEqual(agent.args, ["--model", "opus", "-p", "{{PROMPT}}"]);
-    });
-
-    it("falls back to parent command (docs.forge → docs)", async () => {
-      const { resolveAgent } = await import("../src/lib/agent.js");
-      const config = {
-        defaultAgent: "claude",
-        providers: {
-          claude: {
-            command: "claude",
-            args: ["-p", "{{PROMPT}}"],
-            profiles: {
-              default: [],
-              sonnet: ["--model", "sonnet"],
-            },
-          },
-        },
-        commands: {
-          "docs": { agent: "claude", profile: "sonnet" },
-        },
-      };
-      const agent = resolveAgent(config, "docs.forge");
-      assert.equal(agent.command, "claude");
-      assert.deepEqual(agent.args, ["--model", "sonnet", "-p", "{{PROMPT}}"]);
-    });
-
-    it("falls back to defaultAgent when no command match", async () => {
-      const { resolveAgent } = await import("../src/lib/agent.js");
-      const config = {
-        defaultAgent: "claude",
-        providers: {
-          claude: {
-            command: "claude",
-            args: ["-p", "{{PROMPT}}"],
-            profiles: { default: [] },
-          },
-        },
-        commands: {},
-      };
-      const agent = resolveAgent(config, "docs.review");
-      assert.equal(agent.command, "claude");
-      assert.deepEqual(agent.args, ["-p", "{{PROMPT}}"]);
-    });
-
-    it("profile concat: profiles[name] + provider.args", async () => {
-      const { resolveAgent } = await import("../src/lib/agent.js");
-      const config = {
-        defaultAgent: "claude",
-        providers: {
-          claude: {
-            command: "claude",
-            args: ["-p", "{{PROMPT}}"],
-            profiles: {
-              default: [],
-              custom: ["--model", "sonnet", "--output-format", "json"],
-            },
-          },
-        },
-        commands: {
-          "docs.text": { agent: "claude", profile: "custom" },
-        },
-      };
-      const agent = resolveAgent(config, "docs.text");
-      assert.deepEqual(agent.args, ["--model", "sonnet", "--output-format", "json", "-p", "{{PROMPT}}"]);
-    });
-
-    it("profile default produces provider.args only", async () => {
-      const { resolveAgent } = await import("../src/lib/agent.js");
-      const config = {
-        defaultAgent: "claude",
-        providers: {
-          claude: {
-            command: "claude",
-            args: ["-p", "{{PROMPT}}"],
-            profiles: { default: [] },
-          },
-        },
-        commands: {
-          "docs.forge": { agent: "claude", profile: "default" },
-        },
-      };
-      const agent = resolveAgent(config, "docs.forge");
-      assert.deepEqual(agent.args, ["-p", "{{PROMPT}}"]);
-    });
-
-    it("resolves different provider via commands", async () => {
-      const { resolveAgent } = await import("../src/lib/agent.js");
-      const config = {
-        defaultAgent: "claude",
-        providers: {
-          claude: {
-            command: "claude",
-            args: ["-p", "{{PROMPT}}"],
-            profiles: { default: [] },
-          },
-          codex: {
-            command: "codex",
-            args: ["{{PROMPT}}"],
-            profiles: {
-              default: [],
-              o3: ["--model", "o3"],
-            },
-          },
-        },
-        commands: {
-          "spec.gate": { agent: "codex", profile: "o3" },
-        },
-      };
-      const agent = resolveAgent(config, "spec.gate");
-      assert.equal(agent.command, "codex");
-      assert.deepEqual(agent.args, ["--model", "o3", "{{PROMPT}}"]);
-    });
-
-    it("supports nested agent section (config.agent.*)", async () => {
       const { resolveAgent } = await import("../src/lib/agent.js");
       const config = {
         agent: {
@@ -170,27 +33,151 @@ describe("052: agent command config", () => {
               profiles: {
                 default: [],
                 opus: ["--model", "opus"],
+                sonnet: ["--model", "sonnet"],
               },
             },
           },
           commands: {
-            "docs": { agent: "claude", profile: "opus" },
+            "docs": { agent: "claude", profile: "sonnet" },
+            "docs.review": { agent: "claude", profile: "opus" },
           },
         },
       };
-      const agent = resolveAgent(config, "docs");
+      const agent = resolveAgent(config, "docs.review");
       assert.equal(agent.command, "claude");
       assert.deepEqual(agent.args, ["--model", "opus", "-p", "{{PROMPT}}"]);
     });
 
-    it("backward compat: resolveAgent(config) without COMMAND_ID", async () => {
+    it("falls back to parent command (docs.forge → docs)", async () => {
       const { resolveAgent } = await import("../src/lib/agent.js");
       const config = {
-        defaultAgent: "claude",
-        providers: {
-          claude: {
-            command: "claude",
-            args: ["-p", "{{PROMPT}}"],
+        agent: {
+          default: "claude",
+          providers: {
+            claude: {
+              command: "claude",
+              args: ["-p", "{{PROMPT}}"],
+              profiles: {
+                default: [],
+                sonnet: ["--model", "sonnet"],
+              },
+            },
+          },
+          commands: {
+            "docs": { agent: "claude", profile: "sonnet" },
+          },
+        },
+      };
+      const agent = resolveAgent(config, "docs.forge");
+      assert.equal(agent.command, "claude");
+      assert.deepEqual(agent.args, ["--model", "sonnet", "-p", "{{PROMPT}}"]);
+    });
+
+    it("falls back to default agent when no command match", async () => {
+      const { resolveAgent } = await import("../src/lib/agent.js");
+      const config = {
+        agent: {
+          default: "claude",
+          providers: {
+            claude: {
+              command: "claude",
+              args: ["-p", "{{PROMPT}}"],
+              profiles: { default: [] },
+            },
+          },
+          commands: {},
+        },
+      };
+      const agent = resolveAgent(config, "docs.review");
+      assert.equal(agent.command, "claude");
+      assert.deepEqual(agent.args, ["-p", "{{PROMPT}}"]);
+    });
+
+    it("profile concat: profiles[name] + provider.args", async () => {
+      const { resolveAgent } = await import("../src/lib/agent.js");
+      const config = {
+        agent: {
+          default: "claude",
+          providers: {
+            claude: {
+              command: "claude",
+              args: ["-p", "{{PROMPT}}"],
+              profiles: {
+                default: [],
+                custom: ["--model", "sonnet", "--output-format", "json"],
+              },
+            },
+          },
+          commands: {
+            "docs.text": { agent: "claude", profile: "custom" },
+          },
+        },
+      };
+      const agent = resolveAgent(config, "docs.text");
+      assert.deepEqual(agent.args, ["--model", "sonnet", "--output-format", "json", "-p", "{{PROMPT}}"]);
+    });
+
+    it("profile default produces provider.args only", async () => {
+      const { resolveAgent } = await import("../src/lib/agent.js");
+      const config = {
+        agent: {
+          default: "claude",
+          providers: {
+            claude: {
+              command: "claude",
+              args: ["-p", "{{PROMPT}}"],
+              profiles: { default: [] },
+            },
+          },
+          commands: {
+            "docs.forge": { agent: "claude", profile: "default" },
+          },
+        },
+      };
+      const agent = resolveAgent(config, "docs.forge");
+      assert.deepEqual(agent.args, ["-p", "{{PROMPT}}"]);
+    });
+
+    it("resolves different provider via commands", async () => {
+      const { resolveAgent } = await import("../src/lib/agent.js");
+      const config = {
+        agent: {
+          default: "claude",
+          providers: {
+            claude: {
+              command: "claude",
+              args: ["-p", "{{PROMPT}}"],
+              profiles: { default: [] },
+            },
+            codex: {
+              command: "codex",
+              args: ["{{PROMPT}}"],
+              profiles: {
+                default: [],
+                o3: ["--model", "o3"],
+              },
+            },
+          },
+          commands: {
+            "spec.gate": { agent: "codex", profile: "o3" },
+          },
+        },
+      };
+      const agent = resolveAgent(config, "spec.gate");
+      assert.equal(agent.command, "codex");
+      assert.deepEqual(agent.args, ["--model", "o3", "{{PROMPT}}"]);
+    });
+
+    it("resolveAgent(config) without COMMAND_ID returns default", async () => {
+      const { resolveAgent } = await import("../src/lib/agent.js");
+      const config = {
+        agent: {
+          default: "claude",
+          providers: {
+            claude: {
+              command: "claude",
+              args: ["-p", "{{PROMPT}}"],
+            },
           },
         },
       };
@@ -261,7 +248,6 @@ describe("052: agent command config", () => {
     });
 
     it("setup agent choices do not include skip option", () => {
-      // Verify the locale file does not have a skip option for agent choices
       const localePath = join(process.cwd(), "src", "locale");
       const enPath = join(localePath, "en", "setup.json");
       const jaPath = join(localePath, "ja", "setup.json");

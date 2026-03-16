@@ -210,8 +210,7 @@ describe("gate guardrail integration", () => {
       lang: "en",
       type: "cli/node-cli",
       docs: { languages: ["en"], defaultLanguage: "en" },
-      defaultAgent: "claude",
-      providers: { claude: { command: "echo", args: ["FAIL"] } },
+      agent: { default: "claude", providers: { claude: { command: "echo", args: ["FAIL"] } } },
     });
     writeFile(tmp, "spec.md", validSpec);
     writeFile(tmp, ".sdd-forge/guardrail.md", [
