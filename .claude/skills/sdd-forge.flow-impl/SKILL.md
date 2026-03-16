@@ -29,9 +29,9 @@ Available status values: `pending`, `in_progress`, `done`, `skipped`
 
 選択肢は以下の形式で表示すること:
 ```
-━━━━━━━━━━━━━━━━━━━━━━━━
+────────────────────────────────────────
   説明文（質問や状況の説明）
-━━━━━━━━━━━━━━━━━━━━━━━━
+────────────────────────────────────────
 
   [1] ラベル
   [2] ラベル
@@ -62,10 +62,10 @@ Before starting, run `sdd-forge flow status --check impl` to verify prerequisite
    - **On start**: `sdd-forge flow status --step review --status in_progress`
    - Present:
      ```
-     ━━━━━━━━━━━━━━━━━━━━━━━━
+     ────────────────────────────────────────
        実装が完了しました。
        コードレビューを実行します。
-     ━━━━━━━━━━━━━━━━━━━━━━━━
+     ────────────────────────────────────────
 
        [1] はい
        [2] スキップ
@@ -89,9 +89,9 @@ Before starting, run `sdd-forge flow status --check impl` to verify prerequisite
         ```
      2. Present:
         ```
-        ━━━━━━━━━━━━━━━━━━━━━━━━
+        ────────────────────────────────────────
           承認された提案を適用します。
-        ━━━━━━━━━━━━━━━━━━━━━━━━
+        ────────────────────────────────────────
 
           [1] 適用する
           [2] スキップ
@@ -109,10 +109,10 @@ Before starting, run `sdd-forge flow status --check impl` to verify prerequisite
    - **On start**: `sdd-forge flow status --step finalize --status in_progress`
    - Present:
      ```
-     ━━━━━━━━━━━━━━━━━━━━━━━━
+     ────────────────────────────────────────
        実装とレビューが完了しました。
        次の操作を選択してください。
-     ━━━━━━━━━━━━━━━━━━━━━━━━
+     ────────────────────────────────────────
 
        [1] 終了処理を開始する
        [2] 修正に戻る

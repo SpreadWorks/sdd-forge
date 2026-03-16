@@ -24,9 +24,9 @@ Available status values: `pending`, `in_progress`, `done`, `skipped`
 
 選択肢は以下の形式で表示すること:
 ```
-━━━━━━━━━━━━━━━━━━━━━━━━
+────────────────────────────────────────
   説明文（質問や状況の説明）
-━━━━━━━━━━━━━━━━━━━━━━━━
+────────────────────────────────────────
 
   [1] ラベル
   [2] ラベル
@@ -41,9 +41,9 @@ Available status values: `pending`, `in_progress`, `done`, `skipped`
 **STOP. Do NOT proceed to any other step. You MUST present the options below and wait for the user's response before doing anything else. Do NOT read files, run commands, or take any action until the user selects an option.**
 
 ```
-━━━━━━━━━━━━━━━━━━━━━━━━
+────────────────────────────────────────
   終了処理の範囲を選択してください。
-━━━━━━━━━━━━━━━━━━━━━━━━
+────────────────────────────────────────
 
   [1] すべて実行
   [2] 個別に選択する
@@ -57,9 +57,9 @@ Available status values: `pending`, `in_progress`, `done`, `skipped`
 - **Option 1 (すべて実行)**: Execute steps 1–8 in order without asking for each step.
 - **Option 2 (個別に選択する)**: Before each of steps 3–7, present:
   ```
-  ━━━━━━━━━━━━━━━━━━━━━━━━
+  ────────────────────────────────────────
     このステップを実行しますか？
-  ━━━━━━━━━━━━━━━━━━━━━━━━
+  ────────────────────────────────────────
 
     [1] はい
     [2] スキップ
@@ -129,9 +129,9 @@ Available status values: `pending`, `in_progress`, `done`, `skipped`
    - **Worktree** (`worktree: true`):
      - Present:
        ```
-       ━━━━━━━━━━━━━━━━━━━━━━━━
+       ────────────────────────────────────────
          worktree を削除します。
-       ━━━━━━━━━━━━━━━━━━━━━━━━
+       ────────────────────────────────────────
 
          [1] 削除する
          [2] 残す

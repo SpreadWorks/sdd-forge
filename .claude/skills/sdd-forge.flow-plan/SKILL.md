@@ -30,9 +30,9 @@ Available status values: `pending`, `in_progress`, `done`, `skipped`
 
 選択肢は以下の形式で表示すること:
 ```
-━━━━━━━━━━━━━━━━━━━━━━━━
+────────────────────────────────────────
   説明文（質問や状況の説明）
-━━━━━━━━━━━━━━━━━━━━━━━━
+────────────────────────────────────────
 
   [1] ラベル
   [2] ラベル
@@ -48,9 +48,9 @@ Available status values: `pending`, `in_progress`, `done`, `skipped`
    - **Note**: `flow.json` does not exist yet at this point. Do NOT run `flow status --step` commands until after step 3.
    - Present:
      ```
-     ━━━━━━━━━━━━━━━━━━━━━━━━
+     ────────────────────────────────────────
        要件の整理方法を選択してください。
-     ━━━━━━━━━━━━━━━━━━━━━━━━
+     ────────────────────────────────────────
 
        [1] 要件を整理してから仕様書を作成する
        [2] 仕様書を直接作成する
@@ -63,9 +63,9 @@ Available status values: `pending`, `in_progress`, `done`, `skipped`
      - If yes → already in a worktree. Skip choice, use `--no-branch` automatically.
    - **User choice** (if not in a worktree):
      ```
-     ━━━━━━━━━━━━━━━━━━━━━━━━
+     ────────────────────────────────────────
        ブランチ戦略を選択してください。
-     ━━━━━━━━━━━━━━━━━━━━━━━━
+     ────────────────────────────────────────
 
        [1] Branch（`<current-branch>` から feature ブランチを作成）
        [2] Worktree（隔離環境で作業）
@@ -74,9 +74,9 @@ Available status values: `pending`, `in_progress`, `done`, `skipped`
      ```
    - For options 1 and 2:
      ```
-     ━━━━━━━━━━━━━━━━━━━━━━━━
+     ────────────────────────────────────────
        現在のブランチ (`<current-branch>`) から分岐します。
-     ━━━━━━━━━━━━━━━━━━━━━━━━
+     ────────────────────────────────────────
 
        [1] はい
        [2] ブランチを指定する
@@ -137,9 +137,9 @@ Available status values: `pending`, `in_progress`, `done`, `skipped`
    - Wait for approval before any implementation.
    - Present:
      ```
-     ━━━━━━━━━━━━━━━━━━━━━━━━
+     ────────────────────────────────────────
        spec の内容を確認してください。
-     ━━━━━━━━━━━━━━━━━━━━━━━━
+     ────────────────────────────────────────
 
        [1] 実装する
        [2] 仕様書を修正する
@@ -170,9 +170,9 @@ Available status values: `pending`, `in_progress`, `done`, `skipped`
    - **If test environment exists**:
      1. Present:
         ```
-        ━━━━━━━━━━━━━━━━━━━━━━━━
+        ────────────────────────────────────────
           テストの種類を選択してください。
-        ━━━━━━━━━━━━━━━━━━━━━━━━
+        ────────────────────────────────────────
 
           [1] ユニットテスト
           [2] E2Eテスト
@@ -189,9 +189,9 @@ Available status values: `pending`, `in_progress`, `done`, `skipped`
         ```
         Then present:
         ```
-        ━━━━━━━━━━━━━━━━━━━━━━━━
+        ────────────────────────────────────────
           上記のテスト観点で進めます。
-        ━━━━━━━━━━━━━━━━━━━━━━━━
+        ────────────────────────────────────────
 
           [1] はい
           [2] 変更する
@@ -208,10 +208,10 @@ Available status values: `pending`, `in_progress`, `done`, `skipped`
    - **On complete**: `sdd-forge flow status --step test --status done`
    - **After test step is done**:
      ```
-     ━━━━━━━━━━━━━━━━━━━━━━━━
+     ────────────────────────────────────────
        プランニングフェーズが完了しました。
        次の操作を選択してください。
-     ━━━━━━━━━━━━━━━━━━━━━━━━
+     ────────────────────────────────────────
 
        [1] `/sdd-forge.flow-impl` を開始する
        [2] プランを見直す
