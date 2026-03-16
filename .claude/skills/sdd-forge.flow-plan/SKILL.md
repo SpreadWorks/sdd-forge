@@ -19,6 +19,13 @@ AI が勝手に次のステップに進まない。
 Available step IDs (this skill): `approach`, `branch`, `spec`, `draft`, `fill-spec`, `approval`, `gate`, `test`
 Available status values: `pending`, `in_progress`, `done`, `skipped`
 
+## Context Recording (Compaction Resilience)
+
+**MUST: Record the user's original request and key decisions for compaction recovery.**
+
+- After flow.json is created (step 3), record the request: `sdd-forge flow status --request "<user's original request>"`
+- After each user choice, record: `sdd-forge flow status --note "<step>: <choice summary>"`
+
 ## Choice Format
 
 選択肢はインライン形式で表示すること:

@@ -20,6 +20,8 @@ import {
   updateStepStatus,
   setRequirements,
   updateRequirement,
+  setRequest,
+  addNote,
   clearFlowState,
   flowStatePath,
   FLOW_STEPS,
@@ -79,8 +81,8 @@ function main() {
   const root = repoRoot(import.meta.url);
   const cli = parseArgs(process.argv.slice(2), {
     flags: ["--archive", "--dry-run"],
-    options: ["--step", "--status", "--summary", "--req", "--check"],
-    defaults: { step: "", status: "", summary: "", req: "", check: "", archive: false, dryRun: false },
+    options: ["--step", "--status", "--summary", "--req", "--check", "--request", "--note"],
+    defaults: { step: "", status: "", summary: "", req: "", check: "", request: "", note: "", archive: false, dryRun: false },
   });
 
   if (cli.help) {
@@ -93,6 +95,8 @@ function main() {
         "  --step <id> --status <val>          Update step status",
         "  --summary '<JSON array>'            Set requirements list",
         "  --req <index> --status <val>        Update requirement status",
+        "  --request <text>                    Set the original user request",
+        "  --note <text>                       Append a note (decision/memo)",
         "  --check <phase>                     Check prerequisites (e.g. --check impl)",
         "  --archive                           Move flow.json to spec directory",
         "  --dry-run                           With --check: always exit 0",
@@ -155,6 +159,20 @@ function main() {
     fs.copyFileSync(src, dest);
     clearFlowState(root);
     console.log(`archived: ${dest}`);
+    return;
+  }
+
+  // Set request
+  if (cli.request) {
+    setRequest(root, cli.request);
+    console.log(`request set`);
+    return;
+  }
+
+  // Append note
+  if (cli.note) {
+    addNote(root, cli.note);
+    console.log(`note added`);
     return;
   }
 

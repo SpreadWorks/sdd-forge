@@ -18,6 +18,34 @@ export const FLOW_STEPS = [
   "docs-update", "docs-review", "commit", "merge", "branch-cleanup", "archive",
 ];
 
+/** Step ID → phase mapping. */
+export const PHASE_MAP = {
+  approach: "plan", branch: "plan", spec: "plan", draft: "plan",
+  "fill-spec": "plan", approval: "plan", gate: "plan", test: "plan",
+  implement: "impl", review: "impl", finalize: "impl",
+  "docs-update": "merge", "docs-review": "merge", commit: "merge",
+  merge: "merge", "branch-cleanup": "merge", archive: "merge",
+};
+
+/**
+ * Derive current phase from steps.
+ * Returns the phase of the first in_progress step,
+ * or the phase after the last done/skipped step.
+ * @param {StepEntry[]} [steps]
+ * @returns {"plan"|"impl"|"merge"}
+ */
+export function derivePhase(steps) {
+  if (!steps?.length) return "plan";
+  const inProgress = steps.find((s) => s.status === "in_progress");
+  if (inProgress) return PHASE_MAP[inProgress.id] || "plan";
+  let lastDone = null;
+  for (const s of steps) {
+    if (s.status === "done" || s.status === "skipped") lastDone = s;
+  }
+  if (!lastDone) return "plan";
+  return PHASE_MAP[lastDone.id] || "plan";
+}
+
 function statePath(workRoot) {
   return path.join(sddDir(workRoot), STATE_FILE);
 }
@@ -42,6 +70,8 @@ function statePath(workRoot) {
  * @property {boolean} [worktree]      - worktree 内で作業中かどうか
  * @property {string}  [worktreePath]  - worktree の絶対パス
  * @property {string}  [mainRepoPath]  - メインリポジトリの絶対パス
+ * @property {string}  [request]        - ユーザーの元のリクエスト
+ * @property {string[]} [notes]         - 選択肢結果・メモの配列
  * @property {StepEntry[]} [steps]          - workflow step tracking
  * @property {RequirementEntry[]} [requirements] - spec requirements tracking
  */
@@ -86,19 +116,30 @@ export function clearFlowState(workRoot) {
 }
 
 /**
+ * Load flow.json, apply a mutation, and save.
+ * @param {string} workRoot
+ * @param {(state: FlowState) => void} mutator
+ */
+function mutateFlowState(workRoot, mutator) {
+  const state = loadFlowState(workRoot);
+  if (!state) throw new Error("no active flow (flow.json not found)");
+  mutator(state);
+  saveFlowState(workRoot, state);
+}
+
+/**
  * Update a single step's status.
  * @param {string} workRoot
  * @param {string} stepId
  * @param {string} status
  */
 export function updateStepStatus(workRoot, stepId, status) {
-  const state = loadFlowState(workRoot);
-  if (!state) throw new Error("no active flow (flow.json not found)");
-  if (!state.steps) throw new Error("flow.json has no steps");
-  const step = state.steps.find((s) => s.id === stepId);
-  if (!step) throw new Error(`unknown step: ${stepId}`);
-  step.status = status;
-  saveFlowState(workRoot, state);
+  mutateFlowState(workRoot, (state) => {
+    if (!state.steps) throw new Error("flow.json has no steps");
+    const step = state.steps.find((s) => s.id === stepId);
+    if (!step) throw new Error(`unknown step: ${stepId}`);
+    step.status = status;
+  });
 }
 
 /**
@@ -107,10 +148,9 @@ export function updateStepStatus(workRoot, stepId, status) {
  * @param {string[]} descriptions - array of requirement descriptions
  */
 export function setRequirements(workRoot, descriptions) {
-  const state = loadFlowState(workRoot);
-  if (!state) throw new Error("no active flow (flow.json not found)");
-  state.requirements = descriptions.map((desc) => ({ desc, status: "pending" }));
-  saveFlowState(workRoot, state);
+  mutateFlowState(workRoot, (state) => {
+    state.requirements = descriptions.map((desc) => ({ desc, status: "pending" }));
+  });
 }
 
 /**
@@ -120,11 +160,33 @@ export function setRequirements(workRoot, descriptions) {
  * @param {string} status
  */
 export function updateRequirement(workRoot, index, status) {
-  const state = loadFlowState(workRoot);
-  if (!state) throw new Error("no active flow (flow.json not found)");
-  if (!state.requirements?.[index]) throw new Error(`requirement index out of range: ${index}`);
-  state.requirements[index].status = status;
-  saveFlowState(workRoot, state);
+  mutateFlowState(workRoot, (state) => {
+    if (!state.requirements?.[index]) throw new Error(`requirement index out of range: ${index}`);
+    state.requirements[index].status = status;
+  });
+}
+
+/**
+ * Set the request field in flow.json.
+ * @param {string} workRoot
+ * @param {string} text
+ */
+export function setRequest(workRoot, text) {
+  mutateFlowState(workRoot, (state) => {
+    state.request = text;
+  });
+}
+
+/**
+ * Append a note to the notes array in flow.json.
+ * @param {string} workRoot
+ * @param {string} text
+ */
+export function addNote(workRoot, text) {
+  mutateFlowState(workRoot, (state) => {
+    if (!state.notes) state.notes = [];
+    state.notes.push(text);
+  });
 }
 
 /**

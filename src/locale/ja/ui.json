@@ -122,6 +122,7 @@
       "spec guardrail": "プロジェクト guardrail（原則）を管理",
       "flow start": "SDD フローを開始",
       "flow status": "フロー進捗を表示・更新",
+      "flow resume": "compaction 後の文脈復元サマリーを出力",
       "flow review": "AI コードレビュー",
       "flow merge": "feature ブランチを squash-merge",
       "flow cleanup": "feature ブランチ・worktree を削除",

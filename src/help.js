@@ -37,6 +37,7 @@ const LAYOUT = [
   { section: "Flow" },
   { name: "flow start" },
   { name: "flow status" },
+  { name: "flow resume" },
   { name: "flow review" },
   { name: "flow merge" },
   { name: "flow cleanup" },

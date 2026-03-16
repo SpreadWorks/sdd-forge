@@ -13,6 +13,7 @@ import { PKG_DIR } from "./lib/cli.js";
 const SCRIPTS = {
   start:   "flow/commands/start.js",
   status:  "flow/commands/status.js",
+  resume:  "flow/commands/resume.js",
   review:  "flow/commands/review.js",
   merge:   "flow/commands/merge.js",
   cleanup: "flow/commands/cleanup.js",

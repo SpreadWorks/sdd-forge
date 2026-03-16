@@ -14,6 +14,12 @@ Use this skill when implementation is complete and the user approved finalizatio
 Available step IDs (this skill): `docs-update`, `docs-review`, `commit`, `merge`, `branch-cleanup`, `archive`
 Available status values: `pending`, `in_progress`, `done`, `skipped`
 
+## Context Recording (Compaction Resilience)
+
+**MUST: Record key decisions for compaction recovery.**
+
+- After each user choice, record: `sdd-forge flow status --note "<step>: <choice summary>"`
+
 ## Choice Format
 
 選択肢はインライン形式で表示すること:

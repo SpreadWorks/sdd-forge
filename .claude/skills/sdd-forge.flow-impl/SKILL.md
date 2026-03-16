@@ -19,6 +19,12 @@ AI が勝手に次のステップに進まない。
 Available step IDs (this skill): `implement`, `review`, `finalize`
 Available status values: `pending`, `in_progress`, `done`, `skipped`
 
+## Context Recording (Compaction Resilience)
+
+**MUST: Record key decisions for compaction recovery.**
+
+- After each user choice, record: `sdd-forge flow status --note "<step>: <choice summary>"`
+
 ## Choice Format
 
 選択肢はインライン形式で表示すること:
