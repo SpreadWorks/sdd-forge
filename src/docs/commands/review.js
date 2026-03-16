@@ -14,34 +14,28 @@ import { loadConfig, sddOutputDir } from "../../lib/config.js";
 import { translate } from "../../lib/i18n.js";
 import { resolveOutputConfig, resolveType } from "../../lib/types.js";
 import { getChapterFiles } from "../lib/command-context.js";
-import { collectOutputs, compareOutputs, snapshotDir } from "./snapshot.js";
 import { parseDirectives } from "../lib/directive-parser.js";
 
 // ---------------------------------------------------------------------------
-// Generated output integrity checks
+// Constants
 // ---------------------------------------------------------------------------
 
-// Detect residual block directives that should have been stripped
 const RESIDUAL_BLOCK_RE = /^<!--\s*@(block:\s*[\w-]+|endblock|extends|parent)\s*-->$/;
+const ANALYSIS_META_KEYS = new Set(["analyzedAt", "enrichedAt", "generatedAt", "files", "root", "_incrementalMeta"]);
 
-/**
- * Strip inline code spans from a line.
- * Returns the line with backtick-enclosed content removed.
- */
+// ---------------------------------------------------------------------------
+// Helpers
+// ---------------------------------------------------------------------------
+
 function stripInlineCode(line) {
   return line.replace(/`[^`]+`/g, "");
 }
 
-/**
- * Test if a line matches a pattern, ignoring inline code spans.
- */
 function testIgnoringInlineCode(line, regex) {
   return regex.test(stripInlineCode(line));
 }
 
 /**
- * Check a file's content for output integrity issues.
- *
  * @param {string} content - File content
  * @returns {{ exposedDirectives: number, brokenComments: boolean, residualBlocks: number }}
  */
@@ -52,19 +46,16 @@ function checkOutputIntegrity(content) {
   let inCodeBlock = false;
 
   for (const line of lines) {
-    // Track fenced code blocks (``` or ~~~)
     if (/^(`{3,}|~{3,})/.test(line.trim())) {
       inCodeBlock = !inCodeBlock;
       continue;
     }
     if (inCodeBlock) continue;
 
-    // Strip HTML comments and inline code spans before checking
     const stripped = line
       .replace(/<!--[\s\S]*?-->/g, "")
       .replace(/`[^`]+`/g, "");
 
-    // Detect bare {{data:...}} or {{text:...}} or {{/data}} or {{/text}} outside comments and code
     if (/\{\{(data\s*:|text\s*[\[:]|\/data\}\}|\/text\}\})/.test(stripped)) {
       exposedDirectives++;
     }
@@ -74,7 +65,6 @@ function checkOutputIntegrity(content) {
     }
   }
 
-  // Check for unbalanced HTML comments (exclude code blocks)
   let commentOpens = 0;
   let commentCloses = 0;
   inCodeBlock = false;
@@ -90,6 +80,10 @@ function checkOutputIntegrity(content) {
 
   return { exposedDirectives, brokenComments, residualBlocks };
 }
+
+// ---------------------------------------------------------------------------
+// Main
+// ---------------------------------------------------------------------------
 
 function main() {
   const args = process.argv.slice(2);
@@ -111,6 +105,12 @@ function main() {
   const config = loadConfig(root);
   const type = resolveType(config.type || "");
 
+  let fail = 0;
+  function reportFail(key, params) {
+    console.log(t(key, params));
+    fail = 1;
+  }
+
   // Discover chapter files
   let chapterFiles = [];
   if (fs.existsSync(targetDir) && fs.statSync(targetDir).isDirectory()) {
@@ -124,33 +124,27 @@ function main() {
   console.log(t("messages:review.foundChapters", { count: chapterFiles.length }));
 
   const MIN_LINES = 15;
-  let fail = 0;
 
   for (const f of chapterFiles) {
     const filePath = path.join(targetDir, f);
 
     if (!fs.existsSync(filePath)) {
-      console.log(t("messages:review.missingFile", { path: filePath }));
-      fail = 1;
+      reportFail("messages:review.missingFile", { path: filePath });
       continue;
     }
 
     const content = fs.readFileSync(filePath, "utf8");
     const lines = content.split("\n");
 
-    // Line count check
     if (lines.length < MIN_LINES) {
-      console.log(t("messages:review.tooShort", { lines: lines.length, file: f }));
-      fail = 1;
+      reportFail("messages:review.tooShort", { lines: lines.length, file: f });
     }
 
-    // H1 heading check
     if (!lines.some((line) => /^# /.test(line))) {
-      console.log(t("messages:review.missingH1", { file: f }));
-      fail = 1;
+      reportFail("messages:review.missingH1", { file: f });
     }
 
-    // Unfilled {{text}} directive check (block structure: start tag → content → end tag)
+    // Unfilled {{text}} directive check
     let unfilled = 0;
     {
       let inFence = false;
@@ -158,7 +152,6 @@ function main() {
         if (/^(`{3,}|~{3,})/.test(lines[i].trim())) { inFence = !inFence; continue; }
         if (inFence) continue;
         if (!testIgnoringInlineCode(lines[i], /<!--\s*\{\{text\b/)) continue;
-        // 終了タグまでの間に非空行があるかチェック
         let hasContent = false;
         for (let j = i + 1; j < lines.length; j++) {
           if (/^<!--\s*\{\{\/text\}\}\s*-->$/.test(lines[j].trim())) break;
@@ -168,11 +161,11 @@ function main() {
       }
     }
     if (unfilled > 0) {
-      console.log(t("messages:review.unfilledText", { count: unfilled, file: f }));
+      reportFail("messages:review.unfilledText", { count: unfilled, file: f });
     }
   }
 
-  // Unfilled {{data}} directive check (WARN — data may not yet be available)
+  // Unfilled {{data}} directive check
   for (const f of chapterFiles) {
     const filePath = path.join(targetDir, f);
     const content = fs.readFileSync(filePath, "utf8");
@@ -191,7 +184,7 @@ function main() {
       if (!hasContent) unfilledData++;
     }
     if (unfilledData > 0) {
-      console.log(t("messages:review.unfilledData", { count: unfilledData, file: f }));
+      reportFail("messages:review.unfilledData", { count: unfilledData, file: f });
     }
   }
 
@@ -206,41 +199,28 @@ function main() {
     const content = fs.readFileSync(target.path, "utf8");
     const result = checkOutputIntegrity(content);
     if (result.exposedDirectives > 0) {
-      console.log(t("messages:review.exposedDirective", { count: result.exposedDirectives, file: target.label }));
-      fail = 1;
+      reportFail("messages:review.exposedDirective", { count: result.exposedDirectives, file: target.label });
     }
     if (result.brokenComments) {
-      console.log(t("messages:review.brokenComment", { file: target.label }));
-      fail = 1;
+      reportFail("messages:review.brokenComment", { file: target.label });
     }
     if (result.residualBlocks > 0) {
-      console.log(t("messages:review.residualBlock", { count: result.residualBlocks, file: target.label }));
-      fail = 1;
+      reportFail("messages:review.residualBlock", { count: result.residualBlocks, file: target.label });
     }
   }
 
-  // analysis.json existence and freshness check (WARN)
+  // analysis.json existence check
   const analysisPath = path.join(sddOutputDir(root), "analysis.json");
   if (!fs.existsSync(analysisPath)) {
-    console.log(t("messages:review.analysisNotFound"));
-  } else {
-    const analysisMtime = fs.statSync(analysisPath).mtimeMs;
-    const projectFiles = ["package.json", "composer.json"];
-    for (const pf of projectFiles) {
-      const pfPath = path.join(root, pf);
-      if (fs.existsSync(pfPath) && fs.statSync(pfPath).mtimeMs > analysisMtime) {
-        console.log(t("messages:review.analysisStale", { file: pf }));
-        break;
-      }
-    }
+    reportFail("messages:review.analysisNotFound");
   }
 
-  // README.md check (warn only)
+  // README.md check
   if (!fs.existsSync(path.join(root, "README.md"))) {
-    console.log(t("messages:review.readmeNotFound"));
+    reportFail("messages:review.readmeNotFound");
   }
 
-  // Multi-language: check non-default language directories
+  // Multi-language checks
   try {
     const outputCfg = resolveOutputConfig(config);
     if (outputCfg.isMultiLang) {
@@ -249,12 +229,12 @@ function main() {
       for (const lang of nonDefaultLangs) {
         const langDir = path.join(docsBase, lang);
         if (!fs.existsSync(langDir)) {
-          console.log(`WARN: docs/${lang}/ directory missing for configured language '${lang}'`);
+          reportFail("messages:review.langDirMissing", { lang });
           continue;
         }
         const langFiles = getChapterFiles(langDir, { type, configChapters: config.chapters });
         if (langFiles.length === 0) {
-          console.log(`WARN: docs/${lang}/ has no chapter files`);
+          reportFail("messages:review.langNoChapters", { lang });
           continue;
         }
         for (const f of langFiles) {
@@ -263,25 +243,20 @@ function main() {
           const lines = content.split("\n");
           const label = `${lang}/${f}`;
           if (lines.length < MIN_LINES) {
-            console.log(t("messages:review.tooShort", { lines: lines.length, file: label }));
-            fail = 1;
+            reportFail("messages:review.tooShort", { lines: lines.length, file: label });
           }
           if (!lines.some((line) => /^# /.test(line))) {
-            console.log(t("messages:review.missingH1", { file: label }));
-            fail = 1;
+            reportFail("messages:review.missingH1", { file: label });
           }
           const result = checkOutputIntegrity(content);
           if (result.exposedDirectives > 0) {
-            console.log(t("messages:review.exposedDirective", { count: result.exposedDirectives, file: label }));
-            fail = 1;
+            reportFail("messages:review.exposedDirective", { count: result.exposedDirectives, file: label });
           }
           if (result.brokenComments) {
-            console.log(t("messages:review.brokenComment", { file: label }));
-            fail = 1;
+            reportFail("messages:review.brokenComment", { file: label });
           }
           if (result.residualBlocks > 0) {
-            console.log(t("messages:review.residualBlock", { count: result.residualBlocks, file: label }));
-            fail = 1;
+            reportFail("messages:review.residualBlock", { count: result.residualBlocks, file: label });
           }
         }
       }
@@ -290,18 +265,15 @@ function main() {
     // config not available — skip multi-lang check
   }
 
-  // Analysis coverage check (WARN only — does not cause FAIL)
+  // Analysis coverage check
   if (fs.existsSync(analysisPath)) {
     const analysis = JSON.parse(fs.readFileSync(analysisPath, "utf8"));
-    const META_KEYS = new Set(["analyzedAt", "enrichedAt", "generatedAt", "files", "root"]);
-    const analysisCategories = Object.keys(analysis).filter((k) => !META_KEYS.has(k));
+    const analysisCategories = Object.keys(analysis).filter((k) => !ANALYSIS_META_KEYS.has(k));
 
     if (analysisCategories.length > 0) {
-      // Collect all data directive sources referenced in docs
       const referencedSources = new Set();
       const allDocsFiles = [...chapterFiles.map((f) => path.join(targetDir, f))];
-      const readmePath2 = path.join(root, "README.md");
-      if (fs.existsSync(readmePath2)) allDocsFiles.push(readmePath2);
+      if (fs.existsSync(readmePath)) allDocsFiles.push(readmePath);
 
       for (const fp of allDocsFiles) {
         if (!fs.existsSync(fp)) continue;
@@ -318,27 +290,8 @@ function main() {
           const count = Array.isArray(entries) ? entries.length
             : (typeof entries === "object" && entries !== null) ? Object.keys(entries).length
             : 1;
-          console.log(`[WARN] uncovered analysis category: ${cat} (${count} entries)`);
+          reportFail("messages:review.uncoveredCategory", { cat, count });
         }
-      }
-    }
-  }
-
-  // Snapshot check (WARN only — does not cause FAIL)
-  const snapDir = snapshotDir(root);
-  if (fs.existsSync(path.join(snapDir, "manifest.json"))) {
-    const current = collectOutputs(root);
-    const saved = JSON.parse(fs.readFileSync(path.join(snapDir, "manifest.json"), "utf8"));
-    const savedOutputs = {};
-    for (const [key, safeName] of Object.entries(saved)) {
-      const fp = path.join(snapDir, safeName);
-      if (fs.existsSync(fp)) savedOutputs[key] = fs.readFileSync(fp, "utf8");
-    }
-    const snapResult = compareOutputs(current, savedOutputs);
-    if (!snapResult.pass) {
-      console.log(`[WARN] snapshot: ${snapResult.diffs.length} diff(s) detected`);
-      for (const d of snapResult.diffs) {
-        console.log(`  [${d.type}] ${d.key}`);
       }
     }
   }

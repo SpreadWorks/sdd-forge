@@ -13,20 +13,49 @@ function setupTmp() {
   return tmp;
 }
 
+function runReview(tmp) {
+  return execFileSync("node", [CMD], {
+    encoding: "utf8",
+    env: { ...process.env, SDD_WORK_ROOT: tmp },
+  });
+}
+
+function runReviewExpectFail(tmp) {
+  try {
+    execFileSync("node", [CMD], {
+      encoding: "utf8",
+      env: { ...process.env, SDD_WORK_ROOT: tmp },
+    });
+    assert.fail("should have exited non-zero");
+  } catch (err) {
+    return { stdout: err.stdout || "", stderr: err.stderr || "" };
+  }
+}
+
+/** Create a valid chapter file with enough lines and H1. */
+function writeValidChapter(tmp, name, extra) {
+  const lines = ["# 01. Test", ""];
+  for (let i = 0; i < 20; i++) lines.push(`Line ${i}`);
+  if (extra) lines.push(extra);
+  writeFile(tmp, `docs/${name}`, lines.join("\n"));
+}
+
+/** Setup tmp with valid chapter + analysis + README so review passes baseline. */
+function setupPassingTmp() {
+  const tmp = setupTmp();
+  writeValidChapter(tmp, "test.md");
+  writeJson(tmp, ".sdd-forge/output/analysis.json", { analyzedAt: "2026-01-01" });
+  writeFile(tmp, "README.md", "# README\n");
+  return tmp;
+}
+
 describe("review CLI", () => {
   let tmp;
   afterEach(() => tmp && removeTmpDir(tmp));
 
-  it("passes with valid chapter files", () => {
-    tmp = setupTmp();
-    const lines = ["# 01. Introduction", ""];
-    for (let i = 0; i < 20; i++) lines.push(`Line ${i}`);
-    writeFile(tmp, "docs/intro.md", lines.join("\n"));
-
-    const result = execFileSync("node", [CMD], {
-      encoding: "utf8",
-      env: { ...process.env, SDD_WORK_ROOT: tmp },
-    });
+  it("passes with valid chapter files, analysis, and README", () => {
+    tmp = setupPassingTmp();
+    const result = runReview(tmp);
     assert.match(result, /PASSED/);
   });
 
@@ -34,68 +63,47 @@ describe("review CLI", () => {
     tmp = setupTmp();
     writeFile(tmp, "docs/.gitkeep", "");
 
-    try {
-      execFileSync("node", [CMD], {
-        encoding: "utf8",
-        env: { ...process.env, SDD_WORK_ROOT: tmp },
-      });
-      assert.fail("should have exited non-zero");
-    } catch (err) {
-      assert.match(err.stderr, /no chapter files found/);
-    }
+    const { stderr } = runReviewExpectFail(tmp);
+    assert.match(stderr, /no chapter files found/);
   });
 
   it("fails when chapter is too short", () => {
-    tmp = setupTmp();
+    tmp = setupPassingTmp();
     writeFile(tmp, "docs/short.md", "# 01. Short\nOnly two lines\n");
 
-    try {
-      execFileSync("node", [CMD], {
-        encoding: "utf8",
-        env: { ...process.env, SDD_WORK_ROOT: tmp },
-      });
-      assert.fail("should have exited non-zero");
-    } catch (err) {
-      assert.match(err.stdout, /too short/);
-    }
+    const { stdout } = runReviewExpectFail(tmp);
+    assert.match(stdout, /too short/);
   });
 
   it("fails when chapter has no H1 heading", () => {
-    tmp = setupTmp();
+    tmp = setupPassingTmp();
     const lines = ["No heading here", ""];
     for (let i = 0; i < 20; i++) lines.push(`Line ${i}`);
     writeFile(tmp, "docs/noheading.md", lines.join("\n"));
 
-    try {
-      execFileSync("node", [CMD], {
-        encoding: "utf8",
-        env: { ...process.env, SDD_WORK_ROOT: tmp },
-      });
-      assert.fail("should have exited non-zero");
-    } catch (err) {
-      assert.match(err.stdout, /missing H1/);
-    }
+    const { stdout } = runReviewExpectFail(tmp);
+    assert.match(stdout, /missing H1/);
   });
 
-  it("warns but does not fail when {{data}} directive is unfilled", () => {
-    tmp = setupTmp();
+  // --- WARN → FAIL: {{data}} unfilled ---
+
+  it("fails when {{data}} directive is unfilled", () => {
+    tmp = setupPassingTmp();
     const lines = ["# 01. Test", ""];
     for (let i = 0; i < 10; i++) lines.push(`Line ${i}`);
     lines.push('<!-- {{data: controllers.list("Name|Actions")}} -->');
-    lines.push(""); // empty line = unfilled
+    lines.push(""); // empty = unfilled
     lines.push('<!-- {{/data}} -->');
     for (let i = 0; i < 5; i++) lines.push(`More ${i}`);
-    writeFile(tmp, "docs/test.md", lines.join("\n"));
+    writeFile(tmp, "docs/data_test.md", lines.join("\n"));
 
-    const result = execFileSync("node", [CMD], {
-      encoding: "utf8",
-      env: { ...process.env, SDD_WORK_ROOT: tmp },
-    });
-    assert.match(result, /unfilled \{\{data\}\}/);
+    const { stdout } = runReviewExpectFail(tmp);
+    assert.match(stdout, /unfilled \{\{data\}\}/);
+    assert.match(stdout, /sdd-forge docs data/);
   });
 
   it("does not fail on inline {{data}} examples in prose", () => {
-    tmp = setupTmp();
+    tmp = setupPassingTmp();
     const lines = ["# 01. Test", ""];
     for (let i = 0; i < 10; i++) lines.push(`Line ${i}`);
     lines.push('Example inline syntax: `{{data: mySource.list("Col1|Col2")}}`');
@@ -104,46 +112,54 @@ describe("review CLI", () => {
     for (let i = 0; i < 8; i++) lines.push(`More ${i}`);
     writeFile(tmp, "docs/test.md", lines.join("\n"));
 
-    const result = execFileSync("node", [CMD], {
-      encoding: "utf8",
-      env: { ...process.env, SDD_WORK_ROOT: tmp },
-    });
+    const result = runReview(tmp);
     assert.doesNotMatch(result, /unfilled \{\{data\}\}/);
     assert.match(result, /PASSED/);
   });
 
+  // --- WARN → FAIL: {{text}} unfilled ---
 
-  it("warns when {{text}} directive is unfilled (empty block)", () => {
-    tmp = setupTmp();
+  it("fails when {{text}} directive is unfilled", () => {
+    tmp = setupPassingTmp();
     const lines = ["# 01. Test", ""];
     for (let i = 0; i < 10; i++) lines.push(`Line ${i}`);
     lines.push("<!-- {{text: describe this}} -->");
     lines.push("<!-- {{/text}} -->");
     for (let i = 0; i < 5; i++) lines.push(`More ${i}`);
-    writeFile(tmp, "docs/test.md", lines.join("\n"));
+    writeFile(tmp, "docs/text_test.md", lines.join("\n"));
 
-    const result = execFileSync("node", [CMD], {
-      encoding: "utf8",
-      env: { ...process.env, SDD_WORK_ROOT: tmp },
-    });
-    // unfilled text is a WARN, not FAIL — command should still pass
-    assert.match(result, /unfilled \{\{text\}\}/);
+    const { stdout } = runReviewExpectFail(tmp);
+    assert.match(stdout, /unfilled \{\{text\}\}/);
+    assert.match(stdout, /sdd-forge docs text/);
   });
 
-  it("warns when analysis.json is missing", () => {
+  // --- WARN → FAIL: analysis.json missing ---
+
+  it("fails when analysis.json is missing", () => {
     tmp = setupTmp();
-    const lines = ["# 01. Test", ""];
-    for (let i = 0; i < 20; i++) lines.push(`Line ${i}`);
-    writeFile(tmp, "docs/test.md", lines.join("\n"));
+    writeValidChapter(tmp, "test.md");
+    writeFile(tmp, "README.md", "# README\n");
 
-    const result = execFileSync("node", [CMD], {
-      encoding: "utf8",
-      env: { ...process.env, SDD_WORK_ROOT: tmp },
-    });
-    assert.match(result, /analysis\.json not found/);
+    const { stdout } = runReviewExpectFail(tmp);
+    assert.match(stdout, /analysis\.json not found/);
+    assert.match(stdout, /sdd-forge docs scan/);
   });
 
-  it("warns when analysis category is not covered by any directive", () => {
+  // --- WARN → FAIL: README.md missing ---
+
+  it("fails when README.md is missing", () => {
+    tmp = setupTmp();
+    writeValidChapter(tmp, "test.md");
+    writeJson(tmp, ".sdd-forge/output/analysis.json", { analyzedAt: "2026-01-01" });
+
+    const { stdout } = runReviewExpectFail(tmp);
+    assert.match(stdout, /README\.md not found/);
+    assert.match(stdout, /sdd-forge docs readme/);
+  });
+
+  // --- WARN → FAIL: uncovered analysis category ---
+
+  it("fails when analysis category is not covered by any directive", () => {
     tmp = setupTmp();
     const lines = ["# 01. Test", ""];
     for (let i = 0; i < 10; i++) lines.push(`Line ${i}`);
@@ -152,24 +168,21 @@ describe("review CLI", () => {
     lines.push("<!-- {{/data}} -->");
     for (let i = 0; i < 5; i++) lines.push(`More ${i}`);
     writeFile(tmp, "docs/test.md", lines.join("\n"));
+    writeFile(tmp, "README.md", "# README\n");
 
-    // analysis has "modules" and "controllers" but docs only reference "project"
     writeJson(tmp, ".sdd-forge/output/analysis.json", {
       analyzedAt: "2026-01-01",
       modules: [{ name: "foo" }, { name: "bar" }],
       controllers: [{ name: "UserController" }],
     });
 
-    const result = execFileSync("node", [CMD], {
-      encoding: "utf8",
-      env: { ...process.env, SDD_WORK_ROOT: tmp },
-    });
-    assert.match(result, /uncovered analysis category: modules/);
-    assert.match(result, /uncovered analysis category: controllers/);
-    assert.match(result, /PASSED/); // WARN does not cause FAIL
+    const { stdout } = runReviewExpectFail(tmp);
+    assert.match(stdout, /uncovered analysis category: modules/);
+    assert.match(stdout, /uncovered analysis category: controllers/);
+    assert.match(stdout, /\[FAIL\]/);
   });
 
-  it("does not warn when all analysis categories are covered", () => {
+  it("does not fail when all analysis categories are covered", () => {
     tmp = setupTmp();
     const lines = ["# 01. Test", ""];
     for (let i = 0; i < 10; i++) lines.push(`Line ${i}`);
@@ -178,70 +191,49 @@ describe("review CLI", () => {
     lines.push("<!-- {{/data}} -->");
     for (let i = 0; i < 5; i++) lines.push(`More ${i}`);
     writeFile(tmp, "docs/test.md", lines.join("\n"));
+    writeFile(tmp, "README.md", "# README\n");
 
     writeJson(tmp, ".sdd-forge/output/analysis.json", {
       analyzedAt: "2026-01-01",
       modules: [{ name: "foo" }],
     });
 
-    const result = execFileSync("node", [CMD], {
-      encoding: "utf8",
-      env: { ...process.env, SDD_WORK_ROOT: tmp },
-    });
-    assert.ok(!result.includes("uncovered analysis category"), "should not warn about covered categories");
+    const result = runReview(tmp);
+    assert.ok(!result.includes("uncovered analysis category"), "should not fail for covered categories");
     assert.match(result, /PASSED/);
   });
 
-  it("skips coverage check when analysis.json does not exist", () => {
+  it("does not flag enrichedAt as uncovered category", () => {
     tmp = setupTmp();
-    const lines = ["# 01. Test", ""];
-    for (let i = 0; i < 20; i++) lines.push(`Line ${i}`);
-    writeFile(tmp, "docs/test.md", lines.join("\n"));
-
-    const result = execFileSync("node", [CMD], {
-      encoding: "utf8",
-      env: { ...process.env, SDD_WORK_ROOT: tmp },
-    });
-    assert.ok(!result.includes("uncovered analysis category"), "should not check coverage without analysis");
-  });
-
-  it("coverage warning does not cause FAIL", () => {
-    tmp = setupTmp();
-    const lines = ["# 01. Test", ""];
-    for (let i = 0; i < 20; i++) lines.push(`Line ${i}`);
-    writeFile(tmp, "docs/test.md", lines.join("\n"));
-
-    writeJson(tmp, ".sdd-forge/output/analysis.json", {
-      analyzedAt: "2026-01-01",
-      modules: [{ name: "a" }, { name: "b" }, { name: "c" }],
-    });
-
-    const result = execFileSync("node", [CMD], {
-      encoding: "utf8",
-      env: { ...process.env, SDD_WORK_ROOT: tmp },
-    });
-    assert.match(result, /uncovered analysis category: modules \(3 entries\)/);
-    assert.match(result, /PASSED/); // WARN only, does not FAIL
-  });
-
-  it("does not warn for enrichedAt coverage", () => {
-    tmp = setupTmp();
-    const lines = ["# 01. Test", ""];
-    for (let i = 0; i < 20; i++) lines.push(`Line ${i}`);
-    writeFile(tmp, "docs/test.md", lines.join("\n"));
+    writeValidChapter(tmp, "test.md");
+    writeFile(tmp, "README.md", "# README\n");
 
     writeJson(tmp, ".sdd-forge/output/analysis.json", {
       analyzedAt: "2026-01-01",
       enrichedAt: "2026-01-02",
-      modules: [{ name: "a" }],
     });
 
-    const result = execFileSync("node", [CMD], {
-      encoding: "utf8",
-      env: { ...process.env, SDD_WORK_ROOT: tmp },
-    });
+    const result = runReview(tmp);
     assert.doesNotMatch(result, /uncovered analysis category: enrichedAt/);
-    assert.match(result, /uncovered analysis category: modules/);
+    assert.match(result, /PASSED/);
+  });
+
+  // --- Deleted checks: no mtime, no snapshot ---
+
+  it("does not check analysis.json mtime", () => {
+    tmp = setupPassingTmp();
+    // Make analysis older than package.json — should not matter
+    writeJson(tmp, "package.json", { name: "test", version: "1.0.0" });
+
+    const result = runReview(tmp);
+    assert.doesNotMatch(result, /stale/i);
+    assert.match(result, /PASSED/);
+  });
+
+  it("does not check snapshots", () => {
+    tmp = setupPassingTmp();
+    const result = runReview(tmp);
+    assert.doesNotMatch(result, /snapshot/i);
     assert.match(result, /PASSED/);
   });
 });
