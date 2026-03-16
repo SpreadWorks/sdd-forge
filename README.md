@@ -178,9 +178,9 @@ Add project-specific templates and data sources:
 | Chapter | Summary |
 | --- | --- |
 | [01. Tool Overview and Architecture](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/overview.md) | This chapter introduces sdd-forge, a CLI tool for Spec-Driven Development that automates technical documentation gene… |
-| [02. CLI Command Reference](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/cli_commands.md) | sdd-forge provides 20+ commands organized into four namespaces (`docs`, `spec`, `flow`, and standalone commands) thro… |
+| [02. CLI Command Reference](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/cli_commands.md) | sdd-forge provides over 20 CLI commands organized into four namespaces (`docs`, `spec`, `flow`, and standalone comman… |
 | [03. Configuration and Customization](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/configuration.md) | sdd-forge is configured primarily through `.sdd-forge/config.json`, which controls output language, project type, doc… |
-| [04. Internal Design](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/internal_design.md) | This chapter describes the internal architecture of sdd-forge, covering its three-layer directory structure (`src/` →… |
+| [04. Internal Design](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/internal_design.md) | This chapter describes the internal architecture of sdd-forge, covering its three-layer dispatch structure (`sdd-forg… |
 <!-- {{/data}} -->
 
 ## License

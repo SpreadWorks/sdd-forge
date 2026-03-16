@@ -4,7 +4,7 @@
 
 <!-- {{text: この章の概要を1〜2文で記述してください。コマンド総数・サブコマンド体系を踏まえること。}} -->
 
-sdd-forge は 20 以上のサブコマンドを提供する CLI ツールで、3 層ディスパッチ構造（`sdd-forge` → 名前空間ディスパッチャー → 個別コマンド）でルーティングされます。コマンドは Docs・Spec・Flow の 3 名前空間と、setup・upgrade・presets・help の独立コマンドに分類されます。
+sdd-forge は 3 層ディスパッチ構造（トップレベル → 名前空間ディスパッチャー → サブコマンド実装）を持つ CLI ツールで、`docs`（12 サブコマンド）、`spec`（3 サブコマンド）、`flow`（5 サブコマンド）の名前空間コマンドと、`setup`・`upgrade`・`presets`・`help` の 4 つの独立コマンドを提供します。すべてのコマンドは `sdd-forge <command> [subcommand] [options]` の形式で呼び出します。
 <!-- {{/text}} -->
 
 ## 内容
@@ -15,428 +15,384 @@ sdd-forge は 20 以上のサブコマンドを提供する CLI ツールで、3
 
 | コマンド | 説明 | 主なオプション |
 |---|---|---|
-| `sdd-forge help` | 利用可能な全コマンドを表示する | — |
-| `sdd-forge setup` | 対話型セットアップウィザードで `.sdd-forge/config.json` を生成する | `--name`, `--path`, `--type`, `--agent`, `--lang`, `--dry-run` |
-| `sdd-forge upgrade` | テンプレート由来ファイル（スキル等）を最新版に更新する | `--dry-run` |
-| `sdd-forge presets list` | プリセット継承ツリーを表示する | — |
-| `sdd-forge docs build` | scan→enrich→init→data→text→readme→agents→translate の全パイプラインを実行する | `--force`, `--verbose`, `--dry-run` |
-| `sdd-forge docs scan` | ソースコードを静的解析して `analysis.json` を生成する | `--stdout`, `--dry-run` |
-| `sdd-forge docs enrich` | AI で `analysis.json` の各エントリーに summary/detail/chapter/role を付与する | `--stdout`, `--dry-run` |
-| `sdd-forge docs init` | プリセットテンプレートから章ファイルを `docs/` に配置する | `--type`, `--lang`, `--docs-dir`, `--force`, `--dry-run` |
-| `sdd-forge docs data` | `{{data}}` ディレクティブを解決してマークダウンテーブル等を挿入する | `--docs-dir`, `--stdout`, `--dry-run` |
-| `sdd-forge docs text` | AI で `{{text}}` ディレクティブ内の本文を生成する | `--timeout`, `--id`, `--lang`, `--docs-dir`, `--per-directive`, `--dry-run` |
-| `sdd-forge docs readme` | `docs/` の章ファイルから `README.md` を自動生成する | `--lang`, `--output`, `--dry-run` |
-| `sdd-forge docs forge` | AI と review を反復実行して docs を改善する | `--prompt`, `--prompt-file`, `--spec`, `--max-runs`, `--review-cmd`, `--mode`, `--dry-run`, `--verbose` |
-| `sdd-forge docs review` | 生成済み docs の品質レビューを実行する | — |
-| `sdd-forge docs translate` | デフォルト言語の docs を非デフォルト言語に AI 翻訳する | `--lang`, `--force`, `--dry-run` |
-| `sdd-forge docs changelog` | 変更履歴を生成する | `--dry-run` |
-| `sdd-forge docs agents` | `AGENTS.md` の `{{data}}` ディレクティブを解決し AI で精査・更新する | `--dry-run` |
-| `sdd-forge docs snapshot` | docs 出力のスナップショットを保存・比較する | サブコマンド: `save`, `check`, `update` |
-| `sdd-forge spec init` | 連番 feature ブランチと spec.md テンプレートを作成する | `--title`, `--base`, `--allow-dirty`, `--no-branch`, `--worktree`, `--dry-run` |
-| `sdd-forge spec gate` | spec.md の未解決項目を検出しガードレール準拠を検証する | `--spec`, `--phase`, `--skip-guardrail` |
-| `sdd-forge spec guardrail` | ガードレール（不変原則）の初期化・更新を行う | サブコマンド: `init`, `update`。`--force`, `--agent`, `--dry-run` |
+| `sdd-forge help` | 利用可能な全コマンドを一覧表示する | — |
+| `sdd-forge setup` | インタラクティブセットアップウィザードを実行し、`.sdd-forge/config.json` を生成する | `--name`, `--path`, `--work-root`, `--type`, `--purpose`, `--tone`, `--agent`, `--lang`, `--dry-run` |
+| `sdd-forge upgrade` | テンプレート由来ファイル（スキル等）を最新バージョンに更新する | `--dry-run` |
+| `sdd-forge presets list` | プリセットの継承ツリーをツリー形式で表示する | — |
+| `sdd-forge docs build` | scan→enrich→init→data→text→readme→agents→translate のパイプラインを一括実行する | `--force`, `--verbose`, `--dry-run` |
+| `sdd-forge docs scan` | ソースコードを解析し `analysis.json` を生成する | — |
+| `sdd-forge docs enrich` | AI で `analysis.json` の各エントリーに summary/detail/chapter/role を付与する | `--dry-run`, `--stdout` |
+| `sdd-forge docs init` | テンプレート継承チェーンをマージして `docs/` に章ファイルを出力する | `--type`, `--force`, `--dry-run` |
+| `sdd-forge docs data` | `{{data}}` ディレクティブを解決してテンプレートにデータを挿入する | `--dry-run` |
+| `sdd-forge docs text` | `{{text}}` ディレクティブを LLM エージェントで解決し説明文を挿入する | `--dry-run`, `--per-directive` |
+| `sdd-forge docs readme` | `docs/` 配下の章ファイルから `README.md` を自動生成する | `--dry-run`, `--output` |
+| `sdd-forge docs forge` | AI エージェントで docs を反復改善し、review で品質検証する | `--prompt`, `--prompt-file`, `--spec`, `--max-runs`, `--review-cmd`, `--mode`, `--verbose`, `--dry-run` |
+| `sdd-forge docs review` | docs の品質レビューを実行する | — |
+| `sdd-forge docs translate` | デフォルト言語のドキュメントを非デフォルト言語に AI 翻訳する | `--lang`, `--force`, `--dry-run` |
+| `sdd-forge docs changelog` | `specs/` ディレクトリを走査して `change_log.md` を自動生成する | `--dry-run` |
+| `sdd-forge docs agents` | `AGENTS.md` の `{{data}}` ディレクティブを解決し、PROJECT セクションを AI で精査する | `--dry-run` |
+| `sdd-forge docs snapshot` | ドキュメントのスナップショットを取得する | — |
+| `sdd-forge spec init` | 連番 feature ブランチと `specs/` ディレクトリを作成し、spec.md テンプレートを配置する | `--title`, `--base`, `--dry-run`, `--allow-dirty`, `--no-branch`, `--worktree` |
+| `sdd-forge spec gate` | 実装開始前に spec.md の未解決項目を検出し、ガードレール準拠を検証する | `--spec`, `--phase`, `--skip-guardrail` |
+| `sdd-forge spec guardrail init` | プリセットからガードレールテンプレートを生成する | `--force`, `--dry-run` |
+| `sdd-forge spec guardrail update` | AI で プロジェクト固有のガードレール条項を追加提案する | `--agent`, `--dry-run` |
 | `sdd-forge flow start` | SDD フロー（spec init → gate → forge）を自動実行する | `--request`, `--title`, `--spec`, `--agent`, `--max-runs`, `--forge-mode`, `--no-branch`, `--worktree`, `--dry-run` |
-| `sdd-forge flow status` | フロー進捗の表示・更新・アーカイブを行う | `--step`, `--status`, `--summary`, `--req`, `--archive` |
-| `sdd-forge flow review` | 実装完了後のコード品質レビューを実行する（draft → final → apply） | `--dry-run`, `--skip-confirm` |
+| `sdd-forge flow status` | フロー進捗の表示・ステップ状態の更新を行う | `--step`, `--status`, `--summary`, `--req`, `--check`, `--archive`, `--dry-run` |
+| `sdd-forge flow review` | AI による draft → final の 2 フェーズでコード品質レビューを実施する | `--dry-run`, `--skip-confirm` |
+| `sdd-forge flow merge` | flow.json に基づいて feature ブランチを base ブランチに squash マージする | `--dry-run` |
+| `sdd-forge flow cleanup` | フロー完了後のブランチ・worktree を削除する | `--dry-run` |
 <!-- {{/text}} -->
 
 ### グローバルオプション
 
 <!-- {{text[mode=deep]: 全コマンドに共通するグローバルオプションを表形式で記述してください。ソースコードの引数パース処理から抽出すること。}} -->
 
-`parseArgs` ユーティリティ（`src/lib/cli.js`）が全コマンドで共通して処理するオプションは以下のとおりです。
+以下のオプションは複数のコマンドで共通して利用できます。各コマンドの `parseArgs()` 呼び出しで定義されています。
 
 | オプション | 説明 |
 |---|---|
-| `-h`, `--help` | コマンドのヘルプを表示して終了します。`parseArgs` が `help: true` を自動設定します。 |
-| `-v`, `--version`, `-V` | sdd-forge のバージョン番号を表示して終了します（トップレベルのみ）。 |
-| `--dry-run` | 多くのコマンドで共通して使用でき、ファイルの書き込みを行わず結果をプレビューします。 |
+| `-h`, `--help` | コマンドのヘルプメッセージを表示して終了します。すべてのコマンドで利用可能です。 |
+| `-v`, `--version` | sdd-forge のバージョン番号を表示して終了します。トップレベル（`sdd-forge -v`）でのみ利用可能です。 |
+| `--dry-run` | ファイルの書き込みや破壊的な操作をスキップし、実行内容のプレビューのみ行います。多くのコマンドで利用可能です。 |
 
-`--dry-run` はほぼ全てのコマンドでサポートされていますが、`parseArgs` の `flags` 配列に個別登録する形式のため、厳密にはコマンドごとに定義されています。`--help` のみがパーサーレベルで暗黙的に処理される真のグローバルオプションです。
+sdd-forge はサブコマンドごとに個別のオプションセットを定義する設計であり、全コマンド横断のグローバルフラグは上記に限られます。`--verbose` や `--force` は対応するコマンドでのみ使用できます。
 <!-- {{/text}} -->
 
 ### 各コマンドの詳細
 
 <!-- {{text[mode=deep]: 各コマンドの使用方法・オプション・実行例を詳しく記述してください。コマンドごとに #### サブセクションを立てること。ソースコードの引数定義・ヘルプメッセージから情報を抽出すること。}} -->
 
-#### `sdd-forge help`
+#### sdd-forge setup
 
-利用可能な全コマンドを Project / Docs / Spec / Flow / Info のセクション別に表示します。ANSI エスケープによるボールド・dim 装飾付きで出力されます。
-
-```
-sdd-forge help
-sdd-forge --help
-```
-
-#### `sdd-forge setup`
-
-対話型ウィザードで `.sdd-forge/config.json` を生成し、プロジェクトディレクトリ構造（`.sdd-forge/output/`, `docs/`, `specs/`）を作成します。AGENTS.md テンプレートの配置、CLAUDE.md の作成、スキルファイルのコピーも行います。
+プロジェクト登録と `.sdd-forge/config.json` の生成を行うインタラクティブセットアップウィザードです。必要な値がすべてオプションで指定された場合は非対話モードで実行されます。
 
 ```
-sdd-forge setup
-sdd-forge setup --name myapp --path /path/to/src --type webapp/cakephp2 --agent claude
+sdd-forge setup [options]
 ```
 
 | オプション | 説明 |
 |---|---|
 | `--name <name>` | プロジェクト名 |
-| `--path <path>` | ソースディレクトリのパス |
-| `--work-root <path>` | 作業ルートディレクトリ（省略時は `--path` と同じ） |
-| `--type <type>` | アーキテクチャタイプ（例: `webapp/cakephp2`, `cli/node-cli`） |
-| `--purpose <purpose>` | ドキュメントの目的 |
-| `--tone <tone>` | 文体スタイル（`polite`, `formal`, `casual`） |
-| `--agent <agent>` | デフォルトエージェント（`claude`, `codex`） |
+| `--path <path>` | ソースコードのパス |
+| `--work-root <path>` | 出力先パス（省略時はソースパスと同じ） |
+| `--type <type>` | プロジェクトタイプ（例: `webapp/cakephp2`, `cli/node-cli`） |
+| `--purpose <purpose>` | ドキュメントの用途（`user-guide` または `developer`） |
+| `--tone <tone>` | 文体（`polite`, `formal`, `casual`） |
+| `--agent <agent>` | AI エージェント名 |
 | `--lang <lang>` | 操作言語 |
-| `--dry-run` | ファイル書き込みを行わずプレビューする |
+| `--dry-run` | 設定内容の表示のみ行い、ファイルは書き込まない |
 
-全ての必須オプションを指定すると非対話モードで動作します。
+セットアップでは以下のディレクトリ・ファイルが作成されます: `.sdd-forge/`、`docs/`、`specs/`、`AGENTS.md`、`CLAUDE.md`、`.agents/skills/`、`.claude/skills/`。
 
-#### `sdd-forge upgrade`
+#### sdd-forge upgrade
 
-インストール済み sdd-forge バージョンのテンプレートに合わせて `.agents/skills/` のスキルファイルを更新します。`.claude/skills/` へのシンボリックリンクも再作成します。config.json の設定ヒント（`systemPromptFlag` の未設定など）も表示します。
+インストール済み sdd-forge バージョンのテンプレートに合わせてスキルファイル等を更新します。繰り返し実行しても安全です。
 
 ```
-sdd-forge upgrade
-sdd-forge upgrade --dry-run
+sdd-forge upgrade [--dry-run]
 ```
 
 | オプション | 説明 |
 |---|---|
-| `--dry-run` | 更新内容をプレビューする |
+| `--dry-run` | 変更内容を表示するだけで実際の更新は行わない |
 
-#### `sdd-forge presets list`
+スキルファイルの差分を検出して上書きし、`config.json` の `systemPromptFlag` 未設定プロバイダーに対して設定提案を表示します。
 
-プリセットの継承ツリーを `base/ → arch → leaf` の階層でコンソールに表示します。各ノードの label・aliases・scan キー、テンプレートディレクトリの有無が確認できます。
+#### sdd-forge presets list
+
+プリセットの継承ツリーを表示します。`base/` をルートとし、アーキテクチャ層・リーフ層の階層をツリー形式で出力します。
 
 ```
 sdd-forge presets list
 ```
 
-#### `sdd-forge docs build`
+各ノードには label、aliases、scan キーが表示されます。
 
-scan → enrich → init → data → text → readme → agents → translate の全パイプラインを順次実行します。プログレスバーで進捗を表示し、`defaultAgent` 未設定時は enrich と text をスキップします。多言語設定時は translate または generate モードで非デフォルト言語の docs を生成します。
+#### sdd-forge docs build
 
-```
-sdd-forge docs build
-sdd-forge docs build --force --verbose
-```
-
-| オプション | 説明 |
-|---|---|
-| `--force` | テンプレートの上書きを強制する |
-| `--verbose` | 詳細ログを出力する |
-| `--dry-run` | ファイル書き込みを行わない |
-
-#### `sdd-forge docs scan`
-
-ソースコードを静的解析して `.sdd-forge/output/analysis.json` を生成します。
+ドキュメント生成パイプラインを一括実行します。実行順序: `scan → enrich → init → data → text → readme → agents`。多言語設定がある場合は `translate` ステップも追加されます。
 
 ```
-sdd-forge docs scan
-sdd-forge docs scan --stdout
+sdd-forge docs build [options]
 ```
 
 | オプション | 説明 |
 |---|---|
+| `--force` | 既存ファイルを強制的に上書きする（init ステップに影響） |
+| `--verbose` | 詳細ログを表示する |
+| `--dry-run` | ファイルの書き込みをスキップする |
+
+エージェントが未設定の場合、`enrich` と `text` ステップはスキップされます。多言語出力では `translate` モードと `generate` モードで処理が分岐します。
+
+#### sdd-forge docs enrich
+
+AI を使って `analysis.json` の各エントリーに `summary`、`detail`、`chapter`、`role` メタデータを付与します。
+
+```
+sdd-forge docs enrich [options]
+```
+
+| オプション | 説明 |
+|---|---|
+| `--dry-run` | 結果を表示するだけでファイルには書き込まない |
 | `--stdout` | 結果を標準出力に出力する |
-| `--dry-run` | ファイル書き込みを行わない |
 
-#### `sdd-forge docs enrich`
+エントリーは合計行数ベース（デフォルト 3000 行）またはアイテム数ベース（デフォルト 20 件）でバッチ分割されます。レジューム対応で、既に `summary` を持つエントリーはスキップされます。
 
-AI を使って `analysis.json` の各エントリーに `summary`・`detail`・`chapter`・`role` メタデータを付与します。合計行数ベース（デフォルト 3000 行）またはアイテム数ベース（デフォルト 20 件）でバッチ分割し、各バッチ完了後に中間保存するレジューム機能を備えます。
+#### sdd-forge docs init
 
-```
-sdd-forge docs enrich
-sdd-forge docs enrich --dry-run
-```
-
-| オプション | 説明 |
-|---|---|
-| `--stdout` | 結果を標準出力に出力する |
-| `--dry-run` | ファイル書き込みを行わない |
-
-#### `sdd-forge docs init`
-
-プリセットテンプレートから章ファイル（`.md`）を `docs/` ディレクトリに配置します。テンプレート継承（base → arch → leaf）とプロジェクトローカルテンプレート（`.sdd-forge/templates/`）をサポートします。
+プリセットのテンプレート継承チェーン（`base → arch → leaf → projectLocal`）を解決・マージして、`docs/` ディレクトリに章ファイルを出力します。
 
 ```
-sdd-forge docs init
-sdd-forge docs init --type cli/node-cli --force
+sdd-forge docs init [options]
 ```
 
 | オプション | 説明 |
 |---|---|
-| `--type <type>` | アーキテクチャタイプを明示指定する |
-| `--lang <lang>` | 出力言語を指定する |
-| `--docs-dir <path>` | docs ディレクトリのパスを指定する |
-| `--force` | 既存ファイルを上書きする |
-| `--dry-run` | ファイル書き込みを行わない |
+| `--type <type>` | プロジェクトタイプ（config.json の設定を上書き） |
+| `--force` | 既存ファイルを強制的に上書きする |
+| `--dry-run` | ファイルの書き込みをスキップする |
 
-#### `sdd-forge docs data`
+AI エージェントが設定されている場合、プロジェクトの analysis データに基づいて不要な章を自動除外します。`config.chapters` が定義されている場合は AI フィルタリングを無視します。
 
-章ファイル内の `{{data}}` ディレクティブを解決し、DataSource から生成したマークダウンテーブル等を挿入します。
+#### sdd-forge docs text
 
-```
-sdd-forge docs data
-sdd-forge docs data --docs-dir docs/ja
-```
-
-| オプション | 説明 |
-|---|---|
-| `--docs-dir <path>` | 対象の docs ディレクトリを指定する |
-| `--stdout` | 結果を標準出力に出力する |
-| `--dry-run` | ファイル書き込みを行わない |
-
-#### `sdd-forge docs text`
-
-AI を使って章ファイル内の `{{text}}` ディレクティブの本文を生成します。バッチモード（ファイル単位）とディレクティブ単位モードを選択できます。
+`{{text}}` ディレクティブを LLM エージェントで解決し、テンプレートファイルに説明文を挿入します。
 
 ```
-sdd-forge docs text
-sdd-forge docs text --per-directive --id cli_commands
+sdd-forge docs text [options]
 ```
 
 | オプション | 説明 |
 |---|---|
-| `--timeout <ms>` | AI 呼び出しのタイムアウト（ミリ秒） |
-| `--id <chapter>` | 特定の章のみ処理する |
-| `--lang <lang>` | 出力言語を指定する |
-| `--docs-dir <path>` | 対象の docs ディレクトリを指定する |
-| `--per-directive` | ディレクティブ単位で AI を呼び出す |
-| `--dry-run` | ファイル書き込みを行わない |
+| `--dry-run` | 結果を表示するだけでファイルには書き込まない |
+| `--per-directive` | ディレクティブ単位で個別に LLM を呼び出す（デフォルトはファイル単位バッチ） |
 
-#### `sdd-forge docs readme`
+バッチモードでは品質検証として行数縮小チェック（閾値 50%）と filled 率チェックを行い、基準を満たさない場合は元のコンテンツを保持します。
 
-`docs/` 配下の章ファイルからプリセットテンプレートを使って `README.md` を自動生成します。テンプレート継承・`{{data}}`/`{{text}}` ディレクティブ解決・多言語対応を行います。
+#### sdd-forge docs readme
+
+`docs/` 配下の章ファイルとテンプレートから `README.md` を自動生成します。`{{data}}` ディレクティブの解決、`{{text}}` ディレクティブの AI 処理、多言語対応を含みます。
 
 ```
-sdd-forge docs readme
-sdd-forge docs readme --lang ja --output docs/ja/README.md
+sdd-forge docs readme [options]
 ```
 
 | オプション | 説明 |
 |---|---|
-| `--lang <lang>` | 出力言語を指定する |
-| `--output <path>` | 出力先パスを指定する |
-| `--dry-run` | ファイル書き込みを行わない |
+| `--dry-run` | 結果を表示するだけでファイルには書き込まない |
+| `--output <path>` | 出力先パスを指定する（非デフォルト言語用） |
 
-#### `sdd-forge docs forge`
+差分チェックにより変更がない場合は書き込みをスキップします。
 
-AI エージェントと review コマンドを反復実行して docs の品質を改善します。local（ローカル AI）・assist（補助モード）・agent（フルエージェント）の 3 モードで動作します。
+#### sdd-forge docs forge
+
+AI エージェントを使って docs を反復的に改善するコマンドです。AI による更新 → review → フィードバック のサイクルを最大 `--max-runs` 回繰り返します。
 
 ```
-sdd-forge docs forge --prompt "APIセクションを充実させる"
-sdd-forge docs forge --spec specs/001-feature/spec.md --mode agent --max-runs 5
+sdd-forge docs forge [options]
 ```
 
 | オプション | 説明 |
 |---|---|
-| `--prompt <text>` | 改善指示のプロンプトテキスト |
-| `--prompt-file <path>` | プロンプトをファイルから読み込む |
-| `--spec <path>` | spec ファイルのパス（対象ファイル推定に使用） |
+| `--prompt <text>` | AI への指示テキスト |
+| `--prompt-file <path>` | AI への指示テキストをファイルから読み込む |
+| `--spec <path>` | spec ファイルのパスを指定する |
 | `--max-runs <n>` | 最大反復回数（デフォルト: 3） |
-| `--review-cmd <cmd>` | レビュー実行コマンド（デフォルト: `sdd-forge docs review`） |
-| `--mode <mode>` | 動作モード（`local`, `assist`, `agent`） |
-| `--verbose` | 詳細ログを出力する |
-| `--dry-run` | ファイル書き込みを行わない |
+| `--review-cmd <cmd>` | レビューコマンド（デフォルト: `sdd-forge docs review`） |
+| `--mode <mode>` | 動作モード: `local`（決定論的パッチのみ）、`assist`（AI + フォールバック）、`agent`（AI 必須） |
+| `--verbose` | 詳細ログを表示する |
+| `--dry-run` | ファイルの書き込みをスキップする |
 
-#### `sdd-forge docs review`
+AI が `NEEDS_INPUT` を出力した場合、終了コード 2 で中断します。
 
-生成済み docs の品質レビューを実行します。
+#### sdd-forge docs translate
 
-```
-sdd-forge docs review
-```
-
-#### `sdd-forge docs translate`
-
-デフォルト言語の docs を非デフォルト言語に AI 翻訳します。mtime 比較による差分翻訳をサポートし、`mapWithConcurrency` で並列処理を行います。
+デフォルト言語のドキュメントを非デフォルト言語に AI で翻訳します。ソースとターゲットの mtime を比較し、差分翻訳を行います。
 
 ```
-sdd-forge docs translate
-sdd-forge docs translate --lang ja --force
+sdd-forge docs translate [options]
 ```
 
 | オプション | 説明 |
 |---|---|
-| `--lang <lang>` | 特定の言語のみ翻訳対象にする |
-| `--force` | mtime に関係なく全ファイルを再翻訳する |
-| `--dry-run` | ファイル書き込みを行わない |
+| `--lang <lang>` | 対象言語を絞り込む |
+| `--force` | 全ファイルを再翻訳する |
+| `--dry-run` | 翻訳対象の表示のみ行い、実際の翻訳は行わない |
 
-#### `sdd-forge docs changelog`
+出力モードが `translate` でない場合やエージェント未設定の場合はスキップされます。
 
-変更履歴を生成します。
+#### sdd-forge docs changelog
+
+`specs/` ディレクトリを走査し、spec.md ファイルからメタ情報を抽出して `change_log.md` を自動生成します。
 
 ```
-sdd-forge docs changelog
-sdd-forge docs changelog --dry-run
+sdd-forge docs changelog [--dry-run] [output-file]
 ```
 
 | オプション | 説明 |
 |---|---|
-| `--dry-run` | ファイル書き込みを行わない |
+| `--dry-run` | 結果を stdout に出力し、ファイルへの書き込みをスキップする |
+| `[output-file]` | 出力先ファイルパス（デフォルト: `docs/change_log.md`） |
 
-#### `sdd-forge docs agents`
+出力にはシリーズごとの最新 spec インデックスと全 spec の一覧テーブルが含まれます。既存ファイルの `AUTO-GEN:START/END` ブロック内のみ上書きされます。
+
+#### sdd-forge docs agents
 
 `AGENTS.md` 内の `{{data: agents.sdd}}` / `{{data: agents.project}}` ディレクティブを解決し、PROJECT セクションを AI で精査・更新します。
 
 ```
-sdd-forge docs agents
-sdd-forge docs agents --dry-run
+sdd-forge docs agents [--dry-run]
 ```
 
 | オプション | 説明 |
 |---|---|
-| `--dry-run` | ファイル書き込みを行わない |
+| `--dry-run` | 結果を stdout に出力し、ファイルへの書き込みをスキップする |
 
-#### `sdd-forge docs snapshot`
+生成済み docs と `package.json` の scripts を AI のコンテキストとして渡し、PROJECT セクションの内容を精査します。
 
-docs 出力のスナップショットを保存・比較・更新します。
+#### sdd-forge spec init
 
-```
-sdd-forge docs snapshot save
-sdd-forge docs snapshot check
-sdd-forge docs snapshot update
-```
-
-| サブコマンド | 説明 |
-|---|---|
-| `save` | 現在の出力をスナップショットとして保存する |
-| `check` | 保存済みスナップショットと比較する |
-| `update` | スナップショットを現在の出力で更新する |
-
-#### `sdd-forge spec init`
-
-連番 feature ブランチと `specs/NNN-<slug>/` ディレクトリを作成し、`spec.md` と `qa.md` テンプレートを配置します。ブランチ作成・worktree 作成・spec ファイルのみ作成の 3 モードで動作します。
+連番 feature ブランチと `specs/` ディレクトリを作成し、`spec.md` / `qa.md` テンプレートを配置します。
 
 ```
-sdd-forge spec init --title "contact-form"
-sdd-forge spec init --title "login-feature" --worktree
-sdd-forge spec init --title "hotfix" --no-branch
+sdd-forge spec init [options]
 ```
 
 | オプション | 説明 |
 |---|---|
-| `--title <title>` | **必須**。feature のタイトル（ブランチ名・ディレクトリ名に使用） |
-| `--base <branch>` | ベースブランチ（省略時は現在のブランチ） |
-| `--allow-dirty` | ワークツリーが dirty でも続行する |
-| `--no-branch` | ブランチを作成せず spec ファイルのみ作成する |
+| `--title <title>` | spec のタイトル（必須） |
+| `--base <branch>` | ベースブランチ（デフォルト: 現在のブランチ） |
+| `--dry-run` | 実行内容の表示のみ |
+| `--allow-dirty` | ワークツリーが dirty でも実行を許可する |
+| `--no-branch` | ブランチ作成なしで spec ファイルのみ作成する |
 | `--worktree` | `git worktree add` で隔離されたワークツリーを作成する |
-| `--dry-run` | ファイル書き込みを行わない |
 
-#### `sdd-forge spec gate`
+3 つの動作モードがあります: デフォルト（`git checkout -b`）、`--worktree`（隔離ワークツリー）、`--no-branch`（spec ファイルのみ）。
 
-実装開始前に spec.md の品質をチェックします。未解決トークン（TBD, TODO, FIXME）、未チェックタスク、必須セクションの欠落、ユーザー承認の未チェックを検出します。ガードレール準拠の AI 検証も実行します。
+#### sdd-forge spec gate
+
+実装開始前に spec.md の未解決項目を検出し、ガードレール準拠を AI で検証するゲートチェックを実行します。
 
 ```
-sdd-forge spec gate --spec specs/001-feature/spec.md
-sdd-forge spec gate --spec specs/001-feature/spec.md --phase post --skip-guardrail
+sdd-forge spec gate [options]
 ```
 
 | オプション | 説明 |
 |---|---|
-| `--spec <path>` | **必須**。チェック対象の spec.md パス |
-| `--phase <phase>` | チェックフェーズ（`pre`: 実装前、`post`: 実装後。デフォルト: `pre`） |
-| `--skip-guardrail` | ガードレール AI 準拠チェックをスキップする |
+| `--spec <path>` | spec ファイルのパス（必須） |
+| `--phase <pre\|post>` | チェックフェーズ（デフォルト: `pre`）。`pre` では Status/Acceptance Criteria セクションの未チェック項目をスキップする |
+| `--skip-guardrail` | ガードレール AI コンプライアンスチェックをスキップする |
 
-`--phase pre` では Status・Acceptance Criteria・User Scenarios セクションの未チェック項目をスキップします。
+検出対象: 未解決トークン（TBD, TODO, FIXME, NEEDS CLARIFICATION）、未チェックタスク、必須セクションの欠落、ユーザー承認チェックボックスの未チェック。
 
-#### `sdd-forge spec guardrail`
+#### sdd-forge spec guardrail
 
-プロジェクトのガードレール（不変原則）を管理します。`init` と `update` の 2 つのサブコマンドを持ちます。
+プロジェクトのガードレール（不変原則）を管理します。`init` と `update` の 2 つのサブコマンドがあります。
 
 ```
-sdd-forge spec guardrail init
-sdd-forge spec guardrail init --force
-sdd-forge spec guardrail update --agent claude
+sdd-forge spec guardrail init [--force] [--dry-run]
+sdd-forge spec guardrail update [--agent <name>] [--dry-run]
 ```
 
 | サブコマンド | 説明 |
 |---|---|
-| `init` | プリセット階層からテンプレートをマージして `.sdd-forge/guardrail.md` を作成する |
-| `update` | 既存の guardrail.md と analysis.json を AI に渡し、新規記事を提案・追記する |
+| `init` | プリセットの階層（base → arch → leaf）からガードレールテンプレートを読み込み `.sdd-forge/guardrail.md` に生成する |
+| `update` | AI エージェントに既存 guardrail と analysis.json を渡し、プロジェクト固有の追加条項を提案させる |
 
-| オプション | 対象 | 説明 |
-|---|---|---|
-| `--force` | `init` | 既存ファイルを上書きする |
-| `--agent <name>` | `update` | 使用するエージェントを指定する |
-| `--dry-run` | 両方 | ファイル書き込みを行わない |
+#### sdd-forge flow start
 
-#### `sdd-forge flow start`
-
-SDD フローを自動実行します。内部で `spec init` → `spec gate` → `docs forge` を順次呼び出し、フロー状態を `.sdd-forge/flow.json` に保存します。
+SDD フローを自動実行します。`spec init → gate → forge` の 3 ステップを順次実行し、フロー状態を `flow.json` に保存します。
 
 ```
-sdd-forge flow start --request "ログイン機能を追加"
-sdd-forge flow start --request "add API endpoint" --forge-mode agent --worktree
+sdd-forge flow start --request "<要望>" [options]
 ```
 
 | オプション | 説明 |
 |---|---|
-| `--request <text>` | **必須**。機能追加・修正の要求テキスト |
-| `--title <title>` | feature タイトル（省略時はリクエストから自動生成） |
-| `--spec <path>` | 既存の spec.md を指定する（省略時は `spec init` を実行） |
-| `--agent <name>` | 使用するエージェントを指定する |
+| `--request <text>` | 実装要望（必須） |
+| `--title <title>` | spec タイトル（省略時は request から自動生成） |
+| `--spec <path>` | 既存の spec ファイルを指定する（省略時は自動生成） |
+| `--agent <name>` | AI エージェント名 |
 | `--max-runs <n>` | forge の最大反復回数（デフォルト: 5） |
-| `--forge-mode <mode>` | forge の動作モード（`local`, `assist`, `agent`。デフォルト: `local`） |
+| `--forge-mode <mode>` | forge の動作モード: `local`, `assist`, `agent`（デフォルト: `local`） |
 | `--no-branch` | ブランチ作成をスキップする |
-| `--worktree` | git worktree で隔離環境を作成する |
-| `--dry-run` | ファイル書き込みを行わない |
+| `--worktree` | git worktree を使用する |
+| `--dry-run` | 実行内容の表示のみ |
 
-#### `sdd-forge flow status`
+gate チェックに失敗した場合は終了コード 2 で中断し、未解決項目を表示します。
 
-フローの進捗表示と状態更新を行います。オプションなしで現在のフロー状態（spec パス・ブランチ・ステップ進捗・要件進捗）を表示します。
+#### sdd-forge flow status
+
+フロー進捗の表示・更新を行います。引数なしで実行するとステップ状態・要件一覧を表示します。
 
 ```
-sdd-forge flow status
-sdd-forge flow status --step gate --status done
-sdd-forge flow status --summary '["要件1", "要件2"]'
-sdd-forge flow status --req 0 --status done
-sdd-forge flow status --archive
+sdd-forge flow status [options]
 ```
 
 | オプション | 説明 |
 |---|---|
-| `--step <id> --status <val>` | ステップのステータスを更新する |
-| `--summary '<JSON>'` | 要件リストを JSON 配列で一括設定する |
-| `--req <index> --status <val>` | 個別の要件ステータスを更新する |
-| `--archive` | `flow.json` を spec ディレクトリにコピーし削除する |
+| `--step <id> --status <val>` | 特定ステップのステータスを更新する |
+| `--summary '<JSON array>'` | 要件リストを JSON 配列文字列で設定する |
+| `--req <index> --status <val>` | 特定要件のステータスを更新する |
+| `--check <phase>` | フェーズの前提条件を確認する（例: `--check impl`） |
+| `--archive` | `flow.json` を spec ディレクトリにコピーして元ファイルを削除する |
+| `--dry-run` | `--check` と組み合わせて常に exit 0 にする |
 
-#### `sdd-forge flow review`
+#### sdd-forge flow review
 
-実装完了後にコード品質レビューを実行します。draft（AI による提案生成）→ final（妥当性検証）→ apply（承認済み提案の適用）の 3 フェーズで動作します。
+AI エージェントによる 2 フェーズ（draft → final）のコード品質レビューを実施します。
 
 ```
-sdd-forge flow review
-sdd-forge flow review --dry-run
+sdd-forge flow review [options]
 ```
 
 | オプション | 説明 |
 |---|---|
-| `--dry-run` | 提案の表示のみ行い適用しない |
+| `--dry-run` | 提案の表示のみ行い、適用はしない |
 | `--skip-confirm` | 初期確認プロンプトをスキップする |
+
+draft フェーズで改善提案を生成し、final フェーズで別の AI エージェントが提案を検証します。各提案に APPROVED/REJECTED の判定が付与され、`review.md` に出力されます。
+
+#### sdd-forge flow merge
+
+`flow.json` の状態に基づいて feature ブランチを base ブランチに squash マージします。
+
+```
+sdd-forge flow merge [--dry-run]
+```
+
+3 つのモードを自動判定します: spec-only（`featureBranch === baseBranch` ならスキップ）、worktree（`git -C mainRepoPath merge --squash`）、branch（`git checkout` → `merge --squash`）。
+
+#### sdd-forge flow cleanup
+
+フロー完了後のブランチ・worktree を削除します。
+
+```
+sdd-forge flow cleanup [--dry-run]
+```
+
+`flow.json` の状態から 3 つのモードを自動判定します: spec-only（スキップ）、worktree（`git worktree remove` + `git branch -D`）、branch（`git branch -D` のみ）。
 <!-- {{/text}} -->
 
 ### 終了コードと出力
 
 <!-- {{text[mode=deep]: 終了コードの定義と stdout/stderr の使い分けルールを表形式で記述してください。ソースコードの process.exit() 呼び出しや出力パターンから抽出すること。}} -->
 
-**終了コード**
+#### 終了コード
 
-| コード | 意味 | 発生条件 |
+| 終了コード | 意味 | 発生元 |
 |---|---|---|
-| `0` | 正常終了 | コマンドが成功した場合、ヘルプ表示（明示的なサブコマンド指定時） |
-| `1` | エラー | 未知のコマンド、必須引数の不足、バリデーション失敗、未捕捉例外、`snapshot check` の差分検出 |
-| `2` | ゲートチェック失敗 | `flow start` 内で `spec gate` が失敗した場合 |
+| `0` | 正常終了 | すべてのコマンド |
+| `1` | 一般エラー（不明なサブコマンド、設定不備、必須引数の欠落、ファイル未検出、サブコマンド未指定） | `sdd-forge.js`、`docs.js`、`spec.js`、`flow.js`、各コマンド実装 |
+| `2` | ゲートチェック失敗または `NEEDS_INPUT` 検出による中断 | `flow start`（gate 失敗時）、`forge`（NEEDS_INPUT 検出時） |
 
-`text` コマンドと `snapshot check` コマンドは、非同期処理の途中でエラーが発生した場合に `process.exitCode = 1` を使用します。これにより残りの処理を完了してから非ゼロで終了します。その他のコマンドは `process.exit(n)` で即座に終了するか、例外を `runIfDirect()` ラッパーが捕捉して終了コード 1 で終了します。
+#### stdout / stderr の使い分け
 
-**stdout / stderr の使い分け**
+| 出力先 | 用途 | 例 |
+|---|---|---|
+| stdout | コマンドの主要な出力結果。パイプラインやリダイレクトで利用される正規の出力 | `--dry-run` 時のファイル内容プレビュー、`changelog` の生成結果、`status` の表示、`spec init` の作成報告 |
+| stderr | 進捗表示、警告メッセージ、エラーメッセージ、ヘルプ表示（サブコマンド未指定時） | `[build] ERROR:` メッセージ、`[enrich] WARN:` メッセージ、`[text] WARN:` メッセージ、ディスパッチャーの使用方法表示 |
 
-| ストリーム | 用途 |
-|---|---|
-| stdout（`console.log`） | コマンドの実行結果、ヘルプテキスト、`--stdout` や `--dry-run` 時のデータ出力、ステータス表示 |
-| stderr（`console.error`） | エラーメッセージ、ヘルプ表示（サブコマンド未指定時）、警告、AI 処理の進捗ログ |
-
-ディスパッチャー（`docs.js`, `spec.js`, `flow.js`）はサブコマンド未指定時のヘルプを `console.error` で出力し、終了コード 1 で終了します。明示的に `-h` / `--help` が指定された場合は `console.log` で出力し、終了コード 0 で終了します。`flow start` はサブプロセスの出力を `process.stdout.write()` / `process.stderr.write()` でそのままパススルーします。
+`createLogger()` によるロガー出力は `console.log`（stdout）を使用します。`build` パイプラインの `progress` オブジェクトは進捗バーとステップログを表示します。エラー発生時は `progress.done()` で進捗バーを終了してからエラーメッセージを stderr に出力し `process.exit(1)` で終了します。
 <!-- {{/text}} -->

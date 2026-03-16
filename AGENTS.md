@@ -67,7 +67,7 @@
 <!-- {{data: agents.project("")}} -->
 ## Project Context
 
-- **パッケージ:** `sdd-forge` v0.1.0-alpha.30
+- **パッケージ:** `sdd-forge` v0.1.0-alpha.31
 - **説明:** Spec-Driven Development tooling for automated documentation generation
 - **モジュール形式:** ES Modules (`"type": "module"`)
 - **ランタイム:** Node.js >=18.0.0
@@ -100,7 +100,7 @@ sdd-forge/
     │       ├── command-context.js, concurrency.js
     │       └── scan-source.js, php-array-parser.js, test-env-detection.js
     ├── flow/
-    │   └── commands/         ← start.js, status.js, review.js
+    │   └── commands/         ← start.js, status.js, review.js, merge.js, cleanup.js
     ├── spec/
     │   └── commands/         ← init.js, gate.js, guardrail.js
     ├── lib/                  ← 全レイヤー共有ユーティリティ
@@ -131,6 +131,8 @@ sdd-forge/
 | `sdd-forge flow start` | `flow.js` | `src/flow/commands/start.js` |
 | `sdd-forge flow status` | `flow.js` | `src/flow/commands/status.js` |
 | `sdd-forge flow review` | `flow.js` | `src/flow/commands/review.js` |
+| `sdd-forge flow merge` | `flow.js` | `src/flow/commands/merge.js` |
+| `sdd-forge flow cleanup` | `flow.js` | `src/flow/commands/cleanup.js` |
 | `sdd-forge setup` | 独立 | `src/setup.js` |
 | `sdd-forge upgrade` | 独立 | `src/upgrade.js` |
 | `sdd-forge presets` | 独立 | `src/presets-cmd.js` |

@@ -177,10 +177,10 @@ $sdd-flow-close   — forge → review → commit → merge で終了
 <!-- {{data: docs.chapters("章|概要")}} -->
 | 章 | 概要 |
 | --- | --- |
-| [01. ツール概要とアーキテクチャ](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/ja/overview.md) | sdd-forge は、ソースコードの静的解析と AI を組み合わせて技術ドキュメントを自動生成する CLI ツールです。 |
-| [02. CLI コマンドリファレンス](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/ja/cli_commands.md) | sdd-forge は 20 以上のサブコマンドを提供する CLI ツールで、3 層ディスパッチ構造（`sdd-forge` → 名前空間ディスパッチャー → 個別コマンド）でルーティングされます。 |
-| [03. 設定とカスタマイズ](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/ja/configuration.md) | sdd-forge はプロジェクトルート直下の `.sdd-forge/config.json` を中心に、出力言語・プロジェクト種別・ドキュメントスタイル・AI エージェント・並列数などを設定できます。 |
-| [04. 内部設計](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/ja/internal_design.md) | sdd-forge は 3 層ディスパッチ（CLI エントリ → ドメインディスパッチャー → コマンド実装）を軸に構成され、共有ライブラリ層（`src/lib/`）とドキュメント生成ライブラリ層（`src/docs/lib/`）が全… |
+| [01. ツール概要とアーキテクチャ](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/ja/overview.md) | sdd-forge は、ソースコード解析に基づくドキュメント自動生成と Spec-Driven Development（SDD）ワークフローを提供する Node.js CLI ツールです。 |
+| [02. CLI コマンドリファレンス](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/ja/cli_commands.md) | sdd-forge は 3 層ディスパッチ構造（トップレベル → 名前空間ディスパッチャー → サブコマンド実装）を持つ CLI ツールで、`docs`（12 サブコマンド）、`spec`（3 サブコマンド）、`flow`（5 サブコ… |
+| [03. 設定とカスタマイズ](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/ja/configuration.md) | sdd-forge の動作は `.sdd-forge/config.json` を中心に制御されます。 |
+| [04. 内部設計](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/ja/internal_design.md) | sdd-forge は 3 層ディスパッチ（CLI エントリ → ドメインルーター → コマンド実装）を基本構造とし、プリセット継承によるプロジェクトタイプ別の解析・テンプレート処理を実現しています。 |
 <!-- {{/data}} -->
 
 ## License
