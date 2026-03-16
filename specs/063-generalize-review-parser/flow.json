@@ -1,0 +1,101 @@
+{
+  "spec": "specs/063-generalize-review-parser/spec.md",
+  "baseBranch": "main",
+  "featureBranch": "feature/063-generalize-review-parser",
+  "steps": [
+    {
+      "id": "approach",
+      "status": "done"
+    },
+    {
+      "id": "branch",
+      "status": "done"
+    },
+    {
+      "id": "spec",
+      "status": "done"
+    },
+    {
+      "id": "draft",
+      "status": "done"
+    },
+    {
+      "id": "fill-spec",
+      "status": "done"
+    },
+    {
+      "id": "approval",
+      "status": "done"
+    },
+    {
+      "id": "gate",
+      "status": "done"
+    },
+    {
+      "id": "test",
+      "status": "done"
+    },
+    {
+      "id": "implement",
+      "status": "done"
+    },
+    {
+      "id": "review",
+      "status": "done"
+    },
+    {
+      "id": "finalize",
+      "status": "done"
+    },
+    {
+      "id": "docs-update",
+      "status": "done"
+    },
+    {
+      "id": "docs-review",
+      "status": "done"
+    },
+    {
+      "id": "commit",
+      "status": "done"
+    },
+    {
+      "id": "merge",
+      "status": "done"
+    },
+    {
+      "id": "branch-cleanup",
+      "status": "done"
+    },
+    {
+      "id": "archive",
+      "status": "done"
+    }
+  ],
+  "requirements": [
+    {
+      "desc": "review-parser.jsから死んだコード5関数を削除",
+      "status": "pending"
+    },
+    {
+      "desc": "forge.jsからmissesパッチブロックと関連importを削除",
+      "status": "done"
+    },
+    {
+      "desc": "review-parser.test.jsから削除した関数のテストを削除",
+      "status": "done"
+    },
+    {
+      "desc": "残す関数が引き続き正しく動作すること",
+      "status": "done"
+    },
+    {
+      "desc": "既存テストが通ること",
+      "status": "done"
+    }
+  ],
+  "request": "review-parser の汎用化: CakePHP ハードコードされたファイルパスをプリセット側に移動し、全プリセットで forge local モードを機能させる",
+  "notes": [
+    "draft: 死んだコード(patchGeneratedForMisses, parseReviewMisses等)を削除。forge.jsのmissesパッチブロックも除去。summarizeReview, parseFileResults, extractNeedsInputは残す"
+  ]
+}
