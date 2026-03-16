@@ -409,6 +409,79 @@ function allTextDirectivesFilled(text) {
   return true;
 }
 
+/** analysis.json のメタデータキー（カテゴリではないトップレベルキー） */
+const ANALYSIS_META_KEYS = new Set(["analyzedAt", "enrichedAt", "generatedAt", "files", "root", "_incrementalMeta"]);
+
+/**
+ * analysis.json の _incrementalMeta から影響章を特定する。
+ * 変更ファイルの旧 chapter（prevChapters）と新 chapter（enrichment 後）を
+ * 合わせて影響章セットを返す。
+ *
+ * @param {Object} analysis - analysis.json データ
+ * @returns {Set<string>|null} 影響章のセット（chapter name without .md）。null = 全章対象
+ */
+function getAffectedChapters(analysis) {
+  const meta = analysis?._incrementalMeta;
+  if (!meta) return null;
+
+  const affected = new Set(meta.prevChapters || []);
+
+  const changedSet = new Set(meta.changedFiles || []);
+  if (changedSet.size === 0) return null;
+
+  for (const cat of Object.keys(analysis)) {
+    if (ANALYSIS_META_KEYS.has(cat)) continue;
+    const catData = analysis[cat];
+    if (!catData || typeof catData !== "object") continue;
+    for (const subKey of Object.keys(catData)) {
+      const items = catData[subKey];
+      if (!Array.isArray(items)) continue;
+      for (const item of items) {
+        if (item.file && changedSet.has(item.file) && item.chapter) {
+          affected.add(item.chapter);
+        }
+      }
+    }
+  }
+
+  return affected.size > 0 ? affected : null;
+}
+
+/**
+ * 影響章フィルタリングとディレクティブクリアを含む対象ファイル解決。
+ *
+ * @param {string[]} allDocsFiles - 全章ファイル一覧
+ * @param {string} docsDir - docs ディレクトリの絶対パス
+ * @param {Object} analysis - analysis.json データ
+ * @returns {{ docsFiles: string[], affectedChapters: Set<string>|null }}
+ */
+function resolveIncrementalTargets(allDocsFiles, docsDir, analysis) {
+  const affectedChapters = getAffectedChapters(analysis);
+  const docsFiles = affectedChapters
+    ? allDocsFiles.filter((f) => affectedChapters.has(f.replace(/\.md$/, "")))
+    : allDocsFiles;
+
+  const targetFiles = [];
+  let skippedFileCount = 0;
+  for (const file of docsFiles) {
+    const filePath = path.join(docsDir, file);
+    let content = fs.readFileSync(filePath, "utf8");
+    if (affectedChapters) {
+      content = stripFillContent(content);
+    }
+    if (allTextDirectivesFilled(content)) {
+      skippedFileCount++;
+      continue;
+    }
+    targetFiles.push(file);
+  }
+  if (skippedFileCount > 0) {
+    logger.log(`Skipped ${skippedFileCount} file(s) with all directives filled.`);
+  }
+
+  return { docsFiles, targetFiles, affectedChapters };
+}
+
 /**
  * @param {string} root       - リポジトリルート
  * @param {Object} analysis   - analysis.json データ
@@ -430,8 +503,10 @@ export async function textFillFromAnalysis(root, analysis, commandId, srcRoot) {
   const type = cfg.type ? resolveType(cfg.type) : undefined;
   const concurrency = resolveConcurrency(cfg);
   const docsDir = path.join(root, "docs");
-  const docsFiles = getChapterFiles(docsDir, { type, configChapters: cfg.chapters });
+  const allDocsFiles = getChapterFiles(docsDir, { type, configChapters: cfg.chapters });
   const resolvedSrcRoot = srcRoot || root;
+
+  const { targetFiles, affectedChapters } = resolveIncrementalTargets(allDocsFiles, docsDir, analysis);
 
   const changedFiles = [];
   let totalFilled = 0;
@@ -439,22 +514,6 @@ export async function textFillFromAnalysis(root, analysis, commandId, srcRoot) {
 
   // Batch mode: file-level parallelism (1 call per file)
   const errors = [];
-
-  // Filter files: skip files where all {{text}} directives are already filled
-  const targetFiles = [];
-  let skippedFileCount = 0;
-  for (const file of docsFiles) {
-    const filePath = path.join(docsDir, file);
-    const content = fs.readFileSync(filePath, "utf8");
-    if (allTextDirectivesFilled(content)) {
-      skippedFileCount++;
-      continue;
-    }
-    targetFiles.push(file);
-  }
-  if (skippedFileCount > 0) {
-    logger.log(`Skipped ${skippedFileCount} file(s) with all directives filled.`);
-  }
 
   const fileResults = await mapWithConcurrency(targetFiles, concurrency, async (file) => {
     const filePath = path.join(docsDir, file);
@@ -545,7 +604,16 @@ async function main(ctx) {
   const lang = ctx.outputLang;
   const systemPrompt = buildTextSystemPrompt(documentStyle, lang);
   const concurrency = resolveConcurrency(cfg);
-  const docsFiles = getChapterFiles(docsDir, { type: ctx.type, configChapters: cfg.chapters });
+  const allDocsFiles = getChapterFiles(docsDir, { type: ctx.type, configChapters: cfg.chapters });
+
+  // 差分モード: 影響章のみ処理 + ディレクティブクリア
+  const { docsFiles, affectedChapters } = resolveIncrementalTargets(allDocsFiles, docsDir, analysis);
+  if (affectedChapters) {
+    const skipped = allDocsFiles.length - docsFiles.length;
+    if (skipped > 0) {
+      logger.log(`incremental: ${docsFiles.length} affected chapter(s), ${skipped} skipped`);
+    }
+  }
 
   let totalFilled = 0;
   let totalSkipped = 0;
@@ -568,12 +636,17 @@ async function main(ctx) {
   const fileEntries = [];
   for (const file of docsFiles) {
     const filePath = path.join(docsDir, file);
-    const original = fs.readFileSync(filePath, "utf8");
+    let original = fs.readFileSync(filePath, "utf8");
 
     if (ctx.id) {
       const directives = parseDirectives(original);
       const hasId = directives.some((d) => d.type === "text" && d.params?.id === ctx.id);
       if (!hasId) continue;
+    }
+
+    // 影響章のディレクティブをクリアして再生成を強制
+    if (affectedChapters) {
+      original = stripFillContent(original);
     }
 
     fileEntries.push({ file, filePath, original });
@@ -636,6 +709,6 @@ async function main(ctx) {
   return { errors };
 }
 
-export { main, stripFillContent, countFilledInBatch, processTemplateFileBatch, allTextDirectivesFilled, validateBatchResult };
+export { main, stripFillContent, countFilledInBatch, processTemplateFileBatch, allTextDirectivesFilled, validateBatchResult, getAffectedChapters };
 
 runIfDirect(import.meta.url, main);
