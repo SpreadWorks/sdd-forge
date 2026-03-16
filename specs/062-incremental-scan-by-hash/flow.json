@@ -1,0 +1,109 @@
+{
+  "spec": "specs/062-incremental-scan-by-hash/spec.md",
+  "baseBranch": "main",
+  "featureBranch": "feature/062-incremental-scan-by-hash",
+  "steps": [
+    {
+      "id": "approach",
+      "status": "done"
+    },
+    {
+      "id": "branch",
+      "status": "done"
+    },
+    {
+      "id": "spec",
+      "status": "done"
+    },
+    {
+      "id": "draft",
+      "status": "done"
+    },
+    {
+      "id": "fill-spec",
+      "status": "done"
+    },
+    {
+      "id": "approval",
+      "status": "done"
+    },
+    {
+      "id": "gate",
+      "status": "done"
+    },
+    {
+      "id": "test",
+      "status": "done"
+    },
+    {
+      "id": "implement",
+      "status": "done"
+    },
+    {
+      "id": "review",
+      "status": "done"
+    },
+    {
+      "id": "finalize",
+      "status": "done"
+    },
+    {
+      "id": "docs-update",
+      "status": "done"
+    },
+    {
+      "id": "docs-review",
+      "status": "done"
+    },
+    {
+      "id": "commit",
+      "status": "done"
+    },
+    {
+      "id": "merge",
+      "status": "done"
+    },
+    {
+      "id": "branch-cleanup",
+      "status": "done"
+    },
+    {
+      "id": "archive",
+      "status": "done"
+    }
+  ],
+  "requirements": [
+    {
+      "desc": "R1: scan差分モード（ハッシュ比較で変更・新規だけスキャン、削除除外）",
+      "status": "done"
+    },
+    {
+      "desc": "R2: enrich差分処理（既存レジューム機能で自動対応）",
+      "status": "done"
+    },
+    {
+      "desc": "R3: text影響章限定再生成（ディレクティブクリア＋再生成）",
+      "status": "done"
+    },
+    {
+      "desc": "R4: buildパイプライン統合",
+      "status": "done"
+    },
+    {
+      "desc": "R5: ログ出力",
+      "status": "done"
+    }
+  ],
+  "request": "差分スキャン機能の実装。analysis.jsonの各エントリーのhashフィールドを使ってファイルハッシュ比較を行い、変更されたファイルだけをスキャン・enrich・text再生成する。",
+  "notes": [
+    "approach: 要件整理してから仕様書作成",
+    "branch: mainからfeatureブランチ作成",
+    "scope: 全レイヤー（scan + enrich + text）の差分化",
+    "起動方法: analysis.json存在時はデフォルト差分、--fullでフル実行",
+    "削除ファイル: analysis.jsonから自動除外",
+    "build: デフォルト差分。--fullフラグは不要（analysis.json削除で代用）",
+    "text差分: 影響章のディレクティブをクリアして再生成",
+    "test: ユニットテスト7観点（scan差分5, text差分2）",
+    "merge: 個別に選択する"
+  ]
+}
