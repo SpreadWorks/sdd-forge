@@ -67,6 +67,12 @@ Available status values: `pending`, `in_progress`, `done`, `skipped`
 4. Draft phase (if step 1 chose option 1).
    - **On start**: `sdd-forge flow status --step draft --status in_progress`
    - **If skipped** (step 1 chose option 2): `sdd-forge flow status --step draft --status skipped`
+   - **Before starting draft discussion**:
+     1. Check docs freshness: compare mtime of `docs/*.md` vs source files.
+        If source is newer, suggest `sdd-forge build` to the user and wait for approval.
+     2. Read relevant `docs/` chapters based on the user's request keywords.
+        Use chapter titles and AGENTS.md structure to identify related files.
+        This provides project context that improves question quality and draft accuracy.
    - Create `specs/NNN-xxx/draft.md` in the spec directory created in step 3.
    - AI presents choices/proposals → user selects with short answers.
    - Ask ONE question at a time (do not batch questions, do not self-answer).
@@ -82,6 +88,8 @@ Available status values: `pending`, `in_progress`, `done`, `skipped`
 
 5. Fill spec before coding.
    - **On start**: `sdd-forge flow status --step fill-spec --status in_progress`
+   - **Before writing spec**: Re-read relevant `docs/` chapters identified in step 4.
+     If draft was skipped, identify relevant chapters now (same method as step 4).
    - Fill Goal, Scope, Out of Scope, Requirements, Acceptance Criteria.
    - If draft phase was done, reflect draft Q&A and decisions in spec.md.
    - Include "why this approach" rationale.
