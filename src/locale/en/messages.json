@@ -11,7 +11,7 @@
     "readmeNotFound": "[FAIL] README.md not found — run: sdd-forge docs readme",
     "langDirMissing": "[FAIL] docs/{{lang}}/ directory missing for configured language '{{lang}}'",
     "langNoChapters": "[FAIL] docs/{{lang}}/ has no chapter files",
-    "uncoveredCategory": "[FAIL] uncovered analysis category: {{cat}} ({{count}} entries) — add {{data}} directive referencing \"{{cat}}\" to docs",
+    "uncoveredCategory": "[WARN] uncovered analysis category: {{cat}} ({{count}} entries) — add {{data}} directive referencing \"{{cat}}\" to docs",
     "exposedDirective": "[FAIL] {{count}} exposed directive(s) outside HTML comments: {{file}}",
     "brokenComment": "[FAIL] unbalanced HTML comment (<!-- without -->): {{file}}",
     "residualBlock": "[FAIL] {{count}} residual block directive(s) (@block/@extends/@endblock): {{file}}",

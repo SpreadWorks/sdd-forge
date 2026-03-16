@@ -159,8 +159,8 @@ describe("review CLI", () => {
 
   // --- WARN → FAIL: uncovered analysis category ---
 
-  it("fails when analysis category is not covered by any directive", () => {
-    tmp = setupTmp();
+  it("warns but does not fail when analysis category is not covered by any directive", () => {
+    tmp = setupPassingTmp();
     const lines = ["# 01. Test", ""];
     for (let i = 0; i < 10; i++) lines.push(`Line ${i}`);
     lines.push('<!-- {{data: project.name("")}} -->');
@@ -168,7 +168,6 @@ describe("review CLI", () => {
     lines.push("<!-- {{/data}} -->");
     for (let i = 0; i < 5; i++) lines.push(`More ${i}`);
     writeFile(tmp, "docs/test.md", lines.join("\n"));
-    writeFile(tmp, "README.md", "# README\n");
 
     writeJson(tmp, ".sdd-forge/output/analysis.json", {
       analyzedAt: "2026-01-01",
@@ -176,10 +175,10 @@ describe("review CLI", () => {
       controllers: [{ name: "UserController" }],
     });
 
-    const { stdout } = runReviewExpectFail(tmp);
-    assert.match(stdout, /uncovered analysis category: modules/);
-    assert.match(stdout, /uncovered analysis category: controllers/);
-    assert.match(stdout, /\[FAIL\]/);
+    const result = runReview(tmp);
+    assert.match(result, /uncovered analysis category: modules/);
+    assert.match(result, /uncovered analysis category: controllers/);
+    assert.match(result, /PASSED/);
   });
 
   it("does not fail when all analysis categories are covered", () => {

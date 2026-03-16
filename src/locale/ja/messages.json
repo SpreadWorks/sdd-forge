@@ -11,7 +11,7 @@
     "readmeNotFound": "[FAIL] README.md が見つかりません — run: sdd-forge docs readme",
     "langDirMissing": "[FAIL] docs/{{lang}}/ ディレクトリが見つかりません (設定言語 '{{lang}}')",
     "langNoChapters": "[FAIL] docs/{{lang}}/ に章ファイルがありません",
-    "uncoveredCategory": "[FAIL] 未カバーの analysis カテゴリ: {{cat}} ({{count}} エントリ) — docs に {{data}} ディレクティブ (参照先: \"{{cat}}\") を追加してください",
+    "uncoveredCategory": "[WARN] 未カバーの analysis カテゴリ: {{cat}} ({{count}} エントリ) — docs に {{data}} ディレクティブ (参照先: \"{{cat}}\") を追加してください",
     "exposedDirective": "[FAIL] HTML コメント外に露出したディレクティブ {{count}} 件: {{file}}",
     "brokenComment": "[FAIL] HTML コメントの不対応 (<!-- に対する --> がない): {{file}}",
     "residualBlock": "[FAIL] 残留ブロックディレクティブ (@block/@extends/@endblock) {{count}} 件: {{file}}",

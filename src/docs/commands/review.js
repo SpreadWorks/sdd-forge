@@ -290,7 +290,7 @@ function main() {
           const count = Array.isArray(entries) ? entries.length
             : (typeof entries === "object" && entries !== null) ? Object.keys(entries).length
             : 1;
-          reportFail("messages:review.uncoveredCategory", { cat, count });
+          console.log(t("messages:review.uncoveredCategory", { cat, count }));
         }
       }
     }
