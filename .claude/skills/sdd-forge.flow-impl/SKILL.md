@@ -27,12 +27,19 @@ Available status values: `pending`, `in_progress`, `done`, `skipped`
 
 ## Choice Format
 
-選択肢はインライン形式で表示すること:
+選択肢は以下の形式で表示すること:
 ```
-説明文を書く。
-1: ラベル, 2: ラベル, 3: その他
+━━━━━━━━━━━━━━━━━━━━━━━━
+  説明文（質問や状況の説明）
+━━━━━━━━━━━━━━━━━━━━━━━━
+
+  [1] ラベル
+  [2] ラベル
+  [3] その他
+
 ```
-テーブル形式は使わない。
+- 説明文と選択肢を一文にまとめない。説明文は罫線の中、選択肢は罫線の外。
+- 選択肢の前後に空行を入れる。
 
 ## Prerequisites
 
@@ -53,8 +60,18 @@ Before starting, run `sdd-forge flow status --check impl` to verify prerequisite
 
 2. Review implementation.
    - **On start**: `sdd-forge flow status --step review --status in_progress`
-   - 実装が完了しました。コードレビューを実行します。
-     1: はい, 2: スキップ, 3: その他
+   - Present:
+     ```
+     ━━━━━━━━━━━━━━━━━━━━━━━━
+       実装が完了しました。
+       コードレビューを実行します。
+     ━━━━━━━━━━━━━━━━━━━━━━━━
+
+       [1] はい
+       [2] スキップ
+       [3] その他
+
+     ```
      - 2 → `sdd-forge flow status --step review --status skipped` → Step 3 へ
    - Run `sdd-forge flow review` to perform AI-powered code review.
    - **If proposals exist** (APPROVED items in review.md):
@@ -70,8 +87,17 @@ Before starting, run `sdd-forge flow status --check impl` to verify prerequisite
         - #1: <title> — <却下理由>
         - #3: <title> — <却下理由>
         ```
-     2. 承認された提案を適用します。
-        1: 適用する, 2: スキップ, 3: その他
+     2. Present:
+        ```
+        ━━━━━━━━━━━━━━━━━━━━━━━━
+          承認された提案を適用します。
+        ━━━━━━━━━━━━━━━━━━━━━━━━
+
+          [1] 適用する
+          [2] スキップ
+          [3] その他
+
+        ```
      3. If 1 → Apply fixes based on approved proposals → Re-run tests to confirm no regressions.
      4. If 2 → Skip fixes, proceed to Step 3.
    - **If no proposals** (NO_PROPOSALS):
@@ -81,8 +107,18 @@ Before starting, run `sdd-forge flow status --check impl` to verify prerequisite
 
 3. Ask user about finalization.
    - **On start**: `sdd-forge flow status --step finalize --status in_progress`
-   - 実装とレビューが完了しました。終了処理に進みます。
-     1: 終了処理を開始する, 2: 修正に戻る, 3: その他
+   - Present:
+     ```
+     ━━━━━━━━━━━━━━━━━━━━━━━━
+       実装とレビューが完了しました。
+       次の操作を選択してください。
+     ━━━━━━━━━━━━━━━━━━━━━━━━
+
+       [1] 終了処理を開始する
+       [2] 修正に戻る
+       [3] その他
+
+     ```
    - 1 → immediately invoke `/sdd-forge.flow-merge` using the Skill tool (do not wait for additional user input).
    - 2 → go back to step 2.
    - **On complete**: `sdd-forge flow status --step finalize --status done`
@@ -106,6 +142,7 @@ sdd-forge flow status
 sdd-forge flow status --check impl
 sdd-forge flow status --step <id> --status <val>
 sdd-forge flow status --req <index> --status <val>
+sdd-forge flow status --note "<text>"
 sdd-forge flow review
 sdd-forge snapshot check
 ```

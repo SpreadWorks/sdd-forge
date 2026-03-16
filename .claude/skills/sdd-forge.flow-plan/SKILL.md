@@ -28,30 +28,61 @@ Available status values: `pending`, `in_progress`, `done`, `skipped`
 
 ## Choice Format
 
-選択肢はインライン形式で表示すること:
+選択肢は以下の形式で表示すること:
 ```
-説明文を書く。
-1: ラベル, 2: ラベル, 3: その他
+━━━━━━━━━━━━━━━━━━━━━━━━
+  説明文（質問や状況の説明）
+━━━━━━━━━━━━━━━━━━━━━━━━
+
+  [1] ラベル
+  [2] ラベル
+  [3] その他
+
 ```
-テーブル形式は使わない。
+- 説明文と選択肢を一文にまとめない。説明文は罫線の中、選択肢は罫線の外。
+- 選択肢の前後に空行を入れる。
 
 ## Required Sequence
 
 1. Choose approach.
    - **Note**: `flow.json` does not exist yet at this point. Do NOT run `flow status --step` commands until after step 3.
-   - 要件の整理方法を選んでください。
-     1: 要件を整理してから仕様書を作成する, 2: 仕様書を直接作成する
+   - Present:
+     ```
+     ━━━━━━━━━━━━━━━━━━━━━━━━
+       要件の整理方法を選択してください。
+     ━━━━━━━━━━━━━━━━━━━━━━━━
+
+       [1] 要件を整理してから仕様書を作成する
+       [2] 仕様書を直接作成する
+
+     ```
    - Remember the choice for later. Proceed to step 2 regardless.
 
 2. Choose branching strategy.
    - **Auto-detect**: Check if `.git` is a file (not directory) in the project root.
      - If yes → already in a worktree. Skip choice, use `--no-branch` automatically.
    - **User choice** (if not in a worktree):
-     ブランチ戦略を選んでください。
-     1: Branch（`<current-branch>` から feature ブランチを作成）, 2: Worktree（隔離環境で作業）, 3: Spec only（ブランチなし）
+     ```
+     ━━━━━━━━━━━━━━━━━━━━━━━━
+       ブランチ戦略を選択してください。
+     ━━━━━━━━━━━━━━━━━━━━━━━━
+
+       [1] Branch（`<current-branch>` から feature ブランチを作成）
+       [2] Worktree（隔離環境で作業）
+       [3] Spec only（ブランチなし）
+
+     ```
    - For options 1 and 2:
-     現在のブランチ (`<current-branch>`) から分岐します。
-     1: はい, 2: ブランチを指定する, 3: その他
+     ```
+     ━━━━━━━━━━━━━━━━━━━━━━━━
+       現在のブランチ (`<current-branch>`) から分岐します。
+     ━━━━━━━━━━━━━━━━━━━━━━━━
+
+       [1] はい
+       [2] ブランチを指定する
+       [3] その他
+
+     ```
      - 1 → use `--base <current-branch>`.
      - 2 → ask which branch and use `--base <user-specified-branch>`.
    - Commands:
@@ -104,8 +135,17 @@ Available status values: `pending`, `in_progress`, `done`, `skipped`
    - **On start**: `sdd-forge flow status --step approval --status in_progress`
    - Summarize the spec and ask the user for confirmation.
    - Wait for approval before any implementation.
-   - spec の内容を確認してください。
-     1: 実装する, 2: 仕様書を修正する, 3: その他
+   - Present:
+     ```
+     ━━━━━━━━━━━━━━━━━━━━━━━━
+       spec の内容を確認してください。
+     ━━━━━━━━━━━━━━━━━━━━━━━━
+
+       [1] 実装する
+       [2] 仕様書を修正する
+       [3] その他
+
+     ```
    - Update `## User Confirmation` with:
      - `- [x] User approved this spec`
      - Confirmation date and short note.
@@ -128,8 +168,18 @@ Available status values: `pending`, `in_progress`, `done`, `skipped`
      - Check `extras.packageScripts.test` for test command
      - Use `detectTestEnvironment()` from `src/docs/lib/test-env-detection.js`
    - **If test environment exists**:
-     1. テストの種類を選んでください。
-        1: ユニットテスト, 2: E2Eテスト, 3: 両方, 4: 任せる
+     1. Present:
+        ```
+        ━━━━━━━━━━━━━━━━━━━━━━━━
+          テストの種類を選択してください。
+        ━━━━━━━━━━━━━━━━━━━━━━━━
+
+          [1] ユニットテスト
+          [2] E2Eテスト
+          [3] 両方
+          [4] 任せる
+
+        ```
      2. Present test observations (medium granularity — what to verify, not how):
         ```
         以下のテスト観点で実施します:
@@ -137,7 +187,17 @@ Available status values: `pending`, `in_progress`, `done`, `skipped`
         2. <observation 2>
         3. <observation 3>
         ```
-        1: はい, 2: 変更する, 3: その他
+        Then present:
+        ```
+        ━━━━━━━━━━━━━━━━━━━━━━━━
+          上記のテスト観点で進めます。
+        ━━━━━━━━━━━━━━━━━━━━━━━━
+
+          [1] はい
+          [2] 変更する
+          [3] その他
+
+        ```
      3. If 2, iterate until approved.
      4. Write test code (tests should fail initially).
    - **If no test environment**:
@@ -147,8 +207,17 @@ Available status values: `pending`, `in_progress`, `done`, `skipped`
      - Treat as a separate spec (out of scope for current feature spec).
    - **On complete**: `sdd-forge flow status --step test --status done`
    - **After test step is done**:
-     プランニングフェーズが完了しました。実装に進みます。
-     1: `/sdd-forge.flow-impl` を開始する, 2: プランを見直す, 3: その他
+     ```
+     ━━━━━━━━━━━━━━━━━━━━━━━━
+       プランニングフェーズが完了しました。
+       次の操作を選択してください。
+     ━━━━━━━━━━━━━━━━━━━━━━━━
+
+       [1] `/sdd-forge.flow-impl` を開始する
+       [2] プランを見直す
+       [3] その他
+
+     ```
 
 ## Hard Stops
 
@@ -179,5 +248,7 @@ sdd-forge flow status
 sdd-forge flow status --step <id> --status <val>
 sdd-forge flow status --summary '<JSON array>'
 sdd-forge flow status --req <index> --status <val>
+sdd-forge flow status --request "<text>"
+sdd-forge flow status --note "<text>"
 sdd-forge snapshot check
 ```

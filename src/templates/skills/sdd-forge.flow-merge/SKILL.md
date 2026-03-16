@@ -22,19 +22,33 @@ Available status values: `pending`, `in_progress`, `done`, `skipped`
 
 ## Choice Format
 
-選択肢はインライン形式で表示すること:
+選択肢は以下の形式で表示すること:
 ```
-説明文を書く。
-1: ラベル, 2: ラベル, 3: その他
+━━━━━━━━━━━━━━━━━━━━━━━━
+  説明文（質問や状況の説明）
+━━━━━━━━━━━━━━━━━━━━━━━━
+
+  [1] ラベル
+  [2] ラベル
+  [3] その他
+
 ```
-テーブル形式は使わない。
+- 説明文と選択肢を一文にまとめない。説明文は罫線の中、選択肢は罫線の外。
+- 選択肢の前後に空行を入れる。
 
 ## CRITICAL: Step 0 — Present Options FIRST
 
 **STOP. Do NOT proceed to any other step. You MUST present the options below and wait for the user's response before doing anything else. Do NOT read files, run commands, or take any action until the user selects an option.**
 
-終了処理の範囲を選んでください。
-1: すべて実行, 2: 個別に選択する
+```
+━━━━━━━━━━━━━━━━━━━━━━━━
+  終了処理の範囲を選択してください。
+━━━━━━━━━━━━━━━━━━━━━━━━
+
+  [1] すべて実行
+  [2] 個別に選択する
+
+```
 
 **After presenting this choice, output NOTHING else. Wait for the user to reply with their selection number.**
 
@@ -42,8 +56,16 @@ Available status values: `pending`, `in_progress`, `done`, `skipped`
 
 - **Option 1 (すべて実行)**: Execute steps 1–8 in order without asking for each step.
 - **Option 2 (個別に選択する)**: Before each of steps 3–7, present:
-  このステップを実行しますか？
-  1: はい, 2: スキップ, 3: その他
+  ```
+  ━━━━━━━━━━━━━━━━━━━━━━━━
+    このステップを実行しますか？
+  ━━━━━━━━━━━━━━━━━━━━━━━━
+
+    [1] はい
+    [2] スキップ
+    [3] その他
+
+  ```
   If 2, skip that step.
 
 ## Required Sequence
@@ -105,8 +127,17 @@ Available status values: `pending`, `in_progress`, `done`, `skipped`
    Determine cleanup strategy based on flow.json state:
 
    - **Worktree** (`worktree: true`):
-     - worktree を削除します。
-       1: 削除する, 2: 残す, 3: その他
+     - Present:
+       ```
+       ━━━━━━━━━━━━━━━━━━━━━━━━
+         worktree を削除します。
+       ━━━━━━━━━━━━━━━━━━━━━━━━
+
+         [1] 削除する
+         [2] 残す
+         [3] その他
+
+       ```
        - 1 → `git -C <mainRepoPath> worktree remove <worktreePath>` + verify diff is empty + `git -C <mainRepoPath> branch -D <featureBranch>`
        - 2 → Skip deletion.
      - Guide: "メインリポジトリに戻ってください: `cd <mainRepoPath>`"
@@ -142,5 +173,6 @@ sdd-forge forge --prompt "<change summary>" --spec <spec-path>
 sdd-forge review
 sdd-forge flow status
 sdd-forge flow status --step <id> --status <val>
+sdd-forge flow status --note "<text>"
 sdd-forge flow status --archive
 ```
