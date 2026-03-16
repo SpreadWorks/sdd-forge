@@ -32,12 +32,8 @@ import {
   buildForgePrompt,
 } from "../lib/forge-prompts.js";
 import {
-  FALLBACK_PATCH_ORDER,
   summarizeReview,
-  parseReviewMisses,
   parseFileResults,
-  patchGeneratedForMisses,
-  summarizeNeedsInput,
 } from "../lib/review-parser.js";
 
 const DEFAULT_TIMEOUT_MS = DEFAULT_AGENT_TIMEOUT * 1000;
@@ -441,27 +437,14 @@ async function main() {
       currentTargetFiles = fileResults.failedFiles;
     }
 
-    const misses = parseReviewMisses(reviewOut);
-    console.log(
-      `[forge] parsed misses: ${FALLBACK_PATCH_ORDER.map((k) => `${k}=${(misses[k] || []).length}`).join(", ")}`,
-    );
-    const patchResult = patchGeneratedForMisses(root, misses, analysisData);
-    if (patchResult.changed) {
-      console.log("[forge] local deterministic patch applied.");
-      for (const file of patchResult.touched) {
-        console.log(`- patched: ${file}`);
-      }
-    } else if (agentFailed) {
+    if (agentFailed) {
       console.log(
         "[forge] no local patch candidates found after agent failure."
       );
     } else if (mode === "local" && !usedAgent) {
       console.log(t("messages:forge.needsInput"));
       console.log(t("messages:forge.reviewFeedback"));
-      const lines = summarizeNeedsInput(reviewOut);
-      for (const line of lines) {
-        console.log(`- ${line}`);
-      }
+      console.log(reviewFeedback);
       process.exitCode = 2;
       return;
     }
