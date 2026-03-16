@@ -14,34 +14,31 @@ Use this skill when implementation is complete and the user approved finalizatio
 Available step IDs (this skill): `docs-update`, `docs-review`, `commit`, `merge`, `branch-cleanup`, `archive`
 Available status values: `pending`, `in_progress`, `done`, `skipped`
 
+## Choice Format
+
+選択肢はインライン形式で表示すること:
+```
+説明文を書く。
+1: ラベル, 2: ラベル, 3: その他
+```
+テーブル形式は使わない。
+
 ## CRITICAL: Step 0 — Present Options FIRST
 
 **STOP. Do NOT proceed to any other step. You MUST present the options below and wait for the user's response before doing anything else. Do NOT read files, run commands, or take any action until the user selects an option.**
 
-終了処理の範囲を選んでください:
+終了処理の範囲を選んでください。
+1: すべて実行, 2: 個別に選択する
 
-| # | Label |
-|---|---|
-| 1 | ドキュメント更新+コミット+マージ+ブランチ削除 |
-| 2 | ドキュメント更新 |
-| 3 | コミット |
-| 4 | コミット+マージ |
-| 5 | コミット+マージ+ブランチ削除 |
+**After presenting this choice, output NOTHING else. Wait for the user to reply with their selection number.**
 
-**After presenting this table, output NOTHING else. Wait for the user to reply with their selection number.**
+## Behavior per Option
 
-## Applicable Steps per Option
-
-| Step | 1 | 2 | 3 | 4 | 5 |
-|---|---|---|---|---|---|
-| 1. Load context | ✓ | ✓ | ✓ | ✓ | ✓ |
-| 2. Check current state | ✓ | ✓ | ✓ | ✓ | ✓ |
-| 3. Update documentation (docs-update) | ✓ | ✓ | — | — | — |
-| 4. Review documentation (docs-review) | ✓ | ✓ | — | — | — |
-| 5. Commit (commit) | ✓ | — | ✓ | ✓ | ✓ |
-| 6. Merge (merge) | ✓ | — | — | ✓ | ✓ |
-| 7. Clean up (branch-cleanup) | ✓ | — | — | — | ✓ |
-| 8. Archive & verify (archive) | ✓ | ✓ | ✓ | ✓ | ✓ |
+- **Option 1 (すべて実行)**: Execute steps 1–8 in order without asking for each step.
+- **Option 2 (個別に選択する)**: Before each of steps 3–7, present:
+  このステップを実行しますか？
+  1: はい, 2: スキップ, 3: その他
+  If 2, skip that step.
 
 ## Required Sequence
 
@@ -102,9 +99,10 @@ Available status values: `pending`, `in_progress`, `done`, `skipped`
    Determine cleanup strategy based on flow.json state:
 
    - **Worktree** (`worktree: true`):
-     - Ask user: "worktree を削除しますか？"
-       1. **削除（推奨）** — `git -C <mainRepoPath> worktree remove <worktreePath>` + verify diff is empty + `git -C <mainRepoPath> branch -D <featureBranch>`
-       2. **残す** — Skip deletion.
+     - worktree を削除します。
+       1: 削除する, 2: 残す, 3: その他
+       - 1 → `git -C <mainRepoPath> worktree remove <worktreePath>` + verify diff is empty + `git -C <mainRepoPath> branch -D <featureBranch>`
+       - 2 → Skip deletion.
      - Guide: "メインリポジトリに戻ってください: `cd <mainRepoPath>`"
 
    - **Branch** (`featureBranch != baseBranch`):
