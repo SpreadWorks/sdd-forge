@@ -1,0 +1,125 @@
+{
+  "spec": "specs/061-flow-resume-and-compaction-resilience/spec.md",
+  "baseBranch": "main",
+  "featureBranch": "feature/061-flow-resume-and-compaction-resilience",
+  "steps": [
+    {
+      "id": "approach",
+      "status": "done"
+    },
+    {
+      "id": "branch",
+      "status": "done"
+    },
+    {
+      "id": "spec",
+      "status": "done"
+    },
+    {
+      "id": "draft",
+      "status": "done"
+    },
+    {
+      "id": "fill-spec",
+      "status": "done"
+    },
+    {
+      "id": "approval",
+      "status": "done"
+    },
+    {
+      "id": "gate",
+      "status": "done"
+    },
+    {
+      "id": "test",
+      "status": "done"
+    },
+    {
+      "id": "implement",
+      "status": "done"
+    },
+    {
+      "id": "review",
+      "status": "done"
+    },
+    {
+      "id": "finalize",
+      "status": "done"
+    },
+    {
+      "id": "docs-update",
+      "status": "skipped"
+    },
+    {
+      "id": "docs-review",
+      "status": "skipped"
+    },
+    {
+      "id": "commit",
+      "status": "done"
+    },
+    {
+      "id": "merge",
+      "status": "done"
+    },
+    {
+      "id": "branch-cleanup",
+      "status": "done"
+    },
+    {
+      "id": "archive",
+      "status": "done"
+    }
+  ],
+  "requirements": [
+    {
+      "desc": "flow-state.js に request フィールド追加",
+      "status": "done"
+    },
+    {
+      "desc": "flow-state.js に notes フィールド追加",
+      "status": "done"
+    },
+    {
+      "desc": "flow-state.js に setRequest() 追加",
+      "status": "done"
+    },
+    {
+      "desc": "flow-state.js に addNote() 追加",
+      "status": "done"
+    },
+    {
+      "desc": "status.js に --request オプション追加",
+      "status": "done"
+    },
+    {
+      "desc": "status.js に --note オプション追加",
+      "status": "done"
+    },
+    {
+      "desc": "resume.js 新規作成",
+      "status": "done"
+    },
+    {
+      "desc": "flow.js に resume サブコマンド追加",
+      "status": "done"
+    },
+    {
+      "desc": "help.js に resume 追加",
+      "status": "done"
+    },
+    {
+      "desc": "locale に resume メッセージ追加",
+      "status": "done"
+    },
+    {
+      "desc": "flow-resume スキル新規作成",
+      "status": "done"
+    },
+    {
+      "desc": "既存スキルに --note 記録指示追加",
+      "status": "done"
+    }
+  ]
+}
