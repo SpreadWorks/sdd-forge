@@ -261,8 +261,10 @@
         "usage": "Usage: sdd-forge docs readme [options]",
         "desc": "Auto-generate README.md from docs/ and templates.",
         "options": {
-          "dryRun": "--dry-run   Show diff without writing",
-          "help": "-h, --help  Show this help"
+          "lang": "--lang <code>  Template language (default: config.docs.defaultLanguage)",
+          "output": "--output <path> Output file path (default: README.md)",
+          "dryRun": "--dry-run      Show diff without writing",
+          "help": "-h, --help     Show this help"
         }
       },
       "translate": {

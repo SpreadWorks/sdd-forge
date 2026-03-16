@@ -4,172 +4,121 @@
 <!-- {{/data}} -->
 
 [![npm version](https://img.shields.io/npm/v/sdd-forge.svg)](https://www.npmjs.com/package/sdd-forge)
+[![license](https://img.shields.io/npm/l/sdd-forge.svg)](https://opensource.org/licenses/MIT)
+[![downloads](https://img.shields.io/npm/dm/sdd-forge.svg)](https://www.npmjs.com/package/sdd-forge)
 
-> **Alpha版:** このツールは現在アルファ版です。API・コマンド体系・設定フォーマットは予告なく変更される可能性があります。本番環境での利用はお控えください。
+> **Alpha版:** API・コマンド体系・設定フォーマットは予告なく変更される可能性があります。
 
-**ソースコードをプログラムで解析し、AI の推測ではなく事実に基づいたドキュメントを自動生成する CLI ツール。**
+## Spec-Driven Development — 設計・実装・ドキュメントを1つのフローで完結
 
-機械的なゲートチェックと構造化テンプレートにより、AI だけでは実現できない再現性と正確性を保証します。
-Spec-Driven Development（SDD）ワークフローで、機能追加・修正時のドキュメント鮮度も維持します。
+AI コーディングエージェントと組み合わせて使う、仕様書起点の開発フローを管理するツールです。
 
-## Why sdd-forge?
+## 仕様開発駆動フロー
 
-多くの AI ドキュメント生成ツールは、AI にコードを「読ませて」ドキュメントを書かせます。
-sdd-forge は違います。
+仕様書を起点に 3 フェーズで機能開発を完了します。
 
-- **プログラムによる解析** — AI にコードを読ませるのではなく、スタティックアナライザーがコントローラ・モデル・ルート・設定を解析。AI の幻覚や読み漏れがない
-- **事実と生成の分離** — `{{data}}` はソースから機械的に抽出した事実。`{{text}}` は AI が生成した説明文。どこが信頼できてどこが推測かが構造的に明確
-- **機械的なゲートチェック** — 仕様の完全性をプログラムが検証。AI の判断に依存しない品質ゲート
-- **構成の安定性** — ディレクティブが「何をどこに書くか」を定義。AI が段落構成を勝手に変えない
+```
+plan ─────── 仕様策定
+│  ├─ draft      要件を対話で整理
+│  ├─ spec       仕様書を作成（feature ブランチ + spec.md）
+│  ├─ gate       仕様チェック + ガードレール検証
+│  └─ test       テスト観点レビュー → テストコード作成
+│
+implement ── 実装
+│  ├─ code       gate PASS 後にコーディング
+│  └─ review     AI コードレビュー
+│
+merge ────── 終了処理
+   ├─ docs       ドキュメント自動更新
+   ├─ commit     変更をコミット
+   └─ merge      ベースブランチにマージ → クリーンアップ
+```
 
-## Features
+### AI を枠の中で使う
 
-### Analyze（解析）
+ソースコード解析、仕様のゲートチェック、フローの進行管理はすべてプログラムが担います。AI にフローを丸投げせず、確実性が必要な工程をコマンドで制御したうえで、AI は仕様の整理・コードレビュー・説明文生成を補助します。
 
-`scan` でソースコードを静的解析し `analysis.json` を生成。AI ではなくプログラムが構造を読み取ります。
+- **仕様ゲート** — 未解決事項・未承認をプログラムが検証。PASS するまで実装に進めない
+- **ガードレール** — プロジェクト固有の設計原則に反していないか検証
+- **コンパクション耐性** — フロー状態と要件を永続化し、コンテキスト圧縮後も途中から再開できる
 
-- コントローラ・モデル・ルート・設定ファイルを解析し、構造データを抽出
-- `enrich` で AI が全体像を把握し、各エントリに役割・概要・章分類を付与
-- プリセットシステムで様々なフレームワーク・プロジェクト構成に対応
+## ドキュメント自動同期
 
-### Generate（生成）
+ソースコードを静的解析し、ファイル構造・クラス・メソッド・設定・依存関係を抽出します。抽出した構造データをテンプレートに注入し、章立てされたドキュメント（`docs/`）と `README.md` を生成します。
 
-`{{data}}` で事実を、`{{text}}` で AI 説明を、テンプレートに注入。`build` 一発で `docs/` と `README.md` が完成します。
-
-- テンプレート継承 — base → arch → preset → project-local の 4 層継承でカスタマイズ可能
-- 多言語対応 — translate / generate モードで複数言語のドキュメントを自動生成
-- ゼロ依存 — Node.js 18+ のみで動作。npm 依存パッケージなし
-
-### Enforce（強制）
-
-`gate` で仕様を機械チェック、`review` で品質チェック。SDD フローでドキュメントの鮮度を維持します。
-
-- gate — 仕様書の未解決事項・未承認をプログラムで検出。PASS するまで実装に進めない
-- review — AI がドキュメントとソースコードの整合性をチェック
-- AI エージェント連携 — Claude Code（スキル）・Codex CLI に対応
+SDD フローの終了処理でドキュメントが自動更新されるため、コードとドキュメントの乖離が構造的に起きません。常に最新のドキュメントがあることで、人も AI もソースコード全体を読まずにシステムの構造や依存関係を把握できます。
 
 ## クイックスタート
 
 ### インストール
 
 <pre>
-# npm
 npm install -g <!-- {{data: project.name("")}} --><!-- {{/data}} -->
-
-# yarn
-yarn global add <!-- {{data: project.name("")}} --><!-- {{/data}} -->
-
-# pnpm
-pnpm add -g <!-- {{data: project.name("")}} --><!-- {{/data}} -->
 </pre>
 
-### セットアップ & ドキュメント生成
+### セットアップ
 
 <pre>
-# 1. プロジェクトを登録（インタラクティブウィザード）
 <!-- {{data: project.name("")}} --><!-- {{/data}} --> setup
-
-# 2. ドキュメントを一括生成（scan → enrich → init → data → text → readme → agents → translate）
-<!-- {{data: project.name("")}} --><!-- {{/data}} --> build
 </pre>
 
-これだけで `docs/` と `README.md` が生成されます。
+対話形式でプロジェクトタイプ（プリセット）と AI エージェントを設定します。
+
+### 既存プロジェクトのドキュメントを生成する
+
+既にソースコードがあるプロジェクトでは、ドキュメントを生成してシステムの全体像を把握できます。レガシーシステムの保守・引き継ぎにも有効です。
+
+<pre>
+<!-- {{data: project.name("")}} --><!-- {{/data}} --> docs build
+</pre>
+
+### SDD フローで開発する
+
+**[Claude Code](https://docs.anthropic.com/en/docs/claude-code)** — スキルで各フェーズを実行:
+
+| スキル | フェーズ |
+|---|---|
+| `/sdd-forge.flow-plan` | plan（仕様策定） |
+| `/sdd-forge.flow-impl` | implement（実装） |
+| `/sdd-forge.flow-merge` | merge（終了処理） |
+
+**[Codex CLI](https://github.com/openai/codex)** — `$` プレフィックスでツールを呼び出し:
+
+| コマンド | フェーズ |
+|---|---|
+| `$sdd-forge flow start` | plan（仕様策定を開始） |
+| `$sdd-forge flow review` | implement（AI コードレビュー） |
+| `$sdd-forge flow merge` | merge（終了処理） |
 
 ## コマンド一覧
 
-### ドキュメント生成
-
 | コマンド | 説明 |
 |---|---|
-| `setup` | プロジェクト登録 + 設定ファイル生成 |
-| `build` | ドキュメント生成パイプラインを一括実行 |
-| `scan` | ソースコード解析 → `analysis.json` |
-| `init` | テンプレートから `docs/` を初期化 |
-| `data` | `{{data}}` ディレクティブを解析データで解決 |
-| `text` | `{{text}}` ディレクティブを AI で解決 |
-| `readme` | `docs/` から `README.md` を自動生成 |
-| `forge` | AI によるドキュメント反復改善 |
-| `review` | ドキュメント品質チェック |
-| `translate` | 多言語翻訳（デフォルト言語 → 他言語） |
-| `upgrade` | プリセットテンプレートを最新版に更新 |
-
-### SDD ワークフロー
-
-| コマンド | 説明 |
-|---|---|
-| `spec` | 仕様書 + feature ブランチを作成 |
-| `gate` | 仕様書の実装前チェック |
-| `flow` | SDD ワークフローを自動実行 |
-| `changelog` | specs/ から変更履歴を生成 |
-| `agents` | AGENTS.md を更新 |
-
-### その他
-
-| コマンド | 説明 |
-|---|---|
+| `setup` | プロジェクト登録・設定ファイル生成 |
+| `docs build` | ドキュメント生成パイプラインを一括実行 |
+| `docs readme` | `docs/` から `README.md` を生成 |
+| `docs review` | ドキュメント品質チェック |
+| `flow start` | SDD フローを開始 |
+| `flow status` | フロー進捗を表示 |
 | `presets` | 利用可能なプリセット一覧を表示 |
-| `help` | コマンド一覧を表示 |
+| `help` | 全コマンドの一覧を表示 |
 
-## SDD ワークフロー
-
-機能追加・修正の流れ:
-
-```
-  spec          仕様書を作成（feature ブランチ + spec.md）
-    ↓
-  gate          仕様ゲートチェック ← プログラムが検証（AI ではない）
-    ↓
-  実装          gate PASS 後にコーディング
-    ↓
-  forge         AI がドキュメントを自動更新
-    ↓
-  review        AI が品質チェック（PASS するまで繰り返し）
-```
-
-### AI エージェントとの連携
-
-#### Claude Code
-
-スキルで SDD ワークフローを実行できます:
-
-```
-/sdd-flow-start   — spec 作成 → gate → 実装を開始
-/sdd-flow-close   — forge → review → commit → merge で終了
-```
-
-#### Codex CLI
-
-`$` プロンプトからワークフローを実行できます:
-
-```
-$sdd-flow-start   — spec 作成 → gate → 実装を開始
-$sdd-flow-close   — forge → review → commit → merge で終了
-```
+全コマンドの詳細は `sdd-forge help` または[コマンドリファレンス](docs/cli_commands.md)を参照してください。
 
 ## 設定
 
-`sdd-forge setup` で `.sdd-forge/config.json` が生成されます。
+`setup` で `.sdd-forge/config.json` が生成されます。
 
 ```jsonc
 {
   "type": "cli/node-cli",     // プロジェクトタイプ（プリセット選択）
-  "lang": "ja",               // ドキュメント言語
+  "lang": "ja",               // 操作言語
   "defaultAgent": "claude",   // AI エージェント
   "providers": { ... }        // エージェント設定
 }
 ```
 
-### カスタマイズ
-
-プロジェクト固有のテンプレートやデータソースを追加できます:
-
-```
-.sdd-forge/
-├── templates/{lang}/
-│   ├── docs/      ← 章テンプレート・README のオーバーライド
-│   └── specs/     ← spec.md / qa.md テンプレート
-└── data/          ← カスタムデータソースモジュール
-```
+詳細は[設定リファレンス](docs/configuration.md)を参照してください。
 
 ## ドキュメント
 

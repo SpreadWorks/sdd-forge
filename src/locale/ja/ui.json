@@ -261,8 +261,10 @@
         "usage": "Usage: sdd-forge docs readme [options]",
         "desc": "docs/ とテンプレートから README.md を自動生成する。",
         "options": {
-          "dryRun": "--dry-run   差分を表示するが書き込まない",
-          "help": "-h, --help  このヘルプを表示"
+          "lang": "--lang <code>  テンプレート言語を指定 (default: config.docs.defaultLanguage)",
+          "output": "--output <path> 出力先ファイルパスを指定 (default: README.md)",
+          "dryRun": "--dry-run      差分を表示するが書き込まない",
+          "help": "-h, --help     このヘルプを表示"
         }
       },
       "translate": {

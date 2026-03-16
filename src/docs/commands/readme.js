@@ -53,7 +53,7 @@ async function main(ctx) {
       const t = tr();
       const h = t.raw("ui:help.cmdHelp.readme");
       const o = h.options;
-      console.log([h.usage, "", `  ${h.desc}`, "", "Options:", `  ${o.dryRun}`, `  ${o.help}`].join("\n"));
+      console.log([h.usage, "", `  ${h.desc}`, "", "Options:", `  ${o.lang}`, `  ${o.output}`, `  ${o.dryRun}`, `  ${o.help}`].join("\n"));
       return;
     }
 
