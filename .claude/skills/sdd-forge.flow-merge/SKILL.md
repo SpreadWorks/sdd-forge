@@ -14,30 +14,30 @@ Use this skill when implementation is complete and the user approved finalizatio
 Available step IDs (this skill): `docs-update`, `docs-review`, `commit`, `merge`, `branch-cleanup`, `archive`
 Available status values: `pending`, `in_progress`, `done`, `skipped`
 
+## Choice Format
+
+選択肢はインライン形式で表示すること:
+```
+説明文を書く。
+1: ラベル, 2: ラベル, 3: その他
+```
+テーブル形式は使わない。
+
 ## CRITICAL: Step 0 — Present Options FIRST
 
 **STOP. Do NOT proceed to any other step. You MUST present the options below and wait for the user's response before doing anything else. Do NOT read files, run commands, or take any action until the user selects an option.**
 
-終了処理:
+終了処理の範囲を選んでください。
+1: すべて実行, 2: 個別に選択する
 
-| # | Label |
-|---|---|
-| 1 | すべて実行 |
-| 2 | 個別に選択する |
-
-**After presenting this table, output NOTHING else. Wait for the user to reply with their selection number.**
+**After presenting this choice, output NOTHING else. Wait for the user to reply with their selection number.**
 
 ## Behavior per Option
 
 - **Option 1 (すべて実行)**: Execute steps 1–8 in order without asking for each step.
 - **Option 2 (個別に選択する)**: Before each of steps 3–7, present:
-
-  | # | Label |
-  |---|---|
-  | 1 | はい |
-  | 2 | いいえ |
-  | 3 | その他 |
-
+  このステップを実行しますか？
+  1: はい, 2: スキップ, 3: その他
   If 2, skip that step.
 
 ## Required Sequence
@@ -76,17 +76,43 @@ Available status values: `pending`, `in_progress`, `done`, `skipped`
 
 6. Merge into base branch.
    - **On start**: `sdd-forge flow status --step merge --status in_progress`
-   - Run `sdd-forge flow merge` to execute squash merge (strategy is auto-detected from flow.json).
-   - Use `sdd-forge flow merge --dry-run` first if the user wants to preview.
-   - **On complete**: Step status is updated by the merge command.
+   Determine merge strategy based on flow.json state:
+
+   - **Worktree** (`worktree: true`, `worktreePath` set):
+     - Commit all changes in the worktree.
+     - `git -C <mainRepoPath> merge --squash <featureBranch>`
+     - `git -C <mainRepoPath> commit`
+
+   - **Branch** (`featureBranch != baseBranch`, no worktree):
+     - `git checkout <base-branch>`
+     - `git merge --squash <feature-branch>`
+     - `git commit`
+
+   - **Spec-only** (`featureBranch == baseBranch`):
+     - Just commit, skip merge (already on the correct branch).
+
+   - **On complete**: `sdd-forge flow status --step merge --status done`
    - **If skipped**: `sdd-forge flow status --step merge --status skipped`
 
 7. Clean up.
    - **On start**: `sdd-forge flow status --step branch-cleanup --status in_progress`
-   - Run `sdd-forge flow cleanup` to delete branch/worktree (strategy is auto-detected from flow.json).
-   - Use `sdd-forge flow cleanup --dry-run` first if the user wants to preview.
-   - For worktree mode, guide user: "メインリポジトリに戻ってください: `cd <mainRepoPath>`"
-   - **On complete**: Step status is updated by the cleanup command.
+   Determine cleanup strategy based on flow.json state:
+
+   - **Worktree** (`worktree: true`):
+     - worktree を削除します。
+       1: 削除する, 2: 残す, 3: その他
+       - 1 → `git -C <mainRepoPath> worktree remove <worktreePath>` + verify diff is empty + `git -C <mainRepoPath> branch -D <featureBranch>`
+       - 2 → Skip deletion.
+     - Guide: "メインリポジトリに戻ってください: `cd <mainRepoPath>`"
+
+   - **Branch** (`featureBranch != baseBranch`):
+     - Verify diff is empty: `git diff <baseBranch> <featureBranch> --stat` (should produce no output).
+     - Delete with `git branch -D <featureBranch>` (`-D` required because squash merge is not detected by `-d`).
+
+   - **Spec-only**:
+     - No branch/worktree cleanup needed.
+
+   - **On complete**: `sdd-forge flow status --step branch-cleanup --status done`
    - **If skipped**: `sdd-forge flow status --step branch-cleanup --status skipped`
 
 8. Archive flow.json & final verification.
@@ -111,6 +137,4 @@ sdd-forge review
 sdd-forge flow status
 sdd-forge flow status --step <id> --status <val>
 sdd-forge flow status --archive
-sdd-forge flow merge [--dry-run]
-sdd-forge flow cleanup [--dry-run]
 ```

@@ -19,41 +19,38 @@ AI が勝手に次のステップに進まない。
 Available step IDs (this skill): `approach`, `branch`, `spec`, `draft`, `fill-spec`, `approval`, `gate`, `test`
 Available status values: `pending`, `in_progress`, `done`, `skipped`
 
+## Choice Format
+
+選択肢はインライン形式で表示すること:
+```
+説明文を書く。
+1: ラベル, 2: ラベル, 3: その他
+```
+テーブル形式は使わない。
+
 ## Required Sequence
 
 1. Choose approach.
    - **Note**: `flow.json` does not exist yet at this point. Do NOT run `flow status --step` commands until after step 3.
-   - Present EXACTLY these 2 options:
-
-     | # | Label |
-     |---|---|
-     | 1 | 要件を整理してから仕様書を作成する |
-     | 2 | 仕様書を作成する |
-
+   - 要件の整理方法を選んでください。
+     1: 要件を整理してから仕様書を作成する, 2: 仕様書を直接作成する
    - Remember the choice for later. Proceed to step 2 regardless.
 
 2. Choose branching strategy.
    - **Auto-detect**: Check if `.git` is a file (not directory) in the project root.
      - If yes → already in a worktree. Skip choice, use `--no-branch` automatically.
-   - **User choice** (if not in a worktree): Present EXACTLY these 3 options:
-
-     | # | Label | Command |
-     |---|---|---|
-     | 1 | Branch（デフォルト） | `sdd-forge spec init --title "..." --base <current-branch>` |
-     | 2 | Worktree | `sdd-forge spec init --title "..." --base <current-branch> --worktree` |
-     | 3 | Spec only | `sdd-forge spec init --title "..." --no-branch` |
-
-   - For options 1 and 2, ask: "現在のブランチ (`<current-branch>`) から分岐します"
-
-     | # | Label |
-     |---|---|
-     | 1 | はい |
-     | 2 | いいえ（ブランチを指定する） |
-     | 3 | その他 |
-
+   - **User choice** (if not in a worktree):
+     ブランチ戦略を選んでください。
+     1: Branch（`<current-branch>` から feature ブランチを作成）, 2: Worktree（隔離環境で作業）, 3: Spec only（ブランチなし）
+   - For options 1 and 2:
+     現在のブランチ (`<current-branch>`) から分岐します。
+     1: はい, 2: ブランチを指定する, 3: その他
      - 1 → use `--base <current-branch>`.
-     - 2 → ask which branch to use as base and use `--base <user-specified-branch>`.
-     - 3 → free input.
+     - 2 → ask which branch and use `--base <user-specified-branch>`.
+   - Commands:
+     - Branch: `sdd-forge spec init --title "..." --base <branch>`
+     - Worktree: `sdd-forge spec init --title "..." --base <branch> --worktree`
+     - Spec only: `sdd-forge spec init --title "..." --no-branch`
 
 3. Create or select spec.
    - If no spec exists, run `sdd-forge spec init --title "<short-title>"` (with appropriate flags from step 2).
@@ -100,14 +97,8 @@ Available status values: `pending`, `in_progress`, `done`, `skipped`
    - **On start**: `sdd-forge flow status --step approval --status in_progress`
    - Summarize the spec and ask the user for confirmation.
    - Wait for approval before any implementation.
-   - Present EXACTLY these options:
-
-     | # | Label |
-     |---|---|
-     | 1 | 実装する |
-     | 2 | 仕様書を修正する |
-     | 3 | その他 |
-
+   - spec の内容を確認してください。
+     1: 実装する, 2: 仕様書を修正する, 3: その他
    - Update `## User Confirmation` with:
      - `- [x] User approved this spec`
      - Confirmation date and short note.
@@ -130,29 +121,16 @@ Available status values: `pending`, `in_progress`, `done`, `skipped`
      - Check `extras.packageScripts.test` for test command
      - Use `detectTestEnvironment()` from `src/docs/lib/test-env-detection.js`
    - **If test environment exists**:
-     1. Ask user for test type:
-
-        | # | Label |
-        |---|---|
-        | 1 | ユニットテスト |
-        | 2 | E2Eテスト |
-        | 3 | 両方 |
-        | 4 | 任せる |
-
+     1. テストの種類を選んでください。
+        1: ユニットテスト, 2: E2Eテスト, 3: 両方, 4: 任せる
      2. Present test observations (medium granularity — what to verify, not how):
         ```
-        以下のテストを実施します:
+        以下のテスト観点で実施します:
         1. <observation 1>
         2. <observation 2>
         3. <observation 3>
         ```
-
-        | # | Label |
-        |---|---|
-        | 1 | はい |
-        | 2 | いいえ（変更する） |
-        | 3 | その他 |
-
+        1: はい, 2: 変更する, 3: その他
      3. If 2, iterate until approved.
      4. Write test code (tests should fail initially).
    - **If no test environment**:
@@ -161,7 +139,9 @@ Available status values: `pending`, `in_progress`, `done`, `skipped`
    - **If test environment needs to be set up**:
      - Treat as a separate spec (out of scope for current feature spec).
    - **On complete**: `sdd-forge flow status --step test --status done`
-   - **After test step is done**: Tell the user that the planning phase is complete and they can start implementation with `/sdd-forge.flow-impl`.
+   - **After test step is done**:
+     プランニングフェーズが完了しました。実装に進みます。
+     1: `/sdd-forge.flow-impl` を開始する, 2: プランを見直す, 3: その他
 
 ## Hard Stops
 
