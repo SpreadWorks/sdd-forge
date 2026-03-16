@@ -1,0 +1,135 @@
+{
+  "spec": "specs/064-generic-coverage-check-and-patch/spec.md",
+  "baseBranch": "main",
+  "featureBranch": "feature/064-generic-coverage-check-and-patch",
+  "steps": [
+    {
+      "id": "approach",
+      "status": "done"
+    },
+    {
+      "id": "branch",
+      "status": "done"
+    },
+    {
+      "id": "spec",
+      "status": "done"
+    },
+    {
+      "id": "draft",
+      "status": "done"
+    },
+    {
+      "id": "fill-spec",
+      "status": "done"
+    },
+    {
+      "id": "approval",
+      "status": "done"
+    },
+    {
+      "id": "gate",
+      "status": "done"
+    },
+    {
+      "id": "test",
+      "status": "done"
+    },
+    {
+      "id": "implement",
+      "status": "done"
+    },
+    {
+      "id": "review",
+      "status": "done"
+    },
+    {
+      "id": "finalize",
+      "status": "done"
+    },
+    {
+      "id": "docs-update",
+      "status": "skipped"
+    },
+    {
+      "id": "docs-review",
+      "status": "skipped"
+    },
+    {
+      "id": "commit",
+      "status": "done"
+    },
+    {
+      "id": "merge",
+      "status": "done"
+    },
+    {
+      "id": "branch-cleanup",
+      "status": "done"
+    },
+    {
+      "id": "archive",
+      "status": "done"
+    }
+  ],
+  "requirements": [
+    {
+      "desc": "{{text}}未充填をFAILにする",
+      "status": "done"
+    },
+    {
+      "desc": "{{data}}未充填をFAILにする",
+      "status": "done"
+    },
+    {
+      "desc": "analysis.json不在をFAILにする",
+      "status": "done"
+    },
+    {
+      "desc": "README.md不在をFAILにする",
+      "status": "done"
+    },
+    {
+      "desc": "未カバーanalysisカテゴリをFAILにする",
+      "status": "done"
+    },
+    {
+      "desc": "analysis.json mtimeチェックを削除",
+      "status": "done"
+    },
+    {
+      "desc": "snapshot差分チェックを削除",
+      "status": "done"
+    },
+    {
+      "desc": "snapshotコマンドを削除",
+      "status": "done"
+    },
+    {
+      "desc": "snapshotテストを削除",
+      "status": "done"
+    },
+    {
+      "desc": "snapshot関連ルーティングを削除",
+      "status": "done"
+    },
+    {
+      "desc": "FAILメッセージに解決手順を付記",
+      "status": "done"
+    },
+    {
+      "desc": "i18nメッセージを更新",
+      "status": "done"
+    },
+    {
+      "desc": "既存テストが通ること",
+      "status": "done"
+    }
+  ],
+  "request": "review.jsにanalysis.jsonベースの汎用カバレッジ検知を追加し、enriched chapterフィールドで追記先を解決するパッチ関数を実装し、forge.jsのフィードバックループに統合する",
+  "notes": [
+    "draft: カバレッジ検知はエントリ単位（個々のファイル/クラスが docs に記述されているか）",
+    "draft: 10(analysis鮮度),13(スナップショット差分)は削除。snapshot機能自体も削除。残りのWARNはすべてFAILに昇格。forgeで解決できないケースの対処方法を検討する",
+    "draft: forgeが解決できず例外終了した場合、AIがエラー内容を読んでユーザーに解決方法を提示する（現状の暗黙の動作を明文化）"
+  ]
+}
