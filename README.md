@@ -126,10 +126,11 @@ See the [configuration reference](docs/configuration.md) for details.
 <!-- {{data: docs.chapters("Chapter|Summary")}} -->
 | Chapter | Summary |
 | --- | --- |
-| [01. Tool Overview and Architecture](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/overview.md) | This chapter introduces sdd-forge, a CLI tool for Spec-Driven Development that automates technical documentation gene… |
-| [02. CLI Command Reference](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/cli_commands.md) | sdd-forge provides over 20 CLI commands organized into four namespaces (`docs`, `spec`, `flow`, and standalone comman… |
-| [03. Configuration and Customization](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/configuration.md) | sdd-forge uses a layered configuration system centered on `.sdd-forge/config.json`, supplemented by preset manifests … |
-| [04. Internal Design](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/internal_design.md) | This chapter describes sdd-forge's internal architecture: the three-layer directory structure under `src/`, the depen… |
+| [01. Tool Overview and Architecture](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/overview.md) |  |
+| [02. CLI Command Reference](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/cli_commands.md) |  |
+| [03. Configuration and Customization](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/configuration.md) |  |
+| [04. Internal Design](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/internal_design.md) |  |
+| [05. Development, Testing, and Distribution](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/development_testing.md) |  |
 <!-- {{/data}} -->
 
 ## License

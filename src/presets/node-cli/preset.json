@@ -5,6 +5,7 @@
   "aliases": [],
   "chapters": [
     "overview.md",
+    "stack_and_ops.md",
     "cli_commands.md",
     "configuration.md",
     "internal_design.md",

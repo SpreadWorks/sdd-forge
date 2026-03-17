@@ -65,9 +65,11 @@
 - 公開前に `npm pack --dry-run` で機密情報がないことを確認する。
 
 <!-- {{data: agents.project("")}} -->
+Now I have all the information needed. Let me produce the PROJECT section.
+
 ## Project Context
 
-- **パッケージ:** `sdd-forge` v0.1.0-alpha.31
+- **パッケージ:** `sdd-forge` v0.1.0-alpha.32
 - **説明:** Spec-Driven Development tooling for automated documentation generation
 - **モジュール形式:** ES Modules (`"type": "module"`)
 - **ランタイム:** Node.js >=18.0.0
@@ -91,7 +93,7 @@ sdd-forge/
     ├── docs/
     │   ├── commands/         ← docs サブコマンド実装
     │   │   └── scan, enrich, init, data, text, readme, forge,
-    │   │       review, changelog, agents, translate, snapshot
+    │   │       review, changelog, agents, translate
     │   ├── data/             ← DataSource（agents.js, docs.js, lang.js, project.js）
     │   └── lib/              ← ドキュメント生成ライブラリ
     │       ├── scanner.js, directive-parser.js, template-merger.js
@@ -100,7 +102,7 @@ sdd-forge/
     │       ├── command-context.js, concurrency.js
     │       └── scan-source.js, php-array-parser.js, test-env-detection.js
     ├── flow/
-    │   └── commands/         ← start.js, status.js, review.js, merge.js, cleanup.js
+    │   └── commands/         ← start.js, status.js, review.js, merge.js, resume.js, cleanup.js
     ├── spec/
     │   └── commands/         ← init.js, gate.js, guardrail.js
     ├── lib/                  ← 全レイヤー共有ユーティリティ
@@ -112,7 +114,7 @@ sdd-forge/
     │   ├── i18n.js           ← 3層 i18n（ドメイン名前空間付き）
     │   ├── types.js          ← 型エイリアス解決・バリデーション
     │   └── agents-md.js, entrypoint.js, process.js, progress.js
-    ├── presets/              ← base/, cli/, node-cli/, cakephp2/, laravel/, symfony/, webapp/, library/
+    ├── presets/              ← base/, cli/, node-cli/, node/, php/, cakephp2/, laravel/, symfony/, webapp/, library/, lib/
     ├── locale/               ← en/, ja/
     └── templates/            ← config.example.json, review-checklist.md, skills/
 ```
@@ -132,6 +134,7 @@ sdd-forge/
 | `sdd-forge flow status` | `flow.js` | `src/flow/commands/status.js` |
 | `sdd-forge flow review` | `flow.js` | `src/flow/commands/review.js` |
 | `sdd-forge flow merge` | `flow.js` | `src/flow/commands/merge.js` |
+| `sdd-forge flow resume` | `flow.js` | `src/flow/commands/resume.js` |
 | `sdd-forge flow cleanup` | `flow.js` | `src/flow/commands/cleanup.js` |
 | `sdd-forge setup` | 独立 | `src/setup.js` |
 | `sdd-forge upgrade` | 独立 | `src/upgrade.js` |
