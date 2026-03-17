@@ -127,7 +127,8 @@ See the [configuration reference](docs/configuration.md) for details.
 | Chapter | Summary |
 | --- | --- |
 | [01. Tool Overview and Architecture](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/overview.md) |  |
-| [02. CLI Command Reference](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/cli_commands.md) |  |
+| [02. Technology Stack and Operations](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/stack_and_ops.md) |  |
+| [02. CLI Command Reference](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/cli_commands.md) | sdd-forge provides over 25 CLI commands organized through a three-level dispatch architecture: the top-level entry po… |
 | [03. Configuration and Customization](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/configuration.md) |  |
 | [04. Internal Design](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/internal_design.md) |  |
 | [05. Development, Testing, and Distribution](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/development_testing.md) |  |

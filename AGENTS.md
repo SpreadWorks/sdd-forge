@@ -65,80 +65,61 @@
 - 公開前に `npm pack --dry-run` で機密情報がないことを確認する。
 
 <!-- {{data: agents.project("")}} -->
-Now I have all the information needed. Let me produce the PROJECT section.
+All information verified against source code. Here is the PROJECT section:
 
 ## Project Context
 
 - **パッケージ:** `sdd-forge` v0.1.0-alpha.32
-- **説明:** Spec-Driven Development tooling for automated documentation generation
+- **説明:** ソースコード解析に基づくドキュメント自動生成と SDD ワークフローを提供する CLI ツール
 - **モジュール形式:** ES Modules (`"type": "module"`)
 - **ランタイム:** Node.js >=18.0.0
 - **外部依存:** なし（Node.js 組み込みモジュールのみ）
-- **エントリポイント (bin):** `./src/sdd-forge.js`
+- **エントリポイント:** `./src/sdd-forge.js`
 
 ### ディレクトリ構造
 
 ```
 sdd-forge/
 ├── package.json
+├── tests/                        テストスイート
 └── src/
-    ├── sdd-forge.js          ← CLI エントリポイント・トップレベルルーター
-    ├── docs.js               ← docs ディスパッチャー
-    ├── spec.js               ← spec ディスパッチャー
-    ├── flow.js               ← flow ディスパッチャー
-    ├── setup.js              ← setup（独立コマンド）
-    ├── upgrade.js            ← upgrade（独立コマンド）
-    ├── presets-cmd.js        ← presets（独立コマンド）
-    ├── help.js               ← ヘルプ表示
+    ├── sdd-forge.js              CLI エントリポイント・トップレベルルーター
+    ├── docs.js                   docs ディスパッチャー
+    ├── spec.js                   spec ディスパッチャー
+    ├── flow.js                   flow ディスパッチャー
+    ├── setup.js / upgrade.js / presets-cmd.js / help.js  独立コマンド
+    ├── lib/                      全レイヤー共有ユーティリティ
+    │   ├── cli.js                repoRoot, sourceRoot, parseArgs, PKG_DIR
+    │   ├── config.js             .sdd-forge/config.json ローダー
+    │   ├── agent.js              AI エージェント呼び出し
+    │   ├── presets.js            プリセット自動探索・親チェーン解決
+    │   ├── flow-state.js         SDD フロー状態永続化
+    │   ├── i18n.js               3層 i18n（ドメイン名前空間付き）
+    │   └── types.js              型エイリアス解決・バリデーション
     ├── docs/
-    │   ├── commands/         ← docs サブコマンド実装
-    │   │   └── scan, enrich, init, data, text, readme, forge,
-    │   │       review, changelog, agents, translate
-    │   ├── data/             ← DataSource（agents.js, docs.js, lang.js, project.js）
-    │   └── lib/              ← ドキュメント生成ライブラリ
-    │       ├── scanner.js, directive-parser.js, template-merger.js
-    │       ├── data-source.js, data-source-loader.js, resolver-factory.js
-    │       ├── forge-prompts.js, text-prompts.js, review-parser.js
-    │       ├── command-context.js, concurrency.js
-    │       └── scan-source.js, php-array-parser.js, test-env-detection.js
-    ├── flow/
-    │   └── commands/         ← start.js, status.js, review.js, merge.js, resume.js, cleanup.js
-    ├── spec/
-    │   └── commands/         ← init.js, gate.js, guardrail.js
-    ├── lib/                  ← 全レイヤー共有ユーティリティ
-    │   ├── agent.js          ← AI エージェント呼び出し
-    │   ├── cli.js            ← repoRoot, sourceRoot, parseArgs, PKG_DIR
-    │   ├── config.js         ← .sdd-forge/config.json ローダー
-    │   ├── presets.js        ← preset.json 自動探索
-    │   ├── flow-state.js     ← SDD フロー状態永続化
-    │   ├── i18n.js           ← 3層 i18n（ドメイン名前空間付き）
-    │   ├── types.js          ← 型エイリアス解決・バリデーション
-    │   └── agents-md.js, entrypoint.js, process.js, progress.js
-    ├── presets/              ← base/, cli/, node-cli/, node/, php/, cakephp2/, laravel/, symfony/, webapp/, library/, lib/
-    ├── locale/               ← en/, ja/
-    └── templates/            ← config.example.json, review-checklist.md, skills/
+    │   ├── commands/             scan, enrich, init, data, text, readme,
+    │   │                         forge, review, changelog, agents, translate
+    │   ├── data/                 共通 DataSource（project, docs, lang, agents）
+    │   └── lib/                  ドキュメント生成エンジン
+    ├── flow/commands/            start, status, review, merge, resume, cleanup
+    ├── spec/commands/            init, gate, guardrail
+    ├── presets/                  base, cli, node-cli, node, php, webapp,
+    │                             cakephp2, laravel, symfony, library
+    ├── locale/                   en/, ja/
+    └── templates/                スキャフォールドテンプレート
 ```
 
 ### コマンドルーティング
 
-3層ディスパッチ: `sdd-forge.js` → `docs.js` / `spec.js` / `flow.js` → `commands/*.js`
+3層ディスパッチ: `sdd-forge.js` → `docs.js`/`spec.js`/`flow.js` → `commands/*.js`
 
-| 呼び出し形式 | ルーター | 実装ファイル |
+| 呼び出し形式 | ルーター | 実装 |
 |---|---|---|
 | `sdd-forge docs build` | `docs.js` | パイプライン: `scan→enrich→init→data→text→readme→agents→[translate]` |
 | `sdd-forge docs <cmd>` | `docs.js` | `src/docs/commands/<cmd>.js` |
-| `sdd-forge spec init` | `spec.js` | `src/spec/commands/init.js` |
-| `sdd-forge spec gate` | `spec.js` | `src/spec/commands/gate.js` |
-| `sdd-forge spec guardrail` | `spec.js` | `src/spec/commands/guardrail.js` |
-| `sdd-forge flow start` | `flow.js` | `src/flow/commands/start.js` |
-| `sdd-forge flow status` | `flow.js` | `src/flow/commands/status.js` |
-| `sdd-forge flow review` | `flow.js` | `src/flow/commands/review.js` |
-| `sdd-forge flow merge` | `flow.js` | `src/flow/commands/merge.js` |
-| `sdd-forge flow resume` | `flow.js` | `src/flow/commands/resume.js` |
-| `sdd-forge flow cleanup` | `flow.js` | `src/flow/commands/cleanup.js` |
-| `sdd-forge setup` | 独立 | `src/setup.js` |
-| `sdd-forge upgrade` | 独立 | `src/upgrade.js` |
-| `sdd-forge presets` | 独立 | `src/presets-cmd.js` |
+| `sdd-forge spec <cmd>` | `spec.js` | `src/spec/commands/<cmd>.js` |
+| `sdd-forge flow <cmd>` | `flow.js` | `src/flow/commands/<cmd>.js` |
+| `sdd-forge setup\|upgrade\|presets\|help` | 直接 | `src/<cmd>.js` |
 
 ### npm scripts
 
@@ -150,19 +131,17 @@ sdd-forge/
 
 | 目的 | パス |
 |---|---|
-| CLI エントリ | `src/sdd-forge.js` |
-| docs ディスパッチャー | `src/docs.js` |
+| CLI エントリ・ルーティング | `src/sdd-forge.js` |
+| docs パイプライン制御 | `src/docs.js` |
+| コマンド共有コンテキスト | `src/docs/lib/command-context.js` |
 | AI エージェント呼び出し | `src/lib/agent.js` |
-| 設定ローダー | `src/lib/config.js` |
-| コマンドコンテキスト | `src/docs/lib/command-context.js` |
+| 設定ローダー・バリデーション | `src/lib/config.js`, `src/lib/types.js` |
 | ディレクティブパーサー | `src/docs/lib/directive-parser.js` |
-| テンプレート継承 | `src/docs/lib/template-merger.js` |
+| テンプレート継承・マージ | `src/docs/lib/template-merger.js` |
+| DataSource 基底クラス | `src/docs/lib/data-source.js` |
 | DataSource ファクトリー | `src/docs/lib/resolver-factory.js` |
 | プリセット探索 | `src/lib/presets.js` |
-| i18n | `src/lib/i18n.js` |
-| 型バリデーション | `src/lib/types.js` |
 | フロー状態永続化 | `src/lib/flow-state.js` |
-| テストスイート | `tests/` |
 | analysis.json（解析出力） | `.sdd-forge/output/analysis.json` |
 <!-- {{/data}} -->
 

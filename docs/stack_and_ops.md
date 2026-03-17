@@ -4,7 +4,7 @@
 
 <!-- {{text: Write a 1-2 sentence overview of this chapter. Include the programming language, framework, and key tool versions.}} -->
 
-sdd-forge is built entirely in JavaScript (ES Modules) on Node.js >=18.0.0 with zero external dependencies. This chapter covers the technology stack, dependency policy, and the procedures for publishing and operating the CLI tool.
+sdd-forge is built entirely in JavaScript (ES Modules) running on Node.js >=18.0.0, with no external dependencies. This chapter describes the technology stack, dependency policy, and the procedures for deploying and operating the tool.
 
 <!-- {{/text}} -->
 
@@ -23,15 +23,11 @@ sdd-forge is built entirely in JavaScript (ES Modules) on Node.js >=18.0.0 with 
 
 <!-- {{text: Describe the project's dependency management approach.}} -->
 
-sdd-forge enforces a strict **zero-dependency** policy. Only Node.js built-in modules (such as `fs`, `path`, `child_process`, and `node:test`) are permitted. Adding third-party packages from npm is explicitly prohibited.
+sdd-forge adopts a **zero external dependencies** policy. The project relies exclusively on Node.js built-in modules (`node:fs`, `node:path`, `node:test`, `node:assert`, etc.) for all functionality.
 
-This approach eliminates supply-chain risks, keeps the package lightweight, and ensures that the tool runs on any Node.js >=18 environment without an `npm install` step beyond the package itself. Testing relies on the Node.js native test runner (`node --test`), which is invoked through the `npm test` script:
+Adding third-party packages to `package.json` is strictly prohibited. This policy keeps the package lightweight, eliminates supply-chain risks, and ensures that no dependency auditing or lockfile maintenance is required.
 
-```
-find tests -name '*.test.js' | xargs node --test
-```
-
-Because there is no build or transpilation step, the source code in `src/` is shipped as-is to npm. Changes to source files take effect immediately when running the `sdd-forge` command.
+The `"files"` field in `package.json` is set to `["src/"]`, so only the source directory along with `package.json`, `README.md`, and `LICENSE` are included in the published package.
 
 <!-- {{/text}} -->
 
@@ -39,15 +35,16 @@ Because there is no build or transpilation step, the source code in `src/` is sh
 
 <!-- {{text: Describe the deployment procedure and flow.}} -->
 
-sdd-forge is distributed as a public npm package under the name `sdd-forge`. The release process follows a two-step pre-release workflow:
+sdd-forge is distributed as an npm package. The release process follows a manual two-step procedure:
 
-1. **Pre-publish check** — Run `npm pack --dry-run` to verify that only the intended files (`src/`, `package.json`, `README.md`, `LICENSE`) are included and no secrets or credentials are present.
-2. **Run tests** — Execute `npm test` to confirm all test suites pass.
-3. **Version bump** — Update the version in `package.json` (e.g., `npm version prerelease --preid=alpha`).
-4. **Publish with alpha tag** — Run `npm publish --tag alpha` to push the package to the registry without updating the `latest` tag.
-5. **Promote to latest** — Run `npm dist-tag add sdd-forge@<version> latest` to make the release visible as the default install version on npmjs.com.
+1. **Pre-publish check** — Run `npm pack --dry-run` to verify that no sensitive files (credentials, `.env`, etc.) are included in the package.
+2. **Version bump** — Update the version in `package.json` using `npm version patch`, `npm version minor`, or by editing the field directly.
+3. **Publish with alpha tag** — Run `npm publish --tag alpha` to publish the package under the `alpha` dist-tag.
+4. **Promote to latest** — Run `npm dist-tag add sdd-forge@<version> latest` to update the `latest` tag on the npm registry.
 
-Note that npm does not allow overwriting a published version. Once a version number is used, it cannot be reused even after unpublishing (24-hour cooldown applies). There is no CI/CD pipeline at this time; publishing is performed manually by the maintainer.
+Both steps 3 and 4 are required. Publishing with `--tag alpha` alone does not update the `latest` tag, which means the npmjs.com package page will not reflect the new version.
+
+There is no automated CI/CD pipeline. Publishing is performed manually and only when the maintainer explicitly indicates a release intent.
 
 <!-- {{/text}} -->
 
@@ -55,17 +52,12 @@ Note that npm does not allow overwriting a published version. Once a version num
 
 <!-- {{text: Describe the operations procedures.}} -->
 
-**Initial setup** is performed by running `sdd-forge setup`, which launches an interactive wizard to create the `.sdd-forge/` configuration directory, generate `config.json`, scaffold the `docs/` and `specs/` directories, produce `AGENTS.md`, and deploy skill templates to `.agents/skills/` and `.claude/skills/`.
+Local development and day-to-day operations follow a straightforward workflow:
 
-**Upgrading** template-managed files (such as skill definitions) is handled by `sdd-forge upgrade`. This command re-deploys skill templates from `src/templates/skills/` into the project without modifying `config.json` or other user-owned files. A `--dry-run` flag is available to preview changes before applying them.
-
-**Documentation generation** follows the pipeline `scan → enrich → init → data → text → readme → agents`, orchestrated by `sdd-forge docs build`. Each stage can also be run independently as a subcommand (e.g., `sdd-forge docs scan`).
-
-**Development workflow** for contributors:
-
-1. Clone the repository and run `npm link` to register the CLI globally.
-2. Edit files in `src/` — changes take effect immediately (no build step).
-3. Run `npm test` to validate changes against the test suite.
-4. Use the SDD flow (`sdd-forge flow start`) for spec-driven feature development, and finalize with `sdd-forge flow merge`.
+- **Local setup** — Run `npm link` in the repository root to register `sdd-forge` as a global CLI command for development.
+- **Running tests** — Execute `npm test`, which discovers all `*.test.js` files under `tests/` and runs them with the Node.js built-in test runner (`node --test`). Tests use `node:assert/strict` for assertions and helper utilities in `tests/helpers/` for temporary directories and mock projects.
+- **Package validation** — The test suite includes `tests/package.test.js`, which verifies that `npm pack --dry-run` output contains only the expected files from `src/`, preventing accidental inclusion of sensitive data.
+- **Documentation generation** — Run `sdd-forge docs build` to execute the full documentation pipeline (`scan → enrich → init → data → text → readme → agents → [translate]`). Individual stages can also be run independently.
+- **SDD workflow** — Feature development follows the Spec-Driven Development flow: `sdd-forge flow --request "<request>"` to start planning, then proceed through implementation and merge stages.
 
 <!-- {{/text}} -->
