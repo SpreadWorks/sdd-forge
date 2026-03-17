@@ -1,0 +1,87 @@
+import { describe, it, afterEach } from "node:test";
+import assert from "node:assert/strict";
+import fs from "fs";
+import { join } from "path";
+import { execFileSync } from "child_process";
+import { createTmpDir, removeTmpDir, writeJson, writeFile } from "../../../helpers/tmp-dir.js";
+
+const CMD = join(process.cwd(), "src/docs/commands/readme.js");
+
+function makeEnv(tmp) {
+  return { ...process.env, SDD_WORK_ROOT: tmp, SDD_SOURCE_ROOT: tmp };
+}
+
+function setupProject(tmp, pkg = { name: "test-project" }) {
+  writeJson(tmp, ".sdd-forge/config.json", { lang: "ja", type: "cli/node-cli", docs: { languages: ["ja"], defaultLanguage: "ja" } });
+  writeJson(tmp, "package.json", pkg);
+}
+
+describe("readme CLI", () => {
+  let tmp;
+  afterEach(() => tmp && removeTmpDir(tmp));
+
+  function runReadme(args = []) {
+    return execFileSync("node", [CMD, ...args], {
+      encoding: "utf8",
+      env: makeEnv(tmp),
+    });
+  }
+
+  function readReadme() {
+    return fs.readFileSync(join(tmp, "README.md"), "utf8");
+  }
+
+  it("generates README.md from chapter files", () => {
+    tmp = createTmpDir();
+    setupProject(tmp, { name: "test-project", description: "A test" });
+    writeFile(tmp, "docs/01_overview.md", "# 01. Overview\n## 説明\nThis is an overview\n## 内容\nSome content\n");
+
+    runReadme();
+    assert.ok(fs.existsSync(join(tmp, "README.md")), "README.md should be created");
+    assert.match(readReadme(), /test-project/);
+  });
+
+  it("skips when type is not set", () => {
+    tmp = createTmpDir();
+    writeJson(tmp, ".sdd-forge/config.json", { lang: "ja", docs: { languages: ["ja"], defaultLanguage: "ja" } });
+    const result = runReadme();
+    assert.match(result, /type.*not set|type.*設定されていません/);
+  });
+
+  it("dry-run does not write README", () => {
+    tmp = createTmpDir();
+    setupProject(tmp, { name: "test" });
+    writeFile(tmp, "docs/01_test.md", "# 01. Test\n## 説明\ndesc\n## 内容\ncontent\n");
+    runReadme(["--dry-run"]);
+    assert.ok(!fs.existsSync(join(tmp, "README.md")));
+  });
+
+  it("README includes project name from package.json", () => {
+    tmp = createTmpDir();
+    setupProject(tmp, { name: "my-tool", description: "A CLI tool for developers" });
+    writeFile(tmp, "docs/overview.md", "# Overview\n\nSome content here\n");
+    runReadme();
+    assert.ok(readReadme().includes("my-tool"), "README should include project name");
+  });
+
+  it("overwrites existing README.md", () => {
+    tmp = createTmpDir();
+    setupProject(tmp, { name: "updated-project" });
+    writeFile(tmp, "docs/overview.md", "# Overview\n\nContent\n");
+    writeFile(tmp, "README.md", "# Old README\n");
+    runReadme();
+    const content = readReadme();
+    assert.ok(content.includes("updated-project"), "README should be overwritten");
+    assert.ok(!content.includes("Old README"), "Old content should be gone");
+  });
+
+  it("handles multiple chapter files", () => {
+    tmp = createTmpDir();
+    setupProject(tmp, { name: "multi-chapter" });
+    writeFile(tmp, "docs/overview.md", "# Overview\n\nFirst chapter\n");
+    writeFile(tmp, "docs/cli_commands.md", "# CLI Commands\n\nSecond chapter\n");
+    runReadme();
+    assert.ok(fs.existsSync(join(tmp, "README.md")));
+    assert.ok(readReadme().length > 0);
+  });
+});
