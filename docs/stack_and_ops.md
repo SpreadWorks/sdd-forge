@@ -4,7 +4,7 @@
 
 <!-- {{text: Write a 1-2 sentence overview of this chapter. Include the programming language, framework, and key tool versions.}} -->
 
-sdd-forge is built entirely in JavaScript (ES Modules) running on Node.js >=18.0.0, with no external dependencies. This chapter describes the technology stack, dependency policy, and the procedures for deploying and operating the tool.
+sdd-forge is built with JavaScript (ES Modules) and runs on Node.js >=18.0.0. It operates as a CLI tool with zero external dependencies, relying solely on Node.js built-in modules.
 
 <!-- {{/text}} -->
 
@@ -23,11 +23,11 @@ sdd-forge is built entirely in JavaScript (ES Modules) running on Node.js >=18.0
 
 <!-- {{text: Describe the project's dependency management approach.}} -->
 
-sdd-forge adopts a **zero external dependencies** policy. The project relies exclusively on Node.js built-in modules (`node:fs`, `node:path`, `node:test`, `node:assert`, etc.) for all functionality.
+sdd-forge enforces a strict zero-dependency policy. The project uses only Node.js built-in modules (such as `fs`, `path`, `child_process`, etc.) and does not rely on any third-party npm packages. Adding external dependencies is explicitly prohibited by the project rules.
 
-Adding third-party packages to `package.json` is strictly prohibited. This policy keeps the package lightweight, eliminates supply-chain risks, and ensures that no dependency auditing or lockfile maintenance is required.
+This approach minimizes supply-chain risk, reduces installation footprint, and ensures that the tool remains lightweight and portable across any environment that meets the minimum Node.js version requirement.
 
-The `"files"` field in `package.json` is set to `["src/"]`, so only the source directory along with `package.json`, `README.md`, and `LICENSE` are included in the published package.
+The `package.json` contains no `dependencies` or `devDependencies` fields. Testing is handled via Node.js's built-in test runner (`node --test`), further reinforcing the zero-dependency philosophy.
 
 <!-- {{/text}} -->
 
@@ -35,16 +35,14 @@ The `"files"` field in `package.json` is set to `["src/"]`, so only the source d
 
 <!-- {{text: Describe the deployment procedure and flow.}} -->
 
-sdd-forge is distributed as an npm package. The release process follows a manual two-step procedure:
+sdd-forge is distributed as a public npm package. The published package includes only the `src/` directory along with `package.json`, `README.md`, and `LICENSE`, as defined by the `files` field in `package.json`.
 
-1. **Pre-publish check** — Run `npm pack --dry-run` to verify that no sensitive files (credentials, `.env`, etc.) are included in the package.
-2. **Version bump** — Update the version in `package.json` using `npm version patch`, `npm version minor`, or by editing the field directly.
-3. **Publish with alpha tag** — Run `npm publish --tag alpha` to publish the package under the `alpha` dist-tag.
-4. **Promote to latest** — Run `npm dist-tag add sdd-forge@<version> latest` to update the `latest` tag on the npm registry.
+The release procedure follows a two-step process:
 
-Both steps 3 and 4 are required. Publishing with `--tag alpha` alone does not update the `latest` tag, which means the npmjs.com package page will not reflect the new version.
+1. **Pre-release publish**: Run `npm publish --tag alpha` to publish the package under the `alpha` dist-tag.
+2. **Promote to latest**: Run `npm dist-tag add sdd-forge@<version> latest` to update the `latest` tag so that the new version is reflected on the npmjs.com package page.
 
-There is no automated CI/CD pipeline. Publishing is performed manually and only when the maintainer explicitly indicates a release intent.
+Before publishing, `npm pack --dry-run` is executed to verify the package contents and confirm that no sensitive information is included. Note that npm does not allow overwriting a previously published version, so each release must use a unique version number.
 
 <!-- {{/text}} -->
 
@@ -52,12 +50,16 @@ There is no automated CI/CD pipeline. Publishing is performed manually and only 
 
 <!-- {{text: Describe the operations procedures.}} -->
 
-Local development and day-to-day operations follow a straightforward workflow:
+The primary operational workflow for sdd-forge centers around its documentation generation pipeline and the SDD (Spec-Driven Development) flow.
 
-- **Local setup** — Run `npm link` in the repository root to register `sdd-forge` as a global CLI command for development.
-- **Running tests** — Execute `npm test`, which discovers all `*.test.js` files under `tests/` and runs them with the Node.js built-in test runner (`node --test`). Tests use `node:assert/strict` for assertions and helper utilities in `tests/helpers/` for temporary directories and mock projects.
-- **Package validation** — The test suite includes `tests/package.test.js`, which verifies that `npm pack --dry-run` output contains only the expected files from `src/`, preventing accidental inclusion of sensitive data.
-- **Documentation generation** — Run `sdd-forge docs build` to execute the full documentation pipeline (`scan → enrich → init → data → text → readme → agents → [translate]`). Individual stages can also be run independently.
-- **SDD workflow** — Feature development follows the Spec-Driven Development flow: `sdd-forge flow --request "<request>"` to start planning, then proceed through implementation and merge stages.
+**Documentation generation pipeline** runs in the following sequence:
+
+`scan` → `enrich` → `init` → `data` → `text` → `readme` → `agents` → `[translate]`
+
+This pipeline can be executed as a single command via `sdd-forge docs build`, or each step can be run individually for targeted updates.
+
+**Testing** is performed using the Node.js built-in test runner with the command `npm test`, which discovers and executes all `*.test.js` files under the `tests/` directory.
+
+**SDD workflow** for feature additions and modifications follows a structured process: planning (`flow-plan`) → implementation (`flow-impl`) → merge (`flow-merge`). Flow state is persisted via `src/lib/flow-state.js`, allowing workflows to be resumed after interruption.
 
 <!-- {{/text}} -->

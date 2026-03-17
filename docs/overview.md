@@ -4,7 +4,7 @@
 
 <!-- {{text: Write a 1-2 sentence overview of this chapter. Include the tool's purpose, the problem it solves, and its primary use cases.}} -->
 
-This chapter introduces sdd-forge, a zero-dependency Node.js CLI tool that automates project documentation generation through source code analysis and AI-assisted content creation. It covers the tool's architecture, key concepts, and the typical workflow from setup to first output.
+This chapter introduces sdd-forge, a CLI tool that automatically generates structured documentation from source code analysis and provides a Spec-Driven Development (SDD) workflow. It covers the tool's architecture, key concepts, and typical usage flow to help users understand how sdd-forge transforms codebases into maintainable, up-to-date project documentation.
 
 <!-- {{/text}} -->
 
@@ -14,15 +14,11 @@ This chapter introduces sdd-forge, a zero-dependency Node.js CLI tool that autom
 
 <!-- {{text: Describe the problem this CLI tool solves and its target users. Derive the purpose from package.json and README.}} -->
 
-Maintaining accurate, up-to-date project documentation is a persistent challenge for development teams. Documentation often drifts out of sync with the codebase, becomes incomplete, or requires significant manual effort to keep current. sdd-forge addresses this problem by providing automated documentation generation driven directly from source code analysis.
+sdd-forge addresses the challenge of keeping project documentation accurate and in sync with evolving source code. In many projects, documentation becomes outdated quickly because maintaining it manually is time-consuming and error-prone. sdd-forge solves this by analyzing source code directly and generating structured documentation through a pipeline of automated steps.
 
-The tool targets developers and teams who want to:
+The tool targets development teams working on web applications built with frameworks such as Symfony, CakePHP, and Laravel, as well as Node.js CLI tools and libraries. It provides framework-aware analyzers (called DataSources) that understand controllers, entities, models, migrations, and other framework-specific constructs, extracting meaningful information without requiring developers to annotate their code manually.
 
-- **Generate structured documentation automatically** from their codebase, reducing the manual effort of writing and maintaining project docs.
-- **Adopt Spec-Driven Development (SDD)**, a workflow where feature specifications are written and validated before implementation begins, ensuring design alignment throughout the development cycle.
-- **Support multiple frameworks and languages** through a preset system that provides framework-aware analysis for PHP (CakePHP, Laravel, Symfony), Node.js, and web application projects.
-
-sdd-forge requires no external dependencies beyond Node.js (≥18.0.0) built-in modules, keeping the installation lightweight and the supply chain minimal.
+Beyond documentation generation, sdd-forge also offers a Spec-Driven Development workflow that guides teams through planning, specification, implementation, and review — ensuring that changes are documented as part of the development process rather than as an afterthought.
 
 <!-- {{/text}} -->
 
@@ -31,101 +27,39 @@ sdd-forge requires no external dependencies beyond Node.js (≥18.0.0) built-in 
 <!-- {{text[mode=deep]: Generate a mermaid flowchart showing the tool's overall architecture. Include the dispatch structure from entry point to subcommands and the main processing flow (input → processing → output). Output only the mermaid code block.}} -->
 
 ```mermaid
-flowchart TB
-    CLI["sdd-forge (CLI Entry Point)"]
+flowchart TD
+    CLI["sdd-forge.js\n(CLI Entry Point)"]
 
-    CLI --> docs["docs dispatcher"]
-    CLI --> spec["spec dispatcher"]
-    CLI --> flow["flow dispatcher"]
-    CLI --> setup["setup"]
-    CLI --> upgrade["upgrade"]
-    CLI --> presets["presets"]
-    CLI --> help["help"]
+    CLI --> docs["docs.js\n(Docs Dispatcher)"]
+    CLI --> spec["spec.js\n(Spec Dispatcher)"]
+    CLI --> flow["flow.js\n(Flow Dispatcher)"]
+    CLI --> standalone["setup / upgrade / presets / help"]
 
-    subgraph DocsCommands["docs commands"]
-        scan["scan"]
-        enrich["enrich"]
-        init["init"]
-        data["data"]
-        text["text"]
-        readme["readme"]
-        forge["forge"]
-        review["review"]
-        translate["translate"]
-        changelog["changelog"]
-        agents["agents"]
-    end
-    docs --> DocsCommands
+    docs --> build["build\n(Full Pipeline)"]
+    docs --> cmds["Individual Commands"]
 
-    subgraph BuildPipeline["docs build pipeline"]
-        direction LR
-        bp_scan["scan"] --> bp_enrich["enrich"] --> bp_init["init"] --> bp_data["data"] --> bp_text["text"] --> bp_readme["readme"] --> bp_agents["agents"] --> bp_translate["translate"]
-    end
-    docs -->|"build"| BuildPipeline
+    build --> scan["scan\n— Source code analysis"]
+    scan --> enrich["enrich\n— AI-driven classification"]
+    enrich --> init["init\n— Chapter scaffolding"]
+    init --> data["data\n— DataSource resolution"]
+    data --> text["text\n— Prose generation"]
+    text --> readme["readme\n— README output"]
+    readme --> agents["agents\n— AGENTS.md generation"]
+    agents --> translate["translate\n(optional)"]
 
-    subgraph SpecCommands["spec commands"]
-        spec_init["init"]
-        gate["gate"]
-        guardrail["guardrail"]
-    end
-    spec --> SpecCommands
+    cmds --> forge["forge / review / changelog"]
 
-    subgraph FlowCommands["flow commands"]
-        start["start"]
-        status["status"]
-        resume["resume"]
-        flow_review["review"]
-        merge["merge"]
-        cleanup["cleanup"]
-    end
-    flow --> FlowCommands
+    spec --> specInit["spec init"]
+    spec --> gate["spec gate"]
+    spec --> guardrail["spec guardrail"]
 
-    subgraph SharedLib["shared libraries"]
-        cli_lib["cli.js"]
-        config["config.js"]
-        agent["agent.js"]
-        presets_lib["presets.js"]
-        flow_state["flow-state.js"]
-        i18n["i18n.js"]
-        types["types.js"]
-    end
+    flow --> flowStart["start / status / review\nmerge / resume / cleanup"]
 
-    DocsCommands -.-> SharedLib
-    SpecCommands -.-> SharedLib
-    FlowCommands -.-> SharedLib
-
-    subgraph Engine["docs generation engine"]
-        context["command-context.js"]
-        datasource["data-source.js"]
-        resolver["resolver-factory.js"]
-        directive["directive-parser.js"]
-        merger["template-merger.js"]
-        scanner["scanner.js"]
-    end
-    DocsCommands -.-> Engine
-
-    subgraph Presets["preset hierarchy"]
-        base["base"]
-        base --> webapp["webapp"]
-        base --> cli_preset["cli"]
-        base --> library["library"]
-        webapp --> cakephp2["cakephp2"]
-        webapp --> laravel["laravel"]
-        webapp --> symfony["symfony"]
-        cli_preset --> node_cli["node-cli"]
-    end
-    Engine -.-> Presets
-
-    subgraph IO["input / output"]
-        source_code["Source Code"]
-        analysis[".sdd-forge/output/analysis.json"]
-        docs_out["docs/*.md"]
-        agents_md["AGENTS.md"]
-    end
-    source_code --> bp_scan
-    bp_scan --> analysis
-    bp_text --> docs_out
-    bp_agents --> agents_md
+    scan -.->|"analysis.json"| enrich
+    data -.->|"Presets & DataSources"| presets["Preset Chain\n(base → arch → framework)"]
+    presets --> lang["Lang Layer\n(php / node)"]
+    presets --> ds["DataSources\n(controllers, entities,\nconfig.stack, …)"]
+    lang -.->|"config.stack\n+ union chapters"| ds
 ```
 
 <!-- {{/text}} -->
@@ -136,16 +70,14 @@ flowchart TB
 
 | Concept | Description |
 |---|---|
-| **Preset** | A configuration profile tailored to a specific framework or project type (e.g., `symfony`, `cakephp2`, `node-cli`). Presets form an inheritance hierarchy rooted at `base`, defining chapter order, scan rules, templates, and DataSource modules. |
-| **Chapter** | A single Markdown file within `docs/` representing one section of the generated documentation. Chapter order is defined by the `chapters` array in `preset.json` or overridden in `config.json`. |
-| **`{{data}}` directive** | A template marker in chapter files that resolves to structured data (tables, lists) at generation time. Resolved by DataSource classes (e.g., `{{data: entities.columns("Entity|Column|Type")}}`) . |
-| **`{{text}}` directive** | A template marker that triggers AI-generated prose. The directive contains a prompt instruction, and the AI fills in the content within the directive boundaries, preserving the document structure. |
-| **DataSource** | A class that implements `match()` for file filtering and resolver methods for `{{data}}` directives. Presets provide framework-specific DataSources (e.g., `EntitiesSource` for Symfony Doctrine entities). |
-| **Enrichment** | An AI-powered analysis pass (`enrich` command) that augments raw scan results with role classifications, summaries, and chapter assignments for each source file. |
-| **SDD Flow** | The Spec-Driven Development workflow managed by `flow` commands: start (create spec) → gate (validate spec) → implement → review → merge → cleanup. |
-| **Build Pipeline** | The automated sequence `scan → enrich → init → data → text → readme → agents → translate` executed by `docs build`, producing a complete documentation set in one pass. |
-| **Template Merger** | The engine that resolves template inheritance across the preset chain using `@extends`, `@block`, and `@endblock` markers, allowing child presets to override specific sections. |
-| **Agent** | An external AI tool (e.g., Claude Code) invoked for content generation tasks such as `enrich` and `text`. Configured via `config.agent` with support for multiple providers and per-command overrides. |
+| **Preset** | A reusable configuration package that defines framework-specific analyzers, chapter order, and templates. Presets form an inheritance chain (e.g., `base` → `webapp` → `symfony`) via the `parent` field. A separate **lang layer** (`php`, `node`) provides language-specific DataSources (e.g., `config.stack`) and chapters that are automatically union-merged into the parent chain. |
+| **DataSource** | A class responsible for scanning source files and resolving `{{data}}` directives. Each DataSource implements `match()` to select relevant files, `scan()` to extract structured data, and named methods (e.g., `relations()`, `columns()`) to render that data into markdown tables. |
+| **Directive** | A template marker embedded in chapter files. `{{data: source.method("labels")}}` inserts structured data from a DataSource, while `{{text: instruction}}` delegates prose generation to an AI agent. Content outside directives is preserved across regeneration. |
+| **Chapter** | A markdown file representing one section of the generated documentation. Chapter order and inclusion are controlled by the `chapters` array in `preset.json` or overridden in `config.json`. |
+| **Pipeline** | The sequential processing stages executed by `sdd-forge docs build`: `scan → enrich → init → data → text → readme → agents → [translate]`. Each stage reads the output of the previous stage and produces input for the next. |
+| **Enrichment** | An AI-powered stage that takes raw scan results and adds role classification, summaries, and chapter assignments to each file entry, providing the semantic context needed for high-quality text generation. |
+| **SDD Flow** | The Spec-Driven Development workflow (`sdd-forge flow`) that orchestrates planning, specification gating, implementation, review, and merge steps, ensuring changes are documented alongside code. |
+| **analysis.json** | The intermediate output of the `scan` stage, stored in `.sdd-forge/output/`. It contains the structured representation of the entire codebase that subsequent pipeline stages consume. |
 
 <!-- {{/text}} -->
 
@@ -158,16 +90,14 @@ flowchart TB
    npm install -g sdd-forge
    ```
 
-2. **Initialize the project** — Run `sdd-forge setup` in your project root. This creates the `.sdd-forge/` directory, generates `config.json` with your project type (preset), language, and agent settings, and scaffolds the initial `docs/` directory with chapter templates.
+2. **Initialize the project** — Run `sdd-forge setup` in your project root. This creates the `.sdd-forge/` directory, generates a `config.json` with project-specific settings (language, framework type, documentation languages), and sets up the preset chain appropriate for your framework.
 
-3. **Scan the source code** — Run `sdd-forge docs scan` to perform static analysis of your codebase. The tool discovers files based on preset-defined scan rules and outputs structured analysis data to `.sdd-forge/output/analysis.json`.
+3. **Run a full documentation build** — Execute `sdd-forge docs build` to run the complete pipeline. This scans your source code, enriches the analysis with AI-generated classifications, scaffolds chapter files, resolves data directives, generates prose for text directives, and produces the final README and AGENTS.md.
 
-4. **Enrich the analysis** — Run `sdd-forge docs enrich` to invoke the AI agent, which classifies each file's role, generates summaries, and assigns chapter mappings. The enriched output is stored in `.sdd-forge/output/analysis.enriched.json`.
+4. **Review the output** — Inspect the generated `docs/` directory. Each chapter file contains structured documentation with `{{data}}` and `{{text}}` directives. Content written outside directive blocks is preserved on subsequent builds.
 
-5. **Generate documentation** — Run `sdd-forge docs build` to execute the full pipeline in one command. This sequentially runs `scan → enrich → init → data → text → readme → agents`, resolving all `{{data}}` and `{{text}}` directives in the chapter templates to produce complete Markdown files under `docs/`.
+5. **Iterate with individual commands** — After the initial build, you can run individual pipeline stages (e.g., `sdd-forge docs scan`, `sdd-forge docs text`) to regenerate specific parts without re-running the entire pipeline.
 
-6. **Review and iterate** — Run `sdd-forge docs review` to have the AI evaluate the generated documentation for accuracy and completeness. Make adjustments to directive prompts or DataSource overrides as needed, then re-run individual commands (e.g., `sdd-forge docs text`) to regenerate specific sections.
-
-7. **Translate (optional)** — If your configuration includes multiple languages, run `sdd-forge docs translate` to generate translated versions of the documentation under language-specific subdirectories (e.g., `docs/ja/`).
+6. **Use the SDD workflow for changes** — When adding features or making modifications, start with `sdd-forge flow --request "<description>"` to enter the Spec-Driven Development workflow, which guides you through planning, implementation, and documentation updates in a structured sequence.
 
 <!-- {{/text}} -->
