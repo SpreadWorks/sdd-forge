@@ -12,10 +12,16 @@
 import fs from "fs";
 import path from "path";
 import { parseBlocks } from "./directive-parser.js";
-import { presetByLeaf, resolveChainSafe } from "../../lib/presets.js";
+import { presetByLeaf, resolveChainSafe, resolveLangPreset } from "../../lib/presets.js";
 import { callAgent } from "../../lib/agent.js";
 
 const SPECIAL_FILES = new Set(["README.md", "AGENTS.sdd.md"]);
+
+/** Resolve the lang-axis preset for a type path. */
+function getLangAxisPreset(typePath) {
+  const leaf = typePath.split("/").pop();
+  return resolveLangPreset(leaf);
+}
 
 // ---------------------------------------------------------------------------
 // レイヤー構築（ボトムアップ: 最も具体的な層から）
@@ -44,6 +50,13 @@ export function buildLayers(typePath, lang, projectLocalDir) {
   // chain は root → leaf の順なので、逆順（leaf → root）で追加
   for (let i = chain.length - 1; i >= 0; i--) {
     const dir = path.join(chain[i].dir, "templates", lang);
+    if (fs.existsSync(dir)) layers.push(dir);
+  }
+
+  // 3. lang 層のテンプレートディレクトリ（parent チェーンの後、base の前）
+  const langPreset = getLangAxisPreset(typePath);
+  if (langPreset) {
+    const dir = path.join(langPreset.dir, "templates", lang);
     if (fs.existsSync(dir)) layers.push(dir);
   }
 
@@ -260,6 +273,18 @@ export function resolveChaptersOrder(typePath, configChapters) {
   let chapters = [];
   for (const preset of chain) {
     if (preset.chapters?.length) chapters = preset.chapters;
+  }
+
+  // lang 層の chapters を union マージ（overview.md の直後に挿入）
+  const langPreset = getLangAxisPreset(typePath);
+  if (langPreset?.chapters?.length) {
+    const existing = new Set(chapters);
+    const toAdd = langPreset.chapters.filter((ch) => !existing.has(ch));
+    if (toAdd.length > 0) {
+      const overviewIdx = chapters.indexOf("overview.md");
+      const insertAt = overviewIdx >= 0 ? overviewIdx + 1 : 0;
+      chapters = [...chapters.slice(0, insertAt), ...toAdd, ...chapters.slice(insertAt)];
+    }
   }
 
   return chapters;

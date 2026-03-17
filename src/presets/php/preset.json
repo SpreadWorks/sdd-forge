@@ -2,5 +2,6 @@
   "parent": "base",
   "axis": "lang",
   "label": "PHP",
-  "aliases": []
+  "aliases": [],
+  "chapters": ["stack_and_ops.md"]
 }
