@@ -1,0 +1,110 @@
+{
+  "spec": "specs/067-lang-layer-chapter-union/spec.md",
+  "baseBranch": "development",
+  "featureBranch": "feature/067-lang-layer-chapter-union",
+  "steps": [
+    {
+      "id": "approach",
+      "status": "done"
+    },
+    {
+      "id": "branch",
+      "status": "done"
+    },
+    {
+      "id": "spec",
+      "status": "done"
+    },
+    {
+      "id": "draft",
+      "status": "skipped"
+    },
+    {
+      "id": "fill-spec",
+      "status": "done"
+    },
+    {
+      "id": "approval",
+      "status": "done"
+    },
+    {
+      "id": "gate",
+      "status": "done"
+    },
+    {
+      "id": "test",
+      "status": "skipped"
+    },
+    {
+      "id": "implement",
+      "status": "done"
+    },
+    {
+      "id": "review",
+      "status": "done"
+    },
+    {
+      "id": "finalize",
+      "status": "done"
+    },
+    {
+      "id": "docs-update",
+      "status": "skipped"
+    },
+    {
+      "id": "docs-review",
+      "status": "skipped"
+    },
+    {
+      "id": "commit",
+      "status": "done"
+    },
+    {
+      "id": "merge",
+      "status": "done"
+    },
+    {
+      "id": "branch-cleanup",
+      "status": "done"
+    },
+    {
+      "id": "archive",
+      "status": "done"
+    }
+  ],
+  "requirements": [
+    {
+      "desc": "node preset.json chapters追加",
+      "status": "done"
+    },
+    {
+      "desc": "php preset.json chapters追加",
+      "status": "done"
+    },
+    {
+      "desc": "resolveChaptersOrder union マージ",
+      "status": "done"
+    },
+    {
+      "desc": "buildLayers lang層対応",
+      "status": "done"
+    },
+    {
+      "desc": "node-cli chapters手動分削除",
+      "status": "done"
+    },
+    {
+      "desc": "scan→data検証",
+      "status": "done"
+    },
+    {
+      "desc": "review PASS確認",
+      "status": "done"
+    },
+    {
+      "desc": "npm test全PASS確認",
+      "status": "done"
+    }
+  ],
+  "request": "lang 層の chapters を parent チェーンの chapters と union マージし、テンプレート合成を自動化する"
+}
