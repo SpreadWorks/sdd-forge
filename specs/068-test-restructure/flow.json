@@ -1,0 +1,110 @@
+{
+  "spec": "specs/068-test-restructure/spec.md",
+  "baseBranch": "development",
+  "featureBranch": "feature/068-test-restructure",
+  "steps": [
+    {
+      "id": "approach",
+      "status": "done"
+    },
+    {
+      "id": "branch",
+      "status": "done"
+    },
+    {
+      "id": "spec",
+      "status": "done"
+    },
+    {
+      "id": "draft",
+      "status": "done"
+    },
+    {
+      "id": "fill-spec",
+      "status": "done"
+    },
+    {
+      "id": "approval",
+      "status": "done"
+    },
+    {
+      "id": "gate",
+      "status": "done"
+    },
+    {
+      "id": "test",
+      "status": "done"
+    },
+    {
+      "id": "implement",
+      "status": "done"
+    },
+    {
+      "id": "review",
+      "status": "done"
+    },
+    {
+      "id": "finalize",
+      "status": "done"
+    },
+    {
+      "id": "docs-update",
+      "status": "skipped"
+    },
+    {
+      "id": "docs-review",
+      "status": "skipped"
+    },
+    {
+      "id": "commit",
+      "status": "done"
+    },
+    {
+      "id": "merge",
+      "status": "done"
+    },
+    {
+      "id": "branch-cleanup",
+      "status": "done"
+    },
+    {
+      "id": "archive",
+      "status": "done"
+    }
+  ],
+  "requirements": [
+    {
+      "desc": "tests/unit/ に29ファイル移動",
+      "status": "done"
+    },
+    {
+      "desc": "tests/e2e/ に25ファイル移動",
+      "status": "done"
+    },
+    {
+      "desc": "test/test:unit/test:e2e スクリプト定義",
+      "status": "done"
+    },
+    {
+      "desc": "SHALLOW 5ファイル書き直し",
+      "status": "done"
+    },
+    {
+      "desc": "MISSING_COVERAGE 3ファイル補強",
+      "status": "done"
+    },
+    {
+      "desc": "欠落HIGH 3ファイル新規作成",
+      "status": "done"
+    },
+    {
+      "desc": "npm test 全パス",
+      "status": "done"
+    }
+  ],
+  "request": "テストディレクトリ構造の再編成: tests/unit/ と tests/e2e/ を作成し52ファイルを振り分け、SHALLOW 3ファイルの書き直し、MISSING_COVERAGE 3ファイルの補強、欠落 HIGH の新規テスト作成、package.json の test スクリプト更新",
+  "notes": [
+    "draft: 全要件承認済み — 構造再編(53→unit29+e2e25), SHALLOW書き直し5, 補強3, 新規3, scripts分離",
+    "test: 検証は npm test/test:unit/test:e2e の全パスで確認。メタテスト不要"
+  ]
+}
