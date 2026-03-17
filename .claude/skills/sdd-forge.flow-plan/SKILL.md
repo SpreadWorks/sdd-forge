@@ -7,14 +7,19 @@ description: Run the SDD planning workflow. Use for spec creation, gate check, a
 
 Run this workflow for any feature or fix request. This skill covers the planning phase: from requirements gathering through test writing.
 
+## Language
+
+Present all user-facing text (choices, questions, explanations, status messages) in the language
+specified by `.sdd-forge/config.json` `lang` field. If config.json is not available, use English.
+
 ## Core Principle
 
-**SDD フロー中のすべてのステップで、次の行動について必ずユーザーに確認する。**
-AI が勝手に次のステップに進まない。
+**Confirm with the user before proceeding to the next action at every step of the SDD flow.**
+The AI must not advance to the next step on its own.
 
 ## Flow Progress Tracking
 
-**MUST: 各ステップの完了時に `sdd-forge flow status --step <id> --status <val>` を実行してフロー進捗を記録する。**
+**MUST: Run `sdd-forge flow status --step <id> --status <val>` upon completion of each step to record flow progress.**
 
 Available step IDs (this skill): `approach`, `branch`, `spec`, `draft`, `fill-spec`, `approval`, `gate`, `test`
 Available status values: `pending`, `in_progress`, `done`, `skipped`
@@ -28,19 +33,19 @@ Available status values: `pending`, `in_progress`, `done`, `skipped`
 
 ## Choice Format
 
-選択肢は以下の形式で表示すること:
+Present choices in the following format:
 ```
 ────────────────────────────────────────
-  説明文（質問や状況の説明）
+  Description (question or situation)
 ────────────────────────────────────────
 
-  [1] ラベル
-  [2] ラベル
-  [3] その他
+  [1] Label
+  [2] Label
+  [3] Other
 
 ```
-- 説明文と選択肢を一文にまとめない。説明文は罫線の中、選択肢は罫線の外。
-- 選択肢の前後に空行を入れる。
+- Do not combine the description and choices into one sentence. Description goes inside the lines, choices go outside.
+- Add blank lines before and after the choices.
 
 ## Required Sequence
 
@@ -49,11 +54,11 @@ Available status values: `pending`, `in_progress`, `done`, `skipped`
    - Present:
      ```
      ────────────────────────────────────────
-       要件の整理方法を選択してください。
+       Choose how to organize requirements.
      ────────────────────────────────────────
 
-       [1] 要件を整理してから仕様書を作成する
-       [2] 仕様書を直接作成する
+       [1] Organize requirements before writing the spec
+       [2] Write the spec directly
 
      ```
    - Remember the choice for later. Proceed to step 2 regardless.
@@ -64,23 +69,23 @@ Available status values: `pending`, `in_progress`, `done`, `skipped`
    - **User choice** (if not in a worktree):
      ```
      ────────────────────────────────────────
-       ブランチ戦略を選択してください。
+       Choose a branching strategy.
      ────────────────────────────────────────
 
-       [1] Branch（`<current-branch>` から feature ブランチを作成）
-       [2] Worktree（隔離環境で作業）
-       [3] Spec only（ブランチなし）
+       [1] Branch (create a feature branch from `<current-branch>`)
+       [2] Worktree (work in an isolated environment)
+       [3] Spec only (no branch)
 
      ```
    - For options 1 and 2:
      ```
      ────────────────────────────────────────
-       現在のブランチ (`<current-branch>`) から分岐します。
+       Branch from current branch (`<current-branch>`).
      ────────────────────────────────────────
 
-       [1] はい
-       [2] ブランチを指定する
-       [3] その他
+       [1] Yes
+       [2] Specify a branch
+       [3] Other
 
      ```
      - 1 → use `--base <current-branch>`.
@@ -138,12 +143,12 @@ Available status values: `pending`, `in_progress`, `done`, `skipped`
    - Present:
      ```
      ────────────────────────────────────────
-       spec の内容を確認してください。
+       Please review the spec.
      ────────────────────────────────────────
 
-       [1] 実装する
-       [2] 仕様書を修正する
-       [3] その他
+       [1] Proceed to implementation
+       [2] Revise the spec
+       [3] Other
 
      ```
    - Update `## User Confirmation` with:
@@ -171,18 +176,18 @@ Available status values: `pending`, `in_progress`, `done`, `skipped`
      1. Present:
         ```
         ────────────────────────────────────────
-          テストの種類を選択してください。
+          Choose test type.
         ────────────────────────────────────────
 
-          [1] ユニットテスト
-          [2] E2Eテスト
-          [3] 両方
-          [4] 任せる
+          [1] Unit tests
+          [2] E2E tests
+          [3] Both
+          [4] Let AI decide
 
         ```
      2. Present test observations (medium granularity — what to verify, not how):
         ```
-        以下のテスト観点で実施します:
+        The following test observations will be used:
         1. <observation 1>
         2. <observation 2>
         3. <observation 3>
@@ -190,12 +195,12 @@ Available status values: `pending`, `in_progress`, `done`, `skipped`
         Then present:
         ```
         ────────────────────────────────────────
-          上記のテスト観点で進めます。
+          Proceeding with the above test observations.
         ────────────────────────────────────────
 
-          [1] はい
-          [2] 変更する
-          [3] その他
+          [1] Yes
+          [2] Modify
+          [3] Other
 
         ```
      3. If 2, iterate until approved.
@@ -209,13 +214,13 @@ Available status values: `pending`, `in_progress`, `done`, `skipped`
    - **After test step is done**:
      ```
      ────────────────────────────────────────
-       プランニングフェーズが完了しました。
-       次の操作を選択してください。
+       Planning phase is complete.
+       Choose next action.
      ────────────────────────────────────────
 
-       [1] `/sdd-forge.flow-impl` を開始する
-       [2] プランを見直す
-       [3] その他
+       [1] Start `/sdd-forge.flow-impl`
+       [2] Review the plan
+       [3] Other
 
      ```
 

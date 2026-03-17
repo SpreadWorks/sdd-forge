@@ -7,9 +7,14 @@ description: Finalize the SDD workflow after implementation is complete. Use for
 
 Use this skill when implementation is complete and the user approved finalization.
 
+## Language
+
+Present all user-facing text (choices, questions, explanations, status messages) in the language
+specified by `.sdd-forge/config.json` `lang` field. If config.json is not available, use English.
+
 ## Flow Progress Tracking
 
-**MUST: 各ステップの完了時に `sdd-forge flow status --step <id> --status <val>` を実行してフロー進捗を記録する。**
+**MUST: Run `sdd-forge flow status --step <id> --status <val>` upon completion of each step to record flow progress.**
 
 Available step IDs (this skill): `docs-update`, `docs-review`, `commit`, `merge`, `branch-cleanup`, `archive`
 Available status values: `pending`, `in_progress`, `done`, `skipped`
@@ -22,19 +27,19 @@ Available status values: `pending`, `in_progress`, `done`, `skipped`
 
 ## Choice Format
 
-選択肢は以下の形式で表示すること:
+Present choices in the following format:
 ```
 ────────────────────────────────────────
-  説明文（質問や状況の説明）
+  Description (question or situation)
 ────────────────────────────────────────
 
-  [1] ラベル
-  [2] ラベル
-  [3] その他
+  [1] Label
+  [2] Label
+  [3] Other
 
 ```
-- 説明文と選択肢を一文にまとめない。説明文は罫線の中、選択肢は罫線の外。
-- 選択肢の前後に空行を入れる。
+- Do not combine the description and choices into one sentence. Description goes inside the lines, choices go outside.
+- Add blank lines before and after the choices.
 
 ## CRITICAL: Step 0 — Present Options FIRST
 
@@ -42,11 +47,11 @@ Available status values: `pending`, `in_progress`, `done`, `skipped`
 
 ```
 ────────────────────────────────────────
-  終了処理の範囲を選択してください。
+  Choose the scope of finalization.
 ────────────────────────────────────────
 
-  [1] すべて実行
-  [2] 個別に選択する
+  [1] Run all steps
+  [2] Choose individually
 
 ```
 
@@ -54,16 +59,16 @@ Available status values: `pending`, `in_progress`, `done`, `skipped`
 
 ## Behavior per Option
 
-- **Option 1 (すべて実行)**: Execute steps 1–8 in order without asking for each step.
-- **Option 2 (個別に選択する)**: Before each of steps 3–7, present:
+- **Option 1 (Run all steps)**: Execute steps 1–8 in order without asking for each step.
+- **Option 2 (Choose individually)**: Before each of steps 3–7, present:
   ```
   ────────────────────────────────────────
-    このステップを実行しますか？
+    Execute this step?
   ────────────────────────────────────────
 
-    [1] はい
-    [2] スキップ
-    [3] その他
+    [1] Yes
+    [2] Skip
+    [3] Other
 
   ```
   If 2, skip that step.
@@ -130,17 +135,17 @@ Available status values: `pending`, `in_progress`, `done`, `skipped`
      - Present:
        ```
        ────────────────────────────────────────
-         worktree を削除します。
+         Removing worktree.
        ────────────────────────────────────────
 
-         [1] 削除する
-         [2] 残す
-         [3] その他
+         [1] Remove
+         [2] Keep
+         [3] Other
 
        ```
        - 1 → `git -C <mainRepoPath> worktree remove <worktreePath>` + verify diff is empty + `git -C <mainRepoPath> branch -D <featureBranch>`
        - 2 → Skip deletion.
-     - Guide: "メインリポジトリに戻ってください: `cd <mainRepoPath>`"
+     - Guide: "Return to the main repository: `cd <mainRepoPath>`"
 
    - **Branch** (`featureBranch != baseBranch`):
      - Verify diff is empty: `git diff <baseBranch> <featureBranch> --stat` (should produce no output).

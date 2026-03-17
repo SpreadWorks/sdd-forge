@@ -18,7 +18,8 @@
       "workRoot": "出力先パス (default: {{default}}): ",
       "rewriteAgentsMd": "AGENTS.md を書き直しますか？（既存ファイルがある場合は上書きされます）",
       "claudeMdSymlink": "CLAUDE.md → AGENTS.md のシンボリックリンクを作成しますか？",
-      "renameClaude": "CLAUDE.md を AGENTS.md にリネームし、シンボリックリンクに変換しますか？"
+      "renameClaude": "CLAUDE.md を AGENTS.md にリネームし、シンボリックリンクに変換しますか？",
+      "monorepo": "プロジェクト構成:"
     },
     "choices_agents": {
       "rewrite": "生成する（{{data}} ディレクティブ付きの AGENTS.md を作成）",
@@ -61,6 +62,10 @@
       "agent": {
         "claude": "claude",
         "codex": "codex"
+      },
+      "monorepo": {
+        "single": "単一プロジェクト",
+        "mono": "モノレポ（複数サブプロジェクト）"
       }
     },
     "messages": {
@@ -77,6 +82,7 @@
       "claudeMdExists": "[setup] CLAUDE.md は既に存在するためスキップしました。",
       "claudeRenamed": "[setup] CLAUDE.md → AGENTS.md にリネームし、CLAUDE.md をシンボリックリンク化しました。",
       "skillsDeployed": "[setup] Skills を配置しました (.agents/skills/ + .claude/skills/)",
+      "monorepoInstructions": "\nサブプロジェクトのパスとタイプを入力してください（空のパスで終了）:",
       "summary": "設定サマリ:",
       "nextSteps": "次のステップ:",
       "step1": "sdd-forge build  — ドキュメント一括生成（scan → init → data → text）"
