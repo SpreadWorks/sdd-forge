@@ -1,0 +1,110 @@
+{
+  "spec": "specs/066-skill-i18n-english-unification/spec.md",
+  "baseBranch": "development",
+  "featureBranch": "feature/066-skill-i18n-english-unification",
+  "steps": [
+    {
+      "id": "approach",
+      "status": "done"
+    },
+    {
+      "id": "branch",
+      "status": "done"
+    },
+    {
+      "id": "spec",
+      "status": "done"
+    },
+    {
+      "id": "draft",
+      "status": "skipped"
+    },
+    {
+      "id": "fill-spec",
+      "status": "done"
+    },
+    {
+      "id": "approval",
+      "status": "done"
+    },
+    {
+      "id": "gate",
+      "status": "done"
+    },
+    {
+      "id": "test",
+      "status": "skipped"
+    },
+    {
+      "id": "implement",
+      "status": "done"
+    },
+    {
+      "id": "review",
+      "status": "done"
+    },
+    {
+      "id": "finalize",
+      "status": "done"
+    },
+    {
+      "id": "docs-update",
+      "status": "skipped"
+    },
+    {
+      "id": "docs-review",
+      "status": "skipped"
+    },
+    {
+      "id": "commit",
+      "status": "done"
+    },
+    {
+      "id": "merge",
+      "status": "done"
+    },
+    {
+      "id": "branch-cleanup",
+      "status": "done"
+    },
+    {
+      "id": "archive",
+      "status": "done"
+    }
+  ],
+  "requirements": [
+    {
+      "desc": "flow-plan SKILL.md 英語化",
+      "status": "done"
+    },
+    {
+      "desc": "flow-impl SKILL.md 英語化",
+      "status": "done"
+    },
+    {
+      "desc": "flow-merge SKILL.md 英語化",
+      "status": "done"
+    },
+    {
+      "desc": "flow-status SKILL.md 英語化",
+      "status": "done"
+    },
+    {
+      "desc": "全SKILL.md config.lang指示追加",
+      "status": "done"
+    },
+    {
+      "desc": "templates→.claude/skills反映",
+      "status": "done"
+    },
+    {
+      "desc": "en/ui.json モノレポi18nキー追加",
+      "status": "done"
+    },
+    {
+      "desc": "ja/ui.json モノレポi18nキー追加",
+      "status": "done"
+    }
+  ],
+  "request": "SKILL.md の英語統一と config.lang 翻訳指示の追加。setup.js のモノレポ関連 i18n キー未定義の修正。"
+}
