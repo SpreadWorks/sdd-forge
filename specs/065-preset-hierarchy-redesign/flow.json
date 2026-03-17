@@ -1,0 +1,134 @@
+{
+  "spec": "specs/065-preset-hierarchy-redesign/spec.md",
+  "baseBranch": "development",
+  "featureBranch": "feature/065-preset-hierarchy-redesign",
+  "steps": [
+    {
+      "id": "approach",
+      "status": "done"
+    },
+    {
+      "id": "branch",
+      "status": "done"
+    },
+    {
+      "id": "spec",
+      "status": "done"
+    },
+    {
+      "id": "draft",
+      "status": "skipped"
+    },
+    {
+      "id": "fill-spec",
+      "status": "done"
+    },
+    {
+      "id": "approval",
+      "status": "done"
+    },
+    {
+      "id": "gate",
+      "status": "done"
+    },
+    {
+      "id": "test",
+      "status": "done"
+    },
+    {
+      "id": "implement",
+      "status": "done"
+    },
+    {
+      "id": "review",
+      "status": "done"
+    },
+    {
+      "id": "finalize",
+      "status": "done"
+    },
+    {
+      "id": "docs-update",
+      "status": "skipped"
+    },
+    {
+      "id": "docs-review",
+      "status": "skipped"
+    },
+    {
+      "id": "commit",
+      "status": "done"
+    },
+    {
+      "id": "merge",
+      "status": "done"
+    },
+    {
+      "id": "branch-cleanup",
+      "status": "done"
+    },
+    {
+      "id": "archive",
+      "status": "done"
+    }
+  ],
+  "requirements": [
+    {
+      "desc": "preset.json arch→parent変更+axis/langフィールド追加",
+      "status": "done"
+    },
+    {
+      "desc": "presets.js parentチェーン解決(resolveChain新設)",
+      "status": "done"
+    },
+    {
+      "desc": "resolver-factory.js parentチェーン+lang層ロード",
+      "status": "done"
+    },
+    {
+      "desc": "template-merger.js 可変長レイヤー対応",
+      "status": "done"
+    },
+    {
+      "desc": "scan.js parentチェーン+lang層対応",
+      "status": "done"
+    },
+    {
+      "desc": "types.js buildTypeAliases parent対応",
+      "status": "done"
+    },
+    {
+      "desc": "php/ preset新規作成(config.stack)",
+      "status": "done"
+    },
+    {
+      "desc": "node/ preset新規作成(config.stack)",
+      "status": "done"
+    },
+    {
+      "desc": "既存preset.json arch→parent移行",
+      "status": "done"
+    },
+    {
+      "desc": "setup.js モノレポ判定追加",
+      "status": "done"
+    },
+    {
+      "desc": "build モノレポ時docs生成スキップ",
+      "status": "done"
+    },
+    {
+      "desc": "presets-cmd.js parentチェーンツリー表示",
+      "status": "done"
+    },
+    {
+      "desc": "ユニットテスト作成",
+      "status": "done"
+    },
+    {
+      "desc": "E2E検証(snapshot+fixture)",
+      "status": "done"
+    }
+  ],
+  "request": "preset 階層の再設計（合成モジュール方式の導入、parent チェーン化、Node.js 対応）とモノレポ対応（setup でのモノレポ判定、docs スキップ）"
+}
