@@ -37,21 +37,35 @@ function parseUpgradeArgs(argv) {
 // ---------------------------------------------------------------------------
 
 /**
+ * Resolve the skill template filename for the given language.
+ * Falls back to SKILL.en.md if the language-specific file does not exist.
+ */
+function resolveSkillFile(skillDir, lang) {
+  const langFile = path.join(skillDir, `SKILL.${lang}.md`);
+  if (fs.existsSync(langFile)) return langFile;
+  const enFile = path.join(skillDir, "SKILL.en.md");
+  if (fs.existsSync(enFile)) return enFile;
+  return null;
+}
+
+/**
  * Upgrade skill files from templates.
+ * Selects SKILL.{lang}.md based on config lang.
  * Returns an array of { name, status } where status is "updated" | "unchanged".
  */
-function upgradeSkills(workRoot, dryRun) {
+function upgradeSkills(workRoot, dryRun, lang) {
   const agentsSkillsDir = path.join(workRoot, ".agents", "skills");
   const claudeSkillsDir = path.join(workRoot, ".claude", "skills");
   const templatesDir = path.join(PKG_DIR, "templates", "skills");
 
-  const skillNames = fs.readdirSync(templatesDir).filter(
-    (d) => fs.existsSync(path.join(templatesDir, d, "SKILL.md")),
-  );
+  const skillDirs = fs.readdirSync(templatesDir, { withFileTypes: true })
+    .filter((d) => d.isDirectory())
+    .map((d) => d.name);
   const results = [];
 
-  for (const name of skillNames) {
-    const srcPath = path.join(templatesDir, name, "SKILL.md");
+  for (const name of skillDirs) {
+    const srcPath = resolveSkillFile(path.join(templatesDir, name), lang || "en");
+    if (!srcPath) continue;
     const destPath = path.join(agentsSkillsDir, name, "SKILL.md");
 
     const srcContent = fs.readFileSync(srcPath, "utf8");
@@ -155,7 +169,7 @@ async function main() {
   }
 
   // 1. Skills upgrade
-  const skillResults = upgradeSkills(root, dryRun);
+  const skillResults = upgradeSkills(root, dryRun, config.lang);
   for (const { name, status } of skillResults) {
     if (status === "updated") {
       console.log(t("ui:upgrade.skillUpdated", { name }));

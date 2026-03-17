@@ -23,7 +23,8 @@ describe("051: skill namespace with dot separator", () => {
     it("template directories use sdd-forge.* naming", () => {
       const templatesDir = join(process.cwd(), "src", "templates", "skills");
       const dirs = fs.readdirSync(templatesDir).filter(
-        (d) => fs.existsSync(join(templatesDir, d, "SKILL.md")),
+        (d) => fs.existsSync(join(templatesDir, d, "SKILL.md"))
+          || fs.existsSync(join(templatesDir, d, "SKILL.en.md")),
       );
       assert.ok(dirs.length > 0, "should have skill templates");
       for (const d of dirs) {
@@ -34,12 +35,16 @@ describe("051: skill namespace with dot separator", () => {
     it("SKILL.md name fields use sdd-forge.* naming", () => {
       const templatesDir = join(process.cwd(), "src", "templates", "skills");
       const dirs = fs.readdirSync(templatesDir).filter(
-        (d) => fs.existsSync(join(templatesDir, d, "SKILL.md")),
+        (d) => fs.existsSync(join(templatesDir, d, "SKILL.md"))
+          || fs.existsSync(join(templatesDir, d, "SKILL.en.md")),
       );
       for (const d of dirs) {
-        const content = fs.readFileSync(join(templatesDir, d, "SKILL.md"), "utf8");
+        const skillFile = fs.existsSync(join(templatesDir, d, "SKILL.md"))
+          ? join(templatesDir, d, "SKILL.md")
+          : join(templatesDir, d, "SKILL.en.md");
+        const content = fs.readFileSync(skillFile, "utf8");
         const match = content.match(/^name:\s*(.+)$/m);
-        assert.ok(match, `SKILL.md in "${d}" should have a name field`);
+        assert.ok(match, `skill in "${d}" should have a name field`);
         assert.ok(match[1].startsWith("sdd-forge."), `name "${match[1]}" should start with "sdd-forge."`);
       }
     });
@@ -120,12 +125,17 @@ describe("051: skill namespace with dot separator", () => {
       });
 
       const templatesDir = join(process.cwd(), "src", "templates", "skills");
-      const templateDirs = fs.readdirSync(templatesDir).filter(
-        (d) => fs.existsSync(join(templatesDir, d, "SKILL.md")),
-      );
+      const templateDirs = fs.readdirSync(templatesDir, { withFileTypes: true })
+        .filter((d) => d.isDirectory())
+        .map((d) => d.name);
 
       for (const d of templateDirs) {
-        const templateContent = fs.readFileSync(join(templatesDir, d, "SKILL.md"), "utf8");
+        // setup uses lang=en by default (NI_ARGS), so SKILL.en.md is expected
+        const templateFile = fs.existsSync(join(templatesDir, d, "SKILL.md"))
+          ? join(templatesDir, d, "SKILL.md")
+          : join(templatesDir, d, "SKILL.en.md");
+        if (!fs.existsSync(templateFile)) continue;
+        const templateContent = fs.readFileSync(templateFile, "utf8");
         const claudeContent = fs.readFileSync(join(tmp, ".claude", "skills", d, "SKILL.md"), "utf8");
         const agentsContent = fs.readFileSync(join(tmp, ".agents", "skills", d, "SKILL.md"), "utf8");
         assert.equal(claudeContent, templateContent, `.claude/skills/${d}/SKILL.md should match template`);

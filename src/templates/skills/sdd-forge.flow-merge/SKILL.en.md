@@ -7,11 +7,6 @@ description: Finalize the SDD workflow after implementation is complete. Use for
 
 Use this skill when implementation is complete and the user approved finalization.
 
-## Language
-
-Present all user-facing text (choices, questions, explanations, status messages) in the language
-specified by `.sdd-forge/config.json` `lang` field. If config.json is not available, use English.
-
 ## Flow Progress Tracking
 
 **MUST: Run `sdd-forge flow status --step <id> --status <val>` upon completion of each step to record flow progress.**
@@ -29,9 +24,9 @@ Available status values: `pending`, `in_progress`, `done`, `skipped`
 
 Present choices in the following format:
 ```
-────────────────────────────────────────
+──────────────────────────────────────────────────────────
   Description (question or situation)
-────────────────────────────────────────
+──────────────────────────────────────────────────────────
 
   [1] Label
   [2] Label
@@ -46,9 +41,9 @@ Present choices in the following format:
 **STOP. Do NOT proceed to any other step. You MUST present the options below and wait for the user's response before doing anything else. Do NOT read files, run commands, or take any action until the user selects an option.**
 
 ```
-────────────────────────────────────────
+──────────────────────────────────────────────────────────
   Choose the scope of finalization.
-────────────────────────────────────────
+──────────────────────────────────────────────────────────
 
   [1] Run all steps
   [2] Choose individually
@@ -62,9 +57,9 @@ Present choices in the following format:
 - **Option 1 (Run all steps)**: Execute steps 1–8 in order without asking for each step.
 - **Option 2 (Choose individually)**: Before each of steps 3–7, present:
   ```
-  ────────────────────────────────────────
+  ──────────────────────────────────────────────────────────
     Execute this step?
-  ────────────────────────────────────────
+  ──────────────────────────────────────────────────────────
 
     [1] Yes
     [2] Skip
@@ -134,9 +129,9 @@ Present choices in the following format:
    - **Worktree** (`worktree: true`):
      - Present:
        ```
-       ────────────────────────────────────────
+       ──────────────────────────────────────────────────────────
          Removing worktree.
-       ────────────────────────────────────────
+       ──────────────────────────────────────────────────────────
 
          [1] Remove
          [2] Keep

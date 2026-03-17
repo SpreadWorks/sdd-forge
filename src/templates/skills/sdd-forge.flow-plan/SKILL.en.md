@@ -7,11 +7,6 @@ description: Run the SDD planning workflow. Use for spec creation, gate check, a
 
 Run this workflow for any feature or fix request. This skill covers the planning phase: from requirements gathering through test writing.
 
-## Language
-
-Present all user-facing text (choices, questions, explanations, status messages) in the language
-specified by `.sdd-forge/config.json` `lang` field. If config.json is not available, use English.
-
 ## Core Principle
 
 **Confirm with the user before proceeding to the next action at every step of the SDD flow.**
@@ -35,9 +30,9 @@ Available status values: `pending`, `in_progress`, `done`, `skipped`
 
 Present choices in the following format:
 ```
-────────────────────────────────────────
+────────────────────────────────────────────────────────────────────────────
   Description (question or situation)
-────────────────────────────────────────
+────────────────────────────────────────────────────────────────────────────
 
   [1] Label
   [2] Label
@@ -53,9 +48,9 @@ Present choices in the following format:
    - **Note**: `flow.json` does not exist yet at this point. Do NOT run `flow status --step` commands until after step 3.
    - Present:
      ```
-     ────────────────────────────────────────
+     ────────────────────────────────────────────────────────────────────────────
        Choose how to organize requirements.
-     ────────────────────────────────────────
+     ────────────────────────────────────────────────────────────────────────────
 
        [1] Organize requirements before writing the spec
        [2] Write the spec directly
@@ -68,9 +63,9 @@ Present choices in the following format:
      - If yes → already in a worktree. Skip choice, use `--no-branch` automatically.
    - **User choice** (if not in a worktree):
      ```
-     ────────────────────────────────────────
+     ────────────────────────────────────────────────────────────────────────────
        Choose a branching strategy.
-     ────────────────────────────────────────
+     ────────────────────────────────────────────────────────────────────────────
 
        [1] Branch (create a feature branch from `<current-branch>`)
        [2] Worktree (work in an isolated environment)
@@ -79,9 +74,9 @@ Present choices in the following format:
      ```
    - For options 1 and 2:
      ```
-     ────────────────────────────────────────
+     ────────────────────────────────────────────────────────────────────────────
        Branch from current branch (`<current-branch>`).
-     ────────────────────────────────────────
+     ────────────────────────────────────────────────────────────────────────────
 
        [1] Yes
        [2] Specify a branch
@@ -142,9 +137,9 @@ Present choices in the following format:
    - Wait for approval before any implementation.
    - Present:
      ```
-     ────────────────────────────────────────
+     ────────────────────────────────────────────────────────────────────────────
        Please review the spec.
-     ────────────────────────────────────────
+     ────────────────────────────────────────────────────────────────────────────
 
        [1] Proceed to implementation
        [2] Revise the spec
@@ -175,9 +170,9 @@ Present choices in the following format:
    - **If test environment exists**:
      1. Present:
         ```
-        ────────────────────────────────────────
+        ────────────────────────────────────────────────────────────────────────────
           Choose test type.
-        ────────────────────────────────────────
+        ────────────────────────────────────────────────────────────────────────────
 
           [1] Unit tests
           [2] E2E tests
@@ -194,9 +189,9 @@ Present choices in the following format:
         ```
         Then present:
         ```
-        ────────────────────────────────────────
+        ────────────────────────────────────────────────────────────────────────────
           Proceeding with the above test observations.
-        ────────────────────────────────────────
+        ────────────────────────────────────────────────────────────────────────────
 
           [1] Yes
           [2] Modify
@@ -213,12 +208,12 @@ Present choices in the following format:
    - **On complete**: `sdd-forge flow status --step test --status done`
    - **After test step is done**:
      ```
-     ────────────────────────────────────────
+     ────────────────────────────────────────────────────────────────────────────
        Planning phase is complete.
        Choose next action.
-     ────────────────────────────────────────
+     ────────────────────────────────────────────────────────────────────────────
 
-       [1] Start `/sdd-forge.flow-impl`
+       [1] Proceed to implementation
        [2] Review the plan
        [3] Other
 

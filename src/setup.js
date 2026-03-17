@@ -244,32 +244,52 @@ function setupClaudeMd(sourceDir, t, nonInteractive) {
 // ---------------------------------------------------------------------------
 
 /**
- * Deploy skill templates to .agents/skills/ and .claude/skills/ by direct copy.
+ * Resolve the skill template filename for the given language.
+ * Falls back to SKILL.en.md if the language-specific file does not exist.
+ *
+ * @param {string} skillDir - Skill template directory
+ * @param {string} lang - Language code (e.g. "ja", "en")
+ * @returns {string|null} Resolved filename, or null if no template found
+ */
+function resolveSkillFile(skillDir, lang) {
+  const langFile = path.join(skillDir, `SKILL.${lang}.md`);
+  if (fs.existsSync(langFile)) return langFile;
+  const enFile = path.join(skillDir, "SKILL.en.md");
+  if (fs.existsSync(enFile)) return enFile;
+  return null;
+}
+
+/**
+ * Deploy skill templates to .agents/skills/ and .claude/skills/.
+ * Selects SKILL.{lang}.md based on config lang, falling back to SKILL.en.md.
  *
  * @param {string} workRoot - Work root directory
  * @param {function} t - i18n translation function
+ * @param {string} [lang] - Language code for skill selection
  */
-function setupSkills(workRoot, t) {
+function setupSkills(workRoot, t, lang) {
   const agentsSkillsDir = path.join(workRoot, ".agents", "skills");
   const claudeSkillsDir = path.join(workRoot, ".claude", "skills");
 
   const templatesDir = path.join(PKG_DIR, "templates", "skills");
-  const skillNames = fs.readdirSync(templatesDir).filter(
-    (d) => fs.existsSync(path.join(templatesDir, d, "SKILL.md")),
-  );
+  const skillDirs = fs.readdirSync(templatesDir, { withFileTypes: true })
+    .filter((d) => d.isDirectory())
+    .map((d) => d.name);
 
-  for (const name of skillNames) {
-    const src = path.join(templatesDir, name, "SKILL.md");
+  for (const name of skillDirs) {
+    const skillDir = path.join(templatesDir, name);
+    const srcFile = resolveSkillFile(skillDir, lang || "en");
+    if (!srcFile) continue;
 
     // Copy to .agents/skills/<name>/SKILL.md
     const agentsDest = path.join(agentsSkillsDir, name);
     fs.mkdirSync(agentsDest, { recursive: true });
-    fs.copyFileSync(src, path.join(agentsDest, "SKILL.md"));
+    fs.copyFileSync(srcFile, path.join(agentsDest, "SKILL.md"));
 
     // Copy to .claude/skills/<name>/SKILL.md
     const claudeDest = path.join(claudeSkillsDir, name);
     fs.mkdirSync(claudeDest, { recursive: true });
-    fs.copyFileSync(src, path.join(claudeDest, "SKILL.md"));
+    fs.copyFileSync(srcFile, path.join(claudeDest, "SKILL.md"));
   }
 
   console.log(t("setup.messages.skillsDeployed"));
@@ -542,9 +562,11 @@ async function main() {
     console.log(`  - ${path.join(workRoot, "AGENTS.md")}`);
     console.log(`  - ${path.join(workRoot, "CLAUDE.md")}`);
     const skillTemplatesDir = path.join(PKG_DIR, "templates", "skills");
-    for (const name of fs.readdirSync(skillTemplatesDir).filter(d => fs.existsSync(path.join(skillTemplatesDir, d, "SKILL.md")))) {
-      console.log(`  - ${path.join(workRoot, ".agents", "skills", name, "SKILL.md")}`);
-      console.log(`  - ${path.join(workRoot, ".claude", "skills", name, "SKILL.md")}`);
+    for (const d of fs.readdirSync(skillTemplatesDir, { withFileTypes: true }).filter(d => d.isDirectory())) {
+      const srcFile = resolveSkillFile(path.join(skillTemplatesDir, d.name), operatingLang);
+      if (!srcFile) continue;
+      console.log(`  - ${path.join(workRoot, ".agents", "skills", d.name, "SKILL.md")} (from ${path.basename(srcFile)})`);
+      console.log(`  - ${path.join(workRoot, ".claude", "skills", d.name, "SKILL.md")}`);
     }
     console.log("\n[setup] DRY-RUN: config.json content:");
     console.log(JSON.stringify(config, null, 2));
@@ -573,7 +595,7 @@ async function main() {
   setupClaudeMd(workRoot, t, hasAllRequired);
 
   // 8. Skills deployment
-  setupSkills(workRoot, t);
+  setupSkills(workRoot, t, operatingLang);
 
   // Close readline if open
   if (rl) rl.close();

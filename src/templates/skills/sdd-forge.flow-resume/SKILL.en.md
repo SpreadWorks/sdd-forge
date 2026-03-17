@@ -7,11 +7,6 @@ description: Resume SDD flow after context compaction. Outputs a context summary
 
 Use this skill when context has been lost (e.g. after compaction) and you need to resume an in-progress SDD flow.
 
-## Language
-
-Present all user-facing text (choices, questions, explanations, status messages) in the language
-specified by `.sdd-forge/config.json` `lang` field. If config.json is not available, use English.
-
 ## Procedure
 
 1. Run `sdd-forge flow resume` and read the output.

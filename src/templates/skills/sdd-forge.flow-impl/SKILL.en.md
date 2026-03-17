@@ -7,11 +7,6 @@ description: Run the SDD implementation workflow. Use for coding, review iterati
 
 Run this workflow after the planning phase (flow-plan) is complete. This skill covers implementation, review iteration, and finalization.
 
-## Language
-
-Present all user-facing text (choices, questions, explanations, status messages) in the language
-specified by `.sdd-forge/config.json` `lang` field. If config.json is not available, use English.
-
 ## Core Principle
 
 **Confirm with the user before proceeding to the next action at every step of the SDD flow.**
@@ -34,9 +29,9 @@ Available status values: `pending`, `in_progress`, `done`, `skipped`
 
 Present choices in the following format:
 ```
-────────────────────────────────────────
+──────────────────────────────────────────────────────────
   Description (question or situation)
-────────────────────────────────────────
+──────────────────────────────────────────────────────────
 
   [1] Label
   [2] Label
@@ -67,10 +62,10 @@ Before starting, run `sdd-forge flow status --check impl` to verify prerequisite
    - **On start**: `sdd-forge flow status --step review --status in_progress`
    - Present:
      ```
-     ────────────────────────────────────────
+     ──────────────────────────────────────────────────────────
        Implementation is complete.
        Running code review.
-     ────────────────────────────────────────
+     ──────────────────────────────────────────────────────────
 
        [1] Yes
        [2] Skip
@@ -94,9 +89,9 @@ Before starting, run `sdd-forge flow status --check impl` to verify prerequisite
         ```
      2. Present:
         ```
-        ────────────────────────────────────────
+        ──────────────────────────────────────────────────────────
           Applying approved proposals.
-        ────────────────────────────────────────
+        ──────────────────────────────────────────────────────────
 
           [1] Apply
           [2] Skip
@@ -114,10 +109,10 @@ Before starting, run `sdd-forge flow status --check impl` to verify prerequisite
    - **On start**: `sdd-forge flow status --step finalize --status in_progress`
    - Present:
      ```
-     ────────────────────────────────────────
+     ──────────────────────────────────────────────────────────
        Implementation and review are complete.
        Choose next action.
-     ────────────────────────────────────────
+     ──────────────────────────────────────────────────────────
 
        [1] Start finalization
        [2] Return to modifications

@@ -7,11 +7,6 @@ description: Show the current SDD flow status including branch, worktree, step p
 
 Display the current state of the SDD workflow.
 
-## Language
-
-Present all user-facing text (choices, questions, explanations, status messages) in the language
-specified by `.sdd-forge/config.json` `lang` field. If config.json is not available, use English.
-
 ## Procedure
 
 1. Load flow state.
