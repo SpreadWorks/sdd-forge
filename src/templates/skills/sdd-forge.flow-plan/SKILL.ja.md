@@ -91,6 +91,9 @@ Available status values: `pending`, `in_progress`, `done`, `skipped`
      - Spec only: `sdd-forge spec init --title "..." --no-branch`
 
 3. Create or select spec.
+   - **Before running spec init**, check for uncommitted changes: `git status --short`
+     - If dirty, ask the user to commit or stash before proceeding.
+     - Do not run `sdd-forge spec init` on a dirty worktree.
    - If no spec exists, run `sdd-forge spec init --title "<short-title>"` (with appropriate flags from step 2).
    - This creates the branch, `specs/NNN-xxx/` directory, `spec.md` skeleton, and `.sdd-forge/flow.json`.
    - The base branch is automatically recorded by `sdd-forge spec init`.
