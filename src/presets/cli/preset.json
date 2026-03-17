@@ -1,5 +1,5 @@
 {
-  "arch": "cli",
+  "parent": "base",
   "label": "CLI (shared)",
   "aliases": [],
   "chapters": [

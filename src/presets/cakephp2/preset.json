@@ -1,5 +1,6 @@
 {
-  "arch": "webapp",
+  "parent": "webapp",
+  "lang": "php",
   "label": "CakePHP 2.x",
   "aliases": ["php-mvc"],
   "scan": {

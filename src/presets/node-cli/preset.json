@@ -1,5 +1,6 @@
 {
-  "arch": "cli",
+  "parent": "cli",
+  "lang": "node",
   "label": "Node.js CLI",
   "aliases": [],
   "chapters": [

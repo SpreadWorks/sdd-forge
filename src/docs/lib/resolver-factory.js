@@ -3,15 +3,15 @@
  *
  * リゾルバファクトリ。
  * type に応じて DataSource モジュールをロードし、リゾルバを返す。
- * 親 preset (webapp/cli) → 子 preset (cakephp2/laravel/...) の順でロードし、
- * 子が親を override する。
+ * parent チェーンを root → leaf の順で歩き、子が親を override する。
+ * lang 層が宣言されている場合は追加ロードする。
  */
 
 import fs from "fs";
 import path from "path";
 import { sddDir, sddDataDir } from "../../lib/config.js";
 import { loadDataSources as loadDataSourcesBase } from "./data-source-loader.js";
-import { presetByLeaf } from "../../lib/presets.js";
+import { presetByLeaf, resolveChainSafe, resolveLangPreset } from "../../lib/presets.js";
 import { createLogger } from "../../lib/progress.js";
 
 const logger = createLogger("resolver");
@@ -54,16 +54,12 @@ function descFactory(root) {
 // ファクトリ
 // ---------------------------------------------------------------------------
 
-const PRESETS_DIR = path.resolve(
-  path.dirname(new URL(import.meta.url).pathname),
-  "../../presets",
-);
-
 /**
  * type に基づいてリゾルバを生成する。
- * 親 preset → 子 preset の順で DataSource をロードし、子が親を override する。
+ * parent チェーンを root → leaf の順で歩いて DataSource をロードし、子が親を override する。
+ * lang 層が宣言されている場合は parent チェーンの後に追加ロードする。
  *
- * @param {string} type - 解決済み type パス（例: "webapp/cakephp2"）
+ * @param {string} type - 解決済み type パス（例: "webapp/cakephp2", "node", "cli/node-cli"）
  * @param {string} root - プロジェクトルート（overrides.json のパス解決用）
  * @param {Object} [opts] - 追加オプション
  * @param {string} [opts.docsDir] - docs ディレクトリの絶対パス（非デフォルト言語用）
@@ -81,18 +77,23 @@ export async function createResolver(type, root, opts) {
   );
   let dataSources = await loadDataSources(commonDataDir, ctx);
 
-  // 親 preset (webapp, cli) のロード
-  const arch = type.split("/")[0];
-  const parentDataDir = path.join(PRESETS_DIR, arch, "data");
-  dataSources = await loadDataSources(parentDataDir, ctx, dataSources);
-
-  // 子 preset のロード（親を override）
+  // parent チェーンに沿って DataSource をロード（root → leaf、子が親を override）
   const leaf = type.split("/").pop();
-  const preset = presetByLeaf(leaf);
-  if (preset?.dir) {
-    dataSources = await loadDataSources(path.join(preset.dir, "data"), ctx, dataSources);
+  const chain = resolveChainSafe(type);
+
+  for (const preset of chain) {
+    const dataDir = path.join(preset.dir, "data");
+    dataSources = await loadDataSources(dataDir, ctx, dataSources);
   }
 
+  // lang 層の追加ロード（parent チェーン外の言語層 DataSource）
+  const langPreset = resolveLangPreset(leaf);
+  if (langPreset) {
+    const langDataDir = path.join(langPreset.dir, "data");
+    dataSources = await loadDataSources(langDataDir, ctx, dataSources);
+  }
+
+  // プロジェクト固有 DataSource（最高優先）
   const projectDataDir = sddDataDir(root);
   dataSources = await loadDataSources(projectDataDir, ctx, dataSources);
 

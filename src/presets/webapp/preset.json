@@ -1,5 +1,5 @@
 {
-  "arch": "webapp",
+  "parent": "base",
   "label": "Web Application (shared)",
   "aliases": [],
   "chapters": [

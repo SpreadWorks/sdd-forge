@@ -62,6 +62,14 @@ if (subCmd === "build") {
 
   // Build shared context once
   const baseCtx = resolveCommandContext(null);
+
+  // Monorepo: skip docs generation (scan/enrich still work individually)
+  if (baseCtx.config.projects) {
+    console.log("[build] Monorepo detected (config.projects). Docs generation is not yet supported for monorepos.");
+    console.log("[build] SDD flow (spec, gate, flow) is available. Docs generation coming soon.");
+    process.exit(0);
+  }
+
   const outputCfg = resolveOutputConfig(baseCtx.config);
   const hasTranslateStep = outputCfg.isMultiLang;
 

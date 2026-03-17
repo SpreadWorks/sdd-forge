@@ -1,0 +1,6 @@
+{
+  "parent": "base",
+  "axis": "lang",
+  "label": "Node.js",
+  "aliases": []
+}

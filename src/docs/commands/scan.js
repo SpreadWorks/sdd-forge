@@ -15,7 +15,7 @@ import { repoRoot, parseArgs } from "../../lib/cli.js";
 import { sddDataDir, sddOutputDir } from "../../lib/config.js";
 import { collectFiles } from "../lib/scanner.js";
 import { loadDataSources } from "../lib/data-source-loader.js";
-import { presetByLeaf } from "../../lib/presets.js";
+import { presetByLeaf, resolveChainSafe, resolveLangPreset } from "../../lib/presets.js";
 import { createLogger } from "../../lib/progress.js";
 import { translate } from "../../lib/i18n.js";
 import { resolveCommandContext } from "../lib/command-context.js";
@@ -216,7 +216,6 @@ async function main(ctx) {
 
   // preset からスキャン設定を取得
   const leaf = type.split("/").pop();
-  const arch = type.split("/")[0];
   const preset = presetByLeaf(leaf);
   const presetScan = preset?.scan || {};
 
@@ -227,18 +226,18 @@ async function main(ctx) {
   const files = collectFiles(src, scanConfig.include || [], scanConfig.exclude);
   logger.verbose(`collected ${files.length} files`);
 
-  // DataSource ロード: base → 親 preset → 子 preset（子が親を override）
-  const baseDataDir = path.join(PRESETS_DIR, "base", "data");
-  let dataSources = await loadScanSources(baseDataDir);
+  // DataSource ロード: parent チェーン（root → leaf）+ lang 層 + project
+  const chain = resolveChainSafe(type);
 
-  const parentDataDir = path.join(PRESETS_DIR, arch, "data");
-  dataSources = await loadScanSources(parentDataDir, dataSources);
+  let dataSources = new Map();
+  for (const p of chain) {
+    dataSources = await loadScanSources(path.join(p.dir, "data"), dataSources);
+  }
 
-  if (preset?.dir) {
-    dataSources = await loadScanSources(
-      path.join(preset.dir, "data"),
-      dataSources,
-    );
+  // lang 層の追加ロード
+  const langPreset = resolveLangPreset(leaf);
+  if (langPreset) {
+    dataSources = await loadScanSources(path.join(langPreset.dir, "data"), dataSources);
   }
 
   const projectDataDir = sddDataDir(root);

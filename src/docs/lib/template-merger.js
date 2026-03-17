@@ -12,7 +12,7 @@
 import fs from "fs";
 import path from "path";
 import { parseBlocks } from "./directive-parser.js";
-import { presetByLeaf } from "../../lib/presets.js";
+import { presetByLeaf, resolveChainSafe } from "../../lib/presets.js";
 import { callAgent } from "../../lib/agent.js";
 
 const SPECIAL_FILES = new Set(["README.md", "AGENTS.sdd.md"]);
@@ -31,7 +31,6 @@ const SPECIAL_FILES = new Set(["README.md", "AGENTS.sdd.md"]);
  * @returns {string[]} レイヤーディレクトリ配列（優先度高い順）
  */
 export function buildLayers(typePath, lang, projectLocalDir) {
-  const segments = typePath.split("/").filter(Boolean);
   const layers = [];
 
   // 1. project-local（最高優先）
@@ -39,28 +38,12 @@ export function buildLayers(typePath, lang, projectLocalDir) {
     layers.push(projectLocalDir);
   }
 
-  // 2. leaf preset（例: "node-cli"）
-  if (segments.length >= 2) {
-    const leaf = presetByLeaf(segments[segments.length - 1]);
-    if (leaf?.dir) {
-      const dir = path.join(leaf.dir, "templates", lang);
-      if (fs.existsSync(dir)) layers.push(dir);
-    }
-  }
+  // 2. parent チェーンを leaf → root の順で追加（優先度高い順）
+  const chain = resolveChainSafe(typePath);
 
-  // 3. arch 層（例: "cli"）
-  if (segments.length >= 1 && segments[0] !== "base") {
-    const arch = presetByLeaf(segments[0]);
-    if (arch) {
-      const dir = path.join(arch.dir, "templates", lang);
-      if (fs.existsSync(dir)) layers.push(dir);
-    }
-  }
-
-  // 4. base（最低優先）
-  const base = presetByLeaf("base");
-  if (base) {
-    const dir = path.join(base.dir, "templates", lang);
+  // chain は root → leaf の順なので、逆順（leaf → root）で追加
+  for (let i = chain.length - 1; i >= 0; i--) {
+    const dir = path.join(chain[i].dir, "templates", lang);
     if (fs.existsSync(dir)) layers.push(dir);
   }
 
@@ -271,20 +254,12 @@ export function resolveChaptersOrder(typePath, configChapters) {
   // config.json の chapters が定義されていればプリセットを完全上書き
   if (configChapters?.length) return configChapters;
 
-  const segments = typePath.split("/").filter(Boolean);
+  const chain = resolveChainSafe(typePath);
+
+  // chain は root → leaf の順。最も具体的な（leaf に近い）chapters を使用
   let chapters = [];
-
-  const base = presetByLeaf("base");
-  if (base?.chapters?.length) chapters = base.chapters;
-
-  if (segments.length >= 1 && segments[0] !== "base") {
-    const arch = presetByLeaf(segments[0]);
-    if (arch?.chapters?.length) chapters = arch.chapters;
-  }
-
-  if (segments.length >= 2) {
-    const leaf = presetByLeaf(segments[segments.length - 1]);
-    if (leaf?.chapters?.length) chapters = leaf.chapters;
+  for (const preset of chain) {
+    if (preset.chapters?.length) chapters = preset.chapters;
   }
 
   return chapters;

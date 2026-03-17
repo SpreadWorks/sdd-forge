@@ -311,6 +311,7 @@ async function main() {
   let purpose = cli.purpose;
   let tone = cli.tone;
   let defaultAgent = cli.agent;
+  let monorepoProjects = null;
 
   // Parse --lang for non-interactive use: first value is operating lang
   if (cli.lang) {
@@ -355,6 +356,27 @@ async function main() {
     {
       const answer = await ask(rl, t("setup.questions.workRoot", { default: sourcePath }));
       workRootPath = answer || "";
+    }
+
+    // --- Step 2c: Monorepo detection ---
+    const monorepoChoices = [
+      { label: t("setup.choices.monorepo.single") || "Single project", value: "single" },
+      { label: t("setup.choices.monorepo.mono") || "Monorepo (multiple sub-projects)", value: "mono" },
+    ];
+    const projectMode = await askChoice(rl, t("setup.questions.monorepo") || "Project structure:", monorepoChoices, t);
+
+    if (projectMode === "mono") {
+      monorepoProjects = {};
+      console.log(t("setup.messages.monorepoInstructions") || "\nEnter sub-project paths and types (empty path to finish):");
+      while (true) {
+        const subPath = await ask(rl, "  path (e.g. apps/web): ");
+        if (!subPath) break;
+        const subType = await ask(rl, "  type (e.g. nextjs, express, node): ");
+        monorepoProjects[subPath] = { type: subType || "base" };
+      }
+      if (Object.keys(monorepoProjects).length === 0) {
+        monorepoProjects = null;
+      }
     }
 
     // --- Step 3: Output language (multi-select) ---
@@ -467,6 +489,11 @@ async function main() {
       merge: "squash",
     },
   };
+
+  // Add monorepo projects if detected
+  if (monorepoProjects) {
+    config.projects = monorepoProjects;
+  }
 
   if (defaultAgent) {
     config.agent = {

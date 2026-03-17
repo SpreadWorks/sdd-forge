@@ -3,6 +3,7 @@
  * src/presets-cmd.js
  *
  * `sdd-forge presets list` — display the preset inheritance tree.
+ * Uses parent field for hierarchy display.
  */
 
 import fs from "fs";
@@ -14,9 +15,13 @@ const subCmd = process.argv[2];
 if (!subCmd || subCmd === "list") {
   printTree();
 } else if (subCmd === "-h" || subCmd === "--help") {
-  const { translate } = await import("./lib/i18n.js");
-  const t = translate();
-  const h = t.raw("ui:help.cmdHelp.presets");
+  const { loadLang } = await import("./lib/config.js");
+  const { createI18n } = await import("./lib/i18n.js");
+  const { repoRoot } = await import("./lib/cli.js");
+  let lang;
+  try { lang = loadLang(repoRoot()); } catch (_) { lang = "en"; }
+  const tu = createI18n(lang);
+  const h = tu.raw("help.cmdHelp.presets");
   console.log([h.usage, "", `  ${h.desc}`].join("\n"));
 } else {
   console.error(`sdd-forge presets: unknown command '${subCmd}'`);
@@ -24,44 +29,54 @@ if (!subCmd || subCmd === "list") {
 }
 
 function printTree() {
-  const archMap = new Map();
-
+  // Build parent → children map
+  const childrenMap = new Map();
   for (const p of PRESETS) {
-    if (p.isArch) {
-      if (!archMap.has(p.key)) archMap.set(p.key, []);
+    const parentKey = p.parent || null;
+    if (!childrenMap.has(parentKey)) childrenMap.set(parentKey, []);
+    if (parentKey !== null || p.key === "base") {
+      // base has no parent (null), others have parent
+    }
+  }
+  for (const p of PRESETS) {
+    const parentKey = p.parent || null;
+    if (!childrenMap.has(parentKey)) childrenMap.set(parentKey, []);
+    childrenMap.get(parentKey).push(p);
+  }
+
+  // Find root (base — no parent)
+  const roots = childrenMap.get(null) || [];
+  const base = roots.find((p) => p.key === "base");
+  if (!base) {
+    console.log("(no base preset found)");
+    return;
+  }
+
+  function printNode(preset, prefix, isLast, isRoot) {
+    const parts = [preset.label];
+    if (preset.axis) parts.push(`axis: ${preset.axis}`);
+    if (preset.lang) parts.push(`lang: ${preset.lang}`);
+    if (preset.aliases.length > 0) parts.push(`aliases: ${preset.aliases.join(", ")}`);
+    const scanKeys = Object.keys(preset.scan);
+    if (scanKeys.length > 0) parts.push(`scan: [${scanKeys.join(", ")}]`);
+
+    const tplDir = path.join(preset.dir, "templates");
+    const hasTpl = fs.existsSync(tplDir);
+    const tplMark = hasTpl ? "" : "  [no templates]";
+
+    if (isRoot) {
+      console.log(`${preset.key}/  (${parts.join(", ")})${tplMark}`);
     } else {
-      if (!archMap.has(p.arch)) archMap.set(p.arch, []);
-      archMap.get(p.arch).push(p);
+      const connector = isLast ? "└── " : "├── ";
+      console.log(`${prefix}${connector}${preset.key}/  (${parts.join(", ")})${tplMark}`);
+    }
+
+    const children = (childrenMap.get(preset.key) || []).sort((a, b) => a.key.localeCompare(b.key));
+    const childPrefix = isRoot ? "" : (prefix + (isLast ? "    " : "│   "));
+    for (let i = 0; i < children.length; i++) {
+      printNode(children[i], childPrefix, i === children.length - 1, false);
     }
   }
 
-  const base = presetByLeaf("base");
-  console.log(`${base.key}/  (${base.label})`);
-
-  const archKeys = [...archMap.keys()].filter((k) => k !== "base").sort();
-
-  for (let ai = 0; ai < archKeys.length; ai++) {
-    const archKey = archKeys[ai];
-    const arch = presetByLeaf(archKey);
-    const leaves = archMap.get(archKey);
-    const isLast = ai === archKeys.length - 1;
-    const prefix = isLast ? "└── " : "├── ";
-    const childIndent = isLast ? "    " : "│   ";
-
-    const label = arch ? arch.label : archKey;
-    const tplDir = arch ? path.join(arch.dir, "templates") : null;
-    const hasTpl = tplDir && fs.existsSync(tplDir);
-    console.log(`${prefix}${archKey}/  (${label})${hasTpl ? "" : "  [no templates]"}`);
-
-    for (let li = 0; li < leaves.length; li++) {
-      const leaf = leaves[li];
-      const isLastLeaf = li === leaves.length - 1;
-      const leafPrefix = isLastLeaf ? "└── " : "├── ";
-      const parts = [leaf.label];
-      if (leaf.aliases.length > 0) parts.push(`aliases: ${leaf.aliases.join(", ")}`);
-      const scanKeys = Object.keys(leaf.scan);
-      if (scanKeys.length > 0) parts.push(`scan: [${scanKeys.join(", ")}]`);
-      console.log(`${childIndent}${leafPrefix}${leaf.key}/  (${parts.join(", ")})`);
-    }
-  }
+  printNode(base, "", true, true);
 }
