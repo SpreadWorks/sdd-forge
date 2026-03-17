@@ -25,8 +25,12 @@ export default class NodeConfigSource extends DataSource {
       rows.push(["Runtime", "Node.js", pkg.engines.node]);
     }
 
-    const deps = analysis.extras?.packageDeps?.dependencies || {};
-    const devDeps = analysis.extras?.packageDeps?.devDependencies || {};
+    // packageDeps location depends on which DataSource produced it:
+    // - analysis.package.packageDeps: from base PackageSource scan
+    // - analysis.extras.packageDeps: from scanner.analyzeExtras (legacy)
+    const pkgDeps = analysis.package?.packageDeps || analysis.package || analysis.extras?.packageDeps;
+    const deps = pkgDeps?.dependencies || {};
+    const devDeps = pkgDeps?.devDependencies || {};
 
     // Module system
     if (pkg?.type === "module") {

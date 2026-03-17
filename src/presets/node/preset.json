@@ -3,5 +3,9 @@
   "axis": "lang",
   "label": "Node.js",
   "aliases": [],
-  "chapters": ["stack_and_ops.md"]
+  "chapters": ["stack_and_ops.md"],
+  "scan": {
+    "include": ["package.json"],
+    "exclude": []
+  }
 }

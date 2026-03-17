@@ -270,8 +270,10 @@ export function resolveChaptersOrder(typePath, configChapters) {
   const chain = resolveChainSafe(typePath);
 
   // chain は root → leaf の順。最も具体的な（leaf に近い）chapters を使用
+  // lang 層（axis: "lang"）の chapters は上書きではなく union 追加用なのでスキップ
   let chapters = [];
   for (const preset of chain) {
+    if (preset.axis === "lang") continue;
     if (preset.chapters?.length) chapters = preset.chapters;
   }
 

@@ -11,7 +11,11 @@ export default class PhpConfigSource extends DataSource {
   /** Technology stack table from composer.json. */
   stack(analysis, labels) {
     const rows = [];
-    const deps = analysis.extras?.composerDeps;
+    // composerDeps location depends on which DataSource produced it:
+    // - analysis.config.composerDeps: from FW DataSource scan (laravel, symfony, cakephp2)
+    // - analysis.package.composerDeps: from base PackageSource scan (lang-only type)
+    // - analysis.extras.composerDeps: from scanner.analyzeExtras (legacy)
+    const deps = analysis.config?.composerDeps || analysis.package?.composerDeps || analysis.extras?.composerDeps;
     if (!deps) return null;
 
     if (deps.require?.php) {
