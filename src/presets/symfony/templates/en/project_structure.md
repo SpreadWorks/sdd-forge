@@ -1,0 +1,13 @@
+<!-- @extends -->
+
+<!-- @block: description -->
+<!-- {{text: Write a 1-2 sentence overview of this chapter. Consider the Symfony project directory structure.}} -->
+<!-- {{/text}} -->
+<!-- @endblock -->
+
+<!-- @block: structure -->
+### Directory Structure
+
+<!-- {{text: Describe the Symfony project directory structure in tree format. Include the main directories: src/, config/, migrations/, templates/, public/.}} -->
+<!-- {{/text}} -->
+<!-- @endblock -->

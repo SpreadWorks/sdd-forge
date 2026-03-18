@@ -1,0 +1,46 @@
+<!-- {{data: docs.langSwitcher("relative")}} -->
+<!-- {{/data}} -->
+# 09. Business Logic Layer
+
+## Description
+
+<!-- @block: description -->
+<!-- {{text: Write a 1-2 sentence overview of this chapter. Include the number of logic classes and external integrations.}} -->
+<!-- {{/text}} -->
+
+## Content
+<!-- @endblock -->
+
+<!-- @block: logic-list -->
+### Logic Class List
+
+<!-- {{data: models.logic("Class|File|Responsibility")}} -->
+<!-- {{/data}} -->
+<!-- @endblock -->
+
+<!-- @block: logic-structure -->
+### Logic Class Structure
+
+<!-- {{text[mode=deep]: Describe the inheritance patterns and common method roles of logic classes.}} -->
+<!-- {{/text}} -->
+
+<!-- {{data: models.logicMethods("Class|Extends|Key Methods")}} -->
+<!-- {{/data}} -->
+<!-- @endblock -->
+
+<!-- @block: external-integration -->
+### External Integrations
+
+<!-- {{text[mode=deep]: Describe integrations with external systems.}} -->
+<!-- {{/text}} -->
+<!-- @endblock -->
+
+<!-- @block: model-relations -->
+### Model Relations
+
+<!-- {{data: models.relations("Model|Associations (belongsTo / hasMany / hasOne)")}} -->
+<!-- {{/data}} -->
+
+<!-- {{text[mode=deep]: Describe the key relationship patterns between models.}} -->
+<!-- {{/text}} -->
+<!-- @endblock -->
