@@ -106,10 +106,9 @@ Present choices in the following format:
    - **On start**: `sdd-forge flow status --step merge --status in_progress`
    Determine merge strategy based on flow.json state:
 
-   - **Worktree** (`worktree: true`, `worktreePath` set):
+   - **Worktree** (`worktree: true`):
      - Commit all changes in the worktree.
-     - `git -C <mainRepoPath> merge --squash <featureBranch>`
-     - `git -C <mainRepoPath> commit`
+     - Run `sdd-forge flow merge` (auto-detects worktree paths at runtime).
 
    - **Branch** (`featureBranch != baseBranch`, no worktree):
      - `git checkout <base-branch>`
@@ -138,9 +137,8 @@ Present choices in the following format:
          [3] その他
 
        ```
-       - 1 → `git -C <mainRepoPath> worktree remove <worktreePath>` + verify diff is empty + `git -C <mainRepoPath> branch -D <featureBranch>`
+       - 1 → Run `sdd-forge flow cleanup` (auto-detects paths, handles missing worktree gracefully).
        - 2 → Skip deletion.
-     - Guide: "メインリポジトリに戻ってください: `cd <mainRepoPath>`"
 
    - **Branch** (`featureBranch != baseBranch`):
      - Verify diff is empty: `git diff <baseBranch> <featureBranch> --stat` (should produce no output).
@@ -158,6 +156,15 @@ Present choices in the following format:
    - `git status --short` — confirm tree is clean.
    - Report result to user.
    - **On complete**: Step is marked done by `--archive` command.
+
+## Worktree Mode
+
+When `worktree: true` in flow.json:
+- **All file operations (editing, creating, reading) MUST be done inside the worktree directory.** Do not edit files in the main repository.
+- Run `sdd-forge flow status` to see the worktree path. Use absolute paths if needed.
+- The worktree is an isolated copy — changes in the main repo are NOT visible in the worktree and vice versa.
+- Before cleanup, `cd` to the main repository first to avoid cwd invalidation.
+- `sdd-forge flow cleanup` handles missing worktrees gracefully (no double-delete errors).
 
 ## Hard Stops
 

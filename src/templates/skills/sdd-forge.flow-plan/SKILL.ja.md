@@ -222,6 +222,14 @@ Available status values: `pending`, `in_progress`, `done`, `skipped`
 
      ```
 
+## Worktree Mode
+
+When `worktree: true` in flow.json:
+- **All file operations (editing, creating, reading) MUST be done inside the worktree directory.** Do not edit files in the main repository.
+- Run `sdd-forge flow status` to see the worktree path. Use absolute paths if needed.
+- The worktree is an isolated copy — changes in the main repo are NOT visible in the worktree and vice versa.
+- Before merge, consider running `git rebase <baseBranch>` in the worktree to incorporate upstream changes and avoid post-merge test failures.
+
 ## Hard Stops
 
 - Do not implement before user approval.

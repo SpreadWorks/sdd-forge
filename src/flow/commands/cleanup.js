@@ -6,9 +6,10 @@
  * worktree / branch / spec-only を自動判定。
  */
 
+import fs from "fs";
 import { execFileSync } from "child_process";
 import { runIfDirect } from "../../lib/entrypoint.js";
-import { repoRoot, parseArgs } from "../../lib/cli.js";
+import { repoRoot, parseArgs, isInsideWorktree } from "../../lib/cli.js";
 import { loadFlowState, updateStepStatus, resolveWorktreePaths } from "../../lib/flow-state.js";
 
 function main() {
@@ -51,17 +52,30 @@ function main() {
 
   // Worktree mode
   if (worktree && mainRepoPath) {
-    const cmds = [
-      ["git", "-C", mainRepoPath, "worktree", "remove", worktreePath],
-      ["git", "-C", mainRepoPath, "branch", "-D", featureBranch],
-    ];
+    // If running from inside the worktree, warn that cwd will become invalid
+    if (isInsideWorktree(root)) {
+      console.log(`cleanup: run from main repo to avoid cwd invalidation: cd ${mainRepoPath}`);
+    }
+
+    const worktreeExists = fs.existsSync(worktreePath);
+
     if (cli.dryRun) {
-      for (const cmd of cmds) console.log(cmd.join(" "));
+      if (worktreeExists) {
+        console.log(["git", "-C", mainRepoPath, "worktree", "remove", worktreePath].join(" "));
+      } else {
+        console.log(`skip: worktree already removed (${worktreePath})`);
+      }
+      console.log(["git", "-C", mainRepoPath, "branch", "-D", featureBranch].join(" "));
       return;
     }
-    for (const cmd of cmds) {
-      execFileSync(cmd[0], cmd.slice(1), { stdio: "inherit" });
+
+    if (worktreeExists) {
+      execFileSync("git", ["-C", mainRepoPath, "worktree", "remove", worktreePath], { stdio: "inherit" });
+    } else {
+      console.log(`skip: worktree already removed (${worktreePath})`);
     }
+
+    execFileSync("git", ["-C", mainRepoPath, "branch", "-D", featureBranch], { stdio: "inherit" });
     updateStepStatus(root, "branch-cleanup", "done");
     console.log("cleanup: done (worktree removed, branch deleted)");
     return;
