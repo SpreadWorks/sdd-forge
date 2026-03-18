@@ -43,7 +43,7 @@ function displayStatus(root) {
   console.log(`  Feature branch:   ${state.featureBranch}`);
   console.log(`  Base branch:      ${state.baseBranch}`);
   if (state.worktree) {
-    console.log(`  Worktree:         ${state.worktreePath}`);
+    console.log(`  Worktree:         yes`);
   }
 
   // Steps

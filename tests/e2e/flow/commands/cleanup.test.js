@@ -36,15 +36,14 @@ describe("flow cleanup --dry-run", () => {
     tmp = createTmpDir();
     saveFlowState(tmp, makeState({
       worktree: true,
-      worktreePath: "/tmp/wt-test",
-      mainRepoPath: "/tmp/main-repo",
     }));
     const result = execFileSync("node", [FLOW_CMD, "cleanup", "--dry-run"], {
       encoding: "utf8",
       env: { ...process.env, SDD_WORK_ROOT: tmp },
     });
-    assert.match(result, /git -C \/tmp\/main-repo worktree remove/);
-    assert.match(result, /git -C \/tmp\/main-repo branch -D/);
+    // mainRepoPath is resolved at runtime as SDD_WORK_ROOT (tmp)
+    assert.match(result, /git -C .+ worktree remove/);
+    assert.match(result, /git -C .+ branch -D feature\/001-test/);
   });
 
   it("shows skip message for spec-only mode", () => {

@@ -261,7 +261,7 @@ function main() {
       requirements: [],
       ...extra,
     };
-    saveFlowState(root, state);
+    saveFlowState(specRoot, state);
   }
 
   if (useWorktree) {
@@ -269,7 +269,7 @@ function main() {
     const absPath = worktreePath;
     runGit(root, ["worktree", "add", absPath, "-b", branchName, opts.base]);
     writeSpecFiles();
-    writeFlowState({ worktree: true, worktreePath: absPath });
+    writeFlowState({ worktree: true });
     console.log(
       [
         `created worktree: ${absPath}`,

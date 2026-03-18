@@ -8,6 +8,7 @@
 import fs from "fs";
 import path from "path";
 import { sddDir } from "./config.js";
+import { isInsideWorktree, getMainRepoPath } from "./cli.js";
 
 const STATE_FILE = "flow.json";
 
@@ -67,9 +68,7 @@ function statePath(workRoot) {
  * @property {string} spec          - spec.md の相対パス (e.g. "specs/003-xxx/spec.md")
  * @property {string} baseBranch    - 分岐元ブランチ名
  * @property {string} featureBranch - feature ブランチ名
- * @property {boolean} [worktree]      - worktree 内で作業中かどうか
- * @property {string}  [worktreePath]  - worktree の絶対パス
- * @property {string}  [mainRepoPath]  - メインリポジトリの絶対パス
+ * @property {boolean} [worktree]      - worktree モードかどうか
  * @property {string}  [request]        - ユーザーの元のリクエスト
  * @property {string[]} [notes]         - 選択肢結果・メモの配列
  * @property {StepEntry[]} [steps]          - workflow step tracking
@@ -196,4 +195,30 @@ export function addNote(workRoot, text) {
  */
 export function flowStatePath(workRoot) {
   return statePath(workRoot);
+}
+
+/**
+ * worktree モードのパスを実行時に算出する。
+ * flow.json には絶対パスを保存せず、featureBranch から導出する。
+ *
+ * @param {string} root - 現在の作業ディレクトリ (repoRoot())
+ * @param {FlowState} state - flow.json の内容
+ * @returns {{ worktreePath: string|null, mainRepoPath: string|null }}
+ */
+export function resolveWorktreePaths(root, state) {
+  if (!state.worktree) return { worktreePath: null, mainRepoPath: null };
+
+  if (isInsideWorktree(root)) {
+    return {
+      worktreePath: root,
+      mainRepoPath: getMainRepoPath(root),
+    };
+  }
+
+  // main repo にいる場合: featureBranch から worktree パスを算出
+  const dirName = state.featureBranch.replace(/\//g, "-");
+  return {
+    worktreePath: path.join(sddDir(root), "worktree", dirName),
+    mainRepoPath: root,
+  };
 }

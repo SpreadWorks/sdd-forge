@@ -9,7 +9,7 @@
 import { execFileSync } from "child_process";
 import { runIfDirect } from "../../lib/entrypoint.js";
 import { repoRoot, parseArgs } from "../../lib/cli.js";
-import { loadFlowState, updateStepStatus } from "../../lib/flow-state.js";
+import { loadFlowState, updateStepStatus, resolveWorktreePaths } from "../../lib/flow-state.js";
 
 function main() {
   const root = repoRoot(import.meta.url);
@@ -39,7 +39,8 @@ function main() {
     process.exit(1);
   }
 
-  const { baseBranch, featureBranch, worktree, worktreePath, mainRepoPath } = state;
+  const { baseBranch, featureBranch, worktree } = state;
+  const { worktreePath, mainRepoPath } = resolveWorktreePaths(root, state);
 
   // Spec-only: featureBranch == baseBranch
   if (featureBranch === baseBranch) {

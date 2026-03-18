@@ -37,14 +37,13 @@ describe("flow merge --dry-run", () => {
     tmp = createTmpDir();
     saveFlowState(tmp, makeState({
       worktree: true,
-      worktreePath: "/tmp/wt-test",
-      mainRepoPath: "/tmp/main-repo",
     }));
     const result = execFileSync("node", [FLOW_CMD, "merge", "--dry-run"], {
       encoding: "utf8",
       env: { ...process.env, SDD_WORK_ROOT: tmp },
     });
-    assert.match(result, /git -C \/tmp\/main-repo merge --squash/);
+    // mainRepoPath is resolved at runtime as SDD_WORK_ROOT (tmp)
+    assert.match(result, /git -C .+ merge --squash feature\/001-test/);
   });
 
   it("shows skip message for spec-only mode", () => {

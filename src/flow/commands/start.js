@@ -9,8 +9,7 @@
 import fs from "fs";
 import path from "path";
 import { runIfDirect } from "../../lib/entrypoint.js";
-import { PKG_DIR, repoRoot, parseArgs, isInsideWorktree, getMainRepoPath } from "../../lib/cli.js";
-import { sddDir } from "../../lib/config.js";
+import { PKG_DIR, repoRoot, parseArgs, isInsideWorktree } from "../../lib/cli.js";
 import { runSync } from "../../lib/process.js";
 import { saveFlowState, buildInitialSteps } from "../../lib/flow-state.js";
 import { translate } from "../../lib/i18n.js";
@@ -170,18 +169,8 @@ function main() {
     steps: buildInitialSteps(),
     requirements: [],
   };
-  if (cli.worktree) {
-    const flowJsonPath = path.join(sddDir(root), "flow.json");
-    if (fs.existsSync(flowJsonPath)) {
-      const existing = JSON.parse(fs.readFileSync(flowJsonPath, "utf8"));
-      flowState.worktree = true;
-      flowState.worktreePath = existing.worktreePath;
-      flowState.mainRepoPath = root;
-    }
-  } else if (isInsideWorktree(root)) {
+  if (cli.worktree || isInsideWorktree(root)) {
     flowState.worktree = true;
-    flowState.worktreePath = root;
-    flowState.mainRepoPath = getMainRepoPath(root);
   }
   saveFlowState(root, flowState);
 
