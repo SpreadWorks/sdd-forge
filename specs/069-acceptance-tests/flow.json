@@ -1,0 +1,112 @@
+{
+  "spec": "specs/069-acceptance-tests/spec.md",
+  "baseBranch": "development",
+  "featureBranch": "feature/069-acceptance-tests",
+  "steps": [
+    {
+      "id": "approach",
+      "status": "done"
+    },
+    {
+      "id": "branch",
+      "status": "done"
+    },
+    {
+      "id": "spec",
+      "status": "done"
+    },
+    {
+      "id": "draft",
+      "status": "skipped"
+    },
+    {
+      "id": "fill-spec",
+      "status": "done"
+    },
+    {
+      "id": "approval",
+      "status": "done"
+    },
+    {
+      "id": "gate",
+      "status": "done"
+    },
+    {
+      "id": "test",
+      "status": "done"
+    },
+    {
+      "id": "implement",
+      "status": "done"
+    },
+    {
+      "id": "review",
+      "status": "done"
+    },
+    {
+      "id": "finalize",
+      "status": "done"
+    },
+    {
+      "id": "docs-update",
+      "status": "skipped"
+    },
+    {
+      "id": "docs-review",
+      "status": "skipped"
+    },
+    {
+      "id": "commit",
+      "status": "done"
+    },
+    {
+      "id": "merge",
+      "status": "done"
+    },
+    {
+      "id": "branch-cleanup",
+      "status": "done"
+    },
+    {
+      "id": "archive",
+      "status": "done"
+    }
+  ],
+  "requirements": [
+    {
+      "desc": "テスト基盤(run.js+npm script)",
+      "status": "done"
+    },
+    {
+      "desc": "fixture 7つ(laravel,symfony,cakephp2,node-cli,library,php,node)",
+      "status": "done"
+    },
+    {
+      "desc": "symlink 3つ(webapp,cli,base)",
+      "status": "done"
+    },
+    {
+      "desc": "各fixtureにconfig.json",
+      "status": "done"
+    },
+    {
+      "desc": "パイプライン全体実行(scan→enrich→init→data→text→readme)",
+      "status": "done"
+    },
+    {
+      "desc": "構造検証(章ファイル・ディレクティブ・空セクション)",
+      "status": "done"
+    },
+    {
+      "desc": "AI品質検証",
+      "status": "done"
+    }
+  ],
+  "request": "acceptance テストの構築: tests/acceptance/ に全プリセット対応の acceptance テストを構築する。fixture 7つ + symlink 3つ、パイプライン全体を通して構造検証 + AI品質検証。",
+  "notes": [
+    "approach: 要件定義済みのため仕様書を直接作成",
+    "branch: development から feature/069-acceptance-tests を作成",
+    "docs-update: skipped by user",
+    "docs-review: skipped by user"
+  ]
+}
