@@ -95,7 +95,6 @@
     }
   ],
   "worktree": true,
-  "worktreePath": "/home/nakano/workspace/sdd-forge/.sdd-forge/worktree/feature-070-en-templates-for-webapp-presets",
   "request": "webapp/laravel/symfony/cakephp2 の en テンプレートを作成する。ja テンプレートをベースに英語化した en テンプレートを各プリセットに追加する。",
   "notes": [
     "draft: approach=manual-translate, scope=all 23 files (webapp+laravel+symfony+cakephp2)",
