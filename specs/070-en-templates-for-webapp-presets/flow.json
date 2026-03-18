@@ -1,0 +1,106 @@
+{
+  "spec": "specs/070-en-templates-for-webapp-presets/spec.md",
+  "baseBranch": "development",
+  "featureBranch": "feature/070-en-templates-for-webapp-presets",
+  "steps": [
+    {
+      "id": "approach",
+      "status": "done"
+    },
+    {
+      "id": "branch",
+      "status": "done"
+    },
+    {
+      "id": "spec",
+      "status": "done"
+    },
+    {
+      "id": "draft",
+      "status": "done"
+    },
+    {
+      "id": "fill-spec",
+      "status": "done"
+    },
+    {
+      "id": "approval",
+      "status": "done"
+    },
+    {
+      "id": "gate",
+      "status": "done"
+    },
+    {
+      "id": "test",
+      "status": "done"
+    },
+    {
+      "id": "implement",
+      "status": "done"
+    },
+    {
+      "id": "review",
+      "status": "done"
+    },
+    {
+      "id": "finalize",
+      "status": "done"
+    },
+    {
+      "id": "docs-update",
+      "status": "skipped"
+    },
+    {
+      "id": "docs-review",
+      "status": "skipped"
+    },
+    {
+      "id": "commit",
+      "status": "done"
+    },
+    {
+      "id": "merge",
+      "status": "done"
+    },
+    {
+      "id": "branch-cleanup",
+      "status": "done"
+    },
+    {
+      "id": "archive",
+      "status": "done"
+    }
+  ],
+  "requirements": [
+    {
+      "desc": "e2e: fallback langs: en+ja webapp → 10 chapters",
+      "status": "done"
+    },
+    {
+      "desc": "e2e: single lang en webapp → 4 chapters",
+      "status": "done"
+    },
+    {
+      "desc": "e2e: config.chapters explicit → 2 chapters, no AI",
+      "status": "done"
+    },
+    {
+      "desc": "unit: aiFilterChapters 5 patterns",
+      "status": "done"
+    },
+    {
+      "desc": "export aiFilterChapters from init.js",
+      "status": "done"
+    }
+  ],
+  "worktree": true,
+  "worktreePath": "/home/nakano/workspace/sdd-forge/.sdd-forge/worktree/feature-070-en-templates-for-webapp-presets",
+  "request": "webapp/laravel/symfony/cakephp2 の en テンプレートを作成する。ja テンプレートをベースに英語化した en テンプレートを各プリセットに追加する。",
+  "notes": [
+    "draft: approach=manual-translate, scope=all 23 files (webapp+laravel+symfony+cakephp2)",
+    "draft: 4テスト観点で合意。aiFilterChapters に export 追加してユニットテスト可能にする",
+    "docs-update: skipped by user",
+    "docs-review: skipped by user"
+  ]
+}
