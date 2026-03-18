@@ -3,9 +3,9 @@
   "type": "webapp/laravel",
   "docs": {
     "languages": [
-      "ja"
+      "en"
     ],
-    "defaultLanguage": "ja"
+    "defaultLanguage": "en"
   },
   "agent": {
     "default": "claude",
@@ -19,17 +19,5 @@
         "systemPromptFlag": "--system-prompt"
       }
     }
-  },
-  "chapters": [
-    "overview.md",
-    "stack_and_ops.md",
-    "project_structure.md",
-    "development.md",
-    "auth_and_session.md",
-    "database_architecture.md",
-    "db_tables.md",
-    "controller_routes.md",
-    "business_logic.md",
-    "batch_and_shell.md"
-  ]
+  }
 }
