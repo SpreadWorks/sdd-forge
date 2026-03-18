@@ -251,6 +251,6 @@ function main(ctx) {
   }
 }
 
-export { main };
+export { main, aiFilterChapters };
 
 runIfDirect(import.meta.url, main);

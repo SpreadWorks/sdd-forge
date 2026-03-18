@@ -64,6 +64,101 @@ describe("init CLI", () => {
     assert.match(result, /--type/);
   });
 
+  it("falls back to ja templates when en templates are missing (multi-lang)", () => {
+    tmp = createTmpDir();
+    writeJson(tmp, ".sdd-forge/config.json", {
+      lang: "en",
+      type: "webapp",
+      docs: { languages: ["en", "ja"], defaultLanguage: "en" },
+    });
+    writeJson(tmp, "package.json", { name: "test-proj" });
+    writeJson(tmp, ".sdd-forge/output/analysis.json", {
+      analyzedAt: "2026-01-01",
+      files: { summary: { total: 1 } },
+    });
+
+    execFileSync("node", [CMD, "--type", "webapp", "--force"], {
+      encoding: "utf8",
+      env: { ...process.env, SDD_WORK_ROOT: tmp, SDD_SOURCE_ROOT: tmp },
+    });
+
+    const docsDir = join(tmp, "docs");
+    assert.ok(fs.existsSync(docsDir), "docs/ should be created");
+    const files = fs.readdirSync(docsDir).filter((f) => f.endsWith(".md"));
+    // webapp has 10 chapters: 4 from base/en + 6 from webapp/ja (fallback)
+    assert.equal(files.length, 10, `expected 10 chapters but got ${files.length}: ${files.join(", ")}`);
+  });
+
+  it("generates only base en chapters when single lang with no webapp en templates", () => {
+    tmp = createTmpDir();
+    writeJson(tmp, ".sdd-forge/config.json", {
+      lang: "en",
+      type: "webapp",
+      docs: { languages: ["en"], defaultLanguage: "en" },
+    });
+    writeJson(tmp, "package.json", { name: "test-proj" });
+    writeJson(tmp, ".sdd-forge/output/analysis.json", {
+      analyzedAt: "2026-01-01",
+      files: { summary: { total: 1 } },
+    });
+
+    execFileSync("node", [CMD, "--type", "webapp", "--force"], {
+      encoding: "utf8",
+      env: { ...process.env, SDD_WORK_ROOT: tmp, SDD_SOURCE_ROOT: tmp },
+    });
+
+    const docsDir = join(tmp, "docs");
+    assert.ok(fs.existsSync(docsDir), "docs/ should be created");
+    const files = fs.readdirSync(docsDir).filter((f) => f.endsWith(".md"));
+    // Only base/en templates: overview, stack_and_ops, project_structure, development
+    assert.equal(files.length, 4, `expected 4 chapters but got ${files.length}: ${files.join(", ")}`);
+  });
+
+  it("uses config.chapters to skip AI filtering and generate only specified chapters", () => {
+    tmp = createTmpDir();
+    const promptCapture = join(tmp, "prompt.txt");
+    writeJson(tmp, ".sdd-forge/config.json", {
+      lang: "ja",
+      type: "cli/node-cli",
+      docs: { languages: ["ja"], defaultLanguage: "ja" },
+      chapters: ["overview.md", "development.md"],
+      agent: {
+        default: "capture",
+        providers: {
+          capture: {
+            command: "node",
+            args: [
+              "-e",
+              "const fs=require('fs');fs.writeFileSync(process.env.PROMPT_CAPTURE,'called','utf8');process.stdout.write('[\"overview.md\"]');",
+              "{{PROMPT}}",
+            ],
+          },
+        },
+      },
+    });
+    writeJson(tmp, "package.json", { name: "test-proj" });
+    writeJson(tmp, ".sdd-forge/output/analysis.json", {
+      analyzedAt: "2026-01-01",
+      files: { summary: { total: 1 } },
+    });
+
+    execFileSync("node", [CMD, "--type", "cli/node-cli", "--force"], {
+      encoding: "utf8",
+      env: {
+        ...process.env,
+        SDD_WORK_ROOT: tmp,
+        SDD_SOURCE_ROOT: tmp,
+        PROMPT_CAPTURE: promptCapture,
+      },
+    });
+
+    const docsDir = join(tmp, "docs");
+    const files = fs.readdirSync(docsDir).filter((f) => f.endsWith(".md"));
+    assert.equal(files.length, 2, `expected 2 chapters but got ${files.length}: ${files.join(", ")}`);
+    // AI agent should NOT have been called
+    assert.ok(!fs.existsSync(promptCapture), "AI agent should not be called when config.chapters is set");
+  });
+
   it("passes docs.style.purpose to AI chapter-selection prompt", () => {
     tmp = createTmpDir();
     const promptCapture = join(tmp, "prompt.txt");
