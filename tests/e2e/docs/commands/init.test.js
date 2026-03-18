@@ -89,7 +89,7 @@ describe("init CLI", () => {
     assert.equal(files.length, 10, `expected 10 chapters but got ${files.length}: ${files.join(", ")}`);
   });
 
-  it("generates only base en chapters when single lang with no webapp en templates", () => {
+  it("generates all webapp chapters with single lang en (en templates exist)", () => {
     tmp = createTmpDir();
     writeJson(tmp, ".sdd-forge/config.json", {
       lang: "en",
@@ -110,8 +110,8 @@ describe("init CLI", () => {
     const docsDir = join(tmp, "docs");
     assert.ok(fs.existsSync(docsDir), "docs/ should be created");
     const files = fs.readdirSync(docsDir).filter((f) => f.endsWith(".md"));
-    // Only base/en templates: overview, stack_and_ops, project_structure, development
-    assert.equal(files.length, 4, `expected 4 chapters but got ${files.length}: ${files.join(", ")}`);
+    // All 10 webapp chapters available in en
+    assert.equal(files.length, 10, `expected 10 chapters but got ${files.length}: ${files.join(", ")}`);
   });
 
   it("uses config.chapters to skip AI filtering and generate only specified chapters", () => {
