@@ -1,4 +1,4 @@
-<!-- {{data: docs.langSwitcher("relative")}} -->
+<!-- {{data: webapp.docs.langSwitcher("relative")}} -->
 <!-- {{/data}} -->
 # 09. Business Logic Layer
 
@@ -14,7 +14,7 @@
 <!-- @block: logic-list -->
 ### Logic Class List
 
-<!-- {{data: models.logic("Class|File|Responsibility")}} -->
+<!-- {{data: webapp.models.logic("Class|File|Responsibility")}} -->
 <!-- {{/data}} -->
 <!-- @endblock -->
 
@@ -24,7 +24,7 @@
 <!-- {{text[mode=deep]: Describe the inheritance patterns and common method roles of logic classes.}} -->
 <!-- {{/text}} -->
 
-<!-- {{data: models.logicMethods("Class|Extends|Key Methods")}} -->
+<!-- {{data: webapp.models.logicMethods("Class|Extends|Key Methods")}} -->
 <!-- {{/data}} -->
 <!-- @endblock -->
 
@@ -38,7 +38,7 @@
 <!-- @block: model-relations -->
 ### Model Relations
 
-<!-- {{data: models.relations("Model|Associations (belongsTo / hasMany / hasOne)")}} -->
+<!-- {{data: webapp.models.relations("Model|Associations (belongsTo / hasMany / hasOne)")}} -->
 <!-- {{/data}} -->
 
 <!-- {{text[mode=deep]: Describe the key relationship patterns between models.}} -->

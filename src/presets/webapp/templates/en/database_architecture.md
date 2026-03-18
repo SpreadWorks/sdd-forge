@@ -1,4 +1,4 @@
-<!-- {{data: docs.langSwitcher("relative")}} -->
+<!-- {{data: webapp.docs.langSwitcher("relative")}} -->
 <!-- {{/data}} -->
 # 06. Database Architecture
 
@@ -28,13 +28,13 @@
 <!-- @block: db-env -->
 ### Environment-Specific Connection Settings
 
-<!-- {{data: config.db("Environment|DB Host|Notes")}} -->
+<!-- {{data: webapp.config.db("Environment|DB Host|Notes")}} -->
 <!-- {{/data}} -->
 <!-- @endblock -->
 
 <!-- @block: er-diagram -->
 ### ER Diagram (Key Tables)
 
-<!-- {{data: models.er("")}} -->
+<!-- {{data: webapp.models.er("")}} -->
 <!-- {{/data}} -->
 <!-- @endblock -->

@@ -1,4 +1,4 @@
-<!-- {{data: docs.langSwitcher("relative")}} -->
+<!-- {{data: base.docs.langSwitcher("relative")}} -->
 <!-- {{/data}} -->
 # 02. Technology Stack and Operations
 
@@ -14,7 +14,7 @@
 <!-- @block: stack -->
 ### Technology Stack
 
-<!-- {{data: config.stack("Category|Technology|Version")}} -->
+<!-- {{data: base.config.stack("Category|Technology|Version")}} -->
 <!-- {{/data}} -->
 <!-- @endblock -->
 

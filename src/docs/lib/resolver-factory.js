@@ -3,15 +3,14 @@
  *
  * リゾルバファクトリ。
  * type に応じて DataSource モジュールをロードし、リゾルバを返す。
- * parent チェーンを root → leaf の順で歩き、子が親を override する。
- * lang 層が宣言されている場合は追加ロードする。
+ * 複数 type（配列）の場合、各チェーンごとに独立した resolver を生成する。
  */
 
 import fs from "fs";
 import path from "path";
 import { sddDir, sddDataDir } from "../../lib/config.js";
 import { loadDataSources as loadDataSourcesBase } from "./data-source-loader.js";
-import { presetByLeaf, resolveChainSafe, resolveLangPreset } from "../../lib/presets.js";
+import { resolveMultiChains, resolveChainSafe } from "../../lib/presets.js";
 import { createLogger } from "../../lib/progress.js";
 
 const logger = createLogger("resolver");
@@ -54,66 +53,105 @@ function descFactory(root) {
 // ファクトリ
 // ---------------------------------------------------------------------------
 
+const COMMON_DATA_DIR = path.resolve(
+  path.dirname(new URL(import.meta.url).pathname),
+  "../data",
+);
+
 /**
- * type に基づいてリゾルバを生成する。
- * parent チェーンを root → leaf の順で歩いて DataSource をロードし、子が親を override する。
- * lang 層が宣言されている場合は parent チェーンの後に追加ロードする。
+ * 単一チェーン用の resolver を生成する。
  *
- * @param {string} type - 解決済み type パス（例: "webapp/cakephp2", "node", "cli/node-cli"）
- * @param {string} root - プロジェクトルート（overrides.json のパス解決用）
- * @param {Object} [opts] - 追加オプション
- * @param {string} [opts.docsDir] - docs ディレクトリの絶対パス（非デフォルト言語用）
- * @returns {Promise<{ resolve: (source: string, method: string, analysis: Object, labels: string[]) => string|null }>}
+ * @param {Object[]} chain - preset チェーン（root → leaf）
+ * @param {string} root - プロジェクトルート
+ * @param {Object} ctx - 共有コンテキスト
+ * @returns {Promise<Map<string, Object>>} DataSource マップ
  */
-export async function createResolver(type, root, opts) {
-  const desc = descFactory(root);
-  const loadOverrides = () => loadOverridesFor(root);
-  const ctx = { desc, loadOverrides, root, docsDir: opts?.docsDir, type, configChapters: opts?.configChapters };
-
-  // 共通 DataSource（project, docs など全 type で利用可能）
-  const commonDataDir = path.resolve(
-    path.dirname(new URL(import.meta.url).pathname),
-    "../data",
-  );
-  let dataSources = await loadDataSources(commonDataDir, ctx);
-
-  // parent チェーンに沿って DataSource をロード（root → leaf、子が親を override）
-  const leaf = type.split("/").pop();
-  const chain = resolveChainSafe(type);
+async function loadChainDataSources(chain, root, ctx) {
+  let dataSources = await loadDataSources(COMMON_DATA_DIR, ctx);
 
   for (const preset of chain) {
     const dataDir = path.join(preset.dir, "data");
     dataSources = await loadDataSources(dataDir, ctx, dataSources);
   }
 
-  // lang 層の追加ロード（parent チェーン外の言語層 DataSource）
-  const langPreset = resolveLangPreset(leaf);
-  if (langPreset) {
-    const langDataDir = path.join(langPreset.dir, "data");
-    dataSources = await loadDataSources(langDataDir, ctx, dataSources);
-  }
-
   // プロジェクト固有 DataSource（最高優先）
   const projectDataDir = sddDataDir(root);
   dataSources = await loadDataSources(projectDataDir, ctx, dataSources);
 
+  return dataSources;
+}
+
+/**
+ * type に基づいてリゾルバを生成する。
+ * 複数 type の場合、各チェーンごとに独立した DataSource マップを持つ。
+ *
+ * @param {string|string[]} type - preset 名（例: "symfony"）または配列（例: ["symfony", "postgres"]）
+ * @param {string} root - プロジェクトルート
+ * @param {Object} [opts] - 追加オプション
+ * @param {string} [opts.docsDir] - docs ディレクトリの絶対パス
+ * @returns {Promise<{ resolve: (preset: string, source: string, method: string, analysis: Object, labels: string[]) => string|null }>}
+ */
+export async function createResolver(type, root, opts) {
+  const desc = descFactory(root);
+  const loadOverrides = () => loadOverridesFor(root);
+  const ctx = { desc, loadOverrides, root, docsDir: opts?.docsDir };
+
+  const chains = resolveMultiChains(type);
+
+  // 各チェーンの leaf key → DataSource マップ
+  const resolverMap = new Map();
+  // ancestor key → leaf key マッピング（先祖プリセット名から leaf を逆引き）
+  const ancestorMap = new Map();
+  for (const chain of chains) {
+    const leafKey = chain[chain.length - 1].key;
+    const dataSources = await loadChainDataSources(chain, root, ctx);
+    resolverMap.set(leafKey, dataSources);
+    // chain 内の全プリセットを ancestor マップに登録
+    for (const p of chain) {
+      if (!ancestorMap.has(p.key)) ancestorMap.set(p.key, leafKey);
+    }
+  }
+
   return {
     /**
-     * source.method でデータを解決し、レンダリング済み Markdown を返す。
+     * preset.source.method でデータを解決する。
+     *
+     * @param {string} preset - プリセット名（resolver マップのキー、または先祖プリセット名）
+     * @param {string} source - DataSource 名
+     * @param {string} method - メソッド名
+     * @param {Object} analysis - analysis.json データ
+     * @param {string[]} labels - ラベル配列
+     * @returns {string|null}
      */
-    resolve(source, method, analysis, labels) {
+    resolve(preset, source, method, analysis, labels) {
+      let dataSources = resolverMap.get(preset);
+      // 先祖プリセット名で指定された場合、leaf の DataSource マップにフォールバック
+      if (!dataSources) {
+        const leafKey = ancestorMap.get(preset);
+        if (leafKey) dataSources = resolverMap.get(leafKey);
+      }
+      if (!dataSources) {
+        logger.verbose(`unknown preset: ${preset}`);
+        return null;
+      }
+
       const ds = dataSources.get(source);
       if (ds && typeof ds[method] === "function") {
         try {
           return ds[method](analysis, labels);
         } catch (err) {
-          logger.log(`error in ${source}.${method}: ${err.message}`);
+          logger.log(`error in ${preset}.${source}.${method}: ${err.message}`);
           return null;
         }
       }
 
-      logger.verbose(`unknown: ${source}.${method}`);
+      logger.verbose(`unknown: ${preset}.${source}.${method}`);
       return null;
+    },
+
+    /** Get the list of preset keys this resolver handles. */
+    presetKeys() {
+      return [...resolverMap.keys()];
     },
   };
 }

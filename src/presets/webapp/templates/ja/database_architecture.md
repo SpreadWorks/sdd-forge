@@ -1,4 +1,4 @@
-<\!-- {{data: docs.langSwitcher("relative")}} -->
+<\!-- {{data: webapp.docs.langSwitcher("relative")}} -->
 <\!-- {{/data}} -->
 # 06. データベース構成
 
@@ -28,13 +28,13 @@
 <!-- @block: db-env -->
 ### 環境別接続設定
 
-<!-- {{data: config.db("環境|DB ホスト|備考")}} -->
+<!-- {{data: webapp.config.db("環境|DB ホスト|備考")}} -->
 <!-- {{/data}} -->
 <!-- @endblock -->
 
 <!-- @block: er-diagram -->
 ### ER 図（主要テーブル）
 
-<!-- {{data: models.er("")}} -->
+<!-- {{data: webapp.models.er("")}} -->
 <!-- {{/data}} -->
 <!-- @endblock -->

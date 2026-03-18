@@ -1,4 +1,4 @@
-<!-- {{data: docs.langSwitcher("relative")}} -->
+<!-- {{data: webapp.docs.langSwitcher("relative")}} -->
 <!-- {{/data}} -->
 # 10. Batch & Console Commands
 
@@ -14,7 +14,7 @@
 <!-- @block: command-list -->
 ### Command List
 
-<!-- {{data: shells.list("Command|File|Purpose")}} -->
+<!-- {{data: webapp.shells.list("Command|File|Purpose")}} -->
 <!-- {{/data}} -->
 <!-- @endblock -->
 
@@ -24,14 +24,14 @@
 <!-- {{text[mode=deep]: Describe the class dependencies loaded by each command.}} -->
 <!-- {{/text}} -->
 
-<!-- {{data: shells.deps("Command|Dependency|Type")}} -->
+<!-- {{data: webapp.shells.deps("Command|Dependency|Type")}} -->
 <!-- {{/data}} -->
 <!-- @endblock -->
 
 <!-- @block: command-flow -->
 ### Command Execution Flow
 
-<!-- {{data: shells.flow("Command|Process Summary|Email|File Ops|Transaction")}} -->
+<!-- {{data: webapp.shells.flow("Command|Process Summary|Email|File Ops|Transaction")}} -->
 <!-- {{/data}} -->
 <!-- @endblock -->
 

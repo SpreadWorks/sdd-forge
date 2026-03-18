@@ -23,7 +23,7 @@ describe("parseDirectives", () => {
   it("parses block {{data}} directive with closing tag", () => {
     const text = [
       "# Title",
-      '<!-- {{data: controllers.list("Name|File")}} -->',
+      '<!-- {{data: cakephp2.controllers.list("Name|File")}} -->',
       "old content",
       "<!-- {{/data}} -->",
       "footer",
@@ -32,6 +32,7 @@ describe("parseDirectives", () => {
     assert.equal(result.length, 1);
     const d = result[0];
     assert.equal(d.type, "data");
+    assert.equal(d.preset, "cakephp2");
     assert.equal(d.source, "controllers");
     assert.equal(d.method, "list");
     assert.deepEqual(d.labels, ["Name", "File"]);
@@ -41,7 +42,7 @@ describe("parseDirectives", () => {
   });
 
   it("parses block {{data}} without closing tag (endLine = -1)", () => {
-    const text = '<!-- {{data: project.summary("")}} -->\nsome text';
+    const text = '<!-- {{data: base.project.summary("")}} -->\nsome text';
     const result = parseDirectives(text);
     assert.equal(result.length, 1);
     assert.equal(result[0].endLine, -1);
@@ -49,11 +50,12 @@ describe("parseDirectives", () => {
 
   it("parses inline {{data}} directive", () => {
     const text =
-      '# <!-- {{data: project.name("")}} -->sdd-forge<!-- {{/data}} -->';
+      '# <!-- {{data: base.project.name("")}} -->sdd-forge<!-- {{/data}} -->';
     const result = parseDirectives(text);
     assert.equal(result.length, 1);
     const d = result[0];
     assert.equal(d.type, "data");
+    assert.equal(d.preset, "base");
     assert.equal(d.source, "project");
     assert.equal(d.method, "name");
     assert.equal(d.inline, true);
@@ -63,22 +65,25 @@ describe("parseDirectives", () => {
 
   it("parses multiple inline {{data}} on one line", () => {
     const text =
-      '<!-- {{data: a.b("")}} -->X<!-- {{/data}} --> and <!-- {{data: c.d("")}} -->Y<!-- {{/data}} -->';
+      '<!-- {{data: p.a.b("")}} -->X<!-- {{/data}} --> and <!-- {{data: q.c.d("")}} -->Y<!-- {{/data}} -->';
     const result = parseDirectives(text);
     assert.equal(result.length, 2);
+    assert.equal(result[0].preset, "p");
     assert.equal(result[0].source, "a");
     assert.equal(result[0].method, "b");
+    assert.equal(result[1].preset, "q");
     assert.equal(result[1].source, "c");
     assert.equal(result[1].method, "d");
   });
 
   it("parses dotted source names (e.g. config.constants)", () => {
     const text = [
-      '<!-- {{data: config.constants.list("Key|Value")}} -->',
+      '<!-- {{data: preset.config.constants.list("Key|Value")}} -->',
       "<!-- {{/data}} -->",
     ].join("\n");
     const result = parseDirectives(text);
     assert.equal(result.length, 1);
+    assert.equal(result[0].preset, "preset");
     assert.equal(result[0].source, "config.constants");
     assert.equal(result[0].method, "list");
   });
@@ -138,7 +143,7 @@ describe("parseDirectives", () => {
       "<!-- {{text: Write overview.}} -->",
       "<!-- {{/text}} -->",
       "",
-      '<!-- {{data: docs.chapters("Chapter|Desc")}} -->',
+      '<!-- {{data: base.docs.chapters("Chapter|Desc")}} -->',
       "| a | b |",
       "<!-- {{/data}} -->",
     ].join("\n");
@@ -151,7 +156,7 @@ describe("parseDirectives", () => {
 
   it("handles empty labels", () => {
     const text = [
-      '<!-- {{data: project.name("")}} -->',
+      '<!-- {{data: base.project.name("")}} -->',
       "<!-- {{/data}} -->",
     ].join("\n");
     const result = parseDirectives(text);
@@ -168,19 +173,19 @@ describe("parseDirectives", () => {
 describe("replaceBlockDirective", () => {
   it("replaces content between open and close tags", () => {
     const lines = [
-      '<!-- {{data: x.y("A")}} -->',
+      '<!-- {{data: p.x.y("A")}} -->',
       "old row 1",
       "old row 2",
       "<!-- {{/data}} -->",
     ];
     const d = {
-      raw: '<!-- {{data: x.y("A")}} -->',
+      raw: '<!-- {{data: p.x.y("A")}} -->',
       line: 0,
       endLine: 3,
     };
     replaceBlockDirective(lines, d, "new content");
     assert.deepEqual(lines, [
-      '<!-- {{data: x.y("A")}} -->',
+      '<!-- {{data: p.x.y("A")}} -->',
       "new content",
       "<!-- {{/data}} -->",
     ]);
@@ -189,13 +194,13 @@ describe("replaceBlockDirective", () => {
   it("handles single line between open and close", () => {
     const lines = [
       "before",
-      '<!-- {{data: a.b("")}} -->',
+      '<!-- {{data: p.a.b("")}} -->',
       "old",
       "<!-- {{/data}} -->",
       "after",
     ];
     const d = {
-      raw: '<!-- {{data: a.b("")}} -->',
+      raw: '<!-- {{data: p.a.b("")}} -->',
       line: 1,
       endLine: 3,
     };
@@ -204,7 +209,7 @@ describe("replaceBlockDirective", () => {
     // total stays 5
     assert.equal(lines.length, 5);
     assert.equal(lines[0], "before");
-    assert.equal(lines[1], '<!-- {{data: a.b("")}} -->');
+    assert.equal(lines[1], '<!-- {{data: p.a.b("")}} -->');
     assert.equal(lines[2], "replaced");
     assert.equal(lines[3], "<!-- {{/data}} -->");
     assert.equal(lines[4], "after");
@@ -228,7 +233,7 @@ describe("resolveDataDirectives", () => {
 
   it("resolves block data directive", () => {
     const text = [
-      '<!-- {{data: x.list("A|B")}} -->',
+      '<!-- {{data: p.x.list("A|B")}} -->',
       "old content",
       "<!-- {{/data}} -->",
     ].join("\n");
@@ -239,7 +244,7 @@ describe("resolveDataDirectives", () => {
   });
 
   it("resolves inline data directive", () => {
-    const text = '<!-- {{data: p.name("")}} -->old<!-- {{/data}} -->';
+    const text = '<!-- {{data: base.p.name("")}} -->old<!-- {{/data}} -->';
     const result = resolveDataDirectives(text, () => "NEW");
     assert.equal(result.replaced, 1);
     assert.ok(result.text.includes("NEW"));
@@ -247,7 +252,7 @@ describe("resolveDataDirectives", () => {
 
   it("skips when resolveFn returns null", () => {
     const text = [
-      '<!-- {{data: x.y("A")}} -->',
+      '<!-- {{data: p.x.y("A")}} -->',
       "old",
       "<!-- {{/data}} -->",
     ].join("\n");
@@ -267,15 +272,16 @@ describe("resolveDataDirectives", () => {
 
   it("calls onResolve for each resolved directive", () => {
     const text = [
-      '<!-- {{data: a.b("")}} -->',
+      '<!-- {{data: p.a.b("")}} -->',
       "old",
       "<!-- {{/data}} -->",
     ].join("\n");
     const resolved = [];
     resolveDataDirectives(text, () => "val", {
-      onResolve(d, rendered) { resolved.push({ source: d.source, rendered }); },
+      onResolve(d, rendered) { resolved.push({ preset: d.preset, source: d.source, rendered }); },
     });
     assert.equal(resolved.length, 1);
+    assert.equal(resolved[0].preset, "p");
     assert.equal(resolved[0].source, "a");
     assert.equal(resolved[0].rendered, "val");
   });

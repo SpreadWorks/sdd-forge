@@ -3,27 +3,27 @@
 <!-- @block: dependencies -->
 ### PHP Dependencies (composer.json)
 
-<!-- {{data: config.composer("Package|Version|Purpose")}} -->
+<!-- {{data: cakephp2.config.composer("Package|Version|Purpose")}} -->
 <!-- {{/data}} -->
 
 ### docker-compose.yml Configuration
 
-<!-- {{data: docker.list("Service|Container|Port|Image")}} -->
+<!-- {{data: cakephp2.docker.list("Service|Container|Port|Image")}} -->
 <!-- {{/data}} -->
 
 ### Frontend Libraries
 
-<!-- {{data: config.assets("Library|Version|Purpose")}} -->
+<!-- {{data: cakephp2.config.assets("Library|Version|Purpose")}} -->
 <!-- {{/data}} -->
 
 ### Error Handling
 
-<!-- {{data: libs.errors("Class|File|Responsibility")}} -->
+<!-- {{data: cakephp2.libs.errors("Class|File|Responsibility")}} -->
 <!-- {{/data}} -->
 
 ### Application Initialization (bootstrap.php)
 
-<!-- {{data: config.bootstrap("Setting|Value")}} -->
+<!-- {{data: cakephp2.config.bootstrap("Setting|Value")}} -->
 <!-- {{/data}} -->
 
 ### Email Notification Specifications
@@ -31,7 +31,7 @@
 <!-- {{text[mode=deep]: Describe the email sending configuration defaults (sender, transport).}} -->
 <!-- {{/text}} -->
 
-<!-- {{data: email.list("Source File|Subject Pattern|CC")}} -->
+<!-- {{data: cakephp2.email.list("Source File|Subject Pattern|CC")}} -->
 <!-- {{/data}} -->
 <!-- @endblock -->
 

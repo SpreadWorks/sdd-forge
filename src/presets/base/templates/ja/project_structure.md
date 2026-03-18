@@ -1,4 +1,4 @@
-<!-- {{data: docs.langSwitcher("relative")}} -->
+<!-- {{data: base.docs.langSwitcher("relative")}} -->
 <!-- {{/data}} -->
 # 03. プロジェクト構成
 
@@ -28,6 +28,6 @@
 <!-- @block: libraries -->
 ### 共通ライブラリ
 
-<!-- {{data: libs.list("クラス|ファイル|責務")}} -->
+<!-- {{data: base.libs.list("クラス|ファイル|責務")}} -->
 <!-- {{/data}} -->
 <!-- @endblock -->

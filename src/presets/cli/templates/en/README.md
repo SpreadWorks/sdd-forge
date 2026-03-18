@@ -1,6 +1,6 @@
-# <!-- {{data: project.name("")}} --><!-- {{/data}} -->
+# <!-- {{data: cli.project.name("")}} --><!-- {{/data}} -->
 
-<!-- {{data: docs.langSwitcher("absolute")}} -->
+<!-- {{data: cli.docs.langSwitcher("absolute")}} -->
 <!-- {{/data}} -->
 
 <!-- {{text: Write a 1-2 sentence overview of this project.}} -->
@@ -13,25 +13,25 @@
 
 <pre>
 # npm
-npm install -g <!-- {{data: project.name("")}} --><!-- {{/data}} -->
+npm install -g <!-- {{data: cli.project.name("")}} --><!-- {{/data}} -->
 
 # yarn
-yarn global add <!-- {{data: project.name("")}} --><!-- {{/data}} -->
+yarn global add <!-- {{data: cli.project.name("")}} --><!-- {{/data}} -->
 
 # pnpm
-pnpm add -g <!-- {{data: project.name("")}} --><!-- {{/data}} -->
+pnpm add -g <!-- {{data: cli.project.name("")}} --><!-- {{/data}} -->
 </pre>
 
 ### Basic Commands
 
 <pre>
-<!-- {{data: project.name("")}} --><!-- {{/data}} --> help
+<!-- {{data: cli.project.name("")}} --><!-- {{/data}} --> help
 </pre>
 <!-- @endblock -->
 
 <!-- @block: docs -->
 ## Documentation
 
-<!-- {{data: docs.chapters("Chapter|Description")}} -->
+<!-- {{data: cli.docs.chapters("Chapter|Description")}} -->
 <!-- {{/data}} -->
 <!-- @endblock -->

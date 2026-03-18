@@ -50,10 +50,10 @@ function setupFromFixture(tmp, fixtureName, configOverrides) {
 }
 
 // =========================================================================
-// scan: lang layer DataSource loading
+// scan: parent chain DataSource loading
 // =========================================================================
 
-describe("lang layer: scan", () => {
+describe("parent chain: scan", () => {
   let tmp;
   afterEach(() => tmp && removeTmpDir(tmp));
 
@@ -79,7 +79,7 @@ describe("lang layer: scan", () => {
     assert.ok(fileNames.some((f) => f.includes("cli.js")), "should have scanned cli.js");
   });
 
-  it("laravel scan loads php lang layer DataSource (config category at top level)", () => {
+  it("laravel scan loads php-webapp parent chain DataSource (config category at top level)", () => {
     tmp = createTmpDir();
     setupFromFixture(tmp, "laravel");
 
@@ -91,7 +91,7 @@ describe("lang layer: scan", () => {
 
     assert.ok(analysis.analyzedAt, "should have analyzedAt");
 
-    // config category from laravel config DataSource (extends php lang layer)
+    // config category from laravel config DataSource (extends php-webapp parent chain)
     assert.ok(analysis.config, "config category should exist at top level");
     assert.ok(analysis.config.composerDeps, "config.composerDeps should exist");
     assert.ok(analysis.config.composerDeps.require, "should have require deps");
@@ -116,14 +116,14 @@ describe("lang layer: scan", () => {
 });
 
 // =========================================================================
-// init: lang layer template composition
+// init: parent chain template composition
 // =========================================================================
 
-describe("lang layer: init", () => {
+describe("parent chain: init", () => {
   let tmp;
   afterEach(() => tmp && removeTmpDir(tmp));
 
-  it("node-cli init includes stack_and_ops.md from node lang layer", () => {
+  it("node-cli init includes stack_and_ops.md from parent chain", () => {
     tmp = createTmpDir();
     setupFromFixture(tmp, "node-cli", {
       docs: { languages: ["ja"], defaultLanguage: "ja" },
@@ -143,9 +143,9 @@ describe("lang layer: init", () => {
     const files = fs.readdirSync(docsDir).filter((f) => f.endsWith(".md"));
     assert.ok(files.length > 0, "should have chapter files");
 
-    // stack_and_ops.md should be present (from node lang layer)
+    // stack_and_ops.md should be present (from parent chain)
     const hasStackAndOps = files.some((f) => f.includes("stack_and_ops"));
-    assert.ok(hasStackAndOps, "stack_and_ops.md should be included from node lang layer");
+    assert.ok(hasStackAndOps, "stack_and_ops.md should be included from parent chain");
   });
 
   it("laravel init generates webapp chapters with ja fallback", () => {
@@ -170,41 +170,41 @@ describe("lang layer: init", () => {
     // webapp/laravel chapters should include more than just base chapters
     assert.ok(files.length >= 4, `should have at least 4 chapters, got ${files.length}`);
 
-    // stack_and_ops.md from php lang layer
+    // stack_and_ops.md from php-webapp parent chain
     const hasStackAndOps = files.some((f) => f.includes("stack_and_ops"));
-    assert.ok(hasStackAndOps, "stack_and_ops.md should be included from php lang layer");
+    assert.ok(hasStackAndOps, "stack_and_ops.md should be included from php-webapp parent chain");
   });
 
-  it("resolveChaptersOrder includes lang layer chapters via union merge", async () => {
+  it("resolveChaptersOrder includes parent chain chapters", async () => {
     const { resolveChaptersOrder } = await import("../../../../src/docs/lib/template-merger.js");
 
-    // node-cli: cli chapters + node lang layer's stack_and_ops.md
-    const nodeCli = resolveChaptersOrder("cli/node-cli");
-    assert.ok(nodeCli.includes("stack_and_ops.md"), "node-cli should include stack_and_ops.md from node lang layer");
+    // node-cli: cli chapters + stack_and_ops.md from parent chain
+    const nodeCli = resolveChaptersOrder("node-cli");
+    assert.ok(nodeCli.includes("stack_and_ops.md"), "node-cli should include stack_and_ops.md from parent chain");
     assert.ok(nodeCli.includes("overview.md"), "should include overview.md");
     assert.ok(nodeCli.includes("cli_commands.md"), "should include cli_commands.md from node-cli preset");
 
-    // stack_and_ops.md should come after overview.md (union merge inserts after overview)
+    // stack_and_ops.md should come after overview.md
     const overviewIdx = nodeCli.indexOf("overview.md");
     const stackIdx = nodeCli.indexOf("stack_and_ops.md");
     assert.ok(stackIdx > overviewIdx, "stack_and_ops.md should come after overview.md");
 
-    // laravel: webapp chapters + php lang layer's stack_and_ops.md
-    const laravel = resolveChaptersOrder("webapp/laravel");
-    assert.ok(laravel.includes("stack_and_ops.md"), "laravel should include stack_and_ops.md from php lang layer");
+    // laravel: webapp chapters + stack_and_ops.md from parent chain
+    const laravel = resolveChaptersOrder("laravel");
+    assert.ok(laravel.includes("stack_and_ops.md"), "laravel should include stack_and_ops.md from parent chain");
     assert.ok(laravel.includes("controller_routes.md"), "should include controller_routes.md from webapp preset");
   });
 });
 
 // =========================================================================
-// data: lang layer DataSource directive resolution
+// data: parent chain DataSource directive resolution
 // =========================================================================
 
-describe("lang layer: data", () => {
+describe("parent chain: data", () => {
   let tmp;
   afterEach(() => tmp && removeTmpDir(tmp));
 
-  it("node-cli data resolves config.stack directive via node lang layer", () => {
+  it("node-cli data resolves config.stack directive via parent chain", () => {
     tmp = createTmpDir();
     setupFromFixture(tmp, "node-cli", {
       docs: { languages: ["ja"], defaultLanguage: "ja" },
@@ -232,7 +232,7 @@ describe("lang layer: data", () => {
 
     // If no config.stack directive exists yet, add one for testing
     if (!before.includes("config.stack")) {
-      const content = before + '\n<!-- {{data: config.stack("Category|Technology|Version")}} -->\nplaceholder\n<!-- {{/data}} -->\n';
+      const content = before + '\n<!-- {{data: node-cli.config.stack("Category|Technology|Version")}} -->\nplaceholder\n<!-- {{/data}} -->\n';
       fs.writeFileSync(stackFile, content);
     }
 
@@ -245,7 +245,7 @@ describe("lang layer: data", () => {
     const after = fs.readFileSync(stackFile, "utf8");
 
     // The config.stack directive should be resolved (not just "placeholder")
-    // Node lang layer's config.stack reads package.json dependencies
+    // config.stack reads package.json dependencies via parent chain
     assert.ok(!after.includes("placeholder"), "config.stack directive should be resolved, not placeholder");
 
     // Should contain actual technology info from package.json
@@ -289,7 +289,7 @@ describe("lang layer: data", () => {
 
     const before = fs.readFileSync(targetFile, "utf8");
     if (!before.includes("config.composer")) {
-      const content = before + '\n<!-- {{data: config.composer("Package|Version|Description")}} -->\nplaceholder\n<!-- {{/data}} -->\n';
+      const content = before + '\n<!-- {{data: laravel.config.composer("Package|Version|Description")}} -->\nplaceholder\n<!-- {{/data}} -->\n';
       fs.writeFileSync(targetFile, content);
     }
 

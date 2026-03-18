@@ -3,27 +3,27 @@
 <!-- @block: dependencies -->
 ### PHP 依存パッケージ (composer.json)
 
-<!-- {{data: config.composer("パッケージ|バージョン|用途")}} -->
+<!-- {{data: symfony.config.composer("パッケージ|バージョン|用途")}} -->
 <!-- {{/data}} -->
 
 ### Symfony Bundles
 
-<!-- {{data: config.bundles("Bundle|完全修飾名|用途")}} -->
+<!-- {{data: symfony.config.bundles("Bundle|完全修飾名|用途")}} -->
 <!-- {{/data}} -->
 
 ### 設定ファイル (config/packages/)
 
-<!-- {{data: config.packages("ファイル|主要キー")}} -->
+<!-- {{data: symfony.config.packages("ファイル|主要キー")}} -->
 <!-- {{/data}} -->
 
 ### サービス設定
 
-<!-- {{data: config.services("autowire|autoconfigure")}} -->
+<!-- {{data: symfony.config.services("autowire|autoconfigure")}} -->
 <!-- {{/data}} -->
 
 ### docker-compose.yml 構成
 
-<!-- {{data: docker.list("サービス|コンテナ名|ポート|イメージ")}} -->
+<!-- {{data: symfony.docker.list("サービス|コンテナ名|ポート|イメージ")}} -->
 <!-- {{/data}} -->
 <!-- @endblock -->
 

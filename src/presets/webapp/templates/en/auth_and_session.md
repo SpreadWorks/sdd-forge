@@ -1,4 +1,4 @@
-<!-- {{data: docs.langSwitcher("relative")}} -->
+<!-- {{data: webapp.docs.langSwitcher("relative")}} -->
 <!-- {{/data}} -->
 # 05. Authentication & Session Management
 
@@ -17,7 +17,7 @@
 <!-- {{text[mode=deep]: Describe the authentication method overview. Include authentication component configuration.}} -->
 <!-- {{/text}} -->
 
-<!-- {{data: config.auth("Item|Value")}} -->
+<!-- {{data: webapp.config.auth("Item|Value")}} -->
 <!-- {{/data}} -->
 <!-- @endblock -->
 
@@ -27,7 +27,7 @@
 <!-- {{text[mode=deep]: Describe the access control definitions and role-based access control rules.}} -->
 <!-- {{/text}} -->
 
-<!-- {{data: config.acl("Role|group_id|Permissions")}} -->
+<!-- {{data: webapp.config.acl("Role|group_id|Permissions")}} -->
 <!-- {{/data}} -->
 <!-- @endblock -->
 

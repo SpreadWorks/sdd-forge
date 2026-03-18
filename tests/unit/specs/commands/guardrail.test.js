@@ -73,7 +73,7 @@ describe("guardrail init CLI", () => {
     tmp = createTmpDir();
     writeJson(tmp, ".sdd-forge/config.json", {
       lang: "en",
-      type: "cli/node-cli",
+      type: "node-cli",
       docs: { languages: ["en"], defaultLanguage: "en" },
     });
 
@@ -92,7 +92,7 @@ describe("guardrail init CLI", () => {
     tmp = createTmpDir();
     writeJson(tmp, ".sdd-forge/config.json", {
       lang: "en",
-      type: "cli/node-cli",
+      type: "node-cli",
       docs: { languages: ["en"], defaultLanguage: "en" },
     });
     writeFile(tmp, ".sdd-forge/guardrail.md", "# Existing\n### Rule\nDo not change.\n");
@@ -112,7 +112,7 @@ describe("guardrail init CLI", () => {
     tmp = createTmpDir();
     writeJson(tmp, ".sdd-forge/config.json", {
       lang: "en",
-      type: "cli/node-cli",
+      type: "node-cli",
       docs: { languages: ["en"], defaultLanguage: "en" },
     });
     writeFile(tmp, ".sdd-forge/guardrail.md", "# Old content\n");
@@ -130,7 +130,7 @@ describe("guardrail init CLI", () => {
     tmp = createTmpDir();
     writeJson(tmp, ".sdd-forge/config.json", {
       lang: "en",
-      type: "cli/node-cli",
+      type: "node-cli",
       docs: { languages: ["en"], defaultLanguage: "en" },
     });
 
@@ -182,7 +182,7 @@ describe("gate guardrail integration", () => {
     tmp = createTmpDir();
     writeJson(tmp, ".sdd-forge/config.json", {
       lang: "en",
-      type: "cli/node-cli",
+      type: "node-cli",
       docs: { languages: ["en"], defaultLanguage: "en" },
     });
     writeFile(tmp, "spec.md", validSpec);
@@ -208,7 +208,7 @@ describe("gate guardrail integration", () => {
     tmp = createTmpDir();
     writeJson(tmp, ".sdd-forge/config.json", {
       lang: "en",
-      type: "cli/node-cli",
+      type: "node-cli",
       docs: { languages: ["en"], defaultLanguage: "en" },
       agent: { default: "claude", providers: { claude: { command: "echo", args: ["FAIL"] } } },
     });
@@ -393,7 +393,7 @@ describe("guardrail init template merging", () => {
     tmp = createTmpDir();
     writeJson(tmp, ".sdd-forge/config.json", {
       lang: "en",
-      type: "webapp/cakephp2",
+      type: "cakephp2",
       docs: { languages: ["en"], defaultLanguage: "en" },
     });
 

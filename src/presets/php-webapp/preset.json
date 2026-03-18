@@ -1,0 +1,10 @@
+{
+  "parent": "webapp",
+  "label": "PHP Web Application",
+  "aliases": [],
+  "chapters": [],
+  "scan": {
+    "include": ["composer.json"],
+    "exclude": []
+  }
+}

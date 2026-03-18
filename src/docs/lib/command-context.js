@@ -9,7 +9,7 @@ import fs from "fs";
 import path from "path";
 import { repoRoot, sourceRoot } from "../../lib/cli.js";
 import { loadJsonFile, sddConfigPath, sddOutputDir, DEFAULT_LANG } from "../../lib/config.js";
-import { resolveType, validateConfig } from "../../lib/types.js";
+import { validateConfig } from "../../lib/types.js";
 import { resolveAgent } from "../../lib/agent.js";
 import { translate } from "../../lib/i18n.js";
 import { resolveChaptersOrder } from "./template-merger.js";
@@ -55,7 +55,7 @@ export function resolveCommandContext(cli, overrides) {
   const lang = o.lang || cli?.lang || config.lang || DEFAULT_LANG;
   const outputLang = o.outputLang || cli?.lang || config.docs?.defaultLanguage || lang;
   const rawType = o.type || cli?.type || config.type || "";
-  const type = rawType ? resolveType(rawType) : "";
+  const type = rawType;
 
   const docsDir = o.docsDir
     ? path.resolve(root, o.docsDir)

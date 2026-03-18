@@ -1,0 +1,6 @@
+{
+  "parent": "base",
+  "label": "PostgreSQL",
+  "aliases": [],
+  "chapters": ["database.md"]
+}

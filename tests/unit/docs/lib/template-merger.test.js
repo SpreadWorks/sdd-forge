@@ -19,50 +19,43 @@ const PRESETS_DIR = path.join(SRC_DIR, "presets");
 // ---------------------------------------------------------------------------
 
 describe("buildLayers", () => {
-  it("returns base layer for single-segment 'base' type", () => {
+  it("returns base layer for 'base' preset", () => {
     const layers = buildLayers("base", "ja", null);
-    // base type should only include base (segments[0] === "base" skips arch)
     assert.ok(layers.length >= 1);
     assert.ok(layers[layers.length - 1].includes("base"));
   });
 
-  it("returns arch + base for single-segment type", () => {
+  it("returns leaf + base for preset with one parent", () => {
     const layers = buildLayers("cli", "ja", null);
     // cli → [cli/templates/ja, base/templates/ja]
     assert.ok(layers.length >= 1);
-    // last should be base
     const last = layers[layers.length - 1];
     assert.ok(last.includes("base"), `expected base in ${last}`);
   });
 
-  it("returns leaf + arch + base for two-segment type", () => {
-    const layers = buildLayers("cli/node-cli", "ja", null);
+  it("returns leaf + parent chain + base for deeply nested preset", () => {
+    const layers = buildLayers("node-cli", "ja", null);
     // node-cli → [node-cli/templates/ja, cli/templates/ja, base/templates/ja]
     assert.ok(layers.length >= 2);
-    // first should be most specific (node-cli or cli)
-    // last should be base
     const last = layers[layers.length - 1];
     assert.ok(last.includes("base"), `expected base in ${last}`);
   });
 
   it("includes project-local dir when it exists", () => {
-    // Use an existing directory as project-local
     const projectLocalDir = path.join(PRESETS_DIR, "base", "templates", "ja");
-    const layers = buildLayers("cli/node-cli", "ja", projectLocalDir);
+    const layers = buildLayers("node-cli", "ja", projectLocalDir);
     assert.equal(layers[0], projectLocalDir);
   });
 
   it("skips project-local dir when it does not exist", () => {
-    const layers = buildLayers("cli/node-cli", "ja", "/nonexistent/dir");
+    const layers = buildLayers("node-cli", "ja", "/nonexistent/dir");
     for (const l of layers) {
       assert.notEqual(l, "/nonexistent/dir");
     }
   });
 
   it("returns layers in priority order (most specific first)", () => {
-    const layers = buildLayers("cli/node-cli", "ja", null);
-    // Verify ordering: each layer's path segment should go from specific to general
-    // The last entry should always contain "base"
+    const layers = buildLayers("node-cli", "ja", null);
     if (layers.length >= 2) {
       assert.ok(
         layers[layers.length - 1].includes("base"),
@@ -75,9 +68,8 @@ describe("buildLayers", () => {
     }
   });
 
-  it("skips non-existent language directories", () => {
-    const layers = buildLayers("cli/node-cli", "zz-nonexistent", null);
-    // All layers should reference existing directories
+  it("returns only existing directories", () => {
+    const layers = buildLayers("node-cli", "zz-nonexistent", null);
     for (const l of layers) {
       assert.ok(fs.existsSync(l), `expected ${l} to exist`);
     }
@@ -106,9 +98,6 @@ describe("mergeResolved", () => {
       { path: "child.md", content: "# Child Only", extends: false },
       { path: "parent.md", content: "# Parent Only", extends: false },
     ];
-    // child is first (most specific), parent is last (base)
-    // mergeResolved reverses: starts with parent, then overlays child
-    // Since child has extends:false, mergeTexts returns childText
     const result = mergeResolved(sources);
     assert.equal(result, "# Child Only");
   });
@@ -194,7 +183,6 @@ describe("resolveChaptersOrder", () => {
   it("returns chapters from base preset", () => {
     const chapters = resolveChaptersOrder("base");
     assert.ok(Array.isArray(chapters));
-    // base should have chapters defined
     if (chapters.length > 0) {
       assert.ok(chapters[0].endsWith(".md"));
     }
@@ -202,13 +190,10 @@ describe("resolveChaptersOrder", () => {
 
   it("leaf preset overrides base chapters", () => {
     const baseChapters = resolveChaptersOrder("base");
-    const nodeCliChapters = resolveChaptersOrder("cli/node-cli");
-    // node-cli has its own chapters that differ from base
+    const nodeCliChapters = resolveChaptersOrder("node-cli");
     if (nodeCliChapters.length > 0 && baseChapters.length > 0) {
-      // They should be different arrays (node-cli has specialized chapters)
       const sameOrder =
         JSON.stringify(baseChapters) === JSON.stringify(nodeCliChapters);
-      // It's ok if they're the same (node-cli may not override), but log it
       if (!sameOrder) {
         assert.notDeepEqual(baseChapters, nodeCliChapters);
       }
@@ -216,7 +201,7 @@ describe("resolveChaptersOrder", () => {
   });
 
   it("returns array of strings", () => {
-    const chapters = resolveChaptersOrder("cli/node-cli");
+    const chapters = resolveChaptersOrder("node-cli");
     assert.ok(Array.isArray(chapters));
     for (const ch of chapters) {
       assert.equal(typeof ch, "string");
@@ -230,13 +215,12 @@ describe("resolveChaptersOrder", () => {
 
 describe("resolveTemplates", () => {
   it("resolves templates for existing language", () => {
-    const chaptersOrder = resolveChaptersOrder("cli/node-cli");
-    const resolutions = resolveTemplates("cli/node-cli", "ja", {
+    const chaptersOrder = resolveChaptersOrder("node-cli");
+    const resolutions = resolveTemplates("node-cli", "ja", {
       chaptersOrder,
     });
     assert.ok(resolutions.length > 0, "should resolve at least one template");
 
-    // All resolutions should have action "use" (ja templates exist)
     for (const r of resolutions) {
       assert.equal(r.action, "use");
       assert.ok(r.sources.length > 0);
@@ -245,8 +229,8 @@ describe("resolveTemplates", () => {
   });
 
   it("includes README.md in resolutions", () => {
-    const chaptersOrder = resolveChaptersOrder("cli/node-cli");
-    const resolutions = resolveTemplates("cli/node-cli", "ja", {
+    const chaptersOrder = resolveChaptersOrder("node-cli");
+    const resolutions = resolveTemplates("node-cli", "ja", {
       chaptersOrder,
     });
     const readme = resolutions.find((r) => r.fileName === "README.md");
@@ -254,12 +238,11 @@ describe("resolveTemplates", () => {
   });
 
   it('marks files for translation when target language has no templates', () => {
-    const chaptersOrder = resolveChaptersOrder("cli/node-cli");
-    const resolutions = resolveTemplates("cli/node-cli", "fr", {
+    const chaptersOrder = resolveChaptersOrder("node-cli");
+    const resolutions = resolveTemplates("node-cli", "fr", {
       chaptersOrder,
       fallbackLangs: ["ja"],
     });
-    // fr templates don't exist, so should fall back to ja with translate action
     const translated = resolutions.filter((r) => r.action === "translate");
     assert.ok(translated.length > 0, "should have translate actions");
     for (const r of translated) {
@@ -269,15 +252,15 @@ describe("resolveTemplates", () => {
   });
 
   it("returns empty array when no templates found anywhere", () => {
-    const resolutions = resolveTemplates("cli/node-cli", "zz", {
+    const resolutions = resolveTemplates("node-cli", "zz", {
       chaptersOrder: ["nonexistent.md"],
     });
     assert.deepEqual(resolutions, []);
   });
 
   it("resolveTemplates result sources have expected shape", () => {
-    const chaptersOrder = resolveChaptersOrder("cli/node-cli");
-    const resolutions = resolveTemplates("cli/node-cli", "ja", {
+    const chaptersOrder = resolveChaptersOrder("node-cli");
+    const resolutions = resolveTemplates("node-cli", "ja", {
       chaptersOrder,
     });
     for (const r of resolutions) {

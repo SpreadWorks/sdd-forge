@@ -10,7 +10,6 @@ import path from "path";
 import { createTmpDir, removeTmpDir } from "../../helpers/tmp-dir.js";
 import { validateConfig } from "../../../src/lib/types.js";
 import { loadJsonFile } from "../../../src/lib/config.js";
-import { resolveType } from "../../../src/lib/types.js";
 import { resolveAgent } from "../../../src/lib/agent.js";
 import { createI18n } from "../../../src/lib/i18n.js";
 import { resolveChaptersOrder } from "../../../src/docs/lib/template-merger.js";
@@ -52,8 +51,7 @@ export function buildCtx(tmp) {
   const config = validateConfig(loadJsonFile(configPath));
   const lang = config.lang || "en";
   const outputLang = config.docs?.defaultLanguage || lang;
-  const rawType = config.type || "base";
-  const type = resolveType(rawType);
+  const type = config.type || "base";
   const docsDir = path.join(tmp, "docs");
   const agent = resolveAgent(config, undefined);
   const t = createI18n(lang, { domain: "messages" });

@@ -3,27 +3,27 @@
 <!-- @block: dependencies -->
 ### PHP 依存パッケージ (composer.json)
 
-<!-- {{data: config.composer("パッケージ|バージョン|用途")}} -->
+<!-- {{data: cakephp2.config.composer("パッケージ|バージョン|用途")}} -->
 <!-- {{/data}} -->
 
 ### docker-compose.yml 構成
 
-<!-- {{data: docker.list("サービス|コンテナ名|ポート|イメージ")}} -->
+<!-- {{data: cakephp2.docker.list("サービス|コンテナ名|ポート|イメージ")}} -->
 <!-- {{/data}} -->
 
 ### フロントエンドライブラリ
 
-<!-- {{data: config.assets("ライブラリ|バージョン|用途")}} -->
+<!-- {{data: cakephp2.config.assets("ライブラリ|バージョン|用途")}} -->
 <!-- {{/data}} -->
 
 ### エラーハンドリング
 
-<!-- {{data: libs.errors("クラス|ファイル|責務")}} -->
+<!-- {{data: cakephp2.libs.errors("クラス|ファイル|責務")}} -->
 <!-- {{/data}} -->
 
 ### アプリケーション初期化 (bootstrap.php)
 
-<!-- {{data: config.bootstrap("設定項目|値")}} -->
+<!-- {{data: cakephp2.config.bootstrap("設定項目|値")}} -->
 <!-- {{/data}} -->
 
 ### メール通知仕様
@@ -31,7 +31,7 @@
 <!-- {{text[mode=deep]: メール送信設定のデフォルト値（送信元、トランスポート）を説明してください。}} -->
 <!-- {{/text}} -->
 
-<!-- {{data: email.list("送信元ファイル|件名パターン|CC")}} -->
+<!-- {{data: cakephp2.email.list("送信元ファイル|件名パターン|CC")}} -->
 <!-- {{/data}} -->
 <!-- @endblock -->
 

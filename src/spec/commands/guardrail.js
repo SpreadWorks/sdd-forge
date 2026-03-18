@@ -12,8 +12,7 @@ import { runIfDirect } from "../../lib/entrypoint.js";
 import { repoRoot, parseArgs } from "../../lib/cli.js";
 import { translate } from "../../lib/i18n.js";
 import { loadConfig, sddDir, sddConfigPath } from "../../lib/config.js";
-import { PRESETS_DIR, presetByLeaf } from "../../lib/presets.js";
-import { resolveType } from "../../lib/types.js";
+import { PRESETS_DIR, presetByLeaf, resolveChainSafe } from "../../lib/presets.js";
 import { callAgent } from "../../lib/agent.js";
 
 const GUARDRAIL_FILENAME = "guardrail.md";
@@ -50,15 +49,13 @@ export function parseGuardrailArticles(text) {
 }
 
 /**
- * Build template layers for guardrail (base → arch → leaf), read and merge.
+ * Build template layers for guardrail using parent chain, read and merge.
  *
- * @param {string} typePath - Resolved type path (e.g. "cli/node-cli")
+ * @param {string} presetKey - Preset name (e.g. "cakephp2", "webapp")
  * @param {string} lang - Locale code
  * @returns {string} Merged guardrail template content
  */
-function loadGuardrailTemplate(typePath, lang) {
-  const segments = typePath.split("/").filter(Boolean);
-
+function loadGuardrailTemplate(presetKey, lang) {
   /**
    * Resolve a single template file with lang → en fallback.
    * Returns file content or null.
@@ -73,12 +70,15 @@ function loadGuardrailTemplate(typePath, lang) {
     return null;
   }
 
-  // base (lowest priority)
-  const baseDir = path.join(PRESETS_DIR, "base");
-  const baseContent = readWithFallback(baseDir);
+  // Resolve parent chain (root → leaf)
+  const chain = resolveChainSafe(presetKey);
+
+  // base (first in chain, lowest priority)
+  const basePreset = chain.find((p) => p.key === "base");
+  const baseContent = basePreset ? readWithFallback(basePreset.dir) : "";
   if (!baseContent) return "";
 
-  // Collect stack-specific articles (arch → leaf)
+  // Collect articles from non-base presets in parent chain order
   const extraSections = [];
 
   function appendArticlesFrom(dir) {
@@ -90,16 +90,9 @@ function loadGuardrailTemplate(typePath, lang) {
     }
   }
 
-  // arch layer
-  if (segments.length >= 1 && segments[0] !== "base") {
-    const arch = presetByLeaf(segments[0]);
-    if (arch) appendArticlesFrom(arch.dir);
-  }
-
-  // leaf preset
-  if (segments.length >= 2) {
-    const leaf = presetByLeaf(segments[segments.length - 1]);
-    if (leaf?.dir) appendArticlesFrom(leaf.dir);
+  for (const preset of chain) {
+    if (preset.key === "base") continue;
+    appendArticlesFrom(preset.dir);
   }
 
   if (extraSections.length > 0) {
@@ -123,7 +116,7 @@ function runInit(root, cli) {
   try {
     const config = loadConfig(root);
     lang = config.lang || config.docs?.defaultLanguage || "en";
-    if (config.type) typePath = resolveType(config.type);
+    if (config.type) typePath = config.type;
   } catch (_) {
     // No config — use defaults
   }

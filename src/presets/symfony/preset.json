@@ -1,6 +1,5 @@
 {
-  "parent": "webapp",
-  "lang": "php",
+  "parent": "php-webapp",
   "label": "Symfony 5+",
   "aliases": [],
   "scan": {

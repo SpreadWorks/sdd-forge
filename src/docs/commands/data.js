@@ -33,7 +33,7 @@ const logger = createLogger("data");
  * @param {string} text     - テンプレート全文
  * @param {Object} analysis - analysis.json
  * @param {string} fileName - ログ出力用ファイル名
- * @param {function} [resolveFn] - (source, method, analysis, labels) => rendered string
+ * @param {function} [resolveFn] - (preset, source, method, analysis, labels) => rendered string
  * @returns {{ text: string, replaced: number, skipped: number }}
  */
 function processTemplate(text, analysis, fileName, resolveFn) {
@@ -45,7 +45,7 @@ function processTemplate(text, analysis, fileName, resolveFn) {
 
   const result = resolveDataDirectives(
     text,
-    (source, method, labels) => resolveFn(source, method, analysis, labels),
+    (preset, source, method, labels) => resolveFn(preset, source, method, analysis, labels),
     {
       onSkip(d) {
         if (d.type === "text") {
@@ -55,7 +55,7 @@ function processTemplate(text, analysis, fileName, resolveFn) {
       },
       onUnresolved(d) {
         unresolved++;
-        logger.log(`UNRESOLVED {{data}} in ${fileName}:${d.line + 1}: ${d.source}.${d.method} → null`);
+        logger.log(`UNRESOLVED {{data}} in ${fileName}:${d.line + 1}: ${d.preset}.${d.source}.${d.method} → null`);
       },
     },
   );
@@ -128,7 +128,7 @@ async function main(ctx) {
   let resolveFn;
   try {
     const resolver = await createResolver(type, root, { docsDir, configChapters: ctx.config?.chapters });
-    resolveFn = (source, method, a, labels) => resolver.resolve(source, method, a, labels);
+    resolveFn = (preset, source, method, a, labels) => resolver.resolve(preset, source, method, a, labels);
     logger.verbose(`resolver: ${type}`);
   } catch (err) {
     throw new Error(t("messages:data.resolverFailed", { message: err.message }));
@@ -147,14 +147,14 @@ async function main(ctx) {
     const filePath = path.join(docsDir, file);
     const original = fs.readFileSync(filePath, "utf8");
     // Inject file path context for lang.links resolver
-    const wrappedResolveFn = (source, method, a, labels) => {
+    const wrappedResolveFn = (preset, source, method, a, labels) => {
       if (source === "lang" && method === "links") {
-        return resolveFn(source, method, a, [`${docsDirRel}/${file}`]);
+        return resolveFn(preset, source, method, a, [`${docsDirRel}/${file}`]);
       }
       if (source === "docs" && method === "langSwitcher") {
-        return resolveFn(source, method, a, [labels[0] || "relative", `${docsDirRel}/${file}`]);
+        return resolveFn(preset, source, method, a, [labels[0] || "relative", `${docsDirRel}/${file}`]);
       }
-      return resolveFn(source, method, a, labels);
+      return resolveFn(preset, source, method, a, labels);
     };
     const result = processTemplate(original, analysis, file, wrappedResolveFn);
 

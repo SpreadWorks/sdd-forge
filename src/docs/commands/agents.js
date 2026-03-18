@@ -14,7 +14,6 @@ import { parseArgs } from "../../lib/cli.js";
 import { sddOutputDir } from "../../lib/config.js";
 import { callAgent, loadAgentConfig, DEFAULT_AGENT_TIMEOUT } from "../../lib/agent.js";
 import { translate } from "../../lib/i18n.js";
-import { resolveType } from "../../lib/types.js";
 import { createResolver } from "../lib/resolver-factory.js";
 import { createLogger } from "../../lib/progress.js";
 import { parseDirectives, replaceBlockDirective, resolveDataDirectives } from "../lib/directive-parser.js";
@@ -90,7 +89,7 @@ function resolveAgentsDirectives(text, resolveFn) {
 
   const result = resolveDataDirectives(
     text,
-    (source, method, labels) => resolveFn(source, method, {}, labels),
+    (preset, source, method, labels) => resolveFn(preset, source, method, {}, labels),
     {
       onResolve(d, rendered) {
         if (d.source === "agents" && d.method === "sdd") sddContent = rendered;
@@ -169,9 +168,9 @@ async function main(ctx) {
   const combinedDocs = [docsContent, readmeContent].filter(Boolean).join("\n\n---\n\n");
 
   // Create resolver and resolve {{data}} directives
-  const resolvedType = resolveType(config.type || "base");
+  const resolvedType = config.type || "base";
   const resolver = await createResolver(resolvedType, root, { configChapters: config.chapters });
-  const resolveFn = (source, method, a, labels) => resolver.resolve(source, method, analysis, labels);
+  const resolveFn = (preset, source, method, a, labels) => resolver.resolve(preset, source, method, analysis, labels);
 
   let content = fs.readFileSync(agentsPath, "utf8");
   const { text: resolved, sddContent, projectContent } = resolveAgentsDirectives(content, resolveFn);

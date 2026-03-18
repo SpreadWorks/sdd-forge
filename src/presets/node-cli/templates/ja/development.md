@@ -1,2 +1,2 @@
-<\!-- {{data: docs.langSwitcher("relative")}} -->
+<\!-- {{data: node-cli.docs.langSwitcher("relative")}} -->
 <\!-- {{/data}} -->

@@ -26,14 +26,14 @@ describe("resolveCommandContext", () => {
   it("loads config and resolves fields", () => {
     tmp = createTmpDir("cmd-ctx");
     writeJson(tmp, ".sdd-forge/config.json", {
-      type: "cli/node-cli",
+      type: "node-cli",
       lang: "ja",
       docs: { languages: ["ja"], defaultLanguage: "ja" },
     });
     const ctx = resolveCommandContext(null, { root: tmp });
     assert.equal(ctx.lang, "ja");
     assert.equal(ctx.outputLang, "ja");
-    assert.equal(ctx.type, "cli/node-cli");
+    assert.equal(ctx.type, "node-cli");
     assert.equal(ctx.docsDir, path.join(tmp, "docs"));
     removeTmpDir(tmp);
   });
@@ -41,7 +41,7 @@ describe("resolveCommandContext", () => {
   it("cli options override config", () => {
     tmp = createTmpDir("cmd-ctx");
     writeJson(tmp, ".sdd-forge/config.json", {
-      type: "cli/node-cli",
+      type: "node-cli",
       lang: "ja",
       docs: { languages: ["ja", "en"], defaultLanguage: "ja" },
     });
@@ -55,7 +55,7 @@ describe("resolveCommandContext", () => {
   it("overrides take highest priority", () => {
     tmp = createTmpDir("cmd-ctx");
     writeJson(tmp, ".sdd-forge/config.json", {
-      type: "cli/node-cli",
+      type: "node-cli",
       lang: "ja",
       docs: { languages: ["ja"], defaultLanguage: "ja" },
     });

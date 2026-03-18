@@ -1,6 +1,6 @@
-# <!-- {{data: project.name("")}} --><!-- {{/data}} -->
+# <!-- {{data: webapp.project.name("")}} --><!-- {{/data}} -->
 
-<!-- {{data: docs.langSwitcher("absolute")}} -->
+<!-- {{data: webapp.docs.langSwitcher("absolute")}} -->
 <!-- {{/data}} -->
 
 <!-- {{text: Write a 1-2 sentence overview of this project.}} -->
@@ -10,7 +10,7 @@
 
 | Category | Technology |
 |----------|------------|
-<!-- {{data: config.stack("")}} -->
+<!-- {{data: webapp.config.stack("")}} -->
 <!-- {{/data}} -->
 
 ## Quick Start
@@ -20,5 +20,5 @@
 
 ## Documentation
 
-<!-- {{data: docs.chapters("Chapter|Summary")}} -->
+<!-- {{data: webapp.docs.chapters("Chapter|Summary")}} -->
 <!-- {{/data}} -->

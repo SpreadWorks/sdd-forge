@@ -1,4 +1,4 @@
-<\!-- {{data: docs.langSwitcher("relative")}} -->
+<\!-- {{data: cli.docs.langSwitcher("relative")}} -->
 <\!-- {{/data}} -->
 # 06. 設定とカスタマイズ
 

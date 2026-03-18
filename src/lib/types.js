@@ -4,8 +4,6 @@
  * JSDoc 型定義と config / context のバリデーション関数。
  */
 
-import { buildTypeAliases } from "./presets.js";
-
 // ---------------------------------------------------------------------------
 // JSDoc 型定義
 // ---------------------------------------------------------------------------
@@ -60,7 +58,7 @@ import { buildTypeAliases } from "./presets.js";
  * @typedef {Object} SddConfig
  * @property {DocsConfig} docs               - Documentation configuration (required)
  * @property {string} lang                   - Operating language for CLI, AGENTS.md, skills, specs
- * @property {string} type                   - Project type ("webapp/cakephp2" | "cli" | ...)
+ * @property {string|string[]} type          - Preset name(s) (e.g. "symfony" or ["symfony", "postgres"])
  * @property {number} [concurrency]          - Per-file concurrency (default: 5)
  * @property {AgentConfig} [agent]           - AI agent invocation settings
  * @property {FlowConfig} [flow]             - Flow configuration
@@ -71,22 +69,6 @@ import { buildTypeAliases } from "./presets.js";
 // ---------------------------------------------------------------------------
 
 const VALID_TONES = new Set(["polite", "formal", "casual"]);
-
-/**
- * type 名 → 正規パスのエイリアスマップ。
- * 短縮名（例: "cakephp2"）を正規パス（例: "webapp/cakephp2"）に解決する。
- */
-export const TYPE_ALIASES = buildTypeAliases();
-
-/**
- * type 名をエイリアス解決する。エイリアスがなければそのまま返す。
- *
- * @param {string} type
- * @returns {string}
- */
-export function resolveType(type) {
-  return TYPE_ALIASES[type] || type;
-}
 
 // ---------------------------------------------------------------------------
 // バリデーション
@@ -149,9 +131,19 @@ export function validateConfig(raw) {
     errors.push("'lang' is required and must be a non-empty string");
   }
 
-  // type (required)
-  if (typeof raw.type !== "string" || raw.type.length === 0) {
-    errors.push("'type' is required and must be a non-empty string");
+  // type (required — string or non-empty string[])
+  if (typeof raw.type === "string") {
+    if (raw.type.length === 0) {
+      errors.push("'type' must be a non-empty string");
+    }
+  } else if (Array.isArray(raw.type)) {
+    if (raw.type.length === 0) {
+      errors.push("'type' array must not be empty");
+    } else if (raw.type.some((t) => typeof t !== "string" || t.length === 0)) {
+      errors.push("'type' array entries must be non-empty strings");
+    }
+  } else {
+    errors.push("'type' is required and must be a string or string[]");
   }
 
   // concurrency (省略可)

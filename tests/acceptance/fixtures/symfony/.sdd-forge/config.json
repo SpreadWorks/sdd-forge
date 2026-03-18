@@ -1,6 +1,6 @@
 {
   "lang": "en",
-  "type": "webapp/symfony",
+  "type": "symfony",
   "docs": {
     "languages": [
       "en"

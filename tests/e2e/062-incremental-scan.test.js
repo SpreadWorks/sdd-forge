@@ -16,7 +16,7 @@ describe("incremental scan by hash", () => {
     tmp = createTmpDir();
     writeJson(tmp, ".sdd-forge/config.json", {
       lang: "ja",
-      type: "cli/node-cli",
+      type: "node-cli",
       docs: { languages: ["ja"], defaultLanguage: "ja" },
       scan: { include: ["src/**/*.js"], exclude: [] },
     });

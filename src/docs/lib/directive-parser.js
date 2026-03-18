@@ -19,6 +19,7 @@
 /**
  * @typedef {Object} DataDirective
  * @property {"data"} type
+ * @property {string} preset     - プリセット名 (e.g. "symfony", "base")
  * @property {string} source     - DataSource 名 (e.g. "controllers")
  * @property {string} method     - メソッド名 (e.g. "list")
  * @property {string[]} labels   - テーブルヘッダー表示名
@@ -38,15 +39,15 @@
  * @property {number} line        - 行番号 (0-based)
  */
 
-// <!-- {{data: source.method("label1|label2|...")}} -->
-// source は "config.constants" のようにドットを含むことがある（最後のドットで分割）
-const DATA_RE = /^<!--\s*\{\{data:\s*([\w.-]+)\.([\w-]+)\("([^"]*)"\)\}\}\s*-->$/;
+// <!-- {{data: preset.source.method("label1|label2|...")}} -->
+// 3+部構成: preset(1) . source(2, dotted OK) . method(3) ("labels"(4))
+const DATA_RE = /^<!--\s*\{\{data:\s*([\w-]+)\.([\w.-]+)\.([\w-]+)\("([^"]*)"\)\}\}\s*-->$/;
 const TEXT_RE = /^<!--\s*\{\{text\s*(?:\[([^\]]*)\])?\s*:\s*(.+?)\}\}\s*-->$/;
 const ENDDATA_RE = /^<!--\s*\{\{\/data\}\}\s*-->$/;
 const ENDTEXT_RE = /^<!--\s*\{\{\/text\}\}\s*-->$/;
 
 // インライン検出用: 1行内に {{data ...}} と {{/data}} がある
-const INLINE_DATA_RE = /<!--\s*\{\{data:\s*([\w.-]+)\.([\w-]+)\("([^"]*)"\)\}\}\s*-->([\s\S]*?)<!--\s*\{\{\/data\}\}\s*-->/;
+const INLINE_DATA_RE = /<!--\s*\{\{data:\s*([\w-]+)\.([\w.-]+)\.([\w-]+)\("([^"]*)"\)\}\}\s*-->([\s\S]*?)<!--\s*\{\{\/data\}\}\s*-->/;
 
 // ブロック継承ディレクティブ
 const BLOCK_START_RE = /^<!--\s*@block:\s*([\w-]+)\s*-->$/;
@@ -91,11 +92,12 @@ export function parseDirectives(text) {
     const inlineMatches = [...lines[i].matchAll(inlineGlobal)];
     if (inlineMatches.length > 0) {
       for (const m of inlineMatches) {
-        const labels = m[3] ? m[3].split("|").map((l) => l.trim()) : [];
+        const labels = m[4] ? m[4].split("|").map((l) => l.trim()) : [];
         directives.push({
           type: "data",
-          source: m[1],
-          method: m[2],
+          preset: m[1],
+          source: m[2],
+          method: m[3],
           labels,
           raw: m[0],
           line: i,
@@ -123,11 +125,12 @@ export function parseDirectives(text) {
         }
       }
 
-      const labels = dataMatch[3] ? dataMatch[3].split("|").map((l) => l.trim()) : [];
+      const labels = dataMatch[4] ? dataMatch[4].split("|").map((l) => l.trim()) : [];
       directives.push({
         type: "data",
-        source: dataMatch[1],
-        method: dataMatch[2],
+        preset: dataMatch[1],
+        source: dataMatch[2],
+        method: dataMatch[3],
         labels,
         raw: lines[i],
         line: i,
@@ -198,7 +201,7 @@ export function replaceBlockDirective(lines, d, content) {
  * 逆順ループ + インライン/ブロック置換の共通処理。
  *
  * @param {string} text - テンプレート全文
- * @param {function} resolveFn - (source, method, labels) => rendered string | null
+ * @param {function} resolveFn - (preset, source, method, labels) => rendered string | null
  * @param {Object} [opts]
  * @param {function} [opts.onResolve] - (directive, rendered) => void — 解決時コールバック
  * @param {function} [opts.onSkip] - (directive) => void — data 以外のディレクティブ時コールバック
@@ -221,7 +224,7 @@ export function resolveDataDirectives(text, resolveFn, opts) {
       continue;
     }
 
-    const rendered = resolveFn(d.source, d.method, d.labels);
+    const rendered = resolveFn(d.preset, d.source, d.method, d.labels);
     if (rendered === null || rendered === undefined) {
       if (onUnresolved) onUnresolved(d);
       continue;
@@ -230,7 +233,7 @@ export function resolveDataDirectives(text, resolveFn, opts) {
     if (onResolve) onResolve(d, rendered);
 
     if (d.inline) {
-      const openTag = d.raw.match(/<!--\s*\{\{data:\s*[\w.-]+\.[\w-]+\("[^"]*"\)\s*\}\}\s*-->/)[0];
+      const openTag = d.raw.match(/<!--\s*\{\{data:\s*[\w-]+\.[\w.-]+\.[\w-]+\("[^"]*"\)\s*\}\}\s*-->/)[0];
       const endTag = "<!-- {{/data}} -->";
       lines[d.line] = lines[d.line].replace(d.raw, `${openTag}${rendered}${endTag}`);
       replaced++;

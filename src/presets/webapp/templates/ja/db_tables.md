@@ -1,4 +1,4 @@
-<\!-- {{data: docs.langSwitcher("relative")}} -->
+<\!-- {{data: webapp.docs.langSwitcher("relative")}} -->
 <\!-- {{/data}} -->
 # 07. DB テーブル定義
 
@@ -14,14 +14,14 @@
 <!-- @block: table-list -->
 ### テーブル一覧
 
-<!-- {{data: tables.list("テーブル名|DB|主な用途")}} -->
+<!-- {{data: webapp.tables.list("テーブル名|DB|主な用途")}} -->
 <!-- {{/data}} -->
 <!-- @endblock -->
 
 <!-- @block: fk -->
 ### 外部キー関係（FK）
 
-<!-- {{data: tables.fk("親テーブル|子テーブル|FK カラム|備考")}} -->
+<!-- {{data: webapp.tables.fk("親テーブル|子テーブル|FK カラム|備考")}} -->
 <!-- {{/data}} -->
 <!-- @endblock -->
 

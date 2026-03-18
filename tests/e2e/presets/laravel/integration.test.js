@@ -14,7 +14,7 @@ describe("Laravel scan integration", () => {
     tmp = createTmpDir();
     writeJson(tmp, ".sdd-forge/config.json", {
       lang: "ja",
-      type: "webapp/laravel",
+      type: "laravel",
       docs: { languages: ["ja"], defaultLanguage: "ja" },
     });
 

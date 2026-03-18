@@ -13,7 +13,7 @@ function makeEnv(tmp) {
 
 function setupProject(tmp, opts = {}) {
   writeJson(tmp, ".sdd-forge/config.json", {
-    lang: "ja", type: "cli/node-cli",
+    lang: "ja", type: "node-cli",
     docs: { languages: ["ja"], defaultLanguage: "ja" },
     agent: {
       default: "echo-agent",

@@ -1,4 +1,4 @@
-<!-- {{data: docs.langSwitcher("relative")}} -->
+<!-- {{data: node-cli.docs.langSwitcher("relative")}} -->
 <!-- {{/data}} -->
 # 05. 開発・テスト・配布
 

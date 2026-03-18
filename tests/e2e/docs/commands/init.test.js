@@ -13,14 +13,14 @@ describe("init CLI", () => {
 
   it("creates docs/ from template", () => {
     tmp = createTmpDir();
-    writeJson(tmp, ".sdd-forge/config.json", { lang: "ja", type: "cli/node-cli", docs: { languages: ["ja"], defaultLanguage: "ja" } });
+    writeJson(tmp, ".sdd-forge/config.json", { lang: "ja", type: "node-cli", docs: { languages: ["ja"], defaultLanguage: "ja" } });
     writeJson(tmp, "package.json", { name: "test-proj" });
     writeJson(tmp, ".sdd-forge/output/analysis.json", {
       analyzedAt: "2026-01-01",
       files: { summary: { total: 1 } },
     });
 
-    execFileSync("node", [CMD, "--type", "cli/node-cli"], {
+    execFileSync("node", [CMD, "--type", "node-cli"], {
       encoding: "utf8",
       env: { ...process.env, SDD_WORK_ROOT: tmp, SDD_SOURCE_ROOT: tmp },
     });
@@ -33,14 +33,14 @@ describe("init CLI", () => {
 
   it("--dry-run shows files without writing", () => {
     tmp = createTmpDir();
-    writeJson(tmp, ".sdd-forge/config.json", { lang: "ja", type: "cli/node-cli", docs: { languages: ["ja"], defaultLanguage: "ja" } });
+    writeJson(tmp, ".sdd-forge/config.json", { lang: "ja", type: "node-cli", docs: { languages: ["ja"], defaultLanguage: "ja" } });
     writeJson(tmp, "package.json", { name: "test-proj" });
     writeJson(tmp, ".sdd-forge/output/analysis.json", {
       analyzedAt: "2026-01-01",
       files: { summary: { total: 1 } },
     });
 
-    const result = execFileSync("node", [CMD, "--type", "cli/node-cli", "--dry-run"], {
+    const result = execFileSync("node", [CMD, "--type", "node-cli", "--dry-run"], {
       encoding: "utf8",
       env: { ...process.env, SDD_WORK_ROOT: tmp, SDD_SOURCE_ROOT: tmp },
     });
@@ -55,7 +55,7 @@ describe("init CLI", () => {
 
   it("shows help with --help", () => {
     tmp = createTmpDir();
-    writeJson(tmp, ".sdd-forge/config.json", { lang: "ja", type: "cli/node-cli", docs: { languages: ["ja"], defaultLanguage: "ja" } });
+    writeJson(tmp, ".sdd-forge/config.json", { lang: "ja", type: "node-cli", docs: { languages: ["ja"], defaultLanguage: "ja" } });
 
     const result = execFileSync("node", [CMD, "--help"], {
       encoding: "utf8",
@@ -119,7 +119,7 @@ describe("init CLI", () => {
     const promptCapture = join(tmp, "prompt.txt");
     writeJson(tmp, ".sdd-forge/config.json", {
       lang: "ja",
-      type: "cli/node-cli",
+      type: "node-cli",
       docs: { languages: ["ja"], defaultLanguage: "ja" },
       chapters: ["overview.md", "development.md"],
       agent: {
@@ -142,7 +142,7 @@ describe("init CLI", () => {
       files: { summary: { total: 1 } },
     });
 
-    execFileSync("node", [CMD, "--type", "cli/node-cli", "--force"], {
+    execFileSync("node", [CMD, "--type", "node-cli", "--force"], {
       encoding: "utf8",
       env: {
         ...process.env,
@@ -165,7 +165,7 @@ describe("init CLI", () => {
     writeJson(tmp, ".sdd-forge/config.json", {
       lang: "ja",
       docs: { languages: ["ja"], defaultLanguage: "ja", style: { purpose: "user-guide", tone: "polite" } },
-      type: "cli/node-cli",
+      type: "node-cli",
       agent: {
         default: "capture",
         providers: {
@@ -186,7 +186,7 @@ describe("init CLI", () => {
       files: { summary: { total: 1 } },
     });
 
-    execFileSync("node", [CMD, "--type", "cli/node-cli"], {
+    execFileSync("node", [CMD, "--type", "node-cli"], {
       encoding: "utf8",
       env: {
         ...process.env,

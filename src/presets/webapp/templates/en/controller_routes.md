@@ -1,4 +1,4 @@
-<!-- {{data: docs.langSwitcher("relative")}} -->
+<!-- {{data: webapp.docs.langSwitcher("relative")}} -->
 <!-- {{/data}} -->
 # 08. Controllers & Routing
 
@@ -21,14 +21,14 @@
 <!-- @block: controller-config -->
 ### Common Configuration
 
-<!-- {{data: config.auth("Item|Value")}} -->
+<!-- {{data: webapp.config.auth("Item|Value")}} -->
 <!-- {{/data}} -->
 <!-- @endblock -->
 
 <!-- @block: controller-list -->
 ### Controller List
 
-<!-- {{data: controllers.list("Controller|File|Primary Responsibility")}} -->
+<!-- {{data: webapp.controllers.list("Controller|File|Primary Responsibility")}} -->
 <!-- {{/data}} -->
 <!-- @endblock -->
 
@@ -38,13 +38,13 @@
 <!-- {{text[mode=deep]: Describe the overview of model dependencies declared by controllers.}} -->
 <!-- {{/text}} -->
 
-<!-- {{data: controllers.deps("Controller|Models Used")}} -->
+<!-- {{data: webapp.controllers.deps("Controller|Models Used")}} -->
 <!-- {{/data}} -->
 <!-- @endblock -->
 
 <!-- @block: components -->
 ### Components
 
-<!-- {{data: views.components("Component|Responsibility")}} -->
+<!-- {{data: webapp.views.components("Component|Responsibility")}} -->
 <!-- {{/data}} -->
 <!-- @endblock -->

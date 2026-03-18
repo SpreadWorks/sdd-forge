@@ -1,4 +1,4 @@
-<!-- {{data: docs.langSwitcher("relative")}} -->
+<!-- {{data: webapp.docs.langSwitcher("relative")}} -->
 <!-- {{/data}} -->
 # 07. DB Table Definitions
 
@@ -14,14 +14,14 @@
 <!-- @block: table-list -->
 ### Table List
 
-<!-- {{data: tables.list("Table|DB|Primary Purpose")}} -->
+<!-- {{data: webapp.tables.list("Table|DB|Primary Purpose")}} -->
 <!-- {{/data}} -->
 <!-- @endblock -->
 
 <!-- @block: fk -->
 ### Foreign Key Relationships (FK)
 
-<!-- {{data: tables.fk("Parent Table|Child Table|FK Column|Notes")}} -->
+<!-- {{data: webapp.tables.fk("Parent Table|Child Table|FK Column|Notes")}} -->
 <!-- {{/data}} -->
 <!-- @endblock -->
 

@@ -1,4 +1,4 @@
-<\!-- {{data: docs.langSwitcher("relative")}} -->
+<\!-- {{data: library.docs.langSwitcher("relative")}} -->
 <\!-- {{/data}} -->
 # 05. 公開 API
 

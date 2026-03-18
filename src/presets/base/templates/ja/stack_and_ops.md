@@ -1,4 +1,4 @@
-<!-- {{data: docs.langSwitcher("relative")}} -->
+<!-- {{data: base.docs.langSwitcher("relative")}} -->
 <!-- {{/data}} -->
 # 02. 技術スタックと運用
 
@@ -14,7 +14,7 @@
 <!-- @block: stack -->
 ### 技術スタック
 
-<!-- {{data: config.stack("カテゴリ|技術|バージョン")}} -->
+<!-- {{data: base.config.stack("カテゴリ|技術|バージョン")}} -->
 <!-- {{/data}} -->
 <!-- @endblock -->
 

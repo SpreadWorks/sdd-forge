@@ -13,7 +13,6 @@ import path from "path";
 import { runIfDirect } from "../../lib/entrypoint.js";
 import { repoRoot, parseArgs } from "../../lib/cli.js";
 import { loadPackageField } from "../../lib/config.js";
-import { resolveType } from "../../lib/types.js";
 import { callAgent } from "../../lib/agent.js";
 import { resolveTemplates, mergeResolved, resolveChaptersOrder, translateTemplate } from "../lib/template-merger.js";
 import { summaryToText } from "../lib/forge-prompts.js";
@@ -147,7 +146,7 @@ function main(ctx) {
     if (!rawType) {
       throw new Error(t("messages:init.noType"));
     }
-    type = resolveType(rawType);
+    type = rawType;
   }
 
   logger.verbose(`type=${type} lang=${lang}`);

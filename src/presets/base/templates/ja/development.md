@@ -1,4 +1,4 @@
-<!-- {{data: docs.langSwitcher("relative")}} -->
+<!-- {{data: base.docs.langSwitcher("relative")}} -->
 <!-- {{/data}} -->
 # 04. 開発ガイド
 
@@ -28,7 +28,7 @@
 <!-- @block: scripts -->
 ### 利用可能なスクリプト
 
-<!-- {{data: project.scripts("スクリプト|コマンド")}} -->
+<!-- {{data: base.project.scripts("スクリプト|コマンド")}} -->
 <!-- {{/data}} -->
 <!-- @endblock -->
 

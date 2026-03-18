@@ -12,31 +12,25 @@
 import fs from "fs";
 import path from "path";
 import { parseBlocks } from "./directive-parser.js";
-import { presetByLeaf, resolveChainSafe, resolveLangPreset } from "../../lib/presets.js";
+import { resolveChainSafe } from "../../lib/presets.js";
 import { callAgent } from "../../lib/agent.js";
 
 const SPECIAL_FILES = new Set(["README.md", "AGENTS.sdd.md"]);
-
-/** Resolve the lang-axis preset for a type path. */
-function getLangAxisPreset(typePath) {
-  const leaf = typePath.split("/").pop();
-  return resolveLangPreset(leaf);
-}
 
 // ---------------------------------------------------------------------------
 // レイヤー構築（ボトムアップ: 最も具体的な層から）
 // ---------------------------------------------------------------------------
 
 /**
- * type パスと言語からテンプレートレイヤーを構築する。
- * 優先度の高い順（project-local → leaf → arch → base）で返す。
+ * preset 名と言語からテンプレートレイヤーを構築する。
+ * 優先度の高い順（project-local → leaf → ... → base）で返す。
  *
- * @param {string} typePath - 型パス（例: "webapp/cakephp2"）
+ * @param {string} presetKey - preset 名（例: "cakephp2", "node-cli"）
  * @param {string} lang - ロケール（例: "ja"）
  * @param {string|null} [projectLocalDir] - プロジェクトローカルテンプレートディレクトリ
  * @returns {string[]} レイヤーディレクトリ配列（優先度高い順）
  */
-export function buildLayers(typePath, lang, projectLocalDir) {
+export function buildLayers(presetKey, lang, projectLocalDir) {
   const layers = [];
 
   // 1. project-local（最高優先）
@@ -45,18 +39,11 @@ export function buildLayers(typePath, lang, projectLocalDir) {
   }
 
   // 2. parent チェーンを leaf → root の順で追加（優先度高い順）
-  const chain = resolveChainSafe(typePath);
+  const chain = resolveChainSafe(presetKey);
 
   // chain は root → leaf の順なので、逆順（leaf → root）で追加
   for (let i = chain.length - 1; i >= 0; i--) {
     const dir = path.join(chain[i].dir, "templates", lang);
-    if (fs.existsSync(dir)) layers.push(dir);
-  }
-
-  // 3. lang 層のテンプレートディレクトリ（parent チェーンの後、base の前）
-  const langPreset = getLangAxisPreset(typePath);
-  if (langPreset) {
-    const dir = path.join(langPreset.dir, "templates", lang);
     if (fs.existsSync(dir)) layers.push(dir);
   }
 
@@ -254,42 +241,51 @@ function discoverFileNames(layers, fallbackSets, chaptersOrder) {
 // ---------------------------------------------------------------------------
 
 /**
- * type パスから章の順序を解決する。
+ * preset 名（または配列）から章の順序を解決する。
  * configChapters が指定されている場合はそれを最優先（プリセットを完全上書き）。
- * それ以外は継承チェーン（base → arch → leaf）で探索し、
- * 最も具体的な（リーフに近い）preset の chapters を使用する。
+ * 複数 preset の場合、各チェーンの章を順に union マージする。
  *
- * @param {string} typePath - 型パス（例: "webapp/cakephp2"）
+ * @param {string|string[]} presetKeys - preset 名または配列
  * @param {string[]} [configChapters] - config.json の chapters 配列（最優先）
  * @returns {string[]} 章ファイル名の順序配列
  */
-export function resolveChaptersOrder(typePath, configChapters) {
+export function resolveChaptersOrder(presetKeys, configChapters) {
   // config.json の chapters が定義されていればプリセットを完全上書き
   if (configChapters?.length) return configChapters;
 
-  const chain = resolveChainSafe(typePath);
+  const keys = Array.isArray(presetKeys) ? presetKeys : [presetKeys];
 
-  // chain は root → leaf の順。最も具体的な（leaf に近い）chapters を使用
-  // lang 層（axis: "lang"）の chapters は上書きではなく union 追加用なのでスキップ
-  let chapters = [];
-  for (const preset of chain) {
-    if (preset.axis === "lang") continue;
-    if (preset.chapters?.length) chapters = preset.chapters;
-  }
+  const seen = new Set();
+  const result = [];
 
-  // lang 層の chapters を union マージ（overview.md の直後に挿入）
-  const langPreset = getLangAxisPreset(typePath);
-  if (langPreset?.chapters?.length) {
-    const existing = new Set(chapters);
-    const toAdd = langPreset.chapters.filter((ch) => !existing.has(ch));
-    if (toAdd.length > 0) {
-      const overviewIdx = chapters.indexOf("overview.md");
-      const insertAt = overviewIdx >= 0 ? overviewIdx + 1 : 0;
-      chapters = [...chapters.slice(0, insertAt), ...toAdd, ...chapters.slice(insertAt)];
+  for (const key of keys) {
+    const chain = resolveChainSafe(key);
+
+    // chain 内で最も具体的な chapters をベースにする
+    let primary = [];
+    for (const preset of chain) {
+      if (preset.chapters?.length) primary = preset.chapters;
+    }
+
+    // 親チェーンの章で未含有のものも追加
+    const chainChapters = [...primary];
+    for (const preset of chain) {
+      if (!preset.chapters?.length) continue;
+      for (const ch of preset.chapters) {
+        if (!chainChapters.includes(ch)) chainChapters.push(ch);
+      }
+    }
+
+    // 全体結果に union マージ（重複除去）
+    for (const ch of chainChapters) {
+      if (!seen.has(ch)) {
+        seen.add(ch);
+        result.push(ch);
+      }
     }
   }
 
-  return chapters;
+  return result;
 }
 
 // ---------------------------------------------------------------------------

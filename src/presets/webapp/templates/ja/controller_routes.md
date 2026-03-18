@@ -1,4 +1,4 @@
-<\!-- {{data: docs.langSwitcher("relative")}} -->
+<\!-- {{data: webapp.docs.langSwitcher("relative")}} -->
 <\!-- {{/data}} -->
 # 08. コントローラとルーティング
 
@@ -21,14 +21,14 @@
 <!-- @block: controller-config -->
 ### 共通設定
 
-<!-- {{data: config.auth("項目|内容")}} -->
+<!-- {{data: webapp.config.auth("項目|内容")}} -->
 <!-- {{/data}} -->
 <!-- @endblock -->
 
 <!-- @block: controller-list -->
 ### コントローラ一覧
 
-<!-- {{data: controllers.list("コントローラ名|ファイル|主な責務")}} -->
+<!-- {{data: webapp.controllers.list("コントローラ名|ファイル|主な責務")}} -->
 <!-- {{/data}} -->
 <!-- @endblock -->
 
@@ -38,13 +38,13 @@
 <!-- {{text[mode=deep]: コントローラが宣言しているモデル依存の概要を説明してください。}} -->
 <!-- {{/text}} -->
 
-<!-- {{data: controllers.deps("コントローラ|使用モデル")}} -->
+<!-- {{data: webapp.controllers.deps("コントローラ|使用モデル")}} -->
 <!-- {{/data}} -->
 <!-- @endblock -->
 
 <!-- @block: components -->
 ### コンポーネント
 
-<!-- {{data: views.components("コンポーネント|責務")}} -->
+<!-- {{data: webapp.views.components("コンポーネント|責務")}} -->
 <!-- {{/data}} -->
 <!-- @endblock -->

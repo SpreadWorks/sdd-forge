@@ -1,4 +1,4 @@
-<!-- {{data: docs.langSwitcher("relative")}} -->
+<!-- {{data: base.docs.langSwitcher("relative")}} -->
 <!-- {{/data}} -->
 # 04. Development Guide
 
@@ -28,7 +28,7 @@
 <!-- @block: scripts -->
 ### Available Scripts
 
-<!-- {{data: project.scripts("Script|Command")}} -->
+<!-- {{data: base.project.scripts("Script|Command")}} -->
 <!-- {{/data}} -->
 <!-- @endblock -->
 

@@ -111,8 +111,8 @@ describe("webapp en templates", () => {
 
 describe("laravel en templates", () => {
   it("resolveTemplates resolves all webapp chapters for en", () => {
-    const chaptersOrder = resolveChaptersOrder("webapp/laravel");
-    const resolutions = resolveTemplates("webapp/laravel", "en", { chaptersOrder });
+    const chaptersOrder = resolveChaptersOrder("laravel");
+    const resolutions = resolveTemplates("laravel", "en", { chaptersOrder });
 
     const resolvedFiles = resolutions.map((r) => r.fileName);
     for (const ch of WEBAPP_CHAPTERS) {
@@ -145,8 +145,8 @@ describe("laravel en templates", () => {
 
 describe("symfony en templates", () => {
   it("resolveTemplates resolves all webapp chapters for en", () => {
-    const chaptersOrder = resolveChaptersOrder("webapp/symfony");
-    const resolutions = resolveTemplates("webapp/symfony", "en", { chaptersOrder });
+    const chaptersOrder = resolveChaptersOrder("symfony");
+    const resolutions = resolveTemplates("symfony", "en", { chaptersOrder });
 
     const resolvedFiles = resolutions.map((r) => r.fileName);
     for (const ch of WEBAPP_CHAPTERS) {
@@ -179,8 +179,8 @@ describe("symfony en templates", () => {
 
 describe("cakephp2 en templates", () => {
   it("resolveTemplates resolves all webapp chapters for en", () => {
-    const chaptersOrder = resolveChaptersOrder("webapp/cakephp2");
-    const resolutions = resolveTemplates("webapp/cakephp2", "en", { chaptersOrder });
+    const chaptersOrder = resolveChaptersOrder("cakephp2");
+    const resolutions = resolveTemplates("cakephp2", "en", { chaptersOrder });
 
     const resolvedFiles = resolutions.map((r) => r.fileName);
     for (const ch of WEBAPP_CHAPTERS) {

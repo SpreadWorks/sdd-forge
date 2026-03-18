@@ -15,7 +15,7 @@ import { repoRoot, parseArgs } from "../../lib/cli.js";
 import { sddDataDir, sddOutputDir } from "../../lib/config.js";
 import { collectFiles } from "../lib/scanner.js";
 import { loadDataSources } from "../lib/data-source-loader.js";
-import { presetByLeaf, resolveChainSafe, resolveLangPreset } from "../../lib/presets.js";
+import { presetByLeaf, resolveChainSafe } from "../../lib/presets.js";
 import { createLogger } from "../../lib/progress.js";
 import { translate } from "../../lib/i18n.js";
 import { resolveCommandContext } from "../lib/command-context.js";
@@ -215,8 +215,9 @@ async function main(ctx) {
   logger.verbose(`type=${type}`);
 
   // preset からスキャン設定を取得
-  const leaf = type.split("/").pop();
-  const preset = presetByLeaf(leaf);
+  // type が配列の場合は最初の要素を使用（scan は主要 preset のパターンで実行）
+  const primaryType = Array.isArray(type) ? type[0] : type;
+  const preset = presetByLeaf(primaryType);
   const presetScan = preset?.scan || {};
 
   // config.json に scan があれば preset を完全置換、なければ preset のデフォルトを使用
@@ -226,18 +227,12 @@ async function main(ctx) {
   const files = collectFiles(src, scanConfig.include || [], scanConfig.exclude);
   logger.verbose(`collected ${files.length} files`);
 
-  // DataSource ロード: parent チェーン（root → leaf）+ lang 層 + project
-  const chain = resolveChainSafe(type);
+  // DataSource ロード: parent チェーン（root → leaf）+ project
+  const chain = resolveChainSafe(primaryType);
 
   let dataSources = new Map();
   for (const p of chain) {
     dataSources = await loadScanSources(path.join(p.dir, "data"), dataSources);
-  }
-
-  // lang 層の追加ロード
-  const langPreset = resolveLangPreset(leaf);
-  if (langPreset) {
-    dataSources = await loadScanSources(path.join(langPreset.dir, "data"), dataSources);
   }
 
   const projectDataDir = sddDataDir(root);

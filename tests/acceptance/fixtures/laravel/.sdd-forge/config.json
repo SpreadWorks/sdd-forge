@@ -1,6 +1,6 @@
 {
   "lang": "en",
-  "type": "webapp/laravel",
+  "type": "laravel",
   "docs": {
     "languages": [
       "en"

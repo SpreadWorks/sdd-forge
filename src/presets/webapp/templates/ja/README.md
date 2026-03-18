@@ -1,6 +1,6 @@
-# <!-- {{data: project.name("")}} --><!-- {{/data}} -->
+# <!-- {{data: webapp.project.name("")}} --><!-- {{/data}} -->
 
-<!-- {{data: docs.langSwitcher("absolute")}} -->
+<!-- {{data: webapp.docs.langSwitcher("absolute")}} -->
 <!-- {{/data}} -->
 
 <!-- {{text: このプロジェクトの概要を1〜2文で説明してください。}} -->
@@ -10,7 +10,7 @@
 
 | カテゴリ | 技術 |
 |----------|------|
-<!-- {{data: config.stack("")}} -->
+<!-- {{data: webapp.config.stack("")}} -->
 <!-- {{/data}} -->
 
 ## クイックスタート
@@ -20,5 +20,5 @@
 
 ## ドキュメント
 
-<!-- {{data: docs.chapters("章|概要")}} -->
+<!-- {{data: webapp.docs.chapters("章|概要")}} -->
 <!-- {{/data}} -->

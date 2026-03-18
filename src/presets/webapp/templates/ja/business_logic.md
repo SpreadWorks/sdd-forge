@@ -1,4 +1,4 @@
-<\!-- {{data: docs.langSwitcher("relative")}} -->
+<\!-- {{data: webapp.docs.langSwitcher("relative")}} -->
 <\!-- {{/data}} -->
 # 09. ビジネスロジック層
 
@@ -14,7 +14,7 @@
 <!-- @block: logic-list -->
 ### ロジッククラス一覧
 
-<!-- {{data: models.logic("クラス名|ファイル|責務")}} -->
+<!-- {{data: webapp.models.logic("クラス名|ファイル|責務")}} -->
 <!-- {{/data}} -->
 <!-- @endblock -->
 
@@ -24,7 +24,7 @@
 <!-- {{text[mode=deep]: ロジッククラスの継承パターンと共通メソッドの役割を説明してください。}} -->
 <!-- {{/text}} -->
 
-<!-- {{data: models.logicMethods("クラス|継承元|主要メソッド")}} -->
+<!-- {{data: webapp.models.logicMethods("クラス|継承元|主要メソッド")}} -->
 <!-- {{/data}} -->
 <!-- @endblock -->
 
@@ -38,7 +38,7 @@
 <!-- @block: model-relations -->
 ### モデル間の依存関係
 
-<!-- {{data: models.relations("モデル|関連 (belongsTo / hasMany / hasOne)")}} -->
+<!-- {{data: webapp.models.relations("モデル|関連 (belongsTo / hasMany / hasOne)")}} -->
 <!-- {{/data}} -->
 
 <!-- {{text[mode=deep]: 主要なモデル間の関連パターンを説明してください。}} -->

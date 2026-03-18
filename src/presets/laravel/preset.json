@@ -1,6 +1,5 @@
 {
-  "parent": "webapp",
-  "lang": "php",
+  "parent": "php-webapp",
   "label": "Laravel 8+",
   "aliases": [],
   "scan": {

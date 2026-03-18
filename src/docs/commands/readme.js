@@ -126,11 +126,11 @@ async function main(ctx) {
 
   const resolveResult = resolveDataDirectives(
     templateContent,
-    (source, method, labels) => {
+    (preset, source, method, labels) => {
       if (source === "docs" && method === "langSwitcher") {
-        return resolveFn(source, method, {}, [labels[0] || "relative", readmeRelPath]);
+        return resolveFn(preset, source, method, {}, [labels[0] || "relative", readmeRelPath]);
       }
-      return resolveFn(source, method, {}, labels);
+      return resolveFn(preset, source, method, {}, labels);
     },
   );
   let resolved = resolveResult.text;

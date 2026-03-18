@@ -1,38 +1,18 @@
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
-import { validateConfig, resolveType, TYPE_ALIASES } from "../../../src/lib/types.js";
-
-describe("TYPE_ALIASES", () => {
-  it("maps php-mvc to webapp/cakephp2", () => {
-    assert.equal(TYPE_ALIASES["php-mvc"], "webapp/cakephp2");
-  });
-
-  it("maps node-cli to cli/node-cli", () => {
-    assert.equal(TYPE_ALIASES["node-cli"], "cli/node-cli");
-  });
-});
-
-describe("resolveType", () => {
-  it("resolves aliased type", () => {
-    assert.equal(resolveType("php-mvc"), "webapp/cakephp2");
-  });
-
-  it("returns type as-is when no alias", () => {
-    assert.equal(resolveType("webapp"), "webapp");
-  });
-});
+import { validateConfig } from "../../../src/lib/types.js";
 
 describe("validateConfig", () => {
   const validConfig = {
     lang: "ja",
-    type: "cli/node-cli",
+    type: "node-cli",
     docs: { languages: ["ja"], defaultLanguage: "ja" },
   };
 
   it("accepts minimal valid config", () => {
     const result = validateConfig({ ...validConfig });
     assert.equal(result.lang, "ja");
-    assert.equal(result.type, "cli/node-cli");
+    assert.equal(result.type, "node-cli");
   });
 
   it("throws on non-object input", () => {
@@ -50,6 +30,26 @@ describe("validateConfig", () => {
 
   it("throws when docs is missing", () => {
     assert.throws(() => validateConfig({ lang: "ja", type: "cli" }), /docs/);
+  });
+
+  it("accepts type as array of strings", () => {
+    const cfg = { ...validConfig, type: ["symfony", "postgres"] };
+    const result = validateConfig(cfg);
+    assert.deepEqual(result.type, ["symfony", "postgres"]);
+  });
+
+  it("rejects empty type array", () => {
+    assert.throws(
+      () => validateConfig({ ...validConfig, type: [] }),
+      /type/,
+    );
+  });
+
+  it("rejects non-string entries in type array", () => {
+    assert.throws(
+      () => validateConfig({ ...validConfig, type: ["symfony", 123] }),
+      /type/,
+    );
   });
 
   it("validates docs.style", () => {

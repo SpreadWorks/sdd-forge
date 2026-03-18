@@ -21,45 +21,52 @@ describe("createResolver", () => {
 
   it("returns an object with resolve method", async () => {
     setupTmp("resolver-basic");
-    const resolver = await createResolver("cli/node-cli", tmp);
+    const resolver = await createResolver("node-cli", tmp);
     assert.equal(typeof resolver.resolve, "function");
   });
 
   it("resolves project.name from common data sources", async () => {
     setupTmp("resolver-project");
     writeJson(tmp, "package.json", { name: "test-pkg", version: "1.0.0" });
-    const resolver = await createResolver("cli/node-cli", tmp);
-    const result = resolver.resolve("project", "name", {}, [""]);
+    const resolver = await createResolver("node-cli", tmp);
+    const result = resolver.resolve("node-cli", "project", "name", {}, [""]);
     assert.equal(result, "test-pkg");
   });
 
   it("resolves project.version", async () => {
     setupTmp("resolver-version");
     writeJson(tmp, "package.json", { name: "pkg", version: "2.5.0" });
-    const resolver = await createResolver("cli/node-cli", tmp);
-    const result = resolver.resolve("project", "version", {}, [""]);
+    const resolver = await createResolver("node-cli", tmp);
+    const result = resolver.resolve("node-cli", "project", "version", {}, [""]);
     assert.equal(result, "2.5.0");
+  });
+
+  it("returns null for unknown preset", async () => {
+    setupTmp("resolver-unknown-preset");
+    const resolver = await createResolver("node-cli", tmp);
+    const result = resolver.resolve("nonexistent", "project", "name", {}, []);
+    assert.equal(result, null);
   });
 
   it("returns null for unknown source.method", async () => {
     setupTmp("resolver-unknown");
-    const resolver = await createResolver("cli/node-cli", tmp);
-    const result = resolver.resolve("nonexistent", "method", {}, []);
+    const resolver = await createResolver("node-cli", tmp);
+    const result = resolver.resolve("node-cli", "nonexistent", "method", {}, []);
     assert.equal(result, null);
   });
 
   it("returns null for known source but unknown method", async () => {
     setupTmp("resolver-badmethod");
     writeJson(tmp, "package.json", { name: "pkg", version: "1.0.0" });
-    const resolver = await createResolver("cli/node-cli", tmp);
-    const result = resolver.resolve("project", "nonExistentMethod", {}, []);
+    const resolver = await createResolver("node-cli", tmp);
+    const result = resolver.resolve("node-cli", "project", "nonExistentMethod", {}, []);
     assert.equal(result, null);
   });
 
   it("returns null when method throws an error", async () => {
     setupTmp("resolver-error");
-    const resolver = await createResolver("cli/node-cli", tmp);
-    const result = resolver.resolve("docs", "chapters", {}, ["A", "B"]);
+    const resolver = await createResolver("node-cli", tmp);
+    const result = resolver.resolve("node-cli", "docs", "chapters", {}, ["A", "B"]);
     assert.equal(result, null);
   });
 
@@ -69,16 +76,16 @@ describe("createResolver", () => {
       project: { summary: "Custom override" },
     });
     writeJson(tmp, "package.json", { name: "test-pkg", version: "1.0.0" });
-    const resolver = await createResolver("cli/node-cli", tmp);
+    const resolver = await createResolver("node-cli", tmp);
     // Verify resolver still resolves normally with overrides loaded
-    assert.equal(resolver.resolve("project", "name", {}, [""]), "test-pkg");
+    assert.equal(resolver.resolve("node-cli", "project", "name", {}, [""]), "test-pkg");
   });
 
   it("works without overrides.json", async () => {
     setupTmp("resolver-no-overrides");
     writeJson(tmp, "package.json", { name: "pkg", version: "1.0.0" });
-    const resolver = await createResolver("cli/node-cli", tmp);
-    const result = resolver.resolve("project", "name", {}, [""]);
+    const resolver = await createResolver("node-cli", tmp);
+    const result = resolver.resolve("node-cli", "project", "name", {}, [""]);
     assert.equal(result, "pkg");
   });
 
@@ -87,17 +94,17 @@ describe("createResolver", () => {
     writeJson(tmp, "package.json", { name: "docsdir-pkg", version: "1.0.0" });
     const docsDir = path.join(tmp, "docs", "ja");
     fs.mkdirSync(docsDir, { recursive: true });
-    const resolver = await createResolver("cli/node-cli", tmp, { docsDir });
-    assert.equal(resolver.resolve("project", "name", {}, [""]), "docsdir-pkg");
+    const resolver = await createResolver("node-cli", tmp, { docsDir });
+    assert.equal(resolver.resolve("node-cli", "project", "name", {}, [""]), "docsdir-pkg");
   });
 
   it("resolves data from parent chain presets", async () => {
     setupTmp("resolver-chain");
     writeJson(tmp, "package.json", { name: "chain-pkg", version: "1.0.0" });
-    // cli/node-cli should load base → cli → node-cli chain
-    const resolver = await createResolver("cli/node-cli", tmp);
+    // node-cli resolves through base → cli → node-cli chain
+    const resolver = await createResolver("node-cli", tmp);
     // project source is from common, should be available through chain
-    const name = resolver.resolve("project", "name", {}, [""]);
+    const name = resolver.resolve("node-cli", "project", "name", {}, [""]);
     assert.equal(name, "chain-pkg");
   });
 
@@ -105,7 +112,7 @@ describe("createResolver", () => {
     setupTmp("resolver-single");
     writeJson(tmp, "package.json", { name: "single", version: "0.1.0" });
     const resolver = await createResolver("cli", tmp);
-    const result = resolver.resolve("project", "name", {}, [""]);
+    const result = resolver.resolve("cli", "project", "name", {}, [""]);
     assert.equal(result, "single");
   });
 
@@ -113,7 +120,7 @@ describe("createResolver", () => {
     setupTmp("resolver-base");
     writeJson(tmp, "package.json", { name: "base-pkg", version: "1.0.0" });
     const resolver = await createResolver("base", tmp);
-    assert.equal(resolver.resolve("project", "name", {}, [""]), "base-pkg");
+    assert.equal(resolver.resolve("base", "project", "name", {}, [""]), "base-pkg");
   });
 
   it("loads project-specific DataSources from .sdd-forge/data/", async () => {
@@ -121,16 +128,33 @@ describe("createResolver", () => {
     writeJson(tmp, "package.json", { name: "projds", version: "1.0.0" });
     // Project data dir exists but is empty — should not break
     fs.mkdirSync(path.join(tmp, ".sdd-forge", "data"), { recursive: true });
-    const resolver = await createResolver("cli/node-cli", tmp);
-    assert.equal(resolver.resolve("project", "name", {}, [""]), "projds");
+    const resolver = await createResolver("node-cli", tmp);
+    assert.equal(resolver.resolve("node-cli", "project", "name", {}, [""]), "projds");
   });
 
   it("accepts configChapters option", async () => {
     setupTmp("resolver-chapters");
     writeJson(tmp, "package.json", { name: "ch-pkg", version: "1.0.0" });
-    const resolver = await createResolver("cli/node-cli", tmp, {
+    const resolver = await createResolver("node-cli", tmp, {
       configChapters: ["overview", "cli_commands"],
     });
-    assert.equal(resolver.resolve("project", "name", {}, [""]), "ch-pkg");
+    assert.equal(resolver.resolve("node-cli", "project", "name", {}, [""]), "ch-pkg");
+  });
+
+  it("accepts array of presets and resolves each independently", async () => {
+    setupTmp("resolver-multi");
+    writeJson(tmp, "package.json", { name: "multi-pkg", version: "1.0.0" });
+    const resolver = await createResolver(["node-cli", "postgres"], tmp);
+    // Both presets should be resolvable
+    assert.equal(resolver.resolve("node-cli", "project", "name", {}, [""]), "multi-pkg");
+    assert.equal(resolver.resolve("postgres", "project", "name", {}, [""]), "multi-pkg");
+  });
+
+  it("exposes presetKeys() listing all leaf keys", async () => {
+    setupTmp("resolver-keys");
+    const resolver = await createResolver(["node-cli", "postgres"], tmp);
+    const keys = resolver.presetKeys();
+    assert.ok(keys.includes("node-cli"));
+    assert.ok(keys.includes("postgres"));
   });
 });

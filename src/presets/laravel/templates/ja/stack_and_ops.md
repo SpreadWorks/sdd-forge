@@ -3,27 +3,27 @@
 <!-- @block: dependencies -->
 ### PHP 依存パッケージ (composer.json)
 
-<!-- {{data: config.composer("パッケージ|バージョン|用途")}} -->
+<!-- {{data: laravel.config.composer("パッケージ|バージョン|用途")}} -->
 <!-- {{/data}} -->
 
 ### docker-compose.yml 構成
 
-<!-- {{data: docker.list("サービス|コンテナ名|ポート|イメージ")}} -->
+<!-- {{data: laravel.docker.list("サービス|コンテナ名|ポート|イメージ")}} -->
 <!-- {{/data}} -->
 
 ### ミドルウェア
 
-<!-- {{data: config.middleware("クラス|ファイル|用途")}} -->
+<!-- {{data: laravel.config.middleware("クラス|ファイル|用途")}} -->
 <!-- {{/data}} -->
 
 ### サービスプロバイダ
 
-<!-- {{data: config.providers("プロバイダ|ファイル|register|boot")}} -->
+<!-- {{data: laravel.config.providers("プロバイダ|ファイル|register|boot")}} -->
 <!-- {{/data}} -->
 
 ### 設定ファイル
 
-<!-- {{data: config.files("ファイル|主要キー")}} -->
+<!-- {{data: laravel.config.files("ファイル|主要キー")}} -->
 <!-- {{/data}} -->
 <!-- @endblock -->
 

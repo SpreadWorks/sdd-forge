@@ -33,18 +33,18 @@ npm run docker:stop
 <!-- {{text: テストフレームワークとテスト実行方法を説明してください。}} -->
 <!-- {{/text}} -->
 
-<!-- {{data: tests.list("項目|件数|ディレクトリ")}} -->
+<!-- {{data: cakephp2.tests.list("項目|件数|ディレクトリ")}} -->
 <!-- {{/data}} -->
 
 ### 設定定数リファレンス
 
 #### スカラー定数
 
-<!-- {{data: config.constants("定数名|値|説明")}} -->
+<!-- {{data: cakephp2.config.constants("定数名|値|説明")}} -->
 <!-- {{/data}} -->
 
 #### 選択肢定数
 
-<!-- {{data: config.constantsSelect("定数名|選択肢")}} -->
+<!-- {{data: cakephp2.config.constantsSelect("定数名|選択肢")}} -->
 <!-- {{/data}} -->
 <!-- @endblock -->

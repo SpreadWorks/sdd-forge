@@ -1,6 +1,6 @@
 {
   "lang": "en",
-  "type": "webapp/cakephp2",
+  "type": "cakephp2",
   "docs": {
     "languages": [
       "en"

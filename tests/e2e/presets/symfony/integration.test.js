@@ -14,7 +14,7 @@ describe("Symfony scan integration", () => {
     tmp = createTmpDir();
     writeJson(tmp, ".sdd-forge/config.json", {
       lang: "ja",
-      type: "webapp/symfony",
+      type: "symfony",
       docs: { languages: ["ja"], defaultLanguage: "ja" },
     });
 

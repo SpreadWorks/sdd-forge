@@ -1,4 +1,4 @@
-<\!-- {{data: docs.langSwitcher("relative")}} -->
+<\!-- {{data: webapp.docs.langSwitcher("relative")}} -->
 <\!-- {{/data}} -->
 # 05. 認証とセッション管理
 
@@ -17,7 +17,7 @@
 <!-- {{text[mode=deep]: 認証方式の概要を説明してください。認証コンポーネント設定を含めること。}} -->
 <!-- {{/text}} -->
 
-<!-- {{data: config.auth("項目|設定値")}} -->
+<!-- {{data: webapp.config.auth("項目|設定値")}} -->
 <!-- {{/data}} -->
 <!-- @endblock -->
 
@@ -27,7 +27,7 @@
 <!-- {{text[mode=deep]: アクセス制御の定義と、ロールベースのアクセス制御ルールを説明してください。}} -->
 <!-- {{/text}} -->
 
-<!-- {{data: config.acl("ロール|group_id|権限")}} -->
+<!-- {{data: webapp.config.acl("ロール|group_id|権限")}} -->
 <!-- {{/data}} -->
 <!-- @endblock -->
 

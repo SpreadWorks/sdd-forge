@@ -13,7 +13,7 @@ function makeEnv(tmp) {
 
 function setupProject(tmp, opts = {}) {
   writeJson(tmp, ".sdd-forge/config.json", {
-    lang: "ja", type: "cli/node-cli",
+    lang: "ja", type: "node-cli",
     docs: { languages: ["ja"], defaultLanguage: "ja" },
     ...opts.config,
   });
@@ -25,7 +25,7 @@ function setupProject(tmp, opts = {}) {
 
 // Block data directive helper
 function dataBlock(source, method, labels, placeholder) {
-  return `<!-- {{data: ${source}.${method}("${labels}")}} -->\n${placeholder}\n<!-- {{/data}} -->`;
+  return `<!-- {{data: node-cli.${source}.${method}("${labels}")}} -->\n${placeholder}\n<!-- {{/data}} -->`;
 }
 
 describe("data CLI", () => {

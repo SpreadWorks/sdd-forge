@@ -20,7 +20,6 @@ import { textFillFromAnalysis } from "./text.js";
 import { mapWithConcurrency } from "../lib/concurrency.js";
 import { PKG_DIR, repoRoot, parseArgs } from "../../lib/cli.js";
 import { loadConfig, resolveConcurrency } from "../../lib/config.js";
-import { resolveType } from "../../lib/types.js";
 import { loadFullAnalysis, loadAnalysisData, getChapterFiles, readText } from "../lib/command-context.js";
 import { createResolver } from "../lib/resolver-factory.js";
 import { callAgentAsync, DEFAULT_AGENT_TIMEOUT, resolveAgent } from "../../lib/agent.js";
@@ -215,7 +214,7 @@ async function main() {
 
   const root = repoRoot(import.meta.url);
   const config = loadConfig(root);
-  const type = resolveType(config.type || "");
+  const type = config.type || "";
   const lang = config.docs.defaultLanguage;
   const t = translate();
   const agent = resolveAgent(config, "docs.forge");
@@ -235,7 +234,7 @@ async function main() {
     let resolveFn = null;
     try {
       const resolver = await createResolver(type, root, { configChapters: config.chapters });
-      resolveFn = (source, method, analysis, labels) => resolver.resolve(source, method, analysis, labels);
+      resolveFn = (preset, source, method, analysis, labels) => resolver.resolve(preset, source, method, analysis, labels);
     } catch (err) {
       console.log(`[forge] WARN: resolver not available (${err.message}), skipping {{data}} population`);
     }

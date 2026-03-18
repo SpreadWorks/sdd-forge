@@ -1,4 +1,4 @@
-<!-- {{data: docs.langSwitcher("relative")}} -->
+<!-- {{data: base.docs.langSwitcher("relative")}} -->
 <!-- {{/data}} -->
 # 03. Project Structure
 
@@ -28,6 +28,6 @@
 <!-- @block: libraries -->
 ### Shared Libraries
 
-<!-- {{data: libs.list("Class|File|Responsibility")}} -->
+<!-- {{data: base.libs.list("Class|File|Responsibility")}} -->
 <!-- {{/data}} -->
 <!-- @endblock -->

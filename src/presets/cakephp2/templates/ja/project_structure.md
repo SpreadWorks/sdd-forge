@@ -17,23 +17,23 @@
 <!-- @block: libraries -->
 ### 共通ライブラリ (Lib/)
 
-<!-- {{data: libs.list("クラス|ファイル|責務")}} -->
+<!-- {{data: cakephp2.libs.list("クラス|ファイル|責務")}} -->
 <!-- {{/data}} -->
 
 ### View 層
 
 #### ヘルパー
 
-<!-- {{data: views.helpers("ヘルパー|継承元|責務")}} -->
+<!-- {{data: cakephp2.views.helpers("ヘルパー|継承元|責務")}} -->
 <!-- {{/data}} -->
 
 #### レイアウト
 
-<!-- {{data: views.layouts("ファイル|用途")}} -->
+<!-- {{data: cakephp2.views.layouts("ファイル|用途")}} -->
 <!-- {{/data}} -->
 
 #### エレメント
 
-<!-- {{data: views.elements("ファイル|用途")}} -->
+<!-- {{data: cakephp2.views.elements("ファイル|用途")}} -->
 <!-- {{/data}} -->
 <!-- @endblock -->

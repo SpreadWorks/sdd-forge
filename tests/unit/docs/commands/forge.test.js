@@ -104,7 +104,7 @@ describe("forge CLI validation", () => {
 
   it("rejects invalid --max-runs", () => {
     tmp = createTmpDir();
-    writeJson(tmp, ".sdd-forge/config.json", { lang: "ja", type: "cli/node-cli", docs: { languages: ["ja"], defaultLanguage: "ja" } });
+    writeJson(tmp, ".sdd-forge/config.json", { lang: "ja", type: "node-cli", docs: { languages: ["ja"], defaultLanguage: "ja" } });
     try {
       execFileSync("node", [CMD, "--prompt", "test", "--max-runs", "0"], {
         encoding: "utf8",
@@ -118,7 +118,7 @@ describe("forge CLI validation", () => {
 
   it("rejects invalid --mode", () => {
     tmp = createTmpDir();
-    writeJson(tmp, ".sdd-forge/config.json", { lang: "ja", type: "cli/node-cli", docs: { languages: ["ja"], defaultLanguage: "ja" } });
+    writeJson(tmp, ".sdd-forge/config.json", { lang: "ja", type: "node-cli", docs: { languages: ["ja"], defaultLanguage: "ja" } });
     try {
       execFileSync("node", [CMD, "--prompt", "test", "--mode", "invalid"], {
         encoding: "utf8",
@@ -132,7 +132,7 @@ describe("forge CLI validation", () => {
 
   it("exits with error when no prompt given", () => {
     tmp = createTmpDir();
-    writeJson(tmp, ".sdd-forge/config.json", { lang: "ja", type: "cli/node-cli", docs: { languages: ["ja"], defaultLanguage: "ja" } });
+    writeJson(tmp, ".sdd-forge/config.json", { lang: "ja", type: "node-cli", docs: { languages: ["ja"], defaultLanguage: "ja" } });
 
     try {
       execFileSync("node", [CMD], {
@@ -147,7 +147,7 @@ describe("forge CLI validation", () => {
 
   it("shows help with --help", () => {
     tmp = createTmpDir();
-    writeJson(tmp, ".sdd-forge/config.json", { lang: "ja", type: "cli/node-cli", docs: { languages: ["ja"], defaultLanguage: "ja" } });
+    writeJson(tmp, ".sdd-forge/config.json", { lang: "ja", type: "node-cli", docs: { languages: ["ja"], defaultLanguage: "ja" } });
 
     const result = execFileSync("node", [CMD, "--help"], {
       encoding: "utf8",
@@ -158,7 +158,7 @@ describe("forge CLI validation", () => {
 
   it("--dry-run skips writes, review, and agent calls", () => {
     tmp = createTmpDir();
-    writeJson(tmp, ".sdd-forge/config.json", { lang: "ja", type: "cli/node-cli", docs: { languages: ["ja"], defaultLanguage: "ja" } });
+    writeJson(tmp, ".sdd-forge/config.json", { lang: "ja", type: "node-cli", docs: { languages: ["ja"], defaultLanguage: "ja" } });
     writeFile(tmp, "docs/01_test.md", "# 01. Test\n\nContent\n");
 
     const result = execFileSync("node", [
@@ -177,7 +177,7 @@ describe("forge CLI validation", () => {
 
   it("runs review in local mode and handles pass", () => {
     tmp = createTmpDir();
-    writeJson(tmp, ".sdd-forge/config.json", { lang: "ja", type: "cli/node-cli", docs: { languages: ["ja"], defaultLanguage: "ja" } });
+    writeJson(tmp, ".sdd-forge/config.json", { lang: "ja", type: "node-cli", docs: { languages: ["ja"], defaultLanguage: "ja" } });
     // Create docs that will pass review
     const lines = ["# 01. Test", ""];
     for (let i = 0; i < 20; i++) lines.push(`Content line ${i}`);
@@ -200,7 +200,7 @@ describe("forge CLI validation", () => {
     tmp = createTmpDir();
     writeJson(tmp, ".sdd-forge/config.json", {
       lang: "ja",
-      type: "cli/node-cli",
+      type: "node-cli",
       docs: { languages: ["ja"], defaultLanguage: "ja" },
       agent: {
         default: "echo-agent",
@@ -236,7 +236,7 @@ describe("forge CLI validation", () => {
     tmp = createTmpDir();
     writeJson(tmp, ".sdd-forge/config.json", {
       lang: "ja",
-      type: "cli/node-cli",
+      type: "node-cli",
       docs: { languages: ["ja"], defaultLanguage: "ja" },
       agent: {
         default: "echo-agent",

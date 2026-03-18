@@ -1,4 +1,4 @@
-<\!-- {{data: docs.langSwitcher("relative")}} -->
+<\!-- {{data: webapp.docs.langSwitcher("relative")}} -->
 <\!-- {{/data}} -->
 # 10. バッチとコンソールコマンド
 
@@ -14,7 +14,7 @@
 <!-- @block: command-list -->
 ### コマンド一覧
 
-<!-- {{data: shells.list("コマンド名|ファイル|用途")}} -->
+<!-- {{data: webapp.shells.list("コマンド名|ファイル|用途")}} -->
 <!-- {{/data}} -->
 <!-- @endblock -->
 
@@ -24,14 +24,14 @@
 <!-- {{text[mode=deep]: 各コマンドが読み込んでいるクラスの依存関係を説明してください。}} -->
 <!-- {{/text}} -->
 
-<!-- {{data: shells.deps("コマンド|依存クラス|種別")}} -->
+<!-- {{data: webapp.shells.deps("コマンド|依存クラス|種別")}} -->
 <!-- {{/data}} -->
 <!-- @endblock -->
 
 <!-- @block: command-flow -->
 ### コマンド実行フロー
 
-<!-- {{data: shells.flow("コマンド|処理概要|メール通知|ファイル操作|トランザクション")}} -->
+<!-- {{data: webapp.shells.flow("コマンド|処理概要|メール通知|ファイル操作|トランザクション")}} -->
 <!-- {{/data}} -->
 <!-- @endblock -->
 

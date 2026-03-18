@@ -30,7 +30,6 @@ import { createLogger } from "../../lib/progress.js";
 import { callAgent as callAgentBase, callAgentAsync as callAgentAsyncBase, ensureAgentWorkDir, loadAgentConfig, DEFAULT_AGENT_TIMEOUT } from "../../lib/agent.js";
 import { translate } from "../../lib/i18n.js";
 import { resolveCommandContext, getChapterFiles, loadFullAnalysis } from "../lib/command-context.js";
-import { resolveType } from "../../lib/types.js";
 
 const logger = createLogger("text");
 
@@ -500,7 +499,7 @@ export async function textFillFromAnalysis(root, analysis, commandId, srcRoot) {
   const documentStyle = cfg.docs?.style;
   const lang = cfg.docs.defaultLanguage;
   const systemPrompt = buildTextSystemPrompt(documentStyle, lang);
-  const type = cfg.type ? resolveType(cfg.type) : undefined;
+  const type = cfg.type || undefined;
   const concurrency = resolveConcurrency(cfg);
   const docsDir = path.join(root, "docs");
   const allDocsFiles = getChapterFiles(docsDir, { type, configChapters: cfg.chapters });

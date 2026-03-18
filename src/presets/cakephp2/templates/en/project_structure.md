@@ -17,23 +17,23 @@
 <!-- @block: libraries -->
 ### Common Libraries (Lib/)
 
-<!-- {{data: libs.list("Class|File|Responsibility")}} -->
+<!-- {{data: cakephp2.libs.list("Class|File|Responsibility")}} -->
 <!-- {{/data}} -->
 
 ### View Layer
 
 #### Helpers
 
-<!-- {{data: views.helpers("Helper|Extends|Responsibility")}} -->
+<!-- {{data: cakephp2.views.helpers("Helper|Extends|Responsibility")}} -->
 <!-- {{/data}} -->
 
 #### Layouts
 
-<!-- {{data: views.layouts("File|Purpose")}} -->
+<!-- {{data: cakephp2.views.layouts("File|Purpose")}} -->
 <!-- {{/data}} -->
 
 #### Elements
 
-<!-- {{data: views.elements("File|Purpose")}} -->
+<!-- {{data: cakephp2.views.elements("File|Purpose")}} -->
 <!-- {{/data}} -->
 <!-- @endblock -->

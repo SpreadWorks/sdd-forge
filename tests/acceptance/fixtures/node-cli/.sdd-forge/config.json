@@ -1,6 +1,6 @@
 {
   "lang": "en",
-  "type": "cli/node-cli",
+  "type": "node-cli",
   "docs": {
     "languages": [
       "en"

@@ -118,7 +118,7 @@ describe("scan config validation", async () => {
 
   const baseConfig = {
     lang: "ja",
-    type: "cli/node-cli",
+    type: "node-cli",
     docs: { languages: ["ja"], defaultLanguage: "ja" },
   };
 
@@ -191,7 +191,7 @@ describe("scan config override", () => {
     // config specifies only lib/ — src/ files should NOT appear
     writeJson(tmp, ".sdd-forge/config.json", {
       lang: "ja",
-      type: "cli/node-cli",
+      type: "node-cli",
       docs: { languages: ["ja"], defaultLanguage: "ja" },
       scan: { include: ["lib/**/*.js"] },
     });
@@ -229,7 +229,7 @@ describe("analysis.json top-level structure (no extras)", () => {
     tmp = createTmpDir();
     writeJson(tmp, ".sdd-forge/config.json", {
       lang: "ja",
-      type: "cli/node-cli",
+      type: "node-cli",
       docs: { languages: ["ja"], defaultLanguage: "ja" },
       scan: { include: ["src/**/*.js", "package.json"] },
     });
@@ -263,7 +263,7 @@ describe("preserveEnrichment recursive hash search", () => {
     tmp = createTmpDir();
     writeJson(tmp, ".sdd-forge/config.json", {
       lang: "ja",
-      type: "cli/node-cli",
+      type: "node-cli",
       docs: { languages: ["ja"], defaultLanguage: "ja" },
       scan: { include: ["src/**/*.js", "package.json"] },
     });
@@ -317,7 +317,7 @@ describe("multiple DataSource match", () => {
     tmp = createTmpDir();
     writeJson(tmp, ".sdd-forge/config.json", {
       lang: "ja",
-      type: "webapp/cakephp2",
+      type: "cakephp2",
       docs: { languages: ["ja"], defaultLanguage: "ja" },
       scan: {
         include: [

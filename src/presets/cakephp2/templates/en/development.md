@@ -33,18 +33,18 @@ npm run docker:stop
 <!-- {{text: Describe the test framework and test execution methods.}} -->
 <!-- {{/text}} -->
 
-<!-- {{data: tests.list("Item|Count|Directory")}} -->
+<!-- {{data: cakephp2.tests.list("Item|Count|Directory")}} -->
 <!-- {{/data}} -->
 
 ### Configuration Constants Reference
 
 #### Scalar Constants
 
-<!-- {{data: config.constants("Constant|Value|Description")}} -->
+<!-- {{data: cakephp2.config.constants("Constant|Value|Description")}} -->
 <!-- {{/data}} -->
 
 #### Selection Constants
 
-<!-- {{data: config.constantsSelect("Constant|Choices")}} -->
+<!-- {{data: cakephp2.config.constantsSelect("Constant|Choices")}} -->
 <!-- {{/data}} -->
 <!-- @endblock -->

@@ -4,8 +4,8 @@
  * Auto-discovers presets from src/presets/{key}/preset.json.
  * All consumers derive their preset data from this single source.
  *
- * Preset hierarchy uses `parent` field for variable-length inheritance chains.
- * Legacy `arch` field is supported for backward compatibility.
+ * Preset hierarchy uses `parent` field for single-inheritance chains.
+ * Multiple presets can be combined via type arrays in config.json.
  */
 
 import fs from "fs";
@@ -17,9 +17,7 @@ export const PRESETS_DIR = path.resolve(__dirname, "..", "presets");
 
 /**
  * Discover all presets by scanning src/presets/{key}/preset.json.
- * Each preset gets: { key, dir, parent, arch, lang, axis, label, aliases, scan, type, isArch, chapters }.
- *
- * `parent` is the primary hierarchy field. `arch` is derived for backward compatibility.
+ * Each preset gets: { key, dir, parent, label, aliases, scan, chapters }.
  */
 function discoverPresets() {
   if (!fs.existsSync(PRESETS_DIR)) return [];
@@ -31,41 +29,14 @@ function discoverPresets() {
       if (!fs.existsSync(manifestPath)) return null;
       const manifest = JSON.parse(fs.readFileSync(manifestPath, "utf8"));
 
-      // parent field (new) takes precedence over arch (legacy)
-      const parent = manifest.parent || null;
-
-      // Derive arch for backward compatibility:
-      // - base has no parent → arch = "base"
-      // - presets with parent "base" that have children → they ARE arch-level (cli, webapp, library)
-      // - leaf presets → arch = first non-lang ancestor, or parent
-      const arch = manifest.arch || parent || (d.name === "base" ? "base" : null);
-
-      // isArch: true for structural presets (base, cli, webapp, library) and lang presets (php, node)
-      const isArch = !parent || parent === "base";
-
-      // Type path: arch-level presets use their key, leaf presets use parent/key
-      // For parent-chain presets, find the nearest arch ancestor for type path
-      let type;
-      if (isArch) {
-        type = d.name;
-      } else {
-        // Walk up to find the arch-level ancestor for type path
-        type = `${parent}/${d.name}`;
-      }
-
       return {
         key: d.name,
-        type,
         dir: path.join(PRESETS_DIR, d.name),
-        parent,
-        arch,
-        lang: manifest.lang || null,
-        axis: manifest.axis || null,
+        parent: manifest.parent || null,
         label: manifest.label,
         aliases: manifest.aliases || [],
         scan: manifest.scan || {},
         chapters: manifest.chapters || [],
-        isArch,
       };
     })
     .filter(Boolean);
@@ -77,7 +48,7 @@ export const PRESETS = discoverPresets();
  * Resolve the full parent chain for a preset, from root (base) to the given leaf.
  *
  * @param {string} leafKey - Preset key (e.g. "cakephp2", "node-cli", "webapp")
- * @returns {Object[]} Array of preset objects, ordered root → leaf (e.g. [base, webapp, cakephp2])
+ * @returns {Object[]} Array of preset objects, ordered root → leaf (e.g. [base, webapp, php-webapp, cakephp2])
  * @throws {Error} If preset not found or circular reference detected
  */
 export function resolveChain(leafKey) {
@@ -107,62 +78,60 @@ export function resolveChain(leafKey) {
 }
 
 /**
- * Resolve the lang-layer preset for a given leaf preset.
- * Returns the lang preset if the leaf or any ancestor declares a `lang` field.
+ * Resolve multiple type entries into independent chains.
+ * Handles parent-child dedup: if both parent and child are in the list,
+ * only the child's chain is kept (parent is already included).
  *
- * @param {string} leafKey - Preset key
- * @returns {Object|null} Lang preset object, or null if no lang layer
+ * @param {string|string[]} types - Single preset name or array of preset names
+ * @returns {Object[][]} Array of chains, each chain is root → leaf ordered
  */
-export function resolveLangPreset(leafKey) {
-  const chain = resolveChain(leafKey);
+export function resolveMultiChains(types) {
+  const typeList = Array.isArray(types) ? types : [types];
 
-  // Check from leaf to root for a lang declaration
-  for (let i = chain.length - 1; i >= 0; i--) {
-    const langKey = chain[i].lang;
-    if (langKey) {
-      // Don't return if lang preset is already in the chain
-      if (chain.some((p) => p.key === langKey)) return null;
-      const langPreset = PRESETS.find((p) => p.key === langKey);
-      return langPreset || null;
+  // Deduplicate identical entries first
+  const unique = [...new Set(typeList)];
+
+  // Resolve each type into its full chain
+  const chains = unique.map((t) => resolveChain(t));
+
+  // Dedup: if one chain's leaf is an ancestor of another chain, keep only the longer one
+  const result = [];
+  for (let i = 0; i < chains.length; i++) {
+    const leafKey = chains[i][chains[i].length - 1].key;
+    let isSubset = false;
+
+    for (let j = 0; j < chains.length; j++) {
+      if (i === j) continue;
+      if (chains[j].some((p) => p.key === leafKey) && chains[j].length > chains[i].length) {
+        isSubset = true;
+        break;
+      }
+    }
+
+    if (!isSubset) {
+      result.push(chains[i]);
     }
   }
-  return null;
+
+  return result;
 }
 
 /**
- * Resolve the parent chain for a type path, with fallback for unknown presets.
- * Unlike resolveChain(), this never throws — it falls back to segment-based
- * resolution and always includes base.
+ * Resolve the parent chain for a preset, with fallback for unknown presets.
+ * Unlike resolveChain(), this never throws.
  *
- * @param {string} typePath - Type path (e.g. "webapp/cakephp2", "node", "cli/node-cli")
+ * @param {string} presetKey - Preset key (e.g. "cakephp2", "node-cli")
  * @returns {Object[]} Array of preset objects, ordered root → leaf
  */
-export function resolveChainSafe(typePath) {
-  const leaf = typePath.split("/").pop();
+export function resolveChainSafe(presetKey) {
   try {
-    return resolveChain(leaf);
+    return resolveChain(presetKey);
   } catch (_) {
-    const segments = typePath.split("/").filter(Boolean);
-    const chain = segments.map((seg) => PRESETS.find((p) => p.key === seg)).filter(Boolean);
-    // Ensure base is at the front
-    if (!chain.some((p) => p.key === "base")) {
-      const base = PRESETS.find((p) => p.key === "base");
-      if (base) chain.unshift(base);
-    }
-    // Deduplicate
-    const seen = new Set();
-    return chain.filter((p) => { if (seen.has(p.key)) return false; seen.add(p.key); return true; });
+    const preset = PRESETS.find((p) => p.key === presetKey);
+    if (preset) return [preset];
+    const base = PRESETS.find((p) => p.key === "base");
+    return base ? [base] : [];
   }
-}
-
-/**
- * Return presets belonging to the given architecture.
- * Backward compatible: uses parent field to determine hierarchy.
- *
- * @param {string} arch - "webapp" | "cli" | "library"
- */
-export function presetsForArch(arch) {
-  return PRESETS.filter((p) => p.parent === arch && !p.isArch);
 }
 
 /**
@@ -175,19 +144,10 @@ export function presetByLeaf(leaf) {
 }
 
 /**
- * Build a TYPE_ALIASES-compatible object mapping aliases → canonical type paths.
- * Excludes arch-level presets (base, webapp, cli, library, php, node).
+ * Return presets whose parent is the given key.
  *
- * @returns {Record<string, string>}
+ * @param {string} parentKey - Parent preset key (e.g. "webapp", "cli")
  */
-export function buildTypeAliases() {
-  const aliases = {};
-  for (const p of PRESETS) {
-    if (p.isArch) continue;
-    aliases[p.key] = p.type;
-    for (const alias of p.aliases) {
-      aliases[alias] = p.type;
-    }
-  }
-  return aliases;
+export function presetsForArch(parentKey) {
+  return PRESETS.filter((p) => p.parent === parentKey);
 }

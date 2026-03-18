@@ -15,7 +15,7 @@ describe("scan CLI", () => {
     tmp = createTmpDir();
     writeJson(tmp, ".sdd-forge/config.json", {
       lang: "ja",
-      type: "cli/node-cli",
+      type: "node-cli",
       docs: { languages: ["ja"], defaultLanguage: "ja" },
       scan: { include: ["src/**/*.js"], exclude: [] },
     });
@@ -35,7 +35,7 @@ describe("scan CLI", () => {
     tmp = createTmpDir();
     writeJson(tmp, ".sdd-forge/config.json", {
       lang: "ja",
-      type: "cli/node-cli",
+      type: "node-cli",
       docs: { languages: ["ja"], defaultLanguage: "ja" },
       scan: { include: ["src/**/*.js"], exclude: [] },
     });
@@ -54,7 +54,7 @@ describe("scan CLI", () => {
     tmp = createTmpDir();
     writeJson(tmp, ".sdd-forge/config.json", {
       lang: "ja",
-      type: "cli/node-cli",
+      type: "node-cli",
       docs: { languages: ["ja"], defaultLanguage: "ja" },
       scan: { include: ["src/**/*.js"], exclude: [] },
     });
@@ -81,7 +81,7 @@ describe("scan CLI", () => {
     tmp = createTmpDir();
     writeJson(tmp, ".sdd-forge/config.json", {
       lang: "ja",
-      type: "cli/node-cli",
+      type: "node-cli",
       docs: { languages: ["ja"], defaultLanguage: "ja" },
       scan: { include: ["src/**/*.js"], exclude: [] },
     });
@@ -106,11 +106,11 @@ describe("scan CLI", () => {
     assert.match(result, /--stdout/);
   });
 
-  it("scans webapp/cakephp2 with parent-child DataSource inheritance", () => {
+  it("scans cakephp2 with parent-child DataSource inheritance", () => {
     tmp = createTmpDir();
     writeJson(tmp, ".sdd-forge/config.json", {
       lang: "ja",
-      type: "webapp/cakephp2",
+      type: "cakephp2",
       docs: { languages: ["ja"], defaultLanguage: "ja" },
     });
     writeFile(tmp, "app/Controller/UsersController.php", [
@@ -138,7 +138,7 @@ describe("scan CLI", () => {
     tmp = createTmpDir();
     writeJson(tmp, ".sdd-forge/config.json", {
       lang: "ja",
-      type: "cli/node-cli",
+      type: "node-cli",
       docs: { languages: ["ja"], defaultLanguage: "ja" },
       scan: { include: ["src/**/*.js"], exclude: [] },
     });
@@ -183,7 +183,7 @@ describe("scan CLI", () => {
     tmp = createTmpDir();
     writeJson(tmp, ".sdd-forge/config.json", {
       lang: "ja",
-      type: "cli/node-cli",
+      type: "node-cli",
       docs: { languages: ["ja"], defaultLanguage: "ja" },
       scan: { include: ["src/**/*.js"], exclude: [] },
     });
@@ -221,7 +221,7 @@ describe("scan CLI", () => {
     tmp = createTmpDir();
     writeJson(tmp, ".sdd-forge/config.json", {
       lang: "ja",
-      type: "cli/node-cli",
+      type: "node-cli",
       docs: { languages: ["ja"], defaultLanguage: "ja" },
       scan: { include: ["src/**/*.js", "package.json"] },
     });

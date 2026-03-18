@@ -1,6 +1,6 @@
-# <!-- {{data: project.name("")}} --><!-- {{/data}} -->
+# <!-- {{data: cli.project.name("")}} --><!-- {{/data}} -->
 
-<!-- {{data: docs.langSwitcher("absolute")}} -->
+<!-- {{data: cli.docs.langSwitcher("absolute")}} -->
 <!-- {{/data}} -->
 
 <!-- {{text: このプロジェクトの概要を1〜2文で説明してください。}} -->
@@ -13,25 +13,25 @@
 
 <pre>
 # npm
-npm install -g <!-- {{data: project.name("")}} --><!-- {{/data}} -->
+npm install -g <!-- {{data: cli.project.name("")}} --><!-- {{/data}} -->
 
 # yarn
-yarn global add <!-- {{data: project.name("")}} --><!-- {{/data}} -->
+yarn global add <!-- {{data: cli.project.name("")}} --><!-- {{/data}} -->
 
 # pnpm
-pnpm add -g <!-- {{data: project.name("")}} --><!-- {{/data}} -->
+pnpm add -g <!-- {{data: cli.project.name("")}} --><!-- {{/data}} -->
 </pre>
 
 ### 基本コマンド
 
 <pre>
-<!-- {{data: project.name("")}} --><!-- {{/data}} --> help
+<!-- {{data: cli.project.name("")}} --><!-- {{/data}} --> help
 </pre>
 <!-- @endblock -->
 
 <!-- @block: docs -->
 ## ドキュメント
 
-<!-- {{data: docs.chapters("章|概要")}} -->
+<!-- {{data: cli.docs.chapters("章|概要")}} -->
 <!-- {{/data}} -->
 <!-- @endblock -->

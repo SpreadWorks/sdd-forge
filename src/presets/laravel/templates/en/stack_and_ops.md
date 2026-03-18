@@ -3,27 +3,27 @@
 <!-- @block: dependencies -->
 ### PHP Dependencies (composer.json)
 
-<!-- {{data: config.composer("Package|Version|Purpose")}} -->
+<!-- {{data: laravel.config.composer("Package|Version|Purpose")}} -->
 <!-- {{/data}} -->
 
 ### docker-compose.yml Configuration
 
-<!-- {{data: docker.list("Service|Container|Port|Image")}} -->
+<!-- {{data: laravel.docker.list("Service|Container|Port|Image")}} -->
 <!-- {{/data}} -->
 
 ### Middleware
 
-<!-- {{data: config.middleware("Class|File|Purpose")}} -->
+<!-- {{data: laravel.config.middleware("Class|File|Purpose")}} -->
 <!-- {{/data}} -->
 
 ### Service Providers
 
-<!-- {{data: config.providers("Provider|File|register|boot")}} -->
+<!-- {{data: laravel.config.providers("Provider|File|register|boot")}} -->
 <!-- {{/data}} -->
 
 ### Configuration Files
 
-<!-- {{data: config.files("File|Key Settings")}} -->
+<!-- {{data: laravel.config.files("File|Key Settings")}} -->
 <!-- {{/data}} -->
 <!-- @endblock -->
 

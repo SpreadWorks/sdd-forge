@@ -5,7 +5,7 @@ import { execFileSync } from "child_process";
 import { createTmpDir, removeTmpDir, writeFile, writeJson } from "../../../helpers/tmp-dir.js";
 
 const CMD = join(process.cwd(), "src/docs/commands/review.js");
-const MIN_CONFIG = { lang: "en", type: "cli/node-cli", docs: { languages: ["en"], defaultLanguage: "en" } };
+const MIN_CONFIG = { lang: "en", type: "node-cli", docs: { languages: ["en"], defaultLanguage: "en" } };
 
 function setupTmp() {
   const tmp = createTmpDir();
@@ -91,7 +91,7 @@ describe("review CLI", () => {
     tmp = setupPassingTmp();
     const lines = ["# 01. Test", ""];
     for (let i = 0; i < 10; i++) lines.push(`Line ${i}`);
-    lines.push('<!-- {{data: controllers.list("Name|Actions")}} -->');
+    lines.push('<!-- {{data: node-cli.controllers.list("Name|Actions")}} -->');
     lines.push(""); // empty = unfilled
     lines.push('<!-- {{/data}} -->');
     for (let i = 0; i < 5; i++) lines.push(`More ${i}`);
@@ -106,8 +106,8 @@ describe("review CLI", () => {
     tmp = setupPassingTmp();
     const lines = ["# 01. Test", ""];
     for (let i = 0; i < 10; i++) lines.push(`Line ${i}`);
-    lines.push('Example inline syntax: `{{data: mySource.list("Col1|Col2")}}`');
-    lines.push('Example comment syntax: `<!-- {{data: mySource.list("Col1|Col2")}} -->`');
+    lines.push('Example inline syntax: `{{data: base.mySource.list("Col1|Col2")}}`');
+    lines.push('Example comment syntax: `<!-- {{data: base.mySource.list("Col1|Col2")}} -->`');
     lines.push('Example closing syntax: `<!-- {{/data}} -->`');
     for (let i = 0; i < 8; i++) lines.push(`More ${i}`);
     writeFile(tmp, "docs/test.md", lines.join("\n"));
@@ -163,7 +163,7 @@ describe("review CLI", () => {
     tmp = setupPassingTmp();
     const lines = ["# 01. Test", ""];
     for (let i = 0; i < 10; i++) lines.push(`Line ${i}`);
-    lines.push('<!-- {{data: project.name("")}} -->');
+    lines.push('<!-- {{data: node-cli.project.name("")}} -->');
     lines.push("test-project");
     lines.push("<!-- {{/data}} -->");
     for (let i = 0; i < 5; i++) lines.push(`More ${i}`);
@@ -185,7 +185,7 @@ describe("review CLI", () => {
     tmp = setupTmp();
     const lines = ["# 01. Test", ""];
     for (let i = 0; i < 10; i++) lines.push(`Line ${i}`);
-    lines.push('<!-- {{data: modules.list("")}} -->');
+    lines.push('<!-- {{data: node-cli.modules.list("")}} -->');
     lines.push("mod list here");
     lines.push("<!-- {{/data}} -->");
     for (let i = 0; i < 5; i++) lines.push(`More ${i}`);
