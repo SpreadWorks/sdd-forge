@@ -26,7 +26,8 @@
   "scripts": {
     "test": "find tests/unit tests/e2e -name '*.test.js' | xargs node --test",
     "test:unit": "find tests/unit -name '*.test.js' | xargs node --test",
-    "test:e2e": "find tests/e2e -name '*.test.js' | xargs node --test"
+    "test:e2e": "find tests/e2e -name '*.test.js' | xargs node --test",
+    "test:acceptance": "node tests/acceptance/run.js"
   },
   "license": "MIT"
 }

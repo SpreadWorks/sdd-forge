@@ -1,0 +1,23 @@
+{
+  "lang": "en",
+  "type": "webapp/cakephp2",
+  "docs": {
+    "languages": [
+      "en"
+    ],
+    "defaultLanguage": "en"
+  },
+  "agent": {
+    "default": "claude",
+    "providers": {
+      "claude": {
+        "command": "claude",
+        "args": [
+          "-p",
+          "{{PROMPT}}"
+        ],
+        "systemPromptFlag": "--system-prompt"
+      }
+    }
+  }
+}
