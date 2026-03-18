@@ -41,17 +41,25 @@ function resolveReviewTarget(root, flow) {
         for (const f of scopeFiles) {
           const abs = path.resolve(root, f);
           if (!fs.existsSync(abs)) continue;
-          const res = runSync("git", ["-C", root, "diff", flow.baseBranch, "--", f]);
-          if (res.ok && res.stdout.trim()) diffs.push(res.stdout);
+          // Committed changes against base branch
+          const committed = runSync("git", ["-C", root, "diff", flow.baseBranch, "--", f]);
+          if (committed.ok && committed.stdout.trim()) diffs.push(committed.stdout);
+          // Staged but uncommitted changes
+          const staged = runSync("git", ["-C", root, "diff", "--cached", "--", f]);
+          if (staged.ok && staged.stdout.trim()) diffs.push(staged.stdout);
         }
         if (diffs.length > 0) return diffs.join("\n");
       }
     }
   }
 
-  // Fallback: full diff against base branch
-  const res = runSync("git", ["-C", root, "diff", flow.baseBranch]);
-  return res.ok ? res.stdout : "";
+  // Fallback: committed diff against base branch + staged changes
+  const parts = [];
+  const committed = runSync("git", ["-C", root, "diff", flow.baseBranch]);
+  if (committed.ok && committed.stdout.trim()) parts.push(committed.stdout);
+  const staged = runSync("git", ["-C", root, "diff", "--cached"]);
+  if (staged.ok && staged.stdout.trim()) parts.push(staged.stdout);
+  return parts.join("\n");
 }
 
 /**

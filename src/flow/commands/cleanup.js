@@ -7,10 +7,11 @@
  */
 
 import fs from "fs";
+import path from "path";
 import { execFileSync } from "child_process";
 import { runIfDirect } from "../../lib/entrypoint.js";
 import { repoRoot, parseArgs, isInsideWorktree } from "../../lib/cli.js";
-import { loadFlowState, updateStepStatus, resolveWorktreePaths } from "../../lib/flow-state.js";
+import { loadFlowState, flowStatePath, updateStepStatus, resolveWorktreePaths } from "../../lib/flow-state.js";
 
 function main() {
   const root = repoRoot(import.meta.url);
@@ -55,6 +56,18 @@ function main() {
     // If running from inside the worktree, warn that cwd will become invalid
     if (isInsideWorktree(root)) {
       console.log(`cleanup: run from main repo to avoid cwd invalidation: cd ${mainRepoPath}`);
+    }
+
+    // Archive flow.json before worktree deletion to prevent loss
+    const archiveStep = state.steps?.find((s) => s.id === "archive");
+    if (!archiveStep || archiveStep.status !== "done") {
+      const flowSrc = flowStatePath(root);
+      const specDir = path.join(root, path.dirname(state.spec));
+      if (fs.existsSync(flowSrc) && fs.existsSync(specDir)) {
+        const dest = path.join(specDir, "flow.json");
+        fs.copyFileSync(flowSrc, dest);
+        console.log(`cleanup: auto-archived flow.json to ${path.relative(root, dest)}`);
+      }
     }
 
     const worktreeExists = fs.existsSync(worktreePath);
