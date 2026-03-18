@@ -10,7 +10,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 
-#[Route('/posts')]
+#[Route('/threads/{threadId}/posts')]
 class PostController extends AbstractController
 {
     public function __construct(

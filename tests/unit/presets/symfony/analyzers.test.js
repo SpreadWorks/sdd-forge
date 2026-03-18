@@ -63,6 +63,60 @@ class PostController extends AbstractController
     assert.equal(result.summary.total, 1);
     assert.match(result.controllers[0].file, /Api/);
   });
+
+  it("handles Route attributes with curly-brace path params without hanging", () => {
+    tmp = createTmpDir();
+    writeFile(tmp, "src/Controller/PostController.php", `<?php
+namespace App\\Controller;
+
+use Symfony\\Component\\Routing\\Attribute\\Route;
+
+#[Route('/threads/{threadId}/posts')]
+class PostController extends AbstractController
+{
+    public function __construct(
+        private readonly EntityManagerInterface \$em,
+    ) {}
+
+    #[Route('', name: 'post_store', methods: ['POST'])]
+    public function store(Request \$request): Response {}
+
+    #[Route('/{id}/edit', name: 'post_edit', methods: ['GET', 'POST'])]
+    public function edit(Request \$request, Post \$post): Response {}
+
+    #[Route('/{id}', name: 'post_delete', methods: ['DELETE'])]
+    public function delete(Post \$post): Response {}
+}
+`);
+    const result = analyzeControllers(tmp);
+    assert.equal(result.summary.total, 1);
+    assert.equal(result.controllers[0].className, "PostController");
+    assert.equal(result.controllers[0].classRoutePrefix, "/threads/{threadId}/posts");
+    const actionNames = result.controllers[0].actions.map((a) => a.name);
+    assert.ok(actionNames.includes("store"));
+    assert.ok(actionNames.includes("edit"));
+    assert.ok(actionNames.includes("delete"));
+  });
+
+  it("handles multiple path params in a single Route attribute", () => {
+    tmp = createTmpDir();
+    writeFile(tmp, "src/Controller/DeepController.php", `<?php
+namespace App\\Controller;
+
+use Symfony\\Component\\Routing\\Attribute\\Route;
+
+#[Route('/orgs/{orgId}/projects/{projectId}/threads/{threadId}')]
+class DeepController extends AbstractController
+{
+    #[Route('/posts/{postId}/comments/{commentId}', name: 'deep_comment', methods: ['GET'])]
+    public function show(): Response {}
+}
+`);
+    const result = analyzeControllers(tmp);
+    assert.equal(result.summary.total, 1);
+    assert.equal(result.controllers[0].actions.length, 1);
+    assert.equal(result.controllers[0].actions[0].name, "show");
+  });
 });
 
 describe("Symfony analyze-entities", () => {
@@ -189,6 +243,27 @@ class UserController extends AbstractController
     assert.ok(result.summary.attributeRoutes >= 2);
     const routes = result.routes.filter((r) => r.source === "attribute");
     assert.ok(routes.length >= 2);
+  });
+
+  it("parses attribute routes with curly-brace path params without hanging", () => {
+    tmp = createTmpDir();
+    writeFile(tmp, "src/Controller/PostController.php", `<?php
+namespace App\\Controller;
+
+use Symfony\\Component\\Routing\\Attribute\\Route;
+
+#[Route('/threads/{threadId}/posts')]
+class PostController extends AbstractController
+{
+    #[Route('/{id}', name: 'post_show', methods: ['GET'])]
+    public function show(): Response {}
+}
+`);
+    const result = analyzeRoutes(tmp);
+    const attrRoutes = result.routes.filter((r) => r.source === "attribute");
+    assert.ok(attrRoutes.length >= 1);
+    assert.equal(attrRoutes[0].controller, "PostController::show");
+    assert.match(attrRoutes[0].path, /\{threadId\}/);
   });
 
   it("returns empty when no route files", () => {

@@ -43,7 +43,7 @@ function parseController(filePath, relPath) {
   // public メソッド（アクション）と #[Route] attributes
   const actions = [];
   // メソッド定義の前に #[Route(...)] がある場合を検出
-  const methodBlockRegex = /((?:\s*#\[(?:[^\[\]]*(?:\[[^\[\]]*\])?)*\]\s*)*)\s*public\s+function\s+(\w+)\s*\(/g;
+  const methodBlockRegex = /((?:\s*#\[(?:[^\[\]]|\[[^\]]*\])*\]\s*)*)\s*public\s+function\s+(\w+)\s*\(/g;
   let m;
   while ((m = methodBlockRegex.exec(content)) !== null) {
     const methodName = m[2];
