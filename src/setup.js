@@ -331,7 +331,7 @@ async function main() {
   let purpose = cli.purpose;
   let tone = cli.tone;
   let defaultAgent = cli.agent;
-  let monorepoProjects = null;
+  let additionalTypes = [];
 
   // Parse --lang for non-interactive use: first value is operating lang
   if (cli.lang) {
@@ -370,27 +370,6 @@ async function main() {
     if (!cli.path) {
       const answer = await ask(rl, t("setup.questions.sourcePath", { default: defaultPath }));
       sourcePath = answer || defaultPath;
-    }
-
-    // --- Step 2b: Monorepo detection ---
-    const monorepoChoices = [
-      { label: t("setup.choices.monorepo.single") || "Single project", value: "single" },
-      { label: t("setup.choices.monorepo.mono") || "Monorepo (multiple sub-projects)", value: "mono" },
-    ];
-    const projectMode = await askChoice(rl, t("setup.questions.monorepo") || "Project structure:", monorepoChoices, t);
-
-    if (projectMode === "mono") {
-      monorepoProjects = {};
-      console.log(t("setup.messages.monorepoInstructions") || "\nEnter sub-project paths and types (empty path to finish):");
-      while (true) {
-        const subPath = await ask(rl, "  path (e.g. apps/web): ");
-        if (!subPath) break;
-        const subType = await ask(rl, "  type (e.g. nextjs, express, node): ");
-        monorepoProjects[subPath] = { type: subType || "base" };
-      }
-      if (Object.keys(monorepoProjects).length === 0) {
-        monorepoProjects = null;
-      }
     }
 
     // --- Step 3: Output language (multi-select) ---
@@ -432,7 +411,9 @@ async function main() {
             value: p.type,
           })),
         ];
-        type = await askChoice(rl, t("setup.questions.fwType"), fwChoices, t);
+        const selected = await askMultiChoice(rl, t("setup.questions.fwType"), fwChoices, t);
+        type = selected[0];
+        additionalTypes = selected.slice(1);
       } else {
         type = arch;
       }
@@ -488,9 +469,10 @@ async function main() {
   const { workRoot } = registerProject(projectName, sourcePath, workRootPath, t);
 
   // 2. Build config object
+  const finalType = additionalTypes.length > 0 ? [type, ...additionalTypes] : type;
   const config = {
     lang: operatingLang,
-    type,
+    type: finalType,
     docs: {
       languages: outputLangs,
       defaultLanguage: outputDefault,
@@ -503,11 +485,6 @@ async function main() {
       merge: "squash",
     },
   };
-
-  // Add monorepo projects if detected
-  if (monorepoProjects) {
-    config.projects = monorepoProjects;
-  }
 
   if (defaultAgent) {
     config.agent = {
@@ -600,7 +577,7 @@ async function main() {
   console.log(`    source:   ${path.resolve(sourcePath)}`);
   console.log(`    lang:     ${operatingLang}`);
   console.log(`    output:   ${outputLangs.join(", ")} (default: ${outputDefault})`);
-  console.log(`    type:     ${type}`);
+  console.log(`    type:     ${Array.isArray(finalType) ? finalType.join(", ") : finalType}`);
   console.log(`    purpose:  ${purpose}`);
   console.log(`    tone:     ${tone}`);
   if (defaultAgent) console.log(`    agent:    ${defaultAgent}`);
