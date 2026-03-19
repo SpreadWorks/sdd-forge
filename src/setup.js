@@ -18,7 +18,8 @@ import { PKG_DIR, parseArgs } from "./lib/cli.js";
 import { validateConfig } from "./lib/types.js";
 import { DEFAULT_LANG } from "./lib/config.js";
 import { createI18n } from "./lib/i18n.js";
-import { presetsForArch } from "./lib/presets.js";
+import { PRESETS } from "./lib/presets.js";
+import { buildTreeItems, treeSelect } from "./lib/tree-select.js";
 import { loadSddTemplate } from "./lib/agents-md.js";
 import { ensureAgentWorkDir } from "./lib/agent.js";
 
@@ -392,30 +393,16 @@ async function main() {
       outputDefault = await askChoice(rl, t("setup.questions.outputDefault"), defaultItems, t);
     }
 
-    // --- Step 4: Hierarchical type selection ---
+    // --- Step 4: Preset selection (tree multi-select) ---
     if (!type) {
-      const archLabels = t.raw("setup.choices.archType");
-      const arch = await askChoice(rl, t("setup.questions.archType"), [
-        { label: `webapp — ${archLabels.webapp}`, value: "webapp" },
-        { label: `cli — ${archLabels.cli}`, value: "cli" },
-        { label: `library — ${archLabels.library}`, value: "library" },
-      ], t);
-
-      const presets = presetsForArch(arch);
-      if (presets.length > 0) {
-        const genericLabel = t.raw("setup.choices.fwGeneric");
-        const fwChoices = [
-          { label: `generic — ${genericLabel}`, value: arch },
-          ...presets.map((p) => ({
-            label: `${p.key} — ${p.label}`,
-            value: p.type,
-          })),
-        ];
-        const selected = await askMultiChoice(rl, t("setup.questions.fwType"), fwChoices, t);
+      const treeItems = buildTreeItems(PRESETS);
+      console.log(`\n${t("setup.questions.fwType")}`);
+      const selected = await treeSelect(rl, treeItems);
+      if (selected.length === 0) {
+        type = "base";
+      } else {
         type = selected[0];
         additionalTypes = selected.slice(1);
-      } else {
-        type = arch;
       }
     }
 
