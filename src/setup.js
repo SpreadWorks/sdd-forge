@@ -18,7 +18,7 @@ import { PKG_DIR, parseArgs } from "./lib/cli.js";
 import { validateConfig } from "./lib/types.js";
 import { DEFAULT_LANG, sddDir as sddDirFn } from "./lib/config.js";
 import { createI18n } from "./lib/i18n.js";
-import { PRESETS } from "./lib/presets.js";
+import { PRESETS, resolveMultiChains } from "./lib/presets.js";
 import { buildTreeItems, select } from "./lib/multi-select.js";
 import { loadSddTemplate } from "./lib/agents-md.js";
 import { ensureAgentWorkDir } from "./lib/agent.js";
@@ -349,8 +349,10 @@ async function runWizard(defaults, t) {
 // ---------------------------------------------------------------------------
 
 function buildSummaryLines(s, t) {
-  const finalType = s.additionalTypes.length > 0
+  const allTypes = s.additionalTypes.length > 0
     ? [s.type, ...s.additionalTypes] : [s.type];
+  const chains = resolveMultiChains(allTypes);
+  const leafTypes = chains.map((c) => c[c.length - 1].key);
   const agentFile = s.agent === "claude" ? "CLAUDE.md" : "AGENTS.md";
 
   return [
@@ -358,7 +360,7 @@ function buildSummaryLines(s, t) {
     `    project:    ${s.projectName}`,
     `    lang:       ${s.lang}`,
     `    output:     ${s.outputLangs.join(", ")} (default: ${s.outputDefault})`,
-    `    type:       ${finalType.join(", ")}`,
+    `    type:       ${leafTypes.join(", ")}`,
     `    purpose:    ${s.purpose}`,
     `    tone:       ${s.tone}`,
     `    agent:      ${s.agent}`,
@@ -481,9 +483,13 @@ async function main() {
     try { config = JSON.parse(fs.readFileSync(configPath, "utf8")); } catch (_) {}
   }
 
-  const finalType = settings.additionalTypes.length > 0
+  // Minimize type array: remove parents that are already implied by children
+  const allTypes = settings.additionalTypes.length > 0
     ? [settings.type, ...settings.additionalTypes]
-    : settings.type;
+    : [settings.type];
+  const chains = resolveMultiChains(allTypes);
+  const leafTypes = chains.map((chain) => chain[chain.length - 1].key);
+  const finalType = leafTypes.length === 1 ? leafTypes[0] : leafTypes;
 
   // Wizard-managed fields (overwrite)
   config.lang = settings.lang;
