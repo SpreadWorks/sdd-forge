@@ -107,6 +107,7 @@ const HINT_MULTI = "↑↓: move  space: select  enter: confirm";
  * @param {Object} [opts]
  * @param {"single"|"multi"} [opts.mode="multi"]
  * @param {boolean} [opts.autoSelectAncestors=false] - Auto-select parent items (multi only)
+ * @param {string|string[]} [opts.default] - Default key(s). Single: initial cursor position. Multi: pre-selected keys.
  * @param {string} [opts.hint] - Custom hint text
  * @returns {Promise<string|string[]>} single → key string, multi → key array
  */
@@ -121,6 +122,19 @@ export function select(rl, items, opts = {}) {
     const hint = opts.hint || (mode === "single" ? HINT_SINGLE : HINT_MULTI);
     const selected = new Set();
     let cursor = 0;
+
+    // Apply defaults
+    if (opts.default) {
+      const defaults = Array.isArray(opts.default) ? opts.default : [opts.default];
+      if (mode === "single") {
+        const idx = items.findIndex((it) => it.key === defaults[0]);
+        if (idx >= 0) cursor = idx;
+      } else {
+        for (const d of defaults) {
+          if (items.some((it) => it.key === d)) selected.add(d);
+        }
+      }
+    }
     const output = process.stdout;
     const input = process.stdin;
 
@@ -132,7 +146,7 @@ export function select(rl, items, opts = {}) {
 
     function render() {
       if (rendered) {
-        output.write(`\x1B[${items.length + 1}A`);
+        output.write(`\x1B[${items.length}A`);
       }
       for (let i = 0; i < items.length; i++) {
         renderLine(output, items[i], cursor, i, mode, selected);
