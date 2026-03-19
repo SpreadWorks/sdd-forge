@@ -19,7 +19,7 @@ import { validateConfig } from "./lib/types.js";
 import { DEFAULT_LANG } from "./lib/config.js";
 import { createI18n } from "./lib/i18n.js";
 import { PRESETS } from "./lib/presets.js";
-import { buildTreeItems, treeSelect } from "./lib/tree-select.js";
+import { buildTreeItems, multiSelect } from "./lib/multi-select.js";
 import { loadSddTemplate } from "./lib/agents-md.js";
 import { ensureAgentWorkDir } from "./lib/agent.js";
 
@@ -397,7 +397,7 @@ async function main() {
     if (!type) {
       const treeItems = buildTreeItems(PRESETS);
       console.log(`\n${t("setup.questions.fwType")}`);
-      const selected = await treeSelect(rl, treeItems);
+      const selected = await multiSelect(rl, treeItems);
       if (selected.length === 0) {
         type = "base";
       } else {

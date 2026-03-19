@@ -1,15 +1,16 @@
 /**
- * src/lib/tree-select.js
+ * src/lib/multi-select.js
  *
- * Interactive tree-based multi-select widget for terminal.
+ * Interactive multi-select widget for terminal.
  * Uses raw mode for arrow key navigation, space to toggle, enter to confirm.
+ * Supports optional prefix per item (e.g. tree-drawing characters).
  */
 
 /**
- * @typedef {Object} TreeItem
+ * @typedef {Object} SelectItem
  * @property {string} key     - Unique identifier
  * @property {string} label   - Display label (e.g. "nextjs (Next.js)")
- * @property {string} prefix  - Tree-drawing prefix (e.g. "├── ")
+ * @property {string} [prefix] - Optional prefix (e.g. tree-drawing "├── ")
  */
 
 /**
@@ -66,12 +67,12 @@ export function buildTreeItems(presets) {
  * Pauses the readline interface during interaction.
  *
  * @param {import("readline").Interface} rl - Existing readline interface
- * @param {TreeItem[]} items - Flattened tree items in display order
+ * @param {SelectItem[]} items - Flattened tree items in display order
  * @param {Object} [opts]
  * @param {string} [opts.hint] - Hint text shown below the tree
  * @returns {Promise<string[]>} Selected keys (in display order)
  */
-export function treeSelect(rl, items, opts = {}) {
+export function multiSelect(rl, items, opts = {}) {
   if (!process.stdin.isTTY) {
     return Promise.resolve([]);
   }
@@ -98,7 +99,7 @@ export function treeSelect(rl, items, opts = {}) {
         const item = items[i];
         const check = selected.has(item.key) ? "[x]" : "[ ]";
         const arrow = i === cursor ? "> " : "  ";
-        const line = `${arrow}${item.prefix}${check} ${item.label}`;
+        const line = `${arrow}${item.prefix || ""}${check} ${item.label}`;
 
         if (i === cursor) {
           output.write(`\x1B[2K\x1B[36m${line}\x1B[0m\n`);
