@@ -1,0 +1,13 @@
+{
+  "parent": "base",
+  "label": "HTTP API (shared)",
+  "aliases": [],
+  "chapters": [
+    "overview.md",
+    "stack_and_ops.md",
+    "project_structure.md",
+    "development.md",
+    "api_overview.md",
+    "authentication.md"
+  ]
+}

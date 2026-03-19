@@ -1,0 +1,23 @@
+{
+  "parent": "edge",
+  "label": "Cloudflare Workers",
+  "aliases": [],
+  "chapters": [
+    "edge_runtime.md",
+    "bindings.md"
+  ],
+  "scan": {
+    "include": [
+      "wrangler.toml",
+      "wrangler.json",
+      "wrangler.jsonc",
+      "src/**/*.ts",
+      "src/**/*.js",
+      "package.json"
+    ],
+    "exclude": [
+      "node_modules/**",
+      "dist/**"
+    ]
+  }
+}

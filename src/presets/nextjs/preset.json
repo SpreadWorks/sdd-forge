@@ -1,0 +1,35 @@
+{
+  "parent": "js-webapp",
+  "label": "Next.js",
+  "aliases": [],
+  "chapters": [
+    "overview.md",
+    "stack_and_ops.md",
+    "project_structure.md",
+    "development.md",
+    "pages_routing.md",
+    "route_handlers.md",
+    "middleware.md",
+    "components.md"
+  ],
+  "scan": {
+    "include": [
+      "app/**/*.ts",
+      "app/**/*.tsx",
+      "pages/**/*.ts",
+      "pages/**/*.tsx",
+      "src/app/**/*.ts",
+      "src/app/**/*.tsx",
+      "src/pages/**/*.ts",
+      "src/pages/**/*.tsx",
+      "middleware.ts",
+      "next.config.*",
+      "package.json",
+      "tsconfig.json"
+    ],
+    "exclude": [
+      "node_modules/**",
+      ".next/**"
+    ]
+  }
+}

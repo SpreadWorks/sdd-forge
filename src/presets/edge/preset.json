@@ -1,0 +1,8 @@
+{
+  "parent": "base",
+  "label": "Edge Compute (shared)",
+  "aliases": [],
+  "chapters": [
+    "edge_runtime.md"
+  ]
+}

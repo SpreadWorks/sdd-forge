@@ -168,7 +168,7 @@ function main(ctx) {
   const chapters = [];
   for (const res of resolutions) {
     if (res.fileName === "README.md") continue;
-    let content = mergeResolved(res.sources);
+    let content = mergeResolved(res.sources, res.additive);
     if (content === null) continue;
     if (res.action === "translate" && agent) {
       content = translateTemplate(content, res.from, res.to, agent, root);

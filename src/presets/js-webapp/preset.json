@@ -1,0 +1,24 @@
+{
+  "parent": "webapp",
+  "label": "JavaScript Web Application",
+  "aliases": [],
+  "chapters": [],
+  "scan": {
+    "include": [
+      "**/*.ts",
+      "**/*.tsx",
+      "**/*.js",
+      "**/*.jsx",
+      "**/*.mjs",
+      "package.json",
+      "tsconfig.json",
+      "tsconfig.*.json"
+    ],
+    "exclude": [
+      "node_modules/**",
+      "dist/**",
+      "build/**",
+      ".next/**"
+    ]
+  }
+}

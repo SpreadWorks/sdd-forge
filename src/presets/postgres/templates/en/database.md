@@ -1,11 +1,11 @@
-# Database
+<!-- @extends -->
 
-## Description
-
-<!-- {{text: Describe the database architecture and design decisions}} -->
+<!-- @block: tables -->
+<!-- {{text: List the database tables with their purpose and key columns.}} -->
 <!-- {{/text}} -->
 
-## Database Info
+### Database Info
 
 <!-- {{data: postgres.database.info("Item|Value")}} -->
 <!-- {{/data}} -->
+<!-- @endblock -->

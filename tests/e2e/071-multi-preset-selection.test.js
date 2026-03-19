@@ -158,14 +158,14 @@ describe("presets.js: postgres preset", () => {
     const { presetByLeaf } = await import("../../src/lib/presets.js");
     const postgres = presetByLeaf("postgres");
     assert.ok(postgres, "postgres preset should exist");
-    assert.equal(postgres.parent, "base");
+    assert.equal(postgres.parent, "database");
   });
 
   it("resolveChain for postgres is [base, postgres]", async () => {
     const { resolveChain } = await import("../../src/lib/presets.js");
     const chain = resolveChain("postgres");
     const keys = chain.map((p) => p.key);
-    assert.deepEqual(keys, ["base", "postgres"]);
+    assert.deepEqual(keys, ["base", "database", "postgres"]);
   });
 });
 
@@ -184,7 +184,7 @@ describe("presets.js: multi-chain resolution", () => {
     assert.ok(keys1.includes("base"));
     // chain 2: postgres
     const keys2 = chains[1].map((p) => p.key);
-    assert.deepEqual(keys2, ["base", "postgres"]);
+    assert.deepEqual(keys2, ["base", "database", "postgres"]);
   });
 
   it("deduplicates parent-child: ['webapp', 'symfony'] resolves same as ['symfony']", async () => {

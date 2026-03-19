@@ -1,0 +1,21 @@
+{
+  "parent": "database",
+  "label": "Drizzle ORM",
+  "aliases": [],
+  "chapters": [
+    "database.md",
+    "schema.md"
+  ],
+  "scan": {
+    "include": [
+      "**/schema.ts",
+      "**/schema/*.ts",
+      "drizzle.config.ts",
+      "drizzle.config.js",
+      "**/migrations/**/*.sql"
+    ],
+    "exclude": [
+      "node_modules/**"
+    ]
+  }
+}

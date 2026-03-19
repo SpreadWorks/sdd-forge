@@ -1,0 +1,15 @@
+{
+  "parent": "js-webapp",
+  "label": "Hono",
+  "aliases": [],
+  "chapters": [
+    "overview.md",
+    "stack_and_ops.md",
+    "project_structure.md",
+    "development.md",
+    "api_overview.md",
+    "authentication.md",
+    "controller_routes.md",
+    "middleware.md"
+  ]
+}

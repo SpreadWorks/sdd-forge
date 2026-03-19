@@ -12,7 +12,7 @@
 import fs from "fs";
 import path from "path";
 import { parseBlocks } from "./directive-parser.js";
-import { resolveChainSafe } from "../../lib/presets.js";
+import { resolveChainSafe, resolveMultiChains } from "../../lib/presets.js";
 import { callAgent } from "../../lib/agent.js";
 
 const SPECIAL_FILES = new Set(["README.md", "AGENTS.sdd.md"]);
@@ -95,17 +95,66 @@ function resolveOneFile(fileName, layers) {
  * ソースは優先度高い順（project-local → base）で並んでいるため、
  * 逆順（base → project-local）で mergeTexts を適用する。
  *
+ * additive フラグが true の場合、異なるチェーンからのソースを
+ * ブロック加算（concatenate）でマージする。
+ *
  * @param {{ path: string, content: string, extends: boolean }[]} sources
+ * @param {boolean} [additive] - true の場合、加算マージを行う
  * @returns {string|null} マージ結果
  */
-export function mergeResolved(sources) {
+export function mergeResolved(sources, additive) {
   if (!sources || sources.length === 0) return null;
   if (sources.length === 1) return sources[0].content;
+
+  if (additive) {
+    return mergeSourcesAdditive(sources);
+  }
 
   // base（末尾）から開始し、子を順に被せる
   let result = sources[sources.length - 1].content;
   for (let i = sources.length - 2; i >= 0; i--) {
     result = mergeTexts(result, sources[i].content);
+  }
+  return result;
+}
+
+/**
+ * 加算マージ: 複数チェーンからのソースをブロック単位で結合する。
+ * 同名ブロックは上書きではなく追記（concatenate）する。
+ * @extends を持つソースは先にチェーン内マージし、その結果を加算する。
+ */
+function mergeSourcesAdditive(sources) {
+  // @extends チェーンを先にグループ化してマージ
+  const groups = [];
+  let currentGroup = [];
+
+  for (const src of sources) {
+    currentGroup.push(src);
+    if (!src.extends) {
+      // チェーン内マージを実行
+      if (currentGroup.length === 1) {
+        groups.push(currentGroup[0].content);
+      } else {
+        let result = currentGroup[currentGroup.length - 1].content;
+        for (let i = currentGroup.length - 2; i >= 0; i--) {
+          result = mergeTexts(result, currentGroup[i].content);
+        }
+        groups.push(result);
+      }
+      currentGroup = [];
+    }
+  }
+  // 残りの @extends グループ（ベースなし）があればそのまま追加
+  for (const src of currentGroup) {
+    groups.push(src.content);
+  }
+
+  if (groups.length === 1) return groups[0];
+
+  // グループ間を加算マージ
+  let result = groups[0];
+  for (let i = 1; i < groups.length; i++) {
+    result = addTexts(result, groups[i]);
   }
   return result;
 }
@@ -127,7 +176,10 @@ export function mergeResolved(sources) {
  * 指定タイプ・言語の全テンプレートファイルを解決する。
  * 各ファイルについて正規パスと処理方法（use / translate）を決定する。
  *
- * @param {string} typePath - 型パス（例: "cli/node-cli"）
+ * 複数 type（配列）の場合、各チェーンのレイヤーを独立に構築し、
+ * 同名ファイルは全チェーンのソースを加算マージする。
+ *
+ * @param {string|string[]} typePath - 型パス（例: "node-cli"）または配列（例: ["nextjs", "rest"]）
  * @param {string} lang - ターゲット言語
  * @param {Object} [opts]
  * @param {string|null} [opts.projectLocalDir] - プロジェクトローカルテンプレートディレクトリ
@@ -138,37 +190,82 @@ export function mergeResolved(sources) {
 export function resolveTemplates(typePath, lang, opts = {}) {
   const { projectLocalDir, fallbackLangs, chaptersOrder } = opts;
 
-  // ターゲット言語のレイヤー
-  const layers = buildLayers(typePath, lang, projectLocalDir);
+  const types = Array.isArray(typePath) ? typePath : [typePath];
 
-  // フォールバック言語のレイヤーセット
-  const fallbackSets = (fallbackLangs || [])
-    .filter((l) => l !== lang)
-    .map((fbLang) => ({
-      lang: fbLang,
-      layers: buildLayers(
-        typePath,
-        fbLang,
-        deriveFallbackProjectLocalDir(projectLocalDir, fbLang),
-      ),
-    }));
+  // 各チェーンの leaf key ごとにレイヤーセットを構築
+  const chains = resolveMultiChains(types);
+  const chainLayerSets = chains.map((chain) => {
+    const leafKey = chain[chain.length - 1].key;
+    return {
+      leafKey,
+      layers: buildLayers(leafKey, lang, projectLocalDir),
+      fallbackSets: (fallbackLangs || [])
+        .filter((l) => l !== lang)
+        .map((fbLang) => ({
+          lang: fbLang,
+          layers: buildLayers(
+            leafKey,
+            fbLang,
+            deriveFallbackProjectLocalDir(projectLocalDir, fbLang),
+          ),
+        })),
+    };
+  });
+
+  // 全チェーンのレイヤーとフォールバックを統合（discoverFileNames 用）
+  const allLayers = chainLayerSets.flatMap((s) => s.layers);
+  const allFallbackSets = chainLayerSets.flatMap((s) => s.fallbackSets);
 
   // 解決対象ファイル名を収集
-  const fileNames = discoverFileNames(layers, fallbackSets, chaptersOrder);
+  const fileNames = discoverFileNames(allLayers, allFallbackSets, chaptersOrder);
 
-  // 各ファイルを解決
+  // 各ファイルを解決（複数チェーンからの加算マージ対応）
   const resolutions = [];
   for (const fileName of fileNames) {
-    const resolution = resolveOneFileWithFallback(
+    const resolution = resolveOneFileMultiChain(
       fileName,
       lang,
-      layers,
-      fallbackSets,
+      chainLayerSets,
     );
     if (resolution) resolutions.push(resolution);
   }
 
   return resolutions;
+}
+
+/**
+ * 1つのファイルを複数チェーンから解決し、加算マージする。
+ * 同名ファイルが複数チェーンに存在する場合、各チェーンの解決結果のブロックを加算する。
+ */
+function resolveOneFileMultiChain(fileName, lang, chainLayerSets) {
+  const resolved = [];
+
+  for (const { layers, fallbackSets } of chainLayerSets) {
+    const resolution = resolveOneFileWithFallback(fileName, lang, layers, fallbackSets);
+    if (resolution) resolved.push(resolution);
+  }
+
+  if (resolved.length === 0) return null;
+  if (resolved.length === 1) return resolved[0];
+
+  // 複数チェーンで同名ファイルが見つかった → 加算マージ
+  // 最初のチェーンの resolution をベースに、後続チェーンのソースを追加
+  const base = resolved[0];
+  for (let i = 1; i < resolved.length; i++) {
+    const additional = resolved[i];
+    // 追加チェーンのソースをベースに加算
+    // action が translate の場合は base に合わせる（use 優先）
+    for (const src of additional.sources) {
+      base.sources.push(src);
+    }
+    if (base.action === "translate" && additional.action === "use") {
+      base.action = "use";
+      delete base.from;
+      delete base.to;
+    }
+  }
+  base.additive = true;
+  return base;
 }
 
 /**
@@ -328,6 +425,65 @@ export function translateTemplate(content, fromLang, toLang, agent, root) {
 // ---------------------------------------------------------------------------
 // ブロックマージ（内部）
 // ---------------------------------------------------------------------------
+
+/**
+ * 加算マージ: 2つのテンプレートのブロックを結合する。
+ * 同名ブロックは上書きではなく追記（concatenate）する。
+ * ブロックを持たないテンプレート同士は単純に結合する。
+ *
+ * @param {string} baseText - ベーステンプレート
+ * @param {string} addText - 追加テンプレート
+ * @returns {string} 加算マージ結果
+ */
+function addTexts(baseText, addText) {
+  const base = parseBlocks(baseText);
+  const add = parseBlocks(addText);
+
+  // どちらもブロックを持たない → 単純結合
+  if (base.blocks.size === 0 && add.blocks.size === 0) {
+    return baseText + "\n\n" + addText;
+  }
+
+  const resultLines = [];
+
+  // preamble: base を使用
+  resultLines.push(...base.preamble);
+
+  // base のブロックを走査し、add の同名ブロックがあれば追記
+  for (const [name, baseBlock] of base.blocks) {
+    const addBlock = add.blocks.get(name);
+
+    resultLines.push(`<!-- @block: ${name} -->`);
+    resultLines.push(...baseBlock.content);
+
+    if (addBlock) {
+      resultLines.push("");
+      resultLines.push(...addBlock.content);
+    }
+
+    resultLines.push("<!-- @endblock -->");
+  }
+
+  // add にのみ存在するブロック
+  for (const [name, addBlock] of add.blocks) {
+    if (!base.blocks.has(name)) {
+      resultLines.push(`<!-- @block: ${name} -->`);
+      resultLines.push(...addBlock.content);
+      resultLines.push("<!-- @endblock -->");
+    }
+  }
+
+  // add の preamble（ブロック外コンテンツ）のうち、タイトル以外を追加
+  if (add.preamble.length > 0 && add.blocks.size === 0) {
+    resultLines.push("");
+    resultLines.push(...add.preamble);
+  }
+
+  // postamble: base を使用
+  resultLines.push(...base.postamble);
+
+  return resultLines.join("\n");
+}
 
 /**
  * 親テンプレートと子テンプレートをブロック単位でマージする。
