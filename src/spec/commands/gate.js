@@ -12,7 +12,7 @@ import { repoRoot, parseArgs } from "../../lib/cli.js";
 import { translate } from "../../lib/i18n.js";
 import { loadConfig, sddDir } from "../../lib/config.js";
 import { callAgent, resolveAgent } from "../../lib/agent.js";
-import { parseGuardrailArticles } from "./guardrail.js";
+import { parseGuardrailArticles, filterByPhase } from "./guardrail.js";
 import { loadFlowState, updateStepStatus } from "../../lib/flow-state.js";
 
 /**
@@ -127,14 +127,17 @@ function extractExemptions(specText) {
 
 /**
  * Build AI prompt for guardrail compliance check.
+ * Only articles with phase: [spec] are included.
  *
  * @param {string} specText - spec.md content
- * @param {{ title: string, body: string }[]} articles - parsed guardrail articles
+ * @param {{ title: string, body: string, meta?: Object }[]} articles - parsed guardrail articles
  * @returns {string} prompt
  */
 function buildGuardrailPrompt(specText, articles) {
   const exemptions = extractExemptions(specText);
-  const filteredArticles = articles.filter(
+  // Filter by spec phase, then by exemptions
+  const specArticles = filterByPhase(articles, "spec");
+  const filteredArticles = specArticles.filter(
     (a) => !exemptions.includes(a.title.toLowerCase())
   );
 

@@ -14,15 +14,66 @@ import { translate } from "../../lib/i18n.js";
 import { loadConfig, sddDir, sddConfigPath } from "../../lib/config.js";
 import { PRESETS_DIR, presetByLeaf, resolveChainSafe } from "../../lib/presets.js";
 import { callAgent } from "../../lib/agent.js";
+import { patternToRegex } from "../../docs/lib/scanner.js";
 
 const GUARDRAIL_FILENAME = "guardrail.md";
+
+/** Default meta for articles without a {%meta%} directive. */
+const DEFAULT_META = Object.freeze({ phase: ["spec"] });
+
+/** Regex for {%meta%} directive line. */
+const META_RE = /^<!--\s*\{%meta:\s*\{(.+?)\}%\}\s*-->$/;
+
+/**
+ * Parse a {%meta%} directive value string into a meta object.
+ * Supports: phase: [a, b], scope: [*.css], lint: /pattern/flags
+ *
+ * @param {string} inner - Content inside the outer braces
+ * @returns {Object} Parsed meta object
+ */
+function parseMetaValue(inner) {
+  const meta = {};
+
+  // Extract lint pattern first (contains special chars that break simple parsing)
+  const lintMatch = inner.match(/lint:\s*(\/(?:[^/\\]|\\.)+\/[gimsuy]*)/);
+  if (lintMatch) {
+    const raw = lintMatch[1];
+    const lastSlash = raw.lastIndexOf("/");
+    const pattern = raw.slice(1, lastSlash);
+    const flags = raw.slice(lastSlash + 1);
+    meta.lint = new RegExp(pattern, flags);
+    // Remove lint from inner to simplify remaining parsing
+    inner = inner.replace(lintMatch[0], "");
+  }
+
+  // Extract array fields: key: [val1, val2]
+  const arrayRe = /(\w+):\s*\[([^\]]*)\]/g;
+  let m;
+  while ((m = arrayRe.exec(inner)) !== null) {
+    const key = m[1];
+    const values = m[2].split(",").map((s) => s.trim()).filter(Boolean);
+    if (values.length > 0) meta[key] = values;
+  }
+
+  // Extract scalar fields: key: value (not already parsed)
+  const scalarRe = /(\w+):\s*([^,\]\[{}]+)/g;
+  while ((m = scalarRe.exec(inner)) !== null) {
+    const key = m[1];
+    if (key in meta) continue; // Already parsed as array or lint
+    const value = m[2].trim();
+    if (value) meta[key] = value;
+  }
+
+  return meta;
+}
 
 /**
  * Parse guardrail articles from markdown text.
  * Articles are `###` headings followed by body text until the next `###` or EOF.
+ * Supports optional `<!-- {%meta: {...}%} -->` directive after heading.
  *
  * @param {string} text - Markdown content of guardrail.md
- * @returns {{ title: string, body: string }[]}
+ * @returns {{ title: string, body: string, meta: Object }[]}
  */
 export function parseGuardrailArticles(text) {
   const lines = text.split("\n");
@@ -30,14 +81,25 @@ export function parseGuardrailArticles(text) {
   let current = null;
 
   for (const line of lines) {
-    const m = line.match(/^###\s+(.+)/);
-    if (m) {
+    const heading = line.match(/^###\s+(.+)/);
+    if (heading) {
       if (current) {
         current.body = current.body.join("\n");
         articles.push(current);
       }
-      current = { title: m[1].trim(), body: [] };
-    } else if (current) {
+      current = { title: heading[1].trim(), body: [], meta: null };
+      continue;
+    }
+
+    if (current) {
+      // Check for {%meta%} directive (only right after heading, before any body)
+      if (current.meta === null) {
+        const metaMatch = line.match(META_RE);
+        if (metaMatch) {
+          current.meta = parseMetaValue(metaMatch[1]);
+          continue; // Exclude meta line from body
+        }
+      }
       current.body.push(line);
     }
   }
@@ -45,7 +107,50 @@ export function parseGuardrailArticles(text) {
     current.body = current.body.join("\n");
     articles.push(current);
   }
+
+  // Apply defaults
+  for (const a of articles) {
+    if (!a.meta) {
+      a.meta = { ...DEFAULT_META };
+    } else {
+      if (!a.meta.phase) a.meta.phase = [...DEFAULT_META.phase];
+    }
+  }
+
   return articles;
+}
+
+/**
+ * Filter articles by phase.
+ *
+ * @param {{ title: string, body: string, meta: Object }[]} articles
+ * @param {string} phase - "spec" | "impl" | "lint"
+ * @returns {{ title: string, body: string, meta: Object }[]}
+ */
+export function filterByPhase(articles, phase) {
+  return articles.filter((a) => {
+    const phases = a.meta?.phase || DEFAULT_META.phase;
+    return phases.includes(phase);
+  });
+}
+
+/**
+ * Match a file path against scope glob patterns.
+ * Uses basename matching: *.css matches any file ending in .css.
+ * Supports * as wildcard (same as scanner.js patternToRegex).
+ *
+ * @param {string} filePath - File path to match
+ * @param {string[]|undefined} scope - Glob patterns (undefined = match all)
+ * @returns {boolean}
+ */
+export function matchScope(filePath, scope) {
+  if (!scope || scope.length === 0) return true;
+  const fileName = path.basename(filePath);
+  for (const pattern of scope) {
+    const re = patternToRegex(pattern);
+    if (re.test(fileName) || re.test(filePath)) return true;
+  }
+  return false;
 }
 
 /**

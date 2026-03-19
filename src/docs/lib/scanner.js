@@ -17,7 +17,7 @@ import path from "path";
  * glob 風パターンを正規表現に変換する。
  * "*" → 任意文字列。
  */
-function patternToRegex(pattern) {
+export function patternToRegex(pattern) {
   const escaped = pattern
     .replace(/[.+^${}()|[\]\\]/g, "\\$&")
     .replace(/\*/g, ".*");

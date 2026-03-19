@@ -12,6 +12,7 @@ const SCRIPTS = {
   init:      "spec/commands/init.js",
   gate:      "spec/commands/gate.js",
   guardrail: "spec/commands/guardrail.js",
+  lint:      "spec/commands/lint.js",
 };
 
 const args = process.argv.slice(2);
