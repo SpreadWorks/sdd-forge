@@ -1,0 +1,121 @@
+{
+  "spec": "specs/074-monorepo-target-apps-display/spec.md",
+  "baseBranch": "development",
+  "featureBranch": "feature/074-monorepo-target-apps-display",
+  "steps": [
+    {
+      "id": "approach",
+      "status": "done"
+    },
+    {
+      "id": "branch",
+      "status": "done"
+    },
+    {
+      "id": "spec",
+      "status": "done"
+    },
+    {
+      "id": "draft",
+      "status": "done"
+    },
+    {
+      "id": "fill-spec",
+      "status": "done"
+    },
+    {
+      "id": "approval",
+      "status": "done"
+    },
+    {
+      "id": "gate",
+      "status": "done"
+    },
+    {
+      "id": "test",
+      "status": "done"
+    },
+    {
+      "id": "implement",
+      "status": "done"
+    },
+    {
+      "id": "review",
+      "status": "done"
+    },
+    {
+      "id": "finalize",
+      "status": "done"
+    },
+    {
+      "id": "docs-update",
+      "status": "skipped"
+    },
+    {
+      "id": "docs-review",
+      "status": "skipped"
+    },
+    {
+      "id": "commit",
+      "status": "done"
+    },
+    {
+      "id": "merge",
+      "status": "done"
+    },
+    {
+      "id": "branch-cleanup",
+      "status": "done"
+    },
+    {
+      "id": "archive",
+      "status": "done"
+    }
+  ],
+  "requirements": [
+    {
+      "desc": "architecture/monorepo preset新設",
+      "status": "done"
+    },
+    {
+      "desc": "MonorepoSource DataSource実装",
+      "status": "done"
+    },
+    {
+      "desc": "monorepo.apps() バッジ風テキスト",
+      "status": "done"
+    },
+    {
+      "desc": "type配列対応",
+      "status": "done"
+    },
+    {
+      "desc": "resolver-factory追加typeロード",
+      "status": "done"
+    },
+    {
+      "desc": "ignoreError=trueパラメータ",
+      "status": "done"
+    },
+    {
+      "desc": "resolveDataDirectives警告抑制",
+      "status": "done"
+    },
+    {
+      "desc": "review.js ignoreError考慮",
+      "status": "done"
+    },
+    {
+      "desc": "enrich appフィールド付与",
+      "status": "done"
+    },
+    {
+      "desc": "baseテンプレートoptional directive追加",
+      "status": "done"
+    }
+  ],
+  "request": "I2: モノレポでの対象アプリケーション表示 — 各章ヘッダーに対象アプリを明示する機能",
+  "notes": [
+    "draft: architecture/monorepo preset, type配列対応, ignoreError=trueパラメータ, AI検出+config定義, バッジ風表示"
+  ]
+}
