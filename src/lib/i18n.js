@@ -164,9 +164,10 @@ export function createI18n(lang, options = {}) {
  * "cli/node-cli" → "node-cli", "base" → "base"
  */
 function extractPresetKey(type) {
-  if (!type) return null;
-  const idx = type.lastIndexOf("/");
-  return idx >= 0 ? type.slice(idx + 1) : type;
+  const t = Array.isArray(type) ? type[0] : type;
+  if (!t) return null;
+  const idx = t.lastIndexOf("/");
+  return idx >= 0 ? t.slice(idx + 1) : t;
 }
 
 /**

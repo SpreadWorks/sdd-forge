@@ -116,7 +116,7 @@ function runInit(root, cli) {
   try {
     const config = loadConfig(root);
     lang = config.lang || config.docs?.defaultLanguage || "en";
-    if (config.type) typePath = config.type;
+    if (config.type) typePath = Array.isArray(config.type) ? config.type[0] : config.type;
   } catch (_) {
     // No config — use defaults
   }

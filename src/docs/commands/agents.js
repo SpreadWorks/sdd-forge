@@ -51,7 +51,8 @@ function buildRefinePrompt(projectContent, docsContent, config, srcRoot, sddCont
 
   if (config.type) {
     parts.push("## Project Config");
-    parts.push(`- type: ${config.type}`);
+    const typeStr = Array.isArray(config.type) ? config.type.join(", ") : config.type;
+    parts.push(`- type: ${typeStr}`);
     parts.push("");
   }
 

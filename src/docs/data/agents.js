@@ -54,7 +54,8 @@ export default class AgentsSource extends DataSource {
     if (config.type) {
       lines.push("### Technology Stack");
       lines.push("");
-      lines.push(`- type: ${config.type}`);
+      const typeStr = Array.isArray(config.type) ? config.type.join(", ") : config.type;
+      lines.push(`- type: ${typeStr}`);
 
       if (analysis.package?.composerDeps?.require) {
         const req = analysis.package.composerDeps.require;
