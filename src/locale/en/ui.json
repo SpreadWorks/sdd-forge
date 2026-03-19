@@ -16,12 +16,8 @@
       "rewriteAgentsMd": "AGENTS.md:"
     },
     "choices_agents": {
-      "rewrite": "Generate (create AGENTS.md with {{data}} directives)",
-      "skip": "Skip (do not modify AGENTS.md)"
-    },
-    "choices_claudemd": {
-      "yes": "Yes",
-      "no": "No"
+      "rewrite": "Generate",
+      "skip": "Skip"
     },
     "choices": {
       "uiLang": {
@@ -60,11 +56,9 @@
       "isDefault": "  default: yes",
       "configGenerated": "[setup] {{path}} generated.",
       "contextGenerated": "[setup] context.json generated.",
-      "agentsMdGenerated": "[setup] AGENTS.md generated.",
-      "agentsMdSkipped": "[setup] AGENTS.md update skipped.",
-      "claudeMdCreated": "[setup] Created symlink CLAUDE.md → AGENTS.md.",
-      "claudeMdExists": "[setup] CLAUDE.md already exists, skipped.",
-      "claudeRenamed": "[setup] Renamed CLAUDE.md → AGENTS.md and created CLAUDE.md as symlink.",
+      "agentFileCreated": "[setup] {{file}} created.",
+      "agentFileUpdated": "[setup] {{file}} updated with directives.",
+      "agentFileUpToDate": "[setup] {{file}} is up to date.",
       "skillsDeployed": "[setup] Skills deployed (.agents/skills/ + .claude/skills/)",
       "summary": "Configuration Summary:",
       "nextSteps": "Next Steps:",

@@ -3,6 +3,7 @@
  *
  * Interactive select widget for terminal.
  * Supports single-select and multi-select modes with arrow key navigation.
+ * Does not depend on readline — manages raw mode stdin directly.
  */
 
 /**
@@ -100,9 +101,8 @@ const HINT_MULTI = "↑↓: move  space: select  enter: confirm";
 
 /**
  * Interactive select widget.
- * Pauses the readline interface during interaction.
+ * Manages raw mode stdin directly — no readline dependency.
  *
- * @param {import("readline").Interface} rl - Existing readline interface
  * @param {SelectItem[]} items - Items in display order
  * @param {Object} [opts]
  * @param {"single"|"multi"} [opts.mode="multi"]
@@ -111,7 +111,7 @@ const HINT_MULTI = "↑↓: move  space: select  enter: confirm";
  * @param {string} [opts.hint] - Custom hint text
  * @returns {Promise<string|string[]>} single → key string, multi → key array
  */
-export function select(rl, items, opts = {}) {
+export function select(items, opts = {}) {
   const mode = opts.mode || "multi";
 
   if (!process.stdin.isTTY) {
@@ -135,15 +135,10 @@ export function select(rl, items, opts = {}) {
         }
       }
     }
+
     const output = process.stdout;
     const input = process.stdin;
 
-    // Fully detach readline from stdin so raw mode key events reach us directly.
-    // rl.pause() alone is insufficient — readline still intercepts keypress events
-    // and echoes characters to the terminal.
-    const savedListeners = input.rawListeners("keypress");
-    input.removeAllListeners("keypress");
-    rl.pause();
     input.setRawMode(true);
     input.resume();
 
@@ -176,10 +171,7 @@ export function select(rl, items, opts = {}) {
     function cleanup() {
       input.removeListener("data", onData);
       input.setRawMode(false);
-      for (const listener of savedListeners) {
-        input.on("keypress", listener);
-      }
-      rl.resume();
+      input.pause();
       output.write("\n");
     }
 

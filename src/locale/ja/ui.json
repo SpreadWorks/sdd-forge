@@ -16,12 +16,8 @@
       "rewriteAgentsMd": "AGENTS.md:"
     },
     "choices_agents": {
-      "rewrite": "生成する（{{data}} ディレクティブ付きの AGENTS.md を作成）",
-      "skip": "スキップ（AGENTS.md を変更しない）"
-    },
-    "choices_claudemd": {
-      "yes": "作成する",
-      "no": "作成しない"
+      "rewrite": "生成する",
+      "skip": "スキップ"
     },
     "choices": {
       "uiLang": {
@@ -60,11 +56,9 @@
       "isDefault": "  default: yes",
       "configGenerated": "[setup] {{path}} を生成しました。",
       "contextGenerated": "[setup] context.json を生成しました。",
-      "agentsMdGenerated": "[setup] AGENTS.md を生成しました。",
-      "agentsMdSkipped": "[setup] AGENTS.md の更新をスキップしました。",
-      "claudeMdCreated": "[setup] CLAUDE.md → AGENTS.md のシンボリックリンクを作成しました。",
-      "claudeMdExists": "[setup] CLAUDE.md は既に存在するためスキップしました。",
-      "claudeRenamed": "[setup] CLAUDE.md → AGENTS.md にリネームし、CLAUDE.md をシンボリックリンク化しました。",
+      "agentFileCreated": "[setup] {{file}} を生成しました。",
+      "agentFileUpdated": "[setup] {{file}} にディレクティブを追記しました。",
+      "agentFileUpToDate": "[setup] {{file}} は最新です（変更なし）。",
       "skillsDeployed": "[setup] Skills を配置しました (.agents/skills/ + .claude/skills/)",
       "summary": "設定サマリ:",
       "nextSteps": "次のステップ:",
