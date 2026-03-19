@@ -2,6 +2,9 @@
 <!-- {{/data}} -->
 # 開発ガイド
 
+<!-- {{data[ignoreError=true]: monorepo.monorepo.apps("development")}} -->
+<!-- {{/data}} -->
+
 <!-- @block: description -->
 ## 説明
 

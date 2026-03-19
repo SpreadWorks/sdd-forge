@@ -2,6 +2,9 @@
 <!-- {{/data}} -->
 # Development Guide
 
+<!-- {{data[ignoreError=true]: monorepo.monorepo.apps("development")}} -->
+<!-- {{/data}} -->
+
 <!-- @block: description -->
 ## Description
 

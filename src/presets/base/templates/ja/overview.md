@@ -2,6 +2,9 @@
 <!-- {{/data}} -->
 # システム概要
 
+<!-- {{data[ignoreError=true]: monorepo.monorepo.apps("overview")}} -->
+<!-- {{/data}} -->
+
 <!-- {{text: このプロジェクトの概要を1〜2文で説明してください。}} -->
 <!-- {{/text}} -->
 

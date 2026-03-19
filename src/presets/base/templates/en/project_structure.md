@@ -2,6 +2,9 @@
 <!-- {{/data}} -->
 # Project Structure
 
+<!-- {{data[ignoreError=true]: monorepo.monorepo.apps("project_structure")}} -->
+<!-- {{/data}} -->
+
 <!-- @block: description -->
 ## Description
 

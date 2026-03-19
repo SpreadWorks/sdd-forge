@@ -2,6 +2,9 @@
 <!-- {{/data}} -->
 # Technology Stack and Operations
 
+<!-- {{data[ignoreError=true]: monorepo.monorepo.apps("stack_and_ops")}} -->
+<!-- {{/data}} -->
+
 <!-- @block: description -->
 ## Description
 

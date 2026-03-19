@@ -40,15 +40,19 @@
  */
 
 // <!-- {{data: preset.source.method("label1|label2|...")}} -->
+// <!-- {{data[ignoreError=true]: preset.source.method("label1|...")}} -->
 // <!-- {{data: preset.source.method}} -->  (labels optional)
-// 3+部構成: preset(1) . source(2, dotted OK) . method(3) ("labels"(4, optional))
-const DATA_RE = /^<!--\s*\{\{data:\s*([\w-]+)\.([\w.-]+)\.([\w-]+)(?:\("([^"]*)"\))?\}\}\s*-->$/;
+// 3+部構成: preset . source(dotted OK) . method ("labels" optional)
+// params: [key=val, ...] — text と同じ構文
+// Shared pattern fragment for data directive opening tag (without anchors)
+const DATA_OPEN = String.raw`<!--\s*\{\{data\s*(?:\[([^\]]*)\])?\s*:\s*([\w-]+)\.([\w.-]+)\.([\w-]+)(?:\("([^"]*)"\))?\}\}\s*-->`;
+const DATA_RE = new RegExp(`^${DATA_OPEN}$`);
 const TEXT_RE = /^<!--\s*\{\{text\s*(?:\[([^\]]*)\])?\s*:\s*(.+?)\}\}\s*-->$/;
 const ENDDATA_RE = /^<!--\s*\{\{\/data\}\}\s*-->$/;
 const ENDTEXT_RE = /^<!--\s*\{\{\/text\}\}\s*-->$/;
 
 // インライン検出用: 1行内に {{data ...}} と {{/data}} がある
-const INLINE_DATA_RE = /<!--\s*\{\{data:\s*([\w-]+)\.([\w.-]+)\.([\w-]+)(?:\("([^"]*)"\))?\}\}\s*-->([\s\S]*?)<!--\s*\{\{\/data\}\}\s*-->/;
+const INLINE_DATA_RE = new RegExp(`${DATA_OPEN}([\\s\\S]*?)<!--\\s*\\{\\{\\/data\\}\\}\\s*-->`);
 
 // ブロック継承ディレクティブ
 const BLOCK_START_RE = /^<!--\s*@block:\s*([\w-]+)\s*-->$/;
@@ -68,14 +72,15 @@ const FOOTER_CLOSE_RE = /^<!--\s*\{\{\/footer\}\}\s*-->$/;
  * @param {string|undefined} paramStr - パラメータ文字列
  * @returns {Object} パース済みパラメータ
  */
-function parseTextFillParams(paramStr) {
+function parseDirectiveParams(paramStr) {
   if (!paramStr) return {};
   const params = {};
   for (const pair of paramStr.split(",")) {
     const [key, value] = pair.split("=").map((s) => s.trim());
     if (key && value !== undefined) {
-      const num = Number(value);
-      params[key] = Number.isFinite(num) ? num : value;
+      if (value === "true") { params[key] = true; }
+      else if (value === "false") { params[key] = false; }
+      else { const num = Number(value); params[key] = Number.isFinite(num) ? num : value; }
     }
   }
   return params;
@@ -99,12 +104,13 @@ export function parseDirectives(text) {
     const inlineMatches = [...lines[i].matchAll(inlineGlobal)];
     if (inlineMatches.length > 0) {
       for (const m of inlineMatches) {
-        const labels = m[4] ? m[4].split("|").map((l) => l.trim()) : [];
+        const labels = m[5] ? m[5].split("|").map((l) => l.trim()) : [];
         directives.push({
           type: "data",
-          preset: m[1],
-          source: m[2],
-          method: m[3],
+          params: parseDirectiveParams(m[1]),
+          preset: m[2],
+          source: m[3],
+          method: m[4],
           labels,
           raw: m[0],
           line: i,
@@ -132,12 +138,13 @@ export function parseDirectives(text) {
         }
       }
 
-      const labels = dataMatch[4] ? dataMatch[4].split("|").map((l) => l.trim()) : [];
+      const labels = dataMatch[5] ? dataMatch[5].split("|").map((l) => l.trim()) : [];
       directives.push({
         type: "data",
-        preset: dataMatch[1],
-        source: dataMatch[2],
-        method: dataMatch[3],
+        params: parseDirectiveParams(dataMatch[1]),
+        preset: dataMatch[2],
+        source: dataMatch[3],
+        method: dataMatch[4],
         labels,
         raw: lines[i],
         line: i,
@@ -166,7 +173,7 @@ export function parseDirectives(text) {
       directives.push({
         type: "text",
         prompt: textMatch[2],
-        params: parseTextFillParams(textMatch[1]),
+        params: parseDirectiveParams(textMatch[1]),
         raw: lines[i],
         line: i,
         endLine,
@@ -316,6 +323,17 @@ export function replaceBlockDirective(lines, d, content) {
  * @param {function} [opts.onUnresolved] - (directive) => void — data ディレクティブが null 返却時コールバック
  * @returns {{ text: string, replaced: number }}
  */
+/**
+ * ディレクティブを行配列から除去する（インライン / ブロック両対応）。
+ */
+function removeDirective(lines, d) {
+  if (d.inline) {
+    lines[d.line] = lines[d.line].replace(d.raw, "");
+  } else if (d.endLine >= 0) {
+    lines.splice(d.line, d.endLine - d.line + 1);
+  }
+}
+
 export function resolveDataDirectives(text, resolveFn, opts) {
   const { onResolve, onSkip, onUnresolved } = opts || {};
   const directives = parseDirectives(text);
@@ -334,6 +352,12 @@ export function resolveDataDirectives(text, resolveFn, opts) {
 
     const rendered = resolveFn(d.preset, d.source, d.method, d.labels);
     if (rendered === null || rendered === undefined) {
+      // ignoreError=true: resolve to empty string silently
+      if (d.params?.ignoreError === true) {
+        removeDirective(lines, d);
+        replaced++;
+        continue;
+      }
       if (onUnresolved) onUnresolved(d);
       // I1: fold header/footer when data is null
       if (!d.inline && d.endLine >= 0) {
@@ -345,7 +369,7 @@ export function resolveDataDirectives(text, resolveFn, opts) {
     if (onResolve) onResolve(d, rendered);
 
     if (d.inline) {
-      const openTag = d.raw.match(/<!--\s*\{\{data:\s*[\w-]+\.[\w.-]+\.[\w-]+(?:\("[^"]*"\))?\s*\}\}\s*-->/)[0];
+      const openTag = d.raw.match(new RegExp(DATA_OPEN))[0];
       const endTag = "<!-- {{/data}} -->";
       lines[d.line] = lines[d.line].replace(d.raw, `${openTag}${rendered}${endTag}`);
       replaced++;

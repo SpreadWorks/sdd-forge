@@ -124,7 +124,7 @@ function splitIntoBatches(entries, maxLines, maxItems) {
  * @param {Array<{category: string, index: number, file: string}>} batchEntries - バッチ内のエントリー
  * @returns {string} Prompt text
  */
-function buildEnrichPrompt(chapters, batchEntries) {
+function buildEnrichPrompt(chapters, batchEntries, opts) {
   const parts = [];
 
   parts.push("Read each of the following source files and add structured metadata.");
@@ -166,6 +166,18 @@ function buildEnrichPrompt(chapters, batchEntries) {
   parts.push('}');
   parts.push("```");
   parts.push("");
+  // Monorepo app assignment (optional)
+  const monorepoApps = opts?.monorepoApps;
+  if (Array.isArray(monorepoApps) && monorepoApps.length > 0) {
+    parts.push("## Monorepo apps");
+    parts.push("This is a monorepo. Assign each entry to one of these apps based on its file path:");
+    for (const app of monorepoApps) {
+      parts.push(`- "${app.name}" (path prefix: ${app.path})`);
+    }
+    parts.push('Add an `"app"` field to each entry with the app name.');
+    parts.push("");
+  }
+
   parts.push("Rules:");
   parts.push("- Return ONLY valid JSON, no markdown fences, no explanation text.");
   parts.push("- Group entries by category and subKey in the output.");
@@ -173,6 +185,9 @@ function buildEnrichPrompt(chapters, batchEntries) {
   parts.push("- `summary` should be concise (1-2 sentences).");
   parts.push("- `detail` should capture implementation details from the source code. Do not truncate or summarize away important information.");
   parts.push("- `chapter` must be one of the available chapter names (without .md extension).");
+  if (monorepoApps) {
+    parts.push("- `app` must be one of the monorepo app names listed above (omit if file does not belong to any app).");
+  }
   parts.push("- Write in the project's primary language (match the existing analysis data language).");
 
   return parts.join("\n");
@@ -279,6 +294,7 @@ function mergeEnrichment(analysis, enrichment) {
           detail: entry.detail || items[idx].detail,
           chapter: entry.chapter || items[idx].chapter,
           role: entry.role || items[idx].role,
+          ...(entry.app ? { app: entry.app } : {}),
         };
       }
     }
@@ -373,7 +389,7 @@ async function main(ctx) {
     const batch = batches[b];
     logger.log(`batch ${b + 1}/${batches.length} (${batch.length} entries)`);
 
-    const prompt = buildEnrichPrompt(chapters, batch);
+    const prompt = buildEnrichPrompt(chapters, batch, { monorepoApps: config.monorepo?.apps });
 
     let response;
     try {

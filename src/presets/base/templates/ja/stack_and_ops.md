@@ -2,6 +2,9 @@
 <!-- {{/data}} -->
 # 技術スタックと運用
 
+<!-- {{data[ignoreError=true]: monorepo.monorepo.apps("stack_and_ops")}} -->
+<!-- {{/data}} -->
+
 <!-- @block: description -->
 ## 説明
 
