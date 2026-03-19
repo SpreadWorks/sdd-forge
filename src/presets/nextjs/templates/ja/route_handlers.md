@@ -5,9 +5,9 @@
 <!-- {{text: API ルートハンドラ（app/api/ または pages/api/）とその用途について説明してください。}} -->
 <!-- {{/text}} -->
 
+<!-- @block: handler-list -->
 ## ルートハンドラ一覧
 
-<!-- @block: handler-list -->
 <!-- {{text: すべてのルートハンドラの一覧を、HTTP メソッド、パス、説明とともに記述してください。}} -->
 <!-- {{/text}} -->
 <!-- @endblock -->

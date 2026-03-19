@@ -2,9 +2,9 @@
 <!-- {{/data}} -->
 # Technology Stack and Operations
 
+<!-- @block: description -->
 ## Description
 
-<!-- @block: description -->
 <!-- {{text: Write a 1-2 sentence overview of this chapter. Include the programming language, framework, and key tool versions.}} -->
 <!-- {{/text}} -->
 

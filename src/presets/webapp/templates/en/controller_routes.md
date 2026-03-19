@@ -2,9 +2,9 @@
 <!-- {{/data}} -->
 # Controllers & Routing
 
+<!-- @block: description -->
 ## Description
 
-<!-- @block: description -->
 <!-- {{text: Write a 1-2 sentence overview of this chapter. Include the total number of controllers and routing method.}} -->
 <!-- {{/text}} -->
 

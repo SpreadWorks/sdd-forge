@@ -200,9 +200,18 @@ export default class DocsSource extends DataSource {
       const rawDesc = descLines.join(" ").replace(/\s+/g, " ").trim() || "";
       // First sentence: match Japanese (。) or English (. followed by space/end)
       const firstSentence = rawDesc.match(/^.*?[。]|^.*?\.\s/)?.[0]?.trim() || rawDesc;
-      const description = firstSentence.length > 120
-        ? firstSentence.slice(0, 117) + "…"
-        : firstSentence;
+      // Strip markdown formatting for clean display in tables
+      const cleanDesc = firstSentence
+        .replace(/\*\*(.+?)\*\*/g, "$1")
+        .replace(/__(.+?)__/g, "$1")
+        .replace(/\*(.+?)\*/g, "$1")
+        .replace(/_(.+?)_/g, "$1")
+        .replace(/\[(.+?)\]\([^)]*\)/g, "$1")
+        .replace(/`(.+?)`/g, "$1")
+        .replace(/~~(.+?)~~/g, "$1");
+      const description = cleanDesc.length > 120
+        ? cleanDesc.slice(0, 117) + "…"
+        : cleanDesc;
 
       const docsDirRel = this._docsDir
         ? path.relative(this._root, this._docsDir).replace(/\\/g, "/")

@@ -55,6 +55,12 @@ const BLOCK_START_RE = /^<!--\s*@block:\s*([\w-]+)\s*-->$/;
 const BLOCK_END_RE   = /^<!--\s*@endblock\s*-->$/;
 const EXTENDS_RE     = /^<!--\s*@extends\s*-->$/;
 
+// header/footer ディレクティブ（data ブロック内で使用）
+const HEADER_OPEN_RE  = /^<!--\s*\{\{header\}\}\s*-->$/;
+const HEADER_CLOSE_RE = /^<!--\s*\{\{\/header\}\}\s*-->$/;
+const FOOTER_OPEN_RE  = /^<!--\s*\{\{footer\}\}\s*-->$/;
+const FOOTER_CLOSE_RE = /^<!--\s*\{\{\/footer\}\}\s*-->$/;
+
 /**
  * テキストフィルのパラメータ文字列をパースする。
  * 例: "maxLines=5, maxChars=500" → { maxLines: 5, maxChars: 500 }
@@ -184,6 +190,107 @@ export function parseDirectives(text) {
  * }}
  */
 /**
+ * data ブロック内の header/footer 領域を検出する。
+ *
+ * @param {string[]} lines
+ * @param {number} startLine - {{data}} 行
+ * @param {number} endLine   - {{/data}} 行
+ * @returns {{ header: { start: number, end: number, content: string[] }|null, footer: { start: number, end: number, content: string[] }|null }}
+ */
+function findHeaderFooter(lines, startLine, endLine) {
+  let header = null;
+  let footer = null;
+
+  for (let i = startLine + 1; i < endLine; i++) {
+    const t = lines[i].trim();
+    if (HEADER_OPEN_RE.test(t) && !header) {
+      for (let j = i + 1; j <= endLine; j++) {
+        if (HEADER_CLOSE_RE.test(lines[j].trim())) {
+          header = { start: i, end: j, content: lines.slice(i + 1, j) };
+          break;
+        }
+      }
+    }
+    if (FOOTER_OPEN_RE.test(t) && !footer) {
+      for (let j = i + 1; j <= endLine; j++) {
+        if (FOOTER_CLOSE_RE.test(lines[j].trim())) {
+          footer = { start: i, end: j, content: lines.slice(i + 1, j) };
+          break;
+        }
+      }
+    }
+  }
+
+  return { header, footer };
+}
+
+/**
+ * data が null の場合に header/footer を HTML コメント内に折り畳む。
+ * lines 配列を直接変更する。
+ *
+ * @param {string[]} lines
+ * @param {DataDirective} d
+ * @returns {boolean} header/footer が存在して折り畳みを行ったか
+ */
+function foldHeaderFooter(lines, d) {
+  const { header, footer } = findHeaderFooter(lines, d.line, d.endLine);
+  if (!header && !footer) return false;
+
+  const newLines = [d.raw];
+
+  if (header) {
+    newLines.push("<!-- {{header}}");
+    newLines.push(...header.content);
+    newLines.push("{{/header}} -->");
+  }
+
+  if (footer) {
+    newLines.push("<!-- {{footer}}");
+    newLines.push(...footer.content);
+    newLines.push("{{/footer}} -->");
+  }
+
+  newLines.push(lines[d.endLine]);
+  lines.splice(d.line, d.endLine - d.line + 1, ...newLines);
+  return true;
+}
+
+/**
+ * header/footer 付き data ブロックの内容を置換する。
+ * header/footer がなければ従来の replaceBlockDirective にフォールバック。
+ *
+ * @param {string[]} lines
+ * @param {DataDirective} d
+ * @param {string} rendered - 解決済みデータ
+ */
+function replaceWithHeaderFooter(lines, d, rendered) {
+  const { header, footer } = findHeaderFooter(lines, d.line, d.endLine);
+  if (!header && !footer) {
+    replaceBlockDirective(lines, d, rendered);
+    return;
+  }
+
+  const newLines = [d.raw];
+
+  if (header) {
+    newLines.push(lines[header.start]);  // <!-- {{header}} -->
+    newLines.push(...header.content);
+    newLines.push(lines[header.end]);    // <!-- {{/header}} -->
+  }
+
+  newLines.push(rendered);
+
+  if (footer) {
+    newLines.push(lines[footer.start]);  // <!-- {{footer}} -->
+    newLines.push(...footer.content);
+    newLines.push(lines[footer.end]);    // <!-- {{/footer}} -->
+  }
+
+  newLines.push(lines[d.endLine]);       // <!-- {{/data}} -->
+  lines.splice(d.line, d.endLine - d.line + 1, ...newLines);
+}
+
+/**
  * ブロックディレクティブの内容を置換する。
  * lines 配列を直接変更する（splice）。
  *
@@ -228,6 +335,10 @@ export function resolveDataDirectives(text, resolveFn, opts) {
     const rendered = resolveFn(d.preset, d.source, d.method, d.labels);
     if (rendered === null || rendered === undefined) {
       if (onUnresolved) onUnresolved(d);
+      // I1: fold header/footer when data is null
+      if (!d.inline && d.endLine >= 0) {
+        foldHeaderFooter(lines, d);
+      }
       continue;
     }
 
@@ -239,7 +350,7 @@ export function resolveDataDirectives(text, resolveFn, opts) {
       lines[d.line] = lines[d.line].replace(d.raw, `${openTag}${rendered}${endTag}`);
       replaced++;
     } else if (d.endLine >= 0) {
-      replaceBlockDirective(lines, d, rendered);
+      replaceWithHeaderFooter(lines, d, rendered);
       replaced++;
     }
   }

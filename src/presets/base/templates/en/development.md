@@ -2,9 +2,9 @@
 <!-- {{/data}} -->
 # Development Guide
 
+<!-- @block: description -->
 ## Description
 
-<!-- @block: description -->
 <!-- {{text: Write a 1-2 sentence overview of this chapter. Include development environment setup and testing configuration.}} -->
 <!-- {{/text}} -->
 

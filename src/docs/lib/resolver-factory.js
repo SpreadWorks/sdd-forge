@@ -94,7 +94,7 @@ async function loadChainDataSources(chain, root, ctx) {
 export async function createResolver(type, root, opts) {
   const desc = descFactory(root);
   const loadOverrides = () => loadOverridesFor(root);
-  const ctx = { desc, loadOverrides, root, docsDir: opts?.docsDir };
+  const ctx = { desc, loadOverrides, root, docsDir: opts?.docsDir, type, configChapters: opts?.configChapters };
 
   const chains = resolveMultiChains(type);
 

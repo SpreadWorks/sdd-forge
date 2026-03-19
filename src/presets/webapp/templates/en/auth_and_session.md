@@ -2,9 +2,9 @@
 <!-- {{/data}} -->
 # Authentication & Session Management
 
+<!-- @block: description -->
 ## Description
 
-<!-- @block: description -->
 <!-- {{text: Write a 1-2 sentence overview of this chapter. Include the authentication method, number of roles, and session management approach.}} -->
 <!-- {{/text}} -->
 

@@ -2,9 +2,9 @@
 <!-- {{/data}} -->
 # Database Architecture
 
+<!-- @block: description -->
 ## Description
 
-<!-- @block: description -->
 <!-- {{text: Write a 1-2 sentence overview of this chapter. Include the number of databases, purpose of each DB, and connection switching method.}} -->
 <!-- {{/text}} -->
 

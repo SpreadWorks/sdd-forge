@@ -2,19 +2,19 @@
 
 ## Description
 
-<!-- {{text: Describe the Cloudflare Workers bindings configuration and connected services.}} -->
+<!-- {{text: Describe the service bindings configuration and connected services.}} -->
 <!-- {{/text}} -->
 
+<!-- @block: binding-list -->
 ## Binding List
 
-<!-- @block: binding-list -->
 <!-- {{text: List all bindings (KV, R2, D1, Hyperdrive, Service Bindings, etc.) with their names, types, and purpose.}} -->
 <!-- {{/text}} -->
 <!-- @endblock -->
 
+<!-- @block: env-vars -->
 ## Environment Variables
 
-<!-- @block: env-vars -->
 <!-- {{text: Describe the environment variables and secrets used by the Workers.}} -->
 <!-- {{/text}} -->
 <!-- @endblock -->

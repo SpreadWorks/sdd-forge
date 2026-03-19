@@ -2,9 +2,9 @@
 <!-- {{/data}} -->
 # Batch & Console Commands
 
+<!-- @block: description -->
 ## Description
 
-<!-- @block: description -->
 <!-- {{text: Write a 1-2 sentence overview of this chapter. Include the number of commands and whether scheduled execution is used.}} -->
 <!-- {{/text}} -->
 
