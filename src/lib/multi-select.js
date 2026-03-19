@@ -1,23 +1,24 @@
 /**
  * src/lib/multi-select.js
  *
- * Interactive multi-select widget for terminal.
- * Uses raw mode for arrow key navigation, space to toggle, enter to confirm.
- * Supports optional prefix per item (e.g. tree-drawing characters).
+ * Interactive select widget for terminal.
+ * Supports single-select and multi-select modes with arrow key navigation.
  */
 
 /**
  * @typedef {Object} SelectItem
- * @property {string} key     - Unique identifier
- * @property {string} label   - Display label (e.g. "nextjs (Next.js)")
- * @property {string} [prefix] - Optional prefix (e.g. tree-drawing "├── ")
+ * @property {string} key       - Unique identifier
+ * @property {string} label     - Display label
+ * @property {string} [prefix]  - Optional display prefix (e.g. tree-drawing chars)
+ * @property {string} [parent]  - Parent key (for autoSelectAncestors)
  */
 
 /**
  * Build a flattened tree item list from presets for display.
+ * Each item includes a parent field for ancestor auto-selection.
  *
  * @param {{ key: string, parent: string|null, label: string }[]} presets
- * @returns {TreeItem[]}
+ * @returns {SelectItem[]}
  */
 export function buildTreeItems(presets) {
   const childrenMap = new Map();
@@ -33,7 +34,6 @@ export function buildTreeItems(presets) {
     }
   }
 
-  // Find roots (no parent or parent not in presets)
   const roots = presets
     .filter((p) => !p.parent || !presetMap.has(p.parent))
     .map((p) => p.key);
@@ -42,7 +42,12 @@ export function buildTreeItems(presets) {
 
   function walk(key, ownPrefix, childPrefix) {
     const p = presetMap.get(key);
-    items.push({ key, label: `${key} (${p.label})`, prefix: ownPrefix });
+    items.push({
+      key,
+      label: `${key} (${p.label})`,
+      prefix: ownPrefix,
+      parent: p.parent || null,
+    });
 
     const kids = childrenMap.get(key) || [];
     for (let i = 0; i < kids.length; i++) {
@@ -62,23 +67,58 @@ export function buildTreeItems(presets) {
   return items;
 }
 
+// ---------------------------------------------------------------------------
+// Rendering
+// ---------------------------------------------------------------------------
+
+function renderLine(output, item, cursor, index, mode, selected) {
+  const pfx = item.prefix || "";
+  let line;
+
+  if (mode === "single") {
+    const marker = index === cursor ? ">" : " ";
+    line = ` ${marker} ${pfx}${item.label}`;
+  } else {
+    const check = selected.has(item.key) ? "[x]" : "[ ]";
+    const marker = index === cursor ? ">" : " ";
+    line = ` ${marker} ${pfx}${check} ${item.label}`;
+  }
+
+  if (index === cursor) {
+    output.write(`\r\x1B[2K\x1B[36m${line}\x1B[0m\n`);
+  } else {
+    output.write(`\r\x1B[2K${line}\n`);
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Core select
+// ---------------------------------------------------------------------------
+
+const HINT_SINGLE = "↑↓: move  enter: confirm";
+const HINT_MULTI = "↑↓: move  space: select  enter: confirm";
+
 /**
- * Display an interactive tree with multi-select.
+ * Interactive select widget.
  * Pauses the readline interface during interaction.
  *
  * @param {import("readline").Interface} rl - Existing readline interface
- * @param {SelectItem[]} items - Flattened tree items in display order
+ * @param {SelectItem[]} items - Items in display order
  * @param {Object} [opts]
- * @param {string} [opts.hint] - Hint text shown below the tree
- * @returns {Promise<string[]>} Selected keys (in display order)
+ * @param {"single"|"multi"} [opts.mode="multi"]
+ * @param {boolean} [opts.autoSelectAncestors=false] - Auto-select parent items (multi only)
+ * @param {string} [opts.hint] - Custom hint text
+ * @returns {Promise<string|string[]>} single → key string, multi → key array
  */
-export function multiSelect(rl, items, opts = {}) {
+export function select(rl, items, opts = {}) {
+  const mode = opts.mode || "multi";
+
   if (!process.stdin.isTTY) {
-    return Promise.resolve([]);
+    return Promise.resolve(mode === "single" ? items[0]?.key : []);
   }
 
   return new Promise((resolve) => {
-    const hint = opts.hint || "↑↓: move  space: select  enter: confirm";
+    const hint = opts.hint || (mode === "single" ? HINT_SINGLE : HINT_MULTI);
     const selected = new Set();
     let cursor = 0;
     const output = process.stdout;
@@ -94,21 +134,19 @@ export function multiSelect(rl, items, opts = {}) {
       if (rendered) {
         output.write(`\x1B[${items.length + 1}A`);
       }
-
       for (let i = 0; i < items.length; i++) {
-        const item = items[i];
-        const check = selected.has(item.key) ? "[x]" : "[ ]";
-        const arrow = i === cursor ? "> " : "  ";
-        const line = `${arrow}${item.prefix || ""}${check} ${item.label}`;
-
-        if (i === cursor) {
-          output.write(`\x1B[2K\x1B[36m${line}\x1B[0m\n`);
-        } else {
-          output.write(`\x1B[2K${line}\n`);
-        }
+        renderLine(output, items[i], cursor, i, mode, selected);
       }
-      output.write(`\x1B[2K  ${hint}`);
+      output.write(`\r\x1B[2K  ${hint}`);
       rendered = true;
+    }
+
+    function selectAncestors(key) {
+      const item = items.find((it) => it.key === key);
+      if (item?.parent) {
+        selected.add(item.parent);
+        selectAncestors(item.parent);
+      }
     }
 
     render();
@@ -121,28 +159,31 @@ export function multiSelect(rl, items, opts = {}) {
     }
 
     function onData(buf) {
-      const key = buf.toString();
+      const seq = buf.toString();
 
-      if (key === "\x1B[A") {
+      if (seq === "\x1B[A") {
         if (cursor > 0) cursor--;
         render();
-      } else if (key === "\x1B[B") {
+      } else if (seq === "\x1B[B") {
         if (cursor < items.length - 1) cursor++;
         render();
-      } else if (key === " ") {
+      } else if (seq === " " && mode === "multi") {
         const item = items[cursor];
         if (selected.has(item.key)) {
           selected.delete(item.key);
         } else {
           selected.add(item.key);
+          if (opts.autoSelectAncestors) selectAncestors(item.key);
         }
         render();
-      } else if (key === "\r" || key === "\n") {
+      } else if (seq === "\r" || seq === "\n") {
         cleanup();
-        // Return in display order
-        const result = items.filter((it) => selected.has(it.key)).map((it) => it.key);
-        resolve(result);
-      } else if (key === "\x03") {
+        if (mode === "single") {
+          resolve(items[cursor].key);
+        } else {
+          resolve(items.filter((it) => selected.has(it.key)).map((it) => it.key));
+        }
+      } else if (seq === "\x03") {
         cleanup();
         process.exit(0);
       }

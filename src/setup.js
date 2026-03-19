@@ -19,7 +19,7 @@ import { validateConfig } from "./lib/types.js";
 import { DEFAULT_LANG } from "./lib/config.js";
 import { createI18n } from "./lib/i18n.js";
 import { PRESETS } from "./lib/presets.js";
-import { buildTreeItems, multiSelect } from "./lib/multi-select.js";
+import { buildTreeItems, select } from "./lib/multi-select.js";
 import { loadSddTemplate } from "./lib/agents-md.js";
 import { ensureAgentWorkDir } from "./lib/agent.js";
 
@@ -31,49 +31,6 @@ function ask(rl, prompt) {
   return new Promise((resolve) => {
     rl.question(prompt, (answer) => resolve(answer.trim()));
   });
-}
-
-/**
- * Present a numbered list of choices and return the selected value.
- *
- * @param {readline.Interface} rl
- * @param {string} prompt - Question text
- * @param {{ label: string, value: string }[]} choices
- * @param {function} t - i18n translation function
- * @returns {Promise<string>}
- */
-async function askChoice(rl, prompt, choices, t) {
-  const lines = choices.map((c, i) => `  [${i + 1}] ${c.label}`);
-  console.log(`\n${prompt}`);
-  for (const line of lines) console.log(line);
-  const choicePrompt = t("common.choicePrompt", { min: 1, max: choices.length });
-  const answer = await ask(rl, choicePrompt);
-  const idx = Number(answer) - 1;
-  if (idx >= 0 && idx < choices.length) return choices[idx].value;
-  return choices[0].value;
-}
-
-/**
- * Present a numbered list for multi-select (comma-separated).
- * Returns an array of selected values.
- *
- * @param {readline.Interface} rl
- * @param {string} prompt
- * @param {{ label: string, value: string }[]} choices
- * @param {function} t
- * @returns {Promise<string[]>}
- */
-async function askMultiChoice(rl, prompt, choices, t) {
-  const lines = choices.map((c, i) => `  [${i + 1}] ${c.label}`);
-  console.log(`\n${prompt}`);
-  for (const line of lines) console.log(line);
-  const multiPrompt = t("setup.multiSelectPrompt");
-  const answer = await ask(rl, multiPrompt);
-  const indices = answer.split(",")
-    .map((s) => Number(s.trim()) - 1)
-    .filter((i) => i >= 0 && i < choices.length);
-  if (indices.length === 0) return [choices[0].value];
-  return [...new Set(indices.map((i) => choices[i].value))];
 }
 
 // ---------------------------------------------------------------------------
@@ -186,10 +143,11 @@ async function setupAgentsMd(rl, sourceDir, lang, t, nonInteractive) {
     mode = fs.existsSync(agentsPath) ? "skip" : "rewrite";
   } else if (rl) {
     const choices = t.raw("setup.choices_agents");
-    mode = await askChoice(rl, t("setup.questions.rewriteAgentsMd"), [
-      { label: choices.rewrite, value: "rewrite" },
-      { label: choices.skip, value: "skip" },
-    ], t);
+    console.log(`\n${t("setup.questions.rewriteAgentsMd")}`);
+    mode = await select(rl, [
+      { key: "rewrite", label: choices.rewrite },
+      { key: "skip", label: choices.skip },
+    ], { mode: "single" });
   }
 
   if (mode === "rewrite") {
@@ -354,10 +312,11 @@ async function main() {
     console.log(`  ${t("setup.separator")}\n`);
 
     const langChoices = t.raw("setup.choices.uiLang");
-    operatingLang = await askChoice(rl, t("setup.questions.uiLang"), [
-      { label: langChoices.en, value: "en" },
-      { label: langChoices.ja, value: "ja" },
-    ], t);
+    console.log(t("setup.questions.uiLang"));
+    operatingLang = await select(rl, [
+      { key: "en", label: langChoices.en },
+      { key: "ja", label: langChoices.ja },
+    ], { mode: "single" });
 
     // Switch to selected language for remaining questions
     t = createI18n(operatingLang);
@@ -376,10 +335,12 @@ async function main() {
     // --- Step 3: Output language (multi-select) ---
     const outputLangList = t.raw("setup.choices.outputLang");
     const outputLangItems = outputLangList.map((item) => ({
+      key: item.key,
       label: item.label,
-      value: item.key,
     }));
-    outputLangs = await askMultiChoice(rl, t("setup.questions.outputLang"), outputLangItems, t);
+    console.log(`\n${t("setup.questions.outputLang")}`);
+    outputLangs = await select(rl, outputLangItems, { mode: "multi" });
+    if (outputLangs.length === 0) outputLangs = [operatingLang];
 
     if (outputLangs.length === 1) {
       outputDefault = outputLangs[0];
@@ -387,17 +348,21 @@ async function main() {
       // Multiple languages selected — ask which is default
       const defaultChoices = t.raw("setup.choices.outputDefault");
       const defaultItems = outputLangs.map((lang) => ({
+        key: lang,
         label: defaultChoices[lang] || lang,
-        value: lang,
       }));
-      outputDefault = await askChoice(rl, t("setup.questions.outputDefault"), defaultItems, t);
+      console.log(`\n${t("setup.questions.outputDefault")}`);
+      outputDefault = await select(rl, defaultItems, { mode: "single" });
     }
 
     // --- Step 4: Preset selection (tree multi-select) ---
     if (!type) {
       const treeItems = buildTreeItems(PRESETS);
       console.log(`\n${t("setup.questions.fwType")}`);
-      const selected = await multiSelect(rl, treeItems);
+      const selected = await select(rl, treeItems, {
+        mode: "multi",
+        autoSelectAncestors: true,
+      });
       if (selected.length === 0) {
         type = "base";
       } else {
@@ -409,12 +374,13 @@ async function main() {
     // --- Step 5: Document style ---
     if (!purpose) {
       const purposeChoices = t.raw("setup.choices.purpose");
-      purpose = await askChoice(rl, t("setup.questions.purpose"), [
-        { label: purposeChoices["developer-guide"], value: "developer-guide" },
-        { label: purposeChoices["user-guide"], value: "user-guide" },
-        { label: purposeChoices["api-reference"], value: "api-reference" },
-        { label: purposeChoices.other, value: "__other__" },
-      ], t);
+      console.log(`\n${t("setup.questions.purpose")}`);
+      purpose = await select(rl, [
+        { key: "developer-guide", label: purposeChoices["developer-guide"] },
+        { key: "user-guide", label: purposeChoices["user-guide"] },
+        { key: "api-reference", label: purposeChoices["api-reference"] },
+        { key: "__other__", label: purposeChoices.other },
+      ], { mode: "single" });
       if (purpose === "__other__") {
         purpose = await ask(rl, t("setup.questions.purposeCustom"));
         if (!purpose) purpose = "developer-guide";
@@ -423,21 +389,22 @@ async function main() {
 
     if (!tone) {
       const toneChoices = t.raw("setup.choices.tone");
-      tone = await askChoice(rl, t("setup.questions.tone"), [
-        { label: toneChoices.polite, value: "polite" },
-        { label: toneChoices.formal, value: "formal" },
-        { label: toneChoices.casual, value: "casual" },
-      ], t);
+      console.log(`\n${t("setup.questions.tone")}`);
+      tone = await select(rl, [
+        { key: "polite", label: toneChoices.polite },
+        { key: "formal", label: toneChoices.formal },
+        { key: "casual", label: toneChoices.casual },
+      ], { mode: "single" });
     }
 
     // --- Step 6: Agent ---
     if (!defaultAgent) {
       const agentChoices = t.raw("setup.choices.agent");
-      const agentChoice = await askChoice(rl, t("setup.questions.agent"), [
-        { label: agentChoices.claude, value: "claude" },
-        { label: agentChoices.codex, value: "codex" },
-      ], t);
-      defaultAgent = agentChoice;
+      console.log(`\n${t("setup.questions.agent")}`);
+      defaultAgent = await select(rl, [
+        { key: "claude", label: agentChoices.claude },
+        { key: "codex", label: agentChoices.codex },
+      ], { mode: "single" });
     }
 
     // rl.close() is deferred to after AGENTS.md / CLAUDE.md setup
