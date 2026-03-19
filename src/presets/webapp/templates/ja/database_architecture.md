@@ -35,6 +35,6 @@
 <!-- @block: er-diagram -->
 ### ER 図（主要テーブル）
 
-<!-- {{data: webapp.models.er("")}} -->
+<!-- {{data: webapp.models.er}} -->
 <!-- {{/data}} -->
 <!-- @endblock -->

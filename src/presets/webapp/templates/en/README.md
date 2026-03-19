@@ -1,4 +1,4 @@
-# <!-- {{data: webapp.project.name("")}} --><!-- {{/data}} -->
+# <!-- {{data: webapp.project.name}} --><!-- {{/data}} -->
 
 <!-- {{data: webapp.docs.langSwitcher("absolute")}} -->
 <!-- {{/data}} -->
@@ -10,7 +10,7 @@
 
 | Category | Technology |
 |----------|------------|
-<!-- {{data: webapp.config.stack("")}} -->
+<!-- {{data: webapp.config.stack}} -->
 <!-- {{/data}} -->
 
 ## Quick Start

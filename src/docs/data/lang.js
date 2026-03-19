@@ -1,7 +1,7 @@
 /**
  * LangSource — DataSource for language switcher links.
  *
- * Generates {{data: lang.links("")}} directives that produce
+ * Generates {{data: lang.links}} directives that produce
  * language navigation links at the top of each document.
  */
 
@@ -32,7 +32,7 @@ export default class LangSource extends DataSource {
   /**
    * Generate language switcher links for the current file.
    *
-   * Called via: {{data: lang.links("")}}
+   * Called via: {{data: lang.links}}
    * The file path context is passed via the labels parameter.
    * When called from data.js, labels[0] is the relative file path.
    *

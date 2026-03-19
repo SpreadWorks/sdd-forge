@@ -1,4 +1,4 @@
-# <!-- {{data: library.project.name("")}} --><!-- {{/data}} -->
+# <!-- {{data: library.project.name}} --><!-- {{/data}} -->
 
 <!-- {{data: library.docs.langSwitcher("absolute")}} -->
 <!-- {{/data}} -->
@@ -9,7 +9,7 @@
 ## インストール
 
 <pre>
-npm install <!-- {{data: library.project.name("")}} --><!-- {{/data}} -->
+npm install <!-- {{data: library.project.name}} --><!-- {{/data}} -->
 </pre>
 
 ## ドキュメント

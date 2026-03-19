@@ -35,6 +35,6 @@
 <!-- @block: er-diagram -->
 ### ER Diagram (Key Tables)
 
-<!-- {{data: webapp.models.er("")}} -->
+<!-- {{data: webapp.models.er}} -->
 <!-- {{/data}} -->
 <!-- @endblock -->
