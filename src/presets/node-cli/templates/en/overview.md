@@ -1,6 +1,6 @@
 <!-- {{data: node-cli.docs.langSwitcher("relative")}} -->
 <!-- {{/data}} -->
-# 01. Tool Overview and Architecture
+# Tool Overview and Architecture
 
 ## Description
 

@@ -1,6 +1,6 @@
 <!-- {{data: base.docs.langSwitcher("relative")}} -->
 <!-- {{/data}} -->
-# 02. Technology Stack and Operations
+# Technology Stack and Operations
 
 ## Description
 

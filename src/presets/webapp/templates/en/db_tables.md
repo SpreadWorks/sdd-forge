@@ -1,6 +1,6 @@
 <!-- {{data: webapp.docs.langSwitcher("relative")}} -->
 <!-- {{/data}} -->
-# 07. DB Table Definitions
+# DB Table Definitions
 
 ## Description
 

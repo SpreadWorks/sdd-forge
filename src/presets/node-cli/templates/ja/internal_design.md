@@ -1,6 +1,6 @@
 <!-- {{data: node-cli.docs.langSwitcher("relative")}} -->
 <!-- {{/data}} -->
-# 04. 内部設計
+# 内部設計
 
 ## 説明
 

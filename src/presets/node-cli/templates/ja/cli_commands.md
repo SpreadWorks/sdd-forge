@@ -1,6 +1,6 @@
 <!-- {{data: node-cli.docs.langSwitcher("relative")}} -->
 <!-- {{/data}} -->
-# 02. CLI コマンドリファレンス
+# CLI コマンドリファレンス
 
 ## 説明
 

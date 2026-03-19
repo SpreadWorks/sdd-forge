@@ -1,6 +1,6 @@
 <!-- {{data: node-cli.docs.langSwitcher("relative")}} -->
 <!-- {{/data}} -->
-# 04. Internal Design
+# Internal Design
 
 ## Description
 

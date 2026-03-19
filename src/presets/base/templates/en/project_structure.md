@@ -1,6 +1,6 @@
 <!-- {{data: base.docs.langSwitcher("relative")}} -->
 <!-- {{/data}} -->
-# 03. Project Structure
+# Project Structure
 
 ## Description
 

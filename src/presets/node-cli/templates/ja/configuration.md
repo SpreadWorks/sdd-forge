@@ -1,6 +1,6 @@
 <!-- {{data: node-cli.docs.langSwitcher("relative")}} -->
 <!-- {{/data}} -->
-# 03. 設定とカスタマイズ
+# 設定とカスタマイズ
 
 ## 説明
 

@@ -1,6 +1,6 @@
 <!-- {{data: cli.docs.langSwitcher("relative")}} -->
 <!-- {{/data}} -->
-# 05. CLI Command Reference
+# CLI Command Reference
 
 ## Description
 

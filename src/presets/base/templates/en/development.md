@@ -1,6 +1,6 @@
 <!-- {{data: base.docs.langSwitcher("relative")}} -->
 <!-- {{/data}} -->
-# 04. Development Guide
+# Development Guide
 
 ## Description
 

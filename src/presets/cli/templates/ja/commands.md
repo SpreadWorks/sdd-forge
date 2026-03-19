@@ -1,6 +1,6 @@
 <\!-- {{data: cli.docs.langSwitcher("relative")}} -->
 <\!-- {{/data}} -->
-# 05. CLI コマンドリファレンス
+# CLI コマンドリファレンス
 
 ## 説明
 

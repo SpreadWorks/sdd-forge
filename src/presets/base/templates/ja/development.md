@@ -1,6 +1,6 @@
 <!-- {{data: base.docs.langSwitcher("relative")}} -->
 <!-- {{/data}} -->
-# 04. 開発ガイド
+# 開発ガイド
 
 ## 説明
 

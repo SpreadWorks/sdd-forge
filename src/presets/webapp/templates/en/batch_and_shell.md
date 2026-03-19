@@ -1,6 +1,6 @@
 <!-- {{data: webapp.docs.langSwitcher("relative")}} -->
 <!-- {{/data}} -->
-# 10. Batch & Console Commands
+# Batch & Console Commands
 
 ## Description
 

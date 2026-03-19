@@ -1,6 +1,6 @@
 <!-- {{data: webapp.docs.langSwitcher("relative")}} -->
 <!-- {{/data}} -->
-# 06. Database Architecture
+# Database Architecture
 
 ## Description
 

@@ -1,6 +1,6 @@
 <!-- {{data: webapp.docs.langSwitcher("relative")}} -->
 <!-- {{/data}} -->
-# 09. Business Logic Layer
+# Business Logic Layer
 
 ## Description
 

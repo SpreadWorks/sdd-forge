@@ -1,6 +1,6 @@
 <!-- {{data: base.docs.langSwitcher("relative")}} -->
 <!-- {{/data}} -->
-# 03. プロジェクト構成
+# プロジェクト構成
 
 ## 説明
 

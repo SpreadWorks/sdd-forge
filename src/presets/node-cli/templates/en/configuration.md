@@ -1,6 +1,6 @@
 <!-- {{data: node-cli.docs.langSwitcher("relative")}} -->
 <!-- {{/data}} -->
-# 03. Configuration and Customization
+# Configuration and Customization
 
 ## Description
 

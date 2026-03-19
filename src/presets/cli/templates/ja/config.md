@@ -1,6 +1,6 @@
 <\!-- {{data: cli.docs.langSwitcher("relative")}} -->
 <\!-- {{/data}} -->
-# 06. 設定とカスタマイズ
+# 設定とカスタマイズ
 
 ## 説明
 

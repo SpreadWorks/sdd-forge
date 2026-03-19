@@ -1,6 +1,6 @@
 <\!-- {{data: webapp.docs.langSwitcher("relative")}} -->
 <\!-- {{/data}} -->
-# 09. ビジネスロジック層
+# ビジネスロジック層
 
 ## 説明
 

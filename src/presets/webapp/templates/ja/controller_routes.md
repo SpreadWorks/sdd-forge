@@ -1,6 +1,6 @@
 <\!-- {{data: webapp.docs.langSwitcher("relative")}} -->
 <\!-- {{/data}} -->
-# 08. コントローラとルーティング
+# コントローラとルーティング
 
 ## 説明
 

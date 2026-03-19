@@ -1,6 +1,6 @@
 <!-- {{data: cli.docs.langSwitcher("relative")}} -->
 <!-- {{/data}} -->
-# 06. Configuration and Customization
+# Configuration and Customization
 
 ## Description
 

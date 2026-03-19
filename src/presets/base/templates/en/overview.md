@@ -1,6 +1,6 @@
 <!-- {{data: base.docs.langSwitcher("relative")}} -->
 <!-- {{/data}} -->
-# 01. System Overview
+# System Overview
 
 <!-- {{text: Write a 1-2 sentence overview of this project.}} -->
 <!-- {{/text}} -->

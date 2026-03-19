@@ -1,6 +1,6 @@
 <\!-- {{data: webapp.docs.langSwitcher("relative")}} -->
 <\!-- {{/data}} -->
-# 07. DB テーブル定義
+# DB テーブル定義
 
 ## 説明
 

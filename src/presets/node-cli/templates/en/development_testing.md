@@ -1,6 +1,6 @@
 <!-- {{data: node-cli.docs.langSwitcher("relative")}} -->
 <!-- {{/data}} -->
-# 05. Development, Testing, and Distribution
+# Development, Testing, and Distribution
 
 ## Description
 
