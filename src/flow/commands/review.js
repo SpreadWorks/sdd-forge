@@ -12,7 +12,7 @@ import { runIfDirect } from "../../lib/entrypoint.js";
 import { repoRoot, parseArgs } from "../../lib/cli.js";
 import { loadConfig } from "../../lib/config.js";
 import { loadFlowState } from "../../lib/flow-state.js";
-import { loadAgentConfig, callAgent, resolveAgent } from "../../lib/agent.js";
+import { loadAgentConfig, callAgent, resolveAgent, ensureAgentWorkDir } from "../../lib/agent.js";
 import { runSync } from "../../lib/process.js";
 
 /**
@@ -227,6 +227,7 @@ async function main() {
   // --- Draft phase ---
   console.error("  [draft] Generating proposals...");
   const draftAgent = loadAgentConfig(config, "flow.review.draft");
+  ensureAgentWorkDir(draftAgent, root);
   const draftResult = await callAgent(
     draftAgent,
     diff,
@@ -255,6 +256,7 @@ async function main() {
   // --- Final phase ---
   console.error("  [final] Validating proposals...");
   const finalAgent = loadAgentConfig(config, "flow.review.final");
+  ensureAgentWorkDir(finalAgent, root);
   const finalPrompt = [
     "Validate these refactoring proposals:",
     "",

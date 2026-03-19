@@ -11,6 +11,7 @@ import path from "path";
 import { runIfDirect } from "../../lib/entrypoint.js";
 import { repoRoot, parseArgs } from "../../lib/cli.js";
 import { loadFlowState, derivePhase } from "../../lib/flow-state.js";
+import { sddDir } from "../../lib/config.js";
 
 /**
  * Extract a section's content from Markdown text.
@@ -148,13 +149,36 @@ function main() {
     return;
   }
 
-  const state = loadFlowState(root);
+  let state = loadFlowState(root);
+  let effectiveRoot = root;
+
+  if (!state) {
+    // Search worktree directories for an active flow
+    const worktreeDir = path.join(sddDir(root), "worktree");
+    if (fs.existsSync(worktreeDir)) {
+      for (const entry of fs.readdirSync(worktreeDir, { withFileTypes: true })) {
+        if (!entry.isDirectory()) continue;
+        const wtRoot = path.join(worktreeDir, entry.name);
+        const found = loadFlowState(wtRoot);
+        if (found) {
+          state = found;
+          effectiveRoot = wtRoot;
+          break;
+        }
+      }
+    }
+  }
+
   if (!state) {
     console.error("no active flow (flow.json not found)");
     process.exit(1);
   }
 
-  const summary = buildSummary(state, root);
+  if (effectiveRoot !== root) {
+    console.error(`(found active flow in worktree: ${path.relative(root, effectiveRoot)})`);
+  }
+
+  const summary = buildSummary(state, effectiveRoot);
   process.stdout.write(summary);
 }
 
