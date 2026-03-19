@@ -40,14 +40,15 @@
  */
 
 // <!-- {{data: preset.source.method("label1|label2|...")}} -->
-// 3+部構成: preset(1) . source(2, dotted OK) . method(3) ("labels"(4))
-const DATA_RE = /^<!--\s*\{\{data:\s*([\w-]+)\.([\w.-]+)\.([\w-]+)\("([^"]*)"\)\}\}\s*-->$/;
+// <!-- {{data: preset.source.method}} -->  (labels optional)
+// 3+部構成: preset(1) . source(2, dotted OK) . method(3) ("labels"(4, optional))
+const DATA_RE = /^<!--\s*\{\{data:\s*([\w-]+)\.([\w.-]+)\.([\w-]+)(?:\("([^"]*)"\))?\}\}\s*-->$/;
 const TEXT_RE = /^<!--\s*\{\{text\s*(?:\[([^\]]*)\])?\s*:\s*(.+?)\}\}\s*-->$/;
 const ENDDATA_RE = /^<!--\s*\{\{\/data\}\}\s*-->$/;
 const ENDTEXT_RE = /^<!--\s*\{\{\/text\}\}\s*-->$/;
 
 // インライン検出用: 1行内に {{data ...}} と {{/data}} がある
-const INLINE_DATA_RE = /<!--\s*\{\{data:\s*([\w-]+)\.([\w.-]+)\.([\w-]+)\("([^"]*)"\)\}\}\s*-->([\s\S]*?)<!--\s*\{\{\/data\}\}\s*-->/;
+const INLINE_DATA_RE = /<!--\s*\{\{data:\s*([\w-]+)\.([\w.-]+)\.([\w-]+)(?:\("([^"]*)"\))?\}\}\s*-->([\s\S]*?)<!--\s*\{\{\/data\}\}\s*-->/;
 
 // ブロック継承ディレクティブ
 const BLOCK_START_RE = /^<!--\s*@block:\s*([\w-]+)\s*-->$/;
@@ -233,7 +234,7 @@ export function resolveDataDirectives(text, resolveFn, opts) {
     if (onResolve) onResolve(d, rendered);
 
     if (d.inline) {
-      const openTag = d.raw.match(/<!--\s*\{\{data:\s*[\w-]+\.[\w.-]+\.[\w-]+\("[^"]*"\)\s*\}\}\s*-->/)[0];
+      const openTag = d.raw.match(/<!--\s*\{\{data:\s*[\w-]+\.[\w.-]+\.[\w-]+(?:\("[^"]*"\))?\s*\}\}\s*-->/)[0];
       const endTag = "<!-- {{/data}} -->";
       lines[d.line] = lines[d.line].replace(d.raw, `${openTag}${rendered}${endTag}`);
       replaced++;

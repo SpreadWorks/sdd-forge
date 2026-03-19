@@ -2,7 +2,7 @@
 
 ソースコード解析に基づくドキュメント自動生成と、Spec-Driven Development ワークフローを提供する CLI ツール。
 
-<!-- {{data: agents.sdd("")}} -->
+<!-- {{data: agents.sdd}} -->
 ## SDD (Spec-Driven Development)
 
 本プロジェクトは sdd-forge による Spec-Driven Development を採用している。
@@ -64,7 +64,7 @@
 - pre-release は `npm publish --tag alpha` → `npm dist-tag add sdd-forge@<version> latest` の 2 ステップ。
 - 公開前に `npm pack --dry-run` で機密情報がないことを確認する。
 
-<!-- {{data: agents.project("")}} -->
+<!-- {{data: agents.project}} -->
 All information verified against source code. Here is the PROJECT section:
 
 ## Project Context
