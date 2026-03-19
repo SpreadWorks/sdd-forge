@@ -149,11 +149,12 @@ export function select(rl, items, opts = {}) {
 
     let rendered = false;
 
+    // Blank line between label and list (outside render region)
+    output.write("\n");
+
     function render() {
       if (rendered) {
-        output.write(`\x1B[${items.length + 1}A`);
-      } else {
-        output.write("\n");
+        output.write(`\x1B[${items.length}A`);
       }
       for (let i = 0; i < items.length; i++) {
         renderLine(output, items[i], cursor, i, mode, selected);
