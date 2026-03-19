@@ -6,20 +6,14 @@
       "uiLang": "Select your preferred language for UI messages:",
       "projectName": "プロジェクト名 (default: {{default}}): ",
       "sourcePath": "ソースコードのパス (default: {{default}}): ",
-      "outputLang": "出力ドキュメントの言語を選択してください（カンマ区切りで複数選択可）:",
-      "outputDefault": "デフォルト言語を選択してください:",
-      "archType": "プロジェクトのアーキテクチャを選択してください:",
-      "fwType": "フレームワークを選択してください:",
-      "purpose": "ドキュメントの目的を選択してください:",
+      "outputLang": "出力ドキュメントの言語:",
+      "outputDefault": "デフォルト言語:",
+      "fwType": "プリセット:",
+      "purpose": "ドキュメントの目的:",
       "purposeCustom": "目的を入力してください: ",
-      "tone": "文体を選択してください:",
-      "projectContext": "プロジェクト概要を入力してください（空でも可。scan 後に自動生成できます）:",
-      "agent": "デフォルト AI エージェントを選択してください:",
-      "workRoot": "出力先パス (default: {{default}}): ",
-      "rewriteAgentsMd": "AGENTS.md を書き直しますか？（既存ファイルがある場合は上書きされます）",
-      "claudeMdSymlink": "CLAUDE.md → AGENTS.md のシンボリックリンクを作成しますか？",
-      "renameClaude": "CLAUDE.md を AGENTS.md にリネームし、シンボリックリンクに変換しますか？",
-      "monorepo": "プロジェクト構成:"
+      "tone": "文体:",
+      "agent": "デフォルト AI エージェント:",
+      "rewriteAgentsMd": "AGENTS.md:"
     },
     "choices_agents": {
       "rewrite": "生成する（{{data}} ディレクティブ付きの AGENTS.md を作成）",
@@ -42,12 +36,6 @@
         "en": "English",
         "ja": "日本語"
       },
-      "archType": {
-        "webapp": "Web アプリケーション",
-        "cli": "CLI ツール",
-        "library": "ライブラリ / パッケージ"
-      },
-      "fwGeneric": "汎用（フレームワーク指定なし）",
       "purpose": {
         "developer-guide": "開発者向け技術ガイド",
         "user-guide": "利用者向け操作ガイド",
@@ -62,10 +50,6 @@
       "agent": {
         "claude": "claude",
         "codex": "codex"
-      },
-      "monorepo": {
-        "single": "単一プロジェクト",
-        "mono": "モノレポ（複数サブプロジェクト）"
       }
     },
     "messages": {
@@ -82,12 +66,10 @@
       "claudeMdExists": "[setup] CLAUDE.md は既に存在するためスキップしました。",
       "claudeRenamed": "[setup] CLAUDE.md → AGENTS.md にリネームし、CLAUDE.md をシンボリックリンク化しました。",
       "skillsDeployed": "[setup] Skills を配置しました (.agents/skills/ + .claude/skills/)",
-      "monorepoInstructions": "\nサブプロジェクトのパスとタイプを入力してください（空のパスで終了）:",
       "summary": "設定サマリ:",
       "nextSteps": "次のステップ:",
       "step1": "sdd-forge build  — ドキュメント一括生成（scan → init → data → text）"
     },
-    "multiSelectPrompt": "> (カンマ区切り, 例: 1,2): ",
     "prompt": "> "
   },
   "upgrade": {

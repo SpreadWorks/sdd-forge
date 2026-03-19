@@ -138,6 +138,11 @@ export function select(rl, items, opts = {}) {
     const output = process.stdout;
     const input = process.stdin;
 
+    // Fully detach readline from stdin so raw mode key events reach us directly.
+    // rl.pause() alone is insufficient — readline still intercepts keypress events
+    // and echoes characters to the terminal.
+    const savedListeners = input.rawListeners("keypress");
+    input.removeAllListeners("keypress");
     rl.pause();
     input.setRawMode(true);
     input.resume();
@@ -146,7 +151,9 @@ export function select(rl, items, opts = {}) {
 
     function render() {
       if (rendered) {
-        output.write(`\x1B[${items.length}A`);
+        output.write(`\x1B[${items.length + 1}A`);
+      } else {
+        output.write("\n");
       }
       for (let i = 0; i < items.length; i++) {
         renderLine(output, items[i], cursor, i, mode, selected);
@@ -168,6 +175,9 @@ export function select(rl, items, opts = {}) {
     function cleanup() {
       input.removeListener("data", onData);
       input.setRawMode(false);
+      for (const listener of savedListeners) {
+        input.on("keypress", listener);
+      }
       rl.resume();
       output.write("\n");
     }
@@ -191,6 +201,7 @@ export function select(rl, items, opts = {}) {
         }
         render();
       } else if (seq === "\r" || seq === "\n") {
+        if (mode === "multi" && selected.size === 0) return;
         cleanup();
         if (mode === "single") {
           resolve(items[cursor].key);
@@ -200,6 +211,9 @@ export function select(rl, items, opts = {}) {
       } else if (seq === "\x03") {
         cleanup();
         process.exit(0);
+      } else {
+        // Ignore unknown keys but redraw hint to prevent visual corruption
+        output.write(`\r\x1B[2K  ${hint}`);
       }
     }
 

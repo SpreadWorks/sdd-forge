@@ -6,20 +6,14 @@
       "uiLang": "Select your preferred language for UI messages:",
       "projectName": "Project name (default: {{default}}): ",
       "sourcePath": "Source code path (default: {{default}}): ",
-      "outputLang": "Select output language(s) for generated documents (comma-separated for multiple):",
-      "outputDefault": "Which language should be the default?",
-      "archType": "Select the project architecture:",
-      "fwType": "Select the framework:",
-      "purpose": "Select the document purpose:",
+      "outputLang": "Output language(s):",
+      "outputDefault": "Default language:",
+      "fwType": "Presets:",
+      "purpose": "Document purpose:",
       "purposeCustom": "Enter the purpose: ",
-      "tone": "Select the writing style:",
-      "projectContext": "Enter a brief project description (optional, can be auto-generated after scan):",
-      "agent": "Select the default AI agent:",
-      "workRoot": "Output path (default: {{default}}): ",
-      "rewriteAgentsMd": "Would you like to (re)write AGENTS.md? (existing file will be overwritten)",
-      "claudeMdSymlink": "Create a CLAUDE.md → AGENTS.md symlink?",
-      "renameClaude": "Rename CLAUDE.md to AGENTS.md and convert to symlink?",
-      "monorepo": "Project structure:"
+      "tone": "Writing style:",
+      "agent": "Default AI agent:",
+      "rewriteAgentsMd": "AGENTS.md:"
     },
     "choices_agents": {
       "rewrite": "Generate (create AGENTS.md with {{data}} directives)",
@@ -42,12 +36,6 @@
         "en": "English",
         "ja": "Japanese"
       },
-      "archType": {
-        "webapp": "Web application",
-        "cli": "CLI tool",
-        "library": "Library / package"
-      },
-      "fwGeneric": "No specific framework",
       "purpose": {
         "developer-guide": "Technical guide for developers",
         "user-guide": "User operation guide",
@@ -62,10 +50,6 @@
       "agent": {
         "claude": "claude",
         "codex": "codex"
-      },
-      "monorepo": {
-        "single": "Single project",
-        "mono": "Monorepo (multiple sub-projects)"
       }
     },
     "messages": {
@@ -82,12 +66,10 @@
       "claudeMdExists": "[setup] CLAUDE.md already exists, skipped.",
       "claudeRenamed": "[setup] Renamed CLAUDE.md → AGENTS.md and created CLAUDE.md as symlink.",
       "skillsDeployed": "[setup] Skills deployed (.agents/skills/ + .claude/skills/)",
-      "monorepoInstructions": "\nEnter sub-project paths and types (empty path to finish):",
       "summary": "Configuration Summary:",
       "nextSteps": "Next Steps:",
       "step1": "sdd-forge build  — Generate docs (scan → init → data → text)"
     },
-    "multiSelectPrompt": "> (comma-separated, e.g. 1,2): ",
     "prompt": "> "
   },
   "upgrade": {
