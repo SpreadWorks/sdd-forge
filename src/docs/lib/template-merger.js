@@ -249,14 +249,18 @@ function resolveOneFileMultiChain(fileName, lang, chainLayerSets) {
   if (resolved.length === 1) return resolved[0];
 
   // 複数チェーンで同名ファイルが見つかった → 加算マージ
-  // 最初のチェーンの resolution をベースに、後続チェーンのソースを追加
+  // 最初のチェーンの resolution をベースに、後続チェーンの新規ソースのみ追加
   const base = resolved[0];
+  const originalCount = base.sources.length;
+  const seenPaths = new Set(base.sources.map((s) => s.path));
+
   for (let i = 1; i < resolved.length; i++) {
     const additional = resolved[i];
-    // 追加チェーンのソースをベースに加算
-    // action が translate の場合は base に合わせる（use 優先）
     for (const src of additional.sources) {
-      base.sources.push(src);
+      if (!seenPaths.has(src.path)) {
+        seenPaths.add(src.path);
+        base.sources.push(src);
+      }
     }
     if (base.action === "translate" && additional.action === "use") {
       base.action = "use";
@@ -264,7 +268,8 @@ function resolveOneFileMultiChain(fileName, lang, chainLayerSets) {
       delete base.to;
     }
   }
-  base.additive = true;
+  // 異なるチェーン由来のソースが実際に追加された場合のみ additive
+  base.additive = base.sources.length > originalCount;
   return base;
 }
 

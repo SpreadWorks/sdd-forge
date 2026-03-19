@@ -154,7 +154,11 @@ function main(ctx) {
   // テンプレート解決（ボトムアップ方式）
   const projectLocalDir = path.join(root, ".sdd-forge", "templates", lang, "docs");
   const docsConfig = config?.docs;
-  const fallbackLangs = docsConfig?.languages?.filter((l) => l !== lang) || [];
+  const configLangs = docsConfig?.languages?.filter((l) => l !== lang) || [];
+  // Always include "en" as ultimate fallback for presets with English-only templates
+  const fallbackLangs = configLangs.includes("en") || lang === "en"
+    ? configLangs
+    : [...configLangs, "en"];
   const configChapters = config?.chapters;
   const chaptersOrder = resolveChaptersOrder(type, configChapters);
 
