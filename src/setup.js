@@ -474,28 +474,30 @@ async function main() {
   );
   const t = createI18n(settings.lang);
 
-  // Build config object
+  // Build config: merge wizard values into existing config to preserve customizations
+  const configPath = path.join(workRoot, ".sdd-forge", "config.json");
+  let config = {};
+  if (fs.existsSync(configPath)) {
+    try { config = JSON.parse(fs.readFileSync(configPath, "utf8")); } catch (_) {}
+  }
+
   const finalType = settings.additionalTypes.length > 0
     ? [settings.type, ...settings.additionalTypes]
     : settings.type;
-  const config = {
-    lang: settings.lang,
-    type: finalType,
-    docs: {
-      languages: settings.outputLangs,
-      defaultLanguage: settings.outputDefault,
-      style: {
-        purpose: settings.purpose,
-        tone: settings.tone,
-      },
-    },
-    flow: {
-      merge: "squash",
-    },
+
+  // Wizard-managed fields (overwrite)
+  config.lang = settings.lang;
+  config.type = finalType;
+  config.docs = {
+    ...config.docs,
+    languages: settings.outputLangs,
+    defaultLanguage: settings.outputDefault,
+    style: { ...config.docs?.style, purpose: settings.purpose, tone: settings.tone },
   };
+  if (!config.flow) config.flow = { merge: "squash" };
 
   if (settings.agent) {
-    config.agent = {
+    const defaultAgent = {
       default: settings.agent,
       workDir: ".tmp",
       providers: {
@@ -527,6 +529,18 @@ async function main() {
         "flow": { agent: settings.agent, profile: "default" },
       },
     };
+
+    if (config.agent) {
+      // Preserve existing customizations, only update wizard-managed fields
+      config.agent.default = settings.agent;
+      if (!config.agent.workDir) config.agent.workDir = defaultAgent.workDir;
+      // Merge providers: keep custom providers/profiles, add missing defaults
+      config.agent.providers = { ...defaultAgent.providers, ...config.agent.providers };
+      // Merge commands: keep custom commands, add missing defaults
+      config.agent.commands = { ...defaultAgent.commands, ...config.agent.commands };
+    } else {
+      config.agent = defaultAgent;
+    }
   }
 
   validateConfig(config);
@@ -538,11 +552,6 @@ async function main() {
   }
 
   // Write config.json
-  const sddDir = path.join(workRoot, ".sdd-forge");
-  if (!fs.existsSync(sddDir)) {
-    fs.mkdirSync(sddDir, { recursive: true });
-  }
-  const configPath = path.join(sddDir, "config.json");
   fs.writeFileSync(configPath, JSON.stringify(config, null, 2) + "\n", "utf8");
   console.log(t("setup.messages.configGenerated", { path: configPath }));
 
