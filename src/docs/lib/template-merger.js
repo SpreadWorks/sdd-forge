@@ -358,19 +358,11 @@ export function resolveChaptersOrder(presetKeys, configChapters) {
   for (const key of keys) {
     const chain = resolveChainSafe(key);
 
-    // chain 内で最も具体的な chapters をベースにする
-    let primary = [];
+    // chain 内で最も具体的な（leaf 側の）chapters を使用する。
+    // 子が chapters を定義していれば親の chapters は含めない（上書き）。
+    let chainChapters = [];
     for (const preset of chain) {
-      if (preset.chapters?.length) primary = preset.chapters;
-    }
-
-    // 親チェーンの章で未含有のものも追加
-    const chainChapters = [...primary];
-    for (const preset of chain) {
-      if (!preset.chapters?.length) continue;
-      for (const ch of preset.chapters) {
-        if (!chainChapters.includes(ch)) chainChapters.push(ch);
-      }
+      if (preset.chapters?.length) chainChapters = preset.chapters;
     }
 
     // 全体結果に union マージ（重複除去）
