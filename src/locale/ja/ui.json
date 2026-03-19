@@ -16,7 +16,7 @@
       "rewriteAgentsMd": "AGENTS.md:"
     },
     "choices_agents": {
-      "rewrite": "生成する",
+      "rewrite": "編集する",
       "skip": "スキップ"
     },
     "choices": {
@@ -46,6 +46,11 @@
       "agent": {
         "claude": "claude",
         "codex": "codex"
+      },
+      "confirm": {
+        "prompt": "設定内容を保存しますか？",
+        "yes": "はい",
+        "no": "やり直す"
       }
     },
     "messages": {

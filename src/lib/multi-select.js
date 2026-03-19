@@ -96,8 +96,10 @@ function renderLine(output, item, cursor, index, mode, selected) {
 // Core select
 // ---------------------------------------------------------------------------
 
-const HINT_SINGLE = "↑↓: move  enter: confirm";
-const HINT_MULTI = "↑↓: move  space: select  enter: confirm";
+const R = "\x1B[31m";
+const Z = "\x1B[0m";
+const HINT_SINGLE = `<${R}↑↓${Z}> MOVE | <${R}enter${Z}> OK`;
+const HINT_MULTI = `<${R}↑↓${Z}> MOVE | <${R}space${Z}> SELECT | <${R}enter${Z}> OK`;
 
 /**
  * Interactive select widget.
@@ -142,19 +144,65 @@ export function select(items, opts = {}) {
     input.setRawMode(true);
     input.resume();
 
+    // Viewport: show a window of items that fits the terminal
+    // Reserve 3 lines: blank above list, blank above hint, hint
+    const maxVisible = Math.max(5, (output.rows || 24) - 3);
+    const needsScroll = items.length > maxVisible;
+    const viewSize = needsScroll ? maxVisible : items.length;
+    let viewStart = 0;
+    // Render region: viewSize item lines + 1 blank line = viewSize + 1
+    // (hint has no trailing \n, so cursor stays on hint line)
+    const renderLines = viewSize + 1;
+
     let rendered = false;
 
     // Blank line between label and list (outside render region)
     output.write("\n");
 
+    function adjustViewport() {
+      // Ensure cursor is visible within the item slots (excluding ... lines)
+      const topReserved = (needsScroll && viewStart > 0) ? 1 : 0;
+      const bottomReserved = (needsScroll && viewStart + viewSize < items.length) ? 1 : 0;
+      const firstVisible = viewStart + topReserved;
+      const lastVisible = viewStart + viewSize - bottomReserved - 1;
+
+      if (cursor < firstVisible) {
+        viewStart = cursor;
+      } else if (cursor > lastVisible) {
+        // Place cursor at the last item slot
+        const br = (viewStart + viewSize < items.length) ? 1 : 0;
+        viewStart = cursor - viewSize + 1 + br;
+      }
+      if (viewStart < 0) viewStart = 0;
+    }
+
     function render() {
+      adjustViewport();
+
       if (rendered) {
-        output.write(`\x1B[${items.length}A`);
+        output.write(`\x1B[${renderLines}A`);
       }
-      for (let i = 0; i < items.length; i++) {
-        renderLine(output, items[i], cursor, i, mode, selected);
+
+      const showTop = needsScroll && viewStart > 0;
+      const showBottom = needsScroll && viewStart + viewSize < items.length;
+
+      // Always render exactly viewSize lines
+      if (showTop) {
+        output.write(`\r\x1B[2K     ...\n`);
       }
-      output.write(`\r\x1B[2K  ${hint}`);
+
+      const itemStart = viewStart + (showTop ? 1 : 0);
+      const itemCount = viewSize - (showTop ? 1 : 0) - (showBottom ? 1 : 0);
+      for (let i = 0; i < itemCount; i++) {
+        renderLine(output, items[itemStart + i], cursor, itemStart + i, mode, selected);
+      }
+
+      if (showBottom) {
+        output.write(`\r\x1B[2K     ...\n`);
+      }
+
+      output.write(`\r\x1B[2K\n`);        // blank line
+      output.write(`\r\x1B[2K  ${hint}`); // hint
       rendered = true;
     }
 
@@ -171,20 +219,18 @@ export function select(items, opts = {}) {
     function cleanup() {
       input.removeListener("data", onData);
       input.setRawMode(false);
-      input.pause();
       output.write("\n");
     }
 
     function onData(buf) {
       const seq = buf.toString();
-
       if (seq === "\x1B[A") {
         if (cursor > 0) cursor--;
         render();
       } else if (seq === "\x1B[B") {
         if (cursor < items.length - 1) cursor++;
         render();
-      } else if (seq === " " && mode === "multi") {
+      } else if ((seq === " " || seq === "\u3000") && mode === "multi") {
         const item = items[cursor];
         if (selected.has(item.key)) {
           selected.delete(item.key);
@@ -205,8 +251,8 @@ export function select(items, opts = {}) {
         cleanup();
         process.exit(0);
       } else {
-        // Ignore unknown keys but redraw hint to prevent visual corruption
-        output.write(`\r\x1B[2K  ${hint}`);
+        // Ignore unknown keys but redraw to prevent visual corruption
+        render();
       }
     }
 
