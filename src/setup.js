@@ -372,13 +372,7 @@ async function main() {
       sourcePath = answer || defaultPath;
     }
 
-    // --- Step 2b: Output path ---
-    {
-      const answer = await ask(rl, t("setup.questions.workRoot", { default: sourcePath }));
-      workRootPath = answer || "";
-    }
-
-    // --- Step 2c: Monorepo detection ---
+    // --- Step 2b: Monorepo detection ---
     const monorepoChoices = [
       { label: t("setup.choices.monorepo.single") || "Single project", value: "single" },
       { label: t("setup.choices.monorepo.mono") || "Monorepo (multiple sub-projects)", value: "mono" },
