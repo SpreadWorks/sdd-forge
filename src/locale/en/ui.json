@@ -80,8 +80,7 @@
     "agentsUnchanged": "[upgrade] AGENTS.md SDD section unchanged.",
     "noChanges": "[upgrade] All files are up to date.",
     "dryRunFooter": "[upgrade] DRY-RUN: no files were modified. Run without --dry-run to apply.",
-    "done": "[upgrade] Upgrade complete.",
-    "hintSystemPromptFlag": "[upgrade] Hint: Add \"systemPromptFlag\": \"{{flag}}\" to providers.{{provider}} to enable per-file async processing in forge."
+    "done": "[upgrade] Upgrade complete."
   },
   "help": {
     "title": "Commands",
