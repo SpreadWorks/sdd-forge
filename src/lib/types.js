@@ -67,6 +67,7 @@
 
 /**
  * @typedef {Object} SddConfig
+ * @property {string} [name]                 - Project name (optional, set by setup wizard)
  * @property {DocsConfig} docs               - Documentation configuration (required)
  * @property {string} lang                   - Operating language for CLI, AGENTS.md, skills, specs
  * @property {string|string[]} type          - Preset name(s) (e.g. "symfony" or ["symfony", "postgres"])

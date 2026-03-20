@@ -69,28 +69,38 @@ function parseSetupArgs(argv) {
 }
 
 // ---------------------------------------------------------------------------
+// Config file I/O
+// ---------------------------------------------------------------------------
+
+function readConfigFile(configPath) {
+  if (!fs.existsSync(configPath)) return null;
+  try {
+    return JSON.parse(fs.readFileSync(configPath, "utf8"));
+  } catch (_) {
+    return null;
+  }
+}
+
+// ---------------------------------------------------------------------------
 // Load existing config as defaults
 // ---------------------------------------------------------------------------
 
 function loadExistingDefaults(workRoot) {
   const configPath = path.join(sddDirFn(workRoot), "config.json");
-  if (!fs.existsSync(configPath)) return null;
-  try {
-    const cfg = JSON.parse(fs.readFileSync(configPath, "utf8"));
-    const types = Array.isArray(cfg.type) ? cfg.type : cfg.type ? [cfg.type] : [];
-    return {
-      lang: cfg.lang || DEFAULT_LANG,
-      type: types[0] || "",
-      additionalTypes: types.slice(1),
-      outputLangs: cfg.docs?.languages || [],
-      outputDefault: cfg.docs?.defaultLanguage || "",
-      purpose: cfg.docs?.style?.purpose || "",
-      tone: cfg.docs?.style?.tone || "",
-      agent: cfg.agent?.default || "",
-    };
-  } catch (_) {
-    return null;
-  }
+  const cfg = readConfigFile(configPath);
+  if (!cfg) return null;
+  const types = Array.isArray(cfg.type) ? cfg.type : cfg.type ? [cfg.type] : [];
+  return {
+    projectName: cfg.name || "",
+    lang: cfg.lang || DEFAULT_LANG,
+    type: types[0] || "",
+    additionalTypes: types.slice(1),
+    outputLangs: cfg.docs?.languages || [],
+    outputDefault: cfg.docs?.defaultLanguage || "",
+    purpose: cfg.docs?.style?.purpose || "",
+    tone: cfg.docs?.style?.tone || "",
+    agent: cfg.agent?.default || "",
+  };
 }
 
 // ---------------------------------------------------------------------------
@@ -478,10 +488,7 @@ async function main() {
 
   // Build config: merge wizard values into existing config to preserve customizations
   const configPath = path.join(workRoot, ".sdd-forge", "config.json");
-  let config = {};
-  if (fs.existsSync(configPath)) {
-    try { config = JSON.parse(fs.readFileSync(configPath, "utf8")); } catch (_) {}
-  }
+  let config = readConfigFile(configPath) || {};
 
   // Minimize type array: remove parents that are already implied by children
   const allTypes = settings.additionalTypes.length > 0
@@ -492,6 +499,7 @@ async function main() {
   const finalType = leafTypes.length === 1 ? leafTypes[0] : leafTypes;
 
   // Wizard-managed fields (overwrite)
+  config.name = settings.projectName;
   config.lang = settings.lang;
   config.type = finalType;
   config.docs = {

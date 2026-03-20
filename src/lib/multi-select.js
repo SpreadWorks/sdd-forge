@@ -133,7 +133,7 @@ export function select(items, opts = {}) {
         if (idx >= 0) cursor = idx;
       } else {
         for (const d of defaults) {
-          if (items.some((it) => it.key === d)) selected.add(d);
+          if (items.some((it) => it.key === d)) selectKey(d);
         }
       }
     }
@@ -214,6 +214,11 @@ export function select(items, opts = {}) {
       }
     }
 
+    function selectKey(key) {
+      selected.add(key);
+      if (opts.autoSelectAncestors) selectAncestors(key);
+    }
+
     render();
 
     function cleanup() {
@@ -235,8 +240,7 @@ export function select(items, opts = {}) {
         if (selected.has(item.key)) {
           selected.delete(item.key);
         } else {
-          selected.add(item.key);
-          if (opts.autoSelectAncestors) selectAncestors(item.key);
+          selectKey(item.key);
         }
         render();
       } else if (seq === "\r" || seq === "\n") {
