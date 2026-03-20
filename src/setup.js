@@ -14,7 +14,7 @@ import fs from "fs";
 import path from "path";
 import readline from "readline";
 import { runIfDirect } from "./lib/entrypoint.js";
-import { PKG_DIR, parseArgs } from "./lib/cli.js";
+import { parseArgs } from "./lib/cli.js";
 import { validateConfig } from "./lib/types.js";
 import { DEFAULT_LANG, sddDir as sddDirFn } from "./lib/config.js";
 import { createI18n } from "./lib/i18n.js";
@@ -22,6 +22,7 @@ import { PRESETS, resolveMultiChains } from "./lib/presets.js";
 import { buildTreeItems, select } from "./lib/multi-select.js";
 import { loadSddTemplate } from "./lib/agents-md.js";
 import { ensureAgentWorkDir } from "./lib/agent.js";
+import { deploySkills } from "./lib/skills.js";
 
 // ---------------------------------------------------------------------------
 // readline helpers
@@ -214,37 +215,8 @@ function fixClaudeMdSymlink(sourceDir) {
 // Skills setup
 // ---------------------------------------------------------------------------
 
-function resolveSkillFile(skillDir, lang) {
-  const langFile = path.join(skillDir, `SKILL.${lang}.md`);
-  if (fs.existsSync(langFile)) return langFile;
-  const enFile = path.join(skillDir, "SKILL.en.md");
-  if (fs.existsSync(enFile)) return enFile;
-  return null;
-}
-
 function setupSkills(workRoot, t, lang) {
-  const agentsSkillsDir = path.join(workRoot, ".agents", "skills");
-  const claudeSkillsDir = path.join(workRoot, ".claude", "skills");
-
-  const templatesDir = path.join(PKG_DIR, "templates", "skills");
-  const skillDirs = fs.readdirSync(templatesDir, { withFileTypes: true })
-    .filter((d) => d.isDirectory())
-    .map((d) => d.name);
-
-  for (const name of skillDirs) {
-    const skillDir = path.join(templatesDir, name);
-    const srcFile = resolveSkillFile(skillDir, lang || "en");
-    if (!srcFile) continue;
-
-    const agentsDest = path.join(agentsSkillsDir, name);
-    fs.mkdirSync(agentsDest, { recursive: true });
-    fs.copyFileSync(srcFile, path.join(agentsDest, "SKILL.md"));
-
-    const claudeDest = path.join(claudeSkillsDir, name);
-    fs.mkdirSync(claudeDest, { recursive: true });
-    fs.copyFileSync(srcFile, path.join(claudeDest, "SKILL.md"));
-  }
-
+  deploySkills(workRoot, lang);
   console.log(t("setup.messages.skillsDeployed"));
 }
 
