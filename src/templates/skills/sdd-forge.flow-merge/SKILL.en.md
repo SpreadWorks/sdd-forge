@@ -55,18 +55,23 @@ Present choices in the following format:
 ## Behavior per Option
 
 - **Option 1 (Run all steps)**: Execute steps 1–8 in order without asking for each step.
-- **Option 2 (Choose individually)**: Before each of steps 3–7, present:
-  ```
-  ──────────────────────────────────────────────────────────
-    Execute this step?
-  ──────────────────────────────────────────────────────────
+- **Option 2 (Choose individually)**: Ask about all optional steps (3–7) upfront before executing any of them.
+  1. Present a single checklist for steps 3–7:
+     ```
+     ──────────────────────────────────────────────────────────
+       Select steps to execute.
+       Enter numbers separated by commas (e.g., 3,5,6)
+     ──────────────────────────────────────────────────────────
 
-    [1] Yes
-    [2] Skip
-    [3] Other
+       [3] Update documentation
+       [4] Review documentation
+       [5] Commit
+       [6] Merge
+       [7] Branch cleanup
 
-  ```
-  If 2, skip that step.
+     ```
+  2. Wait for the user's response.
+  3. Execute only the selected steps in order (3→4→5→6→7). Mark unselected steps as `skipped`.
 
 ## Required Sequence
 

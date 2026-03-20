@@ -16,6 +16,10 @@ Read docs to understand the full picture before making changes.
 Before starting work, compare modification dates of docs/ and source code.
 If source is newer, suggest running `sdd-forge build` to the user.
 
+### Development Workflow
+
+- After modifying templates in `src/templates/` or `src/presets/`, run `sdd-forge upgrade` to deploy changes to the project's skills and settings.
+
 ### docs/ Editing Rules
 
 - docs/ content is primarily auto-generated from source code analysis

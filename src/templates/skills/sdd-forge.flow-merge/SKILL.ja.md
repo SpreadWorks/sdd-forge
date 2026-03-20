@@ -55,18 +55,23 @@ Present choices in the following format:
 ## Behavior per Option
 
 - **Option 1 (すべて実行)**: Execute steps 1–8 in order without asking for each step.
-- **Option 2 (個別に選択する)**: Before each of steps 3–7, present:
-  ```
-  ──────────────────────────────────────────────────────────
-    このステップを実行しますか？
-  ──────────────────────────────────────────────────────────
+- **Option 2 (個別に選択する)**: Ask about all optional steps (3–7) upfront before executing any of them.
+  1. Present a single checklist for steps 3–7:
+     ```
+     ──────────────────────────────────────────────────────────
+       実行するステップを選択してください。
+       番号をカンマ区切りで入力（例: 3,5,6）
+     ──────────────────────────────────────────────────────────
 
-    [1] はい
-    [2] スキップ
-    [3] その他
+       [3] ドキュメント更新
+       [4] ドキュメントレビュー
+       [5] コミット
+       [6] マージ
+       [7] ブランチ削除
 
-  ```
-  If 2, skip that step.
+     ```
+  2. Wait for the user's response.
+  3. Execute only the selected steps in order (3→4→5→6→7). Mark unselected steps as `skipped`.
 
 ## Required Sequence
 
