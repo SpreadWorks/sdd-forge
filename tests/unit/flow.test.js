@@ -70,20 +70,21 @@ describe("flow-state", () => {
     assert.equal(loaded.mainRepoPath, "/tmp/main-repo");
   });
 
-  it("exports FLOW_STEPS constant with all 17 step IDs", () => {
-    assert.equal(FLOW_STEPS.length, 17);
+  it("exports FLOW_STEPS constant with all 22 step IDs", () => {
+    assert.equal(FLOW_STEPS.length, 22);
     assert.deepEqual(FLOW_STEPS, [
       "approach", "branch", "spec", "draft", "fill-spec",
       "approval", "gate", "test", "implement", "review", "finalize",
-      "docs-update", "docs-review", "commit", "merge", "branch-cleanup", "archive",
+      "commit", "push", "merge", "pr-create", "branch-cleanup", "archive",
+      "pr-merge", "sync-cleanup", "docs-update", "docs-review", "docs-commit",
     ]);
   });
 
-  it("buildInitialSteps creates pending entries for all 17 steps", () => {
+  it("buildInitialSteps creates pending entries for all 22 steps", () => {
     const steps = buildInitialSteps();
-    assert.equal(steps.length, 17);
-    assert.equal(steps[11].id, "docs-update");
-    assert.equal(steps[11].status, "pending");
+    assert.equal(steps.length, 22);
+    assert.equal(steps[19].id, "docs-update");
+    assert.equal(steps[19].status, "pending");
     assert.equal(steps[16].id, "archive");
     assert.equal(steps[16].status, "pending");
   });

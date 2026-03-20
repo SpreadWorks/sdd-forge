@@ -109,6 +109,7 @@ function main() {
   if (cli.check) {
     const CHECKS = {
       impl: ["gate", "test"],
+      finalize: ["implement"],
     };
     const required = CHECKS[cli.check];
     if (!required) {

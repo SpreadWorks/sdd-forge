@@ -111,7 +111,9 @@ function buildSummary(state, root) {
   if (currentStep) {
     const phaseSkill = phase === "plan" ? "/sdd-forge.flow-plan"
       : phase === "impl" ? "/sdd-forge.flow-impl"
-      : "/sdd-forge.flow-merge";
+      : phase === "finalize" ? "/sdd-forge.flow-finalize"
+      : phase === "sync" ? "/sdd-forge.flow-sync"
+      : "/sdd-forge.flow-finalize";
     lines.push(`Continue with step "${currentStep.id}" (in_progress) using ${phaseSkill}`);
   } else if (doneSteps.length === totalSteps) {
     lines.push("All steps completed.");

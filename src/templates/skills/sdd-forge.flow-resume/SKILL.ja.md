@@ -22,7 +22,8 @@ Use this skill when context has been lost (e.g. after compaction) and you need t
 4. Determine which skill to invoke based on the current phase:
    - `plan` → Tell the user to run `/sdd-forge.flow-plan`
    - `impl` → Tell the user to run `/sdd-forge.flow-impl`
-   - `merge` → Tell the user to run `/sdd-forge.flow-merge`
+   - `finalize` → Tell the user to run `/sdd-forge.flow-finalize`
+   - `sync` → Tell the user to run `/sdd-forge.flow-sync`
 
 5. Tell the user which step to continue from and suggest invoking the appropriate skill.
 

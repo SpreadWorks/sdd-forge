@@ -2,7 +2,7 @@
  * src/lib/flow-state.js
  *
  * .sdd-forge/flow.json の読み書きユーティリティ。
- * flow-plan / flow-impl / flow-merge 間の状態引き継ぎに使用。
+ * flow-plan / flow-impl / flow-finalize / flow-sync 間の状態引き継ぎに使用。
  */
 
 import fs from "fs";
@@ -16,7 +16,8 @@ const STATE_FILE = "flow.json";
 export const FLOW_STEPS = [
   "approach", "branch", "spec", "draft", "fill-spec",
   "approval", "gate", "test", "implement", "review", "finalize",
-  "docs-update", "docs-review", "commit", "merge", "branch-cleanup", "archive",
+  "commit", "push", "merge", "pr-create", "branch-cleanup", "archive",
+  "pr-merge", "sync-cleanup", "docs-update", "docs-review", "docs-commit",
 ];
 
 /** Step ID → phase mapping. */
@@ -24,8 +25,10 @@ export const PHASE_MAP = {
   approach: "plan", branch: "plan", spec: "plan", draft: "plan",
   "fill-spec": "plan", approval: "plan", gate: "plan", test: "plan",
   implement: "impl", review: "impl", finalize: "impl",
-  "docs-update": "merge", "docs-review": "merge", commit: "merge",
-  merge: "merge", "branch-cleanup": "merge", archive: "merge",
+  commit: "finalize", push: "finalize", merge: "finalize",
+  "pr-create": "finalize", "branch-cleanup": "finalize", archive: "finalize",
+  "pr-merge": "sync", "sync-cleanup": "sync",
+  "docs-update": "sync", "docs-review": "sync", "docs-commit": "sync",
 };
 
 /**
@@ -33,7 +36,7 @@ export const PHASE_MAP = {
  * Returns the phase of the first in_progress step,
  * or the phase after the last done/skipped step.
  * @param {StepEntry[]} [steps]
- * @returns {"plan"|"impl"|"merge"}
+ * @returns {"plan"|"impl"|"finalize"|"sync"}
  */
 export function derivePhase(steps) {
   if (!steps?.length) return "plan";
@@ -73,6 +76,8 @@ function statePath(workRoot) {
  * @property {string[]} [notes]         - 選択肢結果・メモの配列
  * @property {StepEntry[]} [steps]          - workflow step tracking
  * @property {RequirementEntry[]} [requirements] - spec requirements tracking
+ * @property {number|null} [issue]      - 紐付く GitHub Issue 番号
+ * @property {"squash"|"pr"|null} [mergeStrategy] - finalize 時に記録されるマージ方式
  */
 
 /**

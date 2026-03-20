@@ -41,8 +41,19 @@
  */
 
 /**
+ * @typedef {Object} FlowPushConfig
+ * @property {string} [remote] - Push remote name (default: "origin")
+ */
+
+/**
  * @typedef {Object} FlowConfig
  * @property {string} [merge] - Merge strategy: "squash" | "ff-only" | "merge" (default: "squash")
+ * @property {FlowPushConfig} [push] - Push configuration
+ */
+
+/**
+ * @typedef {Object} CommandsConfig
+ * @property {"enable"|"disable"} [gh] - GitHub CLI availability (default: "disable")
  */
 
 /**
@@ -62,6 +73,7 @@
  * @property {number} [concurrency]          - Per-file concurrency (default: 5)
  * @property {AgentConfig} [agent]           - AI agent invocation settings
  * @property {FlowConfig} [flow]             - Flow configuration
+ * @property {CommandsConfig} [commands]     - External command availability
  */
 
 // ---------------------------------------------------------------------------
@@ -192,6 +204,27 @@ export function validateConfig(raw) {
       const validMerge = new Set(["squash", "ff-only", "merge"]);
       if (raw.flow.merge != null && !validMerge.has(raw.flow.merge)) {
         errors.push(`'flow.merge' must be one of: ${[...validMerge].join(", ")}`);
+      }
+      if (raw.flow.push != null) {
+        if (typeof raw.flow.push !== "object") {
+          errors.push("'flow.push' must be an object");
+        } else {
+          if (raw.flow.push.remote != null && typeof raw.flow.push.remote !== "string") {
+            errors.push("'flow.push.remote' must be a string if provided");
+          }
+        }
+      }
+    }
+  }
+
+  // commands (省略可)
+  if (raw.commands != null) {
+    if (typeof raw.commands !== "object") {
+      errors.push("'commands' must be an object");
+    } else {
+      const validGh = new Set(["enable", "disable"]);
+      if (raw.commands.gh != null && !validGh.has(raw.commands.gh)) {
+        errors.push(`'commands.gh' must be one of: ${[...validGh].join(", ")}`);
       }
     }
   }

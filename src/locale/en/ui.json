@@ -111,7 +111,7 @@
       "flow status": "Show current flow state",
       "flow resume": "Output context summary for resuming after compaction",
       "flow review": "AI-driven code quality review",
-      "flow merge": "Squash-merge feature branch into base",
+      "flow merge": "Squash-merge feature branch or create PR",
       "flow cleanup": "Delete feature branch and/or worktree",
       "presets list": "Show preset inheritance tree"
     },

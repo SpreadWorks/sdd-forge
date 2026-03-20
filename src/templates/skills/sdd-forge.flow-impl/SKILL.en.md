@@ -121,7 +121,7 @@ Before starting, run `sdd-forge flow status --check impl` to verify prerequisite
        [3] Other
 
      ```
-   - 1 → immediately invoke `/sdd-forge.flow-merge` using the Skill tool (do not wait for additional user input).
+   - 1 → immediately invoke `/sdd-forge.flow-finalize` using the Skill tool (do not wait for additional user input).
    - 2 → go back to step 2.
    - **On complete**: `sdd-forge flow status --step finalize --status done`
 

@@ -111,7 +111,7 @@
       "flow status": "フロー進捗を表示・更新",
       "flow resume": "compaction 後の文脈復元サマリーを出力",
       "flow review": "AI コードレビュー",
-      "flow merge": "feature ブランチを squash-merge",
+      "flow merge": "feature ブランチを squash-merge / PR 作成",
       "flow cleanup": "feature ブランチ・worktree を削除",
       "presets list": "プリセット継承ツリーを表示"
     },
