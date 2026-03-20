@@ -1,9 +1,11 @@
 # API Overview
 
+<!-- @block: description -->
 ## Description
 
 <!-- {{text: Describe the API architecture, protocol, and key design decisions.}} -->
 <!-- {{/text}} -->
+<!-- @endblock -->
 
 <!-- @block: versioning -->
 ## Base URL & Versioning

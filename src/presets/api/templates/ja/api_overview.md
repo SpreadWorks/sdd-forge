@@ -1,9 +1,11 @@
 # API 概要
 
+<!-- @block: description -->
 ## 説明
 
 <!-- {{text: API アーキテクチャ、プロトコル、主要な設計判断について説明してください。}} -->
 <!-- {{/text}} -->
+<!-- @endblock -->
 
 <!-- @block: versioning -->
 ## ベース URL とバージョニング

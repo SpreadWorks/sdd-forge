@@ -1,9 +1,11 @@
 # Authentication & Authorization
 
+<!-- @block: description -->
 ## Description
 
 <!-- {{text: Describe the authentication and authorization mechanisms used by this API.}} -->
 <!-- {{/text}} -->
+<!-- @endblock -->
 
 <!-- @block: auth-flow -->
 ## Authentication Flow
