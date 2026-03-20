@@ -1,11 +1,11 @@
 <!-- @extends -->
 
 <!-- @block: tables -->
-<!-- {{text: ORM スキーマで定義されたデータベーステーブルの一覧を、カラム、型、制約とともに記述してください。}} -->
-<!-- {{/text}} -->
+<!-- {{data: drizzle.schema.tables("テーブル|カラム|説明")}} -->
+<!-- {{/data}} -->
 <!-- @endblock -->
 
 <!-- @block: relationships -->
-<!-- {{text: ORM スキーマで relations() 宣言により定義されたリレーションについて説明してください。}} -->
-<!-- {{/text}} -->
+<!-- {{data: drizzle.schema.relations("元テーブル|先テーブル|種別|外部キー")}} -->
+<!-- {{/data}} -->
 <!-- @endblock -->

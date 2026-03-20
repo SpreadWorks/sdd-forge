@@ -8,20 +8,20 @@
 <!-- @block: server-components -->
 ## Server Components
 
-<!-- {{text: 主要な Server Components の一覧と、そのデータフェッチパターンについて説明してください。}} -->
-<!-- {{/text}} -->
+<!-- {{data: nextjs.components.server("コンポーネント|ファイル|説明")}} -->
+<!-- {{/data}} -->
 <!-- @endblock -->
 
 <!-- @block: client-components -->
 ## Client Components
 
-<!-- {{text: 主要な Client Components の一覧と、そのインタラクティビティパターンについて説明してください。}} -->
-<!-- {{/text}} -->
+<!-- {{data: nextjs.components.client("コンポーネント|ファイル|説明")}} -->
+<!-- {{/data}} -->
 <!-- @endblock -->
 
 <!-- @block: shared-components -->
 ## 共有コンポーネント
 
-<!-- {{text: アプリケーション全体で共有される再利用可能な UI コンポーネントの一覧を記述してください。}} -->
-<!-- {{/text}} -->
+<!-- {{data: nextjs.components.shared("コンポーネント|ファイル|説明")}} -->
+<!-- {{/data}} -->
 <!-- @endblock -->

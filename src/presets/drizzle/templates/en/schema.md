@@ -8,8 +8,8 @@
 <!-- @block: schema-files -->
 ## Schema Files
 
-<!-- {{text: List the schema definition files with their table definitions and purpose.}} -->
-<!-- {{/text}} -->
+<!-- {{data: drizzle.schema.files("File|Tables|Description")}} -->
+<!-- {{/data}} -->
 <!-- @endblock -->
 
 <!-- @block: migrations -->

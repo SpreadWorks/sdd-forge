@@ -1,11 +1,11 @@
 <!-- @extends -->
 
 <!-- @block: tables -->
-<!-- {{text: List the database tables defined in the ORM schema with their columns, types, and constraints.}} -->
-<!-- {{/text}} -->
+<!-- {{data: drizzle.schema.tables("Table|Columns|Description")}} -->
+<!-- {{/data}} -->
 <!-- @endblock -->
 
 <!-- @block: relationships -->
-<!-- {{text: Describe the relationships defined in the ORM schema using relations() declarations.}} -->
-<!-- {{/text}} -->
+<!-- {{data: drizzle.schema.relations("From|To|Type|Foreign Key")}} -->
+<!-- {{/data}} -->
 <!-- @endblock -->

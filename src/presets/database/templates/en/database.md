@@ -8,13 +8,13 @@
 <!-- @block: tables -->
 ## Tables
 
-<!-- {{text: List the database tables with their purpose and key columns.}} -->
-<!-- {{/text}} -->
+<!-- {{data: database.schema.tables("Table|Columns|Description")}} -->
+<!-- {{/data}} -->
 <!-- @endblock -->
 
 <!-- @block: relationships -->
 ## Relationships
 
-<!-- {{text: Describe the key relationships between tables.}} -->
-<!-- {{/text}} -->
+<!-- {{data: database.schema.relationships("From|To|Type|Foreign Key")}} -->
+<!-- {{/data}} -->
 <!-- @endblock -->

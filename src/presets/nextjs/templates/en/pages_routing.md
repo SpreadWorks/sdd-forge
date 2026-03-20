@@ -8,20 +8,20 @@
 <!-- @block: app-router -->
 ## App Router
 
-<!-- {{text: Describe the App Router structure including layouts, pages, loading states, and error boundaries.}} -->
-<!-- {{/text}} -->
+<!-- {{data: nextjs.routes.app("Path|Type|File|Description")}} -->
+<!-- {{/data}} -->
 <!-- @endblock -->
 
 <!-- @block: pages-router -->
 ## Pages Router
 
-<!-- {{text: Describe the Pages Router structure including pages, getStaticProps, getServerSideProps usage.}} -->
-<!-- {{/text}} -->
+<!-- {{data: nextjs.routes.pages("Page|Data Fetching|Description")}} -->
+<!-- {{/data}} -->
 <!-- @endblock -->
 
 <!-- @block: dynamic-routes -->
 ## Dynamic Routes
 
-<!-- {{text: List and describe dynamic route patterns and their parameter handling.}} -->
-<!-- {{/text}} -->
+<!-- {{data: nextjs.routes.dynamic("Pattern|Parameters|Description")}} -->
+<!-- {{/data}} -->
 <!-- @endblock -->

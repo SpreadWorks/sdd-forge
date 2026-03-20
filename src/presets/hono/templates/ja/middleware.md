@@ -8,6 +8,6 @@
 <!-- @block: middleware-list -->
 ## ミドルウェア一覧
 
-<!-- {{text: すべてのミドルウェアの一覧を、用途と設定とともに記述してください。}} -->
-<!-- {{/text}} -->
+<!-- {{data: hono.middleware.list("ミドルウェア|説明")}} -->
+<!-- {{/data}} -->
 <!-- @endblock -->

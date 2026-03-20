@@ -14,15 +14,15 @@
 <!-- @block: command-list -->
 ### Command List
 
-<!-- {{text: List all commands in table format. Include command name, description, and key options.}} -->
-<!-- {{/text}} -->
+<!-- {{data: cli.commands.list("Command|Description")}} -->
+<!-- {{/data}} -->
 <!-- @endblock -->
 
 <!-- @block: global-options -->
 ### Global Options
 
-<!-- {{text[mode=deep]: Describe global options shared by all commands in table format.}} -->
-<!-- {{/text}} -->
+<!-- {{data: cli.commands.globalOptions("Option|Type|Default|Description")}} -->
+<!-- {{/data}} -->
 <!-- @endblock -->
 
 <!-- @block: command-details -->
@@ -35,6 +35,6 @@
 <!-- @block: exit-codes -->
 ### Exit Codes and Output
 
-<!-- {{text[mode=deep]: Define exit codes (0=success, etc.) and describe stdout/stderr conventions in table format.}} -->
-<!-- {{/text}} -->
+<!-- {{data: cli.commands.exitCodes("Code|Meaning")}} -->
+<!-- {{/data}} -->
 <!-- @endblock -->

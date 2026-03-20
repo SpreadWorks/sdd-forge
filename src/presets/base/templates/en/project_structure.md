@@ -17,15 +17,15 @@
 <!-- @block: directory-tree -->
 ### Directory Layout
 
-<!-- {{text[mode=deep]: Describe the project directory structure in a tree-format code block. Include role comments for major directories and files.}} -->
-<!-- {{/text}} -->
+<!-- {{data: base.structure.tree()}} -->
+<!-- {{/data}} -->
 <!-- @endblock -->
 
 <!-- @block: directory-roles -->
 ### Directory Responsibilities
 
-<!-- {{text: Describe the responsibilities of major directories with their file counts in table format.}} -->
-<!-- {{/text}} -->
+<!-- {{data: base.structure.directories("Directory|Files|Role")}} -->
+<!-- {{/data}} -->
 <!-- @endblock -->
 
 <!-- @block: libraries -->

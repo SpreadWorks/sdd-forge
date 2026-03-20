@@ -8,13 +8,13 @@
 <!-- @block: entry-points -->
 ## Entry Points
 
-<!-- {{text: List the edge function entry points with their triggers and purpose.}} -->
-<!-- {{/text}} -->
+<!-- {{data: edge.runtime.entryPoints("Function|Trigger|File|Description")}} -->
+<!-- {{/data}} -->
 <!-- @endblock -->
 
 <!-- @block: constraints -->
 ## Runtime Constraints
 
-<!-- {{text: Describe the runtime constraints such as execution time limits, available APIs, and memory limits.}} -->
-<!-- {{/text}} -->
+<!-- {{data: edge.runtime.constraints("Constraint|Value|Description")}} -->
+<!-- {{/data}} -->
 <!-- @endblock -->

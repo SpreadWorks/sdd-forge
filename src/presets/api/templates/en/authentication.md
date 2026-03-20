@@ -15,6 +15,6 @@
 <!-- @block: authorization -->
 ## Authorization
 
-<!-- {{text: Describe the authorization model, roles, and permission structure.}} -->
-<!-- {{/text}} -->
+<!-- {{data: api.auth.roles("Role|Permissions|Description")}} -->
+<!-- {{/data}} -->
 <!-- @endblock -->

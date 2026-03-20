@@ -8,13 +8,13 @@
 <!-- @block: binding-list -->
 ## バインディング一覧
 
-<!-- {{text: すべてのバインディング（KV、R2、D1、Hyperdrive、Service Bindings など）の一覧を、名前、種類、用途とともに記述してください。}} -->
-<!-- {{/text}} -->
+<!-- {{data: workers.bindings.list("名前|種別|説明")}} -->
+<!-- {{/data}} -->
 <!-- @endblock -->
 
 <!-- @block: env-vars -->
 ## 環境変数
 
-<!-- {{text: Workers で使用される環境変数とシークレットについて説明してください。}} -->
-<!-- {{/text}} -->
+<!-- {{data: workers.bindings.env("名前|種別|説明")}} -->
+<!-- {{/data}} -->
 <!-- @endblock -->

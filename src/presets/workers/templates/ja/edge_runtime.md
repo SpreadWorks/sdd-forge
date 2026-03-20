@@ -1,11 +1,11 @@
 <!-- @extends -->
 
 <!-- @block: entry-points -->
-<!-- {{text: エッジワーカーのエントリポイントの一覧を、ルート、トリガー、用途とともに記述してください。}} -->
-<!-- {{/text}} -->
+<!-- {{data: workers.bindings.entryPoints("ルート|トリガー|ファイル|説明")}} -->
+<!-- {{/data}} -->
 <!-- @endblock -->
 
 <!-- @block: constraints -->
-<!-- {{text: CPU 時間制限、利用可能な API、互換性フラグを含む エッジランタイムの制約について説明してください。}} -->
-<!-- {{/text}} -->
+<!-- {{data: workers.bindings.constraints("制約|値|説明")}} -->
+<!-- {{/data}} -->
 <!-- @endblock -->

@@ -17,15 +17,15 @@
 <!-- @block: directory-tree -->
 ### ディレクトリ構成
 
-<!-- {{text[mode=deep]: プロジェクトのディレクトリ構成を tree 形式のコードブロックで記述してください。主要ディレクトリ・ファイルの役割コメントを含めること。}} -->
-<!-- {{/text}} -->
+<!-- {{data: base.structure.tree()}} -->
+<!-- {{/data}} -->
 <!-- @endblock -->
 
 <!-- @block: directory-roles -->
 ### 各ディレクトリの責務
 
-<!-- {{text: 主要ディレクトリの責務をファイル数とともに表形式で記述してください。}} -->
-<!-- {{/text}} -->
+<!-- {{data: base.structure.directories("ディレクトリ|ファイル数|役割")}} -->
+<!-- {{/data}} -->
 <!-- @endblock -->
 
 <!-- @block: libraries -->

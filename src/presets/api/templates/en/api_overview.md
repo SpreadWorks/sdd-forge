@@ -15,6 +15,6 @@
 <!-- @block: errors -->
 ## Error Handling
 
-<!-- {{text: Describe the API error response format and common error codes.}} -->
-<!-- {{/text}} -->
+<!-- {{data: api.errors.list("Code|Name|Description")}} -->
+<!-- {{/data}} -->
 <!-- @endblock -->

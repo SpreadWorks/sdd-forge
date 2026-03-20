@@ -8,8 +8,8 @@
 <!-- @block: buckets -->
 ## Buckets & Containers
 
-<!-- {{text: List the storage buckets/containers with their purpose and access patterns.}} -->
-<!-- {{/text}} -->
+<!-- {{data: storage.buckets.list("Bucket|Provider|Description")}} -->
+<!-- {{/data}} -->
 <!-- @endblock -->
 
 <!-- @block: access -->

@@ -8,8 +8,8 @@
 <!-- @block: endpoint-list -->
 ## Endpoint List
 
-<!-- {{text: List all REST endpoints grouped by resource. Include HTTP method, path, and description for each.}} -->
-<!-- {{/text}} -->
+<!-- {{data: rest.endpoints.list("Method|Path|Description")}} -->
+<!-- {{/data}} -->
 <!-- @endblock -->
 
 <!-- @block: examples -->

@@ -8,20 +8,20 @@
 <!-- @block: server-components -->
 ## Server Components
 
-<!-- {{text: List and describe the key Server Components and their data fetching patterns.}} -->
-<!-- {{/text}} -->
+<!-- {{data: nextjs.components.server("Component|File|Description")}} -->
+<!-- {{/data}} -->
 <!-- @endblock -->
 
 <!-- @block: client-components -->
 ## Client Components
 
-<!-- {{text: List and describe the key Client Components and their interactivity patterns.}} -->
-<!-- {{/text}} -->
+<!-- {{data: nextjs.components.client("Component|File|Description")}} -->
+<!-- {{/data}} -->
 <!-- @endblock -->
 
 <!-- @block: shared-components -->
 ## Shared Components
 
-<!-- {{text: List reusable UI components shared across the application.}} -->
-<!-- {{/text}} -->
+<!-- {{data: nextjs.components.shared("Component|File|Description")}} -->
+<!-- {{/data}} -->
 <!-- @endblock -->

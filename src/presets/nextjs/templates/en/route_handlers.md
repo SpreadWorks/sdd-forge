@@ -8,6 +8,6 @@
 <!-- @block: handler-list -->
 ## Route Handler List
 
-<!-- {{text: List all route handlers with their HTTP methods, paths, and descriptions.}} -->
-<!-- {{/text}} -->
+<!-- {{data: nextjs.routes.handlers("Method|Path|File|Description")}} -->
+<!-- {{/data}} -->
 <!-- @endblock -->

@@ -21,8 +21,8 @@
 <!-- @block: requirements -->
 ### 動作要件
 
-<!-- {{text: 動作に必要なランタイム・環境要件を表形式で記述してください。}} -->
-<!-- {{/text}} -->
+<!-- {{data: library.exports.runtime("要件|バージョン|説明")}} -->
+<!-- {{/data}} -->
 <!-- @endblock -->
 
 <!-- @block: examples -->

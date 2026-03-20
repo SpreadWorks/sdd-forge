@@ -1,11 +1,11 @@
 <!-- @extends -->
 
 <!-- @block: buckets -->
-<!-- {{text: List the R2 buckets with their purpose, binding names, and access patterns.}} -->
-<!-- {{/text}} -->
+<!-- {{data: r2.storage.buckets("Bucket|Binding|Description")}} -->
+<!-- {{/data}} -->
 <!-- @endblock -->
 
 <!-- @block: access -->
-<!-- {{text: Describe R2 access patterns including Workers bindings, presigned URLs, and public access configuration.}} -->
-<!-- {{/text}} -->
+<!-- {{data: r2.storage.access("Method|Description")}} -->
+<!-- {{/data}} -->
 <!-- @endblock -->

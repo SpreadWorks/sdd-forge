@@ -8,20 +8,20 @@
 <!-- @block: app-router -->
 ## App Router
 
-<!-- {{text: レイアウト、ページ、ローディング状態、エラーバウンダリを含む App Router 構造について説明してください。}} -->
-<!-- {{/text}} -->
+<!-- {{data: nextjs.routes.app("パス|種別|ファイル|説明")}} -->
+<!-- {{/data}} -->
 <!-- @endblock -->
 
 <!-- @block: pages-router -->
 ## Pages Router
 
-<!-- {{text: ページ、getStaticProps、getServerSideProps の使用状況を含む Pages Router 構造について説明してください。}} -->
-<!-- {{/text}} -->
+<!-- {{data: nextjs.routes.pages("ページ|データ取得|説明")}} -->
+<!-- {{/data}} -->
 <!-- @endblock -->
 
 <!-- @block: dynamic-routes -->
 ## 動的ルート
 
-<!-- {{text: 動的ルートパターンの一覧と、そのパラメータハンドリングについて説明してください。}} -->
-<!-- {{/text}} -->
+<!-- {{data: nextjs.routes.dynamic("パターン|パラメータ|説明")}} -->
+<!-- {{/data}} -->
 <!-- @endblock -->

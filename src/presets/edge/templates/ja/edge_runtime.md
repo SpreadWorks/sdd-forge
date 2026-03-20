@@ -8,13 +8,13 @@
 <!-- @block: entry-points -->
 ## エントリポイント
 
-<!-- {{text: エッジファンクションのエントリポイントの一覧を、トリガーと用途とともに記述してください。}} -->
-<!-- {{/text}} -->
+<!-- {{data: edge.runtime.entryPoints("関数|トリガー|ファイル|説明")}} -->
+<!-- {{/data}} -->
 <!-- @endblock -->
 
 <!-- @block: constraints -->
 ## ランタイム制約
 
-<!-- {{text: 実行時間制限、利用可能な API、メモリ制限などのランタイム制約について説明してください。}} -->
-<!-- {{/text}} -->
+<!-- {{data: edge.runtime.constraints("制約|値|説明")}} -->
+<!-- {{/data}} -->
 <!-- @endblock -->

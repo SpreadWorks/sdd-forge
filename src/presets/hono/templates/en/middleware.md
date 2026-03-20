@@ -8,6 +8,6 @@
 <!-- @block: middleware-list -->
 ## Middleware List
 
-<!-- {{text: List all middleware with their purpose and configuration.}} -->
-<!-- {{/text}} -->
+<!-- {{data: hono.middleware.list("Middleware|Description")}} -->
+<!-- {{/data}} -->
 <!-- @endblock -->

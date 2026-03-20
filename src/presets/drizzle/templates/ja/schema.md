@@ -8,8 +8,8 @@
 <!-- @block: schema-files -->
 ## スキーマファイル
 
-<!-- {{text: テーブル定義とその用途を含むスキーマ定義ファイルの一覧を記述してください。}} -->
-<!-- {{/text}} -->
+<!-- {{data: drizzle.schema.files("ファイル|テーブル|説明")}} -->
+<!-- {{/data}} -->
 <!-- @endblock -->
 
 <!-- @block: migrations -->

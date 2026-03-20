@@ -14,15 +14,15 @@
 <!-- @block: command-list -->
 ### コマンド一覧
 
-<!-- {{text: 全コマンドの一覧を表形式で記述してください。コマンド名・説明・主なオプションを含めること。}} -->
-<!-- {{/text}} -->
+<!-- {{data: cli.commands.list("コマンド|説明")}} -->
+<!-- {{/data}} -->
 <!-- @endblock -->
 
 <!-- @block: global-options -->
 ### グローバルオプション
 
-<!-- {{text[mode=deep]: 全コマンドに共通するグローバルオプションを表形式で記述してください。}} -->
-<!-- {{/text}} -->
+<!-- {{data: cli.commands.globalOptions("オプション|型|デフォルト|説明")}} -->
+<!-- {{/data}} -->
 <!-- @endblock -->
 
 <!-- @block: command-details -->
@@ -35,6 +35,6 @@
 <!-- @block: exit-codes -->
 ### 終了コードと出力
 
-<!-- {{text[mode=deep]: 終了コードの定義（0=成功 等）と、stdout/stderr の使い分けルールを表形式で記述してください。}} -->
-<!-- {{/text}} -->
+<!-- {{data: cli.commands.exitCodes("コード|意味")}} -->
+<!-- {{/data}} -->
 <!-- @endblock -->

@@ -8,20 +8,20 @@
 <!-- @block: types -->
 ## Types
 
-<!-- {{text: List the key GraphQL types with their fields and descriptions.}} -->
-<!-- {{/text}} -->
+<!-- {{data: graphql.schema.types("Type|Fields|Description")}} -->
+<!-- {{/data}} -->
 <!-- @endblock -->
 
 <!-- @block: queries -->
 ## Queries
 
-<!-- {{text: List the available queries with their arguments and return types.}} -->
-<!-- {{/text}} -->
+<!-- {{data: graphql.schema.queries("Query|Args|Return|Description")}} -->
+<!-- {{/data}} -->
 <!-- @endblock -->
 
 <!-- @block: mutations -->
 ## Mutations
 
-<!-- {{text: List the available mutations with their arguments and return types.}} -->
-<!-- {{/text}} -->
+<!-- {{data: graphql.schema.mutations("Mutation|Args|Return|Description")}} -->
+<!-- {{/data}} -->
 <!-- @endblock -->

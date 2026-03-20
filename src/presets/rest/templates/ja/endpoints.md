@@ -8,8 +8,8 @@
 <!-- @block: endpoint-list -->
 ## エンドポイント一覧
 
-<!-- {{text: すべての REST エンドポイントをリソース別にグループ化して一覧にしてください。各エンドポイントの HTTP メソッド、パス、説明を含めること。}} -->
-<!-- {{/text}} -->
+<!-- {{data: rest.endpoints.list("メソッド|パス|説明")}} -->
+<!-- {{/data}} -->
 <!-- @endblock -->
 
 <!-- @block: examples -->

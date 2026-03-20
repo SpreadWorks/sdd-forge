@@ -8,20 +8,20 @@
 <!-- @block: types -->
 ## 型定義
 
-<!-- {{text: 主要な GraphQL 型の一覧を、フィールドと説明とともに記述してください。}} -->
-<!-- {{/text}} -->
+<!-- {{data: graphql.schema.types("型名|フィールド|説明")}} -->
+<!-- {{/data}} -->
 <!-- @endblock -->
 
 <!-- @block: queries -->
 ## クエリ
 
-<!-- {{text: 利用可能なクエリの一覧を、引数と戻り値の型とともに記述してください。}} -->
-<!-- {{/text}} -->
+<!-- {{data: graphql.schema.queries("クエリ|引数|戻り値|説明")}} -->
+<!-- {{/data}} -->
 <!-- @endblock -->
 
 <!-- @block: mutations -->
 ## ミューテーション
 
-<!-- {{text: 利用可能なミューテーションの一覧を、引数と戻り値の型とともに記述してください。}} -->
-<!-- {{/text}} -->
+<!-- {{data: graphql.schema.mutations("ミューテーション|引数|戻り値|説明")}} -->
+<!-- {{/data}} -->
 <!-- @endblock -->

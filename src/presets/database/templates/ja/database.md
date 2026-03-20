@@ -8,13 +8,13 @@
 <!-- @block: tables -->
 ## テーブル
 
-<!-- {{text: データベーステーブルの一覧を、用途と主要カラムとともに記述してください。}} -->
-<!-- {{/text}} -->
+<!-- {{data: database.schema.tables("テーブル|カラム|説明")}} -->
+<!-- {{/data}} -->
 <!-- @endblock -->
 
 <!-- @block: relationships -->
 ## リレーション
 
-<!-- {{text: テーブル間の主要なリレーションについて説明してください。}} -->
-<!-- {{/text}} -->
+<!-- {{data: database.schema.relationships("元テーブル|先テーブル|種別|外部キー")}} -->
+<!-- {{/data}} -->
 <!-- @endblock -->
