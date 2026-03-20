@@ -12,6 +12,7 @@
  *
  * ブロック継承構文:
  *   <!-- @extends -->
+ *   <!-- @extends: <name> -->
  *   <!-- @block: <name> -->
  *   <!-- @endblock -->
  */
@@ -54,10 +55,10 @@ const ENDTEXT_RE = /^<!--\s*\{\{\/text\}\}\s*-->$/;
 // インライン検出用: 1行内に {{data ...}} と {{/data}} がある
 const INLINE_DATA_RE = new RegExp(`${DATA_OPEN}([\\s\\S]*?)<!--\\s*\\{\\{\\/data\\}\\}\\s*-->`);
 
-// ブロック継承ディレクティブ
-const BLOCK_START_RE = /^<!--\s*@block:\s*([\w-]+)\s*-->$/;
-const BLOCK_END_RE   = /^<!--\s*@endblock\s*-->$/;
-const EXTENDS_RE     = /^<!--\s*@extends\s*-->$/;
+// ブロック継承ディレクティブ（template-merger.js からも参照）
+export const BLOCK_START_RE = /^<!--\s*@block:\s*([\w-]+)\s*-->$/;
+export const BLOCK_END_RE   = /^<!--\s*@endblock\s*-->$/;
+const EXTENDS_RE     = /^<!--\s*@extends(?::\s*([\w-]+))?\s*-->$/;
 
 // header/footer ディレクティブ（data ブロック内で使用）
 const HEADER_OPEN_RE  = /^<!--\s*\{\{header\}\}\s*-->$/;
@@ -393,7 +394,7 @@ export function stripBlockDirectives(text) {
   return text.split("\n")
     .filter((line) => {
       const t = line.trim();
-      return !/^<!--\s*@(block:\s*[\w-]+|endblock|extends|parent)\s*-->$/.test(t);
+      return !/^<!--\s*@(block:\s*[\w-]+|endblock|extends(?::\s*[\w-]+)?|parent)\s*-->$/.test(t);
     })
     .join("\n");
 }
@@ -401,41 +402,49 @@ export function stripBlockDirectives(text) {
 export function parseBlocks(text) {
   const lines = text.split("\n");
   let hasExtends = false;
+  let extendsTarget = null;
   const blocks = new Map();
   const preamble = [];
   const postamble = [];
 
-  let currentBlock = null;
+  const stack = [];  // stack of { name, content }
   let lastBlockEndLine = -1;
 
   for (let i = 0; i < lines.length; i++) {
     const trimmed = lines[i].trim();
 
-    if (EXTENDS_RE.test(trimmed)) {
+    const extendsMatch = trimmed.match(EXTENDS_RE);
+    if (extendsMatch) {
       hasExtends = true;
+      extendsTarget = extendsMatch[1] || null;
       continue;
     }
 
     const blockStart = trimmed.match(BLOCK_START_RE);
     if (blockStart) {
-      currentBlock = {
-        name: blockStart[1],
-        content: [],
-      };
+      // Nested: add @block tag as placeholder in parent block's content
+      if (stack.length > 0) {
+        stack[stack.length - 1].content.push(lines[i]);
+      }
+      stack.push({ name: blockStart[1], content: [] });
       continue;
     }
 
     if (BLOCK_END_RE.test(trimmed)) {
-      if (currentBlock) {
-        blocks.set(currentBlock.name, currentBlock);
+      if (stack.length > 0) {
+        const completed = stack.pop();
+        blocks.set(completed.name, completed);
         lastBlockEndLine = i;
-        currentBlock = null;
+        // Nested: add @endblock tag as placeholder in parent block's content
+        if (stack.length > 0) {
+          stack[stack.length - 1].content.push(lines[i]);
+        }
       }
       continue;
     }
 
-    if (currentBlock) {
-      currentBlock.content.push(lines[i]);
+    if (stack.length > 0) {
+      stack[stack.length - 1].content.push(lines[i]);
       continue;
     }
 
@@ -449,5 +458,5 @@ export function parseBlocks(text) {
     }
   }
 
-  return { extends: hasExtends, blocks, preamble, postamble };
+  return { extends: hasExtends, extendsTarget, blocks, preamble, postamble };
 }

@@ -1,5 +1,5 @@
-<\!-- {{data: webapp.docs.langSwitcher("relative")}} -->
-<\!-- {{/data}} -->
+<!-- @extends: layout -->
+<!-- @block: content -->
 # 認証とセッション管理
 
 <!-- @block: description -->
@@ -43,4 +43,5 @@
 
 <!-- {{text[mode=deep]: ログイン処理のフローを mermaid sequenceDiagram で生成してください。出力は mermaid コードブロックのみ。}} -->
 <!-- {{/text}} -->
+<!-- @endblock -->
 <!-- @endblock -->

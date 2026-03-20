@@ -1,5 +1,5 @@
-<\!-- {{data: cli.docs.langSwitcher("relative")}} -->
-<\!-- {{/data}} -->
+<!-- @extends: layout -->
+<!-- @block: content -->
 # 設定とカスタマイズ
 
 <!-- @block: description -->
@@ -37,4 +37,5 @@
 
 <!-- {{text[mode=deep]: ツールが参照する環境変数の一覧と用途を表形式で記述してください。}} -->
 <!-- {{/text}} -->
+<!-- @endblock -->
 <!-- @endblock -->

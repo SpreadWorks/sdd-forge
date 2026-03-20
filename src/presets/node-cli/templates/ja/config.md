@@ -1,2 +1,4 @@
-<\!-- {{data: node-cli.docs.langSwitcher("relative")}} -->
-<\!-- {{/data}} -->
+<!-- @extends: layout -->
+<!-- @block: content -->
+
+<!-- @endblock -->

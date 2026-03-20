@@ -1,5 +1,5 @@
-<!-- {{data: cli.docs.langSwitcher("relative")}} -->
-<!-- {{/data}} -->
+<!-- @extends: layout -->
+<!-- @block: content -->
 # CLI Command Reference
 
 <!-- @block: description -->
@@ -37,4 +37,5 @@
 
 <!-- {{data: cli.commands.exitCodes("Code|Meaning")}} -->
 <!-- {{/data}} -->
+<!-- @endblock -->
 <!-- @endblock -->

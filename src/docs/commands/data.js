@@ -146,14 +146,16 @@ async function main(ctx) {
   for (const file of docsFiles) {
     const filePath = path.join(docsDir, file);
     const original = fs.readFileSync(filePath, "utf8");
-    // Inject file path context for lang.links resolver
+    // Inject file path context for file-aware resolvers
+    const fileRelPath = `${docsDirRel}/${file}`;
+    const FILE_CONTEXT_RULES = {
+      "lang.links":        (_labels) => [fileRelPath],
+      "docs.langSwitcher": (labels) => [labels[0] || "relative", fileRelPath],
+      "docs.nav":          (_labels) => [fileRelPath],
+    };
     const wrappedResolveFn = (preset, source, method, a, labels) => {
-      if (source === "lang" && method === "links") {
-        return resolveFn(preset, source, method, a, [`${docsDirRel}/${file}`]);
-      }
-      if (source === "docs" && method === "langSwitcher") {
-        return resolveFn(preset, source, method, a, [labels[0] || "relative", `${docsDirRel}/${file}`]);
-      }
+      const rule = FILE_CONTEXT_RULES[`${source}.${method}`];
+      if (rule) return resolveFn(preset, source, method, a, rule(labels));
       return resolveFn(preset, source, method, a, labels);
     };
     const result = processTemplate(original, analysis, file, wrappedResolveFn);

@@ -1,5 +1,5 @@
-<\!-- {{data: webapp.docs.langSwitcher("relative")}} -->
-<\!-- {{/data}} -->
+<!-- @extends: layout -->
+<!-- @block: content -->
 # ビジネスロジック層
 
 <!-- @block: description -->
@@ -43,4 +43,5 @@
 
 <!-- {{text[mode=deep]: 主要なモデル間の関連パターンを説明してください。}} -->
 <!-- {{/text}} -->
+<!-- @endblock -->
 <!-- @endblock -->

@@ -1,5 +1,5 @@
-<!-- {{data: webapp.docs.langSwitcher("relative")}} -->
-<!-- {{/data}} -->
+<!-- @extends: layout -->
+<!-- @block: content -->
 # Business Logic Layer
 
 <!-- @block: description -->
@@ -43,4 +43,5 @@
 
 <!-- {{text[mode=deep]: Describe the key relationship patterns between models.}} -->
 <!-- {{/text}} -->
+<!-- @endblock -->
 <!-- @endblock -->

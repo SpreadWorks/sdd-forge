@@ -1,5 +1,5 @@
-<!-- {{data: base.docs.langSwitcher("relative")}} -->
-<!-- {{/data}} -->
+<!-- @extends: layout -->
+<!-- @block: content -->
 # 技術スタックと運用
 
 <!-- {{data[ignoreError=true]: monorepo.monorepo.apps("stack_and_ops")}} -->
@@ -40,4 +40,5 @@
 
 <!-- {{text: 運用手順を説明してください。}} -->
 <!-- {{/text}} -->
+<!-- @endblock -->
 <!-- @endblock -->

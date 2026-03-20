@@ -178,10 +178,7 @@ export default class DocsSource extends DataSource {
       const content = fs.readFileSync(path.join(docsDir, f), "utf8");
       const lines = content.split("\n");
 
-      // Title: first # NN. line, fallback to first # line
-      const titleLine = lines.find((l) => /^# \d{2}\./.test(l))
-        || lines.find((l) => /^# /.test(l));
-      const title = titleLine ? titleLine.replace(/^# /, "") : f.replace(/\.md$/, "");
+      const title = this._extractTitle(path.join(docsDir, f), f);
 
       // Description: ## Description / ## 説明 ~ next ##
       let inDesc = false;
@@ -224,5 +221,65 @@ export default class DocsSource extends DataSource {
 
     const hdr = labels.length >= 2 ? labels : ["章", "概要"];
     return this.toMarkdownTable(rows, hdr);
+  }
+
+  /**
+   * Chapter navigation links (prev/next).
+   *
+   * Called via: {{data: docs.nav("")}}
+   * labels[0] = relative file path from project root (injected by data.js)
+   *
+   * @returns {string|null} Markdown navigation links or null
+   */
+  nav(_analysis, labels) {
+    const filePath = labels[0] || "";
+    if (!filePath) return null;
+
+    const docsDir = this._docsDir || path.join(this._root, "docs");
+    if (!fs.existsSync(docsDir)) return null;
+
+    const files = getChapterFiles(docsDir, { type: this._type, configChapters: this._configChapters });
+    if (files.length <= 1) return null;
+
+    // Find current file in the chapter list
+    const currentFile = path.basename(filePath);
+    const currentIdx = files.indexOf(currentFile);
+    if (currentIdx < 0) return null;
+
+    const parts = [];
+
+    // Previous chapter link
+    if (currentIdx > 0) {
+      const prevFile = files[currentIdx - 1];
+      const prevTitle = this._extractTitle(path.join(docsDir, prevFile), prevFile);
+      parts.push(`[← ${prevTitle}](${prevFile})`);
+    }
+
+    // Next chapter link
+    if (currentIdx < files.length - 1) {
+      const nextFile = files[currentIdx + 1];
+      const nextTitle = this._extractTitle(path.join(docsDir, nextFile), nextFile);
+      parts.push(`[${nextTitle} →](${nextFile})`);
+    }
+
+    if (parts.length === 0) return null;
+    return parts.join(" | ");
+  }
+
+  /**
+   * Extract the title from a chapter file.
+   * Prefers `# NN. Title` format, falls back to first `# ` line.
+   *
+   * @param {string} filePath - Absolute path to chapter file
+   * @param {string} fileName - File name (fallback)
+   * @returns {string} Chapter title
+   */
+  _extractTitle(filePath, fileName) {
+    if (!fs.existsSync(filePath)) return fileName.replace(/\.md$/, "");
+    const content = fs.readFileSync(filePath, "utf8");
+    const lines = content.split("\n");
+    const titleLine = lines.find((l) => /^# \d{2}\./.test(l))
+      || lines.find((l) => /^# /.test(l));
+    return titleLine ? titleLine.replace(/^# /, "") : fileName.replace(/\.md$/, "");
   }
 }

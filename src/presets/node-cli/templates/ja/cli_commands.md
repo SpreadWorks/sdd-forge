@@ -1,5 +1,5 @@
-<!-- {{data: node-cli.docs.langSwitcher("relative")}} -->
-<!-- {{/data}} -->
+<!-- @extends: layout -->
+<!-- @block: content -->
 # CLI コマンドリファレンス
 
 ## 説明
@@ -28,3 +28,4 @@
 
 <!-- {{text[mode=deep]: 終了コードの定義と stdout/stderr の使い分けルールを表形式で記述してください。ソースコードの process.exit() 呼び出しや出力パターンから抽出すること。}} -->
 <!-- {{/text}} -->
+<!-- @endblock -->

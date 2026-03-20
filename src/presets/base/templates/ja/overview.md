@@ -1,5 +1,5 @@
-<!-- {{data: base.docs.langSwitcher("relative")}} -->
-<!-- {{/data}} -->
+<!-- @extends: layout -->
+<!-- @block: content -->
 # システム概要
 
 <!-- {{data[ignoreError=true]: monorepo.monorepo.apps("overview")}} -->
@@ -43,4 +43,5 @@
 
 <!-- {{text: 環境ごと（local/staging/production）の構成差分を説明してください。}} -->
 <!-- {{/text}} -->
+<!-- @endblock -->
 <!-- @endblock -->

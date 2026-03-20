@@ -1,5 +1,5 @@
-<!-- {{data: cli.docs.langSwitcher("relative")}} -->
-<!-- {{/data}} -->
+<!-- @extends: layout -->
+<!-- @block: content -->
 # Configuration and Customization
 
 <!-- @block: description -->
@@ -37,4 +37,5 @@
 
 <!-- {{text[mode=deep]: List all environment variables referenced by the tool and their purposes in table format.}} -->
 <!-- {{/text}} -->
+<!-- @endblock -->
 <!-- @endblock -->

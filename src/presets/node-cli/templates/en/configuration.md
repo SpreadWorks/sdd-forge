@@ -1,5 +1,5 @@
-<!-- {{data: node-cli.docs.langSwitcher("relative")}} -->
-<!-- {{/data}} -->
+<!-- @extends: layout -->
+<!-- @block: content -->
 # Configuration and Customization
 
 ## Description
@@ -28,3 +28,4 @@
 
 <!-- {{text[mode=deep]: List all environment variables referenced by the tool and their purposes in table format. Extract from process.env references in the source code.}} -->
 <!-- {{/text}} -->
+<!-- @endblock -->

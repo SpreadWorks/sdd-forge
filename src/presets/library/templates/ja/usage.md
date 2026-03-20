@@ -1,5 +1,5 @@
-<\!-- {{data: library.docs.langSwitcher("relative")}} -->
-<\!-- {{/data}} -->
+<!-- @extends: layout -->
+<!-- @block: content -->
 # 利用ガイド
 
 <!-- @block: description -->
@@ -37,4 +37,5 @@
 
 <!-- {{text[mode=deep]: よくある問題と解決策を記述してください。}} -->
 <!-- {{/text}} -->
+<!-- @endblock -->
 <!-- @endblock -->

@@ -1,5 +1,5 @@
-<!-- {{data: webapp.docs.langSwitcher("relative")}} -->
-<!-- {{/data}} -->
+<!-- @extends: layout -->
+<!-- @block: content -->
 # DB Table Definitions
 
 <!-- @block: description -->
@@ -29,4 +29,5 @@
 ### Indexes
 
 Index definitions should be verified directly from the DB schema.
+<!-- @endblock -->
 <!-- @endblock -->

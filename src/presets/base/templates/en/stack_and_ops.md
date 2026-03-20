@@ -1,5 +1,5 @@
-<!-- {{data: base.docs.langSwitcher("relative")}} -->
-<!-- {{/data}} -->
+<!-- @extends: layout -->
+<!-- @block: content -->
 # Technology Stack and Operations
 
 <!-- {{data[ignoreError=true]: monorepo.monorepo.apps("stack_and_ops")}} -->
@@ -40,4 +40,5 @@
 
 <!-- {{text: Describe the operations procedures.}} -->
 <!-- {{/text}} -->
+<!-- @endblock -->
 <!-- @endblock -->

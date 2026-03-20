@@ -1,5 +1,5 @@
-<!-- {{data: node-cli.docs.langSwitcher("relative")}} -->
-<!-- {{/data}} -->
+<!-- @extends: layout -->
+<!-- @block: content -->
 # 開発・テスト・配布
 
 ## 説明
@@ -46,3 +46,4 @@ npm publish         # npm レジストリに公開
 
 <!-- {{text: 使用言語・ランタイムバージョン要件・依存関係の方針を説明してください。package.json から抽出すること。}} -->
 <!-- {{/text}} -->
+<!-- @endblock -->

@@ -1,5 +1,5 @@
-<!-- {{data: webapp.docs.langSwitcher("relative")}} -->
-<!-- {{/data}} -->
+<!-- @extends: layout -->
+<!-- @block: content -->
 # Database Architecture
 
 <!-- @block: description -->
@@ -37,4 +37,5 @@
 
 <!-- {{data: webapp.models.er}} -->
 <!-- {{/data}} -->
+<!-- @endblock -->
 <!-- @endblock -->

@@ -1,5 +1,5 @@
-<\!-- {{data: webapp.docs.langSwitcher("relative")}} -->
-<\!-- {{/data}} -->
+<!-- @extends: layout -->
+<!-- @block: content -->
 # コントローラとルーティング
 
 <!-- @block: description -->
@@ -47,4 +47,5 @@
 
 <!-- {{data: webapp.views.components("コンポーネント|責務")}} -->
 <!-- {{/data}} -->
+<!-- @endblock -->
 <!-- @endblock -->

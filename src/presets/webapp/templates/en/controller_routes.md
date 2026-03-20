@@ -1,5 +1,5 @@
-<!-- {{data: webapp.docs.langSwitcher("relative")}} -->
-<!-- {{/data}} -->
+<!-- @extends: layout -->
+<!-- @block: content -->
 # Controllers & Routing
 
 <!-- @block: description -->
@@ -47,4 +47,5 @@
 
 <!-- {{data: webapp.views.components("Component|Responsibility")}} -->
 <!-- {{/data}} -->
+<!-- @endblock -->
 <!-- @endblock -->

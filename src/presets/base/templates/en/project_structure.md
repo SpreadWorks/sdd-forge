@@ -1,5 +1,5 @@
-<!-- {{data: base.docs.langSwitcher("relative")}} -->
-<!-- {{/data}} -->
+<!-- @extends: layout -->
+<!-- @block: content -->
 # Project Structure
 
 <!-- {{data[ignoreError=true]: monorepo.monorepo.apps("project_structure")}} -->
@@ -33,4 +33,5 @@
 
 <!-- {{data: base.libs.list("Class|File|Responsibility")}} -->
 <!-- {{/data}} -->
+<!-- @endblock -->
 <!-- @endblock -->

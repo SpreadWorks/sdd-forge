@@ -1,5 +1,5 @@
-<!-- {{data: node-cli.docs.langSwitcher("relative")}} -->
-<!-- {{/data}} -->
+<!-- @extends: layout -->
+<!-- @block: content -->
 # Development, Testing, and Distribution
 
 ## Description
@@ -46,3 +46,4 @@ npm publish         # Publish to npm registry
 
 <!-- {{text: Describe the programming language, runtime version requirements, and dependency policy. Extract from package.json.}} -->
 <!-- {{/text}} -->
+<!-- @endblock -->

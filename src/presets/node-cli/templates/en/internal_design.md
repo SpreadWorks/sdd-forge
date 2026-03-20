@@ -1,5 +1,5 @@
-<!-- {{data: node-cli.docs.langSwitcher("relative")}} -->
-<!-- {{/data}} -->
+<!-- @extends: layout -->
+<!-- @block: content -->
 # Internal Design
 
 ## Description
@@ -33,3 +33,4 @@
 
 <!-- {{text[mode=deep]: Describe the locations that need changes and extension patterns when adding new commands or features. Derive from plugin points and dispatch registration patterns in the source code.}} -->
 <!-- {{/text}} -->
+<!-- @endblock -->

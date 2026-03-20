@@ -1,5 +1,5 @@
-<!-- {{data: webapp.docs.langSwitcher("relative")}} -->
-<!-- {{/data}} -->
+<!-- @extends: layout -->
+<!-- @block: content -->
 # Batch & Console Commands
 
 <!-- @block: description -->
@@ -40,4 +40,5 @@
 
 <!-- {{text: Describe the scheduled execution configuration.}} -->
 <!-- {{/text}} -->
+<!-- @endblock -->
 <!-- @endblock -->

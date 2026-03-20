@@ -1,5 +1,5 @@
-<!-- {{data: webapp.docs.langSwitcher("relative")}} -->
-<!-- {{/data}} -->
+<!-- @extends: layout -->
+<!-- @block: content -->
 # Authentication & Session Management
 
 <!-- @block: description -->
@@ -43,4 +43,5 @@
 
 <!-- {{text[mode=deep]: Generate a mermaid sequenceDiagram of the login process flow. Output only the mermaid code block.}} -->
 <!-- {{/text}} -->
+<!-- @endblock -->
 <!-- @endblock -->

@@ -1,5 +1,5 @@
-<\!-- {{data: webapp.docs.langSwitcher("relative")}} -->
-<\!-- {{/data}} -->
+<!-- @extends: layout -->
+<!-- @block: content -->
 # DB テーブル定義
 
 <!-- @block: description -->
@@ -29,4 +29,5 @@
 ### INDEX
 
 ※ インデックス定義は DB スキーマから直接確認が必要。
+<!-- @endblock -->
 <!-- @endblock -->

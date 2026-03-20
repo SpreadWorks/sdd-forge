@@ -135,7 +135,7 @@ export function getChapterFiles(docsDir, options) {
 
   const type = options?.type;
   const configChapters = options?.configChapters;
-  const EXCLUDE = new Set(["README.md", "AGENTS.sdd.md"]);
+  const EXCLUDE = new Set(["README.md", "AGENTS.sdd.md", "layout.md"]);
 
   if (type || configChapters?.length) {
     const chapters = resolveChaptersOrder(type || "base", configChapters);

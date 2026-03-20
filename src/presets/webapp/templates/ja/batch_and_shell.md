@@ -1,5 +1,5 @@
-<\!-- {{data: webapp.docs.langSwitcher("relative")}} -->
-<\!-- {{/data}} -->
+<!-- @extends: layout -->
+<!-- @block: content -->
 # バッチとコンソールコマンド
 
 <!-- @block: description -->
@@ -40,4 +40,5 @@
 
 <!-- {{text: 定期実行の設定方法を説明してください。}} -->
 <!-- {{/text}} -->
+<!-- @endblock -->
 <!-- @endblock -->

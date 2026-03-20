@@ -1,5 +1,5 @@
-<!-- {{data: base.docs.langSwitcher("relative")}} -->
-<!-- {{/data}} -->
+<!-- @extends: layout -->
+<!-- @block: content -->
 # Development Guide
 
 <!-- {{data[ignoreError=true]: monorepo.monorepo.apps("development")}} -->
@@ -40,4 +40,5 @@
 
 <!-- {{text: Describe the test framework and how to run tests.}} -->
 <!-- {{/text}} -->
+<!-- @endblock -->
 <!-- @endblock -->

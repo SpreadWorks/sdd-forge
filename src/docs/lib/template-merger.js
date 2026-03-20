@@ -11,11 +11,11 @@
 
 import fs from "fs";
 import path from "path";
-import { parseBlocks } from "./directive-parser.js";
+import { parseBlocks, BLOCK_START_RE, BLOCK_END_RE } from "./directive-parser.js";
 import { resolveChainSafe, resolveMultiChains } from "../../lib/presets.js";
 import { callAgent } from "../../lib/agent.js";
 
-const SPECIAL_FILES = new Set(["README.md", "AGENTS.sdd.md"]);
+const SPECIAL_FILES = new Set(["README.md", "AGENTS.sdd.md", "layout.md"]);
 
 // ---------------------------------------------------------------------------
 // レイヤー構築（ボトムアップ: 最も具体的な層から）
@@ -78,6 +78,16 @@ function resolveOneFile(fileName, layers) {
 
     const parsed = parseBlocks(content);
     sources.push({ path: filePath, content, extends: parsed.extends });
+
+    // @extends: <name> → 別名ファイルを親として解決
+    if (parsed.extends && parsed.extendsTarget) {
+      const targetFileName = parsed.extendsTarget + ".md";
+      const targetSources = resolveOneFile(targetFileName, layers);
+      if (targetSources) {
+        sources.push(...targetSources);
+      }
+      break;
+    }
 
     // @extends なし → 親不要、ここで確定
     if (!parsed.extends) break;
@@ -498,6 +508,17 @@ function mergeTexts(parentText, childText) {
     return childText;
   }
 
+  // マージされたブロック Map を構築（親ベース + 子でオーバーライド）
+  const merged = new Map();
+  for (const [name, parentBlock] of parent.blocks) {
+    merged.set(name, child.blocks.get(name) || parentBlock);
+  }
+  for (const [name, childBlock] of child.blocks) {
+    if (!parent.blocks.has(name)) {
+      merged.set(name, childBlock);
+    }
+  }
+
   // 子が @extends を持つ → ブロック単位で親をマージ
   const resultLines = [];
 
@@ -506,26 +527,16 @@ function mergeTexts(parentText, childText) {
 
   // ブロック: 親のブロック順に走査し、子のオーバーライドを適用
   for (const [name, parentBlock] of parent.blocks) {
-    const childBlock = child.blocks.get(name);
-
     resultLines.push(`<!-- @block: ${name} -->`);
-
-    if (!childBlock) {
-      // 子にブロックなし → 親をそのまま使用
-      resultLines.push(...parentBlock.content);
-    } else {
-      // 子にブロックあり → 子で完全置換
-      resultLines.push(...childBlock.content);
-    }
-
+    expandBlockContent(merged.get(name).content, merged, resultLines);
     resultLines.push("<!-- @endblock -->");
   }
 
   // 子にのみ存在するブロック（親にないもの）を追加
-  for (const [name, childBlock] of child.blocks) {
+  for (const [name] of child.blocks) {
     if (!parent.blocks.has(name)) {
       resultLines.push(`<!-- @block: ${name} -->`);
-      resultLines.push(...childBlock.content);
+      expandBlockContent(merged.get(name).content, merged, resultLines);
       resultLines.push("<!-- @endblock -->");
     }
   }
@@ -534,4 +545,30 @@ function mergeTexts(parentText, childText) {
   resultLines.push(...parent.postamble);
 
   return resultLines.join("\n");
+}
+
+/**
+ * ブロック content 内のネストされたブロックプレースホルダーを展開する。
+ * content 配列には `<!-- @block: name -->` / `<!-- @endblock -->` が
+ * プレースホルダーとして含まれる。これらを merged Map の内容で置換する。
+ */
+function expandBlockContent(contentLines, merged, resultLines) {
+  for (const line of contentLines) {
+    const trimmed = line.trim();
+    const blockStart = trimmed.match(BLOCK_START_RE);
+    if (blockStart) {
+      const innerName = blockStart[1];
+      const innerBlock = merged.get(innerName);
+      resultLines.push(line);
+      if (innerBlock) {
+        expandBlockContent(innerBlock.content, merged, resultLines);
+      }
+      continue;
+    }
+    if (BLOCK_END_RE.test(trimmed)) {
+      resultLines.push(line);
+      continue;
+    }
+    resultLines.push(line);
+  }
 }

@@ -1,5 +1,5 @@
-<\!-- {{data: library.docs.langSwitcher("relative")}} -->
-<\!-- {{/data}} -->
+<!-- @extends: layout -->
+<!-- @block: content -->
 # 公開 API
 
 <!-- @block: description -->
@@ -30,4 +30,5 @@
 
 <!-- {{text[mode=deep]: 高度なユースケースやカスタマイズ方法を説明してください。}} -->
 <!-- {{/text}} -->
+<!-- @endblock -->
 <!-- @endblock -->
