@@ -1,17 +1,5 @@
 {
-  "parent": "webapp",
-  "label": "Web Application with Design System",
-  "aliases": [],
-  "chapters": [
-    "overview.md",
-    "stack_and_ops.md",
-    "project_structure.md",
-    "development.md",
-    "auth_and_session.md",
-    "database_architecture.md",
-    "db_tables.md",
-    "controller_routes.md",
-    "business_logic.md",
-    "batch_and_shell.md"
-  ]
+  "parent": "principle",
+  "label": "Web Design System",
+  "aliases": []
 }

@@ -228,10 +228,8 @@ describe("web-design preset guardrail", () => {
     });
 
     const content = readFileSync(join(tmp, ".sdd-forge", "guardrail.md"), "utf8");
-    // base articles should be present
+    // base articles should be present (via principle → base chain)
     assert.ok(content.includes("Single Responsibility"), "should have base article");
-    // webapp articles should be present (parent chain)
-    assert.ok(content.includes("Security Impact Disclosure"), "should have webapp article");
     // web-design articles
     assert.ok(content.includes("Generic Font Prohibition"), "should have design article 1");
     assert.ok(content.includes("Color System"), "should have design article 2");
