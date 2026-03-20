@@ -1,0 +1,8 @@
+{
+  "spec": "specs/077-ci-cd-preset/spec.md",
+  "baseBranch": "development",
+  "featureBranch": "feature/077-ci-cd-preset",
+  "worktree": true,
+  "request": "I4: CI/CD プリセットを新設。.github/workflows/*.yml 等の CI 設定を scan し ci_cd.md 章を生成する",
+  "status": "archived"
+}
