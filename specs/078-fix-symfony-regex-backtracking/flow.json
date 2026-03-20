@@ -1,0 +1,8 @@
+{
+  "spec": "specs/078-fix-symfony-regex-backtracking/spec.md",
+  "baseBranch": "main",
+  "featureBranch": "feature/078-fix-symfony-regex-backtracking",
+  "worktree": true,
+  "request": "GitHub Issue #1: fix catastrophic backtracking in symfony scan regex",
+  "status": "archived"
+}
