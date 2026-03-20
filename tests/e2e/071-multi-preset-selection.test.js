@@ -215,7 +215,7 @@ describe("directive-parser: preset.source.method syntax", () => {
   it("parses 3-part data directive", async () => {
     const { parseDirectives } = await import("../../src/docs/lib/directive-parser.js");
     const text = [
-      '<!-- {{data: symfony.controllers.list("Name|File")}} -->',
+      '<!-- {{data("symfony.controllers.list", {labels: "Name|File"})}} -->',
       "old content",
       "<!-- {{/data}} -->",
     ].join("\n");
@@ -232,7 +232,7 @@ describe("directive-parser: preset.source.method syntax", () => {
   it("parses 3-part inline data directive", async () => {
     const { parseDirectives } = await import("../../src/docs/lib/directive-parser.js");
     const text =
-      '# <!-- {{data: base.project.name("")}} -->sdd-forge<!-- {{/data}} -->';
+      '# <!-- {{data("base.project.name")}} -->sdd-forge<!-- {{/data}} -->';
     const result = parseDirectives(text);
     assert.equal(result.length, 1);
     const d = result[0];
@@ -245,7 +245,7 @@ describe("directive-parser: preset.source.method syntax", () => {
   it("parses 3-part directive with dotted source (e.g. preset.config.constants)", async () => {
     const { parseDirectives } = await import("../../src/docs/lib/directive-parser.js");
     const text = [
-      '<!-- {{data: cakephp2.config.constants("Name|Value")}} -->',
+      '<!-- {{data("cakephp2.config.constants", {labels: "Name|Value"})}} -->',
       "<!-- {{/data}} -->",
     ].join("\n");
     const result = parseDirectives(text);
@@ -259,7 +259,7 @@ describe("directive-parser: preset.source.method syntax", () => {
   it("{{text}} directives are unchanged (no preset field)", async () => {
     const { parseDirectives } = await import("../../src/docs/lib/directive-parser.js");
     const text = [
-      "<!-- {{text: Describe the architecture}} -->",
+      '<!-- {{text({prompt: "Describe the architecture"})}} -->',
       "<!-- {{/text}} -->",
     ].join("\n");
     const result = parseDirectives(text);

@@ -2,19 +2,19 @@
 
 ## 説明
 
-<!-- {{text: エッジランタイム環境、その制約、デプロイモデルについて説明してください。}} -->
+<!-- {{text({prompt: "エッジランタイム環境、その制約、デプロイモデルについて説明してください。"})}} -->
 <!-- {{/text}} -->
 
-<!-- @block: entry-points -->
+<!-- {%block "entry-points"%} -->
 ## エントリポイント
 
-<!-- {{data: edge.runtime.entryPoints("関数|トリガー|ファイル|説明")}} -->
+<!-- {{data("edge.runtime.entryPoints", {labels: "関数|トリガー|ファイル|説明"})}} -->
 <!-- {{/data}} -->
-<!-- @endblock -->
+<!-- {%/block%} -->
 
-<!-- @block: constraints -->
+<!-- {%block "constraints"%} -->
 ## ランタイム制約
 
-<!-- {{data: edge.runtime.constraints("制約|値|説明")}} -->
+<!-- {{data("edge.runtime.constraints", {labels: "制約|値|説明"})}} -->
 <!-- {{/data}} -->
-<!-- @endblock -->
+<!-- {%/block%} -->

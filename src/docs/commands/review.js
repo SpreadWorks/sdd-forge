@@ -175,7 +175,7 @@ function main() {
     for (let i = 0; i < lines.length; i++) {
       if (/^(`{3,}|~{3,})/.test(lines[i].trim())) { inFence = !inFence; continue; }
       if (inFence) continue;
-      if (!testIgnoringInlineCode(lines[i], /<!--\s*\{\{data\s*:/)) continue;
+      if (!testIgnoringInlineCode(lines[i], /<!--\s*\{\{data\(/)) continue;
       let hasContent = false;
       for (let j = i + 1; j < lines.length; j++) {
         if (/^<!--\s*\{\{\/data\}\}\s*-->$/.test(lines[j].trim())) break;

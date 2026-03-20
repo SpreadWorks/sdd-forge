@@ -1,41 +1,41 @@
-<!-- @extends: layout -->
-<!-- @block: content -->
+<!-- {%extends "layout"%} -->
+<!-- {%block "content"%} -->
 # 利用ガイド
 
-<!-- @block: description -->
+<!-- {%block "description"%} -->
 ## 説明
 
-<!-- {{text: この章の概要を1〜2文で記述してください。インストール方法・要件を踏まえること。}} -->
+<!-- {{text({prompt: "この章の概要を1〜2文で記述してください。インストール方法・要件を踏まえること。"})}} -->
 <!-- {{/text}} -->
 
 ## 内容
-<!-- @endblock -->
+<!-- {%/block%} -->
 
-<!-- @block: installation -->
+<!-- {%block "installation"%} -->
 ### インストール
 
-<!-- {{text: ライブラリのインストール方法を説明してください。}} -->
+<!-- {{text({prompt: "ライブラリのインストール方法を説明してください。"})}} -->
 <!-- {{/text}} -->
-<!-- @endblock -->
+<!-- {%/block%} -->
 
-<!-- @block: requirements -->
+<!-- {%block "requirements"%} -->
 ### 動作要件
 
-<!-- {{data: library.exports.runtime("要件|バージョン|説明")}} -->
+<!-- {{data("library.exports.runtime", {labels: "要件|バージョン|説明"})}} -->
 <!-- {{/data}} -->
-<!-- @endblock -->
+<!-- {%/block%} -->
 
-<!-- @block: examples -->
+<!-- {%block "examples"%} -->
 ### 使用例
 
-<!-- {{text[mode=deep]: 代表的な使用例をコードスニペット付きで記述してください。}} -->
+<!-- {{text({prompt: "代表的な使用例をコードスニペット付きで記述してください。", mode: "deep"})}} -->
 <!-- {{/text}} -->
-<!-- @endblock -->
+<!-- {%/block%} -->
 
-<!-- @block: troubleshooting -->
+<!-- {%block "troubleshooting"%} -->
 ### トラブルシューティング
 
-<!-- {{text[mode=deep]: よくある問題と解決策を記述してください。}} -->
+<!-- {{text({prompt: "よくある問題と解決策を記述してください。", mode: "deep"})}} -->
 <!-- {{/text}} -->
-<!-- @endblock -->
-<!-- @endblock -->
+<!-- {%/block%} -->
+<!-- {%/block%} -->

@@ -1,22 +1,22 @@
 # Authentication & Authorization
 
-<!-- @block: description -->
+<!-- {%block "description"%} -->
 ## Description
 
-<!-- {{text: Describe the authentication and authorization mechanisms used by this API.}} -->
+<!-- {{text({prompt: "Describe the authentication and authorization mechanisms used by this API."})}} -->
 <!-- {{/text}} -->
-<!-- @endblock -->
+<!-- {%/block%} -->
 
-<!-- @block: auth-flow -->
+<!-- {%block "auth-flow"%} -->
 ## Authentication Flow
 
-<!-- {{text: Describe the authentication flow including token management and session handling.}} -->
+<!-- {{text({prompt: "Describe the authentication flow including token management and session handling."})}} -->
 <!-- {{/text}} -->
-<!-- @endblock -->
+<!-- {%/block%} -->
 
-<!-- @block: authorization -->
+<!-- {%block "authorization"%} -->
 ## Authorization
 
-<!-- {{data: api.auth.roles("Role|Permissions|Description")}} -->
+<!-- {{data("api.auth.roles", {labels: "Role|Permissions|Description"})}} -->
 <!-- {{/data}} -->
-<!-- @endblock -->
+<!-- {%/block%} -->

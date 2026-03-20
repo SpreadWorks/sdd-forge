@@ -1,37 +1,37 @@
-# <!-- {{data: cli.project.name}} --><!-- {{/data}} -->
+# <!-- {{data("cli.project.name")}} --><!-- {{/data}} -->
 
-<!-- {{data: cli.docs.langSwitcher("absolute")}} -->
+<!-- {{data("cli.docs.langSwitcher", {labels: "absolute"})}} -->
 <!-- {{/data}} -->
 
-<!-- {{text: Write a 1-2 sentence overview of this project.}} -->
+<!-- {{text({prompt: "Write a 1-2 sentence overview of this project."})}} -->
 <!-- {{/text}} -->
 
-<!-- @block: quickstart -->
+<!-- {%block "quickstart"%} -->
 ## Quick Start
 
 ### Installation
 
 <pre>
 # npm
-npm install -g <!-- {{data: cli.project.name}} --><!-- {{/data}} -->
+npm install -g <!-- {{data("cli.project.name")}} --><!-- {{/data}} -->
 
 # yarn
-yarn global add <!-- {{data: cli.project.name}} --><!-- {{/data}} -->
+yarn global add <!-- {{data("cli.project.name")}} --><!-- {{/data}} -->
 
 # pnpm
-pnpm add -g <!-- {{data: cli.project.name}} --><!-- {{/data}} -->
+pnpm add -g <!-- {{data("cli.project.name")}} --><!-- {{/data}} -->
 </pre>
 
 ### Basic Commands
 
 <pre>
-<!-- {{data: cli.project.name}} --><!-- {{/data}} --> help
+<!-- {{data("cli.project.name")}} --><!-- {{/data}} --> help
 </pre>
-<!-- @endblock -->
+<!-- {%/block%} -->
 
-<!-- @block: docs -->
+<!-- {%block "docs"%} -->
 ## Documentation
 
-<!-- {{data: cli.docs.chapters("Chapter|Description")}} -->
+<!-- {{data("cli.docs.chapters", {labels: "Chapter|Description"})}} -->
 <!-- {{/data}} -->
-<!-- @endblock -->
+<!-- {%/block%} -->

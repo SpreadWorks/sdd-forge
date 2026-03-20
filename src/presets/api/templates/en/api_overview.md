@@ -1,22 +1,22 @@
 # API Overview
 
-<!-- @block: description -->
+<!-- {%block "description"%} -->
 ## Description
 
-<!-- {{text: Describe the API architecture, protocol, and key design decisions.}} -->
+<!-- {{text({prompt: "Describe the API architecture, protocol, and key design decisions."})}} -->
 <!-- {{/text}} -->
-<!-- @endblock -->
+<!-- {%/block%} -->
 
-<!-- @block: versioning -->
+<!-- {%block "versioning"%} -->
 ## Base URL & Versioning
 
-<!-- {{text: Describe the API base URL structure and versioning strategy.}} -->
+<!-- {{text({prompt: "Describe the API base URL structure and versioning strategy."})}} -->
 <!-- {{/text}} -->
-<!-- @endblock -->
+<!-- {%/block%} -->
 
-<!-- @block: errors -->
+<!-- {%block "errors"%} -->
 ## Error Handling
 
-<!-- {{data: api.errors.list("Code|Name|Description")}} -->
+<!-- {{data("api.errors.list", {labels: "Code|Name|Description"})}} -->
 <!-- {{/data}} -->
-<!-- @endblock -->
+<!-- {%/block%} -->

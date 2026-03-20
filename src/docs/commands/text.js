@@ -13,7 +13,7 @@
 import fs from "fs";
 import path from "path";
 import { runIfDirect } from "../../lib/entrypoint.js";
-import { parseDirectives } from "../lib/directive-parser.js";
+import { parseDirectives, TEXT_OPEN_RE } from "../lib/directive-parser.js";
 import { mapWithConcurrency } from "../lib/concurrency.js";
 import {
   getAnalysisContext,
@@ -113,7 +113,7 @@ function stripFillContent(text) {
   let i = 0;
   while (i < lines.length) {
     result.push(lines[i]);
-    if (/^<!--\s*\{\{text\s*(?:\[[^\]]*\])?\s*:/.test(lines[i].trim())) {
+    if (TEXT_OPEN_RE.test(lines[i].trim())) {
       i++;
       // {{/text}} 終了タグまでスキップ
       while (i < lines.length && !ENDTEXT_LINE_RE.test(lines[i].trim())) {
@@ -139,7 +139,7 @@ function countFilledInBatch(fileText) {
   const lines = fileText.split("\n");
   let filled = 0;
   for (let i = 0; i < lines.length; i++) {
-    if (/^<!--\s*\{\{text\s*(?:\[[^\]]*\])?\s*:/.test(lines[i].trim())) {
+    if (TEXT_OPEN_RE.test(lines[i].trim())) {
       // 開始タグと終了タグの間に非空行があれば filled
       let hasContent = false;
       for (let j = i + 1; j < lines.length; j++) {

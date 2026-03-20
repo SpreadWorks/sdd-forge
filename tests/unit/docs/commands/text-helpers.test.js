@@ -6,7 +6,7 @@ describe("stripFillContent", () => {
   it("removes content between {{text}} and {{/text}} tags", () => {
     const input = [
       "# Title",
-      "<!-- {{text: describe this}} -->",
+      '<!-- {{text({prompt: "describe this"})}} -->',
       "Some generated content",
       "More content",
       "<!-- {{/text}} -->",
@@ -18,7 +18,7 @@ describe("stripFillContent", () => {
     assert.ok(!result.includes("Some generated content"));
     assert.ok(!result.includes("More content"));
     assert.ok(result.includes("# Title"));
-    assert.ok(result.includes("<!-- {{text: describe this}} -->"));
+    assert.ok(result.includes('<!-- {{text({prompt: "describe this"})}} -->'));
     assert.ok(result.includes("<!-- {{/text}} -->"));
     assert.ok(result.includes("## Next Section"));
   });
@@ -37,12 +37,12 @@ describe("stripFillContent", () => {
   it("handles multiple {{text}} directives", () => {
     const input = [
       "# Title",
-      "<!-- {{text: first}} -->",
+      '<!-- {{text({prompt: "first"})}} -->',
       "First content",
       "<!-- {{/text}} -->",
       "",
       "## Section 2",
-      "<!-- {{text: second}} -->",
+      '<!-- {{text({prompt: "second"})}} -->',
       "Second content",
       "<!-- {{/text}} -->",
       "",
@@ -58,7 +58,7 @@ describe("stripFillContent", () => {
 
   it("handles {{text}} with parameters", () => {
     const input = [
-      "<!-- {{text[maxLines=5]: describe this}} -->",
+      '<!-- {{text({prompt: "describe this", maxLines: 5})}} -->',
       "Generated text here",
       "<!-- {{/text}} -->",
       "",
@@ -67,18 +67,18 @@ describe("stripFillContent", () => {
 
     const result = stripFillContent(input);
     assert.ok(!result.includes("Generated text here"));
-    assert.ok(result.includes("<!-- {{text[maxLines=5]: describe this}} -->"));
+    assert.ok(result.includes('<!-- {{text({prompt: "describe this", maxLines: 5})}} -->'));
     assert.ok(result.includes("<!-- {{/text}} -->"));
   });
 
   it("preserves empty block (no content between tags)", () => {
     const input = [
-      "<!-- {{text: describe this}} -->",
+      '<!-- {{text({prompt: "describe this"})}} -->',
       "<!-- {{/text}} -->",
     ].join("\n");
 
     const result = stripFillContent(input);
-    assert.ok(result.includes("<!-- {{text: describe this}} -->"));
+    assert.ok(result.includes('<!-- {{text({prompt: "describe this"})}} -->'));
     assert.ok(result.includes("<!-- {{/text}} -->"));
   });
 });
@@ -87,7 +87,7 @@ describe("countFilledInBatch", () => {
   it("returns 0 when no directives are filled", () => {
     const input = [
       "# Title",
-      "<!-- {{text: describe this}} -->",
+      '<!-- {{text({prompt: "describe this"})}} -->',
       "<!-- {{/text}} -->",
       "",
       "## Next Section",
@@ -99,7 +99,7 @@ describe("countFilledInBatch", () => {
   it("counts filled directives", () => {
     const input = [
       "# Title",
-      "<!-- {{text: describe this}} -->",
+      '<!-- {{text({prompt: "describe this"})}} -->',
       "This section describes the feature.",
       "<!-- {{/text}} -->",
       "",
@@ -112,12 +112,12 @@ describe("countFilledInBatch", () => {
   it("counts multiple filled directives", () => {
     const input = [
       "# Title",
-      "<!-- {{text: first}} -->",
+      '<!-- {{text({prompt: "first"})}} -->',
       "First content here.",
       "<!-- {{/text}} -->",
       "",
       "## Section 2",
-      "<!-- {{text: second}} -->",
+      '<!-- {{text({prompt: "second"})}} -->',
       "Second content here.",
       "<!-- {{/text}} -->",
       "",
@@ -129,9 +129,9 @@ describe("countFilledInBatch", () => {
 
   it("does not count empty block", () => {
     const input = [
-      "<!-- {{text: first}} -->",
+      '<!-- {{text({prompt: "first"})}} -->',
       "<!-- {{/text}} -->",
-      "<!-- {{text: second}} -->",
+      '<!-- {{text({prompt: "second"})}} -->',
       "Content",
       "<!-- {{/text}} -->",
     ].join("\n");
@@ -141,7 +141,7 @@ describe("countFilledInBatch", () => {
 
   it("does not count block with only blank lines", () => {
     const input = [
-      "<!-- {{text: first}} -->",
+      '<!-- {{text({prompt: "first"})}} -->',
       "",
       "",
       "<!-- {{/text}} -->",
@@ -160,11 +160,11 @@ describe("allTextDirectivesFilled", () => {
   it("returns true when all directives are filled", () => {
     const input = [
       "# Title",
-      "<!-- {{text: describe overview}} -->",
+      '<!-- {{text({prompt: "describe overview"})}} -->',
       "This is the overview.",
       "<!-- {{/text}} -->",
       "",
-      "<!-- {{text: describe details}} -->",
+      '<!-- {{text({prompt: "describe details"})}} -->',
       "These are the details.",
       "<!-- {{/text}} -->",
     ].join("\n");
@@ -174,11 +174,11 @@ describe("allTextDirectivesFilled", () => {
   it("returns false when any directive is empty", () => {
     const input = [
       "# Title",
-      "<!-- {{text: describe overview}} -->",
+      '<!-- {{text({prompt: "describe overview"})}} -->',
       "This is the overview.",
       "<!-- {{/text}} -->",
       "",
-      "<!-- {{text: describe details}} -->",
+      '<!-- {{text({prompt: "describe details"})}} -->',
       "<!-- {{/text}} -->",
     ].join("\n");
     assert.strictEqual(allTextDirectivesFilled(input), false);
@@ -187,7 +187,7 @@ describe("allTextDirectivesFilled", () => {
   it("returns false when all directives are empty", () => {
     const input = [
       "# Title",
-      "<!-- {{text: describe overview}} -->",
+      '<!-- {{text({prompt: "describe overview"})}} -->',
       "<!-- {{/text}} -->",
     ].join("\n");
     assert.strictEqual(allTextDirectivesFilled(input), false);
@@ -195,7 +195,7 @@ describe("allTextDirectivesFilled", () => {
 
   it("treats blank-only lines as empty", () => {
     const input = [
-      "<!-- {{text: describe}} -->",
+      '<!-- {{text({prompt: "describe"})}} -->',
       "   ",
       "",
       "<!-- {{/text}} -->",
@@ -205,19 +205,19 @@ describe("allTextDirectivesFilled", () => {
 
   it("handles directives with params", () => {
     const input = [
-      "<!-- {{text[id=auth, maxLines=5]: auth system}} -->",
+      '<!-- {{text({prompt: "auth system", id: "auth", maxLines: 5})}} -->',
       "Authentication details here.",
       "<!-- {{/text}} -->",
     ].join("\n");
     assert.strictEqual(allTextDirectivesFilled(input), true);
   });
 
-  it("returns false when endLine is missing", () => {
+  it("throws when end tag is missing (unclosed directive)", () => {
     const input = [
-      "<!-- {{text: describe}} -->",
+      '<!-- {{text({prompt: "describe"})}} -->',
       "Some content",
     ].join("\n");
-    assert.strictEqual(allTextDirectivesFilled(input), false);
+    assert.throws(() => allTextDirectivesFilled(input), /Unclosed \{\{text\}\}/);
   });
 });
 

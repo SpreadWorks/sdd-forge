@@ -93,7 +93,7 @@ describe("mergeResolved", () => {
     assert.equal(mergeResolved(sources), "# Hello\nWorld");
   });
 
-  it("child without @extends replaces parent entirely", () => {
+  it("child without {%extends%} replaces parent entirely", () => {
     const sources = [
       { path: "child.md", content: "# Child Only", extends: false },
       { path: "parent.md", content: "# Parent Only", extends: false },
@@ -102,22 +102,22 @@ describe("mergeResolved", () => {
     assert.equal(result, "# Child Only");
   });
 
-  it("child with @extends merges blocks from parent", () => {
+  it("child with {%extends%} merges blocks from parent", () => {
     const parent = [
       "# Title",
-      "<!-- @block: intro -->",
+      '<!-- {%block "intro"%} -->',
       "Parent intro",
-      "<!-- @endblock -->",
-      "<!-- @block: body -->",
+      "<!-- {%/block%} -->",
+      '<!-- {%block "body"%} -->',
       "Parent body",
-      "<!-- @endblock -->",
+      "<!-- {%/block%} -->",
     ].join("\n");
 
     const child = [
-      "<!-- @extends -->",
-      "<!-- @block: intro -->",
+      "<!-- {%extends%} -->",
+      '<!-- {%block "intro"%} -->',
       "Child intro",
-      "<!-- @endblock -->",
+      "<!-- {%/block%} -->",
     ].join("\n");
 
     const sources = [
@@ -137,29 +137,29 @@ describe("mergeResolved", () => {
   it("three-level inheritance merges correctly", () => {
     const base = [
       "# Base",
-      "<!-- @block: a -->",
+      '<!-- {%block "a"%} -->',
       "base-a",
-      "<!-- @endblock -->",
-      "<!-- @block: b -->",
+      "<!-- {%/block%} -->",
+      '<!-- {%block "b"%} -->',
       "base-b",
-      "<!-- @endblock -->",
-      "<!-- @block: c -->",
+      "<!-- {%/block%} -->",
+      '<!-- {%block "c"%} -->',
       "base-c",
-      "<!-- @endblock -->",
+      "<!-- {%/block%} -->",
     ].join("\n");
 
     const mid = [
-      "<!-- @extends -->",
-      "<!-- @block: b -->",
+      "<!-- {%extends%} -->",
+      '<!-- {%block "b"%} -->',
       "mid-b",
-      "<!-- @endblock -->",
+      "<!-- {%/block%} -->",
     ].join("\n");
 
     const leaf = [
-      "<!-- @extends -->",
-      "<!-- @block: a -->",
+      "<!-- {%extends%} -->",
+      '<!-- {%block "a"%} -->',
       "leaf-a",
-      "<!-- @endblock -->",
+      "<!-- {%/block%} -->",
     ].join("\n");
 
     const sources = [

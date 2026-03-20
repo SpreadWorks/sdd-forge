@@ -2,26 +2,26 @@
 
 ## 説明
 
-<!-- {{text: 型、クエリ、ミューテーションの数を含む GraphQL スキーマの概要を説明してください。}} -->
+<!-- {{text({prompt: "型、クエリ、ミューテーションの数を含む GraphQL スキーマの概要を説明してください。"})}} -->
 <!-- {{/text}} -->
 
-<!-- @block: types -->
+<!-- {%block "types"%} -->
 ## 型定義
 
-<!-- {{data: graphql.schema.types("型名|フィールド|説明")}} -->
+<!-- {{data("graphql.schema.types", {labels: "型名|フィールド|説明"})}} -->
 <!-- {{/data}} -->
-<!-- @endblock -->
+<!-- {%/block%} -->
 
-<!-- @block: queries -->
+<!-- {%block "queries"%} -->
 ## クエリ
 
-<!-- {{data: graphql.schema.queries("クエリ|引数|戻り値|説明")}} -->
+<!-- {{data("graphql.schema.queries", {labels: "クエリ|引数|戻り値|説明"})}} -->
 <!-- {{/data}} -->
-<!-- @endblock -->
+<!-- {%/block%} -->
 
-<!-- @block: mutations -->
+<!-- {%block "mutations"%} -->
 ## ミューテーション
 
-<!-- {{data: graphql.schema.mutations("ミューテーション|引数|戻り値|説明")}} -->
+<!-- {{data("graphql.schema.mutations", {labels: "ミューテーション|引数|戻り値|説明"})}} -->
 <!-- {{/data}} -->
-<!-- @endblock -->
+<!-- {%/block%} -->

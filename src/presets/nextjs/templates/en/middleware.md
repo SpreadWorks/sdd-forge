@@ -2,12 +2,12 @@
 
 ## Description
 
-<!-- {{text: Describe the Next.js middleware configuration, matching paths, and purpose.}} -->
+<!-- {{text({prompt: "Describe the Next.js middleware configuration, matching paths, and purpose."})}} -->
 <!-- {{/text}} -->
 
-<!-- @block: chain -->
+<!-- {%block "chain"%} -->
 ## Middleware Chain
 
-<!-- {{text: Describe the middleware execution flow and path matching rules.}} -->
+<!-- {{text({prompt: "Describe the middleware execution flow and path matching rules."})}} -->
 <!-- {{/text}} -->
-<!-- @endblock -->
+<!-- {%/block%} -->

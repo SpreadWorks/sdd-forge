@@ -1,24 +1,24 @@
-# <!-- {{data: webapp.project.name}} --><!-- {{/data}} -->
+# <!-- {{data("webapp.project.name")}} --><!-- {{/data}} -->
 
-<!-- {{data: webapp.docs.langSwitcher("absolute")}} -->
+<!-- {{data("webapp.docs.langSwitcher", {labels: "absolute"})}} -->
 <!-- {{/data}} -->
 
-<!-- {{text: Write a 1-2 sentence overview of this project.}} -->
+<!-- {{text({prompt: "Write a 1-2 sentence overview of this project."})}} -->
 <!-- {{/text}} -->
 
 ## Tech Stack
 
 | Category | Technology |
 |----------|------------|
-<!-- {{data: webapp.config.stack}} -->
+<!-- {{data("webapp.config.stack")}} -->
 <!-- {{/data}} -->
 
 ## Quick Start
 
-<!-- {{text: Describe the environment setup and startup procedure for this project.}} -->
+<!-- {{text({prompt: "Describe the environment setup and startup procedure for this project."})}} -->
 <!-- {{/text}} -->
 
 ## Documentation
 
-<!-- {{data: webapp.docs.chapters("Chapter|Summary")}} -->
+<!-- {{data("webapp.docs.chapters", {labels: "Chapter|Summary"})}} -->
 <!-- {{/data}} -->

@@ -1,47 +1,47 @@
-<!-- @extends: layout -->
-<!-- @block: content -->
+<!-- {%extends "layout"%} -->
+<!-- {%block "content"%} -->
 # システム概要
 
-<!-- {{data[ignoreError=true]: monorepo.monorepo.apps("overview")}} -->
+<!-- {{data("monorepo.monorepo.apps", {labels: "overview", ignoreError: true})}} -->
 <!-- {{/data}} -->
 
-<!-- {{text: このプロジェクトの概要を1〜2文で説明してください。}} -->
+<!-- {{text({prompt: "このプロジェクトの概要を1〜2文で説明してください。"})}} -->
 <!-- {{/text}} -->
 
-<!-- @block: description -->
+<!-- {%block "description"%} -->
 ## 説明
 
-<!-- {{text: この章の概要を1〜2文で記述してください。対象プロジェクトの構成・外部連携の有無を踏まえること。}} -->
+<!-- {{text({prompt: "この章の概要を1〜2文で記述してください。対象プロジェクトの構成・外部連携の有無を踏まえること。"})}} -->
 <!-- {{/text}} -->
 
 ## 内容
-<!-- @endblock -->
+<!-- {%/block%} -->
 
-<!-- @block: architecture -->
+<!-- {%block "architecture"%} -->
 ### 構成図
 
-<!-- {{text: プロジェクトのアーキテクチャ構成図を mermaid flowchart で生成してください。主要コンポーネント間のデータフローを含めること。出力は mermaid コードブロックのみ。}} -->
+<!-- {{text({prompt: "プロジェクトのアーキテクチャ構成図を mermaid flowchart で生成してください。主要コンポーネント間のデータフローを含めること。出力は mermaid コードブロックのみ。"})}} -->
 <!-- {{/text}} -->
-<!-- @endblock -->
+<!-- {%/block%} -->
 
-<!-- @block: components -->
+<!-- {%block "components"%} -->
 ### コンポーネント責務
 
-<!-- {{text[mode=deep]: 主要コンポーネントの配置・責務・入出力を表形式で記述してください。}} -->
+<!-- {{text({prompt: "主要コンポーネントの配置・責務・入出力を表形式で記述してください。", mode: "deep"})}} -->
 <!-- {{/text}} -->
-<!-- @endblock -->
+<!-- {%/block%} -->
 
-<!-- @block: external -->
+<!-- {%block "external"%} -->
 ### 外部連携
 
-<!-- {{text: 外部システムとの連携がある場合、用途・接続方式を表形式で記述してください。}} -->
+<!-- {{text({prompt: "外部システムとの連携がある場合、用途・接続方式を表形式で記述してください。"})}} -->
 <!-- {{/text}} -->
-<!-- @endblock -->
+<!-- {%/block%} -->
 
-<!-- @block: environments -->
+<!-- {%block "environments"%} -->
 ### 環境差分
 
-<!-- {{text: 環境ごと（local/staging/production）の構成差分を説明してください。}} -->
+<!-- {{text({prompt: "環境ごと（local/staging/production）の構成差分を説明してください。"})}} -->
 <!-- {{/text}} -->
-<!-- @endblock -->
-<!-- @endblock -->
+<!-- {%/block%} -->
+<!-- {%/block%} -->

@@ -2,19 +2,19 @@
 
 ## Description
 
-<!-- {{text: Describe the storage architecture, providers used, and key design decisions.}} -->
+<!-- {{text({prompt: "Describe the storage architecture, providers used, and key design decisions."})}} -->
 <!-- {{/text}} -->
 
-<!-- @block: buckets -->
+<!-- {%block "buckets"%} -->
 ## Buckets & Containers
 
-<!-- {{data: storage.buckets.list("Bucket|Provider|Description")}} -->
+<!-- {{data("storage.buckets.list", {labels: "Bucket|Provider|Description"})}} -->
 <!-- {{/data}} -->
-<!-- @endblock -->
+<!-- {%/block%} -->
 
-<!-- @block: access -->
+<!-- {%block "access"%} -->
 ## Access Patterns
 
-<!-- {{text: Describe how the application reads and writes to storage, including any caching or CDN integration.}} -->
+<!-- {{text({prompt: "Describe how the application reads and writes to storage, including any caching or CDN integration."})}} -->
 <!-- {{/text}} -->
-<!-- @endblock -->
+<!-- {%/block%} -->

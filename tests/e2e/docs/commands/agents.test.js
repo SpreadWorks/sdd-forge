@@ -31,7 +31,7 @@ describe("agents CLI", () => {
     tmp = createTmpDir();
     writeJson(tmp, ".sdd-forge/config.json", { lang: "ja", type: "cli", docs: { languages: ["ja"], defaultLanguage: "ja" } });
     writeFile(tmp, "AGENTS.md", [
-      '<!-- {{data: base.agents.sdd}} -->',
+      '<!-- {{data("base.agents.sdd")}} -->',
       '<!-- {{/data}} -->',
     ].join("\n"));
 
@@ -54,10 +54,10 @@ describe("agents CLI", () => {
       files: { summary: { total: 5 } },
     });
     writeFile(tmp, "AGENTS.md", [
-      '<!-- {{data: base.agents.sdd}} -->',
+      '<!-- {{data("base.agents.sdd")}} -->',
       '<!-- {{/data}} -->',
       '',
-      '<!-- {{data: base.agents.project}} -->',
+      '<!-- {{data("base.agents.project")}} -->',
       '<!-- {{/data}} -->',
     ].join("\n"));
 
@@ -84,7 +84,7 @@ describe("agents CLI", () => {
       files: { summary: { total: 5 } },
     });
     writeFile(tmp, "AGENTS.md", [
-      '<!-- {{data: base.agents.sdd}} -->',
+      '<!-- {{data("base.agents.sdd")}} -->',
       '<!-- {{/data}} -->',
       '',
       'Custom content below',

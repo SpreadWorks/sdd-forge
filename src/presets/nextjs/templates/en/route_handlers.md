@@ -2,12 +2,12 @@
 
 ## Description
 
-<!-- {{text: Describe the API route handlers (app/api/ or pages/api/) and their purpose.}} -->
+<!-- {{text({prompt: "Describe the API route handlers (app/api/ or pages/api/) and their purpose."})}} -->
 <!-- {{/text}} -->
 
-<!-- @block: handler-list -->
+<!-- {%block "handler-list"%} -->
 ## Route Handler List
 
-<!-- {{data: nextjs.routes.handlers("Method|Path|File|Description")}} -->
+<!-- {{data("nextjs.routes.handlers", {labels: "Method|Path|File|Description"})}} -->
 <!-- {{/data}} -->
-<!-- @endblock -->
+<!-- {%/block%} -->

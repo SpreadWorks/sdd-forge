@@ -2,19 +2,19 @@
 
 ## Description
 
-<!-- {{text: Describe the service bindings configuration and connected services.}} -->
+<!-- {{text({prompt: "Describe the service bindings configuration and connected services."})}} -->
 <!-- {{/text}} -->
 
-<!-- @block: binding-list -->
+<!-- {%block "binding-list"%} -->
 ## Binding List
 
-<!-- {{data: workers.bindings.list("Name|Type|Description")}} -->
+<!-- {{data("workers.bindings.list", {labels: "Name|Type|Description"})}} -->
 <!-- {{/data}} -->
-<!-- @endblock -->
+<!-- {%/block%} -->
 
-<!-- @block: env-vars -->
+<!-- {%block "env-vars"%} -->
 ## Environment Variables
 
-<!-- {{data: workers.bindings.env("Name|Type|Description")}} -->
+<!-- {{data("workers.bindings.env", {labels: "Name|Type|Description"})}} -->
 <!-- {{/data}} -->
-<!-- @endblock -->
+<!-- {%/block%} -->

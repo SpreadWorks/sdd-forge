@@ -1,29 +1,29 @@
-<!-- @extends -->
+<!-- {%extends%} -->
 
-<!-- @block: table-list -->
+<!-- {%block "table-list"%} -->
 ### テーブル一覧（マイグレーションから抽出）
 
-<!-- {{data: symfony.tables.list("テーブル名|カラム数|主な用途")}} -->
+<!-- {{data("symfony.tables.list", {labels: "テーブル名|カラム数|主な用途"})}} -->
 <!-- {{/data}} -->
-<!-- @endblock -->
+<!-- {%/block%} -->
 
-<!-- @block: entity-columns -->
+<!-- {%block "entity-columns"%} -->
 ### エンティティ・カラム一覧
 
-<!-- {{data: symfony.entities.columns("エンティティ|カラム|型|NULL|PK")}} -->
+<!-- {{data("symfony.entities.columns", {labels: "エンティティ|カラム|型|NULL|PK"})}} -->
 <!-- {{/data}} -->
-<!-- @endblock -->
+<!-- {%/block%} -->
 
-<!-- @block: fk -->
+<!-- {%block "fk"%} -->
 ### 外部キー関係（FK）
 
-<!-- {{data: symfony.tables.fk("テーブル|カラム|参照先")}} -->
+<!-- {{data("symfony.tables.fk", {labels: "テーブル|カラム|参照先"})}} -->
 <!-- {{/data}} -->
-<!-- @endblock -->
+<!-- {%/block%} -->
 
-<!-- @block: relations -->
+<!-- {%block "relations"%} -->
 ### Doctrine リレーション
 
-<!-- {{data: symfony.entities.relations("エンティティ|リレーション")}} -->
+<!-- {{data("symfony.entities.relations", {labels: "エンティティ|リレーション"})}} -->
 <!-- {{/data}} -->
-<!-- @endblock -->
+<!-- {%/block%} -->

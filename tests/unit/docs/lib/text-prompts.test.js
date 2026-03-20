@@ -195,7 +195,7 @@ import { parseDirectives } from "../../../../src/docs/lib/directive-parser.js";
 describe("parseDirectives mode param", () => {
   it("parses mode=deep from {{text}} params", () => {
     const text = [
-      "<!-- {{text[mode=deep]: Describe the architecture.}} -->",
+      '<!-- {{text({prompt: "Describe the architecture.", mode: "deep"})}} -->',
       "<!-- {{/text}} -->",
     ].join("\n");
     const result = parseDirectives(text);
@@ -206,7 +206,7 @@ describe("parseDirectives mode param", () => {
 
   it("parses mode=light from {{text}} params", () => {
     const text = [
-      "<!-- {{text[mode=light]: Explain setup.}} -->",
+      '<!-- {{text({prompt: "Explain setup.", mode: "light"})}} -->',
       "<!-- {{/text}} -->",
     ].join("\n");
     const result = parseDirectives(text);
@@ -216,7 +216,7 @@ describe("parseDirectives mode param", () => {
 
   it("mode defaults to undefined when not specified", () => {
     const text = [
-      "<!-- {{text: Explain setup.}} -->",
+      '<!-- {{text({prompt: "Explain setup."})}} -->',
       "<!-- {{/text}} -->",
     ].join("\n");
     const result = parseDirectives(text);
@@ -226,7 +226,7 @@ describe("parseDirectives mode param", () => {
 
   it("parses mode alongside other params", () => {
     const text = [
-      "<!-- {{text[id=arch, mode=deep, maxLines=10]: Describe the architecture.}} -->",
+      '<!-- {{text({prompt: "Describe the architecture.", id: "arch", mode: "deep", maxLines: 10})}} -->',
       "<!-- {{/text}} -->",
     ].join("\n");
     const result = parseDirectives(text);

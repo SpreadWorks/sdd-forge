@@ -1,20 +1,26 @@
 /**
- * tools/engine/directive-parser.js
+ * src/docs/lib/directive-parser.js
  *
- * テンプレート内の {{data}} / {{text}} ディレクティブを抽出する。
- * テンプレート継承用の @block / @endblock / @extends も解析する。
+ * テンプレート内の出力ディレクティブ {{ }} と制御ディレクティブ {% %} を解析する。
  *
- * ディレクティブ構文:
- *   <!-- {{data: <source>.<method>("<label1>|<label2>|...")}} -->
+ * 出力ディレクティブ（関数呼び出しスタイル）:
+ *   <!-- {{data("preset.source.method", {labels: "A|B", ignoreError: true})}} -->
  *   <!-- {{/data}} -->
- *   <!-- {{text: <prompt text>}} -->
- *   <!-- {{text[id=foo, maxLines=5]: <prompt text>}} -->
+ *   <!-- {{text({prompt: "Write overview.", mode: "deep"})}} -->
+ *   <!-- {{/text}} -->
  *
- * ブロック継承構文:
- *   <!-- @extends -->
- *   <!-- @extends: <name> -->
- *   <!-- @block: <name> -->
- *   <!-- @endblock -->
+ * 制御ディレクティブ（宣言スタイル）:
+ *   <!-- {%extends "layout"%} -->
+ *   <!-- {%block "name"%} -->
+ *   <!-- {%/block%} -->
+ *
+ * マルチラインディレクティブ:
+ *   <!--
+ *   {{data("webapp.controllers.list", {
+ *     labels: "Name|Path",
+ *     ignoreError: true
+ *   })}}
+ *   -->
  */
 
 /**
@@ -24,8 +30,9 @@
  * @property {string} source     - DataSource 名 (e.g. "controllers")
  * @property {string} method     - メソッド名 (e.g. "list")
  * @property {string[]} labels   - テーブルヘッダー表示名
- * @property {string} raw        - ディレクティブ行の全文
- * @property {number} line       - 行番号 (0-based)
+ * @property {Object} params     - オプションパラメータ
+ * @property {string} raw        - ディレクティブの全文（マルチラインの場合は結合済み）
+ * @property {number} line       - 開始行番号 (0-based)
  * @property {number} endLine    - {{/data}} の行番号 (0-based)
  * @property {boolean} inline    - {{data}} と {{/data}} が同一行か
  * @property {string} fullRaw    - インラインの場合、行全体
@@ -35,57 +42,200 @@
  * @typedef {Object} TextDirective
  * @property {"text"} type
  * @property {string} prompt     - LLM に渡すプロンプト
- * @property {Object} params     - オプショナルパラメータ (例: { id: "auth", maxLines: 5, maxChars: 500 })
- * @property {string} raw        - ディレクティブ行の全文
- * @property {number} line        - 行番号 (0-based)
+ * @property {Object} params     - オプショナルパラメータ
+ * @property {string} raw        - ディレクティブの全文
+ * @property {number} line       - 開始行番号 (0-based)
+ * @property {number} endLine    - {{/text}} の行番号 (0-based)
  */
 
-// <!-- {{data: preset.source.method("label1|label2|...")}} -->
-// <!-- {{data[ignoreError=true]: preset.source.method("label1|...")}} -->
-// <!-- {{data: preset.source.method}} -->  (labels optional)
-// 3+部構成: preset . source(dotted OK) . method ("labels" optional)
-// params: [key=val, ...] — text と同じ構文
-// Shared pattern fragment for data directive opening tag (without anchors)
-const DATA_OPEN = String.raw`<!--\s*\{\{data\s*(?:\[([^\]]*)\])?\s*:\s*([\w-]+)\.([\w.-]+)\.([\w-]+)(?:\("([^"]*)"\))?\}\}\s*-->`;
-const DATA_RE = new RegExp(`^${DATA_OPEN}$`);
-const TEXT_RE = /^<!--\s*\{\{text\s*(?:\[([^\]]*)\])?\s*:\s*(.+?)\}\}\s*-->$/;
+// ---------------------------------------------------------------------------
+// Shared directive patterns
+// ---------------------------------------------------------------------------
 const ENDDATA_RE = /^<!--\s*\{\{\/data\}\}\s*-->$/;
 const ENDTEXT_RE = /^<!--\s*\{\{\/text\}\}\s*-->$/;
 
-// インライン検出用: 1行内に {{data ...}} と {{/data}} がある
-const INLINE_DATA_RE = new RegExp(`${DATA_OPEN}([\\s\\S]*?)<!--\\s*\\{\\{\\/data\\}\\}\\s*-->`);
+/** Opening tag pattern for {{text(...)}} directives. */
+export const TEXT_OPEN_RE = /^<!--\s*\{\{text\(/;
 
-// ブロック継承ディレクティブ（template-merger.js からも参照）
-export const BLOCK_START_RE = /^<!--\s*@block:\s*([\w-]+)\s*-->$/;
-export const BLOCK_END_RE   = /^<!--\s*@endblock\s*-->$/;
-const EXTENDS_RE     = /^<!--\s*@extends(?::\s*([\w-]+))?\s*-->$/;
+// ---------------------------------------------------------------------------
+// New control directive patterns
+// ---------------------------------------------------------------------------
+export const BLOCK_START_RE = /^<!--\s*\{%block\s+"([\w-]+)"%\}\s*-->$/;
+export const BLOCK_END_RE   = /^<!--\s*\{%\/block%\}\s*-->$/;
+const EXTENDS_RE     = /^<!--\s*\{%extends(?:\s+"([\w-]+)")?%\}\s*-->$/;
 
-// header/footer ディレクティブ（data ブロック内で使用）
-const HEADER_OPEN_RE  = /^<!--\s*\{\{header\}\}\s*-->$/;
-const HEADER_CLOSE_RE = /^<!--\s*\{\{\/header\}\}\s*-->$/;
-const FOOTER_OPEN_RE  = /^<!--\s*\{\{footer\}\}\s*-->$/;
-const FOOTER_CLOSE_RE = /^<!--\s*\{\{\/footer\}\}\s*-->$/;
+// ---------------------------------------------------------------------------
+// HTML comment block extraction (for multiline support)
+// ---------------------------------------------------------------------------
 
 /**
- * テキストフィルのパラメータ文字列をパースする。
- * 例: "maxLines=5, maxChars=500" → { maxLines: 5, maxChars: 500 }
+ * HTML コメントブロック <!-- ... --> を抽出する。
+ * 単一行コメントとマルチラインコメントの両方に対応。
  *
- * @param {string|undefined} paramStr - パラメータ文字列
- * @returns {Object} パース済みパラメータ
+ * @param {string} line - 現在の行
+ * @param {string[]} lines - 全行配列
+ * @param {number} index - 現在の行インデックス
+ * @returns {{ content: string, endIndex: number }|null}
  */
-function parseDirectiveParams(paramStr) {
-  if (!paramStr) return {};
-  const params = {};
-  for (const pair of paramStr.split(",")) {
-    const [key, value] = pair.split("=").map((s) => s.trim());
-    if (key && value !== undefined) {
-      if (value === "true") { params[key] = true; }
-      else if (value === "false") { params[key] = false; }
-      else { const num = Number(value); params[key] = Number.isFinite(num) ? num : value; }
+function extractCommentBlock(line, lines, index) {
+  const trimmed = line.trim();
+
+  // Single-line: <!-- ... -->
+  const singleMatch = trimmed.match(/^<!--(.+?)-->$/s);
+  if (singleMatch) {
+    return { content: singleMatch[1].trim(), endIndex: index };
+  }
+
+  // Multiline start: <!--
+  if (trimmed === "<!--" || (trimmed.startsWith("<!--") && !trimmed.includes("-->"))) {
+    const parts = [trimmed.slice(4).trim()]; // content after <!--
+    for (let j = index + 1; j < lines.length; j++) {
+      const jTrimmed = lines[j].trim();
+      if (jTrimmed.endsWith("-->")) {
+        parts.push(jTrimmed.slice(0, -3).trim());
+        const content = parts.filter(Boolean).join("\n");
+        return { content, endIndex: j };
+      }
+      parts.push(jTrimmed);
     }
   }
-  return params;
+
+  return null;
 }
+
+// ---------------------------------------------------------------------------
+// Output directive parsing (function call style)
+// ---------------------------------------------------------------------------
+
+/**
+ * Parse option object from function call arguments.
+ * Handles: {labels: "A|B", ignoreError: true, maxLines: 10, mode: "deep"}
+ *
+ * @param {string} optStr - Option string (without outer braces)
+ * @returns {Object}
+ */
+function parseOptions(optStr) {
+  if (!optStr) return {};
+  const opts = {};
+
+  // Match key: value pairs (handles quoted strings, booleans, numbers)
+  const pairRe = /(\w+)\s*:\s*(?:"([^"]*)"|(true|false|\d+(?:\.\d+)?)|(\w+))/g;
+  let m;
+  while ((m = pairRe.exec(optStr)) !== null) {
+    const key = m[1];
+    if (m[2] !== undefined) {
+      opts[key] = m[2]; // quoted string
+    } else if (m[3] !== undefined) {
+      if (m[3] === "true") opts[key] = true;
+      else if (m[3] === "false") opts[key] = false;
+      else opts[key] = Number(m[3]);
+    } else if (m[4] !== undefined) {
+      opts[key] = m[4]; // unquoted identifier
+    }
+  }
+
+  return opts;
+}
+
+/**
+ * Build data directive fields from a dotted path and options string.
+ *
+ * @param {string} pathStr - Dotted path (e.g. "base.project.summary")
+ * @param {string} optsStr - Options string (e.g. 'labels: "A|B", ignoreError: true')
+ * @returns {Object|null} { preset, source, method, labels, params } or null
+ */
+function buildDataFields(pathStr, optsStr) {
+  const parts = pathStr.split(".");
+  if (parts.length < 3) return null;
+
+  const preset = parts[0];
+  const method = parts[parts.length - 1];
+  const source = parts.slice(1, -1).join(".");
+
+  const opts = parseOptions(optsStr);
+  const labels = opts.labels ? opts.labels.split("|").map((l) => l.trim()) : [];
+  const params = { ...opts };
+  delete params.labels;
+
+  return { preset, source, method, labels, params };
+}
+
+/**
+ * Parse a data() function call.
+ * Format: data("preset.source.method", {options})
+ *         data("preset.source.method")
+ *
+ * @param {string} content - Content inside {{ }}
+ * @returns {Object|null} Parsed directive fields or null
+ */
+function parseDataCall(content) {
+  const re = /^data\(\s*"([\w][\w.-]*)"\s*(?:,\s*\{([^}]*)\})?\s*\)$/s;
+  const m = content.match(re);
+  if (!m) return null;
+  return buildDataFields(m[1], m[2] || "");
+}
+
+/**
+ * Parse a text() function call.
+ * Format: text({prompt: "...", mode: "deep", id: "name", maxLines: 10})
+ *
+ * @param {string} content - Content inside {{ }}
+ * @returns {Object|null} Parsed directive fields or null
+ */
+function parseTextCall(content) {
+  // text({...})
+  const re = /^text\(\s*\{([\s\S]*)\}\s*\)$/s;
+  const m = content.match(re);
+  if (!m) return null;
+
+  const opts = parseOptions(m[1]);
+  const prompt = opts.prompt;
+  if (!prompt) return null;
+
+  const params = { ...opts };
+  delete params.prompt;
+
+  return { prompt, params };
+}
+
+// ---------------------------------------------------------------------------
+// Inline data directive detection
+// ---------------------------------------------------------------------------
+
+/**
+ * Inline {{data(...)}} pattern for single-line detection.
+ * Matches: <!-- {{data("path", {opts})}} -->content<!-- {{/data}} -->
+ */
+const INLINE_DATA_RE = /<!--\s*\{\{data\(\s*"([\w][\w.-]*)"\s*(?:,\s*\{([^}]*)\})?\s*\)\}\}\s*-->([\s\S]*?)<!--\s*\{\{\/data\}\}\s*-->/;
+
+function parseInlineData(match) {
+  return buildDataFields(match[1], match[2] || "");
+}
+
+// ---------------------------------------------------------------------------
+// Closing tag search helper
+// ---------------------------------------------------------------------------
+
+/**
+ * 指定位置以降から閉じタグを検索する。見つからなければエラーを投げる。
+ *
+ * @param {string[]} lines - 全行配列
+ * @param {number} startIndex - 検索開始行
+ * @param {RegExp} closingRe - 閉じタグの正規表現
+ * @param {string} label - エラーメッセージ用のディレクティブ名
+ * @param {number} openLine - 開始タグの行番号（エラーメッセージ用）
+ * @returns {number} 閉じタグの行番号
+ */
+function findClosingTag(lines, startIndex, closingRe, label, openLine) {
+  for (let j = startIndex; j < lines.length; j++) {
+    if (closingRe.test(lines[j].trim())) return j;
+  }
+  throw new Error(`Unclosed {{${label}}} directive at line ${openLine + 1}`);
+}
+
+// ---------------------------------------------------------------------------
+// Main parser
+// ---------------------------------------------------------------------------
 
 /**
  * テンプレートテキストからディレクティブを抽出する。
@@ -98,21 +248,16 @@ export function parseDirectives(text) {
   const directives = [];
 
   for (let i = 0; i < lines.length; i++) {
-    const trimmed = lines[i].trim();
-
-    // インライン {{data}} チェック（1行内に {{data}} と {{/data}} がある、複数対応）
+    // Inline {{data(...)}} check (multiple per line)
     const inlineGlobal = new RegExp(INLINE_DATA_RE.source, "g");
     const inlineMatches = [...lines[i].matchAll(inlineGlobal)];
     if (inlineMatches.length > 0) {
       for (const m of inlineMatches) {
-        const labels = m[5] ? m[5].split("|").map((l) => l.trim()) : [];
+        const parsed = parseInlineData(m);
+        if (!parsed) continue;
         directives.push({
           type: "data",
-          params: parseDirectiveParams(m[1]),
-          preset: m[2],
-          source: m[3],
-          method: m[4],
-          labels,
+          ...parsed,
           raw: m[0],
           line: i,
           endLine: i,
@@ -123,180 +268,60 @@ export function parseDirectives(text) {
       continue;
     }
 
-    // ブロック {{data}} チェック
-    const dataMatch = trimmed.match(DATA_RE);
-    if (dataMatch) {
-      // {{/data}} を探す
-      let endLine = -1;
-      for (let j = i + 1; j < lines.length; j++) {
-        if (ENDDATA_RE.test(lines[j].trim())) {
-          endLine = j;
-          break;
-        }
-        // 次の {{data}} が先に来たら閉じなし（エラー扱い）
-        if (DATA_RE.test(lines[j].trim()) || INLINE_DATA_RE.test(lines[j])) {
-          break;
-        }
-      }
+    // Extract comment block (single-line or multiline)
+    const comment = extractCommentBlock(lines[i], lines, i);
+    if (!comment) continue;
 
-      const labels = dataMatch[5] ? dataMatch[5].split("|").map((l) => l.trim()) : [];
-      directives.push({
-        type: "data",
-        params: parseDirectiveParams(dataMatch[1]),
-        preset: dataMatch[2],
-        source: dataMatch[3],
-        method: dataMatch[4],
-        labels,
-        raw: lines[i],
-        line: i,
-        endLine,
-        inline: false,
-        fullRaw: null,
-      });
-      continue;
+    const { content, endIndex } = comment;
+
+    // Try {{data(...)}}
+    const dataContent = content.match(/^\{\{(data\([\s\S]*\))\}\}$/s);
+    if (dataContent) {
+      const parsed = parseDataCall(dataContent[1]);
+      if (parsed) {
+        const endLine = findClosingTag(lines, endIndex + 1, ENDDATA_RE, "data", i);
+        const rawLines = lines.slice(i, endIndex + 1);
+        directives.push({
+          type: "data",
+          ...parsed,
+          raw: rawLines.join("\n"),
+          line: i,
+          endLine,
+          inline: false,
+          fullRaw: null,
+        });
+        i = endIndex;
+        continue;
+      }
     }
 
-    const textMatch = trimmed.match(TEXT_RE);
-    if (textMatch) {
-      // {{/text}} を探す
-      let endLine = -1;
-      for (let j = i + 1; j < lines.length; j++) {
-        if (ENDTEXT_RE.test(lines[j].trim())) {
-          endLine = j;
-          break;
-        }
-        // 次の {{text}} が先に来たら閉じなし
-        if (TEXT_RE.test(lines[j].trim())) {
-          break;
-        }
+    // Try {{text(...)}}
+    const textContent = content.match(/^\{\{(text\([\s\S]*\))\}\}$/s);
+    if (textContent) {
+      const parsed = parseTextCall(textContent[1]);
+      if (parsed) {
+        const endLine = findClosingTag(lines, endIndex + 1, ENDTEXT_RE, "text", i);
+        const rawLines = lines.slice(i, endIndex + 1);
+        directives.push({
+          type: "text",
+          prompt: parsed.prompt,
+          params: parsed.params,
+          raw: rawLines.join("\n"),
+          line: i,
+          endLine,
+        });
+        i = endIndex;
+        continue;
       }
-
-      directives.push({
-        type: "text",
-        prompt: textMatch[2],
-        params: parseDirectiveParams(textMatch[1]),
-        raw: lines[i],
-        line: i,
-        endLine,
-      });
-      continue;
     }
   }
 
   return directives;
 }
 
-/**
- * テンプレートファイルのブロック継承構造を解析する。
- *
- * @param {string} text - テンプレート全文
- * @returns {{
- *   extends: boolean,
- *   blocks: Map<string, { name: string, content: string[] }>,
- *   preamble: string[],
- *   postamble: string[],
- * }}
- */
-/**
- * data ブロック内の header/footer 領域を検出する。
- *
- * @param {string[]} lines
- * @param {number} startLine - {{data}} 行
- * @param {number} endLine   - {{/data}} 行
- * @returns {{ header: { start: number, end: number, content: string[] }|null, footer: { start: number, end: number, content: string[] }|null }}
- */
-function findHeaderFooter(lines, startLine, endLine) {
-  let header = null;
-  let footer = null;
-
-  for (let i = startLine + 1; i < endLine; i++) {
-    const t = lines[i].trim();
-    if (HEADER_OPEN_RE.test(t) && !header) {
-      for (let j = i + 1; j <= endLine; j++) {
-        if (HEADER_CLOSE_RE.test(lines[j].trim())) {
-          header = { start: i, end: j, content: lines.slice(i + 1, j) };
-          break;
-        }
-      }
-    }
-    if (FOOTER_OPEN_RE.test(t) && !footer) {
-      for (let j = i + 1; j <= endLine; j++) {
-        if (FOOTER_CLOSE_RE.test(lines[j].trim())) {
-          footer = { start: i, end: j, content: lines.slice(i + 1, j) };
-          break;
-        }
-      }
-    }
-  }
-
-  return { header, footer };
-}
-
-/**
- * data が null の場合に header/footer を HTML コメント内に折り畳む。
- * lines 配列を直接変更する。
- *
- * @param {string[]} lines
- * @param {DataDirective} d
- * @returns {boolean} header/footer が存在して折り畳みを行ったか
- */
-function foldHeaderFooter(lines, d) {
-  const { header, footer } = findHeaderFooter(lines, d.line, d.endLine);
-  if (!header && !footer) return false;
-
-  const newLines = [d.raw];
-
-  if (header) {
-    newLines.push("<!-- {{header}}");
-    newLines.push(...header.content);
-    newLines.push("{{/header}} -->");
-  }
-
-  if (footer) {
-    newLines.push("<!-- {{footer}}");
-    newLines.push(...footer.content);
-    newLines.push("{{/footer}} -->");
-  }
-
-  newLines.push(lines[d.endLine]);
-  lines.splice(d.line, d.endLine - d.line + 1, ...newLines);
-  return true;
-}
-
-/**
- * header/footer 付き data ブロックの内容を置換する。
- * header/footer がなければ従来の replaceBlockDirective にフォールバック。
- *
- * @param {string[]} lines
- * @param {DataDirective} d
- * @param {string} rendered - 解決済みデータ
- */
-function replaceWithHeaderFooter(lines, d, rendered) {
-  const { header, footer } = findHeaderFooter(lines, d.line, d.endLine);
-  if (!header && !footer) {
-    replaceBlockDirective(lines, d, rendered);
-    return;
-  }
-
-  const newLines = [d.raw];
-
-  if (header) {
-    newLines.push(lines[header.start]);  // <!-- {{header}} -->
-    newLines.push(...header.content);
-    newLines.push(lines[header.end]);    // <!-- {{/header}} -->
-  }
-
-  newLines.push(rendered);
-
-  if (footer) {
-    newLines.push(lines[footer.start]);  // <!-- {{footer}} -->
-    newLines.push(...footer.content);
-    newLines.push(lines[footer.end]);    // <!-- {{/footer}} -->
-  }
-
-  newLines.push(lines[d.endLine]);       // <!-- {{/data}} -->
-  lines.splice(d.line, d.endLine - d.line + 1, ...newLines);
-}
+// ---------------------------------------------------------------------------
+// Block directive replacement
+// ---------------------------------------------------------------------------
 
 /**
  * ブロックディレクティブの内容を置換する。
@@ -307,23 +332,17 @@ function replaceWithHeaderFooter(lines, d, rendered) {
  * @param {string} content - 新しい内容
  */
 export function replaceBlockDirective(lines, d, content) {
+  // For multiline directives, raw may span multiple lines
+  const rawLines = d.raw.split("\n");
   const endDataLine = lines[d.endLine];
-  const newLines = [d.raw, content, endDataLine];
+  const newLines = [...rawLines, content, endDataLine];
   lines.splice(d.line, d.endLine - d.line + 1, ...newLines);
 }
 
-/**
- * テンプレート内の {{data}} ディレクティブを一括解決する。
- * 逆順ループ + インライン/ブロック置換の共通処理。
- *
- * @param {string} text - テンプレート全文
- * @param {function} resolveFn - (preset, source, method, labels) => rendered string | null
- * @param {Object} [opts]
- * @param {function} [opts.onResolve] - (directive, rendered) => void — 解決時コールバック
- * @param {function} [opts.onSkip] - (directive) => void — data 以外のディレクティブ時コールバック
- * @param {function} [opts.onUnresolved] - (directive) => void — data ディレクティブが null 返却時コールバック
- * @returns {{ text: string, replaced: number }}
- */
+// ---------------------------------------------------------------------------
+// Directive resolution
+// ---------------------------------------------------------------------------
+
 /**
  * ディレクティブを行配列から除去する（インライン / ブロック両対応）。
  */
@@ -335,6 +354,17 @@ function removeDirective(lines, d) {
   }
 }
 
+/**
+ * テンプレート内の {{data}} ディレクティブを一括解決する。
+ *
+ * @param {string} text - テンプレート全文
+ * @param {function} resolveFn - (preset, source, method, labels) => rendered string | null
+ * @param {Object} [opts]
+ * @param {function} [opts.onResolve] - (directive, rendered) => void
+ * @param {function} [opts.onSkip] - (directive) => void — data 以外のディレクティブ時
+ * @param {function} [opts.onUnresolved] - (directive) => void — null 返却時
+ * @returns {{ text: string, replaced: number }}
+ */
 export function resolveDataDirectives(text, resolveFn, opts) {
   const { onResolve, onSkip, onUnresolved } = opts || {};
   const directives = parseDirectives(text);
@@ -353,29 +383,28 @@ export function resolveDataDirectives(text, resolveFn, opts) {
 
     const rendered = resolveFn(d.preset, d.source, d.method, d.labels);
     if (rendered === null || rendered === undefined) {
-      // ignoreError=true: resolve to empty string silently
       if (d.params?.ignoreError === true) {
         removeDirective(lines, d);
         replaced++;
         continue;
       }
       if (onUnresolved) onUnresolved(d);
-      // I1: fold header/footer when data is null
-      if (!d.inline && d.endLine >= 0) {
-        foldHeaderFooter(lines, d);
-      }
       continue;
     }
 
     if (onResolve) onResolve(d, rendered);
 
     if (d.inline) {
-      const openTag = d.raw.match(new RegExp(DATA_OPEN))[0];
+      // Reconstruct inline: openTag + rendered + endTag
+      const rawLines = d.raw.split("\n");
+      const openTag = rawLines.join("\n").match(/<!--\s*\{\{data\([^)]*\)\}\}\s*-->/s)?.[0];
       const endTag = "<!-- {{/data}} -->";
-      lines[d.line] = lines[d.line].replace(d.raw, `${openTag}${rendered}${endTag}`);
+      if (openTag) {
+        lines[d.line] = lines[d.line].replace(d.raw, `${openTag}${rendered}${endTag}`);
+      }
       replaced++;
     } else if (d.endLine >= 0) {
-      replaceWithHeaderFooter(lines, d, rendered);
+      replaceBlockDirective(lines, d, rendered);
       replaced++;
     }
   }
@@ -383,9 +412,12 @@ export function resolveDataDirectives(text, resolveFn, opts) {
   return { text: lines.join("\n"), replaced };
 }
 
+// ---------------------------------------------------------------------------
+// Block structure parsing (for template inheritance)
+// ---------------------------------------------------------------------------
+
 /**
  * マージ済みテンプレートからブロック制御行を除去する。
- * docs/ 出力時にブロックディレクティブは不要。
  *
  * @param {string} text - テンプレートテキスト
  * @returns {string}
@@ -394,11 +426,23 @@ export function stripBlockDirectives(text) {
   return text.split("\n")
     .filter((line) => {
       const t = line.trim();
-      return !/^<!--\s*@(block:\s*[\w-]+|endblock|extends(?::\s*[\w-]+)?|parent)\s*-->$/.test(t);
+      return !BLOCK_START_RE.test(t) && !BLOCK_END_RE.test(t) && !EXTENDS_RE.test(t);
     })
     .join("\n");
 }
 
+/**
+ * テンプレートファイルのブロック継承構造を解析する。
+ *
+ * @param {string} text - テンプレート全文
+ * @returns {{
+ *   extends: boolean,
+ *   extendsTarget: string|null,
+ *   blocks: Map<string, { name: string, content: string[] }>,
+ *   preamble: string[],
+ *   postamble: string[],
+ * }}
+ */
 export function parseBlocks(text) {
   const lines = text.split("\n");
   let hasExtends = false;
@@ -407,7 +451,7 @@ export function parseBlocks(text) {
   const preamble = [];
   const postamble = [];
 
-  const stack = [];  // stack of { name, content }
+  const stack = [];
   let lastBlockEndLine = -1;
 
   for (let i = 0; i < lines.length; i++) {
@@ -422,7 +466,6 @@ export function parseBlocks(text) {
 
     const blockStart = trimmed.match(BLOCK_START_RE);
     if (blockStart) {
-      // Nested: add @block tag as placeholder in parent block's content
       if (stack.length > 0) {
         stack[stack.length - 1].content.push(lines[i]);
       }
@@ -435,7 +478,6 @@ export function parseBlocks(text) {
         const completed = stack.pop();
         blocks.set(completed.name, completed);
         lastBlockEndLine = i;
-        // Nested: add @endblock tag as placeholder in parent block's content
         if (stack.length > 0) {
           stack[stack.length - 1].content.push(lines[i]);
         }
@@ -448,12 +490,9 @@ export function parseBlocks(text) {
       continue;
     }
 
-    // ブロック外の行
     if (blocks.size === 0 && lastBlockEndLine === -1) {
-      // まだブロックが出現していない → preamble
       preamble.push(lines[i]);
     } else {
-      // 最後のブロック以降 → postamble
       postamble.push(lines[i]);
     }
   }

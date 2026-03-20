@@ -2,19 +2,19 @@
 
 ## 説明
 
-<!-- {{text: データベースアーキテクチャ、エンジン、主要な設計判断について説明してください。}} -->
+<!-- {{text({prompt: "データベースアーキテクチャ、エンジン、主要な設計判断について説明してください。"})}} -->
 <!-- {{/text}} -->
 
-<!-- @block: tables -->
+<!-- {%block "tables"%} -->
 ## テーブル
 
-<!-- {{data: database.schema.tables("テーブル|カラム|説明")}} -->
+<!-- {{data("database.schema.tables", {labels: "テーブル|カラム|説明"})}} -->
 <!-- {{/data}} -->
-<!-- @endblock -->
+<!-- {%/block%} -->
 
-<!-- @block: relationships -->
+<!-- {%block "relationships"%} -->
 ## リレーション
 
-<!-- {{data: database.schema.relationships("元テーブル|先テーブル|種別|外部キー")}} -->
+<!-- {{data("database.schema.relationships", {labels: "元テーブル|先テーブル|種別|外部キー"})}} -->
 <!-- {{/data}} -->
-<!-- @endblock -->
+<!-- {%/block%} -->

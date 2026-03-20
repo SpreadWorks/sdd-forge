@@ -18,14 +18,17 @@ import { patternToRegex } from "../../docs/lib/scanner.js";
 
 const GUARDRAIL_FILENAME = "guardrail.md";
 
-/** Default meta for articles without a {%meta%} directive. */
+/** Default meta for articles without a {%guardrail%} block. */
 const DEFAULT_META = Object.freeze({ phase: ["spec"] });
 
-/** Regex for {%meta%} directive line. */
-const META_RE = /^<!--\s*\{%meta:\s*\{(.+?)\}%\}\s*-->$/;
+/** Regex for {%guardrail ...%} opening tag. */
+const GUARDRAIL_OPEN_RE = /^<!--\s*\{%guardrail\s+\{(.+?)\}%\}\s*-->$/;
+
+/** Regex for {%/guardrail%} closing tag. */
+const GUARDRAIL_CLOSE_RE = /^<!--\s*\{%\/guardrail%\}\s*-->$/;
 
 /**
- * Parse a {%meta%} directive value string into a meta object.
+ * Parse a guardrail directive value string into a meta object.
  * Supports: phase: [a, b], scope: [*.css], lint: /pattern/flags
  *
  * @param {string} inner - Content inside the outer braces
@@ -42,7 +45,6 @@ function parseMetaValue(inner) {
     const pattern = raw.slice(1, lastSlash);
     const flags = raw.slice(lastSlash + 1);
     meta.lint = new RegExp(pattern, flags);
-    // Remove lint from inner to simplify remaining parsing
     inner = inner.replace(lintMatch[0], "");
   }
 
@@ -59,7 +61,7 @@ function parseMetaValue(inner) {
   const scalarRe = /(\w+):\s*([^,\]\[{}]+)/g;
   while ((m = scalarRe.exec(inner)) !== null) {
     const key = m[1];
-    if (key in meta) continue; // Already parsed as array or lint
+    if (key in meta) continue;
     const value = m[2].trim();
     if (value) meta[key] = value;
   }
@@ -69,8 +71,8 @@ function parseMetaValue(inner) {
 
 /**
  * Parse guardrail articles from markdown text.
- * Articles are `###` headings followed by body text until the next `###` or EOF.
- * Supports optional `<!-- {%meta: {...}%} -->` directive after heading.
+ * Articles are found inside `{%guardrail%}` blocks.
+ * Each block wraps `###` headings and their body text.
  *
  * @param {string} text - Markdown content of guardrail.md
  * @returns {{ title: string, body: string, meta: Object }[]}
@@ -78,28 +80,47 @@ function parseMetaValue(inner) {
 export function parseGuardrailArticles(text) {
   const lines = text.split("\n");
   const articles = [];
+  let currentMeta = null;
+  let inGuardrail = false;
   let current = null;
 
   for (const line of lines) {
+    const trimmed = line.trim();
+
+    // Check for {%guardrail ...%} opening tag
+    const openMatch = trimmed.match(GUARDRAIL_OPEN_RE);
+    if (openMatch) {
+      currentMeta = parseMetaValue(openMatch[1]);
+      inGuardrail = true;
+      continue;
+    }
+
+    // Check for {%/guardrail%} closing tag
+    if (GUARDRAIL_CLOSE_RE.test(trimmed)) {
+      if (current) {
+        current.body = current.body.join("\n");
+        articles.push(current);
+        current = null;
+      }
+      inGuardrail = false;
+      currentMeta = null;
+      continue;
+    }
+
+    if (!inGuardrail) continue;
+
+    // Inside guardrail block: look for ### headings
     const heading = line.match(/^###\s+(.+)/);
     if (heading) {
       if (current) {
         current.body = current.body.join("\n");
         articles.push(current);
       }
-      current = { title: heading[1].trim(), body: [], meta: null };
+      current = { title: heading[1].trim(), body: [], meta: currentMeta ? { ...currentMeta } : null };
       continue;
     }
 
     if (current) {
-      // Check for {%meta%} directive (only right after heading, before any body)
-      if (current.meta === null) {
-        const metaMatch = line.match(META_RE);
-        if (metaMatch) {
-          current.meta = parseMetaValue(metaMatch[1]);
-          continue; // Exclude meta line from body
-        }
-      }
       current.body.push(line);
     }
   }
@@ -196,17 +217,18 @@ function readWithFallback(dir, lang) {
  * @returns {string}
  */
 function serializeArticle(a) {
-  const parts = [`### ${a.title}`];
-  if (a.meta) {
-    const fields = [];
-    if (a.meta.phase) fields.push(`phase: [${a.meta.phase.join(", ")}]`);
-    if (a.meta.scope) fields.push(`scope: [${a.meta.scope.join(", ")}]`);
-    if (a.meta.lint) fields.push(`lint: ${a.meta.lint.toString()}`);
-    if (fields.length > 0) {
-      parts.push(`<!-- {%meta: {${fields.join(", ")}}%} -->`);
-    }
-  }
-  parts.push(a.body.trim());
+  const fields = [];
+  if (a.meta?.phase) fields.push(`phase: [${a.meta.phase.join(", ")}]`);
+  if (a.meta?.scope) fields.push(`scope: [${a.meta.scope.join(", ")}]`);
+  if (a.meta?.lint) fields.push(`lint: ${a.meta.lint.toString()}`);
+
+  const metaStr = fields.length > 0 ? `{${fields.join(", ")}}` : "{phase: [spec]}";
+  const parts = [
+    `<!-- {%guardrail ${metaStr}%} -->`,
+    `### ${a.title}`,
+    a.body.trim(),
+    `<!-- {%/guardrail%} -->`,
+  ];
   return parts.join("\n");
 }
 
@@ -298,12 +320,7 @@ function runShow(root, cli) {
 
   if (filtered.length === 0) return;
 
-  const output = filtered.map((a) => {
-    const metaLine = a.meta
-      ? `<!-- {%meta: {phase: [${a.meta.phase.join(", ")}]}%} -->\n`
-      : "";
-    return `### ${a.title}\n${metaLine}${a.body.trim()}`;
-  }).join("\n\n");
+  const output = filtered.map((a) => serializeArticle(a)).join("\n\n");
 
   console.log(output);
 }

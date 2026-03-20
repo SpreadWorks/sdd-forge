@@ -1,11 +1,14 @@
+<!-- {%guardrail {phase: [draft, spec]}%} -->
 ### CLI インターフェースの後方互換性
-<!-- {%meta: {phase: [draft, spec]}%} -->
 既存コマンド・オプションの削除や意味の変更は、移行手順を spec に含めること。
+<!-- {%/guardrail%} -->
 
+<!-- {%guardrail {phase: [spec, impl]}%} -->
 ### 終了コードの規約
-<!-- {%meta: {phase: [spec, impl]}%} -->
 コマンドの失敗時に終了コード 0 を返してはならない。エラーは非ゼロの終了コードで通知すること。
+<!-- {%/guardrail%} -->
 
+<!-- {%guardrail {phase: [spec, impl]}%} -->
 ### 破壊的操作の確認必須
-<!-- {%meta: {phase: [spec, impl]}%} -->
 データ削除・上書き等の破壊的操作は、`--force` フラグまたはユーザーへの確認を要求すること。
+<!-- {%/guardrail%} -->

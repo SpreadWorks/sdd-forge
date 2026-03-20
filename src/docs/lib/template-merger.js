@@ -6,7 +6,7 @@
  * ディレクトリ階層を「最も具体的な層（project-local）→ 最も汎用的な層（base）」の
  * 順で探索し、各ファイルの正規パスと処理方法（そのまま使用 / 翻訳して使用）を決定する。
  *
- * @block / @endblock / @extends ディレクティブによるブロック単位マージにも対応。
+ * {%block%} / {%/block%} / {%extends%} ディレクティブによるブロック単位マージにも対応。
  */
 
 import fs from "fs";
@@ -411,9 +411,9 @@ export function translateTemplate(content, fromLang, toLang, agent, root) {
     `Translate the following Markdown template from ${fromLang} to ${toLang}.`,
     "",
     "Rules:",
-    '- Preserve ALL directives exactly as-is: {{data: ...}}, {{text: ...}}, {{/data}}, <!-- @block -->, <!-- @endblock -->, <!-- @extends -->',
+    '- Preserve ALL directives exactly as-is: {{data(...)}}, {{text(...)}}, {{/data}}, {%block%}, {%/block%}, {%extends%}',
     "- Translate ONLY: Markdown headings (#), static text, table headers in data directive labels",
-    "- For {{text: ...}} directives, translate the prompt text inside them",
+    "- For {{text(...)}} directives, translate the prompt text inside them",
     "- Do NOT add or remove any lines",
     "- Output ONLY the translated template, no explanation",
     "",
@@ -460,7 +460,7 @@ function addTexts(baseText, addText) {
   for (const [name, baseBlock] of base.blocks) {
     const addBlock = add.blocks.get(name);
 
-    resultLines.push(`<!-- @block: ${name} -->`);
+    resultLines.push(`<!-- {%block "${name}"%} -->`);
     resultLines.push(...baseBlock.content);
 
     if (addBlock) {
@@ -468,15 +468,15 @@ function addTexts(baseText, addText) {
       resultLines.push(...addBlock.content);
     }
 
-    resultLines.push("<!-- @endblock -->");
+    resultLines.push("<!-- {%/block%} -->");
   }
 
   // add にのみ存在するブロック
   for (const [name, addBlock] of add.blocks) {
     if (!base.blocks.has(name)) {
-      resultLines.push(`<!-- @block: ${name} -->`);
+      resultLines.push(`<!-- {%block "${name}"%} -->`);
       resultLines.push(...addBlock.content);
-      resultLines.push("<!-- @endblock -->");
+      resultLines.push("<!-- {%/block%} -->");
     }
   }
 
@@ -527,17 +527,17 @@ function mergeTexts(parentText, childText) {
 
   // ブロック: 親のブロック順に走査し、子のオーバーライドを適用
   for (const [name, parentBlock] of parent.blocks) {
-    resultLines.push(`<!-- @block: ${name} -->`);
+    resultLines.push(`<!-- {%block "${name}"%} -->`);
     expandBlockContent(merged.get(name).content, merged, resultLines);
-    resultLines.push("<!-- @endblock -->");
+    resultLines.push("<!-- {%/block%} -->");
   }
 
   // 子にのみ存在するブロック（親にないもの）を追加
   for (const [name] of child.blocks) {
     if (!parent.blocks.has(name)) {
-      resultLines.push(`<!-- @block: ${name} -->`);
+      resultLines.push(`<!-- {%block "${name}"%} -->`);
       expandBlockContent(merged.get(name).content, merged, resultLines);
-      resultLines.push("<!-- @endblock -->");
+      resultLines.push("<!-- {%/block%} -->");
     }
   }
 
@@ -549,7 +549,7 @@ function mergeTexts(parentText, childText) {
 
 /**
  * ブロック content 内のネストされたブロックプレースホルダーを展開する。
- * content 配列には `<!-- @block: name -->` / `<!-- @endblock -->` が
+ * content 配列には `<!-- @block: name -->` / `<!-- {%/block%} -->` が
  * プレースホルダーとして含まれる。これらを merged Map の内容で置換する。
  */
 function expandBlockContent(contentLines, merged, resultLines) {

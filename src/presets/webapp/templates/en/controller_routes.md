@@ -1,51 +1,51 @@
-<!-- @extends: layout -->
-<!-- @block: content -->
+<!-- {%extends "layout"%} -->
+<!-- {%block "content"%} -->
 # Controllers & Routing
 
-<!-- @block: description -->
+<!-- {%block "description"%} -->
 ## Description
 
-<!-- {{text: Write a 1-2 sentence overview of this chapter. Include the total number of controllers and routing method.}} -->
+<!-- {{text({prompt: "Write a 1-2 sentence overview of this chapter. Include the total number of controllers and routing method."})}} -->
 <!-- {{/text}} -->
 
 ## Content
-<!-- @endblock -->
+<!-- {%/block%} -->
 
-<!-- @block: routing -->
+<!-- {%block "routing"%} -->
 ### Routing Configuration
 
-<!-- {{text[mode=deep]: Describe the routing configuration approach.}} -->
+<!-- {{text({prompt: "Describe the routing configuration approach.", mode: "deep"})}} -->
 <!-- {{/text}} -->
-<!-- @endblock -->
+<!-- {%/block%} -->
 
-<!-- @block: controller-config -->
+<!-- {%block "controller-config"%} -->
 ### Common Configuration
 
-<!-- {{data: webapp.config.auth("Item|Value")}} -->
+<!-- {{data("webapp.config.auth", {labels: "Item|Value"})}} -->
 <!-- {{/data}} -->
-<!-- @endblock -->
+<!-- {%/block%} -->
 
-<!-- @block: controller-list -->
+<!-- {%block "controller-list"%} -->
 ### Controller List
 
-<!-- {{data: webapp.controllers.list("Controller|File|Primary Responsibility")}} -->
+<!-- {{data("webapp.controllers.list", {labels: "Controller|File|Primary Responsibility"})}} -->
 <!-- {{/data}} -->
-<!-- @endblock -->
+<!-- {%/block%} -->
 
-<!-- @block: controller-deps -->
+<!-- {%block "controller-deps"%} -->
 ### Controller-Model Dependencies
 
-<!-- {{text[mode=deep]: Describe the overview of model dependencies declared by controllers.}} -->
+<!-- {{text({prompt: "Describe the overview of model dependencies declared by controllers.", mode: "deep"})}} -->
 <!-- {{/text}} -->
 
-<!-- {{data: webapp.controllers.deps("Controller|Models Used")}} -->
+<!-- {{data("webapp.controllers.deps", {labels: "Controller|Models Used"})}} -->
 <!-- {{/data}} -->
-<!-- @endblock -->
+<!-- {%/block%} -->
 
-<!-- @block: components -->
+<!-- {%block "components"%} -->
 ### Components
 
-<!-- {{data: webapp.views.components("Component|Responsibility")}} -->
+<!-- {{data("webapp.views.components", {labels: "Component|Responsibility"})}} -->
 <!-- {{/data}} -->
-<!-- @endblock -->
-<!-- @endblock -->
+<!-- {%/block%} -->
+<!-- {%/block%} -->

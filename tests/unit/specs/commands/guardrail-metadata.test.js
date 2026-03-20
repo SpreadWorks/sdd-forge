@@ -13,13 +13,14 @@ const { buildGuardrailPrompt } = await import(
 // ---------------------------------------------------------------------------
 
 describe("parseGuardrailArticles metadata parsing", () => {
-  it("parses {%meta%} directive with all fields", () => {
+  it("parses {%guardrail%} directive with all fields", () => {
     const text = [
       "# Project Guardrail",
       "",
+      '<!-- {%guardrail {phase: [impl, lint], scope: [*.css, *.tsx], lint: /style\\s*=/}%} -->',
       "### No Inline Styles",
-      '<!-- {%meta: {phase: [impl, lint], scope: [*.css, *.tsx], lint: /style\\s*=/}%} -->',
       "Do not use inline style attributes.",
+      "<!-- {%/guardrail%} -->",
     ].join("\n");
 
     const articles = parseGuardrailArticles(text);
@@ -36,9 +37,10 @@ describe("parseGuardrailArticles metadata parsing", () => {
 
   it("parses phase-only metadata", () => {
     const text = [
+      "<!-- {%guardrail {phase: [spec, impl]}%} -->",
       "### Rule A",
-      "<!-- {%meta: {phase: [spec, impl]}%} -->",
       "Body text.",
+      "<!-- {%/guardrail%} -->",
     ].join("\n");
 
     const articles = parseGuardrailArticles(text);
@@ -48,37 +50,35 @@ describe("parseGuardrailArticles metadata parsing", () => {
     assert.equal(articles[0].meta.lint, undefined);
   });
 
-  it("applies default meta when no {%meta%} directive", () => {
+  it("returns empty array when no {%guardrail%} blocks", () => {
     const text = [
       "### Plain Rule",
-      "No metadata here.",
+      "No guardrail block here.",
     ].join("\n");
 
     const articles = parseGuardrailArticles(text);
-    assert.equal(articles.length, 1);
-    assert.ok(articles[0].meta, "meta field should exist with defaults");
-    assert.deepEqual(articles[0].meta.phase, ["spec"]);
-    assert.equal(articles[0].meta.scope, undefined);
-    assert.equal(articles[0].meta.lint, undefined);
+    assert.equal(articles.length, 0);
   });
 
-  it("excludes {%meta%} line from body", () => {
+  it("excludes {%guardrail%} line from body", () => {
     const text = [
+      "<!-- {%guardrail {phase: [lint], lint: /TODO/}%} -->",
       "### Rule",
-      "<!-- {%meta: {phase: [lint], lint: /TODO/}%} -->",
       "Body content here.",
+      "<!-- {%/guardrail%} -->",
     ].join("\n");
 
     const articles = parseGuardrailArticles(text);
-    assert.ok(!articles[0].body.includes("{%meta"), "body should not contain meta directive");
+    assert.ok(!articles[0].body.includes("{%guardrail"), "body should not contain guardrail directive");
     assert.ok(articles[0].body.includes("Body content here"));
   });
 
   it("parses lint pattern with flags", () => {
     const text = [
+      "<!-- {%guardrail {phase: [lint], lint: /console\\.log/gi}%} -->",
       "### Case Insensitive Rule",
-      "<!-- {%meta: {phase: [lint], lint: /console\\.log/gi}%} -->",
       "No console.log.",
+      "<!-- {%/guardrail%} -->",
     ].join("\n");
 
     const articles = parseGuardrailArticles(text);
@@ -91,22 +91,26 @@ describe("parseGuardrailArticles metadata parsing", () => {
     const text = [
       "# Guardrail",
       "",
+      "<!-- {%guardrail {phase: [spec]}%} -->",
       "### Spec Only Rule",
       "Check this in spec phase.",
+      "<!-- {%/guardrail%} -->",
       "",
+      "<!-- {%guardrail {phase: [lint], scope: [*.js], lint: /eval\\(/}%} -->",
       "### Lint Rule",
-      "<!-- {%meta: {phase: [lint], scope: [*.js], lint: /eval\\(/}%} -->",
       "No eval().",
+      "<!-- {%/guardrail%} -->",
       "",
+      "<!-- {%guardrail {phase: [impl]}%} -->",
       "### Impl Rule",
-      "<!-- {%meta: {phase: [impl]}%} -->",
       "Follow this during implementation.",
+      "<!-- {%/guardrail%} -->",
     ].join("\n");
 
     const articles = parseGuardrailArticles(text);
     assert.equal(articles.length, 3);
 
-    // Spec Only Rule: default meta
+    // Spec Only Rule
     assert.deepEqual(articles[0].meta.phase, ["spec"]);
 
     // Lint Rule: explicit meta

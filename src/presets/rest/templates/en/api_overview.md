@@ -1,8 +1,8 @@
-<!-- @extends -->
+<!-- {%extends%} -->
 
-<!-- @block: description -->
+<!-- {%block "description"%} -->
 ## Description
 
-<!-- {{text: Describe the REST API architecture, resource design, and key conventions (naming, pagination, filtering).}} -->
+<!-- {{text({prompt: "Describe the REST API architecture, resource design, and key conventions (naming, pagination, filtering)."})}} -->
 <!-- {{/text}} -->
-<!-- @endblock -->
+<!-- {%/block%} -->

@@ -1,11 +1,11 @@
-<!-- @extends -->
+<!-- {%extends%} -->
 
-<!-- @block: buckets -->
-<!-- {{data: r2.storage.buckets("Bucket|Binding|Description")}} -->
+<!-- {%block "buckets"%} -->
+<!-- {{data("r2.storage.buckets", {labels: "Bucket|Binding|Description"})}} -->
 <!-- {{/data}} -->
-<!-- @endblock -->
+<!-- {%/block%} -->
 
-<!-- @block: access -->
-<!-- {{data: r2.storage.access("Method|Description")}} -->
+<!-- {%block "access"%} -->
+<!-- {{data("r2.storage.access", {labels: "Method|Description"})}} -->
 <!-- {{/data}} -->
-<!-- @endblock -->
+<!-- {%/block%} -->

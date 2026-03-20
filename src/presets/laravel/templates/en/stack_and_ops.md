@@ -1,42 +1,42 @@
-<!-- @extends -->
+<!-- {%extends%} -->
 
-<!-- @block: dependencies -->
+<!-- {%block "dependencies"%} -->
 ### PHP Dependencies (composer.json)
 
-<!-- {{data: laravel.config.composer("Package|Version|Purpose")}} -->
+<!-- {{data("laravel.config.composer", {labels: "Package|Version|Purpose"})}} -->
 <!-- {{/data}} -->
 
 ### docker-compose.yml Configuration
 
-<!-- {{data: laravel.docker.list("Service|Container|Port|Image")}} -->
+<!-- {{data("laravel.docker.list", {labels: "Service|Container|Port|Image"})}} -->
 <!-- {{/data}} -->
 
 ### Middleware
 
-<!-- {{data: laravel.config.middleware("Class|File|Purpose")}} -->
+<!-- {{data("laravel.config.middleware", {labels: "Class|File|Purpose"})}} -->
 <!-- {{/data}} -->
 
 ### Service Providers
 
-<!-- {{data: laravel.config.providers("Provider|File|register|boot")}} -->
+<!-- {{data("laravel.config.providers", {labels: "Provider|File|register|boot"})}} -->
 <!-- {{/data}} -->
 
 ### Configuration Files
 
-<!-- {{data: laravel.config.files("File|Key Settings")}} -->
+<!-- {{data("laravel.config.files", {labels: "File|Key Settings"})}} -->
 <!-- {{/data}} -->
-<!-- @endblock -->
+<!-- {%/block%} -->
 
-<!-- @block: deploy -->
+<!-- {%block "deploy"%} -->
 ### Deployment Flow
 
-<!-- {{text: Describe the Laravel project deployment procedure. Include php artisan commands (migrate, config:cache, route:cache, etc.).}} -->
+<!-- {{text({prompt: "Describe the Laravel project deployment procedure. Include php artisan commands (migrate, config:cache, route:cache, etc.)."})}} -->
 <!-- {{/text}} -->
-<!-- @endblock -->
+<!-- {%/block%} -->
 
-<!-- @block: operations -->
+<!-- {%block "operations"%} -->
 ### Operations Flow
 
-<!-- {{text: Describe the Laravel project operations procedures. Include queue workers, scheduler, logging, etc.}} -->
+<!-- {{text({prompt: "Describe the Laravel project operations procedures. Include queue workers, scheduler, logging, etc."})}} -->
 <!-- {{/text}} -->
-<!-- @endblock -->
+<!-- {%/block%} -->

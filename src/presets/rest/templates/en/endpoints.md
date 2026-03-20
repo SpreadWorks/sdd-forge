@@ -2,19 +2,19 @@
 
 ## Description
 
-<!-- {{text: Provide an overview of the REST API endpoints, including the total count and resource grouping.}} -->
+<!-- {{text({prompt: "Provide an overview of the REST API endpoints, including the total count and resource grouping."})}} -->
 <!-- {{/text}} -->
 
-<!-- @block: endpoint-list -->
+<!-- {%block "endpoint-list"%} -->
 ## Endpoint List
 
-<!-- {{data: rest.endpoints.list("Method|Path|Description")}} -->
+<!-- {{data("rest.endpoints.list", {labels: "Method|Path|Description"})}} -->
 <!-- {{/data}} -->
-<!-- @endblock -->
+<!-- {%/block%} -->
 
-<!-- @block: examples -->
+<!-- {%block "examples"%} -->
 ## Request & Response Examples
 
-<!-- {{text: Show representative request/response examples for the most important endpoints.}} -->
+<!-- {{text({prompt: "Show representative request/response examples for the most important endpoints."})}} -->
 <!-- {{/text}} -->
-<!-- @endblock -->
+<!-- {%/block%} -->

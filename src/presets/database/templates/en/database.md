@@ -2,19 +2,19 @@
 
 ## Description
 
-<!-- {{text: Describe the database architecture, engine, and key design decisions.}} -->
+<!-- {{text({prompt: "Describe the database architecture, engine, and key design decisions."})}} -->
 <!-- {{/text}} -->
 
-<!-- @block: tables -->
+<!-- {%block "tables"%} -->
 ## Tables
 
-<!-- {{data: database.schema.tables("Table|Columns|Description")}} -->
+<!-- {{data("database.schema.tables", {labels: "Table|Columns|Description"})}} -->
 <!-- {{/data}} -->
-<!-- @endblock -->
+<!-- {%/block%} -->
 
-<!-- @block: relationships -->
+<!-- {%block "relationships"%} -->
 ## Relationships
 
-<!-- {{data: database.schema.relationships("From|To|Type|Foreign Key")}} -->
+<!-- {{data("database.schema.relationships", {labels: "From|To|Type|Foreign Key"})}} -->
 <!-- {{/data}} -->
-<!-- @endblock -->
+<!-- {%/block%} -->

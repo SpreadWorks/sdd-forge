@@ -1,48 +1,48 @@
-<!-- @extends -->
+<!-- {%extends%} -->
 
-<!-- @block: dependencies -->
+<!-- {%block "dependencies"%} -->
 ### PHP Dependencies (composer.json)
 
-<!-- {{data: cakephp2.config.composer("Package|Version|Purpose")}} -->
+<!-- {{data("cakephp2.config.composer", {labels: "Package|Version|Purpose"})}} -->
 <!-- {{/data}} -->
 
 ### docker-compose.yml Configuration
 
-<!-- {{data: cakephp2.docker.list("Service|Container|Port|Image")}} -->
+<!-- {{data("cakephp2.docker.list", {labels: "Service|Container|Port|Image"})}} -->
 <!-- {{/data}} -->
 
 ### Frontend Libraries
 
-<!-- {{data: cakephp2.config.assets("Library|Version|Purpose")}} -->
+<!-- {{data("cakephp2.config.assets", {labels: "Library|Version|Purpose"})}} -->
 <!-- {{/data}} -->
 
 ### Error Handling
 
-<!-- {{data: cakephp2.libs.errors("Class|File|Responsibility")}} -->
+<!-- {{data("cakephp2.libs.errors", {labels: "Class|File|Responsibility"})}} -->
 <!-- {{/data}} -->
 
 ### Application Initialization (bootstrap.php)
 
-<!-- {{data: cakephp2.config.bootstrap("Setting|Value")}} -->
+<!-- {{data("cakephp2.config.bootstrap", {labels: "Setting|Value"})}} -->
 <!-- {{/data}} -->
 
 ### Email Notification Specifications
 
-<!-- {{text[mode=deep]: Describe the email sending configuration defaults (sender, transport).}} -->
+<!-- {{text({prompt: "Describe the email sending configuration defaults (sender, transport).", mode: "deep"})}} -->
 <!-- {{/text}} -->
 
-<!-- {{data: cakephp2.email.list("Source File|Subject Pattern|CC")}} -->
+<!-- {{data("cakephp2.email.list", {labels: "Source File|Subject Pattern|CC"})}} -->
 <!-- {{/data}} -->
-<!-- @endblock -->
+<!-- {%/block%} -->
 
-<!-- @block: deploy -->
+<!-- {%block "deploy"%} -->
 ### Deployment Flow
 
 Deployment procedures should be confirmed with the production operations team. No deployment scripts are included in the source code.
-<!-- @endblock -->
+<!-- {%/block%} -->
 
-<!-- @block: operations -->
+<!-- {%block "operations"%} -->
 ### Operations Flow
 
 Operations procedures should be confirmed with the production operations team.
-<!-- @endblock -->
+<!-- {%/block%} -->

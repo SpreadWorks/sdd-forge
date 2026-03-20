@@ -49,13 +49,15 @@ describe("guardrail show CLI", () => {
     writeFile(tmp, ".sdd-forge/guardrail.md", [
       "# Project Guardrail",
       "",
+      "<!-- {%guardrail {phase: [draft]}%} -->",
       "### Draft Only Rule",
-      "<!-- {%meta: {phase: [draft]}%} -->",
       "This rule is for drafts only.",
+      "<!-- {%/guardrail%} -->",
       "",
+      "<!-- {%guardrail {phase: [spec]}%} -->",
       "### Spec Only Rule",
-      "<!-- {%meta: {phase: [spec]}%} -->",
       "This rule is for specs only.",
+      "<!-- {%/guardrail%} -->",
     ].join("\n"));
 
     const result = execFileSync("node", [GUARDRAIL_CMD, "show", "--phase", "draft"], {
@@ -77,17 +79,20 @@ describe("guardrail show CLI", () => {
     writeFile(tmp, ".sdd-forge/guardrail.md", [
       "# Project Guardrail",
       "",
+      "<!-- {%guardrail {phase: [draft]}%} -->",
       "### Draft Rule",
-      "<!-- {%meta: {phase: [draft]}%} -->",
       "Draft only.",
+      "<!-- {%/guardrail%} -->",
       "",
+      "<!-- {%guardrail {phase: [spec]}%} -->",
       "### Spec Rule",
-      "<!-- {%meta: {phase: [spec]}%} -->",
       "Spec only.",
+      "<!-- {%/guardrail%} -->",
       "",
+      "<!-- {%guardrail {phase: [draft, spec]}%} -->",
       "### Both Rule",
-      "<!-- {%meta: {phase: [draft, spec]}%} -->",
       "Both phases.",
+      "<!-- {%/guardrail%} -->",
     ].join("\n"));
 
     const result = execFileSync("node", [GUARDRAIL_CMD, "show", "--phase", "spec"], {
@@ -110,12 +115,15 @@ describe("guardrail show CLI", () => {
     writeFile(tmp, ".sdd-forge/guardrail.md", [
       "# Project Guardrail",
       "",
+      "<!-- {%guardrail {phase: [impl]}%} -->",
       "### Impl Rule",
-      "<!-- {%meta: {phase: [impl]}%} -->",
       "Impl only.",
+      "<!-- {%/guardrail%} -->",
       "",
+      "<!-- {%guardrail {phase: [spec]}%} -->",
       "### Spec Rule",
       "Spec only (default phase).",
+      "<!-- {%/guardrail%} -->",
     ].join("\n"));
 
     const result = execFileSync("node", [GUARDRAIL_CMD, "show", "--phase", "impl"], {
@@ -138,9 +146,10 @@ describe("guardrail show CLI", () => {
     writeFile(tmp, ".sdd-forge/guardrail.md", [
       "# Project Guardrail",
       "",
+      "<!-- {%guardrail {phase: [impl]}%} -->",
       "### Custom Impl Rule",
-      "<!-- {%meta: {phase: [impl]}%} -->",
       "Project-specific implementation rule.",
+      "<!-- {%/guardrail%} -->",
     ].join("\n"));
 
     const result = execFileSync("node", [GUARDRAIL_CMD, "show", "--phase", "spec"], {
@@ -181,9 +190,10 @@ describe("guardrail show CLI", () => {
     writeFile(tmp, ".sdd-forge/guardrail.md", [
       "# Project Guardrail",
       "",
+      "<!-- {%guardrail {phase: [spec]}%} -->",
       "### Spec Rule",
-      "<!-- {%meta: {phase: [spec]}%} -->",
       "Only for spec.",
+      "<!-- {%/guardrail%} -->",
     ].join("\n"));
 
     // Ask for lint phase — no articles should match

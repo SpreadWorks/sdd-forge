@@ -1,44 +1,44 @@
-<!-- @extends: layout -->
-<!-- @block: content -->
+<!-- {%extends "layout"%} -->
+<!-- {%block "content"%} -->
 # Batch & Console Commands
 
-<!-- @block: description -->
+<!-- {%block "description"%} -->
 ## Description
 
-<!-- {{text: Write a 1-2 sentence overview of this chapter. Include the number of commands and whether scheduled execution is used.}} -->
+<!-- {{text({prompt: "Write a 1-2 sentence overview of this chapter. Include the number of commands and whether scheduled execution is used."})}} -->
 <!-- {{/text}} -->
 
 ## Content
-<!-- @endblock -->
+<!-- {%/block%} -->
 
-<!-- @block: command-list -->
+<!-- {%block "command-list"%} -->
 ### Command List
 
-<!-- {{data: webapp.shells.list("Command|File|Purpose")}} -->
+<!-- {{data("webapp.shells.list", {labels: "Command|File|Purpose"})}} -->
 <!-- {{/data}} -->
-<!-- @endblock -->
+<!-- {%/block%} -->
 
-<!-- @block: command-deps -->
+<!-- {%block "command-deps"%} -->
 ### Command Dependencies
 
-<!-- {{text[mode=deep]: Describe the class dependencies loaded by each command.}} -->
+<!-- {{text({prompt: "Describe the class dependencies loaded by each command.", mode: "deep"})}} -->
 <!-- {{/text}} -->
 
-<!-- {{data: webapp.shells.deps("Command|Dependency|Type")}} -->
+<!-- {{data("webapp.shells.deps", {labels: "Command|Dependency|Type"})}} -->
 <!-- {{/data}} -->
-<!-- @endblock -->
+<!-- {%/block%} -->
 
-<!-- @block: command-flow -->
+<!-- {%block "command-flow"%} -->
 ### Command Execution Flow
 
-<!-- {{data: webapp.shells.flow("Command|Process Summary|Email|File Ops|Transaction")}} -->
+<!-- {{data("webapp.shells.flow", {labels: "Command|Process Summary|Email|File Ops|Transaction"})}} -->
 <!-- {{/data}} -->
-<!-- @endblock -->
+<!-- {%/block%} -->
 
-<!-- @block: schedule -->
+<!-- {%block "schedule"%} -->
 ### Scheduled Execution
 
-<!-- {{text: Describe the scheduled execution configuration.}} -->
+<!-- {{text({prompt: "Describe the scheduled execution configuration."})}} -->
 <!-- {{/text}} -->
-<!-- @endblock -->
-<!-- @endblock -->
+<!-- {%/block%} -->
+<!-- {%/block%} -->

@@ -1,4 +1,4 @@
-<!-- @extends: layout -->
-<!-- @block: content -->
+<!-- {%extends "layout"%} -->
+<!-- {%block "content"%} -->
 
-<!-- @endblock -->
+<!-- {%/block%} -->

@@ -1,7 +1,9 @@
+<!-- {%guardrail {phase: [impl]}%} -->
 ### ホットパスでの同期 I/O 禁止
-<!-- {%meta: {phase: [impl]}%} -->
 ループや大量データ処理内で `readFileSync` 等の同期 I/O を使用してはならない。ストリームまたは非同期 API を使うこと。
+<!-- {%/guardrail%} -->
 
+<!-- {%guardrail {phase: [impl]}%} -->
 ### エントリポイントでの入力バリデーション
-<!-- {%meta: {phase: [impl]}%} -->
 CLI 引数・stdin からの入力はエントリポイントでバリデーションすること。未検証の入力を内部関数に渡してはならない。
+<!-- {%/guardrail%} -->

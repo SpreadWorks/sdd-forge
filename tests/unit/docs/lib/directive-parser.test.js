@@ -23,7 +23,7 @@ describe("parseDirectives", () => {
   it("parses block {{data}} directive with closing tag", () => {
     const text = [
       "# Title",
-      '<!-- {{data: cakephp2.controllers.list("Name|File")}} -->',
+      '<!-- {{data("cakephp2.controllers.list", {labels: "Name|File"})}} -->',
       "old content",
       "<!-- {{/data}} -->",
       "footer",
@@ -41,16 +41,14 @@ describe("parseDirectives", () => {
     assert.equal(d.inline, false);
   });
 
-  it("parses block {{data}} without closing tag (endLine = -1)", () => {
-    const text = '<!-- {{data: base.project.summary("")}} -->\nsome text';
-    const result = parseDirectives(text);
-    assert.equal(result.length, 1);
-    assert.equal(result[0].endLine, -1);
+  it("throws for block {{data}} without closing tag", () => {
+    const text = '<!-- {{data("base.project.summary")}} -->\nsome text';
+    assert.throws(() => parseDirectives(text), /Unclosed \{\{data\}\}/);
   });
 
   it("parses inline {{data}} directive", () => {
     const text =
-      '# <!-- {{data: base.project.name("")}} -->sdd-forge<!-- {{/data}} -->';
+      '# <!-- {{data("base.project.name")}} -->sdd-forge<!-- {{/data}} -->';
     const result = parseDirectives(text);
     assert.equal(result.length, 1);
     const d = result[0];
@@ -65,7 +63,7 @@ describe("parseDirectives", () => {
 
   it("parses multiple inline {{data}} on one line", () => {
     const text =
-      '<!-- {{data: p.a.b("")}} -->X<!-- {{/data}} --> and <!-- {{data: q.c.d("")}} -->Y<!-- {{/data}} -->';
+      '<!-- {{data("p.a.b")}} -->X<!-- {{/data}} --> and <!-- {{data("q.c.d")}} -->Y<!-- {{/data}} -->';
     const result = parseDirectives(text);
     assert.equal(result.length, 2);
     assert.equal(result[0].preset, "p");
@@ -78,7 +76,7 @@ describe("parseDirectives", () => {
 
   it("parses dotted source names (e.g. config.constants)", () => {
     const text = [
-      '<!-- {{data: preset.config.constants.list("Key|Value")}} -->',
+      '<!-- {{data("preset.config.constants.list", {labels: "Key|Value"})}} -->',
       "<!-- {{/data}} -->",
     ].join("\n");
     const result = parseDirectives(text);
@@ -90,7 +88,7 @@ describe("parseDirectives", () => {
 
   it("parses {{text}} directive without params (with end tag)", () => {
     const text = [
-      "<!-- {{text: Explain the architecture.}} -->",
+      '<!-- {{text({prompt: "Explain the architecture."})}} -->',
       "<!-- {{/text}} -->",
     ].join("\n");
     const result = parseDirectives(text);
@@ -103,16 +101,14 @@ describe("parseDirectives", () => {
     assert.equal(d.endLine, 1);
   });
 
-  it("parses {{text}} directive without end tag (endLine = -1)", () => {
-    const text = "<!-- {{text: Explain the architecture.}} -->";
-    const result = parseDirectives(text);
-    assert.equal(result.length, 1);
-    assert.equal(result[0].endLine, -1);
+  it("throws for {{text}} directive without end tag", () => {
+    const text = '<!-- {{text({prompt: "Explain the architecture."})}} -->';
+    assert.throws(() => parseDirectives(text), /Unclosed \{\{text\}\}/);
   });
 
   it("parses {{text}} directive with content between tags", () => {
     const text = [
-      "<!-- {{text: Explain the architecture.}} -->",
+      '<!-- {{text({prompt: "Explain the architecture."})}} -->',
       "Some generated content here.",
       "More content.",
       "<!-- {{/text}} -->",
@@ -125,7 +121,7 @@ describe("parseDirectives", () => {
 
   it("parses {{text}} directive with params", () => {
     const text = [
-      "<!-- {{text[id=auth, maxLines=5]: Describe authentication.}} -->",
+      '<!-- {{text({prompt: "Describe authentication.", id: "auth", maxLines: 5})}} -->',
       "<!-- {{/text}} -->",
     ].join("\n");
     const result = parseDirectives(text);
@@ -140,10 +136,10 @@ describe("parseDirectives", () => {
   it("parses mixed data and text directives", () => {
     const text = [
       "# Title",
-      "<!-- {{text: Write overview.}} -->",
+      '<!-- {{text({prompt: "Write overview."})}} -->',
       "<!-- {{/text}} -->",
       "",
-      '<!-- {{data: base.docs.chapters("Chapter|Desc")}} -->',
+      '<!-- {{data("base.docs.chapters", {labels: "Chapter|Desc"})}} -->',
       "| a | b |",
       "<!-- {{/data}} -->",
     ].join("\n");
@@ -156,12 +152,12 @@ describe("parseDirectives", () => {
 
   it("handles empty labels", () => {
     const text = [
-      '<!-- {{data: base.project.name("")}} -->',
+      '<!-- {{data("base.project.name")}} -->',
       "<!-- {{/data}} -->",
     ].join("\n");
     const result = parseDirectives(text);
     assert.equal(result.length, 1);
-    // Empty string split by "|" produces [""], but the parser may return []
+    // No labels option produces empty array
     assert.ok(Array.isArray(result[0].labels));
   });
 });
@@ -173,19 +169,19 @@ describe("parseDirectives", () => {
 describe("replaceBlockDirective", () => {
   it("replaces content between open and close tags", () => {
     const lines = [
-      '<!-- {{data: p.x.y("A")}} -->',
+      '<!-- {{data("p.x.y", {labels: "A"})}} -->',
       "old row 1",
       "old row 2",
       "<!-- {{/data}} -->",
     ];
     const d = {
-      raw: '<!-- {{data: p.x.y("A")}} -->',
+      raw: '<!-- {{data("p.x.y", {labels: "A"})}} -->',
       line: 0,
       endLine: 3,
     };
     replaceBlockDirective(lines, d, "new content");
     assert.deepEqual(lines, [
-      '<!-- {{data: p.x.y("A")}} -->',
+      '<!-- {{data("p.x.y", {labels: "A"})}} -->',
       "new content",
       "<!-- {{/data}} -->",
     ]);
@@ -194,13 +190,13 @@ describe("replaceBlockDirective", () => {
   it("handles single line between open and close", () => {
     const lines = [
       "before",
-      '<!-- {{data: p.a.b("")}} -->',
+      '<!-- {{data("p.a.b")}} -->',
       "old",
       "<!-- {{/data}} -->",
       "after",
     ];
     const d = {
-      raw: '<!-- {{data: p.a.b("")}} -->',
+      raw: '<!-- {{data("p.a.b")}} -->',
       line: 1,
       endLine: 3,
     };
@@ -209,7 +205,7 @@ describe("replaceBlockDirective", () => {
     // total stays 5
     assert.equal(lines.length, 5);
     assert.equal(lines[0], "before");
-    assert.equal(lines[1], '<!-- {{data: p.a.b("")}} -->');
+    assert.equal(lines[1], '<!-- {{data("p.a.b")}} -->');
     assert.equal(lines[2], "replaced");
     assert.equal(lines[3], "<!-- {{/data}} -->");
     assert.equal(lines[4], "after");
@@ -233,7 +229,7 @@ describe("resolveDataDirectives", () => {
 
   it("resolves block data directive", () => {
     const text = [
-      '<!-- {{data: p.x.list("A|B")}} -->',
+      '<!-- {{data("p.x.list", {labels: "A|B"})}} -->',
       "old content",
       "<!-- {{/data}} -->",
     ].join("\n");
@@ -244,7 +240,7 @@ describe("resolveDataDirectives", () => {
   });
 
   it("resolves inline data directive", () => {
-    const text = '<!-- {{data: base.p.name("")}} -->old<!-- {{/data}} -->';
+    const text = '<!-- {{data("base.p.name")}} -->old<!-- {{/data}} -->';
     const result = resolveDataDirectives(text, () => "NEW");
     assert.equal(result.replaced, 1);
     assert.ok(result.text.includes("NEW"));
@@ -252,7 +248,7 @@ describe("resolveDataDirectives", () => {
 
   it("skips when resolveFn returns null", () => {
     const text = [
-      '<!-- {{data: p.x.y("A")}} -->',
+      '<!-- {{data("p.x.y", {labels: "A"})}} -->',
       "old",
       "<!-- {{/data}} -->",
     ].join("\n");
@@ -262,7 +258,10 @@ describe("resolveDataDirectives", () => {
   });
 
   it("calls onSkip for non-data directives", () => {
-    const text = "<!-- {{text: Explain.}} -->";
+    const text = [
+      '<!-- {{text({prompt: "Explain."})}} -->',
+      "<!-- {{/text}} -->",
+    ].join("\n");
     const skipped = [];
     resolveDataDirectives(text, () => "x", {
       onSkip(d) { skipped.push(d.type); },
@@ -272,7 +271,7 @@ describe("resolveDataDirectives", () => {
 
   it("calls onResolve for each resolved directive", () => {
     const text = [
-      '<!-- {{data: p.a.b("")}} -->',
+      '<!-- {{data("p.a.b")}} -->',
       "old",
       "<!-- {{/data}} -->",
     ].join("\n");
@@ -300,8 +299,8 @@ describe("parseBlocks", () => {
     assert.deepEqual(result.postamble, []);
   });
 
-  it("detects @extends", () => {
-    const text = "<!-- @extends -->\n<!-- @block: main -->\ncontent\n<!-- @endblock -->";
+  it("detects {%extends%}", () => {
+    const text = '<!-- {%extends%} -->\n<!-- {%block "main"%} -->\ncontent\n<!-- {%/block%} -->';
     const result = parseBlocks(text);
     assert.equal(result.extends, true);
   });
@@ -309,9 +308,9 @@ describe("parseBlocks", () => {
   it("parses single block", () => {
     const text = [
       "# Title",
-      "<!-- @block: intro -->",
+      '<!-- {%block "intro"%} -->',
       "Hello world",
-      "<!-- @endblock -->",
+      "<!-- {%/block%} -->",
       "Footer",
     ].join("\n");
     const result = parseBlocks(text);
@@ -324,12 +323,12 @@ describe("parseBlocks", () => {
 
   it("parses multiple blocks", () => {
     const text = [
-      "<!-- @block: a -->",
+      '<!-- {%block "a"%} -->',
       "content a",
-      "<!-- @endblock -->",
-      "<!-- @block: b -->",
+      "<!-- {%/block%} -->",
+      '<!-- {%block "b"%} -->',
       "content b",
-      "<!-- @endblock -->",
+      "<!-- {%/block%} -->",
     ].join("\n");
     const result = parseBlocks(text);
     assert.equal(result.blocks.size, 2);
@@ -339,11 +338,11 @@ describe("parseBlocks", () => {
 
   it("block with multiple content lines", () => {
     const text = [
-      "<!-- @block: main -->",
+      '<!-- {%block "main"%} -->',
       "line 1",
       "line 2",
       "line 3",
-      "<!-- @endblock -->",
+      "<!-- {%/block%} -->",
     ].join("\n");
     const result = parseBlocks(text);
     assert.deepEqual(result.blocks.get("main").content, [
@@ -353,12 +352,12 @@ describe("parseBlocks", () => {
     ]);
   });
 
-  it("@extends with block overrides", () => {
+  it("{%extends%} with block overrides", () => {
     const text = [
-      "<!-- @extends -->",
-      "<!-- @block: intro -->",
+      "<!-- {%extends%} -->",
+      '<!-- {%block "intro"%} -->',
       "overridden content",
-      "<!-- @endblock -->",
+      "<!-- {%/block%} -->",
     ].join("\n");
     const result = parseBlocks(text);
     assert.equal(result.extends, true);

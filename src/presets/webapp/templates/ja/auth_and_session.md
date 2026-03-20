@@ -1,47 +1,47 @@
-<!-- @extends: layout -->
-<!-- @block: content -->
+<!-- {%extends "layout"%} -->
+<!-- {%block "content"%} -->
 # 認証とセッション管理
 
-<!-- @block: description -->
+<!-- {%block "description"%} -->
 ## 説明
 
-<!-- {{text: この章の概要を1〜2文で記述してください。認証方式、ロール数、セッション管理方式を踏まえること。}} -->
+<!-- {{text({prompt: "この章の概要を1〜2文で記述してください。認証方式、ロール数、セッション管理方式を踏まえること。"})}} -->
 <!-- {{/text}} -->
 
 ## 内容
-<!-- @endblock -->
+<!-- {%/block%} -->
 
-<!-- @block: auth-method -->
+<!-- {%block "auth-method"%} -->
 ### 認証方式
 
-<!-- {{text[mode=deep]: 認証方式の概要を説明してください。認証コンポーネント設定を含めること。}} -->
+<!-- {{text({prompt: "認証方式の概要を説明してください。認証コンポーネント設定を含めること。", mode: "deep"})}} -->
 <!-- {{/text}} -->
 
-<!-- {{data: webapp.config.auth("項目|設定値")}} -->
+<!-- {{data("webapp.config.auth", {labels: "項目|設定値"})}} -->
 <!-- {{/data}} -->
-<!-- @endblock -->
+<!-- {%/block%} -->
 
-<!-- @block: acl -->
+<!-- {%block "acl"%} -->
 ### ACL（アクセス制御）
 
-<!-- {{text[mode=deep]: アクセス制御の定義と、ロールベースのアクセス制御ルールを説明してください。}} -->
+<!-- {{text({prompt: "アクセス制御の定義と、ロールベースのアクセス制御ルールを説明してください。", mode: "deep"})}} -->
 <!-- {{/text}} -->
 
-<!-- {{data: webapp.config.acl("ロール|group_id|権限")}} -->
+<!-- {{data("webapp.config.acl", {labels: "ロール|group_id|権限"})}} -->
 <!-- {{/data}} -->
-<!-- @endblock -->
+<!-- {%/block%} -->
 
-<!-- @block: session -->
+<!-- {%block "session"%} -->
 ### セッション管理
 
-<!-- {{text[mode=deep]: セッション管理方式を説明してください。}} -->
+<!-- {{text({prompt: "セッション管理方式を説明してください。", mode: "deep"})}} -->
 <!-- {{/text}} -->
-<!-- @endblock -->
+<!-- {%/block%} -->
 
-<!-- @block: login-flow -->
+<!-- {%block "login-flow"%} -->
 ### ログインフロー
 
-<!-- {{text[mode=deep]: ログイン処理のフローを mermaid sequenceDiagram で生成してください。出力は mermaid コードブロックのみ。}} -->
+<!-- {{text({prompt: "ログイン処理のフローを mermaid sequenceDiagram で生成してください。出力は mermaid コードブロックのみ。", mode: "deep"})}} -->
 <!-- {{/text}} -->
-<!-- @endblock -->
-<!-- @endblock -->
+<!-- {%/block%} -->
+<!-- {%/block%} -->

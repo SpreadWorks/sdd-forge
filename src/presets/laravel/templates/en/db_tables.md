@@ -1,22 +1,22 @@
-<!-- @extends -->
+<!-- {%extends%} -->
 
-<!-- @block: table-list -->
+<!-- {%block "table-list"%} -->
 ### Table List (Extracted from Migrations)
 
-<!-- {{data: laravel.tables.list("Table|Columns|Primary Purpose")}} -->
+<!-- {{data("laravel.tables.list", {labels: "Table|Columns|Primary Purpose"})}} -->
 <!-- {{/data}} -->
-<!-- @endblock -->
+<!-- {%/block%} -->
 
-<!-- @block: fk -->
+<!-- {%block "fk"%} -->
 ### Foreign Key Relationships (FK)
 
-<!-- {{data: laravel.tables.fk("Table|Column|References")}} -->
+<!-- {{data("laravel.tables.fk", {labels: "Table|Column|References"})}} -->
 <!-- {{/data}} -->
-<!-- @endblock -->
+<!-- {%/block%} -->
 
-<!-- @block: indexes -->
+<!-- {%block "indexes"%} -->
 ### Indexes
 
-<!-- {{data: laravel.tables.indexes("Table|Type|Columns")}} -->
+<!-- {{data("laravel.tables.indexes", {labels: "Table|Type|Columns"})}} -->
 <!-- {{/data}} -->
-<!-- @endblock -->
+<!-- {%/block%} -->

@@ -1,44 +1,44 @@
-<!-- @extends: layout -->
-<!-- @block: content -->
+<!-- {%extends "layout"%} -->
+<!-- {%block "content"%} -->
 # Technology Stack and Operations
 
-<!-- {{data[ignoreError=true]: monorepo.monorepo.apps("stack_and_ops")}} -->
+<!-- {{data("monorepo.monorepo.apps", {labels: "stack_and_ops", ignoreError: true})}} -->
 <!-- {{/data}} -->
 
-<!-- @block: description -->
+<!-- {%block "description"%} -->
 ## Description
 
-<!-- {{text: Write a 1-2 sentence overview of this chapter. Include the programming language, framework, and key tool versions.}} -->
+<!-- {{text({prompt: "Write a 1-2 sentence overview of this chapter. Include the programming language, framework, and key tool versions."})}} -->
 <!-- {{/text}} -->
 
 ## Content
-<!-- @endblock -->
+<!-- {%/block%} -->
 
-<!-- @block: stack -->
+<!-- {%block "stack"%} -->
 ### Technology Stack
 
-<!-- {{data: base.config.stack("Category|Technology|Version")}} -->
+<!-- {{data("base.config.stack", {labels: "Category|Technology|Version"})}} -->
 <!-- {{/data}} -->
-<!-- @endblock -->
+<!-- {%/block%} -->
 
-<!-- @block: dependencies -->
+<!-- {%block "dependencies"%} -->
 ### Dependencies
 
-<!-- {{text: Describe the project's dependency management approach.}} -->
+<!-- {{text({prompt: "Describe the project's dependency management approach."})}} -->
 <!-- {{/text}} -->
-<!-- @endblock -->
+<!-- {%/block%} -->
 
-<!-- @block: deploy -->
+<!-- {%block "deploy"%} -->
 ### Deployment Flow
 
-<!-- {{text: Describe the deployment procedure and flow.}} -->
+<!-- {{text({prompt: "Describe the deployment procedure and flow."})}} -->
 <!-- {{/text}} -->
-<!-- @endblock -->
+<!-- {%/block%} -->
 
-<!-- @block: operations -->
+<!-- {%block "operations"%} -->
 ### Operations Flow
 
-<!-- {{text: Describe the operations procedures.}} -->
+<!-- {{text({prompt: "Describe the operations procedures."})}} -->
 <!-- {{/text}} -->
-<!-- @endblock -->
-<!-- @endblock -->
+<!-- {%/block%} -->
+<!-- {%/block%} -->

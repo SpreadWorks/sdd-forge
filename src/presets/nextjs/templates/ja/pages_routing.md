@@ -2,26 +2,26 @@
 
 ## 説明
 
-<!-- {{text: ページ／ルーティングアーキテクチャについて説明してください。App Router、Pages Router、またはその両方が使用されているかを識別すること。}} -->
+<!-- {{text({prompt: "ページ／ルーティングアーキテクチャについて説明してください。App Router、Pages Router、またはその両方が使用されているかを識別すること。"})}} -->
 <!-- {{/text}} -->
 
-<!-- @block: app-router -->
+<!-- {%block "app-router"%} -->
 ## App Router
 
-<!-- {{data: nextjs.routes.app("パス|種別|ファイル|説明")}} -->
+<!-- {{data("nextjs.routes.app", {labels: "パス|種別|ファイル|説明"})}} -->
 <!-- {{/data}} -->
-<!-- @endblock -->
+<!-- {%/block%} -->
 
-<!-- @block: pages-router -->
+<!-- {%block "pages-router"%} -->
 ## Pages Router
 
-<!-- {{data: nextjs.routes.pages("ページ|データ取得|説明")}} -->
+<!-- {{data("nextjs.routes.pages", {labels: "ページ|データ取得|説明"})}} -->
 <!-- {{/data}} -->
-<!-- @endblock -->
+<!-- {%/block%} -->
 
-<!-- @block: dynamic-routes -->
+<!-- {%block "dynamic-routes"%} -->
 ## 動的ルート
 
-<!-- {{data: nextjs.routes.dynamic("パターン|パラメータ|説明")}} -->
+<!-- {{data("nextjs.routes.dynamic", {labels: "パターン|パラメータ|説明"})}} -->
 <!-- {{/data}} -->
-<!-- @endblock -->
+<!-- {%/block%} -->

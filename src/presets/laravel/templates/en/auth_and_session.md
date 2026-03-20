@@ -1,29 +1,29 @@
-<!-- @extends -->
+<!-- {%extends%} -->
 
-<!-- @block: auth-method -->
+<!-- {%block "auth-method"%} -->
 ### Authentication Method
 
-<!-- {{text[mode=deep]: Describe the Laravel authentication method. Determine usage of Sanctum, Passport, Fortify, etc. from composer.json, and include guard configuration (config/auth.php).}} -->
+<!-- {{text({prompt: "Describe the Laravel authentication method. Determine usage of Sanctum, Passport, Fortify, etc. from composer.json, and include guard configuration (config/auth.php).", mode: "deep"})}} -->
 <!-- {{/text}} -->
-<!-- @endblock -->
+<!-- {%/block%} -->
 
-<!-- @block: acl -->
+<!-- {%block "acl"%} -->
 ### Authorization
 
-<!-- {{text[mode=deep]: Describe the overview of access control using policies, gates, and middleware.}} -->
+<!-- {{text({prompt: "Describe the overview of access control using policies, gates, and middleware.", mode: "deep"})}} -->
 <!-- {{/text}} -->
-<!-- @endblock -->
+<!-- {%/block%} -->
 
-<!-- @block: session -->
+<!-- {%block "session"%} -->
 ### Session Management
 
-<!-- {{text: Describe the session management approach based on the SESSION_DRIVER setting in .env.example.}} -->
+<!-- {{text({prompt: "Describe the session management approach based on the SESSION_DRIVER setting in .env.example."})}} -->
 <!-- {{/text}} -->
-<!-- @endblock -->
+<!-- {%/block%} -->
 
-<!-- @block: login-flow -->
+<!-- {%block "login-flow"%} -->
 ### Login Flow
 
-<!-- {{text[mode=deep]: Generate a mermaid sequenceDiagram of the login process flow. Output only the mermaid code block.}} -->
+<!-- {{text({prompt: "Generate a mermaid sequenceDiagram of the login process flow. Output only the mermaid code block.", mode: "deep"})}} -->
 <!-- {{/text}} -->
-<!-- @endblock -->
+<!-- {%/block%} -->

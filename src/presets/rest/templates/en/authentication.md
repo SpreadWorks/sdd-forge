@@ -1,15 +1,15 @@
-<!-- @extends -->
+<!-- {%extends%} -->
 
-<!-- @block: description -->
+<!-- {%block "description"%} -->
 ## Description
 
-<!-- {{text: Describe the REST API authentication and authorization mechanisms, including token types and header conventions.}} -->
+<!-- {{text({prompt: "Describe the REST API authentication and authorization mechanisms, including token types and header conventions."})}} -->
 <!-- {{/text}} -->
-<!-- @endblock -->
+<!-- {%/block%} -->
 
-<!-- @block: auth-flow -->
+<!-- {%block "auth-flow"%} -->
 ## Authentication Flow
 
-<!-- {{text: Describe the REST API authentication flow, including token acquisition, refresh, and revocation endpoints.}} -->
+<!-- {{text({prompt: "Describe the REST API authentication flow, including token acquisition, refresh, and revocation endpoints."})}} -->
 <!-- {{/text}} -->
-<!-- @endblock -->
+<!-- {%/block%} -->

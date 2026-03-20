@@ -62,7 +62,7 @@ describe("text CLI", () => {
     const original = [
       "# Overview",
       "",
-      "<!-- {{text: Describe the project}} -->",
+      '<!-- {{text({prompt: "Describe the project"})}} -->',
       "placeholder",
       "<!-- {{/text}} -->",
       "",
@@ -96,7 +96,7 @@ describe("text CLI", () => {
     writeFile(tmp, "docs/overview.md", [
       "# Overview",
       "",
-      "<!-- {{text: Describe the project}} -->",
+      '<!-- {{text({prompt: "Describe the project"})}} -->',
       "placeholder",
       "<!-- {{/text}} -->",
       "",
@@ -115,11 +115,11 @@ describe("text CLI", () => {
     writeFile(tmp, "docs/overview.md", [
       "# Overview",
       "",
-      "<!-- {{text: First section}} -->",
+      '<!-- {{text({prompt: "First section"})}} -->',
       "placeholder1",
       "<!-- {{/text}} -->",
       "",
-      "<!-- {{text: Second section}} -->",
+      '<!-- {{text({prompt: "Second section"})}} -->',
       "placeholder2",
       "<!-- {{/text}} -->",
       "",
@@ -139,7 +139,7 @@ describe("text CLI", () => {
     writeFile(tmp, "docs/overview.md", [
       "# Overview",
       "",
-      "<!-- {{text: Describe, id=intro}} -->",
+      '<!-- {{text({prompt: "Describe", id: "intro"})}} -->',
       "placeholder",
       "<!-- {{/text}} -->",
       "",
@@ -147,7 +147,7 @@ describe("text CLI", () => {
     writeFile(tmp, "docs/cli_commands.md", [
       "# CLI",
       "",
-      "<!-- {{text: Commands, id=cmds}} -->",
+      '<!-- {{text({prompt: "Commands", id: "cmds"})}} -->',
       "placeholder",
       "<!-- {{/text}} -->",
       "",

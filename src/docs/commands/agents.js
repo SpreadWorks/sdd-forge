@@ -3,7 +3,7 @@
  * src/docs/commands/agents.js
  *
  * AGENTS.md を更新する。
- * AGENTS.md 内の {{data: agents.sdd}} / {{data: agents.project}} ディレクティブを解決し、
+ * AGENTS.md 内の {{data("agents.sdd")}} / {{data("agents.project")}} ディレクティブを解決し、
  * PROJECT セクションは AI で精査する。
  */
 

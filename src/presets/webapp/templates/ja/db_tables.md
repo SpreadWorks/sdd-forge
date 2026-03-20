@@ -1,33 +1,33 @@
-<!-- @extends: layout -->
-<!-- @block: content -->
+<!-- {%extends "layout"%} -->
+<!-- {%block "content"%} -->
 # DB テーブル定義
 
-<!-- @block: description -->
+<!-- {%block "description"%} -->
 ## 説明
 
-<!-- {{text: この章の概要を1〜2文で記述してください。テーブル総数、FK関係を踏まえること。}} -->
+<!-- {{text({prompt: "この章の概要を1〜2文で記述してください。テーブル総数、FK関係を踏まえること。"})}} -->
 <!-- {{/text}} -->
 
 ## 内容
-<!-- @endblock -->
+<!-- {%/block%} -->
 
-<!-- @block: table-list -->
+<!-- {%block "table-list"%} -->
 ### テーブル一覧
 
-<!-- {{data: webapp.tables.list("テーブル名|DB|主な用途")}} -->
+<!-- {{data("webapp.tables.list", {labels: "テーブル名|DB|主な用途"})}} -->
 <!-- {{/data}} -->
-<!-- @endblock -->
+<!-- {%/block%} -->
 
-<!-- @block: fk -->
+<!-- {%block "fk"%} -->
 ### 外部キー関係（FK）
 
-<!-- {{data: webapp.tables.fk("親テーブル|子テーブル|FK カラム|備考")}} -->
+<!-- {{data("webapp.tables.fk", {labels: "親テーブル|子テーブル|FK カラム|備考"})}} -->
 <!-- {{/data}} -->
-<!-- @endblock -->
+<!-- {%/block%} -->
 
-<!-- @block: indexes -->
+<!-- {%block "indexes"%} -->
 ### INDEX
 
 ※ インデックス定義は DB スキーマから直接確認が必要。
-<!-- @endblock -->
-<!-- @endblock -->
+<!-- {%/block%} -->
+<!-- {%/block%} -->

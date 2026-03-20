@@ -1,11 +1,11 @@
-<!-- @extends -->
+<!-- {%extends%} -->
 
-<!-- @block: entry-points -->
-<!-- {{data: workers.bindings.entryPoints("Route|Trigger|File|Description")}} -->
+<!-- {%block "entry-points"%} -->
+<!-- {{data("workers.bindings.entryPoints", {labels: "Route|Trigger|File|Description"})}} -->
 <!-- {{/data}} -->
-<!-- @endblock -->
+<!-- {%/block%} -->
 
-<!-- @block: constraints -->
-<!-- {{data: workers.bindings.constraints("Constraint|Value|Description")}} -->
+<!-- {%block "constraints"%} -->
+<!-- {{data("workers.bindings.constraints", {labels: "Constraint|Value|Description"})}} -->
 <!-- {{/data}} -->
-<!-- @endblock -->
+<!-- {%/block%} -->

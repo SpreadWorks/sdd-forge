@@ -1,44 +1,44 @@
-<!-- @extends -->
+<!-- {%extends%} -->
 
-<!-- @block: routing -->
+<!-- {%block "routing"%} -->
 ### ルーティング設定
 
-<!-- {{text[mode=deep]: Laravel のルーティング方式を説明してください。routes/web.php と routes/api.php の役割を含めること。}} -->
+<!-- {{text({prompt: "Laravel のルーティング方式を説明してください。routes/web.php と routes/api.php の役割を含めること。", mode: "deep"})}} -->
 <!-- {{/text}} -->
 
-<!-- {{data: laravel.routes.list("メソッド|URI|コントローラ|アクション")}} -->
+<!-- {{data("laravel.routes.list", {labels: "メソッド|URI|コントローラ|アクション"})}} -->
 <!-- {{/data}} -->
-<!-- @endblock -->
+<!-- {%/block%} -->
 
-<!-- @block: controller-config -->
+<!-- {%block "controller-config"%} -->
 ### ミドルウェア
 
-<!-- {{data: laravel.controllers.middleware("ミドルウェア|適用コントローラ")}} -->
+<!-- {{data("laravel.controllers.middleware", {labels: "ミドルウェア|適用コントローラ"})}} -->
 <!-- {{/data}} -->
-<!-- @endblock -->
+<!-- {%/block%} -->
 
-<!-- @block: controller-list -->
+<!-- {%block "controller-list"%} -->
 ### コントローラ一覧
 
-<!-- {{data: laravel.controllers.list("コントローラ名|ファイル|主な責務")}} -->
+<!-- {{data("laravel.controllers.list", {labels: "コントローラ名|ファイル|主な責務"})}} -->
 <!-- {{/data}} -->
 
 ### コントローラ–アクション一覧
 
-<!-- {{data: laravel.controllers.actions("コントローラ|アクション")}} -->
+<!-- {{data("laravel.controllers.actions", {labels: "コントローラ|アクション"})}} -->
 <!-- {{/data}} -->
-<!-- @endblock -->
+<!-- {%/block%} -->
 
-<!-- @block: controller-deps -->
+<!-- {%block "controller-deps"%} -->
 ### Eloquent リレーション一覧
 
-<!-- {{data: laravel.models.relations("モデル|リレーション")}} -->
+<!-- {{data("laravel.models.relations", {labels: "モデル|リレーション"})}} -->
 <!-- {{/data}} -->
-<!-- @endblock -->
+<!-- {%/block%} -->
 
-<!-- @block: components -->
+<!-- {%block "components"%} -->
 ### Artisan コマンド
 
-<!-- {{data: laravel.commands.list("コマンド|ファイル|説明")}} -->
+<!-- {{data("laravel.commands.list", {labels: "コマンド|ファイル|説明"})}} -->
 <!-- {{/data}} -->
-<!-- @endblock -->
+<!-- {%/block%} -->

@@ -1,6 +1,6 @@
-<!-- @extends -->
+<!-- {%extends%} -->
 
-<!-- @block: setup -->
+<!-- {%block "setup"%} -->
 ### Docker セットアップ
 
 ```bash
@@ -16,35 +16,35 @@ npm run docker:stop
 
 ### npm scripts（Docker 操作）
 
-<!-- {{text: package.json に定義されている Docker 操作コマンドを表形式で記述してください。}} -->
+<!-- {{text({prompt: "package.json に定義されている Docker 操作コマンドを表形式で記述してください。"})}} -->
 <!-- {{/text}} -->
-<!-- @endblock -->
+<!-- {%/block%} -->
 
-<!-- @block: dev-workflow -->
+<!-- {%block "dev-workflow"%} -->
 ### ローカル開発手順
 
-<!-- {{text: Docker 環境でのローカル開発手順（起動→コーディング→テスト→確認）を記述してください。}} -->
+<!-- {{text({prompt: "Docker 環境でのローカル開発手順（起動→コーディング→テスト→確認）を記述してください。"})}} -->
 <!-- {{/text}} -->
-<!-- @endblock -->
+<!-- {%/block%} -->
 
-<!-- @block: testing -->
+<!-- {%block "testing"%} -->
 ### テスト構成
 
-<!-- {{text: テストフレームワークとテスト実行方法を説明してください。}} -->
+<!-- {{text({prompt: "テストフレームワークとテスト実行方法を説明してください。"})}} -->
 <!-- {{/text}} -->
 
-<!-- {{data: cakephp2.tests.list("項目|件数|ディレクトリ")}} -->
+<!-- {{data("cakephp2.tests.list", {labels: "項目|件数|ディレクトリ"})}} -->
 <!-- {{/data}} -->
 
 ### 設定定数リファレンス
 
 #### スカラー定数
 
-<!-- {{data: cakephp2.config.constants("定数名|値|説明")}} -->
+<!-- {{data("cakephp2.config.constants", {labels: "定数名|値|説明"})}} -->
 <!-- {{/data}} -->
 
 #### 選択肢定数
 
-<!-- {{data: cakephp2.config.constantsSelect("定数名|選択肢")}} -->
+<!-- {{data("cakephp2.config.constantsSelect", {labels: "定数名|選択肢"})}} -->
 <!-- {{/data}} -->
-<!-- @endblock -->
+<!-- {%/block%} -->

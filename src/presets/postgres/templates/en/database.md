@@ -1,11 +1,11 @@
-<!-- @extends -->
+<!-- {%extends%} -->
 
-<!-- @block: tables -->
-<!-- {{text: List the database tables with their purpose and key columns.}} -->
+<!-- {%block "tables"%} -->
+<!-- {{text({prompt: "List the database tables with their purpose and key columns."})}} -->
 <!-- {{/text}} -->
 
 ### Database Info
 
-<!-- {{data: postgres.database.info("Item|Value")}} -->
+<!-- {{data("postgres.database.info", {labels: "Item|Value"})}} -->
 <!-- {{/data}} -->
-<!-- @endblock -->
+<!-- {%/block%} -->

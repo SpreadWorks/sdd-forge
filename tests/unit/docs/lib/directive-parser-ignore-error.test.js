@@ -6,14 +6,14 @@ import {
 } from "../../../../src/docs/lib/directive-parser.js";
 
 // ---------------------------------------------------------------------------
-// {{data[ignoreError=true]}} パラメータ解析
+// {{data(..., {ignoreError: true})}} パラメータ解析
 // ---------------------------------------------------------------------------
 
 describe("parseDirectives — data params", () => {
-  it("parses [ignoreError=true] parameter on block data directive", () => {
+  it("parses ignoreError: true parameter on block data directive", () => {
     const text = [
       "# Title",
-      '<!-- {{data[ignoreError=true]: base.monorepo.apps("")}} -->',
+      '<!-- {{data("base.monorepo.apps", {ignoreError: true})}} -->',
       "<!-- {{/data}} -->",
     ].join("\n");
     const result = parseDirectives(text);
@@ -28,7 +28,7 @@ describe("parseDirectives — data params", () => {
 
   it("parses data directive without params (backward compatible)", () => {
     const text = [
-      '<!-- {{data: base.project.name("")}} -->',
+      '<!-- {{data("base.project.name")}} -->',
       "<!-- {{/data}} -->",
     ].join("\n");
     const result = parseDirectives(text);
@@ -38,7 +38,7 @@ describe("parseDirectives — data params", () => {
 
   it("parses multiple params on data directive", () => {
     const text = [
-      '<!-- {{data[ignoreError=true, maxRows=10]: base.monorepo.apps("")}} -->',
+      '<!-- {{data("base.monorepo.apps", {ignoreError: true, maxRows: 10})}} -->',
       "<!-- {{/data}} -->",
     ].join("\n");
     const result = parseDirectives(text);
@@ -46,9 +46,9 @@ describe("parseDirectives — data params", () => {
     assert.deepEqual(result[0].params, { ignoreError: true, maxRows: 10 });
   });
 
-  it("parses [ignoreError=true] on inline data directive", () => {
+  it("parses ignoreError: true on inline data directive", () => {
     const text =
-      '<!-- {{data[ignoreError=true]: base.monorepo.apps("")}} --><!-- {{/data}} -->';
+      '<!-- {{data("base.monorepo.apps", {ignoreError: true})}} --><!-- {{/data}} -->';
     const result = parseDirectives(text);
     assert.equal(result.length, 1);
     assert.deepEqual(result[0].params, { ignoreError: true });
@@ -63,7 +63,7 @@ describe("resolveDataDirectives — ignoreError", () => {
   it("resolves to empty string when DataSource returns null and ignoreError=true", () => {
     const text = [
       "# Title",
-      '<!-- {{data[ignoreError=true]: base.monorepo.apps("")}} -->',
+      '<!-- {{data("base.monorepo.apps", {ignoreError: true})}} -->',
       "<!-- {{/data}} -->",
       "footer",
     ].join("\n");
@@ -79,7 +79,7 @@ describe("resolveDataDirectives — ignoreError", () => {
   it("resolves normally when DataSource returns content and ignoreError=true", () => {
     const text = [
       "# Title",
-      '<!-- {{data[ignoreError=true]: base.monorepo.apps("")}} -->',
+      '<!-- {{data("base.monorepo.apps", {ignoreError: true})}} -->',
       "<!-- {{/data}} -->",
     ].join("\n");
 
@@ -93,7 +93,7 @@ describe("resolveDataDirectives — ignoreError", () => {
   it("does not resolve when DataSource returns null without ignoreError", () => {
     const text = [
       "# Title",
-      '<!-- {{data: base.monorepo.apps("")}} -->',
+      '<!-- {{data("base.monorepo.apps")}} -->',
       "<!-- {{/data}} -->",
     ].join("\n");
 

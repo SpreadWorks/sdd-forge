@@ -1,41 +1,41 @@
-<!-- @extends: layout -->
-<!-- @block: content -->
+<!-- {%extends "layout"%} -->
+<!-- {%block "content"%} -->
 # データベース構成
 
-<!-- @block: description -->
+<!-- {%block "description"%} -->
 ## 説明
 
-<!-- {{text: この章の概要を1〜2文で記述してください。DB数、各DBの用途、接続切り替え方式を踏まえること。}} -->
+<!-- {{text({prompt: "この章の概要を1〜2文で記述してください。DB数、各DBの用途、接続切り替え方式を踏まえること。"})}} -->
 <!-- {{/text}} -->
 
 ## 内容
-<!-- @endblock -->
+<!-- {%/block%} -->
 
-<!-- @block: db-list -->
+<!-- {%block "db-list"%} -->
 ### データベース一覧
 
-<!-- {{text[mode=deep]: DB構成の各DBの用途と接続設定を表形式で記述してください。}} -->
+<!-- {{text({prompt: "DB構成の各DBの用途と接続設定を表形式で記述してください。", mode: "deep"})}} -->
 <!-- {{/text}} -->
-<!-- @endblock -->
+<!-- {%/block%} -->
 
-<!-- @block: db-switching -->
+<!-- {%block "db-switching"%} -->
 ### DB 切り替え方式
 
-<!-- {{text[mode=deep]: DB接続の切り替え方式を説明してください。}} -->
+<!-- {{text({prompt: "DB接続の切り替え方式を説明してください。", mode: "deep"})}} -->
 <!-- {{/text}} -->
-<!-- @endblock -->
+<!-- {%/block%} -->
 
-<!-- @block: db-env -->
+<!-- {%block "db-env"%} -->
 ### 環境別接続設定
 
-<!-- {{data: webapp.config.db("環境|DB ホスト|備考")}} -->
+<!-- {{data("webapp.config.db", {labels: "環境|DB ホスト|備考"})}} -->
 <!-- {{/data}} -->
-<!-- @endblock -->
+<!-- {%/block%} -->
 
-<!-- @block: er-diagram -->
+<!-- {%block "er-diagram"%} -->
 ### ER 図（主要テーブル）
 
-<!-- {{data: webapp.models.er}} -->
+<!-- {{data("webapp.models.er")}} -->
 <!-- {{/data}} -->
-<!-- @endblock -->
-<!-- @endblock -->
+<!-- {%/block%} -->
+<!-- {%/block%} -->

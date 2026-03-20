@@ -1,37 +1,37 @@
-<!-- @extends: layout -->
-<!-- @block: content -->
+<!-- {%extends "layout"%} -->
+<!-- {%block "content"%} -->
 # プロジェクト構成
 
-<!-- {{data[ignoreError=true]: monorepo.monorepo.apps("project_structure")}} -->
+<!-- {{data("monorepo.monorepo.apps", {labels: "project_structure", ignoreError: true})}} -->
 <!-- {{/data}} -->
 
-<!-- @block: description -->
+<!-- {%block "description"%} -->
 ## 説明
 
-<!-- {{text: この章の概要を1〜2文で記述してください。主要ディレクトリの数と役割を踏まえること。}} -->
+<!-- {{text({prompt: "この章の概要を1〜2文で記述してください。主要ディレクトリの数と役割を踏まえること。"})}} -->
 <!-- {{/text}} -->
 
 ## 内容
-<!-- @endblock -->
+<!-- {%/block%} -->
 
-<!-- @block: directory-tree -->
+<!-- {%block "directory-tree"%} -->
 ### ディレクトリ構成
 
 <!-- {{data: base.structure.tree()}} -->
 <!-- {{/data}} -->
-<!-- @endblock -->
+<!-- {%/block%} -->
 
-<!-- @block: directory-roles -->
+<!-- {%block "directory-roles"%} -->
 ### 各ディレクトリの責務
 
-<!-- {{data: base.structure.directories("ディレクトリ|ファイル数|役割")}} -->
+<!-- {{data("base.structure.directories", {labels: "ディレクトリ|ファイル数|役割"})}} -->
 <!-- {{/data}} -->
-<!-- @endblock -->
+<!-- {%/block%} -->
 
-<!-- @block: libraries -->
+<!-- {%block "libraries"%} -->
 ### 共通ライブラリ
 
-<!-- {{data: base.libs.list("クラス|ファイル|責務")}} -->
+<!-- {{data("base.libs.list", {labels: "クラス|ファイル|責務"})}} -->
 <!-- {{/data}} -->
-<!-- @endblock -->
-<!-- @endblock -->
+<!-- {%/block%} -->
+<!-- {%/block%} -->

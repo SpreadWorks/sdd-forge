@@ -1,47 +1,47 @@
-<!-- @extends: layout -->
-<!-- @block: content -->
+<!-- {%extends "layout"%} -->
+<!-- {%block "content"%} -->
 # ビジネスロジック層
 
-<!-- @block: description -->
+<!-- {%block "description"%} -->
 ## 説明
 
-<!-- {{text: この章の概要を1〜2文で記述してください。ロジッククラス数、外部連携先を踏まえること。}} -->
+<!-- {{text({prompt: "この章の概要を1〜2文で記述してください。ロジッククラス数、外部連携先を踏まえること。"})}} -->
 <!-- {{/text}} -->
 
 ## 内容
-<!-- @endblock -->
+<!-- {%/block%} -->
 
-<!-- @block: logic-list -->
+<!-- {%block "logic-list"%} -->
 ### ロジッククラス一覧
 
-<!-- {{data: webapp.models.logic("クラス名|ファイル|責務")}} -->
+<!-- {{data("webapp.models.logic", {labels: "クラス名|ファイル|責務"})}} -->
 <!-- {{/data}} -->
-<!-- @endblock -->
+<!-- {%/block%} -->
 
-<!-- @block: logic-structure -->
+<!-- {%block "logic-structure"%} -->
 ### ロジッククラス構成
 
-<!-- {{text[mode=deep]: ロジッククラスの継承パターンと共通メソッドの役割を説明してください。}} -->
+<!-- {{text({prompt: "ロジッククラスの継承パターンと共通メソッドの役割を説明してください。", mode: "deep"})}} -->
 <!-- {{/text}} -->
 
-<!-- {{data: webapp.models.logicMethods("クラス|継承元|主要メソッド")}} -->
+<!-- {{data("webapp.models.logicMethods", {labels: "クラス|継承元|主要メソッド"})}} -->
 <!-- {{/data}} -->
-<!-- @endblock -->
+<!-- {%/block%} -->
 
-<!-- @block: external-integration -->
+<!-- {%block "external-integration"%} -->
 ### 外部連携
 
-<!-- {{text[mode=deep]: 外部システムとの連携を説明してください。}} -->
+<!-- {{text({prompt: "外部システムとの連携を説明してください。", mode: "deep"})}} -->
 <!-- {{/text}} -->
-<!-- @endblock -->
+<!-- {%/block%} -->
 
-<!-- @block: model-relations -->
+<!-- {%block "model-relations"%} -->
 ### モデル間の依存関係
 
-<!-- {{data: webapp.models.relations("モデル|関連 (belongsTo / hasMany / hasOne)")}} -->
+<!-- {{data("webapp.models.relations", {labels: "モデル|関連 (belongsTo / hasMany / hasOne)"})}} -->
 <!-- {{/data}} -->
 
-<!-- {{text[mode=deep]: 主要なモデル間の関連パターンを説明してください。}} -->
+<!-- {{text({prompt: "主要なモデル間の関連パターンを説明してください。", mode: "deep"})}} -->
 <!-- {{/text}} -->
-<!-- @endblock -->
-<!-- @endblock -->
+<!-- {%/block%} -->
+<!-- {%/block%} -->

@@ -1,47 +1,47 @@
-<!-- @extends: layout -->
-<!-- @block: content -->
+<!-- {%extends "layout"%} -->
+<!-- {%block "content"%} -->
 # Business Logic Layer
 
-<!-- @block: description -->
+<!-- {%block "description"%} -->
 ## Description
 
-<!-- {{text: Write a 1-2 sentence overview of this chapter. Include the number of logic classes and external integrations.}} -->
+<!-- {{text({prompt: "Write a 1-2 sentence overview of this chapter. Include the number of logic classes and external integrations."})}} -->
 <!-- {{/text}} -->
 
 ## Content
-<!-- @endblock -->
+<!-- {%/block%} -->
 
-<!-- @block: logic-list -->
+<!-- {%block "logic-list"%} -->
 ### Logic Class List
 
-<!-- {{data: webapp.models.logic("Class|File|Responsibility")}} -->
+<!-- {{data("webapp.models.logic", {labels: "Class|File|Responsibility"})}} -->
 <!-- {{/data}} -->
-<!-- @endblock -->
+<!-- {%/block%} -->
 
-<!-- @block: logic-structure -->
+<!-- {%block "logic-structure"%} -->
 ### Logic Class Structure
 
-<!-- {{text[mode=deep]: Describe the inheritance patterns and common method roles of logic classes.}} -->
+<!-- {{text({prompt: "Describe the inheritance patterns and common method roles of logic classes.", mode: "deep"})}} -->
 <!-- {{/text}} -->
 
-<!-- {{data: webapp.models.logicMethods("Class|Extends|Key Methods")}} -->
+<!-- {{data("webapp.models.logicMethods", {labels: "Class|Extends|Key Methods"})}} -->
 <!-- {{/data}} -->
-<!-- @endblock -->
+<!-- {%/block%} -->
 
-<!-- @block: external-integration -->
+<!-- {%block "external-integration"%} -->
 ### External Integrations
 
-<!-- {{text[mode=deep]: Describe integrations with external systems.}} -->
+<!-- {{text({prompt: "Describe integrations with external systems.", mode: "deep"})}} -->
 <!-- {{/text}} -->
-<!-- @endblock -->
+<!-- {%/block%} -->
 
-<!-- @block: model-relations -->
+<!-- {%block "model-relations"%} -->
 ### Model Relations
 
-<!-- {{data: webapp.models.relations("Model|Associations (belongsTo / hasMany / hasOne)")}} -->
+<!-- {{data("webapp.models.relations", {labels: "Model|Associations (belongsTo / hasMany / hasOne)"})}} -->
 <!-- {{/data}} -->
 
-<!-- {{text[mode=deep]: Describe the key relationship patterns between models.}} -->
+<!-- {{text({prompt: "Describe the key relationship patterns between models.", mode: "deep"})}} -->
 <!-- {{/text}} -->
-<!-- @endblock -->
-<!-- @endblock -->
+<!-- {%/block%} -->
+<!-- {%/block%} -->

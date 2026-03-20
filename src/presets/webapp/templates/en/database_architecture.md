@@ -1,41 +1,41 @@
-<!-- @extends: layout -->
-<!-- @block: content -->
+<!-- {%extends "layout"%} -->
+<!-- {%block "content"%} -->
 # Database Architecture
 
-<!-- @block: description -->
+<!-- {%block "description"%} -->
 ## Description
 
-<!-- {{text: Write a 1-2 sentence overview of this chapter. Include the number of databases, purpose of each DB, and connection switching method.}} -->
+<!-- {{text({prompt: "Write a 1-2 sentence overview of this chapter. Include the number of databases, purpose of each DB, and connection switching method."})}} -->
 <!-- {{/text}} -->
 
 ## Content
-<!-- @endblock -->
+<!-- {%/block%} -->
 
-<!-- @block: db-list -->
+<!-- {%block "db-list"%} -->
 ### Database List
 
-<!-- {{text[mode=deep]: Describe the purpose and connection configuration of each database in table format.}} -->
+<!-- {{text({prompt: "Describe the purpose and connection configuration of each database in table format.", mode: "deep"})}} -->
 <!-- {{/text}} -->
-<!-- @endblock -->
+<!-- {%/block%} -->
 
-<!-- @block: db-switching -->
+<!-- {%block "db-switching"%} -->
 ### DB Connection Switching
 
-<!-- {{text[mode=deep]: Describe the database connection switching approach.}} -->
+<!-- {{text({prompt: "Describe the database connection switching approach.", mode: "deep"})}} -->
 <!-- {{/text}} -->
-<!-- @endblock -->
+<!-- {%/block%} -->
 
-<!-- @block: db-env -->
+<!-- {%block "db-env"%} -->
 ### Environment-Specific Connection Settings
 
-<!-- {{data: webapp.config.db("Environment|DB Host|Notes")}} -->
+<!-- {{data("webapp.config.db", {labels: "Environment|DB Host|Notes"})}} -->
 <!-- {{/data}} -->
-<!-- @endblock -->
+<!-- {%/block%} -->
 
-<!-- @block: er-diagram -->
+<!-- {%block "er-diagram"%} -->
 ### ER Diagram (Key Tables)
 
-<!-- {{data: webapp.models.er}} -->
+<!-- {{data("webapp.models.er")}} -->
 <!-- {{/data}} -->
-<!-- @endblock -->
-<!-- @endblock -->
+<!-- {%/block%} -->
+<!-- {%/block%} -->

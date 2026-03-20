@@ -234,7 +234,7 @@ describe("en templates contain no Japanese", () => {
           const line = lines[i];
           // Skip directive lines (may contain Japanese in data labels of inherited content)
           if (/<!--\s*\{\{/.test(line)) continue;
-          if (/<!--\s*@/.test(line)) continue;
+          if (/<!--\s*\{%/.test(line)) continue;
 
           assert.ok(
             !JAPANESE_RE.test(line),

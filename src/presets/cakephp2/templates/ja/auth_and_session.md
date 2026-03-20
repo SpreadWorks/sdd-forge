@@ -1,6 +1,6 @@
-<!-- @extends -->
+<!-- {%extends%} -->
 
-<!-- @block: login-flow -->
+<!-- {%block "login-flow"%} -->
 ### ログインフロー
 
 ```mermaid
@@ -19,4 +19,4 @@ sequenceDiagram
   AuthComponent-->>AppController: セッション作成
   AppController-->>Browser: リダイレクト
 ```
-<!-- @endblock -->
+<!-- {%/block%} -->

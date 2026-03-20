@@ -1,41 +1,41 @@
-<!-- @extends: layout -->
-<!-- @block: content -->
+<!-- {%extends "layout"%} -->
+<!-- {%block "content"%} -->
 # Configuration and Customization
 
-<!-- @block: description -->
+<!-- {%block "description"%} -->
 ## Description
 
-<!-- {{text: Write a 1-2 sentence overview of this chapter. Include the types of config files, range of configurable items, and customization points.}} -->
+<!-- {{text({prompt: "Write a 1-2 sentence overview of this chapter. Include the types of config files, range of configurable items, and customization points."})}} -->
 <!-- {{/text}} -->
 
 ## Content
-<!-- @endblock -->
+<!-- {%/block%} -->
 
-<!-- @block: config-files -->
+<!-- {%block "config-files"%} -->
 ### Configuration Files
 
-<!-- {{text: List all configuration files this tool reads, including their locations and roles, in table format.}} -->
+<!-- {{text({prompt: "List all configuration files this tool reads, including their locations and roles, in table format."})}} -->
 <!-- {{/text}} -->
-<!-- @endblock -->
+<!-- {%/block%} -->
 
-<!-- @block: config-reference -->
+<!-- {%block "config-reference"%} -->
 ### Configuration Reference
 
-<!-- {{text[mode=deep]: Describe all configuration file fields in table format. Include field name, type, default value, and description.}} -->
+<!-- {{text({prompt: "Describe all configuration file fields in table format. Include field name, type, default value, and description.", mode: "deep"})}} -->
 <!-- {{/text}} -->
-<!-- @endblock -->
+<!-- {%/block%} -->
 
-<!-- @block: customization -->
+<!-- {%block "customization"%} -->
 ### Customization Points
 
-<!-- {{text[mode=deep]: Describe items that users can customize. Include customization examples.}} -->
+<!-- {{text({prompt: "Describe items that users can customize. Include customization examples.", mode: "deep"})}} -->
 <!-- {{/text}} -->
-<!-- @endblock -->
+<!-- {%/block%} -->
 
-<!-- @block: env-vars -->
+<!-- {%block "env-vars"%} -->
 ### Environment Variables
 
-<!-- {{text[mode=deep]: List all environment variables referenced by the tool and their purposes in table format.}} -->
+<!-- {{text({prompt: "List all environment variables referenced by the tool and their purposes in table format.", mode: "deep"})}} -->
 <!-- {{/text}} -->
-<!-- @endblock -->
-<!-- @endblock -->
+<!-- {%/block%} -->
+<!-- {%/block%} -->

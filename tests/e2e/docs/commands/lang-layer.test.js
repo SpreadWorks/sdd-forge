@@ -232,7 +232,7 @@ describe("parent chain: data", () => {
 
     // If no config.stack directive exists yet, add one for testing
     if (!before.includes("config.stack")) {
-      const content = before + '\n<!-- {{data: node-cli.config.stack("Category|Technology|Version")}} -->\nplaceholder\n<!-- {{/data}} -->\n';
+      const content = before + '\n<!-- {{data("node-cli.config.stack", {labels: "Category|Technology|Version"})}} -->\nplaceholder\n<!-- {{/data}} -->\n';
       fs.writeFileSync(stackFile, content);
     }
 
@@ -289,7 +289,7 @@ describe("parent chain: data", () => {
 
     const before = fs.readFileSync(targetFile, "utf8");
     if (!before.includes("config.composer")) {
-      const content = before + '\n<!-- {{data: laravel.config.composer("Package|Version|Description")}} -->\nplaceholder\n<!-- {{/data}} -->\n';
+      const content = before + '\n<!-- {{data("laravel.config.composer", {labels: "Package|Version|Description"})}} -->\nplaceholder\n<!-- {{/data}} -->\n';
       fs.writeFileSync(targetFile, content);
     }
 

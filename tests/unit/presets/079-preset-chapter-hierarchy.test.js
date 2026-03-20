@@ -13,10 +13,10 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const PRESETS_DIR = path.resolve(__dirname, "../../../src/presets");
 
 /**
- * Parse @block names from a template file content.
+ * Parse {%block "name"%} names from a template file content.
  */
 function parseBlockNames(content) {
-  const re = /<!--\s*@block:\s*(\S+)\s*-->/g;
+  const re = /<!--\s*\{%block\s+"([\w-]+)"%\}\s*-->/g;
   const names = [];
   let m;
   while ((m = re.exec(content)) !== null) names.push(m[1]);
@@ -24,12 +24,12 @@ function parseBlockNames(content) {
 }
 
 // ---------------------------------------------------------------------------
-// api parent templates have required @block markers
+// api parent templates have required {%block%} markers
 // ---------------------------------------------------------------------------
 
-describe("api parent templates (@block markers)", () => {
+describe('api parent templates ({%block%} markers)', () => {
   for (const lang of ["en", "ja"]) {
-    it(`api_overview.md (${lang}) has @block: description`, () => {
+    it(`api_overview.md (${lang}) has {%block "description"%}`, () => {
       const file = path.join(
         PRESETS_DIR,
         "api/templates",
@@ -40,11 +40,11 @@ describe("api parent templates (@block markers)", () => {
       const blocks = parseBlockNames(content);
       assert.ok(
         blocks.includes("description"),
-        `expected @block: description in api_overview.md (${lang}), found: ${blocks}`,
+        `expected {%block "description"%} in api_overview.md (${lang}), found: ${blocks}`,
       );
     });
 
-    it(`authentication.md (${lang}) has @block: description`, () => {
+    it(`authentication.md (${lang}) has {%block "description"%}`, () => {
       const file = path.join(
         PRESETS_DIR,
         "api/templates",
@@ -55,24 +55,24 @@ describe("api parent templates (@block markers)", () => {
       const blocks = parseBlockNames(content);
       assert.ok(
         blocks.includes("description"),
-        `expected @block: description in authentication.md (${lang}), found: ${blocks}`,
+        `expected {%block "description"%} in authentication.md (${lang}), found: ${blocks}`,
       );
     });
   }
 });
 
 // ---------------------------------------------------------------------------
-// rest / graphql child templates use @extends
+// rest / graphql child templates use {%extends%}
 // ---------------------------------------------------------------------------
 
-describe("child preset templates use @extends", () => {
+describe("child preset templates use {%extends%}", () => {
   const children = ["rest", "graphql"];
   const sharedChapters = ["api_overview.md", "authentication.md"];
 
   for (const preset of children) {
     for (const chapter of sharedChapters) {
       for (const lang of ["en", "ja"]) {
-        it(`${preset}/${chapter} (${lang}) has @extends directive`, () => {
+        it(`${preset}/${chapter} (${lang}) has {%extends%} directive`, () => {
           const file = path.join(
             PRESETS_DIR,
             preset,
@@ -83,8 +83,8 @@ describe("child preset templates use @extends", () => {
           assert.ok(fs.existsSync(file), `file should exist: ${file}`);
           const content = fs.readFileSync(file, "utf8");
           assert.ok(
-            content.includes("<!-- @extends -->"),
-            `expected <!-- @extends --> in ${preset}/${chapter} (${lang})`,
+            content.includes("{%extends"),
+            `expected {%extends%} in ${preset}/${chapter} (${lang})`,
           );
         });
       }
@@ -93,7 +93,7 @@ describe("child preset templates use @extends", () => {
 });
 
 // ---------------------------------------------------------------------------
-// child @block overrides match parent @block names
+// child {%block%} overrides match parent {%block%} names
 // ---------------------------------------------------------------------------
 
 describe("child overridden blocks exist in parent", () => {
@@ -135,10 +135,10 @@ describe("child overridden blocks exist in parent", () => {
 });
 
 // ---------------------------------------------------------------------------
-// template-merger resolves @extends correctly for rest/graphql
+// template-merger resolves {%extends%} correctly for rest/graphql
 // ---------------------------------------------------------------------------
 
-describe("template-merger resolves api→rest/graphql inheritance", () => {
+describe("template-merger resolves api->rest/graphql inheritance", () => {
   for (const preset of ["rest", "graphql"]) {
     it(`${preset} api_overview.md merges with api parent`, () => {
       const chaptersOrder = resolveChaptersOrder(preset);

@@ -1,33 +1,33 @@
-<!-- @extends: layout -->
-<!-- @block: content -->
+<!-- {%extends "layout"%} -->
+<!-- {%block "content"%} -->
 # CI/CD
 
-<!-- @block: description -->
+<!-- {%block "description"%} -->
 ## Description
 
-<!-- {{text: Write a 1-2 sentence overview of this project's CI/CD setup. Include the platforms used and primary purposes (testing, deployment, etc.).}} -->
+<!-- {{text({prompt: "Write a 1-2 sentence overview of this project's CI/CD setup. Include the platforms used and primary purposes (testing, deployment, etc.)."})}} -->
 <!-- {{/text}} -->
-<!-- @endblock -->
+<!-- {%/block%} -->
 
-<!-- @block: pipelines -->
+<!-- {%block "pipelines"%} -->
 ## Pipelines
 
-<!-- {{data: ci.pipelines.list("Name|File|Triggers|Jobs")}} -->
+<!-- {{data("ci.pipelines.list", {labels: "Name|File|Triggers|Jobs"})}} -->
 <!-- {{/data}} -->
-<!-- @endblock -->
+<!-- {%/block%} -->
 
-<!-- @block: jobs -->
+<!-- {%block "jobs"%} -->
 ## Job Details
 
-<!-- {{data: ci.pipelines.jobs("Pipeline|Job|Runner|Steps|Dependencies")}} -->
+<!-- {{data("ci.pipelines.jobs", {labels: "Pipeline|Job|Runner|Steps|Dependencies"})}} -->
 <!-- {{/data}} -->
-<!-- @endblock -->
+<!-- {%/block%} -->
 
-<!-- @block: env -->
+<!-- {%block "env"%} -->
 ## Secrets & Environment Variables
 
-<!-- {{data: ci.pipelines.env("Pipeline|Secrets|Env Vars")}} -->
+<!-- {{data("ci.pipelines.env", {labels: "Pipeline|Secrets|Env Vars"})}} -->
 <!-- {{/data}} -->
-<!-- @endblock -->
+<!-- {%/block%} -->
 
-<!-- @endblock -->
+<!-- {%/block%} -->

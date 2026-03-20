@@ -1,42 +1,42 @@
-<!-- @extends -->
+<!-- {%extends%} -->
 
-<!-- @block: routing -->
+<!-- {%block "routing"%} -->
 ### Routing Configuration
 
-<!-- {{text[mode=deep]: Describe the Symfony routing approach. Include the roles of #[Route] attributes and config/routes.yaml.}} -->
+<!-- {{text({prompt: "Describe the Symfony routing approach. Include the roles of #[Route] attributes and config/routes.yaml.", mode: "deep"})}} -->
 <!-- {{/text}} -->
 
-<!-- {{data: symfony.routes.list("Method|Path|Controller|Name")}} -->
+<!-- {{data("symfony.routes.list", {labels: "Method|Path|Controller|Name"})}} -->
 <!-- {{/data}} -->
-<!-- @endblock -->
+<!-- {%/block%} -->
 
-<!-- @block: controller-list -->
+<!-- {%block "controller-list"%} -->
 ### Controller List
 
-<!-- {{data: symfony.controllers.list("Controller|File|Primary Responsibility")}} -->
+<!-- {{data("symfony.controllers.list", {labels: "Controller|File|Primary Responsibility"})}} -->
 <!-- {{/data}} -->
 
 ### Controller-Action List
 
-<!-- {{data: symfony.controllers.actions("Controller|Action")}} -->
+<!-- {{data("symfony.controllers.actions", {labels: "Controller|Action"})}} -->
 <!-- {{/data}} -->
-<!-- @endblock -->
+<!-- {%/block%} -->
 
-<!-- @block: controller-deps -->
+<!-- {%block "controller-deps"%} -->
 ### DI Dependencies
 
-<!-- {{data: symfony.controllers.di("Controller|Dependency Service")}} -->
+<!-- {{data("symfony.controllers.di", {labels: "Controller|Dependency Service"})}} -->
 <!-- {{/data}} -->
 
 ### Doctrine Relations
 
-<!-- {{data: symfony.entities.relations("Entity|Relations")}} -->
+<!-- {{data("symfony.entities.relations", {labels: "Entity|Relations"})}} -->
 <!-- {{/data}} -->
-<!-- @endblock -->
+<!-- {%/block%} -->
 
-<!-- @block: components -->
+<!-- {%block "components"%} -->
 ### Console Commands
 
-<!-- {{data: symfony.commands.list("Command|File|Description")}} -->
+<!-- {{data("symfony.commands.list", {labels: "Command|File|Description"})}} -->
 <!-- {{/data}} -->
-<!-- @endblock -->
+<!-- {%/block%} -->

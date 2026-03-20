@@ -25,7 +25,8 @@ function setupProject(tmp, opts = {}) {
 
 // Block data directive helper
 function dataBlock(source, method, labels, placeholder) {
-  return `<!-- {{data: node-cli.${source}.${method}("${labels}")}} -->\n${placeholder}\n<!-- {{/data}} -->`;
+  const labelsOpt = labels ? `, {labels: "${labels}"}` : "";
+  return `<!-- {{data("node-cli.${source}.${method}"${labelsOpt})}} -->\n${placeholder}\n<!-- {{/data}} -->`;
 }
 
 describe("data CLI", () => {
@@ -77,13 +78,13 @@ describe("data CLI", () => {
   it("preserves {{text}} directives (skips them)", () => {
     setup([
       "# Overview", "",
-      "<!-- {{text: Describe the project overview}} -->",
+      '<!-- {{text({prompt: "Describe the project overview"})}} -->',
       "Some placeholder text",
       "<!-- {{/text}} -->", "",
     ].join("\n"));
     runData();
     const content = readDoc();
-    assert.ok(content.includes("{{text:"), "{{text}} directives should be preserved");
+    assert.ok(content.includes("{{text("), "{{text}} directives should be preserved");
     assert.ok(content.includes("{{/text}}"), "Closing tag should be preserved");
   });
 

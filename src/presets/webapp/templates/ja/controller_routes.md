@@ -1,51 +1,51 @@
-<!-- @extends: layout -->
-<!-- @block: content -->
+<!-- {%extends "layout"%} -->
+<!-- {%block "content"%} -->
 # コントローラとルーティング
 
-<!-- @block: description -->
+<!-- {%block "description"%} -->
 ## 説明
 
-<!-- {{text: この章の概要を1〜2文で記述してください。コントローラ総数、ルーティング方式を踏まえること。}} -->
+<!-- {{text({prompt: "この章の概要を1〜2文で記述してください。コントローラ総数、ルーティング方式を踏まえること。"})}} -->
 <!-- {{/text}} -->
 
 ## 内容
-<!-- @endblock -->
+<!-- {%/block%} -->
 
-<!-- @block: routing -->
+<!-- {%block "routing"%} -->
 ### ルーティング設定
 
-<!-- {{text[mode=deep]: ルーティングの設定方式を説明してください。}} -->
+<!-- {{text({prompt: "ルーティングの設定方式を説明してください。", mode: "deep"})}} -->
 <!-- {{/text}} -->
-<!-- @endblock -->
+<!-- {%/block%} -->
 
-<!-- @block: controller-config -->
+<!-- {%block "controller-config"%} -->
 ### 共通設定
 
-<!-- {{data: webapp.config.auth("項目|内容")}} -->
+<!-- {{data("webapp.config.auth", {labels: "項目|内容"})}} -->
 <!-- {{/data}} -->
-<!-- @endblock -->
+<!-- {%/block%} -->
 
-<!-- @block: controller-list -->
+<!-- {%block "controller-list"%} -->
 ### コントローラ一覧
 
-<!-- {{data: webapp.controllers.list("コントローラ名|ファイル|主な責務")}} -->
+<!-- {{data("webapp.controllers.list", {labels: "コントローラ名|ファイル|主な責務"})}} -->
 <!-- {{/data}} -->
-<!-- @endblock -->
+<!-- {%/block%} -->
 
-<!-- @block: controller-deps -->
+<!-- {%block "controller-deps"%} -->
 ### コントローラ–モデル依存関係
 
-<!-- {{text[mode=deep]: コントローラが宣言しているモデル依存の概要を説明してください。}} -->
+<!-- {{text({prompt: "コントローラが宣言しているモデル依存の概要を説明してください。", mode: "deep"})}} -->
 <!-- {{/text}} -->
 
-<!-- {{data: webapp.controllers.deps("コントローラ|使用モデル")}} -->
+<!-- {{data("webapp.controllers.deps", {labels: "コントローラ|使用モデル"})}} -->
 <!-- {{/data}} -->
-<!-- @endblock -->
+<!-- {%/block%} -->
 
-<!-- @block: components -->
+<!-- {%block "components"%} -->
 ### コンポーネント
 
-<!-- {{data: webapp.views.components("コンポーネント|責務")}} -->
+<!-- {{data("webapp.views.components", {labels: "コンポーネント|責務"})}} -->
 <!-- {{/data}} -->
-<!-- @endblock -->
-<!-- @endblock -->
+<!-- {%/block%} -->
+<!-- {%/block%} -->

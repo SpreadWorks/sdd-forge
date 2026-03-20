@@ -1,29 +1,29 @@
-<!-- @extends -->
+<!-- {%extends%} -->
 
-<!-- @block: auth-method -->
+<!-- {%block "auth-method"%} -->
 ### Authentication Method
 
-<!-- {{text[mode=deep]: Describe the Symfony authentication method. Include Security Bundle configuration (config/packages/security.yaml), firewalls, providers, and authenticators.}} -->
+<!-- {{text({prompt: "Describe the Symfony authentication method. Include Security Bundle configuration (config/packages/security.yaml), firewalls, providers, and authenticators.", mode: "deep"})}} -->
 <!-- {{/text}} -->
-<!-- @endblock -->
+<!-- {%/block%} -->
 
-<!-- @block: acl -->
+<!-- {%block "acl"%} -->
 ### Authorization
 
-<!-- {{text[mode=deep]: Describe the overview of access control using voters, security attributes (#[IsGranted]), and role hierarchy.}} -->
+<!-- {{text({prompt: "Describe the overview of access control using voters, security attributes (#[IsGranted]), and role hierarchy.", mode: "deep"})}} -->
 <!-- {{/text}} -->
-<!-- @endblock -->
+<!-- {%/block%} -->
 
-<!-- @block: session -->
+<!-- {%block "session"%} -->
 ### Session Management
 
-<!-- {{text: Describe the session management approach based on the session configuration in config/packages/framework.yaml.}} -->
+<!-- {{text({prompt: "Describe the session management approach based on the session configuration in config/packages/framework.yaml."})}} -->
 <!-- {{/text}} -->
-<!-- @endblock -->
+<!-- {%/block%} -->
 
-<!-- @block: login-flow -->
+<!-- {%block "login-flow"%} -->
 ### Login Flow
 
-<!-- {{text[mode=deep]: Generate a mermaid sequenceDiagram of the login process flow. Output only the mermaid code block.}} -->
+<!-- {{text({prompt: "Generate a mermaid sequenceDiagram of the login process flow. Output only the mermaid code block.", mode: "deep"})}} -->
 <!-- {{/text}} -->
-<!-- @endblock -->
+<!-- {%/block%} -->

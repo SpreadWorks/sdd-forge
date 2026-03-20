@@ -1,11 +1,11 @@
-<!-- @extends -->
+<!-- {%extends%} -->
 
-<!-- @block: tables -->
-<!-- {{data: drizzle.schema.tables("Table|Columns|Description")}} -->
+<!-- {%block "tables"%} -->
+<!-- {{data("drizzle.schema.tables", {labels: "Table|Columns|Description"})}} -->
 <!-- {{/data}} -->
-<!-- @endblock -->
+<!-- {%/block%} -->
 
-<!-- @block: relationships -->
-<!-- {{data: drizzle.schema.relations("From|To|Type|Foreign Key")}} -->
+<!-- {%block "relationships"%} -->
+<!-- {{data("drizzle.schema.relations", {labels: "From|To|Type|Foreign Key"})}} -->
 <!-- {{/data}} -->
-<!-- @endblock -->
+<!-- {%/block%} -->

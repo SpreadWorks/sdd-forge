@@ -1,11 +1,11 @@
-<!-- @extends -->
+<!-- {%extends%} -->
 
-<!-- @block: tables -->
-<!-- {{data: drizzle.schema.tables("テーブル|カラム|説明")}} -->
+<!-- {%block "tables"%} -->
+<!-- {{data("drizzle.schema.tables", {labels: "テーブル|カラム|説明"})}} -->
 <!-- {{/data}} -->
-<!-- @endblock -->
+<!-- {%/block%} -->
 
-<!-- @block: relationships -->
-<!-- {{data: drizzle.schema.relations("元テーブル|先テーブル|種別|外部キー")}} -->
+<!-- {%block "relationships"%} -->
+<!-- {{data("drizzle.schema.relations", {labels: "元テーブル|先テーブル|種別|外部キー"})}} -->
 <!-- {{/data}} -->
-<!-- @endblock -->
+<!-- {%/block%} -->

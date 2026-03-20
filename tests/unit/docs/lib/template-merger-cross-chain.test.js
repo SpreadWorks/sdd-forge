@@ -72,16 +72,16 @@ describe("mergeResolved: additive merge", () => {
   it("concatenates blocks from different chains", () => {
     const baseTemplate = [
       "# API",
-      "<!-- @block: endpoints -->",
+      '<!-- {%block "endpoints"%} -->',
       "Base endpoint content",
-      "<!-- @endblock -->",
+      "<!-- {%/block%} -->",
     ].join("\n");
 
     const addTemplate = [
       "# API",
-      "<!-- @block: endpoints -->",
+      '<!-- {%block "endpoints"%} -->',
       "Additional endpoint content",
-      "<!-- @endblock -->",
+      "<!-- {%/block%} -->",
     ].join("\n");
 
     const sources = [
@@ -97,16 +97,16 @@ describe("mergeResolved: additive merge", () => {
   it("adds blocks from second chain that don't exist in first", () => {
     const baseTemplate = [
       "# Doc",
-      "<!-- @block: section-a -->",
+      '<!-- {%block "section-a"%} -->',
       "Section A",
-      "<!-- @endblock -->",
+      "<!-- {%/block%} -->",
     ].join("\n");
 
     const addTemplate = [
       "# Doc",
-      "<!-- @block: section-b -->",
+      '<!-- {%block "section-b"%} -->',
       "Section B",
-      "<!-- @endblock -->",
+      "<!-- {%/block%} -->",
     ].join("\n");
 
     const sources = [
@@ -122,16 +122,16 @@ describe("mergeResolved: additive merge", () => {
   it("handles non-additive mode as before", () => {
     const parent = [
       "# Title",
-      "<!-- @block: intro -->",
+      '<!-- {%block "intro"%} -->',
       "Parent intro",
-      "<!-- @endblock -->",
+      "<!-- {%/block%} -->",
     ].join("\n");
 
     const child = [
-      "<!-- @extends -->",
-      "<!-- @block: intro -->",
+      "<!-- {%extends%} -->",
+      '<!-- {%block "intro"%} -->',
       "Child intro",
-      "<!-- @endblock -->",
+      "<!-- {%/block%} -->",
     ].join("\n");
 
     const sources = [

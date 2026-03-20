@@ -1,37 +1,37 @@
-<!-- @extends: layout -->
-<!-- @block: content -->
+<!-- {%extends "layout"%} -->
+<!-- {%block "content"%} -->
 # Project Structure
 
-<!-- {{data[ignoreError=true]: monorepo.monorepo.apps("project_structure")}} -->
+<!-- {{data("monorepo.monorepo.apps", {labels: "project_structure", ignoreError: true})}} -->
 <!-- {{/data}} -->
 
-<!-- @block: description -->
+<!-- {%block "description"%} -->
 ## Description
 
-<!-- {{text: Write a 1-2 sentence overview of this chapter. Include the number of major directories and their roles.}} -->
+<!-- {{text({prompt: "Write a 1-2 sentence overview of this chapter. Include the number of major directories and their roles."})}} -->
 <!-- {{/text}} -->
 
 ## Content
-<!-- @endblock -->
+<!-- {%/block%} -->
 
-<!-- @block: directory-tree -->
+<!-- {%block "directory-tree"%} -->
 ### Directory Layout
 
 <!-- {{data: base.structure.tree()}} -->
 <!-- {{/data}} -->
-<!-- @endblock -->
+<!-- {%/block%} -->
 
-<!-- @block: directory-roles -->
+<!-- {%block "directory-roles"%} -->
 ### Directory Responsibilities
 
-<!-- {{data: base.structure.directories("Directory|Files|Role")}} -->
+<!-- {{data("base.structure.directories", {labels: "Directory|Files|Role"})}} -->
 <!-- {{/data}} -->
-<!-- @endblock -->
+<!-- {%/block%} -->
 
-<!-- @block: libraries -->
+<!-- {%block "libraries"%} -->
 ### Shared Libraries
 
-<!-- {{data: base.libs.list("Class|File|Responsibility")}} -->
+<!-- {{data("base.libs.list", {labels: "Class|File|Responsibility"})}} -->
 <!-- {{/data}} -->
-<!-- @endblock -->
-<!-- @endblock -->
+<!-- {%/block%} -->
+<!-- {%/block%} -->

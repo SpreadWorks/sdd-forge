@@ -21,17 +21,21 @@ describe("parseGuardrailArticles", () => {
   // Import after describe so the module is loaded lazily
   let parseGuardrailArticles;
 
-  it("parses ### headings and body text", async () => {
+  it("parses ### headings and body text inside {%guardrail%} blocks", async () => {
     ({ parseGuardrailArticles } = await import("../../../../src/spec/commands/guardrail.js"));
     const text = [
       "# Project Guardrail",
       "",
+      "<!-- {%guardrail {phase: [spec]}%} -->",
       "### No External Dependencies",
       "Use only Node.js built-in modules.",
+      "<!-- {%/guardrail%} -->",
       "",
+      "<!-- {%guardrail {phase: [spec]}%} -->",
       "### REST-First",
       "All APIs must follow REST conventions.",
       "Use proper HTTP methods.",
+      "<!-- {%/guardrail%} -->",
     ].join("\n");
 
     const articles = parseGuardrailArticles(text);
@@ -52,7 +56,15 @@ describe("parseGuardrailArticles", () => {
 
   it("handles article with no body", async () => {
     ({ parseGuardrailArticles } = await import("../../../../src/spec/commands/guardrail.js"));
-    const text = "### Empty Article\n### Next Article\nSome body.\n";
+    const text = [
+      "<!-- {%guardrail {phase: [spec]}%} -->",
+      "### Empty Article",
+      "<!-- {%/guardrail%} -->",
+      "<!-- {%guardrail {phase: [spec]}%} -->",
+      "### Next Article",
+      "Some body.",
+      "<!-- {%/guardrail%} -->",
+    ].join("\n");
     const articles = parseGuardrailArticles(text);
     assert.equal(articles.length, 2);
     assert.equal(articles[0].title, "Empty Article");
@@ -95,7 +107,13 @@ describe("guardrail init CLI", () => {
       type: "node-cli",
       docs: { languages: ["en"], defaultLanguage: "en" },
     });
-    writeFile(tmp, ".sdd-forge/guardrail.md", "# Existing\n### Rule\nDo not change.\n");
+    writeFile(tmp, ".sdd-forge/guardrail.md", [
+      "# Existing",
+      "<!-- {%guardrail {phase: [spec]}%} -->",
+      "### Rule",
+      "Do not change.",
+      "<!-- {%/guardrail%} -->",
+    ].join("\n"));
 
     try {
       execFileSync("node", [GUARDRAIL_CMD, "init"], {
@@ -189,8 +207,10 @@ describe("gate guardrail integration", () => {
     writeFile(tmp, ".sdd-forge/guardrail.md", [
       "# Project Guardrail",
       "",
+      "<!-- {%guardrail {phase: [spec]}%} -->",
       "### No External Dependencies",
       "Use only Node.js built-in modules.",
+      "<!-- {%/guardrail%} -->",
     ].join("\n"));
 
     const result = execFileSync("node", [
@@ -216,8 +236,10 @@ describe("gate guardrail integration", () => {
     writeFile(tmp, ".sdd-forge/guardrail.md", [
       "# Project Guardrail",
       "",
+      "<!-- {%guardrail {phase: [spec]}%} -->",
       "### Rule",
       "Some rule.",
+      "<!-- {%/guardrail%} -->",
     ].join("\n"));
 
     // With --skip-guardrail, gate should pass even though agent would return FAIL
@@ -284,7 +306,7 @@ describe("parseGuardrailResponse", () => {
   });
 
   it("handles en-dash and hyphen separators", () => {
-    const r1 = parseGuardrailResponse("PASS: Rule – reason with en-dash");
+    const r1 = parseGuardrailResponse("PASS: Rule \u2013 reason with en-dash");
     assert.equal(r1.length, 1);
     const r2 = parseGuardrailResponse("FAIL: Rule - reason with hyphen");
     assert.equal(r2.length, 1);
@@ -303,8 +325,8 @@ describe("extractExemptions", () => {
       "## Requirements",
       "- R1: something",
       "## Guardrail Exemptions",
-      "- No Hardcoded Secrets — test fixtures need dummy API keys",
-      "- Single Responsibility — intentionally bundled",
+      "- No Hardcoded Secrets \u2014 test fixtures need dummy API keys",
+      "- Single Responsibility \u2014 intentionally bundled",
       "## Acceptance Criteria",
       "- done",
     ].join("\n");
@@ -337,7 +359,7 @@ describe("buildGuardrailPrompt with exemptions", () => {
   ];
 
   it("excludes exempted articles from prompt", () => {
-    const spec = "## Guardrail Exemptions\n- Rule B — reason\n\n## Requirements\n- R1\n";
+    const spec = "## Guardrail Exemptions\n- Rule B \u2014 reason\n\n## Requirements\n- R1\n";
     const prompt = buildGuardrailPrompt(spec, articles);
     assert.ok(prompt.includes("Rule A"));
     assert.ok(!prompt.includes("**Rule B**"));
@@ -346,13 +368,13 @@ describe("buildGuardrailPrompt with exemptions", () => {
   });
 
   it("returns null when all articles are exempted", () => {
-    const spec = "## Guardrail Exemptions\n- Rule A — r\n- Rule B — r\n- Rule C — r\n";
+    const spec = "## Guardrail Exemptions\n- Rule A \u2014 r\n- Rule B \u2014 r\n- Rule C \u2014 r\n";
     const prompt = buildGuardrailPrompt(spec, articles);
     assert.equal(prompt, null);
   });
 
   it("case-insensitive exemption matching", () => {
-    const spec = "## Guardrail Exemptions\n- rule a — reason\n";
+    const spec = "## Guardrail Exemptions\n- rule a \u2014 reason\n";
     const prompt = buildGuardrailPrompt(spec, articles);
     assert.ok(!prompt.includes("**Rule A**"));
     assert.ok(prompt.includes("Rule B"));

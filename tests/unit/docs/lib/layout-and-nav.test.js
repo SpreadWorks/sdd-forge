@@ -4,16 +4,16 @@ import { parseBlocks } from "../../../../src/docs/lib/directive-parser.js";
 import { mergeResolved } from "../../../../src/docs/lib/template-merger.js";
 
 // ---------------------------------------------------------------------------
-// parseBlocks — @extends: <name> syntax
+// parseBlocks — {%extends "name"%} syntax
 // ---------------------------------------------------------------------------
 
-describe("parseBlocks @extends: <name>", () => {
-  it("parses @extends: layout with target name", () => {
+describe('parseBlocks {%extends "name"%}', () => {
+  it('parses {%extends "layout"%} with target name', () => {
     const text = [
-      "<!-- @extends: layout -->",
-      "<!-- @block: content -->",
+      '<!-- {%extends "layout"%} -->',
+      '<!-- {%block "content"%} -->',
       "chapter body",
-      "<!-- @endblock -->",
+      "<!-- {%/block%} -->",
     ].join("\n");
     const result = parseBlocks(text);
     assert.equal(result.extends, true);
@@ -22,20 +22,20 @@ describe("parseBlocks @extends: <name>", () => {
     assert.deepEqual(result.blocks.get("content").content, ["chapter body"]);
   });
 
-  it("parses plain @extends without target (backward compat)", () => {
+  it("parses plain {%extends%} without target", () => {
     const text = [
-      "<!-- @extends -->",
-      "<!-- @block: main -->",
+      "<!-- {%extends%} -->",
+      '<!-- {%block "main"%} -->',
       "content",
-      "<!-- @endblock -->",
+      "<!-- {%/block%} -->",
     ].join("\n");
     const result = parseBlocks(text);
     assert.equal(result.extends, true);
     assert.equal(result.extendsTarget, null);
   });
 
-  it("parses @extends: with hyphenated name", () => {
-    const text = "<!-- @extends: my-layout -->\n<!-- @block: content -->\nx\n<!-- @endblock -->";
+  it('{%extends%} with hyphenated name', () => {
+    const text = '<!-- {%extends "my-layout"%} -->\n<!-- {%block "content"%} -->\nx\n<!-- {%/block%} -->';
     const result = parseBlocks(text);
     assert.equal(result.extends, true);
     assert.equal(result.extendsTarget, "my-layout");
@@ -47,14 +47,14 @@ describe("parseBlocks @extends: <name>", () => {
 // ---------------------------------------------------------------------------
 
 describe("mergeResolved with layout", () => {
-  it("merges chapter content into layout @block: content", () => {
+  it('merges chapter content into layout {%block "content"%}', () => {
     const layout = {
       path: "base/layout.md",
       content: [
         "HEADER",
-        "<!-- @block: content -->",
+        '<!-- {%block "content"%} -->',
         "default content",
-        "<!-- @endblock -->",
+        "<!-- {%/block%} -->",
         "FOOTER",
       ].join("\n"),
       extends: false,
@@ -62,11 +62,11 @@ describe("mergeResolved with layout", () => {
     const chapter = {
       path: "base/overview.md",
       content: [
-        "<!-- @extends: layout -->",
-        "<!-- @block: content -->",
+        '<!-- {%extends "layout"%} -->',
+        '<!-- {%block "content"%} -->',
         "# Overview",
         "Real chapter content",
-        "<!-- @endblock -->",
+        "<!-- {%/block%} -->",
       ].join("\n"),
       extends: true,
     };

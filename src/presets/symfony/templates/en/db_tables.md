@@ -1,29 +1,29 @@
-<!-- @extends -->
+<!-- {%extends%} -->
 
-<!-- @block: table-list -->
+<!-- {%block "table-list"%} -->
 ### Table List (Extracted from Migrations)
 
-<!-- {{data: symfony.tables.list("Table|Columns|Primary Purpose")}} -->
+<!-- {{data("symfony.tables.list", {labels: "Table|Columns|Primary Purpose"})}} -->
 <!-- {{/data}} -->
-<!-- @endblock -->
+<!-- {%/block%} -->
 
-<!-- @block: entity-columns -->
+<!-- {%block "entity-columns"%} -->
 ### Entity Columns
 
-<!-- {{data: symfony.entities.columns("Entity|Column|Type|NULL|PK")}} -->
+<!-- {{data("symfony.entities.columns", {labels: "Entity|Column|Type|NULL|PK"})}} -->
 <!-- {{/data}} -->
-<!-- @endblock -->
+<!-- {%/block%} -->
 
-<!-- @block: fk -->
+<!-- {%block "fk"%} -->
 ### Foreign Key Relationships (FK)
 
-<!-- {{data: symfony.tables.fk("Table|Column|References")}} -->
+<!-- {{data("symfony.tables.fk", {labels: "Table|Column|References"})}} -->
 <!-- {{/data}} -->
-<!-- @endblock -->
+<!-- {%/block%} -->
 
-<!-- @block: relations -->
+<!-- {%block "relations"%} -->
 ### Doctrine Relations
 
-<!-- {{data: symfony.entities.relations("Entity|Relations")}} -->
+<!-- {{data("symfony.entities.relations", {labels: "Entity|Relations"})}} -->
 <!-- {{/data}} -->
-<!-- @endblock -->
+<!-- {%/block%} -->

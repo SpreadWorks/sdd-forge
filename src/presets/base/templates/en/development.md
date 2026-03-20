@@ -1,44 +1,44 @@
-<!-- @extends: layout -->
-<!-- @block: content -->
+<!-- {%extends "layout"%} -->
+<!-- {%block "content"%} -->
 # Development Guide
 
-<!-- {{data[ignoreError=true]: monorepo.monorepo.apps("development")}} -->
+<!-- {{data("monorepo.monorepo.apps", {labels: "development", ignoreError: true})}} -->
 <!-- {{/data}} -->
 
-<!-- @block: description -->
+<!-- {%block "description"%} -->
 ## Description
 
-<!-- {{text: Write a 1-2 sentence overview of this chapter. Include development environment setup and testing configuration.}} -->
+<!-- {{text({prompt: "Write a 1-2 sentence overview of this chapter. Include development environment setup and testing configuration."})}} -->
 <!-- {{/text}} -->
 
 ## Content
-<!-- @endblock -->
+<!-- {%/block%} -->
 
-<!-- @block: setup -->
+<!-- {%block "setup"%} -->
 ### Environment Setup
 
-<!-- {{text: Describe the local development environment setup procedure.}} -->
+<!-- {{text({prompt: "Describe the local development environment setup procedure."})}} -->
 <!-- {{/text}} -->
-<!-- @endblock -->
+<!-- {%/block%} -->
 
-<!-- @block: dev-workflow -->
+<!-- {%block "dev-workflow"%} -->
 ### Local Development Workflow
 
-<!-- {{text: Describe the local development procedure (start → code → test → verify).}} -->
+<!-- {{text({prompt: "Describe the local development procedure (start → code → test → verify)."})}} -->
 <!-- {{/text}} -->
-<!-- @endblock -->
+<!-- {%/block%} -->
 
-<!-- @block: scripts -->
+<!-- {%block "scripts"%} -->
 ### Available Scripts
 
-<!-- {{data: base.project.scripts("Script|Command")}} -->
+<!-- {{data("base.project.scripts", {labels: "Script|Command"})}} -->
 <!-- {{/data}} -->
-<!-- @endblock -->
+<!-- {%/block%} -->
 
-<!-- @block: testing -->
+<!-- {%block "testing"%} -->
 ### Testing
 
-<!-- {{text: Describe the test framework and how to run tests.}} -->
+<!-- {{text({prompt: "Describe the test framework and how to run tests."})}} -->
 <!-- {{/text}} -->
-<!-- @endblock -->
-<!-- @endblock -->
+<!-- {%/block%} -->
+<!-- {%/block%} -->

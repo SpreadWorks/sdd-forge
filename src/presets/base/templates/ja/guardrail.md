@@ -2,30 +2,37 @@
 
 プロジェクトの不変原則。各条項はすべての spec が遵守すべきルールを定義する。
 
+<!-- {%guardrail {phase: [draft, spec]}%} -->
 ### 単一責任
-<!-- {%meta: {phase: [draft, spec]}%} -->
 各 spec は一つの関心事に対応すること。無関係な変更を一つの仕様にまとめてはならない。
+<!-- {%/guardrail%} -->
 
+<!-- {%guardrail {phase: [draft, spec]}%} -->
 ### 要件の明確性
-<!-- {%meta: {phase: [draft, spec]}%} -->
 要件は曖昧な形容詞（「適切に」「高速に」「簡単に」等）を避け、検証可能な条件で記述すること。
+<!-- {%/guardrail%} -->
 
+<!-- {%guardrail {phase: [draft, spec]}%} -->
 ### 文脈の完全性
-<!-- {%meta: {phase: [draft, spec]}%} -->
 各要件はトリガー条件（When / If）と期待される振る舞い（shall）を対にすること。文脈や期待結果のない要件は不完全である。
+<!-- {%/guardrail%} -->
 
+<!-- {%guardrail {phase: [draft, spec, impl]}%} -->
 ### 機密情報のハードコード禁止
-<!-- {%meta: {phase: [draft, spec, impl]}%} -->
 ソースコードに API キー・パスワード・トークン等の機密情報を直接記述してはならない。環境変数や設定ファイルで外部化すること。
+<!-- {%/guardrail%} -->
 
+<!-- {%guardrail {phase: [spec, impl]}%} -->
 ### エラーの黙殺禁止
-<!-- {%meta: {phase: [spec, impl]}%} -->
 空の catch ブロックやエラーを握りつぶす実装を禁止する。エラーはログ出力またはリスローすること。
+<!-- {%/guardrail%} -->
 
+<!-- {%guardrail {phase: [draft, spec]}%} -->
 ### 要件の優先順位
-<!-- {%meta: {phase: [draft, spec]}%} -->
 要件が3つを超える場合、優先順位を明示すること。スコープの肥大化を防ぎ、重要な項目から対応するため。
+<!-- {%/guardrail%} -->
 
+<!-- {%guardrail {phase: [draft, spec]}%} -->
 ### 既存機能への影響
-<!-- {%meta: {phase: [draft, spec]}%} -->
 変更が既存機能に与える影響を列挙すること。影響がない場合はその旨を明示すること。
+<!-- {%/guardrail%} -->

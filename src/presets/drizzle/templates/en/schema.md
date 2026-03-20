@@ -2,19 +2,19 @@
 
 ## Description
 
-<!-- {{text: Describe the ORM schema organization, including the number of tables and relationship patterns.}} -->
+<!-- {{text({prompt: "Describe the ORM schema organization, including the number of tables and relationship patterns."})}} -->
 <!-- {{/text}} -->
 
-<!-- @block: schema-files -->
+<!-- {%block "schema-files"%} -->
 ## Schema Files
 
-<!-- {{data: drizzle.schema.files("File|Tables|Description")}} -->
+<!-- {{data("drizzle.schema.files", {labels: "File|Tables|Description"})}} -->
 <!-- {{/data}} -->
-<!-- @endblock -->
+<!-- {%/block%} -->
 
-<!-- @block: migrations -->
+<!-- {%block "migrations"%} -->
 ## Migrations
 
-<!-- {{text: Describe the migration strategy, including how migrations are generated and applied.}} -->
+<!-- {{text({prompt: "Describe the migration strategy, including how migrations are generated and applied."})}} -->
 <!-- {{/text}} -->
-<!-- @endblock -->
+<!-- {%/block%} -->

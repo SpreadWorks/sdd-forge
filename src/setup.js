@@ -146,16 +146,16 @@ function registerProject(projectName, sourcePath, workRootPath, t) {
 function buildAgentContent(lang) {
   const sddContent = loadSddTemplate(lang);
   const lines = [];
-  lines.push('<!-- {{data: agents.sdd}} -->');
+  lines.push('<!-- {{data("agents.sdd")}} -->');
   if (sddContent) lines.push(sddContent.trimEnd());
   lines.push('<!-- {{/data}} -->');
   lines.push('');
-  lines.push('<!-- {{data: agents.project}} -->');
+  lines.push('<!-- {{data("agents.project")}} -->');
   lines.push('<!-- {{/data}} -->');
   return lines.join("\n");
 }
 
-const SDD_DIRECTIVE_RE = /<!-- \{\{data: agents\.sdd(?:\(""\))?\}\} -->[\s\S]*?<!-- \{\{\/data\}\} -->/;
+const SDD_DIRECTIVE_RE = /<!-- \{\{data\("agents\.sdd"\)\}\} -->[\s\S]*?<!-- \{\{\/data\}\} -->/;
 
 function ensureAgentConfigFile(filePath, lang, t) {
   const fileName = path.basename(filePath);

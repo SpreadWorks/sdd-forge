@@ -2,26 +2,26 @@
 
 ## Description
 
-<!-- {{text: Describe the page/routing architecture. Identify whether App Router, Pages Router, or both are used.}} -->
+<!-- {{text({prompt: "Describe the page/routing architecture. Identify whether App Router, Pages Router, or both are used."})}} -->
 <!-- {{/text}} -->
 
-<!-- @block: app-router -->
+<!-- {%block "app-router"%} -->
 ## App Router
 
-<!-- {{data: nextjs.routes.app("Path|Type|File|Description")}} -->
+<!-- {{data("nextjs.routes.app", {labels: "Path|Type|File|Description"})}} -->
 <!-- {{/data}} -->
-<!-- @endblock -->
+<!-- {%/block%} -->
 
-<!-- @block: pages-router -->
+<!-- {%block "pages-router"%} -->
 ## Pages Router
 
-<!-- {{data: nextjs.routes.pages("Page|Data Fetching|Description")}} -->
+<!-- {{data("nextjs.routes.pages", {labels: "Page|Data Fetching|Description"})}} -->
 <!-- {{/data}} -->
-<!-- @endblock -->
+<!-- {%/block%} -->
 
-<!-- @block: dynamic-routes -->
+<!-- {%block "dynamic-routes"%} -->
 ## Dynamic Routes
 
-<!-- {{data: nextjs.routes.dynamic("Pattern|Parameters|Description")}} -->
+<!-- {{data("nextjs.routes.dynamic", {labels: "Pattern|Parameters|Description"})}} -->
 <!-- {{/data}} -->
-<!-- @endblock -->
+<!-- {%/block%} -->

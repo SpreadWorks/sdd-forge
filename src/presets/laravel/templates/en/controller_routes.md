@@ -1,44 +1,44 @@
-<!-- @extends -->
+<!-- {%extends%} -->
 
-<!-- @block: routing -->
+<!-- {%block "routing"%} -->
 ### Routing Configuration
 
-<!-- {{text[mode=deep]: Describe the Laravel routing approach. Include the roles of routes/web.php and routes/api.php.}} -->
+<!-- {{text({prompt: "Describe the Laravel routing approach. Include the roles of routes/web.php and routes/api.php.", mode: "deep"})}} -->
 <!-- {{/text}} -->
 
-<!-- {{data: laravel.routes.list("Method|URI|Controller|Action")}} -->
+<!-- {{data("laravel.routes.list", {labels: "Method|URI|Controller|Action"})}} -->
 <!-- {{/data}} -->
-<!-- @endblock -->
+<!-- {%/block%} -->
 
-<!-- @block: controller-config -->
+<!-- {%block "controller-config"%} -->
 ### Middleware
 
-<!-- {{data: laravel.controllers.middleware("Middleware|Applied Controllers")}} -->
+<!-- {{data("laravel.controllers.middleware", {labels: "Middleware|Applied Controllers"})}} -->
 <!-- {{/data}} -->
-<!-- @endblock -->
+<!-- {%/block%} -->
 
-<!-- @block: controller-list -->
+<!-- {%block "controller-list"%} -->
 ### Controller List
 
-<!-- {{data: laravel.controllers.list("Controller|File|Primary Responsibility")}} -->
+<!-- {{data("laravel.controllers.list", {labels: "Controller|File|Primary Responsibility"})}} -->
 <!-- {{/data}} -->
 
 ### Controller-Action List
 
-<!-- {{data: laravel.controllers.actions("Controller|Action")}} -->
+<!-- {{data("laravel.controllers.actions", {labels: "Controller|Action"})}} -->
 <!-- {{/data}} -->
-<!-- @endblock -->
+<!-- {%/block%} -->
 
-<!-- @block: controller-deps -->
+<!-- {%block "controller-deps"%} -->
 ### Eloquent Relations
 
-<!-- {{data: laravel.models.relations("Model|Relations")}} -->
+<!-- {{data("laravel.models.relations", {labels: "Model|Relations"})}} -->
 <!-- {{/data}} -->
-<!-- @endblock -->
+<!-- {%/block%} -->
 
-<!-- @block: components -->
+<!-- {%block "components"%} -->
 ### Artisan Commands
 
-<!-- {{data: laravel.commands.list("Command|File|Description")}} -->
+<!-- {{data("laravel.commands.list", {labels: "Command|File|Description"})}} -->
 <!-- {{/data}} -->
-<!-- @endblock -->
+<!-- {%/block%} -->
