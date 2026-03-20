@@ -10,9 +10,9 @@ import path from "path";
 import { runIfDirect } from "../../lib/entrypoint.js";
 import { repoRoot, parseArgs } from "../../lib/cli.js";
 import { translate } from "../../lib/i18n.js";
-import { loadConfig, sddDir } from "../../lib/config.js";
+import { loadConfig } from "../../lib/config.js";
 import { callAgent, resolveAgent } from "../../lib/agent.js";
-import { parseGuardrailArticles, filterByPhase } from "./guardrail.js";
+import { filterByPhase, loadMergedArticles } from "./guardrail.js";
 import { loadFlowState, updateStepStatus } from "../../lib/flow-state.js";
 
 /**
@@ -203,15 +203,9 @@ function parseGuardrailResponse(response) {
  *   null if skipped (no guardrail, no agent)
  */
 function checkGuardrail(root, specText, t) {
-  const guardrailPath = path.join(sddDir(root), "guardrail.md");
-  if (!fs.existsSync(guardrailPath)) {
-    console.error(t("messages:gate.guardrailWarn"));
-    return null;
-  }
-
-  const guardrailText = fs.readFileSync(guardrailPath, "utf8");
-  const articles = parseGuardrailArticles(guardrailText);
+  const articles = loadMergedArticles(root);
   if (articles.length === 0) {
+    console.error(t("messages:gate.guardrailWarn"));
     return null;
   }
 

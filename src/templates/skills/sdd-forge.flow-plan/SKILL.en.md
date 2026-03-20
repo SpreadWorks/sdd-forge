@@ -108,7 +108,9 @@ Present choices in the following format:
    - **Before starting draft discussion**:
      1. Check docs freshness: compare mtime of `docs/*.md` vs source files.
         If source is newer, suggest `sdd-forge build` to the user and wait for approval.
-     2. Read relevant `docs/` chapters based on the user's request keywords.
+     2. Load guardrail articles for the draft phase: `sdd-forge spec guardrail show --phase draft`.
+        If output is non-empty, consider these principles as constraints when asking questions and making proposals.
+     3. Read relevant `docs/` chapters based on the user's request keywords.
         Use chapter titles and AGENTS.md structure to identify related files.
         This provides project context that improves question quality and draft accuracy.
    - Create `specs/NNN-xxx/draft.md` in the spec directory created in step 3.
@@ -254,6 +256,7 @@ Record clarifications in `spec.md` under `## Clarifications (Q&A)` and `## Open 
 sdd-forge spec init --title "<short-title>" --base <branch>
 sdd-forge spec init --title "<short-title>" --no-branch
 sdd-forge spec init --title "<short-title>" --base <branch> --worktree
+sdd-forge spec guardrail show --phase <draft|spec|impl|lint>
 sdd-forge spec gate --spec specs/NNN-xxx/spec.md
 sdd-forge flow status
 sdd-forge flow status --step <id> --status <val>

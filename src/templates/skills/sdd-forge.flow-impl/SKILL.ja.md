@@ -52,6 +52,8 @@ Before starting, run `sdd-forge flow status --check impl` to verify prerequisite
 1. Implement changes.
    - **On start**: `sdd-forge flow status --step implement --status in_progress`
    - Read the spec to understand requirements.
+   - Load guardrail articles for the implementation phase: `sdd-forge spec guardrail show --phase impl`.
+     If output is non-empty, follow these principles during implementation.
    - Code only after confirming gate PASS and test phase completion.
    - Aim to make tests pass.
    - **Update requirements as you go**: `sdd-forge flow status --req <index> --status done` for each completed requirement.
@@ -146,6 +148,7 @@ When `worktree: true` in flow.json:
 ## Commands
 
 ```bash
+sdd-forge spec guardrail show --phase <draft|spec|impl|lint>
 sdd-forge flow status
 sdd-forge flow status --check impl
 sdd-forge flow status --step <id> --status <val>

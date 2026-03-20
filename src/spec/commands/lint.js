@@ -10,9 +10,8 @@ import fs from "fs";
 import path from "path";
 import { runIfDirect } from "../../lib/entrypoint.js";
 import { repoRoot, parseArgs } from "../../lib/cli.js";
-import { sddDir } from "../../lib/config.js";
 import { runSync } from "../../lib/process.js";
-import { parseGuardrailArticles, filterByPhase, matchScope } from "./guardrail.js";
+import { filterByPhase, matchScope, loadMergedArticles } from "./guardrail.js";
 
 /**
  * Validate lint articles for misconfiguration.
@@ -114,15 +113,12 @@ function main() {
     throw new Error("--base is required");
   }
 
-  // Load guardrail
-  const guardrailPath = path.join(sddDir(root), "guardrail.md");
-  if (!fs.existsSync(guardrailPath)) {
-    console.log("lint: no guardrail.md found, skipping.");
+  // Load merged guardrail (preset chain + project)
+  const allArticles = loadMergedArticles(root);
+  if (allArticles.length === 0) {
+    console.log("lint: no guardrail articles found, skipping.");
     return;
   }
-
-  const guardrailText = fs.readFileSync(guardrailPath, "utf8");
-  const allArticles = parseGuardrailArticles(guardrailText);
 
   // Validate and warn
   const warnings = validateLintArticles(allArticles);

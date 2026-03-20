@@ -11,8 +11,8 @@ import path from "path";
 import { runIfDirect } from "../../lib/entrypoint.js";
 import { repoRoot, parseArgs } from "../../lib/cli.js";
 import { translate } from "../../lib/i18n.js";
-import { loadConfig, sddDir, sddConfigPath } from "../../lib/config.js";
-import { PRESETS_DIR, presetByLeaf, resolveChainSafe } from "../../lib/presets.js";
+import { loadConfig, sddDir } from "../../lib/config.js";
+import { resolveChainSafe } from "../../lib/presets.js";
 import { callAgent } from "../../lib/agent.js";
 import { patternToRegex } from "../../docs/lib/scanner.js";
 
@@ -154,56 +154,158 @@ export function matchScope(filePath, scope) {
 }
 
 /**
- * Build template layers for guardrail using parent chain, read and merge.
+ * Resolve guardrail context (lang, presetKey) from config.
+ *
+ * @param {string} root - project root
+ * @returns {{ lang: string, presetKey: string }}
+ */
+function resolveGuardrailContext(root) {
+  let lang = "en";
+  let presetKey = "base";
+  try {
+    const config = loadConfig(root);
+    lang = config.lang || config.docs?.defaultLanguage || "en";
+    if (config.type) presetKey = Array.isArray(config.type) ? config.type[0] : config.type;
+  } catch (_) {
+    // No config — use defaults
+  }
+  return { lang, presetKey };
+}
+
+/**
+ * Read a guardrail template file with lang → en fallback.
+ *
+ * @param {string} dir - Preset directory
+ * @param {string} lang - Locale code
+ * @returns {string|null} File content or null
+ */
+function readWithFallback(dir, lang) {
+  const primary = path.join(dir, "templates", lang, GUARDRAIL_FILENAME);
+  if (fs.existsSync(primary)) return fs.readFileSync(primary, "utf8");
+  if (lang !== "en") {
+    const fallback = path.join(dir, "templates", "en", GUARDRAIL_FILENAME);
+    if (fs.existsSync(fallback)) return fs.readFileSync(fallback, "utf8");
+  }
+  return null;
+}
+
+/**
+ * Serialize an article back to markdown, preserving metadata.
+ *
+ * @param {{ title: string, body: string, meta: Object }} article
+ * @returns {string}
+ */
+function serializeArticle(a) {
+  const parts = [`### ${a.title}`];
+  if (a.meta) {
+    const fields = [];
+    if (a.meta.phase) fields.push(`phase: [${a.meta.phase.join(", ")}]`);
+    if (a.meta.scope) fields.push(`scope: [${a.meta.scope.join(", ")}]`);
+    if (a.meta.lint) fields.push(`lint: ${a.meta.lint.toString()}`);
+    if (fields.length > 0) {
+      parts.push(`<!-- {%meta: {${fields.join(", ")}}%} -->`);
+    }
+  }
+  parts.push(a.body.trim());
+  return parts.join("\n");
+}
+
+/**
+ * Build template text for guardrail using parent chain, read and merge.
+ * Used by `guardrail init` to create `.sdd-forge/guardrail.md`.
  *
  * @param {string} presetKey - Preset name (e.g. "cakephp2", "webapp")
  * @param {string} lang - Locale code
  * @returns {string} Merged guardrail template content
  */
 function loadGuardrailTemplate(presetKey, lang) {
-  /**
-   * Resolve a single template file with lang → en fallback.
-   * Returns file content or null.
-   */
-  function readWithFallback(dir) {
-    const primary = path.join(dir, "templates", lang, GUARDRAIL_FILENAME);
-    if (fs.existsSync(primary)) return fs.readFileSync(primary, "utf8");
-    if (lang !== "en") {
-      const fallback = path.join(dir, "templates", "en", GUARDRAIL_FILENAME);
-      if (fs.existsSync(fallback)) return fs.readFileSync(fallback, "utf8");
-    }
-    return null;
-  }
-
-  // Resolve parent chain (root → leaf)
   const chain = resolveChainSafe(presetKey);
-
-  // base (first in chain, lowest priority)
   const basePreset = chain.find((p) => p.key === "base");
-  const baseContent = basePreset ? readWithFallback(basePreset.dir) : "";
+  const baseContent = basePreset ? readWithFallback(basePreset.dir, lang) : "";
   if (!baseContent) return "";
 
-  // Collect articles from non-base presets in parent chain order
-  const extraSections = [];
+  // Collect articles from non-base presets, preserving metadata
+  const extraArticles = [];
+  for (const preset of chain) {
+    if (preset.key === "base") continue;
+    const content = readWithFallback(preset.dir, lang);
+    if (!content) continue;
+    extraArticles.push(...parseGuardrailArticles(content));
+  }
 
-  function appendArticlesFrom(dir) {
-    const content = readWithFallback(dir);
-    if (!content) return;
-    const articles = parseGuardrailArticles(content);
-    for (const a of articles) {
-      extraSections.push(`### ${a.title}\n${a.body}`);
+  if (extraArticles.length > 0) {
+    const serialized = extraArticles.map(serializeArticle).join("\n\n");
+    return baseContent.trimEnd() + "\n\n" + serialized.trimEnd() + "\n";
+  }
+  return baseContent;
+}
+
+/**
+ * Load all guardrail articles from preset chain as parsed objects.
+ *
+ * @param {string} presetKey - Preset name
+ * @param {string} lang - Locale code
+ * @returns {{ title: string, body: string, meta: Object }[]}
+ */
+function loadPresetArticles(presetKey, lang) {
+  const chain = resolveChainSafe(presetKey);
+  const articles = [];
+  for (const preset of chain) {
+    const content = readWithFallback(preset.dir, lang);
+    if (!content) continue;
+    articles.push(...parseGuardrailArticles(content));
+  }
+  return articles;
+}
+
+/**
+ * Load and merge all guardrail articles from preset chain + project guardrail.
+ * Used by `guardrail show`, `gate.js`, and `lint.js` for a unified loading pipeline.
+ *
+ * @param {string} root - project root
+ * @returns {{ title: string, body: string, meta: Object }[]} merged articles
+ */
+export function loadMergedArticles(root) {
+  const { lang, presetKey } = resolveGuardrailContext(root);
+
+  // 1. Collect articles from preset chain (object-based, preserves metadata)
+  const articles = loadPresetArticles(presetKey, lang);
+
+  // 2. Append articles from project guardrail (.sdd-forge/guardrail.md)
+  const projectPath = path.join(sddDir(root), GUARDRAIL_FILENAME);
+  if (fs.existsSync(projectPath)) {
+    const projectText = fs.readFileSync(projectPath, "utf8");
+    const projectArticles = parseGuardrailArticles(projectText);
+    const existingTitles = new Set(articles.map((a) => a.title.toLowerCase()));
+    for (const a of projectArticles) {
+      if (!existingTitles.has(a.title.toLowerCase())) {
+        articles.push(a);
+      }
     }
   }
 
-  for (const preset of chain) {
-    if (preset.key === "base") continue;
-    appendArticlesFrom(preset.dir);
+  return articles;
+}
+
+function runShow(root, cli) {
+  if (!cli.phase) {
+    console.error("--phase is required for show");
+    process.exit(1);
   }
 
-  if (extraSections.length > 0) {
-    return baseContent.trimEnd() + "\n\n" + extraSections.join("\n\n").trimEnd() + "\n";
-  }
-  return baseContent;
+  const articles = loadMergedArticles(root);
+  const filtered = filterByPhase(articles, cli.phase);
+
+  if (filtered.length === 0) return;
+
+  const output = filtered.map((a) => {
+    const metaLine = a.meta
+      ? `<!-- {%meta: {phase: [${a.meta.phase.join(", ")}]}%} -->\n`
+      : "";
+    return `### ${a.title}\n${metaLine}${a.body.trim()}`;
+  }).join("\n\n");
+
+  console.log(output);
 }
 
 function runInit(root, cli) {
@@ -215,18 +317,8 @@ function runInit(root, cli) {
     process.exit(1);
   }
 
-  // Load config to determine type and lang
-  let lang = "en";
-  let typePath = "base";
-  try {
-    const config = loadConfig(root);
-    lang = config.lang || config.docs?.defaultLanguage || "en";
-    if (config.type) typePath = Array.isArray(config.type) ? config.type[0] : config.type;
-  } catch (_) {
-    // No config — use defaults
-  }
-
-  const content = loadGuardrailTemplate(typePath, lang);
+  const { lang, presetKey } = resolveGuardrailContext(root);
+  const content = loadGuardrailTemplate(presetKey, lang);
   if (!content) {
     console.error(t("messages:guardrail.noTemplate"));
     process.exit(1);
@@ -312,7 +404,13 @@ function main() {
   const subCmd = process.argv[2];
   const argv = process.argv.slice(3);
 
-  if (subCmd === "init") {
+  if (subCmd === "show") {
+    const cli = parseArgs(argv, {
+      options: ["--phase"],
+      defaults: { phase: "" },
+    });
+    runShow(root, cli);
+  } else if (subCmd === "init") {
     const cli = parseArgs(argv, {
       flags: ["--dry-run", "--force"],
       defaults: { dryRun: false, force: false },
