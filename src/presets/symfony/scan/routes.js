@@ -7,6 +7,7 @@
 import fs from "fs";
 import path from "path";
 import { findFiles } from "../../../docs/lib/scanner.js";
+import { findMethodsWithAttributes } from "./php-attributes.js";
 
 /**
  * @param {string} sourceRoot - プロジェクトルート
@@ -168,14 +169,11 @@ function extractAttributeRoutes(content) {
   const classMatch = content.match(/class\s+(\w+)/);
   const controllerName = classMatch ? classMatch[1] : "";
 
-  // メソッドレベル #[Route]
-  const methodBlockRegex = /((?:\s*#\[(?:[^\[\]]|\[[^\]]*\])*\]\s*)*)\s*public\s+function\s+(\w+)\s*\(/g;
-  let m;
-  while ((m = methodBlockRegex.exec(content)) !== null) {
-    const methodName = m[2];
+  // Two-step approach to avoid catastrophic backtracking (Issue #1)
+  const methodMatches = findMethodsWithAttributes(content);
+  for (const { methodName, attrBlock } of methodMatches) {
     if (methodName === "__construct" || methodName.startsWith("_")) continue;
 
-    const attrBlock = m[1] || "";
     const routeAttrRegex = /#\[Route\s*\(\s*['"]([^'"]*)['"]\s*(?:,\s*(?:name:\s*['"]([^'"]*)['"]\s*)?(?:,?\s*methods:\s*\[([^\]]*)\])?)?\s*\)/g;
     let rm;
     while ((rm = routeAttrRegex.exec(attrBlock)) !== null) {

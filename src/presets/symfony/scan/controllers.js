@@ -7,6 +7,7 @@
 import fs from "fs";
 import path from "path";
 import { findFiles } from "../../../docs/lib/scanner.js";
+import { findMethodsWithAttributes } from "./php-attributes.js";
 
 /**
  * コントローラディレクトリを再帰的に走査し、コントローラ情報を返す。
@@ -41,15 +42,12 @@ function parseController(filePath, relPath) {
   const classRoutePrefix = classRouteMatch ? classRouteMatch[1] : "";
 
   // public メソッド（アクション）と #[Route] attributes
+  // Two-step approach to avoid catastrophic backtracking (Issue #1)
   const actions = [];
-  // メソッド定義の前に #[Route(...)] がある場合を検出
-  const methodBlockRegex = /((?:\s*#\[(?:[^\[\]]|\[[^\]]*\])*\]\s*)*)\s*public\s+function\s+(\w+)\s*\(/g;
-  let m;
-  while ((m = methodBlockRegex.exec(content)) !== null) {
-    const methodName = m[2];
+  const methodMatches = findMethodsWithAttributes(content);
+  for (const { methodName, attrBlock } of methodMatches) {
     if (methodName === "__construct" || methodName.startsWith("_")) continue;
 
-    const attrBlock = m[1] || "";
     const routes = [];
 
     // #[Route('/path', name: 'name', methods: ['GET'])]
