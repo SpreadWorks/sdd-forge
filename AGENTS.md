@@ -30,6 +30,21 @@
 
 <!-- {{/data}} -->
 
+## タスク管理
+
+- GitHub Projects (Private) でタスク管理: プロジェクト番号 3、オーナー SpreadWorks
+- 追加: `gh project item-create 3 --owner SpreadWorks --title "..." --body "..."`
+- 一覧: `gh project item-list 3 --owner SpreadWorks`
+- ユーザーが「ボードに追加」「タスク化」「メモしておいて」等と言ったら Draft issue を日本語で作成する
+- アイデア・リサーチメモ → status を「Ideas」に設定
+- 実装タスク・バグ → status を「Todo」に設定
+- ステータス変更は `gh project item-edit` で行う（「○○を in progress にして」「○○を done にして」）
+- アイテムの特定はタイトルの一部で行う（例:「B2」「symfony のバグ」）
+- 「○○を issue にして」と言われたら、Draft の内容を英語に翻訳して `gh issue create` で Issue を作成する
+  - リポジトリは public のため Issue は英語で書く
+  - 適切なラベル（bug / enhancement / documentation 等）を付ける
+  - プロジェクトに紐付ける: `--project "sdd-forge"`
+
 ## 設計思想
 
 - **構成の安定性** — `{{text}}` ディレクティブが「どこに何を書くか」を定義する。AI は枠内で書き、段落構成を変えない。
