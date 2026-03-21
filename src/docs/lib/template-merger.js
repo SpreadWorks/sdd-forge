@@ -525,16 +525,23 @@ function mergeTexts(parentText, childText) {
   // preamble: 親を使用（子のpreambleは @extends 行のみのことが多い）
   resultLines.push(...parent.preamble);
 
+  // ネストブロック名を収集（他ブロックの content 内に出現するブロック）
+  // これらは expandBlockContent で展開されるため、個別出力をスキップする
+  const nestedInMerged = collectNestedBlockNames(merged);
+
   // ブロック: 親のブロック順に走査し、子のオーバーライドを適用
-  for (const [name, parentBlock] of parent.blocks) {
+  // ネストブロックは親ブロック展開時に expandBlockContent で出力済みなのでスキップ
+  for (const [name] of parent.blocks) {
+    if (nestedInMerged.has(name)) continue;
     resultLines.push(`<!-- {%block "${name}"%} -->`);
     expandBlockContent(merged.get(name).content, merged, resultLines);
     resultLines.push("<!-- {%/block%} -->");
   }
 
   // 子にのみ存在するブロック（親にないもの）を追加
+  // ネストブロックは既に展開済みなのでスキップ
   for (const [name] of child.blocks) {
-    if (!parent.blocks.has(name)) {
+    if (!parent.blocks.has(name) && !nestedInMerged.has(name)) {
       resultLines.push(`<!-- {%block "${name}"%} -->`);
       expandBlockContent(merged.get(name).content, merged, resultLines);
       resultLines.push("<!-- {%/block%} -->");
@@ -545,6 +552,21 @@ function mergeTexts(parentText, childText) {
   resultLines.push(...parent.postamble);
 
   return resultLines.join("\n");
+}
+
+/**
+ * マージ済みブロック群の content 内に出現するネストブロック名を再帰的に収集する。
+ * これらは expandBlockContent で既に展開されるため、第2ループでの重複追加を防ぐ。
+ */
+function collectNestedBlockNames(blocks) {
+  const nested = new Set();
+  for (const [, block] of blocks) {
+    for (const line of block.content) {
+      const m = line.trim().match(BLOCK_START_RE);
+      if (m) nested.add(m[1]);
+    }
+  }
+  return nested;
 }
 
 /**
