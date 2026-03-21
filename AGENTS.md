@@ -44,6 +44,7 @@
   - リポジトリは public のため Issue は英語で書く
   - 適切なラベル（bug / enhancement / documentation 等）を付ける
   - プロジェクトに紐付ける: `--project "sdd-forge"`
+  - **MUST: Issue 作成時、ボード上の Draft アイテムのタイトルは日本語のまま保持すること。英語に変更してはならない。**
 
 ## 設計思想
 
