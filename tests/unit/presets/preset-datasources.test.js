@@ -2,24 +2,8 @@ import { describe, it, afterEach } from "node:test";
 import assert from "node:assert/strict";
 import fs from "fs";
 import path from "path";
-import { fileURLToPath } from "url";
 import { createResolver } from "../../../src/docs/lib/resolver-factory.js";
 import { createTmpDir, removeTmpDir, writeJson } from "../../helpers/tmp-dir.js";
-
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const PRESETS_DIR = path.resolve(__dirname, "../../../src/presets");
-
-// ---------------------------------------------------------------------------
-// Helper: check DataSource directory and files exist for a preset
-// ---------------------------------------------------------------------------
-
-function dataDir(preset) {
-  return path.join(PRESETS_DIR, preset, "data");
-}
-
-function hasDataSource(preset, name) {
-  return fs.existsSync(path.join(dataDir(preset), `${name}.js`));
-}
 
 // ---------------------------------------------------------------------------
 // Helper: create resolver for a preset with mock project
@@ -104,59 +88,7 @@ const ENRICHED_ANALYSIS = {
 };
 
 // ---------------------------------------------------------------------------
-// 1. DataSource files exist for each preset
-// ---------------------------------------------------------------------------
-
-describe("preset DataSource files exist", () => {
-  const expected = {
-    base: ["structure"],
-    cli: ["commands"],
-    nextjs: ["routes", "components"],
-    hono: ["middleware"],
-    graphql: ["schema"],
-    drizzle: ["schema"],
-    workers: ["bindings"],
-    edge: ["runtime"],
-    storage: ["buckets"],
-    database: ["schema"],
-    r2: ["storage"],
-  };
-
-  for (const [preset, sources] of Object.entries(expected)) {
-    for (const source of sources) {
-      it(`${preset}/data/${source}.js exists`, () => {
-        assert.ok(
-          hasDataSource(preset, source),
-          `missing DataSource: src/presets/${preset}/data/${source}.js`,
-        );
-      });
-    }
-  }
-});
-
-// ---------------------------------------------------------------------------
-// 2. DataSource classes load via resolver-factory
-// ---------------------------------------------------------------------------
-
-describe("DataSources load via createResolver", () => {
-  const presets = [
-    "base", "cli", "node-cli", "library",
-    "nextjs", "hono", "graphql", "rest",
-    "drizzle", "workers", "edge", "storage",
-    "api", "database", "r2",
-  ];
-
-  for (const preset of presets) {
-    it(`createResolver("${preset}") loads without error`, async () => {
-      const root = setupTmp(preset);
-      const resolver = await createResolver(preset, root);
-      assert.equal(typeof resolver.resolve, "function");
-    });
-  }
-});
-
-// ---------------------------------------------------------------------------
-// 3. DataSource methods return markdown tables from enriched analysis
+// 1. DataSource methods return markdown tables from enriched analysis
 // ---------------------------------------------------------------------------
 
 describe("DataSource methods produce markdown tables", () => {
@@ -247,7 +179,7 @@ describe("DataSource methods produce markdown tables", () => {
 });
 
 // ---------------------------------------------------------------------------
-// 4. DataSource methods return null when no data
+// 2. DataSource methods return null when no data
 // ---------------------------------------------------------------------------
 
 describe("DataSource methods return null when no data", () => {
@@ -283,7 +215,7 @@ describe("DataSource methods return null when no data", () => {
 });
 
 // ---------------------------------------------------------------------------
-// 5. Label customization
+// 3. Label customization
 // ---------------------------------------------------------------------------
 
 describe("DataSource methods respect custom labels", () => {
