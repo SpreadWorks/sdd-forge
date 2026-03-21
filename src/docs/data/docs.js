@@ -187,9 +187,11 @@ export default class DocsSource extends DataSource {
         if (/^## (Description|説明|概要)/.test(line)) { inDesc = true; continue; }
         if (inDesc && /^## /.test(line)) break;
         if (inDesc) {
-          if (/<!--\s*\{\{(text|data)\s*(\[[^\]]*\])?\s*:/.test(line)) continue;
+          // Skip directive lines (both old and new syntax)
+          if (/<!--\s*\{\{(text|data)/.test(line)) continue;
           if (/<!--\s*\{\{\/(data|text)\}\}\s*-->/.test(line)) continue;
           if (/<!--\s*@(block|endblock|extends|parent)/.test(line)) continue;
+          if (/<!--\s*\{%/.test(line)) continue;
           descLines.push(line);
         }
       }
