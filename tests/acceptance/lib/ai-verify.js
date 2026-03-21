@@ -2,6 +2,8 @@
  * tests/acceptance/lib/ai-verify.js
  *
  * AI-based quality verification for generated docs.
+ * Evaluates documentation quality on 5 axes:
+ *   Naturalness, Cultural Fit, Informativeness, Coherence, Actionability
  */
 
 import fs from "fs";
@@ -12,14 +14,23 @@ import { getChapterFiles } from "../../../src/docs/lib/command-context.js";
 
 const VERIFY_TIMEOUT_MS = 180000;
 
+const QUALITY_AXES = [
+  "naturalness",
+  "culturalFit",
+  "informativeness",
+  "coherence",
+  "actionability",
+];
+
 /**
  * Build the verification prompt for the AI.
  *
  * @param {string} docsContent - Concatenated docs content
  * @param {string} fixtureDescription - Description of the fixture for context
+ * @param {string} lang - Documentation language code
  * @returns {string}
  */
-function buildVerifyPrompt(docsContent, fixtureDescription) {
+function buildVerifyPrompt(docsContent, fixtureDescription, lang) {
   return [
     "You are a documentation quality reviewer.",
     "",
@@ -27,27 +38,44 @@ function buildVerifyPrompt(docsContent, fixtureDescription) {
     fixtureDescription,
     "",
     "## Generated Documentation",
+    `Language: ${lang}`,
     docsContent,
     "",
     "## Verification Instructions",
-    "Review the generated documentation against the fixture description and check:",
+    "Evaluate the generated documentation on the following 5 axes.",
+    "For each axis, determine pass/fail and provide a brief comment explaining your assessment.",
     "",
-    "1. **Completeness**: Are the key components described in the fixture (dependencies,",
-    "   database tables/relations, routes, controllers, models, CLI commands) mentioned",
-    "   in the documentation? Minor omissions are acceptable; major components missing is a failure.",
+    "1. **naturalness** — Does the text read naturally, as if written by a human?",
+    "   Is it free of robotic, template-like, or formulaic phrasing?",
+    "   Fail if the text feels machine-generated or overly mechanical.",
     "",
-    "2. **Consistency**: Is there any contradictory information between chapters?",
-    "   Repeated context (e.g. overview + detail chapter) is acceptable; contradictions are not.",
+    "2. **culturalFit** — Does the text follow the conventions of technical writing",
+    `   in the target language (${lang})? For example: consistent register (formal/informal),`,
+    "   appropriate use of language-specific conventions (e.g. 'ですます調' consistency in Japanese,",
+    "   imperative mood in English CLI docs). Fail if conventions are violated or mixed inconsistently.",
     "",
-    "3. **Readability**: Are there broken sentences, garbled text, or meaningless content?",
-    "   Placeholder text like section headings with no content is acceptable if the heading",
-    "   itself is meaningful.",
+    "3. **informativeness** — Does the text provide project-specific, concrete information?",
+    "   Is it more than generic filler? Does it reference actual files, classes, commands,",
+    "   or architectural decisions from the project? Fail if content is too vague or generic.",
+    "",
+    "4. **coherence** — Is terminology consistent across chapters? Do sections flow logically?",
+    "   Are there contradictions or unnecessary repetition? Fail if there are contradictions",
+    "   or if chapters feel disconnected.",
+    "",
+    "5. **actionability** — Can a developer reading this documentation understand where to start,",
+    "   how the project is structured, and what to do next? Are entry points and key files clear?",
+    "   Fail if the documentation doesn't help a developer get oriented.",
     "",
     "## Output Format",
     "Return ONLY a JSON object (no markdown fences, no explanation):",
-    '{ "pass": true }',
-    "or",
-    '{ "pass": false, "issues": ["issue 1", "issue 2"] }',
+    "{",
+    '  "pass": <overall boolean — true only if ALL axes pass>,',
+    '  "naturalness": { "pass": true/false, "comment": "..." },',
+    '  "culturalFit": { "pass": true/false, "comment": "..." },',
+    '  "informativeness": { "pass": true/false, "comment": "..." },',
+    '  "coherence": { "pass": true/false, "comment": "..." },',
+    '  "actionability": { "pass": true/false, "comment": "..." }',
+    "}",
     "",
     "Be lenient: pass unless there are clear, significant problems.",
   ].join("\n");
@@ -102,16 +130,72 @@ function buildFixtureDescription(tmp, presetName) {
 }
 
 /**
+ * Parse the AI response JSON, handling markdown fences.
+ *
+ * @param {string} response - Raw AI response
+ * @returns {Object} Parsed JSON
+ */
+function parseAIResponse(response) {
+  let cleaned = response.trim();
+  cleaned = cleaned.replace(/^```(?:json)?\s*\n?/i, "").replace(/\n?```\s*$/i, "");
+  try {
+    return JSON.parse(cleaned);
+  } catch (_) {
+    const match = response.match(/\{[\s\S]*\}/);
+    if (match) {
+      return JSON.parse(match[0]);
+    }
+    throw new Error(`AI returned unparseable response: ${response.slice(0, 500)}`);
+  }
+}
+
+/**
+ * Print quality evaluation results to console.
+ *
+ * @param {string} presetName - Preset name
+ * @param {Object} result - Parsed AI evaluation result
+ */
+function printQualityReport(presetName, result) {
+  console.log(`\n  [quality] AI evaluation for "${presetName}":`);
+  for (const axis of QUALITY_AXES) {
+    const eval_ = result[axis];
+    if (!eval_) continue;
+    const icon = eval_.pass ? "✓" : "✗";
+    console.log(`    ${icon} ${axis}: ${eval_.comment || "(no comment)"}`);
+  }
+  console.log();
+}
+
+/**
+ * Extract structured quality data from the AI result.
+ *
+ * @param {Object} result - Parsed AI evaluation result
+ * @returns {Object} Quality data for report JSON
+ */
+export function extractQualityData(result) {
+  const quality = {};
+  for (const axis of QUALITY_AXES) {
+    const eval_ = result[axis];
+    quality[axis] = eval_
+      ? { pass: Boolean(eval_.pass), comment: eval_.comment || "" }
+      : { pass: false, comment: "axis not evaluated by AI" };
+  }
+  return quality;
+}
+
+/**
  * Run AI quality verification on generated docs.
  *
  * @param {string} tmp - Project root
  * @param {Object} config - SddConfig
  * @param {string} presetName - Preset name for context
+ * @returns {{ quality: Object }} Evaluation results (throws on failure)
  */
 export async function verifyWithAI(tmp, config, presetName) {
   const agent = loadAgentConfig(config);
   const docsDir = path.join(tmp, "docs");
   const files = getChapterFiles(docsDir);
+  const lang = config.docs?.defaultLanguage || config.lang || "en";
 
   // Concatenate all docs
   const docsContent = files
@@ -129,31 +213,28 @@ export async function verifyWithAI(tmp, config, presetName) {
 
   const fullDocs = docsContent + readmeContent;
   const fixtureDesc = buildFixtureDescription(tmp, presetName);
-  const prompt = buildVerifyPrompt(fullDocs, fixtureDesc);
+  const prompt = buildVerifyPrompt(fullDocs, fixtureDesc, lang);
 
   const response = callAgent(agent, prompt, VERIFY_TIMEOUT_MS, tmp);
 
-  // Parse response
   let result;
   try {
-    let cleaned = response.trim();
-    cleaned = cleaned.replace(/^```(?:json)?\s*\n?/i, "").replace(/\n?```\s*$/i, "");
-    result = JSON.parse(cleaned);
-  } catch (_) {
-    const match = response.match(/\{[\s\S]*\}/);
-    if (match) {
-      try {
-        result = JSON.parse(match[0]);
-      } catch (__) {
-        assert.fail(`AI returned unparseable response: ${response.slice(0, 500)}`);
-      }
-    } else {
-      assert.fail(`AI returned no JSON: ${response.slice(0, 500)}`);
-    }
+    result = parseAIResponse(response);
+  } catch (e) {
+    assert.fail(e.message);
   }
 
+  const quality = extractQualityData(result);
+  printQualityReport(presetName, result);
+
+  // Maintain existing pass/fail assertion behavior
   if (!result.pass) {
-    const issues = (result.issues || []).join("\n  - ");
-    assert.fail(`AI quality check failed for ${presetName}:\n  - ${issues}`);
+    const failedAxes = QUALITY_AXES.filter((a) => result[a] && !result[a].pass);
+    const details = failedAxes
+      .map((a) => `${a}: ${result[a].comment || "failed"}`)
+      .join("\n  - ");
+    assert.fail(`AI quality check failed for ${presetName}:\n  - ${details}`);
   }
+
+  return { quality };
 }

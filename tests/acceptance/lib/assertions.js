@@ -2,26 +2,77 @@
  * tests/acceptance/lib/assertions.js
  *
  * Structural assertions for acceptance tests.
+ * Also provides structured detection functions for report generation.
+ *
+ * detectUnfilledDirectives() and detectExposedDirectives() are the canonical
+ * scanners. The assert* functions are thin wrappers that delegate to them.
  */
 
 import fs from "fs";
 import path from "path";
 import assert from "node:assert/strict";
 import { getChapterFiles } from "../../../src/docs/lib/command-context.js";
-// checkOutputIntegrity inline — not exported from review.js
-function checkOutputIntegrity(content) {
-  const lines = content.split("\n");
-  let exposedDirectives = 0;
-  let inCodeBlock = false;
-  for (const line of lines) {
-    if (/^(`{3,}|~{3,})/.test(line.trim())) { inCodeBlock = !inCodeBlock; continue; }
-    if (inCodeBlock) continue;
-    const stripped = line.replace(/<!--[\s\S]*?-->/g, "").replace(/`[^`]+`/g, "");
-    if (/\{\{(data\s*:|text\s*[\[:]|\/data\}\}|\/text\}\})/.test(stripped)) {
-      exposedDirectives++;
+
+const DIRECTIVE_RE = /\{\{(data\s*:|text\s*[\[:]|\/data\}\}|\/text\}\})/;
+const CODE_BLOCK_RE = /^(`{3,}|~{3,})/;
+
+/**
+ * Detect unfilled {{text}} directives with file name and line number.
+ *
+ * @param {string} docsDir - Absolute path to docs/
+ * @param {string[]} files - Chapter file names
+ * @returns {{ file: string, line: number }[]}
+ */
+export function detectUnfilledDirectives(docsDir, files) {
+  const results = [];
+  for (const f of files) {
+    const content = fs.readFileSync(path.join(docsDir, f), "utf8");
+    const lines = content.split("\n");
+    let inCodeBlock = false;
+
+    for (let i = 0; i < lines.length; i++) {
+      if (CODE_BLOCK_RE.test(lines[i].trim())) { inCodeBlock = !inCodeBlock; continue; }
+      if (inCodeBlock) continue;
+
+      if (/<!--\s*\{\{text\b/.test(lines[i])) {
+        let hasContent = false;
+        for (let j = i + 1; j < lines.length; j++) {
+          if (/^<!--\s*\{\{\/text\}\}\s*-->$/.test(lines[j].trim())) break;
+          if (lines[j].trim() !== "") { hasContent = true; break; }
+        }
+        if (!hasContent) {
+          results.push({ file: f, line: i + 1 });
+        }
+      }
     }
   }
-  return { exposedDirectives };
+  return results;
+}
+
+/**
+ * Detect exposed directives (outside comments/code) with file name and line number.
+ *
+ * @param {string} docsDir - Absolute path to docs/
+ * @param {string[]} files - Chapter file names
+ * @returns {{ file: string, line: number }[]}
+ */
+export function detectExposedDirectives(docsDir, files) {
+  const results = [];
+  for (const f of files) {
+    const content = fs.readFileSync(path.join(docsDir, f), "utf8");
+    const lines = content.split("\n");
+    let inCodeBlock = false;
+
+    for (let i = 0; i < lines.length; i++) {
+      if (CODE_BLOCK_RE.test(lines[i].trim())) { inCodeBlock = !inCodeBlock; continue; }
+      if (inCodeBlock) continue;
+      const stripped = lines[i].replace(/<!--[\s\S]*?-->/g, "").replace(/`[^`]+`/g, "");
+      if (DIRECTIVE_RE.test(stripped)) {
+        results.push({ file: f, line: i + 1 });
+      }
+    }
+  }
+  return results;
 }
 
 /**
@@ -45,15 +96,12 @@ export function assertChaptersExist(docsDir) {
  * @param {string[]} files - Chapter file names
  */
 export function assertNoExposedDirectives(docsDir, files) {
-  for (const f of files) {
-    const content = fs.readFileSync(path.join(docsDir, f), "utf8");
-    const result = checkOutputIntegrity(content);
-    assert.equal(
-      result.exposedDirectives,
-      0,
-      `Exposed directives found in ${f}: ${result.exposedDirectives}`,
-    );
-  }
+  const found = detectExposedDirectives(docsDir, files);
+  assert.equal(
+    found.length,
+    0,
+    `Exposed directives found: ${found.map((d) => `${d.file}:${d.line}`).join(", ")}`,
+  );
 }
 
 /**
@@ -63,28 +111,12 @@ export function assertNoExposedDirectives(docsDir, files) {
  * @param {string[]} files - Chapter file names
  */
 export function assertTextDirectivesFilled(docsDir, files) {
-  for (const f of files) {
-    const content = fs.readFileSync(path.join(docsDir, f), "utf8");
-    const lines = content.split("\n");
-    let unfilled = 0;
-
-    for (let i = 0; i < lines.length; i++) {
-      if (/<!--\s*\{\{text\b/.test(lines[i])) {
-        let hasContent = false;
-        for (let j = i + 1; j < lines.length; j++) {
-          if (/^<!--\s*\{\{\/text\}\}\s*-->$/.test(lines[j].trim())) break;
-          if (lines[j].trim() !== "") { hasContent = true; break; }
-        }
-        if (!hasContent) unfilled++;
-      }
-    }
-
-    assert.equal(
-      unfilled,
-      0,
-      `Unfilled text directives in ${f}: ${unfilled}`,
-    );
-  }
+  const found = detectUnfilledDirectives(docsDir, files);
+  assert.equal(
+    found.length,
+    0,
+    `Unfilled text directives: ${found.map((d) => `${d.file}:${d.line}`).join(", ")}`,
+  );
 }
 
 /**

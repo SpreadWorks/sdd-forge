@@ -70,47 +70,78 @@ export function buildCtx(tmp) {
 }
 
 /**
+ * Run a single pipeline step with timing and status tracking.
+ *
+ * @param {string} name - Step name
+ * @param {() => Promise<void>} fn - Step function
+ * @returns {Promise<{ name: string, status: string, durationMs: number }>}
+ */
+async function runStep(name, fn) {
+  const start = performance.now();
+  try {
+    await fn();
+    const durationMs = Math.round(performance.now() - start);
+    console.log(`  [pipeline] ${name}: ok (${durationMs}ms)`);
+    return { name, status: "ok", durationMs };
+  } catch (e) {
+    const durationMs = Math.round(performance.now() - start);
+    console.error(`  [pipeline] ${name}: error (${durationMs}ms) — ${e.message}`);
+    throw Object.assign(e, { stepResult: { name, status: "error", durationMs } });
+  }
+}
+
+/**
  * Run the full pipeline on a fixture in a tmp directory.
  *
  * @param {string} tmp - Absolute path to tmp project
- * @returns {Promise<{ ctx: Object, analysisPath: string }>}
+ * @returns {Promise<{ ctx: Object, steps: { name: string, status: string, durationMs: number }[] }>}
  */
 export async function runPipeline(tmp) {
   const ctx = buildCtx(tmp);
+  const steps = [];
 
   // 1. scan
   const { main: scanMain } = await import("../../../src/docs/commands/scan.js");
-  await scanMain({ ...ctx });
+  steps.push(await runStep("scan", () => scanMain({ ...ctx })));
 
   // 2. enrich (non-fatal — AI response parsing may fail intermittently)
   if (ctx.agent) {
     const { main: enrichMain } = await import("../../../src/docs/commands/enrich.js");
     try {
-      await enrichMain({ ...ctx, agentName: ctx.config.agent?.default });
+      steps.push(await runStep("enrich", () =>
+        enrichMain({ ...ctx, agentName: ctx.config.agent?.default }),
+      ));
     } catch (e) {
-      console.error(`[acceptance] enrich warning: ${e.message} — continuing without enrichment`);
+      steps.push(e.stepResult);
+      console.error(`[acceptance] enrich warning: continuing without enrichment`);
     }
+  } else {
+    steps.push({ name: "enrich", status: "skipped", durationMs: 0 });
   }
 
   // 3. init
   const { main: initMain } = await import("../../../src/docs/commands/init.js");
-  await initMain({ ...ctx, force: true });
+  steps.push(await runStep("init", () => initMain({ ...ctx, force: true })));
 
   // 4. data
   const { main: dataMain } = await import("../../../src/docs/commands/data.js");
-  await dataMain({ ...ctx });
+  steps.push(await runStep("data", () => dataMain({ ...ctx })));
 
   // 5. text
   if (ctx.agent) {
     const { main: textMain } = await import("../../../src/docs/commands/text.js");
-    await textMain({ ...ctx, agentName: ctx.config.agent?.default });
+    steps.push(await runStep("text", () =>
+      textMain({ ...ctx, agentName: ctx.config.agent?.default }),
+    ));
+  } else {
+    steps.push({ name: "text", status: "skipped", durationMs: 0 });
   }
 
   // 6. readme
   const { main: readmeMain } = await import("../../../src/docs/commands/readme.js");
-  await readmeMain({ ...ctx });
+  steps.push(await runStep("readme", () => readmeMain({ ...ctx })));
 
-  return { ctx };
+  return { ctx, steps };
 }
 
 /**
