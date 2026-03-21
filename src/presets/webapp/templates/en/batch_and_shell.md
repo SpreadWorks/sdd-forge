@@ -24,15 +24,15 @@
 <!-- {{text({prompt: "Describe the class dependencies loaded by each command.", mode: "deep"})}} -->
 <!-- {{/text}} -->
 
-<!-- {{data("webapp.shells.deps", {labels: "Command|Dependency|Type"})}} -->
-<!-- {{/data}} -->
+<!-- {{text({prompt: "Describe the class dependencies for each command in table format."})}} -->
+<!-- {{/text}} -->
 <!-- {%/block%} -->
 
 <!-- {%block "command-flow"%} -->
 ### Command Execution Flow
 
-<!-- {{data("webapp.shells.flow", {labels: "Command|Process Summary|Email|File Ops|Transaction"})}} -->
-<!-- {{/data}} -->
+<!-- {{text({prompt: "Describe the command execution flow (process summary, email, file operations, transactions) in table format."})}} -->
+<!-- {{/text}} -->
 <!-- {%/block%} -->
 
 <!-- {%block "schedule"%} -->

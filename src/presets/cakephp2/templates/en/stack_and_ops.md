@@ -1,5 +1,12 @@
 <!-- {%extends%} -->
 
+<!-- {%block "stack"%} -->
+### Technology Stack
+
+<!-- {{data("cakephp2.config.stack", {labels: "Category|Technology|Version"})}} -->
+<!-- {{/data}} -->
+<!-- {%/block%} -->
+
 <!-- {%block "dependencies"%} -->
 ### PHP Dependencies (composer.json)
 

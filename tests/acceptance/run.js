@@ -24,6 +24,25 @@ const ALL_PRESETS = [
 ];
 
 const args = process.argv.slice(2);
+
+if (args.includes("--help") || args.includes("-h")) {
+  console.log(`Usage: node tests/acceptance/run.js [preset ...]
+
+Run acceptance tests for sdd-forge presets.
+
+Arguments:
+  preset    One or more preset names to test (default: all)
+
+Available presets:
+  ${ALL_PRESETS.join(", ")}
+
+Examples:
+  node tests/acceptance/run.js              Run all presets
+  node tests/acceptance/run.js symfony      Run only symfony
+  node tests/acceptance/run.js node laravel Run node and laravel`);
+  process.exit(0);
+}
+
 const requested = args.filter((a) => !a.startsWith("-"));
 const presets = requested.length > 0 ? requested : ALL_PRESETS;
 

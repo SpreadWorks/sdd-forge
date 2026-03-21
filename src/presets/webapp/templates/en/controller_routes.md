@@ -21,8 +21,8 @@
 <!-- {%block "controller-config"%} -->
 ### Common Configuration
 
-<!-- {{data("webapp.config.auth", {labels: "Item|Value"})}} -->
-<!-- {{/data}} -->
+<!-- {{text({prompt: "Describe common controller configuration (auth, components, helpers) in table format."})}} -->
+<!-- {{/text}} -->
 <!-- {%/block%} -->
 
 <!-- {%block "controller-list"%} -->
@@ -45,7 +45,7 @@
 <!-- {%block "components"%} -->
 ### Components
 
-<!-- {{data("webapp.views.components", {labels: "Component|Responsibility"})}} -->
-<!-- {{/data}} -->
+<!-- {{text({prompt: "Describe view components and their responsibilities in table format."})}} -->
+<!-- {{/text}} -->
 <!-- {%/block%} -->
 <!-- {%/block%} -->

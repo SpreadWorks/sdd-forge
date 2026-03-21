@@ -17,8 +17,8 @@
 <!-- {{text({prompt: "Describe the authentication method overview. Include authentication component configuration.", mode: "deep"})}} -->
 <!-- {{/text}} -->
 
-<!-- {{data("webapp.config.auth", {labels: "Item|Value"})}} -->
-<!-- {{/data}} -->
+<!-- {{text({prompt: "Describe the authentication component settings (auth method, authorization, user model, redirects) in table format."})}} -->
+<!-- {{/text}} -->
 <!-- {%/block%} -->
 
 <!-- {%block "acl"%} -->
@@ -27,8 +27,8 @@
 <!-- {{text({prompt: "Describe the access control definitions and role-based access control rules.", mode: "deep"})}} -->
 <!-- {{/text}} -->
 
-<!-- {{data("webapp.config.acl", {labels: "Role|group_id|Permissions"})}} -->
-<!-- {{/data}} -->
+<!-- {{text({prompt: "Describe the access control list (roles, permissions) in table format."})}} -->
+<!-- {{/text}} -->
 <!-- {%/block%} -->
 
 <!-- {%block "session"%} -->

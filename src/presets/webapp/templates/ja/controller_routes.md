@@ -21,8 +21,8 @@
 <!-- {%block "controller-config"%} -->
 ### 共通設定
 
-<!-- {{data("webapp.config.auth", {labels: "項目|内容"})}} -->
-<!-- {{/data}} -->
+<!-- {{text({prompt: "共通設定（認証、コンポーネント、ヘルパー）を表形式で記述してください。"})}} -->
+<!-- {{/text}} -->
 <!-- {%/block%} -->
 
 <!-- {%block "controller-list"%} -->
@@ -45,7 +45,7 @@
 <!-- {%block "components"%} -->
 ### コンポーネント
 
-<!-- {{data("webapp.views.components", {labels: "コンポーネント|責務"})}} -->
-<!-- {{/data}} -->
+<!-- {{text({prompt: "ビューコンポーネントの一覧と責務を表形式で記述してください。"})}} -->
+<!-- {{/text}} -->
 <!-- {%/block%} -->
 <!-- {%/block%} -->

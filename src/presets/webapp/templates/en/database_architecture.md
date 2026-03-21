@@ -28,14 +28,14 @@
 <!-- {%block "db-env"%} -->
 ### Environment-Specific Connection Settings
 
-<!-- {{data("webapp.config.db", {labels: "Environment|DB Host|Notes"})}} -->
-<!-- {{/data}} -->
+<!-- {{text({prompt: "Describe the environment-specific database connection settings in table format."})}} -->
+<!-- {{/text}} -->
 <!-- {%/block%} -->
 
 <!-- {%block "er-diagram"%} -->
 ### ER Diagram (Key Tables)
 
-<!-- {{data("webapp.models.er")}} -->
-<!-- {{/data}} -->
+<!-- {{text({prompt: "Generate an ER diagram (parent-child relationships) for key tables using mermaid erDiagram. Output only the mermaid code block."})}} -->
+<!-- {{/text}} -->
 <!-- {%/block%} -->
 <!-- {%/block%} -->

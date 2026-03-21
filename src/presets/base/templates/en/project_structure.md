@@ -31,7 +31,7 @@
 <!-- {%block "libraries"%} -->
 ### Shared Libraries
 
-<!-- {{data("base.libs.list", {labels: "Class|File|Responsibility"})}} -->
-<!-- {{/data}} -->
+<!-- {{text({prompt: "List the shared libraries (class name, file, responsibility) in table format."})}} -->
+<!-- {{/text}} -->
 <!-- {%/block%} -->
 <!-- {%/block%} -->

@@ -14,8 +14,8 @@
 <!-- {%block "logic-list"%} -->
 ### Logic Class List
 
-<!-- {{data("webapp.models.logic", {labels: "Class|File|Responsibility"})}} -->
-<!-- {{/data}} -->
+<!-- {{text({prompt: "List the logic classes (class name, file, responsibility) in table format."})}} -->
+<!-- {{/text}} -->
 <!-- {%/block%} -->
 
 <!-- {%block "logic-structure"%} -->
@@ -24,8 +24,8 @@
 <!-- {{text({prompt: "Describe the inheritance patterns and common method roles of logic classes.", mode: "deep"})}} -->
 <!-- {{/text}} -->
 
-<!-- {{data("webapp.models.logicMethods", {labels: "Class|Extends|Key Methods"})}} -->
-<!-- {{/data}} -->
+<!-- {{text({prompt: "Describe the logic class inheritance structure and key methods in table format."})}} -->
+<!-- {{/text}} -->
 <!-- {%/block%} -->
 
 <!-- {%block "external-integration"%} -->

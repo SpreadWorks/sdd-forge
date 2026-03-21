@@ -74,15 +74,24 @@ export function acceptanceTest(presetName, opts) {
       }
 
       // 4. AI quality verification
-      const aiResult = await verifyWithAI(tmp, ctx.config, presetName);
+      let quality = null;
+      let aiError = null;
+      try {
+        const aiResult = await verifyWithAI(tmp, ctx.config, presetName);
+        quality = aiResult.quality;
+      } catch (e) {
+        // Capture error but write report first
+        quality = e.quality || null;
+        aiError = e;
+      }
 
-      // 5. Write report
+      // 5. Write report (always, even on failure)
       const report = {
         preset: presetName,
         timestamp: new Date().toISOString(),
         pipeline: { steps },
         directives: { unfilled, exposed },
-        quality: aiResult.quality,
+        quality,
       };
 
       const reportPath = path.join(
@@ -93,6 +102,9 @@ export function acceptanceTest(presetName, opts) {
       );
       writeReport(reportPath, report);
       console.log(`  [report] written to ${reportPath}`);
+
+      // Re-throw after report is written
+      if (aiError) throw aiError;
     });
 
     // Cleanup is done in a separate block to ensure it runs

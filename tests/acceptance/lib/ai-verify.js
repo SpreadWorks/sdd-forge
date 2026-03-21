@@ -233,7 +233,12 @@ export async function verifyWithAI(tmp, config, presetName) {
     const details = failedAxes
       .map((a) => `${a}: ${result[a].comment || "failed"}`)
       .join("\n  - ");
-    assert.fail(`AI quality check failed for ${presetName}:\n  - ${details}`);
+    const err = new assert.AssertionError({
+      message: `AI quality check failed for ${presetName}:\n  - ${details}`,
+      operator: "fail",
+    });
+    err.quality = quality;
+    throw err;
   }
 
   return { quality };

@@ -14,8 +14,8 @@
 <!-- {%block "logic-list"%} -->
 ### ロジッククラス一覧
 
-<!-- {{data("webapp.models.logic", {labels: "クラス名|ファイル|責務"})}} -->
-<!-- {{/data}} -->
+<!-- {{text({prompt: "ロジッククラスの一覧（クラス名、ファイル、責務）を表形式で記述してください。"})}} -->
+<!-- {{/text}} -->
 <!-- {%/block%} -->
 
 <!-- {%block "logic-structure"%} -->
@@ -24,8 +24,8 @@
 <!-- {{text({prompt: "ロジッククラスの継承パターンと共通メソッドの役割を説明してください。", mode: "deep"})}} -->
 <!-- {{/text}} -->
 
-<!-- {{data("webapp.models.logicMethods", {labels: "クラス|継承元|主要メソッド"})}} -->
-<!-- {{/data}} -->
+<!-- {{text({prompt: "ロジッククラスの継承構造と主要メソッドを表形式で記述してください。"})}} -->
+<!-- {{/text}} -->
 <!-- {%/block%} -->
 
 <!-- {%block "external-integration"%} -->

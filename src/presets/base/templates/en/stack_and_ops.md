@@ -17,8 +17,8 @@
 <!-- {%block "stack"%} -->
 ### Technology Stack
 
-<!-- {{data("base.config.stack", {labels: "Category|Technology|Version"})}} -->
-<!-- {{/data}} -->
+<!-- {{text({prompt: "Describe the technology stack (category, technology, version) in table format."})}} -->
+<!-- {{/text}} -->
 <!-- {%/block%} -->
 
 <!-- {%block "dependencies"%} -->
