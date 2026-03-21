@@ -8,13 +8,13 @@
 <!-- {%block "entry-points"%} -->
 ## Entry Points
 
-<!-- {{data("edge.runtime.entryPoints", {labels: "Function|Trigger|File|Description"})}} -->
-<!-- {{/data}} -->
+<!-- {{text({prompt: "List the edge function entry points (function name, trigger, file, description) in table format."})}} -->
+<!-- {{/text}} -->
 <!-- {%/block%} -->
 
 <!-- {%block "constraints"%} -->
 ## Runtime Constraints
 
-<!-- {{data("edge.runtime.constraints", {labels: "Constraint|Value|Description"})}} -->
-<!-- {{/data}} -->
+<!-- {{text({prompt: "List the runtime constraints (constraint, value, description) in table format."})}} -->
+<!-- {{/text}} -->
 <!-- {%/block%} -->

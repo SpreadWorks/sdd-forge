@@ -31,7 +31,7 @@
 <!-- {%block "libraries"%} -->
 ### Shared Libraries
 
-<!-- {{text({prompt: "List the shared libraries (class name, file, responsibility) in table format."})}} -->
+<!-- {{text({prompt: "List the shared libraries with class name, file path, and responsibility in table format."})}} -->
 <!-- {{/text}} -->
 <!-- {%/block%} -->
 <!-- {%/block%} -->

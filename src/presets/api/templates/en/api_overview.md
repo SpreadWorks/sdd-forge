@@ -17,6 +17,6 @@
 <!-- {%block "errors"%} -->
 ## Error Handling
 
-<!-- {{data("api.errors.list", {labels: "Code|Name|Description"})}} -->
-<!-- {{/data}} -->
+<!-- {{text({prompt: "List the API error codes (code, name, description) in table format."})}} -->
+<!-- {{/text}} -->
 <!-- {%/block%} -->

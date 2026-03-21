@@ -8,20 +8,20 @@
 <!-- {%block "app-router"%} -->
 ## App Router
 
-<!-- {{data("nextjs.routes.app", {labels: "パス|種別|ファイル|説明"})}} -->
-<!-- {{/data}} -->
+<!-- {{text({prompt: "App Router のルート定義（パス、種別、ファイル、説明）を表形式で記述してください。"})}} -->
+<!-- {{/text}} -->
 <!-- {%/block%} -->
 
 <!-- {%block "pages-router"%} -->
 ## Pages Router
 
-<!-- {{data("nextjs.routes.pages", {labels: "ページ|データ取得|説明"})}} -->
-<!-- {{/data}} -->
+<!-- {{text({prompt: "Pages Router のページ定義（ページ、データ取得方法、説明）を表形式で記述してください。"})}} -->
+<!-- {{/text}} -->
 <!-- {%/block%} -->
 
 <!-- {%block "dynamic-routes"%} -->
 ## 動的ルート
 
-<!-- {{data("nextjs.routes.dynamic", {labels: "パターン|パラメータ|説明"})}} -->
-<!-- {{/data}} -->
+<!-- {{text({prompt: "動的ルートの定義（パターン、パラメータ、説明）を表形式で記述してください。"})}} -->
+<!-- {{/text}} -->
 <!-- {%/block%} -->

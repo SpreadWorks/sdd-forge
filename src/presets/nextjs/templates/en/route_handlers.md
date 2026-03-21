@@ -8,6 +8,6 @@
 <!-- {%block "handler-list"%} -->
 ## Route Handler List
 
-<!-- {{data("nextjs.routes.handlers", {labels: "Method|Path|File|Description"})}} -->
-<!-- {{/data}} -->
+<!-- {{text({prompt: "List the route handlers (method, path, file, description) in table format."})}} -->
+<!-- {{/text}} -->
 <!-- {%/block%} -->

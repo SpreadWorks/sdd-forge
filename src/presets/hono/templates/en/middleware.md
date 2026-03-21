@@ -8,6 +8,6 @@
 <!-- {%block "middleware-list"%} -->
 ## Middleware List
 
-<!-- {{data("hono.middleware.list", {labels: "Middleware|Description"})}} -->
-<!-- {{/data}} -->
+<!-- {{text({prompt: "List the middleware and describe the role of each in table format."})}} -->
+<!-- {{/text}} -->
 <!-- {%/block%} -->

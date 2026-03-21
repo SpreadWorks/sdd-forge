@@ -35,7 +35,7 @@
 <!-- {%block "er-diagram"%} -->
 ### ER Diagram (Key Tables)
 
-<!-- {{text({prompt: "Generate an ER diagram (parent-child relationships) for key tables using mermaid erDiagram. Output only the mermaid code block."})}} -->
+<!-- {{text({prompt: "Generate a mermaid erDiagram of the key tables. Output only the mermaid code block.", mode: "deep"})}} -->
 <!-- {{/text}} -->
 <!-- {%/block%} -->
 <!-- {%/block%} -->

@@ -8,20 +8,20 @@
 <!-- {%block "server-components"%} -->
 ## Server Components
 
-<!-- {{data("nextjs.components.server", {labels: "コンポーネント|ファイル|説明"})}} -->
-<!-- {{/data}} -->
+<!-- {{text({prompt: "Server Components の一覧（コンポーネント名、ファイル、説明）を表形式で記述してください。"})}} -->
+<!-- {{/text}} -->
 <!-- {%/block%} -->
 
 <!-- {%block "client-components"%} -->
 ## Client Components
 
-<!-- {{data("nextjs.components.client", {labels: "コンポーネント|ファイル|説明"})}} -->
-<!-- {{/data}} -->
+<!-- {{text({prompt: "Client Components の一覧（コンポーネント名、ファイル、説明）を表形式で記述してください。"})}} -->
+<!-- {{/text}} -->
 <!-- {%/block%} -->
 
 <!-- {%block "shared-components"%} -->
 ## 共有コンポーネント
 
-<!-- {{data("nextjs.components.shared", {labels: "コンポーネント|ファイル|説明"})}} -->
-<!-- {{/data}} -->
+<!-- {{text({prompt: "共有コンポーネントの一覧（コンポーネント名、ファイル、説明）を表形式で記述してください。"})}} -->
+<!-- {{/text}} -->
 <!-- {%/block%} -->

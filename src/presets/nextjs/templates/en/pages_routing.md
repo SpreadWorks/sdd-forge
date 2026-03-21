@@ -8,20 +8,20 @@
 <!-- {%block "app-router"%} -->
 ## App Router
 
-<!-- {{data("nextjs.routes.app", {labels: "Path|Type|File|Description"})}} -->
-<!-- {{/data}} -->
+<!-- {{text({prompt: "List the App Router route definitions (path, type, file, description) in table format."})}} -->
+<!-- {{/text}} -->
 <!-- {%/block%} -->
 
 <!-- {%block "pages-router"%} -->
 ## Pages Router
 
-<!-- {{data("nextjs.routes.pages", {labels: "Page|Data Fetching|Description"})}} -->
-<!-- {{/data}} -->
+<!-- {{text({prompt: "List the Pages Router page definitions (page, data fetching, description) in table format."})}} -->
+<!-- {{/text}} -->
 <!-- {%/block%} -->
 
 <!-- {%block "dynamic-routes"%} -->
 ## Dynamic Routes
 
-<!-- {{data("nextjs.routes.dynamic", {labels: "Pattern|Parameters|Description"})}} -->
-<!-- {{/data}} -->
+<!-- {{text({prompt: "List the dynamic route definitions (pattern, parameters, description) in table format."})}} -->
+<!-- {{/text}} -->
 <!-- {%/block%} -->

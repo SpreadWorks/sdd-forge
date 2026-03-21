@@ -17,7 +17,7 @@
 <!-- {{text({prompt: "Describe the authentication method overview. Include authentication component configuration.", mode: "deep"})}} -->
 <!-- {{/text}} -->
 
-<!-- {{text({prompt: "Describe the authentication component settings (auth method, authorization, user model, redirects) in table format."})}} -->
+<!-- {{text({prompt: "Describe the key authentication configuration items and their values in table format."})}} -->
 <!-- {{/text}} -->
 <!-- {%/block%} -->
 
@@ -27,7 +27,7 @@
 <!-- {{text({prompt: "Describe the access control definitions and role-based access control rules.", mode: "deep"})}} -->
 <!-- {{/text}} -->
 
-<!-- {{text({prompt: "Describe the access control list (roles, permissions) in table format."})}} -->
+<!-- {{text({prompt: "Describe the role-based access control rules in table format."})}} -->
 <!-- {{/text}} -->
 <!-- {%/block%} -->
 

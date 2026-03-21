@@ -21,7 +21,7 @@
 <!-- {%block "controller-config"%} -->
 ### Common Configuration
 
-<!-- {{text({prompt: "Describe common controller configuration (auth, components, helpers) in table format."})}} -->
+<!-- {{text({prompt: "Describe the common controller configuration."})}} -->
 <!-- {{/text}} -->
 <!-- {%/block%} -->
 
@@ -45,7 +45,7 @@
 <!-- {%block "components"%} -->
 ### Components
 
-<!-- {{text({prompt: "Describe view components and their responsibilities in table format."})}} -->
+<!-- {{text({prompt: "Describe the view components and their responsibilities in table format."})}} -->
 <!-- {{/text}} -->
 <!-- {%/block%} -->
 <!-- {%/block%} -->

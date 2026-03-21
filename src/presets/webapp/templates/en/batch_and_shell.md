@@ -31,7 +31,7 @@
 <!-- {%block "command-flow"%} -->
 ### Command Execution Flow
 
-<!-- {{text({prompt: "Describe the command execution flow (process summary, email, file operations, transactions) in table format."})}} -->
+<!-- {{text({prompt: "Describe the execution flow of each command in table format. Include email notifications, file operations, and transaction usage."})}} -->
 <!-- {{/text}} -->
 <!-- {%/block%} -->
 

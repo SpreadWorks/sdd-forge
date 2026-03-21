@@ -21,8 +21,8 @@
 <!-- {%block "requirements"%} -->
 ### 動作要件
 
-<!-- {{data("library.exports.runtime", {labels: "要件|バージョン|説明"})}} -->
-<!-- {{/data}} -->
+<!-- {{text({prompt: "動作要件（ランタイム、バージョン、説明）を表形式で記述してください。"})}} -->
+<!-- {{/text}} -->
 <!-- {%/block%} -->
 
 <!-- {%block "examples"%} -->

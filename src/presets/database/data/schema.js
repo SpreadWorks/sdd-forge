@@ -1,7 +1,7 @@
 /**
  * DbSchemaSource — enrich-based DataSource for database schema.
  *
- * Reads analysis.schemas to generate table/relationship tables.
+ * Reads analysis.schema to generate table/relationship tables.
  */
 
 import { DataSource } from "../../../docs/lib/data-source.js";
@@ -9,7 +9,7 @@ import { DataSource } from "../../../docs/lib/data-source.js";
 export default class DbSchemaSource extends DataSource {
   /** Database tables list. */
   tables(analysis, labels) {
-    const items = analysis.schemas?.tables;
+    const items = analysis.schema?.tables;
     if (!Array.isArray(items) || items.length === 0) return null;
     const rows = this.toRows(items, (t) => [
       t.name || "—",
@@ -22,7 +22,7 @@ export default class DbSchemaSource extends DataSource {
 
   /** Table relationships list. */
   relationships(analysis, labels) {
-    const items = analysis.schemas?.relations;
+    const items = analysis.schema?.relations;
     if (!Array.isArray(items) || items.length === 0) return null;
     const rows = this.toRows(items, (r) => [
       r.from || "—",

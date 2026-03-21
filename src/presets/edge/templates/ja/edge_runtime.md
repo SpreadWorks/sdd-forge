@@ -8,13 +8,13 @@
 <!-- {%block "entry-points"%} -->
 ## エントリポイント
 
-<!-- {{data("edge.runtime.entryPoints", {labels: "関数|トリガー|ファイル|説明"})}} -->
-<!-- {{/data}} -->
+<!-- {{text({prompt: "エッジ関数のエントリポイント一覧（関数名、トリガー、ファイル、説明）を表形式で記述してください。"})}} -->
+<!-- {{/text}} -->
 <!-- {%/block%} -->
 
 <!-- {%block "constraints"%} -->
 ## ランタイム制約
 
-<!-- {{data("edge.runtime.constraints", {labels: "制約|値|説明"})}} -->
-<!-- {{/data}} -->
+<!-- {{text({prompt: "ランタイム制約の一覧（制約、値、説明）を表形式で記述してください。"})}} -->
+<!-- {{/text}} -->
 <!-- {%/block%} -->

@@ -17,7 +17,7 @@
 <!-- {%block "stack"%} -->
 ### Technology Stack
 
-<!-- {{text({prompt: "Describe the technology stack (category, technology, version) in table format."})}} -->
+<!-- {{text({prompt: "Describe the technology stack in table format with category, technology name, and version."})}} -->
 <!-- {{/text}} -->
 <!-- {%/block%} -->
 

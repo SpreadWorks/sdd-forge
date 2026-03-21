@@ -8,8 +8,8 @@
 <!-- {%block "endpoint-list"%} -->
 ## Endpoint List
 
-<!-- {{data("rest.endpoints.list", {labels: "Method|Path|Description"})}} -->
-<!-- {{/data}} -->
+<!-- {{text({prompt: "List the REST endpoints (method, path, description) in table format."})}} -->
+<!-- {{/text}} -->
 <!-- {%/block%} -->
 
 <!-- {%block "examples"%} -->

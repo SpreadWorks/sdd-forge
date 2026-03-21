@@ -8,13 +8,13 @@
 <!-- {%block "binding-list"%} -->
 ## バインディング一覧
 
-<!-- {{data("workers.bindings.list", {labels: "名前|種別|説明"})}} -->
-<!-- {{/data}} -->
+<!-- {{text({prompt: "バインディングの一覧（名前、種別、説明）を表形式で記述してください。"})}} -->
+<!-- {{/text}} -->
 <!-- {%/block%} -->
 
 <!-- {%block "env-vars"%} -->
 ## 環境変数
 
-<!-- {{data("workers.bindings.env", {labels: "名前|種別|説明"})}} -->
-<!-- {{/data}} -->
+<!-- {{text({prompt: "環境変数の一覧（名前、種別、説明）を表形式で記述してください。"})}} -->
+<!-- {{/text}} -->
 <!-- {%/block%} -->

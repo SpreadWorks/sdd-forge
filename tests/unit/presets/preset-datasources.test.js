@@ -111,17 +111,13 @@ describe("preset DataSource files exist", () => {
   const expected = {
     base: ["structure"],
     cli: ["commands"],
-    "node-cli": ["config"],
-    library: ["exports"],
     nextjs: ["routes", "components"],
     hono: ["middleware"],
     graphql: ["schema"],
-    rest: ["endpoints"],
     drizzle: ["schema"],
     workers: ["bindings"],
     edge: ["runtime"],
     storage: ["buckets"],
-    api: ["errors", "auth"],
     database: ["schema"],
     r2: ["storage"],
   };

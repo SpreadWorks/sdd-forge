@@ -1,11 +1,11 @@
 <!-- {%extends%} -->
 
 <!-- {%block "tables"%} -->
-<!-- {{data("drizzle.schema.tables", {labels: "Table|Columns|Description"})}} -->
-<!-- {{/data}} -->
+<!-- {{text({prompt: "List the table definitions (table name, columns, description) in table format."})}} -->
+<!-- {{/text}} -->
 <!-- {%/block%} -->
 
 <!-- {%block "relationships"%} -->
-<!-- {{data("drizzle.schema.relations", {labels: "From|To|Type|Foreign Key"})}} -->
-<!-- {{/data}} -->
+<!-- {{text({prompt: "Describe the table relations (from, to, type, foreign key) in table format."})}} -->
+<!-- {{/text}} -->
 <!-- {%/block%} -->

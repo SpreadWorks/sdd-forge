@@ -8,8 +8,8 @@
 <!-- {%block "buckets"%} -->
 ## Buckets & Containers
 
-<!-- {{data("storage.buckets.list", {labels: "Bucket|Provider|Description"})}} -->
-<!-- {{/data}} -->
+<!-- {{text({prompt: "List the storage buckets (bucket name, provider, description) in table format."})}} -->
+<!-- {{/text}} -->
 <!-- {%/block%} -->
 
 <!-- {%block "access"%} -->

@@ -14,7 +14,7 @@
 <!-- {%block "logic-list"%} -->
 ### Logic Class List
 
-<!-- {{text({prompt: "List the logic classes (class name, file, responsibility) in table format."})}} -->
+<!-- {{text({prompt: "List the logic classes with their file paths and responsibilities in table format."})}} -->
 <!-- {{/text}} -->
 <!-- {%/block%} -->
 
@@ -24,7 +24,7 @@
 <!-- {{text({prompt: "Describe the inheritance patterns and common method roles of logic classes.", mode: "deep"})}} -->
 <!-- {{/text}} -->
 
-<!-- {{text({prompt: "Describe the logic class inheritance structure and key methods in table format."})}} -->
+<!-- {{text({prompt: "Describe the inheritance hierarchy and key methods of logic classes in table format."})}} -->
 <!-- {{/text}} -->
 <!-- {%/block%} -->
 

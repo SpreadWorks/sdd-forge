@@ -17,6 +17,6 @@
 <!-- {%block "authorization"%} -->
 ## Authorization
 
-<!-- {{data("api.auth.roles", {labels: "Role|Permissions|Description"})}} -->
-<!-- {{/data}} -->
+<!-- {{text({prompt: "List the API roles and permissions in table format."})}} -->
+<!-- {{/text}} -->
 <!-- {%/block%} -->

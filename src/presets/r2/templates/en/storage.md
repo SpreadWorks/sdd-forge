@@ -1,11 +1,11 @@
 <!-- {%extends%} -->
 
 <!-- {%block "buckets"%} -->
-<!-- {{data("r2.storage.buckets", {labels: "Bucket|Binding|Description"})}} -->
-<!-- {{/data}} -->
+<!-- {{text({prompt: "List the R2 buckets (bucket name, binding, description) in table format."})}} -->
+<!-- {{/text}} -->
 <!-- {%/block%} -->
 
 <!-- {%block "access"%} -->
-<!-- {{data("r2.storage.access", {labels: "Method|Description"})}} -->
-<!-- {{/data}} -->
+<!-- {{text({prompt: "List the R2 storage access methods (method, description) in table format."})}} -->
+<!-- {{/text}} -->
 <!-- {%/block%} -->

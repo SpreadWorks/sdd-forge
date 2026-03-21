@@ -8,6 +8,6 @@
 <!-- {%block "middleware-list"%} -->
 ## ミドルウェア一覧
 
-<!-- {{data("hono.middleware.list", {labels: "ミドルウェア|説明"})}} -->
-<!-- {{/data}} -->
+<!-- {{text({prompt: "ミドルウェアの一覧と各ミドルウェアの役割を表形式で記述してください。"})}} -->
+<!-- {{/text}} -->
 <!-- {%/block%} -->

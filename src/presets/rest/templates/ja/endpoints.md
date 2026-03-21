@@ -8,8 +8,8 @@
 <!-- {%block "endpoint-list"%} -->
 ## エンドポイント一覧
 
-<!-- {{data("rest.endpoints.list", {labels: "メソッド|パス|説明"})}} -->
-<!-- {{/data}} -->
+<!-- {{text({prompt: "REST エンドポイントの一覧（メソッド、パス、説明）を表形式で記述してください。"})}} -->
+<!-- {{/text}} -->
 <!-- {%/block%} -->
 
 <!-- {%block "examples"%} -->

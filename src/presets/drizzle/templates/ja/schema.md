@@ -8,8 +8,8 @@
 <!-- {%block "schema-files"%} -->
 ## スキーマファイル
 
-<!-- {{data("drizzle.schema.files", {labels: "ファイル|テーブル|説明"})}} -->
-<!-- {{/data}} -->
+<!-- {{text({prompt: "スキーマ定義ファイルの一覧（ファイル名、定義テーブル、説明）を表形式で記述してください。"})}} -->
+<!-- {{/text}} -->
 <!-- {%/block%} -->
 
 <!-- {%block "migrations"%} -->

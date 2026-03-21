@@ -8,20 +8,20 @@
 <!-- {%block "types"%} -->
 ## Types
 
-<!-- {{data("graphql.schema.types", {labels: "Type|Fields|Description"})}} -->
-<!-- {{/data}} -->
+<!-- {{text({prompt: "List the GraphQL type definitions (type name, fields, description) in table format."})}} -->
+<!-- {{/text}} -->
 <!-- {%/block%} -->
 
 <!-- {%block "queries"%} -->
 ## Queries
 
-<!-- {{data("graphql.schema.queries", {labels: "Query|Args|Return|Description"})}} -->
-<!-- {{/data}} -->
+<!-- {{text({prompt: "List the GraphQL queries (query name, args, return type, description) in table format."})}} -->
+<!-- {{/text}} -->
 <!-- {%/block%} -->
 
 <!-- {%block "mutations"%} -->
 ## Mutations
 
-<!-- {{data("graphql.schema.mutations", {labels: "Mutation|Args|Return|Description"})}} -->
-<!-- {{/data}} -->
+<!-- {{text({prompt: "List the GraphQL mutations (name, args, return type, description) in table format."})}} -->
+<!-- {{/text}} -->
 <!-- {%/block%} -->

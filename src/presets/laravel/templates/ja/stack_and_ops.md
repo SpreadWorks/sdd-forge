@@ -8,8 +8,8 @@
 
 ### docker-compose.yml 構成
 
-<!-- {{data("laravel.docker.list", {labels: "サービス|コンテナ名|ポート|イメージ"})}} -->
-<!-- {{/data}} -->
+<!-- {{text({prompt: "docker-compose.yml のサービス構成を表形式で記述してください。サービス名、コンテナ名、ポート、イメージを含めること。"})}} -->
+<!-- {{/text}} -->
 
 ### ミドルウェア
 

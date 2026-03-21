@@ -1,11 +1,11 @@
 <!-- {%extends%} -->
 
 <!-- {%block "entry-points"%} -->
-<!-- {{data("workers.bindings.entryPoints", {labels: "Route|Trigger|File|Description"})}} -->
-<!-- {{/data}} -->
+<!-- {{text({prompt: "List the entry points (route, trigger, file, description) in table format."})}} -->
+<!-- {{/text}} -->
 <!-- {%/block%} -->
 
 <!-- {%block "constraints"%} -->
-<!-- {{data("workers.bindings.constraints", {labels: "Constraint|Value|Description"})}} -->
-<!-- {{/data}} -->
+<!-- {{text({prompt: "List the runtime constraints (constraint, value, description) in table format."})}} -->
+<!-- {{/text}} -->
 <!-- {%/block%} -->

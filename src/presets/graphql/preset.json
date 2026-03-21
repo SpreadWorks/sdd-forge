@@ -10,5 +10,9 @@
     "api_overview.md",
     "authentication.md",
     "schema.md"
-  ]
+  ],
+  "scan": {
+    "include": ["**/*.graphql", "**/*.gql", "**/schema.ts", "**/schema.js"],
+    "exclude": ["node_modules/**"]
+  }
 }

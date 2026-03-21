@@ -1,11 +1,11 @@
 <!-- {%extends%} -->
 
 <!-- {%block "entry-points"%} -->
-<!-- {{data("workers.bindings.entryPoints", {labels: "ルート|トリガー|ファイル|説明"})}} -->
-<!-- {{/data}} -->
+<!-- {{text({prompt: "エントリポイントの一覧（ルート、トリガー、ファイル、説明）を表形式で記述してください。"})}} -->
+<!-- {{/text}} -->
 <!-- {%/block%} -->
 
 <!-- {%block "constraints"%} -->
-<!-- {{data("workers.bindings.constraints", {labels: "制約|値|説明"})}} -->
-<!-- {{/data}} -->
+<!-- {{text({prompt: "ランタイム制約の一覧（制約、値、説明）を表形式で記述してください。"})}} -->
+<!-- {{/text}} -->
 <!-- {%/block%} -->

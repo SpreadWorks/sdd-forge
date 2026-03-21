@@ -204,16 +204,10 @@ describe("parent chain: data", () => {
   let tmp;
   afterEach(() => tmp && removeTmpDir(tmp));
 
-  it("node-cli data resolves config.stack directive via parent chain", () => {
+  it("node-cli stack_and_ops uses text directive instead of data for config.stack", () => {
     tmp = createTmpDir();
     setupFromFixture(tmp, "node-cli", {
       docs: { languages: ["ja"], defaultLanguage: "ja" },
-    });
-
-    // Run scan to get real analysis data
-    execFileSync("node", [SCAN_CMD], {
-      encoding: "utf8",
-      env: makeEnv(tmp),
     });
 
     // Run init to create chapter files
@@ -222,38 +216,17 @@ describe("parent chain: data", () => {
       env: makeEnv(tmp),
     });
 
-    // Find the stack_and_ops chapter file and ensure it has a config.stack directive
+    // Find the stack_and_ops chapter file
     const docsDir = join(tmp, "docs");
     const files = fs.readdirSync(docsDir).filter((f) => f.includes("stack_and_ops"));
     assert.ok(files.length > 0, "stack_and_ops chapter should exist");
 
     const stackFile = join(docsDir, files[0]);
-    const before = fs.readFileSync(stackFile, "utf8");
+    const content = fs.readFileSync(stackFile, "utf8");
 
-    // If no config.stack directive exists yet, add one for testing
-    if (!before.includes("config.stack")) {
-      const content = before + '\n<!-- {{data("node-cli.config.stack", {labels: "Category|Technology|Version"})}} -->\nplaceholder\n<!-- {{/data}} -->\n';
-      fs.writeFileSync(stackFile, content);
-    }
-
-    // Run data to resolve directives
-    execFileSync("node", [DATA_CMD], {
-      encoding: "utf8",
-      env: makeEnv(tmp),
-    });
-
-    const after = fs.readFileSync(stackFile, "utf8");
-
-    // The config.stack directive should be resolved (not just "placeholder")
-    // config.stack reads package.json dependencies via parent chain
-    assert.ok(!after.includes("placeholder"), "config.stack directive should be resolved, not placeholder");
-
-    // Should contain actual technology info from package.json
-    // The node-cli fixture has commander, chalk etc. in package.json
-    assert.ok(
-      after.includes("Category") || after.includes("Technology") || after.includes("ES Modules") || after.includes("Runtime"),
-      "resolved config.stack should contain technology information",
-    );
+    // base template uses {{text}} for stack section (not {{data}})
+    // since node-cli has no config.stack scan DataSource
+    assert.ok(!content.includes("config.stack"), "should not contain config.stack data directive");
   });
 
   it("laravel data resolves config.composer directive via laravel DataSource", () => {

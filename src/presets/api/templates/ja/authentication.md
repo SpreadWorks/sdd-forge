@@ -17,6 +17,6 @@
 <!-- {%block "authorization"%} -->
 ## 認可
 
-<!-- {{data("api.auth.roles", {labels: "ロール|権限|説明"})}} -->
-<!-- {{/data}} -->
+<!-- {{text({prompt: "API のロールと権限の一覧を表形式で記述してください。"})}} -->
+<!-- {{/text}} -->
 <!-- {%/block%} -->

@@ -8,8 +8,8 @@
 <!-- {%block "schema-files"%} -->
 ## Schema Files
 
-<!-- {{data("drizzle.schema.files", {labels: "File|Tables|Description"})}} -->
-<!-- {{/data}} -->
+<!-- {{text({prompt: "List the schema definition files (file, tables, description) in table format."})}} -->
+<!-- {{/text}} -->
 <!-- {%/block%} -->
 
 <!-- {%block "migrations"%} -->

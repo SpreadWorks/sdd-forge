@@ -10,8 +10,8 @@
 
 | Category | Technology |
 |----------|------------|
-<!-- {{data("webapp.config.stack")}} -->
-<!-- {{/data}} -->
+<!-- {{text({prompt: "Describe the technology stack in table rows with 'Category | Technology' format. No table header needed."})}} -->
+<!-- {{/text}} -->
 
 ## Quick Start
 

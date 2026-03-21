@@ -8,8 +8,8 @@
 
 ### docker-compose.yml Configuration
 
-<!-- {{data("laravel.docker.list", {labels: "Service|Container|Port|Image"})}} -->
-<!-- {{/data}} -->
+<!-- {{text({prompt: "Describe the docker-compose.yml service configuration in table format. Include service name, container name, ports, and image."})}} -->
+<!-- {{/text}} -->
 
 ### Middleware
 

@@ -35,7 +35,7 @@
 <!-- {%block "er-diagram"%} -->
 ### ER 図（主要テーブル）
 
-<!-- {{text({prompt: "主要テーブルの ER 図（親子関係）を mermaid erDiagram で生成してください。出力は mermaid コードブロックのみ。"})}} -->
+<!-- {{text({prompt: "主要テーブルの ER 図を mermaid erDiagram で生成してください。出力は mermaid コードブロックのみ。", mode: "deep"})}} -->
 <!-- {{/text}} -->
 <!-- {%/block%} -->
 <!-- {%/block%} -->

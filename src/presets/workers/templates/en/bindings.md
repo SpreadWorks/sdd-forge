@@ -8,13 +8,13 @@
 <!-- {%block "binding-list"%} -->
 ## Binding List
 
-<!-- {{data("workers.bindings.list", {labels: "Name|Type|Description"})}} -->
-<!-- {{/data}} -->
+<!-- {{text({prompt: "List the bindings (name, type, description) in table format."})}} -->
+<!-- {{/text}} -->
 <!-- {%/block%} -->
 
 <!-- {%block "env-vars"%} -->
 ## Environment Variables
 
-<!-- {{data("workers.bindings.env", {labels: "Name|Type|Description"})}} -->
-<!-- {{/data}} -->
+<!-- {{text({prompt: "List the environment variables (name, type, description) in table format."})}} -->
+<!-- {{/text}} -->
 <!-- {%/block%} -->

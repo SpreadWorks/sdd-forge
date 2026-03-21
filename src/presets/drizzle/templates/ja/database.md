@@ -1,11 +1,11 @@
 <!-- {%extends%} -->
 
 <!-- {%block "tables"%} -->
-<!-- {{data("drizzle.schema.tables", {labels: "テーブル|カラム|説明"})}} -->
-<!-- {{/data}} -->
+<!-- {{text({prompt: "テーブル定義の一覧（テーブル名、カラム、説明）を表形式で記述してください。"})}} -->
+<!-- {{/text}} -->
 <!-- {%/block%} -->
 
 <!-- {%block "relationships"%} -->
-<!-- {{data("drizzle.schema.relations", {labels: "元テーブル|先テーブル|種別|外部キー"})}} -->
-<!-- {{/data}} -->
+<!-- {{text({prompt: "テーブル間のリレーション（元テーブル、先テーブル、種別、外部キー）を表形式で記述してください。"})}} -->
+<!-- {{/text}} -->
 <!-- {%/block%} -->
