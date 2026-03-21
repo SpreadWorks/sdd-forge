@@ -15,7 +15,7 @@ import { repoRoot, parseArgs } from "../../lib/cli.js";
 import { sddDataDir, sddOutputDir } from "../../lib/config.js";
 import { collectFiles } from "../lib/scanner.js";
 import { loadDataSources } from "../lib/data-source-loader.js";
-import { presetByLeaf, resolveChainSafe } from "../../lib/presets.js";
+import { presetByLeaf, resolveChainSafe, resolveMultiChains } from "../../lib/presets.js";
 import { createLogger } from "../../lib/progress.js";
 import { translate } from "../../lib/i18n.js";
 import { resolveCommandContext } from "../lib/command-context.js";
@@ -215,24 +215,48 @@ async function main(ctx) {
   logger.verbose(`type=${type}`);
 
   // preset からスキャン設定を取得
-  // type が配列の場合は最初の要素を使用（scan は主要 preset のパターンで実行）
-  const primaryType = Array.isArray(type) ? type[0] : type;
-  const preset = presetByLeaf(primaryType);
-  const presetScan = preset?.scan || {};
+  // type が配列の場合は全 type のスキャンパターンをマージ
+  const types = Array.isArray(type) ? type : [type];
 
-  // config.json に scan があれば preset を完全置換、なければ preset のデフォルトを使用
-  const scanConfig = cfg.scan || presetScan;
+  let mergedInclude = [];
+  let mergedExclude = [];
+
+  if (cfg.scan) {
+    // config.json に scan があれば preset を完全置換
+    mergedInclude = cfg.scan.include || [];
+    mergedExclude = cfg.scan.exclude || [];
+  } else {
+    // 全 type チェーンからスキャンパターンを収集・マージ
+    const seenInclude = new Set();
+    const seenExclude = new Set();
+    for (const t of types) {
+      const preset = presetByLeaf(t);
+      const scan = preset?.scan;
+      if (!scan) continue;
+      for (const p of scan.include || []) {
+        if (!seenInclude.has(p)) { seenInclude.add(p); mergedInclude.push(p); }
+      }
+      for (const p of scan.exclude || []) {
+        if (!seenExclude.has(p)) { seenExclude.add(p); mergedExclude.push(p); }
+      }
+    }
+  }
 
   // glob パターンでファイルを一括収集
-  const files = collectFiles(src, scanConfig.include || [], scanConfig.exclude);
+  const files = collectFiles(src, mergedInclude, mergedExclude);
   logger.verbose(`collected ${files.length} files`);
 
-  // DataSource ロード: parent チェーン（root → leaf）+ project
-  const chain = resolveChainSafe(primaryType);
+  // DataSource ロード: 全 type チェーン + project
+  const chains = resolveMultiChains(types);
+  const seenDirs = new Set();
 
   let dataSources = new Map();
-  for (const p of chain) {
-    dataSources = await loadScanSources(path.join(p.dir, "data"), dataSources);
+  for (const chain of chains) {
+    for (const p of chain) {
+      if (seenDirs.has(p.dir)) continue;
+      seenDirs.add(p.dir);
+      dataSources = await loadScanSources(path.join(p.dir, "data"), dataSources);
+    }
   }
 
   const projectDataDir = sddDataDir(root);
