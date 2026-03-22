@@ -1,6 +1,6 @@
 ---
 name: sdd-forge.flow-impl
-description: Run the SDD implementation workflow. Use for coding, review iteration, and finalization after planning is complete.
+description: SDD 実装ワークフローを実行する。コーディング、レビュー、終了処理をカバー。
 ---
 
 # SDD Flow Impl
@@ -27,7 +27,7 @@ Available status values: `pending`, `in_progress`, `done`, `skipped`
 
 ## Choice Format
 
-Present choices in the following format:
+選択肢は以下の形式で表示すること:
 ```
 ──────────────────────────────────────────────────────────
   説明文（質問や状況の説明）
@@ -65,8 +65,7 @@ Before starting, run `sdd-forge flow status --check impl` to verify prerequisite
    - Present:
      ```
      ──────────────────────────────────────────────────────────
-       実装が完了しました。
-       コードレビューを実行します。
+       実装が完了しました。コードレビューを実行しますか？
      ──────────────────────────────────────────────────────────
 
        [1] はい
@@ -79,29 +78,37 @@ Before starting, run `sdd-forge flow status --check impl` to verify prerequisite
    - **If proposals exist** (APPROVED items in review.md):
      1. Display review summary in this format:
         ```
-        レビュー結果: N件の提案があります。
+        コードレビューの結果、N件の修正案が見つかりました。
+        うち N件を適用すべきと判断しました。
 
-        承認（修正推奨）:
-        - #2: <title> — <one-line description>
-        - #5: <title> — <one-line description>
+        適用する修正案:
+          #2: <title>
+              問題: <なぜこれが問題なのか>
+              修正: <どう修正するか>
 
-        却下（対応不要）:
-        - #1: <title> — <rejection reason>
-        - #3: <title> — <rejection reason>
+          #5: <title>
+              問題: <なぜこれが問題なのか>
+              修正: <どう修正するか>
+
+        対応不要と判断:
+          #1: <title>
+              理由: <対応不要な理由>
         ```
      2. Present:
         ```
         ──────────────────────────────────────────────────────────
-          承認された提案を適用します。
+          修正案を適用しますか？
         ──────────────────────────────────────────────────────────
 
-          [1] 適用する
-          [2] スキップ
-          [3] その他
+          [1] 判断に従って適用する
+          [2] すべての修正案を適用する
+          [3] スキップ
+          [4] その他
 
         ```
-     3. If 1 → Apply fixes based on approved proposals → Re-run tests to confirm no regressions.
-     4. If 2 → Skip fixes, proceed to Step 3.
+     3. If 1 → Apply fixes based on recommended proposals → Re-run tests to confirm no regressions.
+     4. If 2 → Apply all proposals (including those marked as no action needed) → Re-run tests.
+     5. If 3 → Skip fixes, proceed to Step 3.
    - **If no proposals** (NO_PROPOSALS):
      - Display: "レビューの結果、修正の必要はありませんでした。"
      - Proceed directly to Step 3 (no user confirmation needed).

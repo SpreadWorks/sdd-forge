@@ -54,10 +54,11 @@ Present choices in the following format:
 
 ## Behavior per Option
 
-- **Option 1 (Run all steps)**: Execute steps 1–6 in order without asking for each step.
+- **Option 1 (Run all steps)**: Execute steps 1–7 in order without asking for each step.
   - For step 4 (merge strategy), auto-detect: if `commands.gh` is `"enable"` in config AND `gh` command is available, use PR route. Otherwise use squash merge.
-- **Option 2 (Choose individually)**: Ask about all optional steps (3–6) upfront before executing any of them.
-  1. Present a single checklist for steps 3–6:
+  - For step 6 (documentation sync), auto-invoke for merge/squash routes, skip for PR route.
+- **Option 2 (Choose individually)**: Ask about all optional steps (3–7) upfront before executing any of them.
+  1. Present a single checklist for steps 3–7:
      ```
      ──────────────────────────────────────────────────────────
        Select steps to execute.
@@ -67,7 +68,8 @@ Present choices in the following format:
        [3] Commit
        [4] Merge / PR creation
        [5] Branch cleanup
-       [6] Archive
+       [6] Documentation sync
+       [7] Save work record
 
      ```
   2. Wait for the user's response.
@@ -98,10 +100,47 @@ Present choices in the following format:
 4. Merge or create PR.
    Determine strategy based on user choice and `gh` availability:
 
-   **4a. Squash merge route** (default when `gh` unavailable):
+   - **If `gh` is available**, present:
+     ```
+     ──────────────────────────────────────────────────────────
+       Choose merge method.
+     ──────────────────────────────────────────────────────────
+
+       [1] merge
+       [2] squash merge
+       [3] pull request (create PR to `<baseBranch>`)
+
+     ```
+   - **If `gh` is NOT available**, present:
+     ```
+     ──────────────────────────────────────────────────────────
+       Choose merge method.
+     ──────────────────────────────────────────────────────────
+
+       [1] merge
+       [2] squash merge
+
+     ```
+
+   **4a. merge route**:
+   - **On start**: `sdd-forge flow status --step merge --status in_progress`
+   - Record strategy: `sdd-forge flow status --note "merge: merge"`
+   - Determine approach based on flow.json state:
+     - **Worktree** (`worktree: true`):
+       - From the main repository: `git checkout <base-branch>` then `git merge <feature-branch>`.
+     - **Branch** (`featureBranch != baseBranch`, no worktree):
+       - `git checkout <base-branch>`
+       - `git merge <feature-branch>`
+     - **Spec-only** (`featureBranch == baseBranch`):
+       - Skip merge (already on the correct branch).
+   - Update flow.json: set `mergeStrategy` to `"merge"`.
+   - **On complete**: `sdd-forge flow status --step merge --status done`
+   - Mark `push` and `pr-create` as `skipped`.
+
+   **4b. squash merge route**:
    - **On start**: `sdd-forge flow status --step merge --status in_progress`
    - Record strategy: `sdd-forge flow status --note "merge: squash merge"`
-   - Determine merge approach based on flow.json state:
+   - Determine approach based on flow.json state:
      - **Worktree** (`worktree: true`):
        - Run `sdd-forge flow merge` (auto-detects worktree paths at runtime).
      - **Branch** (`featureBranch != baseBranch`, no worktree):
@@ -114,42 +153,30 @@ Present choices in the following format:
    - **On complete**: `sdd-forge flow status --step merge --status done`
    - Mark `push` and `pr-create` as `skipped`.
 
-   **4b. PR route** (when `gh` is available and user chooses PR):
-   - Present:
-     ```
-     ──────────────────────────────────────────────────────────
-       Choose merge method.
-     ──────────────────────────────────────────────────────────
-
-       [1] Squash merge (merge locally)
-       [2] Pull Request (create PR to `<baseBranch>`)
-
-     ```
-   - If 1 → Execute 4a above.
-   - If 2 → Execute PR route:
-     - **Push**: `sdd-forge flow status --step push --status in_progress`
-       - Determine remote from config: `flow.push.remote` (default: `"origin"`).
-       - Run `sdd-forge flow merge --pr --dry-run` to preview, then `sdd-forge flow merge --pr` to execute.
-       - `sdd-forge flow status --step push --status done`
-     - **PR create**: `sdd-forge flow status --step pr-create --status in_progress`
-       - PR is created by `sdd-forge flow merge --pr`.
-       - `sdd-forge flow status --step pr-create --status done`
-     - Update flow.json: set `mergeStrategy` to `"pr"`.
-     - Record: `sdd-forge flow status --note "merge: PR route"`
-     - Mark `merge` as `skipped`.
+   **4c. PR route** (when user chooses pull request):
+   - **Push**: `sdd-forge flow status --step push --status in_progress`
+     - Determine remote from config: `flow.push.remote` (default: `"origin"`).
+     - Run `sdd-forge flow merge --pr --dry-run` to preview, then `sdd-forge flow merge --pr` to execute.
+     - `sdd-forge flow status --step push --status done`
+   - **PR create**: `sdd-forge flow status --step pr-create --status in_progress`
+     - PR is created by `sdd-forge flow merge --pr`.
+     - `sdd-forge flow status --step pr-create --status done`
+   - Update flow.json: set `mergeStrategy` to `"pr"`.
+   - Record: `sdd-forge flow status --note "merge: PR route"`
+   - Mark `merge` as `skipped`.
 
 5. Clean up.
    - **On start**: `sdd-forge flow status --step branch-cleanup --status in_progress`
-   - **If PR route was used**: Skip cleanup (branch is needed for the PR).
+   - **If PR route was used**: Skip cleanup.
      - `sdd-forge flow status --step branch-cleanup --status skipped`
-     - Inform user: "Branch cleanup skipped for PR route (handled by flow-sync)."
-   - **If squash merge route**:
+     - Inform user: "Branch cleanup is not performed for pull requests."
+   - **If merge/squash merge route**:
      Determine cleanup strategy based on flow.json state:
      - **Worktree** (`worktree: true`):
        - Present:
          ```
          ──────────────────────────────────────────────────────────
-           Removing worktree.
+           Remove worktree?
          ──────────────────────────────────────────────────────────
 
            [1] Remove
@@ -166,12 +193,33 @@ Present choices in the following format:
    - **On complete**: `sdd-forge flow status --step branch-cleanup --status done`
    - **If skipped**: `sdd-forge flow status --step branch-cleanup --status skipped`
 
-6. Archive flow.json & final verification.
+6. Documentation sync.
+   - **If PR route was used**: Skip documentation sync.
+   - **If merge/squash merge route**:
+     - Present:
+       ```
+       ──────────────────────────────────────────────────────────
+         Sync documentation?
+       ──────────────────────────────────────────────────────────
+
+         [1] Yes
+         [2] Skip
+
+       ```
+     - 1 → Invoke `/sdd-forge.flow-sync` using the Skill tool.
+     - 2 → Skip.
+
+7. Save work record & final verification.
    - **On start**: `sdd-forge flow status --step archive --status in_progress`
    - **Archive flow.json**: Run `sdd-forge flow status --archive` to move `.sdd-forge/flow.json` to the spec directory for historical record.
    - `git status --short` — confirm tree is clean.
    - Report result to user.
-   - If PR route was used, remind user: "Run `/sdd-forge.flow-sync` to sync documentation."
+   - If PR route was used, display:
+     ```
+     After PR merge, run the following:
+     - Delete branch: git branch -D <featureBranch>
+     - Sync documentation: sdd-forge build or /sdd-forge.flow-sync
+     ```
    - **On complete**: Step is marked done by `--archive` command.
 
 ## Worktree Mode

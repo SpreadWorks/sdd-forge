@@ -65,8 +65,7 @@ Before starting, run `sdd-forge flow status --check impl` to verify prerequisite
    - Present:
      ```
      ──────────────────────────────────────────────────────────
-       Implementation is complete.
-       Running code review.
+       Implementation is complete. Run code review?
      ──────────────────────────────────────────────────────────
 
        [1] Yes
@@ -79,29 +78,37 @@ Before starting, run `sdd-forge flow status --check impl` to verify prerequisite
    - **If proposals exist** (APPROVED items in review.md):
      1. Display review summary in this format:
         ```
-        Review result: N proposal(s).
+        Code review found N proposal(s).
+        N are recommended for application.
 
-        Approved (fix recommended):
-        - #2: <title> — <one-line description>
-        - #5: <title> — <one-line description>
+        Proposals to apply:
+          #2: <title>
+              Issue: <why this is a problem>
+              Fix: <what to change>
 
-        Rejected (no action needed):
-        - #1: <title> — <rejection reason>
-        - #3: <title> — <rejection reason>
+          #5: <title>
+              Issue: <why this is a problem>
+              Fix: <what to change>
+
+        No action needed:
+          #1: <title>
+              Reason: <why no action is needed>
         ```
      2. Present:
         ```
         ──────────────────────────────────────────────────────────
-          Applying approved proposals.
+          Apply the recommended proposals?
         ──────────────────────────────────────────────────────────
 
-          [1] Apply
-          [2] Skip
-          [3] Other
+          [1] Apply recommended
+          [2] Apply all proposals
+          [3] Skip
+          [4] Other
 
         ```
-     3. If 1 → Apply fixes based on approved proposals → Re-run tests to confirm no regressions.
-     4. If 2 → Skip fixes, proceed to Step 3.
+     3. If 1 → Apply fixes based on recommended proposals → Re-run tests to confirm no regressions.
+     4. If 2 → Apply all proposals (including those marked as no action needed) → Re-run tests.
+     5. If 3 → Skip fixes, proceed to Step 3.
    - **If no proposals** (NO_PROPOSALS):
      - Display: "Review found no issues requiring changes."
      - Proceed directly to Step 3 (no user confirmation needed).

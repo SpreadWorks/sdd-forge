@@ -30,9 +30,9 @@ Available status values: `pending`, `in_progress`, `done`, `skipped`
 
 Present choices in the following format:
 ```
-────────────────────────────────────────────────────────────────────────────
+──────────────────────────────────────────────────────────
   Description (question or situation)
-────────────────────────────────────────────────────────────────────────────
+──────────────────────────────────────────────────────────
 
   [1] Label
   [2] Label
@@ -48,35 +48,35 @@ Present choices in the following format:
    - **Note**: `flow.json` does not exist yet at this point. Do NOT run `flow status --step` commands until after step 3.
    - Present:
      ```
-     ────────────────────────────────────────────────────────────────────────────
-       Choose how to organize requirements.
-     ────────────────────────────────────────────────────────────────────────────
+     ──────────────────────────────────────────────────────────
+       Choose how to create the spec.
+     ──────────────────────────────────────────────────────────
 
-       [1] Organize requirements before writing the spec
-       [2] Write the spec directly
+       [1] Organize requirements through Q&A before writing the spec
+       [2] Write the spec
 
      ```
    - Remember the choice for later. Proceed to step 2 regardless.
 
-2. Choose branching strategy.
+2. Choose work environment.
    - **Auto-detect**: Check if `.git` is a file (not directory) in the project root.
      - If yes → already in a worktree. Skip choice, use `--no-branch` automatically.
    - **User choice** (if not in a worktree):
      ```
-     ────────────────────────────────────────────────────────────────────────────
-       Choose a branching strategy.
-     ────────────────────────────────────────────────────────────────────────────
+     ──────────────────────────────────────────────────────────
+       Choose a work environment.
+     ──────────────────────────────────────────────────────────
 
-       [1] Branch (create a feature branch from `<current-branch>`)
-       [2] Worktree (work in an isolated environment)
-       [3] Spec only (no branch)
+       [1] Git worktree (work in an isolated environment)
+       [2] Branch (create a feature branch)
+       [3] No branch
 
      ```
    - For options 1 and 2:
      ```
-     ────────────────────────────────────────────────────────────────────────────
+     ──────────────────────────────────────────────────────────
        Branch from current branch (`<current-branch>`).
-     ────────────────────────────────────────────────────────────────────────────
+     ──────────────────────────────────────────────────────────
 
        [1] Yes
        [2] Specify a branch
@@ -86,9 +86,9 @@ Present choices in the following format:
      - 1 → use `--base <current-branch>`.
      - 2 → ask which branch and use `--base <user-specified-branch>`.
    - Commands:
-     - Branch: `sdd-forge spec init --title "..." --base <branch>`
      - Worktree: `sdd-forge spec init --title "..." --base <branch> --worktree`
-     - Spec only: `sdd-forge spec init --title "..." --no-branch`
+     - Branch: `sdd-forge spec init --title "..." --base <branch>`
+     - No branch: `sdd-forge spec init --title "..." --no-branch`
 
 3. Create or select spec.
    - **Before running spec init**, check for uncommitted changes: `git status --short`
@@ -142,12 +142,12 @@ Present choices in the following format:
    - Wait for approval before any implementation.
    - Present:
      ```
-     ────────────────────────────────────────────────────────────────────────────
-       Please review the spec.
-     ────────────────────────────────────────────────────────────────────────────
+     ──────────────────────────────────────────────────────────
+       Review the spec and approve it.
+     ──────────────────────────────────────────────────────────
 
-       [1] Proceed to implementation
-       [2] Revise the spec
+       [1] Approve
+       [2] Revise
        [3] Other
 
      ```
@@ -175,32 +175,31 @@ Present choices in the following format:
    - **If test environment exists**:
      1. Present:
         ```
-        ────────────────────────────────────────────────────────────────────────────
+        ──────────────────────────────────────────────────────────
           Choose test type.
-        ────────────────────────────────────────────────────────────────────────────
+        ──────────────────────────────────────────────────────────
 
-          [1] Unit tests
-          [2] E2E tests
-          [3] Both
-          [4] Let AI decide
+          [1] Write tests based on the spec
+          [2] Unit tests
+          [3] E2E tests
+          [4] Unit tests + E2E
 
         ```
-     2. Present test observations (medium granularity — what to verify, not how):
+     2. Present test content (medium granularity — what to verify, not how):
         ```
-        The following test observations will be used:
-        1. <observation 1>
-        2. <observation 2>
-        3. <observation 3>
+        The following test content will be used:
+        1. <item 1>
+        2. <item 2>
+        3. <item 3>
         ```
         Then present:
         ```
-        ────────────────────────────────────────────────────────────────────────────
-          Proceeding with the above test observations.
-        ────────────────────────────────────────────────────────────────────────────
+        ──────────────────────────────────────────────────────────
+          Proceeding with the above test content.
+        ──────────────────────────────────────────────────────────
 
           [1] Yes
           [2] Modify
-          [3] Other
 
         ```
      3. If 2, iterate until approved.
@@ -213,10 +212,10 @@ Present choices in the following format:
    - **On complete**: `sdd-forge flow status --step test --status done`
    - **After test step is done**:
      ```
-     ────────────────────────────────────────────────────────────────────────────
+     ──────────────────────────────────────────────────────────
        Planning phase is complete.
        Choose next action.
-     ────────────────────────────────────────────────────────────────────────────
+     ──────────────────────────────────────────────────────────
 
        [1] Proceed to implementation
        [2] Review the plan
@@ -236,7 +235,7 @@ When `worktree: true` in flow.json:
 
 - Do not implement before user approval.
 - Do not implement when gate FAIL.
-- Do not skip test observation review when test environment exists.
+- Do not skip test content review when test environment exists.
 - Do not proceed to next step without user confirmation.
 
 ## Clarification Rule

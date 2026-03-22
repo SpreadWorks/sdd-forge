@@ -5,16 +5,16 @@ description: SDD プランニングワークフローを実行する。仕様書
 
 # SDD Flow Plan
 
-機能追加や修正リクエストに対してこのワークフローを実行する。要件整理からテスト作成までのプランニングフェーズをカバーする。
+Run this workflow for any feature or fix request. This skill covers the planning phase: from requirements gathering through test writing.
 
 ## Core Principle
 
-**SDD フロー中のすべてのステップで、次の行動について必ずユーザーに確認する。**
-AI が勝手に次のステップに進まない。
+**Confirm with the user before proceeding to the next action at every step of the SDD flow.**
+The AI must not advance to the next step on its own.
 
 ## Flow Progress Tracking
 
-**MUST: 各ステップの完了時に `sdd-forge flow status --step <id> --status <val>` を実行してフロー進捗を記録する。**
+**MUST: Run `sdd-forge flow status --step <id> --status <val>` upon completion of each step to record flow progress.**
 
 Available step IDs (this skill): `approach`, `branch`, `spec`, `draft`, `fill-spec`, `approval`, `gate`, `test`
 Available status values: `pending`, `in_progress`, `done`, `skipped`
@@ -39,8 +39,8 @@ Available status values: `pending`, `in_progress`, `done`, `skipped`
   [3] その他
 
 ```
-- 説明文と選択肢を一文にまとめない。説明文は罫線の中、選択肢は罫線の外。
-- 選択肢の前後に空行を入れる。
+- Do not combine the description and choices into one sentence. Description goes inside the lines, choices go outside.
+- Add blank lines before and after the choices.
 
 ## Required Sequence
 
@@ -49,27 +49,27 @@ Available status values: `pending`, `in_progress`, `done`, `skipped`
    - Present:
      ```
      ──────────────────────────────────────────────────────────
-       要件の整理方法を選択してください。
+       仕様書の作成方法を選択してください。
      ──────────────────────────────────────────────────────────
 
-       [1] 要件を整理してから仕様書を作成する
-       [2] 仕様書を直接作成する
+       [1] Q&A で要件を整理してから仕様書を作成する
+       [2] 仕様書を作成する
 
      ```
    - Remember the choice for later. Proceed to step 2 regardless.
 
-2. Choose branching strategy.
+2. Choose work environment.
    - **Auto-detect**: Check if `.git` is a file (not directory) in the project root.
      - If yes → already in a worktree. Skip choice, use `--no-branch` automatically.
    - **User choice** (if not in a worktree):
      ```
      ──────────────────────────────────────────────────────────
-       ブランチ戦略を選択してください。
+       作業環境を選択してください。
      ──────────────────────────────────────────────────────────
 
-       [1] Branch（`<current-branch>` から feature ブランチを作成）
-       [2] Worktree（隔離環境で作業）
-       [3] Spec only（ブランチなし）
+       [1] Git worktree（隔離した環境で作業）
+       [2] Branch（feature ブランチを作成）
+       [3] ブランチを作成しない
 
      ```
    - For options 1 and 2:
@@ -86,9 +86,9 @@ Available status values: `pending`, `in_progress`, `done`, `skipped`
      - 1 → use `--base <current-branch>`.
      - 2 → ask which branch and use `--base <user-specified-branch>`.
    - Commands:
-     - Branch: `sdd-forge spec init --title "..." --base <branch>`
      - Worktree: `sdd-forge spec init --title "..." --base <branch> --worktree`
-     - Spec only: `sdd-forge spec init --title "..." --no-branch`
+     - Branch: `sdd-forge spec init --title "..." --base <branch>`
+     - No branch: `sdd-forge spec init --title "..." --no-branch`
 
 3. Create or select spec.
    - **Before running spec init**, check for uncommitted changes: `git status --short`
@@ -143,11 +143,11 @@ Available status values: `pending`, `in_progress`, `done`, `skipped`
    - Present:
      ```
      ──────────────────────────────────────────────────────────
-       spec の内容を確認してください。
+       仕様書の内容を確認し、承認してください。
      ──────────────────────────────────────────────────────────
 
-       [1] 実装する
-       [2] 仕様書を修正する
+       [1] 承認する
+       [2] 修正する
        [3] その他
 
      ```
@@ -179,28 +179,27 @@ Available status values: `pending`, `in_progress`, `done`, `skipped`
           テストの種類を選択してください。
         ──────────────────────────────────────────────────────────
 
-          [1] ユニットテスト
-          [2] E2Eテスト
-          [3] 両方
-          [4] 任せる
+          [1] 仕様に基づいてテストを作成する
+          [2] ユニットテスト
+          [3] E2Eテスト
+          [4] ユニットテスト + E2E
 
         ```
-     2. Present test observations (medium granularity — what to verify, not how):
+     2. Present test content (medium granularity — what to verify, not how):
         ```
-        以下のテスト観点で実施します:
-        1. <observation 1>
-        2. <observation 2>
-        3. <observation 3>
+        以下のテスト内容で実施します:
+        1. <item 1>
+        2. <item 2>
+        3. <item 3>
         ```
         Then present:
         ```
         ──────────────────────────────────────────────────────────
-          上記のテスト観点で進めます。
+          上記のテスト内容で進めます。
         ──────────────────────────────────────────────────────────
 
           [1] はい
           [2] 変更する
-          [3] その他
 
         ```
      3. If 2, iterate until approved.
@@ -236,7 +235,7 @@ When `worktree: true` in flow.json:
 
 - Do not implement before user approval.
 - Do not implement when gate FAIL.
-- Do not skip test observation review when test environment exists.
+- Do not skip test content review when test environment exists.
 - Do not proceed to next step without user confirmation.
 
 ## Clarification Rule
