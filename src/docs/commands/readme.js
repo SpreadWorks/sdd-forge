@@ -18,7 +18,7 @@ import { createResolver } from "../lib/resolver-factory.js";
 import { resolveDataDirectives, stripBlockDirectives, parseDirectives } from "../lib/directive-parser.js";
 import { createLogger } from "../../lib/progress.js";
 import { resolveCommandContext, loadFullAnalysis } from "../lib/command-context.js";
-import { processTemplateFileBatch } from "./text.js";
+import { processTemplate } from "./text.js";
 import { buildTextSystemPrompt } from "../lib/text-prompts.js";
 import { loadConfig, resolveConcurrency } from "../../lib/config.js";
 import { loadAgentConfig, ensureAgentWorkDir, DEFAULT_AGENT_TIMEOUT } from "../../lib/agent.js";
@@ -135,7 +135,10 @@ async function main(ctx) {
   );
   let resolved = resolveResult.text;
 
-  // {{text}} ディレクティブを処理
+  // {{text}} ディレクティブを処理（per-directive モード）
+  // README.md は {{data}} 解決済みの大きなコンテンツを含むため、
+  // バッチモードでは AI が構造を維持できず充填に失敗する。
+  // per-directive モードで各ディレクティブを個別に処理する。
   const textDirectives = parseDirectives(resolved).filter((d) => d.type === "text");
   if (textDirectives.length > 0 && !ctx.dryRun) {
     try {
@@ -147,7 +150,7 @@ async function main(ctx) {
       const systemPrompt = buildTextSystemPrompt(documentStyle, lang);
       const timeoutMs = DEFAULT_AGENT_TIMEOUT * 1000;
 
-      const result = await processTemplateFileBatch(
+      const result = await processTemplate(
         resolved, analysis, "README.md", agent, timeoutMs,
         root, false, [], systemPrompt, undefined, undefined, lang, ctx.srcRoot || root,
       );

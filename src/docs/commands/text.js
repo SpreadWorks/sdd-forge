@@ -708,6 +708,6 @@ async function main(ctx) {
   return { errors };
 }
 
-export { main, stripFillContent, countFilledInBatch, processTemplateFileBatch, allTextDirectivesFilled, validateBatchResult, getAffectedChapters };
+export { main, stripFillContent, countFilledInBatch, processTemplateFileBatch, processTemplate, allTextDirectivesFilled, validateBatchResult, getAffectedChapters };
 
 runIfDirect(import.meta.url, main);
