@@ -11,5 +11,9 @@
     "authentication.md",
     "controller_routes.md",
     "middleware.md"
-  ]
+  ],
+  "scan": {
+    "include": ["src/**/*.ts", "src/**/*.js", "src/**/*.mjs", "package.json", "tsconfig.json", "wrangler.toml"],
+    "exclude": ["node_modules/**", "dist/**"]
+  }
 }

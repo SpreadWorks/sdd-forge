@@ -1,8 +1,8 @@
 import { describe, it, afterEach } from "node:test";
 import assert from "node:assert/strict";
-import { createTmpDir, removeTmpDir, writeFile } from "../../../helpers/tmp-dir.js";
-import { analyzeControllers } from "../../../../src/presets/symfony/scan/controllers.js";
-import { analyzeRoutes } from "../../../../src/presets/symfony/scan/routes.js";
+import { createTmpDir, removeTmpDir, writeFile } from "../../../../../tests/helpers/tmp-dir.js";
+import { analyzeControllers } from "../../scan/controllers.js";
+import { analyzeRoutes } from "../../scan/routes.js";
 
 // ---------------------------------------------------------------------------
 // Shared helper: collectAttributeBlock

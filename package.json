@@ -11,7 +11,8 @@
     "sdd-forge": "./src/sdd-forge.js"
   },
   "files": [
-    "src/"
+    "src/",
+    "!src/presets/*/tests/"
   ],
   "engines": {
     "node": ">=18.0.0"
@@ -24,9 +25,9 @@
     "technical-docs"
   ],
   "scripts": {
-    "test": "find tests/unit tests/e2e -name '*.test.js' | xargs node --test",
-    "test:unit": "find tests/unit -name '*.test.js' | xargs node --test",
-    "test:e2e": "find tests/e2e -name '*.test.js' | xargs node --test",
+    "test": "node tests/run.js",
+    "test:unit": "node tests/run.js --scope unit",
+    "test:e2e": "node tests/run.js --scope e2e",
     "test:acceptance": "node tests/acceptance/run.js"
   },
   "license": "MIT"

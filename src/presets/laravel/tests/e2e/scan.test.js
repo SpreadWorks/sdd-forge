@@ -5,25 +5,24 @@ import path from "path";
 import { fileURLToPath } from "url";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const presetPath = path.resolve(__dirname, "../../../../src/presets/symfony/preset.json");
+const presetPath = path.resolve(__dirname, "../../preset.json");
 
-describe("Symfony preset.json scan config", () => {
+describe("Laravel preset.json scan config", () => {
   const preset = JSON.parse(fs.readFileSync(presetPath, "utf8"));
   const scan = preset.scan;
 
   it("has include array with PHP source globs", () => {
     assert.ok(Array.isArray(scan.include));
     assert.ok(scan.include.length > 0);
-    assert.ok(scan.include.some((g) => g.includes("src/**/*.php")));
+    assert.ok(scan.include.some((g) => g.includes("app/**/*.php")));
   });
 
-  it("includes config files (PHP and YAML)", () => {
-    assert.ok(scan.include.some((g) => g.includes("config") && g.includes(".php")));
-    assert.ok(scan.include.some((g) => g.includes("config") && g.includes(".yaml")));
+  it("includes route files", () => {
+    assert.ok(scan.include.some((g) => g.includes("routes")));
   });
 
   it("includes migration files", () => {
-    assert.ok(scan.include.some((g) => g.includes("migrations")));
+    assert.ok(scan.include.some((g) => g.includes("database/migrations")));
   });
 
   it("includes composer.json", () => {

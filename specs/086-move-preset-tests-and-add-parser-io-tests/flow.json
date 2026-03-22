@@ -1,0 +1,191 @@
+{
+  "spec": "specs/086-move-preset-tests-and-add-parser-io-tests/spec.md",
+  "baseBranch": "main",
+  "featureBranch": "feature/086-move-preset-tests-and-add-parser-io-tests",
+  "steps": [
+    {
+      "id": "approach",
+      "status": "done"
+    },
+    {
+      "id": "branch",
+      "status": "done"
+    },
+    {
+      "id": "spec",
+      "status": "done"
+    },
+    {
+      "id": "draft",
+      "status": "done"
+    },
+    {
+      "id": "fill-spec",
+      "status": "done"
+    },
+    {
+      "id": "approval",
+      "status": "done"
+    },
+    {
+      "id": "gate",
+      "status": "done"
+    },
+    {
+      "id": "test",
+      "status": "done"
+    },
+    {
+      "id": "implement",
+      "status": "done"
+    },
+    {
+      "id": "review",
+      "status": "done"
+    },
+    {
+      "id": "finalize",
+      "status": "done"
+    },
+    {
+      "id": "commit",
+      "status": "done"
+    },
+    {
+      "id": "push",
+      "status": "done"
+    },
+    {
+      "id": "merge",
+      "status": "skipped"
+    },
+    {
+      "id": "pr-create",
+      "status": "done"
+    },
+    {
+      "id": "branch-cleanup",
+      "status": "skipped"
+    },
+    {
+      "id": "archive",
+      "status": "done"
+    },
+    {
+      "id": "pr-merge",
+      "status": "pending"
+    },
+    {
+      "id": "sync-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "docs-update",
+      "status": "pending"
+    },
+    {
+      "id": "docs-review",
+      "status": "pending"
+    },
+    {
+      "id": "docs-commit",
+      "status": "pending"
+    }
+  ],
+  "requirements": [
+    {
+      "desc": "R1: laravel テスト移動",
+      "status": "done"
+    },
+    {
+      "desc": "R2: symfony テスト移動",
+      "status": "done"
+    },
+    {
+      "desc": "R3: import パス更新",
+      "status": "done"
+    },
+    {
+      "desc": "R4: 移動元削除",
+      "status": "done"
+    },
+    {
+      "desc": "R5: test スクリプト更新",
+      "status": "done"
+    },
+    {
+      "desc": "R6: --preset オプション",
+      "status": "done"
+    },
+    {
+      "desc": "R7: プリセット名動的検証",
+      "status": "done"
+    },
+    {
+      "desc": "R8: エラー処理",
+      "status": "done"
+    },
+    {
+      "desc": "R9: laravel I/O テスト",
+      "status": "done"
+    },
+    {
+      "desc": "R10: symfony I/O テスト",
+      "status": "done"
+    },
+    {
+      "desc": "R11: cakephp2 I/O テスト",
+      "status": "done"
+    },
+    {
+      "desc": "R12: drizzle scan",
+      "status": "done"
+    },
+    {
+      "desc": "R13: workers scan",
+      "status": "done"
+    },
+    {
+      "desc": "R14: nextjs scan",
+      "status": "done"
+    },
+    {
+      "desc": "R15: hono scan",
+      "status": "done"
+    },
+    {
+      "desc": "R16: graphql scan",
+      "status": "done"
+    },
+    {
+      "desc": "R17: 親プリセット置換",
+      "status": "done"
+    },
+    {
+      "desc": "R18: 新規 scan テスト",
+      "status": "done"
+    },
+    {
+      "desc": "R19: npm publish 除外",
+      "status": "done"
+    },
+    {
+      "desc": "R20: npm pack 確認",
+      "status": "done"
+    },
+    {
+      "desc": "R21: AGENTS.md 作成手順",
+      "status": "done"
+    },
+    {
+      "desc": "R22: AGENTS.md テストルール",
+      "status": "done"
+    }
+  ],
+  "worktree": true,
+  "request": "Issue #11: プリセットテストを src/presets/*/tests/ に移動し、パーサーI/Oテストを追加する",
+  "notes": [
+    "draft: 1 spec でまとめ、unit/e2e 維持、新規5プリセットの scan 作成含む",
+    "merge: PR route"
+  ]
+}

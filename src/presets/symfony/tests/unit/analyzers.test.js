@@ -1,11 +1,11 @@
 import { describe, it, afterEach } from "node:test";
 import assert from "node:assert/strict";
-import { createTmpDir, removeTmpDir, writeFile } from "../../../helpers/tmp-dir.js";
-import { analyzeControllers } from "../../../../src/presets/symfony/scan/controllers.js";
-import { analyzeEntities } from "../../../../src/presets/symfony/scan/entities.js";
-import { analyzeRoutes } from "../../../../src/presets/symfony/scan/routes.js";
-import { analyzeMigrations } from "../../../../src/presets/symfony/scan/migrations.js";
-import { analyzeConfig } from "../../../../src/presets/symfony/scan/config.js";
+import { createTmpDir, removeTmpDir, writeFile } from "../../../../../tests/helpers/tmp-dir.js";
+import { analyzeControllers } from "../../scan/controllers.js";
+import { analyzeEntities } from "../../scan/entities.js";
+import { analyzeRoutes } from "../../scan/routes.js";
+import { analyzeMigrations } from "../../scan/migrations.js";
+import { analyzeConfig } from "../../scan/config.js";
 
 describe("Symfony analyze-controllers", () => {
   let tmp;
