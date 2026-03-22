@@ -139,6 +139,13 @@ presets/<key>/
 │   ├── config.js            設定解析
 │   ├── controllers.js       コントローラ解析
 │   └── ...
+├── scan/                    scan パーサー群
+│   ├── routes.js            ルート解析
+│   ├── config.js            設定解析
+│   └── ...
+├── tests/                   プリセット固有テスト
+│   ├── unit/                ユニットテスト（scan パーサー I/O テスト等）
+│   └── e2e/                 E2E テスト（統合スキャンテスト等）
 └── templates/               章テンプレート
     ├── ja/
     │   ├── overview.md
@@ -151,6 +158,25 @@ presets/<key>/
 ---
 
 ## プリセット作成ルール
+
+### MUST: プリセット作成手順（トップダウン設計）
+
+プリセットの構成要素は以下の順序で作成すること:
+
+1. **テンプレート** (`templates/`) — どんなドキュメントを出力するか定義する
+2. **DataSource** (`data/`) — テンプレートが必要とするデータを定義する
+3. **scan パーサー** (`scan/`) — DataSource にデータを供給するパーサーを実装する
+
+消費者（テンプレート）→ 仲介者（DataSource）→ 生産者（scan）の順に作ることで、不要なパーサーを書かず、必要なデータの漏れがなくなる。
+
+### MUST: プリセットテストの作成
+
+プリセットは `tests/` ディレクトリを含むこと。
+
+- `tests/unit/` — scan パーサーの I/O テスト。最小限のフィクスチャを `createTmpDir()` で作成し、パーサー関数の入出力を検証する
+- `tests/e2e/` — preset.json の scan 設定検証、フルスキャンパイプラインテスト
+- `npm test -- --preset <name>` でプリセット毎のテストを実行できること
+- テストファイルは npm パッケージには含まれない（package.json の `files` で除外済み）
 
 ### MUST: scan DataSource と data DataSource の対応
 
@@ -376,6 +402,17 @@ const child = spawn("claude", args, {
 3. **analysis キーのカバレッジ** — data DataSource が `analysis.X` を読むなら、`X` を書く scan DataSource がプリセットエコシステム内に存在する
 
 **新しいプリセットを追加・変更したら `npm test` を実行し、整合性テストがパスすることを確認すること。**
+
+### プリセット固有テスト
+
+プリセット固有テストの配置ルールとテスト内容は「プリセット作成ルール > MUST: プリセットテストの作成」を参照。
+
+**プリセット毎のテスト実行:**
+
+```bash
+npm test -- --preset laravel    # tests/unit + tests/e2e + src/presets/laravel/tests/
+npm test -- --preset symfony    # tests/unit + tests/e2e + src/presets/symfony/tests/
+```
 
 ### テストルール
 

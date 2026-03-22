@@ -2,7 +2,7 @@ import { describe, it, afterEach } from "node:test";
 import assert from "node:assert/strict";
 import { join } from "path";
 import { execFileSync } from "child_process";
-import { createTmpDir, removeTmpDir, writeFile, writeJson } from "../../../helpers/tmp-dir.js";
+import { createTmpDir, removeTmpDir, writeFile, writeJson } from "../../../../../tests/helpers/tmp-dir.js";
 
 const CMD = join(process.cwd(), "src/docs/commands/scan.js");
 

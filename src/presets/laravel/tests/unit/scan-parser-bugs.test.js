@@ -2,11 +2,11 @@ import { describe, it, afterEach } from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
-import { createTmpDir, removeTmpDir, writeFile } from "../../../helpers/tmp-dir.js";
-import { analyzeRoutes } from "../../../../src/presets/laravel/scan/routes.js";
-import { analyzeConfig } from "../../../../src/presets/laravel/scan/config.js";
+import { createTmpDir, removeTmpDir, writeFile } from "../../../../../tests/helpers/tmp-dir.js";
+import { analyzeRoutes } from "../../scan/routes.js";
+import { analyzeConfig } from "../../scan/config.js";
 
-const PRESETS_DIR = join(import.meta.dirname, "..", "..", "..", "..", "src", "presets");
+const PRESETS_DIR = join(import.meta.dirname, "..", "..", "..");
 
 describe("Route::resource URI parameters (R1)", () => {
   let tmp;

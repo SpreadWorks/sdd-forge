@@ -1,11 +1,11 @@
 import { describe, it, afterEach } from "node:test";
 import assert from "node:assert/strict";
-import { createTmpDir, removeTmpDir, writeFile } from "../../../helpers/tmp-dir.js";
-import { analyzeControllers } from "../../../../src/presets/laravel/scan/controllers.js";
-import { analyzeModels } from "../../../../src/presets/laravel/scan/models.js";
-import { analyzeRoutes } from "../../../../src/presets/laravel/scan/routes.js";
-import { analyzeMigrations } from "../../../../src/presets/laravel/scan/migrations.js";
-import { analyzeConfig } from "../../../../src/presets/laravel/scan/config.js";
+import { createTmpDir, removeTmpDir, writeFile } from "../../../../../tests/helpers/tmp-dir.js";
+import { analyzeControllers } from "../../scan/controllers.js";
+import { analyzeModels } from "../../scan/models.js";
+import { analyzeRoutes } from "../../scan/routes.js";
+import { analyzeMigrations } from "../../scan/migrations.js";
+import { analyzeConfig } from "../../scan/config.js";
 
 describe("Laravel analyze-controllers", () => {
   let tmp;
