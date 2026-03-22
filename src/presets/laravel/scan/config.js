@@ -29,6 +29,9 @@ export function analyzeConfig(sourceRoot) {
   // app/Http/Middleware/
   extras.middleware = parseMiddleware(sourceRoot);
 
+  // Middleware registration (Kernel.php or bootstrap/app.php)
+  extras.middlewareRegistration = parseMiddlewareRegistration(sourceRoot);
+
   return extras;
 }
 
@@ -75,6 +78,111 @@ function parseProviders(sourceRoot) {
       const hasBoot = /public\s+function\s+boot\s*\(/.test(content);
       return { file: path.join("app/Providers", f), className, hasRegister, hasBoot };
     });
+}
+
+function parseMiddlewareRegistration(sourceRoot) {
+  const result = { global: [], groups: {}, aliases: {} };
+
+  // Laravel 10: app/Http/Kernel.php
+  const kernelPath = path.join(sourceRoot, "app", "Http", "Kernel.php");
+  if (fs.existsSync(kernelPath)) {
+    const content = fs.readFileSync(kernelPath, "utf8");
+    Object.assign(result, parseKernelMiddleware(content));
+  }
+
+  // Laravel 11: bootstrap/app.php
+  const bootstrapPath = path.join(sourceRoot, "bootstrap", "app.php");
+  if (fs.existsSync(bootstrapPath)) {
+    const content = fs.readFileSync(bootstrapPath, "utf8");
+    mergeMiddlewareRegistration(result, parseBootstrapMiddleware(content));
+  }
+
+  return result;
+}
+
+function parseKernelMiddleware(content) {
+  const result = { global: [], groups: {}, aliases: {} };
+
+  // $middleware = [...]
+  const globalMatch = content.match(/\$middleware\s*=\s*\[([\s\S]*?)\];/);
+  if (globalMatch) {
+    result.global = extractClassNames(globalMatch[1]);
+  }
+
+  // $middlewareGroups = ['web' => [...], 'api' => [...]]
+  const groupsMatch = content.match(/\$middlewareGroups\s*=\s*\[([\s\S]*?)\];/);
+  if (groupsMatch) {
+    const groupRegex = /['"](\w+)['"]\s*=>\s*\[([\s\S]*?)\]/g;
+    let gm;
+    while ((gm = groupRegex.exec(groupsMatch[1])) !== null) {
+      result.groups[gm[1]] = extractClassNames(gm[2]);
+    }
+  }
+
+  // $middlewareAliases = ['auth' => Authenticate::class, ...]
+  // also $routeMiddleware (older Laravel versions)
+  const aliasMatch = content.match(/\$(?:middlewareAliases|routeMiddleware)\s*=\s*\[([\s\S]*?)\];/);
+  if (aliasMatch) {
+    result.aliases = parseAliasMap(aliasMatch[1]);
+  }
+
+  return result;
+}
+
+function parseBootstrapMiddleware(content) {
+  const result = { global: [], groups: {}, aliases: {} };
+
+  // ->append(ClassName::class) or ->prepend(ClassName::class)
+  const appendRegex = /->(?:append|prepend)\s*\(\s*([\w\\]+)(?:::class)?\s*\)/g;
+  let m;
+  while ((m = appendRegex.exec(content)) !== null) {
+    result.global.push(m[1].split("\\").pop());
+  }
+
+  // ->alias([...])
+  const aliasMatch = content.match(/->alias\s*\(\s*\[([\s\S]*?)\]\s*\)/);
+  if (aliasMatch) {
+    result.aliases = parseAliasMap(aliasMatch[1]);
+  }
+
+  // ->group('name', [...])
+  const groupRegex = /->group\s*\(\s*['"](\w+)['"]\s*,\s*\[([\s\S]*?)\]\s*\)/g;
+  while ((m = groupRegex.exec(content)) !== null) {
+    result.groups[m[1]] = extractClassNames(m[2]);
+  }
+
+  return result;
+}
+
+function parseAliasMap(str) {
+  const aliases = {};
+  const re = /['"](\w+)['"]\s*=>\s*([\w\\]+)(?:::class)?/g;
+  let m;
+  while ((m = re.exec(str)) !== null) {
+    aliases[m[1]] = m[2].split("\\").pop();
+  }
+  return aliases;
+}
+
+function extractClassNames(str) {
+  const names = [];
+  const re = /([\w\\]+)(?:::class)?/g;
+  let m;
+  while ((m = re.exec(str)) !== null) {
+    const name = m[1].split("\\").pop();
+    if (name && name[0] === name[0].toUpperCase() && name !== "class") {
+      names.push(name);
+    }
+  }
+  return names;
+}
+
+function mergeMiddlewareRegistration(target, source) {
+  target.global.push(...source.global);
+  for (const [key, value] of Object.entries(source.groups)) {
+    target.groups[key] = (target.groups[key] || []).concat(value);
+  }
+  Object.assign(target.aliases, source.aliases);
 }
 
 function parseMiddleware(sourceRoot) {

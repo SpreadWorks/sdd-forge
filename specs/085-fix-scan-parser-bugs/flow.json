@@ -1,0 +1,131 @@
+{
+  "spec": "specs/085-fix-scan-parser-bugs/spec.md",
+  "baseBranch": "main",
+  "featureBranch": "feature/085-fix-scan-parser-bugs",
+  "steps": [
+    {
+      "id": "approach",
+      "status": "done"
+    },
+    {
+      "id": "branch",
+      "status": "done"
+    },
+    {
+      "id": "spec",
+      "status": "done"
+    },
+    {
+      "id": "draft",
+      "status": "done"
+    },
+    {
+      "id": "fill-spec",
+      "status": "done"
+    },
+    {
+      "id": "approval",
+      "status": "done"
+    },
+    {
+      "id": "gate",
+      "status": "done"
+    },
+    {
+      "id": "test",
+      "status": "done"
+    },
+    {
+      "id": "implement",
+      "status": "done"
+    },
+    {
+      "id": "review",
+      "status": "done"
+    },
+    {
+      "id": "finalize",
+      "status": "done"
+    },
+    {
+      "id": "commit",
+      "status": "done"
+    },
+    {
+      "id": "push",
+      "status": "done"
+    },
+    {
+      "id": "merge",
+      "status": "skipped"
+    },
+    {
+      "id": "pr-create",
+      "status": "done"
+    },
+    {
+      "id": "branch-cleanup",
+      "status": "skipped"
+    },
+    {
+      "id": "archive",
+      "status": "done"
+    },
+    {
+      "id": "pr-merge",
+      "status": "pending"
+    },
+    {
+      "id": "sync-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "docs-update",
+      "status": "pending"
+    },
+    {
+      "id": "docs-review",
+      "status": "pending"
+    },
+    {
+      "id": "docs-commit",
+      "status": "pending"
+    }
+  ],
+  "requirements": [
+    {
+      "desc": "R1: Route::resource URI パラメータ付加",
+      "status": "done"
+    },
+    {
+      "desc": "R2: only/except 対応",
+      "status": "done"
+    },
+    {
+      "desc": "R3: ネストリソース展開",
+      "status": "done"
+    },
+    {
+      "desc": "R4: Laravel 11 middleware 解析",
+      "status": "done"
+    },
+    {
+      "desc": "R5: Laravel 10 Kernel.php middleware 解析",
+      "status": "done"
+    },
+    {
+      "desc": "R6: Symfony business_logic.md テンプレート追加",
+      "status": "done"
+    }
+  ],
+  "worktree": true,
+  "request": "issue #10: fix scan parser bugs (laravel routes, Laravel 11 middleware, symfony entity key mismatch)",
+  "notes": [
+    "approach: Q&A で要件整理",
+    "bug1-routes: resource URI パラメータ付加、only/except 解析、ネストリソース展開",
+    "bug2-middleware: Laravel 11 bootstrap/app.php + Laravel 10 Kernel.php 両方のグループ解析",
+    "bug3-symfony: business_logic.md に model-relations ブロック override 追加",
+    "review: #1 parseAliasMap共通化, #2 withMiddleware事前チェック削除, #4 filterResourceActions抽出を適用",
+    "merge: PR route"
+  ]
+}
