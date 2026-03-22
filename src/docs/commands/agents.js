@@ -18,6 +18,7 @@ import { createResolver } from "../lib/resolver-factory.js";
 import { createLogger } from "../../lib/progress.js";
 import { parseDirectives, replaceBlockDirective, resolveDataDirectives } from "../lib/directive-parser.js";
 import { resolveCommandContext, loadFullAnalysis, getChapterFiles, readText } from "../lib/command-context.js";
+import { loadSddTemplate } from "../../lib/agents-md.js";
 
 const logger = createLogger("agents");
 
@@ -152,7 +153,21 @@ async function main(ctx) {
 
   const agentsPath = path.join(srcRoot, "AGENTS.md");
   if (!fs.existsSync(agentsPath)) {
-    throw new Error(t("messages:agents.notFound", { path: agentsPath }));
+    // Generate from template
+    const sddSection = loadSddTemplate(lang || config?.lang || "en");
+    const template = [
+      `# ${path.basename(srcRoot)}`,
+      "",
+      '<!-- {{data("agents.sdd")}} -->',
+      sddSection,
+      "<!-- {{/data}} -->",
+      "",
+      '<!-- {{data("agents.project")}} -->',
+      "<!-- {{/data}} -->",
+      "",
+    ].join("\n");
+    fs.writeFileSync(agentsPath, template, "utf8");
+    logger.log(`created ${agentsPath}`);
   }
 
   // Load analysis

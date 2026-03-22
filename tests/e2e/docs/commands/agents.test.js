@@ -11,20 +11,20 @@ describe("agents CLI", () => {
   let tmp;
   afterEach(() => tmp && removeTmpDir(tmp));
 
-  it("exits non-zero when AGENTS.md is missing", () => {
+  it("creates AGENTS.md from template when missing", () => {
     tmp = createTmpDir();
     writeJson(tmp, ".sdd-forge/config.json", { lang: "ja", type: "cli", docs: { languages: ["ja"], defaultLanguage: "ja" } });
     writeJson(tmp, ".sdd-forge/output/analysis.json", { analyzedAt: "2026-01-01" });
+    writeJson(tmp, "package.json", { name: "test-pkg", version: "1.0.0" });
 
-    try {
-      execFileSync("node", [CMD], {
-        encoding: "utf8",
-        env: { ...process.env, SDD_WORK_ROOT: tmp, SDD_SOURCE_ROOT: tmp },
-      });
-      assert.fail("should exit non-zero");
-    } catch (err) {
-      assert.match(err.stderr, /not found|見つかりません/i);
-    }
+    assert.ok(!fs.existsSync(join(tmp, "AGENTS.md")), "AGENTS.md should not exist before");
+    execFileSync("node", [CMD], {
+      encoding: "utf8",
+      env: { ...process.env, SDD_WORK_ROOT: tmp, SDD_SOURCE_ROOT: tmp },
+    });
+    assert.ok(fs.existsSync(join(tmp, "AGENTS.md")), "AGENTS.md should be created");
+    const content = fs.readFileSync(join(tmp, "AGENTS.md"), "utf8");
+    assert.ok(content.includes("SDD"), "should contain SDD section");
   });
 
   it("exits non-zero when analysis.json is missing", () => {
