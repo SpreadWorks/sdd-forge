@@ -1,24 +1,16 @@
 <!-- {%extends%} -->
 
 <!-- {%block "dependencies"%} -->
-### PHP Dependencies (composer.json)
-
-<!-- {{data("symfony.config.composer", {labels: "Package|Version|Purpose"})}} -->
+<!-- {{data("symfony.config.composer", {header: "### PHP Dependencies (composer.json)\n", labels: "Package|Version|Purpose", ignoreError: true})}} -->
 <!-- {{/data}} -->
 
-### Symfony Bundles
-
-<!-- {{data("symfony.config.bundles", {labels: "Bundle|Fully Qualified Name|Purpose"})}} -->
+<!-- {{data("symfony.config.bundles", {header: "### Symfony Bundles\n", labels: "Bundle|Fully Qualified Name|Purpose", ignoreError: true})}} -->
 <!-- {{/data}} -->
 
-### Configuration Files (config/packages/)
-
-<!-- {{data("symfony.config.packages", {labels: "File|Key Settings"})}} -->
+<!-- {{data("symfony.config.packages", {header: "### Configuration Files (config/packages/)\n", labels: "File|Key Settings", ignoreError: true})}} -->
 <!-- {{/data}} -->
 
-### Service Configuration
-
-<!-- {{data("symfony.config.services", {labels: "autowire|autoconfigure"})}} -->
+<!-- {{data("symfony.config.services", {header: "### Service Configuration\n", labels: "autowire|autoconfigure", ignoreError: true})}} -->
 <!-- {{/data}} -->
 
 ### docker-compose.yml Configuration

@@ -26,9 +26,7 @@
 <!-- {%/block%} -->
 
 <!-- {%block "controller-list"%} -->
-### Controller List
-
-<!-- {{data("webapp.controllers.list", {labels: "Controller|File|Primary Responsibility"})}} -->
+<!-- {{data("webapp.controllers.list", {header: "### Controller List\n", labels: "Controller|File|Primary Responsibility", ignoreError: true})}} -->
 <!-- {{/data}} -->
 <!-- {%/block%} -->
 

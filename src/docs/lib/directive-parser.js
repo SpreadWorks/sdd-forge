@@ -124,7 +124,7 @@ function parseOptions(optStr) {
   while ((m = pairRe.exec(optStr)) !== null) {
     const key = m[1];
     if (m[2] !== undefined) {
-      opts[key] = m[2]; // quoted string
+      opts[key] = m[2].replace(/\\n/g, "\n"); // quoted string (unescape \n)
     } else if (m[3] !== undefined) {
       if (m[3] === "true") opts[key] = true;
       else if (m[3] === "false") opts[key] = false;
@@ -329,13 +329,15 @@ export function parseDirectives(text) {
  *
  * @param {string[]} lines - ファイルの行配列
  * @param {DataDirective} d - ディレクティブ
- * @param {string} content - 新しい内容
+ * @param {string} [content] - 新しい内容（省略時はコンテンツをクリア）
  */
 export function replaceBlockDirective(lines, d, content) {
   // For multiline directives, raw may span multiple lines
   const rawLines = d.raw.split("\n");
   const endDataLine = lines[d.endLine];
-  const newLines = [...rawLines, content, endDataLine];
+  const newLines = content != null
+    ? [...rawLines, content, endDataLine]
+    : [...rawLines, endDataLine];
   lines.splice(d.line, d.endLine - d.line + 1, ...newLines);
 }
 
@@ -344,13 +346,16 @@ export function replaceBlockDirective(lines, d, content) {
 // ---------------------------------------------------------------------------
 
 /**
- * ディレクティブを行配列から除去する（インライン / ブロック両対応）。
+ * インラインディレクティブのコンテンツを置換する。
  */
-function removeDirective(lines, d) {
-  if (d.inline) {
-    lines[d.line] = lines[d.line].replace(d.raw, "");
-  } else if (d.endLine >= 0) {
-    lines.splice(d.line, d.endLine - d.line + 1);
+function replaceInlineDirective(lines, d, content) {
+  const openTag = d.raw.match(/<!--\s*\{\{data\([^)]*\)\}\}\s*-->/s)?.[0];
+  const endTag = "<!-- {{/data}} -->";
+  if (openTag) {
+    const replacement = content != null
+      ? `${openTag}${content}${endTag}`
+      : `${openTag}${endTag}`;
+    lines[d.line] = lines[d.line].replace(d.raw, replacement);
   }
 }
 
@@ -384,7 +389,11 @@ export function resolveDataDirectives(text, resolveFn, opts) {
     const rendered = resolveFn(d.preset, d.source, d.method, d.labels);
     if (rendered === null || rendered === undefined) {
       if (d.params?.ignoreError === true) {
-        removeDirective(lines, d);
+        if (d.inline) {
+          replaceInlineDirective(lines, d);
+        } else {
+          replaceBlockDirective(lines, d);
+        }
         replaced++;
         continue;
       }
@@ -392,19 +401,21 @@ export function resolveDataDirectives(text, resolveFn, opts) {
       continue;
     }
 
+    // Build content with optional header/footer
+    const { header, footer } = d.params || {};
+    const parts = [];
+    if (header) parts.push(header);
+    parts.push(rendered);
+    if (footer) parts.push(footer);
+    const content = parts.join("\n");
+
     if (onResolve) onResolve(d, rendered);
 
     if (d.inline) {
-      // Reconstruct inline: openTag + rendered + endTag
-      const rawLines = d.raw.split("\n");
-      const openTag = rawLines.join("\n").match(/<!--\s*\{\{data\([^)]*\)\}\}\s*-->/s)?.[0];
-      const endTag = "<!-- {{/data}} -->";
-      if (openTag) {
-        lines[d.line] = lines[d.line].replace(d.raw, `${openTag}${rendered}${endTag}`);
-      }
+      replaceInlineDirective(lines, d, content);
       replaced++;
     } else if (d.endLine >= 0) {
-      replaceBlockDirective(lines, d, rendered);
+      replaceBlockDirective(lines, d, content);
       replaced++;
     }
   }

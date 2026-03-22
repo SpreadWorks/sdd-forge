@@ -11,34 +11,24 @@
 <!-- {%/block%} -->
 
 <!-- {%block "controller-config"%} -->
-### Middleware
-
-<!-- {{data("laravel.controllers.middleware", {labels: "Middleware|Applied Controllers"})}} -->
+<!-- {{data("laravel.controllers.middleware", {header: "### Middleware\n", labels: "Middleware|Applied Controllers", ignoreError: true})}} -->
 <!-- {{/data}} -->
 <!-- {%/block%} -->
 
 <!-- {%block "controller-list"%} -->
-### Controller List
-
-<!-- {{data("laravel.controllers.list", {labels: "Controller|File|Primary Responsibility"})}} -->
+<!-- {{data("laravel.controllers.list", {header: "### Controller List\n", labels: "Controller|File|Primary Responsibility", ignoreError: true})}} -->
 <!-- {{/data}} -->
 
-### Controller-Action List
-
-<!-- {{data("laravel.controllers.actions", {labels: "Controller|Action"})}} -->
+<!-- {{data("laravel.controllers.actions", {header: "### Controller-Action List\n", labels: "Controller|Action", ignoreError: true})}} -->
 <!-- {{/data}} -->
 <!-- {%/block%} -->
 
 <!-- {%block "controller-deps"%} -->
-### Eloquent Relations
-
-<!-- {{data("laravel.models.relations", {labels: "Model|Relations"})}} -->
+<!-- {{data("laravel.models.relations", {header: "### Eloquent Relations\n", labels: "Model|Relations", ignoreError: true})}} -->
 <!-- {{/data}} -->
 <!-- {%/block%} -->
 
 <!-- {%block "components"%} -->
-### Artisan Commands
-
-<!-- {{data("laravel.commands.list", {labels: "Command|File|Description"})}} -->
+<!-- {{data("laravel.commands.list", {header: "### Artisan Commands\n", labels: "Command|File|Description", ignoreError: true})}} -->
 <!-- {{/data}} -->
 <!-- {%/block%} -->

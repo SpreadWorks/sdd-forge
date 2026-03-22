@@ -38,13 +38,9 @@ npm run docker:stop
 
 ### Configuration Constants Reference
 
-#### Scalar Constants
-
-<!-- {{data("cakephp2.config.constants", {labels: "Constant|Value|Description"})}} -->
+<!-- {{data("cakephp2.config.constants", {header: "#### Scalar Constants\n", labels: "Constant|Value|Description", ignoreError: true})}} -->
 <!-- {{/data}} -->
 
-#### Selection Constants
-
-<!-- {{data("cakephp2.config.constantsSelect", {labels: "Constant|Choices"})}} -->
+<!-- {{data("cakephp2.config.constantsSelect", {header: "#### Selection Constants\n", labels: "Constant|Choices", ignoreError: true})}} -->
 <!-- {{/data}} -->
 <!-- {%/block%} -->

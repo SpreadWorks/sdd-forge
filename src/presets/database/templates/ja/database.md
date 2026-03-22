@@ -6,15 +6,11 @@
 <!-- {{/text}} -->
 
 <!-- {%block "tables"%} -->
-## テーブル
-
-<!-- {{data("database.schema.tables", {labels: "テーブル|カラム|説明"})}} -->
+<!-- {{data("database.schema.tables", {header: "## テーブル\n", labels: "テーブル|カラム|説明", ignoreError: true})}} -->
 <!-- {{/data}} -->
 <!-- {%/block%} -->
 
 <!-- {%block "relationships"%} -->
-## リレーション
-
-<!-- {{data("database.schema.relationships", {labels: "元テーブル|先テーブル|種別|外部キー"})}} -->
+<!-- {{data("database.schema.relationships", {header: "## リレーション\n", labels: "元テーブル|先テーブル|種別|外部キー", ignoreError: true})}} -->
 <!-- {{/data}} -->
 <!-- {%/block%} -->

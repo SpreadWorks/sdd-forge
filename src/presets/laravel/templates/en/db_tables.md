@@ -1,22 +1,16 @@
 <!-- {%extends%} -->
 
 <!-- {%block "table-list"%} -->
-### Table List (Extracted from Migrations)
-
-<!-- {{data("laravel.tables.list", {labels: "Table|Columns|Primary Purpose"})}} -->
+<!-- {{data("laravel.tables.list", {header: "### Table List (Extracted from Migrations)\n", labels: "Table|Columns|Primary Purpose", ignoreError: true})}} -->
 <!-- {{/data}} -->
 <!-- {%/block%} -->
 
 <!-- {%block "fk"%} -->
-### Foreign Key Relationships (FK)
-
-<!-- {{data("laravel.tables.fk", {labels: "Table|Column|References"})}} -->
+<!-- {{data("laravel.tables.fk", {header: "### Foreign Key Relationships (FK)\n", labels: "Table|Column|References", ignoreError: true})}} -->
 <!-- {{/data}} -->
 <!-- {%/block%} -->
 
 <!-- {%block "indexes"%} -->
-### Indexes
-
-<!-- {{data("laravel.tables.indexes", {labels: "Table|Type|Columns"})}} -->
+<!-- {{data("laravel.tables.indexes", {header: "### Indexes\n", labels: "Table|Type|Columns", ignoreError: true})}} -->
 <!-- {{/data}} -->
 <!-- {%/block%} -->

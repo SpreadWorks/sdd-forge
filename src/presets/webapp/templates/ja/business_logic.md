@@ -36,9 +36,7 @@
 <!-- {%/block%} -->
 
 <!-- {%block "model-relations"%} -->
-### モデル間の依存関係
-
-<!-- {{data("webapp.models.relations", {labels: "モデル|関連 (belongsTo / hasMany / hasOne)"})}} -->
+<!-- {{data("webapp.models.relations", {header: "### モデル間の依存関係\n", labels: "モデル|関連 (belongsTo / hasMany / hasOne)", ignoreError: true})}} -->
 <!-- {{/data}} -->
 
 <!-- {{text({prompt: "主要なモデル間の関連パターンを説明してください。", mode: "deep"})}} -->

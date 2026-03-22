@@ -12,16 +12,12 @@
 <!-- {%/block%} -->
 
 <!-- {%block "command-list"%} -->
-### コマンド一覧
-
-<!-- {{data("cli.commands.list", {labels: "コマンド|説明"})}} -->
+<!-- {{data("cli.commands.list", {header: "### コマンド一覧\n", labels: "コマンド|説明", ignoreError: true})}} -->
 <!-- {{/data}} -->
 <!-- {%/block%} -->
 
 <!-- {%block "global-options"%} -->
-### グローバルオプション
-
-<!-- {{data("cli.commands.globalOptions", {labels: "オプション|型|デフォルト|説明"})}} -->
+<!-- {{data("cli.commands.globalOptions", {header: "### グローバルオプション\n", labels: "オプション|型|デフォルト|説明", ignoreError: true})}} -->
 <!-- {{/data}} -->
 <!-- {%/block%} -->
 
@@ -33,9 +29,7 @@
 <!-- {%/block%} -->
 
 <!-- {%block "exit-codes"%} -->
-### 終了コードと出力
-
-<!-- {{data("cli.commands.exitCodes", {labels: "コード|意味"})}} -->
+<!-- {{data("cli.commands.exitCodes", {header: "### 終了コードと出力\n", labels: "コード|意味", ignoreError: true})}} -->
 <!-- {{/data}} -->
 <!-- {%/block%} -->
 <!-- {%/block%} -->

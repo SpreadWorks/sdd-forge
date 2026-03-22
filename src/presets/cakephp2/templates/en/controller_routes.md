@@ -1,27 +1,19 @@
 <!-- {%extends%} -->
 
 <!-- {%block "controller-config"%} -->
-### Common Configuration
-
-<!-- {{data("cakephp2.config.auth", {labels: "Item|Value"})}} -->
+<!-- {{data("cakephp2.config.auth", {header: "### Common Configuration\n", labels: "Item|Value", ignoreError: true})}} -->
 <!-- {{/data}} -->
 <!-- {%/block%} -->
 
 <!-- {%block "controller-list"%} -->
-### Controller List
-
-<!-- {{data("cakephp2.controllers.list", {labels: "Controller|File|Primary Responsibility"})}} -->
+<!-- {{data("cakephp2.controllers.list", {header: "### Controller List\n", labels: "Controller|File|Primary Responsibility", ignoreError: true})}} -->
 <!-- {{/data}} -->
 
-### CSV/Excel Import/Export
-
-<!-- {{data("cakephp2.controllers.csv", {labels: "Controller|CSV Import|CSV Export|Excel Export"})}} -->
+<!-- {{data("cakephp2.controllers.csv", {header: "### CSV/Excel Import/Export\n", labels: "Controller|CSV Import|CSV Export|Excel Export", ignoreError: true})}} -->
 <!-- {{/data}} -->
 <!-- {%/block%} -->
 
 <!-- {%block "components"%} -->
-### Components
-
-<!-- {{data("cakephp2.views.components", {labels: "Component|Responsibility"})}} -->
+<!-- {{data("cakephp2.views.components", {header: "### Components\n", labels: "Component|Responsibility", ignoreError: true})}} -->
 <!-- {{/data}} -->
 <!-- {%/block%} -->

@@ -12,16 +12,12 @@
 <!-- {%/block%} -->
 
 <!-- {%block "command-list"%} -->
-### Command List
-
-<!-- {{data("cli.commands.list", {labels: "Command|Description"})}} -->
+<!-- {{data("cli.commands.list", {header: "### Command List\n", labels: "Command|Description", ignoreError: true})}} -->
 <!-- {{/data}} -->
 <!-- {%/block%} -->
 
 <!-- {%block "global-options"%} -->
-### Global Options
-
-<!-- {{data("cli.commands.globalOptions", {labels: "Option|Type|Default|Description"})}} -->
+<!-- {{data("cli.commands.globalOptions", {header: "### Global Options\n", labels: "Option|Type|Default|Description", ignoreError: true})}} -->
 <!-- {{/data}} -->
 <!-- {%/block%} -->
 
@@ -33,9 +29,7 @@
 <!-- {%/block%} -->
 
 <!-- {%block "exit-codes"%} -->
-### Exit Codes and Output
-
-<!-- {{data("cli.commands.exitCodes", {labels: "Code|Meaning"})}} -->
+<!-- {{data("cli.commands.exitCodes", {header: "### Exit Codes and Output\n", labels: "Code|Meaning", ignoreError: true})}} -->
 <!-- {{/data}} -->
 <!-- {%/block%} -->
 <!-- {%/block%} -->

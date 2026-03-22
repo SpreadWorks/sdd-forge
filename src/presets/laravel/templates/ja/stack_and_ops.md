@@ -1,9 +1,7 @@
 <!-- {%extends%} -->
 
 <!-- {%block "dependencies"%} -->
-### PHP 依存パッケージ (composer.json)
-
-<!-- {{data("laravel.config.composer", {labels: "パッケージ|バージョン|用途"})}} -->
+<!-- {{data("laravel.config.composer", {header: "### PHP 依存パッケージ (composer.json)\n", labels: "パッケージ|バージョン|用途", ignoreError: true})}} -->
 <!-- {{/data}} -->
 
 ### docker-compose.yml 構成
@@ -11,19 +9,13 @@
 <!-- {{text({prompt: "docker-compose.yml のサービス構成を表形式で記述してください。サービス名、コンテナ名、ポート、イメージを含めること。"})}} -->
 <!-- {{/text}} -->
 
-### ミドルウェア
-
-<!-- {{data("laravel.config.middleware", {labels: "クラス|ファイル|用途"})}} -->
+<!-- {{data("laravel.config.middleware", {header: "### ミドルウェア\n", labels: "クラス|ファイル|用途", ignoreError: true})}} -->
 <!-- {{/data}} -->
 
-### サービスプロバイダ
-
-<!-- {{data("laravel.config.providers", {labels: "プロバイダ|ファイル|register|boot"})}} -->
+<!-- {{data("laravel.config.providers", {header: "### サービスプロバイダ\n", labels: "プロバイダ|ファイル|register|boot", ignoreError: true})}} -->
 <!-- {{/data}} -->
 
-### 設定ファイル
-
-<!-- {{data("laravel.config.files", {labels: "ファイル|主要キー"})}} -->
+<!-- {{data("laravel.config.files", {header: "### 設定ファイル\n", labels: "ファイル|主要キー", ignoreError: true})}} -->
 <!-- {{/data}} -->
 <!-- {%/block%} -->
 

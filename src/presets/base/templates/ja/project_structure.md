@@ -22,9 +22,7 @@
 <!-- {%/block%} -->
 
 <!-- {%block "directory-roles"%} -->
-### 各ディレクトリの責務
-
-<!-- {{data("base.structure.directories", {labels: "ディレクトリ|ファイル数|役割"})}} -->
+<!-- {{data("base.structure.directories", {header: "### 各ディレクトリの責務\n", labels: "ディレクトリ|ファイル数|役割", ignoreError: true})}} -->
 <!-- {{/data}} -->
 <!-- {%/block%} -->
 

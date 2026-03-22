@@ -10,23 +10,17 @@
 <!-- {%/block%} -->
 
 <!-- {%block "pipelines"%} -->
-## パイプライン
-
-<!-- {{data("ci.pipelines.list", {labels: "名前|ファイル|トリガー|ジョブ数"})}} -->
+<!-- {{data("ci.pipelines.list", {header: "## パイプライン\n", labels: "名前|ファイル|トリガー|ジョブ数", ignoreError: true})}} -->
 <!-- {{/data}} -->
 <!-- {%/block%} -->
 
 <!-- {%block "jobs"%} -->
-## ジョブ詳細
-
-<!-- {{data("ci.pipelines.jobs", {labels: "パイプライン|ジョブ|ランナー|ステップ数|依存"})}} -->
+<!-- {{data("ci.pipelines.jobs", {header: "## ジョブ詳細\n", labels: "パイプライン|ジョブ|ランナー|ステップ数|依存", ignoreError: true})}} -->
 <!-- {{/data}} -->
 <!-- {%/block%} -->
 
 <!-- {%block "env"%} -->
-## シークレットと環境変数
-
-<!-- {{data("ci.pipelines.env", {labels: "パイプライン|シークレット|環境変数"})}} -->
+<!-- {{data("ci.pipelines.env", {header: "## シークレットと環境変数\n", labels: "パイプライン|シークレット|環境変数", ignoreError: true})}} -->
 <!-- {{/data}} -->
 <!-- {%/block%} -->
 

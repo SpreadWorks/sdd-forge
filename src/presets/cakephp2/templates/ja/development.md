@@ -38,13 +38,9 @@ npm run docker:stop
 
 ### 設定定数リファレンス
 
-#### スカラー定数
-
-<!-- {{data("cakephp2.config.constants", {labels: "定数名|値|説明"})}} -->
+<!-- {{data("cakephp2.config.constants", {header: "#### スカラー定数\n", labels: "定数名|値|説明", ignoreError: true})}} -->
 <!-- {{/data}} -->
 
-#### 選択肢定数
-
-<!-- {{data("cakephp2.config.constantsSelect", {labels: "定数名|選択肢"})}} -->
+<!-- {{data("cakephp2.config.constantsSelect", {header: "#### 選択肢定数\n", labels: "定数名|選択肢", ignoreError: true})}} -->
 <!-- {{/data}} -->
 <!-- {%/block%} -->

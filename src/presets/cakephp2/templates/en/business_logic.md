@@ -1,9 +1,7 @@
 <!-- {%extends%} -->
 
 <!-- {%block "logic-list"%} -->
-### Logic Class List
-
-<!-- {{data("cakephp2.models.logic", {labels: "Class|File|Responsibility"})}} -->
+<!-- {{data("cakephp2.models.logic", {header: "### Logic Class List\n", labels: "Class|File|Responsibility", ignoreError: true})}} -->
 <!-- {{/data}} -->
 <!-- {%/block%} -->
 

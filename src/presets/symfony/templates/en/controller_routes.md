@@ -11,32 +11,22 @@
 <!-- {%/block%} -->
 
 <!-- {%block "controller-list"%} -->
-### Controller List
-
-<!-- {{data("symfony.controllers.list", {labels: "Controller|File|Primary Responsibility"})}} -->
+<!-- {{data("symfony.controllers.list", {header: "### Controller List\n", labels: "Controller|File|Primary Responsibility", ignoreError: true})}} -->
 <!-- {{/data}} -->
 
-### Controller-Action List
-
-<!-- {{data("symfony.controllers.actions", {labels: "Controller|Action"})}} -->
+<!-- {{data("symfony.controllers.actions", {header: "### Controller-Action List\n", labels: "Controller|Action", ignoreError: true})}} -->
 <!-- {{/data}} -->
 <!-- {%/block%} -->
 
 <!-- {%block "controller-deps"%} -->
-### DI Dependencies
-
-<!-- {{data("symfony.controllers.di", {labels: "Controller|Dependency Service"})}} -->
+<!-- {{data("symfony.controllers.di", {header: "### DI Dependencies\n", labels: "Controller|Dependency Service", ignoreError: true})}} -->
 <!-- {{/data}} -->
 
-### Doctrine Relations
-
-<!-- {{data("symfony.entities.relations", {labels: "Entity|Relations"})}} -->
+<!-- {{data("symfony.entities.relations", {header: "### Doctrine Relations\n", labels: "Entity|Relations", ignoreError: true})}} -->
 <!-- {{/data}} -->
 <!-- {%/block%} -->
 
 <!-- {%block "components"%} -->
-### Console Commands
-
-<!-- {{data("symfony.commands.list", {labels: "Command|File|Description"})}} -->
+<!-- {{data("symfony.commands.list", {header: "### Console Commands\n", labels: "Command|File|Description", ignoreError: true})}} -->
 <!-- {{/data}} -->
 <!-- {%/block%} -->

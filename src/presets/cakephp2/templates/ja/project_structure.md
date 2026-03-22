@@ -15,25 +15,17 @@
 <!-- {%/block%} -->
 
 <!-- {%block "libraries"%} -->
-### 共通ライブラリ (Lib/)
-
-<!-- {{data("cakephp2.libs.list", {labels: "クラス|ファイル|責務"})}} -->
+<!-- {{data("cakephp2.libs.list", {header: "### 共通ライブラリ (Lib/)\n", labels: "クラス|ファイル|責務", ignoreError: true})}} -->
 <!-- {{/data}} -->
 
 ### View 層
 
-#### ヘルパー
-
-<!-- {{data("cakephp2.views.helpers", {labels: "ヘルパー|継承元|責務"})}} -->
+<!-- {{data("cakephp2.views.helpers", {header: "#### ヘルパー\n", labels: "ヘルパー|継承元|責務", ignoreError: true})}} -->
 <!-- {{/data}} -->
 
-#### レイアウト
-
-<!-- {{data("cakephp2.views.layouts", {labels: "ファイル|用途"})}} -->
+<!-- {{data("cakephp2.views.layouts", {header: "#### レイアウト\n", labels: "ファイル|用途", ignoreError: true})}} -->
 <!-- {{/data}} -->
 
-#### エレメント
-
-<!-- {{data("cakephp2.views.elements", {labels: "ファイル|用途"})}} -->
+<!-- {{data("cakephp2.views.elements", {header: "#### エレメント\n", labels: "ファイル|用途", ignoreError: true})}} -->
 <!-- {{/data}} -->
 <!-- {%/block%} -->

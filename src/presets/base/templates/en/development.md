@@ -29,9 +29,7 @@
 <!-- {%/block%} -->
 
 <!-- {%block "scripts"%} -->
-### Available Scripts
-
-<!-- {{data("base.project.scripts", {labels: "Script|Command"})}} -->
+<!-- {{data("base.project.scripts", {header: "### Available Scripts\n", labels: "Script|Command", ignoreError: true})}} -->
 <!-- {{/data}} -->
 <!-- {%/block%} -->
 

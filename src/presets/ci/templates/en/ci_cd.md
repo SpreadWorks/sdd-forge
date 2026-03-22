@@ -10,23 +10,17 @@
 <!-- {%/block%} -->
 
 <!-- {%block "pipelines"%} -->
-## Pipelines
-
-<!-- {{data("ci.pipelines.list", {labels: "Name|File|Triggers|Jobs"})}} -->
+<!-- {{data("ci.pipelines.list", {header: "## Pipelines\n", labels: "Name|File|Triggers|Jobs", ignoreError: true})}} -->
 <!-- {{/data}} -->
 <!-- {%/block%} -->
 
 <!-- {%block "jobs"%} -->
-## Job Details
-
-<!-- {{data("ci.pipelines.jobs", {labels: "Pipeline|Job|Runner|Steps|Dependencies"})}} -->
+<!-- {{data("ci.pipelines.jobs", {header: "## Job Details\n", labels: "Pipeline|Job|Runner|Steps|Dependencies", ignoreError: true})}} -->
 <!-- {{/data}} -->
 <!-- {%/block%} -->
 
 <!-- {%block "env"%} -->
-## Secrets & Environment Variables
-
-<!-- {{data("ci.pipelines.env", {labels: "Pipeline|Secrets|Env Vars"})}} -->
+<!-- {{data("ci.pipelines.env", {header: "## Secrets & Environment Variables\n", labels: "Pipeline|Secrets|Env Vars", ignoreError: true})}} -->
 <!-- {{/data}} -->
 <!-- {%/block%} -->
 

@@ -11,32 +11,22 @@
 <!-- {%/block%} -->
 
 <!-- {%block "controller-list"%} -->
-### コントローラ一覧
-
-<!-- {{data("symfony.controllers.list", {labels: "コントローラ名|ファイル|主な責務"})}} -->
+<!-- {{data("symfony.controllers.list", {header: "### コントローラ一覧\n", labels: "コントローラ名|ファイル|主な責務", ignoreError: true})}} -->
 <!-- {{/data}} -->
 
-### コントローラ–アクション一覧
-
-<!-- {{data("symfony.controllers.actions", {labels: "コントローラ|アクション"})}} -->
+<!-- {{data("symfony.controllers.actions", {header: "### コントローラ–アクション一覧\n", labels: "コントローラ|アクション", ignoreError: true})}} -->
 <!-- {{/data}} -->
 <!-- {%/block%} -->
 
 <!-- {%block "controller-deps"%} -->
-### DI 依存一覧
-
-<!-- {{data("symfony.controllers.di", {labels: "コントローラ|依存サービス"})}} -->
+<!-- {{data("symfony.controllers.di", {header: "### DI 依存一覧\n", labels: "コントローラ|依存サービス", ignoreError: true})}} -->
 <!-- {{/data}} -->
 
-### Doctrine リレーション一覧
-
-<!-- {{data("symfony.entities.relations", {labels: "エンティティ|リレーション"})}} -->
+<!-- {{data("symfony.entities.relations", {header: "### Doctrine リレーション一覧\n", labels: "エンティティ|リレーション", ignoreError: true})}} -->
 <!-- {{/data}} -->
 <!-- {%/block%} -->
 
 <!-- {%block "components"%} -->
-### Console コマンド
-
-<!-- {{data("symfony.commands.list", {labels: "コマンド|ファイル|説明"})}} -->
+<!-- {{data("symfony.commands.list", {header: "### Console コマンド\n", labels: "コマンド|ファイル|説明", ignoreError: true})}} -->
 <!-- {{/data}} -->
 <!-- {%/block%} -->

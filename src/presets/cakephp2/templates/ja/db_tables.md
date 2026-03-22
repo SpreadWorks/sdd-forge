@@ -5,18 +5,12 @@
 
 ※ インデックス定義は DB スキーマから直接確認が必要。
 
-### AppModel 共通処理
-
-<!-- {{data("cakephp2.libs.appmodel", {labels: "機能|説明"})}} -->
+<!-- {{data("cakephp2.libs.appmodel", {header: "### AppModel 共通処理\n", labels: "機能|説明", ignoreError: true})}} -->
 <!-- {{/data}} -->
 
-### SQL テンプレートファイル
-
-<!-- {{data("cakephp2.libs.sql", {labels: "ファイル|行数|パラメータ|参照テーブル"})}} -->
+<!-- {{data("cakephp2.libs.sql", {header: "### SQL テンプレートファイル\n", labels: "ファイル|行数|パラメータ|参照テーブル", ignoreError: true})}} -->
 <!-- {{/data}} -->
 
-### ビヘイビア
-
-<!-- {{data("cakephp2.libs.behaviors", {labels: "ビヘイビア|メソッド|説明"})}} -->
+<!-- {{data("cakephp2.libs.behaviors", {header: "### ビヘイビア\n", labels: "ビヘイビア|メソッド|説明", ignoreError: true})}} -->
 <!-- {{/data}} -->
 <!-- {%/block%} -->

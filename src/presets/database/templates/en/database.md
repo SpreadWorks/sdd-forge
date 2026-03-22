@@ -6,15 +6,11 @@
 <!-- {{/text}} -->
 
 <!-- {%block "tables"%} -->
-## Tables
-
-<!-- {{data("database.schema.tables", {labels: "Table|Columns|Description"})}} -->
+<!-- {{data("database.schema.tables", {header: "## Tables\n", labels: "Table|Columns|Description", ignoreError: true})}} -->
 <!-- {{/data}} -->
 <!-- {%/block%} -->
 
 <!-- {%block "relationships"%} -->
-## Relationships
-
-<!-- {{data("database.schema.relationships", {labels: "From|To|Type|Foreign Key"})}} -->
+<!-- {{data("database.schema.relationships", {header: "## Relationships\n", labels: "From|To|Type|Foreign Key", ignoreError: true})}} -->
 <!-- {{/data}} -->
 <!-- {%/block%} -->

@@ -18,7 +18,5 @@
 <!-- {{text({prompt: "Describe the environment setup and startup procedure for this project."})}} -->
 <!-- {{/text}} -->
 
-## Documentation
-
-<!-- {{data("webapp.docs.chapters", {labels: "Chapter|Summary"})}} -->
+<!-- {{data("webapp.docs.chapters", {header: "## Documentation\n", labels: "Chapter|Summary", ignoreError: true})}} -->
 <!-- {{/data}} -->

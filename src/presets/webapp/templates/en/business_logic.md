@@ -36,9 +36,7 @@
 <!-- {%/block%} -->
 
 <!-- {%block "model-relations"%} -->
-### Model Relations
-
-<!-- {{data("webapp.models.relations", {labels: "Model|Associations (belongsTo / hasMany / hasOne)"})}} -->
+<!-- {{data("webapp.models.relations", {header: "### Model Relations\n", labels: "Model|Associations (belongsTo / hasMany / hasOne)", ignoreError: true})}} -->
 <!-- {{/data}} -->
 
 <!-- {{text({prompt: "Describe the key relationship patterns between models.", mode: "deep"})}} -->

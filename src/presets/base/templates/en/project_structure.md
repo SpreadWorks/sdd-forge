@@ -22,9 +22,7 @@
 <!-- {%/block%} -->
 
 <!-- {%block "directory-roles"%} -->
-### Directory Responsibilities
-
-<!-- {{data("base.structure.directories", {labels: "Directory|Files|Role"})}} -->
+<!-- {{data("base.structure.directories", {header: "### Directory Responsibilities\n", labels: "Directory|Files|Role", ignoreError: true})}} -->
 <!-- {{/data}} -->
 <!-- {%/block%} -->
 

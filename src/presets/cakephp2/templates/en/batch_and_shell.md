@@ -11,8 +11,6 @@
 <!-- {%/block%} -->
 
 <!-- {%block "command-flow"%} -->
-### Command Execution Flow
-
-<!-- {{data("cakephp2.shells.flow", {labels: "Command|Process Summary|Email|File Ops|Transaction"})}} -->
+<!-- {{data("cakephp2.shells.flow", {header: "### Command Execution Flow\n", labels: "Command|Process Summary|Email|File Ops|Transaction", ignoreError: true})}} -->
 <!-- {{/data}} -->
 <!-- {%/block%} -->

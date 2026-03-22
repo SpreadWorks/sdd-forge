@@ -26,9 +26,7 @@
 <!-- {%/block%} -->
 
 <!-- {%block "controller-list"%} -->
-### コントローラ一覧
-
-<!-- {{data("webapp.controllers.list", {labels: "コントローラ名|ファイル|主な責務"})}} -->
+<!-- {{data("webapp.controllers.list", {header: "### コントローラ一覧\n", labels: "コントローラ名|ファイル|主な責務", ignoreError: true})}} -->
 <!-- {{/data}} -->
 <!-- {%/block%} -->
 

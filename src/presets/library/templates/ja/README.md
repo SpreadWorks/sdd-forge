@@ -12,7 +12,5 @@
 npm install <!-- {{data("library.project.name")}} --><!-- {{/data}} -->
 </pre>
 
-## ドキュメント
-
-<!-- {{data("library.docs.chapters", {labels: "章|概要"})}} -->
+<!-- {{data("library.docs.chapters", {header: "## ドキュメント\n", labels: "章|概要", ignoreError: true})}} -->
 <!-- {{/data}} -->

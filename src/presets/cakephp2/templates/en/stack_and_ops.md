@@ -1,36 +1,24 @@
 <!-- {%extends%} -->
 
 <!-- {%block "stack"%} -->
-### Technology Stack
-
-<!-- {{data("cakephp2.config.stack", {labels: "Category|Technology|Version"})}} -->
+<!-- {{data("cakephp2.config.stack", {header: "### Technology Stack\n", labels: "Category|Technology|Version", ignoreError: true})}} -->
 <!-- {{/data}} -->
 <!-- {%/block%} -->
 
 <!-- {%block "dependencies"%} -->
-### PHP Dependencies (composer.json)
-
-<!-- {{data("cakephp2.config.composer", {labels: "Package|Version|Purpose"})}} -->
+<!-- {{data("cakephp2.config.composer", {header: "### PHP Dependencies (composer.json)\n", labels: "Package|Version|Purpose", ignoreError: true})}} -->
 <!-- {{/data}} -->
 
-### docker-compose.yml Configuration
-
-<!-- {{data("cakephp2.docker.list", {labels: "Service|Container|Port|Image"})}} -->
+<!-- {{data("cakephp2.docker.list", {header: "### docker-compose.yml Configuration\n", labels: "Service|Container|Port|Image", ignoreError: true})}} -->
 <!-- {{/data}} -->
 
-### Frontend Libraries
-
-<!-- {{data("cakephp2.config.assets", {labels: "Library|Version|Purpose"})}} -->
+<!-- {{data("cakephp2.config.assets", {header: "### Frontend Libraries\n", labels: "Library|Version|Purpose", ignoreError: true})}} -->
 <!-- {{/data}} -->
 
-### Error Handling
-
-<!-- {{data("cakephp2.libs.errors", {labels: "Class|File|Responsibility"})}} -->
+<!-- {{data("cakephp2.libs.errors", {header: "### Error Handling\n", labels: "Class|File|Responsibility", ignoreError: true})}} -->
 <!-- {{/data}} -->
 
-### Application Initialization (bootstrap.php)
-
-<!-- {{data("cakephp2.config.bootstrap", {labels: "Setting|Value"})}} -->
+<!-- {{data("cakephp2.config.bootstrap", {header: "### Application Initialization (bootstrap.php)\n", labels: "Setting|Value", ignoreError: true})}} -->
 <!-- {{/data}} -->
 
 ### Email Notification Specifications

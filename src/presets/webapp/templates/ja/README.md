@@ -18,7 +18,5 @@
 <!-- {{text({prompt: "このプロジェクトの環境構築と起動手順を説明してください。"})}} -->
 <!-- {{/text}} -->
 
-## ドキュメント
-
-<!-- {{data("webapp.docs.chapters", {labels: "章|概要"})}} -->
+<!-- {{data("webapp.docs.chapters", {header: "## ドキュメント\n", labels: "章|概要", ignoreError: true})}} -->
 <!-- {{/data}} -->

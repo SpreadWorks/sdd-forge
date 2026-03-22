@@ -4,8 +4,6 @@
 <!-- {{text({prompt: "データベーステーブルの一覧を、用途と主要カラムとともに記述してください。"})}} -->
 <!-- {{/text}} -->
 
-### データベース情報
-
-<!-- {{data("postgres.database.info", {labels: "項目|値"})}} -->
+<!-- {{data("postgres.database.info", {header: "### データベース情報\n", labels: "項目|値", ignoreError: true})}} -->
 <!-- {{/data}} -->
 <!-- {%/block%} -->

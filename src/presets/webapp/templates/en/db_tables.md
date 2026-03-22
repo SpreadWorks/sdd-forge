@@ -12,16 +12,12 @@
 <!-- {%/block%} -->
 
 <!-- {%block "table-list"%} -->
-### Table List
-
-<!-- {{data("webapp.tables.list", {labels: "Table|DB|Primary Purpose"})}} -->
+<!-- {{data("webapp.tables.list", {header: "### Table List\n", labels: "Table|DB|Primary Purpose", ignoreError: true})}} -->
 <!-- {{/data}} -->
 <!-- {%/block%} -->
 
 <!-- {%block "fk"%} -->
-### Foreign Key Relationships (FK)
-
-<!-- {{data("webapp.tables.fk", {labels: "Parent Table|Child Table|FK Column|Notes"})}} -->
+<!-- {{data("webapp.tables.fk", {header: "### Foreign Key Relationships (FK)\n", labels: "Parent Table|Child Table|FK Column|Notes", ignoreError: true})}} -->
 <!-- {{/data}} -->
 <!-- {%/block%} -->
 

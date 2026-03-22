@@ -4,8 +4,6 @@
 <!-- {{text({prompt: "List the database tables with their purpose and key columns."})}} -->
 <!-- {{/text}} -->
 
-### Database Info
-
-<!-- {{data("postgres.database.info", {labels: "Item|Value"})}} -->
+<!-- {{data("postgres.database.info", {header: "### Database Info\n", labels: "Item|Value", ignoreError: true})}} -->
 <!-- {{/data}} -->
 <!-- {%/block%} -->

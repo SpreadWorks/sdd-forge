@@ -30,8 +30,6 @@ pnpm add -g <!-- {{data("cli.project.name")}} --><!-- {{/data}} -->
 <!-- {%/block%} -->
 
 <!-- {%block "docs"%} -->
-## ドキュメント
-
-<!-- {{data("cli.docs.chapters", {labels: "章|概要"})}} -->
+<!-- {{data("cli.docs.chapters", {header: "## ドキュメント\n", labels: "章|概要", ignoreError: true})}} -->
 <!-- {{/data}} -->
 <!-- {%/block%} -->

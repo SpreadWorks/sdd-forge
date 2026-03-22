@@ -11,34 +11,24 @@
 <!-- {%/block%} -->
 
 <!-- {%block "controller-config"%} -->
-### ミドルウェア
-
-<!-- {{data("laravel.controllers.middleware", {labels: "ミドルウェア|適用コントローラ"})}} -->
+<!-- {{data("laravel.controllers.middleware", {header: "### ミドルウェア\n", labels: "ミドルウェア|適用コントローラ", ignoreError: true})}} -->
 <!-- {{/data}} -->
 <!-- {%/block%} -->
 
 <!-- {%block "controller-list"%} -->
-### コントローラ一覧
-
-<!-- {{data("laravel.controllers.list", {labels: "コントローラ名|ファイル|主な責務"})}} -->
+<!-- {{data("laravel.controllers.list", {header: "### コントローラ一覧\n", labels: "コントローラ名|ファイル|主な責務", ignoreError: true})}} -->
 <!-- {{/data}} -->
 
-### コントローラ–アクション一覧
-
-<!-- {{data("laravel.controllers.actions", {labels: "コントローラ|アクション"})}} -->
+<!-- {{data("laravel.controllers.actions", {header: "### コントローラ–アクション一覧\n", labels: "コントローラ|アクション", ignoreError: true})}} -->
 <!-- {{/data}} -->
 <!-- {%/block%} -->
 
 <!-- {%block "controller-deps"%} -->
-### Eloquent リレーション一覧
-
-<!-- {{data("laravel.models.relations", {labels: "モデル|リレーション"})}} -->
+<!-- {{data("laravel.models.relations", {header: "### Eloquent リレーション一覧\n", labels: "モデル|リレーション", ignoreError: true})}} -->
 <!-- {{/data}} -->
 <!-- {%/block%} -->
 
 <!-- {%block "components"%} -->
-### Artisan コマンド
-
-<!-- {{data("laravel.commands.list", {labels: "コマンド|ファイル|説明"})}} -->
+<!-- {{data("laravel.commands.list", {header: "### Artisan コマンド\n", labels: "コマンド|ファイル|説明", ignoreError: true})}} -->
 <!-- {{/data}} -->
 <!-- {%/block%} -->

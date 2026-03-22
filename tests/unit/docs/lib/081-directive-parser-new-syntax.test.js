@@ -258,7 +258,9 @@ describe("resolveDataDirectives — new syntax", () => {
       "<!-- {{/data}} -->",
     ].join("\n");
     const result = resolveDataDirectives(text, () => null);
-    assert.ok(!result.text.includes("monorepo.apps"));
+    // ignoreError: directive lines preserved, content cleared
+    assert.ok(result.text.includes("monorepo.apps"));
+    assert.ok(result.text.includes("<!-- {{/data}} -->"));
     assert.equal(result.replaced, 1);
   });
 });

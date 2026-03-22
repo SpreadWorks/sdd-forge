@@ -15,25 +15,17 @@
 <!-- {%/block%} -->
 
 <!-- {%block "libraries"%} -->
-### Common Libraries (Lib/)
-
-<!-- {{data("cakephp2.libs.list", {labels: "Class|File|Responsibility"})}} -->
+<!-- {{data("cakephp2.libs.list", {header: "### Common Libraries (Lib/)\n", labels: "Class|File|Responsibility", ignoreError: true})}} -->
 <!-- {{/data}} -->
 
 ### View Layer
 
-#### Helpers
-
-<!-- {{data("cakephp2.views.helpers", {labels: "Helper|Extends|Responsibility"})}} -->
+<!-- {{data("cakephp2.views.helpers", {header: "#### Helpers\n", labels: "Helper|Extends|Responsibility", ignoreError: true})}} -->
 <!-- {{/data}} -->
 
-#### Layouts
-
-<!-- {{data("cakephp2.views.layouts", {labels: "File|Purpose"})}} -->
+<!-- {{data("cakephp2.views.layouts", {header: "#### Layouts\n", labels: "File|Purpose", ignoreError: true})}} -->
 <!-- {{/data}} -->
 
-#### Elements
-
-<!-- {{data("cakephp2.views.elements", {labels: "File|Purpose"})}} -->
+<!-- {{data("cakephp2.views.elements", {header: "#### Elements\n", labels: "File|Purpose", ignoreError: true})}} -->
 <!-- {{/data}} -->
 <!-- {%/block%} -->

@@ -1,15 +1,11 @@
 <!-- {%extends%} -->
 
 <!-- {%block "db-env"%} -->
-### Environment-Specific Connection Settings
-
-<!-- {{data("cakephp2.config.db", {labels: "Environment|DB Host|Notes"})}} -->
+<!-- {{data("cakephp2.config.db", {header: "### Environment-Specific Connection Settings\n", labels: "Environment|DB Host|Notes", ignoreError: true})}} -->
 <!-- {{/data}} -->
 <!-- {%/block%} -->
 
 <!-- {%block "er-diagram"%} -->
-### ER Diagram (Key Tables)
-
-<!-- {{data("cakephp2.models.er")}} -->
+<!-- {{data("cakephp2.models.er", {header: "### ER Diagram (Key Tables)\n", ignoreError: true})}} -->
 <!-- {{/data}} -->
 <!-- {%/block%} -->

@@ -5,18 +5,12 @@
 
 Index definitions should be verified directly from the DB schema.
 
-### AppModel Common Methods
-
-<!-- {{data("cakephp2.libs.appmodel", {labels: "Feature|Description"})}} -->
+<!-- {{data("cakephp2.libs.appmodel", {header: "### AppModel Common Methods\n", labels: "Feature|Description", ignoreError: true})}} -->
 <!-- {{/data}} -->
 
-### SQL Template Files
-
-<!-- {{data("cakephp2.libs.sql", {labels: "File|Lines|Parameters|Referenced Tables"})}} -->
+<!-- {{data("cakephp2.libs.sql", {header: "### SQL Template Files\n", labels: "File|Lines|Parameters|Referenced Tables", ignoreError: true})}} -->
 <!-- {{/data}} -->
 
-### Behaviors
-
-<!-- {{data("cakephp2.libs.behaviors", {labels: "Behavior|Methods|Description"})}} -->
+<!-- {{data("cakephp2.libs.behaviors", {header: "### Behaviors\n", labels: "Behavior|Methods|Description", ignoreError: true})}} -->
 <!-- {{/data}} -->
 <!-- {%/block%} -->

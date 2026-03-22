@@ -29,9 +29,7 @@
 <!-- {%/block%} -->
 
 <!-- {%block "scripts"%} -->
-### 利用可能なスクリプト
-
-<!-- {{data("base.project.scripts", {labels: "スクリプト|コマンド"})}} -->
+<!-- {{data("base.project.scripts", {header: "### 利用可能なスクリプト\n", labels: "スクリプト|コマンド", ignoreError: true})}} -->
 <!-- {{/data}} -->
 <!-- {%/block%} -->
 

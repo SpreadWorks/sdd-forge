@@ -12,16 +12,12 @@
 <!-- {%/block%} -->
 
 <!-- {%block "table-list"%} -->
-### テーブル一覧
-
-<!-- {{data("webapp.tables.list", {labels: "テーブル名|DB|主な用途"})}} -->
+<!-- {{data("webapp.tables.list", {header: "### テーブル一覧\n", labels: "テーブル名|DB|主な用途", ignoreError: true})}} -->
 <!-- {{/data}} -->
 <!-- {%/block%} -->
 
 <!-- {%block "fk"%} -->
-### 外部キー関係（FK）
-
-<!-- {{data("webapp.tables.fk", {labels: "親テーブル|子テーブル|FK カラム|備考"})}} -->
+<!-- {{data("webapp.tables.fk", {header: "### 外部キー関係（FK）\n", labels: "親テーブル|子テーブル|FK カラム|備考", ignoreError: true})}} -->
 <!-- {{/data}} -->
 <!-- {%/block%} -->
 

@@ -1,9 +1,7 @@
 <!-- {%extends%} -->
 
 <!-- {%block "dependencies"%} -->
-### PHP Dependencies (composer.json)
-
-<!-- {{data("laravel.config.composer", {labels: "Package|Version|Purpose"})}} -->
+<!-- {{data("laravel.config.composer", {header: "### PHP Dependencies (composer.json)\n", labels: "Package|Version|Purpose", ignoreError: true})}} -->
 <!-- {{/data}} -->
 
 ### docker-compose.yml Configuration
@@ -11,19 +9,13 @@
 <!-- {{text({prompt: "Describe the docker-compose.yml service configuration in table format. Include service name, container name, ports, and image."})}} -->
 <!-- {{/text}} -->
 
-### Middleware
-
-<!-- {{data("laravel.config.middleware", {labels: "Class|File|Purpose"})}} -->
+<!-- {{data("laravel.config.middleware", {header: "### Middleware\n", labels: "Class|File|Purpose", ignoreError: true})}} -->
 <!-- {{/data}} -->
 
-### Service Providers
-
-<!-- {{data("laravel.config.providers", {labels: "Provider|File|register|boot"})}} -->
+<!-- {{data("laravel.config.providers", {header: "### Service Providers\n", labels: "Provider|File|register|boot", ignoreError: true})}} -->
 <!-- {{/data}} -->
 
-### Configuration Files
-
-<!-- {{data("laravel.config.files", {labels: "File|Key Settings"})}} -->
+<!-- {{data("laravel.config.files", {header: "### Configuration Files\n", labels: "File|Key Settings", ignoreError: true})}} -->
 <!-- {{/data}} -->
 <!-- {%/block%} -->
 

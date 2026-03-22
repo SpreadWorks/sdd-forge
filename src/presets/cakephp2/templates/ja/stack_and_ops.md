@@ -1,36 +1,24 @@
 <!-- {%extends%} -->
 
 <!-- {%block "stack"%} -->
-### 技術スタック
-
-<!-- {{data("cakephp2.config.stack", {labels: "カテゴリ|技術|バージョン"})}} -->
+<!-- {{data("cakephp2.config.stack", {header: "### 技術スタック\n", labels: "カテゴリ|技術|バージョン", ignoreError: true})}} -->
 <!-- {{/data}} -->
 <!-- {%/block%} -->
 
 <!-- {%block "dependencies"%} -->
-### PHP 依存パッケージ (composer.json)
-
-<!-- {{data("cakephp2.config.composer", {labels: "パッケージ|バージョン|用途"})}} -->
+<!-- {{data("cakephp2.config.composer", {header: "### PHP 依存パッケージ (composer.json)\n", labels: "パッケージ|バージョン|用途", ignoreError: true})}} -->
 <!-- {{/data}} -->
 
-### docker-compose.yml 構成
-
-<!-- {{data("cakephp2.docker.list", {labels: "サービス|コンテナ名|ポート|イメージ"})}} -->
+<!-- {{data("cakephp2.docker.list", {header: "### docker-compose.yml 構成\n", labels: "サービス|コンテナ名|ポート|イメージ", ignoreError: true})}} -->
 <!-- {{/data}} -->
 
-### フロントエンドライブラリ
-
-<!-- {{data("cakephp2.config.assets", {labels: "ライブラリ|バージョン|用途"})}} -->
+<!-- {{data("cakephp2.config.assets", {header: "### フロントエンドライブラリ\n", labels: "ライブラリ|バージョン|用途", ignoreError: true})}} -->
 <!-- {{/data}} -->
 
-### エラーハンドリング
-
-<!-- {{data("cakephp2.libs.errors", {labels: "クラス|ファイル|責務"})}} -->
+<!-- {{data("cakephp2.libs.errors", {header: "### エラーハンドリング\n", labels: "クラス|ファイル|責務", ignoreError: true})}} -->
 <!-- {{/data}} -->
 
-### アプリケーション初期化 (bootstrap.php)
-
-<!-- {{data("cakephp2.config.bootstrap", {labels: "設定項目|値"})}} -->
+<!-- {{data("cakephp2.config.bootstrap", {header: "### アプリケーション初期化 (bootstrap.php)\n", labels: "設定項目|値", ignoreError: true})}} -->
 <!-- {{/data}} -->
 
 ### メール通知仕様
