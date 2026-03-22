@@ -60,20 +60,24 @@ function parseRouteFile(content, routeType) {
     });
   }
 
-  // Route::resource / Route::apiResource
-  const resourceRegex = /Route::(?:api)?[Rr]esource\s*\(\s*['"]([^'"]+)['"]\s*,\s*([\w\\:]+)/g;
+  // Route::resource / Route::apiResource (with optional ->only() / ->except())
+  const resourceRegex = /Route::(?:api)?[Rr]esource\s*\(\s*['"]([^'"]+)['"]\s*,\s*([\w\\:]+)\s*\)([^\n;]*)/g;
   while ((m = resourceRegex.exec(content)) !== null) {
-    const uri = m[1];
+    const resourceName = m[1];
     const controller = m[2].replace(/::class$/, "").split("\\").pop();
+    const chain = m[3];
     const isApi = m[0].includes("apiResource");
-    const actions = isApi
+    const allActions = isApi
       ? ["index", "store", "show", "update", "destroy"]
       : ["index", "create", "store", "show", "edit", "update", "destroy"];
+    const actions = filterResourceActions(allActions, chain);
+
+    const baseUri = buildResourceUri(resourceName, routeType);
 
     for (const action of actions) {
       routes.push({
         httpMethod: resourceMethod(action),
-        uri: routeType === "api" ? `/api/${uri}` : `/${uri}`,
+        uri: resourceActionUri(baseUri, resourceName, action),
         controller,
         action,
         routeType,
@@ -105,6 +109,59 @@ function parseHandler(handler) {
   }
 
   return { controller: "", action: "" };
+}
+
+function parseStringList(str) {
+  const items = [];
+  const re = /['"](\w+)['"]/g;
+  let match;
+  while ((match = re.exec(str)) !== null) items.push(match[1]);
+  return items;
+}
+
+function filterResourceActions(actions, chain) {
+  const onlyMatch = chain.match(/->only\s*\(\s*\[([^\]]*)\]\s*\)/);
+  if (onlyMatch) {
+    const allowed = parseStringList(onlyMatch[1]);
+    return actions.filter((a) => allowed.includes(a));
+  }
+  const exceptMatch = chain.match(/->except\s*\(\s*\[([^\]]*)\]\s*\)/);
+  if (exceptMatch) {
+    const excluded = parseStringList(exceptMatch[1]);
+    return actions.filter((a) => !excluded.includes(a));
+  }
+  return actions;
+}
+
+function singularize(name) {
+  if (name.endsWith("ies")) return name.slice(0, -3) + "y";
+  if (name.endsWith("ses") || name.endsWith("xes") || name.endsWith("zes") ||
+      name.endsWith("shes") || name.endsWith("ches")) return name.slice(0, -2);
+  if (name.endsWith("s")) return name.slice(0, -1);
+  return name;
+}
+
+function buildResourceUri(resourceName, routeType) {
+  const segments = resourceName.split(".");
+  const parts = [];
+  for (let i = 0; i < segments.length; i++) {
+    const seg = segments[i];
+    parts.push(seg);
+    if (i < segments.length - 1) {
+      parts.push(`{${singularize(seg)}}`);
+    }
+  }
+  const base = "/" + parts.join("/");
+  return routeType === "api" ? `/api${base}` : base;
+}
+
+function resourceActionUri(baseUri, resourceName, action) {
+  const lastSegment = resourceName.split(".").pop();
+  const param = singularize(lastSegment);
+  const needsParam = ["show", "edit", "update", "destroy"].includes(action);
+  const suffix = needsParam ? `/{${param}}` : "";
+  const editSuffix = action === "edit" ? "/edit" : "";
+  return baseUri + suffix + editSuffix;
 }
 
 function resourceMethod(action) {
