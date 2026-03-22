@@ -36,15 +36,17 @@
 - 追加: `gh project item-create 3 --owner SpreadWorks --title "..." --body "..."`
 - 一覧: `gh project item-list 3 --owner SpreadWorks`
 - ユーザーが「ボードに追加」「タスク化」「メモしておいて」等と言ったら Draft issue を日本語で作成する
+- **MUST: ボード上のアイテム（Draft issue）のタイトル・本文は常に日本語で書くこと。英語にしてはならない。**
 - アイデア・リサーチメモ → status を「Ideas」に設定
 - 実装タスク・バグ → status を「Todo」に設定
 - ステータス変更は `gh project item-edit` で行う（「○○を in progress にして」「○○を done にして」）
 - アイテムの特定はタイトルの一部で行う（例:「B2」「symfony のバグ」）
+- **MUST: Issue を作成する場合は、必ず先にボードに Draft を日本語で作成し、ユーザーの「issue にして」指示を待つこと。Draft を経由せず直接 `gh issue create` してはならない。**
 - 「○○を issue にして」と言われたら、Draft の内容を英語に翻訳して `gh issue create` で Issue を作成する
   - リポジトリは public のため Issue は英語で書く
   - 適切なラベル（bug / enhancement / documentation 等）を付ける
   - プロジェクトに紐付ける: `--project "sdd-forge"`
-  - **MUST: Issue 作成時、ボード上の Draft アイテムのタイトルは日本語のまま保持すること。英語に変更してはならない。**
+  - **MUST: Issue 作成後も、ボード上の Draft アイテムのタイトルは日本語のまま保持すること。英語に変更してはならない。**
 
 ## 設計思想
 
