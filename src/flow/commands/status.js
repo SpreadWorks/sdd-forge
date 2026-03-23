@@ -91,9 +91,19 @@ function displayAll(root) {
   console.log(SEP);
   for (const f of flows) {
     const phase = derivePhase(f.state.steps);
-    const doneCount = f.state.steps?.filter((s) => s.status === "done").length || 0;
-    const totalCount = f.state.steps?.length || 0;
-    const progress = `${doneCount}/${totalCount}`;
+    const steps = f.state.steps || [];
+    const hasInProgress = steps.some((s) => s.status === "in_progress");
+    const hasPendingBeforeDone = (() => {
+      let seenDone = false;
+      for (let i = steps.length - 1; i >= 0; i--) {
+        if (steps[i].status === "done" || steps[i].status === "skipped") seenDone = true;
+        else if (seenDone && steps[i].status === "pending") return true;
+      }
+      return false;
+    })();
+    const doneCount = steps.filter((s) => s.status === "done" || s.status === "skipped").length;
+    const totalCount = steps.length;
+    const progress = hasInProgress || hasPendingBeforeDone ? `${doneCount}/${totalCount}` : "done";
     const m = f.specId.match(/^(\d+)-(.+)/);
     const maxNameLen = 12;
     let label;
