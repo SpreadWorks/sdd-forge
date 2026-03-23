@@ -11,6 +11,7 @@
  * 一覧:  sdd-forge flow status --all
  */
 
+import path from "path";
 import { runIfDirect } from "../../lib/entrypoint.js";
 import { repoRoot, parseArgs } from "../../lib/cli.js";
 import {
@@ -83,14 +84,18 @@ function displayAll(root) {
     return;
   }
 
-  const SEP = "────────────────────────────────";
+  const SEP = "────────────────────────────────────────────────────────────────────────";
   console.log(`All Flows (${flows.length})`);
+  console.log(SEP);
+  console.log(`  ${"SPEC".padEnd(22)} ${"MODE".padEnd(10)} ${"PHASE".padEnd(10)} ${"PROGRESS".padEnd(12)} LOCATION`);
   console.log(SEP);
   for (const f of flows) {
     const phase = derivePhase(f.state.steps);
     const doneCount = f.state.steps?.filter((s) => s.status === "done").length || 0;
     const totalCount = f.state.steps?.length || 0;
-    console.log(`  ${f.specId.padEnd(30)} ${f.mode.padEnd(10)} ${phase.padEnd(10)} ${doneCount}/${totalCount} done  [${f.location}]`);
+    const progress = `${doneCount}/${totalCount}`;
+    const loc = f.location.startsWith("branch:") ? f.location : path.relative(root, f.location) || ".";
+    console.log(`  ${f.specId.padEnd(22)} ${f.mode.padEnd(10)} ${phase.padEnd(10)} ${progress.padEnd(12)} ${loc}`);
   }
 }
 

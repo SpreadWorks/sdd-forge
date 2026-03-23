@@ -521,14 +521,14 @@ export function scanAllFlows(workRoot) {
       encoding: "utf8",
     });
     for (const line of output.split("\n")) {
-      const branch = line.replace(/^[* ]+/, "").trim();
+      const branch = line.replace(/^[*+ ]+/, "").trim();
       if (!branch) continue;
       const specId = branch.replace("feature/", "");
       if (seen.has(specId)) continue;
       try {
         const content = execFileSync(
           "git", ["-C", mainRoot, "show", `${branch}:specs/${specId}/flow.json`],
-          { encoding: "utf8" },
+          { encoding: "utf8", stdio: ["pipe", "pipe", "ignore"] },
         );
         const state = JSON.parse(content);
         results.push({ specId, mode: "branch", state, location: `branch:${branch}` });
