@@ -77,60 +77,69 @@ function displayStatus(root) {
   }
 }
 
-function displayAll(root) {
+function isActive(f) {
+  if (!f.state) return false;
+  const steps = f.state.steps || [];
+  return steps.some((s) => s.status === "in_progress") || (() => {
+    let seenDone = false;
+    for (let i = steps.length - 1; i >= 0; i--) {
+      if (steps[i].status === "done" || steps[i].status === "skipped") seenDone = true;
+      else if (seenDone && steps[i].status === "pending") return true;
+    }
+    return false;
+  })();
+}
+
+function formatFlowRow(f, root) {
+  const m = f.specId.match(/^(\d+)-(.+)/);
+  const maxNameLen = 12;
+  let label;
+  if (m) {
+    const name = m[2].length > maxNameLen ? m[2].slice(0, maxNameLen) + "..." : m[2];
+    label = `${m[1]}-${name}`;
+  } else {
+    label = f.specId.length > 16 ? f.specId.slice(0, 16) + "..." : f.specId;
+  }
+  const loc = f.location.startsWith("branch:") ? f.location : path.relative(root, f.location) || "./";
+
+  if (!f.state) {
+    return `  ${label.padEnd(20)} ${"-".padEnd(10)} ${"-".padEnd(10)} ${"-".padEnd(10)} ${loc}`;
+  }
+
+  const phase = derivePhase(f.state.steps);
+  const steps = f.state.steps || [];
+  const doneCount = steps.filter((s) => s.status === "done" || s.status === "skipped").length;
+  const totalCount = steps.length;
+  const progress = isActive(f) ? `${doneCount}/${totalCount}` : "done";
+  return `  ${label.padEnd(20)} ${f.mode.padEnd(10)} ${phase.padEnd(10)} ${progress.padEnd(10)} ${loc}`;
+}
+
+function displayList(root, showAll) {
   const flows = scanAllFlows(root);
-  if (flows.length === 0) {
-    console.log("no flows found");
+  const filtered = showAll ? flows : flows.filter(isActive);
+
+  if (filtered.length === 0) {
+    console.log(showAll ? "no specs found" : "no active flows");
     return;
   }
 
+  const title = showAll ? `All Specs (${filtered.length})` : `Active Flows (${filtered.length})`;
   const SEP = "──────────────────────────────────────────────────";
-  console.log(`All Flows (${flows.length})`);
+  console.log(title);
   console.log(SEP);
   console.log(`  ${"SPEC".padEnd(20)} ${"MODE".padEnd(10)} ${"PHASE".padEnd(10)} ${"PROGRESS".padEnd(10)} LOCATION`);
   console.log(SEP);
-  for (const f of flows) {
-    const m = f.specId.match(/^(\d+)-(.+)/);
-    const maxNameLen = 12;
-    let label;
-    if (m) {
-      const name = m[2].length > maxNameLen ? m[2].slice(0, maxNameLen) + "..." : m[2];
-      label = `${m[1]}-${name}`;
-    } else {
-      label = f.specId.length > 16 ? f.specId.slice(0, 16) + "..." : f.specId;
-    }
-
-    if (!f.state) {
-      const loc = f.location.startsWith("branch:") ? f.location : path.relative(root, f.location) || "./";
-      console.log(`  ${label.padEnd(20)} ${"-".padEnd(10)} ${"-".padEnd(10)} ${"-".padEnd(10)} ${loc}`);
-      continue;
-    }
-
-    const phase = derivePhase(f.state.steps);
-    const steps = f.state.steps || [];
-    const hasInProgress = steps.some((s) => s.status === "in_progress");
-    const hasPendingBeforeDone = (() => {
-      let seenDone = false;
-      for (let i = steps.length - 1; i >= 0; i--) {
-        if (steps[i].status === "done" || steps[i].status === "skipped") seenDone = true;
-        else if (seenDone && steps[i].status === "pending") return true;
-      }
-      return false;
-    })();
-    const doneCount = steps.filter((s) => s.status === "done" || s.status === "skipped").length;
-    const totalCount = steps.length;
-    const progress = hasInProgress || hasPendingBeforeDone ? `${doneCount}/${totalCount}` : "done";
-    const loc = f.location.startsWith("branch:") ? f.location : path.relative(root, f.location) || "./";
-    console.log(`  ${label.padEnd(20)} ${f.mode.padEnd(10)} ${phase.padEnd(10)} ${progress.padEnd(10)} ${loc}`);
+  for (const f of filtered) {
+    console.log(formatFlowRow(f, root));
   }
 }
 
 function main() {
   const root = repoRoot(import.meta.url);
   const cli = parseArgs(process.argv.slice(2), {
-    flags: ["--dry-run", "--all"],
+    flags: ["--dry-run", "--all", "--list"],
     options: ["--step", "--status", "--summary", "--req", "--check", "--request", "--note"],
-    defaults: { step: "", status: "", summary: "", req: "", check: "", request: "", note: "", dryRun: false, all: false },
+    defaults: { step: "", status: "", summary: "", req: "", check: "", request: "", note: "", dryRun: false, all: false, list: false },
   });
 
   if (cli.help) {
@@ -146,16 +155,17 @@ function main() {
         "  --request <text>                    Set the original user request",
         "  --note <text>                       Append a note (decision/memo)",
         "  --check <phase>                     Check prerequisites (e.g. --check impl)",
-        "  --all                               List all flows (active and completed)",
+        "  --list                              List active (in-progress) flows",
+        "  --all                               List all specs (including completed)",
         "  --dry-run                           With --check: always exit 0",
       ].join("\n"),
     );
     return;
   }
 
-  // List all flows
-  if (cli.all) {
-    displayAll(root);
+  // List flows
+  if (cli.all || cli.list) {
+    displayList(root, cli.all);
     return;
   }
 
