@@ -285,6 +285,7 @@ function mergeEnrichment(analysis, enrichment) {
       if (!Array.isArray(enrichedItems)) continue;
 
       for (const entry of enrichedItems) {
+        if (!entry || typeof entry !== "object") continue;
         const idx = entry.index;
         if (idx == null || idx < 0 || idx >= items.length) continue;
 
