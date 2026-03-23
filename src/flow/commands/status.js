@@ -25,6 +25,7 @@ import {
   FLOW_STEPS,
   scanAllFlows,
   derivePhase,
+  loadActiveFlows,
 } from "../../lib/flow-state.js";
 
 function displayStatus(root) {
@@ -77,20 +78,11 @@ function displayStatus(root) {
   }
 }
 
-function isActive(f) {
-  if (!f.state) return false;
-  const steps = f.state.steps || [];
-  return steps.some((s) => s.status === "in_progress") || (() => {
-    let seenDone = false;
-    for (let i = steps.length - 1; i >= 0; i--) {
-      if (steps[i].status === "done" || steps[i].status === "skipped") seenDone = true;
-      else if (seenDone && steps[i].status === "pending") return true;
-    }
-    return false;
-  })();
+function isActive(f, activeSpecIds) {
+  return activeSpecIds.has(f.specId);
 }
 
-function formatFlowRow(f, root) {
+function formatFlowRow(f, root, active) {
   const m = f.specId.match(/^(\d+)-(.+)/);
   const maxNameLen = 12;
   let label;
@@ -110,13 +102,14 @@ function formatFlowRow(f, root) {
   const steps = f.state.steps || [];
   const doneCount = steps.filter((s) => s.status === "done" || s.status === "skipped").length;
   const totalCount = steps.length;
-  const progress = isActive(f) ? `${doneCount}/${totalCount}` : "done";
+  const progress = active ? `${doneCount}/${totalCount}` : "done";
   return `  ${label.padEnd(20)} ${f.mode.padEnd(10)} ${phase.padEnd(10)} ${progress.padEnd(10)} ${loc}`;
 }
 
 function displayList(root, showAll) {
+  const activeSpecIds = new Set(loadActiveFlows(root).map((a) => a.spec));
   const flows = scanAllFlows(root);
-  const filtered = showAll ? flows : flows.filter(isActive);
+  const filtered = showAll ? flows : flows.filter((f) => isActive(f, activeSpecIds));
 
   if (filtered.length === 0) {
     console.log(showAll ? "no specs found" : "no active flows");
@@ -130,7 +123,7 @@ function displayList(root, showAll) {
   console.log(`  ${"SPEC".padEnd(20)} ${"MODE".padEnd(10)} ${"PHASE".padEnd(10)} ${"PROGRESS".padEnd(10)} LOCATION`);
   console.log(SEP);
   for (const f of filtered) {
-    console.log(formatFlowRow(f, root));
+    console.log(formatFlowRow(f, root, isActive(f, activeSpecIds)));
   }
 }
 
