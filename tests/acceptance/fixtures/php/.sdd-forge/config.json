@@ -1,6 +1,6 @@
 {
   "lang": "en",
-  "type": "php",
+  "type": "php-webapp",
   "docs": {
     "languages": [
       "en"

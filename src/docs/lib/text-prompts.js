@@ -26,9 +26,9 @@ const CATEGORY_TO_SECTIONS = {
   "models.logic.methods":  (a) => ({ logicClasses: a.config?.logicClasses }),
   "models.relations":      (a) => ({ models: a.models }),
   "models.er":             (a) => ({ models: a.models }),
-  shells:                  (a) => ({ shells: a.shells }),
-  "shells.deps":           (a) => ({ shells: a.shells }),
-  "shells.flow":           (a) => ({ shellDetails: a.config?.shellDetails }),
+  commands:                (a) => ({ commands: a.commands }),
+  "commands.deps":         (a) => ({ commands: a.commands }),
+  "commands.flow":         (a) => ({ commandDetails: a.config?.commandDetails }),
   "config.stack":          ()  => ({}),
   "config.composer":       (a) => ({ composerDeps: a.package?.composerDeps }),
   "config.assets":         (a) => ({ assets: a.config?.assets }),
@@ -61,7 +61,7 @@ export function getAnalysisContext(analysis, directives) {
 
   if (analysis.controllers?.summary) data.controllersSummary = analysis.controllers.summary;
   if (analysis.models?.summary) data.modelsSummary = analysis.models.summary;
-  if (analysis.shells?.summary) data.shellsSummary = analysis.shells.summary;
+  if (analysis.commands?.summary) data.commandsSummary = analysis.commands.summary;
   if (analysis.routes?.summary) data.routesSummary = analysis.routes.summary;
 
   const dataFills = directives.filter((d) => d.type === "data");

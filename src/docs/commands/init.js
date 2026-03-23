@@ -63,7 +63,7 @@ function aiFilterChapters(chapters, analysis, agent, root, purpose) {
     "",
     `Selection criteria:`,
     "- Always include foundational chapters: overview, stack_and_ops, project_structure, development, development_testing.",
-    "- Exclude chapters whose topic has zero data in the analysis (e.g. no shells → exclude batch_and_shell chapter, no models → exclude db_tables chapter).",
+    "- Exclude chapters whose topic has zero data in the analysis (e.g. no commands → exclude commands chapter, no models → exclude db_tables chapter).",
     ...purposeRules,
     "- When in doubt, include the chapter.",
     "",

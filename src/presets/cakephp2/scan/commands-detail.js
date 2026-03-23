@@ -1,7 +1,7 @@
 /**
- * analyze-shells-detail.js
+ * analyze-commands-detail.js
  *
- * Detailed Shell execution flow analyzer.
+ * Detailed command execution flow analyzer for CakePHP 2.x shells.
  */
 
 import fs from "fs";
@@ -9,17 +9,18 @@ import path from "path";
 import { stripBlockComments } from "../../../docs/lib/php-array-parser.js";
 
 // ---------------------------------------------------------------------------
-// Shell 実行フロー詳細解析
+// コマンド実行フロー詳細解析
 // ---------------------------------------------------------------------------
-export function analyzeShellDetails(appDir) {
-  const shellDir = path.join(appDir, "Console", "Command");
-  if (!fs.existsSync(shellDir)) return [];
+export function analyzeCommandDetails(appDir) {
+  const commandDir = path.join(appDir, "Console", "Command");
+  if (!fs.existsSync(commandDir)) return [];
 
-  const files = fs.readdirSync(shellDir).filter((f) => f.endsWith("Shell.php"));
+  // CakePHP 2.x convention: console commands use *Shell.php filenames
+  const files = fs.readdirSync(commandDir).filter((f) => f.endsWith("Shell.php"));
   const results = [];
 
   for (const file of files) {
-    const filePath = path.join(shellDir, file);
+    const filePath = path.join(commandDir, file);
     const raw = fs.readFileSync(filePath, "utf8");
     const src = stripBlockComments(raw);
 

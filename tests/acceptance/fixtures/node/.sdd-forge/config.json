@@ -1,6 +1,6 @@
 {
   "lang": "en",
-  "type": "node",
+  "type": "js-webapp",
   "docs": {
     "languages": [
       "en"

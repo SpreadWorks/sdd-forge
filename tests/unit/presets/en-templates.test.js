@@ -23,7 +23,7 @@ const WEBAPP_CHAPTERS = [
   "db_tables.md",
   "controller_routes.md",
   "business_logic.md",
-  "batch_and_shell.md",
+  "commands.md",
 ];
 
 // Chapters that are webapp-specific (not in base)
@@ -33,7 +33,7 @@ const WEBAPP_ONLY_CHAPTERS = [
   "db_tables.md",
   "controller_routes.md",
   "business_logic.md",
-  "batch_and_shell.md",
+  "commands.md",
 ];
 
 // ---------------------------------------------------------------------------

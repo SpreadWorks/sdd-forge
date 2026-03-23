@@ -1,24 +1,18 @@
 /**
  * CommandsSource — Symfony console commands DataSource.
  *
- * Symfony-only category using DataSource directly (no scan).
+ * Extends webapp CommandsSource with Symfony-specific match logic.
+ * Scan is delegated to the parent class.
  *
  * Available methods (called via {{data}} directives):
- *   commands.list("Name|File|Description")
+ *   commands.list("Name|File|Description")   — inherited
  */
 
-import { DataSource } from "../../../docs/lib/data-source.js";
+import CommandsSource from "../../webapp/data/commands.js";
 
-export default class CommandsSource extends DataSource {
-  /** Console commands list table. */
-  list(analysis, labels) {
-    const shells = this.mergeDesc(analysis.shells?.shells || [], "commands");
-    if (shells.length === 0) return null;
-    const rows = this.toRows(shells, (s) => [
-      s.className,
-      s.file,
-      s.summary || "—",
-    ]);
-    return this.toMarkdownTable(rows, labels);
+export default class SymfonyCommandsSource extends CommandsSource {
+  match(file) {
+    return file.relPath.startsWith("src/Command/")
+      && file.relPath.endsWith(".php");
   }
 }

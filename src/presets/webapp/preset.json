@@ -12,6 +12,6 @@
     "db_tables.md",
     "controller_routes.md",
     "business_logic.md",
-    "batch_and_shell.md"
+    "commands.md"
   ]
 }

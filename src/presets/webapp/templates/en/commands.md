@@ -12,7 +12,7 @@
 <!-- {%/block%} -->
 
 <!-- {%block "command-list"%} -->
-<!-- {{data("webapp.shells.list", {header: "### Command List\n", labels: "Command|File|Purpose", ignoreError: true})}} -->
+<!-- {{data("webapp.commands.list", {header: "### Command List\n", labels: "Command|File|Purpose", ignoreError: true})}} -->
 <!-- {{/data}} -->
 <!-- {%/block%} -->
 

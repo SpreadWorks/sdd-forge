@@ -45,12 +45,12 @@ export function summaryToText(analysis) {
       }
     }
   }
-  if (analysis.shells) {
-    const s = analysis.shells;
-    parts.push(`Shells: ${s.total} files`);
-    if (s.items) {
-      for (const sh of s.items) {
-        parts.push(`  - ${sh.className}: [${(sh.methods || []).join(", ")}]`);
+  if (analysis.commands) {
+    const c = analysis.commands;
+    parts.push(`Commands: ${c.total} files`);
+    if (c.items) {
+      for (const cmd of c.items) {
+        parts.push(`  - ${cmd.className}: [${(cmd.methods || []).join(", ")}]`);
       }
     }
   }

@@ -7,7 +7,7 @@ const CHAPTERS = [
   { fileName: "stack_and_ops.md", content: "# Stack & Ops\nTechnology stack." },
   { fileName: "development.md", content: "# Development\nDev setup." },
   { fileName: "db_tables.md", content: "# DB Tables\nDatabase tables." },
-  { fileName: "batch_and_shell.md", content: "# Batch & Shell\nBatch jobs." },
+  { fileName: "commands.md", content: "# Commands\nBatch jobs." },
 ];
 
 const ANALYSIS = {

@@ -1,5 +1,5 @@
 /**
- * I/O tests for views.js, shells-detail.js, testing.js, and notifications.js scan parsers.
+ * I/O tests for views.js, commands-detail.js, testing.js, and notifications.js scan parsers.
  */
 import { describe, it, afterEach } from "node:test";
 import assert from "node:assert/strict";
@@ -16,7 +16,7 @@ import {
   analyzeLayouts,
   analyzeElements,
 } from "../../scan/views.js";
-import { analyzeShellDetails } from "../../scan/shells-detail.js";
+import { analyzeCommandDetails } from "../../scan/commands-detail.js";
 import { analyzeTestStructure } from "../../scan/testing.js";
 import { analyzeEmailNotifications } from "../../scan/notifications.js";
 
@@ -258,15 +258,15 @@ describe("analyzeElements", () => {
 });
 
 // =========================================================================
-// analyzeShellDetails
+// analyzeCommandDetails
 // =========================================================================
-describe("analyzeShellDetails", () => {
+describe("analyzeCommandDetails", () => {
   let tmp;
   afterEach(() => tmp && removeTmpDir(tmp));
 
   it("returns empty array when Command dir does not exist", () => {
     tmp = createTmpDir();
-    assert.deepStrictEqual(analyzeShellDetails(tmp), []);
+    assert.deepStrictEqual(analyzeCommandDetails(tmp), []);
   });
 
   it("parses shell with flow detection", () => {
@@ -288,7 +288,7 @@ class ImportShell extends AppShell {
 `,
     );
 
-    const result = analyzeShellDetails(tmp);
+    const result = analyzeCommandDetails(tmp);
     assert.equal(result.length, 1);
     assert.equal(result[0].className, "ImportShell");
     assert.equal(result[0].file, "app/Console/Command/ImportShell.php");
@@ -314,7 +314,7 @@ class ImportShell extends AppShell {
       `<?php class CronShell extends AppShell {}`,
     );
 
-    const result = analyzeShellDetails(tmp);
+    const result = analyzeCommandDetails(tmp);
     assert.equal(result.length, 1);
     assert.equal(result[0].className, "CronShell");
   });
@@ -334,7 +334,7 @@ class NotifyShell extends AppShell {
 `,
     );
 
-    const result = analyzeShellDetails(tmp);
+    const result = analyzeCommandDetails(tmp);
     assert.equal(result[0].hasMail, true);
     assert.ok(result[0].flowSteps.includes("メール通知"));
   });
@@ -352,7 +352,7 @@ class NotifyShell extends AppShell {
       `<?php class Helper {}`,
     );
 
-    const result = analyzeShellDetails(tmp);
+    const result = analyzeCommandDetails(tmp);
     assert.equal(result.length, 1);
   });
 });

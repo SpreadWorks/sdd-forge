@@ -69,17 +69,17 @@ export default class AgentsSource extends DataSource {
     // Structure summary
     const ctrl = analysis.controllers?.summary;
     const mdl = analysis.models?.summary;
-    const sh = analysis.shells?.summary;
+    const cmd = analysis.commands?.summary;
     const rt = analysis.routes?.summary;
 
-    if (ctrl || mdl || sh || rt) {
+    if (ctrl || mdl || cmd || rt) {
       lines.push("### Structure Summary");
       lines.push("");
       lines.push("| category | count | details |");
       lines.push("| --- | --- | --- |");
       if (ctrl) lines.push(`| Controllers | ${ctrl.total} | ${ctrl.totalActions} actions |`);
       if (mdl) lines.push(`| Models | ${mdl.total} | FE: ${mdl.feModels || 0}, Logic: ${mdl.logicModels || 0} |`);
-      if (sh) lines.push(`| Shells | ${sh.total} | ${sh.withMain || 0} with main() |`);
+      if (cmd) lines.push(`| Commands | ${cmd.total} | — |`);
       if (rt) lines.push(`| Routes | ${rt.total} | ${(rt.controllers || []).length} controllers |`);
       lines.push("");
     }

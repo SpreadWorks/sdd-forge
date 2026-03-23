@@ -69,9 +69,9 @@ describe("summaryToText", () => {
     assert.ok(result.includes("DB[logs]: 1 models"));
   });
 
-  it("includes shells summary (legacy mode)", () => {
+  it("includes commands summary (legacy mode)", () => {
     const summary = {
-      shells: {
+      commands: {
         total: 2,
         items: [
           { className: "ImportShell", methods: ["main", "execute"] },
@@ -79,7 +79,7 @@ describe("summaryToText", () => {
       },
     };
     const result = summaryToText(summary);
-    assert.ok(result.includes("Shells: 2 files"));
+    assert.ok(result.includes("Commands: 2 files"));
     assert.ok(result.includes("ImportShell"));
   });
 

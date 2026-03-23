@@ -1,5 +1,5 @@
 /**
- * ShellsSource — webapp common shells/commands scan + resolve.
+ * CommandsSource — webapp common commands scan + resolve.
  *
  * Child presets extend this class to add FW-specific scan logic
  * and resolve methods.
@@ -8,7 +8,7 @@
 import WebappDataSource from "./webapp-data-source.js";
 import { parseFile } from "../../../docs/lib/scanner.js";
 
-export default class ShellsSource extends WebappDataSource {
+export default class CommandsSource extends WebappDataSource {
   match(file) {
     return false;
   }
@@ -16,15 +16,13 @@ export default class ShellsSource extends WebappDataSource {
   scan(files) {
     if (files.length === 0) return null;
 
-    const shells = [];
+    const commands = [];
     for (const f of files) {
       const parsed = parseFile(f.absPath);
-      const hasMain = parsed.methods.includes("main");
-      shells.push({
+      commands.push({
         file: f.relPath,
         className: parsed.className,
         publicMethods: parsed.methods.filter((m) => !m.startsWith("_")),
-        hasMain,
         appUses: [],
         lines: f.lines,
         hash: f.hash,
@@ -33,10 +31,9 @@ export default class ShellsSource extends WebappDataSource {
     }
 
     return {
-      shells,
+      commands,
       summary: {
-        total: shells.length,
-        withMain: shells.filter((s) => s.hasMain).length,
+        total: commands.length,
       },
     };
   }
@@ -44,16 +41,16 @@ export default class ShellsSource extends WebappDataSource {
   summarize(data) {
     return {
       ...data.summary,
-      items: data.shells.map((x) => ({
+      items: data.commands.map((x) => ({
         className: x.className,
         methods: x.publicMethods,
       })),
     };
   }
 
-  /** Shell/command list. */
+  /** Command list. */
   list(analysis, labels) {
-    const items = this.mergeDesc(analysis.shells?.shells || [], "shells");
+    const items = this.mergeDesc(analysis.commands?.commands || [], "commands");
     if (items.length === 0) return null;
     const rows = this.toRows(items, (s) => [
       s.className,

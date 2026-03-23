@@ -10,7 +10,7 @@ import { analyzeAppController, analyzeAppModel } from "../scan/base-classes.js";
 import { analyzeAssets } from "../scan/assets.js";
 import { analyzeAcl, analyzePermissionComponent } from "../scan/security.js";
 import { analyzeLogicClasses, analyzeTitlesGraphMapping, analyzeComposerDeps } from "../scan/business.js";
-import { analyzeShellDetails } from "../scan/shells-detail.js";
+import { analyzeCommandDetails } from "../scan/commands-detail.js";
 
 export default class CakephpConfigSource extends WebappDataSource {
   match(file) {
@@ -35,7 +35,7 @@ export default class CakephpConfigSource extends WebappDataSource {
       logicClasses: analyzeLogicClasses(appDir),
       titlesGraphMapping: analyzeTitlesGraphMapping(appDir),
       composerDeps: analyzeComposerDeps(appDir),
-      shellDetails: analyzeShellDetails(appDir),
+      commandDetails: analyzeCommandDetails(appDir),
     };
   }
 
