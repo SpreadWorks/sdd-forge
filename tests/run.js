@@ -2,6 +2,7 @@
 import { readdirSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { execFileSync } from "node:child_process";
+import { getPresetAliasNames, resolvePresetTestName } from "./helpers/preset-aliases.js";
 
 const ROOT = resolve(import.meta.dirname, "..");
 const PRESETS_DIR = join(ROOT, "src", "presets");
@@ -28,22 +29,20 @@ function walk(dir, out) {
   }
 }
 
-function getPresetNames() {
+function getRealPresetNames() {
   return readdirSync(PRESETS_DIR, { withFileTypes: true })
     .filter((e) => e.isDirectory())
     .map((e) => e.name);
 }
 
-function collectPresetTestDirs(scope) {
-  const dirs = [];
-  for (const name of getPresetNames()) {
-    const testDir = join(PRESETS_DIR, name, "tests", scope);
-    dirs.push(testDir);
-  }
-  return dirs;
+function getPresetNames() {
+  return [...new Set([...getRealPresetNames(), ...getPresetAliasNames()])];
 }
 
-// Parse args
+function collectPresetTestDirs(scope) {
+  return getRealPresetNames().map((name) => join(PRESETS_DIR, name, "tests", scope));
+}
+
 const args = process.argv.slice(2);
 const presetIdx = args.indexOf("--preset");
 const scopeIdx = args.indexOf("--scope");
@@ -73,20 +72,18 @@ if (scopeIdx !== -1) {
 
 let searchDirs;
 if (preset) {
-  // --preset: shared tests + preset-specific tests
+  const presetDirName = resolvePresetTestName(preset);
   searchDirs = [
     join(ROOT, "tests", "unit"),
     join(ROOT, "tests", "e2e"),
-    join(PRESETS_DIR, preset, "tests"),
+    join(PRESETS_DIR, presetDirName, "tests"),
   ];
 } else if (scope) {
-  // --scope: scoped tests from tests/ + all presets
   searchDirs = [
     join(ROOT, "tests", scope),
     ...collectPresetTestDirs(scope),
   ];
 } else {
-  // default: all tests
   searchDirs = [
     join(ROOT, "tests", "unit"),
     join(ROOT, "tests", "e2e"),

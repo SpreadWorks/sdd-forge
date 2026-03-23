@@ -145,7 +145,8 @@ presets/<key>/
 │   └── ...
 ├── tests/                   プリセット固有テスト
 │   ├── unit/                ユニットテスト（scan パーサー I/O テスト等）
-│   └── e2e/                 E2E テスト（統合スキャンテスト等）
+│   ├── e2e/                 E2E テスト（統合スキャンテスト等）
+│   └── acceptance/          acceptance テスト（preset ローカル fixture + test.js）
 └── templates/               章テンプレート
     ├── ja/
     │   ├── overview.md
@@ -175,7 +176,10 @@ presets/<key>/
 
 - `tests/unit/` — scan パーサーの I/O テスト。最小限のフィクスチャを `createTmpDir()` で作成し、パーサー関数の入出力を検証する
 - `tests/e2e/` — preset.json の scan 設定検証、フルスキャンパイプラインテスト
+- `tests/acceptance/test.js` — preset ローカル fixture を使う acceptance テスト。共有処理は `tests/acceptance/lib/` を使う
+- テンプレートを作成・変更した場合は acceptance テストも実装し、実行すること
 - `npm test -- --preset <name>` でプリセット毎のテストを実行できること
+- `node tests/acceptance/run.js <name>` で acceptance テストを個別実行できること
 - テストファイルは npm パッケージには含まれない（package.json の `files` で除外済み）
 
 ### MUST: scan DataSource と data DataSource の対応
