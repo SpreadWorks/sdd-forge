@@ -88,6 +88,10 @@
 - **MUST: コミットメッセージは英語で書くこと。**
 - sign-off 行や co-authored-by トレーラーを付けないこと。
 
+### バージョニング（alpha 期間）
+
+- alpha 期間中のバージョン番号は `0.1.0-alpha.N` 形式。N は `git rev-list --count HEAD` の値（総コミット数）とする。
+
 ### npm 公開
 - **MUST: `npm publish` / `npm dist-tag` はユーザーがリリースの意図を明示した場合のみ実行する。** バージョン上げ・コミット・push の指示はリリース指示ではない。
 - pre-release は `npm publish --tag alpha` → `npm dist-tag add sdd-forge@<version> latest` の 2 ステップ。
