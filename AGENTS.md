@@ -45,6 +45,8 @@
 
 - ユーザーが「ボードに追加」「タスク化」「メモしておいて」等と言ったら `board.js add` で Draft を作成する
 - **MUST: ボード上のアイテム（Draft issue）のタイトル・本文は常に日本語で書くこと。英語にしてはならない。**
+- **MUST: `board.js add` / `board.js update` を実行する前に、登録・更新するタイトルと本文が日本語だけで構成されているか確認すること。英訳してから登録してはならない。**
+- **MUST: `board.js add` / `board.js update` の直後に `board.js show <hash>` で表示内容を確認し、タイトル・本文が日本語の Draft のまま保存されていることを検証すること。**
 - アイデア・リサーチメモ → `--status Ideas`
 - 実装タスク・バグ → `--status Todo`
 - アイテムの特定はハッシュID またはタイトルの一部で `board.js search` を使う
@@ -53,6 +55,7 @@
   - リポジトリは public のため Issue は英語で書く
   - 適切なラベル（bug / enhancement / documentation 等）を `--label` で付ける
   - **MUST: Issue 作成後も、ボード上の Draft アイテムのタイトルは日本語のまま保持すること。英語に変更してはならない。**
+  - **MUST: 英語化が許されるのは Issue 化で外部に作成される GitHub Issue のみであり、ボード上の Draft に対して英語タイトル・英語本文への更新を行ってはならない。**
 
 ## 設計思想
 

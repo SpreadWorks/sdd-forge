@@ -6,6 +6,17 @@ import { prefixTitle, extractId } from "./lib/hash.js";
 import { searchItems, listItems, getProjectMeta, setItemStatus, updateDraftIssue } from "./lib/graphql.js";
 import { createIssue } from "./lib/issue.js";
 
+function parseJsonResponse(text) {
+  const trimmed = text.trim();
+  if (trimmed.startsWith("```")) {
+    const lines = trimmed.split("\n");
+    if (lines.length >= 3 && lines.at(-1) === "```") {
+      return JSON.parse(lines.slice(1, -1).join("\n"));
+    }
+  }
+  return JSON.parse(trimmed);
+}
+
 function findItem(nodes, hash) {
   return nodes.find((n) => {
     const title = n.content?.title || "";
@@ -232,8 +243,9 @@ ${c.body || "(empty)"}`;
     timeout: 60000,
   });
   const parsed = JSON.parse(translated);
-  const enTitle = JSON.parse(parsed.result).title;
-  const enBody = JSON.parse(parsed.result).body;
+  const result = parseJsonResponse(parsed.result);
+  const enTitle = result.title;
+  const enBody = result.body;
 
   console.log(`英訳タイトル: ${enTitle}`);
   console.log(`英訳本文:\n${enBody}\n`);
