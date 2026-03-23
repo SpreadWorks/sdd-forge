@@ -17,7 +17,7 @@
 <!-- {%block "directory-tree"%} -->
 ### Directory Layout
 
-<!-- {{data: base.structure.tree()}} -->
+<!-- {{data("base.structure.tree")}} -->
 <!-- {{/data}} -->
 <!-- {%/block%} -->
 

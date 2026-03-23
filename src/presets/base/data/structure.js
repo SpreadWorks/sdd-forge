@@ -17,7 +17,8 @@ function allItems(analysis) {
     const arr = Array.isArray(val) ? val : val[key] || Object.values(val).find(Array.isArray);
     if (Array.isArray(arr)) {
       for (const item of arr) {
-        if (item?.relPath) items.push(item);
+        const p = item?.relPath || item?.file;
+      if (p) items.push({ ...item, relPath: p });
       }
     }
   }

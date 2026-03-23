@@ -1,279 +1,290 @@
-# 04. 内部設計
+# 内部設計
 
 ## 説明
 
-<!-- {{text: この章の概要を1〜2文で記述してください。プロジェクト構成・モジュール依存の方向・主要な処理フローを踏まえること。}} -->
+<!-- {{text({prompt: "この章の概要を1〜2文で記述してください。プロジェクト構成・モジュール依存の方向・主要な処理フローを踏まえること。"})}} -->
 
-sdd-forge は3層ディスパッチ（CLI エントリ → サブコマンドルーター → コマンド実装）を基本構造とし、プリセット継承チェーンによる DataSource の多態性でフレームワーク固有の解析ロジックを差し替えます。共有ユーティリティ層（`src/lib/`）が設定・i18n・エージェント呼び出し・フロー状態管理を一元化し、上位のコマンド層やドキュメント生成エンジン層はこの共有層に依存する単方向の依存構造を取ります。
-
+sdd-forge の内部アーキテクチャについて、3層ディスパッチ構造（`sdd-forge.js` → サブコマンドルーター → 個別コマンド）、プリセット継承チェーンに基づく DataSource/テンプレート解決メカニズム、および `scan → enrich → init → data → text → readme` のドキュメント生成パイプラインを解説します。モジュール依存は `lib/`（共通ユーティリティ）→ `docs/lib/`（ドキュメント生成基盤）→ `docs/commands/`（CLI コマンド）→ `presets/`（プリセット固有ロジック）の方向で流れます。
 <!-- {{/text}} -->
 
 ## 内容
 
 ### プロジェクト構成
 
-<!-- {{text[mode=deep]: このプロジェクトのディレクトリ構成を tree 形式のコードブロックで記述してください。主要ディレクトリ・ファイルの役割コメントを含めること。ソースコードの実際の構成から生成すること。}} -->
+<!-- {{text({prompt: "このプロジェクトのディレクトリ構成を tree 形式のコードブロックで記述してください。主要ディレクトリ・ファイルの役割コメントを含めること。ソースコードの実際の構成から生成すること。", mode: "deep"})}} -->
 
 ```
 src/
-├── sdd-forge.js                    # CLI エントリポイント・トップレベルルーター
-├── docs.js                         # docs サブコマンドディスパッチャー（build パイプライン含む）
-├── spec.js                         # spec サブコマンドディスパッチャー
-├── flow.js                         # flow サブコマンドディスパッチャー
-├── setup.js                        # プロジェクト初期セットアップ
-├── upgrade.js                      # 設定アップグレード
-├── presets-cmd.js                   # プリセット一覧コマンド
-├── help.js                         # ヘルプ表示
-│
-├── lib/                            # 全レイヤー共有ユーティリティ
-│   ├── cli.js                      #   repoRoot, sourceRoot, parseArgs, PKG_DIR
-│   ├── config.js                   #   .sdd-forge/config.json ローダー・バリデーション
-│   ├── agent.js                    #   AI エージェント呼び出し（同期・非同期）
-│   ├── presets.js                  #   プリセット自動探索・parent チェーン解決
-│   ├── flow-state.js               #   SDD フロー状態永続化（flow.json）
-│   ├── i18n.js                     #   3層マージ対応 i18n（ui/messages/prompts）
-│   ├── types.js                    #   型エイリアス解決・config バリデーション
-│   ├── entrypoint.js               #   ES Modules 直接実行判定
-│   ├── process.js                  #   spawnSync ラッパー
-│   ├── progress.js                 #   プログレスバー・ロギング
-│   └── agents-md.js                #   AGENTS.md テンプレート読み込み
-│
+├── sdd-forge.js              # メインエントリポイント（3層ディスパッチの起点）
+├── docs.js                   # docs サブコマンドルーター
+├── spec.js                   # spec サブコマンドルーター
+├── flow.js                   # SDD フローの DIRECT_COMMAND
+├── lib/                      # 全コマンド共通ユーティリティ
+│   ├── cli.js                #   リポジトリルート解決・引数パース
+│   ├── agent.js              #   AI エージェント呼び出し（同期・非同期）
+│   ├── config.js             #   設定ファイル読み込み・パス解決
+│   ├── presets.js             #   プリセット継承チェーン解決
+│   ├── i18n.js               #   国際化（3層マージ）
+│   ├── flow-state.js         #   SDD フロー状態の永続化
+│   ├── progress.js           #   プログレスバー・ロギング
+│   ├── entrypoint.js         #   直接実行判定ガード
+│   ├── skills.js             #   スキルファイルデプロイ
+│   ├── agents-md.js          #   AGENTS.md テンプレート読み込み
+│   ├── multi-select.js       #   ターミナル選択ウィジェット
+│   ├── process.js            #   spawnSync ラッパー
+│   └── types.js              #   設定バリデーション
 ├── docs/
-│   ├── commands/                   # docs サブコマンド実装
-│   │   ├── scan.js                 #   ソースコード解析 → analysis.json 生成
-│   │   ├── enrich.js               #   AI による analysis エントリ拡充
-│   │   ├── init.js                 #   テンプレート → docs/ 展開
-│   │   ├── data.js                 #   {{data}} ディレクティブ解決
-│   │   ├── text.js                 #   {{text}} ディレクティブ LLM 解決
-│   │   ├── readme.js               #   README.md 生成
-│   │   ├── forge.js                #   反復生成＋レビューループ
-│   │   ├── review.js               #   ドキュメント品質レビュー
-│   │   ├── changelog.js            #   変更履歴生成
-│   │   ├── agents.js               #   AGENTS.md 生成・更新
-│   │   └── translate.js            #   多言語翻訳
-│   │
-│   ├── data/                       # 共通 DataSource（全プリセットで利用可能）
-│   │   ├── project.js              #   package.json メタデータ
-│   │   ├── docs.js                 #   章ファイル一覧・言語切替リンク
-│   │   ├── lang.js                 #   言語切替リンク（軽量版）
-│   │   └── agents.js               #   AGENTS.md セクション生成
-│   │
-│   └── lib/                        # ドキュメント生成エンジン
-│       ├── directive-parser.js     #   {{data}}/{{text}} パーサー・ブロック継承
-│       ├── template-merger.js      #   テンプレート解決・章順序・ブロックマージ
-│       ├── resolver-factory.js     #   DataSource リゾルバファクトリ
-│       ├── data-source.js          #   DataSource 基底クラス
-│       ├── data-source-loader.js   #   DataSource 動的ローダー
-│       ├── scan-source.js          #   ScanSource 基底・Scannable ミックスイン
-│       ├── scanner.js              #   ファイル探索・言語別パーサ
-│       ├── command-context.js      #   コマンド共有コンテキスト解決
-│       ├── concurrency.js          #   並列実行キュー
-│       ├── text-prompts.js         #   {{text}} プロンプト構築
-│       ├── forge-prompts.js        #   forge プロンプト構築
-│       ├── review-parser.js        #   review 出力パーサー
-│       └── php-array-parser.js     #   PHP 配列構文パーサー
-│
-├── flow/commands/                  # flow サブコマンド実装
-│   ├── start.js                    #   SDD フロー開始
-│   ├── status.js                   #   フロー状態表示
-│   ├── review.js                   #   フローレビュー
-│   ├── merge.js                    #   マージ・クリーンアップ
-│   ├── resume.js                   #   コンテキスト復帰
-│   └── cleanup.js                  #   ブランチ・worktree 削除
-│
-├── spec/commands/                  # spec サブコマンド実装
-│   ├── init.js                     #   仕様書スキャフォールド
-│   ├── gate.js                     #   仕様ゲートチェック
-│   └── guardrail.js                #   実装ガードレール
-│
-├── presets/                        # プリセット定義
-│   ├── base/                       #   全プリセット共通基底
-│   ├── webapp/                     #   Web アプリケーション共通
-│   ├── cli/                        #   CLI アプリケーション共通
-│   ├── library/                    #   ライブラリ共通
-│   ├── node/                       #   Node.js 言語層
-│   ├── php/                        #   PHP 言語層
-│   ├── node-cli/                   #   Node.js CLI（cli + node）
-│   ├── cakephp2/                   #   CakePHP 2.x（webapp + php）
-│   ├── laravel/                    #   Laravel（webapp + php）
-│   └── symfony/                    #   Symfony（webapp + php）
-│
-├── locale/                         # i18n メッセージファイル
-│   ├── en/                         #   英語（ui.json, messages.json, prompts.json）
-│   └── ja/                         #   日本語
-│
-└── templates/                      # スキャフォールドテンプレート
+│   ├── commands/             # ドキュメント生成 CLI コマンド群
+│   │   ├── scan.js           #   DataSource ベースのソーススキャン
+│   │   ├── enrich.js         #   AI による analysis メタデータ付与
+│   │   ├── data.js           #   {{data}} ディレクティブ解決
+│   │   ├── text.js           #   {{text}} ディレクティブの LLM 処理
+│   │   ├── init.js           #   テンプレート初期化
+│   │   ├── forge.js          #   AI ドキュメント一括生成
+│   │   ├── review.js         #   ドキュメント品質レビュー
+│   │   ├── readme.js         #   README.md 生成
+│   │   └── changelog.js      #   変更履歴生成
+│   ├── lib/                  # ドキュメント生成基盤ライブラリ
+│   │   ├── data-source.js    #   DataSource 基底クラス
+│   │   ├── scan-source.js    #   Scannable ミックスイン
+│   │   ├── data-source-loader.js  # DataSource 動的ローダー
+│   │   ├── resolver-factory.js    # {{data}} リゾルバファクトリ
+│   │   ├── directive-parser.js    # ディレクティブパーサー
+│   │   ├── template-merger.js     # テンプレート継承・マージエンジン
+│   │   ├── text-prompts.js        # {{text}} プロンプト構築
+│   │   ├── forge-prompts.js       # forge プロンプト構築
+│   │   ├── command-context.js     # コマンド共通コンテキスト
+│   │   ├── concurrency.js        # 並列実行キュー
+│   │   ├── scanner.js            # ファイル収集・言語別パーサー
+│   │   ├── review-parser.js      # レビュー出力パーサー
+│   │   ├── test-env-detection.js # テスト環境検出
+│   │   ├── toml-parser.js        # TOML パーサー
+│   │   └── php-array-parser.js   # PHP 配列パーサー
+│   └── data/                 # 共通 DataSource（全プリセットで利用可能）
+│       ├── project.js        #   package.json メタデータ
+│       ├── docs.js           #   章一覧・ナビゲーション
+│       ├── agents.js         #   AGENTS.md セクション生成
+│       ├── lang.js           #   言語切り替えリンク
+│       └── text.js           #   AI テキスト生成プレースホルダ
+├── presets/                  # プリセット定義（継承チェーン構造）
+│   ├── base/                 #   全プリセットの基底
+│   │   └── data/             #     package.js, structure.js
+│   ├── webapp/               #   Web アプリ共通基底
+│   │   └── data/             #     controllers, models, routes, tables, commands
+│   ├── cli/                  #   CLI アプリ基底
+│   │   └── data/             #     modules.js
+│   ├── cakephp2/             #   CakePHP 2.x（webapp 継承）
+│   ├── laravel/              #   Laravel（webapp 継承）
+│   ├── symfony/              #   Symfony（webapp 継承）
+│   ├── nextjs/               #   Next.js
+│   ├── hono/                 #   Hono
+│   ├── workers/              #   Cloudflare Workers
+│   ├── drizzle/              #   Drizzle ORM
+│   ├── graphql/              #   GraphQL
+│   ├── postgres/             #   PostgreSQL
+│   ├── r2/                   #   Cloudflare R2
+│   ├── storage/              #   汎用ストレージ
+│   ├── database/             #   汎用データベース
+│   ├── monorepo/             #   モノレポ対応
+│   └── lib/                  #   プリセット間共有ユーティリティ
+├── locale/                   # i18n メッセージファイル
+├── templates/                # スキル・設定テンプレート
+└── specs/                    # spec コマンド関連
 ```
-
 <!-- {{/text}} -->
 
 ### モジュール構成
 
-<!-- {{text[mode=deep]: 主要モジュールの一覧を表形式で記述してください。モジュール名・ファイルパス・責務を含めること。ソースコードの import/require 関係と各ファイルのエクスポートから抽出すること。}} -->
+<!-- {{text({prompt: "主要モジュールの一覧を表形式で記述してください。モジュール名・ファイルパス・責務を含めること。ソースコードの import/require 関係と各ファイルのエクスポートから抽出すること。", mode: "deep"})}} -->
 
-| モジュール名 | ファイルパス | 責務 |
+| モジュール | ファイルパス | 責務 |
 | --- | --- | --- |
-| CLI ルーター | `src/sdd-forge.js` | トップレベルコマンドルーティング（docs/spec/flow/setup/help） |
-| docs ディスパッチャー | `src/docs.js` | docs サブコマンドの振り分けと build パイプライン制御 |
-| spec ディスパッチャー | `src/spec.js` | spec サブコマンドの振り分け |
-| flow ディスパッチャー | `src/flow.js` | flow サブコマンドの振り分け |
-| CLI ユーティリティ | `src/lib/cli.js` | プロジェクトルート解決・引数パース・worktree 判定・タイムスタンプ生成 |
-| 設定ローダー | `src/lib/config.js` | `.sdd-forge/config.json` の読み込み・出力ディレクトリ解決 |
-| 型・バリデーション | `src/lib/types.js` | config バリデーション・プロジェクトタイプのエイリアス解決 |
-| エージェント呼び出し | `src/lib/agent.js` | AI エージェントの同期・非同期呼び出し・プロバイダー解決・コンテキストファイル管理 |
-| プリセット探索 | `src/lib/presets.js` | プリセット自動探索・parent チェーン解決・lang 層解決 |
-| フロー状態管理 | `src/lib/flow-state.js` | `flow.json` による SDD ワークフロー状態の永続化・ステップ管理 |
-| i18n | `src/lib/i18n.js` | 3層マージ（デフォルト→プリセット→プロジェクト）の国際化メッセージ管理 |
-| エントリポイント | `src/lib/entrypoint.js` | ES Modules の直接実行判定と安全な main() 起動 |
-| プログレス表示 | `src/lib/progress.js` | TTY プログレスバー・スピナー・コマンドロガー |
-| コマンドコンテキスト | `src/docs/lib/command-context.js` | 全 docs コマンド共通の root/config/type/agent/i18n 解決 |
-| ディレクティブパーサー | `src/docs/lib/directive-parser.js` | `{{data}}`/`{{text}}` ディレクティブの解析・ブロック継承構文処理 |
-| テンプレートマージャー | `src/docs/lib/template-merger.js` | テンプレート継承チェーン解決・ブロックマージ・章順序解決 |
-| リゾルバファクトリ | `src/docs/lib/resolver-factory.js` | type に応じた DataSource のロードとリゾルバ生成 |
-| DataSource 基底 | `src/docs/lib/data-source.js` | `{{data}}` リゾルバの基底クラス（テーブル生成・overrides マージ） |
-| Scannable ミックスイン | `src/docs/lib/scan-source.js` | DataSource に scan 能力を付加するミックスイン |
-| スキャナユーティリティ | `src/docs/lib/scanner.js` | ファイル探索・PHP/JS パーサー・glob 変換 |
-| 並列実行キュー | `src/docs/lib/concurrency.js` | 最大同時実行数を制限した Promise ベースの並列処理 |
-| text プロンプト構築 | `src/docs/lib/text-prompts.js` | `{{text}}` 処理用のシステムプロンプト・enriched コンテキスト構築 |
-| forge プロンプト構築 | `src/docs/lib/forge-prompts.js` | forge コマンド用プロンプト構築・analysis テキスト化 |
-
+| CLI ユーティリティ | `src/lib/cli.js` | リポジトリルート解決（`repoRoot`/`sourceRoot`）、汎用引数パーサー（`parseArgs`）、worktree 判定、バージョン取得 |
+| エージェント | `src/lib/agent.js` | AI CLI の同期・非同期呼び出し、systemPrompt 注入、stdin フォールバック、per-command エージェント解決 |
+| 設定管理 | `src/lib/config.js` | `.sdd-forge/config.json` の読み込み・パス解決、`sddDir`/`sddOutputDir`/`sddDataDir` 等のパスヘルパー |
+| プリセット解決 | `src/lib/presets.js` | プリセット継承チェーンの解決（`resolveChainSafe`/`resolveMultiChains`）、`PRESETS_DIR` 定数の提供 |
+| 国際化 | `src/lib/i18n.js` | 3層マージ（パッケージ→プリセット→プロジェクト）によるメッセージ解決、`translate()`/`createI18n()` |
+| フロー状態 | `src/lib/flow-state.js` | `.active-flow` ポインタと `specs/NNN/flow.json` による SDD フロー状態の永続化・参照 |
+| DataSource 基底 | `src/docs/lib/data-source.js` | `{{data}}` ディレクティブリゾルバの基底クラス、`desc()`/`mergeDesc()`/`toMarkdownTable()` |
+| Scannable ミックスイン | `src/docs/lib/scan-source.js` | DataSource に `match()`/`scan()` メソッドを付与するミックスインファクトリ |
+| DataSource ローダー | `src/docs/lib/data-source-loader.js` | 指定ディレクトリの `.js` ファイルから DataSource を動的にインポート・インスタンス化 |
+| リゾルバファクトリ | `src/docs/lib/resolver-factory.js` | type に応じてプリセット継承チェーンに沿った DataSource マップを構築し `resolve()` メソッドを提供 |
+| ディレクティブパーサー | `src/docs/lib/directive-parser.js` | テンプレート内の `{{data}}`/`{{text}}`/`{%extends%}`/`{%block%}` を解析 |
+| テンプレートマージャー | `src/docs/lib/template-merger.js` | プリセット継承チェーンに基づくボトムアップ方式のレイヤー構築とブロック単位マージ |
+| コマンドコンテキスト | `src/docs/lib/command-context.js` | 全コマンド共通の `root`/`config`/`agent`/`docsDir` 等を `resolveCommandContext()` で一括解決 |
+| スキャンコマンド | `src/docs/commands/scan.js` | DataSource ベースのスキャンパイプライン、差分スキャン、enrichment 保持 |
+| enrich コマンド | `src/docs/commands/enrich.js` | AI で analysis.json の各エントリに `summary`/`detail`/`chapter`/`role` を付与 |
+| text コマンド | `src/docs/commands/text.js` | `{{text}}` ディレクティブの LLM 処理（バッチモード/per-directive モード） |
+| ファイル収集 | `src/docs/lib/scanner.js` | glob パターンでのファイル収集（`collectFiles`）、PHP/JS 言語別パーサー |
+| プログレス | `src/lib/progress.js` | スピナー付きプログレスバーとスコープ付きロガー |
 <!-- {{/text}} -->
 
 ### モジュール依存関係
 
-<!-- {{text[mode=deep]: モジュール間の依存関係を mermaid graph で生成してください。ソースコードの import/require を解析し、レイヤー構造と依存方向を示すこと。出力は mermaid コードブロックのみ。}} -->
+<!-- {{text({prompt: "モジュール間の依存関係を mermaid graph で生成してください。ソースコードの import/require を解析し、レイヤー構造と依存方向を示すこと。出力は mermaid コードブロックのみ。", mode: "deep"})}} -->
 
 ```mermaid
 graph TD
-    subgraph "CLI エントリ層"
-        sdd["sdd-forge.js"]
-        docs_cmd["docs.js"]
-        spec_cmd["spec.js"]
-        flow_cmd["flow.js"]
-        setup["setup.js"]
+    subgraph "CLI Commands"
+        scan["scan.js"]
+        enrich["enrich.js"]
+        text["text.js"]
+        data["data.js"]
+        init["init.js"]
+        forge["forge.js"]
+        review["review.js"]
+        readme["readme.js"]
     end
 
-    subgraph "docs コマンド層"
-        scan["commands/scan.js"]
-        enrich["commands/enrich.js"]
-        init_cmd["commands/init.js"]
-        data_cmd["commands/data.js"]
-        text_cmd["commands/text.js"]
-        readme["commands/readme.js"]
-        forge["commands/forge.js"]
-        review["commands/review.js"]
-        agents_cmd["commands/agents.js"]
-    end
-
-    subgraph "ドキュメント生成エンジン層"
-        cmd_ctx["command-context.js"]
-        directive["directive-parser.js"]
-        tmpl_merger["template-merger.js"]
+    subgraph "Docs Library"
+        cmdctx["command-context.js"]
+        dirparser["directive-parser.js"]
         resolver["resolver-factory.js"]
-        ds_base["data-source.js"]
-        ds_loader["data-source-loader.js"]
+        tmmerger["template-merger.js"]
+        dsloader["data-source-loader.js"]
+        textprompts["text-prompts.js"]
+        forgeprompts["forge-prompts.js"]
         scanner["scanner.js"]
-        text_prompts["text-prompts.js"]
-        forge_prompts["forge-prompts.js"]
         concurrency["concurrency.js"]
+        datasource["data-source.js"]
+        scansource["scan-source.js"]
     end
 
-    subgraph "共有ユーティリティ層"
-        cli["lib/cli.js"]
-        config["lib/config.js"]
-        agent["lib/agent.js"]
-        presets["lib/presets.js"]
-        flow_state["lib/flow-state.js"]
-        i18n["lib/i18n.js"]
-        types["lib/types.js"]
-        progress["lib/progress.js"]
-        entrypoint["lib/entrypoint.js"]
+    subgraph "Core Library"
+        cli["cli.js"]
+        agent["agent.js"]
+        config["config.js"]
+        presets["presets.js"]
+        i18n["i18n.js"]
+        flowstate["flow-state.js"]
+        progress["progress.js"]
+        entrypoint["entrypoint.js"]
     end
 
-    subgraph "DataSource 層"
-        common_ds["data/project,docs,lang,agents"]
-        preset_ds["presets/*/data/*.js"]
+    subgraph "Presets"
+        base["base/data/*"]
+        webapp["webapp/data/*"]
+        cakephp["cakephp2/data/*"]
+        laravel["laravel/data/*"]
+        symfony["symfony/data/*"]
+        nextjs["nextjs/data/*"]
+        workers["workers/data/*"]
     end
 
-    sdd --> docs_cmd & spec_cmd & flow_cmd & setup
-    docs_cmd --> scan & enrich & init_cmd & data_cmd & text_cmd & readme & forge & agents_cmd
+    scan --> cmdctx
+    scan --> dsloader
+    scan --> scanner
+    scan --> presets
+    enrich --> cmdctx
+    enrich --> agent
+    text --> cmdctx
+    text --> dirparser
+    text --> textprompts
+    text --> agent
+    text --> concurrency
+    data --> cmdctx
+    data --> resolver
+    data --> dirparser
+    forge --> cmdctx
+    forge --> forgeprompts
+    forge --> agent
+    init --> cmdctx
+    init --> tmmerger
+    readme --> cmdctx
+    review --> cmdctx
+    review --> agent
 
-    scan & data_cmd & text_cmd & forge & review --> cmd_ctx
-    data_cmd --> directive & resolver
-    text_cmd --> directive & text_prompts & concurrency
-    forge --> forge_prompts & concurrency
-    init_cmd --> tmpl_merger & directive
+    cmdctx --> cli
+    cmdctx --> config
+    cmdctx --> agent
+    cmdctx --> i18n
+    cmdctx --> tmmerger
 
-    cmd_ctx --> cli & config & types & i18n & agent
-    resolver --> ds_loader & presets
-    tmpl_merger --> directive & presets
-    ds_loader --> ds_base
-    preset_ds --> ds_base
-    preset_ds --> scanner
+    resolver --> dsloader
+    resolver --> presets
+    dsloader --> datasource
+    tmmerger --> dirparser
+    tmmerger --> presets
+    textprompts --> i18n
+    forgeprompts --> i18n
 
-    flow_cmd --> flow_state
-    i18n --> config & presets
-    types --> presets
+    webapp --> datasource
+    webapp --> scansource
+    cakephp --> webapp
+    laravel --> webapp
+    symfony --> webapp
+    base --> datasource
+    nextjs --> datasource
+    nextjs --> scansource
+    workers --> datasource
+    workers --> scansource
+
+    i18n --> config
+    i18n --> presets
+    flowstate --> config
+    flowstate --> cli
     agent --> cli
-    config --> cli
 ```
-
 <!-- {{/text}} -->
 
 ### 主要な処理フロー
 
-<!-- {{text[mode=deep]: 代表的なコマンドを実行した際のモジュール間のデータ・制御フローを番号付きステップで説明してください。エントリポイントから最終出力までの流れを含めること。}} -->
+<!-- {{text({prompt: "代表的なコマンドを実行した際のモジュール間のデータ・制御フローを番号付きステップで説明してください。エントリポイントから最終出力までの流れを含めること。", mode: "deep"})}} -->
 
-**`sdd-forge docs build` パイプライン**
+#### `sdd-forge build` パイプライン（scan → enrich → init → data → text → readme）
 
-1. `sdd-forge.js` が `process.argv` から `docs` サブコマンドを識別し、`docs.js` にディスパッチします。
-2. `docs.js` は `build` コマンドを検出すると、パイプライン `scan → enrich → init → data → text → readme → agents → [translate]` を順次実行します。`createProgress()` でプログレスバーを初期化します。
-3. **scan**: `scan.js` が `collectFiles()` で対象ファイルを収集し、各プリセットの DataSource の `match()` / `scan()` でカテゴリ別にソースコードを解析します。結果は `.sdd-forge/output/analysis.json` に書き込まれます。
-4. **enrich**: AI エージェントに analysis 全体を渡し、各エントリに role・summary・detail・chapter 分類を一括付与します。
-5. **init**: `template-merger.js` が `buildLayers()` でプリセット継承チェーンのテンプレートレイヤーを構築し、`resolveTemplates()` で各章ファイルを解決します。`@extends` / `@block` ディレクティブがある場合はブロック単位でマージします。結果を `docs/` ディレクトリに展開します。
-6. **data**: `data.js` が `resolveCommandContext()` でコンテキストを構築し、`createResolver()` で type に応じたリゾルバを生成します。`getChapterFiles()` で章ファイル一覧を取得し、各ファイルの `{{data}}` ディレクティブを `resolveDataDirectives()` で解決して Markdown テーブル等に置換します。
-7. **text**: `text.js` がバッチモード（`processTemplateFileBatch()`）で各章ファイル内の `{{text}}` ディレクティブを処理します。`getEnrichedContext()` で enriched analysis から章に該当するエントリのコンテキストを構築し、`buildBatchPrompt()` でプロンプトを組み立てて AI エージェントに送信します。結果は `validateBatchResult()` で品質検証されます。
-8. **readme**: README.md を生成し、`{{data}}` ディレクティブ（章一覧テーブル等）を解決します。
-9. **agents**: `agents.js` が AGENTS.md の SDD セクション（テンプレート）と PROJECT セクション（analysis からの自動生成）を更新します。
+1. **エントリポイント解決**: `sdd-forge.js` が `process.argv` からサブコマンドを判定し、`docs.js` へディスパッチします。`docs.js` は `build` コマンドを認識し、パイプライン全体を順次実行します。
+2. **コンテキスト構築**: `resolveCommandContext()` が `repoRoot()`/`sourceRoot()` でプロジェクトルートを解決し、`.sdd-forge/config.json` を `validateConfig()` で検証し、`resolveAgent()` で AI エージェント設定を解決します。
+3. **scan**: `scan.js` が `collectFiles()` でプリセットの include/exclude glob パターンに基づきファイルを一括収集します。`resolveMultiChains()` で type のプリセット継承チェーンを解決し、各プリセットの `data/` ディレクトリから `loadScanSources()` で `scan()` メソッドを持つ DataSource をロードします。各 DataSource の `match()` でファイルを振り分け、`scan()` を実行して `analysis.json` を生成します。既存 analysis がある場合は `analyzeCategoryDelta()` で差分スキャンを行い、`preserveEnrichment()` でハッシュが一致するエントリの enriched フィールドを引き継ぎます。
+4. **enrich**: `enrich.js` が `collectEntries()` で analysis.json の全エントリを収集し、未処理のものを `splitIntoBatches()` でバッチ分割します。`buildEnrichPrompt()` でプロンプトを生成し、`callAgentAsync()` で AI を呼び出します。`parseEnrichResponse()` でレスポンスを解析し、`mergeEnrichment()` で `summary`/`detail`/`chapter`/`role` を analysis にマージします。各バッチ完了後に中間保存します。
+5. **init**: `template-merger.js` の `resolveTemplates()` がプリセット継承チェーンに沿ってテンプレートファイルを解決し、`mergeResolved()` でブロック単位マージを適用して `docs/` にテンプレートを配置します。
+6. **data**: `resolver-factory.js` の `createResolver()` が DataSource マップを構築し、`directive-parser.js` がテンプレート内の `{{data}}` ディレクティブを解析します。`resolveDataDirectives()` が各ディレクティブに対して `resolver.resolve(preset, source, method, analysis, labels)` を呼び出し、マークダウンテーブル等の結果をテンプレートに挿入します。
+7. **text**: `text.js` がテンプレート内の `{{text}}` ディレクティブを解析し、`getEnrichedContext()` で enriched analysis から該当章のコンテキストを構築します。バッチモードでは `processTemplateFileBatch()` がファイル単位で1回の LLM 呼び出しを行い、`validateBatchResult()` で品質検証します。
+8. **readme**: `readme.js` が `README.md` テンプレートの `{{data}}` ディレクティブを解決し、章一覧テーブルやプロジェクトメタデータを含む README を生成します。
 
-**`sdd-forge docs data` 単独実行**
+#### `sdd-forge scan`（差分スキャン）
 
-1. `sdd-forge.js` → `docs.js` → `data.js` の3層ディスパッチで `main()` が呼び出されます。
-2. `resolveCommandContext()` が root・config・type・docsDir・agent・i18n を解決します。
-3. `analysis.json` をファイルシステムから読み込みます。
-4. `createResolver(type, root)` がプリセット parent チェーン（base → arch → leaf）と lang 層の順に DataSource をロードし、プロジェクト固有 DataSource（`.sdd-forge/data/`）を最高優先で追加します。
-5. `getChapterFiles()` が config.chapters → preset.chapters → アルファベット順のフォールバックで対象ファイルを決定します。
-6. 各ファイルに対して `processTemplate()` が `resolveDataDirectives()` を呼び出し、`{{data: source.method("labels")}}` を DataSource の対応メソッドの戻り値（Markdown テーブル等）で置換します。
-7. `dryRun` でなければ `fs.writeFileSync()` でファイルを更新します。
-
+1. `resolveCommandContext()` でコンテキストを構築します。
+2. 既存 `analysis.json` がある場合、`buildExistingFileIndex()` でファイルパス→ハッシュのルックアップを構築します。
+3. `collectFiles()` でファイルを収集し、各 DataSource の `match()` で振り分けます。
+4. `analyzeCategoryDelta()` でカテゴリごとに変更・追加・削除を判定し、変更がないカテゴリはスキップして既存データを再利用します。
+5. 変更があったカテゴリのみ `scan()` を実行し、`_incrementalMeta` に変更ファイルと影響章を記録します。
+6. `preserveEnrichment()` でハッシュが一致するエントリの enriched フィールドを新結果に引き継ぎます。
 <!-- {{/text}} -->
 
 ### 拡張ポイント
 
-<!-- {{text[mode=deep]: 新しいコマンドや機能を追加する際に変更が必要な箇所と、拡張パターンを説明してください。ソースコードのプラグインポイントやディスパッチ登録パターンから導出すること。}} -->
+<!-- {{text({prompt: "新しいコマンドや機能を追加する際に変更が必要な箇所と、拡張パターンを説明してください。ソースコードのプラグインポイントやディスパッチ登録パターンから導出すること。", mode: "deep"})}} -->
 
-**新しいプリセットの追加**
+#### 新しいプリセットの追加
 
-`src/presets/{key}/` ディレクトリに `preset.json`（`parent`・`chapters`・`scan` 等を定義）と `data/` ディレクトリ配下に DataSource クラスを配置します。`presets.js` の `discoverPresets()` が自動探索するため、ディレクトリ追加だけで認識されます。DataSource は `Scannable(DataSource)` または既存の親プリセット DataSource（例: `webapp/data/controllers.js`）を継承し、`match()` と `scan()` をオーバーライドします。テンプレートは `templates/{lang}/` 配下に `.md` ファイルを配置し、`@extends` ディレクティブで親テンプレートのブロックを選択的に上書きできます。
+`src/presets/` 配下に新しいディレクトリを作成し、`preset.json` で `parent` を指定して継承チェーンを構築します。`data/` ディレクトリに DataSource クラスを配置すると、`data-source-loader.js` が自動的にロードします。DataSource は `DataSource` を直接継承（data-only）するか、`Scannable(DataSource)` ミックスインで `match()`/`scan()` メソッドを追加できます。`templates/{lang}/` にテンプレートファイルを配置すると、`template-merger.js` が継承チェーンに沿ってマージします。
 
-**新しい DataSource の追加**
+#### 新しい DataSource の追加
 
-`src/docs/data/` に共通 DataSource を、または `src/presets/{preset}/data/` にプリセット固有 DataSource を追加します。`data-source-loader.js` の `loadDataSources()` がディレクトリ内の `.js` ファイルを動的にインポートするため、ファイル追加だけで登録されます。ファイル名がディレクティブの `source` 名になります（例: `mydata.js` → `{{data: mydata.method("...")}}`）。
+1. `src/presets/{preset}/data/` に `.js` ファイルを作成し、`DataSource` または `Scannable(DataSource)` を継承するクラスを `export default` します。
+2. スキャン機能が必要な場合は `match(file)` と `scan(files)` を実装します。`match()` は `relPath`/`fileName` でファイルを判定し、`scan()` は解析結果オブジェクトを返します。
+3. データ出力メソッド（例: `list(analysis, labels)`）を実装します。テンプレートから `{{data("preset.source.method", {labels: "A|B"})}}` の形式で呼び出されます。
+4. `toMarkdownTable(rows, labels)` や `mergeDesc(items, section, keyField)` など、基底クラスのユーティリティを利用してマークダウン出力を生成します。
 
-**新しい docs サブコマンドの追加**
+#### プロジェクト固有の DataSource
 
-`src/docs/commands/{cmd}.js` に `main()` 関数を実装し、`src/docs.js` のディスパッチテーブルにエントリを追加します。`resolveCommandContext()` を呼び出すことで root・config・type 等の共通コンテキストを取得でき、`runIfDirect()` で直接実行もサポートできます。
+プリセットを変更せずに、`.sdd-forge/data/` ディレクトリに DataSource ファイルを配置することで、プロジェクト固有のスキャン・データ出力を追加できます。同名のファイルがプリセットチェーンに存在する場合は上書きされます。
 
-**新しいトップレベルコマンドの追加**
+#### 新しい CLI コマンドの追加
 
-`src/{cmd}.js` にコマンドを実装し、`src/sdd-forge.js` のルーティング条件に分岐を追加します。
+1. `src/docs/commands/` にコマンドファイルを作成します。
+2. `runIfDirect(import.meta.url, main)` でエントリポイントガードを設定します。
+3. `resolveCommandContext(cli)` でコンテキストを取得します。
+4. `docs.js` のサブコマンドディスパッチテーブルにエントリを追加します。
 
-**i18n メッセージの拡張**
+#### テンプレートディレクティブの拡張
 
-`src/locale/{lang}/` 配下の `ui.json`・`messages.json`・`prompts.json` にキーを追加します。プリセット固有メッセージは `src/presets/{preset}/locale/` に、プロジェクト固有メッセージは `.sdd-forge/locale/` に配置でき、3層マージで後勝ちになります。
-
-**scan 対象の拡張**
-
-`preset.json` の `scan.include` / `scan.exclude` glob パターンで対象ファイルを制御します。新しいファイル種別を解析する場合は、対応する DataSource の `match()` でファイル判定を定義し、`scan()` で解析ロジックを実装します。
-
+`{{data}}` ディレクティブは `directive-parser.js` の `parseDataCall()` でパースされ、`resolver-factory.js` の `resolve()` で解決されます。新しいディレクティブタイプを追加する場合は、`directive-parser.js` にパターンを追加し、対応する処理ロジックを実装します。`{{text}}` ディレクティブのパラメータ（`mode`、`maxLines`、`maxChars`、`id`）は `parseOptions()` で解析され、`text.js` で処理されます。
 <!-- {{/text}} -->
+
+---
+
+<!-- {{data("base.docs.nav")}} -->
+[← 設定とカスタマイズ](configuration.md) | [開発・テスト・配布 →](development_testing.md)
+<!-- {{/data}} -->

@@ -17,7 +17,7 @@
 <!-- {%block "directory-tree"%} -->
 ### ディレクトリ構成
 
-<!-- {{data: base.structure.tree()}} -->
+<!-- {{data("base.structure.tree")}} -->
 <!-- {{/data}} -->
 <!-- {%/block%} -->
 
