@@ -1,7 +1,6 @@
-# <!-- {{data("cli.project.name")}} -->sdd-forge<!-- {{/data}} -->
+# <!-- {{data("cli.project.name")}} --><!-- {{/data}} -->
 
 <!-- {{data("cli.docs.langSwitcher", {labels: "absolute"})}} -->
-**English** | [日本語](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/ja/README.md)
 <!-- {{/data}} -->
 
 [![npm version](https://img.shields.io/npm/v/sdd-forge.svg)](https://www.npmjs.com/package/sdd-forge)
@@ -54,13 +53,13 @@ Documentation is automatically refreshed during the merge phase, so docs and cod
 ### Install
 
 <pre>
-npm install -g <!-- {{data("cli.project.name")}} -->sdd-forge<!-- {{/data}} -->
+npm install -g <!-- {{data("cli.project.name")}} --><!-- {{/data}} -->
 </pre>
 
 ### Setup
 
 <pre>
-<!-- {{data("cli.project.name")}} -->sdd-forge<!-- {{/data}} --> setup
+<!-- {{data("cli.project.name")}} --><!-- {{/data}} --> setup
 </pre>
 
 An interactive wizard configures your project type (preset) and AI agent.
@@ -70,7 +69,7 @@ An interactive wizard configures your project type (preset) and AI agent.
 If you already have source code, generate documentation to get a complete picture of the system. Especially useful for onboarding onto legacy codebases.
 
 <pre>
-<!-- {{data("cli.project.name")}} -->sdd-forge<!-- {{/data}} --> docs build
+<!-- {{data("cli.project.name")}} --><!-- {{/data}} --> docs build
 </pre>
 
 ### Develop with the SDD flow
@@ -124,15 +123,6 @@ See the [configuration reference](docs/configuration.md) for details.
 ## Documentation
 
 <!-- {{data("cli.docs.chapters", {header: "", labels: "Chapter|Summary", ignoreError: true})}} -->
-| Chapter | Summary |
-| --- | --- |
-| [Tool Overview and Architecture](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/overview.md) |  |
-| [Technology Stack and Operations](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/stack_and_ops.md) |  |
-| [Project Structure](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/project_structure.md) |  |
-| [CLI Command Reference](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/cli_commands.md) |  |
-| [Configuration and Customization](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/configuration.md) |  |
-| [Internal Design](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/internal_design.md) |  |
-| [Development, Testing, and Distribution](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/development_testing.md) |  |
 <!-- {{/data}} -->
 
 ## License
