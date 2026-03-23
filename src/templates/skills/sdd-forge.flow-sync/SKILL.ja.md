@@ -20,11 +20,7 @@ Sync documentation with the current codebase. Can be invoked from flow-finalize 
 
 2. Generate documentation.
    - Display: "ドキュメントを更新しています..."
-   - If `docs/` has no chapter files:
-     - Run `sdd-forge build`.
-   - If `docs/` already has chapter files:
-     - Run `sdd-forge forge --prompt "<change summary>" --spec <spec-path>` (if spec path is available).
-     - Otherwise, run `sdd-forge build`.
+   - Run `sdd-forge build`.
 
 3. Review documentation.
    - `sdd-forge review`
@@ -42,6 +38,5 @@ Sync documentation with the current codebase. Can be invoked from flow-finalize 
 
 ```bash
 sdd-forge build
-sdd-forge forge --prompt "<change summary>" --spec <spec-path>
 sdd-forge review
 ```
