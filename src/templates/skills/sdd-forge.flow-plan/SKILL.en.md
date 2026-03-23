@@ -101,16 +101,21 @@ Present choices in the following format:
      - `sdd-forge flow status --step approach --status done`
      - `sdd-forge flow status --step branch --status done`
      - `sdd-forge flow status --step spec --status done`
+   - **If a GitHub Issue number was provided** (e.g. user said "#17" or "issue 17"):
+     - Run `sdd-forge flow status --issue <number>` to save it in flow.json.
 
 4. Draft phase (if step 1 chose option 1).
    - **On start**: `sdd-forge flow status --step draft --status in_progress`
    - **If skipped** (step 1 chose option 2): `sdd-forge flow status --step draft --status skipped`
    - **Before starting draft discussion**:
-     1. Check docs freshness: compare mtime of `docs/*.md` vs source files.
+     1. **If a GitHub Issue number is linked** (saved in flow.json via `--issue`):
+        Fetch the issue content with `gh issue view <number>` and display the title and body before the first question.
+        Use the issue content as context for the draft discussion.
+     2. Check docs freshness: compare mtime of `docs/*.md` vs source files.
         If source is newer, suggest `sdd-forge build` to the user and wait for approval.
-     2. Load guardrail articles for the draft phase: `sdd-forge spec guardrail show --phase draft`.
+     3. Load guardrail articles for the draft phase: `sdd-forge spec guardrail show --phase draft`.
         If output is non-empty, consider these principles as constraints when asking questions and making proposals.
-     3. Read relevant `docs/` chapters based on the user's request keywords.
+     4. Read relevant `docs/` chapters based on the user's request keywords.
         Use chapter titles and AGENTS.md structure to identify related files.
         This provides project context that improves question quality and draft accuracy.
    - Create `specs/NNN-xxx/draft.md` in the spec directory created in step 3.
@@ -263,5 +268,6 @@ sdd-forge flow status --summary '<JSON array>'
 sdd-forge flow status --req <index> --status <val>
 sdd-forge flow status --request "<text>"
 sdd-forge flow status --note "<text>"
+sdd-forge flow status --issue <number>
 sdd-forge snapshot check
 ```

@@ -1,0 +1,111 @@
+{
+  "spec": "specs/088-issue-input-for-flow/spec.md",
+  "baseBranch": "main",
+  "featureBranch": "feature/088-issue-input-for-flow",
+  "steps": [
+    {
+      "id": "approach",
+      "status": "done"
+    },
+    {
+      "id": "branch",
+      "status": "done"
+    },
+    {
+      "id": "spec",
+      "status": "done"
+    },
+    {
+      "id": "draft",
+      "status": "done"
+    },
+    {
+      "id": "fill-spec",
+      "status": "done"
+    },
+    {
+      "id": "approval",
+      "status": "done"
+    },
+    {
+      "id": "gate",
+      "status": "done"
+    },
+    {
+      "id": "test",
+      "status": "done"
+    },
+    {
+      "id": "implement",
+      "status": "done"
+    },
+    {
+      "id": "review",
+      "status": "done"
+    },
+    {
+      "id": "finalize",
+      "status": "in_progress"
+    },
+    {
+      "id": "commit",
+      "status": "in_progress"
+    },
+    {
+      "id": "push",
+      "status": "pending"
+    },
+    {
+      "id": "merge",
+      "status": "pending"
+    },
+    {
+      "id": "pr-create",
+      "status": "pending"
+    },
+    {
+      "id": "branch-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "pr-merge",
+      "status": "pending"
+    },
+    {
+      "id": "sync-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "docs-update",
+      "status": "pending"
+    },
+    {
+      "id": "docs-review",
+      "status": "pending"
+    },
+    {
+      "id": "docs-commit",
+      "status": "pending"
+    }
+  ],
+  "requirements": [
+    {
+      "desc": "flow-state.js に setIssue() を追加",
+      "status": "done"
+    },
+    {
+      "desc": "status.js に --issue オプションを追加",
+      "status": "done"
+    },
+    {
+      "desc": "flow-plan SKILL.md に issue 取得・活用の指示を追加",
+      "status": "done"
+    }
+  ],
+  "worktree": true,
+  "request": "GitHub Issue #17: Allow GitHub Issue as input source for flow-plan via --issue <number> option",
+  "notes": [
+    "approach: --issue は flow status に追加（spec init ではなく）",
+    "draft: issue は情報ソースの一つとして扱う。既存フローは変更しない。flow-plan時にissue内容を読み取りflow.jsonに保存する程度"
+  ]
+}

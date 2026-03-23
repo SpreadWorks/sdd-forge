@@ -20,6 +20,7 @@ import {
   setRequirements,
   updateRequirement,
   setRequest,
+  setIssue,
   addNote,
   clearFlowState,
   FLOW_STEPS,
@@ -45,6 +46,9 @@ function displayStatus(root) {
   console.log(`  Base branch:      ${state.baseBranch}`);
   if (state.worktree) {
     console.log(`  Worktree:         yes`);
+  }
+  if (state.issue) {
+    console.log(`  Issue:            #${state.issue}`);
   }
 
   // Steps
@@ -131,8 +135,8 @@ function main() {
   const root = repoRoot(import.meta.url);
   const cli = parseArgs(process.argv.slice(2), {
     flags: ["--dry-run", "--all", "--list"],
-    options: ["--step", "--status", "--summary", "--req", "--check", "--request", "--note"],
-    defaults: { step: "", status: "", summary: "", req: "", check: "", request: "", note: "", dryRun: false, all: false, list: false },
+    options: ["--step", "--status", "--summary", "--req", "--check", "--request", "--note", "--issue"],
+    defaults: { step: "", status: "", summary: "", req: "", check: "", request: "", note: "", issue: "", dryRun: false, all: false, list: false },
   });
 
   if (cli.help) {
@@ -147,6 +151,7 @@ function main() {
         "  --req <index> --status <val>        Update requirement status",
         "  --request <text>                    Set the original user request",
         "  --note <text>                       Append a note (decision/memo)",
+        "  --issue <number>                    Set the linked GitHub Issue number",
         "  --check <phase>                     Check prerequisites (e.g. --check impl)",
         "  --list                              List active (in-progress) flows",
         "  --all                               List all specs (including completed)",
@@ -196,6 +201,18 @@ function main() {
   if (cli.request) {
     setRequest(root, cli.request);
     console.log(`request set`);
+    return;
+  }
+
+  // Set issue
+  if (cli.issue) {
+    const num = Number(cli.issue);
+    if (Number.isNaN(num) || !Number.isInteger(num) || num <= 0) {
+      console.error("--issue must be a number");
+      process.exit(1);
+    }
+    setIssue(root, num);
+    console.log(`issue set to #${num}`);
     return;
   }
 
