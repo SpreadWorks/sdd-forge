@@ -472,18 +472,20 @@ export function scanAllFlows(workRoot) {
   const results = [];
   const seen = new Set();
 
-  // 1. Local: specs/*/flow.json in main repo
+  // 1. Local: specs/*/ in main repo (with or without flow.json)
   const specsDir = path.join(mainRoot, "specs");
   if (fs.existsSync(specsDir)) {
     for (const entry of fs.readdirSync(specsDir, { withFileTypes: true })) {
-      if (!entry.isDirectory()) continue;
+      if (!entry.isDirectory() || !/^\d{3}-/.test(entry.name)) continue;
       const fp = path.join(specsDir, entry.name, STATE_FILE);
       if (fs.existsSync(fp)) {
         const state = JSON.parse(fs.readFileSync(fp, "utf8"));
         const mode = state.worktree ? "worktree" : (state.featureBranch && state.featureBranch !== state.baseBranch) ? "branch" : "local";
         results.push({ specId: entry.name, mode, state, location: mainRoot });
-        seen.add(entry.name);
+      } else {
+        results.push({ specId: entry.name, mode: null, state: null, location: mainRoot });
       }
+      seen.add(entry.name);
     }
   }
 

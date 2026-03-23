@@ -90,6 +90,22 @@ function displayAll(root) {
   console.log(`  ${"SPEC".padEnd(20)} ${"MODE".padEnd(10)} ${"PHASE".padEnd(10)} ${"PROGRESS".padEnd(10)} LOCATION`);
   console.log(SEP);
   for (const f of flows) {
+    const m = f.specId.match(/^(\d+)-(.+)/);
+    const maxNameLen = 12;
+    let label;
+    if (m) {
+      const name = m[2].length > maxNameLen ? m[2].slice(0, maxNameLen) + "..." : m[2];
+      label = `${m[1]}-${name}`;
+    } else {
+      label = f.specId.length > 16 ? f.specId.slice(0, 16) + "..." : f.specId;
+    }
+
+    if (!f.state) {
+      const loc = f.location.startsWith("branch:") ? f.location : path.relative(root, f.location) || "./";
+      console.log(`  ${label.padEnd(20)} ${"-".padEnd(10)} ${"-".padEnd(10)} ${"-".padEnd(10)} ${loc}`);
+      continue;
+    }
+
     const phase = derivePhase(f.state.steps);
     const steps = f.state.steps || [];
     const hasInProgress = steps.some((s) => s.status === "in_progress");
@@ -104,15 +120,6 @@ function displayAll(root) {
     const doneCount = steps.filter((s) => s.status === "done" || s.status === "skipped").length;
     const totalCount = steps.length;
     const progress = hasInProgress || hasPendingBeforeDone ? `${doneCount}/${totalCount}` : "done";
-    const m = f.specId.match(/^(\d+)-(.+)/);
-    const maxNameLen = 12;
-    let label;
-    if (m) {
-      const name = m[2].length > maxNameLen ? m[2].slice(0, maxNameLen) + "..." : m[2];
-      label = `${m[1]}-${name}`;
-    } else {
-      label = f.specId.length > 16 ? f.specId.slice(0, 16) + "..." : f.specId;
-    }
     const loc = f.location.startsWith("branch:") ? f.location : path.relative(root, f.location) || "./";
     console.log(`  ${label.padEnd(20)} ${f.mode.padEnd(10)} ${phase.padEnd(10)} ${progress.padEnd(10)} ${loc}`);
   }
