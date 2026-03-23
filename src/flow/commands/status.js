@@ -95,7 +95,7 @@ function displayAll(root) {
     const totalCount = f.state.steps?.length || 0;
     const progress = `${doneCount}/${totalCount}`;
     const num = f.specId.match(/^(\d+)/)?.[1] || f.specId;
-    const loc = f.location.startsWith("branch:") ? f.location : path.relative(root, f.location) || ".";
+    const loc = f.location.startsWith("branch:") ? f.location : path.relative(root, f.location) || "./";
     console.log(`  ${num.padEnd(5)} ${f.mode.padEnd(10)} ${phase.padEnd(10)} ${progress.padEnd(10)} ${loc}`);
   }
 }
