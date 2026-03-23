@@ -10,8 +10,7 @@ import fs from "fs";
 import path from "path";
 import { runIfDirect } from "../../lib/entrypoint.js";
 import { repoRoot, parseArgs } from "../../lib/cli.js";
-import { loadFlowState, derivePhase } from "../../lib/flow-state.js";
-import { sddDir } from "../../lib/config.js";
+import { loadFlowState, derivePhase, loadActiveFlows, scanAllFlows, resolveWorktreePaths } from "../../lib/flow-state.js";
 
 /**
  * Extract a section's content from Markdown text.
@@ -151,33 +150,58 @@ function main() {
     return;
   }
 
+  // Try loading from context first (current branch/worktree)
   let state = loadFlowState(root);
   let effectiveRoot = root;
 
   if (!state) {
-    // Search worktree directories for an active flow
-    const worktreeDir = path.join(sddDir(root), "worktree");
-    if (fs.existsSync(worktreeDir)) {
-      for (const entry of fs.readdirSync(worktreeDir, { withFileTypes: true })) {
-        if (!entry.isDirectory()) continue;
-        const wtRoot = path.join(worktreeDir, entry.name);
-        const found = loadFlowState(wtRoot);
-        if (found) {
-          state = found;
-          effectiveRoot = wtRoot;
-          break;
+    // Scan active flows and pick one
+    const activeFlows = loadActiveFlows(root);
+    if (activeFlows.length === 1) {
+      state = loadFlowState(root, activeFlows[0].spec);
+      if (state) {
+        // Resolve effective root for worktree mode
+        const { worktreePath } = resolveWorktreePaths(root, state);
+        if (worktreePath && fs.existsSync(worktreePath)) {
+          effectiveRoot = worktreePath;
+          state = loadFlowState(effectiveRoot, activeFlows[0].spec);
         }
       }
+    } else if (activeFlows.length > 1) {
+      console.error("multiple active flows found. specify --spec or run from the correct worktree/branch:");
+      for (const f of activeFlows) {
+        console.error(`  ${f.spec} (${f.mode})`);
+      }
+      process.exit(1);
     }
   }
 
   if (!state) {
-    console.error("no active flow (flow.json not found)");
+    // Last resort: scan all flows
+    const all = scanAllFlows(root);
+    const inProgress = all.filter((f) => {
+      const phase = derivePhase(f.state.steps);
+      return f.state.steps?.some((s) => s.status === "in_progress" || s.status === "pending");
+    });
+    if (inProgress.length === 1) {
+      state = inProgress[0].state;
+      effectiveRoot = inProgress[0].location.startsWith("branch:") ? root : inProgress[0].location;
+    } else if (inProgress.length > 1) {
+      console.error("multiple in-progress flows found:");
+      for (const f of inProgress) {
+        console.error(`  ${f.specId} (${f.mode}) [${f.location}]`);
+      }
+      process.exit(1);
+    }
+  }
+
+  if (!state) {
+    console.error("no active flow found");
     process.exit(1);
   }
 
   if (effectiveRoot !== root) {
-    console.error(`(found active flow in worktree: ${path.relative(root, effectiveRoot)})`);
+    console.error(`(found active flow in: ${path.relative(root, effectiveRoot) || effectiveRoot})`);
   }
 
   const summary = buildSummary(state, effectiveRoot);

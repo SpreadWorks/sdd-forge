@@ -11,7 +11,7 @@ import path from "path";
 import { runIfDirect } from "../../lib/entrypoint.js";
 import { PKG_DIR, repoRoot, parseArgs, isInsideWorktree } from "../../lib/cli.js";
 import { runSync } from "../../lib/process.js";
-import { saveFlowState, buildInitialSteps } from "../../lib/flow-state.js";
+import { saveFlowState, buildInitialSteps, addActiveFlow, specIdFromPath } from "../../lib/flow-state.js";
 import { translate } from "../../lib/i18n.js";
 
 function run(root, cmd, args) {
@@ -173,6 +173,9 @@ function main() {
     flowState.worktree = true;
   }
   saveFlowState(root, flowState);
+  const specId = specIdFromPath(specRel);
+  const mode = flowState.worktree ? "worktree" : cli.noBranch ? "local" : "branch";
+  addActiveFlow(root, specId, mode);
 
   const forgeArgs = [
     path.join(PKG_DIR, "docs", "commands", "forge.js"),

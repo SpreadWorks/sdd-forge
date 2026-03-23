@@ -3,27 +3,10 @@ import assert from "node:assert/strict";
 import { join } from "path";
 import { execFileSync } from "child_process";
 import { createTmpDir, removeTmpDir } from "../../../helpers/tmp-dir.js";
-import { saveFlowState, FLOW_STEPS } from "../../../../src/lib/flow-state.js";
+import { makeFlowState, setupFlow, setStepDone } from "../../../helpers/flow-setup.js";
+import { saveFlowState, addActiveFlow } from "../../../../src/lib/flow-state.js";
 
 const FLOW_CMD = join(process.cwd(), "src/flow.js");
-
-function makeState(overrides = {}) {
-  const steps = FLOW_STEPS.map((id) => ({ id, status: "pending" }));
-  return {
-    spec: "specs/001-test/spec.md",
-    baseBranch: "main",
-    featureBranch: "feature/001-test",
-    steps,
-    ...overrides,
-  };
-}
-
-function setStepDone(state, ...ids) {
-  for (const id of ids) {
-    const step = state.steps.find((s) => s.id === id);
-    if (step) step.status = "done";
-  }
-}
 
 describe("flow status --check impl", () => {
   let tmp;
@@ -31,9 +14,10 @@ describe("flow status --check impl", () => {
 
   it("PASS when gate and test are both done", () => {
     tmp = createTmpDir();
-    const state = makeState();
+    const state = makeFlowState();
     setStepDone(state, "gate", "test");
     saveFlowState(tmp, state);
+    addActiveFlow(tmp, "001-test", "local");
     const result = execFileSync("node", [FLOW_CMD, "status", "--check", "impl"], {
       encoding: "utf8",
       env: { ...process.env, SDD_WORK_ROOT: tmp },
@@ -43,10 +27,11 @@ describe("flow status --check impl", () => {
 
   it("PASS when gate is done and test is skipped", () => {
     tmp = createTmpDir();
-    const state = makeState();
+    const state = makeFlowState();
     setStepDone(state, "gate");
     state.steps.find((s) => s.id === "test").status = "skipped";
     saveFlowState(tmp, state);
+    addActiveFlow(tmp, "001-test", "local");
     const result = execFileSync("node", [FLOW_CMD, "status", "--check", "impl"], {
       encoding: "utf8",
       env: { ...process.env, SDD_WORK_ROOT: tmp },
@@ -56,9 +41,10 @@ describe("flow status --check impl", () => {
 
   it("FAIL (exit 1) when gate is not done", () => {
     tmp = createTmpDir();
-    const state = makeState();
+    const state = makeFlowState();
     setStepDone(state, "test");
     saveFlowState(tmp, state);
+    addActiveFlow(tmp, "001-test", "local");
     try {
       execFileSync("node", [FLOW_CMD, "status", "--check", "impl"], {
         encoding: "utf8",
@@ -74,9 +60,10 @@ describe("flow status --check impl", () => {
 
   it("FAIL (exit 1) when test is not done", () => {
     tmp = createTmpDir();
-    const state = makeState();
+    const state = makeFlowState();
     setStepDone(state, "gate");
     saveFlowState(tmp, state);
+    addActiveFlow(tmp, "001-test", "local");
     try {
       execFileSync("node", [FLOW_CMD, "status", "--check", "impl"], {
         encoding: "utf8",
@@ -92,8 +79,9 @@ describe("flow status --check impl", () => {
 
   it("--dry-run always exits 0 even when FAIL", () => {
     tmp = createTmpDir();
-    const state = makeState(); // gate and test both pending
+    const state = makeFlowState(); // gate and test both pending
     saveFlowState(tmp, state);
+    addActiveFlow(tmp, "001-test", "local");
     const result = execFileSync("node", [FLOW_CMD, "status", "--check", "impl", "--dry-run"], {
       encoding: "utf8",
       env: { ...process.env, SDD_WORK_ROOT: tmp },

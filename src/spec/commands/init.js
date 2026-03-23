@@ -16,7 +16,7 @@ import { repoRoot, parseArgs, isInsideWorktree } from "../../lib/cli.js";
 import { sddConfigPath, sddDir, DEFAULT_LANG } from "../../lib/config.js";
 import { runSync } from "../../lib/process.js";
 import { translate } from "../../lib/i18n.js";
-import { saveFlowState, buildInitialSteps } from "../../lib/flow-state.js";
+import { saveFlowState, buildInitialSteps, addActiveFlow, cleanStaleFlows } from "../../lib/flow-state.js";
 
 function runGit(root, args) {
   const res = runSync("git", ["-C", root, ...args]);
@@ -264,12 +264,16 @@ function main() {
     saveFlowState(specRoot, state);
   }
 
+  // Clean stale .active-flow entries before creating a new flow
+  cleanStaleFlows(root);
+
   if (useWorktree) {
     // Create worktree with new branch
     const absPath = worktreePath;
     runGit(root, ["worktree", "add", absPath, "-b", branchName, opts.base]);
     writeSpecFiles();
     writeFlowState({ worktree: true });
+    addActiveFlow(root, specDirName, "worktree");
     console.log(
       [
         `created worktree: ${absPath}`,
@@ -288,6 +292,7 @@ function main() {
     // Spec-only: no branch creation
     writeSpecFiles();
     writeFlowState();
+    addActiveFlow(root, specDirName, "local");
     console.log(
       [
         `created spec: ${path.relative(root, specPath)}`,
@@ -304,6 +309,7 @@ function main() {
     runGit(root, ["checkout", "-b", branchName, opts.base]);
     writeSpecFiles();
     writeFlowState();
+    addActiveFlow(root, specDirName, "branch");
     console.log(
       [
         `created branch: ${branchName} (from ${opts.base})`,

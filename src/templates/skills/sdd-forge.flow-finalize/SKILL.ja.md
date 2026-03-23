@@ -11,7 +11,7 @@ Use this skill when implementation is complete and the user approved finalizatio
 
 **MUST: Run `sdd-forge flow status --step <id> --status <val>` upon completion of each step to record flow progress.**
 
-Available step IDs (this skill): `commit`, `push`, `merge`, `pr-create`, `branch-cleanup`, `archive`
+Available step IDs (this skill): `commit`, `push`, `merge`, `pr-create`, `branch-cleanup`
 Available status values: `pending`, `in_progress`, `done`, `skipped`
 
 ## Context Recording (Compaction Resilience)
@@ -78,7 +78,7 @@ Available status values: `pending`, `in_progress`, `done`, `skipped`
 ## Required Sequence
 
 1. Load context.
-   - Read `.sdd-forge/flow.json` to get spec path, base branch, worktree info, and progress.
+   - Read `specs/NNN/flow.json` (resolved via `.sdd-forge/.active-flow` pointer) to get spec path, base branch, worktree info, and progress.
    - Read `.sdd-forge/config.json` to get `commands.gh` and `flow.push.remote` settings.
    - Run `sdd-forge flow status` to display current state.
 
@@ -209,9 +209,7 @@ Available status values: `pending`, `in_progress`, `done`, `skipped`
      - 1 → Invoke `/sdd-forge.flow-sync` using the Skill tool.
      - 2 → Skip.
 
-7. Save work record & final verification.
-   - **On start**: `sdd-forge flow status --step archive --status in_progress`
-   - **Archive flow.json**: Run `sdd-forge flow status --archive` to move `.sdd-forge/flow.json` to the spec directory for historical record.
+7. Final verification.
    - `git status --short` — confirm tree is clean.
    - Report result to user.
    - If PR route was used, display:
@@ -220,7 +218,6 @@ Available status values: `pending`, `in_progress`, `done`, `skipped`
      - ブランチの削除: git branch -D <featureBranch>
      - ドキュメントの同期: sdd-forge build または /sdd-forge.flow-sync
      ```
-   - **On complete**: Step is marked done by `--archive` command.
 
 ## Worktree Mode
 
@@ -243,7 +240,6 @@ When `worktree: true` in flow.json:
 sdd-forge flow status
 sdd-forge flow status --step <id> --status <val>
 sdd-forge flow status --note "<text>"
-sdd-forge flow status --archive
 sdd-forge flow merge
 sdd-forge flow merge --pr
 sdd-forge flow merge --pr --dry-run

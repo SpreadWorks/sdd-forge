@@ -95,7 +95,7 @@ Available status values: `pending`, `in_progress`, `done`, `skipped`
      - If dirty, ask the user to commit or stash before proceeding.
      - Do not run `sdd-forge spec init` on a dirty worktree.
    - If no spec exists, run `sdd-forge spec init --title "<short-title>"` (with appropriate flags from step 2).
-   - This creates the branch, `specs/NNN-xxx/` directory, `spec.md` skeleton, and `.sdd-forge/flow.json`.
+   - This creates the branch, `specs/NNN-xxx/` directory, `spec.md` skeleton, and `specs/NNN-xxx/flow.json`.
    - The base branch is automatically recorded by `sdd-forge spec init`.
    - **After flow.json is created**, mark steps 1-3 as done:
      - `sdd-forge flow status --step approach --status done`

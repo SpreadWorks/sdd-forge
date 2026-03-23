@@ -8,29 +8,28 @@
  * 更新:  sdd-forge flow status --step <id> --status <val>
  *        sdd-forge flow status --summary '<JSON array of strings>'
  *        sdd-forge flow status --req <index> --status <val>
+ * 一覧:  sdd-forge flow status --all
  */
 
-import fs from "fs";
-import path from "path";
 import { runIfDirect } from "../../lib/entrypoint.js";
 import { repoRoot, parseArgs } from "../../lib/cli.js";
 import {
   loadFlowState,
-  saveFlowState,
   updateStepStatus,
   setRequirements,
   updateRequirement,
   setRequest,
   addNote,
   clearFlowState,
-  flowStatePath,
   FLOW_STEPS,
+  scanAllFlows,
+  derivePhase,
 } from "../../lib/flow-state.js";
 
 function displayStatus(root) {
   const state = loadFlowState(root);
   if (!state) {
-    console.error("no active flow (flow.json not found)");
+    console.error("no active flow");
     process.exit(1);
   }
 
@@ -77,12 +76,30 @@ function displayStatus(root) {
   }
 }
 
+function displayAll(root) {
+  const flows = scanAllFlows(root);
+  if (flows.length === 0) {
+    console.log("no flows found");
+    return;
+  }
+
+  const SEP = "────────────────────────────────";
+  console.log(`All Flows (${flows.length})`);
+  console.log(SEP);
+  for (const f of flows) {
+    const phase = derivePhase(f.state.steps);
+    const doneCount = f.state.steps?.filter((s) => s.status === "done").length || 0;
+    const totalCount = f.state.steps?.length || 0;
+    console.log(`  ${f.specId.padEnd(30)} ${f.mode.padEnd(10)} ${phase.padEnd(10)} ${doneCount}/${totalCount} done  [${f.location}]`);
+  }
+}
+
 function main() {
   const root = repoRoot(import.meta.url);
   const cli = parseArgs(process.argv.slice(2), {
-    flags: ["--archive", "--dry-run"],
+    flags: ["--dry-run", "--all"],
     options: ["--step", "--status", "--summary", "--req", "--check", "--request", "--note"],
-    defaults: { step: "", status: "", summary: "", req: "", check: "", request: "", note: "", archive: false, dryRun: false },
+    defaults: { step: "", status: "", summary: "", req: "", check: "", request: "", note: "", dryRun: false, all: false },
   });
 
   if (cli.help) {
@@ -98,10 +115,16 @@ function main() {
         "  --request <text>                    Set the original user request",
         "  --note <text>                       Append a note (decision/memo)",
         "  --check <phase>                     Check prerequisites (e.g. --check impl)",
-        "  --archive                           Move flow.json to spec directory",
+        "  --all                               List all flows (active and completed)",
         "  --dry-run                           With --check: always exit 0",
       ].join("\n"),
     );
+    return;
+  }
+
+  // List all flows
+  if (cli.all) {
+    displayAll(root);
     return;
   }
 
@@ -119,7 +142,7 @@ function main() {
     }
     const state = loadFlowState(root);
     if (!state) {
-      console.error("no active flow (flow.json not found)");
+      console.error("no active flow");
       process.exit(cli.dryRun ? 0 : 1);
     }
     const missing = required.filter((id) => {
@@ -132,34 +155,6 @@ function main() {
       console.log(`FAIL: ${cli.check} prerequisites not met — missing: ${missing.join(", ")}`);
       if (!cli.dryRun) process.exit(1);
     }
-    return;
-  }
-
-  // Archive flow.json to spec directory
-  if (cli.archive) {
-    const state = loadFlowState(root);
-    if (!state) {
-      console.error("no active flow (flow.json not found)");
-      process.exit(1);
-    }
-    const specDir = path.join(root, path.dirname(state.spec));
-    if (!fs.existsSync(specDir)) {
-      console.error(`spec directory not found: ${specDir}`);
-      process.exit(1);
-    }
-    // Mark finalize and archive as done before archiving
-    for (const id of ["finalize", "archive"]) {
-      const step = state.steps?.find((s) => s.id === id);
-      if (step && step.status !== "done") {
-        step.status = "done";
-      }
-    }
-    saveFlowState(root, state);
-    const src = flowStatePath(root);
-    const dest = path.join(specDir, "flow.json");
-    fs.copyFileSync(src, dest);
-    clearFlowState(root);
-    console.log(`archived: ${dest}`);
     return;
   }
 
