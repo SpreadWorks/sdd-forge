@@ -480,7 +480,8 @@ export function scanAllFlows(workRoot) {
       const fp = path.join(specsDir, entry.name, STATE_FILE);
       if (fs.existsSync(fp)) {
         const state = JSON.parse(fs.readFileSync(fp, "utf8"));
-        results.push({ specId: entry.name, mode: "local", state, location: mainRoot });
+        const mode = state.worktree ? "worktree" : (state.featureBranch && state.featureBranch !== state.baseBranch) ? "branch" : "local";
+        results.push({ specId: entry.name, mode, state, location: mainRoot });
         seen.add(entry.name);
       }
     }
