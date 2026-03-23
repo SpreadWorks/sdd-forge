@@ -87,16 +87,24 @@ function displayAll(root) {
   const SEP = "──────────────────────────────────────────────────";
   console.log(`All Flows (${flows.length})`);
   console.log(SEP);
-  console.log(`  ${"#".padEnd(5)} ${"MODE".padEnd(10)} ${"PHASE".padEnd(10)} ${"PROGRESS".padEnd(10)} LOCATION`);
+  console.log(`  ${"SPEC".padEnd(20)} ${"MODE".padEnd(10)} ${"PHASE".padEnd(10)} ${"PROGRESS".padEnd(10)} LOCATION`);
   console.log(SEP);
   for (const f of flows) {
     const phase = derivePhase(f.state.steps);
     const doneCount = f.state.steps?.filter((s) => s.status === "done").length || 0;
     const totalCount = f.state.steps?.length || 0;
     const progress = `${doneCount}/${totalCount}`;
-    const num = f.specId.match(/^(\d+)/)?.[1] || f.specId;
+    const m = f.specId.match(/^(\d+)-(.+)/);
+    const maxNameLen = 12;
+    let label;
+    if (m) {
+      const name = m[2].length > maxNameLen ? m[2].slice(0, maxNameLen) + "..." : m[2];
+      label = `${m[1]}-${name}`;
+    } else {
+      label = f.specId.length > 16 ? f.specId.slice(0, 16) + "..." : f.specId;
+    }
     const loc = f.location.startsWith("branch:") ? f.location : path.relative(root, f.location) || "./";
-    console.log(`  ${num.padEnd(5)} ${f.mode.padEnd(10)} ${phase.padEnd(10)} ${progress.padEnd(10)} ${loc}`);
+    console.log(`  ${label.padEnd(20)} ${f.mode.padEnd(10)} ${phase.padEnd(10)} ${progress.padEnd(10)} ${loc}`);
   }
 }
 
