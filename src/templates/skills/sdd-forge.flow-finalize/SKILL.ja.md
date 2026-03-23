@@ -55,7 +55,7 @@ Available status values: `pending`, `in_progress`, `done`, `skipped`
 ## Behavior per Option
 
 - **Option 1 (すべて実行)**: Execute steps 1–7 in order without asking for each step.
-  - For step 4 (merge strategy), auto-detect: if `commands.gh` is `"enable"` in config AND `gh` command is available, use PR route. Otherwise use squash merge.
+  - For step 4 (merge strategy), run `sdd-forge flow merge --auto` (auto-detects PR vs squash from config).
   - For step 6 (documentation sync), auto-invoke for merge/squash routes, skip for PR route.
 - **Option 2 (個別に選択する)**: Ask about all optional steps (3–7) upfront before executing any of them.
   1. Present a single checklist for steps 3–7:
@@ -241,6 +241,7 @@ sdd-forge flow status
 sdd-forge flow status --step <id> --status <val>
 sdd-forge flow status --note "<text>"
 sdd-forge flow merge
+sdd-forge flow merge --auto
 sdd-forge flow merge --pr
 sdd-forge flow merge --pr --dry-run
 sdd-forge flow cleanup

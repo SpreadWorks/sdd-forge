@@ -56,8 +56,8 @@ function buildPrBody(state) {
 function main() {
   const root = repoRoot(import.meta.url);
   const cli = parseArgs(process.argv.slice(2), {
-    flags: ["--dry-run", "--pr"],
-    defaults: { dryRun: false, pr: false },
+    flags: ["--dry-run", "--pr", "--auto"],
+    defaults: { dryRun: false, pr: false, auto: false },
   });
 
   if (cli.help) {
@@ -71,6 +71,7 @@ function main() {
         "Options:",
         "  --dry-run   Show commands without executing",
         "  --pr        Create a pull request instead of squash merge",
+        "  --auto      Auto-detect: PR if commands.gh=enable and gh available, else squash",
       ].join("\n"),
     );
     return;
@@ -89,6 +90,17 @@ function main() {
     console.log("skip: spec-only mode (no merge needed)");
     updateStepStatus(root, "merge", "skipped");
     return;
+  }
+
+  // Auto-detect: resolve --auto to --pr or squash based on config
+  if (cli.auto) {
+    let cfg;
+    try { cfg = loadConfig(root); } catch (_) { cfg = {}; }
+    const ghEnabled = cfg?.commands?.gh === "enable";
+    if (ghEnabled && isGhAvailable()) {
+      cli.pr = true;
+    }
+    // else: fall through to squash merge
   }
 
   // PR route
