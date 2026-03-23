@@ -220,13 +220,14 @@ function main(ctx) {
 
   const conflicts = outputChapters.filter((ch) => fs.existsSync(path.join(docsDir, ch.outputName)));
 
+  const conflictSet = new Set(conflicts.map((ch) => ch.outputName));
+
   if (conflicts.length > 0 && !ctx.force) {
     logger.log(t("messages:init.conflictsExist", { count: conflicts.length }));
     for (const ch of conflicts) {
       logger.log(`  - ${ch.outputName}`);
     }
     logger.log(t("messages:init.useForce"));
-    return;
   }
 
   if (conflicts.length > 0 && ctx.force) {
@@ -234,6 +235,7 @@ function main(ctx) {
   }
 
   for (const chapter of outputChapters) {
+    if (conflictSet.has(chapter.outputName) && !ctx.force) continue;
     let text = chapter.content;
 
     // ブロックディレクティブを除去

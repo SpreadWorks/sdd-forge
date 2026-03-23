@@ -58,7 +58,8 @@ if (subCmd === "build") {
   const isVerbose = rest.includes("--verbose");
   const isDryRun = rest.includes("--dry-run");
   const hasForce = rest.includes("--force");
-  const otherArgs = rest.filter((a) => !["--force", "--verbose", "--dry-run"].includes(a));
+  const hasRegenerate = rest.includes("--regenerate");
+  const otherArgs = rest.filter((a) => !["--force", "--regenerate", "--verbose", "--dry-run"].includes(a));
 
   // Build shared context once
   const baseCtx = resolveCommandContext(null);
@@ -69,7 +70,7 @@ if (subCmd === "build") {
   const pipelineSteps = [
     { label: "scan", weight: 1 },
     { label: "enrich", weight: 2 },
-    { label: "init", weight: 1 },
+    ...(!hasRegenerate ? [{ label: "init", weight: 1 }] : []),
     { label: "data", weight: 1 },
     { label: "text", weight: 3 },
     { label: "readme", weight: 1 },
@@ -110,10 +111,20 @@ if (subCmd === "build") {
     }
     progress.stepDone();
 
-    // 3. init
-    progress.start("init");
-    await initMain({ ...baseCtx, force: hasForce, dryRun: isDryRun });
-    progress.stepDone();
+    // 3. init (skip for --regenerate)
+    if (hasRegenerate) {
+      const docsFiles = fs.existsSync(baseCtx.docsDir)
+        ? fs.readdirSync(baseCtx.docsDir).filter((f) => f.endsWith(".md"))
+        : [];
+      if (docsFiles.length === 0) {
+        console.error("[regenerate] ERROR: docs/ に章ファイルがありません。先に docs build を実行してください。");
+        process.exit(1);
+      }
+    } else {
+      progress.start("init");
+      await initMain({ ...baseCtx, force: hasForce, dryRun: isDryRun });
+      progress.stepDone();
+    }
 
     // 4. data
     progress.start("data");
@@ -123,7 +134,7 @@ if (subCmd === "build") {
     // 5. text
     progress.start("text");
     if (hasAgent) {
-      const textResult = await textMain({ ...baseCtx, dryRun: isDryRun, commandId: "docs.text" });
+      const textResult = await textMain({ ...baseCtx, dryRun: isDryRun, commandId: "docs.text", regenerate: hasForce || hasRegenerate });
       if (textResult?.errors?.length > 0) {
         progress.log(`[text] WARN: ${textResult.errors.length} file(s) had errors. Pipeline continues but docs may be incomplete.`);
       }
@@ -158,10 +169,12 @@ if (subCmd === "build") {
           const langCtx = { ...baseCtx, outputLang: lang, docsDir: langDocsDir };
           progress.log(`[build] Generating ${lang}...`);
 
-          await initMain({ ...langCtx, force: hasForce, dryRun: isDryRun });
+          if (!hasRegenerate) {
+            await initMain({ ...langCtx, force: hasForce, dryRun: isDryRun });
+          }
           await dataMain({ ...langCtx, dryRun: isDryRun });
           if (hasAgent) {
-            const langTextResult = await textMain({ ...langCtx, dryRun: isDryRun, commandId: "docs.text" });
+            const langTextResult = await textMain({ ...langCtx, dryRun: isDryRun, commandId: "docs.text", regenerate: hasForce || hasRegenerate });
             if (langTextResult?.errors?.length > 0) {
               progress.log(`[text] WARN: ${lang}: ${langTextResult.errors.length} file(s) had errors.`);
             }

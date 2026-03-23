@@ -126,13 +126,13 @@ npm install -g <!-- {{data("cli.project.name")}} -->sdd-forge<!-- {{/data}} -->
 <!-- {{data("cli.docs.chapters", {header: "", labels: "章|概要", ignoreError: true})}} -->
 | 章 | 概要 |
 | --- | --- |
-| [ツール概要とアーキテクチャ](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/ja/overview.md) | sdd-forge は、ソースコードの静的解析とAIによるテキスト生成を組み合わせて、プロジェクトのドキュメントを自動生成する CLI ツールです。 |
-| [技術スタックと運用](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/ja/stack_and_ops.md) | sdd-forge は Node.js（>= 18.0.0）上で動作する ES Modules ベースの CLI ツールであり、外部 npm パッケージへの依存を一切持たず、Node.js 組み込みモジュールのみで構築されています。 |
-| [project_structure](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/ja/project_structure.md) |  |
-| [CLI コマンドリファレンス](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/ja/cli_commands.md) | sdd-forge は 3 段階ディスパッチ構造（トップレベル → 名前空間 → サブコマンド）を採用しており、docs・spec・flow の 3 名前空間と setup・upgrade・presets・help の独立コマンドを合… |
-| [設定とカスタマイズ](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/ja/configuration.md) | sdd-forge は .sdd-forge/config.json を中心に、プリセット定義（preset.json）や解析結果（analysis.json）など複数の設定ファイルを使用します。 |
-| [内部設計](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/ja/internal_design.md) | sdd-forge の内部アーキテクチャについて、3層ディスパッチ構造（sdd-forge.js → サブコマンドルーター → 個別コマンド）、プリセット継承チェーンに基づく DataSource/テンプレート解決メカニズム、および … |
-| [開発・テスト・配布](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/ja/development_testing.md) | sdd-forge のローカル開発環境の構築方法、ユニットテスト・E2E テスト・受け入れテストによる多層テスト戦略、および npm レジストリへのリリース手順について説明します。 |
+| [ツール概要とアーキテクチャ](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/ja/overview.md) | sdd-forge は、ソースコードの静的解析に基づいて技術ドキュメントを自動生成し、Spec-Driven Development（SDD）ワークフローによって機能開発を構造化する CLI ツールです。 |
+| [技術スタックと運用](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/ja/stack_and_ops.md) | sdd-forge は Node.js 18 以上で動作する JavaScript（ES modules）製の CLI ツールであり、外部依存パッケージを一切持たないゼロ依存設計を採用しています。 |
+| [プロジェクト構成](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/ja/project_structure.md) | 本プロジェクトの src/ は 6 つの主要ディレクトリ（docs/・spec/・flow/・lib/・presets/・templates/）で構成されており、ドキュメント生成パイプライン、SDD ワークフロー管理、共通ライブラリ、… |
+| [CLI コマンドリファレンス](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/ja/cli_commands.md) | sdd-forge は 3 階層のディスパッチ構造（sdd-forge → 名前空間ディスパッチャ → 個別コマンド）を持ち、docs・spec・flow の 3 名前空間と独立コマンドを合わせて 25 以上のサブコマンドを提供します。 |
+| [設定とカスタマイズ](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/ja/configuration.md) | sdd-forge の動作は .sdd-forge/config.json を中心に制御されます。 |
+| [内部設計](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/ja/internal_design.md) | sdd-forge の内部設計を解説します。 |
+| [開発・テスト・配布](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/ja/development_testing.md) | sdd-forge のローカル開発環境のセットアップ手順、ユニット・E2E・受け入れテストの実行方法、および npm レジストリへのリリースフローについて説明します。 |
 <!-- {{/data}} -->
 
 ## License

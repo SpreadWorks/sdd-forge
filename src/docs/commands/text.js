@@ -454,7 +454,18 @@ function getAffectedChapters(analysis) {
  * @param {Object} analysis - analysis.json データ
  * @returns {{ docsFiles: string[], affectedChapters: Set<string>|null }}
  */
-function resolveIncrementalTargets(allDocsFiles, docsDir, analysis) {
+function resolveIncrementalTargets(allDocsFiles, docsDir, analysis, regenerate) {
+  if (regenerate) {
+    // regenerate: skip all filtering, process all files, strip existing content
+    for (const file of allDocsFiles) {
+      const filePath = path.join(docsDir, file);
+      const content = fs.readFileSync(filePath, "utf8");
+      const stripped = stripFillContent(content);
+      if (stripped !== content) fs.writeFileSync(filePath, stripped, "utf8");
+    }
+    return { docsFiles: allDocsFiles, targetFiles: [...allDocsFiles], affectedChapters: null };
+  }
+
   const affectedChapters = getAffectedChapters(analysis);
   const docsFiles = affectedChapters
     ? allDocsFiles.filter((f) => affectedChapters.has(f.replace(/\.md$/, "")))
@@ -490,7 +501,7 @@ function resolveIncrementalTargets(allDocsFiles, docsDir, analysis) {
  * @param {boolean} [opts.force] - true の場合、埋まっているディレクティブも再処理する
  * @returns {{ filled: number, skipped: number, files: string[] }}
  */
-export async function textFillFromAnalysis(root, analysis, commandId, srcRoot) {
+export async function textFillFromAnalysis(root, analysis, commandId, srcRoot, opts) {
   if (!analysis) return { filled: 0, skipped: 0, files: [] };
 
   const cfg = loadConfig(root);
@@ -505,7 +516,7 @@ export async function textFillFromAnalysis(root, analysis, commandId, srcRoot) {
   const allDocsFiles = getChapterFiles(docsDir, { type, configChapters: cfg.chapters });
   const resolvedSrcRoot = srcRoot || root;
 
-  const { targetFiles, affectedChapters } = resolveIncrementalTargets(allDocsFiles, docsDir, analysis);
+  const { targetFiles, affectedChapters } = resolveIncrementalTargets(allDocsFiles, docsDir, analysis, opts?.regenerate);
 
   const changedFiles = [];
   let totalFilled = 0;
@@ -606,7 +617,7 @@ async function main(ctx) {
   const allDocsFiles = getChapterFiles(docsDir, { type: ctx.type, configChapters: cfg.chapters });
 
   // 差分モード: 影響章のみ処理 + ディレクティブクリア
-  const { docsFiles, affectedChapters } = resolveIncrementalTargets(allDocsFiles, docsDir, analysis);
+  const { targetFiles, docsFiles, affectedChapters } = resolveIncrementalTargets(allDocsFiles, docsDir, analysis, ctx.regenerate);
   if (affectedChapters) {
     const skipped = allDocsFiles.length - docsFiles.length;
     if (skipped > 0) {
@@ -628,12 +639,12 @@ async function main(ctx) {
   const processFn = ctx.perDirective ? processTemplate : processTemplateFileBatch;
   if (!ctx.perDirective) {
     if (!ctx.timeout) ctx.timeout = configTimeout || DEFAULT_TIMEOUT_MS;
-    logger.verbose(`Mode: batch (file-level, ${docsFiles.length} file(s), concurrency=${concurrency}, timeout=${ctx.timeout}ms). Use --per-directive for single-call mode.`);
+    logger.verbose(`Mode: batch (file-level, ${targetFiles.length} file(s), concurrency=${concurrency}, timeout=${ctx.timeout}ms). Use --per-directive for single-call mode.`);
   }
 
   // Prepare file entries (filter for --id before parallel dispatch)
   const fileEntries = [];
-  for (const file of docsFiles) {
+  for (const file of targetFiles) {
     const filePath = path.join(docsDir, file);
     let original = fs.readFileSync(filePath, "utf8");
 
