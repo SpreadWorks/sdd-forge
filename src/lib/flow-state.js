@@ -409,6 +409,17 @@ export function setRequest(workRoot, text) {
 }
 
 /**
+ * Set the issue number in flow.json.
+ * @param {string} workRoot
+ * @param {number} issue - GitHub Issue number
+ */
+export function setIssue(workRoot, issue) {
+  mutateFlowState(workRoot, (state) => {
+    state.issue = issue;
+  });
+}
+
+/**
  * Append a note to the notes array in flow.json.
  * @param {string} workRoot
  * @param {string} text

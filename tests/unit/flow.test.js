@@ -6,7 +6,7 @@ import { execFileSync } from "child_process";
 import { createTmpDir, removeTmpDir, writeJson } from "../helpers/tmp-dir.js";
 import {
   saveFlowState, loadFlowState, clearFlowState, buildInitialSteps,
-  updateStepStatus, FLOW_STEPS,
+  updateStepStatus, setIssue, FLOW_STEPS,
   loadActiveFlows, addActiveFlow, removeActiveFlow,
 } from "../../src/lib/flow-state.js";
 
@@ -197,6 +197,44 @@ describe("flow-state steps and requirements", () => {
   });
 });
 
+// ── setIssue ─────────────────────────────────────────────────────────────────
+
+describe("setIssue", () => {
+  let tmp;
+  afterEach(() => tmp && removeTmpDir(tmp));
+
+  function setupFlow(dir) {
+    const specId = "001-test";
+    const state = {
+      spec: `specs/${specId}/spec.md`,
+      baseBranch: "main",
+      featureBranch: "feature/001-test",
+      steps: buildInitialSteps(),
+      requirements: [],
+    };
+    saveFlowState(dir, state);
+    addActiveFlow(dir, specId, "local");
+    return specId;
+  }
+
+  it("sets issue number in flow.json", () => {
+    tmp = createTmpDir();
+    setupFlow(tmp);
+    setIssue(tmp, 17);
+    const loaded = loadFlowState(tmp);
+    assert.equal(loaded.issue, 17);
+  });
+
+  it("overwrites existing issue number", () => {
+    tmp = createTmpDir();
+    setupFlow(tmp);
+    setIssue(tmp, 10);
+    setIssue(tmp, 25);
+    const loaded = loadFlowState(tmp);
+    assert.equal(loaded.issue, 25);
+  });
+});
+
 // ── flow CLI dispatcher ─────────────────────────────────────────────────────
 
 describe("flow CLI dispatcher", () => {
@@ -326,6 +364,46 @@ describe("flow status CLI", () => {
     const loaded = loadFlowState(tmp);
     assert.equal(loaded.requirements[0].status, "done");
     assert.equal(loaded.requirements[1].status, "pending");
+  });
+
+  it("saves issue number with --issue", () => {
+    tmp = createTmpDir();
+    setupFlowState(tmp);
+    execFileSync("node", [FLOW_CMD, "status", "--issue", "17"], {
+      encoding: "utf8",
+      env: { ...process.env, SDD_WORK_ROOT: tmp },
+    });
+    const loaded = loadFlowState(tmp);
+    assert.equal(loaded.issue, 17);
+  });
+
+  it("rejects non-numeric --issue value", () => {
+    tmp = createTmpDir();
+    setupFlowState(tmp);
+    try {
+      execFileSync("node", [FLOW_CMD, "status", "--issue", "abc"], {
+        encoding: "utf8",
+        env: { ...process.env, SDD_WORK_ROOT: tmp },
+      });
+      assert.fail("should exit non-zero");
+    } catch (err) {
+      const out = `${err.stdout || ""}${err.stderr || ""}`;
+      assert.match(out, /must be a number/i);
+    }
+  });
+
+  it("displays issue number in flow status output", () => {
+    tmp = createTmpDir();
+    setupFlowState(tmp);
+    execFileSync("node", [FLOW_CMD, "status", "--issue", "42"], {
+      encoding: "utf8",
+      env: { ...process.env, SDD_WORK_ROOT: tmp },
+    });
+    const result = execFileSync("node", [FLOW_CMD, "status"], {
+      encoding: "utf8",
+      env: { ...process.env, SDD_WORK_ROOT: tmp },
+    });
+    assert.match(result, /#42/);
   });
 
   it("reports error when no .active-flow exists", () => {
