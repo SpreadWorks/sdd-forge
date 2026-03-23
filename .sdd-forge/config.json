@@ -12,6 +12,10 @@
       "customInstruction": ""
     }
   },
+  "scan": {
+    "include": ["src/**/*.js", "src/**/*.mjs", "src/**/*.cjs", "package.json"],
+    "exclude": ["experimental/**"]
+  },
   "flow": {
     "merge": "squash"
   },
