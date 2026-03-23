@@ -43,14 +43,14 @@ export const PHASE_MAP = {
  */
 export function derivePhase(steps) {
   if (!steps?.length) return "plan";
-  const inProgress = steps.find((s) => s.status === "in_progress");
-  if (inProgress) return PHASE_MAP[inProgress.id] || "plan";
+  const inProgress = steps.find((s) => s.status === "in_progress" && PHASE_MAP[s.id]);
+  if (inProgress) return PHASE_MAP[inProgress.id];
   let lastDone = null;
   for (const s of steps) {
-    if (s.status === "done" || s.status === "skipped") lastDone = s;
+    if ((s.status === "done" || s.status === "skipped") && PHASE_MAP[s.id]) lastDone = s;
   }
   if (!lastDone) return "plan";
-  return PHASE_MAP[lastDone.id] || "plan";
+  return PHASE_MAP[lastDone.id];
 }
 
 /**
