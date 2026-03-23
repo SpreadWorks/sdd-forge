@@ -6,24 +6,18 @@ import { processTemplateFileBatch, countFilledInBatch } from "../../../../src/do
 /**
  * README.md の {{text}} 処理に関するテスト。
  *
- * README.md はバッチモード（processTemplateFileBatch）では
- * {{data}} 解決済みの大きなテーブルを含むため AI が構造を維持できず
- * 0/N filled になる問題がある。
- * per-directive モード（processTemplate）を使うことで解決する。
+ * バッチモードは JSON 形式でディレクティブごとのテキストを受け取り、
+ * コード側で該当位置に挿入する。{{data}} 解決済みコンテンツは
+ * AI に返させないため構造が壊れない。
  */
 
 describe("README.md text directive processing", () => {
   let tmp;
   afterEach(() => tmp && removeTmpDir(tmp));
 
-  /**
-   * README.md のような構造（{{text}} が少数、間に大きな {{data}} 解決済みコンテンツ）
-   * でバッチモードが失敗するケースを再現する。
-   */
-  it("batch mode fails when README contains large resolved {{data}} content between {{text}} directives", async () => {
+  it("batch JSON mode fills directives without affecting {{data}} content", async () => {
     tmp = createTmpDir();
 
-    // README.md の典型的な構造: {{text}} の間に大きな {{data}} 解決済みテーブル
     const readmeContent = [
       '# <!-- {{data("webapp.project.name")}} -->MyProject<!-- {{/data}} -->',
       "",
@@ -43,26 +37,18 @@ describe("README.md text directive processing", () => {
       "| Chapter | Summary |",
       "| --- | --- |",
       "| [Overview](docs/overview.md) | System overview |",
-      "| [Stack](docs/stack_and_ops.md) | Technology stack |",
-      "| [Structure](docs/project_structure.md) | Project structure |",
-      "| [Development](docs/development.md) | Development guide |",
-      "| [API](docs/api_overview.md) | REST API overview |",
-      "| [Auth](docs/authentication.md) | Authentication |",
-      "| [Endpoints](docs/endpoints.md) | REST endpoints |",
-      "| [Database](docs/database.md) | Database architecture |",
-      "| [Schema](docs/schema.md) | ORM schema |",
-      "| [Runtime](docs/edge_runtime.md) | Edge runtime |",
-      "| [Bindings](docs/bindings.md) | Service bindings |",
-      "| [Storage](docs/storage.md) | Storage architecture |",
       "<!-- {{/data}} -->",
       "",
     ].join("\n");
 
-    // Agent that returns the file but WITHOUT filling {{text}} directives
-    // (simulates AI failing to maintain structure in batch mode)
+    // Agent returns JSON with directive texts (ignore prompt via {{PROMPT}})
+    const jsonResponse = JSON.stringify({
+      d0: "This is the project overview.",
+      d1: "| Node.js | >= 18.0.0 |",
+    });
     const agent = {
-      command: "echo",
-      args: [readmeContent],
+      command: "node",
+      args: ["-e", `process.stdout.write(${JSON.stringify(jsonResponse)})`, "{{PROMPT}}"],
     };
 
     const result = await processTemplateFileBatch(
@@ -80,8 +66,11 @@ describe("README.md text directive processing", () => {
       "ja",
     );
 
-    // Batch mode: AI returned file without filling → 0 filled
-    assert.strictEqual(result.filled, 0, "batch mode should report 0 filled when AI does not fill directives");
+    assert.strictEqual(result.filled, 2, "both directives should be filled");
+    assert.ok(result.text.includes("This is the project overview."), "d0 content inserted");
+    assert.ok(result.text.includes("| Node.js | >= 18.0.0 |"), "d1 content inserted");
+    // {{data}} content should be preserved
+    assert.ok(result.text.includes("| [Overview](docs/overview.md) | System overview |"), "data content preserved");
   });
 
   it("countFilledInBatch correctly identifies unfilled directives", () => {

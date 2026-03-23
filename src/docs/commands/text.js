@@ -30,6 +30,7 @@ import { createLogger } from "../../lib/progress.js";
 import { callAgent as callAgentBase, callAgentAsync as callAgentAsyncBase, ensureAgentWorkDir, loadAgentConfig, DEFAULT_AGENT_TIMEOUT } from "../../lib/agent.js";
 import { translate } from "../../lib/i18n.js";
 import { resolveCommandContext, getChapterFiles, loadFullAnalysis } from "../lib/command-context.js";
+import { extractBalancedJson } from "../../lib/json-parse.js";
 
 const logger = createLogger("text");
 
@@ -153,8 +154,70 @@ function countFilledInBatch(fileText) {
 }
 
 /**
+ * JSON レスポンスをパースする。コードフェンスがあれば除去する。
+ *
+ * @param {string} response - AI のレスポンス
+ * @returns {Object|null} パース結果、失敗時は null
+ */
+function parseBatchJsonResponse(response) {
+  let cleaned = response.trim();
+  cleaned = cleaned.replace(/^```(?:json)?\s*\n?/i, "").replace(/\n?```\s*$/i, "");
+  try {
+    return JSON.parse(cleaned);
+  } catch (_) {
+    const extracted = extractBalancedJson(cleaned);
+    if (extracted) {
+      try { return JSON.parse(extracted); } catch (__) { /* fall through */ }
+    }
+    return null;
+  }
+}
+
+/**
+ * JSON レスポンスを元のファイルのディレクティブ位置に挿入する。
+ *
+ * @param {string} text - 元のファイル内容（stripFillContent 済み）
+ * @param {{ type: string, line: number, endLine: number, params?: Object, prompt: string }[]} textFills - ディレクティブ一覧
+ * @param {Object} jsonData - パース済み JSON（id → テキスト）
+ * @returns {{ text: string, filled: number, skipped: number }}
+ */
+function applyBatchJsonToFile(text, textFills, jsonData) {
+  const lines = text.split("\n");
+  let filled = 0;
+  let skipped = 0;
+
+  // 逆順で挿入（行番号のずれを防ぐ）
+  for (let i = textFills.length - 1; i >= 0; i--) {
+    const d = textFills[i];
+    const id = d.params?.id || `d${i}`;
+    const generated = jsonData[id];
+
+    if (!generated) {
+      skipped++;
+      continue;
+    }
+
+    const endLine = d.endLine;
+    if (endLine < 0) {
+      skipped++;
+      continue;
+    }
+
+    const endTag = lines[endLine];
+    const newLines = [d.raw, "\n" + generated, endTag];
+    lines.splice(d.line, endLine - d.line + 1, ...newLines);
+    filled++;
+  }
+
+  let result = lines.join("\n");
+  if (!result.endsWith("\n")) result += "\n";
+  return { text: result, filled, skipped };
+}
+
+/**
  * ファイル内のすべての {{text}} ディレクティブを1回の LLM 呼び出しで処理する。
- * 既存の生成済みコンテンツを stripFillContent で除去してからプロンプトを組み立てる。
+ * AI には JSON 形式でディレクティブごとのテキストを返させ、
+ * コード側で元ファイルの該当位置に挿入する。
  *
  * @returns {{ text: string, filled: number, skipped: number }}
  */
@@ -182,7 +245,6 @@ async function processTemplateFileBatch(text, analysis, fileName, agent, timeout
 
   logger.verbose(`Batch ${fileName}: ${textFills.length} directive(s) → 1 call`);
 
-  // バッチはファイル全体を返すので preamble パターンは使わない
   // 空レスポンスが返る場合は1回だけリトライする
   let result = await callAgentAsync(agent, prompt, timeoutMs, cwd, [], systemPrompt);
 
@@ -196,19 +258,16 @@ async function processTemplateFileBatch(text, analysis, fileName, agent, timeout
     throw new Error(`empty batch response for ${fileName}`);
   }
 
-  // ファイル先頭に余分な前置きがあれば除去（最初の # 見出し行を起点にする）
-  const resultLines = result.split("\n");
-  let startIdx = 0;
-  for (let i = 0; i < Math.min(10, resultLines.length); i++) {
-    if (resultLines[i].startsWith("#")) { startIdx = i; break; }
+  const jsonData = parseBatchJsonResponse(result);
+  if (!jsonData) {
+    logger.log(`WARN: JSON parse failed for ${fileName}, response preview: ${result.slice(0, 200)}`);
+    throw new Error(`batch JSON parse failed for ${fileName}`);
   }
-  const finalText = resultLines.slice(startIdx).join("\n").trimEnd() + "\n";
 
-  const filled = countFilledInBatch(finalText);
-  const skipped = textFills.length - filled;
-  logger.verbose(`Batch DONE ${fileName}: ${filled}/${textFills.length} filled`);
+  const applied = applyBatchJsonToFile(cleanText, textFills, jsonData);
+  logger.verbose(`Batch DONE ${fileName}: ${applied.filled}/${textFills.length} filled`);
 
-  return { text: finalText, filled, skipped };
+  return applied;
 }
 
 // ---------------------------------------------------------------------------
@@ -485,6 +544,18 @@ function resolveIncrementalTargets(allDocsFiles, docsDir, analysis, regenerate) 
     }
     targetFiles.push(file);
   }
+
+  // 影響章フィルタで除外されたが未充填のファイルも対象に含める
+  if (affectedChapters) {
+    for (const file of allDocsFiles) {
+      if (targetFiles.includes(file)) continue;
+      const filePath = path.join(docsDir, file);
+      const content = fs.readFileSync(filePath, "utf8");
+      if (!allTextDirectivesFilled(content)) {
+        targetFiles.push(file);
+      }
+    }
+  }
   if (skippedFileCount > 0) {
     logger.log(`Skipped ${skippedFileCount} file(s) with all directives filled.`);
   }
@@ -719,6 +790,6 @@ async function main(ctx) {
   return { errors };
 }
 
-export { main, stripFillContent, countFilledInBatch, processTemplateFileBatch, processTemplate, allTextDirectivesFilled, validateBatchResult, getAffectedChapters };
+export { main, stripFillContent, countFilledInBatch, processTemplateFileBatch, processTemplate, allTextDirectivesFilled, validateBatchResult, getAffectedChapters, parseBatchJsonResponse, applyBatchJsonToFile };
 
 runIfDirect(import.meta.url, main);

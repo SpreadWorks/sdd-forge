@@ -255,32 +255,40 @@ export function buildFileSystemPrompt(baseSystemPrompt, contextData, lang) {
 
 /**
  * バッチプロンプトを構築する。
+ * JSON 形式でディレクティブごとの生成テキストを返させる。
  */
 export function buildBatchPrompt(fileName, text, textFills, lang) {
   const t = createI18n(lang || "ja", { domain: "prompts" });
-  const batchRules = t.raw("text.batchRules") || [];
+  const batchRules = t.raw("text.batchJsonRules") || t.raw("text.batchRules") || [];
 
-  const perDirectiveRules = [];
-  for (const d of textFills) {
-    if (d.params && (d.params.maxLines || d.params.maxChars)) {
-      perDirectiveRules.push(`- "${d.prompt.slice(0, 40)}..." → ${formatLimitRule(d.params)}`);
-    }
-  }
-  const defaultRule = perDirectiveRules.length === textFills.length
-    ? ""
-    : `- ${t("text.batchDefaultLimit")}`;
+  const directiveEntries = textFills.map((d, i) => {
+    const id = d.params?.id || `d${i}`;
+    const limitInfo = (d.params?.maxLines || d.params?.maxChars)
+      ? ` (${formatLimitRule(d.params)})`
+      : "";
+    return `- id: "${id}" | prompt: "${d.prompt}"${limitInfo}`;
+  });
+
+  const defaultRule = `- ${t("text.batchDefaultLimit")}`;
 
   return [
     t("text.batchInstruction", { fileName }),
     "",
+    "## Directives",
+    ...directiveEntries,
+    "",
+    "## File context",
+    text,
+    "",
     "## Output Rules (strict)",
     ...batchRules.map((r) => `- ${r}`),
-    ...(defaultRule ? [defaultRule] : []),
-    ...perDirectiveRules,
+    defaultRule,
     `- ${t("text.batchNoHr")}`,
     "",
-    `## ${fileName}`,
+    "## Output format",
+    'Return a JSON object where each key is the directive id and each value is the generated markdown text.',
+    'Output ONLY the JSON object. No commentary, no code fences.',
     "",
-    text,
+    `Example: {"d0": "Generated text.", "d1": "Another text."}`,
   ].join("\n");
 }

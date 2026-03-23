@@ -197,6 +197,7 @@ describe("init CLI", () => {
     });
 
     const prompt = fs.readFileSync(promptCapture, "utf8");
-    assert.match(prompt, /user-guide/);
+    // purpose="user-guide" → ルール文に変換される（end users 向けの選別指示）
+    assert.match(prompt, /end users/);
   });
 });

@@ -19,6 +19,7 @@ import { resolveCommandContext, loadFullAnalysis } from "../lib/command-context.
 import { resolveChaptersOrder } from "../lib/template-merger.js";
 import { createLogger } from "../../lib/progress.js";
 import { translate } from "../../lib/i18n.js";
+import { extractBalancedJson } from "../../lib/json-parse.js";
 
 const logger = createLogger("enrich");
 
@@ -207,15 +208,13 @@ function parseEnrichResponse(response) {
   try {
     return JSON.parse(cleaned);
   } catch (_) {
-    // Try to find JSON object in the response
-    const match = cleaned.match(/\{[\s\S]*\}/);
-    if (match) {
+    // Extract JSON by bracket balancing (greedy regex can overshoot with nested braces)
+    const extracted = extractBalancedJson(cleaned);
+    if (extracted) {
       try {
-        return JSON.parse(match[0]);
+        return JSON.parse(extracted);
       } catch (__) {
-        // Try to fix unescaped quotes inside string values.
-        // AI often outputs unescaped " inside detail/summary fields.
-        const fixed = fixUnescapedQuotes(match[0]);
+        const fixed = fixUnescapedQuotes(extracted);
         try {
           return JSON.parse(fixed);
         } catch (___) {
@@ -226,6 +225,7 @@ function parseEnrichResponse(response) {
     return null;
   }
 }
+
 
 /**
  * JSON 文字列値内のエスケープされていないダブルクォーテーションを修復する。

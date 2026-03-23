@@ -46,12 +46,11 @@ function aiFilterChapters(chapters, analysis, agent, root, purpose) {
     return `- ${ch.fileName}: ${title}`;
   }).join("\n");
 
-  const purposeRules = [];
-  if (purpose === "user-guide") {
-    purposeRules.push("- This is a user-guide. Exclude developer-only chapters (development setup, testing, contributing, release procedures).");
-  } else if (purpose === "developer") {
-    purposeRules.push("- This is developer documentation. Include development, testing, and contributing chapters.");
-  }
+  const purposeClause = purpose
+    ? `\nThe documentation purpose is "${purpose}". Judge each chapter's audience from its title and content — exclude chapters whose primary audience does not match this purpose.\n`
+    : "";
+
+  const selectionRule = "Look at the project analysis and each chapter title. Include a chapter if the analysis contains data relevant to that chapter's topic. Exclude a chapter if the analysis has NO relevant data for it (e.g. no CLI commands found → exclude a commands chapter, no database tables → exclude a db_tables chapter). When in doubt, include the chapter.";
 
   const prompt = [
     `Select which documentation chapters to include for this project.`,
@@ -61,11 +60,9 @@ function aiFilterChapters(chapters, analysis, agent, root, purpose) {
     `Available chapters:`,
     chapterList,
     "",
-    `Selection criteria:`,
-    "- Always include foundational chapters: overview, stack_and_ops, project_structure, development, development_testing.",
-    "- Exclude chapters whose topic has zero data in the analysis (e.g. no commands → exclude commands chapter, no models → exclude db_tables chapter).",
-    ...purposeRules,
-    "- When in doubt, include the chapter.",
+    purposeClause,
+    `Selection rule:`,
+    selectionRule,
     "",
     `Reply with ONLY a JSON array of filenames. Example: ["overview.md", "commands.md"]`,
   ].join("\n");

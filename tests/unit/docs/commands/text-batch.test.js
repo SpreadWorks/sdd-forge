@@ -25,17 +25,14 @@ describe("processTemplateFileBatch", () => {
       "",
     ].join("\n");
 
-    // echo agent returns the prompt as-is, which contains the file content
-    // We simulate an agent that returns a filled version
+    // Agent returns JSON with directive ids as keys (ignore prompt via {{PROMPT}})
+    const jsonResponse = JSON.stringify({
+      d0: "This is the overview.",
+      d1: "These are the details.",
+    });
     const agent = {
-      command: "echo",
-      args: [templateContent.replace(
-        '<!-- {{text({prompt: "describe the overview"})}} -->\n<!-- {{/text}} -->',
-        '<!-- {{text({prompt: "describe the overview"})}} -->\n\nThis is the overview.\n\n<!-- {{/text}} -->'
-      ).replace(
-        '<!-- {{text({prompt: "describe the details"})}} -->\n<!-- {{/text}} -->',
-        '<!-- {{text({prompt: "describe the details"})}} -->\n\nThese are the details.\n\n<!-- {{/text}} -->'
-      )],
+      command: "node",
+      args: ["-e", `process.stdout.write(${JSON.stringify(jsonResponse)})`, "{{PROMPT}}"],
     };
 
     const result = await processTemplateFileBatch(

@@ -1,3 +1,7 @@
+<!-- {{data("base.docs.langSwitcher", {labels: "relative"})}} -->
+[English](../project_structure.md) | **日本語**
+<!-- {{/data}} -->
+
 # プロジェクト構成
 
 <!-- {{data("monorepo.monorepo.apps", {labels: "project_structure", ignoreError: true})}} -->
@@ -7,7 +11,7 @@
 
 <!-- {{text({prompt: "この章の概要を1〜2文で記述してください。主要ディレクトリの数と役割を踏まえること。"})}} -->
 
-本プロジェクトの `src/` は 6 つの主要ディレクトリ（`docs/`・`spec/`・`flow/`・`lib/`・`presets/`・`templates/`）で構成されており、ドキュメント生成パイプライン、SDD ワークフロー管理、共通ライブラリ、プリセットテンプレート群をそれぞれ担当しています。`presets/` 配下には 20 以上のプロジェクトタイプ別プリセットがあり、`parent` チェーンによる継承構造でテンプレートを管理しています。
+本プロジェクトは `src/` 配下に CLI エントリポイント、ドキュメント生成エンジン（`src/docs/`）、共通ユーティリティ（`src/lib/`）、SDD フロー制御（`src/flow/`）、仕様コマンド（`src/spec/`）、および 20 種以上のプリセット（`src/presets/`）を持つ構成です。各プリセットは `data/`（DataSource）・`scan/`（スキャナ）・`tests/`（テスト）のサブディレクトリで構成され、`parent` チェーンにより基底プリセットの機能を継承します。
 <!-- {{/text}} -->
 
 ## 内容
@@ -69,40 +73,39 @@ src/spec/commands/    (cli)
 
 | ディレクトリ | ファイル数 | 役割 |
 | --- | --- | --- |
-| src | 156 | cli, model, lib, config, test |
+| src | 157 | cli, model, lib, config, test |
 <!-- {{/data}} -->
 
 ### 共通ライブラリ
 
 <!-- {{text({prompt: "共通ライブラリの一覧をクラス名・ファイルパス・責務の表形式で記述してください。"})}} -->
 
-`src/lib/` にはプロジェクト全体で共有されるユーティリティが配置されています。
-
-| クラス・関数名 | ファイルパス | 責務 |
+| クラス / モジュール名 | ファイルパス | 責務 |
 | --- | --- | --- |
-| `callAgent()` | `src/lib/agent.js` | AI エージェント呼び出しの共通インターフェース。プロンプト構築・タイムアウト管理を担当します |
-| `PKG_DIR`, `repoRoot()`, `parseArgs()` | `src/lib/cli.js` | パッケージルート・リポジトリルートの解決、コマンドライン引数のパース処理を提供します |
-| `loadConfig()`, `loadAnalysis()`, `sddDir()` | `src/lib/config.js` | `.sdd-forge/config.json` の読み込みと検証、各種パスの解決を行います |
-| `isDirectRun()`, `runIfDirect()` | `src/lib/entrypoint.js` | モジュールが直接実行されたかインポートされたかを判定するガード処理です |
-| `loadFlow()`, `saveFlow()`, `FLOW_STEPS` | `src/lib/flow-state.js` | SDD フローの状態を `flow.json` で永続化し、ステップ進行を管理します |
-| `translate()`, `createI18n()` | `src/lib/i18n.js` | ドメインネームスペース付きの 3 層国際化処理を提供します |
-| `selectOne()`, `selectMulti()` | `src/lib/multi-select.js` | ターミナル上での対話的な選択ウィジェットを提供します |
-| `discoverPresets()`, `resolveChainSafe()` | `src/lib/presets.js` | プリセットの自動検出と `parent` チェーンによる継承解決を行います |
-| `Progress`, `createLogger()` | `src/lib/progress.js` | ビルドパイプライン向けのプログレスバーとロガーを提供します |
-| `deploySkill()`, `resolveSkillFile()` | `src/lib/skills.js` | スキルファイルの解決・シンボリックリンク作成によるデプロイ処理を行います |
-| `validateConfig()`, `validateAgent()` | `src/lib/types.js` | JSDoc 型定義とコンフィグ・コンテキストのバリデーション処理です |
-
-`src/docs/lib/` にはドキュメント生成エンジンの中核ライブラリが配置されています。
-
-| クラス・関数名 | ファイルパス | 責務 |
-| --- | --- | --- |
-| `DataSource`, `Scannable()` | `src/docs/lib/data-source.js` | `{{data}}` ディレクティブ用リゾルバの基底クラスとスキャン機能ミキシンです |
-| `createResolver()` | `src/docs/lib/resolver-factory.js` | プリセットチェーンに基づき DataSource インスタンスを生成するファクトリです |
-| `parseDirectives()` | `src/docs/lib/directive-parser.js` | マークダウンコメント内の `{{data}}`・`{{text}}`・`{%block%}` ディレクティブを解析します |
-| `resolveTemplateChain()`, `mergeLayers()` | `src/docs/lib/template-merger.js` | プロジェクトローカル → リーフ → ベースの順にテンプレートをマージするエンジンです |
-| `buildTextPrompt()` | `src/docs/lib/text-prompts.js` | `{{text}}` ディレクティブ用の AI プロンプトを構築します |
-| `mapWithConcurrency()` | `src/docs/lib/concurrency.js` | 並列度を制御しながら非同期タスクを実行するキューユーティリティです |
-| `glob()`, `findAllMatches()`, `contentHash()` | `src/docs/lib/scanner.js` | ファイル探索・行数カウント・ハッシュ計算など汎用のソース解析ユーティリティです |
+| `runSync()` | `src/lib/process.js` | `spawnSync` ラッパーによる同期コマンド実行 |
+| `isDirectRun()`, `runIfDirect()` | `src/lib/entrypoint.js` | モジュール直接実行の検出とガード処理 |
+| `loadSddTemplate()` | `src/lib/agents-md.js` | AGENTS.md 用 SDD テンプレートセクションの読み込み |
+| `PKG_DIR`, `repoRoot()`, `sourceRoot()` | `src/lib/cli.js` | パッケージディレクトリ解決・ワークスペースルート検出 |
+| `Progress` | `src/lib/progress.js` | ビルドパイプライン向けプログレスバーとロガー |
+| `loadJsonFile()`, `resolveConcurrency()` | `src/lib/config.js` | 設定ファイル読み込みと並行数のデフォルト解決 |
+| `callAgent()` | `src/lib/agent.js` | AI エージェント呼び出し（spawn 経由） |
+| `resolveChain()`, `discoverPresets()` | `src/lib/presets.js` | プリセット自動検出と親チェーン解決 |
+| `createI18n()`, `translate()` | `src/lib/i18n.js` | ドメイン名前空間付き 3 層 i18n システム |
+| `validateConfig()` | `src/lib/types.js` | 型定義とコンフィグバリデーション |
+| `deploySkills()` | `src/lib/skills.js` | スキルファイルのデプロイ処理 |
+| `derivePhase()`, `FLOW_STEPS` | `src/lib/flow-state.js` | SDD ワークフロー状態の永続化とフェーズ判定 |
+| `extractBalancedJson()` | `src/lib/json-parse.js` | AI レスポンスからの括弧均衡 JSON 抽出 |
+| `DataSource` | `src/docs/lib/data-source.js` | `{{data}}` ディレクティブ解決の基底クラス |
+| `ScanSource`, `Scannable` | `src/docs/lib/scan-source.js` | ソースコード解析の基底クラスとミックスイン |
+| `loadDataSources()` | `src/docs/lib/data-source-loader.js` | DataSource の非同期ローダー |
+| `parseBlocks()` | `src/docs/lib/directive-parser.js` | `{{data}}`, `{{text}}` テンプレートディレクティブのパーサー |
+| `createResolver()` | `src/docs/lib/resolver-factory.js` | DataSource ローダーとオーバーライドキャッシュ |
+| `resolveCommandContext()` | `src/docs/lib/command-context.js` | 全コマンド共通のコンテキスト解決（ルート・言語・設定・エージェント） |
+| `buildLayers()`, `mergeBlocks()` | `src/docs/lib/template-merger.js` | ボトムアップ方式のテンプレート継承とブロックマージ |
+| `mapWithConcurrency()` | `src/docs/lib/concurrency.js` | 並行数制限付きの並列キューワーカー |
+| `detectTestEnvironment()` | `src/docs/lib/test-env-detection.js` | analysis.json からのテストフレームワーク自動検出 |
+| `summaryToText()` | `src/docs/lib/forge-prompts.js` | analysis.json を AI プロンプトテキストへ変換 |
+| `parseComposer()`, `parseEnvFile()` | `src/presets/lib/composer-utils.js` | composer.json パースと .env 変数抽出 |
 <!-- {{/text}} -->
 
 ---
