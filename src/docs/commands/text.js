@@ -476,35 +476,20 @@ function allTextDirectivesFilled(text) {
  * @param {boolean} regenerate - true の場合、全ファイルのディレクティブをクリアして再生成
  * @returns {{ docsFiles: string[], targetFiles: string[] }}
  */
-function resolveTargetFiles(allDocsFiles, docsDir, analysis, regenerate) {
-  if (regenerate) {
-    // regenerate: skip all filtering, process all files, strip existing content
+function resolveTargetFiles(allDocsFiles, docsDir, analysis, { regenerate, dryRun } = {}) {
+  // Always regenerate all chapters.
+  // Incremental regeneration (only affected chapters) is deferred to a future spec.
+  // Without _incrementalMeta, we cannot determine which chapters are affected,
+  // so we regenerate all to avoid stale docs.
+  if (!dryRun) {
     for (const file of allDocsFiles) {
       const filePath = path.join(docsDir, file);
       const content = fs.readFileSync(filePath, "utf8");
       const stripped = stripFillContent(content);
       if (stripped !== content) fs.writeFileSync(filePath, stripped, "utf8");
     }
-    return { docsFiles: allDocsFiles, targetFiles: [...allDocsFiles] };
   }
-
-  const targetFiles = [];
-  let skippedFileCount = 0;
-  for (const file of allDocsFiles) {
-    const filePath = path.join(docsDir, file);
-    const content = fs.readFileSync(filePath, "utf8");
-    if (allTextDirectivesFilled(content)) {
-      skippedFileCount++;
-      continue;
-    }
-    targetFiles.push(file);
-  }
-
-  if (skippedFileCount > 0) {
-    logger.log(`Skipped ${skippedFileCount} file(s) with all directives filled.`);
-  }
-
-  return { docsFiles: allDocsFiles, targetFiles };
+  return { docsFiles: allDocsFiles, targetFiles: [...allDocsFiles] };
 }
 
 /**
@@ -531,7 +516,7 @@ export async function textFillFromAnalysis(root, analysis, commandId, srcRoot, o
   const allDocsFiles = getChapterFiles(docsDir, { type, configChapters: cfg.chapters });
   const resolvedSrcRoot = srcRoot || root;
 
-  const { targetFiles } = resolveTargetFiles(allDocsFiles, docsDir, analysis, opts?.regenerate);
+  const { targetFiles } = resolveTargetFiles(allDocsFiles, docsDir, analysis, { regenerate: opts?.regenerate, dryRun: opts?.dryRun });
 
   const changedFiles = [];
   let totalFilled = 0;
@@ -631,7 +616,7 @@ async function main(ctx) {
   const concurrency = resolveConcurrency(cfg);
   const allDocsFiles = getChapterFiles(docsDir, { type: ctx.type, configChapters: cfg.chapters });
 
-  const { targetFiles } = resolveTargetFiles(allDocsFiles, docsDir, analysis, ctx.regenerate);
+  const { targetFiles } = resolveTargetFiles(allDocsFiles, docsDir, analysis, { regenerate: ctx.regenerate, dryRun: ctx.dryRun });
 
   let totalFilled = 0;
   let totalSkipped = 0;

@@ -81,7 +81,8 @@ function buildExistingEntryIndex(existing) {
     if (!catData || !Array.isArray(catData.entries)) continue;
     for (const entry of catData.entries) {
       if (entry && entry.file) {
-        index.set(entry.file, { entry, category: cat });
+        if (!index.has(entry.file)) index.set(entry.file, []);
+        index.get(entry.file).push({ entry, category: cat });
       }
     }
   }
@@ -180,25 +181,28 @@ async function main(ctx) {
   const stats = { unchanged: 0, changed: 0, added: 0, deleted: 0 };
 
   for (const file of files) {
-    // Check if existing entry has matching hash
-    const existingInfo = existingIndex.get(file.relPath);
-    if (existingInfo && existingInfo.entry.hash === file.hash) {
-      // Hash match → preserve existing entry (including enrichment)
-      const cat = existingInfo.category;
-      if (!categoryEntries.has(cat)) {
-        // Find the DataSource for this category to get EntryClass
-        const source = dataSources.get(cat);
-        categoryEntries.set(cat, {
-          entries: [],
-          EntryClass: source?.constructor?.Entry ?? null,
-        });
+    // Check if existing entries have matching hash (a file can appear in multiple categories)
+    const existingInfos = existingIndex.get(file.relPath) || [];
+    const hashMatch = existingInfos.length > 0 && existingInfos[0].entry.hash === file.hash;
+
+    if (hashMatch) {
+      // Hash match → preserve existing entries in all categories (including enrichment)
+      for (const { entry, category: cat } of existingInfos) {
+        if (!categoryEntries.has(cat)) {
+          const source = dataSources.get(cat);
+          categoryEntries.set(cat, {
+            entries: [],
+            EntryClass: source?.constructor?.Entry ?? null,
+          });
+        }
+        categoryEntries.get(cat).entries.push(entry);
       }
-      categoryEntries.get(cat).entries.push(existingInfo.entry);
       stats.unchanged++;
       continue;
     }
 
-    // Hash mismatch or new file → find matching DataSource and parse
+    // Hash mismatch or new file → try ALL matching DataSources (no break)
+    let matched = false;
     for (const [name, source] of dataSources) {
       if (!source.match(file.relPath)) continue;
 
@@ -221,18 +225,20 @@ async function main(ctx) {
         });
       }
       categoryEntries.get(name).entries.push(parsed);
+      matched = true;
+    }
 
-      if (existingInfo) {
+    if (matched) {
+      if (existingInfos.length > 0) {
         stats.changed++;
       } else {
         stats.added++;
       }
-      break; // First matching DataSource wins
     }
   }
 
   // 5. Detect deleted files
-  for (const [relPath, info] of existingIndex) {
+  for (const [relPath, infos] of existingIndex) {
     if (!currentFilePaths.has(relPath)) {
       stats.deleted++;
     }
