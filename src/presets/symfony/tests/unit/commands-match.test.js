@@ -14,28 +14,28 @@ describe("SymfonyCommandsSource.match()", () => {
 
   it("matches PHP files in src/Command/", () => {
     assert.equal(
-      source.match({ relPath: "src/Command/CleanupCommand.php" }),
+      source.match("src/Command/CleanupCommand.php"),
       true,
     );
   });
 
   it("matches commands without Command suffix", () => {
     assert.equal(
-      source.match({ relPath: "src/Command/SendEmails.php" }),
+      source.match("src/Command/SendEmails.php"),
       true,
     );
   });
 
   it("excludes files outside src/Command/", () => {
     assert.equal(
-      source.match({ relPath: "src/Controller/UserController.php" }),
+      source.match("src/Controller/UserController.php"),
       false,
     );
   });
 
   it("excludes non-PHP files", () => {
     assert.equal(
-      source.match({ relPath: "src/Command/.gitkeep" }),
+      source.match("src/Command/.gitkeep"),
       false,
     );
   });

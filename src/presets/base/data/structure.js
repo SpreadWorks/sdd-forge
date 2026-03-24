@@ -5,16 +5,15 @@
  */
 
 import { DataSource } from "../../../docs/lib/data-source.js";
-
-const META_KEYS = new Set(["analyzedAt", "enrichedAt", "generatedAt", "files", "root"]);
+import { ANALYSIS_META_KEYS } from "../../../docs/lib/analysis-entry.js";
 
 /** Collect all items across all analysis categories. */
 function allItems(analysis) {
   const items = [];
   for (const [key, val] of Object.entries(analysis)) {
-    if (META_KEYS.has(key)) continue;
+    if (ANALYSIS_META_KEYS.has(key)) continue;
     if (!val || typeof val !== "object") continue;
-    const arr = Array.isArray(val) ? val : val[key] || Object.values(val).find(Array.isArray);
+    const arr = val.entries;
     if (Array.isArray(arr)) {
       for (const item of arr) {
         const p = item?.relPath || item?.file;

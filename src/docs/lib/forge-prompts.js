@@ -6,8 +6,7 @@
  */
 
 import { createI18n } from "../../lib/i18n.js";
-
-const ANALYSIS_META_KEYS = new Set(["analyzedAt", "enrichedAt", "generatedAt", "files", "root"]);
+import { ANALYSIS_META_KEYS } from "./analysis-entry.js";
 
 /**
  * analysis.json をプロンプト用テキストに変換する。
@@ -24,41 +23,25 @@ export function summaryToText(analysis) {
     return enrichedSummaryToText(analysis);
   }
 
-  // Legacy fallback: structured summary fields
+  // Fallback: use summary fields from each category
   const parts = [];
-  if (analysis.controllers) {
-    const c = analysis.controllers;
-    parts.push(`Controllers: ${c.total} files, ${c.totalActions} actions`);
-    if (c.top) {
-      for (const ctrl of c.top) {
-        const acts = ctrl.actions || [];
-        parts.push(`  - ${ctrl.className}: ${acts.length} actions [${acts.slice(0, 5).join(", ")}${acts.length > 5 ? " ..." : ""}]`);
-      }
-    }
+  if (analysis.controllers?.summary) {
+    const s = analysis.controllers.summary;
+    parts.push(`Controllers: ${s.total} files, ${s.totalActions || 0} actions`);
   }
-  if (analysis.models) {
-    const m = analysis.models;
-    parts.push(`Models: ${m.total} files (fe=${m.feModels || 0}, logic=${m.logicModels || 0})`);
-    if (m.dbGroups) {
-      for (const [db, models] of Object.entries(m.dbGroups)) {
-        parts.push(`  DB[${db}]: ${models.length} models`);
-      }
-    }
+  if (analysis.models?.summary) {
+    const s = analysis.models.summary;
+    parts.push(`Models: ${s.total} files`);
   }
-  if (analysis.commands) {
-    const c = analysis.commands;
-    parts.push(`Commands: ${c.total} files`);
-    if (c.items) {
-      for (const cmd of c.items) {
-        parts.push(`  - ${cmd.className}: [${(cmd.methods || []).join(", ")}]`);
-      }
-    }
+  if (analysis.commands?.summary) {
+    const s = analysis.commands.summary;
+    parts.push(`Commands: ${s.total} files`);
   }
-  if (analysis.routes) {
-    parts.push(`Routes: ${analysis.routes.total} explicit routes`);
+  if (analysis.routes?.summary) {
+    parts.push(`Routes: ${analysis.routes.summary.total} explicit routes`);
   }
-  if (analysis.files) {
-    parts.push(`Files: ${analysis.files.summary?.total || 0} total`);
+  if (analysis.modules?.summary) {
+    parts.push(`Modules: ${analysis.modules.summary.total} files`);
   }
   return parts.join("\n");
 }
@@ -76,7 +59,7 @@ function enrichedSummaryToText(analysis) {
     if (ANALYSIS_META_KEYS.has(cat)) continue;
     const data = analysis[cat];
     if (!data || typeof data !== "object") continue;
-    const items = data[cat];
+    const items = data.entries;
     if (!Array.isArray(items)) continue;
 
     const enrichedItems = items.filter((item) => item.summary);

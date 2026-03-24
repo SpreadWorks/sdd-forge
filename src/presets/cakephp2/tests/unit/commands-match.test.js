@@ -14,35 +14,35 @@ describe("CakephpCommandsSource.match()", () => {
 
   it("matches *Shell.php in Console/Command/", () => {
     assert.equal(
-      source.match({ relPath: "app/Console/Command/CleanupShell.php" }),
+      source.match("app/Console/Command/CleanupShell.php"),
       true,
     );
   });
 
   it("matches nested Shell files", () => {
     assert.equal(
-      source.match({ relPath: "app/Console/Command/ImportShell.php" }),
+      source.match("app/Console/Command/ImportShell.php"),
       true,
     );
   });
 
   it("excludes AppShell.php", () => {
     assert.equal(
-      source.match({ relPath: "app/Console/Command/AppShell.php" }),
+      source.match("app/Console/Command/AppShell.php"),
       false,
     );
   });
 
   it("excludes files not in Console/Command/", () => {
     assert.equal(
-      source.match({ relPath: "app/Model/TaskShell.php" }),
+      source.match("app/Model/TaskShell.php"),
       false,
     );
   });
 
   it("excludes non-Shell PHP files in Console/Command/", () => {
     assert.equal(
-      source.match({ relPath: "app/Console/Command/Helper.php" }),
+      source.match("app/Console/Command/Helper.php"),
       false,
     );
   });

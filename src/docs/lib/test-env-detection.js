@@ -21,10 +21,19 @@ export function detectTestEnvironment(analysis) {
   const frameworks = [];
   let testCommand = null;
 
-  // devDependencies からフレームワークを検出
-  const devDeps = analysis.package?.packageDeps?.devDependencies || {};
-  const composerDevDeps = analysis.package?.composerDeps?.requireDev || {};
+  // entries から依存・スクリプト情報を集約
+  const entries = analysis.package?.entries || [];
+  const devDeps = {};
+  const composerDevDeps = {};
+  let scripts = null;
 
+  for (const entry of entries) {
+    Object.assign(devDeps, entry.packageDeps?.devDependencies);
+    Object.assign(composerDevDeps, entry.composerDeps?.requireDev);
+    if (entry.packageScripts) scripts = entry.packageScripts;
+  }
+
+  // devDependencies からフレームワークを検出
   for (const fw of TEST_FRAMEWORKS) {
     if (devDeps[fw] || composerDevDeps[fw]) {
       frameworks.push(fw);
@@ -32,7 +41,6 @@ export function detectTestEnvironment(analysis) {
   }
 
   // scripts.test からテストコマンドを検出
-  const scripts = analysis.package?.packageScripts;
   if (scripts?.test) {
     testCommand = scripts.test;
   }

@@ -94,15 +94,13 @@ class Kernel extends BaseKernel {}
     const analysis = JSON.parse(result);
     assert.ok(analysis.analyzedAt);
 
-    // DataSource results should be at top level (no extras)
+    // DataSource results use entries-based structure
     assert.equal(analysis.extras, undefined, "extras should not exist");
-    assert.ok(analysis.controllers?.symfonyControllers, "should have symfonyControllers");
-    assert.ok(analysis.entities?.symfonyEntities, "should have symfonyEntities");
-    assert.ok(analysis.routes?.symfonyRoutes, "should have symfonyRoutes");
-    assert.ok(analysis.tables?.migrations, "should have migrations");
-    assert.ok(analysis.config?.composerDeps, "should have composerDeps");
-    assert.ok(analysis.config?.envKeys, "should have envKeys");
-    assert.ok(analysis.config?.bundles, "should have bundles");
+    assert.ok(analysis.controllers?.entries?.length > 0, "should have controller entries");
+    assert.ok(analysis.entities?.entries?.length > 0, "should have entity entries");
+    assert.ok(analysis.routes?.entries?.length > 0, "should have route entries");
+    assert.ok(analysis.tables?.entries?.length > 0, "should have table entries");
+    assert.ok(analysis.config?.entries?.length > 0, "should have config entries");
   });
 
   it("type alias 'symfony' resolves correctly", () => {

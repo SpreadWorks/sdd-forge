@@ -14,35 +14,35 @@ describe("LaravelCommandsSource.match()", () => {
 
   it("matches PHP files in app/Console/Commands/", () => {
     assert.equal(
-      source.match({ relPath: "app/Console/Commands/CleanupCommand.php" }),
+      source.match("app/Console/Commands/CleanupCommand.php"),
       true,
     );
   });
 
   it("matches Artisan commands without Command suffix", () => {
     assert.equal(
-      source.match({ relPath: "app/Console/Commands/SendEmails.php" }),
+      source.match("app/Console/Commands/SendEmails.php"),
       true,
     );
   });
 
   it("excludes Kernel.php", () => {
     assert.equal(
-      source.match({ relPath: "app/Console/Kernel.php" }),
+      source.match("app/Console/Kernel.php"),
       false,
     );
   });
 
   it("excludes files outside Console/Commands/", () => {
     assert.equal(
-      source.match({ relPath: "app/Http/Controllers/UserController.php" }),
+      source.match("app/Http/Controllers/UserController.php"),
       false,
     );
   });
 
   it("excludes non-PHP files", () => {
     assert.equal(
-      source.match({ relPath: "app/Console/Commands/README.md" }),
+      source.match("app/Console/Commands/README.md"),
       false,
     );
   });

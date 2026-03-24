@@ -10,8 +10,7 @@
 import path from "path";
 import { DataSource } from "../../../docs/lib/data-source.js";
 import { loadJsonFile } from "../../../lib/config.js";
-
-const ANALYSIS_META_KEYS = new Set(["analyzedAt", "enrichedAt", "generatedAt", "extras", "files", "root"]);
+import { ANALYSIS_META_KEYS } from "../../../docs/lib/analysis-entry.js";
 
 export default class MonorepoSource extends DataSource {
   init(ctx) {
@@ -52,7 +51,7 @@ export default class MonorepoSource extends DataSource {
       if (ANALYSIS_META_KEYS.has(cat)) continue;
       const data = analysis[cat];
       if (!data || typeof data !== "object") continue;
-      const items = data[cat];
+      const items = data.entries;
       if (!Array.isArray(items)) continue;
 
       for (const item of items) {

@@ -8,21 +8,9 @@
 import WebappDataSource from "./webapp-data-source.js";
 
 export default class TablesSource extends WebappDataSource {
-  /**
-   * Default: no independent scan. Tables are derived from models analysis.
-   * Child presets (e.g. Laravel) override to scan migrations.
-   */
-  match(file) {
-    return false;
-  }
-
-  scan(files) {
-    return null;
-  }
-
   /** Table list (derived from model analysis). */
   list(analysis, labels) {
-    const models = this.mergeDesc(analysis.models?.models || [], "tables", "tableName");
+    const models = this.mergeDesc(analysis.models?.entries || [], "tables", "tableName");
     if (models.length === 0) return null;
     const seen = new Set();
     const rows = [];
@@ -38,7 +26,7 @@ export default class TablesSource extends WebappDataSource {
 
   /** Foreign key relationships (derived from model relations). */
   fk(analysis, labels) {
-    const models = analysis.models?.models || [];
+    const models = analysis.models?.entries || [];
     if (models.length === 0) return null;
     const classToTable = Object.fromEntries(models.map((m) => [m.className, m.tableName]));
     const rows = [];

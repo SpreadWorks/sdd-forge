@@ -11,7 +11,7 @@ import {
 import {
   analyzePermissionComponent,
   analyzeAcl,
-} from "../../scan/security.js";
+} from "../../data/controllers.js";
 
 // =========================================================================
 // analyzePermissionComponent

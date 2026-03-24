@@ -9,16 +9,16 @@ import {
   removeTmpDir,
   writeFile,
 } from "../../../../../tests/helpers/tmp-dir.js";
-import { analyzeModels } from "../../scan/models.js";
+import { analyzeModels } from "../../data/models.js";
 import {
   analyzeLogicClasses,
   analyzeTitlesGraphMapping,
   analyzeComposerDeps,
-} from "../../scan/business.js";
+} from "../../data/models.js";
 import {
   analyzeAppController,
   analyzeAppModel,
-} from "../../scan/base-classes.js";
+} from "../../data/models.js";
 
 // =========================================================================
 // analyzeModels

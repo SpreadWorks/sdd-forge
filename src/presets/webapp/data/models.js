@@ -6,65 +6,56 @@
  */
 
 import WebappDataSource from "./webapp-data-source.js";
+import { AnalysisEntry } from "../../../docs/lib/analysis-entry.js";
 import { parseFile, camelToSnake, pluralize } from "../../../docs/lib/scanner.js";
 
+export class ModelEntry extends AnalysisEntry {
+  className = null;
+  parentClass = null;
+  isLogic = null;
+  isFe = null;
+  useTable = null;
+  useDbConfig = null;
+  primaryKey = null;
+  displayField = null;
+  tableName = null;
+  relations = null;
+  validateFields = null;
+  actsAs = null;
+
+  static summary = {};
+}
+
 export default class ModelsSource extends WebappDataSource {
-  match(file) {
+  static Entry = ModelEntry;
+
+  match(relPath) {
     return false;
   }
 
-  scan(files) {
-    if (files.length === 0) return null;
-
-    const models = [];
-    const dbGroups = {};
-
-    for (const f of files) {
-      const parsed = parseFile(f.absPath);
-      const isLogic = f.relPath.includes("Logic");
-      const isFe = parsed.className.startsWith("Fe");
-      const useTable = parsed.properties.useTable || null;
-      const useDbConfig = parsed.properties.useDbConfig || null;
-      const tableName = useTable || pluralize(camelToSnake(parsed.className));
-      const dbKey = useDbConfig || "default";
-
-      if (!dbGroups[dbKey]) dbGroups[dbKey] = [];
-      dbGroups[dbKey].push(parsed.className);
-
-      models.push({
-        file: f.relPath,
-        className: parsed.className,
-        parentClass: parsed.parentClass,
-        isLogic,
-        isFe,
-        useTable,
-        useDbConfig,
-        primaryKey: parsed.properties.primaryKey || null,
-        displayField: parsed.properties.displayField || null,
-        tableName,
-        relations: parsed.relations,
-        validateFields: parsed.properties.validate
-          ? (Array.isArray(parsed.properties.validate) ? parsed.properties.validate : [])
-          : [],
-        actsAs: parsed.properties.actsAs || [],
-        lines: f.lines,
-        hash: f.hash,
-        mtime: f.mtime,
-      });
-    }
-
-    const feModels = models.filter((m) => m.isFe).length;
-    const logicModels = models.filter((m) => m.isLogic).length;
-
-    return {
-      models,
-      summary: { total: models.length, feModels, logicModels, dbGroups },
-    };
+  parse(absPath) {
+    const entry = new ModelEntry();
+    const parsed = parseFile(absPath);
+    entry.className = parsed.className;
+    entry.parentClass = parsed.parentClass;
+    entry.isLogic = absPath.includes("Logic");
+    entry.isFe = parsed.className.startsWith("Fe");
+    entry.useTable = parsed.properties.useTable || null;
+    entry.useDbConfig = parsed.properties.useDbConfig || null;
+    entry.primaryKey = parsed.properties.primaryKey || null;
+    entry.displayField = parsed.properties.displayField || null;
+    entry.tableName = entry.useTable || pluralize(camelToSnake(parsed.className));
+    entry.relations = parsed.relations;
+    entry.validateFields = parsed.properties.validate
+      ? (Array.isArray(parsed.properties.validate) ? parsed.properties.validate : [])
+      : [];
+    entry.actsAs = parsed.properties.actsAs || [];
+    return entry;
   }
 
   /** Model association summary. */
   relations(analysis, labels) {
-    const models = analysis.models?.models || [];
+    const models = analysis.models?.entries || [];
     if (models.length === 0) return null;
     const rows = [];
     for (const model of models) {

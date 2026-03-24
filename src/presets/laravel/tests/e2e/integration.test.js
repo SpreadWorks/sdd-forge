@@ -69,14 +69,33 @@ Schema::create('users', function (Blueprint \$table) {
     const analysis = JSON.parse(result);
     assert.ok(analysis.analyzedAt);
 
-    // DataSource results should be at top level (no extras)
-    assert.equal(analysis.extras, undefined, "extras should not exist");
-    assert.ok(analysis.controllers?.laravelControllers, "should have laravelControllers");
-    assert.ok(analysis.models?.laravelModels, "should have laravelModels");
-    assert.ok(analysis.routes?.laravelRoutes, "should have laravelRoutes");
-    assert.ok(analysis.tables?.migrations, "should have migrations");
-    assert.ok(analysis.config?.composerDeps, "should have composerDeps");
-    assert.ok(analysis.config?.envKeys, "should have envKeys");
+    // New pipeline: all entries are in analysis[cat].entries
+    assert.ok(analysis.controllers?.entries?.length > 0, "should have controller entries");
+    assert.ok(analysis.models?.entries?.length > 0, "should have model entries");
+    assert.ok(analysis.routes?.entries?.length > 0, "should have route entries");
+    assert.ok(analysis.tables?.entries?.length > 0, "should have table entries");
+    assert.ok(analysis.config?.entries?.length > 0, "should have config entries");
+
+    // Verify controller entry structure
+    const ctrl = analysis.controllers.entries[0];
+    assert.equal(ctrl.className, "UserController");
+    assert.ok(Array.isArray(ctrl.actions));
+
+    // Verify model entry structure
+    const model = analysis.models.entries[0];
+    assert.equal(model.className, "User");
+
+    // Verify composer data in package category (from base PackageSource)
+    assert.ok(analysis.package?.entries?.length > 0, "should have package entries");
+    const composerEntry = analysis.package.entries.find((e) => e.composerDeps);
+    assert.ok(composerEntry, "should have composer package entry");
+    assert.ok(composerEntry.composerDeps.require, "composer entry should have deps");
+
+    // Verify config entries contain env data
+    const configEntries = analysis.config.entries;
+    const envEntry = configEntries.find((e) => e.kind === "env");
+    assert.ok(envEntry, "should have env config entry");
+    assert.ok(envEntry.envKeys?.length > 0, "env entry should have keys");
   });
 
   it("type alias 'laravel' resolves correctly", () => {

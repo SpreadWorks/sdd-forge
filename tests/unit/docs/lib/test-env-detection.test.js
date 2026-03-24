@@ -32,8 +32,9 @@ describe("scan scripts extraction", () => {
       });
       const analysis = JSON.parse(result);
 
-      assert.ok(analysis.package?.packageScripts, "packageScripts should be in analysis.package");
-      assert.equal(analysis.package.packageScripts.test, "node --test");
+      const pkgEntry = analysis.package?.entries?.find(e => e.packageScripts);
+      assert.ok(pkgEntry?.packageScripts, "packageScripts should be in analysis.package.entries[]");
+      assert.equal(pkgEntry.packageScripts.test, "node --test");
     } finally {
       removeTmpDir(tmp);
     }
@@ -64,8 +65,9 @@ describe("scan scripts extraction", () => {
       });
       const analysis = JSON.parse(result);
 
-      // packageScripts should not exist or be empty
-      assert.ok(!analysis.package?.packageScripts || Object.keys(analysis.package.packageScripts).length === 0);
+      // packageScripts should not exist in any entry or be empty
+      const pkgEntry = analysis.package?.entries?.find(e => e.packageScripts);
+      assert.ok(!pkgEntry?.packageScripts || Object.keys(pkgEntry.packageScripts).length === 0);
     } finally {
       removeTmpDir(tmp);
     }
@@ -78,11 +80,13 @@ describe("test environment detection", () => {
 
     const analysis = {
       package: {
-        packageDeps: {
-          dependencies: {},
-          devDependencies: { jest: "^29.0.0" },
-        },
-        packageScripts: { test: "jest" },
+        entries: [{
+          packageDeps: {
+            dependencies: {},
+            devDependencies: { jest: "^29.0.0" },
+          },
+          packageScripts: { test: "jest" },
+        }],
       },
     };
 
@@ -97,10 +101,12 @@ describe("test environment detection", () => {
 
     const analysis = {
       package: {
-        packageDeps: {
-          dependencies: {},
-          devDependencies: {},
-        },
+        entries: [{
+          packageDeps: {
+            dependencies: {},
+            devDependencies: {},
+          },
+        }],
       },
     };
 

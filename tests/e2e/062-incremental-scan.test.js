@@ -4,7 +4,6 @@ import fs from "fs";
 import { join } from "path";
 import { execFileSync } from "child_process";
 import { createTmpDir, removeTmpDir, writeJson, writeFile } from "../helpers/tmp-dir.js";
-import { getAffectedChapters } from "../../src/docs/commands/text.js";
 
 const CMD = join(process.cwd(), "src/docs/commands/scan.js");
 
@@ -36,7 +35,7 @@ describe("incremental scan by hash", () => {
   }
 
   function enrichEntry(analysis, index, enrichment) {
-    const entry = analysis.modules.modules[index];
+    const entry = analysis.modules.entries[index];
     Object.assign(entry, enrichment);
     analysis.enrichedAt = "2026-01-01T00:00:00.000Z";
     const outputPath = join(tmp, ".sdd-forge/output/analysis.json");
@@ -61,8 +60,8 @@ describe("incremental scan by hash", () => {
     const second = runScan();
     assert.equal(second.modules.summary.total, 2);
     // Both enrichments should be preserved
-    assert.equal(second.modules.modules[0].summary, "func a");
-    assert.equal(second.modules.modules[1].summary, "func b");
+    assert.equal(second.modules.entries[0].summary, "func a");
+    assert.equal(second.modules.entries[1].summary, "func b");
   });
 
   it("re-scans only changed files and drops their enrichment", () => {
@@ -72,13 +71,13 @@ describe("incremental scan by hash", () => {
     });
 
     const first = runScan();
-    const hashA = first.modules.modules.find(e => e.file.includes("a.js")).hash;
-    const hashB = first.modules.modules.find(e => e.file.includes("b.js")).hash;
+    const hashA = first.modules.entries.find(e => e.file.includes("a.js")).hash;
+    const hashB = first.modules.entries.find(e => e.file.includes("b.js")).hash;
 
     // Enrich both
-    for (let i = 0; i < first.modules.modules.length; i++) {
-      first.modules.modules[i].summary = `summary ${i}`;
-      first.modules.modules[i].chapter = "overview";
+    for (let i = 0; i < first.modules.entries.length; i++) {
+      first.modules.entries[i].summary = `summary ${i}`;
+      first.modules.entries[i].chapter = "overview";
     }
     first.enrichedAt = "2026-01-01T00:00:00.000Z";
     fs.writeFileSync(join(tmp, ".sdd-forge/output/analysis.json"), JSON.stringify(first) + "\n");
@@ -87,8 +86,8 @@ describe("incremental scan by hash", () => {
     writeFile(tmp, "src/a.js", 'export function a() { return "changed"; }\n');
 
     const second = runScan();
-    const newA = second.modules.modules.find(e => e.file.includes("a.js"));
-    const newB = second.modules.modules.find(e => e.file.includes("b.js"));
+    const newA = second.modules.entries.find(e => e.file.includes("a.js"));
+    const newB = second.modules.entries.find(e => e.file.includes("b.js"));
 
     // a.js: hash changed → enrichment dropped
     assert.notEqual(newA.hash, hashA);
@@ -112,7 +111,7 @@ describe("incremental scan by hash", () => {
 
     const second = runScan();
     assert.equal(second.modules.summary.total, 2);
-    const files = second.modules.modules.map(e => e.file);
+    const files = second.modules.entries.map(e => e.file);
     assert.ok(files.some(f => f.includes("c.js")), "new file should be in analysis");
   });
 
@@ -130,7 +129,7 @@ describe("incremental scan by hash", () => {
 
     const second = runScan();
     assert.equal(second.modules.summary.total, 1);
-    const files = second.modules.modules.map(e => e.file);
+    const files = second.modules.entries.map(e => e.file);
     assert.ok(!files.some(f => f.includes("b.js")), "deleted file should be removed from analysis");
     assert.ok(files.some(f => f.includes("a.js")), "remaining file should stay");
   });
@@ -145,59 +144,5 @@ describe("incremental scan by hash", () => {
     const result = runScan();
     assert.equal(result.modules.summary.total, 2);
     assert.ok(result.analyzedAt);
-  });
-});
-
-describe("getAffectedChapters", () => {
-  it("returns null when no _incrementalMeta", () => {
-    const analysis = {
-      analyzedAt: "2026-01-01T00:00:00.000Z",
-      modules: { modules: [{ file: "src/a.js", hash: "aaa", chapter: "overview" }] },
-    };
-    assert.equal(getAffectedChapters(analysis), null);
-  });
-
-  it("collects prevChapters and new chapters from changed files", () => {
-    const analysis = {
-      analyzedAt: "2026-01-01T00:00:00.000Z",
-      _incrementalMeta: {
-        changedFiles: ["src/a.js"],
-        prevChapters: ["old_chapter"],
-      },
-      modules: {
-        modules: [
-          { file: "src/a.js", hash: "aaa", summary: "a", chapter: "new_chapter" },
-          { file: "src/b.js", hash: "bbb", summary: "b", chapter: "other" },
-        ],
-      },
-    };
-    const affected = getAffectedChapters(analysis);
-    assert.ok(affected.has("old_chapter"), "old chapter should be affected");
-    assert.ok(affected.has("new_chapter"), "new chapter should be affected");
-    assert.ok(!affected.has("other"), "unrelated chapter should not be affected");
-  });
-
-  it("returns null when changedFiles is empty", () => {
-    const analysis = {
-      _incrementalMeta: { changedFiles: [], prevChapters: [] },
-    };
-    assert.equal(getAffectedChapters(analysis), null);
-  });
-
-  it("handles changed file with no chapter assigned yet", () => {
-    const analysis = {
-      _incrementalMeta: {
-        changedFiles: ["src/a.js"],
-        prevChapters: ["overview"],
-      },
-      modules: {
-        modules: [
-          { file: "src/a.js", hash: "aaa" },  // no chapter yet (pre-enrich)
-        ],
-      },
-    };
-    const affected = getAffectedChapters(analysis);
-    assert.ok(affected.has("overview"), "prevChapter should still be affected");
-    assert.equal(affected.size, 1);
   });
 });

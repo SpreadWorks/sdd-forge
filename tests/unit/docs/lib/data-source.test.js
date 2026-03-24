@@ -4,15 +4,6 @@ import { DataSource } from "../../../../src/docs/lib/data-source.js";
 
 describe("DataSource base class", () => {
   // ---------------------------------------------------------------------------
-  // match()
-  // ---------------------------------------------------------------------------
-
-  it("match() returns false by default", () => {
-    const ds = new DataSource();
-    assert.equal(ds.match({ absPath: "/a.js", relPath: "a.js", hash: "abc" }), false);
-  });
-
-  // ---------------------------------------------------------------------------
   // init() / desc()
   // ---------------------------------------------------------------------------
 

@@ -6,51 +6,36 @@
  */
 
 import WebappDataSource from "./webapp-data-source.js";
+import { AnalysisEntry } from "../../../docs/lib/analysis-entry.js";
 import { parseFile } from "../../../docs/lib/scanner.js";
 
+export class CommandEntry extends AnalysisEntry {
+  className = null;
+  publicMethods = null;
+  appUses = null;
+
+  static summary = {};
+}
+
 export default class CommandsSource extends WebappDataSource {
-  match(file) {
+  static Entry = CommandEntry;
+
+  match(relPath) {
     return false;
   }
 
-  scan(files) {
-    if (files.length === 0) return null;
-
-    const commands = [];
-    for (const f of files) {
-      const parsed = parseFile(f.absPath);
-      commands.push({
-        file: f.relPath,
-        className: parsed.className,
-        publicMethods: parsed.methods.filter((m) => !m.startsWith("_")),
-        appUses: [],
-        lines: f.lines,
-        hash: f.hash,
-        mtime: f.mtime,
-      });
-    }
-
-    return {
-      commands,
-      summary: {
-        total: commands.length,
-      },
-    };
-  }
-
-  summarize(data) {
-    return {
-      ...data.summary,
-      items: data.commands.map((x) => ({
-        className: x.className,
-        methods: x.publicMethods,
-      })),
-    };
+  parse(absPath) {
+    const entry = new CommandEntry();
+    const parsed = parseFile(absPath);
+    entry.className = parsed.className;
+    entry.publicMethods = parsed.methods.filter((m) => !m.startsWith("_"));
+    entry.appUses = [];
+    return entry;
   }
 
   /** Command list. */
   list(analysis, labels) {
-    const items = this.mergeDesc(analysis.commands?.commands || [], "commands");
+    const items = this.mergeDesc(analysis.commands?.entries || [], "commands");
     if (items.length === 0) return null;
     const rows = this.toRows(items, (s) => [
       s.className,

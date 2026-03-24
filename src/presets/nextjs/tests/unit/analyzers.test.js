@@ -1,8 +1,8 @@
 import { describe, it, afterEach } from "node:test";
 import assert from "node:assert/strict";
 import { createTmpDir, removeTmpDir, writeFile } from "../../../../../tests/helpers/tmp-dir.js";
-import { analyzeComponents } from "../../scan/components.js";
-import { analyzeRoutes } from "../../scan/routes.js";
+import { analyzeComponents } from "../../data/components.js";
+import { analyzeRoutes } from "../../data/routes.js";
 
 // ---------------------------------------------------------------------------
 // Components

@@ -125,8 +125,8 @@ function setupProject(workflows) {
 
 describe("ci preset: scan/workflows.js", async () => {
   // Dynamic import after file creation
-  const { parseWorkflow, scanWorkflows } = await import(
-    "../../../src/presets/ci/scan/workflows.js"
+  const { parseWorkflow } = await import(
+    "../../../src/presets/ci/data/pipelines.js"
   );
 
   describe("parseWorkflow", () => {
@@ -186,25 +186,7 @@ describe("ci preset: scan/workflows.js", async () => {
     });
   });
 
-  describe("scanWorkflows", () => {
-    it("scans .github/workflows/ directory", () => {
-      const root = setupProject({
-        "ci.yml": SIMPLE_WORKFLOW,
-        "deploy.yml": DEPLOY_WORKFLOW,
-      });
-      const result = scanWorkflows(root);
-      assert.equal(result.pipelines.length, 2);
-      assert.equal(result.summary.total, 2);
-      assert.ok(result.summary.totalJobs >= 3);
-    });
-
-    it("returns empty when no workflows directory exists", () => {
-      tmp = createTmpDir("ci-empty-");
-      const result = scanWorkflows(tmp);
-      assert.equal(result.pipelines.length, 0);
-      assert.equal(result.summary.total, 0);
-    });
-  });
+  // scanWorkflows (directory-level scanner) removed — scan pipeline now uses per-file parse()
 });
 
 // ---------------------------------------------------------------------------

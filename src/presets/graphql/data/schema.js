@@ -13,9 +13,15 @@
 import fs from "fs";
 import { DataSource } from "../../../docs/lib/data-source.js";
 import { Scannable } from "../../../docs/lib/scan-source.js";
+import { AnalysisEntry } from "../../../docs/lib/analysis-entry.js";
+import { collectFiles } from "../../../docs/lib/scanner.js";
+
+// ---------------------------------------------------------------------------
+// Schema content parser (inlined from scan/schema.js)
+// ---------------------------------------------------------------------------
 
 /** Match type definitions: type Foo implements Bar { ... } */
-const TYPE_RE = /type\s+(\w+)\s*(?:implements\s+[\w\s&]+)?\s*\{([^}]*)\}/g;
+const TYPE_RE = /type\s+(\w+)\s*(?:implements\s+([\w\s&]+))?\s*\{([^}]*)\}/g;
 
 /** Match fields inside a type: name(args): ReturnType */
 const FIELD_RE = /(\w+)\s*(?:\([^)]*\))?\s*:\s*([^\n]+)/g;
@@ -23,63 +29,88 @@ const FIELD_RE = /(\w+)\s*(?:\([^)]*\))?\s*:\s*([^\n]+)/g;
 /** Match field with args for query/mutation: name(arg: Type, ...): ReturnType */
 const FIELD_ARGS_RE = /(\w+)\s*(?:\(([^)]*)\))?\s*:\s*([^\n]+)/g;
 
-export default class GraphqlSchemaSource extends Scannable(DataSource) {
-  match(file) {
-    return /\.(?:graphql|gql)$/.test(file.relPath);
+/**
+ * Parse a single GraphQL schema content string.
+ *
+ * @param {string} content - raw .graphql/.gql file content
+ * @returns {{ types: Object[], queries: Object[], mutations: Object[] }}
+ */
+export function parseSchemaContent(content) {
+  const types = [];
+  const queries = [];
+  const mutations = [];
+
+  for (const m of content.matchAll(TYPE_RE)) {
+    const typeName = m[1];
+    const implementsClause = m[2] ? m[2].trim() : null;
+    const body = m[3];
+
+    if (typeName === "Query") {
+      for (const fm of body.matchAll(FIELD_ARGS_RE)) {
+        queries.push({
+          name: fm[1],
+          args: fm[2] ? fm[2].trim() : "\u2014",
+          returnType: fm[3].trim(),
+        });
+      }
+    } else if (typeName === "Mutation") {
+      for (const fm of body.matchAll(FIELD_ARGS_RE)) {
+        mutations.push({
+          name: fm[1],
+          args: fm[2] ? fm[2].trim() : "\u2014",
+          returnType: fm[3].trim(),
+        });
+      }
+    } else {
+      const fields = [];
+      for (const fm of body.matchAll(FIELD_RE)) {
+        fields.push(fm[1]);
+      }
+      const entry = { name: typeName, fields };
+      if (implementsClause) {
+        entry.implements = implementsClause.split("&").map((s) => s.trim());
+      }
+      types.push(entry);
+    }
   }
 
-  scan(files) {
-    if (files.length === 0) return null;
+  return { types, queries, mutations };
+}
 
-    const types = [];
-    const queries = [];
-    const mutations = [];
+// ---------------------------------------------------------------------------
+// DataSource
+// ---------------------------------------------------------------------------
 
-    for (const f of files) {
-      const content = fs.readFileSync(f.absPath, "utf8");
+export class GraphqlSchemaEntry extends AnalysisEntry {
+  types = null;
+  queries = null;
+  mutations = null;
 
-      for (const m of content.matchAll(TYPE_RE)) {
-        const typeName = m[1];
-        const body = m[2];
+  static summary = {};
+}
 
-        if (typeName === "Query") {
-          for (const fm of body.matchAll(FIELD_ARGS_RE)) {
-            queries.push({
-              name: fm[1],
-              args: fm[2] ? fm[2].trim() : "—",
-              returnType: fm[3].trim(),
-            });
-          }
-        } else if (typeName === "Mutation") {
-          for (const fm of body.matchAll(FIELD_ARGS_RE)) {
-            mutations.push({
-              name: fm[1],
-              args: fm[2] ? fm[2].trim() : "—",
-              returnType: fm[3].trim(),
-            });
-          }
-        } else {
-          const fields = [];
-          for (const fm of body.matchAll(FIELD_RE)) {
-            fields.push(fm[1]);
-          }
-          types.push({ name: typeName, fields });
-        }
-      }
-    }
+export default class GraphqlSchemaSource extends Scannable(DataSource) {
+  static Entry = GraphqlSchemaEntry;
 
-    return {
-      types,
-      queries,
-      mutations,
-      summary: { totalTypes: types.length, totalQueries: queries.length, totalMutations: mutations.length },
-    };
+  match(relPath) {
+    return /\.(?:graphql|gql)$/.test(relPath);
+  }
+
+  parse(absPath) {
+    const entry = new GraphqlSchemaEntry();
+    const content = fs.readFileSync(absPath, "utf8");
+    const result = parseSchemaContent(content);
+    entry.types = result.types;
+    entry.queries = result.queries;
+    entry.mutations = result.mutations;
+    return entry;
   }
 
   /** GraphQL types table. */
   types(analysis, labels) {
-    const items = analysis.schema?.types;
-    if (!Array.isArray(items) || items.length === 0) return null;
+    const entries = analysis.schema?.entries || [];
+    const items = entries.flatMap((e) => e.types || []);
+    if (items.length === 0) return null;
     const rows = this.toRows(items, (t) => [
       t.name,
       Array.isArray(t.fields) ? t.fields.join(", ") : (t.fields || "—"),
@@ -91,8 +122,9 @@ export default class GraphqlSchemaSource extends Scannable(DataSource) {
 
   /** GraphQL queries table. */
   queries(analysis, labels) {
-    const items = analysis.schema?.queries;
-    if (!Array.isArray(items) || items.length === 0) return null;
+    const entries = analysis.schema?.entries || [];
+    const items = entries.flatMap((e) => e.queries || []);
+    if (items.length === 0) return null;
     const rows = this.toRows(items, (q) => [
       q.name,
       q.args || "—",
@@ -105,8 +137,9 @@ export default class GraphqlSchemaSource extends Scannable(DataSource) {
 
   /** GraphQL mutations table. */
   mutations(analysis, labels) {
-    const items = analysis.schema?.mutations;
-    if (!Array.isArray(items) || items.length === 0) return null;
+    const entries = analysis.schema?.entries || [];
+    const items = entries.flatMap((e) => e.mutations || []);
+    if (items.length === 0) return null;
     const rows = this.toRows(items, (m) => [
       m.name,
       m.args || "—",
@@ -116,4 +149,50 @@ export default class GraphqlSchemaSource extends Scannable(DataSource) {
     const hdr = labels.length >= 2 ? labels : ["Mutation", "Args", "Return", "Description"];
     return this.toMarkdownTable(rows, hdr);
   }
+}
+
+// ---------------------------------------------------------------------------
+// Directory-level analyzer (moved from scan/schema.js, used by tests)
+// ---------------------------------------------------------------------------
+
+/**
+ * Scan sourceRoot for .graphql/.gql files and extract schema information.
+ *
+ * @param {string} sourceRoot - project root directory
+ * @returns {{ types: Object[], queries: Object[], mutations: Object[], summary: Object }}
+ */
+export function analyzeSchema(sourceRoot) {
+  const files = collectFiles(sourceRoot, ["**/*.graphql", "**/*.gql"], ["node_modules/**"]);
+
+  if (files.length === 0) {
+    return {
+      types: [],
+      queries: [],
+      mutations: [],
+      summary: { totalTypes: 0, totalQueries: 0, totalMutations: 0 },
+    };
+  }
+
+  const allTypes = [];
+  const allQueries = [];
+  const allMutations = [];
+
+  for (const f of files) {
+    const content = fs.readFileSync(f.absPath, "utf8");
+    const result = parseSchemaContent(content);
+    allTypes.push(...result.types);
+    allQueries.push(...result.queries);
+    allMutations.push(...result.mutations);
+  }
+
+  return {
+    types: allTypes,
+    queries: allQueries,
+    mutations: allMutations,
+    summary: {
+      totalTypes: allTypes.length,
+      totalQueries: allQueries.length,
+      totalMutations: allMutations.length,
+    },
+  };
 }

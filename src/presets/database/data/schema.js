@@ -9,8 +9,9 @@ import { DataSource } from "../../../docs/lib/data-source.js";
 export default class DbSchemaSource extends DataSource {
   /** Database tables list. */
   tables(analysis, labels) {
-    const items = analysis.schema?.tables;
-    if (!Array.isArray(items) || items.length === 0) return null;
+    const entries = analysis.schema?.entries || [];
+    const items = entries.flatMap((e) => e.tables || []);
+    if (items.length === 0) return null;
     const rows = this.toRows(items, (t) => [
       t.name || "—",
       Array.isArray(t.columns) ? t.columns.join(", ") : (t.columns || "—"),
@@ -22,8 +23,9 @@ export default class DbSchemaSource extends DataSource {
 
   /** Table relationships list. */
   relationships(analysis, labels) {
-    const items = analysis.schema?.relations;
-    if (!Array.isArray(items) || items.length === 0) return null;
+    const entries = analysis.schema?.entries || [];
+    const items = entries.flatMap((e) => e.relations || []);
+    if (items.length === 0) return null;
     const rows = this.toRows(items, (r) => [
       r.from || "—",
       r.to || "—",

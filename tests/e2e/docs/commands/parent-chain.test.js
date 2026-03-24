@@ -36,9 +36,9 @@ describe("parent chain: scan", () => {
     assert.ok(analysis.analyzedAt, "should have analyzedAt");
     assert.ok(analysis.modules, "modules category should exist from cli parent chain");
     assert.ok(analysis.modules.summary.total > 0, "should have scanned modules");
-    assert.ok(analysis.modules.modules.length > 0, "should have module entries");
+    assert.ok(analysis.modules.entries.length > 0, "should have module entries");
 
-    const fileNames = analysis.modules.modules.map((m) => m.file);
+    const fileNames = analysis.modules.entries.map((m) => m.file);
     assert.ok(fileNames.some((f) => f.includes("cli.js")), "should have scanned cli.js");
   });
 
@@ -53,18 +53,18 @@ describe("parent chain: scan", () => {
     const analysis = JSON.parse(result);
 
     assert.ok(analysis.analyzedAt, "should have analyzedAt");
-    assert.ok(analysis.config, "config category should exist at top level");
-    assert.ok(analysis.config.composerDeps, "config.composerDeps should exist");
-    assert.ok(analysis.config.composerDeps.require, "should have require deps");
+    assert.ok(analysis.package, "package category should exist at top level");
+    assert.ok(analysis.package.entries?.length > 0, "package should have entries");
+    const composerEntry = analysis.package.entries.find((e) => e.composerDeps);
+    assert.ok(composerEntry?.composerDeps?.require, "should have require deps");
     assert.ok(analysis.controllers, "controllers category should exist");
-    assert.ok(analysis.controllers.laravelControllers, "laravelControllers should exist");
-    assert.ok(analysis.controllers.laravelControllers.length > 0, "should have scanned controllers");
+    assert.ok(analysis.controllers.entries?.length > 0, "should have scanned controllers");
     assert.ok(analysis.models, "models category should exist");
-    assert.ok(analysis.models.laravelModels, "laravelModels should exist");
+    assert.ok(analysis.models.entries?.length > 0, "should have model entries");
     assert.ok(analysis.routes, "routes category should exist");
-    assert.ok(analysis.routes.laravelRoutes, "laravelRoutes should exist");
+    assert.ok(analysis.routes.entries?.length > 0, "should have route entries");
     assert.ok(analysis.tables, "tables category should exist");
-    assert.ok(analysis.tables.migrations, "migrations should exist");
+    assert.ok(analysis.tables.entries?.length > 0, "should have table entries");
   });
 });
 
@@ -79,7 +79,7 @@ describe("parent chain: init", () => {
     });
     writeJson(tmp, ".sdd-forge/output/analysis.json", {
       analyzedAt: "2026-01-01",
-      modules: { modules: [], summary: { total: 0 } },
+      modules: { entries: [{ file: "src/cli.js", className: "cli.js", methods: ["run"] }], summary: { total: 1 } },
     });
 
     execFileSync("node", [INIT_CMD, "--force"], {
@@ -102,8 +102,8 @@ describe("parent chain: init", () => {
     });
     writeJson(tmp, ".sdd-forge/output/analysis.json", {
       analyzedAt: "2026-01-01",
-      controllers: { controllers: [], summary: { total: 0, totalActions: 0 } },
-      models: { models: [], summary: { total: 0 } },
+      controllers: { entries: [], summary: { total: 0, totalActions: 0 } },
+      models: { entries: [], summary: { total: 0 } },
     });
 
     execFileSync("node", [INIT_CMD, "--force"], {

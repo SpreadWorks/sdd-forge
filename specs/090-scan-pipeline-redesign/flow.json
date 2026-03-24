@@ -1,0 +1,139 @@
+{
+  "spec": "specs/090-scan-pipeline-redesign/spec.md",
+  "baseBranch": "development",
+  "featureBranch": "feature/090-scan-pipeline-redesign",
+  "steps": [
+    {
+      "id": "approach",
+      "status": "done"
+    },
+    {
+      "id": "branch",
+      "status": "done"
+    },
+    {
+      "id": "spec",
+      "status": "done"
+    },
+    {
+      "id": "draft",
+      "status": "done"
+    },
+    {
+      "id": "fill-spec",
+      "status": "done"
+    },
+    {
+      "id": "approval",
+      "status": "done"
+    },
+    {
+      "id": "gate",
+      "status": "done"
+    },
+    {
+      "id": "test",
+      "status": "done"
+    },
+    {
+      "id": "implement",
+      "status": "done"
+    },
+    {
+      "id": "review",
+      "status": "done"
+    },
+    {
+      "id": "finalize",
+      "status": "in_progress"
+    },
+    {
+      "id": "commit",
+      "status": "in_progress"
+    },
+    {
+      "id": "push",
+      "status": "pending"
+    },
+    {
+      "id": "merge",
+      "status": "pending"
+    },
+    {
+      "id": "pr-create",
+      "status": "pending"
+    },
+    {
+      "id": "branch-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "pr-merge",
+      "status": "pending"
+    },
+    {
+      "id": "sync-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "docs-update",
+      "status": "pending"
+    },
+    {
+      "id": "docs-review",
+      "status": "pending"
+    },
+    {
+      "id": "docs-commit",
+      "status": "pending"
+    }
+  ],
+  "requirements": [
+    {
+      "desc": "AnalysisEntry基底クラス導入",
+      "status": "done"
+    },
+    {
+      "desc": "Scannable match/parseインターフェース改修",
+      "status": "done"
+    },
+    {
+      "desc": "ファイル単位hashスキップ",
+      "status": "done"
+    },
+    {
+      "desc": "analysis[cat].entries構造統一",
+      "status": "done"
+    },
+    {
+      "desc": "全18プリセットDataSource移行+scan/削除",
+      "status": "done"
+    },
+    {
+      "desc": "全後段コマンド読み替え",
+      "status": "done"
+    },
+    {
+      "desc": "preserveEnrichment廃止",
+      "status": "done"
+    },
+    {
+      "desc": "_incrementalMeta廃止",
+      "status": "done"
+    },
+    {
+      "desc": "CakePHP2 acceptanceテスト",
+      "status": "done"
+    },
+    {
+      "desc": "node-cli acceptanceテスト",
+      "status": "done"
+    }
+  ],
+  "worktree": true,
+  "issue": 20,
+  "request": "Issue #20: scan パイプライン再設計 — DataSource インターフェース刷新、エントリ/サマリーのクラス化、analysis.json 構造変更、差分更新の正常動作",
+  "notes": [
+    "draft: Q&A完了。全プリセット移行・全後段対応を1 specで実施。summarize廃止→static summary宣言+共通層自動集計。_incrementalMeta・preserveEnrichment廃止。差分再生成は別spec"
+  ]
+}

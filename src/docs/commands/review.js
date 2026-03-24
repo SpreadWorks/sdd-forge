@@ -15,13 +15,13 @@ import { translate } from "../../lib/i18n.js";
 import { resolveOutputConfig } from "../../lib/types.js";
 import { getChapterFiles } from "../lib/command-context.js";
 import { parseDirectives } from "../lib/directive-parser.js";
+import { ANALYSIS_META_KEYS } from "../lib/analysis-entry.js";
 
 // ---------------------------------------------------------------------------
 // Constants
 // ---------------------------------------------------------------------------
 
 const RESIDUAL_BLOCK_RE = /^<!--\s*@(block:\s*[\w-]+|endblock|extends|parent)\s*-->$/;
-const ANALYSIS_META_KEYS = new Set(["analyzedAt", "enrichedAt", "generatedAt", "files", "root", "_incrementalMeta"]);
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -286,9 +286,10 @@ function main() {
 
       for (const cat of analysisCategories) {
         if (!referencedSources.has(cat)) {
-          const entries = analysis[cat];
+          const catData = analysis[cat];
+          const entries = catData?.entries;
           const count = Array.isArray(entries) ? entries.length
-            : (typeof entries === "object" && entries !== null) ? Object.keys(entries).length
+            : (typeof catData === "object" && catData !== null) ? Object.keys(catData).length
             : 1;
           console.log(t("messages:review.uncoveredCategory", { cat, count }));
         }
