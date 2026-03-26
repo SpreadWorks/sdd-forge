@@ -107,6 +107,12 @@ Available status values: `pending`, `in_progress`, `done`, `skipped`
 4. Draft phase (if step 1 chose option 1).
    - **On start**: `sdd-forge flow status --step draft --status in_progress`
    - **If skipped** (step 1 chose option 2): `sdd-forge flow status --step draft --status skipped`
+
+   **Communication rules for the draft phase:**
+   - Before critiquing or challenging a decision, confirm the user's intent and current phase (brainstorming / deciding / executing). Do not evaluate brainstorming ideas as if they were final decisions.
+   - Before making assertions, verify your assumptions by asking or exploring the codebase.
+   - When proposing a recommendation, always state the reasoning behind it.
+   - When a discussion digresses, capture key insights and decisions in draft.md before returning to the main thread. Side discussions often contain critical design rationale.
    - **Before starting draft discussion**:
      1. **If a GitHub Issue number is linked** (saved in flow.json via `--issue`):
         Fetch the issue content with `gh issue view <number>` and display the title and body before the first question.
