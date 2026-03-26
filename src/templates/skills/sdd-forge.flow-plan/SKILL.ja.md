@@ -109,9 +109,10 @@ Available status values: `pending`, `in_progress`, `done`, `skipped`
    - **If skipped** (step 1 chose option 2): `sdd-forge flow status --step draft --status skipped`
 
    **Communication rules for the draft phase:**
-   - Before critiquing or challenging a decision, confirm the user's intent and current phase (brainstorming / deciding / executing). Do not evaluate brainstorming ideas as if they were final decisions.
-   - Before making assertions, verify your assumptions by asking or exploring the codebase.
-   - When proposing a recommendation, always state the reasoning behind it.
+   - For each question, provide your recommended answer with reasoning. Do not just present choices — state which option you recommend and why. Base recommendations on: (1) project docs/, (2) guardrail principles, (3) existing code patterns. State which basis you used.
+   - When a decision has obvious related implications, proactively raise them. Do not wait for the user to notice gaps. (Example: if email addresses are being moved to config, SMTP settings should also be flagged for config migration.)
+   - If a question can be answered by reading docs/ or exploring the codebase, do so first rather than asking the user.
+   - Before critiquing a decision, confirm whether the user is brainstorming or deciding. Do not evaluate brainstorming ideas as final decisions.
    - When a discussion digresses, capture key insights and decisions in draft.md before returning to the main thread. Side discussions often contain critical design rationale.
    - **Before starting draft discussion**:
      1. **If a GitHub Issue number is linked** (saved in flow.json via `--issue`):
