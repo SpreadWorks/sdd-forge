@@ -32,7 +32,7 @@ export default class CakephpTablesSource extends TablesSource {
   /** Table list with CakePHP DB name resolution. */
   list(analysis, labels) {
     const models = this.mergeDesc(
-      analysis.models.models.filter((m) => !m.isLogic && !m.isFe),
+      (analysis.models?.entries || []).filter((m) => !m.isLogic && !m.isFe),
       "tables", "tableName",
     );
     const seen = new Set();
@@ -49,7 +49,7 @@ export default class CakephpTablesSource extends TablesSource {
 
   /** Foreign key relationships. */
   fk(analysis, labels) {
-    const models = analysis.models.models.filter((m) => !m.isLogic && !m.isFe);
+    const models = (analysis.models?.entries || []).filter((m) => !m.isLogic && !m.isFe);
     const classToTable = Object.fromEntries(models.map((m) => [m.className, m.tableName]));
     const rows = [];
     const seen = new Set();
@@ -94,7 +94,7 @@ export default class CakephpTablesSource extends TablesSource {
 
   /** Contents DB ↔ Staging DB sync table mapping. */
   sync(analysis, labels) {
-    const feModels = analysis.models.models.filter((m) => m.isFe);
+    const feModels = (analysis.models?.entries || []).filter((m) => m.isFe);
     if (feModels.length === 0) return null;
 
     const contentsModels = feModels.filter((m) => m.useDbConfig === "contents_db" && m.useTable);

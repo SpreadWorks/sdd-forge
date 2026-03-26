@@ -1,59 +1,75 @@
 /**
- * ScanSource — base class for source code analysis.
+ * Scannable — mixin that adds scan capabilities to DataSource.
  *
- * Scannable — mixin to combine ScanSource capabilities with DataSource.
  * Usage: class FooSource extends Scannable(DataSource) { ... }
- */
-
-/**
- * Base class for scan-only modules.
- */
-class ScanSource {
-  /**
-   * Extract raw data from source code.
-   * @param {string} sourceRoot - absolute path to the source directory
-   * @param {Object} scanCfg - scan configuration from preset.json
-   * @returns {Object} extracted data to be stored in analysis.json
-   */
-  scan(sourceRoot, scanCfg) {
-    return {};
-  }
-}
-
-/**
- * Mixin that adds scan() capability to any base class (typically DataSource).
+ *
+ * Subclasses implement:
+ *   match(relPath)  → boolean    — whether this DataSource handles the file
+ *   parse(absPath)  → AnalysisEntry subclass instance — parse one file
+ *
+ * The common scan pipeline (scan.js) handles:
+ *   - Iterating over files and calling match/parse
+ *   - Setting common fields (file, hash, lines, mtime)
+ *   - Empty entry detection
+ *   - Hash-based skip for unchanged files
+ *   - Summary generation via AnalysisEntry.summary definitions
  *
  * @param {Function} Base - class to extend
- * @returns {Function} class with scan() method
+ * @returns {Function} class with match() and parse() methods
  *
  * @example
  *   import { DataSource } from "./data-source.js";
  *   import { Scannable } from "./scan-source.js";
+ *   import { AnalysisEntry } from "./analysis-entry.js";
+ *
+ *   class ControllerEntry extends AnalysisEntry {
+ *     className = null;
+ *     actions = null;
+ *     static summary = {
+ *       totalActions: { field: "actions", aggregate: "count" },
+ *     };
+ *   }
  *
  *   export default class ControllersSource extends Scannable(DataSource) {
- *     scan(sourceRoot, scanCfg) { ... }
- *     list(analysis, labels) { ... }
+ *     static Entry = ControllerEntry;
+ *
+ *     match(relPath) { return /Controller\.php$/.test(relPath); }
+ *     parse(absPath) {
+ *       const entry = new ControllerEntry();
+ *       // ... fill fields from file ...
+ *       return entry;
+ *     }
+ *     list(analysis, labels) { // resolve method }
  *   }
  */
 export const Scannable = (Base) =>
   class extends Base {
     /**
-     * このDataSourceが処理対象とするファイルかを判定する。
-     * サブクラスでオーバーライドして具体的な条件を定義する。
+     * Whether this DataSource handles a file.
+     * Override in subclasses.
      *
-     * @param {{ absPath: string, relPath: string, hash: string }} file
+     * @param {string} relPath - relative file path
      * @returns {boolean}
      */
-    match(file) {
+    match(relPath) {
       return false;
     }
 
     /**
-     * マッチしたファイルリストを受け取り解析する。
-     * @param {Array<{ absPath: string, relPath: string, hash: string, lines: number, mtime: string }>} files
-     * @returns {Object} extracted data to be stored in analysis.json
+     * Parse one file and return an entry instance.
+     * Override in subclasses.
+     *
+     * @param {string} absPath - absolute file path
+     * @returns {AnalysisEntry} entry instance (never null — return instance with null fields for empty)
      */
-    scan(files) {
-      return {};
+    parse(absPath) {
+      return new (this.constructor.Entry)();
     }
+
+    /**
+     * Marker method for Scannable detection.
+     * The scan pipeline calls match() + parse(); this method exists so that
+     * external code can identify scannable DataSources via `typeof ds.scan === "function"`.
+     */
+    scan() {}
   };

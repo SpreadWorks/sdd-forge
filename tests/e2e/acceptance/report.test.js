@@ -9,22 +9,18 @@ import { describe, it } from "node:test";
 import assert from "node:assert/strict";
 import fs from "fs";
 import path from "path";
-import { fileURLToPath } from "url";
 import { copyFixture, runPipeline, removeTmpDir } from "../../acceptance/lib/pipeline.js";
-
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const FIXTURES_DIR = path.resolve(__dirname, "..", "..", "acceptance", "fixtures");
+import { getAcceptanceFixtureDir } from "../../acceptance/lib/targets.js";
 
 describe("acceptance report: pipeline traceability", { timeout: 300000 }, () => {
   let tmp;
 
   it("runPipeline returns step timing for each pipeline step", async () => {
-    const fixtureDir = path.join(FIXTURES_DIR, "node");
+    const fixtureDir = getAcceptanceFixtureDir("node");
     tmp = copyFixture(fixtureDir, { type: "base" });
 
     const result = await runPipeline(tmp);
 
-    // result should contain steps array
     assert.ok(result.steps, "runPipeline should return steps array");
     assert.ok(Array.isArray(result.steps), "steps should be an array");
 
@@ -47,23 +43,18 @@ describe("acceptance report: pipeline traceability", { timeout: 300000 }, () => 
   });
 
   it("failed step records status as error", async () => {
-    // Use a fixture with invalid config to trigger a failure
-    const fixtureDir = path.join(FIXTURES_DIR, "node");
+    const fixtureDir = getAcceptanceFixtureDir("node");
     const badTmp = copyFixture(fixtureDir, { type: "base" });
 
-    // Corrupt analysis output dir to cause scan failure
     const outputDir = path.join(badTmp, ".sdd-forge", "output");
     fs.rmSync(outputDir, { recursive: true });
-    // Write a file where the directory should be to cause mkdir to fail
     fs.writeFileSync(path.join(badTmp, ".sdd-forge", "output"), "not-a-dir");
 
     try {
       const result = await runPipeline(badTmp);
-      // If it doesn't throw, check that the failed step has error status
       const failedStep = result.steps.find((s) => s.status === "error");
       assert.ok(failedStep, "should have at least one step with error status");
     } catch {
-      // runPipeline may throw on fatal errors — that's acceptable
     } finally {
       removeTmpDir(badTmp);
     }
@@ -81,14 +72,11 @@ describe("acceptance report: JSON output", { timeout: 300000 }, () => {
   let tmp;
 
   it("report JSON is written to .sdd-forge/output/acceptance-report.json", async () => {
-    const fixtureDir = path.join(FIXTURES_DIR, "node");
+    const fixtureDir = getAcceptanceFixtureDir("node");
     tmp = copyFixture(fixtureDir, { type: "base" });
 
-    // Run pipeline to generate results
     await runPipeline(tmp);
 
-    // The report file should be written by the test template after all checks
-    // For this test, we verify the writeReport function directly
     const { writeReport } = await import("../../acceptance/lib/test-template.js");
     const report = {
       preset: "base",

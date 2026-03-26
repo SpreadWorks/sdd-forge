@@ -47,7 +47,7 @@ describe("MonorepoSource", () => {
       const analysis = {
         enrichedAt: "2026-03-19T00:00:00Z",
         modules: {
-          modules: [
+          entries: [
             { file: "apps/frontend/src/App.tsx", chapter: "overview", app: "Frontend" },
             { file: "apps/backend/src/index.ts", chapter: "api_overview", app: "Backend CMS" },
           ],
@@ -65,7 +65,7 @@ describe("MonorepoSource", () => {
       const analysis = {
         enrichedAt: "2026-03-19T00:00:00Z",
         modules: {
-          modules: [
+          entries: [
             { file: "apps/frontend/src/App.tsx", chapter: "overview", app: "Frontend" },
             { file: "apps/frontend/src/Header.tsx", chapter: "overview", app: "Frontend" },
             { file: "apps/backend/src/index.ts", chapter: "overview", app: "Backend CMS" },
@@ -85,7 +85,7 @@ describe("MonorepoSource", () => {
       const analysis = {
         enrichedAt: "2026-03-19T00:00:00Z",
         modules: {
-          modules: [
+          entries: [
             { file: "apps/web/src/A.tsx", chapter: "components", app: "Web" },
             { file: "apps/web/src/B.tsx", chapter: "components", app: "Web" },
             { file: "apps/web/src/C.tsx", chapter: "components", app: "Web" },
@@ -105,7 +105,7 @@ describe("MonorepoSource", () => {
 
       const analysis = {
         modules: {
-          modules: [
+          entries: [
             { file: "src/index.ts", chapter: "overview" },
           ],
         },
@@ -121,7 +121,7 @@ describe("MonorepoSource", () => {
       const analysis = {
         enrichedAt: "2026-03-19T00:00:00Z",
         modules: {
-          modules: [
+          entries: [
             { file: "apps/web/src/A.tsx", chapter: "components", app: "Web" },
           ],
         },

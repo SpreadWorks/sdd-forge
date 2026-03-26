@@ -18,44 +18,35 @@ import {
 } from "./assertions.js";
 import { verifyWithAI } from "./ai-verify.js";
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const FIXTURES_DIR = path.resolve(__dirname, "..", "fixtures");
+function resolveFixtureDir(presetName, opts) {
+  const fixtureDir = opts?.fixtureDir;
+  if (!fixtureDir) {
+    throw new Error(`fixtureDir is required for acceptance preset: ${presetName}`);
+  }
+  if (fixtureDir instanceof URL) {
+    return path.resolve(fileURLToPath(fixtureDir));
+  }
+  return path.resolve(String(fixtureDir));
+}
 
-/**
- * Write a report JSON file.
- *
- * @param {string} reportPath - Absolute path to report file
- * @param {Object} report - Report data
- */
 export function writeReport(reportPath, report) {
   const dir = path.dirname(reportPath);
   fs.mkdirSync(dir, { recursive: true });
   fs.writeFileSync(reportPath, JSON.stringify(report, null, 2));
 }
 
-/**
- * Create and run an acceptance test for a preset.
- *
- * @param {string} presetName - Preset name (e.g. "laravel", "webapp")
- * @param {Object} [opts]
- * @param {string} [opts.fixtureFrom] - Use a different fixture as source (for derived presets)
- * @param {Object} [opts.configOverrides] - Config.json overrides (for derived presets)
- */
 export function acceptanceTest(presetName, opts) {
-  const { fixtureFrom, configOverrides } = opts || {};
-  const fixtureDir = path.join(FIXTURES_DIR, fixtureFrom || presetName);
+  const { configOverrides } = opts || {};
+  const fixtureDir = resolveFixtureDir(presetName, opts);
 
   describe(`acceptance: ${presetName}`, { timeout: 600000 }, () => {
     let tmp;
 
     it("pipeline completes and passes all checks", async () => {
-      // 1. Copy fixture to tmp
       tmp = copyFixture(fixtureDir, configOverrides);
 
-      // 2. Run pipeline
       const { ctx, steps } = await runPipeline(tmp);
 
-      // 3. Structural assertions (also collects directive data)
       const { files } = assertStructure(ctx.docsDir);
       const unfilled = detectUnfilledDirectives(ctx.docsDir, files);
       const exposed = detectExposedDirectives(ctx.docsDir, files);
@@ -73,19 +64,16 @@ export function acceptanceTest(presetName, opts) {
         }
       }
 
-      // 4. AI quality verification
       let quality = null;
       let aiError = null;
       try {
         const aiResult = await verifyWithAI(tmp, ctx.config, presetName);
         quality = aiResult.quality;
       } catch (e) {
-        // Capture error but write report first
         quality = e.quality || null;
         aiError = e;
       }
 
-      // 5. Write report (always, even on failure)
       const report = {
         preset: presetName,
         timestamp: new Date().toISOString(),
@@ -103,11 +91,9 @@ export function acceptanceTest(presetName, opts) {
       writeReport(reportPath, report);
       console.log(`  [report] written to ${reportPath}`);
 
-      // Re-throw after report is written
       if (aiError) throw aiError;
     });
 
-    // Cleanup is done in a separate block to ensure it runs
     it("cleanup", () => {
       if (tmp) {
         removeTmpDir(tmp);

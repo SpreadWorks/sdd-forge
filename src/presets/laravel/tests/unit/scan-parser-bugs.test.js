@@ -3,8 +3,8 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { createTmpDir, removeTmpDir, writeFile } from "../../../../../tests/helpers/tmp-dir.js";
-import { analyzeRoutes } from "../../scan/routes.js";
-import { analyzeConfig } from "../../scan/config.js";
+import { analyzeRoutes } from "../../data/routes.js";
+import { analyzeConfig } from "../../data/config.js";
 
 const PRESETS_DIR = join(import.meta.dirname, "..", "..", "..");
 

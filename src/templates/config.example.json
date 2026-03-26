@@ -1,7 +1,7 @@
 {
   "lang": "ja",
-  "type": "cakephp2",
-  "concurrency": 5,
+  "type": "webapp",
+  "concurrency": 2,
   "docs": {
     "languages": ["ja"],
     "defaultLanguage": "ja",
@@ -35,15 +35,15 @@
       }
     },
     "commands": {
-      "docs.enrich":       { "agent": "claude", "profile": "default" },
-      "docs.text":         { "agent": "claude", "profile": "default" },
-      "docs.forge":        { "agent": "claude", "profile": "default" },
-      "docs.readme":       { "agent": "claude", "profile": "default" },
-      "docs.agents":       { "agent": "claude", "profile": "default" },
-      "docs.translate":    { "agent": "claude", "profile": "default" },
-      "spec.gate":         { "agent": "claude", "profile": "default" },
-      "flow.review.draft": { "agent": "claude", "profile": "default" },
-      "flow.review.final": { "agent": "claude", "profile": "default" }
+      "docs.enrich":       { "agent": "claude", "profile": "opus" },
+      "docs.text":         { "agent": "claude", "profile": "opus" },
+      "docs.forge":        { "agent": "claude", "profile": "opus" },
+      "docs.readme":       { "agent": "claude", "profile": "sonnet" },
+      "docs.agents":       { "agent": "claude", "profile": "opus" },
+      "spec.gate":         { "agent": "claude", "profile": "sonnet" },
+      "flow.review.draft": { "agent": "codex" },
+      "flow.review.final": { "agent": "claude", "profile": "opus" },
+      "docs.translate":    { "agent": "codex" }
     }
   }
 }

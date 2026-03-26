@@ -131,7 +131,7 @@ describe("scan CLI", () => {
     // CakePHP controllers DataSource overrides webapp parent
     assert.ok(analysis.controllers, "controllers category should exist");
     assert.equal(analysis.controllers.summary.total, 1);
-    assert.equal(analysis.controllers.controllers[0].className, "UsersController");
+    assert.equal(analysis.controllers.entries[0].className, "UsersController");
   });
 
   it("preserves enrichment for unchanged entries on re-scan", () => {
@@ -152,14 +152,14 @@ describe("scan CLI", () => {
 
     const outputPath = join(tmp, ".sdd-forge/output/analysis.json");
     const first = JSON.parse(fs.readFileSync(outputPath, "utf8"));
-    const hash = first.modules.modules[0].hash;
+    const hash = first.modules.entries[0].hash;
     assert.ok(hash, "scan should produce hash");
 
     // Simulate enrichment (as enrich.js would do)
-    first.modules.modules[0].summary = "A greeting function";
-    first.modules.modules[0].detail = "Returns hi";
-    first.modules.modules[0].chapter = "overview";
-    first.modules.modules[0].role = "lib";
+    first.modules.entries[0].summary = "A greeting function";
+    first.modules.entries[0].detail = "Returns hi";
+    first.modules.entries[0].chapter = "overview";
+    first.modules.entries[0].role = "lib";
     first.enrichedAt = "2026-01-01T00:00:00.000Z";
     fs.writeFileSync(outputPath, JSON.stringify(first) + "\n");
 
@@ -170,7 +170,7 @@ describe("scan CLI", () => {
     });
 
     const second = JSON.parse(fs.readFileSync(outputPath, "utf8"));
-    const item = second.modules.modules[0];
+    const item = second.modules.entries[0];
     assert.equal(item.hash, hash, "hash should be the same");
     assert.equal(item.summary, "A greeting function", "summary should be preserved");
     assert.equal(item.detail, "Returns hi", "detail should be preserved");
@@ -197,8 +197,8 @@ describe("scan CLI", () => {
 
     const outputPath = join(tmp, ".sdd-forge/output/analysis.json");
     const first = JSON.parse(fs.readFileSync(outputPath, "utf8"));
-    first.modules.modules[0].summary = "Old summary";
-    first.modules.modules[0].detail = "Old detail";
+    first.modules.entries[0].summary = "Old summary";
+    first.modules.entries[0].detail = "Old detail";
     first.enrichedAt = "2026-01-01T00:00:00.000Z";
     fs.writeFileSync(outputPath, JSON.stringify(first) + "\n");
 
@@ -212,7 +212,7 @@ describe("scan CLI", () => {
     });
 
     const second = JSON.parse(fs.readFileSync(outputPath, "utf8"));
-    const item = second.modules.modules[0];
+    const item = second.modules.entries[0];
     assert.ok(!item.summary, "summary should NOT be preserved for changed file");
     assert.ok(!item.detail, "detail should NOT be preserved for changed file");
   });
@@ -235,8 +235,9 @@ describe("scan CLI", () => {
     });
     const analysis = JSON.parse(result);
     assert.ok(analysis.package, "package should be at top level");
-    assert.ok(analysis.package.packageDeps);
-    assert.deepEqual(analysis.package.packageDeps.dependencies, { "express": "^4.0.0" });
+    const pkgEntry = analysis.package.entries?.find((e) => e.packageDeps);
+    assert.ok(pkgEntry, "package should have an entry with packageDeps");
+    assert.deepEqual(pkgEntry.packageDeps.dependencies, { "express": "^4.0.0" });
     assert.equal(analysis.extras, undefined, "extras should not exist");
   });
 });

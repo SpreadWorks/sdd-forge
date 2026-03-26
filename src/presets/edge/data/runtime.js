@@ -6,24 +6,40 @@
  */
 
 import fs from "fs";
+import path from "path";
 import { DataSource } from "../../../docs/lib/data-source.js";
 import { Scannable } from "../../../docs/lib/scan-source.js";
+import { AnalysisEntry } from "../../../docs/lib/analysis-entry.js";
 import { parseTOML } from "../../../docs/lib/toml-parser.js";
 
+const WRANGLER_FILES = new Set(["wrangler.toml", "wrangler.json", "wrangler.jsonc"]);
+
+export class EdgeRuntimeEntry extends AnalysisEntry {
+  entryPoints = null;
+  constraints = null;
+
+  static summary = {};
+}
+
 export default class EdgeRuntimeSource extends Scannable(DataSource) {
-  match(file) {
-    return file.fileName === "wrangler.toml" || file.fileName === "wrangler.json" || file.fileName === "wrangler.jsonc";
+  static Entry = EdgeRuntimeEntry;
+
+  match(relPath) {
+    return WRANGLER_FILES.has(path.basename(relPath));
   }
 
-  scan(files) {
-    const wranglerFile = files.find(
-      (f) => f.fileName === "wrangler.toml" || f.fileName === "wrangler.json" || f.fileName === "wrangler.jsonc",
-    );
-    if (!wranglerFile) return null;
+  parse(absPath) {
+    const entry = new EdgeRuntimeEntry();
+    const raw = fs.readFileSync(absPath, "utf8");
+    const fileName = path.basename(absPath);
+    const isToml = fileName === "wrangler.toml";
 
-    const raw = fs.readFileSync(wranglerFile.absPath, "utf8");
-    const isToml = wranglerFile.fileName === "wrangler.toml";
-    const cfg = isToml ? parseTOML(raw) : JSON.parse(raw);
+    let cfg;
+    try {
+      cfg = isToml ? parseTOML(raw) : JSON.parse(raw);
+    } catch (_) {
+      return entry;
+    }
 
     // Entry points
     const entryPoints = [];
@@ -54,20 +70,16 @@ export default class EdgeRuntimeSource extends Scannable(DataSource) {
       constraints.push({ name: "node_compat", value: String(cfg.node_compat) });
     }
 
-    return {
-      entryPoints,
-      constraints,
-      summary: {
-        totalEntryPoints: entryPoints.length,
-        totalConstraints: constraints.length,
-      },
-    };
+    entry.entryPoints = entryPoints;
+    entry.constraints = constraints;
+    return entry;
   }
 
   /** Edge function entry points table. */
   entryPoints(analysis, labels) {
-    const items = analysis.runtime?.entryPoints;
-    if (!Array.isArray(items) || items.length === 0) return null;
+    const entries = analysis.runtime?.entries || [];
+    const items = entries.flatMap((e) => e.entryPoints || []);
+    if (items.length === 0) return null;
     const rows = this.toRows(items, (e) => [
       e.name || e.route || "—",
       e.trigger || "—",
@@ -80,8 +92,9 @@ export default class EdgeRuntimeSource extends Scannable(DataSource) {
 
   /** Runtime constraints table. */
   constraints(analysis, labels) {
-    const items = analysis.runtime?.constraints;
-    if (!Array.isArray(items) || items.length === 0) return null;
+    const entries = analysis.runtime?.entries || [];
+    const items = entries.flatMap((e) => e.constraints || []);
+    if (items.length === 0) return null;
     const rows = this.toRows(items, (c) => [
       c.name || "—",
       c.value || "—",

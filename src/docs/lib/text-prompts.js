@@ -8,8 +8,7 @@
 import fs from "fs";
 import path from "path";
 import { createI18n } from "../../lib/i18n.js";
-
-const ANALYSIS_META_KEYS = new Set(["analyzedAt", "enrichedAt", "generatedAt", "files", "root"]);
+import { ANALYSIS_META_KEYS } from "./analysis-entry.js";
 
 /**
  * {{data}} カテゴリ名 → analysis.json の必要セクションへのマッピング。
@@ -107,7 +106,7 @@ export function getEnrichedContext(analysis, fileName, mode, srcRoot) {
     if (ANALYSIS_META_KEYS.has(cat)) continue;
     const data = analysis[cat];
     if (!data || typeof data !== "object") continue;
-    const items = data[cat];
+    const items = data.entries;
     if (!Array.isArray(items)) continue;
 
     for (const item of items) {

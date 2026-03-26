@@ -8,8 +8,8 @@ import {
   removeTmpDir,
   writeFile,
 } from "../../../../../tests/helpers/tmp-dir.js";
-import { analyzeAssets } from "../../scan/assets.js";
-import { analyzeConstants, analyzeBootstrap } from "../../scan/config.js";
+import { analyzeAssets } from "../../data/config.js";
+import { analyzeConstants, analyzeBootstrap } from "../../data/config.js";
 
 // =========================================================================
 // analyzeAssets

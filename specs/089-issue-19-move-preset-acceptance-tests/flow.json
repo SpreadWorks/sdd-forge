@@ -1,0 +1,134 @@
+{
+  "spec": "specs/089-issue-19-move-preset-acceptance-tests/spec.md",
+  "baseBranch": "development",
+  "featureBranch": "feature/089-issue-19-move-preset-acceptance-tests",
+  "steps": [
+    {
+      "id": "approach",
+      "status": "done"
+    },
+    {
+      "id": "branch",
+      "status": "done"
+    },
+    {
+      "id": "spec",
+      "status": "done"
+    },
+    {
+      "id": "draft",
+      "status": "done"
+    },
+    {
+      "id": "fill-spec",
+      "status": "done"
+    },
+    {
+      "id": "approval",
+      "status": "done"
+    },
+    {
+      "id": "gate",
+      "status": "done"
+    },
+    {
+      "id": "test",
+      "status": "done"
+    },
+    {
+      "id": "implement",
+      "status": "done"
+    },
+    {
+      "id": "review",
+      "status": "done"
+    },
+    {
+      "id": "finalize",
+      "status": "pending"
+    },
+    {
+      "id": "commit",
+      "status": "in_progress"
+    },
+    {
+      "id": "push",
+      "status": "pending"
+    },
+    {
+      "id": "merge",
+      "status": "pending"
+    },
+    {
+      "id": "pr-create",
+      "status": "pending"
+    },
+    {
+      "id": "branch-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "pr-merge",
+      "status": "pending"
+    },
+    {
+      "id": "sync-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "docs-update",
+      "status": "pending"
+    },
+    {
+      "id": "docs-review",
+      "status": "pending"
+    },
+    {
+      "id": "docs-commit",
+      "status": "pending"
+    }
+  ],
+  "requirements": [
+    {
+      "desc": "Move all current acceptance tests into preset-local src/presets/<name>/tests/acceptance/test.js",
+      "status": "done"
+    },
+    {
+      "desc": "Move each preset fixture into preset-local tests/acceptance/fixtures without sharing",
+      "status": "done"
+    },
+    {
+      "desc": "Keep tests/acceptance/run.js and tests/acceptance/lib while updating discovery and fixture resolution",
+      "status": "done"
+    },
+    {
+      "desc": "Update npm test and preset-specific execution to include preset-local acceptance tests",
+      "status": "done"
+    },
+    {
+      "desc": "Exclude tests from published package and update src/AGENTS.md acceptance-test rules",
+      "status": "done"
+    }
+  ],
+  "worktree": true,
+  "issue": 19,
+  "notes": [
+    "approach: Q&A で要件を整理してから仕様書を作成する / branch: Git worktree from development",
+    "draft: docs are older than source; user chose to skip sdd-forge build",
+    "draft: scope includes the test migration and all related supporting changes",
+    "draft: include publish-related changes and src/AGENTS.md updates in required outcomes",
+    "draft: scope covers all current acceptance tests under tests/acceptance",
+    "draft: fixtures must be moved into each preset and not shared across presets",
+    "draft: move each existing acceptance test into its matching preset directory and rename files to test.js",
+    "draft: keep tests/acceptance/run.js and change its discovery targets to preset-local acceptance tests",
+    "approval: user approved the spec without further changes",
+    "gate: clarified intra-P1 priority as relocation -> runner compatibility -> test discovery",
+    "gate: added explicit When conditions to AGENTS.md requirements R16 and R17",
+    "gate: rewrote requirements R1-R19 into explicit When/If-shall format",
+    "test: verified acceptance runner help, nonexistent preset error, npm pack exclusions, parent-chain e2e, acceptance report e2e, and preset-local node acceptance execution",
+    "implement: relocated acceptance tests and fixtures into preset-local directories, updated runners/helpers, fixed dependent e2e tests, and updated src/AGENTS.md",
+    "review: applied approved proposals 1,2,4 and re-ran follow-up tests (report.test, parent-chain.test, acceptance run node, preset nonexistent)",
+    "finalize: run all steps"
+  ],
+  "request": "$sdd-forge.flow-plan issue #19 の対応を進めてください。"
+}

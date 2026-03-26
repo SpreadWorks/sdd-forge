@@ -18,7 +18,7 @@ describe("getEnrichedContext", () => {
     const analysis = {
       modules: {
         summary: { total: 1 },
-        modules: [{ file: "src/a.js", summary: "does stuff" }],
+        entries: [{ file: "src/a.js", summary: "does stuff" }],
       },
     };
     assert.equal(getEnrichedContext(analysis, "01_overview.md", "light"), null);
@@ -29,7 +29,7 @@ describe("getEnrichedContext", () => {
       enrichedAt: "2026-01-01T00:00:00Z",
       modules: {
         summary: { total: 1 },
-        modules: [{ file: "src/a.js", summary: "does stuff", chapter: "configuration" }],
+        entries: [{ file: "src/a.js", summary: "does stuff", chapter: "configuration" }],
       },
     };
     assert.equal(getEnrichedContext(analysis, "01_overview.md", "light"), null);
@@ -40,7 +40,7 @@ describe("getEnrichedContext", () => {
       enrichedAt: "2026-01-01T00:00:00Z",
       modules: {
         summary: { total: 2 },
-        modules: [
+        entries: [
           { file: "src/a.js", summary: "Module A summary", detail: "Module A detail", chapter: "overview", role: "lib" },
           { file: "src/b.js", summary: "Module B summary", detail: "Module B detail", chapter: "configuration", role: "config" },
         ],
@@ -59,7 +59,7 @@ describe("getEnrichedContext", () => {
       enrichedAt: "2026-01-01T00:00:00Z",
       modules: {
         summary: { total: 1 },
-        modules: [
+        entries: [
           { file: "src/a.js", summary: "A summary", detail: "A detail", chapter: "cli_commands" },
         ],
       },
@@ -76,7 +76,7 @@ describe("getEnrichedContext", () => {
       enrichedAt: "2026-01-01T00:00:00Z",
       modules: {
         summary: { total: 1 },
-        modules: [
+        entries: [
           { file: "src/a.js", summary: "A summary", detail: "A detail", chapter: "overview" },
         ],
       },
@@ -94,7 +94,7 @@ describe("getEnrichedContext", () => {
       enrichedAt: "2026-01-01T00:00:00Z",
       modules: {
         summary: { total: 1 },
-        modules: [
+        entries: [
           { file: "src/a.js", summary: "A summary", detail: "A detail", chapter: "overview" },
         ],
       },
@@ -115,7 +115,7 @@ describe("getEnrichedContext", () => {
       enrichedAt: "2026-01-01T00:00:00Z",
       modules: {
         summary: { total: 1 },
-        modules: [
+        entries: [
           { file: "src/big.js", summary: "Big file", detail: "Lots of code", chapter: "overview" },
         ],
       },
@@ -132,7 +132,7 @@ describe("getEnrichedContext", () => {
       enrichedAt: "2026-01-01T00:00:00Z",
       modules: {
         summary: { total: 1 },
-        modules: [
+        entries: [
           { file: "src/missing.js", summary: "Missing", detail: "Not found", chapter: "overview" },
         ],
       },
@@ -149,13 +149,13 @@ describe("getEnrichedContext", () => {
       enrichedAt: "2026-01-01T00:00:00Z",
       controllers: {
         summary: { total: 1 },
-        controllers: [
+        entries: [
           { file: "app/Controller/UsersController.php", summary: "Users controller", detail: "Handles users", chapter: "overview", role: "controller" },
         ],
       },
       models: {
         summary: { total: 1 },
-        models: [
+        entries: [
           { file: "app/Model/User.php", summary: "User model", detail: "User data", chapter: "overview", role: "model" },
         ],
       },
@@ -174,7 +174,7 @@ describe("getEnrichedContext", () => {
       extras: { packageDeps: {} },
       modules: {
         summary: { total: 1 },
-        modules: [
+        entries: [
           { file: "src/a.js", summary: "A", detail: "Detail", chapter: "overview" },
         ],
       },

@@ -1,7 +1,7 @@
 import { describe, it, afterEach } from "node:test";
 import assert from "node:assert/strict";
 import { createTmpDir, removeTmpDir, writeFile } from "../../../../../tests/helpers/tmp-dir.js";
-import { analyzeMiddleware } from "../../scan/middleware.js";
+import { analyzeMiddleware } from "../../data/middleware.js";
 
 describe("Hono analyzeMiddleware", () => {
   let tmp;

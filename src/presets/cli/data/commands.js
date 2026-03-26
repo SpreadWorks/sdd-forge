@@ -7,7 +7,7 @@
 import { DataSource } from "../../../docs/lib/data-source.js";
 
 function cliItems(analysis) {
-  const items = analysis.modules?.modules || [];
+  const items = analysis.modules?.entries || [];
   return items.filter((m) => m.role === "cli" || m.chapter === "cli_commands" || m.chapter === "commands");
 }
 

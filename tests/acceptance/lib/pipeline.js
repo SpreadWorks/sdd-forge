@@ -14,6 +14,22 @@ import { resolveAgent } from "../../../src/lib/agent.js";
 import { createI18n } from "../../../src/lib/i18n.js";
 import { resolveChaptersOrder } from "../../../src/docs/lib/template-merger.js";
 
+export function copyFixtureInto(fixtureDir, dest, configOverrides) {
+  copyDirSync(fixtureDir, dest);
+
+  if (configOverrides) {
+    const configPath = path.join(dest, ".sdd-forge", "config.json");
+    const config = JSON.parse(fs.readFileSync(configPath, "utf8"));
+    Object.assign(config, configOverrides);
+    fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+  }
+
+  fs.mkdirSync(path.join(dest, ".sdd-forge", "output"), { recursive: true });
+  fs.mkdirSync(path.join(dest, "docs"), { recursive: true });
+
+  return dest;
+}
+
 /**
  * Copy a fixture directory to a temporary directory.
  *
@@ -23,24 +39,7 @@ import { resolveChaptersOrder } from "../../../src/docs/lib/template-merger.js";
  */
 export function copyFixture(fixtureDir, configOverrides) {
   const tmp = createTmpDir("acceptance-");
-  copyDirSync(fixtureDir, tmp);
-
-  if (configOverrides) {
-    const configPath = path.join(tmp, ".sdd-forge", "config.json");
-    const config = JSON.parse(fs.readFileSync(configPath, "utf8"));
-    Object.assign(config, configOverrides);
-    fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
-  }
-
-  // Ensure output directory exists
-  const outputDir = path.join(tmp, ".sdd-forge", "output");
-  fs.mkdirSync(outputDir, { recursive: true });
-
-  // Ensure docs directory exists
-  const docsDir = path.join(tmp, "docs");
-  fs.mkdirSync(docsDir, { recursive: true });
-
-  return tmp;
+  return copyFixtureInto(fixtureDir, tmp, configOverrides);
 }
 
 /**
@@ -69,13 +68,6 @@ export function buildCtx(tmp) {
   };
 }
 
-/**
- * Run a single pipeline step with timing and status tracking.
- *
- * @param {string} name - Step name
- * @param {() => Promise<void>} fn - Step function
- * @returns {Promise<{ name: string, status: string, durationMs: number }>}
- */
 async function runStep(name, fn) {
   const start = performance.now();
   try {
@@ -90,21 +82,13 @@ async function runStep(name, fn) {
   }
 }
 
-/**
- * Run the full pipeline on a fixture in a tmp directory.
- *
- * @param {string} tmp - Absolute path to tmp project
- * @returns {Promise<{ ctx: Object, steps: { name: string, status: string, durationMs: number }[] }>}
- */
 export async function runPipeline(tmp) {
   const ctx = buildCtx(tmp);
   const steps = [];
 
-  // 1. scan
   const { main: scanMain } = await import("../../../src/docs/commands/scan.js");
   steps.push(await runStep("scan", () => scanMain({ ...ctx })));
 
-  // 2. enrich (non-fatal — AI response parsing may fail intermittently)
   if (ctx.agent) {
     const { main: enrichMain } = await import("../../../src/docs/commands/enrich.js");
     try {
@@ -119,15 +103,12 @@ export async function runPipeline(tmp) {
     steps.push({ name: "enrich", status: "skipped", durationMs: 0 });
   }
 
-  // 3. init
   const { main: initMain } = await import("../../../src/docs/commands/init.js");
   steps.push(await runStep("init", () => initMain({ ...ctx, force: true })));
 
-  // 4. data
   const { main: dataMain } = await import("../../../src/docs/commands/data.js");
   steps.push(await runStep("data", () => dataMain({ ...ctx })));
 
-  // 5. text
   if (ctx.agent) {
     const { main: textMain } = await import("../../../src/docs/commands/text.js");
     steps.push(await runStep("text", () =>
@@ -137,16 +118,12 @@ export async function runPipeline(tmp) {
     steps.push({ name: "text", status: "skipped", durationMs: 0 });
   }
 
-  // 6. readme
   const { main: readmeMain } = await import("../../../src/docs/commands/readme.js");
   steps.push(await runStep("readme", () => readmeMain({ ...ctx })));
 
   return { ctx, steps };
 }
 
-/**
- * Recursively copy a directory.
- */
 function copyDirSync(src, dest) {
   fs.mkdirSync(dest, { recursive: true });
   for (const entry of fs.readdirSync(src, { withFileTypes: true })) {

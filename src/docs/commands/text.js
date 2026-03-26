@@ -467,100 +467,29 @@ function allTextDirectivesFilled(text) {
   return true;
 }
 
-/** analysis.json のメタデータキー（カテゴリではないトップレベルキー） */
-const ANALYSIS_META_KEYS = new Set(["analyzedAt", "enrichedAt", "generatedAt", "files", "root", "_incrementalMeta"]);
-
 /**
- * analysis.json の _incrementalMeta から影響章を特定する。
- * 変更ファイルの旧 chapter（prevChapters）と新 chapter（enrichment 後）を
- * 合わせて影響章セットを返す。
- *
- * @param {Object} analysis - analysis.json データ
- * @returns {Set<string>|null} 影響章のセット（chapter name without .md）。null = 全章対象
- */
-function getAffectedChapters(analysis) {
-  const meta = analysis?._incrementalMeta;
-  if (!meta) return null;
-
-  const affected = new Set(meta.prevChapters || []);
-
-  const changedSet = new Set(meta.changedFiles || []);
-  if (changedSet.size === 0) return null;
-
-  for (const cat of Object.keys(analysis)) {
-    if (ANALYSIS_META_KEYS.has(cat)) continue;
-    const catData = analysis[cat];
-    if (!catData || typeof catData !== "object") continue;
-    for (const subKey of Object.keys(catData)) {
-      const items = catData[subKey];
-      if (!Array.isArray(items)) continue;
-      for (const item of items) {
-        if (item.file && changedSet.has(item.file) && item.chapter) {
-          affected.add(item.chapter);
-        }
-      }
-    }
-  }
-
-  return affected.size > 0 ? affected : null;
-}
-
-/**
- * 影響章フィルタリングとディレクティブクリアを含む対象ファイル解決。
+ * 対象ファイル解決。regenerate の場合は既存コンテンツをクリアする。
  *
  * @param {string[]} allDocsFiles - 全章ファイル一覧
  * @param {string} docsDir - docs ディレクトリの絶対パス
  * @param {Object} analysis - analysis.json データ
- * @returns {{ docsFiles: string[], affectedChapters: Set<string>|null }}
+ * @param {boolean} regenerate - true の場合、全ファイルのディレクティブをクリアして再生成
+ * @returns {{ docsFiles: string[], targetFiles: string[] }}
  */
-function resolveIncrementalTargets(allDocsFiles, docsDir, analysis, regenerate) {
-  if (regenerate) {
-    // regenerate: skip all filtering, process all files, strip existing content
+function resolveTargetFiles(allDocsFiles, docsDir, analysis, { regenerate, dryRun } = {}) {
+  // Always regenerate all chapters.
+  // Incremental regeneration (only affected chapters) is deferred to a future spec.
+  // Without _incrementalMeta, we cannot determine which chapters are affected,
+  // so we regenerate all to avoid stale docs.
+  if (!dryRun) {
     for (const file of allDocsFiles) {
       const filePath = path.join(docsDir, file);
       const content = fs.readFileSync(filePath, "utf8");
       const stripped = stripFillContent(content);
       if (stripped !== content) fs.writeFileSync(filePath, stripped, "utf8");
     }
-    return { docsFiles: allDocsFiles, targetFiles: [...allDocsFiles], affectedChapters: null };
   }
-
-  const affectedChapters = getAffectedChapters(analysis);
-  const docsFiles = affectedChapters
-    ? allDocsFiles.filter((f) => affectedChapters.has(f.replace(/\.md$/, "")))
-    : allDocsFiles;
-
-  const targetFiles = [];
-  let skippedFileCount = 0;
-  for (const file of docsFiles) {
-    const filePath = path.join(docsDir, file);
-    let content = fs.readFileSync(filePath, "utf8");
-    if (affectedChapters) {
-      content = stripFillContent(content);
-    }
-    if (allTextDirectivesFilled(content)) {
-      skippedFileCount++;
-      continue;
-    }
-    targetFiles.push(file);
-  }
-
-  // 影響章フィルタで除外されたが未充填のファイルも対象に含める
-  if (affectedChapters) {
-    for (const file of allDocsFiles) {
-      if (targetFiles.includes(file)) continue;
-      const filePath = path.join(docsDir, file);
-      const content = fs.readFileSync(filePath, "utf8");
-      if (!allTextDirectivesFilled(content)) {
-        targetFiles.push(file);
-      }
-    }
-  }
-  if (skippedFileCount > 0) {
-    logger.log(`Skipped ${skippedFileCount} file(s) with all directives filled.`);
-  }
-
-  return { docsFiles, targetFiles, affectedChapters };
+  return { docsFiles: allDocsFiles, targetFiles: [...allDocsFiles] };
 }
 
 /**
@@ -587,7 +516,7 @@ export async function textFillFromAnalysis(root, analysis, commandId, srcRoot, o
   const allDocsFiles = getChapterFiles(docsDir, { type, configChapters: cfg.chapters });
   const resolvedSrcRoot = srcRoot || root;
 
-  const { targetFiles, affectedChapters } = resolveIncrementalTargets(allDocsFiles, docsDir, analysis, opts?.regenerate);
+  const { targetFiles } = resolveTargetFiles(allDocsFiles, docsDir, analysis, { regenerate: opts?.regenerate, dryRun: opts?.dryRun });
 
   const changedFiles = [];
   let totalFilled = 0;
@@ -687,14 +616,7 @@ async function main(ctx) {
   const concurrency = resolveConcurrency(cfg);
   const allDocsFiles = getChapterFiles(docsDir, { type: ctx.type, configChapters: cfg.chapters });
 
-  // 差分モード: 影響章のみ処理 + ディレクティブクリア
-  const { targetFiles, docsFiles, affectedChapters } = resolveIncrementalTargets(allDocsFiles, docsDir, analysis, ctx.regenerate);
-  if (affectedChapters) {
-    const skipped = allDocsFiles.length - docsFiles.length;
-    if (skipped > 0) {
-      logger.log(`incremental: ${docsFiles.length} affected chapter(s), ${skipped} skipped`);
-    }
-  }
+  const { targetFiles } = resolveTargetFiles(allDocsFiles, docsDir, analysis, { regenerate: ctx.regenerate, dryRun: ctx.dryRun });
 
   let totalFilled = 0;
   let totalSkipped = 0;
@@ -723,11 +645,6 @@ async function main(ctx) {
       const directives = parseDirectives(original);
       const hasId = directives.some((d) => d.type === "text" && d.params?.id === ctx.id);
       if (!hasId) continue;
-    }
-
-    // 影響章のディレクティブをクリアして再生成を強制
-    if (affectedChapters) {
-      original = stripFillContent(original);
     }
 
     fileEntries.push({ file, filePath, original });
@@ -790,6 +707,6 @@ async function main(ctx) {
   return { errors };
 }
 
-export { main, stripFillContent, countFilledInBatch, processTemplateFileBatch, processTemplate, allTextDirectivesFilled, validateBatchResult, getAffectedChapters, parseBatchJsonResponse, applyBatchJsonToFile };
+export { main, stripFillContent, countFilledInBatch, processTemplateFileBatch, processTemplate, allTextDirectivesFilled, validateBatchResult, parseBatchJsonResponse, applyBatchJsonToFile };
 
 runIfDirect(import.meta.url, main);

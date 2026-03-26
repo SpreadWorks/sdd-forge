@@ -9,8 +9,9 @@ import { DataSource } from "../../../docs/lib/data-source.js";
 export default class StorageBucketsSource extends DataSource {
   /** Storage buckets/containers list. */
   list(analysis, labels) {
-    const items = analysis.storage?.buckets;
-    if (!Array.isArray(items) || items.length === 0) return null;
+    const entries = analysis.storage?.entries || [];
+    const items = entries.flatMap((e) => e.buckets || []);
+    if (items.length === 0) return null;
     const rows = this.toRows(items, (b) => [
       b.name || "—",
       b.provider || b.type || "—",

@@ -20,83 +20,64 @@ describe("summaryToText", () => {
     assert.equal(summaryToText(undefined), "");
   });
 
-  it("includes controller summary (legacy mode)", () => {
-    const summary = {
+  it("includes controller summary (fallback mode)", () => {
+    const analysis = {
       controllers: {
-        total: 3,
-        totalActions: 10,
-        top: [
-          { className: "UsersController", actions: ["index", "show"] },
+        summary: { total: 3, totalActions: 10 },
+        entries: [
+          { file: "UsersController.php", className: "UsersController" },
         ],
       },
     };
-    const result = summaryToText(summary);
+    const result = summaryToText(analysis);
     assert.ok(result.includes("Controllers: 3 files"));
-    assert.ok(result.includes("UsersController"));
-    assert.ok(result.includes("2 actions"));
+    assert.ok(result.includes("10 actions"));
   });
 
-  it("truncates long action lists in legacy mode", () => {
-    const summary = {
-      controllers: {
-        total: 1,
-        totalActions: 8,
-        top: [
-          {
-            className: "BigController",
-            actions: ["a", "b", "c", "d", "e", "f", "g", "h"],
-          },
-        ],
-      },
-    };
-    const result = summaryToText(summary);
-    assert.ok(result.includes("..."));
-  });
-
-  it("includes models summary with dbGroups (legacy mode)", () => {
-    const summary = {
+  it("includes models summary (fallback mode)", () => {
+    const analysis = {
       models: {
-        total: 5,
-        feModels: 2,
-        logicModels: 3,
-        dbGroups: { main: ["User", "Post"], logs: ["AuditLog"] },
+        summary: { total: 5 },
+        entries: [],
       },
     };
-    const result = summaryToText(summary);
+    const result = summaryToText(analysis);
     assert.ok(result.includes("Models: 5 files"));
-    assert.ok(result.includes("fe=2"));
-    assert.ok(result.includes("DB[main]: 2 models"));
-    assert.ok(result.includes("DB[logs]: 1 models"));
   });
 
-  it("includes commands summary (legacy mode)", () => {
-    const summary = {
+  it("includes commands summary (fallback mode)", () => {
+    const analysis = {
       commands: {
-        total: 2,
-        items: [
-          { className: "ImportShell", methods: ["main", "execute"] },
+        summary: { total: 2 },
+        entries: [
+          { file: "ImportShell.php", className: "ImportShell" },
         ],
       },
     };
-    const result = summaryToText(summary);
+    const result = summaryToText(analysis);
     assert.ok(result.includes("Commands: 2 files"));
-    assert.ok(result.includes("ImportShell"));
   });
 
-  it("includes routes summary (legacy mode)", () => {
-    const summary = {
-      routes: { total: 5 },
+  it("includes routes summary (fallback mode)", () => {
+    const analysis = {
+      routes: {
+        summary: { total: 5 },
+        entries: [],
+      },
     };
-    const result = summaryToText(summary);
+    const result = summaryToText(analysis);
     assert.ok(result.includes("Routes: 5 explicit routes"));
   });
 
-  it("includes files summary (legacy mode)", () => {
-    const summary = {
-      files: { summary: { total: 42 } },
+  it("includes modules summary (fallback mode)", () => {
+    const analysis = {
+      modules: {
+        summary: { total: 42 },
+        entries: [],
+      },
     };
-    const result = summaryToText(summary);
-    assert.ok(result.includes("Files: 42 total"));
+    const result = summaryToText(analysis);
+    assert.ok(result.includes("Modules: 42 files"));
   });
 
   it("handles empty analysis object", () => {
@@ -109,7 +90,7 @@ describe("summaryToText", () => {
       enrichedAt: "2026-01-01T00:00:00Z",
       modules: {
         summary: { total: 2 },
-        modules: [
+        entries: [
           { file: "src/a.js", summary: "Module A handles auth", chapter: "overview" },
           { file: "src/b.js", summary: "Module B handles config", chapter: "configuration" },
         ],
@@ -126,7 +107,7 @@ describe("summaryToText", () => {
       enrichedAt: "2026-01-01T00:00:00Z",
       modules: {
         summary: { total: 2 },
-        modules: [
+        entries: [
           { file: "src/a.js", summary: "Has summary" },
           { file: "src/b.js" },
         ],
@@ -142,13 +123,13 @@ describe("summaryToText", () => {
       enrichedAt: "2026-01-01T00:00:00Z",
       controllers: {
         summary: { total: 1 },
-        controllers: [
+        entries: [
           { file: "UsersController.php", summary: "Handles users" },
         ],
       },
       models: {
         summary: { total: 1 },
-        models: [
+        entries: [
           { file: "User.php", summary: "User data" },
         ],
       },
@@ -163,10 +144,9 @@ describe("summaryToText", () => {
       enrichedAt: "2026-01-01T00:00:00Z",
       analyzedAt: "2026-01-01T00:00:00Z",
       generatedAt: "2026-01-01",
-      root: "/path/to/root",
       modules: {
         summary: { total: 1 },
-        modules: [
+        entries: [
           { file: "src/a.js", summary: "A" },
         ],
       },
@@ -175,7 +155,6 @@ describe("summaryToText", () => {
     assert.ok(result.includes("modules"));
     assert.ok(!result.includes("analyzedAt"));
     assert.ok(!result.includes("generatedAt"));
-    assert.ok(!result.includes("/path/to/root"));
   });
 
   it("uses name or className as fallback identifier in enriched mode", () => {
@@ -183,7 +162,7 @@ describe("summaryToText", () => {
       enrichedAt: "2026-01-01T00:00:00Z",
       controllers: {
         summary: { total: 2 },
-        controllers: [
+        entries: [
           { name: "UserCtrl", summary: "User controller" },
           { className: "PostCtrl", summary: "Post controller" },
         ],
@@ -194,13 +173,13 @@ describe("summaryToText", () => {
     assert.ok(result.includes("PostCtrl: Post controller"));
   });
 
-  it("skips categories where items array is not present", () => {
+  it("skips categories where entries array is not present", () => {
     const analysis = {
       enrichedAt: "2026-01-01T00:00:00Z",
       extras: { foo: "bar" },
       modules: {
         summary: { total: 1 },
-        modules: [{ file: "a.js", summary: "A" }],
+        entries: [{ file: "a.js", summary: "A" }],
       },
     };
     const result = summaryToText(analysis);
@@ -213,7 +192,7 @@ describe("summaryToText", () => {
       enrichedAt: "2026-01-01T00:00:00Z",
       modules: {
         summary: { total: 2 },
-        modules: [
+        entries: [
           { file: "a.js" },
           { file: "b.js" },
         ],

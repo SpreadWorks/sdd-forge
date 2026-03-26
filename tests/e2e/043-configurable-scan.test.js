@@ -70,17 +70,9 @@ describe("parseFile language auto-detection", async () => {
 });
 
 // ---------------------------------------------------------------------------
-// 2. DataSource.match() interface
+// 2. DataSource base class no longer has match()
+//    match() is now provided by the Scannable mixin (scan-source.js).
 // ---------------------------------------------------------------------------
-describe("DataSource.match() interface", async () => {
-  const { DataSource } = await import("../../src/docs/lib/data-source.js");
-
-  it("base DataSource has match() method that returns false by default", () => {
-    const ds = new DataSource();
-    assert.equal(typeof ds.match, "function", "DataSource should have match()");
-    assert.equal(ds.match({ absPath: "/foo.js", relPath: "foo.js" }), false);
-  });
-});
 
 // ---------------------------------------------------------------------------
 // 3. Scannable mixin has match() method
@@ -307,13 +299,13 @@ describe("preserveEnrichment recursive hash search", () => {
 });
 
 // ---------------------------------------------------------------------------
-// 8. Multiple DataSources can match same file
+// 8. First matching DataSource wins (file appears in only one category)
 // ---------------------------------------------------------------------------
-describe("multiple DataSource match", () => {
+describe("single DataSource match (first wins)", () => {
   let tmp;
   afterEach(() => tmp && removeTmpDir(tmp));
 
-  it("a file can appear in multiple DataSource results", () => {
+  it("a file is assigned to the first matching DataSource only", () => {
     tmp = createTmpDir();
     writeJson(tmp, ".sdd-forge/config.json", {
       lang: "ja",
@@ -326,7 +318,8 @@ describe("multiple DataSource match", () => {
         ],
       },
     });
-    // AppController.php could match both controllers and config
+    // AppController.php matches config DataSource first (it explicitly claims AppController.php),
+    // so it does NOT appear in controllers.
     writeFile(tmp, "app/Controller/AppController.php", [
       "<?php",
       "class AppController extends Controller {",
@@ -340,8 +333,11 @@ describe("multiple DataSource match", () => {
       env: { ...process.env, SDD_WORK_ROOT: tmp, SDD_SOURCE_ROOT: tmp },
     });
     const analysis = JSON.parse(result);
-    // At minimum, controllers should have it
-    assert.ok(analysis.controllers, "controllers category should exist");
+    // config DataSource matches AppController.php first (first-match-wins)
+    assert.ok(analysis.config, "config category should exist");
+    assert.equal(analysis.config.entries.length, 1, "should have one config entry");
+    // controllers should not exist (no other controller files provided)
+    assert.equal(analysis.controllers, undefined, "controllers should not exist — file went to config");
   });
 });
 

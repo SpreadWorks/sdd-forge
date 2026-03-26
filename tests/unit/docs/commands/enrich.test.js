@@ -14,7 +14,7 @@ describe("collectEntries", () => {
       analyzedAt: "2026-01-01",
       modules: {
         summary: { total: 2 },
-        modules: [
+        entries: [
           { file: "src/foo.js", name: "foo.js", lines: 100 },
           { file: "src/bar.js", name: "bar.js", lines: 50 },
         ],
@@ -34,7 +34,7 @@ describe("collectEntries", () => {
   it("marks entries with summary as enriched", () => {
     const analysis = {
       modules: {
-        modules: [
+        entries: [
           { file: "a.js", summary: "Already done" },
           { file: "b.js" },
         ],
@@ -47,7 +47,7 @@ describe("collectEntries", () => {
 
   it("defaults lines to 0 when not present", () => {
     const analysis = {
-      modules: { modules: [{ file: "a.js" }] },
+      modules: { entries: [{ file: "a.js" }] },
     };
     const entries = collectEntries(analysis);
     assert.equal(entries[0].lines, 0);
@@ -59,7 +59,7 @@ describe("collectEntries", () => {
       enrichedAt: "2026-01-01",
       extras: { foo: "bar" },
       modules: {
-        modules: [{ file: "a.js" }],
+        entries: [{ file: "a.js" }],
       },
     };
     const entries = collectEntries(analysis);
@@ -69,8 +69,8 @@ describe("collectEntries", () => {
 
   it("handles multiple categories", () => {
     const analysis = {
-      modules: { modules: [{ file: "a.js" }] },
-      controllers: { controllers: [{ file: "b.js" }, { file: "c.js" }] },
+      modules: { entries: [{ file: "a.js" }] },
+      controllers: { entries: [{ file: "b.js" }, { file: "c.js" }] },
     };
     const entries = collectEntries(analysis);
     assert.equal(entries.length, 3);
@@ -194,7 +194,7 @@ describe("mergeEnrichment", () => {
       analyzedAt: "2026-01-01",
       modules: {
         summary: { total: 2 },
-        modules: [
+        entries: [
           { file: "src/foo.js", name: "foo.js" },
           { file: "src/bar.js", name: "bar.js" },
         ],
@@ -209,12 +209,12 @@ describe("mergeEnrichment", () => {
 
     const result = mergeEnrichment(analysis, enrichment);
 
-    assert.equal(result.modules.modules[0].summary, "Foo module");
-    assert.equal(result.modules.modules[0].detail, "Does foo things");
-    assert.equal(result.modules.modules[0].chapter, "internal_design");
-    assert.equal(result.modules.modules[0].role, "lib");
-    assert.equal(result.modules.modules[0].file, "src/foo.js"); // original preserved
-    assert.equal(result.modules.modules[1].summary, "Bar module");
+    assert.equal(result.modules.entries[0].summary, "Foo module");
+    assert.equal(result.modules.entries[0].detail, "Does foo things");
+    assert.equal(result.modules.entries[0].chapter, "internal_design");
+    assert.equal(result.modules.entries[0].role, "lib");
+    assert.equal(result.modules.entries[0].file, "src/foo.js"); // original preserved
+    assert.equal(result.modules.entries[1].summary, "Bar module");
     assert.ok(result.enrichedAt); // timestamp added
   });
 
@@ -223,7 +223,7 @@ describe("mergeEnrichment", () => {
       analyzedAt: "2026-01-01",
       modules: {
         summary: { total: 1 },
-        modules: [{ file: "a.js" }],
+        entries: [{ file: "a.js" }],
       },
     };
     const enrichment = {
@@ -234,7 +234,7 @@ describe("mergeEnrichment", () => {
     };
 
     const result = mergeEnrichment(analysis, enrichment);
-    assert.ok(!result.modules.modules[0].summary); // not modified
+    assert.ok(!result.modules.entries[0].summary); // not modified
   });
 
   it("skips unknown categories", () => {
@@ -242,7 +242,7 @@ describe("mergeEnrichment", () => {
       analyzedAt: "2026-01-01",
       modules: {
         summary: { total: 1 },
-        modules: [{ file: "a.js" }],
+        entries: [{ file: "a.js" }],
       },
     };
     const enrichment = {
@@ -258,7 +258,7 @@ describe("mergeEnrichment", () => {
       analyzedAt: "2026-01-01",
       modules: {
         summary: { total: 1 },
-        modules: [{ file: "a.js", summary: "original" }],
+        entries: [{ file: "a.js", summary: "original" }],
       },
     };
     const enrichment = {
@@ -266,7 +266,7 @@ describe("mergeEnrichment", () => {
     };
 
     const result = mergeEnrichment(analysis, enrichment);
-    assert.equal(result.modules.modules[0].summary, "original"); // preserved
-    assert.equal(result.modules.modules[0].detail, "new detail"); // added
+    assert.equal(result.modules.entries[0].summary, "original"); // preserved
+    assert.equal(result.modules.entries[0].detail, "new detail"); // added
   });
 });

@@ -2,6 +2,8 @@
  * ConfigSource — Symfony configuration DataSource.
  *
  * Symfony-only category using Scannable(DataSource) directly.
+ * Each matched config file is parsed individually; resolve methods
+ * aggregate across all entries.
  *
  * Available methods (called via {{data}} directives):
  *   config.composer("Package|Version|Description")
@@ -11,27 +13,97 @@
  *   config.services("Autowire|Autoconfigure")
  */
 
+import fs from "fs";
+import path from "path";
 import WebappDataSource from "../../webapp/data/webapp-data-source.js";
-import { analyzeConfig } from "../scan/config.js";
+import { AnalysisEntry } from "../../../docs/lib/analysis-entry.js";
+
+export class SymfonyConfigEntry extends AnalysisEntry {
+  /** Entry type: "composer" | "env" | "bundle" | "package" | "services" | "kernel" */
+  configType = null;
+  /** composer.json: { require, requireDev } */
+  composerDeps = null;
+  /** .env: Array<{key, defaultValue}> */
+  envKeys = null;
+  /** config/bundles.php: Array<{fullName, shortName}> */
+  bundles = null;
+  /** config/packages/*.yaml: { file, keys } */
+  packageConfig = null;
+  /** config/services.yaml: { autowire, autoconfigure } */
+  services = null;
+  /** src/Kernel.php: { className, parentClass } */
+  kernel = null;
+
+  static summary = {};
+}
 
 export default class ConfigSource extends WebappDataSource {
-  match(file) {
-    return file.relPath.startsWith("config/") ||
-      file.fileName === ".env" ||
-      file.fileName === ".env.local" ||
-      file.fileName === "composer.json";
+  static Entry = SymfonyConfigEntry;
+
+  match(relPath) {
+    return relPath.startsWith("config/") ||
+      relPath === ".env" ||
+      relPath === ".env.local" ||
+      relPath === "composer.json";
   }
 
-  scan(files) {
-    if (files.length === 0) return null;
-    const sourceRoot = this.deriveSourceRoot(files);
-    return analyzeConfig(sourceRoot);
+  parse(absPath) {
+    const entry = new SymfonyConfigEntry();
+    const fileName = path.basename(absPath);
+    const content = fs.readFileSync(absPath, "utf8");
+
+    if (fileName === "composer.json") {
+      entry.configType = "composer";
+      try {
+        const composer = JSON.parse(content);
+        entry.composerDeps = {
+          require: composer.require || {},
+          requireDev: composer["require-dev"] || {},
+        };
+      } catch (_) {
+        entry.composerDeps = { require: {}, requireDev: {} };
+      }
+    } else if (fileName === ".env" || fileName === ".env.local" || fileName === ".env.example") {
+      entry.configType = "env";
+      entry.envKeys = parseEnvContent(content);
+    } else if (fileName === "bundles.php") {
+      entry.configType = "bundle";
+      entry.bundles = parseBundlesContent(content);
+    } else if (fileName === "services.yaml" || fileName === "services.yml") {
+      entry.configType = "services";
+      entry.services = {
+        autowire: /autowire:\s*true/.test(content),
+        autoconfigure: /autoconfigure:\s*true/.test(content),
+      };
+    } else if (/\.(yaml|yml)$/.test(fileName) && absPath.includes("config/packages")) {
+      entry.configType = "package";
+      const topKeys = [];
+      for (const line of content.split("\n")) {
+        const keyMatch = line.match(/^(\w[\w_-]*):/);
+        if (keyMatch && !topKeys.includes(keyMatch[1])) {
+          topKeys.push(keyMatch[1]);
+          if (topKeys.length >= 20) break;
+        }
+      }
+      entry.packageConfig = { file: fileName, keys: topKeys };
+    } else if (fileName === "Kernel.php") {
+      entry.configType = "kernel";
+      const classMatch = content.match(/class\s+(\w+)\s+extends\s+(\w+)/);
+      entry.kernel = {
+        className: classMatch ? classMatch[1] : "Kernel",
+        parentClass: classMatch ? classMatch[2] : "",
+      };
+    }
+
+    return entry;
   }
 
   /** Composer dependencies table. */
   composer(analysis, labels) {
-    if (!analysis.config?.composerDeps) return null;
-    const { require: req, requireDev } = analysis.config.composerDeps;
+    const entries = analysis.config?.entries || [];
+    const composerEntry = entries.find((e) => e.configType === "composer");
+    if (!composerEntry?.composerDeps) return null;
+    const { require: req, requireDev } = composerEntry.composerDeps;
     const rows = [];
     for (const [pkg, ver] of Object.entries(req || {})) {
       rows.push([pkg, ver, this.desc("composerDeps", pkg)]);
@@ -45,34 +117,40 @@ export default class ConfigSource extends WebappDataSource {
 
   /** Environment variables table. */
   env(analysis, labels) {
-    const envKeys = analysis.config?.envKeys;
-    if (!envKeys || envKeys.length === 0) return null;
-    const items = this.mergeDesc(envKeys, "env", "key");
+    const entries = analysis.config?.entries || [];
+    const envEntries = entries.filter((e) => e.configType === "env");
+    const allKeys = envEntries.flatMap((e) => e.envKeys || []);
+    if (allKeys.length === 0) return null;
+    const items = this.mergeDesc(allKeys, "env", "key");
     const rows = this.toRows(items, (e) => [
       e.key,
       e.defaultValue || "\u2014",
-      e.summary || "—",
+      e.summary || "\u2014",
     ]);
     return this.toMarkdownTable(rows, labels);
   }
 
   /** Symfony bundles table. */
   bundles(analysis, labels) {
-    const bundles = analysis.config?.bundles;
-    if (!bundles || bundles.length === 0) return null;
-    const items = this.mergeDesc(bundles, "bundles", "shortName");
+    const entries = analysis.config?.entries || [];
+    const bundleEntry = entries.find((e) => e.configType === "bundle");
+    if (!bundleEntry?.bundles || bundleEntry.bundles.length === 0) return null;
+    const items = this.mergeDesc(bundleEntry.bundles, "bundles", "shortName");
     const rows = this.toRows(items, (b) => [
       b.shortName,
       b.fullName,
-      b.summary || "—",
+      b.summary || "\u2014",
     ]);
     return this.toMarkdownTable(rows, labels);
   }
 
   /** Config packages table. */
   packages(analysis, labels) {
-    const configFiles = analysis.config?.configFiles;
-    if (!configFiles || configFiles.length === 0) return null;
+    const entries = analysis.config?.entries || [];
+    const packageEntries = entries.filter((e) => e.configType === "package");
+    if (packageEntries.length === 0) return null;
+    const configFiles = packageEntries.map((e) => e.packageConfig).filter(Boolean);
+    if (configFiles.length === 0) return null;
     const rows = this.toRows(configFiles, (cf) => [
       cf.file,
       cf.keys.join(", ") || "\u2014",
@@ -82,11 +160,113 @@ export default class ConfigSource extends WebappDataSource {
 
   /** Services configuration table. */
   services(analysis, labels) {
-    const services = analysis.config?.services;
-    if (!services) return null;
+    const entries = analysis.config?.entries || [];
+    const servicesEntry = entries.find((e) => e.configType === "services");
+    if (!servicesEntry?.services) return null;
     const rows = [
-      [services.autowire ? "YES" : "NO", services.autoconfigure ? "YES" : "NO"],
+      [servicesEntry.services.autowire ? "YES" : "NO", servicesEntry.services.autoconfigure ? "YES" : "NO"],
     ];
     return this.toMarkdownTable(rows, labels);
   }
+}
+
+function parseEnvContent(content) {
+  const keys = [];
+  for (const line of content.split("\n")) {
+    const trimmed = line.trim();
+    if (!trimmed || trimmed.startsWith("#")) continue;
+    const match = trimmed.match(/^([A-Z_][A-Z0-9_]*)=/);
+    if (match) {
+      const value = trimmed.slice(match[0].length);
+      keys.push({ key: match[1], defaultValue: value });
+    }
+  }
+  return keys;
+}
+
+function parseBundlesContent(content) {
+  const bundles = [];
+  const bundleRegex = /([\w\\]+)::class\s*=>/g;
+  let m;
+  while ((m = bundleRegex.exec(content)) !== null) {
+    const fullName = m[1];
+    const shortName = fullName.split("\\").pop();
+    bundles.push({ fullName, shortName });
+  }
+  return bundles;
+}
+
+// ---------------------------------------------------------------------------
+// Directory-level analyzer (moved from scan/config.js, used by tests)
+// ---------------------------------------------------------------------------
+
+import { parseComposer, parseEnvFile } from "../../lib/composer-utils.js";
+
+/**
+ * @param {string} sourceRoot
+ * @returns {Object} extras data
+ */
+export function analyzeConfig(sourceRoot) {
+  const extras = {};
+
+  // composer.json
+  extras.composerDeps = parseComposer(sourceRoot);
+
+  // .env
+  extras.envKeys = parseEnvFile(sourceRoot, [".env", ".env.example"]);
+
+  // config/packages/*.yaml
+  const configDir = path.join(sourceRoot, "config", "packages");
+  extras.configFiles = [];
+  if (fs.existsSync(configDir)) {
+    extras.configFiles = fs.readdirSync(configDir)
+      .filter((f) => f.endsWith(".yaml") || f.endsWith(".yml"))
+      .sort()
+      .map((f) => {
+        const content = fs.readFileSync(path.join(configDir, f), "utf8");
+        const topKeys = [];
+        for (const line of content.split("\n")) {
+          const keyMatch = line.match(/^(\w[\w_-]*):/);
+          if (keyMatch && !topKeys.includes(keyMatch[1])) {
+            topKeys.push(keyMatch[1]);
+            if (topKeys.length >= 20) break;
+          }
+        }
+        return { file: f, keys: topKeys };
+      });
+  }
+
+  // config/services.yaml
+  const servicesPath = path.join(sourceRoot, "config", "services.yaml");
+  if (fs.existsSync(servicesPath)) {
+    const content = fs.readFileSync(servicesPath, "utf8");
+    extras.services = {
+      autowire: /autowire:\s*true/.test(content),
+      autoconfigure: /autoconfigure:\s*true/.test(content),
+    };
+  } else {
+    extras.services = { autowire: false, autoconfigure: false };
+  }
+
+  // src/Kernel.php
+  const kernelPath = path.join(sourceRoot, "src", "Kernel.php");
+  extras.kernel = null;
+  if (fs.existsSync(kernelPath)) {
+    const content = fs.readFileSync(kernelPath, "utf8");
+    const classMatch = content.match(/class\s+(\w+)\s+extends\s+(\w+)/);
+    extras.kernel = {
+      className: classMatch ? classMatch[1] : "Kernel",
+      parentClass: classMatch ? classMatch[2] : "",
+    };
+  }
+
+  // config/bundles.php
+  const bundlesPath = path.join(sourceRoot, "config", "bundles.php");
+  extras.bundles = [];
+  if (fs.existsSync(bundlesPath)) {
+    const content = fs.readFileSync(bundlesPath, "utf8");
+    extras.bundles = parseBundlesContent(content);
+  }
+
+  return extras;
 }

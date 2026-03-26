@@ -104,7 +104,7 @@ describe("scan multi-type pattern merging", () => {
     const analysis = JSON.parse(result);
     if (analysis.modules) {
       // Should only find lib/util.js, not src/index.js
-      const files = analysis.modules.modules.map((m) => m.relPath || m.file);
+      const files = analysis.modules.entries.map((m) => m.relPath || m.file);
       assert.ok(!files.some((f) => f.includes("src/")), "src/ files should not be collected when config.scan overrides");
     }
   });

@@ -6,46 +6,55 @@
  */
 
 import fs from "fs";
+import path from "path";
 import { DataSource } from "../../../docs/lib/data-source.js";
 import { Scannable } from "../../../docs/lib/scan-source.js";
+import { AnalysisEntry } from "../../../docs/lib/analysis-entry.js";
 import { parseTOML } from "../../../docs/lib/toml-parser.js";
 
+const WRANGLER_FILES = new Set(["wrangler.toml", "wrangler.json", "wrangler.jsonc"]);
+
+export class StorageEntry extends AnalysisEntry {
+  buckets = null;
+
+  static summary = {};
+}
+
 export default class R2StorageSource extends Scannable(DataSource) {
-  match(file) {
-    return file.fileName === "wrangler.toml" || file.fileName === "wrangler.json" || file.fileName === "wrangler.jsonc";
+  static Entry = StorageEntry;
+
+  match(relPath) {
+    return WRANGLER_FILES.has(path.basename(relPath));
   }
 
-  scan(files) {
-    const wranglerFile = files.find(
-      (f) => f.fileName === "wrangler.toml" || f.fileName === "wrangler.json" || f.fileName === "wrangler.jsonc",
-    );
-    if (!wranglerFile) return null;
+  parse(absPath) {
+    const entry = new StorageEntry();
+    const raw = fs.readFileSync(absPath, "utf8");
+    const fileName = path.basename(absPath);
+    const isToml = fileName === "wrangler.toml";
 
-    const raw = fs.readFileSync(wranglerFile.absPath, "utf8");
-    const isToml = wranglerFile.fileName === "wrangler.toml";
-    const cfg = isToml ? parseTOML(raw) : JSON.parse(raw);
+    let cfg;
+    try {
+      cfg = isToml ? parseTOML(raw) : JSON.parse(raw);
+    } catch (_) {
+      return entry;
+    }
 
     const r2Buckets = cfg.r2_buckets || [];
-    if (r2Buckets.length === 0) return null;
-
-    const buckets = r2Buckets.map((b) => ({
+    entry.buckets = r2Buckets.map((b) => ({
       name: b.bucket_name || b.binding || "",
       binding: b.binding || "",
       preview_bucket_name: b.preview_bucket_name || "",
     }));
 
-    return {
-      buckets,
-      summary: {
-        totalBuckets: buckets.length,
-      },
-    };
+    return entry;
   }
 
   /** R2 buckets list. */
   buckets(analysis, labels) {
-    const items = analysis.storage?.buckets;
-    if (!Array.isArray(items) || items.length === 0) return null;
+    const entries = analysis.storage?.entries || [];
+    const items = entries.flatMap((e) => e.buckets || []);
+    if (items.length === 0) return null;
     const rows = this.toRows(items, (b) => [
       b.name || "—",
       b.binding || "—",

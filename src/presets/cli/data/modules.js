@@ -5,42 +5,38 @@
  * Scans source files and extracts classes/functions.
  */
 
-import path from "path";
 import { DataSource } from "../../../docs/lib/data-source.js";
 import { Scannable } from "../../../docs/lib/scan-source.js";
+import { AnalysisEntry } from "../../../docs/lib/analysis-entry.js";
 import { parseFile } from "../../../docs/lib/scanner.js";
 
+export class ModuleEntry extends AnalysisEntry {
+  className = null;
+  methods = null;
+
+  static summary = {
+    totalMethods: { field: "methods", aggregate: "count" },
+  };
+}
+
 export default class ModulesSource extends Scannable(DataSource) {
-  match(file) {
-    return /\.(js|mjs|cjs)$/.test(file.relPath);
+  static Entry = ModuleEntry;
+
+  match(relPath) {
+    return /\.(js|mjs|cjs)$/.test(relPath);
   }
 
-  scan(files) {
-    if (files.length === 0) return null;
-
-    const items = [];
-    for (const f of files) {
-      const parsed = parseFile(f.absPath);
-      items.push({
-        file: f.relPath,
-        className: parsed.className,
-        methods: parsed.methods,
-        lines: f.lines,
-        hash: f.hash,
-        mtime: f.mtime,
-      });
-    }
-
-    const totalMethods = items.reduce((s, i) => s + i.methods.length, 0);
-    return {
-      modules: items,
-      summary: { total: items.length, totalMethods },
-    };
+  parse(absPath) {
+    const entry = new ModuleEntry();
+    const parsed = parseFile(absPath);
+    entry.className = parsed.className;
+    entry.methods = parsed.methods;
+    return entry;
   }
 
   /** Module list table. */
   list(analysis, labels) {
-    const items = this.mergeDesc(analysis.modules?.modules || [], "modules");
+    const items = this.mergeDesc(analysis.modules?.entries || [], "modules");
     if (items.length === 0) return null;
     const rows = this.toRows(items, (m) => [
       m.className,

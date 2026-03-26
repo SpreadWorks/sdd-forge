@@ -9,7 +9,8 @@
       "database/migrations/**/*.php",
       "routes/**/*.php",
       "composer.json",
-      ".env"
+      ".env",
+      ".env.example"
     ],
     "exclude": []
   }
