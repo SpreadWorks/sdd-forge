@@ -61,6 +61,7 @@
  * @property {string} [default]              - Default agent provider name
  * @property {string} [workDir]              - Working directory for agent execution
  * @property {number} [timeout]              - Agent execution timeout in seconds
+ * @property {number} [retryCount]           - Retry count for docs enrich agent calls
  * @property {Object<string, AgentProvider>} [providers] - Agent provider definitions
  * @property {Object} [commands]             - Per-command agent and profile overrides
  */
@@ -181,6 +182,11 @@ export function validateConfig(raw) {
   // agent.timeout (省略可)
   if (raw.agent?.timeout != null && (typeof raw.agent.timeout !== "number" || raw.agent.timeout < 1)) {
     errors.push("'agent.timeout' must be a positive number if provided");
+  }
+
+  // agent.retryCount (省略可)
+  if (raw.agent?.retryCount != null && (typeof raw.agent.retryCount !== "number" || raw.agent.retryCount < 1)) {
+    errors.push("'agent.retryCount' must be a positive number if provided");
   }
 
   // scan (省略可)

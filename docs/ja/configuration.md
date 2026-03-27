@@ -54,6 +54,7 @@ sdd-forge が読み込む設定ファイルは以下のとおりです。
 | `agent.default` | — | `string` | — | デフォルトのエージェントプロバイダ名 |
 | `agent.workDir` | — | `string` | — | エージェント実行の作業ディレクトリ |
 | `agent.timeout` | — | `number` | — | エージェント実行タイムアウト（秒） |
+| `agent.retryCount` | — | `number` | `1` | `docs enrich` 専用の再試行回数。空レスポンスと一時的な agent 呼び出し失敗を 3 秒固定で再試行する。他の agent コマンドでは未実装。 |
 | `agent.providers` | — | `object` | — | エージェントプロバイダの定義（名前→設定のマップ） |
 | `agent.commands` | — | `object` | — | コマンド別のエージェント・プロファイル上書き |
 | `flow.merge` | — | `string` | — | マージ戦略。`"squash"` / `"ff-only"` / `"merge"` のいずれか |

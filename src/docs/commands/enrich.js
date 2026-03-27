@@ -25,6 +25,7 @@ import { ANALYSIS_META_KEYS } from "../lib/analysis-entry.js";
 const logger = createLogger("enrich");
 const DEFAULT_BATCH_SIZE = 20;
 const DEFAULT_BATCH_LINES = 3000;
+const RETRY_DELAY_MS = 3000;
 
 function printHelp() {
   const t = translate();
@@ -66,11 +67,53 @@ function collectEntries(analysis) {
         index: i,
         file: items[i].file || items[i].name || `${cat}.entries[${i}]`,
         lines: items[i].lines || 0,
-        enriched: !!items[i].summary,
+        enriched: !!items[i].enrich?.processedAt,
       });
     }
   }
   return entries;
+}
+
+function entryKey(category, index) {
+  return `${category}:${index}`;
+}
+
+function getRetryCount(config) {
+  return Number(config?.agent?.retryCount || 0) || 1;
+}
+
+function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+async function enrichBatchWithRetry({
+  agent,
+  prompt,
+  timeoutMs,
+  cwd,
+  retryCount,
+  callAgent = callAgentAsync,
+  sleep: sleepFn = sleep,
+  onAttempt = () => {},
+}) {
+  let lastError = null;
+
+  for (let attempt = 0; attempt <= retryCount; attempt++) {
+    onAttempt();
+    try {
+      const response = await callAgent(agent, prompt, timeoutMs, cwd);
+      if (response) return response;
+      lastError = new Error("empty response");
+    } catch (err) {
+      lastError = err;
+    }
+
+    if (attempt < retryCount) {
+      await sleepFn(RETRY_DELAY_MS);
+    }
+  }
+
+  throw lastError || new Error("empty response");
 }
 
 /**
@@ -258,9 +301,15 @@ function fixUnescapedQuotes(json) {
  *
  * @param {Object} analysis - Original analysis data
  * @param {Object} enrichment - AI-generated enrichment data
+ * @param {Object} [opts] - Merge options
  * @returns {Object} Enriched analysis (same reference)
  */
-function mergeEnrichment(analysis, enrichment) {
+function mergeEnrichment(analysis, enrichment, opts = {}) {
+  const processedAt = opts.now || new Date().toISOString();
+  const attemptsByKey = opts.attemptsByKey || new Map();
+  const onWarn = opts.onWarn || (() => {});
+  const respondedKeys = new Set();
+
   for (const cat of Object.keys(enrichment)) {
     if (!analysis[cat]) continue;
     const enrichedItems = enrichment[cat];
@@ -273,6 +322,7 @@ function mergeEnrichment(analysis, enrichment) {
       if (!entry || typeof entry !== "object") continue;
       const idx = entry.index;
       if (idx == null || idx < 0 || idx >= items.length) continue;
+      respondedKeys.add(entryKey(cat, idx));
 
       items[idx] = {
         ...items[idx],
@@ -280,13 +330,57 @@ function mergeEnrichment(analysis, enrichment) {
         detail: entry.detail || items[idx].detail,
         chapter: entry.chapter || items[idx].chapter,
         role: entry.role || items[idx].role,
+        enrich: {
+          processedAt,
+          attempts: attemptsByKey.get(entryKey(cat, idx)) ?? items[idx].enrich?.attempts ?? 1,
+        },
         ...(entry.app ? { app: entry.app } : {}),
       };
+
+      if (!entry.summary) {
+        const file = items[idx].file || items[idx].name || `${cat}.entries[${idx}]`;
+        onWarn(`WARN: summary missing for ${file} (category=${cat}, index=${idx})`);
+      }
     }
   }
 
-  analysis.enrichedAt = new Date().toISOString();
+  for (const [key, attempts] of attemptsByKey.entries()) {
+    if (respondedKeys.has(key)) continue;
+    const [category, rawIndex] = key.split(":");
+    const index = Number(rawIndex);
+    const item = analysis?.[category]?.entries?.[index];
+    if (!item) continue;
+    item.enrich = {
+      ...item.enrich,
+      attempts,
+    };
+  }
+
+  analysis.enrichedAt = processedAt;
   return analysis;
+}
+
+function buildAttemptsByKey(analysis, batchEntries, attemptsUsed) {
+  const attempts = new Map();
+  for (const entry of batchEntries) {
+    const current = analysis?.[entry.category]?.entries?.[entry.index]?.enrich?.attempts ?? 0;
+    attempts.set(entryKey(entry.category, entry.index), current + attemptsUsed);
+  }
+  return attempts;
+}
+
+function saveProgress(root, analysis, totalEnriched, ctx) {
+  if (totalEnriched > 0 && !ctx.dryRun && !ctx.stdout) {
+    const saved = saveAnalysis(root, analysis);
+    logger.log(`saved progress (${totalEnriched} entries) to ${path.relative(root, saved)}`);
+  }
+}
+
+function formatBatchError(err, b, batches) {
+  if (err?.message === "empty response") {
+    return `enrich: AI agent returned empty response at batch ${b + 1}/${batches.length}.`;
+  }
+  return `enrich: AI agent failed at batch ${b + 1}/${batches.length}: ${err.message}`;
 }
 
 /**
@@ -364,6 +458,7 @@ async function main(ctx) {
   // Split into batches (lines-based with item count fallback)
   const maxItems = Number(config.docs?.enrichBatchSize || 0) || DEFAULT_BATCH_SIZE;
   const maxLines = Number(config.docs?.enrichBatchLines || 0) || DEFAULT_BATCH_LINES;
+  const retryCount = getRetryCount(config);
   const hasLines = pending.some((e) => e.lines > 0);
   const batches = splitIntoBatches(pending, hasLines ? maxLines : 0, maxItems);
 
@@ -377,23 +472,21 @@ async function main(ctx) {
     const prompt = buildEnrichPrompt(chapters, batch, { monorepoApps: config.monorepo?.apps });
 
     let response;
+    let attemptsUsed = 0;
     try {
-      response = await callAgentAsync(agent, prompt, timeoutMs, root);
+      response = await enrichBatchWithRetry({
+        agent,
+        prompt,
+        timeoutMs,
+        cwd: root,
+        retryCount,
+        onAttempt: () => {
+          attemptsUsed += 1;
+        },
+      });
     } catch (err) {
-      // Save progress before failing
-      if (totalEnriched > 0 && !ctx.dryRun && !ctx.stdout) {
-        const saved = saveAnalysis(root, analysis);
-        logger.log(`saved progress (${totalEnriched} entries) to ${path.relative(root, saved)}`);
-      }
-      throw new Error(`enrich: AI agent failed at batch ${b + 1}/${batches.length}: ${err.message}`);
-    }
-
-    if (!response) {
-      if (totalEnriched > 0 && !ctx.dryRun && !ctx.stdout) {
-        const saved = saveAnalysis(root, analysis);
-        logger.log(`saved progress (${totalEnriched} entries) to ${path.relative(root, saved)}`);
-      }
-      throw new Error(`enrich: AI agent returned empty response at batch ${b + 1}/${batches.length}.`);
+      saveProgress(root, analysis, totalEnriched, ctx);
+      throw new Error(formatBatchError(err, b, batches));
     }
 
     const enrichment = parseEnrichResponse(response);
@@ -403,15 +496,17 @@ async function main(ctx) {
       try { fs.writeFileSync(dumpPath, response); } catch (_) { /* ignore */ }
       logger.log(`response preview (${response.length} chars): ${response.slice(0, 200)}...`);
       logger.log(`full response dumped to: ${path.relative(root, dumpPath)}`);
-      if (totalEnriched > 0 && !ctx.dryRun && !ctx.stdout) {
-        const saved = saveAnalysis(root, analysis);
-        logger.log(`saved progress (${totalEnriched} entries) to ${path.relative(root, saved)}`);
-      }
+      saveProgress(root, analysis, totalEnriched, ctx);
       throw new Error(`enrich: could not parse AI response at batch ${b + 1}/${batches.length}.`);
     }
 
     // Merge batch results into analysis (mutates)
-    mergeEnrichment(analysis, enrichment);
+    const attemptsByKey = buildAttemptsByKey(analysis, batch, attemptsUsed);
+    mergeEnrichment(analysis, enrichment, {
+      batchEntries: batch,
+      attemptsByKey,
+      onWarn: (msg) => logger.log(msg),
+    });
 
     const batchCount = Object.values(enrichment).reduce(
       (sum, arr) => sum + (Array.isArray(arr) ? arr.length : 0), 0,
@@ -435,6 +530,17 @@ async function main(ctx) {
   }
 }
 
-export { main, buildEnrichPrompt, parseEnrichResponse, mergeEnrichment, collectEntries, splitIntoBatches, DEFAULT_BATCH_SIZE, DEFAULT_BATCH_LINES };
+export {
+  main,
+  buildEnrichPrompt,
+  parseEnrichResponse,
+  mergeEnrichment,
+  collectEntries,
+  splitIntoBatches,
+  getRetryCount,
+  enrichBatchWithRetry,
+  DEFAULT_BATCH_SIZE,
+  DEFAULT_BATCH_LINES,
+};
 
 runIfDirect(import.meta.url, main);

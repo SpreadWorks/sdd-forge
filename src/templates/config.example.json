@@ -15,6 +15,7 @@
     "default": "claude",
     "workDir": ".tmp",
     "timeout": 300,
+    "retryCount": 1,
     "providers": {
       "claude": {
         "command": "claude",

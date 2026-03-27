@@ -80,6 +80,22 @@ describe("validateConfig", () => {
     assert.deepEqual(result.agent.providers.claude.args, ["-p", "{{PROMPT}}"]);
   });
 
+  it("validates agent.retryCount", () => {
+    const cfg = {
+      ...validConfig,
+      agent: { retryCount: 3 },
+    };
+    const result = validateConfig(cfg);
+    assert.equal(result.agent.retryCount, 3);
+  });
+
+  it("rejects invalid agent.retryCount", () => {
+    assert.throws(
+      () => validateConfig({ ...validConfig, agent: { retryCount: 0 } }),
+      /agent\.retryCount/,
+    );
+  });
+
   it("rejects agent.providers entry without command", () => {
     assert.throws(
       () => validateConfig({ ...validConfig, agent: { providers: { bad: { args: [] } } } }),

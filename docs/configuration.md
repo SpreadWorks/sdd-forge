@@ -54,6 +54,7 @@ sdd-forge uses two primary configuration files — `.sdd-forge/config.json` for 
 | `agent.default` | No | `string` | — | Name of the default agent provider. |
 | `agent.workDir` | No | `string` | — | Working directory for agent execution. |
 | `agent.timeout` | No | `number` | — | Agent execution timeout in seconds. |
+| `agent.retryCount` | No | `number` | `1` | Retry count for `docs enrich` only. Retries empty responses and transient agent call failures with a fixed 3-second delay. Other agent commands do not use this yet. |
 | `agent.providers` | No | `object` | — | Map of agent provider definitions (name → provider config with `command`, `args`, etc.). |
 | `flow` | No | `object` | — | SDD flow configuration. |
 | `flow.merge` | No | `"squash" \| "ff-only" \| "merge"` | `"squash"` | Git merge strategy used when completing a flow. |
