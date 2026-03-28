@@ -4,7 +4,7 @@ import {
   containsJapanese,
   stripHashPrefix,
   assertJapaneseDraft,
-} from "../../experimental/workflow/lib/validation.js";
+} from "../workflow/lib/validation.js";
 
 describe("board draft validation", () => {
   it("detects Japanese text", () => {
