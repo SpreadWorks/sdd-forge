@@ -1,0 +1,119 @@
+{
+  "spec": "specs/093-structure-directories-fallback/spec.md",
+  "baseBranch": "development",
+  "featureBranch": "feature/093-structure-directories-fallback",
+  "steps": [
+    {
+      "id": "approach",
+      "status": "done"
+    },
+    {
+      "id": "branch",
+      "status": "done"
+    },
+    {
+      "id": "spec",
+      "status": "done"
+    },
+    {
+      "id": "draft",
+      "status": "done"
+    },
+    {
+      "id": "fill-spec",
+      "status": "done"
+    },
+    {
+      "id": "approval",
+      "status": "done"
+    },
+    {
+      "id": "gate",
+      "status": "done"
+    },
+    {
+      "id": "test",
+      "status": "done"
+    },
+    {
+      "id": "implement",
+      "status": "done"
+    },
+    {
+      "id": "review",
+      "status": "done"
+    },
+    {
+      "id": "finalize",
+      "status": "in_progress"
+    },
+    {
+      "id": "commit",
+      "status": "in_progress"
+    },
+    {
+      "id": "push",
+      "status": "pending"
+    },
+    {
+      "id": "merge",
+      "status": "pending"
+    },
+    {
+      "id": "pr-create",
+      "status": "pending"
+    },
+    {
+      "id": "branch-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "pr-merge",
+      "status": "pending"
+    },
+    {
+      "id": "sync-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "docs-update",
+      "status": "pending"
+    },
+    {
+      "id": "docs-review",
+      "status": "pending"
+    },
+    {
+      "id": "docs-commit",
+      "status": "pending"
+    }
+  ],
+  "requirements": [
+    {
+      "desc": "1エントリなら子ディレクトリで再集約",
+      "status": "done"
+    },
+    {
+      "desc": "まだ1エントリなら繰り返す",
+      "status": "done"
+    },
+    {
+      "desc": "上限 MAX_EXPAND_DEPTH = 5",
+      "status": "done"
+    },
+    {
+      "desc": "上限到達時はそのまま返す",
+      "status": "done"
+    },
+    {
+      "desc": "2エントリ以上は既存動作と同一",
+      "status": "done"
+    }
+  ],
+  "worktree": true,
+  "request": "Issue #23: StructureSource.directories() がトップレベル1ディレクトリの場合に子ディレクトリを展開するフォールバック",
+  "issue": 23,
+  "notes": [
+    "draft: recursive expansion with max depth 5 as code constant, directories() only"
+  ]
+}

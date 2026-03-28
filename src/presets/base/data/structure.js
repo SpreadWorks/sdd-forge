@@ -39,14 +39,42 @@ function buildDirectoryMap(items) {
   return dirs;
 }
 
+const MAX_EXPAND_DEPTH = 5;
+
+/** Validate analysis and return directory map, or null if not ready. */
+function getDirectoryMap(analysis) {
+  if (!analysis?.enrichedAt) return null;
+  const items = allItems(analysis);
+  if (items.length === 0) return null;
+  const dirs = buildDirectoryMap(items);
+  if (dirs.size === 0) return null;
+  return dirs;
+}
+
+/**
+ * Aggregate dirs map at a given depth, using prefix segments.
+ * @param {Map<string, {count: number, roles: Set}>} dirs - full directory map
+ * @param {number} depth - number of path segments to group by
+ * @returns {Map<string, {count: number, roles: Set}>}
+ */
+function aggregateAtDepth(dirs, depth) {
+  const agg = new Map();
+  for (const [dir, info] of dirs) {
+    const parts = dir.split("/");
+    const key = parts.slice(0, depth).join("/");
+    if (!agg.has(key)) agg.set(key, { count: 0, roles: new Set() });
+    const entry = agg.get(key);
+    entry.count += info.count;
+    for (const r of info.roles) entry.roles.add(r);
+  }
+  return agg;
+}
+
 export default class StructureSource extends DataSource {
   /** Directory tree as a code block. */
   tree(analysis, _labels) {
-    if (!analysis?.enrichedAt) return null;
-    const items = allItems(analysis);
-    if (items.length === 0) return null;
-    const dirs = buildDirectoryMap(items);
-    if (dirs.size === 0) return null;
+    const dirs = getDirectoryMap(analysis);
+    if (!dirs) return null;
 
     const sorted = [...dirs.keys()].sort();
     const lines = ["```"];
@@ -61,23 +89,18 @@ export default class StructureSource extends DataSource {
 
   /** Major directories with file counts and roles. */
   directories(analysis, labels) {
-    if (!analysis?.enrichedAt) return null;
-    const items = allItems(analysis);
-    if (items.length === 0) return null;
-    const dirs = buildDirectoryMap(items);
-    if (dirs.size === 0) return null;
+    const dirs = getDirectoryMap(analysis);
+    if (!dirs) return null;
 
-    // Only top-level directories
-    const topDirs = new Map();
-    for (const [dir, info] of dirs) {
-      const top = dir.split("/")[0];
-      if (!topDirs.has(top)) topDirs.set(top, { count: 0, roles: new Set() });
-      const entry = topDirs.get(top);
-      entry.count += info.count;
-      for (const r of info.roles) entry.roles.add(r);
+    let depth = 1;
+    let agg = aggregateAtDepth(dirs, depth);
+
+    while (agg.size === 1 && depth < MAX_EXPAND_DEPTH) {
+      depth++;
+      agg = aggregateAtDepth(dirs, depth);
     }
 
-    const rows = [...topDirs.entries()]
+    const rows = [...agg.entries()]
       .sort((a, b) => b[1].count - a[1].count)
       .map(([dir, info]) => [dir, String(info.count), [...info.roles].join(", ") || "—"]);
     const hdr = labels.length >= 2 ? labels : ["Directory", "Files", "Role"];
