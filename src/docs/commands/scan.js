@@ -48,6 +48,7 @@ function printHelp() {
       h.desc,
       "",
       "Options:",
+      `  ${opts.reset}`,
       `  ${opts.stdout}`,
       `  ${opts.dryRun}`,
       `  ${opts.help}`,
@@ -90,21 +91,107 @@ function buildExistingEntryIndex(existing) {
 }
 
 // ---------------------------------------------------------------------------
+// CLI argument parsing
+// ---------------------------------------------------------------------------
+
+/**
+ * Parse scan CLI arguments, extracting --reset (optional value) before
+ * passing remaining args to parseArgs.
+ *
+ * @returns {{ cli: Object, reset: string|null, hasReset: boolean }}
+ */
+function parseScanArgs() {
+  const rawArgs = process.argv.slice(2);
+  const resetIdx = rawArgs.indexOf("--reset");
+  let reset = null;
+  let hasReset = false;
+
+  const filtered = [...rawArgs];
+  if (resetIdx !== -1) {
+    hasReset = true;
+    const next = rawArgs[resetIdx + 1];
+    if (next && !next.startsWith("-")) {
+      reset = next;
+      filtered.splice(resetIdx, 2);
+    } else {
+      filtered.splice(resetIdx, 1);
+    }
+  }
+
+  const cli = parseArgs(filtered, {
+    flags: ["--stdout", "--dry-run"],
+    defaults: { stdout: false, dryRun: false },
+  });
+  return { cli, reset, hasReset };
+}
+
+// ---------------------------------------------------------------------------
+// --reset: clear hashes for specified (or all) categories
+// ---------------------------------------------------------------------------
+
+function resetCategories(root, resetValue) {
+  const outputDir = sddOutputDir(root);
+  const outputPath = path.join(outputDir, "analysis.json");
+
+  if (!fs.existsSync(outputPath)) {
+    logger.log("no analysis.json found — nothing to reset");
+    return;
+  }
+
+  let analysis;
+  try {
+    analysis = JSON.parse(fs.readFileSync(outputPath, "utf8"));
+  } catch (err) {
+    throw new Error(`Failed to parse ${outputPath}: ${err.message}`);
+  }
+
+  const allCategories = Object.keys(analysis).filter(
+    (k) => !ANALYSIS_META_KEYS.has(k) && analysis[k]?.entries,
+  );
+
+  const targets = resetValue
+    ? resetValue.split(",").map((s) => s.trim()).filter(Boolean)
+    : allCategories;
+
+  let totalEntries = 0;
+  let resetCount = 0;
+
+  for (const cat of targets) {
+    if (!analysis[cat] || !Array.isArray(analysis[cat].entries)) {
+      logger.log(`warn: category "${cat}" not found in analysis.json (skipped)`);
+      continue;
+    }
+    const entries = analysis[cat].entries;
+    for (const entry of entries) {
+      entry.hash = null;
+    }
+    logger.log(`reset: ${cat} (${entries.length} entries)`);
+    totalEntries += entries.length;
+    resetCount++;
+  }
+
+  if (resetCount > 0) {
+    fs.writeFileSync(outputPath, JSON.stringify(analysis) + "\n");
+    logger.log(`total: ${totalEntries} entries reset in ${resetCount} categories`);
+  }
+}
+
+// ---------------------------------------------------------------------------
 // Main
 // ---------------------------------------------------------------------------
 
 async function main(ctx) {
-  // CLI mode
   if (!ctx) {
-    const cli = parseArgs(process.argv.slice(2), {
-      flags: ["--stdout", "--dry-run"],
-      defaults: { stdout: false, dryRun: false },
-    });
+    const { cli, reset, hasReset } = parseScanArgs();
     if (cli.help) {
       printHelp();
       return;
     }
     ctx = resolveCommandContext(cli);
+    if (hasReset) {
+      resetCategories(ctx.root, reset);
+      return;
+    }
     ctx.dryRun = cli.dryRun;
     ctx.stdout = cli.stdout;
   }

@@ -129,6 +129,7 @@
         "usage": "Usage: sdd-forge docs scan [options]",
         "desc": "Analyze source code and generate analysis.json.",
         "options": {
+          "reset": "--reset [cats]  Clear entry hashes (all or comma-separated categories)",
           "stdout": "--stdout        Print result to stdout (no file write)",
           "dryRun": "--dry-run       Same as --stdout (no file write)",
           "help": "-h, --help      Show this help"

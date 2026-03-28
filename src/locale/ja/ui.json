@@ -129,6 +129,7 @@
         "usage": "Usage: sdd-forge docs scan [options]",
         "desc": "ソースコードを解析し analysis.json を生成する。",
         "options": {
+          "reset": "--reset [cats]  エントリの hash をクリア（全体またはカンマ区切りカテゴリ指定）",
           "stdout": "--stdout        結果を stdout に出力（ファイル書き込みしない）",
           "dryRun": "--dry-run       --stdout と同じ（ファイル書き込みしない）",
           "help": "-h, --help      このヘルプを表示"
