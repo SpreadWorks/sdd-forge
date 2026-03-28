@@ -54,7 +54,9 @@
 - 実装タスク・バグ → `--status Todo`
 - アイテムの特定はハッシュID またはタイトルの一部で `board.js search` を使う
 - **MUST: Issue を作成する場合は、必ず先にボードに Draft を日本語で作成し、ユーザーの「issue にして」指示を待つこと。Draft を経由せず直接 `gh issue create` してはならない。**
-- 「○○を issue にして」と言われたら `board.js to-issue <hash>` で Issue 化する（英訳は claude CLI が自動実行）
+- **MUST: 「○○を issue にして」と言われたら、必ず `node experimental/workflow/board.js to-issue <hash> [--label ...]` を実行すること。Issue 化のために `board.js add` / `board.js update` で英語タイトル・英語本文を作成してはならない。**
+- **MUST: Issue 化のために新しい英語 Draft を追加してはならない。既存の日本語 Draft を `board.js to-issue` に渡すこと。**
+- 「○○を issue にして」と言われたら `board.js to-issue <hash>` で Issue 化する（英訳はコマンド内で実行される）
   - リポジトリは public のため Issue は英語で書く
   - 適切なラベル（bug / enhancement / documentation 等）を `--label` で付ける
   - **MUST: 英語化してよいのは `board.js to-issue` により外部へ送信される GitHub Issue のタイトル・本文だけである。**

@@ -5,6 +5,7 @@ import { loadBoardConfig } from "./lib/config.js";
 import { prefixTitle, extractId } from "./lib/hash.js";
 import { searchItems, listItems, getProjectMeta, setItemStatus, updateDraftIssue } from "./lib/graphql.js";
 import { createIssue } from "./lib/issue.js";
+import { assertJapaneseDraft, assertJapaneseDraftField, stripHashPrefix } from "./lib/validation.js";
 
 function parseJsonResponse(text) {
   const trimmed = text.trim();
@@ -69,6 +70,7 @@ function cmdAdd(config, args) {
     console.error("Usage: board.js add <title> [--status Todo|Ideas] [--body <text>]");
     process.exit(1);
   }
+  assertJapaneseDraft(rawTitle, body, { allowEmptyBody: true });
 
   const title = prefixTitle(rawTitle);
 
@@ -173,6 +175,10 @@ function cmdUpdate(config, args) {
       console.error("Issue に変換済みのアイテムのタイトル・本文は更新できません");
       process.exit(1);
     }
+    const currentTitle = stripHashPrefix(item.content?.title || "");
+    const nextTitle = title !== null ? title : currentTitle;
+    const nextBody = body !== null ? body : item.content?.body;
+    assertJapaneseDraft(nextTitle, nextBody, { allowEmptyBody: true });
     const newTitle = title !== null ? `${hash}: ${title}` : undefined;
     updateDraftIssue(draftId, { title: newTitle, body: body ?? undefined });
     if (title !== null) console.log(`タイトル更新: ${newTitle}`);
@@ -229,11 +235,12 @@ function cmdToIssue(config, args) {
 
   const c = item.content;
   console.log(`Draft: ${c.title}\n`);
+  assertJapaneseDraft(stripHashPrefix(c.title || ""), c.body, { allowEmptyBody: true });
 
   // 2. claude で英訳
   const prompt = `Translate the following Japanese GitHub issue title and body to English. Output ONLY valid JSON with "title" and "body" keys. Do not include any other text.
 
-Title: ${c.title}
+Title: ${stripHashPrefix(c.title || "")}
 
 Body:
 ${c.body || "(empty)"}`;
@@ -246,6 +253,7 @@ ${c.body || "(empty)"}`;
   const result = parseJsonResponse(parsed.result);
   const enTitle = result.title;
   const enBody = result.body;
+  assertJapaneseDraftField("Draft タイトル", stripHashPrefix(c.title || ""));
 
   console.log(`英訳タイトル: ${enTitle}`);
   console.log(`英訳本文:\n${enBody}\n`);
