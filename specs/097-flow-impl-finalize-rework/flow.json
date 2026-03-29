@@ -1,0 +1,151 @@
+{
+  "spec": "specs/097-flow-impl-finalize-rework/spec.md",
+  "baseBranch": "development",
+  "featureBranch": "feature/097-flow-impl-finalize-rework",
+  "steps": [
+    {
+      "id": "approach",
+      "status": "done"
+    },
+    {
+      "id": "branch",
+      "status": "done"
+    },
+    {
+      "id": "prepare-spec",
+      "status": "done"
+    },
+    {
+      "id": "draft",
+      "status": "done"
+    },
+    {
+      "id": "spec",
+      "status": "done"
+    },
+    {
+      "id": "gate",
+      "status": "done"
+    },
+    {
+      "id": "approval",
+      "status": "done"
+    },
+    {
+      "id": "test",
+      "status": "done"
+    },
+    {
+      "id": "implement",
+      "status": "done"
+    },
+    {
+      "id": "review",
+      "status": "done"
+    },
+    {
+      "id": "finalize",
+      "status": "in_progress"
+    },
+    {
+      "id": "commit",
+      "status": "in_progress"
+    },
+    {
+      "id": "push",
+      "status": "pending"
+    },
+    {
+      "id": "merge",
+      "status": "pending"
+    },
+    {
+      "id": "pr-create",
+      "status": "pending"
+    },
+    {
+      "id": "branch-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "pr-merge",
+      "status": "pending"
+    },
+    {
+      "id": "sync-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "docs-update",
+      "status": "pending"
+    },
+    {
+      "id": "docs-review",
+      "status": "pending"
+    },
+    {
+      "id": "docs-commit",
+      "status": "pending"
+    }
+  ],
+  "requirements": [
+    {
+      "desc": "flow-impl review 3択に書き換え(en)",
+      "status": "done"
+    },
+    {
+      "desc": "レビューのみ時1件ずつ提示フロー記述(en)",
+      "status": "done"
+    },
+    {
+      "desc": "flow-impl最終確認を承認/概要/詳細/その他に書き換え(en)",
+      "status": "done"
+    },
+    {
+      "desc": "flow-impl ja版を同様に書き換え",
+      "status": "done"
+    },
+    {
+      "desc": "flow-finalize step1でresolve-context使用(en)",
+      "status": "done"
+    },
+    {
+      "desc": "flow-finalize merge/cleanup判定ロジック除去(en)",
+      "status": "done"
+    },
+    {
+      "desc": "flow-finalize ja版を同様に書き換え",
+      "status": "done"
+    },
+    {
+      "desc": "prompt impl.review-mode更新",
+      "status": "done"
+    },
+    {
+      "desc": "prompt impl.confirmation更新",
+      "status": "done"
+    },
+    {
+      "desc": "prompt finalize.mode description追加",
+      "status": "done"
+    },
+    {
+      "desc": "finalize step0に説明追加",
+      "status": "done"
+    },
+    {
+      "desc": "Hard Stops整理",
+      "status": "done"
+    }
+  ],
+  "worktree": true,
+  "request": "Task 03: flow-impl/finalize rework - review方針3択、指摘1件ずつ、impl-confirm、finalize context解決強化、merge/cleanup分岐安定化",
+  "notes": [
+    "draft: impl最終確認を承認/概要確認/詳細確認/その他に変更。flow run impl-confirm使用",
+    "draft: review方針3択(自動改善/レビューのみ/しない)。レビューのみ選択時のみ1件ずつ提示。自動改善は現行通り一括",
+    "draft: finalize開始時にflow get resolve-contextでパス確定。mainRepoPath/worktreePathを以後の全操作で使用",
+    "draft: finalize.mode のchoiceにdescription追加。prompt.jsを更新",
+    "draft: merge/cleanupの分岐判断をCLI側(flow run merge/cleanup)に寄せる。skillは結果を使って次の行動を決めるだけ",
+    "draft: prompt更新 impl.review-mode(自動改善/レビューのみ/しない), impl.confirmation(承認/概要/詳細/その他), finalize.mode(description追加)"
+  ]
+}

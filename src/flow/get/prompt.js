@@ -76,12 +76,12 @@ const PROMPTS = {
   },
   "impl.review-mode": {
     phase: "impl", step: "review-mode",
-    description: "実装が完了しました。コードレビューを実行しますか？",
+    description: "コードレビューの方針を選択してください。",
     recommendation: null,
     choices: [
-      { id: 1, label: "はい", description: "", recommended: false },
-      { id: 2, label: "スキップ", description: "", recommended: false },
-      { id: 3, label: "その他", description: "", recommended: false },
+      { id: 1, label: "コードレビューを行い改善を自動で行う", description: "", recommended: false },
+      { id: 2, label: "コードレビューのみ", description: "", recommended: false },
+      { id: 3, label: "しない", description: "", recommended: false },
     ],
   },
   "impl.review-item": {
@@ -96,9 +96,10 @@ const PROMPTS = {
     description: "実装とレビューが完了しました。次の操作を選択してください。",
     recommendation: null,
     choices: [
-      { id: 1, label: "終了処理を開始する", description: "", recommended: false },
-      { id: 2, label: "修正に戻る", description: "", recommended: false },
-      { id: 3, label: "その他", description: "", recommended: false },
+      { id: 1, label: "承認する", description: "", recommended: false },
+      { id: 2, label: "実装内容の概要を確認する", description: "", recommended: false },
+      { id: 3, label: "実装内容を詳細に確認する", description: "", recommended: false },
+      { id: 4, label: "その他", description: "", recommended: false },
     ],
   },
   "finalize.mode": {
@@ -106,8 +107,8 @@ const PROMPTS = {
     description: "終了処理の範囲を選択してください。",
     recommendation: null,
     choices: [
-      { id: 1, label: "すべて実行", description: "", recommended: false },
-      { id: 2, label: "個別に選択する", description: "", recommended: false },
+      { id: 1, label: "すべて実行", description: "コミット、マージまたは PR 作成、後片付け、必要ならドキュメント同期までまとめて進める", recommended: false },
+      { id: 2, label: "個別に選択する", description: "実行する終了処理だけを選び、選んだものだけ順に進める", recommended: false },
     ],
   },
   "finalize.steps": {
