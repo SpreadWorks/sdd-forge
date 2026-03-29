@@ -59,13 +59,12 @@ const PROMPTS = {
   },
   "plan.test-mode": {
     phase: "plan", step: "test-mode",
-    description: "テストの種類を選択してください。",
+    description: "テストコードの作成方法を選択してください。",
     recommendation: null,
     choices: [
-      { id: 1, label: "仕様に基づいてテストを作成する", description: "", recommended: false },
-      { id: 2, label: "ユニットテスト", description: "", recommended: false },
-      { id: 3, label: "E2Eテスト", description: "", recommended: false },
-      { id: 4, label: "ユニットテスト + E2E", description: "", recommended: false },
+      { id: 1, label: "テストコードを作成する", description: "", recommended: true },
+      { id: 2, label: "テストコードを作成しない", description: "", recommended: false },
+      { id: 3, label: "その他", description: "", recommended: false },
     ],
   },
   "plan.draft": {

@@ -19,21 +19,21 @@ describe("FLOW_STEPS includes review", () => {
   });
 });
 
-describe("flow CLI routes review subcommand", () => {
-  it("shows review in help output", () => {
-    const result = execFileSync("node", [FLOW_CMD, "--help"], { encoding: "utf8" });
+describe("flow run routes review action", () => {
+  it("shows review in flow run help output", () => {
+    const result = execFileSync("node", [FLOW_CMD, "run", "--help"], { encoding: "utf8" });
     assert.match(result, /review/);
   });
 });
 
-describe("flow review CLI", () => {
+describe("flow run review CLI", () => {
   let tmp;
   afterEach(() => tmp && removeTmpDir(tmp));
 
   it("errors when no active flow", () => {
     tmp = createTmpDir();
     try {
-      execFileSync("node", [FLOW_CMD, "review"], {
+      execFileSync("node", [FLOW_CMD, "run", "review"], {
         encoding: "utf8",
         env: { ...process.env, SDD_WORK_ROOT: tmp },
       });

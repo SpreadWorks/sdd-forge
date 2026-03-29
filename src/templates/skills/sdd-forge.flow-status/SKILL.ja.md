@@ -10,7 +10,7 @@ Display the current state of the SDD workflow.
 ## Procedure
 
 1. Load flow state.
-   - Run `sdd-forge flow status`.
+   - Run `sdd-forge flow get status`.
    - If it reports "no active flow", tell the user and stop.
 
 2. Gather additional information and display all of the following:
@@ -27,11 +27,11 @@ Display the current state of the SDD workflow.
      - `featureBranch == baseBranch` → "Spec only"
 
    ### Step Progress
-   - Show the step table from `sdd-forge flow status` output.
+   - Show the step table from `sdd-forge flow get status` output.
    - Highlight the current step (first `in_progress` or first `pending` after all `done`).
 
    ### Requirements Progress
-   - Show the requirements table from `sdd-forge flow status` output.
+   - Show the requirements table from `sdd-forge flow get status` output.
    - If no requirements are set yet, note "Requirements not yet defined (set after spec approval)".
 
    ### Spec Summary
@@ -65,9 +65,9 @@ Display the current state of the SDD workflow.
    ────────────────────────────────
       1. approach       ✓ done
       2. branch         ✓ done
-      3. spec           ✓ done
+      3. prepare-spec   ✓ done
       4. draft          ✓ done
-      5. fill-spec      > in_progress
+      5. spec            > in_progress
       6. approval         pending
       ...
 
@@ -91,4 +91,4 @@ Display the current state of the SDD workflow.
 
 - This skill is read-only. It does not modify any files or state.
 - If the spec file is missing or unreadable, show the path but note it cannot be read.
-- Use `sdd-forge flow status` as the primary data source — it reads `specs/NNN/flow.json` via `.sdd-forge/.active-flow` pointer internally.
+- Use `sdd-forge flow get status` as the primary data source — it reads `specs/NNN/flow.json` via `.sdd-forge/.active-flow` pointer internally.
