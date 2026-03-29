@@ -53,19 +53,19 @@
     },
     {
       "id": "push",
-      "status": "pending"
+      "status": "skipped"
     },
     {
       "id": "merge",
-      "status": "pending"
+      "status": "done"
     },
     {
       "id": "pr-create",
-      "status": "pending"
+      "status": "skipped"
     },
     {
       "id": "branch-cleanup",
-      "status": "pending"
+      "status": "in_progress"
     },
     {
       "id": "pr-merge",
