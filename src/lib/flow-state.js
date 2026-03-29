@@ -351,7 +351,7 @@ export function clearFlowState(workRoot, specId) {
  * @param {string} workRoot
  * @param {(state: FlowState) => void} mutator
  */
-function mutateFlowState(workRoot, mutator) {
+export function mutateFlowState(workRoot, mutator) {
   const state = loadFlowState(workRoot);
   if (!state) throw new Error("no active flow (flow.json not found)");
   mutator(state);

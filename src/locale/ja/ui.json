@@ -106,12 +106,9 @@
       "spec init": "spec 初期化（feature ブランチ + spec.md）",
       "spec gate": "spec ゲート（未解決事項チェック）",
       "spec guardrail": "プロジェクト guardrail（原則）を管理",
-      "flow start": "SDD フローを開始",
-      "flow status": "フロー進捗を表示・更新",
-      "flow resume": "compaction 後の文脈復元サマリーを出力",
-      "flow review": "AI コードレビュー",
-      "flow merge": "feature ブランチを squash-merge / PR 作成",
-      "flow cleanup": "feature ブランチ・worktree を削除",
+      "flow get": "フロー状態を取得（status, check, prompt, guardrail, ...）",
+      "flow set": "フロー状態を更新（step, req, note, metric, ...）",
+      "flow run": "フローアクションを実行（prepare-spec, gate, merge, ...）",
       "presets list": "プリセット継承ツリーを表示"
     },
     "cmdHelp": {

@@ -1,0 +1,81 @@
+/**
+ * tests/unit/flow/get-check.test.js
+ *
+ * Tests for `flow get check <target>` — returns prerequisite check results.
+ */
+
+import { describe, it, afterEach } from "node:test";
+import assert from "node:assert/strict";
+import { execFileSync } from "child_process";
+import { join } from "path";
+import { createTmpDir, removeTmpDir } from "../../helpers/tmp-dir.js";
+import {
+  saveFlowState, loadFlowState, buildInitialSteps, addActiveFlow,
+  updateStepStatus,
+} from "../../../src/lib/flow-state.js";
+
+const FLOW_CMD = join(process.cwd(), "src/flow.js");
+
+describe("flow get check", () => {
+  let tmp;
+  afterEach(() => tmp && removeTmpDir(tmp));
+
+  function setupFlowState(dir) {
+    const specId = "001-test";
+    const state = {
+      spec: `specs/${specId}/spec.md`,
+      baseBranch: "main",
+      featureBranch: "feature/001-test",
+      steps: buildInitialSteps(),
+      requirements: [],
+    };
+    saveFlowState(dir, state);
+    addActiveFlow(dir, specId, "local");
+  }
+
+  it("returns JSON envelope with pass and checks array", () => {
+    tmp = createTmpDir();
+    setupFlowState(tmp);
+    updateStepStatus(tmp, "gate", "done");
+    updateStepStatus(tmp, "test", "done");
+    const result = execFileSync(
+      "node", [FLOW_CMD, "get", "check", "impl"],
+      { encoding: "utf8", env: { ...process.env, SDD_WORK_ROOT: tmp } },
+    );
+    const envelope = JSON.parse(result);
+    assert.equal(envelope.ok, true);
+    assert.equal(envelope.type, "get");
+    assert.equal(envelope.key, "check");
+    assert.equal(envelope.data.pass, true);
+    assert.ok(Array.isArray(envelope.data.checks));
+  });
+
+  it("returns pass: false when prerequisites not met", () => {
+    tmp = createTmpDir();
+    setupFlowState(tmp);
+    const result = execFileSync(
+      "node", [FLOW_CMD, "get", "check", "impl"],
+      { encoding: "utf8", env: { ...process.env, SDD_WORK_ROOT: tmp } },
+    );
+    const envelope = JSON.parse(result);
+    assert.equal(envelope.ok, true);
+    assert.equal(envelope.data.pass, false);
+    const failedChecks = envelope.data.checks.filter((c) => !c.pass);
+    assert.ok(failedChecks.length > 0);
+  });
+
+  it("returns error for unknown target", () => {
+    tmp = createTmpDir();
+    setupFlowState(tmp);
+    try {
+      execFileSync(
+        "node", [FLOW_CMD, "get", "check", "nonexistent"],
+        { encoding: "utf8", env: { ...process.env, SDD_WORK_ROOT: tmp } },
+      );
+      assert.fail("should exit non-zero");
+    } catch (err) {
+      const envelope = JSON.parse(err.stdout);
+      assert.equal(envelope.ok, false);
+    }
+  });
+});

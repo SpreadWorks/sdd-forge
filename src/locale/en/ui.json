@@ -106,12 +106,9 @@
       "spec init": "Initialize spec (feature branch + spec.md)",
       "spec gate": "Spec gate (open issues check)",
       "spec guardrail": "Manage project guardrail (principles)",
-      "flow start": "Run SDD flow automatically",
-      "flow status": "Show current flow state",
-      "flow resume": "Output context summary for resuming after compaction",
-      "flow review": "AI-driven code quality review",
-      "flow merge": "Squash-merge feature branch or create PR",
-      "flow cleanup": "Delete feature branch and/or worktree",
+      "flow get": "Read flow state (status, check, prompt, guardrail, ...)",
+      "flow set": "Update flow state (step, req, note, metric, ...)",
+      "flow run": "Execute flow actions (prepare-spec, gate, merge, ...)",
       "presets list": "Show preset inheritance tree"
     },
     "cmdHelp": {
