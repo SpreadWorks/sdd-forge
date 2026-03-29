@@ -264,7 +264,6 @@ ${c.body || "(empty)"}`;
     body: enBody,
     labels,
     repo: config.repo,
-    project: config.repo.split("/")[1],
   });
 
   console.log(`Issue 作成: ${url}`);
