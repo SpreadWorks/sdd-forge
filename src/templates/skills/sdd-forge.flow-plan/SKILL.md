@@ -31,49 +31,22 @@ Available status values: `pending`, `in_progress`, `done`, `skipped`
 
 1. Choose approach.
    - **Note**: `flow.json` does not exist yet at this point. Do NOT run `sdd-forge flow set` commands until after step 3.
-   - Present:
-     ```
-     ──────────────────────────────────────────────────────────
-       Choose how to create the spec.
-     ──────────────────────────────────────────────────────────
-
-       [1] Organize requirements through Q&A before writing the spec
-       [2] Write the spec
-
-     ```
+   - Run `sdd-forge flow get prompt plan.approach` and present the `description` and `choices` from the response using the Choice Format.
    - Remember the choice for later. Proceed to step 2 regardless.
 
 2. Choose work environment.
    - **Auto-detect**: Check if `.git` is a file (not directory) in the project root.
      - If yes → already in a worktree. Skip choice, use `--no-branch` automatically.
    - **User choice** (if not in a worktree):
-     ```
-     ──────────────────────────────────────────────────────────
-       Choose a work environment.
-     ──────────────────────────────────────────────────────────
-
-       [1] Git worktree (work in an isolated environment)
-       [2] Branch (create a feature branch)
-       [3] No branch
-
-     ```
+     - Run `sdd-forge flow get prompt plan.work-environment` and present the choices.
    - For options 1 and 2:
-     ```
-     ──────────────────────────────────────────────────────────
-       Branch from current branch (`<current-branch>`).
-     ──────────────────────────────────────────────────────────
-
-       [1] Yes
-       [2] Specify a branch
-       [3] Other
-
-     ```
+     - Run `sdd-forge flow get prompt plan.base-branch` and present the choices. Append `` (`<current-branch>`) `` to the description.
      - 1 → use `--base <current-branch>`.
      - 2 → ask which branch and use `--base <user-specified-branch>`.
 
 3. Create or select spec (`prepare-spec`).
    - **Before running prepare-spec**, check for uncommitted changes: `git status --short`
-     - If dirty, ask the user to commit or stash before proceeding.
+     - If dirty, run `sdd-forge flow get prompt plan.dirty-worktree` and present the choices.
      - Do not run `sdd-forge flow run prepare-spec` on a dirty worktree.
    - Commands (based on step 2 choice):
      - Worktree: `sdd-forge flow run prepare-spec --title "..." --base <branch> --worktree`
@@ -159,17 +132,7 @@ Available status values: `pending`, `in_progress`, `done`, `skipped`
    - Present the FULL spec text (the gate-PASS version) to the user.
    - The user reads the gate-passed final spec and approves.
    - Wait for approval before any implementation.
-   - Present:
-     ```
-     ──────────────────────────────────────────────────────────
-       Review the spec and approve it.
-     ──────────────────────────────────────────────────────────
-
-       [1] Approve
-       [2] Revise
-       [3] Other
-
-     ```
+   - Run `sdd-forge flow get prompt plan.approval` and present the choices.
    - Update `## User Confirmation` with:
      - `- [x] User approved this spec`
      - Confirmation date and short note.
@@ -179,17 +142,7 @@ Available status values: `pending`, `in_progress`, `done`, `skipped`
 
 8. Test phase (after approval).
    - **On start**: `sdd-forge flow set step test in_progress`
-   - Present:
-     ```
-     ──────────────────────────────────────────────────────────
-       Choose test approach.
-     ──────────────────────────────────────────────────────────
-
-       [1] Write test code
-       [2] Skip test creation
-       [3] Other
-
-     ```
+   - Run `sdd-forge flow get prompt plan.test-mode` and present the choices.
    - If code changes exist, implementation verification test is required in principle.
    - AI decides the appropriate test type based on the project's test infrastructure (no separate test-type selection).
    - AI shares briefly which test framework will be used and what will be verified (not a separate approval gate).
@@ -203,17 +156,7 @@ Available status values: `pending`, `in_progress`, `done`, `skipped`
      - Treat as a separate spec (out of scope for current feature spec).
    - **On complete**: `sdd-forge flow set step test done`
    - **After test step is done**:
-     ```
-     ──────────────────────────────────────────────────────────
-       Planning phase is complete.
-       Choose next action.
-     ──────────────────────────────────────────────────────────
-
-       [1] Proceed to implementation
-       [2] Review the plan
-       [3] Other
-
-     ```
+     - Run `sdd-forge flow get prompt plan.complete` and present the choices.
 
 ## Worktree Mode
 

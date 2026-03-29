@@ -1,0 +1,137 @@
+/**
+ * tests/unit/flow/prompt-i18n.test.js
+ *
+ * Tests for prompt i18n — verifies ja/en language support.
+ */
+
+import { describe, it, afterEach } from "node:test";
+import assert from "node:assert/strict";
+import fs from "fs";
+import path from "path";
+import { execFileSync } from "child_process";
+import { join } from "path";
+import { createTmpDir, removeTmpDir } from "../../helpers/tmp-dir.js";
+import {
+  saveFlowState, buildInitialSteps, addActiveFlow,
+} from "../../../src/lib/flow-state.js";
+
+const FLOW_CMD = join(process.cwd(), "src/flow.js");
+
+function setupFlowState(dir, lang) {
+  const specId = "001-test";
+  const state = {
+    spec: `specs/${specId}/spec.md`,
+    baseBranch: "main",
+    featureBranch: "feature/001-test",
+    steps: buildInitialSteps(),
+    requirements: [],
+  };
+  saveFlowState(dir, state);
+  addActiveFlow(dir, specId, "local");
+  // Write config with lang
+  const sddDir = path.join(dir, ".sdd-forge");
+  fs.mkdirSync(sddDir, { recursive: true });
+  fs.writeFileSync(path.join(sddDir, "config.json"), JSON.stringify({
+    lang,
+    type: "base",
+    docs: { languages: [lang], defaultLanguage: lang },
+  }));
+}
+
+describe("flow get prompt i18n — Japanese", () => {
+  let tmp;
+  afterEach(() => tmp && removeTmpDir(tmp));
+
+  it("returns Japanese description for plan.approach when lang=ja", () => {
+    tmp = createTmpDir();
+    setupFlowState(tmp, "ja");
+    const result = execFileSync(
+      "node", [FLOW_CMD, "get", "prompt", "plan.approach"],
+      { encoding: "utf8", env: { ...process.env, SDD_WORK_ROOT: tmp } },
+    );
+    const envelope = JSON.parse(result);
+    assert.equal(envelope.ok, true);
+    assert.ok(envelope.data.description.includes("仕様書"), `should be Japanese: ${envelope.data.description}`);
+  });
+
+  it("returns Japanese choices for plan.work-environment when lang=ja", () => {
+    tmp = createTmpDir();
+    setupFlowState(tmp, "ja");
+    const result = execFileSync(
+      "node", [FLOW_CMD, "get", "prompt", "plan.work-environment"],
+      { encoding: "utf8", env: { ...process.env, SDD_WORK_ROOT: tmp } },
+    );
+    const envelope = JSON.parse(result);
+    const labels = envelope.data.choices.map((c) => c.label);
+    assert.ok(labels.some((l) => l.includes("worktree") || l.includes("隔離")), `should have Japanese label: ${labels}`);
+  });
+
+  it("returns Japanese for plan.approval when lang=ja", () => {
+    tmp = createTmpDir();
+    setupFlowState(tmp, "ja");
+    const result = execFileSync(
+      "node", [FLOW_CMD, "get", "prompt", "plan.approval"],
+      { encoding: "utf8", env: { ...process.env, SDD_WORK_ROOT: tmp } },
+    );
+    const envelope = JSON.parse(result);
+    assert.ok(envelope.data.description.includes("承認"), `should be Japanese: ${envelope.data.description}`);
+  });
+});
+
+describe("flow get prompt i18n — English", () => {
+  let tmp;
+  afterEach(() => tmp && removeTmpDir(tmp));
+
+  it("returns English description for plan.approach when lang=en", () => {
+    tmp = createTmpDir();
+    setupFlowState(tmp, "en");
+    const result = execFileSync(
+      "node", [FLOW_CMD, "get", "prompt", "plan.approach"],
+      { encoding: "utf8", env: { ...process.env, SDD_WORK_ROOT: tmp } },
+    );
+    const envelope = JSON.parse(result);
+    assert.equal(envelope.ok, true);
+    assert.ok(envelope.data.description.includes("Choose"), `should be English: ${envelope.data.description}`);
+  });
+
+  it("returns English choices for plan.approval when lang=en", () => {
+    tmp = createTmpDir();
+    setupFlowState(tmp, "en");
+    const result = execFileSync(
+      "node", [FLOW_CMD, "get", "prompt", "plan.approval"],
+      { encoding: "utf8", env: { ...process.env, SDD_WORK_ROOT: tmp } },
+    );
+    const envelope = JSON.parse(result);
+    const labels = envelope.data.choices.map((c) => c.label);
+    assert.ok(labels.includes("Approve"), `should have English label: ${labels}`);
+  });
+
+  it("returns English for plan.test-mode when lang=en", () => {
+    tmp = createTmpDir();
+    setupFlowState(tmp, "en");
+    const result = execFileSync(
+      "node", [FLOW_CMD, "get", "prompt", "plan.test-mode"],
+      { encoding: "utf8", env: { ...process.env, SDD_WORK_ROOT: tmp } },
+    );
+    const envelope = JSON.parse(result);
+    assert.ok(envelope.data.description.includes("test"), `should be English: ${envelope.data.description}`);
+    const labels = envelope.data.choices.map((c) => c.label);
+    assert.ok(labels.includes("Write test code"), `should have English label: ${labels}`);
+  });
+});
+
+describe("flow-plan SKILL.md has no hardcoded prompt text", () => {
+  it("does not contain fixed choice blocks for plan prompts", () => {
+    const skillPath = join(process.cwd(), "src/templates/skills/sdd-forge.flow-plan/SKILL.md");
+    const content = fs.readFileSync(skillPath, "utf8");
+    // Should not contain hardcoded English choice labels
+    assert.ok(!content.includes("[1] Organize requirements"), "should not hardcode approach choices");
+    assert.ok(!content.includes("[1] Write test code"), "should not hardcode test-mode choices");
+    assert.ok(!content.includes("[1] Approve"), "should not hardcode approval choices");
+    assert.ok(!content.includes("[1] Proceed to implementation"), "should not hardcode complete choices");
+    // Should reference flow get prompt instead
+    assert.ok(content.includes("flow get prompt plan.approach"), "should reference prompt command");
+    assert.ok(content.includes("flow get prompt plan.approval"), "should reference prompt command");
+    assert.ok(content.includes("flow get prompt plan.test-mode"), "should reference prompt command");
+  });
+});
