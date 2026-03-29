@@ -14,7 +14,7 @@ import path from "path";
 import { runIfDirect } from "../../lib/entrypoint.js";
 import { parseArgs } from "../../lib/cli.js";
 import { sddOutputDir } from "../../lib/config.js";
-import { resolveAgent, callAgentAsync, DEFAULT_AGENT_TIMEOUT } from "../../lib/agent.js";
+import { resolveAgent, callAgentAsync, DEFAULT_AGENT_TIMEOUT, resolveWorkDir } from "../../lib/agent.js";
 import { resolveCommandContext, loadFullAnalysis } from "../lib/command-context.js";
 import { resolveChaptersOrder } from "../lib/template-merger.js";
 import { createLogger } from "../../lib/progress.js";
@@ -491,8 +491,10 @@ async function main(ctx) {
 
     const enrichment = parseEnrichResponse(response);
     if (!enrichment) {
-      // Dump failed response for debugging
-      const dumpPath = path.join(sddOutputDir(root), `enrich-fail-batch${b + 1}.txt`);
+      // Dump failed response for debugging (to workDir, not .sdd-forge/output/)
+      const dumpDir = resolveWorkDir(root, config);
+      fs.mkdirSync(dumpDir, { recursive: true });
+      const dumpPath = path.join(dumpDir, `enrich-fail-batch${b + 1}.txt`);
       try { fs.writeFileSync(dumpPath, response); } catch (_) { /* ignore */ }
       logger.log(`response preview (${response.length} chars): ${response.slice(0, 200)}...`);
       logger.log(`full response dumped to: ${path.relative(root, dumpPath)}`);

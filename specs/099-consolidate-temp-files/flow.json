@@ -1,0 +1,118 @@
+{
+  "spec": "specs/099-consolidate-temp-files/spec.md",
+  "baseBranch": "development",
+  "featureBranch": "feature/099-consolidate-temp-files",
+  "steps": [
+    {
+      "id": "approach",
+      "status": "done"
+    },
+    {
+      "id": "branch",
+      "status": "done"
+    },
+    {
+      "id": "prepare-spec",
+      "status": "done"
+    },
+    {
+      "id": "draft",
+      "status": "done"
+    },
+    {
+      "id": "spec",
+      "status": "done"
+    },
+    {
+      "id": "gate",
+      "status": "done"
+    },
+    {
+      "id": "approval",
+      "status": "done"
+    },
+    {
+      "id": "test",
+      "status": "done"
+    },
+    {
+      "id": "implement",
+      "status": "done"
+    },
+    {
+      "id": "review",
+      "status": "skipped"
+    },
+    {
+      "id": "finalize",
+      "status": "in_progress"
+    },
+    {
+      "id": "commit",
+      "status": "in_progress"
+    },
+    {
+      "id": "push",
+      "status": "pending"
+    },
+    {
+      "id": "merge",
+      "status": "pending"
+    },
+    {
+      "id": "pr-create",
+      "status": "pending"
+    },
+    {
+      "id": "branch-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "pr-merge",
+      "status": "pending"
+    },
+    {
+      "id": "sync-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "docs-update",
+      "status": "pending"
+    },
+    {
+      "id": "docs-review",
+      "status": "pending"
+    },
+    {
+      "id": "docs-commit",
+      "status": "pending"
+    }
+  ],
+  "requirements": [
+    {
+      "desc": "enrich失敗ダンプの出力先をresolveWorkDirに変更",
+      "status": "done"
+    },
+    {
+      "desc": "ファイル名enrich-fail-batch{N}.txtは維持",
+      "status": "pending"
+    },
+    {
+      "desc": "resolveWorkDirのディレクトリが存在しない場合は作成",
+      "status": "pending"
+    }
+  ],
+  "worktree": true,
+  "issue": 25,
+  "request": "Issue #25: 一時ファイルを設定済みテンポラリディレクトリへ集約する",
+  "metrics": {
+    "draft": {
+      "question": 4
+    }
+  },
+  "notes": [
+    "draft: enrich失敗ダンプを.tmp/(agent.workDir)に移動",
+    "draft: agent.workDirをtemp用に使う。新設定は追加しない",
+    "draft: 既存ファイルのクリーンアップはしない。新規分のみ.tmp/に書く"
+  ]
+}
