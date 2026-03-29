@@ -63,15 +63,20 @@ Available status values: `pending`, `in_progress`, `done`, `skipped`
 
 ## Required Sequence
 
-1. Load context.
-   - Read `specs/NNN/flow.json` (resolved via `.sdd-forge/.active-flow` pointer) to get spec path, base branch, worktree info, and progress.
-   - Read `.sdd-forge/config.json` to get `commands.gh` and `flow.push.remote` settings.
-   - Run `sdd-forge flow get status` to display current state.
+1. Resolve context and paths.
+   - Run `sdd-forge flow get resolve-context` to get JSON with:
+     - `mainRepoPath` — main repository root
+     - `worktreePath` — worktree path (null if not worktree mode)
+     - `activeFlow` — active flow spec ID
+     - `flowJsonPath` — path to flow.json
+     - `spec`, `baseBranch`, `featureBranch`, `worktree`
+   - **Confirm paths:** If `worktree: true`, verify `worktreePath` exists.
+   - **Rule:** Merge/checkout operations use `mainRepoPath`. File reads/commits use `worktreePath` (if worktree mode).
+   - Read `.sdd-forge/config.json` from `mainRepoPath` to get `commands.gh` and `flow.push.remote` settings.
 
 2. Check current state.
    - `git rev-parse --abbrev-ref HEAD` — confirm on feature branch.
    - `git status --short` — check uncommitted changes.
-   - If `worktree: true` in flow.json, confirm working in worktree directory.
    - **Check `gh` availability**: If `commands.gh` is `"enable"` in config, run `gh --version`.
      - If `gh` is available, PR route is offered.
      - If `gh` is NOT available, display warning: `⚠ commands.gh is enabled but gh command is not found. PR route is unavailable.`
@@ -109,46 +114,27 @@ Available status values: `pending`, `in_progress`, `done`, `skipped`
      ```
 
    **4a. merge route**:
-   - **On start**: `sdd-forge flow set step merge in_progress`
-   - Record strategy: `sdd-forge flow set note "merge: merge"`
-   - Determine approach based on flow.json state:
-     - **Worktree** (`worktree: true`):
-       - From the main repository: `git checkout <base-branch>` then `git merge <feature-branch>`.
-     - **Branch** (`featureBranch != baseBranch`, no worktree):
-       - `git checkout <base-branch>`
-       - `git merge <feature-branch>`
-     - **Spec-only** (`featureBranch == baseBranch`):
-       - Skip merge (already on the correct branch).
-   - Update flow.json: set `mergeStrategy` to `"merge"`.
-   - **On complete**: `sdd-forge flow set step merge done`
+   - `sdd-forge flow set step merge in_progress`
+   - `sdd-forge flow set note "merge: merge"`
+   - Run `sdd-forge flow run merge` from `mainRepoPath`. The CLI handles worktree/branch/spec-only detection internally.
+   - Use the JSON response `{result, changed, artifacts, next}` to confirm success.
+   - `sdd-forge flow set step merge done`
    - Mark `push` and `pr-create` as `skipped`.
 
    **4b. squash merge route**:
-   - **On start**: `sdd-forge flow set step merge in_progress`
-   - Record strategy: `sdd-forge flow set note "merge: squash merge"`
-   - Determine approach based on flow.json state:
-     - **Worktree** (`worktree: true`):
-       - Run `sdd-forge flow run merge` (auto-detects worktree paths at runtime).
-     - **Branch** (`featureBranch != baseBranch`, no worktree):
-       - `git checkout <base-branch>`
-       - `git merge --squash <feature-branch>`
-       - `git commit`
-     - **Spec-only** (`featureBranch == baseBranch`):
-       - Skip merge (already on the correct branch).
-   - Update flow.json: set `mergeStrategy` to `"squash"`.
-   - **On complete**: `sdd-forge flow set step merge done`
+   - `sdd-forge flow set step merge in_progress`
+   - `sdd-forge flow set note "merge: squash merge"`
+   - Run `sdd-forge flow run merge` from `mainRepoPath`. The CLI handles worktree/branch/spec-only detection internally.
+   - Use the JSON response to confirm success.
+   - `sdd-forge flow set step merge done`
    - Mark `push` and `pr-create` as `skipped`.
 
    **4c. PR route** (when user chooses pull request):
-   - **Push**: `sdd-forge flow set step push in_progress`
-     - Determine remote from config: `flow.push.remote` (default: `"origin"`).
-     - Run `sdd-forge flow run merge --pr --dry-run` to preview, then `sdd-forge flow run merge --pr` to execute.
-     - `sdd-forge flow set step push done`
-   - **PR create**: `sdd-forge flow set step pr-create in_progress`
-     - PR is created by `sdd-forge flow run merge --pr`.
-     - `sdd-forge flow set step pr-create done`
-   - Update flow.json: set `mergeStrategy` to `"pr"`.
-   - Record: `sdd-forge flow set note "merge: PR route"`
+   - `sdd-forge flow set step push in_progress`
+   - Run `sdd-forge flow run merge --pr --dry-run` to preview, then `sdd-forge flow run merge --pr` to execute.
+   - `sdd-forge flow set step push done`
+   - `sdd-forge flow set step pr-create done` (PR is created by the merge --pr command).
+   - `sdd-forge flow set note "merge: PR route"`
    - Mark `merge` as `skipped`.
 
 5. Clean up.
@@ -157,25 +143,21 @@ Available status values: `pending`, `in_progress`, `done`, `skipped`
      - `sdd-forge flow set step branch-cleanup skipped`
      - Inform user: "Branch cleanup is not performed for pull requests."
    - **If merge/squash merge route**:
-     Determine cleanup strategy based on flow.json state:
-     - **Worktree** (`worktree: true`):
-       - Present:
-         ```
-         ──────────────────────────────────────────────────────────
-           Remove worktree?
-         ──────────────────────────────────────────────────────────
+     - Run `sdd-forge flow run cleanup --dry-run` to preview what will be deleted.
+     - Present:
+       ```
+       ──────────────────────────────────────────────────────────
+         ブランチ/worktree を削除しますか？
+       ──────────────────────────────────────────────────────────
 
-           [1] Remove
-           [2] Keep
-           [3] Other
+         [1] 削除する
+         [2] 残す
+         [3] その他
 
-         ```
-         - 1 → Run `sdd-forge flow run cleanup`.
-         - 2 → Skip deletion.
-     - **Branch** (`featureBranch != baseBranch`):
-       - Delete with `git branch -D <featureBranch>`.
-     - **Spec-only**:
-       - No branch/worktree cleanup needed.
+       ```
+       - 1 → Run `sdd-forge flow run cleanup`. The CLI handles worktree/branch/spec-only detection internally.
+       - 2 → Skip deletion.
+   - Use the JSON response `{result, changed, artifacts}` to confirm what was deleted.
    - **On complete**: `sdd-forge flow set step branch-cleanup done`
    - **If skipped**: `sdd-forge flow set step branch-cleanup skipped`
 
@@ -221,6 +203,7 @@ Available status values: `pending`, `in_progress`, `done`, `skipped`
 
 ```bash
 sdd-forge flow get status
+sdd-forge flow get resolve-context
 sdd-forge flow set step <id> <val>
 sdd-forge flow set note "<text>"
 sdd-forge flow run merge
@@ -228,4 +211,5 @@ sdd-forge flow run merge --auto
 sdd-forge flow run merge --pr
 sdd-forge flow run merge --pr --dry-run
 sdd-forge flow run cleanup
+sdd-forge flow run cleanup --dry-run
 ```

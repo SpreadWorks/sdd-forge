@@ -47,21 +47,23 @@ Before starting, run `sdd-forge flow get check impl` to verify prerequisites.
 
 2. Review implementation.
    - **On start**: `sdd-forge flow set step review in_progress`
-   - Present:
+   - Present review policy:
      ```
      ──────────────────────────────────────────────────────────
-       Implementation is complete. Run code review?
+       コードレビューの方針を選択してください。
      ──────────────────────────────────────────────────────────
 
-       [1] Yes
-       [2] Skip
-       [3] Other
+       [1] コードレビューを行い改善を自動で行う
+       [2] コードレビューのみ
+       [3] しない
 
      ```
-     - 2 → `sdd-forge flow set step review skipped` → Step 3
+     - 3 → `sdd-forge flow set step review skipped` → Step 3
+
+   **Option 1 (auto-fix):**
    - Run `sdd-forge flow run review` to perform AI-powered code review.
    - **If proposals exist** (APPROVED items in review.md):
-     1. Display review summary in this format:
+     1. Display review summary:
         ```
         Code review found N proposal(s).
         N are recommended for application.
@@ -71,50 +73,69 @@ Before starting, run `sdd-forge flow get check impl` to verify prerequisites.
               Issue: <why this is a problem>
               Fix: <what to change>
 
-          #5: <title>
-              Issue: <why this is a problem>
-              Fix: <what to change>
-
         No action needed:
           #1: <title>
               Reason: <why no action is needed>
         ```
-     2. Present:
-        ```
-        ──────────────────────────────────────────────────────────
-          Apply the recommended proposals?
-        ──────────────────────────────────────────────────────────
-
-          [1] Apply recommended
-          [2] Apply all proposals
-          [3] Skip
-          [4] Other
-
-        ```
-     3. If 1 → Apply fixes based on recommended proposals → Re-run tests to confirm no regressions.
-     4. If 2 → Apply all proposals (including those marked as no action needed) → Re-run tests.
-     5. If 3 → Skip fixes, proceed to Step 3.
+     2. Apply approved fixes automatically.
+     3. Re-run tests to confirm no regressions.
    - **If no proposals** (NO_PROPOSALS):
      - Display: "Review found no issues requiring changes."
-     - Proceed directly to Step 3 (no user confirmation needed).
+   - Proceed to Step 3.
+
+   **Option 2 (review-only):**
+   - Run `sdd-forge flow run review` to get all proposals.
+   - Present each proposal **one at a time** with `(n/N)` progress display.
+   - For each proposal, show concisely:
+     - Problem
+     - Proposed fix
+     - Whether it is needed for this spec
+   - End each proposal with a question:
+     ```
+     ──────────────────────────────────────────────────────────
+       (n/N) この指摘に対する対応を選択してください。
+     ──────────────────────────────────────────────────────────
+
+       [1] 適用する
+       [2] 適用しない
+       [3] 修正方針を変える
+
+     ```
+   - **Do NOT apply fixes yet** — collect all user responses first.
+   - After all proposals are reviewed, apply only the approved ones in bulk.
+   - Re-run tests to confirm no regressions.
+   - Proceed to Step 3.
+
    - **On complete**: `sdd-forge flow set step review done`
 
-3. Ask user about finalization.
+3. Final confirmation before finalize.
    - **On start**: `sdd-forge flow set step finalize in_progress`
    - Present:
      ```
      ──────────────────────────────────────────────────────────
-       Implementation and review are complete.
-       Choose next action.
+       実装とレビューが完了しました。次の操作を選択してください。
      ──────────────────────────────────────────────────────────
 
-       [1] Start finalization
-       [2] Return to modifications
-       [3] Other
+       [1] 承認する
+       [2] 実装内容の概要を確認する
+       [3] 実装内容を詳細に確認する
+       [4] その他
 
      ```
-   - 1 → immediately invoke `/sdd-forge.flow-finalize` using the Skill tool (do not wait for additional user input).
-   - 2 → go back to step 2.
+   - **Option 1 (approve):** Immediately invoke `/sdd-forge.flow-finalize` using the Skill tool.
+   - **Option 2 (overview):** Run `sdd-forge flow run impl-confirm --mode overview`. Display:
+     - Changed files list
+     - Summary of major changes
+     - Whether any changes are outside spec scope
+     - Test/verification results
+     Then return to this choice prompt.
+   - **Option 3 (detail):** Run `sdd-forge flow run impl-confirm --mode detail`. Present requirement-by-requirement:
+     - Which spec requirement it addresses
+     - Changed files
+     - Implementation summary
+     - Whether any changes are outside spec scope
+     Then return to this choice prompt.
+   - **Option 4 (other):** Ask what the user wants to do.
    - **On complete**: `sdd-forge flow set step finalize done`
 
 ## Worktree Mode
@@ -144,5 +165,6 @@ sdd-forge flow set step <id> <val>
 sdd-forge flow set req <index> <val>
 sdd-forge flow set note "<text>"
 sdd-forge flow run review
+sdd-forge flow run impl-confirm --mode <overview|detail>
 sdd-forge snapshot check
 ```
