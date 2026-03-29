@@ -63,7 +63,13 @@ async function main() {
   }
 
   // 1. Skills upgrade
-  const skillResults = deploySkills(root, config.lang, { dryRun });
+  let skillResults;
+  try {
+    skillResults = deploySkills(root, config.lang, { dryRun });
+  } catch (e) {
+    console.error(`upgrade failed: ${e.message}`);
+    process.exit(1);
+  }
   for (const { name, status } of skillResults) {
     if (status === "updated") {
       console.log(t("ui:upgrade.skillUpdated", { name }));

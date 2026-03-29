@@ -1,0 +1,143 @@
+{
+  "spec": "specs/098-include-upgrade/spec.md",
+  "baseBranch": "development",
+  "featureBranch": "feature/098-include-upgrade",
+  "steps": [
+    {
+      "id": "approach",
+      "status": "done"
+    },
+    {
+      "id": "branch",
+      "status": "done"
+    },
+    {
+      "id": "prepare-spec",
+      "status": "done"
+    },
+    {
+      "id": "draft",
+      "status": "done"
+    },
+    {
+      "id": "spec",
+      "status": "done"
+    },
+    {
+      "id": "gate",
+      "status": "done"
+    },
+    {
+      "id": "approval",
+      "status": "done"
+    },
+    {
+      "id": "test",
+      "status": "done"
+    },
+    {
+      "id": "implement",
+      "status": "done"
+    },
+    {
+      "id": "review",
+      "status": "done"
+    },
+    {
+      "id": "finalize",
+      "status": "in_progress"
+    },
+    {
+      "id": "commit",
+      "status": "in_progress"
+    },
+    {
+      "id": "push",
+      "status": "pending"
+    },
+    {
+      "id": "merge",
+      "status": "pending"
+    },
+    {
+      "id": "pr-create",
+      "status": "pending"
+    },
+    {
+      "id": "branch-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "pr-merge",
+      "status": "pending"
+    },
+    {
+      "id": "sync-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "docs-update",
+      "status": "pending"
+    },
+    {
+      "id": "docs-review",
+      "status": "pending"
+    },
+    {
+      "id": "docs-commit",
+      "status": "pending"
+    }
+  ],
+  "requirements": [
+    {
+      "desc": "resolveIncludes()を実装(再帰展開)",
+      "status": "done"
+    },
+    {
+      "desc": "パス解決ルール4種を実装",
+      "status": "done"
+    },
+    {
+      "desc": "../と./の禁止パス検出",
+      "status": "done"
+    },
+    {
+      "desc": "循環参照の検出",
+      "status": "done"
+    },
+    {
+      "desc": "ファイル未発見時のエラーメッセージ",
+      "status": "done"
+    },
+    {
+      "desc": "deploySkills()でresolveIncludes()統合",
+      "status": "done"
+    },
+    {
+      "desc": "共有パーツ5ファイル作成(partials/)",
+      "status": "done"
+    },
+    {
+      "desc": "plan/impl/finalizeテンプレートをinclude化",
+      "status": "done"
+    },
+    {
+      "desc": "upgrade.jsのエラーハンドリング",
+      "status": "done"
+    },
+    {
+      "desc": "展開済み出力の検証テスト",
+      "status": "done"
+    }
+  ],
+  "worktree": true,
+  "request": "Task 04: include ディレクティブと upgrade 時の展開を実装。skill テンプレートの重複削減",
+  "notes": [
+    "draft: include関数はsrc/lib/include.jsに配置。resolveIncludes(content, opts)のシグネチャ",
+    "draft: 共有パーツはsrc/templates/partials/に配置。include参照は@templates/partials/xxx.md",
+    "draft: include展開はdeploySkills()内。展開済み完成品を.agents/.claudeにデプロイ",
+    "draft: resolveIncludes()はthrowのみ。process.exitは呼ばない。親側(upgrade.js)でキャッチ・制御",
+    "draft: include仕組み+実際のskillテンプレート切り出しを両方やる",
+    "review: SKILL.en.md/ja.mdをSKILL.md 1本に統一。config.lang翻訳指示方式に変更"
+  ]
+}

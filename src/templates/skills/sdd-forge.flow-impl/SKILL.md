@@ -1,6 +1,6 @@
 ---
 name: sdd-forge.flow-impl
-description: SDD 実装ワークフローを実行する。コーディング、レビュー、終了処理をカバー。
+description: Run the SDD implementation workflow. Use for coding, review iteration, and finalization after planning is complete.
 ---
 
 # SDD Flow Impl
@@ -9,37 +9,22 @@ Run this workflow after the planning phase (flow-plan) is complete. This skill c
 
 ## Core Principle
 
-**Confirm with the user before proceeding to the next action at every step of the SDD flow.**
-The AI must not advance to the next step on its own.
+<!-- include("@templates/partials/core-principle.md") -->
 
 ## Flow Progress Tracking
 
-**MUST: Run `sdd-forge flow set step <id> <val>` upon completion of each step to record flow progress.**
+<!-- include("@templates/partials/flow-tracking.md") -->
 
 Available step IDs (this skill): `implement`, `review`, `finalize`
 Available status values: `pending`, `in_progress`, `done`, `skipped`
 
 ## Context Recording (Compaction Resilience)
 
-**MUST: Record key decisions for compaction recovery.**
-
-- After each user choice, record: `sdd-forge flow set note "<step>: <choice summary>"`
+<!-- include("@templates/partials/context-recording.md") -->
 
 ## Choice Format
 
-選択肢は以下の形式で表示すること:
-```
-──────────────────────────────────────────────────────────
-  説明文（質問や状況の説明）
-──────────────────────────────────────────────────────────
-
-  [1] ラベル
-  [2] ラベル
-  [3] その他
-
-```
-- Do not combine the description and choices into one sentence. Description goes inside the lines, choices go outside.
-- Add blank lines before and after the choices.
+<!-- include("@templates/partials/choice-format.md") -->
 
 ## Prerequisites
 
@@ -65,12 +50,12 @@ Before starting, run `sdd-forge flow get check impl` to verify prerequisites.
    - Present:
      ```
      ──────────────────────────────────────────────────────────
-       実装が完了しました。コードレビューを実行しますか？
+       Implementation is complete. Run code review?
      ──────────────────────────────────────────────────────────
 
-       [1] はい
-       [2] スキップ
-       [3] その他
+       [1] Yes
+       [2] Skip
+       [3] Other
 
      ```
      - 2 → `sdd-forge flow set step review skipped` → Step 3
@@ -78,39 +63,39 @@ Before starting, run `sdd-forge flow get check impl` to verify prerequisites.
    - **If proposals exist** (APPROVED items in review.md):
      1. Display review summary in this format:
         ```
-        コードレビューの結果、N件の修正案が見つかりました。
-        うち N件を適用すべきと判断しました。
+        Code review found N proposal(s).
+        N are recommended for application.
 
-        適用する修正案:
+        Proposals to apply:
           #2: <title>
-              問題: <なぜこれが問題なのか>
-              修正: <どう修正するか>
+              Issue: <why this is a problem>
+              Fix: <what to change>
 
           #5: <title>
-              問題: <なぜこれが問題なのか>
-              修正: <どう修正するか>
+              Issue: <why this is a problem>
+              Fix: <what to change>
 
-        対応不要と判断:
+        No action needed:
           #1: <title>
-              理由: <対応不要な理由>
+              Reason: <why no action is needed>
         ```
      2. Present:
         ```
         ──────────────────────────────────────────────────────────
-          修正案を適用しますか？
+          Apply the recommended proposals?
         ──────────────────────────────────────────────────────────
 
-          [1] 判断に従って適用する
-          [2] すべての修正案を適用する
-          [3] スキップ
-          [4] その他
+          [1] Apply recommended
+          [2] Apply all proposals
+          [3] Skip
+          [4] Other
 
         ```
      3. If 1 → Apply fixes based on recommended proposals → Re-run tests to confirm no regressions.
      4. If 2 → Apply all proposals (including those marked as no action needed) → Re-run tests.
      5. If 3 → Skip fixes, proceed to Step 3.
    - **If no proposals** (NO_PROPOSALS):
-     - Display: "レビューの結果、修正の必要はありませんでした。"
+     - Display: "Review found no issues requiring changes."
      - Proceed directly to Step 3 (no user confirmation needed).
    - **On complete**: `sdd-forge flow set step review done`
 
@@ -119,13 +104,13 @@ Before starting, run `sdd-forge flow get check impl` to verify prerequisites.
    - Present:
      ```
      ──────────────────────────────────────────────────────────
-       実装とレビューが完了しました。
-       次の操作を選択してください。
+       Implementation and review are complete.
+       Choose next action.
      ──────────────────────────────────────────────────────────
 
-       [1] 終了処理を開始する
-       [2] 修正に戻る
-       [3] その他
+       [1] Start finalization
+       [2] Return to modifications
+       [3] Other
 
      ```
    - 1 → immediately invoke `/sdd-forge.flow-finalize` using the Skill tool (do not wait for additional user input).
@@ -134,10 +119,7 @@ Before starting, run `sdd-forge flow get check impl` to verify prerequisites.
 
 ## Worktree Mode
 
-When `worktree: true` in flow.json:
-- **All file operations (editing, creating, reading) MUST be done inside the worktree directory.** Do not edit files in the main repository.
-- Run `sdd-forge flow get status` to see the worktree path. Use absolute paths if needed.
-- The worktree is an isolated copy — changes in the main repo are NOT visible in the worktree and vice versa.
+<!-- include("@templates/partials/worktree-mode.md") -->
 - Before merge, consider running `git rebase <baseBranch>` in the worktree to incorporate upstream changes and avoid post-merge test failures.
 
 ## Hard Stops

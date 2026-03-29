@@ -5,16 +5,14 @@
 import fs from "fs";
 import path from "path";
 import { PKG_DIR } from "./cli.js";
+import { resolveIncludes } from "./include.js";
 
 /**
- * Resolve the skill template filename for the given language.
- * Falls back to SKILL.en.md if the language-specific file does not exist.
+ * Resolve the skill template file in the given directory.
  */
-function resolveSkillFile(skillDir, lang) {
-  const langFile = path.join(skillDir, `SKILL.${lang}.md`);
-  if (fs.existsSync(langFile)) return langFile;
-  const enFile = path.join(skillDir, "SKILL.en.md");
-  if (fs.existsSync(enFile)) return enFile;
+function resolveSkillFile(skillDir) {
+  const file = path.join(skillDir, "SKILL.md");
+  if (fs.existsSync(file)) return file;
   return null;
 }
 
@@ -35,7 +33,7 @@ function removeIfSymlink(filePath) {
  * Deploy skill files from templates to .agents/skills/ and .claude/skills/.
  *
  * @param {string} workRoot  Project root directory
- * @param {string} lang      Language code (e.g. "en", "ja")
+ * @param {string} lang      Language code for include resolution (e.g. "en", "ja"). Does not affect template file selection (always SKILL.md).
  * @param {object} [opts]
  * @param {boolean} [opts.dryRun=false]  If true, skip writing files
  * @returns {{ name: string, status: "updated" | "unchanged" }[]}
@@ -53,12 +51,20 @@ export function deploySkills(workRoot, lang, opts = {}) {
   const results = [];
 
   for (const name of skillDirs) {
-    const srcPath = resolveSkillFile(path.join(templatesDir, name), lang || "en");
+    const srcPath = resolveSkillFile(path.join(templatesDir, name));
     if (!srcPath) continue;
 
     const agentsDest = path.join(agentsSkillsDir, name, "SKILL.md");
     const claudeDest = path.join(claudeSkillsDir, name, "SKILL.md");
-    const srcContent = fs.readFileSync(srcPath, "utf8");
+    const rawContent = fs.readFileSync(srcPath, "utf8");
+    const srcContent = resolveIncludes(rawContent, {
+      baseDir: path.dirname(srcPath),
+      pkgDir: PKG_DIR,
+      templatesDir: path.join(PKG_DIR, "templates"),
+      presetsDir: path.join(PKG_DIR, "presets"),
+      lang: lang || "en",
+      sourceFile: srcPath,
+    });
 
     // Check if update is needed (compare against .agents/ copy)
     let needsUpdate = true;

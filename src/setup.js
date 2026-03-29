@@ -216,8 +216,9 @@ function fixClaudeMdSymlink(sourceDir) {
 // ---------------------------------------------------------------------------
 
 function setupSkills(workRoot, t, lang) {
-  deploySkills(workRoot, lang);
+  const skillResults = deploySkills(workRoot, lang);
   console.log(t("setup.messages.skillsDeployed"));
+  return skillResults;
 }
 
 // ---------------------------------------------------------------------------
@@ -556,7 +557,12 @@ async function main() {
   }
 
   // Skills
-  setupSkills(workRoot, t, settings.lang);
+  try {
+    setupSkills(workRoot, t, settings.lang);
+  } catch (e) {
+    console.error(`skill deployment failed: ${e.message}`);
+    process.exit(1);
+  }
 
   // Final summary
   console.log(`\n  ${t("setup.messages.nextSteps")}`);

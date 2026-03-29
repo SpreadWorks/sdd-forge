@@ -9,32 +9,18 @@ Use this skill when implementation is complete and the user approved finalizatio
 
 ## Flow Progress Tracking
 
-**MUST: Run `sdd-forge flow set step <id> <val>` upon completion of each step to record flow progress.**
+<!-- include("@templates/partials/flow-tracking.md") -->
 
 Available step IDs (this skill): `commit`, `push`, `merge`, `pr-create`, `branch-cleanup`
 Available status values: `pending`, `in_progress`, `done`, `skipped`
 
 ## Context Recording (Compaction Resilience)
 
-**MUST: Record key decisions for compaction recovery.**
-
-- After each user choice, record: `sdd-forge flow set note "<step>: <choice summary>"`
+<!-- include("@templates/partials/context-recording.md") -->
 
 ## Choice Format
 
-Present choices in the following format:
-```
-──────────────────────────────────────────────────────────
-  Description (question or situation)
-──────────────────────────────────────────────────────────
-
-  [1] Label
-  [2] Label
-  [3] Other
-
-```
-- Do not combine the description and choices into one sentence. Description goes inside the lines, choices go outside.
-- Add blank lines before and after the choices.
+<!-- include("@templates/partials/choice-format.md") -->
 
 ## CRITICAL: Step 0 — Present Options FIRST
 
@@ -221,10 +207,7 @@ Present choices in the following format:
 
 ## Worktree Mode
 
-When `worktree: true` in flow.json:
-- **All file operations (editing, creating, reading) MUST be done inside the worktree directory.** Do not edit files in the main repository.
-- Run `sdd-forge flow get status` to see the worktree path. Use absolute paths if needed.
-- The worktree is an isolated copy — changes in the main repo are NOT visible in the worktree and vice versa.
+<!-- include("@templates/partials/worktree-mode.md") -->
 - Before cleanup, `cd` to the main repository first to avoid cwd invalidation.
 - `sdd-forge flow run cleanup` handles missing worktrees gracefully (no double-delete errors).
 
