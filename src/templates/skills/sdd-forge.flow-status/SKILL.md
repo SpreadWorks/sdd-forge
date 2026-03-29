@@ -68,7 +68,8 @@ Display the current state of the SDD workflow.
       3. prepare-spec   ✓ done
       4. draft          ✓ done
       5. spec            > in_progress
-      6. approval         pending
+      6. gate              pending
+      7. approval          pending
       ...
 
    Requirements (1/3 done)

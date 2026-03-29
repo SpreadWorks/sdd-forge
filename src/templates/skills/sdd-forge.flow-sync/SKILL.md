@@ -19,7 +19,7 @@ Sync documentation with the current codebase. Can be invoked from flow-finalize 
    - If not, `git checkout <baseBranch>`.
 
 2. Generate documentation.
-   - Display: "Updating documentation..."
+   - Display: "ドキュメントを更新しています..."
    - Run `sdd-forge build`.
 
 3. Review documentation.

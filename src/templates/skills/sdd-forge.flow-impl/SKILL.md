@@ -65,22 +65,22 @@ Before starting, run `sdd-forge flow get check impl` to verify prerequisites.
    - **If proposals exist** (APPROVED items in review.md):
      1. Display review summary:
         ```
-        Code review found N proposal(s).
-        N are recommended for application.
+        コードレビューの結果、N 件の修正案が見つかりました。
+        うち N 件を適用すべきと判断しました。
 
-        Proposals to apply:
+        適用する修正案:
           #2: <title>
-              Issue: <why this is a problem>
-              Fix: <what to change>
+              問題: <なぜこれが問題なのか>
+              修正: <どう修正するか>
 
-        No action needed:
+        対応不要と判断:
           #1: <title>
-              Reason: <why no action is needed>
+              理由: <対応不要な理由>
         ```
      2. Apply approved fixes automatically.
      3. Re-run tests to confirm no regressions.
    - **If no proposals** (NO_PROPOSALS):
-     - Display: "Review found no issues requiring changes."
+     - Display: "レビューの結果、修正の必要はありませんでした。"
    - Proceed to Step 3.
 
    **Option 2 (review-only):**

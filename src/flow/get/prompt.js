@@ -45,7 +45,7 @@ const PROMPTS_BY_LANG = {
       recommendation: null,
       choices: [
         { id: 1, label: "コミットする", description: "", recommended: false },
-        { id: 2, label: "stash する", description: "", recommended: false },
+        { id: 2, label: "スタッシュする", description: "", recommended: false },
         { id: 3, label: "その他", description: "", recommended: false },
       ],
     },
@@ -101,7 +101,7 @@ const PROMPTS_BY_LANG = {
       description: "コードレビューの方針を選択してください。",
       recommendation: null,
       choices: [
-        { id: 1, label: "コードレビューを行い改善を自動で行う", description: "", recommended: false },
+        { id: 1, label: "コードレビューを行い、自動で改善する", description: "", recommended: false },
         { id: 2, label: "コードレビューのみ", description: "", recommended: false },
         { id: 3, label: "しない", description: "", recommended: false },
       ],

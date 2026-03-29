@@ -24,17 +24,9 @@ Available status values: `pending`, `in_progress`, `done`, `skipped`
 
 ## CRITICAL: Step 0 — Present Options FIRST
 
-**STOP. Do NOT proceed to any other step. You MUST present the options below and wait for the user's response before doing anything else. Do NOT read files, run commands, or take any action until the user selects an option.**
+**STOP. Do NOT proceed to any other step. You MUST present the prompt below and wait for the user's response before doing anything else. Do NOT read files, run commands, or take any action until the user selects an option.**
 
-```
-──────────────────────────────────────────────────────────
-  Choose the scope of finalization.
-──────────────────────────────────────────────────────────
-
-  [1] Run all steps
-  [2] Choose individually
-
-```
+- Run `sdd-forge flow get prompt finalize.mode` and present the `description` and `choices` using the Choice Format. Each choice has a `description` field — display it below the label.
 
 **After presenting this choice, output NOTHING else. Wait for the user to reply with their selection number.**
 
@@ -44,20 +36,7 @@ Available status values: `pending`, `in_progress`, `done`, `skipped`
   - For step 4 (merge strategy), run `sdd-forge flow run merge --auto` (auto-detects PR vs squash from config).
   - For step 6 (documentation sync), auto-invoke for merge/squash routes, skip for PR route.
 - **Option 2 (Choose individually)**: Ask about all optional steps (3–7) upfront before executing any of them.
-  1. Present a single checklist for steps 3–7:
-     ```
-     ──────────────────────────────────────────────────────────
-       Select steps to execute.
-       Enter numbers separated by commas (e.g., 3,4,5)
-     ──────────────────────────────────────────────────────────
-
-       [3] Commit
-       [4] Merge / PR creation
-       [5] Branch cleanup
-       [6] Documentation sync
-       [7] Save work record
-
-     ```
+  1. Run `sdd-forge flow get prompt finalize.steps` and present the choices.
   2. Wait for the user's response.
   3. Execute only the selected steps in order. Mark unselected steps as `skipped`.
 
@@ -91,27 +70,8 @@ Available status values: `pending`, `in_progress`, `done`, `skipped`
 4. Merge or create PR.
    Determine strategy based on user choice and `gh` availability:
 
-   - **If `gh` is available**, present:
-     ```
-     ──────────────────────────────────────────────────────────
-       Choose merge method.
-     ──────────────────────────────────────────────────────────
-
-       [1] merge
-       [2] squash merge
-       [3] pull request (create PR to `<baseBranch>`)
-
-     ```
-   - **If `gh` is NOT available**, present:
-     ```
-     ──────────────────────────────────────────────────────────
-       Choose merge method.
-     ──────────────────────────────────────────────────────────
-
-       [1] merge
-       [2] squash merge
-
-     ```
+   - Run `sdd-forge flow get prompt finalize.merge-strategy` and present the choices.
+   - **If `gh` is NOT available**, omit the pull request choice from the displayed options.
 
    **4a. merge route**:
    - `sdd-forge flow set step merge in_progress`
@@ -144,17 +104,7 @@ Available status values: `pending`, `in_progress`, `done`, `skipped`
      - Inform user: "Branch cleanup is not performed for pull requests."
    - **If merge/squash merge route**:
      - Run `sdd-forge flow run cleanup --dry-run` to preview what will be deleted.
-     - Present:
-       ```
-       ──────────────────────────────────────────────────────────
-         ブランチ/worktree を削除しますか？
-       ──────────────────────────────────────────────────────────
-
-         [1] 削除する
-         [2] 残す
-         [3] その他
-
-       ```
+     - Run `sdd-forge flow get prompt finalize.cleanup` and present the choices.
        - 1 → Run `sdd-forge flow run cleanup`. The CLI handles worktree/branch/spec-only detection internally.
        - 2 → Skip deletion.
    - Use the JSON response `{result, changed, artifacts}` to confirm what was deleted.
@@ -167,11 +117,11 @@ Available status values: `pending`, `in_progress`, `done`, `skipped`
      - Present:
        ```
        ──────────────────────────────────────────────────────────
-         Sync documentation?
+         ドキュメントを同期しますか？
        ──────────────────────────────────────────────────────────
 
-         [1] Yes
-         [2] Skip
+         [1] はい
+         [2] スキップ
 
        ```
      - 1 → Invoke `/sdd-forge.flow-sync` using the Skill tool.
@@ -182,9 +132,9 @@ Available status values: `pending`, `in_progress`, `done`, `skipped`
    - Report result to user.
    - If PR route was used, display:
      ```
-     After PR merge, run the following:
-     - Delete branch: git branch -D <featureBranch>
-     - Sync documentation: sdd-forge build or /sdd-forge.flow-sync
+     PR マージ後に以下を実行してください:
+     - ブランチの削除: git branch -D <featureBranch>
+     - ドキュメントの同期: sdd-forge build または /sdd-forge.flow-sync
      ```
 
 ## Worktree Mode
