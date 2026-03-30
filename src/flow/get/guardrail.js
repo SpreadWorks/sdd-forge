@@ -8,7 +8,7 @@
 
 import { runIfDirect } from "../../lib/entrypoint.js";
 import { repoRoot } from "../../lib/cli.js";
-import { loadMergedArticles, filterByPhase } from "../../spec/commands/guardrail.js";
+import { loadMergedArticles, filterByPhase } from "../../lib/guardrail.js";
 import { ok, fail, output } from "../../lib/flow-envelope.js";
 
 const VALID_PHASES = ["draft", "spec", "impl", "lint"];

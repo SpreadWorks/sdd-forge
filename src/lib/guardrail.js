@@ -1,20 +1,15 @@
-#!/usr/bin/env node
 /**
- * src/spec/commands/guardrail.js
+ * src/lib/guardrail.js
  *
- * Manage project guardrail (immutable principles) for spec compliance.
- * Subcommands: init, update
+ * Shared guardrail logic: parse, filter, match, and load guardrail articles.
+ * Extracted from spec/commands/guardrail.js for use by flow commands.
  */
 
 import fs from "fs";
 import path from "path";
-import { runIfDirect } from "../../lib/entrypoint.js";
-import { repoRoot, parseArgs } from "../../lib/cli.js";
-import { translate } from "../../lib/i18n.js";
-import { loadConfig, sddDir } from "../../lib/config.js";
-import { resolveChainSafe } from "../../lib/presets.js";
-import { callAgent } from "../../lib/agent.js";
-import { patternToRegex } from "../../docs/lib/scanner.js";
+import { loadConfig, sddDir } from "./config.js";
+import { resolveChainSafe } from "./presets.js";
+import { patternToRegex } from "../docs/lib/scanner.js";
 
 const GUARDRAIL_FILENAME = "guardrail.md";
 
@@ -145,7 +140,7 @@ export function parseGuardrailArticles(text) {
  * Filter articles by phase.
  *
  * @param {{ title: string, body: string, meta: Object }[]} articles
- * @param {string} phase - "spec" | "impl" | "lint"
+ * @param {string} phase - "spec" | "impl" | "lint" | "draft"
  * @returns {{ title: string, body: string, meta: Object }[]}
  */
 export function filterByPhase(articles, phase) {
@@ -172,6 +167,28 @@ export function matchScope(filePath, scope) {
     if (re.test(fileName) || re.test(filePath)) return true;
   }
   return false;
+}
+
+/**
+ * Serialize an article back to markdown, preserving metadata.
+ *
+ * @param {{ title: string, body: string, meta: Object }} article
+ * @returns {string}
+ */
+export function serializeArticle(a) {
+  const fields = [];
+  if (a.meta?.phase) fields.push(`phase: [${a.meta.phase.join(", ")}]`);
+  if (a.meta?.scope) fields.push(`scope: [${a.meta.scope.join(", ")}]`);
+  if (a.meta?.lint) fields.push(`lint: ${a.meta.lint.toString()}`);
+
+  const metaStr = fields.length > 0 ? `{${fields.join(", ")}}` : "{phase: [spec]}";
+  const parts = [
+    `<!-- {%guardrail ${metaStr}%} -->`,
+    `### ${a.title}`,
+    a.body.trim(),
+    `<!-- {%/guardrail%} -->`,
+  ];
+  return parts.join("\n");
 }
 
 /**
@@ -211,58 +228,6 @@ function readWithFallback(dir, lang) {
 }
 
 /**
- * Serialize an article back to markdown, preserving metadata.
- *
- * @param {{ title: string, body: string, meta: Object }} article
- * @returns {string}
- */
-function serializeArticle(a) {
-  const fields = [];
-  if (a.meta?.phase) fields.push(`phase: [${a.meta.phase.join(", ")}]`);
-  if (a.meta?.scope) fields.push(`scope: [${a.meta.scope.join(", ")}]`);
-  if (a.meta?.lint) fields.push(`lint: ${a.meta.lint.toString()}`);
-
-  const metaStr = fields.length > 0 ? `{${fields.join(", ")}}` : "{phase: [spec]}";
-  const parts = [
-    `<!-- {%guardrail ${metaStr}%} -->`,
-    `### ${a.title}`,
-    a.body.trim(),
-    `<!-- {%/guardrail%} -->`,
-  ];
-  return parts.join("\n");
-}
-
-/**
- * Build template text for guardrail using parent chain, read and merge.
- * Used by `guardrail init` to create `.sdd-forge/guardrail.md`.
- *
- * @param {string} presetKey - Preset name (e.g. "cakephp2", "webapp")
- * @param {string} lang - Locale code
- * @returns {string} Merged guardrail template content
- */
-function loadGuardrailTemplate(presetKey, lang) {
-  const chain = resolveChainSafe(presetKey);
-  const basePreset = chain.find((p) => p.key === "base");
-  const baseContent = basePreset ? readWithFallback(basePreset.dir, lang) : "";
-  if (!baseContent) return "";
-
-  // Collect articles from non-base presets, preserving metadata
-  const extraArticles = [];
-  for (const preset of chain) {
-    if (preset.key === "base") continue;
-    const content = readWithFallback(preset.dir, lang);
-    if (!content) continue;
-    extraArticles.push(...parseGuardrailArticles(content));
-  }
-
-  if (extraArticles.length > 0) {
-    const serialized = extraArticles.map(serializeArticle).join("\n\n");
-    return baseContent.trimEnd() + "\n\n" + serialized.trimEnd() + "\n";
-  }
-  return baseContent;
-}
-
-/**
  * Load all guardrail articles from preset chain as parsed objects.
  *
  * @param {string} presetKey - Preset name
@@ -282,7 +247,6 @@ function loadPresetArticles(presetKey, lang) {
 
 /**
  * Load and merge all guardrail articles from preset chain + project guardrail.
- * Used by `guardrail show`, `gate.js`, and `lint.js` for a unified loading pipeline.
  *
  * @param {string} root - project root
  * @returns {{ title: string, body: string, meta: Object }[]} merged articles
@@ -309,156 +273,32 @@ export function loadMergedArticles(root) {
   return articles;
 }
 
-function runShow(root, cli) {
-  if (!cli.phase) {
-    console.error("--phase is required for show");
-    process.exit(1);
+/**
+ * Build template text for guardrail using parent chain, read and merge.
+ * Used by `guardrail init` to create `.sdd-forge/guardrail.md`.
+ *
+ * @param {string} presetKey - Preset name (e.g. "cakephp2", "webapp")
+ * @param {string} lang - Locale code
+ * @returns {string} Merged guardrail template content
+ */
+export function loadGuardrailTemplate(presetKey, lang) {
+  const chain = resolveChainSafe(presetKey);
+  const basePreset = chain.find((p) => p.key === "base");
+  const baseContent = basePreset ? readWithFallback(basePreset.dir, lang) : "";
+  if (!baseContent) return "";
+
+  // Collect articles from non-base presets, preserving metadata
+  const extraArticles = [];
+  for (const preset of chain) {
+    if (preset.key === "base") continue;
+    const content = readWithFallback(preset.dir, lang);
+    if (!content) continue;
+    extraArticles.push(...parseGuardrailArticles(content));
   }
 
-  const articles = loadMergedArticles(root);
-  const filtered = filterByPhase(articles, cli.phase);
-
-  if (filtered.length === 0) return;
-
-  const output = filtered.map((a) => serializeArticle(a)).join("\n\n");
-
-  console.log(output);
+  if (extraArticles.length > 0) {
+    const serialized = extraArticles.map(serializeArticle).join("\n\n");
+    return baseContent.trimEnd() + "\n\n" + serialized.trimEnd() + "\n";
+  }
+  return baseContent;
 }
-
-function runInit(root, cli) {
-  const t = translate();
-  const guardrailPath = path.join(sddDir(root), GUARDRAIL_FILENAME);
-
-  if (fs.existsSync(guardrailPath) && !cli.force) {
-    console.error(t("messages:guardrail.alreadyExists", { path: guardrailPath }));
-    process.exit(1);
-  }
-
-  const { lang, presetKey } = resolveGuardrailContext(root);
-  const content = loadGuardrailTemplate(presetKey, lang);
-  if (!content) {
-    console.error(t("messages:guardrail.noTemplate"));
-    process.exit(1);
-  }
-
-  if (cli.dryRun) {
-    console.log(content);
-    return;
-  }
-
-  const dir = sddDir(root);
-  if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
-  fs.writeFileSync(guardrailPath, content, "utf8");
-  console.log(t("messages:guardrail.created", { path: guardrailPath }));
-}
-
-async function runUpdate(root, cli) {
-  const t = translate();
-  const guardrailPath = path.join(sddDir(root), GUARDRAIL_FILENAME);
-
-  if (!fs.existsSync(guardrailPath)) {
-    console.error(t("messages:guardrail.notFound"));
-    process.exit(1);
-  }
-
-  // Load analysis.json
-  const analysisPath = path.join(sddDir(root), "output", "analysis.json");
-  if (!fs.existsSync(analysisPath)) {
-    console.error(t("messages:guardrail.analysisNotFound"));
-    process.exit(1);
-  }
-
-  let config;
-  try {
-    config = loadConfig(root);
-  } catch (_) {
-    console.error(t("messages:guardrail.noConfig"));
-    process.exit(1);
-  }
-
-  const agentName = cli.agent || config.agent?.default;
-  if (!agentName) {
-    console.error(t("messages:guardrail.noAgent"));
-    process.exit(1);
-  }
-
-  const existing = fs.readFileSync(guardrailPath, "utf8");
-  const analysis = fs.readFileSync(analysisPath, "utf8");
-
-  const prompt = [
-    "You are a software architect. Analyze the project structure below and propose additional project-specific guardrail articles.",
-    "Each article must be a `### Heading` followed by a description paragraph.",
-    "Do NOT repeat articles that already exist.",
-    "Output ONLY the new articles in markdown format (### headings + body). No preamble.",
-    "",
-    "## Existing Guardrail",
-    existing,
-    "",
-    "## Project Analysis",
-    analysis,
-  ].join("\n");
-
-  console.error(t("messages:guardrail.updating"));
-  const result = await callAgent(agentName, prompt, config);
-
-  if (!result || !result.trim()) {
-    console.log(t("messages:guardrail.noNewArticles"));
-    return;
-  }
-
-  if (cli.dryRun) {
-    console.log(result);
-    return;
-  }
-
-  const updated = existing.trimEnd() + "\n\n" + result.trimEnd() + "\n";
-  fs.writeFileSync(guardrailPath, updated, "utf8");
-  console.log(t("messages:guardrail.updated", { path: guardrailPath }));
-}
-
-function main() {
-  const root = repoRoot(import.meta.url);
-  const subCmd = process.argv[2];
-  const argv = process.argv.slice(3);
-
-  if (subCmd === "show") {
-    const cli = parseArgs(argv, {
-      options: ["--phase"],
-      defaults: { phase: "" },
-    });
-    runShow(root, cli);
-  } else if (subCmd === "init") {
-    const cli = parseArgs(argv, {
-      flags: ["--dry-run", "--force"],
-      defaults: { dryRun: false, force: false },
-    });
-    if (cli.help) {
-      const t = translate();
-      const h = t.raw("ui:help.cmdHelp.guardrail");
-      console.log([h.usage, "", `  ${h.desc}`, "", "Subcommands:", `  ${h.init}`, `  ${h.update}`].join("\n"));
-      return;
-    }
-    runInit(root, cli);
-  } else if (subCmd === "update") {
-    const cli = parseArgs(argv, {
-      flags: ["--dry-run"],
-      options: ["--agent"],
-      defaults: { dryRun: false, agent: "" },
-    });
-    if (cli.help) {
-      const t = translate();
-      const h = t.raw("ui:help.cmdHelp.guardrail");
-      console.log([h.usage, "", `  ${h.desc}`, "", "Subcommands:", `  ${h.init}`, `  ${h.update}`].join("\n"));
-      return;
-    }
-    return runUpdate(root, cli);
-  } else {
-    const t = translate();
-    const h = t.raw("ui:help.cmdHelp.guardrail");
-    console.log([h.usage, "", `  ${h.desc}`, "", "Subcommands:", `  ${h.init}`, `  ${h.update}`].join("\n"));
-  }
-}
-
-export { main };
-
-runIfDirect(import.meta.url, main);

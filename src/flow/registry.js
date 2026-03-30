@@ -43,6 +43,7 @@ export const FLOW_COMMANDS = {
       "impl-confirm":  { script: "flow/run/impl-confirm.js",  desc: { en: "Confirm implementation readiness", ja: "実装準備を確認" } },
       finalize:        { script: "flow/run/finalize.js",       desc: { en: "Execute finalization pipeline", ja: "ファイナライズパイプラインを実行" } },
       sync:            { script: "flow/run/sync.js",           desc: { en: "Sync documentation", ja: "ドキュメントを同期" } },
+      lint:            { script: "flow/run/lint.js",           desc: { en: "Run guardrail lint check", ja: "ガードレール lint チェックを実行" } },
     },
   },
 };

@@ -1,17 +1,14 @@
-#!/usr/bin/env node
 /**
- * src/spec/commands/lint.js
+ * src/lib/lint.js
  *
- * Guardrail lint: mechanical check of changed files against lint patterns.
- * Runs RegExp patterns from guardrail articles with phase: [lint].
+ * Guardrail lint logic: mechanical check of files against lint patterns.
+ * Extracted from spec/commands/lint.js for use by flow commands.
  */
 
 import fs from "fs";
 import path from "path";
-import { runIfDirect } from "../../lib/entrypoint.js";
-import { repoRoot, parseArgs } from "../../lib/cli.js";
-import { runSync } from "../../lib/process.js";
-import { filterByPhase, matchScope, loadMergedArticles } from "./guardrail.js";
+import { runSync } from "./process.js";
+import { filterByPhase, matchScope } from "./guardrail.js";
 
 /**
  * Validate lint articles for misconfiguration.
@@ -37,7 +34,7 @@ export function validateLintArticles(articles) {
  * @param {string} base - Base branch name
  * @returns {string[]} Relative file paths
  */
-function getChangedFiles(root, base) {
+export function getChangedFiles(root, base) {
   const res = runSync("git", ["-C", root, "diff", "--name-only", `${base}...HEAD`]);
   if (!res.ok) {
     throw new Error(`git diff failed: ${res.stderr.trim()}`);
@@ -56,7 +53,7 @@ function getChangedFiles(root, base) {
  * @param {string[]} files - Changed file paths (relative)
  * @returns {{ article: string, file: string, line: number, match: string }[]} Failures
  */
-function runLintChecks(root, articles, files) {
+export function runLintChecks(root, articles, files) {
   const failures = [];
 
   for (const article of articles) {
@@ -90,75 +87,38 @@ function runLintChecks(root, articles, files) {
   return failures;
 }
 
-function main() {
-  const root = repoRoot(import.meta.url);
-  const cli = parseArgs(process.argv.slice(2), {
-    options: ["--base"],
-    defaults: { base: "" },
-  });
-
-  if (cli.help) {
-    console.log([
-      "Usage: sdd-forge spec lint --base <branch>",
-      "",
-      "  Check changed files against guardrail lint patterns.",
-      "",
-      "Options:",
-      "  --base <branch>  Base branch for git diff (required)",
-    ].join("\n"));
-    return;
-  }
-
-  if (!cli.base) {
-    throw new Error("--base is required");
-  }
-
-  // Load merged guardrail (preset chain + project)
-  const allArticles = loadMergedArticles(root);
-  if (allArticles.length === 0) {
-    console.log("lint: no guardrail articles found, skipping.");
-    return;
-  }
-
-  // Validate and warn
+/**
+ * Run the full lint pipeline.
+ *
+ * @param {string} root - Repository root
+ * @param {{ title: string, body: string, meta: Object }[]} allArticles - All guardrail articles
+ * @param {string} base - Base branch for git diff
+ * @returns {{ ok: boolean, warnings: string[], lintArticleCount: number, fileCount: number, failures: Object[] }}
+ */
+export function runLint(root, allArticles, base) {
   const warnings = validateLintArticles(allArticles);
-  for (const w of warnings) {
-    console.error(w);
-  }
 
   // Filter to lint-phase articles with lint patterns
   const lintArticles = filterByPhase(allArticles, "lint").filter((a) => a.meta.lint);
 
   if (lintArticles.length === 0) {
-    console.log("lint: no lint-phase articles with patterns found. PASS");
-    return;
+    return { ok: true, warnings, lintArticleCount: 0, fileCount: 0, failures: [] };
   }
 
   // Get changed files
-  const changedFiles = getChangedFiles(root, cli.base);
+  const changedFiles = getChangedFiles(root, base);
   if (changedFiles.length === 0) {
-    console.log("lint: no changed files. PASS");
-    return;
+    return { ok: true, warnings, lintArticleCount: lintArticles.length, fileCount: 0, failures: [] };
   }
-
-  console.error(`lint: checking ${lintArticles.length} rule(s) against ${changedFiles.length} file(s)`);
 
   // Run checks
   const failures = runLintChecks(root, lintArticles, changedFiles);
 
-  if (failures.length === 0) {
-    console.log("lint: PASS");
-    return;
-  }
-
-  // Report failures
-  console.error(`lint: ${failures.length} violation(s) found`);
-  for (const f of failures) {
-    console.error(`  FAIL: [${f.article}] ${f.file}:${f.line} — ${f.match}`);
-  }
-  process.exitCode = 1;
+  return {
+    ok: failures.length === 0,
+    warnings,
+    lintArticleCount: lintArticles.length,
+    fileCount: changedFiles.length,
+    failures,
+  };
 }
-
-export { main };
-
-runIfDirect(import.meta.url, main);

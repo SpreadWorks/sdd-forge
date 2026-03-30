@@ -103,9 +103,6 @@
       "docs data": "Resolve {{data}} directives with analysis data",
       "docs text": "Resolve {{text}} directives with AI",
       "docs snapshot": "Save/check docs snapshot for change detection",
-      "spec init": "Initialize spec (feature branch + spec.md)",
-      "spec gate": "Spec gate (open issues check)",
-      "spec guardrail": "Manage project guardrail (principles)",
       "flow get": "Read flow state (status, check, prompt, guardrail, ...)",
       "flow set": "Update flow state (step, req, note, metric, ...)",
       "flow run": "Execute flow actions (prepare-spec, gate, finalize, ...)",
@@ -202,18 +199,6 @@
           "dryRun": "--dry-run   Print generated content to stdout without writing"
         }
       },
-      "spec": {
-        "usage": "Usage: sdd-forge spec init --title <name> [options]",
-        "desc": "Initialize a spec (feature branch + spec.md).",
-        "options": {
-          "title": "--title <name>      Short name appended after sequence number (required)",
-          "base": "--base <branch>     Branch to create from (default: current branch)",
-          "dryRun": "--dry-run           Show results without making changes",
-          "allowDirty": "--allow-dirty       Continue even if worktree is dirty",
-          "noBranch": "--no-branch         Create spec only without creating a branch",
-          "worktree": "--worktree          Create a git worktree for the spec (.sdd-forge/worktree/<branch>/)"
-        }
-      },
       "flow": {
         "usage": "Usage: sdd-forge flow start --request \"...\" [options]",
         "desc": "Run the SDD flow automatically.",
@@ -290,25 +275,6 @@
           "dryRun": "--dry-run    Show what would change without writing files",
           "help": "-h, --help   Show this help"
         }
-      },
-      "gate": {
-        "usage": "Usage: sdd-forge spec gate --spec specs/NNN-name/spec.md [--phase pre|post]",
-        "desc": "Spec gate check.",
-        "options": {
-          "spec": "--spec <path>   Path to spec.md (required)",
-          "phase": "--phase <phase> Check phase: pre (default) or post",
-          "skipGuardrail": "--skip-guardrail  Skip guardrail AI compliance check"
-        },
-        "phaseDetail": {
-          "pre": "pre:  Skip unchecked items in Status and Acceptance Criteria",
-          "post": "post: Check all unchecked items"
-        }
-      },
-      "guardrail": {
-        "usage": "Usage: sdd-forge spec guardrail <init|update> [options]",
-        "desc": "Manage project guardrail (immutable principles).",
-        "init": "init [--force] [--dry-run]   Create guardrail.md from preset templates",
-        "update": "update [--agent <name>] [--dry-run]   AI-propose project-specific principles"
       },
       "presets": {
         "usage": "Usage: sdd-forge presets list",

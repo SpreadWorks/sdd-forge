@@ -2,7 +2,7 @@ import { describe, it } from "node:test";
 import assert from "node:assert/strict";
 
 const { parseGuardrailArticles } = await import(
-  "../../../../src/spec/commands/guardrail.js"
+  "../../../../src/lib/guardrail.js"
 );
 
 // ---------------------------------------------------------------------------

@@ -103,9 +103,6 @@
       "docs changelog": "specs/ から change_log.md を生成",
       "docs agents": "AGENTS.md の PROJECT セクションを更新",
       "docs snapshot": "スナップショットテスト（リグレッション検出）",
-      "spec init": "spec 初期化（feature ブランチ + spec.md）",
-      "spec gate": "spec ゲート（未解決事項チェック）",
-      "spec guardrail": "プロジェクト guardrail（原則）を管理",
       "flow get": "フロー状態を取得（status, check, prompt, guardrail, ...）",
       "flow set": "フロー状態を更新（step, req, note, metric, ...）",
       "flow run": "フローアクションを実行（prepare-spec, gate, finalize, ...）",
@@ -202,18 +199,6 @@
           "dryRun": "--dry-run   ファイル書き込みせず生成内容を stdout に出力"
         }
       },
-      "spec": {
-        "usage": "Usage: sdd-forge spec init --title <name> [options]",
-        "desc": "spec を初期化する（feature ブランチ + spec.md）。",
-        "options": {
-          "title": "--title <name>      連番の後ろに付与する短い名前（必須）",
-          "base": "--base <branch>     ブランチ作成元 (default: current branch)",
-          "dryRun": "--dry-run           変更せず結果のみ表示",
-          "allowDirty": "--allow-dirty       ワークツリーが dirty でも続行する",
-          "noBranch": "--no-branch         ブランチを作成せず spec のみ作成する",
-          "worktree": "--worktree          git worktree を作成して spec を配置する (.sdd-forge/worktree/<branch>/)"
-        }
-      },
       "flow": {
         "usage": "Usage: sdd-forge flow start --request \"...\" [options]",
         "desc": "SDD フローを自動実行する。",
@@ -290,25 +275,6 @@
           "dryRun": "--dry-run    変更内容を表示するだけでファイル書き込みしない",
           "help": "-h, --help   このヘルプを表示"
         }
-      },
-      "gate": {
-        "usage": "Usage: sdd-forge spec gate --spec specs/NNN-name/spec.md [--phase pre|post]",
-        "desc": "spec ゲートチェック。",
-        "options": {
-          "spec": "--spec <path>   spec.md のパス（必須）",
-          "phase": "--phase <phase> チェックフェーズ: pre (default) or post",
-          "skipGuardrail": "--skip-guardrail  guardrail AI 整合性チェックをスキップ"
-        },
-        "phaseDetail": {
-          "pre": "pre:  Status と Acceptance Criteria の未チェック項目をスキップ",
-          "post": "post: 全未チェック項目を検査"
-        }
-      },
-      "guardrail": {
-        "usage": "Usage: sdd-forge spec guardrail <init|update> [options]",
-        "desc": "プロジェクト guardrail（不変原則）を管理する。",
-        "init": "init [--force] [--dry-run]   プリセットテンプレートから guardrail.md を生成",
-        "update": "update [--agent <name>] [--dry-run]   AI がプロジェクト固有の原則を提案・追記"
       },
       "presets": {
         "usage": "Usage: sdd-forge presets list",

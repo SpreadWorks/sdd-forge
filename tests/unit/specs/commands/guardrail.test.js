@@ -1,16 +1,14 @@
 import { describe, it, afterEach } from "node:test";
 import assert from "node:assert/strict";
 import { join } from "path";
-import { existsSync, readFileSync } from "fs";
 import { createTmpDir, removeTmpDir, writeFile, writeJson } from "../../../helpers/tmp-dir.js";
 import { execFileSync } from "child_process";
 
-const GUARDRAIL_CMD = join(process.cwd(), "src/spec/commands/guardrail.js");
-const GATE_CMD = join(process.cwd(), "src/spec/commands/gate.js");
+const SDD_FORGE = join(process.cwd(), "src/sdd-forge.js");
 
 // Dynamically import gate functions for unit tests
 const { buildGuardrailPrompt, parseGuardrailResponse, extractExemptions } = await import(
-  "../../../../src/spec/commands/gate.js"
+  "../../../../src/flow/run/gate.js"
 );
 
 // ---------------------------------------------------------------------------
@@ -22,7 +20,7 @@ describe("parseGuardrailArticles", () => {
   let parseGuardrailArticles;
 
   it("parses ### headings and body text inside {%guardrail%} blocks", async () => {
-    ({ parseGuardrailArticles } = await import("../../../../src/spec/commands/guardrail.js"));
+    ({ parseGuardrailArticles } = await import("../../../../src/lib/guardrail.js"));
     const text = [
       "# Project Guardrail",
       "",
@@ -48,14 +46,14 @@ describe("parseGuardrailArticles", () => {
   });
 
   it("returns empty array for no articles", async () => {
-    ({ parseGuardrailArticles } = await import("../../../../src/spec/commands/guardrail.js"));
+    ({ parseGuardrailArticles } = await import("../../../../src/lib/guardrail.js"));
     const text = "# Guardrail\n\nSome intro text.\n";
     const articles = parseGuardrailArticles(text);
     assert.deepEqual(articles, []);
   });
 
   it("handles article with no body", async () => {
-    ({ parseGuardrailArticles } = await import("../../../../src/spec/commands/guardrail.js"));
+    ({ parseGuardrailArticles } = await import("../../../../src/lib/guardrail.js"));
     const text = [
       "<!-- {%guardrail {phase: [spec]}%} -->",
       "### Empty Article",
@@ -70,94 +68,6 @@ describe("parseGuardrailArticles", () => {
     assert.equal(articles[0].title, "Empty Article");
     assert.equal(articles[0].body.trim(), "");
     assert.equal(articles[1].title, "Next Article");
-  });
-});
-
-// ---------------------------------------------------------------------------
-// guardrail init CLI tests
-// ---------------------------------------------------------------------------
-
-describe("guardrail init CLI", () => {
-  let tmp;
-  afterEach(() => tmp && removeTmpDir(tmp));
-
-  it("creates guardrail.md from base template", () => {
-    tmp = createTmpDir();
-    writeJson(tmp, ".sdd-forge/config.json", {
-      lang: "en",
-      type: "node-cli",
-      docs: { languages: ["en"], defaultLanguage: "en" },
-    });
-
-    const result = execFileSync("node", [GUARDRAIL_CMD, "init"], {
-      encoding: "utf8",
-      env: { ...process.env, SDD_WORK_ROOT: tmp },
-    });
-
-    const guardrailPath = join(tmp, ".sdd-forge", "guardrail.md");
-    assert.ok(existsSync(guardrailPath), "guardrail.md should be created");
-    const content = readFileSync(guardrailPath, "utf8");
-    assert.ok(content.includes("###"), "should contain article headings");
-  });
-
-  it("fails without --force when guardrail.md exists", () => {
-    tmp = createTmpDir();
-    writeJson(tmp, ".sdd-forge/config.json", {
-      lang: "en",
-      type: "node-cli",
-      docs: { languages: ["en"], defaultLanguage: "en" },
-    });
-    writeFile(tmp, ".sdd-forge/guardrail.md", [
-      "# Existing",
-      "<!-- {%guardrail {phase: [spec]}%} -->",
-      "### Rule",
-      "Do not change.",
-      "<!-- {%/guardrail%} -->",
-    ].join("\n"));
-
-    try {
-      execFileSync("node", [GUARDRAIL_CMD, "init"], {
-        encoding: "utf8",
-        env: { ...process.env, SDD_WORK_ROOT: tmp },
-      });
-      assert.fail("should exit non-zero");
-    } catch (err) {
-      assert.ok(err.stderr.includes("already exists") || err.status !== 0);
-    }
-  });
-
-  it("overwrites with --force", () => {
-    tmp = createTmpDir();
-    writeJson(tmp, ".sdd-forge/config.json", {
-      lang: "en",
-      type: "node-cli",
-      docs: { languages: ["en"], defaultLanguage: "en" },
-    });
-    writeFile(tmp, ".sdd-forge/guardrail.md", "# Old content\n");
-
-    execFileSync("node", [GUARDRAIL_CMD, "init", "--force"], {
-      encoding: "utf8",
-      env: { ...process.env, SDD_WORK_ROOT: tmp },
-    });
-
-    const content = readFileSync(join(tmp, ".sdd-forge", "guardrail.md"), "utf8");
-    assert.ok(!content.includes("Old content"), "should be overwritten");
-  });
-
-  it("--dry-run does not write file", () => {
-    tmp = createTmpDir();
-    writeJson(tmp, ".sdd-forge/config.json", {
-      lang: "en",
-      type: "node-cli",
-      docs: { languages: ["en"], defaultLanguage: "en" },
-    });
-
-    execFileSync("node", [GUARDRAIL_CMD, "init", "--dry-run"], {
-      encoding: "utf8",
-      env: { ...process.env, SDD_WORK_ROOT: tmp },
-    });
-
-    assert.ok(!existsSync(join(tmp, ".sdd-forge", "guardrail.md")), "should not create file");
   });
 });
 
@@ -184,16 +94,16 @@ describe("gate guardrail integration", () => {
     writeFile(tmp, "spec.md", validSpec);
 
     const result = execFileSync("node", [
-      GATE_CMD,
+      SDD_FORGE, "flow", "run", "gate",
       "--spec", join(tmp, "spec.md"),
     ], {
       encoding: "utf8",
       env: { ...process.env, SDD_WORK_ROOT: tmp },
     });
 
-    // Gate should still pass but output a warning
-    assert.match(result, /PASSED/);
-    // Warning about missing guardrail should be on stderr or stdout
+    // Gate should still pass — JSON envelope with ok: true
+    const envelope = JSON.parse(result);
+    assert.equal(envelope.ok, true);
   });
 
   it("passes with guardrail.md present (no agent = skip AI check with warn)", () => {
@@ -214,14 +124,15 @@ describe("gate guardrail integration", () => {
     ].join("\n"));
 
     const result = execFileSync("node", [
-      GATE_CMD,
+      SDD_FORGE, "flow", "run", "gate",
       "--spec", join(tmp, "spec.md"),
     ], {
       encoding: "utf8",
       env: { ...process.env, SDD_WORK_ROOT: tmp },
     });
 
-    assert.match(result, /PASSED/);
+    const envelope = JSON.parse(result);
+    assert.equal(envelope.ok, true);
   });
 
   it("skips AI check with --skip-guardrail", () => {
@@ -244,7 +155,7 @@ describe("gate guardrail integration", () => {
 
     // With --skip-guardrail, gate should pass even though agent would return FAIL
     const result = execFileSync("node", [
-      GATE_CMD,
+      SDD_FORGE, "flow", "run", "gate",
       "--spec", join(tmp, "spec.md"),
       "--skip-guardrail",
     ], {
@@ -252,7 +163,8 @@ describe("gate guardrail integration", () => {
       env: { ...process.env, SDD_WORK_ROOT: tmp },
     });
 
-    assert.match(result, /PASSED/);
+    const envelope = JSON.parse(result);
+    assert.equal(envelope.ok, true);
   });
 });
 
@@ -381,56 +293,3 @@ describe("buildGuardrailPrompt with exemptions", () => {
   });
 });
 
-// ---------------------------------------------------------------------------
-// guardrail init: webapp type merges base + webapp articles
-// ---------------------------------------------------------------------------
-
-describe("guardrail init template merging", () => {
-  let tmp;
-  afterEach(() => tmp && removeTmpDir(tmp));
-
-  it("merges base + webapp articles for webapp type", () => {
-    tmp = createTmpDir();
-    writeJson(tmp, ".sdd-forge/config.json", {
-      lang: "en",
-      type: "webapp",
-      docs: { languages: ["en"], defaultLanguage: "en" },
-    });
-
-    execFileSync("node", [GUARDRAIL_CMD, "init"], {
-      encoding: "utf8",
-      env: { ...process.env, SDD_WORK_ROOT: tmp },
-    });
-
-    const content = readFileSync(join(tmp, ".sdd-forge", "guardrail.md"), "utf8");
-    // base articles
-    assert.ok(content.includes("Single Responsibility"), "should have base article");
-    assert.ok(content.includes("No Hardcoded Secrets"), "should have base article");
-    // webapp articles
-    assert.ok(content.includes("Security Impact Disclosure"), "should have webapp article");
-    assert.ok(content.includes("Input Sanitization"), "should have webapp article");
-  });
-
-  it("merges base + webapp + cakephp2 articles for cakephp2 type", () => {
-    tmp = createTmpDir();
-    writeJson(tmp, ".sdd-forge/config.json", {
-      lang: "en",
-      type: "cakephp2",
-      docs: { languages: ["en"], defaultLanguage: "en" },
-    });
-
-    execFileSync("node", [GUARDRAIL_CMD, "init"], {
-      encoding: "utf8",
-      env: { ...process.env, SDD_WORK_ROOT: tmp },
-    });
-
-    const content = readFileSync(join(tmp, ".sdd-forge", "guardrail.md"), "utf8");
-    // base
-    assert.ok(content.includes("Single Responsibility"), "should have base article");
-    // webapp
-    assert.ok(content.includes("Security Impact Disclosure"), "should have webapp article");
-    // cakephp2
-    assert.ok(content.includes("Fat Model"), "should have cakephp2 article");
-    assert.ok(content.includes("CakeSession"), "should have cakephp2 article");
-  });
-});

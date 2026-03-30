@@ -5,7 +5,6 @@
  * sdd-forge CLI entry point.
  * Routes top-level subcommands to dedicated dispatchers:
  *   docs    → src/docs.js
- *   spec    → src/spec.js
  *   flow    → src/flow.js
  *   setup   → src/setup.js
  *   upgrade → src/upgrade.js
@@ -34,7 +33,7 @@ if (!subCmd || subCmd === "-h" || subCmd === "--help") {
 }
 
 /** Namespace dispatchers — receive subcommand + rest args */
-const NAMESPACE_DISPATCHERS = new Set(["docs", "spec", "flow"]);
+const NAMESPACE_DISPATCHERS = new Set(["docs", "flow"]);
 
 /** Independent commands — receive rest args directly */
 const INDEPENDENT = {
