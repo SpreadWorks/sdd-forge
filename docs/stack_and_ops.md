@@ -11,7 +11,7 @@
 
 <!-- {{text({prompt: "Write a 1-2 sentence overview of this chapter. Include the programming language, framework, and key tool versions."})}} -->
 
-This chapter covers the operational stack exposed by the analyzed JavaScript data sources, including CakePHP 2.x and GitHub Actions workflow analysis. The available version information identifies CakePHP 2.x, while the CI/CD workflow parser reports pipeline structure, triggers, jobs, secrets, and environment variables from workflow YAML files.
+This project is a Node.js 18+ command-line tool written as an ES module package in JavaScript. It distributes a single `sdd-forge` CLI entry point from `src/sdd-forge.js`, uses pnpm 10.33.0 as the pinned package manager, and currently publishes version `0.1.0-alpha.361`.
 <!-- {{/text}} -->
 
 ## Content
@@ -22,39 +22,43 @@ This chapter covers the operational stack exposed by the analyzed JavaScript dat
 
 | Category | Technology | Version |
 | --- | --- | --- |
-| Programming language | JavaScript | Not specified |
-| Framework | CakePHP | 2.x |
-| CI/CD | GitHub Actions | Not specified |
-| Container-related configuration | Docker | Not specified |
+| Language | JavaScript (ES modules) | Not separately specified |
+| Runtime | Node.js | 18 or newer |
+| Package manager | pnpm | 10.33.0 |
+| Package format | npm package `sdd-forge` | 0.1.0-alpha.361 |
+| CLI entry point | `sdd-forge` -> `src/sdd-forge.js` | Not separately specified |
+| CI workflows | GitHub Actions workflow files (`.yml` / `.yaml`) | Not separately specified |
+| Edge runtime config support | Wrangler (`wrangler.toml`, `wrangler.json`, `wrangler.jsonc`) | Not separately specified |
+| Preset framework support | CakePHP 2 preset data sources | Not separately specified |
 <!-- {{/text}} -->
 
 ### Dependencies
 
 <!-- {{text({prompt: "Describe the project's dependency management approach."})}} -->
 
-The provided analysis does not describe a package manager or lockfile-based dependency strategy.
+The project uses `package.json` as the central dependency and distribution manifest. It declares no external runtime dependencies, which matches the built-in-module-only policy described for the codebase.
 
-Within operations, dependency information is captured from GitHub Actions workflow files. The pipeline parser extracts `uses` references from job steps, removes duplicates, and presents them as part of the job details for each workflow.
+Runtime constraints are enforced through the `engines` field, which requires Node.js 18 or newer, and the package manager is pinned to pnpm 10.33.0. Test execution is exposed through package scripts for the default suite, unit tests, end-to-end tests, and acceptance tests.
+
+For publishing, the package limits distributed files to `src/` and explicitly excludes preset acceptance test folders under `src/presets/*/tests/`.
 <!-- {{/text}} -->
 
 ### Deployment Flow
 
 <!-- {{text({prompt: "Describe the deployment procedure and flow."})}} -->
 
-Deployment-related information is derived from GitHub Actions workflow definitions under `.github/workflows/*.yml`.
+Deployment is package-based: the npm package exposes a single executable named `sdd-forge` that resolves to `src/sdd-forge.js`. The published artifact is constrained by `package.json` so that `src/` is included while preset acceptance test folders are excluded.
 
-The pipeline data source scans workflow files, parses workflow names and triggers, reads branch filters and cron schedules when present, and summarizes each workflow's jobs, referenced secrets, and environment variables. Docker-based deployment details are not currently provided by the CakePHP 2.x Docker data source, because that source is implemented as a stub and always returns `null`.
+Project-local skill assets are deployed by copying resolved `SKILL.md` templates into `.agents/skills` and `.claude/skills`. During this process, the deployment logic expands template includes, preserves unchanged files, removes symlink targets when necessary, and writes updated content only when the generated result differs from the existing file.
 <!-- {{/text}} -->
 
 ### Operations Flow
 
 <!-- {{text({prompt: "Describe the operations procedures."})}} -->
 
-Operations are documented through two analysis paths.
+Operational command execution is standardized through a synchronous process wrapper that returns normalized `ok`, `status`, `stdout`, and `stderr` fields without throwing. Higher-level Git state helpers use read-only shell calls to inspect worktree cleanliness, current branch, commits ahead of a base branch, the latest commit summary, and GitHub CLI availability.
 
-For CI/CD, workflow files are parsed into pipeline lists, job tables, and a table of referenced secrets and environment variables. This makes the operational view centered on workflow triggers, job execution targets, step counts, and external references used in automation.
-
-For Docker-related operations in the CakePHP 2.x preset, no runtime data is currently available because the Docker data source is present only as an extension point and does not return analyzed results.
+CI operations are documented by scanning `.github/workflows` YAML files and extracting workflow names, triggers, jobs, step counts, referenced actions, secrets, and environment variables into structured analysis entries and Markdown tables. Edge runtime operations are similarly derived from Wrangler configuration files, which are parsed to expose entry points, routes, and compatibility constraints, while the CakePHP Docker preset currently returns no Docker metadata.
 <!-- {{/text}} -->
 
 ---

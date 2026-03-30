@@ -11,7 +11,8 @@
 
 <!-- {{text({prompt: "この章の概要を1〜2文で記述してください。主要ディレクトリの数と役割を踏まえること。"})}} -->
 
-このプロジェクトは、CLI 本体を担う `src`、ドキュメント生成を担う `src/docs`、Spec-Driven Development の実行系を担う `src/flow`、共通ライブラリを置く `src/lib`、各種プリセットを集約した `src/presets`、Spec 関連コマンドを持つ `src/spec` の6つの主要ディレクトリで構成されています。特に `src/presets` は 122 ファイルを持ち、分析用 DataSource やテストを含む中核領域です。
+このプロジェクトは、CLI 本体を置く `src`、共通処理をまとめた `src/lib`、ワークフロー実行を担う `src/flow`、ドキュメント生成関連を扱う `src/docs`、各種プリセットとそのテストを集約した `src/presets` の 5 つの主要ディレクトリで構成されています。
+特に `src/presets` は 122 ファイルを持つ最大の領域で、設定、共通ライブラリ、コントローラー、ルート、モデル、テストなど複数の役割をまとめて提供しています。
 <!-- {{/text}} -->
 
 ## 内容
@@ -22,47 +23,47 @@
 ```
 src/    (cli)
 src/docs/commands/    (cli)
-src/docs/data/    (lib)
+src/docs/data/    (other)
 src/docs/lib/    (lib)
 src/flow/    (cli, config)
 src/flow/commands/    (cli)
-src/flow/get/    (lib)
-src/flow/run/    (lib)
+src/flow/get/    (cli)
+src/flow/run/    (cli)
 src/flow/set/    (cli)
-src/lib/    (lib)
-src/presets/base/data/    (lib)
+src/lib/    (lib, config, model)
+src/presets/base/data/    (other)
 src/presets/base/tests/acceptance/    (test)
-src/presets/base/tests/acceptance/fixtures/src/    (test)
-src/presets/cakephp2/data/    (lib, model, view)
+src/presets/base/tests/acceptance/fixtures/src/    (config, lib, controller)
+src/presets/cakephp2/data/    (other, controller, lib)
 src/presets/cakephp2/tests/acceptance/    (test)
 src/presets/cakephp2/tests/unit/    (test)
 src/presets/ci/data/    (lib)
 src/presets/cli/data/    (lib)
 src/presets/cli/tests/acceptance/    (test)
-src/presets/cli/tests/acceptance/fixtures/src/    (test)
-src/presets/cli/tests/acceptance/fixtures/src/commands/    (test)
-src/presets/cli/tests/acceptance/fixtures/src/lib/    (test)
-src/presets/cli/tests/acceptance/fixtures/src/lib/rules/    (test)
+src/presets/cli/tests/acceptance/fixtures/src/    (cli, config)
+src/presets/cli/tests/acceptance/fixtures/src/commands/    (cli)
+src/presets/cli/tests/acceptance/fixtures/src/lib/    (lib)
+src/presets/cli/tests/acceptance/fixtures/src/lib/rules/    (lib)
 src/presets/database/data/    (lib)
 src/presets/drizzle/data/    (lib)
 src/presets/drizzle/tests/unit/    (test)
-src/presets/edge/data/    (lib)
+src/presets/edge/data/    (config)
 src/presets/graphql/data/    (lib)
 src/presets/graphql/tests/unit/    (test)
-src/presets/hono/data/    (lib)
+src/presets/hono/data/    (middleware)
 src/presets/hono/tests/unit/    (test)
 src/presets/js-webapp/tests/acceptance/    (test)
 src/presets/js-webapp/tests/acceptance/fixtures/src/    (config, lib, other)
-src/presets/laravel/data/    (lib)
+src/presets/laravel/data/    (cli, config, controller, model, route, migration)
 src/presets/laravel/tests/acceptance/    (test)
 src/presets/laravel/tests/e2e/    (test)
 src/presets/laravel/tests/unit/    (test)
 src/presets/lib/    (lib)
 src/presets/library/tests/acceptance/    (test)
-src/presets/library/tests/acceptance/fixtures/src/    (test)
-src/presets/library/tests/acceptance/fixtures/src/rules/    (test)
-src/presets/library/tests/acceptance/fixtures/src/utils/    (test)
-src/presets/monorepo/data/    (config)
+src/presets/library/tests/acceptance/fixtures/src/    (lib)
+src/presets/library/tests/acceptance/fixtures/src/rules/    (lib)
+src/presets/library/tests/acceptance/fixtures/src/utils/    (lib)
+src/presets/monorepo/data/    (lib)
 src/presets/nextjs/data/    (lib)
 src/presets/nextjs/tests/unit/    (test)
 src/presets/node-cli/tests/acceptance/    (test)
@@ -71,18 +72,17 @@ src/presets/node-cli/tests/acceptance/fixtures/src/commands/    (cli)
 src/presets/node-cli/tests/acceptance/fixtures/src/lib/    (lib)
 src/presets/node-cli/tests/acceptance/fixtures/src/lib/rules/    (lib)
 src/presets/php-webapp/tests/acceptance/    (test)
-src/presets/postgres/data/    (lib)
-src/presets/r2/data/    (lib)
-src/presets/storage/data/    (lib)
-src/presets/symfony/data/    (lib)
+src/presets/postgres/data/    (config)
+src/presets/r2/data/    (config)
+src/presets/storage/data/    (config)
+src/presets/symfony/data/    (config, lib, model, route)
 src/presets/symfony/tests/acceptance/    (test)
 src/presets/symfony/tests/e2e/    (test)
 src/presets/symfony/tests/unit/    (test)
-src/presets/webapp/data/    (lib)
+src/presets/webapp/data/    (cli, controller, model, route, lib)
 src/presets/webapp/tests/acceptance/    (test)
-src/presets/workers/data/    (lib)
+src/presets/workers/data/    (config)
 src/presets/workers/tests/unit/    (test)
-src/spec/commands/    (cli)
 ```
 <!-- {{/data}} -->
 
@@ -91,12 +91,11 @@ src/spec/commands/    (cli)
 
 | ディレクトリ | ファイル数 | 役割 |
 | --- | --- | --- |
-| src/presets | 122 | lib, test, model, view, config, other, cli |
-| src/docs | 32 | cli, lib |
-| src/flow | 30 | cli, config, lib |
-| src/lib | 17 | lib |
-| src | 8 | cli |
-| src/spec | 4 | cli |
+| src/presets | 122 | other, config, lib, controller, test, cli, middleware, model, route, migration |
+| src/docs | 33 | cli, other, lib |
+| src/flow | 30 | cli, config |
+| src/lib | 19 | lib, config, model |
+| src | 7 | cli |
 <!-- {{/data}} -->
 
 ### 共通ライブラリ
@@ -105,10 +104,12 @@ src/spec/commands/    (cli)
 
 | クラス名 | ファイルパス | 責務 |
 | --- | --- | --- |
-| `PackageSource` | `src/presets/base/data/package.js` | `package.json` または `composer.json` を解析し、依存関係とスクリプト情報を抽出します。 |
-| `StructureSource` | `src/presets/base/data/structure.js` | enriched analysis を基に、ディレクトリツリーとロール別のディレクトリ集計テーブルを生成します。 |
-| `CakephpControllersSource` | `src/presets/cakephp2/data/controllers.js` | CakePHP 2.x のコントローラを解析し、アクション、利用コンポーネント、CSV 対応、権限関連情報を集計します。 |
-| `MonorepoSource` | `src/presets/monorepo/data/monorepo.js` | monorepo 構成向けに、章ごとの対象アプリ情報をバッジ形式テキストとして出力します。 |
+| なし（`loadSddTemplate` をエクスポート） | `src/lib/agents-md.js` | `AGENTS.md` 生成に使う SDD セクションテンプレートを読み込み、要求言語と英語の順でフォールバックして返します。 |
+| なし（プリセット解決用関数群をエクスポート） | `src/lib/presets.js` | プリセット定義の探索、親子継承チェーンの解決、複数プリセット指定時の重複整理、安全なフォールバック解決を一元化します。 |
+| `ModulesSource` | `src/presets/cli/data/modules.js` | CLI 向けソースファイルを走査し、クラス名とメソッド情報を抽出してモジュール一覧表を生成します。 |
+| `MonorepoSource` | `src/presets/monorepo/data/monorepo.js` | モノレポ設定または解析結果から対象アプリ名を収集し、章ごとのターゲット表示を生成します。 |
+| `NextjsComponentsSource` | `src/presets/nextjs/data/components.js` | Next.js のコンポーネントファイルを走査し、サーバー・クライアント・共有の種別ごとに一覧化します。 |
+| `RoutesSource` | `src/presets/nextjs/data/routes.js` | Next.js の App Router / Pages Router を解析し、ルート種別、動的セグメント、ハンドラー情報を抽出して一覧化します。 |
 <!-- {{/text}} -->
 
 ---

@@ -126,11 +126,11 @@ See the [configuration reference](docs/configuration.md) for details.
 <!-- {{data("cli.docs.chapters", {header: "", labels: "Chapter|Summary", ignoreError: true})}} -->
 | Chapter | Summary |
 | --- | --- |
-| [Tool Overview and Architecture](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/overview.md) | sdd-forge is a Node.js CLI for Spec-Driven Development and automated documentation generation. |
-| [Technology Stack and Operations](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/stack_and_ops.md) | This chapter covers the operational stack exposed by the analyzed JavaScript data sources, including CakePHP 2.x and … |
-| [Project Structure](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/project_structure.md) | This chapter covers 6 major directories: src/ and src/spec/ for CLI entry points and command handling, src/docs/ for … |
-| [CLI Command Reference](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/cli_commands.md) | The CLI is organized around the top-level sdd-forge entry point, which routes to three namespaces (docs, spec, and fl… |
-| [Configuration and Customization](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/configuration.md) | sdd-forge reads its main project settings from .sdd-forge/config.json and also reads package.json when a package fiel… |
+| [Tool Overview and Architecture](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/overview.md) | This chapter introduces a CLI tool that combines source-code-based documentation generation with a Spec-Driven Develo… |
+| [Technology Stack and Operations](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/stack_and_ops.md) | This project is a Node.js 18+ command-line tool written as an ES module package in JavaScript. |
+| [Project Structure](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/project_structure.md) | This chapter covers five major directory areas: src for top-level CLI entry points, src/docs for documentation comman… |
+| [CLI Command Reference](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/cli_commands.md) | The analyzed CLI exposes 38 documented command entry points: 6 top-level commands, 12 docs subcommands, 3 flow namesp… |
+| [Configuration and Customization](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/configuration.md) | sdd-forge is configured primarily through JSON in .sdd-forge/config.json, with optional package metadata from package… |
 <!-- {{/data}} -->
 
 ## License

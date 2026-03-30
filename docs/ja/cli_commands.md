@@ -8,7 +8,8 @@
 
 <!-- {{text({prompt: "この章の概要を1〜2文で記述してください。コマンド総数・サブコマンド体系を踏まえること。"})}} -->
 
-`sdd-forge` はトップレベルで `docs`・`spec`・`flow`・`setup`・`upgrade`・`presets`・`help` を持つ CLI です。解析データ上、`docs` は 11 個のサブコマンドをディスパッチし、`flow` は `set` 配下の状態更新コマンドと `run` 配下の実行コマンド、`spec` は仕様作成・ゲート・ガードレール管理・lint を提供します。
+この章で確認できる実行系コマンドは少なくとも33系統あり、トップレベルの `sdd-forge` から `docs` 名前空間と `flow` 名前空間、さらに個別コマンドへ段階的に振り分けられます。
+`docs` はドキュメント生成パイプライン、`flow` は SDD ワークフローの状態参照・更新・実行を担い、`setup` `upgrade` `presets` `help` が独立コマンドとして提供されます。
 <!-- {{/text}} -->
 
 ## 内容
@@ -17,289 +18,282 @@
 
 <!-- {{text({prompt: "全コマンドの一覧を表形式で記述してください。コマンド名・説明・主なオプションを含めること。ソースコードのコマンド定義・ルーティングから網羅的に抽出すること。", mode: "deep"})}} -->
 
-| コマンド | 説明 | 主なオプション |
+| コマンド名 | 説明 | 主なオプション |
 | --- | --- | --- |
-| `sdd-forge help` | 全サブコマンド一覧を表示します。 | なし |
-| `sdd-forge setup` | 対話型または非対話で `.sdd-forge/config.json` を生成し、プロジェクトを登録します。 | `--name` `--path` `--work-root` `--type` `--purpose` `--tone` `--agent` `--lang` `--dry-run` |
-| `sdd-forge upgrade` | スキルや `AGENTS.md` の SDD セクションなど、テンプレート由来ファイルを更新します。 | `--dry-run` |
-| `sdd-forge presets list` | プリセットの継承ツリーを表示します。 | `-h` `--help` |
-| `sdd-forge docs build` | `scan → enrich → init → data → text → readme → agents → [translate]` のパイプラインを順次実行します。 | `--force` `--regenerate` `--verbose` `--dry-run` |
-| `sdd-forge docs scan` | `docs/commands/scan.js` にルーティングされます。 | 解析データに個別オプションの記載はありません。 |
-| `sdd-forge docs enrich` | `docs/commands/enrich.js` にルーティングされ、`docs build` の enrich ステップでも使われます。 | 解析データに個別オプションの記載はありません。 |
-| `sdd-forge docs init` | テンプレート継承チェーンを解決し、`docs/` 配下の章ファイルを初期生成します。 | `--type` `--lang` `--docs-dir` `--force` `--dry-run` |
-| `sdd-forge docs data` | `analysis.json` をもとに `{{data}}` ディレクティブを解決して章ファイルへ反映します。 | `--docs-dir` `--dry-run` `--stdout` |
-| `sdd-forge docs text` | `docs/commands/text.js` にルーティングされ、`docs build` の text ステップでも使われます。 | 解析データに個別オプションの記載はありません。 |
-| `sdd-forge docs readme` | `docs/` 配下の章から `README.md` を自動生成します。 | `--lang` `--output` `--dry-run` |
-| `sdd-forge docs forge` | AI エージェントで docs 改善を反復し、レビュー結果を次ラウンドへ反映します。 | `--prompt` `--prompt-file` `--spec` `--max-runs` `--review-cmd` `--mode` `--dry-run` `--verbose` |
-| `sdd-forge docs review` | 章ファイルや `README.md` の構造、未充填ディレクティブ、出力整合性を検査します。 | 対象ディレクトリを位置引数で指定可能 |
+| `sdd-forge` | トップレベルのエントリーポイントです。`docs` と `flow` の名前空間、および独立コマンドへ振り分けます。 | `-h`, `--help`, `-v`, `--version`, `-V` |
+| `sdd-forge help` | 全体のヘルプを表示します。 | なし |
+| `sdd-forge setup` | プロジェクトを初期設定し、`.sdd-forge/config.json` や作業ディレクトリ、エージェント設定ファイルを準備します。 | `--name`, `--path`, `--work-root`, `--type`, `--purpose`, `--tone`, `--agent`, `--lang`, `--dry-run` |
+| `sdd-forge upgrade` | 既存プロジェクトのテンプレート管理ファイル、主にスキル群を更新します。 | `--dry-run` |
+| `sdd-forge presets` / `sdd-forge presets list` | プリセット継承ツリーを表示します。 | `-h`, `--help` |
+| `sdd-forge docs` | ドキュメント系サブコマンドの名前空間です。 | `-h`, `--help` |
+| `sdd-forge docs build` | `scan` から `readme`、`agents`、必要に応じて `translate` までを順に実行する統合ビルドです。 | `--verbose`, `--dry-run`, `--force`, `--regenerate` |
+| `sdd-forge docs scan` | ソースコードを走査して `.sdd-forge/output/analysis.json` を生成または更新します。 | `--reset`, `--stdout`, `--dry-run` |
+| `sdd-forge docs enrich` | `analysis.json` の各項目に要約、詳細、章割り当て、役割などの補足情報を付与します。 | `--stdout`, `--dry-run` |
+| `sdd-forge docs init` | テンプレートを解決して `docs/` の章ファイルを初期化します。 | `--type`, `--lang`, `--docs-dir`, `--force`, `--dry-run` |
+| `sdd-forge docs data` | `{{data}}` ディレクティブを `analysis.json` から解決して章ファイルへ反映します。 | `--docs-dir`, `--stdout`, `--dry-run` |
+| `sdd-forge docs text` | `{{text}}` ディレクティブを埋めて本文を生成します。 | `--per-directive`, `--timeout`, `--id`, `--lang`, `--docs-dir`, `--files`, `--dry-run` |
+| `sdd-forge docs readme` | README テンプレートを解決し、`README.md` を再生成します。 | `--lang`, `--output`, `--dry-run` |
+| `sdd-forge docs forge` | ユーザー指示とレビュー結果を使って文書を反復改善します。 | `--prompt`, `--prompt-file`, `--spec`, `--max-runs`, `--review-cmd`, `--mode`, `--verbose`, `--dry-run` |
+| `sdd-forge docs review` | 文書レビューを実行します。`docs forge` の既定レビューコマンド、および `flow run sync` の検証工程から呼び出されます。 | 解析対象に詳細な引数定義なし |
 | `sdd-forge docs changelog` | `specs/` を走査して `docs/change_log.md` を生成します。 | `--dry-run` |
-| `sdd-forge docs agents` | `AGENTS.md` を生成・更新し、`agents.sdd` と `agents.project` のディレクティブを解決します。 | `--dry-run` |
-| `sdd-forge docs translate` | `docs/commands/translate.js` にルーティングされ、`docs build` の多言語出力でも使われます。 | 解析データに個別オプションの記載はありません。 |
-| `sdd-forge spec init` | 連番の feature ブランチと `specs/<番号>-<slug>/` を初期化し、`spec.md` と `qa.md` を作成します。 | `--title` `--base` `--dry-run` `--allow-dirty` `--no-branch` `--worktree` |
-| `sdd-forge spec gate` | spec の未解決事項を検出し、必要に応じてガードレール AI チェックを実行します。 | `--spec` `--phase` `--skip-guardrail` |
-| `sdd-forge spec guardrail init` | プリセットチェーンから `.sdd-forge/guardrail.md` を生成します。 | `--force` |
-| `sdd-forge spec guardrail update` | 既存ガードレールへ AI でプロジェクト固有の条項を提案・追記します。 | 解析データに個別オプションの記載はありません。 |
-| `sdd-forge spec guardrail show` | ガードレール条項を表示し、`--phase` で絞り込みます。 | `--phase` |
-| `sdd-forge spec lint` | ベースブランチとの差分ファイルに対してガードレール lint パターンを適用します。 | `--base` |
-| `sdd-forge flow set issue <number>` | `flow.json` の issue 番号を設定します。 | 位置引数 `<number>` |
-| `sdd-forge flow set metric <phase> <counter>` | `flow.json` のメトリクスカウンターをインクリメントします。 | 位置引数 `<phase>` `<counter>` |
-| `sdd-forge flow set note "<text>"` | `flow.json` の `notes` 配列へメモを追加します。 | 位置引数 `<text>` |
-| `sdd-forge flow set redo` | `specs/<spec>/redolog.json` にやり直し記録を追加します。 | `--step` `--reason` `--trigger` `--resolution` `--guardrail-candidate` |
-| `sdd-forge flow set req <index> <status>` | 要件一覧の個別ステータスを更新します。 | 位置引数 `<index>` `<status>` |
-| `sdd-forge flow set request "<text>"` | `flow.json` の `request` を設定します。 | 位置引数 `<text>` |
-| `sdd-forge flow set step <id> <status>` | ワークフローステップの状態を更新します。 | 位置引数 `<id>` `<status>` |
-| `sdd-forge flow set summary '<json-array>'` | JSON 文字列配列から要件一覧を一括設定します。 | 位置引数 `<json-array>` |
-| `sdd-forge flow run merge` | アクティブフローに基づいて squash merge または PR 作成を行います。 | `--dry-run` `--pr` `--auto` |
-| `sdd-forge flow run cleanup` | `.active-flow` エントリ削除と worktree・ブランチ削除を行います。 | `--dry-run` |
-| `sdd-forge flow run review` | 実装後レビューを draft → final → 承認の 3 フェーズで実行します。 | `--dry-run` `--skip-confirm` |
+| `sdd-forge docs agents` | `AGENTS.md` を生成または更新し、`agents.project` ブロックをエージェントで整形します。 | `--dry-run` |
+| `sdd-forge docs translate` | 既定言語の文書を追加言語へ翻訳します。 | `--lang`, `--force`, `--dry-run` |
+| `sdd-forge flow` | SDD フロー系サブコマンドの名前空間です。 | `-h`, `--help` |
+| `sdd-forge flow get` | フロー状態の参照系サブコマンドです。 | `-h`, `--help` |
+| `sdd-forge flow get status` | 現在のフロー状態、進捗、ブランチ情報、要求一覧を JSON エンベロープで返します。 | なし |
+| `sdd-forge flow get check <impl\|finalize\|dirty\|gh>` | 実装前提条件、最終化前提条件、ワークツリー汚れ、`gh` 利用可否を確認します。 | 対象引数が必須 |
+| `sdd-forge flow get guardrail <draft\|spec\|impl\|lint>` | 指定フェーズに対応するガードレール記事を返します。 | フェーズ引数が必須 |
+| `sdd-forge flow get issue <number>` | GitHub Issue を `gh issue view` で取得して JSON で返します。 | Issue 番号引数が必須 |
+| `sdd-forge flow get qa-count` | アクティブフローで回答済み質問数を返します。 | なし |
+| `sdd-forge flow set` | フロー状態の更新系サブコマンドです。 | `-h`, `--help` |
+| `sdd-forge flow set issue <number>` | アクティブフローに Issue 番号を設定します。 | Issue 番号引数が必須 |
+| `sdd-forge flow set metric <phase> <counter>` | メトリクス値を1件加算します。 | フェーズ・カウンタ引数が必須 |
+| `sdd-forge flow set note "<text>"` | ノートを1件追記します。 | テキスト引数が必須 |
+| `sdd-forge flow set redo --step ... --reason ...` | redo ログに再実施理由を追記します。 | `--step`, `--reason`, `--trigger`, `--resolution`, `--guardrail-candidate` |
+| `sdd-forge flow set req <index> <status>` | 要件1件の状態を更新します。 | インデックス・状態引数が必須 |
+| `sdd-forge flow set request "<text>"` | 元のユーザー要求文を保存します。 | テキスト引数が必須 |
+| `sdd-forge flow set step <id> <status>` | ワークフローステップの状態を更新します。 | ステップID・状態引数が必須 |
+| `sdd-forge flow set summary '<json-array>'` | 要件一覧を JSON 配列で置き換えます。 | JSON 配列引数が必須 |
+| `sdd-forge flow run` | フロー実行系サブコマンドです。 | `-h`, `--help` |
+| `sdd-forge flow run prepare-spec` | 新しい spec、branch/worktree、初期 flow 状態を作成します。 | `--title`, `--base`, `--worktree`, `--no-branch`, `--dry-run` |
+| `sdd-forge flow run review` | レビューコマンドを JSON エンベロープ付きで実行します。 | `--dry-run`, `--skip-confirm` |
+| `sdd-forge flow run sync` | `docs build` と `docs review` を実行し、文書変更をコミットします。 | `--dry-run` |
+| `sdd-forge flow run finalize` | commit → merge → cleanup → sync → record の最終化パイプラインを実行します。 | `--mode`, `--steps`, `--merge-strategy`, `--message`, `--dry-run` |
 <!-- {{/text}} -->
 
 ### グローバルオプション
 
 <!-- {{text({prompt: "全コマンドに共通するグローバルオプションを表形式で記述してください。ソースコードの引数パース処理から抽出すること。", mode: "deep"})}} -->
 
-ソースコード上、すべてのコマンドで共通に解釈されるグローバルオプションは定義されていません。複数の入口で繰り返し使われている主なオプションは次のとおりです。
+この解析対象では、すべてのコマンドに一律で適用される共通オプションは定義されていません。共通に近い扱いとして確認できるものを示します。
 
-| オプション | 主に使われるコマンド | 内容 |
+| オプション | 適用範囲 | 役割 |
 | --- | --- | --- |
-| `-h`, `--help` | `sdd-forge`、`docs` ディスパッチャ、`flow` ディスパッチャ、`presets list`、多くの個別コマンド | 使用方法とオプションを表示します。 |
-| `--dry-run` | `docs build` `docs init` `docs data` `docs readme` `docs forge` `docs changelog` `docs agents` `setup` `upgrade` `spec init` `flow run merge` `flow run cleanup` `flow run review` | 実際の書き込みや実行を行わず、予定内容を表示します。 |
-| `--verbose` | `docs build` `docs forge` | 進捗や詳細ログを増やします。 |
-| `--force` | `docs build` `docs init` `spec guardrail init` | 既存ファイルの上書きや強制処理に使います。 |
-| `--lang` | `setup` `docs init` `docs readme` | 出力言語またはセットアップ言語を指定します。 |
-| 位置引数 | `flow set` 系、`docs review` など | コマンドによって ID、番号、対象ディレクトリ、JSON 文字列などを受け取ります。 |
+| `-h`, `--help` | トップレベル、`docs` / `flow` ディスパッチャ、多くの個別コマンド | 使用方法とオプション一覧を表示します。 |
+| `-v`, `--version`, `-V` | `sdd-forge` トップレベルのみ | パッケージのバージョンを表示して終了します。 |
+| `--dry-run` | `setup`、`upgrade`、`docs build`、`docs scan`、`docs enrich`、`docs init`、`docs data`、`docs text`、`docs readme`、`docs forge`、`docs changelog`、`docs agents`、`docs translate`、`flow run prepare-spec`、`flow run review`、`flow run sync`、`flow run finalize`、`flow merge`、`flow cleanup` | 実際の書き込みや Git 操作を行わず、予定内容だけを表示します。 |
+
+`--dry-run` は広く使われていますが、全コマンド共通ではありません。`parseArgs()` は各コマンドごとに許可されたフラグだけを受け付けるため、未対応オプションを渡すとエラーになります。
 <!-- {{/text}} -->
 
 ### 各コマンドの詳細
 
 <!-- {{text({prompt: "各コマンドの使用方法・オプション・実行例を詳しく記述してください。コマンドごとに #### サブセクションを立てること。ソースコードの引数定義・ヘルプメッセージから情報を抽出すること。", mode: "deep"})}} -->
 
+#### `sdd-forge`
+使用方法: `sdd-forge <command>`
+`docs` と `flow` の名前空間、`setup` `upgrade` `presets` `help` の独立コマンドへ振り分けます。`-h` / `--help` で全体ヘルプ、`-v` / `--version` / `-V` でバージョン表示を行います。
+実行例: `sdd-forge docs build`
+
 #### `sdd-forge help`
 使用方法: `sdd-forge help`
-利用可能なトップレベルコマンドをセクション付きで表示します。
-主なオプションはありません。
+セクション分けされた全体ヘルプを表示します。`Project` `Docs` `Flow` `Info` の各分類ごとにコマンド一覧を確認できます。
 実行例: `sdd-forge help`
 
 #### `sdd-forge setup`
-使用方法: `sdd-forge setup [--name <name>] [--path <path>] [--work-root <path>] [--type <type>] [--purpose <purpose>] [--tone <tone>] [--agent <agent>] [--lang <lang>] [--dry-run]`
-対話型ではプロジェクト名、出力言語、プリセット、ドキュメント目的、トーン、エージェント設定を収集します。
-非対話では引数から設定を受け取り、`.sdd-forge/config.json`、`docs/`、`specs/`、スキル、`AGENTS.md` などを準備します。
-実行例: `sdd-forge setup --name myapp --path /path/to/src --type webapp/cakephp2`
+使用方法: `sdd-forge setup [options]`
+`--name` `--path` `--work-root` `--type` `--purpose` `--tone` `--agent` `--lang` `--dry-run` を受け付けます。必要な値が足りない場合は対話式ウィザードに入り、`.sdd-forge/config.json`、`docs/`、`specs/`、スキル、エージェント設定ファイルを準備します。
+実行例: `sdd-forge setup --name my-project --type node-cli --lang ja --dry-run`
 
 #### `sdd-forge upgrade`
 使用方法: `sdd-forge upgrade [--dry-run]`
-テンプレート管理対象のスキルや `AGENTS.md` の SDD セクションを現在のバージョンに合わせて更新します。
-`config.json` や `context.json` は変更しません。
+既存設定を読み込み、言語設定に応じてスキル群を再配備します。`--dry-run` では更新予定だけを表示します。
 実行例: `sdd-forge upgrade --dry-run`
 
-#### `sdd-forge presets list`
-使用方法: `sdd-forge presets list`
-`base` を起点に、プリセットの継承ツリー、別名、scan キー、テンプレート有無を表示します。
-ヘルプは `-h` または `--help` で表示します。
+#### `sdd-forge presets`
+使用方法: `sdd-forge presets [list]`
+プリセット継承ツリーを表示します。`-h` / `--help` を付けると簡易ヘルプを表示します。
 実行例: `sdd-forge presets list`
 
+#### `sdd-forge docs`
+使用方法: `sdd-forge docs <command>`
+ドキュメント関連サブコマンドの入口です。コマンド未指定時は利用可能なサブコマンド一覧を表示します。
+実行例: `sdd-forge docs build`
+
 #### `sdd-forge docs build`
-使用方法: `sdd-forge docs build [--force] [--regenerate] [--verbose] [--dry-run]`
-`scan`、`enrich`、`init`、`data`、`text`、`readme`、`agents`、必要に応じて `translate` を順に実行します。
-`--regenerate` 指定時は既存 `docs/` を前提に `init` を省略し、章ファイルがない場合はエラー終了します。
+使用方法: `sdd-forge docs build [options]`
+`scan` → `enrich` → `init` → `data` → `text` → `readme` → `agents` を順に実行し、多言語設定時は `translate` も処理します。主なオプションは `--verbose` `--dry-run` `--force` `--regenerate` です。
 実行例: `sdd-forge docs build --verbose`
 
 #### `sdd-forge docs scan`
-使用方法: `sdd-forge docs scan --help`
-`src/docs.js` から `docs/commands/scan.js` へルーティングされます。
-本解析データには個別オプションの詳細は含まれていません。
-実行例: `sdd-forge docs scan --help`
+使用方法: `sdd-forge docs scan [options]`
+ソースファイルを集めて DataSource ごとに解析し、`.sdd-forge/output/analysis.json` を生成します。`--reset` で保存済みハッシュを消去し、`--stdout` `--dry-run` に対応します。
+実行例: `sdd-forge docs scan --reset modules`
 
 #### `sdd-forge docs enrich`
-使用方法: `sdd-forge docs enrich --help`
-`docs build` の enrich ステップでも使われるサブコマンドです。
-エージェント未設定時は `docs build` からの呼び出しでスキップされます。
-実行例: `sdd-forge docs enrich --help`
+使用方法: `sdd-forge docs enrich [options]`
+解析済み項目をバッチ分割し、要約、詳細説明、章、役割などを付加します。`--stdout` と `--dry-run` が利用できます。
+実行例: `sdd-forge docs enrich --dry-run`
 
 #### `sdd-forge docs init`
-使用方法: `sdd-forge docs init [--type <type>] [--lang <lang>] [--docs-dir <dir>] [--force] [--dry-run]`
-テンプレート継承チェーンを解決し、`README.md` を除く章テンプレートを `docs/` 配下へ展開します。
-`config.chapters` 未定義かつ分析とエージェントがある場合は AI による章選別を行います。
+使用方法: `sdd-forge docs init [options]`
+テンプレート継承を解決して `docs/` の章ファイルを作成します。`--type` `--lang` `--docs-dir` `--force` `--dry-run` を受け付けます。
 実行例: `sdd-forge docs init --type cli --force`
 
 #### `sdd-forge docs data`
-使用方法: `sdd-forge docs data [--docs-dir <dir>] [--dry-run] [--stdout]`
-`analysis.json` を読み込み、`docs/` 内の `{{data}}` ディレクティブを解決します。
-`{{text}}` はこのコマンドでは埋めず、スキップとして扱います。
-実行例: `sdd-forge docs data --dry-run`
+使用方法: `sdd-forge docs data [options]`
+`{{data}}` ディレクティブを `analysis.json` から解決します。`--docs-dir` で対象ディレクトリを変えられ、`--stdout` `--dry-run` に対応します。
+実行例: `sdd-forge docs data --stdout`
 
 #### `sdd-forge docs text`
-使用方法: `sdd-forge docs text --help`
-`src/docs.js` から `docs/commands/text.js` へルーティングされます。
-本解析データでは、`docs build` の text ステップとして使われることが確認できます。
-実行例: `sdd-forge docs text --help`
+使用方法: `sdd-forge docs text [options]`
+`{{text}}` ディレクティブを LLM で埋めます。`--per-directive` `--timeout` `--id` `--lang` `--docs-dir` `--files` `--dry-run` が用意されています。
+実行例: `sdd-forge docs text --files cli_commands.md --per-directive`
 
 #### `sdd-forge docs readme`
-使用方法: `sdd-forge docs readme [--lang <lang>] [--output <path>] [--dry-run]`
-章ファイルから `README.md` テンプレートを構築し、`{{data}}` と `{{text}}` を処理して出力します。
-`--output` は多言語出力時の `lang/README.md` 生成にも使われます。
+使用方法: `sdd-forge docs readme [options]`
+README テンプレートを解決し、必要に応じて `{{text}}` も埋めて `README.md` を更新します。`--lang` `--output` `--dry-run` を受け付けます。
 実行例: `sdd-forge docs readme --output docs/ja/README.md`
 
 #### `sdd-forge docs forge`
-使用方法: `sdd-forge docs forge [--prompt <text>] [--prompt-file <file>] [--spec <spec.md>] [--max-runs <n>] [--review-cmd <cmd>] [--mode <local|assist|agent>] [--dry-run] [--verbose]`
-AI エージェントで docs を改善し、各ラウンドの後にレビューコマンドを実行して再試行します。
-`--mode` は `local`、`assist`、`agent` を受け付け、既定値は `local` です。
-実行例: `sdd-forge docs forge --prompt "ユーザー向けに簡潔化" --max-runs 3`
+使用方法: `sdd-forge docs forge --prompt <text> [options]`
+ユーザー指示、任意の spec、レビューコマンドを使って文書を反復改善します。`--prompt` `--prompt-file` `--spec` `--max-runs` `--review-cmd` `--mode` `--verbose` `--dry-run` が使えます。
+実行例: `sdd-forge docs forge --prompt "CLI 章を改善" --mode assist`
 
 #### `sdd-forge docs review`
-使用方法: `sdd-forge docs review [<targetDir>]`
-章ファイルの最小行数、H1 見出し、未充填の `{{text}}`・`{{data}}`、壊れたコメント、残留ブロックディレクティブなどを検査します。
-多言語設定がある場合は非デフォルト言語ディレクトリも検査対象です。
-実行例: `sdd-forge docs review docs`
+使用方法: `sdd-forge docs review`
+文書レビュー工程として利用されるコマンドです。`docs forge` の既定レビューコマンド、および `flow run sync` の検証工程から呼び出されます。
+実行例: `sdd-forge docs review`
 
 #### `sdd-forge docs changelog`
-使用方法: `sdd-forge docs changelog [outputFile] [--dry-run]`
-`specs/` 配下の各 `spec.md` からタイトル、作成日、ステータス、ブランチ、概要を抽出してテーブル化します。
-既定の出力先は `docs/change_log.md` です。
+使用方法: `sdd-forge docs changelog [output] [--dry-run]`
+`specs/` 配下の `spec.md` を集約し、最新シリーズ索引と全 spec 一覧を含む `docs/change_log.md` を生成します。
 実行例: `sdd-forge docs changelog --dry-run`
 
 #### `sdd-forge docs agents`
 使用方法: `sdd-forge docs agents [--dry-run]`
-`AGENTS.md` がなければテンプレートから新規作成し、`agents.sdd` と `agents.project` を解決します。
-`project` セクションがある場合は AI で精査して差し替えます。
+`AGENTS.md` を作成または更新し、`agents.sdd` を保持したまま `agents.project` を生成・整形します。
 実行例: `sdd-forge docs agents --dry-run`
 
 #### `sdd-forge docs translate`
-使用方法: `sdd-forge docs translate --help`
-`src/docs.js` から `docs/commands/translate.js` へルーティングされます。
-`docs build` の多言語出力時に自動で呼ばれる場合があります。
-実行例: `sdd-forge docs translate --help`
+使用方法: `sdd-forge docs translate [options]`
+既定言語の章ファイルと README を追加言語へ翻訳します。`--lang` で対象言語を絞り込み、`--force` で更新日時判定を無視できます。
+実行例: `sdd-forge docs translate --lang ja --force`
 
-#### `sdd-forge spec init`
-使用方法: `sdd-forge spec init --title <title> [--base <branch>] [--dry-run] [--allow-dirty] [--no-branch] [--worktree]`
-連番付きの feature ブランチ名と spec ディレクトリ名を自動採番し、`spec.md` と `qa.md` を生成します。
-`--no-branch` または worktree 内実行時は spec-only、`--worktree` 指定時は別 worktree を作成します。
-実行例: `sdd-forge spec init --title "contact-form" --worktree`
+#### `sdd-forge flow`
+使用方法: `sdd-forge flow <get|set|run> ...`
+SDD フロー関連の参照、更新、実行をまとめた名前空間です。未指定または `--help` で利用可能なサブコマンドを表示します。
+実行例: `sdd-forge flow get status`
 
-#### `sdd-forge spec gate`
-使用方法: `sdd-forge spec gate --spec <path> [--phase <pre|post>] [--skip-guardrail]`
-未解決トークン、未チェック項目、必須セクション不足、ユーザー承認不足を検出します。
-`--skip-guardrail` を付けない場合は、ガードレール条項に対する AI コンプライアンスチェックも実行します。
-実行例: `sdd-forge spec gate --spec specs/001-feature/spec.md --phase pre`
+#### `sdd-forge flow get`
+使用方法: `sdd-forge flow get <key> [options]`
+フロー状態の参照専用サブコマンド群です。`status` `check` `guardrail` `issue` `qa-count` を選べます。
+実行例: `sdd-forge flow get qa-count`
 
-#### `sdd-forge spec guardrail init`
-使用方法: `sdd-forge spec guardrail init [--force]`
-プリセットチェーンの guardrail テンプレートをマージして `.sdd-forge/guardrail.md` を作成します。
-既存ファイルがある場合は `--force` で上書きします。
-実行例: `sdd-forge spec guardrail init --force`
+#### `sdd-forge flow get status`
+使用方法: `sdd-forge flow get status`
+現在の spec、base branch、feature branch、steps、requirements、notes、metrics を JSON エンベロープで返します。
+実行例: `sdd-forge flow get status`
 
-#### `sdd-forge spec guardrail update`
-使用方法: `sdd-forge spec guardrail update`
-`analysis.json` と既存ガードレールを AI に渡し、プロジェクト固有の追加条項を提案・追記します。
-本解析データには個別オプションの記載はありません。
-実行例: `sdd-forge spec guardrail update`
+#### `sdd-forge flow get check`
+使用方法: `sdd-forge flow get check <impl|finalize|dirty|gh>`
+`impl` と `finalize` は前提ステップの達成状況、`dirty` は Git 作業ツリーの汚れ、`gh` は GitHub CLI の有無を調べます。
+実行例: `sdd-forge flow get check finalize`
 
-#### `sdd-forge spec guardrail show`
-使用方法: `sdd-forge spec guardrail show [--phase <spec|impl|lint>]`
-マージ済みガードレール条項を表示し、フェーズで絞り込みます。
-`phase` が未指定の場合の既定動作は解析データに記載されていません。
-実行例: `sdd-forge spec guardrail show --phase spec`
+#### `sdd-forge flow get guardrail`
+使用方法: `sdd-forge flow get guardrail <draft|spec|impl|lint>`
+ガードレール記事をフェーズ別に抽出して JSON で返します。
+実行例: `sdd-forge flow get guardrail impl`
 
-#### `sdd-forge spec lint`
-使用方法: `sdd-forge spec lint --base <branch>`
-`git diff --name-only <base>...HEAD` で取得した変更ファイルに、lint フェーズのガードレール正規表現を適用します。
-違反があると `FAIL: [条項名] ファイル:行番号` 形式で報告します。
-実行例: `sdd-forge spec lint --base development`
+#### `sdd-forge flow get issue`
+使用方法: `sdd-forge flow get issue <number>`
+`gh issue view` を使って title、body、labels、state を取得します。
+実行例: `sdd-forge flow get issue 42`
 
-#### `sdd-forge flow set issue <number>`
+#### `sdd-forge flow get qa-count`
+使用方法: `sdd-forge flow get qa-count`
+アクティブフローの `metrics.draft.question` を返します。
+実行例: `sdd-forge flow get qa-count`
+
+#### `sdd-forge flow set`
+使用方法: `sdd-forge flow set <key> [args]`
+フロー状態を書き換えるサブコマンド群です。`issue` `metric` `note` `redo` `req` `request` `step` `summary` を選べます。
+実行例: `sdd-forge flow set note "仕様確認済み"`
+
+#### `sdd-forge flow set issue`
 使用方法: `sdd-forge flow set issue <number>`
-`flow.json` の issue 番号を更新し、結果を JSON エンベロープで出力します。
-数値でない場合は `INVALID_ISSUE` を返します。
-実行例: `sdd-forge flow set issue 123`
+アクティブフローに GitHub Issue 番号を保存します。
+実行例: `sdd-forge flow set issue 42`
 
-#### `sdd-forge flow set metric <phase> <counter>`
+#### `sdd-forge flow set metric`
 使用方法: `sdd-forge flow set metric <phase> <counter>`
-`phase` は `draft` `spec` `gate` `test`、`counter` は `question` `redo` `docsRead` `srcRead` を受け付けます。
-対象カウンターを 1 増やし、更新後の値を返します。
-実行例: `sdd-forge flow set metric spec docsRead`
+`draft` `spec` `gate` `test` の各フェーズに対して、`question` `redo` `docsRead` `srcRead` のいずれかを加算します。
+実行例: `sdd-forge flow set metric spec question`
 
-#### `sdd-forge flow set note "<text>"`
+#### `sdd-forge flow set note`
 使用方法: `sdd-forge flow set note "<text>"`
-`flow.json` の `notes` 配列にテキストを追加します。
-結果は JSON エンベロープで返されます。
-実行例: `sdd-forge flow set note "仕様確認が必要です"`
+ノート文字列を1件追記します。
+実行例: `sdd-forge flow set note "レビュー指摘を確認した"`
 
 #### `sdd-forge flow set redo`
-使用方法: `sdd-forge flow set redo --step <id> --reason <text> [--trigger <text>] [--resolution <text>] [--guardrail-candidate <text>]`
-現在のアクティブフローに対応する `specs/<spec>/redolog.json` へ再作業記録を追加します。
-`--step` と `--reason` は必須です。
-実行例: `sdd-forge flow set redo --step test --reason "期待値が不十分でした"`
+使用方法: `sdd-forge flow set redo --step <id> --reason <text> [options]`
+redo ログへ再実施記録を残します。`--trigger` `--resolution` `--guardrail-candidate` を追加できます。
+実行例: `sdd-forge flow set redo --step gate --reason "要件漏れ" --resolution "要件を追記"`
 
-#### `sdd-forge flow set req <index> <status>`
+#### `sdd-forge flow set req`
 使用方法: `sdd-forge flow set req <index> <status>`
-要件配列の指定インデックスの `status` を更新します。
-インデックスが数値でない場合はエラーを返します。
+要件一覧の1件だけ状態を更新します。
 実行例: `sdd-forge flow set req 0 done`
 
-#### `sdd-forge flow set request "<text>"`
+#### `sdd-forge flow set request`
 使用方法: `sdd-forge flow set request "<text>"`
-`flow.json` の `request` フィールドを設定します。
-結果は JSON エンベロープで返されます。
-実行例: `sdd-forge flow set request "README を整理したいです"`
+元の要求文を保存します。
+実行例: `sdd-forge flow set request "CLI ガイドを整備したい"`
 
-#### `sdd-forge flow set step <id> <status>`
+#### `sdd-forge flow set step`
 使用方法: `sdd-forge flow set step <id> <status>`
-ワークフローステップの状態を更新します。
-不正なステップ ID の場合は `INVALID_STEP` エラーになります。
-実行例: `sdd-forge flow set step merge done`
+ステップ ID を指定して状態を変更します。
+実行例: `sdd-forge flow set step implement done`
 
-#### `sdd-forge flow set summary '<json-array>'`
+#### `sdd-forge flow set summary`
 使用方法: `sdd-forge flow set summary '<json-array>'`
-JSON 文字列配列を `requirements` に変換し、各要素へ `status: pending` を付けて保存します。
-配列でない JSON は受け付けません。
-実行例: `sdd-forge flow set summary '["ログインできる","一覧を表示できる"]'`
+要件説明の JSON 配列を渡し、各要件を `pending` 状態で置き換えます。
+実行例: `sdd-forge flow set summary '["CLI 一覧を整理する","終了コードを文書化する"]'`
 
-#### `sdd-forge flow run merge`
-使用方法: `sdd-forge flow run merge [--dry-run] [--pr] [--auto]`
-アクティブフローを読み込み、spec-only ならスキップし、それ以外は squash merge または PR 作成を行います。
-`--auto` は `commands.gh=enable` かつ `gh` 利用可能時に PR ルートへ切り替えます。
-実行例: `sdd-forge flow run merge --auto`
+#### `sdd-forge flow run`
+使用方法: `sdd-forge flow run <action> [options]`
+フローを進める実行系サブコマンド群です。解析対象では `prepare-spec` `review` `sync` `finalize` が確認できます。
+実行例: `sdd-forge flow run prepare-spec --title "CLI docs"`
 
-#### `sdd-forge flow run cleanup`
-使用方法: `sdd-forge flow run cleanup [--dry-run]`
-`.active-flow` を削除し、必要に応じて worktree と feature ブランチを削除します。
-worktree モードでは main リポジトリ側からの実行を案内します。
-実行例: `sdd-forge flow run cleanup --dry-run`
+#### `sdd-forge flow run prepare-spec`
+使用方法: `sdd-forge flow run prepare-spec --title <name> [options]`
+新しい spec ディレクトリ、必要なら branch または worktree、初期 `flow.json` を作成します。`--base` `--worktree` `--no-branch` `--dry-run` に対応します。
+実行例: `sdd-forge flow run prepare-spec --title "CLI docs" --worktree`
 
 #### `sdd-forge flow run review`
-使用方法: `sdd-forge flow run review [--dry-run] [--skip-confirm]`
-差分を対象に AI で改善提案を作成し、次に保守的な検証を行って `review.md` を生成します。
-提案がない場合は空の `review.md` を出力して終了します。
+使用方法: `sdd-forge flow run review [options]`
+レビュー実行結果を JSON エンベロープで包んで返します。`--dry-run` と `--skip-confirm` を受け付けます。
 実行例: `sdd-forge flow run review --dry-run`
+
+#### `sdd-forge flow run sync`
+使用方法: `sdd-forge flow run sync [--dry-run]`
+`docs build` と `docs review` を実行し、`docs/` `AGENTS.md` `CLAUDE.md` `README.md` をステージして `docs: sync documentation` でコミットします。
+実行例: `sdd-forge flow run sync --dry-run`
+
+#### `sdd-forge flow run finalize`
+使用方法: `sdd-forge flow run finalize --mode <all|select> [options]`
+最終化パイプラインを実行します。`--steps` で `3:commit` `4:merge` `5:cleanup` `6:sync` `7:record` を選択でき、`--merge-strategy` は `merge` `squash` `pr` を受け付けます。
+実行例: `sdd-forge flow run finalize --mode select --steps 3,4,5 --merge-strategy pr`
 <!-- {{/text}} -->
 
 ### 終了コードと出力
 
 <!-- {{text({prompt: "終了コードの定義と stdout/stderr の使い分けルールを表形式で記述してください。ソースコードの process.exit() 呼び出しや出力パターンから抽出すること。", mode: "deep"})}} -->
 
-| 種別 | 条件 | 終了コード | 根拠となる挙動 |
+| 区分 | stdout | stderr | 終了コード |
 | --- | --- | --- | --- |
-| 正常終了 | `sdd-forge -h` / `--help` / 引数なし | `0` | `src/sdd-forge.js` が `help.js` 実行後に `process.exit(0)` します。 |
-| 正常終了 | `sdd-forge -v` / `--version` / `-V` | `0` | `src/sdd-forge.js` がバージョン出力後に `process.exit(0)` します。 |
-| エラー終了 | 不明なトップレベルコマンド | `1` | `src/sdd-forge.js` が unknown command を表示して `process.exit(1)` します。 |
-| 正常終了 | `sdd-forge docs --help` | `0` | `src/docs.js` は `-h` / `--help` 付きなら使用可能コマンドを表示して終了します。 |
-| エラー終了 | `sdd-forge docs` だけを実行 | `1` | `src/docs.js` はサブコマンド未指定時に usage を表示して `process.exit(1)` します。 |
-| エラー終了 | `docs build --regenerate` で章ファイルがない | `1` | `src/docs.js` はエラーメッセージを出して `process.exit(1)` します。 |
-| 正常終了 | `sdd-forge flow --help` | `0` | `src/flow.js` はヘルプ表示後に `process.exit(0)` します。 |
-| エラー終了 | `sdd-forge flow` だけを実行 | `1` | `src/flow.js` はサブコマンド未指定時に `process.exit(1)` します。 |
-| エラー終了 | 不明な `flow` サブコマンド | `1` | `src/flow.js` は unknown command を表示して `process.exit(1)` します。 |
-| エラー終了 | `flow run cleanup` でアクティブフローなし | `1` | `src/flow/commands/cleanup.js` は `no active flow` で `process.exit(1)` します。 |
-| エラー終了 | `flow run merge` でアクティブフローなし、または `--pr` で `gh` 不在 | `1` | `src/flow/commands/merge.js` が `process.exit(1)` します。 |
-| エラー扱い | `spec lint` で違反あり | `1` | `src/spec/commands/lint.js` は違反時に `process.exitCode = 1` を設定します。 |
-| 例外終了 | 解析ファイル不足や必須引数不足など | 実装依存 | 複数コマンドが `throw new Error(...)` を使うため、Node.js の例外終了に委ねられます。 |
+| `sdd-forge` トップレベルの通常ヘルプ・バージョン | ヘルプ本文、バージョン文字列を出力します。 | なし | `--help` / `--version` は `0` です。 |
+| `sdd-forge` 未知コマンド | なし | `unknown command` と `Run: sdd-forge help` を出力します。 | `1` です。 |
+| `sdd-forge docs` ディスパッチャ | `build --help` はヘルプ本文を出力します。 | コマンド未指定時の使用方法、利用可能コマンド一覧、未知サブコマンドエラーを出力します。 | コマンド未指定は `1`、明示的な `--help` は `0`、未知サブコマンドは `1`、`build` 失敗は `1` です。 |
+| `sdd-forge flow` ディスパッチャ | ヘルプ本文を出力します。 | 未知サブコマンドエラーを出力します。 | コマンド未指定は `1`、明示的な `--help` は `0`、未知サブコマンドは `1` です。 |
+| `docs build` の進捗表示 | 生成結果そのものは通常ファイルへ反映します。 | 進捗バー、各ステップ完了、警告は progress/logger 経由で出力します。 | 例外時は `1` で終了します。 |
+| `docs scan` `docs data` `docs changelog` `docs agents` `docs readme` の dry-run / stdout モード | 生成本文や変更対象、ファイル差分情報を出力します。 | `changelog` は dry-run の出力先通知を stderr に出します。progress/logger 利用時のログも stderr です。 | 明示的な `process.exit()` は示されていません。 |
+| `flow get` / `flow set` / `flow run` 系 | 成功・失敗ともに JSON エンベロープを出力します。 | 原則として使いません。内部 review ラッパでは下流コマンドの stderr を解析材料として使います。 | 各モジュールでは失敗もエンベロープ返却が中心で、明示的な `process.exit()` は限定的です。 |
+| `flow commands/review.js` 本体 | 承認済み提案一覧や最終メッセージを出力します。 | 進捗、提案数、承認数、保存先を出力します。 | フローなし・設定失敗時は `1` です。 |
+| `flow commands/merge.js` | dry-run の Git / `gh` コマンド列、完了メッセージを出力します。 | `gh` 未導入時やフロー未検出時のエラーを出力します。 | フローなし、`gh` 未導入の PR モードは `1` です。 |
+| `flow commands/cleanup.js` | dry-run のコマンド列、完了メッセージ、skip メッセージを出力します。 | フロー未検出時のエラーを出力します。 | フローなしは `1` です。 |
 
-| 出力先 | 主な用途 | 具体例 |
-| --- | --- | --- |
-| `stdout` | 正常系の結果、生成物、JSON エンベロープ、ヘルプ本文 | `help` の一覧表示、`docs agents --dry-run` の内容出力、`flow set *` の JSON 出力 |
-| `stderr` | エラーメッセージ、警告、進捗ドット、一部レビュー進捗 | `docs` / `flow` の usage エラー、`docs forge` の待機ドット、`flow run review` の draft ログ |
-| `stdout` と `stderr` の併用 | 本文は `stdout`、補助メッセージは `stderr` | `docs changelog --dry-run` は生成内容を `stdout`、dry-run 通知を `stderr` に出します。 |
-| `console.log` 中心 | 更新完了やスキップ通知 | `docs readme`、`docs agents`、`upgrade`、`spec lint` の PASS 表示 |
-| `console.error` 中心 | 失敗通知や警告 | unknown command、guardrail 警告、`gh` 不在エラー |
+`createLogger()` と `createProgress()` は通常 stderr を使うため、進捗・警告・詳細ログは stderr、生成本文や JSON 本体は stdout という使い分けが基本です。`flow` の JSON エンベロープ系は機械処理しやすいように stdout へ統一され、`docs` の生成系はファイル更新を主目的にしつつ、dry-run 時のみ stdout に内容を出す実装になっています。
 <!-- {{/text}} -->
 
 ---

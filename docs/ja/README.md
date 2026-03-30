@@ -126,11 +126,11 @@ npm install -g <!-- {{data("cli.project.name")}} -->sdd-forge<!-- {{/data}} -->
 <!-- {{data("cli.docs.chapters", {header: "", labels: "章|概要", ignoreError: true})}} -->
 | 章 | 概要 |
 | --- | --- |
-| [ツール概要とアーキテクチャ](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/ja/overview.md) | sdd-forge は、ソースコード解析にもとづくドキュメント自動生成と Spec-Driven Development を支援する CLI ツールです。 |
-| [技術スタックと運用](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/ja/stack_and_ops.md) | この章で確認できる運用関連の実装は、CakePHP 2.x 向け Docker 設定の拡張ポイントと、GitHub Actions のワークフロー YAML を解析する CI/CD パイプライン用 DataSource です。 |
-| [プロジェクト構成](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/ja/project_structure.md) | このプロジェクトは、CLI 本体を担う src、ドキュメント生成を担う src/docs、Spec-Driven Development の実行系を担う src/flow、共通ライブラリを置く src/lib、各種プリセットを集約した… |
-| [CLI コマンドリファレンス](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/ja/cli_commands.md) | sdd-forge はトップレベルで docs・spec・flow・setup・upgrade・presets・help を持つ CLI です。 |
-| [設定とカスタマイズ](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/ja/configuration.md) | このツールは主に .sdd-forge/config.json を読み込み、ドキュメント生成、CLI の動作言語、プリセット種別、並列実行数、エージェント実行、フロー制御、外部コマンド利用可否などを設定できます。 |
+| [ツール概要とアーキテクチャ](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/ja/overview.md) | このツールは、ソースコード解析に基づくドキュメント生成と、Spec-Driven Development ワークフローを CLI で扱うための基盤を提供します。 |
+| [技術スタックと運用](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/ja/stack_and_ops.md) | sdd-forge は Node.js 18 以上で動作する ES Modules 形式の CLI ツールで、パッケージのバージョンは 0.1.0-alpha.361 です。 |
+| [プロジェクト構成](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/ja/project_structure.md) | このプロジェクトは、CLI 本体を置く src、共通処理をまとめた src/lib、ワークフロー実行を担う src/flow、ドキュメント生成関連を扱う src/docs、各種プリセットとそのテストを集約した src/presets … |
+| [CLI コマンドリファレンス](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/ja/cli_commands.md) | この章で確認できる実行系コマンドは少なくとも33系統あり、トップレベルの sdd-forge から docs 名前空間と flow 名前空間、さらに個別コマンドへ段階的に振り分けられます。 |
+| [設定とカスタマイズ](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/ja/configuration.md) | このツールは主に .sdd-forge/config.json を読み込み、ドキュメント生成、言語設定、並列実行数、対象タイプ、フロー動作、エージェント実行条件などを設定できます。 |
 <!-- {{/data}} -->
 
 ## License
