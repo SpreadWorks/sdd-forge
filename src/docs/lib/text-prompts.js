@@ -9,6 +9,7 @@ import fs from "fs";
 import path from "path";
 import { createI18n } from "../../lib/i18n.js";
 import { ANALYSIS_META_KEYS } from "./analysis-entry.js";
+import { minify } from "./minify.js";
 
 /**
  * {{data}} カテゴリ名 → analysis.json の必要セクションへのマッピング。
@@ -134,6 +135,7 @@ export function getEnrichedContext(analysis, fileName, mode, srcRoot) {
         try {
           const absPath = path.resolve(srcRoot, filePath);
           let code = fs.readFileSync(absPath, "utf8");
+          code = minify(code, filePath);
           const MAX_CHARS = 8000;
           if (code.length > MAX_CHARS) {
             code = code.slice(0, MAX_CHARS) + "\n... (truncated)";
