@@ -9,7 +9,7 @@
 import { execFileSync } from "child_process";
 import { runIfDirect } from "../../lib/entrypoint.js";
 import { repoRoot, parseArgs } from "../../lib/cli.js";
-import { loadFlowState, updateStepStatus, resolveWorktreePaths } from "../../lib/flow-state.js";
+import { loadFlowState, resolveWorktreePaths } from "../../lib/flow-state.js";
 import { loadConfig } from "../../lib/config.js";
 
 /**
@@ -88,7 +88,6 @@ function main() {
   // Spec-only: featureBranch == baseBranch
   if (featureBranch === baseBranch) {
     console.log("skip: spec-only mode (no merge needed)");
-    updateStepStatus(root, "merge", "skipped");
     return;
   }
 
@@ -134,11 +133,7 @@ function main() {
     }
 
     execFileSync(pushCmd[0], pushCmd.slice(1), { stdio: "inherit" });
-    updateStepStatus(root, "push", "done");
-
     execFileSync(prCmd[0], prCmd.slice(1), { stdio: "inherit" });
-    updateStepStatus(root, "pr-create", "done");
-
     console.log("merge: done (PR created)");
     return;
   }
@@ -159,7 +154,6 @@ function main() {
     for (const cmd of cmds) {
       execFileSync(cmd[0], cmd.slice(1), { stdio: "inherit" });
     }
-    updateStepStatus(root, "merge", "done");
     console.log("merge: done (worktree → squash merge)");
     return;
   }
@@ -177,7 +171,6 @@ function main() {
   for (const cmd of cmds) {
     execFileSync(cmd[0], cmd.slice(1), { stdio: "inherit" });
   }
-  updateStepStatus(root, "merge", "done");
   console.log("merge: done (branch → squash merge)");
 }
 
