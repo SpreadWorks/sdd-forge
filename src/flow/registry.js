@@ -44,6 +44,7 @@ export const FLOW_COMMANDS = {
       finalize:        { script: "flow/run/finalize.js",       desc: { en: "Execute finalization pipeline", ja: "ファイナライズパイプラインを実行" } },
       sync:            { script: "flow/run/sync.js",           desc: { en: "Sync documentation", ja: "ドキュメントを同期" } },
       lint:            { script: "flow/run/lint.js",           desc: { en: "Run guardrail lint check", ja: "ガードレール lint チェックを実行" } },
+      retro:           { script: "flow/run/retro.js",          desc: { en: "Run spec retrospective evaluation", ja: "spec リトロスペクティブ評価を実行" } },
     },
   },
 };

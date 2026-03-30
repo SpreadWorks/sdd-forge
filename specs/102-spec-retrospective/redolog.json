@@ -1,0 +1,11 @@
+{
+  "entries": [
+    {
+      "step": "implement",
+      "reason": "flow set コマンドを main repo で実行してしまい NO_FLOW エラー",
+      "trigger": "worktree モードなのに main repo の cwd で実行",
+      "resolution": "worktree ディレクトリに cd してから実行",
+      "timestamp": "2026-03-30T14:51:49.663Z"
+    }
+  ]
+}
