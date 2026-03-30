@@ -226,7 +226,10 @@ function buildEnrichPrompt(chapters, batchEntries, opts) {
   if (monorepoApps) {
     parts.push("- `app` must be one of the monorepo app names listed above (omit if file does not belong to any app).");
   }
-  parts.push("- Write in the project's primary language (match the existing analysis data language).");
+  const LANG_NAMES = { en: "English", ja: "Japanese", zh: "Chinese", ko: "Korean", fr: "French", de: "German", es: "Spanish", pt: "Portuguese", it: "Italian", ru: "Russian" };
+  const lang = opts?.lang || "en";
+  const langName = LANG_NAMES[lang] || lang;
+  parts.push(`- Write summary and detail in ${langName}.`);
 
   return parts.join("\n");
 }
@@ -469,7 +472,7 @@ async function main(ctx) {
     const batch = batches[b];
     logger.log(`batch ${b + 1}/${batches.length} (${batch.length} entries)`);
 
-    const prompt = buildEnrichPrompt(chapters, batch, { monorepoApps: config.monorepo?.apps });
+    const prompt = buildEnrichPrompt(chapters, batch, { monorepoApps: config.monorepo?.apps, lang: config.docs?.defaultLanguage || "en" });
 
     let response;
     let attemptsUsed = 0;

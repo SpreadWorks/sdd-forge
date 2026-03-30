@@ -1,0 +1,117 @@
+{
+  "spec": "specs/102-fix-japanese-text-mixed-into-english-docs-in-cak/spec.md",
+  "baseBranch": "development",
+  "featureBranch": "feature/102-fix-japanese-text-mixed-into-english-docs-in-cak",
+  "steps": [
+    {
+      "id": "approach",
+      "status": "done"
+    },
+    {
+      "id": "branch",
+      "status": "done"
+    },
+    {
+      "id": "prepare-spec",
+      "status": "done"
+    },
+    {
+      "id": "draft",
+      "status": "done"
+    },
+    {
+      "id": "spec",
+      "status": "done"
+    },
+    {
+      "id": "gate",
+      "status": "done"
+    },
+    {
+      "id": "approval",
+      "status": "done"
+    },
+    {
+      "id": "test",
+      "status": "done"
+    },
+    {
+      "id": "implement",
+      "status": "done"
+    },
+    {
+      "id": "review",
+      "status": "done"
+    },
+    {
+      "id": "finalize",
+      "status": "done"
+    },
+    {
+      "id": "commit",
+      "status": "pending"
+    },
+    {
+      "id": "push",
+      "status": "pending"
+    },
+    {
+      "id": "merge",
+      "status": "pending"
+    },
+    {
+      "id": "pr-create",
+      "status": "pending"
+    },
+    {
+      "id": "branch-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "pr-merge",
+      "status": "pending"
+    },
+    {
+      "id": "sync-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "docs-update",
+      "status": "pending"
+    },
+    {
+      "id": "docs-review",
+      "status": "pending"
+    },
+    {
+      "id": "docs-commit",
+      "status": "pending"
+    }
+  ],
+  "requirements": [
+    {
+      "desc": "main() から buildEnrichPrompt に config.docs.defaultLanguage を渡す",
+      "status": "pending"
+    },
+    {
+      "desc": "buildEnrichPrompt の言語指示行を明示的な言語名に変更",
+      "status": "done"
+    },
+    {
+      "desc": "マッピングにない言語コードはそのまま使用",
+      "status": "done"
+    }
+  ],
+  "worktree": true,
+  "issue": 27,
+  "request": "#27 CakePHP2 プリセットの英語ドキュメントに日本語テキストが混入するバグの修正",
+  "notes": [
+    "approach: Q&A で要件整理",
+    "finalize: select steps=3,4,5,7, merge strategy=merge"
+  ],
+  "metrics": {
+    "draft": {
+      "question": 5
+    }
+  }
+}
