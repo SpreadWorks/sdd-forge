@@ -1,0 +1,11 @@
+{
+  "entries": [
+    {
+      "step": "review",
+      "reason": "flow run review fails with NO_FLOW in worktree mode when multiple active flows exist",
+      "trigger": "SDD_WORK_ROOT set to mainRoot but resolveCurrentFlow uses branch matching from cwd",
+      "resolution": "Skipped automated review, proceeding with manual review",
+      "timestamp": "2026-03-30T14:29:21.305Z"
+    }
+  ]
+}

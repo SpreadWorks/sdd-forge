@@ -1,0 +1,120 @@
+{
+  "spec": "specs/102-refactor-text-command-to-separate-responsibiliti/spec.md",
+  "baseBranch": "development",
+  "featureBranch": "feature/102-refactor-text-command-to-separate-responsibiliti",
+  "steps": [
+    {
+      "id": "approach",
+      "status": "done"
+    },
+    {
+      "id": "branch",
+      "status": "done"
+    },
+    {
+      "id": "prepare-spec",
+      "status": "done"
+    },
+    {
+      "id": "draft",
+      "status": "skipped"
+    },
+    {
+      "id": "spec",
+      "status": "done"
+    },
+    {
+      "id": "gate",
+      "status": "done"
+    },
+    {
+      "id": "approval",
+      "status": "done"
+    },
+    {
+      "id": "test",
+      "status": "done"
+    },
+    {
+      "id": "implement",
+      "status": "done"
+    },
+    {
+      "id": "review",
+      "status": "done"
+    },
+    {
+      "id": "finalize",
+      "status": "done"
+    },
+    {
+      "id": "commit",
+      "status": "pending"
+    },
+    {
+      "id": "push",
+      "status": "pending"
+    },
+    {
+      "id": "merge",
+      "status": "pending"
+    },
+    {
+      "id": "pr-create",
+      "status": "pending"
+    },
+    {
+      "id": "branch-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "pr-merge",
+      "status": "pending"
+    },
+    {
+      "id": "sync-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "docs-update",
+      "status": "pending"
+    },
+    {
+      "id": "docs-review",
+      "status": "pending"
+    },
+    {
+      "id": "docs-commit",
+      "status": "pending"
+    }
+  ],
+  "requirements": [
+    {
+      "desc": "resolveTargetFiles()をtext.jsから削除",
+      "status": "done"
+    },
+    {
+      "desc": "text CLIに--filesオプション追加",
+      "status": "done"
+    },
+    {
+      "desc": "textFillFromAnalysis()にopts.filesパラメータ追加",
+      "status": "done"
+    },
+    {
+      "desc": "docs.js buildパイプラインでファイル選定・strip実行",
+      "status": "done"
+    },
+    {
+      "desc": "全呼び出し元(docs.js,forge.js,readme.js)の互換性確認",
+      "status": "done"
+    }
+  ],
+  "worktree": true,
+  "issue": 29,
+  "request": "Issue #29: text コマンドの責務分離リファクタ。text は渡されたファイルの {{text}} 充填のみ、差分判定・ファイル選定は build 側に移す",
+  "notes": [
+    "approach: 仕様書を直接作成（Q&Aスキップ）",
+    "work-env: worktree, base=development"
+  ]
+}

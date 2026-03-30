@@ -468,37 +468,12 @@ function allTextDirectivesFilled(text) {
 }
 
 /**
- * 対象ファイル解決。regenerate の場合は既存コンテンツをクリアする。
- *
- * @param {string[]} allDocsFiles - 全章ファイル一覧
- * @param {string} docsDir - docs ディレクトリの絶対パス
- * @param {Object} analysis - analysis.json データ
- * @param {boolean} regenerate - true の場合、全ファイルのディレクティブをクリアして再生成
- * @returns {{ docsFiles: string[], targetFiles: string[] }}
- */
-function resolveTargetFiles(allDocsFiles, docsDir, analysis, { regenerate, dryRun } = {}) {
-  // Always regenerate all chapters.
-  // Incremental regeneration (only affected chapters) is deferred to a future spec.
-  // Without _incrementalMeta, we cannot determine which chapters are affected,
-  // so we regenerate all to avoid stale docs.
-  if (!dryRun) {
-    for (const file of allDocsFiles) {
-      const filePath = path.join(docsDir, file);
-      const content = fs.readFileSync(filePath, "utf8");
-      const stripped = stripFillContent(content);
-      if (stripped !== content) fs.writeFileSync(filePath, stripped, "utf8");
-    }
-  }
-  return { docsFiles: allDocsFiles, targetFiles: [...allDocsFiles] };
-}
-
-/**
  * @param {string} root       - リポジトリルート
  * @param {Object} analysis   - analysis.json データ
- * @param {string} agentName  - エージェント名 (claude, codex)
+ * @param {string} commandId  - コマンドID (docs.text)
  * @param {string} [srcRoot]  - ソースルート
  * @param {Object} [opts]     - オプション
- * @param {boolean} [opts.force] - true の場合、埋まっているディレクティブも再処理する
+ * @param {string[]} [opts.files] - 処理対象ファイル名の配列。指定時はそのファイルのみ処理する
  * @returns {{ filled: number, skipped: number, files: string[] }}
  */
 export async function textFillFromAnalysis(root, analysis, commandId, srcRoot, opts) {
@@ -513,10 +488,9 @@ export async function textFillFromAnalysis(root, analysis, commandId, srcRoot, o
   const type = cfg.type || undefined;
   const concurrency = resolveConcurrency(cfg);
   const docsDir = path.join(root, "docs");
-  const allDocsFiles = getChapterFiles(docsDir, { type, configChapters: cfg.chapters });
   const resolvedSrcRoot = srcRoot || root;
 
-  const { targetFiles } = resolveTargetFiles(allDocsFiles, docsDir, analysis, { regenerate: opts?.regenerate, dryRun: opts?.dryRun });
+  const targetFiles = opts?.files || getChapterFiles(docsDir, { type, configChapters: cfg.chapters });
 
   const changedFiles = [];
   let totalFilled = 0;
@@ -575,8 +549,8 @@ async function main(ctx) {
   if (!ctx) {
     const cli = parseArgs(process.argv.slice(2), {
       flags: ["--dry-run", "--per-directive"],
-      options: ["--timeout", "--id", "--lang", "--docs-dir"],
-      defaults: { dryRun: false, timeout: String(DEFAULT_TIMEOUT_MS), perDirective: false, id: "", lang: "", docsDir: "" },
+      options: ["--timeout", "--id", "--lang", "--docs-dir", "--files"],
+      defaults: { dryRun: false, timeout: String(DEFAULT_TIMEOUT_MS), perDirective: false, id: "", lang: "", docsDir: "", files: "" },
     });
     cli.timeout = Number(cli.timeout) || DEFAULT_TIMEOUT_MS;
     if (cli.help) {
@@ -597,6 +571,7 @@ async function main(ctx) {
     ctx.perDirective = cli.perDirective;
     ctx.timeout = cli.timeout;
     ctx.id = cli.id;
+    if (cli.files) ctx.files = cli.files.split(",").map((f) => f.trim()).filter(Boolean);
   }
 
   const { root, srcRoot, config: cfg, docsDir } = ctx;
@@ -614,9 +589,22 @@ async function main(ctx) {
   const lang = ctx.outputLang;
   const systemPrompt = buildTextSystemPrompt(documentStyle, lang);
   const concurrency = resolveConcurrency(cfg);
-  const allDocsFiles = getChapterFiles(docsDir, { type: ctx.type, configChapters: cfg.chapters });
 
-  const { targetFiles } = resolveTargetFiles(allDocsFiles, docsDir, analysis, { regenerate: ctx.regenerate, dryRun: ctx.dryRun });
+  // File selection: use ctx.files if provided, otherwise get all chapter files and strip
+  let targetFiles;
+  if (ctx.files) {
+    targetFiles = ctx.files;
+  } else {
+    targetFiles = getChapterFiles(docsDir, { type: ctx.type, configChapters: cfg.chapters });
+    if (!ctx.dryRun) {
+      for (const file of targetFiles) {
+        const filePath = path.join(docsDir, file);
+        const content = fs.readFileSync(filePath, "utf8");
+        const stripped = stripFillContent(content);
+        if (stripped !== content) fs.writeFileSync(filePath, stripped, "utf8");
+      }
+    }
+  }
 
   let totalFilled = 0;
   let totalSkipped = 0;
