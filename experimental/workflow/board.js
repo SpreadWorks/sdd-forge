@@ -3,7 +3,7 @@
 import { execFileSync } from "node:child_process";
 import { loadBoardConfig } from "./lib/config.js";
 import { prefixTitle, extractId } from "./lib/hash.js";
-import { searchItems, listItems, getProjectMeta, setItemStatus, updateDraftIssue } from "./lib/graphql.js";
+import { searchItems, listItems, getProjectMeta, setItemStatus, updateDraftIssue, addIssueToProject, deleteProjectItem, getIssueNodeId } from "./lib/graphql.js";
 import { createIssue } from "./lib/issue.js";
 import { assertJapaneseDraft, assertJapaneseDraftField, stripHashPrefix } from "./lib/validation.js";
 
@@ -267,6 +267,28 @@ ${c.body || "(empty)"}`;
   });
 
   console.log(`Issue 作成: ${url}`);
+
+  // 4. Issue をプロジェクトに追加し、Draft を削除して紐付け
+  const issueNumber = parseInt(url.match(/\/issues\/(\d+)/)?.[1], 10);
+  if (issueNumber) {
+    const { projectId } = getProjectMeta(config.owner, config.project);
+    const issueNodeId = getIssueNodeId(config.repo, issueNumber);
+    const newItemId = addIssueToProject(projectId, issueNodeId);
+
+    // Draft のステータスを引き継ぐ
+    const draftStatus = item.fieldValueByName?.name;
+    if (draftStatus) {
+      const { statusField } = getProjectMeta(config.owner, config.project);
+      const option = statusField.options.find((o) => o.name === draftStatus);
+      if (option) {
+        setItemStatus(projectId, newItemId, statusField.id, option.id);
+      }
+    }
+
+    // 元の Draft を削除
+    deleteProjectItem(projectId, item.id);
+    console.log(`プロジェクトに Issue #${issueNumber} を追加し、Draft を削除しました`);
+  }
 }
 
 // --- main ---
