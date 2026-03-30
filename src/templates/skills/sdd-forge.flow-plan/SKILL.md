@@ -147,6 +147,11 @@ Available status values: `pending`, `in_progress`, `done`, `skipped`
    - If tests can't fit in the project's formal test structure, place them in `specs/<spec>/tests/`.
    - `specs/<spec>/tests/` are kept as history, not maintained long-term.
    - Write test code (tests should fail initially).
+   - **MUST: Create `specs/<spec>/tests/README.md`** documenting:
+     - What was tested and why
+     - Where tests are located (formal test path or `specs/<spec>/tests/`)
+     - How to run the tests
+     - Expected results
    - **If no test environment**:
      - AI performs spec-implementation alignment check after coding.
      - Compare spec Requirements against actual code changes.
@@ -169,6 +174,10 @@ Available status values: `pending`, `in_progress`, `done`, `skipped`
 - Do not skip implementation verification when code changes exist.
 - In draft phase, do not end a turn without a question.
 - Do not proceed to next step without user confirmation.
+
+## Redo Recording
+
+<!-- include("@templates/partials/redo-recording.md") -->
 
 ## Clarification Rule
 
@@ -196,6 +205,7 @@ sdd-forge flow set request "<text>"
 sdd-forge flow set note "<text>"
 sdd-forge flow set issue <number>
 sdd-forge flow set metric <phase> <counter>
+sdd-forge flow set redo --step <id> --reason "<text>" [--trigger "<text>"] [--resolution "<text>"] [--guardrail-candidate "<text>"]
 sdd-forge flow run prepare-spec --title "..." [--base branch] [--worktree] [--no-branch]
 sdd-forge flow run gate
 sdd-forge snapshot check

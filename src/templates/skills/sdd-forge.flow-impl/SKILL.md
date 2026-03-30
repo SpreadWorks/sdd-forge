@@ -149,6 +149,10 @@ Before starting, run `sdd-forge flow get check impl` to verify prerequisites.
 - Do not finalize without asking the user.
 - Do not proceed to next step without user confirmation.
 
+## Redo Recording
+
+<!-- include("@templates/partials/redo-recording.md") -->
+
 ## Test Maintenance
 
 - If new tests break existing tests, inform the user and ask how to proceed.
@@ -164,6 +168,7 @@ sdd-forge flow get check impl
 sdd-forge flow set step <id> <val>
 sdd-forge flow set req <index> <val>
 sdd-forge flow set note "<text>"
+sdd-forge flow set redo --step <id> --reason "<text>" [--trigger "<text>"] [--resolution "<text>"] [--guardrail-candidate "<text>"]
 sdd-forge flow run review
 sdd-forge flow run impl-confirm --mode <overview|detail>
 sdd-forge snapshot check
