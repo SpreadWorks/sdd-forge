@@ -269,34 +269,67 @@ function parseEnrichResponse(response) {
 
 /**
  * JSON 文字列値内のエスケープされていないダブルクォーテーションを修復する。
- * AI が detail/summary に this.desc("foo", bar) のような未エスケープ引用符を含めるケース対策。
+ * AI が detail/summary に `commandId: "docs.translate"` のような未エスケープ引用符を含めるケース対策。
  *
- * 戦略: 行単位で解析し、JSON の構造キー（"key": "value"）の value 部分内にある
- * 未エスケープクォートを \\" に置換する。
+ * 戦略: 文字単位のステートマシンで JSON を走査し、文字列値内の未エスケープ引用符を検出・修復する。
+ * 整形済み JSON（複数行）と minified JSON（1行）の両方に対応。
  */
 function fixUnescapedQuotes(json) {
-  const lines = json.split("\n");
-  const result = [];
+  const out = [];
+  let i = 0;
+  const len = json.length;
 
-  for (const line of lines) {
-    // Match lines like:  "key": "value",
-    // Capture the value portion and fix unescaped quotes within it
-    const m = line.match(/^(\s*"(?:summary|detail)"\s*:\s*")(.*)(",?\s*)$/);
-    if (m) {
-      const [, prefix, value, suffix] = m;
-      // Escape unescaped double quotes in the value
-      // First un-escape already escaped ones to avoid double-escaping, then re-escape all
-      const fixed = value
-        .replace(/\\"/g, "\x00")      // temp-mark already-escaped quotes
-        .replace(/"/g, '\\"')          // escape all remaining quotes
-        .replace(/\x00/g, '\\"');      // restore temp-marked ones
-      result.push(prefix + fixed + suffix);
-    } else {
-      result.push(line);
+  while (i < len) {
+    const ch = json[i];
+
+    // Not inside a string — pass through until opening quote
+    if (ch !== '"') {
+      out.push(ch);
+      i++;
+      continue;
+    }
+
+    // Opening quote of a JSON string
+    out.push(ch);
+    i++;
+
+    // Scan to find the real closing quote
+    while (i < len) {
+      const c = json[i];
+
+      if (c === "\\") {
+        // Escaped char — pass through both backslash and next char
+        out.push(c);
+        i++;
+        if (i < len) {
+          out.push(json[i]);
+          i++;
+        }
+        continue;
+      }
+
+      if (c === '"') {
+        // Is this the real end of the string, or an unescaped quote inside?
+        // Look ahead: if followed by JSON structural chars, it's the real end.
+        const next = json[i + 1];
+        if (next === undefined || next === "," || next === "}" || next === "]" || next === ":"
+            || next === "\n" || next === "\r" || next === " " || next === "\t") {
+          out.push(c);
+          i++;
+          break;
+        }
+        // Unescaped quote inside a string value — escape it
+        out.push('\\"');
+        i++;
+        continue;
+      }
+
+      out.push(c);
+      i++;
     }
   }
 
-  return result.join("\n");
+  return out.join("");
 }
 
 /**
