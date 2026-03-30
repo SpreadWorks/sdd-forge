@@ -229,7 +229,7 @@ function buildEnrichPrompt(chapters, batchEntries, opts) {
   const LANG_NAMES = { en: "English", ja: "Japanese", zh: "Chinese", ko: "Korean", fr: "French", de: "German", es: "Spanish", pt: "Portuguese", it: "Italian", ru: "Russian" };
   const lang = opts?.lang || "en";
   const langName = LANG_NAMES[lang] || lang;
-  parts.push(`- Write summary and detail in ${langName}.`);
+  parts.push(`- Write ALL output text (summary, detail, and any descriptive content) strictly in ${langName}. Even if the source code contains comments or strings in other languages, translate them into ${langName} in your output.`);
 
   return parts.join("\n");
 }

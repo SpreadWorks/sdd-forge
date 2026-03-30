@@ -214,7 +214,7 @@ export function buildTextSystemPrompt(documentStyle, lang) {
     t("text.instruction"),
     "",
     "## Output Rules (strict)",
-    `- Write all output in ${langName}`,
+    `- Write ALL output strictly in ${langName}. Even if the source code or analysis data contains text in other languages, translate everything into ${langName}.`,
     ...outputRules.map((r) => `- ${r}`),
   ].join("\n");
 }
