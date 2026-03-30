@@ -30,7 +30,7 @@ import { createLogger } from "../../lib/progress.js";
 import { callAgent as callAgentBase, callAgentAsync as callAgentAsyncBase, ensureAgentWorkDir, loadAgentConfig, DEFAULT_AGENT_TIMEOUT } from "../../lib/agent.js";
 import { translate } from "../../lib/i18n.js";
 import { resolveCommandContext, getChapterFiles, loadFullAnalysis } from "../lib/command-context.js";
-import { extractBalancedJson } from "../../lib/json-parse.js";
+import { extractBalancedJson, fixUnescapedQuotes } from "../../lib/json-parse.js";
 
 const logger = createLogger("text");
 
@@ -167,8 +167,14 @@ function parseBatchJsonResponse(response) {
   } catch (_) {
     const extracted = extractBalancedJson(cleaned);
     if (extracted) {
-      try { return JSON.parse(extracted); } catch (__) { /* fall through */ }
+      try { return JSON.parse(extracted); } catch (__) {
+        const fixed = fixUnescapedQuotes(extracted);
+        try { return JSON.parse(fixed); } catch (___) { /* fall through */ }
+      }
     }
+    // Last resort: fix quotes on the whole cleaned string
+    const fixed = fixUnescapedQuotes(cleaned);
+    try { return JSON.parse(fixed); } catch (__) { /* fall through */ }
     return null;
   }
 }

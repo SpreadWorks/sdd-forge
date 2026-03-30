@@ -19,7 +19,7 @@ import { resolveCommandContext, loadFullAnalysis } from "../lib/command-context.
 import { resolveChaptersOrder } from "../lib/template-merger.js";
 import { createLogger } from "../../lib/progress.js";
 import { translate } from "../../lib/i18n.js";
-import { extractBalancedJson } from "../../lib/json-parse.js";
+import { extractBalancedJson, fixUnescapedQuotes } from "../../lib/json-parse.js";
 import { ANALYSIS_META_KEYS } from "../lib/analysis-entry.js";
 
 const logger = createLogger("enrich");
@@ -266,71 +266,6 @@ function parseEnrichResponse(response) {
   }
 }
 
-
-/**
- * JSON 文字列値内のエスケープされていないダブルクォーテーションを修復する。
- * AI が detail/summary に `commandId: "docs.translate"` のような未エスケープ引用符を含めるケース対策。
- *
- * 戦略: 文字単位のステートマシンで JSON を走査し、文字列値内の未エスケープ引用符を検出・修復する。
- * 整形済み JSON（複数行）と minified JSON（1行）の両方に対応。
- */
-function fixUnescapedQuotes(json) {
-  const out = [];
-  let i = 0;
-  const len = json.length;
-
-  while (i < len) {
-    const ch = json[i];
-
-    // Not inside a string — pass through until opening quote
-    if (ch !== '"') {
-      out.push(ch);
-      i++;
-      continue;
-    }
-
-    // Opening quote of a JSON string
-    out.push(ch);
-    i++;
-
-    // Scan to find the real closing quote
-    while (i < len) {
-      const c = json[i];
-
-      if (c === "\\") {
-        // Escaped char — pass through both backslash and next char
-        out.push(c);
-        i++;
-        if (i < len) {
-          out.push(json[i]);
-          i++;
-        }
-        continue;
-      }
-
-      if (c === '"') {
-        // Is this the real end of the string, or an unescaped quote inside?
-        // Look ahead: if followed by JSON structural chars, it's the real end.
-        const next = json[i + 1];
-        if (next === undefined || next === "," || next === "}" || next === "]" || next === ":"
-            || next === "\n" || next === "\r" || next === " " || next === "\t") {
-          out.push(c);
-          i++;
-          break;
-        }
-        // Unescaped quote inside a string value — escape it
-        out.push('\\"');
-        i++;
-        continue;
-      }
-
-      out.push(c);
-      i++;
-    }
-  }
-
-  return out.join("");
-}
 
 /**
  * Merge enrichment data into the analysis object (mutates analysis).
