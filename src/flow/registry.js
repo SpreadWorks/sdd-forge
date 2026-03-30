@@ -16,6 +16,7 @@ export const FLOW_COMMANDS = {
       prompt:            { script: "flow/get/prompt.js",          desc: { en: "Get structured prompt for a flow step", ja: "フローステップの構造化プロンプトを取得" } },
       "qa-count":        { script: "flow/get/qa-count.js",        desc: { en: "Get answered question count", ja: "回答済み質問数を取得" } },
       guardrail:         { script: "flow/get/guardrail.js",       desc: { en: "Get guardrail articles filtered by phase", ja: "フェーズでフィルタしたガードレール記事を取得" } },
+      issue:             { script: "flow/get/issue.js",           desc: { en: "Get GitHub issue content as JSON", ja: "GitHub Issue の内容を JSON で取得" } },
     },
   },
   set: {
@@ -34,14 +35,14 @@ export const FLOW_COMMANDS = {
   },
   run: {
     script: "flow/run.js",
-    desc: { en: "Execute flow actions (prepare-spec, gate, merge, ...)", ja: "フローアクションを実行（prepare-spec, gate, merge, ...）" },
+    desc: { en: "Execute flow actions (prepare-spec, gate, finalize, ...)", ja: "フローアクションを実行（prepare-spec, gate, finalize, ...）" },
     keys: {
       "prepare-spec":  { script: "flow/run/prepare-spec.js",  desc: { en: "Create branch/worktree and initialize spec", ja: "ブランチ/worktree 作成 + spec 初期化" } },
       gate:            { script: "flow/run/gate.js",           desc: { en: "Run spec gate check", ja: "spec ゲートチェックを実行" } },
       review:          { script: "flow/run/review.js",         desc: { en: "Run AI code quality review", ja: "AI コードレビューを実行" } },
       "impl-confirm":  { script: "flow/run/impl-confirm.js",  desc: { en: "Confirm implementation readiness", ja: "実装準備を確認" } },
-      merge:           { script: "flow/run/merge.js",          desc: { en: "Merge feature branch", ja: "feature ブランチをマージ" } },
-      cleanup:         { script: "flow/run/cleanup.js",        desc: { en: "Delete branch/worktree", ja: "ブランチ/worktree を削除" } },
+      finalize:        { script: "flow/run/finalize.js",       desc: { en: "Execute finalization pipeline", ja: "ファイナライズパイプラインを実行" } },
+      sync:            { script: "flow/run/sync.js",           desc: { en: "Sync documentation", ja: "ドキュメントを同期" } },
     },
   },
 };

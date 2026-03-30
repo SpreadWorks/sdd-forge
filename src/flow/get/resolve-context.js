@@ -10,6 +10,7 @@ import fs from "fs";
 import path from "path";
 import { runIfDirect } from "../../lib/entrypoint.js";
 import { repoRoot } from "../../lib/cli.js";
+import { getWorktreeStatus, getCurrentBranch, getAheadCount, getLastCommit, isGhAvailable } from "../../lib/git-state.js";
 import {
   loadFlowState, loadActiveFlows, scanAllFlows,
   derivePhase, resolveWorktreePaths,
@@ -91,6 +92,13 @@ function main() {
     scope = extractSection(specText, "Scope") || null;
   }
 
+  // Git/gh state (read-only)
+  const { dirty, dirtyFiles } = getWorktreeStatus(effectiveRoot);
+  const currentBranch = getCurrentBranch(effectiveRoot);
+  const aheadCount = getAheadCount(effectiveRoot, state.baseBranch || "main");
+  const lastCommit = getLastCommit(effectiveRoot);
+  const ghAvailable = isGhAvailable();
+
   // Determine recommended skill
   const phaseSkill = phase === "plan" ? "flow-plan"
     : phase === "impl" ? "flow-impl"
@@ -116,6 +124,12 @@ function main() {
     scope,
     requirements: state.requirements || [],
     notes: state.notes || [],
+    dirty,
+    dirtyFiles,
+    currentBranch,
+    aheadCount,
+    lastCommit,
+    ghAvailable,
     recommendedSkill: phaseSkill,
   }));
 }

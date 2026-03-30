@@ -13,10 +13,13 @@ Display the current state of the SDD workflow.
    - Run `sdd-forge flow get status`.
    - If it reports "no active flow", tell the user and stop.
 
-2. Gather additional information and display all of the following:
+2. Gather additional context.
+   - Run `sdd-forge flow get resolve-context` to get `currentBranch`, `dirty`, `dirtyFiles`, `aheadCount`, `lastCommit`, and path information.
+
+3. Display all of the following:
 
    ### Branch & Worktree
-   - Current branch: `git rev-parse --abbrev-ref HEAD`
+   - Current branch: `currentBranch` from resolve-context
    - Base branch: from flow state
    - Feature branch: from flow state
    - Worktree: from flow state (true/false)
@@ -42,10 +45,10 @@ Display the current state of the SDD workflow.
      - User Confirmation status (`- [x]` or `- [ ]`)
 
    ### Commit & Working Tree
-   - Uncommitted changes: `git status --short` (show file count and list)
-   - Commits ahead of base: `git log <baseBranch>..<featureBranch> --oneline` (count and list)
+   - Uncommitted changes: use `dirty` and `dirtyFiles` from resolve-context (show file count and list)
+   - Commits ahead of base: use `aheadCount` from resolve-context
      - Skip if spec-only mode (same branch)
-   - Last commit: `git log -1 --oneline`
+   - Last commit: use `lastCommit` from resolve-context
 
 3. Format output.
    - Use plain text with lines and indentation. Do NOT use markdown tables or headings.

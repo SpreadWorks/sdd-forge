@@ -45,9 +45,7 @@ Available status values: `pending`, `in_progress`, `done`, `skipped`
      - 2 → ask which branch and use `--base <user-specified-branch>`.
 
 3. Create or select spec (`prepare-spec`).
-   - **Before running prepare-spec**, check for uncommitted changes: `git status --short`
-     - If dirty, run `sdd-forge flow get prompt plan.dirty-worktree` and present the choices.
-     - Do not run `sdd-forge flow run prepare-spec` on a dirty worktree.
+   - Run `sdd-forge flow run prepare-spec`. If it returns `{ok: false, code: "DIRTY_WORKTREE"}`, run `sdd-forge flow get prompt plan.dirty-worktree` and present the choices. Do not retry until the worktree is clean.
    - Commands (based on step 2 choice):
      - Worktree: `sdd-forge flow run prepare-spec --title "..." --base <branch> --worktree`
      - Branch: `sdd-forge flow run prepare-spec --title "..." --base <branch>`
@@ -85,7 +83,7 @@ Available status values: `pending`, `in_progress`, `done`, `skipped`
    - Draft is RFP/requirements level only. No implementation details or function-level design.
    - **Before starting draft discussion**:
      1. **If a GitHub Issue number is linked** (saved in flow.json via `--issue`):
-        Fetch the issue content with `gh issue view <number>` and display the title and body before the first question.
+        Fetch the issue content with `sdd-forge flow get issue <number>` and display the title and body before the first question.
         Use the issue content as context for the draft discussion.
      2. Check docs freshness: compare mtime of `docs/*.md` vs source files.
         If source is newer, suggest `sdd-forge build` to the user and wait for approval.

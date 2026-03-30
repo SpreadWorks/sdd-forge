@@ -14,29 +14,21 @@ Sync documentation with the current codebase. Can be invoked from flow-finalize 
 
 ## Required Sequence
 
-1. Ensure on the correct branch.
-   - `git rev-parse --abbrev-ref HEAD` — confirm on the expected branch.
-   - If not, `git checkout <baseBranch>`.
+1. Run documentation sync.
+   - Display: "ドキュメントを同期しています..."
+   - Run `sdd-forge flow run sync`.
+   - Display the JSON result to the user.
 
-2. Generate documentation.
-   - Display: "ドキュメントを更新しています..."
-   - Run `sdd-forge build`.
-
-3. Review documentation.
-   - `sdd-forge review`
-   - If FAIL, fix issues and re-run. Do not proceed until PASS.
-
-4. Commit docs changes.
-   - `git add docs/ AGENTS.md CLAUDE.md` (and other generated files).
-   - `git commit -m "docs: sync documentation"`
+2. Handle errors.
+   - If the result contains an error, display the error message and stop.
+   - If the result indicates review failure, inform the user and stop.
 
 ## Hard Stops
 
-- Do not commit if `sdd-forge review` FAIL.
+- Do not proceed if `sdd-forge flow run sync` reports an error.
 
 ## Commands
 
 ```bash
-sdd-forge build
-sdd-forge review
+sdd-forge flow run sync
 ```

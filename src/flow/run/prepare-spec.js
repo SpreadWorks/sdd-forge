@@ -10,10 +10,19 @@ import { runIfDirect } from "../../lib/entrypoint.js";
 import { repoRoot, parseArgs, PKG_DIR } from "../../lib/cli.js";
 import { runSync } from "../../lib/process.js";
 import { ok, fail, output } from "../../lib/flow-envelope.js";
+import { getWorktreeStatus } from "../../lib/git-state.js";
 import path from "path";
 
 function main() {
   const root = repoRoot(import.meta.url);
+
+  // Dirty worktree check — abort early if uncommitted changes exist
+  const { dirty, dirtyFiles } = getWorktreeStatus(root);
+  if (dirty) {
+    output(fail("run", "prepare-spec", "DIRTY_WORKTREE", dirtyFiles));
+    return;
+  }
+
   const cli = parseArgs(process.argv.slice(2), {
     flags: ["--no-branch", "--worktree", "--dry-run"],
     options: ["--title", "--base"],

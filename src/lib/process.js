@@ -22,6 +22,7 @@ export function runSync(cmd, args, opts = {}) {
     cwd: opts.cwd,
     encoding: opts.encoding || "utf8",
     timeout: opts.timeout,
+    ...(opts.env && { env: opts.env }),
   });
   return {
     ok: res.status === 0,
