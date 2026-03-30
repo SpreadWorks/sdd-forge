@@ -81,17 +81,17 @@ export function getAnalysisContext(analysis, directives) {
 
 /**
  * ファイル名から章名を抽出する。
- * "01_overview.md" → "overview"
+ * "overview.md" → "overview"
  */
 function chapterNameFromFile(fileName) {
-  return fileName.replace(/^\d+_/, "").replace(/\.md$/, "");
+  return fileName.replace(/\.md$/, "");
 }
 
 /**
  * enriched analysis から章に該当するエントリのコンテキストを構築する。
  *
  * @param {Object} analysis - analysis.json (enrichedAt あり)
- * @param {string} fileName - 章ファイル名 (e.g. "01_overview.md")
+ * @param {string} fileName - 章ファイル名 (e.g. "overview.md")
  * @param {string} mode - "light" or "deep"
  * @param {string} [srcRoot] - ソースルート（deep モード時に使用）
  * @returns {string|null} enriched コンテキスト文字列、なければ null

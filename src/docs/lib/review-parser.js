@@ -47,7 +47,7 @@ export function summarizeReview(outputText) {
  * review 対象のうち failedFiles に含まれないものを passedFiles として返す。
  *
  * @param {string} outputText - review コマンドの stdout+stderr
- * @param {string[]} allFiles - review 対象の全ファイル名リスト (例: ["docs/01_overview.md", ...])
+ * @param {string[]} allFiles - review 対象の全ファイル名リスト (例: ["docs/overview.md", ...])
  * @returns {{ passedFiles: string[], failedFiles: string[] }}
  */
 export function parseFileResults(outputText, allFiles) {
@@ -82,4 +82,3 @@ export function parseFileResults(outputText, allFiles) {
   const passedFiles = allFiles.filter((f) => !failedSet.has(f));
   return { passedFiles, failedFiles };
 }
-

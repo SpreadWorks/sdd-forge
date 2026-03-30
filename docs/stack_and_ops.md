@@ -11,7 +11,7 @@
 
 <!-- {{text({prompt: "Write a 1-2 sentence overview of this chapter. Include the programming language, framework, and key tool versions."})}} -->
 
-This chapter covers the technology stack and operational infrastructure of sdd-forge, a CLI tool built entirely on **Node.js** (ES modules) with **zero external dependencies**. CI/CD automation is handled through **GitHub Actions** workflow pipelines.
+This chapter covers the operational stack exposed by the analyzed JavaScript data sources, including CakePHP 2.x and GitHub Actions workflow analysis. The available version information identifies CakePHP 2.x, while the CI/CD workflow parser reports pipeline structure, triggers, jobs, secrets, and environment variables from workflow YAML files.
 <!-- {{/text}} -->
 
 ## Content
@@ -20,54 +20,41 @@ This chapter covers the technology stack and operational infrastructure of sdd-f
 
 <!-- {{text({prompt: "Describe the technology stack in table format with category, technology name, and version."})}} -->
 
-| Category | Technology | Version / Notes |
-|---|---|---|
-| Runtime | Node.js | ES modules (`"type": "module"`) |
-| Language | JavaScript | No transpilation required |
-| Package Manager | npm | Used for publishing (`sdd-forge` on npmjs.com) |
-| CI/CD | GitHub Actions | Workflow YAML under `.github/workflows/` |
-| Containerization | Docker | Stub support for CakePHP 2.x preset (not yet implemented) |
-| Version Control | Git | Versioning via `git rev-list --count HEAD` |
-
-The project enforces a strict **no external dependencies** policy — only Node.js built-in modules are permitted.
+| Category | Technology | Version |
+| --- | --- | --- |
+| Programming language | JavaScript | Not specified |
+| Framework | CakePHP | 2.x |
+| CI/CD | GitHub Actions | Not specified |
+| Container-related configuration | Docker | Not specified |
 <!-- {{/text}} -->
 
 ### Dependencies
 
 <!-- {{text({prompt: "Describe the project's dependency management approach."})}} -->
 
-sdd-forge adopts a **zero-dependency** approach. The project relies exclusively on Node.js built-in modules and prohibits adding any external packages.
+The provided analysis does not describe a package manager or lockfile-based dependency strategy.
 
-This design decision eliminates supply-chain risks, keeps the installation footprint minimal, and ensures the tool runs on any environment with a compatible Node.js runtime. All functionality — including YAML parsing for CI pipeline analysis — is implemented inline without third-party libraries.
-
-The package is published to npm with the `files` field set to `["src/"]`, so only source code, `package.json`, `README.md`, and `LICENSE` are distributed.
+Within operations, dependency information is captured from GitHub Actions workflow files. The pipeline parser extracts `uses` references from job steps, removes duplicates, and presents them as part of the job details for each workflow.
 <!-- {{/text}} -->
 
 ### Deployment Flow
 
 <!-- {{text({prompt: "Describe the deployment procedure and flow."})}} -->
 
-sdd-forge uses a two-step npm publishing flow for releases:
+Deployment-related information is derived from GitHub Actions workflow definitions under `.github/workflows/*.yml`.
 
-1. **Publish with alpha tag** — `npm publish --tag alpha` to push the package without updating the `latest` dist-tag.
-2. **Promote to latest** — `npm dist-tag add sdd-forge@<version> latest` to make the release visible as the default installation.
-
-Versioning during the alpha period follows the `0.1.0-alpha.N` format, where `N` is derived from the total commit count (`git rev-list --count HEAD`). Before publishing, `npm pack --dry-run` is executed to verify that no sensitive files are included in the package.
-
-The `PipelinesSource` data source parses `.github/workflows/*.yml` files to document the project's GitHub Actions pipelines, extracting triggers, jobs, dependencies, secrets, and environment variables automatically.
+The pipeline data source scans workflow files, parses workflow names and triggers, reads branch filters and cron schedules when present, and summarizes each workflow's jobs, referenced secrets, and environment variables. Docker-based deployment details are not currently provided by the CakePHP 2.x Docker data source, because that source is implemented as a stub and always returns `null`.
 <!-- {{/text}} -->
 
 ### Operations Flow
 
 <!-- {{text({prompt: "Describe the operations procedures."})}} -->
 
-CI/CD pipeline monitoring and documentation are supported through the built-in `PipelinesSource` (from the `ci` preset). This data source performs the following:
+Operations are documented through two analysis paths.
 
-- **Pipeline inventory** — `list()` generates a summary table of all discovered GitHub Actions workflows.
-- **Job details** — `jobs()` provides per-pipeline breakdowns including runner type (`runs-on`), step counts, and action dependencies.
-- **Secrets and environment variables** — `env()` extracts references to `secrets.*` and `env.*` across workflows, producing a consolidated table for audit purposes.
+For CI/CD, workflow files are parsed into pipeline lists, job tables, and a table of referenced secrets and environment variables. This makes the operational view centered on workflow triggers, job execution targets, step counts, and external references used in automation.
 
-Workflow YAML parsing is handled entirely in-process, with `parseTriggers()` supporting inline, list, and cron schedule formats along with branch filters. Docker-based operations for CakePHP 2.x projects are defined as an extension point via `CakephpDockerSource`, though the implementation currently returns a stub response.
+For Docker-related operations in the CakePHP 2.x preset, no runtime data is currently available because the Docker data source is present only as an extension point and does not return analyzed results.
 <!-- {{/text}} -->
 
 ---

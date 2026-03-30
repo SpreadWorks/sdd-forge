@@ -11,7 +11,7 @@
 
 <!-- {{text({prompt: "Write a 1-2 sentence overview of this chapter. Include the number of major directories and their roles."})}} -->
 
-The project is organized under the `src/` directory with 6 major areas: `src/presets/` (122 files) housing DataSource definitions and tests for each supported framework, `src/flow/` (33 files) implementing the SDD workflow engine, `src/docs/` (32 files) providing documentation generation commands and libraries, `src/lib/` (17 files) containing shared utility modules, `src/` root (8 files) serving as the CLI entry point and dispatcher, and `src/spec/` (4 files) handling spec-related commands.
+This chapter covers 6 major directories: `src/` and `src/spec/` for CLI entry points and command handling, `src/docs/` for documentation generation support, `src/flow/` for workflow commands and supporting logic, `src/lib/` for shared library code, and `src/presets/` for preset-specific libraries, configuration, models, views, and tests. Together, they show a CLI-centered codebase with shared infrastructure in common libraries and most framework-specific logic grouped under presets.
 <!-- {{/text}} -->
 
 ## Content
@@ -62,7 +62,7 @@ src/presets/library/tests/acceptance/    (test)
 src/presets/library/tests/acceptance/fixtures/src/    (test)
 src/presets/library/tests/acceptance/fixtures/src/rules/    (test)
 src/presets/library/tests/acceptance/fixtures/src/utils/    (test)
-src/presets/monorepo/data/    (lib)
+src/presets/monorepo/data/    (config)
 src/presets/nextjs/data/    (lib)
 src/presets/nextjs/tests/unit/    (test)
 src/presets/node-cli/tests/acceptance/    (test)
@@ -92,8 +92,8 @@ src/spec/commands/    (cli)
 | Directory | Files | Role |
 | --- | --- | --- |
 | src/presets | 122 | lib, test, model, view, config, other, cli |
-| src/flow | 33 | cli, config, lib |
 | src/docs | 32 | cli, lib |
+| src/flow | 30 | cli, config, lib |
 | src/lib | 17 | lib |
 | src | 8 | cli |
 | src/spec | 4 | cli |
@@ -103,11 +103,12 @@ src/spec/commands/    (cli)
 
 <!-- {{text({prompt: "List the shared libraries with class name, file path, and responsibility in table format."})}} -->
 
-| Class | File | Responsibility |
+| Class | File Path | Responsibility |
 | --- | --- | --- |
-| PackageSource / PackageEntry | `src/presets/base/data/package.js` | Extracts dependency and script information from `package.json` and `composer.json`. Parses dependencies, devDependencies, scripts (npm) and require, require-dev (Composer) into PackageEntry records. Available to all presets through base inheritance. |
-| StructureSource | `src/presets/base/data/structure.js` | Generates a directory tree and role-based summary table from the enriched analysis. Collects all category entries, builds a directory map with file counts and role sets, and produces markdown output via `tree()` and `directories()` methods. Auto-expands depth when only one top-level directory exists. |
-| CakephpControllersSource | `src/presets/cakephp2/data/controllers.js` | Analyzes CakePHP 2.x controllers by extending the webapp ControllersSource. Parses class names, parent classes, `$components`, `$uses`, and public actions. Provides CSV import/export tables, action-to-logic mappings, permission component analysis, and ACL rule extraction. |
+| `PackageSource` | `src/presets/base/data/package.js` | Scans `package.json` and `composer.json` files and extracts dependency and script information into analysis entries shared through the base preset. |
+| `StructureSource` | `src/presets/base/data/structure.js` | Builds directory-tree output and directory responsibility tables from enriched analysis data for structural documentation. |
+| `CakephpControllersSource` | `src/presets/cakephp2/data/controllers.js` | Analyzes CakePHP 2.x controllers, including class metadata, components, models, actions, CSV mappings, permission methods, and ACL data. |
+| `MonorepoSource` | `src/presets/monorepo/data/monorepo.js` | Supplies chapter-level target app information for monorepo documentation, using configured app definitions or enriched analysis results. |
 <!-- {{/text}} -->
 
 ---

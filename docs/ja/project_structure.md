@@ -10,6 +10,8 @@
 ## 説明
 
 <!-- {{text({prompt: "この章の概要を1〜2文で記述してください。主要ディレクトリの数と役割を踏まえること。"})}} -->
+
+このプロジェクトは、CLI 本体を担う `src`、ドキュメント生成を担う `src/docs`、Spec-Driven Development の実行系を担う `src/flow`、共通ライブラリを置く `src/lib`、各種プリセットを集約した `src/presets`、Spec 関連コマンドを持つ `src/spec` の6つの主要ディレクトリで構成されています。特に `src/presets` は 122 ファイルを持ち、分析用 DataSource やテストを含む中核領域です。
 <!-- {{/text}} -->
 
 ## 内容
@@ -60,7 +62,7 @@ src/presets/library/tests/acceptance/    (test)
 src/presets/library/tests/acceptance/fixtures/src/    (test)
 src/presets/library/tests/acceptance/fixtures/src/rules/    (test)
 src/presets/library/tests/acceptance/fixtures/src/utils/    (test)
-src/presets/monorepo/data/    (lib)
+src/presets/monorepo/data/    (config)
 src/presets/nextjs/data/    (lib)
 src/presets/nextjs/tests/unit/    (test)
 src/presets/node-cli/tests/acceptance/    (test)
@@ -90,8 +92,8 @@ src/spec/commands/    (cli)
 | ディレクトリ | ファイル数 | 役割 |
 | --- | --- | --- |
 | src/presets | 122 | lib, test, model, view, config, other, cli |
-| src/flow | 33 | cli, config, lib |
 | src/docs | 32 | cli, lib |
+| src/flow | 30 | cli, config, lib |
 | src/lib | 17 | lib |
 | src | 8 | cli |
 | src/spec | 4 | cli |
@@ -100,6 +102,13 @@ src/spec/commands/    (cli)
 ### 共通ライブラリ
 
 <!-- {{text({prompt: "共通ライブラリの一覧をクラス名・ファイルパス・責務の表形式で記述してください。"})}} -->
+
+| クラス名 | ファイルパス | 責務 |
+| --- | --- | --- |
+| `PackageSource` | `src/presets/base/data/package.js` | `package.json` または `composer.json` を解析し、依存関係とスクリプト情報を抽出します。 |
+| `StructureSource` | `src/presets/base/data/structure.js` | enriched analysis を基に、ディレクトリツリーとロール別のディレクトリ集計テーブルを生成します。 |
+| `CakephpControllersSource` | `src/presets/cakephp2/data/controllers.js` | CakePHP 2.x のコントローラを解析し、アクション、利用コンポーネント、CSV 対応、権限関連情報を集計します。 |
+| `MonorepoSource` | `src/presets/monorepo/data/monorepo.js` | monorepo 構成向けに、章ごとの対象アプリ情報をバッジ形式テキストとして出力します。 |
 <!-- {{/text}} -->
 
 ---

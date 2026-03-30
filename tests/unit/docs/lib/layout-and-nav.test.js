@@ -99,7 +99,7 @@ describe("docs.nav link generation", () => {
     const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "nav-test-"));
     const docsDir = path.join(tmpDir, "docs");
     fs.mkdirSync(docsDir, { recursive: true });
-    fs.writeFileSync(path.join(docsDir, "01_overview.md"), "# Overview\n");
+    fs.writeFileSync(path.join(docsDir, "overview.md"), "# Overview\n");
 
     ds.init({
       desc: () => "—",
@@ -110,7 +110,7 @@ describe("docs.nav link generation", () => {
       configChapters: ["overview.md"],
     });
 
-    const result = ds.nav({}, ["docs/01_overview.md"]);
+    const result = ds.nav({}, ["docs/overview.md"]);
     assert.equal(result, null, "single chapter should return null");
 
     // Cleanup
@@ -126,9 +126,9 @@ describe("docs.nav link generation", () => {
     const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "nav-test-"));
     const docsDir = path.join(tmpDir, "docs");
     fs.mkdirSync(docsDir, { recursive: true });
-    fs.writeFileSync(path.join(docsDir, "01_overview.md"), "# 01. Overview\n");
-    fs.writeFileSync(path.join(docsDir, "02_design.md"), "# 02. Design\n");
-    fs.writeFileSync(path.join(docsDir, "03_dev.md"), "# 03. Development\n");
+    fs.writeFileSync(path.join(docsDir, "overview.md"), "# Overview\n");
+    fs.writeFileSync(path.join(docsDir, "design.md"), "# Design\n");
+    fs.writeFileSync(path.join(docsDir, "dev.md"), "# Development\n");
 
     ds.init({
       desc: () => "—",
@@ -139,11 +139,11 @@ describe("docs.nav link generation", () => {
       configChapters: ["overview.md", "design.md", "dev.md"],
     });
 
-    const result = ds.nav({}, ["docs/01_overview.md"]);
+    const result = ds.nav({}, ["docs/overview.md"]);
     assert.ok(result !== null, "should return nav for first chapter");
     assert.ok(!result.includes("←"), "first chapter should not have prev link");
     assert.ok(result.includes("→"), "first chapter should have next link");
-    assert.ok(result.includes("02_design.md"), "should link to second chapter");
+    assert.ok(result.includes("design.md"), "should link to second chapter");
 
     fs.rmSync(tmpDir, { recursive: true });
   });
@@ -157,9 +157,9 @@ describe("docs.nav link generation", () => {
     const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "nav-test-"));
     const docsDir = path.join(tmpDir, "docs");
     fs.mkdirSync(docsDir, { recursive: true });
-    fs.writeFileSync(path.join(docsDir, "01_overview.md"), "# 01. Overview\n");
-    fs.writeFileSync(path.join(docsDir, "02_design.md"), "# 02. Design\n");
-    fs.writeFileSync(path.join(docsDir, "03_dev.md"), "# 03. Development\n");
+    fs.writeFileSync(path.join(docsDir, "overview.md"), "# Overview\n");
+    fs.writeFileSync(path.join(docsDir, "design.md"), "# Design\n");
+    fs.writeFileSync(path.join(docsDir, "dev.md"), "# Development\n");
 
     ds.init({
       desc: () => "—",
@@ -170,11 +170,11 @@ describe("docs.nav link generation", () => {
       configChapters: ["overview.md", "design.md", "dev.md"],
     });
 
-    const result = ds.nav({}, ["docs/03_dev.md"]);
+    const result = ds.nav({}, ["docs/dev.md"]);
     assert.ok(result !== null, "should return nav for last chapter");
     assert.ok(result.includes("←"), "last chapter should have prev link");
     assert.ok(!result.includes("→"), "last chapter should not have next link");
-    assert.ok(result.includes("02_design.md"), "should link to second chapter");
+    assert.ok(result.includes("design.md"), "should link to second chapter");
 
     fs.rmSync(tmpDir, { recursive: true });
   });
@@ -188,9 +188,9 @@ describe("docs.nav link generation", () => {
     const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "nav-test-"));
     const docsDir = path.join(tmpDir, "docs");
     fs.mkdirSync(docsDir, { recursive: true });
-    fs.writeFileSync(path.join(docsDir, "01_overview.md"), "# 01. Overview\n");
-    fs.writeFileSync(path.join(docsDir, "02_design.md"), "# 02. Design\n");
-    fs.writeFileSync(path.join(docsDir, "03_dev.md"), "# 03. Development\n");
+    fs.writeFileSync(path.join(docsDir, "overview.md"), "# Overview\n");
+    fs.writeFileSync(path.join(docsDir, "design.md"), "# Design\n");
+    fs.writeFileSync(path.join(docsDir, "dev.md"), "# Development\n");
 
     ds.init({
       desc: () => "—",
@@ -201,12 +201,12 @@ describe("docs.nav link generation", () => {
       configChapters: ["overview.md", "design.md", "dev.md"],
     });
 
-    const result = ds.nav({}, ["docs/02_design.md"]);
+    const result = ds.nav({}, ["docs/design.md"]);
     assert.ok(result !== null, "should return nav for middle chapter");
     assert.ok(result.includes("←"), "middle chapter should have prev link");
     assert.ok(result.includes("→"), "middle chapter should have next link");
-    assert.ok(result.includes("01_overview.md"), "should link to first chapter");
-    assert.ok(result.includes("03_dev.md"), "should link to third chapter");
+    assert.ok(result.includes("overview.md"), "should link to first chapter");
+    assert.ok(result.includes("dev.md"), "should link to third chapter");
 
     fs.rmSync(tmpDir, { recursive: true });
   });

@@ -26,7 +26,7 @@ export default class MonorepoSource extends DataSource {
    * When using enriched analysis, apps are filtered by chapter name.
    *
    * @param {Object} analysis - analysis.json data
-   * @param {string[]} labels - labels[0] = chapter name (without .md, without number prefix)
+   * @param {string[]} labels - labels[0] = chapter name (without .md)
    * @returns {string|null}
    */
   apps(analysis, labels) {

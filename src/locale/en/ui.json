@@ -183,7 +183,7 @@
       },
       "review": {
         "usage": "Usage: sdd-forge docs review [<docs-dir>]",
-        "desc": "Validate chapter files (NN_*.md) in docs/.",
+        "desc": "Validate chapter files in docs/.",
         "descDetail": "Defaults to ${SDD_WORK_ROOT}/docs when no argument is given."
       },
       "changelog": {

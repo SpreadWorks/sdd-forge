@@ -1,10 +1,16 @@
 #!/usr/bin/env node
 
+import path from "node:path";
 import { execFileSync } from "node:child_process";
 import { loadBoardConfig } from "./lib/config.js";
 import { prefixTitle, extractId } from "./lib/hash.js";
 import { searchItems, listItems, getProjectMeta, setItemStatus, updateDraftIssue, convertDraftToIssue, getRepositoryId } from "./lib/graphql.js";
 import { assertJapaneseDraft, assertJapaneseDraftField, stripHashPrefix } from "./lib/validation.js";
+import { loadConfig } from "../../src/lib/config.js";
+import { callAgent, ensureAgentWorkDir, resolveAgent } from "../../src/lib/agent.js";
+
+const COMMAND_ID = "experimental.workflow.borad.to-issue";
+const ROOT = path.resolve(import.meta.dirname, "..", "..");
 
 function parseJsonResponse(text) {
   const trimmed = text.trim();
@@ -238,7 +244,7 @@ function cmdToIssue(config, args) {
   console.log(`Draft: ${c.title}\n`);
   assertJapaneseDraft(jaTitle, jaBody, { allowEmptyBody: true });
 
-  // 2. claude で英訳
+  // 2. configured agent で英訳
   const prompt = `Translate the following Japanese GitHub issue title and body to English. Output ONLY valid JSON with "title" and "body" keys. Do not include any other text.
 
 Title: ${jaTitle}
@@ -246,17 +252,26 @@ Title: ${jaTitle}
 Body:
 ${jaBody || "(empty)"}`;
 
-  const translated = execFileSync("claude", ["-p", prompt, "--output-format", "json"], {
-    encoding: "utf8",
-    timeout: 60000,
-  });
-  const parsed = JSON.parse(translated);
-  const result = parseJsonResponse(parsed.result);
+  const agentConfig = loadConfig(ROOT);
+  const agent = resolveAgent(agentConfig, COMMAND_ID);
+  if (!agent) {
+    throw new Error(`No agent configured for ${COMMAND_ID}`);
+  }
+  ensureAgentWorkDir(agent, ROOT);
+
+  const translated = callAgent(
+    agent,
+    prompt,
+    (agentConfig.agent?.timeout || 300) * 1000,
+    ROOT,
+  );
+  const result = parseJsonResponse(translated);
   const enTitle = result.title;
+  const issueTitle = `${hash}: ${enTitle}`;
   const enBody = result.body;
   assertJapaneseDraftField("Draft タイトル", jaTitle);
 
-  console.log(`英訳タイトル: ${enTitle}`);
+  console.log(`英訳タイトル: ${issueTitle}`);
   console.log(`英訳本文:\n${enBody}\n`);
 
   // 3. Issue 本文を組み立て（英語 + 日本語折りたたみ）
@@ -271,18 +286,17 @@ ${jaTitle}
 
 ${jaBody}
 
-</details>`;
+  </details>`;
 
   // 4. Draft のタイトル・本文を英語に更新
-  const draftId = c.id;
-  updateDraftIssue(draftId, { title: enTitle, body: issueBody });
+  const draftId = c.draftId;
+  updateDraftIssue(draftId, { title: issueTitle, body: issueBody });
 
   // 5. Draft を Issue に変換（convertProjectV2DraftIssueItemToIssue）
-  const { projectId } = getProjectMeta(config.owner, config.project);
   const [repoOwner, repoName] = config.repo.split("/");
   const repositoryId = getRepositoryId(repoOwner, repoName);
 
-  const converted = convertDraftToIssue(projectId, item.id, repositoryId);
+  const converted = convertDraftToIssue(item.id, repositoryId);
   const issueNumber = converted.content?.number;
   const issueUrl = converted.content?.url;
 

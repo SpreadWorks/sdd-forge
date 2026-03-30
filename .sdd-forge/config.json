@@ -43,12 +43,13 @@
       }
     },
     "commands": {
-      "docs.enrich":       { "agent": "claude", "profile": "opus" },
-      "docs.text":         { "agent": "claude", "profile": "opus" },
-      "docs.forge":        { "agent": "claude", "profile": "opus" },
-      "docs.readme":       { "agent": "claude", "profile": "sonnet" },
-      "docs.agents":       { "agent": "claude", "profile": "opus" },
+      "docs.enrich":       { "agent": "codex" },
+      "docs.text":         { "agent": "codex" },
+      "docs.forge":        { "agent": "codex" },
+      "docs.readme":       { "agent": "codex" },
+      "docs.agents":       { "agent": "codex" },
       "spec.gate":         { "agent": "claude", "profile": "sonnet" },
+      "experimental.workflow.borad.to-issue": { "agent": "codex" },
       "flow.review.draft": { "agent": "codex" },
       "flow.review.final": { "agent": "claude", "profile": "opus" },
       "docs.translate":    { "agent": "codex" }

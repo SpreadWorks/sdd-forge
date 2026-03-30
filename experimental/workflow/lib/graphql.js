@@ -93,11 +93,10 @@ export function updateDraftIssue(draftIssueId, { title, body } = {}) {
   return ghGraphQL(q);
 }
 
-export function convertDraftToIssue(projectId, itemId, repositoryId) {
+export function convertDraftToIssue(itemId, repositoryId) {
   const q = `
     mutation {
       convertProjectV2DraftIssueItemToIssue(input: {
-        projectId: "${projectId}"
         itemId: "${itemId}"
         repositoryId: "${repositoryId}"
       }) {

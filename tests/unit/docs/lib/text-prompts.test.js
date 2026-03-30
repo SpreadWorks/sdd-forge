@@ -21,7 +21,7 @@ describe("getEnrichedContext", () => {
         entries: [{ file: "src/a.js", summary: "does stuff" }],
       },
     };
-    assert.equal(getEnrichedContext(analysis, "01_overview.md", "light"), null);
+    assert.equal(getEnrichedContext(analysis, "overview.md", "light"), null);
   });
 
   it("returns null when no entries match the chapter", () => {
@@ -32,7 +32,7 @@ describe("getEnrichedContext", () => {
         entries: [{ file: "src/a.js", summary: "does stuff", chapter: "configuration" }],
       },
     };
-    assert.equal(getEnrichedContext(analysis, "01_overview.md", "light"), null);
+    assert.equal(getEnrichedContext(analysis, "overview.md", "light"), null);
   });
 
   it("returns enriched context for matching chapter entries (light mode)", () => {
@@ -46,7 +46,7 @@ describe("getEnrichedContext", () => {
         ],
       },
     };
-    const result = getEnrichedContext(analysis, "01_overview.md", "light");
+    const result = getEnrichedContext(analysis, "overview.md", "light");
     assert.ok(result);
     assert.ok(result.includes("Module A summary"));
     assert.ok(result.includes("Module A detail"));
@@ -54,7 +54,7 @@ describe("getEnrichedContext", () => {
     assert.ok(result.includes("1 entries for chapter: overview"));
   });
 
-  it("strips number prefix and .md from filename to match chapter", () => {
+  it("uses the chapter filename without .md to match chapter", () => {
     const analysis = {
       enrichedAt: "2026-01-01T00:00:00Z",
       modules: {
@@ -64,7 +64,7 @@ describe("getEnrichedContext", () => {
         ],
       },
     };
-    const result = getEnrichedContext(analysis, "02_cli_commands.md", "light");
+    const result = getEnrichedContext(analysis, "cli_commands.md", "light");
     assert.ok(result);
     assert.ok(result.includes("A summary"));
   });
@@ -81,7 +81,7 @@ describe("getEnrichedContext", () => {
         ],
       },
     };
-    const result = getEnrichedContext(analysis, "01_overview.md", "light", tmp);
+    const result = getEnrichedContext(analysis, "overview.md", "light", tmp);
     assert.ok(result);
     assert.ok(!result.includes("function hello()"), "light mode should not include source code");
     removeTmpDir(tmp);
@@ -99,7 +99,7 @@ describe("getEnrichedContext", () => {
         ],
       },
     };
-    const result = getEnrichedContext(analysis, "01_overview.md", "deep", tmp);
+    const result = getEnrichedContext(analysis, "overview.md", "deep", tmp);
     assert.ok(result);
     assert.ok(result.includes("function hello()"), "deep mode should include source code");
     assert.ok(result.includes("A summary"));
@@ -120,7 +120,7 @@ describe("getEnrichedContext", () => {
         ],
       },
     };
-    const result = getEnrichedContext(analysis, "01_overview.md", "deep", tmp);
+    const result = getEnrichedContext(analysis, "overview.md", "deep", tmp);
     assert.ok(result);
     assert.ok(result.includes("(truncated)"));
     removeTmpDir(tmp);
@@ -137,7 +137,7 @@ describe("getEnrichedContext", () => {
         ],
       },
     };
-    const result = getEnrichedContext(analysis, "01_overview.md", "deep", tmp);
+    const result = getEnrichedContext(analysis, "overview.md", "deep", tmp);
     assert.ok(result);
     assert.ok(result.includes("Missing"));
     assert.ok(!result.includes("```"), "should not include code block for missing file");
@@ -160,7 +160,7 @@ describe("getEnrichedContext", () => {
         ],
       },
     };
-    const result = getEnrichedContext(analysis, "01_overview.md", "light");
+    const result = getEnrichedContext(analysis, "overview.md", "light");
     assert.ok(result);
     assert.ok(result.includes("Users controller"));
     assert.ok(result.includes("User model"));
@@ -180,7 +180,7 @@ describe("getEnrichedContext", () => {
       },
     };
     // Should not crash trying to iterate meta keys
-    const result = getEnrichedContext(analysis, "01_overview.md", "light");
+    const result = getEnrichedContext(analysis, "overview.md", "light");
     assert.ok(result);
     assert.ok(result.includes("1 entries"));
   });

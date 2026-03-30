@@ -183,7 +183,7 @@
       },
       "review": {
         "usage": "Usage: sdd-forge docs review [<docs-dir>]",
-        "desc": "docs/ 配下の章ファイル（NN_*.md）を検証する。",
+        "desc": "docs/ 配下の章ファイルを検証する。",
         "descDetail": "引数なしの場合は ${SDD_WORK_ROOT}/docs を対象とする。"
       },
       "changelog": {
