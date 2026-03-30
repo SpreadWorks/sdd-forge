@@ -126,11 +126,11 @@ npm install -g <!-- {{data("cli.project.name")}} -->sdd-forge<!-- {{/data}} -->
 <!-- {{data("cli.docs.chapters", {header: "", labels: "章|概要", ignoreError: true})}} -->
 | 章 | 概要 |
 | --- | --- |
-| [ツール概要とアーキテクチャ](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/ja/overview.md) | sdd-forge は、ソースコード解析に基づく技術ドキュメントの自動生成と、仕様駆動開発（Spec-Driven Development）ワークフローを提供する CLI ツールです。 |
-| [技術スタックと運用](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/ja/stack_and_ops.md) | 本プロジェクトは Node.js（18.0.0 以上）のみで構成される ES modules ベースの CLI ツールです。 |
-| [プロジェクト構成](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/ja/project_structure.md) | 本プロジェクトは src/ 配下に CLI エントリポイント、ドキュメント生成エンジン（src/docs/）、共通ユーティリティ（src/lib/）、SDD フロー制御（src/flow/）、仕様コマンド（src/spec/）、および… |
-| [CLI コマンドリファレンス](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/ja/cli_commands.md) | sdd-forge は docs・spec・flow の 3 つの名前空間ディスパッチャと独立コマンドを含む、合計 30 以上のサブコマンドを持つ CLI ツールです。 |
-| [設定とカスタマイズ](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/ja/configuration.md) | sdd-forge は .sdd-forge/config.json を中心に、プロジェクトのドキュメント生成言語・プリセット種別・AI エージェント・並列数・フロー戦略などを設定します。 |
+| [ツール概要とアーキテクチャ](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/ja/overview.md) |  |
+| [技術スタックと運用](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/ja/stack_and_ops.md) | 本プロジェクトは Node.js（ES Modules）のみで構成された CLI ツールであり、外部依存パッケージを持ちません。 |
+| [プロジェクト構成](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/ja/project_structure.md) |  |
+| [CLI コマンドリファレンス](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/ja/cli_commands.md) |  |
+| [設定とカスタマイズ](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/ja/configuration.md) |  |
 <!-- {{/data}} -->
 
 ## License

@@ -108,7 +108,7 @@
       "spec guardrail": "プロジェクト guardrail（原則）を管理",
       "flow get": "フロー状態を取得（status, check, prompt, guardrail, ...）",
       "flow set": "フロー状態を更新（step, req, note, metric, ...）",
-      "flow run": "フローアクションを実行（prepare-spec, gate, merge, ...）",
+      "flow run": "フローアクションを実行（prepare-spec, gate, finalize, ...）",
       "presets list": "プリセット継承ツリーを表示"
     },
     "cmdHelp": {

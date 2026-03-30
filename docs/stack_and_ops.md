@@ -11,7 +11,7 @@
 
 <!-- {{text({prompt: "Write a 1-2 sentence overview of this chapter. Include the programming language, framework, and key tool versions."})}} -->
 
-sdd-forge is a CLI tool built entirely in JavaScript on Node.js, using ES modules with zero external dependencies. It provides automated documentation generation and Spec-Driven Development workflows, leveraging only Node.js built-in modules for all functionality including YAML parsing and file system operations.
+This chapter covers the technology stack and operational infrastructure of sdd-forge, a CLI tool built entirely on **Node.js** (ES modules) with **zero external dependencies**. CI/CD automation is handled through **GitHub Actions** workflow pipelines.
 <!-- {{/text}} -->
 
 ## Content
@@ -22,53 +22,52 @@ sdd-forge is a CLI tool built entirely in JavaScript on Node.js, using ES module
 
 | Category | Technology | Version / Notes |
 |---|---|---|
-| Language | JavaScript (ES Modules) | Node.js built-in modules only |
-| Runtime | Node.js | `"type": "module"` in package.json |
-| Package Manager | npm | Version follows `0.1.0-alpha.N` (alpha period) |
-| CI/CD Integration | GitHub Actions | Workflow YAML parsed via regex-based scanner |
-| Edge Runtime Support | Cloudflare Workers | `wrangler.toml` / `wrangler.json` configuration parsing |
-| Frontend Asset Detection | jQuery, Highcharts, FancyBox, etc. | Library pattern matching for CakePHP 2 preset |
-| Configuration Format | JSON, TOML | Internal TOML parser for wrangler config; JSON for project settings |
-| Version Control | Git | Used for diff-based incremental updates and versioning |
+| Runtime | Node.js | ES modules (`"type": "module"`) |
+| Language | JavaScript | No transpilation required |
+| Package Manager | npm | Used for publishing (`sdd-forge` on npmjs.com) |
+| CI/CD | GitHub Actions | Workflow YAML under `.github/workflows/` |
+| Containerization | Docker | Stub support for CakePHP 2.x preset (not yet implemented) |
+| Version Control | Git | Versioning via `git rev-list --count HEAD` |
+
+The project enforces a strict **no external dependencies** policy — only Node.js built-in modules are permitted.
 <!-- {{/text}} -->
 
 ### Dependencies
 
 <!-- {{text({prompt: "Describe the project's dependency management approach."})}} -->
 
-sdd-forge follows a strict **zero external dependencies** policy. All functionality is implemented using only Node.js built-in modules such as `fs`, `path`, and `child_process`. This means there is no `node_modules` directory or lock file to manage.
+sdd-forge adopts a **zero-dependency** approach. The project relies exclusively on Node.js built-in modules and prohibits adding any external packages.
 
-For example, the CI workflow scanner (`workflows.js`) parses YAML files using a custom regex-based parser rather than relying on a third-party YAML library. Similarly, the edge runtime preset includes an internal TOML parser for reading `wrangler.toml` files.
+This design decision eliminates supply-chain risks, keeps the installation footprint minimal, and ensures the tool runs on any environment with a compatible Node.js runtime. All functionality — including YAML parsing for CI pipeline analysis — is implemented inline without third-party libraries.
 
-The published npm package includes only the `src/` directory, `package.json`, `README.md`, and `LICENSE`. This minimal footprint ensures fast installation and eliminates supply-chain risks associated with transitive dependencies.
+The package is published to npm with the `files` field set to `["src/"]`, so only source code, `package.json`, `README.md`, and `LICENSE` are distributed.
 <!-- {{/text}} -->
 
 ### Deployment Flow
 
 <!-- {{text({prompt: "Describe the deployment procedure and flow."})}} -->
 
-sdd-forge supports CI/CD pipeline analysis through its `ci` preset, which scans GitHub Actions workflow definitions located in `.github/workflows/`.
+sdd-forge uses a two-step npm publishing flow for releases:
 
-The deployment analysis flow works as follows:
+1. **Publish with alpha tag** — `npm publish --tag alpha` to push the package without updating the `latest` dist-tag.
+2. **Promote to latest** — `npm dist-tag add sdd-forge@<version> latest` to make the release visible as the default installation.
 
-1. **Scan** — `scanWorkflows()` reads all `.yml` / `.yaml` files under `.github/workflows/` and extracts pipeline metadata (name, triggers, jobs, secrets, environment variables).
-2. **Parse** — `parseWorkflow()` processes each workflow file, detecting trigger configurations (push, pull_request, schedule cron), job definitions (runner, steps, dependencies), and secret/environment variable references via `${{ secrets.X }}` and `${{ env.X }}` patterns.
-3. **Report** — The `PipelinesSource` DataSource exposes three views: a pipeline list with trigger and job counts, a cross-pipeline job detail table, and an environment/secrets inventory.
+Versioning during the alpha period follows the `0.1.0-alpha.N` format, where `N` is derived from the total commit count (`git rev-list --count HEAD`). Before publishing, `npm pack --dry-run` is executed to verify that no sensitive files are included in the package.
 
-For edge deployments, the `edge` preset parses `wrangler.toml` or `wrangler.json` to extract entry points, route configurations, and runtime constraints such as `compatibility_date` and `compatibility_flags`.
+The `PipelinesSource` data source parses `.github/workflows/*.yml` files to document the project's GitHub Actions pipelines, extracting triggers, jobs, dependencies, secrets, and environment variables automatically.
 <!-- {{/text}} -->
 
 ### Operations Flow
 
 <!-- {{text({prompt: "Describe the operations procedures."})}} -->
 
-Operational visibility is provided through sdd-forge's scanning and data extraction pipeline. Key operational procedures include:
+CI/CD pipeline monitoring and documentation are supported through the built-in `PipelinesSource` (from the `ci` preset). This data source performs the following:
 
-- **Pipeline inventory** — Run `sdd-forge scan` followed by `sdd-forge data` to generate an up-to-date summary of all CI/CD pipelines, including job counts, runners, and action dependencies.
-- **Secrets and environment audit** — The CI preset's `env()` data method produces a consolidated table of all referenced secrets and environment variables across workflows, enabling security reviews.
-- **Edge runtime constraints** — The edge preset's `constraints()` method reports compatibility dates and flags from `wrangler.toml`, helping track runtime version requirements for Cloudflare Workers deployments.
-- **Incremental updates** — When source files change, sdd-forge supports diff-based updates: only modified files are re-analyzed and only affected chapters are regenerated, reducing unnecessary processing.
-- **Asset tracking** — For CakePHP 2 projects, the asset scanner detects front-end library versions (jQuery, Highcharts, FancyBox, and others) from file naming patterns, providing a quick inventory of client-side dependencies.
+- **Pipeline inventory** — `list()` generates a summary table of all discovered GitHub Actions workflows.
+- **Job details** — `jobs()` provides per-pipeline breakdowns including runner type (`runs-on`), step counts, and action dependencies.
+- **Secrets and environment variables** — `env()` extracts references to `secrets.*` and `env.*` across workflows, producing a consolidated table for audit purposes.
+
+Workflow YAML parsing is handled entirely in-process, with `parseTriggers()` supporting inline, list, and cron schedule formats along with branch filters. Docker-based operations for CakePHP 2.x projects are defined as an extension point via `CakephpDockerSource`, though the implementation currently returns a stub response.
 <!-- {{/text}} -->
 
 ---

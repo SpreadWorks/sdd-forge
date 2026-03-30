@@ -26,6 +26,9 @@ src/
 │   ├── agent.js              AI エージェント呼び出し
 │   ├── presets.js            プリセット自動探索・親チェーン解決
 │   ├── flow-state.js         SDD フロー状態永続化
+│   ├── flow-envelope.js      flow get/set/run の JSON envelope
+│   ├── git-state.js          git/gh 状態取得ヘルパー
+│   ├── include.js            include ディレクティブ展開
 │   ├── i18n.js               3層 i18n（ドメイン名前空間付き）
 │   └── types.js              型エイリアス解決・バリデーション
 ├── docs/
@@ -33,16 +36,27 @@ src/
 │   │                         forge, review, changelog, agents, translate
 │   ├── data/                 共通 DataSource（project, docs, lang, agents）
 │   └── lib/                  ドキュメント生成エンジン
-├── flow/commands/            start, status, review, merge, resume, cleanup
+├── flow/
+│   ├── flow.js              flow ディスパッチャ（get/set/run）
+│   ├── registry.js          コマンドメタデータの単一ソース
+│   ├── get.js               get サブディスパッチャ
+│   ├── set.js               set サブディスパッチャ
+│   ├── run.js               run サブディスパッチャ
+│   ├── get/                 status, resolve-context, check, prompt, qa-count, guardrail, issue
+│   ├── set/                 step, request, issue, note, summary, req, metric, redo
+│   ├── run/                 prepare-spec, gate, review, impl-confirm, finalize, sync
+│   └── commands/            内部ヘルパー（merge, cleanup, review の実体）
 ├── spec/commands/            init, gate, guardrail
 ├── presets/                  プリセット群（後述）
 ├── locale/                   en/, ja/
-└── templates/                スキャフォールドテンプレート
+└── templates/
+    ├── skills/              skill テンプレート（SKILL.md）
+    └── partials/            共有パーツ（include 用）
 ```
 
 ## コマンドルーティング
 
-3段階ディスパッチ: `sdd-forge.js` → `docs.js`/`spec.js`/`flow.js` → `commands/*.js`
+ディスパッチ: `sdd-forge.js` → `docs.js`/`spec.js`/`flow.js` → 各ハンドラ
 
 ```
 sdd-forge <cmd> [args]
@@ -52,8 +66,11 @@ sdd-forge <cmd> [args]
     │   │   └─ docs/commands/*.js   # 3. 実際のコマンド実装
     │   ├─ spec.js           # 2. spec サブコマンドのルーティング
     │   │   └─ spec/commands/*.js
-    │   ├─ flow.js           # 2+3. 直接実行（ディスパッチャなし）
-    │   └─ help.js           # 2+3. 直接実行
+    │   ├─ flow.js           # 2. flow サブディスパッチャ（registry.js 参照）
+    │   │   ├─ flow/get.js → flow/get/*.js
+    │   │   ├─ flow/set.js → flow/set/*.js
+    │   │   └─ flow/run.js → flow/run/*.js
+    │   └─ help.js           # 直接実行
 ```
 
 ### プロジェクトコンテキスト

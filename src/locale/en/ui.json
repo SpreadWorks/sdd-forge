@@ -108,7 +108,7 @@
       "spec guardrail": "Manage project guardrail (principles)",
       "flow get": "Read flow state (status, check, prompt, guardrail, ...)",
       "flow set": "Update flow state (step, req, note, metric, ...)",
-      "flow run": "Execute flow actions (prepare-spec, gate, merge, ...)",
+      "flow run": "Execute flow actions (prepare-spec, gate, finalize, ...)",
       "presets list": "Show preset inheritance tree"
     },
     "cmdHelp": {
