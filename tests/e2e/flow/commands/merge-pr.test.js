@@ -5,7 +5,7 @@ import { execFileSync } from "child_process";
 import { createTmpDir, removeTmpDir, writeJson } from "../../../helpers/tmp-dir.js";
 import { setupFlow } from "../../../helpers/flow-setup.js";
 
-const FLOW_CMD = join(process.cwd(), "src/flow.js");
+const CMD = join(process.cwd(), "src/flow/commands/merge.js");
 
 function makeConfig(overrides = {}) {
   return {
@@ -26,7 +26,7 @@ describe("flow merge --pr --dry-run", () => {
     writeJson(tmp, ".sdd-forge/config.json", makeConfig({
       commands: { gh: "enable" },
     }));
-    const result = execFileSync("node", [FLOW_CMD, "merge", "--pr", "--dry-run"], {
+    const result = execFileSync("node", [CMD, "--pr", "--dry-run"], {
       encoding: "utf8",
       env: { ...process.env, SDD_WORK_ROOT: tmp },
     });
@@ -40,7 +40,7 @@ describe("flow merge --pr --dry-run", () => {
     writeJson(tmp, ".sdd-forge/config.json", makeConfig({
       commands: { gh: "enable" },
     }));
-    const result = execFileSync("node", [FLOW_CMD, "merge", "--pr", "--dry-run"], {
+    const result = execFileSync("node", [CMD, "--pr", "--dry-run"], {
       encoding: "utf8",
       env: { ...process.env, SDD_WORK_ROOT: tmp },
     });
@@ -53,7 +53,7 @@ describe("flow merge --pr --dry-run", () => {
     writeJson(tmp, ".sdd-forge/config.json", makeConfig({
       commands: { gh: "enable" },
     }));
-    const result = execFileSync("node", [FLOW_CMD, "merge", "--pr", "--dry-run"], {
+    const result = execFileSync("node", [CMD, "--pr", "--dry-run"], {
       encoding: "utf8",
       env: { ...process.env, SDD_WORK_ROOT: tmp },
     });
@@ -67,7 +67,7 @@ describe("flow merge --pr --dry-run", () => {
       commands: { gh: "enable" },
       flow: { push: { remote: "upstream" } },
     }));
-    const result = execFileSync("node", [FLOW_CMD, "merge", "--pr", "--dry-run"], {
+    const result = execFileSync("node", [CMD, "--pr", "--dry-run"], {
       encoding: "utf8",
       env: { ...process.env, SDD_WORK_ROOT: tmp },
     });
@@ -80,7 +80,7 @@ describe("flow merge --pr --dry-run", () => {
     writeJson(tmp, ".sdd-forge/config.json", makeConfig({
       commands: { gh: "enable" },
     }));
-    const result = execFileSync("node", [FLOW_CMD, "merge", "--pr", "--dry-run"], {
+    const result = execFileSync("node", [CMD, "--pr", "--dry-run"], {
       encoding: "utf8",
       env: { ...process.env, SDD_WORK_ROOT: tmp },
     });
@@ -95,7 +95,7 @@ describe("flow merge --dry-run (existing squash merge)", () => {
   it("still shows squash merge commands for branch mode", () => {
     tmp = createTmpDir();
     setupFlow(tmp);
-    const result = execFileSync("node", [FLOW_CMD, "merge", "--dry-run"], {
+    const result = execFileSync("node", [CMD, "--dry-run"], {
       encoding: "utf8",
       env: { ...process.env, SDD_WORK_ROOT: tmp },
     });
