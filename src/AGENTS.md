@@ -46,7 +46,7 @@ src/
 │   ├── set/                 step, request, issue, note, summary, req, metric, redo
 │   ├── run/                 prepare-spec, gate, review, impl-confirm, finalize, sync
 │   └── commands/            内部ヘルパー（merge, cleanup, review の実体）
-├── spec/commands/            init, gate, guardrail
+├── spec/commands/            init, gate, guardrail（flow/run/prepare-spec, gate が内部で呼ぶ）
 ├── presets/                  プリセット群（後述）
 ├── locale/                   en/, ja/
 └── templates/
