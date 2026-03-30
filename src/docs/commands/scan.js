@@ -18,6 +18,7 @@
 
 import fs from "fs";
 import path from "path";
+import crypto from "crypto";
 import { fileURLToPath } from "url";
 import { runIfDirect } from "../../lib/entrypoint.js";
 import { repoRoot, parseArgs } from "../../lib/cli.js";
@@ -88,6 +89,46 @@ function buildExistingEntryIndex(existing) {
     }
   }
   return index;
+}
+
+// ---------------------------------------------------------------------------
+// Entry ID helpers
+// ---------------------------------------------------------------------------
+
+function generateEntryId() {
+  return crypto.randomBytes(4).toString("hex");
+}
+
+function entrySubkey(entry) {
+  if (entry.className) return entry.className;
+  if (entry.name) return entry.name;
+  return undefined;
+}
+
+function entryMatchKey(category, entry) {
+  const sub = entrySubkey(entry);
+  return sub ? `${category}\0${entry.file}\0${sub}` : `${category}\0${entry.file}`;
+}
+
+function buildExistingIdIndex(existing) {
+  const index = new Map();
+  for (const cat of Object.keys(existing)) {
+    if (ANALYSIS_META_KEYS.has(cat)) continue;
+    const catData = existing[cat];
+    if (!catData || !Array.isArray(catData.entries)) continue;
+    for (const entry of catData.entries) {
+      if (entry && entry.file && entry.id) {
+        const key = entryMatchKey(cat, entry);
+        index.set(key, entry.id);
+      }
+    }
+  }
+  return index;
+}
+
+function resolveEntryId(idIndex, category, entry) {
+  const key = entryMatchKey(category, entry);
+  return idIndex.get(key) || generateEntryId();
 }
 
 // ---------------------------------------------------------------------------
@@ -244,6 +285,7 @@ async function main(ctx) {
   }
 
   const existingIndex = existing ? buildExistingEntryIndex(existing) : new Map();
+  const idIndex = existing ? buildExistingIdIndex(existing) : new Map();
   const currentFilePaths = new Set(files.map((f) => f.relPath));
 
   // 3. Load Scannable DataSources from preset chain
@@ -282,6 +324,7 @@ async function main(ctx) {
             EntryClass: source?.constructor?.Entry ?? null,
           });
         }
+        if (!entry.id) entry.id = resolveEntryId(idIndex, cat, entry);
         categoryEntries.get(cat).entries.push(entry);
       }
       stats.unchanged++;
@@ -304,6 +347,8 @@ async function main(ctx) {
 
       // Empty entry detection
       if (isEmptyEntry(parsed)) continue;
+
+      parsed.id = resolveEntryId(idIndex, name, parsed);
 
       if (!categoryEntries.has(name)) {
         categoryEntries.set(name, {

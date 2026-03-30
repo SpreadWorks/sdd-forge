@@ -12,6 +12,7 @@
 
 import fs from "fs";
 import path from "path";
+import crypto from "crypto";
 import { runIfDirect } from "../../lib/entrypoint.js";
 import { parseDirectives, TEXT_OPEN_RE } from "../lib/directive-parser.js";
 import { mapWithConcurrency } from "../lib/concurrency.js";
@@ -548,15 +549,59 @@ export async function textFillFromAnalysis(root, analysis, commandId, srcRoot, o
 }
 
 // ---------------------------------------------------------------------------
+// Diff-based chapter detection
+// ---------------------------------------------------------------------------
+
+/**
+ * Compare each entry's stored hash against the current source file's hash.
+ * Returns a Set of chapter names that need regeneration, or null if
+ * diff detection is not possible (e.g., no enriched entries with chapter field).
+ */
+function detectChangedChapters(analysis, srcRoot) {
+  const chapters = new Set();
+  let hasChapterField = false;
+
+  for (const catKey of Object.keys(analysis)) {
+    const catData = analysis[catKey];
+    if (!catData || !Array.isArray(catData.entries)) continue;
+
+    for (const entry of catData.entries) {
+      if (!entry.chapter) continue;
+      hasChapterField = true;
+
+      if (!entry.file || !entry.hash) {
+        chapters.add(entry.chapter);
+        continue;
+      }
+
+      const absPath = path.join(srcRoot, entry.file);
+      if (!fs.existsSync(absPath)) {
+        chapters.add(entry.chapter);
+        continue;
+      }
+
+      const currentHash = crypto.createHash("md5")
+        .update(fs.readFileSync(absPath, "utf8"))
+        .digest("hex");
+      if (entry.hash !== currentHash) {
+        chapters.add(entry.chapter);
+      }
+    }
+  }
+
+  return hasChapterField ? chapters : null;
+}
+
+// ---------------------------------------------------------------------------
 // CLI メイン
 // ---------------------------------------------------------------------------
 async function main(ctx) {
   // CLI モード
   if (!ctx) {
     const cli = parseArgs(process.argv.slice(2), {
-      flags: ["--dry-run", "--per-directive"],
+      flags: ["--dry-run", "--per-directive", "--force"],
       options: ["--timeout", "--id", "--lang", "--docs-dir", "--files"],
-      defaults: { dryRun: false, timeout: String(DEFAULT_TIMEOUT_MS), perDirective: false, id: "", lang: "", docsDir: "", files: "" },
+      defaults: { dryRun: false, timeout: String(DEFAULT_TIMEOUT_MS), perDirective: false, force: false, id: "", lang: "", docsDir: "", files: "" },
     });
     cli.timeout = Number(cli.timeout) || DEFAULT_TIMEOUT_MS;
     if (cli.help) {
@@ -575,6 +620,7 @@ async function main(ctx) {
     ctx = resolveCommandContext(cli, { commandId: "docs.text" });
     ctx.dryRun = cli.dryRun;
     ctx.perDirective = cli.perDirective;
+    ctx.force = cli.force;
     ctx.timeout = cli.timeout;
     ctx.id = cli.id;
     if (cli.files) ctx.files = cli.files.split(",").map((f) => f.trim()).filter(Boolean);
@@ -602,6 +648,24 @@ async function main(ctx) {
     targetFiles = ctx.files;
   } else {
     targetFiles = getChapterFiles(docsDir, { type: ctx.type, configChapters: cfg.chapters });
+
+    // Diff-based chapter filtering: skip chapters whose entries are unchanged
+    if (!ctx.force) {
+      const changedChapters = detectChangedChapters(analysis, srcRoot);
+      if (changedChapters) {
+        if (changedChapters.size === 0) {
+          logger.log("No source changes detected. Use --force to regenerate all chapters.");
+          return { errors: [] };
+        }
+        const before = targetFiles.length;
+        targetFiles = targetFiles.filter((f) => {
+          const chapterName = f.replace(/\.md$/, "");
+          return changedChapters.has(chapterName);
+        });
+        logger.log(`Diff: ${changedChapters.size} chapter(s) changed [${[...changedChapters].join(", ")}], processing ${targetFiles.length}/${before} file(s).`);
+      }
+    }
+
     if (!ctx.dryRun) {
       for (const file of targetFiles) {
         const filePath = path.join(docsDir, file);
@@ -701,6 +765,6 @@ async function main(ctx) {
   return { errors };
 }
 
-export { main, stripFillContent, countFilledInBatch, processTemplateFileBatch, processTemplate, allTextDirectivesFilled, validateBatchResult, parseBatchJsonResponse, applyBatchJsonToFile };
+export { main, stripFillContent, countFilledInBatch, processTemplateFileBatch, processTemplate, allTextDirectivesFilled, validateBatchResult, parseBatchJsonResponse, applyBatchJsonToFile, detectChangedChapters };
 
 runIfDirect(import.meta.url, main);
