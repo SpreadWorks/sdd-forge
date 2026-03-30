@@ -3,8 +3,7 @@
 import { execFileSync } from "node:child_process";
 import { loadBoardConfig } from "./lib/config.js";
 import { prefixTitle, extractId } from "./lib/hash.js";
-import { searchItems, listItems, getProjectMeta, setItemStatus, updateDraftIssue, addIssueToProject, deleteProjectItem, getIssueNodeId } from "./lib/graphql.js";
-import { createIssue } from "./lib/issue.js";
+import { searchItems, listItems, getProjectMeta, setItemStatus, updateDraftIssue, convertDraftToIssue, getRepositoryId } from "./lib/graphql.js";
 import { assertJapaneseDraft, assertJapaneseDraftField, stripHashPrefix } from "./lib/validation.js";
 
 function parseJsonResponse(text) {
@@ -234,16 +233,18 @@ function cmdToIssue(config, args) {
   }
 
   const c = item.content;
+  const jaTitle = stripHashPrefix(c.title || "");
+  const jaBody = c.body || "";
   console.log(`Draft: ${c.title}\n`);
-  assertJapaneseDraft(stripHashPrefix(c.title || ""), c.body, { allowEmptyBody: true });
+  assertJapaneseDraft(jaTitle, jaBody, { allowEmptyBody: true });
 
   // 2. claude で英訳
   const prompt = `Translate the following Japanese GitHub issue title and body to English. Output ONLY valid JSON with "title" and "body" keys. Do not include any other text.
 
-Title: ${stripHashPrefix(c.title || "")}
+Title: ${jaTitle}
 
 Body:
-${c.body || "(empty)"}`;
+${jaBody || "(empty)"}`;
 
   const translated = execFileSync("claude", ["-p", prompt, "--output-format", "json"], {
     encoding: "utf8",
@@ -253,41 +254,47 @@ ${c.body || "(empty)"}`;
   const result = parseJsonResponse(parsed.result);
   const enTitle = result.title;
   const enBody = result.body;
-  assertJapaneseDraftField("Draft タイトル", stripHashPrefix(c.title || ""));
+  assertJapaneseDraftField("Draft タイトル", jaTitle);
 
   console.log(`英訳タイトル: ${enTitle}`);
   console.log(`英訳本文:\n${enBody}\n`);
 
-  // 3. Issue 作成
-  const url = createIssue({
-    title: enTitle,
-    body: enBody,
-    labels,
-    repo: config.repo,
-  });
+  // 3. Issue 本文を組み立て（英語 + 日本語折りたたみ）
+  const issueBody = `${enBody}
 
-  console.log(`Issue 作成: ${url}`);
+---
 
-  // 4. Issue をプロジェクトに追加し、Draft を削除して紐付け
-  const issueNumber = parseInt(url.match(/\/issues\/(\d+)/)?.[1], 10);
-  if (issueNumber) {
-    const { projectId } = getProjectMeta(config.owner, config.project);
-    const issueNodeId = getIssueNodeId(config.repo, issueNumber);
-    const newItemId = addIssueToProject(projectId, issueNodeId);
+<details>
+<summary>Japanese</summary>
 
-    // Draft のステータスを引き継ぐ
-    const draftStatus = item.fieldValueByName?.name;
-    if (draftStatus) {
-      const { statusField } = getProjectMeta(config.owner, config.project);
-      const option = statusField.options.find((o) => o.name === draftStatus);
-      if (option) {
-        setItemStatus(projectId, newItemId, statusField.id, option.id);
-      }
-    }
+${jaTitle}
 
-    // 元の Draft を削除
-    deleteProjectItem(projectId, item.id);
-    console.log(`プロジェクトに Issue #${issueNumber} を追加し、Draft を削除しました`);
+${jaBody}
+
+</details>`;
+
+  // 4. Draft のタイトル・本文を英語に更新
+  const draftId = c.id;
+  updateDraftIssue(draftId, { title: enTitle, body: issueBody });
+
+  // 5. Draft を Issue に変換（convertProjectV2DraftIssueItemToIssue）
+  const { projectId } = getProjectMeta(config.owner, config.project);
+  const [repoOwner, repoName] = config.repo.split("/");
+  const repositoryId = getRepositoryId(repoOwner, repoName);
+
+  const converted = convertDraftToIssue(projectId, item.id, repositoryId);
+  const issueNumber = converted.content?.number;
+  const issueUrl = converted.content?.url;
+
+  console.log(`Issue 作成: ${issueUrl || `#${issueNumber}`}`);
+
+  // 6. ラベルを付与
+  if (labels.length > 0 && issueNumber) {
+    execFileSync("gh", ["issue", "edit", String(issueNumber), ...labels.flatMap((l) => ["--add-label", l]), "--repo", config.repo], {
+      encoding: "utf8",
+      timeout: 30000,
+    });
+    console.log(`ラベル追加: ${labels.join(", ")}`);
   }
 }
 

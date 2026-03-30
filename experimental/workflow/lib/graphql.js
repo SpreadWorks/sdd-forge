@@ -93,45 +93,35 @@ export function updateDraftIssue(draftIssueId, { title, body } = {}) {
   return ghGraphQL(q);
 }
 
-export function addIssueToProject(projectId, issueNodeId) {
+export function convertDraftToIssue(projectId, itemId, repositoryId) {
   const q = `
     mutation {
-      addProjectV2ItemById(input: {
-        projectId: "${projectId}"
-        contentId: "${issueNodeId}"
-      }) {
-        item { id }
-      }
-    }`;
-  const result = ghGraphQL(q);
-  return result.data.addProjectV2ItemById.item.id;
-}
-
-export function deleteProjectItem(projectId, itemId) {
-  const q = `
-    mutation {
-      deleteProjectV2Item(input: {
+      convertProjectV2DraftIssueItemToIssue(input: {
         projectId: "${projectId}"
         itemId: "${itemId}"
+        repositoryId: "${repositoryId}"
       }) {
-        deletedItemId
-      }
-    }`;
-  return ghGraphQL(q);
-}
-
-export function getIssueNodeId(repo, issueNumber) {
-  const [owner, name] = repo.split("/");
-  const q = `
-    query {
-      repository(owner: "${owner}", name: "${name}") {
-        issue(number: ${issueNumber}) {
+        item {
           id
+          content {
+            ... on Issue { number url }
+          }
         }
       }
     }`;
   const result = ghGraphQL(q);
-  return result.data.repository.issue.id;
+  return result.data.convertProjectV2DraftIssueItemToIssue.item;
+}
+
+export function getRepositoryId(owner, name) {
+  const q = `
+    query {
+      repository(owner: "${owner}", name: "${name}") {
+        id
+      }
+    }`;
+  const result = ghGraphQL(q);
+  return result.data.repository.id;
 }
 
 export function setItemStatus(projectId, itemId, fieldId, optionId) {
