@@ -1,0 +1,129 @@
+{
+  "spec": "specs/102-spec-retrospective/spec.md",
+  "baseBranch": "development",
+  "featureBranch": "feature/102-spec-retrospective",
+  "steps": [
+    {
+      "id": "approach",
+      "status": "done"
+    },
+    {
+      "id": "branch",
+      "status": "done"
+    },
+    {
+      "id": "prepare-spec",
+      "status": "done"
+    },
+    {
+      "id": "draft",
+      "status": "done"
+    },
+    {
+      "id": "spec",
+      "status": "done"
+    },
+    {
+      "id": "gate",
+      "status": "done"
+    },
+    {
+      "id": "approval",
+      "status": "done"
+    },
+    {
+      "id": "test",
+      "status": "done"
+    },
+    {
+      "id": "implement",
+      "status": "done"
+    },
+    {
+      "id": "review",
+      "status": "done"
+    },
+    {
+      "id": "finalize",
+      "status": "done"
+    },
+    {
+      "id": "commit",
+      "status": "pending"
+    },
+    {
+      "id": "push",
+      "status": "pending"
+    },
+    {
+      "id": "merge",
+      "status": "pending"
+    },
+    {
+      "id": "pr-create",
+      "status": "pending"
+    },
+    {
+      "id": "branch-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "pr-merge",
+      "status": "pending"
+    },
+    {
+      "id": "sync-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "docs-update",
+      "status": "pending"
+    },
+    {
+      "id": "docs-review",
+      "status": "pending"
+    },
+    {
+      "id": "docs-commit",
+      "status": "pending"
+    }
+  ],
+  "requirements": [
+    {
+      "desc": "retro.js 新規作成（flow.json + spec.md + git diff → AI評価 → retro.json保存）",
+      "status": "done"
+    },
+    {
+      "desc": "retro.json スキーマ定義（requirements, unplanned, summary）",
+      "status": "done"
+    },
+    {
+      "desc": "registry.js に retro エントリ追加",
+      "status": "done"
+    },
+    {
+      "desc": "flow-finalize スキルに commit前 retro ステップ追加",
+      "status": "done"
+    }
+  ],
+  "worktree": true,
+  "issue": 30,
+  "request": "Issue #30: Spec Retrospective - 実装完了後にspecの精度を自動評価し、要件の達成率・追加変更・見積もりとの乖離を記録してspecs/NNN-xxx/retro.mdに保存する",
+  "notes": [
+    "approach: Q&A draft, work-env: worktree, base: development",
+    "draft Q1: retro実行タイミング → finalize最初(commit前)に自動実行",
+    "draft Q2: 出力形式 → JSON (retro.json)",
+    "draft Q3: 記録項目 → requirements(達成状況), unplanned(追加変更), summary(達成率・所見). metricsはflow.jsonに既存のため含めない",
+    "draft Q4: 評価方法 → AIがspec.mdとgit diffを比較して自動評価。ユーザー承認なし",
+    "draft Q5: 実装構成 → flow registry に run retro コマンド追加。src/flow/run/retro.js 新規作成。finalize から呼び出し + 手動実行可",
+    "draft Q6: 影響範囲確認 → 承認。既存CLI変更なし、後方互換問題なし",
+    "review: auto-fix mode selected",
+    "finalize: select mode",
+    "finalize: steps 3,4,5,7 / merge strategy: merge"
+  ],
+  "metrics": {
+    "draft": {
+      "question": 6
+    }
+  }
+}

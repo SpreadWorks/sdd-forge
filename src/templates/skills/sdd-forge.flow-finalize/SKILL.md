@@ -41,18 +41,23 @@ Available status values: `pending`, `in_progress`, `done`, `skipped`
 2. Present mode choice.
    - The mode was already selected in Step 0.
 
-3. **If "all"** (Option 1):
+3. Run spec retrospective (before commit).
+   - Run `sdd-forge flow run retro --force`.
+   - If `ok: true`: display the summary (rate, done/partial/not_done counts).
+   - If `ok: false`: display the error to the user and continue (retro failure does not block finalize).
+
+4. **If "all"** (Option 1):
    - Run `sdd-forge flow get prompt finalize.merge-strategy` and present the merge strategy choices.
    - Run `sdd-forge flow run finalize --mode all --merge-strategy <choice>`.
    - Display the JSON result to the user.
 
-4. **If "select"** (Option 2):
+5. **If "select"** (Option 2):
    - Run `sdd-forge flow get prompt finalize.steps` and present the step choices. Wait for user selection.
    - If the user selected the merge step, run `sdd-forge flow get prompt finalize.merge-strategy` and present the choices.
    - Run `sdd-forge flow run finalize --mode select --steps <selected> --merge-strategy <choice>`.
    - Display the JSON result to the user.
 
-5. Post-finalize.
+6. Post-finalize.
    - If the result contains PR info, display:
      ```
      PR マージ後に以下を実行してください:
@@ -77,5 +82,6 @@ sdd-forge flow get resolve-context
 sdd-forge flow get prompt <kind>
 sdd-forge flow set step <id> <val>
 sdd-forge flow set note "<text>"
+sdd-forge flow run retro [--force] [--dry-run]
 sdd-forge flow run finalize --mode all|select [--steps N,N] --merge-strategy merge|squash|pr
 ```
