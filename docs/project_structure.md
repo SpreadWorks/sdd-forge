@@ -11,7 +11,7 @@
 
 <!-- {{text({prompt: "Write a 1-2 sentence overview of this chapter. Include the number of major directories and their roles."})}} -->
 
-The project consists of 1 top-level source directory (`src/`) containing 157 files across 5 major areas: CLI entry points and commands (`src/`, `src/docs/commands/`, `src/flow/commands/`, `src/spec/commands/`), shared libraries (`src/lib/`, `src/docs/lib/`, `src/presets/lib/`), data models (`src/docs/data/`, `src/presets/*/data/`), preset-specific scanners (`src/presets/*/scan/`), and tests (`src/presets/*/tests/`). The `src/presets/` subtree accounts for the majority of directories, providing framework-specific data sources, scanners, and tests for over 15 preset types including base, laravel, symfony, hono, nextjs, and workers.
+This chapter describes the physical layout of the sdd-forge source tree, which is organized into five major top-level directories: `src/presets` (preset definitions, DataSources, and their acceptance and unit tests), `src/docs` (documentation generation commands, DataSources, and the processing engine), `src/flow` (SDD workflow commands and state management), `src/lib` (shared utility libraries used across all subsystems), and `src` (top-level CLI entry points).
 <!-- {{/text}} -->
 
 ## Content
@@ -24,47 +24,65 @@ src/    (cli)
 src/docs/commands/    (cli)
 src/docs/data/    (model)
 src/docs/lib/    (lib)
+src/docs/lib/lang/    (lib)
+src/flow/    (cli, config)
 src/flow/commands/    (cli)
-src/lib/    (lib, cli, config)
-src/presets/base/data/    (model, lib)
-src/presets/cakephp2/data/    (model, lib)
-src/presets/cakephp2/scan/    (lib)
+src/flow/get/    (lib, cli)
+src/flow/run/    (cli)
+src/flow/set/    (cli)
+src/lib/    (lib)
+src/presets/base/data/    (model)
+src/presets/base/tests/acceptance/    (test)
+src/presets/base/tests/acceptance/fixtures/src/    (test, lib, other)
+src/presets/cakephp2/data/    (lib, config, controller, other, model, test, view)
+src/presets/cakephp2/tests/acceptance/    (test)
 src/presets/cakephp2/tests/unit/    (test)
 src/presets/ci/data/    (lib)
-src/presets/ci/scan/    (lib)
 src/presets/cli/data/    (lib)
-src/presets/database/data/    (lib)
-src/presets/drizzle/data/    (lib)
-src/presets/drizzle/scan/    (lib)
+src/presets/cli/tests/acceptance/    (test)
+src/presets/cli/tests/acceptance/fixtures/src/    (cli, config)
+src/presets/cli/tests/acceptance/fixtures/src/commands/    (cli)
+src/presets/cli/tests/acceptance/fixtures/src/lib/    (lib)
+src/presets/cli/tests/acceptance/fixtures/src/lib/rules/    (lib)
+src/presets/database/data/    (model)
+src/presets/drizzle/data/    (model)
 src/presets/drizzle/tests/unit/    (test)
-src/presets/edge/data/    (lib)
-src/presets/graphql/data/    (lib)
-src/presets/graphql/scan/    (lib)
+src/presets/edge/data/    (config)
+src/presets/graphql/data/    (model)
 src/presets/graphql/tests/unit/    (test)
-src/presets/hono/data/    (lib)
-src/presets/hono/scan/    (lib)
+src/presets/hono/data/    (middleware)
 src/presets/hono/tests/unit/    (test)
-src/presets/laravel/data/    (lib)
-src/presets/laravel/scan/    (config, lib)
+src/presets/js-webapp/tests/acceptance/    (test)
+src/presets/js-webapp/tests/acceptance/fixtures/src/    (config, lib, other)
+src/presets/laravel/data/    (cli, config, controller, model, route)
+src/presets/laravel/tests/acceptance/    (test)
 src/presets/laravel/tests/e2e/    (test)
 src/presets/laravel/tests/unit/    (test)
 src/presets/lib/    (lib)
-src/presets/monorepo/data/    (lib)
-src/presets/nextjs/data/    (lib)
-src/presets/nextjs/scan/    (lib)
+src/presets/library/tests/acceptance/    (test)
+src/presets/library/tests/acceptance/fixtures/src/    (lib)
+src/presets/library/tests/acceptance/fixtures/src/rules/    (lib)
+src/presets/library/tests/acceptance/fixtures/src/utils/    (lib)
+src/presets/monorepo/data/    (model)
+src/presets/nextjs/data/    (model)
 src/presets/nextjs/tests/unit/    (test)
+src/presets/node-cli/tests/acceptance/    (test)
+src/presets/node-cli/tests/acceptance/fixtures/src/    (cli, config)
+src/presets/node-cli/tests/acceptance/fixtures/src/commands/    (cli)
+src/presets/node-cli/tests/acceptance/fixtures/src/lib/    (lib)
+src/presets/node-cli/tests/acceptance/fixtures/src/lib/rules/    (lib)
+src/presets/php-webapp/tests/acceptance/    (test)
 src/presets/postgres/data/    (lib)
 src/presets/r2/data/    (lib)
 src/presets/storage/data/    (lib)
-src/presets/symfony/data/    (lib)
-src/presets/symfony/scan/    (lib)
+src/presets/symfony/data/    (lib, config, controller, model, route, migration)
+src/presets/symfony/tests/acceptance/    (test)
 src/presets/symfony/tests/e2e/    (test)
 src/presets/symfony/tests/unit/    (test)
-src/presets/webapp/data/    (lib)
-src/presets/workers/data/    (lib)
-src/presets/workers/scan/    (lib)
+src/presets/webapp/data/    (lib, controller, model, route, migration)
+src/presets/webapp/tests/acceptance/    (test)
+src/presets/workers/data/    (model)
 src/presets/workers/tests/unit/    (test)
-src/spec/commands/    (cli)
 ```
 <!-- {{/data}} -->
 
@@ -73,16 +91,40 @@ src/spec/commands/    (cli)
 
 | Directory | Files | Role |
 | --- | --- | --- |
-| src | 157 | cli, model, lib, config, test |
+| src/presets | 122 | model, test, lib, other, config, controller, view, cli, middleware, route, migration |
+| src/docs | 39 | cli, model, lib |
+| src/flow | 32 | cli, config, lib |
+| src/lib | 20 | lib |
+| src | 7 | cli |
 <!-- {{/data}} -->
 
 ### Shared Libraries
 
 <!-- {{text({prompt: "List the shared libraries with class name, file path, and responsibility in table format."})}} -->
 
-| Class | File Path | Responsibility |
+The shared libraries are spread across three directories. `src/lib/` provides universal utilities consumed by all subsystems, `src/docs/lib/` contains the documentation generation engine, and `src/presets/lib/` holds preset-specific helpers.
+
+| Class / Function | File | Responsibility |
 | --- | --- | --- |
-| `StructureSource` | `src/presets/base/data/structure.js` | Collects entries from all enriched analysis categories via `allItems()`, builds a directory map with file counts and role sets, and exposes `tree()` (code-block directory listing) and `directories()` (top-level directory table sorted by file count). Returns `null` when `analysis.enrichedAt` is absent. |
+| `ProjectSource` | `src/docs/data/project.js` | DataSource exposing project metadata (name, description, version, npm scripts) from `package.json` |
+| `DataSource` | `src/docs/lib/data-source.js` | Base class for all `{{data}}` directive resolvers; defines the standard method contract |
+| `AnalysisEntry` | `src/docs/lib/analysis-entry.js` | Base class for `analysis.json` entries with aggregation rules |
+| `loadDataSources()` | `src/docs/lib/data-source-loader.js` | Loads and instantiates DataSource classes discovered from preset directories |
+| `parseDirectives()` | `src/docs/lib/directive-parser.js` | Parses `{{data}}` and `{{text}}` template directives from document files |
+| `resolveForPresets()` | `src/docs/lib/resolver-factory.js` | Creates DataSource resolvers by walking the preset inheritance chain |
+| `mergeChapters()` | `src/docs/lib/chapter-resolver.js` | Merges chapter definitions and maps `{{data}}` category assignments |
+| `templateMerger` | `src/docs/lib/template-merger.js` | Bottom-up template resolution with block-based inheritance for preset templates |
+| `mapWithConcurrency()` | `src/docs/lib/concurrency.js` | Concurrent task queue with configurable parallelism for build pipelines |
+| `loadConfig()` | `src/lib/config.js` | Loads JSON configuration and resolves SDD project directory paths |
+| `parseArgs()` / `repoRoot()` | `src/lib/cli.js` | Argument parsing and repo/source root resolution for all CLI commands |
+| `callAgent()` | `src/lib/agent.js` | Spawns AI agent processes with stdio management and configurable timeout |
+| `createI18n()` | `src/lib/i18n.js` | Three-layer i18n with domain-based namespacing across ui, messages, and prompts |
+| `flow-state.js` | `src/lib/flow-state.js` | Persists and restores SDD workflow state across plan, impl, finalize, and sync phases |
+| `discoverPresets()` | `src/lib/presets.js` | Auto-discovers preset directories and resolves single-inheritance preset chains |
+| `createLogger()` | `src/lib/progress.js` | Progress bar and spinner utilities with ANSI formatting for build pipeline output |
+| `isDirectRun()` | `src/lib/entrypoint.js` | Detects whether a module is being run directly, enabling conditional top-level execution |
+| `getWorktreeStatus()` | `src/lib/git-state.js` | Read-only Git and GitHub CLI state access for worktree and branch inspection |
+| `parseComposer()` | `src/presets/lib/composer-utils.js` | Parses `composer.json` and extracts environment variables for PHP preset DataSources |
 <!-- {{/text}} -->
 
 ---

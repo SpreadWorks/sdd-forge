@@ -3,8 +3,14 @@
   "label": "Drizzle ORM",
   "aliases": [],
   "chapters": [
-    "database.md",
-    "schema.md"
+    {
+      "chapter": "database.md",
+      "desc": "Database configuration, connections, and query patterns"
+    },
+    {
+      "chapter": "schema.md",
+      "desc": "Database schema definitions and type system"
+    }
   ],
   "scan": {
     "include": [

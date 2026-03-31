@@ -17,9 +17,9 @@ describe("help", () => {
     assert.ok(names.includes("help"));
     assert.ok(names.includes("setup"));
     assert.ok(names.includes("docs build"));
-    assert.ok(names.includes("spec init"));
-    assert.ok(names.includes("spec gate"));
-    assert.ok(names.includes("flow start"));
+    assert.ok(names.includes("flow get"));
+    assert.ok(names.includes("flow set"));
+    assert.ok(names.includes("flow run"));
   });
 
   it("does not include old flat commands", () => {
@@ -32,7 +32,6 @@ describe("help", () => {
   it("has namespace sections", () => {
     const sections = commands.filter((c) => c.section).map((c) => c.section);
     assert.ok(sections.includes("Docs"));
-    assert.ok(sections.includes("Spec"));
     assert.ok(sections.includes("Flow"));
   });
 

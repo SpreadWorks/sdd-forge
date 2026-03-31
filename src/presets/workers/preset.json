@@ -3,8 +3,14 @@
   "label": "Cloudflare Workers",
   "aliases": [],
   "chapters": [
-    "edge_runtime.md",
-    "bindings.md"
+    {
+      "chapter": "edge_runtime.md",
+      "desc": "Edge runtime configuration, bindings, and deployment"
+    },
+    {
+      "chapter": "bindings.md",
+      "desc": "Worker bindings, environment configuration, and resource access"
+    }
   ],
   "scan": {
     "include": [

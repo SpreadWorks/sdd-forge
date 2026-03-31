@@ -76,6 +76,12 @@ describe("parent chain: init", () => {
     tmp = createTmpDir();
     setupFromFixture(tmp, "node-cli", {
       docs: { languages: ["ja"], defaultLanguage: "ja" },
+      chapters: [
+        { chapter: "overview.md" },
+        { chapter: "stack_and_ops.md" },
+        { chapter: "project_structure.md" },
+        { chapter: "cli_commands.md" },
+      ],
     });
     writeJson(tmp, ".sdd-forge/output/analysis.json", {
       analyzedAt: "2026-01-01",
@@ -99,6 +105,12 @@ describe("parent chain: init", () => {
     tmp = createTmpDir();
     setupFromFixture(tmp, "laravel", {
       docs: { languages: ["ja"], defaultLanguage: "ja" },
+      chapters: [
+        { chapter: "overview.md" },
+        { chapter: "stack_and_ops.md" },
+        { chapter: "project_structure.md" },
+        { chapter: "controller_routes.md" },
+      ],
     });
     writeJson(tmp, ".sdd-forge/output/analysis.json", {
       analyzedAt: "2026-01-01",
@@ -165,6 +177,12 @@ describe("parent chain: data", () => {
     tmp = createTmpDir();
     setupFromFixture(tmp, "laravel", {
       docs: { languages: ["ja"], defaultLanguage: "ja" },
+      chapters: [
+        { chapter: "overview.md" },
+        { chapter: "stack_and_ops.md" },
+        { chapter: "project_structure.md" },
+        { chapter: "controller_routes.md" },
+      ],
     });
 
     execFileSync("node", [SCAN_CMD], {

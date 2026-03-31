@@ -18,6 +18,7 @@
 
 import fs from "fs";
 import path from "path";
+import crypto from "crypto";
 import { fileURLToPath } from "url";
 import { runIfDirect } from "../../lib/entrypoint.js";
 import { repoRoot, parseArgs } from "../../lib/cli.js";
@@ -48,6 +49,7 @@ function printHelp() {
       h.desc,
       "",
       "Options:",
+      `  ${opts.reset}`,
       `  ${opts.stdout}`,
       `  ${opts.dryRun}`,
       `  ${opts.help}`,
@@ -90,21 +92,147 @@ function buildExistingEntryIndex(existing) {
 }
 
 // ---------------------------------------------------------------------------
+// Entry ID helpers
+// ---------------------------------------------------------------------------
+
+function generateEntryId() {
+  return crypto.randomBytes(4).toString("hex");
+}
+
+function entrySubkey(entry) {
+  if (entry.className) return entry.className;
+  if (entry.name) return entry.name;
+  return undefined;
+}
+
+function entryMatchKey(category, entry) {
+  const sub = entrySubkey(entry);
+  return sub ? `${category}\0${entry.file}\0${sub}` : `${category}\0${entry.file}`;
+}
+
+function buildExistingIdIndex(existing) {
+  const index = new Map();
+  for (const cat of Object.keys(existing)) {
+    if (ANALYSIS_META_KEYS.has(cat)) continue;
+    const catData = existing[cat];
+    if (!catData || !Array.isArray(catData.entries)) continue;
+    for (const entry of catData.entries) {
+      if (entry && entry.file && entry.id) {
+        const key = entryMatchKey(cat, entry);
+        index.set(key, entry.id);
+      }
+    }
+  }
+  return index;
+}
+
+function resolveEntryId(idIndex, category, entry) {
+  const key = entryMatchKey(category, entry);
+  return idIndex.get(key) || generateEntryId();
+}
+
+// ---------------------------------------------------------------------------
+// CLI argument parsing
+// ---------------------------------------------------------------------------
+
+/**
+ * Parse scan CLI arguments, extracting --reset (optional value) before
+ * passing remaining args to parseArgs.
+ *
+ * @returns {{ cli: Object, reset: string|null, hasReset: boolean }}
+ */
+function parseScanArgs() {
+  const rawArgs = process.argv.slice(2);
+  const resetIdx = rawArgs.indexOf("--reset");
+  let reset = null;
+  let hasReset = false;
+
+  const filtered = [...rawArgs];
+  if (resetIdx !== -1) {
+    hasReset = true;
+    const next = rawArgs[resetIdx + 1];
+    if (next && !next.startsWith("-")) {
+      reset = next;
+      filtered.splice(resetIdx, 2);
+    } else {
+      filtered.splice(resetIdx, 1);
+    }
+  }
+
+  const cli = parseArgs(filtered, {
+    flags: ["--stdout", "--dry-run"],
+    defaults: { stdout: false, dryRun: false },
+  });
+  return { cli, reset, hasReset };
+}
+
+// ---------------------------------------------------------------------------
+// --reset: clear hashes for specified (or all) categories
+// ---------------------------------------------------------------------------
+
+function resetCategories(root, resetValue) {
+  const outputDir = sddOutputDir(root);
+  const outputPath = path.join(outputDir, "analysis.json");
+
+  if (!fs.existsSync(outputPath)) {
+    logger.log("no analysis.json found — nothing to reset");
+    return;
+  }
+
+  let analysis;
+  try {
+    analysis = JSON.parse(fs.readFileSync(outputPath, "utf8"));
+  } catch (err) {
+    throw new Error(`Failed to parse ${outputPath}: ${err.message}`);
+  }
+
+  const allCategories = Object.keys(analysis).filter(
+    (k) => !ANALYSIS_META_KEYS.has(k) && analysis[k]?.entries,
+  );
+
+  const targets = resetValue
+    ? resetValue.split(",").map((s) => s.trim()).filter(Boolean)
+    : allCategories;
+
+  let totalEntries = 0;
+  let resetCount = 0;
+
+  for (const cat of targets) {
+    if (!analysis[cat] || !Array.isArray(analysis[cat].entries)) {
+      logger.log(`warn: category "${cat}" not found in analysis.json (skipped)`);
+      continue;
+    }
+    const entries = analysis[cat].entries;
+    for (const entry of entries) {
+      entry.hash = null;
+    }
+    logger.log(`reset: ${cat} (${entries.length} entries)`);
+    totalEntries += entries.length;
+    resetCount++;
+  }
+
+  if (resetCount > 0) {
+    fs.writeFileSync(outputPath, JSON.stringify(analysis, null, 2) + "\n");
+    logger.log(`total: ${totalEntries} entries reset in ${resetCount} categories`);
+  }
+}
+
+// ---------------------------------------------------------------------------
 // Main
 // ---------------------------------------------------------------------------
 
 async function main(ctx) {
-  // CLI mode
   if (!ctx) {
-    const cli = parseArgs(process.argv.slice(2), {
-      flags: ["--stdout", "--dry-run"],
-      defaults: { stdout: false, dryRun: false },
-    });
+    const { cli, reset, hasReset } = parseScanArgs();
     if (cli.help) {
       printHelp();
       return;
     }
     ctx = resolveCommandContext(cli);
+    if (hasReset) {
+      resetCategories(ctx.root, reset);
+      return;
+    }
     ctx.dryRun = cli.dryRun;
     ctx.stdout = cli.stdout;
   }
@@ -157,6 +285,7 @@ async function main(ctx) {
   }
 
   const existingIndex = existing ? buildExistingEntryIndex(existing) : new Map();
+  const idIndex = existing ? buildExistingIdIndex(existing) : new Map();
   const currentFilePaths = new Set(files.map((f) => f.relPath));
 
   // 3. Load Scannable DataSources from preset chain
@@ -174,6 +303,23 @@ async function main(ctx) {
 
   const projectDataDir = sddDataDir(root);
   dataSources = await loadScanSources(projectDataDir, dataSources);
+
+  // 3b. DataSource hash detection: clear entry hashes for categories whose DataSource changed
+  if (existing) {
+    for (const [name, source] of dataSources) {
+      const filePath = source._sourceFilePath;
+      if (!filePath || !fs.existsSync(filePath)) continue;
+      const currentDsHash = crypto.createHash("md5").update(fs.readFileSync(filePath, "utf8")).digest("hex");
+      const storedDsHash = existing[name]?.dataSourceHash;
+      if (!storedDsHash || storedDsHash !== currentDsHash) {
+        const entries = existing[name]?.entries;
+        if (Array.isArray(entries) && entries.length > 0) {
+          for (const entry of entries) entry.hash = null;
+          logger.log(`DataSource changed: ${name} (${entries.length} entries will be re-parsed)`);
+        }
+      }
+    }
+  }
 
   // 4. File loop: per-file hash skip + parse
   // Collect entries per category: Map<categoryName, { entries: [], EntryClass }>
@@ -195,6 +341,7 @@ async function main(ctx) {
             EntryClass: source?.constructor?.Entry ?? null,
           });
         }
+        if (!entry.id) entry.id = resolveEntryId(idIndex, cat, entry);
         categoryEntries.get(cat).entries.push(entry);
       }
       stats.unchanged++;
@@ -217,6 +364,8 @@ async function main(ctx) {
 
       // Empty entry detection
       if (isEmptyEntry(parsed)) continue;
+
+      parsed.id = resolveEntryId(idIndex, name, parsed);
 
       if (!categoryEntries.has(name)) {
         categoryEntries.set(name, {
@@ -250,7 +399,42 @@ async function main(ctx) {
   for (const [name, { entries, EntryClass }] of categoryEntries) {
     const summary = EntryClass ? buildSummary(EntryClass, entries) : { total: entries.length };
     result[name] = { entries, summary };
+    // Record DataSource file hash for change detection on next scan
+    const source = dataSources.get(name);
+    const dsFilePath = source?._sourceFilePath;
+    if (dsFilePath && fs.existsSync(dsFilePath)) {
+      result[name].dataSourceHash = crypto.createHash("md5").update(fs.readFileSync(dsFilePath, "utf8")).digest("hex");
+    }
     logger.verbose(`${name}: ${entries.length} entries`);
+  }
+
+  // 6b. Populate usedBy from reverse import lookup
+  const fileToEntries = new Map();
+  for (const [, { entries }] of categoryEntries) {
+    for (const entry of entries) {
+      if (entry.file) {
+        if (!fileToEntries.has(entry.file)) fileToEntries.set(entry.file, []);
+        fileToEntries.get(entry.file).push(entry);
+      }
+    }
+  }
+  for (const [, { entries }] of categoryEntries) {
+    for (const entry of entries) {
+      if (!Array.isArray(entry.imports)) continue;
+      for (const imp of entry.imports) {
+        // Match import path to known files (resolve relative paths)
+        for (const knownFile of fileToEntries.keys()) {
+          if (knownFile.endsWith(imp) || knownFile.endsWith(imp.replace(/^\.\//, ""))) {
+            for (const target of fileToEntries.get(knownFile)) {
+              if (!target.usedBy) target.usedBy = [];
+              if (!target.usedBy.includes(entry.file)) {
+                target.usedBy.push(entry.file);
+              }
+            }
+          }
+        }
+      }
+    }
   }
 
   // Preserve enrichedAt if existing entries had enrichment
@@ -276,7 +460,7 @@ async function main(ctx) {
   }
 
   // 7. Output
-  const json = JSON.stringify(result);
+  const json = JSON.stringify(result, null, 2);
 
   if (ctx.stdout || ctx.dryRun) {
     process.stdout.write(json + "\n");

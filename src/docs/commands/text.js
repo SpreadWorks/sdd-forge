@@ -12,6 +12,7 @@
 
 import fs from "fs";
 import path from "path";
+import crypto from "crypto";
 import { runIfDirect } from "../../lib/entrypoint.js";
 import { parseDirectives, TEXT_OPEN_RE } from "../lib/directive-parser.js";
 import { mapWithConcurrency } from "../lib/concurrency.js";
@@ -30,7 +31,8 @@ import { createLogger } from "../../lib/progress.js";
 import { callAgent as callAgentBase, callAgentAsync as callAgentAsyncBase, ensureAgentWorkDir, loadAgentConfig, DEFAULT_AGENT_TIMEOUT } from "../../lib/agent.js";
 import { translate } from "../../lib/i18n.js";
 import { resolveCommandContext, getChapterFiles, loadFullAnalysis } from "../lib/command-context.js";
-import { extractBalancedJson } from "../../lib/json-parse.js";
+import { extractBalancedJson, fixUnescapedQuotes } from "../../lib/json-parse.js";
+import { EXIT_ERROR } from "../../lib/exit-codes.js";
 
 const logger = createLogger("text");
 
@@ -167,8 +169,14 @@ function parseBatchJsonResponse(response) {
   } catch (_) {
     const extracted = extractBalancedJson(cleaned);
     if (extracted) {
-      try { return JSON.parse(extracted); } catch (__) { /* fall through */ }
+      try { return JSON.parse(extracted); } catch (__) {
+        const fixed = fixUnescapedQuotes(extracted);
+        try { return JSON.parse(fixed); } catch (___) { /* fall through */ }
+      }
     }
+    // Last resort: fix quotes on the whole cleaned string
+    const fixed = fixUnescapedQuotes(cleaned);
+    try { return JSON.parse(fixed); } catch (__) { /* fall through */ }
     return null;
   }
 }
@@ -221,7 +229,7 @@ function applyBatchJsonToFile(text, textFills, jsonData) {
  *
  * @returns {{ text: string, filled: number, skipped: number }}
  */
-async function processTemplateFileBatch(text, analysis, fileName, agent, timeoutMs, cwd, dryRun, _preamblePatterns, systemPrompt, _filterId, _concurrency, lang, srcRoot) {
+async function processTemplateFileBatch(text, analysis, fileName, agent, timeoutMs, cwd, dryRun, _preamblePatterns, systemPrompt, _filterId, _concurrency, lang, srcRoot, retryCount) {
   const directives = parseDirectives(text);
   const textFills = directives.filter((d) => d.type === "text");
 
@@ -245,14 +253,7 @@ async function processTemplateFileBatch(text, analysis, fileName, agent, timeout
 
   logger.verbose(`Batch ${fileName}: ${textFills.length} directive(s) → 1 call`);
 
-  // 空レスポンスが返る場合は1回だけリトライする
-  let result = await callAgentAsync(agent, prompt, timeoutMs, cwd, [], systemPrompt);
-
-  if (!result) {
-    logger.verbose(`empty response for ${fileName}, retrying after 3s...`);
-    await new Promise((r) => setTimeout(r, 3000));
-    result = await callAgentAsync(agent, prompt, timeoutMs, cwd, [], systemPrompt);
-  }
+  const result = await callAgentAsync(agent, prompt, timeoutMs, cwd, [], systemPrompt, { retryCount: retryCount || 0 });
 
   if (!result) {
     throw new Error(`empty batch response for ${fileName}`);
@@ -278,8 +279,8 @@ function callAgent(agent, prompt, timeoutMs, cwd, preamblePatterns, systemPrompt
   return stripPreamble(result, preamblePatterns);
 }
 
-async function callAgentAsync(agent, prompt, timeoutMs, cwd, preamblePatterns, systemPrompt) {
-  const result = await callAgentAsyncBase(agent, prompt, timeoutMs, cwd, { systemPrompt });
+async function callAgentAsync(agent, prompt, timeoutMs, cwd, preamblePatterns, systemPrompt, extraOptions) {
+  const result = await callAgentAsyncBase(agent, prompt, timeoutMs, cwd, { systemPrompt, ...extraOptions });
   return stripPreamble(result, preamblePatterns);
 }
 
@@ -338,7 +339,7 @@ function stripPreamble(text, preamblePatterns) {
  * @param {boolean} dryRun     - dry-run モード
  * @returns {{ text: string, filled: number, skipped: number }}
  */
-async function processTemplate(text, analysis, fileName, agent, timeoutMs, cwd, dryRun, preamblePatterns, systemPrompt, filterId, concurrency, lang, srcRoot) {
+async function processTemplate(text, analysis, fileName, agent, timeoutMs, cwd, dryRun, preamblePatterns, systemPrompt, filterId, concurrency, lang, srcRoot, retryCount) {
   const directives = parseDirectives(text);
   let textFills = directives.filter((d) => d.type === "text");
   if (filterId) {
@@ -378,7 +379,7 @@ async function processTemplate(text, analysis, fileName, agent, timeoutMs, cwd, 
   const maxConcurrency = concurrency || DEFAULT_CONCURRENCY;
   const results = await mapWithConcurrency(tasks, maxConcurrency, async ({ directive: d, prompt }) => {
     logger.verbose(`Processing ${fileName}:${d.line + 1}: ${d.prompt.slice(0, 60)}...`);
-    const generated = await callAgentAsync(agent, prompt, timeoutMs, cwd, preamblePatterns, fileSystemPrompt);
+    const generated = await callAgentAsync(agent, prompt, timeoutMs, cwd, preamblePatterns, fileSystemPrompt, { retryCount: retryCount || 0 });
     return { generated };
   });
 
@@ -468,37 +469,12 @@ function allTextDirectivesFilled(text) {
 }
 
 /**
- * 対象ファイル解決。regenerate の場合は既存コンテンツをクリアする。
- *
- * @param {string[]} allDocsFiles - 全章ファイル一覧
- * @param {string} docsDir - docs ディレクトリの絶対パス
- * @param {Object} analysis - analysis.json データ
- * @param {boolean} regenerate - true の場合、全ファイルのディレクティブをクリアして再生成
- * @returns {{ docsFiles: string[], targetFiles: string[] }}
- */
-function resolveTargetFiles(allDocsFiles, docsDir, analysis, { regenerate, dryRun } = {}) {
-  // Always regenerate all chapters.
-  // Incremental regeneration (only affected chapters) is deferred to a future spec.
-  // Without _incrementalMeta, we cannot determine which chapters are affected,
-  // so we regenerate all to avoid stale docs.
-  if (!dryRun) {
-    for (const file of allDocsFiles) {
-      const filePath = path.join(docsDir, file);
-      const content = fs.readFileSync(filePath, "utf8");
-      const stripped = stripFillContent(content);
-      if (stripped !== content) fs.writeFileSync(filePath, stripped, "utf8");
-    }
-  }
-  return { docsFiles: allDocsFiles, targetFiles: [...allDocsFiles] };
-}
-
-/**
  * @param {string} root       - リポジトリルート
  * @param {Object} analysis   - analysis.json データ
- * @param {string} agentName  - エージェント名 (claude, codex)
+ * @param {string} commandId  - コマンドID (docs.text)
  * @param {string} [srcRoot]  - ソースルート
  * @param {Object} [opts]     - オプション
- * @param {boolean} [opts.force] - true の場合、埋まっているディレクティブも再処理する
+ * @param {string[]} [opts.files] - 処理対象ファイル名の配列。指定時はそのファイルのみ処理する
  * @returns {{ filled: number, skipped: number, files: string[] }}
  */
 export async function textFillFromAnalysis(root, analysis, commandId, srcRoot, opts) {
@@ -513,10 +489,9 @@ export async function textFillFromAnalysis(root, analysis, commandId, srcRoot, o
   const type = cfg.type || undefined;
   const concurrency = resolveConcurrency(cfg);
   const docsDir = path.join(root, "docs");
-  const allDocsFiles = getChapterFiles(docsDir, { type, configChapters: cfg.chapters });
   const resolvedSrcRoot = srcRoot || root;
 
-  const { targetFiles } = resolveTargetFiles(allDocsFiles, docsDir, analysis, { regenerate: opts?.regenerate, dryRun: opts?.dryRun });
+  const targetFiles = opts?.files || getChapterFiles(docsDir, { type, configChapters: cfg.chapters });
 
   const changedFiles = [];
   let totalFilled = 0;
@@ -528,7 +503,8 @@ export async function textFillFromAnalysis(root, analysis, commandId, srcRoot, o
   const fileResults = await mapWithConcurrency(targetFiles, concurrency, async (file) => {
     const filePath = path.join(docsDir, file);
     const original = fs.readFileSync(filePath, "utf8");
-    const result = await processTemplateFileBatch(original, analysis, file, agent, DEFAULT_TIMEOUT_MS, root, false, preamblePatterns, systemPrompt, undefined, undefined, lang, resolvedSrcRoot);
+    const retryCount = Number(cfg?.agent?.retryCount) || 0;
+    const result = await processTemplateFileBatch(original, analysis, file, agent, DEFAULT_TIMEOUT_MS, root, false, preamblePatterns, systemPrompt, undefined, undefined, lang, resolvedSrcRoot, retryCount);
     return { file, filePath, original, result };
   });
 
@@ -568,15 +544,59 @@ export async function textFillFromAnalysis(root, analysis, commandId, srcRoot, o
 }
 
 // ---------------------------------------------------------------------------
+// Diff-based chapter detection
+// ---------------------------------------------------------------------------
+
+/**
+ * Compare each entry's stored hash against the current source file's hash.
+ * Returns a Set of chapter names that need regeneration, or null if
+ * diff detection is not possible (e.g., no enriched entries with chapter field).
+ */
+function detectChangedChapters(analysis, srcRoot) {
+  const chapters = new Set();
+  let hasChapterField = false;
+
+  for (const catKey of Object.keys(analysis)) {
+    const catData = analysis[catKey];
+    if (!catData || !Array.isArray(catData.entries)) continue;
+
+    for (const entry of catData.entries) {
+      if (!entry.chapter) continue;
+      hasChapterField = true;
+
+      if (!entry.file || !entry.hash) {
+        chapters.add(entry.chapter);
+        continue;
+      }
+
+      const absPath = path.join(srcRoot, entry.file);
+      if (!fs.existsSync(absPath)) {
+        chapters.add(entry.chapter);
+        continue;
+      }
+
+      const currentHash = crypto.createHash("md5")
+        .update(fs.readFileSync(absPath, "utf8"))
+        .digest("hex");
+      if (entry.hash !== currentHash) {
+        chapters.add(entry.chapter);
+      }
+    }
+  }
+
+  return hasChapterField ? chapters : null;
+}
+
+// ---------------------------------------------------------------------------
 // CLI メイン
 // ---------------------------------------------------------------------------
 async function main(ctx) {
   // CLI モード
   if (!ctx) {
     const cli = parseArgs(process.argv.slice(2), {
-      flags: ["--dry-run", "--per-directive"],
-      options: ["--timeout", "--id", "--lang", "--docs-dir"],
-      defaults: { dryRun: false, timeout: String(DEFAULT_TIMEOUT_MS), perDirective: false, id: "", lang: "", docsDir: "" },
+      flags: ["--dry-run", "--per-directive", "--force"],
+      options: ["--timeout", "--id", "--lang", "--docs-dir", "--files"],
+      defaults: { dryRun: false, timeout: String(DEFAULT_TIMEOUT_MS), perDirective: false, force: false, id: "", lang: "", docsDir: "", files: "" },
     });
     cli.timeout = Number(cli.timeout) || DEFAULT_TIMEOUT_MS;
     if (cli.help) {
@@ -595,8 +615,10 @@ async function main(ctx) {
     ctx = resolveCommandContext(cli, { commandId: "docs.text" });
     ctx.dryRun = cli.dryRun;
     ctx.perDirective = cli.perDirective;
+    ctx.force = cli.force;
     ctx.timeout = cli.timeout;
     ctx.id = cli.id;
+    if (cli.files) ctx.files = cli.files.split(",").map((f) => f.trim()).filter(Boolean);
   }
 
   const { root, srcRoot, config: cfg, docsDir } = ctx;
@@ -614,9 +636,40 @@ async function main(ctx) {
   const lang = ctx.outputLang;
   const systemPrompt = buildTextSystemPrompt(documentStyle, lang);
   const concurrency = resolveConcurrency(cfg);
-  const allDocsFiles = getChapterFiles(docsDir, { type: ctx.type, configChapters: cfg.chapters });
 
-  const { targetFiles } = resolveTargetFiles(allDocsFiles, docsDir, analysis, { regenerate: ctx.regenerate, dryRun: ctx.dryRun });
+  // File selection: use ctx.files if provided, otherwise get all chapter files and strip
+  let targetFiles;
+  if (ctx.files) {
+    targetFiles = ctx.files;
+  } else {
+    targetFiles = getChapterFiles(docsDir, { type: ctx.type, configChapters: cfg.chapters });
+
+    // Diff-based chapter filtering: skip chapters whose entries are unchanged
+    if (!ctx.force) {
+      const changedChapters = detectChangedChapters(analysis, srcRoot);
+      if (changedChapters) {
+        if (changedChapters.size === 0) {
+          logger.log("No source changes detected. Use --force to regenerate all chapters.");
+          return { errors: [] };
+        }
+        const before = targetFiles.length;
+        targetFiles = targetFiles.filter((f) => {
+          const chapterName = f.replace(/\.md$/, "");
+          return changedChapters.has(chapterName);
+        });
+        logger.log(`Diff: ${changedChapters.size} chapter(s) changed [${[...changedChapters].join(", ")}], processing ${targetFiles.length}/${before} file(s).`);
+      }
+    }
+
+    if (!ctx.dryRun) {
+      for (const file of targetFiles) {
+        const filePath = path.join(docsDir, file);
+        const content = fs.readFileSync(filePath, "utf8");
+        const stripped = stripFillContent(content);
+        if (stripped !== content) fs.writeFileSync(filePath, stripped, "utf8");
+      }
+    }
+  }
 
   let totalFilled = 0;
   let totalSkipped = 0;
@@ -629,6 +682,7 @@ async function main(ctx) {
   }
 
   const configTimeout = cfg.agent?.timeout ? Number(cfg.agent.timeout) * 1000 : undefined;
+  const retryCount = Number(cfg?.agent?.retryCount) || 0;
   const processFn = ctx.perDirective ? processTemplate : processTemplateFileBatch;
   if (!ctx.perDirective) {
     if (!ctx.timeout) ctx.timeout = configTimeout || DEFAULT_TIMEOUT_MS;
@@ -657,7 +711,7 @@ async function main(ctx) {
   const fileResults = await mapWithConcurrency(fileEntries, fileConcurrency, async (entry) => {
     const { file, original } = entry;
     logger.verbose(`start: ${file}`);
-    const result = await processFn(original, analysis, file, agent, ctx.timeout, root, ctx.dryRun, preamblePatterns, systemPrompt, ctx.id || undefined, concurrency, lang, srcRoot);
+    const result = await processFn(original, analysis, file, agent, ctx.timeout, root, ctx.dryRun, preamblePatterns, systemPrompt, ctx.id || undefined, concurrency, lang, srcRoot, retryCount);
     logger.verbose(`done: ${file}`);
     return { ...entry, result };
   });
@@ -702,11 +756,11 @@ async function main(ctx) {
   }
   logger.log(`Done. ${changedFiles.size} file(s) updated. filled: ${totalFilled}, skipped: ${totalSkipped}.`);
   if (errors.length > 0) {
-    process.exitCode = 1;
+    process.exitCode = EXIT_ERROR;
   }
   return { errors };
 }
 
-export { main, stripFillContent, countFilledInBatch, processTemplateFileBatch, processTemplate, allTextDirectivesFilled, validateBatchResult, parseBatchJsonResponse, applyBatchJsonToFile };
+export { main, stripFillContent, countFilledInBatch, processTemplateFileBatch, processTemplate, allTextDirectivesFilled, validateBatchResult, parseBatchJsonResponse, applyBatchJsonToFile, detectChangedChapters };
 
 runIfDirect(import.meta.url, main);

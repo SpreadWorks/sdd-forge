@@ -8,8 +8,9 @@
 import fs from "fs";
 import path from "path";
 import { PKG_DIR } from "./lib/cli.js";
-import { resolveCommandContext } from "./docs/lib/command-context.js";
+import { resolveCommandContext, getChapterFiles } from "./docs/lib/command-context.js";
 import { resolveOutputConfig } from "./lib/types.js";
+import { EXIT_ERROR } from "./lib/exit-codes.js";
 
 /** Subcommand → script mapping */
 const SCRIPTS = {
@@ -90,7 +91,7 @@ if (subCmd === "build") {
   const { main: enrichMain } = await import(path.join(PKG_DIR, "docs/commands/enrich.js"));
   const { main: initMain } = await import(path.join(PKG_DIR, "docs/commands/init.js"));
   const { main: dataMain } = await import(path.join(PKG_DIR, "docs/commands/data.js"));
-  const { main: textMain } = await import(path.join(PKG_DIR, "docs/commands/text.js"));
+  const { main: textMain, stripFillContent } = await import(path.join(PKG_DIR, "docs/commands/text.js"));
   const { main: readmeMain } = await import(path.join(PKG_DIR, "docs/commands/readme.js"));
   const { main: agentsMain } = await import(path.join(PKG_DIR, "docs/commands/agents.js"));
 
@@ -118,7 +119,7 @@ if (subCmd === "build") {
         : [];
       if (docsFiles.length === 0) {
         console.error("[regenerate] ERROR: docs/ に章ファイルがありません。先に docs build を実行してください。");
-        process.exit(1);
+        process.exit(EXIT_ERROR);
       }
     } else {
       progress.start("init");
@@ -131,10 +132,19 @@ if (subCmd === "build") {
     await dataMain({ ...baseCtx, dryRun: isDryRun });
     progress.stepDone();
 
-    // 5. text
+    // 5. text — file selection and strip moved from text.js to build pipeline
     progress.start("text");
     if (hasAgent) {
-      const textResult = await textMain({ ...baseCtx, dryRun: isDryRun, commandId: "docs.text", regenerate: hasForce || hasRegenerate });
+      const textFiles = getChapterFiles(baseCtx.docsDir, { type: baseCtx.type, configChapters: baseCtx.config.chapters });
+      if (!isDryRun) {
+        for (const file of textFiles) {
+          const filePath = path.join(baseCtx.docsDir, file);
+          const content = fs.readFileSync(filePath, "utf8");
+          const stripped = stripFillContent(content);
+          if (stripped !== content) fs.writeFileSync(filePath, stripped, "utf8");
+        }
+      }
+      const textResult = await textMain({ ...baseCtx, dryRun: isDryRun, commandId: "docs.text", files: textFiles });
       if (textResult?.errors?.length > 0) {
         progress.log(`[text] WARN: ${textResult.errors.length} file(s) had errors. Pipeline continues but docs may be incomplete.`);
       }
@@ -210,7 +220,7 @@ if (subCmd === "build") {
   } catch (err) {
     progress.done();
     console.error(`[build] ERROR: ${err.message}`);
-    process.exit(1);
+    process.exit(EXIT_ERROR);
   }
   process.exit(0);
 }
@@ -220,7 +230,7 @@ const scriptRelPath = SCRIPTS[subCmd];
 if (!scriptRelPath) {
   console.error(`sdd-forge docs: unknown command '${subCmd}'`);
   console.error("Run: sdd-forge help");
-  process.exit(1);
+  process.exit(EXIT_ERROR);
 }
 
 const scriptPath = path.join(PKG_DIR, scriptRelPath);

@@ -1,0 +1,144 @@
+{
+  "spec": "specs/091-fix-enrich-stuck-entries/spec.md",
+  "baseBranch": "development",
+  "featureBranch": "feature/091-fix-enrich-stuck-entries",
+  "steps": [
+    {
+      "id": "approach",
+      "status": "done"
+    },
+    {
+      "id": "branch",
+      "status": "done"
+    },
+    {
+      "id": "spec",
+      "status": "done"
+    },
+    {
+      "id": "draft",
+      "status": "done"
+    },
+    {
+      "id": "fill-spec",
+      "status": "done"
+    },
+    {
+      "id": "approval",
+      "status": "done"
+    },
+    {
+      "id": "gate",
+      "status": "done"
+    },
+    {
+      "id": "test",
+      "status": "done"
+    },
+    {
+      "id": "implement",
+      "status": "done"
+    },
+    {
+      "id": "review",
+      "status": "done"
+    },
+    {
+      "id": "finalize",
+      "status": "in_progress"
+    },
+    {
+      "id": "commit",
+      "status": "pending"
+    },
+    {
+      "id": "push",
+      "status": "skipped"
+    },
+    {
+      "id": "merge",
+      "status": "pending"
+    },
+    {
+      "id": "pr-create",
+      "status": "skipped"
+    },
+    {
+      "id": "branch-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "pr-merge",
+      "status": "pending"
+    },
+    {
+      "id": "sync-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "docs-update",
+      "status": "pending"
+    },
+    {
+      "id": "docs-review",
+      "status": "pending"
+    },
+    {
+      "id": "docs-commit",
+      "status": "pending"
+    }
+  ],
+  "requirements": [
+    {
+      "desc": "R1: docs enrich は entry 完了判定を summary ではなく enrich メタデータで行う",
+      "status": "done"
+    },
+    {
+      "desc": "R2: AI応答に含まれた entry に enrich.processedAt と enrich.attempts を保存する",
+      "status": "done"
+    },
+    {
+      "desc": "R3: summary 欠落 entry は処理済みとして保存し WARN を出す",
+      "status": "done"
+    },
+    {
+      "desc": "R4: AI応答に含まれない entry は未処理のまま再送する",
+      "status": "done"
+    },
+    {
+      "desc": "R5: 空レスポンスと一時的 AI 呼び出し失敗は3秒固定で agent.retryCount 回まで再試行する",
+      "status": "done"
+    },
+    {
+      "desc": "R6: agent.retryCount は docs enrich のみで使い未設定時は1",
+      "status": "done"
+    },
+    {
+      "desc": "R7: リトライ上限後も途中進捗を保存してエラー終了する",
+      "status": "done"
+    }
+  ],
+  "worktree": true,
+  "issue": 21,
+  "notes": [
+    "approach: Q&A で要件整理してから仕様書を作成する",
+    "branch: Git worktree を選択",
+    "branch-base: development から分岐",
+    "docs: build は実行せず現状の docs を参照して進める",
+    "draft: リトライ対象は空レスポンスに加えて一時的な AI 呼び出し失敗も含める",
+    "draft: enrich の空レスポンスと一時的 AI 呼び出し失敗は3秒固定で再試行し、回数はconfigで設定可能・デフォルト1",
+    "draft: リトライ回数の設定名は agent.retryCount を採用",
+    "draft: 各エントリは enrich.status・enrich.processedAt・enrich.attempts を持つ実用構成を採用",
+    "draft: enrich.attempts は各エントリへのAI呼び出し総回数（初回含む）",
+    "draft: 各エントリの enrich メタデータは processedAt と attempts のみを持つ",
+    "draft: summary が空でも enrich メタデータを保存し、再送しない",
+    "draft: summary 欠落時は entry 単位で file/category/index を含む WARN を出す",
+    "draft: リトライ上限到達後も失敗したバッチは進捗保存後にエラー終了する",
+    "draft: enrich.attempts は各エントリをAI処理対象にした回数を表す",
+    "draft: AI応答に含まれなかった entry は未処理のまま残し、次回も再実行する",
+    "test: 仕様ベースで enrich の再開判定・retry・config 変更をユニットテスト化",
+    "review: flow review は agent 設定失敗のため未使用、ローカルレビューで1件修正し関連テスト再実行",
+    "finalize: 個別選択で commit, merge, branch-cleanup, record を実行。merge 方式は merge"
+  ],
+  "request": "issue #21の対応を進めてください。AIがスキップしたエントリが永遠にunenrichedのまま残るバグと空レスポンス時のリトライを計画する。"
+}

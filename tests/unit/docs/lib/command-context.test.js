@@ -111,18 +111,18 @@ describe("getChapterFiles", () => {
     assert.deepEqual(getChapterFiles("/nonexistent/dir"), []);
   });
 
-  it("returns sorted chapter files matching NN_*.md pattern", () => {
+  it("returns sorted chapter files", () => {
     tmp = createTmpDir("chapters");
-    writeFile(tmp, "03_config.md", "# Config");
-    writeFile(tmp, "01_overview.md", "# Overview");
-    writeFile(tmp, "02_commands.md", "# Commands");
+    writeFile(tmp, "overview.md", "# Overview");
+    writeFile(tmp, "commands.md", "# Commands");
+    writeFile(tmp, "configuration.md", "# Config");
     writeFile(tmp, "README.md", "# Readme");
     writeFile(tmp, "notes.txt", "notes");
     const files = getChapterFiles(tmp);
     assert.deepEqual(files, [
-      "01_overview.md",
-      "02_commands.md",
-      "03_config.md",
+      "commands.md",
+      "configuration.md",
+      "overview.md",
     ]);
     removeTmpDir(tmp);
   });

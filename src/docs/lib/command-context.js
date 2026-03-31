@@ -122,7 +122,7 @@ export function loadFullAnalysis(root) {
 /**
  * docs ディレクトリから章ファイル一覧を取得する。
  * config.chapters > preset の chapters 順で返す。
- * フォールバック: *.md をアルファベット順（README.md, AGENTS.sdd.md 除外）。
+ * フォールバック: *.md をアルファベット順（README.md, AGENTS.sdd.md, layout.md 除外）。
  *
  * @param {string} docsDir - docs ディレクトリの絶対パス
  * @param {Object} [options]
@@ -145,7 +145,7 @@ export function getChapterFiles(docsDir, options) {
     }
   }
 
-  // Fallback: all *.md files alphabetically (excluding special files)
+  // Fallback: all *.md files alphabetically.
   return fs
     .readdirSync(docsDir)
     .filter((f) => f.endsWith(".md") && !EXCLUDE.has(f))

@@ -14,17 +14,20 @@ import path from "path";
 import { runIfDirect } from "../../lib/entrypoint.js";
 import { parseArgs } from "../../lib/cli.js";
 import { sddOutputDir } from "../../lib/config.js";
-import { resolveAgent, callAgentAsync, DEFAULT_AGENT_TIMEOUT } from "../../lib/agent.js";
+import { resolveAgent, callAgentAsync, DEFAULT_AGENT_TIMEOUT, resolveWorkDir } from "../../lib/agent.js";
 import { resolveCommandContext, loadFullAnalysis } from "../lib/command-context.js";
 import { resolveChaptersOrder } from "../lib/template-merger.js";
+import { buildCategoryMapFromDocs, mergeChapters } from "../lib/chapter-resolver.js";
+import { globToRegex } from "../lib/scanner.js";
 import { createLogger } from "../../lib/progress.js";
 import { translate } from "../../lib/i18n.js";
-import { extractBalancedJson } from "../../lib/json-parse.js";
+import { extractBalancedJson, fixUnescapedQuotes } from "../../lib/json-parse.js";
 import { ANALYSIS_META_KEYS } from "../lib/analysis-entry.js";
 
 const logger = createLogger("enrich");
 const DEFAULT_BATCH_SIZE = 20;
 const DEFAULT_BATCH_LINES = 3000;
+
 
 function printHelp() {
   const t = translate();
@@ -66,11 +69,32 @@ function collectEntries(analysis) {
         index: i,
         file: items[i].file || items[i].name || `${cat}.entries[${i}]`,
         lines: items[i].lines || 0,
-        enriched: !!items[i].summary,
+        enriched: !!items[i].enrich?.processedAt,
       });
     }
   }
   return entries;
+}
+
+/**
+ * docs.exclude パターンでエントリをフィルタする。
+ * マッチしたエントリを除外し、残りを返す。
+ *
+ * @param {Array} entries - collectEntries() の結果
+ * @param {string[]|undefined} excludePatterns - glob パターン配列
+ * @returns {Array} フィルタ済みエントリ
+ */
+function filterByDocsExclude(entries, excludePatterns) {
+  if (!excludePatterns?.length) return entries;
+  const regexes = excludePatterns.map((p) => globToRegex(p));
+  return entries.filter((e) => {
+    if (!e.file) return true;
+    return !regexes.some((re) => re.test(e.file));
+  });
+}
+
+function entryKey(category, index) {
+  return `${category}:${index}`;
 }
 
 /**
@@ -135,11 +159,16 @@ function buildEnrichPrompt(chapters, batchEntries, opts) {
   }
   parts.push("");
 
-  // Chapter list
+  // Chapter list (accepts both string[] and {chapter, desc}[])
   parts.push("## Available chapters");
   parts.push("Each entry should be assigned to one of these chapters:");
   for (const ch of chapters) {
-    parts.push(`- ${ch.replace(/\.md$/, "")}`);
+    if (typeof ch === "string") {
+      parts.push(`- ${ch.replace(/\.md$/, "")}`);
+    } else {
+      const name = ch.chapter.replace(/\.md$/, "");
+      parts.push(ch.desc ? `- ${name}: ${ch.desc}` : `- ${name}`);
+    }
   }
   parts.push("");
 
@@ -155,7 +184,8 @@ function buildEnrichPrompt(chapters, batchEntries, opts) {
   parts.push('      "summary": "1-2 sentence summary of what this file/class does",');
   parts.push('      "detail": "Detailed description of the implementation, key logic, patterns used. Do not omit information.",');
   parts.push('      "chapter": "chapter_name (from the available chapters list, without .md)",');
-  parts.push('      "role": "one of: controller, model, lib, config, cli, middleware, test, migration, route, view, other"');
+  parts.push('      "role": "one of: controller, model, lib, config, cli, middleware, test, migration, route, view, other",');
+  parts.push('      "keywords": ["keyword1", "keyword2", "synonym", "関連語"]');
   parts.push('    }');
   parts.push('  ]');
   parts.push('}');
@@ -183,7 +213,11 @@ function buildEnrichPrompt(chapters, batchEntries, opts) {
   if (monorepoApps) {
     parts.push("- `app` must be one of the monorepo app names listed above (omit if file does not belong to any app).");
   }
-  parts.push("- Write in the project's primary language (match the existing analysis data language).");
+  const LANG_NAMES = { en: "English", ja: "Japanese", zh: "Chinese", ko: "Korean", fr: "French", de: "German", es: "Spanish", pt: "Portuguese", it: "Italian", ru: "Russian" };
+  const lang = opts?.lang || "en";
+  const langName = LANG_NAMES[lang] || lang;
+  parts.push("- `keywords` should contain 3-10 search keywords including synonyms, related terms, and translations (e.g. both English and Japanese terms). Keywords are used for context search.");
+  parts.push(`- Write summary, detail, and any descriptive content strictly in ${langName}. keywords may contain terms in any language for cross-language search.`);
 
   return parts.join("\n");
 }
@@ -222,45 +256,19 @@ function parseEnrichResponse(response) {
 
 
 /**
- * JSON 文字列値内のエスケープされていないダブルクォーテーションを修復する。
- * AI が detail/summary に this.desc("foo", bar) のような未エスケープ引用符を含めるケース対策。
- *
- * 戦略: 行単位で解析し、JSON の構造キー（"key": "value"）の value 部分内にある
- * 未エスケープクォートを \\" に置換する。
- */
-function fixUnescapedQuotes(json) {
-  const lines = json.split("\n");
-  const result = [];
-
-  for (const line of lines) {
-    // Match lines like:  "key": "value",
-    // Capture the value portion and fix unescaped quotes within it
-    const m = line.match(/^(\s*"(?:summary|detail)"\s*:\s*")(.*)(",?\s*)$/);
-    if (m) {
-      const [, prefix, value, suffix] = m;
-      // Escape unescaped double quotes in the value
-      // First un-escape already escaped ones to avoid double-escaping, then re-escape all
-      const fixed = value
-        .replace(/\\"/g, "\x00")      // temp-mark already-escaped quotes
-        .replace(/"/g, '\\"')          // escape all remaining quotes
-        .replace(/\x00/g, '\\"');      // restore temp-marked ones
-      result.push(prefix + fixed + suffix);
-    } else {
-      result.push(line);
-    }
-  }
-
-  return result.join("\n");
-}
-
-/**
  * Merge enrichment data into the analysis object (mutates analysis).
  *
  * @param {Object} analysis - Original analysis data
  * @param {Object} enrichment - AI-generated enrichment data
+ * @param {Object} [opts] - Merge options
  * @returns {Object} Enriched analysis (same reference)
  */
-function mergeEnrichment(analysis, enrichment) {
+function mergeEnrichment(analysis, enrichment, opts = {}) {
+  const processedAt = opts.now || new Date().toISOString();
+  const attemptsByKey = opts.attemptsByKey || new Map();
+  const onWarn = opts.onWarn || (() => {});
+  const respondedKeys = new Set();
+
   for (const cat of Object.keys(enrichment)) {
     if (!analysis[cat]) continue;
     const enrichedItems = enrichment[cat];
@@ -273,20 +281,74 @@ function mergeEnrichment(analysis, enrichment) {
       if (!entry || typeof entry !== "object") continue;
       const idx = entry.index;
       if (idx == null || idx < 0 || idx >= items.length) continue;
+      respondedKeys.add(entryKey(cat, idx));
+
+      // Validate chapter if validChapters set is provided
+      let chapter = entry.chapter || items[idx].chapter;
+      const validChapters = opts.validChapters;
+      if (chapter && validChapters && !validChapters.has(chapter)) {
+        onWarn(`WARN: invalid chapter "${chapter}" for ${cat}[${idx}], skipped`);
+        chapter = items[idx].chapter || null;
+      }
 
       items[idx] = {
         ...items[idx],
         summary: entry.summary || items[idx].summary,
         detail: entry.detail || items[idx].detail,
-        chapter: entry.chapter || items[idx].chapter,
+        chapter,
         role: entry.role || items[idx].role,
+        enrich: {
+          processedAt,
+          attempts: attemptsByKey.get(entryKey(cat, idx)) ?? items[idx].enrich?.attempts ?? 1,
+        },
         ...(entry.app ? { app: entry.app } : {}),
+        ...(Array.isArray(entry.keywords) && entry.keywords.length > 0 ? { keywords: entry.keywords } : (items[idx].keywords ? { keywords: items[idx].keywords } : {})),
       };
+
+      if (!entry.summary) {
+        const file = items[idx].file || items[idx].name || `${cat}.entries[${idx}]`;
+        onWarn(`WARN: summary missing for ${file} (category=${cat}, index=${idx})`);
+      }
     }
   }
 
-  analysis.enrichedAt = new Date().toISOString();
+  for (const [key, attempts] of attemptsByKey.entries()) {
+    if (respondedKeys.has(key)) continue;
+    const [category, rawIndex] = key.split(":");
+    const index = Number(rawIndex);
+    const item = analysis?.[category]?.entries?.[index];
+    if (!item) continue;
+    item.enrich = {
+      ...item.enrich,
+      attempts,
+    };
+  }
+
+  analysis.enrichedAt = processedAt;
   return analysis;
+}
+
+function buildAttemptsByKey(analysis, batchEntries, attemptsUsed) {
+  const attempts = new Map();
+  for (const entry of batchEntries) {
+    const current = analysis?.[entry.category]?.entries?.[entry.index]?.enrich?.attempts ?? 0;
+    attempts.set(entryKey(entry.category, entry.index), current + attemptsUsed);
+  }
+  return attempts;
+}
+
+function saveProgress(root, analysis, totalEnriched, ctx) {
+  if (totalEnriched > 0 && !ctx.dryRun && !ctx.stdout) {
+    const saved = saveAnalysis(root, analysis);
+    logger.log(`saved progress (${totalEnriched} entries) to ${path.relative(root, saved)}`);
+  }
+}
+
+function formatBatchError(err, b, batches) {
+  if (err?.message === "empty response") {
+    return `enrich: AI agent returned empty response at batch ${b + 1}/${batches.length}.`;
+  }
+  return `enrich: AI agent failed at batch ${b + 1}/${batches.length}: ${err.message}`;
 }
 
 /**
@@ -298,7 +360,7 @@ function saveAnalysis(root, analysis) {
     fs.mkdirSync(outputDir, { recursive: true });
   }
   const outputPath = path.join(outputDir, "analysis.json");
-  fs.writeFileSync(outputPath, JSON.stringify(analysis) + "\n");
+  fs.writeFileSync(outputPath, JSON.stringify(analysis, null, 2) + "\n");
   return outputPath;
 }
 
@@ -337,24 +399,61 @@ async function main(ctx) {
     return;
   }
 
-  // Get chapter list from preset (config.chapters overrides preset)
-  const configChapters = config?.chapters;
-  const chapters = resolveChaptersOrder(type, configChapters);
-  if (chapters.length === 0) {
+  // Get chapter list from preset
+  const presetChapterNames = resolveChaptersOrder(type, undefined);
+  if (presetChapterNames.length === 0) {
     logger.log("WARN: no chapters defined in preset, skipping enrich.");
     return;
   }
 
+  // Build chapter objects with desc (preset defaults + config overrides)
+  const presetChapters = presetChapterNames.map((name) => {
+    // resolveChaptersOrder returns string[] from preset.json
+    // If preset.json has been migrated to object format, the name is already extracted
+    return typeof name === "string" ? { chapter: name } : name;
+  });
+  const chapters = mergeChapters(presetChapters, config?.chapters);
+
+  // Static chapter assignment from {{data}} categories (R4)
+  const { docsDir } = ctx;
+  const chapterFileNames = chapters.map((c) => c.chapter);
+  const categoryToChapter = buildCategoryMapFromDocs(docsDir, chapterFileNames);
+  if (categoryToChapter.size > 0) {
+    logger.log(`static chapter mapping: ${categoryToChapter.size} categories from {{data}} directives`);
+  }
+
   // Collect entries and filter out already-enriched ones (resume)
   const allEntries = collectEntries(analysis);
-  const pending = allEntries.filter((e) => !e.enriched);
+
+  // Apply static chapter assignment to pending entries
+  for (const entry of allEntries) {
+    if (entry.enriched) continue;
+    const staticChapter = categoryToChapter.get(entry.category);
+    if (staticChapter) {
+      // Set chapter statically; AI will still generate summary/detail
+      const items = analysis[entry.category]?.entries;
+      if (items && items[entry.index]) {
+        items[entry.index].chapter = staticChapter;
+      }
+    }
+  }
+
+  // Filter by docs.exclude patterns
+  const docsExclude = config?.docs?.exclude;
+  const filtered = filterByDocsExclude(allEntries, docsExclude);
+  const excludedCount = allEntries.length - filtered.length;
+  if (excludedCount > 0) {
+    logger.log(`excluded ${excludedCount} entries by docs.exclude`);
+  }
+
+  const pending = filtered.filter((e) => !e.enriched);
 
   if (pending.length === 0) {
     logger.log("all entries already enriched, skipping.");
     return;
   }
 
-  const skipped = allEntries.length - pending.length;
+  const skipped = filtered.length - pending.length;
   if (skipped > 0) {
     logger.log(`resuming: ${skipped} already enriched, ${pending.length} remaining`);
   } else {
@@ -364,6 +463,7 @@ async function main(ctx) {
   // Split into batches (lines-based with item count fallback)
   const maxItems = Number(config.docs?.enrichBatchSize || 0) || DEFAULT_BATCH_SIZE;
   const maxLines = Number(config.docs?.enrichBatchLines || 0) || DEFAULT_BATCH_LINES;
+  const retryCount = Number(config?.agent?.retryCount) || 0;
   const hasLines = pending.some((e) => e.lines > 0);
   const batches = splitIntoBatches(pending, hasLines ? maxLines : 0, maxItems);
 
@@ -374,44 +474,40 @@ async function main(ctx) {
     const batch = batches[b];
     logger.log(`batch ${b + 1}/${batches.length} (${batch.length} entries)`);
 
-    const prompt = buildEnrichPrompt(chapters, batch, { monorepoApps: config.monorepo?.apps });
+    const prompt = buildEnrichPrompt(chapters, batch, { monorepoApps: config.monorepo?.apps, lang: config.docs?.defaultLanguage || "en" });
 
     let response;
     try {
-      response = await callAgentAsync(agent, prompt, timeoutMs, root);
+      response = await callAgentAsync(agent, prompt, timeoutMs, root, {
+        retryCount,
+      });
     } catch (err) {
-      // Save progress before failing
-      if (totalEnriched > 0 && !ctx.dryRun && !ctx.stdout) {
-        const saved = saveAnalysis(root, analysis);
-        logger.log(`saved progress (${totalEnriched} entries) to ${path.relative(root, saved)}`);
-      }
-      throw new Error(`enrich: AI agent failed at batch ${b + 1}/${batches.length}: ${err.message}`);
-    }
-
-    if (!response) {
-      if (totalEnriched > 0 && !ctx.dryRun && !ctx.stdout) {
-        const saved = saveAnalysis(root, analysis);
-        logger.log(`saved progress (${totalEnriched} entries) to ${path.relative(root, saved)}`);
-      }
-      throw new Error(`enrich: AI agent returned empty response at batch ${b + 1}/${batches.length}.`);
+      saveProgress(root, analysis, totalEnriched, ctx);
+      throw new Error(formatBatchError(err, b, batches));
     }
 
     const enrichment = parseEnrichResponse(response);
     if (!enrichment) {
-      // Dump failed response for debugging
-      const dumpPath = path.join(sddOutputDir(root), `enrich-fail-batch${b + 1}.txt`);
+      // Dump failed response for debugging (to workDir, not .sdd-forge/output/)
+      const dumpDir = resolveWorkDir(root, config);
+      fs.mkdirSync(dumpDir, { recursive: true });
+      const dumpPath = path.join(dumpDir, `enrich-fail-batch${b + 1}.txt`);
       try { fs.writeFileSync(dumpPath, response); } catch (_) { /* ignore */ }
       logger.log(`response preview (${response.length} chars): ${response.slice(0, 200)}...`);
       logger.log(`full response dumped to: ${path.relative(root, dumpPath)}`);
-      if (totalEnriched > 0 && !ctx.dryRun && !ctx.stdout) {
-        const saved = saveAnalysis(root, analysis);
-        logger.log(`saved progress (${totalEnriched} entries) to ${path.relative(root, saved)}`);
-      }
+      saveProgress(root, analysis, totalEnriched, ctx);
       throw new Error(`enrich: could not parse AI response at batch ${b + 1}/${batches.length}.`);
     }
 
     // Merge batch results into analysis (mutates)
-    mergeEnrichment(analysis, enrichment);
+    const attemptsByKey = buildAttemptsByKey(analysis, batch, 1);
+    const validChapterNames = new Set(chapters.map((c) => (typeof c === "string" ? c : c.chapter).replace(/\.md$/, "")));
+    mergeEnrichment(analysis, enrichment, {
+      batchEntries: batch,
+      attemptsByKey,
+      validChapters: validChapterNames,
+      onWarn: (msg) => logger.log(msg),
+    });
 
     const batchCount = Object.values(enrichment).reduce(
       (sum, arr) => sum + (Array.isArray(arr) ? arr.length : 0), 0,
@@ -428,13 +524,23 @@ async function main(ctx) {
 
   // Final output
   if (ctx.stdout || ctx.dryRun) {
-    process.stdout.write(JSON.stringify(analysis) + "\n");
+    process.stdout.write(JSON.stringify(analysis, null, 2) + "\n");
   } else {
     const outputPath = saveAnalysis(root, analysis);
     logger.log(`output: ${path.relative(root, outputPath)}`);
   }
 }
 
-export { main, buildEnrichPrompt, parseEnrichResponse, mergeEnrichment, collectEntries, splitIntoBatches, DEFAULT_BATCH_SIZE, DEFAULT_BATCH_LINES };
+export {
+  main,
+  buildEnrichPrompt,
+  parseEnrichResponse,
+  mergeEnrichment,
+  collectEntries,
+  filterByDocsExclude,
+  splitIntoBatches,
+  DEFAULT_BATCH_SIZE,
+  DEFAULT_BATCH_LINES,
+};
 
 runIfDirect(import.meta.url, main);

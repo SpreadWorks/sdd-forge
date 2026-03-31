@@ -47,10 +47,20 @@ function aiFilterChapters(chapters, analysis, agent, root, purpose) {
   }).join("\n");
 
   const purposeClause = purpose
-    ? `\nThe documentation purpose is "${purpose}". Judge each chapter's audience from its title and content — exclude chapters whose primary audience does not match this purpose.\n`
+    ? `\nThe documentation purpose is "${purpose}". Judge each chapter's primary audience from its title and expected content. Exclude chapters whose primary audience does not match this purpose.\n`
     : "";
 
-  const selectionRule = "Look at the project analysis and each chapter title. Include a chapter if the analysis contains data relevant to that chapter's topic. Exclude a chapter if the analysis has NO relevant data for it (e.g. no CLI commands found → exclude a commands chapter, no database tables → exclude a db_tables chapter). When in doubt, include the chapter.";
+  const audienceRule = purpose === "user-guide"
+    ? [
+      "Audience rule for user-guide:",
+      "- Include only chapters primarily useful to end users or adopters of the tool.",
+      "- Exclude chapters primarily intended for developers or maintainers, such as internal design, development/testing, implementation details, architecture-for-contributors, or contributor workflow.",
+      "- Do not include a chapter just because the project analysis contains relevant data. Audience fit is required.",
+      "- In particular, development_testing.md and internal_design.md should normally be excluded for user-guide unless the chapter is clearly written for end users.",
+    ].join("\n")
+    : "";
+
+  const selectionRule = "Look at the project analysis and each chapter title. Include a chapter only if both conditions are true: (1) the analysis contains data relevant to that chapter's topic, and (2) the chapter's primary audience matches the documentation purpose. Exclude a chapter if either condition is false. When unsure about audience fit, exclude developer-oriented chapters.";
 
   const prompt = [
     `Select which documentation chapters to include for this project.`,
@@ -61,6 +71,8 @@ function aiFilterChapters(chapters, analysis, agent, root, purpose) {
     chapterList,
     "",
     purposeClause,
+    audienceRule,
+    audienceRule ? "" : null,
     `Selection rule:`,
     selectionRule,
     "",

@@ -61,6 +61,7 @@
  * @property {string} [default]              - Default agent provider name
  * @property {string} [workDir]              - Working directory for agent execution
  * @property {number} [timeout]              - Agent execution timeout in seconds
+ * @property {number} [retryCount]           - Retry count for docs enrich agent calls
  * @property {Object<string, AgentProvider>} [providers] - Agent provider definitions
  * @property {Object} [commands]             - Per-command agent and profile overrides
  */
@@ -137,6 +138,15 @@ export function validateConfig(raw) {
         }
       }
     }
+
+    // docs.exclude (省略可)
+    if (raw.docs.exclude != null) {
+      if (!Array.isArray(raw.docs.exclude)) {
+        errors.push("'docs.exclude' must be an array of glob pattern strings");
+      } else if (raw.docs.exclude.some((e) => typeof e !== "string")) {
+        errors.push("'docs.exclude' entries must be strings");
+      }
+    }
   }
 
   // lang (required)
@@ -164,12 +174,31 @@ export function validateConfig(raw) {
     errors.push("'concurrency' must be a positive number if provided");
   }
 
-  // chapters (省略可)
+  // chapters (省略可 — オブジェクト配列形式)
   if (raw.chapters != null) {
     if (!Array.isArray(raw.chapters)) {
-      errors.push("'chapters' must be an array of strings");
-    } else if (raw.chapters.some((c) => typeof c !== "string")) {
-      errors.push("'chapters' entries must be strings");
+      errors.push("'chapters' must be an array. Run 'sdd-forge upgrade' to migrate.");
+    } else {
+      for (let i = 0; i < raw.chapters.length; i++) {
+        const entry = raw.chapters[i];
+        if (typeof entry === "string") {
+          errors.push(`'chapters' format has changed. Run 'sdd-forge upgrade' to migrate automatically.`);
+          break;
+        }
+        if (typeof entry !== "object" || entry === null) {
+          errors.push(`'chapters[${i}]' must be an object with { chapter: "name.md" }`);
+          continue;
+        }
+        if (typeof entry.chapter !== "string") {
+          errors.push(`'chapters[${i}].chapter' must be a string`);
+        }
+        if (entry.desc != null && typeof entry.desc !== "string") {
+          errors.push(`'chapters[${i}].desc' must be a string if provided`);
+        }
+        if (entry.exclude != null && typeof entry.exclude !== "boolean") {
+          errors.push(`'chapters[${i}].exclude' must be a boolean if provided`);
+        }
+      }
     }
   }
 
@@ -181,6 +210,11 @@ export function validateConfig(raw) {
   // agent.timeout (省略可)
   if (raw.agent?.timeout != null && (typeof raw.agent.timeout !== "number" || raw.agent.timeout < 1)) {
     errors.push("'agent.timeout' must be a positive number if provided");
+  }
+
+  // agent.retryCount (省略可)
+  if (raw.agent?.retryCount != null && (typeof raw.agent.retryCount !== "number" || raw.agent.retryCount < 1)) {
+    errors.push("'agent.retryCount' must be a positive number if provided");
   }
 
   // scan (省略可)

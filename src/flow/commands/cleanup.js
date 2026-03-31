@@ -10,8 +10,9 @@ import fs from "fs";
 import { execFileSync } from "child_process";
 import { runIfDirect } from "../../lib/entrypoint.js";
 import { repoRoot, parseArgs, isInsideWorktree } from "../../lib/cli.js";
+import { EXIT_ERROR } from "../../lib/exit-codes.js";
 import {
-  loadFlowState, updateStepStatus, resolveWorktreePaths,
+  loadFlowState, resolveWorktreePaths,
   clearFlowState, specIdFromPath,
 } from "../../lib/flow-state.js";
 
@@ -40,7 +41,7 @@ function main() {
   const state = loadFlowState(root);
   if (!state) {
     console.error("no active flow");
-    process.exit(1);
+    process.exit(EXIT_ERROR);
   }
 
   const { baseBranch, featureBranch, worktree } = state;
@@ -50,7 +51,6 @@ function main() {
   // Spec-only: featureBranch == baseBranch
   if (featureBranch === baseBranch) {
     console.log("skip: spec-only mode (no cleanup needed)");
-    updateStepStatus(root, "branch-cleanup", "skipped");
     clearFlowState(root, specId);
     return;
   }

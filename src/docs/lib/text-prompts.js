@@ -9,6 +9,7 @@ import fs from "fs";
 import path from "path";
 import { createI18n } from "../../lib/i18n.js";
 import { ANALYSIS_META_KEYS } from "./analysis-entry.js";
+import { minify } from "./minify.js";
 
 /**
  * {{data}} カテゴリ名 → analysis.json の必要セクションへのマッピング。
@@ -81,17 +82,17 @@ export function getAnalysisContext(analysis, directives) {
 
 /**
  * ファイル名から章名を抽出する。
- * "01_overview.md" → "overview"
+ * "overview.md" → "overview"
  */
 function chapterNameFromFile(fileName) {
-  return fileName.replace(/^\d+_/, "").replace(/\.md$/, "");
+  return fileName.replace(/\.md$/, "");
 }
 
 /**
  * enriched analysis から章に該当するエントリのコンテキストを構築する。
  *
  * @param {Object} analysis - analysis.json (enrichedAt あり)
- * @param {string} fileName - 章ファイル名 (e.g. "01_overview.md")
+ * @param {string} fileName - 章ファイル名 (e.g. "overview.md")
  * @param {string} mode - "light" or "deep"
  * @param {string} [srcRoot] - ソースルート（deep モード時に使用）
  * @returns {string|null} enriched コンテキスト文字列、なければ null
@@ -134,6 +135,7 @@ export function getEnrichedContext(analysis, fileName, mode, srcRoot) {
         try {
           const absPath = path.resolve(srcRoot, filePath);
           let code = fs.readFileSync(absPath, "utf8");
+          code = minify(code, filePath);
           const MAX_CHARS = 8000;
           if (code.length > MAX_CHARS) {
             code = code.slice(0, MAX_CHARS) + "\n... (truncated)";
@@ -212,7 +214,7 @@ export function buildTextSystemPrompt(documentStyle, lang) {
     t("text.instruction"),
     "",
     "## Output Rules (strict)",
-    `- Write all output in ${langName}`,
+    `- Write ALL output strictly in ${langName}. Even if the source code or analysis data contains text in other languages, translate everything into ${langName}.`,
     ...outputRules.map((r) => `- ${r}`),
   ].join("\n");
 }

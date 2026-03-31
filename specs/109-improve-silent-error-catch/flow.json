@@ -1,0 +1,116 @@
+{
+  "spec": "specs/109-improve-silent-error-catch/spec.md",
+  "baseBranch": "development",
+  "featureBranch": "feature/109-improve-silent-error-catch",
+  "steps": [
+    {
+      "id": "approach",
+      "status": "done"
+    },
+    {
+      "id": "branch",
+      "status": "done"
+    },
+    {
+      "id": "prepare-spec",
+      "status": "done"
+    },
+    {
+      "id": "draft",
+      "status": "done"
+    },
+    {
+      "id": "spec",
+      "status": "done"
+    },
+    {
+      "id": "gate",
+      "status": "done"
+    },
+    {
+      "id": "approval",
+      "status": "done"
+    },
+    {
+      "id": "test",
+      "status": "done"
+    },
+    {
+      "id": "implement",
+      "status": "done"
+    },
+    {
+      "id": "review",
+      "status": "done"
+    },
+    {
+      "id": "finalize",
+      "status": "done"
+    },
+    {
+      "id": "commit",
+      "status": "pending"
+    },
+    {
+      "id": "push",
+      "status": "pending"
+    },
+    {
+      "id": "merge",
+      "status": "pending"
+    },
+    {
+      "id": "pr-create",
+      "status": "pending"
+    },
+    {
+      "id": "branch-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "pr-merge",
+      "status": "pending"
+    },
+    {
+      "id": "sync-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "docs-update",
+      "status": "pending"
+    },
+    {
+      "id": "docs-review",
+      "status": "pending"
+    },
+    {
+      "id": "docs-commit",
+      "status": "pending"
+    }
+  ],
+  "requirements": [
+    {
+      "desc": "8箇所の catch を ENOENT チェック付きに変更",
+      "status": "done"
+    },
+    {
+      "desc": "SyntaxError も正しく出力される",
+      "status": "done"
+    },
+    {
+      "desc": "ENOENT 時の既存動作は維持",
+      "status": "done"
+    },
+    {
+      "desc": "既存テストがパスする",
+      "status": "done"
+    }
+  ],
+  "worktree": true,
+  "issue": 42,
+  "request": "Issue #42: サイレントエラー catch (_) {} の改善",
+  "notes": [
+    "approach: Q&A(auto), work-env: worktree, base: development"
+  ],
+  "autoApprove": true
+}

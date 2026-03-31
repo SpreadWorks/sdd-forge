@@ -1,0 +1,12 @@
+{
+  "entries": [
+    {
+      "step": "implement",
+      "reason": "flow run review が worktree モードで動作しなかった。.active-flow が main repo 側にあり、worktree の repoRoot() では見つからない",
+      "trigger": "sdd-forge flow run review 実行時に no active flow エラー",
+      "resolution": "review.js に worktree 検出を追加し、SDD_WORK_ROOT を main repo パスに設定して子プロセスに渡す。runSync に env オプションサポートを追加",
+      "guardrailCandidate": "worktree モードで子プロセスを起動する際は、.active-flow の解決に必要な main repo パスを SDD_WORK_ROOT で渡す",
+      "timestamp": "2026-03-30T00:00:00.000Z"
+    }
+  ]
+}

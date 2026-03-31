@@ -15,6 +15,7 @@ import path from "path";
 import readline from "readline";
 import { runIfDirect } from "./lib/entrypoint.js";
 import { parseArgs } from "./lib/cli.js";
+import { EXIT_ERROR } from "./lib/exit-codes.js";
 import { validateConfig } from "./lib/types.js";
 import { DEFAULT_LANG, sddDir as sddDirFn } from "./lib/config.js";
 import { createI18n } from "./lib/i18n.js";
@@ -137,6 +138,19 @@ function ensureGitignore(workRoot) {
   }
 }
 
+function ensureGitattributes(workRoot) {
+  const gitattributesPath = path.join(workRoot, ".gitattributes");
+  const entry = ".sdd-forge/output/analysis.json merge=ours";
+  if (fs.existsSync(gitattributesPath)) {
+    const content = fs.readFileSync(gitattributesPath, "utf8");
+    if (!content.includes(entry)) {
+      fs.appendFileSync(gitattributesPath, `\n${entry}\n`);
+    }
+  } else {
+    fs.writeFileSync(gitattributesPath, `${entry}\n`);
+  }
+}
+
 function registerProject(projectName, sourcePath, workRootPath, t) {
   const resolved = path.resolve(sourcePath);
   if (!fs.existsSync(resolved)) {
@@ -146,6 +160,7 @@ function registerProject(projectName, sourcePath, workRootPath, t) {
   const workRoot = workRootPath ? path.resolve(workRootPath) : resolved;
   ensureProjectDirs(workRoot);
   ensureGitignore(workRoot);
+  ensureGitattributes(workRoot);
 
   return { workRoot };
 }
@@ -208,7 +223,7 @@ function fixClaudeMdSymlink(sourceDir) {
       fs.unlinkSync(claudePath);
       fs.writeFileSync(claudePath, content, "utf8");
     }
-  } catch (_) {}
+  } catch (err) { if (err.code !== "ENOENT") console.error(err); }
 }
 
 // ---------------------------------------------------------------------------
@@ -216,8 +231,9 @@ function fixClaudeMdSymlink(sourceDir) {
 // ---------------------------------------------------------------------------
 
 function setupSkills(workRoot, t, lang) {
-  deploySkills(workRoot, lang);
+  const skillResults = deploySkills(workRoot, lang);
   console.log(t("setup.messages.skillsDeployed"));
+  return skillResults;
 }
 
 // ---------------------------------------------------------------------------
@@ -556,7 +572,12 @@ async function main() {
   }
 
   // Skills
-  setupSkills(workRoot, t, settings.lang);
+  try {
+    setupSkills(workRoot, t, settings.lang);
+  } catch (e) {
+    console.error(`skill deployment failed: ${e.message}`);
+    process.exit(EXIT_ERROR);
+  }
 
   // Final summary
   console.log(`\n  ${t("setup.messages.nextSteps")}`);

@@ -34,7 +34,7 @@ describe("readme CLI", () => {
   it("generates README.md from chapter files", () => {
     tmp = createTmpDir();
     setupProject(tmp, { name: "test-project", description: "A test" });
-    writeFile(tmp, "docs/01_overview.md", "# 01. Overview\n## 説明\nThis is an overview\n## 内容\nSome content\n");
+    writeFile(tmp, "docs/overview.md", "# Overview\n## 説明\nThis is an overview\n## 内容\nSome content\n");
 
     runReadme();
     assert.ok(fs.existsSync(join(tmp, "README.md")), "README.md should be created");
@@ -51,7 +51,7 @@ describe("readme CLI", () => {
   it("dry-run does not write README", () => {
     tmp = createTmpDir();
     setupProject(tmp, { name: "test" });
-    writeFile(tmp, "docs/01_test.md", "# 01. Test\n## 説明\ndesc\n## 内容\ncontent\n");
+    writeFile(tmp, "docs/test.md", "# Test\n## 説明\ndesc\n## 内容\ncontent\n");
     runReadme(["--dry-run"]);
     assert.ok(!fs.existsSync(join(tmp, "README.md")));
   });

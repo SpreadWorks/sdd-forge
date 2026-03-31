@@ -29,7 +29,7 @@ function setupProject(tmp, docsConfig, repoUrl) {
 
   // Create minimal docs
   fs.mkdirSync(path.join(tmp, "docs"), { recursive: true });
-  writeFile(tmp, "docs/01_overview.md", "# 01. Overview\n\nHello\n");
+  writeFile(tmp, "docs/overview.md", "# Overview\n\nHello\n");
 }
 
 describe("docs.langSwitcher", () => {
@@ -44,7 +44,7 @@ describe("docs.langSwitcher", () => {
 
     const { createResolver } = await import("../../../../src/docs/lib/resolver-factory.js");
     const resolver = await createResolver("node-cli", tmp, {});
-    const result = resolver.resolve("node-cli", "docs", "langSwitcher", {}, ["relative", "docs/01_overview.md"]);
+    const result = resolver.resolve("node-cli", "docs", "langSwitcher", {}, ["relative", "docs/overview.md"]);
 
     assert.equal(result, null);
     removeTmpDir(tmp);
@@ -55,15 +55,15 @@ describe("docs.langSwitcher", () => {
 
     const { createResolver } = await import("../../../../src/docs/lib/resolver-factory.js");
     const resolver = await createResolver("node-cli", tmp, {});
-    const result = resolver.resolve("node-cli", "docs", "langSwitcher", {}, ["relative", "docs/01_overview.md"]);
+    const result = resolver.resolve("node-cli", "docs", "langSwitcher", {}, ["relative", "docs/overview.md"]);
 
     assert.ok(result, "should return a non-null string");
     // Current lang (en) should be bold
     assert.ok(result.includes("**English**"), `should contain bold English, got: ${result}`);
     // Other lang (ja) should be a link
     assert.ok(result.includes("[日本語]"), `should contain link to Japanese, got: ${result}`);
-    // Relative path from docs/01_overview.md to docs/ja/01_overview.md
-    assert.ok(result.includes("ja/01_overview.md"), `should contain relative path, got: ${result}`);
+    // Relative path from docs/overview.md to docs/ja/overview.md
+    assert.ok(result.includes("ja/overview.md"), `should contain relative path, got: ${result}`);
     removeTmpDir(tmp);
   });
 
@@ -73,13 +73,13 @@ describe("docs.langSwitcher", () => {
     const { createResolver } = await import("../../../../src/docs/lib/resolver-factory.js");
     const resolver = await createResolver("node-cli", tmp, {});
     // File is in docs/ja/ (non-default lang)
-    const result = resolver.resolve("node-cli", "docs", "langSwitcher", {}, ["relative", "docs/ja/01_overview.md"]);
+    const result = resolver.resolve("node-cli", "docs", "langSwitcher", {}, ["relative", "docs/ja/overview.md"]);
 
     assert.ok(result, "should return a non-null string");
     // Current lang (ja) should be bold
     assert.ok(result.includes("**日本語**"), `should contain bold Japanese, got: ${result}`);
     // Other lang (en) should link to parent dir
-    assert.ok(result.includes("../01_overview.md"), `should contain ../ relative path, got: ${result}`);
+    assert.ok(result.includes("../overview.md"), `should contain ../ relative path, got: ${result}`);
     removeTmpDir(tmp);
   });
 
@@ -135,11 +135,11 @@ describe("docs.langSwitcher", () => {
 
     const { createResolver } = await import("../../../../src/docs/lib/resolver-factory.js");
     const resolver = await createResolver("node-cli", tmp, {});
-    const result = resolver.resolve("node-cli", "docs", "langSwitcher", {}, ["absolute", "docs/01_overview.md"]);
+    const result = resolver.resolve("node-cli", "docs", "langSwitcher", {}, ["absolute", "docs/overview.md"]);
 
     assert.ok(result, "should return a non-null string");
     assert.ok(
-      result.includes("https://github.com/TestOrg/test-project/blob/main/docs/ja/01_overview.md"),
+      result.includes("https://github.com/TestOrg/test-project/blob/main/docs/ja/overview.md"),
       `should contain absolute URL to ja chapter, got: ${result}`,
     );
     removeTmpDir(tmp);

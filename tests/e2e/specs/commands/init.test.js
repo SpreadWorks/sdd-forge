@@ -5,7 +5,7 @@ import { join } from "path";
 import { execFileSync } from "child_process";
 import { createTmpDir, removeTmpDir } from "../../../helpers/tmp-dir.js";
 
-const CMD = join(process.cwd(), "src/spec/commands/init.js");
+const CMD = join(process.cwd(), "src/sdd-forge.js");
 
 describe("spec init CLI", () => {
   let tmp;
@@ -18,24 +18,28 @@ describe("spec init CLI", () => {
     execFileSync("git", ["-C", tmp, "checkout", "-b", "main"], { encoding: "utf8" });
     execFileSync("git", ["-C", tmp, "commit", "--allow-empty", "-m", "init"], { encoding: "utf8" });
 
-    const result = execFileSync("node", [CMD, "--title", "test-feature", "--base", "main", "--dry-run"], {
+    const result = execFileSync("node", [CMD, "flow", "run", "prepare-spec", "--title", "test-feature", "--base", "main", "--dry-run"], {
       encoding: "utf8",
       env: { ...process.env, SDD_WORK_ROOT: tmp },
     });
 
-    assert.match(result, /dry-run/);
-    assert.match(result, /001-test-feature/);
+    const envelope = JSON.parse(result);
+    assert.equal(envelope.ok, true);
+    assert.match(envelope.data.result, /dry-run/);
+    assert.match(envelope.data.artifacts.specDir, /001-test-feature/);
   });
 
   it("throws when no title given", () => {
     try {
-      execFileSync("node", [CMD], {
+      execFileSync("node", [CMD, "flow", "run", "prepare-spec"], {
         encoding: "utf8",
         env: { ...process.env, SDD_WORK_ROOT: "/tmp" },
       });
       assert.fail("should throw");
     } catch (err) {
-      assert.match(err.stderr, /--title is required/);
+      const envelope = JSON.parse(err.stdout);
+      assert.equal(envelope.ok, false);
+      assert.ok(envelope.errors[0].messages.some((m) => m.includes("--title is required")));
     }
   });
 
@@ -45,19 +49,21 @@ describe("spec init CLI", () => {
     execFileSync("git", ["-C", tmp, "checkout", "-b", "main"], { encoding: "utf8" });
     execFileSync("git", ["-C", tmp, "commit", "--allow-empty", "-m", "init"], { encoding: "utf8" });
 
-    const result = execFileSync("node", [CMD, "--title", "my-feat", "--base", "main", "--allow-dirty"], {
+    const result = execFileSync("node", [CMD, "flow", "run", "prepare-spec", "--title", "my-feat", "--base", "main"], {
       encoding: "utf8",
       env: { ...process.env, SDD_WORK_ROOT: tmp },
     });
 
-    assert.match(result, /created branch/);
-    assert.match(result, /created spec/);
+    const envelope = JSON.parse(result);
+    assert.equal(envelope.ok, true);
+    assert.match(envelope.data.output, /created branch/);
+    assert.match(envelope.data.output, /created spec/);
     assert.ok(fs.existsSync(join(tmp, "specs/001-my-feat/spec.md")));
     assert.ok(fs.existsSync(join(tmp, "specs/001-my-feat/qa.md")));
   });
 
   it("shows help with --help", () => {
-    const result = execFileSync("node", [CMD, "--help"], {
+    const result = execFileSync("node", [CMD, "flow", "run", "prepare-spec", "--help"], {
       encoding: "utf8",
       env: { ...process.env, SDD_WORK_ROOT: "/tmp" },
     });
@@ -72,14 +78,16 @@ describe("spec init CLI", () => {
     execFileSync("git", ["-C", tmp, "checkout", "-b", "main"], { encoding: "utf8" });
     execFileSync("git", ["-C", tmp, "commit", "--allow-empty", "-m", "init"], { encoding: "utf8" });
 
-    const result = execFileSync("node", [CMD, "--title", "nb-feat", "--base", "main", "--no-branch", "--allow-dirty"], {
+    const result = execFileSync("node", [CMD, "flow", "run", "prepare-spec", "--title", "nb-feat", "--base", "main", "--no-branch"], {
       encoding: "utf8",
       env: { ...process.env, SDD_WORK_ROOT: tmp },
     });
 
+    const envelope = JSON.parse(result);
+    assert.equal(envelope.ok, true);
     // Should create spec but NOT branch
-    assert.match(result, /created spec/);
-    assert.ok(!result.includes("created branch"));
+    assert.match(envelope.data.output, /created spec/);
+    assert.ok(!envelope.data.output.includes("created branch"));
     assert.ok(fs.existsSync(join(tmp, "specs/001-nb-feat/spec.md")));
     assert.ok(fs.existsSync(join(tmp, "specs/001-nb-feat/qa.md")));
 
@@ -94,12 +102,14 @@ describe("spec init CLI", () => {
     execFileSync("git", ["-C", tmp, "checkout", "-b", "main"], { encoding: "utf8" });
     execFileSync("git", ["-C", tmp, "commit", "--allow-empty", "-m", "init"], { encoding: "utf8" });
 
-    const result = execFileSync("node", [CMD, "--title", "test-so", "--base", "main", "--no-branch", "--dry-run"], {
+    const result = execFileSync("node", [CMD, "flow", "run", "prepare-spec", "--title", "test-so", "--base", "main", "--no-branch", "--dry-run"], {
       encoding: "utf8",
       env: { ...process.env, SDD_WORK_ROOT: tmp },
     });
 
-    assert.match(result, /mode: spec-only/);
+    const envelope = JSON.parse(result);
+    assert.equal(envelope.ok, true);
+    assert.equal(envelope.data.artifacts.mode, "spec-only");
   });
 
   it("creates worktree with --worktree", () => {
@@ -108,13 +118,15 @@ describe("spec init CLI", () => {
     execFileSync("git", ["-C", tmp, "checkout", "-b", "main"], { encoding: "utf8" });
     execFileSync("git", ["-C", tmp, "commit", "--allow-empty", "-m", "init"], { encoding: "utf8" });
 
-    const result = execFileSync("node", [CMD, "--title", "wt-feat", "--base", "main", "--worktree", "--allow-dirty"], {
+    const result = execFileSync("node", [CMD, "flow", "run", "prepare-spec", "--title", "wt-feat", "--base", "main", "--worktree"], {
       encoding: "utf8",
       env: { ...process.env, SDD_WORK_ROOT: tmp },
     });
 
-    assert.match(result, /created worktree/);
-    assert.match(result, /created branch/);
+    const envelope = JSON.parse(result);
+    assert.equal(envelope.ok, true);
+    assert.match(envelope.data.output, /created worktree/);
+    assert.match(envelope.data.output, /created branch/);
     const wtPath = join(tmp, ".sdd-forge", "worktree", "feature-001-wt-feat");
     assert.ok(fs.existsSync(join(wtPath, "specs/001-wt-feat/spec.md")));
     assert.ok(fs.existsSync(join(wtPath, "specs/001-wt-feat/qa.md")));
@@ -129,13 +141,15 @@ describe("spec init CLI", () => {
     execFileSync("git", ["-C", tmp, "checkout", "-b", "main"], { encoding: "utf8" });
     execFileSync("git", ["-C", tmp, "commit", "--allow-empty", "-m", "init"], { encoding: "utf8" });
 
-    const result = execFileSync("node", [CMD, "--title", "test-wt", "--base", "main", "--worktree", "--dry-run"], {
+    const result = execFileSync("node", [CMD, "flow", "run", "prepare-spec", "--title", "test-wt", "--base", "main", "--worktree", "--dry-run"], {
       encoding: "utf8",
       env: { ...process.env, SDD_WORK_ROOT: tmp },
     });
 
-    assert.match(result, /mode: worktree/);
-    assert.match(result, /worktree:/);
+    const envelope = JSON.parse(result);
+    assert.equal(envelope.ok, true);
+    assert.equal(envelope.data.artifacts.mode, "worktree");
+    assert.ok(envelope.data.artifacts.worktree, "should have worktree path");
   });
 
   it("auto-detects worktree and skips branch creation", () => {
@@ -147,14 +161,16 @@ describe("spec init CLI", () => {
     const wtPath = join(tmp, "auto-wt");
     execFileSync("git", ["-C", tmp, "worktree", "add", wtPath, "-b", "wt-auto"], { encoding: "utf8" });
 
-    const result = execFileSync("node", [CMD, "--title", "auto-feat", "--base", "main", "--allow-dirty"], {
+    const result = execFileSync("node", [CMD, "flow", "run", "prepare-spec", "--title", "auto-feat", "--base", "main"], {
       encoding: "utf8",
       env: { ...process.env, SDD_WORK_ROOT: wtPath },
     });
 
+    const envelope = JSON.parse(result);
+    assert.equal(envelope.ok, true);
     // Should detect worktree and create spec-only (no branch)
-    assert.ok(!result.includes("created branch"));
-    assert.match(result, /created spec/);
+    assert.ok(!envelope.data.output.includes("created branch"));
+    assert.match(envelope.data.output, /created spec/);
     assert.ok(fs.existsSync(join(wtPath, "specs/001-auto-feat/spec.md")));
 
     // Cleanup worktree

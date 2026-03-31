@@ -31,7 +31,21 @@ describe("collectEntries", () => {
     assert.equal(entries[1].lines, 50);
   });
 
-  it("marks entries with summary as enriched", () => {
+  it("marks entries with enrich metadata as enriched", () => {
+    const analysis = {
+      modules: {
+        entries: [
+          { file: "a.js", enrich: { processedAt: "2026-03-26T00:00:00.000Z", attempts: 1 } },
+          { file: "b.js" },
+        ],
+      },
+    };
+    const entries = collectEntries(analysis);
+    assert.equal(entries[0].enriched, true);
+    assert.equal(entries[1].enriched, false);
+  });
+
+  it("does not mark entries with summary alone as enriched", () => {
     const analysis = {
       modules: {
         entries: [
@@ -41,7 +55,7 @@ describe("collectEntries", () => {
       },
     };
     const entries = collectEntries(analysis);
-    assert.equal(entries[0].enriched, true);
+    assert.equal(entries[0].enriched, false);
     assert.equal(entries[1].enriched, false);
   });
 
@@ -207,13 +221,21 @@ describe("mergeEnrichment", () => {
       ],
     };
 
-    const result = mergeEnrichment(analysis, enrichment);
+    const result = mergeEnrichment(analysis, enrichment, {
+      batchEntries: [{ category: "modules", index: 0 }, { category: "modules", index: 1 }],
+      attemptsByKey: new Map([
+        ["modules:0", 1],
+        ["modules:1", 1],
+      ]),
+    });
 
     assert.equal(result.modules.entries[0].summary, "Foo module");
     assert.equal(result.modules.entries[0].detail, "Does foo things");
     assert.equal(result.modules.entries[0].chapter, "internal_design");
     assert.equal(result.modules.entries[0].role, "lib");
     assert.equal(result.modules.entries[0].file, "src/foo.js"); // original preserved
+    assert.equal(result.modules.entries[0].enrich.attempts, 1);
+    assert.ok(result.modules.entries[0].enrich.processedAt);
     assert.equal(result.modules.entries[1].summary, "Bar module");
     assert.ok(result.enrichedAt); // timestamp added
   });
@@ -265,8 +287,72 @@ describe("mergeEnrichment", () => {
       modules: [{ index: 0, detail: "new detail" }],
     };
 
-    const result = mergeEnrichment(analysis, enrichment);
+    const result = mergeEnrichment(analysis, enrichment, {
+      batchEntries: [{ category: "modules", index: 0 }],
+      attemptsByKey: new Map([["modules:0", 2]]),
+    });
     assert.equal(result.modules.entries[0].summary, "original"); // preserved
     assert.equal(result.modules.entries[0].detail, "new detail"); // added
+    assert.equal(result.modules.entries[0].enrich.attempts, 2);
+  });
+
+  it("marks entries as processed even when summary is missing and emits a warning", () => {
+    const analysis = {
+      analyzedAt: "2026-01-01",
+      modules: {
+        summary: { total: 1 },
+        entries: [{ file: "a.js" }],
+      },
+    };
+    const warnings = [];
+    const enrichment = {
+      modules: [{ index: 0, detail: "new detail" }],
+    };
+
+    const result = mergeEnrichment(analysis, enrichment, {
+      batchEntries: [{ category: "modules", index: 0, file: "a.js" }],
+      attemptsByKey: new Map([["modules:0", 3]]),
+      onWarn: (msg) => warnings.push(msg),
+    });
+
+    assert.equal(result.modules.entries[0].detail, "new detail");
+    assert.equal(result.modules.entries[0].enrich.attempts, 3);
+    assert.ok(result.modules.entries[0].enrich.processedAt);
+    assert.equal(warnings.length, 1);
+    assert.match(warnings[0], /a\.js/);
+    assert.match(warnings[0], /modules/);
+    assert.match(warnings[0], /index=0/);
+  });
+
+  it("does not mark entries as processed when they are missing from the AI response", () => {
+    const analysis = {
+      analyzedAt: "2026-01-01",
+      modules: {
+        summary: { total: 2 },
+        entries: [{ file: "a.js" }, { file: "b.js" }],
+      },
+    };
+    const enrichment = {
+      modules: [{ index: 0, summary: "A summary" }],
+    };
+
+    const result = mergeEnrichment(analysis, enrichment, {
+      batchEntries: [
+        { category: "modules", index: 0, file: "a.js" },
+        { category: "modules", index: 1, file: "b.js" },
+      ],
+      attemptsByKey: new Map([
+        ["modules:0", 1],
+        ["modules:1", 1],
+      ]),
+    });
+
+    assert.ok(result.modules.entries[0].enrich);
+    assert.equal(result.modules.entries[0].enrich.attempts, 1);
+    assert.equal(result.modules.entries[1].enrich.processedAt, undefined);
+    assert.equal(result.modules.entries[1].enrich.attempts, 1);
   });
 });
+
+// getRetryCount and enrichBatchWithRetry tests moved to tests/unit/lib/agent.test.js
+// (retry logic is now in callAgentAsync)

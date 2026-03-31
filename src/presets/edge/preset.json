@@ -3,6 +3,9 @@
   "label": "Edge Compute (shared)",
   "aliases": [],
   "chapters": [
-    "edge_runtime.md"
+    {
+      "chapter": "edge_runtime.md",
+      "desc": "Edge runtime configuration, bindings, and deployment"
+    }
   ]
 }

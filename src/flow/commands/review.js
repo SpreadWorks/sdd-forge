@@ -14,6 +14,7 @@ import { loadConfig } from "../../lib/config.js";
 import { loadFlowState } from "../../lib/flow-state.js";
 import { loadAgentConfig, callAgent, resolveAgent, ensureAgentWorkDir } from "../../lib/agent.js";
 import { runSync } from "../../lib/process.js";
+import { EXIT_ERROR } from "../../lib/exit-codes.js";
 
 /**
  * Resolve review target files from spec scope or git diff fallback.
@@ -206,7 +207,7 @@ async function main() {
   const flow = loadFlowState(root);
   if (!flow) {
     console.error("Error: no active flow (flow.json not found)");
-    process.exit(1);
+    process.exit(EXIT_ERROR);
   }
 
   let config;
@@ -214,7 +215,7 @@ async function main() {
     config = loadConfig(root);
   } catch (_) {
     console.error("Error: failed to load config.json");
-    process.exit(1);
+    process.exit(EXIT_ERROR);
   }
 
   // Resolve target diff

@@ -43,15 +43,16 @@
       }
     },
     "commands": {
-      "docs.enrich":       { "agent": "claude", "profile": "opus" },
-      "docs.text":         { "agent": "claude", "profile": "opus" },
-      "docs.forge":        { "agent": "claude", "profile": "opus" },
+      "docs.enrich":       { "agent": "claude", "profile": "sonnet" },
+      "docs.text":         { "agent": "claude", "profile": "sonnet" },
+      "docs.forge":        { "agent": "claude", "profile": "sonnet" },
       "docs.readme":       { "agent": "claude", "profile": "sonnet" },
-      "docs.agents":       { "agent": "claude", "profile": "opus" },
+      "docs.agents":       { "agent": "claude", "profile": "sonnet" },
       "spec.gate":         { "agent": "claude", "profile": "sonnet" },
-      "flow.review.draft": { "agent": "codex" },
+      "experimental.workflow.borad.to-issue": { "agent": "claude", "profile": "sonnet" },
+      "flow.review.draft": { "agent": "claude", "profile": "sonnet" },
       "flow.review.final": { "agent": "claude", "profile": "opus" },
-      "docs.translate":    { "agent": "codex" }
+      "docs.translate":    { "agent": "claude", "profile": "sonnet" }
     }
   }
 }

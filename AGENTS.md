@@ -44,18 +44,24 @@
 ### ルール
 
 - ユーザーが「ボードに追加」「タスク化」「メモしておいて」等と言ったら `board.js add` で Draft を作成する
-- **MUST: ボード上のアイテム（Draft issue）のタイトル・本文は常に日本語で書くこと。英語にしてはならない。**
+- **MUST: ボード上の Draft issue のタイトル・本文は、Issue 化前は日本語で書くこと。**
+- **MUST: `board.js add` / `board.js update` は Draft を対象とし、Issue 化前のタイトル・本文は日本語で扱うこと。**
+- **MUST: `board.js add` / `board.js update` に渡すタイトル・本文そのものを日本語で作成すること。英語で下書きしてから翻訳してはならない。**
 - **MUST: `board.js add` / `board.js update` を実行する前に、登録・更新するタイトルと本文が日本語だけで構成されているか確認すること。英訳してから登録してはならない。**
 - **MUST: `board.js add` / `board.js update` の直後に `board.js show <hash>` で表示内容を確認し、タイトル・本文が日本語の Draft のまま保存されていることを検証すること。**
+- **MUST: `board.js show <hash>` で英語タイトル・英語本文が見えた場合、Issue 化前の Draft であれば日本語へ修正してから再確認すること。**
 - アイデア・リサーチメモ → `--status Ideas`
 - 実装タスク・バグ → `--status Todo`
 - アイテムの特定はハッシュID またはタイトルの一部で `board.js search` を使う
 - **MUST: Issue を作成する場合は、必ず先にボードに Draft を日本語で作成し、ユーザーの「issue にして」指示を待つこと。Draft を経由せず直接 `gh issue create` してはならない。**
-- 「○○を issue にして」と言われたら `board.js to-issue <hash>` で Issue 化する（英訳は claude CLI が自動実行）
+- **MUST: 「○○を issue にして」と言われたら、必ず `node experimental/workflow/board.js to-issue <hash> [--label ...]` を実行すること。Issue 化のために `board.js add` / `board.js update` で英語タイトル・英語本文を作成してはならない。**
+- **MUST: Issue 化のために新しい英語 Draft を追加してはならない。既存の日本語 Draft を `board.js to-issue` に渡すこと。**
+- 「○○を issue にして」と言われたら `board.js to-issue <hash>` で Issue 化する（英訳はコマンド内で実行される）
   - リポジトリは public のため Issue は英語で書く
   - 適切なラベル（bug / enhancement / documentation 等）を `--label` で付ける
-  - **MUST: Issue 作成後も、ボード上の Draft アイテムのタイトルは日本語のまま保持すること。英語に変更してはならない。**
-  - **MUST: 英語化が許されるのは Issue 化で外部に作成される GitHub Issue のみであり、ボード上の Draft に対して英語タイトル・英語本文への更新を行ってはならない。**
+  - **MUST: `board.js to-issue` では、Issue 化の直前にボード上の Draft タイトル・本文を英語へ更新してよい。本文下部には元の日本語を残すこと。**
+  - **MUST: 英訳タイトルへ更新する際も、ボードのハッシュID接頭辞（例: `0bc3:`）は保持すること。**
+  - **MUST: Issue 化後のボードアイテムは GitHub Issue を参照するため、タイトル・本文は英語 Issue の内容を表示してよい。**
 
 ## 設計思想
 
@@ -107,4 +113,3 @@
 ## ソースコード（src/）
 
 `src/` のアーキテクチャ・プリセット作成ルール・コーディングルールは `src/AGENTS.md` を参照すること。
-

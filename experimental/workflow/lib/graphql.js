@@ -93,6 +93,36 @@ export function updateDraftIssue(draftIssueId, { title, body } = {}) {
   return ghGraphQL(q);
 }
 
+export function convertDraftToIssue(itemId, repositoryId) {
+  const q = `
+    mutation {
+      convertProjectV2DraftIssueItemToIssue(input: {
+        itemId: "${itemId}"
+        repositoryId: "${repositoryId}"
+      }) {
+        item {
+          id
+          content {
+            ... on Issue { number url }
+          }
+        }
+      }
+    }`;
+  const result = ghGraphQL(q);
+  return result.data.convertProjectV2DraftIssueItemToIssue.item;
+}
+
+export function getRepositoryId(owner, name) {
+  const q = `
+    query {
+      repository(owner: "${owner}", name: "${name}") {
+        id
+      }
+    }`;
+  const result = ghGraphQL(q);
+  return result.data.repository.id;
+}
+
 export function setItemStatus(projectId, itemId, fieldId, optionId) {
   const q = `
     mutation {

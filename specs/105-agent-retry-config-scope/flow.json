@@ -1,0 +1,127 @@
+{
+  "spec": "specs/105-agent-retry-config-scope/spec.md",
+  "baseBranch": "development",
+  "featureBranch": "feature/105-agent-retry-config-scope",
+  "steps": [
+    {
+      "id": "approach",
+      "status": "done"
+    },
+    {
+      "id": "branch",
+      "status": "done"
+    },
+    {
+      "id": "prepare-spec",
+      "status": "done"
+    },
+    {
+      "id": "draft",
+      "status": "done"
+    },
+    {
+      "id": "spec",
+      "status": "done"
+    },
+    {
+      "id": "gate",
+      "status": "done"
+    },
+    {
+      "id": "approval",
+      "status": "done"
+    },
+    {
+      "id": "test",
+      "status": "done"
+    },
+    {
+      "id": "implement",
+      "status": "done"
+    },
+    {
+      "id": "review",
+      "status": "done"
+    },
+    {
+      "id": "finalize",
+      "status": "done"
+    },
+    {
+      "id": "commit",
+      "status": "pending"
+    },
+    {
+      "id": "push",
+      "status": "pending"
+    },
+    {
+      "id": "merge",
+      "status": "pending"
+    },
+    {
+      "id": "pr-create",
+      "status": "pending"
+    },
+    {
+      "id": "branch-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "pr-merge",
+      "status": "pending"
+    },
+    {
+      "id": "sync-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "docs-update",
+      "status": "pending"
+    },
+    {
+      "id": "docs-review",
+      "status": "pending"
+    },
+    {
+      "id": "docs-commit",
+      "status": "pending"
+    }
+  ],
+  "requirements": [
+    {
+      "desc": "callAgentAsync に retryCount/retryDelayMs オプション追加",
+      "status": "done"
+    },
+    {
+      "desc": "空レスポンスと非ゼロ終了時にリトライ（signal/timeout は除外）",
+      "status": "done"
+    },
+    {
+      "desc": "enrich の enrichBatchWithRetry/getRetryCount を削除",
+      "status": "done"
+    },
+    {
+      "desc": "text のハードコードリトライを削除",
+      "status": "done"
+    },
+    {
+      "desc": "enrich・text が config.agent.retryCount を callAgentAsync に渡す",
+      "status": "done"
+    }
+  ],
+  "worktree": true,
+  "issue": 36,
+  "request": "Issue #36: agent.retryCount の適用範囲を docs enrich に限定する実装",
+  "notes": [
+    "approach: Q&A → spec, work-env: worktree, base: development",
+    "draft: retryCount を enrich と text で共通化。enrich の enrichBatchWithRetry を lib に移すか、共通ヘルパーを作る方針",
+    "draft: callAgentAsync に options.retryCount/retryDelayMs を追加。デフォルト retryCount:0 で後方互換維持。enrich の enrichBatchWithRetry と text のハードコードリトライを置き換え",
+    "draft: getRetryCount ヘルパー不要。各コマンドが config.agent?.retryCount || 0 を直接渡す"
+  ],
+  "metrics": {
+    "draft": {
+      "question": 5
+    }
+  }
+}

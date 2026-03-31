@@ -165,7 +165,7 @@ export default class DocsSource extends DataSource {
     }
   }
 
-  /** Chapter table: lists docs/NN_*.md files with title and description. */
+  /** Chapter table: lists docs chapter files with title and description. */
   chapters(_analysis, labels) {
     const docsDir = this._docsDir || path.join(this._root, "docs");
     if (!fs.existsSync(docsDir)) return null;

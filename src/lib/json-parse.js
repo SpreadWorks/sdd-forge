@@ -12,6 +12,72 @@
  * @param {string} text - JSON を含むテキスト
  * @returns {string|null} 抽出された JSON 文字列、見つからなければ null
  */
+/**
+ * JSON 文字列値内のエスケープされていないダブルクォーテーションを修復する。
+ * AI が `commandId: "docs.translate"` のような未エスケープ引用符を含めるケース対策。
+ * 整形済み JSON（複数行）と minified JSON（1行）の両方に対応。
+ *
+ * @param {string} json - 壊れた JSON 文字列
+ * @returns {string} 修復された JSON 文字列
+ */
+export function fixUnescapedQuotes(json) {
+  const out = [];
+  let i = 0;
+  const len = json.length;
+
+  while (i < len) {
+    const ch = json[i];
+
+    if (ch !== '"') {
+      out.push(ch);
+      i++;
+      continue;
+    }
+
+    // Opening quote of a JSON string
+    out.push(ch);
+    i++;
+
+    while (i < len) {
+      const c = json[i];
+
+      if (c === "\\") {
+        const next = json[i + 1];
+        // Valid JSON escape sequences: " \ / b f n r t u
+        if (next && '"\\/bfnrtu'.includes(next)) {
+          out.push(c);
+          out.push(next);
+          i += 2;
+        } else {
+          // Invalid escape (e.g. \` ) — drop the backslash, keep the char
+          i++;
+        }
+        continue;
+      }
+
+      if (c === '"') {
+        // Real end of string if followed by JSON structural chars
+        const next = json[i + 1];
+        if (next === undefined || next === "," || next === "}" || next === "]" || next === ":"
+            || next === "\n" || next === "\r" || next === " " || next === "\t") {
+          out.push(c);
+          i++;
+          break;
+        }
+        // Unescaped quote inside a string value
+        out.push('\\"');
+        i++;
+        continue;
+      }
+
+      out.push(c);
+      i++;
+    }
+  }
+
+  return out.join("");
+}
+
 export function extractBalancedJson(text) {
   const start = text.indexOf("{");
   if (start < 0) return null;

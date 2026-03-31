@@ -5,7 +5,6 @@
  * sdd-forge CLI entry point.
  * Routes top-level subcommands to dedicated dispatchers:
  *   docs    → src/docs.js
- *   spec    → src/spec.js
  *   flow    → src/flow.js
  *   setup   → src/setup.js
  *   upgrade → src/upgrade.js
@@ -14,6 +13,7 @@
 
 import path from "path";
 import { PKG_DIR } from "./lib/cli.js";
+import { EXIT_ERROR } from "./lib/exit-codes.js";
 
 const rawArgs = process.argv.slice(2);
 const [subCmd, ...rest] = rawArgs;
@@ -34,7 +34,7 @@ if (!subCmd || subCmd === "-h" || subCmd === "--help") {
 }
 
 /** Namespace dispatchers — receive subcommand + rest args */
-const NAMESPACE_DISPATCHERS = new Set(["docs", "spec", "flow"]);
+const NAMESPACE_DISPATCHERS = new Set(["docs", "flow"]);
 
 /** Independent commands — receive rest args directly */
 const INDEPENDENT = {
@@ -55,5 +55,5 @@ if (NAMESPACE_DISPATCHERS.has(subCmd)) {
 } else {
   console.error(`sdd-forge: unknown command '${subCmd}'`);
   console.error("Run: sdd-forge help");
-  process.exit(1);
+  process.exit(EXIT_ERROR);
 }

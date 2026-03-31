@@ -1,0 +1,154 @@
+{
+  "spec": "specs/100-remove-external-cmd-deps/spec.md",
+  "baseBranch": "development",
+  "featureBranch": "feature/100-remove-external-cmd-deps",
+  "steps": [
+    {
+      "id": "approach",
+      "status": "done"
+    },
+    {
+      "id": "branch",
+      "status": "done"
+    },
+    {
+      "id": "prepare-spec",
+      "status": "done"
+    },
+    {
+      "id": "draft",
+      "status": "done"
+    },
+    {
+      "id": "spec",
+      "status": "done"
+    },
+    {
+      "id": "gate",
+      "status": "done"
+    },
+    {
+      "id": "approval",
+      "status": "done"
+    },
+    {
+      "id": "test",
+      "status": "done"
+    },
+    {
+      "id": "implement",
+      "status": "pending"
+    },
+    {
+      "id": "review",
+      "status": "pending"
+    },
+    {
+      "id": "finalize",
+      "status": "pending"
+    },
+    {
+      "id": "commit",
+      "status": "pending"
+    },
+    {
+      "id": "push",
+      "status": "pending"
+    },
+    {
+      "id": "merge",
+      "status": "pending"
+    },
+    {
+      "id": "pr-create",
+      "status": "pending"
+    },
+    {
+      "id": "branch-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "pr-merge",
+      "status": "pending"
+    },
+    {
+      "id": "sync-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "docs-update",
+      "status": "pending"
+    },
+    {
+      "id": "docs-review",
+      "status": "pending"
+    },
+    {
+      "id": "docs-commit",
+      "status": "pending"
+    }
+  ],
+  "requirements": [
+    {
+      "desc": "resolve-contextにdirty/branch/ahead/gh/lastCommit追加",
+      "status": "pending"
+    },
+    {
+      "desc": "prepare-specが dirty時にerror返却",
+      "status": "pending"
+    },
+    {
+      "desc": "flow get issue新規実装",
+      "status": "pending"
+    },
+    {
+      "desc": "flow run finalize新規実装(commit→merge→cleanup→sync一括)",
+      "status": "pending"
+    },
+    {
+      "desc": "flow run sync新規実装",
+      "status": "pending"
+    },
+    {
+      "desc": "merge/cleanupをregistryから削除",
+      "status": "pending"
+    },
+    {
+      "desc": "flow-plan skillからgit/gh除去",
+      "status": "pending"
+    },
+    {
+      "desc": "flow-finalize skillからgit/gh除去",
+      "status": "pending"
+    },
+    {
+      "desc": "flow-status skillからgit除去",
+      "status": "pending"
+    },
+    {
+      "desc": "flow-sync skillからgit除去",
+      "status": "pending"
+    },
+    {
+      "desc": "flow-impl skillから不要なgit参照除去",
+      "status": "pending"
+    },
+    {
+      "desc": "sdd-forge以外の依存がないことのテスト",
+      "status": "pending"
+    }
+  ],
+  "worktree": true,
+  "issue": 26,
+  "request": "Issue #26: flow skill から git/gh の直接実行を排除し、sdd-forge コマンドに集約する",
+  "metrics": {
+    "draft": {
+      "question": 4
+    }
+  },
+  "notes": [
+    "draft: 細切れにせず、設問結果をまとめてコマンドに渡し内部で一括処理。AIの判断回数を減らす",
+    "draft: merge現状維持。resolve-contextは読み取りのみ(get)。状態変更を伴うものはrunに",
+    "draft: flow run merge/cleanup削除、flow run finalizeに統合。alpha版ポリシー"
+  ]
+}

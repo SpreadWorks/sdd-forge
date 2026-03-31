@@ -24,6 +24,7 @@ import { loadFullAnalysis, loadAnalysisData, getChapterFiles, readText } from ".
 import { createResolver } from "../lib/resolver-factory.js";
 import { callAgentAsync, DEFAULT_AGENT_TIMEOUT, resolveAgent } from "../../lib/agent.js";
 import { translate } from "../../lib/i18n.js";
+import { EXIT_ERROR } from "../../lib/exit-codes.js";
 import {
   summaryToText,
   buildForgeSystemPrompt,
@@ -444,7 +445,7 @@ async function main() {
       console.log(t("messages:forge.needsInput"));
       console.log(t("messages:forge.reviewFeedback"));
       console.log(reviewFeedback);
-      process.exitCode = 2;
+      process.exitCode = EXIT_ERROR;
       return;
     }
   }

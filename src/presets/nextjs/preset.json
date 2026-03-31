@@ -3,14 +3,38 @@
   "label": "Next.js",
   "aliases": [],
   "chapters": [
-    "overview.md",
-    "stack_and_ops.md",
-    "project_structure.md",
-    "development.md",
-    "pages_routing.md",
-    "route_handlers.md",
-    "middleware.md",
-    "components.md"
+    {
+      "chapter": "overview.md",
+      "desc": "Project overview, architecture, and key concepts"
+    },
+    {
+      "chapter": "stack_and_ops.md",
+      "desc": "Technology stack, runtime dependencies, and operational setup"
+    },
+    {
+      "chapter": "project_structure.md",
+      "desc": "Directory structure, file organization, and shared libraries"
+    },
+    {
+      "chapter": "development.md",
+      "desc": "Development setup, scripts, and workflows"
+    },
+    {
+      "chapter": "pages_routing.md",
+      "desc": "Page structure, file-based routing, and navigation"
+    },
+    {
+      "chapter": "route_handlers.md",
+      "desc": "Route handlers, API routes, and server actions"
+    },
+    {
+      "chapter": "middleware.md",
+      "desc": "Middleware stack and request processing pipeline"
+    },
+    {
+      "chapter": "components.md",
+      "desc": "UI component architecture and patterns"
+    }
   ],
   "scan": {
     "include": [

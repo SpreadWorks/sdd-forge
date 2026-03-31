@@ -50,6 +50,70 @@ describe("callAgentAsync", () => {
   });
 });
 
+describe("callAgentAsync retry", () => {
+  it("retries on empty response and succeeds", async () => {
+    // node script: first call outputs nothing, second call outputs "ok"
+    const script = `
+      const fs = require("fs");
+      const f = process.argv[1];
+      let n = 0;
+      try { n = Number(fs.readFileSync(f, "utf8")); } catch {}
+      n++;
+      fs.writeFileSync(f, String(n));
+      if (n === 1) process.stdout.write("");
+      else process.stdout.write("ok");
+    `;
+    const tmp = `/tmp/agent-retry-test-${Date.now()}`;
+    const agent = { command: "node", args: ["-e", script, tmp] };
+    const result = await callAgentAsync(agent, "", undefined, undefined, { retryCount: 2, retryDelayMs: 10 });
+    assert.equal(result, "ok");
+    const { unlinkSync } = await import("node:fs");
+    try { unlinkSync(tmp); } catch {}
+  });
+
+  it("does not retry when retryCount is 0", async () => {
+    const agent = { command: "node", args: ["-e", ""] };
+    // Empty output, no retry — resolves with empty string
+    const result = await callAgentAsync(agent, "");
+    assert.equal(result, "");
+  });
+
+  it("retries on non-zero exit and succeeds", async () => {
+    const tmp = `/tmp/agent-retry-exit-${Date.now()}`;
+    const script = `
+      const fs = require("fs");
+      const f = process.argv[1];
+      let n = 0;
+      try { n = Number(fs.readFileSync(f, "utf8")); } catch {}
+      n++;
+      fs.writeFileSync(f, String(n));
+      if (n === 1) process.exit(1);
+      process.stdout.write("recovered");
+    `;
+    const agent = { command: "node", args: ["-e", script, tmp] };
+    const result = await callAgentAsync(agent, "", undefined, undefined, { retryCount: 1, retryDelayMs: 10 });
+    assert.equal(result, "recovered");
+    const { unlinkSync } = await import("node:fs");
+    try { unlinkSync(tmp); } catch {}
+  });
+
+  it("does not retry on signal kill (timeout)", async () => {
+    const agent = { command: "node", args: ["-e", "setTimeout(() => {}, 60000)"] };
+    await assert.rejects(
+      callAgentAsync(agent, "", 50, undefined, { retryCount: 2, retryDelayMs: 10 }),
+      (err) => err.killed === true || err.signal != null,
+    );
+  });
+
+  it("throws last error after all retries exhausted", async () => {
+    const agent = { command: "node", args: ["-e", "process.exit(1)"] };
+    await assert.rejects(
+      callAgentAsync(agent, "", undefined, undefined, { retryCount: 1, retryDelayMs: 10 }),
+      /exit=1/,
+    );
+  });
+});
+
 describe("resolveAgent", () => {
   it("resolves agent via commands config", () => {
     const cfg = {

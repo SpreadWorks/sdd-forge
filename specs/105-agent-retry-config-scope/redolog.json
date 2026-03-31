@@ -1,0 +1,11 @@
+{
+  "entries": [
+    {
+      "step": "review",
+      "reason": "flow run review fails in worktree mode: SDD_WORK_ROOT points to main repo but flow.json is in worktree",
+      "trigger": "node src/sdd-forge.js flow run review",
+      "resolution": "Pre-existing bug, skipped automated review and performed manual review instead",
+      "timestamp": "2026-03-31T05:12:13.284Z"
+    }
+  ]
+}

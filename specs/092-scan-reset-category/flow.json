@@ -1,0 +1,140 @@
+{
+  "spec": "specs/092-scan-reset-category/spec.md",
+  "baseBranch": "development",
+  "featureBranch": "feature/092-scan-reset-category",
+  "steps": [
+    {
+      "id": "approach",
+      "status": "done"
+    },
+    {
+      "id": "branch",
+      "status": "done"
+    },
+    {
+      "id": "spec",
+      "status": "done"
+    },
+    {
+      "id": "draft",
+      "status": "done"
+    },
+    {
+      "id": "fill-spec",
+      "status": "done"
+    },
+    {
+      "id": "approval",
+      "status": "done"
+    },
+    {
+      "id": "gate",
+      "status": "done"
+    },
+    {
+      "id": "test",
+      "status": "done"
+    },
+    {
+      "id": "implement",
+      "status": "done"
+    },
+    {
+      "id": "review",
+      "status": "done"
+    },
+    {
+      "id": "finalize",
+      "status": "in_progress"
+    },
+    {
+      "id": "commit",
+      "status": "in_progress"
+    },
+    {
+      "id": "push",
+      "status": "skipped"
+    },
+    {
+      "id": "merge",
+      "status": "done"
+    },
+    {
+      "id": "pr-create",
+      "status": "skipped"
+    },
+    {
+      "id": "branch-cleanup",
+      "status": "in_progress"
+    },
+    {
+      "id": "pr-merge",
+      "status": "pending"
+    },
+    {
+      "id": "sync-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "docs-update",
+      "status": "pending"
+    },
+    {
+      "id": "docs-review",
+      "status": "pending"
+    },
+    {
+      "id": "docs-commit",
+      "status": "pending"
+    }
+  ],
+  "requirements": [
+    {
+      "desc": "scan --reset で全カテゴリの hash を null 化",
+      "status": "done"
+    },
+    {
+      "desc": "scan --reset <categories> でカンマ区切り指定カテゴリのみ",
+      "status": "done"
+    },
+    {
+      "desc": "カテゴリ名と件数の表示",
+      "status": "done"
+    },
+    {
+      "desc": "合計表示",
+      "status": "done"
+    },
+    {
+      "desc": "存在しないカテゴリは警告で正常終了",
+      "status": "done"
+    },
+    {
+      "desc": "analysis.json なしはメッセージで正常終了",
+      "status": "done"
+    },
+    {
+      "desc": "scan は実行しない（hash クリアのみ）",
+      "status": "done"
+    },
+    {
+      "desc": "enrich フィールドはクリアしない",
+      "status": "done"
+    },
+    {
+      "desc": "ヘルプテキスト更新",
+      "status": "done"
+    },
+    {
+      "desc": "i18n locale 更新",
+      "status": "done"
+    }
+  ],
+  "worktree": true,
+  "request": "Issue #22: scan --reset-category オプションで指定カテゴリの hash を手動クリアする",
+  "issue": 22,
+  "notes": [
+    "draft: --reset option name, hash-only clear, no scan execution, argv detection",
+    "draft: normalization layer out of scope (board 83f6), enrich skip uses enrich.processedAt not summary"
+  ]
+}

@@ -17,16 +17,16 @@ const ACTIVE_FLOW_FILE = ".active-flow";
 
 /** SDD workflow step IDs in order. */
 export const FLOW_STEPS = [
-  "approach", "branch", "spec", "draft", "fill-spec",
-  "approval", "gate", "test", "implement", "review", "finalize",
+  "approach", "branch", "prepare-spec", "draft", "spec",
+  "gate", "approval", "test", "implement", "review", "finalize",
   "commit", "push", "merge", "pr-create", "branch-cleanup",
   "pr-merge", "sync-cleanup", "docs-update", "docs-review", "docs-commit",
 ];
 
 /** Step ID → phase mapping. */
 export const PHASE_MAP = {
-  approach: "plan", branch: "plan", spec: "plan", draft: "plan",
-  "fill-spec": "plan", approval: "plan", gate: "plan", test: "plan",
+  approach: "plan", branch: "plan", "prepare-spec": "plan", draft: "plan",
+  spec: "plan", gate: "plan", approval: "plan", test: "plan",
   implement: "impl", review: "impl", finalize: "impl",
   commit: "finalize", push: "finalize", merge: "finalize",
   "pr-create": "finalize", "branch-cleanup": "finalize",
@@ -77,6 +77,7 @@ export function derivePhase(steps) {
  * @property {RequirementEntry[]} [requirements] - spec requirements tracking
  * @property {number|null} [issue]      - 紐付く GitHub Issue 番号
  * @property {"squash"|"pr"|null} [mergeStrategy] - finalize 時に記録されるマージ方式
+ * @property {boolean} [autoApprove] - autoApprove モード（true の場合 AI が選択肢を自動選択して進む）
  */
 
 /**
@@ -115,7 +116,10 @@ export function loadActiveFlows(workRoot) {
   try {
     const data = JSON.parse(fs.readFileSync(p, "utf8"));
     return Array.isArray(data) ? data : [];
-  } catch (_) {
+  } catch (err) {
+    if (err.code !== "ENOENT") {
+      console.error(`[flow-state] WARN: failed to parse .active-flow (${p}): ${err.message}`);
+    }
     return [];
   }
 }
@@ -148,7 +152,7 @@ export function removeActiveFlow(workRoot, specId) {
   const filtered = flows.filter((f) => f.spec !== specId);
   const p = activeFlowPath(mainRoot);
   if (filtered.length === 0) {
-    try { fs.unlinkSync(p); } catch (_) {}
+    try { fs.unlinkSync(p); } catch (err) { if (err.code !== "ENOENT") console.error(err); }
     return;
   }
   fs.writeFileSync(p, JSON.stringify(filtered, null, 2) + "\n", "utf8");
@@ -221,7 +225,7 @@ export function cleanStaleFlows(workRoot) {
   if (valid.length !== flows.length) {
     const p = activeFlowPath(mainRoot);
     if (valid.length === 0) {
-      try { fs.unlinkSync(p); } catch (_) {}
+      try { fs.unlinkSync(p); } catch (err) { if (err.code !== "ENOENT") console.error(err); }
     } else {
       fs.writeFileSync(p, JSON.stringify(valid, null, 2) + "\n", "utf8");
     }
@@ -351,7 +355,7 @@ export function clearFlowState(workRoot, specId) {
  * @param {string} workRoot
  * @param {(state: FlowState) => void} mutator
  */
-function mutateFlowState(workRoot, mutator) {
+export function mutateFlowState(workRoot, mutator) {
   const state = loadFlowState(workRoot);
   if (!state) throw new Error("no active flow (flow.json not found)");
   mutator(state);

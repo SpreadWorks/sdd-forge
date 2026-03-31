@@ -1,0 +1,119 @@
+{
+  "spec": "specs/094-persist-acceptance-reports/spec.md",
+  "baseBranch": "development",
+  "featureBranch": "feature/094-persist-acceptance-reports",
+  "steps": [
+    {
+      "id": "approach",
+      "status": "done"
+    },
+    {
+      "id": "branch",
+      "status": "done"
+    },
+    {
+      "id": "spec",
+      "status": "done"
+    },
+    {
+      "id": "draft",
+      "status": "done"
+    },
+    {
+      "id": "fill-spec",
+      "status": "done"
+    },
+    {
+      "id": "approval",
+      "status": "done"
+    },
+    {
+      "id": "gate",
+      "status": "done"
+    },
+    {
+      "id": "test",
+      "status": "done"
+    },
+    {
+      "id": "implement",
+      "status": "done"
+    },
+    {
+      "id": "review",
+      "status": "done"
+    },
+    {
+      "id": "finalize",
+      "status": "in_progress"
+    },
+    {
+      "id": "commit",
+      "status": "in_progress"
+    },
+    {
+      "id": "push",
+      "status": "skipped"
+    },
+    {
+      "id": "merge",
+      "status": "done"
+    },
+    {
+      "id": "pr-create",
+      "status": "skipped"
+    },
+    {
+      "id": "branch-cleanup",
+      "status": "in_progress"
+    },
+    {
+      "id": "pr-merge",
+      "status": "pending"
+    },
+    {
+      "id": "sync-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "docs-update",
+      "status": "pending"
+    },
+    {
+      "id": "docs-review",
+      "status": "pending"
+    },
+    {
+      "id": "docs-commit",
+      "status": "pending"
+    }
+  ],
+  "requirements": [
+    {
+      "desc": "従来通り一時ディレクトリにレポート書き出し",
+      "status": "done"
+    },
+    {
+      "desc": "プロジェクトルートの .sdd-forge/output/acceptance-report-{preset}.json にも書き出し",
+      "status": "done"
+    },
+    {
+      "desc": "ファイル名にプリセット名をサフィックスとして付与",
+      "status": "done"
+    },
+    {
+      "desc": "同名ファイルは上書き",
+      "status": "done"
+    },
+    {
+      "desc": ".sdd-forge/output/ が存在しない場合は作成",
+      "status": "done"
+    }
+  ],
+  "worktree": true,
+  "issue": 24,
+  "request": "Issue #24: Persist acceptance test reports to .sdd-forge/output/ with preset name suffix (e.g., acceptance-report-cakephp2.json)",
+  "notes": [
+    "draft: approved. persist to project root .sdd-forge/output/, both temp+root, filename acceptance-report-{preset}.json, overwrite on re-run, no summary report"
+  ]
+}

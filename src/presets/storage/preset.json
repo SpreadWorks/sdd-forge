@@ -3,6 +3,9 @@
   "label": "Storage (shared)",
   "aliases": [],
   "chapters": [
-    "storage.md"
+    {
+      "chapter": "storage.md",
+      "desc": "Storage configuration, buckets, and data management"
+    }
   ]
 }

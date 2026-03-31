@@ -2,10 +2,10 @@ import { describe, it } from "node:test";
 import assert from "node:assert/strict";
 
 const { parseGuardrailArticles } = await import(
-  "../../../../src/spec/commands/guardrail.js"
+  "../../../../src/lib/guardrail.js"
 );
 const { buildGuardrailPrompt } = await import(
-  "../../../../src/spec/commands/gate.js"
+  "../../../../src/flow/run/gate.js"
 );
 
 // ---------------------------------------------------------------------------
@@ -132,7 +132,7 @@ describe("filterByPhase", () => {
   let filterByPhase;
 
   it("filters articles by phase", async () => {
-    ({ filterByPhase } = await import("../../../../src/spec/commands/guardrail.js"));
+    ({ filterByPhase } = await import("../../../../src/lib/guardrail.js"));
 
     const articles = [
       { title: "A", body: "", meta: { phase: ["spec"] } },
@@ -163,7 +163,7 @@ describe("matchScope", () => {
   let matchScope;
 
   it("matches glob patterns against file paths", async () => {
-    ({ matchScope } = await import("../../../../src/spec/commands/guardrail.js"));
+    ({ matchScope } = await import("../../../../src/lib/guardrail.js"));
 
     // *.css matches .css files
     assert.ok(matchScope("src/styles/main.css", ["*.css"]));
@@ -180,7 +180,7 @@ describe("matchScope", () => {
   });
 
   it("returns true when scope is undefined (all files match)", async () => {
-    ({ matchScope } = await import("../../../../src/spec/commands/guardrail.js"));
+    ({ matchScope } = await import("../../../../src/lib/guardrail.js"));
     assert.ok(matchScope("any/file.js", undefined));
     assert.ok(matchScope("any/file.js", []));
   });
@@ -221,7 +221,7 @@ describe("lint article validation", () => {
   let validateLintArticles;
 
   it("warns when lint pattern exists but phase does not include lint", async () => {
-    ({ validateLintArticles } = await import("../../../../src/spec/commands/lint.js"));
+    ({ validateLintArticles } = await import("../../../../src/lib/lint.js"));
 
     const articles = [
       { title: "Good", body: "", meta: { phase: ["lint"], lint: /TODO/ } },

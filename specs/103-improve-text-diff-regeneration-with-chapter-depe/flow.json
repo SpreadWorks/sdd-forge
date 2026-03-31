@@ -1,0 +1,127 @@
+{
+  "spec": "specs/103-improve-text-diff-regeneration-with-chapter-depe/spec.md",
+  "baseBranch": "development",
+  "featureBranch": "feature/103-improve-text-diff-regeneration-with-chapter-depe",
+  "steps": [
+    {
+      "id": "approach",
+      "status": "done"
+    },
+    {
+      "id": "branch",
+      "status": "done"
+    },
+    {
+      "id": "prepare-spec",
+      "status": "done"
+    },
+    {
+      "id": "draft",
+      "status": "done"
+    },
+    {
+      "id": "spec",
+      "status": "done"
+    },
+    {
+      "id": "gate",
+      "status": "done"
+    },
+    {
+      "id": "approval",
+      "status": "done"
+    },
+    {
+      "id": "test",
+      "status": "done"
+    },
+    {
+      "id": "implement",
+      "status": "done"
+    },
+    {
+      "id": "review",
+      "status": "done"
+    },
+    {
+      "id": "finalize",
+      "status": "done"
+    },
+    {
+      "id": "commit",
+      "status": "pending"
+    },
+    {
+      "id": "push",
+      "status": "pending"
+    },
+    {
+      "id": "merge",
+      "status": "pending"
+    },
+    {
+      "id": "pr-create",
+      "status": "pending"
+    },
+    {
+      "id": "branch-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "pr-merge",
+      "status": "pending"
+    },
+    {
+      "id": "sync-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "docs-update",
+      "status": "pending"
+    },
+    {
+      "id": "docs-review",
+      "status": "pending"
+    },
+    {
+      "id": "docs-commit",
+      "status": "pending"
+    }
+  ],
+  "requirements": [
+    {
+      "desc": "scan: 各entryに永続idを付与し、前回entryと照合して引き継ぐ",
+      "status": "done"
+    },
+    {
+      "desc": "scan: subkeyはclassName > name > なしの優先順で自動決定",
+      "status": "done"
+    },
+    {
+      "desc": "text: entry hashと現在のソースファイルhashを比較して変更検知",
+      "status": "done"
+    },
+    {
+      "desc": "text: 変更entryのchapterから再生成対象の章を特定",
+      "status": "done"
+    },
+    {
+      "desc": "text: --forceで全章強制再生成",
+      "status": "done"
+    }
+  ],
+  "worktree": true,
+  "issue": 31,
+  "request": "Issue #31: text差分再生成の仕組み改善（章依存とentry単位の判定）",
+  "notes": [
+    "approach: Q&Aで要件整理してから仕様書作成, work-env: worktree, base: development",
+    "draft: entry_idはanalysis.jsonの各entryにidフィールドとして保存。永続ID方式で、scan時にcategory+file+subkeyで前回entryと照合しIDを引き継ぐ",
+    "draft: 章依存データは保存せず、text実行時にanalysis.jsonのentryのchapterフィールドから都度算出する",
+    "draft: 変更検知はtext実行時にanalysis.json内のentryのhashと現在のソースファイルのhashを比較。差分制御用stateファイルは不要"
+  ],
+  "metrics": {
+    "draft": {
+      "question": 6
+    }
+  }
+}

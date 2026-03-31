@@ -10,16 +10,16 @@ import { validateConfig } from "../../src/lib/types.js";
 describe("060-A: help layout includes flow subcommands", () => {
   const names = commands.filter((c) => c.name).map((c) => c.name);
 
-  it("includes flow review", () => {
-    assert.ok(names.includes("flow review"));
+  it("includes flow get", () => {
+    assert.ok(names.includes("flow get"));
   });
 
-  it("includes flow merge", () => {
-    assert.ok(names.includes("flow merge"));
+  it("includes flow set", () => {
+    assert.ok(names.includes("flow set"));
   });
 
-  it("includes flow cleanup", () => {
-    assert.ok(names.includes("flow cleanup"));
+  it("includes flow run", () => {
+    assert.ok(names.includes("flow run"));
   });
 });
 

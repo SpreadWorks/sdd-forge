@@ -1,0 +1,142 @@
+{
+  "spec": "specs/096-flow-plan-rework/spec.md",
+  "baseBranch": "development",
+  "featureBranch": "feature/096-flow-plan-rework",
+  "steps": [
+    {
+      "id": "approach",
+      "status": "done"
+    },
+    {
+      "id": "branch",
+      "status": "done"
+    },
+    {
+      "id": "spec",
+      "status": "done"
+    },
+    {
+      "id": "draft",
+      "status": "done"
+    },
+    {
+      "id": "fill-spec",
+      "status": "done"
+    },
+    {
+      "id": "approval",
+      "status": "done"
+    },
+    {
+      "id": "gate",
+      "status": "done"
+    },
+    {
+      "id": "test",
+      "status": "done"
+    },
+    {
+      "id": "implement",
+      "status": "done"
+    },
+    {
+      "id": "review",
+      "status": "done"
+    },
+    {
+      "id": "finalize",
+      "status": "in_progress"
+    },
+    {
+      "id": "commit",
+      "status": "in_progress"
+    },
+    {
+      "id": "push",
+      "status": "pending"
+    },
+    {
+      "id": "merge",
+      "status": "pending"
+    },
+    {
+      "id": "pr-create",
+      "status": "pending"
+    },
+    {
+      "id": "branch-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "pr-merge",
+      "status": "pending"
+    },
+    {
+      "id": "sync-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "docs-update",
+      "status": "pending"
+    },
+    {
+      "id": "docs-review",
+      "status": "pending"
+    },
+    {
+      "id": "docs-commit",
+      "status": "pending"
+    }
+  ],
+  "requirements": [
+    {
+      "desc": "FLOW_STEPS を新順序に変更",
+      "status": "done"
+    },
+    {
+      "desc": "PHASE_MAP を新ステップ名に更新",
+      "status": "done"
+    },
+    {
+      "desc": "flow-plan SKILL.en.md を書き換え",
+      "status": "done"
+    },
+    {
+      "desc": "flow-plan SKILL.ja.md を書き換え",
+      "status": "done"
+    },
+    {
+      "desc": "全skillテンプレートのコマンドをflow get/set/run体系に置換",
+      "status": "done"
+    },
+    {
+      "desc": "plan.test-mode の選択肢を更新",
+      "status": "done"
+    },
+    {
+      "desc": "specs/<spec>/tests 配置規約を記述",
+      "status": "done"
+    },
+    {
+      "desc": "draft フェーズに要件カテゴリチェックリストを記述",
+      "status": "done"
+    },
+    {
+      "desc": "flow set metric draft question の呼び出しを組み込み",
+      "status": "done"
+    },
+    {
+      "desc": "既存テストの FLOW_STEPS 参照を更新",
+      "status": "done"
+    }
+  ],
+  "worktree": true,
+  "request": "Task 02: flow-plan rework - step並び変更、draft質問進行改善、gate移動、test再設計、metrics/redolog/qa-count反映",
+  "notes": [
+    "draft: FLOW_STEPS順序変更 approach→branch→prepare-spec→draft→spec→gate→approval→test→...",
+    "draft: draftチェックリスト=目的・スコープ/既存への影響/制約/エッジケース/テスト方針。skillテンプレートに埋め込み",
+    "draft: 全skillテンプレートのコマンドを新体系(flow get/set/run)に一括置換",
+    "draft: specs/<spec>/tests のディレクトリ作成・テスト実行の仕組みを本スコープに含める。CLIコマンドは不要、skill指示+規約で実現",
+    "draft: plan.test-mode選択肢変更→テストコード作成する/作成しない/その他"
+  ]
+}

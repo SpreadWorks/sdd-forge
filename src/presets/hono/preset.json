@@ -3,17 +3,51 @@
   "label": "Hono",
   "aliases": [],
   "chapters": [
-    "overview.md",
-    "stack_and_ops.md",
-    "project_structure.md",
-    "development.md",
-    "api_overview.md",
-    "authentication.md",
-    "controller_routes.md",
-    "middleware.md"
+    {
+      "chapter": "overview.md",
+      "desc": "Project overview, architecture, and key concepts"
+    },
+    {
+      "chapter": "stack_and_ops.md",
+      "desc": "Technology stack, runtime dependencies, and operational setup"
+    },
+    {
+      "chapter": "project_structure.md",
+      "desc": "Directory structure, file organization, and shared libraries"
+    },
+    {
+      "chapter": "development.md",
+      "desc": "Development setup, scripts, and workflows"
+    },
+    {
+      "chapter": "api_overview.md",
+      "desc": "API overview, design principles, and endpoint structure"
+    },
+    {
+      "chapter": "authentication.md",
+      "desc": "Authentication flows, token management, and access control"
+    },
+    {
+      "chapter": "controller_routes.md",
+      "desc": "URL routing, controllers, request handling, and middleware"
+    },
+    {
+      "chapter": "middleware.md",
+      "desc": "Middleware stack and request processing pipeline"
+    }
   ],
   "scan": {
-    "include": ["src/**/*.ts", "src/**/*.js", "src/**/*.mjs", "package.json", "tsconfig.json", "wrangler.toml"],
-    "exclude": ["node_modules/**", "dist/**"]
+    "include": [
+      "src/**/*.ts",
+      "src/**/*.js",
+      "src/**/*.mjs",
+      "package.json",
+      "tsconfig.json",
+      "wrangler.toml"
+    ],
+    "exclude": [
+      "node_modules/**",
+      "dist/**"
+    ]
   }
 }

@@ -8,6 +8,7 @@
 import crypto from "crypto";
 import fs from "fs";
 import path from "path";
+import { getLangHandler } from "./lang-factory.js";
 
 // ---------------------------------------------------------------------------
 // ファイル探索
@@ -174,12 +175,19 @@ export function parseJSFile(filePath) {
 
 /**
  * 拡張子から言語を自動判定してパーサーを選択する。
+ * lang-factory 経由で言語ハンドラを取得し、parse を呼ぶ。
  * lang 引数が明示されていれば、それを優先する。
  */
 export function parseFile(filePath, lang) {
-  const resolved = lang || detectLang(filePath);
-  if (resolved === "php") return parsePHPFile(filePath);
-  if (resolved === "js") return parseJSFile(filePath);
+  // Legacy lang argument support
+  if (lang === "php") return parsePHPFile(filePath);
+  if (lang === "js") return parseJSFile(filePath);
+
+  const handler = getLangHandler(filePath);
+  if (handler?.parse) {
+    const content = fs.readFileSync(filePath, "utf8");
+    return handler.parse(content, filePath);
+  }
   // デフォルト: ファイル名のみ
   return {
     className: path.basename(filePath),
@@ -189,17 +197,6 @@ export function parseFile(filePath, lang) {
     relations: {},
     content: "",
   };
-}
-
-/**
- * ファイルの拡張子から言語を判定する。
- */
-function detectLang(filePath) {
-  const ext = path.extname(filePath).toLowerCase();
-  if (ext === ".php") return "php";
-  if (ext === ".js" || ext === ".mjs" || ext === ".cjs") return "js";
-  if (ext === ".json") return "json";
-  return null;
 }
 
 // ---------------------------------------------------------------------------

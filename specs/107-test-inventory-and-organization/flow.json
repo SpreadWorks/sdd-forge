@@ -1,0 +1,120 @@
+{
+  "spec": "specs/107-test-inventory-and-organization/spec.md",
+  "baseBranch": "development",
+  "featureBranch": "feature/107-test-inventory-and-organization",
+  "steps": [
+    {
+      "id": "approach",
+      "status": "done"
+    },
+    {
+      "id": "branch",
+      "status": "done"
+    },
+    {
+      "id": "prepare-spec",
+      "status": "done"
+    },
+    {
+      "id": "draft",
+      "status": "done"
+    },
+    {
+      "id": "spec",
+      "status": "done"
+    },
+    {
+      "id": "gate",
+      "status": "done"
+    },
+    {
+      "id": "approval",
+      "status": "done"
+    },
+    {
+      "id": "test",
+      "status": "done"
+    },
+    {
+      "id": "implement",
+      "status": "done"
+    },
+    {
+      "id": "review",
+      "status": "done"
+    },
+    {
+      "id": "finalize",
+      "status": "in_progress"
+    },
+    {
+      "id": "commit",
+      "status": "pending"
+    },
+    {
+      "id": "push",
+      "status": "pending"
+    },
+    {
+      "id": "merge",
+      "status": "pending"
+    },
+    {
+      "id": "pr-create",
+      "status": "pending"
+    },
+    {
+      "id": "branch-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "pr-merge",
+      "status": "pending"
+    },
+    {
+      "id": "sync-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "docs-update",
+      "status": "pending"
+    },
+    {
+      "id": "docs-review",
+      "status": "pending"
+    },
+    {
+      "id": "docs-commit",
+      "status": "pending"
+    }
+  ],
+  "requirements": [
+    {
+      "desc": "SKILL.md テストフェーズに分類基準追記",
+      "status": "done"
+    },
+    {
+      "desc": "9件のテストを specs/ に移動",
+      "status": "done"
+    },
+    {
+      "desc": "npm test PASS 確認",
+      "status": "done"
+    }
+  ],
+  "worktree": true,
+  "issue": 40,
+  "request": "#40 テストの棚卸し・整理方針 — テストを仕様テストとリグレッションテストに分類し、全体像を俯瞰できるようにする",
+  "notes": [
+    "approach: Q&A で要件整理",
+    "work-env: worktree, base: development",
+    "draft: 全テスト精査+分類基準明文化+スキル改善+npm test:spec追加+テスト移動",
+    "review: auto-fix",
+    "finalize: all, squash merge"
+  ],
+  "metrics": {
+    "draft": {
+      "question": 10
+    }
+  }
+}

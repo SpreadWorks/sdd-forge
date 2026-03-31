@@ -85,16 +85,16 @@ export default class LangSource extends DataSource {
     const fileName = path.basename(normalized);
 
     if (currentLang === defaultLang) {
-      // docs/01_overview.md → docs/{targetLang}/01_overview.md
-      // Relative: {targetLang}/01_overview.md
+      // docs/overview.md → docs/{targetLang}/overview.md
+      // Relative: {targetLang}/overview.md
       return `${targetLang}/${fileName}`;
     } else if (targetLang === defaultLang) {
-      // docs/{currentLang}/01_overview.md → docs/01_overview.md
-      // Relative: ../01_overview.md
+      // docs/{currentLang}/overview.md → docs/overview.md
+      // Relative: ../overview.md
       return `../${fileName}`;
     } else {
-      // docs/{currentLang}/01_overview.md → docs/{targetLang}/01_overview.md
-      // Relative: ../{targetLang}/01_overview.md
+      // docs/{currentLang}/overview.md → docs/{targetLang}/overview.md
+      // Relative: ../{targetLang}/overview.md
       return `../${targetLang}/${fileName}`;
     }
   }

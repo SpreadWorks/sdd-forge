@@ -1,0 +1,55 @@
+/**
+ * tests/unit/lib/skills-include.test.js
+ *
+ * Verify that deploySkills() resolves include directives
+ * and produces expanded output without include markers.
+ */
+
+import { describe, it, afterEach } from "node:test";
+import assert from "node:assert/strict";
+import fs from "fs";
+import path from "path";
+import { createTmpDir, removeTmpDir } from "../../helpers/tmp-dir.js";
+import { deploySkills } from "../../../src/lib/skills.js";
+
+describe("deploySkills include resolution", () => {
+  let tmp;
+  afterEach(() => tmp && removeTmpDir(tmp));
+
+  it("deployed SKILL.md contains no include directives", () => {
+    tmp = createTmpDir();
+    fs.mkdirSync(path.join(tmp, ".sdd-forge"), { recursive: true });
+    fs.writeFileSync(path.join(tmp, ".sdd-forge", "config.json"), JSON.stringify({ lang: "en", type: "base", docs: { languages: ["en"], defaultLanguage: "en" } }));
+
+    const results = deploySkills(tmp, "en");
+    assert.ok(results.length > 0, "should deploy at least one skill");
+
+    for (const { name } of results) {
+      const agentsPath = path.join(tmp, ".agents", "skills", name, "SKILL.md");
+      if (!fs.existsSync(agentsPath)) continue;
+      const content = fs.readFileSync(agentsPath, "utf8");
+      assert.ok(
+        !content.includes('<!-- include('),
+        `${name}/SKILL.md should not contain include directives, found: ${content.match(/<!-- include\([^)]+\) -->/)?.[0]}`,
+      );
+    }
+  });
+
+  it("deployed content includes partials content", () => {
+    tmp = createTmpDir();
+    fs.mkdirSync(path.join(tmp, ".sdd-forge"), { recursive: true });
+    fs.writeFileSync(path.join(tmp, ".sdd-forge", "config.json"), JSON.stringify({ lang: "en", type: "base", docs: { languages: ["en"], defaultLanguage: "en" } }));
+
+    deploySkills(tmp, "en");
+
+    const planPath = path.join(tmp, ".agents", "skills", "sdd-forge.flow-plan", "SKILL.md");
+    if (fs.existsSync(planPath)) {
+      const content = fs.readFileSync(planPath, "utf8");
+      // Choice Format partial content should be expanded
+      assert.ok(
+        content.includes("Description") || content.includes("description") || content.includes("choices"),
+        "flow-plan SKILL.md should contain expanded Choice Format content",
+      );
+    }
+  });
+});

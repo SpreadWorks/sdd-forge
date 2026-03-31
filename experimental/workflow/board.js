@@ -1,10 +1,16 @@
 #!/usr/bin/env node
 
+import path from "node:path";
 import { execFileSync } from "node:child_process";
 import { loadBoardConfig } from "./lib/config.js";
 import { prefixTitle, extractId } from "./lib/hash.js";
-import { searchItems, listItems, getProjectMeta, setItemStatus, updateDraftIssue } from "./lib/graphql.js";
-import { createIssue } from "./lib/issue.js";
+import { searchItems, listItems, getProjectMeta, setItemStatus, updateDraftIssue, convertDraftToIssue, getRepositoryId } from "./lib/graphql.js";
+import { assertJapaneseDraft, assertJapaneseDraftField, stripHashPrefix } from "./lib/validation.js";
+import { loadConfig } from "../../src/lib/config.js";
+import { callAgent, ensureAgentWorkDir, resolveAgent } from "../../src/lib/agent.js";
+
+const COMMAND_ID = "experimental.workflow.borad.to-issue";
+const ROOT = path.resolve(import.meta.dirname, "..", "..");
 
 function parseJsonResponse(text) {
   const trimmed = text.trim();
@@ -69,6 +75,7 @@ function cmdAdd(config, args) {
     console.error("Usage: board.js add <title> [--status Todo|Ideas] [--body <text>]");
     process.exit(1);
   }
+  assertJapaneseDraft(rawTitle, body, { allowEmptyBody: true });
 
   const title = prefixTitle(rawTitle);
 
@@ -173,6 +180,10 @@ function cmdUpdate(config, args) {
       console.error("Issue に変換済みのアイテムのタイトル・本文は更新できません");
       process.exit(1);
     }
+    const currentTitle = stripHashPrefix(item.content?.title || "");
+    const nextTitle = title !== null ? title : currentTitle;
+    const nextBody = body !== null ? body : item.content?.body;
+    assertJapaneseDraft(nextTitle, nextBody, { allowEmptyBody: true });
     const newTitle = title !== null ? `${hash}: ${title}` : undefined;
     updateDraftIssue(draftId, { title: newTitle, body: body ?? undefined });
     if (title !== null) console.log(`タイトル更新: ${newTitle}`);
@@ -228,38 +239,77 @@ function cmdToIssue(config, args) {
   }
 
   const c = item.content;
+  const jaTitle = stripHashPrefix(c.title || "");
+  const jaBody = c.body || "";
   console.log(`Draft: ${c.title}\n`);
+  assertJapaneseDraft(jaTitle, jaBody, { allowEmptyBody: true });
 
-  // 2. claude で英訳
+  // 2. configured agent で英訳
   const prompt = `Translate the following Japanese GitHub issue title and body to English. Output ONLY valid JSON with "title" and "body" keys. Do not include any other text.
 
-Title: ${c.title}
+Title: ${jaTitle}
 
 Body:
-${c.body || "(empty)"}`;
+${jaBody || "(empty)"}`;
 
-  const translated = execFileSync("claude", ["-p", prompt, "--output-format", "json"], {
-    encoding: "utf8",
-    timeout: 60000,
-  });
-  const parsed = JSON.parse(translated);
-  const result = parseJsonResponse(parsed.result);
+  const agentConfig = loadConfig(ROOT);
+  const agent = resolveAgent(agentConfig, COMMAND_ID);
+  if (!agent) {
+    throw new Error(`No agent configured for ${COMMAND_ID}`);
+  }
+  ensureAgentWorkDir(agent, ROOT);
+
+  const translated = callAgent(
+    agent,
+    prompt,
+    (agentConfig.agent?.timeout || 300) * 1000,
+    ROOT,
+  );
+  const result = parseJsonResponse(translated);
   const enTitle = result.title;
+  const issueTitle = `${hash}: ${enTitle}`;
   const enBody = result.body;
+  assertJapaneseDraftField("Draft タイトル", jaTitle);
 
-  console.log(`英訳タイトル: ${enTitle}`);
+  console.log(`英訳タイトル: ${issueTitle}`);
   console.log(`英訳本文:\n${enBody}\n`);
 
-  // 3. Issue 作成
-  const url = createIssue({
-    title: enTitle,
-    body: enBody,
-    labels,
-    repo: config.repo,
-    project: config.repo.split("/")[1],
-  });
+  // 3. Issue 本文を組み立て（英語 + 日本語折りたたみ）
+  const issueBody = `${enBody}
 
-  console.log(`Issue 作成: ${url}`);
+---
+
+<details>
+<summary>Japanese</summary>
+
+${jaTitle}
+
+${jaBody}
+
+  </details>`;
+
+  // 4. Draft のタイトル・本文を英語に更新
+  const draftId = c.draftId;
+  updateDraftIssue(draftId, { title: issueTitle, body: issueBody });
+
+  // 5. Draft を Issue に変換（convertProjectV2DraftIssueItemToIssue）
+  const [repoOwner, repoName] = config.repo.split("/");
+  const repositoryId = getRepositoryId(repoOwner, repoName);
+
+  const converted = convertDraftToIssue(item.id, repositoryId);
+  const issueNumber = converted.content?.number;
+  const issueUrl = converted.content?.url;
+
+  console.log(`Issue 作成: ${issueUrl || `#${issueNumber}`}`);
+
+  // 6. ラベルを付与
+  if (labels.length > 0 && issueNumber) {
+    execFileSync("gh", ["issue", "edit", String(issueNumber), ...labels.flatMap((l) => ["--add-label", l]), "--repo", config.repo], {
+      encoding: "utf8",
+      timeout: 30000,
+    });
+    console.log(`ラベル追加: ${labels.join(", ")}`);
+  }
 }
 
 // --- main ---

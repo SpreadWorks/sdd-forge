@@ -73,19 +73,19 @@ describe("buildForgeSystemPrompt", () => {
 describe("buildForgeFilePrompt", () => {
   it("includes target file and round info", () => {
     const result = buildForgeFilePrompt({
-      targetFile: "docs/01_overview.md",
+      targetFile: "docs/overview.md",
       round: 2,
       maxRuns: 3,
       reviewFeedback: "",
     });
-    assert.ok(result.includes("docs/01_overview.md"));
+    assert.ok(result.includes("docs/overview.md"));
     assert.ok(result.includes("round: 2/3"));
     assert.ok(result.includes("[TARGET_FILE]"));
   });
 
   it("includes review feedback when provided", () => {
     const result = buildForgeFilePrompt({
-      targetFile: "docs/01_overview.md",
+      targetFile: "docs/overview.md",
       round: 2,
       maxRuns: 3,
       reviewFeedback: "[FAIL] too short",
@@ -159,7 +159,7 @@ describe("forge CLI validation", () => {
   it("--dry-run skips writes, review, and agent calls", () => {
     tmp = createTmpDir();
     writeJson(tmp, ".sdd-forge/config.json", { lang: "ja", type: "node-cli", docs: { languages: ["ja"], defaultLanguage: "ja" } });
-    writeFile(tmp, "docs/01_test.md", "# 01. Test\n\nContent\n");
+    writeFile(tmp, "docs/test.md", "# Test\n\nContent\n");
 
     const result = execFileSync("node", [
       CMD,
@@ -179,9 +179,9 @@ describe("forge CLI validation", () => {
     tmp = createTmpDir();
     writeJson(tmp, ".sdd-forge/config.json", { lang: "ja", type: "node-cli", docs: { languages: ["ja"], defaultLanguage: "ja" } });
     // Create docs that will pass review
-    const lines = ["# 01. Test", ""];
+    const lines = ["# Test", ""];
     for (let i = 0; i < 20; i++) lines.push(`Content line ${i}`);
-    writeFile(tmp, "docs/01_test.md", lines.join("\n"));
+    writeFile(tmp, "docs/test.md", lines.join("\n"));
 
     // Use a review command that always passes
     const result = execFileSync("node", [
@@ -214,8 +214,8 @@ describe("forge CLI validation", () => {
         },
       },
     });
-    writeFile(tmp, "docs/01_test.md", "# Test\n\ncontent\n");
-    writeFile(tmp, "docs/02_arch.md", "# Arch\n\ncontent\n");
+    writeFile(tmp, "docs/test.md", "# Test\n\ncontent\n");
+    writeFile(tmp, "docs/arch.md", "# Arch\n\ncontent\n");
 
     const result = execFileSync("node", [
       CMD,

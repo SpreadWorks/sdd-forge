@@ -35,6 +35,17 @@ export function writeReport(reportPath, report) {
   fs.writeFileSync(reportPath, JSON.stringify(report, null, 2));
 }
 
+export function persistReport(projectRoot, report) {
+  const reportPath = path.join(
+    projectRoot,
+    ".sdd-forge",
+    "output",
+    `acceptance-report-${report.preset}.json`,
+  );
+  writeReport(reportPath, report);
+  return reportPath;
+}
+
 export function acceptanceTest(presetName, opts) {
   const { configOverrides } = opts || {};
   const fixtureDir = resolveFixtureDir(presetName, opts);
@@ -90,6 +101,15 @@ export function acceptanceTest(presetName, opts) {
       );
       writeReport(reportPath, report);
       console.log(`  [report] written to ${reportPath}`);
+
+      const projectRoot = path.resolve(
+        path.dirname(fileURLToPath(import.meta.url)),
+        "..",
+        "..",
+        "..",
+      );
+      const persistPath = persistReport(projectRoot, report);
+      console.log(`  [report] persisted to ${persistPath}`);
 
       if (aiError) throw aiError;
     });

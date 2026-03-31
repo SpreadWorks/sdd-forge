@@ -3,6 +3,9 @@
   "label": "Database (shared)",
   "aliases": [],
   "chapters": [
-    "database.md"
+    {
+      "chapter": "database.md",
+      "desc": "Database configuration, connections, and query patterns"
+    }
   ]
 }

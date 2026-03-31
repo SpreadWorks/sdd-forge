@@ -1,0 +1,126 @@
+{
+  "spec": "specs/108-mechanical-extraction-of-structural-info-and-fac/spec.md",
+  "baseBranch": "development",
+  "featureBranch": "feature/108-mechanical-extraction-of-structural-info-and-fac",
+  "steps": [
+    {
+      "id": "approach",
+      "status": "done"
+    },
+    {
+      "id": "branch",
+      "status": "done"
+    },
+    {
+      "id": "prepare-spec",
+      "status": "done"
+    },
+    {
+      "id": "draft",
+      "status": "done"
+    },
+    {
+      "id": "spec",
+      "status": "done"
+    },
+    {
+      "id": "gate",
+      "status": "done"
+    },
+    {
+      "id": "approval",
+      "status": "done"
+    },
+    {
+      "id": "test",
+      "status": "done"
+    },
+    {
+      "id": "implement",
+      "status": "done"
+    },
+    {
+      "id": "review",
+      "status": "done"
+    },
+    {
+      "id": "finalize",
+      "status": "done"
+    },
+    {
+      "id": "commit",
+      "status": "pending"
+    },
+    {
+      "id": "push",
+      "status": "pending"
+    },
+    {
+      "id": "merge",
+      "status": "pending"
+    },
+    {
+      "id": "pr-create",
+      "status": "pending"
+    },
+    {
+      "id": "branch-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "pr-merge",
+      "status": "pending"
+    },
+    {
+      "id": "sync-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "docs-update",
+      "status": "pending"
+    },
+    {
+      "id": "docs-review",
+      "status": "pending"
+    },
+    {
+      "id": "docs-commit",
+      "status": "pending"
+    }
+  ],
+  "requirements": [
+    {
+      "desc": "Factory: lang-factory.jsでgetLangHandler(filePath)を提供",
+      "status": "done"
+    },
+    {
+      "desc": "リファクタ: scanner.jsとminify.jsの言語別処理をlang/に移動",
+      "status": "done"
+    },
+    {
+      "desc": "構造抽出: JS/PHPのextractImports/extractExportsを実装",
+      "status": "done"
+    },
+    {
+      "desc": "usedBy: scan完了後にimportsを逆引きして算出",
+      "status": "done"
+    },
+    {
+      "desc": "ドキュメント: src/AGENTS.mdに言語ハンドラ開発方法を記載",
+      "status": "done"
+    }
+  ],
+  "worktree": true,
+  "issue": 38,
+  "request": "Issue #38: 構造情報の機械的抽出（imports/exports/usedBy）+ 言語ハンドラの Factory パターン導入",
+  "notes": [
+    "approach: Q&Aで要件整理, work-env: worktree, base: development",
+    "draft: parse+minify+extractImportsをすべてFactory化。scanner.jsとminify.jsをリファクタ",
+    "draft: ModuleEntryにimports,exports,usedBy,extendsの4フィールド追加"
+  ],
+  "metrics": {
+    "draft": {
+      "question": 5
+    }
+  }
+}
