@@ -1,0 +1,114 @@
+{
+  "spec": "specs/114-fix-flow-run-review-worktree-mode/spec.md",
+  "baseBranch": "development",
+  "featureBranch": "feature/114-fix-flow-run-review-worktree-mode",
+  "steps": [
+    {
+      "id": "approach",
+      "status": "done"
+    },
+    {
+      "id": "branch",
+      "status": "done"
+    },
+    {
+      "id": "prepare-spec",
+      "status": "done"
+    },
+    {
+      "id": "draft",
+      "status": "done"
+    },
+    {
+      "id": "spec",
+      "status": "done"
+    },
+    {
+      "id": "gate",
+      "status": "done"
+    },
+    {
+      "id": "approval",
+      "status": "done"
+    },
+    {
+      "id": "test",
+      "status": "done"
+    },
+    {
+      "id": "implement",
+      "status": "done"
+    },
+    {
+      "id": "review",
+      "status": "skipped"
+    },
+    {
+      "id": "finalize",
+      "status": "done"
+    },
+    {
+      "id": "commit",
+      "status": "pending"
+    },
+    {
+      "id": "push",
+      "status": "pending"
+    },
+    {
+      "id": "merge",
+      "status": "pending"
+    },
+    {
+      "id": "pr-create",
+      "status": "pending"
+    },
+    {
+      "id": "branch-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "pr-merge",
+      "status": "pending"
+    },
+    {
+      "id": "sync-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "docs-update",
+      "status": "pending"
+    },
+    {
+      "id": "docs-review",
+      "status": "pending"
+    },
+    {
+      "id": "docs-commit",
+      "status": "pending"
+    }
+  ],
+  "requirements": [
+    {
+      "desc": "R1: run/review.jsがworktree時にSDD_WORK_ROOTを上書きしない",
+      "status": "done"
+    },
+    {
+      "desc": "R2: worktreeモードでflow run reviewがflow.jsonを検出しレビュー実行",
+      "status": "done"
+    },
+    {
+      "desc": "R3: メインリポモードの動作に退行なし",
+      "status": "done"
+    }
+  ],
+  "worktree": true,
+  "issue": 43,
+  "request": "fix flow run review worktree mode - SDD_WORK_ROOT points to main repo instead of worktree",
+  "notes": [
+    "approach: [1] Q&A with self-Q&A (autoApprove). work-env: [1] worktree, base=development",
+    "draft: self-Q&A完了。run/review.jsのSDD_WORK_ROOT override削除が修正方針",
+    "review: skipped - this is the exact bug being fixed (flow run review fails in worktree mode)"
+  ],
+  "autoApprove": true
+}
