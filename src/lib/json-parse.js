@@ -42,10 +42,14 @@ export function fixUnescapedQuotes(json) {
       const c = json[i];
 
       if (c === "\\") {
-        out.push(c);
-        i++;
-        if (i < len) {
-          out.push(json[i]);
+        const next = json[i + 1];
+        // Valid JSON escape sequences: " \ / b f n r t u
+        if (next && '"\\/bfnrtu'.includes(next)) {
+          out.push(c);
+          out.push(next);
+          i += 2;
+        } else {
+          // Invalid escape (e.g. \` ) — drop the backslash, keep the char
           i++;
         }
         continue;

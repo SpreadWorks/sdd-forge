@@ -4,8 +4,10 @@ import fs from "fs";
 import { join } from "path";
 import { spawnSync } from "child_process";
 import { createTmpDir, removeTmpDir, writeJson } from "../helpers/tmp-dir.js";
+import { resolveIncludes } from "../../src/lib/include.js";
 
 const CMD = join(process.cwd(), "src/setup.js");
+const PKG_DIR = join(process.cwd(), "src");
 
 /** Non-interactive CLI args */
 const NI_ARGS = [
@@ -135,7 +137,16 @@ describe("051: skill namespace with dot separator", () => {
           ? join(templatesDir, d, "SKILL.md")
           : join(templatesDir, d, "SKILL.en.md");
         if (!fs.existsSync(templateFile)) continue;
-        const templateContent = fs.readFileSync(templateFile, "utf8");
+        const rawContent = fs.readFileSync(templateFile, "utf8");
+        // Resolve includes to match what deploySkills actually writes
+        const templateContent = resolveIncludes(rawContent, {
+          baseDir: join(templatesDir, d),
+          pkgDir: PKG_DIR,
+          templatesDir: join(PKG_DIR, "templates"),
+          presetsDir: join(PKG_DIR, "presets"),
+          lang: "en",
+          sourceFile: templateFile,
+        });
         const claudeContent = fs.readFileSync(join(tmp, ".claude", "skills", d, "SKILL.md"), "utf8");
         const agentsContent = fs.readFileSync(join(tmp, ".agents", "skills", d, "SKILL.md"), "utf8");
         assert.equal(claudeContent, templateContent, `.claude/skills/${d}/SKILL.md should match template`);

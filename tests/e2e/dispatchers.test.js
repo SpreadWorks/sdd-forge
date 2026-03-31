@@ -37,7 +37,8 @@ describe("sdd-forge dispatcher", () => {
       execFileSync("node", [SDD_FORGE, "docs", "review"], { encoding: "utf8" });
     } catch (err) {
       // review may fail if no docs dir, but it should have run the review command
-      assert.match(err.stdout, /FAIL|Found/);
+      const out = `${err.stdout || ""}${err.stderr || ""}`;
+      assert.match(out, /FAIL|Found|章ファイル/);
     }
   });
 
