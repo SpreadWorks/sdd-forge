@@ -63,7 +63,20 @@ Available status values: `pending`, `in_progress`, `done`, `skipped`
    - **On start**: `sdd-forge flow set step draft in_progress`
    - **If skipped** (step 1 chose option 2): `sdd-forge flow set step draft skipped`
 
-   **Communication rules for the draft phase:**
+   **autoApprove mode — self-Q&A draft:**
+   When `autoApprove: true`, the AI conducts the draft phase autonomously:
+   - Do NOT ask the user questions. Instead, answer them yourself.
+   - Use Issue content (if linked), `docs/` chapters, guardrail articles, and source code as input.
+   - Work through the requirements checklist systematically:
+     1. Goal & Scope — Is the goal clear? Is scope bounded?
+     2. Impact on existing — What existing features/code/tests are affected?
+     3. Constraints — Non-functional requirements, guardrails, project rules?
+     4. Edge cases — Boundary conditions, error cases?
+     5. Test strategy — What to test and how?
+   - Write the completed draft to `draft.md` and proceed to spec.
+   - Mark draft as approved: `- [x] User approved this draft (autoApprove)`
+
+   **Communication rules for the draft phase (when NOT autoApprove):**
    - **ALL turns MUST end with a question.** The AI must never end a turn without asking the user something.
    - Add progress display `(n/N)` at the start of each question. Get `n` from `sdd-forge flow get qa-count`. `N` is the AI's estimate of remaining questions.
    - After each question: `sdd-forge flow set metric draft question`
@@ -120,6 +133,7 @@ Available status values: `pending`, `in_progress`, `done`, `skipped`
    - `sdd-forge flow run gate`
    - If FAIL: show ALL failures at once (no per-item user approval needed).
    - AI fixes issues and re-runs gate until PASS. No user confirmation needed per fix — just fix and re-run.
+   - **Retry limit: 20 attempts.** If gate does not PASS after 20 fix-and-rerun cycles, STOP and return control to the user.
    - Do not proceed until PASS.
    - **On complete**: `sdd-forge flow set step gate done`
 
@@ -175,6 +189,8 @@ Available status values: `pending`, `in_progress`, `done`, `skipped`
 - Do not skip implementation verification when code changes exist.
 - In draft phase, do not end a turn without a question.
 - Do not proceed to next step without user confirmation.
+
+**autoApprove exception:** When `autoApprove: true`, the rules "do not end a turn without a question" and "do not proceed to next step without user confirmation" do NOT apply. All other hard stops remain in effect.
 
 ## Redo Recording
 

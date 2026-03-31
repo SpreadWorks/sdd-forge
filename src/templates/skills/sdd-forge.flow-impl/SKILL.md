@@ -44,6 +44,7 @@ Before starting, run `sdd-forge flow get check impl` to verify prerequisites.
    - Aim to make tests pass.
    - **Update requirements as you go**: `sdd-forge flow set req <index> done` for each completed requirement.
    - Run tests to verify: use the test command from `package.json` scripts or the project's test runner.
+   - **Retry limit for test fixes: 5 attempts.** If tests do not pass after 5 fix-and-rerun cycles, STOP and return control to the user.
    - **On complete**: `sdd-forge flow set step implement done`
 
 2. Review implementation.
@@ -82,6 +83,7 @@ Before starting, run `sdd-forge flow get check impl` to verify prerequisites.
      3. Re-run tests to confirm no regressions.
    - **If no proposals** (NO_PROPOSALS):
      - Display: "レビューの結果、修正の必要はありませんでした。"
+   - **Retry limit for review: 3 rounds.** If review keeps producing new proposals after 3 review-fix-review cycles, STOP and return control to the user.
    - Proceed to Step 3.
 
    **Option 2 (review-only):**
@@ -149,6 +151,8 @@ Before starting, run `sdd-forge flow get check impl` to verify prerequisites.
 - Do not implement before gate PASS and test phase completion.
 - Do not finalize without asking the user.
 - Do not proceed to next step without user confirmation.
+
+**autoApprove exception:** When `autoApprove: true`, the rules "do not finalize without asking the user" and "do not proceed to next step without user confirmation" do NOT apply. All other hard stops remain in effect.
 
 ## Redo Recording
 

@@ -40,6 +40,7 @@ function main() {
     notes: state.notes || [],
     metrics: state.metrics || null,
     mergeStrategy: state.mergeStrategy || null,
+    autoApprove: state.autoApprove || false,
   }));
 }
 

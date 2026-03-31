@@ -77,6 +77,7 @@ export function derivePhase(steps) {
  * @property {RequirementEntry[]} [requirements] - spec requirements tracking
  * @property {number|null} [issue]      - 紐付く GitHub Issue 番号
  * @property {"squash"|"pr"|null} [mergeStrategy] - finalize 時に記録されるマージ方式
+ * @property {boolean} [autoApprove] - autoApprove モード（true の場合 AI が選択肢を自動選択して進む）
  */
 
 /**

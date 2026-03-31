@@ -32,6 +32,7 @@ export const FLOW_COMMANDS = {
       req:     { script: "flow/set/req.js",     desc: { en: "Update requirement status", ja: "要件ステータスを更新" } },
       metric:  { script: "flow/set/metric.js",  desc: { en: "Increment a metric counter", ja: "メトリクスカウンターをインクリメント" } },
       redo:    { script: "flow/set/redo.js",    desc: { en: "Record a redo entry", ja: "redo エントリーを記録" } },
+      auto:    { script: "flow/set/auto.js",    desc: { en: "Enable/disable autoApprove mode", ja: "autoApprove モードの ON/OFF" } },
     },
   },
   run: {
