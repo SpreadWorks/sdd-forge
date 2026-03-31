@@ -140,12 +140,14 @@ function main() {
 
   // Squash merge route
   const { mainRepoPath } = resolveWorktreePaths(root, state);
+  const specTitle = state.spec?.replace(/^specs\/\d+-/, "").replace(/\/spec\.md$/, "") || featureBranch;
+  const commitMsg = state.issue ? `${specTitle}\n\nfixes #${state.issue}` : specTitle;
 
   // Worktree mode
   if (worktree && mainRepoPath) {
     const cmds = [
       ["git", "-C", mainRepoPath, "merge", "--squash", featureBranch],
-      ["git", "-C", mainRepoPath, "commit", "--no-edit"],
+      ["git", "-C", mainRepoPath, "commit", "-m", commitMsg],
     ];
     if (cli.dryRun) {
       for (const cmd of cmds) console.log(cmd.join(" "));
@@ -162,7 +164,7 @@ function main() {
   const cmds = [
     ["git", "checkout", baseBranch],
     ["git", "merge", "--squash", featureBranch],
-    ["git", "commit", "--no-edit"],
+    ["git", "commit", "-m", commitMsg],
   ];
   if (cli.dryRun) {
     for (const cmd of cmds) console.log(cmd.join(" "));
