@@ -18,7 +18,7 @@ import { resolveAgent, callAgentAsync, DEFAULT_AGENT_TIMEOUT, resolveWorkDir } f
 import { resolveCommandContext, loadFullAnalysis } from "../lib/command-context.js";
 import { resolveChaptersOrder } from "../lib/template-merger.js";
 import { buildCategoryMapFromDocs, mergeChapters } from "../lib/chapter-resolver.js";
-import { globToRegex } from "../lib/scanner.js";
+import { filterByDocsExclude } from "../lib/analysis-filter.js";
 import { createLogger } from "../../lib/progress.js";
 import { translate } from "../../lib/i18n.js";
 import { repairJson } from "../../lib/json-parse.js";
@@ -76,22 +76,6 @@ function collectEntries(analysis) {
   return entries;
 }
 
-/**
- * docs.exclude パターンでエントリをフィルタする。
- * マッチしたエントリを除外し、残りを返す。
- *
- * @param {Array} entries - collectEntries() の結果
- * @param {string[]|undefined} excludePatterns - glob パターン配列
- * @returns {Array} フィルタ済みエントリ
- */
-function filterByDocsExclude(entries, excludePatterns) {
-  if (!excludePatterns?.length) return entries;
-  const regexes = excludePatterns.map((p) => globToRegex(p));
-  return entries.filter((e) => {
-    if (!e.file) return true;
-    return !regexes.some((re) => re.test(e.file));
-  });
-}
 
 function entryKey(category, index) {
   return `${category}:${index}`;
