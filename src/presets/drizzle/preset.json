@@ -3,8 +3,12 @@
   "label": "Drizzle ORM",
   "aliases": [],
   "chapters": [
-    "database.md",
-    "schema.md"
+    {
+      "chapter": "database.md"
+    },
+    {
+      "chapter": "schema.md"
+    }
   ],
   "scan": {
     "include": [

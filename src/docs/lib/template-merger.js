@@ -363,7 +363,10 @@ function discoverFileNames(layers, fallbackSets, chaptersOrder) {
  */
 export function resolveChaptersOrder(presetKeys, configChapters) {
   // config.json の chapters が定義されていればプリセットを完全上書き
-  if (configChapters?.length) return configChapters;
+  if (configChapters?.length) {
+    // Support both old string[] and new object[] formats
+    return configChapters.map((c) => typeof c === "string" ? c : c.chapter);
+  }
 
   const keys = Array.isArray(presetKeys) ? presetKeys : [presetKeys];
 
@@ -381,10 +384,12 @@ export function resolveChaptersOrder(presetKeys, configChapters) {
     }
 
     // 全体結果に union マージ（重複除去）
+    // Support both old string[] and new object[] formats
     for (const ch of chainChapters) {
-      if (!seen.has(ch)) {
-        seen.add(ch);
-        result.push(ch);
+      const name = typeof ch === "string" ? ch : ch.chapter;
+      if (!seen.has(name)) {
+        seen.add(name);
+        result.push(name);
       }
     }
   }

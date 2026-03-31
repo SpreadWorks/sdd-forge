@@ -121,7 +121,7 @@ describe("init CLI", () => {
       lang: "ja",
       type: "node-cli",
       docs: { languages: ["ja"], defaultLanguage: "ja" },
-      chapters: ["overview.md", "development.md"],
+      chapters: [{ chapter: "overview.md" }, { chapter: "development.md" }],
       agent: {
         default: "capture",
         providers: {

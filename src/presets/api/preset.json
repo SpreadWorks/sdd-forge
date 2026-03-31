@@ -3,11 +3,27 @@
   "label": "HTTP API (shared)",
   "aliases": [],
   "chapters": [
-    "overview.md",
-    "stack_and_ops.md",
-    "project_structure.md",
-    "development.md",
-    "api_overview.md",
-    "authentication.md"
+    {
+      "chapter": "overview.md",
+      "desc": "Project overview, architecture, and key concepts"
+    },
+    {
+      "chapter": "stack_and_ops.md",
+      "desc": "Technology stack, runtime dependencies, and operational setup"
+    },
+    {
+      "chapter": "project_structure.md",
+      "desc": "Directory structure, file organization, and shared libraries"
+    },
+    {
+      "chapter": "development.md",
+      "desc": "Development setup, scripts, and workflows"
+    },
+    {
+      "chapter": "api_overview.md"
+    },
+    {
+      "chapter": "authentication.md"
+    }
   ]
 }

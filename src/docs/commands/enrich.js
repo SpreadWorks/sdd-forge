@@ -17,6 +17,7 @@ import { sddOutputDir } from "../../lib/config.js";
 import { resolveAgent, callAgentAsync, DEFAULT_AGENT_TIMEOUT, resolveWorkDir } from "../../lib/agent.js";
 import { resolveCommandContext, loadFullAnalysis } from "../lib/command-context.js";
 import { resolveChaptersOrder } from "../lib/template-merger.js";
+import { buildCategoryMapFromDocs, mergeChapters } from "../lib/chapter-resolver.js";
 import { createLogger } from "../../lib/progress.js";
 import { translate } from "../../lib/i18n.js";
 import { extractBalancedJson, fixUnescapedQuotes } from "../../lib/json-parse.js";
@@ -178,11 +179,16 @@ function buildEnrichPrompt(chapters, batchEntries, opts) {
   }
   parts.push("");
 
-  // Chapter list
+  // Chapter list (accepts both string[] and {chapter, desc}[])
   parts.push("## Available chapters");
   parts.push("Each entry should be assigned to one of these chapters:");
   for (const ch of chapters) {
-    parts.push(`- ${ch.replace(/\.md$/, "")}`);
+    if (typeof ch === "string") {
+      parts.push(`- ${ch.replace(/\.md$/, "")}`);
+    } else {
+      const name = ch.chapter.replace(/\.md$/, "");
+      parts.push(ch.desc ? `- ${name}: ${ch.desc}` : `- ${name}`);
+    }
   }
   parts.push("");
 
@@ -295,11 +301,19 @@ function mergeEnrichment(analysis, enrichment, opts = {}) {
       if (idx == null || idx < 0 || idx >= items.length) continue;
       respondedKeys.add(entryKey(cat, idx));
 
+      // Validate chapter if validChapters set is provided
+      let chapter = entry.chapter || items[idx].chapter;
+      const validChapters = opts.validChapters;
+      if (chapter && validChapters && !validChapters.has(chapter)) {
+        onWarn(`WARN: invalid chapter "${chapter}" for ${cat}[${idx}], skipped`);
+        chapter = items[idx].chapter || null;
+      }
+
       items[idx] = {
         ...items[idx],
         summary: entry.summary || items[idx].summary,
         detail: entry.detail || items[idx].detail,
-        chapter: entry.chapter || items[idx].chapter,
+        chapter,
         role: entry.role || items[idx].role,
         enrich: {
           processedAt,
@@ -402,16 +416,45 @@ async function main(ctx) {
     return;
   }
 
-  // Get chapter list from preset (config.chapters overrides preset)
-  const configChapters = config?.chapters;
-  const chapters = resolveChaptersOrder(type, configChapters);
-  if (chapters.length === 0) {
+  // Get chapter list from preset
+  const presetChapterNames = resolveChaptersOrder(type, undefined);
+  if (presetChapterNames.length === 0) {
     logger.log("WARN: no chapters defined in preset, skipping enrich.");
     return;
   }
 
+  // Build chapter objects with desc (preset defaults + config overrides)
+  const presetChapters = presetChapterNames.map((name) => {
+    // resolveChaptersOrder returns string[] from preset.json
+    // If preset.json has been migrated to object format, the name is already extracted
+    return typeof name === "string" ? { chapter: name } : name;
+  });
+  const chapters = mergeChapters(presetChapters, config?.chapters);
+
+  // Static chapter assignment from {{data}} categories (R4)
+  const { docsDir } = ctx;
+  const chapterFileNames = chapters.map((c) => c.chapter);
+  const categoryToChapter = buildCategoryMapFromDocs(docsDir, chapterFileNames);
+  if (categoryToChapter.size > 0) {
+    logger.log(`static chapter mapping: ${categoryToChapter.size} categories from {{data}} directives`);
+  }
+
   // Collect entries and filter out already-enriched ones (resume)
   const allEntries = collectEntries(analysis);
+
+  // Apply static chapter assignment to pending entries
+  for (const entry of allEntries) {
+    if (entry.enriched) continue;
+    const staticChapter = categoryToChapter.get(entry.category);
+    if (staticChapter) {
+      // Set chapter statically; AI will still generate summary/detail
+      const items = analysis[entry.category]?.entries;
+      if (items && items[entry.index]) {
+        items[entry.index].chapter = staticChapter;
+      }
+    }
+  }
+
   const pending = allEntries.filter((e) => !e.enriched);
 
   if (pending.length === 0) {
@@ -475,9 +518,11 @@ async function main(ctx) {
 
     // Merge batch results into analysis (mutates)
     const attemptsByKey = buildAttemptsByKey(analysis, batch, attemptsUsed);
+    const validChapterNames = new Set(chapters.map((c) => (typeof c === "string" ? c : c.chapter).replace(/\.md$/, "")));
     mergeEnrichment(analysis, enrichment, {
       batchEntries: batch,
       attemptsByKey,
+      validChapters: validChapterNames,
       onWarn: (msg) => logger.log(msg),
     });
 

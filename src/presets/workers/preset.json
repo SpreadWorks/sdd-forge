@@ -3,8 +3,12 @@
   "label": "Cloudflare Workers",
   "aliases": [],
   "chapters": [
-    "edge_runtime.md",
-    "bindings.md"
+    {
+      "chapter": "edge_runtime.md"
+    },
+    {
+      "chapter": "bindings.md"
+    }
   ],
   "scan": {
     "include": [

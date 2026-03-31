@@ -165,12 +165,31 @@ export function validateConfig(raw) {
     errors.push("'concurrency' must be a positive number if provided");
   }
 
-  // chapters (省略可)
+  // chapters (省略可 — オブジェクト配列形式)
   if (raw.chapters != null) {
     if (!Array.isArray(raw.chapters)) {
-      errors.push("'chapters' must be an array of strings");
-    } else if (raw.chapters.some((c) => typeof c !== "string")) {
-      errors.push("'chapters' entries must be strings");
+      errors.push("'chapters' must be an array. Run 'sdd-forge upgrade' to migrate.");
+    } else {
+      for (let i = 0; i < raw.chapters.length; i++) {
+        const entry = raw.chapters[i];
+        if (typeof entry === "string") {
+          errors.push(`'chapters' format has changed. Run 'sdd-forge upgrade' to migrate automatically.`);
+          break;
+        }
+        if (typeof entry !== "object" || entry === null) {
+          errors.push(`'chapters[${i}]' must be an object with { chapter: "name.md" }`);
+          continue;
+        }
+        if (typeof entry.chapter !== "string") {
+          errors.push(`'chapters[${i}].chapter' must be a string`);
+        }
+        if (entry.desc != null && typeof entry.desc !== "string") {
+          errors.push(`'chapters[${i}].desc' must be a string if provided`);
+        }
+        if (entry.exclude != null && typeof entry.exclude !== "boolean") {
+          errors.push(`'chapters[${i}].exclude' must be a boolean if provided`);
+        }
+      }
     }
   }
 
