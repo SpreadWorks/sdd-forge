@@ -11,7 +11,7 @@
 
 <!-- {{text({prompt: "Write a 1-2 sentence overview of this chapter. Include the number of major directories and their roles."})}} -->
 
-The source tree is organized into five major directories: `src/presets` (preset definitions and tests), `src/docs` (documentation generation commands, data sources, and utilities), `src/flow` (SDD workflow orchestration), `src/lib` (shared libraries and models), and the top-level `src` directory containing the CLI entry points.
+This chapter covers the five major directories that form the sdd-forge package source: `src/presets` holds all preset definitions (122 files), `src/docs` provides documentation generation commands, data sources, and libraries (39 files), `src/flow` implements the SDD workflow controller and commands (32 files), `src/lib` houses shared utilities and models (20 files), and the root `src` directory contains the CLI entry points (7 files).
 <!-- {{/text}} -->
 
 ## Content
@@ -92,7 +92,7 @@ src/presets/workers/tests/unit/
 | Directory | Files | Role |
 | --- | --- | --- |
 | src/presets | 122 | — |
-| src/docs | 39 | cli, model, lib |
+| src/docs | 40 | cli, model, lib |
 | src/flow | 32 | cli, controller, config, lib |
 | src/lib | 20 | lib, model |
 | src | 7 | cli |
@@ -102,9 +102,9 @@ src/presets/workers/tests/unit/
 
 <!-- {{text({prompt: "List the shared libraries with class name, file path, and responsibility in table format."})}} -->
 
-| Module | File | Responsibility |
-| --- | --- | --- |
-| presets | `src/lib/presets.js` | Auto-discovers all presets from `src/presets/{key}/preset.json` and exposes functions for resolving parent-chain inheritance: `resolveChain()` (root→leaf order), `resolveMultiChains()` (deduplicates overlapping chains), `resolveChainSafe()` (fallback-safe wrapper), `presetByLeaf()` (direct lookup), and `presetsForArch()` (filter by parent key). |
+| File | Responsibility |
+| --- | --- |
+| `src/lib/presets.js` | Auto-discovers all presets from `src/presets/{key}/preset.json` and exposes preset metadata (key, dir, parent, label, aliases, scan, chapters). Provides `resolveChain()` to walk the parent chain from a leaf preset to the root, `resolveMultiChains()` to resolve multiple type strings with deduplication, `resolveChainSafe()` as a fallback-safe wrapper, `presetByLeaf()` for direct lookup, and `presetsForArch()` to list presets by parent key. |
 <!-- {{/text}} -->
 
 ---

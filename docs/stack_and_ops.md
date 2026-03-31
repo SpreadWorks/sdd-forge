@@ -11,7 +11,7 @@
 
 <!-- {{text({prompt: "Write a 1-2 sentence overview of this chapter. Include the programming language, framework, and key tool versions."})}} -->
 
-sdd-forge is a Node.js CLI tool written in JavaScript using ES modules, targeting Node.js 18.0.0 or higher. The current release is version 0.1.0-alpha.361, managed with pnpm 10.33.0.
+This chapter covers the technology stack and operational procedures for sdd-forge, a Node.js CLI tool built as an ES module with no external runtime dependencies, requiring Node.js >= 18.0.0 and managed via pnpm 10.33.0.
 <!-- {{/text}} -->
 
 ## Content
@@ -23,31 +23,47 @@ sdd-forge is a Node.js CLI tool written in JavaScript using ES modules, targetin
 | Category | Technology | Version |
 |---|---|---|
 | Runtime | Node.js | >= 18.0.0 |
-| Language | JavaScript (ES Modules) | — |
+| Language | JavaScript (ES Modules) | ECMAScript 2022+ |
 | Package Manager | pnpm | 10.33.0 |
-| Package Format | npm (ES module, `"type": "module"`) | 0.1.0-alpha.361 |
-| CLI Entry Point | sdd-forge (`./src/sdd-forge.js`) | — |
+| Package Version | sdd-forge | 0.1.0-alpha.361 |
+| External Dependencies | None | — |
 <!-- {{/text}} -->
 
 ### Dependencies
 
 <!-- {{text({prompt: "Describe the project's dependency management approach."})}} -->
 
-sdd-forge has no external runtime dependencies. All functionality is built exclusively on Node.js built-in modules, keeping the installation footprint minimal and eliminating supply-chain risk from third-party packages. Development tooling uses pnpm 10.33.0 as the package manager. The `files` field in `package.json` restricts what is published to npm — only the `src/` directory is included, with test files under `presets/*/tests/` explicitly excluded.
+sdd-forge relies exclusively on Node.js built-in modules and declares no external runtime dependencies in its package manifest. This design choice eliminates dependency version conflicts and reduces installation overhead for end users.
+
+The package is managed with pnpm 10.33.0. The published package includes only the `src/` directory (excluding preset test files), along with `package.json`, `README.md`, and `LICENSE`. This keeps the distributed package lean and free of development-only artifacts.
+
+Test tooling is invoked through the scripts defined in `package.json`, running unit, end-to-end, and acceptance test suites via `node tests/run.js`.
 <!-- {{/text}} -->
 
 ### Deployment Flow
 
 <!-- {{text({prompt: "Describe the deployment procedure and flow."})}} -->
 
-Releases follow a two-step npm publishing process. First, the package is published under the `alpha` dist-tag using `npm publish --tag alpha`. Second, the `latest` tag is explicitly updated with `npm dist-tag add sdd-forge@<version> latest` to ensure the release appears on the npmjs.com package page. Before publishing, `npm pack --dry-run` is run to verify that no sensitive files are included in the published artifact. The version number during the alpha period follows the format `0.1.0-alpha.N`, where N is the total commit count from `git rev-list --count HEAD`.
+sdd-forge is published to npm under the package name `sdd-forge`. The release process follows a two-step tagging procedure to ensure the `latest` tag on npmjs.com is updated correctly.
+
+1. Run `npm pack --dry-run` to verify the contents of the package and confirm no sensitive files are included.
+2. Publish the release with the alpha tag: `npm publish --tag alpha`.
+3. Promote the version to the `latest` tag: `npm dist-tag add sdd-forge@<version> latest`.
+
+The version number follows the format `0.1.0-alpha.N`, where `N` is the total commit count obtained from `git rev-list --count HEAD`. Published versions cannot be overwritten on npm; unpublished versions remain unavailable for reuse for 24 hours.
 <!-- {{/text}} -->
 
 ### Operations Flow
 
 <!-- {{text({prompt: "Describe the operations procedures."})}} -->
 
-Test suites are executed through a unified runner at `tests/run.js`, which covers unit, end-to-end, and acceptance test scenarios. Output from long-running test commands is redirected to a log file (e.g., `command > /tmp/output.log 2>&1`) and reviewed with `grep` or file read tools rather than re-running commands. The `sdd-forge build` command regenerates project documentation from source analysis and should be re-run whenever source files are newer than the contents of `docs/`. The `sdd-forge upgrade` command propagates changes from `src/templates/` and `src/presets/` into project-level skills and configuration files.
+Routine operations for sdd-forge center on the CLI commands bundled in the `src/` directory. The primary operational tasks are as follows.
+
+- **Documentation generation**: Run `sdd-forge build` to execute the full scan-to-docs pipeline for the target project.
+- **Analysis**: Run `sdd-forge scan` to generate or refresh `analysis.json` stored in `.sdd-forge/output/`.
+- **Template and skill updates**: After modifying files under `src/templates/` or `src/presets/`, run `sdd-forge upgrade` to propagate changes to project-level skills and configuration files.
+- **AGENTS.md refresh**: Run `sdd-forge agents` to regenerate the `AGENTS.md` context file for the target project.
+- **Testing**: Execute `node tests/run.js` to run unit, end-to-end, and acceptance test suites. Redirect output to a file (e.g., `node tests/run.js > /tmp/test.log 2>&1`) for review when tests are long-running.
 <!-- {{/text}} -->
 
 ---

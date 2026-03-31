@@ -90,7 +90,7 @@ src/presets/workers/tests/unit/
 | ディレクトリ | ファイル数 | 役割 |
 | --- | --- | --- |
 | src/presets | 122 | — |
-| src/docs | 39 | cli, model, lib |
+| src/docs | 40 | cli, model, lib |
 | src/flow | 32 | cli, controller, config, lib |
 | src/lib | 20 | lib, model |
 | src | 7 | cli |
