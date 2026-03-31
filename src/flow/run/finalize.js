@@ -2,14 +2,14 @@
 /**
  * src/flow/run/finalize.js
  *
- * flow run finalize --mode all|select [--steps 3,4,5] --merge-strategy merge|squash|pr [--dry-run]
- * Execute finalization pipeline: commit -> merge -> cleanup -> sync -> record.
+ * flow run finalize --mode all|select [--steps 3,4,5] [--merge-strategy squash|pr] [--dry-run]
+ * Execute finalization pipeline: commit -> merge -> sync -> cleanup -> record.
  */
 
 import { execFileSync } from "child_process";
 import { runIfDirect } from "../../lib/entrypoint.js";
 import { repoRoot, parseArgs, PKG_DIR } from "../../lib/cli.js";
-import { loadFlowState } from "../../lib/flow-state.js";
+import { loadFlowState, resolveWorktreePaths } from "../../lib/flow-state.js";
 import { runSync } from "../../lib/process.js";
 import { ok, fail, output } from "../../lib/flow-envelope.js";
 import path from "path";
@@ -17,8 +17,8 @@ import path from "path";
 const STEP_MAP = {
   3: "commit",
   4: "merge",
-  5: "cleanup",
-  6: "sync",
+  5: "sync",
+  6: "cleanup",
   7: "record",
 };
 
@@ -27,7 +27,7 @@ function main() {
   const cli = parseArgs(process.argv.slice(2), {
     flags: ["--dry-run"],
     options: ["--mode", "--steps", "--merge-strategy", "--message"],
-    defaults: { dryRun: false, mode: "", steps: "", mergeStrategy: "merge", message: "" },
+    defaults: { dryRun: false, mode: "", steps: "", mergeStrategy: "", message: "" },
   });
 
   if (cli.help) {
@@ -35,12 +35,12 @@ function main() {
       [
         "Usage: sdd-forge flow run finalize [options]",
         "",
-        "Execute finalization pipeline: commit -> merge -> cleanup -> sync -> record.",
+        "Execute finalization pipeline: commit -> merge -> sync -> cleanup -> record.",
         "",
         "Options:",
         "  --mode <all|select>           Mode (required)",
         "  --steps <3,4,5,...>           Comma-separated step numbers (select mode)",
-        "  --merge-strategy <strategy>   merge, squash, or pr (default: merge)",
+        "  --merge-strategy <strategy>   squash or pr (default: auto-detect)",
         "  --message <msg>               Custom commit message",
         "  --dry-run                     Preview only",
       ].join("\n"),
@@ -53,8 +53,8 @@ function main() {
     return;
   }
 
-  if (!["merge", "squash", "pr"].includes(cli.mergeStrategy)) {
-    output(fail("run", "finalize", "INVALID_STRATEGY", "--merge-strategy must be 'merge', 'squash', or 'pr'"));
+  if (cli.mergeStrategy && !["squash", "pr"].includes(cli.mergeStrategy)) {
+    output(fail("run", "finalize", "INVALID_STRATEGY", "--merge-strategy must be 'squash' or 'pr'"));
     return;
   }
 
@@ -81,6 +81,14 @@ function main() {
     return;
   }
 
+  // Resolve merge strategy: explicit > auto
+  let mergeStrategy = cli.mergeStrategy;
+  if (!mergeStrategy) {
+    // Auto-detect: delegate to merge.js --auto
+    mergeStrategy = "auto";
+  }
+
+  const { mainRepoPath } = resolveWorktreePaths(root, state);
   const results = {};
 
   // Step 3: commit
@@ -94,7 +102,6 @@ function main() {
         execFileSync("git", ["commit", "-m", msg], { cwd: root, encoding: "utf8" });
         results.commit = { status: "done", message: msg };
       } catch (e) {
-        // "nothing to commit" is not a fatal error
         if (/nothing to commit/i.test(e.message || String(e.stderr || ""))) {
           results.commit = { status: "skipped", message: "nothing to commit" };
         } else {
@@ -107,22 +114,64 @@ function main() {
   // Step 4: merge
   if (activeSteps.has(4)) {
     if (cli.dryRun) {
-      results.merge = { status: "dry-run", strategy: cli.mergeStrategy };
+      results.merge = { status: "dry-run", strategy: mergeStrategy };
     } else {
       const scriptPath = path.join(PKG_DIR, "flow", "commands", "merge.js");
       const args = [];
-      if (cli.mergeStrategy === "pr") args.push("--pr");
+      if (mergeStrategy === "pr") {
+        args.push("--pr");
+      } else if (mergeStrategy === "auto") {
+        args.push("--auto");
+      }
+      // "squash" needs no extra args (merge.js defaults to squash)
       const res = runSync("node", [scriptPath, ...args], { cwd: root });
       if (res.ok) {
-        results.merge = { status: "done", strategy: cli.mergeStrategy };
+        // Detect if auto resolved to PR by checking output
+        const isPr = mergeStrategy === "pr" || (mergeStrategy === "auto" && /PR created/i.test(res.stdout || ""));
+        results.merge = { status: "done", strategy: isPr ? "pr" : "squash" };
       } else {
         results.merge = { status: "failed", message: (res.stderr || res.stdout || "").trim() };
       }
     }
   }
 
-  // Step 5: cleanup
+  // Step 5: sync (docs generation on main branch)
   if (activeSteps.has(5)) {
+    // Skip sync if merge was PR route (not yet merged)
+    const wasPr = results.merge?.strategy === "pr" || mergeStrategy === "pr";
+    if (wasPr) {
+      results.sync = { status: "skipped", message: "PR route: run sdd-forge build after PR merge" };
+    } else if (cli.dryRun) {
+      results.sync = { status: "dry-run" };
+    } else {
+      // Use mainRepoPath for worktree mode, root for branch mode
+      const syncCwd = (state.worktree && mainRepoPath) ? mainRepoPath : root;
+      const buildScript = path.join(PKG_DIR, "docs.js");
+      const buildRes = runSync("node", [buildScript, "build"], { cwd: syncCwd });
+      if (!buildRes.ok) {
+        results.sync = { status: "failed", message: (buildRes.stderr || buildRes.stdout || "").trim() };
+      } else {
+        try {
+          execFileSync("git", ["add", "docs/", "AGENTS.md", "CLAUDE.md", "README.md"], { cwd: syncCwd, encoding: "utf8" });
+        } catch (_) {
+          // ignore errors for missing files
+        }
+        try {
+          execFileSync("git", ["commit", "-m", "docs: sync documentation"], { cwd: syncCwd, encoding: "utf8" });
+          results.sync = { status: "done" };
+        } catch (e) {
+          if (/nothing to commit/i.test(String(e.stderr || e.message || ""))) {
+            results.sync = { status: "skipped", message: "nothing to commit" };
+          } else {
+            results.sync = { status: "failed", message: String(e.stderr || e.message) };
+          }
+        }
+      }
+    }
+  }
+
+  // Step 6: cleanup
+  if (activeSteps.has(6)) {
     if (cli.dryRun) {
       results.cleanup = { status: "dry-run" };
     } else {
@@ -132,35 +181,6 @@ function main() {
         results.cleanup = { status: "done" };
       } else {
         results.cleanup = { status: "failed", message: (res.stderr || res.stdout || "").trim() };
-      }
-    }
-  }
-
-  // Step 6: sync
-  if (activeSteps.has(6)) {
-    if (cli.dryRun) {
-      results.sync = { status: "dry-run" };
-    } else {
-      const buildScript = path.join(PKG_DIR, "docs.js");
-      const buildRes = runSync("node", [buildScript, "build"], { cwd: root });
-      if (!buildRes.ok) {
-        results.sync = { status: "failed", message: (buildRes.stderr || buildRes.stdout || "").trim() };
-      } else {
-        try {
-          execFileSync("git", ["add", "docs/", "AGENTS.md", "CLAUDE.md", "README.md"], { cwd: root, encoding: "utf8" });
-        } catch (_) {
-          // ignore errors for missing files
-        }
-        try {
-          execFileSync("git", ["commit", "-m", "docs: sync documentation"], { cwd: root, encoding: "utf8" });
-          results.sync = { status: "done" };
-        } catch (e) {
-          if (/nothing to commit/i.test(String(e.stderr || e.message || ""))) {
-            results.sync = { status: "skipped", message: "nothing to commit" };
-          } else {
-            results.sync = { status: "failed", message: String(e.stderr || e.message) };
-          }
-        }
       }
     }
   }

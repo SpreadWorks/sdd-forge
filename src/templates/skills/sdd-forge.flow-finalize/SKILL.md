@@ -47,18 +47,22 @@ Available status values: `pending`, `in_progress`, `done`, `skipped`
    - If `ok: false`: display the error to the user and continue (retro failure does not block finalize).
 
 4. **If "all"** (Option 1):
-   - Run `sdd-forge flow get prompt finalize.merge-strategy` and present the merge strategy choices.
-   - Run `sdd-forge flow run finalize --mode all --merge-strategy <choice>`.
+   - Run `sdd-forge flow run finalize --mode all`.
+   - Merge strategy is auto-detected: `commands.gh=enable` AND `gh` available → PR, else squash merge.
    - Display the JSON result to the user.
+   - If the result shows sync was skipped (PR route), display the reminder from step 6.
 
 5. **If "select"** (Option 2):
    - Run `sdd-forge flow get prompt finalize.steps` and present the step choices. Wait for user selection.
-   - If the user selected the merge step, run `sdd-forge flow get prompt finalize.merge-strategy` and present the choices.
-   - Run `sdd-forge flow run finalize --mode select --steps <selected> --merge-strategy <choice>`.
+   - If the user selected the merge step (4), ask if they want to override the auto-detected merge strategy:
+     - Run `sdd-forge flow get prompt finalize.merge-strategy` and present the choices.
+     - If the user chooses, pass `--merge-strategy <choice>` to finalize.
+     - If the user does not override, auto-detection is used.
+   - Run `sdd-forge flow run finalize --mode select --steps <selected> [--merge-strategy <choice>]`.
    - Display the JSON result to the user.
 
 6. Post-finalize.
-   - If the result contains PR info, display:
+   - If the result shows sync was skipped (PR route), display:
      ```
      PR マージ後に以下を実行してください:
      - ドキュメントの同期: sdd-forge build または /sdd-forge.flow-sync
@@ -68,6 +72,7 @@ Available status values: `pending`, `in_progress`, `done`, `skipped`
 
 <!-- include("@templates/partials/worktree-mode.md") -->
 - `sdd-forge flow run finalize` handles worktree detection, merge, and cleanup internally.
+- Docs sync (step 5) runs on the main repository after merge, before worktree cleanup.
 
 ## Hard Stops
 
@@ -83,5 +88,5 @@ sdd-forge flow get prompt <kind>
 sdd-forge flow set step <id> <val>
 sdd-forge flow set note "<text>"
 sdd-forge flow run retro [--force] [--dry-run]
-sdd-forge flow run finalize --mode all|select [--steps N,N] --merge-strategy merge|squash|pr
+sdd-forge flow run finalize --mode all|select [--steps N,N] [--merge-strategy squash|pr]
 ```

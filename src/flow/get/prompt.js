@@ -140,8 +140,8 @@ const PROMPTS_BY_LANG = {
       choices: [
         { id: 3, label: "コミット", description: "", recommended: false },
         { id: 4, label: "マージ / PR 作成", description: "", recommended: false },
-        { id: 5, label: "ブランチ削除", description: "", recommended: false },
-        { id: 6, label: "ドキュメント同期", description: "", recommended: false },
+        { id: 5, label: "ドキュメント同期", description: "", recommended: false },
+        { id: 6, label: "ブランチ削除", description: "", recommended: false },
         { id: 7, label: "作業の記録を保存", description: "", recommended: false },
       ],
     },
@@ -150,9 +150,8 @@ const PROMPTS_BY_LANG = {
       description: "マージ方法を選択してください。",
       recommendation: null,
       choices: [
-        { id: 1, label: "merge", description: "", recommended: false },
-        { id: 2, label: "squash merge", description: "", recommended: false },
-        { id: 3, label: "pull request", description: "", recommended: false },
+        { id: 1, label: "squash merge", description: "", recommended: false },
+        { id: 2, label: "pull request", description: "", recommended: false },
       ],
     },
     "finalize.cleanup": {
@@ -287,8 +286,8 @@ const PROMPTS_BY_LANG = {
       choices: [
         { id: 3, label: "Commit", description: "", recommended: false },
         { id: 4, label: "Merge / PR creation", description: "", recommended: false },
-        { id: 5, label: "Branch cleanup", description: "", recommended: false },
-        { id: 6, label: "Documentation sync", description: "", recommended: false },
+        { id: 5, label: "Documentation sync", description: "", recommended: false },
+        { id: 6, label: "Branch cleanup", description: "", recommended: false },
         { id: 7, label: "Save work record", description: "", recommended: false },
       ],
     },
@@ -297,9 +296,8 @@ const PROMPTS_BY_LANG = {
       description: "Choose merge method.",
       recommendation: null,
       choices: [
-        { id: 1, label: "merge", description: "", recommended: false },
-        { id: 2, label: "squash merge", description: "", recommended: false },
-        { id: 3, label: "pull request", description: "", recommended: false },
+        { id: 1, label: "squash merge", description: "", recommended: false },
+        { id: 2, label: "pull request", description: "", recommended: false },
       ],
     },
     "finalize.cleanup": {

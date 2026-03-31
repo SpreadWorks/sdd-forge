@@ -1,0 +1,127 @@
+{
+  "spec": "specs/104-move-docs-generation-from-feature-branch-to-main/spec.md",
+  "baseBranch": "development",
+  "featureBranch": "feature/104-move-docs-generation-from-feature-branch-to-main",
+  "steps": [
+    {
+      "id": "approach",
+      "status": "done"
+    },
+    {
+      "id": "branch",
+      "status": "done"
+    },
+    {
+      "id": "prepare-spec",
+      "status": "done"
+    },
+    {
+      "id": "draft",
+      "status": "done"
+    },
+    {
+      "id": "spec",
+      "status": "done"
+    },
+    {
+      "id": "gate",
+      "status": "done"
+    },
+    {
+      "id": "approval",
+      "status": "done"
+    },
+    {
+      "id": "test",
+      "status": "done"
+    },
+    {
+      "id": "implement",
+      "status": "done"
+    },
+    {
+      "id": "review",
+      "status": "done"
+    },
+    {
+      "id": "finalize",
+      "status": "done"
+    },
+    {
+      "id": "commit",
+      "status": "pending"
+    },
+    {
+      "id": "push",
+      "status": "pending"
+    },
+    {
+      "id": "merge",
+      "status": "pending"
+    },
+    {
+      "id": "pr-create",
+      "status": "pending"
+    },
+    {
+      "id": "branch-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "pr-merge",
+      "status": "pending"
+    },
+    {
+      "id": "sync-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "docs-update",
+      "status": "pending"
+    },
+    {
+      "id": "docs-review",
+      "status": "pending"
+    },
+    {
+      "id": "docs-commit",
+      "status": "pending"
+    }
+  ],
+  "requirements": [
+    {
+      "desc": "finalize: ステップ順序をcommit→merge→sync→cleanup→recordに変更",
+      "status": "done"
+    },
+    {
+      "desc": "sync: worktreeモードではmainRepoPathで実行",
+      "status": "done"
+    },
+    {
+      "desc": "sync: PRルートでは自動スキップ+リマインド",
+      "status": "done"
+    },
+    {
+      "desc": "merge: allモードはauto判定、selectモードは上書き可能",
+      "status": "done"
+    },
+    {
+      "desc": "prompt/SKILL.md: ステップ番号とmerge-strategy選択肢を更新",
+      "status": "done"
+    }
+  ],
+  "worktree": true,
+  "issue": 32,
+  "request": "Issue #32: docs生成タイミングの変更 - featureブランチからメインブランチ側へ移行",
+  "notes": [
+    "approach: Q&Aで要件整理, work-env: worktree, base: development",
+    "draft: syncをcleanupの前に移動。commit→merge→sync(メインブランチ上)→cleanup→record",
+    "draft: syncのcwdはworktreeモードならmainRepoPath、それ以外はroot。resolveWorktreePaths()を使用",
+    "draft: マージ方法はauto判定をデフォルトにする。すべて実行はauto、個別選択時はマージステップで上書き可能"
+  ],
+  "metrics": {
+    "draft": {
+      "question": 6
+    }
+  }
+}
