@@ -127,10 +127,10 @@ See the [configuration reference](docs/configuration.md) for details.
 | Chapter | Summary |
 | --- | --- |
 | [Tool Overview and Architecture](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/overview.md) | sdd-forge is a Node.js CLI for Spec-Driven Development and automated documentation generation from source code. |
-| [Technology Stack and Operations](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/stack_and_ops.md) | This project is a Node.js command-line tool written as native ES modules in JavaScript and published as the sdd-forge… |
-| [Project Structure](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/project_structure.md) | This chapter covers 5 major directories: src for the CLI entry layer, src/docs for documentation commands and support… |
-| [CLI Command Reference](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/cli_commands.md) | This reference covers 43 analyzed command entry points across the sdd-forge CLI: 6 top-level commands, 11 docs subcom… |
-| [Configuration and Customization](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/configuration.md) | This chapter covers the configuration files the project reads, centered on .sdd-forge/config.json and package.json, a… |
+| [Technology Stack and Operations](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/stack_and_ops.md) | sdd-forge is a Node.js 18+ command-line tool written as native ECMAScript modules and distributed through a single sd… |
+| [Project Structure](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/project_structure.md) | This chapter covers five major directories: src for CLI entry points, src/docs for documentation commands and support… |
+| [CLI Command Reference](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/cli_commands.md) | The CLI exposes 6 top-level entry points: help, setup, upgrade, presets, docs, and flow, plus top-level version short… |
+| [Configuration and Customization](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/configuration.md) | This chapter covers the configuration files the tool reads from the project root and .sdd-forge directory, along with… |
 <!-- {{/data}} -->
 
 ## License
