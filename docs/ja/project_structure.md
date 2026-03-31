@@ -23,9 +23,9 @@ src/docs/commands/    (cli)
 src/docs/data/    (model)
 src/docs/lib/    (lib)
 src/docs/lib/lang/    (lib)
-src/flow/    (controller, config)
+src/flow/    (cli, config)
 src/flow/commands/    (cli)
-src/flow/get/    (lib)
+src/flow/get/    (lib, cli)
 src/flow/run/    (cli)
 src/flow/set/    (cli)
 src/lib/    (lib)
@@ -91,8 +91,8 @@ src/presets/workers/tests/unit/    (test)
 | --- | --- | --- |
 | src/presets | 122 | model, test, lib, other, config, controller, view, cli, middleware, route, migration |
 | src/docs | 39 | cli, model, lib |
-| src/flow | 32 | cli, controller, config, lib |
-| src/lib | 19 | lib |
+| src/flow | 32 | cli, config, lib |
+| src/lib | 20 | lib |
 | src | 7 | cli |
 <!-- {{/data}} -->
 
