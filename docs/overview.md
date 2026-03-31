@@ -8,7 +8,7 @@
 
 <!-- {{text({prompt: "Write a 1-2 sentence overview of this chapter. Include the tool's purpose, the problem it solves, and its primary use cases."})}} -->
 
-sdd-forge is a Node.js CLI for Spec-Driven Development and automated documentation generation from source code. It helps teams and AI coding agents keep specifications, implementation flow, and generated project docs aligned through commands for setup, documentation pipelines, and persistent flow management.
+This chapter describes an application entry module that loads runtime configuration, constructs supporting services, starts an HTTP server, and installs shutdown handling. It addresses the need to assemble startup, request handling, logging, and graceful termination in one place, with primary use cases around launching the service and serving a simple health-style JSON response.
 <!-- {{/text}} -->
 
 ## Content
@@ -17,9 +17,7 @@ sdd-forge is a Node.js CLI for Spec-Driven Development and automated documentati
 
 <!-- {{text({prompt: "Describe the problem this CLI tool solves and its target users. Derive the purpose from package.json and README."})}} -->
 
-sdd-forge addresses two related problems: project knowledge is often buried in source code, and feature work can drift when specification, implementation, and documentation are handled separately. Its package metadata describes it as "Spec-Driven Development tooling for automated documentation generation," and the README shows that it combines static source analysis, template-based document generation, and a managed SDD flow.
-
-The tool is aimed at developers working with AI coding agents, especially teams that want deterministic command-driven control over spec creation, gate checks, review, and documentation refresh. It is also intended for users onboarding to existing codebases, since `docs build` can analyze an existing project and generate structured `docs/` content and `README.md`.
+The provided analysis shows an application composition root that centralizes startup behavior rather than a CLI interface. Its purpose is to load configuration, create logging and HTTP client services, start an HTTP server on the configured port, and shut it down cleanly on `SIGTERM`, which is relevant to users or developers who need to run, observe, and stop the service reliably.
 <!-- {{/text}} -->
 
 ### Architecture Overview
@@ -28,62 +26,24 @@ The tool is aimed at developers working with AI coding agents, especially teams 
 
 ```mermaid
 flowchart TD
-    A[User runs `sdd-forge <command>`] --> B{Top-level dispatch in `src/sdd-forge.js`}
-    B -->|no args / --help| H[`help.js`]
-    B -->|--version| V[Print package version]
-    B -->|setup| S[`setup.js`]
-    B -->|upgrade| U[`upgrade.js`]
-    B -->|presets| P[`presets-cmd.js`]
-    B -->|docs| D[`docs.js`]
-    B -->|flow| F[`flow.js`]
-
-    S --> S1[Interactive wizard]
-    S1 --> S2[Create `.sdd-forge/config.json`, `docs/`, `specs/`, agent files]
-
-    U --> U1[Refresh template-derived skills and managed files]
-
-    P --> P1[Read preset manifests]
-    P1 --> P2[Print preset inheritance tree]
-
-    D --> D0{Docs subcommand}
-    D0 -->|build| DB[Build pipeline]
-    D0 -->|scan| DS[Analyze source files]
-    D0 -->|data| DD[Resolve `{{data}}` directives]
-    D0 -->|text| DT[Resolve `{{text}}` directives with agent]
-    D0 -->|readme| DR[Generate `README.md` from docs/templates]
-    D0 -->|review / forge / translate / agents / changelog| DX[Supporting docs operations]
-
-    DB --> DB1[scan]
-    DB1 --> DB2[enrich]
-    DB2 --> DB3[init]
-    DB3 --> DB4[data]
-    DB4 --> DB5[text]
-    DB5 --> DB6[readme]
-    DB6 --> DB7[agents]
-    DB7 --> DB8[translate if multi-language]
-    DS --> O1[`.sdd-forge/output/analysis.json`]
-    DD --> O2[Filled chapter files in `docs/`]
-    DT --> O2
-    DR --> O3[`README.md`]
-    DB8 --> O4[Updated docs set]
-
-    F --> F0{Flow subcommand}
-    F0 -->|get| FG[Read flow state or prompts]
-    F0 -->|set| FS[Update flow state]
-    F0 -->|run| FR[Execute flow actions]
-
-    FR --> FR1[prepare-spec]
-    FR --> FR2[gate]
-    FR --> FR3[review]
-    FR --> FR4[impl-confirm]
-    FR --> FR5[finalize]
-    FR --> FR6[sync]
-    FR --> FR7[lint / retro]
-
-    FG --> O5[Status, checks, prompts, context]
-    FS --> O6[Updated `flow.json` state]
-    FR1 --> O7[Spec directory, branch or worktree, persisted flow state]
-    FR5 --> O8[Commit, merge or PR route, docs sync, cleanup]
+  A[main] --> B[loadConfig]
+  B --> C[createLogger using config.logLevel]
+  C --> D[createApp(config)]
+  D --> E[createLogger for app]
+  D --> F[HttpClient using apiBaseUrl and timeout]
+  A --> G[log Application starting]
+  G --> H[app.start()]
+  H --> I[dynamic import node:http]
+  I --> J[createServer]
+  J --> K[listen on config.port]
+  K --> L[server started]
+  L --> M[log Listening on port]
+  J --> N[request received]
+  N --> O[log method and URL]
+  O --> P[write 200 JSON response]
+  A --> Q[register SIGTERM handler]
+  Q --> R[log Shutting down]
+  R --> S[server.close()]
 ```
 <!-- {{/text}} -->
 
@@ -91,30 +51,28 @@ flowchart TD
 
 <!-- {{text({prompt: "Explain the key concepts and terminology needed to understand this tool in table format. Extract the main concepts from source code."})}} -->
 
-| Term | Meaning in this tool |
+| Concept | Meaning in this code |
 | --- | --- |
-| Preset | A project-type definition discovered from `src/presets/*/preset.json`. Presets provide scan patterns, templates, chapter order, and inheritance. |
-| Type | The selected preset name, or an array of preset names, stored in `.sdd-forge/config.json` and used to resolve behavior for docs generation. |
-| `analysis.json` | Structured output written under `.sdd-forge/output/analysis.json` by `docs scan`; later steps read it as the main intermediate representation of the codebase. |
-| `{{data}}` directive | A template directive resolved deterministically from analysis data during `docs data`. It inserts generated factual content into chapter files. |
-| `{{text}}` directive | A template directive resolved by an AI agent during `docs text`. It fills prose sections after analysis data is available. |
-| Docs build pipeline | The main documentation pipeline in `docs build`: `scan -> enrich -> init -> data -> text -> readme -> agents`, with translation added for multi-language output. |
-| Flow state | Persistent SDD workflow state stored as a pointer in `.sdd-forge/.active-flow` and detailed state in `specs/<id>/flow.json`. |
-| Spec | The feature specification created during `flow run prepare-spec`, including files such as `spec.md` and `qa.md` under `specs/<id>/`. |
-| Phase | The high-level SDD stages reflected in the README and flow state: planning, implementation, finalization, and sync-related follow-up. |
-| Worktree mode | An option in spec preparation where a dedicated Git worktree is created for feature work instead of using only the current repository checkout. |
+| `main` | The top-level async entry function that coordinates configuration loading, application creation, startup, and shutdown wiring. |
+| Configuration | Runtime settings returned by `loadConfig`, including `logLevel`, `apiBaseUrl`, `timeout`, and `port`. |
+| Logger | A service created with `createLogger` that records startup messages, request activity, and shutdown events. |
+| `createApp` | A factory function that assembles application dependencies and returns an object with a `client` and `start` method. |
+| `HttpClient` | A client instance initialized with `baseUrl` and `timeout` from configuration. |
+| `start` | An async method that imports `node:http`, creates the server, and resolves once the server begins listening. |
+| HTTP server | A Node.js server that logs each request and returns a JSON body with `{ status: 'ok' }` and status `200`. |
+| Graceful shutdown | A `SIGTERM` handler that logs shutdown and awaits `server.close()`. |
 <!-- {{/text}} -->
 
 ### Typical Usage Flow
 
 <!-- {{text({prompt: "Describe the typical steps from installation to first output in step format. Derive the steps from help output and command definitions in the source code."})}} -->
 
-1. Install the CLI globally with `npm install -g sdd-forge`. The package declares a Node.js requirement of `>=18.0.0`.
-2. Run `sdd-forge setup` to register the project through the interactive wizard. This creates `.sdd-forge/config.json` and prepares project directories such as `docs/` and `specs/`.
-3. During setup, choose the project type preset, language, and default AI agent so the CLI can resolve scan rules, templates, and agent-backed text generation.
-4. Run `sdd-forge docs build` to execute the full documentation pipeline. According to help output, this runs `scan`, `enrich`, `init`, `data`, `text`, and `readme`, with `agents` and optional translation steps in the build implementation.
-5. The first generated output is a populated documentation set in `docs/`, plus an auto-generated `README.md`. For an existing codebase, this is the fastest path to a usable first result.
-6. After setup, use `sdd-forge help`, `sdd-forge docs --help`, or `sdd-forge flow --help` to inspect the available command families for documentation and SDD workflow operations.
+1. Load runtime settings through `loadConfig` so the application has values for log level, API base URL, timeout, and port.
+2. Create the logger and application object, which also initializes the HTTP client.
+3. Start the application by calling `app.start()`, which imports `node:http`, creates the server, and begins listening on the configured port.
+4. Send an HTTP request to the running server; the server logs the request method and URL.
+5. Receive the first observable output as a `200` response with a JSON body: `{ "status": "ok" }`.
+6. When the process receives `SIGTERM`, the application logs shutdown and closes the server.
 <!-- {{/text}} -->
 
 ---

@@ -11,7 +11,7 @@
 
 <!-- {{text({prompt: "Write a 1-2 sentence overview of this chapter. Include the number of major directories and their roles."})}} -->
 
-This chapter covers five major directories: `src` for CLI entry points, `src/docs` for documentation commands and support libraries, `src/flow` for workflow commands and configuration, `src/lib` for shared libraries and supporting models, and `src/presets` for preset-specific data, fixtures, and tests. Together, these directories show how the project separates core command logic, reusable library code, workflow handling, and preset-driven generation behavior.
+This chapter covers 5 major directory groups: `src` for top-level CLI entry points, `src/docs` for documentation-related CLI and library code, `src/flow` for workflow commands and configuration, `src/lib` for shared library, configuration, and model utilities, and `src/presets` for preset-specific data, models, framework support, and test fixtures. The directory layout and responsibility table show that `src/presets` is the largest area, while the other directories provide the core CLI, flow, and shared-library foundation.
 <!-- {{/text}} -->
 
 ## Content
@@ -103,10 +103,9 @@ src/presets/workers/tests/unit/    (test)
 
 | Class Name | File Path | Responsibility |
 | --- | --- | --- |
-| StructureSource | `src/presets/base/data/structure.js` | Extends `DataSource` to build directory structure outputs, including a tree view and an aggregated directory summary table from enriched analysis data. |
-| Parser | `src/presets/library/tests/acceptance/fixtures/src/index.js` | Exposed through the fixture library surface and used by the convenience parsing flow for raw Markdown input. |
-| Tokenizer | `src/presets/library/tests/acceptance/fixtures/src/index.js` | Exposed through the fixture library surface as a sibling parser component. |
-| Renderer | `src/presets/library/tests/acceptance/fixtures/src/index.js` | Exposed through the fixture library surface and used by the convenience rendering flow after parsing Markdown input. |
+| N/A | `src/lib/agents-md.js` | Loads the SDD section template for `AGENTS.md`, resolving a localized preset file and falling back to English when needed. |
+| `StructureSource` | `src/presets/base/data/structure.js` | Builds derived project-structure views from enriched analysis output, including a directory tree block and an aggregated directory responsibility table. |
+| N/A | `src/presets/library/tests/acceptance/fixtures/src/index.js` | Re-exports the fixture library surface and provides convenience `parse` and `render` helpers for working with Markdown input. |
 <!-- {{/text}} -->
 
 ---
