@@ -184,7 +184,8 @@ function buildEnrichPrompt(chapters, batchEntries, opts) {
   parts.push('      "summary": "1-2 sentence summary of what this file/class does",');
   parts.push('      "detail": "Detailed description of the implementation, key logic, patterns used. Do not omit information.",');
   parts.push('      "chapter": "chapter_name (from the available chapters list, without .md)",');
-  parts.push('      "role": "one of: controller, model, lib, config, cli, middleware, test, migration, route, view, other"');
+  parts.push('      "role": "one of: controller, model, lib, config, cli, middleware, test, migration, route, view, other",');
+  parts.push('      "keywords": ["keyword1", "keyword2", "synonym", "関連語"]');
   parts.push('    }');
   parts.push('  ]');
   parts.push('}');
@@ -215,7 +216,8 @@ function buildEnrichPrompt(chapters, batchEntries, opts) {
   const LANG_NAMES = { en: "English", ja: "Japanese", zh: "Chinese", ko: "Korean", fr: "French", de: "German", es: "Spanish", pt: "Portuguese", it: "Italian", ru: "Russian" };
   const lang = opts?.lang || "en";
   const langName = LANG_NAMES[lang] || lang;
-  parts.push(`- Write ALL output text (summary, detail, and any descriptive content) strictly in ${langName}. Even if the source code contains comments or strings in other languages, translate them into ${langName} in your output.`);
+  parts.push("- `keywords` should contain 3-10 search keywords including synonyms, related terms, and translations (e.g. both English and Japanese terms). Keywords are used for context search.");
+  parts.push(`- Write summary, detail, and any descriptive content strictly in ${langName}. keywords may contain terms in any language for cross-language search.`);
 
   return parts.join("\n");
 }
@@ -300,6 +302,7 @@ function mergeEnrichment(analysis, enrichment, opts = {}) {
           attempts: attemptsByKey.get(entryKey(cat, idx)) ?? items[idx].enrich?.attempts ?? 1,
         },
         ...(entry.app ? { app: entry.app } : {}),
+        ...(Array.isArray(entry.keywords) && entry.keywords.length > 0 ? { keywords: entry.keywords } : (items[idx].keywords ? { keywords: items[idx].keywords } : {})),
       };
 
       if (!entry.summary) {

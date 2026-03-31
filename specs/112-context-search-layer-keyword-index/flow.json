@@ -1,0 +1,132 @@
+{
+  "spec": "specs/112-context-search-layer-keyword-index/spec.md",
+  "baseBranch": "development",
+  "featureBranch": "feature/112-context-search-layer-keyword-index",
+  "steps": [
+    {
+      "id": "approach",
+      "status": "done"
+    },
+    {
+      "id": "branch",
+      "status": "done"
+    },
+    {
+      "id": "prepare-spec",
+      "status": "done"
+    },
+    {
+      "id": "draft",
+      "status": "done"
+    },
+    {
+      "id": "spec",
+      "status": "done"
+    },
+    {
+      "id": "gate",
+      "status": "done"
+    },
+    {
+      "id": "approval",
+      "status": "done"
+    },
+    {
+      "id": "test",
+      "status": "done"
+    },
+    {
+      "id": "implement",
+      "status": "done"
+    },
+    {
+      "id": "review",
+      "status": "done"
+    },
+    {
+      "id": "finalize",
+      "status": "in_progress"
+    },
+    {
+      "id": "commit",
+      "status": "pending"
+    },
+    {
+      "id": "push",
+      "status": "pending"
+    },
+    {
+      "id": "merge",
+      "status": "pending"
+    },
+    {
+      "id": "pr-create",
+      "status": "pending"
+    },
+    {
+      "id": "branch-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "pr-merge",
+      "status": "pending"
+    },
+    {
+      "id": "sync-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "docs-update",
+      "status": "pending"
+    },
+    {
+      "id": "docs-review",
+      "status": "pending"
+    },
+    {
+      "id": "docs-commit",
+      "status": "pending"
+    }
+  ],
+  "requirements": [
+    {
+      "desc": "enrich プロンプトに keywords 追加",
+      "status": "done"
+    },
+    {
+      "desc": "enrich マージで keywords 保存",
+      "status": "done"
+    },
+    {
+      "desc": "context --search 検索オプション",
+      "status": "done"
+    },
+    {
+      "desc": "raw/JSON 出力形式",
+      "status": "done"
+    },
+    {
+      "desc": "終了コード規約",
+      "status": "done"
+    }
+  ],
+  "worktree": true,
+  "issue": 47,
+  "request": "#47 コンテキスト検索レイヤー — docs/specs/review 履歴からキーワードインデックスで関連セクションを動的に取得する仕組み",
+  "notes": [
+    "approach: Q&A で要件整理",
+    "work-env: worktree, base: development",
+    "draft: Phase 1 のみ（index生成+CLI検索）。flow統合→0bc9、review履歴→ce15 にボード化",
+    "draft: analysis.json の enriched エントリをそのままインデックスソースに。別途 index.json は作らない",
+    "draft: シソーラスはインデックス作成時に事前定義。検索時AI不使用",
+    "draft: enrich プロンプトに keywords フィールド追加。analysis.json にシソーラス含むキーワード群を格納",
+    "draft: flow get context --search で summary+detail+path を返す",
+    "review: auto-fix",
+    "finalize: all, auto-detect merge strategy"
+  ],
+  "metrics": {
+    "draft": {
+      "question": 8
+    }
+  }
+}
