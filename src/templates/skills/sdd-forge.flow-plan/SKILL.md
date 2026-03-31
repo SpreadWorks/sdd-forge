@@ -92,6 +92,7 @@ Available status values: `pending`, `in_progress`, `done`, `skipped`
      4. Read relevant `docs/` chapters based on the user's request keywords.
         Use chapter titles and AGENTS.md structure to identify related files.
         This provides project context that improves question quality and draft accuracy.
+     5. Record what was read: `sdd-forge flow set metric draft docsRead` (if docs/ was read), `sdd-forge flow set metric draft srcRead` (if source code was read directly).
    - Create `specs/NNN-xxx/draft.md` in the spec directory created in step 3.
    - AI presents choices/proposals → user selects with short answers.
    - Ask ONE question at a time (do not batch questions, do not self-answer).
@@ -110,6 +111,7 @@ Available status values: `pending`, `in_progress`, `done`, `skipped`
    - **Before writing spec**:
      - Read draft (if exists), linked GitHub issue content, analysis.json, and relevant `docs/` chapters.
      - If `docs/` is missing or stale, read existing source code directly.
+     - Record what was read: `sdd-forge flow set metric spec docsRead` (if docs/ was read), `sdd-forge flow set metric spec srcRead` (if source code was read).
    - Fill Goal, Scope, Out of Scope, Requirements, Acceptance Criteria.
    - If draft phase was done, reflect draft Q&A and decisions in spec.md.
    - Don't just copy draft — organize and abstract (but don't invent).

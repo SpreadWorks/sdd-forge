@@ -10,7 +10,7 @@ import { repoRoot } from "../../lib/cli.js";
 import { mutateFlowState } from "../../lib/flow-state.js";
 import { ok, fail, output } from "../../lib/flow-envelope.js";
 
-const VALID_PHASES = ["draft", "spec", "gate", "test"];
+const VALID_PHASES = ["draft", "spec", "gate", "test", "impl"];
 const VALID_COUNTERS = ["question", "redo", "docsRead", "srcRead"];
 
 function main() {

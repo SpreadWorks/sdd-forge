@@ -37,6 +37,7 @@ Before starting, run `sdd-forge flow get check impl` to verify prerequisites.
 1. Implement changes.
    - **On start**: `sdd-forge flow set step implement in_progress`
    - Read the spec to understand requirements.
+   - After reading spec/docs, run: `sdd-forge flow set metric impl docsRead`
    - Load guardrail articles for the implementation phase: `sdd-forge flow get guardrail impl`.
      If output is non-empty, follow these principles during implementation.
    - Code only after confirming gate PASS and test phase completion.
@@ -169,6 +170,7 @@ sdd-forge flow set step <id> <val>
 sdd-forge flow set req <index> <val>
 sdd-forge flow set note "<text>"
 sdd-forge flow set redo --step <id> --reason "<text>" [--trigger "<text>"] [--resolution "<text>"] [--guardrail-candidate "<text>"]
+sdd-forge flow set metric <phase> <counter>
 sdd-forge flow run review
 sdd-forge flow run impl-confirm --mode <overview|detail>
 sdd-forge snapshot check
