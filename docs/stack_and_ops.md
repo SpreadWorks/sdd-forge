@@ -11,7 +11,7 @@
 
 <!-- {{text({prompt: "Write a 1-2 sentence overview of this chapter. Include the programming language, framework, and key tool versions."})}} -->
 
-This chapter documents the runtime environment and operational tooling that sdd-forge targets through its preset DataSource implementations, covering Node.js as the execution platform, GitHub Actions for CI/CD pipelines, Cloudflare Workers and R2 for edge deployment and storage, and PostgreSQL as a supported database backend.
+The sdd-forge project is implemented in Node.js using ES modules, with no external runtime dependencies beyond the Node.js standard library. Operations are automated through GitHub Actions CI/CD pipelines, and the project ships preset support for deployment targets including Cloudflare Workers edge runtimes and Cloudflare R2 storage.
 <!-- {{/text}} -->
 
 ## Content
@@ -22,33 +22,54 @@ This chapter documents the runtime environment and operational tooling that sdd-
 
 | Category | Technology | Notes |
 |---|---|---|
-| Runtime | Node.js | ES modules; no external dependencies |
-| CI/CD | GitHub Actions | Workflow YAML scanning via `PipelinesSource` (`.github/workflows/`) |
-| Edge Runtime | Cloudflare Workers | Configuration parsed from `wrangler.toml` / `wrangler.json` / `wrangler.jsonc` |
-| Object Storage | Cloudflare R2 | Bucket bindings extracted from wrangler config via `R2StorageSource` |
-| Database | PostgreSQL | Static metadata surfaced through `DatabaseSource` |
-| Container | Docker | Stub DataSource for CakePHP 2.x preset; returns null (not applicable to that stack) |
+| Runtime | Node.js | ES modules (`"type": "module"`); no external dependencies |
+| Package Manager | npm | Published to npmjs.com as `sdd-forge` |
+| CI/CD | GitHub Actions | Workflow files located under `.github/workflows/` |
+| Edge Runtime | Cloudflare Workers | Configuration via `wrangler.toml` / `wrangler.json` / `wrangler.jsonc` |
+| Object Storage | Cloudflare R2 | Bucket metadata read from wrangler config (`r2_buckets`) |
+| Database (preset) | PostgreSQL | Static preset; no scan required |
+| Container (preset) | Docker | Stub preset for CakePHP 2.x; not applicable to core tooling |
 <!-- {{/text}} -->
 
 ### Dependencies
 
 <!-- {{text({prompt: "Describe the project's dependency management approach."})}} -->
 
-The project enforces a strict zero-external-dependency policy: only Node.js built-in modules are used throughout `src/`. No `package.json` dependency entries are added, and no third-party libraries are imported. TOML parsing for wrangler configuration files is handled inline using custom regex-based logic rather than a dedicated YAML/TOML library. This constraint keeps the npm package lightweight and eliminates supply-chain risk for downstream consumers.
+The project enforces a strict no-external-dependency policy: only Node.js built-in modules are permitted throughout `src/`. This constraint eliminates `node_modules` concerns entirely and ensures the published npm package remains self-contained.
+
+Dependency declarations in `package.json` are therefore limited to development tooling (if any) and the package metadata itself. The `files` field restricts the published artifact to `src/` plus `package.json`, `README.md`, and `LICENSE`, preventing accidental inclusion of workspace files.
+
+Before each release, `npm pack --dry-run` is run to verify the exact set of files that will be published and to confirm no sensitive or unintended content is included.
 <!-- {{/text}} -->
 
 ### Deployment Flow
 
 <!-- {{text({prompt: "Describe the deployment procedure and flow."})}} -->
 
-Edge deployments targeting Cloudflare Workers are configured via `wrangler.toml`, `wrangler.json`, or `wrangler.jsonc` files at the project root. sdd-forge's `EdgeRuntimeSource` parses these files to extract entry points (`main`, `build.upload.main`), route bindings (`routes` / `route`), and runtime constraints (`compatibility_date`, `compatibility_flags`, `node_compat`). CI/CD pipelines defined as GitHub Actions workflows under `.github/workflows/` are scanned by `PipelinesSource`, which captures triggers (push, pull_request, schedule cron), per-job runner environments, step counts, and referenced reusable actions. The resulting tables give a consolidated view of how code flows from repository to production.
+Releases follow a two-step npm publish flow to ensure both the `alpha` tag and the `latest` tag are updated correctly:
+
+1. **Pack verification** — Run `npm pack --dry-run` to review the file manifest and confirm no credentials or project-specific files are included.
+2. **Publish to alpha** — Execute `npm publish --tag alpha` to push the new version under the `alpha` dist-tag without immediately updating `latest`.
+3. **Promote to latest** — Execute `npm dist-tag add sdd-forge@<version> latest` to make the release the default install target on npmjs.com.
+
+Versions follow the `0.1.0-alpha.N` scheme during the alpha period, where `N` is the total commit count from `git rev-list --count HEAD`. Once a version is published it cannot be reused; `npm unpublish` enforces a 24-hour embargo on version reuse.
+
+For projects using the edge preset, deployment to Cloudflare Workers is performed via the Wrangler CLI using the `wrangler.toml` or `wrangler.json` configuration file at the project root.
 <!-- {{/text}} -->
 
 ### Operations Flow
 
 <!-- {{text({prompt: "Describe the operations procedures."})}} -->
 
-Operational visibility is provided through dedicated DataSource implementations for each infrastructure layer. `PipelinesSource` surfaces secrets and environment variable references (via `${{ secrets.X }}` and `${{ env.X }}` patterns) across all GitHub Actions workflows, enabling a quick audit of credential exposure. `R2StorageSource` lists R2 bucket names, binding identifiers, and preview bucket names sourced from wrangler configuration, and exposes an access-pattern table derived from enriched analysis. `DatabaseSource` provides a static info table confirming the PostgreSQL backend. For projects where a category is not applicable (e.g., Docker on CakePHP 2.x), the corresponding DataSource returns `null`, suppressing the section cleanly without error.
+CI/CD pipelines are defined as GitHub Actions workflow YAML files under `.github/workflows/`. The `PipelinesSource` data source parses these files to surface pipeline names, trigger conditions (push, pull request, schedule), per-job runner environments, step counts, referenced reusable actions, and secret or environment variable references.
+
+Key operational tasks:
+
+- **Documentation rebuild** — Run `sdd-forge build` after source changes to regenerate `docs/` from the latest analysis. When source files are newer than docs output, the tooling prompts for a rebuild.
+- **Preset upgrade** — After modifying files under `src/templates/` or `src/presets/`, run `sdd-forge upgrade` to propagate changes to project skill files (`.claude/skills/`, `.agents/skills/`) and configuration templates.
+- **Analysis refresh** — Run `sdd-forge scan` to regenerate `analysis.json` in `.sdd-forge/output/` whenever the codebase structure changes significantly.
+- **Edge runtime monitoring** — For Cloudflare Workers deployments, compatibility date and compatibility flags recorded in `wrangler.toml` should be reviewed periodically against the Cloudflare Workers runtime changelog to avoid unexpected breakage.
+- **Storage operations** — R2 bucket bindings and preview bucket names are tracked via the wrangler configuration and surfaced in the generated docs for audit and access-control review.
 <!-- {{/text}} -->
 
 ---
