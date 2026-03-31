@@ -6,12 +6,22 @@
     "languages": ["en", "ja"],
     "defaultLanguage": "en",
     "mode": "generate",
+    "exclude": ["experimental/**", "src/presets/**"],
     "style": {
       "purpose": "user-guide",
       "tone": "polite",
       "customInstruction": ""
     }
   },
+  "chapters": [
+    { "chapter": "overview.md", "desc": "sdd-forge の目的・設計思想・主要機能の概要" },
+    { "chapter": "stack_and_ops.md", "desc": "Node.js ランタイム、外部依存なしポリシー、動作要件" },
+    { "chapter": "project_structure.md", "desc": "src/ のディレクトリ構造、3層ディスパッチ、プリセットシステム" },
+    { "chapter": "cli_commands.md", "desc": "docs/spec/flow サブコマンド群、オプション、使用例、終了コード" },
+    { "chapter": "configuration.md", "desc": "config.json スキーマ、agent 設定、プリセット設定、flow 設定" },
+    { "chapter": "internal_design.md", "desc": "テンプレートエンジン、DataSource、enrich パイプライン、言語ハンドラ" },
+    { "chapter": "development_testing.md", "exclude": true }
+  ],
   "scan": {
     "include": ["src/**/*.js", "src/**/*.mjs", "src/**/*.cjs", "package.json"],
     "exclude": ["experimental/**"]

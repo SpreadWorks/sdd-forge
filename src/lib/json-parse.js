@@ -56,10 +56,15 @@ export function fixUnescapedQuotes(json) {
       }
 
       if (c === '"') {
-        // Real end of string if followed by JSON structural chars
+        // Look ahead to find the next non-whitespace char after this quote
         const next = json[i + 1];
-        if (next === undefined || next === "," || next === "}" || next === "]" || next === ":"
-            || next === "\n" || next === "\r" || next === " " || next === "\t") {
+        let nextNonWs = i + 1;
+        while (nextNonWs < len && (json[nextNonWs] === " " || json[nextNonWs] === "\t" || json[nextNonWs] === "\n" || json[nextNonWs] === "\r")) {
+          nextNonWs++;
+        }
+        const afterWs = json[nextNonWs];
+        // Real end of string if followed by (optional whitespace +) JSON structural chars or EOF
+        if (afterWs === undefined || afterWs === "," || afterWs === "}" || afterWs === "]" || afterWs === ":") {
           out.push(c);
           i++;
           break;
