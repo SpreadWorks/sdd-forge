@@ -70,6 +70,7 @@ Available status values: `pending`, `in_progress`, `done`, `skipped`
 <!-- include("@templates/partials/worktree-mode.md") -->
 - `sdd-forge flow run finalize` handles worktree detection, merge, and cleanup internally.
 - Docs sync (step 3) runs on the main repository after merge, before worktree cleanup.
+- **MUST: Before running `sdd-forge flow run finalize`, change the working directory to the main repository path** (not the worktree). Finalize deletes the worktree during cleanup, which invalidates the shell's cwd and causes spurious errors. Use the `mainRepoPath` from `sdd-forge flow get resolve-context` to determine the correct directory.
 
 ## Hard Stops
 
