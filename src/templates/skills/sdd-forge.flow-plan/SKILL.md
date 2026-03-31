@@ -175,6 +175,7 @@ Available status values: `pending`, `in_progress`, `done`, `skipped`
    - **On complete**: `sdd-forge flow set step test done`
    - **After test step is done**:
      - Run `sdd-forge flow get prompt plan.complete` and present the choices.
+     - **autoApprove transition:** If `autoApprove: true`, treat [1] as selected and invoke `/sdd-forge.flow-impl` using the Skill tool.
 
 ## Worktree Mode
 

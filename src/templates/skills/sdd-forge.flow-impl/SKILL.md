@@ -126,6 +126,7 @@ Before starting, run `sdd-forge flow get check impl` to verify prerequisites.
 
      ```
    - **Option 1 (approve):** Immediately invoke `/sdd-forge.flow-finalize` using the Skill tool.
+   - **autoApprove transition:** If `autoApprove: true`, treat [1] as selected and invoke `/sdd-forge.flow-finalize` using the Skill tool.
    - **Option 2 (overview):** Run `sdd-forge flow run impl-confirm --mode overview`. Display:
      - Changed files list
      - Summary of major changes

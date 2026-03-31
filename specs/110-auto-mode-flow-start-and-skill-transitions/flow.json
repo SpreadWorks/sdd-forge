@@ -1,0 +1,117 @@
+{
+  "spec": "specs/110-auto-mode-flow-start-and-skill-transitions/spec.md",
+  "baseBranch": "development",
+  "featureBranch": "feature/110-auto-mode-flow-start-and-skill-transitions",
+  "steps": [
+    {
+      "id": "approach",
+      "status": "done"
+    },
+    {
+      "id": "branch",
+      "status": "done"
+    },
+    {
+      "id": "prepare-spec",
+      "status": "done"
+    },
+    {
+      "id": "draft",
+      "status": "done"
+    },
+    {
+      "id": "spec",
+      "status": "done"
+    },
+    {
+      "id": "gate",
+      "status": "done"
+    },
+    {
+      "id": "approval",
+      "status": "done"
+    },
+    {
+      "id": "test",
+      "status": "done"
+    },
+    {
+      "id": "implement",
+      "status": "done"
+    },
+    {
+      "id": "review",
+      "status": "done"
+    },
+    {
+      "id": "finalize",
+      "status": "done"
+    },
+    {
+      "id": "commit",
+      "status": "pending"
+    },
+    {
+      "id": "push",
+      "status": "pending"
+    },
+    {
+      "id": "merge",
+      "status": "pending"
+    },
+    {
+      "id": "pr-create",
+      "status": "pending"
+    },
+    {
+      "id": "branch-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "pr-merge",
+      "status": "pending"
+    },
+    {
+      "id": "sync-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "docs-update",
+      "status": "pending"
+    },
+    {
+      "id": "docs-review",
+      "status": "pending"
+    },
+    {
+      "id": "docs-commit",
+      "status": "pending"
+    }
+  ],
+  "requirements": [
+    {
+      "desc": "flow-auto-on SKILL.md をゲートキーパー化",
+      "status": "done"
+    },
+    {
+      "desc": "flow-plan SKILL.md に autoApprove 時の flow-impl 自動呼び出し追記",
+      "status": "done"
+    },
+    {
+      "desc": "flow-impl SKILL.md に autoApprove 時の flow-finalize 自動呼び出し追記",
+      "status": "done"
+    }
+  ],
+  "worktree": true,
+  "issue": 44,
+  "request": "Issue #44: auto mode のflow開始からskill間遷移までの自動化",
+  "notes": [
+    "approach: Q&A, work-env: worktree, base: development",
+    "draft: flow-auto-on がゲートキーパー(flow.json+request/issue確認)、skill間遷移は各SKILL.mdの最終ステップに次skill呼び出し指示を追記"
+  ],
+  "metrics": {
+    "draft": {
+      "question": 5
+    }
+  }
+}
