@@ -1,0 +1,118 @@
+{
+  "spec": "specs/106-auto-generate-pr-description/spec.md",
+  "baseBranch": "development",
+  "featureBranch": "feature/106-auto-generate-pr-description",
+  "steps": [
+    {
+      "id": "approach",
+      "status": "done"
+    },
+    {
+      "id": "branch",
+      "status": "done"
+    },
+    {
+      "id": "prepare-spec",
+      "status": "done"
+    },
+    {
+      "id": "draft",
+      "status": "skipped"
+    },
+    {
+      "id": "spec",
+      "status": "done"
+    },
+    {
+      "id": "gate",
+      "status": "done"
+    },
+    {
+      "id": "approval",
+      "status": "done"
+    },
+    {
+      "id": "test",
+      "status": "done"
+    },
+    {
+      "id": "implement",
+      "status": "done"
+    },
+    {
+      "id": "review",
+      "status": "done"
+    },
+    {
+      "id": "finalize",
+      "status": "in_progress"
+    },
+    {
+      "id": "commit",
+      "status": "pending"
+    },
+    {
+      "id": "push",
+      "status": "pending"
+    },
+    {
+      "id": "merge",
+      "status": "pending"
+    },
+    {
+      "id": "pr-create",
+      "status": "pending"
+    },
+    {
+      "id": "branch-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "pr-merge",
+      "status": "pending"
+    },
+    {
+      "id": "sync-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "docs-update",
+      "status": "pending"
+    },
+    {
+      "id": "docs-review",
+      "status": "pending"
+    },
+    {
+      "id": "docs-commit",
+      "status": "pending"
+    }
+  ],
+  "requirements": [
+    {
+      "desc": "spec.mdパーサー追加",
+      "status": "done"
+    },
+    {
+      "desc": "buildPrBody拡張",
+      "status": "done"
+    },
+    {
+      "desc": "buildPrTitle新設",
+      "status": "done"
+    },
+    {
+      "desc": "フォールバック",
+      "status": "done"
+    }
+  ],
+  "worktree": true,
+  "issue": 37,
+  "request": "#37 PR description の自動生成 — flow-finalize で PR ルートを選んだ際、spec.md から PR title/body を自動生成する",
+  "notes": [
+    "approach: 仕様書を直接作成",
+    "work-env: worktree, base: development",
+    "review: auto-fix",
+    "finalize: all, squash merge"
+  ]
+}

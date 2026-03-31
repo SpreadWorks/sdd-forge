@@ -7,6 +7,8 @@
  */
 
 import { execFileSync } from "child_process";
+import { readFileSync } from "fs";
+import { resolve } from "path";
 import { runIfDirect } from "../../lib/entrypoint.js";
 import { repoRoot, parseArgs } from "../../lib/cli.js";
 import { loadFlowState, resolveWorktreePaths } from "../../lib/flow-state.js";
@@ -35,22 +37,107 @@ function isGhAvailable() {
 }
 
 /**
- * Build PR body from flow state.
- * @param {Object} state - flow.json state
+ * Extract a markdown section body by heading name.
+ * Returns trimmed content between the heading and the next same-or-higher level heading, or null if empty.
+ * @param {string} content - full markdown text
+ * @param {string} heading - heading text to find (e.g. "Goal")
+ * @returns {string|null}
+ */
+function extractSection(content, heading) {
+  const pattern = new RegExp(`^##\\s+${heading}\\s*$`, "m");
+  const match = pattern.exec(content);
+  if (!match) return null;
+  const start = match.index + match[0].length;
+  const rest = content.slice(start);
+  const nextHeading = rest.search(/^##\s+/m);
+  const body = (nextHeading === -1 ? rest : rest.slice(0, nextHeading)).trim();
+  return body || null;
+}
+
+/**
+ * Parse spec.md content and extract Goal, Scope, Requirements sections.
+ * @param {string} content - spec.md file content
+ * @returns {{goal: string|null, scope: string|null, requirements: string|null}}
+ */
+function parseSpec(content) {
+  if (!content) return { goal: null, scope: null, requirements: null };
+  return {
+    goal: extractSection(content, "Goal"),
+    scope: extractSection(content, "Scope"),
+    requirements: extractSection(content, "Requirements"),
+  };
+}
+
+/**
+ * Build PR title from parsed spec.
+ * @param {{goal: string|null}|null} spec - parsed spec sections
+ * @param {string} fallback - fallback title (e.g. spec directory name)
  * @returns {string}
  */
-function buildPrBody(state) {
+function buildPrTitle(spec, fallback) {
+  if (spec?.goal) {
+    const firstLine = spec.goal.split("\n")[0].trim();
+    if (firstLine) return firstLine;
+  }
+  return fallback;
+}
+
+/**
+ * Build PR body from flow state and parsed spec.
+ * @param {Object} state - flow.json state
+ * @param {{goal: string|null, scope: string|null, requirements: string|null}|null} spec - parsed spec sections
+ * @returns {string}
+ */
+function buildPrBody(state, spec) {
   const lines = [];
   if (state.issue) {
     lines.push(`fixes #${state.issue}`);
     lines.push("");
   }
-  if (state.request) {
-    lines.push(`## Summary`);
+  if (spec?.goal) {
+    lines.push("## Goal");
     lines.push("");
-    lines.push(state.request);
+    lines.push(spec.goal);
+    lines.push("");
   }
-  return lines.join("\n");
+  if (spec?.requirements) {
+    lines.push("## Requirements");
+    lines.push("");
+    lines.push(spec.requirements);
+    lines.push("");
+  }
+  if (spec?.scope) {
+    lines.push("## Scope");
+    lines.push("");
+    lines.push(spec.scope);
+    lines.push("");
+  }
+  // Fallback: no spec sections available
+  if (!spec?.goal && !spec?.requirements && !spec?.scope) {
+    if (state.request) {
+      lines.push("## Summary");
+      lines.push("");
+      lines.push(state.request);
+    }
+  }
+  return lines.join("\n").trim();
+}
+
+/**
+ * Try to read and parse spec.md from flow state.
+ * @param {Object} state - flow.json state
+ * @param {string} root - project root
+ * @returns {{goal: string|null, scope: string|null, requirements: string|null}|null}
+ */
+function loadSpec(state, root) {
+  if (!state.spec) return null;
+  try {
+    const specPath = resolve(root, state.spec);
+    const content = readFileSync(specPath, "utf8");
+    return parseSpec(content);
+  } catch (_) {
+    return null;
+  }
 }
 
 function main() {
@@ -115,14 +202,16 @@ function main() {
       cfg = {};
     }
     const remote = resolveRemote(cfg);
-    const body = buildPrBody(state);
-    const specTitle = state.spec?.replace(/^specs\/\d+-/, "").replace(/\/spec\.md$/, "") || featureBranch;
+    const spec = loadSpec(state, root);
+    const fallbackTitle = state.spec?.replace(/^specs\/\d+-/, "").replace(/\/spec\.md$/, "") || featureBranch;
+    const title = buildPrTitle(spec, fallbackTitle);
+    const body = buildPrBody(state, spec);
 
     const pushCmd = ["git", "push", "-u", remote, featureBranch];
     const prCmd = ["gh", "pr", "create",
       "--base", baseBranch,
       "--head", featureBranch,
-      "--title", specTitle,
+      "--title", title,
       ...(body ? ["--body", body] : []),
     ];
 
@@ -176,6 +265,6 @@ function main() {
   console.log("merge: done (branch → squash merge)");
 }
 
-export { main };
+export { main, parseSpec, buildPrTitle, buildPrBody };
 
 runIfDirect(import.meta.url, main);
