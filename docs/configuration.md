@@ -8,7 +8,7 @@
 
 <!-- {{text({prompt: "Write a 1-2 sentence overview of this chapter. Include the types of config files, range of configurable items, and customization points."})}} -->
 
-sdd-forge is configured through a single JSON file that controls every aspect of its behavior, from documentation language and writing style to AI agent settings, source scanning patterns, and Git flow strategy. Users can tailor documentation output, agent execution, and workflow automation without touching the source code.
+The configuration system is centred on a single project-level file, `.sdd-forge/config.json`, which controls documentation generation, AI agent behaviour, workflow integration, and scan patterns. Configurable items range from output language and writing tone to concurrency limits, chapter ordering, merge strategy, and agent provider definitions.
 <!-- {{/text}} -->
 
 ## Content
@@ -19,8 +19,8 @@ sdd-forge is configured through a single JSON file that controls every aspect of
 
 | File | Location | Role |
 |------|----------|------|
-| `config.json` | `.sdd-forge/config.json` | Primary project configuration file; loaded and schema-validated by `loadConfig()` on every command run |
-| `package.json` | `<project-root>/package.json` | Supplementary metadata source; individual fields are read on demand via `loadPackageField()` and the file is silently skipped if absent |
+| `config.json` | `.sdd-forge/config.json` | Primary project configuration. Loaded by `loadConfig()`, parsed as JSON, and fully validated against the schema before any command runs. An error is thrown if the file is missing or invalid. |
+| `package.json` | `<project-root>/package.json` | Read on demand by `loadPackageField()` to retrieve arbitrary metadata fields such as `name` or `version`. Returns `undefined` silently if the file is absent or cannot be parsed. |
 <!-- {{/text}} -->
 
 ### Configuration Reference
@@ -29,134 +29,121 @@ sdd-forge is configured through a single JSON file that controls every aspect of
 
 | Field | Required | Type | Default | Description |
 |-------|----------|------|---------|-------------|
-| `docs` | Required | object | — | Top-level block for all documentation generation settings |
-| `docs.languages` | Required | string[] | — | Non-empty list of output language codes (e.g., `["en", "ja"]`) |
-| `docs.defaultLanguage` | Required | string | — | Primary output language; must be one of the values in `docs.languages` |
-| `docs.mode` | Optional | `"translate"` \| `"generate"` | `"translate"` | Controls whether secondary languages are translated from the default or generated independently |
-| `docs.style` | Optional | object | — | Writing style overrides for AI-generated content |
-| `docs.style.purpose` | Required (if `docs.style` set) | string | — | A non-empty string describing the intended purpose of the documentation |
-| `docs.style.tone` | Required (if `docs.style` set) | `"polite"` \| `"formal"` \| `"casual"` | — | Writing tone applied to all generated text |
-| `docs.style.customInstruction` | Optional | string | — | Additional free-form instruction passed to the AI writer |
-| `docs.exclude` | Optional | string[] | — | Glob patterns for source files to exclude from documentation output |
-| `docs.enrichBatchSize` | Optional | number | — | Number of entries processed per batch during the enrich step |
-| `docs.enrichBatchLines` | Optional | number | — | Maximum source lines included per enrich batch |
-| `lang` | Required | string | — | Language code for the project itself (e.g., `"en"`) |
-| `type` | Required | string \| string[] | — | Preset type(s) to apply (e.g., `"node-cli"` or `["node", "cli"]`) |
-| `concurrency` | Optional | number | `5` | Maximum number of parallel agent invocations (`DEFAULT_CONCURRENCY = 5`) |
-| `chapters` | Optional | array | — | Array of chapter objects controlling order and inclusion |
-| `chapters[].chapter` | Required | string | — | Chapter filename relative to the docs directory (e.g., `"overview.md"`) |
-| `chapters[].desc` | Optional | string | — | Description override for the chapter |
-| `chapters[].exclude` | Optional | boolean | — | When `true`, the chapter is omitted from the output |
-| `agent.workDir` | Optional | string | — | Working directory for spawned agent processes |
-| `agent.timeout` | Optional | number (ms) | — | Timeout in milliseconds for a single agent invocation |
-| `agent.retryCount` | Optional | number | — | Number of retry attempts on agent failure (must be ≥ 1) |
-| `agent.providers.<name>.command` | Required (per provider) | string | — | Executable name or path for the named agent provider |
-| `agent.providers.<name>.args` | Required (per provider) | string[] | — | Argument array prepended when invoking the provider command |
-| `scan.include` | Required (if `scan` set) | string[] | — | Non-empty list of glob patterns that determine which files are scanned |
-| `scan.exclude` | Optional | string[] | — | Glob patterns for files to skip during scanning |
-| `flow.merge` | Optional | `"squash"` \| `"ff-only"` \| `"merge"` | — | Git merge strategy used when the SDD flow finalizes a branch |
-| `flow.push.remote` | Optional | string | — | Remote name used for automatic pushes during the flow (e.g., `"origin"`) |
-| `commands.gh` | Optional | `"enable"` \| `"disable"` | — | Controls whether the GitHub CLI (`gh`) is used for pull-request operations |
+| `docs` | Required | object | — | Parent object for all documentation output settings. |
+| `docs.languages` | Required | string[] | — | Non-empty list of language codes for which documentation is generated (e.g. `["en", "ja"]`). |
+| `docs.defaultLanguage` | Required | string | — | The primary output language. Must be one of the values in `docs.languages`. |
+| `docs.mode` | Optional | `"translate"` \| `"generate"` | `"translate"` | Controls how non-default languages are produced. |
+| `docs.style` | Optional | object | — | Writing style hints passed to the AI. Omit the entire object to use preset defaults. |
+| `docs.style.purpose` | Required (if `style` present) | string | — | One-sentence description of the documentation's purpose. |
+| `docs.style.tone` | Required (if `style` present) | `"polite"` \| `"formal"` \| `"casual"` | — | Desired writing tone for generated prose. |
+| `docs.style.customInstruction` | Optional | string | — | Free-form additional instruction appended to AI prompts. |
+| `docs.exclude` | Optional | string[] | — | Glob patterns for source files to exclude from documentation generation. |
+| `docs.enrichBatchSize` | Optional | number | — | Number of entries processed per enrich batch. |
+| `docs.enrichBatchLines` | Optional | number | — | Maximum source lines sent per enrich batch. |
+| `lang` | Required | string | — | Language code used for prompts and internal messages (e.g. `"en"`). |
+| `type` | Required | string \| string[] | — | Preset type(s) that define chapter templates (e.g. `"node-cli"`). |
+| `concurrency` | Optional | number | `5` | Maximum number of AI calls executed in parallel. Must be a positive integer if provided. |
+| `chapters` | Optional | `{chapter, desc?, exclude?}`[] | — | Project-level override for chapter ordering and inclusion. Each entry must have a `chapter` filename; `exclude: true` removes a chapter from output. |
+| `scan.include` | Required (if `scan` present) | string[] | — | Non-empty list of glob patterns identifying source files to scan. |
+| `scan.exclude` | Optional | string[] | — | Glob patterns for source files to skip during scanning. |
+| `agent.default` | Optional | string | — | Key of the default provider entry within `agent.providers`. |
+| `agent.workDir` | Optional | string | — | Working directory used when spawning agent processes. |
+| `agent.timeout` | Optional | number | — | Timeout in milliseconds for a single agent call. Must be a positive number. |
+| `agent.retryCount` | Optional | number | — | Number of retry attempts on agent failure. Must be a positive number. |
+| `agent.providers` | Optional | object | — | Map of named provider configurations. Each entry requires a `command` (non-empty string) and `args` (array). |
+| `flow.merge` | Optional | `"squash"` \| `"ff-only"` \| `"merge"` | — | Git merge strategy used when finalising a flow branch. |
+| `flow.push.remote` | Optional | string | — | Name of the git remote to push to during flow finalisation. |
+| `commands.gh` | Optional | `"enable"` \| `"disable"` | — | Controls whether GitHub CLI (`gh`) commands are used in flow operations. |
 <!-- {{/text}} -->
 
 ### Customization Points
 
 <!-- {{text({prompt: "Describe items that users can customize. Extract configurable items from the source code and include configuration examples for each.", mode: "deep"})}} -->
 
-**Documentation languages and style**
+**Documentation language and multi-language output**
 
-Set the languages you want to publish and how text should sound:
+Set `docs.languages` to the list of languages you want and `docs.defaultLanguage` to your primary language. When `docs.mode` is `"translate"`, secondary languages are derived from the primary output; when set to `"generate"`, each language is generated independently.
 
 ```json
-{
-  "docs": {
-    "languages": ["en", "ja"],
-    "defaultLanguage": "en",
-    "mode": "translate",
-    "style": {
-      "purpose": "Developer-facing reference for a CLI tool",
-      "tone": "formal",
-      "customInstruction": "Prefer active voice and concise sentences."
-    }
+"docs": {
+  "languages": ["en", "ja"],
+  "defaultLanguage": "en",
+  "mode": "translate"
+}
+```
+
+**Writing style**
+
+Provide `docs.style` to guide the tone and purpose of generated prose. All three sub-fields (`purpose`, `tone`, `customInstruction`) let you steer the AI without modifying templates.
+
+```json
+"docs": {
+  "style": {
+    "purpose": "Reference documentation for library maintainers",
+    "tone": "formal",
+    "customInstruction": "Prefer active voice and avoid jargon."
   }
 }
 ```
 
-**Preset type**
+**Concurrency**
 
-Select one or more preset types to control which documentation chapters and scan rules are applied:
-
-```json
-{ "type": "node-cli" }
-```
-
-or for a combined stack:
+Increase or decrease the number of parallel AI calls to balance speed against API rate limits. The built-in default is `5`.
 
 ```json
-{ "type": ["node", "cli"] }
-```
-
-**Source file scanning**
-
-Define exactly which files are analysed. Use `scan.include` for glob patterns to include and `scan.exclude` for patterns to skip:
-
-```json
-{
-  "scan": {
-    "include": ["src/**/*.js"],
-    "exclude": ["src/**/*.test.js", "src/fixtures/**"]
-  }
-}
+"concurrency": 3
 ```
 
 **Chapter ordering and exclusion**
 
-Override the preset chapter order or hide specific chapters without editing the preset:
+Add a `chapters` array to reorder chapters or exclude specific ones from the output. Entries not listed here fall back to the preset order.
 
 ```json
-{
-  "chapters": [
-    { "chapter": "overview.md" },
-    { "chapter": "cli_commands.md" },
-    { "chapter": "configuration.md" },
-    { "chapter": "internal_design.md", "exclude": true }
-  ]
-}
+"chapters": [
+  { "chapter": "overview.md" },
+  { "chapter": "cli_commands.md" },
+  { "chapter": "configuration.md", "desc": "Config reference" },
+  { "chapter": "internal_design.md", "exclude": true }
+]
 ```
 
-**Agent concurrency and providers**
+**Agent providers**
 
-Control how many agents run in parallel and register alternative AI providers:
+Register one or more named AI agent runtimes under `agent.providers`, then set `agent.default` to select which one is used by default.
 
 ```json
-{
-  "concurrency": 3,
-  "agent": {
-    "timeout": 120000,
-    "retryCount": 2,
-    "providers": {
-      "claude": {
-        "command": "claude",
-        "args": ["--model", "claude-opus-4-5"]
-      }
+"agent": {
+  "default": "claude",
+  "timeout": 120000,
+  "retryCount": 2,
+  "providers": {
+    "claude": {
+      "command": "claude",
+      "args": ["--output-format", "stream-json", "--verbose"]
     }
   }
 }
 ```
 
-**Flow and Git integration**
+**Flow and merge strategy**
 
-Choose the merge strategy and whether the GitHub CLI is used for pull requests:
+Choose how feature branches are integrated and whether commits are pushed automatically.
 
 ```json
-{
-  "flow": {
-    "merge": "squash",
-    "push": { "remote": "origin" }
-  },
-  "commands": {
-    "gh": "enable"
-  }
+"flow": {
+  "merge": "squash",
+  "push": { "remote": "origin" }
+}
+```
+
+**Scan patterns**
+
+Define which source files are analysed. `scan.include` accepts glob patterns; `scan.exclude` removes matched paths from the result.
+
+```json
+"scan": {
+  "include": ["src/**/*.js"],
+  "exclude": ["src/**/*.test.js", "src/vendor/**"]
 }
 ```
 <!-- {{/text}} -->
@@ -165,7 +152,10 @@ Choose the merge strategy and whether the GitHub CLI is used for pull requests:
 
 <!-- {{text({prompt: "List all environment variables referenced by the tool and their purposes in table format. Extract from process.env references in the source code.", mode: "deep"})}} -->
 
-The configuration loading module (`config.js`) and the schema validation module (`types.js`) do not reference any environment variables directly. All configuration values are read exclusively from files on disk (`.sdd-forge/config.json` and `package.json`). Environment variables used by the broader CLI — such as those that resolve the project root — are handled in the top-level dispatcher layer, outside the configuration module.
+| Variable | Purpose |
+|----------|---------|
+| `SDD_SOURCE_ROOT` | Absolute path to the project's source root. Used by `sdd-forge.js` to resolve where source files and the `.sdd-forge/` directory reside when the tool is invoked outside the project root. |
+| `SDD_WORK_ROOT` | Absolute path to the working directory for agent operations. Used by `sdd-forge.js` to determine where agent processes are spawned when `agent.workDir` is not set in `config.json`. |
 <!-- {{/text}} -->
 
 ---
