@@ -27,7 +27,7 @@ import { ANALYSIS_META_KEYS } from "../lib/analysis-entry.js";
 const logger = createLogger("enrich");
 const DEFAULT_BATCH_SIZE = 20;
 const DEFAULT_BATCH_LINES = 3000;
-const RETRY_DELAY_MS = 3000;
+
 
 function printHelp() {
   const t = translate();
@@ -95,44 +95,6 @@ function filterByDocsExclude(entries, excludePatterns) {
 
 function entryKey(category, index) {
   return `${category}:${index}`;
-}
-
-function getRetryCount(config) {
-  return Number(config?.agent?.retryCount || 0) || 1;
-}
-
-function sleep(ms) {
-  return new Promise((resolve) => setTimeout(resolve, ms));
-}
-
-async function enrichBatchWithRetry({
-  agent,
-  prompt,
-  timeoutMs,
-  cwd,
-  retryCount,
-  callAgent = callAgentAsync,
-  sleep: sleepFn = sleep,
-  onAttempt = () => {},
-}) {
-  let lastError = null;
-
-  for (let attempt = 0; attempt <= retryCount; attempt++) {
-    onAttempt();
-    try {
-      const response = await callAgent(agent, prompt, timeoutMs, cwd);
-      if (response) return response;
-      lastError = new Error("empty response");
-    } catch (err) {
-      lastError = err;
-    }
-
-    if (attempt < retryCount) {
-      await sleepFn(RETRY_DELAY_MS);
-    }
-  }
-
-  throw lastError || new Error("empty response");
 }
 
 /**
@@ -498,7 +460,7 @@ async function main(ctx) {
   // Split into batches (lines-based with item count fallback)
   const maxItems = Number(config.docs?.enrichBatchSize || 0) || DEFAULT_BATCH_SIZE;
   const maxLines = Number(config.docs?.enrichBatchLines || 0) || DEFAULT_BATCH_LINES;
-  const retryCount = getRetryCount(config);
+  const retryCount = Number(config?.agent?.retryCount) || 0;
   const hasLines = pending.some((e) => e.lines > 0);
   const batches = splitIntoBatches(pending, hasLines ? maxLines : 0, maxItems);
 
@@ -512,17 +474,9 @@ async function main(ctx) {
     const prompt = buildEnrichPrompt(chapters, batch, { monorepoApps: config.monorepo?.apps, lang: config.docs?.defaultLanguage || "en" });
 
     let response;
-    let attemptsUsed = 0;
     try {
-      response = await enrichBatchWithRetry({
-        agent,
-        prompt,
-        timeoutMs,
-        cwd: root,
+      response = await callAgentAsync(agent, prompt, timeoutMs, root, {
         retryCount,
-        onAttempt: () => {
-          attemptsUsed += 1;
-        },
       });
     } catch (err) {
       saveProgress(root, analysis, totalEnriched, ctx);
@@ -582,8 +536,6 @@ export {
   collectEntries,
   filterByDocsExclude,
   splitIntoBatches,
-  getRetryCount,
-  enrichBatchWithRetry,
   DEFAULT_BATCH_SIZE,
   DEFAULT_BATCH_LINES,
 };

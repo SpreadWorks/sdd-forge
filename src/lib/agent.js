@@ -125,9 +125,37 @@ export function callAgent(agent, prompt, timeoutMs, cwd, options) {
  * @param {string} [options.systemPrompt] - System prompt text
  * @param {function} [options.onStdout] - Streaming callback for stdout chunks
  * @param {function} [options.onStderr] - Streaming callback for stderr chunks
+ * @param {number} [options.retryCount=0] - Number of retries on empty response or non-zero exit (0 = no retry)
+ * @param {number} [options.retryDelayMs=3000] - Delay between retries in milliseconds
  * @returns {Promise<string>} Agent response (trimmed)
  */
 export function callAgentAsync(agent, prompt, timeoutMs, cwd, options) {
+  const { retryCount = 0, retryDelayMs = 3000, ...restOptions } = options || {};
+  if (retryCount <= 0) {
+    return callAgentAsyncOnce(agent, prompt, timeoutMs, cwd, restOptions);
+  }
+  return callAgentAsyncWithRetry(agent, prompt, timeoutMs, cwd, restOptions, retryCount, retryDelayMs);
+}
+
+async function callAgentAsyncWithRetry(agent, prompt, timeoutMs, cwd, options, retryCount, retryDelayMs) {
+  let lastError = null;
+  for (let attempt = 0; attempt <= retryCount; attempt++) {
+    try {
+      const result = await callAgentAsyncOnce(agent, prompt, timeoutMs, cwd, options);
+      if (result) return result;
+      lastError = new Error("empty response");
+    } catch (err) {
+      if (err.killed || err.signal) throw err;
+      lastError = err;
+    }
+    if (attempt < retryCount) {
+      await new Promise((r) => setTimeout(r, retryDelayMs));
+    }
+  }
+  throw lastError;
+}
+
+function callAgentAsyncOnce(agent, prompt, timeoutMs, cwd, options) {
   const { systemPrompt, onStdout, onStderr } = options || {};
   const { finalArgs, env, stdinContent } = buildAgentInvocation(agent, prompt, { systemPrompt });
 

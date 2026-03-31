@@ -228,7 +228,7 @@ function applyBatchJsonToFile(text, textFills, jsonData) {
  *
  * @returns {{ text: string, filled: number, skipped: number }}
  */
-async function processTemplateFileBatch(text, analysis, fileName, agent, timeoutMs, cwd, dryRun, _preamblePatterns, systemPrompt, _filterId, _concurrency, lang, srcRoot) {
+async function processTemplateFileBatch(text, analysis, fileName, agent, timeoutMs, cwd, dryRun, _preamblePatterns, systemPrompt, _filterId, _concurrency, lang, srcRoot, retryCount) {
   const directives = parseDirectives(text);
   const textFills = directives.filter((d) => d.type === "text");
 
@@ -252,14 +252,7 @@ async function processTemplateFileBatch(text, analysis, fileName, agent, timeout
 
   logger.verbose(`Batch ${fileName}: ${textFills.length} directive(s) → 1 call`);
 
-  // 空レスポンスが返る場合は1回だけリトライする
-  let result = await callAgentAsync(agent, prompt, timeoutMs, cwd, [], systemPrompt);
-
-  if (!result) {
-    logger.verbose(`empty response for ${fileName}, retrying after 3s...`);
-    await new Promise((r) => setTimeout(r, 3000));
-    result = await callAgentAsync(agent, prompt, timeoutMs, cwd, [], systemPrompt);
-  }
+  const result = await callAgentAsync(agent, prompt, timeoutMs, cwd, [], systemPrompt, { retryCount: retryCount || 0 });
 
   if (!result) {
     throw new Error(`empty batch response for ${fileName}`);
@@ -285,8 +278,8 @@ function callAgent(agent, prompt, timeoutMs, cwd, preamblePatterns, systemPrompt
   return stripPreamble(result, preamblePatterns);
 }
 
-async function callAgentAsync(agent, prompt, timeoutMs, cwd, preamblePatterns, systemPrompt) {
-  const result = await callAgentAsyncBase(agent, prompt, timeoutMs, cwd, { systemPrompt });
+async function callAgentAsync(agent, prompt, timeoutMs, cwd, preamblePatterns, systemPrompt, extraOptions) {
+  const result = await callAgentAsyncBase(agent, prompt, timeoutMs, cwd, { systemPrompt, ...extraOptions });
   return stripPreamble(result, preamblePatterns);
 }
 
@@ -345,7 +338,7 @@ function stripPreamble(text, preamblePatterns) {
  * @param {boolean} dryRun     - dry-run モード
  * @returns {{ text: string, filled: number, skipped: number }}
  */
-async function processTemplate(text, analysis, fileName, agent, timeoutMs, cwd, dryRun, preamblePatterns, systemPrompt, filterId, concurrency, lang, srcRoot) {
+async function processTemplate(text, analysis, fileName, agent, timeoutMs, cwd, dryRun, preamblePatterns, systemPrompt, filterId, concurrency, lang, srcRoot, retryCount) {
   const directives = parseDirectives(text);
   let textFills = directives.filter((d) => d.type === "text");
   if (filterId) {
@@ -385,7 +378,7 @@ async function processTemplate(text, analysis, fileName, agent, timeoutMs, cwd, 
   const maxConcurrency = concurrency || DEFAULT_CONCURRENCY;
   const results = await mapWithConcurrency(tasks, maxConcurrency, async ({ directive: d, prompt }) => {
     logger.verbose(`Processing ${fileName}:${d.line + 1}: ${d.prompt.slice(0, 60)}...`);
-    const generated = await callAgentAsync(agent, prompt, timeoutMs, cwd, preamblePatterns, fileSystemPrompt);
+    const generated = await callAgentAsync(agent, prompt, timeoutMs, cwd, preamblePatterns, fileSystemPrompt, { retryCount: retryCount || 0 });
     return { generated };
   });
 
@@ -509,7 +502,8 @@ export async function textFillFromAnalysis(root, analysis, commandId, srcRoot, o
   const fileResults = await mapWithConcurrency(targetFiles, concurrency, async (file) => {
     const filePath = path.join(docsDir, file);
     const original = fs.readFileSync(filePath, "utf8");
-    const result = await processTemplateFileBatch(original, analysis, file, agent, DEFAULT_TIMEOUT_MS, root, false, preamblePatterns, systemPrompt, undefined, undefined, lang, resolvedSrcRoot);
+    const retryCount = Number(cfg?.agent?.retryCount) || 0;
+    const result = await processTemplateFileBatch(original, analysis, file, agent, DEFAULT_TIMEOUT_MS, root, false, preamblePatterns, systemPrompt, undefined, undefined, lang, resolvedSrcRoot, retryCount);
     return { file, filePath, original, result };
   });
 
@@ -687,6 +681,7 @@ async function main(ctx) {
   }
 
   const configTimeout = cfg.agent?.timeout ? Number(cfg.agent.timeout) * 1000 : undefined;
+  const retryCount = Number(cfg?.agent?.retryCount) || 0;
   const processFn = ctx.perDirective ? processTemplate : processTemplateFileBatch;
   if (!ctx.perDirective) {
     if (!ctx.timeout) ctx.timeout = configTimeout || DEFAULT_TIMEOUT_MS;
@@ -715,7 +710,7 @@ async function main(ctx) {
   const fileResults = await mapWithConcurrency(fileEntries, fileConcurrency, async (entry) => {
     const { file, original } = entry;
     logger.verbose(`start: ${file}`);
-    const result = await processFn(original, analysis, file, agent, ctx.timeout, root, ctx.dryRun, preamblePatterns, systemPrompt, ctx.id || undefined, concurrency, lang, srcRoot);
+    const result = await processFn(original, analysis, file, agent, ctx.timeout, root, ctx.dryRun, preamblePatterns, systemPrompt, ctx.id || undefined, concurrency, lang, srcRoot, retryCount);
     logger.verbose(`done: ${file}`);
     return { ...entry, result };
   });

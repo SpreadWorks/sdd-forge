@@ -6,8 +6,6 @@ import {
   mergeEnrichment,
   collectEntries,
   splitIntoBatches,
-  getRetryCount,
-  enrichBatchWithRetry,
 } from "../../../../src/docs/commands/enrich.js";
 
 describe("collectEntries", () => {
@@ -356,73 +354,5 @@ describe("mergeEnrichment", () => {
   });
 });
 
-describe("getRetryCount", () => {
-  it("defaults to 1 when config is missing", () => {
-    assert.equal(getRetryCount({}), 1);
-  });
-
-  it("uses configured agent.retryCount", () => {
-    assert.equal(getRetryCount({ agent: { retryCount: 4 } }), 4);
-  });
-});
-
-describe("enrichBatchWithRetry", () => {
-  it("retries empty response and succeeds", async () => {
-    const calls = [];
-    const result = await enrichBatchWithRetry({
-      agent: {},
-      prompt: "test",
-      timeoutMs: 1000,
-      cwd: process.cwd(),
-      retryCount: 1,
-      callAgent: async () => {
-        calls.push("call");
-        return calls.length === 1 ? "" : "{\"modules\":[]}";
-      },
-      sleep: async () => {},
-    });
-
-    assert.equal(calls.length, 2);
-    assert.equal(result, "{\"modules\":[]}");
-  });
-
-  it("retries transient agent failure and succeeds", async () => {
-    let calls = 0;
-    const result = await enrichBatchWithRetry({
-      agent: {},
-      prompt: "test",
-      timeoutMs: 1000,
-      cwd: process.cwd(),
-      retryCount: 1,
-      callAgent: async () => {
-        calls += 1;
-        if (calls === 1) throw new Error("transient");
-        return "{\"modules\":[]}";
-      },
-      sleep: async () => {},
-    });
-
-    assert.equal(calls, 2);
-    assert.equal(result, "{\"modules\":[]}");
-  });
-
-  it("stops after retry limit is exceeded", async () => {
-    let calls = 0;
-    await assert.rejects(
-      enrichBatchWithRetry({
-        agent: {},
-        prompt: "test",
-        timeoutMs: 1000,
-        cwd: process.cwd(),
-        retryCount: 1,
-        callAgent: async () => {
-          calls += 1;
-          throw new Error("still failing");
-        },
-        sleep: async () => {},
-      }),
-      /still failing/,
-    );
-    assert.equal(calls, 2);
-  });
-});
+// getRetryCount and enrichBatchWithRetry tests moved to tests/unit/lib/agent.test.js
+// (retry logic is now in callAgentAsync)
