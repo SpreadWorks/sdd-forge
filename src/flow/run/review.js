@@ -7,7 +7,7 @@
  */
 
 import { runIfDirect } from "../../lib/entrypoint.js";
-import { repoRoot, parseArgs, PKG_DIR, isInsideWorktree, getMainRepoPath } from "../../lib/cli.js";
+import { repoRoot, parseArgs, PKG_DIR } from "../../lib/cli.js";
 import { runSync } from "../../lib/process.js";
 import { ok, fail, output } from "../../lib/flow-envelope.js";
 import path from "path";
@@ -39,13 +39,7 @@ function main() {
   if (cli.dryRun) args.push("--dry-run");
   if (cli.skipConfirm) args.push("--skip-confirm");
 
-  // In worktree mode, review needs to find .active-flow in the main repo
-  const env = { ...process.env };
-  if (isInsideWorktree(root)) {
-    env.SDD_WORK_ROOT = getMainRepoPath(root);
-  }
-
-  const res = runSync("node", [scriptPath, ...args], { cwd: root, timeout: 300000, env });
+  const res = runSync("node", [scriptPath, ...args], { cwd: root, timeout: 300000 });
 
   const stdout = (res.stdout || "").trim();
   const stderr = (res.stderr || "").trim();

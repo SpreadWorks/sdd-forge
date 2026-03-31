@@ -31,7 +31,7 @@ import { createLogger } from "../../lib/progress.js";
 import { callAgent as callAgentBase, callAgentAsync as callAgentAsyncBase, ensureAgentWorkDir, loadAgentConfig, DEFAULT_AGENT_TIMEOUT } from "../../lib/agent.js";
 import { translate } from "../../lib/i18n.js";
 import { resolveCommandContext, getChapterFiles, loadFullAnalysis } from "../lib/command-context.js";
-import { extractBalancedJson, fixUnescapedQuotes } from "../../lib/json-parse.js";
+import { repairJson } from "../../lib/json-parse.js";
 import { EXIT_ERROR } from "../../lib/exit-codes.js";
 
 const logger = createLogger("text");
@@ -162,21 +162,9 @@ function countFilledInBatch(fileText) {
  * @returns {Object|null} パース結果、失敗時は null
  */
 function parseBatchJsonResponse(response) {
-  let cleaned = response.trim();
-  cleaned = cleaned.replace(/^```(?:json)?\s*\n?/i, "").replace(/\n?```\s*$/i, "");
   try {
-    return JSON.parse(cleaned);
+    return JSON.parse(repairJson(response));
   } catch (_) {
-    const extracted = extractBalancedJson(cleaned);
-    if (extracted) {
-      try { return JSON.parse(extracted); } catch (__) {
-        const fixed = fixUnescapedQuotes(extracted);
-        try { return JSON.parse(fixed); } catch (___) { /* fall through */ }
-      }
-    }
-    // Last resort: fix quotes on the whole cleaned string
-    const fixed = fixUnescapedQuotes(cleaned);
-    try { return JSON.parse(fixed); } catch (__) { /* fall through */ }
     return null;
   }
 }

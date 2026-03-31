@@ -1,85 +1,146 @@
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
-import { fixUnescapedQuotes, extractBalancedJson } from "../../../src/lib/json-parse.js";
+import { repairJson } from "../../../src/lib/json-parse.js";
 
-describe("fixUnescapedQuotes", () => {
+function repairAndParse(input) {
+  return JSON.parse(repairJson(input));
+}
+
+describe("repairJson — valid JSON", () => {
   it("returns valid JSON unchanged", () => {
     const json = '{"key": "value", "num": 42}';
-    assert.equal(fixUnescapedQuotes(json), json);
+    assert.deepEqual(repairAndParse(json), { key: "value", num: 42 });
   });
 
-  it("fixes unescaped double quotes mid-value when followed by structural char", () => {
-    // "key": "value "x": next" → the quote before x is followed by x (not structural),
-    // so it gets escaped. The quote after next is followed by } (structural), so it ends the string.
-    const broken = '{"a": "hello "world"}';
-    const fixed = fixUnescapedQuotes(broken);
-    // The quote before world is escaped, making it valid
-    assert.doesNotThrow(() => JSON.parse(fixed));
+  it("handles nested objects and arrays", () => {
+    const json = '{"a": {"b": [1, 2, 3]}, "c": true}';
+    assert.deepEqual(repairAndParse(json), { a: { b: [1, 2, 3] }, c: true });
   });
 
-  it("removes invalid escape sequences", () => {
-    // AI outputs \` which is not valid JSON escape
-    const broken = '{"code": "value with \\` backtick"}';
-    const fixed = fixUnescapedQuotes(broken);
-    assert.doesNotThrow(() => JSON.parse(fixed));
+  it("handles empty object", () => {
+    assert.deepEqual(repairAndParse("{}"), {});
   });
 
-  it("returns empty string for empty input", () => {
-    assert.equal(fixUnescapedQuotes(""), "");
+  it("handles empty array", () => {
+    assert.deepEqual(repairAndParse("[]"), []);
   });
 
-  it("handles value ending with structural char after unescaped quote", () => {
-    // Quote before ] is structural end → string terminates correctly
-    const broken = '{"items": ["a "b"]}';
-    const fixed = fixUnescapedQuotes(broken);
-    assert.ok(fixed.includes('\\"'));
-  });
-
-  it("preserves valid escape sequences", () => {
-    const json = '{"path": "C:\\\\Users\\\\test", "newline": "a\\nb"}';
-    const fixed = fixUnescapedQuotes(json);
-    assert.equal(fixed, json);
+  it("handles strings with valid escapes", () => {
+    const json = '{"path": "C:\\\\Users\\\\test", "nl": "a\\nb"}';
+    const result = repairAndParse(json);
+    assert.equal(result.path, "C:\\Users\\test");
+    assert.equal(result.nl, "a\nb");
   });
 });
 
-describe("extractBalancedJson", () => {
-  it("returns null when no { is found", () => {
-    assert.equal(extractBalancedJson("no json here"), null);
+describe("repairJson — unescaped quotes", () => {
+  it("fixes unescaped quote mid-value", () => {
+    const broken = '{"a": "hello "world"}';
+    const result = repairAndParse(broken);
+    assert.ok(result.a.includes("hello"));
+    assert.ok(result.a.includes("world"));
   });
 
+  it('fixes type="" pattern (adjacent unescaped quotes)', () => {
+    const broken = '{"detail": "type="" なら空フォーマット", "summary": "ok"}';
+    const result = repairAndParse(broken);
+    assert.ok(result.detail.includes("type="));
+    assert.equal(result.summary, "ok");
+  });
+
+  it("fixes multiple unescaped quotes in one value", () => {
+    const broken = '{"detail": "use "foo" and "bar" here"}';
+    const result = repairAndParse(broken);
+    assert.ok(result.detail.includes("foo"));
+    assert.ok(result.detail.includes("bar"));
+  });
+
+  it("handles enrich-like response with unescaped quotes", () => {
+    const broken = '{"controllers": [{"index": 18, "detail": "outputJtactConfirm は type="" なら空フォーマット", "summary": "JASRAC", "chapter": "business_logic", "role": "controller"}]}';
+    const result = repairAndParse(broken);
+    assert.equal(result.controllers[0].summary, "JASRAC");
+    assert.ok(result.controllers[0].detail.includes("type="));
+  });
+});
+
+describe("repairJson — markdown fences", () => {
+  it("strips ```json fences", () => {
+    const wrapped = '```json\n{"key": "value"}\n```';
+    assert.deepEqual(repairAndParse(wrapped), { key: "value" });
+  });
+
+  it("strips ``` fences without language", () => {
+    const wrapped = '```\n{"key": "value"}\n```';
+    assert.deepEqual(repairAndParse(wrapped), { key: "value" });
+  });
+});
+
+describe("repairJson — truncated JSON", () => {
+  it("completes truncated string", () => {
+    const truncated = '{"key": "val';
+    const result = repairAndParse(truncated);
+    assert.equal(result.key, "val");
+  });
+
+  it("completes truncated object (missing })", () => {
+    const truncated = '{"a": 1, "b": 2';
+    const result = repairAndParse(truncated);
+    assert.equal(result.a, 1);
+    assert.equal(result.b, 2);
+  });
+
+  it("completes truncated array (missing ])", () => {
+    const truncated = '{"items": [1, 2, 3';
+    const result = repairAndParse(truncated);
+    assert.deepEqual(result.items, [1, 2, 3]);
+  });
+
+  it("completes deeply nested truncation", () => {
+    const truncated = '{"a": {"b": [1, 2';
+    const result = repairAndParse(truncated);
+    assert.deepEqual(result.a.b, [1, 2]);
+  });
+});
+
+describe("repairJson — surrounding text", () => {
   it("extracts JSON from surrounding text", () => {
-    const text = 'Here is the result: {"key": "value"} and some more text';
-    const result = extractBalancedJson(text);
-    assert.equal(result, '{"key": "value"}');
+    const text = 'Here is the result: {"key": "value"} and more';
+    assert.deepEqual(repairAndParse(text), { key: "value" });
   });
 
-  it("extracts nested JSON correctly", () => {
-    const json = '{"a": {"b": {"c": 1}}, "d": 2}';
-    const text = `prefix ${json} suffix`;
-    assert.equal(extractBalancedJson(text), json);
+  it("handles text before JSON", () => {
+    const text = 'Some preamble\n{"key": "value"}';
+    assert.deepEqual(repairAndParse(text), { key: "value" });
+  });
+});
+
+describe("repairJson — edge cases", () => {
+  it("removes invalid escape sequences", () => {
+    const broken = '{"code": "value with \\` backtick"}';
+    const result = repairAndParse(broken);
+    assert.ok(result.code.includes("backtick"));
   });
 
-  it("ignores braces inside strings", () => {
-    const json = '{"msg": "use {braces} here"}';
-    assert.equal(extractBalancedJson(json), json);
+  it("handles empty string values", () => {
+    const json = '{"a": "", "b": "ok"}';
+    const result = repairAndParse(json);
+    assert.equal(result.a, "");
+    assert.equal(result.b, "ok");
   });
 
-  it("returns null when closing brace is missing", () => {
-    assert.equal(extractBalancedJson('{"key": "value"'), null);
+  it("handles null, true, false values", () => {
+    const json = '{"a": null, "b": true, "c": false}';
+    const result = repairAndParse(json);
+    assert.equal(result.a, null);
+    assert.equal(result.b, true);
+    assert.equal(result.c, false);
   });
 
-  it("extracts minified JSON", () => {
-    const json = '{"a":1,"b":"x","c":[1,2],"d":{"e":true}}';
-    assert.equal(extractBalancedJson(json), json);
-  });
-
-  it("handles escaped quotes inside strings", () => {
-    const json = '{"msg": "say \\"hello\\""}';
-    assert.equal(extractBalancedJson(json), json);
-  });
-
-  it("extracts first complete object when multiple exist", () => {
-    const text = '{"first": 1} {"second": 2}';
-    assert.equal(extractBalancedJson(text), '{"first": 1}');
+  it("handles negative numbers and decimals", () => {
+    const json = '{"a": -1, "b": 3.14, "c": 1e10}';
+    const result = repairAndParse(json);
+    assert.equal(result.a, -1);
+    assert.equal(result.b, 3.14);
+    assert.equal(result.c, 1e10);
   });
 });

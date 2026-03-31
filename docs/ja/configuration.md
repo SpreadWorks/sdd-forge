@@ -34,5 +34,5 @@
 ---
 
 <!-- {{data("base.docs.nav")}} -->
-[← CLI コマンドリファレンス](cli_commands.md)
+[← CLI コマンドリファレンス](cli_commands.md) | [内部設計 →](internal_design.md)
 <!-- {{/data}} -->

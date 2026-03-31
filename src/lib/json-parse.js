@@ -1,97 +1,286 @@
 /**
  * src/lib/json-parse.js
  *
- * AI レスポンスから JSON を安全に抽出するユーティリティ。
+ * AI レスポンスの壊れた JSON を修復するユーティリティ。
+ * 再帰下降パーサー + バックトラックで構造を認識しながら修復する。
+ *
+ * Architecture inspired by josdejong/jsonrepair (ISC License).
+ * See NOTICE for acknowledgement.
  */
 
+const STRUCTURAL = new Set([",", ":", "{", "}", "[", "]"]);
+
 /**
- * 括弧の対応を数えて最初の完全な JSON オブジェクトを抽出する。
- * 貪欲 regex (/\{[\s\S]*\}/) は AI が末尾に余分な括弧を出力した場合に
- * オーバーシュートするため、bracket-balanced で抽出する。
+ * Repair broken JSON from AI responses.
+ * Handles: unescaped quotes in strings, truncated JSON, markdown fences,
+ * surrounding text, and invalid escape sequences.
  *
- * @param {string} text - JSON を含むテキスト
- * @returns {string|null} 抽出された JSON 文字列、見つからなければ null
+ * @param {string} text - Raw AI response (may contain broken JSON)
+ * @returns {string} Repaired JSON string (valid for JSON.parse)
  */
-/**
- * JSON 文字列値内のエスケープされていないダブルクォーテーションを修復する。
- * AI が `commandId: "docs.translate"` のような未エスケープ引用符を含めるケース対策。
- * 整形済み JSON（複数行）と minified JSON（1行）の両方に対応。
- *
- * @param {string} json - 壊れた JSON 文字列
- * @returns {string} 修復された JSON 文字列
- */
-export function fixUnescapedQuotes(json) {
-  const out = [];
+export function repairJson(text) {
+  let input = stripMarkdownFences(text);
+  // Find the start of JSON
+  const jsonStart = findJsonStart(input);
+  if (jsonStart < 0) return input.trim();
+  input = input.slice(jsonStart);
+
   let i = 0;
-  const len = json.length;
+  let output = "";
 
-  while (i < len) {
-    const ch = json[i];
+  function ch() { return input[i]; }
+  function eof() { return i >= input.length; }
+  function emit(s) { output += s; }
 
-    if (ch !== '"') {
-      out.push(ch);
+  function skipWhitespace() {
+    while (!eof() && isWhitespace(ch())) {
+      emit(ch());
       i++;
-      continue;
+    }
+  }
+
+  function parseValue() {
+    skipWhitespace();
+    if (eof()) return false;
+    const c = ch();
+    if (c === "{") return parseObject();
+    if (c === "[") return parseArray();
+    if (c === '"') return parseString();
+    if (c === "-" || isDigit(c)) return parseNumber();
+    if (tryKeyword("true") || tryKeyword("false") || tryKeyword("null")) return true;
+    return false;
+  }
+
+  function parseObject() {
+    emit("{");
+    i++; // skip {
+    skipWhitespace();
+
+    let first = true;
+    while (!eof()) {
+      skipWhitespace();
+      if (eof()) break;
+      if (ch() === "}") { emit("}"); i++; return true; }
+
+      if (!first) {
+        if (ch() === ",") { emit(","); i++; }
+        else { emit(","); } // missing comma — insert
+        skipWhitespace();
+        if (eof()) break;
+        if (ch() === "}") { emit("}"); i++; return true; } // trailing comma
+      }
+      first = false;
+
+      // key
+      if (ch() !== '"') break;
+      parseString();
+      skipWhitespace();
+
+      // colon
+      if (!eof() && ch() === ":") { emit(":"); i++; }
+      else { emit(":"); } // missing colon — insert
+      skipWhitespace();
+
+      // value
+      if (eof()) { emit("null"); break; }
+      if (!parseValue()) { emit("null"); }
     }
 
-    // Opening quote of a JSON string
-    out.push(ch);
-    i++;
+    // truncation — auto-close
+    emit("}");
+    return true;
+  }
 
-    while (i < len) {
-      const c = json[i];
+  function parseArray() {
+    emit("[");
+    i++; // skip [
+    skipWhitespace();
 
+    let first = true;
+    while (!eof()) {
+      skipWhitespace();
+      if (eof()) break;
+      if (ch() === "]") { emit("]"); i++; return true; }
+
+      if (!first) {
+        if (ch() === ",") { emit(","); i++; }
+        else { emit(","); }
+        skipWhitespace();
+        if (eof()) break;
+        if (ch() === "]") { emit("]"); i++; return true; } // trailing comma
+      }
+      first = false;
+
+      if (!parseValue()) break;
+    }
+
+    emit("]");
+    return true;
+  }
+
+  /**
+   * Parse a JSON string with backtracking for unescaped quote detection.
+   *
+   * Strategy (inspired by jsonrepair):
+   * 1. First pass: scan for closing quote. When we see a `"`, check if the
+   *    next non-whitespace char is a structural delimiter (,}]:). If so, it's
+   *    the real end quote. Otherwise, escape it and continue.
+   * 2. If first pass reaches EOF without a valid close, backtrack and retry
+   *    in "stop at delimiter" mode — end the string at the first unescaped
+   *    structural delimiter encountered.
+   */
+  function parseString() {
+    const saveI = i;
+    const saveOutput = output;
+
+    const result = parseStringPass(false);
+    if (result) return true;
+
+    // Backtrack and retry with stopAtDelimiter
+    i = saveI;
+    output = saveOutput;
+    return parseStringPass(true);
+  }
+
+  function parseStringPass(stopAtDelimiter) {
+    emit('"');
+    i++; // skip opening "
+
+    while (!eof()) {
+      const c = ch();
+
+      // Escape sequences
       if (c === "\\") {
-        const next = json[i + 1];
-        // Valid JSON escape sequences: " \ / b f n r t u
-        if (next && '"\\/bfnrtu'.includes(next)) {
-          out.push(c);
-          out.push(next);
-          i += 2;
+        i++;
+        if (eof()) break;
+        const escaped = ch();
+        if ('"\\/bfnrtu'.includes(escaped)) {
+          emit("\\");
+          emit(escaped);
+          i++;
         } else {
-          // Invalid escape (e.g. \` ) — drop the backslash, keep the char
+          // Invalid escape — drop backslash, keep char
+          emit(escaped);
           i++;
         }
         continue;
       }
 
+      // Candidate end quote
       if (c === '"') {
-        // Real end of string if followed by JSON structural chars
-        const next = json[i + 1];
-        if (next === undefined || next === "," || next === "}" || next === "]" || next === ":"
-            || next === "\n" || next === "\r" || next === " " || next === "\t") {
-          out.push(c);
+        // Look ahead past whitespace for structural char
+        let peek = i + 1;
+        while (peek < input.length && isWhitespace(input[peek])) peek++;
+        const after = input[peek];
+
+        if (after === undefined || after === "," || after === "}" ||
+            after === "]" || after === ":") {
+          // Real end of string
+          emit('"');
           i++;
-          break;
+          return true;
         }
-        // Unescaped quote inside a string value
-        out.push('\\"');
+
+        // Not followed by structural char — likely unescaped interior quote
+        emit('\\"');
         i++;
         continue;
       }
 
-      out.push(c);
+      // stopAtDelimiter mode: treat structural chars as string boundary
+      if (stopAtDelimiter && STRUCTURAL.has(c)) {
+        emit('"');
+        return true;
+      }
+
+      // Control characters — escape them
+      if (c.charCodeAt(0) < 0x20) {
+        emit(escapeControl(c));
+        i++;
+        continue;
+      }
+
+      emit(c);
       i++;
     }
+
+    // EOF inside string — close it
+    emit('"');
+    return true;
   }
 
-  return out.join("");
+  function parseNumber() {
+    if (ch() === "-") { emit("-"); i++; }
+    if (eof()) { emit("0"); return true; }
+
+    // Integer part
+    while (!eof() && isDigit(ch())) { emit(ch()); i++; }
+
+    // Decimal part
+    if (!eof() && ch() === ".") {
+      emit(".");
+      i++;
+      if (eof() || !isDigit(ch())) emit("0"); // truncated: "2." → "2.0"
+      while (!eof() && isDigit(ch())) { emit(ch()); i++; }
+    }
+
+    // Exponent part
+    if (!eof() && (ch() === "e" || ch() === "E")) {
+      emit(ch());
+      i++;
+      if (!eof() && (ch() === "+" || ch() === "-")) { emit(ch()); i++; }
+      if (eof() || !isDigit(ch())) emit("0"); // truncated exponent
+      while (!eof() && isDigit(ch())) { emit(ch()); i++; }
+    }
+
+    return true;
+  }
+
+  function tryKeyword(kw) {
+    if (input.slice(i, i + kw.length) === kw) {
+      const after = input[i + kw.length];
+      if (after === undefined || isWhitespace(after) || STRUCTURAL.has(after)) {
+        emit(kw);
+        i += kw.length;
+        return true;
+      }
+    }
+    return false;
+  }
+
+  parseValue();
+  return output;
 }
 
-export function extractBalancedJson(text) {
-  const start = text.indexOf("{");
-  if (start < 0) return null;
-  let depth = 0;
-  let inString = false;
-  let escape = false;
-  for (let i = start; i < text.length; i++) {
-    const ch = text[i];
-    if (escape) { escape = false; continue; }
-    if (ch === "\\") { escape = true; continue; }
-    if (ch === '"') { inString = !inString; continue; }
-    if (inString) continue;
-    if (ch === "{") depth++;
-    else if (ch === "}") { depth--; if (depth === 0) return text.slice(start, i + 1); }
-  }
-  return null;
+// --- Helpers ---
+
+function stripMarkdownFences(text) {
+  let s = text.trim();
+  s = s.replace(/^```(?:json)?\s*\n?/i, "").replace(/\n?```\s*$/i, "");
+  return s;
+}
+
+function findJsonStart(text) {
+  const objStart = text.indexOf("{");
+  const arrStart = text.indexOf("[");
+  if (objStart < 0 && arrStart < 0) return -1;
+  if (objStart < 0) return arrStart;
+  if (arrStart < 0) return objStart;
+  return Math.min(objStart, arrStart);
+}
+
+function isWhitespace(c) {
+  return c === " " || c === "\t" || c === "\n" || c === "\r";
+}
+
+function isDigit(c) {
+  return c >= "0" && c <= "9";
+}
+
+function escapeControl(c) {
+  const code = c.charCodeAt(0);
+  if (code === 0x09) return "\\t";
+  if (code === 0x0a) return "\\n";
+  if (code === 0x0d) return "\\r";
+  return "\\u" + code.toString(16).padStart(4, "0");
 }

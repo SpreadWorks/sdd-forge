@@ -8,7 +8,7 @@
 
 <!-- {{text({prompt: "Write a 1-2 sentence overview of this chapter. Include the tool's purpose, the problem it solves, and its primary use cases."})}} -->
 
-sdd-forge is a CLI tool that automates documentation generation through source code analysis and provides a Spec-Driven Development (SDD) workflow for managing feature implementation with AI coding agents. It solves the problem of documentation drift by deriving structured content directly from static source analysis, and enforces a spec-first discipline that keeps AI assistance within well-defined boundaries.
+sdd-forge is a Node.js CLI tool that automates technical documentation generation from static source code analysis and provides a structured Spec-Driven Development (SDD) workflow. It solves the problem of documentation drifting out of sync with evolving codebases, and is used by development teams to produce and maintain accurate developer guides, API references, and README files as first-class project artifacts.
 <!-- {{/text}} -->
 
 ## Content
@@ -17,11 +17,9 @@ sdd-forge is a CLI tool that automates documentation generation through source c
 
 <!-- {{text({prompt: "Describe the problem this CLI tool solves and its target users. Derive the purpose from package.json and README."})}} -->
 
-Software projects routinely suffer from documentation that falls out of sync with the codebase, making onboarding, maintenance, and collaboration increasingly difficult. sdd-forge addresses this by scanning source code to extract file structure, classes, methods, configuration, and dependencies, then generating documentation through a template-driven pipeline that can be refreshed automatically at merge time.
+Software projects routinely suffer from documentation that falls behind the code — written once at project start and then abandoned as the codebase evolves. sdd-forge addresses this by treating documentation as a generated artifact: it parses source files to extract structural metadata (classes, methods, routes, configuration, dependencies), enriches those entries with AI-generated summaries, and injects the results into versioned Markdown templates. The output is a coherent, up-to-date documentation site produced on demand.
 
-Beyond documentation, the tool enforces a three-phase Spec-Driven Development discipline — **plan**, **implement**, and **merge** — ensuring that specifications are written, gate-checked, and approved before any implementation begins. Deterministic commands handle source analysis, spec validation, and flow orchestration, while AI assistance operates within those well-defined boundaries.
-
-Target users are development teams working on Node.js projects who want living documentation generated from their codebase and a structured workflow that keeps AI agents productive without letting them drift outside the intended scope.
+Target users are developers and engineering teams who want accurate technical docs without the manual overhead of keeping them current. The tool is particularly suited to teams practising iterative development, where specs and source code change frequently. By separating structural data extraction (deterministic) from prose generation (AI-assisted), sdd-forge keeps documentation reproducible and auditable while still producing readable narrative text.
 <!-- {{/text}} -->
 
 ### Architecture Overview
@@ -30,29 +28,31 @@ Target users are development teams working on Node.js projects who want living d
 
 ```mermaid
 flowchart TD
-    CLI["sdd-forge\nsdd-forge.js"]
-    CLI -->|"docs *"| DOCS["docs.js"]
-    CLI -->|"flow *"| FLOW["flow.js"]
-    CLI -->|"setup"| SETUP["setup.js"]
-    CLI -->|"upgrade"| UPGRADE["upgrade.js"]
-    CLI -->|"help"| HELP["help.js"]
+    CLI["sdd-forge &lt;command&gt;"] --> DISPATCH{Top-level dispatch}
 
-    DOCS --> scan["scan"]
-    DOCS --> enrich["enrich"]
-    DOCS --> init["init"]
-    DOCS --> data["data"]
-    DOCS --> text["text"]
-    DOCS --> readme["readme / forge / review"]
-    DOCS --> extras["translate / changelog / agents"]
+    DISPATCH --> SETUP[setup]
+    DISPATCH --> UPGRADE[upgrade]
+    DISPATCH --> PRESETS[presets]
+    DISPATCH --> HELP[help]
+    DISPATCH --> DOCS[docs &lt;subcommand&gt;]
+    DISPATCH --> FLOW[flow &lt;subcommand&gt;]
 
-    FLOW --> fget["flow get"]
-    FLOW --> fset["flow set"]
-    FLOW --> frun["flow run"]
+    DOCS --> SCAN[scan\nParse source → analysis.json]
+    SCAN --> ENRICH[enrich\nAI-annotate entries]
+    ENRICH --> INIT[init\nMerge preset templates → docs/]
+    INIT --> DATA[data\nReplace {{data}} directives]
+    DATA --> TEXT[text\nReplace {{text}} directives via AI]
+    TEXT --> README[readme\nGenerate README.md]
+    README --> AGENTS[agents\nGenerate CLAUDE.md / AGENTS.md]
 
-    scan -->|"analysis.json"| enrich
-    enrich -->|"enriched analysis"| data
-    data --> text
-    text --> readme
+    FLOW --> GET[flow get\nQuery flow state]
+    FLOW --> SET[flow set\nMutate flow state]
+    FLOW --> RUN[flow run\nExecute actions]
+
+    RUN --> GATE[gate — spec gate check]
+    RUN --> REVIEW[review — code review]
+    RUN --> FINALIZE[finalize — commit / merge pipeline]
+    RUN --> SYNC[sync — documentation sync]
 ```
 <!-- {{/text}} -->
 
@@ -60,67 +60,75 @@ flowchart TD
 
 <!-- {{text({prompt: "Explain the key concepts and terminology needed to understand this tool in table format. Extract the main concepts from source code."})}} -->
 
-| Term | Description |
-|------|-------------|
-| **SDD (Spec-Driven Development)** | A three-phase workflow — plan, implement, merge — where specifications are written and gate-checked before implementation begins. |
-| **Preset** | A reusable configuration bundle that defines document structure, scanner rules, and chapter layout for a given project type (e.g., `node-cli`, `laravel`, `cakephp2`). Presets support inheritance via a `parent` chain. |
-| **Directive** | Template markers embedded in documentation files — `{{data}}` pulls structured data, `{{text}}` triggers AI text generation — replaced during the build pipeline. Content outside directives is preserved across rebuilds. |
-| **analysis.json** | The intermediate output of `sdd-forge docs scan`, capturing structured metadata about source files, modules, classes, methods, and dependencies. Stored in `.sdd-forge/output/`. |
-| **Enrichment** | An AI-assisted pass (`sdd-forge docs enrich`) that annotates each analysis entry with a role, summary, and chapter classification, feeding downstream text generation. |
-| **Chapter** | A single Markdown file within `docs/` whose content is driven by directives. Chapter order is defined by the `chapters` array in `preset.json` and can be overridden in `config.json`. |
-| **Flow** | The SDD workflow engine managing a feature's lifecycle through `flow get`, `flow set`, and `flow run` sub-commands. State is stored in `.sdd-forge/flow.json`. |
-| **AGENTS.md** | A project-specific knowledge file generated by `sdd-forge docs agents`, read by AI coding agents to understand the codebase structure and constraints. `CLAUDE.md` is a symlink to this file. |
+| Concept | Description |
+|---|---|
+| **Preset** | A named configuration bundle (e.g., `node-cli`, `laravel`, `hono`) that provides scanner rules, DataSource classes, and Markdown chapter templates for a specific project type. Presets inherit from one another via a `parent` chain. |
+| **analysis.json** | The machine-readable output of `docs scan`. Contains structured metadata extracted from source files: classes, methods, routes, configuration keys, and dependencies. |
+| **Enrich** | An AI-assisted pass (`docs enrich`) that annotates each entry in `analysis.json` with a human-readable summary, a chapter assignment, and a role classification. |
+| **`{{data}}` directive** | A template placeholder replaced by the `docs data` command with deterministically generated structured content (tables, lists) drawn from `analysis.json` via a DataSource method. |
+| **`{{text}}` directive** | A template placeholder replaced by the `docs text` command with AI-generated prose, guided by a prompt embedded in the directive itself. |
+| **Chapter** | A single Markdown file in `docs/` corresponding to one topic area (e.g., `overview.md`, `cli_commands.md`). The chapter list and order are defined in `preset.json`. |
+| **DataSource** | A JavaScript class inside a preset that knows how to read `analysis.json` and format a specific slice of it as Markdown. Scannable DataSources also define `match()` and `scan()` methods used during source parsing. |
+| **Flow** | The SDD workflow engine, implemented as `flow get` / `flow set` / `flow run` subcommands. It tracks progress through plan → implement → merge phases using a persistent `flow.json` state file. |
+| **Spec Gate** | A deterministic validation step (`flow run gate`) that checks whether a specification meets defined quality criteria before implementation begins. |
+| **Config (`config.json`)** | The project-level configuration file at `.sdd-forge/config.json`. Specifies project type, output language(s), AI agent settings, and documentation style. Created by `sdd-forge setup`. |
 <!-- {{/text}} -->
 
 ### Typical Usage Flow
 
 <!-- {{text({prompt: "Describe the typical steps from installation to first output in step format. Derive the steps from help output and command definitions in the source code."})}} -->
 
-**1. Install the package**
+**Step 1 — Install the package**
 
-```bash
+Install sdd-forge globally from npm:
+
+```
 npm install -g sdd-forge
 ```
 
-**2. Initialize the project**
+Node.js 18 or later is required. The package has no external runtime dependencies.
 
-Run the setup command in your project root. This creates `.sdd-forge/config.json`, selects a preset matching your project type, and generates `AGENTS.md`.
+**Step 2 — Run the setup wizard**
 
-```bash
+In your project root, run:
+
+```
 sdd-forge setup
 ```
 
-**3. Scan the source code**
+The interactive wizard prompts you to choose a project name, output language(s), one or more preset types (e.g., `node-cli`, `laravel`), documentation purpose, tone, and AI agent (Claude or Codex). It creates a `.sdd-forge/config.json`, initialises the `docs/` and `specs/` directories, and deploys the appropriate agent skill files.
 
-Analyze the project to produce `analysis.json` in `.sdd-forge/output/`.
+**Step 3 — Scan your source code**
 
-```bash
+```
 sdd-forge docs scan
 ```
 
-**4. Enrich the analysis**
+This parses your source files according to the preset's scanner rules and writes structured metadata to `.sdd-forge/output/analysis.json`.
 
-Run an AI-assisted enrichment pass to annotate each source entry with role, summary, and chapter classification.
+**Step 4 — Enrich the analysis**
 
-```bash
+```
 sdd-forge docs enrich
 ```
 
-**5. Build documentation**
+An AI pass annotates each entry in `analysis.json` with summaries, chapter assignments, and role classifications. This step can be resumed if interrupted.
 
-Run the full documentation pipeline — `init`, `data`, `text`, and `readme` — generating Markdown files in `docs/`.
+**Step 5 — Initialise the document templates**
 
-```bash
+```
+sdd-forge docs init
+```
+
+Preset templates are resolved through the inheritance chain and written into your `docs/` directory as editable Markdown files.
+
+**Step 6 — Generate the full documentation**
+
+```
 sdd-forge docs build
 ```
 
-**6. Start a SDD flow (for new features)**
-
-When beginning a new feature, start a spec-driven flow to draft and gate-check a specification before writing any code.
-
-```bash
-sdd-forge flow run start
-```
+This runs the `data`, `text`, and `readme` pipeline in sequence, filling every `{{data}}` and `{{text}}` directive and producing a complete `README.md`. After this step, your `docs/` directory and project README reflect the current state of your source code.
 <!-- {{/text}} -->
 
 ---
