@@ -131,6 +131,8 @@ npm install -g <!-- {{data("cli.project.name")}} -->sdd-forge<!-- {{/data}} -->
 | [プロジェクト構成](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/ja/project_structure.md) |  |
 | [CLI コマンドリファレンス](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/ja/cli_commands.md) | sdd-forge はトップレベルで help setup upgrade presets docs flow を受け付け、docs は 12 個のサブコマンド、flow は get set run の 3 系統からさらに細分化されます。 |
 | [設定とカスタマイズ](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/ja/configuration.md) |  |
+| [内部設計](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/ja/internal_design.md) |  |
+| [開発・テスト・配布](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/ja/development_testing.md) |  |
 <!-- {{/data}} -->
 
 ## License

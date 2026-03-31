@@ -10,6 +10,8 @@
 ## Description
 
 <!-- {{text({prompt: "Write a 1-2 sentence overview of this chapter. Include the number of major directories and their roles."})}} -->
+
+This chapter describes the physical layout of the sdd-forge source tree, organized across five major directories: `src/presets` (preset definitions and tests), `src/docs` (documentation generation commands, data sources, and libraries), `src/flow` (Spec-Driven Development workflow controllers and commands), `src/lib` (shared utility libraries), and the root `src/` directory containing top-level CLI entry points.
 <!-- {{/text}} -->
 
 ## Content
@@ -99,6 +101,10 @@ src/presets/workers/tests/unit/
 ### Shared Libraries
 
 <!-- {{text({prompt: "List the shared libraries with class name, file path, and responsibility in table format."})}} -->
+
+| Module | File Path | Responsibility |
+| --- | --- | --- |
+| presets | `src/lib/presets.js` | Auto-discovers all presets from `src/presets/{key}/preset.json` at load time; exposes `PRESETS_DIR`, the `PRESETS` array, and chain resolution functions (`resolveChain`, `resolveMultiChains`, `resolveChainSafe`, `presetByLeaf`, `presetsForArch`) that walk parent chains root→leaf with deduplication and circular-reference detection. |
 <!-- {{/text}} -->
 
 ---
