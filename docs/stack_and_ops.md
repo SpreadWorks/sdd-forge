@@ -11,7 +11,7 @@
 
 <!-- {{text({prompt: "Write a 1-2 sentence overview of this chapter. Include the programming language, framework, and key tool versions."})}} -->
 
-This chapter covers the technology stack and operational tooling used in the project, including runtime environments, CI/CD pipelines configured via GitHub Actions, edge runtime constraints managed through Wrangler, database integration with PostgreSQL, and object storage via Cloudflare R2.
+This chapter covers the technology stack and operational tooling for sdd-forge, a Node.js CLI tool built exclusively on Node.js built-in modules with no external dependencies. It includes CI/CD pipeline support via GitHub Actions, edge runtime deployment through Cloudflare Workers, and preset-level integrations for PostgreSQL and Cloudflare R2 storage.
 <!-- {{/text}} -->
 
 ## Content
@@ -22,33 +22,43 @@ This chapter covers the technology stack and operational tooling used in the pro
 
 | Category | Technology | Notes |
 |---|---|---|
-| Runtime | Node.js | ES modules (`"type": "module"`); no external dependencies |
-| CI/CD | GitHub Actions | Workflow files under `.github/workflows/` (`.yml` / `.yaml`) |
-| Edge Runtime | Cloudflare Workers | Entry points and constraints defined in `wrangler.toml` / `wrangler.json` |
-| Database | PostgreSQL | Static configuration; no ORM dependency |
-| Object Storage | Cloudflare R2 | Bucket bindings declared in `wrangler.toml` / `wrangler.json` |
-| Config Formats | TOML, JSON, YAML | Used by Wrangler and GitHub Actions configuration files |
+| Runtime | Node.js | ES modules (`"type": "module"`); no external npm dependencies |
+| CI/CD | GitHub Actions | Workflow files located under `.github/workflows/` (`.yml` / `.yaml`) |
+| Edge Runtime | Cloudflare Workers | Configured via `wrangler.toml`, `wrangler.json`, or `wrangler.jsonc` |
+| Storage | Cloudflare R2 | R2 bucket bindings declared in wrangler config files |
+| Database | PostgreSQL | Supported via the `postgres` preset; database type is statically declared |
+| Container | Docker | Placeholder integration for the CakePHP 2.x preset; no active scan |
+
+Version constraints for Cloudflare Workers deployments are captured from the `compatibility_date` and `compatibility_flags` fields in wrangler configuration files.
 <!-- {{/text}} -->
 
 ### Dependencies
 
 <!-- {{text({prompt: "Describe the project's dependency management approach."})}} -->
 
-The project relies exclusively on Node.js built-in modules and imposes a strict no-external-dependencies policy. There is no `node_modules` installation step required beyond the Node.js runtime itself. Cloudflare-specific configuration (edge runtime compatibility flags, R2 bucket bindings, `compatibility_date`) is declared directly in `wrangler.toml` or `wrangler.json` and is consumed at deploy time by the Wrangler CLI rather than managed as a runtime dependency.
+sdd-forge enforces a zero-external-dependency policy: only Node.js built-in modules are used throughout the codebase. There is no `node_modules` install step required at runtime. YAML parsing for GitHub Actions workflow files is performed via custom regex-based logic rather than a third-party YAML library, consistent with this constraint. Preset-level DataSources rely solely on file I/O, regex, and JSON/TOML parsing implemented in-house.
 <!-- {{/text}} -->
 
 ### Deployment Flow
 
 <!-- {{text({prompt: "Describe the deployment procedure and flow."})}} -->
 
-Deployment targets Cloudflare Workers and is driven by the Wrangler CLI. The `wrangler.toml` or `wrangler.json` file at the project root specifies the entry point (`main` or `build.upload.main`), route patterns, `compatibility_date`, `compatibility_flags`, and optional `node_compat` constraints. R2 bucket bindings (`r2_buckets`) are also declared in the same Wrangler config, mapping bucket names to binding identifiers used in application code. GitHub Actions workflows automate the deployment pipeline: jobs reference runners (`runs-on`), trigger conditions (push, pull request, schedule), and upstream actions via `uses:` steps. Secrets and environment variables required during deployment are referenced through `${{ secrets.* }}` and `${{ env.* }}` expressions in the workflow YAML.
+Deployment targets are detected from wrangler configuration files (`wrangler.toml`, `wrangler.json`, `wrangler.jsonc`). The edge runtime preset parses these files to extract entry points — defined by `main` or `build.upload.main` — as well as route triggers from `routes` or `route` fields. Compatibility constraints such as `compatibility_date`, `compatibility_flags`, and `node_compat` are also extracted and surfaced in documentation.
+
+For Cloudflare R2, bucket configurations are read from the same wrangler config files, mapping `r2_buckets` entries to their `name`, `binding`, and `preview_bucket_name` fields.
+
+CI/CD pipelines are defined as GitHub Actions workflows. The pipeline DataSource extracts trigger types (schedule, push with branch filters, etc.), job definitions (runner, step count, referenced actions), and referenced secrets or environment variables from `${{ secrets.X }}` and `${{ env.X }}` expressions.
 <!-- {{/text}} -->
 
 ### Operations Flow
 
 <!-- {{text({prompt: "Describe the operations procedures."})}} -->
 
-Ongoing operations are monitored and automated through GitHub Actions pipelines defined under `.github/workflows/`. Each pipeline exposes its triggers (branch filters, cron schedules, or event hooks), job runners, step counts, and referenced third-party actions, making the operational surface fully auditable from the workflow YAML. For edge deployments, Cloudflare Workers compatibility settings (`compatibility_date`, `compatibility_flags`) govern runtime behaviour and must be reviewed when updating the Wrangler configuration. R2 storage operations are managed through bucket bindings; adding or renaming a bucket requires updating both the `r2_buckets` entry in the Wrangler config and any corresponding binding references in application code. PostgreSQL database access is configured statically and does not require migration tooling within the sdd-forge preset layer.
+Pipeline metadata is collected from all `.github/workflows/*.yml` and `.github/workflows/*.yaml` files. Extracted information includes the number of jobs per workflow, the runner environment (`runs-on`), external action dependencies (`uses:`), and environment variable or secret references. This data is exposed as structured tables in the generated documentation for operational visibility.
+
+For edge deployments, the runtime DataSource surfaces entry points and compatibility constraints, enabling operators to review which Worker scripts are registered and under what runtime conditions they execute.
+
+R2 storage operations are documented through bucket binding tables, listing each bucket's name and its wrangler binding identifier. The generic storage preset additionally flattens bucket entries across all analysis sources into a unified provider-annotated table, supporting multi-provider storage overviews.
 <!-- {{/text}} -->
 
 ---
