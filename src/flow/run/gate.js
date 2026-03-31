@@ -37,7 +37,7 @@ function checkSpecText(text, opts) {
   const issues = [];
   const lines = text.split("\n");
 
-  const PRE_SKIP_SECTIONS = /^(Status|Acceptance Criteria|User Scenarios\s*&?\s*Testing)/i;
+  const PRE_SKIP_SECTIONS = /^(Status|Acceptance Criteria|User Scenarios\s*&?\s*Testing|User Confirmation)/i;
 
   const unresolvedPatterns = [
     /\[NEEDS CLARIFICATION\]/i,
@@ -71,7 +71,7 @@ function checkSpecText(text, opts) {
   }
   if (!/^\s*##\s+User Confirmation\b/im.test(text)) {
     issues.push("missing section: ## User Confirmation");
-  } else {
+  } else if (phase === "post") {
     const startMatch = text.match(/^\s*##\s+User Confirmation\b/im);
     const start = startMatch?.index ?? -1;
     const tail = start >= 0 ? text.slice(start) : "";

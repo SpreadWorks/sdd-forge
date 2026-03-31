@@ -127,6 +127,7 @@ Available status values: `pending`, `in_progress`, `done`, `skipped`
 
 7. Get explicit user approval (AFTER gate PASS).
    - **On start**: `sdd-forge flow set step approval in_progress`
+   - **Do NOT re-run gate.** The gate already passed in step 6.
    - Present the FULL spec text (the gate-PASS version) to the user.
    - The user reads the gate-passed final spec and approves.
    - Wait for approval before any implementation.

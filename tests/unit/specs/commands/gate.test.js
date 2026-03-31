@@ -55,7 +55,7 @@ describe("checkSpecText", () => {
     assert.ok(issues.some((i) => i.includes("User Confirmation")));
   });
 
-  it("detects unapproved spec", () => {
+  it("detects unapproved spec in post phase", () => {
     const text = [
       "# Spec",
       "## Clarifications (Q&A)",
@@ -64,8 +64,21 @@ describe("checkSpecText", () => {
       "- [ ] User approved this spec",
       "## Acceptance Criteria",
     ].join("\n");
-    const issues = checkSpecText(text);
+    const issues = checkSpecText(text, { phase: "post" });
     assert.ok(issues.some((i) => i.includes("user confirmation is required")));
+  });
+
+  it("skips approval check in pre phase", () => {
+    const text = [
+      "# Spec",
+      "## Clarifications (Q&A)",
+      "## Open Questions",
+      "## User Confirmation",
+      "- [ ] User approved this spec",
+      "## Acceptance Criteria",
+    ].join("\n");
+    const issues = checkSpecText(text, { phase: "pre" });
+    assert.ok(!issues.some((i) => i.includes("user confirmation is required")));
   });
 
   it("detects missing Acceptance Criteria", () => {
