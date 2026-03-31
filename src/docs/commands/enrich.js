@@ -21,7 +21,7 @@ import { buildCategoryMapFromDocs, mergeChapters } from "../lib/chapter-resolver
 import { globToRegex } from "../lib/scanner.js";
 import { createLogger } from "../../lib/progress.js";
 import { translate } from "../../lib/i18n.js";
-import { extractBalancedJson, fixUnescapedQuotes } from "../../lib/json-parse.js";
+import { repairJson } from "../../lib/json-parse.js";
 import { ANALYSIS_META_KEYS } from "../lib/analysis-entry.js";
 
 const logger = createLogger("enrich");
@@ -229,27 +229,9 @@ function buildEnrichPrompt(chapters, batchEntries, opts) {
  * @returns {Object|null} Parsed enrichment data
  */
 function parseEnrichResponse(response) {
-  // Strip markdown fences if present
-  let cleaned = response.trim();
-  cleaned = cleaned.replace(/^```(?:json)?\s*\n?/i, "").replace(/\n?```\s*$/i, "");
-
   try {
-    return JSON.parse(cleaned);
+    return JSON.parse(repairJson(response));
   } catch (_) {
-    // Extract JSON by bracket balancing (greedy regex can overshoot with nested braces)
-    const extracted = extractBalancedJson(cleaned);
-    if (extracted) {
-      try {
-        return JSON.parse(extracted);
-      } catch (__) {
-        const fixed = fixUnescapedQuotes(extracted);
-        try {
-          return JSON.parse(fixed);
-        } catch (___) {
-          return null;
-        }
-      }
-    }
     return null;
   }
 }

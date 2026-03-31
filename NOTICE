@@ -1,0 +1,15 @@
+sdd-forge
+Copyright 2026 SpreadWorks Inc.
+
+This product includes software inspired by the following projects:
+
+---
+
+jsonrepair
+https://github.com/josdejong/jsonrepair
+Copyright (c) 2020 Jos de Jong
+Licensed under the ISC License
+
+The recursive descent parser architecture with backtracking in
+src/lib/json-parse.js was designed with reference to jsonrepair's
+approach to repairing broken JSON strings.

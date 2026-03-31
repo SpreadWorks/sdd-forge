@@ -1,0 +1,130 @@
+{
+  "spec": "specs/114-rebuild-json-parser-with-backtracking/spec.md",
+  "baseBranch": "development",
+  "featureBranch": "feature/114-rebuild-json-parser-with-backtracking",
+  "steps": [
+    {
+      "id": "approach",
+      "status": "done"
+    },
+    {
+      "id": "branch",
+      "status": "done"
+    },
+    {
+      "id": "prepare-spec",
+      "status": "done"
+    },
+    {
+      "id": "draft",
+      "status": "skipped"
+    },
+    {
+      "id": "spec",
+      "status": "done"
+    },
+    {
+      "id": "gate",
+      "status": "done"
+    },
+    {
+      "id": "approval",
+      "status": "done"
+    },
+    {
+      "id": "test",
+      "status": "done"
+    },
+    {
+      "id": "implement",
+      "status": "done"
+    },
+    {
+      "id": "review",
+      "status": "done"
+    },
+    {
+      "id": "finalize",
+      "status": "in_progress"
+    },
+    {
+      "id": "commit",
+      "status": "pending"
+    },
+    {
+      "id": "push",
+      "status": "pending"
+    },
+    {
+      "id": "merge",
+      "status": "pending"
+    },
+    {
+      "id": "pr-create",
+      "status": "pending"
+    },
+    {
+      "id": "branch-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "pr-merge",
+      "status": "pending"
+    },
+    {
+      "id": "sync-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "docs-update",
+      "status": "pending"
+    },
+    {
+      "id": "docs-review",
+      "status": "pending"
+    },
+    {
+      "id": "docs-commit",
+      "status": "pending"
+    }
+  ],
+  "requirements": [
+    {
+      "desc": "repairJson 再帰下降パーサー",
+      "status": "done"
+    },
+    {
+      "desc": "parseString バックトラック",
+      "status": "done"
+    },
+    {
+      "desc": "切断JSON補完",
+      "status": "done"
+    },
+    {
+      "desc": "markdown fence除去",
+      "status": "done"
+    },
+    {
+      "desc": "呼び出し元移行",
+      "status": "done"
+    },
+    {
+      "desc": "NOTICE謝辞",
+      "status": "done"
+    },
+    {
+      "desc": "旧関数削除",
+      "status": "done"
+    }
+  ],
+  "worktree": true,
+  "issue": 51,
+  "request": "#51 JSON パーサーの再構築 — jsonrepair を参考にバックトラック付き再帰下降パーサーとして再設計",
+  "notes": [
+    "approach: 仕様書直接作成",
+    "work-env: worktree, base: development",
+    "review: auto-fix",
+    "finalize: all, auto-detect"
+  ]
+}
