@@ -22,7 +22,7 @@ import { PKG_DIR, repoRoot, parseArgs } from "../../lib/cli.js";
 import { loadConfig, resolveConcurrency } from "../../lib/config.js";
 import { loadFullAnalysis, loadAnalysisData, getChapterFiles, readText } from "../lib/command-context.js";
 import { createResolver } from "../lib/resolver-factory.js";
-import { callAgentAsync, DEFAULT_AGENT_TIMEOUT, resolveAgent } from "../../lib/agent.js";
+import { callAgentAsync, DEFAULT_AGENT_TIMEOUT_MS, resolveAgent } from "../../lib/agent.js";
 import { translate } from "../../lib/i18n.js";
 import { EXIT_ERROR } from "../../lib/exit-codes.js";
 import {
@@ -36,7 +36,7 @@ import {
   parseFileResults,
 } from "../lib/review-parser.js";
 
-const DEFAULT_TIMEOUT_MS = DEFAULT_AGENT_TIMEOUT * 1000;
+const DEFAULT_TIMEOUT_MS = DEFAULT_AGENT_TIMEOUT_MS;
 const DEFAULT_WAIT_LOG_SEC = 1;
 const DEFAULT_MAX_RUNS = 3;
 const DEFAULT_REVIEW_CMD = "sdd-forge docs review";

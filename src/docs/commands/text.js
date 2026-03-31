@@ -28,7 +28,7 @@ import {
 import { repoRoot, parseArgs } from "../../lib/cli.js";
 import { loadConfig, resolveConcurrency, DEFAULT_CONCURRENCY } from "../../lib/config.js";
 import { createLogger } from "../../lib/progress.js";
-import { callAgent as callAgentBase, callAgentAsync as callAgentAsyncBase, ensureAgentWorkDir, loadAgentConfig, DEFAULT_AGENT_TIMEOUT } from "../../lib/agent.js";
+import { callAgent as callAgentBase, callAgentAsync as callAgentAsyncBase, ensureAgentWorkDir, loadAgentConfig, DEFAULT_AGENT_TIMEOUT_MS } from "../../lib/agent.js";
 import { translate } from "../../lib/i18n.js";
 import { resolveCommandContext, getChapterFiles, loadFullAnalysis } from "../lib/command-context.js";
 import { repairJson } from "../../lib/json-parse.js";
@@ -37,7 +37,7 @@ import { EXIT_ERROR } from "../../lib/exit-codes.js";
 const logger = createLogger("text");
 
 /** Per-directive mode uses MID (180s), batch mode uses LONG (300s) */
-const DEFAULT_TIMEOUT_MS = DEFAULT_AGENT_TIMEOUT * 1000;
+const DEFAULT_TIMEOUT_MS = DEFAULT_AGENT_TIMEOUT_MS;
 
 /**
  * i18n の messages:text.preamblePatterns を RegExp 配列に変換する。

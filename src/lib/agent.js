@@ -13,6 +13,9 @@ import { execFileSync, spawn } from "child_process";
 /** Default agent timeout in seconds. */
 export const DEFAULT_AGENT_TIMEOUT = 300;
 
+/** Default agent timeout in milliseconds. */
+export const DEFAULT_AGENT_TIMEOUT_MS = DEFAULT_AGENT_TIMEOUT * 1000;
+
 function createSystemPromptPrefix(flag, systemPrompt) {
   if (!flag || !systemPrompt) return { prefix: [] };
   return { prefix: [flag, systemPrompt] };
@@ -101,7 +104,7 @@ export function callAgent(agent, prompt, timeoutMs, cwd, options) {
   const result = execFileSync(agent.command, finalArgs, {
     encoding: "utf8",
     maxBuffer: 20 * 1024 * 1024,
-    timeout: timeoutMs || DEFAULT_AGENT_TIMEOUT * 1000,
+    timeout: timeoutMs || DEFAULT_AGENT_TIMEOUT_MS,
     cwd: cwd || process.cwd(),
     env,
     ...(stdinContent != null ? { input: stdinContent } : {}),
@@ -159,7 +162,7 @@ function callAgentAsyncOnce(agent, prompt, timeoutMs, cwd, options) {
   const { systemPrompt, onStdout, onStderr } = options || {};
   const { finalArgs, env, stdinContent } = buildAgentInvocation(agent, prompt, { systemPrompt });
 
-  const timeout = timeoutMs || DEFAULT_AGENT_TIMEOUT * 1000;
+  const timeout = timeoutMs || DEFAULT_AGENT_TIMEOUT_MS;
 
   return new Promise((resolve, reject) => {
     const child = spawn(agent.command, finalArgs, {
