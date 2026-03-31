@@ -13,6 +13,7 @@ import { runIfDirect } from "../../lib/entrypoint.js";
 import { repoRoot, parseArgs } from "../../lib/cli.js";
 import { loadFlowState, resolveWorktreePaths } from "../../lib/flow-state.js";
 import { loadConfig } from "../../lib/config.js";
+import { EXIT_ERROR } from "../../lib/exit-codes.js";
 
 /**
  * Resolve push remote from config.
@@ -167,7 +168,7 @@ function main() {
   const state = loadFlowState(root);
   if (!state) {
     console.error("no active flow (flow.json not found)");
-    process.exit(1);
+    process.exit(EXIT_ERROR);
   }
 
   const { baseBranch, featureBranch, worktree } = state;
@@ -193,7 +194,7 @@ function main() {
   if (cli.pr) {
     if (!isGhAvailable()) {
       console.error("error: gh command is not available. Install GitHub CLI to use --pr.");
-      process.exit(1);
+      process.exit(EXIT_ERROR);
     }
     let cfg;
     try {

@@ -13,6 +13,7 @@
 
 import path from "path";
 import { PKG_DIR } from "./lib/cli.js";
+import { EXIT_ERROR } from "./lib/exit-codes.js";
 
 const rawArgs = process.argv.slice(2);
 const [subCmd, ...rest] = rawArgs;
@@ -54,5 +55,5 @@ if (NAMESPACE_DISPATCHERS.has(subCmd)) {
 } else {
   console.error(`sdd-forge: unknown command '${subCmd}'`);
   console.error("Run: sdd-forge help");
-  process.exit(1);
+  process.exit(EXIT_ERROR);
 }

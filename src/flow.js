@@ -8,6 +8,7 @@
 import path from "path";
 import { PKG_DIR } from "./lib/cli.js";
 import { FLOW_COMMANDS } from "./flow/registry.js";
+import { EXIT_ERROR } from "./lib/exit-codes.js";
 
 const args = process.argv.slice(2);
 const subCmd = args[0];
@@ -27,7 +28,7 @@ if (!subCmd || subCmd === "-h" || subCmd === "--help") {
   lines.push("  sdd-forge flow set step approach done");
   lines.push("  sdd-forge flow run merge --auto");
   console.log(lines.join("\n"));
-  if (!subCmd) process.exit(1);
+  if (!subCmd) process.exit(EXIT_ERROR);
   process.exit(0);
 }
 
@@ -35,7 +36,7 @@ const entry = FLOW_COMMANDS[subCmd];
 if (!entry) {
   console.error(`sdd-forge flow: unknown command '${subCmd}'`);
   console.error("Run: sdd-forge flow --help");
-  process.exit(1);
+  process.exit(EXIT_ERROR);
 }
 
 const scriptPath = path.join(PKG_DIR, entry.script);

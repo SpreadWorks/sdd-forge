@@ -10,6 +10,7 @@ import fs from "fs";
 import { execFileSync } from "child_process";
 import { runIfDirect } from "../../lib/entrypoint.js";
 import { repoRoot, parseArgs, isInsideWorktree } from "../../lib/cli.js";
+import { EXIT_ERROR } from "../../lib/exit-codes.js";
 import {
   loadFlowState, resolveWorktreePaths,
   clearFlowState, specIdFromPath,
@@ -40,7 +41,7 @@ function main() {
   const state = loadFlowState(root);
   if (!state) {
     console.error("no active flow");
-    process.exit(1);
+    process.exit(EXIT_ERROR);
   }
 
   const { baseBranch, featureBranch, worktree } = state;

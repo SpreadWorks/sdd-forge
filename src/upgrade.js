@@ -15,6 +15,7 @@
 import fs from "fs";
 import { runIfDirect } from "./lib/entrypoint.js";
 import { repoRoot, parseArgs } from "./lib/cli.js";
+import { EXIT_ERROR } from "./lib/exit-codes.js";
 import { loadConfig, sddConfigPath } from "./lib/config.js";
 import { translate } from "./lib/i18n.js";
 import { deploySkills } from "./lib/skills.js";
@@ -69,7 +70,7 @@ async function main() {
     skillResults = deploySkills(root, config.lang, { dryRun });
   } catch (e) {
     console.error(`upgrade failed: ${e.message}`);
-    process.exit(1);
+    process.exit(EXIT_ERROR);
   }
   for (const { name, status } of skillResults) {
     if (status === "updated") {

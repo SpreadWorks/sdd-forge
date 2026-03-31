@@ -15,6 +15,7 @@ import path from "path";
 import readline from "readline";
 import { runIfDirect } from "./lib/entrypoint.js";
 import { parseArgs } from "./lib/cli.js";
+import { EXIT_ERROR } from "./lib/exit-codes.js";
 import { validateConfig } from "./lib/types.js";
 import { DEFAULT_LANG, sddDir as sddDirFn } from "./lib/config.js";
 import { createI18n } from "./lib/i18n.js";
@@ -575,7 +576,7 @@ async function main() {
     setupSkills(workRoot, t, settings.lang);
   } catch (e) {
     console.error(`skill deployment failed: ${e.message}`);
-    process.exit(1);
+    process.exit(EXIT_ERROR);
   }
 
   // Final summary

@@ -10,6 +10,7 @@ import path from "path";
 import { PKG_DIR } from "./lib/cli.js";
 import { resolveCommandContext, getChapterFiles } from "./docs/lib/command-context.js";
 import { resolveOutputConfig } from "./lib/types.js";
+import { EXIT_ERROR } from "./lib/exit-codes.js";
 
 /** Subcommand → script mapping */
 const SCRIPTS = {
@@ -118,7 +119,7 @@ if (subCmd === "build") {
         : [];
       if (docsFiles.length === 0) {
         console.error("[regenerate] ERROR: docs/ に章ファイルがありません。先に docs build を実行してください。");
-        process.exit(1);
+        process.exit(EXIT_ERROR);
       }
     } else {
       progress.start("init");
@@ -219,7 +220,7 @@ if (subCmd === "build") {
   } catch (err) {
     progress.done();
     console.error(`[build] ERROR: ${err.message}`);
-    process.exit(1);
+    process.exit(EXIT_ERROR);
   }
   process.exit(0);
 }
@@ -229,7 +230,7 @@ const scriptRelPath = SCRIPTS[subCmd];
 if (!scriptRelPath) {
   console.error(`sdd-forge docs: unknown command '${subCmd}'`);
   console.error("Run: sdd-forge help");
-  process.exit(1);
+  process.exit(EXIT_ERROR);
 }
 
 const scriptPath = path.join(PKG_DIR, scriptRelPath);

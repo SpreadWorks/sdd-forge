@@ -8,6 +8,7 @@
 import path from "path";
 import { PKG_DIR } from "../lib/cli.js";
 import { FLOW_COMMANDS } from "./registry.js";
+import { EXIT_ERROR } from "../lib/exit-codes.js";
 
 const KEYS = FLOW_COMMANDS.get.keys;
 
@@ -21,7 +22,7 @@ if (!key || key === "-h" || key === "--help") {
     lines.push(`  ${name.padEnd(18)} ${entry.desc.en}`);
   }
   console.log(lines.join("\n"));
-  if (!key) process.exit(1);
+  if (!key) process.exit(EXIT_ERROR);
   process.exit(0);
 }
 
@@ -29,7 +30,7 @@ const entry = KEYS[key];
 if (!entry) {
   console.error(`sdd-forge flow get: unknown key '${key}'`);
   console.error("Run: sdd-forge flow get --help");
-  process.exit(1);
+  process.exit(EXIT_ERROR);
 }
 
 const scriptPath = path.join(PKG_DIR, entry.script);

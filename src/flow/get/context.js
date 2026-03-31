@@ -16,6 +16,7 @@ import { sddOutputDir } from "../../lib/config.js";
 import { loadFlowState, mutateFlowState } from "../../lib/flow-state.js";
 import { ok, fail, output } from "../../lib/flow-envelope.js";
 import { ANALYSIS_META_KEYS } from "../../docs/lib/analysis-entry.js";
+import { EXIT_ERROR } from "../../lib/exit-codes.js";
 
 const EXCLUDE_FIELDS = new Set(["hash", "mtime", "lines", "id", "enrich", "detail"]);
 
@@ -81,7 +82,7 @@ function main() {
     if (!fs.existsSync(absPath)) {
       if (isRaw) {
         console.error(`file not found: ${filePath}`);
-        process.exitCode = 1;
+        process.exitCode = EXIT_ERROR;
         return;
       }
       output(fail("get", "context", "FILE_NOT_FOUND", `file not found: ${filePath}`));
@@ -117,7 +118,7 @@ function main() {
   if (!fs.existsSync(analysisPath)) {
     if (isRaw) {
       console.error("analysis.json not found. Run: sdd-forge docs scan");
-      process.exitCode = 1;
+      process.exitCode = EXIT_ERROR;
       return;
     }
     output(fail("get", "context", "NO_ANALYSIS", "analysis.json not found. Run: sdd-forge docs scan"));

@@ -16,6 +16,7 @@ import { loadConfig } from "../../lib/config.js";
 import { callAgent, resolveAgent } from "../../lib/agent.js";
 import { loadFlowState } from "../../lib/flow-state.js";
 import { ok, fail, output } from "../../lib/flow-envelope.js";
+import { EXIT_ERROR } from "../../lib/exit-codes.js";
 
 /**
  * Extract requirements text from spec.md.
@@ -158,7 +159,7 @@ function main() {
   const state = loadFlowState(root);
   if (!state) {
     output(fail("run", "retro", "NO_FLOW", "no active flow (flow.json not found)"));
-    process.exitCode = 1;
+    process.exitCode = EXIT_ERROR;
     return;
   }
 
@@ -169,7 +170,7 @@ function main() {
   // Check existing retro.json
   if (fs.existsSync(retroPath) && !cli.force) {
     output(fail("run", "retro", "RETRO_EXISTS", "retro.json already exists. Use --force to overwrite."));
-    process.exitCode = 1;
+    process.exitCode = EXIT_ERROR;
     return;
   }
 
@@ -177,7 +178,7 @@ function main() {
   const absSpecPath = path.resolve(root, specPath);
   if (!fs.existsSync(absSpecPath)) {
     output(fail("run", "retro", "SPEC_NOT_FOUND", `spec not found: ${specPath}`));
-    process.exitCode = 1;
+    process.exitCode = EXIT_ERROR;
     return;
   }
   const specText = fs.readFileSync(absSpecPath, "utf8");
@@ -187,7 +188,7 @@ function main() {
   const requirements = state.requirements || [];
   if (requirements.length === 0) {
     output(fail("run", "retro", "NO_REQUIREMENTS", "no requirements found in flow.json"));
-    process.exitCode = 1;
+    process.exitCode = EXIT_ERROR;
     return;
   }
 
@@ -195,7 +196,7 @@ function main() {
   const baseBranch = state.baseBranch;
   if (!baseBranch) {
     output(fail("run", "retro", "NO_BASE_BRANCH", "baseBranch not set in flow.json"));
-    process.exitCode = 1;
+    process.exitCode = EXIT_ERROR;
     return;
   }
 
@@ -204,7 +205,7 @@ function main() {
 
   if (!detailedDiff) {
     output(fail("run", "retro", "NO_DIFF", "no diff found between base branch and HEAD"));
-    process.exitCode = 1;
+    process.exitCode = EXIT_ERROR;
     return;
   }
 
@@ -228,14 +229,14 @@ function main() {
     config = loadConfig(root);
   } catch (e) {
     output(fail("run", "retro", "CONFIG_ERROR", `failed to load config: ${e.message}`));
-    process.exitCode = 1;
+    process.exitCode = EXIT_ERROR;
     return;
   }
 
   const agent = resolveAgent(config, "flow.retro");
   if (!agent) {
     output(fail("run", "retro", "NO_AGENT", "no AI agent configured (agent.default or agent.commands.flow.retro)"));
-    process.exitCode = 1;
+    process.exitCode = EXIT_ERROR;
     return;
   }
 
@@ -247,7 +248,7 @@ function main() {
     response = callAgent(agent, prompt);
   } catch (e) {
     output(fail("run", "retro", "AGENT_ERROR", `AI agent call failed: ${e.message}`));
-    process.exitCode = 1;
+    process.exitCode = EXIT_ERROR;
     return;
   }
 
@@ -257,7 +258,7 @@ function main() {
     retroData = parseRetroResponse(response, requirements);
   } catch (e) {
     output(fail("run", "retro", "PARSE_ERROR", `failed to parse AI response: ${e.message}`));
-    process.exitCode = 1;
+    process.exitCode = EXIT_ERROR;
     return;
   }
 

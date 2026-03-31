@@ -32,6 +32,7 @@ import { callAgent as callAgentBase, callAgentAsync as callAgentAsyncBase, ensur
 import { translate } from "../../lib/i18n.js";
 import { resolveCommandContext, getChapterFiles, loadFullAnalysis } from "../lib/command-context.js";
 import { extractBalancedJson, fixUnescapedQuotes } from "../../lib/json-parse.js";
+import { EXIT_ERROR } from "../../lib/exit-codes.js";
 
 const logger = createLogger("text");
 
@@ -755,7 +756,7 @@ async function main(ctx) {
   }
   logger.log(`Done. ${changedFiles.size} file(s) updated. filled: ${totalFilled}, skipped: ${totalSkipped}.`);
   if (errors.length > 0) {
-    process.exitCode = 1;
+    process.exitCode = EXIT_ERROR;
   }
   return { errors };
 }

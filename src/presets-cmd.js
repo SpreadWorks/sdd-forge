@@ -9,6 +9,7 @@
 import fs from "fs";
 import path from "path";
 import { PRESETS, presetByLeaf } from "./lib/presets.js";
+import { EXIT_ERROR } from "./lib/exit-codes.js";
 
 const subCmd = process.argv[2];
 
@@ -25,7 +26,7 @@ if (!subCmd || subCmd === "list") {
   console.log([h.usage, "", `  ${h.desc}`].join("\n"));
 } else {
   console.error(`sdd-forge presets: unknown command '${subCmd}'`);
-  process.exit(1);
+  process.exit(EXIT_ERROR);
 }
 
 function printTree() {
