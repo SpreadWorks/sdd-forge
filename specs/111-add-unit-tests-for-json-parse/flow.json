@@ -1,0 +1,116 @@
+{
+  "spec": "specs/111-add-unit-tests-for-json-parse/spec.md",
+  "baseBranch": "development",
+  "featureBranch": "feature/111-add-unit-tests-for-json-parse",
+  "steps": [
+    {
+      "id": "approach",
+      "status": "done"
+    },
+    {
+      "id": "branch",
+      "status": "done"
+    },
+    {
+      "id": "prepare-spec",
+      "status": "done"
+    },
+    {
+      "id": "draft",
+      "status": "done"
+    },
+    {
+      "id": "spec",
+      "status": "done"
+    },
+    {
+      "id": "gate",
+      "status": "done"
+    },
+    {
+      "id": "approval",
+      "status": "done"
+    },
+    {
+      "id": "test",
+      "status": "done"
+    },
+    {
+      "id": "implement",
+      "status": "done"
+    },
+    {
+      "id": "review",
+      "status": "done"
+    },
+    {
+      "id": "finalize",
+      "status": "done"
+    },
+    {
+      "id": "commit",
+      "status": "pending"
+    },
+    {
+      "id": "push",
+      "status": "pending"
+    },
+    {
+      "id": "merge",
+      "status": "pending"
+    },
+    {
+      "id": "pr-create",
+      "status": "pending"
+    },
+    {
+      "id": "branch-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "pr-merge",
+      "status": "pending"
+    },
+    {
+      "id": "sync-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "docs-update",
+      "status": "pending"
+    },
+    {
+      "id": "docs-review",
+      "status": "pending"
+    },
+    {
+      "id": "docs-commit",
+      "status": "pending"
+    }
+  ],
+  "requirements": [
+    {
+      "desc": "fixUnescapedQuotes のテスト作成",
+      "status": "done"
+    },
+    {
+      "desc": "extractBalancedJson のテスト作成",
+      "status": "done"
+    },
+    {
+      "desc": "tests/unit/lib/json-parse.test.js に配置",
+      "status": "done"
+    },
+    {
+      "desc": "既存テストがパス",
+      "status": "done"
+    }
+  ],
+  "worktree": true,
+  "issue": 45,
+  "request": "Issue #45: json-parse.js のユニットテスト追加",
+  "notes": [
+    "approach: Q&A, work-env: worktree, base: development"
+  ],
+  "autoApprove": true
+}
