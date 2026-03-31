@@ -1,0 +1,128 @@
+{
+  "spec": "specs/105-ai-context-optimization-with-flow-get-context-co/spec.md",
+  "baseBranch": "development",
+  "featureBranch": "feature/105-ai-context-optimization-with-flow-get-context-co",
+  "steps": [
+    {
+      "id": "approach",
+      "status": "done"
+    },
+    {
+      "id": "branch",
+      "status": "done"
+    },
+    {
+      "id": "prepare-spec",
+      "status": "done"
+    },
+    {
+      "id": "draft",
+      "status": "done"
+    },
+    {
+      "id": "spec",
+      "status": "done"
+    },
+    {
+      "id": "gate",
+      "status": "done"
+    },
+    {
+      "id": "approval",
+      "status": "done"
+    },
+    {
+      "id": "test",
+      "status": "done"
+    },
+    {
+      "id": "implement",
+      "status": "done"
+    },
+    {
+      "id": "review",
+      "status": "done"
+    },
+    {
+      "id": "finalize",
+      "status": "done"
+    },
+    {
+      "id": "commit",
+      "status": "pending"
+    },
+    {
+      "id": "push",
+      "status": "pending"
+    },
+    {
+      "id": "merge",
+      "status": "pending"
+    },
+    {
+      "id": "pr-create",
+      "status": "pending"
+    },
+    {
+      "id": "branch-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "pr-merge",
+      "status": "pending"
+    },
+    {
+      "id": "sync-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "docs-update",
+      "status": "pending"
+    },
+    {
+      "id": "docs-review",
+      "status": "pending"
+    },
+    {
+      "id": "docs-commit",
+      "status": "pending"
+    }
+  ],
+  "requirements": [
+    {
+      "desc": "flow get context: 一覧モード（file+summary+methods）+ 個別読み取りモード",
+      "status": "done"
+    },
+    {
+      "desc": "flow get context: docsRead/srcRead自動カウント + --rawオプション",
+      "status": "done"
+    },
+    {
+      "desc": "analysis.json: JSON.stringify null,2 で整形出力",
+      "status": "done"
+    },
+    {
+      "desc": "analysis.json: git管理化（.gitignore除外 + .gitattributes merge=ours）",
+      "status": "done"
+    },
+    {
+      "desc": "スキル: metric指示削除、flow get context/flow run scan指示に集約",
+      "status": "done"
+    }
+  ],
+  "worktree": true,
+  "issue": 34,
+  "request": "Issue #34: AIコンテキスト最適化 - flow get contextコマンドで必要最小限の情報だけをAIに渡す",
+  "notes": [
+    "approach: Q&Aで要件整理, work-env: worktree, base: development",
+    "draft: fc44連動は除外。基本機能のみ",
+    "draft: 出力形式はJSON envelope統一。--rawオプションでenvelopeなしの生コンテンツを返す",
+    "draft: flow get context実行時にscanを自動実行。enrichなしの警告は出さない。未enrichのentryはソース直接参照を示す",
+    "draft: analysis.jsonをgit管理化。JSON.stringify null,2で整形。.gitattributesでmerge=ours。setup時の.gitignore見直し。コンフリクト時はscan再実行"
+  ],
+  "metrics": {
+    "draft": {
+      "question": 7
+    }
+  }
+}

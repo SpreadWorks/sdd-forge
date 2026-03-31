@@ -137,6 +137,19 @@ function ensureGitignore(workRoot) {
   }
 }
 
+function ensureGitattributes(workRoot) {
+  const gitattributesPath = path.join(workRoot, ".gitattributes");
+  const entry = ".sdd-forge/output/analysis.json merge=ours";
+  if (fs.existsSync(gitattributesPath)) {
+    const content = fs.readFileSync(gitattributesPath, "utf8");
+    if (!content.includes(entry)) {
+      fs.appendFileSync(gitattributesPath, `\n${entry}\n`);
+    }
+  } else {
+    fs.writeFileSync(gitattributesPath, `${entry}\n`);
+  }
+}
+
 function registerProject(projectName, sourcePath, workRootPath, t) {
   const resolved = path.resolve(sourcePath);
   if (!fs.existsSync(resolved)) {
@@ -146,6 +159,7 @@ function registerProject(projectName, sourcePath, workRootPath, t) {
   const workRoot = workRootPath ? path.resolve(workRootPath) : resolved;
   ensureProjectDirs(workRoot);
   ensureGitignore(workRoot);
+  ensureGitattributes(workRoot);
 
   return { workRoot };
 }

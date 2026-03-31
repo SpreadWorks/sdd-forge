@@ -377,7 +377,7 @@ function saveAnalysis(root, analysis) {
     fs.mkdirSync(outputDir, { recursive: true });
   }
   const outputPath = path.join(outputDir, "analysis.json");
-  fs.writeFileSync(outputPath, JSON.stringify(analysis) + "\n");
+  fs.writeFileSync(outputPath, JSON.stringify(analysis, null, 2) + "\n");
   return outputPath;
 }
 
@@ -541,7 +541,7 @@ async function main(ctx) {
 
   // Final output
   if (ctx.stdout || ctx.dryRun) {
-    process.stdout.write(JSON.stringify(analysis) + "\n");
+    process.stdout.write(JSON.stringify(analysis, null, 2) + "\n");
   } else {
     const outputPath = saveAnalysis(root, analysis);
     logger.log(`output: ${path.relative(root, outputPath)}`);

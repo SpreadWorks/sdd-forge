@@ -85,14 +85,10 @@ Available status values: `pending`, `in_progress`, `done`, `skipped`
      1. **If a GitHub Issue number is linked** (saved in flow.json via `--issue`):
         Fetch the issue content with `sdd-forge flow get issue <number>` and display the title and body before the first question.
         Use the issue content as context for the draft discussion.
-     2. Check docs freshness: compare mtime of `docs/*.md` vs source files.
-        If source is newer, suggest `sdd-forge build` to the user and wait for approval.
-     3. Load guardrail articles for the draft phase: `sdd-forge flow get guardrail draft`.
+     2. Run `sdd-forge flow run scan` to ensure analysis.json is up to date.
+     3. Run `sdd-forge flow get context --raw` to understand the project structure. Use this output to identify relevant files and modules.
+     4. Load guardrail articles for the draft phase: `sdd-forge flow get guardrail draft`.
         If output is non-empty, consider these principles as constraints when asking questions and making proposals.
-     4. Read relevant `docs/` chapters based on the user's request keywords.
-        Use chapter titles and AGENTS.md structure to identify related files.
-        This provides project context that improves question quality and draft accuracy.
-     5. Record what was read: `sdd-forge flow set metric draft docsRead` (if docs/ was read), `sdd-forge flow set metric draft srcRead` (if source code was read directly).
    - Create `specs/NNN-xxx/draft.md` in the spec directory created in step 3.
    - AI presents choices/proposals → user selects with short answers.
    - Ask ONE question at a time (do not batch questions, do not self-answer).
@@ -109,9 +105,9 @@ Available status values: `pending`, `in_progress`, `done`, `skipped`
 5. Fill spec (`spec`).
    - **On start**: `sdd-forge flow set step spec in_progress`
    - **Before writing spec**:
-     - Read draft (if exists), linked GitHub issue content, analysis.json, and relevant `docs/` chapters.
-     - If `docs/` is missing or stale, read existing source code directly.
-     - Record what was read: `sdd-forge flow set metric spec docsRead` (if docs/ was read), `sdd-forge flow set metric spec srcRead` (if source code was read).
+     - Read draft (if exists) and linked GitHub issue content.
+     - Run `sdd-forge flow get context --raw` to understand the project structure.
+     - For files needing deeper understanding, use `sdd-forge flow get context <path> --raw` to read them.
    - Fill Goal, Scope, Out of Scope, Requirements, Acceptance Criteria.
    - If draft phase was done, reflect draft Q&A and decisions in spec.md.
    - Don't just copy draft — organize and abstract (but don't invent).

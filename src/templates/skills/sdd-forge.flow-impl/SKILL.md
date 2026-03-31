@@ -37,7 +37,7 @@ Before starting, run `sdd-forge flow get check impl` to verify prerequisites.
 1. Implement changes.
    - **On start**: `sdd-forge flow set step implement in_progress`
    - Read the spec to understand requirements.
-   - After reading spec/docs, run: `sdd-forge flow set metric impl docsRead`
+   - Run `sdd-forge flow get context --raw` to understand the project structure. For files needing deeper understanding, use `sdd-forge flow get context <path> --raw`.
    - Load guardrail articles for the implementation phase: `sdd-forge flow get guardrail impl`.
      If output is non-empty, follow these principles during implementation.
    - Code only after confirming gate PASS and test phase completion.

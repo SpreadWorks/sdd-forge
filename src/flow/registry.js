@@ -17,6 +17,7 @@ export const FLOW_COMMANDS = {
       "qa-count":        { script: "flow/get/qa-count.js",        desc: { en: "Get answered question count", ja: "回答済み質問数を取得" } },
       guardrail:         { script: "flow/get/guardrail.js",       desc: { en: "Get guardrail articles filtered by phase", ja: "フェーズでフィルタしたガードレール記事を取得" } },
       issue:             { script: "flow/get/issue.js",           desc: { en: "Get GitHub issue content as JSON", ja: "GitHub Issue の内容を JSON で取得" } },
+      context:           { script: "flow/get/context.js",         desc: { en: "Get filtered project context from analysis", ja: "analysis からフィルタ済みプロジェクトコンテキストを取得" } },
     },
   },
   set: {

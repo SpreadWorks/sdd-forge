@@ -212,7 +212,7 @@ function resetCategories(root, resetValue) {
   }
 
   if (resetCount > 0) {
-    fs.writeFileSync(outputPath, JSON.stringify(analysis) + "\n");
+    fs.writeFileSync(outputPath, JSON.stringify(analysis, null, 2) + "\n");
     logger.log(`total: ${totalEntries} entries reset in ${resetCount} categories`);
   }
 }
@@ -408,7 +408,7 @@ async function main(ctx) {
   }
 
   // 7. Output
-  const json = JSON.stringify(result);
+  const json = JSON.stringify(result, null, 2);
 
   if (ctx.stdout || ctx.dryRun) {
     process.stdout.write(json + "\n");
