@@ -116,7 +116,10 @@ export function loadActiveFlows(workRoot) {
   try {
     const data = JSON.parse(fs.readFileSync(p, "utf8"));
     return Array.isArray(data) ? data : [];
-  } catch (_) {
+  } catch (err) {
+    if (err.code !== "ENOENT") {
+      console.error(`[flow-state] WARN: failed to parse .active-flow (${p}): ${err.message}`);
+    }
     return [];
   }
 }
