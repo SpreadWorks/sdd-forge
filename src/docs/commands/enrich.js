@@ -497,7 +497,7 @@ async function main(ctx) {
     }
 
     // Merge batch results into analysis (mutates)
-    const attemptsByKey = buildAttemptsByKey(analysis, batch, attemptsUsed);
+    const attemptsByKey = buildAttemptsByKey(analysis, batch, 1);
     const validChapterNames = new Set(chapters.map((c) => (typeof c === "string" ? c : c.chapter).replace(/\.md$/, "")));
     mergeEnrichment(analysis, enrichment, {
       batchEntries: batch,
