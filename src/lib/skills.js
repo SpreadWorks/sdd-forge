@@ -25,7 +25,7 @@ function removeIfSymlink(filePath) {
       fs.unlinkSync(filePath);
       return true;
     }
-  } catch (_) {}
+  } catch (err) { if (err.code !== "ENOENT") console.error(err); }
   return false;
 }
 
@@ -74,8 +74,8 @@ export function deploySkills(workRoot, lang, opts = {}) {
         const existing = fs.readFileSync(agentsDest, "utf8");
         if (existing === srcContent) needsUpdate = false;
       }
-    } catch (_) {
-      // file doesn't exist — will be created
+    } catch (err) {
+      if (err.code !== "ENOENT") console.error(err);
     }
 
     if (!needsUpdate) {

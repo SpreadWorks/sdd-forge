@@ -105,7 +105,7 @@ function main() {
   let specExists = false;
   try {
     specExists = fs.existsSync(specPath);
-  } catch (_) {}
+  } catch (err) { if (err.code !== "ENOENT") console.error(err); }
 
   output(ok("run", "impl-confirm", {
     result: allDone || noRequirements ? "ready" : "incomplete",

@@ -149,7 +149,7 @@ export function removeActiveFlow(workRoot, specId) {
   const filtered = flows.filter((f) => f.spec !== specId);
   const p = activeFlowPath(mainRoot);
   if (filtered.length === 0) {
-    try { fs.unlinkSync(p); } catch (_) {}
+    try { fs.unlinkSync(p); } catch (err) { if (err.code !== "ENOENT") console.error(err); }
     return;
   }
   fs.writeFileSync(p, JSON.stringify(filtered, null, 2) + "\n", "utf8");
@@ -222,7 +222,7 @@ export function cleanStaleFlows(workRoot) {
   if (valid.length !== flows.length) {
     const p = activeFlowPath(mainRoot);
     if (valid.length === 0) {
-      try { fs.unlinkSync(p); } catch (_) {}
+      try { fs.unlinkSync(p); } catch (err) { if (err.code !== "ENOENT") console.error(err); }
     } else {
       fs.writeFileSync(p, JSON.stringify(valid, null, 2) + "\n", "utf8");
     }

@@ -133,7 +133,7 @@ function main() {
   try {
     const cfgData = loadConfig(root);
     lang = cfgData.docs?.defaultLanguage || cfgData.lang || DEFAULT_LANG;
-  } catch (_) {}
+  } catch (err) { if (err.code !== "ENOENT") console.error(err); }
   const t = translate();
 
   // Ensure output directory exists

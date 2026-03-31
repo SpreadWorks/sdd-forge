@@ -366,5 +366,5 @@ export function writeAgentContext(workDir, content) {
  * @param {string} filePath - writeAgentContext が返したパス
  */
 export function cleanupAgentContext(filePath) {
-  try { fs.unlinkSync(filePath); } catch (_) {}
+  try { fs.unlinkSync(filePath); } catch (err) { if (err.code !== "ENOENT") console.error(err); }
 }

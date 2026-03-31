@@ -222,7 +222,7 @@ function fixClaudeMdSymlink(sourceDir) {
       fs.unlinkSync(claudePath);
       fs.writeFileSync(claudePath, content, "utf8");
     }
-  } catch (_) {}
+  } catch (err) { if (err.code !== "ENOENT") console.error(err); }
 }
 
 // ---------------------------------------------------------------------------
