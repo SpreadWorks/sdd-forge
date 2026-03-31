@@ -20,13 +20,16 @@
       "desc": "Development setup, scripts, and workflows"
     },
     {
-      "chapter": "api_overview.md"
+      "chapter": "api_overview.md",
+      "desc": "API overview, design principles, and endpoint structure"
     },
     {
-      "chapter": "authentication.md"
+      "chapter": "authentication.md",
+      "desc": "Authentication flows, token management, and access control"
     },
     {
-      "chapter": "endpoints.md"
+      "chapter": "endpoints.md",
+      "desc": "API endpoint definitions and specifications"
     }
   ]
 }

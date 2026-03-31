@@ -24,7 +24,8 @@
       "desc": "Directory structure, file organization, and shared libraries"
     },
     {
-      "chapter": "ci_cd.md"
+      "chapter": "ci_cd.md",
+      "desc": "CI/CD pipeline configuration, build steps, and deployment automation"
     },
     {
       "chapter": "development.md",

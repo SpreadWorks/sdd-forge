@@ -4,7 +4,8 @@
   "aliases": [],
   "chapters": [
     {
-      "chapter": "database.md"
+      "chapter": "database.md",
+      "desc": "Database configuration, connections, and query patterns"
     }
   ]
 }

@@ -4,7 +4,8 @@
   "aliases": [],
   "chapters": [
     {
-      "chapter": "storage.md"
+      "chapter": "storage.md",
+      "desc": "Storage configuration, buckets, and data management"
     }
   ]
 }

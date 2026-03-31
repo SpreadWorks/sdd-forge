@@ -20,10 +20,12 @@
       "desc": "Development setup, scripts, and workflows"
     },
     {
-      "chapter": "public_api.md"
+      "chapter": "public_api.md",
+      "desc": "Public API surface, exports, and usage interface"
     },
     {
-      "chapter": "usage.md"
+      "chapter": "usage.md",
+      "desc": "Usage guide, examples, and integration patterns"
     }
   ]
 }

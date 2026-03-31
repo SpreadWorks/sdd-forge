@@ -4,10 +4,12 @@
   "aliases": [],
   "chapters": [
     {
-      "chapter": "edge_runtime.md"
+      "chapter": "edge_runtime.md",
+      "desc": "Edge runtime configuration, bindings, and deployment"
     },
     {
-      "chapter": "bindings.md"
+      "chapter": "bindings.md",
+      "desc": "Worker bindings, environment configuration, and resource access"
     }
   ],
   "scan": {

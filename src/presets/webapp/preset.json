@@ -24,13 +24,16 @@
       "desc": "Authentication, authorization, and session management"
     },
     {
-      "chapter": "database_architecture.md"
+      "chapter": "database_architecture.md",
+      "desc": "Database schema, migrations, and data access patterns"
     },
     {
-      "chapter": "db_tables.md"
+      "chapter": "db_tables.md",
+      "desc": "Database table definitions, columns, and relationships"
     },
     {
-      "chapter": "controller_routes.md"
+      "chapter": "controller_routes.md",
+      "desc": "URL routing, controllers, request handling, and middleware"
     },
     {
       "chapter": "business_logic.md",

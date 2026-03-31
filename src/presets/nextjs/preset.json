@@ -20,16 +20,20 @@
       "desc": "Development setup, scripts, and workflows"
     },
     {
-      "chapter": "pages_routing.md"
+      "chapter": "pages_routing.md",
+      "desc": "Page structure, file-based routing, and navigation"
     },
     {
-      "chapter": "route_handlers.md"
+      "chapter": "route_handlers.md",
+      "desc": "Route handlers, API routes, and server actions"
     },
     {
-      "chapter": "middleware.md"
+      "chapter": "middleware.md",
+      "desc": "Middleware stack and request processing pipeline"
     },
     {
-      "chapter": "components.md"
+      "chapter": "components.md",
+      "desc": "UI component architecture and patterns"
     }
   ],
   "scan": {

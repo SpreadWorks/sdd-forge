@@ -4,10 +4,12 @@
   "aliases": [],
   "chapters": [
     {
-      "chapter": "database.md"
+      "chapter": "database.md",
+      "desc": "Database configuration, connections, and query patterns"
     },
     {
-      "chapter": "schema.md"
+      "chapter": "schema.md",
+      "desc": "Database schema definitions and type system"
     }
   ],
   "scan": {
