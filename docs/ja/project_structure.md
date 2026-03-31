@@ -90,7 +90,7 @@ src/presets/workers/tests/unit/    (test)
 | --- | --- | --- |
 | src/presets | 122 | lib, config, other, test, cli, middleware, controller, model, route, migration |
 | src/docs | 34 | cli, lib |
-| src/flow | 30 | cli, config |
+| src/flow | 31 | cli, config |
 | src/lib | 19 | lib, config, model |
 | src | 7 | cli |
 <!-- {{/data}} -->

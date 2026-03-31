@@ -11,7 +11,7 @@
 
 <!-- {{text({prompt: "Write a 1-2 sentence overview of this chapter. Include the number of major directories and their roles."})}} -->
 
-The project is organized around five major directory groups: `src` for top-level CLI entry points, `src/docs` for documentation-related CLI and library logic, `src/flow` for workflow commands and configuration, `src/lib` for shared library, configuration, and model utilities, and `src/presets` for preset-specific libraries, models, middleware, routes, migrations, and test fixtures. Together, these directories separate core command execution, workflow orchestration, reusable support code, and the preset ecosystem that drives analysis and document generation.
+This chapter covers 5 major directories: `src` for the CLI entry layer, `src/docs` for documentation commands and support libraries, `src/flow` for workflow-related CLI and configuration logic, `src/lib` for shared libraries and core models, and `src/presets` for the largest collection of preset data, tests, and framework-specific roles. Together, these directories show a structure centered on reusable libraries, CLI workflows, and preset-driven project generation.
 <!-- {{/text}} -->
 
 ## Content
@@ -92,7 +92,7 @@ src/presets/workers/tests/unit/    (test)
 | --- | --- | --- |
 | src/presets | 122 | lib, config, other, test, cli, middleware, controller, model, route, migration |
 | src/docs | 34 | cli, lib |
-| src/flow | 30 | cli, config |
+| src/flow | 31 | cli, config |
 | src/lib | 19 | lib, config, model |
 | src | 7 | cli |
 <!-- {{/data}} -->
@@ -103,9 +103,9 @@ src/presets/workers/tests/unit/    (test)
 
 | Class Name | File Path | Responsibility |
 | --- | --- | --- |
-| `StructureSource` | `src/presets/base/data/structure.js` | Extends `DataSource` to build project-structure outputs from enriched analysis, including a directory tree block and an aggregated directory summary table. |
-| `loadSddTemplate` | `src/lib/agents-md.js` | Loads the `AGENTS.sdd.md` template for the requested language, falling back to English when a localized preset file is unavailable. |
-| `Parser`, `Tokenizer`, `Renderer` | `src/presets/library/tests/acceptance/fixtures/src/index.js` | Re-exports the fixture library surface and provides `parse()` and `render()` convenience helpers for parsing Markdown input and optionally rendering the result. |
+| `StructureSource` | `src/presets/base/data/structure.js` | Extends `DataSource` to build project-structure outputs, including a directory tree block and a summarized directory table derived from enriched analysis data. |
+| `loadSddTemplate` | `src/lib/agents-md.js` | Loads the SDD section template for `AGENTS.md` generation and update flows, resolving the localized preset template with fallback to English. |
+| `Parser`, `Tokenizer`, `Renderer` | `src/presets/library/tests/acceptance/fixtures/src/index.js` | Re-exported as a small shared library surface for the fixture package, with convenience helpers that parse and render Markdown input through the related modules. |
 <!-- {{/text}} -->
 
 ---
