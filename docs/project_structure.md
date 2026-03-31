@@ -10,8 +10,6 @@
 ## Description
 
 <!-- {{text({prompt: "Write a 1-2 sentence overview of this chapter. Include the number of major directories and their roles."})}} -->
-
-This chapter describes the physical layout of the sdd-forge source tree, organized into five major top-level directories: `src/presets` (preset implementations and tests), `src/docs` (documentation generation pipeline), `src/flow` (SDD workflow engine), `src/lib` (shared utilities), and `src` (CLI entry points).
 <!-- {{/text}} -->
 
 ## Content
@@ -101,13 +99,6 @@ src/presets/workers/tests/unit/    (test)
 ### Shared Libraries
 
 <!-- {{text({prompt: "List the shared libraries with class name, file path, and responsibility in table format."})}} -->
-
-The following DataSource classes are available across all presets via the base preset inheritance chain.
-
-| Class | File | Responsibility |
-| --- | --- | --- |
-| ProjectSource | `src/docs/data/project.js` | Reads `package.json` and exposes project metadata — name, description, version, and an npm scripts table — as `{{data}}` directive values. |
-| StructureSource | `src/presets/base/data/structure.js` | Reads enriched analysis entries to generate a fenced directory tree and a sorted major-directories table; requires `analysis.enrichedAt` to be present before producing output. |
 <!-- {{/text}} -->
 
 ---

@@ -11,7 +11,7 @@
 
 <!-- {{text({prompt: "Write a 1-2 sentence overview of this chapter. Include the programming language, framework, and key tool versions."})}} -->
 
-This project is implemented in Node.js using ES modules, with no external runtime dependencies. It provides a preset-based documentation and spec tooling system covering multiple language ecosystems including Node.js (npm) and PHP (Composer), with first-class support for CI pipelines, edge runtimes, and cloud storage.
+This chapter covers the technology stack and operational tooling supported by sdd-forge, spanning a Node.js (ES modules) core with preset-level integrations for GitHub Actions CI/CD pipelines, Cloudflare Workers edge runtime (wrangler), Cloudflare R2 object storage, and PostgreSQL databases.
 <!-- {{/text}} -->
 
 ## Content
@@ -22,35 +22,33 @@ This project is implemented in Node.js using ES modules, with no external runtim
 
 | Category | Technology | Notes |
 |---|---|---|
-| Runtime | Node.js | ES Modules (`"type": "module"`) |
-| Package manifest (Node.js) | npm / `package.json` | `dependencies`, `devDependencies`, scripts |
-| Package manifest (PHP) | Composer / `composer.json` | `require`, `require-dev` |
-| CI/CD | GitHub Actions | Workflow YAML under `.github/workflows/` |
-| Edge runtime | Cloudflare Workers | Configured via `wrangler.toml` / `wrangler.json` / `wrangler.jsonc` |
-| Database | PostgreSQL | Identified via the `postgres` preset |
-| Object storage | Cloudflare R2 | R2 bucket bindings read from `wrangler.toml` / `wrangler.json` |
-| Generic storage | Pluggable (preset chain) | Provider resolved from `analysis.storage` at build time |
+| Runtime | Node.js (ES modules) | No external dependencies; built-in modules only |
+| CI/CD | GitHub Actions | Workflow YAML files under `.github/workflows/` |
+| Edge Runtime | Cloudflare Workers | Configured via `wrangler.toml` / `wrangler.json` / `wrangler.jsonc` |
+| Object Storage | Cloudflare R2 | R2 bucket bindings declared in wrangler config |
+| Database | PostgreSQL | Static configuration; no ORM layer |
+| PHP Framework | CakePHP 2.x | Supported via dedicated preset; Docker integration is a no-op stub |
 <!-- {{/text}} -->
 
 ### Dependencies
 
 <!-- {{text({prompt: "Describe the project's dependency management approach."})}} -->
 
-The project itself carries no external npm dependencies; only Node.js built-in modules are used throughout `src/`. For projects consuming sdd-forge, the `base` preset scans `package.json` to extract `dependencies`, `devDependencies`, and npm scripts, and scans `composer.json` to extract `require` and `require-dev` sections. Both manifests are matched by filename alone, so they are detected regardless of directory depth. Parse errors are handled silently, returning an empty entry to avoid blocking the documentation build pipeline.
+The project enforces a zero-external-dependency policy: only Node.js built-in modules are permitted. There is no `node_modules` install step for the core package. Preset-level integrations (CI pipelines, edge runtime, storage) are configured through their respective platform tooling files (`wrangler.toml`, GitHub Actions YAML) rather than through npm packages, keeping the dependency surface minimal and the package portable across environments.
 <!-- {{/text}} -->
 
 ### Deployment Flow
 
 <!-- {{text({prompt: "Describe the deployment procedure and flow."})}} -->
 
-Deployment targets vary by preset. For Cloudflare Workers projects using the `edge` preset, deployment configuration is read from `wrangler.toml`, `wrangler.json`, or `wrangler.jsonc`. Entry points are resolved from `cfg.main`, `cfg.build.upload.main`, and route bindings (`cfg.routes` / `cfg.route`). Runtime compatibility constraints — including `compatibility_date`, `compatibility_flags`, and `node_compat` — are also extracted to document the exact runtime requirements before deployment. For CI-driven workflows, the `ci` preset parses GitHub Actions YAML files to expose pipeline triggers, branch filters, job definitions, runner types, step counts, action dependencies, and referenced secrets and environment variables.
+Edge deployments target Cloudflare Workers and are driven by `wrangler.toml` or `wrangler.json` configuration files. The `edge/data/runtime.js` data source extracts the worker entry point (`main` field or `build.upload.main`), registered routes, `compatibility_date`, `compatibility_flags`, and `node_compat` constraints from these files. Deployments are triggered by pushing the configured entry point through the Wrangler CLI, with route bindings and compatibility settings applied as declared. R2 bucket bindings used during deployment are read from the same wrangler config via `r2_buckets` entries, mapping bucket names to Worker binding identifiers.
 <!-- {{/text}} -->
 
 ### Operations Flow
 
 <!-- {{text({prompt: "Describe the operations procedures."})}} -->
 
-Operational visibility is provided through structured data tables generated at documentation build time. Pipeline operations are surfaced via three views: an overview table (name, file, triggers, job count), a jobs table (pipeline, job, runner, steps, action dependencies), and an environment table (secrets and environment variable references per pipeline). Storage operations for Cloudflare R2 are covered by a bucket binding table (bucket name, binding, preview bucket) and an access pattern table. For CakePHP 2.x deployments, Docker infrastructure is intentionally stubbed out via a null-returning placeholder, reflecting that containerised deployment is not applicable to that preset. PostgreSQL presence is identified statically and surfaced as a single-entry reference table.
+Operational monitoring and automation are handled through two main mechanisms. CI/CD pipelines defined as GitHub Actions workflows (`.github/workflows/*.yml`) are parsed to expose trigger conditions (push, pull request, schedule), runner environments, step counts, and referenced Actions. Secrets and environment variable references (`${{ secrets.X }}`, `${{ env.X }}`) are catalogued automatically to support access-control auditing. For storage operations, Cloudflare R2 bucket configurations (name, binding, preview bucket) are tracked via wrangler config, and generic storage sources aggregate bucket lists across providers using enriched analysis data for operational visibility.
 <!-- {{/text}} -->
 
 ---
