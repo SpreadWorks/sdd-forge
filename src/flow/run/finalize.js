@@ -15,11 +15,11 @@ import { ok, fail, output } from "../../lib/flow-envelope.js";
 import path from "path";
 
 const STEP_MAP = {
-  3: "commit",
-  4: "merge",
-  5: "sync",
-  6: "cleanup",
-  7: "record",
+  1: "commit",
+  2: "merge",
+  3: "sync",
+  4: "cleanup",
+  5: "record",
 };
 
 function main() {
@@ -39,7 +39,7 @@ function main() {
         "",
         "Options:",
         "  --mode <all|select>           Mode (required)",
-        "  --steps <3,4,5,...>           Comma-separated step numbers (select mode)",
+        "  --steps <1,2,3,...>           Comma-separated step numbers (select mode)",
         "  --merge-strategy <strategy>   squash or pr (default: auto-detect)",
         "  --message <msg>               Custom commit message",
         "  --dry-run                     Preview only",
@@ -61,7 +61,7 @@ function main() {
   // Determine which steps to execute
   let activeSteps;
   if (cli.mode === "all") {
-    activeSteps = new Set([3, 4, 5, 6, 7]);
+    activeSteps = new Set([1, 2, 3, 4, 5]);
   } else {
     if (!cli.steps) {
       output(fail("run", "finalize", "MISSING_STEPS", "--steps required when mode is 'select'"));
@@ -69,7 +69,7 @@ function main() {
     }
     activeSteps = new Set(cli.steps.split(",").map(Number).filter((n) => STEP_MAP[n]));
     if (activeSteps.size === 0) {
-      output(fail("run", "finalize", "INVALID_STEPS", "no valid steps. valid: 3,4,5,6,7"));
+      output(fail("run", "finalize", "INVALID_STEPS", "no valid steps. valid: 1,2,3,4,5"));
       return;
     }
   }
@@ -91,8 +91,8 @@ function main() {
   const { mainRepoPath } = resolveWorktreePaths(root, state);
   const results = {};
 
-  // Step 3: commit
-  if (activeSteps.has(3)) {
+  // Step 1: commit
+  if (activeSteps.has(1)) {
     if (cli.dryRun) {
       results.commit = { status: "dry-run", message: cli.message || "(auto)" };
     } else {
@@ -111,8 +111,8 @@ function main() {
     }
   }
 
-  // Step 4: merge
-  if (activeSteps.has(4)) {
+  // Step 2: merge
+  if (activeSteps.has(2)) {
     if (cli.dryRun) {
       results.merge = { status: "dry-run", strategy: mergeStrategy };
     } else {
@@ -135,8 +135,8 @@ function main() {
     }
   }
 
-  // Step 5: sync (docs generation on main branch)
-  if (activeSteps.has(5)) {
+  // Step 3: sync (docs generation on main branch)
+  if (activeSteps.has(3)) {
     // Skip sync if merge was PR route (not yet merged)
     const wasPr = results.merge?.strategy === "pr" || mergeStrategy === "pr";
     if (wasPr) {
@@ -170,8 +170,8 @@ function main() {
     }
   }
 
-  // Step 6: cleanup
-  if (activeSteps.has(6)) {
+  // Step 4: cleanup
+  if (activeSteps.has(4)) {
     if (cli.dryRun) {
       results.cleanup = { status: "dry-run" };
     } else {
@@ -185,8 +185,8 @@ function main() {
     }
   }
 
-  // Step 7: record (placeholder)
-  if (activeSteps.has(7)) {
+  // Step 5: record (placeholder)
+  if (activeSteps.has(5)) {
     results.record = { status: cli.dryRun ? "dry-run" : "done" };
   }
 

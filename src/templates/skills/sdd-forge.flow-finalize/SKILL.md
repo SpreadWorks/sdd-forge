@@ -41,42 +41,39 @@ Available status values: `pending`, `in_progress`, `done`, `skipped`
 2. Present mode choice.
    - The mode was already selected in Step 0.
 
-3. Run spec retrospective (before commit).
-   - Run `sdd-forge flow run retro --force`.
-   - If `ok: true`: display the summary (rate, done/partial/not_done counts).
-   - If `ok: false`: display the error to the user and continue (retro failure does not block finalize).
-
-4. **If "all"** (Option 1):
+3. **If "all"** (Option 1):
    - Run `sdd-forge flow run finalize --mode all`.
    - Merge strategy is auto-detected: `commands.gh=enable` AND `gh` available → PR, else squash merge.
    - Display the JSON result to the user.
-   - If the result shows sync was skipped (PR route), display the reminder from step 6.
+   - If the result shows sync was skipped (PR route), display the reminder from step 5.
 
-5. **If "select"** (Option 2):
+4. **If "select"** (Option 2):
    - Run `sdd-forge flow get prompt finalize.steps` and present the step choices. Wait for user selection.
-   - If the user selected the merge step (4), ask if they want to override the auto-detected merge strategy:
-     - Run `sdd-forge flow get prompt finalize.merge-strategy` and present the choices.
-     - If the user chooses, pass `--merge-strategy <choice>` to finalize.
-     - If the user does not override, auto-detection is used.
+   - If the user selected the merge step (2), run `sdd-forge flow get prompt finalize.merge-strategy` and present the choices.
    - Run `sdd-forge flow run finalize --mode select --steps <selected> [--merge-strategy <choice>]`.
    - Display the JSON result to the user.
 
-6. Post-finalize.
+5. Post-finalize.
    - If the result shows sync was skipped (PR route), display:
      ```
      PR マージ後に以下を実行してください:
      - ドキュメントの同期: sdd-forge build または /sdd-forge.flow-sync
      ```
 
+6. Run spec retrospective (after finalize).
+   - Run `sdd-forge flow run retro --force`.
+   - If `ok: true`: display the summary (rate, done/partial/not_done counts).
+   - If `ok: false`: display the error to the user and continue (retro failure does not block).
+
 ## Worktree Mode
 
 <!-- include("@templates/partials/worktree-mode.md") -->
 - `sdd-forge flow run finalize` handles worktree detection, merge, and cleanup internally.
-- Docs sync (step 5) runs on the main repository after merge, before worktree cleanup.
+- Docs sync (step 3) runs on the main repository after merge, before worktree cleanup.
 
 ## Hard Stops
 
-- Do not run `sdd-forge flow run finalize` if resolve-context reports `dirty: true`.
+- Do not run `sdd-forge flow run finalize` if resolve-context reports `dirty: true` and commit step is not included.
 - Do not proceed to next step without user confirmation.
 
 ## Commands

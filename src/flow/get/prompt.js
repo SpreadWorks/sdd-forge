@@ -135,14 +135,14 @@ const PROMPTS_BY_LANG = {
     },
     "finalize.steps": {
       phase: "finalize", step: "steps",
-      description: "実行するステップを選択してください。番号をカンマ区切りで入力（例: 3,4,5）",
+      description: "実行するステップを選択してください。番号をカンマ区切りで入力（例: 1,2,3）",
       recommendation: null,
       choices: [
-        { id: 3, label: "コミット", description: "", recommended: false },
-        { id: 4, label: "マージ / PR 作成", description: "", recommended: false },
-        { id: 5, label: "ドキュメント同期", description: "", recommended: false },
-        { id: 6, label: "ブランチ削除", description: "", recommended: false },
-        { id: 7, label: "作業の記録を保存", description: "", recommended: false },
+        { id: 1, label: "コミット", description: "", recommended: false },
+        { id: 2, label: "マージ / PR 作成", description: "", recommended: false },
+        { id: 3, label: "ドキュメント同期", description: "", recommended: false },
+        { id: 4, label: "ブランチ削除", description: "", recommended: false },
+        { id: 5, label: "作業の記録を保存", description: "", recommended: false },
       ],
     },
     "finalize.merge-strategy": {
@@ -281,14 +281,14 @@ const PROMPTS_BY_LANG = {
     },
     "finalize.steps": {
       phase: "finalize", step: "steps",
-      description: "Select steps to execute. Enter numbers separated by commas (e.g., 3,4,5).",
+      description: "Select steps to execute. Enter numbers separated by commas (e.g., 1,2,3).",
       recommendation: null,
       choices: [
-        { id: 3, label: "Commit", description: "", recommended: false },
-        { id: 4, label: "Merge / PR creation", description: "", recommended: false },
-        { id: 5, label: "Documentation sync", description: "", recommended: false },
-        { id: 6, label: "Branch cleanup", description: "", recommended: false },
-        { id: 7, label: "Save work record", description: "", recommended: false },
+        { id: 1, label: "Commit", description: "", recommended: false },
+        { id: 2, label: "Merge / PR creation", description: "", recommended: false },
+        { id: 3, label: "Documentation sync", description: "", recommended: false },
+        { id: 4, label: "Branch cleanup", description: "", recommended: false },
+        { id: 5, label: "Save work record", description: "", recommended: false },
       ],
     },
     "finalize.merge-strategy": {
