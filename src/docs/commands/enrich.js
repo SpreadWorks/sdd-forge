@@ -18,6 +18,7 @@ import { resolveAgent, callAgentAsync, DEFAULT_AGENT_TIMEOUT, resolveWorkDir } f
 import { resolveCommandContext, loadFullAnalysis } from "../lib/command-context.js";
 import { resolveChaptersOrder } from "../lib/template-merger.js";
 import { buildCategoryMapFromDocs, mergeChapters } from "../lib/chapter-resolver.js";
+import { globToRegex } from "../lib/scanner.js";
 import { createLogger } from "../../lib/progress.js";
 import { translate } from "../../lib/i18n.js";
 import { extractBalancedJson, fixUnescapedQuotes } from "../../lib/json-parse.js";
@@ -73,6 +74,23 @@ function collectEntries(analysis) {
     }
   }
   return entries;
+}
+
+/**
+ * docs.exclude パターンでエントリをフィルタする。
+ * マッチしたエントリを除外し、残りを返す。
+ *
+ * @param {Array} entries - collectEntries() の結果
+ * @param {string[]|undefined} excludePatterns - glob パターン配列
+ * @returns {Array} フィルタ済みエントリ
+ */
+function filterByDocsExclude(entries, excludePatterns) {
+  if (!excludePatterns?.length) return entries;
+  const regexes = excludePatterns.map((p) => globToRegex(p));
+  return entries.filter((e) => {
+    if (!e.file) return true;
+    return !regexes.some((re) => re.test(e.file));
+  });
 }
 
 function entryKey(category, index) {
@@ -455,14 +473,22 @@ async function main(ctx) {
     }
   }
 
-  const pending = allEntries.filter((e) => !e.enriched);
+  // Filter by docs.exclude patterns
+  const docsExclude = config?.docs?.exclude;
+  const filtered = filterByDocsExclude(allEntries, docsExclude);
+  const excludedCount = allEntries.length - filtered.length;
+  if (excludedCount > 0) {
+    logger.log(`excluded ${excludedCount} entries by docs.exclude`);
+  }
+
+  const pending = filtered.filter((e) => !e.enriched);
 
   if (pending.length === 0) {
     logger.log("all entries already enriched, skipping.");
     return;
   }
 
-  const skipped = allEntries.length - pending.length;
+  const skipped = filtered.length - pending.length;
   if (skipped > 0) {
     logger.log(`resuming: ${skipped} already enriched, ${pending.length} remaining`);
   } else {
@@ -554,6 +580,7 @@ export {
   parseEnrichResponse,
   mergeEnrichment,
   collectEntries,
+  filterByDocsExclude,
   splitIntoBatches,
   getRetryCount,
   enrichBatchWithRetry,

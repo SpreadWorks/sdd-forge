@@ -1,0 +1,115 @@
+{
+  "spec": "specs/105-separate-scan-targets-from-documentation-targets/spec.md",
+  "baseBranch": "development",
+  "featureBranch": "feature/105-separate-scan-targets-from-documentation-targets",
+  "steps": [
+    {
+      "id": "approach",
+      "status": "done"
+    },
+    {
+      "id": "branch",
+      "status": "done"
+    },
+    {
+      "id": "prepare-spec",
+      "status": "done"
+    },
+    {
+      "id": "draft",
+      "status": "skipped"
+    },
+    {
+      "id": "spec",
+      "status": "done"
+    },
+    {
+      "id": "gate",
+      "status": "done"
+    },
+    {
+      "id": "approval",
+      "status": "done"
+    },
+    {
+      "id": "test",
+      "status": "done"
+    },
+    {
+      "id": "implement",
+      "status": "done"
+    },
+    {
+      "id": "review",
+      "status": "done"
+    },
+    {
+      "id": "finalize",
+      "status": "done"
+    },
+    {
+      "id": "commit",
+      "status": "pending"
+    },
+    {
+      "id": "push",
+      "status": "pending"
+    },
+    {
+      "id": "merge",
+      "status": "pending"
+    },
+    {
+      "id": "pr-create",
+      "status": "pending"
+    },
+    {
+      "id": "branch-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "pr-merge",
+      "status": "pending"
+    },
+    {
+      "id": "sync-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "docs-update",
+      "status": "pending"
+    },
+    {
+      "id": "docs-review",
+      "status": "pending"
+    },
+    {
+      "id": "docs-commit",
+      "status": "pending"
+    }
+  ],
+  "requirements": [
+    {
+      "desc": "R1: docs.exclude field",
+      "status": "done"
+    },
+    {
+      "desc": "R2: types.js validation",
+      "status": "done"
+    },
+    {
+      "desc": "R3: globToRegex sharing",
+      "status": "done"
+    },
+    {
+      "desc": "R4: enrich filter",
+      "status": "done"
+    }
+  ],
+  "worktree": true,
+  "issue": 35,
+  "request": "Issue #35: scan対象とドキュメント対象の分離（docs.exclude の導入）",
+  "notes": [
+    "approach: 直接仕様書作成。議論済みの設計をそのまま spec 化。worktree mode, base=development"
+  ]
+}

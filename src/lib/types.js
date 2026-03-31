@@ -138,6 +138,15 @@ export function validateConfig(raw) {
         }
       }
     }
+
+    // docs.exclude (省略可)
+    if (raw.docs.exclude != null) {
+      if (!Array.isArray(raw.docs.exclude)) {
+        errors.push("'docs.exclude' must be an array of glob pattern strings");
+      } else if (raw.docs.exclude.some((e) => typeof e !== "string")) {
+        errors.push("'docs.exclude' entries must be strings");
+      }
+    }
   }
 
   // lang (required)
