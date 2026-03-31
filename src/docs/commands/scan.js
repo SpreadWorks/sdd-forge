@@ -408,6 +408,35 @@ async function main(ctx) {
     logger.verbose(`${name}: ${entries.length} entries`);
   }
 
+  // 6b. Populate usedBy from reverse import lookup
+  const fileToEntries = new Map();
+  for (const [, { entries }] of categoryEntries) {
+    for (const entry of entries) {
+      if (entry.file) {
+        if (!fileToEntries.has(entry.file)) fileToEntries.set(entry.file, []);
+        fileToEntries.get(entry.file).push(entry);
+      }
+    }
+  }
+  for (const [, { entries }] of categoryEntries) {
+    for (const entry of entries) {
+      if (!Array.isArray(entry.imports)) continue;
+      for (const imp of entry.imports) {
+        // Match import path to known files (resolve relative paths)
+        for (const knownFile of fileToEntries.keys()) {
+          if (knownFile.endsWith(imp) || knownFile.endsWith(imp.replace(/^\.\//, ""))) {
+            for (const target of fileToEntries.get(knownFile)) {
+              if (!target.usedBy) target.usedBy = [];
+              if (!target.usedBy.includes(entry.file)) {
+                target.usedBy.push(entry.file);
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
   // Preserve enrichedAt if existing entries had enrichment
   if (existing?.enrichedAt) {
     const hasEnrichedEntries = [...categoryEntries.values()].some(

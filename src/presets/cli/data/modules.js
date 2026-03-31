@@ -5,14 +5,20 @@
  * Scans source files and extracts classes/functions.
  */
 
+import fs from "fs";
 import { DataSource } from "../../../docs/lib/data-source.js";
 import { Scannable } from "../../../docs/lib/scan-source.js";
 import { AnalysisEntry } from "../../../docs/lib/analysis-entry.js";
 import { parseFile } from "../../../docs/lib/scanner.js";
+import { getLangHandler } from "../../../docs/lib/lang-factory.js";
 
 export class ModuleEntry extends AnalysisEntry {
   className = null;
   methods = null;
+  imports = null;
+  exports = null;
+  extends = null;
+  usedBy = null;
 
   static summary = {
     totalMethods: { field: "methods", aggregate: "count" },
@@ -31,6 +37,16 @@ export default class ModulesSource extends Scannable(DataSource) {
     const parsed = parseFile(absPath);
     entry.className = parsed.className;
     entry.methods = parsed.methods;
+    entry.extends = parsed.parentClass || null;
+
+    // Extract imports/exports via language handler
+    const handler = getLangHandler(absPath);
+    if (handler) {
+      const content = parsed.content || fs.readFileSync(absPath, "utf8");
+      if (handler.extractImports) entry.imports = handler.extractImports(content);
+      if (handler.extractExports) entry.exports = handler.extractExports(content);
+    }
+
     return entry;
   }
 
