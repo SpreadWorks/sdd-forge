@@ -126,11 +126,11 @@ See the [configuration reference](docs/configuration.md) for details.
 <!-- {{data("cli.docs.chapters", {header: "", labels: "Chapter|Summary", ignoreError: true})}} -->
 | Chapter | Summary |
 | --- | --- |
-| [Tool Overview and Architecture](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/overview.md) | This chapter introduces sdd-forge, a CLI tool that automates documentation generation from source code analysis and p… |
-| [Technology Stack and Operations](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/stack_and_ops.md) | This chapter covers the technology stack and operational tooling supported by sdd-forge, spanning a Node.js (ES modul… |
-| [Project Structure](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/project_structure.md) |  |
-| [CLI Command Reference](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/cli_commands.md) | sdd-forge exposes 19 named commands organized into four groups: top-level commands (help, setup, upgrade), the docs n… |
-| [Configuration and Customization](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/configuration.md) | sdd-forge reads project configuration from a single JSON file (.sdd-forge/config.json) that controls documentation ge… |
+| [Tool Overview and Architecture](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/overview.md) | This chapter introduces sdd-forge, a CLI tool that automates project documentation generation through source code ana… |
+| [Technology Stack and Operations](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/stack_and_ops.md) | This chapter documents the runtime environment and operational tooling that sdd-forge targets through its preset Data… |
+| [Project Structure](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/project_structure.md) | This chapter describes the physical layout of the sdd-forge source tree, which is organized into five major directori… |
+| [CLI Command Reference](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/cli_commands.md) | sdd-forge exposes 20 commands organized into three structural layers: four independent top-level commands (help, setu… |
+| [Configuration and Customization](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/configuration.md) | sdd-forge is configured through a single .sdd-forge/config.json file that controls documentation generation, output l… |
 <!-- {{/data}} -->
 
 ## License

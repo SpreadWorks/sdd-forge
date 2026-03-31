@@ -11,7 +11,7 @@
 
 <!-- {{text({prompt: "Write a 1-2 sentence overview of this chapter. Include the programming language, framework, and key tool versions."})}} -->
 
-This chapter covers the technology stack and operational tooling supported by sdd-forge, spanning a Node.js (ES modules) core with preset-level integrations for GitHub Actions CI/CD pipelines, Cloudflare Workers edge runtime (wrangler), Cloudflare R2 object storage, and PostgreSQL databases.
+This chapter documents the runtime environment and operational tooling that sdd-forge targets through its preset DataSource implementations, covering Node.js as the execution platform, GitHub Actions for CI/CD pipelines, Cloudflare Workers and R2 for edge deployment and storage, and PostgreSQL as a supported database backend.
 <!-- {{/text}} -->
 
 ## Content
@@ -22,33 +22,33 @@ This chapter covers the technology stack and operational tooling supported by sd
 
 | Category | Technology | Notes |
 |---|---|---|
-| Runtime | Node.js (ES modules) | No external dependencies; built-in modules only |
-| CI/CD | GitHub Actions | Workflow YAML files under `.github/workflows/` |
-| Edge Runtime | Cloudflare Workers | Configured via `wrangler.toml` / `wrangler.json` / `wrangler.jsonc` |
-| Object Storage | Cloudflare R2 | R2 bucket bindings declared in wrangler config |
-| Database | PostgreSQL | Static configuration; no ORM layer |
-| PHP Framework | CakePHP 2.x | Supported via dedicated preset; Docker integration is a no-op stub |
+| Runtime | Node.js | ES modules; no external dependencies |
+| CI/CD | GitHub Actions | Workflow YAML scanning via `PipelinesSource` (`.github/workflows/`) |
+| Edge Runtime | Cloudflare Workers | Configuration parsed from `wrangler.toml` / `wrangler.json` / `wrangler.jsonc` |
+| Object Storage | Cloudflare R2 | Bucket bindings extracted from wrangler config via `R2StorageSource` |
+| Database | PostgreSQL | Static metadata surfaced through `DatabaseSource` |
+| Container | Docker | Stub DataSource for CakePHP 2.x preset; returns null (not applicable to that stack) |
 <!-- {{/text}} -->
 
 ### Dependencies
 
 <!-- {{text({prompt: "Describe the project's dependency management approach."})}} -->
 
-The project enforces a zero-external-dependency policy: only Node.js built-in modules are permitted. There is no `node_modules` install step for the core package. Preset-level integrations (CI pipelines, edge runtime, storage) are configured through their respective platform tooling files (`wrangler.toml`, GitHub Actions YAML) rather than through npm packages, keeping the dependency surface minimal and the package portable across environments.
+The project enforces a strict zero-external-dependency policy: only Node.js built-in modules are used throughout `src/`. No `package.json` dependency entries are added, and no third-party libraries are imported. TOML parsing for wrangler configuration files is handled inline using custom regex-based logic rather than a dedicated YAML/TOML library. This constraint keeps the npm package lightweight and eliminates supply-chain risk for downstream consumers.
 <!-- {{/text}} -->
 
 ### Deployment Flow
 
 <!-- {{text({prompt: "Describe the deployment procedure and flow."})}} -->
 
-Edge deployments target Cloudflare Workers and are driven by `wrangler.toml` or `wrangler.json` configuration files. The `edge/data/runtime.js` data source extracts the worker entry point (`main` field or `build.upload.main`), registered routes, `compatibility_date`, `compatibility_flags`, and `node_compat` constraints from these files. Deployments are triggered by pushing the configured entry point through the Wrangler CLI, with route bindings and compatibility settings applied as declared. R2 bucket bindings used during deployment are read from the same wrangler config via `r2_buckets` entries, mapping bucket names to Worker binding identifiers.
+Edge deployments targeting Cloudflare Workers are configured via `wrangler.toml`, `wrangler.json`, or `wrangler.jsonc` files at the project root. sdd-forge's `EdgeRuntimeSource` parses these files to extract entry points (`main`, `build.upload.main`), route bindings (`routes` / `route`), and runtime constraints (`compatibility_date`, `compatibility_flags`, `node_compat`). CI/CD pipelines defined as GitHub Actions workflows under `.github/workflows/` are scanned by `PipelinesSource`, which captures triggers (push, pull_request, schedule cron), per-job runner environments, step counts, and referenced reusable actions. The resulting tables give a consolidated view of how code flows from repository to production.
 <!-- {{/text}} -->
 
 ### Operations Flow
 
 <!-- {{text({prompt: "Describe the operations procedures."})}} -->
 
-Operational monitoring and automation are handled through two main mechanisms. CI/CD pipelines defined as GitHub Actions workflows (`.github/workflows/*.yml`) are parsed to expose trigger conditions (push, pull request, schedule), runner environments, step counts, and referenced Actions. Secrets and environment variable references (`${{ secrets.X }}`, `${{ env.X }}`) are catalogued automatically to support access-control auditing. For storage operations, Cloudflare R2 bucket configurations (name, binding, preview bucket) are tracked via wrangler config, and generic storage sources aggregate bucket lists across providers using enriched analysis data for operational visibility.
+Operational visibility is provided through dedicated DataSource implementations for each infrastructure layer. `PipelinesSource` surfaces secrets and environment variable references (via `${{ secrets.X }}` and `${{ env.X }}` patterns) across all GitHub Actions workflows, enabling a quick audit of credential exposure. `R2StorageSource` lists R2 bucket names, binding identifiers, and preview bucket names sourced from wrangler configuration, and exposes an access-pattern table derived from enriched analysis. `DatabaseSource` provides a static info table confirming the PostgreSQL backend. For projects where a category is not applicable (e.g., Docker on CakePHP 2.x), the corresponding DataSource returns `null`, suppressing the section cleanly without error.
 <!-- {{/text}} -->
 
 ---
