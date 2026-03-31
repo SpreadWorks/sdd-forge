@@ -1,0 +1,116 @@
+{
+  "spec": "specs/112-fix-finalize-worktree-cwd/spec.md",
+  "baseBranch": "development",
+  "featureBranch": "feature/112-fix-finalize-worktree-cwd",
+  "steps": [
+    {
+      "id": "approach",
+      "status": "done"
+    },
+    {
+      "id": "branch",
+      "status": "done"
+    },
+    {
+      "id": "prepare-spec",
+      "status": "done"
+    },
+    {
+      "id": "draft",
+      "status": "done"
+    },
+    {
+      "id": "spec",
+      "status": "done"
+    },
+    {
+      "id": "gate",
+      "status": "done"
+    },
+    {
+      "id": "approval",
+      "status": "done"
+    },
+    {
+      "id": "test",
+      "status": "done"
+    },
+    {
+      "id": "implement",
+      "status": "done"
+    },
+    {
+      "id": "review",
+      "status": "done"
+    },
+    {
+      "id": "finalize",
+      "status": "done"
+    },
+    {
+      "id": "commit",
+      "status": "pending"
+    },
+    {
+      "id": "push",
+      "status": "pending"
+    },
+    {
+      "id": "merge",
+      "status": "pending"
+    },
+    {
+      "id": "pr-create",
+      "status": "pending"
+    },
+    {
+      "id": "branch-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "pr-merge",
+      "status": "pending"
+    },
+    {
+      "id": "sync-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "docs-update",
+      "status": "pending"
+    },
+    {
+      "id": "docs-review",
+      "status": "pending"
+    },
+    {
+      "id": "docs-commit",
+      "status": "pending"
+    }
+  ],
+  "requirements": [
+    {
+      "desc": "SKILL.md からメインリポジトリ実行指示を削除",
+      "status": "done"
+    },
+    {
+      "desc": "worktree内実行+完了後cd復帰の手順に変更",
+      "status": "done"
+    },
+    {
+      "desc": "フォアグラウンド実行指示を追加",
+      "status": "done"
+    },
+    {
+      "desc": "既存テストがパス",
+      "status": "done"
+    }
+  ],
+  "worktree": true,
+  "issue": 48,
+  "request": "Issue #48: auto mode finalize の worktree cwd 問題を修正",
+  "notes": [
+    "approach: Q&A(auto), work-env: worktree, base: development"
+  ],
+  "autoApprove": true
+}
