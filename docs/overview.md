@@ -8,7 +8,7 @@
 
 <!-- {{text({prompt: "Write a 1-2 sentence overview of this chapter. Include the tool's purpose, the problem it solves, and its primary use cases."})}} -->
 
-This chapter introduces a CLI tool that combines source-code-based documentation generation with a Spec-Driven Development workflow. It helps teams keep project documentation, navigation, and package metadata connected to the codebase and is used to generate docs, expose project information, and organize development flow.
+This chapter introduces `sdd-forge`, a CLI tool for source-code-based documentation generation and Spec-Driven Development workflows. It is used to generate documentation structure and navigation from project files, expose package metadata to templates, and support documentation and workflow commands such as build, upgrade, and flow execution.
 <!-- {{/text}} -->
 
 ## Content
@@ -17,13 +17,7 @@ This chapter introduces a CLI tool that combines source-code-based documentation
 
 <!-- {{text({prompt: "Describe the problem this CLI tool solves and its target users. Derive the purpose from package.json and README."})}} -->
 
-This CLI tool is intended for projects that need documentation generated from source analysis and a structured Spec-Driven Development workflow.
-
-Based on the available project context, it targets developers and maintainers who need to:
-- generate documentation content from analyzed source code and project metadata
-- build navigation such as chapter lists, language switchers, and previous/next links
-- surface package information such as project name, version, and scripts in documentation
-- work with a documented development process centered on specifications and generated docs
+`sdd-forge` is designed for projects that want documentation content and navigation to be derived from the codebase and project configuration instead of being maintained entirely by hand. The analyzed sources show that it targets maintainers and contributors who need generated chapter listings, language switching, repository links, package metadata in templates, and workflow support for Spec-Driven Development.
 <!-- {{/text}} -->
 
 ### Architecture Overview
@@ -32,41 +26,29 @@ Based on the available project context, it targets developers and maintainers wh
 
 ```mermaid
 flowchart TD
-  A[User runs CLI workflow] --> B[Project root and docs context]
-  B --> C[Documentation data sources]
-  B --> D[Project metadata source]
-  B --> E[Package analysis source]
+  A[CLI Entry Point: sdd-forge] --> B[Subcommand Dispatch]
+  B --> C[build]
+  B --> D[flow]
+  B --> E[upgrade]
 
-  C --> C1[DocsSource.init]
-  C1 --> C2[Read docs directory]
-  C1 --> C3[Read .sdd-forge/config.json]
-  C1 --> C4[Read package.json repository]
-  C1 --> C5[Read locale UI files]
+  C --> F[Load project root and docs configuration]
+  D --> F
+  E --> F
 
-  C2 --> C6[Build chapter list]
-  C3 --> C7[Detect languages and default language]
-  C4 --> C8[Build relative or repository links]
-  C5 --> C9[Load language display names]
+  F --> G[Scan project files and docs directory]
+  G --> H[Load package metadata]
+  G --> I[Resolve chapter files]
+  G --> J[Read localized UI labels]
 
-  C6 --> F[Markdown navigation output]
-  C7 --> F
-  C8 --> F
-  C9 --> F
+  H --> K[ProjectSource]
+  I --> L[DocsSource]
+  J --> L
 
-  D --> D1[ProjectSource]
-  D1 --> D2[Load package.json]
-  D2 --> D3[Expose name description version scripts]
-  D3 --> G[Markdown tables and values]
+  K --> M[Fill {{data}} directives]
+  L --> M
+  M --> N[Generate Markdown tables, links, navigation, and metadata output]
 
-  E --> E1[PackageSource scan]
-  E1 --> E2[Match package.json or composer.json]
-  E2 --> E3[Extract dependencies and scripts]
-  E3 --> H[Analysis entries for templates]
-
-  F --> I[Documentation templates]
-  G --> I
-  H --> I
-  I --> J[Generated markdown documentation]
+  E --> O[Update skills and template-derived project files]
 ```
 <!-- {{/text}} -->
 
@@ -76,28 +58,28 @@ flowchart TD
 
 | Concept | Meaning |
 | --- | --- |
-| DataSource | A provider that resolves values or markdown fragments for documentation templates. |
-| DocsSource | A documentation-specific data source that generates language switchers, chapter tables, and previous/next navigation links. |
-| ProjectSource | A data source that reads `package.json` and exposes project-level metadata such as name, description, version, and scripts. |
-| PackageSource | A scan-based source that parses `package.json` or `composer.json` and records dependencies and scripts as analysis data. |
-| Analysis entry | A structured record produced during scanning and then consumed by documentation templates. |
-| Chapter list | An ordered set of documentation files used to build overview tables and navigation between chapters. |
-| Language switcher | A generated set of links that lets readers move between localized versions of the same document. |
-| Relative vs. absolute links | Two link modes used by docs generation: local relative paths or repository `blob/main` URLs. |
-| Template directive | A placeholder such as `{{data}}` or `{{text}}` that inserts generated content into markdown files. |
-| Markdown table output | A formatted table generated from structured project or documentation data, such as scripts or chapter summaries. |
+| DataSource | A documentation data provider that resolves values for template directives and can format markdown output such as tables. |
+| DocsSource | A documentation-specific data source that builds language switchers, chapter tables, and previous/next navigation links from the docs directory and repository metadata. |
+| ProjectSource | A package-metadata data source that exposes the project name, description, version, and npm scripts from `package.json`. |
+| Directive | A placeholder such as `{{data}}` or `{{text}}` that is replaced with generated content during documentation processing. |
+| Chapter files | Ordered markdown files in the docs directory that are scanned to extract titles, summaries, and navigation relationships. |
+| Language switcher | A generated set of links for multilingual documentation that highlights the current language and links to translated equivalents. |
+| Repository URL resolution | Logic that converts the `repository` field in `package.json` into browser-friendly links for generated documentation. |
+| Analysis entry | A structured record produced while scanning files so template data sources can expose extracted metadata to documentation templates. |
+| Scannable source | A data source that matches supported files such as `package.json` or `composer.json` and parses them into analysis entries. |
+| Navigation | Generated previous/next chapter links based on the configured chapter order and extracted chapter titles. |
 <!-- {{/text}} -->
 
 ### Typical Usage Flow
 
 <!-- {{text({prompt: "Describe the typical steps from installation to first output in step format. Derive the steps from help output and command definitions in the source code."})}} -->
 
-1. Prepare a project that contains a documentation directory, package metadata, and the CLI configuration used by the tool.
-2. Ensure the project metadata is available in `package.json`, because the tool reads values such as repository URL, name, description, version, and scripts from it.
-3. Configure documentation settings in `.sdd-forge/config.json` when the project uses multiple languages, so language detection and switcher generation can work.
-4. Place chapter files in the docs directory so the tool can discover them, extract titles and descriptions, and build navigation.
-5. Run the documentation generation workflow so template directives can call the data sources and resolve markdown content.
-6. Review the generated output, which can include chapter tables, language switchers, previous/next links, and package script tables.
+1. Open the project at its root so the tool can access `package.json`, `.sdd-forge/config.json`, and the docs directory.
+2. Ensure the documentation structure and configuration are present, including chapter files and any configured documentation languages.
+3. Run `sdd-forge build` to scan the project and docs files, resolve repository metadata, and fill documentation directives.
+4. Review the generated markdown output, which can include chapter tables, language-switch links, navigation links, and package metadata such as scripts.
+5. If templates or presets were changed, run `sdd-forge upgrade` so project skills and generated settings are refreshed from the updated templates.
+6. For workflow-driven authoring, use `sdd-forge flow --request "<request>"` to start the Spec-Driven Development flow from a user request.
 <!-- {{/text}} -->
 
 ---

@@ -11,7 +11,7 @@
 
 <!-- {{text({prompt: "Write a 1-2 sentence overview of this chapter. Include the number of major directories and their roles."})}} -->
 
-This chapter covers five major directory areas: `src` for top-level CLI entry points, `src/docs` for documentation commands and supporting data, `src/flow` for Spec-Driven Development workflow commands and state handling, `src/lib` for shared core libraries, and `src/presets` for preset-specific data sources and test fixtures. The largest area is `src/presets`, which groups built-in preset implementations and their tests, while the other directories provide the CLI, documentation, workflow, and reusable infrastructure those presets rely on.
+The project structure is organized around five major directory areas: `src` for CLI entry points, `src/docs` for documentation generation commands and helpers, `src/flow` for Spec-Driven Development workflow commands, `src/lib` for shared runtime and preset utilities, and `src/presets` for preset-specific data sources and their test fixtures. The largest area is `src/presets`, which combines built-in preset logic with acceptance and unit test coverage across multiple target architectures.
 <!-- {{/text}} -->
 
 ## Content
@@ -103,12 +103,12 @@ src/presets/workers/tests/unit/    (test)
 
 | Class Name | File Path | Responsibility |
 | --- | --- | --- |
-| — | `src/lib/agents-md.js` | Loads the SDD section template for `AGENTS.md` generation and falls back from the requested locale to English when needed. |
-| — | `src/lib/presets.js` | Discovers preset manifests, resolves parent inheritance chains, and provides shared preset lookup helpers. |
-| `ModulesSource` | `src/presets/cli/data/modules.js` | Scans JavaScript-family source files, captures class and method metadata, and renders a module listing table for CLI presets. |
-| `MonorepoSource` | `src/presets/monorepo/data/monorepo.js` | Generates target-app badge text for documentation chapters from monorepo configuration or enriched analysis data. |
-| `NextjsComponentsSource` | `src/presets/nextjs/data/components.js` | Scans Next.js component files, classifies them as server, client, or shared, and renders component tables. |
-| `RoutesSource` | `src/presets/nextjs/data/routes.js` | Scans Next.js App Router and Pages Router files, derives route metadata, and renders route-oriented documentation tables. |
+| — | `src/lib/agents-md.js` | Loads the SDD template for generated `AGENTS.md` files and falls back from the requested locale to English when needed. |
+| — | `src/lib/presets.js` | Discovers preset manifests, resolves parent inheritance chains, and provides safe and multi-preset lookup helpers. |
+| `ModuleEntry`, `ModulesSource` | `src/presets/cli/data/modules.js` | Scans JavaScript-family source files for class and method metadata and renders a module listing table for CLI presets. |
+| `MonorepoSource` | `src/presets/monorepo/data/monorepo.js` | Produces target-app badge text for documentation chapters from monorepo configuration or enriched analysis data. |
+| `ComponentEntry`, `NextjsComponentsSource` | `src/presets/nextjs/data/components.js` | Scans Next.js component files, classifies them as server, client, or shared, and renders component tables. |
+| `NextjsRouteEntry`, `RoutesSource` | `src/presets/nextjs/data/routes.js` | Scans Next.js App Router and Pages Router files, derives route metadata, and renders route-oriented documentation tables. |
 <!-- {{/text}} -->
 
 ---
