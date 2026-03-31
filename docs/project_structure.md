@@ -11,7 +11,7 @@
 
 <!-- {{text({prompt: "Write a 1-2 sentence overview of this chapter. Include the number of major directories and their roles."})}} -->
 
-This chapter covers 5 major directory groups: `src` for top-level CLI entry points, `src/docs` for documentation-related CLI and library code, `src/flow` for workflow commands and configuration, `src/lib` for shared library, configuration, and model utilities, and `src/presets` for preset-specific data, models, framework support, and test fixtures. The directory layout and responsibility table show that `src/presets` is the largest area, while the other directories provide the core CLI, flow, and shared-library foundation.
+This chapter describes the physical layout of the sdd-forge source tree, organized into five major top-level directories: `src/presets` (preset implementations and tests), `src/docs` (documentation generation pipeline), `src/flow` (SDD workflow engine), `src/lib` (shared utilities), and `src` (CLI entry points).
 <!-- {{/text}} -->
 
 ## Content
@@ -22,18 +22,19 @@ This chapter covers 5 major directory groups: `src` for top-level CLI entry poin
 ```
 src/    (cli)
 src/docs/commands/    (cli)
-src/docs/data/    (lib)
+src/docs/data/    (model)
 src/docs/lib/    (lib)
-src/flow/    (cli, config)
+src/docs/lib/lang/    (lib)
+src/flow/    (controller, config)
 src/flow/commands/    (cli)
-src/flow/get/    (cli)
+src/flow/get/    (lib)
 src/flow/run/    (cli)
 src/flow/set/    (cli)
-src/lib/    (lib, config, model)
-src/presets/base/data/    (lib)
+src/lib/    (lib)
+src/presets/base/data/    (model)
 src/presets/base/tests/acceptance/    (test)
-src/presets/base/tests/acceptance/fixtures/src/    (config, lib, other)
-src/presets/cakephp2/data/    (lib)
+src/presets/base/tests/acceptance/fixtures/src/    (test, lib, other)
+src/presets/cakephp2/data/    (lib, config, controller, other, model, test, view)
 src/presets/cakephp2/tests/acceptance/    (test)
 src/presets/cakephp2/tests/unit/    (test)
 src/presets/ci/data/    (lib)
@@ -43,44 +44,44 @@ src/presets/cli/tests/acceptance/fixtures/src/    (cli, config)
 src/presets/cli/tests/acceptance/fixtures/src/commands/    (cli)
 src/presets/cli/tests/acceptance/fixtures/src/lib/    (lib)
 src/presets/cli/tests/acceptance/fixtures/src/lib/rules/    (lib)
-src/presets/database/data/    (lib)
-src/presets/drizzle/data/    (lib)
+src/presets/database/data/    (model)
+src/presets/drizzle/data/    (model)
 src/presets/drizzle/tests/unit/    (test)
-src/presets/edge/data/    (lib)
-src/presets/graphql/data/    (lib)
+src/presets/edge/data/    (config)
+src/presets/graphql/data/    (model)
 src/presets/graphql/tests/unit/    (test)
 src/presets/hono/data/    (middleware)
 src/presets/hono/tests/unit/    (test)
 src/presets/js-webapp/tests/acceptance/    (test)
 src/presets/js-webapp/tests/acceptance/fixtures/src/    (config, lib, other)
-src/presets/laravel/data/    (cli, config, controller, model, route, migration)
+src/presets/laravel/data/    (cli, config, controller, model, route)
 src/presets/laravel/tests/acceptance/    (test)
 src/presets/laravel/tests/e2e/    (test)
 src/presets/laravel/tests/unit/    (test)
 src/presets/lib/    (lib)
 src/presets/library/tests/acceptance/    (test)
-src/presets/library/tests/acceptance/fixtures/src/    (other)
-src/presets/library/tests/acceptance/fixtures/src/rules/    (other)
+src/presets/library/tests/acceptance/fixtures/src/    (lib)
+src/presets/library/tests/acceptance/fixtures/src/rules/    (lib)
 src/presets/library/tests/acceptance/fixtures/src/utils/    (lib)
 src/presets/monorepo/data/    (model)
 src/presets/nextjs/data/    (model)
 src/presets/nextjs/tests/unit/    (test)
 src/presets/node-cli/tests/acceptance/    (test)
 src/presets/node-cli/tests/acceptance/fixtures/src/    (cli, config)
-src/presets/node-cli/tests/acceptance/fixtures/src/commands/    (controller)
+src/presets/node-cli/tests/acceptance/fixtures/src/commands/    (cli)
 src/presets/node-cli/tests/acceptance/fixtures/src/lib/    (lib)
 src/presets/node-cli/tests/acceptance/fixtures/src/lib/rules/    (lib)
 src/presets/php-webapp/tests/acceptance/    (test)
-src/presets/postgres/data/    (model)
-src/presets/r2/data/    (model)
-src/presets/storage/data/    (model)
-src/presets/symfony/data/    (model, controller, route)
+src/presets/postgres/data/    (lib)
+src/presets/r2/data/    (lib)
+src/presets/storage/data/    (lib)
+src/presets/symfony/data/    (lib, config, controller, model, route, migration)
 src/presets/symfony/tests/acceptance/    (test)
 src/presets/symfony/tests/e2e/    (test)
 src/presets/symfony/tests/unit/    (test)
-src/presets/webapp/data/    (cli, controller, model, route, lib)
+src/presets/webapp/data/    (lib, controller, model, route, migration)
 src/presets/webapp/tests/acceptance/    (test)
-src/presets/workers/data/    (config)
+src/presets/workers/data/    (model)
 src/presets/workers/tests/unit/    (test)
 ```
 <!-- {{/data}} -->
@@ -90,10 +91,10 @@ src/presets/workers/tests/unit/    (test)
 
 | Directory | Files | Role |
 | --- | --- | --- |
-| src/presets | 122 | lib, config, other, test, cli, middleware, controller, model, route, migration |
-| src/docs | 34 | cli, lib |
-| src/flow | 31 | cli, config |
-| src/lib | 19 | lib, config, model |
+| src/presets | 122 | model, test, lib, other, config, controller, view, cli, middleware, route, migration |
+| src/docs | 39 | cli, model, lib |
+| src/flow | 32 | cli, controller, config, lib |
+| src/lib | 19 | lib |
 | src | 7 | cli |
 <!-- {{/data}} -->
 
@@ -101,11 +102,12 @@ src/presets/workers/tests/unit/    (test)
 
 <!-- {{text({prompt: "List the shared libraries with class name, file path, and responsibility in table format."})}} -->
 
-| Class Name | File Path | Responsibility |
+The following DataSource classes are available across all presets via the base preset inheritance chain.
+
+| Class | File | Responsibility |
 | --- | --- | --- |
-| N/A | `src/lib/agents-md.js` | Loads the SDD section template for `AGENTS.md`, resolving a localized preset file and falling back to English when needed. |
-| `StructureSource` | `src/presets/base/data/structure.js` | Builds derived project-structure views from enriched analysis output, including a directory tree block and an aggregated directory responsibility table. |
-| N/A | `src/presets/library/tests/acceptance/fixtures/src/index.js` | Re-exports the fixture library surface and provides convenience `parse` and `render` helpers for working with Markdown input. |
+| ProjectSource | `src/docs/data/project.js` | Reads `package.json` and exposes project metadata — name, description, version, and an npm scripts table — as `{{data}}` directive values. |
+| StructureSource | `src/presets/base/data/structure.js` | Reads enriched analysis entries to generate a fenced directory tree and a sorted major-directories table; requires `analysis.enrichedAt` to be present before producing output. |
 <!-- {{/text}} -->
 
 ---
