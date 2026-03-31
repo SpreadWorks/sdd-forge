@@ -304,6 +304,23 @@ async function main(ctx) {
   const projectDataDir = sddDataDir(root);
   dataSources = await loadScanSources(projectDataDir, dataSources);
 
+  // 3b. DataSource hash detection: clear entry hashes for categories whose DataSource changed
+  if (existing) {
+    for (const [name, source] of dataSources) {
+      const filePath = source._sourceFilePath;
+      if (!filePath || !fs.existsSync(filePath)) continue;
+      const currentDsHash = crypto.createHash("md5").update(fs.readFileSync(filePath, "utf8")).digest("hex");
+      const storedDsHash = existing[name]?.dataSourceHash;
+      if (!storedDsHash || storedDsHash !== currentDsHash) {
+        const entries = existing[name]?.entries;
+        if (Array.isArray(entries) && entries.length > 0) {
+          for (const entry of entries) entry.hash = null;
+          logger.log(`DataSource changed: ${name} (${entries.length} entries will be re-parsed)`);
+        }
+      }
+    }
+  }
+
   // 4. File loop: per-file hash skip + parse
   // Collect entries per category: Map<categoryName, { entries: [], EntryClass }>
   const categoryEntries = new Map();
@@ -382,6 +399,12 @@ async function main(ctx) {
   for (const [name, { entries, EntryClass }] of categoryEntries) {
     const summary = EntryClass ? buildSummary(EntryClass, entries) : { total: entries.length };
     result[name] = { entries, summary };
+    // Record DataSource file hash for change detection on next scan
+    const source = dataSources.get(name);
+    const dsFilePath = source?._sourceFilePath;
+    if (dsFilePath && fs.existsSync(dsFilePath)) {
+      result[name].dataSourceHash = crypto.createHash("md5").update(fs.readFileSync(dsFilePath, "utf8")).digest("hex");
+    }
     logger.verbose(`${name}: ${entries.length} entries`);
   }
 

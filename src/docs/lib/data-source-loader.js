@@ -33,6 +33,7 @@ export async function loadDataSources(dataDir, opts) {
       const Source = mod.default;
       if (typeof Source === "function") {
         const instance = new Source();
+        instance._sourceFilePath = path.join(dataDir, file);
         if (onInstance && onInstance(instance, name) === false) continue;
         sources.set(name, instance);
       }
