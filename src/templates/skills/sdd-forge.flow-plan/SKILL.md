@@ -143,8 +143,10 @@ Available status values: `pending`, `in_progress`, `done`, `skipped`
    - If code changes exist, implementation verification test is required in principle.
    - AI decides the appropriate test type based on the project's test infrastructure (no separate test-type selection).
    - AI shares briefly which test framework will be used and what will be verified (not a separate approval gate).
-   - If tests can't fit in the project's formal test structure, place them in `specs/<spec>/tests/`.
-   - `specs/<spec>/tests/` are kept as history, not maintained long-term.
+   - **MUST: Decide test placement based on these criteria:**
+     - **`tests/` (formal tests, run by `npm test`):** Public API / function interface contract tests, CLI command behavior specs, preset integrity checks — tests where breakage indicates a bug regardless of which spec introduced them.
+     - **`specs/<spec>/tests/` (spec verification tests, NOT run by `npm test`):** Tests that only verify this spec's requirements are met, bug fix reproduction tests, temporary setup/integration verification. These are kept as history, not maintained long-term.
+     - **Decision rule:** Ask "If a future change breaks this test, is that always a bug?" — YES → `tests/`, NO → `specs/<spec>/tests/`.
    - Write test code (tests should fail initially).
    - **MUST: Create `specs/<spec>/tests/README.md`** documenting:
      - What was tested and why
