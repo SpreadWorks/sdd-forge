@@ -12,11 +12,12 @@ import fs from "fs";
 import path from "path";
 import { runIfDirect } from "../../lib/entrypoint.js";
 import { repoRoot } from "../../lib/cli.js";
-import { sddOutputDir } from "../../lib/config.js";
+import { sddOutputDir, loadConfig } from "../../lib/config.js";
 import { loadFlowState, mutateFlowState } from "../../lib/flow-state.js";
 import { ok, fail, output } from "../../lib/flow-envelope.js";
 import { ANALYSIS_META_KEYS } from "../../docs/lib/analysis-entry.js";
 import { EXIT_ERROR } from "../../lib/exit-codes.js";
+import { resolveAgent, callAgent } from "../../lib/agent.js";
 
 const EXCLUDE_FIELDS = new Set(["hash", "mtime", "lines", "id", "enrich", "detail"]);
 
@@ -41,6 +42,143 @@ function searchEntries(entries, query) {
       chapter: e.chapter || null,
       role: e.role || null,
     }));
+}
+
+/**
+ * Collect all unique keywords from analysis.json entries.
+ * @param {Object} analysis - Parsed analysis.json
+ * @returns {string[]} Unique keywords array
+ */
+function collectAllKeywords(analysis) {
+  const seen = new Set();
+  for (const catKey of Object.keys(analysis)) {
+    if (!analysis[catKey] || typeof analysis[catKey] !== "object") continue;
+    if (ANALYSIS_META_KEYS.has(catKey)) continue;
+    const entries = analysis[catKey].entries;
+    if (!Array.isArray(entries)) continue;
+    for (const e of entries) {
+      if (!Array.isArray(e.keywords)) continue;
+      for (const kw of e.keywords) {
+        seen.add(String(kw));
+      }
+    }
+  }
+  return [...seen];
+}
+
+/**
+ * Build a prompt for AI keyword selection.
+ * @param {string[]} keywords - Available keywords from analysis
+ * @param {string} query - User's natural language query
+ * @returns {string} Prompt text
+ */
+function buildKeywordSelectionPrompt(keywords, query) {
+  return [
+    "You are a keyword selector. Given a query and a list of available keywords, select the keywords that are relevant to the query.",
+    "",
+    "## Query",
+    query,
+    "",
+    "## Available keywords",
+    keywords.join(", "),
+    "",
+    "## Rules",
+    "- Select 5-20 keywords that are most relevant to the query.",
+    "- Return ONLY a JSON array of selected keywords. No explanation, no markdown fences.",
+    "- Include both direct matches and semantically related keywords.",
+    '- Example output: ["auth", "認証", "session", "login"]',
+  ].join("\n");
+}
+
+/**
+ * Fallback search: split query by spaces, OR-match against keywords.
+ * @param {Object[]} entries - Analysis entries
+ * @param {string} query - Space-separated keywords
+ * @returns {Object[]} Matched entries (deduplicated)
+ */
+function fallbackSearch(entries, query) {
+  const terms = query.split(/\s+/).filter(Boolean).map((t) => t.toLowerCase());
+  if (terms.length === 0) return [];
+  const seen = new Set();
+  const results = [];
+  for (const e of entries) {
+    if (!Array.isArray(e.keywords)) continue;
+    const match = terms.some((t) =>
+      e.keywords.some((kw) => String(kw).toLowerCase().includes(t))
+    );
+    if (match && !seen.has(e.file)) {
+      seen.add(e.file);
+      results.push({
+        file: e.file,
+        summary: e.summary || null,
+        detail: e.detail || null,
+        keywords: e.keywords,
+        chapter: e.chapter || null,
+        role: e.role || null,
+      });
+    }
+  }
+  return results;
+}
+
+/**
+ * AI-powered keyword selection + static match search.
+ * Falls back to space-split OR search if agent is unavailable.
+ * @param {Object[]} allEntries - All analysis entries
+ * @param {Object} analysis - Full analysis object (for keyword collection)
+ * @param {string} query - Natural language query
+ * @param {string} root - Project root path
+ * @returns {Object[]} Matched entries
+ */
+function aiSearch(allEntries, analysis, query, root) {
+  const allKeywords = collectAllKeywords(analysis);
+  if (allKeywords.length === 0) return fallbackSearch(allEntries, query);
+
+  let config;
+  try { config = loadConfig(root); } catch (_) { config = {}; }
+  const agent = resolveAgent(config, "context.search");
+  if (!agent) return fallbackSearch(allEntries, query);
+
+  const prompt = buildKeywordSelectionPrompt(allKeywords, query);
+  let response;
+  try {
+    response = callAgent(agent, prompt, 30000, root);
+  } catch (_) {
+    return fallbackSearch(allEntries, query);
+  }
+
+  // Parse AI response as JSON array of keywords
+  let selectedKeywords;
+  try {
+    const cleaned = response.trim().replace(/^```(?:json)?\s*\n?/i, "").replace(/\n?```\s*$/i, "");
+    selectedKeywords = JSON.parse(cleaned);
+    if (!Array.isArray(selectedKeywords)) return fallbackSearch(allEntries, query);
+  } catch (_) {
+    return fallbackSearch(allEntries, query);
+  }
+
+  // Use selected keywords for OR search
+  const terms = selectedKeywords.map((k) => String(k).toLowerCase());
+  const seen = new Set();
+  const results = [];
+  for (const e of allEntries) {
+    if (!Array.isArray(e.keywords)) continue;
+    const match = terms.some((t) =>
+      e.keywords.some((kw) => String(kw).toLowerCase().includes(t))
+    );
+    if (match && !seen.has(e.file)) {
+      seen.add(e.file);
+      results.push({
+        file: e.file,
+        summary: e.summary || null,
+        detail: e.detail || null,
+        keywords: e.keywords,
+        chapter: e.chapter || null,
+        role: e.role || null,
+      });
+    }
+  }
+  return results;
 }
 
 function filterEntry(entry) {
@@ -171,7 +309,7 @@ function main() {
       }
     }
 
-    const results = searchEntries(allEntries, searchQuery);
+    const results = aiSearch(allEntries, analysis, searchQuery, root);
 
     if (isRaw) {
       for (const r of results) {
@@ -250,5 +388,5 @@ function main() {
   }));
 }
 
-export { main, filterEntry, resolvePhase, searchEntries };
+export { main, filterEntry, resolvePhase, searchEntries, collectAllKeywords, buildKeywordSelectionPrompt, fallbackSearch };
 runIfDirect(import.meta.url, main);

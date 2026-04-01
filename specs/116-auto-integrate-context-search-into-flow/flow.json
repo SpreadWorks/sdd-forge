@@ -1,0 +1,128 @@
+{
+  "spec": "specs/116-auto-integrate-context-search-into-flow/spec.md",
+  "baseBranch": "development",
+  "featureBranch": "feature/116-auto-integrate-context-search-into-flow",
+  "steps": [
+    {
+      "id": "approach",
+      "status": "done"
+    },
+    {
+      "id": "branch",
+      "status": "done"
+    },
+    {
+      "id": "prepare-spec",
+      "status": "done"
+    },
+    {
+      "id": "draft",
+      "status": "done"
+    },
+    {
+      "id": "spec",
+      "status": "done"
+    },
+    {
+      "id": "gate",
+      "status": "done"
+    },
+    {
+      "id": "approval",
+      "status": "done"
+    },
+    {
+      "id": "test",
+      "status": "done"
+    },
+    {
+      "id": "implement",
+      "status": "done"
+    },
+    {
+      "id": "review",
+      "status": "done"
+    },
+    {
+      "id": "finalize",
+      "status": "in_progress"
+    },
+    {
+      "id": "commit",
+      "status": "pending"
+    },
+    {
+      "id": "push",
+      "status": "pending"
+    },
+    {
+      "id": "merge",
+      "status": "pending"
+    },
+    {
+      "id": "pr-create",
+      "status": "pending"
+    },
+    {
+      "id": "branch-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "pr-merge",
+      "status": "pending"
+    },
+    {
+      "id": "sync-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "docs-update",
+      "status": "pending"
+    },
+    {
+      "id": "docs-review",
+      "status": "pending"
+    },
+    {
+      "id": "docs-commit",
+      "status": "pending"
+    }
+  ],
+  "requirements": [
+    {
+      "desc": "--search AI キーワード選定方式",
+      "status": "done"
+    },
+    {
+      "desc": "resolveAgent context.search",
+      "status": "done"
+    },
+    {
+      "desc": "agent なしフォールバック",
+      "status": "done"
+    },
+    {
+      "desc": "flow-plan スキル統合",
+      "status": "done"
+    },
+    {
+      "desc": "flow-impl スキル統合",
+      "status": "done"
+    }
+  ],
+  "worktree": true,
+  "issue": 57,
+  "request": "#57 コンテキスト検索を flow-plan/impl スキルに自動統合する",
+  "notes": [
+    "approach: Q&A で要件整理",
+    "work-env: worktree, base: development",
+    "draft: A案採用。--search に自然文を渡し、コマンド内部で AI がキーワードリストから選定→静的マッチ",
+    "review: auto-fix",
+    "finalize: select 1,2,4,5, squash merge, skip docs sync"
+  ],
+  "metrics": {
+    "draft": {
+      "question": 8
+    }
+  }
+}

@@ -100,7 +100,8 @@ Available status values: `pending`, `in_progress`, `done`, `skipped`
         Use the issue content as context for the draft discussion.
      2. Run `sdd-forge flow run scan` to ensure analysis.json is up to date.
      3. Run `sdd-forge flow get context --raw` to understand the project structure. Use this output to identify relevant files and modules.
-     4. Load guardrail articles for the draft phase: `sdd-forge flow get guardrail draft`.
+     4. Run `sdd-forge flow get context --search "<request text or issue title>" --raw` to retrieve related entries with detail. Use the request text or issue title as the search query.
+     5. Load guardrail articles for the draft phase: `sdd-forge flow get guardrail draft`.
         If output is non-empty, consider these principles as constraints when asking questions and making proposals.
    - Create `specs/NNN-xxx/draft.md` in the spec directory created in step 3.
    - AI presents choices/proposals → user selects with short answers.
@@ -120,6 +121,7 @@ Available status values: `pending`, `in_progress`, `done`, `skipped`
    - **Before writing spec**:
      - Read draft (if exists) and linked GitHub issue content.
      - Run `sdd-forge flow get context --raw` to understand the project structure.
+     - Run `sdd-forge flow get context --search "<request text or issue title>" --raw` to retrieve related entries with detail.
      - For files needing deeper understanding, use `sdd-forge flow get context <path> --raw` to read them.
    - Fill Goal, Scope, Out of Scope, Requirements, Acceptance Criteria.
    - If draft phase was done, reflect draft Q&A and decisions in spec.md.
