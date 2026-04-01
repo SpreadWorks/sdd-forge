@@ -11,7 +11,7 @@
 
 <!-- {{text({prompt: "Write a 1-2 sentence overview of this chapter. Include the number of major directories and their roles."})}} -->
 
-This chapter covers the layout and responsibilities of the four major directories that make up the project — `src/docs`, `src/flow`, `src/lib`, and the root `src/` — spanning documentation generation pipelines, flow orchestration, shared utility libraries, and top-level CLI entry points.
+The project is organized into four major directories: `src/` (entry points and controllers), `src/docs/` (documentation generation commands, data sources, and libraries), `src/flow/` (Spec-Driven Development workflow commands and handlers), and `src/lib/` (shared utility libraries used across the entire codebase).
 <!-- {{/text}} -->
 
 ## Content
@@ -20,17 +20,17 @@ This chapter covers the layout and responsibilities of the four major directorie
 
 <!-- {{data("base.structure.tree")}} -->
 ```
-src/    (cli)
+src/    (cli, controller)
 src/docs/commands/    (cli)
 src/docs/data/    (model)
 src/docs/lib/    (lib)
 src/docs/lib/lang/    (lib)
-src/flow/    (controller, config)
+src/flow/    (controller)
 src/flow/commands/    (cli)
-src/flow/get/    (lib)
-src/flow/run/    (cli, controller)
-src/flow/set/    (controller)
-src/lib/    (lib, model)
+src/flow/get/    (lib, cli)
+src/flow/run/    (cli, lib)
+src/flow/set/    (cli, lib)
+src/lib/    (lib)
 ```
 <!-- {{/data}} -->
 
@@ -40,9 +40,9 @@ src/lib/    (lib, model)
 | Directory | Files | Role |
 | --- | --- | --- |
 | src/docs | 40 | cli, model, lib |
-| src/flow | 32 | cli, controller, config, lib |
-| src/lib | 20 | lib, model |
-| src | 7 | cli |
+| src/flow | 29 | cli, lib, controller |
+| src/lib | 20 | lib |
+| src | 7 | cli, controller |
 <!-- {{/data}} -->
 
 ### Shared Libraries
@@ -51,7 +51,10 @@ src/lib/    (lib, model)
 
 | Module | File Path | Responsibility |
 | --- | --- | --- |
-| presets | `src/lib/presets.js` | Auto-discovers all presets from `src/presets/{key}/preset.json` and exposes preset inheritance utilities: `resolveChain` (walks parent chain root→leaf), `resolveMultiChains` (resolves multiple type strings with deduplication), `resolveChainSafe` (fallback-safe wrapper), `presetByLeaf` (lookup by leaf key), and `presetsForArch` (filters presets by parent key). |
+| cli | src/lib/cli.js | Provides `repoRoot`, `sourceRoot`, `parseArgs`, worktree detection helpers, `PKG_DIR` constant, and timestamp formatting utilities used across CLI commands. |
+| entrypoint | src/lib/entrypoint.js | Exports `isDirectRun` and `runIfDirect` to distinguish direct script execution from module imports, enabling files to serve as both standalone commands and importable modules. |
+| exit-codes | src/lib/exit-codes.js | Defines `EXIT_SUCCESS` (0) and `EXIT_ERROR` (1) constants, centralizing exit code values to eliminate magic numbers throughout CLI commands and flow handlers. |
+| presets | src/lib/presets.js | Discovers all available presets from the filesystem, resolves linear inheritance chains via `parent` references, detects circular dependencies, and exports the `PRESETS` registry for O(1) access. |
 <!-- {{/text}} -->
 
 ---

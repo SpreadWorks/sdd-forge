@@ -18,17 +18,17 @@
 
 <!-- {{data("base.structure.tree")}} -->
 ```
-src/    (cli)
+src/    (cli, controller)
 src/docs/commands/    (cli)
 src/docs/data/    (model)
 src/docs/lib/    (lib)
 src/docs/lib/lang/    (lib)
-src/flow/    (controller, config)
+src/flow/    (controller)
 src/flow/commands/    (cli)
-src/flow/get/    (lib)
-src/flow/run/    (cli, controller)
-src/flow/set/    (controller)
-src/lib/    (lib, model)
+src/flow/get/    (lib, cli)
+src/flow/run/    (cli, lib)
+src/flow/set/    (cli, lib)
+src/lib/    (lib)
 ```
 <!-- {{/data}} -->
 
@@ -38,9 +38,9 @@ src/lib/    (lib, model)
 | ディレクトリ | ファイル数 | 役割 |
 | --- | --- | --- |
 | src/docs | 40 | cli, model, lib |
-| src/flow | 32 | cli, controller, config, lib |
-| src/lib | 20 | lib, model |
-| src | 7 | cli |
+| src/flow | 29 | cli, lib, controller |
+| src/lib | 20 | lib |
+| src | 7 | cli, controller |
 <!-- {{/data}} -->
 
 ### 共通ライブラリ

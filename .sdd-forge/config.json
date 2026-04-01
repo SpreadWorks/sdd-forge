@@ -1,7 +1,7 @@
 {
   "lang": "ja",
   "type": "node-cli",
-  "concurrency": 2,
+  "concurrency": 4,
   "docs": {
     "languages": ["en", "ja"],
     "defaultLanguage": "en",
