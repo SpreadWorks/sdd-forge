@@ -11,7 +11,7 @@
 
 <!-- {{text({prompt: "Write a 1-2 sentence overview of this chapter. Include the number of major directories and their roles."})}} -->
 
-This chapter covers the layout of the `src/` directory, which is organized into five major areas: entry-point CLI scripts (`src/`), documentation generation commands and libraries (`src/docs/`), SDD workflow controllers and commands (`src/flow/`), shared utility libraries and models (`src/lib/`), and the collection of preset definitions with their data sources and tests (`src/presets/`).
+This chapter describes the top-level layout of the sdd-forge source tree, which is organized into four major directories: `src/docs` for documentation generation commands, data models, and libraries; `src/flow` for the Spec-Driven Development workflow engine and its controllers; `src/lib` for shared utility libraries and models; and `src` for the root CLI entry points.
 <!-- {{/text}} -->
 
 ## Content
@@ -31,58 +31,6 @@ src/flow/get/    (lib)
 src/flow/run/    (cli, controller)
 src/flow/set/    (controller)
 src/lib/    (lib, model)
-src/presets/base/data/    
-src/presets/base/tests/acceptance/    
-src/presets/base/tests/acceptance/fixtures/src/    
-src/presets/cakephp2/data/    
-src/presets/cakephp2/tests/acceptance/    
-src/presets/cakephp2/tests/unit/    
-src/presets/ci/data/    
-src/presets/cli/data/    
-src/presets/cli/tests/acceptance/    
-src/presets/cli/tests/acceptance/fixtures/src/    
-src/presets/cli/tests/acceptance/fixtures/src/commands/    
-src/presets/cli/tests/acceptance/fixtures/src/lib/    
-src/presets/cli/tests/acceptance/fixtures/src/lib/rules/    
-src/presets/database/data/    
-src/presets/drizzle/data/    
-src/presets/drizzle/tests/unit/    
-src/presets/edge/data/    
-src/presets/graphql/data/    
-src/presets/graphql/tests/unit/    
-src/presets/hono/data/    
-src/presets/hono/tests/unit/    
-src/presets/js-webapp/tests/acceptance/    
-src/presets/js-webapp/tests/acceptance/fixtures/src/    
-src/presets/laravel/data/    
-src/presets/laravel/tests/acceptance/    
-src/presets/laravel/tests/e2e/    
-src/presets/laravel/tests/unit/    
-src/presets/lib/    
-src/presets/library/tests/acceptance/    
-src/presets/library/tests/acceptance/fixtures/src/    
-src/presets/library/tests/acceptance/fixtures/src/rules/    
-src/presets/library/tests/acceptance/fixtures/src/utils/    
-src/presets/monorepo/data/    
-src/presets/nextjs/data/    
-src/presets/nextjs/tests/unit/    
-src/presets/node-cli/tests/acceptance/    
-src/presets/node-cli/tests/acceptance/fixtures/src/    
-src/presets/node-cli/tests/acceptance/fixtures/src/commands/    
-src/presets/node-cli/tests/acceptance/fixtures/src/lib/    
-src/presets/node-cli/tests/acceptance/fixtures/src/lib/rules/    
-src/presets/php-webapp/tests/acceptance/    
-src/presets/postgres/data/    
-src/presets/r2/data/    
-src/presets/storage/data/    
-src/presets/symfony/data/    
-src/presets/symfony/tests/acceptance/    
-src/presets/symfony/tests/e2e/    
-src/presets/symfony/tests/unit/    
-src/presets/webapp/data/    
-src/presets/webapp/tests/acceptance/    
-src/presets/workers/data/    
-src/presets/workers/tests/unit/    
 ```
 <!-- {{/data}} -->
 
@@ -91,7 +39,6 @@ src/presets/workers/tests/unit/
 
 | Directory | Files | Role |
 | --- | --- | --- |
-| src/presets | 122 | — |
 | src/docs | 40 | cli, model, lib |
 | src/flow | 32 | cli, controller, config, lib |
 | src/lib | 20 | lib, model |
@@ -102,9 +49,9 @@ src/presets/workers/tests/unit/
 
 <!-- {{text({prompt: "List the shared libraries with class name, file path, and responsibility in table format."})}} -->
 
-| Name | File Path | Responsibility |
+| Module | File | Responsibility |
 | --- | --- | --- |
-| presets | `src/lib/presets.js` | Auto-discovers all presets by scanning `src/presets/{key}/preset.json` and exposes `PRESETS_DIR`, `PRESETS`, `resolveChain`, `resolveMultiChains`, `resolveChainSafe`, `presetByLeaf`, and `presetsForArch` for use throughout the documentation generation and flow pipelines. |
+| Presets | `src/lib/presets.js` | Auto-discovers all presets from `src/presets/{key}/preset.json` and exposes the full preset registry (`PRESETS`) along with parent-chain resolution utilities: `resolveChain()` (leaf → root order), `resolveMultiChains()` (deduplicating multi-type chains), `resolveChainSafe()` (fallback-safe variant), `presetByLeaf()` (single preset lookup), and `presetsForArch()` (presets filtered by parent key). |
 <!-- {{/text}} -->
 
 ---

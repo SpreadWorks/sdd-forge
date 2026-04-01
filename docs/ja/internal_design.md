@@ -39,5 +39,5 @@
 ---
 
 <!-- {{data("base.docs.nav")}} -->
-[← 設定とカスタマイズ](configuration.md) | [開発・テスト・配布 →](development_testing.md)
+[← 設定とカスタマイズ](configuration.md)
 <!-- {{/data}} -->
