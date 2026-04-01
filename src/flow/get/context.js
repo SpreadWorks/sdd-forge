@@ -10,10 +10,8 @@
 
 import fs from "fs";
 import path from "path";
-import { runIfDirect } from "../../lib/entrypoint.js";
-import { repoRoot } from "../../lib/cli.js";
-import { sddOutputDir, loadConfig } from "../../lib/config.js";
-import { loadFlowState, mutateFlowState } from "../../lib/flow-state.js";
+import { sddOutputDir } from "../../lib/config.js";
+import { mutateFlowState } from "../../lib/flow-state.js";
 import { ok, fail, output } from "../../lib/flow-envelope.js";
 import { ANALYSIS_META_KEYS } from "../../docs/lib/analysis-entry.js";
 import { EXIT_ERROR } from "../../lib/exit-codes.js";
@@ -217,9 +215,9 @@ function incrementMetric(root, phase, counter) {
   }
 }
 
-function main() {
-  const root = repoRoot(import.meta.url);
-  const rawArgs = process.argv.slice(2);
+export async function execute(ctx) {
+  const { root } = ctx;
+  const rawArgs = ctx.args;
   const isHelp = rawArgs.includes("-h") || rawArgs.includes("--help");
   const isRaw = rawArgs.includes("--raw");
   const searchIdx = rawArgs.indexOf("--search");
@@ -255,7 +253,7 @@ function main() {
     }
 
     // Metric increment
-    const state = loadFlowState(root);
+    const state = ctx.flowState;
     const phase = resolvePhase(state);
     const isDocsPath = filePath.startsWith("docs/") || filePath.startsWith("docs\\");
     incrementMetric(root, phase, isDocsPath ? "docsRead" : "srcRead");
@@ -360,7 +358,7 @@ function main() {
   }
 
   // Metric increment for list mode
-  const state = loadFlowState(root);
+  const state = ctx.flowState;
   const phase = resolvePhase(state);
   incrementMetric(root, phase, "docsRead");
 
@@ -388,5 +386,4 @@ function main() {
   }));
 }
 
-export { main, filterEntry, resolvePhase, searchEntries, collectAllKeywords, buildKeywordSelectionPrompt, fallbackSearch };
-runIfDirect(import.meta.url, main);
+export { filterEntry, resolvePhase, searchEntries };

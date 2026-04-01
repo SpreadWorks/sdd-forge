@@ -1,4 +1,3 @@
-#!/usr/bin/env node
 /**
  * src/flow/run/lint.js
  *
@@ -6,16 +5,14 @@
  * Returns JSON envelope with lint results.
  */
 
-import { runIfDirect } from "../../lib/entrypoint.js";
-import { repoRoot, parseArgs } from "../../lib/cli.js";
-import { loadFlowState } from "../../lib/flow-state.js";
+import { parseArgs } from "../../lib/cli.js";
 import { loadMergedArticles } from "../../lib/guardrail.js";
 import { runLint } from "../../lib/lint.js";
 import { ok, fail, output } from "../../lib/flow-envelope.js";
 
-function main() {
-  const root = repoRoot(import.meta.url);
-  const cli = parseArgs(process.argv.slice(2), {
+export async function execute(ctx) {
+  const { root } = ctx;
+  const cli = parseArgs(ctx.args, {
     options: ["--base"],
     defaults: { base: "" },
   });
@@ -37,7 +34,7 @@ function main() {
   // Resolve base branch from flow state if not provided
   let base = cli.base;
   if (!base) {
-    const state = loadFlowState(root);
+    const state = ctx.flowState;
     if (state?.baseBranch) {
       base = state.baseBranch;
     } else {
@@ -80,6 +77,3 @@ function main() {
     failures: [],
   }));
 }
-
-export { main };
-runIfDirect(import.meta.url, main);

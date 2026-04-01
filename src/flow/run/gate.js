@@ -1,4 +1,3 @@
-#!/usr/bin/env node
 /**
  * src/flow/run/gate.js
  *
@@ -8,13 +7,10 @@
 
 import fs from "fs";
 import path from "path";
-import { runIfDirect } from "../../lib/entrypoint.js";
-import { repoRoot, parseArgs } from "../../lib/cli.js";
+import { parseArgs } from "../../lib/cli.js";
 import { translate } from "../../lib/i18n.js";
-import { loadConfig } from "../../lib/config.js";
 import { callAgent, resolveAgent } from "../../lib/agent.js";
 import { filterByPhase, loadMergedArticles } from "../../lib/guardrail.js";
-import { loadFlowState } from "../../lib/flow-state.js";
 import { ok, fail, output } from "../../lib/flow-envelope.js";
 
 /**
@@ -181,16 +177,9 @@ function parseGuardrailResponse(response) {
 /**
  * Run guardrail AI compliance check.
  */
-function checkGuardrail(root, specText) {
+function checkGuardrail(root, specText, config) {
   const articles = loadMergedArticles(root);
   if (articles.length === 0) return null;
-
-  let config;
-  try {
-    config = loadConfig(root);
-  } catch (_) {
-    return null;
-  }
 
   const agent = resolveAgent(config, "spec.gate");
   if (!agent) return null;
@@ -205,9 +194,9 @@ function checkGuardrail(root, specText) {
   return { passed, results };
 }
 
-function main() {
-  const root = repoRoot(import.meta.url);
-  const cli = parseArgs(process.argv.slice(2), {
+export async function execute(ctx) {
+  const { root } = ctx;
+  const cli = parseArgs(ctx.args, {
     options: ["--spec", "--phase"],
     flags: ["--skip-guardrail"],
     defaults: { spec: "", phase: "pre", skipGuardrail: false },
@@ -232,7 +221,7 @@ function main() {
   // Resolve spec path from flow state if not provided
   let specPath = cli.spec;
   if (!specPath) {
-    const state = loadFlowState(root);
+    const state = ctx.flowState;
     if (state?.spec) {
       specPath = state.spec;
     } else {
@@ -263,7 +252,7 @@ function main() {
   // Guardrail AI compliance check
   const reasons = [];
   if (!cli.skipGuardrail) {
-    const result = checkGuardrail(root, text);
+    const result = checkGuardrail(root, text, ctx.config);
     if (result) {
       for (const r of result.results) {
         reasons.push({ verdict: r.passed ? "PASS" : "FAIL", detail: `${r.title} — ${r.reason}` });
@@ -290,5 +279,4 @@ function main() {
   }));
 }
 
-export { main, checkSpecText, buildGuardrailPrompt, parseGuardrailResponse, checkGuardrail, extractExemptions };
-runIfDirect(import.meta.url, main);
+export { checkSpecText, buildGuardrailPrompt, parseGuardrailResponse, checkGuardrail, extractExemptions };

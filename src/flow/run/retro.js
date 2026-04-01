@@ -1,4 +1,3 @@
-#!/usr/bin/env node
 /**
  * src/flow/run/retro.js
  *
@@ -10,11 +9,8 @@
 import fs from "fs";
 import path from "path";
 import { execFileSync } from "child_process";
-import { runIfDirect } from "../../lib/entrypoint.js";
-import { repoRoot, parseArgs } from "../../lib/cli.js";
-import { loadConfig } from "../../lib/config.js";
+import { parseArgs } from "../../lib/cli.js";
 import { callAgent, resolveAgent } from "../../lib/agent.js";
-import { loadFlowState } from "../../lib/flow-state.js";
 import { ok, fail, output } from "../../lib/flow-envelope.js";
 import { EXIT_ERROR } from "../../lib/exit-codes.js";
 
@@ -132,9 +128,9 @@ function parseRetroResponse(response, requirements) {
   };
 }
 
-function main() {
-  const root = repoRoot(import.meta.url);
-  const cli = parseArgs(process.argv.slice(2), {
+export async function execute(ctx) {
+  const { root } = ctx;
+  const cli = parseArgs(ctx.args, {
     flags: ["--force", "--dry-run"],
     defaults: { force: false, dryRun: false },
   });
@@ -156,7 +152,7 @@ function main() {
   }
 
   // Load flow state
-  const state = loadFlowState(root);
+  const state = ctx.flowState;
   if (!state) {
     output(fail("run", "retro", "NO_FLOW", "no active flow (flow.json not found)"));
     process.exitCode = EXIT_ERROR;
@@ -224,11 +220,9 @@ function main() {
   }
 
   // Resolve AI agent
-  let config;
-  try {
-    config = loadConfig(root);
-  } catch (e) {
-    output(fail("run", "retro", "CONFIG_ERROR", `failed to load config: ${e.message}`));
+  const config = ctx.config;
+  if (!config) {
+    output(fail("run", "retro", "CONFIG_ERROR", "failed to load config"));
     process.exitCode = EXIT_ERROR;
     return;
   }
@@ -284,5 +278,4 @@ function main() {
   }));
 }
 
-export { main, extractRequirements, buildRetroPrompt, parseRetroResponse };
-runIfDirect(import.meta.url, main);
+export { extractRequirements, buildRetroPrompt, parseRetroResponse };

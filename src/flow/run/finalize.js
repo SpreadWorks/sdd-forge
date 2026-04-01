@@ -1,4 +1,3 @@
-#!/usr/bin/env node
 /**
  * src/flow/run/finalize.js
  *
@@ -7,9 +6,8 @@
  */
 
 import { execFileSync } from "child_process";
-import { runIfDirect } from "../../lib/entrypoint.js";
-import { repoRoot, parseArgs, PKG_DIR } from "../../lib/cli.js";
-import { loadFlowState, resolveWorktreePaths } from "../../lib/flow-state.js";
+import { parseArgs, PKG_DIR } from "../../lib/cli.js";
+import { resolveWorktreePaths } from "../../lib/flow-state.js";
 import { runSync } from "../../lib/process.js";
 import { ok, fail, output } from "../../lib/flow-envelope.js";
 import path from "path";
@@ -22,9 +20,9 @@ const STEP_MAP = {
   5: "record",
 };
 
-function main() {
-  const root = repoRoot(import.meta.url);
-  const cli = parseArgs(process.argv.slice(2), {
+export async function execute(ctx) {
+  const { root } = ctx;
+  const cli = parseArgs(ctx.args, {
     flags: ["--dry-run"],
     options: ["--mode", "--steps", "--merge-strategy", "--message"],
     defaults: { dryRun: false, mode: "", steps: "", mergeStrategy: "", message: "" },
@@ -75,7 +73,7 @@ function main() {
   }
 
   // Load flow state
-  const state = loadFlowState(root);
+  const state = ctx.flowState;
   if (!state) {
     output(fail("run", "finalize", "NO_FLOW", "no active flow (flow.json not found)"));
     return;
@@ -206,6 +204,3 @@ function main() {
     },
   }));
 }
-
-export { main };
-runIfDirect(import.meta.url, main);

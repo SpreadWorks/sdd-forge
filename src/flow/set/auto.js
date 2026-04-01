@@ -1,24 +1,21 @@
-#!/usr/bin/env node
 /**
  * src/flow/set/auto.js
  *
  * flow set auto on|off — Enable or disable autoApprove mode in flow.json.
  */
 
-import { runIfDirect } from "../../lib/entrypoint.js";
-import { repoRoot } from "../../lib/cli.js";
 import { mutateFlowState } from "../../lib/flow-state.js";
 import { ok, fail, output } from "../../lib/flow-envelope.js";
 
-function main() {
-  const value = process.argv[2];
+export async function execute(ctx) {
+  const value = ctx.args[0];
 
   if (!value || (value !== "on" && value !== "off")) {
     output(fail("set", "auto", "MISSING_ARGS", 'usage: flow set auto on|off'));
     return;
   }
 
-  const root = repoRoot(import.meta.url);
+  const { root } = ctx;
   const autoApprove = value === "on";
 
   try {
@@ -30,6 +27,3 @@ function main() {
     output(fail("set", "auto", "SET_FAILED", e.message));
   }
 }
-
-export { main };
-runIfDirect(import.meta.url, main);

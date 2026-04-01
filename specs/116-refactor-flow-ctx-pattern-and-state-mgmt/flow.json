@@ -1,0 +1,143 @@
+{
+  "spec": "specs/116-refactor-flow-ctx-pattern-and-state-mgmt/spec.md",
+  "baseBranch": "development",
+  "featureBranch": "feature/116-refactor-flow-ctx-pattern-and-state-mgmt",
+  "steps": [
+    {
+      "id": "approach",
+      "status": "done"
+    },
+    {
+      "id": "branch",
+      "status": "done"
+    },
+    {
+      "id": "prepare-spec",
+      "status": "done"
+    },
+    {
+      "id": "draft",
+      "status": "done"
+    },
+    {
+      "id": "spec",
+      "status": "done"
+    },
+    {
+      "id": "gate",
+      "status": "done"
+    },
+    {
+      "id": "approval",
+      "status": "done"
+    },
+    {
+      "id": "test",
+      "status": "done"
+    },
+    {
+      "id": "implement",
+      "status": "done"
+    },
+    {
+      "id": "review",
+      "status": "done"
+    },
+    {
+      "id": "finalize",
+      "status": "done"
+    },
+    {
+      "id": "commit",
+      "status": "pending"
+    },
+    {
+      "id": "push",
+      "status": "pending"
+    },
+    {
+      "id": "merge",
+      "status": "pending"
+    },
+    {
+      "id": "pr-create",
+      "status": "pending"
+    },
+    {
+      "id": "branch-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "pr-merge",
+      "status": "pending"
+    },
+    {
+      "id": "sync-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "docs-update",
+      "status": "pending"
+    },
+    {
+      "id": "docs-review",
+      "status": "pending"
+    },
+    {
+      "id": "docs-commit",
+      "status": "pending"
+    }
+  ],
+  "requirements": [
+    {
+      "desc": "R1: flow.js で ctx 解決し全コマンドに渡す",
+      "status": "done"
+    },
+    {
+      "desc": "R2: registry.js を helpKey/before/execute/after に拡張",
+      "status": "done"
+    },
+    {
+      "desc": "R3: prepare を flow prepare に分離、config 必須",
+      "status": "done"
+    },
+    {
+      "desc": "R4: 全コマンド execute(ctx) に統一、runIfDirect 削除",
+      "status": "done"
+    },
+    {
+      "desc": "R5: review の子プロセス廃止、直接 import",
+      "status": "done"
+    },
+    {
+      "desc": "R6: worktree で branch 名から flow.json 直接読み",
+      "status": "done"
+    },
+    {
+      "desc": "R7: before/after で flowState 自動更新",
+      "status": "done"
+    },
+    {
+      "desc": "R8: 2層目ディスパッチャー廃止",
+      "status": "done"
+    },
+    {
+      "desc": "R9: skill テンプレート更新",
+      "status": "done"
+    }
+  ],
+  "worktree": true,
+  "issue": 56,
+  "request": "flow サブシステムリファクタリング: ctx パターン導入とステート管理統一 (課題1-7)",
+  "notes": [
+    "approach: [1] Q&A. work-env: [1] worktree, base=development",
+    "draft: ctx パターン導入、registry.js 拡張、prepare 分離、runIfDirect 廃止、ハイブリッドステート管理",
+    "finalize: [2] 個別に選択する",
+    "finalize: steps=1,2,4,5 merge-strategy=squash"
+  ],
+  "metrics": {
+    "draft": {
+      "question": 5
+    }
+  }
+}

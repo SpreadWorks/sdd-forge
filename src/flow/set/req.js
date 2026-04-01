@@ -1,17 +1,14 @@
-#!/usr/bin/env node
 /**
  * src/flow/set/req.js
  *
  * flow set req <index> <status> — Update a single requirement's status.
  */
 
-import { runIfDirect } from "../../lib/entrypoint.js";
-import { repoRoot } from "../../lib/cli.js";
 import { updateRequirement } from "../../lib/flow-state.js";
 import { ok, fail, output } from "../../lib/flow-envelope.js";
 
-function main() {
-  const args = process.argv.slice(2);
+export async function execute(ctx) {
+  const args = ctx.args;
   const rawIndex = args[0];
   const status = args[1];
 
@@ -26,7 +23,7 @@ function main() {
     return;
   }
 
-  const root = repoRoot(import.meta.url);
+  const { root } = ctx;
 
   try {
     updateRequirement(root, index, status);
@@ -35,6 +32,3 @@ function main() {
     output(fail("set", "req", "SET_FAILED", e.message));
   }
 }
-
-export { main };
-runIfDirect(import.meta.url, main);

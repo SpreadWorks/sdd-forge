@@ -1,20 +1,17 @@
-#!/usr/bin/env node
 /**
  * src/flow/set/metric.js
  *
  * flow set metric <phase> <counter> — Increment a metric counter in flow.json.
  */
 
-import { runIfDirect } from "../../lib/entrypoint.js";
-import { repoRoot } from "../../lib/cli.js";
 import { mutateFlowState } from "../../lib/flow-state.js";
 import { ok, fail, output } from "../../lib/flow-envelope.js";
 
 const VALID_PHASES = ["draft", "spec", "gate", "test", "impl"];
 const VALID_COUNTERS = ["question", "redo", "docsRead", "srcRead"];
 
-function main() {
-  const args = process.argv.slice(2);
+export async function execute(ctx) {
+  const args = ctx.args;
   const phase = args[0];
   const counter = args[1];
 
@@ -33,7 +30,7 @@ function main() {
     return;
   }
 
-  const root = repoRoot(import.meta.url);
+  const { root } = ctx;
 
   try {
     let newValue;
@@ -49,6 +46,3 @@ function main() {
     output(fail("set", "metric", "SET_FAILED", e.message));
   }
 }
-
-export { main };
-runIfDirect(import.meta.url, main);

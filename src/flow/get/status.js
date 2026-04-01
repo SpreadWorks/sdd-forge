@@ -5,14 +5,11 @@
  * flow get status — Return current flow state as JSON envelope.
  */
 
-import { runIfDirect } from "../../lib/entrypoint.js";
-import { repoRoot } from "../../lib/cli.js";
-import { loadFlowState, derivePhase } from "../../lib/flow-state.js";
+import { derivePhase } from "../../lib/flow-state.js";
 import { ok, fail, output } from "../../lib/flow-envelope.js";
 
-function main() {
-  const root = repoRoot(import.meta.url);
-  const state = loadFlowState(root);
+export async function execute(ctx) {
+  const state = ctx.flowState;
 
   if (!state) {
     output(fail("get", "status", "NO_FLOW", "no active flow (flow.json not found)"));
@@ -43,6 +40,3 @@ function main() {
     autoApprove: state.autoApprove || false,
   }));
 }
-
-export { main };
-runIfDirect(import.meta.url, main);

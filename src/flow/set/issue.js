@@ -1,17 +1,14 @@
-#!/usr/bin/env node
 /**
  * src/flow/set/issue.js
  *
  * flow set issue <number> — Set the GitHub issue number in flow.json.
  */
 
-import { runIfDirect } from "../../lib/entrypoint.js";
-import { repoRoot } from "../../lib/cli.js";
 import { setIssue } from "../../lib/flow-state.js";
 import { ok, fail, output } from "../../lib/flow-envelope.js";
 
-function main() {
-  const args = process.argv.slice(2);
+export async function execute(ctx) {
+  const args = ctx.args;
   const raw = args[0];
 
   if (!raw) {
@@ -25,7 +22,7 @@ function main() {
     return;
   }
 
-  const root = repoRoot(import.meta.url);
+  const { root } = ctx;
 
   try {
     setIssue(root, num);
@@ -34,6 +31,3 @@ function main() {
     output(fail("set", "issue", "SET_FAILED", e.message));
   }
 }
-
-export { main };
-runIfDirect(import.meta.url, main);

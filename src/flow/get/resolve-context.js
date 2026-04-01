@@ -8,8 +8,6 @@
 
 import fs from "fs";
 import path from "path";
-import { runIfDirect } from "../../lib/entrypoint.js";
-import { repoRoot } from "../../lib/cli.js";
 import { getWorktreeStatus, getCurrentBranch, getAheadCount, getLastCommit, isGhAvailable } from "../../lib/git-state.js";
 import {
   loadFlowState, loadActiveFlows, scanAllFlows,
@@ -32,10 +30,10 @@ function extractSection(text, heading) {
   return result.join("\n").trim();
 }
 
-function main() {
-  const root = repoRoot(import.meta.url);
+export async function execute(ctx) {
+  const { root } = ctx;
 
-  let state = loadFlowState(root);
+  let state = ctx.flowState;
   let mainRepoPath = root;
   let worktreePath = null;
   let activeFlowSpec = null;
@@ -133,6 +131,3 @@ function main() {
     recommendedSkill: phaseSkill,
   }));
 }
-
-export { main };
-runIfDirect(import.meta.url, main);

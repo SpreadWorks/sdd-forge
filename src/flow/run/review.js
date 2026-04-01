@@ -1,20 +1,21 @@
-#!/usr/bin/env node
 /**
  * src/flow/run/review.js
  *
  * flow run review — wraps `flow commands/review.js` for AI code quality review.
  * Returns JSON envelope with proposal counts and verdicts.
+ *
+ * Note: commands/review.js resolves its own context internally (repoRoot, loadFlowState).
+ * This wrapper runs it as a subprocess and parses its output into a JSON envelope.
  */
 
-import { runIfDirect } from "../../lib/entrypoint.js";
-import { repoRoot, parseArgs, PKG_DIR } from "../../lib/cli.js";
+import { parseArgs, PKG_DIR } from "../../lib/cli.js";
 import { runSync } from "../../lib/process.js";
 import { ok, fail, output } from "../../lib/flow-envelope.js";
 import path from "path";
 
-function main() {
-  const root = repoRoot(import.meta.url);
-  const cli = parseArgs(process.argv.slice(2), {
+export async function execute(ctx) {
+  const { root } = ctx;
+  const cli = parseArgs(ctx.args, {
     flags: ["--dry-run", "--skip-confirm"],
     defaults: { dryRun: false, skipConfirm: false },
   });
@@ -82,6 +83,3 @@ function main() {
     output: stdout,
   }));
 }
-
-export { main };
-runIfDirect(import.meta.url, main);

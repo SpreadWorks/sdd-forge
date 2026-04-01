@@ -6,13 +6,12 @@
  */
 
 import { execFileSync } from "child_process";
-import { runIfDirect } from "../../lib/entrypoint.js";
-import { repoRoot } from "../../lib/cli.js";
 import { ok, fail, output } from "../../lib/flow-envelope.js";
 
-function main() {
-  const root = repoRoot(import.meta.url);
-  const number = process.argv[2];
+export async function execute(ctx) {
+  const { root } = ctx;
+  const args = ctx.args;
+  const number = args[0];
 
   if (!number || !/^\d+$/.test(number)) {
     output(fail("get", "issue", "INVALID_NUMBER", "issue number required (positive integer)"));
@@ -37,6 +36,3 @@ function main() {
     output(fail("get", "issue", "GH_ERROR", e.message));
   }
 }
-
-export { main };
-runIfDirect(import.meta.url, main);
