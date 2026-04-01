@@ -1,0 +1,12 @@
+{
+  "entries": [
+    {
+      "step": "review",
+      "reason": "review.js を直接 import に変換したが commands/review.js が ctx 非対応で壊れた",
+      "trigger": "AI code review #4",
+      "resolution": "subprocess を復元。SDD_WORK_ROOT override は入れない（spec #114 修正維持）。テスト #4 を SDD_WORK_ROOT 不在チェックに変更",
+      "guardrailCandidate": "commands/*.js を ctx 対応に変換するまで subprocess を維持する",
+      "timestamp": "2026-04-01T07:03:14.092Z"
+    }
+  ]
+}

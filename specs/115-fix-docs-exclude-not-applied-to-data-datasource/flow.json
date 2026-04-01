@@ -1,0 +1,113 @@
+{
+  "spec": "specs/115-fix-docs-exclude-not-applied-to-data-datasource/spec.md",
+  "baseBranch": "development",
+  "featureBranch": "feature/115-fix-docs-exclude-not-applied-to-data-datasource",
+  "steps": [
+    {
+      "id": "approach",
+      "status": "done"
+    },
+    {
+      "id": "branch",
+      "status": "done"
+    },
+    {
+      "id": "prepare-spec",
+      "status": "done"
+    },
+    {
+      "id": "draft",
+      "status": "done"
+    },
+    {
+      "id": "spec",
+      "status": "done"
+    },
+    {
+      "id": "gate",
+      "status": "done"
+    },
+    {
+      "id": "approval",
+      "status": "done"
+    },
+    {
+      "id": "test",
+      "status": "done"
+    },
+    {
+      "id": "implement",
+      "status": "done"
+    },
+    {
+      "id": "review",
+      "status": "done"
+    },
+    {
+      "id": "finalize",
+      "status": "done"
+    },
+    {
+      "id": "commit",
+      "status": "pending"
+    },
+    {
+      "id": "push",
+      "status": "pending"
+    },
+    {
+      "id": "merge",
+      "status": "pending"
+    },
+    {
+      "id": "pr-create",
+      "status": "pending"
+    },
+    {
+      "id": "branch-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "pr-merge",
+      "status": "pending"
+    },
+    {
+      "id": "sync-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "docs-update",
+      "status": "pending"
+    },
+    {
+      "id": "docs-review",
+      "status": "pending"
+    },
+    {
+      "id": "docs-commit",
+      "status": "pending"
+    }
+  ],
+  "requirements": [
+    {
+      "desc": "R1: data コマンドが docs.exclude でエントリをフィルタして DataSource に渡す",
+      "status": "done"
+    },
+    {
+      "desc": "R2: filterByDocsExclude を共有ユーティリティに移動",
+      "status": "done"
+    },
+    {
+      "desc": "R3: docs.exclude 未設定時は既存動作維持",
+      "status": "done"
+    }
+  ],
+  "worktree": true,
+  "issue": 53,
+  "request": "fix docs.exclude not applied to data DataSource (StructureSource)",
+  "notes": [
+    "approach: [1] Q&A with self-Q&A (autoApprove). work-env: [1] worktree, base=development",
+    "draft: analysis をフィルタして DataSource に渡す方針。filterByDocsExclude を共有化"
+  ],
+  "autoApprove": true
+}

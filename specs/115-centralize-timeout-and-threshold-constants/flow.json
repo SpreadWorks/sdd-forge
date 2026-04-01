@@ -1,0 +1,120 @@
+{
+  "spec": "specs/115-centralize-timeout-and-threshold-constants/spec.md",
+  "baseBranch": "development",
+  "featureBranch": "feature/115-centralize-timeout-and-threshold-constants",
+  "steps": [
+    {
+      "id": "approach",
+      "status": "done"
+    },
+    {
+      "id": "branch",
+      "status": "done"
+    },
+    {
+      "id": "prepare-spec",
+      "status": "done"
+    },
+    {
+      "id": "draft",
+      "status": "done"
+    },
+    {
+      "id": "spec",
+      "status": "done"
+    },
+    {
+      "id": "gate",
+      "status": "done"
+    },
+    {
+      "id": "approval",
+      "status": "done"
+    },
+    {
+      "id": "test",
+      "status": "done"
+    },
+    {
+      "id": "implement",
+      "status": "done"
+    },
+    {
+      "id": "review",
+      "status": "done"
+    },
+    {
+      "id": "finalize",
+      "status": "done"
+    },
+    {
+      "id": "commit",
+      "status": "pending"
+    },
+    {
+      "id": "push",
+      "status": "pending"
+    },
+    {
+      "id": "merge",
+      "status": "pending"
+    },
+    {
+      "id": "pr-create",
+      "status": "pending"
+    },
+    {
+      "id": "branch-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "pr-merge",
+      "status": "pending"
+    },
+    {
+      "id": "sync-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "docs-update",
+      "status": "pending"
+    },
+    {
+      "id": "docs-review",
+      "status": "pending"
+    },
+    {
+      "id": "docs-commit",
+      "status": "pending"
+    }
+  ],
+  "requirements": [
+    {
+      "desc": "agent.js に DEFAULT_AGENT_TIMEOUT_MS を追加し export",
+      "status": "done"
+    },
+    {
+      "desc": "text/forge/translate のローカル定義を import に置換",
+      "status": "done"
+    },
+    {
+      "desc": "enrich/readme/agents の計算式を定数に置換",
+      "status": "done"
+    },
+    {
+      "desc": "callAgent/callAgentAsync 内部のフォールバックを定数に置換",
+      "status": "done"
+    },
+    {
+      "desc": "全テストがパス",
+      "status": "done"
+    }
+  ],
+  "worktree": true,
+  "issue": 55,
+  "request": "Issue #55: タイムアウト計算・閾値のハードコード集約",
+  "notes": [
+    "approach: Q&A(auto), work-env: worktree, base: development"
+  ],
+  "autoApprove": true
+}

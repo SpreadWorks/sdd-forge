@@ -126,13 +126,12 @@ See the [configuration reference](docs/configuration.md) for details.
 <!-- {{data("cli.docs.chapters", {header: "", labels: "Chapter|Summary", ignoreError: true})}} -->
 | Chapter | Summary |
 | --- | --- |
-| [Tool Overview and Architecture](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/overview.md) | sdd-forge is a Node.js CLI tool that automates technical documentation generation from static source code analysis an… |
-| [Technology Stack and Operations](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/stack_and_ops.md) | sdd-forge is a Node.js CLI tool written in JavaScript using ES modules, targeting Node.js 18.0.0 or higher. |
-| [Project Structure](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/project_structure.md) | The source tree is organized into five major directories: src/presets (preset definitions and tests), src/docs (docum… |
-| [CLI Command Reference](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/cli_commands.md) | sdd-forge provides more than 25 CLI commands organized under four top-level entry points: standalone commands (help, … |
-| [Configuration and Customization](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/configuration.md) | sdd-forge reads project configuration from a single JSON file located at .sdd-forge/config.json, with optional supple… |
-| [Internal Design](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/internal_design.md) | sdd-forge is organized into three layers: top-level CLI dispatchers (sdd-forge.js, docs.js, flow.js), feature-domain … |
-| [Development, Testing, and Distribution](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/development_testing.md) | This chapter covers the full development lifecycle of sdd-forge — from cloning the repository and setting up a local … |
+| [Tool Overview and Architecture](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/overview.md) | This chapter introduces sdd-forge — a CLI tool for automated documentation generation driven by source code analysis … |
+| [Technology Stack and Operations](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/stack_and_ops.md) | This chapter covers the technology stack, dependency management, and operational procedures for sdd-forge, a Node.js … |
+| [Project Structure](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/project_structure.md) | The project is organized into four major directories: src/ (entry points and controllers), src/docs/ (documentation g… |
+| [CLI Command Reference](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/cli_commands.md) | This chapter documents all CLI commands provided by sdd-forge, covering 4 top-level independent commands (help, setup… |
+| [Configuration and Customization](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/configuration.md) | sdd-forge is configured primarily through a single JSON file stored in the .sdd-forge/ directory at the root of each … |
+| [Internal Design](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/internal_design.md) | This chapter documents the internal structure of sdd-forge, organized into three layers: CLI entry-point commands, do… |
 <!-- {{/data}} -->
 
 ## License

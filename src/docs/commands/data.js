@@ -20,6 +20,7 @@ import { sddOutputDir } from "../../lib/config.js";
 import { createLogger } from "../../lib/progress.js";
 import { translate } from "../../lib/i18n.js";
 import { resolveCommandContext, getChapterFiles } from "../lib/command-context.js";
+import { filterAnalysisByDocsExclude } from "../lib/analysis-filter.js";
 
 const logger = createLogger("data");
 
@@ -122,7 +123,9 @@ async function main(ctx) {
     throw new Error(`${t("messages:data.analysisNotFound", { path: analysisPath })}\n${t("messages:data.runScanFirst")}`);
   }
 
-  const analysis = JSON.parse(fs.readFileSync(analysisPath, "utf8"));
+  const rawAnalysis = JSON.parse(fs.readFileSync(analysisPath, "utf8"));
+  const docsExclude = ctx.config?.docs?.exclude;
+  const analysis = filterAnalysisByDocsExclude(rawAnalysis, docsExclude);
 
   // type に基づくリゾルバを生成
   let resolveFn;

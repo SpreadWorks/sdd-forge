@@ -36,8 +36,7 @@
  * @property {string}   defaultLanguage      - Default output language
  * @property {"translate"|"generate"} [mode] - How non-default languages are produced
  * @property {DocumentStyle} [style]         - Document style settings
- * @property {number} [enrichBatchSize]      - Enrich batch size
- * @property {number} [enrichBatchLines]     - Enrich batch max lines
+ * (enrichBatchSize/enrichBatchLines removed — replaced by agent.batchTokenLimit)
  */
 
 /**
@@ -215,6 +214,11 @@ export function validateConfig(raw) {
   // agent.retryCount (省略可)
   if (raw.agent?.retryCount != null && (typeof raw.agent.retryCount !== "number" || raw.agent.retryCount < 1)) {
     errors.push("'agent.retryCount' must be a positive number if provided");
+  }
+
+  // agent.batchTokenLimit (省略可)
+  if (raw.agent?.batchTokenLimit != null && (typeof raw.agent.batchTokenLimit !== "number" || raw.agent.batchTokenLimit < 1000)) {
+    errors.push("'agent.batchTokenLimit' must be a number >= 1000 if provided");
   }
 
   // scan (省略可)

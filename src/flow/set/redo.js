@@ -1,4 +1,3 @@
-#!/usr/bin/env node
 /**
  * src/flow/set/redo.js
  *
@@ -8,9 +7,7 @@
 
 import fs from "fs";
 import path from "path";
-import { runIfDirect } from "../../lib/entrypoint.js";
-import { repoRoot, parseArgs } from "../../lib/cli.js";
-import { loadFlowState } from "../../lib/flow-state.js";
+import { parseArgs } from "../../lib/cli.js";
 import { ok, fail, output } from "../../lib/flow-envelope.js";
 
 /**
@@ -60,8 +57,8 @@ function saveRedoLog(root, specPath, redoLog) {
   fs.writeFileSync(redoPath, JSON.stringify(redoLog, null, 2) + "\n");
 }
 
-function main() {
-  const args = process.argv.slice(2);
+export async function execute(ctx) {
+  const args = ctx.args;
 
   let opts;
   try {
@@ -94,10 +91,10 @@ function main() {
     timestamp: new Date().toISOString(),
   };
 
-  const root = repoRoot(import.meta.url);
+  const { root } = ctx;
 
   try {
-    const state = loadFlowState(root);
+    const state = ctx.flowState;
     if (!state) {
       output(fail("set", "redo", "NO_FLOW", "no active flow (flow.json not found)"));
       return;
@@ -113,5 +110,4 @@ function main() {
   }
 }
 
-export { main, loadRedoLog, saveRedoLog };
-runIfDirect(import.meta.url, main);
+export { loadRedoLog, saveRedoLog };

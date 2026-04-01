@@ -1,17 +1,14 @@
-#!/usr/bin/env node
 /**
  * src/flow/set/summary.js
  *
  * flow set summary '<json-array>' — Set requirements list from a JSON string array.
  */
 
-import { runIfDirect } from "../../lib/entrypoint.js";
-import { repoRoot } from "../../lib/cli.js";
 import { setRequirements } from "../../lib/flow-state.js";
 import { ok, fail, output } from "../../lib/flow-envelope.js";
 
-function main() {
-  const args = process.argv.slice(2);
+export async function execute(ctx) {
+  const args = ctx.args;
   const raw = args[0];
 
   if (!raw) {
@@ -32,7 +29,7 @@ function main() {
     return;
   }
 
-  const root = repoRoot(import.meta.url);
+  const { root } = ctx;
 
   try {
     setRequirements(root, parsed);
@@ -41,6 +38,3 @@ function main() {
     output(fail("set", "summary", "SET_FAILED", e.message));
   }
 }
-
-export { main };
-runIfDirect(import.meta.url, main);

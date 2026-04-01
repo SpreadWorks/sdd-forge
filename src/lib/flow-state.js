@@ -314,7 +314,11 @@ export function saveFlowState(workRoot, state) {
 }
 
 /**
- * flow.json を .active-flow 経由で読み込む。存在しなければ null。
+ * flow.json を読み込む。存在しなければ null。
+ *
+ * Worktree 内の場合は branch 名から spec ID を導出し、
+ * .active-flow を経由せず直接 specs/NNN/flow.json を読む。
+ *
  * @param {string} workRoot
  * @param {string} [specId] - 明示的に spec ID を指定する場合
  * @returns {FlowState|null}
@@ -326,6 +330,15 @@ export function loadFlowState(workRoot, specId) {
     return JSON.parse(fs.readFileSync(p, "utf8"));
   }
 
+  // Worktree shortcut: derive spec ID from branch name directly
+  if (isInsideWorktree(workRoot)) {
+    const id = specIdFromBranch(workRoot);
+    if (id) {
+      const p = specFlowPath(workRoot, id);
+      if (fs.existsSync(p)) return JSON.parse(fs.readFileSync(p, "utf8"));
+    }
+  }
+
   const flows = loadActiveFlows(workRoot);
   const current = resolveCurrentFlow(workRoot, flows);
   if (!current) return null;
@@ -333,6 +346,25 @@ export function loadFlowState(workRoot, specId) {
   const p = specFlowPath(workRoot, current.spec);
   if (!fs.existsSync(p)) return null;
   return JSON.parse(fs.readFileSync(p, "utf8"));
+}
+
+/**
+ * Derive spec ID from the current branch name inside a worktree.
+ * Branch format: feature/<spec-id>
+ * @param {string} workRoot
+ * @returns {string|null}
+ */
+function specIdFromBranch(workRoot) {
+  try {
+    const branch = execFileSync("git", ["-C", workRoot, "rev-parse", "--abbrev-ref", "HEAD"], {
+      encoding: "utf8",
+    }).trim();
+    const prefix = "feature/";
+    if (branch.startsWith(prefix)) return branch.slice(prefix.length);
+    return null;
+  } catch (_) {
+    return null;
+  }
 }
 
 /**

@@ -1,0 +1,138 @@
+{
+  "spec": "specs/117-improve-enrich-speed/spec.md",
+  "baseBranch": "development",
+  "featureBranch": "feature/117-improve-enrich-speed",
+  "steps": [
+    {
+      "id": "approach",
+      "status": "done"
+    },
+    {
+      "id": "branch",
+      "status": "done"
+    },
+    {
+      "id": "prepare-spec",
+      "status": "done"
+    },
+    {
+      "id": "draft",
+      "status": "done"
+    },
+    {
+      "id": "spec",
+      "status": "done"
+    },
+    {
+      "id": "gate",
+      "status": "done"
+    },
+    {
+      "id": "approval",
+      "status": "done"
+    },
+    {
+      "id": "test",
+      "status": "done"
+    },
+    {
+      "id": "implement",
+      "status": "done"
+    },
+    {
+      "id": "review",
+      "status": "done"
+    },
+    {
+      "id": "finalize",
+      "status": "in_progress"
+    },
+    {
+      "id": "commit",
+      "status": "pending"
+    },
+    {
+      "id": "push",
+      "status": "pending"
+    },
+    {
+      "id": "merge",
+      "status": "pending"
+    },
+    {
+      "id": "pr-create",
+      "status": "pending"
+    },
+    {
+      "id": "branch-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "pr-merge",
+      "status": "pending"
+    },
+    {
+      "id": "sync-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "docs-update",
+      "status": "pending"
+    },
+    {
+      "id": "docs-review",
+      "status": "pending"
+    },
+    {
+      "id": "docs-commit",
+      "status": "pending"
+    }
+  ],
+  "requirements": [
+    {
+      "desc": "minify mode:essential",
+      "status": "done"
+    },
+    {
+      "desc": "buildEnrichPrompt Essential埋め込み",
+      "status": "done"
+    },
+    {
+      "desc": "splitIntoBatches トークンベース",
+      "status": "done"
+    },
+    {
+      "desc": "mapWithConcurrency並列化",
+      "status": "done"
+    },
+    {
+      "desc": "detail短縮",
+      "status": "done"
+    },
+    {
+      "desc": "keywords英語統一",
+      "status": "done"
+    },
+    {
+      "desc": "agent.batchTokenLimit追加",
+      "status": "done"
+    }
+  ],
+  "worktree": true,
+  "issue": 58,
+  "request": "#58 enrich 速度改善 — Essential 埋め込み + concurrency 並列化 + トークンベースバッチ分割 + detail 短縮 + keywords 英語統一",
+  "notes": [
+    "approach: Q&A で要件整理",
+    "work-env: worktree, base: development",
+    "draft: minify に mode オプション追加。デフォルト現行、mode:essential で Essential 抽出",
+    "draft: トークンベースバッチ分割。config 設定可能、デフォルト 10,000 tok",
+    "draft: batchTokenLimit は agent.batchTokenLimit に配置。デフォルト 10,000",
+    "review: auto-fix",
+    "finalize: select 1,2,4,5, squash merge, skip docs sync"
+  ],
+  "metrics": {
+    "draft": {
+      "question": 4
+    }
+  }
+}

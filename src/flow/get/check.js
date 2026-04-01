@@ -7,9 +7,6 @@
  */
 
 import { execFileSync } from "child_process";
-import { runIfDirect } from "../../lib/entrypoint.js";
-import { repoRoot } from "../../lib/cli.js";
-import { loadFlowState } from "../../lib/flow-state.js";
 import { ok, fail, output } from "../../lib/flow-envelope.js";
 
 const VALID_TARGETS = ["impl", "finalize", "dirty", "gh"];
@@ -63,9 +60,10 @@ function checkGh() {
   }
 }
 
-function main() {
-  const root = repoRoot(import.meta.url);
-  const target = process.argv[2];
+export async function execute(ctx) {
+  const { root } = ctx;
+  const args = ctx.args;
+  const target = args[0];
 
   if (!target) {
     output(fail("get", "check", "MISSING_TARGET", `target required. valid: ${VALID_TARGETS.join(", ")}`));
@@ -88,7 +86,7 @@ function main() {
   }
 
   // impl / finalize — need flow state
-  const state = loadFlowState(root);
+  const state = ctx.flowState;
   if (!state) {
     output(fail("get", "check", "NO_FLOW", "no active flow (flow.json not found)"));
     return;
@@ -97,6 +95,3 @@ function main() {
   const result = checkStepPrereqs(state, PREREQS[target]);
   output(ok("get", "check", result));
 }
-
-export { main };
-runIfDirect(import.meta.url, main);

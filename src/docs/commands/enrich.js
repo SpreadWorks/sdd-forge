@@ -13,20 +13,21 @@ import fs from "fs";
 import path from "path";
 import { runIfDirect } from "../../lib/entrypoint.js";
 import { parseArgs } from "../../lib/cli.js";
-import { sddOutputDir } from "../../lib/config.js";
-import { resolveAgent, callAgentAsync, DEFAULT_AGENT_TIMEOUT, resolveWorkDir } from "../../lib/agent.js";
+import { sddOutputDir, resolveConcurrency } from "../../lib/config.js";
+import { resolveAgent, callAgentAsync, DEFAULT_AGENT_TIMEOUT_MS, resolveWorkDir } from "../../lib/agent.js";
+import { minify } from "../lib/minify.js";
+import { mapWithConcurrency } from "../lib/concurrency.js";
 import { resolveCommandContext, loadFullAnalysis } from "../lib/command-context.js";
 import { resolveChaptersOrder } from "../lib/template-merger.js";
 import { buildCategoryMapFromDocs, mergeChapters } from "../lib/chapter-resolver.js";
-import { globToRegex } from "../lib/scanner.js";
+import { filterByDocsExclude } from "../lib/analysis-filter.js";
 import { createLogger } from "../../lib/progress.js";
 import { translate } from "../../lib/i18n.js";
 import { repairJson } from "../../lib/json-parse.js";
 import { ANALYSIS_META_KEYS } from "../lib/analysis-entry.js";
 
 const logger = createLogger("enrich");
-const DEFAULT_BATCH_SIZE = 20;
-const DEFAULT_BATCH_LINES = 3000;
+const DEFAULT_BATCH_TOKEN_LIMIT = 10000;
 
 
 function printHelp() {
@@ -76,60 +77,35 @@ function collectEntries(analysis) {
   return entries;
 }
 
-/**
- * docs.exclude パターンでエントリをフィルタする。
- * マッチしたエントリを除外し、残りを返す。
- *
- * @param {Array} entries - collectEntries() の結果
- * @param {string[]|undefined} excludePatterns - glob パターン配列
- * @returns {Array} フィルタ済みエントリ
- */
-function filterByDocsExclude(entries, excludePatterns) {
-  if (!excludePatterns?.length) return entries;
-  const regexes = excludePatterns.map((p) => globToRegex(p));
-  return entries.filter((e) => {
-    if (!e.file) return true;
-    return !regexes.some((re) => re.test(e.file));
-  });
-}
 
 function entryKey(category, index) {
   return `${category}:${index}`;
 }
 
 /**
- * エントリーを合計行数ベースでバッチに分割する。
- * 1バッチあたりの合計行数が maxLines を超えないようにする。
- * ただし1エントリーが maxLines を超える場合はそのエントリー単独で1バッチ。
+ * エントリーをトークン数ベースでバッチに分割する。
+ * 各エントリーの essential フィールド（Essential 抽出済みテキスト）のトークン数を基準にする。
+ * トークン数は Math.ceil(text.length / 4) で概算する。
  *
- * @param {Array} entries - collectEntries の結果
- * @param {number} maxLines - 1バッチあたりの最大合計行数
- * @param {number} maxItems - 1バッチあたりの最大件数（フォールバック）
+ * @param {Array} entries - collectEntries の結果（essential フィールド付き）
+ * @param {number} maxTokens - 1バッチあたりの最大トークン数
  * @returns {Array<Array>} バッチの配列
  */
-function splitIntoBatches(entries, maxLines, maxItems) {
-  if (maxLines <= 0) {
-    // 行数情報がない場合は件数ベースでフォールバック
-    const batches = [];
-    for (let i = 0; i < entries.length; i += maxItems) {
-      batches.push(entries.slice(i, i + maxItems));
-    }
-    return batches;
-  }
-
+function splitIntoBatches(entries, maxTokens) {
+  if (maxTokens <= 0) maxTokens = DEFAULT_BATCH_TOKEN_LIMIT;
   const batches = [];
   let current = [];
-  let currentLines = 0;
+  let currentTokens = 0;
 
   for (const entry of entries) {
-    // 現バッチに追加すると超過する場合、新バッチを開始
-    if (current.length > 0 && (currentLines + entry.lines > maxLines || current.length >= maxItems)) {
+    const tokens = Math.ceil((entry.essential || "").length / 4);
+    if (current.length > 0 && currentTokens + tokens > maxTokens) {
       batches.push(current);
       current = [];
-      currentLines = 0;
+      currentTokens = 0;
     }
     current.push(entry);
-    currentLines += entry.lines;
+    currentTokens += tokens;
   }
   if (current.length > 0) {
     batches.push(current);
@@ -148,16 +124,21 @@ function splitIntoBatches(entries, maxLines, maxItems) {
 function buildEnrichPrompt(chapters, batchEntries, opts) {
   const parts = [];
 
-  parts.push("Read each of the following source files and add structured metadata.");
+  parts.push("Analyze the following source code extracts and add structured metadata.");
   parts.push("");
 
-  // File list
+  // Embedded essential source
   parts.push("## Target files");
   parts.push("");
   for (const entry of batchEntries) {
-    parts.push(`- category: "${entry.category}", index: ${entry.index}, file: "${entry.file}"`);
+    parts.push(`### [${entry.category}:${entry.index}] ${entry.file}`);
+    if (entry.essential) {
+      parts.push("```");
+      parts.push(entry.essential);
+      parts.push("```");
+    }
+    parts.push("");
   }
-  parts.push("");
 
   // Chapter list (accepts both string[] and {chapter, desc}[])
   parts.push("## Available chapters");
@@ -182,10 +163,10 @@ function buildEnrichPrompt(chapters, batchEntries, opts) {
   parts.push('    {');
   parts.push('      "index": 0,');
   parts.push('      "summary": "1-2 sentence summary of what this file/class does",');
-  parts.push('      "detail": "Detailed description of the implementation, key logic, patterns used. Do not omit information.",');
+  parts.push('      "detail": "3-5 sentences summarizing key implementation patterns and logic.",');
   parts.push('      "chapter": "chapter_name (from the available chapters list, without .md)",');
   parts.push('      "role": "one of: controller, model, lib, config, cli, middleware, test, migration, route, view, other",');
-  parts.push('      "keywords": ["keyword1", "keyword2", "synonym", "関連語"]');
+  parts.push('      "keywords": ["keyword1", "keyword2", "synonym"]');
   parts.push('    }');
   parts.push('  ]');
   parts.push('}');
@@ -208,7 +189,7 @@ function buildEnrichPrompt(chapters, batchEntries, opts) {
   parts.push("- Group entries by category in the output.");
   parts.push("- The `index` field must match the original index provided above.");
   parts.push("- `summary` should be concise (1-2 sentences).");
-  parts.push("- `detail` should capture implementation details from the source code. Do not truncate or summarize away important information.");
+  parts.push("- `detail`: 3-5 sentences summarizing key implementation patterns and logic.");
   parts.push("- `chapter` must be one of the available chapter names (without .md extension).");
   if (monorepoApps) {
     parts.push("- `app` must be one of the monorepo app names listed above (omit if file does not belong to any app).");
@@ -216,8 +197,8 @@ function buildEnrichPrompt(chapters, batchEntries, opts) {
   const LANG_NAMES = { en: "English", ja: "Japanese", zh: "Chinese", ko: "Korean", fr: "French", de: "German", es: "Spanish", pt: "Portuguese", it: "Italian", ru: "Russian" };
   const lang = opts?.lang || "en";
   const langName = LANG_NAMES[lang] || lang;
-  parts.push("- `keywords` should contain 3-10 search keywords including synonyms, related terms, and translations (e.g. both English and Japanese terms). Keywords are used for context search.");
-  parts.push(`- Write summary, detail, and any descriptive content strictly in ${langName}. keywords may contain terms in any language for cross-language search.`);
+  parts.push("- `keywords` must be in English. Include 3-10 search keywords with synonyms and related terms.");
+  parts.push(`- Write summary, detail, and any descriptive content strictly in ${langName}.`);
 
   return parts.join("\n");
 }
@@ -442,19 +423,32 @@ async function main(ctx) {
     logger.log(`enriching ${pending.length} entries with AI...`);
   }
 
-  // Split into batches (lines-based with item count fallback)
-  const maxItems = Number(config.docs?.enrichBatchSize || 0) || DEFAULT_BATCH_SIZE;
-  const maxLines = Number(config.docs?.enrichBatchLines || 0) || DEFAULT_BATCH_LINES;
-  const retryCount = Number(config?.agent?.retryCount) || 0;
-  const hasLines = pending.some((e) => e.lines > 0);
-  const batches = splitIntoBatches(pending, hasLines ? maxLines : 0, maxItems);
+  // Extract essential source for each entry
+  const { sourceRoot } = ctx;
+  for (const entry of pending) {
+    try {
+      const filePath = path.resolve(sourceRoot || root, entry.file);
+      const code = fs.readFileSync(filePath, "utf8");
+      entry.essential = minify(code, entry.file, { mode: "essential" });
+    } catch (_) {
+      entry.essential = "";
+    }
+  }
 
-  const timeoutMs = config.agent?.timeout ? Number(config.agent.timeout) * 1000 : DEFAULT_AGENT_TIMEOUT * 1000;
+  // Split into batches (token-based)
+  const maxTokens = Number(config.agent?.batchTokenLimit || 0) || DEFAULT_BATCH_TOKEN_LIMIT;
+  const retryCount = Number(config?.agent?.retryCount) || 0;
+  const batches = splitIntoBatches(pending, maxTokens);
+  const concurrency = resolveConcurrency(config);
+
+  const timeoutMs = config.agent?.timeout ? Number(config.agent.timeout) * 1000 : DEFAULT_AGENT_TIMEOUT_MS;
   let totalEnriched = 0;
 
-  for (let b = 0; b < batches.length; b++) {
-    const batch = batches[b];
-    logger.log(`batch ${b + 1}/${batches.length} (${batch.length} entries)`);
+  logger.log(`${batches.length} batches (token limit: ${maxTokens}, concurrency: ${concurrency})`);
+
+  await mapWithConcurrency(batches, concurrency, async (batch) => {
+    const batchIdx = batches.indexOf(batch);
+    logger.log(`batch ${batchIdx + 1}/${batches.length} (${batch.length} entries)`);
 
     const prompt = buildEnrichPrompt(chapters, batch, { monorepoApps: config.monorepo?.apps, lang: config.docs?.defaultLanguage || "en" });
 
@@ -465,7 +459,7 @@ async function main(ctx) {
       });
     } catch (err) {
       saveProgress(root, analysis, totalEnriched, ctx);
-      throw new Error(formatBatchError(err, b, batches));
+      throw new Error(formatBatchError(err, batchIdx, batches));
     }
 
     const enrichment = parseEnrichResponse(response);
@@ -473,12 +467,12 @@ async function main(ctx) {
       // Dump failed response for debugging (to workDir, not .sdd-forge/output/)
       const dumpDir = resolveWorkDir(root, config);
       fs.mkdirSync(dumpDir, { recursive: true });
-      const dumpPath = path.join(dumpDir, `enrich-fail-batch${b + 1}.txt`);
+      const dumpPath = path.join(dumpDir, `enrich-fail-batch${batchIdx + 1}.txt`);
       try { fs.writeFileSync(dumpPath, response); } catch (_) { /* ignore */ }
       logger.log(`response preview (${response.length} chars): ${response.slice(0, 200)}...`);
       logger.log(`full response dumped to: ${path.relative(root, dumpPath)}`);
       saveProgress(root, analysis, totalEnriched, ctx);
-      throw new Error(`enrich: could not parse AI response at batch ${b + 1}/${batches.length}.`);
+      throw new Error(`enrich: could not parse AI response at batch ${batchIdx + 1}/${batches.length}.`);
     }
 
     // Merge batch results into analysis (mutates)
@@ -500,7 +494,7 @@ async function main(ctx) {
     if (!ctx.dryRun && !ctx.stdout) {
       saveAnalysis(root, analysis);
     }
-  }
+  });
 
   logger.log(`enriched ${totalEnriched} entries in ${batches.length} batches`);
 
@@ -521,8 +515,7 @@ export {
   collectEntries,
   filterByDocsExclude,
   splitIntoBatches,
-  DEFAULT_BATCH_SIZE,
-  DEFAULT_BATCH_LINES,
+  DEFAULT_BATCH_TOKEN_LIMIT,
 };
 
 runIfDirect(import.meta.url, main);

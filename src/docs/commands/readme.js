@@ -21,7 +21,7 @@ import { resolveCommandContext, loadFullAnalysis } from "../lib/command-context.
 import { processTemplate } from "./text.js";
 import { buildTextSystemPrompt } from "../lib/text-prompts.js";
 import { loadConfig, resolveConcurrency } from "../../lib/config.js";
-import { loadAgentConfig, ensureAgentWorkDir, DEFAULT_AGENT_TIMEOUT } from "../../lib/agent.js";
+import { loadAgentConfig, ensureAgentWorkDir, DEFAULT_AGENT_TIMEOUT_MS } from "../../lib/agent.js";
 
 const logger = createLogger("readme");
 
@@ -148,7 +148,7 @@ async function main(ctx) {
       const analysis = loadFullAnalysis(root) || {};
       const documentStyle = cfg.docs?.style;
       const systemPrompt = buildTextSystemPrompt(documentStyle, lang);
-      const timeoutMs = DEFAULT_AGENT_TIMEOUT * 1000;
+      const timeoutMs = DEFAULT_AGENT_TIMEOUT_MS;
 
       const result = await processTemplate(
         resolved, analysis, "README.md", agent, timeoutMs,

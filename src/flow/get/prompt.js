@@ -7,9 +7,6 @@
  * Responds in the language configured in .sdd-forge/config.json (lang field).
  */
 
-import { runIfDirect } from "../../lib/entrypoint.js";
-import { repoRoot } from "../../lib/cli.js";
-import { loadFlowState } from "../../lib/flow-state.js";
 import { ok, fail, output } from "../../lib/flow-envelope.js";
 
 /**
@@ -313,25 +310,15 @@ const PROMPTS_BY_LANG = {
   },
 };
 
-/** Resolve language from config, defaulting to "en". */
-async function resolveLang(root) {
-  try {
-    const { loadConfig } = await import("../../lib/config.js");
-    const config = loadConfig(root);
-    return config.lang || "en";
-  } catch {
-    return "en";
-  }
-}
-
 /** Get all valid kind names (from ja, which is the superset). */
 function validKinds() {
   return Object.keys(PROMPTS_BY_LANG.ja);
 }
 
-async function main() {
-  const root = repoRoot(import.meta.url);
-  const kind = process.argv[2];
+export async function execute(ctx) {
+  const { root } = ctx;
+  const args = ctx.args;
+  const kind = args[0];
 
   if (!kind) {
     output(fail("get", "prompt", "MISSING_KIND",
@@ -345,14 +332,15 @@ async function main() {
     return;
   }
 
-  const lang = await resolveLang(root);
+  const config = ctx.config;
+  const lang = config?.lang || "en";
   const prompts = PROMPTS_BY_LANG[lang] || PROMPTS_BY_LANG.en;
   const def = prompts[kind] || PROMPTS_BY_LANG.en[kind];
 
   // Get qa-count for current/total if in draft phase
   let current = null;
   let total = null;
-  const state = loadFlowState(root);
+  const state = ctx.flowState;
   if (state?.metrics?.draft) {
     current = state.metrics.draft.question || 0;
   }
@@ -368,6 +356,3 @@ async function main() {
     choices: def.choices.map(({ id, label, description, recommended }) => ({ id, label, description, recommended })),
   }));
 }
-
-export { main };
-runIfDirect(import.meta.url, main);

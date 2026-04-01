@@ -12,7 +12,7 @@ import path from "path";
 import { runIfDirect } from "../../lib/entrypoint.js";
 import { parseArgs } from "../../lib/cli.js";
 import { sddOutputDir } from "../../lib/config.js";
-import { callAgent, loadAgentConfig, DEFAULT_AGENT_TIMEOUT } from "../../lib/agent.js";
+import { callAgent, loadAgentConfig, DEFAULT_AGENT_TIMEOUT_MS } from "../../lib/agent.js";
 import { translate } from "../../lib/i18n.js";
 import { createResolver } from "../lib/resolver-factory.js";
 import { createLogger } from "../../lib/progress.js";
@@ -201,7 +201,7 @@ async function main(ctx) {
     const prompt = buildRefinePrompt(projectContent, combinedDocs, config, srcRoot, sddContent);
 
     try {
-      const result = callAgent(agent, prompt, DEFAULT_AGENT_TIMEOUT * 1000, undefined, { systemPrompt });
+      const result = callAgent(agent, prompt, DEFAULT_AGENT_TIMEOUT_MS, undefined, { systemPrompt });
 
       let refined = result.trim();
 

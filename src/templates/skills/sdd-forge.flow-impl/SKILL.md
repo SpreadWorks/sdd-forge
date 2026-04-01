@@ -38,12 +38,14 @@ Before starting, run `sdd-forge flow get check impl` to verify prerequisites.
    - **On start**: `sdd-forge flow set step implement in_progress`
    - Read the spec to understand requirements.
    - Run `sdd-forge flow get context --raw` to understand the project structure. For files needing deeper understanding, use `sdd-forge flow get context <path> --raw`.
+   - Run `sdd-forge flow get context --search "<spec goal>" --raw` to retrieve related entries with detail. Use the spec's Goal section as the search query.
    - Load guardrail articles for the implementation phase: `sdd-forge flow get guardrail impl`.
      If output is non-empty, follow these principles during implementation.
    - Code only after confirming gate PASS and test phase completion.
    - Aim to make tests pass.
    - **Update requirements as you go**: `sdd-forge flow set req <index> done` for each completed requirement.
    - Run tests to verify: use the test command from `package.json` scripts or the project's test runner.
+   - **MUST: If test failures are caused by pre-existing bugs (not the current spec's changes)**, record them in redolog (`sdd-forge flow set redo --step implement --reason "..."`) before applying a workaround or adjusting the test.
    - **Retry limit for test fixes: 5 attempts.** If tests do not pass after 5 fix-and-rerun cycles, STOP and return control to the user.
    - **On complete**: `sdd-forge flow set step implement done`
 

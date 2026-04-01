@@ -91,23 +91,11 @@ describe("collectEntries", () => {
   });
 });
 
-describe("splitIntoBatches", () => {
-  it("splits by item count when maxLines is 0", () => {
-    const entries = Array.from({ length: 5 }, (_, i) => ({ lines: 100, index: i }));
-    const batches = splitIntoBatches(entries, 0, 2);
-    assert.equal(batches.length, 3);
-    assert.equal(batches[0].length, 2);
-    assert.equal(batches[1].length, 2);
-    assert.equal(batches[2].length, 1);
-  });
-
-  it("splits by total lines", () => {
-    const entries = [
-      { lines: 100 }, { lines: 100 }, { lines: 100 },
-      { lines: 100 }, { lines: 100 },
-    ];
-    const batches = splitIntoBatches(entries, 250, 20);
-    // 100+100=200 OK, +100=300 > 250, so batch 1 = 2 items
+describe("splitIntoBatches (token-based)", () => {
+  it("splits by token count", () => {
+    // Each essential is 400 chars = 100 tokens. Limit 250 → 2 per batch
+    const entries = Array.from({ length: 5 }, (_, i) => ({ essential: "x".repeat(400), index: i }));
+    const batches = splitIntoBatches(entries, 250);
     assert.equal(batches.length, 3);
     assert.equal(batches[0].length, 2);
     assert.equal(batches[1].length, 2);
@@ -116,20 +104,28 @@ describe("splitIntoBatches", () => {
 
   it("puts a single large file in its own batch", () => {
     const entries = [
-      { lines: 5000 }, // exceeds maxLines alone
-      { lines: 50 },
-      { lines: 50 },
+      { essential: "x".repeat(20000) }, // 5000 tokens, exceeds limit alone
+      { essential: "x".repeat(200) },   // 50 tokens
+      { essential: "x".repeat(200) },   // 50 tokens
     ];
-    const batches = splitIntoBatches(entries, 3000, 20);
+    const batches = splitIntoBatches(entries, 3000);
     assert.equal(batches.length, 2);
     assert.equal(batches[0].length, 1); // large file alone
     assert.equal(batches[1].length, 2); // small files together
   });
 
-  it("respects maxItems even when lines budget remains", () => {
-    const entries = Array.from({ length: 10 }, () => ({ lines: 10 }));
-    const batches = splitIntoBatches(entries, 99999, 3);
-    assert.equal(batches.length, 4); // 3+3+3+1
+  it("handles entries without essential field", () => {
+    const entries = [{ file: "a.js" }, { file: "b.js" }, { file: "c.js" }];
+    const batches = splitIntoBatches(entries, 1000);
+    assert.equal(batches.length, 1); // all 0 tokens, fit in one batch
+    assert.equal(batches[0].length, 3);
+  });
+
+  it("uses default limit when maxTokens is 0", () => {
+    const entries = Array.from({ length: 3 }, () => ({ essential: "x".repeat(400) }));
+    const batches = splitIntoBatches(entries, 0);
+    // Default 10000 tokens, each entry is 100 tokens → all fit in one batch
+    assert.equal(batches.length, 1);
   });
 
   it("handles empty entries", () => {
@@ -155,21 +151,23 @@ describe("buildEnrichPrompt", () => {
     assert.ok(prompt.includes("JSON"));
   });
 
-  it("includes category and index in file list", () => {
+  it("includes category and index in file header", () => {
     const batchEntries = [
-      { category: "modules", index: 5, file: "src/lib/config.js" },
+      { category: "modules", index: 5, file: "src/lib/config.js", essential: "import fs from 'fs';" },
     ];
     const prompt = buildEnrichPrompt(["overview.md"], batchEntries);
-    assert.ok(prompt.includes('category: "modules"'));
-    assert.ok(prompt.includes("index: 5"));
+    assert.ok(prompt.includes("[modules:5]"));
+    assert.ok(prompt.includes("src/lib/config.js"));
   });
 
-  it("instructs AI to read source files", () => {
-    const prompt = buildEnrichPrompt(["overview.md"], [
-      { category: "modules", index: 0, file: "src/a.js" },
-    ]);
-    assert.ok(prompt.includes("Read"));
-    assert.ok(prompt.includes("source file"));
+  it("embeds essential source in prompt", () => {
+    const batchEntries = [
+      { category: "modules", index: 0, file: "src/a.js", essential: "export function foo() {\nreturn 1;" },
+    ];
+    const prompt = buildEnrichPrompt(["overview.md"], batchEntries);
+    assert.ok(prompt.includes("export function foo()"));
+    assert.ok(prompt.includes("return 1"));
+    assert.ok(prompt.includes("Analyze"));
   });
 });
 

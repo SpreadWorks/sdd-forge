@@ -1,4 +1,3 @@
-#!/usr/bin/env node
 /**
  * src/flow/run/prepare-spec.js
  *
@@ -8,8 +7,7 @@
 
 import fs from "fs";
 import path from "path";
-import { runIfDirect } from "../../lib/entrypoint.js";
-import { repoRoot, parseArgs, isInsideWorktree } from "../../lib/cli.js";
+import { parseArgs, isInsideWorktree } from "../../lib/cli.js";
 import { sddConfigPath, sddDir, DEFAULT_LANG } from "../../lib/config.js";
 import { runSync } from "../../lib/process.js";
 import { translate } from "../../lib/i18n.js";
@@ -150,8 +148,8 @@ function createSpecTemplate({ branchName, specDirName }, root, lang) {
     .replace(/\{\{STATUS\}\}/g, "Draft");
 }
 
-function main() {
-  const root = repoRoot(import.meta.url);
+export async function execute(ctx) {
+  const { root } = ctx;
 
   // Dirty worktree check — abort early if uncommitted changes exist
   const { dirty, dirtyFiles } = getWorktreeStatus(root);
@@ -160,7 +158,7 @@ function main() {
     return;
   }
 
-  const cli = parseArgs(process.argv.slice(2), {
+  const cli = parseArgs(ctx.args, {
     flags: ["--no-branch", "--worktree", "--dry-run"],
     options: ["--title", "--base"],
     defaults: { title: "", base: "", noBranch: false, worktree: false, dryRun: false },
@@ -189,9 +187,12 @@ function main() {
     return;
   }
 
-  const configPath = sddConfigPath(root);
-  const sddConfig = fs.existsSync(configPath) ? JSON.parse(fs.readFileSync(configPath, "utf8")) : null;
-  const lang = sddConfig?.lang || DEFAULT_LANG;
+  const config = ctx.config;
+  if (!config) {
+    output(fail("run", "prepare-spec", "NO_CONFIG", "config.json not found"));
+    return;
+  }
+  const lang = config.lang || DEFAULT_LANG;
   cli.base = cli.base || detectBaseBranch(root);
 
   // Determine branching strategy
@@ -328,6 +329,3 @@ function main() {
     output: lines.join("\n"),
   }));
 }
-
-export { main };
-runIfDirect(import.meta.url, main);

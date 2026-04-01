@@ -2,51 +2,150 @@
  * src/flow/registry.js
  *
  * Single source of truth for flow subcommand metadata.
- * Used by dispatchers (flow.js, get.js, set.js, run.js) and help.js.
+ * Each command is defined declaratively with helpKey, execute,
+ * and optional before/after hooks.
+ *
+ * Used by flow.js dispatcher and help.js.
  */
 
+import { updateStepStatus } from "../lib/flow-state.js";
+
+/**
+ * Create a before hook that sets a step to in_progress.
+ * @param {string} stepId
+ * @returns {(ctx: object) => void}
+ */
+function stepBefore(stepId) {
+  return (ctx) => updateStepStatus(ctx.root, stepId, "in_progress");
+}
+
+/**
+ * Create an after hook that sets a step status based on result.
+ * @param {string} stepId
+ * @param {(result: object) => string} [statusFn] - derive status from result; defaults to "done"
+ * @returns {(ctx: object, result: object) => void}
+ */
+function stepAfter(stepId, statusFn) {
+  return (ctx, result) => {
+    const status = statusFn ? statusFn(result) : "done";
+    updateStepStatus(ctx.root, stepId, status);
+  };
+}
+
 export const FLOW_COMMANDS = {
+  prepare: {
+    helpKey: "flow.prepare",
+    requiresFlow: false,
+    execute: () => import("./run/prepare-spec.js"),
+  },
   get: {
-    script: "flow/get.js",
-    desc: { en: "Read flow state (status, check, prompt, guardrail, ...)", ja: "フロー状態を取得（status, check, prompt, guardrail, ...）" },
-    keys: {
-      status:            { script: "flow/get/status.js",          desc: { en: "Show current flow state", ja: "現在のフロー状態を表示" } },
-      "resolve-context": { script: "flow/get/resolve-context.js", desc: { en: "Resolve worktree/repo paths for context recovery", ja: "worktree/リポジトリパスを解決" } },
-      check:             { script: "flow/get/check.js",           desc: { en: "Check prerequisites (impl, finalize, dirty, gh)", ja: "前提条件チェック（impl, finalize, dirty, gh）" } },
-      prompt:            { script: "flow/get/prompt.js",          desc: { en: "Get structured prompt for a flow step", ja: "フローステップの構造化プロンプトを取得" } },
-      "qa-count":        { script: "flow/get/qa-count.js",        desc: { en: "Get answered question count", ja: "回答済み質問数を取得" } },
-      guardrail:         { script: "flow/get/guardrail.js",       desc: { en: "Get guardrail articles filtered by phase", ja: "フェーズでフィルタしたガードレール記事を取得" } },
-      issue:             { script: "flow/get/issue.js",           desc: { en: "Get GitHub issue content as JSON", ja: "GitHub Issue の内容を JSON で取得" } },
-      context:           { script: "flow/get/context.js",         desc: { en: "Get filtered project context from analysis", ja: "analysis からフィルタ済みプロジェクトコンテキストを取得" } },
+    status: {
+      helpKey: "flow.get.status",
+      execute: () => import("./get/status.js"),
+    },
+    "resolve-context": {
+      helpKey: "flow.get.resolve-context",
+      execute: () => import("./get/resolve-context.js"),
+    },
+    check: {
+      helpKey: "flow.get.check",
+      execute: () => import("./get/check.js"),
+    },
+    prompt: {
+      helpKey: "flow.get.prompt",
+      requiresFlow: false,
+      execute: () => import("./get/prompt.js"),
+    },
+    "qa-count": {
+      helpKey: "flow.get.qa-count",
+      execute: () => import("./get/qa-count.js"),
+    },
+    guardrail: {
+      helpKey: "flow.get.guardrail",
+      requiresFlow: false,
+      execute: () => import("./get/guardrail.js"),
+    },
+    issue: {
+      helpKey: "flow.get.issue",
+      requiresFlow: false,
+      execute: () => import("./get/issue.js"),
+    },
+    context: {
+      helpKey: "flow.get.context",
+      execute: () => import("./get/context.js"),
     },
   },
   set: {
-    script: "flow/set.js",
-    desc: { en: "Update flow state (step, req, note, metric, ...)", ja: "フロー状態を更新（step, req, note, metric, ...）" },
-    keys: {
-      step:    { script: "flow/set/step.js",    desc: { en: "Update step status", ja: "ステップ状態を更新" } },
-      request: { script: "flow/set/request.js", desc: { en: "Set user request", ja: "ユーザーリクエストを設定" } },
-      issue:   { script: "flow/set/issue.js",   desc: { en: "Set GitHub issue number", ja: "GitHub Issue 番号を設定" } },
-      note:    { script: "flow/set/note.js",     desc: { en: "Append a note", ja: "メモを追記" } },
-      summary: { script: "flow/set/summary.js", desc: { en: "Set requirements list", ja: "要件リストを設定" } },
-      req:     { script: "flow/set/req.js",     desc: { en: "Update requirement status", ja: "要件ステータスを更新" } },
-      metric:  { script: "flow/set/metric.js",  desc: { en: "Increment a metric counter", ja: "メトリクスカウンターをインクリメント" } },
-      redo:    { script: "flow/set/redo.js",    desc: { en: "Record a redo entry", ja: "redo エントリーを記録" } },
-      auto:    { script: "flow/set/auto.js",    desc: { en: "Enable/disable autoApprove mode", ja: "autoApprove モードの ON/OFF" } },
+    step: {
+      helpKey: "flow.set.step",
+      execute: () => import("./set/step.js"),
+    },
+    request: {
+      helpKey: "flow.set.request",
+      execute: () => import("./set/request.js"),
+    },
+    issue: {
+      helpKey: "flow.set.issue",
+      execute: () => import("./set/issue.js"),
+    },
+    note: {
+      helpKey: "flow.set.note",
+      execute: () => import("./set/note.js"),
+    },
+    summary: {
+      helpKey: "flow.set.summary",
+      execute: () => import("./set/summary.js"),
+    },
+    req: {
+      helpKey: "flow.set.req",
+      execute: () => import("./set/req.js"),
+    },
+    metric: {
+      helpKey: "flow.set.metric",
+      execute: () => import("./set/metric.js"),
+    },
+    redo: {
+      helpKey: "flow.set.redo",
+      execute: () => import("./set/redo.js"),
+    },
+    auto: {
+      helpKey: "flow.set.auto",
+      execute: () => import("./set/auto.js"),
     },
   },
   run: {
-    script: "flow/run.js",
-    desc: { en: "Execute flow actions (prepare-spec, gate, finalize, ...)", ja: "フローアクションを実行（prepare-spec, gate, finalize, ...）" },
-    keys: {
-      "prepare-spec":  { script: "flow/run/prepare-spec.js",  desc: { en: "Create branch/worktree and initialize spec", ja: "ブランチ/worktree 作成 + spec 初期化" } },
-      gate:            { script: "flow/run/gate.js",           desc: { en: "Run spec gate check", ja: "spec ゲートチェックを実行" } },
-      review:          { script: "flow/run/review.js",         desc: { en: "Run AI code quality review", ja: "AI コードレビューを実行" } },
-      "impl-confirm":  { script: "flow/run/impl-confirm.js",  desc: { en: "Confirm implementation readiness", ja: "実装準備を確認" } },
-      finalize:        { script: "flow/run/finalize.js",       desc: { en: "Execute finalization pipeline", ja: "ファイナライズパイプラインを実行" } },
-      sync:            { script: "flow/run/sync.js",           desc: { en: "Sync documentation", ja: "ドキュメントを同期" } },
-      lint:            { script: "flow/run/lint.js",           desc: { en: "Run guardrail lint check", ja: "ガードレール lint チェックを実行" } },
-      retro:           { script: "flow/run/retro.js",          desc: { en: "Run spec retrospective evaluation", ja: "spec リトロスペクティブ評価を実行" } },
+    gate: {
+      helpKey: "flow.run.gate",
+      before: stepBefore("gate"),
+      execute: () => import("./run/gate.js"),
+      after: stepAfter("gate", (result) => result?.data?.result === "pass" ? "done" : "in_progress"),
+    },
+    review: {
+      helpKey: "flow.run.review",
+      before: stepBefore("review"),
+      execute: () => import("./run/review.js"),
+      after: stepAfter("review"),
+    },
+    "impl-confirm": {
+      helpKey: "flow.run.impl-confirm",
+      execute: () => import("./run/impl-confirm.js"),
+    },
+    finalize: {
+      helpKey: "flow.run.finalize",
+      execute: () => import("./run/finalize.js"),
+    },
+    sync: {
+      helpKey: "flow.run.sync",
+      requiresFlow: false,
+      execute: () => import("./run/sync.js"),
+    },
+    lint: {
+      helpKey: "flow.run.lint",
+      execute: () => import("./run/lint.js"),
+    },
+    retro: {
+      helpKey: "flow.run.retro",
+      execute: () => import("./run/retro.js"),
     },
   },
 };

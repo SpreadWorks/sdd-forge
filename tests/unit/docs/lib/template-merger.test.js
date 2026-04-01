@@ -273,3 +273,34 @@ describe("resolveTemplates", () => {
     }
   });
 });
+
+describe("resolveChaptersOrder — exclude:true", () => {
+  it("filters out chapters with exclude:true from configChapters", () => {
+    const configChapters = [
+      { chapter: "overview.md" },
+      { chapter: "development_testing.md", exclude: true },
+      { chapter: "stack_and_ops.md" },
+    ];
+    const result = resolveChaptersOrder("base", configChapters);
+    assert.ok(result.includes("overview.md"));
+    assert.ok(result.includes("stack_and_ops.md"));
+    assert.ok(!result.includes("development_testing.md"));
+  });
+
+  it("keeps chapters with exclude:false", () => {
+    const configChapters = [
+      { chapter: "overview.md", exclude: false },
+      { chapter: "stack_and_ops.md" },
+    ];
+    const result = resolveChaptersOrder("base", configChapters);
+    assert.ok(result.includes("overview.md"));
+    assert.ok(result.includes("stack_and_ops.md"));
+  });
+
+  it("handles old string format without breaking", () => {
+    const configChapters = ["overview.md", "stack_and_ops.md"];
+    const result = resolveChaptersOrder("base", configChapters);
+    assert.ok(result.includes("overview.md"));
+    assert.ok(result.includes("stack_and_ops.md"));
+  });
+});

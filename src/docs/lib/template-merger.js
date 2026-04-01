@@ -365,7 +365,10 @@ export function resolveChaptersOrder(presetKeys, configChapters) {
   // config.json の chapters が定義されていればプリセットを完全上書き
   if (configChapters?.length) {
     // Support both old string[] and new object[] formats
-    return configChapters.map((c) => typeof c === "string" ? c : c.chapter);
+    // Filter out chapters with exclude: true
+    return configChapters
+      .filter((c) => typeof c === "string" || !c.exclude)
+      .map((c) => typeof c === "string" ? c : c.chapter);
   }
 
   const keys = Array.isArray(presetKeys) ? presetKeys : [presetKeys];

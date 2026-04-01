@@ -45,11 +45,11 @@ Available status values: `pending`, `in_progress`, `done`, `skipped`
      - 2 → ask which branch and use `--base <user-specified-branch>`.
 
 3. Create or select spec (`prepare-spec`).
-   - Run `sdd-forge flow run prepare-spec`. If it returns `{ok: false, code: "DIRTY_WORKTREE"}`, run `sdd-forge flow get prompt plan.dirty-worktree` and present the choices. Do not retry until the worktree is clean.
+   - Run `sdd-forge flow prepare`. If it returns `{ok: false, code: "DIRTY_WORKTREE"}`, run `sdd-forge flow get prompt plan.dirty-worktree` and present the choices. Do not retry until the worktree is clean.
    - Commands (based on step 2 choice):
-     - Worktree: `sdd-forge flow run prepare-spec --title "..." --base <branch> --worktree`
-     - Branch: `sdd-forge flow run prepare-spec --title "..." --base <branch>`
-     - No branch: `sdd-forge flow run prepare-spec --title "..." --no-branch`
+     - Worktree: `sdd-forge flow prepare --title "..." --base <branch> --worktree`
+     - Branch: `sdd-forge flow prepare --title "..." --base <branch>`
+     - No branch: `sdd-forge flow prepare --title "..." --no-branch`
    - This creates the branch, `specs/NNN-xxx/` directory, `spec.md` skeleton, and `specs/NNN-xxx/flow.json`.
    - The base branch is automatically recorded.
    - **After flow.json is created**, mark steps 1-3 as done:
@@ -100,7 +100,8 @@ Available status values: `pending`, `in_progress`, `done`, `skipped`
         Use the issue content as context for the draft discussion.
      2. Run `sdd-forge flow run scan` to ensure analysis.json is up to date.
      3. Run `sdd-forge flow get context --raw` to understand the project structure. Use this output to identify relevant files and modules.
-     4. Load guardrail articles for the draft phase: `sdd-forge flow get guardrail draft`.
+     4. Run `sdd-forge flow get context --search "<request text or issue title>" --raw` to retrieve related entries with detail. Use the request text or issue title as the search query.
+     5. Load guardrail articles for the draft phase: `sdd-forge flow get guardrail draft`.
         If output is non-empty, consider these principles as constraints when asking questions and making proposals.
    - Create `specs/NNN-xxx/draft.md` in the spec directory created in step 3.
    - AI presents choices/proposals → user selects with short answers.
@@ -120,6 +121,7 @@ Available status values: `pending`, `in_progress`, `done`, `skipped`
    - **Before writing spec**:
      - Read draft (if exists) and linked GitHub issue content.
      - Run `sdd-forge flow get context --raw` to understand the project structure.
+     - Run `sdd-forge flow get context --search "<request text or issue title>" --raw` to retrieve related entries with detail.
      - For files needing deeper understanding, use `sdd-forge flow get context <path> --raw` to read them.
    - Fill Goal, Scope, Out of Scope, Requirements, Acceptance Criteria.
    - If draft phase was done, reflect draft Q&A and decisions in spec.md.
@@ -162,6 +164,7 @@ Available status values: `pending`, `in_progress`, `done`, `skipped`
      - **`specs/<spec>/tests/` (spec verification tests, NOT run by `npm test`):** Tests that only verify this spec's requirements are met, bug fix reproduction tests, temporary setup/integration verification. These are kept as history, not maintained long-term.
      - **Decision rule:** Ask "If a future change breaks this test, is that always a bug?" — YES → `tests/`, NO → `specs/<spec>/tests/`.
    - Write test code (tests should fail initially).
+   - **MUST: If a test reveals a production code bug that is outside the current spec's scope**, record it in redolog (`sdd-forge flow set redo --step test --reason "..."`) before adjusting the test to match current behavior. Do not silently fix or skip the test.
    - **MUST: Create `specs/<spec>/tests/README.md`** documenting:
      - What was tested and why
      - Where tests are located (formal test path or `specs/<spec>/tests/`)
@@ -224,7 +227,7 @@ sdd-forge flow set note "<text>"
 sdd-forge flow set issue <number>
 sdd-forge flow set metric <phase> <counter>
 sdd-forge flow set redo --step <id> --reason "<text>" [--trigger "<text>"] [--resolution "<text>"] [--guardrail-candidate "<text>"]
-sdd-forge flow run prepare-spec --title "..." [--base branch] [--worktree] [--no-branch]
+sdd-forge flow prepare --title "..." [--base branch] [--worktree] [--no-branch]
 sdd-forge flow run gate
 sdd-forge snapshot check
 ```

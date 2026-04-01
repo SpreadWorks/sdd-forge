@@ -6,16 +6,15 @@
  * Moved from spec/commands/guardrail.js runShow().
  */
 
-import { runIfDirect } from "../../lib/entrypoint.js";
-import { repoRoot } from "../../lib/cli.js";
 import { loadMergedArticles, filterByPhase } from "../../lib/guardrail.js";
 import { ok, fail, output } from "../../lib/flow-envelope.js";
 
 const VALID_PHASES = ["draft", "spec", "impl", "lint"];
 
-function main() {
-  const root = repoRoot(import.meta.url);
-  const phase = process.argv[2];
+export async function execute(ctx) {
+  const { root } = ctx;
+  const args = ctx.args;
+  const phase = args[0];
 
   if (!phase) {
     output(fail("get", "guardrail", "MISSING_PHASE",
@@ -42,6 +41,3 @@ function main() {
     })),
   }));
 }
-
-export { main };
-runIfDirect(import.meta.url, main);

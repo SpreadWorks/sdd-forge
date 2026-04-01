@@ -11,7 +11,7 @@
 
 <!-- {{text({prompt: "Write a 1-2 sentence overview of this chapter. Include the programming language, framework, and key tool versions."})}} -->
 
-sdd-forge is a Node.js CLI tool written in JavaScript using ES modules, targeting Node.js 18.0.0 or higher. The current release is version 0.1.0-alpha.361, managed with pnpm 10.33.0.
+This chapter covers the technology stack, dependency management, and operational procedures for sdd-forge, a Node.js CLI tool built with ES Modules. The project targets Node.js >= 18.0.0, uses pnpm 10.33.0 as its package manager, and ships the current release at version 0.1.0-alpha.
 <!-- {{/text}} -->
 
 ## Content
@@ -23,31 +23,60 @@ sdd-forge is a Node.js CLI tool written in JavaScript using ES modules, targetin
 | Category | Technology | Version |
 |---|---|---|
 | Runtime | Node.js | >= 18.0.0 |
-| Language | JavaScript (ES Modules) | — |
+| Module System | ES Modules (`"type": "module"`) | — |
 | Package Manager | pnpm | 10.33.0 |
-| Package Format | npm (ES module, `"type": "module"`) | 0.1.0-alpha.361 |
-| CLI Entry Point | sdd-forge (`./src/sdd-forge.js`) | — |
+| External npm Dependencies | None (Node.js built-ins only) | — |
+| CLI Entry Point | `src/sdd-forge.js` (via `bin` field) | — |
+| External CLI Tools (invoked at runtime) | Claude CLI (`claude`) | — |
+| External CLI Tools (invoked at runtime) | GitHub CLI (`gh`) | — |
+| Versioning Scheme | `0.1.0-alpha.N` (N = total commit count) | — |
 <!-- {{/text}} -->
 
 ### Dependencies
 
 <!-- {{text({prompt: "Describe the project's dependency management approach."})}} -->
 
-sdd-forge has no external runtime dependencies. All functionality is built exclusively on Node.js built-in modules, keeping the installation footprint minimal and eliminating supply-chain risk from third-party packages. Development tooling uses pnpm 10.33.0 as the package manager. The `files` field in `package.json` restricts what is published to npm — only the `src/` directory is included, with test files under `presets/*/tests/` explicitly excluded.
+sdd-forge enforces a strict zero-external-dependency policy: all runtime code relies exclusively on Node.js built-in modules such as `fs`, `path`, `child_process`, and `url`. No third-party npm packages are added as `dependencies` or `devDependencies` in `package.json`.
+
+The package manager is **pnpm 10.33.0**, pinned via the `packageManager` field in `package.json` with a specific integrity hash to ensure reproducible installs. A `pnpm-lock.yaml` lockfile is committed to the repository and must remain in sync with `package.json`.
+
+Dependabot is configured (`.github/dependabot.yml`) to monitor npm and composer ecosystems and open automated pull requests when updates are available.
 <!-- {{/text}} -->
 
 ### Deployment Flow
 
 <!-- {{text({prompt: "Describe the deployment procedure and flow."})}} -->
 
-Releases follow a two-step npm publishing process. First, the package is published under the `alpha` dist-tag using `npm publish --tag alpha`. Second, the `latest` tag is explicitly updated with `npm dist-tag add sdd-forge@<version> latest` to ensure the release appears on the npmjs.com package page. Before publishing, `npm pack --dry-run` is run to verify that no sensitive files are included in the published artifact. The version number during the alpha period follows the format `0.1.0-alpha.N`, where N is the total commit count from `git rev-list --count HEAD`.
+sdd-forge is distributed as an npm package under the name `sdd-forge`. The published artifact contains only the `src/` directory along with `package.json`, `README.md`, and `LICENSE`; test files and project-specific configuration are excluded via the `files` field in `package.json`.
+
+The release process follows these steps:
+
+1. Calculate the new version number using `git rev-list --count HEAD` to obtain the commit count N, then set the version to `0.1.0-alpha.N` in `package.json`.
+2. Run `npm pack --dry-run` to verify the contents of the package and confirm that no sensitive files are included.
+3. Publish to npm with the alpha tag: `npm publish --tag alpha`.
+4. Promote the release to the `latest` tag: `npm dist-tag add sdd-forge@<version> latest`.
+
+Both publish steps are required; omitting the `dist-tag` step leaves the `latest` tag pointing to an older version. Publication is performed only when an explicit release intent is stated — incrementing the version or pushing commits alone does not trigger a publish.
 <!-- {{/text}} -->
 
 ### Operations Flow
 
 <!-- {{text({prompt: "Describe the operations procedures."})}} -->
 
-Test suites are executed through a unified runner at `tests/run.js`, which covers unit, end-to-end, and acceptance test scenarios. Output from long-running test commands is redirected to a log file (e.g., `command > /tmp/output.log 2>&1`) and reviewed with `grep` or file read tools rather than re-running commands. The `sdd-forge build` command regenerates project documentation from source analysis and should be re-run whenever source files are newer than the contents of `docs/`. The `sdd-forge upgrade` command propagates changes from `src/templates/` and `src/presets/` into project-level skills and configuration files.
+The following npm scripts cover the main day-to-day operations of the project:
+
+| Command | Purpose |
+|---|---|
+| `npm test` | Run the full test suite (unit, e2e, and preset tests) |
+| `npm run test:unit` | Run unit tests only |
+| `npm run test:e2e` | Run end-to-end tests only |
+| `npm run test:acceptance` | Run acceptance tests only |
+
+Test execution is orchestrated by `tests/run.js` using the Node.js built-in test runner. To target a specific preset, pass `--preset <name>` as an argument. Individual acceptance tests can be run directly with `node tests/acceptance/run.js <name>`.
+
+When templates or skills under `src/templates/` or `src/presets/` are modified, run `sdd-forge upgrade` afterward to propagate changes to the project's local skill files (`.claude/skills/`, `.agents/skills/`).
+
+For long-running commands, redirect output to a file before inspecting results: `command > /tmp/output.log 2>&1`, then use `grep` or a file reader to review the relevant sections. Re-running a command solely to pipe its output is discouraged.
 <!-- {{/text}} -->
 
 ---
