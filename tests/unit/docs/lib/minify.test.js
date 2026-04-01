@@ -200,3 +200,74 @@ describe("minify edge cases", () => {
     assert.ok(!result.includes("inline"));
   });
 });
+
+// ---------------------------------------------------------------------------
+// Essential mode
+// ---------------------------------------------------------------------------
+
+describe("minify mode:essential", () => {
+  const opts = { mode: "essential" };
+
+  it("keeps import statements", () => {
+    const code = 'import fs from "fs";\nconst x = 1;\n';
+    const result = minify(code, "file.js", opts);
+    assert.ok(result.includes('import fs from "fs"'));
+  });
+
+  it("keeps export function declarations", () => {
+    const code = 'export function loadConfig(root) {\n  const p = sddConfigPath(root);\n  return validateConfig(raw);\n}\n';
+    const result = minify(code, "file.js", opts);
+    assert.ok(result.includes("export function loadConfig(root)"));
+  });
+
+  it("keeps return statements", () => {
+    const code = 'function foo() {\n  const x = calc();\n  return x + 1;\n}\n';
+    const result = minify(code, "file.js", opts);
+    assert.ok(result.includes("return x + 1"));
+  });
+
+  it("keeps throw statements", () => {
+    const code = 'function bar() {\n  if (!ok) {\n    throw new Error("fail");\n  }\n  return true;\n}\n';
+    const result = minify(code, "file.js", opts);
+    assert.ok(result.includes('throw new Error("fail")'));
+    assert.ok(result.includes("return true"));
+  });
+
+  it("keeps major API calls (fs, path, JSON, process)", () => {
+    const code = 'const data = fs.readFileSync(p, "utf8");\nconst parsed = JSON.parse(data);\nconst full = path.join(root, name);\n';
+    const result = minify(code, "file.js", opts);
+    assert.ok(result.includes("fs.readFileSync"));
+    assert.ok(result.includes("JSON.parse"));
+    assert.ok(result.includes("path.join"));
+  });
+
+  it("removes plain variable assignments and control flow", () => {
+    const code = 'const x = 1;\nlet y = "hello";\nif (x > 0) {\n  y = "world";\n}\nfor (const i of arr) {\n  console.log(i);\n}\n';
+    const result = minify(code, "file.js", opts);
+    assert.ok(!result.includes("const x = 1"));
+    assert.ok(!result.includes("if (x > 0)"));
+    assert.ok(!result.includes("for (const i"));
+  });
+
+  it("keeps export const for constants", () => {
+    const code = 'export const DEFAULT_LANG = "en";\nconst internal = 42;\n';
+    const result = minify(code, "file.js", opts);
+    assert.ok(result.includes('export const DEFAULT_LANG'));
+    assert.ok(!result.includes("internal = 42"));
+  });
+
+  it("default mode (no opts) is unchanged", () => {
+    const code = '// comment\nconst x = 1;\nreturn x;\n';
+    const withOpts = minify(code, "file.js");
+    assert.ok(!withOpts.includes("// comment"));  // comment removed
+    assert.ok(withOpts.includes("const x = 1"));  // code preserved
+    assert.ok(withOpts.includes("return x"));
+  });
+
+  it("keeps async function and class declarations", () => {
+    const code = 'export async function execute(ctx) {\n  const r = await fetch(url);\n  return r;\n}\nexport class Foo {\n}\n';
+    const result = minify(code, "file.js", opts);
+    assert.ok(result.includes("export async function execute(ctx)"));
+    assert.ok(result.includes("export class Foo"));
+  });
+});
