@@ -126,12 +126,12 @@ See the [configuration reference](docs/configuration.md) for details.
 <!-- {{data("cli.docs.chapters", {header: "", labels: "Chapter|Summary", ignoreError: true})}} -->
 | Chapter | Summary |
 | --- | --- |
-| [Tool Overview and Architecture](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/overview.md) | This chapter introduces sdd-forge — a CLI tool that automates technical documentation generation from source code ana… |
-| [Technology Stack and Operations](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/stack_and_ops.md) | sdd-forge is a Node.js CLI tool written in JavaScript (ES modules), requiring Node.js 18.0.0 or later, and managed wi… |
-| [Project Structure](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/project_structure.md) | This chapter describes the top-level layout of the sdd-forge source tree, which is organized into four major director… |
-| [CLI Command Reference](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/cli_commands.md) |  |
-| [Configuration and Customization](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/configuration.md) | sdd-forge stores its project configuration in .sdd-forge/config.json and optionally reads metadata from the project r… |
-| [Internal Design](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/internal_design.md) | This chapter describes the internal architecture of sdd-forge: a layered CLI package whose entry points (sdd-forge.js… |
+| [Tool Overview and Architecture](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/overview.md) | This chapter introduces sdd-forge, a CLI tool that automates technical documentation generation through static source… |
+| [Technology Stack and Operations](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/stack_and_ops.md) | sdd-forge is a Node.js CLI tool implemented entirely in JavaScript using the ES module system, targeting Node.js 18.0… |
+| [Project Structure](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/project_structure.md) | This chapter covers the layout and responsibilities of the four major directories that make up the project — src/docs… |
+| [CLI Command Reference](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/cli_commands.md) | sdd-forge provides over 28 commands organized under three top-level namespaces: docs (13 subcommands covering the ful… |
+| [Configuration and Customization](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/configuration.md) | sdd-forge stores all project configuration in .sdd-forge/config.json, with additional metadata read from the project'… |
+| [Internal Design](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/internal_design.md) | sdd-forge follows a three-tier architecture: top-level dispatchers (sdd-forge.js, docs.js, flow.js) route subcommands… |
 <!-- {{/data}} -->
 
 ## License

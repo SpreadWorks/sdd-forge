@@ -11,7 +11,7 @@
 
 <!-- {{text({prompt: "Write a 1-2 sentence overview of this chapter. Include the number of major directories and their roles."})}} -->
 
-This chapter describes the top-level layout of the sdd-forge source tree, which is organized into four major directories: `src/docs` for documentation generation commands, data models, and libraries; `src/flow` for the Spec-Driven Development workflow engine and its controllers; `src/lib` for shared utility libraries and models; and `src` for the root CLI entry points.
+This chapter covers the layout and responsibilities of the four major directories that make up the project — `src/docs`, `src/flow`, `src/lib`, and the root `src/` — spanning documentation generation pipelines, flow orchestration, shared utility libraries, and top-level CLI entry points.
 <!-- {{/text}} -->
 
 ## Content
@@ -49,9 +49,9 @@ src/lib/    (lib, model)
 
 <!-- {{text({prompt: "List the shared libraries with class name, file path, and responsibility in table format."})}} -->
 
-| Module | File | Responsibility |
+| Module | File Path | Responsibility |
 | --- | --- | --- |
-| Presets | `src/lib/presets.js` | Auto-discovers all presets from `src/presets/{key}/preset.json` and exposes the full preset registry (`PRESETS`) along with parent-chain resolution utilities: `resolveChain()` (leaf → root order), `resolveMultiChains()` (deduplicating multi-type chains), `resolveChainSafe()` (fallback-safe variant), `presetByLeaf()` (single preset lookup), and `presetsForArch()` (presets filtered by parent key). |
+| presets | `src/lib/presets.js` | Auto-discovers all presets from `src/presets/{key}/preset.json` and exposes preset inheritance utilities: `resolveChain` (walks parent chain root→leaf), `resolveMultiChains` (resolves multiple type strings with deduplication), `resolveChainSafe` (fallback-safe wrapper), `presetByLeaf` (lookup by leaf key), and `presetsForArch` (filters presets by parent key). |
 <!-- {{/text}} -->
 
 ---

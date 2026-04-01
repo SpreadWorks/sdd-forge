@@ -11,7 +11,7 @@
 
 <!-- {{text({prompt: "Write a 1-2 sentence overview of this chapter. Include the programming language, framework, and key tool versions."})}} -->
 
-sdd-forge is a Node.js CLI tool written in JavaScript (ES modules), requiring Node.js 18.0.0 or later, and managed with pnpm 10.33.0. The current release is version 0.1.0-alpha.361.
+sdd-forge is a Node.js CLI tool implemented entirely in JavaScript using the ES module system, targeting Node.js 18.0.0 or later. The current release is version 0.1.0-alpha.361, managed with pnpm 10.33.0.
 <!-- {{/text}} -->
 
 ## Content
@@ -22,32 +22,31 @@ sdd-forge is a Node.js CLI tool written in JavaScript (ES modules), requiring No
 
 | Category | Technology | Version |
 |---|---|---|
-| Runtime | Node.js | >= 18.0.0 |
 | Language | JavaScript (ES Modules) | — |
+| Runtime | Node.js | >= 18.0.0 |
 | Package Manager | pnpm | 10.33.0 |
-| CLI Entry Point | sdd-forge (./src/sdd-forge.js) | 0.1.0-alpha.361 |
-| External Dependencies | None (Node.js built-ins only) | — |
+| CLI Entry Point | sdd-forge (→ src/sdd-forge.js) | — |
 <!-- {{/text}} -->
 
 ### Dependencies
 
 <!-- {{text({prompt: "Describe the project's dependency management approach."})}} -->
 
-sdd-forge has no external runtime dependencies — the implementation relies exclusively on Node.js built-in modules. The package is managed with pnpm 10.33.0. Only the `src/` directory is included in the published package (presets' test files are explicitly excluded via the `files` field in package.json), keeping the distributed bundle minimal and free of third-party code.
+sdd-forge has no external runtime dependencies. All functionality is built exclusively on Node.js built-in modules, eliminating the need for a `node_modules` install in production contexts. Development tooling is managed via pnpm 10.33.0. The `files` field in `package.json` restricts the published artifact to the `src/` directory, explicitly excluding test directories under `presets/*/tests/`.
 <!-- {{/text}} -->
 
 ### Deployment Flow
 
 <!-- {{text({prompt: "Describe the deployment procedure and flow."})}} -->
 
-Releases are published to npm under the package name `sdd-forge`. The process begins with verifying the contents using `npm pack --dry-run` to confirm no sensitive files are included. The package is then published with `npm publish --tag alpha` to register it under the alpha distribution tag. A second step, `npm dist-tag add sdd-forge@<version> latest`, is required to update the `latest` tag so the release appears on the npmjs.com package page. Versions follow the `0.1.0-alpha.N` format during the alpha period, where `N` is the total commit count from `git rev-list --count HEAD`.
+The package is distributed through the npm registry under the name `sdd-forge`. The published artifact consists solely of the `src/` directory along with `package.json`, `README.md`, and `LICENSE`. Before publishing, the contents can be verified using `npm pack --dry-run`. The release follows a two-step process: publishing with `npm publish --tag alpha` to attach the pre-release tag, followed by `npm dist-tag add sdd-forge@<version> latest` to update the `latest` tag on the registry.
 <!-- {{/text}} -->
 
 ### Operations Flow
 
 <!-- {{text({prompt: "Describe the operations procedures."})}} -->
 
-Testing is performed via `node tests/run.js`, which provides separate runners for unit, end-to-end, and acceptance test suites. The CLI can be invoked directly as `sdd-forge` once installed. Documentation is regenerated using `sdd-forge build`, which runs the full scan-to-docs pipeline. When templates or presets under `src/templates/` or `src/presets/` are modified, `sdd-forge upgrade` is run to propagate changes to project-level skills and configuration files.
+Three categories of automated tests are provided, all executed through `node tests/run.js`: unit tests, end-to-end (e2e) tests, and acceptance tests. Each suite can be invoked via the corresponding script defined in `package.json`. No external test framework is required, as the test runner relies solely on Node.js built-in capabilities consistent with the zero-dependency policy.
 <!-- {{/text}} -->
 
 ---
