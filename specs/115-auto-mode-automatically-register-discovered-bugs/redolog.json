@@ -1,0 +1,12 @@
+{
+  "entries": [
+    {
+      "step": "implement",
+      "reason": "sdd-forge upgrade used main repo src/ instead of worktree src/ because the global sdd-forge command resolves to main repo",
+      "trigger": "sdd-forge upgrade expanded old partial content",
+      "resolution": "used node src/sdd-forge.js upgrade to run from worktree local src/",
+      "guardrailCandidate": "in worktree mode, run upgrade via node src/sdd-forge.js instead of global sdd-forge command",
+      "timestamp": "2026-03-31T15:20:43.848Z"
+    }
+  ]
+}

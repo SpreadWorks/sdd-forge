@@ -162,6 +162,7 @@ Available status values: `pending`, `in_progress`, `done`, `skipped`
      - **`specs/<spec>/tests/` (spec verification tests, NOT run by `npm test`):** Tests that only verify this spec's requirements are met, bug fix reproduction tests, temporary setup/integration verification. These are kept as history, not maintained long-term.
      - **Decision rule:** Ask "If a future change breaks this test, is that always a bug?" — YES → `tests/`, NO → `specs/<spec>/tests/`.
    - Write test code (tests should fail initially).
+   - **MUST: If a test reveals a production code bug that is outside the current spec's scope**, record it in redolog (`sdd-forge flow set redo --step test --reason "..."`) before adjusting the test to match current behavior. Do not silently fix or skip the test.
    - **MUST: Create `specs/<spec>/tests/README.md`** documenting:
      - What was tested and why
      - Where tests are located (formal test path or `specs/<spec>/tests/`)

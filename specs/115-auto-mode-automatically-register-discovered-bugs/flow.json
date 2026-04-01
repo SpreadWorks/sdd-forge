@@ -1,0 +1,131 @@
+{
+  "spec": "specs/115-auto-mode-automatically-register-discovered-bugs/spec.md",
+  "baseBranch": "development",
+  "featureBranch": "feature/115-auto-mode-automatically-register-discovered-bugs",
+  "steps": [
+    {
+      "id": "approach",
+      "status": "done"
+    },
+    {
+      "id": "branch",
+      "status": "done"
+    },
+    {
+      "id": "prepare-spec",
+      "status": "done"
+    },
+    {
+      "id": "draft",
+      "status": "done"
+    },
+    {
+      "id": "spec",
+      "status": "done"
+    },
+    {
+      "id": "gate",
+      "status": "done"
+    },
+    {
+      "id": "approval",
+      "status": "done"
+    },
+    {
+      "id": "test",
+      "status": "done"
+    },
+    {
+      "id": "implement",
+      "status": "done"
+    },
+    {
+      "id": "review",
+      "status": "done"
+    },
+    {
+      "id": "finalize",
+      "status": "in_progress"
+    },
+    {
+      "id": "commit",
+      "status": "pending"
+    },
+    {
+      "id": "push",
+      "status": "pending"
+    },
+    {
+      "id": "merge",
+      "status": "pending"
+    },
+    {
+      "id": "pr-create",
+      "status": "pending"
+    },
+    {
+      "id": "branch-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "pr-merge",
+      "status": "pending"
+    },
+    {
+      "id": "sync-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "docs-update",
+      "status": "pending"
+    },
+    {
+      "id": "docs-review",
+      "status": "pending"
+    },
+    {
+      "id": "docs-commit",
+      "status": "pending"
+    }
+  ],
+  "requirements": [
+    {
+      "desc": "P1: Expand redo-recording.md with trigger conditions",
+      "status": "done"
+    },
+    {
+      "desc": "P2: Add examples subsection",
+      "status": "done"
+    },
+    {
+      "desc": "P3: Add note to flow-plan test phase",
+      "status": "done"
+    },
+    {
+      "desc": "P3: Add note to flow-impl implement step",
+      "status": "done"
+    },
+    {
+      "desc": "P3: Add note to flow-finalize worktree/merge/commit",
+      "status": "done"
+    },
+    {
+      "desc": "No changes to src/flow/ code",
+      "status": "done"
+    }
+  ],
+  "worktree": true,
+  "issue": 54,
+  "request": "#54 auto mode: テスト中に発見したバグの自動ボード登録",
+  "notes": [
+    "approach: [1] Q&A → spec, work-env: [1] worktree, base: development",
+    "draft: redolog パーシャル拡充方針で承認。リネームは別タスク 2dbb",
+    "review: 提案5件は全て別specの変更に関するもので本spec無関係。対応不要",
+    "finalize: [1] すべて実行"
+  ],
+  "metrics": {
+    "draft": {
+      "question": 5
+    }
+  }
+}
