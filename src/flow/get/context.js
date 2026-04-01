@@ -47,8 +47,8 @@ function searchEntries(entries, query) {
  * @param {Object} analysis - Parsed analysis.json
  * @returns {string[]} Unique keywords array
  */
-function collectAllKeywords(analysis) {
-  const seen = new Set();
+function collectAllKeywords(analysis, limit = 2000) {
+  const freq = new Map();
   for (const catKey of Object.keys(analysis)) {
     if (!analysis[catKey] || typeof analysis[catKey] !== "object") continue;
     if (ANALYSIS_META_KEYS.has(catKey)) continue;
@@ -57,11 +57,16 @@ function collectAllKeywords(analysis) {
     for (const e of entries) {
       if (!Array.isArray(e.keywords)) continue;
       for (const kw of e.keywords) {
-        seen.add(String(kw));
+        const s = String(kw);
+        freq.set(s, (freq.get(s) || 0) + 1);
       }
     }
   }
-  return [...seen];
+  // Sort by frequency descending, then alphabetically for stability
+  const sorted = [...freq.entries()]
+    .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
+    .map(([kw]) => kw);
+  return limit > 0 ? sorted.slice(0, limit) : sorted;
 }
 
 /**
@@ -156,6 +161,8 @@ function aiSearch(allEntries, analysis, query, root) {
   }
 
   // Use selected keywords for OR search
+  if (selectedKeywords.length === 0) return fallbackSearch(allEntries, query);
+
   const terms = selectedKeywords.map((k) => String(k).toLowerCase());
   const seen = new Set();
   const results = [];
@@ -176,6 +183,8 @@ function aiSearch(allEntries, analysis, query, root) {
       });
     }
   }
+  // If AI-selected keywords matched nothing, fall back to text search
+  if (results.length === 0) return fallbackSearch(allEntries, query);
   return results;
 }
 
@@ -386,4 +395,4 @@ export async function execute(ctx) {
   }));
 }
 
-export { filterEntry, resolvePhase, searchEntries };
+export { filterEntry, resolvePhase, searchEntries, collectAllKeywords, buildKeywordSelectionPrompt, fallbackSearch };
