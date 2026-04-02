@@ -11,7 +11,7 @@
 
 <!-- {{text({prompt: "Write a 1-2 sentence overview of this chapter. Include the number of major directories and their roles."})}} -->
 
-This chapter describes the directory layout of the `sdd-forge` source tree, which is organized into four major directories: `src/` for top-level CLI entrypoints and controllers, `src/docs/` for documentation generation commands and data sources, `src/flow/` for the Spec-Driven Development workflow engine, and `src/lib/` for shared utility libraries.
+This chapter describes the physical layout of the sdd-forge source tree, covering three major directories: `src/docs` (documentation generation pipeline with CLI, controller, model, and library components), `src/flow` (Spec-Driven Development workflow controllers), and `src/lib` (shared utilities spanning configuration, model, and view responsibilities).
 <!-- {{/text}} -->
 
 ## Content
@@ -21,16 +21,16 @@ This chapter describes the directory layout of the `sdd-forge` source tree, whic
 <!-- {{data("base.structure.tree")}} -->
 ```
 src/    (cli, controller)
-src/docs/commands/    (cli, controller)
+src/docs/commands/    (cli, lib, controller)
 src/docs/data/    (model)
 src/docs/lib/    (lib)
 src/docs/lib/lang/    (lib)
-src/flow/    (lib)
-src/flow/commands/    (controller, lib, cli)
-src/flow/get/    (lib, controller, cli)
-src/flow/run/    (controller, lib, cli)
-src/flow/set/    (cli, lib)
-src/lib/    (lib)
+src/flow/    (controller)
+src/flow/commands/    (controller)
+src/flow/get/    (controller)
+src/flow/run/    (controller)
+src/flow/set/    (controller)
+src/lib/    (lib, config, model, view)
 ```
 <!-- {{/data}} -->
 
@@ -39,9 +39,9 @@ src/lib/    (lib)
 
 | Directory | Files | Role |
 | --- | --- | --- |
-| src/docs | 40 | cli, controller, model, lib |
-| src/flow | 31 | controller, lib, cli |
-| src/lib | 20 | lib |
+| src/docs | 40 | cli, lib, controller, model |
+| src/flow | 31 | controller |
+| src/lib | 20 | lib, config, model, view |
 | src | 7 | cli, controller |
 <!-- {{/data}} -->
 
@@ -49,12 +49,11 @@ src/lib/    (lib)
 
 <!-- {{text({prompt: "List the shared libraries with class name, file path, and responsibility in table format."})}} -->
 
-| File | Path | Responsibility |
+| Module | File Path | Responsibility |
 | --- | --- | --- |
-| cli.js | src/lib/cli.js | Provides `repoRoot`, `sourceRoot`, `parseArgs`, `isInsideWorktree`, `getMainRepoPath`, `PKG_DIR`, and timestamp formatting utilities used across CLI commands. |
-| entrypoint.js | src/lib/entrypoint.js | Exposes `isDirectRun` and `runIfDirect` guards that distinguish direct script execution from module imports, enabling scripts to support both invocation styles. |
-| exit-codes.js | src/lib/exit-codes.js | Defines `EXIT_SUCCESS` (0) and `EXIT_ERROR` (1) constants, centralizing exit code values to avoid magic numbers throughout the codebase. |
-| presets.js | src/lib/presets.js | Discovers preset manifests from `src/presets/`, resolves linear inheritance chains via `parent` references, detects circular dependencies, and exports the `PRESETS` registry for O(1) lookup. |
+| cli | `src/lib/cli.js` | Provides the `PKG_DIR` constant, repository and source root resolution (with `SDD_WORK_ROOT` / `SDD_SOURCE_ROOT` env var support), a spec-driven `parseArgs` option parser, worktree detection, and package version retrieval. |
+| presets | `src/lib/presets.js` | Discovers all available presets under `src/presets/`, resolves parent-chain inheritance from `preset.json` manifests, and exposes lookup helpers (`presetByLeaf`, `presetsForArch`) for the rest of the toolchain. |
+| skills | `src/lib/skills.js` | Reads skill templates from `src/templates/skills/`, resolves `include` directives, and deploys the resulting `SKILL.md` files into both `.agents/skills/` and `.claude/skills/` in the target project, skipping unchanged files to avoid unnecessary disk writes. |
 <!-- {{/text}} -->
 
 ---
