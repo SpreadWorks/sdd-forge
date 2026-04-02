@@ -25,8 +25,8 @@ src/docs/commands/    (cli, controller)
 src/docs/data/    (model)
 src/docs/lib/    (lib)
 src/docs/lib/lang/    (lib)
-src/flow/    (controller)
-src/flow/commands/    (cli, lib)
+src/flow/    (lib)
+src/flow/commands/    (controller, lib, cli)
 src/flow/get/    (lib, controller, cli)
 src/flow/run/    (controller, lib, cli)
 src/flow/set/    (cli, lib)
@@ -40,7 +40,7 @@ src/lib/    (lib)
 | Directory | Files | Role |
 | --- | --- | --- |
 | src/docs | 40 | cli, controller, model, lib |
-| src/flow | 31 | cli, lib, controller |
+| src/flow | 31 | controller, lib, cli |
 | src/lib | 20 | lib |
 | src | 7 | cli, controller |
 <!-- {{/data}} -->
