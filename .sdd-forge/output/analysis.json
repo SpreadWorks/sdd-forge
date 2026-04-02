@@ -1,12 +1,12 @@
 {
-  "analyzedAt": "2026-04-02T16:03:29.422Z",
+  "analyzedAt": "2026-04-02T17:31:31.729Z",
   "package": {
     "entries": [
       {
         "file": "package.json",
-        "hash": "d5a3bdffcab0391fd61645fbe87732c3",
+        "hash": "44ae17f206c3997d9d610523f68c640f",
         "lines": 36,
-        "mtime": "2026-04-02T15:08:37.743Z",
+        "mtime": "2026-04-02T16:24:42.435Z",
         "packageDeps": {
           "dependencies": {},
           "devDependencies": {}
@@ -19,24 +19,25 @@
         },
         "composerDeps": null,
         "id": "451a9f25",
-        "summary": "npm package manifest for sdd-forge, defining the CLI entry point, published file set, and test scripts.",
-        "detail": "Declares sdd-forge as an ES module package with the bin entry pointing to src/sdd-forge.js. The files field publishes only src/ while excluding preset test directories. Engines requires Node.js 18+. No runtime dependencies are listed, reflecting the zero-external-dependency policy. Test scripts delegate to tests/run.js with scoping flags for unit, e2e, and acceptance suites.",
-        "chapter": "project_structure",
+        "summary": "Root package manifest for the sdd-forge npm package, defining entry point, file inclusions, and test scripts.",
+        "detail": "Declares sdd-forge as an ES module CLI tool with the binary entry at src/sdd-forge.js. Published files are restricted to src/ (excluding preset test directories). Requires Node.js 18+. Defines four test scripts covering unit, e2e, and acceptance scopes via a custom test runner. Uses pnpm as the package manager with a pinned version hash.",
+        "chapter": "stack_and_ops",
         "role": "config",
         "enrich": {
-          "processedAt": "2026-04-02T16:07:58.173Z",
+          "processedAt": "2026-04-02T17:31:50.544Z",
           "attempts": 1
         },
         "keywords": [
           "package.json",
           "npm",
-          "bin",
-          "entry point",
+          "cli",
+          "binary",
+          "esm",
+          "node18",
+          "pnpm",
+          "test scripts",
           "files",
-          "scripts",
-          "test runner",
-          "ES module",
-          "engines"
+          "entry point"
         ]
       }
     ],
@@ -1985,9 +1986,9 @@
       },
       {
         "file": "src/flow/commands/merge.js",
-        "hash": "4d7e57afac5c38dd6407af22723a7ca3",
-        "lines": 209,
-        "mtime": "2026-04-02T15:07:32.621Z",
+        "hash": "042ec29264d8324cc3174892d597dca3",
+        "lines": 219,
+        "mtime": "2026-04-02T17:31:31.534Z",
         "className": "merge",
         "methods": [
           "resolveRemote",
@@ -2014,22 +2015,25 @@
         "extends": null,
         "usedBy": null,
         "id": "3a0db928",
-        "summary": "Implements the `flow merge` command, determining whether to create a GitHub PR or perform a squash merge based on config and gh availability. Parses spec content to build PR title and body.",
-        "detail": "resolveRemote reads the push remote from config. isGhAvailable checks if the gh CLI binary is present. parseSpec extracts title, requirements, and acceptance criteria sections from spec markdown. buildPrTitle and buildPrBody compose PR metadata from flow state and parsed spec. The main() function evaluates commands.gh config and gh availability to select strategy: 'pr', 'squash', or 'skip'.",
+        "summary": "Implements the flow merge command, handling both squash-merge and GitHub PR creation strategies for finalizing SDD feature branches.",
+        "detail": "Reads flow state and spec file to build PR title and body for GitHub CLI integration. Provides isGhAvailable() to detect gh CLI presence and selects the appropriate strategy (pr or squash). Parses spec markdown to extract sections like title and summary for PR metadata. buildPrBody() assembles a structured PR description from flow state and spec content. runSquashMerge() performs a squash merge via git and raises an error on conflict detection.",
         "chapter": "cli_commands",
-        "role": "cli",
+        "role": "controller",
         "enrich": {
-          "processedAt": "2026-04-02T16:09:42.720Z",
+          "processedAt": "2026-04-02T17:31:50.544Z",
           "attempts": 1
         },
         "keywords": [
           "merge",
-          "pull request",
+          "flow",
           "squash merge",
-          "GitHub CLI",
-          "gh",
-          "PR strategy",
-          "spec parsing"
+          "pull request",
+          "gh cli",
+          "spec parser",
+          "PR title",
+          "PR body",
+          "strategy",
+          "git merge"
         ]
       },
       {
@@ -2476,12 +2480,13 @@
       },
       {
         "file": "src/flow/registry.js",
-        "hash": "2e4e563109ea2e031bf986860833aa73",
-        "lines": 194,
-        "mtime": "2026-04-02T15:07:32.622Z",
+        "hash": "693821e22934890cb7736c49d5bcd986",
+        "lines": 201,
+        "mtime": "2026-04-02T17:31:31.534Z",
         "className": "registry",
         "methods": [
           "deriveActivePhase",
+          "tryUpdateStepStatus",
           "stepPre",
           "stepPost"
         ],
@@ -2496,28 +2501,32 @@
           "src/flow.js"
         ],
         "id": "d64f4095",
-        "summary": "Central registry mapping all flow command strings to their handler modules with step-tracking middleware. Defines the complete command surface of the flow subsystem.",
-        "detail": "FLOW_COMMANDS is a flat object where each key is a 'group/command' string mapping to an entry with execute, requiresFlow, pre, and post hooks. stepPre and stepPost generate middleware closures that call updateStepStatus before and after execution. deriveActivePhase reads current phase from persisted flow state. The registry pattern decouples flow.js dispatch from individual command implementations.",
-        "chapter": "project_structure",
-        "role": "lib",
+        "summary": "Defines the FLOW_COMMANDS registry and lifecycle hooks (stepPre/stepPost) that wrap each flow command with step-status tracking.",
+        "detail": "Exports FLOW_COMMANDS as the central routing table mapping command names to handler functions. stepPre and stepPost are higher-order functions that update flow step status to in_progress or a derived terminal state before and after execution. deriveActivePhase reads current flow state to determine the active phase. Uses loadFlowState and updateStepStatus from flow-state.js for persistence. incrementMetric is called within stepPost to record execution metrics per step.",
+        "chapter": "internal_design",
+        "role": "middleware",
         "enrich": {
-          "processedAt": "2026-04-02T16:09:42.720Z",
+          "processedAt": "2026-04-02T17:31:50.544Z",
           "attempts": 1
         },
         "keywords": [
-          "flow registry",
-          "command map",
-          "step tracking",
-          "middleware",
+          "registry",
           "flow commands",
-          "dispatch registry"
+          "step status",
+          "lifecycle hooks",
+          "stepPre",
+          "stepPost",
+          "phase",
+          "metrics",
+          "dispatcher",
+          "flow state"
         ]
       },
       {
         "file": "src/flow/run/finalize.js",
-        "hash": "315388024fdc2be8548a45f591f0534b",
-        "lines": 293,
-        "mtime": "2026-04-02T15:07:32.622Z",
+        "hash": "68ebd562f64030b4ea3f92ddb3563cff",
+        "lines": 307,
+        "mtime": "2026-04-02T17:31:31.534Z",
         "className": "finalize",
         "methods": [
           "execute",
@@ -2541,21 +2550,25 @@
         "extends": null,
         "usedBy": null,
         "id": "0da529e9",
-        "summary": "Implements `flow run finalize`, orchestrating the final steps of an SDD flow: report generation, worktree cleanup, and optional docs sync. Entry point for post-implementation teardown.",
-        "detail": "STEP_MAP defines the sequence of finalize sub-steps. executeCleanup handles spec-only mode, worktree removal, and git branch cleanup. execute resolves which steps to run based on CLI flags, calls generateReport and saveReport, conditionally runs the docs build script via runSync, and delegates cleanup. Uses PKG_DIR to locate the docs.js script.",
-        "chapter": "cli_commands",
-        "role": "cli",
+        "summary": "Orchestrates the finalize phase of an SDD flow run, coordinating cleanup, report generation, and post-merge documentation build.",
+        "detail": "Exports STEP_MAP defining the ordered steps of the finalize phase and an execute() async function that drives execution. executeCleanup handles worktree removal and returns structured status objects. Integrates generateReport and saveReport from report.js to persist flow metrics. Loads redo log via loadRedoLog for inclusion in the final report. Invokes the docs build script via runSync using PKG_DIR-relative path resolution after merge completes.",
+        "chapter": "internal_design",
+        "role": "controller",
         "enrich": {
-          "processedAt": "2026-04-02T16:09:42.720Z",
+          "processedAt": "2026-04-02T17:31:50.544Z",
           "attempts": 1
         },
         "keywords": [
           "finalize",
-          "flow finalize",
-          "worktree cleanup",
-          "report generation",
-          "teardown",
-          "SDD finalize"
+          "cleanup",
+          "worktree",
+          "report",
+          "redo log",
+          "flow run",
+          "step map",
+          "docs build",
+          "execute",
+          "flow envelope"
         ]
       },
       {
@@ -7337,9 +7350,9 @@
     ],
     "summary": {
       "total": 220,
-      "totalMethods": 676
+      "totalMethods": 677
     },
     "dataSourceHash": "7d725e75d5031be445119323e4947c91"
   },
-  "enrichedAt": "2026-04-02T16:09:42.720Z"
+  "enrichedAt": "2026-04-02T17:31:50.544Z"
 }
