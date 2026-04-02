@@ -23,7 +23,6 @@ plan ──────── Specification
 │  ├─ draft       Refine requirements through dialogue
 │  ├─ spec        Create spec (feature branch + spec.md)
 │  ├─ gate        Spec validation + guardrail check
-│  ├─ approval    User sign-off
 │  └─ test        Write test code
 │
 implement ─── Coding

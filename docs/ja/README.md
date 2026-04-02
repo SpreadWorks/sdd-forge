@@ -23,7 +23,6 @@ plan ──────── 仕様策定
 │  ├─ draft       要件を対話で整理
 │  ├─ spec        仕様書を作成（feature ブランチ + spec.md）
 │  ├─ gate        仕様チェック + ガードレール検証
-│  ├─ approval    ユーザー承認
 │  └─ test        テストコード作成
 │
 implement ─── 実装
