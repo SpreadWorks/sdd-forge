@@ -5,6 +5,7 @@
  * Execute finalization pipeline: commit -> merge -> retro -> sync -> cleanup -> record.
  */
 
+import fs from "fs";
 import { execFileSync } from "child_process";
 import { parseArgs, PKG_DIR } from "../../lib/cli.js";
 import { resolveWorktreePaths } from "../../lib/flow-state.js";
@@ -147,6 +148,20 @@ export async function execute(ctx) {
       if (retroRes.ok) {
         let retroData;
         try { retroData = JSON.parse(retroRes.stdout); } catch (_) { retroData = null; }
+        // R1: Copy retro.json to main repo in worktree mode
+        if (state.worktree && mainRepoPath) {
+          const specDir = path.dirname(state.spec);
+          const srcRetro = path.resolve(root, specDir, "retro.json");
+          const dstRetro = path.resolve(mainRepoPath, specDir, "retro.json");
+          try {
+            if (fs.existsSync(srcRetro)) {
+              fs.mkdirSync(path.dirname(dstRetro), { recursive: true });
+              fs.copyFileSync(srcRetro, dstRetro);
+            }
+          } catch (_) {
+            // non-critical: retro copy failure does not block pipeline
+          }
+        }
         results.retro = { status: "done", ...(retroData?.data?.summary ? { summary: retroData.data.summary } : {}) };
       } else {
         // retro failure does not block the pipeline
@@ -256,12 +271,25 @@ export async function execute(ctx) {
           commitMessages,
         });
 
-        // Save to specs/NNN/report.json (R5)
+        // R2: Save to main repo's specs/NNN/report.json
+        const reportRoot = (state.worktree && mainRepoPath) ? mainRepoPath : root;
         try {
-          saveReport(root, state.spec, report);
+          saveReport(reportRoot, state.spec, report);
         } catch (e) {
           // save failure is non-blocking, but report the error
           report.saveError = e.message;
+        }
+
+        // R3: Commit retro.json + report.json on main repo
+        try {
+          const specDir = path.dirname(state.spec);
+          execFileSync("git", ["add", path.join(specDir, "retro.json"), path.join(specDir, "report.json")], { cwd: reportRoot, encoding: "utf8" });
+          const specTitle = path.basename(path.dirname(state.spec));
+          execFileSync("git", ["commit", "-m", `chore: add retro and report for ${specTitle}`], { cwd: reportRoot, encoding: "utf8" });
+        } catch (e) {
+          if (!/nothing to commit/i.test(String(e.stderr || e.message || ""))) {
+            report.commitError = String(e.stderr || e.message);
+          }
         }
 
         results.report = { status: "done", ...report };

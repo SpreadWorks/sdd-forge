@@ -1,0 +1,117 @@
+{
+  "spec": "specs/124-fix-finalize-report-save/spec.md",
+  "baseBranch": "development",
+  "featureBranch": "feature/124-fix-finalize-report-save",
+  "steps": [
+    {
+      "id": "approach",
+      "status": "done"
+    },
+    {
+      "id": "branch",
+      "status": "done"
+    },
+    {
+      "id": "prepare-spec",
+      "status": "pending"
+    },
+    {
+      "id": "draft",
+      "status": "skipped"
+    },
+    {
+      "id": "spec",
+      "status": "done"
+    },
+    {
+      "id": "gate",
+      "status": "done"
+    },
+    {
+      "id": "approval",
+      "status": "done"
+    },
+    {
+      "id": "test",
+      "status": "done"
+    },
+    {
+      "id": "implement",
+      "status": "done"
+    },
+    {
+      "id": "review",
+      "status": "done"
+    },
+    {
+      "id": "finalize",
+      "status": "pending"
+    },
+    {
+      "id": "commit",
+      "status": "pending"
+    },
+    {
+      "id": "push",
+      "status": "pending"
+    },
+    {
+      "id": "merge",
+      "status": "pending"
+    },
+    {
+      "id": "pr-create",
+      "status": "pending"
+    },
+    {
+      "id": "branch-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "pr-merge",
+      "status": "pending"
+    },
+    {
+      "id": "sync-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "docs-update",
+      "status": "pending"
+    },
+    {
+      "id": "docs-review",
+      "status": "pending"
+    },
+    {
+      "id": "docs-commit",
+      "status": "pending"
+    }
+  ],
+  "requirements": [
+    {
+      "desc": "R1: retro.jsonをメインリポジトリにコピー",
+      "status": "done"
+    },
+    {
+      "desc": "R2: report.jsonをメインリポジトリに保存",
+      "status": "done"
+    },
+    {
+      "desc": "R3: retro+reportをgit commit",
+      "status": "done"
+    },
+    {
+      "desc": "R4: SKILL.mdにreport text表示指示追加",
+      "status": "done"
+    }
+  ],
+  "issue": 64,
+  "request": "Fix finalize: retro/report save to main repo instead of worktree, add report text display to SKILL.md",
+  "worktree": true,
+  "autoApprove": true,
+  "notes": [
+    "approach: direct spec, worktree from development, autoApprove",
+    "finalize: autoApprove all mode"
+  ]
+}

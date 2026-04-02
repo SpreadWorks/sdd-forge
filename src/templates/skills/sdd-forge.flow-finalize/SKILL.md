@@ -61,6 +61,7 @@ Available status values: `pending`, `in_progress`, `done`, `skipped`
      ```
    - If the result includes `steps.retro`, display the retro summary or failure message.
    - Note: retro is now part of the finalize pipeline (step 3) and runs automatically before cleanup. No separate `sdd-forge flow run retro` call is needed.
+   - **MUST: If `steps.report.text` exists in the result, display it as-is.** The report text is pre-formatted by the command — do not reformat, summarize, or interpret it. Just output the text directly.
 
 ## Worktree Mode
 
