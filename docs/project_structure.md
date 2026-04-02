@@ -11,7 +11,7 @@
 
 <!-- {{text({prompt: "Write a 1-2 sentence overview of this chapter. Include the number of major directories and their roles."})}} -->
 
-The project source is organized into three major directories: `src/docs/` for documentation generation commands, data sources, and supporting libraries; `src/flow/` for Spec-Driven Development workflow orchestration; and `src/lib/` for shared utility libraries used across the entire codebase.
+This chapter describes the directory layout of the `sdd-forge` source tree, which is organized into four major directories: `src/` for top-level CLI entrypoints and controllers, `src/docs/` for documentation generation commands and data sources, `src/flow/` for the Spec-Driven Development workflow engine, and `src/lib/` for shared utility libraries.
 <!-- {{/text}} -->
 
 ## Content
@@ -49,12 +49,12 @@ src/lib/    (lib)
 
 <!-- {{text({prompt: "List the shared libraries with class name, file path, and responsibility in table format."})}} -->
 
-| Module | File Path | Responsibility |
+| File | Path | Responsibility |
 | --- | --- | --- |
-| cli | `src/lib/cli.js` | Provides core CLI utilities including repository root resolution, argument parsing, worktree detection, and timestamp formatting |
-| entrypoint | `src/lib/entrypoint.js` | Guards script entry points to distinguish direct execution from module imports, enabling scripts to serve as both CLI commands and importable modules |
-| exit-codes | `src/lib/exit-codes.js` | Defines `EXIT_SUCCESS` and `EXIT_ERROR` numeric constants to eliminate magic numbers across CLI commands and flow handlers |
-| presets | `src/lib/presets.js` | Discovers available presets from the filesystem, resolves inheritance chains via `parent` references, and provides O(1) lookup utilities used throughout the tool |
+| cli.js | src/lib/cli.js | Provides `repoRoot`, `sourceRoot`, `parseArgs`, `isInsideWorktree`, `getMainRepoPath`, `PKG_DIR`, and timestamp formatting utilities used across CLI commands. |
+| entrypoint.js | src/lib/entrypoint.js | Exposes `isDirectRun` and `runIfDirect` guards that distinguish direct script execution from module imports, enabling scripts to support both invocation styles. |
+| exit-codes.js | src/lib/exit-codes.js | Defines `EXIT_SUCCESS` (0) and `EXIT_ERROR` (1) constants, centralizing exit code values to avoid magic numbers throughout the codebase. |
+| presets.js | src/lib/presets.js | Discovers preset manifests from `src/presets/`, resolves linear inheritance chains via `parent` references, detects circular dependencies, and exports the `PRESETS` registry for O(1) lookup. |
 <!-- {{/text}} -->
 
 ---
