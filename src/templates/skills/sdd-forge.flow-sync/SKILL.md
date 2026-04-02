@@ -26,6 +26,7 @@ Sync documentation with the current codebase. Can be invoked from flow-finalize 
 ## Hard Stops
 
 - Do not proceed if `sdd-forge flow run sync` reports an error.
+- **NEVER chain or background `sdd-forge` commands.** Each `sdd-forge` command must be run as a separate, foreground Bash invocation. Do not use `&&`, `||`, `;`, pipes, or `run_in_background`.
 
 ## Commands
 

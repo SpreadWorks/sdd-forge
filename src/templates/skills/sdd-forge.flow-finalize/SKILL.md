@@ -74,6 +74,7 @@ Available status values: `pending`, `in_progress`, `done`, `skipped`
 
 - Do not run `sdd-forge flow run finalize` if resolve-context reports `dirty: true` and commit step is not included.
 - Do not proceed to next step without user confirmation.
+- **NEVER chain or background `sdd-forge` commands.** Each `sdd-forge` command must be run as a separate, foreground Bash invocation. Do not use `&&`, `||`, `;`, pipes, or `run_in_background`. Every command's result determines the next action, so it must complete and be read before proceeding.
 
 **autoApprove exception:** When `autoApprove: true`, the rule "do not proceed to next step without user confirmation" does NOT apply. All other hard stops remain in effect.
 
