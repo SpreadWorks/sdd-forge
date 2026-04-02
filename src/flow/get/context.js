@@ -5,13 +5,12 @@
  * flow get context [path] [--raw]
  *
  * List mode (no path): Return filtered analysis entries (file, summary, methods, chapter, role).
- * File mode (with path): Return file content + increment docsRead/srcRead metric.
+ * File mode (with path): Return file content. Metric recording is handled by registry post hook.
  */
 
 import fs from "fs";
 import path from "path";
 import { sddOutputDir } from "../../lib/config.js";
-import { mutateFlowState } from "../../lib/flow-state.js";
 import { ok, fail, output } from "../../lib/flow-envelope.js";
 import { ANALYSIS_META_KEYS } from "../../docs/lib/analysis-entry.js";
 import { EXIT_ERROR } from "../../lib/exit-codes.js";
@@ -211,18 +210,6 @@ function resolvePhase(state) {
   return null;
 }
 
-function incrementMetric(root, phase, counter) {
-  if (!phase) return;
-  try {
-    mutateFlowState(root, (state) => {
-      if (!state.metrics) state.metrics = {};
-      if (!state.metrics[phase]) state.metrics[phase] = {};
-      state.metrics[phase][counter] = (state.metrics[phase][counter] || 0) + 1;
-    });
-  } catch (_) {
-    // flow.json may not exist outside a flow
-  }
-}
 
 export async function execute(ctx) {
   const { root } = ctx;
@@ -261,11 +248,8 @@ export async function execute(ctx) {
       return;
     }
 
-    // Metric increment
-    const state = ctx.flowState;
-    const phase = resolvePhase(state);
+    // Metric recording is handled by the registry post hook (see registry.js)
     const isDocsPath = filePath.startsWith("docs/") || filePath.startsWith("docs\\");
-    incrementMetric(root, phase, isDocsPath ? "docsRead" : "srcRead");
 
     // Read and return content
     const content = fs.readFileSync(absPath, "utf8");
@@ -366,10 +350,7 @@ export async function execute(ctx) {
     }
   }
 
-  // Metric increment for list mode
-  const state = ctx.flowState;
-  const phase = resolvePhase(state);
-  incrementMetric(root, phase, "docsRead");
+  // Metric recording is handled by the registry post hook (see registry.js)
 
   if (isRaw) {
     for (const e of entries) {

@@ -50,10 +50,12 @@ export function warn(type, key, data, code, messages) {
 }
 
 /**
- * Print envelope as JSON to stdout and exit with appropriate code.
+ * Print envelope as JSON to stdout and set exit code.
+ * Uses process.exitCode (not process.exit()) to allow post hooks
+ * and finally blocks in the call chain to complete before exiting.
  * @param {Object} envelope - envelope from ok(), fail(), or warn()
  */
 export function output(envelope) {
   console.log(JSON.stringify(envelope, null, 2));
-  process.exit(envelope.ok ? 0 : 1);
+  process.exitCode = envelope.ok ? 0 : 1;
 }

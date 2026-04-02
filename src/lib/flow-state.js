@@ -395,6 +395,26 @@ export function mutateFlowState(workRoot, mutator) {
 }
 
 /**
+ * Increment a metric counter in flow.json.
+ * Silently no-ops if no active flow exists (e.g. outside a flow).
+ * @param {string} workRoot
+ * @param {string} phase - e.g. "plan", "impl"
+ * @param {string} counter - e.g. "docsRead", "srcRead", "redo"
+ */
+export function incrementMetric(workRoot, phase, counter) {
+  if (!phase) return;
+  try {
+    mutateFlowState(workRoot, (state) => {
+      if (!state.metrics) state.metrics = {};
+      if (!state.metrics[phase]) state.metrics[phase] = {};
+      state.metrics[phase][counter] = (state.metrics[phase][counter] || 0) + 1;
+    });
+  } catch (_) {
+    // flow.json may not exist outside a flow
+  }
+}
+
+/**
  * Update a single step's status.
  * @param {string} workRoot
  * @param {string} stepId

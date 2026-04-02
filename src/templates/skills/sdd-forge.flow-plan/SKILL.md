@@ -23,6 +23,15 @@ Available status values: `pending`, `in_progress`, `done`, `skipped`
 <!-- include("@templates/partials/context-recording.md") -->
 - After flow.json is created (step 3), record the request: `sdd-forge flow set request "<user's original request>"`
 
+## Metric Recording (Read Tool)
+
+**MUST: When reading files directly with the Read tool (not via `sdd-forge flow get context`), record the metric:**
+- After reading `docs/` files: `sdd-forge flow set metric <current-phase> docsRead`
+- After reading `src/` files: `sdd-forge flow set metric <current-phase> srcRead`
+
+The current phase can be determined from the step you are working on (e.g. `draft`, `spec`, `gate`, `test`).
+Note: `sdd-forge flow get context` automatically records these metrics via hooks — manual recording is only needed for direct Read tool usage.
+
 ## Choice Format
 
 <!-- include("@templates/partials/choice-format.md") -->
@@ -46,18 +55,13 @@ Available status values: `pending`, `in_progress`, `done`, `skipped`
 
 3. Create or select spec (`prepare-spec`).
    - Run `sdd-forge flow prepare`. If it returns `{ok: false, code: "DIRTY_WORKTREE"}`, run `sdd-forge flow get prompt plan.dirty-worktree` and present the choices. Do not retry until the worktree is clean.
-   - Commands (based on step 2 choice):
-     - Worktree: `sdd-forge flow prepare --title "..." --base <branch> --worktree`
-     - Branch: `sdd-forge flow prepare --title "..." --base <branch>`
-     - No branch: `sdd-forge flow prepare --title "..." --no-branch`
+   - Commands (based on step 2 choice). Add `--issue <number>` if a GitHub Issue was provided, and `--request "<text>"` with the user's original request:
+     - Worktree: `sdd-forge flow prepare --title "..." --base <branch> --worktree [--issue N] [--request "..."]`
+     - Branch: `sdd-forge flow prepare --title "..." --base <branch> [--issue N] [--request "..."]`
+     - No branch: `sdd-forge flow prepare --title "..." --no-branch [--issue N] [--request "..."]`
    - This creates the branch, `specs/NNN-xxx/` directory, `spec.md` skeleton, and `specs/NNN-xxx/flow.json`.
-   - The base branch is automatically recorded.
-   - **After flow.json is created**, mark steps 1-3 as done:
-     - `sdd-forge flow set step approach done`
-     - `sdd-forge flow set step branch done`
-     - `sdd-forge flow set step prepare-spec done`
-   - **If a GitHub Issue number was provided** (e.g. user said "#17" or "issue 17"):
-     - Run `sdd-forge flow set issue <number>` to save it in flow.json.
+   - The base branch, issue number, and request are automatically recorded in flow.json.
+   - Steps approach/branch/prepare-spec are automatically set to done by prepare-spec.
 
 4. Draft phase (if step 1 chose option 1).
    - **On start**: `sdd-forge flow set step draft in_progress`
@@ -131,13 +135,11 @@ Available status values: `pending`, `in_progress`, `done`, `skipped`
    - **On complete**: `sdd-forge flow set step spec done`
 
 6. Run gate (BEFORE approval).
-   - **On start**: `sdd-forge flow set step gate in_progress`
-   - `sdd-forge flow run gate`
+   - `sdd-forge flow run gate` (step status is automatically managed by hooks: pre sets in_progress, post sets done on PASS)
    - If FAIL: show ALL failures at once (no per-item user approval needed).
    - AI fixes issues and re-runs gate until PASS. No user confirmation needed per fix — just fix and re-run.
    - **Retry limit: 20 attempts.** If gate does not PASS after 20 fix-and-rerun cycles, STOP and return control to the user.
    - Do not proceed until PASS.
-   - **On complete**: `sdd-forge flow set step gate done`
 
 7. Get explicit user approval (AFTER gate PASS).
    - **On start**: `sdd-forge flow set step approval in_progress`
@@ -227,7 +229,7 @@ sdd-forge flow set note "<text>"
 sdd-forge flow set issue <number>
 sdd-forge flow set metric <phase> <counter>
 sdd-forge flow set redo --step <id> --reason "<text>" [--trigger "<text>"] [--resolution "<text>"] [--guardrail-candidate "<text>"]
-sdd-forge flow prepare --title "..." [--base branch] [--worktree] [--no-branch]
+sdd-forge flow prepare --title "..." [--base branch] [--worktree] [--no-branch] [--issue N] [--request "..."]
 sdd-forge flow run gate
 sdd-forge snapshot check
 ```

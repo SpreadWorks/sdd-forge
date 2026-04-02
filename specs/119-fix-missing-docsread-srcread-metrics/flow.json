@@ -1,0 +1,133 @@
+{
+  "spec": "specs/119-fix-missing-docsread-srcread-metrics/spec.md",
+  "baseBranch": "development",
+  "featureBranch": "feature/119-fix-missing-docsread-srcread-metrics",
+  "steps": [
+    {
+      "id": "approach",
+      "status": "done"
+    },
+    {
+      "id": "branch",
+      "status": "done"
+    },
+    {
+      "id": "prepare-spec",
+      "status": "done"
+    },
+    {
+      "id": "draft",
+      "status": "done"
+    },
+    {
+      "id": "spec",
+      "status": "done"
+    },
+    {
+      "id": "gate",
+      "status": "done"
+    },
+    {
+      "id": "approval",
+      "status": "done"
+    },
+    {
+      "id": "test",
+      "status": "done"
+    },
+    {
+      "id": "implement",
+      "status": "done"
+    },
+    {
+      "id": "review",
+      "status": "in_progress"
+    },
+    {
+      "id": "finalize",
+      "status": "done"
+    },
+    {
+      "id": "commit",
+      "status": "pending"
+    },
+    {
+      "id": "push",
+      "status": "pending"
+    },
+    {
+      "id": "merge",
+      "status": "pending"
+    },
+    {
+      "id": "pr-create",
+      "status": "pending"
+    },
+    {
+      "id": "branch-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "pr-merge",
+      "status": "pending"
+    },
+    {
+      "id": "sync-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "docs-update",
+      "status": "pending"
+    },
+    {
+      "id": "docs-review",
+      "status": "pending"
+    },
+    {
+      "id": "docs-commit",
+      "status": "pending"
+    }
+  ],
+  "requirements": [
+    {
+      "desc": "R1: runEntry hook lifecycle (pre/post/onError/finally)",
+      "status": "done"
+    },
+    {
+      "desc": "R2: registry hook 拡張 (全run + get.context + set.redo)",
+      "status": "done"
+    },
+    {
+      "desc": "R3: incrementMetric の共有化 (context.js → flow-state.js)",
+      "status": "done"
+    },
+    {
+      "desc": "R4: prepare-spec --issue/--request 引数追加",
+      "status": "done"
+    },
+    {
+      "desc": "R5: スキルテンプレート更新 (冗長な set step 削除、metric記録指示追加)",
+      "status": "done"
+    }
+  ],
+  "worktree": true,
+  "issue": 59,
+  "request": "Issue #59: docsRead/srcRead メトリクスの計測漏れを修正。hook ライフサイクル再設計、prepare-spec への引数追加、registry hook 追加",
+  "notes": [
+    "approach: Q&A で要件整理してから仕様書作成",
+    "draft: スコープは一括（hook再設計+prepare-spec引数+スキル更新を1 specで）",
+    "draft: hook lifecycle は pre/post/onError/finally 全て実装（Issue設計通り）",
+    "draft: issue/request は prepare-spec 本体で flow.json 作成時に含める（例外。hookパターンではなく作成コマンドの責務として）。--request のエスケープ問題は残るが、skill呼び出し削減を優先",
+    "draft: get.context のメトリクス記録は registry post hook に移動。file mode は result.data.type で判定、list/search mode は docsRead（analysis.json読み込みのため）",
+    "draft: スキルテンプレートに Read ツール後の metric 記録指示を追加する（docs/ → docsRead, src/ → srcRead）",
+    "test: spec検証テストを specs/119-*/tests/ に作成。node:test 使用",
+    "review: コードレビュー+自動修正",
+    "finalize: 個別に選択",
+    "finalize: steps 1,2,4,5 / squash merge"
+  ],
+  "metrics": {
+    "draft": {
+      "question": 8
+    }
+  }
+}

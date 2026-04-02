@@ -22,6 +22,14 @@ Available status values: `pending`, `in_progress`, `done`, `skipped`
 
 <!-- include("@templates/partials/context-recording.md") -->
 
+## Metric Recording (Read Tool)
+
+**MUST: When reading files directly with the Read tool (not via `sdd-forge flow get context`), record the metric:**
+- After reading `docs/` files: `sdd-forge flow set metric impl docsRead`
+- After reading `src/` files: `sdd-forge flow set metric impl srcRead`
+
+Note: `sdd-forge flow get context` automatically records these metrics via hooks — manual recording is only needed for direct Read tool usage.
+
 ## Choice Format
 
 <!-- include("@templates/partials/choice-format.md") -->
@@ -50,7 +58,7 @@ Before starting, run `sdd-forge flow get check impl` to verify prerequisites.
    - **On complete**: `sdd-forge flow set step implement done`
 
 2. Review implementation.
-   - **On start**: `sdd-forge flow set step review in_progress`
+   - Step status is automatically managed by `sdd-forge flow run review` hooks (pre sets in_progress, post sets done).
    - Present review policy:
      ```
      ──────────────────────────────────────────────────────────
@@ -111,10 +119,7 @@ Before starting, run `sdd-forge flow get check impl` to verify prerequisites.
    - Re-run tests to confirm no regressions.
    - Proceed to Step 3.
 
-   - **On complete**: `sdd-forge flow set step review done`
-
 3. Final confirmation before finalize.
-   - **On start**: `sdd-forge flow set step finalize in_progress`
    - Present:
      ```
      ──────────────────────────────────────────────────────────
@@ -142,7 +147,7 @@ Before starting, run `sdd-forge flow get check impl` to verify prerequisites.
      - Whether any changes are outside spec scope
      Then return to this choice prompt.
    - **Option 4 (other):** Ask what the user wants to do.
-   - **On complete**: `sdd-forge flow set step finalize done`
+   - Step status for finalize is automatically managed by `sdd-forge flow run impl-confirm` / `sdd-forge flow run finalize` hooks.
 
 ## Worktree Mode
 

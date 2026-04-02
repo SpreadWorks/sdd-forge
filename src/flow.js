@@ -69,14 +69,21 @@ function resolveCtx(requiresFlow) {
 }
 
 // ---------------------------------------------------------------------------
-// Run a registry entry: before → execute → after
+// Run a registry entry: pre → execute → post/onError → finally
 // ---------------------------------------------------------------------------
 
 async function runEntry(entry, ctx) {
-  if (entry.before) entry.before(ctx);
-  const mod = await entry.execute();
-  const result = await mod.execute(ctx);
-  if (entry.after) entry.after(ctx, result);
+  if (entry.pre) entry.pre(ctx);
+  try {
+    const mod = await entry.execute();
+    const result = await mod.execute(ctx);
+    if (entry.post) entry.post(ctx, result);
+  } catch (err) {
+    if (entry.onError) entry.onError(ctx, err);
+    throw err;
+  } finally {
+    if (entry.finally) entry.finally(ctx);
+  }
 }
 
 // ---------------------------------------------------------------------------
