@@ -641,14 +641,6 @@ async function main(ctx) {
     targetFiles = getChapterFiles(docsDir, { type: ctx.type, configChapters: cfg.chapters });
 
     // Diff-based chapter filtering: skip chapters whose entries are unchanged
-    // But if any target file still has unfilled {{text}} directives, force regeneration
-    if (!ctx.force) {
-      const hasUnfilled = targetFiles.some((f) => {
-        const content = fs.readFileSync(path.join(docsDir, f), "utf8");
-        return /<!--\s*\{\{text\(/.test(content);
-      });
-      if (hasUnfilled) ctx.force = true;
-    }
     if (!ctx.force) {
       const changedChapters = detectChangedChapters(analysis, srcRoot);
       if (changedChapters) {
