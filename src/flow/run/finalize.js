@@ -12,6 +12,7 @@ import {
   resolveWorktreePaths, clearFlowState, specIdFromPath,
 } from "../../lib/flow-state.js";
 import { runSync } from "../../lib/process.js";
+import { isGhAvailable, commentOnIssue } from "../../lib/git-state.js";
 import { ok, fail, output } from "../../lib/flow-envelope.js";
 import { generateReport, saveReport } from "../commands/report.js";
 import { loadRedoLog } from "../set/redo.js";
@@ -193,7 +194,24 @@ export async function execute(ctx) {
         results.report = { status: "failed", message: String(e.message || e) };
       }
 
-      // 1d. commit retro + report files
+      // 1d. post report to issue (if issue-driven flow + gh available)
+      if (!state.issue) {
+        results.issueComment = { status: "skipped", reason: "no linked issue" };
+      } else if (!results.report?.text) {
+        results.issueComment = { status: "skipped", reason: "report text missing" };
+      } else if (!isGhAvailable()) {
+        results.issueComment = { status: "skipped", reason: "gh unavailable" };
+      } else {
+        const res = commentOnIssue(state.issue, results.report.text, root);
+        if (res.ok) {
+          results.issueComment = { status: "done", issue: state.issue };
+        } else {
+          console.error(`Failed to post report to issue #${state.issue}: ${res.error}`);
+          results.issueComment = { status: "failed", message: res.error };
+        }
+      }
+
+      // 1e. commit retro + report files
       try {
         execFileSync("git", ["add", "-A"], { cwd: root, encoding: "utf8" });
         execFileSync("git", ["commit", "-m", "chore: add retro and report"], { cwd: root, encoding: "utf8" });

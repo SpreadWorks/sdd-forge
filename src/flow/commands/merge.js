@@ -9,6 +9,7 @@ import { execFileSync } from "child_process";
 import { readFileSync } from "fs";
 import path from "path";
 import { loadConfig } from "../../lib/config.js";
+import { isGhAvailable } from "../../lib/git-state.js";
 
 /**
  * Resolve push remote from config.
@@ -17,19 +18,6 @@ import { loadConfig } from "../../lib/config.js";
  */
 function resolveRemote(cfg) {
   return cfg?.flow?.push?.remote || "origin";
-}
-
-/**
- * Check if gh command is available.
- * @returns {boolean}
- */
-function isGhAvailable() {
-  try {
-    execFileSync("gh", ["--version"], { stdio: "ignore" });
-    return true;
-  } catch (_) {
-    return false;
-  }
 }
 
 /**

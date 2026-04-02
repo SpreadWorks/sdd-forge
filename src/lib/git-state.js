@@ -50,3 +50,23 @@ export function getLastCommit(cwd) {
 export function isGhAvailable() {
   return tryExec("gh", ["--version"], { timeout: 5000 }) !== null;
 }
+
+/**
+ * Post a comment to a GitHub issue.
+ * @param {number|string} issueNumber
+ * @param {string} body - Comment body text
+ * @param {string} [cwd] - Working directory
+ * @returns {{ ok: boolean, error?: string }}
+ */
+export function commentOnIssue(issueNumber, body, cwd) {
+  try {
+    execFileSync("gh", ["issue", "comment", String(issueNumber), "--body", body], {
+      cwd,
+      encoding: "utf8",
+      timeout: 30000,
+    });
+    return { ok: true };
+  } catch (e) {
+    return { ok: false, error: String(e.message || e) };
+  }
+}

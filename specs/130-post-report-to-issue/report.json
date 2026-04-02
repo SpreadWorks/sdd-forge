@@ -1,0 +1,27 @@
+{
+  "data": {
+    "implementation": {
+      "diffStat": "specs/130-post-report-to-issue/draft.md            |  20 ++++\n specs/130-post-report-to-issue/flow.json           | 106 +++++++++++++++++++++\n specs/130-post-report-to-issue/qa.md               |   9 ++\n specs/130-post-report-to-issue/review.md           |  41 ++++++++\n specs/130-post-report-to-issue/spec.md             |  56 +++++++++++\n specs/130-post-report-to-issue/tests/README.md     |  17 ++++\n .../tests/post-report.test.js                      |  20 ++++\n src/flow/commands/merge.js                         |  14 +--\n src/flow/run/finalize.js                           |  20 +++-\n src/lib/git-state.js                               |  20 ++++\n 10 files changed, 309 insertions(+), 14 deletions(-)",
+      "commits": [
+        "feat: feature/130-post-report-to-issue"
+      ]
+    },
+    "retro": null,
+    "redolog": {
+      "count": 0,
+      "entries": []
+    },
+    "metrics": {
+      "docsRead": 0,
+      "srcRead": 0,
+      "question": 3,
+      "redo": 0
+    },
+    "tests": null,
+    "sync": {
+      "status": "skipped",
+      "reason": "sync was skipped"
+    }
+  },
+  "text": "  Report\n\n  Implementation\n  ────────────────────────────────────────────────\n    feat: feature/130-post-report-to-issue\n    10 files changed, 309 insertions(+), 14 deletions(-)\n\n  Retro\n  ────────────────────────────────────────────────\n    -\n\n  Metrics\n  ────────────────────────────────────────────────\n    docs 0  src 0  Q&A 3  redo 0\n\n  Documents\n  ────────────────────────────────────────────────\n    skipped: sync was skipped"
+}
