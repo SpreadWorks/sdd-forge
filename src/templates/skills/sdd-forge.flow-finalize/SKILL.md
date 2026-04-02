@@ -59,17 +59,14 @@ Available status values: `pending`, `in_progress`, `done`, `skipped`
      PR マージ後に以下を実行してください:
      - ドキュメントの同期: sdd-forge build または /sdd-forge.flow-sync
      ```
-
-6. Run spec retrospective (after finalize).
-   - Run `sdd-forge flow run retro --force`.
-   - If `ok: true`: display the summary (rate, done/partial/not_done counts).
-   - If `ok: false`: display the error to the user and continue (retro failure does not block).
+   - If the result includes `steps.retro`, display the retro summary or failure message.
+   - Note: retro is now part of the finalize pipeline (step 3) and runs automatically before cleanup. No separate `sdd-forge flow run retro` call is needed.
 
 ## Worktree Mode
 
 <!-- include("@templates/partials/worktree-mode.md") -->
 - `sdd-forge flow run finalize` handles worktree detection, merge, and cleanup internally.
-- Docs sync (step 3) runs on the main repository after merge, before worktree cleanup.
+- Docs sync (step 4) runs on the main repository after merge and retro, before worktree cleanup.
 - **MUST: Do NOT run `sdd-forge flow run finalize` in background.** Run it in the foreground and wait for it to complete before proceeding.
 - **MUST: After `sdd-forge flow run finalize` completes in worktree mode**, the worktree directory is deleted by cleanup, invalidating the shell's cwd. Immediately run `cd <mainRepoPath>` to restore a valid working directory. Get `mainRepoPath` from `sdd-forge flow get resolve-context` (run this BEFORE finalize).
 

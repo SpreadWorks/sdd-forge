@@ -137,9 +137,10 @@ const PROMPTS_BY_LANG = {
       choices: [
         { id: 1, label: "コミット", description: "", recommended: false },
         { id: 2, label: "マージ / PR 作成", description: "", recommended: false },
-        { id: 3, label: "ドキュメント同期", description: "", recommended: false },
-        { id: 4, label: "ブランチ削除", description: "", recommended: false },
-        { id: 5, label: "作業の記録を保存", description: "", recommended: false },
+        { id: 3, label: "振り返り（retro）", description: "", recommended: false },
+        { id: 4, label: "ドキュメント同期", description: "", recommended: false },
+        { id: 5, label: "ブランチ削除", description: "", recommended: false },
+        { id: 6, label: "作業の記録を保存", description: "", recommended: false },
       ],
     },
     "finalize.merge-strategy": {
@@ -283,9 +284,10 @@ const PROMPTS_BY_LANG = {
       choices: [
         { id: 1, label: "Commit", description: "", recommended: false },
         { id: 2, label: "Merge / PR creation", description: "", recommended: false },
-        { id: 3, label: "Documentation sync", description: "", recommended: false },
-        { id: 4, label: "Branch cleanup", description: "", recommended: false },
-        { id: 5, label: "Save work record", description: "", recommended: false },
+        { id: 3, label: "Retrospective (retro)", description: "", recommended: false },
+        { id: 4, label: "Documentation sync", description: "", recommended: false },
+        { id: 5, label: "Branch cleanup", description: "", recommended: false },
+        { id: 6, label: "Save work record", description: "", recommended: false },
       ],
     },
     "finalize.merge-strategy": {

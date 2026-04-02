@@ -2,7 +2,7 @@
  * src/flow/run/finalize.js
  *
  * flow run finalize --mode all|select [--steps 3,4,5] [--merge-strategy squash|pr] [--dry-run]
- * Execute finalization pipeline: commit -> merge -> sync -> cleanup -> record.
+ * Execute finalization pipeline: commit -> merge -> retro -> sync -> cleanup -> record.
  */
 
 import { execFileSync } from "child_process";
@@ -15,9 +15,10 @@ import path from "path";
 const STEP_MAP = {
   1: "commit",
   2: "merge",
-  3: "sync",
-  4: "cleanup",
-  5: "record",
+  3: "retro",
+  4: "sync",
+  5: "cleanup",
+  6: "record",
 };
 
 export async function execute(ctx) {
@@ -33,11 +34,11 @@ export async function execute(ctx) {
       [
         "Usage: sdd-forge flow run finalize [options]",
         "",
-        "Execute finalization pipeline: commit -> merge -> sync -> cleanup -> record.",
+        "Execute finalization pipeline: commit -> merge -> retro -> sync -> cleanup -> record.",
         "",
         "Options:",
         "  --mode <all|select>           Mode (required)",
-        "  --steps <1,2,3,...>           Comma-separated step numbers (select mode)",
+        "  --steps <1,2,3,...>           Comma-separated step numbers (select mode: 1=commit 2=merge 3=retro 4=sync 5=cleanup 6=record)",
         "  --merge-strategy <strategy>   squash or pr (default: auto-detect)",
         "  --message <msg>               Custom commit message",
         "  --dry-run                     Preview only",
@@ -59,7 +60,7 @@ export async function execute(ctx) {
   // Determine which steps to execute
   let activeSteps;
   if (cli.mode === "all") {
-    activeSteps = new Set([1, 2, 3, 4, 5]);
+    activeSteps = new Set(Object.keys(STEP_MAP).map(Number));
   } else {
     if (!cli.steps) {
       output(fail("run", "finalize", "MISSING_STEPS", "--steps required when mode is 'select'"));
@@ -67,7 +68,7 @@ export async function execute(ctx) {
     }
     activeSteps = new Set(cli.steps.split(",").map(Number).filter((n) => STEP_MAP[n]));
     if (activeSteps.size === 0) {
-      output(fail("run", "finalize", "INVALID_STEPS", "no valid steps. valid: 1,2,3,4,5"));
+      output(fail("run", "finalize", "INVALID_STEPS", `no valid steps. valid: ${Object.keys(STEP_MAP).join(",")}`));
       return;
     }
   }
@@ -133,8 +134,27 @@ export async function execute(ctx) {
     }
   }
 
-  // Step 3: sync (docs generation on main branch)
+  // Step 3: retro (spec retrospective — runs before cleanup so .active-flow and branch exist)
   if (activeSteps.has(3)) {
+    if (cli.dryRun) {
+      results.retro = { status: "dry-run" };
+    } else {
+      const retroRes = runSync("node", [
+        path.join(PKG_DIR, "..", "flow.js"), "run", "retro", "--force",
+      ], { cwd: root });
+      if (retroRes.ok) {
+        let retroData;
+        try { retroData = JSON.parse(retroRes.stdout); } catch (_) { retroData = null; }
+        results.retro = { status: "done", ...(retroData?.data?.summary ? { summary: retroData.data.summary } : {}) };
+      } else {
+        // retro failure does not block the pipeline
+        results.retro = { status: "failed", message: (retroRes.stderr || retroRes.stdout || "").trim() };
+      }
+    }
+  }
+
+  // Step 4: sync (docs generation on main branch)
+  if (activeSteps.has(4)) {
     // Skip sync if merge was PR route (not yet merged)
     const wasPr = results.merge?.strategy === "pr" || mergeStrategy === "pr";
     if (wasPr) {
@@ -168,8 +188,8 @@ export async function execute(ctx) {
     }
   }
 
-  // Step 4: cleanup
-  if (activeSteps.has(4)) {
+  // Step 5: cleanup
+  if (activeSteps.has(5)) {
     if (cli.dryRun) {
       results.cleanup = { status: "dry-run" };
     } else {
@@ -183,8 +203,8 @@ export async function execute(ctx) {
     }
   }
 
-  // Step 5: record (placeholder)
-  if (activeSteps.has(5)) {
+  // Step 6: record (placeholder)
+  if (activeSteps.has(6)) {
     results.record = { status: cli.dryRun ? "dry-run" : "done" };
   }
 
