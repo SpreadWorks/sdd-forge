@@ -10,6 +10,8 @@
 ## Description
 
 <!-- {{text({prompt: "Write a 1-2 sentence overview of this chapter. Include the number of major directories and their roles."})}} -->
+
+The project is organized into three major directories: `src/docs/` (documentation generation commands, data sources, and utilities), `src/flow/` (Spec-Driven Development workflow controllers and commands), and `src/lib/` (shared utility libraries used across the entire codebase).
 <!-- {{/text}} -->
 
 ## Content
@@ -46,6 +48,13 @@ src/lib/    (lib)
 ### Shared Libraries
 
 <!-- {{text({prompt: "List the shared libraries with class name, file path, and responsibility in table format."})}} -->
+
+| Module | File Path | Responsibility |
+| --- | --- | --- |
+| cli | `src/lib/cli.js` | Provides core CLI utilities including repository root resolution, argument parsing, worktree detection, and timestamp formatting |
+| entrypoint | `src/lib/entrypoint.js` | Guards script entry points, distinguishing direct execution from module imports, and wraps main functions with error-exit handling |
+| exit-codes | `src/lib/exit-codes.js` | Defines `EXIT_SUCCESS` and `EXIT_ERROR` numeric constants to eliminate magic numbers across CLI commands and flow handlers |
+| presets | `src/lib/presets.js` | Discovers and registers all available presets from the filesystem, resolves inheritance chains via `parent` references, and provides O(1) lookup utilities throughout the tool |
 <!-- {{/text}} -->
 
 ---
