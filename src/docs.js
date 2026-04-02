@@ -175,7 +175,7 @@ if (subCmd === "build") {
           }
           await dataMain({ ...langCtx, dryRun: isDryRun });
           if (hasAgent) {
-            const langTextResult = await textMain({ ...langCtx, dryRun: isDryRun, commandId: "docs.text", regenerate: hasForce || hasRegenerate });
+            const langTextResult = await textMain({ ...langCtx, dryRun: isDryRun, commandId: "docs.text", force: hasForce || hasRegenerate });
             if (langTextResult?.errors?.length > 0) {
               progress.log(`[text] WARN: ${lang}: ${langTextResult.errors.length} file(s) had errors.`);
             }
