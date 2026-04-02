@@ -103,9 +103,10 @@ describe("parseGaps", () => {
 });
 
 describe("formatTestReviewMd", () => {
-  it("formats PASS verdict", () => {
+  it("formats PASS verdict with link to tests/spec.md", () => {
     const md = formatTestReviewMd("test design", ["no gaps"], "PASS", []);
     assert.match(md, /# Test Review Results/);
+    assert.match(md, /tests\/spec\.md/);
     assert.match(md, /Verdict: PASS/);
     assert.ok(!md.includes("Remaining Gaps"));
   });

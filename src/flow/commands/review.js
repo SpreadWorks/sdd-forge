@@ -375,8 +375,8 @@ function applyTestFixes(text, root) {
  */
 function formatTestReviewMd(testDesign, gapHistory, finalVerdict, remainingGaps) {
   const lines = ["# Test Review Results", ""];
-  lines.push("## Test Design Summary");
-  lines.push(testDesign);
+  lines.push("## Test Design");
+  lines.push("See [tests/spec.md](tests/spec.md) for the full test design.");
   lines.push("");
   lines.push("## Gap Analysis");
   for (let i = 0; i < gapHistory.length; i++) {
@@ -427,7 +427,12 @@ async function runTestReview(root, flow, config, dryRun) {
     root,
     { systemPrompt: "You are a test design expert. Output a structured test design." },
   );
-  console.error("  [test-review] Test design generated.");
+  // Save test design as tests/spec.md
+  const testsDir = path.resolve(root, specDir, "tests");
+  if (!fs.existsSync(testsDir)) fs.mkdirSync(testsDir, { recursive: true });
+  const testSpecPath = path.join(testsDir, "spec.md");
+  fs.writeFileSync(testSpecPath, `# Test Design\n\n${testDesign}\n`);
+  console.error(`  [test-review] Test design saved to ${path.relative(root, testSpecPath)}`);
 
   // Step 2-3: Compare and retry loop
   const gapHistory = [];
