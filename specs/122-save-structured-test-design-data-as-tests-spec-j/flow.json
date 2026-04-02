@@ -1,0 +1,120 @@
+{
+  "spec": "specs/122-save-structured-test-design-data-as-tests-spec-j/spec.md",
+  "baseBranch": "development",
+  "featureBranch": "feature/122-save-structured-test-design-data-as-tests-spec-j",
+  "steps": [
+    {
+      "id": "approach",
+      "status": "done"
+    },
+    {
+      "id": "branch",
+      "status": "done"
+    },
+    {
+      "id": "prepare-spec",
+      "status": "done"
+    },
+    {
+      "id": "draft",
+      "status": "done"
+    },
+    {
+      "id": "spec",
+      "status": "done"
+    },
+    {
+      "id": "gate",
+      "status": "done"
+    },
+    {
+      "id": "approval",
+      "status": "done"
+    },
+    {
+      "id": "test",
+      "status": "done"
+    },
+    {
+      "id": "implement",
+      "status": "done"
+    },
+    {
+      "id": "review",
+      "status": "done"
+    },
+    {
+      "id": "finalize",
+      "status": "in_progress"
+    },
+    {
+      "id": "commit",
+      "status": "pending"
+    },
+    {
+      "id": "push",
+      "status": "pending"
+    },
+    {
+      "id": "merge",
+      "status": "pending"
+    },
+    {
+      "id": "pr-create",
+      "status": "pending"
+    },
+    {
+      "id": "branch-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "pr-merge",
+      "status": "pending"
+    },
+    {
+      "id": "sync-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "docs-update",
+      "status": "pending"
+    },
+    {
+      "id": "docs-review",
+      "status": "pending"
+    },
+    {
+      "id": "docs-commit",
+      "status": "pending"
+    }
+  ],
+  "requirements": [
+    {
+      "desc": "REQ-1: flow set test-summary command with --unit/--integration/--acceptance flags",
+      "status": "done"
+    },
+    {
+      "desc": "REQ-2: flow.json test.summary field storage",
+      "status": "done"
+    },
+    {
+      "desc": "REQ-3: Registry and dispatcher integration",
+      "status": "done"
+    }
+  ],
+  "worktree": true,
+  "notes": [
+    "approach: Q&A draft then spec",
+    "branch: worktree from development",
+    "Q1: spec.json はテストファイルの静的解析から生成する方針",
+    "Q2: AI出力はブレるので、コマンド引数 or シンプルJSONで種別:件数だけにする",
+    "Q3: flow.json の test.summary に保存。コマンドは flow set test-summary --unit N ..."
+  ],
+  "request": "テスト設計の構造化データ（tests/spec.json）保存機能の追加",
+  "metrics": {
+    "draft": {
+      "question": 4
+    }
+  },
+  "autoApprove": true
+}

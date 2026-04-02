@@ -138,6 +138,10 @@ export const FLOW_COMMANDS = {
       helpKey: "flow.set.auto",
       execute: () => import("./set/auto.js"),
     },
+    "test-summary": {
+      helpKey: "flow.set.test-summary",
+      execute: () => import("./set/test-summary.js"),
+    },
   },
   run: {
     gate: {

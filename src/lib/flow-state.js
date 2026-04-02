@@ -441,6 +441,19 @@ export function setRequirements(workRoot, descriptions) {
 }
 
 /**
+ * Set test summary counts in flow.json under test.summary.
+ * Replaces existing test.summary entirely.
+ * @param {string} workRoot
+ * @param {{ [type: string]: number }} summary
+ */
+export function setTestSummary(workRoot, summary) {
+  mutateFlowState(workRoot, (state) => {
+    if (!state.test) state.test = {};
+    state.test.summary = summary;
+  });
+}
+
+/**
  * Update a single requirement's status.
  * @param {string} workRoot
  * @param {number} index
