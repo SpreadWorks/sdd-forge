@@ -1,0 +1,47 @@
+{
+  "guardrails": [
+    {
+      "id": "",
+      "title": "パラメータ化クエリの使用",
+      "body": "DQL および QueryBuilder ではパラメータバインディングを必須とする。クエリ内での文字列結合を禁止する。",
+      "meta": {
+        "phase": [
+          "spec",
+          "impl"
+        ]
+      }
+    },
+    {
+      "id": "service",
+      "title": "Service 層の分離",
+      "body": "ビジネスロジックは Service クラスに置き、Controller は薄く保つこと。",
+      "meta": {
+        "phase": [
+          "spec",
+          "impl"
+        ]
+      }
+    },
+    {
+      "id": "voter",
+      "title": "Voter による認可",
+      "body": "認可ロジックは Voter に集約すること。Controller 内での権限チェック分散を禁止する。",
+      "meta": {
+        "phase": [
+          "spec",
+          "impl"
+        ]
+      }
+    },
+    {
+      "id": "dto",
+      "title": "外部入力は DTO で受ける",
+      "body": "外部入力は DTO + Validator で受け取ること。Request からエンティティへの直接マッピングを禁止する。",
+      "meta": {
+        "phase": [
+          "impl"
+        ]
+      }
+    }
+  ]
+}

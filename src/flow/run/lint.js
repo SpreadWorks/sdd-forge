@@ -6,7 +6,7 @@
  */
 
 import { parseArgs } from "../../lib/cli.js";
-import { loadMergedArticles } from "../../lib/guardrail.js";
+import { loadMergedGuardrails } from "../../lib/guardrail.js";
 import { runLint } from "../../lib/lint.js";
 import { ok, fail, output } from "../../lib/flow-envelope.js";
 
@@ -44,18 +44,18 @@ export async function execute(ctx) {
   }
 
   // Load merged guardrail articles
-  const allArticles = loadMergedArticles(root);
-  if (allArticles.length === 0) {
+  const allGuardrails = loadMergedGuardrails(root);
+  if (allGuardrails.length === 0) {
     output(ok("run", "lint", {
       result: "pass",
-      message: "no guardrail articles found",
+      message: "no guardrails found",
       warnings: [],
       failures: [],
     }));
     return;
   }
 
-  const result = runLint(root, allArticles, base);
+  const result = runLint(root, allGuardrails, base);
 
   for (const w of result.warnings) {
     console.error(w);
@@ -64,14 +64,14 @@ export async function execute(ctx) {
   if (!result.ok) {
     output(fail("run", "lint", "LINT_FAILED", [
       `${result.failures.length} violation(s) found`,
-      ...result.failures.map((f) => `FAIL: [${f.article}] ${f.file}:${f.line} — ${f.match}`),
+      ...result.failures.map((f) => `FAIL: [${f.guardrail}] ${f.file}:${f.line} — ${f.match}`),
     ]));
     return;
   }
 
   output(ok("run", "lint", {
     result: "pass",
-    lintArticleCount: result.lintArticleCount,
+    lintGuardrailCount: result.lintGuardrailCount,
     fileCount: result.fileCount,
     warnings: result.warnings,
     failures: [],

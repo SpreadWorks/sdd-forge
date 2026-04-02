@@ -1,0 +1,47 @@
+{
+  "guardrails": [
+    {
+      "id": "use-parameterized-queries",
+      "title": "Use Parameterized Queries",
+      "body": "DQL and QueryBuilder shall use parameter bindings. String concatenation in queries is prohibited.",
+      "meta": {
+        "phase": [
+          "spec",
+          "impl"
+        ]
+      }
+    },
+    {
+      "id": "service-layer-separation",
+      "title": "Service Layer Separation",
+      "body": "Business logic shall reside in Service classes. Controllers shall remain thin.",
+      "meta": {
+        "phase": [
+          "spec",
+          "impl"
+        ]
+      }
+    },
+    {
+      "id": "use-voter-for-authorization",
+      "title": "Use Voter for Authorization",
+      "body": "Authorization logic shall be consolidated in Voter classes. Scattering permission checks across controllers is prohibited.",
+      "meta": {
+        "phase": [
+          "spec",
+          "impl"
+        ]
+      }
+    },
+    {
+      "id": "use-dto-for-external-input",
+      "title": "Use DTO for External Input",
+      "body": "External input shall be received via DTO combined with Validator. Direct mapping from Request to Entity is prohibited.",
+      "meta": {
+        "phase": [
+          "impl"
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,82 @@
+{
+  "guardrails": [
+    {
+      "id": "single-responsibility",
+      "title": "Single Responsibility",
+      "body": "Each spec shall address one concern. Do not bundle unrelated changes into a single specification.",
+      "meta": {
+        "phase": [
+          "draft",
+          "spec"
+        ]
+      }
+    },
+    {
+      "id": "unambiguous-requirements",
+      "title": "Unambiguous Requirements",
+      "body": "Requirements shall avoid vague adjectives (e.g. \"appropriate\", \"fast\", \"easy\") and instead state verifiable conditions.",
+      "meta": {
+        "phase": [
+          "draft",
+          "spec"
+        ]
+      }
+    },
+    {
+      "id": "complete-context",
+      "title": "Complete Context",
+      "body": "Each requirement shall pair a trigger condition (When / If) with an expected behavior (shall). Requirements without context or expected outcome are incomplete.",
+      "meta": {
+        "phase": [
+          "draft",
+          "spec"
+        ]
+      }
+    },
+    {
+      "id": "no-hardcoded-secrets",
+      "title": "No Hardcoded Secrets",
+      "body": "Source code shall not contain API keys, passwords, tokens, or other secrets directly. Externalize them via environment variables or configuration files.",
+      "meta": {
+        "phase": [
+          "draft",
+          "spec",
+          "impl"
+        ]
+      }
+    },
+    {
+      "id": "no-silent-error-swallowing",
+      "title": "No Silent Error Swallowing",
+      "body": "Empty catch blocks or code that silently discards errors are prohibited. Errors shall be logged or re-thrown.",
+      "meta": {
+        "phase": [
+          "spec",
+          "impl"
+        ]
+      }
+    },
+    {
+      "id": "prioritize-requirements",
+      "title": "Prioritize Requirements",
+      "body": "When requirements exceed three items, specify their priority order. This prevents scope creep and ensures the most critical items are addressed first.",
+      "meta": {
+        "phase": [
+          "draft",
+          "spec"
+        ]
+      }
+    },
+    {
+      "id": "impact-on-existing-features",
+      "title": "Impact on Existing Features",
+      "body": "Changes shall list their impact on existing features. If no existing features are affected, state so explicitly.",
+      "meta": {
+        "phase": [
+          "draft",
+          "spec"
+        ]
+      }
+    }
+  ]
+}

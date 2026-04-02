@@ -11,17 +11,17 @@ import { runSync } from "./process.js";
 import { filterByPhase, matchScope } from "./guardrail.js";
 
 /**
- * Validate lint articles for misconfiguration.
- * Warns when an article has a lint pattern but phase does not include "lint".
+ * Validate guardrails for lint misconfiguration.
+ * Warns when a guardrail has a lint pattern but phase does not include "lint".
  *
- * @param {{ title: string, meta: Object }[]} articles
+ * @param {Object[]} guardrails
  * @returns {string[]} Warning messages
  */
-export function validateLintArticles(articles) {
+export function validateLintGuardrails(guardrails) {
   const warnings = [];
-  for (const a of articles) {
-    if (a.meta?.lint && !a.meta.phase?.includes("lint")) {
-      warnings.push(`WARN: "${a.title}" has lint pattern but phase does not include "lint"`);
+  for (const g of guardrails) {
+    if (g.meta?.lint && !g.meta.phase?.includes("lint")) {
+      warnings.push(`WARN: "${g.title}" has lint pattern but phase does not include "lint"`);
     }
   }
   return warnings;
@@ -49,18 +49,18 @@ export function getChangedFiles(root, base) {
  * Run lint patterns against file contents.
  *
  * @param {string} root - Repository root
- * @param {{ title: string, body: string, meta: Object }[]} articles - Lint articles
+ * @param {Object[]} guardrails - Lint guardrails
  * @param {string[]} files - Changed file paths (relative)
- * @returns {{ article: string, file: string, line: number, match: string }[]} Failures
+ * @returns {{ guardrail: string, file: string, line: number, match: string }[]} Failures
  */
-export function runLintChecks(root, articles, files) {
+export function runLintChecks(root, guardrails, files) {
   const failures = [];
 
-  for (const article of articles) {
-    const pattern = article.meta.lint;
+  for (const g of guardrails) {
+    const pattern = g.meta.lint;
     if (!pattern) continue;
 
-    const targetFiles = files.filter((f) => matchScope(f, article.meta.scope));
+    const targetFiles = files.filter((f) => matchScope(f, g.meta.scope));
 
     for (const file of targetFiles) {
       const absPath = path.join(root, file);
@@ -74,7 +74,7 @@ export function runLintChecks(root, articles, files) {
         pattern.lastIndex = 0;
         if (pattern.test(lines[i])) {
           failures.push({
-            article: article.title,
+            guardrail: g.title,
             file,
             line: i + 1,
             match: lines[i].trim().slice(0, 80),
@@ -91,33 +91,33 @@ export function runLintChecks(root, articles, files) {
  * Run the full lint pipeline.
  *
  * @param {string} root - Repository root
- * @param {{ title: string, body: string, meta: Object }[]} allArticles - All guardrail articles
+ * @param {Object[]} allGuardrails - All guardrails
  * @param {string} base - Base branch for git diff
- * @returns {{ ok: boolean, warnings: string[], lintArticleCount: number, fileCount: number, failures: Object[] }}
+ * @returns {{ ok: boolean, warnings: string[], lintGuardrailCount: number, fileCount: number, failures: Object[] }}
  */
-export function runLint(root, allArticles, base) {
-  const warnings = validateLintArticles(allArticles);
+export function runLint(root, allGuardrails, base) {
+  const warnings = validateLintGuardrails(allGuardrails);
 
-  // Filter to lint-phase articles with lint patterns
-  const lintArticles = filterByPhase(allArticles, "lint").filter((a) => a.meta.lint);
+  // Filter to lint-phase guardrails with lint patterns
+  const lintGuardrails = filterByPhase(allGuardrails, "lint").filter((g) => g.meta.lint);
 
-  if (lintArticles.length === 0) {
-    return { ok: true, warnings, lintArticleCount: 0, fileCount: 0, failures: [] };
+  if (lintGuardrails.length === 0) {
+    return { ok: true, warnings, lintGuardrailCount: 0, fileCount: 0, failures: [] };
   }
 
   // Get changed files
   const changedFiles = getChangedFiles(root, base);
   if (changedFiles.length === 0) {
-    return { ok: true, warnings, lintArticleCount: lintArticles.length, fileCount: 0, failures: [] };
+    return { ok: true, warnings, lintGuardrailCount: lintGuardrails.length, fileCount: 0, failures: [] };
   }
 
   // Run checks
-  const failures = runLintChecks(root, lintArticles, changedFiles);
+  const failures = runLintChecks(root, lintGuardrails, changedFiles);
 
   return {
     ok: failures.length === 0,
     warnings,
-    lintArticleCount: lintArticles.length,
+    lintGuardrailCount: lintGuardrails.length,
     fileCount: changedFiles.length,
     failures,
   };

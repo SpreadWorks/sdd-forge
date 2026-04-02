@@ -2,11 +2,11 @@
 /**
  * src/flow/get/guardrail.js
  *
- * flow get guardrail <phase> — Return guardrail articles filtered by phase.
+ * flow get guardrail <phase> — Return guardrails filtered by phase.
  * Moved from spec/commands/guardrail.js runShow().
  */
 
-import { loadMergedArticles, filterByPhase } from "../../lib/guardrail.js";
+import { loadMergedGuardrails, filterByPhase } from "../../lib/guardrail.js";
 import { ok, fail, output } from "../../lib/flow-envelope.js";
 
 const VALID_PHASES = ["draft", "spec", "impl", "lint"];
@@ -28,16 +28,17 @@ export async function execute(ctx) {
     return;
   }
 
-  const articles = loadMergedArticles(root);
-  const filtered = filterByPhase(articles, phase);
+  const guardrails = loadMergedGuardrails(root);
+  const filtered = filterByPhase(guardrails, phase);
 
   output(ok("get", "guardrail", {
     phase,
     count: filtered.length,
-    articles: filtered.map((a) => ({
-      title: a.title,
-      body: a.body.trim(),
-      meta: a.meta,
+    guardrails: filtered.map((g) => ({
+      id: g.id,
+      title: g.title,
+      body: g.body.trim(),
+      meta: g.meta,
     })),
   }));
 }

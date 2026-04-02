@@ -1,0 +1,37 @@
+{
+  "guardrails": [
+    {
+      "id": "backward-compatible-cli-interface",
+      "title": "Backward-Compatible CLI Interface",
+      "body": "Removing or changing the meaning of existing commands or options shall include a migration plan in the spec.",
+      "meta": {
+        "phase": [
+          "draft",
+          "spec"
+        ]
+      }
+    },
+    {
+      "id": "exit-code-contract",
+      "title": "Exit Code Contract",
+      "body": "Commands shall not return exit code 0 on failure. Errors shall be signaled via non-zero exit codes.",
+      "meta": {
+        "phase": [
+          "spec",
+          "impl"
+        ]
+      }
+    },
+    {
+      "id": "destructive-operations-require-confirmation",
+      "title": "Destructive Operations Require Confirmation",
+      "body": "Destructive operations (data deletion, overwriting) shall require a `--force` flag or interactive user confirmation.",
+      "meta": {
+        "phase": [
+          "spec",
+          "impl"
+        ]
+      }
+    }
+  ]
+}

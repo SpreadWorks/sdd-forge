@@ -10,7 +10,7 @@ import path from "path";
 import { parseArgs } from "../../lib/cli.js";
 import { translate } from "../../lib/i18n.js";
 import { callAgent, resolveAgent } from "../../lib/agent.js";
-import { filterByPhase, loadMergedArticles } from "../../lib/guardrail.js";
+import { filterByPhase, loadMergedGuardrails } from "../../lib/guardrail.js";
 import { ok, fail, output } from "../../lib/flow-envelope.js";
 
 /**
@@ -118,17 +118,17 @@ function extractExemptions(specText) {
 /**
  * Build AI prompt for guardrail compliance check.
  */
-function buildGuardrailPrompt(specText, articles) {
+function buildGuardrailPrompt(specText, guardrails) {
   const exemptions = extractExemptions(specText);
-  const specArticles = filterByPhase(articles, "spec");
-  const filteredArticles = specArticles.filter(
-    (a) => !exemptions.includes(a.title.toLowerCase())
+  const specGuardrails = filterByPhase(guardrails, "spec");
+  const filtered = specGuardrails.filter(
+    (g) => !exemptions.includes(g.title.toLowerCase())
   );
 
-  if (filteredArticles.length === 0) return null;
+  if (filtered.length === 0) return null;
 
-  const articleList = filteredArticles.map((a, i) =>
-    `${i + 1}. **${a.title}**: ${a.body.trim()}`
+  const articleList = filtered.map((g, i) =>
+    `${i + 1}. **${g.title}**: ${g.body.trim()}`
   ).join("\n");
 
   const parts = [
@@ -178,13 +178,13 @@ function parseGuardrailResponse(response) {
  * Run guardrail AI compliance check.
  */
 function checkGuardrail(root, specText, config) {
-  const articles = loadMergedArticles(root);
-  if (articles.length === 0) return null;
+  const guardrails = loadMergedGuardrails(root);
+  if (guardrails.length === 0) return null;
 
   const agent = resolveAgent(config, "spec.gate");
   if (!agent) return null;
 
-  const prompt = buildGuardrailPrompt(specText, articles);
+  const prompt = buildGuardrailPrompt(specText, guardrails);
   if (!prompt) return { passed: true, results: [] };
 
   const response = callAgent(agent, prompt);

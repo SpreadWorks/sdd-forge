@@ -1,0 +1,46 @@
+{
+  "guardrails": [
+    {
+      "id": "eloquent-query-builder",
+      "title": "Eloquent / Query Builder の使用",
+      "body": "`DB::raw()` や生 SQL を使用する場合はバインディングを必須とする。クエリ内での文字列結合を禁止する。",
+      "meta": {
+        "phase": [
+          "spec",
+          "impl"
+        ]
+      }
+    },
+    {
+      "id": "controller",
+      "title": "Controller にビジネスロジックを書かない",
+      "body": "ビジネスロジックは Service または Action クラスに分離すること。Controller は薄く保つこと。",
+      "meta": {
+        "phase": [
+          "spec",
+          "impl"
+        ]
+      }
+    },
+    {
+      "id": "formrequest",
+      "title": "FormRequest によるバリデーション",
+      "body": "入力バリデーションは Controller 内で直接行わず、FormRequest クラスを使用すること。",
+      "meta": {
+        "phase": [
+          "impl"
+        ]
+      }
+    },
+    {
+      "id": "mass-assignment",
+      "title": "Mass Assignment の保護必須",
+      "body": "Model は `$guarded` または `$fillable` を定義すること。`Model::unguard()` の使用を禁止する。",
+      "meta": {
+        "phase": [
+          "impl"
+        ]
+      }
+    }
+  ]
+}
