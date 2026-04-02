@@ -8,9 +8,7 @@
 
 ## Tech Stack
 
-| Category | Technology |
-|----------|------------|
-<!-- {{text({prompt: "Describe the technology stack in table rows with 'Category | Technology' format. No table header needed."})}} -->
+<!-- {{text({prompt: "Describe the technology stack in table rows with 'Category | Technology' format. No table header needed.", header: "| Category | Technology |\n|----------|------------|"})}} -->
 <!-- {{/text}} -->
 
 ## Quick Start

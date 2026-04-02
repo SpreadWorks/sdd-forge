@@ -416,9 +416,17 @@ async function processTemplate(text, analysis, fileName, agent, timeoutMs, cwd, 
       continue;
     }
 
+    // Build content with optional header/footer (same as data directives)
+    const { header, footer } = d.params || {};
+    const contentParts = [];
+    if (header) contentParts.push(header);
+    contentParts.push(generated);
+    if (footer) contentParts.push(footer);
+    const content = contentParts.join("\n");
+
     // ディレクティブ行 + 生成内容 + 終了タグ行
     const endTag = lines[endLine];
-    const newLines = [d.raw, generated, endTag];
+    const newLines = [d.raw, content, endTag];
     lines.splice(d.line, endLine - d.line + 1, ...newLines);
     filled++;
     logger.verbose(`FILLED ${fileName}:${d.line + 1} (${generated.split("\n").length} lines)`);
