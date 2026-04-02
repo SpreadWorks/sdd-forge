@@ -25,8 +25,15 @@ function deriveActivePhase(root) {
  * @param {string} stepId
  * @returns {(ctx: object) => void}
  */
+/**
+ * Best-effort step status update. Silently ignores errors (e.g. flow.json absent after cleanup).
+ */
+function tryUpdateStepStatus(root, stepId, status) {
+  try { updateStepStatus(root, stepId, status); } catch {}
+}
+
 function stepPre(stepId) {
-  return (ctx) => updateStepStatus(ctx.root, stepId, "in_progress");
+  return (ctx) => tryUpdateStepStatus(ctx.root, stepId, "in_progress");
 }
 
 /**
@@ -38,7 +45,7 @@ function stepPre(stepId) {
 function stepPost(stepId, statusFn) {
   return (ctx, result) => {
     const status = statusFn ? statusFn(result) : "done";
-    updateStepStatus(ctx.root, stepId, status);
+    tryUpdateStepStatus(ctx.root, stepId, status);
   };
 }
 

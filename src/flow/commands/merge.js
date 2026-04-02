@@ -192,16 +192,26 @@ function main(ctx) {
   const specTitle = state.spec?.replace(/^specs\/\d+-/, "").replace(/\/spec\.md$/, "") || featureBranch;
   const commitMsg = state.issue ? `${specTitle}\n\nfixes #${state.issue}` : specTitle;
 
+  function runSquashMerge(gitPrefix, hint) {
+    const mergeArgs = [...gitPrefix, "merge", "--squash", featureBranch];
+    const resetArgs = [...gitPrefix, "reset", "--merge"];
+    try {
+      execFileSync("git", mergeArgs, { stdio: "inherit" });
+    } catch {
+      try { execFileSync("git", resetArgs, { stdio: "ignore" }); } catch {}
+      throw new Error(`Merge conflict detected. ${hint}`);
+    }
+    execFileSync("git", [...gitPrefix, "commit", "-m", commitMsg], { stdio: "inherit" });
+  }
+
   if (worktree && mainRepoPath) {
-    execFileSync("git", ["-C", mainRepoPath, "merge", "--squash", featureBranch], { stdio: "inherit" });
-    execFileSync("git", ["-C", mainRepoPath, "commit", "-m", commitMsg], { stdio: "inherit" });
+    runSquashMerge(["-C", mainRepoPath], `Run 'git rebase ${baseBranch}' in the worktree and retry finalize.`);
     return { strategy: "squash" };
   }
 
   // Branch mode
   execFileSync("git", ["checkout", baseBranch], { stdio: "inherit" });
-  execFileSync("git", ["merge", "--squash", featureBranch], { stdio: "inherit" });
-  execFileSync("git", ["commit", "-m", commitMsg], { stdio: "inherit" });
+  runSquashMerge([], `Run 'git rebase ${baseBranch}' and retry finalize.`);
   return { strategy: "squash" };
 }
 

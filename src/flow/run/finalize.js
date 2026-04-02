@@ -228,6 +228,20 @@ export async function execute(ctx) {
     }
   }
 
+  // ── Merge failure guard: skip subsequent steps ──
+  if (results.merge?.status === "failed") {
+    if (activeSteps.has(3)) results.sync = { status: "skipped", message: "skipped due to merge failure" };
+    if (activeSteps.has(4)) results.cleanup = { status: "skipped", message: "skipped due to merge failure" };
+
+    output(ok("run", "finalize", {
+      result: "merge_failed",
+      steps: results,
+      message: results.merge.message,
+      artifacts: { baseBranch: state.baseBranch, featureBranch: state.featureBranch, worktree: !!state.worktree, spec: state.spec },
+    }));
+    return;
+  }
+
   // ── Step 3: sync (docs generation — runs on main repo after merge) ──
   if (activeSteps.has(3)) {
     const wasPr = results.merge?.strategy === "pr" || mergeStrategy === "pr";

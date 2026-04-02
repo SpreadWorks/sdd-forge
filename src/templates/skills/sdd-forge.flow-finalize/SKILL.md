@@ -72,6 +72,7 @@ Available status values: `pending`, `in_progress`, `done`, `skipped`
 ## Worktree Mode
 
 <!-- include("@templates/partials/worktree-mode.md") -->
+- Before merge, consider running `git rebase <baseBranch>` in the worktree to incorporate upstream changes and avoid merge conflicts.
 - `sdd-forge flow run finalize` handles worktree detection, merge, and cleanup internally.
 - Docs sync (step 3) runs on the main repository after merge, before worktree cleanup (step 4).
 - **MUST: Do NOT run `sdd-forge flow run finalize` in background.** Run it in the foreground and wait for it to complete before proceeding.

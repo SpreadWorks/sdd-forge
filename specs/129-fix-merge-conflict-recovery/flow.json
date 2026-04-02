@@ -1,0 +1,118 @@
+{
+  "spec": "specs/129-fix-merge-conflict-recovery/spec.md",
+  "baseBranch": "development",
+  "featureBranch": "feature/129-fix-merge-conflict-recovery",
+  "steps": [
+    {
+      "id": "approach",
+      "status": "done"
+    },
+    {
+      "id": "branch",
+      "status": "done"
+    },
+    {
+      "id": "prepare-spec",
+      "status": "pending"
+    },
+    {
+      "id": "draft",
+      "status": "done"
+    },
+    {
+      "id": "spec",
+      "status": "done"
+    },
+    {
+      "id": "gate",
+      "status": "done"
+    },
+    {
+      "id": "approval",
+      "status": "done"
+    },
+    {
+      "id": "test",
+      "status": "done"
+    },
+    {
+      "id": "implement",
+      "status": "done"
+    },
+    {
+      "id": "review",
+      "status": "done"
+    },
+    {
+      "id": "finalize",
+      "status": "pending"
+    },
+    {
+      "id": "commit",
+      "status": "pending"
+    },
+    {
+      "id": "push",
+      "status": "pending"
+    },
+    {
+      "id": "merge",
+      "status": "pending"
+    },
+    {
+      "id": "pr-create",
+      "status": "pending"
+    },
+    {
+      "id": "branch-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "pr-merge",
+      "status": "pending"
+    },
+    {
+      "id": "sync-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "docs-update",
+      "status": "pending"
+    },
+    {
+      "id": "docs-review",
+      "status": "pending"
+    },
+    {
+      "id": "docs-commit",
+      "status": "pending"
+    }
+  ],
+  "requirements": [
+    {
+      "desc": "R1: merge.js conflict リカバリ",
+      "status": "done"
+    },
+    {
+      "desc": "R2: finalize.js 後続スキップ",
+      "status": "done"
+    },
+    {
+      "desc": "R3: registry.js post フック安全化",
+      "status": "done"
+    },
+    {
+      "desc": "R4: flow-finalize SKILL.md rebase 案内",
+      "status": "done"
+    }
+  ],
+  "issue": 65,
+  "request": "finalize の merge conflict 時にリカバリ処理を追加する",
+  "worktree": true,
+  "metrics": {
+    "draft": {
+      "question": 3
+    }
+  },
+  "autoApprove": true
+}

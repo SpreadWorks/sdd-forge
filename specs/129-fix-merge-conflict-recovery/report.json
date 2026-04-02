@@ -1,0 +1,27 @@
+{
+  "data": {
+    "implementation": {
+      "diffStat": "specs/129-fix-merge-conflict-recovery/draft.md     |  32 ++++++\n specs/129-fix-merge-conflict-recovery/flow.json    | 118 +++++++++++++++++++++\n specs/129-fix-merge-conflict-recovery/qa.md        |   9 ++\n specs/129-fix-merge-conflict-recovery/review.md    |  41 +++++++\n specs/129-fix-merge-conflict-recovery/spec.md      |  68 ++++++++++++\n .../tests/README.md                                |  17 +++\n .../tests/merge-conflict-recovery.test.js          |  87 +++++++++++++++\n src/flow/commands/merge.js                         |  18 +++-\n src/flow/registry.js                               |  11 +-\n src/flow/run/finalize.js                           |  14 +++\n .../skills/sdd-forge.flow-finalize/SKILL.md        |   1 +\n 11 files changed, 410 insertions(+), 6 deletions(-)",
+      "commits": [
+        "feat: feature/129-fix-merge-conflict-recovery"
+      ]
+    },
+    "retro": null,
+    "redolog": {
+      "count": 0,
+      "entries": []
+    },
+    "metrics": {
+      "docsRead": 0,
+      "srcRead": 0,
+      "question": 3,
+      "redo": 0
+    },
+    "tests": null,
+    "sync": {
+      "status": "skipped",
+      "reason": "sync was skipped"
+    }
+  },
+  "text": "  Report\n\n  Implementation\n  ────────────────────────────────────────────────\n    feat: feature/129-fix-merge-conflict-recovery\n    11 files changed, 410 insertions(+), 6 deletions(-)\n\n  Retro\n  ────────────────────────────────────────────────\n    -\n\n  Metrics\n  ────────────────────────────────────────────────\n    docs 0  src 0  Q&A 3  redo 0\n\n  Documents\n  ────────────────────────────────────────────────\n    skipped: sync was skipped"
+}
