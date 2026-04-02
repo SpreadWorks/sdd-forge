@@ -53,7 +53,7 @@ Before starting, run `sdd-forge flow get check impl` to verify prerequisites.
    - Aim to make tests pass.
    - **Update requirements as you go**: `sdd-forge flow set req <index> done` for each completed requirement.
    - Run tests to verify: use the test command from `package.json` scripts or the project's test runner.
-   - **MUST: If test failures are caused by pre-existing bugs (not the current spec's changes)**, record them in redolog (`sdd-forge flow set redo --step implement --reason "..."`) before applying a workaround or adjusting the test.
+   - **MUST: If test failures are caused by pre-existing bugs (not the current spec's changes)**, record them in issue-log (`sdd-forge flow set issue-log --step implement --reason "..."`) before applying a workaround or adjusting the test.
    - **Retry limit for test fixes: 5 attempts.** If tests do not pass after 5 fix-and-rerun cycles, STOP and return control to the user.
    - **On complete**: `sdd-forge flow set step implement done`
 
@@ -162,9 +162,9 @@ Before starting, run `sdd-forge flow get check impl` to verify prerequisites.
 
 **autoApprove exception:** When `autoApprove: true`, the rules "do not finalize without asking the user" and "do not proceed to next step without user confirmation" do NOT apply. All other hard stops remain in effect.
 
-## Redo Recording
+## Issue Log Recording
 
-<!-- include("@templates/partials/redo-recording.md") -->
+<!-- include("@templates/partials/issue-log-recording.md") -->
 
 ## Test Maintenance
 
@@ -181,7 +181,7 @@ sdd-forge flow get check impl
 sdd-forge flow set step <id> <val>
 sdd-forge flow set req <index> <val>
 sdd-forge flow set note "<text>"
-sdd-forge flow set redo --step <id> --reason "<text>" [--trigger "<text>"] [--resolution "<text>"] [--guardrail-candidate "<text>"]
+sdd-forge flow set issue-log --step <id> --reason "<text>" [--trigger "<text>"] [--resolution "<text>"] [--guardrail-candidate "<text>"]
 sdd-forge flow set metric <phase> <counter>
 sdd-forge flow run review
 sdd-forge flow run impl-confirm --mode <overview|detail>

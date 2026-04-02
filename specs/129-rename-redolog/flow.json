@@ -1,0 +1,148 @@
+{
+  "spec": "specs/129-rename-redolog/spec.md",
+  "baseBranch": "main",
+  "featureBranch": "feature/129-rename-redolog",
+  "steps": [
+    {
+      "id": "approach",
+      "status": "done"
+    },
+    {
+      "id": "branch",
+      "status": "done"
+    },
+    {
+      "id": "prepare-spec",
+      "status": "pending"
+    },
+    {
+      "id": "draft",
+      "status": "done"
+    },
+    {
+      "id": "spec",
+      "status": "done"
+    },
+    {
+      "id": "gate",
+      "status": "done"
+    },
+    {
+      "id": "approval",
+      "status": "done"
+    },
+    {
+      "id": "test",
+      "status": "done"
+    },
+    {
+      "id": "implement",
+      "status": "done"
+    },
+    {
+      "id": "review",
+      "status": "done"
+    },
+    {
+      "id": "finalize",
+      "status": "pending"
+    },
+    {
+      "id": "commit",
+      "status": "pending"
+    },
+    {
+      "id": "push",
+      "status": "pending"
+    },
+    {
+      "id": "merge",
+      "status": "pending"
+    },
+    {
+      "id": "pr-create",
+      "status": "pending"
+    },
+    {
+      "id": "branch-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "pr-merge",
+      "status": "pending"
+    },
+    {
+      "id": "sync-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "docs-update",
+      "status": "pending"
+    },
+    {
+      "id": "docs-review",
+      "status": "pending"
+    },
+    {
+      "id": "docs-commit",
+      "status": "pending"
+    }
+  ],
+  "requirements": [
+    {
+      "desc": "redo.js → issue-log.js リネーム（関数名・型名含む）",
+      "status": "done"
+    },
+    {
+      "desc": "registry.js コマンド登録更新",
+      "status": "done"
+    },
+    {
+      "desc": "report.js/finalize.js の import 更新",
+      "status": "done"
+    },
+    {
+      "desc": "出力ファイル名 issue-log.json",
+      "status": "done"
+    },
+    {
+      "desc": "metric カウンター redo → issueLog",
+      "status": "done"
+    },
+    {
+      "desc": "redo-recording.md → issue-log-recording.md",
+      "status": "done"
+    },
+    {
+      "desc": "SKILL.md テンプレート更新",
+      "status": "done"
+    },
+    {
+      "desc": "旧コマンド flow set redo のエラーメッセージ",
+      "status": "done"
+    },
+    {
+      "desc": "テスト set-redo.test.js → set-issue-log.test.js",
+      "status": "done"
+    }
+  ],
+  "issue": 71,
+  "request": "redolog の用途と名前が合っていないのでリネームする",
+  "worktree": true,
+  "notes": [
+    "approach: Q&A で要件整理してから仕様書作成",
+    "draft: 新名称は issue-log に決定",
+    "draft: 全レイヤー一括リネーム。後方互換不要（alpha版）",
+    "draft: 既存redolog.jsonはそのまま残す。loadIssueLogは両ファイル名をサポート（fallback読み込み）",
+    "draft: 既存redolog.jsonのfallback読み込みは不要。issue-log.jsonのみサポート（alpha版ポリシー）",
+    "draft: テストは既存テストのリネーム・更新のみ"
+  ],
+  "metrics": {
+    "draft": {
+      "question": 4
+    },
+    "impl": {
+      "srcRead": 2
+    }
+  }
+}

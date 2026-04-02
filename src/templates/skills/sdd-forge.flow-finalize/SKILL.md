@@ -86,11 +86,11 @@ Available status values: `pending`, `in_progress`, `done`, `skipped`
 
 **autoApprove exception:** When `autoApprove: true`, the rule "do not proceed to next step without user confirmation" does NOT apply. All other hard stops remain in effect.
 
-## Redo Recording
+## Issue Log Recording
 
-<!-- include("@templates/partials/redo-recording.md") -->
+<!-- include("@templates/partials/issue-log-recording.md") -->
 
-**MUST: If worktree, merge, or commit operations fail**, record the issue in redolog (`sdd-forge flow set redo --step finalize --reason "..."`) before applying a workaround or retrying with different options.
+**MUST: If worktree, merge, or commit operations fail**, record the issue in issue-log (`sdd-forge flow set issue-log --step finalize --reason "..."`) before applying a workaround or retrying with different options.
 
 ## Commands
 

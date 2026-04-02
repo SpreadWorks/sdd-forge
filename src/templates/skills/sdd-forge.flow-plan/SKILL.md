@@ -167,7 +167,7 @@ Note: `sdd-forge flow get context` automatically records these metrics via hooks
      - **`specs/<spec>/tests/` (spec verification tests, NOT run by `npm test`):** Tests that only verify this spec's requirements are met, bug fix reproduction tests, temporary setup/integration verification. These are kept as history, not maintained long-term.
      - **Decision rule:** Ask "If a future change breaks this test, is that always a bug?" — YES → `tests/`, NO → `specs/<spec>/tests/`.
    - Write test code (tests should fail initially).
-   - **MUST: If a test reveals a production code bug that is outside the current spec's scope**, record it in redolog (`sdd-forge flow set redo --step test --reason "..."`) before adjusting the test to match current behavior. Do not silently fix or skip the test.
+   - **MUST: If a test reveals a production code bug that is outside the current spec's scope**, record it in issue-log (`sdd-forge flow set issue-log --step test --reason "..."`) before adjusting the test to match current behavior. Do not silently fix or skip the test.
    - **MUST: Create `specs/<spec>/tests/README.md`** documenting:
      - What was tested and why
      - Where tests are located (formal test path or `specs/<spec>/tests/`)
@@ -199,9 +199,9 @@ Note: `sdd-forge flow get context` automatically records these metrics via hooks
 
 **autoApprove exception:** When `autoApprove: true`, the rules "do not end a turn without a question" and "do not proceed to next step without user confirmation" do NOT apply. All other hard stops remain in effect.
 
-## Redo Recording
+## Issue Log Recording
 
-<!-- include("@templates/partials/redo-recording.md") -->
+<!-- include("@templates/partials/issue-log-recording.md") -->
 
 ## Clarification Rule
 
@@ -229,7 +229,7 @@ sdd-forge flow set request "<text>"
 sdd-forge flow set note "<text>"
 sdd-forge flow set issue <number>
 sdd-forge flow set metric <phase> <counter>
-sdd-forge flow set redo --step <id> --reason "<text>" [--trigger "<text>"] [--resolution "<text>"] [--guardrail-candidate "<text>"]
+sdd-forge flow set issue-log --step <id> --reason "<text>" [--trigger "<text>"] [--resolution "<text>"] [--guardrail-candidate "<text>"]
 sdd-forge flow prepare --title "..." [--base branch] [--worktree] [--no-branch] [--issue N] [--request "..."]
 sdd-forge flow run gate
 sdd-forge snapshot check

@@ -8,7 +8,7 @@ import { mutateFlowState } from "../../lib/flow-state.js";
 import { ok, fail, output } from "../../lib/flow-envelope.js";
 
 const VALID_PHASES = ["draft", "spec", "gate", "test", "impl"];
-const VALID_COUNTERS = ["question", "redo", "docsRead", "srcRead"];
+const VALID_COUNTERS = ["question", "issueLog", "docsRead", "srcRead"];
 
 export async function execute(ctx) {
   const args = ctx.args;

@@ -1,0 +1,27 @@
+{
+  "data": {
+    "implementation": {
+      "diffStat": "specs/129-rename-redolog/draft.md                  |  60 +++++++++\n specs/129-rename-redolog/flow.json                 | 148 +++++++++++++++++++++\n specs/129-rename-redolog/qa.md                     |   9 ++\n specs/129-rename-redolog/review.md                 |  29 ++++\n specs/129-rename-redolog/spec.md                   |  99 ++++++++++++++\n specs/129-rename-redolog/tests/README.md           |  22 +++\n src/flow/commands/report.js                        |  22 +--\n src/flow/registry.js                               |  14 +-\n src/flow/run/finalize.js                           |   8 +-\n src/flow/run/report.js                             |   8 +-\n src/flow/set/issue-log.js                          | 113 ++++++++++++++++\n src/flow/set/metric.js                             |   2 +-\n src/flow/set/redo.js                               | 113 ----------------\n .../{redo-recording.md => issue-log-recording.md}  |  10 +-\n .../skills/sdd-forge.flow-finalize/SKILL.md        |   6 +-\n src/templates/skills/sdd-forge.flow-impl/SKILL.md  |   8 +-\n src/templates/skills/sdd-forge.flow-plan/SKILL.md  |   8 +-\n .../{set-redo.test.js => set-issue-log.test.js}    |  54 ++++----\n 18 files changed, 553 insertions(+), 180 deletions(-)",
+      "commits": [
+        "feat: feature/129-rename-redolog"
+      ]
+    },
+    "retro": null,
+    "redolog": {
+      "count": 0,
+      "entries": []
+    },
+    "metrics": {
+      "docsRead": 0,
+      "srcRead": 2,
+      "question": 4,
+      "redo": 0
+    },
+    "tests": null,
+    "sync": {
+      "status": "skipped",
+      "reason": "sync was skipped"
+    }
+  },
+  "text": "  Report\n\n  Implementation\n  ────────────────────────────────────────────────\n    feat: feature/129-rename-redolog\n    18 files changed, 553 insertions(+), 180 deletions(-)\n\n  Retro\n  ────────────────────────────────────────────────\n    -\n\n  Metrics\n  ────────────────────────────────────────────────\n    docs 0  src 2  Q&A 4  redo 0\n\n  Documents\n  ────────────────────────────────────────────────\n    skipped: sync was skipped"
+}

@@ -7,7 +7,7 @@
 
 import fs from "fs";
 import path from "path";
-import { loadRedoLog } from "../set/redo.js";
+import { loadIssueLog } from "../set/issue-log.js";
 
 /**
  * Aggregate metrics across all phases.
@@ -15,7 +15,7 @@ import { loadRedoLog } from "../set/redo.js";
  * @returns {{ docsRead: number, srcRead: number, question: number, redo: number }}
  */
 function aggregateMetrics(metrics) {
-  const totals = { docsRead: 0, srcRead: 0, question: 0, redo: 0 };
+  const totals = { docsRead: 0, srcRead: 0, question: 0, issueLog: 0 };
   if (!metrics) return totals;
   for (const phase of Object.values(metrics)) {
     if (!phase || typeof phase !== "object") continue;
@@ -31,13 +31,13 @@ function aggregateMetrics(metrics) {
  * @param {Object} input
  * @param {Object} input.state - flow.json state
  * @param {Object} input.results - finalize step results
- * @param {Object} input.redolog - redolog data { entries: [] }
+ * @param {Object} input.issueLog - issue-log data { entries: [] }
  * @param {string} input.implDiffStat - git diff --stat output for implementation
  * @param {string[]} input.commitMessages - commit messages from feature branch
  * @returns {{ data: Object, text: string }}
  */
 export function generateReport(input) {
-  const { state, results, redolog, implDiffStat, commitMessages } = input;
+  const { state, results, issueLog, implDiffStat, commitMessages } = input;
 
   // Implementation
   const implementation = {
@@ -52,8 +52,8 @@ export function generateReport(input) {
     : null;
 
   // Redolog
-  const entries = redolog?.entries || [];
-  const redologData = {
+  const entries = issueLog?.entries || [];
+  const issueLogData = {
     count: entries.length,
     entries: entries.map(e => ({
       step: e.step,
@@ -96,7 +96,7 @@ export function generateReport(input) {
     tests = { unit, integration, acceptance, total: unit + integration + acceptance };
   }
 
-  const data = { implementation, retro, redolog: redologData, metrics, tests, sync };
+  const data = { implementation, retro, issueLog: issueLogData, metrics, tests, sync };
   const text = formatText(data);
 
   return { data, text };
@@ -150,7 +150,7 @@ function formatText(data) {
   lines.push("  Metrics");
   lines.push(`  ${thin}`);
   const m = data.metrics;
-  lines.push(`    docs ${m.docsRead}  src ${m.srcRead}  Q&A ${m.question}  redo ${m.redo}`);
+  lines.push(`    docs ${m.docsRead}  src ${m.srcRead}  Q&A ${m.question}  issues ${m.issueLog}`);
 
   // Tests
   if (data.tests) {
@@ -162,11 +162,11 @@ function formatText(data) {
   }
 
   // Redo (only if entries exist)
-  if (data.redolog.count > 0) {
+  if (data.issueLog.count > 0) {
     lines.push("");
-    lines.push(`  Redo (${data.redolog.count})`);
+    lines.push(`  Issue Log (${data.issueLog.count})`);
     lines.push(`  ${thin}`);
-    for (const e of data.redolog.entries) {
+    for (const e of data.issueLog.entries) {
       lines.push(`    [${e.step}] ${e.reason}${e.resolution ? ` -> ${e.resolution}` : ""}`);
     }
   }

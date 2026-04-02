@@ -1,16 +1,16 @@
 **MUST: When a fix, correction, or workaround is needed (e.g., a command fails, a gate check reveals an issue, a test reveals a bug, a design assumption turns out wrong), record it immediately:**
 
 ```
-sdd-forge flow set redo --step <current-step> --reason "<what went wrong>" --trigger "<what triggered the issue>" --resolution "<how it was fixed>" --guardrail-candidate "<principle to prevent recurrence>"
+sdd-forge flow set issue-log --step <current-step> --reason "<what went wrong>" --trigger "<what triggered the issue>" --resolution "<how it was fixed>" --guardrail-candidate "<principle to prevent recurrence>"
 ```
 
 - Do not defer recording — record as soon as the fix is applied.
 - `--reason` and `--step` are required. `--trigger`, `--resolution`, `--guardrail-candidate` are optional but recommended.
-- This creates `specs/<spec>/redolog.json`. The file persists with the spec.
+- This creates `specs/<spec>/issue-log.json`. The file persists with the spec.
 
 ### When to record
 
-Record in redolog when any of the following occur:
+Record in issue-log when any of the following occur:
 
 - A test failure reveals a production code bug that is outside the current spec's scope (the bug exists independently of this spec's changes).
 - A test is adjusted to match current (incorrect) behavior because the spec prohibits production code changes — the underlying bug must not be silently lost.
@@ -27,14 +27,14 @@ Record in redolog when any of the following occur:
 
 ```bash
 # Test revealed a production code bug outside spec scope
-sdd-forge flow set redo --step test \
+sdd-forge flow set issue-log --step test \
   --reason "fixUnescapedQuotes mishandles nested quotes — test adjusted to match current behavior" \
   --trigger "unit test for edge case with nested single quotes inside double-quoted values" \
   --resolution "adjusted test expectation to match current (incorrect) behavior per spec constraint" \
   --guardrail-candidate "when a test reveals a pre-existing bug, always record it before adjusting the test"
 
 # Worktree merge conflict
-sdd-forge flow set redo --step finalize \
+sdd-forge flow set issue-log --step finalize \
   --reason "merge conflict in SKILL.md due to upstream changes during implementation" \
   --trigger "git merge development into feature branch" \
   --resolution "manually resolved conflict, kept both upstream and feature changes"

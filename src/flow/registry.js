@@ -9,6 +9,7 @@
  */
 
 import { updateStepStatus, incrementMetric, derivePhase, loadFlowState } from "../lib/flow-state.js";
+import { fail, output } from "../lib/flow-envelope.js";
 
 /**
  * Load flow state and derive the current phase.
@@ -133,13 +134,18 @@ export const FLOW_COMMANDS = {
       helpKey: "flow.set.metric",
       execute: () => import("./set/metric.js"),
     },
-    redo: {
-      helpKey: "flow.set.redo",
-      execute: () => import("./set/redo.js"),
+    "issue-log": {
+      helpKey: "flow.set.issue-log",
+      execute: () => import("./set/issue-log.js"),
       post(ctx) {
         const phase = deriveActivePhase(ctx.root);
-        if (phase) incrementMetric(ctx.root, phase, "redo");
+        if (phase) incrementMetric(ctx.root, phase, "issueLog");
       },
+    },
+    redo: {
+      helpKey: "flow.set.redo",
+      requiresFlow: false,
+      execute: () => Promise.resolve({ execute() { output(fail("set", "redo", "RENAMED", '"redo" has been renamed to "issue-log". Use: sdd-forge flow set issue-log')); } }),
     },
     auto: {
       helpKey: "flow.set.auto",

@@ -10,7 +10,7 @@ import { execFileSync } from "child_process";
 import { parseArgs } from "../../lib/cli.js";
 import { ok, fail, output } from "../../lib/flow-envelope.js";
 import { generateReport, saveReport } from "../commands/report.js";
-import { loadRedoLog } from "../set/redo.js";
+import { loadIssueLog } from "../set/issue-log.js";
 import path from "path";
 
 export async function execute(ctx) {
@@ -61,13 +61,13 @@ export async function execute(ctx) {
     ).trim().split("\n").filter(Boolean);
   } catch (_) { /* no commits */ }
 
-  let redolog = { entries: [] };
-  try { redolog = loadRedoLog(root, state.spec); } catch (_) { /* no redolog */ }
+  let issueLog = { entries: [] };
+  try { issueLog = loadIssueLog(root, state.spec); } catch (_) { /* no issue-log */ }
 
   const report = generateReport({
     state,
     results: {},
-    redolog,
+    issueLog,
     implDiffStat,
     commitMessages,
   });
