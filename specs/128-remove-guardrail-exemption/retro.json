@@ -1,0 +1,43 @@
+{
+  "spec": "specs/128-remove-guardrail-exemption/spec.md",
+  "date": "2026-04-02T14:35:16.876Z",
+  "requirements": [
+    {
+      "desc": "R1: extractExemptions() 削除",
+      "status": "done",
+      "note": "extractExemptions() 関数本体、JSDoc、エクスポートがすべて gate.js から削除されている"
+    },
+    {
+      "desc": "R2: buildGuardrailPrompt() 簡素化",
+      "status": "done",
+      "note": "exemption フィルタリング（extractExemptions 呼び出しと .filter()）削除、Exempted Articles セクション出力削除、「If an article is inapplicable by nature of the spec, mark it as PASS and state the reason.」指示追加済み"
+    },
+    {
+      "desc": "R3: テスト更新",
+      "status": "done",
+      "note": "extractExemptions のインポートと関連テスト（extractExemptions describe, buildGuardrailPrompt with exemptions describe）を削除。新しい describe 'buildGuardrailPrompt ignores exemption sections' で全 guardrail 包含とinapplicable-PASS指示を検証するテストを追加。レビュー指摘によりスイート名も改善済み"
+    }
+  ],
+  "unplanned": [
+    {
+      "file": "src/flow/run/gate.js",
+      "change": "translate インポートの削除（未使用インポートの除去、レビューで承認済み）"
+    },
+    {
+      "file": "src/flow/run/gate.js",
+      "change": "buildGuardrailPrompt 内で Spec セクションの配置を parts 配列末尾のインライン要素に変更（後付け push から配列リテラル内へ移動）"
+    },
+    {
+      "file": "specs/128-remove-guardrail-exemption/tests/exemption-removed.test.js",
+      "change": "spec テスト（TDD 用の先行テスト）が新規追加されているが、これは SDD フローの test ステップの成果物であり実質的に計画内"
+    }
+  ],
+  "summary": {
+    "total": 3,
+    "done": 3,
+    "partial": 0,
+    "not_done": 0,
+    "rate": 1,
+    "notes": "全3要件が完全に実装されている。extractExemptions の削除、buildGuardrailPrompt の簡素化（フィルタリング除去・Exempted Articles 削除・inapplicable-PASS 指示追加）、テスト更新（旧テスト削除・新テスト追加・スイート名改善）すべて仕様通り。未使用 translate インポートの除去はレビューで承認された軽微な改善。"
+  }
+}

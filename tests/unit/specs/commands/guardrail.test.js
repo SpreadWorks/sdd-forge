@@ -7,7 +7,7 @@ import { execFileSync } from "child_process";
 const SDD_FORGE = join(process.cwd(), "src/sdd-forge.js");
 
 // Dynamically import gate functions for unit tests
-const { buildGuardrailPrompt, parseGuardrailResponse, extractExemptions } = await import(
+const { buildGuardrailPrompt, parseGuardrailResponse } = await import(
   "../../../../src/flow/run/gate.js"
 );
 
@@ -171,68 +171,27 @@ describe("parseGuardrailResponse", () => {
 });
 
 // ---------------------------------------------------------------------------
-// extractExemptions unit tests
+// buildGuardrailPrompt includes all guardrails (no exemption filtering)
 // ---------------------------------------------------------------------------
 
-describe("extractExemptions", () => {
-  it("extracts exempted article titles", () => {
-    const spec = [
-      "# Spec",
-      "## Requirements",
-      "- R1: something",
-      "## Guardrail Exemptions",
-      "- No Hardcoded Secrets \u2014 test fixtures need dummy API keys",
-      "- Single Responsibility \u2014 intentionally bundled",
-      "## Acceptance Criteria",
-      "- done",
-    ].join("\n");
-    const exemptions = extractExemptions(spec);
-    assert.equal(exemptions.length, 2);
-    assert.ok(exemptions.includes("no hardcoded secrets"));
-    assert.ok(exemptions.includes("single responsibility"));
-  });
-
-  it("returns empty array when no exemptions section", () => {
-    const spec = "# Spec\n## Requirements\n- R1\n";
-    assert.deepEqual(extractExemptions(spec), []);
-  });
-
-  it("returns empty array when exemptions section is empty", () => {
-    const spec = "## Guardrail Exemptions\n\n## Requirements\n";
-    assert.deepEqual(extractExemptions(spec), []);
-  });
-});
-
-// ---------------------------------------------------------------------------
-// buildGuardrailPrompt with exemptions
-// ---------------------------------------------------------------------------
-
-describe("buildGuardrailPrompt with exemptions", () => {
+describe("buildGuardrailPrompt ignores exemption sections", () => {
   const guardrails = [
     { title: "Rule A", body: "Description A", meta: { phase: ["spec"] } },
     { title: "Rule B", body: "Description B", meta: { phase: ["spec"] } },
     { title: "Rule C", body: "Description C", meta: { phase: ["spec"] } },
   ];
 
-  it("excludes exempted guardrails from prompt", () => {
+  it("includes all spec-phase guardrails even with exemptions section in spec", () => {
     const spec = "## Guardrail Exemptions\n- Rule B \u2014 reason\n\n## Requirements\n- R1\n";
     const prompt = buildGuardrailPrompt(spec, guardrails);
     assert.ok(prompt.includes("Rule A"));
-    assert.ok(!prompt.includes("**Rule B**"));
+    assert.ok(prompt.includes("Rule B"), "Rule B should NOT be filtered out");
     assert.ok(prompt.includes("Rule C"));
-    assert.ok(prompt.includes("Exempted Articles"));
+    assert.ok(!prompt.includes("Exempted Articles"), "should not have Exempted Articles section");
   });
 
-  it("returns null when all guardrails are exempted", () => {
-    const spec = "## Guardrail Exemptions\n- Rule A \u2014 r\n- Rule B \u2014 r\n- Rule C \u2014 r\n";
-    const prompt = buildGuardrailPrompt(spec, guardrails);
-    assert.equal(prompt, null);
-  });
-
-  it("case-insensitive exemption matching", () => {
-    const spec = "## Guardrail Exemptions\n- rule a \u2014 reason\n";
-    const prompt = buildGuardrailPrompt(spec, guardrails);
-    assert.ok(!prompt.includes("**Rule A**"));
-    assert.ok(prompt.includes("Rule B"));
+  it("includes inapplicable-PASS instruction", () => {
+    const prompt = buildGuardrailPrompt("## Requirements\n- R1\n", guardrails);
+    assert.ok(prompt.includes("inapplicable"), "should include inapplicable instruction");
   });
 });
