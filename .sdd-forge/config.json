@@ -60,7 +60,7 @@
       "docs.agents":       { "agent": "claude", "profile": "sonnet" },
       "spec.gate":         { "agent": "claude", "profile": "sonnet" },
       "experimental.workflow.borad.to-issue": { "agent": "claude", "profile": "sonnet" },
-      "flow.review.draft": { "agent": "claude", "profile": "sonnet" },
+      "flow.review.draft": { "agent": "codex" },
       "flow.review.final": { "agent": "claude", "profile": "opus" },
       "docs.translate":    { "agent": "claude", "profile": "sonnet" }
     }
