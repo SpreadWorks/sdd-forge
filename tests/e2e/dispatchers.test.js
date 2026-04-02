@@ -53,7 +53,7 @@ describe("sdd-forge dispatcher", () => {
       assert.fail("should exit non-zero without subcommand");
     } catch (err) {
       const out = `${err.stdout || ""}${err.stderr || ""}`;
-      assert.match(out, /start|status/);
+      assert.match(out, /prepare|get|set|run/);
     }
   });
 
