@@ -86,7 +86,17 @@ export function generateReport(input) {
     };
   }
 
-  const data = { implementation, retro, redolog: redologData, metrics, sync };
+  // Tests (R1, R3)
+  const testSummary = state.metrics?.test?.summary;
+  let tests = null;
+  if (testSummary) {
+    const unit = testSummary.unit || 0;
+    const integration = testSummary.integration || 0;
+    const acceptance = testSummary.acceptance || 0;
+    tests = { unit, integration, acceptance, total: unit + integration + acceptance };
+  }
+
+  const data = { implementation, retro, redolog: redologData, metrics, tests, sync };
   const text = formatText(data);
 
   return { data, text };
@@ -155,6 +165,19 @@ function formatText(data) {
   lines.push(sep);
   lines.push("");
   lines.push(`  docs read: ${data.metrics.docsRead}  src read: ${data.metrics.srcRead}  questions: ${data.metrics.question}  redos: ${data.metrics.redo}`);
+
+  // Tests (R2)
+  lines.push("");
+  lines.push(sep);
+  lines.push("  Tests");
+  lines.push(sep);
+  if (data.tests) {
+    lines.push("");
+    lines.push(`  unit: ${data.tests.unit}  integration: ${data.tests.integration}  acceptance: ${data.tests.acceptance}  total: ${data.tests.total}`);
+  } else {
+    lines.push("");
+    lines.push("  (not available)");
+  }
 
   // Sync
   lines.push("");
