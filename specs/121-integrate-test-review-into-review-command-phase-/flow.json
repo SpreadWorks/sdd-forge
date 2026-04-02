@@ -1,0 +1,140 @@
+{
+  "spec": "specs/121-integrate-test-review-into-review-command-phase-/spec.md",
+  "baseBranch": "development",
+  "featureBranch": "feature/121-integrate-test-review-into-review-command-phase-",
+  "steps": [
+    {
+      "id": "approach",
+      "status": "done"
+    },
+    {
+      "id": "branch",
+      "status": "done"
+    },
+    {
+      "id": "prepare-spec",
+      "status": "done"
+    },
+    {
+      "id": "draft",
+      "status": "done"
+    },
+    {
+      "id": "spec",
+      "status": "done"
+    },
+    {
+      "id": "gate",
+      "status": "done"
+    },
+    {
+      "id": "approval",
+      "status": "done"
+    },
+    {
+      "id": "test",
+      "status": "done"
+    },
+    {
+      "id": "implement",
+      "status": "done"
+    },
+    {
+      "id": "review",
+      "status": "done"
+    },
+    {
+      "id": "finalize",
+      "status": "in_progress"
+    },
+    {
+      "id": "commit",
+      "status": "pending"
+    },
+    {
+      "id": "push",
+      "status": "pending"
+    },
+    {
+      "id": "merge",
+      "status": "pending"
+    },
+    {
+      "id": "pr-create",
+      "status": "pending"
+    },
+    {
+      "id": "branch-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "pr-merge",
+      "status": "pending"
+    },
+    {
+      "id": "sync-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "docs-update",
+      "status": "pending"
+    },
+    {
+      "id": "docs-review",
+      "status": "pending"
+    },
+    {
+      "id": "docs-commit",
+      "status": "pending"
+    }
+  ],
+  "requirements": [
+    {
+      "desc": "REQ-1: --phase test option to switch to test review pipeline",
+      "status": "done"
+    },
+    {
+      "desc": "REQ-2: AI generates test design from spec requirements",
+      "status": "done"
+    },
+    {
+      "desc": "REQ-3: Compare test design against test code, locate from specs/<spec>/tests/ then tests/",
+      "status": "done"
+    },
+    {
+      "desc": "REQ-4: Auto-fix retry loop max 3, non-zero exit on FAIL",
+      "status": "done"
+    },
+    {
+      "desc": "REQ-5: Output test-review.md in spec directory",
+      "status": "done"
+    },
+    {
+      "desc": "REQ-6: Agent config flow.review.test with fallback",
+      "status": "done"
+    },
+    {
+      "desc": "REQ-7: Backward compatibility for existing code review",
+      "status": "done"
+    }
+  ],
+  "worktree": true,
+  "notes": [
+    "approach: Q&A draft then spec",
+    "branch: worktree from development",
+    "Q1: --phase test を既存 review に統合する方式を選択",
+    "Q2: 1コマンド内でテスト設計生成→照合→ギャップ報告を完結。差し戻しループは上限付き",
+    "Q3: 差し戻しループ上限3回",
+    "Q4: test-review.md を spec ディレクトリに出力。既存 review.md と共存。後方互換維持",
+    "Q5: flow.review.test を新設。未設定時は flow.review.draft にフォールバック",
+    "review: auto-fix mode selected",
+    "finalize: all mode selected"
+  ],
+  "request": "#62 Integrate test review into review command (--phase test)",
+  "issue": 62,
+  "metrics": {
+    "draft": {
+      "question": 6
+    }
+  }
+}

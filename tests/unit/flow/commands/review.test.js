@@ -45,6 +45,30 @@ describe("flow run review CLI", () => {
   });
 });
 
+describe("flow run review --phase test CLI", () => {
+  let tmp;
+  afterEach(() => tmp && removeTmpDir(tmp));
+
+  it("passes --phase test through to review command", () => {
+    const result = execFileSync("node", [FLOW_CMD, "run", "review", "--help"], { encoding: "utf8" });
+    assert.match(result, /--phase/);
+  });
+
+  it("errors when no active flow with --phase test", () => {
+    tmp = createTmpDir();
+    try {
+      execFileSync("node", [FLOW_CMD, "run", "review", "--phase", "test"], {
+        encoding: "utf8",
+        env: { ...process.env, SDD_WORK_ROOT: tmp },
+      });
+      assert.fail("should exit non-zero");
+    } catch (err) {
+      const out = `${err.stdout || ""}${err.stderr || ""}`;
+      assert.match(out, /no active flow/i);
+    }
+  });
+});
+
 describe("resolveAgent for flow.review", () => {
   it("resolves flow.review.draft independently from flow.review.final", () => {
     const cfg = {
@@ -96,5 +120,55 @@ describe("resolveAgent for flow.review", () => {
     };
     const draft = resolveAgent(cfg, "flow.review.draft");
     assert.equal(draft.command, "claude");
+  });
+});
+
+describe("resolveAgent for flow.review.test", () => {
+  it("resolves flow.review.test when explicitly configured", () => {
+    const cfg = {
+      agent: {
+        default: "claude",
+        providers: {
+          claude: { command: "claude", args: ["-p", "{{PROMPT}}"] },
+          codex: { command: "codex", args: ["exec", "{{PROMPT}}"] },
+        },
+        commands: {
+          "flow.review.test": { agent: "codex" },
+          "flow.review.draft": { agent: "claude" },
+        },
+      },
+    };
+    const testAgent = resolveAgent(cfg, "flow.review.test");
+    assert.equal(testAgent.command, "codex");
+  });
+
+  it("falls back to flow.review when flow.review.test not configured", () => {
+    const cfg = {
+      agent: {
+        default: "claude",
+        providers: {
+          claude: { command: "claude", args: ["-p", "{{PROMPT}}"] },
+          codex: { command: "codex", args: ["exec", "{{PROMPT}}"] },
+        },
+        commands: {
+          "flow.review": { agent: "codex" },
+        },
+      },
+    };
+    const testAgent = resolveAgent(cfg, "flow.review.test");
+    assert.equal(testAgent.command, "codex");
+  });
+
+  it("falls back to agent.default when no flow.review configured", () => {
+    const cfg = {
+      agent: {
+        default: "claude",
+        providers: {
+          claude: { command: "claude", args: ["-p", "{{PROMPT}}"] },
+        },
+      },
+    };
+    const testAgent = resolveAgent(cfg, "flow.review.test");
+    assert.equal(testAgent.command, "claude");
   });
 });
