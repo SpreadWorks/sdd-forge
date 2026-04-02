@@ -656,13 +656,14 @@ async function main(ctx) {
           }
           targetFiles = unfilledFiles;
           logger.log(`No source changes, but ${unfilledFiles.length} file(s) have unfilled text directives.`);
+        } else {
+          const before = targetFiles.length;
+          targetFiles = targetFiles.filter((f) => {
+            const chapterName = f.replace(/\.md$/, "");
+            return changedChapters.has(chapterName);
+          });
+          logger.log(`Diff: ${changedChapters.size} chapter(s) changed [${[...changedChapters].join(", ")}], processing ${targetFiles.length}/${before} file(s).`);
         }
-        const before = targetFiles.length;
-        targetFiles = targetFiles.filter((f) => {
-          const chapterName = f.replace(/\.md$/, "");
-          return changedChapters.has(chapterName);
-        });
-        logger.log(`Diff: ${changedChapters.size} chapter(s) changed [${[...changedChapters].join(", ")}], processing ${targetFiles.length}/${before} file(s).`);
       }
     }
 
