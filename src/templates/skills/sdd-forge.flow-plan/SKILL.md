@@ -55,6 +55,7 @@ Note: `sdd-forge flow get context` automatically records these metrics via hooks
 
 3. Create or select spec (`prepare-spec`).
    - Run `sdd-forge flow prepare`. If it returns `{ok: false, code: "DIRTY_WORKTREE"}`, run `sdd-forge flow get prompt plan.dirty-worktree` and present the choices. Do not retry until the worktree is clean.
+   - The `--title` value becomes the spec directory name and branch name. Keep it short: **max 30 characters**, lowercase English, hyphen-separated (e.g. "fix-scan-parser-bugs", "add-preset-datasources").
    - Commands (based on step 2 choice). Add `--issue <number>` if a GitHub Issue was provided, and `--request "<text>"` with the user's original request:
      - Worktree: `sdd-forge flow prepare --title "..." --base <branch> --worktree [--issue N] [--request "..."]`
      - Branch: `sdd-forge flow prepare --title "..." --base <branch> [--issue N] [--request "..."]`
