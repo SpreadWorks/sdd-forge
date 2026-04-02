@@ -1,0 +1,63 @@
+{
+  "spec": "specs/124-guardrail-output-format/spec.md",
+  "date": "2026-04-02T11:27:06.278Z",
+  "requirements": [
+    {
+      "desc": "R1: Markdown 出力実装",
+      "status": "done",
+      "note": "toMarkdown() renders `## Guardrail: <title>\\n\\n<body>` format. Empty guardrails produce empty string via .join() on empty array. meta info is excluded. Default path uses console.log(toMarkdown(filtered))."
+    },
+    {
+      "desc": "R2: --format json オプション",
+      "status": "done",
+      "note": "parseGuardrailArgs extracts --format option. When format==='json', outputs JSON envelope via ok() with phase, count, guardrails array including id/title/body/meta. Non-json or missing --format falls through to Markdown."
+    },
+    {
+      "desc": "R3: エラー出力",
+      "status": "done",
+      "note": "Missing phase and invalid phase both output JSON error via fail()/output() before format is checked, maintaining existing error behavior regardless of --format value."
+    }
+  ],
+  "unplanned": [
+    {
+      "file": "src/flow/get/guardrail.js",
+      "change": "Extracted parseGuardrailArgs() helper per code review recommendation (review item #2 APPROVED)"
+    },
+    {
+      "file": "specs/124-guardrail-output-format/review.md",
+      "change": "Code review results document added (spec artifact, not product code)"
+    },
+    {
+      "file": "specs/124-guardrail-output-format/draft.md",
+      "change": "Draft document added (spec artifact)"
+    },
+    {
+      "file": "specs/124-guardrail-output-format/qa.md",
+      "change": "Q&A document added (spec artifact)"
+    },
+    {
+      "file": "specs/124-guardrail-output-format/spec.md",
+      "change": "Spec document added (spec artifact)"
+    },
+    {
+      "file": "specs/124-guardrail-output-format/flow.json",
+      "change": "Flow state file added (spec artifact)"
+    },
+    {
+      "file": "specs/124-guardrail-output-format/tests/README.md",
+      "change": "Test README added (spec artifact)"
+    },
+    {
+      "file": "specs/124-guardrail-output-format/tests/guardrail-output.test.js",
+      "change": "Spec verification tests added (spec artifact)"
+    }
+  ],
+  "summary": {
+    "total": 3,
+    "done": 3,
+    "partial": 0,
+    "not_done": 0,
+    "rate": 1,
+    "notes": "All three requirements (R1, R2, R3) are fully satisfied. The implementation changes are confined to src/flow/get/guardrail.js as scoped. The parseGuardrailArgs helper was added per an approved code review recommendation. All other new files are spec/flow artifacts, not unplanned product code changes."
+  }
+}
