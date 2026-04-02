@@ -148,8 +148,13 @@ export async function execute(ctx) {
       // 1b. retro (post-commit: runs in worktree where diff is available)
       try {
         const { execute: retroExecute } = await import("./retro.js");
-        await retroExecute({ ...ctx, args: ["--force"] });
-        results.retro = { status: "done" };
+        const retroEnvelope = await retroExecute({ ...ctx, args: ["--force"] });
+        if (retroEnvelope?.ok) {
+          const summary = retroEnvelope.data?.artifacts?.summary;
+          results.retro = { status: "done", ...(summary ? { summary } : {}) };
+        } else {
+          results.retro = { status: "failed", message: retroEnvelope?.errors?.[0]?.messages?.join("; ") || "retro failed" };
+        }
       } catch (e) {
         results.retro = { status: "failed", message: String(e.message) };
       }

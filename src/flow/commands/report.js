@@ -109,103 +109,88 @@ export function generateReport(input) {
  */
 function formatText(data) {
   const lines = [];
-  const sep = "──────────────────────────────────────────────────────────";
+  const thin = "────────────────────────────────────────────────";
+
+  lines.push("  Report");
 
   // Implementation
-  lines.push(sep);
-  lines.push("  Implementation");
-  lines.push(sep);
+  lines.push("");
+  lines.push(`  Implementation`);
+  lines.push(`  ${thin}`);
   if (data.implementation.commits.length > 0) {
-    lines.push("");
-    lines.push("  Commits:");
     for (const msg of data.implementation.commits) {
-      lines.push(`    - ${msg}`);
+      lines.push(`    ${msg}`);
     }
   }
   if (data.implementation.diffStat) {
-    lines.push("");
-    lines.push("  Changes:");
-    for (const line of data.implementation.diffStat.split("\n")) {
-      lines.push(`    ${line}`);
-    }
+    const last = data.implementation.diffStat.split("\n").pop()?.trim();
+    if (last) lines.push(`    ${last}`);
+  }
+  if (!data.implementation.commits.length && !data.implementation.diffStat) {
+    lines.push("    -");
   }
 
   // Retro
   lines.push("");
-  lines.push(sep);
   lines.push("  Retro");
-  lines.push(sep);
+  lines.push(`  ${thin}`);
   if (data.retro) {
     const r = data.retro;
-    lines.push("");
-    lines.push(`  Completion: ${(r.rate * 100).toFixed(0)}% (${r.done}/${r.total})`);
-    lines.push(`    done: ${r.done}  partial: ${r.partial}  not_done: ${r.not_done}`);
+    const pct = (r.rate * 100).toFixed(0);
+    const bar8 = Math.round(r.rate * 8);
+    const filled = "\u2588".repeat(bar8);
+    const empty = "\u2591".repeat(8 - bar8);
+    lines.push(`    ${filled}${empty} ${pct}%  (${r.done} done / ${r.partial} partial / ${r.not_done} miss)`);
   } else {
-    lines.push("");
-    lines.push("  (not available)");
+    lines.push("    -");
   }
 
-  // Redo
+  // Metrics (single line)
   lines.push("");
-  lines.push(sep);
-  lines.push("  Redo");
-  lines.push(sep);
-  lines.push("");
-  lines.push(`  Total: ${data.redolog.count}`);
-  if (data.redolog.entries.length > 0) {
-    for (const e of data.redolog.entries) {
-      lines.push(`    [${e.step}] ${e.reason}${e.resolution ? ` → ${e.resolution}` : ""}`);
-    }
-  }
-
-  // Metrics
-  lines.push("");
-  lines.push(sep);
   lines.push("  Metrics");
-  lines.push(sep);
-  lines.push("");
-  lines.push(`  docs read: ${data.metrics.docsRead}  src read: ${data.metrics.srcRead}  questions: ${data.metrics.question}  redos: ${data.metrics.redo}`);
+  lines.push(`  ${thin}`);
+  const m = data.metrics;
+  lines.push(`    docs ${m.docsRead}  src ${m.srcRead}  Q&A ${m.question}  redo ${m.redo}`);
 
-  // Tests (R2)
-  lines.push("");
-  lines.push(sep);
-  lines.push("  Tests");
-  lines.push(sep);
+  // Tests
   if (data.tests) {
     lines.push("");
-    lines.push(`  unit: ${data.tests.unit}  integration: ${data.tests.integration}  acceptance: ${data.tests.acceptance}  total: ${data.tests.total}`);
-  } else {
-    lines.push("");
-    lines.push("  (not available)");
+    lines.push("  Tests");
+    lines.push(`  ${thin}`);
+    const t = data.tests;
+    lines.push(`    unit ${t.unit}  integration ${t.integration}  acceptance ${t.acceptance}  total ${t.total}`);
   }
 
-  // Sync
-  lines.push("");
-  lines.push(sep);
-  lines.push("  Sync");
-  lines.push(sep);
-  if (data.sync.status === "skipped") {
+  // Redo (only if entries exist)
+  if (data.redolog.count > 0) {
     lines.push("");
-    lines.push(`  Skipped: ${data.sync.reason}`);
+    lines.push(`  Redo (${data.redolog.count})`);
+    lines.push(`  ${thin}`);
+    for (const e of data.redolog.entries) {
+      lines.push(`    [${e.step}] ${e.reason}${e.resolution ? ` -> ${e.resolution}` : ""}`);
+    }
+  }
+
+  // Documents
+  lines.push("");
+  lines.push("  Documents");
+  lines.push(`  ${thin}`);
+  if (data.sync.status === "skipped") {
+    lines.push(`    skipped: ${data.sync.reason}`);
   } else if (data.sync.status === "done") {
-    if (data.sync.diffStat) {
-      lines.push("");
-      lines.push("  Docs changes:");
-      for (const line of data.sync.diffStat.split("\n")) {
-        lines.push(`    ${line}`);
+    if (data.sync.diffSummary) {
+      for (const f of data.sync.diffSummary.split("\n").filter(Boolean)) {
+        lines.push(`    ${f}`);
       }
     }
-    if (data.sync.diffSummary) {
-      lines.push("");
-      lines.push("  Summary:");
-      lines.push(`    ${data.sync.diffSummary}`);
+    if (data.sync.diffStat) {
+      const last = data.sync.diffStat.split("\n").pop()?.trim();
+      if (last) lines.push(`    ${last}`);
     }
   } else {
-    lines.push("");
-    lines.push(`  Status: ${data.sync.status}`);
+    lines.push(`    ${data.sync.status}${data.sync.reason ? ": " + data.sync.reason : ""}`);
   }
 
-  lines.push("");
   return lines.join("\n");
 }
 

@@ -11,8 +11,7 @@ import path from "path";
 import { execFileSync } from "child_process";
 import { parseArgs } from "../../lib/cli.js";
 import { callAgent, resolveAgent } from "../../lib/agent.js";
-import { ok, fail, output } from "../../lib/flow-envelope.js";
-import { EXIT_ERROR } from "../../lib/exit-codes.js";
+import { ok, fail } from "../../lib/flow-envelope.js";
 
 /**
  * Extract requirements text from spec.md.
@@ -154,9 +153,8 @@ export async function execute(ctx) {
   // Load flow state
   const state = ctx.flowState;
   if (!state) {
-    output(fail("run", "retro", "NO_FLOW", "no active flow (flow.json not found)"));
-    process.exitCode = EXIT_ERROR;
-    return;
+    return fail("run", "retro", "NO_FLOW", "no active flow (flow.json not found)"));
+
   }
 
   const specPath = state.spec;
@@ -165,17 +163,15 @@ export async function execute(ctx) {
 
   // Check existing retro.json
   if (fs.existsSync(retroPath) && !cli.force) {
-    output(fail("run", "retro", "RETRO_EXISTS", "retro.json already exists. Use --force to overwrite."));
-    process.exitCode = EXIT_ERROR;
-    return;
+    return fail("run", "retro", "RETRO_EXISTS", "retro.json already exists. Use --force to overwrite."));
+
   }
 
   // Read spec
   const absSpecPath = path.resolve(root, specPath);
   if (!fs.existsSync(absSpecPath)) {
-    output(fail("run", "retro", "SPEC_NOT_FOUND", `spec not found: ${specPath}`));
-    process.exitCode = EXIT_ERROR;
-    return;
+    return fail("run", "retro", "SPEC_NOT_FOUND", `spec not found: ${specPath}`));
+
   }
   const specText = fs.readFileSync(absSpecPath, "utf8");
   const requirementsText = extractRequirements(specText);
@@ -183,30 +179,27 @@ export async function execute(ctx) {
   // Get requirements from flow.json
   const requirements = state.requirements || [];
   if (requirements.length === 0) {
-    output(fail("run", "retro", "NO_REQUIREMENTS", "no requirements found in flow.json"));
-    process.exitCode = EXIT_ERROR;
-    return;
+    return fail("run", "retro", "NO_REQUIREMENTS", "no requirements found in flow.json"));
+
   }
 
   // Get diff
   const baseBranch = state.baseBranch;
   if (!baseBranch) {
-    output(fail("run", "retro", "NO_BASE_BRANCH", "baseBranch not set in flow.json"));
-    process.exitCode = EXIT_ERROR;
-    return;
+    return fail("run", "retro", "NO_BASE_BRANCH", "baseBranch not set in flow.json"));
+
   }
 
   const diffStat = getDiff(root, baseBranch);
   const detailedDiff = getDetailedDiff(root, baseBranch);
 
   if (!detailedDiff) {
-    output(fail("run", "retro", "NO_DIFF", "no diff found between base branch and HEAD"));
-    process.exitCode = EXIT_ERROR;
-    return;
+    return fail("run", "retro", "NO_DIFF", "no diff found between base branch and HEAD"));
+
   }
 
   if (cli.dryRun) {
-    output(ok("run", "retro", {
+    return ok("run", "retro", {
       result: "dry-run",
       artifacts: {
         spec: specPath,
@@ -216,22 +209,19 @@ export async function execute(ctx) {
         diffStat,
       },
     }));
-    return;
   }
 
   // Resolve AI agent
   const config = ctx.config;
   if (!config) {
-    output(fail("run", "retro", "CONFIG_ERROR", "failed to load config"));
-    process.exitCode = EXIT_ERROR;
-    return;
+    return fail("run", "retro", "CONFIG_ERROR", "failed to load config"));
+
   }
 
   const agent = resolveAgent(config, "flow.retro");
   if (!agent) {
-    output(fail("run", "retro", "NO_AGENT", "no AI agent configured (agent.default or agent.commands.flow.retro)"));
-    process.exitCode = EXIT_ERROR;
-    return;
+    return fail("run", "retro", "NO_AGENT", "no AI agent configured (agent.default or agent.commands.flow.retro)"));
+
   }
 
   // Build prompt and call AI
@@ -241,9 +231,8 @@ export async function execute(ctx) {
   try {
     response = callAgent(agent, prompt);
   } catch (e) {
-    output(fail("run", "retro", "AGENT_ERROR", `AI agent call failed: ${e.message}`));
-    process.exitCode = EXIT_ERROR;
-    return;
+    return fail("run", "retro", "AGENT_ERROR", `AI agent call failed: ${e.message}`));
+
   }
 
   // Parse response
@@ -251,9 +240,8 @@ export async function execute(ctx) {
   try {
     retroData = parseRetroResponse(response, requirements);
   } catch (e) {
-    output(fail("run", "retro", "PARSE_ERROR", `failed to parse AI response: ${e.message}`));
-    process.exitCode = EXIT_ERROR;
-    return;
+    return fail("run", "retro", "PARSE_ERROR", `failed to parse AI response: ${e.message}`));
+
   }
 
   // Build retro.json
@@ -267,7 +255,7 @@ export async function execute(ctx) {
   fs.mkdirSync(specDir, { recursive: true });
   fs.writeFileSync(retroPath, JSON.stringify(retro, null, 2) + "\n", "utf8");
 
-  output(ok("run", "retro", {
+  return ok("run", "retro", {
     result: "ok",
     changed: [path.relative(root, retroPath)],
     artifacts: {
@@ -275,7 +263,7 @@ export async function execute(ctx) {
       retroPath: path.relative(root, retroPath),
       summary: retro.summary,
     },
-  }));
+  });
 }
 
 export { extractRequirements, buildRetroPrompt, parseRetroResponse };

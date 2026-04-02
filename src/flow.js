@@ -78,6 +78,7 @@ async function runEntry(entry, ctx) {
   try {
     const mod = await entry.execute();
     const result = await mod.execute(ctx);
+    if (result && !isHelp) output(result);
     if (!isHelp && entry.post) entry.post(ctx, result);
   } catch (err) {
     if (entry.onError) entry.onError(ctx, err);
