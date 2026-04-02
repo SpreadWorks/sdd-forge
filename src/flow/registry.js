@@ -184,5 +184,10 @@ export const FLOW_COMMANDS = {
       helpKey: "flow.run.retro",
       execute: () => import("./run/retro.js"),
     },
+    // report generates a work report from the current flow state.
+    report: {
+      helpKey: "flow.run.report",
+      execute: () => import("./run/report.js"),
+    },
   },
 };

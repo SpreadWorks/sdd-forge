@@ -1,19 +1,14 @@
-#!/usr/bin/env node
 /**
  * src/flow/commands/merge.js
  *
- * sdd-forge flow merge — flow.json に基づく squash merge または PR 作成。
- * worktree / branch / spec-only を自動判定。
+ * Squash merge or PR creation based on flow state.
+ * Called by finalize.js with ctx containing root, flowState, worktreePath, mainRepoPath, mergeStrategy.
  */
 
 import { execFileSync } from "child_process";
 import { readFileSync } from "fs";
-import { resolve } from "path";
-import { runIfDirect } from "../../lib/entrypoint.js";
-import { repoRoot, parseArgs } from "../../lib/cli.js";
-import { loadFlowState, resolveWorktreePaths } from "../../lib/flow-state.js";
+import path from "path";
 import { loadConfig } from "../../lib/config.js";
-import { EXIT_ERROR } from "../../lib/exit-codes.js";
 
 /**
  * Resolve push remote from config.
@@ -39,7 +34,6 @@ function isGhAvailable() {
 
 /**
  * Extract a markdown section body by heading name.
- * Returns trimmed content between the heading and the next same-or-higher level heading, or null if empty.
  * @param {string} content - full markdown text
  * @param {string} heading - heading text to find (e.g. "Goal")
  * @returns {string|null}
@@ -72,7 +66,7 @@ function parseSpec(content) {
 /**
  * Build PR title from parsed spec.
  * @param {{goal: string|null}|null} spec - parsed spec sections
- * @param {string} fallback - fallback title (e.g. spec directory name)
+ * @param {string} fallback - fallback title
  * @returns {string}
  */
 function buildPrTitle(spec, fallback) {
@@ -113,7 +107,6 @@ function buildPrBody(state, spec) {
     lines.push(spec.scope);
     lines.push("");
   }
-  // Fallback: no spec sections available
   if (!spec?.goal && !spec?.requirements && !spec?.scope) {
     if (state.request) {
       lines.push("## Summary");
@@ -133,7 +126,7 @@ function buildPrBody(state, spec) {
 function loadSpec(state, root) {
   if (!state.spec) return null;
   try {
-    const specPath = resolve(root, state.spec);
+    const specPath = path.resolve(root, state.spec);
     const content = readFileSync(specPath, "utf8");
     return parseSpec(content);
   } catch (_) {
@@ -141,131 +134,75 @@ function loadSpec(state, root) {
   }
 }
 
-function main() {
-  const root = repoRoot(import.meta.url);
-  const cli = parseArgs(process.argv.slice(2), {
-    flags: ["--dry-run", "--pr", "--auto"],
-    defaults: { dryRun: false, pr: false, auto: false },
-  });
-
-  if (cli.help) {
-    console.log(
-      [
-        "Usage: sdd-forge flow merge [options]",
-        "",
-        "Squash-merge feature branch into base branch, or create a PR.",
-        "Strategy is auto-detected from flow.json.",
-        "",
-        "Options:",
-        "  --dry-run   Show commands without executing",
-        "  --pr        Create a pull request instead of squash merge",
-        "  --auto      Auto-detect: PR if commands.gh=enable and gh available, else squash",
-      ].join("\n"),
-    );
-    return;
-  }
-
-  const state = loadFlowState(root);
-  if (!state) {
-    console.error("no active flow (flow.json not found)");
-    process.exit(EXIT_ERROR);
-  }
-
+/**
+ * Execute merge operation.
+ * @param {Object} ctx
+ * @param {string} ctx.root - project root (worktree or main repo)
+ * @param {Object} ctx.flowState - flow.json state
+ * @param {string|null} ctx.worktreePath - worktree path (null if not worktree mode)
+ * @param {string|null} ctx.mainRepoPath - main repo path (null if not worktree mode)
+ * @param {string} ctx.mergeStrategy - "squash" | "pr" | "auto"
+ * @returns {{ strategy: string }} - the resolved strategy
+ */
+function main(ctx) {
+  const { root, flowState: state, mainRepoPath, mergeStrategy } = ctx;
   const { baseBranch, featureBranch, worktree } = state;
 
   // Spec-only: featureBranch == baseBranch
   if (featureBranch === baseBranch) {
-    console.log("skip: spec-only mode (no merge needed)");
-    return;
+    return { strategy: "skip" };
   }
 
-  // Auto-detect: resolve --auto to --pr or squash based on config
-  if (cli.auto) {
+  // Resolve strategy
+  let usePr = mergeStrategy === "pr";
+  if (mergeStrategy === "auto") {
     let cfg;
     try { cfg = loadConfig(root); } catch (_) { cfg = {}; }
     const ghEnabled = cfg?.commands?.gh === "enable";
     if (ghEnabled && isGhAvailable()) {
-      cli.pr = true;
+      usePr = true;
     }
-    // else: fall through to squash merge
   }
 
   // PR route
-  if (cli.pr) {
+  if (usePr) {
     if (!isGhAvailable()) {
-      console.error("error: gh command is not available. Install GitHub CLI to use --pr.");
-      process.exit(EXIT_ERROR);
+      throw new Error("gh command is not available. Install GitHub CLI to use PR route.");
     }
     let cfg;
-    try {
-      cfg = loadConfig(root);
-    } catch (_) {
-      cfg = {};
-    }
+    try { cfg = loadConfig(root); } catch (_) { cfg = {}; }
     const remote = resolveRemote(cfg);
     const spec = loadSpec(state, root);
     const fallbackTitle = state.spec?.replace(/^specs\/\d+-/, "").replace(/\/spec\.md$/, "") || featureBranch;
     const title = buildPrTitle(spec, fallbackTitle);
     const body = buildPrBody(state, spec);
 
-    const pushCmd = ["git", "push", "-u", remote, featureBranch];
-    const prCmd = ["gh", "pr", "create",
+    execFileSync("git", ["push", "-u", remote, featureBranch], { stdio: "inherit" });
+    execFileSync("gh", [
+      "pr", "create",
       "--base", baseBranch,
       "--head", featureBranch,
       "--title", title,
       ...(body ? ["--body", body] : []),
-    ];
-
-    if (cli.dryRun) {
-      console.log(pushCmd.join(" "));
-      console.log(prCmd.join(" "));
-      return;
-    }
-
-    execFileSync(pushCmd[0], pushCmd.slice(1), { stdio: "inherit" });
-    execFileSync(prCmd[0], prCmd.slice(1), { stdio: "inherit" });
-    console.log("merge: done (PR created)");
-    return;
+    ], { stdio: "inherit" });
+    return { strategy: "pr" };
   }
 
   // Squash merge route
-  const { mainRepoPath } = resolveWorktreePaths(root, state);
   const specTitle = state.spec?.replace(/^specs\/\d+-/, "").replace(/\/spec\.md$/, "") || featureBranch;
   const commitMsg = state.issue ? `${specTitle}\n\nfixes #${state.issue}` : specTitle;
 
-  // Worktree mode
   if (worktree && mainRepoPath) {
-    const cmds = [
-      ["git", "-C", mainRepoPath, "merge", "--squash", featureBranch],
-      ["git", "-C", mainRepoPath, "commit", "-m", commitMsg],
-    ];
-    if (cli.dryRun) {
-      for (const cmd of cmds) console.log(cmd.join(" "));
-      return;
-    }
-    for (const cmd of cmds) {
-      execFileSync(cmd[0], cmd.slice(1), { stdio: "inherit" });
-    }
-    console.log("merge: done (worktree → squash merge)");
-    return;
+    execFileSync("git", ["-C", mainRepoPath, "merge", "--squash", featureBranch], { stdio: "inherit" });
+    execFileSync("git", ["-C", mainRepoPath, "commit", "-m", commitMsg], { stdio: "inherit" });
+    return { strategy: "squash" };
   }
 
   // Branch mode
-  const cmds = [
-    ["git", "checkout", baseBranch],
-    ["git", "merge", "--squash", featureBranch],
-    ["git", "commit", "-m", commitMsg],
-  ];
-  if (cli.dryRun) {
-    for (const cmd of cmds) console.log(cmd.join(" "));
-    return;
-  }
-  for (const cmd of cmds) {
-    execFileSync(cmd[0], cmd.slice(1), { stdio: "inherit" });
-  }
-  console.log("merge: done (branch → squash merge)");
+  execFileSync("git", ["checkout", baseBranch], { stdio: "inherit" });
+  execFileSync("git", ["merge", "--squash", featureBranch], { stdio: "inherit" });
+  execFileSync("git", ["commit", "-m", commitMsg], { stdio: "inherit" });
+  return { strategy: "squash" };
 }
 
 export { main, parseSpec, buildPrTitle, buildPrBody };
-
-runIfDirect(import.meta.url, main);

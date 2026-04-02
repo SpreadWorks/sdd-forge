@@ -1,0 +1,141 @@
+{
+  "spec": "specs/127-redesign-finalize-flow/spec.md",
+  "baseBranch": "development",
+  "featureBranch": "feature/127-redesign-finalize-flow",
+  "steps": [
+    {
+      "id": "approach",
+      "status": "done"
+    },
+    {
+      "id": "branch",
+      "status": "done"
+    },
+    {
+      "id": "prepare-spec",
+      "status": "pending"
+    },
+    {
+      "id": "draft",
+      "status": "done"
+    },
+    {
+      "id": "spec",
+      "status": "done"
+    },
+    {
+      "id": "gate",
+      "status": "done"
+    },
+    {
+      "id": "approval",
+      "status": "done"
+    },
+    {
+      "id": "test",
+      "status": "done"
+    },
+    {
+      "id": "implement",
+      "status": "done"
+    },
+    {
+      "id": "review",
+      "status": "done"
+    },
+    {
+      "id": "finalize",
+      "status": "pending"
+    },
+    {
+      "id": "commit",
+      "status": "pending"
+    },
+    {
+      "id": "push",
+      "status": "pending"
+    },
+    {
+      "id": "merge",
+      "status": "pending"
+    },
+    {
+      "id": "pr-create",
+      "status": "pending"
+    },
+    {
+      "id": "branch-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "pr-merge",
+      "status": "pending"
+    },
+    {
+      "id": "sync-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "docs-update",
+      "status": "pending"
+    },
+    {
+      "id": "docs-review",
+      "status": "pending"
+    },
+    {
+      "id": "docs-commit",
+      "status": "pending"
+    }
+  ],
+  "requirements": [
+    {
+      "desc": "R1: ステップ順序変更 commit(+retro+report)→merge→sync→cleanup",
+      "status": "done"
+    },
+    {
+      "desc": "R2: 関数呼び出し化 merge/retro/report",
+      "status": "done"
+    },
+    {
+      "desc": "R3: ctx にパス情報追加 worktreePath/mainRepoPath",
+      "status": "done"
+    },
+    {
+      "desc": "R4: cleanup 統合 finalize.jsに統合",
+      "status": "done"
+    },
+    {
+      "desc": "R5: merge.js runIfDirect 削除",
+      "status": "done"
+    },
+    {
+      "desc": "R6: report.js registry 登録",
+      "status": "done"
+    },
+    {
+      "desc": "R7: SKILL.md 更新",
+      "status": "done"
+    },
+    {
+      "desc": "R8: 画面表示 report+sync結果",
+      "status": "done"
+    }
+  ],
+  "issue": 68,
+  "request": "finalize再設計: ステップ順序変更、子コマンド関数呼び出し化、cleanup統合、パス解決一元化",
+  "worktree": true,
+  "notes": [
+    "approach: Q&A draft, work-env: worktree, base: development",
+    "finalize: mode=all, autoApprove"
+  ],
+  "metrics": {
+    "draft": {
+      "question": 5
+    },
+    "impl": {
+      "srcRead": 1
+    }
+  },
+  "autoApprove": true
+}

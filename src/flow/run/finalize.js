@@ -1,26 +1,63 @@
 /**
  * src/flow/run/finalize.js
  *
- * flow run finalize --mode all|select [--steps 3,4,5] [--merge-strategy squash|pr] [--dry-run]
- * Execute finalization pipeline: commit -> merge -> retro -> sync -> cleanup -> record.
+ * flow run finalize --mode all|select [--steps 1,2,3,4] [--merge-strategy squash|pr] [--dry-run]
+ * Execute finalization pipeline: commit(+retro+report) -> merge -> sync -> cleanup.
  */
 
+import fs from "fs";
 import { execFileSync } from "child_process";
 import { parseArgs, PKG_DIR } from "../../lib/cli.js";
-import { resolveWorktreePaths } from "../../lib/flow-state.js";
+import {
+  resolveWorktreePaths, clearFlowState, specIdFromPath,
+} from "../../lib/flow-state.js";
 import { runSync } from "../../lib/process.js";
 import { ok, fail, output } from "../../lib/flow-envelope.js";
 import { generateReport, saveReport } from "../commands/report.js";
 import { loadRedoLog } from "../set/redo.js";
 import path from "path";
 
-const STEP_MAP = {
+/**
+ * Execute cleanup: clear flow state, remove worktree/branch.
+ * @returns {{ status: string, message?: string }}
+ */
+function executeCleanup({ root, flowState, worktreePath, mainRepoPath }) {
+  const { baseBranch, featureBranch, worktree } = flowState;
+  const specId = specIdFromPath(flowState.spec);
+
+  if (featureBranch === baseBranch) {
+    clearFlowState(root, specId);
+    return { status: "done", message: "spec-only mode" };
+  }
+
+  clearFlowState(root, specId);
+
+  if (worktree && mainRepoPath) {
+    const wtPath = worktreePath || root;
+    try {
+      if (fs.existsSync(wtPath)) {
+        execFileSync("git", ["-C", mainRepoPath, "worktree", "remove", wtPath], { encoding: "utf8" });
+      }
+      execFileSync("git", ["-C", mainRepoPath, "branch", "-D", featureBranch], { encoding: "utf8" });
+      return { status: "done" };
+    } catch (e) {
+      return { status: "failed", message: String(e.stderr || e.message) };
+    }
+  }
+
+  try {
+    execFileSync("git", ["branch", "-D", featureBranch], { cwd: root, encoding: "utf8" });
+    return { status: "done" };
+  } catch (e) {
+    return { status: "failed", message: String(e.stderr || e.message) };
+  }
+}
+
+export const STEP_MAP = {
   1: "commit",
   2: "merge",
-  3: "retro",
-  4: "sync",
-  5: "cleanup",
-  6: "report",
+  3: "sync",
+  4: "cleanup",
 };
 
 export async function execute(ctx) {
@@ -36,11 +73,11 @@ export async function execute(ctx) {
       [
         "Usage: sdd-forge flow run finalize [options]",
         "",
-        "Execute finalization pipeline: commit -> merge -> retro -> sync -> cleanup -> record.",
+        "Execute finalization pipeline: commit(+retro+report) -> merge -> sync -> cleanup.",
         "",
         "Options:",
         "  --mode <all|select>           Mode (required)",
-        "  --steps <1,2,3,...>           Comma-separated step numbers (select mode: 1=commit 2=merge 3=retro 4=sync 5=cleanup 6=record)",
+        "  --steps <1,2,3,4>            Comma-separated step numbers (select mode: 1=commit 2=merge 3=sync 4=cleanup)",
         "  --merge-strategy <strategy>   squash or pr (default: auto-detect)",
         "  --message <msg>               Custom commit message",
         "  --dry-run                     Preview only",
@@ -83,20 +120,18 @@ export async function execute(ctx) {
   }
 
   // Resolve merge strategy: explicit > auto
-  let mergeStrategy = cli.mergeStrategy;
-  if (!mergeStrategy) {
-    // Auto-detect: delegate to merge.js --auto
-    mergeStrategy = "auto";
-  }
+  const mergeStrategy = cli.mergeStrategy || "auto";
 
-  const { mainRepoPath } = resolveWorktreePaths(root, state);
+  // Resolve paths once (R3)
+  const { worktreePath, mainRepoPath } = resolveWorktreePaths(root, state);
   const results = {};
 
-  // Step 1: commit
+  // ── Step 1: commit (+retro +report as post) ──────────────────────
   if (activeSteps.has(1)) {
     if (cli.dryRun) {
       results.commit = { status: "dry-run", message: cli.message || "(auto)" };
     } else {
+      // 1a. commit
       try {
         execFileSync("git", ["add", "-A"], { cwd: root, encoding: "utf8" });
         const msg = cli.message || `feat: ${state.featureBranch || "finalize"}`;
@@ -109,77 +144,93 @@ export async function execute(ctx) {
           results.commit = { status: "failed", message: String(e.stderr || e.message) };
         }
       }
+
+      // 1b. retro (post-commit: runs in worktree where diff is available)
+      try {
+        const { execute: retroExecute } = await import("./retro.js");
+        await retroExecute({ ...ctx, args: ["--force"] });
+        results.retro = { status: "done" };
+      } catch (e) {
+        results.retro = { status: "failed", message: String(e.message) };
+      }
+
+      // 1c. report (post-commit: generate in worktree before merge)
+      try {
+        let implDiffStat = "";
+        let commitMessages = [];
+        try {
+          implDiffStat = execFileSync(
+            "git", ["diff", "--stat", `${state.baseBranch}...HEAD`],
+            { cwd: root, encoding: "utf8" },
+          ).trim();
+        } catch (_) { /* no diff */ }
+        try {
+          commitMessages = execFileSync(
+            "git", ["log", "--format=%s", `${state.baseBranch}..HEAD`],
+            { cwd: root, encoding: "utf8" },
+          ).trim().split("\n").filter(Boolean);
+        } catch (_) { /* no commits */ }
+
+        let redolog = { entries: [] };
+        try { redolog = loadRedoLog(root, state.spec); } catch (_) { /* no redolog */ }
+
+        const report = generateReport({
+          state,
+          results,
+          redolog,
+          implDiffStat,
+          commitMessages,
+        });
+
+        try { saveReport(root, state.spec, report); } catch (e) { report.saveError = e.message; }
+        results.report = { status: "done", ...report };
+      } catch (e) {
+        results.report = { status: "failed", message: String(e.message || e) };
+      }
+
+      // 1d. commit retro + report files
+      try {
+        execFileSync("git", ["add", "-A"], { cwd: root, encoding: "utf8" });
+        execFileSync("git", ["commit", "-m", "chore: add retro and report"], { cwd: root, encoding: "utf8" });
+      } catch (e) {
+        if (!/nothing to commit/i.test(String(e.stderr || e.message || ""))) {
+          if (results.report) {
+            results.report.commitNote = "retro/report commit failed: " + String(e.stderr || e.message).slice(0, 200);
+          }
+        }
+      }
     }
   }
 
-  // Step 2: merge
+  // ── Step 2: merge ─────────────────────────────────────────────────
   if (activeSteps.has(2)) {
     if (cli.dryRun) {
       results.merge = { status: "dry-run", strategy: mergeStrategy };
     } else {
-      const scriptPath = path.join(PKG_DIR, "flow", "commands", "merge.js");
-      const args = [];
-      if (mergeStrategy === "pr") {
-        args.push("--pr");
-      } else if (mergeStrategy === "auto") {
-        args.push("--auto");
-      }
-      // "squash" needs no extra args (merge.js defaults to squash)
-      const res = runSync("node", [scriptPath, ...args], { cwd: root });
-      if (res.ok) {
-        // Detect if auto resolved to PR by checking output
-        const isPr = mergeStrategy === "pr" || (mergeStrategy === "auto" && /PR created/i.test(res.stdout || ""));
-        results.merge = { status: "done", strategy: isPr ? "pr" : "squash" };
-      } else {
-        results.merge = { status: "failed", message: (res.stderr || res.stdout || "").trim() };
+      try {
+        const { main: mergeMain } = await import("../commands/merge.js");
+        const mergeResult = mergeMain({
+          root,
+          flowState: state,
+          worktreePath,
+          mainRepoPath,
+          mergeStrategy,
+        });
+        results.merge = { status: "done", strategy: mergeResult?.strategy || "squash" };
+      } catch (e) {
+        results.merge = { status: "failed", message: String(e.message || e) };
       }
     }
   }
 
-  // Step 3: retro (spec retrospective — runs in worktree where feature branch diff is available)
+  // ── Step 3: sync (docs generation — runs on main repo after merge) ──
   if (activeSteps.has(3)) {
-    if (cli.dryRun) {
-      results.retro = { status: "dry-run" };
-    } else {
-      const retroRes = runSync("node", [
-        path.join(PKG_DIR, "flow.js"), "run", "retro", "--force",
-      ], { cwd: root });
-      if (retroRes.ok) {
-        let retroData;
-        try { retroData = JSON.parse(retroRes.stdout); } catch (_) { retroData = null; }
-        // Second commit + merge: bring retro.json into main repo
-        if (state.worktree && mainRepoPath) {
-          try {
-            execFileSync("git", ["add", "-A"], { cwd: root, encoding: "utf8" });
-            execFileSync("git", ["commit", "-m", "chore: add retro results"], { cwd: root, encoding: "utf8" });
-            execFileSync("git", ["-C", mainRepoPath, "merge", "--squash", state.featureBranch], { encoding: "utf8" });
-            execFileSync("git", ["-C", mainRepoPath, "commit", "-m", "chore: add retro results"], { encoding: "utf8" });
-          } catch (e) {
-            if (!/nothing to commit/i.test(String(e.stderr || e.message || ""))) {
-              results.retro = { status: "done", mergeNote: "retro second merge failed: " + String(e.stderr || e.message).slice(0, 200) };
-            }
-          }
-        }
-        if (!results.retro) {
-          results.retro = { status: "done", ...(retroData?.data?.summary ? { summary: retroData.data.summary } : {}) };
-        }
-      } else {
-        // retro failure does not block the pipeline
-        results.retro = { status: "failed", message: (retroRes.stderr || retroRes.stdout || "").trim() };
-      }
-    }
-  }
-
-  // Step 4: sync (docs generation on main branch)
-  if (activeSteps.has(4)) {
-    // Skip sync if merge was PR route (not yet merged)
     const wasPr = results.merge?.strategy === "pr" || mergeStrategy === "pr";
     if (wasPr) {
       results.sync = { status: "skipped", message: "PR route: run sdd-forge build after PR merge" };
     } else if (cli.dryRun) {
       results.sync = { status: "dry-run" };
     } else {
-      // Use mainRepoPath for worktree mode, root for branch mode
       const syncCwd = (state.worktree && mainRepoPath) ? mainRepoPath : root;
       const buildScript = path.join(PKG_DIR, "docs.js");
       const buildRes = runSync("node", [buildScript, "build"], { cwd: syncCwd });
@@ -188,18 +239,13 @@ export async function execute(ctx) {
       } else {
         try {
           execFileSync("git", ["add", "docs/", "AGENTS.md", "CLAUDE.md", "README.md"], { cwd: syncCwd, encoding: "utf8" });
-        } catch (_) {
-          // ignore errors for missing files
-        }
-        // Capture diff before commit for report (R3)
+        } catch (_) { /* missing files ok */ }
         let diffStat = null;
         let diffSummary = null;
         try {
           diffStat = execFileSync("git", ["diff", "--cached", "--stat"], { cwd: syncCwd, encoding: "utf8" }).trim();
           diffSummary = execFileSync("git", ["diff", "--cached", "--name-only"], { cwd: syncCwd, encoding: "utf8" }).trim();
-        } catch (_) {
-          // non-critical: diff info is optional for report
-        }
+        } catch (_) { /* non-critical */ }
         try {
           execFileSync("git", ["commit", "-m", "docs: sync documentation"], { cwd: syncCwd, encoding: "utf8" });
           results.sync = { status: "done", ...(diffStat && { diffStat }), ...(diffSummary && { diffSummary }) };
@@ -214,93 +260,17 @@ export async function execute(ctx) {
     }
   }
 
-  // Step 5: cleanup
-  if (activeSteps.has(5)) {
+  // ── Step 4: cleanup (R4 — inlined from cleanup.js) ──────────────
+  if (activeSteps.has(4)) {
     if (cli.dryRun) {
       results.cleanup = { status: "dry-run" };
     } else {
-      const scriptPath = path.join(PKG_DIR, "flow", "commands", "cleanup.js");
-      const res = runSync("node", [scriptPath], { cwd: root });
-      if (res.ok) {
-        results.cleanup = { status: "done" };
-      } else {
-        results.cleanup = { status: "failed", message: (res.stderr || res.stdout || "").trim() };
-      }
-    }
-  }
-
-  // Step 6: report — runs on main repo (after cleanup, worktree may be gone)
-  if (activeSteps.has(6)) {
-    if (cli.dryRun) {
-      results.report = { status: "dry-run" };
-    } else {
-      const reportRoot = (state.worktree && mainRepoPath) ? mainRepoPath : root;
-      try {
-        // Collect implementation diff stat and commit messages from main repo
-        let implDiffStat = "";
-        let commitMessages = [];
-        try {
-          implDiffStat = execFileSync(
-            "git", ["diff", "--stat", `${state.baseBranch}...HEAD`],
-            { cwd: reportRoot, encoding: "utf8" },
-          ).trim();
-        } catch (_) {
-          // no diff available after squash merge
-        }
-        try {
-          commitMessages = execFileSync(
-            "git", ["log", "--format=%s", `${state.baseBranch}..HEAD`],
-            { cwd: reportRoot, encoding: "utf8" },
-          ).trim().split("\n").filter(Boolean);
-        } catch (_) {
-          // no commits
-        }
-
-        // Load redolog from main repo (retro second merge brought it here)
-        let redolog = { entries: [] };
-        try {
-          redolog = loadRedoLog(reportRoot, state.spec);
-        } catch (_) {
-          // no redolog file
-        }
-
-        const report = generateReport({
-          state,
-          results,
-          redolog,
-          implDiffStat,
-          commitMessages,
-        });
-
-        // Save report.json to main repo
-        try {
-          saveReport(reportRoot, state.spec, report);
-        } catch (e) {
-          report.saveError = e.message;
-        }
-
-        // Commit report.json on main repo
-        try {
-          const specDir = path.dirname(state.spec);
-          execFileSync("git", ["add", path.join(specDir, "report.json")], { cwd: reportRoot, encoding: "utf8" });
-          const specTitle = path.basename(path.dirname(state.spec));
-          execFileSync("git", ["commit", "-m", `chore: add report for ${specTitle}`], { cwd: reportRoot, encoding: "utf8" });
-        } catch (e) {
-          if (!/nothing to commit/i.test(String(e.stderr || e.message || ""))) {
-            report.commitError = String(e.stderr || e.message);
-          }
-        }
-
-        results.report = { status: "done", ...report };
-      } catch (e) {
-        // report errors do not block pipeline
-        results.report = { status: "failed", message: String(e.message || e) };
-      }
+      results.cleanup = executeCleanup({ root, flowState: state, worktreePath, mainRepoPath });
     }
   }
 
   // Mark missing steps as skipped
-  for (const [num, name] of Object.entries(STEP_MAP)) {
+  for (const name of Object.values(STEP_MAP)) {
     if (!results[name]) results[name] = { status: "skipped" };
   }
 
