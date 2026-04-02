@@ -1,7 +1,7 @@
 {
   "guardrails": [
     {
-      "id": "",
+      "id": "use-parameterized-queries",
       "title": "パラメータ化クエリの使用",
       "body": "DQL および QueryBuilder ではパラメータバインディングを必須とする。クエリ内での文字列結合を禁止する。",
       "meta": {

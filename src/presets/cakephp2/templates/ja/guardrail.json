@@ -23,7 +23,7 @@
       }
     },
     {
-      "id": "",
+      "id": "validate-before-save",
       "title": "保存前バリデーション必須",
       "body": "Model は `beforeSave` または `$validate` でバリデーションルールを定義すること。バリデーションなしの `save()` を禁止する。",
       "meta": {
@@ -33,7 +33,7 @@
       }
     },
     {
-      "id": "",
+      "id": "no-direct-session-manipulation",
       "title": "セッション直接操作の禁止",
       "body": "`$_SESSION` を直接操作してはならない。`CakeSession` を使用すること。",
       "meta": {

@@ -1,7 +1,7 @@
 {
   "guardrails": [
     {
-      "id": "",
+      "id": "security-impact-disclosure",
       "title": "セキュリティ影響の明示",
       "body": "認証・認可・入力バリデーションに影響する変更は、セキュリティへの影響を spec に明記すること。",
       "meta": {
@@ -12,7 +12,7 @@
       }
     },
     {
-      "id": "",
+      "id": "migration-required-for-schema-changes",
       "title": "スキーマ変更時のマイグレーション必須",
       "body": "DB スキーマ変更を伴う場合、マイグレーション手順を spec に含めること。",
       "meta": {
@@ -23,7 +23,7 @@
       }
     },
     {
-      "id": "",
+      "id": "input-sanitization-required",
       "title": "入力サニタイズ必須",
       "body": "ユーザー入力を扱う変更は、SQL injection・XSS・パストラバーサル等の対策方針を spec に明記すること。",
       "meta": {
@@ -34,7 +34,7 @@
       }
     },
     {
-      "id": "",
+      "id": "no-reinventing-framework-features",
       "title": "フレームワーク機能の再発明禁止",
       "body": "フレームワークが提供する機能がある場合、同等機能の独自実装を禁止する。",
       "meta": {
@@ -45,7 +45,7 @@
       }
     },
     {
-      "id": "",
+      "id": "no-sensitive-data-in-logs",
       "title": "ログへの機密情報出力禁止",
       "body": "ログにパスワード・トークン・個人情報を出力してはならない。機密データはマスキングまたは除外すること。",
       "meta": {

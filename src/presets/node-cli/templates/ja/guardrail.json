@@ -11,7 +11,7 @@
       }
     },
     {
-      "id": "",
+      "id": "validate-user-input-at-entry-point",
       "title": "エントリポイントでの入力バリデーション",
       "body": "CLI 引数・stdin からの入力はエントリポイントでバリデーションすること。未検証の入力を内部関数に渡してはならない。",
       "meta": {

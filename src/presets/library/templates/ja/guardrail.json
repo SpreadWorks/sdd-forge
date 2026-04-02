@@ -12,7 +12,7 @@
       }
     },
     {
-      "id": "",
+      "id": "no-unnecessary-dependencies",
       "title": "不要な依存の追加禁止",
       "body": "外部依存の追加は、その必要性を spec で正当化すること。",
       "meta": {
