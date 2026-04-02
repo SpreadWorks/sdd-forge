@@ -1,0 +1,129 @@
+{
+  "spec": "specs/118-fix-essential-extraction-multilang/spec.md",
+  "baseBranch": "development",
+  "featureBranch": "feature/118-fix-essential-extraction-multilang",
+  "steps": [
+    {
+      "id": "approach",
+      "status": "done"
+    },
+    {
+      "id": "branch",
+      "status": "done"
+    },
+    {
+      "id": "prepare-spec",
+      "status": "done"
+    },
+    {
+      "id": "draft",
+      "status": "done"
+    },
+    {
+      "id": "spec",
+      "status": "done"
+    },
+    {
+      "id": "gate",
+      "status": "done"
+    },
+    {
+      "id": "approval",
+      "status": "done"
+    },
+    {
+      "id": "test",
+      "status": "done"
+    },
+    {
+      "id": "implement",
+      "status": "done"
+    },
+    {
+      "id": "review",
+      "status": "done"
+    },
+    {
+      "id": "finalize",
+      "status": "in_progress"
+    },
+    {
+      "id": "commit",
+      "status": "pending"
+    },
+    {
+      "id": "push",
+      "status": "pending"
+    },
+    {
+      "id": "merge",
+      "status": "pending"
+    },
+    {
+      "id": "pr-create",
+      "status": "pending"
+    },
+    {
+      "id": "branch-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "pr-merge",
+      "status": "pending"
+    },
+    {
+      "id": "sync-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "docs-update",
+      "status": "pending"
+    },
+    {
+      "id": "docs-review",
+      "status": "pending"
+    },
+    {
+      "id": "docs-commit",
+      "status": "pending"
+    }
+  ],
+  "requirements": [
+    {
+      "desc": "js.js extractEssential",
+      "status": "done"
+    },
+    {
+      "desc": "php.js extractEssential",
+      "status": "done"
+    },
+    {
+      "desc": "py.js extractEssential",
+      "status": "done"
+    },
+    {
+      "desc": "minify.js ディスパッチ化",
+      "status": "done"
+    },
+    {
+      "desc": "直書きパターン削除",
+      "status": "done"
+    }
+  ],
+  "worktree": true,
+  "request": "Essential 抽出が JS 専用だったため PHP プロジェクトで enrich が 0 件になるバグの修正。lang ハンドラとの設計整合性を考慮して正しく対応する",
+  "notes": [
+    "approach: Q&A で要件整理",
+    "work-env: worktree, base: development",
+    "draft: lang ハンドラに extractEssential メソッドを追加する方式を採用",
+    "draft: extractEssential がないハンドラは通常 minify にフォールバック",
+    "draft: extractEssential を全て lang ハンドラに移動。minify.js には残さない。JS も js.js へ",
+    "review: auto-fix",
+    "finalize: select 1,2,4,5, squash merge, skip docs sync"
+  ],
+  "metrics": {
+    "draft": {
+      "question": 5
+    }
+  }
+}

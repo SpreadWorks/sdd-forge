@@ -123,7 +123,7 @@ if (subCmd === "build") {
       }
     } else {
       progress.start("init");
-      await initMain({ ...baseCtx, force: hasForce, dryRun: isDryRun });
+      await initMain({ ...baseCtx, force: hasForce, dryRun: isDryRun, commandId: "docs.init" });
       progress.stepDone();
     }
 
@@ -155,12 +155,12 @@ if (subCmd === "build") {
 
     // 6. readme
     progress.start("readme");
-    await readmeMain({ ...baseCtx, dryRun: isDryRun });
+    await readmeMain({ ...baseCtx, dryRun: isDryRun, commandId: "docs.readme" });
     progress.stepDone();
 
     // 7. agents
     progress.start("agents");
-    await agentsMain({ ...baseCtx, dryRun: isDryRun });
+    await agentsMain({ ...baseCtx, dryRun: isDryRun, commandId: "docs.agents" });
     progress.stepDone();
 
     // 8. Multi-language: generate non-default languages
@@ -172,7 +172,7 @@ if (subCmd === "build") {
       if (outputCfg.mode === "translate") {
         const { main: translateMain } = await import(path.join(PKG_DIR, "docs/commands/translate.js"));
         progress.log(`[build] Translating to: ${nonDefaultLangs.join(", ")}`);
-        await translateMain({ ...baseCtx, dryRun: isDryRun });
+        await translateMain({ ...baseCtx, dryRun: isDryRun, commandId: "docs.translate" });
       } else {
         for (const lang of nonDefaultLangs) {
           const langDocsDir = path.join(docsDir, lang);
@@ -180,7 +180,7 @@ if (subCmd === "build") {
           progress.log(`[build] Generating ${lang}...`);
 
           if (!hasRegenerate) {
-            await initMain({ ...langCtx, force: hasForce, dryRun: isDryRun });
+            await initMain({ ...langCtx, force: hasForce, dryRun: isDryRun, commandId: "docs.init" });
           }
           await dataMain({ ...langCtx, dryRun: isDryRun });
           if (hasAgent) {
@@ -190,7 +190,7 @@ if (subCmd === "build") {
             }
           }
           const langReadmePath = path.join(langDocsDir, "README.md");
-          await readmeMain({ ...langCtx, dryRun: isDryRun, output: langReadmePath });
+          await readmeMain({ ...langCtx, dryRun: isDryRun, output: langReadmePath, commandId: "docs.readme" });
         }
       }
 
@@ -200,7 +200,7 @@ if (subCmd === "build") {
           if (fs.existsSync(langDocsDir)) {
             const langReadmePath = path.join(langDocsDir, "README.md");
             progress.log(`[build] Regenerating ${lang}/README.md...`);
-            await readmeMain({ ...baseCtx, outputLang: lang, docsDir: langDocsDir, dryRun: isDryRun, output: langReadmePath });
+            await readmeMain({ ...baseCtx, outputLang: lang, docsDir: langDocsDir, dryRun: isDryRun, output: langReadmePath, commandId: "docs.readme" });
           }
         }
       }

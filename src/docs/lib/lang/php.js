@@ -1,6 +1,6 @@
 /**
  * PHP language handler.
- * Provides parse, minify, extractImports, extractExports.
+ * Provides parse, minify, extractImports, extractExports, extractEssential.
  */
 
 import path from "node:path";
@@ -145,4 +145,29 @@ export function extractExports(content) {
   }
 
   return exports;
+}
+
+// ---------------------------------------------------------------------------
+// Essential extraction
+// ---------------------------------------------------------------------------
+
+export function extractEssential(code) {
+  const lines = code.split("\n");
+  const kept = [];
+  for (const line of lines) {
+    const t = line.trim();
+    if (/^(require|require_once|include|include_once)\s/.test(t)) { kept.push(t); continue; }
+    if (/^use\s/.test(t)) { kept.push(t); continue; }
+    if (/^namespace\s/.test(t)) { kept.push(t); continue; }
+    if (/^(public|protected|private|static|abstract)\s/.test(t) && /function\s/.test(t)) { kept.push(t); continue; }
+    if (/^\s*function\s/.test(line)) { kept.push(t); continue; }
+    if (/^(abstract\s+)?class\s/.test(t)) { kept.push(t); continue; }
+    if (/^interface\s/.test(t)) { kept.push(t); continue; }
+    if (/^trait\s/.test(t)) { kept.push(t); continue; }
+    if (/^\s*return\s/.test(line)) { kept.push(t); continue; }
+    if (/^\s*throw\s/.test(line)) { kept.push(t); continue; }
+    if (/^\s*new\s/.test(line)) { kept.push(t); continue; }
+    if (/^\s*\$this->/.test(line) && /=\s*new\s/.test(line)) { kept.push(t); continue; }
+  }
+  return kept.join("\n");
 }
