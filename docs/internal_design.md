@@ -8,7 +8,7 @@
 
 <!-- {{text({prompt: "Write a 1-2 sentence overview of this chapter. Include the project structure, module dependency direction, and key processing flows."})}} -->
 
-This chapter documents the internal architecture of sdd-forge, tracing the three-level command dispatch hierarchy from the CLI entry point through subcommand dispatchers to individual command implementations, and describing the preset-based DataSource plugin system, the scan→enrich→data→text documentation pipeline, and the SDD flow orchestration layer.
+sdd-forge is a CLI tool organized around two entry points (`docs.js` for documentation commands and `flow.js` for SDD flow commands), where source scanning and AI enrichment feed into a directive-based chapter population pipeline, and flow commands orchestrate spec-driven development steps through a registry-dispatched, flow-state-backed execution model with preset chain inheritance running from leaf to base throughout all data resolution.
 <!-- {{/text}} -->
 
 ## Content
@@ -19,55 +19,59 @@ This chapter documents the internal architecture of sdd-forge, tracing the three
 
 ```
 src/
-├── sdd-forge.js          # Top-level CLI entry point; routes subcommands to dispatchers
-├── docs.js               # Docs dispatcher; orchestrates build pipeline and subcommand routing
-├── flow.js               # Flow dispatcher; resolves context and delegates via registry.js
-├── help.js               # Standalone help command
-├── setup.js              # Project initialisation wizard
-├── upgrade.js            # Upgrades skills and templates in an existing project
-├── presets-cmd.js        # Presets listing command
+├── docs.js                  # Entry point: documentation subcommand dispatcher
+├── flow.js                  # Entry point: SDD flow subcommand dispatcher
 ├── docs/
-│   ├── commands/         # One file per CLI subcommand (scan, enrich, data, text, …)
-│   ├── data/             # DataSource classes for {{data}} directive resolution
-│   └── lib/              # Shared doc-generation libraries
-│       ├── directive-parser.js    # Parses {{data}} / {{text}} / {%block%} directives
-│       ├── resolver-factory.js    # Assembles DataSource resolver from preset chain
-│       ├── scanner.js             # File traversal and hash computation
-│       ├── template-merger.js     # Merges preset-chain templates and resolves chapters order
-│       ├── text-prompts.js        # Builds AI prompts for {{text}} directives
-│       ├── minify.js              # Dispatches to language-specific minifiers
-│       ├── lang/                  # Per-language parse/minify/extract handlers (js, php, py, yaml)
-│       ├── analysis-entry.js      # AnalysisEntry base class and category utilities
-│       ├── concurrency.js         # Bounded-concurrency async map helper
-│       └── …
+│   ├── commands/
+│   │   ├── scan.js          # Scans source files, writes analysis.json with stable IDs and MD5 hashes
+│   │   ├── enrich.js        # AI-powered batch annotation of analysis entries
+│   │   ├── data.js          # Populates {{data}} directives from analysis.json
+│   │   └── text.js          # Fills {{text}} directives via AI; supports incremental rebuild
+│   ├── data/
+│   │   ├── agents.js        # DataSource: agent configuration
+│   │   ├── docs.js          # DataSource: documentation metadata
+│   │   ├── lang.js          # DataSource: language statistics
+│   │   ├── project.js       # DataSource: project-level info
+│   │   └── text.js          # DataSource: text directive content
+│   └── lib/
+│       ├── directive-parser.js    # Parses and resolves {{data}}/{{text}} directives in-place
+│       ├── resolver-factory.js    # createResolver(): loads preset chain, instantiates DataSources
+│       ├── data-source.js         # Base class for all DataSources
+│       ├── data-source-loader.js  # Dynamic import of data/ files; calls init(ctx) on each
+│       ├── scanner.js             # File collection, glob matching, stat and parse utilities
+│       ├── lang-factory.js        # EXT_MAP: maps file extensions to language handlers
+│       ├── minify.js              # Unified dispatcher: getLangHandler → minify/extractEssential
+│       ├── template-merger.js     # Preset template inheritance: buildLayers, resolveTemplates
+│       ├── text-prompts.js        # Prompt builders for text generation
+│       ├── forge-prompts.js       # Prompt builders for forge/review commands
+│       ├── chapter-resolver.js    # Category-to-chapter mapping from docs structure
+│       ├── command-context.js     # resolveCommandContext, getChapterFiles, loadFullAnalysis
+│       ├── concurrency.js         # mapWithConcurrency: bounded async concurrency pool
+│       ├── analysis-entry.js      # AnalysisEntry model, ANALYSIS_META_KEYS, buildSummary
+│       ├── analysis-filter.js     # filterAnalysisByDocsExclude
+│       ├── review-parser.js       # parseFileResults, summarizeReview, extractNeedsInput
+│       ├── scan-source.js         # Scannable mixin
+│       └── toml-parser.js         # Minimal TOML parser
 ├── flow/
-│   ├── registry.js       # FLOW_COMMANDS dispatch table with pre/post hooks
-│   ├── commands/         # Complex multi-step flow scripts (review, merge, cleanup, report)
-│   ├── get/              # Read-only query handlers (context, check, guardrail, resolve-context, …)
-│   ├── run/              # State-mutating pipeline steps (gate, finalize, lint, retro, …)
-│   └── set/              # Flow state mutation handlers (step, req, metric, note, redo, …)
-├── lib/                  # Shared core libraries used across docs and flow subsystems
-│   ├── agent.js          # Claude CLI invocation (sync and async) with retry and stdin fallback
-│   ├── flow-state.js     # flow.json read/write, active-flow tracking, step and metric mutation
-│   ├── flow-envelope.js  # Typed ok/fail/warn envelope constructors and output()
-│   ├── guardrail.js      # Guardrail loading, merging, phase filtering, and lint matching
-│   ├── i18n.js           # Multi-tier locale loading with deep-merge and interpolation
-│   ├── presets.js        # Preset key resolution and parent-chain traversal
-│   ├── config.js         # config.json loading, path helpers (sddDir, sddOutputDir)
-│   ├── include.js        # Template include directive processor
-│   ├── skills.js         # Skill file deployment to .agents/skills/ and .claude/skills/
-│   ├── json-parse.js     # Lenient JSON repair for AI-generated output
-│   ├── lint.js           # Guardrail lint checks against git-changed files
-│   ├── git-state.js      # Git worktree, branch, and ahead-count utilities
-│   ├── process.js        # Thin spawnSync wrapper
-│   └── progress.js       # ANSI progress bar and logger factory
-└── presets/              # Preset definitions (base, node, cli, cakephp2, laravel, hono, …)
-    ├── base/
-    │   ├── preset.json   # Chapters order, scan patterns
-    │   ├── data/         # Preset-specific DataSource overrides
-    │   ├── templates/    # Per-language chapter Markdown templates
-    │   └── locale/       # Preset-specific locale strings
-    └── …
+│   ├── registry.js          # FLOW_COMMANDS dispatch table with execute factories and hooks
+│   ├── get/                 # Read-only flow query handlers (check, context, guardrail, qa-count, resolve-context)
+│   ├── run/                 # Mutating flow step handlers (gate, prepare-spec, impl-confirm, lint, review, retro, finalize)
+│   └── set/                 # Flow state mutation handlers (step, req, metric, note, redo, summary, request)
+├── lib/
+│   ├── agent.js             # callAgent/callAgentAsync, resolveAgent, buildAgentInvocation
+│   ├── flow-envelope.js     # ok/fail/warn constructors; output() serializes JSON to stdout
+│   ├── flow-state.js        # loadFlowState, saveFlowState, mutateFlowState, FLOW_STEPS, PHASE_MAP
+│   ├── git-state.js         # getWorktreeStatus, getCurrentBranch, isGhAvailable
+│   ├── guardrail.js         # loadMergedGuardrails, filterByPhase, matchScope, hydrate
+│   ├── i18n.js              # createI18n, translate with deepMerge locale loading
+│   ├── lint.js              # validateLintGuardrails, runLintChecks, runLint
+│   ├── presets.js           # PRESETS_DIR, resolveChainSafe, resolveMultiChains, presetByLeaf
+│   ├── process.js           # runSync wrapping spawnSync
+│   ├── progress.js          # ANSI progress bar/spinner
+│   └── skills.js            # deploySkills: writes SKILL.md templates to agent skill directories
+├── presets/                 # base, node, php, cli, webapp, library, node-cli, cakephp2, laravel, symfony
+├── locale/                  # en/, ja/ i18n message files
+└── templates/skills/        # SKILL.md templates
 ```
 <!-- {{/text}} -->
 
@@ -75,29 +79,36 @@ src/
 
 <!-- {{text({prompt: "List the major modules in table format. Include module name, file path, and responsibility. Extract from import/require relationships and exports in each file.", mode: "deep"})}} -->
 
-| Module | File path | Responsibility |
-| --- | --- | --- |
-| CLI entry | `src/sdd-forge.js` | Parses top-level subcommand; dynamically imports the correct dispatcher or standalone command |
-| Docs dispatcher | `src/docs.js` | Routes `sdd-forge docs` subcommands; orchestrates the multi-step `build` pipeline |
-| Flow dispatcher | `src/flow.js` | Resolves project context; dispatches `sdd-forge flow` commands via `FLOW_COMMANDS` with pre/post hooks |
-| Flow registry | `src/flow/registry.js` | Declares the `FLOW_COMMANDS` dispatch table mapping group+command to module factories and lifecycle hooks |
-| scan | `src/docs/commands/scan.js` | Walks source files, runs DataSource parsers, writes `analysis.json` with stable IDs and MD5 hashes |
-| enrich | `src/docs/commands/enrich.js` | Batch-calls AI agent on `analysis.json` entries; merges summary, detail, chapter, role, and keywords |
-| data | `src/docs/commands/data.js` | Resolves `{{data}}` directives in chapter files using the DataSource resolver chain |
-| text | `src/docs/commands/text.js` | Fills `{{text}}` directives by invoking AI agent with enriched analysis context; supports batch and per-directive modes |
-| DataSource base | `src/docs/lib/data-source.js` | Base class for all DataSources; provides `desc()`, `mergeDesc()`, and `toMarkdownTable()` helpers |
-| directive-parser | `src/docs/lib/directive-parser.js` | Parses `{{data}}`, `{{text}}`, and `{%block%}` directives; performs in-place block replacement |
-| resolver-factory | `src/docs/lib/resolver-factory.js` | Builds a resolver from the preset chain by loading DataSource instances and layering overrides |
-| template-merger | `src/docs/lib/template-merger.js` | Resolves and merges per-language Markdown templates across the preset parent chain |
-| text-prompts | `src/docs/lib/text-prompts.js` | Constructs AI system prompts, per-directive prompts, and batch prompts from enriched analysis data |
-| scanner | `src/docs/lib/scanner.js` | File traversal, glob-to-regex, hash computation, and language-handler dispatch for source parsing |
-| minify | `src/docs/lib/minify.js` | Central minification dispatcher delegating to per-language handlers via `lang-factory.js` |
-| agent | `src/lib/agent.js` | Wraps Claude CLI invocation with ARG_MAX-safe stdin fallback, async retry, and work-dir management |
-| flow-state | `src/lib/flow-state.js` | Persists `flow.json` per spec; manages `.active-flow` registry; exposes step/metric mutation helpers |
-| flow-envelope | `src/lib/flow-envelope.js` | Typed `ok`/`fail`/`warn` envelope constructors; `output()` serialises to stdout and sets exit code |
-| guardrail | `src/lib/guardrail.js` | Loads and merges guardrail definitions from preset chain and project overrides; filters by phase |
-| i18n | `src/lib/i18n.js` | Multi-tier locale deep-merge with namespaced key lookup and `{{param}}` interpolation |
-| presets | `src/lib/presets.js` | Resolves preset parent chains; `resolveMultiChains()` supports array types for multi-stack projects |
+| Module | File Path | Responsibility |
+|---|---|---|
+| docs.js | `src/docs.js` | Documentation subcommand dispatcher; routes to scan, enrich, data, text, and other commands |
+| flow.js | `src/flow.js` | SDD flow subcommand dispatcher; routes via registry.js dispatch table |
+| scan.js | `src/docs/commands/scan.js` | Collects source files via DataSources, computes MD5 hashes, assigns stable IDs, writes `analysis.json` |
+| enrich.js | `src/docs/commands/enrich.js` | Reads `analysis.json`, calls AI in bounded batches via `mapWithConcurrency` to annotate each entry with summary, detail, chapter, and keywords |
+| data.js | `src/docs/commands/data.js` | Loads `analysis.json`, resolves `{{data}}` directives in chapter files using `createResolver()` and `resolveDataDirectives`; exports `populateFromAnalysis` |
+| text.js | `src/docs/commands/text.js` | Resolves `{{text}}` directives via AI; supports full and incremental rebuild via `detectChangedChapters` |
+| directive-parser.js | `src/docs/lib/directive-parser.js` | Parses `{{data}}` and `{{text}}` directive blocks in markdown; `resolveDataDirectives` replaces blocks in-place |
+| resolver-factory.js | `src/docs/lib/resolver-factory.js` | `createResolver()` loads preset chain via `resolveMultiChains`, instantiates DataSources, returns `resolve()` interface |
+| data-source.js | `src/docs/lib/data-source.js` | Base class for all DataSources; provides `toMarkdownTable`, `desc`, and `mergeDesc` helpers |
+| data-source-loader.js | `src/docs/lib/data-source-loader.js` | Dynamically imports `.js` files from a `data/` directory and calls `init(ctx)` on each default-export class instance |
+| scanner.js | `src/docs/lib/scanner.js` | `collectFiles`, `globToRegex`, `getFileStats`, `parseFile`, `findFiles` — core file traversal and parsing |
+| lang-factory.js | `src/docs/lib/lang-factory.js` | `EXT_MAP` mapping file extensions to language-specific handler modules (js, php, py, yaml) |
+| minify.js | `src/docs/lib/minify.js` | Unified dispatcher: resolves language handler then calls `handler.minify` or `extractEssential` |
+| template-merger.js | `src/docs/lib/template-merger.js` | Preset template inheritance engine: `buildLayers`, `resolveTemplates`, `mergeResolved` |
+| chapter-resolver.js | `src/docs/lib/chapter-resolver.js` | `buildCategoryMapFromDocs`, `mergeChapters` — maps analysis categories to chapter files |
+| command-context.js | `src/docs/lib/command-context.js` | `resolveCommandContext`, `getChapterFiles`, `loadFullAnalysis` — shared setup for docs commands |
+| concurrency.js | `src/docs/lib/concurrency.js` | `mapWithConcurrency` — bounded async concurrency pool for AI batch calls |
+| analysis-entry.js | `src/docs/lib/analysis-entry.js` | `AnalysisEntry` model, `ANALYSIS_META_KEYS`, `isEmptyEntry`, `buildSummary` |
+| registry.js | `src/flow/registry.js` | `FLOW_COMMANDS` dispatch table mapping nested keys (e.g. `get.check`, `run.gate`) to lazy-imported execute factories with pre/post hooks |
+| flow-envelope.js | `src/lib/flow-envelope.js` | `ok`/`fail`/`warn` constructors; `output()` serializes result as JSON to stdout and sets `process.exitCode` |
+| flow-state.js | `src/lib/flow-state.js` | `loadFlowState`, `saveFlowState`, `mutateFlowState`, `FLOW_STEPS`, `PHASE_MAP`, `derivePhase` — persistent SDD flow state management |
+| agent.js | `src/lib/agent.js` | `callAgent` (sync), `callAgentAsync` (spawn + retry), `resolveAgent`, `buildAgentInvocation`, `writeAgentContext` |
+| presets.js | `src/lib/presets.js` | `resolveChainSafe`, `resolveMultiChains`, `presetByLeaf` — preset chain resolution from leaf to base |
+| guardrail.js | `src/lib/guardrail.js` | `loadMergedGuardrails`, `filterByPhase`, `matchScope`, `hydrate` — merges preset and project guardrail overrides |
+| git-state.js | `src/lib/git-state.js` | `getWorktreeStatus`, `getCurrentBranch`, `getAheadCount`, `getLastCommit`, `isGhAvailable` |
+| i18n.js | `src/lib/i18n.js` | `createI18n`, `translate` — multi-tier locale loading with `deepMerge` |
+| lint.js | `src/lib/lint.js` | `validateLintGuardrails`, `getChangedFiles`, `runLintChecks`, `runLint` |
+| skills.js | `src/lib/skills.js` | `deploySkills` — resolves and writes SKILL.md templates to `.agents/skills/` and `.claude/skills/` |
 <!-- {{/text}} -->
 
 ### Module Dependencies
@@ -106,55 +117,116 @@ src/
 
 ```mermaid
 graph TD
-    CLI[sdd-forge.js] --> DOCS[docs.js]
-    CLI --> FLOW[flow.js]
+    subgraph EntryPoints["Entry Points"]
+        DOCS["docs.js"]
+        FLOW["flow.js"]
+    end
 
-    DOCS --> SCAN[docs/commands/scan.js]
-    DOCS --> ENRICH[docs/commands/enrich.js]
-    DOCS --> DATA[docs/commands/data.js]
-    DOCS --> TEXT[docs/commands/text.js]
+    subgraph DocsCommands["src/docs/commands/"]
+        SCAN["scan.js"]
+        ENRICH["enrich.js"]
+        DATA["data.js"]
+        TEXT["text.js"]
+    end
 
-    SCAN --> SCANNER[docs/lib/scanner.js]
-    SCAN --> DSL[docs/lib/data-source-loader.js]
-    SCAN --> PRESETS[lib/presets.js]
+    subgraph DocsLib["src/docs/lib/"]
+        DIRPARSER["directive-parser.js"]
+        RESFACT["resolver-factory.js"]
+        DATASRCLOADER["data-source-loader.js"]
+        DATASRC["data-source.js"]
+        SCANNER["scanner.js"]
+        LANGFACT["lang-factory.js"]
+        MINIFY["minify.js"]
+        TMPLMERGE["template-merger.js"]
+        CMDCTX["command-context.js"]
+        CONCUR["concurrency.js"]
+        ANAENTRY["analysis-entry.js"]
+    end
 
-    ENRICH --> AGENT[lib/agent.js]
-    ENRICH --> MINIFY[docs/lib/minify.js]
-    ENRICH --> CONCURRENCY[docs/lib/concurrency.js]
-    ENRICH --> CHAPRES[docs/lib/chapter-resolver.js]
+    subgraph DocsData["src/docs/data/"]
+        DSDOCS["docs.js"]
+        DSLANG["lang.js"]
+        DSPROJECT["project.js"]
+        DSAGENTS["agents.js"]
+        DSTEXT["text.js"]
+    end
 
-    DATA --> DIRPARSER[docs/lib/directive-parser.js]
-    DATA --> RESOLVER[docs/lib/resolver-factory.js]
-    DATA --> CMDCTX[docs/lib/command-context.js]
+    subgraph FlowRegistry["src/flow/"]
+        REGISTRY["registry.js"]
+        FLOWGET["get/*.js"]
+        FLOWRUN["run/*.js"]
+        FLOWSET["set/*.js"]
+    end
 
-    TEXT --> DIRPARSER
-    TEXT --> AGENT
-    TEXT --> TEXTPROMPTS[docs/lib/text-prompts.js]
+    subgraph Lib["src/lib/"]
+        AGENT["agent.js"]
+        ENVELOPE["flow-envelope.js"]
+        STATE["flow-state.js"]
+        GIT["git-state.js"]
+        GUARDRAIL["guardrail.js"]
+        PRESETS["presets.js"]
+        I18N["i18n.js"]
+        LINT["lint.js"]
+        PROCESS["process.js"]
+    end
+
+    DOCS --> SCAN
+    DOCS --> ENRICH
+    DOCS --> DATA
+    DOCS --> TEXT
+
+    FLOW --> REGISTRY
+    REGISTRY --> FLOWGET
+    REGISTRY --> FLOWRUN
+    REGISTRY --> FLOWSET
+
+    SCAN --> CMDCTX
+    SCAN --> SCANNER
+    SCAN --> LANGFACT
+    SCAN --> MINIFY
+    SCAN --> ANAENTRY
+    ENRICH --> CMDCTX
+    ENRICH --> CONCUR
+    ENRICH --> AGENT
+    DATA --> CMDCTX
+    DATA --> RESFACT
+    DATA --> DIRPARSER
     TEXT --> CMDCTX
+    TEXT --> DIRPARSER
+    TEXT --> CONCUR
+    TEXT --> AGENT
 
-    RESOLVER --> DSL
-    RESOLVER --> PRESETS
-    RESOLVER --> CONFIG[lib/config.js]
+    RESFACT --> PRESETS
+    RESFACT --> DATASRCLOADER
+    RESFACT --> TMPLMERGE
+    DATASRCLOADER --> DSDOCS
+    DATASRCLOADER --> DSLANG
+    DATASRCLOADER --> DSPROJECT
+    DATASRCLOADER --> DSAGENTS
+    DATASRCLOADER --> DSTEXT
+    DSDOCS --> DATASRC
+    DSLANG --> DATASRC
+    DSPROJECT --> DATASRC
+    DSAGENTS --> DATASRC
+    DSTEXT --> DATASRC
 
-    FLOW --> REGISTRY[flow/registry.js]
-    REGISTRY --> FLOWSTATE[lib/flow-state.js]
-    REGISTRY --> FLOWRUN[flow/run/*.js]
-    REGISTRY --> FLOWGET[flow/get/*.js]
-    REGISTRY --> FLOWSET[flow/set/*.js]
+    MINIFY --> LANGFACT
 
-    FLOWRUN --> AGENT
-    FLOWRUN --> FLOWSTATE
-    FLOWRUN --> ENVELOPE[lib/flow-envelope.js]
-    FLOWRUN --> GUARDRAIL[lib/guardrail.js]
-
-    FLOWGET --> FLOWSTATE
     FLOWGET --> ENVELOPE
-    FLOWSET --> FLOWSTATE
+    FLOWGET --> STATE
+    FLOWGET --> GIT
+    FLOWGET --> GUARDRAIL
+    FLOWRUN --> ENVELOPE
+    FLOWRUN --> STATE
+    FLOWRUN --> AGENT
+    FLOWRUN --> GIT
+    FLOWRUN --> LINT
     FLOWSET --> ENVELOPE
+    FLOWSET --> STATE
 
     GUARDRAIL --> PRESETS
-    GUARDRAIL --> CONFIG
-    AGENT --> CONFIG
+    LINT --> GIT
+    AGENT --> PROCESS
 ```
 <!-- {{/text}} -->
 
@@ -162,38 +234,46 @@ graph TD
 
 <!-- {{text({prompt: "Describe the inter-module data and control flow when running a representative command in numbered steps. Include the flow from entry point to final output.", mode: "deep"})}} -->
 
-The following describes the data and control flow for `sdd-forge build`, the primary documentation generation command:
-
-1. **Entry** — `sdd-forge.js` receives `build` as the subcommand, resolves `SDD_SOURCE_ROOT` and `SDD_WORK_ROOT` from environment variables, and delegates to `docs.js`.
-2. **scan** — `docs/commands/scan.js` calls `collectFiles()` to gather source files matching preset glob patterns. It loads DataSource modules via `loadDataSources()` from each preset in the chain, runs `parse()` on every file, computes MD5 hashes for change detection, assigns stable IDs by matching against any existing `analysis.json`, and writes the result to `.sdd-forge/output/analysis.json`.
-3. **enrich** — `docs/commands/enrich.js` reads `analysis.json`, calls `collectEntries()` to flatten categories, splits entries into token-limited batches via `splitIntoBatches()`, and sends each batch to the AI agent using `callAgentAsync()` with bounded concurrency from `mapWithConcurrency()`. The JSON response is repaired via `repairJson()`, validated against the known chapter list, and merged back into `analysis.json` incrementally, adding `summary`, `detail`, `chapter`, `role`, and `keywords` fields per entry.
-4. **init** — `docs/commands/init.js` reads the preset template hierarchy via `resolveTemplates()` in `template-merger.js`, merges parent and child chapter templates using block inheritance, and writes the resolved Markdown files into the `docs/` directory, skipping files that already exist.
-5. **data** — `docs/commands/data.js` creates a resolver via `createResolver()` in `resolver-factory.js`, which loads DataSource class instances from the preset chain. It then iterates each chapter file, calls `resolveDataDirectives()` from `directive-parser.js` to replace `{{data(...)}}` blocks with the output of the corresponding DataSource method, and writes changed files back to disk.
-6. **text** — `docs/commands/text.js` reads each chapter file, calls `parseDirectives()` to locate `{{text(...)}}` blocks, assembles enriched analysis context for the chapter via `getEnrichedContext()` (reading source files for deep-mode directives), constructs a batch prompt via `buildBatchPrompt()`, and sends it to the AI agent. The JSON response is applied to the file using `applyBatchJsonToFile()`, filling each directive block with generated prose.
-7. **Output** — All chapter files in `docs/` are now populated with structured data tables and AI-generated narrative text, ready for review or commit.
+1. `docs.js` receives the `data` subcommand and dynamically imports `src/docs/commands/data.js`.
+2. `data.js` calls `resolveCommandContext()` from `command-context.js`, which loads project config, resolves the preset chain via `presets.js` (`resolveMultiChains`), and determines chapter file paths via `getChapterFiles()`.
+3. `loadFullAnalysis()` (also from `command-context.js`) reads `analysis.json` from `.sdd-forge/output/` and parses it into `AnalysisEntry` objects using `analysis-entry.js`.
+4. `data.js` calls `createResolver()` from `resolver-factory.js`, which uses `data-source-loader.js` to dynamically import each `.js` file in the preset chain's `data/` directories and calls `init(ctx)` on each default-export DataSource instance (extending `data-source.js`).
+5. `createResolver()` also invokes `template-merger.js` (`buildLayers`, `resolveTemplates`, `mergeResolved`) to merge preset template definitions across the chain from leaf to base.
+6. For each chapter file, `data.js` reads the markdown content and passes it to `directive-parser.js` (`resolveDataDirectives`), which identifies each `{{data: <key>}}` block.
+7. For each directive key, `resolveDataDirectives` calls `resolve(key, analysisEntries)` on the resolver, which dispatches to the matching DataSource's method and returns rendered markdown (often via `toMarkdownTable` on the DataSource base class).
+8. `directive-parser.js` replaces the content between the directive tags in-place with the resolved markdown string.
+9. The updated chapter file content is written back to disk, completing the `{{data}}` population for that chapter.
+10. Steps 6–9 repeat for each chapter file; no AI calls are made — `data.js` is a purely deterministic, analysis-driven population step.
 <!-- {{/text}} -->
 
 ### Extension Points
 
 <!-- {{text({prompt: "Describe the locations that need changes and extension patterns when adding new commands or features. Derive from plugin points and dispatch registration patterns in the source code.", mode: "deep"})}} -->
 
-**Adding a new `{{data}}` method:**
-Add a public method to an existing DataSource class under `src/docs/data/` or create a new `.js` file in that directory. The `data-source-loader.js` module auto-discovers all `.js` files in `data/` directories and instantiates their default export class, making the new method available as `{{data("preset.sourceName.methodName")}}` in any chapter template. Preset-specific DataSources belong in `src/presets/<preset>/data/`.
+**Adding a new docs command**
+- Create `src/docs/commands/<name>.js` implementing a `main()` function.
+- Register the subcommand in `src/docs.js` dispatch logic (import and route the new command by name).
+- If the command needs shared project context, call `resolveCommandContext()` from `src/docs/lib/command-context.js`.
 
-**Adding a new docs subcommand:**
-Register the command name and script path in the `SCRIPTS` map inside `src/docs.js`, then create the handler file under `src/docs/commands/`. Export a `main(ctx)` function and call `runIfDirect()` at the bottom for standalone execution support.
+**Adding a new DataSource**
+- Create `src/docs/data/<name>.js` (or within a preset's `data/` directory) exporting a default class that extends `DataSource` from `src/docs/lib/data-source.js`.
+- Implement `init(ctx)` on the class; `data-source-loader.js` discovers and initializes it automatically by scanning the `data/` directory — no manual registration required.
+- The resolver key used in `{{data: <key>}}` directives must match the method or mapping exposed by the DataSource.
 
-**Adding a new flow step or command:**
-Declare the step ID in the `FLOW_STEPS` array in `src/lib/flow-state.js` and map it to a phase in `PHASE_MAP`. Register the command in the `FLOW_COMMANDS` object in `src/flow/registry.js` under the appropriate group (`get`, `set`, or `run`), providing an `execute` factory returning the module, plus optional `pre`, `post`, and `onError` lifecycle hooks. Create the handler file in `src/flow/get/`, `src/flow/run/`, or `src/flow/set/`; export an `execute(ctx)` function that calls `output()` from `flow-envelope.js` to emit structured results.
+**Adding a new flow command**
+- Create the handler module under `src/flow/get/`, `src/flow/run/`, or `src/flow/set/` depending on whether the command reads state, mutates flow execution, or writes state.
+- Register the command in `src/flow/registry.js` under `FLOW_COMMANDS` using the nested key convention (e.g. `run.mycommand`), providing a lazy `execute` factory and optional `pre`/`post` hooks via `stepPre`/`stepPost` wrappers.
+- The handler must use `ok`/`fail`/`warn` from `src/lib/flow-envelope.js` and call `output()` to serialize results; set `process.exitCode` rather than calling `process.exit()`.
 
-**Adding a new preset:**
-Create a directory under `src/presets/<name>/` containing a `preset.json` that declares the `parent` key and `chapters` ordering. Add DataSource files to the `data/` subdirectory and Markdown chapter templates to `templates/<lang>/`. The preset becomes available in `resolveChainSafe()` automatically via `presets.js`.
+**Adding a new preset**
+- Create a directory under `src/presets/<name>/` containing at minimum a `preset.json` with `parent` chain reference, a `chapters` array, and a `type` leaf name.
+- Add language-specific DataSources to `src/presets/<name>/data/` if needed; they are auto-discovered by `data-source-loader.js`.
+- Add guardrail rules to `.sdd-forge/guardrail.json` for project-level overrides, or embed them in the preset; `src/lib/guardrail.js` merges by ID with project overrides taking precedence.
+- Register the preset leaf name in `src/lib/presets.js` (`presetByLeaf`) if the auto-discovery path is not sufficient.
 
-**Adding guardrail rules:**
-Add entries to `guardrail.json` inside `src/presets/<preset>/templates/<lang>/` for preset-level rules, or to `.sdd-forge/guardrail.json` for project-level overrides. Each entry requires an `id`, `title`, `body`, and a `meta.phase` array selecting which pipeline phase enforces it. Lint-mode rules additionally carry a `meta.lint` regex string processed by `guardrail.js`.
-
-**Adding a language handler:**
-Create a module under `src/docs/lib/lang/` implementing `minify`, `parse`, `extractImports`, `extractExports`, and `extractEssential` as needed, then register the file extension(s) in the `EXT_MAP` in `src/docs/lib/lang-factory.js`.
+**Adding a new language handler**
+- Create `src/docs/lib/langs/<ext>.js` implementing `minify` and/or `extractEssential` exports.
+- Register the file extension mapping in `src/docs/lib/lang-factory.js` under `EXT_MAP`; `minify.js` dispatches to handlers via this map automatically.
 <!-- {{/text}} -->
 
 ---

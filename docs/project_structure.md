@@ -11,7 +11,7 @@
 
 <!-- {{text({prompt: "Write a 1-2 sentence overview of this chapter. Include the number of major directories and their roles."})}} -->
 
-The project structure is organized across three major directories: `src/docs/` (documentation generation commands, data sources, and libraries), `src/flow/` (Spec-Driven Development flow controllers and commands), and `src/lib/` (shared utility libraries used throughout the tool).
+The project source is organized into three major directories: `src/docs/` for documentation generation commands, data sources, and supporting libraries; `src/flow/` for Spec-Driven Development workflow orchestration; and `src/lib/` for shared utility libraries used across the entire codebase.
 <!-- {{/text}} -->
 
 ## Content
@@ -52,9 +52,9 @@ src/lib/    (lib)
 | Module | File Path | Responsibility |
 | --- | --- | --- |
 | cli | `src/lib/cli.js` | Provides core CLI utilities including repository root resolution, argument parsing, worktree detection, and timestamp formatting |
-| entrypoint | `src/lib/entrypoint.js` | Guards direct script execution versus module imports; wraps main functions with error handling and exit code management |
-| exit-codes | `src/lib/exit-codes.js` | Defines `EXIT_SUCCESS` and `EXIT_ERROR` constants to eliminate magic numbers across CLI commands and flow handlers |
-| presets | `src/lib/presets.js` | Discovers and registers all available presets from the filesystem; resolves inheritance chains via `parent` references and provides O(1) lookup utilities |
+| entrypoint | `src/lib/entrypoint.js` | Guards script entry points to distinguish direct execution from module imports, enabling scripts to serve as both CLI commands and importable modules |
+| exit-codes | `src/lib/exit-codes.js` | Defines `EXIT_SUCCESS` and `EXIT_ERROR` numeric constants to eliminate magic numbers across CLI commands and flow handlers |
+| presets | `src/lib/presets.js` | Discovers available presets from the filesystem, resolves inheritance chains via `parent` references, and provides O(1) lookup utilities used throughout the tool |
 <!-- {{/text}} -->
 
 ---
