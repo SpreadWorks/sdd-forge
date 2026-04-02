@@ -5,7 +5,6 @@
  * Execute finalization pipeline: commit -> merge -> retro -> sync -> cleanup -> record.
  */
 
-import fs from "fs";
 import { execFileSync } from "child_process";
 import { parseArgs, PKG_DIR } from "../../lib/cli.js";
 import { resolveWorktreePaths } from "../../lib/flow-state.js";
@@ -137,7 +136,7 @@ export async function execute(ctx) {
     }
   }
 
-  // Step 3: retro (spec retrospective — runs before cleanup so .active-flow and branch exist)
+  // Step 3: retro (spec retrospective — runs in worktree where feature branch diff is available)
   if (activeSteps.has(3)) {
     if (cli.dryRun) {
       results.retro = { status: "dry-run" };
@@ -148,21 +147,22 @@ export async function execute(ctx) {
       if (retroRes.ok) {
         let retroData;
         try { retroData = JSON.parse(retroRes.stdout); } catch (_) { retroData = null; }
-        // R1: Copy retro.json to main repo in worktree mode
+        // Second commit + merge: bring retro.json into main repo
         if (state.worktree && mainRepoPath) {
-          const specDir = path.dirname(state.spec);
-          const srcRetro = path.resolve(root, specDir, "retro.json");
-          const dstRetro = path.resolve(mainRepoPath, specDir, "retro.json");
           try {
-            if (fs.existsSync(srcRetro)) {
-              fs.mkdirSync(path.dirname(dstRetro), { recursive: true });
-              fs.copyFileSync(srcRetro, dstRetro);
+            execFileSync("git", ["add", "-A"], { cwd: root, encoding: "utf8" });
+            execFileSync("git", ["commit", "-m", "chore: add retro results"], { cwd: root, encoding: "utf8" });
+            execFileSync("git", ["-C", mainRepoPath, "merge", "--squash", state.featureBranch], { encoding: "utf8" });
+            execFileSync("git", ["-C", mainRepoPath, "commit", "-m", "chore: add retro results"], { encoding: "utf8" });
+          } catch (e) {
+            if (!/nothing to commit/i.test(String(e.stderr || e.message || ""))) {
+              results.retro = { status: "done", mergeNote: "retro second merge failed: " + String(e.stderr || e.message).slice(0, 200) };
             }
-          } catch (_) {
-            // non-critical: retro copy failure does not block pipeline
           }
         }
-        results.retro = { status: "done", ...(retroData?.data?.summary ? { summary: retroData.data.summary } : {}) };
+        if (!results.retro) {
+          results.retro = { status: "done", ...(retroData?.data?.summary ? { summary: retroData.data.summary } : {}) };
+        }
       } else {
         // retro failure does not block the pipeline
         results.retro = { status: "failed", message: (retroRes.stderr || retroRes.stdout || "").trim() };
@@ -229,36 +229,37 @@ export async function execute(ctx) {
     }
   }
 
-  // Step 6: report (R1, R2, R4, R5, R6, R7)
+  // Step 6: report — runs on main repo (after cleanup, worktree may be gone)
   if (activeSteps.has(6)) {
     if (cli.dryRun) {
       results.report = { status: "dry-run" };
     } else {
+      const reportRoot = (state.worktree && mainRepoPath) ? mainRepoPath : root;
       try {
-        // Collect implementation diff stat and commit messages
+        // Collect implementation diff stat and commit messages from main repo
         let implDiffStat = "";
         let commitMessages = [];
         try {
           implDiffStat = execFileSync(
             "git", ["diff", "--stat", `${state.baseBranch}...HEAD`],
-            { cwd: root, encoding: "utf8" },
+            { cwd: reportRoot, encoding: "utf8" },
           ).trim();
         } catch (_) {
-          // feature branch may not have diverged
+          // no diff available after squash merge
         }
         try {
           commitMessages = execFileSync(
             "git", ["log", "--format=%s", `${state.baseBranch}..HEAD`],
-            { cwd: root, encoding: "utf8" },
+            { cwd: reportRoot, encoding: "utf8" },
           ).trim().split("\n").filter(Boolean);
         } catch (_) {
           // no commits
         }
 
-        // Load redolog
+        // Load redolog from main repo (retro second merge brought it here)
         let redolog = { entries: [] };
         try {
-          redolog = loadRedoLog(root, state.spec);
+          redolog = loadRedoLog(reportRoot, state.spec);
         } catch (_) {
           // no redolog file
         }
@@ -271,21 +272,19 @@ export async function execute(ctx) {
           commitMessages,
         });
 
-        // R2: Save to main repo's specs/NNN/report.json
-        const reportRoot = (state.worktree && mainRepoPath) ? mainRepoPath : root;
+        // Save report.json to main repo
         try {
           saveReport(reportRoot, state.spec, report);
         } catch (e) {
-          // save failure is non-blocking, but report the error
           report.saveError = e.message;
         }
 
-        // R3: Commit retro.json + report.json on main repo
+        // Commit report.json on main repo
         try {
           const specDir = path.dirname(state.spec);
-          execFileSync("git", ["add", path.join(specDir, "retro.json"), path.join(specDir, "report.json")], { cwd: reportRoot, encoding: "utf8" });
+          execFileSync("git", ["add", path.join(specDir, "report.json")], { cwd: reportRoot, encoding: "utf8" });
           const specTitle = path.basename(path.dirname(state.spec));
-          execFileSync("git", ["commit", "-m", `chore: add retro and report for ${specTitle}`], { cwd: reportRoot, encoding: "utf8" });
+          execFileSync("git", ["commit", "-m", `chore: add report for ${specTitle}`], { cwd: reportRoot, encoding: "utf8" });
         } catch (e) {
           if (!/nothing to commit/i.test(String(e.stderr || e.message || ""))) {
             report.commitError = String(e.stderr || e.message);
@@ -294,7 +293,7 @@ export async function execute(ctx) {
 
         results.report = { status: "done", ...report };
       } catch (e) {
-        // R7: report errors do not block pipeline
+        // report errors do not block pipeline
         results.report = { status: "failed", message: String(e.message || e) };
       }
     }
