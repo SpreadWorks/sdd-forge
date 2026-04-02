@@ -271,3 +271,97 @@ describe("minify mode:essential", () => {
     assert.ok(result.includes("export class Foo"));
   });
 });
+
+// ---------------------------------------------------------------------------
+// Essential mode — PHP
+// ---------------------------------------------------------------------------
+
+describe("minify mode:essential (PHP)", () => {
+  const opts = { mode: "essential" };
+
+  it("keeps require/include statements", () => {
+    const code = '<?php\nrequire_once "vendor/autoload.php";\ninclude "config.php";\n$x = 1;\n';
+    const result = minify(code, "file.php", opts);
+    assert.ok(result.includes("require_once"));
+    assert.ok(result.includes("include"));
+  });
+
+  it("keeps use and namespace statements", () => {
+    const code = '<?php\nnamespace App\\Controller;\nuse Cake\\Controller\\Controller;\n$logger = new Logger();\n';
+    const result = minify(code, "file.php", opts);
+    assert.ok(result.includes("namespace App"));
+    assert.ok(result.includes("use Cake"));
+  });
+
+  it("keeps public/protected/private function declarations", () => {
+    const code = '<?php\npublic function index() {\n  $data = $this->Model->find("all");\n  return $data;\n}\nprotected function _helper() {\n  return true;\n}\n';
+    const result = minify(code, "file.php", opts);
+    assert.ok(result.includes("public function index()"));
+    assert.ok(result.includes("protected function _helper()"));
+    assert.ok(result.includes("return"));
+  });
+
+  it("keeps class declarations", () => {
+    const code = '<?php\nclass UsersController extends AppController {\n  public $uses = array();\n}\n';
+    const result = minify(code, "file.php", opts);
+    assert.ok(result.includes("class UsersController"));
+  });
+
+  it("keeps throw and new statements", () => {
+    const code = '<?php\nthrow new NotFoundException("Not found");\n$obj = new stdClass();\n';
+    const result = minify(code, "file.php", opts);
+    assert.ok(result.includes("throw new NotFoundException"));
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Essential mode — Python
+// ---------------------------------------------------------------------------
+
+describe("minify mode:essential (Python)", () => {
+  const opts = { mode: "essential" };
+
+  it("keeps import and from...import statements", () => {
+    const code = 'import os\nfrom pathlib import Path\nx = 1\n';
+    const result = minify(code, "file.py", opts);
+    assert.ok(result.includes("import os"));
+    assert.ok(result.includes("from pathlib import Path"));
+  });
+
+  it("keeps def and class declarations", () => {
+    const code = 'def process(data):\n    result = transform(data)\n    return result\n\nclass Handler:\n    pass\n';
+    const result = minify(code, "file.py", opts);
+    assert.ok(result.includes("def process(data)"));
+    assert.ok(result.includes("class Handler"));
+    assert.ok(result.includes("return result"));
+  });
+
+  it("keeps raise and yield statements", () => {
+    const code = 'def gen():\n    yield item\n    raise ValueError("bad")\n';
+    const result = minify(code, "file.py", opts);
+    assert.ok(result.includes("yield item"));
+    assert.ok(result.includes("raise ValueError"));
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Essential mode — fallback
+// ---------------------------------------------------------------------------
+
+describe("minify mode:essential (fallback)", () => {
+  const opts = { mode: "essential" };
+
+  it("falls back to regular minify for YAML", () => {
+    const code = '# comment\nkey: value\nnested:\n  child: 1\n';
+    const result = minify(code, "file.yaml", opts);
+    // YAML has no extractEssential, so falls back to regular minify (comment removal)
+    assert.ok(result.includes("key: value"));
+    assert.ok(result.includes("child: 1"));
+  });
+
+  it("falls back to regular minify for unknown extensions", () => {
+    const code = '// comment\nsome content here\n';
+    const result = minify(code, "file.unknown", opts);
+    assert.ok(result.includes("some content here"));
+  });
+});

@@ -1,6 +1,6 @@
 /**
  * JS/TS language handler.
- * Provides parse, minify, extractImports, extractExports.
+ * Provides parse, minify, extractImports, extractExports, extractEssential.
  */
 
 import path from "node:path";
@@ -138,4 +138,26 @@ export function extractExports(content) {
   }
 
   return exports;
+}
+
+// ---------------------------------------------------------------------------
+// Essential extraction
+// ---------------------------------------------------------------------------
+
+export function extractEssential(code) {
+  const lines = code.split("\n");
+  const kept = [];
+  for (const line of lines) {
+    const t = line.trim();
+    if (/^import\s/.test(t)) { kept.push(t); continue; }
+    if (/^export\s/.test(t)) { kept.push(t); continue; }
+    if (/^(const|let|var)\s+[A-Z_]+\s*=/.test(t)) { kept.push(t); continue; }
+    if (/^(async\s+)?function\s/.test(t)) { kept.push(t); continue; }
+    if (/^class\s/.test(t)) { kept.push(t); continue; }
+    if (/^\s*return\s/.test(line)) { kept.push(t); continue; }
+    if (/^\s*throw\s/.test(line)) { kept.push(t); continue; }
+    if (/^\s*(await\s|new\s)/.test(line)) { kept.push(t); continue; }
+    if (/\b(fs\.|path\.|JSON\.|process\.|child_process)/.test(t) && !/^\/\//.test(t)) { kept.push(t); continue; }
+  }
+  return kept.join("\n");
 }
