@@ -1,0 +1,24 @@
+{
+  "guardrails": [
+    {
+      "id": "no-synchronous-io-in-hot-paths",
+      "title": "No Synchronous I/O in Hot Paths",
+      "body": "Synchronous I/O (e.g. `readFileSync`) shall not be used inside loops or bulk-processing paths. Use streams or async APIs instead.",
+      "meta": {
+        "phase": [
+          "impl"
+        ]
+      }
+    },
+    {
+      "id": "validate-user-input-at-entry-point",
+      "title": "Validate User Input at Entry Point",
+      "body": "CLI arguments and stdin input shall be validated at the entry point. Do not pass unvalidated input to internal functions.",
+      "meta": {
+        "phase": [
+          "impl"
+        ]
+      }
+    }
+  ]
+}

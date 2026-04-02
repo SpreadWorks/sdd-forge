@@ -1,0 +1,113 @@
+{
+  "spec": "specs/124-guardrail-output-format/spec.md",
+  "baseBranch": "development",
+  "featureBranch": "feature/124-guardrail-output-format",
+  "steps": [
+    {
+      "id": "approach",
+      "status": "done"
+    },
+    {
+      "id": "branch",
+      "status": "done"
+    },
+    {
+      "id": "prepare-spec",
+      "status": "pending"
+    },
+    {
+      "id": "draft",
+      "status": "done"
+    },
+    {
+      "id": "spec",
+      "status": "done"
+    },
+    {
+      "id": "gate",
+      "status": "done"
+    },
+    {
+      "id": "approval",
+      "status": "done"
+    },
+    {
+      "id": "test",
+      "status": "done"
+    },
+    {
+      "id": "implement",
+      "status": "done"
+    },
+    {
+      "id": "review",
+      "status": "done"
+    },
+    {
+      "id": "finalize",
+      "status": "pending"
+    },
+    {
+      "id": "commit",
+      "status": "pending"
+    },
+    {
+      "id": "push",
+      "status": "pending"
+    },
+    {
+      "id": "merge",
+      "status": "pending"
+    },
+    {
+      "id": "pr-create",
+      "status": "pending"
+    },
+    {
+      "id": "branch-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "pr-merge",
+      "status": "pending"
+    },
+    {
+      "id": "sync-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "docs-update",
+      "status": "pending"
+    },
+    {
+      "id": "docs-review",
+      "status": "pending"
+    },
+    {
+      "id": "docs-commit",
+      "status": "pending"
+    }
+  ],
+  "requirements": [
+    {
+      "desc": "R1: Markdown 出力実装",
+      "status": "done"
+    },
+    {
+      "desc": "R2: --format json オプション",
+      "status": "done"
+    },
+    {
+      "desc": "R3: エラー出力",
+      "status": "done"
+    }
+  ],
+  "issue": 67,
+  "request": "flow get guardrail の出力形式整備: デフォルト=Markdown, --format json で JSON",
+  "worktree": true,
+  "metrics": {
+    "draft": {
+      "question": 3
+    }
+  }
+}

@@ -1,0 +1,33 @@
+{
+  "spec": "specs/125-add-test-txt/spec.md",
+  "date": "2026-04-02T10:35:44.049Z",
+  "requirements": [
+    {
+      "desc": "R1: test.txtをルートに作成",
+      "status": "done",
+      "note": "test.txt がプロジェクトルートに作成されており、内容は \"test\" の1行のみ。仕様通り。"
+    }
+  ],
+  "unplanned": [
+    {
+      "file": "specs/125-add-test-txt/flow.json",
+      "change": "SDD フロー管理ファイルの追加（フロー管理の一部として想定内）"
+    },
+    {
+      "file": "specs/125-add-test-txt/qa.md",
+      "change": "Q&A ドキュメントの追加（SDD フローの標準成果物）"
+    },
+    {
+      "file": "specs/125-add-test-txt/spec.md",
+      "change": "仕様書の追加（SDD フローの標準成果物）"
+    }
+  ],
+  "summary": {
+    "total": 1,
+    "done": 1,
+    "partial": 0,
+    "not_done": 0,
+    "rate": 1,
+    "notes": "R1 は完全に満たされている。test.txt がルートに存在し内容は \"test\" のみ。specs/ 配下のファイルは SDD フローの標準成果物であり、実質的な unplanned changes はない。"
+  }
+}

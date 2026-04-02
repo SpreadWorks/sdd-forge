@@ -395,6 +395,26 @@ export function mutateFlowState(workRoot, mutator) {
 }
 
 /**
+ * Increment a metric counter in flow.json.
+ * Silently no-ops if no active flow exists (e.g. outside a flow).
+ * @param {string} workRoot
+ * @param {string} phase - e.g. "plan", "impl"
+ * @param {string} counter - e.g. "docsRead", "srcRead", "redo"
+ */
+export function incrementMetric(workRoot, phase, counter) {
+  if (!phase) return;
+  try {
+    mutateFlowState(workRoot, (state) => {
+      if (!state.metrics) state.metrics = {};
+      if (!state.metrics[phase]) state.metrics[phase] = {};
+      state.metrics[phase][counter] = (state.metrics[phase][counter] || 0) + 1;
+    });
+  } catch (_) {
+    // flow.json may not exist outside a flow
+  }
+}
+
+/**
  * Update a single step's status.
  * @param {string} workRoot
  * @param {string} stepId
@@ -417,6 +437,19 @@ export function updateStepStatus(workRoot, stepId, status) {
 export function setRequirements(workRoot, descriptions) {
   mutateFlowState(workRoot, (state) => {
     state.requirements = descriptions.map((desc) => ({ desc, status: "pending" }));
+  });
+}
+
+/**
+ * Set test summary counts in flow.json under test.summary.
+ * Replaces existing test.summary entirely.
+ * @param {string} workRoot
+ * @param {{ [type: string]: number }} summary
+ */
+export function setTestSummary(workRoot, summary) {
+  mutateFlowState(workRoot, (state) => {
+    if (!state.test) state.test = {};
+    state.test.summary = summary;
   });
 }
 

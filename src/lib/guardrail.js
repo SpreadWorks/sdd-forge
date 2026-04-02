@@ -1,8 +1,7 @@
 /**
  * src/lib/guardrail.js
  *
- * Shared guardrail logic: parse, filter, match, and load guardrail articles.
- * Extracted from spec/commands/guardrail.js for use by flow commands.
+ * Shared guardrail logic: load, filter, match, and merge guardrails from JSON.
  */
 
 import fs from "fs";
@@ -11,149 +10,70 @@ import { loadConfig, sddDir } from "./config.js";
 import { resolveChainSafe } from "./presets.js";
 import { patternToRegex } from "../docs/lib/scanner.js";
 
-const GUARDRAIL_FILENAME = "guardrail.md";
+const GUARDRAIL_FILENAME = "guardrail.json";
 
-/** Default meta for articles without a {%guardrail%} block. */
-const DEFAULT_META = Object.freeze({ phase: ["spec"] });
-
-/** Regex for {%guardrail ...%} opening tag. */
-const GUARDRAIL_OPEN_RE = /^<!--\s*\{%guardrail\s+\{(.+?)\}%\}\s*-->$/;
-
-/** Regex for {%/guardrail%} closing tag. */
-const GUARDRAIL_CLOSE_RE = /^<!--\s*\{%\/guardrail%\}\s*-->$/;
+const DEFAULT_PHASE = Object.freeze(["spec"]);
 
 /**
- * Parse a guardrail directive value string into a meta object.
- * Supports: phase: [a, b], scope: [*.css], lint: /pattern/flags
+ * Parse a lint string (e.g. "/pattern/flags") into a RegExp.
  *
- * @param {string} inner - Content inside the outer braces
- * @returns {Object} Parsed meta object
+ * @param {string} lintStr - Lint pattern string
+ * @returns {RegExp}
  */
-function parseMetaValue(inner) {
-  const meta = {};
-
-  // Extract lint pattern first (contains special chars that break simple parsing)
-  const lintMatch = inner.match(/lint:\s*(\/(?:[^/\\]|\\.)+\/[gimsuy]*)/);
-  if (lintMatch) {
-    const raw = lintMatch[1];
-    const lastSlash = raw.lastIndexOf("/");
-    const pattern = raw.slice(1, lastSlash);
-    const flags = raw.slice(lastSlash + 1);
-    meta.lint = new RegExp(pattern, flags);
-    inner = inner.replace(lintMatch[0], "");
-  }
-
-  // Extract array fields: key: [val1, val2]
-  const arrayRe = /(\w+):\s*\[([^\]]*)\]/g;
-  let m;
-  while ((m = arrayRe.exec(inner)) !== null) {
-    const key = m[1];
-    const values = m[2].split(",").map((s) => s.trim()).filter(Boolean);
-    if (values.length > 0) meta[key] = values;
-  }
-
-  // Extract scalar fields: key: value (not already parsed)
-  const scalarRe = /(\w+):\s*([^,\]\[{}]+)/g;
-  while ((m = scalarRe.exec(inner)) !== null) {
-    const key = m[1];
-    if (key in meta) continue;
-    const value = m[2].trim();
-    if (value) meta[key] = value;
-  }
-
-  return meta;
+function parseLintString(lintStr) {
+  const lastSlash = lintStr.lastIndexOf("/");
+  const pattern = lintStr.slice(1, lastSlash);
+  const flags = lintStr.slice(lastSlash + 1);
+  return new RegExp(pattern, flags);
 }
 
 /**
- * Parse guardrail articles from markdown text.
- * Articles are found inside `{%guardrail%}` blocks.
- * Each block wraps `###` headings and their body text.
+ * Hydrate a raw guardrail entry from JSON:
+ * - Convert lint string to RegExp
+ * - Apply default phase
  *
- * @param {string} text - Markdown content of guardrail.md
- * @returns {{ title: string, body: string, meta: Object }[]}
+ * @param {Object} entry - Raw guardrail from JSON
+ * @returns {Object} Hydrated guardrail
  */
-export function parseGuardrailArticles(text) {
-  const lines = text.split("\n");
-  const articles = [];
-  let currentMeta = null;
-  let inGuardrail = false;
-  let current = null;
-
-  for (const line of lines) {
-    const trimmed = line.trim();
-
-    // Check for {%guardrail ...%} opening tag
-    const openMatch = trimmed.match(GUARDRAIL_OPEN_RE);
-    if (openMatch) {
-      currentMeta = parseMetaValue(openMatch[1]);
-      inGuardrail = true;
-      continue;
-    }
-
-    // Check for {%/guardrail%} closing tag
-    if (GUARDRAIL_CLOSE_RE.test(trimmed)) {
-      if (current) {
-        current.body = current.body.join("\n");
-        articles.push(current);
-        current = null;
-      }
-      inGuardrail = false;
-      currentMeta = null;
-      continue;
-    }
-
-    if (!inGuardrail) continue;
-
-    // Inside guardrail block: look for ### headings
-    const heading = line.match(/^###\s+(.+)/);
-    if (heading) {
-      if (current) {
-        current.body = current.body.join("\n");
-        articles.push(current);
-      }
-      current = { title: heading[1].trim(), body: [], meta: currentMeta ? { ...currentMeta } : null };
-      continue;
-    }
-
-    if (current) {
-      current.body.push(line);
-    }
+function hydrate(entry) {
+  const meta = { ...entry.meta };
+  if (!meta.phase || meta.phase.length === 0) {
+    meta.phase = [...DEFAULT_PHASE];
   }
-  if (current) {
-    current.body = current.body.join("\n");
-    articles.push(current);
+  if (typeof meta.lint === "string") {
+    meta.lint = parseLintString(meta.lint);
   }
-
-  // Apply defaults
-  for (const a of articles) {
-    if (!a.meta) {
-      a.meta = { ...DEFAULT_META };
-    } else {
-      if (!a.meta.phase) a.meta.phase = [...DEFAULT_META.phase];
-    }
-  }
-
-  return articles;
+  return { ...entry, meta };
 }
 
 /**
- * Filter articles by phase.
+ * Load guardrails from a JSON file.
  *
- * @param {{ title: string, body: string, meta: Object }[]} articles
+ * @param {string} filePath - Path to guardrail.json
+ * @returns {Object[]} Array of guardrail objects
+ */
+function loadGuardrailFile(filePath) {
+  const content = fs.readFileSync(filePath, "utf8");
+  const data = JSON.parse(content);
+  return (data.guardrails || []).map(hydrate);
+}
+
+/**
+ * Filter guardrails by phase.
+ *
+ * @param {Object[]} guardrails
  * @param {string} phase - "spec" | "impl" | "lint" | "draft"
- * @returns {{ title: string, body: string, meta: Object }[]}
+ * @returns {Object[]}
  */
-export function filterByPhase(articles, phase) {
-  return articles.filter((a) => {
-    const phases = a.meta?.phase || DEFAULT_META.phase;
+export function filterByPhase(guardrails, phase) {
+  return guardrails.filter((g) => {
+    const phases = g.meta?.phase || DEFAULT_PHASE;
     return phases.includes(phase);
   });
 }
 
 /**
  * Match a file path against scope glob patterns.
- * Uses basename matching: *.css matches any file ending in .css.
- * Supports * as wildcard (same as scanner.js patternToRegex).
  *
  * @param {string} filePath - File path to match
  * @param {string[]|undefined} scope - Glob patterns (undefined = match all)
@@ -167,28 +87,6 @@ export function matchScope(filePath, scope) {
     if (re.test(fileName) || re.test(filePath)) return true;
   }
   return false;
-}
-
-/**
- * Serialize an article back to markdown, preserving metadata.
- *
- * @param {{ title: string, body: string, meta: Object }} article
- * @returns {string}
- */
-export function serializeArticle(a) {
-  const fields = [];
-  if (a.meta?.phase) fields.push(`phase: [${a.meta.phase.join(", ")}]`);
-  if (a.meta?.scope) fields.push(`scope: [${a.meta.scope.join(", ")}]`);
-  if (a.meta?.lint) fields.push(`lint: ${a.meta.lint.toString()}`);
-
-  const metaStr = fields.length > 0 ? `{${fields.join(", ")}}` : "{phase: [spec]}";
-  const parts = [
-    `<!-- {%guardrail ${metaStr}%} -->`,
-    `### ${a.title}`,
-    a.body.trim(),
-    `<!-- {%/guardrail%} -->`,
-  ];
-  return parts.join("\n");
 }
 
 /**
@@ -211,94 +109,82 @@ function resolveGuardrailContext(root) {
 }
 
 /**
- * Read a guardrail template file with lang → en fallback.
+ * Read a guardrail JSON file with lang → en fallback.
  *
  * @param {string} dir - Preset directory
  * @param {string} lang - Locale code
- * @returns {string|null} File content or null
+ * @returns {Object[]|null} Array of guardrails or null
  */
 function readWithFallback(dir, lang) {
   const primary = path.join(dir, "templates", lang, GUARDRAIL_FILENAME);
-  if (fs.existsSync(primary)) return fs.readFileSync(primary, "utf8");
+  if (fs.existsSync(primary)) return loadGuardrailFile(primary);
   if (lang !== "en") {
     const fallback = path.join(dir, "templates", "en", GUARDRAIL_FILENAME);
-    if (fs.existsSync(fallback)) return fs.readFileSync(fallback, "utf8");
+    if (fs.existsSync(fallback)) return loadGuardrailFile(fallback);
   }
   return null;
 }
 
 /**
- * Load all guardrail articles from preset chain as parsed objects.
+ * Merge guardrails by id: child overrides parent completely.
+ *
+ * @param {Object[]} base - Existing guardrails
+ * @param {Object[]} additions - New guardrails to merge
+ * @returns {Object[]} Merged guardrails
+ */
+function mergeById(base, additions) {
+  const idIndex = new Map();
+  const result = [...base];
+  for (let i = 0; i < result.length; i++) {
+    if (result[i].id) idIndex.set(result[i].id, i);
+  }
+  for (const g of additions) {
+    if (g.id && idIndex.has(g.id)) {
+      result[idIndex.get(g.id)] = g;
+    } else {
+      if (g.id) idIndex.set(g.id, result.length);
+      result.push(g);
+    }
+  }
+  return result;
+}
+
+/**
+ * Load all guardrails from preset chain.
  *
  * @param {string} presetKey - Preset name
  * @param {string} lang - Locale code
- * @returns {{ title: string, body: string, meta: Object }[]}
+ * @returns {Object[]}
  */
-function loadPresetArticles(presetKey, lang) {
+function loadPresetGuardrails(presetKey, lang) {
   const chain = resolveChainSafe(presetKey);
-  const articles = [];
+  let guardrails = [];
   for (const preset of chain) {
-    const content = readWithFallback(preset.dir, lang);
-    if (!content) continue;
-    articles.push(...parseGuardrailArticles(content));
+    const loaded = readWithFallback(preset.dir, lang);
+    if (!loaded) continue;
+    guardrails = mergeById(guardrails, loaded);
   }
-  return articles;
+  return guardrails;
 }
 
 /**
- * Load and merge all guardrail articles from preset chain + project guardrail.
+ * Load and merge all guardrails from preset chain + project guardrail.
  *
  * @param {string} root - project root
- * @returns {{ title: string, body: string, meta: Object }[]} merged articles
+ * @returns {Object[]} merged guardrails
  */
-export function loadMergedArticles(root) {
+export function loadMergedGuardrails(root) {
   const { lang, presetKey } = resolveGuardrailContext(root);
 
-  // 1. Collect articles from preset chain (object-based, preserves metadata)
-  const articles = loadPresetArticles(presetKey, lang);
+  // 1. Collect guardrails from preset chain
+  let guardrails = loadPresetGuardrails(presetKey, lang);
 
-  // 2. Append articles from project guardrail (.sdd-forge/guardrail.md)
+  // 2. Merge guardrails from project (.sdd-forge/guardrail.json)
   const projectPath = path.join(sddDir(root), GUARDRAIL_FILENAME);
   if (fs.existsSync(projectPath)) {
-    const projectText = fs.readFileSync(projectPath, "utf8");
-    const projectArticles = parseGuardrailArticles(projectText);
-    const existingTitles = new Set(articles.map((a) => a.title.toLowerCase()));
-    for (const a of projectArticles) {
-      if (!existingTitles.has(a.title.toLowerCase())) {
-        articles.push(a);
-      }
-    }
+    const projectGuardrails = loadGuardrailFile(projectPath);
+    guardrails = mergeById(guardrails, projectGuardrails);
   }
 
-  return articles;
-}
-
-/**
- * Build template text for guardrail using parent chain, read and merge.
- * Used by `guardrail init` to create `.sdd-forge/guardrail.md`.
- *
- * @param {string} presetKey - Preset name (e.g. "cakephp2", "webapp")
- * @param {string} lang - Locale code
- * @returns {string} Merged guardrail template content
- */
-export function loadGuardrailTemplate(presetKey, lang) {
-  const chain = resolveChainSafe(presetKey);
-  const basePreset = chain.find((p) => p.key === "base");
-  const baseContent = basePreset ? readWithFallback(basePreset.dir, lang) : "";
-  if (!baseContent) return "";
-
-  // Collect articles from non-base presets, preserving metadata
-  const extraArticles = [];
-  for (const preset of chain) {
-    if (preset.key === "base") continue;
-    const content = readWithFallback(preset.dir, lang);
-    if (!content) continue;
-    extraArticles.push(...parseGuardrailArticles(content));
-  }
-
-  if (extraArticles.length > 0) {
-    const serialized = extraArticles.map(serializeArticle).join("\n\n");
-    return baseContent.trimEnd() + "\n\n" + serialized.trimEnd() + "\n";
-  }
-  return baseContent;
+  return guardrails;
 }

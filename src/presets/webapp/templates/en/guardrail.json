@@ -1,0 +1,58 @@
+{
+  "guardrails": [
+    {
+      "id": "security-impact-disclosure",
+      "title": "Security Impact Disclosure",
+      "body": "Changes affecting authentication, authorization, or input validation shall explicitly state their security impact in the spec.",
+      "meta": {
+        "phase": [
+          "draft",
+          "spec"
+        ]
+      }
+    },
+    {
+      "id": "migration-required-for-schema-changes",
+      "title": "Migration Required for Schema Changes",
+      "body": "Changes involving database schema modifications shall include a migration plan in the spec.",
+      "meta": {
+        "phase": [
+          "draft",
+          "spec"
+        ]
+      }
+    },
+    {
+      "id": "input-sanitization-required",
+      "title": "Input Sanitization Required",
+      "body": "Changes handling user input shall specify countermeasures against SQL injection, XSS, path traversal, and similar attacks in the spec.",
+      "meta": {
+        "phase": [
+          "spec",
+          "impl"
+        ]
+      }
+    },
+    {
+      "id": "no-reinventing-framework-features",
+      "title": "No Reinventing Framework Features",
+      "body": "When the framework provides a built-in feature, custom implementations of the same functionality are prohibited.",
+      "meta": {
+        "phase": [
+          "spec",
+          "impl"
+        ]
+      }
+    },
+    {
+      "id": "no-sensitive-data-in-logs",
+      "title": "No Sensitive Data in Logs",
+      "body": "Logs shall not contain passwords, tokens, or personally identifiable information. Sensitive data shall be masked or excluded.",
+      "meta": {
+        "phase": [
+          "impl"
+        ]
+      }
+    }
+  ]
+}

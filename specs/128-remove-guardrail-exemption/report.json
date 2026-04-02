@@ -1,0 +1,27 @@
+{
+  "data": {
+    "implementation": {
+      "diffStat": "specs/128-remove-guardrail-exemption/draft.md      |  23 +++++\n specs/128-remove-guardrail-exemption/flow.json     | 114 +++++++++++++++++++++\n specs/128-remove-guardrail-exemption/qa.md         |   9 ++\n specs/128-remove-guardrail-exemption/review.md     |  33 ++++++\n specs/128-remove-guardrail-exemption/spec.md       |  62 +++++++++++\n .../128-remove-guardrail-exemption/tests/README.md |  18 ++++\n .../tests/exemption-removed.test.js                |  36 +++++++\n src/flow/run/gate.js                               |  46 ++-------\n tests/unit/specs/commands/guardrail.test.js        |  59 ++---------\n 9 files changed, 312 insertions(+), 88 deletions(-)",
+      "commits": [
+        "feat: feature/128-remove-guardrail-exemption"
+      ]
+    },
+    "retro": null,
+    "redolog": {
+      "count": 0,
+      "entries": []
+    },
+    "metrics": {
+      "docsRead": 0,
+      "srcRead": 1,
+      "question": 0,
+      "redo": 0
+    },
+    "tests": null,
+    "sync": {
+      "status": "skipped",
+      "reason": "sync was skipped"
+    }
+  },
+  "text": "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n  Flow Report\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n  Implementation\n  ────────────────────────────────────────────────\n    feat: feature/128-remove-guardrail-exemption\n    9 files changed, 312 insertions(+), 88 deletions(-)\n\n  Retro\n  ────────────────────────────────────────────────\n    -\n\n  Metrics\n  ────────────────────────────────────────────────\n    docs 0  src 1  Q&A 0  redo 0\n\n  Sync\n  ────────────────────────────────────────────────\n    skipped: sync was skipped\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+}

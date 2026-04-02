@@ -1,0 +1,141 @@
+{
+  "spec": "specs/122-auto-generate-spec-work-report-on-finalize/spec.md",
+  "baseBranch": "development",
+  "featureBranch": "feature/122-auto-generate-spec-work-report-on-finalize",
+  "steps": [
+    {
+      "id": "approach",
+      "status": "done"
+    },
+    {
+      "id": "branch",
+      "status": "done"
+    },
+    {
+      "id": "prepare-spec",
+      "status": "done"
+    },
+    {
+      "id": "draft",
+      "status": "done"
+    },
+    {
+      "id": "spec",
+      "status": "done"
+    },
+    {
+      "id": "gate",
+      "status": "done"
+    },
+    {
+      "id": "approval",
+      "status": "done"
+    },
+    {
+      "id": "test",
+      "status": "done"
+    },
+    {
+      "id": "implement",
+      "status": "done"
+    },
+    {
+      "id": "review",
+      "status": "done"
+    },
+    {
+      "id": "finalize",
+      "status": "in_progress"
+    },
+    {
+      "id": "commit",
+      "status": "pending"
+    },
+    {
+      "id": "push",
+      "status": "pending"
+    },
+    {
+      "id": "merge",
+      "status": "pending"
+    },
+    {
+      "id": "pr-create",
+      "status": "pending"
+    },
+    {
+      "id": "branch-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "pr-merge",
+      "status": "pending"
+    },
+    {
+      "id": "sync-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "docs-update",
+      "status": "pending"
+    },
+    {
+      "id": "docs-review",
+      "status": "pending"
+    },
+    {
+      "id": "docs-commit",
+      "status": "pending"
+    }
+  ],
+  "requirements": [
+    {
+      "desc": "R1: STEP_MAP record→report変更",
+      "status": "done"
+    },
+    {
+      "desc": "R2: reportステップでデータ収集(implementation,retro,redolog,metrics,sync)",
+      "status": "done"
+    },
+    {
+      "desc": "R3: sync処理にgit diff情報取得を追加",
+      "status": "done"
+    },
+    {
+      "desc": "R4: report出力をdata(JSON)+text(整形テキスト)の2形式",
+      "status": "done"
+    },
+    {
+      "desc": "R5: specs/NNN/report.jsonに保存",
+      "status": "done"
+    },
+    {
+      "desc": "R6: dry-runでスキップ",
+      "status": "done"
+    },
+    {
+      "desc": "R7: エラー時もパイプライン非ブロック",
+      "status": "done"
+    }
+  ],
+  "worktree": true,
+  "notes": [
+    "approach: Q&A draft chosen",
+    "branch: worktree from development",
+    "draft: approved - report replaces record step, 7 items + sync, JSON + formatted text, save to report.json, test info out of scope (adb3)",
+    "review: auto-fix review selected (autoApprove)",
+    "review: 1 proposal (help-path isolation) - out of scope, skipped",
+    "finalize: autoApprove all mode"
+  ],
+  "request": "Issue #64: auto-generate spec work report on finalize",
+  "issue": 64,
+  "metrics": {
+    "draft": {
+      "question": 5
+    },
+    "plan": {
+      "redo": 1
+    }
+  },
+  "autoApprove": true
+}

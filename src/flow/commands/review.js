@@ -4,6 +4,9 @@
  *
  * sdd-forge flow review — code quality review after implementation.
  * Phases: confirm → draft (propose) → final (validate) → approve → apply
+ *
+ * --phase test: test sufficiency review before impl.
+ * Internal pipeline: generate test design → compare with test code → auto-fix loop.
  */
 
 import fs from "fs";
@@ -15,6 +18,9 @@ import { loadFlowState } from "../../lib/flow-state.js";
 import { loadAgentConfig, callAgent, resolveAgent, ensureAgentWorkDir } from "../../lib/agent.js";
 import { runSync } from "../../lib/process.js";
 import { EXIT_ERROR } from "../../lib/exit-codes.js";
+
+/** Maximum retry iterations for test review auto-fix loop. */
+const MAX_TEST_REVIEW_RETRIES = 3;
 
 /**
  * Resolve review target files from spec scope or git diff fallback.
@@ -186,11 +192,319 @@ function buildApplyPrompt(approved, diff) {
   ].join("\n");
 }
 
+// ---------------------------------------------------------------------------
+// Test review pipeline (--phase test)
+// ---------------------------------------------------------------------------
+
+/**
+ * Extract Requirements section from spec.md.
+ * @param {string} specText
+ * @returns {string}
+ */
+function extractRequirements(specText) {
+  const match = specText.match(/^## Requirements\n([\s\S]*?)(?=\n## )/m);
+  return match ? match[1].trim() : "";
+}
+
+/**
+ * Collect test files from spec-local tests/ and project tests/.
+ * Spec-local takes precedence for same-name files.
+ * @param {string} root
+ * @param {string} specDir - relative spec directory
+ * @returns {{ name: string, content: string, source: string }[]}
+ */
+function collectTestFiles(root, specDir) {
+  const files = new Map();
+
+  // Project-level tests/ (fallback)
+  const projectTestDir = path.resolve(root, "tests");
+  if (fs.existsSync(projectTestDir)) {
+    collectTestsRecursive(projectTestDir, projectTestDir, files, "tests/");
+  }
+
+  // Spec-local tests/ (takes precedence)
+  const specTestDir = path.resolve(root, specDir, "tests");
+  if (fs.existsSync(specTestDir)) {
+    collectTestsRecursive(specTestDir, specTestDir, files, `${specDir}/tests/`);
+  }
+
+  return Array.from(files.values());
+}
+
+/**
+ * Recursively collect test files from a directory.
+ */
+function collectTestsRecursive(dir, baseDir, fileMap, sourcePrefix) {
+  for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+    const full = path.join(dir, entry.name);
+    if (entry.isDirectory()) {
+      collectTestsRecursive(full, baseDir, fileMap, sourcePrefix);
+    } else if (/\.(test|spec)\.(js|ts|mjs)$/.test(entry.name)) {
+      const relName = path.relative(baseDir, full);
+      const content = fs.readFileSync(full, "utf8");
+      fileMap.set(relName, { name: relName, content, source: sourcePrefix + relName });
+    }
+  }
+}
+
+/**
+ * Build the test design generation prompt.
+ */
+function buildTestDesignPrompt(requirements) {
+  return [
+    "You are a test design expert. Based on the following spec requirements, generate a comprehensive test design.",
+    "List what should be tested, including:",
+    "- Happy path scenarios",
+    "- Edge cases and boundary conditions",
+    "- Error paths and failure modes",
+    "- Test type balance (unit / integration / acceptance)",
+    "",
+    "Output format:",
+    "### Test Design",
+    "For each test case:",
+    "- **TC-N: <title>**",
+    "  - Type: unit|integration|acceptance",
+    "  - Input: <description>",
+    "  - Expected: <description>",
+    "",
+    "## Requirements",
+    requirements,
+  ].join("\n");
+}
+
+/**
+ * Serialize test files into markdown code blocks for prompts.
+ */
+function formatTestFilesForPrompt(testFiles) {
+  if (testFiles.length === 0) return "(no test files found)";
+  return testFiles
+    .map((f) => `### ${f.source}\n\`\`\`\n${f.content}\n\`\`\``)
+    .join("\n\n");
+}
+
+/**
+ * Build the gap analysis prompt.
+ */
+function buildGapAnalysisPrompt(testDesign, testFiles) {
+  return [
+    "You are a test quality reviewer. Compare the test design against actual test code and identify gaps.",
+    "",
+    "For each gap, output:",
+    "### GAP-N: <title>",
+    "**Missing:** <what is not tested>",
+    "**Severity:** HIGH|MEDIUM|LOW",
+    "**Fix:** <concrete suggestion for test code>",
+    "",
+    "If all test cases are adequately covered, output: NO_GAPS",
+    "",
+    "## Test Design",
+    testDesign,
+    "",
+    "## Existing Test Code",
+    formatTestFilesForPrompt(testFiles),
+  ].join("\n");
+}
+
+/**
+ * Build the test fix prompt.
+ */
+function buildTestFixPrompt(gaps, testFiles) {
+  return [
+    "You are a test engineer. Fix the following gaps in the test code.",
+    "Output the complete updated test file(s) with fixes applied.",
+    "For each file, output:",
+    "### FILE: <path>",
+    "```",
+    "<complete file content>",
+    "```",
+    "",
+    "Only modify files that need changes. Do not add unrelated tests.",
+    "",
+    "## Gaps to fix",
+    gaps,
+    "",
+    "## Current test code",
+    formatTestFilesForPrompt(testFiles),
+  ].join("\n");
+}
+
+/**
+ * Parse gap analysis output.
+ * @param {string} text
+ * @returns {{ title: string, body: string }[]}
+ */
+function parseGaps(text) {
+  if (/NO_GAPS/i.test(text)) return [];
+  const gaps = [];
+  const parts = text.split(/^### GAP-/m).filter(Boolean);
+  for (const part of parts) {
+    const nlIdx = part.indexOf("\n");
+    const title = nlIdx >= 0 ? part.slice(0, nlIdx).trim() : part.trim();
+    const body = nlIdx >= 0 ? part.slice(nlIdx + 1).trim() : "";
+    gaps.push({ title, body });
+  }
+  return gaps;
+}
+
+/**
+ * Parse file fix output and apply to disk.
+ * @param {string} text - AI output with ### FILE: <path> blocks
+ * @param {string} root
+ * @returns {string[]} paths of files written
+ */
+function applyTestFixes(text, root) {
+  const written = [];
+  const fileParts = text.split(/^### FILE:\s*/m).filter(Boolean);
+  for (const part of fileParts) {
+    const nlIdx = part.indexOf("\n");
+    if (nlIdx < 0) continue;
+    const filePath = part.slice(0, nlIdx).trim();
+    const codeMatch = part.match(/```(?:\w*)\n([\s\S]*?)```/);
+    if (!codeMatch) continue;
+    const absPath = path.resolve(root, filePath);
+    const dir = path.dirname(absPath);
+    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+    fs.writeFileSync(absPath, codeMatch[1]);
+    written.push(filePath);
+  }
+  return written;
+}
+
+/**
+ * Format test-review.md content.
+ */
+function formatTestReviewMd(testDesign, gapHistory, finalVerdict, remainingGaps) {
+  const lines = ["# Test Review Results", ""];
+  lines.push("## Test Design");
+  lines.push("See [tests/spec.md](tests/spec.md) for the full test design.");
+  lines.push("");
+  lines.push("## Gap Analysis");
+  for (let i = 0; i < gapHistory.length; i++) {
+    if (gapHistory.length > 1) lines.push(`### Iteration ${i + 1}`);
+    lines.push(gapHistory[i]);
+    lines.push("");
+  }
+  lines.push(`## Verdict: ${finalVerdict}`);
+  if (finalVerdict === "FAIL" && remainingGaps.length > 0) {
+    lines.push("");
+    lines.push("### Remaining Gaps");
+    for (const g of remainingGaps) {
+      lines.push(`- ${g.title}`);
+      lines.push(`  ${g.body}`);
+    }
+  }
+  return lines.join("\n");
+}
+
+/**
+ * Run the test review pipeline.
+ */
+async function runTestReview(root, flow, config, dryRun) {
+  const specDir = path.dirname(flow.spec);
+  const specPath = path.resolve(root, flow.spec);
+
+  if (!fs.existsSync(specPath)) {
+    console.error("Error: spec.md not found");
+    process.exit(EXIT_ERROR);
+  }
+
+  const specText = fs.readFileSync(specPath, "utf8");
+  const requirements = extractRequirements(specText);
+  if (!requirements) {
+    console.error("Error: no Requirements section found in spec.md");
+    process.exit(EXIT_ERROR);
+  }
+
+  const agent = loadAgentConfig(config, "flow.review.test");
+  ensureAgentWorkDir(agent, root);
+
+  // Step 1: Generate test design
+  console.error("  [test-review] Generating test design...");
+  const testDesign = await callAgent(
+    agent,
+    buildTestDesignPrompt(requirements),
+    undefined,
+    root,
+    { systemPrompt: "You are a test design expert. Output a structured test design." },
+  );
+  // Save test design as tests/spec.md
+  const testsDir = path.resolve(root, specDir, "tests");
+  if (!fs.existsSync(testsDir)) fs.mkdirSync(testsDir, { recursive: true });
+  const testSpecPath = path.join(testsDir, "spec.md");
+  fs.writeFileSync(testSpecPath, `# Test Design\n\n${testDesign}\n`);
+  console.error(`  [test-review] Test design saved to ${path.relative(root, testSpecPath)}`);
+
+  // Step 2-3: Compare and retry loop
+  const gapHistory = [];
+  let finalGaps = [];
+  let testFiles = collectTestFiles(root, specDir);
+
+  for (let attempt = 0; attempt < MAX_TEST_REVIEW_RETRIES; attempt++) {
+    console.error(`  [test-review] Gap analysis (attempt ${attempt + 1}/${MAX_TEST_REVIEW_RETRIES})...`);
+    const gapResult = await callAgent(
+      agent,
+      buildGapAnalysisPrompt(testDesign, testFiles),
+      undefined,
+      root,
+      { systemPrompt: "You are a test quality reviewer. Identify gaps between test design and test code." },
+    );
+    gapHistory.push(gapResult);
+
+    const gaps = parseGaps(gapResult);
+    if (gaps.length === 0) {
+      console.error("  [test-review] No gaps found. PASS.");
+      finalGaps = [];
+      break;
+    }
+
+    console.error(`  [test-review] ${gaps.length} gap(s) found.`);
+    finalGaps = gaps;
+
+    if (dryRun) {
+      console.error("  [test-review] (dry-run: skipping auto-fix)");
+      break;
+    }
+
+    if (attempt < MAX_TEST_REVIEW_RETRIES - 1) {
+      console.error("  [test-review] Applying fixes...");
+      const fixResult = await callAgent(
+        agent,
+        buildTestFixPrompt(gapResult, testFiles),
+        undefined,
+        root,
+        { systemPrompt: "You are a test engineer. Fix test gaps by writing complete updated test files." },
+      );
+      const written = applyTestFixes(fixResult, root);
+      if (written.length > 0) {
+        console.error(`  [test-review] Fixed ${written.length} file(s): ${written.join(", ")}`);
+      } else {
+        console.error("  [test-review] No files were updated by fix attempt.");
+      }
+      // Reload test files for next comparison
+      testFiles = collectTestFiles(root, specDir);
+    }
+  }
+
+  const verdict = finalGaps.length === 0 ? "PASS" : "FAIL";
+  const testReviewPath = path.join(path.resolve(root, specDir), "test-review.md");
+  fs.writeFileSync(testReviewPath, formatTestReviewMd(testDesign, gapHistory, verdict, finalGaps));
+  console.error(`  [test-review] Results saved to ${path.relative(root, testReviewPath)}`);
+
+  if (verdict === "PASS") {
+    console.log("Test review PASS. All test cases are adequately covered.");
+  } else {
+    console.log(`Test review FAIL. ${finalGaps.length} gap(s) remaining after ${MAX_TEST_REVIEW_RETRIES} attempts.`);
+    console.error(`  [test-review] verdict=FAIL gaps=${finalGaps.length}`);
+    process.exit(EXIT_ERROR);
+  }
+}
+
 async function main() {
   const root = repoRoot(import.meta.url);
   const cli = parseArgs(process.argv.slice(2), {
     flags: ["--dry-run", "--skip-confirm"],
-    defaults: { dryRun: false, skipConfirm: false },
+    options: ["--phase"],
+    defaults: { dryRun: false, skipConfirm: false, phase: null },
   });
 
   if (cli.help) {
@@ -198,10 +512,16 @@ async function main() {
       "Usage: sdd-forge flow review [options]",
       "",
       "Options:",
+      "  --phase <type>   Review phase: 'test' for test sufficiency review",
       "  --dry-run        Show proposals without applying",
       "  --skip-confirm   Skip initial confirmation prompt",
     ].join("\n"));
     return;
+  }
+
+  if (cli.phase && cli.phase !== "test") {
+    console.error(`Error: unknown phase '${cli.phase}'. Supported: test`);
+    process.exit(EXIT_ERROR);
   }
 
   const flow = loadFlowState(root);
@@ -216,6 +536,12 @@ async function main() {
   } catch (_) {
     console.error("Error: failed to load config.json");
     process.exit(EXIT_ERROR);
+  }
+
+  // Test review pipeline
+  if (cli.phase === "test") {
+    await runTestReview(root, flow, config, cli.dryRun);
+    return;
   }
 
   // Resolve target diff
@@ -307,6 +633,10 @@ async function main() {
   console.log("Review the proposals above and in review.md.");
 }
 
-export { main, parseProposals, mergeVerdicts, formatReviewMd, resolveReviewTarget };
+export {
+  main, parseProposals, mergeVerdicts, formatReviewMd, resolveReviewTarget,
+  MAX_TEST_REVIEW_RETRIES, extractRequirements, collectTestFiles, parseGaps,
+  applyTestFixes, formatTestReviewMd,
+};
 
 runIfDirect(import.meta.url, main);

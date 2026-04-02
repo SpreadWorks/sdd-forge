@@ -69,14 +69,23 @@ function resolveCtx(requiresFlow) {
 }
 
 // ---------------------------------------------------------------------------
-// Run a registry entry: before → execute → after
+// Run a registry entry: pre → execute → post/onError → finally
 // ---------------------------------------------------------------------------
 
 async function runEntry(entry, ctx) {
-  if (entry.before) entry.before(ctx);
-  const mod = await entry.execute();
-  const result = await mod.execute(ctx);
-  if (entry.after) entry.after(ctx, result);
+  const isHelp = ctx.args?.includes("-h") || ctx.args?.includes("--help");
+  if (!isHelp && entry.pre) entry.pre(ctx);
+  try {
+    const mod = await entry.execute();
+    const result = await mod.execute(ctx);
+    if (result && !isHelp) output(result);
+    if (!isHelp && entry.post) entry.post(ctx, result);
+  } catch (err) {
+    if (entry.onError) entry.onError(ctx, err);
+    throw err;
+  } finally {
+    if (entry.finally) entry.finally(ctx);
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -125,7 +134,8 @@ async function dispatch() {
     process.exit(EXIT_ERROR);
   }
 
-  const requiresFlow = entry.requiresFlow !== false;
+  const isHelp = cmdArgs.includes("-h") || cmdArgs.includes("--help");
+  const requiresFlow = !isHelp && entry.requiresFlow !== false;
   const ctx = resolveCtx(requiresFlow);
   ctx.args = cmdArgs;
 

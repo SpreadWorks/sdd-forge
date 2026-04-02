@@ -1,0 +1,72 @@
+{
+  "spec": "specs/127-redesign-finalize-flow/spec.md",
+  "date": "2026-04-02T14:22:23.773Z",
+  "requirements": [
+    {
+      "desc": "R1: ステップ順序変更 commit(+retro+report)→merge→sync→cleanup",
+      "status": "done",
+      "note": "STEP_MAP is now {1:commit, 2:merge, 3:sync, 4:cleanup}. retro and report run as post-commit operations within step 1. Pipeline order matches spec."
+    },
+    {
+      "desc": "R2: 関数呼び出し化 merge/retro/report",
+      "status": "done",
+      "note": "finalize.js now imports merge.js main() and retro.js execute() directly instead of runSync. report uses imported generateReport/saveReport. No subprocess spawning for these three."
+    },
+    {
+      "desc": "R3: ctx にパス情報追加 worktreePath/mainRepoPath",
+      "status": "done",
+      "note": "resolveWorktreePaths called once at line ~122, both worktreePath and mainRepoPath destructured and passed to merge main() and executeCleanup()."
+    },
+    {
+      "desc": "R4: cleanup 統合 finalize.jsに統合",
+      "status": "done",
+      "note": "cleanup.js deleted from src/flow/commands/. executeCleanup() function inlined in finalize.js handling spec-only, worktree, and branch modes. clearFlowState called directly."
+    },
+    {
+      "desc": "R5: merge.js runIfDirect 削除",
+      "status": "done",
+      "note": "runIfDirect import removed, CLI arg parsing removed, shebang removed. main(ctx) accepts ctx object and is exported. No more standalone execution support."
+    },
+    {
+      "desc": "R6: report.js registry 登録",
+      "status": "done",
+      "note": "src/flow/run/report.js created with execute(ctx). registry.js updated with flow.run.report entry pointing to it."
+    },
+    {
+      "desc": "R7: SKILL.md 更新",
+      "status": "done",
+      "note": "SKILL.md updated with 4-step description (commit+retro+report, merge, sync, cleanup). Old 6-step references replaced. Step numbers updated throughout."
+    },
+    {
+      "desc": "R8: 画面表示 report+sync結果",
+      "status": "done",
+      "note": "finalize.js outputs results JSON to stdout via output(). results object contains report data and sync diffStat/diffSummary. SKILL.md instructs displaying sync.diffSummary. Sync skip status included when PR route."
+    }
+  ],
+  "unplanned": [
+    {
+      "file": "tests/e2e/flow/commands/cleanup.test.js",
+      "change": "Deleted cleanup.test.js — expected consequence of R4 (cleanup.js removal) but not explicitly listed as a requirement"
+    },
+    {
+      "file": "tests/e2e/flow/commands/merge.test.js",
+      "change": "Deleted merge.test.js and merge-pr.test.js — tests relied on CLI entrypoint (--dry-run) which was removed by R5. No replacement tests for the new function-call interface"
+    },
+    {
+      "file": "tests/unit/flow/removed-commands.test.js",
+      "change": "Relaxed regex from /unknown action/i to /unknown (action|key)/i — adapts to changed error message format"
+    },
+    {
+      "file": "specs/127-redesign-finalize-flow/",
+      "change": "Spec artifacts (draft.md, flow.json, qa.md, review.md, spec.md, tests/) added — standard SDD flow output, not a code change"
+    }
+  ],
+  "summary": {
+    "total": 8,
+    "done": 8,
+    "partial": 0,
+    "not_done": 0,
+    "rate": 1,
+    "notes": "All 8 requirements are fully satisfied. The diff cleanly implements the finalize pipeline redesign: step reordering, function call migration, ctx path injection, cleanup inlining, merge.js simplification, report registry registration, SKILL.md update, and combined result output. The deleted test files for merge and cleanup are a natural consequence of removing CLI entrypoints but represent a test coverage gap for the new function-call interface — the spec tests partially cover this via static analysis but not runtime behavior."
+  }
+}

@@ -44,11 +44,17 @@ Available status values: `pending`, `in_progress`, `done`, `skipped`
 3. **If "all"** (Option 1):
    - Run `sdd-forge flow run finalize --mode all`.
    - Merge strategy is auto-detected: `commands.gh=enable` AND `gh` available → PR, else squash merge.
+   - The pipeline executes 4 steps:
+     - **Step 1 (commit)**: Commits implementation changes. After commit, retro (AI evaluation) and report (report.json) are automatically generated as post-commit operations.
+     - **Step 2 (merge)**: Squash merge or PR creation.
+     - **Step 3 (sync)**: Docs build on main repo after merge (skipped for PR route).
+     - **Step 4 (cleanup)**: Worktree/branch deletion and flow state cleanup.
    - Display the JSON result to the user.
    - If the result shows sync was skipped (PR route), display the reminder from step 5.
 
 4. **If "select"** (Option 2):
    - Run `sdd-forge flow get prompt finalize.steps` and present the step choices. Wait for user selection.
+   - Available steps: 1=commit(+retro+report), 2=merge, 3=sync, 4=cleanup.
    - If the user selected the merge step (2), run `sdd-forge flow get prompt finalize.merge-strategy` and present the choices.
    - Run `sdd-forge flow run finalize --mode select --steps <selected> [--merge-strategy <choice>]`.
    - Display the JSON result to the user.
@@ -59,17 +65,15 @@ Available status values: `pending`, `in_progress`, `done`, `skipped`
      PR マージ後に以下を実行してください:
      - ドキュメントの同期: sdd-forge build または /sdd-forge.flow-sync
      ```
-
-6. Run spec retrospective (after finalize).
-   - Run `sdd-forge flow run retro --force`.
-   - If `ok: true`: display the summary (rate, done/partial/not_done counts).
-   - If `ok: false`: display the error to the user and continue (retro failure does not block).
+   - If the result includes `steps.retro`, display the retro summary or failure message. Retro runs automatically as part of the commit step (step 1) — no separate call is needed.
+   - **MUST: If `steps.report.text` exists in the result, display it as-is.** The report text is pre-formatted by the command — do not reformat, summarize, or interpret it. Just output the text directly.
+   - Sync result (if available) should also be displayed: show `steps.sync.diffSummary` for the list of changed docs files.
 
 ## Worktree Mode
 
 <!-- include("@templates/partials/worktree-mode.md") -->
 - `sdd-forge flow run finalize` handles worktree detection, merge, and cleanup internally.
-- Docs sync (step 3) runs on the main repository after merge, before worktree cleanup.
+- Docs sync (step 3) runs on the main repository after merge, before worktree cleanup (step 4).
 - **MUST: Do NOT run `sdd-forge flow run finalize` in background.** Run it in the foreground and wait for it to complete before proceeding.
 - **MUST: After `sdd-forge flow run finalize` completes in worktree mode**, the worktree directory is deleted by cleanup, invalidating the shell's cwd. Immediately run `cd <mainRepoPath>` to restore a valid working directory. Get `mainRepoPath` from `sdd-forge flow get resolve-context` (run this BEFORE finalize).
 
@@ -77,6 +81,7 @@ Available status values: `pending`, `in_progress`, `done`, `skipped`
 
 - Do not run `sdd-forge flow run finalize` if resolve-context reports `dirty: true` and commit step is not included.
 - Do not proceed to next step without user confirmation.
+- **NEVER chain or background `sdd-forge` commands.** Each `sdd-forge` command must be run as a separate, foreground Bash invocation. Do not use `&&`, `||`, `;`, pipes, or `run_in_background`. Every command's result determines the next action, so it must complete and be read before proceeding.
 
 **autoApprove exception:** When `autoApprove: true`, the rule "do not proceed to next step without user confirmation" does NOT apply. All other hard stops remain in effect.
 
@@ -94,6 +99,6 @@ sdd-forge flow get resolve-context
 sdd-forge flow get prompt <kind>
 sdd-forge flow set step <id> <val>
 sdd-forge flow set note "<text>"
-sdd-forge flow run retro [--force] [--dry-run]
-sdd-forge flow run finalize --mode all|select [--steps N,N] [--merge-strategy squash|pr]
+sdd-forge flow run finalize --mode all|select [--steps 1,2,3,4] [--merge-strategy squash|pr]
+sdd-forge flow run report [--dry-run]
 ```

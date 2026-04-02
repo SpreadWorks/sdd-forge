@@ -19,14 +19,14 @@
 <!-- {{data("base.structure.tree")}} -->
 ```
 src/    (cli, controller)
-src/docs/commands/    (cli)
+src/docs/commands/    (cli, controller)
 src/docs/data/    (model)
 src/docs/lib/    (lib)
 src/docs/lib/lang/    (lib)
-src/flow/    (controller)
-src/flow/commands/    (cli)
-src/flow/get/    (lib, cli)
-src/flow/run/    (cli, lib)
+src/flow/    (lib)
+src/flow/commands/    (controller, lib, cli)
+src/flow/get/    (lib, controller, cli)
+src/flow/run/    (controller, lib, cli)
 src/flow/set/    (cli, lib)
 src/lib/    (lib)
 ```
@@ -37,8 +37,8 @@ src/lib/    (lib)
 
 | ディレクトリ | ファイル数 | 役割 |
 | --- | --- | --- |
-| src/docs | 40 | cli, model, lib |
-| src/flow | 29 | cli, lib, controller |
+| src/docs | 40 | cli, controller, model, lib |
+| src/flow | 31 | controller, lib, cli |
 | src/lib | 20 | lib |
 | src | 7 | cli, controller |
 <!-- {{/data}} -->

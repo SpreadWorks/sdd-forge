@@ -1,0 +1,117 @@
+{
+  "spec": "specs/120-fix-retro-execution-order-in-finalize/spec.md",
+  "baseBranch": "development",
+  "featureBranch": "feature/120-fix-retro-execution-order-in-finalize",
+  "steps": [
+    {
+      "id": "approach",
+      "status": "done"
+    },
+    {
+      "id": "branch",
+      "status": "done"
+    },
+    {
+      "id": "prepare-spec",
+      "status": "done"
+    },
+    {
+      "id": "draft",
+      "status": "skipped"
+    },
+    {
+      "id": "spec",
+      "status": "done"
+    },
+    {
+      "id": "gate",
+      "status": "done"
+    },
+    {
+      "id": "approval",
+      "status": "done"
+    },
+    {
+      "id": "test",
+      "status": "done"
+    },
+    {
+      "id": "implement",
+      "status": "done"
+    },
+    {
+      "id": "review",
+      "status": "done"
+    },
+    {
+      "id": "finalize",
+      "status": "in_progress"
+    },
+    {
+      "id": "commit",
+      "status": "pending"
+    },
+    {
+      "id": "push",
+      "status": "pending"
+    },
+    {
+      "id": "merge",
+      "status": "pending"
+    },
+    {
+      "id": "pr-create",
+      "status": "pending"
+    },
+    {
+      "id": "branch-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "pr-merge",
+      "status": "pending"
+    },
+    {
+      "id": "sync-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "docs-update",
+      "status": "pending"
+    },
+    {
+      "id": "docs-review",
+      "status": "pending"
+    },
+    {
+      "id": "docs-commit",
+      "status": "pending"
+    }
+  ],
+  "requirements": [
+    {
+      "desc": "R1: STEP_MAP に retro を追加",
+      "status": "done"
+    },
+    {
+      "desc": "R2: retro ステップの実装",
+      "status": "done"
+    },
+    {
+      "desc": "R3: スキルテンプレート更新",
+      "status": "done"
+    },
+    {
+      "desc": "R4: prompt 定義更新",
+      "status": "done"
+    }
+  ],
+  "issue": 61,
+  "worktree": true,
+  "request": "Issue #61: retro が finalize の cleanup 後に実行できないバグ。finalize の実行順序を commit→merge→retro→cleanup→record に変更",
+  "notes": [
+    "approach: 仕様書を直接作成",
+    "finalize: autoApprove all mode, squash merge"
+  ],
+  "autoApprove": true
+}

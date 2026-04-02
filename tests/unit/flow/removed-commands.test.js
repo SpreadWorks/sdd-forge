@@ -18,7 +18,7 @@ describe("removed flow run commands", () => {
       assert.fail("should exit non-zero");
     } catch (err) {
       const out = `${err.stdout || ""}${err.stderr || ""}`;
-      assert.match(out, /unknown action/i);
+      assert.match(out, /unknown (action|key)/i);
     }
   });
 
@@ -28,7 +28,7 @@ describe("removed flow run commands", () => {
       assert.fail("should exit non-zero");
     } catch (err) {
       const out = `${err.stdout || ""}${err.stderr || ""}`;
-      assert.match(out, /unknown action/i);
+      assert.match(out, /unknown (action|key)/i);
     }
   });
 

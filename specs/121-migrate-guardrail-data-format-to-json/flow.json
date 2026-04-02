@@ -1,0 +1,137 @@
+{
+  "spec": "specs/121-migrate-guardrail-data-format-to-json/spec.md",
+  "baseBranch": "development",
+  "featureBranch": "feature/121-migrate-guardrail-data-format-to-json",
+  "steps": [
+    {
+      "id": "approach",
+      "status": "done"
+    },
+    {
+      "id": "branch",
+      "status": "done"
+    },
+    {
+      "id": "prepare-spec",
+      "status": "done"
+    },
+    {
+      "id": "draft",
+      "status": "done"
+    },
+    {
+      "id": "spec",
+      "status": "done"
+    },
+    {
+      "id": "gate",
+      "status": "in_progress"
+    },
+    {
+      "id": "approval",
+      "status": "done"
+    },
+    {
+      "id": "test",
+      "status": "done"
+    },
+    {
+      "id": "implement",
+      "status": "done"
+    },
+    {
+      "id": "review",
+      "status": "done"
+    },
+    {
+      "id": "finalize",
+      "status": "done"
+    },
+    {
+      "id": "commit",
+      "status": "pending"
+    },
+    {
+      "id": "push",
+      "status": "pending"
+    },
+    {
+      "id": "merge",
+      "status": "pending"
+    },
+    {
+      "id": "pr-create",
+      "status": "pending"
+    },
+    {
+      "id": "branch-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "pr-merge",
+      "status": "pending"
+    },
+    {
+      "id": "sync-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "docs-update",
+      "status": "pending"
+    },
+    {
+      "id": "docs-review",
+      "status": "pending"
+    },
+    {
+      "id": "docs-commit",
+      "status": "pending"
+    }
+  ],
+  "requirements": [
+    {
+      "desc": "R1: JSON フォーマット定義",
+      "status": "done"
+    },
+    {
+      "desc": "R2: プリセットテンプレート変換",
+      "status": "done"
+    },
+    {
+      "desc": "R3: JSON 読み込み実装",
+      "status": "done"
+    },
+    {
+      "desc": "R4: id ベースマージ",
+      "status": "done"
+    },
+    {
+      "desc": "R5: 不要コード削除",
+      "status": "done"
+    },
+    {
+      "desc": "R6: articles → guardrails リネーム",
+      "status": "done"
+    },
+    {
+      "desc": "R7: テスト更新",
+      "status": "done"
+    }
+  ],
+  "worktree": true,
+  "issue": 63,
+  "request": "Migrate guardrail data format from Markdown to JSON (issue #63)",
+  "notes": [
+    "approach: Q&A → spec",
+    "branch: worktree from development",
+    "draft: articles → guardrails に全面リネーム（JSON キー、変数、関数、型すべて）",
+    "draft: 変換スクリプトで md→json 一括変換。既存の md→json 変換コードも参照し、不要コードを整理",
+    "test: spec verification tests in specs/121/tests/, formal tests updated in R7"
+  ],
+  "metrics": {
+    "draft": {
+      "question": 5
+    }
+  },
+  "autoApprove": true
+}

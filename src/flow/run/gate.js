@@ -8,9 +8,8 @@
 import fs from "fs";
 import path from "path";
 import { parseArgs } from "../../lib/cli.js";
-import { translate } from "../../lib/i18n.js";
 import { callAgent, resolveAgent } from "../../lib/agent.js";
-import { filterByPhase, loadMergedArticles } from "../../lib/guardrail.js";
+import { filterByPhase, loadMergedGuardrails } from "../../lib/guardrail.js";
 import { ok, fail, output } from "../../lib/flow-envelope.js";
 
 /**
@@ -96,39 +95,15 @@ function checkSpecText(text, opts) {
 }
 
 /**
- * Extract exempted article titles from spec text.
- */
-function extractExemptions(specText) {
-  const match = specText.match(/^\s*##\s+Guardrail Exemptions\b/im);
-  if (!match) return [];
-
-  const start = match.index + match[0].length;
-  const tail = specText.slice(start);
-  const nextHeading = tail.match(/\n\s*##\s+/m);
-  const block = nextHeading ? tail.slice(0, nextHeading.index) : tail;
-
-  const exemptions = [];
-  for (const line of block.split("\n")) {
-    const m = line.match(/^\s*-\s+(.+?)(?:\s*[—–-]\s*.*)?$/);
-    if (m) exemptions.push(m[1].trim().toLowerCase());
-  }
-  return exemptions;
-}
-
-/**
  * Build AI prompt for guardrail compliance check.
  */
-function buildGuardrailPrompt(specText, articles) {
-  const exemptions = extractExemptions(specText);
-  const specArticles = filterByPhase(articles, "spec");
-  const filteredArticles = specArticles.filter(
-    (a) => !exemptions.includes(a.title.toLowerCase())
-  );
+function buildGuardrailPrompt(specText, guardrails) {
+  const specGuardrails = filterByPhase(guardrails, "spec");
 
-  if (filteredArticles.length === 0) return null;
+  if (specGuardrails.length === 0) return null;
 
-  const articleList = filteredArticles.map((a, i) =>
-    `${i + 1}. **${a.title}**: ${a.body.trim()}`
+  const articleList = specGuardrails.map((g, i) =>
+    `${i + 1}. **${g.title}**: ${g.body.trim()}`
   ).join("\n");
 
   const parts = [
@@ -137,21 +112,16 @@ function buildGuardrailPrompt(specText, articles) {
     "  PASS: <article title> — <brief reason>",
     "  FAIL: <article title> — <brief reason>",
     "",
+    "If an article is inapplicable by nature of the spec, mark it as PASS and state the reason.",
+    "",
     "Output ONLY the result lines. No preamble, no summary.",
     "",
     "## Guardrail Articles",
     articleList,
+    "",
+    "## Spec",
+    specText,
   ];
-
-  if (exemptions.length > 0) {
-    parts.push("");
-    parts.push("## Exempted Articles (do NOT check these)");
-    parts.push(exemptions.map((e) => `- ${e}`).join("\n"));
-  }
-
-  parts.push("");
-  parts.push("## Spec");
-  parts.push(specText);
 
   return parts.join("\n");
 }
@@ -178,13 +148,13 @@ function parseGuardrailResponse(response) {
  * Run guardrail AI compliance check.
  */
 function checkGuardrail(root, specText, config) {
-  const articles = loadMergedArticles(root);
-  if (articles.length === 0) return null;
+  const guardrails = loadMergedGuardrails(root);
+  if (guardrails.length === 0) return null;
 
   const agent = resolveAgent(config, "spec.gate");
   if (!agent) return null;
 
-  const prompt = buildGuardrailPrompt(specText, articles);
+  const prompt = buildGuardrailPrompt(specText, guardrails);
   if (!prompt) return { passed: true, results: [] };
 
   const response = callAgent(agent, prompt);
@@ -279,4 +249,4 @@ export async function execute(ctx) {
   }));
 }
 
-export { checkSpecText, buildGuardrailPrompt, parseGuardrailResponse, checkGuardrail, extractExemptions };
+export { checkSpecText, buildGuardrailPrompt, parseGuardrailResponse, checkGuardrail };

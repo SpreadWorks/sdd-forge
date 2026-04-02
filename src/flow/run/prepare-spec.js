@@ -160,23 +160,25 @@ export async function execute(ctx) {
 
   const cli = parseArgs(ctx.args, {
     flags: ["--no-branch", "--worktree", "--dry-run"],
-    options: ["--title", "--base"],
-    defaults: { title: "", base: "", noBranch: false, worktree: false, dryRun: false },
+    options: ["--title", "--base", "--issue", "--request"],
+    defaults: { title: "", base: "", issue: "", request: "", noBranch: false, worktree: false, dryRun: false },
   });
 
   if (cli.help) {
     console.log(
       [
-        "Usage: sdd-forge flow run prepare-spec [options]",
+        "Usage: sdd-forge flow prepare [options]",
         "",
         "Create branch/worktree and initialize spec directory.",
         "",
         "Options:",
-        "  --title <name>   Feature title (required)",
-        "  --base <branch>  Base branch (default: current HEAD)",
-        "  --worktree       Use git worktree mode",
-        "  --no-branch      Spec-only mode (no branch creation)",
-        "  --dry-run        Show what would happen without executing",
+        "  --title <name>     Feature title (required)",
+        "  --base <branch>    Base branch (default: current HEAD)",
+        "  --worktree         Use git worktree mode",
+        "  --no-branch        Spec-only mode (no branch creation)",
+        "  --issue <number>   GitHub Issue number to link",
+        "  --request <text>   User request text to save in flow.json",
+        "  --dry-run          Show what would happen without executing",
       ].join("\n"),
     );
     return;
@@ -246,6 +248,10 @@ export async function execute(ctx) {
   }
 
   // Helper: write flow.json state
+  // NOTE: prepare-spec writes issue/request directly into flow.json at creation time.
+  // This is an exception to the hook pattern — prepare-spec is the only command that
+  // *creates* flow.json. All other run commands operate on an existing flow.json
+  // and use registry hooks for state writes.
   function writeFlowState(extra) {
     const steps = buildInitialSteps();
     for (const id of ["approach", "branch", "spec"]) {
@@ -258,6 +264,8 @@ export async function execute(ctx) {
       featureBranch: branchName,
       steps,
       requirements: [],
+      ...(cli.issue ? { issue: Number(cli.issue) } : {}),
+      ...(cli.request ? { request: cli.request } : {}),
       ...extra,
     };
     saveFlowState(specRoot, state);

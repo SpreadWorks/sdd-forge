@@ -1,0 +1,75 @@
+{
+  "guardrails": [
+    {
+      "id": "generic-font-prohibition",
+      "title": "汎用フォントの直接使用禁止",
+      "body": "汎用フォント名（Arial, Times New Roman, Helvetica 等）を直接使用してはならない。プロジェクトのフォントを CSS カスタムプロパティまたはデザイントークンとして定義し、それを参照すること。",
+      "meta": {
+        "phase": [
+          "impl"
+        ]
+      }
+    },
+    {
+      "id": "color-system-required",
+      "title": "カラーシステムの使用必須",
+      "body": "すべての色は CSS カスタムプロパティ（例: `--color-primary`）で定義すること。コンポーネントスタイル内でのハードコードされた hex/rgb 値を禁止する。プロジェクトのカラーシステムを使用すること。",
+      "meta": {
+        "phase": [
+          "impl"
+        ]
+      }
+    },
+    {
+      "id": "animation-method-constraint",
+      "title": "アニメーション手法の制約",
+      "body": "JavaScript によるアニメーションよりも CSS アニメーション・トランジションを優先すること。CSS で実現できない効果（スクロール連動、物理演算等）の場合のみ JavaScript を使用すること。",
+      "meta": {
+        "phase": [
+          "impl"
+        ]
+      }
+    },
+    {
+      "id": "no-inline-styles-in-components",
+      "title": "コンポーネントでのインラインスタイル禁止",
+      "body": "コンポーネントテンプレート内の `style` 属性を禁止する。CSS クラス、CSS Modules、styled-components を使用すること。",
+      "meta": {
+        "phase": [
+          "impl"
+        ]
+      }
+    },
+    {
+      "id": "responsive-breakpoints-must-use-design-tokens",
+      "title": "レスポンシブブレークポイントはデザイントークンを使用",
+      "body": "メディアクエリのブレークポイントはデザイントークンまたは共有変数を参照すること。個別コンポーネントでのハードコードされたピクセル値を禁止する。",
+      "meta": {
+        "phase": [
+          "impl"
+        ]
+      }
+    },
+    {
+      "id": "accessibility-minimum-for-interactive-elements",
+      "title": "インタラクティブ要素のアクセシビリティ最低基準",
+      "body": "すべてのインタラクティブ要素（ボタン、リンク、フォームコントロール）にはアクセシブルなラベル、十分なカラーコントラスト（WCAG AA）、キーボード操作性を確保すること。",
+      "meta": {
+        "phase": [
+          "spec",
+          "impl"
+        ]
+      }
+    },
+    {
+      "id": "image-format-and-optimization-required",
+      "title": "画像フォーマットと最適化の必須化",
+      "body": "画像はモダンフォーマット（WebP, AVIF）を使用し、適切なフォールバックを提供すること。未最適化の画像（BMP, 非圧縮 PNG/TIFF）のプロダクションビルドへの含有を禁止する。",
+      "meta": {
+        "phase": [
+          "impl"
+        ]
+      }
+    }
+  ]
+}

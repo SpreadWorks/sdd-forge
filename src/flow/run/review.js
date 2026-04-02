@@ -4,6 +4,8 @@
  * flow run review — wraps `flow commands/review.js` for AI code quality review.
  * Returns JSON envelope with proposal counts and verdicts.
  *
+ * --phase test: wraps test sufficiency review pipeline.
+ *
  * Note: commands/review.js resolves its own context internally (repoRoot, loadFlowState).
  * This wrapper runs it as a subprocess and parses its output into a JSON envelope.
  */
@@ -17,7 +19,8 @@ export async function execute(ctx) {
   const { root } = ctx;
   const cli = parseArgs(ctx.args, {
     flags: ["--dry-run", "--skip-confirm"],
-    defaults: { dryRun: false, skipConfirm: false },
+    options: ["--phase"],
+    defaults: { dryRun: false, skipConfirm: false, phase: null },
   });
 
   if (cli.help) {
@@ -25,9 +28,10 @@ export async function execute(ctx) {
       [
         "Usage: sdd-forge flow run review [options]",
         "",
-        "Run AI code quality review on current changes.",
+        "Run AI code review on current changes.",
         "",
         "Options:",
+        "  --phase <type>   Review phase: 'test' for test sufficiency review",
         "  --dry-run        Show proposals without applying",
         "  --skip-confirm   Skip initial confirmation prompt",
       ].join("\n"),
@@ -37,6 +41,7 @@ export async function execute(ctx) {
 
   const scriptPath = path.join(PKG_DIR, "flow", "commands", "review.js");
   const args = [];
+  if (cli.phase) args.push("--phase", cli.phase);
   if (cli.dryRun) args.push("--dry-run");
   if (cli.skipConfirm) args.push("--skip-confirm");
 
@@ -44,6 +49,11 @@ export async function execute(ctx) {
 
   const stdout = (res.stdout || "").trim();
   const stderr = (res.stderr || "").trim();
+
+  // Route to test review parser
+  if (cli.phase === "test") {
+    return parseTestReviewOutput(res, stdout, stderr);
+  }
 
   if (!res.ok) {
     output(fail("run", "review", "REVIEW_FAILED", [
@@ -80,6 +90,41 @@ export async function execute(ctx) {
       rejected,
     },
     next,
+    output: stdout,
+  }));
+}
+
+/**
+ * Parse test review subprocess output into JSON envelope.
+ */
+function parseTestReviewOutput(res, stdout, stderr) {
+  const verdictMatch = stderr.match(/verdict=(PASS|FAIL)/);
+  const gapCountMatch = stderr.match(/gaps=(\d+)/);
+  const reviewPathMatch = stderr.match(/Results saved to (\S+)/);
+
+  const verdict = verdictMatch ? verdictMatch[1] : (res.ok ? "PASS" : "FAIL");
+  const gapCount = gapCountMatch ? parseInt(gapCountMatch[1], 10) : 0;
+
+  const changed = [];
+  if (reviewPathMatch) changed.push(reviewPathMatch[1]);
+
+  if (!res.ok) {
+    output(fail("run", "review", "TEST_REVIEW_FAIL", [
+      `Test review FAIL: ${gapCount} gap(s) remaining`,
+      ...(stdout ? [stdout] : []),
+    ]));
+    return;
+  }
+
+  output(ok("run", "review", {
+    result: "ok",
+    changed,
+    artifacts: {
+      phase: "test",
+      verdict,
+      gapCount,
+    },
+    next: "implement",
     output: stdout,
   }));
 }

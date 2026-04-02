@@ -1,0 +1,118 @@
+{
+  "spec": "specs/123-add-test-info-to-report/spec.md",
+  "baseBranch": "development",
+  "featureBranch": "feature/123-add-test-info-to-report",
+  "steps": [
+    {
+      "id": "approach",
+      "status": "done"
+    },
+    {
+      "id": "branch",
+      "status": "done"
+    },
+    {
+      "id": "prepare-spec",
+      "status": "done"
+    },
+    {
+      "id": "draft",
+      "status": "skipped"
+    },
+    {
+      "id": "spec",
+      "status": "done"
+    },
+    {
+      "id": "gate",
+      "status": "done"
+    },
+    {
+      "id": "approval",
+      "status": "done"
+    },
+    {
+      "id": "test",
+      "status": "done"
+    },
+    {
+      "id": "implement",
+      "status": "done"
+    },
+    {
+      "id": "review",
+      "status": "done"
+    },
+    {
+      "id": "finalize",
+      "status": "pending"
+    },
+    {
+      "id": "commit",
+      "status": "pending"
+    },
+    {
+      "id": "push",
+      "status": "pending"
+    },
+    {
+      "id": "merge",
+      "status": "pending"
+    },
+    {
+      "id": "pr-create",
+      "status": "pending"
+    },
+    {
+      "id": "branch-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "pr-merge",
+      "status": "pending"
+    },
+    {
+      "id": "sync-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "docs-update",
+      "status": "pending"
+    },
+    {
+      "id": "docs-review",
+      "status": "pending"
+    },
+    {
+      "id": "docs-commit",
+      "status": "pending"
+    }
+  ],
+  "requirements": [
+    {
+      "desc": "R1: generateReport()にtestsフィールド追加",
+      "status": "done"
+    },
+    {
+      "desc": "R2: formatText()にTestsセクション追加",
+      "status": "done"
+    },
+    {
+      "desc": "R3: total算出ロジック",
+      "status": "done"
+    }
+  ],
+  "issue": 66,
+  "request": "Issue #66: Add test information (unit/integration/acceptance counts from flow.json metrics.test.summary) to finalize report",
+  "worktree": true,
+  "autoApprove": true,
+  "notes": [
+    "approach: direct spec (no draft), worktree from development",
+    "finalize: autoApprove all mode"
+  ],
+  "metrics": {
+    "spec": {
+      "srcRead": 1
+    }
+  }
+}

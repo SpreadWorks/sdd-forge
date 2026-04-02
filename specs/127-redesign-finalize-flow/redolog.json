@@ -1,0 +1,12 @@
+{
+  "entries": [
+    {
+      "step": "finalize",
+      "reason": "cleanup failed: global sdd-forge uses old finalize.js which references deleted cleanup.js",
+      "trigger": "sdd-forge flow run finalize --mode all",
+      "resolution": "manual worktree remove and branch delete",
+      "guardrailCandidate": "worktree flow should use local src/ not global package for finalize",
+      "timestamp": "2026-04-02T14:23:53.222Z"
+    }
+  ]
+}

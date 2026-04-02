@@ -1,0 +1,11 @@
+{
+  "entries": [
+    {
+      "step": "gate",
+      "reason": "gate rejects R5 overwrite policy repeatedly despite justification",
+      "trigger": "guardrail: destructive operation check",
+      "resolution": "add note that report.json is an output artifact, not user data",
+      "timestamp": "2026-04-02T08:43:13.838Z"
+    }
+  ]
+}

@@ -253,6 +253,13 @@ export function validateConfig(raw) {
           }
         }
       }
+      const searchMode = raw.flow.commands?.context?.search?.mode;
+      if (searchMode != null) {
+        const validSearchModes = new Set(["ngram", "ai"]);
+        if (!validSearchModes.has(searchMode)) {
+          errors.push(`'flow.commands.context.search.mode' must be one of: ${[...validSearchModes].join(", ")}`);
+        }
+      }
     }
   }
 
