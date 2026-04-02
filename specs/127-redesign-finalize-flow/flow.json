@@ -134,7 +134,8 @@
       "question": 5
     },
     "impl": {
-      "srcRead": 1
+      "srcRead": 1,
+      "redo": 1
     }
   },
   "autoApprove": true

@@ -1,5 +1,5 @@
 {
-  "analyzedAt": "2026-04-02T12:55:00.558Z",
+  "analyzedAt": "2026-04-02T14:22:24.003Z",
   "package": {
     "entries": [
       {
@@ -2006,50 +2006,10 @@
         ]
       },
       {
-        "file": "src/flow/commands/cleanup.js",
-        "hash": "f85e5b09a2306b45cffa5d933ef2c6a3",
-        "lines": 106,
-        "mtime": "2026-03-31T12:57:20.416Z",
-        "className": "cleanup",
-        "methods": [
-          "main"
-        ],
-        "imports": [
-          "fs",
-          "child_process",
-          "../../lib/entrypoint.js",
-          "../../lib/cli.js",
-          "../../lib/exit-codes.js",
-          "../../lib/flow-state.js"
-        ],
-        "exports": [
-          "main"
-        ],
-        "extends": null,
-        "usedBy": null,
-        "id": "478c71e4",
-        "summary": "Flow cleanup command that removes the git worktree and optionally deletes the feature branch after a merge.",
-        "detail": "Parses --branch and --worktree-path options from argv. Checks worktree existence before attempting removal with git worktree remove. Uses execFileSync for git operations and exits with EXIT_ERROR on failure. Safe to run idempotently if worktree has already been removed.",
-        "chapter": "cli_commands",
-        "role": "cli",
-        "enrich": {
-          "processedAt": "2026-04-01T16:23:17.974Z",
-          "attempts": 1
-        },
-        "keywords": [
-          "cleanup",
-          "worktree",
-          "git",
-          "branch deletion",
-          "flow finalize",
-          "post-merge"
-        ]
-      },
-      {
         "file": "src/flow/commands/merge.js",
-        "hash": "0a9484311c758472736a289f75c32e93",
-        "lines": 272,
-        "mtime": "2026-03-31T12:57:20.416Z",
+        "hash": "4d7e57afac5c38dd6407af22723a7ca3",
+        "lines": 209,
+        "mtime": "2026-04-02T14:21:56.018Z",
         "className": "merge",
         "methods": [
           "resolveRemote",
@@ -2065,11 +2025,7 @@
           "child_process",
           "fs",
           "path",
-          "../../lib/entrypoint.js",
-          "../../lib/cli.js",
-          "../../lib/flow-state.js",
-          "../../lib/config.js",
-          "../../lib/exit-codes.js"
+          "../../lib/config.js"
         ],
         "exports": [
           "main",
@@ -2080,22 +2036,25 @@
         "extends": null,
         "usedBy": null,
         "id": "0c7492e0",
-        "summary": "Flow merge command that creates a PR or performs a direct merge based on config and gh availability.",
-        "detail": "resolveRemote reads push.remote from config. isGhAvailable probes the gh CLI. parseSpec extracts title, summary, and requirements from spec.md. buildPrBody assembles the PR body from flow state and spec content. main dispatches to gh pr create or git merge depending on route, loading spec via loadSpec for PR metadata. Exports parseSpec, buildPrTitle, buildPrBody for unit testing.",
+        "summary": "Implements the merge/PR strategy resolver for the SDD flow, determining whether to skip, create a PR via GitHub CLI, or perform a squash merge based on config and environment.",
+        "detail": "Reads flow state and config to resolve the merge strategy (skip, pr, or squash). Uses `gh` CLI availability and `commands.gh` config flag together to gate the PR route. Parses the spec file to extract PR title and body content from structured sections. Exports helpers (`parseSpec`, `buildPrTitle`, `buildPrBody`) for use in finalize and other consumers. Throws an explicit error if the PR route is selected but `gh` is not installed.",
         "chapter": "cli_commands",
-        "role": "cli",
+        "role": "controller",
         "enrich": {
-          "processedAt": "2026-04-01T16:23:17.974Z",
+          "processedAt": "2026-04-02T14:22:47.310Z",
           "attempts": 1
         },
         "keywords": [
           "merge",
           "pull request",
-          "gh CLI",
-          "PR creation",
+          "PR",
+          "squash",
+          "gh cli",
+          "GitHub CLI",
+          "flow merge",
+          "strategy",
           "spec",
-          "git merge",
-          "flow finalize"
+          "flow state"
         ]
       },
       {
@@ -2559,9 +2518,9 @@
       },
       {
         "file": "src/flow/registry.js",
-        "hash": "0b58644520e9e3ac7cbd7e696aed3499",
-        "lines": 189,
-        "mtime": "2026-04-02T09:08:37.507Z",
+        "hash": "2e4e563109ea2e031bf986860833aa73",
+        "lines": 194,
+        "mtime": "2026-04-02T14:21:56.018Z",
         "className": "registry",
         "methods": [
           "deriveActivePhase",
@@ -2579,37 +2538,39 @@
           "src/flow.js"
         ],
         "id": "532742cc",
-        "summary": "Flow command registry that maps step IDs to pre/post middleware hooks and exports the FLOW_COMMANDS dispatch table.",
-        "detail": "Imports state management utilities from flow-state.js to wire up step lifecycle callbacks. The stepPre and stepPost factory functions return closures that update step status and increment metrics on entry and exit. deriveActivePhase delegates to derivePhase to compute the current pipeline phase from step statuses. FLOW_COMMANDS is the central export consumed by flow.js dispatcher.",
+        "summary": "Defines the FLOW_COMMANDS registry and lifecycle hook factories (`stepPre`, `stepPost`) that wrap each flow command with step status tracking and metric increments.",
+        "detail": "Provides `stepPre` and `stepPost` higher-order functions that return context handlers updating step status to `in_progress` or a derived terminal state. `deriveActivePhase` delegates to `derivePhase` from `flow-state.js` to determine the current flow phase from loaded state. The `FLOW_COMMANDS` export maps command names to their pre/post hooks and handler modules. Acts as the central wiring point between the flow dispatcher and individual command implementations.",
         "chapter": "internal_design",
-        "role": "controller",
+        "role": "lib",
         "enrich": {
-          "processedAt": "2026-04-02T09:09:02.666Z",
+          "processedAt": "2026-04-02T14:22:47.310Z",
           "attempts": 1
         },
         "keywords": [
-          "flow",
           "registry",
-          "FLOW_COMMANDS",
-          "step",
-          "middleware",
-          "dispatch",
+          "flow commands",
+          "step lifecycle",
+          "stepPre",
+          "stepPost",
+          "metrics",
           "phase",
-          "hook",
-          "lifecycle",
-          "pipeline"
+          "flow state",
+          "dispatcher",
+          "hooks"
         ]
       },
       {
         "file": "src/flow/run/finalize.js",
-        "hash": "dcad35785739f4d299a85ea10ba74003",
-        "lines": 318,
-        "mtime": "2026-04-02T10:49:18.060Z",
+        "hash": "2ebd2d344279cef3c9f42a9b4536dcd9",
+        "lines": 288,
+        "mtime": "2026-04-02T14:21:56.018Z",
         "className": "finalize",
         "methods": [
-          "execute"
+          "execute",
+          "executeCleanup"
         ],
         "imports": [
+          "fs",
           "child_process",
           "../../lib/cli.js",
           "../../lib/flow-state.js",
@@ -2620,30 +2581,31 @@
           "path"
         ],
         "exports": [
-          "execute"
+          "execute",
+          "STEP_MAP"
         ],
         "extends": null,
         "usedBy": null,
         "id": "d6688987",
-        "summary": "Orchestrates the finalization phase of an SDD flow, running merge, retro, docs build, cleanup, and report commit steps in sequence.",
-        "detail": "Uses a STEP_MAP to define named execution steps that can be selectively run or skipped. Invokes merge.js via execFileSync to perform the git merge, then triggers retro collection with --force to gather retrospective data. Runs the docs build pipeline (docs.js) to regenerate documentation after code changes. Calls cleanup.js to remove worktree artifacts and temporary state. Commits the generated report.json into the spec directory using git add, deriving paths from the current flow state.",
+        "summary": "Implements the `finalize` step of the SDD flow, orchestrating cleanup, retro execution, and docs build after implementation is complete.",
+        "detail": "Exports a `STEP_MAP` for step registration and an async `execute` function that drives the finalize phase. Calls `retroExecute` with `--force` to record retrospective data, then invokes `docs.js` as a subprocess via `runSync`. `executeCleanup` handles worktree removal and returns structured status objects for both success and failure cases. Loads the redo log and generates/saves a report using shared helpers from `commands/report.js`. Handles spec-only mode as an early exit path.",
         "chapter": "cli_commands",
         "role": "controller",
         "enrich": {
-          "processedAt": "2026-04-02T11:27:19.179Z",
+          "processedAt": "2026-04-02T14:22:47.310Z",
           "attempts": 1
         },
         "keywords": [
           "finalize",
-          "flow",
-          "merge",
-          "retro",
+          "flow finalize",
           "cleanup",
-          "report",
           "worktree",
+          "retro",
           "docs build",
-          "execFileSync",
-          "step map"
+          "redo log",
+          "report",
+          "step map",
+          "SDD flow"
         ]
       },
       {
@@ -2836,6 +2798,49 @@
           "slugify",
           "sequential index",
           "SDD init"
+        ]
+      },
+      {
+        "file": "src/flow/run/report.js",
+        "hash": "38be5b9cae5371875a985db453495957",
+        "lines": 92,
+        "mtime": "2026-04-02T14:21:56.018Z",
+        "className": "report",
+        "methods": [
+          "execute"
+        ],
+        "imports": [
+          "child_process",
+          "../../lib/cli.js",
+          "../../lib/flow-envelope.js",
+          "../commands/report.js",
+          "../set/redo.js",
+          "path"
+        ],
+        "exports": [
+          "execute"
+        ],
+        "extends": null,
+        "usedBy": null,
+        "id": "ecb0e7b1",
+        "summary": "Implements the `report` step runner for the SDD flow, generating and saving a flow report from the current state and redo log.",
+        "detail": "Exports an async `execute` function that loads flow state, reads the redo log, and delegates to `generateReport`/`saveReport` from `commands/report.js`. Returns an `ok` envelope with the changed file path (`report.json` under the spec directory) on success, or a `fail` envelope on error. Integrates with the flow envelope system (`ok`, `fail`, `output`) for consistent result reporting. Serves as a thin orchestration layer with minimal logic beyond wiring inputs to the report command.",
+        "chapter": "cli_commands",
+        "role": "controller",
+        "enrich": {
+          "processedAt": "2026-04-02T14:22:47.310Z",
+          "attempts": 1
+        },
+        "keywords": [
+          "report",
+          "flow report",
+          "redo log",
+          "generate report",
+          "save report",
+          "flow envelope",
+          "step runner",
+          "spec dir",
+          "report.json"
         ]
       },
       {
@@ -7404,9 +7409,9 @@
     ],
     "summary": {
       "total": 220,
-      "totalMethods": 676
+      "totalMethods": 677
     },
     "dataSourceHash": "7d725e75d5031be445119323e4947c91"
   },
-  "enrichedAt": "2026-04-02T12:55:11.337Z"
+  "enrichedAt": "2026-04-02T14:22:47.310Z"
 }
