@@ -142,7 +142,7 @@ export async function execute(ctx) {
       results.retro = { status: "dry-run" };
     } else {
       const retroRes = runSync("node", [
-        path.join(PKG_DIR, "..", "flow.js"), "run", "retro", "--force",
+        path.join(PKG_DIR, "flow.js"), "run", "retro", "--force",
       ], { cwd: root });
       if (retroRes.ok) {
         let retroData;
