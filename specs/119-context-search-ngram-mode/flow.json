@@ -1,0 +1,125 @@
+{
+  "spec": "specs/119-context-search-ngram-mode/spec.md",
+  "baseBranch": "development",
+  "featureBranch": "feature/119-context-search-ngram-mode",
+  "steps": [
+    {
+      "id": "approach",
+      "status": "done"
+    },
+    {
+      "id": "branch",
+      "status": "done"
+    },
+    {
+      "id": "prepare-spec",
+      "status": "done"
+    },
+    {
+      "id": "draft",
+      "status": "done"
+    },
+    {
+      "id": "spec",
+      "status": "done"
+    },
+    {
+      "id": "gate",
+      "status": "done"
+    },
+    {
+      "id": "approval",
+      "status": "done"
+    },
+    {
+      "id": "test",
+      "status": "done"
+    },
+    {
+      "id": "implement",
+      "status": "done"
+    },
+    {
+      "id": "review",
+      "status": "done"
+    },
+    {
+      "id": "finalize",
+      "status": "in_progress"
+    },
+    {
+      "id": "commit",
+      "status": "pending"
+    },
+    {
+      "id": "push",
+      "status": "pending"
+    },
+    {
+      "id": "merge",
+      "status": "pending"
+    },
+    {
+      "id": "pr-create",
+      "status": "pending"
+    },
+    {
+      "id": "branch-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "pr-merge",
+      "status": "pending"
+    },
+    {
+      "id": "sync-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "docs-update",
+      "status": "pending"
+    },
+    {
+      "id": "docs-review",
+      "status": "pending"
+    },
+    {
+      "id": "docs-commit",
+      "status": "pending"
+    }
+  ],
+  "requirements": [
+    {
+      "desc": "R1: N-gram検索関数の実装(toBigrams, bigramSimilarity, ngramSearch)",
+      "status": "done"
+    },
+    {
+      "desc": "R2: flow.commands.context.search.modeで ngram/ai 切替",
+      "status": "done"
+    },
+    {
+      "desc": "R3: 3段フォールバック(ngram→fallbackSearch→AI)",
+      "status": "done"
+    },
+    {
+      "desc": "R4: エラーハンドリング(例外stderr+フォールバック)",
+      "status": "done"
+    },
+    {
+      "desc": "R5: 既存CLIインターフェース維持",
+      "status": "done"
+    }
+  ],
+  "worktree": true,
+  "issue": 60,
+  "request": "#60 コンテキスト検索のデフォルトをN-gram方式に変更し、AI/ngram切り替え可能にする",
+  "notes": [
+    "approach: Q&A で要件整理 → spec 作成",
+    "branch: worktree mode, base=development"
+  ],
+  "metrics": {
+    "draft": {
+      "question": 5
+    }
+  }
+}

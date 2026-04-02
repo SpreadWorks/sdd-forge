@@ -10,13 +10,25 @@
 
 import fs from "fs";
 import path from "path";
-import { sddOutputDir } from "../../lib/config.js";
+import { sddOutputDir, loadConfig } from "../../lib/config.js";
+import { mutateFlowState } from "../../lib/flow-state.js";
 import { ok, fail, output } from "../../lib/flow-envelope.js";
 import { ANALYSIS_META_KEYS } from "../../docs/lib/analysis-entry.js";
 import { EXIT_ERROR } from "../../lib/exit-codes.js";
 import { resolveAgent, callAgent } from "../../lib/agent.js";
 
 const EXCLUDE_FIELDS = new Set(["hash", "mtime", "lines", "id", "enrich", "detail"]);
+
+function toSearchResult(e) {
+  return {
+    file: e.file,
+    summary: e.summary || null,
+    detail: e.detail || null,
+    keywords: e.keywords,
+    chapter: e.chapter || null,
+    role: e.role || null,
+  };
+}
 
 /**
  * Search analysis entries by keyword matching against the keywords array.
@@ -123,6 +135,71 @@ function fallbackSearch(entries, query) {
   return results;
 }
 
+const NGRAM_THRESHOLD = 0.15;
+
+/**
+ * Split text into bigrams (character pairs).
+ * @param {string} text - Input text
+ * @returns {string[]} Array of bigrams
+ */
+function toBigrams(text) {
+  const s = text.toLowerCase();
+  if (s.length < 2) return [];
+  const bigrams = [];
+  for (let i = 0; i < s.length - 1; i++) {
+    bigrams.push(s.slice(i, i + 2));
+  }
+  return bigrams;
+}
+
+/**
+ * Calculate Dice coefficient between two bigram arrays.
+ * @param {string[]} a - First bigram set
+ * @param {string[]} b - Second bigram set
+ * @returns {number} Similarity score between 0 and 1
+ */
+function bigramSimilarity(a, b) {
+  if (a.length === 0 || b.length === 0) return 0.0;
+  const setA = new Set(a);
+  const setB = new Set(b);
+  let intersection = 0;
+  for (const bg of setA) {
+    if (setB.has(bg)) intersection++;
+  }
+  return (2 * intersection) / (setA.size + setB.size);
+}
+
+/**
+ * N-gram (bigram) based keyword search.
+ * Compares query bigrams against entry keywords bigrams using Dice coefficient.
+ * @param {Object[]} allEntries - All analysis entries
+ * @param {string} query - Natural language query
+ * @returns {Object[]} Matched entries sorted by score descending
+ */
+function ngramSearch(allEntries, query) {
+  const queryBigrams = toBigrams(query);
+  if (queryBigrams.length === 0) return [];
+
+  const scored = [];
+  for (const e of allEntries) {
+    if (!Array.isArray(e.keywords) || e.keywords.length === 0) continue;
+    // Compute max similarity across all keywords for this entry
+    let maxScore = 0;
+    for (const kw of e.keywords) {
+      const kwBigrams = toBigrams(String(kw));
+      const score = bigramSimilarity(queryBigrams, kwBigrams);
+      if (score > maxScore) maxScore = score;
+    }
+    if (maxScore >= NGRAM_THRESHOLD) {
+      scored.push({ entry: e, score: maxScore });
+    }
+  }
+
+  scored.sort((a, b) => b.score - a.score);
+
+  return scored.map(({ entry }) => toSearchResult(entry));
+}
+
 /**
  * AI-powered keyword selection + static match search.
  * Falls back to space-split OR search if agent is unavailable.
@@ -185,6 +262,33 @@ function aiSearch(allEntries, analysis, query, root) {
   // If AI-selected keywords matched nothing, fall back to text search
   if (results.length === 0) return fallbackSearch(allEntries, query);
   return results;
+}
+
+/**
+ * Dispatch search based on configured mode with fallback chain.
+ * - ngram mode: ngramSearch → fallbackSearch → aiSearch
+ * - ai mode: aiSearch → fallbackSearch (legacy behavior)
+ * @param {Object[]} allEntries - All analysis entries
+ * @param {Object} analysis - Full analysis object
+ * @param {string} query - Search query
+ * @param {string} root - Project root path
+ * @param {string} mode - Search mode ("ngram" or "ai")
+ * @returns {Object[]} Matched entries
+ */
+function contextSearch(allEntries, analysis, query, root, mode = "ngram") {
+  if (mode === "ai") {
+    return aiSearch(allEntries, analysis, query, root);
+  }
+
+  // ngram mode (default): ngram → fallbackSearch → AI
+  let results = ngramSearch(allEntries, query);
+  if (results.length > 0) return results;
+
+  results = fallbackSearch(allEntries, query);
+  if (results.length > 0) return results;
+
+  // Final fallback: try AI if agent is available
+  return aiSearch(allEntries, analysis, query, root);
 }
 
 function filterEntry(entry) {
@@ -300,7 +404,10 @@ export async function execute(ctx) {
       }
     }
 
-    const results = aiSearch(allEntries, analysis, searchQuery, root);
+    let config;
+    try { config = loadConfig(root); } catch (_e) { config = {}; }
+    const searchMode = config?.flow?.commands?.context?.search?.mode ?? "ngram";
+    const results = contextSearch(allEntries, analysis, searchQuery, root, searchMode);
 
     if (isRaw) {
       for (const r of results) {
@@ -376,4 +483,4 @@ export async function execute(ctx) {
   }));
 }
 
-export { filterEntry, resolvePhase, searchEntries, collectAllKeywords, buildKeywordSelectionPrompt, fallbackSearch };
+export { filterEntry, resolvePhase, searchEntries, collectAllKeywords, buildKeywordSelectionPrompt, fallbackSearch, toBigrams, bigramSimilarity, ngramSearch };

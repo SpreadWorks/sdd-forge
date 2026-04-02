@@ -8,7 +8,7 @@
 
 <!-- {{text({prompt: "Write a 1-2 sentence overview of this chapter. Include the types of config files, range of configurable items, and customization points."})}} -->
 
-sdd-forge reads two types of configuration files — a project-specific config at `.sdd-forge/config.json` and the standard `package.json` — covering output language settings, documentation style, source scan scope, AI agent behaviour, SDD flow strategy, and chapter ordering. Every aspect of how documentation is generated and how the SDD workflow runs can be tailored through these files.
+sdd-forge reads its primary configuration from `.sdd-forge/config.json` and supplements it with metadata from the project's `package.json`. The configuration covers documentation output languages, project type and preset selection, AI agent behaviour, source scan patterns, SDD flow strategy, and external command integration.
 <!-- {{/text}} -->
 
 ## Content
@@ -19,8 +19,10 @@ sdd-forge reads two types of configuration files — a project-specific config a
 
 | File | Location | Role |
 |------|----------|------|
-| `config.json` | `.sdd-forge/config.json` in the project root | Primary project configuration. Loaded and validated by `loadConfig()` in `src/lib/config.js` on every command run. Defines language, type, docs output, scan scope, agent settings, flow strategy, and chapter ordering. |
-| `package.json` | Project root | Supplementary metadata source. Individual fields are read on demand via `loadPackageField()` in `src/lib/config.js`. Used to retrieve package-level information such as the project name or version. |
+| `config.json` | `.sdd-forge/config.json` | Primary project configuration. Loaded by `loadConfig()` in `src/lib/config.js` and passed through `validateConfig()` before use. |
+| `package.json` | `<project-root>/package.json` | Supplementary metadata source. Arbitrary fields are read on demand via `loadPackageField()` in `src/lib/config.js`. |
+
+All paths under `.sdd-forge/` are derived from the project root. `sddDir()`, `sddConfigPath()`, `sddOutputDir()`, and `sddDataDir()` in `src/lib/config.js` centralise these path computations. Generated output is written to `.sdd-forge/output/` and structured data to `.sdd-forge/data/`.
 <!-- {{/text}} -->
 
 ### Configuration Reference
@@ -29,89 +31,86 @@ sdd-forge reads two types of configuration files — a project-specific config a
 
 | Field | Required | Type | Default | Description |
 |-------|----------|------|---------|-------------|
-| `lang` | Required | `string` | — | Language code for the tool's own output messages. |
-| `type` | Required | `string \| string[]` | — | Preset type(s) that describe the project category (e.g. `"node-cli"`). |
-| `docs` | Required | `object` | — | Top-level container for all documentation output settings. |
-| `docs.languages` | Required | `string[]` | — | List of languages in which documentation is generated. Must be non-empty. |
-| `docs.defaultLanguage` | Required | `string` | — | The primary output language. Must appear in `docs.languages`. |
-| `docs.mode` | Optional | `"translate" \| "generate"` | `"translate"` | Controls how additional language variants are produced. |
-| `docs.style` | Optional | `object` | — | Writing style settings passed to the AI generator. When provided, both `purpose` and `tone` are required. |
-| `docs.style.purpose` | Required if `docs.style` set | `string` | — | Short description of the document's intended purpose. |
-| `docs.style.tone` | Required if `docs.style` set | `"polite" \| "formal" \| "casual"` | — | Desired writing tone for generated text. |
-| `docs.style.customInstruction` | Optional | `string` | — | Additional free-form instruction appended to AI prompts. |
-| `docs.exclude` | Optional | `string[]` | — | Glob patterns for source paths to omit from documentation. |
-| `concurrency` | Optional | `number` (≥ 1) | `5` | Maximum number of parallel AI calls during document generation. |
-| `chapters` | Optional | `{ chapter: string, desc?: string, exclude?: boolean }[]` | — | Override chapter order and visibility. Each entry names a chapter file; `exclude: true` suppresses it. |
-| `agent.workDir` | Optional | `string` | — | Working directory used when invoking the AI agent process. |
-| `agent.timeout` | Optional | `number` (ms) | — | Maximum time in milliseconds allowed for a single agent call. |
-| `agent.retryCount` | Optional | `number` (≥ 1) | — | Number of retry attempts on agent failure. |
-| `agent.batchTokenLimit` | Optional | `number` (≥ 1000) | — | Token budget per batch when processing large analyses. |
-| `agent.default` | Optional | `string` | — | Key of the default provider entry inside `agent.providers`. |
-| `agent.providers.<name>.command` | Required per provider | `string` | — | Executable command for the named AI provider. |
-| `agent.providers.<name>.args` | Required per provider | `string[]` | — | Argument list passed to the provider command. |
-| `scan.include` | Required if `scan` set | `string[]` | — | Glob patterns identifying source files to scan. |
-| `scan.exclude` | Optional | `string[]` | — | Glob patterns identifying source files to skip during scan. |
-| `flow.merge` | Optional | `"squash" \| "ff-only" \| "merge"` | — | Git merge strategy used when finalising an SDD flow branch. |
-| `flow.push.remote` | Optional | `string` | — | Name of the git remote to push to during flow finalize. |
-| `commands.gh` | Optional | `"enable" \| "disable"` | — | Controls whether GitHub CLI integration is active during flow operations. |
+| `lang` | Required | `string` | — | Language code used for generated content. |
+| `type` | Required | `string` \| `string[]` | — | Project preset type(s). Each entry must be a non-empty string (e.g. `"node-cli"`, `"laravel"`). |
+| `docs` | Required | `object` | — | Top-level documentation output settings. |
+| `docs.languages` | Required | `string[]` | — | Non-empty list of output languages. |
+| `docs.defaultLanguage` | Required | `string` | — | Default language; must be present in `docs.languages`. |
+| `docs.mode` | Optional | `"translate"` \| `"generate"` | `"translate"` | Documentation generation mode. |
+| `docs.style` | Optional | `object` | — | Style overrides for generated text. When provided, both `purpose` and `tone` are required. |
+| `docs.style.purpose` | Required if `docs.style` set | `string` | — | Purpose descriptor guiding the documentation tone. |
+| `docs.style.tone` | Required if `docs.style` set | `"polite"` \| `"formal"` \| `"casual"` | — | Writing tone for generated content. |
+| `docs.style.customInstruction` | Optional | `string` | — | Additional free-form style instructions. |
+| `docs.exclude` | Optional | `string[]` | — | Glob patterns for source files to exclude from documentation. |
+| `concurrency` | Optional | `number` (≥ 1) | `5` | Maximum number of concurrent AI operations. |
+| `chapters` | Optional | `object[]` | — | Project-specific chapter list overriding the preset order. Each entry must include a `chapter` filename string. |
+| `chapters[].chapter` | Required | `string` | — | Chapter filename, e.g. `"overview.md"`. |
+| `chapters[].desc` | Optional | `string` | — | Chapter description override. |
+| `chapters[].exclude` | Optional | `boolean` | — | When `true`, the chapter is excluded from output. |
+| `agent` | Optional | `object` | — | AI agent execution settings. |
+| `agent.workDir` | Optional | `string` | — | Working directory for agent execution. |
+| `agent.timeout` | Optional | `number` (≥ 1) | — | Agent call timeout in milliseconds. |
+| `agent.retryCount` | Optional | `number` (≥ 1) | — | Number of retries for failed agent calls. |
+| `agent.batchTokenLimit` | Optional | `number` (≥ 1000) | — | Maximum token count per batch operation. |
+| `agent.providers` | Optional | `object` | — | Named AI provider configurations. |
+| `agent.providers.<name>.command` | Required | `string` | — | Shell command to invoke the provider. |
+| `agent.providers.<name>.args` | Required | `array` | — | Arguments passed to the provider command. |
+| `scan` | Optional | `object` | — | Source file scan configuration. |
+| `scan.include` | Required if `scan` set | `string[]` | — | Non-empty list of glob patterns specifying files to scan. |
+| `scan.exclude` | Optional | `string[]` | — | Glob patterns for files to exclude from scanning. |
+| `flow` | Optional | `object` | — | SDD workflow settings. |
+| `flow.merge` | Optional | `"squash"` \| `"ff-only"` \| `"merge"` | — | Git merge strategy used during flow finalization. |
+| `flow.push.remote` | Optional | `string` | — | Remote name used when pushing during flow finalization. |
+| `flow.commands.context.search.mode` | Optional | `"ngram"` \| `"ai"` | — | Search mode for context lookups during flow execution. |
+| `commands` | Optional | `object` | — | External command integration settings. |
+| `commands.gh` | Optional | `"enable"` \| `"disable"` | — | Controls whether GitHub CLI (`gh`) commands are used during flow finalization. |
 <!-- {{/text}} -->
 
 ### Customization Points
 
 <!-- {{text({prompt: "Describe items that users can customize. Extract configurable items from the source code and include configuration examples for each.", mode: "deep"})}} -->
 
-**Output languages**
+**Documentation style**
 
-Set `docs.languages` to an array of language codes and choose one as `docs.defaultLanguage`. All listed languages receive generated or translated documentation.
+The `docs.style` object customises the tone and purpose of all AI-generated content. When omitted, the preset defaults apply.
+
+```json
+{
+  "docs": {
+    "languages": ["en"],
+    "defaultLanguage": "en",
+    "style": {
+      "purpose": "A public developer-facing reference guide",
+      "tone": "formal",
+      "customInstruction": "Avoid passive voice where possible."
+    }
+  }
+}
+```
+
+**Multi-language output**
+
+Set `docs.languages` to more than one language code and `docs.mode` to `"generate"` to have each language produced independently rather than translated from the default.
 
 ```json
 {
   "docs": {
     "languages": ["en", "ja"],
     "defaultLanguage": "en",
-    "mode": "translate"
+    "mode": "generate"
   }
 }
 ```
 
-**Documentation writing style**
+**Chapter ordering**
 
-Provide `docs.style` to guide the AI's tone and purpose. `customInstruction` appends a free-form directive to every generation prompt.
-
-```json
-{
-  "docs": {
-    "style": {
-      "purpose": "Internal developer reference for onboarding and maintenance",
-      "tone": "formal",
-      "customInstruction": "Avoid abbreviations and always spell out acronyms on first use."
-    }
-  }
-}
-```
-
-**Source scan scope**
-
-Use `scan.include` and `scan.exclude` to control which source files are analysed. Patterns follow glob syntax.
-
-```json
-{
-  "scan": {
-    "include": ["src/**/*.js"],
-    "exclude": ["src/**/*.test.js", "src/fixtures/**"]
-  }
-}
-```
-
-**Chapter ordering and exclusion**
-
-Override the preset's default chapter list with `chapters`. Set `exclude: true` on any entry to suppress that chapter from the output.
+The `chapters` array overrides the preset-defined chapter order. Only the chapters listed are included; set `exclude: true` on any entry to omit a specific chapter.
 
 ```json
 {
   "chapters": [
     { "chapter": "overview.md" },
-    { "chapter": "cli_commands.md" },
+    { "chapter": "cli_commands.md", "desc": "Available commands and flags" },
     { "chapter": "configuration.md" },
     { "chapter": "internal_design.md", "exclude": true }
   ]
@@ -120,7 +119,7 @@ Override the preset's default chapter list with `chapters`. Set `exclude: true` 
 
 **AI agent providers**
 
-Define one or more named providers under `agent.providers` and set `agent.default` to select which one runs by default.
+The `agent.providers` map lets you register named AI providers. Each provider entry requires the shell command and its argument list. The `agent.default` key selects which provider is used by default.
 
 ```json
 {
@@ -131,33 +130,39 @@ Define one or more named providers under `agent.providers` and set `agent.defaul
     "providers": {
       "claude": {
         "command": "claude",
-        "args": ["--output-format", "json"]
+        "args": ["--output-format", "stream-json", "--verbose"]
       }
     }
   }
 }
 ```
 
-**SDD flow merge strategy**
+**Scan scope**
 
-Set `flow.merge` to control how feature branches are integrated when a flow is finalised.
+The `scan` object controls which source files are analysed. Use `include` to restrict scanning to relevant directories and `exclude` to skip generated or third-party paths.
+
+```json
+{
+  "scan": {
+    "include": ["src/**/*.js"],
+    "exclude": ["src/vendor/**", "src/**/*.test.js"]
+  }
+}
+```
+
+**Flow and merge strategy**
+
+The `flow` object controls SDD workflow behaviour. `flow.merge` sets the git merge strategy applied at finalization; `commands.gh` enables or disables GitHub CLI integration for pull request creation.
 
 ```json
 {
   "flow": {
     "merge": "squash",
     "push": { "remote": "origin" }
+  },
+  "commands": {
+    "gh": "enable"
   }
-}
-```
-
-**Parallel concurrency**
-
-Adjust `concurrency` to limit or increase the number of simultaneous AI calls during document generation. The default is `5`.
-
-```json
-{
-  "concurrency": 3
 }
 ```
 <!-- {{/text}} -->
@@ -168,8 +173,10 @@ Adjust `concurrency` to limit or increase the number of simultaneous AI calls du
 
 | Variable | Purpose |
 |----------|---------|
-| `SDD_SOURCE_ROOT` | Overrides the project root directory that sdd-forge uses as the source base. When set, the tool resolves all source paths relative to this value instead of the current working directory. |
-| `SDD_WORK_ROOT` | Overrides the working root used for `.sdd-forge/` artefacts (config, output, data). Allows the config and generated files to be stored in a location separate from the source tree. |
+| `SDD_SOURCE_ROOT` | Overrides the source project root directory resolved by the `sdd-forge` entry point. When set, the tool uses this path as the project root instead of the current working directory. |
+| `SDD_WORK_ROOT` | Overrides the working root directory (where `.sdd-forge/` is located) resolved by the entry point. Allows the config and output directories to reside outside the source tree. |
+
+These variables are consumed by `src/sdd-forge.js` when establishing project context before any subcommand runs. The configuration loading functions in `src/lib/config.js` (`loadConfig`, `sddConfigPath`, etc.) receive the resolved root as a function argument and do not read environment variables directly.
 <!-- {{/text}} -->
 
 ---
