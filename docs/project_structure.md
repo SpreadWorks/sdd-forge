@@ -11,7 +11,7 @@
 
 <!-- {{text({prompt: "Write a 1-2 sentence overview of this chapter. Include the number of major directories and their roles."})}} -->
 
-This chapter describes the physical layout of the sdd-forge source tree, covering three major directories: `src/docs` (documentation generation pipeline with CLI, controller, model, and library components), `src/flow` (Spec-Driven Development workflow controllers), and `src/lib` (shared utilities spanning configuration, model, and view responsibilities).
+This chapter describes the source layout of sdd-forge across three major directory groups: `src/docs` (documentation generation commands, data sources, and libraries), `src/flow` (spec-driven development workflow commands and registry), and `src/lib` (shared configuration and preset utilities).
 <!-- {{/text}} -->
 
 ## Content
@@ -20,17 +20,17 @@ This chapter describes the physical layout of the sdd-forge source tree, coverin
 
 <!-- {{data("base.structure.tree")}} -->
 ```
-src/    (cli, controller)
-src/docs/commands/    (cli, lib, controller)
+src/    (controller, cli)
+src/docs/commands/    (cli, controller)
 src/docs/data/    (model)
-src/docs/lib/    (lib)
+src/docs/lib/    (model, lib)
 src/docs/lib/lang/    (lib)
-src/flow/    (controller)
-src/flow/commands/    (controller)
-src/flow/get/    (controller)
-src/flow/run/    (controller)
-src/flow/set/    (controller)
-src/lib/    (lib, config, model, view)
+src/flow/    (lib)
+src/flow/commands/    (cli, lib)
+src/flow/get/    (cli)
+src/flow/run/    (cli)
+src/flow/set/    (cli, lib)
+src/lib/    (lib, config)
 ```
 <!-- {{/data}} -->
 
@@ -39,10 +39,10 @@ src/lib/    (lib, config, model, view)
 
 | Directory | Files | Role |
 | --- | --- | --- |
-| src/docs | 40 | cli, lib, controller, model |
-| src/flow | 31 | controller |
-| src/lib | 20 | lib, config, model, view |
-| src | 7 | cli, controller |
+| src/docs | 40 | cli, controller, model, lib |
+| src/flow | 31 | cli, lib |
+| src/lib | 20 | lib, config |
+| src | 7 | controller, cli |
 <!-- {{/data}} -->
 
 ### Shared Libraries
@@ -51,9 +51,8 @@ src/lib/    (lib, config, model, view)
 
 | Module | File Path | Responsibility |
 | --- | --- | --- |
-| cli | `src/lib/cli.js` | Provides the `PKG_DIR` constant, repository and source root resolution (with `SDD_WORK_ROOT` / `SDD_SOURCE_ROOT` env var support), a spec-driven `parseArgs` option parser, worktree detection, and package version retrieval. |
-| presets | `src/lib/presets.js` | Discovers all available presets under `src/presets/`, resolves parent-chain inheritance from `preset.json` manifests, and exposes lookup helpers (`presetByLeaf`, `presetsForArch`) for the rest of the toolchain. |
-| skills | `src/lib/skills.js` | Reads skill templates from `src/templates/skills/`, resolves `include` directives, and deploys the resulting `SKILL.md` files into both `.agents/skills/` and `.claude/skills/` in the target project, skipping unchanged files to avoid unnecessary disk writes. |
+| flow/registry | `src/flow/registry.js` | Maps all flow command strings to their handler modules; provides step-tracking middleware (`stepPre`, `stepPost`) and `deriveActivePhase` for reading persisted flow state. |
+| presets | `src/lib/presets.js` | Discovers available presets from `src/presets/`, resolves single and merged parent-chain inheritance, and exposes safe fallback variants for contexts where missing presets must not abort execution. |
 <!-- {{/text}} -->
 
 ---

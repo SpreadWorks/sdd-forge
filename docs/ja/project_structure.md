@@ -10,6 +10,8 @@
 ## 説明
 
 <!-- {{text({prompt: "この章の概要を1〜2文で記述してください。主要ディレクトリの数と役割を踏まえること。"})}} -->
+
+本章では、sdd-forge パッケージのディレクトリ構成と各領域の役割を説明します。`src/docs`・`src/flow`・`src/lib`・`src/` の 4 つの主要ディレクトリに分かれており、それぞれドキュメント生成・フロー管理・共通ライブラリ・エントリーポイントの責務を担っています。
 <!-- {{/text}} -->
 
 ## 内容
@@ -18,17 +20,17 @@
 
 <!-- {{data("base.structure.tree")}} -->
 ```
-src/    (cli, controller)
-src/docs/commands/    (cli, lib, controller)
+src/    (controller, cli)
+src/docs/commands/    (cli, controller)
 src/docs/data/    (model)
-src/docs/lib/    (lib)
+src/docs/lib/    (model, lib)
 src/docs/lib/lang/    (lib)
-src/flow/    (controller)
-src/flow/commands/    (controller)
-src/flow/get/    (controller)
-src/flow/run/    (controller)
-src/flow/set/    (controller)
-src/lib/    (lib, config, model, view)
+src/flow/    (lib)
+src/flow/commands/    (cli, lib)
+src/flow/get/    (cli)
+src/flow/run/    (cli)
+src/flow/set/    (cli, lib)
+src/lib/    (lib, config)
 ```
 <!-- {{/data}} -->
 
@@ -37,15 +39,20 @@ src/lib/    (lib, config, model, view)
 
 | ディレクトリ | ファイル数 | 役割 |
 | --- | --- | --- |
-| src/docs | 40 | cli, lib, controller, model |
-| src/flow | 31 | controller |
-| src/lib | 20 | lib, config, model, view |
-| src | 7 | cli, controller |
+| src/docs | 40 | cli, controller, model, lib |
+| src/flow | 31 | cli, lib |
+| src/lib | 20 | lib, config |
+| src | 7 | controller, cli |
 <!-- {{/data}} -->
 
 ### 共通ライブラリ
 
 <!-- {{text({prompt: "共通ライブラリの一覧をクラス名・ファイルパス・責務の表形式で記述してください。"})}} -->
+
+| モジュール名 | ファイルパス | 責務 |
+| --- | --- | --- |
+| registry.js | src/flow/registry.js | フローサブシステムの全コマンド文字列とハンドラーモジュールを一元管理するセントラルレジストリ。ステップ追跡用ミドルウェアの生成と、flow.js ディスパッチからの実装分離も担う |
+| presets.js | src/lib/presets.js | `src/presets/` ディレクトリ配下の全プリセットを探索し、`parent` フィールドをたどる継承チェーン解決を提供する。`PRESETS` 定数のほか、チェーン取得・複数チェーン統合・安全なフォールバック付き取得のヘルパーを公開する |
 <!-- {{/text}} -->
 
 ---
