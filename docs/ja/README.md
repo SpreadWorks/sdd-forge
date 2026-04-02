@@ -84,13 +84,13 @@ npm install -g <!-- {{data("cli.project.name")}} -->sdd-forge<!-- {{/data}} -->
 | `/sdd-forge.flow-impl` | implement（実装） |
 | `/sdd-forge.flow-finalize` | finalize（コミット、マージ、ドキュメント同期、クリーンアップ） |
 
-**CLI** — ターミナルから直接実行:
+**[Codex CLI](https://github.com/openai/codex)** — `$` プレフィックスでツールを呼び出し:
 
 | コマンド | フェーズ |
 |---|---|
-| `sdd-forge flow prepare --title "..." --base main` | plan（仕様書 + ブランチ作成） |
-| `sdd-forge flow run review` | implement（AI コードレビュー） |
-| `sdd-forge flow run finalize --mode all` | finalize（終了処理） |
+| `$sdd-forge flow prepare --title "..." --base main` | plan（仕様書 + ブランチ作成） |
+| `$sdd-forge flow run review` | implement（AI コードレビュー） |
+| `$sdd-forge flow run finalize --mode all` | finalize（終了処理） |
 
 ## コマンド一覧
 

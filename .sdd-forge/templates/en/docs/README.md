@@ -83,13 +83,13 @@ If you already have source code, generate documentation to get a complete pictur
 | `/sdd-forge.flow-impl` | implement (coding + review) |
 | `/sdd-forge.flow-finalize` | finalize (commit, merge, docs sync, cleanup) |
 
-**CLI** — invoke directly from terminal:
+**[Codex CLI](https://github.com/openai/codex)** — invoke via `$` prefix:
 
 | Command | Phase |
 |---|---|
-| `sdd-forge flow prepare --title "..." --base main` | plan (create spec + branch) |
-| `sdd-forge flow run review` | implement (AI code review) |
-| `sdd-forge flow run finalize --mode all` | finalize (wrap-up) |
+| `$sdd-forge flow prepare --title "..." --base main` | plan (create spec + branch) |
+| `$sdd-forge flow run review` | implement (AI code review) |
+| `$sdd-forge flow run finalize --mode all` | finalize (wrap-up) |
 
 ## Commands
 
