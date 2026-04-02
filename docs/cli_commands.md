@@ -8,7 +8,7 @@
 
 <!-- {{text({prompt: "Write a 1-2 sentence overview of this chapter. Include the total number of commands and subcommand structure."})}} -->
 
-This chapter documents all commands provided by the `sdd-forge` CLI. The tool exposes approximately 20 commands organized into three tiers: independent top-level commands (`help`, `setup`, `upgrade`, `presets`), the `docs` namespace with 12 subcommands, and the `flow` namespace structured as four command groups (`prepare`, `get`, `set`, `run`) each containing multiple keys or actions.
+sdd-forge provides more than 20 CLI commands organized into a two-tier structure: four independent top-level commands (`help`, `setup`, `upgrade`, `presets`) and two namespace dispatchers — `docs` with 13 subcommands covering the full documentation pipeline, and `flow` with three command groups (`get`, `set`, `run`) for managing spec-driven development workflows.
 <!-- {{/text}} -->
 
 ## Content
@@ -18,388 +18,260 @@ This chapter documents all commands provided by the `sdd-forge` CLI. The tool ex
 <!-- {{text({prompt: "List all commands in table format. Include command name, description, and key options. Extract comprehensively from command definitions and routing in the source code.", mode: "deep"})}} -->
 
 | Command | Description | Key Options |
-|---|---|---|
-| `sdd-forge help` | Display help text listing all available commands | |
-| `sdd-forge setup` | Interactive wizard to generate `.sdd-forge/config.json` | `--name`, `--path`, `--work-root`, `--type`, `--purpose`, `--tone`, `--agent`, `--lang`, `--dry-run` |
-| `sdd-forge upgrade` | Re-deploy skills and apply config schema migrations | `--dry-run` |
-| `sdd-forge presets list` | Display the preset inheritance tree | |
-| `sdd-forge docs build` | Run the full documentation pipeline (scan → enrich → init → data → text → readme → agents → translate) | `--force`, `--regenerate`, `--dry-run`, `--verbose` |
-| `sdd-forge docs scan` | Analyze source code and generate `analysis.json` | |
-| `sdd-forge docs enrich` | AI-powered enrichment of analysis entries with roles and summaries | |
-| `sdd-forge docs init` | Initialize chapter markdown files from preset templates | `--type`, `--force`, `--dry-run`, `--lang`, `--docs-dir` |
-| `sdd-forge docs data` | Resolve `{{data}}` directives in chapter files | `--dry-run` |
-| `sdd-forge docs text` | Fill `{{text}}` directives using an AI agent | `--dry-run` |
-| `sdd-forge docs readme` | Generate or update `README.md` | `--lang`, `--output`, `--dry-run` |
-| `sdd-forge docs forge` | AI-driven iterative documentation authoring loop | `--prompt`, `--prompt-file`, `--spec`, `--max-runs`, `--review-cmd`, `--mode`, `--dry-run`, `--verbose` |
-| `sdd-forge docs review` | Validate generated docs quality; exits non-zero on failures | |
-| `sdd-forge docs changelog` | Generate `docs/change_log.md` from `specs/` directories | `--dry-run` |
-| `sdd-forge docs agents` | Generate or update `AGENTS.md` / `CLAUDE.md` | `--dry-run` |
-| `sdd-forge docs translate` | Translate docs to configured non-default languages | `--lang`, `--force`, `--dry-run` |
-| `sdd-forge flow prepare` | Initialize a spec directory and create a feature branch or worktree | |
-| `sdd-forge flow get <key>` | Read flow state values (`status`, `issue`, `prompt`) | |
-| `sdd-forge flow set <key>` | Write flow state values (`issue`, `metric`, etc.) | |
-| `sdd-forge flow run <action>` | Execute flow actions (`finalize`, `lint`, `sync`, `review`, `retro`) | Action-specific options |
+| --- | --- | --- |
+| `help` | Print all available commands with descriptions | — |
+| `setup` | Interactive wizard to initialize a new project | `--name`, `--path`, `--type`, `--lang`, `--agent`, `--dry-run` |
+| `upgrade` | Re-deploy skill files and apply `config.json` schema migrations | `--dry-run` |
+| `presets list` | Print the preset inheritance tree | — |
+| `docs build` | Run the full pipeline: scan → enrich → init → data → text → readme → agents | `--force`, `--regenerate`, `--verbose`, `--dry-run` |
+| `docs scan` | Scan source files and produce `analysis.json` | — |
+| `docs enrich` | AI-enrich analysis entries with roles, summaries, and chapter assignments | — |
+| `docs init` | Initialize `docs/` with chapter template files | `--type`, `--force`, `--dry-run` |
+| `docs data` | Resolve `{{data}}` directives in chapter files | `--dry-run` |
+| `docs text` | Fill `{{text}}` directives via AI agent | `--dry-run` |
+| `docs readme` | Generate or update `README.md` from the preset template | `--lang`, `--output`, `--dry-run` |
+| `docs forge` | AI-driven iterative documentation authoring with a write-review loop | `--prompt`, `--prompt-file`, `--spec`, `--max-runs`, `--mode`, `--dry-run` |
+| `docs review` | Validate documentation quality: directives, line count, and coverage | — |
+| `docs translate` | Translate docs into configured target languages using AI | `--lang`, `--force`, `--dry-run` |
+| `docs changelog` | Generate a Markdown changelog from `specs/` directories | `--dry-run` |
+| `docs agents` | Generate or refine `AGENTS.md` / `CLAUDE.md` using AI | `--dry-run` |
+| `flow prepare` | Initialize a spec file and create a feature branch or worktree | — |
+| `flow get status` | Read full flow state including phase, steps, and metrics | — |
+| `flow get prompt <kind>` | Retrieve predefined choice prompts for a given phase/step key | — |
+| `flow get issue <number>` | Fetch GitHub issue metadata via `gh` | — |
+| `flow set issue <number>` | Associate a GitHub issue number with the current flow | — |
+| `flow set step <id> <status>` | Update the status of a workflow step | — |
+| `flow set metric <phase> <counter>` | Increment a phase metric counter | — |
+| `flow set note <text>` | Append a note to the flow's notes array | — |
+| `flow set auto on\|off` | Enable or disable autoApprove mode | — |
+| `flow run finalize` | Orchestrate commit, merge/PR, retro, docs sync, and cleanup | `--mode`, `--steps`, `--merge-strategy`, `--message`, `--dry-run` |
+| `flow run lint` | Run guardrail lint checks on changed files | `--base`, `--dry-run` |
+| `flow run sync` | Trigger docs build and commit the result | `--dry-run` |
+| `flow run retro` | Evaluate spec accuracy by comparing requirements to the git diff | `--dry-run` |
+| `flow run review` | Run AI-driven code quality review with proposal and verdict output | `--dry-run` |
 <!-- {{/text}} -->
 
 ### Global Options
 
 <!-- {{text({prompt: "Describe global options shared by all commands in table format. Extract from argument parsing logic in the source code.", mode: "deep"})}} -->
 
-| Option | Applicable To | Description |
-|---|---|---|
-| `--help` / `-h` | All commands | Display help text for the command and exit with code `0` |
-| `--version` / `-v` / `-V` | Top-level `sdd-forge` only | Print the package version and exit |
-| `--dry-run` | Most commands | Preview changes without writing files or executing side effects |
+| Option | Applies To | Description |
+| --- | --- | --- |
+| `--help`, `-h` | All commands | Print command usage and available options, then exit with code 0 |
+| `--dry-run` | `setup`, `upgrade`, all `docs` commands, all `flow run` actions | Preview changes without writing any files to disk |
+| `--verbose`, `-v` | `docs build`, `docs forge` | Enable detailed progress output during pipeline execution |
+| `--lang` | `docs init`, `docs readme`, `docs translate` | Override the output language (e.g. `en`, `ja`) |
 <!-- {{/text}} -->
 
 ### Command Details
 
 <!-- {{text({prompt: "Describe each command's usage, options, and examples in detail. Create a #### subsection for each command. Extract from argument definitions and help messages in the source code.", mode: "deep"})}} -->
 
-#### sdd-forge help
+#### `help`
 
-Displays the top-level help listing all available commands and their descriptions. Invoked with no arguments or with `-h` / `--help`. Reads the version from `package.json`.
+Prints a formatted list of all available commands grouped by section, along with the current package version. Invoked automatically when `sdd-forge` is run without arguments or with `--help`.
 
-```
-sdd-forge help
-sdd-forge --help
-```
+**Usage:** `sdd-forge help`
 
-#### sdd-forge setup
+No options are accepted.
 
-Interactive wizard that creates or updates `.sdd-forge/config.json`. Prompts for project name, source path, language, preset type, docs purpose, tone, and agent provider. When CLI flags are supplied they are used as prefilled defaults. Also creates project directories, updates `.gitignore` and `.gitattributes`, deploys skill files, and creates or updates `AGENTS.md`.
+#### `setup`
 
-```
-sdd-forge setup
-sdd-forge setup --name myapp --path ./src --type hono --lang en
-```
+Interactive wizard that initializes a new sdd-forge project. Prompts for project name, source path, language, preset type, documentation purpose, and AI agent provider. Writes `config.json` to `.sdd-forge/`, creates project directories, updates `.gitignore` and `.gitattributes`, deploys skill files, and generates `AGENTS.md`.
+
+**Usage:** `sdd-forge setup [options]`
 
 | Option | Description |
-|---|---|
+| --- | --- |
 | `--name <name>` | Project name |
-| `--path <path>` | Source root path |
-| `--work-root <path>` | Working root directory (defaults to the repo root) |
-| `--type <type>` | Preset type leaf name (e.g. `hono`, `laravel`) |
-| `--purpose <text>` | Docs style purpose (e.g. `user-guide`, `developer-guide`) |
-| `--tone <text>` | Docs style tone (e.g. `polite`, `formal`) |
-| `--agent <id>` | Default agent provider identifier |
-| `--lang <code>` | Project language code (e.g. `en`, `ja`) |
-| `--dry-run` | Preview config output without writing |
+| `--path <path>` | Source path |
+| `--type <type>` | Preset type |
+| `--lang <lang>` | Project language (e.g. `en`, `ja`) |
+| `--agent <provider>` | AI agent provider |
+| `--dry-run` | Preview without writing files |
 
-#### sdd-forge upgrade
+#### `upgrade`
 
-Re-deploys skill files from the current package version to `.claude/skills/` and `.agents/skills/`, and applies any pending `config.json` schema migrations. Safe to run repeatedly; only overwrites template-managed content.
+Re-deploys skill files from the installed package and applies any pending `config.json` schema migrations (e.g. converting `chapters` string arrays to object format). Safe to run after a package update to keep skill files in sync.
 
-```
-sdd-forge upgrade
-sdd-forge upgrade --dry-run
-```
+**Usage:** `sdd-forge upgrade [--dry-run]`
 
 | Option | Description |
-|---|---|
-| `--dry-run` | Show which files would be updated without writing |
+| --- | --- |
+| `--dry-run` | Show what would be updated without writing |
 
-#### sdd-forge presets list
+#### `presets list`
 
-Prints the full preset inheritance tree. Each node shows the preset key, label, axis, lang, aliases, and scan keys. Box-drawing characters indicate parent–child relationships.
+Prints the full preset inheritance tree to stdout using box-drawing characters. Shows each preset's key, axis, language, aliases, scan keys, and whether a `templates/` directory is present.
 
-```
-sdd-forge presets list
-```
+**Usage:** `sdd-forge presets list`
 
-#### sdd-forge docs build
+No options are accepted.
 
-Runs the full documentation pipeline in sequence: `scan` → `enrich` → `init` → `data` → `text` → `readme` → `agents`. When multi-language output is configured, a `translate` step follows. `--regenerate` skips `init` and regenerates text into existing chapter files. Progress is displayed with a step-weighted progress bar.
+#### `docs build`
 
-```
-sdd-forge docs build
-sdd-forge docs build --force --verbose
-sdd-forge docs build --regenerate --dry-run
-```
+Runs the complete documentation pipeline in sequence: `scan → enrich → init → data → text → readme → agents`, with an optional `translate` step for multi-language configurations. AI-dependent steps (`enrich`, `text`) are silently skipped if no `defaultAgent` is configured. Displays a weighted progress bar for each step.
+
+**Usage:** `sdd-forge docs build [options]`
 
 | Option | Description |
-|---|---|
+| --- | --- |
 | `--force` | Overwrite existing chapter files during the `init` step |
-| `--regenerate` | Skip `init`; regenerate text in existing chapter files |
+| `--regenerate` | Skip the `init` step and regenerate text for existing files |
+| `--verbose` | Show detailed step-level output |
 | `--dry-run` | Preview pipeline steps without writing files |
-| `--verbose` | Print detailed step output |
 
-#### sdd-forge docs scan
+#### `docs scan`
 
-Analyzes the project source tree and writes `analysis.json` to `.sdd-forge/output/`. This file is the data foundation for all subsequent pipeline steps.
+Scans the source directory using the project's preset scan configuration and writes `analysis.json` to `.sdd-forge/output/`. This file is the required input for all subsequent pipeline steps.
 
-```
-sdd-forge docs scan
-```
+**Usage:** `sdd-forge docs scan`
 
-#### sdd-forge docs enrich
+#### `docs enrich`
 
-Sends analysis entries to the configured AI agent to annotate each entry with a role, summary, detail text, and chapter classification. Requires `agent.default` to be set in `config.json`. Skipped automatically by `docs build` when no agent is configured.
+Passes `analysis.json` to an AI agent to annotate each entry with a `role`, `summary`, `detail`, and chapter classification. Requires `defaultAgent` to be configured in `config.json`.
 
-```
-sdd-forge docs enrich
-```
+**Usage:** `sdd-forge docs enrich`
 
-#### sdd-forge docs init
+#### `docs init`
 
-Initializes chapter markdown files in the `docs/` directory using the preset template chain for the configured type. Uses AI to filter chapter candidates based on analysis content unless `config.chapters` is defined. Existing files are preserved unless `--force` is given.
+Creates chapter Markdown files in `docs/` by resolving the preset template chain for the configured type. Skips files that already exist unless `--force` is passed. When `config.chapters` is not set and an AI agent is available, uses AI to filter chapters based on analysis content and `docs.style.purpose`.
 
-```
-sdd-forge docs init
-sdd-forge docs init --type hono --force --lang ja
-```
+**Usage:** `sdd-forge docs init [options]`
 
 | Option | Description |
-|---|---|
-| `--type <type>` | Override preset type for template selection |
+| --- | --- |
+| `--type <type>` | Override the preset type |
 | `--force` | Overwrite existing chapter files |
-| `--dry-run` | Preview file creation without writing |
-| `--lang <code>` | Language override for template selection |
-| `--docs-dir <path>` | Override the docs output directory |
+| `--dry-run` | Print intended actions without writing |
 
-#### sdd-forge docs data
+#### `docs data`
 
-Reads chapter files in `docs/` and resolves all `{{data(...)}}` directives by calling resolver methods against the enriched analysis.
+Resolves all `{{data(...)}}` directives in chapter files by calling the appropriate preset resolver methods, then writes the updated content back to each file in place. With `--dry-run`, prints resolved output to stdout without modifying files.
 
-```
-sdd-forge docs data
-sdd-forge docs data --dry-run
-```
+**Usage:** `sdd-forge docs data [--dry-run]`
 
-| Option | Description |
-|---|---|
-| `--dry-run` | Preview directive replacements without writing |
+#### `docs text`
 
-#### sdd-forge docs text
+Fills `{{text(...)}}` directives in chapter files by invoking an AI agent per file with a system prompt derived from documentation style and analysis data. Operates concurrently across files according to `config.concurrency`. Requires `defaultAgent` to be configured.
 
-Fills `{{text(...)}}` directives in chapter markdown files using the configured AI agent. Files are processed concurrently up to the configured concurrency limit. Requires `agent.default` to be set in `config.json`.
+**Usage:** `sdd-forge docs text [--dry-run]`
 
-```
-sdd-forge docs text
-sdd-forge docs text --dry-run
-```
+#### `docs readme`
+
+Generates `README.md` (or a per-language README for multi-language projects) from the preset README template. Resolves `{{data}}` directives and optionally fills `{{text}}` blocks via AI. Skips writing if the generated content is identical to the existing file.
+
+**Usage:** `sdd-forge docs readme [options]`
 
 | Option | Description |
-|---|---|
-| `--dry-run` | Preview without writing |
+| --- | --- |
+| `--lang <lang>` | Target language for template resolution |
+| `--output <path>` | Custom output path (default: `README.md`) |
+| `--dry-run` | Print generated content without writing |
 
-#### sdd-forge docs readme
+#### `docs forge`
 
-Generates or updates `README.md` by merging the preset readme template, resolving `{{data}}` directives, and filling `{{text}}` directives with AI. Skips writing if the generated content is identical to the existing file.
+Runs an iterative AI-driven documentation authoring loop across all chapter files. In each round the agent writes content; then `docs review` is executed and any failures are fed back as `reviewFeedback` for the next round, up to `--max-runs`. Supports three modes: `local` (per-file concurrent agent calls), `assist`, and `agent`.
 
-```
-sdd-forge docs readme
-sdd-forge docs readme --lang ja --output docs/ja/README.md
-```
-
-| Option | Description |
-|---|---|
-| `--lang <code>` | Language override for output |
-| `--output <path>` | Custom output path (default: `README.md` in repo root) |
-| `--dry-run` | Preview without writing |
-
-#### sdd-forge docs forge
-
-AI-driven iterative documentation authoring loop. Builds a system prompt from analysis data and optional spec content, then invokes the AI agent per target file. After each round, runs the review command and feeds failures back as context for the next round, up to `--max-runs` iterations. Supports three modes: `local` (per-file agent calls), `assist`, and `agent`.
-
-```
-sdd-forge docs forge --prompt "Improve overview sections" --mode local
-sdd-forge docs forge --prompt-file improve.txt --spec specs/042/spec.md --max-runs 3
-```
+**Usage:** `sdd-forge docs forge --prompt "<text>" [options]`
 
 | Option | Description |
-|---|---|
-| `--prompt <text>` | Inline prompt text (required unless `--prompt-file` is used) |
-| `--prompt-file <path>` | Path to a file containing the prompt |
-| `--spec <path>` | Path to a spec file for additional context |
-| `--max-runs <n>` | Maximum write-review iterations (default: `3`) |
-| `--review-cmd <cmd>` | Shell command used as the review step (default: `sdd-forge docs review`) |
+| --- | --- |
+| `--prompt <text>` | Instruction for the AI agent (required unless `--prompt-file` is used) |
+| `--prompt-file <path>` | Load prompt text from a file |
+| `--spec <path>` | Path to a `spec.md` file to include as context |
+| `--max-runs <n>` | Maximum write-review rounds (default: 3) |
 | `--mode <mode>` | `local`, `assist`, or `agent` (default: `local`) |
-| `--dry-run` | Preview target files without invoking the agent |
-| `--verbose` / `-v` | Stream agent stdout/stderr during execution |
+| `--review-cmd <cmd>` | Review command to run after each round (default: `sdd-forge docs review`) |
+| `--dry-run` | Skip agent calls; print target file list and exit |
 
-#### sdd-forge docs review
+#### `docs review`
 
-Validates generated documentation quality. Checks each chapter file for: minimum line count (15 lines), presence of an H1 heading, unfilled `{{text}}` directives, unfilled `{{data}}` directives, exposed directive syntax in rendered output, broken HTML comments, and residual block tags. Also verifies that `README.md` exists, that all translated language docs are present and non-empty, and that `analysis.json` coverage aligns with docs content. Exits with code `1` if any check fails.
+Validates generated documentation. For each chapter file, checks: minimum 15 lines, H1 heading presence, unfilled `{{text}}` directives, unfilled `{{data}}` directives, exposed directive syntax, broken HTML comments, and residual block tags. Also verifies `README.md` existence, translation directories for multi-language projects, and `analysis.json` entry coverage. The `docs-dir` argument defaults to `docs/`.
 
-```
-sdd-forge docs review
-sdd-forge docs review docs/
-```
+**Usage:** `sdd-forge docs review [docs-dir]`
 
-#### sdd-forge docs changelog
+#### `docs translate`
 
-Scans `specs/` subdirectories, reads each `spec.md`, and extracts title, status, created date, and description fields to generate a Markdown changelog at `docs/change_log.md`. Outputs both a latest-per-series index table and a full spec table.
+Translates existing chapter files and `README.md` into all configured target languages using an AI agent. Skips files where the target is newer than the source unless `--force` is set. Creates per-language subdirectories under `docs/` automatically. Concurrency is controlled by `config.concurrency`.
 
-```
-sdd-forge docs changelog
-sdd-forge docs changelog --dry-run
-```
+**Usage:** `sdd-forge docs translate [options]`
 
 | Option | Description |
-|---|---|
-| `--dry-run` | Print output to stdout without writing the file |
+| --- | --- |
+| `--lang <lang>` | Translate to a single target language only |
+| `--force` | Re-translate even when the target file is up to date |
+| `--dry-run` | Show what would be translated without writing |
 
-#### sdd-forge docs agents
+#### `docs changelog`
 
-Generates or updates `AGENTS.md` by merging SDD template content (via `{{data}}` directives) with AI-generated project context derived from docs chapter content, `README.md`, and `package.json` scripts. Creates `AGENTS.md` with a stub template if it does not exist.
+Scans `specs/` for numbered subdirectories (`NNN-name` or `bak.NNN-name`), reads each `spec.md`, and extracts title, status, created date, and description. Outputs a Markdown file with a latest-by-series index table and a full history table. Default output path is `docs/change_log.md`.
 
-```
-sdd-forge docs agents
-sdd-forge docs agents --dry-run
-```
+**Usage:** `sdd-forge docs changelog [out-file] [--dry-run]`
 
-| Option | Description |
-|---|---|
-| `--dry-run` | Print the generated content to stdout without writing |
+#### `docs agents`
 
-#### sdd-forge docs translate
+Generates or updates `AGENTS.md` in the source root. Creates the file with directive stubs if absent. Resolves `{{data("agents.sdd")}}` (SDD template section) and `{{data("agents.project")}}` (project-specific section) directives, then calls an AI agent to refine the PROJECT section using `package.json` scripts, generated docs content, and `README.md` as context. Content outside directive blocks is preserved.
 
-Translates the default-language docs chapter files and `README.md` into one or more configured non-default languages. Translation tasks run concurrently. Skips files where the target is newer than the source unless `--force` is set. Creates per-language subdirectories under `docs/` automatically.
+**Usage:** `sdd-forge docs agents [--dry-run]`
 
-```
-sdd-forge docs translate
-sdd-forge docs translate --lang ja --force
-```
+#### `flow prepare`
 
-| Option | Description |
-|---|---|
-| `--lang <code>` | Translate into a specific language only |
-| `--force` | Retranslate even when the target file is up-to-date |
-| `--dry-run` | Preview the list of files that would be translated |
+Initializes a new SDD flow by creating a spec file under `specs/`, writing the initial `flow.json` state, and optionally creating a feature branch or git worktree for isolated development. Requires `config.json` to be present.
 
-#### sdd-forge flow prepare
+**Usage:** `sdd-forge flow prepare [options]`
 
-Initializes a new SDD flow by creating a numbered spec directory under `specs/`, writing `flow.json`, and optionally creating a feature branch or git worktree. Requires a clean working tree when a branch or worktree is requested. Outputs a JSON envelope confirming the initialized state.
+#### `flow get <key>`
 
-```
-sdd-forge flow prepare
-```
+Reads a value from the active flow state and emits a structured JSON envelope to stdout. Supported keys:
 
-#### sdd-forge flow get
+- **`status`** — Full flow state including phase, steps progress, requirements progress, branch info, metrics, and notes.
+- **`prompt <kind>`** — Predefined choice prompts for a given phase/step key (e.g. `plan.approach`, `finalize.mode`, `impl.review-mode`).
+- **`issue <number>`** — Fetch GitHub issue title, body, labels, and state via `gh issue view`.
 
-Reads values from the active flow state and writes a structured JSON envelope to stdout. Exits with `EXIT_ERROR` if no active flow is found for keys that require one.
+**Usage:** `sdd-forge flow get status | prompt <kind> | issue <number>`
 
-Supported keys:
+#### `flow set <key>`
 
-| Key | Description |
-|---|---|
-| `status` | Current phase, step list with statuses, requirements progress, and branch information |
-| `issue` | Fetch a linked GitHub issue by number via `gh issue view` |
-| `prompt` | Retrieve a predefined prompt object by kind (e.g. `plan.approach`, `finalize.mode`) |
+Persists a value into the active `flow.json`. Supported keys:
 
-```
-sdd-forge flow get status
-sdd-forge flow get issue
-sdd-forge flow get prompt plan.approach
-```
+- **`issue <number>`** — Associate a GitHub issue number with the current flow.
+- **`step <id> <status>`** — Update the status of a named workflow step.
+- **`metric <phase> <counter>`** — Increment a phase metric counter such as `docsRead`, `srcRead`, `question`, or `redo`.
+- **`note <text>`** — Append a free-text note to the flow's notes array.
+- **`auto on|off`** — Enable or disable autoApprove mode for the flow session.
 
-#### sdd-forge flow set
+**Usage:** `sdd-forge flow set <key> [args]`
 
-Writes values into the active flow state and outputs a JSON envelope to stdout.
+#### `flow run <action>`
 
-Supported keys:
+Executes a named flow pipeline action. Supported actions:
 
-| Key | Arguments | Description |
-|---|---|---|
-| `issue` | `<number>` | Associate a GitHub issue number with the current flow |
-| `metric` | `<phase> <key> <value>` | Record or increment a flow phase metric counter |
+- **`finalize`** — Orchestrates commit, merge or PR creation, retrospective, docs sync, workspace cleanup, and session record. Accepts `--mode all|select`, `--steps <1,2,...>`, `--merge-strategy squash|pr`, and `--message`.
+- **`lint`** — Runs guardrail lint checks on files changed relative to the base branch. Accepts `--base <branch>`.
+- **`sync`** — Triggers `docs build`, runs `docs review`, stages docs files, and commits with `docs: sync documentation`.
+- **`retro`** — Evaluates spec accuracy by comparing stated requirements against the actual git diff.
+- **`review`** — Runs AI-driven code quality review: generates refactoring proposals, merges verdicts, and optionally applies approved patches.
 
-```
-sdd-forge flow set issue 42
-sdd-forge flow set metric plan docsRead 1
-```
+**Usage:** `sdd-forge flow run <action> [options]`
 
-#### sdd-forge flow run finalize
-
-Executes the finalization pipeline. In `--mode all`, runs all six steps in sequence: commit (1) → merge (2) → retro (3) → sync (4) → cleanup (5) → record (6). In `--mode select`, runs only the numbered steps supplied via `--steps`. Merge strategy is auto-detected from config unless overridden.
-
-```
-sdd-forge flow run finalize --mode all
-sdd-forge flow run finalize --mode select --steps 1,2 --merge-strategy pr
-sdd-forge flow run finalize --mode all --dry-run
-```
-
-| Option | Description |
-|---|---|
-| `--mode <all\|select>` | Run all steps or a specific subset (required) |
-| `--steps <n,n,...>` | Comma-separated step numbers when using `--mode select` |
-| `--merge-strategy <squash\|pr>` | Override merge strategy (`squash` or `pr`; default: auto) |
-| `--message <msg>` | Custom commit message for step 1 |
-| `--dry-run` | Preview steps without executing |
-
-#### sdd-forge flow run lint
-
-Runs guardrail lint patterns against files changed between the base branch and HEAD. Loads merged guardrail articles and reports violations. Returns a JSON envelope with pass/fail status, violation list, and file count.
-
-```
-sdd-forge flow run lint
-sdd-forge flow run lint --base main
-```
-
-| Option | Description |
-|---|---|
-| `--base <branch>` | Base branch for `git diff` (auto-resolved from `flow.json` when omitted) |
-
-#### sdd-forge flow run sync
-
-Synchronizes documentation with the current code state by running `docs build` → `docs review` → `git add` → `git commit`. Returns a JSON envelope listing changed files. The commit is skipped if there are no staged changes after the build.
-
-```
-sdd-forge flow run sync
-sdd-forge flow run sync --dry-run
-```
-
-| Option | Description |
-|---|---|
-| `--dry-run` | Preview without writing or committing |
-
-#### sdd-forge flow run review
-
-Orchestrates AI-driven code review across two sequential phases: test review (gap analysis between test design and existing test files, with up to three retries) and code review (draft proposal generation, verdict merging, and optional patch application). Writes `review.md` and `test-review.md` to the spec directory. Returns a JSON envelope with proposal counts and verdicts.
-
-```
-sdd-forge flow run review
-```
-
-#### sdd-forge flow run retro
-
-Collects retrospective data by comparing spec requirements against the git diff between the base branch and HEAD. Saves results to `retro.json` in the spec directory and returns a summary via the JSON envelope.
-
-```
-sdd-forge flow run retro
-```
+All actions support `--dry-run` to preview operations without side effects.
 <!-- {{/text}} -->
 
 ### Exit Codes and Output
 
 <!-- {{text({prompt: "Define exit codes and describe stdout/stderr conventions in table format. Extract from process.exit() calls and output patterns in the source code.", mode: "deep"})}} -->
 
-All commands exit with one of two codes:
+| Exit Code | Constant | Condition |
+| --- | --- | --- |
+| `0` | — | Command completed successfully, or `--help` was requested |
+| `1` | `EXIT_ERROR` | Unknown subcommand, missing required argument, pipeline failure, or unrecoverable runtime error |
 
-| Exit Code | Constant | Meaning |
-|---|---|---|
-| `0` | *(implicit success)* | Command completed successfully |
-| `1` | `EXIT_ERROR` | Fatal error — invalid arguments, missing config, pipeline failure, or quality check failure |
+**stdout conventions:** Progress messages and generated content are written to stdout via `console.log`. `flow get`, `flow set`, and `flow run` commands emit a structured JSON envelope to stdout in the form `{"group":"<group>","command":"<cmd>","status":"ok"|"fail","data":{...}}`. Failure envelopes include a `code` string and a `message` field.
 
-`docs review` exits with code `1` when quality failures are detected, even though the command itself ran without a runtime error. Unknown subcommands in `docs`, `flow`, and the top-level dispatcher also exit with `EXIT_ERROR`.
+**stderr conventions:** Warning messages (prefixed `WARN:`) and error details (prefixed `ERROR:`) are written to stderr via `console.error`. Within `docs build`, skipped AI steps emit `WARN:` lines to stderr. The `--verbose` flag routes additional step-level output to stderr.
 
-**stdout / stderr conventions:**
-
-| Category | Stream | Format |
-|---|---|---|
-| `flow get`, `flow set`, `flow run` | stdout | Structured JSON envelope: `{ ok, type, key, data, errors }` |
-| `docs` pipeline commands | stdout | Human-readable log lines prefixed with `[step]` |
-| `docs build` progress | stdout | Step-weighted progress bar with optional verbose log lines |
-| Error and unknown-command messages | stderr | Plain text, prefixed with the command path (e.g. `sdd-forge docs: unknown command 'foo'`) |
-| `--help` output | stdout | Plain text usage block |
-
-Flow command JSON envelopes follow this structure:
-
-```json
-{ "ok": true,  "type": "get", "key": "status", "data": { ... }, "errors": [] }
-{ "ok": false, "type": "run", "key": "lint",   "data": null,   "errors": [{ "code": "LINT_FAILED", "messages": ["..."] }] }
-```
+**`--dry-run` behavior:** All commands that accept `--dry-run` skip file writes and subprocess invocations, instead printing intended actions to stdout, and then exit with code 0.
 <!-- {{/text}} -->
 
 ---

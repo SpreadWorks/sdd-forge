@@ -11,7 +11,7 @@
 
 <!-- {{text({prompt: "Write a 1-2 sentence overview of this chapter. Include the number of major directories and their roles."})}} -->
 
-The project is organized into four major directories: `src/docs` (documentation generation commands, data sources, and libraries), `src/flow` (spec-driven development workflow commands and handlers), `src/lib` (shared utility libraries and models), and `src` (top-level CLI entry points and controllers).
+This chapter covers the source code layout of the `sdd-forge` package, organized across three major directories: `src/` for top-level CLI entry points and controllers, `src/docs/` for documentation generation commands and data sources, `src/flow/` for Spec-Driven Development workflow handlers, and `src/lib/` for shared utility libraries used throughout the tool.
 <!-- {{/text}} -->
 
 ## Content
@@ -51,10 +51,10 @@ src/lib/    (lib, model)
 
 | Module | File Path | Responsibility |
 | --- | --- | --- |
-| cli | `src/lib/cli.js` | Provides core CLI utilities including repository root resolution, argument parsing, worktree detection, and timestamp formatting. |
-| entrypoint | `src/lib/entrypoint.js` | Guards script entry points, distinguishing direct execution from module imports; wraps main functions with error-exit handling. |
-| exit-codes | `src/lib/exit-codes.js` | Exports `EXIT_SUCCESS` (0) and `EXIT_ERROR` (1) constants to eliminate magic numbers across CLI commands and flow handlers. |
-| presets | `src/lib/presets.js` | Discovers available presets from the filesystem, resolves inheritance chains via `parent` references, and exposes lookup utilities used throughout the tool. |
+| `cli.js` | `src/lib/cli.js` | Provides core CLI utilities including repository root resolution, argument parsing, worktree detection, and the `PKG_DIR` constant used for script path resolution across the codebase. |
+| `entrypoint.js` | `src/lib/entrypoint.js` | Supplies `isDirectRun` and `runIfDirect` guards that distinguish direct script execution from module imports, enabling commands to function both as standalone executables and as importable modules. |
+| `exit-codes.js` | `src/lib/exit-codes.js` | Exports `EXIT_SUCCESS` (0) and `EXIT_ERROR` (1) constants to centralize exit code definitions and eliminate magic numbers across CLI commands and flow handlers. |
+| `presets.js` | `src/lib/presets.js` | Implements the preset registry and inheritance chain resolver, discovering all available presets from `src/presets/` at startup and resolving linear ancestor chains with circular reference detection. |
 <!-- {{/text}} -->
 
 ---
