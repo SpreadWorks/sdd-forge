@@ -19,20 +19,22 @@ A spec-first development flow manager designed to work with AI coding agents.
 Every feature goes through three phases, from spec to merge.
 
 ```
-plan ─────── Specification
-│  ├─ draft      Refine requirements through dialogue
-│  ├─ spec       Create spec (feature branch + spec.md)
-│  ├─ gate       Spec validation + guardrail check
-│  └─ test       Review test plan → write test code
+plan ──────── Specification
+│  ├─ draft       Refine requirements through dialogue
+│  ├─ spec        Create spec (feature branch + spec.md)
+│  ├─ gate        Spec validation + guardrail check
+│  ├─ approval    User sign-off
+│  └─ test        Write test code
 │
-implement ── Implementation
-│  ├─ code       Write code after gate PASS
-│  └─ review     AI code review
+implement ─── Coding
+│  ├─ implement   Write code after gate PASS
+│  └─ review      AI code review
 │
-merge ────── Wrap-up
-   ├─ docs       Auto-update documentation
-   ├─ commit     Commit changes
-   └─ merge      Merge to base branch → cleanup
+finalize ──── Wrap-up
+│  ├─ commit      Commit + retro + report
+│  ├─ merge       Squash merge or PR
+│  ├─ sync        Auto-update documentation
+│  └─ cleanup     Remove branch / worktree
 ```
 
 ### AI stays in its lane
@@ -81,15 +83,15 @@ If you already have source code, generate documentation to get a complete pictur
 |---|---|
 | `/sdd-forge.flow-plan` | plan (specification) |
 | `/sdd-forge.flow-impl` | implement (coding + review) |
-| `/sdd-forge.flow-merge` | merge (wrap-up) |
+| `/sdd-forge.flow-finalize` | finalize (commit, merge, docs sync, cleanup) |
 
-**[Codex CLI](https://github.com/openai/codex)** — invoke via `$` prefix:
+**CLI** — invoke directly from terminal:
 
 | Command | Phase |
 |---|---|
-| `$sdd-forge flow start` | plan (start specification) |
-| `$sdd-forge flow review` | implement (AI code review) |
-| `$sdd-forge flow merge` | merge (wrap-up) |
+| `sdd-forge flow prepare --title "..." --base main` | plan (create spec + branch) |
+| `sdd-forge flow run review` | implement (AI code review) |
+| `sdd-forge flow run finalize --mode all` | finalize (wrap-up) |
 
 ## Commands
 
@@ -99,8 +101,8 @@ If you already have source code, generate documentation to get a complete pictur
 | `docs build` | Run the full documentation pipeline |
 | `docs readme` | Generate `README.md` from `docs/` |
 | `docs review` | Check documentation quality |
-| `flow start` | Start the SDD flow |
-| `flow status` | Show flow progress |
+| `flow prepare` | Create spec and branch |
+| `flow get status` | Show flow progress |
 | `presets` | List available presets |
 | `help` | Show all commands |
 
@@ -112,10 +114,12 @@ See `sdd-forge help` or the [command reference](docs/cli_commands.md) for the fu
 
 ```jsonc
 {
-  "type": "cli/node-cli",     // project type (preset selection)
-  "lang": "en",               // operating language
-  "defaultAgent": "claude",   // AI agent
-  "providers": { ... }        // agent settings
+  "type": "node-cli",          // project type (preset name)
+  "lang": "en",                // operating language
+  "agent": {
+    "default": "claude",       // AI agent
+    "providers": { ... }       // agent settings
+  }
 }
 ```
 
