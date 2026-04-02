@@ -645,8 +645,17 @@ async function main(ctx) {
       const changedChapters = detectChangedChapters(analysis, srcRoot);
       if (changedChapters) {
         if (changedChapters.size === 0) {
-          logger.log("No source changes detected. Use --force to regenerate all chapters.");
-          return { errors: [] };
+          // No source changes, but check for unfilled text directives
+          const unfilledFiles = targetFiles.filter((f) => {
+            const content = fs.readFileSync(path.join(docsDir, f), "utf8");
+            return !allTextDirectivesFilled(content);
+          });
+          if (unfilledFiles.length === 0) {
+            logger.log("No source changes detected. Use --force to regenerate all chapters.");
+            return { errors: [] };
+          }
+          targetFiles = unfilledFiles;
+          logger.log(`No source changes, but ${unfilledFiles.length} file(s) have unfilled text directives.`);
         }
         const before = targetFiles.length;
         targetFiles = targetFiles.filter((f) => {
