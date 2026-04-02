@@ -29,16 +29,32 @@ function extractEssential(code) {
   const kept = [];
   for (const line of lines) {
     const t = line.trim();
+    // JS/TS patterns
     if (/^import\s/.test(t)) { kept.push(t); continue; }
     if (/^export\s/.test(t)) { kept.push(t); continue; }
     if (/^(const|let|var)\s+[A-Z_]+\s*=/.test(t)) { kept.push(t); continue; }
-    if (/^(async\s+)?function\s/.test(t)) { kept.push(t); continue; }
-    if (/^class\s/.test(t)) { kept.push(t); continue; }
+    // PHP patterns
+    if (/^(require|require_once|include|include_once)\s/.test(t)) { kept.push(t); continue; }
+    if (/^use\s/.test(t)) { kept.push(t); continue; }
+    if (/^namespace\s/.test(t)) { kept.push(t); continue; }
+    if (/^\$(this->)?\w+\s*=\s*new\s/.test(t)) { kept.push(t); continue; }
+    // Python patterns
+    if (/^(from\s+\S+\s+)?import\s/.test(t)) { kept.push(t); continue; }
+    if (/^def\s/.test(t)) { kept.push(t); continue; }
+    // Universal patterns
+    if (/^(public|protected|private|static|abstract)?\s*(async\s+)?function\s/.test(t)) { kept.push(t); continue; }
+    if (/^(abstract\s+)?class\s/.test(t)) { kept.push(t); continue; }
     if (/^\s*return\s/.test(line)) { kept.push(t); continue; }
     if (/^\s*throw\s/.test(line)) { kept.push(t); continue; }
-    if (/^\s*(await\s|new\s)/.test(line)) { kept.push(t); continue; }
+    if (/^\s*(await\s|new\s|yield\s)/.test(line)) { kept.push(t); continue; }
     if (/\b(fs\.|path\.|JSON\.|process\.|child_process)/.test(t) && !/^\/\//.test(t)) { kept.push(t); continue; }
   }
+
+  // If extraction is too sparse (< 5% of original), fall back to regular minify
+  if (kept.length > 0 && kept.join("\n").length < code.length * 0.05) {
+    return null; // signal caller to fall back
+  }
+
   return kept.join("\n");
 }
 
@@ -46,7 +62,9 @@ export function minify(code, filePath, opts) {
   if (!code) return code;
 
   if (opts?.mode === "essential") {
-    return extractEssential(code);
+    const essential = extractEssential(code);
+    if (essential !== null) return essential;
+    // Fall back to regular minify if essential extraction is too sparse
   }
 
   let result = removeBlankLines(code);
