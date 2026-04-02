@@ -26,8 +26,10 @@ function createFlowState(tmp) {
 }
 
 function runSetAuto(tmp, value) {
-  const script = path.resolve("src/flow/set/auto.js");
-  const result = execFileSync("node", [script, value], {
+  const script = path.resolve("src/sdd-forge.js");
+  const args = ["flow", "set", "auto"];
+  if (value !== undefined) args.push(value);
+  const result = execFileSync("node", [script, ...args], {
     encoding: "utf8",
     cwd: tmp,
     env: { ...process.env, SDD_WORK_ROOT: tmp },
@@ -67,13 +69,8 @@ describe("flow set auto", () => {
   });
 
   it("fails without argument", () => {
-    const script = path.resolve("src/flow/set/auto.js");
     try {
-      execFileSync("node", [script], {
-        encoding: "utf8",
-        cwd: tmp,
-        env: { ...process.env, SDD_WORK_ROOT: tmp },
-      });
+      runSetAuto(tmp, undefined);
       assert.fail("should have thrown");
     } catch (e) {
       const output = JSON.parse(e.stdout.trim());

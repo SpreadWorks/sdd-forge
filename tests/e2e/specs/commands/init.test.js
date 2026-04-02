@@ -18,7 +18,7 @@ describe("spec init CLI", () => {
     execFileSync("git", ["-C", tmp, "checkout", "-b", "main"], { encoding: "utf8" });
     execFileSync("git", ["-C", tmp, "commit", "--allow-empty", "-m", "init"], { encoding: "utf8" });
 
-    const result = execFileSync("node", [CMD, "flow", "run", "prepare-spec", "--title", "test-feature", "--base", "main", "--dry-run"], {
+    const result = execFileSync("node", [CMD, "flow", "prepare", "--title", "test-feature", "--base", "main", "--dry-run"], {
       encoding: "utf8",
       env: { ...process.env, SDD_WORK_ROOT: tmp },
     });
@@ -31,7 +31,7 @@ describe("spec init CLI", () => {
 
   it("throws when no title given", () => {
     try {
-      execFileSync("node", [CMD, "flow", "run", "prepare-spec"], {
+      execFileSync("node", [CMD, "flow", "prepare"], {
         encoding: "utf8",
         env: { ...process.env, SDD_WORK_ROOT: "/tmp" },
       });
@@ -49,7 +49,7 @@ describe("spec init CLI", () => {
     execFileSync("git", ["-C", tmp, "checkout", "-b", "main"], { encoding: "utf8" });
     execFileSync("git", ["-C", tmp, "commit", "--allow-empty", "-m", "init"], { encoding: "utf8" });
 
-    const result = execFileSync("node", [CMD, "flow", "run", "prepare-spec", "--title", "my-feat", "--base", "main"], {
+    const result = execFileSync("node", [CMD, "flow", "prepare", "--title", "my-feat", "--base", "main"], {
       encoding: "utf8",
       env: { ...process.env, SDD_WORK_ROOT: tmp },
     });
@@ -63,7 +63,7 @@ describe("spec init CLI", () => {
   });
 
   it("shows help with --help", () => {
-    const result = execFileSync("node", [CMD, "flow", "run", "prepare-spec", "--help"], {
+    const result = execFileSync("node", [CMD, "flow", "prepare", "--help"], {
       encoding: "utf8",
       env: { ...process.env, SDD_WORK_ROOT: "/tmp" },
     });
@@ -78,7 +78,7 @@ describe("spec init CLI", () => {
     execFileSync("git", ["-C", tmp, "checkout", "-b", "main"], { encoding: "utf8" });
     execFileSync("git", ["-C", tmp, "commit", "--allow-empty", "-m", "init"], { encoding: "utf8" });
 
-    const result = execFileSync("node", [CMD, "flow", "run", "prepare-spec", "--title", "nb-feat", "--base", "main", "--no-branch"], {
+    const result = execFileSync("node", [CMD, "flow", "prepare", "--title", "nb-feat", "--base", "main", "--no-branch"], {
       encoding: "utf8",
       env: { ...process.env, SDD_WORK_ROOT: tmp },
     });
@@ -102,7 +102,7 @@ describe("spec init CLI", () => {
     execFileSync("git", ["-C", tmp, "checkout", "-b", "main"], { encoding: "utf8" });
     execFileSync("git", ["-C", tmp, "commit", "--allow-empty", "-m", "init"], { encoding: "utf8" });
 
-    const result = execFileSync("node", [CMD, "flow", "run", "prepare-spec", "--title", "test-so", "--base", "main", "--no-branch", "--dry-run"], {
+    const result = execFileSync("node", [CMD, "flow", "prepare", "--title", "test-so", "--base", "main", "--no-branch", "--dry-run"], {
       encoding: "utf8",
       env: { ...process.env, SDD_WORK_ROOT: tmp },
     });
@@ -118,7 +118,7 @@ describe("spec init CLI", () => {
     execFileSync("git", ["-C", tmp, "checkout", "-b", "main"], { encoding: "utf8" });
     execFileSync("git", ["-C", tmp, "commit", "--allow-empty", "-m", "init"], { encoding: "utf8" });
 
-    const result = execFileSync("node", [CMD, "flow", "run", "prepare-spec", "--title", "wt-feat", "--base", "main", "--worktree"], {
+    const result = execFileSync("node", [CMD, "flow", "prepare", "--title", "wt-feat", "--base", "main", "--worktree"], {
       encoding: "utf8",
       env: { ...process.env, SDD_WORK_ROOT: tmp },
     });
@@ -141,7 +141,7 @@ describe("spec init CLI", () => {
     execFileSync("git", ["-C", tmp, "checkout", "-b", "main"], { encoding: "utf8" });
     execFileSync("git", ["-C", tmp, "commit", "--allow-empty", "-m", "init"], { encoding: "utf8" });
 
-    const result = execFileSync("node", [CMD, "flow", "run", "prepare-spec", "--title", "test-wt", "--base", "main", "--worktree", "--dry-run"], {
+    const result = execFileSync("node", [CMD, "flow", "prepare", "--title", "test-wt", "--base", "main", "--worktree", "--dry-run"], {
       encoding: "utf8",
       env: { ...process.env, SDD_WORK_ROOT: tmp },
     });
@@ -161,7 +161,7 @@ describe("spec init CLI", () => {
     const wtPath = join(tmp, "auto-wt");
     execFileSync("git", ["-C", tmp, "worktree", "add", wtPath, "-b", "wt-auto"], { encoding: "utf8" });
 
-    const result = execFileSync("node", [CMD, "flow", "run", "prepare-spec", "--title", "auto-feat", "--base", "main"], {
+    const result = execFileSync("node", [CMD, "flow", "prepare", "--title", "auto-feat", "--base", "main"], {
       encoding: "utf8",
       env: { ...process.env, SDD_WORK_ROOT: wtPath },
     });

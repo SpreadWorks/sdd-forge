@@ -4,6 +4,7 @@ import { join } from "path";
 import { checkSpecText } from "../../../../src/flow/run/gate.js";
 import { createTmpDir, removeTmpDir, writeFile } from "../../../helpers/tmp-dir.js";
 import { execFileSync } from "child_process";
+import { setupFlow } from "../../../helpers/flow-setup.js";
 
 describe("checkSpecText", () => {
   it("returns no issues for a valid spec", () => {
@@ -233,6 +234,9 @@ describe("gate CLI", () => {
 
   it("exits 0 on valid spec", () => {
     tmp = createTmpDir();
+    execFileSync("git", ["init", tmp], { stdio: "ignore" });
+    execFileSync("git", ["-C", tmp, "commit", "--allow-empty", "-m", "init"], { stdio: "ignore" });
+    setupFlow(tmp);
     const specContent = [
       "# Spec",
       "## Clarifications (Q&A)",
@@ -255,6 +259,9 @@ describe("gate CLI", () => {
 
   it("exits non-zero on invalid spec", () => {
     tmp = createTmpDir();
+    execFileSync("git", ["init", tmp], { stdio: "ignore" });
+    execFileSync("git", ["-C", tmp, "commit", "--allow-empty", "-m", "init"], { stdio: "ignore" });
+    setupFlow(tmp);
     writeFile(tmp, "spec.md", "# Empty spec\n");
 
     try {
