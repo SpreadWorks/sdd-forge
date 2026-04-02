@@ -10,8 +10,6 @@
 ## Description
 
 <!-- {{text({prompt: "Write a 1-2 sentence overview of this chapter. Include the number of major directories and their roles."})}} -->
-
-This chapter describes the directory layout of the `sdd-forge` source tree, which is organized into three major areas: `src/docs/` for documentation generation (commands, data sources, and libraries), `src/flow/` for the Spec-Driven Development workflow engine, and `src/lib/` for shared utilities used across the entire codebase.
 <!-- {{/text}} -->
 
 ## Content
@@ -48,15 +46,6 @@ src/lib/    (lib)
 ### Shared Libraries
 
 <!-- {{text({prompt: "List the shared libraries with class name, file path, and responsibility in table format."})}} -->
-
-The `src/lib/` directory contains four shared library modules used throughout the tool.
-
-| Module | File Path | Responsibility |
-| --- | --- | --- |
-| cli | `src/lib/cli.js` | Provides `repoRoot`, `sourceRoot`, `parseArgs`, worktree detection helpers, `PKG_DIR`, and timestamp formatting for CLI commands |
-| entrypoint | `src/lib/entrypoint.js` | Supplies `isDirectRun` and `runIfDirect` guards so scripts can be both executed directly and imported as modules |
-| exit-codes | `src/lib/exit-codes.js` | Exports `EXIT_SUCCESS` (0) and `EXIT_ERROR` (1) constants to eliminate magic numbers across CLI commands and flow handlers |
-| presets | `src/lib/presets.js` | Discovers available presets from the filesystem, resolves `parent`-based inheritance chains, and exposes lookup utilities including `resolveChainSafe` for graceful fallback on unknown preset keys |
 <!-- {{/text}} -->
 
 ---
