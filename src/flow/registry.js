@@ -158,11 +158,11 @@ export const FLOW_COMMANDS = {
       helpKey: "flow.run.impl-confirm",
       execute: () => import("./run/impl-confirm.js"),
     },
+    // finalize runs cleanup internally which deletes .active-flow,
+    // so post hooks cannot update step status. Managed by the skill.
     finalize: {
       helpKey: "flow.run.finalize",
-      pre: stepPre("finalize"),
       execute: () => import("./run/finalize.js"),
-      post: stepPost("finalize"),
     },
     sync: {
       helpKey: "flow.run.sync",
