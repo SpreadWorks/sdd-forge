@@ -26,7 +26,7 @@ src/docs/lib/lang/    (lib)
 src/flow/    (config)
 src/flow/commands/    (cli)
 src/flow/get/    (lib, cli)
-src/flow/run/    (cli, lib, controller)
+src/flow/run/    (controller, lib, cli)
 src/flow/set/    (cli, lib)
 src/lib/    (lib, model)
 ```
