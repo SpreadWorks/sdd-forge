@@ -10,6 +10,8 @@ import { parseArgs, PKG_DIR } from "../../lib/cli.js";
 import { resolveWorktreePaths } from "../../lib/flow-state.js";
 import { runSync } from "../../lib/process.js";
 import { ok, fail, output } from "../../lib/flow-envelope.js";
+import { generateReport, saveReport } from "../commands/report.js";
+import { loadRedoLog } from "../set/redo.js";
 import path from "path";
 
 const STEP_MAP = {
@@ -18,7 +20,7 @@ const STEP_MAP = {
   3: "retro",
   4: "sync",
   5: "cleanup",
-  6: "record",
+  6: "report",
 };
 
 export async function execute(ctx) {
@@ -174,9 +176,18 @@ export async function execute(ctx) {
         } catch (_) {
           // ignore errors for missing files
         }
+        // Capture diff before commit for report (R3)
+        let diffStat = null;
+        let diffSummary = null;
+        try {
+          diffStat = execFileSync("git", ["diff", "--cached", "--stat"], { cwd: syncCwd, encoding: "utf8" }).trim();
+          diffSummary = execFileSync("git", ["diff", "--cached", "--name-only"], { cwd: syncCwd, encoding: "utf8" }).trim();
+        } catch (_) {
+          // non-critical: diff info is optional for report
+        }
         try {
           execFileSync("git", ["commit", "-m", "docs: sync documentation"], { cwd: syncCwd, encoding: "utf8" });
-          results.sync = { status: "done" };
+          results.sync = { status: "done", ...(diffStat && { diffStat }), ...(diffSummary && { diffSummary }) };
         } catch (e) {
           if (/nothing to commit/i.test(String(e.stderr || e.message || ""))) {
             results.sync = { status: "skipped", message: "nothing to commit" };
@@ -203,9 +214,62 @@ export async function execute(ctx) {
     }
   }
 
-  // Step 6: record (placeholder)
+  // Step 6: report (R1, R2, R4, R5, R6, R7)
   if (activeSteps.has(6)) {
-    results.record = { status: cli.dryRun ? "dry-run" : "done" };
+    if (cli.dryRun) {
+      results.report = { status: "dry-run" };
+    } else {
+      try {
+        // Collect implementation diff stat and commit messages
+        let implDiffStat = "";
+        let commitMessages = [];
+        try {
+          implDiffStat = execFileSync(
+            "git", ["diff", "--stat", `${state.baseBranch}...HEAD`],
+            { cwd: root, encoding: "utf8" },
+          ).trim();
+        } catch (_) {
+          // feature branch may not have diverged
+        }
+        try {
+          commitMessages = execFileSync(
+            "git", ["log", "--format=%s", `${state.baseBranch}..HEAD`],
+            { cwd: root, encoding: "utf8" },
+          ).trim().split("\n").filter(Boolean);
+        } catch (_) {
+          // no commits
+        }
+
+        // Load redolog
+        let redolog = { entries: [] };
+        try {
+          redolog = loadRedoLog(root, state.spec);
+        } catch (_) {
+          // no redolog file
+        }
+
+        const report = generateReport({
+          state,
+          results,
+          redolog,
+          implDiffStat,
+          commitMessages,
+        });
+
+        // Save to specs/NNN/report.json (R5)
+        try {
+          saveReport(root, state.spec, report);
+        } catch (e) {
+          // save failure is non-blocking, but report the error
+          report.saveError = e.message;
+        }
+
+        results.report = { status: "done", ...report };
+      } catch (e) {
+        // R7: report errors do not block pipeline
+        results.report = { status: "failed", message: String(e.message || e) };
+      }
+    }
   }
 
   // Mark missing steps as skipped
