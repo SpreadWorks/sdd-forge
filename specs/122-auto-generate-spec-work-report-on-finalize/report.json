@@ -1,0 +1,31 @@
+{
+  "data": {
+    "implementation": {
+      "diffStat": null,
+      "commits": []
+    },
+    "retro": null,
+    "redolog": {
+      "count": 1,
+      "entries": [
+        {
+          "step": "gate",
+          "reason": "gate rejects R5 overwrite policy repeatedly despite justification",
+          "resolution": "add note that report.json is an output artifact, not user data"
+        }
+      ]
+    },
+    "metrics": {
+      "docsRead": 0,
+      "srcRead": 0,
+      "question": 5,
+      "redo": 1
+    },
+    "sync": {
+      "status": "done",
+      "diffStat": "docs/ja/README.md          |   2 +-\n docs/ja/internal_design.md | 384 +++++++++++++++++++++------------------------\n 2 files changed, 178 insertions(+), 208 deletions(-)",
+      "diffSummary": "docs/ja/README.md\ndocs/ja/internal_design.md"
+    }
+  },
+  "text": "──────────────────────────────────────────────────────────\n  Implementation\n──────────────────────────────────────────────────────────\n\n──────────────────────────────────────────────────────────\n  Retro\n──────────────────────────────────────────────────────────\n\n  (not available)\n\n──────────────────────────────────────────────────────────\n  Redo\n──────────────────────────────────────────────────────────\n\n  Total: 1\n    [gate] gate rejects R5 overwrite policy repeatedly despite justification → add note that report.json is an output artifact, not user data\n\n──────────────────────────────────────────────────────────\n  Metrics\n──────────────────────────────────────────────────────────\n\n  docs read: 0  src read: 0  questions: 5  redos: 1\n\n──────────────────────────────────────────────────────────\n  Sync\n──────────────────────────────────────────────────────────\n\n  Docs changes:\n    docs/ja/README.md          |   2 +-\n     docs/ja/internal_design.md | 384 +++++++++++++++++++++------------------------\n     2 files changed, 178 insertions(+), 208 deletions(-)\n\n  Summary:\n    docs/ja/README.md\ndocs/ja/internal_design.md\n"
+}
