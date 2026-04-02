@@ -1,0 +1,33 @@
+{
+  "spec": "specs/126-add-text-txt-verify/spec.md",
+  "date": "2026-04-02T11:27:06.656Z",
+  "requirements": [
+    {
+      "desc": "R1: text.txtをルートに作成",
+      "status": "done",
+      "note": "text.txt がルートに作成され、内容は \"text\" のみ（改行付き）"
+    }
+  ],
+  "unplanned": [
+    {
+      "file": "specs/126-add-text-txt-verify/flow.json",
+      "change": "SDD フロー管理ファイルの作成（フロー管理の一部であり想定内）"
+    },
+    {
+      "file": "specs/126-add-text-txt-verify/qa.md",
+      "change": "Q&A ドキュメントの作成（SDD フローの標準成果物）"
+    },
+    {
+      "file": "specs/126-add-text-txt-verify/spec.md",
+      "change": "仕様書の作成（SDD フローの標準成果物）"
+    }
+  ],
+  "summary": {
+    "total": 1,
+    "done": 1,
+    "partial": 0,
+    "not_done": 0,
+    "rate": 1,
+    "notes": "R1 は完全に満たされている。text.txt がプロジェクトルートに作成され、内容は仕様通り \"text\" のみ。その他の変更は SDD フローの標準成果物（spec, flow.json, qa.md）であり、問題なし。"
+  }
+}
