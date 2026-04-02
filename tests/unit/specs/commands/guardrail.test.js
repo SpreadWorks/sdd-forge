@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import { join } from "path";
 import { createTmpDir, removeTmpDir, writeFile, writeJson } from "../../../helpers/tmp-dir.js";
 import { execFileSync } from "child_process";
+import { setupFlow } from "../../../helpers/flow-setup.js";
 
 const SDD_FORGE = join(process.cwd(), "src/sdd-forge.js");
 
@@ -31,6 +32,13 @@ describe("gate guardrail integration", () => {
 
   it("warns when guardrail.json is absent", () => {
     tmp = createTmpDir();
+    execFileSync("git", ["init", tmp], { stdio: "ignore" });
+    execFileSync("git", ["-C", tmp, "commit", "--allow-empty", "-m", "init"], { stdio: "ignore" });
+    setupFlow(tmp);
+    writeJson(tmp, ".sdd-forge/config.json", {
+      lang: "en", type: "node-cli",
+      docs: { languages: ["en"], defaultLanguage: "en" },
+    });
     writeFile(tmp, "spec.md", validSpec);
 
     const result = execFileSync("node", [
@@ -48,6 +56,9 @@ describe("gate guardrail integration", () => {
 
   it("passes with guardrail.json present (no agent = skip AI check with warn)", () => {
     tmp = createTmpDir();
+    execFileSync("git", ["init", tmp], { stdio: "ignore" });
+    execFileSync("git", ["-C", tmp, "commit", "--allow-empty", "-m", "init"], { stdio: "ignore" });
+    setupFlow(tmp);
     writeJson(tmp, ".sdd-forge/config.json", {
       lang: "en",
       type: "node-cli",
@@ -79,6 +90,9 @@ describe("gate guardrail integration", () => {
 
   it("skips AI check with --skip-guardrail", () => {
     tmp = createTmpDir();
+    execFileSync("git", ["init", tmp], { stdio: "ignore" });
+    execFileSync("git", ["-C", tmp, "commit", "--allow-empty", "-m", "init"], { stdio: "ignore" });
+    setupFlow(tmp);
     writeJson(tmp, ".sdd-forge/config.json", {
       lang: "en",
       type: "node-cli",

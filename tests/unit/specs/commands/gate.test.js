@@ -2,9 +2,19 @@ import { describe, it, afterEach } from "node:test";
 import assert from "node:assert/strict";
 import { join } from "path";
 import { checkSpecText } from "../../../../src/flow/run/gate.js";
-import { createTmpDir, removeTmpDir, writeFile } from "../../../helpers/tmp-dir.js";
+import { createTmpDir, removeTmpDir, writeFile, writeJson } from "../../../helpers/tmp-dir.js";
 import { execFileSync } from "child_process";
 import { setupFlow } from "../../../helpers/flow-setup.js";
+
+function initGateProject(tmp) {
+  execFileSync("git", ["init", tmp], { stdio: "ignore" });
+  execFileSync("git", ["-C", tmp, "commit", "--allow-empty", "-m", "init"], { stdio: "ignore" });
+  setupFlow(tmp);
+  writeJson(tmp, ".sdd-forge/config.json", {
+    lang: "en", type: "node-cli",
+    docs: { languages: ["en"], defaultLanguage: "en" },
+  });
+}
 
 describe("checkSpecText", () => {
   it("returns no issues for a valid spec", () => {
@@ -234,9 +244,7 @@ describe("gate CLI", () => {
 
   it("exits 0 on valid spec", () => {
     tmp = createTmpDir();
-    execFileSync("git", ["init", tmp], { stdio: "ignore" });
-    execFileSync("git", ["-C", tmp, "commit", "--allow-empty", "-m", "init"], { stdio: "ignore" });
-    setupFlow(tmp);
+    initGateProject(tmp);
     const specContent = [
       "# Spec",
       "## Clarifications (Q&A)",
@@ -259,9 +267,7 @@ describe("gate CLI", () => {
 
   it("exits non-zero on invalid spec", () => {
     tmp = createTmpDir();
-    execFileSync("git", ["init", tmp], { stdio: "ignore" });
-    execFileSync("git", ["-C", tmp, "commit", "--allow-empty", "-m", "init"], { stdio: "ignore" });
-    setupFlow(tmp);
+    initGateProject(tmp);
     writeFile(tmp, "spec.md", "# Empty spec\n");
 
     try {
