@@ -11,7 +11,7 @@
 
 <!-- {{text({prompt: "Write a 1-2 sentence overview of this chapter. Include the programming language, framework, and key tool versions."})}} -->
 
-This chapter covers the technology stack, dependency management, and operational procedures for sdd-forge, a Node.js CLI tool built with ES Modules. The project targets Node.js >= 18.0.0, uses pnpm 10.33.0 as its package manager, and ships the current release at version 0.1.0-alpha.
+This chapter covers the technology stack, dependency management, and operational procedures for sdd-forge. The project is a Node.js CLI tool (requiring Node.js ≥ 18.0.0) published to the npm registry as `sdd-forge`, currently at version `0.1.0-alpha.361`.
 <!-- {{/text}} -->
 
 ## Content
@@ -22,61 +22,81 @@ This chapter covers the technology stack, dependency management, and operational
 
 | Category | Technology | Version |
 |---|---|---|
-| Runtime | Node.js | >= 18.0.0 |
-| Module System | ES Modules (`"type": "module"`) | — |
+| Runtime | Node.js | ≥ 18.0.0 |
+| Language | JavaScript (ES Modules) | ESNext |
 | Package Manager | pnpm | 10.33.0 |
-| External npm Dependencies | None (Node.js built-ins only) | — |
-| CLI Entry Point | `src/sdd-forge.js` (via `bin` field) | — |
-| External CLI Tools (invoked at runtime) | Claude CLI (`claude`) | — |
-| External CLI Tools (invoked at runtime) | GitHub CLI (`gh`) | — |
-| Versioning Scheme | `0.1.0-alpha.N` (N = total commit count) | — |
+| Registry | npm | — |
+| Version Control | Git / GitHub | — |
+| Dependency Updates | Dependabot | weekly (npm) |
+| Test Runner | Node.js built-in (`node --test`) | — |
+
+No external npm packages are used. All functionality is implemented using Node.js built-in modules only (`fs`, `path`, `child_process`, `url`, etc.).
 <!-- {{/text}} -->
 
 ### Dependencies
 
 <!-- {{text({prompt: "Describe the project's dependency management approach."})}} -->
 
-sdd-forge enforces a strict zero-external-dependency policy: all runtime code relies exclusively on Node.js built-in modules such as `fs`, `path`, `child_process`, and `url`. No third-party npm packages are added as `dependencies` or `devDependencies` in `package.json`.
+sdd-forge has zero external npm dependencies by design. All logic relies exclusively on Node.js built-in modules, which eliminates supply-chain risk and ensures the package installs instantly with no transitive dependencies.
 
-The package manager is **pnpm 10.33.0**, pinned via the `packageManager` field in `package.json` with a specific integrity hash to ensure reproducible installs. A `pnpm-lock.yaml` lockfile is committed to the repository and must remain in sync with `package.json`.
+The package manager is **pnpm** (v10.33.0), pinned via the `packageManager` field in `package.json`. The `pnpm-lock.yaml` lockfile is committed to the repository to ensure reproducible installs.
 
-Dependabot is configured (`.github/dependabot.yml`) to monitor npm and composer ecosystems and open automated pull requests when updates are available.
+Dependabot is configured to scan for npm dependency updates on a weekly schedule, providing automated pull requests if any future dependency is introduced.
 <!-- {{/text}} -->
 
 ### Deployment Flow
 
 <!-- {{text({prompt: "Describe the deployment procedure and flow."})}} -->
 
-sdd-forge is distributed as an npm package under the name `sdd-forge`. The published artifact contains only the `src/` directory along with `package.json`, `README.md`, and `LICENSE`; test files and project-specific configuration are excluded via the `files` field in `package.json`.
+Releases are published manually to the npm registry under the package name `sdd-forge`. The recommended two-step process ensures the `latest` dist-tag is updated correctly:
 
-The release process follows these steps:
+1. **Publish the alpha release**
+   ```bash
+   npm publish --tag alpha
+   ```
+2. **Promote to `latest`**
+   ```bash
+   npm dist-tag add sdd-forge@<version> latest
+   ```
 
-1. Calculate the new version number using `git rev-list --count HEAD` to obtain the commit count N, then set the version to `0.1.0-alpha.N` in `package.json`.
-2. Run `npm pack --dry-run` to verify the contents of the package and confirm that no sensitive files are included.
-3. Publish to npm with the alpha tag: `npm publish --tag alpha`.
-4. Promote the release to the `latest` tag: `npm dist-tag add sdd-forge@<version> latest`.
+Before publishing, verify the packaged contents with `npm pack --dry-run` to confirm no sensitive files are included. Only the `src/` directory, `package.json`, `README.md`, and `LICENSE` are included in the published artifact (controlled by the `files` field in `package.json`).
 
-Both publish steps are required; omitting the `dist-tag` step leaves the `latest` tag pointing to an older version. Publication is performed only when an explicit release intent is stated — incrementing the version or pushing commits alone does not trigger a publish.
+Versions follow the `0.1.0-alpha.N` scheme during the alpha period, where `N` equals the total commit count (`git rev-list --count HEAD`). Published versions cannot be re-published under the same version number.
 <!-- {{/text}} -->
 
 ### Operations Flow
 
 <!-- {{text({prompt: "Describe the operations procedures."})}} -->
 
-The following npm scripts cover the main day-to-day operations of the project:
+**Running tests**
 
-| Command | Purpose |
+| Command | Scope |
 |---|---|
-| `npm test` | Run the full test suite (unit, e2e, and preset tests) |
-| `npm run test:unit` | Run unit tests only |
-| `npm run test:e2e` | Run end-to-end tests only |
-| `npm run test:acceptance` | Run acceptance tests only |
+| `pnpm test` | All tests (unit + e2e) |
+| `pnpm test:unit` | Unit tests only |
+| `pnpm test:e2e` | End-to-end tests only |
+| `pnpm test:acceptance` | Acceptance tests for all presets |
 
-Test execution is orchestrated by `tests/run.js` using the Node.js built-in test runner. To target a specific preset, pass `--preset <name>` as an argument. Individual acceptance tests can be run directly with `node tests/acceptance/run.js <name>`.
+For long-running test commands, redirect output to a file before inspecting results:
+```bash
+pnpm test > /tmp/test.log 2>&1
+```
 
-When templates or skills under `src/templates/` or `src/presets/` are modified, run `sdd-forge upgrade` afterward to propagate changes to the project's local skill files (`.claude/skills/`, `.agents/skills/`).
+**Documentation regeneration**
 
-For long-running commands, redirect output to a file before inspecting results: `command > /tmp/output.log 2>&1`, then use `grep` or a file reader to review the relevant sections. Re-running a command solely to pipe its output is discouraged.
+After source changes, rebuild the project documentation with:
+```bash
+sdd-forge build
+```
+
+When `src/templates/` or `src/presets/` are modified, propagate changes to project skills and configuration by running:
+```bash
+sdd-forge upgrade
+```
+
+**SDD workflow**
+
+Feature development follows the Spec-Driven Development flow managed by the `sdd-forge flow` subcommand (plan → implement → merge). Flow state is persisted to `.sdd-forge/` so that work can resume after interruption.
 <!-- {{/text}} -->
 
 ---
