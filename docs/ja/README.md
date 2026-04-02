@@ -131,7 +131,7 @@ npm install -g <!-- {{data("cli.project.name")}} -->sdd-forge<!-- {{/data}} -->
 | [プロジェクト構成](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/ja/project_structure.md) |  |
 | [CLI コマンドリファレンス](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/ja/cli_commands.md) |  |
 | [設定とカスタマイズ](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/ja/configuration.md) |  |
-| [内部設計](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/ja/internal_design.md) | sdd-forge は CLI エントリポイントから docs コマンド群・flow コマンド群・共有ライブラリという三層構造を持ち、上位層が下位ライブラリを単方向に参照する依存方向を維持しています。 |
+| [内部設計](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/ja/internal_design.md) | src/ は docs/・flow/・lib/ の3層構造を持ち、CLI コマンドからライブラリへの単方向依存でモジュール結合が管理されています。 |
 <!-- {{/data}} -->
 
 ## License
