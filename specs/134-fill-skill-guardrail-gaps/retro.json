@@ -1,0 +1,64 @@
+{
+  "spec": "specs/134-fill-skill-guardrail-gaps/spec.md",
+  "date": "2026-04-03T12:59:14.224Z",
+  "requirements": [
+    {
+      "desc": "R1: spec起草時にget guardrail specを参照",
+      "status": "done",
+      "note": "flow-plan SKILL.md の Fill spec ステップに `sdd-forge flow get guardrail spec` の呼び出しと non-empty 条件付き参照指示が追加されている"
+    },
+    {
+      "desc": "R2: testフェーズにget guardrail test + run review --phase testを追加",
+      "status": "done",
+      "note": "flow-plan SKILL.md の step 9 に `get guardrail test` の呼び出しと、テスト作成後の `run review --phase test`（内部3回ループ、FAIL時STOP）が追加されている"
+    },
+    {
+      "desc": "R3: code review後にrun gate --phase impl再検証を追加",
+      "status": "done",
+      "note": "flow-impl SKILL.md に step 3b として `run gate --phase impl` 再検証が追加。リトライ上限5回、review スキップ時はスキップの条件も記載"
+    },
+    {
+      "desc": "R4: get-guardrailのtest phase対応(空結果を返す)",
+      "status": "done",
+      "note": "get-guardrail.js の VALID_PHASES 配列に `test` を追加。phase バリデーション通過後、該当記事がなければ空結果を返す既存ロジックがそのまま適用される"
+    }
+  ],
+  "unplanned": [
+    {
+      "file": "specs/134-fill-skill-guardrail-gaps/draft.md",
+      "change": "spec ドラフト文書の新規作成（SDD フロー成果物として想定内）"
+    },
+    {
+      "file": "specs/134-fill-skill-guardrail-gaps/flow.json",
+      "change": "SDD フロー管理ファイルの新規作成（SDD フロー成果物として想定内）"
+    },
+    {
+      "file": "specs/134-fill-skill-guardrail-gaps/qa.md",
+      "change": "Q&A テンプレートの新規作成（SDD フロー成果物として想定内）"
+    },
+    {
+      "file": "specs/134-fill-skill-guardrail-gaps/review.md",
+      "change": "コードレビュー結果の記録（SDD フロー成果物として想定内）"
+    },
+    {
+      "file": "specs/134-fill-skill-guardrail-gaps/spec.md",
+      "change": "仕様書の新規作成（SDD フロー成果物として想定内）"
+    },
+    {
+      "file": "specs/134-fill-skill-guardrail-gaps/tests/README.md",
+      "change": "テスト説明の新規作成（SDD フロー成果物として想定内）"
+    },
+    {
+      "file": "specs/134-fill-skill-guardrail-gaps/tests/guardrail-gaps.test.js",
+      "change": "AC1-AC4 検証テストの新規作成（SDD フロー成果物として想定内）"
+    }
+  ],
+  "summary": {
+    "total": 4,
+    "done": 4,
+    "partial": 0,
+    "not_done": 0,
+    "rate": 1,
+    "notes": "全4要件が実装済み。R1: flow-plan SKILL.md spec ステップに guardrail spec 参照を追加、R2: flow-plan SKILL.md test フェーズに guardrail test 参照と review --phase test を追加、R3: flow-impl SKILL.md に step 3b として gate impl 再検証（リトライ上限5回）を追加、R4: get-guardrail.js の VALID_PHASES に test を追加。プロダクトコード変更は3ファイル（get-guardrail.js, flow-plan SKILL.md, flow-impl SKILL.md）の最小修正。specs/ 配下のファイルは SDD フローの標準成果物であり、意図しない変更はない。"
+  }
+}

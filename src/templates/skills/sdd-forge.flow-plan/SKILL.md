@@ -136,6 +136,8 @@ Note: `sdd-forge flow get context` automatically records these metrics via hooks
      - Run `sdd-forge flow get context --raw` to understand the project structure.
      - Run `sdd-forge flow get context --search "<request text or issue title>" --raw` to retrieve related entries with detail.
      - For files needing deeper understanding, use `sdd-forge flow get context <path> --raw` to read them.
+     - Load guardrail articles for the spec phase: `sdd-forge flow get guardrail spec`.
+       If output is non-empty, follow these principles when writing the spec.
    - Fill Goal, Scope, Out of Scope, Requirements, Acceptance Criteria.
    - If draft phase was done, reflect draft Q&A and decisions in spec.md.
    - Don't just copy draft — organize and abstract (but don't invent).
@@ -179,6 +181,8 @@ Note: `sdd-forge flow get context` automatically records these metrics via hooks
 9. Test phase (after approval).
    - **On start**: `sdd-forge flow set step test in_progress`
    - Run `sdd-forge flow get prompt plan.test-mode` and present the choices.
+   - Load guardrail articles for the test phase: `sdd-forge flow get guardrail test`.
+     If output is non-empty, follow these principles when writing tests.
    - If code changes exist, implementation verification test is required in principle.
    - AI decides the appropriate test type based on the project's test infrastructure (no separate test-type selection).
    - AI shares briefly which test framework will be used and what will be verified (not a separate approval gate).
@@ -198,6 +202,11 @@ Note: `sdd-forge flow get context` automatically records these metrics via hooks
      - Compare spec Requirements against actual code changes.
    - **If test environment needs to be set up**:
      - Treat as a separate spec (out of scope for current feature spec).
+   - **After writing tests**, run test review to check test quality:
+     - Run `sdd-forge flow run review --phase test`.
+     - The command internally loops: generate test design → compare with test code → auto-fix (up to 3 iterations).
+     - If PASS: proceed.
+     - If FAIL: display remaining gaps and STOP. Return control to the user.
    - **On complete**: `sdd-forge flow set step test done`
    - **After test step is done**:
      - Run `sdd-forge flow get prompt plan.complete` and present the choices.

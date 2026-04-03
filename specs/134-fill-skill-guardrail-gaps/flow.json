@@ -1,0 +1,130 @@
+{
+  "spec": "specs/134-fill-skill-guardrail-gaps/spec.md",
+  "baseBranch": "main",
+  "featureBranch": "feature/134-fill-skill-guardrail-gaps",
+  "steps": [
+    {
+      "id": "approach",
+      "status": "done"
+    },
+    {
+      "id": "branch",
+      "status": "done"
+    },
+    {
+      "id": "prepare-spec",
+      "status": "pending"
+    },
+    {
+      "id": "draft",
+      "status": "done"
+    },
+    {
+      "id": "gate-draft",
+      "status": "done"
+    },
+    {
+      "id": "spec",
+      "status": "done"
+    },
+    {
+      "id": "gate",
+      "status": "done"
+    },
+    {
+      "id": "approval",
+      "status": "done"
+    },
+    {
+      "id": "test",
+      "status": "done"
+    },
+    {
+      "id": "implement",
+      "status": "done"
+    },
+    {
+      "id": "gate-impl",
+      "status": "pending"
+    },
+    {
+      "id": "review",
+      "status": "done"
+    },
+    {
+      "id": "finalize",
+      "status": "pending"
+    },
+    {
+      "id": "commit",
+      "status": "pending"
+    },
+    {
+      "id": "push",
+      "status": "pending"
+    },
+    {
+      "id": "merge",
+      "status": "pending"
+    },
+    {
+      "id": "pr-create",
+      "status": "pending"
+    },
+    {
+      "id": "branch-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "pr-merge",
+      "status": "pending"
+    },
+    {
+      "id": "sync-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "docs-update",
+      "status": "pending"
+    },
+    {
+      "id": "docs-review",
+      "status": "pending"
+    },
+    {
+      "id": "docs-commit",
+      "status": "pending"
+    }
+  ],
+  "requirements": [
+    {
+      "desc": "R1: spec起草時にget guardrail specを参照",
+      "status": "done"
+    },
+    {
+      "desc": "R2: testフェーズにget guardrail test + run review --phase testを追加",
+      "status": "done"
+    },
+    {
+      "desc": "R3: code review後にrun gate --phase impl再検証を追加",
+      "status": "done"
+    },
+    {
+      "desc": "R4: get-guardrailのtest phase対応(空結果を返す)",
+      "status": "done"
+    }
+  ],
+  "request": "SKILL.mdのguardrail/gate/review呼び出しの抜けを修正: spec起草時guardrail、test review、code review後gate再検証",
+  "worktree": true,
+  "notes": [
+    "approach: Q&A draft, work-env: worktree, base: main",
+    "review: #1 VALID_PHASES共有定数化はスコープ外、ボードに追加",
+    "impl: approved by user, proceeding to finalize",
+    "finalize: mode=all"
+  ],
+  "metrics": {
+    "draft": {
+      "question": 3
+    }
+  }
+}

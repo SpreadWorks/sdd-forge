@@ -3,14 +3,14 @@
  *
  * Return guardrails filtered by phase.
  *
- * ctx.phase  — one of: draft, spec, impl, lint
+ * ctx.phase  — one of: draft, spec, impl, test, lint
  * ctx.format — "json" or undefined (default: markdown string)
  */
 
 import { loadMergedGuardrails, filterByPhase } from "../../lib/guardrail.js";
 import { FlowCommand } from "./base-command.js";
 
-const VALID_PHASES = ["draft", "spec", "impl", "lint"];
+const VALID_PHASES = ["draft", "spec", "impl", "test", "lint"];
 
 /**
  * Render guardrails as Markdown text.

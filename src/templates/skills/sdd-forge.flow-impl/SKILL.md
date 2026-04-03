@@ -126,6 +126,12 @@ Before starting, run `sdd-forge flow get check impl` to verify prerequisites.
    - Re-run tests to confirm no regressions.
    - Proceed to Step 3.
 
+3b. Re-run gate impl (after review, BEFORE finalize).
+   - Run `sdd-forge flow run gate --phase impl` to re-validate that review's auto-corrections have not broken spec requirements or guardrail compliance.
+   - If FAIL: AI fixes implementation and re-runs gate.
+   - **Retry limit: 5 attempts.** If gate does not PASS after 5 fix-and-rerun cycles, STOP and return control to the user.
+   - If review was skipped (step 3 chose option 3), skip this step as well.
+
 4. Final confirmation before finalize.
    - Present:
      ```
