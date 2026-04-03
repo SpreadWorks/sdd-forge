@@ -1,0 +1,139 @@
+{
+  "spec": "specs/133-spec-review-phase/spec.md",
+  "baseBranch": "main",
+  "featureBranch": "feature/133-spec-review-phase",
+  "steps": [
+    {
+      "id": "approach",
+      "status": "done"
+    },
+    {
+      "id": "branch",
+      "status": "done"
+    },
+    {
+      "id": "prepare-spec",
+      "status": "pending"
+    },
+    {
+      "id": "draft",
+      "status": "done"
+    },
+    {
+      "id": "gate-draft",
+      "status": "done"
+    },
+    {
+      "id": "spec",
+      "status": "done"
+    },
+    {
+      "id": "gate",
+      "status": "done"
+    },
+    {
+      "id": "approval",
+      "status": "done"
+    },
+    {
+      "id": "test",
+      "status": "done"
+    },
+    {
+      "id": "implement",
+      "status": "done"
+    },
+    {
+      "id": "gate-impl",
+      "status": "pending"
+    },
+    {
+      "id": "review",
+      "status": "done"
+    },
+    {
+      "id": "finalize",
+      "status": "pending"
+    },
+    {
+      "id": "commit",
+      "status": "pending"
+    },
+    {
+      "id": "push",
+      "status": "pending"
+    },
+    {
+      "id": "merge",
+      "status": "pending"
+    },
+    {
+      "id": "pr-create",
+      "status": "pending"
+    },
+    {
+      "id": "branch-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "pr-merge",
+      "status": "pending"
+    },
+    {
+      "id": "sync-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "docs-update",
+      "status": "pending"
+    },
+    {
+      "id": "docs-review",
+      "status": "pending"
+    },
+    {
+      "id": "docs-commit",
+      "status": "pending"
+    }
+  ],
+  "requirements": [
+    {
+      "desc": "R1: レビューループの共通化(test/spec共通のrunReviewLoop)",
+      "status": "done"
+    },
+    {
+      "desc": "R2: --phase spec の追加(spec+contextSearch→AI→proposal)",
+      "status": "done"
+    },
+    {
+      "desc": "R3: specの自動修正と反復(APPROVED指摘で書き戻し、上限3回)",
+      "status": "done"
+    },
+    {
+      "desc": "R4: get-context.jsのexport追加(loadAnalysisEntries/contextSearch)",
+      "status": "done"
+    },
+    {
+      "desc": "R5: flow-planスキルの更新(gate→spec review→gate→approval)",
+      "status": "done"
+    }
+  ],
+  "issue": 76,
+  "request": "flow run review --phase spec: 仕様レビューによる考慮漏れ検出",
+  "worktree": true,
+  "notes": [
+    "approach: Q&A draft, work-env: worktree, base: main",
+    "impl: approved by user, proceeding to finalize",
+    "finalize: mode=all"
+  ],
+  "metrics": {
+    "plan": {
+      "docsRead": 1
+    },
+    "draft": {
+      "docsRead": 1,
+      "srcRead": 4,
+      "question": 5
+    }
+  }
+}

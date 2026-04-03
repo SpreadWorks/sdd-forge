@@ -396,4 +396,4 @@ export default class GetContextCommand extends FlowCommand {
   }
 }
 
-export { filterEntry, resolvePhase, searchEntries, collectAllKeywords, buildKeywordSelectionPrompt, fallbackSearch, toBigrams, bigramSimilarity, ngramSearch };
+export { filterEntry, resolvePhase, searchEntries, collectAllKeywords, buildKeywordSelectionPrompt, fallbackSearch, toBigrams, bigramSimilarity, ngramSearch, loadAnalysisEntries, contextSearch };

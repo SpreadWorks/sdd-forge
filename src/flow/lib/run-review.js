@@ -43,6 +43,39 @@ function parseTestReviewOutput(res, stdout, stderr) {
   };
 }
 
+/**
+ * Parse spec review subprocess output into result object.
+ */
+function parseSpecReviewOutput(res, stdout, stderr) {
+  const verdictMatch = stderr.match(/verdict=(PASS|FAIL)/);
+  const issueCountMatch = stderr.match(/issues=(\d+)/);
+  const reviewPathMatch = stderr.match(/Results saved to (\S+)/);
+
+  const verdict = verdictMatch ? verdictMatch[1] : (res.ok ? "PASS" : "FAIL");
+  const issueCount = issueCountMatch ? parseInt(issueCountMatch[1], 10) : 0;
+
+  const changed = [];
+  if (reviewPathMatch) changed.push(reviewPathMatch[1]);
+
+  if (!res.ok) {
+    throw new Error(
+      [`Spec review FAIL: ${issueCount} issue(s) remaining`, ...(stdout ? [stdout] : [])].join("\n"),
+    );
+  }
+
+  return {
+    result: "ok",
+    changed,
+    artifacts: {
+      phase: "spec",
+      verdict,
+      issueCount,
+    },
+    next: "approval",
+    output: stdout,
+  };
+}
+
 export class RunReviewCommand extends FlowCommand {
   async execute(ctx) {
     const { root } = ctx;
@@ -64,6 +97,11 @@ export class RunReviewCommand extends FlowCommand {
     // Route to test review parser
     if (phase === "test") {
       return parseTestReviewOutput(res, stdout, stderr);
+    }
+
+    // Route to spec review parser
+    if (phase === "spec") {
+      return parseSpecReviewOutput(res, stdout, stderr);
     }
 
     if (!res.ok) {

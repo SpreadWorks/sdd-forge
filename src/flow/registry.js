@@ -274,7 +274,7 @@ export const FLOW_COMMANDS = {
         "Run AI code review on current changes.",
         "",
         "Options:",
-        "  --phase <type>   Review phase: 'test' for test sufficiency review",
+        "  --phase <type>   Review phase: 'test' for test sufficiency, 'spec' for spec completeness",
         "  --dry-run        Show proposals without applying",
         "  --skip-confirm   Skip initial confirmation prompt",
       ].join("\n"),

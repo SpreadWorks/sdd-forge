@@ -1,0 +1,53 @@
+{
+  "spec": "specs/133-spec-review-phase/spec.md",
+  "date": "2026-04-03T12:00:36.627Z",
+  "requirements": [
+    {
+      "desc": "R1: レビューループの共通化(test/spec共通のrunReviewLoop)",
+      "status": "done",
+      "note": "runReviewLoop共通関数が実装済み。maxRetries, label, dryRun, detect, fixコールバックを受け取り、上限回数まで反復し、指摘なし or 上限到達で終了する。test reviewが既存ループからrunReviewLoop呼び出しにリファクタされ、動作は同等。"
+    },
+    {
+      "desc": "R2: --phase spec の追加(spec+contextSearch→AI→proposal)",
+      "status": "done",
+      "note": "runSpecReviewがspec.mdを読み、loadAnalysisEntries+contextSearchでコンテキスト取得し、buildSpecReviewPromptでAIに渡してproposal形式で検出する。--phase specのCLIルーティングも実装済み。"
+    },
+    {
+      "desc": "R3: specの自動修正と反復(APPROVED指摘で書き戻し、上限3回)",
+      "status": "done",
+      "note": "fix()内でmergeVerdictsによるAPPROVED判定、buildSpecFixPromptによるAI修正、spec.md書き戻しを実装。runReviewLoopで上限MAX_REVIEW_RETRIES=3回まで反復。detect()内でspec再読み込み+コンテキスト再計算も実装済み（review.mdの指摘対応も反映）。"
+    },
+    {
+      "desc": "R4: get-context.jsのexport追加(loadAnalysisEntries/contextSearch)",
+      "status": "done",
+      "note": "get-context.jsのexport行にloadAnalysisEntriesとcontextSearchが追加されている。既存のsearchEntries等のexportは維持。"
+    },
+    {
+      "desc": "R5: flow-planスキルの更新(gate→spec review→gate→approval)",
+      "status": "done",
+      "note": "SKILL.mdにstep 7b(spec review実行)と7c(gate再実行)が追加。gate PASS後にspec review→gate再検証→approvalの流れが明記されている。"
+    }
+  ],
+  "unplanned": [
+    {
+      "file": "src/flow/commands/review.js",
+      "change": "REVIEW_PHASESメタデータオブジェクト追加によるphase検証・helpテキストの集約化。要件に明示されていないが、review.mdのAPPROVED指摘(#4)への対応。"
+    },
+    {
+      "file": "src/flow/lib/run-review.js",
+      "change": "parseSpecReviewOutput関数の追加とphase=specのルーティング。spec.mdのRequirementsのScope欄には記載があるが、独立した要件としては定義されていない。"
+    },
+    {
+      "file": "specs/133-spec-review-phase/",
+      "change": "spec関連ファイル一式(draft.md, flow.json, qa.md, review.md, spec.md, tests/)の追加。SDDフローの成果物であり、実装そのものではない。"
+    }
+  ],
+  "summary": {
+    "total": 5,
+    "done": 5,
+    "partial": 0,
+    "not_done": 0,
+    "rate": 1,
+    "notes": "全5要件が実装済み。R1のrunReviewLoop共通化、R2のspec reviewパイプライン、R3の自動修正ループ、R4のget-context.js export追加、R5のSKILL.md更新がすべてdiffに反映されている。review.mdで指摘されたcontextEntries再計算の問題(APPROVED #1)もdetect()内での再読み込みで対応済み。REVIEW_PHASESメタデータ集約(APPROVED #4)も実装されている。unplanned変更はrun-review.jsのパーサー追加とSDDフロー成果物で、いずれもspec Scopeに記載された想定内の変更。"
+  }
+}

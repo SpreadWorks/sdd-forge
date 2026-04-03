@@ -19,8 +19,14 @@ import { loadAgentConfig, callAgent, resolveAgent, ensureAgentWorkDir } from "..
 import { runSync } from "../../lib/process.js";
 import { EXIT_ERROR } from "../../lib/exit-codes.js";
 
-/** Maximum retry iterations for test review auto-fix loop. */
-const MAX_TEST_REVIEW_RETRIES = 3;
+/** Maximum retry iterations for review auto-fix loops (test and spec). */
+const MAX_REVIEW_RETRIES = 3;
+
+/** Supported review phases and their descriptions. */
+const REVIEW_PHASES = {
+  test: "test sufficiency",
+  spec: "spec completeness",
+};
 
 /**
  * Resolve review target files from spec scope or git diff fallback.
@@ -190,6 +196,53 @@ function buildApplyPrompt(approved, diff) {
     "## Current Diff (for context)",
     diff,
   ].join("\n");
+}
+
+// ---------------------------------------------------------------------------
+// Common review loop
+// ---------------------------------------------------------------------------
+
+/**
+ * Run a review-fix loop up to maxRetries times.
+ * @param {Object} opts
+ * @param {number} opts.maxRetries - Maximum iterations
+ * @param {string} opts.label - Log label (e.g. "test-review", "spec-review")
+ * @param {boolean} opts.dryRun - Skip fix phase if true
+ * @param {() => Promise<{issues: Object[], raw: string}>} opts.detect - Detect issues. Return { issues, raw }.
+ * @param {(raw: string) => Promise<void>} opts.fix - Apply fixes based on raw detection output.
+ * @returns {Promise<{history: string[], finalIssues: Object[], verdict: string}>}
+ */
+async function runReviewLoop({ maxRetries, label, dryRun, detect, fix }) {
+  const history = [];
+  let finalIssues = [];
+
+  for (let attempt = 0; attempt < maxRetries; attempt++) {
+    console.error(`  [${label}] Analysis (attempt ${attempt + 1}/${maxRetries})...`);
+    const { issues, raw } = await detect();
+    history.push(raw);
+
+    if (issues.length === 0) {
+      console.error(`  [${label}] No issues found. PASS.`);
+      finalIssues = [];
+      break;
+    }
+
+    console.error(`  [${label}] ${issues.length} issue(s) found.`);
+    finalIssues = issues;
+
+    if (dryRun) {
+      console.error(`  [${label}] (dry-run: skipping auto-fix)`);
+      break;
+    }
+
+    if (attempt < maxRetries - 1) {
+      console.error(`  [${label}] Applying fixes...`);
+      await fix(raw);
+    }
+  }
+
+  const verdict = finalIssues.length === 0 ? "PASS" : "FAIL";
+  return { history, finalIssues, verdict };
 }
 
 // ---------------------------------------------------------------------------
@@ -434,42 +487,27 @@ async function runTestReview(root, flow, config, dryRun) {
   fs.writeFileSync(testSpecPath, `# Test Design\n\n${testDesign}\n`);
   console.error(`  [test-review] Test design saved to ${path.relative(root, testSpecPath)}`);
 
-  // Step 2-3: Compare and retry loop
-  const gapHistory = [];
-  let finalGaps = [];
+  // Step 2-3: Compare and retry loop (using common runReviewLoop)
   let testFiles = collectTestFiles(root, specDir);
 
-  for (let attempt = 0; attempt < MAX_TEST_REVIEW_RETRIES; attempt++) {
-    console.error(`  [test-review] Gap analysis (attempt ${attempt + 1}/${MAX_TEST_REVIEW_RETRIES})...`);
-    const gapResult = await callAgent(
-      agent,
-      buildGapAnalysisPrompt(testDesign, testFiles),
-      undefined,
-      root,
-      { systemPrompt: "You are a test quality reviewer. Identify gaps between test design and test code." },
-    );
-    gapHistory.push(gapResult);
-
-    const gaps = parseGaps(gapResult);
-    if (gaps.length === 0) {
-      console.error("  [test-review] No gaps found. PASS.");
-      finalGaps = [];
-      break;
-    }
-
-    console.error(`  [test-review] ${gaps.length} gap(s) found.`);
-    finalGaps = gaps;
-
-    if (dryRun) {
-      console.error("  [test-review] (dry-run: skipping auto-fix)");
-      break;
-    }
-
-    if (attempt < MAX_TEST_REVIEW_RETRIES - 1) {
-      console.error("  [test-review] Applying fixes...");
+  const { history: gapHistory, finalIssues: finalGaps, verdict } = await runReviewLoop({
+    maxRetries: MAX_REVIEW_RETRIES,
+    label: "test-review",
+    dryRun,
+    async detect() {
+      const raw = await callAgent(
+        agent,
+        buildGapAnalysisPrompt(testDesign, testFiles),
+        undefined,
+        root,
+        { systemPrompt: "You are a test quality reviewer. Identify gaps between test design and test code." },
+      );
+      return { issues: parseGaps(raw), raw };
+    },
+    async fix(raw) {
       const fixResult = await callAgent(
         agent,
-        buildTestFixPrompt(gapResult, testFiles),
+        buildTestFixPrompt(raw, testFiles),
         undefined,
         root,
         { systemPrompt: "You are a test engineer. Fix test gaps by writing complete updated test files." },
@@ -480,12 +518,9 @@ async function runTestReview(root, flow, config, dryRun) {
       } else {
         console.error("  [test-review] No files were updated by fix attempt.");
       }
-      // Reload test files for next comparison
       testFiles = collectTestFiles(root, specDir);
-    }
-  }
-
-  const verdict = finalGaps.length === 0 ? "PASS" : "FAIL";
+    },
+  });
   const testReviewPath = path.join(path.resolve(root, specDir), "test-review.md");
   fs.writeFileSync(testReviewPath, formatTestReviewMd(testDesign, gapHistory, verdict, finalGaps));
   console.error(`  [test-review] Results saved to ${path.relative(root, testReviewPath)}`);
@@ -493,8 +528,217 @@ async function runTestReview(root, flow, config, dryRun) {
   if (verdict === "PASS") {
     console.log("Test review PASS. All test cases are adequately covered.");
   } else {
-    console.log(`Test review FAIL. ${finalGaps.length} gap(s) remaining after ${MAX_TEST_REVIEW_RETRIES} attempts.`);
+    console.log(`Test review FAIL. ${finalGaps.length} gap(s) remaining after ${MAX_REVIEW_RETRIES} attempts.`);
     console.error(`  [test-review] verdict=FAIL gaps=${finalGaps.length}`);
+    process.exit(EXIT_ERROR);
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Spec review pipeline (--phase spec)
+// ---------------------------------------------------------------------------
+
+/**
+ * Extract Goal and Scope sections from spec.md for context search query.
+ * @param {string} specText
+ * @returns {string}
+ */
+function extractGoalAndScope(specText) {
+  const parts = [];
+  for (const heading of ["Goal", "Scope"]) {
+    const match = specText.match(new RegExp(`^## ${heading}\\n([\\s\\S]*?)(?=\\n## )`, "m"));
+    if (match) parts.push(match[1].trim());
+  }
+  return parts.join("\n");
+}
+
+/**
+ * Build the spec review prompt.
+ * @param {string} specText - Full spec.md content
+ * @param {Object[]} contextEntries - Related codebase entries from contextSearch
+ * @returns {string}
+ */
+function buildSpecReviewPrompt(specText, contextEntries) {
+  const contextText = contextEntries.map((e) =>
+    `- **${e.file}**: ${e.summary || "(no summary)"}${e.detail ? "\n  " + e.detail : ""}`
+  ).join("\n");
+
+  return [
+    "You are a spec completeness reviewer. Analyze the following spec against the codebase context to identify oversights.",
+    "Focus on:",
+    "- Files or features around modules in Scope that the spec does not mention",
+    "- Related code not explicitly listed in Out of Scope",
+    "- External references (skill templates, tests, config) that depend on files to be deleted or moved",
+    "- Contradictions or gaps between requirements",
+    "",
+    "Output a numbered list of proposals in this format:",
+    "### 1. <title>",
+    "**File:** `<path>` (the file that the spec overlooks)",
+    "**Issue:** <what the spec misses or gets wrong>",
+    "**Suggestion:** <concrete improvement to the spec>",
+    "",
+    "If no oversights are found, output: NO_PROPOSALS",
+    "",
+    "## Spec",
+    specText,
+    "",
+    "## Codebase Context (related files)",
+    contextText,
+  ].join("\n");
+}
+
+/**
+ * Build the spec fix prompt.
+ * @param {string} specText - Current spec.md content
+ * @param {string} proposals - Approved proposals text
+ * @returns {string}
+ */
+function buildSpecFixPrompt(specText, proposals) {
+  return [
+    "Apply the following approved proposals to improve the spec.",
+    "Output the complete updated spec.md content.",
+    "Make only the changes described in the proposals. Do not add unrelated modifications.",
+    "Preserve all existing sections and formatting.",
+    "",
+    "## Approved Proposals",
+    proposals,
+    "",
+    "## Current Spec",
+    specText,
+  ].join("\n");
+}
+
+/**
+ * Format spec-review.md content.
+ * @param {string[]} history - Raw review outputs per iteration
+ * @param {string} verdict - PASS or FAIL
+ * @param {Object[]} finalIssues - Remaining issues if FAIL
+ * @returns {string}
+ */
+function formatSpecReviewMd(history, verdict, finalIssues) {
+  const lines = ["# Spec Review Results", ""];
+  lines.push("## Review Iterations");
+  for (let i = 0; i < history.length; i++) {
+    if (history.length > 1) lines.push(`### Iteration ${i + 1}`);
+    lines.push(history[i]);
+    lines.push("");
+  }
+  lines.push(`## Verdict: ${verdict}`);
+  if (verdict === "FAIL" && finalIssues.length > 0) {
+    lines.push("");
+    lines.push("### Remaining Issues");
+    for (const p of finalIssues) {
+      lines.push(`- ${p.title}`);
+      if (p.body) lines.push(`  ${p.body}`);
+    }
+  }
+  return lines.join("\n");
+}
+
+/**
+ * Run the spec review pipeline.
+ */
+async function runSpecReview(root, flow, config, dryRun) {
+  const specPath = path.resolve(root, flow.spec);
+  const specDir = path.dirname(flow.spec);
+
+  if (!fs.existsSync(specPath)) {
+    console.error("Error: spec.md not found");
+    process.exit(EXIT_ERROR);
+  }
+
+  // Load analysis data once (entries don't change during review)
+  let analysisData = null;
+  try {
+    const { loadAnalysisEntries, contextSearch: ctxSearch } = await import("../lib/get-context.js");
+    analysisData = { ...loadAnalysisEntries(root), ctxSearch };
+  } catch (e) {
+    console.error(`  [spec-review] Warning: failed to load codebase context: ${e.message}`);
+  }
+
+  const agent = loadAgentConfig(config, "flow.review.spec");
+  ensureAgentWorkDir(agent, root);
+  const validationAgent = loadAgentConfig(config, "flow.review.final");
+  ensureAgentWorkDir(validationAgent, root);
+
+  const { history, finalIssues, verdict } = await runReviewLoop({
+    maxRetries: MAX_REVIEW_RETRIES,
+    label: "spec-review",
+    dryRun,
+    async detect() {
+      // Re-read spec and recompute context on each iteration (spec may have been modified by fix)
+      const specText = fs.readFileSync(specPath, "utf8");
+      let contextEntries = [];
+      if (analysisData) {
+        const searchQuery = extractGoalAndScope(specText);
+        if (searchQuery) {
+          contextEntries = analysisData.ctxSearch(analysisData.entries, analysisData.analysis, searchQuery, root);
+        }
+      }
+      const raw = await callAgent(
+        agent,
+        buildSpecReviewPrompt(specText, contextEntries),
+        undefined,
+        root,
+        { systemPrompt: "You are a spec completeness reviewer. Identify oversights in the spec." },
+      );
+      if (raw.includes("NO_PROPOSALS")) return { issues: [], raw };
+      const issues = parseProposals(raw);
+      return { issues, raw };
+    },
+    async fix(raw) {
+      const specText = fs.readFileSync(specPath, "utf8");
+      const proposals = parseProposals(raw);
+      const validationResult = await callAgent(
+        validationAgent,
+        [
+          "Validate these spec improvement proposals:",
+          "",
+          raw,
+          "",
+          "## Current spec for context:",
+          specText,
+        ].join("\n"),
+        undefined,
+        root,
+        { systemPrompt: buildFinalSystemPrompt() },
+      );
+      const results = mergeVerdicts(validationResult, proposals);
+      const approved = results.filter((r) => r.verdict === "APPROVED");
+
+      if (approved.length === 0) {
+        console.error("  [spec-review] All proposals rejected. Skipping fix.");
+        return;
+      }
+
+      console.error(`  [spec-review] ${approved.length} proposal(s) approved. Applying to spec...`);
+
+      const approvedText = approved.map((p, i) => `### ${i + 1}. ${p.title}\n${p.body}`).join("\n\n");
+      const fixResult = await callAgent(
+        agent,
+        buildSpecFixPrompt(specText, approvedText),
+        undefined,
+        root,
+        { systemPrompt: "You are a spec writer. Apply the approved proposals to produce an updated spec." },
+      );
+
+      // Extract spec content (strip markdown fences if present)
+      const cleaned = fixResult.replace(/^```(?:markdown)?\s*\n?/i, "").replace(/\n?```\s*$/i, "").trim();
+      fs.writeFileSync(specPath, cleaned + "\n");
+      console.error("  [spec-review] spec.md updated.");
+    },
+  });
+
+  // Save review results
+  const reviewPath = path.join(path.resolve(root, specDir), "spec-review.md");
+  fs.writeFileSync(reviewPath, formatSpecReviewMd(history, verdict, finalIssues));
+  console.error(`  [spec-review] Results saved to ${path.relative(root, reviewPath)}`);
+  console.error(`  [spec-review] verdict=${verdict} issues=${finalIssues.length}`);
+
+  if (verdict === "PASS") {
+    console.log("Spec review PASS. No oversights found.");
+  } else {
+    console.log(`Spec review FAIL. ${finalIssues.length} issue(s) remaining after ${MAX_REVIEW_RETRIES} attempts.`);
     process.exit(EXIT_ERROR);
   }
 }
@@ -508,19 +752,21 @@ async function main() {
   });
 
   if (cli.help) {
+    const phaseDesc = Object.entries(REVIEW_PHASES).map(([k, v]) => `'${k}' for ${v}`).join(", ");
     console.log([
       "Usage: sdd-forge flow review [options]",
       "",
       "Options:",
-      "  --phase <type>   Review phase: 'test' for test sufficiency review",
+      `  --phase <type>   Review phase: ${phaseDesc}`,
       "  --dry-run        Show proposals without applying",
       "  --skip-confirm   Skip initial confirmation prompt",
     ].join("\n"));
     return;
   }
 
-  if (cli.phase && cli.phase !== "test") {
-    console.error(`Error: unknown phase '${cli.phase}'. Supported: test`);
+  if (cli.phase && !REVIEW_PHASES[cli.phase]) {
+    const supported = Object.keys(REVIEW_PHASES).join(", ");
+    console.error(`Error: unknown phase '${cli.phase}'. Supported: ${supported}`);
     process.exit(EXIT_ERROR);
   }
 
@@ -541,6 +787,12 @@ async function main() {
   // Test review pipeline
   if (cli.phase === "test") {
     await runTestReview(root, flow, config, cli.dryRun);
+    return;
+  }
+
+  // Spec review pipeline
+  if (cli.phase === "spec") {
+    await runSpecReview(root, flow, config, cli.dryRun);
     return;
   }
 
@@ -635,8 +887,9 @@ async function main() {
 
 export {
   main, parseProposals, mergeVerdicts, formatReviewMd, resolveReviewTarget,
-  MAX_TEST_REVIEW_RETRIES, extractRequirements, collectTestFiles, parseGaps,
-  applyTestFixes, formatTestReviewMd,
+  MAX_REVIEW_RETRIES, REVIEW_PHASES, extractRequirements, collectTestFiles, parseGaps,
+  applyTestFixes, formatTestReviewMd, runReviewLoop,
+  extractGoalAndScope, buildSpecReviewPrompt, formatSpecReviewMd,
 };
 
 runIfDirect(import.meta.url, main);

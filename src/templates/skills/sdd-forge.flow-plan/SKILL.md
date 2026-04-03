@@ -149,9 +149,22 @@ Note: `sdd-forge flow get context` automatically records these metrics via hooks
    - **Retry limit: 20 attempts.** If gate does not PASS after 20 fix-and-rerun cycles, STOP and return control to the user.
    - Do not proceed until PASS (`data.result === "pass"`).
 
-8. Get explicit user approval (AFTER gate PASS).
+7b. Run spec review (AFTER gate PASS, BEFORE approval).
+   - Run `sdd-forge flow run review --phase spec`.
+   - The command performs an AI-powered review of spec.md against codebase context to detect oversights.
+   - The command internally loops: detect oversights → validate proposals → apply approved fixes → re-detect (up to 3 iterations).
+   - If PASS (`data.result === "ok"`, verdict PASS): proceed to gate re-validation (step 7c).
+   - If FAIL: display the remaining issues and STOP. Return control to the user.
+   - **autoApprove mode:** proceed automatically on PASS.
+
+7c. Re-run gate spec (AFTER spec review, BEFORE approval).
+   - Run `sdd-forge flow run gate` to re-validate that spec review's auto-corrections have not introduced guardrail violations.
+   - If FAIL: AI fixes spec.md and re-runs gate (same retry limit as step 7).
+   - If PASS: proceed to approval.
+
+8. Get explicit user approval (AFTER gate PASS and spec review PASS).
    - **On start**: `sdd-forge flow set step approval in_progress`
-   - **Do NOT re-run gate.** The gate already passed in step 7.
+   - **Do NOT re-run gate.** The gate already passed in step 7c.
    - Present the FULL spec text (the gate-PASS version) to the user.
    - The user reads the gate-passed final spec and approves.
    - Wait for approval before any implementation.
