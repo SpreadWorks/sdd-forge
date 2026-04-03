@@ -1,5 +1,5 @@
 {
-  "analyzedAt": "2026-04-03T03:13:47.849Z",
+  "analyzedAt": "2026-04-03T06:35:08.385Z",
   "package": {
     "entries": [
       {
@@ -2609,21 +2609,26 @@
       },
       {
         "file": "src/flow/lib/run-gate.js",
-        "hash": "726217164644da7d94055f5026db8c71",
-        "lines": 228,
-        "mtime": "2026-04-03T01:07:47.871Z",
+        "hash": "b87925d05a6401d824a083d382ad2663",
+        "lines": 467,
+        "mtime": "2026-04-03T06:35:08.190Z",
         "className": "run-gate",
         "methods": [
           "RunGateCommand",
           "sectionAt",
           "checkSpecText",
+          "checkDraftText",
           "buildGuardrailPrompt",
           "parseGuardrailResponse",
-          "checkGuardrail"
+          "checkGuardrail",
+          "buildImplCheckPrompt",
+          "gatePass",
+          "gateFail"
         ],
         "imports": [
           "fs",
           "path",
+          "child_process",
           "../../lib/agent.js",
           "../../lib/guardrail.js",
           "./base-command.js"
@@ -2632,6 +2637,7 @@
           "RunGateCommand",
           "default",
           "checkSpecText",
+          "checkDraftText",
           "buildGuardrailPrompt",
           "parseGuardrailResponse",
           "checkGuardrail"
@@ -2639,23 +2645,25 @@
         "extends": "FlowCommand",
         "usedBy": null,
         "id": "b4aa4dad",
-        "summary": "Implements `flow run gate`, validating a spec file against structural rules and AI-evaluated guardrails.",
-        "detail": "checkSpecText performs regex-based structural checks, skipping certain section headings (Status, Acceptance Criteria, etc.) via PRE_SKIP_SECTIONS. buildGuardrailPrompt assembles a prompt combining spec text and loaded guardrails. parseGuardrailResponse interprets the AI's JSON response into pass/fail results. checkGuardrail orchestrates the AI call and returns { passed, results }. Throws a consolidated error listing all spec issues on failure.",
-        "chapter": "cli_commands",
-        "role": "lib",
+        "summary": "Implements the RunGateCommand that validates spec/draft/impl artifacts through guardrail checks and AI-assisted review at each SDD flow phase.",
+        "detail": "RunGateCommand extends FlowCommand and dispatches to executeDraft, executeSpec, or executeImpl based on the current phase. Draft validation uses checkDraftText for structural issues; spec validation uses checkSpecText with section-aware skipping and optional guardrail prompts via callAgent. Impl validation diffs the working branch against the base branch and checks alignment with the spec. Pass/fail outcomes return structured objects with a next-step hint via PASS_NEXT/FAIL_NEXT maps, enabling the flow orchestrator to advance or retry the appropriate step.",
+        "chapter": "internal_design",
+        "role": "controller",
         "enrich": {
-          "processedAt": "2026-04-03T03:15:49.316Z",
+          "processedAt": "2026-04-03T06:35:26.741Z",
           "attempts": 1
         },
         "keywords": [
           "gate",
           "guardrail",
-          "spec-validation",
-          "AI",
-          "structural-check",
-          "flow-gate",
-          "spec-gate",
-          "run-gate"
+          "spec validation",
+          "draft check",
+          "impl check",
+          "phase",
+          "RunGateCommand",
+          "flow gate",
+          "AI review",
+          "diff"
         ]
       },
       {
@@ -3336,15 +3344,16 @@
       },
       {
         "file": "src/flow/registry.js",
-        "hash": "caaf57334878568ca54f1e57c7dad5c5",
-        "lines": 397,
-        "mtime": "2026-04-03T03:13:47.673Z",
+        "hash": "4a321038a7eb688b7935c5c9b6ca0c61",
+        "lines": 413,
+        "mtime": "2026-04-03T06:35:08.190Z",
         "className": "registry",
         "methods": [
           "deriveActivePhase",
           "tryUpdateStepStatus",
           "stepPre",
-          "stepPost"
+          "stepPost",
+          "resolveGateStepId"
         ],
         "imports": [
           "../lib/flow-state.js"
@@ -3357,25 +3366,25 @@
           "src/flow.js"
         ],
         "id": "d64f4095",
-        "summary": "Central registry for all flow commands, mapping group/command names to FlowCommand instances with pre/post hooks.",
-        "detail": "FLOW_COMMANDS is a nested map from group (run, get, set) to command name to { command, pre, post, onError, help } descriptors. stepPre and stepPost generate hook functions that call tryUpdateStepStatus to track step lifecycle in flow.json. incrementMetric post-hooks auto-record metrics after get commands. The finalize entry wires finalizeOnError and calls executeCommitPost as a post-hook. deriveActivePhase reads current phase for conditional hook logic.",
-        "chapter": "project_structure",
-        "role": "controller",
+        "summary": "Defines the FLOW_COMMANDS registry that maps flow subcommand names to their configuration, hooks, and handler classes for the flow dispatcher.",
+        "detail": "The registry centralizes args definitions, help strings, pre/post hooks, and command constructors so the flow dispatcher can uniformly call parseArgs, run, and output without per-command branching. stepPre and stepPost helpers generate lifecycle hooks that update step status in flow.json via updateStepStatus. resolveGateStepId maps gate phase names to the canonical 'gate' step identifier. The registry also wires metric increments via incrementMetric in post hooks, enabling automatic flow metrics collection after each command.",
+        "chapter": "internal_design",
+        "role": "other",
         "enrich": {
-          "processedAt": "2026-04-03T03:15:49.316Z",
+          "processedAt": "2026-04-03T06:35:26.741Z",
           "attempts": 1
         },
         "keywords": [
           "registry",
           "FLOW_COMMANDS",
+          "dispatcher",
           "hooks",
-          "pre",
-          "post",
-          "onError",
-          "dispatch",
-          "step-status",
-          "flow-registry",
-          "command-map"
+          "stepPre",
+          "stepPost",
+          "flow subcommand",
+          "lifecycle",
+          "metrics",
+          "command registration"
         ]
       },
       {
@@ -3780,9 +3789,9 @@
       },
       {
         "file": "src/lib/flow-state.js",
-        "hash": "b7a9496aae3c6b6eeadd4976f454a4c6",
+        "hash": "f1276150774fb2cca008ef659b454a52",
         "lines": 629,
-        "mtime": "2026-04-02T15:07:32.623Z",
+        "mtime": "2026-04-03T06:35:08.191Z",
         "className": "flow-state",
         "methods": [
           "derivePhase",
@@ -3853,12 +3862,12 @@
           "src/flow.js"
         ],
         "id": "5bb0bb76",
-        "summary": "Manages persistent flow state for SDD workflows, including loading, saving, and mutating flow.json files per spec. Also handles active flow tracking across worktrees and scanning all flows in the repository.",
-        "detail": "Defines FLOW_STEPS and PHASE_MAP constants to drive workflow progression, and exposes helpers to derive the current phase from completed steps. Supports multi-worktree scenarios by maintaining a shared .active-flow index file in the main repo's .sdd-forge directory. Provides atomic mutation via mutateFlowState(), and metric tracking via incrementMetric() for phase-level counters. cleanStaleFlows() removes entries whose spec directories or worktrees no longer exist, preventing dangling references.",
+        "summary": "Provides all persistence and state-management functions for SDD flow state, including active-flow tracking, step status mutation, and multi-worktree scanning.",
+        "detail": "Flow state is stored as flow.json under specs/<specId>/ and active flows are tracked in .sdd-forge/.active-flow as a JSON array. loadFlowState and saveFlowState handle read/write; mutateFlowState provides an atomic read-modify-write pattern used by updateStepStatus, incrementMetric, setRequirements, and other mutators. resolveWorktreePaths computes worktree directory paths from state, and scanAllFlows traverses both the main repo and any git worktrees to collect all known flow states. cleanStaleFlows removes entries whose spec directories or worktrees no longer exist.",
         "chapter": "internal_design",
-        "role": "lib",
+        "role": "model",
         "enrich": {
-          "processedAt": "2026-04-02T16:04:59.891Z",
+          "processedAt": "2026-04-03T06:35:26.741Z",
           "attempts": 1
         },
         "keywords": [
@@ -3866,12 +3875,12 @@
           "flow.json",
           "active flow",
           "worktree",
+          "step status",
+          "mutateFlowState",
+          "scanAllFlows",
+          "persistence",
           "spec",
-          "phase",
-          "steps",
-          "metrics",
-          "SDD",
-          "state management"
+          "metrics"
         ]
       },
       {
@@ -7457,9 +7466,9 @@
     ],
     "summary": {
       "total": 221,
-      "totalMethods": 665
+      "totalMethods": 670
     },
     "dataSourceHash": "7d725e75d5031be445119323e4947c91"
   },
-  "enrichedAt": "2026-04-03T03:15:49.316Z"
+  "enrichedAt": "2026-04-03T06:35:26.741Z"
 }
