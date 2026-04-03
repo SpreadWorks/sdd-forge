@@ -1,8 +1,8 @@
 /**
  * src/lib/git-state.js
  *
- * Shared helpers for reading Git and GitHub CLI state.
- * All functions are read-only (no side effects).
+ * Shared helpers for Git and GitHub CLI operations.
+ * Includes both read-only state queries and GitHub actions (e.g. issue comments).
  */
 
 import { execFileSync } from "child_process";

@@ -15,6 +15,7 @@ import {
   resolveWorktreePaths, clearFlowState, specIdFromPath,
 } from "../../lib/flow-state.js";
 import { loadIssueLog, saveIssueLog } from "./set-issue-log.js";
+import { isGhAvailable, commentOnIssue } from "../../lib/git-state.js";
 import { FlowCommand } from "./base-command.js";
 import { FLOW_COMMANDS } from "../registry.js";
 
@@ -154,7 +155,6 @@ export async function executeCommitPost(ctx) {
 
     let issueLog = { entries: [] };
     try {
-      const { loadIssueLog } = await import("./set-issue-log.js");
       issueLog = loadIssueLog(root, state.spec);
     } catch (_) { /* no issue-log */ }
 
@@ -170,6 +170,23 @@ export async function executeCommitPost(ctx) {
     results.report = { status: "done", ...report };
   } catch (e) {
     results.report = { status: "failed", message: String(e.message || e) };
+  }
+
+  // post report to issue (if issue-driven flow + gh available)
+  if (!state.issue) {
+    results.issueComment = { status: "skipped", reason: "no linked issue" };
+  } else if (!results.report?.text) {
+    results.issueComment = { status: "skipped", reason: "report text missing" };
+  } else if (!isGhAvailable()) {
+    results.issueComment = { status: "skipped", reason: "gh unavailable" };
+  } else {
+    const res = commentOnIssue(state.issue, results.report.text, root);
+    if (res.ok) {
+      results.issueComment = { status: "done", issue: state.issue };
+    } else {
+      console.error(`Failed to post report to issue #${state.issue}: ${res.error}`);
+      results.issueComment = { status: "failed", message: res.error };
+    }
   }
 
   // commit retro + report files

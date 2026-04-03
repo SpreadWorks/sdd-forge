@@ -7,6 +7,7 @@
  */
 
 import { execFileSync } from "child_process";
+import { isGhAvailable } from "../../lib/git-state.js";
 import { FlowCommand } from "./base-command.js";
 
 const VALID_TARGETS = ["impl", "finalize", "dirty", "gh"];
@@ -44,20 +45,12 @@ function checkDirty(root) {
 }
 
 function checkGh() {
-  try {
-    const out = execFileSync("gh", ["--version"], { encoding: "utf8", timeout: 5000 });
-    return {
-      pass: true,
-      summary: out.trim().split("\n")[0],
-      checks: [{ id: "gh", pass: true, message: "available" }],
-    };
-  } catch {
-    return {
-      pass: false,
-      summary: "gh command not found",
-      checks: [{ id: "gh", pass: false, message: "not available" }],
-    };
-  }
+  const pass = isGhAvailable();
+  return {
+    pass,
+    summary: pass ? "gh available" : "gh command not found",
+    checks: [{ id: "gh", pass, message: pass ? "available" : "not available" }],
+  };
 }
 
 export default class GetCheckCommand extends FlowCommand {

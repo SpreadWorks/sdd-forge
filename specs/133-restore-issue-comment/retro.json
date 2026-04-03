@@ -1,0 +1,43 @@
+{
+  "spec": "specs/133-restore-issue-comment/spec.md",
+  "date": "2026-04-03T11:57:21.433Z",
+  "requirements": [
+    {
+      "desc": "R1: issue コメント投稿の復元",
+      "status": "done",
+      "note": "executeCommitPost() 内の report 生成後・retro/report コミット前に、state.issue falsy → skipped/no linked issue、report?.text falsy → skipped/report text missing、isGhAvailable() false → skipped/gh unavailable、それ以外 → commentOnIssue 呼び出し（成功時 done/issue、失敗時 failed/message + console.error）が全て仕様通り実装されている"
+    },
+    {
+      "desc": "R2: import の追加",
+      "status": "done",
+      "note": "src/flow/lib/run-finalize.js に import { isGhAvailable, commentOnIssue } from \"../../lib/git-state.js\" が追加されている"
+    },
+    {
+      "desc": "R3: テスト",
+      "status": "done",
+      "note": "specs/133-restore-issue-comment/tests/issue-comment.test.js にソースコード内容検証テストが追加。import 存在確認（R2）、issueComment 代入・commentOnIssue 呼び出し・isGhAvailable チェック・3つのスキップ条件文字列の存在確認をカバー。ただしテストはソース文字列のパターンマッチであり、実行時の振る舞いテスト（モック等）ではない"
+    }
+  ],
+  "unplanned": [
+    {
+      "file": "src/lib/git-state.js",
+      "change": "モジュールヘッダーコメントを「read-only」から「read-only + GitHub actions」に更新（review item #2 の対応）"
+    },
+    {
+      "file": "src/flow/lib/get-check.js",
+      "change": "checkGh() を isGhAvailable() を使うようリファクタリングし、重複する gh --version プローブロジックを除去（review item #3 の対応）"
+    },
+    {
+      "file": "src/flow/lib/run-finalize.js",
+      "change": "loadIssueLog の冗長な動的 import を削除し、既存のトップレベル import を使用（review item #4 の対応）"
+    }
+  ],
+  "summary": {
+    "total": 3,
+    "done": 3,
+    "partial": 0,
+    "not_done": 0,
+    "rate": 1,
+    "notes": "R1〜R3 の全要件が仕様通り実装されている。加えてコードレビューで APPROVED された3件の改善（git-state.js ヘッダー修正、checkGh 重複除去、動的 import 除去）が未計画変更として含まれるが、いずれもレビュー指摘に基づく妥当な修正。テストはソースコード文字列検証方式であり、実行時の振る舞い（モックによるスキップ/成功/失敗パス）のテストではない点は留意が必要だが、spec の R3 要件（スキップ条件と成功ケースのカバー）は文字列レベルで満たしている。"
+  }
+}

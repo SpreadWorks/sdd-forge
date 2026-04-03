@@ -1,0 +1,34 @@
+{
+  "data": {
+    "implementation": {
+      "diffStat": "specs/133-restore-issue-comment/draft.md           |  24 ++++\n specs/133-restore-issue-comment/flow.json          | 126 +++++++++++++++++++++\n specs/133-restore-issue-comment/qa.md              |   9 ++\n specs/133-restore-issue-comment/review.md          |  33 ++++++\n specs/133-restore-issue-comment/spec.md            |  64 +++++++++++\n specs/133-restore-issue-comment/tests/README.md    |  21 ++++\n .../tests/issue-comment.test.js                    |  79 +++++++++++++\n src/flow/lib/get-check.js                          |  21 ++--\n src/flow/lib/run-finalize.js                       |  19 +++-\n src/lib/git-state.js                               |   4 +-\n 10 files changed, 383 insertions(+), 17 deletions(-)",
+      "commits": [
+        "feat: feature/133-restore-issue-comment"
+      ]
+    },
+    "retro": {
+      "total": 3,
+      "done": 3,
+      "partial": 0,
+      "not_done": 0,
+      "rate": 1,
+      "notes": "R1〜R3 の全要件が仕様通り実装されている。加えてコードレビューで APPROVED された3件の改善（git-state.js ヘッダー修正、checkGh 重複除去、動的 import 除去）が未計画変更として含まれるが、いずれもレビュー指摘に基づく妥当な修正。テストはソースコード文字列検証方式であり、実行時の振る舞い（モックによるスキップ/成功/失敗パス）のテストではない点は留意が必要だが、spec の R3 要件（スキップ条件と成功ケースのカバー）は文字列レベルで満たしている。"
+    },
+    "issueLog": {
+      "count": 0,
+      "entries": []
+    },
+    "metrics": {
+      "docsRead": 0,
+      "srcRead": 0,
+      "question": 2,
+      "issueLog": 0
+    },
+    "tests": null,
+    "sync": {
+      "status": "skipped",
+      "reason": "sync was skipped"
+    }
+  },
+  "text": "  Report\n\n  Implementation\n  ────────────────────────────────────────────────\n    feat: feature/133-restore-issue-comment\n    10 files changed, 383 insertions(+), 17 deletions(-)\n\n  Retro\n  ────────────────────────────────────────────────\n    ████████ 100%  (3 done / 0 partial / 0 miss)\n\n  Metrics\n  ────────────────────────────────────────────────\n    docs 0  src 0  Q&A 2  issues 0\n\n  Documents\n  ────────────────────────────────────────────────\n    skipped: sync was skipped"
+}
