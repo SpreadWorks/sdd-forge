@@ -1,0 +1,34 @@
+{
+  "data": {
+    "implementation": {
+      "diffStat": "specs/131-fix-finalize-hook-bypass/draft.md        |  34 +++\n specs/131-fix-finalize-hook-bypass/flow.json       | 125 ++++++++++\n specs/131-fix-finalize-hook-bypass/qa.md           |   9 +\n specs/131-fix-finalize-hook-bypass/review.md       |  41 ++++\n specs/131-fix-finalize-hook-bypass/spec.md         |  66 +++++\n specs/131-fix-finalize-hook-bypass/tests/README.md |  30 +++\n .../tests/finalize-hooks.test.js                   |  89 +++++++\n src/flow/lib/run-finalize.js                       | 272 +++++++++++++--------\n src/flow/registry.js                               |  30 +++\n 9 files changed, 590 insertions(+), 106 deletions(-)",
+      "commits": [
+        "feat: feature/131-fix-finalize-hook-bypass"
+      ]
+    },
+    "retro": {
+      "total": 3,
+      "done": 3,
+      "partial": 0,
+      "not_done": 0,
+      "rate": 1,
+      "notes": "3要件すべて実装済み。registry に finalize サブステップが宣言的に定義され、run-finalize.js は runSubStep() で registry フックを適用する構造に書き換えられた。onError → issue-log 記録も finalizeOnError で実装。review で APPROVED された commitOrSkip ヘルパー抽出も含まれている。review で REJECTED された2件（registry ステップのループ化、executeCleanupImpl リネーム戻し）は正しく見送られている。ただし executeCleanupImpl のリネーム自体は残っており、review #3 の指摘と矛盾するが軽微。"
+    },
+    "issueLog": {
+      "count": 0,
+      "entries": []
+    },
+    "metrics": {
+      "docsRead": 6,
+      "srcRead": 4,
+      "question": 3,
+      "issueLog": 0
+    },
+    "tests": null,
+    "sync": {
+      "status": "skipped",
+      "reason": "sync was skipped"
+    }
+  },
+  "text": "  Report\n\n  Implementation\n  ────────────────────────────────────────────────\n    feat: feature/131-fix-finalize-hook-bypass\n    9 files changed, 590 insertions(+), 106 deletions(-)\n\n  Retro\n  ────────────────────────────────────────────────\n    ████████ 100%  (3 done / 0 partial / 0 miss)\n\n  Metrics\n  ────────────────────────────────────────────────\n    docs 6  src 4  Q&A 3  issues 0\n\n  Documents\n  ────────────────────────────────────────────────\n    skipped: sync was skipped"
+}

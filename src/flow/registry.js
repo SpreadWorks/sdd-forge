@@ -302,6 +302,36 @@ export const FLOW_COMMANDS = {
         "  --message <msg>               Custom commit message",
         "  --dry-run                     Preview only",
       ].join("\n"),
+      steps: {
+        commit: {
+          async post(ctx, result) {
+            const m = await import("./lib/run-finalize.js");
+            await m.executeCommitPost(ctx);
+          },
+          async onError(ctx, err) {
+            const m = await import("./lib/run-finalize.js");
+            m.finalizeOnError("commit")(ctx, err);
+          },
+        },
+        merge: {
+          async onError(ctx, err) {
+            const m = await import("./lib/run-finalize.js");
+            m.finalizeOnError("merge")(ctx, err);
+          },
+        },
+        sync: {
+          async onError(ctx, err) {
+            const m = await import("./lib/run-finalize.js");
+            m.finalizeOnError("sync")(ctx, err);
+          },
+        },
+        cleanup: {
+          async onError(ctx, err) {
+            const m = await import("./lib/run-finalize.js");
+            m.finalizeOnError("cleanup")(ctx, err);
+          },
+        },
+      },
     },
     sync: {
       helpKey: "flow.run.sync",

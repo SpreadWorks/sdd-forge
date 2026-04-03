@@ -1,0 +1,125 @@
+{
+  "spec": "specs/131-fix-finalize-hook-bypass/spec.md",
+  "baseBranch": "main",
+  "featureBranch": "feature/131-fix-finalize-hook-bypass",
+  "steps": [
+    {
+      "id": "approach",
+      "status": "done"
+    },
+    {
+      "id": "branch",
+      "status": "done"
+    },
+    {
+      "id": "prepare-spec",
+      "status": "pending"
+    },
+    {
+      "id": "draft",
+      "status": "done"
+    },
+    {
+      "id": "spec",
+      "status": "done"
+    },
+    {
+      "id": "gate",
+      "status": "done"
+    },
+    {
+      "id": "approval",
+      "status": "done"
+    },
+    {
+      "id": "test",
+      "status": "done"
+    },
+    {
+      "id": "implement",
+      "status": "done"
+    },
+    {
+      "id": "review",
+      "status": "done"
+    },
+    {
+      "id": "finalize",
+      "status": "pending"
+    },
+    {
+      "id": "commit",
+      "status": "pending"
+    },
+    {
+      "id": "push",
+      "status": "pending"
+    },
+    {
+      "id": "merge",
+      "status": "pending"
+    },
+    {
+      "id": "pr-create",
+      "status": "pending"
+    },
+    {
+      "id": "branch-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "pr-merge",
+      "status": "pending"
+    },
+    {
+      "id": "sync-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "docs-update",
+      "status": "pending"
+    },
+    {
+      "id": "docs-review",
+      "status": "pending"
+    },
+    {
+      "id": "docs-commit",
+      "status": "pending"
+    }
+  ],
+  "requirements": [
+    {
+      "desc": "R1: registry にサブステップ定義追加(commit post=retro+report, 全エントリに onError)",
+      "status": "done"
+    },
+    {
+      "desc": "R2: finalize のベタ書き廃止(registry 経由実行)",
+      "status": "done"
+    },
+    {
+      "desc": "R3: onError による issue-log 自動記録",
+      "status": "done"
+    }
+  ],
+  "issue": 74,
+  "request": "finalize内サブコマンド呼び出しでregistryフック(onError等)が発火しない問題の修正",
+  "worktree": true,
+  "notes": [
+    "approach: Q&A draft, work-env: worktree, base: main",
+    "impl: approved by user, proceeding to finalize",
+    "finalize: mode=all"
+  ],
+  "metrics": {
+    "plan": {
+      "docsRead": 4
+    },
+    "draft": {
+      "question": 3
+    },
+    "impl": {
+      "docsRead": 2,
+      "srcRead": 4
+    }
+  }
+}

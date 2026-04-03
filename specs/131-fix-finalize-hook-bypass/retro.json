@@ -1,0 +1,43 @@
+{
+  "spec": "specs/131-fix-finalize-hook-bypass/spec.md",
+  "date": "2026-04-03T03:13:47.627Z",
+  "requirements": [
+    {
+      "desc": "R1: registry にサブステップ定義追加(commit post=retro+report, 全エントリに onError)",
+      "status": "done",
+      "note": "registry.js に steps オブジェクトが追加され、commit/merge/sync/cleanup の4エントリを定義。commit には post フック（executeCommitPost 経由で retro+report 実行）、全エントリに onError フック（finalizeOnError 経由で issue-log 記録）が定義されている。"
+    },
+    {
+      "desc": "R2: finalize のベタ書き廃止(registry 経由実行)",
+      "status": "done",
+      "note": "run-finalize.js から RunRetroCommand の直接インスタンス化、merge.js/report.js の直接 import、runSync による docs build 呼び出しを削除。全ステップが runSubStep() 経由で実行され、registry の steps 定義から post/onError フックを参照する構造に変更済み。retro と report は executeCommitPost に移動し、registry の commit.post から lazy import で呼ばれる。"
+    },
+    {
+      "desc": "R3: onError による issue-log 自動記録",
+      "status": "done",
+      "note": "finalizeOnError 関数が run-finalize.js に定義され、loadIssueLog/saveIssueLog を使って step 名・エラーメッセージ・タイムスタンプを issue-log.json に記録する。runSubStep の catch ブロックで stepDef.onError(ctx, err) が呼ばれ、registry の全サブステップで発火する。"
+    }
+  ],
+  "unplanned": [
+    {
+      "file": "src/flow/lib/run-finalize.js",
+      "change": "commitOrSkip ヘルパー関数の追加（commit と sync の git commit + nothing-to-commit フォールバックの重複を共通化）。review.md #4 で APPROVED された改善。"
+    },
+    {
+      "file": "src/flow/lib/run-finalize.js",
+      "change": "executeCleanup を executeCleanupImpl にリネームし、内部の try-catch を除去してエラーを直接 throw する形に変更（onError で捕捉するため）"
+    },
+    {
+      "file": "specs/131-fix-finalize-hook-bypass/",
+      "change": "spec 関連ファイル一式（draft.md, flow.json, qa.md, review.md, spec.md, tests/）の追加。SDD フロー成果物であり実装外。"
+    }
+  ],
+  "summary": {
+    "total": 3,
+    "done": 3,
+    "partial": 0,
+    "not_done": 0,
+    "rate": 1,
+    "notes": "3要件すべて実装済み。registry に finalize サブステップが宣言的に定義され、run-finalize.js は runSubStep() で registry フックを適用する構造に書き換えられた。onError → issue-log 記録も finalizeOnError で実装。review で APPROVED された commitOrSkip ヘルパー抽出も含まれている。review で REJECTED された2件（registry ステップのループ化、executeCleanupImpl リネーム戻し）は正しく見送られている。ただし executeCleanupImpl のリネーム自体は残っており、review #3 の指摘と矛盾するが軽微。"
+  }
+}
