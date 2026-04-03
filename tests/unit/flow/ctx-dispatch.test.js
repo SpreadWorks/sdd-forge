@@ -78,7 +78,7 @@ describe("execute(ctx) signature", () => {
 
 describe("review.js worktree fix", () => {
   it("run/review.js should not override SDD_WORK_ROOT", () => {
-    const content = fs.readFileSync(path.join(FLOW_DIR, "run/review.js"), "utf8");
+    const content = fs.readFileSync(path.join(FLOW_DIR, "lib/run-review.js"), "utf8");
     assert.ok(
       !content.includes("SDD_WORK_ROOT"),
       "run/review.js must not override SDD_WORK_ROOT",
@@ -111,7 +111,7 @@ describe("2nd-level dispatcher removal", () => {
 
 describe("prepare-spec config requirement", () => {
   it("prepare-spec.js should not fallback to null config", () => {
-    const content = fs.readFileSync(path.join(FLOW_DIR, "run/prepare-spec.js"), "utf8");
+    const content = fs.readFileSync(path.join(FLOW_DIR, "lib/run-prepare-spec.js"), "utf8");
     assert.ok(
       !content.includes("? null"),
       "prepare-spec.js must not fallback config to null",

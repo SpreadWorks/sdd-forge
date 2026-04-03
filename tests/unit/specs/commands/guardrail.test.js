@@ -9,7 +9,7 @@ const SDD_FORGE = join(process.cwd(), "src/sdd-forge.js");
 
 // Dynamically import gate functions for unit tests
 const { buildGuardrailPrompt, parseGuardrailResponse } = await import(
-  "../../../../src/flow/run/gate.js"
+  "../../../../src/flow/lib/run-gate.js"
 );
 
 // ---------------------------------------------------------------------------

@@ -1,6 +1,6 @@
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
-import { collectAllKeywords, buildKeywordSelectionPrompt, fallbackSearch } from "../../../src/flow/get/context.js";
+import { collectAllKeywords, buildKeywordSelectionPrompt, fallbackSearch } from "../../../src/flow/lib/get-context.js";
 
 const SAMPLE_ANALYSIS = {
   _meta: { version: 1 },

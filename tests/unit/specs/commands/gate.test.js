@@ -1,7 +1,7 @@
 import { describe, it, afterEach } from "node:test";
 import assert from "node:assert/strict";
 import { join } from "path";
-import { checkSpecText } from "../../../../src/flow/run/gate.js";
+import { checkSpecText } from "../../../../src/flow/lib/run-gate.js";
 import { createTmpDir, removeTmpDir, writeFile, writeJson } from "../../../helpers/tmp-dir.js";
 import { execFileSync } from "child_process";
 import { setupFlow } from "../../../helpers/flow-setup.js";

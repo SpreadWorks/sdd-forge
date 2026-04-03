@@ -1,0 +1,133 @@
+{
+  "spec": "specs/130-flow-logic-cli-separation/spec.md",
+  "baseBranch": "main",
+  "featureBranch": "feature/130-flow-logic-cli-separation",
+  "steps": [
+    {
+      "id": "approach",
+      "status": "done"
+    },
+    {
+      "id": "branch",
+      "status": "done"
+    },
+    {
+      "id": "prepare-spec",
+      "status": "pending"
+    },
+    {
+      "id": "draft",
+      "status": "done"
+    },
+    {
+      "id": "spec",
+      "status": "done"
+    },
+    {
+      "id": "gate",
+      "status": "done"
+    },
+    {
+      "id": "approval",
+      "status": "done"
+    },
+    {
+      "id": "test",
+      "status": "done"
+    },
+    {
+      "id": "implement",
+      "status": "done"
+    },
+    {
+      "id": "review",
+      "status": "done"
+    },
+    {
+      "id": "finalize",
+      "status": "pending"
+    },
+    {
+      "id": "commit",
+      "status": "pending"
+    },
+    {
+      "id": "push",
+      "status": "pending"
+    },
+    {
+      "id": "merge",
+      "status": "pending"
+    },
+    {
+      "id": "pr-create",
+      "status": "pending"
+    },
+    {
+      "id": "branch-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "pr-merge",
+      "status": "pending"
+    },
+    {
+      "id": "sync-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "docs-update",
+      "status": "pending"
+    },
+    {
+      "id": "docs-review",
+      "status": "pending"
+    },
+    {
+      "id": "docs-commit",
+      "status": "pending"
+    }
+  ],
+  "requirements": [
+    {
+      "desc": "R1: FlowCommand基底クラス(run+execute)",
+      "status": "done"
+    },
+    {
+      "desc": "R2: 全27コマンドのロジック層分離(output/parseArgs/ok/fail除去)",
+      "status": "done"
+    },
+    {
+      "desc": "R3: registryにargs/help/command集約",
+      "status": "done"
+    },
+    {
+      "desc": "R4: ディスパッチャ共通ラッパー(parseArgs→run→ok/fail→output)",
+      "status": "done"
+    },
+    {
+      "desc": "R5: run/get/set個別ラッパー削除",
+      "status": "done"
+    },
+    {
+      "desc": "R6: finalizeからlib直接呼び出し",
+      "status": "done"
+    },
+    {
+      "desc": "R7: DIRTY_WORKTREEのコマンド内解決",
+      "status": "done"
+    }
+  ],
+  "issue": 73,
+  "request": "flow コマンドのロジック/CLI分離リファクタ: execute()内のoutput/exitCode/parseArgsをロジック層から分離",
+  "worktree": true,
+  "notes": [
+    "approach: Q&A draft, work-env: worktree, base: main",
+    "finalize: mode=all"
+  ],
+  "metrics": {
+    "draft": {
+      "question": 6
+    }
+  }
+}

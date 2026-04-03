@@ -1,6 +1,6 @@
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
-import { searchEntries } from "../../../src/flow/get/context.js";
+import { searchEntries } from "../../../src/flow/lib/get-context.js";
 
 const ENTRIES = [
   {

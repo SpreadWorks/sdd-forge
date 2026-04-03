@@ -7,7 +7,7 @@
 
 import fs from "fs";
 import path from "path";
-import { loadIssueLog } from "../set/issue-log.js";
+import { loadIssueLog } from "../lib/set-issue-log.js";
 
 /**
  * Aggregate metrics across all phases.

@@ -1,0 +1,28 @@
+{
+  "data": {
+    "implementation": {
+      "diffStat": "specs/130-flow-logic-cli-separation/draft.md       | 132 ++++++++\n specs/130-flow-logic-cli-separation/flow.json      | 133 ++++++++\n specs/130-flow-logic-cli-separation/qa.md          |   9 +\n specs/130-flow-logic-cli-separation/report.json    |  27 ++\n specs/130-flow-logic-cli-separation/review.md      |  33 ++\n specs/130-flow-logic-cli-separation/spec.md        |  84 +++++\n .../130-flow-logic-cli-separation/tests/README.md  |  23 ++\n .../tests/flow-lib-separation.test.js              | 100 ++++++\n src/flow.js                                        | 104 +++++--\n src/flow/commands/report.js                        |   2 +-\n src/flow/get/guardrail.js                          |  76 -----\n src/flow/get/issue.js                              |  38 ---\n src/flow/get/qa-count.js                           |  21 --\n src/flow/get/resolve-context.js                    | 133 --------\n src/flow/get/status.js                             |  42 ---\n src/flow/lib/base-command.js                       |  40 +++\n src/flow/{get/check.js => lib/get-check.js}        |  61 ++--\n src/flow/{get/context.js => lib/get-context.js}    | 213 ++++---------\n src/flow/lib/get-guardrail.js                      |  62 ++++\n src/flow/lib/get-issue.js                          |  43 +++\n src/flow/{get/prompt.js => lib/get-prompt.js}      |  79 ++---\n src/flow/lib/get-qa-count.js                       |  16 +\n src/flow/lib/get-resolve-context.js                | 133 ++++++++\n src/flow/lib/get-status.js                         |  38 +++\n src/flow/lib/run-finalize.js                       | 277 +++++++++++++++++\n src/flow/{run/gate.js => lib/run-gate.js}          | 135 ++++----\n src/flow/lib/run-impl-confirm.js                   |  97 ++++++\n src/flow/lib/run-lint.js                           |  61 ++++\n src/flow/lib/run-prepare-spec.js                   | 321 +++++++++++++++++++\n src/flow/lib/run-report.js                         |  69 +++++\n src/flow/lib/run-retro.js                          | 238 +++++++++++++++\n src/flow/lib/run-review.js                         | 106 +++++++\n src/flow/lib/run-sync.js                           | 103 +++++++\n src/flow/lib/set-auto.js                           |  28 ++\n src/flow/lib/set-issue-log.js                      |  73 +++++\n src/flow/lib/set-issue.js                          |  29 ++\n src/flow/lib/set-metric.js                         |  43 +++\n src/flow/lib/set-note.js                           |  24 ++\n src/flow/lib/set-req.js                            |  30 ++\n src/flow/lib/set-request.js                        |  24 ++\n src/flow/lib/set-step.js                           |  25 ++\n src/flow/lib/set-summary.js                        |  35 +++\n src/flow/lib/set-test-summary.js                   |  39 +++\n src/flow/registry.js                               | 240 ++++++++++++---\n src/flow/run/finalize.js                           | 324 --------------------\n src/flow/run/impl-confirm.js                       | 121 --------\n src/flow/run/lint.js                               |  79 -----\n src/flow/run/prepare-spec.js                       | 339 ---------------------\n src/flow/run/report.js                             |  91 ------\n src/flow/run/retro.js                              | 269 ----------------\n src/flow/run/review.js                             | 130 --------\n src/flow/run/sync.js                               | 114 -------\n src/flow/set/auto.js                               |  29 --\n src/flow/set/issue-log.js                          | 113 -------\n src/flow/set/issue.js                              |  33 --\n src/flow/set/metric.js                             |  48 ---\n src/flow/set/note.js                               |  27 --\n src/flow/set/req.js                                |  34 ---\n src/flow/set/request.js                            |  27 --\n src/flow/set/step.js                               |  28 --\n src/flow/set/summary.js                            |  40 ---\n src/flow/set/test-summary.js                       |  57 ----\n tests/unit/flow/ctx-dispatch.test.js               |   4 +-\n tests/unit/flow/get-context-ai-search.test.js      |   2 +-\n tests/unit/flow/get-context-ngram.test.js          |   2 +-\n tests/unit/flow/get-context-search.test.js         |   2 +-\n tests/unit/flow/set-issue-log.test.js              |   2 +-\n tests/unit/specs/commands/gate.test.js             |   2 +-\n .../unit/specs/commands/guardrail-metadata.test.js |   2 +-\n tests/unit/specs/commands/guardrail.test.js        |   2 +-\n 70 files changed, 2973 insertions(+), 2587 deletions(-)",
+      "commits": [
+        "chore: add retro and report",
+        "feat: feature/130-flow-logic-cli-separation"
+      ]
+    },
+    "retro": null,
+    "issueLog": {
+      "count": 0,
+      "entries": []
+    },
+    "metrics": {
+      "docsRead": 0,
+      "srcRead": 0,
+      "question": 6,
+      "issueLog": 0
+    },
+    "tests": null,
+    "sync": {
+      "status": "skipped",
+      "reason": "sync was skipped"
+    }
+  },
+  "text": "  Report\n\n  Implementation\n  ────────────────────────────────────────────────\n    chore: add retro and report\n    feat: feature/130-flow-logic-cli-separation\n    70 files changed, 2973 insertions(+), 2587 deletions(-)\n\n  Retro\n  ────────────────────────────────────────────────\n    -\n\n  Metrics\n  ────────────────────────────────────────────────\n    docs 0  src 0  Q&A 6  issues 0\n\n  Documents\n  ────────────────────────────────────────────────\n    skipped: sync was skipped"
+}

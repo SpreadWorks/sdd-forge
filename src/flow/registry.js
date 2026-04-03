@@ -2,14 +2,13 @@
  * src/flow/registry.js
  *
  * Single source of truth for flow subcommand metadata.
- * Each command is defined declaratively with helpKey, execute,
- * and optional pre/post/onError/finally hooks.
+ * Each command is defined declaratively with help, command (lazy import),
+ * args definition, and optional pre/post/onError/finally hooks.
  *
  * Used by flow.js dispatcher and help.js.
  */
 
 import { updateStepStatus, incrementMetric, derivePhase, loadFlowState } from "../lib/flow-state.js";
-import { fail, output } from "../lib/flow-envelope.js";
 
 /**
  * Load flow state and derive the current phase.
@@ -22,17 +21,17 @@ function deriveActivePhase(root) {
 }
 
 /**
- * Create a pre hook that sets a step to in_progress.
- * @param {string} stepId
- * @returns {(ctx: object) => void}
- */
-/**
  * Best-effort step status update. Silently ignores errors (e.g. flow.json absent after cleanup).
  */
 function tryUpdateStepStatus(root, stepId, status) {
   try { updateStepStatus(root, stepId, status); } catch {}
 }
 
+/**
+ * Create a pre hook that sets a step to in_progress.
+ * @param {string} stepId
+ * @returns {(ctx: object) => void}
+ */
 function stepPre(stepId) {
   return (ctx) => tryUpdateStepStatus(ctx.root, stepId, "in_progress");
 }
@@ -54,51 +53,92 @@ export const FLOW_COMMANDS = {
   prepare: {
     helpKey: "flow.prepare",
     requiresFlow: false,
-    execute: () => import("./run/prepare-spec.js"),
+    command: () => import("./lib/run-prepare-spec.js"),
+    args: {
+      flags: ["--no-branch", "--worktree", "--dry-run"],
+      options: ["--title", "--base", "--issue", "--request"],
+    },
+    help: [
+      "Usage: sdd-forge flow prepare [options]",
+      "",
+      "Create branch/worktree and initialize spec directory.",
+      "",
+      "Options:",
+      "  --title <name>     Feature title (required)",
+      "  --base <branch>    Base branch (default: current HEAD)",
+      "  --worktree         Use git worktree mode",
+      "  --no-branch        Spec-only mode (no branch creation)",
+      "  --issue <number>   GitHub Issue number to link",
+      "  --request <text>   User request text to save in flow.json",
+      "  --dry-run          Show what would happen without executing",
+    ].join("\n"),
   },
   get: {
     status: {
       helpKey: "flow.get.status",
-      execute: () => import("./get/status.js"),
+      command: () => import("./lib/get-status.js"),
+      help: "Usage: sdd-forge flow get status\n\nReturn current flow state as JSON envelope.",
     },
     "resolve-context": {
       helpKey: "flow.get.resolve-context",
-      execute: () => import("./get/resolve-context.js"),
+      command: () => import("./lib/get-resolve-context.js"),
+      help: "Usage: sdd-forge flow get resolve-context\n\nResolve worktree/repo paths and active flow for context recovery.",
     },
     check: {
       helpKey: "flow.get.check",
-      execute: () => import("./get/check.js"),
+      command: () => import("./lib/get-check.js"),
+      args: { positional: ["target"] },
+      help: "Usage: sdd-forge flow get check <target>\n\nCheck a condition. Targets: dirty, gh, impl, finalize.",
     },
     prompt: {
       helpKey: "flow.get.prompt",
       requiresFlow: false,
-      execute: () => import("./get/prompt.js"),
+      command: () => import("./lib/get-prompt.js"),
+      args: { positional: ["kind"] },
+      help: "Usage: sdd-forge flow get prompt <kind>\n\nReturn a prompt template by kind.",
     },
     "qa-count": {
       helpKey: "flow.get.qa-count",
-      execute: () => import("./get/qa-count.js"),
+      command: () => import("./lib/get-qa-count.js"),
+      help: "Usage: sdd-forge flow get qa-count\n\nReturn the number of answered questions in draft phase.",
     },
     guardrail: {
       helpKey: "flow.get.guardrail",
       requiresFlow: false,
-      execute: () => import("./get/guardrail.js"),
+      command: () => import("./lib/get-guardrail.js"),
+      args: { positional: ["phase"], options: ["--format"] },
+      help: "Usage: sdd-forge flow get guardrail <phase> [--format json]\n\nReturn guardrails filtered by phase. Phases: draft, spec, impl, lint.",
     },
     issue: {
       helpKey: "flow.get.issue",
       requiresFlow: false,
-      execute: () => import("./get/issue.js"),
+      command: () => import("./lib/get-issue.js"),
+      args: { positional: ["number"] },
+      help: "Usage: sdd-forge flow get issue <number>\n\nGet GitHub issue content as JSON.",
     },
     context: {
       helpKey: "flow.get.context",
-      execute: () => import("./get/context.js"),
+      command: () => import("./lib/get-context.js"),
+      args: { positional: ["path"], flags: ["--raw"], options: ["--search"] },
+      help: [
+        "Usage: sdd-forge flow get context [path] [--raw] [--search <query>]",
+        "",
+        "List mode (no path): filtered analysis entries.",
+        "File mode (with path): file content + metric increment.",
+        "Search mode (--search): keyword search in analysis entries.",
+        "",
+        "Options:",
+        "  --raw              Output content without JSON envelope",
+        "  --search <query>   Search entries by keyword (matches against keywords array)",
+      ].join("\n"),
       post(ctx, result) {
         const phase = deriveActivePhase(ctx.root);
         if (!phase) return;
 
-        if (result?.data?.type) {
-          // File mode: result.data.type is "docs" or "src"
-          incrementMetric(ctx.root, phase, result.data.type === "docs" ? "docsRead" : "srcRead");
-        } else if (result?.data?.entries || result?.data?.total != null) {
+        if (result?.type) {
+          // File mode: result.type is "docs" or "src"
+          incrementMetric(ctx.root, phase, result.type === "docs" ? "docsRead" : "srcRead");
+        } else if (result?.entries || result?.total != null) {
           // List mode or search mode: reads analysis.json → docsRead
           incrementMetric(ctx.root, phase, "docsRead");
         }
@@ -108,35 +148,51 @@ export const FLOW_COMMANDS = {
   set: {
     step: {
       helpKey: "flow.set.step",
-      execute: () => import("./set/step.js"),
+      command: () => import("./lib/set-step.js"),
+      args: { positional: ["id", "status"] },
+      help: "Usage: sdd-forge flow set step <id> <status>\n\nUpdate a workflow step's status.",
     },
     request: {
       helpKey: "flow.set.request",
-      execute: () => import("./set/request.js"),
+      command: () => import("./lib/set-request.js"),
+      args: { positional: ["text"] },
+      help: "Usage: sdd-forge flow set request \"<text>\"\n\nSet the user request field in flow.json.",
     },
     issue: {
       helpKey: "flow.set.issue",
-      execute: () => import("./set/issue.js"),
+      command: () => import("./lib/set-issue.js"),
+      args: { positional: ["number"] },
+      help: "Usage: sdd-forge flow set issue <number>\n\nSet the GitHub issue number in flow.json.",
     },
     note: {
       helpKey: "flow.set.note",
-      execute: () => import("./set/note.js"),
+      command: () => import("./lib/set-note.js"),
+      args: { positional: ["text"] },
+      help: "Usage: sdd-forge flow set note \"<text>\"\n\nAppend a note to the notes array in flow.json.",
     },
     summary: {
       helpKey: "flow.set.summary",
-      execute: () => import("./set/summary.js"),
+      command: () => import("./lib/set-summary.js"),
+      args: { positional: ["json"] },
+      help: "Usage: sdd-forge flow set summary '<json-array>'\n\nSet requirements list from a JSON string array.",
     },
     req: {
       helpKey: "flow.set.req",
-      execute: () => import("./set/req.js"),
+      command: () => import("./lib/set-req.js"),
+      args: { positional: ["index", "status"] },
+      help: "Usage: sdd-forge flow set req <index> <status>\n\nUpdate a single requirement's status.",
     },
     metric: {
       helpKey: "flow.set.metric",
-      execute: () => import("./set/metric.js"),
+      command: () => import("./lib/set-metric.js"),
+      args: { positional: ["phase", "counter"] },
+      help: "Usage: sdd-forge flow set metric <phase> <counter>\n\nIncrement a metric counter in flow.json. Phases: draft, spec, gate, test, impl. Counters: question, redo, docsRead, srcRead.",
     },
     "issue-log": {
       helpKey: "flow.set.issue-log",
-      execute: () => import("./set/issue-log.js"),
+      command: () => import("./lib/set-issue-log.js"),
+      args: { options: ["--step", "--reason", "--trigger", "--resolution", "--guardrail-candidate"] },
+      help: "Usage: sdd-forge flow set issue-log --step <id> --reason <text> [--trigger <text>] [--resolution <text>] [--guardrail-candidate <text>]\n\nRecord an issue-log entry in issue-log.json.",
       post(ctx) {
         const phase = deriveActivePhase(ctx.root);
         if (phase) incrementMetric(ctx.root, phase, "issueLog");
@@ -149,58 +205,162 @@ export const FLOW_COMMANDS = {
     },
     auto: {
       helpKey: "flow.set.auto",
-      execute: () => import("./set/auto.js"),
+      command: () => import("./lib/set-auto.js"),
+      args: { positional: ["value"] },
+      help: "Usage: sdd-forge flow set auto on|off\n\nEnable or disable autoApprove mode in flow.json.",
     },
     "test-summary": {
       helpKey: "flow.set.test-summary",
-      execute: () => import("./set/test-summary.js"),
+      command: () => import("./lib/set-test-summary.js"),
+      args: { options: ["--unit", "--integration", "--acceptance"] },
+      help: [
+        "Usage: sdd-forge flow set test-summary [options]",
+        "",
+        "Options:",
+        "  --unit N          Number of unit tests",
+        "  --integration N   Number of integration tests",
+        "  --acceptance N    Number of acceptance tests",
+      ].join("\n"),
     },
   },
   run: {
     gate: {
       helpKey: "flow.run.gate",
       pre: stepPre("gate"),
-      execute: () => import("./run/gate.js"),
-      post: stepPost("gate", (result) => result?.data?.result === "pass" ? "done" : "in_progress"),
+      command: () => import("./lib/run-gate.js"),
+      args: {
+        options: ["--spec", "--phase"],
+        flags: ["--skip-guardrail"],
+      },
+      help: [
+        "Usage: sdd-forge flow run gate [options]",
+        "",
+        "Run spec gate check. Resolves --spec from flow.json if omitted.",
+        "",
+        "Options:",
+        "  --spec <path>       Path to spec.md (auto-resolved from flow.json)",
+        "  --phase <pre|post>  Gate phase (default: pre)",
+        "  --skip-guardrail    Skip AI guardrail compliance check",
+      ].join("\n"),
+      post: stepPost("gate", (result) => result?.result === "pass" ? "done" : "in_progress"),
     },
     review: {
       helpKey: "flow.run.review",
       pre: stepPre("review"),
-      execute: () => import("./run/review.js"),
+      command: () => import("./lib/run-review.js"),
+      args: {
+        flags: ["--dry-run", "--skip-confirm"],
+        options: ["--phase"],
+      },
+      help: [
+        "Usage: sdd-forge flow run review [options]",
+        "",
+        "Run AI code review on current changes.",
+        "",
+        "Options:",
+        "  --phase <type>   Review phase: 'test' for test sufficiency review",
+        "  --dry-run        Show proposals without applying",
+        "  --skip-confirm   Skip initial confirmation prompt",
+      ].join("\n"),
       post: stepPost("review"),
     },
     // impl-confirm is a read-only check, not the finalize action itself.
     // Step status is managed by the skill, not hooks.
     "impl-confirm": {
       helpKey: "flow.run.impl-confirm",
-      execute: () => import("./run/impl-confirm.js"),
+      command: () => import("./lib/run-impl-confirm.js"),
+      args: { options: ["--mode"] },
+      help: [
+        "Usage: sdd-forge flow run impl-confirm [options]",
+        "",
+        "Check implementation readiness against requirements.",
+        "",
+        "Options:",
+        "  --mode <overview|detail>  Check mode (default: overview)",
+        "    overview: summarize requirements status from flow.json",
+        "    detail:   also compare git diff against requirements",
+      ].join("\n"),
     },
     // finalize runs cleanup internally which deletes .active-flow,
     // so post hooks cannot update step status. Managed by the skill.
     finalize: {
       helpKey: "flow.run.finalize",
-      execute: () => import("./run/finalize.js"),
+      command: () => import("./lib/run-finalize.js"),
+      args: {
+        flags: ["--dry-run"],
+        options: ["--mode", "--steps", "--merge-strategy", "--message"],
+      },
+      help: [
+        "Usage: sdd-forge flow run finalize [options]",
+        "",
+        "Execute finalization pipeline: commit(+retro+report) -> merge -> sync -> cleanup.",
+        "",
+        "Options:",
+        "  --mode <all|select>           Mode (required)",
+        "  --steps <1,2,3,4>            Comma-separated step numbers (select mode: 1=commit 2=merge 3=sync 4=cleanup)",
+        "  --merge-strategy <strategy>   squash or pr (default: auto-detect)",
+        "  --message <msg>               Custom commit message",
+        "  --dry-run                     Preview only",
+      ].join("\n"),
     },
     sync: {
       helpKey: "flow.run.sync",
       requiresFlow: false,
-      execute: () => import("./run/sync.js"),
+      command: () => import("./lib/run-sync.js"),
+      args: { flags: ["--dry-run"] },
+      help: [
+        "Usage: sdd-forge flow run sync [options]",
+        "",
+        "Sync documentation: build -> review -> add -> commit.",
+        "",
+        "Options:",
+        "  --dry-run   Preview only",
+      ].join("\n"),
     },
     // lint is a sub-task of the implement phase; it does not exclusively own the step.
     // Step status is managed by the skill, not hooks.
     lint: {
       helpKey: "flow.run.lint",
-      execute: () => import("./run/lint.js"),
+      command: () => import("./lib/run-lint.js"),
+      args: { options: ["--base"] },
+      help: [
+        "Usage: sdd-forge flow run lint [options]",
+        "",
+        "Check changed files against guardrail lint patterns.",
+        "",
+        "Options:",
+        "  --base <branch>  Base branch for git diff (auto-resolved from flow.json)",
+      ].join("\n"),
     },
     // retro is a post-flow analysis; it does not own the finalize step.
     retro: {
       helpKey: "flow.run.retro",
-      execute: () => import("./run/retro.js"),
+      command: () => import("./lib/run-retro.js"),
+      args: { flags: ["--force", "--dry-run"] },
+      help: [
+        "Usage: sdd-forge flow run retro [options]",
+        "",
+        "Evaluate spec accuracy after implementation.",
+        "Compares spec requirements against git diff and saves retro.json.",
+        "",
+        "Options:",
+        "  --force     Overwrite existing retro.json",
+        "  --dry-run   Preview only, do not write retro.json",
+      ].join("\n"),
     },
     // report generates a work report from the current flow state.
     report: {
       helpKey: "flow.run.report",
-      execute: () => import("./run/report.js"),
+      command: () => import("./lib/run-report.js"),
+      args: { flags: ["--dry-run"] },
+      help: [
+        "Usage: sdd-forge flow run report [options]",
+        "",
+        "Generate a work report from the current flow state.",
+        "",
+        "Options:",
+        "  --dry-run   Preview only, do not write report.json",
+      ].join("\n"),
     },
   },
 };

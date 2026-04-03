@@ -5,7 +5,7 @@ const { filterByPhase, matchScope } = await import(
   "../../../../src/lib/guardrail.js"
 );
 const { buildGuardrailPrompt } = await import(
-  "../../../../src/flow/run/gate.js"
+  "../../../../src/flow/lib/run-gate.js"
 );
 
 // ---------------------------------------------------------------------------

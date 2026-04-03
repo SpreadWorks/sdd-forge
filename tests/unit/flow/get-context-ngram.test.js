@@ -1,6 +1,6 @@
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
-import { toBigrams, bigramSimilarity, ngramSearch } from "../../../src/flow/get/context.js";
+import { toBigrams, bigramSimilarity, ngramSearch } from "../../../src/flow/lib/get-context.js";
 
 describe("toBigrams", () => {
   it("splits a string into bigrams", () => {

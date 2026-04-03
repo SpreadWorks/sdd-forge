@@ -12,10 +12,10 @@
  *   sdd-forge flow run gate
  */
 
-import { repoRoot, isInsideWorktree, getMainRepoPath } from "./lib/cli.js";
+import { repoRoot, isInsideWorktree, getMainRepoPath, parseArgs } from "./lib/cli.js";
 import { loadConfig } from "./lib/config.js";
 import { loadFlowState, specIdFromPath } from "./lib/flow-state.js";
-import { fail, output } from "./lib/flow-envelope.js";
+import { ok, fail, output } from "./lib/flow-envelope.js";
 import { FLOW_COMMANDS } from "./flow/registry.js";
 import { EXIT_ERROR } from "./lib/exit-codes.js";
 
@@ -46,7 +46,7 @@ if (!group || group === "-h" || group === "--help") {
 // Resolve ctx
 // ---------------------------------------------------------------------------
 
-function resolveCtx(requiresFlow) {
+function resolveCtx() {
   const root = repoRoot();
   const inWorktree = isInsideWorktree(root);
   const mainRoot = inWorktree ? getMainRepoPath(root) : root;
@@ -59,30 +59,92 @@ function resolveCtx(requiresFlow) {
   }
 
   const flowState = loadFlowState(root);
-  if (requiresFlow && !flowState) {
-    output(fail("flow", group, "NO_FLOW", "no active flow (flow.json not found)"));
-    process.exit(EXIT_ERROR);
-  }
   const specId = flowState ? specIdFromPath(flowState.spec) : null;
 
   return { root, mainRoot, config, flowState, specId, inWorktree };
 }
 
 // ---------------------------------------------------------------------------
-// Run a registry entry: pre → execute → post/onError → finally
+// Parse entry args and merge into ctx
 // ---------------------------------------------------------------------------
 
-async function runEntry(entry, ctx) {
-  const isHelp = ctx.args?.includes("-h") || ctx.args?.includes("--help");
-  if (!isHelp && entry.pre) entry.pre(ctx);
+function parseEntryArgs(entry, rawArgs, ctx) {
+  if (!entry.args) return;
+
+  const { positional, flags, options } = entry.args;
+
+  // Parse flags/options via parseArgs if defined
+  if (flags || options) {
+    const spec = { flags: flags || [], options: options || [] };
+    // Separate positional args from flag/option args
+    const flagOptionSet = new Set([...(flags || []), ...(options || [])]);
+    const nonPositional = [];
+    const positionalValues = [];
+    for (let i = 0; i < rawArgs.length; i++) {
+      const a = rawArgs[i];
+      if (a === "-h" || a === "--help") { nonPositional.push(a); continue; }
+      if (flagOptionSet.has(a)) {
+        nonPositional.push(a);
+        if ((options || []).includes(a) && i + 1 < rawArgs.length) {
+          nonPositional.push(rawArgs[++i]);
+        }
+        continue;
+      }
+      positionalValues.push(a);
+    }
+    const parsed = parseArgs(nonPositional, spec);
+    Object.assign(ctx, parsed);
+
+    // Map positional values to named properties
+    if (positional && positionalValues.length > 0) {
+      for (let i = 0; i < positional.length && i < positionalValues.length; i++) {
+        ctx[positional[i]] = positionalValues[i];
+      }
+    }
+  } else if (positional) {
+    // Only positional args (no flags/options)
+    for (let i = 0; i < positional.length && i < rawArgs.length; i++) {
+      ctx[positional[i]] = rawArgs[i];
+    }
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Run a registry entry: parseArgs → help → pre → command.run → ok/fail → post
+// ---------------------------------------------------------------------------
+
+async function runEntry(entry, ctx, envelopeType, envelopeKey) {
+  // Parse args
+  parseEntryArgs(entry, ctx.args || [], ctx);
+
+  // Help
+  if (ctx.help && entry.help) {
+    console.log(entry.help);
+    return;
+  }
+
+  // requiresFlow check
+  const requiresFlow = entry.requiresFlow !== false;
+  if (requiresFlow && !ctx.flowState) {
+    output(fail(envelopeType, envelopeKey, "NO_FLOW", "no active flow (flow.json not found)"));
+    process.exit(EXIT_ERROR);
+  }
+
+  // Pre hook
+  if (entry.pre) entry.pre(ctx);
+
   try {
-    const mod = await entry.execute();
-    const result = await mod.execute(ctx);
-    if (result && !isHelp) output(result);
-    if (!isHelp && entry.post) entry.post(ctx, result);
+    const mod = await entry.command();
+    const Command = mod.default;
+    const cmd = new Command();
+    const result = await cmd.run(ctx);
+
+    output(ok(envelopeType, envelopeKey, result || {}));
+
+    if (entry.post) entry.post(ctx, result);
   } catch (err) {
+    output(fail(envelopeType, envelopeKey, err.code || "ERROR", err.message));
     if (entry.onError) entry.onError(ctx, err);
-    throw err;
   } finally {
     if (entry.finally) entry.finally(ctx);
   }
@@ -96,13 +158,13 @@ async function dispatch() {
   // Top-level command: prepare
   if (group === "prepare") {
     const entry = FLOW_COMMANDS.prepare;
-    const ctx = resolveCtx(false);
+    const ctx = resolveCtx();
     if (!ctx.config) {
       output(fail("flow", "prepare", "NO_CONFIG", "config.json not found. Run sdd-forge setup first."));
       process.exit(EXIT_ERROR);
     }
     ctx.args = rest;
-    await runEntry(entry, ctx);
+    await runEntry(entry, ctx, "run", "prepare-spec");
     return;
   }
 
@@ -134,12 +196,10 @@ async function dispatch() {
     process.exit(EXIT_ERROR);
   }
 
-  const isHelp = cmdArgs.includes("-h") || cmdArgs.includes("--help");
-  const requiresFlow = !isHelp && entry.requiresFlow !== false;
-  const ctx = resolveCtx(requiresFlow);
+  const ctx = resolveCtx();
   ctx.args = cmdArgs;
 
-  await runEntry(entry, ctx);
+  await runEntry(entry, ctx, group, cmd);
 }
 
 await dispatch();
