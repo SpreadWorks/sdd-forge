@@ -25,10 +25,10 @@ src/docs/commands/    (cli, controller)
 src/docs/data/    (model)
 src/docs/lib/    (model, lib)
 src/docs/lib/lang/    (lib)
-src/flow/    (controller)
+src/flow/    (other)
 src/flow/commands/    (lib, cli)
 src/flow/lib/    (lib, controller)
-src/lib/    (lib, config)
+src/lib/    (lib, config, model)
 ```
 <!-- {{/data}} -->
 
@@ -38,8 +38,8 @@ src/lib/    (lib, config)
 | Directory | Files | Role |
 | --- | --- | --- |
 | src/docs | 40 | cli, controller, model, lib |
-| src/flow | 32 | lib, cli, controller |
-| src/lib | 20 | lib, config |
+| src/flow | 32 | lib, cli, controller, other |
+| src/lib | 20 | lib, config, model |
 | src | 7 | controller, cli |
 <!-- {{/data}} -->
 
