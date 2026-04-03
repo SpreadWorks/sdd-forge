@@ -9,6 +9,7 @@ import fs from "fs";
 import path from "path";
 import { execFileSync } from "child_process";
 import { callAgent, resolveAgent } from "../../lib/agent.js";
+import { repairJson } from "../../lib/json-parse.js";
 import { FlowCommand } from "./base-command.js";
 
 /**
@@ -96,7 +97,12 @@ function buildRetroPrompt(requirementsText, requirements, diff) {
  */
 function parseRetroResponse(response, requirements) {
   const cleaned = response.replace(/^```(?:json)?\s*/m, "").replace(/```\s*$/m, "").trim();
-  const data = JSON.parse(cleaned);
+  let data;
+  try {
+    data = JSON.parse(cleaned);
+  } catch (_) {
+    data = JSON.parse(repairJson(cleaned));
+  }
 
   // Ensure requirements array matches flow.json length
   const reqs = (data.requirements || []).slice(0, requirements.length);
