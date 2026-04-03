@@ -1,5 +1,5 @@
 {
-  "analyzedAt": "2026-04-02T17:31:31.729Z",
+  "analyzedAt": "2026-04-03T03:13:47.849Z",
   "package": {
     "entries": [
       {
@@ -1946,12 +1946,13 @@
       },
       {
         "file": "src/flow.js",
-        "hash": "154a22a0827aa05af238851042f2f620",
-        "lines": 146,
-        "mtime": "2026-04-02T15:07:32.621Z",
+        "hash": "28de06b90269a986ae732edfad4dc4fd",
+        "lines": 206,
+        "mtime": "2026-04-03T01:07:47.870Z",
         "className": "flow",
         "methods": [
           "resolveCtx",
+          "parseEntryArgs",
           "runEntry",
           "dispatch"
         ],
@@ -1967,32 +1968,33 @@
         "extends": null,
         "usedBy": null,
         "id": "1ab08f2b",
-        "summary": "Main dispatcher for the `sdd-forge flow` subcommand. Resolves project context, routes to registered command handlers, and manages process exit codes.",
-        "detail": "Parses argv to extract the command group and subcommand. resolveCtx loads repo root, config, flow state, and worktree info, exiting with EXIT_ERROR on missing context when required. Dispatches through the FLOW_COMMANDS registry, calling runEntry which wraps async handlers and re-throws errors. Top-level await drives the async dispatch loop.",
+        "summary": "Main CLI entry point for the `sdd-forge flow` command. Parses arguments, resolves context, and dispatches to registered flow commands.",
+        "detail": "Imports FLOW_COMMANDS registry and uses a two-level dispatch (group + command). Calls resolveCtx() to build a shared context object containing root, config, flowState, specId, and inWorktree flags. Uses parseEntryArgs and runEntry helpers to handle argument parsing and execution per entry. Exits with EXIT_ERROR on any missing or invalid argument. The prepare-spec path is handled separately before the general group/command dispatch.",
         "chapter": "cli_commands",
         "role": "cli",
         "enrich": {
-          "processedAt": "2026-04-02T16:09:42.720Z",
+          "processedAt": "2026-04-03T03:15:49.316Z",
           "attempts": 1
         },
         "keywords": [
-          "flow dispatcher",
-          "command routing",
-          "flow entry point",
-          "process exit",
-          "flow commands",
-          "CLI dispatcher"
+          "flow",
+          "dispatcher",
+          "entry-point",
+          "CLI",
+          "subcommand",
+          "dispatch",
+          "argv",
+          "flow.js"
         ]
       },
       {
         "file": "src/flow/commands/merge.js",
-        "hash": "042ec29264d8324cc3174892d597dca3",
-        "lines": 219,
-        "mtime": "2026-04-02T17:31:31.534Z",
+        "hash": "90a81e6a6f920dfeeecc225e3e3ca19f",
+        "lines": 207,
+        "mtime": "2026-04-02T22:02:22.588Z",
         "className": "merge",
         "methods": [
           "resolveRemote",
-          "isGhAvailable",
           "extractSection",
           "parseSpec",
           "buildPrTitle",
@@ -2004,7 +2006,8 @@
           "child_process",
           "fs",
           "path",
-          "../../lib/config.js"
+          "../../lib/config.js",
+          "../../lib/git-state.js"
         ],
         "exports": [
           "main",
@@ -2015,32 +2018,31 @@
         "extends": null,
         "usedBy": null,
         "id": "3a0db928",
-        "summary": "Implements the flow merge command, handling both squash-merge and GitHub PR creation strategies for finalizing SDD feature branches.",
-        "detail": "Reads flow state and spec file to build PR title and body for GitHub CLI integration. Provides isGhAvailable() to detect gh CLI presence and selects the appropriate strategy (pr or squash). Parses spec markdown to extract sections like title and summary for PR metadata. buildPrBody() assembles a structured PR description from flow state and spec content. runSquashMerge() performs a squash merge via git and raises an error on conflict detection.",
+        "summary": "Implements the merge step of the SDD finalize workflow, supporting both squash-merge and GitHub PR strategies.",
+        "detail": "Determines merge strategy based on config (commands.gh=enable) and gh CLI availability; falls back to squash if gh is absent. Parses the spec file to extract PR title and body from structured headings. buildPrBody assembles a markdown PR description from spec sections and flow state. runSquashMerge performs a git merge --squash and commit, detecting conflicts. Exported helpers (parseSpec, buildPrTitle, buildPrBody) are used by finalize orchestration.",
         "chapter": "cli_commands",
-        "role": "controller",
+        "role": "lib",
         "enrich": {
-          "processedAt": "2026-04-02T17:31:50.544Z",
+          "processedAt": "2026-04-03T03:15:49.316Z",
           "attempts": 1
         },
         "keywords": [
           "merge",
-          "flow",
-          "squash merge",
-          "pull request",
-          "gh cli",
-          "spec parser",
-          "PR title",
-          "PR body",
-          "strategy",
-          "git merge"
+          "squash",
+          "pull-request",
+          "PR",
+          "gh",
+          "git",
+          "finalize",
+          "spec",
+          "strategy"
         ]
       },
       {
         "file": "src/flow/commands/report.js",
-        "hash": "5b02b1e849f7aa7474a892990bda1e78",
+        "hash": "b9e5b478010b4e3d0f9f946ffb255334",
         "lines": 208,
-        "mtime": "2026-04-02T15:07:32.621Z",
+        "mtime": "2026-04-03T01:07:47.870Z",
         "className": "report",
         "methods": [
           "generateReport",
@@ -2051,7 +2053,7 @@
         "imports": [
           "fs",
           "path",
-          "../set/redo.js"
+          "../lib/set-issue-log.js"
         ],
         "exports": [
           "generateReport",
@@ -2060,21 +2062,23 @@
         "extends": null,
         "usedBy": null,
         "id": "5f80ffd2",
-        "summary": "Generates and persists flow execution reports by aggregating per-phase metrics from flow state. Used as a shared utility by both the report command and finalize.",
-        "detail": "aggregateMetrics sums counters (question, redo, docsRead, srcRead) across all phases into totals. generateReport constructs a structured data object and a human-readable text summary via formatText. saveReport writes report.json to the spec directory alongside other spec artifacts. formatText produces a markdown-style lines-joined summary of metrics and phase breakdowns.",
-        "chapter": "cli_commands",
+        "summary": "Generates and persists a structured flow report by aggregating metrics and issue-log entries.",
+        "detail": "aggregateMetrics computes totals across metric phases (question, redo, docsRead, srcRead). generateReport combines metrics and issue-log into a { data, text } envelope where formatText produces a human-readable summary. saveReport writes report.json alongside the spec file in the spec directory. Used as a late-stage step in finalize to capture quality signals for the completed flow.",
+        "chapter": "internal_design",
         "role": "lib",
         "enrich": {
-          "processedAt": "2026-04-02T16:09:42.720Z",
+          "processedAt": "2026-04-03T03:15:49.316Z",
           "attempts": 1
         },
         "keywords": [
           "report",
           "metrics",
-          "flow report",
           "aggregation",
-          "phase counters",
-          "report.json"
+          "issue-log",
+          "report.json",
+          "finalize",
+          "quality",
+          "flow-report"
         ]
       },
       {
@@ -2151,52 +2155,116 @@
         ]
       },
       {
-        "file": "src/flow/get/check.js",
-        "hash": "da53138ab5626e3e4f6b8852aa8c81ff",
-        "lines": 98,
-        "mtime": "2026-04-01T16:34:36.488Z",
-        "className": "check",
+        "file": "src/flow/lib/base-command.js",
+        "hash": "f53df55dd91b67127133491595f327e7",
+        "lines": 41,
+        "mtime": "2026-04-03T01:07:47.870Z",
+        "className": "base-command",
         "methods": [
+          "FlowCommand"
+        ],
+        "imports": [],
+        "exports": [
+          "FlowCommand"
+        ],
+        "extends": null,
+        "usedBy": [
+          "src/flow/lib/get-check.js",
+          "src/flow/lib/get-context.js",
+          "src/flow/lib/get-guardrail.js",
+          "src/flow/lib/get-issue.js",
+          "src/flow/lib/get-prompt.js",
+          "src/flow/lib/get-qa-count.js",
+          "src/flow/lib/get-resolve-context.js",
+          "src/flow/lib/get-status.js",
+          "src/flow/lib/run-finalize.js",
+          "src/flow/lib/run-gate.js",
+          "src/flow/lib/run-impl-confirm.js",
+          "src/flow/lib/run-lint.js",
+          "src/flow/lib/run-prepare-spec.js",
+          "src/flow/lib/run-report.js",
+          "src/flow/lib/run-retro.js",
+          "src/flow/lib/run-review.js",
+          "src/flow/lib/run-sync.js",
+          "src/flow/lib/set-auto.js",
+          "src/flow/lib/set-issue-log.js",
+          "src/flow/lib/set-issue.js",
+          "src/flow/lib/set-metric.js",
+          "src/flow/lib/set-note.js",
+          "src/flow/lib/set-req.js",
+          "src/flow/lib/set-request.js",
+          "src/flow/lib/set-step.js",
+          "src/flow/lib/set-summary.js",
+          "src/flow/lib/set-test-summary.js"
+        ],
+        "id": "83f60bd3",
+        "summary": "Abstract base class for all FlowCommand implementations, enforcing a no-CLI contract in the logic layer.",
+        "detail": "Provides a run(ctx) method that validates active flow state before delegating to the subclass execute(ctx). Throws a standard error if flow.json is not found. Explicitly documents that output, parseArgs, and process.exitCode are forbidden in this layer. Subclasses must implement execute(ctx) and return plain objects; failures are signaled by throwing errors.",
+        "chapter": "internal_design",
+        "role": "lib",
+        "enrich": {
+          "processedAt": "2026-04-03T03:15:49.316Z",
+          "attempts": 1
+        },
+        "keywords": [
+          "base-command",
+          "FlowCommand",
+          "abstract",
           "execute",
+          "flow",
+          "pattern",
+          "layer",
+          "inheritance"
+        ]
+      },
+      {
+        "file": "src/flow/lib/get-check.js",
+        "hash": "4558220a5173a5cd0f7c4107cc950e25",
+        "lines": 93,
+        "mtime": "2026-04-03T01:07:47.870Z",
+        "className": "get-check",
+        "methods": [
           "checkStepPrereqs",
           "checkDirty",
           "checkGh"
         ],
         "imports": [
           "child_process",
-          "../../lib/flow-envelope.js"
+          "./base-command.js"
         ],
         "exports": [
-          "execute"
+          "default"
         ],
-        "extends": null,
+        "extends": "FlowCommand",
         "usedBy": null,
-        "id": "97381f7a",
-        "summary": "Implements `flow get check`, validating whether preconditions for a given target (impl, finalize, dirty, gh) are met. Returns structured pass/fail results for each check.",
-        "detail": "PREREQS maps target names to required prior step completions. checkStepPrereqs iterates required steps and evaluates their status in flow state. checkDirty runs git status to detect uncommitted changes. checkGh tests gh CLI availability. execute selects the validator based on the target argument and returns an envelope with per-check pass/fail details and a summary string.",
+        "id": "10eecc8b",
+        "summary": "Implements `flow get check` to verify preconditions for impl, finalize, dirty, or gh targets.",
+        "detail": "PREREQS maps each target to the step IDs that must be completed before it is valid. checkStepPrereqs iterates steps from flow.json and returns a { pass, summary, checks } result. checkDirty runs `git status --porcelain` to detect uncommitted changes. checkGh probes gh CLI availability. Throws on unknown targets and missing flow state.",
         "chapter": "cli_commands",
-        "role": "cli",
+        "role": "lib",
         "enrich": {
-          "processedAt": "2026-04-02T16:09:42.720Z",
+          "processedAt": "2026-04-03T03:15:49.316Z",
           "attempts": 1
         },
         "keywords": [
-          "flow check",
-          "preconditions",
-          "dirty check",
-          "gh check",
-          "step prerequisites",
-          "validation"
+          "check",
+          "gate",
+          "prerequisites",
+          "dirty",
+          "gh",
+          "impl",
+          "finalize",
+          "flow-check",
+          "git-status"
         ]
       },
       {
-        "file": "src/flow/get/context.js",
-        "hash": "6fe88d3f100a7d7a059f4d2db06f434d",
-        "lines": 487,
-        "mtime": "2026-04-02T15:07:32.621Z",
-        "className": "context",
+        "file": "src/flow/lib/get-context.js",
+        "hash": "b93591bd8e254c48bcddfaadb0228aed",
+        "lines": 400,
+        "mtime": "2026-04-03T01:07:47.870Z",
+        "className": "get-context",
         "methods": [
-          "execute",
           "toSearchResult",
           "searchEntries",
           "collectAllKeywords",
@@ -2208,20 +2276,19 @@
           "aiSearch",
           "contextSearch",
           "filterEntry",
-          "resolvePhase"
+          "resolvePhase",
+          "loadAnalysisEntries"
         ],
         "imports": [
           "fs",
           "path",
           "../../lib/config.js",
-          "../../lib/flow-state.js",
-          "../../lib/flow-envelope.js",
+          "./base-command.js",
           "../../docs/lib/analysis-entry.js",
-          "../../lib/exit-codes.js",
           "../../lib/agent.js"
         ],
         "exports": [
-          "execute",
+          "default",
           "filterEntry",
           "resolvePhase",
           "searchEntries",
@@ -2232,181 +2299,186 @@
           "bigramSimilarity",
           "ngramSearch"
         ],
-        "extends": null,
+        "extends": "FlowCommand",
         "usedBy": [
           "src/docs/commands/forge.js",
           "src/docs/commands/readme.js"
         ],
-        "id": "4d7ad938",
-        "summary": "Implements `flow get context`, providing file reading, analysis search, and keyword collection operations for AI context building. Supports ngram, AI, and fallback search modes.",
-        "detail": "execute routes to file-read, analysis-dump, search, or keyword-list modes. ngramSearch computes bigram similarity scores against all analysis entries. aiSearch uses an AI agent to select relevant keywords before filtering entries. fallbackSearch applies simple substring matching. filterEntry removes excluded metadata fields before returning entries. toSearchResult normalizes entries to a consistent shape. collectAllKeywords gathers all keywords from analysis sorted by frequency.",
-        "chapter": "cli_commands",
-        "role": "cli",
+        "id": "1261e39f",
+        "summary": "Implements `flow get context`, providing code-search over analysis.json using ngram, AI-assisted, or file-based strategies.",
+        "detail": "loadAnalysisEntries reads and parses analysis.json; entries are filtered through filterEntry to strip excluded fields. ngramSearch scores entries by bigram similarity against the query. aiSearch uses buildKeywordSelectionPrompt + callAgent to select relevant keywords before fallback search. contextSearch selects the strategy based on a mode flag. Also supports direct file content retrieval and phase resolution from flow state. Exports internal helpers for testing.",
+        "chapter": "internal_design",
+        "role": "lib",
         "enrich": {
-          "processedAt": "2026-04-02T16:09:42.720Z",
+          "processedAt": "2026-04-03T03:15:49.316Z",
           "attempts": 1
         },
         "keywords": [
-          "context search",
-          "analysis search",
+          "context",
+          "search",
+          "analysis",
           "ngram",
-          "bigram similarity",
-          "keyword collection",
-          "AI search",
-          "flow context"
+          "bigram",
+          "AI",
+          "keywords",
+          "flow-context",
+          "code-search",
+          "analysis.json"
         ]
       },
       {
-        "file": "src/flow/get/guardrail.js",
-        "hash": "895b04b4478583b205d759710ec710a4",
-        "lines": 77,
-        "mtime": "2026-04-02T15:07:32.622Z",
-        "className": "guardrail",
+        "file": "src/flow/lib/get-guardrail.js",
+        "hash": "ba403be70a6740bf34e6f97a26130420",
+        "lines": 63,
+        "mtime": "2026-04-03T01:07:47.870Z",
+        "className": "get-guardrail",
         "methods": [
-          "execute",
-          "parseGuardrailArgs",
           "toMarkdown"
         ],
         "imports": [
           "../../lib/guardrail.js",
-          "../../lib/flow-envelope.js"
+          "./base-command.js"
         ],
         "exports": [
-          "execute"
+          "default"
         ],
-        "extends": null,
+        "extends": "FlowCommand",
         "usedBy": [
           "src/lib/lint.js"
         ],
-        "id": "fcbd6fb8",
-        "summary": "Implements `flow get guardrail`, returning guardrail rules for a specified phase in text or JSON format. Loads merged guardrails from preset chain and filters by phase.",
-        "detail": "parseGuardrailArgs extracts the positional phase argument and optional --json format flag. toMarkdown formats guardrail entries as a markdown list. execute calls loadMergedGuardrails and filterByPhase, then outputs via the flow envelope. VALID_PHASES restricts accepted phase values to draft, spec, impl, and lint.",
+        "id": "f80cce52",
+        "summary": "Implements `flow get guardrail`, returning guardrail rules for a given SDD phase as markdown.",
+        "detail": "Valid phases are draft, spec, impl, and lint. Calls loadMergedGuardrails and filterByPhase from the guardrail library to retrieve applicable rules. toMarkdown formats guardrails as a numbered markdown list. Throws on missing or unknown phase argument.",
         "chapter": "cli_commands",
-        "role": "cli",
+        "role": "lib",
         "enrich": {
-          "processedAt": "2026-04-02T16:09:42.720Z",
+          "processedAt": "2026-04-03T03:15:49.316Z",
           "attempts": 1
         },
         "keywords": [
           "guardrail",
-          "phase rules",
-          "validation rules",
-          "flow guardrail",
-          "spec rules"
+          "phase",
+          "rules",
+          "markdown",
+          "draft",
+          "spec",
+          "impl",
+          "lint",
+          "flow-guardrail"
         ]
       },
       {
-        "file": "src/flow/get/issue.js",
-        "hash": "9890c914f9fa92588caf50c7d3d163cd",
-        "lines": 39,
-        "mtime": "2026-04-01T16:34:36.488Z",
-        "className": "issue",
-        "methods": [
-          "execute"
-        ],
+        "file": "src/flow/lib/get-issue.js",
+        "hash": "bc3bf37d97e3f23dffafe3c7eb98f66d",
+        "lines": 44,
+        "mtime": "2026-04-03T01:07:47.870Z",
+        "className": "get-issue",
+        "methods": [],
         "imports": [
           "child_process",
-          "../../lib/flow-envelope.js"
+          "./base-command.js"
         ],
         "exports": [
-          "execute"
+          "default"
         ],
-        "extends": null,
+        "extends": "FlowCommand",
         "usedBy": null,
-        "id": "ab887e0d",
-        "summary": "Implements `flow get issue`, fetching a GitHub issue by number and returning its content as a JSON envelope. Delegates to the gh CLI.",
-        "detail": "execute extracts the issue number from ctx.args, calls execFileSync with gh issue view --json, parses the JSON response, and wraps it in an ok envelope. Fails with an appropriate error message if the gh call throws or the issue number is missing.",
+        "id": "7aec11d1",
+        "summary": "Implements `flow get issue`, fetching GitHub issue content as JSON via the gh CLI.",
+        "detail": "Validates that the issue number argument is a positive integer. Runs `gh issue view <number> --json` and parses the result. Returns structured issue data including title, body, and labels. Wraps gh errors and surfaces them as thrown Error objects.",
         "chapter": "cli_commands",
-        "role": "cli",
+        "role": "lib",
         "enrich": {
-          "processedAt": "2026-04-02T16:09:42.720Z",
+          "processedAt": "2026-04-03T03:15:49.316Z",
           "attempts": 1
         },
         "keywords": [
-          "GitHub issue",
-          "gh CLI",
-          "issue fetch",
-          "flow get issue",
-          "issue content"
+          "issue",
+          "GitHub",
+          "gh",
+          "issue-view",
+          "JSON",
+          "flow-issue",
+          "get-issue"
         ]
       },
       {
-        "file": "src/flow/get/prompt.js",
-        "hash": "259a2f7c900ce926dc2e0cee126bf203",
-        "lines": 361,
-        "mtime": "2026-04-02T15:07:32.622Z",
-        "className": "prompt",
+        "file": "src/flow/lib/get-prompt.js",
+        "hash": "d5e4bdc6cb16b00fdfff994b5371491b",
+        "lines": 362,
+        "mtime": "2026-04-03T01:07:47.870Z",
+        "className": "get-prompt",
         "methods": [
-          "execute",
           "validKinds"
         ],
         "imports": [
-          "../../lib/flow-envelope.js"
+          "./base-command.js"
         ],
         "exports": [
-          "execute"
+          "default"
         ],
-        "extends": null,
+        "extends": "FlowCommand",
         "usedBy": null,
-        "id": "da11259a",
-        "summary": "Implements `flow get prompt`, returning predefined prompt text by language and kind. Provides a registry of reusable prompt strings for flow phases.",
-        "detail": "PROMPTS_BY_LANG is a nested object keyed by language code then prompt kind. validKinds() returns the list of available kinds for the default language. execute looks up the prompt by lang and kind from ctx, returning it in an ok envelope or failing with a list of valid kinds on mismatch.",
+        "id": "410dfcc9",
+        "summary": "Implements `flow get prompt`, returning predefined prompt strings by kind and language.",
+        "detail": "PROMPTS_BY_LANG is a static map keyed by language (e.g., ja) then by kind (e.g., spec, retro). validKinds() derives allowed values from the ja locale keys. Throws on missing kind or unknown kind values. Returns a { prompt } object suitable for AI agent consumption in flow skill steps.",
         "chapter": "cli_commands",
-        "role": "cli",
+        "role": "lib",
         "enrich": {
-          "processedAt": "2026-04-02T16:09:42.720Z",
+          "processedAt": "2026-04-03T03:15:49.316Z",
           "attempts": 1
         },
         "keywords": [
-          "prompt registry",
-          "flow prompts",
-          "language prompts",
-          "prompt kinds",
-          "i18n prompts"
+          "prompt",
+          "language",
+          "i18n",
+          "kind",
+          "flow-prompt",
+          "AI-prompt",
+          "template",
+          "get-prompt"
         ]
       },
       {
-        "file": "src/flow/get/qa-count.js",
-        "hash": "4178b8602a85c6ed5f4003af32da8d3e",
-        "lines": 22,
-        "mtime": "2026-04-01T16:34:36.488Z",
-        "className": "qa-count",
-        "methods": [
-          "execute"
-        ],
+        "file": "src/flow/lib/get-qa-count.js",
+        "hash": "da58bfb6ac183caceb3eff77ae195141",
+        "lines": 17,
+        "mtime": "2026-04-03T01:07:47.871Z",
+        "className": "get-qa-count",
+        "methods": [],
         "imports": [
-          "../../lib/flow-envelope.js"
+          "./base-command.js"
         ],
         "exports": [
-          "execute"
+          "default"
         ],
-        "extends": null,
+        "extends": "FlowCommand",
         "usedBy": null,
-        "id": "45ab4c29",
-        "summary": "Implements `flow get qa-count`, returning the count of QA items from the current flow state. Simple read accessor for flow metrics.",
-        "detail": "execute reads the qa array from flow state and returns its length in an ok envelope. Returns zero when no QA entries exist. Used by skill scripts to determine whether the QA phase has populated items before proceeding.",
+        "id": "28b15622",
+        "summary": "Implements `flow get qa-count`, returning the number of QA items in the active flow's qa.md.",
+        "detail": "Reads the QA file path from flow state and counts entries. Returns { count } as a plain object. Relies on FlowCommand base class to enforce active flow requirement.",
         "chapter": "cli_commands",
-        "role": "cli",
+        "role": "lib",
         "enrich": {
-          "processedAt": "2026-04-02T16:09:42.720Z",
+          "processedAt": "2026-04-03T03:15:49.316Z",
           "attempts": 1
         },
         "keywords": [
-          "QA count",
-          "flow state",
-          "qa items",
-          "flow metrics",
-          "status check"
+          "qa",
+          "count",
+          "qa.md",
+          "flow-qa",
+          "test-count",
+          "get-qa-count"
         ]
       },
       {
-        "file": "src/flow/get/resolve-context.js",
-        "hash": "81f4954f4d4eea7d80467433227cdcd4",
+        "file": "src/flow/lib/get-resolve-context.js",
+        "hash": "d35623e4e4442c9ae1b099fa43d5ea5f",
         "lines": 134,
-        "mtime": "2026-04-01T16:34:36.489Z",
-        "className": "resolve-context",
+        "mtime": "2026-04-03T01:07:47.871Z",
+        "className": "get-resolve-context",
         "methods": [
-          "execute",
           "extractSection"
         ],
         "imports": [
@@ -2414,171 +2486,135 @@
           "path",
           "../../lib/git-state.js",
           "../../lib/flow-state.js",
-          "../../lib/flow-envelope.js"
+          "./base-command.js"
         ],
         "exports": [
-          "execute"
+          "default"
         ],
-        "extends": null,
+        "extends": "FlowCommand",
         "usedBy": [
           "src/docs/commands/forge.js",
           "src/docs/commands/readme.js"
         ],
-        "id": "7ec8f70b",
-        "summary": "Implements `flow get resolve-context`, assembling a comprehensive context snapshot including worktree status, branch info, spec content, and active flow state. Used by skills to orient AI agents.",
-        "detail": "execute determines whether to use a worktree or main repo path, resolves the active flow spec, reads spec and relevant section text via extractSection, and gathers git state (branch, ahead count, last commit, worktree status). Outputs a structured envelope combining all these fields. Handles both specId-based and active-flow-based resolution paths.",
+        "id": "c2848d40",
+        "summary": "Implements `flow get resolve-context`, assembling branch, commit, and spec information to support conflict resolution.",
+        "detail": "Resolves the effective worktree path and reads flow.json from either the worktree or main repo. Extracts spec text sections using extractSection. Gathers git state via getWorktreeStatus, getCurrentBranch, getAheadCount, getLastCommit, and isGhAvailable. Returns a composite context object used by skill steps to guide the user through merge conflict resolution.",
         "chapter": "cli_commands",
-        "role": "cli",
+        "role": "lib",
         "enrich": {
-          "processedAt": "2026-04-02T16:09:42.720Z",
+          "processedAt": "2026-04-03T03:15:49.316Z",
           "attempts": 1
         },
         "keywords": [
-          "resolve context",
+          "resolve",
+          "context",
           "worktree",
-          "flow context",
-          "branch info",
-          "spec content",
-          "git state",
-          "context snapshot"
+          "branch",
+          "conflict",
+          "git-state",
+          "spec",
+          "flow-resolve",
+          "merge-conflict"
         ]
       },
       {
-        "file": "src/flow/get/status.js",
-        "hash": "5c06a0fdfce3df893f08d949a881ac9a",
-        "lines": 43,
-        "mtime": "2026-04-01T16:34:36.489Z",
-        "className": "status",
-        "methods": [
-          "execute"
-        ],
+        "file": "src/flow/lib/get-status.js",
+        "hash": "328f78a71bd7ac5bec857d34d06a3321",
+        "lines": 39,
+        "mtime": "2026-04-03T01:07:47.871Z",
+        "className": "get-status",
+        "methods": [],
         "imports": [
           "../../lib/flow-state.js",
-          "../../lib/flow-envelope.js"
+          "./base-command.js"
         ],
         "exports": [
-          "execute"
+          "default"
         ],
-        "extends": null,
+        "extends": "FlowCommand",
         "usedBy": null,
-        "id": "f93dd94e",
-        "summary": "Implements `flow get status`, returning the current flow phase and step statuses derived from flow state. Minimal read accessor for the flow lifecycle.",
-        "detail": "execute calls derivePhase on the flow state steps to compute the current phase and wraps it with the full steps array in an ok envelope. Used by skill scripts and the status display command to show progress through the SDD workflow.",
+        "id": "9aca938f",
+        "summary": "Implements `flow get status`, returning the current phase and step progress of the active flow.",
+        "detail": "Delegates to derivePhase from flow-state to compute the current SDD phase from step statuses. Returns a structured object with phase and full step list. Minimal implementation relying on FlowCommand base for flow validation.",
         "chapter": "cli_commands",
-        "role": "cli",
+        "role": "lib",
         "enrich": {
-          "processedAt": "2026-04-02T16:09:42.720Z",
+          "processedAt": "2026-04-03T03:15:49.316Z",
           "attempts": 1
         },
         "keywords": [
-          "flow status",
+          "status",
           "phase",
-          "step status",
-          "flow lifecycle",
-          "SDD workflow"
+          "steps",
+          "flow-status",
+          "derivePhase",
+          "progress",
+          "get-status"
         ]
       },
       {
-        "file": "src/flow/registry.js",
-        "hash": "693821e22934890cb7736c49d5bcd986",
-        "lines": 201,
-        "mtime": "2026-04-02T17:31:31.534Z",
-        "className": "registry",
+        "file": "src/flow/lib/run-finalize.js",
+        "hash": "94ec396200f9eeafd5fa01ce9e4f9205",
+        "lines": 338,
+        "mtime": "2026-04-03T03:13:47.673Z",
+        "className": "run-finalize",
         "methods": [
-          "deriveActivePhase",
-          "tryUpdateStepStatus",
-          "stepPre",
-          "stepPost"
-        ],
-        "imports": [
-          "../lib/flow-state.js"
-        ],
-        "exports": [
-          "FLOW_COMMANDS"
-        ],
-        "extends": null,
-        "usedBy": [
-          "src/flow.js"
-        ],
-        "id": "d64f4095",
-        "summary": "Defines the FLOW_COMMANDS registry and lifecycle hooks (stepPre/stepPost) that wrap each flow command with step-status tracking.",
-        "detail": "Exports FLOW_COMMANDS as the central routing table mapping command names to handler functions. stepPre and stepPost are higher-order functions that update flow step status to in_progress or a derived terminal state before and after execution. deriveActivePhase reads current flow state to determine the active phase. Uses loadFlowState and updateStepStatus from flow-state.js for persistence. incrementMetric is called within stepPost to record execution metrics per step.",
-        "chapter": "internal_design",
-        "role": "middleware",
-        "enrich": {
-          "processedAt": "2026-04-02T17:31:50.544Z",
-          "attempts": 1
-        },
-        "keywords": [
-          "registry",
-          "flow commands",
-          "step status",
-          "lifecycle hooks",
-          "stepPre",
-          "stepPost",
-          "phase",
-          "metrics",
-          "dispatcher",
-          "flow state"
-        ]
-      },
-      {
-        "file": "src/flow/run/finalize.js",
-        "hash": "68ebd562f64030b4ea3f92ddb3563cff",
-        "lines": 307,
-        "mtime": "2026-04-02T17:31:31.534Z",
-        "className": "finalize",
-        "methods": [
-          "execute",
-          "executeCleanup"
+          "finalizeOnError",
+          "executeCommitPost",
+          "RunFinalizeCommand",
+          "executeCleanupImpl",
+          "commitOrSkip",
+          "runSubStep"
         ],
         "imports": [
           "fs",
+          "path",
           "child_process",
           "../../lib/cli.js",
           "../../lib/flow-state.js",
-          "../../lib/process.js",
-          "../../lib/flow-envelope.js",
-          "../commands/report.js",
-          "../set/redo.js",
-          "path"
+          "./set-issue-log.js",
+          "./base-command.js",
+          "../registry.js"
         ],
         "exports": [
-          "execute",
+          "finalizeOnError",
+          "executeCommitPost",
+          "RunFinalizeCommand",
+          "default",
           "STEP_MAP"
         ],
-        "extends": null,
+        "extends": "FlowCommand",
         "usedBy": null,
-        "id": "0da529e9",
-        "summary": "Orchestrates the finalize phase of an SDD flow run, coordinating cleanup, report generation, and post-merge documentation build.",
-        "detail": "Exports STEP_MAP defining the ordered steps of the finalize phase and an execute() async function that drives execution. executeCleanup handles worktree removal and returns structured status objects. Integrates generateReport and saveReport from report.js to persist flow metrics. Loads redo log via loadRedoLog for inclusion in the final report. Invokes the docs build script via runSync using PKG_DIR-relative path resolution after merge completes.",
-        "chapter": "internal_design",
+        "id": "c711309b",
+        "summary": "Implements `flow run finalize`, orchestrating the end-of-flow sequence: docs build, commit, merge, report, and worktree cleanup.",
+        "detail": "STEP_MAP defines named sub-steps (docs, commit, merge, report, cleanup) each backed by a dedicated RunXxxCommand or inline function. runSubStep wraps each step with error capture and status tracking. executeCommitPost handles post-commit hooks. Supports --mode all|select and --merge-strategy squash|pr flags. finalizeOnError is a reusable error hook factory used by the registry. Worktree removal is handled in executeCleanupImpl using fs and git commands.",
+        "chapter": "cli_commands",
         "role": "controller",
         "enrich": {
-          "processedAt": "2026-04-02T17:31:50.544Z",
+          "processedAt": "2026-04-03T03:15:49.316Z",
           "attempts": 1
         },
         "keywords": [
           "finalize",
+          "commit",
+          "merge",
           "cleanup",
           "worktree",
+          "docs-build",
           "report",
-          "redo log",
-          "flow run",
-          "step map",
-          "docs build",
-          "execute",
-          "flow envelope"
+          "flow-finalize",
+          "orchestration",
+          "step-map"
         ]
       },
       {
-        "file": "src/flow/run/gate.js",
-        "hash": "5227df77d9d774de45f701a046237864",
-        "lines": 253,
-        "mtime": "2026-04-02T15:07:32.622Z",
-        "className": "gate",
+        "file": "src/flow/lib/run-gate.js",
+        "hash": "726217164644da7d94055f5026db8c71",
+        "lines": 228,
+        "mtime": "2026-04-03T01:07:47.871Z",
+        "className": "run-gate",
         "methods": [
-          "execute",
+          "RunGateCommand",
           "sectionAt",
           "checkSpecText",
           "buildGuardrailPrompt",
@@ -2588,124 +2624,129 @@
         "imports": [
           "fs",
           "path",
-          "../../lib/cli.js",
           "../../lib/agent.js",
           "../../lib/guardrail.js",
-          "../../lib/flow-envelope.js"
+          "./base-command.js"
         ],
         "exports": [
-          "execute",
+          "RunGateCommand",
+          "default",
           "checkSpecText",
           "buildGuardrailPrompt",
           "parseGuardrailResponse",
           "checkGuardrail"
         ],
-        "extends": null,
+        "extends": "FlowCommand",
         "usedBy": null,
-        "id": "d27740a4",
-        "summary": "Implements `flow run gate`, validating a spec file against structural rules and AI-evaluated guardrails. Acts as a quality gate before implementation begins.",
-        "detail": "checkSpecText applies regex-based structural checks, skipping certain sections defined in PRE_SKIP_SECTIONS. buildGuardrailPrompt formats guardrail rules and spec text into an AI prompt. parseGuardrailResponse extracts pass/fail verdicts from the AI response. checkGuardrail orchestrates both checks, returning combined results. execute reads the spec from the path in flow state and reports issues via the flow envelope.",
+        "id": "b4aa4dad",
+        "summary": "Implements `flow run gate`, validating a spec file against structural rules and AI-evaluated guardrails.",
+        "detail": "checkSpecText performs regex-based structural checks, skipping certain section headings (Status, Acceptance Criteria, etc.) via PRE_SKIP_SECTIONS. buildGuardrailPrompt assembles a prompt combining spec text and loaded guardrails. parseGuardrailResponse interprets the AI's JSON response into pass/fail results. checkGuardrail orchestrates the AI call and returns { passed, results }. Throws a consolidated error listing all spec issues on failure.",
         "chapter": "cli_commands",
-        "role": "cli",
+        "role": "lib",
         "enrich": {
-          "processedAt": "2026-04-02T16:09:42.720Z",
+          "processedAt": "2026-04-03T03:15:49.316Z",
           "attempts": 1
         },
         "keywords": [
-          "gate check",
-          "spec validation",
+          "gate",
           "guardrail",
-          "AI evaluation",
-          "spec quality",
-          "flow gate",
-          "structural check"
+          "spec-validation",
+          "AI",
+          "structural-check",
+          "flow-gate",
+          "spec-gate",
+          "run-gate"
         ]
       },
       {
-        "file": "src/flow/run/impl-confirm.js",
-        "hash": "61665480095f51775ed2352e4ef53e0d",
-        "lines": 122,
-        "mtime": "2026-04-01T16:34:36.489Z",
-        "className": "impl-confirm",
+        "file": "src/flow/lib/run-impl-confirm.js",
+        "hash": "6b7bf2667e4f821559b3c8b2fce67973",
+        "lines": 98,
+        "mtime": "2026-04-03T01:07:47.871Z",
+        "className": "run-impl-confirm",
         "methods": [
-          "execute",
+          "RunImplConfirmCommand",
           "getChangedFiles",
           "summarizeRequirements"
         ],
         "imports": [
           "fs",
           "path",
-          "../../lib/cli.js",
           "../../lib/process.js",
-          "../../lib/flow-envelope.js"
+          "./base-command.js"
         ],
         "exports": [
-          "execute"
+          "RunImplConfirmCommand",
+          "default"
         ],
-        "extends": null,
+        "extends": "FlowCommand",
         "usedBy": null,
-        "id": "fe54093b",
-        "summary": "Implements `flow run impl-confirm`, displaying a summary of changed files and pending requirements to help the AI agent confirm readiness for implementation.",
-        "detail": "getChangedFiles runs git diff against the base branch to list modified paths. summarizeRequirements parses the requirements array from flow state into counts of done, pending, and in-progress items. execute assembles the confirmation payload including spec existence, changed files, and requirement summary, returning it in an ok envelope for the skill to present.",
+        "id": "e6534160",
+        "summary": "Implements `flow run impl-confirm`, summarizing implementation progress against spec requirements.",
+        "detail": "getChangedFiles runs git diff against baseBranch to list modified files. summarizeRequirements aggregates requirement statuses (done, pending, inProgress) from flow state. Returns a composite object with spec existence, changed files, and requirement summary for display in skill UIs.",
         "chapter": "cli_commands",
-        "role": "cli",
+        "role": "lib",
         "enrich": {
-          "processedAt": "2026-04-02T16:09:42.720Z",
+          "processedAt": "2026-04-03T03:15:49.316Z",
           "attempts": 1
         },
         "keywords": [
-          "impl confirm",
-          "implementation readiness",
-          "changed files",
-          "requirements summary",
-          "flow confirm"
+          "impl-confirm",
+          "implementation",
+          "requirements",
+          "changed-files",
+          "git-diff",
+          "progress",
+          "flow-impl"
         ]
       },
       {
-        "file": "src/flow/run/lint.js",
-        "hash": "4206184b66c3c6a445c5e74631363ef8",
-        "lines": 80,
-        "mtime": "2026-04-02T15:07:32.622Z",
-        "className": "lint",
+        "file": "src/flow/lib/run-lint.js",
+        "hash": "aa00527b6d76e9e9914b6a5bfa15b03b",
+        "lines": 62,
+        "mtime": "2026-04-03T01:07:47.871Z",
+        "className": "run-lint",
         "methods": [
-          "execute"
+          "RunLintCommand"
         ],
         "imports": [
-          "../../lib/cli.js",
           "../../lib/guardrail.js",
           "../../lib/lint.js",
-          "../../lib/flow-envelope.js"
+          "./base-command.js"
         ],
         "exports": [
-          "execute"
+          "RunLintCommand",
+          "default"
         ],
-        "extends": null,
+        "extends": "FlowCommand",
         "usedBy": null,
-        "id": "d9e5dd54",
-        "summary": "Implements `flow run lint`, running lint checks using merged guardrail rules from the preset chain. Delegates to the shared runLint utility.",
-        "detail": "execute loads merged guardrails via loadMergedGuardrails, parses CLI flags for target file or directory, calls runLint with the guardrail set, and wraps the result in a flow envelope. Supports dry-run mode. Shares guardrail loading logic with the gate command.",
+        "id": "4fb3080f",
+        "summary": "Implements `flow run lint`, running lint checks against the implementation diff using loaded guardrails.",
+        "detail": "Loads merged guardrails and delegates to the runLint library function with the base branch and guardrail set. Returns { passed, results } or throws a formatted error listing violations. Resolves baseBranch from args or active flow state.",
         "chapter": "cli_commands",
-        "role": "cli",
+        "role": "lib",
         "enrich": {
-          "processedAt": "2026-04-02T16:09:42.720Z",
+          "processedAt": "2026-04-03T03:15:49.316Z",
           "attempts": 1
         },
         "keywords": [
           "lint",
-          "flow lint",
-          "guardrail lint",
-          "code quality",
-          "static analysis"
+          "guardrail",
+          "diff",
+          "flow-lint",
+          "run-lint",
+          "code-quality",
+          "baseBranch"
         ]
       },
       {
-        "file": "src/flow/run/prepare-spec.js",
-        "hash": "275ee98db2b20cfd53faf9d661c02ff4",
-        "lines": 340,
-        "mtime": "2026-04-02T15:07:32.622Z",
-        "className": "prepare-spec",
+        "file": "src/flow/lib/run-prepare-spec.js",
+        "hash": "b6a1341b0e85c0cd65538cdb9c6dd5e9",
+        "lines": 322,
+        "mtime": "2026-04-03T01:07:47.871Z",
+        "className": "run-prepare-spec",
         "methods": [
-          "execute",
+          "RunPrepareSpecCommand",
           "runGit",
           "slugify",
           "nextIndex",
@@ -2726,80 +2767,85 @@
           "../../lib/i18n.js",
           "../../lib/flow-state.js",
           "../../lib/git-state.js",
-          "../../lib/flow-envelope.js"
+          "./base-command.js"
         ],
         "exports": [
-          "execute"
+          "RunPrepareSpecCommand",
+          "default"
         ],
-        "extends": null,
+        "extends": "FlowCommand",
         "usedBy": null,
-        "id": "45b75423",
-        "summary": "Implements `flow run prepare-spec`, creating the spec directory, branch, worktree, spec.md, and qa.md files that initialize a new SDD flow. The entry point for starting a new feature spec.",
-        "detail": "nextIndex scans the specs directory to assign a sequential spec number. slugify normalizes the request text to a valid branch name. ensureClean and ensureBaseBranch validate the repo state. createSpecTemplate and createQaTemplate generate initial file content, falling back to local templates in .sdd-forge/templates. writeFlowState persists the initial flow.json. Worktree creation and branch setup use runGit helpers.",
+        "id": "59eeacc6",
+        "summary": "Implements `flow run prepare-spec`, creating the spec directory, branch, worktree, and initial flow.json for a new SDD flow.",
+        "detail": "slugify converts the title to a branch-safe name; nextIndex finds the next available spec index. ensureClean aborts if the worktree is dirty. Creates spec.md and qa.md from templates (local override or built-in fallback) using loadLocalTemplate. Calls git to create and checkout a new branch, then optionally creates a worktree. writeFlowState persists initial flow.json with steps from buildInitialSteps. addActiveFlow and cleanStaleFlows manage the active flow registry.",
         "chapter": "cli_commands",
-        "role": "cli",
+        "role": "controller",
         "enrich": {
-          "processedAt": "2026-04-02T16:09:42.720Z",
+          "processedAt": "2026-04-03T03:15:49.316Z",
           "attempts": 1
         },
         "keywords": [
-          "prepare spec",
-          "flow start",
-          "spec creation",
+          "prepare-spec",
+          "spec",
+          "branch",
           "worktree",
-          "branch setup",
-          "SDD init",
-          "spec template",
-          "qa template"
+          "flow-init",
+          "slug",
+          "template",
+          "qa.md",
+          "spec.md",
+          "flow-state"
         ]
       },
       {
-        "file": "src/flow/run/report.js",
-        "hash": "38be5b9cae5371875a985db453495957",
-        "lines": 92,
-        "mtime": "2026-04-02T15:07:32.622Z",
-        "className": "report",
+        "file": "src/flow/lib/run-report.js",
+        "hash": "bcfa19c20c993af2a746681840072b80",
+        "lines": 70,
+        "mtime": "2026-04-03T01:07:47.871Z",
+        "className": "run-report",
         "methods": [
-          "execute"
+          "RunReportCommand"
         ],
         "imports": [
           "child_process",
-          "../../lib/cli.js",
-          "../../lib/flow-envelope.js",
           "../commands/report.js",
-          "../set/redo.js",
+          "./set-issue-log.js",
+          "./base-command.js",
           "path"
         ],
         "exports": [
-          "execute"
+          "RunReportCommand",
+          "default"
         ],
-        "extends": null,
+        "extends": "FlowCommand",
         "usedBy": null,
-        "id": "d0ba7da5",
-        "summary": "Entry point for the `flow run report` command, loading the redo log and delegating to generateReport/saveReport. Thin wrapper over the shared report library.",
-        "detail": "execute reads the spec directory from flow state, loads the redo log via loadRedoLog, and passes metrics and redo data to generateReport. Calls saveReport to persist report.json and returns the changed file path in the ok envelope.",
+        "id": "43872d6b",
+        "summary": "Implements `flow run report` as a FlowCommand wrapper around report generation and git change tracking.",
+        "detail": "Loads issue-log via loadIssueLog and passes it with git diff output to generateReport. Saves the resulting report.json alongside the spec using saveReport. Returns the list of changed files (report.json path) for downstream commit steps.",
         "chapter": "cli_commands",
-        "role": "cli",
+        "role": "lib",
         "enrich": {
-          "processedAt": "2026-04-02T16:09:42.720Z",
+          "processedAt": "2026-04-03T03:15:49.316Z",
           "attempts": 1
         },
         "keywords": [
-          "report command",
-          "flow report",
-          "redo log",
-          "metrics report",
-          "report.json"
+          "report",
+          "run-report",
+          "issue-log",
+          "generateReport",
+          "saveReport",
+          "flow-report",
+          "changed-files"
         ]
       },
       {
-        "file": "src/flow/run/retro.js",
-        "hash": "6a489c1e7a9a0147c292c134ae76486b",
-        "lines": 270,
-        "mtime": "2026-04-02T15:07:32.622Z",
-        "className": "retro",
+        "file": "src/flow/lib/run-retro.js",
+        "hash": "0f91d5c2b892320d20fe1feb83125036",
+        "lines": 245,
+        "mtime": "2026-04-03T01:30:19.975Z",
+        "className": "run-retro",
         "methods": [
-          "execute",
+          "RunRetroCommand",
           "extractRequirements",
           "getDiff",
           "getDetailedDiff",
@@ -2810,469 +2856,526 @@
           "fs",
           "path",
           "child_process",
-          "../../lib/cli.js",
           "../../lib/agent.js",
-          "../../lib/flow-envelope.js"
+          "../../lib/json-parse.js",
+          "./base-command.js"
         ],
         "exports": [
-          "execute",
+          "RunRetroCommand",
+          "default",
           "extractRequirements",
           "buildRetroPrompt",
           "parseRetroResponse"
         ],
-        "extends": null,
+        "extends": "FlowCommand",
         "usedBy": null,
-        "id": "8864847f",
-        "summary": "Implements `flow run retro`, performing an AI-assisted retrospective comparing implemented diff against requirements. Produces a structured retro.json artifact.",
-        "detail": "extractRequirements locates the requirements section in spec text. getDiff and getDetailedDiff run git diff against the base branch. buildRetroPrompt constructs an AI prompt including requirements and diff context. parseRetroResponse extracts structured pass/fail verdicts per requirement from the AI JSON response. execute validates preconditions, calls the AI agent, and writes retro.json to the spec directory.",
+        "id": "862e7d08",
+        "summary": "Implements `flow run retro`, using an AI agent to generate a retrospective JSON from spec requirements and implementation diff.",
+        "detail": "extractRequirements parses the Requirements section from spec markdown. getDiff and getDetailedDiff run git diff against baseBranch. buildRetroPrompt assembles a structured AI prompt combining requirements and diff. parseRetroResponse handles JSON extraction with repairJson fallback for malformed AI output. Writes retro.json to the spec directory; supports --force to overwrite. Exports helpers for unit testing.",
         "chapter": "cli_commands",
-        "role": "cli",
+        "role": "lib",
         "enrich": {
-          "processedAt": "2026-04-02T16:09:42.720Z",
+          "processedAt": "2026-04-03T03:15:49.316Z",
           "attempts": 1
         },
         "keywords": [
-          "retrospective",
           "retro",
-          "AI review",
-          "diff analysis",
-          "requirements verification",
-          "retro.json",
-          "flow retro"
+          "retrospective",
+          "AI",
+          "diff",
+          "requirements",
+          "JSON-parse",
+          "repairJson",
+          "flow-retro",
+          "spec",
+          "run-retro"
         ]
       },
       {
-        "file": "src/flow/run/review.js",
-        "hash": "fd12ad3de42cdbcb38f83054f5a3d91b",
-        "lines": 131,
-        "mtime": "2026-04-02T15:07:32.622Z",
-        "className": "review",
+        "file": "src/flow/lib/run-review.js",
+        "hash": "e4c64ad5d742422b6ea2c05184ca5f8a",
+        "lines": 107,
+        "mtime": "2026-04-03T01:07:47.871Z",
+        "className": "run-review",
         "methods": [
-          "execute",
+          "RunReviewCommand",
           "parseTestReviewOutput"
         ],
         "imports": [
           "../../lib/cli.js",
           "../../lib/process.js",
-          "../../lib/flow-envelope.js",
+          "./base-command.js",
           "path"
         ],
         "exports": [
-          "execute"
+          "RunReviewCommand",
+          "default"
         ],
-        "extends": null,
+        "extends": "FlowCommand",
         "usedBy": null,
-        "id": "a997aee2",
-        "summary": "Thin runner for `flow run review`, delegating to the flow/commands/review.js script via runSync and parsing its output. Handles both code review and test review modes.",
-        "detail": "execute builds the script path from PKG_DIR, assembles args from ctx, and calls runSync. parseTestReviewOutput inspects the exit code and stdout/stderr to construct appropriate ok or fail envelopes. Passes through --test, --dry-run, and other flags from ctx.args.",
+        "id": "d4e97204",
+        "summary": "Implements `flow run review`, invoking the review.js script as a subprocess and parsing its structured output.",
+        "detail": "Resolves the review script path relative to PKG_DIR. Runs the script via runSync and delegates stdout/stderr parsing to parseTestReviewOutput. Returns { passed, results, summary } or throws a formatted error. Wraps non-zero exits with contextual error messages.",
         "chapter": "cli_commands",
-        "role": "cli",
+        "role": "lib",
         "enrich": {
-          "processedAt": "2026-04-02T16:09:42.720Z",
+          "processedAt": "2026-04-03T03:15:49.316Z",
           "attempts": 1
         },
         "keywords": [
-          "review runner",
-          "flow review",
-          "test review",
+          "review",
+          "test-review",
           "subprocess",
-          "code review"
+          "run-review",
+          "flow-review",
+          "script",
+          "PKG_DIR"
         ]
       },
       {
-        "file": "src/flow/run/sync.js",
-        "hash": "bdfb4b028b4ca0dfec110d10fb301ee2",
-        "lines": 115,
-        "mtime": "2026-04-01T16:34:36.489Z",
-        "className": "sync",
+        "file": "src/flow/lib/run-sync.js",
+        "hash": "a81c5efcd2a9ce80a71686436817ec9e",
+        "lines": 104,
+        "mtime": "2026-04-03T01:07:47.871Z",
+        "className": "run-sync",
         "methods": [
-          "execute"
+          "RunSyncCommand"
         ],
         "imports": [
           "child_process",
           "../../lib/cli.js",
           "../../lib/process.js",
-          "../../lib/flow-envelope.js",
+          "./base-command.js",
           "path"
         ],
         "exports": [
-          "execute"
+          "RunSyncCommand",
+          "default"
         ],
-        "extends": null,
+        "extends": "FlowCommand",
         "usedBy": null,
-        "id": "989ac930",
-        "summary": "Implements `flow run sync`, running the docs build pipeline from within a flow worktree to synchronize documentation with current source code.",
-        "detail": "execute resolves the docs.js script path via PKG_DIR and calls it through runSync with the appropriate project root. Passes --lang and other config flags derived from flow state. Returns an ok envelope on success or a fail envelope capturing stderr output.",
+        "id": "6cc87b22",
+        "summary": "Implements `flow run sync`, running the docs build pipeline as a subprocess to synchronize documentation with source code.",
+        "detail": "Resolves the docs.js script path from PKG_DIR. Executes via runSync with configurable verbosity. Returns { changed } list or throws on failure. Wraps stderr into user-facing error messages for diagnosis.",
         "chapter": "cli_commands",
-        "role": "cli",
+        "role": "lib",
         "enrich": {
-          "processedAt": "2026-04-02T16:09:42.720Z",
+          "processedAt": "2026-04-03T03:15:49.316Z",
           "attempts": 1
         },
         "keywords": [
-          "sync docs",
-          "flow sync",
-          "docs build",
-          "documentation update",
-          "flow run sync"
+          "sync",
+          "docs-build",
+          "documentation",
+          "run-sync",
+          "subprocess",
+          "flow-sync",
+          "docs.js"
         ]
       },
       {
-        "file": "src/flow/set/auto.js",
-        "hash": "1c1104de4c109019f79e12ba669ff95e",
-        "lines": 30,
-        "mtime": "2026-04-01T16:34:36.489Z",
-        "className": "auto",
-        "methods": [
-          "execute"
-        ],
+        "file": "src/flow/lib/set-auto.js",
+        "hash": "d0465224a882b65f200aaaff114c70d8",
+        "lines": 29,
+        "mtime": "2026-04-03T01:07:47.871Z",
+        "className": "set-auto",
+        "methods": [],
         "imports": [
-          "../../lib/flow-state.js",
-          "../../lib/flow-envelope.js"
+          "./base-command.js",
+          "../../lib/flow-state.js"
         ],
         "exports": [
-          "execute"
+          "default"
         ],
-        "extends": null,
+        "extends": "FlowCommand",
         "usedBy": null,
-        "id": "25b900f3",
-        "summary": "Implements `flow set auto`, toggling the autoApprove flag in flow state to enable or disable automatic step progression.",
-        "detail": "execute parses the boolean value from ctx.args and calls mutateFlowState to update the auto field. Returns an ok envelope with the new auto value. Used by the /sdd-forge.flow-auto-on and /sdd-forge.flow-auto-off skills.",
+        "id": "2c71e989",
+        "summary": "Implements `flow set auto`, toggling the autoApprove flag in flow.json.",
+        "detail": "Accepts 'on' or 'off' as the sole argument. Calls mutateFlowState to patch the autoApprove boolean in the active flow.json. Returns { autoApprove } reflecting the new state.",
         "chapter": "cli_commands",
-        "role": "cli",
+        "role": "lib",
         "enrich": {
-          "processedAt": "2026-04-02T16:09:42.720Z",
+          "processedAt": "2026-04-03T03:15:49.316Z",
           "attempts": 1
         },
         "keywords": [
-          "auto approve",
-          "flow auto",
+          "auto",
           "autoApprove",
-          "flow set",
-          "automatic mode"
+          "set-auto",
+          "flow-auto",
+          "mutate",
+          "toggle",
+          "flow-state"
         ]
       },
       {
-        "file": "src/flow/set/issue.js",
-        "hash": "74fdafd0bd69edfaffdbcfc97a487677",
-        "lines": 34,
-        "mtime": "2026-04-01T16:34:36.490Z",
-        "className": "issue",
+        "file": "src/flow/lib/set-issue-log.js",
+        "hash": "267f3568761ce9d147818987fafb3d94",
+        "lines": 74,
+        "mtime": "2026-04-03T01:07:47.871Z",
+        "className": "set-issue-log",
         "methods": [
-          "execute"
-        ],
-        "imports": [
-          "../../lib/flow-state.js",
-          "../../lib/flow-envelope.js"
-        ],
-        "exports": [
-          "execute"
-        ],
-        "extends": null,
-        "usedBy": null,
-        "id": "58350ef2",
-        "summary": "Implements `flow set issue`, storing a GitHub issue reference in flow state to associate the flow with a tracked issue.",
-        "detail": "execute extracts the issue number from ctx.args and calls setIssue to persist it in flow.json. Returns ok with the stored issue value or fail if the argument is missing. Used during the spec phase to link implementation work to its originating issue.",
-        "chapter": "cli_commands",
-        "role": "cli",
-        "enrich": {
-          "processedAt": "2026-04-02T16:09:42.720Z",
-          "attempts": 1
-        },
-        "keywords": [
-          "set issue",
-          "GitHub issue",
-          "flow issue",
-          "issue tracking",
-          "flow state"
-        ]
-      },
-      {
-        "file": "src/flow/set/metric.js",
-        "hash": "8afd575c4cad504aaaa7f2b4aa3881b9",
-        "lines": 49,
-        "mtime": "2026-04-01T16:34:36.490Z",
-        "className": "metric",
-        "methods": [
-          "execute"
-        ],
-        "imports": [
-          "../../lib/flow-state.js",
-          "../../lib/flow-envelope.js"
-        ],
-        "exports": [
-          "execute"
-        ],
-        "extends": null,
-        "usedBy": null,
-        "id": "da4a0678",
-        "summary": "Implements `flow set metric`, incrementing named counters (question, redo, docsRead, srcRead) for a specified flow phase in flow state.",
-        "detail": "VALID_PHASES and VALID_COUNTERS define allowed values. execute validates both the phase and counter arguments, then calls mutateFlowState to increment the targeted counter within the metrics object for that phase. Returns ok with the updated counter value or fail with validation errors.",
-        "chapter": "cli_commands",
-        "role": "cli",
-        "enrich": {
-          "processedAt": "2026-04-02T16:09:42.720Z",
-          "attempts": 1
-        },
-        "keywords": [
-          "flow metrics",
-          "counter increment",
-          "phase metrics",
-          "docsRead",
-          "srcRead",
-          "question count",
-          "redo count"
-        ]
-      },
-      {
-        "file": "src/flow/set/note.js",
-        "hash": "a5b876ffe4baa9fbcb25e3a8e1008639",
-        "lines": 28,
-        "mtime": "2026-04-01T16:34:36.490Z",
-        "className": "note",
-        "methods": [
-          "execute"
-        ],
-        "imports": [
-          "../../lib/flow-state.js",
-          "../../lib/flow-envelope.js"
-        ],
-        "exports": [
-          "execute"
-        ],
-        "extends": null,
-        "usedBy": null,
-        "id": "81e18136",
-        "summary": "Implements `flow set note`, appending a text note to the notes array in flow state. Used to record observations and decisions during a flow.",
-        "detail": "execute extracts the note text from ctx.args and calls addNote to append it to flow.json. Returns ok with the added note or fail if no text was provided. Notes are surfaced in status output and the context resolver for AI agent awareness.",
-        "chapter": "cli_commands",
-        "role": "cli",
-        "enrich": {
-          "processedAt": "2026-04-02T16:09:42.720Z",
-          "attempts": 1
-        },
-        "keywords": [
-          "flow note",
-          "set note",
-          "flow state",
-          "notes",
-          "observations"
-        ]
-      },
-      {
-        "file": "src/flow/set/redo.js",
-        "hash": "020a20906a9eaffaaf0a90a24ccc850d",
-        "lines": 114,
-        "mtime": "2026-04-01T16:34:36.490Z",
-        "className": "redo",
-        "methods": [
-          "execute",
-          "loadRedoLog",
-          "saveRedoLog"
+          "loadIssueLog",
+          "saveIssueLog"
         ],
         "imports": [
           "fs",
           "path",
-          "../../lib/cli.js",
-          "../../lib/flow-envelope.js"
+          "./base-command.js"
         ],
         "exports": [
-          "execute",
-          "loadRedoLog",
-          "saveRedoLog"
+          "loadIssueLog",
+          "saveIssueLog",
+          "default"
         ],
-        "extends": null,
+        "extends": "FlowCommand",
+        "usedBy": [
+          "src/flow/lib/run-finalize.js",
+          "src/flow/lib/run-report.js"
+        ],
+        "id": "65ac9e4f",
+        "summary": "Provides load/save helpers for issue-log.json and the `flow set issue-log` command for appending log entries.",
+        "detail": "loadIssueLog reads issue-log.json from the spec directory, validates the entries array, and returns a default empty log if absent. saveIssueLog writes atomically with pretty-printed JSON. SetIssueLogCommand requires --step and --reason arguments and appends a timestamped entry to the log. Used by finalize and retro steps to track issues encountered during the flow.",
+        "chapter": "internal_design",
+        "role": "lib",
+        "enrich": {
+          "processedAt": "2026-04-03T03:15:49.316Z",
+          "attempts": 1
+        },
+        "keywords": [
+          "issue-log",
+          "log",
+          "entries",
+          "set-issue-log",
+          "flow-log",
+          "load",
+          "save",
+          "finalize",
+          "retro"
+        ]
+      },
+      {
+        "file": "src/flow/lib/set-issue.js",
+        "hash": "7b58c42adb909e1fec71ddda27b2b2c7",
+        "lines": 30,
+        "mtime": "2026-04-03T01:07:47.871Z",
+        "className": "set-issue",
+        "methods": [],
+        "imports": [
+          "./base-command.js",
+          "../../lib/flow-state.js"
+        ],
+        "exports": [
+          "default"
+        ],
+        "extends": "FlowCommand",
         "usedBy": null,
-        "id": "e2c82635",
-        "summary": "Manages the redo log (redolog.json) tracking revision history entries within a flow. Provides loadRedoLog and saveRedoLog utilities plus the `flow set redo` command.",
-        "detail": "loadRedoLog reads redolog.json from the spec directory, validating that entries is an array, and returns an empty structure if the file does not exist. saveRedoLog writes the updated log with JSON formatting. execute appends a new redo entry with timestamp and reason from ctx.args and persists via saveRedoLog.",
+        "id": "c3865b58",
+        "summary": "Implements `flow set issue`, recording the GitHub issue number linked to the active flow.",
+        "detail": "Validates the argument is a positive integer. Calls setIssue from flow-state to persist the issue number in flow.json. Returns { issue: num }.",
         "chapter": "cli_commands",
         "role": "lib",
         "enrich": {
-          "processedAt": "2026-04-02T16:09:42.720Z",
+          "processedAt": "2026-04-03T03:15:49.316Z",
           "attempts": 1
         },
         "keywords": [
-          "redo log",
-          "redolog.json",
-          "revision history",
-          "flow redo",
-          "undo tracking"
+          "issue",
+          "set-issue",
+          "GitHub",
+          "flow-state",
+          "link",
+          "issue-number"
         ]
       },
       {
-        "file": "src/flow/set/req.js",
-        "hash": "8768454aa95215cdad3cf21bbf26bffb",
-        "lines": 35,
-        "mtime": "2026-04-01T16:34:36.490Z",
-        "className": "req",
-        "methods": [
-          "execute"
-        ],
+        "file": "src/flow/lib/set-metric.js",
+        "hash": "dd639199c4aca4bb36b88885fc33306a",
+        "lines": 44,
+        "mtime": "2026-04-03T01:07:47.872Z",
+        "className": "set-metric",
+        "methods": [],
         "imports": [
-          "../../lib/flow-state.js",
-          "../../lib/flow-envelope.js"
+          "./base-command.js",
+          "../../lib/flow-state.js"
         ],
         "exports": [
-          "execute"
+          "default"
         ],
-        "extends": null,
+        "extends": "FlowCommand",
         "usedBy": null,
-        "id": "99aeadc9",
-        "summary": "Implements `flow set req`, updating the status or text of a specific requirement entry in flow state by index.",
-        "detail": "execute extracts the requirement index and new value from ctx.args and delegates to updateRequirement which mutates flow.json. Returns ok with the updated requirement or fail on invalid index. Used by skill scripts to mark requirements as done or in-progress during implementation.",
-        "chapter": "cli_commands",
-        "role": "cli",
+        "id": "40d93087",
+        "summary": "Implements `flow set metric`, incrementing a named counter for a given SDD phase in flow.json.",
+        "detail": "Validates phase against VALID_PHASES (draft, spec, gate, test, impl) and counter against VALID_COUNTERS (question, redo, docsRead, srcRead). Calls mutateFlowState to increment the counter atomically. Returns the new value. Used by post-hooks in the registry to auto-record flow metrics.",
+        "chapter": "internal_design",
+        "role": "lib",
         "enrich": {
-          "processedAt": "2026-04-02T16:09:42.720Z",
+          "processedAt": "2026-04-03T03:15:49.316Z",
           "attempts": 1
         },
         "keywords": [
-          "set requirement",
-          "requirement status",
-          "flow requirements",
-          "requirement update"
+          "metric",
+          "counter",
+          "phase",
+          "set-metric",
+          "flow-metrics",
+          "question",
+          "redo",
+          "docsRead",
+          "srcRead",
+          "increment"
         ]
       },
       {
-        "file": "src/flow/set/request.js",
-        "hash": "fa92c312ebd0d90e1c724f03a79a5bdf",
-        "lines": 28,
-        "mtime": "2026-04-01T16:34:36.490Z",
-        "className": "request",
-        "methods": [
-          "execute"
-        ],
+        "file": "src/flow/lib/set-note.js",
+        "hash": "888706fbd3372c31f1fce7e61ef173f6",
+        "lines": 25,
+        "mtime": "2026-04-03T01:07:47.872Z",
+        "className": "set-note",
+        "methods": [],
         "imports": [
-          "../../lib/flow-state.js",
-          "../../lib/flow-envelope.js"
+          "./base-command.js",
+          "../../lib/flow-state.js"
         ],
         "exports": [
-          "execute"
+          "default"
         ],
-        "extends": null,
+        "extends": "FlowCommand",
         "usedBy": null,
-        "id": "0dcb231e",
-        "summary": "Implements `flow set request`, storing the original user request text in flow state for reference throughout the flow lifecycle.",
-        "detail": "execute extracts the request string from ctx.args and calls setRequest to persist it in flow.json. Returns ok with the stored request or fail if empty. The request is used by skills to maintain context about what triggered the current flow.",
+        "id": "7c2ef03f",
+        "summary": "Implements `flow set note`, appending a free-text note to the active flow's note list.",
+        "detail": "Requires a non-empty text argument. Calls addNote from flow-state to append to flow.json. Returns { note: text }.",
         "chapter": "cli_commands",
-        "role": "cli",
+        "role": "lib",
         "enrich": {
-          "processedAt": "2026-04-02T16:09:42.720Z",
+          "processedAt": "2026-04-03T03:15:49.316Z",
           "attempts": 1
         },
         "keywords": [
-          "set request",
-          "user request",
-          "flow request",
-          "flow state",
-          "request text"
+          "note",
+          "set-note",
+          "flow-note",
+          "addNote",
+          "annotation",
+          "flow-state"
         ]
       },
       {
-        "file": "src/flow/set/step.js",
-        "hash": "3e0bdc5e5ebbac22cf35348ff55958ad",
-        "lines": 29,
-        "mtime": "2026-04-01T16:34:36.490Z",
-        "className": "step",
-        "methods": [
-          "execute"
-        ],
+        "file": "src/flow/lib/set-req.js",
+        "hash": "375ed7b07a051e12b1d86e425d3390af",
+        "lines": 31,
+        "mtime": "2026-04-03T01:07:47.872Z",
+        "className": "set-req",
+        "methods": [],
         "imports": [
-          "../../lib/flow-state.js",
-          "../../lib/flow-envelope.js"
+          "./base-command.js",
+          "../../lib/flow-state.js"
         ],
         "exports": [
-          "execute"
+          "default"
         ],
-        "extends": null,
+        "extends": "FlowCommand",
         "usedBy": null,
-        "id": "2ab6d755",
-        "summary": "Implements `flow set step`, updating the status of a named step in flow state. Allows manual step progression outside of automatic pre/post hooks.",
-        "detail": "execute parses the step ID and status value from ctx.args, validates the status against allowed values, and calls updateStepStatus to persist the change. Returns ok with the updated step or fail on invalid arguments. Used by skill scripts to advance or revert step states.",
+        "id": "6dd22e12",
+        "summary": "Implements `flow set req`, updating the status of a requirement by index in flow.json.",
+        "detail": "Validates the index argument as a non-negative integer. Calls updateRequirement from flow-state with the parsed index and status string. Returns { index, status }.",
         "chapter": "cli_commands",
-        "role": "cli",
+        "role": "lib",
         "enrich": {
-          "processedAt": "2026-04-02T16:09:42.720Z",
+          "processedAt": "2026-04-03T03:15:49.316Z",
           "attempts": 1
         },
         "keywords": [
-          "set step",
-          "step status",
-          "flow step",
-          "step progression",
-          "flow state"
+          "requirement",
+          "set-req",
+          "status",
+          "index",
+          "updateRequirement",
+          "flow-state",
+          "requirements"
         ]
       },
       {
-        "file": "src/flow/set/summary.js",
-        "hash": "4a0044ae45b6b0f99a48bc94b5340fea",
-        "lines": 41,
-        "mtime": "2026-04-01T16:34:36.490Z",
-        "className": "summary",
-        "methods": [
-          "execute"
-        ],
+        "file": "src/flow/lib/set-request.js",
+        "hash": "05bca1c7db54365ec2719f12fe6de3af",
+        "lines": 25,
+        "mtime": "2026-04-03T01:07:47.872Z",
+        "className": "set-request",
+        "methods": [],
         "imports": [
-          "../../lib/flow-state.js",
-          "../../lib/flow-envelope.js"
+          "./base-command.js",
+          "../../lib/flow-state.js"
         ],
         "exports": [
-          "execute"
+          "default"
         ],
-        "extends": null,
+        "extends": "FlowCommand",
         "usedBy": null,
-        "id": "32d0c8d5",
-        "summary": "Implements `flow set summary`, storing a structured requirements array in flow state parsed from JSON or plain text input.",
-        "detail": "execute attempts JSON.parse on the raw input; on failure, treats the input as plain text and wraps it in a single-item array. Calls setRequirements to persist the parsed requirements in flow.json. Returns ok with the stored requirements or fail on empty input.",
+        "id": "546ef334",
+        "summary": "Implements `flow set request`, storing the original user request text in flow.json.",
+        "detail": "Requires a non-empty text argument. Calls setRequest from flow-state. Returns { request: text }. Used at flow initialization to preserve the user's original feature request.",
         "chapter": "cli_commands",
-        "role": "cli",
+        "role": "lib",
         "enrich": {
-          "processedAt": "2026-04-02T16:09:42.720Z",
+          "processedAt": "2026-04-03T03:15:49.316Z",
           "attempts": 1
         },
         "keywords": [
-          "set summary",
+          "request",
+          "set-request",
+          "user-request",
+          "flow-state",
+          "setRequest",
+          "initialization"
+        ]
+      },
+      {
+        "file": "src/flow/lib/set-step.js",
+        "hash": "bc653d2afc87dfebec8e3ed5da208df5",
+        "lines": 26,
+        "mtime": "2026-04-03T01:07:47.872Z",
+        "className": "set-step",
+        "methods": [],
+        "imports": [
+          "./base-command.js",
+          "../../lib/flow-state.js"
+        ],
+        "exports": [
+          "default"
+        ],
+        "extends": "FlowCommand",
+        "usedBy": null,
+        "id": "d4cb8d93",
+        "summary": "Implements `flow set step`, updating the status of a named step in flow.json.",
+        "detail": "Requires id and status arguments. Calls updateStepStatus from flow-state. Returns { id, status }. Used by registry pre/post hooks and manually by skill steps to track progress.",
+        "chapter": "cli_commands",
+        "role": "lib",
+        "enrich": {
+          "processedAt": "2026-04-03T03:15:49.316Z",
+          "attempts": 1
+        },
+        "keywords": [
+          "step",
+          "set-step",
+          "status",
+          "updateStepStatus",
+          "flow-state",
+          "progress",
+          "step-id"
+        ]
+      },
+      {
+        "file": "src/flow/lib/set-summary.js",
+        "hash": "ac99c7eefd5d079c479d1fc293c5e5e8",
+        "lines": 36,
+        "mtime": "2026-04-03T01:07:47.872Z",
+        "className": "set-summary",
+        "methods": [],
+        "imports": [
+          "./base-command.js",
+          "../../lib/flow-state.js"
+        ],
+        "exports": [
+          "default"
+        ],
+        "extends": "FlowCommand",
+        "usedBy": null,
+        "id": "f62c866f",
+        "summary": "Implements `flow set summary`, replacing the requirements array in flow.json with a parsed JSON array of strings.",
+        "detail": "Parses the raw JSON argument and validates it is a string array. Calls setRequirements from flow-state. Returns { count }. Throws descriptive errors on parse failure or wrong type.",
+        "chapter": "cli_commands",
+        "role": "lib",
+        "enrich": {
+          "processedAt": "2026-04-03T03:15:49.316Z",
+          "attempts": 1
+        },
+        "keywords": [
+          "summary",
           "requirements",
-          "flow summary",
-          "JSON requirements",
-          "flow state"
+          "set-summary",
+          "JSON-array",
+          "flow-state",
+          "setRequirements"
         ]
       },
       {
-        "file": "src/flow/set/test-summary.js",
-        "hash": "3d29a6801fd92530a32ed60937f7b53c",
-        "lines": 58,
-        "mtime": "2026-04-02T15:07:32.622Z",
-        "className": "test-summary",
-        "methods": [
-          "execute"
-        ],
+        "file": "src/flow/lib/set-test-summary.js",
+        "hash": "ded47c3965169cb923441fb460772467",
+        "lines": 40,
+        "mtime": "2026-04-03T01:07:47.872Z",
+        "className": "set-test-summary",
+        "methods": [],
         "imports": [
-          "../../lib/cli.js",
-          "../../lib/flow-state.js",
-          "../../lib/flow-envelope.js"
+          "./base-command.js",
+          "../../lib/flow-state.js"
         ],
         "exports": [
-          "execute"
+          "default"
         ],
-        "extends": null,
+        "extends": "FlowCommand",
         "usedBy": null,
-        "id": "e96ee8a8",
-        "summary": "Implements `flow set test-summary`, recording a test execution summary (pass/fail counts and type) in flow state after test runs.",
-        "detail": "TYPE_FLAGS maps --unit, --integration, --acceptance to type strings. execute parses the type flag and numeric pass/fail arguments from ctx.args and calls setTestSummary to persist in flow.json. Returns ok with the summary or fail on missing arguments. Used by skill scripts after running the test suite.",
+        "id": "962cab89",
+        "summary": "Implements `flow set test-summary`, recording test counts by type (unit, integration, acceptance) in flow.json.",
+        "detail": "Parses --unit, --integration, and --acceptance flags as non-negative integers. Validates at least one is provided. Calls setTestSummary from flow-state. Returns { summary }. Used in the test phase to capture test coverage metrics.",
         "chapter": "cli_commands",
-        "role": "cli",
+        "role": "lib",
         "enrich": {
-          "processedAt": "2026-04-02T16:09:42.720Z",
+          "processedAt": "2026-04-03T03:15:49.316Z",
           "attempts": 1
         },
         "keywords": [
-          "test summary",
-          "test results",
-          "flow test",
-          "pass fail counts",
-          "unit integration acceptance"
+          "test-summary",
+          "unit",
+          "integration",
+          "acceptance",
+          "flow-state",
+          "setTestSummary",
+          "test-count",
+          "metrics"
+        ]
+      },
+      {
+        "file": "src/flow/registry.js",
+        "hash": "caaf57334878568ca54f1e57c7dad5c5",
+        "lines": 397,
+        "mtime": "2026-04-03T03:13:47.673Z",
+        "className": "registry",
+        "methods": [
+          "deriveActivePhase",
+          "tryUpdateStepStatus",
+          "stepPre",
+          "stepPost"
+        ],
+        "imports": [
+          "../lib/flow-state.js"
+        ],
+        "exports": [
+          "FLOW_COMMANDS"
+        ],
+        "extends": null,
+        "usedBy": [
+          "src/flow.js"
+        ],
+        "id": "d64f4095",
+        "summary": "Central registry for all flow commands, mapping group/command names to FlowCommand instances with pre/post hooks.",
+        "detail": "FLOW_COMMANDS is a nested map from group (run, get, set) to command name to { command, pre, post, onError, help } descriptors. stepPre and stepPost generate hook functions that call tryUpdateStepStatus to track step lifecycle in flow.json. incrementMetric post-hooks auto-record metrics after get commands. The finalize entry wires finalizeOnError and calls executeCommitPost as a post-hook. deriveActivePhase reads current phase for conditional hook logic.",
+        "chapter": "project_structure",
+        "role": "controller",
+        "enrich": {
+          "processedAt": "2026-04-03T03:15:49.316Z",
+          "attempts": 1
+        },
+        "keywords": [
+          "registry",
+          "FLOW_COMMANDS",
+          "hooks",
+          "pre",
+          "post",
+          "onError",
+          "dispatch",
+          "step-status",
+          "flow-registry",
+          "command-map"
         ]
       },
       {
@@ -3773,9 +3876,9 @@
       },
       {
         "file": "src/lib/git-state.js",
-        "hash": "aab13ef48a595dc1a5dd38753d973512",
-        "lines": 53,
-        "mtime": "2026-03-31T12:57:20.418Z",
+        "hash": "dcddef7ac45d7600ba7ddf42a6f5c485",
+        "lines": 73,
+        "mtime": "2026-04-02T22:02:22.588Z",
         "className": "git-state",
         "methods": [
           "getWorktreeStatus",
@@ -3783,6 +3886,7 @@
           "getAheadCount",
           "getLastCommit",
           "isGhAvailable",
+          "commentOnIssue",
           "tryExec"
         ],
         "imports": [
@@ -3793,28 +3897,31 @@
           "getCurrentBranch",
           "getAheadCount",
           "getLastCommit",
-          "isGhAvailable"
+          "isGhAvailable",
+          "commentOnIssue"
         ],
         "extends": null,
         "usedBy": null,
         "id": "a7fc927f",
-        "summary": "Provides lightweight utility functions for reading Git repository state such as branch name, dirty files, ahead count, and last commit. Also checks whether the gh CLI is available.",
-        "detail": "All functions delegate to execFileSync via a tryExec wrapper that returns null on failure, making every call safe to use without try/catch at the call site. getWorktreeStatus() parses git status --porcelain output to return a dirty flag and list of modified files. getAheadCount() counts commits ahead of a base branch using git rev-list. The module has no side effects and no persistent state.",
+        "summary": "Utility library for reading git repository state: dirty status, current branch, ahead count, last commit, and gh CLI availability.",
+        "detail": "tryExec wraps execFileSync with a null-on-error fallback to avoid throwing on missing tools. getWorktreeStatus runs `git status --porcelain` and returns { dirty, dirtyFiles }. getAheadCount computes how many commits the branch is ahead of a base using `git rev-list --count`. isGhAvailable probes the gh binary with a 5-second timeout. commentOnIssue posts a GitHub issue comment via gh CLI and returns { ok, error }.",
         "chapter": "internal_design",
         "role": "lib",
         "enrich": {
-          "processedAt": "2026-04-02T16:04:59.891Z",
+          "processedAt": "2026-04-03T03:15:49.316Z",
           "attempts": 1
         },
         "keywords": [
-          "git",
+          "git-state",
+          "dirty",
           "branch",
-          "dirty files",
-          "ahead count",
-          "last commit",
-          "gh CLI",
-          "worktree status",
-          "repository state"
+          "ahead",
+          "commit",
+          "gh",
+          "worktree",
+          "git-status",
+          "isGhAvailable",
+          "execFileSync"
         ]
       },
       {
@@ -7349,10 +7456,10 @@
       }
     ],
     "summary": {
-      "total": 220,
-      "totalMethods": 677
+      "total": 221,
+      "totalMethods": 665
     },
     "dataSourceHash": "7d725e75d5031be445119323e4947c91"
   },
-  "enrichedAt": "2026-04-02T17:31:50.544Z"
+  "enrichedAt": "2026-04-03T03:15:49.316Z"
 }
