@@ -1,5 +1,5 @@
 {
-  "analyzedAt": "2026-04-03T06:35:08.385Z",
+  "analyzedAt": "2026-04-03T12:00:36.877Z",
   "package": {
     "entries": [
       {
@@ -2083,9 +2083,9 @@
       },
       {
         "file": "src/flow/commands/review.js",
-        "hash": "1f90f2fbf601a9454668cc1dba151a13",
-        "lines": 643,
-        "mtime": "2026-04-02T15:07:32.621Z",
+        "hash": "a6257f6064ff98ff83393a38e71de6a8",
+        "lines": 896,
+        "mtime": "2026-04-03T12:00:36.678Z",
         "className": "review",
         "methods": [
           "resolveReviewTarget",
@@ -2095,6 +2095,7 @@
           "mergeVerdicts",
           "formatReviewMd",
           "buildApplyPrompt",
+          "runReviewLoop",
           "extractRequirements",
           "collectTestFiles",
           "collectTestsRecursive",
@@ -2106,6 +2107,11 @@
           "applyTestFixes",
           "formatTestReviewMd",
           "runTestReview",
+          "extractGoalAndScope",
+          "buildSpecReviewPrompt",
+          "buildSpecFixPrompt",
+          "formatSpecReviewMd",
+          "runSpecReview",
           "main"
         ],
         "imports": [
@@ -2125,33 +2131,40 @@
           "mergeVerdicts",
           "formatReviewMd",
           "resolveReviewTarget",
-          "MAX_TEST_REVIEW_RETRIES",
+          "MAX_REVIEW_RETRIES",
+          "REVIEW_PHASES",
           "extractRequirements",
           "collectTestFiles",
           "parseGaps",
           "applyTestFixes",
-          "formatTestReviewMd"
+          "formatTestReviewMd",
+          "runReviewLoop",
+          "extractGoalAndScope",
+          "buildSpecReviewPrompt",
+          "formatSpecReviewMd"
         ],
         "extends": null,
         "usedBy": null,
         "id": "331cf497",
-        "summary": "Implements the full code review workflow including draft review, final verdict with AI proposals, and test review with gap analysis and automated fix application. The most complex flow command.",
-        "detail": "resolveReviewTarget gathers spec text and related implementation files. Draft and final review phases build distinct system prompts and parse structured proposals. Test review runs up to MAX_TEST_REVIEW_RETRIES cycles of gap analysis: buildTestDesignPrompt generates a test design, buildGapAnalysisPrompt identifies missing coverage, and buildTestFixPrompt produces fixes applied by applyTestFixes. formatReviewMd and formatTestReviewMd produce persisted review artifacts. extractRequirements isolates the requirements section from spec text.",
-        "chapter": "cli_commands",
-        "role": "cli",
+        "summary": "Implements the SDD flow review command, orchestrating spec review, test review, and code review phases by invoking AI agents iteratively.",
+        "detail": "Defines three review phases (spec-review, test-review, final) and drives each through a retry loop (up to MAX_REVIEW_RETRIES). Spec review reads the spec file, sends it to an AI agent for proposal generation, merges verdicts, and rewrites the spec in place. Test review extracts requirements from the spec, collects existing test files, designs missing tests via AI, performs gap analysis, and applies generated test file fixes. Code review builds a diff-based prompt from implementation files, collects AI proposals, and writes results to review.md. All phases write structured markdown result files (spec-review.md, test-review.md, review.md) into the spec directory.",
+        "chapter": "internal_design",
+        "role": "controller",
         "enrich": {
-          "processedAt": "2026-04-02T16:09:42.720Z",
+          "processedAt": "2026-04-03T12:01:07.319Z",
           "attempts": 1
         },
         "keywords": [
-          "code review",
-          "test review",
+          "review",
+          "spec-review",
+          "test-review",
+          "code-review",
+          "AI agent",
+          "retry loop",
           "gap analysis",
-          "AI review",
-          "spec review",
           "proposals",
-          "test coverage",
-          "review.md"
+          "verdicts",
+          "flow command"
         ]
       },
       {
@@ -2219,9 +2232,9 @@
       },
       {
         "file": "src/flow/lib/get-check.js",
-        "hash": "4558220a5173a5cd0f7c4107cc950e25",
-        "lines": 93,
-        "mtime": "2026-04-03T01:07:47.870Z",
+        "hash": "753d5dea2167ec580393f1a6bbfc6015",
+        "lines": 86,
+        "mtime": "2026-04-03T11:57:21.477Z",
         "className": "get-check",
         "methods": [
           "checkStepPrereqs",
@@ -2230,6 +2243,7 @@
         ],
         "imports": [
           "child_process",
+          "../../lib/git-state.js",
           "./base-command.js"
         ],
         "exports": [
@@ -2238,31 +2252,31 @@
         "extends": "FlowCommand",
         "usedBy": null,
         "id": "10eecc8b",
-        "summary": "Implements `flow get check` to verify preconditions for impl, finalize, dirty, or gh targets.",
-        "detail": "PREREQS maps each target to the step IDs that must be completed before it is valid. checkStepPrereqs iterates steps from flow.json and returns a { pass, summary, checks } result. checkDirty runs `git status --porcelain` to detect uncommitted changes. checkGh probes gh CLI availability. Throws on unknown targets and missing flow state.",
+        "summary": "Implements the 'get check' flow command that validates prerequisites for specific flow targets such as impl, finalize, dirty, and gh.",
+        "detail": "GetCheckCommand extends FlowCommand and dispatches to one of four check functions based on the target argument. checkDirty runs git status to detect uncommitted changes. checkGh verifies GitHub CLI availability via isGhAvailable. checkStepPrereqs validates step-level prerequisites from a PREREQS map against the current flow state. Results are returned as structured objects with pass, summary, and checks fields.",
         "chapter": "cli_commands",
-        "role": "lib",
+        "role": "controller",
         "enrich": {
-          "processedAt": "2026-04-03T03:15:49.316Z",
+          "processedAt": "2026-04-03T11:57:37.443Z",
           "attempts": 1
         },
         "keywords": [
-          "check",
-          "gate",
-          "prerequisites",
-          "dirty",
-          "gh",
-          "impl",
-          "finalize",
-          "flow-check",
-          "git-status"
+          "flow check",
+          "prereq",
+          "prerequisite",
+          "dirty check",
+          "gh check",
+          "git status",
+          "FlowCommand",
+          "GetCheckCommand",
+          "flow validation"
         ]
       },
       {
         "file": "src/flow/lib/get-context.js",
-        "hash": "b93591bd8e254c48bcddfaadb0228aed",
+        "hash": "0ec796a41e5eb1dca06705f2cdf33cc8",
         "lines": 400,
-        "mtime": "2026-04-03T01:07:47.870Z",
+        "mtime": "2026-04-03T12:00:36.678Z",
         "className": "get-context",
         "methods": [
           "toSearchResult",
@@ -2297,7 +2311,9 @@
           "fallbackSearch",
           "toBigrams",
           "bigramSimilarity",
-          "ngramSearch"
+          "ngramSearch",
+          "loadAnalysisEntries",
+          "contextSearch"
         ],
         "extends": "FlowCommand",
         "usedBy": [
@@ -2305,25 +2321,25 @@
           "src/docs/commands/readme.js"
         ],
         "id": "1261e39f",
-        "summary": "Implements `flow get context`, providing code-search over analysis.json using ngram, AI-assisted, or file-based strategies.",
-        "detail": "loadAnalysisEntries reads and parses analysis.json; entries are filtered through filterEntry to strip excluded fields. ngramSearch scores entries by bigram similarity against the query. aiSearch uses buildKeywordSelectionPrompt + callAgent to select relevant keywords before fallback search. contextSearch selects the strategy based on a mode flag. Also supports direct file content retrieval and phase resolution from flow state. Exports internal helpers for testing.",
+        "summary": "Provides context retrieval for flow commands by searching analysis.json entries using ngram similarity, AI keyword selection, or fallback keyword matching.",
+        "detail": "Loads analysis.json from the sdd-forge output directory and exposes multiple search strategies: keyword-based fallback search, bigram ngram similarity scoring (threshold 0.15), and AI-assisted search that asks the agent to select relevant keywords from the full keyword index. The contextSearch function selects the strategy based on a mode parameter (ngram vs ai). GetContextCommand extends FlowCommand and supports file-read, phase-resolve, and context-search sub-operations. Exported utility functions (filterEntry, resolvePhase, loadAnalysisEntries, etc.) are used by other flow commands to access structured project context.",
         "chapter": "internal_design",
         "role": "lib",
         "enrich": {
-          "processedAt": "2026-04-03T03:15:49.316Z",
+          "processedAt": "2026-04-03T12:01:07.319Z",
           "attempts": 1
         },
         "keywords": [
-          "context",
-          "search",
-          "analysis",
+          "context search",
+          "analysis.json",
           "ngram",
-          "bigram",
-          "AI",
-          "keywords",
-          "flow-context",
-          "code-search",
-          "analysis.json"
+          "bigram similarity",
+          "keyword selection",
+          "AI search",
+          "flow context",
+          "GetContextCommand",
+          "FlowCommand",
+          "entry filter"
         ]
       },
       {
@@ -2554,9 +2570,9 @@
       },
       {
         "file": "src/flow/lib/run-finalize.js",
-        "hash": "94ec396200f9eeafd5fa01ce9e4f9205",
-        "lines": 338,
-        "mtime": "2026-04-03T03:13:47.673Z",
+        "hash": "84ebe990559be1a460ff556122966754",
+        "lines": 355,
+        "mtime": "2026-04-03T11:57:21.477Z",
         "className": "run-finalize",
         "methods": [
           "finalizeOnError",
@@ -2573,6 +2589,7 @@
           "../../lib/cli.js",
           "../../lib/flow-state.js",
           "./set-issue-log.js",
+          "../../lib/git-state.js",
           "./base-command.js",
           "../registry.js"
         ],
@@ -2586,25 +2603,26 @@
         "extends": "FlowCommand",
         "usedBy": null,
         "id": "c711309b",
-        "summary": "Implements `flow run finalize`, orchestrating the end-of-flow sequence: docs build, commit, merge, report, and worktree cleanup.",
-        "detail": "STEP_MAP defines named sub-steps (docs, commit, merge, report, cleanup) each backed by a dedicated RunXxxCommand or inline function. runSubStep wraps each step with error capture and status tracking. executeCommitPost handles post-commit hooks. Supports --mode all|select and --merge-strategy squash|pr flags. finalizeOnError is a reusable error hook factory used by the registry. Worktree removal is handled in executeCleanupImpl using fs and git commands.",
+        "summary": "Implements the finalize step of the SDD flow, orchestrating commit, docs build, merge/PR creation, and worktree cleanup.",
+        "detail": "RunFinalizeCommand extends FlowCommand and supports mode='all' or mode='select' with explicit step selection. STEP_MAP defines named sub-steps (commit, docs, merge, cleanup) each executed via runSubStep with error capture. executeCommitPost handles post-commit logic including diff stat collection. executeCleanupImpl removes the worktree if it exists. finalizeOnError is a factory for per-step error handlers that integrate with flow registry hooks. The command directly imports lib-layer commands to invoke sub-steps without going through the registry dispatcher.",
         "chapter": "cli_commands",
         "role": "controller",
         "enrich": {
-          "processedAt": "2026-04-03T03:15:49.316Z",
+          "processedAt": "2026-04-03T11:57:37.443Z",
           "attempts": 1
         },
         "keywords": [
           "finalize",
+          "flow finalize",
+          "worktree cleanup",
           "commit",
           "merge",
-          "cleanup",
-          "worktree",
-          "docs-build",
-          "report",
-          "flow-finalize",
-          "orchestration",
-          "step-map"
+          "PR",
+          "squash",
+          "STEP_MAP",
+          "RunFinalizeCommand",
+          "issue log",
+          "docs build"
         ]
       },
       {
@@ -2901,13 +2919,14 @@
       },
       {
         "file": "src/flow/lib/run-review.js",
-        "hash": "e4c64ad5d742422b6ea2c05184ca5f8a",
-        "lines": 107,
-        "mtime": "2026-04-03T01:07:47.871Z",
+        "hash": "b013c2a211a12796856bbd8a28424664",
+        "lines": 145,
+        "mtime": "2026-04-03T12:00:36.678Z",
         "className": "run-review",
         "methods": [
           "RunReviewCommand",
-          "parseTestReviewOutput"
+          "parseTestReviewOutput",
+          "parseSpecReviewOutput"
         ],
         "imports": [
           "../../lib/cli.js",
@@ -2922,22 +2941,25 @@
         "extends": "FlowCommand",
         "usedBy": null,
         "id": "d4e97204",
-        "summary": "Implements `flow run review`, invoking the review.js script as a subprocess and parsing its structured output.",
-        "detail": "Resolves the review script path relative to PKG_DIR. Runs the script via runSync and delegates stdout/stderr parsing to parseTestReviewOutput. Returns { passed, results, summary } or throws a formatted error. Wraps non-zero exits with contextual error messages.",
-        "chapter": "cli_commands",
+        "summary": "Wraps the review.js command script as a FlowCommand, running it as a subprocess and parsing its stdout/stderr into structured result objects.",
+        "detail": "RunReviewCommand extends FlowCommand and invokes src/flow/commands/review.js via runSync, passing phase flags (--test-review, --spec-review, or no flag for final code review). Output parsing functions (parseTestReviewOutput, parseSpecReviewOutput) validate exit codes and extract issues and verdict from the subprocess output. Errors from non-zero exit codes or missing output fields are surfaced as thrown Error instances. This design isolates the review execution environment while keeping result handling in the lib layer.",
+        "chapter": "internal_design",
         "role": "lib",
         "enrich": {
-          "processedAt": "2026-04-03T03:15:49.316Z",
+          "processedAt": "2026-04-03T12:01:07.319Z",
           "attempts": 1
         },
         "keywords": [
-          "review",
-          "test-review",
+          "RunReviewCommand",
           "subprocess",
-          "run-review",
-          "flow-review",
-          "script",
-          "PKG_DIR"
+          "review runner",
+          "FlowCommand",
+          "test-review",
+          "spec-review",
+          "output parsing",
+          "runSync",
+          "exit code",
+          "flow lib"
         ]
       },
       {
@@ -3344,9 +3366,9 @@
       },
       {
         "file": "src/flow/registry.js",
-        "hash": "4a321038a7eb688b7935c5c9b6ca0c61",
+        "hash": "aaf84d33f9b78599942c049cb44c717f",
         "lines": 413,
-        "mtime": "2026-04-03T06:35:08.190Z",
+        "mtime": "2026-04-03T12:00:36.678Z",
         "className": "registry",
         "methods": [
           "deriveActivePhase",
@@ -3366,25 +3388,25 @@
           "src/flow.js"
         ],
         "id": "d64f4095",
-        "summary": "Defines the FLOW_COMMANDS registry that maps flow subcommand names to their configuration, hooks, and handler classes for the flow dispatcher.",
-        "detail": "The registry centralizes args definitions, help strings, pre/post hooks, and command constructors so the flow dispatcher can uniformly call parseArgs, run, and output without per-command branching. stepPre and stepPost helpers generate lifecycle hooks that update step status in flow.json via updateStepStatus. resolveGateStepId maps gate phase names to the canonical 'gate' step identifier. The registry also wires metric increments via incrementMetric in post hooks, enabling automatic flow metrics collection after each command.",
-        "chapter": "internal_design",
-        "role": "other",
+        "summary": "Defines the central registry of all flow subcommands, wiring each command to its args schema, help text, pre/post hooks, and execution logic.",
+        "detail": "Exports FLOW_COMMANDS as a map keyed by command name, where each entry declares args, help, optional pre/post hooks, and a command function. Pre-hooks use stepPre to mark a flow step as in_progress, while post-hooks use stepPost to transition step status based on result. deriveActivePhase reads flow state to determine the current phase, and resolveGateStepId maps a phase name to its gate step identifier. The executeCommitPost helper is called in the post hook of commit-related commands to perform post-commit actions. This registry acts as the single source of truth for the flow dispatcher.",
+        "chapter": "cli_commands",
+        "role": "config",
         "enrich": {
-          "processedAt": "2026-04-03T06:35:26.741Z",
+          "processedAt": "2026-04-03T12:01:07.319Z",
           "attempts": 1
         },
         "keywords": [
-          "registry",
+          "flow registry",
           "FLOW_COMMANDS",
-          "dispatcher",
-          "hooks",
-          "stepPre",
-          "stepPost",
-          "flow subcommand",
-          "lifecycle",
-          "metrics",
-          "command registration"
+          "step hooks",
+          "pre hook",
+          "post hook",
+          "flow dispatcher",
+          "step status",
+          "derivePhase",
+          "flow state",
+          "command registry"
         ]
       },
       {
@@ -3885,9 +3907,9 @@
       },
       {
         "file": "src/lib/git-state.js",
-        "hash": "dcddef7ac45d7600ba7ddf42a6f5c485",
+        "hash": "90be9da0cfc766af5bd37f8ab76a76e3",
         "lines": 73,
-        "mtime": "2026-04-02T22:02:22.588Z",
+        "mtime": "2026-04-03T11:57:21.477Z",
         "className": "git-state",
         "methods": [
           "getWorktreeStatus",
@@ -3912,24 +3934,25 @@
         "extends": null,
         "usedBy": null,
         "id": "a7fc927f",
-        "summary": "Utility library for reading git repository state: dirty status, current branch, ahead count, last commit, and gh CLI availability.",
-        "detail": "tryExec wraps execFileSync with a null-on-error fallback to avoid throwing on missing tools. getWorktreeStatus runs `git status --porcelain` and returns { dirty, dirtyFiles }. getAheadCount computes how many commits the branch is ahead of a base using `git rev-list --count`. isGhAvailable probes the gh binary with a 5-second timeout. commentOnIssue posts a GitHub issue comment via gh CLI and returns { ok, error }.",
+        "summary": "Provides utility functions for querying local git repository state and interacting with GitHub CLI.",
+        "detail": "All functions use execFileSync via the internal tryExec wrapper that returns null on failure instead of throwing. getWorktreeStatus returns dirty flag and list of modified files by parsing git status output. getCurrentBranch, getAheadCount, and getLastCommit expose common git metadata. isGhAvailable probes gh --version with a 5-second timeout to detect CLI presence. commentOnIssue wraps gh issue comment and returns a structured ok/error result.",
         "chapter": "internal_design",
         "role": "lib",
         "enrich": {
-          "processedAt": "2026-04-03T03:15:49.316Z",
+          "processedAt": "2026-04-03T11:57:37.443Z",
           "attempts": 1
         },
         "keywords": [
-          "git-state",
+          "git state",
+          "git status",
           "dirty",
           "branch",
-          "ahead",
-          "commit",
-          "gh",
-          "worktree",
-          "git-status",
+          "ahead count",
+          "gh cli",
+          "GitHub CLI",
           "isGhAvailable",
+          "commentOnIssue",
+          "worktree",
           "execFileSync"
         ]
       },
@@ -7466,9 +7489,9 @@
     ],
     "summary": {
       "total": 221,
-      "totalMethods": 670
+      "totalMethods": 677
     },
     "dataSourceHash": "7d725e75d5031be445119323e4947c91"
   },
-  "enrichedAt": "2026-04-03T06:35:26.741Z"
+  "enrichedAt": "2026-04-03T12:01:07.319Z"
 }
