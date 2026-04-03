@@ -17,8 +17,8 @@ const ACTIVE_FLOW_FILE = ".active-flow";
 
 /** SDD workflow step IDs in order. */
 export const FLOW_STEPS = [
-  "approach", "branch", "prepare-spec", "draft", "spec",
-  "gate", "approval", "test", "implement", "review", "finalize",
+  "approach", "branch", "prepare-spec", "draft", "gate-draft", "spec",
+  "gate", "approval", "test", "implement", "gate-impl", "review", "finalize",
   "commit", "push", "merge", "pr-create", "branch-cleanup",
   "pr-merge", "sync-cleanup", "docs-update", "docs-review", "docs-commit",
 ];
@@ -26,8 +26,8 @@ export const FLOW_STEPS = [
 /** Step ID → phase mapping. */
 export const PHASE_MAP = {
   approach: "plan", branch: "plan", "prepare-spec": "plan", draft: "plan",
-  spec: "plan", gate: "plan", approval: "plan", test: "plan",
-  implement: "impl", review: "impl", finalize: "impl",
+  "gate-draft": "plan", spec: "plan", gate: "plan", approval: "plan", test: "plan",
+  implement: "impl", "gate-impl": "impl", review: "impl", finalize: "impl",
   commit: "finalize", push: "finalize", merge: "finalize",
   "pr-create": "finalize", "branch-cleanup": "finalize",
   "pr-merge": "sync", "sync-cleanup": "sync",

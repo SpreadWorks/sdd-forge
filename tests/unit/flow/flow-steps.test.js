@@ -9,10 +9,10 @@ import assert from "node:assert/strict";
 import { FLOW_STEPS, PHASE_MAP } from "../../../src/lib/flow-state.js";
 
 describe("FLOW_STEPS ordering (plan rework)", () => {
-  it("has prepare-spec, draft, spec, gate, approval, test as plan steps", () => {
-    const first8 = FLOW_STEPS.slice(0, 8);
-    assert.deepEqual(first8, [
-      "approach", "branch", "prepare-spec", "draft",
+  it("has prepare-spec, draft, gate-draft, spec, gate, approval, test as plan steps", () => {
+    const first9 = FLOW_STEPS.slice(0, 9);
+    assert.deepEqual(first9, [
+      "approach", "branch", "prepare-spec", "draft", "gate-draft",
       "spec", "gate", "approval", "test",
     ]);
   });

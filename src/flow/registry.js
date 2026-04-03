@@ -49,6 +49,17 @@ function stepPost(stepId, statusFn) {
   };
 }
 
+/**
+ * Map gate --phase value to the corresponding step ID.
+ * @param {string} [phase]
+ * @returns {string}
+ */
+function resolveGateStepId(phase) {
+  if (phase === "draft") return "gate-draft";
+  if (phase === "impl") return "gate-impl";
+  return "gate";
+}
+
 export const FLOW_COMMANDS = {
   prepare: {
     helpKey: "flow.prepare",
@@ -226,7 +237,9 @@ export const FLOW_COMMANDS = {
   run: {
     gate: {
       helpKey: "flow.run.gate",
-      pre: stepPre("gate"),
+      pre(ctx) {
+        tryUpdateStepStatus(ctx.root, resolveGateStepId(ctx.phase), "in_progress");
+      },
       command: () => import("./lib/run-gate.js"),
       args: {
         options: ["--spec", "--phase"],
@@ -235,14 +248,17 @@ export const FLOW_COMMANDS = {
       help: [
         "Usage: sdd-forge flow run gate [options]",
         "",
-        "Run spec gate check. Resolves --spec from flow.json if omitted.",
+        "Run gate check. Resolves target from flow.json if omitted.",
         "",
         "Options:",
-        "  --spec <path>       Path to spec.md (auto-resolved from flow.json)",
-        "  --phase <pre|post>  Gate phase (default: pre)",
-        "  --skip-guardrail    Skip AI guardrail compliance check",
+        "  --spec <path>                 Path to spec.md (auto-resolved from flow.json)",
+        "  --phase <draft|pre|post|impl> Gate phase (default: pre)",
+        "  --skip-guardrail              Skip AI guardrail compliance check",
       ].join("\n"),
-      post: stepPost("gate", (result) => result?.result === "pass" ? "done" : "in_progress"),
+      post(ctx, result) {
+        const status = result?.result === "pass" ? "done" : "in_progress";
+        tryUpdateStepStatus(ctx.root, resolveGateStepId(ctx.phase), status);
+      },
     },
     review: {
       helpKey: "flow.run.review",

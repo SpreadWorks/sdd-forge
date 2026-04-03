@@ -265,21 +265,19 @@ describe("gate CLI", () => {
     assert.equal(envelope.ok, true);
   });
 
-  it("exits non-zero on invalid spec", () => {
+  it("returns ok:true with result:fail on invalid spec (R5)", () => {
     tmp = createTmpDir();
     initGateProject(tmp);
     writeFile(tmp, "spec.md", "# Empty spec\n");
 
-    try {
-      execFileSync("node", [
-        join(process.cwd(), "src/sdd-forge.js"),
-        "flow", "run", "gate",
-        "--spec", join(tmp, "spec.md"),
-      ], { encoding: "utf8", env: { ...process.env, SDD_WORK_ROOT: tmp } });
-      assert.fail("should have exited non-zero");
-    } catch (err) {
-      const envelope = JSON.parse(err.stdout);
-      assert.equal(envelope.ok, false);
-    }
+    const result = execFileSync("node", [
+      join(process.cwd(), "src/sdd-forge.js"),
+      "flow", "run", "gate",
+      "--spec", join(tmp, "spec.md"),
+    ], { encoding: "utf8", env: { ...process.env, SDD_WORK_ROOT: tmp } });
+    const envelope = JSON.parse(result);
+    assert.equal(envelope.ok, true);
+    assert.equal(envelope.data.result, "fail");
+    assert.ok(envelope.data.artifacts.issues.length > 0);
   });
 });

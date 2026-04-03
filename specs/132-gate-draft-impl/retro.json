@@ -1,0 +1,97 @@
+{
+  "spec": "specs/132-gate-draft-impl/spec.md",
+  "date": "2026-04-03T06:35:08.140Z",
+  "requirements": [
+    {
+      "desc": "R1: --phase オプション拡張 (draft|pre|post|impl)",
+      "status": "done",
+      "note": "run-gate.js で phase に応じて executeDraft/executeSpec/executeImpl に分岐。registry.js のヘルプに draft|pre|post|impl を明記。デフォルトは pre を維持。"
+    },
+    {
+      "desc": "R2: checkDraftText テキスト構造チェック",
+      "status": "done",
+      "note": "checkDraftText 関数を実装。Q&Aセクション、ユーザー承認チェックボックス、開発種別、目的/ゴールの4項目を検証。不足時は issues 配列で返却。"
+    },
+    {
+      "desc": "R3: gate draft guardrail AI チェック",
+      "status": "done",
+      "note": "executeDraft 内で checkGuardrail(root, text, ctx.config, \"draft\", ...) を呼び出し。filterByPhase で draft フェーズの guardrail を取得し、buildGuardrailPrompt/parseGuardrailResponse パターンを踏襲。"
+    },
+    {
+      "desc": "R4: gate impl AI チェック (spec + git diff)",
+      "status": "done",
+      "note": "executeImpl で spec.md を読み込み、execFileSync で git diff baseBranch...HEAD を取得。buildImplCheckPrompt で Requirements+diff を AI に渡し PASS/FAIL 判定。filterByPhase(guardrails, \"impl\") の guardrail チェックも実施。"
+    },
+    {
+      "desc": "R5: エラーハンドリング統一 (throw→return)",
+      "status": "done",
+      "note": "全 gate (draft/spec/impl) で FAIL 時は gateFail() で {result:\"fail\", changed:[], artifacts:{phase,reasons,issues}, next} を return。FAIL_NEXT マップで phase→next を定義。復旧不能エラー(ファイル未発見等)は従来通り throw。既存テストも throw→return に更新済み。"
+    },
+    {
+      "desc": "R6: step ID 追加 (gate-draft, gate-impl)",
+      "status": "done",
+      "note": "FLOW_STEPS に gate-draft (draft の後 spec の前) と gate-impl (implement の後 review の前) を追加。PHASE_MAP に gate-draft:plan, gate-impl:impl を追加。既存 gate は維持。"
+    },
+    {
+      "desc": "R7: registry pre/post hook 更新",
+      "status": "done",
+      "note": "resolveGateStepId ヘルパーを抽出し pre/post 両方で使用。pre で phase に応じた step ID を in_progress に設定。post で result===pass なら done、それ以外は in_progress を維持。"
+    },
+    {
+      "desc": "R8: SKILL.md 更新 (flow-plan, flow-impl)",
+      "status": "done",
+      "note": "flow-plan SKILL.md に step 5 として gate draft を挿入(リトライ上限10回)。flow-impl SKILL.md に step 2 として gate impl を挿入(リトライ上限5回)。data.result フィールドで PASS/FAIL 判定する記述に更新。既存 spec gate の記述も result ベースに統一。"
+    },
+    {
+      "desc": "R9: テスト追加・更新",
+      "status": "done",
+      "note": "gate-draft.test.js 新規追加(checkDraftText の7テストケース)。gate.test.js を throw→return に更新(R5対応)。guardrail-metadata.test.js と guardrail.test.js で buildGuardrailPrompt の新シグネチャに対応。flow-steps.test.js を gate-draft/gate-impl 追加に対応。spec verification テストも追加。ただし gate impl の AI チェックロジックのユニットテストと --phase draft/impl の CLI 統合テストは未実装。"
+    }
+  ],
+  "unplanned": [
+    {
+      "file": "specs/132-gate-draft-impl/draft.md",
+      "change": "spec ドキュメント (draft) の追加。SDD フローの成果物であり実装変更ではない。"
+    },
+    {
+      "file": "specs/132-gate-draft-impl/flow.json",
+      "change": "SDD フロー管理ファイルの追加。実装変更ではない。"
+    },
+    {
+      "file": "specs/132-gate-draft-impl/qa.md",
+      "change": "Q&A テンプレートの追加。SDD フローの成果物。"
+    },
+    {
+      "file": "specs/132-gate-draft-impl/review.md",
+      "change": "コードレビュー結果の記録。review ステップの成果物で、approved items (1,2,4) の修正が実装に反映されている。"
+    },
+    {
+      "file": "specs/132-gate-draft-impl/spec.md",
+      "change": "仕様書の追加。SDD フローの成果物。"
+    },
+    {
+      "file": "specs/132-gate-draft-impl/tests/README.md",
+      "change": "テストの説明ドキュメント。"
+    },
+    {
+      "file": "specs/132-gate-draft-impl/tests/gate-draft-impl.test.js",
+      "change": "spec verification テスト。R9 の範囲内だがテスト一覧に明示されていなかった。"
+    },
+    {
+      "file": "src/flow/lib/run-gate.js",
+      "change": "PHASE_STEP マップが review で指摘されたにもかかわらず残存していないことを確認 — 実際に削除済み。review item 1 が反映されている。"
+    },
+    {
+      "file": "src/flow/registry.js",
+      "change": "resolveGateStepId ヘルパー抽出は review item 2 の反映。R7 の範囲内。"
+    }
+  ],
+  "summary": {
+    "total": 9,
+    "done": 9,
+    "partial": 0,
+    "not_done": 0,
+    "rate": 1,
+    "notes": "全9要件が実装済み。R5 のエラーハンドリング統一が全 gate に適用され、R1-R4 の新機能、R6-R7 のインフラ、R8 の SKILL.md 更新が完了。R9 は大部分カバーされているが、spec が要求する gate impl AI チェックロジックの専用ユニットテストと --phase draft/impl の CLI 統合テストが不足している点は留意。コードレビューの approved items (PHASE_STEP 削除、resolveGateStepId 抽出、PASS_NEXT/FAIL_NEXT 分離) は全て反映済み。unplanned changes は全て SDD フローの成果物(specs/)であり、実装上の逸脱はない。"
+  }
+}

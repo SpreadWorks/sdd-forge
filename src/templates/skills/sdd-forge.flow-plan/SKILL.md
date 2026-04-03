@@ -15,7 +15,7 @@ Run this workflow for any feature or fix request. This skill covers the planning
 
 <!-- include("@templates/partials/flow-tracking.md") -->
 
-Available step IDs (this skill): `approach`, `branch`, `prepare-spec`, `draft`, `spec`, `gate`, `approval`, `test`
+Available step IDs (this skill): `approach`, `branch`, `prepare-spec`, `draft`, `gate-draft`, `spec`, `gate`, `approval`, `test`
 Available status values: `pending`, `in_progress`, `done`, `skipped`
 
 ## Context Recording (Compaction Resilience)
@@ -121,7 +121,15 @@ Note: `sdd-forge flow get context` automatically records these metrics via hooks
    - Keep `draft.md` in `specs/` (do not delete).
    - **On complete**: `sdd-forge flow set step draft done`
 
-5. Fill spec (`spec`).
+5. Run gate draft (after draft approval, BEFORE spec).
+   - **Skip condition**: If step 1 chose option 2 (skip draft), skip this step: `sdd-forge flow set step gate-draft skipped`
+   - `sdd-forge flow run gate --phase draft` (step status is automatically managed by hooks: pre sets gate-draft to in_progress, post sets done on PASS)
+   - Checks draft.md for: Q&A section, user approval, development type, goal + guardrail AI compliance.
+   - If FAIL (`data.result === "fail"`): show ALL failures from `data.artifacts.issues` and `data.artifacts.reasons`. AI fixes draft.md and re-runs gate.
+   - **Retry limit: 10 attempts.** If gate does not PASS after 10 fix-and-rerun cycles, STOP and return control to the user.
+   - Do not proceed until PASS (`data.result === "pass"`).
+
+6. Fill spec (`spec`).
    - **On start**: `sdd-forge flow set step spec in_progress`
    - **Before writing spec**:
      - Read draft (if exists) and linked GitHub issue content.
@@ -135,16 +143,15 @@ Note: `sdd-forge flow get context` automatically records these metrics via hooks
    - Include "why this approach" rationale.
    - **On complete**: `sdd-forge flow set step spec done`
 
-6. Run gate (BEFORE approval).
-   - `sdd-forge flow run gate` (step status is automatically managed by hooks: pre sets in_progress, post sets done on PASS)
-   - If FAIL: show ALL failures at once (no per-item user approval needed).
-   - AI fixes issues and re-runs gate until PASS. No user confirmation needed per fix — just fix and re-run.
+7. Run gate spec (BEFORE approval).
+   - `sdd-forge flow run gate` (step status is automatically managed by hooks: pre sets gate to in_progress, post sets done on PASS)
+   - If FAIL (`data.result === "fail"`): show ALL failures from `data.artifacts.issues` and `data.artifacts.reasons`. AI fixes spec.md and re-runs gate.
    - **Retry limit: 20 attempts.** If gate does not PASS after 20 fix-and-rerun cycles, STOP and return control to the user.
-   - Do not proceed until PASS.
+   - Do not proceed until PASS (`data.result === "pass"`).
 
-7. Get explicit user approval (AFTER gate PASS).
+8. Get explicit user approval (AFTER gate PASS).
    - **On start**: `sdd-forge flow set step approval in_progress`
-   - **Do NOT re-run gate.** The gate already passed in step 6.
+   - **Do NOT re-run gate.** The gate already passed in step 7.
    - Present the FULL spec text (the gate-PASS version) to the user.
    - The user reads the gate-passed final spec and approves.
    - Wait for approval before any implementation.
@@ -156,7 +163,7 @@ Note: `sdd-forge flow get context` automatically records these metrics via hooks
      - Extract Requirements from spec.md and run: `sdd-forge flow set summary '["req 1", "req 2", ...]'`
      - `sdd-forge flow set step approval done`
 
-8. Test phase (after approval).
+9. Test phase (after approval).
    - **On start**: `sdd-forge flow set step test in_progress`
    - Run `sdd-forge flow get prompt plan.test-mode` and present the choices.
    - If code changes exist, implementation verification test is required in principle.

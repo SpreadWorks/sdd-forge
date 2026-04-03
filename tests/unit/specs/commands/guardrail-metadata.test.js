@@ -72,7 +72,7 @@ describe("buildGuardrailPrompt with phase filtering", () => {
       { title: "Lint Rule", body: "Check in lint.", meta: { phase: ["lint"] } },
       { title: "Both Rule", body: "Check in both.", meta: { phase: ["spec", "lint"] } },
     ];
-    const prompt = buildGuardrailPrompt("spec content", guardrails);
+    const prompt = buildGuardrailPrompt("spec content", guardrails, "spec");
     assert.ok(prompt.includes("Spec Rule"));
     assert.ok(!prompt.includes("Lint Rule"));
     assert.ok(prompt.includes("Both Rule"));
@@ -83,7 +83,7 @@ describe("buildGuardrailPrompt with phase filtering", () => {
       { title: "Lint Only", body: "Lint check.", meta: { phase: ["lint"] } },
       { title: "Impl Only", body: "Impl check.", meta: { phase: ["impl"] } },
     ];
-    const prompt = buildGuardrailPrompt("spec content", guardrails);
+    const prompt = buildGuardrailPrompt("spec content", guardrails, "spec");
     assert.equal(prompt, null);
   });
 });

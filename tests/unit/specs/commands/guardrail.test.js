@@ -136,7 +136,7 @@ describe("buildGuardrailPrompt", () => {
       { title: "Rule A", body: "Description A", meta: { phase: ["spec"] } },
       { title: "Rule B", body: "Description B", meta: { phase: ["spec"] } },
     ];
-    const prompt = buildGuardrailPrompt("spec content here", guardrails);
+    const prompt = buildGuardrailPrompt("spec content here", guardrails, "spec");
     assert.ok(prompt.includes("Rule A"));
     assert.ok(prompt.includes("Rule B"));
     assert.ok(prompt.includes("spec content here"));
@@ -197,7 +197,7 @@ describe("buildGuardrailPrompt ignores exemption sections", () => {
 
   it("includes all spec-phase guardrails even with exemptions section in spec", () => {
     const spec = "## Guardrail Exemptions\n- Rule B \u2014 reason\n\n## Requirements\n- R1\n";
-    const prompt = buildGuardrailPrompt(spec, guardrails);
+    const prompt = buildGuardrailPrompt(spec, guardrails, "spec");
     assert.ok(prompt.includes("Rule A"));
     assert.ok(prompt.includes("Rule B"), "Rule B should NOT be filtered out");
     assert.ok(prompt.includes("Rule C"));
@@ -205,7 +205,7 @@ describe("buildGuardrailPrompt ignores exemption sections", () => {
   });
 
   it("includes inapplicable-PASS instruction", () => {
-    const prompt = buildGuardrailPrompt("## Requirements\n- R1\n", guardrails);
+    const prompt = buildGuardrailPrompt("## Requirements\n- R1\n", guardrails, "spec");
     assert.ok(prompt.includes("inapplicable"), "should include inapplicable instruction");
   });
 });

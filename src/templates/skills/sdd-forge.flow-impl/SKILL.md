@@ -15,7 +15,7 @@ Run this workflow after the planning phase (flow-plan) is complete. This skill c
 
 <!-- include("@templates/partials/flow-tracking.md") -->
 
-Available step IDs (this skill): `implement`, `review`, `finalize`
+Available step IDs (this skill): `implement`, `gate-impl`, `review`, `finalize`
 Available status values: `pending`, `in_progress`, `done`, `skipped`
 
 ## Context Recording (Compaction Resilience)
@@ -57,7 +57,14 @@ Before starting, run `sdd-forge flow get check impl` to verify prerequisites.
    - **Retry limit for test fixes: 5 attempts.** If tests do not pass after 5 fix-and-rerun cycles, STOP and return control to the user.
    - **On complete**: `sdd-forge flow set step implement done`
 
-2. Review implementation.
+2. Run gate impl (after implementation, BEFORE review).
+   - `sdd-forge flow run gate --phase impl` (step status is automatically managed by hooks: pre sets gate-impl to in_progress, post sets done on PASS)
+   - Checks spec requirements against `git diff baseBranch...HEAD` + guardrail compliance via AI.
+   - If FAIL (`data.result === "fail"`): show ALL failures from `data.artifacts.reasons`. AI fixes implementation and re-runs gate.
+   - **Retry limit: 5 attempts.** If gate does not PASS after 5 fix-and-rerun cycles, STOP and return control to the user.
+   - Do not proceed until PASS (`data.result === "pass"`).
+
+3. Review implementation.
    - Step status is automatically managed by `sdd-forge flow run review` hooks (pre sets in_progress, post sets done).
    - Present review policy:
      ```
@@ -119,7 +126,7 @@ Before starting, run `sdd-forge flow get check impl` to verify prerequisites.
    - Re-run tests to confirm no regressions.
    - Proceed to Step 3.
 
-3. Final confirmation before finalize.
+4. Final confirmation before finalize.
    - Present:
      ```
      ──────────────────────────────────────────────────────────
