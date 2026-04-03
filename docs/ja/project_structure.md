@@ -25,8 +25,8 @@ src/docs/commands/    (cli, controller)
 src/docs/data/    (model)
 src/docs/lib/    (model, lib)
 src/docs/lib/lang/    (lib)
-src/flow/    (other)
-src/flow/commands/    (lib, cli)
+src/flow/    (config)
+src/flow/commands/    (lib, controller)
 src/flow/lib/    (lib, controller)
 src/lib/    (lib, config, model)
 ```
@@ -38,7 +38,7 @@ src/lib/    (lib, config, model)
 | ディレクトリ | ファイル数 | 役割 |
 | --- | --- | --- |
 | src/docs | 40 | cli, controller, model, lib |
-| src/flow | 32 | lib, cli, controller, other |
+| src/flow | 32 | lib, controller, config |
 | src/lib | 20 | lib, config, model |
 | src | 7 | controller, cli |
 <!-- {{/data}} -->
