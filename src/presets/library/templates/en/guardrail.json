@@ -21,6 +21,16 @@
           "spec"
         ]
       }
+    },
+    {
+      "id": "no-side-effects-on-import",
+      "title": "No Side Effects on Import",
+      "body": "Importing a module shall not cause side effects (global state mutation, I/O, process manipulation). Consumers must not experience unexpected behavior just by importing.",
+      "meta": {
+        "phase": [
+          "impl"
+        ]
+      }
     }
   ]
 }

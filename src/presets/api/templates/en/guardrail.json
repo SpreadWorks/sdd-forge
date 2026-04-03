@@ -1,0 +1,25 @@
+{
+  "guardrails": [
+    {
+      "id": "version-api-changes",
+      "title": "Version API Changes",
+      "body": "Breaking API changes shall include a versioning strategy (URL path, header, etc.) in the spec.",
+      "meta": {
+        "phase": [
+          "draft",
+          "spec"
+        ]
+      }
+    },
+    {
+      "id": "document-error-responses",
+      "title": "Document Error Responses",
+      "body": "API error responses (status codes, format, messages) shall be included in the spec. Specs covering only success cases are incomplete.",
+      "meta": {
+        "phase": [
+          "spec"
+        ]
+      }
+    }
+  ]
+}

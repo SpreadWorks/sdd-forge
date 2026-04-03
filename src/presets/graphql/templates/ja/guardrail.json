@@ -1,0 +1,36 @@
+{
+  "guardrails": [
+    {
+      "id": "limit-query-depth-and-complexity",
+      "title": "クエリ深度・複雑度の制限",
+      "body": "クエリの深度・複雑度に上限を設けること。無制限のネストは DoS の原因になる。",
+      "meta": {
+        "phase": [
+          "spec",
+          "impl"
+        ]
+      }
+    },
+    {
+      "id": "no-exposing-internal-errors",
+      "title": "内部エラー詳細の露出禁止",
+      "body": "GraphQL エラーレスポンスに内部エラーの詳細（スタックトレース、DB エラー等）を含めないこと。攻撃者への情報漏洩を防ぐ。",
+      "meta": {
+        "phase": [
+          "impl"
+        ]
+      }
+    },
+    {
+      "id": "authorize-at-field-and-relation-level",
+      "title": "フィールド・リレーション単位の認可",
+      "body": "認可チェックはルートリゾルバだけでなく、フィールド・リレーション単位で行うこと。リレーション経由で未認可のデータにアクセスできる状態を禁止。",
+      "meta": {
+        "phase": [
+          "spec",
+          "impl"
+        ]
+      }
+    }
+  ]
+}

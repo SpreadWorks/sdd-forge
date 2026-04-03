@@ -21,17 +21,6 @@
           "impl"
         ]
       }
-    },
-    {
-      "id": "destructive-operations-require-confirmation",
-      "title": "破壊的操作の確認必須",
-      "body": "データ削除・上書き等の破壊的操作は、`--force` フラグまたはユーザーへの確認を要求すること。",
-      "meta": {
-        "phase": [
-          "spec",
-          "impl"
-        ]
-      }
     }
   ]
 }

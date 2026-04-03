@@ -21,17 +21,6 @@
           "impl"
         ]
       }
-    },
-    {
-      "id": "destructive-operations-require-confirmation",
-      "title": "Destructive Operations Require Confirmation",
-      "body": "Destructive operations (data deletion, overwriting) shall require a `--force` flag or interactive user confirmation.",
-      "meta": {
-        "phase": [
-          "spec",
-          "impl"
-        ]
-      }
     }
   ]
 }

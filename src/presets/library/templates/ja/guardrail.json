@@ -21,6 +21,16 @@
           "spec"
         ]
       }
+    },
+    {
+      "id": "no-side-effects-on-import",
+      "title": "import 時の副作用禁止",
+      "body": "モジュールの import/require 時に副作用（グローバル状態の変更、I/O、プロセス操作等）を起こさないこと。利用者が import しただけで予期しない動作が発生するのを防ぐ。",
+      "meta": {
+        "phase": [
+          "impl"
+        ]
+      }
     }
   ]
 }

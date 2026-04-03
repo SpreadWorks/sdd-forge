@@ -12,17 +12,6 @@
       }
     },
     {
-      "id": "migration-required-for-schema-changes",
-      "title": "Migration Required for Schema Changes",
-      "body": "Changes involving database schema modifications shall include a migration plan in the spec.",
-      "meta": {
-        "phase": [
-          "draft",
-          "spec"
-        ]
-      }
-    },
-    {
       "id": "input-sanitization-required",
       "title": "Input Sanitization Required",
       "body": "Changes handling user input shall specify countermeasures against SQL injection, XSS, path traversal, and similar attacks in the spec.",
@@ -45,9 +34,52 @@
       }
     },
     {
-      "id": "no-sensitive-data-in-logs",
-      "title": "No Sensitive Data in Logs",
-      "body": "Logs shall not contain passwords, tokens, or personally identifiable information. Sensitive data shall be masked or excluded.",
+      "id": "csrf-protection-required",
+      "title": "CSRF Protection Required",
+      "body": "Requests that cause state changes shall have CSRF protection. Do not disable the framework's built-in CSRF protection.",
+      "meta": {
+        "phase": [
+          "spec",
+          "impl"
+        ]
+      }
+    },
+    {
+      "id": "no-sensitive-files-in-public-dir",
+      "title": "No Sensitive Files in Public Directory",
+      "body": "Do not place configuration files, .env, backups, .git, or other sensitive files in the public directory (webroot).",
+      "meta": {
+        "phase": [
+          "impl"
+        ]
+      }
+    },
+    {
+      "id": "server-side-authorization",
+      "title": "Server-Side Authorization",
+      "body": "Authorization checks shall be performed on the server side. Access control solely through hiding UI elements is prohibited.",
+      "meta": {
+        "phase": [
+          "spec",
+          "impl"
+        ]
+      }
+    },
+    {
+      "id": "secure-session-handling",
+      "title": "Secure Session Handling",
+      "body": "Regenerate session IDs after login. Cookies shall have HttpOnly, Secure, and SameSite attributes.",
+      "meta": {
+        "phase": [
+          "spec",
+          "impl"
+        ]
+      }
+    },
+    {
+      "id": "use-standard-password-hashing",
+      "title": "Use Standard Password Hashing",
+      "body": "Do not store passwords in plaintext. Custom hash implementations are prohibited. Use the standard hashing functions provided by the language or framework.",
       "meta": {
         "phase": [
           "impl"

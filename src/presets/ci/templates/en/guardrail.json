@@ -1,0 +1,25 @@
+{
+  "guardrails": [
+    {
+      "id": "no-secrets-in-pipeline-config",
+      "title": "No Secrets in Pipeline Config",
+      "body": "CI configuration files shall not contain secrets directly. Use the CI platform's secret management or environment variable features.",
+      "meta": {
+        "phase": [
+          "spec",
+          "impl"
+        ]
+      }
+    },
+    {
+      "id": "pin-dependency-versions-in-ci",
+      "title": "Pin Dependency Versions in CI",
+      "body": "Actions, images, and tools used in CI shall have pinned versions. Using `latest` or major-version-only tags is prohibited.",
+      "meta": {
+        "phase": [
+          "impl"
+        ]
+      }
+    }
+  ]
+}

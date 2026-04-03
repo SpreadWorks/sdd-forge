@@ -1,0 +1,15 @@
+{
+  "guardrails": [
+    {
+      "id": "explicit-module-boundaries",
+      "title": "Explicit Module Boundaries",
+      "body": "Dependency directions and public interfaces between modules shall be stated in the spec. Implicit dependencies are prohibited.",
+      "meta": {
+        "phase": [
+          "draft",
+          "spec"
+        ]
+      }
+    }
+  ]
+}

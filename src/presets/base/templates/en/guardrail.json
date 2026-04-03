@@ -77,6 +77,69 @@
           "spec"
         ]
       }
+    },
+    {
+      "id": "bounded-resource-usage",
+      "title": "Bounded Resource Usage",
+      "body": "Recursive processing, retries, and bulk data loading shall have explicit upper bounds (depth, count, size). Designs that allow unbounded processing are prohibited.",
+      "meta": {
+        "phase": [
+          "spec",
+          "impl"
+        ]
+      }
+    },
+    {
+      "id": "no-sensitive-data-in-logs",
+      "title": "No Sensitive Data in Logs",
+      "body": "Logs shall not contain passwords, tokens, or personally identifiable information. Sensitive data shall be masked or excluded.",
+      "meta": {
+        "phase": [
+          "impl"
+        ]
+      }
+    },
+    {
+      "id": "no-disabling-existing-tests",
+      "title": "No Disabling Existing Tests",
+      "body": "Skipping, commenting out, or deleting existing tests to make them pass is prohibited. When tests fail, fix the product code.",
+      "meta": {
+        "phase": [
+          "test",
+          "impl"
+        ]
+      }
+    },
+    {
+      "id": "changes-require-test-coverage",
+      "title": "Changes Require Test Coverage",
+      "body": "New features and bug fixes shall include corresponding tests. At minimum, tests for the primary success path (happy path) are required. Changes without tests shall state the reason in the spec.",
+      "meta": {
+        "phase": [
+          "spec",
+          "test"
+        ]
+      }
+    },
+    {
+      "id": "test-covers-spec-requirements",
+      "title": "Test Covers Spec Requirements",
+      "body": "Each requirement stated in the spec shall have a corresponding test. A state where the mapping between requirements and tests cannot be confirmed is insufficient.",
+      "meta": {
+        "phase": [
+          "test"
+        ]
+      }
+    },
+    {
+      "id": "spec-includes-test-strategy",
+      "title": "Spec Includes Test Strategy",
+      "body": "The spec shall include a test strategy (what to test and how). Specs without a test strategy shall not pass the gate.",
+      "meta": {
+        "phase": [
+          "spec"
+        ]
+      }
     }
   ]
 }

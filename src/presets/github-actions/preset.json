@@ -1,0 +1,5 @@
+{
+  "parent": "ci",
+  "label": "GitHub Actions",
+  "aliases": []
+}

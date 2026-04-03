@@ -1,0 +1,58 @@
+{
+  "guardrails": [
+    {
+      "id": "migration-required-for-schema-changes",
+      "title": "スキーマ変更時のマイグレーション必須",
+      "body": "DB スキーマ変更を伴う場合、マイグレーション手順を spec に含めること。",
+      "meta": {
+        "phase": [
+          "draft",
+          "spec"
+        ]
+      }
+    },
+    {
+      "id": "no-raw-sql-without-parameterization",
+      "title": "パラメータなし生 SQL の禁止",
+      "body": "SQL を直接記述する場合はパラメータバインディングを使うこと。文字列結合による SQL 構築は禁止。",
+      "meta": {
+        "phase": [
+          "spec",
+          "impl"
+        ]
+      }
+    },
+    {
+      "id": "destructive-ddl-requires-safeguard",
+      "title": "破壊的 DDL には安全策が必要",
+      "body": "DROP / TRUNCATE 等の破壊的 DDL はバックアップ確認・段階的実行等の安全策を仕様に含めること。",
+      "meta": {
+        "phase": [
+          "spec",
+          "impl"
+        ]
+      }
+    },
+    {
+      "id": "verify-connection-target",
+      "title": "接続先環境の確認",
+      "body": "DB 接続先が意図した環境（本番/ステージング/開発）であることを実行前に確認する仕組みを設けること。",
+      "meta": {
+        "phase": [
+          "impl"
+        ]
+      }
+    },
+    {
+      "id": "specify-target-db-version",
+      "title": "対象 DB バージョンの明記",
+      "body": "対象のデータベースバージョンを spec に明記すること。バージョン間で動作が異なる機能を使う場合は互換性を確認する。",
+      "meta": {
+        "phase": [
+          "draft",
+          "spec"
+        ]
+      }
+    }
+  ]
+}

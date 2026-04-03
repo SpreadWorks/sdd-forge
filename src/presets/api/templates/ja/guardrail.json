@@ -1,0 +1,25 @@
+{
+  "guardrails": [
+    {
+      "id": "version-api-changes",
+      "title": "API 変更のバージョニング",
+      "body": "API の破壊的変更にはバージョニング戦略（URL パス、ヘッダー等）を spec に含めること。",
+      "meta": {
+        "phase": [
+          "draft",
+          "spec"
+        ]
+      }
+    },
+    {
+      "id": "document-error-responses",
+      "title": "エラーレスポンスの仕様記載",
+      "body": "API のエラーレスポンス（ステータスコード、形式、メッセージ）を仕様に含めること。正常系のみの仕様は不完全。",
+      "meta": {
+        "phase": [
+          "spec"
+        ]
+      }
+    }
+  ]
+}

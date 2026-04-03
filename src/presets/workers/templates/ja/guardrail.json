@@ -1,0 +1,15 @@
+{
+  "guardrails": [
+    {
+      "id": "respect-cpu-time-limits",
+      "title": "CPU 時間制限の遵守",
+      "body": "Workers の CPU 時間制限（無料10ms / 有料30s）を考慮した設計にすること。長時間の同期処理は禁止。",
+      "meta": {
+        "phase": [
+          "spec",
+          "impl"
+        ]
+      }
+    }
+  ]
+}

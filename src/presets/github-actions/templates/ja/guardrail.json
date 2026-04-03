@@ -1,0 +1,34 @@
+{
+  "guardrails": [
+    {
+      "id": "restrict-github-token-permissions",
+      "title": "GITHUB_TOKEN の権限制限",
+      "body": "ワークフローは `permissions` を明示的に設定し、GITHUB_TOKEN の権限を必要最小限に絞ること。デフォルトの広い権限のまま使わない。",
+      "meta": {
+        "phase": [
+          "impl"
+        ]
+      }
+    },
+    {
+      "id": "no-untrusted-input-in-run",
+      "title": "run ブロックでの未信頼入力の展開禁止",
+      "body": "`run:` ブロックで `${{ github.event.*.title }}` 等の外部由来の値を直接展開しないこと。スクリプトインジェクション防止のため環境変数経由で渡す。",
+      "meta": {
+        "phase": [
+          "impl"
+        ]
+      }
+    },
+    {
+      "id": "no-pull-request-target-with-checkout",
+      "title": "pull_request_target でのコード checkout 禁止",
+      "body": "`pull_request_target` トリガーで PR のコードを checkout して実行しないこと。フォークからの未信頼コードにシークレットが漏洩する。",
+      "meta": {
+        "phase": [
+          "impl"
+        ]
+      }
+    }
+  ]
+}

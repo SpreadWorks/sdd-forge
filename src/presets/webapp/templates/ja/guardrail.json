@@ -12,17 +12,6 @@
       }
     },
     {
-      "id": "migration-required-for-schema-changes",
-      "title": "スキーマ変更時のマイグレーション必須",
-      "body": "DB スキーマ変更を伴う場合、マイグレーション手順を spec に含めること。",
-      "meta": {
-        "phase": [
-          "draft",
-          "spec"
-        ]
-      }
-    },
-    {
       "id": "input-sanitization-required",
       "title": "入力サニタイズ必須",
       "body": "ユーザー入力を扱う変更は、SQL injection・XSS・パストラバーサル等の対策方針を spec に明記すること。",
@@ -45,9 +34,52 @@
       }
     },
     {
-      "id": "no-sensitive-data-in-logs",
-      "title": "ログへの機密情報出力禁止",
-      "body": "ログにパスワード・トークン・個人情報を出力してはならない。機密データはマスキングまたは除外すること。",
+      "id": "csrf-protection-required",
+      "title": "CSRF 対策必須",
+      "body": "状態変更を伴うリクエストには CSRF 対策を施すこと。フレームワークの CSRF 保護機能を無効化しない。",
+      "meta": {
+        "phase": [
+          "spec",
+          "impl"
+        ]
+      }
+    },
+    {
+      "id": "no-sensitive-files-in-public-dir",
+      "title": "公開ディレクトリへの機密ファイル配置禁止",
+      "body": "公開ディレクトリ（webroot）に設定ファイル・.env・バックアップ・.git 等の機密ファイルを配置しないこと。",
+      "meta": {
+        "phase": [
+          "impl"
+        ]
+      }
+    },
+    {
+      "id": "server-side-authorization",
+      "title": "サーバー側での認可チェック必須",
+      "body": "認可チェックは必ずサーバー側で行うこと。画面要素の非表示のみによるアクセス制御を禁止。",
+      "meta": {
+        "phase": [
+          "spec",
+          "impl"
+        ]
+      }
+    },
+    {
+      "id": "secure-session-handling",
+      "title": "セッション管理の安全性",
+      "body": "ログイン後にセッション ID を再発行すること。Cookie には HttpOnly・Secure・SameSite 属性を付与する。",
+      "meta": {
+        "phase": [
+          "spec",
+          "impl"
+        ]
+      }
+    },
+    {
+      "id": "use-standard-password-hashing",
+      "title": "標準パスワードハッシュの使用",
+      "body": "パスワードを平文で保存しないこと。独自ハッシュ実装を禁止し、言語やフレームワークが提供する標準的なハッシュ関数を使用する。",
       "meta": {
         "phase": [
           "impl"

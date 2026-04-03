@@ -77,6 +77,69 @@
           "spec"
         ]
       }
+    },
+    {
+      "id": "bounded-resource-usage",
+      "title": "リソース使用量の上限設定",
+      "body": "再帰的処理・リトライ・大量データの読み込みには上限（深度、回数、サイズ）を設けること。無制限に処理を続ける設計は禁止。",
+      "meta": {
+        "phase": [
+          "spec",
+          "impl"
+        ]
+      }
+    },
+    {
+      "id": "no-sensitive-data-in-logs",
+      "title": "ログへの機密情報出力禁止",
+      "body": "ログにパスワード・トークン・個人情報を出力してはならない。機密データはマスキングまたは除外すること。",
+      "meta": {
+        "phase": [
+          "impl"
+        ]
+      }
+    },
+    {
+      "id": "no-disabling-existing-tests",
+      "title": "既存テストの無効化禁止",
+      "body": "既存テストを skip・コメントアウト・削除して通す行為を禁止。テスト失敗時はプロダクトコードを修正すること。",
+      "meta": {
+        "phase": [
+          "test",
+          "impl"
+        ]
+      }
+    },
+    {
+      "id": "changes-require-test-coverage",
+      "title": "変更にはテストが必要",
+      "body": "新機能やバグ修正には対応するテストを含めること。最低限、主要な正常系（ハッピーパス）のテストは必須。テストなしの変更は仕様にその理由を明記する。",
+      "meta": {
+        "phase": [
+          "spec",
+          "test"
+        ]
+      }
+    },
+    {
+      "id": "test-covers-spec-requirements",
+      "title": "テストが仕様の要件をカバーしていること",
+      "body": "spec に記載された各要件に対応するテストが存在すること。要件とテストの対応が確認できない状態は不十分。",
+      "meta": {
+        "phase": [
+          "test"
+        ]
+      }
+    },
+    {
+      "id": "spec-includes-test-strategy",
+      "title": "仕様にテスト方針を含めること",
+      "body": "仕様にテスト方針（何をどうテストするか）を含めること。テスト方針のない仕様は gate を通過できない。",
+      "meta": {
+        "phase": [
+          "spec"
+        ]
+      }
     }
   ]
 }

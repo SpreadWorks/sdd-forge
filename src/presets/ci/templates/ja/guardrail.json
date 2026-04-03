@@ -1,0 +1,25 @@
+{
+  "guardrails": [
+    {
+      "id": "no-secrets-in-pipeline-config",
+      "title": "CI 設定ファイルへのシークレット記述禁止",
+      "body": "CI 設定ファイルにシークレットを直接記述しないこと。CI プラットフォームのシークレット管理機能や環境変数機能を使う。",
+      "meta": {
+        "phase": [
+          "spec",
+          "impl"
+        ]
+      }
+    },
+    {
+      "id": "pin-dependency-versions-in-ci",
+      "title": "CI 依存のバージョン固定",
+      "body": "CI で使用するアクション・イメージ・ツールはバージョンを固定すること。latest やメジャーバージョンタグのみの指定は禁止。",
+      "meta": {
+        "phase": [
+          "impl"
+        ]
+      }
+    }
+  ]
+}
