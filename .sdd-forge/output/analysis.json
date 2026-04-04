@@ -1,5 +1,5 @@
 {
-  "analyzedAt": "2026-04-04T14:30:00.330Z",
+  "analyzedAt": "2026-04-04T14:45:09.797Z",
   "package": {
     "entries": [
       {
@@ -3003,11 +3003,12 @@
       },
       {
         "file": "src/flow/lib/run-review.js",
-        "hash": "8a4f0442c922450b9cb9fc0c95dcb028",
-        "lines": 160,
-        "mtime": "2026-04-04T13:51:27.785Z",
+        "hash": "b2e422a97d1594f1b7d4c660a4a03157",
+        "lines": 197,
+        "mtime": "2026-04-04T14:45:09.605Z",
         "className": "run-review",
         "methods": [
+          "runCmdWithRetry",
           "RunReviewCommand",
           "parseTestReviewOutput",
           "parseSpecReviewOutput"
@@ -3020,6 +3021,7 @@
           "path"
         ],
         "exports": [
+          "runCmdWithRetry",
           "RunReviewCommand",
           "default",
           "parseTestReviewOutput",
@@ -3028,23 +3030,25 @@
         "extends": "FlowCommand",
         "usedBy": null,
         "id": "d4e97204",
-        "summary": "Runs the review sub-step of the SDD flow, invoking the review.js script and parsing its output to determine pass/fail.",
-        "detail": "Implements RunReviewCommand extending FlowCommand, delegating execution to the flow review.js script via runCmd. Provides two output parsers: parseTestReviewOutput for test-phase review and parseSpecReviewOutput for spec-phase review. Both parsers throw on non-zero exit codes with enriched error messages, and return structured result objects on success. Timeout is inherited from DEFAULT_AGENT_TIMEOUT_MS.",
+        "summary": "Implements the review execution logic for SDD flow, including retry handling and output parsing for both test and spec review modes.",
+        "detail": "RunReviewCommand extends FlowCommand and orchestrates subprocess execution of review.js script via runCmd, dispatching to either parseTestReviewOutput or parseSpecReviewOutput based on review type. runCmdWithRetry provides configurable retry logic with delay between attempts, defaulting to 2 retries with 3000ms delay. Output parsers normalize subprocess results (res, stdout, stderr) into structured return objects or throw on failure. The module exports both the command class and the parser/retry utilities for reuse.",
         "chapter": "internal_design",
-        "role": "controller",
+        "role": "lib",
         "enrich": {
-          "processedAt": "2026-04-04T13:52:16.857Z",
+          "processedAt": "2026-04-04T14:45:20.624Z",
           "attempts": 1
         },
         "keywords": [
           "review",
-          "flow review",
-          "test review",
-          "spec review",
-          "pass/fail",
-          "SDD flow",
-          "output parser",
-          "RunReviewCommand"
+          "retry",
+          "subprocess",
+          "RunReviewCommand",
+          "parseTestReviewOutput",
+          "parseSpecReviewOutput",
+          "runCmdWithRetry",
+          "flow",
+          "agent",
+          "timeout"
         ]
       },
       {
@@ -7584,9 +7588,9 @@
     ],
     "summary": {
       "total": 223,
-      "totalMethods": 683
+      "totalMethods": 684
     },
     "dataSourceHash": "7d725e75d5031be445119323e4947c91"
   },
-  "enrichedAt": "2026-04-04T14:30:13.130Z"
+  "enrichedAt": "2026-04-04T14:45:20.624Z"
 }
