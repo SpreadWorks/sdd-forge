@@ -3,22 +3,6 @@ This preset contains guardrail articles inspired by the following sources.
 ---
 
 Affected articles:
-- queue-design-for-heavy-processing
-
-Original source: VoltAgent/awesome-claude-code-subagents
-License: MIT (https://opensource.org/licenses/MIT)
-
----
-
-Affected articles:
-- cache-invalidation-strategy
-
-Original source: iSerter/laravel-claude-agents
-License: MIT (https://opensource.org/licenses/MIT)
-
----
-
-Affected articles:
 - authorization-flow-in-spec
 - queue-design-for-heavy-processing
 - cache-invalidation-strategy
@@ -37,3 +21,19 @@ Affected articles:
 
 Original source: PatrickJS/awesome-cursorrules
 License: CC0-1.0 (https://creativecommons.org/publicdomain/zero/1.0/)
+
+---
+
+Affected articles:
+- cache-invalidation-strategy
+
+Original source: iSerter/laravel-claude-agents
+License: MIT (https://opensource.org/licenses/MIT)
+
+---
+
+Affected articles:
+- queue-design-for-heavy-processing
+
+Original source: VoltAgent/awesome-claude-code-subagents
+License: MIT (https://opensource.org/licenses/MIT)
