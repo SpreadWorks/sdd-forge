@@ -19,14 +19,17 @@ function parseTestReviewOutput(res, stdout, stderr) {
   const reviewPathMatch = stderr.match(/Results saved to (\S+)/);
 
   const verdict = verdictMatch ? verdictMatch[1] : (res.ok ? "PASS" : "FAIL");
-  const gapCount = gapCountMatch ? parseInt(gapCountMatch[1], 10) : 0;
+  const gapCount = gapCountMatch ? parseInt(gapCountMatch[1], 10) : null;
 
   const changed = [];
   if (reviewPathMatch) changed.push(reviewPathMatch[1]);
 
   if (!res.ok) {
+    const detail = gapCount !== null
+      ? `Test review FAIL: ${gapCount} gap(s) remaining`
+      : `Test review failed (subprocess error)`;
     throw new Error(
-      [`Test review FAIL: ${gapCount} gap(s) remaining`, ...(stdout ? [stdout] : [])].join("\n"),
+      [detail, ...(stderr ? [stderr] : []), ...(stdout ? [stdout] : [])].join("\n"),
     );
   }
 
@@ -36,7 +39,7 @@ function parseTestReviewOutput(res, stdout, stderr) {
     artifacts: {
       phase: "test",
       verdict,
-      gapCount,
+      gapCount: gapCount ?? 0,
     },
     next: "implement",
     output: stdout,
@@ -52,14 +55,17 @@ function parseSpecReviewOutput(res, stdout, stderr) {
   const reviewPathMatch = stderr.match(/Results saved to (\S+)/);
 
   const verdict = verdictMatch ? verdictMatch[1] : (res.ok ? "PASS" : "FAIL");
-  const issueCount = issueCountMatch ? parseInt(issueCountMatch[1], 10) : 0;
+  const issueCount = issueCountMatch ? parseInt(issueCountMatch[1], 10) : null;
 
   const changed = [];
   if (reviewPathMatch) changed.push(reviewPathMatch[1]);
 
   if (!res.ok) {
+    const detail = issueCount !== null
+      ? `Spec review FAIL: ${issueCount} issue(s) remaining`
+      : `Spec review failed (subprocess error)`;
     throw new Error(
-      [`Spec review FAIL: ${issueCount} issue(s) remaining`, ...(stdout ? [stdout] : [])].join("\n"),
+      [detail, ...(stderr ? [stderr] : []), ...(stdout ? [stdout] : [])].join("\n"),
     );
   }
 
@@ -69,12 +75,14 @@ function parseSpecReviewOutput(res, stdout, stderr) {
     artifacts: {
       phase: "spec",
       verdict,
-      issueCount,
+      issueCount: issueCount ?? 0,
     },
     next: "approval",
     output: stdout,
   };
 }
+
+export { parseTestReviewOutput, parseSpecReviewOutput };
 
 export class RunReviewCommand extends FlowCommand {
   async execute(ctx) {

@@ -1,0 +1,35 @@
+{
+  "data": {
+    "implementation": {
+      "diffStat": "specs/136-fix-review-cmd-bugs/draft.md             |  47 ++++++++\n specs/136-fix-review-cmd-bugs/flow.json            | 125 +++++++++++++++++++++\n specs/136-fix-review-cmd-bugs/qa.md                |   9 ++\n specs/136-fix-review-cmd-bugs/spec.md              |  67 +++++++++++\n specs/136-fix-review-cmd-bugs/tests/README.md      |  24 ++++\n .../tests/review-bugs.test.js                      |  94 ++++++++++++++++\n src/flow/commands/review.js                        |  16 +++\n src/flow/lib/run-review.js                         |  20 +++-\n 8 files changed, 396 insertions(+), 6 deletions(-)",
+      "commits": [
+        "feat: feature/136-fix-review-cmd-bugs",
+        "fix: review command bugs — spec output validation, error messages, prompt guidance"
+      ]
+    },
+    "retro": {
+      "total": 4,
+      "done": 4,
+      "partial": 0,
+      "not_done": 0,
+      "rate": 1,
+      "notes": "4件の要件すべてが正確に実装されている。unplannedの変更はテスト用のexport追加とSDDフロー成果物であり、既存動作への影響はない。実装品質は高く、エッジケース（空文字列、パース不能時のnull処理、成功パスでの0フォールバック）も適切に処理されている。"
+    },
+    "issueLog": {
+      "count": 0,
+      "entries": []
+    },
+    "metrics": {
+      "docsRead": 0,
+      "srcRead": 2,
+      "question": 0,
+      "issueLog": 0
+    },
+    "tests": null,
+    "sync": {
+      "status": "skipped",
+      "reason": "sync was skipped"
+    }
+  },
+  "text": "  Report\n\n  Implementation\n  ────────────────────────────────────────────────\n    feat: feature/136-fix-review-cmd-bugs\n    fix: review command bugs — spec output validation, error messages, prompt guidance\n    8 files changed, 396 insertions(+), 6 deletions(-)\n\n  Retro\n  ────────────────────────────────────────────────\n    ████████ 100%  (4 done / 0 partial / 0 miss)\n\n  Metrics\n  ────────────────────────────────────────────────\n    docs 0  src 2  Q&A 0  issues 0\n\n  Documents\n  ────────────────────────────────────────────────\n    skipped: sync was skipped"
+}

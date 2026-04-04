@@ -380,6 +380,7 @@ function buildTestFixPrompt(gaps, testFiles) {
     "```",
     "",
     "Only modify files that need changes. Do not add unrelated tests.",
+    "Note: constant definitions may be wrapped in Object.freeze(), Object.seal(), or similar. When writing regex patterns to match definitions, account for these wrappers (e.g. `=\\s*(?:Object\\.freeze\\()?\\[` instead of `=\\s*\\[`).",
     "",
     "## Gaps to fix",
     gaps,
@@ -732,6 +733,10 @@ async function runSpecReview(root, flow, config, dryRun) {
 
       // Extract spec content (strip markdown fences if present)
       const cleaned = fixResult.replace(/^```(?:markdown)?\s*\n?/i, "").replace(/\n?```\s*$/i, "").trim();
+      if (!isValidSpecOutput(cleaned)) {
+        console.error("  [spec-review] WARNING: AI output is not valid spec content. Keeping original spec.md.");
+        return;
+      }
       fs.writeFileSync(specPath, cleaned + "\n");
       console.error("  [spec-review] spec.md updated.");
     },
@@ -893,11 +898,22 @@ async function main() {
   console.log("Review the proposals above and in review.md.");
 }
 
+/**
+ * Validate that AI output looks like spec content, not garbage text.
+ * @param {string} text
+ * @returns {boolean}
+ */
+function isValidSpecOutput(text) {
+  if (!text || !text.trim()) return false;
+  return /^#\s+Feature Specification/m.test(text) || /^##\s+Goal/m.test(text);
+}
+
 export {
   main, parseProposals, mergeVerdicts, formatReviewMd, resolveReviewTarget,
   MAX_REVIEW_RETRIES, REVIEW_PHASES, extractRequirements, collectTestFiles, parseGaps,
   applyTestFixes, formatTestReviewMd, runReviewLoop,
   extractGoalAndScope, buildSpecReviewPrompt, formatSpecReviewMd,
+  isValidSpecOutput, buildTestFixPrompt,
 };
 
 runIfDirect(import.meta.url, main);

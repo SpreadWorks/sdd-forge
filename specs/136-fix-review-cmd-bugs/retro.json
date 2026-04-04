@@ -1,0 +1,48 @@
+{
+  "spec": "specs/136-fix-review-cmd-bugs/spec.md",
+  "date": "2026-04-04T08:24:35.038Z",
+  "requirements": [
+    {
+      "desc": "spec fix 出力バリデーション + isValidSpecOutput エクスポート",
+      "status": "done",
+      "note": "isValidSpecOutput関数が実装され、# Feature Specification または ## Goal の正規表現チェックを行う。不正出力時は元specを保持しWARNINGログを出力。export文にisValidSpecOutputが追加されている"
+    },
+    {
+      "desc": "parseTestReviewOutput/parseSpecReviewOutput エラーメッセージ改善",
+      "status": "done",
+      "note": "両関数でgapCount/issueCountがパース不能時にnullとし、エラーメッセージを「subprocess error」に変更。stderrとstdoutの内容もエラーに含める。成功時はnullish coalescingで0にフォールバック"
+    },
+    {
+      "desc": "buildTestFixPrompt に Object.freeze ガイダンス追加",
+      "status": "done",
+      "note": "Object.freeze/Object.sealのラッパーを考慮した正規表現パターン例を含むガイダンス行が追加されている"
+    },
+    {
+      "desc": "既存CLIインターフェース不変",
+      "status": "done",
+      "note": "変更はすべて内部ロジック（バリデーション追加、エラーメッセージ改善、プロンプト改善）のみ。コマンド引数・出力形式・終了コードに変更なし"
+    }
+  ],
+  "unplanned": [
+    {
+      "file": "src/flow/commands/review.js",
+      "change": "buildTestFixPromptがexport文に追加された（specではエクスポート追加の要件はisValidSpecOutputのみ）"
+    },
+    {
+      "file": "src/flow/lib/run-review.js",
+      "change": "parseTestReviewOutputとparseSpecReviewOutputのnamed exportが追加された（テストのimportに必要だが、spec要件には明示されていない）"
+    },
+    {
+      "file": "specs/136-fix-review-cmd-bugs/",
+      "change": "spec関連ファイル群（draft.md, flow.json, qa.md, spec.md, tests/）の新規追加。SDDフローの成果物であり実装変更ではない"
+    }
+  ],
+  "summary": {
+    "total": 4,
+    "done": 4,
+    "partial": 0,
+    "not_done": 0,
+    "rate": 1,
+    "notes": "4件の要件すべてが正確に実装されている。unplannedの変更はテスト用のexport追加とSDDフロー成果物であり、既存動作への影響はない。実装品質は高く、エッジケース（空文字列、パース不能時のnull処理、成功パスでの0フォールバック）も適切に処理されている。"
+  }
+}
