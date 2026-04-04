@@ -1,12 +1,22 @@
 {
   "lang": "ja",
-  "type": "node-cli",
+  "type": [
+    "node-cli",
+    "greenfield",
+    "document"
+  ],
   "concurrency": 4,
   "docs": {
-    "languages": ["en", "ja"],
+    "languages": [
+      "ja",
+      "en"
+    ],
     "defaultLanguage": "en",
     "mode": "generate",
-    "exclude": ["experimental/**", "src/presets/**"],
+    "exclude": [
+      "experimental/**",
+      "src/presets/**"
+    ],
     "style": {
       "purpose": "user-guide",
       "tone": "polite",
@@ -14,17 +24,45 @@
     }
   },
   "chapters": [
-    { "chapter": "overview.md", "desc": "sdd-forge の目的・設計思想・主要機能の概要" },
-    { "chapter": "stack_and_ops.md", "desc": "Node.js ランタイム、外部依存なしポリシー、動作要件" },
-    { "chapter": "project_structure.md", "desc": "src/ のディレクトリ構造、3層ディスパッチ、プリセットシステム" },
-    { "chapter": "cli_commands.md", "desc": "docs/spec/flow サブコマンド群、オプション、使用例、終了コード" },
-    { "chapter": "configuration.md", "desc": "config.json スキーマ、agent 設定、プリセット設定、flow 設定" },
-    { "chapter": "internal_design.md", "desc": "テンプレートエンジン、DataSource、enrich パイプライン、言語ハンドラ" },
-    { "chapter": "development_testing.md", "exclude": true }
+    {
+      "chapter": "overview.md",
+      "desc": "sdd-forge の目的・設計思想・主要機能の概要"
+    },
+    {
+      "chapter": "stack_and_ops.md",
+      "desc": "Node.js ランタイム、外部依存なしポリシー、動作要件"
+    },
+    {
+      "chapter": "project_structure.md",
+      "desc": "src/ のディレクトリ構造、3層ディスパッチ、プリセットシステム"
+    },
+    {
+      "chapter": "cli_commands.md",
+      "desc": "docs/spec/flow サブコマンド群、オプション、使用例、終了コード"
+    },
+    {
+      "chapter": "configuration.md",
+      "desc": "config.json スキーマ、agent 設定、プリセット設定、flow 設定"
+    },
+    {
+      "chapter": "internal_design.md",
+      "desc": "テンプレートエンジン、DataSource、enrich パイプライン、言語ハンドラ"
+    },
+    {
+      "chapter": "development_testing.md",
+      "exclude": true
+    }
   ],
   "scan": {
-    "include": ["src/**/*.js", "src/**/*.mjs", "src/**/*.cjs", "package.json"],
-    "exclude": ["experimental/**"]
+    "include": [
+      "src/**/*.js",
+      "src/**/*.mjs",
+      "src/**/*.cjs",
+      "package.json"
+    ],
+    "exclude": [
+      "experimental/**"
+    ]
   },
   "flow": {
     "merge": "squash"
@@ -36,33 +74,94 @@
     "providers": {
       "claude": {
         "command": "claude",
-        "args": ["-p", "{{PROMPT}}"],
+        "args": [
+          "-p",
+          "{{PROMPT}}"
+        ],
         "systemPromptFlag": "--system-prompt",
         "profiles": {
           "default": [],
-          "opus": ["--model", "opus"],
-          "sonnet": ["--model", "sonnet"]
+          "opus": [
+            "--model",
+            "opus"
+          ],
+          "sonnet": [
+            "--model",
+            "sonnet"
+          ]
         }
       },
       "codex": {
         "command": "codex",
-        "args": ["exec", "--full-auto", "-C", ".tmp", "{{PROMPT}}"],
+        "args": [
+          "exec",
+          "--full-auto",
+          "-C",
+          ".tmp",
+          "{{PROMPT}}"
+        ],
         "profiles": {
           "default": []
         }
       }
     },
     "commands": {
-      "docs.enrich":       { "agent": "claude", "profile": "sonnet" },
-      "docs.text":         { "agent": "claude", "profile": "sonnet" },
-      "docs.forge":        { "agent": "claude", "profile": "sonnet" },
-      "docs.readme":       { "agent": "claude", "profile": "sonnet" },
-      "docs.agents":       { "agent": "claude", "profile": "sonnet" },
-      "spec.gate":         { "agent": "claude", "profile": "sonnet" },
-      "experimental.workflow.borad.to-issue": { "agent": "claude", "profile": "sonnet" },
-      "flow.review.draft": { "agent": "codex" },
-      "flow.review.final": { "agent": "claude", "profile": "opus" },
-      "docs.translate":    { "agent": "claude", "profile": "sonnet" }
+      "docs": {
+        "agent": "claude",
+        "profile": "default"
+      },
+      "docs.review": {
+        "agent": "claude",
+        "profile": "default"
+      },
+      "docs.forge": {
+        "agent": "claude",
+        "profile": "sonnet"
+      },
+      "spec": {
+        "agent": "claude",
+        "profile": "default"
+      },
+      "spec.gate": {
+        "agent": "claude",
+        "profile": "sonnet"
+      },
+      "flow": {
+        "agent": "claude",
+        "profile": "default"
+      },
+      "docs.enrich": {
+        "agent": "claude",
+        "profile": "sonnet"
+      },
+      "docs.text": {
+        "agent": "claude",
+        "profile": "sonnet"
+      },
+      "docs.readme": {
+        "agent": "claude",
+        "profile": "sonnet"
+      },
+      "docs.agents": {
+        "agent": "claude",
+        "profile": "sonnet"
+      },
+      "experimental.workflow.borad.to-issue": {
+        "agent": "claude",
+        "profile": "sonnet"
+      },
+      "flow.review.draft": {
+        "agent": "codex"
+      },
+      "flow.review.final": {
+        "agent": "claude",
+        "profile": "opus"
+      },
+      "docs.translate": {
+        "agent": "claude",
+        "profile": "sonnet"
+      }
     }
-  }
+  },
+  "name": "sdd-forge"
 }
