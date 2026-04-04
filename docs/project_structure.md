@@ -26,7 +26,7 @@ src/docs/data/    (model)
 src/docs/lib/    (model, lib)
 src/docs/lib/lang/    (lib)
 src/flow/    (controller)
-src/flow/commands/    (lib, controller)
+src/flow/commands/    (controller, lib)
 src/flow/lib/    (lib, controller)
 src/lib/    (lib, config, model)
 ```
@@ -38,7 +38,7 @@ src/lib/    (lib, config, model)
 | Directory | Files | Role |
 | --- | --- | --- |
 | src/docs | 40 | cli, controller, model, lib |
-| src/flow | 34 | lib, controller |
+| src/flow | 34 | controller, lib |
 | src/lib | 20 | lib, config, model |
 | src | 7 | controller, cli |
 <!-- {{/data}} -->

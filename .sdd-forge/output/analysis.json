@@ -1,5 +1,5 @@
 {
-  "analyzedAt": "2026-04-04T07:37:04.388Z",
+  "analyzedAt": "2026-04-04T08:15:57.307Z",
   "package": {
     "entries": [
       {
@@ -303,9 +303,9 @@
       },
       {
         "file": "src/docs/commands/forge.js",
-        "hash": "293ac76f68db33905a059328ea5f4bb4",
-        "lines": 459,
-        "mtime": "2026-04-01T16:34:36.487Z",
+        "hash": "d0391b8fd7d68573bf34b4531c6ac623",
+        "lines": 445,
+        "mtime": "2026-04-04T08:09:59.594Z",
         "className": "forge",
         "methods": [
           "getTargetFiles",
@@ -320,7 +320,7 @@
         "imports": [
           "fs",
           "path",
-          "child_process",
+          "../../lib/process.js",
           "../../lib/entrypoint.js",
           "./data.js",
           "./text.js",
@@ -342,24 +342,24 @@
         "extends": null,
         "usedBy": null,
         "id": "ef4fa5d9",
-        "summary": "Implements the `sdd-forge forge` command, the AI-driven multi-round document generation loop.",
-        "detail": "Supports three modes: local (per-file parallel AI calls), assist (single prompt for all files), and agent (delegates to a sub-agent). Determines target files via getChapterFiles filtered by spec relevance. Each round calls invokeAgent per file concurrently, then runs the review command; if review passes the loop exits early. After writing docs, optionally runs readme and translate. Exposes estimateRelevantFiles for spec-to-file affinity scoring. Exits with EXIT_ERROR if max rounds are exhausted.",
+        "summary": "The forge command drives AI-powered iterative documentation generation, invoking agents per-file and running review loops until quality gates pass or max runs are exhausted.",
+        "detail": "Parses CLI options (--spec, --prompt, --mode, --max-runs, --concurrency) and resolves target doc files via getChapterFiles. Supports three modes: local, assist, and agent, with agent mode invoking callAgentAsync with configurable timeout and concurrency. Each round builds prompts from spec and analysis context, then calls runPerFile which maps over target files with mapWithConcurrency. After each round, a review command is run and its exit code determines whether to loop or finalize. Post-generation steps include readme rebuild and optional translation.",
         "chapter": "cli_commands",
-        "role": "controller",
+        "role": "cli",
         "enrich": {
-          "processedAt": "2026-04-02T16:07:58.173Z",
+          "processedAt": "2026-04-04T08:17:46.932Z",
           "attempts": 1
         },
         "keywords": [
           "forge",
-          "multi-round generation",
-          "AI agent",
+          "docs generation",
+          "agent",
           "review loop",
-          "local mode",
-          "assist mode",
-          "spec-driven",
           "concurrency",
-          "max-runs"
+          "AI",
+          "documentation",
+          "iterative",
+          "spec"
         ]
       },
       {
@@ -1989,9 +1989,9 @@
       },
       {
         "file": "src/flow/commands/merge.js",
-        "hash": "90a81e6a6f920dfeeecc225e3e3ca19f",
-        "lines": 207,
-        "mtime": "2026-04-02T22:02:22.588Z",
+        "hash": "095032f48dbfe91a0c3f42166877b5a0",
+        "lines": 210,
+        "mtime": "2026-04-04T08:09:59.594Z",
         "className": "merge",
         "methods": [
           "resolveRemote",
@@ -2003,11 +2003,11 @@
           "main"
         ],
         "imports": [
-          "child_process",
           "fs",
+          "../../lib/process.js",
           "path",
           "../../lib/config.js",
-          "../../lib/git-state.js"
+          "../../lib/git-helpers.js"
         ],
         "exports": [
           "main",
@@ -2018,24 +2018,24 @@
         "extends": null,
         "usedBy": null,
         "id": "3a0db928",
-        "summary": "Implements the merge step of the SDD finalize workflow, supporting both squash-merge and GitHub PR strategies.",
-        "detail": "Determines merge strategy based on config (commands.gh=enable) and gh CLI availability; falls back to squash if gh is absent. Parses the spec file to extract PR title and body from structured headings. buildPrBody assembles a markdown PR description from spec sections and flow state. runSquashMerge performs a git merge --squash and commit, detecting conflicts. Exported helpers (parseSpec, buildPrTitle, buildPrBody) are used by finalize orchestration.",
-        "chapter": "cli_commands",
-        "role": "lib",
+        "summary": "The merge command resolves the merge strategy (PR via GitHub CLI or local squash) for the SDD flow finalization step.",
+        "detail": "Reads flow state and config to determine the remote and merge strategy. Checks gh CLI availability via isGhAvailable and falls back to squash merge if not available or if config does not specify PR route. Parses spec content to extract PR title and body sections using extractSection. buildPrBody assembles a structured PR description from spec and flow state. runSquashMerge performs a squash merge with conflict detection, returning a strategy result object.",
+        "chapter": "internal_design",
+        "role": "controller",
         "enrich": {
-          "processedAt": "2026-04-03T03:15:49.316Z",
+          "processedAt": "2026-04-04T08:17:46.932Z",
           "attempts": 1
         },
         "keywords": [
           "merge",
-          "squash",
-          "pull-request",
           "PR",
+          "squash",
+          "GitHub CLI",
           "gh",
-          "git",
-          "finalize",
-          "spec",
-          "strategy"
+          "pull request",
+          "flow finalize",
+          "strategy",
+          "spec"
         ]
       },
       {
@@ -2083,9 +2083,9 @@
       },
       {
         "file": "src/flow/commands/review.js",
-        "hash": "f259a4b98f9b334830e108663d5f9d78",
+        "hash": "79a8259938b65e1a64c295fdf9198964",
         "lines": 904,
-        "mtime": "2026-04-04T07:37:04.194Z",
+        "mtime": "2026-04-04T08:09:59.594Z",
         "className": "review",
         "methods": [
           "resolveReviewTarget",
@@ -2147,25 +2147,24 @@
         "extends": null,
         "usedBy": null,
         "id": "331cf497",
-        "summary": "Flow review command that orchestrates spec review, test review, and code review phases using AI agents with retry loops.",
-        "detail": "Implements three distinct review pipelines: spec review (validates spec quality), test review (gap analysis between spec requirements and test files), and code review (proposal-based diff application). Each pipeline uses a retry loop (up to MAX_REVIEW_RETRIES=3) with AI agent calls for detection and fixing. Results are persisted as markdown files (spec-review.md, test-review.md, review.md) in the spec directory. Helper functions handle prompt building, proposal parsing, verdict merging, and test file collection from both project-level and spec-level test directories.",
+        "summary": "The review command orchestrates multi-phase AI-driven review of specs, tests, and implementation code within the SDD flow.",
+        "detail": "Implements three distinct review pipelines: runSpecReview (checks spec quality with guardrail-style prompts and applies AI fixes), runTestReview (designs test plans, collects existing test files, performs gap analysis, and writes missing tests), and a final code review phase that applies approved proposals to source files. Each pipeline uses runReviewLoop with configurable retries and persists results to markdown files in the spec directory. parseProposals and mergeVerdicts parse structured AI responses, while applyTestFixes writes generated test files to disk.",
         "chapter": "internal_design",
         "role": "controller",
         "enrich": {
-          "processedAt": "2026-04-04T07:37:25.012Z",
+          "processedAt": "2026-04-04T08:17:46.932Z",
           "attempts": 1
         },
         "keywords": [
           "review",
-          "spec-review",
-          "test-review",
-          "code-review",
-          "retry-loop",
+          "spec review",
+          "test review",
+          "code review",
           "AI agent",
-          "proposals",
-          "gap-analysis",
-          "verdicts",
-          "flow"
+          "gap analysis",
+          "guardrail",
+          "SDD flow",
+          "proposals"
         ]
       },
       {
@@ -2234,9 +2233,9 @@
       },
       {
         "file": "src/flow/lib/get-check.js",
-        "hash": "78c1944c1ae61bd141195724e2d265f2",
-        "lines": 86,
-        "mtime": "2026-04-04T06:57:23.425Z",
+        "hash": "ca45dc398ca9e14d7140bf34fe9be5c3",
+        "lines": 85,
+        "mtime": "2026-04-04T08:09:59.595Z",
         "className": "get-check",
         "methods": [
           "checkStepPrereqs",
@@ -2244,8 +2243,8 @@
           "checkGh"
         ],
         "imports": [
-          "child_process",
-          "../../lib/git-state.js",
+          "../../lib/process.js",
+          "../../lib/git-helpers.js",
           "./base-command.js"
         ],
         "exports": [
@@ -2254,23 +2253,23 @@
         "extends": "FlowCommand",
         "usedBy": null,
         "id": "10eecc8b",
-        "summary": "Implements the `flow get check` command, which validates preconditions for flow targets such as impl, finalize, dirty, and gh availability. Returns a structured pass/fail report with per-check details.",
-        "detail": "Defines VALID_TARGETS and PREREQS maps to declare which flow steps must be complete before each target can proceed. `checkStepPrereqs` iterates required step IDs against the current flow state and accumulates pass/fail results. `checkDirty` shells out to git to detect uncommitted changes. `checkGh` tests whether the GitHub CLI is available via the shared `isGhAvailable` utility. The `GetCheckCommand` class routes to the appropriate check function based on the target argument and throws on unknown targets.",
-        "chapter": "cli_commands",
+        "summary": "GetCheckCommand validates prerequisites for specific flow targets (impl, finalize, dirty, gh) by inspecting git state and flow step completion.",
+        "detail": "Extends FlowCommand and dispatches to one of four check functions based on the target argument. checkDirty runs git status and returns pass/fail with dirty file details. checkGh calls isGhAvailable and returns availability status. checkStepPrereqs inspects flow state steps against a PREREQS map to ensure required steps are completed before advancing. Results are returned as structured objects with pass boolean, summary string, and checks array.",
+        "chapter": "internal_design",
         "role": "lib",
         "enrich": {
-          "processedAt": "2026-04-04T06:58:00.015Z",
+          "processedAt": "2026-04-04T08:17:46.932Z",
           "attempts": 1
         },
         "keywords": [
-          "check",
-          "preconditions",
-          "gate",
-          "dirty",
-          "gh",
+          "prerequisite check",
+          "dirty check",
+          "gh check",
           "flow steps",
-          "validation",
-          "prerequisites"
+          "impl",
+          "finalize",
+          "gate",
+          "validation"
         ]
       },
       {
@@ -2386,13 +2385,13 @@
       },
       {
         "file": "src/flow/lib/get-issue.js",
-        "hash": "bc3bf37d97e3f23dffafe3c7eb98f66d",
-        "lines": 44,
-        "mtime": "2026-04-03T01:07:47.870Z",
+        "hash": "47664720dae5590eb013b4264a23012b",
+        "lines": 43,
+        "mtime": "2026-04-04T08:09:59.595Z",
         "className": "get-issue",
         "methods": [],
         "imports": [
-          "child_process",
+          "../../lib/process.js",
           "./base-command.js"
         ],
         "exports": [
@@ -2401,22 +2400,21 @@
         "extends": "FlowCommand",
         "usedBy": null,
         "id": "7aec11d1",
-        "summary": "Implements `flow get issue`, fetching GitHub issue content as JSON via the gh CLI.",
-        "detail": "Validates that the issue number argument is a positive integer. Runs `gh issue view <number> --json` and parses the result. Returns structured issue data including title, body, and labels. Wraps gh errors and surfaces them as thrown Error objects.",
-        "chapter": "cli_commands",
+        "summary": "GetIssueCommand fetches a GitHub issue by number using the gh CLI and returns structured issue data.",
+        "detail": "Extends FlowCommand and validates that a positive integer issue number is provided. Executes gh issue view with JSON output format via runCmd. Parses the JSON response and returns a normalized result object. Throws descriptive errors for missing issue number, gh command failures, or parse errors.",
+        "chapter": "internal_design",
         "role": "lib",
         "enrich": {
-          "processedAt": "2026-04-03T03:15:49.316Z",
+          "processedAt": "2026-04-04T08:17:46.932Z",
           "attempts": 1
         },
         "keywords": [
-          "issue",
-          "GitHub",
-          "gh",
-          "issue-view",
-          "JSON",
-          "flow-issue",
-          "get-issue"
+          "GitHub issue",
+          "gh CLI",
+          "issue fetch",
+          "flow context",
+          "issue number",
+          "JSON"
         ]
       },
       {
@@ -2491,9 +2489,9 @@
       },
       {
         "file": "src/flow/lib/get-resolve-context.js",
-        "hash": "b95d22b768a9ec8ae4409c75f6d80eb5",
+        "hash": "da8c98ca41076ae32f6595ea36ca1cda",
         "lines": 100,
-        "mtime": "2026-04-04T06:57:23.426Z",
+        "mtime": "2026-04-04T08:09:59.595Z",
         "className": "get-resolve-context",
         "methods": [
           "extractSection"
@@ -2501,7 +2499,7 @@
         "imports": [
           "fs",
           "path",
-          "../../lib/git-state.js",
+          "../../lib/git-helpers.js",
           "../../lib/flow-state.js",
           "./base-command.js"
         ],
@@ -2514,23 +2512,23 @@
           "src/docs/commands/readme.js"
         ],
         "id": "c2848d40",
-        "summary": "Implements the `flow get resolve-context` command, which collects runtime context about an active flow including branch state, commit info, and spec content for use by AI agents. Returns a structured context object.",
-        "detail": "Uses `resolveActiveFlow` to locate the current active flow and `derivePhase` to compute the current phase from step statuses. Resolves the effective root between the worktree path and the main repo path. Reads the spec file from disk and extracts named sections via `extractSection`. Aggregates git state (worktree status, branch, ahead count, last commit) and gh availability into a single return value consumed by skills and agent prompts.",
+        "summary": "GetResolveContextCommand aggregates flow context needed for resuming or resolving an active SDD flow, including worktree state, branch, and spec content.",
+        "detail": "Extends FlowCommand and calls resolveActiveFlow to locate the current flow. Resolves the effective root between worktree and main repo paths. Reads spec text and extracts sections using extractSection. Gathers git metadata via getWorktreeStatus, getCurrentBranch, getAheadCount, getLastCommit, and isGhAvailable. Returns a comprehensive context object used by skills to reconstruct flow state after context compaction.",
         "chapter": "internal_design",
         "role": "lib",
         "enrich": {
-          "processedAt": "2026-04-04T06:58:00.015Z",
+          "processedAt": "2026-04-04T08:17:46.932Z",
           "attempts": 1
         },
         "keywords": [
           "resolve context",
           "flow context",
-          "spec",
-          "git state",
           "worktree",
           "branch",
-          "phase",
-          "agent context"
+          "spec",
+          "resume",
+          "active flow",
+          "git metadata"
         ]
       },
       {
@@ -2570,9 +2568,9 @@
       },
       {
         "file": "src/flow/lib/phases.js",
-        "hash": "1f57a95b47e40b4cf6f47b9cfe3462fa",
-        "lines": 9,
-        "mtime": "2026-04-04T07:37:04.194Z",
+        "hash": "c8271f3e1381d5e41fb4777c95b5d34f",
+        "lines": 15,
+        "mtime": "2026-04-04T08:09:59.595Z",
         "className": "phases",
         "methods": [],
         "imports": [],
@@ -2586,32 +2584,30 @@
           "src/flow/registry.js"
         ],
         "id": "5d33316d",
-        "summary": "Defines and exports the frozen VALID_PHASES constant array used across the flow system for phase validation.",
-        "detail": "Single-export module that defines the canonical ordered list of valid flow phases: draft, spec, gate, impl, test, lint. Exported as a frozen array to prevent mutation. Referenced by multiple flow command modules (review.js, get-guardrail.js, set-metric.js, registry.js) for phase validation and error messaging.",
+        "summary": "Defines and exports the VALID_PHASES frozen array, which enumerates all legal phase identifiers in the SDD flow.",
+        "detail": "Exports a single frozen constant array listing phase names such as draft, spec, pre, post, impl, review, and others. Being frozen prevents accidental mutation at runtime. This module serves as the single source of truth for phase identifiers referenced across gate, review, and registry modules.",
         "chapter": "internal_design",
         "role": "lib",
         "enrich": {
-          "processedAt": "2026-04-04T07:37:25.012Z",
+          "processedAt": "2026-04-04T08:17:46.932Z",
           "attempts": 1
         },
         "keywords": [
           "phases",
           "VALID_PHASES",
+          "flow phases",
+          "constants",
           "draft",
           "spec",
-          "gate",
           "impl",
-          "test",
-          "lint",
-          "constants",
-          "flow"
+          "review"
         ]
       },
       {
         "file": "src/flow/lib/run-finalize.js",
-        "hash": "84ebe990559be1a460ff556122966754",
-        "lines": 355,
-        "mtime": "2026-04-03T11:57:21.477Z",
+        "hash": "3392ea1db8e1b36df6d6bef65123f22b",
+        "lines": 333,
+        "mtime": "2026-04-04T08:09:59.595Z",
         "className": "run-finalize",
         "methods": [
           "finalizeOnError",
@@ -2624,11 +2620,11 @@
         "imports": [
           "fs",
           "path",
-          "child_process",
+          "../../lib/process.js",
           "../../lib/cli.js",
           "../../lib/flow-state.js",
           "./set-issue-log.js",
-          "../../lib/git-state.js",
+          "../../lib/git-helpers.js",
           "./base-command.js",
           "../registry.js"
         ],
@@ -2642,33 +2638,31 @@
         "extends": "FlowCommand",
         "usedBy": null,
         "id": "c711309b",
-        "summary": "Implements the finalize step of the SDD flow, orchestrating commit, docs build, merge/PR creation, and worktree cleanup.",
-        "detail": "RunFinalizeCommand extends FlowCommand and supports mode='all' or mode='select' with explicit step selection. STEP_MAP defines named sub-steps (commit, docs, merge, cleanup) each executed via runSubStep with error capture. executeCommitPost handles post-commit logic including diff stat collection. executeCleanupImpl removes the worktree if it exists. finalizeOnError is a factory for per-step error handlers that integrate with flow registry hooks. The command directly imports lib-layer commands to invoke sub-steps without going through the registry dispatcher.",
-        "chapter": "cli_commands",
+        "summary": "RunFinalizeCommand orchestrates the finalization pipeline of an SDD flow, including docs build, commit, merge, and worktree cleanup.",
+        "detail": "Defines STEP_MAP mapping step names to implementation functions: docs build (runs docs.js script), commit (calls commitOrSkip which checks for changes before committing), merge (delegates to merge.js command), report (generates flow report), and cleanup (removes worktree). Supports mode='all' or mode='select' with explicit step list. runSubStep wraps each step with error handling and returns structured status objects. executeCommitPost handles post-commit metadata. finalizeOnError is a higher-order function producing error handlers that run cleanup on failure.",
+        "chapter": "internal_design",
         "role": "controller",
         "enrich": {
-          "processedAt": "2026-04-03T11:57:37.443Z",
+          "processedAt": "2026-04-04T08:17:46.932Z",
           "attempts": 1
         },
         "keywords": [
           "finalize",
-          "flow finalize",
-          "worktree cleanup",
           "commit",
           "merge",
-          "PR",
-          "squash",
-          "STEP_MAP",
-          "RunFinalizeCommand",
-          "issue log",
-          "docs build"
+          "cleanup",
+          "worktree",
+          "docs build",
+          "step map",
+          "flow finalization",
+          "pipeline"
         ]
       },
       {
         "file": "src/flow/lib/run-gate.js",
-        "hash": "b87925d05a6401d824a083d382ad2663",
-        "lines": 467,
-        "mtime": "2026-04-03T06:35:08.190Z",
+        "hash": "a35d77054041fc763c7b79f7fcd94473",
+        "lines": 464,
+        "mtime": "2026-04-04T08:09:59.595Z",
         "className": "run-gate",
         "methods": [
           "RunGateCommand",
@@ -2685,7 +2679,7 @@
         "imports": [
           "fs",
           "path",
-          "child_process",
+          "../../lib/process.js",
           "../../lib/agent.js",
           "../../lib/guardrail.js",
           "./base-command.js"
@@ -2702,32 +2696,31 @@
         "extends": "FlowCommand",
         "usedBy": null,
         "id": "b4aa4dad",
-        "summary": "Implements the RunGateCommand that validates spec/draft/impl artifacts through guardrail checks and AI-assisted review at each SDD flow phase.",
-        "detail": "RunGateCommand extends FlowCommand and dispatches to executeDraft, executeSpec, or executeImpl based on the current phase. Draft validation uses checkDraftText for structural issues; spec validation uses checkSpecText with section-aware skipping and optional guardrail prompts via callAgent. Impl validation diffs the working branch against the base branch and checks alignment with the spec. Pass/fail outcomes return structured objects with a next-step hint via PASS_NEXT/FAIL_NEXT maps, enabling the flow orchestrator to advance or retry the appropriate step.",
+        "summary": "RunGateCommand performs quality gate checks at draft, spec, and impl phases using both static text checks and AI guardrail evaluation.",
+        "detail": "Dispatches to executeDraft, executeSpec, or executeImpl based on the target phase. Static checks (checkSpecText, checkDraftText) scan document text for structural issues using regex patterns. checkGuardrail loads merged guardrails via loadMergedGuardrails, filters by phase, and calls an AI agent with buildGuardrailPrompt, parsing results via parseGuardrailResponse. executeImpl additionally runs git diff against the base branch and uses buildImplCheckPrompt to verify implementation matches spec. Results use gatePass/gateFail helpers that encode next-step routing.",
         "chapter": "internal_design",
-        "role": "controller",
+        "role": "lib",
         "enrich": {
-          "processedAt": "2026-04-03T06:35:26.741Z",
+          "processedAt": "2026-04-04T08:17:46.932Z",
           "attempts": 1
         },
         "keywords": [
           "gate",
           "guardrail",
-          "spec validation",
+          "quality gate",
           "draft check",
+          "spec check",
           "impl check",
+          "AI agent",
           "phase",
-          "RunGateCommand",
-          "flow gate",
-          "AI review",
-          "diff"
+          "validation"
         ]
       },
       {
         "file": "src/flow/lib/run-impl-confirm.js",
-        "hash": "6b7bf2667e4f821559b3c8b2fce67973",
+        "hash": "c4048ef3570dbe7c9726cc09c25b284c",
         "lines": 98,
-        "mtime": "2026-04-03T01:07:47.871Z",
+        "mtime": "2026-04-04T08:09:59.595Z",
         "className": "run-impl-confirm",
         "methods": [
           "RunImplConfirmCommand",
@@ -2747,22 +2740,21 @@
         "extends": "FlowCommand",
         "usedBy": null,
         "id": "e6534160",
-        "summary": "Implements `flow run impl-confirm`, summarizing implementation progress against spec requirements.",
-        "detail": "getChangedFiles runs git diff against baseBranch to list modified files. summarizeRequirements aggregates requirement statuses (done, pending, inProgress) from flow state. Returns a composite object with spec existence, changed files, and requirement summary for display in skill UIs.",
-        "chapter": "cli_commands",
+        "summary": "RunImplConfirmCommand summarizes implementation progress by collecting changed files and parsing requirement statuses from flow state.",
+        "detail": "Extends FlowCommand and reads the current flow state to access requirements and spec path. getChangedFiles runs git diff against the base branch to list modified files. summarizeRequirements counts requirements by status (done, pending, inProgress) from flow state. Returns a structured result with spec existence flag, changed file list, and requirement summary for use by implementation-phase skills.",
+        "chapter": "internal_design",
         "role": "lib",
         "enrich": {
-          "processedAt": "2026-04-03T03:15:49.316Z",
+          "processedAt": "2026-04-04T08:17:46.932Z",
           "attempts": 1
         },
         "keywords": [
-          "impl-confirm",
-          "implementation",
+          "impl confirm",
           "requirements",
-          "changed-files",
-          "git-diff",
-          "progress",
-          "flow-impl"
+          "changed files",
+          "implementation progress",
+          "flow state",
+          "status summary"
         ]
       },
       {
@@ -2806,9 +2798,9 @@
       },
       {
         "file": "src/flow/lib/run-prepare-spec.js",
-        "hash": "b6a1341b0e85c0cd65538cdb9c6dd5e9",
+        "hash": "fa33139b5f23419f1cd3b11b2f755646",
         "lines": 322,
-        "mtime": "2026-04-03T01:07:47.871Z",
+        "mtime": "2026-04-04T08:09:59.595Z",
         "className": "run-prepare-spec",
         "methods": [
           "RunPrepareSpecCommand",
@@ -2831,7 +2823,7 @@
           "../../lib/process.js",
           "../../lib/i18n.js",
           "../../lib/flow-state.js",
-          "../../lib/git-state.js",
+          "../../lib/git-helpers.js",
           "./base-command.js"
         ],
         "exports": [
@@ -2841,38 +2833,37 @@
         "extends": "FlowCommand",
         "usedBy": null,
         "id": "59eeacc6",
-        "summary": "Implements `flow run prepare-spec`, creating the spec directory, branch, worktree, and initial flow.json for a new SDD flow.",
-        "detail": "slugify converts the title to a branch-safe name; nextIndex finds the next available spec index. ensureClean aborts if the worktree is dirty. Creates spec.md and qa.md from templates (local override or built-in fallback) using loadLocalTemplate. Calls git to create and checkout a new branch, then optionally creates a worktree. writeFlowState persists initial flow.json with steps from buildInitialSteps. addActiveFlow and cleanStaleFlows manage the active flow registry.",
-        "chapter": "cli_commands",
+        "summary": "RunPrepareSpecCommand initializes a new SDD flow by creating spec files, a git branch, and optionally a worktree, then persisting flow state.",
+        "detail": "Validates clean worktree state via ensureClean and base branch existence via ensureBaseBranch. Generates a sequential spec directory index with nextIndex. Creates the branch, optionally a linked worktree under .sdd-forge/worktree/, and writes spec.md and qa.md from templates (local overrides in .sdd-forge/templates/ take precedence via loadLocalTemplate). Saves initial flow state via saveFlowState and registers the flow in .active-flow via addActiveFlow. slugify normalizes the title to a valid branch name segment.",
+        "chapter": "internal_design",
         "role": "controller",
         "enrich": {
-          "processedAt": "2026-04-03T03:15:49.316Z",
+          "processedAt": "2026-04-04T08:17:46.932Z",
           "attempts": 1
         },
         "keywords": [
-          "prepare-spec",
-          "spec",
-          "branch",
+          "prepare spec",
+          "flow init",
           "worktree",
-          "flow-init",
-          "slug",
-          "template",
-          "qa.md",
-          "spec.md",
-          "flow-state"
+          "branch",
+          "spec template",
+          "qa template",
+          "flow state",
+          "slugify",
+          "SDD setup"
         ]
       },
       {
         "file": "src/flow/lib/run-report.js",
-        "hash": "bcfa19c20c993af2a746681840072b80",
-        "lines": 70,
-        "mtime": "2026-04-03T01:07:47.871Z",
+        "hash": "b9c3fdfd2a72ed5534111642fa4a46ce",
+        "lines": 57,
+        "mtime": "2026-04-04T08:09:59.595Z",
         "className": "run-report",
         "methods": [
           "RunReportCommand"
         ],
         "imports": [
-          "child_process",
+          "../../lib/git-helpers.js",
           "../commands/report.js",
           "./set-issue-log.js",
           "./base-command.js",
@@ -2885,29 +2876,29 @@
         "extends": "FlowCommand",
         "usedBy": null,
         "id": "43872d6b",
-        "summary": "Implements `flow run report` as a FlowCommand wrapper around report generation and git change tracking.",
-        "detail": "Loads issue-log via loadIssueLog and passes it with git diff output to generateReport. Saves the resulting report.json alongside the spec using saveReport. Returns the list of changed files (report.json path) for downstream commit steps.",
-        "chapter": "cli_commands",
+        "summary": "RunReportCommand generates and persists a flow completion report combining git summary and issue log data.",
+        "detail": "Extends FlowCommand and reads the current flow state to obtain baseBranch. Calls collectGitSummary to get commit messages and diff stats, and loadIssueLog to retrieve recorded issues. Delegates report generation to generateReport and persistence to saveReport from the report command module. Returns changed file paths pointing to report.json in the spec directory.",
+        "chapter": "internal_design",
         "role": "lib",
         "enrich": {
-          "processedAt": "2026-04-03T03:15:49.316Z",
+          "processedAt": "2026-04-04T08:17:46.932Z",
           "attempts": 1
         },
         "keywords": [
           "report",
-          "run-report",
-          "issue-log",
-          "generateReport",
-          "saveReport",
-          "flow-report",
-          "changed-files"
+          "flow report",
+          "git summary",
+          "issue log",
+          "retro",
+          "completion",
+          "metrics"
         ]
       },
       {
         "file": "src/flow/lib/run-resume.js",
-        "hash": "f17879a4b67413773992ff0501b9a36d",
+        "hash": "9bc3f6d2bcea504abdfe58aad85fd07b",
         "lines": 104,
-        "mtime": "2026-04-04T06:57:23.426Z",
+        "mtime": "2026-04-04T08:09:59.595Z",
         "className": "run-resume",
         "methods": [
           "extractSection"
@@ -2915,7 +2906,7 @@
         "imports": [
           "fs",
           "path",
-          "../../lib/git-state.js",
+          "../../lib/git-helpers.js",
           "../../lib/flow-state.js",
           "./base-command.js"
         ],
@@ -2925,30 +2916,30 @@
         "extends": "FlowCommand",
         "usedBy": null,
         "id": "abe5ac21",
-        "summary": "Implements the `flow run resume` command, which reconstructs the full flow context needed to resume an in-progress SDD flow after context compaction or interruption. Mirrors the structure of get-resolve-context.",
-        "detail": "Follows the same pattern as `GetResolveContextCommand`: resolves the active flow, reads the spec file, extracts sections, and gathers git metadata. The `effectiveRoot` logic prefers the worktree path when it exists, falling back to the main repo path. The returned object is consumed by the `flow-resume` skill to regenerate a context summary for the AI. Shares the `extractSection` helper locally for section parsing from spec Markdown.",
+        "summary": "RunResumeCommand builds a comprehensive context summary for resuming an active SDD flow after context compaction.",
+        "detail": "Extends FlowCommand and mirrors GetResolveContextCommand in structure, calling resolveActiveFlow to find the current flow. Resolves effective root between worktree and main repo. Reads spec text and extracts relevant sections with extractSection. Collects git metadata (branch, ahead count, last commit, worktree dirty status, gh availability) and returns a unified context object that skills use to reconstruct the conversation state.",
         "chapter": "internal_design",
         "role": "lib",
         "enrich": {
-          "processedAt": "2026-04-04T06:58:00.015Z",
+          "processedAt": "2026-04-04T08:17:46.932Z",
           "attempts": 1
         },
         "keywords": [
           "resume",
           "flow resume",
-          "context compaction",
-          "spec",
+          "context summary",
           "worktree",
-          "git state",
-          "recovery",
+          "branch",
+          "spec",
+          "context compaction",
           "active flow"
         ]
       },
       {
         "file": "src/flow/lib/run-retro.js",
-        "hash": "0f91d5c2b892320d20fe1feb83125036",
-        "lines": 245,
-        "mtime": "2026-04-03T01:30:19.975Z",
+        "hash": "674374c212bb9751df6f32de208eeff9",
+        "lines": 233,
+        "mtime": "2026-04-04T08:09:59.595Z",
         "className": "run-retro",
         "methods": [
           "RunRetroCommand",
@@ -2961,7 +2952,7 @@
         "imports": [
           "fs",
           "path",
-          "child_process",
+          "../../lib/process.js",
           "../../lib/agent.js",
           "../../lib/json-parse.js",
           "./base-command.js"
@@ -2976,32 +2967,30 @@
         "extends": "FlowCommand",
         "usedBy": null,
         "id": "862e7d08",
-        "summary": "Implements `flow run retro`, using an AI agent to generate a retrospective JSON from spec requirements and implementation diff.",
-        "detail": "extractRequirements parses the Requirements section from spec markdown. getDiff and getDetailedDiff run git diff against baseBranch. buildRetroPrompt assembles a structured AI prompt combining requirements and diff. parseRetroResponse handles JSON extraction with repairJson fallback for malformed AI output. Writes retro.json to the spec directory; supports --force to overwrite. Exports helpers for unit testing.",
-        "chapter": "cli_commands",
+        "summary": "RunRetroCommand generates an AI-powered retrospective analysis comparing spec requirements against the actual implementation diff.",
+        "detail": "Extracts requirements text from the spec file and parses them into structured items via extractRequirements. Obtains git diffs using getDiff and getDetailedDiff against baseBranch. Calls an AI agent with buildRetroPrompt and parses the JSON response via parseRetroResponse and repairJson for resilience. Writes retro.json to the spec directory with per-requirement verdict, coverage notes, and overall assessment. Guards against overwriting existing retro.json unless --force is passed.",
+        "chapter": "internal_design",
         "role": "lib",
         "enrich": {
-          "processedAt": "2026-04-03T03:15:49.316Z",
+          "processedAt": "2026-04-04T08:17:46.932Z",
           "attempts": 1
         },
         "keywords": [
           "retro",
           "retrospective",
-          "AI",
-          "diff",
-          "requirements",
-          "JSON-parse",
-          "repairJson",
-          "flow-retro",
+          "AI agent",
+          "requirements coverage",
+          "diff analysis",
+          "JSON repair",
           "spec",
-          "run-retro"
+          "post-impl"
         ]
       },
       {
         "file": "src/flow/lib/run-review.js",
-        "hash": "b013c2a211a12796856bbd8a28424664",
+        "hash": "07d5ec6ef9bd37c00ada7784a87d34ee",
         "lines": 145,
-        "mtime": "2026-04-03T12:00:36.678Z",
+        "mtime": "2026-04-04T08:09:59.596Z",
         "className": "run-review",
         "methods": [
           "RunReviewCommand",
@@ -3021,38 +3010,34 @@
         "extends": "FlowCommand",
         "usedBy": null,
         "id": "d4e97204",
-        "summary": "Wraps the review.js command script as a FlowCommand, running it as a subprocess and parsing its stdout/stderr into structured result objects.",
-        "detail": "RunReviewCommand extends FlowCommand and invokes src/flow/commands/review.js via runSync, passing phase flags (--test-review, --spec-review, or no flag for final code review). Output parsing functions (parseTestReviewOutput, parseSpecReviewOutput) validate exit codes and extract issues and verdict from the subprocess output. Errors from non-zero exit codes or missing output fields are surfaced as thrown Error instances. This design isolates the review execution environment while keeping result handling in the lib layer.",
+        "summary": "RunReviewCommand is a thin wrapper that invokes the review.js script as a subprocess and parses its structured output.",
+        "detail": "Extends FlowCommand and constructs the script path using PKG_DIR. Executes the review script via runCmd with phase-specific arguments (test-review or spec-review). parseTestReviewOutput and parseSpecReviewOutput parse stdout/stderr from the subprocess, extracting issue counts and verdict from structured output lines. Throws on non-zero exit with stderr context. Returns a normalized result object with issues array, verdict, and raw output.",
         "chapter": "internal_design",
         "role": "lib",
         "enrich": {
-          "processedAt": "2026-04-03T12:01:07.319Z",
+          "processedAt": "2026-04-04T08:17:46.932Z",
           "attempts": 1
         },
         "keywords": [
-          "RunReviewCommand",
+          "review wrapper",
           "subprocess",
-          "review runner",
-          "FlowCommand",
-          "test-review",
-          "spec-review",
+          "test review",
+          "spec review",
           "output parsing",
-          "runSync",
-          "exit code",
-          "flow lib"
+          "flow review",
+          "script invocation"
         ]
       },
       {
         "file": "src/flow/lib/run-sync.js",
-        "hash": "80bb60d55ea27a2ffa07de02dab0bd60",
-        "lines": 104,
-        "mtime": "2026-04-04T05:39:18.219Z",
+        "hash": "407f3ff2758cf3cf1a36e4a5358ca2f3",
+        "lines": 86,
+        "mtime": "2026-04-04T08:09:59.596Z",
         "className": "run-sync",
         "methods": [
           "RunSyncCommand"
         ],
         "imports": [
-          "child_process",
           "../../lib/cli.js",
           "../../lib/process.js",
           "./base-command.js",
@@ -3065,23 +3050,22 @@
         "extends": "FlowCommand",
         "usedBy": null,
         "id": "6cc87b22",
-        "summary": "Implements the `flow run sync` command, which triggers the docs pipeline (scan → build) against the current project to synchronize documentation with source code. Returns a structured result with generated file paths.",
-        "detail": "Delegates to the `runSync` process utility to shell out to `docs.js` with appropriate arguments. Constructs the docs script path via `PKG_DIR` to ensure it references the installed package location regardless of CWD. Throws descriptive errors for known failure modes (e.g., missing config, scan failure). The return value includes metadata about which doc files were updated, consumed by the flow skill to report sync results.",
-        "chapter": "cli_commands",
+        "summary": "RunSyncCommand runs the docs build pipeline and optionally commits the resulting documentation changes.",
+        "detail": "Extends FlowCommand and resolves the docs script path via PKG_DIR. Executes the docs.js build script via runCmd and throws a descriptive error on failure. If commit mode is enabled, stages and commits the generated docs changes, returning diffStat in the result. Returns a structured object indicating changed files and build status, used by the flow sync step in the finalization pipeline.",
+        "chapter": "internal_design",
         "role": "lib",
         "enrich": {
-          "processedAt": "2026-04-04T06:58:00.015Z",
+          "processedAt": "2026-04-04T08:17:46.932Z",
           "attempts": 1
         },
         "keywords": [
           "sync",
-          "docs",
-          "build",
-          "scan",
-          "documentation pipeline",
+          "docs build",
+          "commit",
+          "documentation",
           "flow sync",
-          "process",
-          "PKG_DIR"
+          "pipeline step",
+          "diffStat"
         ]
       },
       {
@@ -3638,9 +3622,9 @@
       },
       {
         "file": "src/lib/cli.js",
-        "hash": "83b3a6cac791b58f5699deda423875fc",
-        "lines": 150,
-        "mtime": "2026-03-13T15:18:01.235Z",
+        "hash": "1cf95d9e1ec1588aa110461301bf1e79",
+        "lines": 144,
+        "mtime": "2026-04-04T08:09:59.596Z",
         "className": "cli",
         "methods": [
           "repoRoot",
@@ -3655,8 +3639,8 @@
         "imports": [
           "fs",
           "path",
-          "child_process",
-          "url"
+          "url",
+          "./process.js"
         ],
         "exports": [
           "repoRoot",
@@ -3681,23 +3665,24 @@
           "src/upgrade.js"
         ],
         "id": "f351ecc4",
-        "summary": "Core CLI utility library providing repo root resolution, source root detection, argument parsing, worktree detection, and package metadata access.",
-        "detail": "PKG_DIR resolves the package root from import.meta.url for locating bundled scripts. repoRoot checks SDD_WORK_ROOT env first, then falls back to git rev-parse. sourceRoot checks SDD_SOURCE_ROOT for source-target separation. parseArgs implements a spec-driven flag parser supporting boolean, string, and multi-value flags. isInsideWorktree detects git worktrees by checking if .git is a file rather than a directory. getMainRepoPath reads the gitdir file to resolve the main repo path from a worktree.",
-        "chapter": "cli_commands",
+        "summary": "Core CLI utility module providing package directory resolution, repo root detection, argument parsing, worktree detection, and version retrieval.",
+        "detail": "PKG_DIR is resolved from import.meta.url to locate the package's src/ directory regardless of installation path. repoRoot checks SDD_WORK_ROOT env var first, then runs git rev-parse, falling back to process.cwd(). parseArgs is a lightweight option parser supporting typed spec definitions with unknown-option rejection. isInsideWorktree detects linked worktrees by checking if .git is a file rather than a directory. getMainRepoPath reads the commondir from the .git file to navigate back to the main repository root.",
+        "chapter": "internal_design",
         "role": "lib",
         "enrich": {
-          "processedAt": "2026-04-02T16:09:42.720Z",
+          "processedAt": "2026-04-04T08:17:46.932Z",
           "attempts": 1
         },
         "keywords": [
-          "repo root",
-          "parseArgs",
-          "worktree detection",
           "PKG_DIR",
+          "repoRoot",
+          "parseArgs",
+          "worktree",
           "CLI utilities",
-          "git root",
+          "version",
           "SDD_WORK_ROOT",
-          "SDD_SOURCE_ROOT"
+          "git root",
+          "argument parser"
         ]
       },
       {
@@ -3894,9 +3879,9 @@
       },
       {
         "file": "src/lib/flow-state.js",
-        "hash": "376b1726b47bc3c8537f60059e49e51f",
-        "lines": 689,
-        "mtime": "2026-04-04T06:57:23.426Z",
+        "hash": "bee04dfe51999fa1b99db2a1201d9cc4",
+        "lines": 665,
+        "mtime": "2026-04-04T08:09:59.596Z",
         "className": "flow-state",
         "methods": [
           "derivePhase",
@@ -3933,7 +3918,7 @@
         "imports": [
           "fs",
           "path",
-          "child_process",
+          "./process.js",
           "./config.js",
           "./cli.js"
         ],
@@ -3969,43 +3954,43 @@
           "src/flow.js"
         ],
         "id": "5bb0bb76",
-        "summary": "Core state management module for SDD flows. Provides all read/write operations for flow.json, active flow tracking, step status updates, metrics, and worktree path resolution.",
-        "detail": "Manages two persistence layers: per-spec `flow.json` files under `specs/<id>/flow.json` and a shared `.active-flow` registry in the `.sdd-forge/` directory. `resolveActiveFlow` implements the multi-strategy lookup: explicit specId argument, current branch name inference, and single-active-flow fallback. `cleanStaleFlows` removes entries whose spec directories or worktrees no longer exist. `mutateFlowState` provides a transactional read-modify-write primitive used by all state-updating exports. `resolveWorktreePaths` computes the expected worktree directory path from spec metadata.",
+        "summary": "Central state management module for SDD flows, handling flow.json persistence, active flow registry, step tracking, and worktree path resolution.",
+        "detail": "Flow state is stored per-spec under specs/<specId>/flow.json, with an .active-flow index file in the sddDir tracking currently active flows. FLOW_STEPS defines the ordered step sequence and PHASE_MAP maps last-completed step IDs to phase names via derivePhase. Provides fine-grained mutators (updateStepStatus, incrementMetric, setRequirements, addNote, etc.) that all delegate to mutateFlowState for atomic JSON read-modify-write. resolveActiveFlow locates the current flow by checking .active-flow, then scanning worktrees. scanAllFlows enumerates all flows across main repo and worktrees.",
         "chapter": "internal_design",
         "role": "model",
         "enrich": {
-          "processedAt": "2026-04-04T06:58:00.015Z",
+          "processedAt": "2026-04-04T08:17:46.932Z",
           "attempts": 1
         },
         "keywords": [
           "flow state",
           "flow.json",
           "active flow",
-          "step status",
+          "FLOW_STEPS",
+          "PHASE_MAP",
           "worktree",
-          "metrics",
-          "spec",
           "state management",
-          "persistence"
+          "step tracking",
+          "spec ID"
         ]
       },
       {
-        "file": "src/lib/git-state.js",
-        "hash": "90be9da0cfc766af5bd37f8ab76a76e3",
-        "lines": 73,
-        "mtime": "2026-04-03T11:57:21.477Z",
-        "className": "git-state",
+        "file": "src/lib/git-helpers.js",
+        "hash": "bf21f716b72bb3ce8d29ec69e5e22ba7",
+        "lines": 71,
+        "mtime": "2026-04-04T08:09:59.596Z",
+        "className": "git-helpers",
         "methods": [
           "getWorktreeStatus",
           "getCurrentBranch",
           "getAheadCount",
           "getLastCommit",
           "isGhAvailable",
-          "commentOnIssue",
-          "tryExec"
+          "collectGitSummary",
+          "commentOnIssue"
         ],
         "imports": [
-          "child_process"
+          "./process.js"
         ],
         "exports": [
           "getWorktreeStatus",
@@ -4013,31 +3998,29 @@
           "getAheadCount",
           "getLastCommit",
           "isGhAvailable",
+          "collectGitSummary",
           "commentOnIssue"
         ],
         "extends": null,
         "usedBy": null,
-        "id": "a7fc927f",
-        "summary": "Provides utility functions for querying local git repository state and interacting with GitHub CLI.",
-        "detail": "All functions use execFileSync via the internal tryExec wrapper that returns null on failure instead of throwing. getWorktreeStatus returns dirty flag and list of modified files by parsing git status output. getCurrentBranch, getAheadCount, and getLastCommit expose common git metadata. isGhAvailable probes gh --version with a 5-second timeout to detect CLI presence. commentOnIssue wraps gh issue comment and returns a structured ok/error result.",
+        "id": "61b28e9c",
+        "summary": "Git utility helpers providing worktree status, branch detection, ahead count, last commit, GitHub CLI availability check, and issue commenting.",
+        "detail": "getWorktreeStatus runs git status --porcelain and returns dirty flag with file list. getCurrentBranch uses git rev-parse --abbrev-ref HEAD. getAheadCount computes commits ahead of baseBranch via git rev-list. collectGitSummary aggregates diffStat and commit messages for report generation. commentOnIssue calls gh issue comment to post flow summaries to GitHub issues. isGhAvailable runs gh --version with a 5-second timeout to check CLI presence.",
         "chapter": "internal_design",
         "role": "lib",
         "enrich": {
-          "processedAt": "2026-04-03T11:57:37.443Z",
+          "processedAt": "2026-04-04T08:17:46.932Z",
           "attempts": 1
         },
         "keywords": [
-          "git state",
-          "git status",
-          "dirty",
+          "git helpers",
+          "worktree status",
           "branch",
           "ahead count",
-          "gh cli",
-          "GitHub CLI",
-          "isGhAvailable",
-          "commentOnIssue",
-          "worktree",
-          "execFileSync"
+          "gh CLI",
+          "issue comment",
+          "git utilities",
+          "dirty check"
         ]
       },
       {
@@ -4241,9 +4224,9 @@
       },
       {
         "file": "src/lib/lint.js",
-        "hash": "7143524d954545d30fb8aa744a87a052",
+        "hash": "8f85f3ef53e06ed57b16f90e3b894747",
         "lines": 125,
-        "mtime": "2026-04-02T15:07:32.623Z",
+        "mtime": "2026-04-04T08:09:59.596Z",
         "className": "lint",
         "methods": [
           "validateLintGuardrails",
@@ -4266,24 +4249,23 @@
         "extends": null,
         "usedBy": null,
         "id": "aa4a324d",
-        "summary": "Executes lint guardrail checks against changed files in the repository and returns structured pass/fail results. Integrates with the guardrail system for phase-aware rule selection.",
-        "detail": "getChangedFiles() uses git diff to enumerate files modified relative to a base branch. runLintChecks() iterates over files, reads their content, and evaluates each guardrail's regex against the file, recording failures with file path, rule ID, and matched line. runLint() orchestrates the full pipeline: filter guardrails by phase, collect changed files, run checks, and return a result object with ok flag, warning list, and failure details. validateLintGuardrails() pre-screens guardrail definitions for missing required fields.",
+        "summary": "Lint module that validates guardrail lint rules against changed files, reporting failures per file and guardrail.",
+        "detail": "validateLintGuardrails checks guardrail definitions for required lint fields and returns warnings for malformed entries. getChangedFiles runs git diff against a base ref to obtain the list of modified file paths. runLintChecks iterates changed files, reads their content, and tests each against matched guardrails using matchScope pattern filtering. runLint orchestrates the full pipeline: filter lint-phase guardrails via filterByPhase, collect changed files, and run checks, returning ok status, warning list, and detailed failures.",
         "chapter": "internal_design",
         "role": "lib",
         "enrich": {
-          "processedAt": "2026-04-02T16:04:59.891Z",
+          "processedAt": "2026-04-04T08:17:46.932Z",
           "attempts": 1
         },
         "keywords": [
           "lint",
           "guardrail",
           "changed files",
-          "git diff",
-          "regex check",
-          "phase",
           "validation",
-          "runLint",
-          "failures"
+          "scope matching",
+          "file content check",
+          "lint rules",
+          "filterByPhase"
         ]
       },
       {
@@ -4386,42 +4368,48 @@
       },
       {
         "file": "src/lib/process.js",
-        "hash": "083f652b508c2bff3f9fd7d8135de50e",
-        "lines": 34,
-        "mtime": "2026-03-31T12:57:20.419Z",
+        "hash": "769d9402c413d9c6a47ee5353401d77a",
+        "lines": 89,
+        "mtime": "2026-04-04T08:09:59.596Z",
         "className": "process",
         "methods": [
-          "runSync"
+          "runCmd",
+          "runCmdAsync"
         ],
         "imports": [
           "child_process"
         ],
         "exports": [
-          "runSync"
+          "runCmd",
+          "runCmdAsync"
         ],
         "extends": null,
         "usedBy": [
+          "src/lib/cli.js",
+          "src/lib/flow-state.js",
+          "src/lib/git-helpers.js",
           "src/lib/lint.js"
         ],
         "id": "6196b26c",
-        "summary": "Thin wrapper around Node.js spawnSync that returns a normalized result object with stdout, stderr, status, and error fields. Used throughout the codebase for synchronous subprocess execution.",
-        "detail": "runSync() sets encoding to utf8 and merges caller-provided options, then returns spawnSync's result without throwing. This design lets callers inspect stderr and exit status explicitly rather than catching exceptions. The module has no state and no side effects beyond spawning a child process.",
+        "summary": "Low-level process execution module providing synchronous and asynchronous command runners built on Node.js child_process.",
+        "detail": "runCmd wraps execFileSync with try/catch, capturing stdout and stderr as strings and returning a result object with ok boolean, status code, stdout, and stderr. Accepts opts for cwd, timeout, and environment. runCmdAsync wraps execFile in a Promise with the same result shape, enabling non-blocking command execution used by the forge command for concurrent agent invocations. Both functions avoid shell interpolation by using execFile/execFileSync rather than exec.",
         "chapter": "internal_design",
         "role": "lib",
         "enrich": {
-          "processedAt": "2026-04-02T16:04:59.891Z",
+          "processedAt": "2026-04-04T08:17:46.932Z",
           "attempts": 1
         },
         "keywords": [
           "process",
-          "spawnSync",
+          "runCmd",
+          "runCmdAsync",
+          "execFile",
+          "child_process",
+          "command execution",
+          "async",
           "subprocess",
-          "shell",
-          "runSync",
           "stdout",
-          "stderr",
-          "child process",
-          "execution"
+          "stderr"
         ]
       },
       {
@@ -7573,9 +7561,9 @@
     ],
     "summary": {
       "total": 223,
-      "totalMethods": 679
+      "totalMethods": 680
     },
     "dataSourceHash": "7d725e75d5031be445119323e4947c91"
   },
-  "enrichedAt": "2026-04-04T07:37:25.012Z"
+  "enrichedAt": "2026-04-04T08:17:46.932Z"
 }
