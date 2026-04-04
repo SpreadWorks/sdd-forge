@@ -1,5 +1,5 @@
 {
-  "analyzedAt": "2026-04-03T12:59:14.462Z",
+  "analyzedAt": "2026-04-04T06:57:23.607Z",
   "package": {
     "entries": [
       {
@@ -1946,9 +1946,9 @@
       },
       {
         "file": "src/flow.js",
-        "hash": "28de06b90269a986ae732edfad4dc4fd",
-        "lines": 206,
-        "mtime": "2026-04-03T01:07:47.870Z",
+        "hash": "deba01043970475bba1a7eac002a1302",
+        "lines": 216,
+        "mtime": "2026-04-04T06:57:23.425Z",
         "className": "flow",
         "methods": [
           "resolveCtx",
@@ -1968,23 +1968,23 @@
         "extends": null,
         "usedBy": null,
         "id": "1ab08f2b",
-        "summary": "Main CLI entry point for the `sdd-forge flow` command. Parses arguments, resolves context, and dispatches to registered flow commands.",
-        "detail": "Imports FLOW_COMMANDS registry and uses a two-level dispatch (group + command). Calls resolveCtx() to build a shared context object containing root, config, flowState, specId, and inWorktree flags. Uses parseEntryArgs and runEntry helpers to handle argument parsing and execution per entry. Exits with EXIT_ERROR on any missing or invalid argument. The prepare-spec path is handled separately before the general group/command dispatch.",
+        "summary": "Main entry point and dispatcher for the `sdd-forge flow` CLI subcommand. Parses arguments, resolves execution context, and routes to the appropriate flow command handler.",
+        "detail": "Imports the FLOW_COMMANDS registry and uses it to dispatch to named command entries. The `resolveCtx()` function builds a shared context object containing root paths, config, flow state, spec ID, and worktree flag. The `parseEntryArgs` helper maps raw CLI args onto each command's declared parameter schema. `runEntry` wraps command execution with envelope handling (ok/fail). Special-cased routes exist for `resume` and `prepare-spec` actions before falling through to the generic dispatch path.",
         "chapter": "cli_commands",
         "role": "cli",
         "enrich": {
-          "processedAt": "2026-04-03T03:15:49.316Z",
+          "processedAt": "2026-04-04T06:58:00.015Z",
           "attempts": 1
         },
         "keywords": [
           "flow",
           "dispatcher",
-          "entry-point",
           "CLI",
-          "subcommand",
-          "dispatch",
+          "entry point",
+          "routing",
+          "context",
           "argv",
-          "flow.js"
+          "subcommand"
         ]
       },
       {
@@ -2208,7 +2208,8 @@
           "src/flow/lib/set-request.js",
           "src/flow/lib/set-step.js",
           "src/flow/lib/set-summary.js",
-          "src/flow/lib/set-test-summary.js"
+          "src/flow/lib/set-test-summary.js",
+          "src/flow/lib/run-resume.js"
         ],
         "id": "83f60bd3",
         "summary": "Abstract base class for all FlowCommand implementations, enforcing a no-CLI contract in the logic layer.",
@@ -2232,9 +2233,9 @@
       },
       {
         "file": "src/flow/lib/get-check.js",
-        "hash": "753d5dea2167ec580393f1a6bbfc6015",
+        "hash": "78c1944c1ae61bd141195724e2d265f2",
         "lines": 86,
-        "mtime": "2026-04-03T11:57:21.477Z",
+        "mtime": "2026-04-04T06:57:23.425Z",
         "className": "get-check",
         "methods": [
           "checkStepPrereqs",
@@ -2252,24 +2253,23 @@
         "extends": "FlowCommand",
         "usedBy": null,
         "id": "10eecc8b",
-        "summary": "Implements the 'get check' flow command that validates prerequisites for specific flow targets such as impl, finalize, dirty, and gh.",
-        "detail": "GetCheckCommand extends FlowCommand and dispatches to one of four check functions based on the target argument. checkDirty runs git status to detect uncommitted changes. checkGh verifies GitHub CLI availability via isGhAvailable. checkStepPrereqs validates step-level prerequisites from a PREREQS map against the current flow state. Results are returned as structured objects with pass, summary, and checks fields.",
+        "summary": "Implements the `flow get check` command, which validates preconditions for flow targets such as impl, finalize, dirty, and gh availability. Returns a structured pass/fail report with per-check details.",
+        "detail": "Defines VALID_TARGETS and PREREQS maps to declare which flow steps must be complete before each target can proceed. `checkStepPrereqs` iterates required step IDs against the current flow state and accumulates pass/fail results. `checkDirty` shells out to git to detect uncommitted changes. `checkGh` tests whether the GitHub CLI is available via the shared `isGhAvailable` utility. The `GetCheckCommand` class routes to the appropriate check function based on the target argument and throws on unknown targets.",
         "chapter": "cli_commands",
-        "role": "controller",
+        "role": "lib",
         "enrich": {
-          "processedAt": "2026-04-03T11:57:37.443Z",
+          "processedAt": "2026-04-04T06:58:00.015Z",
           "attempts": 1
         },
         "keywords": [
-          "flow check",
-          "prereq",
-          "prerequisite",
-          "dirty check",
-          "gh check",
-          "git status",
-          "FlowCommand",
-          "GetCheckCommand",
-          "flow validation"
+          "check",
+          "preconditions",
+          "gate",
+          "dirty",
+          "gh",
+          "flow steps",
+          "validation",
+          "prerequisites"
         ]
       },
       {
@@ -2494,9 +2494,9 @@
       },
       {
         "file": "src/flow/lib/get-resolve-context.js",
-        "hash": "d35623e4e4442c9ae1b099fa43d5ea5f",
-        "lines": 134,
-        "mtime": "2026-04-03T01:07:47.871Z",
+        "hash": "b95d22b768a9ec8ae4409c75f6d80eb5",
+        "lines": 100,
+        "mtime": "2026-04-04T06:57:23.426Z",
         "className": "get-resolve-context",
         "methods": [
           "extractSection"
@@ -2517,24 +2517,23 @@
           "src/docs/commands/readme.js"
         ],
         "id": "c2848d40",
-        "summary": "Implements `flow get resolve-context`, assembling branch, commit, and spec information to support conflict resolution.",
-        "detail": "Resolves the effective worktree path and reads flow.json from either the worktree or main repo. Extracts spec text sections using extractSection. Gathers git state via getWorktreeStatus, getCurrentBranch, getAheadCount, getLastCommit, and isGhAvailable. Returns a composite context object used by skill steps to guide the user through merge conflict resolution.",
-        "chapter": "cli_commands",
+        "summary": "Implements the `flow get resolve-context` command, which collects runtime context about an active flow including branch state, commit info, and spec content for use by AI agents. Returns a structured context object.",
+        "detail": "Uses `resolveActiveFlow` to locate the current active flow and `derivePhase` to compute the current phase from step statuses. Resolves the effective root between the worktree path and the main repo path. Reads the spec file from disk and extracts named sections via `extractSection`. Aggregates git state (worktree status, branch, ahead count, last commit) and gh availability into a single return value consumed by skills and agent prompts.",
+        "chapter": "internal_design",
         "role": "lib",
         "enrich": {
-          "processedAt": "2026-04-03T03:15:49.316Z",
+          "processedAt": "2026-04-04T06:58:00.015Z",
           "attempts": 1
         },
         "keywords": [
-          "resolve",
-          "context",
+          "resolve context",
+          "flow context",
+          "spec",
+          "git state",
           "worktree",
           "branch",
-          "conflict",
-          "git-state",
-          "spec",
-          "flow-resolve",
-          "merge-conflict"
+          "phase",
+          "agent context"
         ]
       },
       {
@@ -2869,6 +2868,47 @@
         ]
       },
       {
+        "file": "src/flow/lib/run-resume.js",
+        "hash": "f17879a4b67413773992ff0501b9a36d",
+        "lines": 104,
+        "mtime": "2026-04-04T06:57:23.426Z",
+        "className": "run-resume",
+        "methods": [
+          "extractSection"
+        ],
+        "imports": [
+          "fs",
+          "path",
+          "../../lib/git-state.js",
+          "../../lib/flow-state.js",
+          "./base-command.js"
+        ],
+        "exports": [
+          "default"
+        ],
+        "extends": "FlowCommand",
+        "usedBy": null,
+        "id": "abe5ac21",
+        "summary": "Implements the `flow run resume` command, which reconstructs the full flow context needed to resume an in-progress SDD flow after context compaction or interruption. Mirrors the structure of get-resolve-context.",
+        "detail": "Follows the same pattern as `GetResolveContextCommand`: resolves the active flow, reads the spec file, extracts sections, and gathers git metadata. The `effectiveRoot` logic prefers the worktree path when it exists, falling back to the main repo path. The returned object is consumed by the `flow-resume` skill to regenerate a context summary for the AI. Shares the `extractSection` helper locally for section parsing from spec Markdown.",
+        "chapter": "internal_design",
+        "role": "lib",
+        "enrich": {
+          "processedAt": "2026-04-04T06:58:00.015Z",
+          "attempts": 1
+        },
+        "keywords": [
+          "resume",
+          "flow resume",
+          "context compaction",
+          "spec",
+          "worktree",
+          "git state",
+          "recovery",
+          "active flow"
+        ]
+      },
+      {
         "file": "src/flow/lib/run-retro.js",
         "hash": "0f91d5c2b892320d20fe1feb83125036",
         "lines": 245,
@@ -2968,9 +3008,9 @@
       },
       {
         "file": "src/flow/lib/run-sync.js",
-        "hash": "a81c5efcd2a9ce80a71686436817ec9e",
+        "hash": "80bb60d55ea27a2ffa07de02dab0bd60",
         "lines": 104,
-        "mtime": "2026-04-03T01:07:47.871Z",
+        "mtime": "2026-04-04T05:39:18.219Z",
         "className": "run-sync",
         "methods": [
           "RunSyncCommand"
@@ -2989,22 +3029,23 @@
         "extends": "FlowCommand",
         "usedBy": null,
         "id": "6cc87b22",
-        "summary": "Implements `flow run sync`, running the docs build pipeline as a subprocess to synchronize documentation with source code.",
-        "detail": "Resolves the docs.js script path from PKG_DIR. Executes via runSync with configurable verbosity. Returns { changed } list or throws on failure. Wraps stderr into user-facing error messages for diagnosis.",
+        "summary": "Implements the `flow run sync` command, which triggers the docs pipeline (scan → build) against the current project to synchronize documentation with source code. Returns a structured result with generated file paths.",
+        "detail": "Delegates to the `runSync` process utility to shell out to `docs.js` with appropriate arguments. Constructs the docs script path via `PKG_DIR` to ensure it references the installed package location regardless of CWD. Throws descriptive errors for known failure modes (e.g., missing config, scan failure). The return value includes metadata about which doc files were updated, consumed by the flow skill to report sync results.",
         "chapter": "cli_commands",
         "role": "lib",
         "enrich": {
-          "processedAt": "2026-04-03T03:15:49.316Z",
+          "processedAt": "2026-04-04T06:58:00.015Z",
           "attempts": 1
         },
         "keywords": [
           "sync",
-          "docs-build",
-          "documentation",
-          "run-sync",
-          "subprocess",
-          "flow-sync",
-          "docs.js"
+          "docs",
+          "build",
+          "scan",
+          "documentation pipeline",
+          "flow sync",
+          "process",
+          "PKG_DIR"
         ]
       },
       {
@@ -3370,9 +3411,9 @@
       },
       {
         "file": "src/flow/registry.js",
-        "hash": "aaf84d33f9b78599942c049cb44c717f",
-        "lines": 413,
-        "mtime": "2026-04-03T12:00:36.678Z",
+        "hash": "2fc3ad24a1d504107b081fad92cf97aa",
+        "lines": 419,
+        "mtime": "2026-04-04T06:57:23.426Z",
         "className": "registry",
         "methods": [
           "deriveActivePhase",
@@ -3392,25 +3433,23 @@
           "src/flow.js"
         ],
         "id": "d64f4095",
-        "summary": "Defines the central registry of all flow subcommands, wiring each command to its args schema, help text, pre/post hooks, and execution logic.",
-        "detail": "Exports FLOW_COMMANDS as a map keyed by command name, where each entry declares args, help, optional pre/post hooks, and a command function. Pre-hooks use stepPre to mark a flow step as in_progress, while post-hooks use stepPost to transition step status based on result. deriveActivePhase reads flow state to determine the current phase, and resolveGateStepId maps a phase name to its gate step identifier. The executeCommitPost helper is called in the post hook of commit-related commands to perform post-commit actions. This registry acts as the single source of truth for the flow dispatcher.",
-        "chapter": "cli_commands",
-        "role": "config",
+        "summary": "Central registry that defines all `sdd-forge flow` commands, their argument schemas, pre/post hooks, and help text. Acts as the single source of truth for command wiring in the flow dispatcher.",
+        "detail": "Exports FLOW_COMMANDS as a structured map keyed by group and command name. Each entry declares a command class, argument definitions, optional pre/post lifecycle hooks, and help text. `stepPre` and `stepPost` factory functions generate hooks that update step statuses in flow.json before and after command execution. `resolveGateStepId` maps a phase name to its gate step ID. `deriveActivePhase` is a convenience wrapper that loads flow state and computes the current phase for use in conditional hook logic.",
+        "chapter": "internal_design",
+        "role": "controller",
         "enrich": {
-          "processedAt": "2026-04-03T12:01:07.319Z",
+          "processedAt": "2026-04-04T06:58:00.015Z",
           "attempts": 1
         },
         "keywords": [
-          "flow registry",
-          "FLOW_COMMANDS",
-          "step hooks",
-          "pre hook",
-          "post hook",
-          "flow dispatcher",
+          "registry",
+          "commands",
+          "hooks",
+          "pre post",
           "step status",
-          "derivePhase",
-          "flow state",
-          "command registry"
+          "dispatch table",
+          "flow commands",
+          "wiring"
         ]
       },
       {
@@ -3815,9 +3854,9 @@
       },
       {
         "file": "src/lib/flow-state.js",
-        "hash": "f1276150774fb2cca008ef659b454a52",
-        "lines": 629,
-        "mtime": "2026-04-03T06:35:08.191Z",
+        "hash": "376b1726b47bc3c8537f60059e49e51f",
+        "lines": 689,
+        "mtime": "2026-04-04T06:57:23.426Z",
         "className": "flow-state",
         "methods": [
           "derivePhase",
@@ -3842,6 +3881,7 @@
           "flowStatePath",
           "resolveWorktreePaths",
           "scanAllFlows",
+          "resolveActiveFlow",
           "activeFlowPath",
           "resolveMainRoot",
           "worktreeExists",
@@ -3880,6 +3920,7 @@
           "flowStatePath",
           "resolveWorktreePaths",
           "scanAllFlows",
+          "resolveActiveFlow",
           "FLOW_STEPS",
           "PHASE_MAP"
         ],
@@ -3888,25 +3929,24 @@
           "src/flow.js"
         ],
         "id": "5bb0bb76",
-        "summary": "Provides all persistence and state-management functions for SDD flow state, including active-flow tracking, step status mutation, and multi-worktree scanning.",
-        "detail": "Flow state is stored as flow.json under specs/<specId>/ and active flows are tracked in .sdd-forge/.active-flow as a JSON array. loadFlowState and saveFlowState handle read/write; mutateFlowState provides an atomic read-modify-write pattern used by updateStepStatus, incrementMetric, setRequirements, and other mutators. resolveWorktreePaths computes worktree directory paths from state, and scanAllFlows traverses both the main repo and any git worktrees to collect all known flow states. cleanStaleFlows removes entries whose spec directories or worktrees no longer exist.",
+        "summary": "Core state management module for SDD flows. Provides all read/write operations for flow.json, active flow tracking, step status updates, metrics, and worktree path resolution.",
+        "detail": "Manages two persistence layers: per-spec `flow.json` files under `specs/<id>/flow.json` and a shared `.active-flow` registry in the `.sdd-forge/` directory. `resolveActiveFlow` implements the multi-strategy lookup: explicit specId argument, current branch name inference, and single-active-flow fallback. `cleanStaleFlows` removes entries whose spec directories or worktrees no longer exist. `mutateFlowState` provides a transactional read-modify-write primitive used by all state-updating exports. `resolveWorktreePaths` computes the expected worktree directory path from spec metadata.",
         "chapter": "internal_design",
         "role": "model",
         "enrich": {
-          "processedAt": "2026-04-03T06:35:26.741Z",
+          "processedAt": "2026-04-04T06:58:00.015Z",
           "attempts": 1
         },
         "keywords": [
           "flow state",
           "flow.json",
           "active flow",
-          "worktree",
           "step status",
-          "mutateFlowState",
-          "scanAllFlows",
-          "persistence",
+          "worktree",
+          "metrics",
           "spec",
-          "metrics"
+          "state management",
+          "persistence"
         ]
       },
       {
@@ -7492,10 +7532,10 @@
       }
     ],
     "summary": {
-      "total": 221,
-      "totalMethods": 677
+      "total": 222,
+      "totalMethods": 679
     },
     "dataSourceHash": "7d725e75d5031be445119323e4947c91"
   },
-  "enrichedAt": "2026-04-03T12:59:22.798Z"
+  "enrichedAt": "2026-04-04T06:58:00.015Z"
 }
