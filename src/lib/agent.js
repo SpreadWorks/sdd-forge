@@ -104,7 +104,7 @@ export function callAgent(agent, prompt, timeoutMs, cwd, options) {
   const result = execFileSync(agent.command, finalArgs, {
     encoding: "utf8",
     maxBuffer: 20 * 1024 * 1024,
-    timeout: timeoutMs || DEFAULT_AGENT_TIMEOUT_MS,
+    timeout: timeoutMs || agent.timeoutMs || DEFAULT_AGENT_TIMEOUT_MS,
     cwd: cwd || process.cwd(),
     env,
     ...(stdinContent != null ? { input: stdinContent } : {}),
@@ -162,7 +162,7 @@ function callAgentAsyncOnce(agent, prompt, timeoutMs, cwd, options) {
   const { systemPrompt, onStdout, onStderr } = options || {};
   const { finalArgs, env, stdinContent } = buildAgentInvocation(agent, prompt, { systemPrompt });
 
-  const timeout = timeoutMs || DEFAULT_AGENT_TIMEOUT_MS;
+  const timeout = timeoutMs || agent.timeoutMs || DEFAULT_AGENT_TIMEOUT_MS;
 
   return new Promise((resolve, reject) => {
     const child = spawn(agent.command, finalArgs, {
@@ -309,6 +309,9 @@ export function resolveAgent(cfg, commandId) {
   const commands = agentSection.commands;
   const providers = agentSection.providers;
   const defaultAgent = agentSection.default;
+  const timeoutMs = agentSection.timeout != null
+    ? Number(agentSection.timeout) * 1000
+    : DEFAULT_AGENT_TIMEOUT_MS;
 
   const cmdSettings = resolveCommandSettings(commands, commandId);
 
@@ -318,8 +321,8 @@ export function resolveAgent(cfg, commandId) {
   const provider = providers?.[agentKey];
   if (!provider) return null;
 
-  // No profiles support in provider → return as-is (backward compat)
-  if (!cmdSettings && !provider.profiles) return provider;
+  // No profiles support in provider → return as-is
+  if (!cmdSettings && !provider.profiles) return { ...provider, timeoutMs };
 
   const profileName = cmdSettings?.profile || "default";
   const mergedArgs = mergeProfileArgs(provider, profileName);
@@ -327,6 +330,7 @@ export function resolveAgent(cfg, commandId) {
   return {
     ...provider,
     args: mergedArgs,
+    timeoutMs,
   };
 }
 

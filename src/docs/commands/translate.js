@@ -15,13 +15,12 @@ import { runIfDirect } from "../../lib/entrypoint.js";
 import { parseArgs } from "../../lib/cli.js";
 import { resolveOutputConfig } from "../../lib/types.js";
 import { resolveConcurrency } from "../../lib/config.js";
-import { callAgentAsync, DEFAULT_AGENT_TIMEOUT_MS } from "../../lib/agent.js";
+import { callAgentAsync } from "../../lib/agent.js";
 import { createLogger } from "../../lib/progress.js";
 import { resolveCommandContext, getChapterFiles, stripResponsePreamble } from "../lib/command-context.js";
 import { mapWithConcurrency } from "../lib/concurrency.js";
 
 const logger = createLogger("translate");
-const DEFAULT_TIMEOUT_MS = DEFAULT_AGENT_TIMEOUT_MS;
 
 /**
  * Translate a Markdown document from one language to another via AI agent.
@@ -72,7 +71,7 @@ async function translateDocument(content, fromLang, toLang, agent, root, documen
 
   const prompt = content;
 
-  const result = await callAgentAsync(agent, prompt, DEFAULT_TIMEOUT_MS, root, {
+  const result = await callAgentAsync(agent, prompt, agent.timeoutMs, root, {
     systemPrompt,
   });
 

@@ -7,6 +7,7 @@
 
 import { PKG_DIR } from "../../lib/cli.js";
 import { runCmd } from "../../lib/process.js";
+import { DEFAULT_AGENT_TIMEOUT_MS } from "../../lib/agent.js";
 import { FlowCommand } from "./base-command.js";
 import path from "path";
 
@@ -101,7 +102,9 @@ export class RunReviewCommand extends FlowCommand {
     if (dryRun) args.push("--dry-run");
     if (skipConfirm) args.push("--skip-confirm");
 
-    const res = runCmd("node", [scriptPath, ...args], { cwd: root, timeout: 300000 });
+    const agentTimeout = ctx.config?.agent?.timeout;
+    const timeoutMs = agentTimeout != null ? Number(agentTimeout) * 1000 : DEFAULT_AGENT_TIMEOUT_MS;
+    const res = runCmd("node", [scriptPath, ...args], { cwd: root, timeout: timeoutMs });
 
     const stdout = (res.stdout || "").trim();
     const stderr = (res.stderr || "").trim();
