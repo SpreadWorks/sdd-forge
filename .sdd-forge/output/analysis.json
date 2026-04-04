@@ -1,5 +1,5 @@
 {
-  "analyzedAt": "2026-04-04T09:10:18.154Z",
+  "analyzedAt": "2026-04-04T09:45:42.216Z",
   "package": {
     "entries": [
       {
@@ -2083,9 +2083,9 @@
       },
       {
         "file": "src/flow/commands/review.js",
-        "hash": "a43990095c61eeba5991f360bd9045f6",
-        "lines": 934,
-        "mtime": "2026-04-04T09:10:17.960Z",
+        "hash": "fc9db527f3f1160ce56c50a7acc6f05c",
+        "lines": 961,
+        "mtime": "2026-04-04T09:45:42.023Z",
         "className": "review",
         "methods": [
           "resolveReviewTarget",
@@ -2113,6 +2113,7 @@
           "formatSpecReviewMd",
           "runSpecReview",
           "main",
+          "stripPreamble",
           "isValidSpecOutput"
         ],
         "imports": [
@@ -2145,31 +2146,34 @@
           "buildSpecReviewPrompt",
           "formatSpecReviewMd",
           "isValidSpecOutput",
+          "stripPreamble",
           "buildTestFixPrompt"
         ],
         "extends": null,
         "usedBy": null,
         "id": "331cf497",
-        "summary": "Main review command script for SDD flow, orchestrating spec review, test review, and code review phases via AI agent calls.",
-        "detail": "Implements three distinct review loops: spec review (validates and fixes the feature specification), test review (analyzes test coverage gaps and generates missing tests), and code review (proposes and applies fixes to implementation). Each loop uses a retry mechanism with MAX_REVIEW_RETRIES and calls an LLM agent for draft proposals, then a final verdict pass. Results are written as markdown files (review.md, spec-review.md, test-review.md) in the spec directory. Helper functions handle prompt construction, proposal parsing, verdict merging, and applying AI-generated file patches.",
+        "summary": "Implements the SDD flow review command, orchestrating spec review, test review, and code review phases using an AI agent loop with retry logic.",
+        "detail": "The file defines three main review pipelines: runSpecReview (validates and fixes the feature spec), runTestReview (generates test design and fills coverage gaps), and a code review loop using draft/final system prompts with proposal parsing and verdict merging. Each pipeline uses a runReviewLoop helper that retries up to MAX_REVIEW_RETRIES times, calling an AI agent and applying fixes incrementally. Results are persisted as Markdown files (spec-review.md, test-review.md, review.md) in the spec directory. The module exports utility functions like stripPreamble and isValidSpecOutput for use by other flow stages.",
         "chapter": "internal_design",
         "role": "controller",
         "enrich": {
-          "processedAt": "2026-04-04T09:10:30.550Z",
+          "processedAt": "2026-04-04T09:45:51.691Z",
           "attempts": 1
         },
         "keywords": [
           "review",
-          "spec-review",
-          "test-review",
-          "code-review",
+          "spec review",
+          "test review",
+          "code review",
           "flow",
-          "agent",
+          "agent loop",
           "retry",
           "proposals",
           "verdicts",
-          "LLM",
-          "gap-analysis"
+          "gap analysis",
+          "test design",
+          "fix",
+          "markdown output"
         ]
       },
       {
@@ -7571,9 +7575,9 @@
     ],
     "summary": {
       "total": 223,
-      "totalMethods": 681
+      "totalMethods": 682
     },
     "dataSourceHash": "7d725e75d5031be445119323e4947c91"
   },
-  "enrichedAt": "2026-04-04T09:10:30.550Z"
+  "enrichedAt": "2026-04-04T09:45:51.691Z"
 }
