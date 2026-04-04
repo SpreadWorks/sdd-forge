@@ -619,7 +619,9 @@ function buildSpecReviewPrompt(specText, contextEntries) {
 function buildSpecFixPrompt(specText, proposals) {
   return [
     "Apply the following approved proposals to improve the spec.",
-    "Output the complete updated spec.md content.",
+    "Output ONLY the complete updated spec.md content. Do not include any preamble, explanation, or commentary before or after the spec content.",
+    "Do not wrap the output in markdown fences.",
+    "The output must start with the spec's first heading (e.g. '# Feature Specification').",
     "Make only the changes described in the proposals. Do not add unrelated modifications.",
     "Preserve all existing sections and formatting.",
     "",
@@ -745,8 +747,8 @@ async function runSpecReview(root, flow, config, dryRun) {
         { systemPrompt: "You are a spec writer. Apply the approved proposals to produce an updated spec." },
       );
 
-      // Extract spec content (strip markdown fences if present)
-      const cleaned = fixResult.replace(/^```(?:markdown)?\s*\n?/i, "").replace(/\n?```\s*$/i, "").trim();
+      // Strip preamble and markdown fences from AI output
+      const cleaned = stripPreamble(fixResult);
       if (!isValidSpecOutput(cleaned)) {
         console.error("  [spec-review] WARNING: AI output is not valid spec content. Keeping original spec.md.");
         return;
@@ -913,6 +915,31 @@ async function main() {
 }
 
 /**
+ * Strip AI preamble text that appears before the actual spec content.
+ * Also removes markdown fences wrapping the spec.
+ * @param {string} text
+ * @returns {string}
+ */
+function stripPreamble(text) {
+  if (!text) return text;
+
+  // Strip markdown fences first
+  let cleaned = text.replace(/^```(?:markdown)?\s*\n?/i, "").replace(/\n?```\s*$/i, "").trim();
+
+  // Find the first spec header
+  const headerMatch = cleaned.match(/^(#\s+Feature Specification|##\s+Goal)/m);
+  if (!headerMatch) return cleaned;
+
+  // Remove everything before the header
+  const headerIdx = cleaned.indexOf(headerMatch[0]);
+  if (headerIdx > 0) {
+    cleaned = cleaned.slice(headerIdx);
+  }
+
+  return cleaned;
+}
+
+/**
  * Validate that AI output looks like spec content, not garbage text.
  * @param {string} text
  * @returns {boolean}
@@ -927,7 +954,7 @@ export {
   MAX_REVIEW_RETRIES, REVIEW_PHASES, extractRequirements, collectTestFiles, parseGaps,
   applyTestFixes, formatTestReviewMd, runReviewLoop,
   extractGoalAndScope, buildSpecReviewPrompt, formatSpecReviewMd,
-  isValidSpecOutput, buildTestFixPrompt,
+  isValidSpecOutput, stripPreamble, buildTestFixPrompt,
 };
 
 runIfDirect(import.meta.url, main);

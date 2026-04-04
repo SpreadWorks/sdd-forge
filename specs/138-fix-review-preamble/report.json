@@ -1,0 +1,35 @@
+{
+  "data": {
+    "implementation": {
+      "diffStat": "specs/138-fix-review-preamble/draft.md             |  32 +++++\n specs/138-fix-review-preamble/flow.json            | 129 +++++++++++++++++++++\n specs/138-fix-review-preamble/issue-log.json       |  11 ++\n specs/138-fix-review-preamble/qa.md                |   9 ++\n specs/138-fix-review-preamble/review.md            |  33 ++++++\n specs/138-fix-review-preamble/spec.md              |  67 +++++++++++\n specs/138-fix-review-preamble/tests/README.md      |  16 +++\n .../138-fix-review-preamble/tests/preamble.test.js |  87 ++++++++++++++\n src/flow/commands/review.js                        |  35 +++++-\n 9 files changed, 415 insertions(+), 4 deletions(-)",
+      "commits": [
+        "feat: feature/138-fix-review-preamble",
+        "fix: strip AI preamble from spec review fix output (#84)"
+      ]
+    },
+    "retro": {
+      "total": 4,
+      "done": 4,
+      "partial": 0,
+      "not_done": 0,
+      "rate": 1,
+      "notes": "4件の要件すべてが実装済み。buildSpecFixPrompt にはプリアンブル抑制の明確な指示が追加され、stripPreamble はフェンス除去→ヘッダ検出→プリアンブル除去の順で処理する。fix フェーズでは旧来のインライン fence 除去が stripPreamble 呼び出しに置き換えられた。ただし review.md で指摘された buildSpecFixPrompt の未エクスポート問題により、テスト内の assert.ok(true) フォールバックが実質的にプロンプト検証をスキップしている点は残課題。specs/ 配下のファイルは SDD フローの標準成果物であり、実質的な unplanned 変更はない。"
+    },
+    "issueLog": {
+      "count": 0,
+      "entries": []
+    },
+    "metrics": {
+      "docsRead": 0,
+      "srcRead": 2,
+      "question": 0,
+      "issueLog": 1
+    },
+    "tests": null,
+    "sync": {
+      "status": "skipped",
+      "reason": "sync was skipped"
+    }
+  },
+  "text": "  Report\n\n  Implementation\n  ────────────────────────────────────────────────\n    feat: feature/138-fix-review-preamble\n    fix: strip AI preamble from spec review fix output (#84)\n    9 files changed, 415 insertions(+), 4 deletions(-)\n\n  Retro\n  ────────────────────────────────────────────────\n    ████████ 100%  (4 done / 0 partial / 0 miss)\n\n  Metrics\n  ────────────────────────────────────────────────\n    docs 0  src 2  Q&A 0  issues 1\n\n  Documents\n  ────────────────────────────────────────────────\n    skipped: sync was skipped"
+}

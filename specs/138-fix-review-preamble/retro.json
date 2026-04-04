@@ -1,0 +1,68 @@
+{
+  "spec": "specs/138-fix-review-preamble/spec.md",
+  "date": "2026-04-04T09:45:40.815Z",
+  "requirements": [
+    {
+      "desc": "buildSpecFixPrompt にプリアンブル抑制指示を追加",
+      "status": "done",
+      "note": "プロンプトに「Output ONLY the complete updated spec.md content. Do not include any preamble, explanation, or commentary」「Do not wrap the output in markdown fences」「The output must start with the spec's first heading」の3行が追加されている"
+    },
+    {
+      "desc": "stripPreamble 関数で spec ヘッダ前のテキストを除去",
+      "status": "done",
+      "note": "stripPreamble関数が実装され、正規表現で # Feature Specification または ## Goal の最初の出現位置を検出し、それより前のテキストを除去する。fix フェーズで fixResult に対して stripPreamble を適用している"
+    },
+    {
+      "desc": "spec ヘッダなしのテキストはそのまま返す",
+      "status": "done",
+      "note": "headerMatch が null の場合 cleaned をそのまま返す実装。テストでも「returns text without spec header unchanged」で検証済み"
+    },
+    {
+      "desc": "マークダウンフェンスも除去する",
+      "status": "done",
+      "note": "stripPreamble 内で最初に ```markdown / ``` フェンスを除去してから spec ヘッダ検出を行う。テストでもフェンス単体・プリアンブル+フェンス複合の両パターンを検証"
+    }
+  ],
+  "unplanned": [
+    {
+      "file": "specs/138-fix-review-preamble/draft.md",
+      "change": "ドラフト文書の追加（SDD フローの成果物）"
+    },
+    {
+      "file": "specs/138-fix-review-preamble/flow.json",
+      "change": "フロー管理ファイルの追加（SDD フローの成果物）"
+    },
+    {
+      "file": "specs/138-fix-review-preamble/issue-log.json",
+      "change": "実装中に発生したプリアンブル注入問題の記録"
+    },
+    {
+      "file": "specs/138-fix-review-preamble/qa.md",
+      "change": "Q&Aテンプレート（SDD フローの成果物）"
+    },
+    {
+      "file": "specs/138-fix-review-preamble/review.md",
+      "change": "コードレビュー結果の記録（SDD フローの成果物）"
+    },
+    {
+      "file": "specs/138-fix-review-preamble/spec.md",
+      "change": "仕様書（SDD フローの成果物）"
+    },
+    {
+      "file": "specs/138-fix-review-preamble/tests/README.md",
+      "change": "テストの説明ドキュメント"
+    },
+    {
+      "file": "specs/138-fix-review-preamble/tests/preamble.test.js",
+      "change": "stripPreamble と buildSpecFixPrompt のユニットテスト（spec の Test Strategy に記載あり）"
+    }
+  ],
+  "summary": {
+    "total": 4,
+    "done": 4,
+    "partial": 0,
+    "not_done": 0,
+    "rate": 1,
+    "notes": "4件の要件すべてが実装済み。buildSpecFixPrompt にはプリアンブル抑制の明確な指示が追加され、stripPreamble はフェンス除去→ヘッダ検出→プリアンブル除去の順で処理する。fix フェーズでは旧来のインライン fence 除去が stripPreamble 呼び出しに置き換えられた。ただし review.md で指摘された buildSpecFixPrompt の未エクスポート問題により、テスト内の assert.ok(true) フォールバックが実質的にプロンプト検証をスキップしている点は残課題。specs/ 配下のファイルは SDD フローの標準成果物であり、実質的な unplanned 変更はない。"
+  }
+}

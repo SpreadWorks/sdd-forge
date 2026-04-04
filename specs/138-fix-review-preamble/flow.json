@@ -1,0 +1,129 @@
+{
+  "spec": "specs/138-fix-review-preamble/spec.md",
+  "baseBranch": "main",
+  "featureBranch": "feature/138-fix-review-preamble",
+  "steps": [
+    {
+      "id": "approach",
+      "status": "done"
+    },
+    {
+      "id": "branch",
+      "status": "done"
+    },
+    {
+      "id": "prepare-spec",
+      "status": "pending"
+    },
+    {
+      "id": "draft",
+      "status": "done"
+    },
+    {
+      "id": "gate-draft",
+      "status": "done"
+    },
+    {
+      "id": "spec",
+      "status": "done"
+    },
+    {
+      "id": "gate",
+      "status": "done"
+    },
+    {
+      "id": "approval",
+      "status": "done"
+    },
+    {
+      "id": "test",
+      "status": "done"
+    },
+    {
+      "id": "implement",
+      "status": "done"
+    },
+    {
+      "id": "gate-impl",
+      "status": "done"
+    },
+    {
+      "id": "review",
+      "status": "done"
+    },
+    {
+      "id": "finalize",
+      "status": "pending"
+    },
+    {
+      "id": "commit",
+      "status": "pending"
+    },
+    {
+      "id": "push",
+      "status": "pending"
+    },
+    {
+      "id": "merge",
+      "status": "pending"
+    },
+    {
+      "id": "pr-create",
+      "status": "pending"
+    },
+    {
+      "id": "branch-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "pr-merge",
+      "status": "pending"
+    },
+    {
+      "id": "sync-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "docs-update",
+      "status": "pending"
+    },
+    {
+      "id": "docs-review",
+      "status": "pending"
+    },
+    {
+      "id": "docs-commit",
+      "status": "pending"
+    }
+  ],
+  "requirements": [
+    {
+      "desc": "buildSpecFixPrompt にプリアンブル抑制指示を追加",
+      "status": "done"
+    },
+    {
+      "desc": "stripPreamble 関数で spec ヘッダ前のテキストを除去",
+      "status": "done"
+    },
+    {
+      "desc": "spec ヘッダなしのテキストはそのまま返す",
+      "status": "done"
+    },
+    {
+      "desc": "マークダウンフェンスも除去する",
+      "status": "done"
+    }
+  ],
+  "issue": 84,
+  "request": "spec review の fix フェーズで AI がプリアンブルテキストを付加する問題を修正",
+  "worktree": true,
+  "autoApprove": true,
+  "metrics": {
+    "draft": {
+      "srcRead": 2
+    },
+    "impl": {
+      "issueLog": 1
+    }
+  }
+}
