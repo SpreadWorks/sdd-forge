@@ -1,5 +1,5 @@
 {
-  "analyzedAt": "2026-04-04T10:03:27.843Z",
+  "analyzedAt": "2026-04-04T10:16:10.435Z",
   "package": {
     "entries": [
       {
@@ -2614,16 +2614,16 @@
       },
       {
         "file": "src/flow/lib/run-finalize.js",
-        "hash": "3392ea1db8e1b36df6d6bef65123f22b",
-        "lines": 333,
-        "mtime": "2026-04-04T08:09:59.595Z",
+        "hash": "45bdf3fe127ebeeb8cc9b8e03807b866",
+        "lines": 336,
+        "mtime": "2026-04-04T10:16:10.249Z",
         "className": "run-finalize",
         "methods": [
           "finalizeOnError",
+          "commitOrSkip",
           "executeCommitPost",
           "RunFinalizeCommand",
           "executeCleanupImpl",
-          "commitOrSkip",
           "runSubStep"
         ],
         "imports": [
@@ -2639,6 +2639,7 @@
         ],
         "exports": [
           "finalizeOnError",
+          "commitOrSkip",
           "executeCommitPost",
           "RunFinalizeCommand",
           "default",
@@ -2647,24 +2648,27 @@
         "extends": "FlowCommand",
         "usedBy": null,
         "id": "c711309b",
-        "summary": "RunFinalizeCommand orchestrates the finalization pipeline of an SDD flow, including docs build, commit, merge, and worktree cleanup.",
-        "detail": "Defines STEP_MAP mapping step names to implementation functions: docs build (runs docs.js script), commit (calls commitOrSkip which checks for changes before committing), merge (delegates to merge.js command), report (generates flow report), and cleanup (removes worktree). Supports mode='all' or mode='select' with explicit step list. runSubStep wraps each step with error handling and returns structured status objects. executeCommitPost handles post-commit metadata. finalizeOnError is a higher-order function producing error handlers that run cleanup on failure.",
+        "summary": "Implements the finalize phase of the SDD flow, handling commit, merge/PR creation, cleanup, and post-commit documentation sync.",
+        "detail": "RunFinalizeCommand extends FlowCommand and orchestrates a series of sub-steps defined in STEP_MAP, supporting both 'all' and 'select' execution modes. The module provides commitOrSkip for idempotent git commits, executeCleanupImpl for worktree teardown, and executeCommitPost for post-commit documentation generation via docs.js. Merge strategies include 'squash' and 'pr', with GitHub CLI integration via isGhAvailable and commentOnIssue from git-helpers. Error handling uses finalizeOnError to attach step context to failures, and each sub-step is wrapped by runSubStep for uniform status reporting. The flow state is persisted via loadIssueLog/saveIssueLog throughout the finalize lifecycle.",
         "chapter": "internal_design",
         "role": "controller",
         "enrich": {
-          "processedAt": "2026-04-04T08:17:46.932Z",
+          "processedAt": "2026-04-04T10:16:22.115Z",
           "attempts": 1
         },
         "keywords": [
           "finalize",
+          "flow",
           "commit",
           "merge",
-          "cleanup",
           "worktree",
-          "docs build",
-          "step map",
-          "flow finalization",
-          "pipeline"
+          "cleanup",
+          "squash",
+          "pull-request",
+          "gh",
+          "issue-log",
+          "SDD",
+          "RunFinalizeCommand"
         ]
       },
       {
@@ -7579,5 +7583,5 @@
     },
     "dataSourceHash": "7d725e75d5031be445119323e4947c91"
   },
-  "enrichedAt": "2026-04-04T09:45:51.691Z"
+  "enrichedAt": "2026-04-04T10:16:22.115Z"
 }
