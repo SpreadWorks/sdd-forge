@@ -108,10 +108,9 @@ Note: `sdd-forge flow get context` automatically records these metrics via hooks
      1. **If a GitHub Issue number is linked** (saved in flow.json via `--issue`):
         Fetch the issue content with `sdd-forge flow get issue <number>` and display the title and body before the first question.
         Use the issue content as context for the draft discussion.
-     2. Run `sdd-forge flow run scan` to ensure analysis.json is up to date.
-     3. Run `sdd-forge flow get context --raw` to understand the project structure. Use this output to identify relevant files and modules.
-     4. Run `sdd-forge flow get context --search "<request text or issue title>" --raw` to retrieve related entries with detail. Use the request text or issue title as the search query.
-     5. Load guardrail articles for the draft phase: `sdd-forge flow get guardrail draft`.
+     2. Run `sdd-forge flow get context --raw` to understand the project structure. Use this output to identify relevant files and modules.
+     3. Run `sdd-forge flow get context --search "<request text or issue title>" --raw` to retrieve related entries with detail. Use the request text or issue title as the search query.
+     4. Load guardrail articles for the draft phase: `sdd-forge flow get guardrail draft`.
         If output is non-empty, consider these principles as constraints when asking questions and making proposals.
    - Create `specs/NNN-xxx/draft.md` in the spec directory created in step 3.
    - AI presents choices/proposals → user selects with short answers.

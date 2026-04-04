@@ -1,0 +1,37 @@
+{
+  "spec": "specs/140-fix-skill-scan-cmd/spec.md",
+  "date": "2026-04-04T10:03:26.601Z",
+  "requirements": [
+    {
+      "desc": "SKILL.md の draft 手順から flow run scan を削除し番号繰り上げ",
+      "status": "done",
+      "note": "src/templates/skills/sdd-forge.flow-plan/SKILL.md から手順2の `sdd-forge flow run scan` 行を削除し、後続の番号を 3→2, 4→3, 5→4 に繰り上げ済み"
+    }
+  ],
+  "unplanned": [
+    {
+      "file": "specs/140-fix-skill-scan-cmd/draft.md",
+      "change": "新規specファイル（SDDフローの成果物、実装変更ではない）"
+    },
+    {
+      "file": "specs/140-fix-skill-scan-cmd/flow.json",
+      "change": "新規フロー管理ファイル（SDDフローの成果物）"
+    },
+    {
+      "file": "specs/140-fix-skill-scan-cmd/qa.md",
+      "change": "新規Q&Aファイル（SDDフローの成果物）"
+    },
+    {
+      "file": "specs/140-fix-skill-scan-cmd/spec.md",
+      "change": "新規仕様書ファイル（SDDフローの成果物）"
+    }
+  ],
+  "summary": {
+    "total": 1,
+    "done": 1,
+    "partial": 0,
+    "not_done": 0,
+    "rate": 1,
+    "notes": "要件は完全に満たされている。SKILL.md から `sdd-forge flow run scan` の手順（旧手順2）が削除され、後続の番号が正しく繰り上げられている。unplanned として検出されたファイルはすべて SDD フローの標準成果物（spec, draft, flow.json, qa）であり、問題なし。"
+  }
+}

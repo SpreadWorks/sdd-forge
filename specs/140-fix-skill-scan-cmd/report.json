@@ -1,0 +1,35 @@
+{
+  "data": {
+    "implementation": {
+      "diffStat": "specs/140-fix-skill-scan-cmd/draft.md             |  15 +++\n specs/140-fix-skill-scan-cmd/flow.json            | 109 ++++++++++++++++++++++\n specs/140-fix-skill-scan-cmd/qa.md                |   9 ++\n specs/140-fix-skill-scan-cmd/spec.md              |  48 ++++++++++\n src/templates/skills/sdd-forge.flow-plan/SKILL.md |   7 +-\n 5 files changed, 184 insertions(+), 4 deletions(-)",
+      "commits": [
+        "feat: feature/140-fix-skill-scan-cmd",
+        "fix: remove non-existent flow run scan from skill template (#86)"
+      ]
+    },
+    "retro": {
+      "total": 1,
+      "done": 1,
+      "partial": 0,
+      "not_done": 0,
+      "rate": 1,
+      "notes": "要件は完全に満たされている。SKILL.md から `sdd-forge flow run scan` の手順（旧手順2）が削除され、後続の番号が正しく繰り上げられている。unplanned として検出されたファイルはすべて SDD フローの標準成果物（spec, draft, flow.json, qa）であり、問題なし。"
+    },
+    "issueLog": {
+      "count": 0,
+      "entries": []
+    },
+    "metrics": {
+      "docsRead": 0,
+      "srcRead": 0,
+      "question": 0,
+      "issueLog": 0
+    },
+    "tests": null,
+    "sync": {
+      "status": "skipped",
+      "reason": "sync was skipped"
+    }
+  },
+  "text": "  Report\n\n  Implementation\n  ────────────────────────────────────────────────\n    feat: feature/140-fix-skill-scan-cmd\n    fix: remove non-existent flow run scan from skill template (#86)\n    5 files changed, 184 insertions(+), 4 deletions(-)\n\n  Retro\n  ────────────────────────────────────────────────\n    ████████ 100%  (1 done / 0 partial / 0 miss)\n\n  Metrics\n  ────────────────────────────────────────────────\n    docs 0  src 0  Q&A 0  issues 0\n\n  Documents\n  ────────────────────────────────────────────────\n    skipped: sync was skipped"
+}
