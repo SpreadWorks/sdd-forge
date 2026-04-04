@@ -27,13 +27,15 @@ import { FLOW_COMMANDS } from "../registry.js";
 export function finalizeOnError(stepName) {
   return (ctx, err) => {
     try {
-      const issueLog = loadIssueLog(ctx.root, ctx.flowState.spec);
+      // Use mainRoot in worktree mode so issue-log persists after cleanup
+      const logRoot = ctx.mainRoot || ctx.root;
+      const issueLog = loadIssueLog(logRoot, ctx.flowState.spec);
       issueLog.entries.push({
         step: stepName,
         reason: err.message || String(err),
         timestamp: new Date().toISOString(),
       });
-      saveIssueLog(ctx.root, ctx.flowState.spec, issueLog);
+      saveIssueLog(logRoot, ctx.flowState.spec, issueLog);
     } catch (_) { /* best effort */ }
   };
 }
@@ -72,13 +74,14 @@ function executeCleanupImpl({ root, flowState, worktreePath, mainRepoPath }) {
  * @param {{ cwd: string }} opts - runCmd options
  * @returns {{ status: string, message?: string }}
  */
-function commitOrSkip(args, opts) {
+export function commitOrSkip(args, opts) {
   const res = runCmd("git", ["commit", ...args], opts);
   if (res.ok) return { status: "done" };
-  if (/nothing to commit/i.test(res.stderr || res.stdout)) {
+  const output = res.stderr || res.stdout || "";
+  if (/nothing to commit|no changes added to commit/i.test(output)) {
     return { status: "skipped", message: "nothing to commit" };
   }
-  throw new Error(res.stderr || res.stdout || "commit failed");
+  throw new Error(output || "commit failed");
 }
 
 export const STEP_MAP = {

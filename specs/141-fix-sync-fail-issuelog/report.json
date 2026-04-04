@@ -1,0 +1,36 @@
+{
+  "data": {
+    "implementation": {
+      "diffStat": "specs/141-fix-sync-fail-issuelog/draft.md          |  18 ++++\n specs/141-fix-sync-fail-issuelog/flow.json         | 118 +++++++++++++++++++++\n specs/141-fix-sync-fail-issuelog/qa.md             |   9 ++\n specs/141-fix-sync-fail-issuelog/spec.md           |  56 ++++++++++\n specs/141-fix-sync-fail-issuelog/tests/README.md   |  16 +++\n .../tests/sync-issuelog.test.js                    |  72 +++++++++++++\n src/flow/lib/run-finalize.js                       |  13 ++-\n 7 files changed, 297 insertions(+), 5 deletions(-)",
+      "commits": [
+        "feat: feature/141-fix-sync-fail-issuelog",
+        "fix: align spec message field with implementation (#87)",
+        "fix: handle \"no changes added to commit\" in sync and persist issue-log in worktree mode (#87)"
+      ]
+    },
+    "retro": {
+      "total": 2,
+      "done": 2,
+      "partial": 0,
+      "not_done": 0,
+      "rate": 1,
+      "notes": "両要件とも正確に実装されている。commitOrSkip の regex 拡張と返却値、finalizeOnError の worktree パス解決ともに spec 通り。unplanned な変更は commitOrSkip の export 追加（テスト可能にするため）と output 変数への抽出で、いずれも低リスクな付随変更。"
+    },
+    "issueLog": {
+      "count": 0,
+      "entries": []
+    },
+    "metrics": {
+      "docsRead": 0,
+      "srcRead": 1,
+      "question": 0,
+      "issueLog": 0
+    },
+    "tests": null,
+    "sync": {
+      "status": "skipped",
+      "reason": "sync was skipped"
+    }
+  },
+  "text": "  Report\n\n  Implementation\n  ────────────────────────────────────────────────\n    feat: feature/141-fix-sync-fail-issuelog\n    fix: align spec message field with implementation (#87)\n    fix: handle \"no changes added to commit\" in sync and persist issue-log in worktree mode (#87)\n    7 files changed, 297 insertions(+), 5 deletions(-)\n\n  Retro\n  ────────────────────────────────────────────────\n    ████████ 100%  (2 done / 0 partial / 0 miss)\n\n  Metrics\n  ────────────────────────────────────────────────\n    docs 0  src 1  Q&A 0  issues 0\n\n  Documents\n  ────────────────────────────────────────────────\n    skipped: sync was skipped"
+}

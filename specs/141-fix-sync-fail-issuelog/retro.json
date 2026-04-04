@@ -1,0 +1,34 @@
+{
+  "spec": "specs/141-fix-sync-fail-issuelog/spec.md",
+  "date": "2026-04-04T10:16:09.172Z",
+  "requirements": [
+    {
+      "desc": "commitOrSkip の regex を拡張して no changes added to commit を skipped 扱い",
+      "status": "done",
+      "note": "run-finalize.js の commitOrSkip で regex が /nothing to commit|no changes added to commit/i に拡張され、マッチ時に { status: \"skipped\", message: \"nothing to commit\" } を返す"
+    },
+    {
+      "desc": "finalizeOnError が worktree モードで mainRoot に書き込む",
+      "status": "done",
+      "note": "finalizeOnError 内で const logRoot = ctx.mainRoot || ctx.root を使い、loadIssueLog/saveIssueLog の両方で logRoot を参照するよう変更済み"
+    }
+  ],
+  "unplanned": [
+    {
+      "file": "src/flow/lib/run-finalize.js",
+      "change": "commitOrSkip が export された（テストのためと思われるが spec に明記なし）"
+    },
+    {
+      "file": "src/flow/lib/run-finalize.js",
+      "change": "res.stderr || res.stdout を output 変数に抽出し throw 側でも再利用するリファクタリング"
+    }
+  ],
+  "summary": {
+    "total": 2,
+    "done": 2,
+    "partial": 0,
+    "not_done": 0,
+    "rate": 1,
+    "notes": "両要件とも正確に実装されている。commitOrSkip の regex 拡張と返却値、finalizeOnError の worktree パス解決ともに spec 通り。unplanned な変更は commitOrSkip の export 追加（テスト可能にするため）と output 変数への抽出で、いずれも低リスクな付随変更。"
+  }
+}
