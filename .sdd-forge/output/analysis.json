@@ -1,5 +1,5 @@
 {
-  "analyzedAt": "2026-04-03T12:00:36.877Z",
+  "analyzedAt": "2026-04-03T12:59:14.462Z",
   "package": {
     "entries": [
       {
@@ -2344,9 +2344,9 @@
       },
       {
         "file": "src/flow/lib/get-guardrail.js",
-        "hash": "ba403be70a6740bf34e6f97a26130420",
+        "hash": "b19632b61628e434cfc719da4ba24918",
         "lines": 63,
-        "mtime": "2026-04-03T01:07:47.870Z",
+        "mtime": "2026-04-03T12:59:14.273Z",
         "className": "get-guardrail",
         "methods": [
           "toMarkdown"
@@ -2363,24 +2363,28 @@
           "src/lib/lint.js"
         ],
         "id": "f80cce52",
-        "summary": "Implements `flow get guardrail`, returning guardrail rules for a given SDD phase as markdown.",
-        "detail": "Valid phases are draft, spec, impl, and lint. Calls loadMergedGuardrails and filterByPhase from the guardrail library to retrieve applicable rules. toMarkdown formats guardrails as a numbered markdown list. Throws on missing or unknown phase argument.",
+        "summary": "Implements the 'flow get guardrail' command that retrieves and formats guardrail rules for a specific SDD phase as Markdown. Validates the phase parameter against a fixed list of valid phases.",
+        "detail": "GetGuardrailCommand extends FlowCommand and uses loadMergedGuardrails and filterByPhase from the guardrail library to fetch phase-specific rules. It validates that a phase argument is provided and that it matches one of the five valid phases: draft, spec, impl, test, or lint. Filtered guardrails are converted to Markdown via a local toMarkdown helper and returned as a result object. Error handling covers both missing and unrecognized phase values.",
         "chapter": "cli_commands",
-        "role": "lib",
+        "role": "controller",
         "enrich": {
-          "processedAt": "2026-04-03T03:15:49.316Z",
+          "processedAt": "2026-04-03T12:59:22.798Z",
           "attempts": 1
         },
         "keywords": [
           "guardrail",
+          "get-guardrail",
+          "flow get",
           "phase",
-          "rules",
+          "filterByPhase",
+          "loadMergedGuardrails",
+          "FlowCommand",
           "markdown",
           "draft",
           "spec",
           "impl",
-          "lint",
-          "flow-guardrail"
+          "test",
+          "lint"
         ]
       },
       {
@@ -7493,5 +7497,5 @@
     },
     "dataSourceHash": "7d725e75d5031be445119323e4947c91"
   },
-  "enrichedAt": "2026-04-03T12:01:07.319Z"
+  "enrichedAt": "2026-04-03T12:59:22.798Z"
 }
