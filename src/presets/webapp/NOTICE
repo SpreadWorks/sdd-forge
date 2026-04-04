@@ -3,6 +3,15 @@ This preset contains guardrail articles inspired by the following sources.
 ---
 
 Affected articles:
+- no-queries-in-view-templates
+- detect-missing-index-on-foreign-keys
+
+Original source: PatrickJS/awesome-cursorrules
+License: CC0-1.0 (https://creativecommons.org/publicdomain/zero/1.0/)
+
+---
+
+Affected articles:
 - authorization-flow-in-spec
 - queue-design-for-heavy-processing
 - cache-invalidation-strategy
@@ -11,15 +20,6 @@ Affected articles:
 - detect-missing-index-on-foreign-keys
 
 Original source: sanjeed5/awesome-cursor-rules-mdc
-License: CC0-1.0 (https://creativecommons.org/publicdomain/zero/1.0/)
-
----
-
-Affected articles:
-- no-queries-in-view-templates
-- detect-missing-index-on-foreign-keys
-
-Original source: PatrickJS/awesome-cursorrules
 License: CC0-1.0 (https://creativecommons.org/publicdomain/zero/1.0/)
 
 ---

@@ -3,11 +3,12 @@ This preset contains guardrail articles inspired by the following sources.
 ---
 
 Affected articles:
-- eager-loading-strategy-required
-- enable-prevent-lazy-loading
+- use-query-scopes-for-reusable-conditions
+- use-enum-casting-in-eloquent
+- invokeable-controller-for-single-action
 
-Original source: laravel/boost
-License: MIT (https://opensource.org/licenses/MIT)
+Original source: PatrickJS/awesome-cursorrules
+License: CC0-1.0 (https://creativecommons.org/publicdomain/zero/1.0/)
 
 ---
 
@@ -23,6 +24,23 @@ License: CC0-1.0 (https://creativecommons.org/publicdomain/zero/1.0/)
 ---
 
 Affected articles:
+- use-factory-for-test-data
+
+Original source: AratKruglik/claude-laravel
+License: MIT (https://opensource.org/licenses/MIT)
+
+---
+
+Affected articles:
+- eager-loading-strategy-required
+- enable-prevent-lazy-loading
+
+Original source: laravel/boost
+License: MIT (https://opensource.org/licenses/MIT)
+
+---
+
+Affected articles:
 - eager-loading-strategy-required
 - use-query-scopes-for-reusable-conditions
 - use-enum-casting-in-eloquent
@@ -30,22 +48,4 @@ Affected articles:
 - invokeable-controller-for-single-action
 
 Original source: pekral/cursor-rules
-License: MIT (https://opensource.org/licenses/MIT)
-
----
-
-Affected articles:
-- use-query-scopes-for-reusable-conditions
-- use-enum-casting-in-eloquent
-- invokeable-controller-for-single-action
-
-Original source: PatrickJS/awesome-cursorrules
-License: CC0-1.0 (https://creativecommons.org/publicdomain/zero/1.0/)
-
----
-
-Affected articles:
-- use-factory-for-test-data
-
-Original source: AratKruglik/claude-laravel
 License: MIT (https://opensource.org/licenses/MIT)
