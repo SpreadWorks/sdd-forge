@@ -1,5 +1,5 @@
 <!-- {{data("base.docs.langSwitcher", {labels: "relative"})}} -->
-**English** | [日本語](ja/overview.md)
+[日本語](ja/overview.md) | **English**
 <!-- {{/data}} -->
 
 # Tool Overview and Architecture

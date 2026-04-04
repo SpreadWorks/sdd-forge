@@ -1,5 +1,5 @@
 <!-- {{data("base.docs.langSwitcher", {labels: "relative"})}} -->
-[English](../internal_design.md) | **日本語**
+**日本語** | [English](../internal_design.md)
 <!-- {{/data}} -->
 
 # 内部設計

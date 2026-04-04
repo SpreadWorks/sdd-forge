@@ -1,5 +1,5 @@
 <!-- {{data("base.docs.langSwitcher", {labels: "relative"})}} -->
-[English](../stack_and_ops.md) | **日本語**
+**日本語** | [English](../stack_and_ops.md)
 <!-- {{/data}} -->
 
 # 技術スタックと運用

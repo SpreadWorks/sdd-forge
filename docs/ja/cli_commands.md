@@ -1,5 +1,5 @@
 <!-- {{data("base.docs.langSwitcher", {labels: "relative"})}} -->
-[English](../cli_commands.md) | **日本語**
+**日本語** | [English](../cli_commands.md)
 <!-- {{/data}} -->
 
 # CLI コマンドリファレンス

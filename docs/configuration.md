@@ -1,5 +1,5 @@
 <!-- {{data("base.docs.langSwitcher", {labels: "relative"})}} -->
-**English** | [日本語](ja/configuration.md)
+[日本語](ja/configuration.md) | **English**
 <!-- {{/data}} -->
 
 # Configuration and Customization

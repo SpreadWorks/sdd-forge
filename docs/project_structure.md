@@ -1,5 +1,5 @@
 <!-- {{data("base.docs.langSwitcher", {labels: "relative"})}} -->
-**English** | [日本語](ja/project_structure.md)
+[日本語](ja/project_structure.md) | **English**
 <!-- {{/data}} -->
 
 # Project Structure
@@ -25,7 +25,7 @@ src/docs/commands/    (cli, controller)
 src/docs/data/    (model)
 src/docs/lib/    (model, lib)
 src/docs/lib/lang/    (lib)
-src/flow/    (config)
+src/flow/    (controller)
 src/flow/commands/    (lib, controller)
 src/flow/lib/    (lib, controller)
 src/lib/    (lib, config, model)
@@ -38,7 +38,7 @@ src/lib/    (lib, config, model)
 | Directory | Files | Role |
 | --- | --- | --- |
 | src/docs | 40 | cli, controller, model, lib |
-| src/flow | 32 | lib, controller, config |
+| src/flow | 33 | lib, controller |
 | src/lib | 20 | lib, config, model |
 | src | 7 | controller, cli |
 <!-- {{/data}} -->

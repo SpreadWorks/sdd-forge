@@ -1,7 +1,7 @@
 # <!-- {{data("cli.project.name")}} -->sdd-forge<!-- {{/data}} -->
 
 <!-- {{data("cli.docs.langSwitcher", {labels: "absolute"})}} -->
-[English](https://github.com/SpreadWorks/sdd-forge/blob/main/README.md) | **日本語**
+**日本語** | [English](https://github.com/SpreadWorks/sdd-forge/blob/main/README.md)
 <!-- {{/data}} -->
 
 [![npm version](https://img.shields.io/npm/v/sdd-forge.svg)](https://www.npmjs.com/package/sdd-forge)

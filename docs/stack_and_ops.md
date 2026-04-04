@@ -1,5 +1,5 @@
 <!-- {{data("base.docs.langSwitcher", {labels: "relative"})}} -->
-**English** | [日本語](ja/stack_and_ops.md)
+[日本語](ja/stack_and_ops.md) | **English**
 <!-- {{/data}} -->
 
 # Technology Stack and Operations
