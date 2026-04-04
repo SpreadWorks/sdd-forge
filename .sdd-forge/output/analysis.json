@@ -1,5 +1,5 @@
 {
-  "analyzedAt": "2026-04-04T13:57:06.929Z",
+  "analyzedAt": "2026-04-04T14:12:31.696Z",
   "package": {
     "entries": [
       {
@@ -2617,9 +2617,9 @@
       },
       {
         "file": "src/flow/lib/run-finalize.js",
-        "hash": "93f2c294e5a6f64de6d3b05710569316",
-        "lines": 336,
-        "mtime": "2026-04-04T12:45:35.956Z",
+        "hash": "91e60b83dd972d131f2827a5ee69cc89",
+        "lines": 338,
+        "mtime": "2026-04-04T14:12:31.497Z",
         "className": "run-finalize",
         "methods": [
           "finalizeOnError",
@@ -2651,23 +2651,25 @@
         "extends": "FlowCommand",
         "usedBy": null,
         "id": "c711309b",
-        "summary": "Executes the finalize phase of the SDD flow, handling commit, docs build, merge strategy selection, and worktree cleanup.",
-        "detail": "Implements RunFinalizeCommand extending FlowCommand, with a STEP_MAP of sub-steps (commit, docs-build, merge, cleanup) that can be run in full or selective mode. commitOrSkip checks git status and skips if nothing to commit. executeCleanupImpl removes the worktree path after merge. Supports squash and PR merge strategies. Emits post-commit metrics and optionally comments on the linked GitHub issue via collectGitSummary and commentOnIssue.",
+        "summary": "Implements the finalize step of the SDD flow, handling commit, cleanup, docs build, and optional merge/PR creation after implementation is complete.",
+        "detail": "Exports RunFinalizeCommand extending FlowCommand, orchestrating sub-steps via STEP_MAP. Provides commitOrSkip for conditional git commits, executeCleanupImpl for worktree teardown, and executeCommitPost for post-commit processing. Integrates with git-helpers for GitHub issue commenting and git summary collection. Supports two execution modes ('all' or 'select') and two merge strategies ('squash' or 'pr'). Error handling is centralized via finalizeOnError which captures step name and trigger context.",
         "chapter": "internal_design",
         "role": "controller",
         "enrich": {
-          "processedAt": "2026-04-04T13:52:16.857Z",
+          "processedAt": "2026-04-04T14:12:47.737Z",
           "attempts": 1
         },
         "keywords": [
           "finalize",
-          "flow finalize",
           "commit",
+          "cleanup",
+          "worktree",
           "merge",
-          "worktree cleanup",
           "squash",
-          "PR",
-          "SDD flow"
+          "pr",
+          "flow",
+          "RunFinalizeCommand",
+          "STEP_MAP"
         ]
       },
       {
@@ -3142,7 +3144,8 @@
         "extends": "FlowCommand",
         "usedBy": [
           "src/flow/lib/run-finalize.js",
-          "src/flow/lib/run-report.js"
+          "src/flow/lib/run-report.js",
+          "src/flow/registry.js"
         ],
         "id": "65ac9e4f",
         "summary": "Provides load/save helpers for issue-log.json and the `flow set issue-log` command for appending log entries.",
@@ -3448,9 +3451,9 @@
       },
       {
         "file": "src/flow/registry.js",
-        "hash": "b91ee5eaffefda800bb7ea294fbe818e",
-        "lines": 420,
-        "mtime": "2026-04-04T07:37:04.194Z",
+        "hash": "29db0fec9e646681a4b079b579f337fb",
+        "lines": 452,
+        "mtime": "2026-04-04T14:12:31.497Z",
         "className": "registry",
         "methods": [
           "deriveActivePhase",
@@ -3461,7 +3464,8 @@
         ],
         "imports": [
           "../lib/flow-state.js",
-          "./lib/phases.js"
+          "./lib/phases.js",
+          "./lib/set-issue-log.js"
         ],
         "exports": [
           "FLOW_COMMANDS"
@@ -3471,25 +3475,25 @@
           "src/flow.js"
         ],
         "id": "d64f4095",
-        "summary": "Central registry that maps flow subcommand names to their handler classes, args schemas, and pre/post hooks for step tracking and metrics.",
-        "detail": "Defines FLOW_COMMANDS as a flat map of command descriptors used by the flow dispatcher. Provides stepPre and stepPost hook factories that automatically update step status (in_progress/done) and increment metrics via tryUpdateStepStatus and incrementMetric. deriveActivePhase infers the current phase from flow state steps. resolveGateStepId maps phase names to gate step identifiers. Commands are registered with args definitions, help strings, command class references, and optional pre/post lifecycle hooks.",
-        "chapter": "cli_commands",
-        "role": "controller",
+        "summary": "Central registry for SDD flow commands, defining pre/post hooks for step status tracking, phase derivation, and command dispatch logic.",
+        "detail": "Exports FLOW_COMMANDS object mapping command names to their handlers, help strings, and hook configurations. Provides stepPre and stepPost factory functions that wrap step execution with automatic status updates via updateStepStatus. deriveActivePhase resolves the current flow phase from persisted state. resolveGateStepId normalizes gate step identification across phases. Integrates with flow-state.js for metric tracking and issue-log for audit trail management.",
+        "chapter": "internal_design",
+        "role": "lib",
         "enrich": {
-          "processedAt": "2026-04-04T07:37:25.012Z",
+          "processedAt": "2026-04-04T14:12:47.737Z",
           "attempts": 1
         },
         "keywords": [
           "registry",
           "FLOW_COMMANDS",
+          "stepPre",
+          "stepPost",
+          "phase",
+          "hook",
           "dispatch",
-          "hooks",
-          "step-status",
-          "metrics",
-          "pre-hook",
-          "post-hook",
           "flow",
-          "subcommand"
+          "gate",
+          "metric"
         ]
       },
       {
@@ -7582,5 +7586,5 @@
     },
     "dataSourceHash": "7d725e75d5031be445119323e4947c91"
   },
-  "enrichedAt": "2026-04-04T13:57:21.702Z"
+  "enrichedAt": "2026-04-04T14:12:47.737Z"
 }
