@@ -1,0 +1,42 @@
+{
+  "spec": "specs/144-optimize-test-only-spec-flow/spec.md",
+  "date": "2026-04-04T14:21:12.537Z",
+  "requirements": [
+    {
+      "desc": "flow-impl SKILL.md に test-only spec 検出と impl スキップ指示を追加",
+      "status": "done",
+      "note": "src/templates/skills/sdd-forge.flow-impl/SKILL.md の step 1 に autoApprove モードでの test-only spec 検出指示が追加されている。spec の Goal/Scope/Requirements にプロダクトコード変更が含まれない場合、implement と gate-impl を skipped に設定し review に進む指示が含まれている。"
+    },
+    {
+      "desc": "flow-plan SKILL.md に test-only spec 注記を追加",
+      "status": "done",
+      "note": "src/templates/skills/sdd-forge.flow-plan/SKILL.md の test phase 完了後の autoApprove transition 直後に、test-only spec では impl フェーズが自動スキップされる旨の注記が追加されている。"
+    }
+  ],
+  "unplanned": [
+    {
+      "file": "specs/144-optimize-test-only-spec-flow/draft.md",
+      "change": "spec ドラフトファイルの追加（SDD フロー成果物）"
+    },
+    {
+      "file": "specs/144-optimize-test-only-spec-flow/flow.json",
+      "change": "フロー状態管理ファイルの追加（SDD フロー成果物）"
+    },
+    {
+      "file": "specs/144-optimize-test-only-spec-flow/qa.md",
+      "change": "Q&A ファイルの追加（SDD フロー成果物）"
+    },
+    {
+      "file": "specs/144-optimize-test-only-spec-flow/spec.md",
+      "change": "仕様書ファイルの追加（SDD フロー成果物）"
+    }
+  ],
+  "summary": {
+    "total": 2,
+    "done": 2,
+    "partial": 0,
+    "not_done": 0,
+    "rate": 1,
+    "notes": "両方の要件が正確に実装されている。flow-impl SKILL.md には test-only spec の検出条件、スキップ手順（implement と gate-impl を skipped に設定）、表示メッセージ、安全側に倒す判断基準が含まれている。flow-plan SKILL.md には test phase 完了後の遷移に test-only spec の注記が追加されている。unplanned の specs/ ファイル群は SDD フローの標準成果物であり問題なし。"
+  }
+}

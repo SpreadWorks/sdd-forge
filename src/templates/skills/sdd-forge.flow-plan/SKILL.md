@@ -220,6 +220,7 @@ Note: `sdd-forge flow get context` automatically records these metrics via hooks
    - **After test step is done**:
      - Run `sdd-forge flow get prompt plan.complete` and present the choices.
      - **autoApprove transition:** If `autoApprove: true`, treat [1] as selected and invoke `/sdd-forge.flow-impl` using the Skill tool.
+     - **Note:** For test-only specs (no production code changes), the impl phase will be automatically skipped in autoApprove mode. See flow-impl SKILL.md for details.
 
 ## Worktree Mode
 
