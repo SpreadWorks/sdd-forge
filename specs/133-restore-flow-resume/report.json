@@ -1,0 +1,36 @@
+{
+  "data": {
+    "implementation": {
+      "diffStat": "specs/133-restore-flow-resume/draft.md             |  36 +++++\n specs/133-restore-flow-resume/flow.json            | 151 +++++++++++++++++++++\n specs/133-restore-flow-resume/issue-log.json       |  16 +++\n specs/133-restore-flow-resume/qa.md                |   9 ++\n specs/133-restore-flow-resume/report.json          |  34 +++++\n specs/133-restore-flow-resume/retro.json           |  63 +++++++++\n specs/133-restore-flow-resume/review.md            |  41 ++++++\n specs/133-restore-flow-resume/spec.md              |  59 ++++++++\n specs/133-restore-flow-resume/tests/README.md      |  26 ++++\n .../tests/resume-command.test.js                   | 119 ++++++++++++++++\n src/flow.js                                        |  10 ++\n src/flow/lib/get-check.js                          |   8 +-\n src/flow/lib/get-resolve-context.js                |  50 ++-----\n src/flow/lib/run-resume.js                         | 103 ++++++++++++++\n src/flow/registry.js                               |   6 +\n src/lib/flow-state.js                              |  60 ++++++++\n tests/unit/flow/resolve-active-flow.test.js        |  74 ++++++++++\n 17 files changed, 819 insertions(+), 46 deletions(-)",
+      "commits": [
+        "feat: feature/133-restore-flow-resume",
+        "chore: add retro and report",
+        "feat: feature/133-restore-flow-resume"
+      ]
+    },
+    "retro": {
+      "total": 7,
+      "done": 5,
+      "partial": 0,
+      "not_done": 2,
+      "rate": 0.71,
+      "notes": "P1 要件4件（共通ヘルパー、resume コマンド、registry 登録、ディスパッチャ）と P2 の get-resolve-context リファクタは完全に実装済み。SKILL.md テンプレートは以前の実装で既に要件を満たす内容が存在するが、このブランチでの変更ではない。upgrade 反映は未実施。コア機能は完成しており、残る2件は周辺タスク。7要件中5完了、2未着手（実質的には SKILL.md の内容自体は既存で要件充足、upgrade のみ真に未実施）。"
+    },
+    "issueLog": {
+      "count": 0,
+      "entries": []
+    },
+    "metrics": {
+      "docsRead": 2,
+      "srcRead": 0,
+      "question": 5,
+      "issueLog": 1
+    },
+    "tests": null,
+    "sync": {
+      "status": "skipped",
+      "reason": "sync was skipped"
+    }
+  },
+  "text": "  Report\n\n  Implementation\n  ────────────────────────────────────────────────\n    feat: feature/133-restore-flow-resume\n    chore: add retro and report\n    feat: feature/133-restore-flow-resume\n    17 files changed, 819 insertions(+), 46 deletions(-)\n\n  Retro\n  ────────────────────────────────────────────────\n    ██████░░ 71%  (5 done / 0 partial / 2 miss)\n\n  Metrics\n  ────────────────────────────────────────────────\n    docs 2  src 0  Q&A 5  issues 1\n\n  Documents\n  ────────────────────────────────────────────────\n    skipped: sync was skipped"
+}

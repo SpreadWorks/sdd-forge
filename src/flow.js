@@ -33,6 +33,7 @@ if (!group || group === "-h" || group === "--help") {
     "",
     "Commands:",
     `  ${"prepare".padEnd(18)} Initialize spec and branch/worktree`,
+    `  ${"resume".padEnd(18)} Discover and resume active flow`,
     `  ${"get <key>".padEnd(18)} Read flow state`,
     `  ${"set <key>".padEnd(18)} Update flow state`,
     `  ${"run <action>".padEnd(18)} Execute flow actions`,
@@ -155,6 +156,15 @@ async function runEntry(entry, ctx, envelopeType, envelopeKey) {
 // ---------------------------------------------------------------------------
 
 async function dispatch() {
+  // Top-level command: resume
+  if (group === "resume") {
+    const entry = FLOW_COMMANDS.resume;
+    const ctx = resolveCtx();
+    ctx.args = rest;
+    await runEntry(entry, ctx, "run", "resume");
+    return;
+  }
+
   // Top-level command: prepare
   if (group === "prepare") {
     const entry = FLOW_COMMANDS.prepare;

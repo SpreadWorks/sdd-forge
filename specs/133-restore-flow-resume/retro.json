@@ -1,0 +1,87 @@
+{
+  "spec": "specs/133-restore-flow-resume/spec.md",
+  "date": "2026-04-04T06:57:22.424Z",
+  "requirements": [
+    {
+      "desc": "共通ヘルパー resolveActiveFlow を flow-state.js に追加",
+      "status": "done",
+      "note": "flow-state.js に resolveActiveFlow(root, flowState) を追加。3段階フォールバック（flowState → loadActiveFlows → scanAllFlows）、{ state, specId, worktreePath } 返却、null 返却、複数フロー時 Error throw すべて仕様通り実装済み。ユニットテストも追加。"
+    },
+    {
+      "desc": "resume コマンドを run-resume.js に実装",
+      "status": "done",
+      "note": "src/flow/lib/run-resume.js に FlowCommand(requiresFlow: false) として実装。resolveActiveFlow で探索し、get-resolve-context と同構造の JSON を返す。フロー未発見時は 'no active flow found' エラー。スペックテストも追加。"
+    },
+    {
+      "desc": "registry.js にトップレベルコマンドとして登録",
+      "status": "done",
+      "note": "FLOW_COMMANDS の先頭に resume エントリを追加。helpKey, requiresFlow: false, command（動的import）, help すべて定義済み。prepare と同列。"
+    },
+    {
+      "desc": "flow.js に resume ルーティング追加",
+      "status": "done",
+      "note": "dispatch() 内で group === 'resume' の分岐を追加。prepare と同パターンで runEntry に委譲。ヘルプ出力にも resume 行を追加。"
+    },
+    {
+      "desc": "get-resolve-context を共通ヘルパーでリファクタ",
+      "status": "done",
+      "note": "get-resolve-context.js のフロー探索ロジック（約30行）を resolveActiveFlow 呼び出し1行に置換。出力構造は維持。import も loadFlowState/loadActiveFlows/resolveWorktreePaths から resolveActiveFlow/derivePhase に整理。"
+    },
+    {
+      "desc": "SKILL.md テンプレート更新",
+      "status": "not_done",
+      "note": "src/templates/skills/sdd-forge.flow-resume/SKILL.md は仕様に合致する内容が存在するが、以前の実装(#061)で作られたものであり、このフィーチャーブランチの diff には含まれていない。main との差分もゼロ。この実装サイクルでの更新は行われていない。"
+    },
+    {
+      "desc": "sdd-forge upgrade でプロジェクト側反映",
+      "status": "not_done",
+      "note": "diff にプロジェクト側 .claude/skills/sdd-forge.flow-resume/SKILL.md の変更が含まれていない。flow.json でも status: pending。upgrade 未実行。"
+    }
+  ],
+  "unplanned": [
+    {
+      "file": "src/flow/lib/get-check.js",
+      "change": "checkGh() の変数名を pass から available にリネーム（レビュー指摘 #1 への対応。isGhAvailable() 自体は元から使用されていたが、変数名の一貫性を改善）"
+    },
+    {
+      "file": "specs/133-restore-flow-resume/draft.md",
+      "change": "ドラフト文書の追加（SDD フロープロセスの成果物）"
+    },
+    {
+      "file": "specs/133-restore-flow-resume/qa.md",
+      "change": "Q&A 文書の追加（SDD フロープロセスの成果物）"
+    },
+    {
+      "file": "specs/133-restore-flow-resume/spec.md",
+      "change": "仕様書の追加（SDD フロープロセスの成果物）"
+    },
+    {
+      "file": "specs/133-restore-flow-resume/review.md",
+      "change": "コードレビュー結果の追加（SDD フロープロセスの成果物）"
+    },
+    {
+      "file": "specs/133-restore-flow-resume/retro.json",
+      "change": "振り返り結果の追加（SDD フロープロセスの成果物）"
+    },
+    {
+      "file": "specs/133-restore-flow-resume/report.json",
+      "change": "レポートの追加（SDD フロープロセスの成果物）"
+    },
+    {
+      "file": "specs/133-restore-flow-resume/flow.json",
+      "change": "フロー状態ファイルの追加（SDD フロープロセスの成果物）"
+    },
+    {
+      "file": "specs/133-restore-flow-resume/issue-log.json",
+      "change": "issue-log の追加（マージコンフリクト記録）"
+    }
+  ],
+  "summary": {
+    "total": 7,
+    "done": 5,
+    "partial": 0,
+    "not_done": 2,
+    "rate": 0.71,
+    "notes": "P1 要件4件（共通ヘルパー、resume コマンド、registry 登録、ディスパッチャ）と P2 の get-resolve-context リファクタは完全に実装済み。SKILL.md テンプレートは以前の実装で既に要件を満たす内容が存在するが、このブランチでの変更ではない。upgrade 反映は未実施。コア機能は完成しており、残る2件は周辺タスク。7要件中5完了、2未着手（実質的には SKILL.md の内容自体は既存で要件充足、upgrade のみ真に未実施）。"
+  }
+}

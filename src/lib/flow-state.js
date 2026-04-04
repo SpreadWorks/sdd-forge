@@ -626,3 +626,63 @@ export function scanAllFlows(workRoot) {
 
   return results;
 }
+
+// ── resolve active flow (shared helper) ─────────────────────────────────────
+
+/**
+ * 3-stage fallback to resolve the single active flow.
+ *
+ * 1. flowState (already loaded by dispatcher)
+ * 2. loadActiveFlows → single entry
+ * 3. scanAllFlows → filter entries with active state
+ *
+ * @param {string} root - repoRoot()
+ * @param {FlowState|null} flowState - pre-loaded flow state (may be null)
+ * @returns {{ state: FlowState, specId: string, worktreePath: string|null } | null}
+ */
+export function resolveActiveFlow(root, flowState) {
+  // Stage 1: use pre-loaded flowState
+  if (flowState) {
+    const specId = specIdFromPath(flowState.spec);
+    let worktreePath = null;
+    if (flowState.worktree) {
+      worktreePath = resolveWorktreePaths(root, flowState).worktreePath;
+    }
+    return { state: flowState, specId, worktreePath };
+  }
+
+  // Stage 2: loadActiveFlows
+  const activeFlows = loadActiveFlows(root);
+  if (activeFlows.length === 1) {
+    const specId = activeFlows[0].spec;
+    let state = loadFlowState(root, specId);
+    let worktreePath = null;
+    if (state?.worktree) {
+      const resolved = resolveWorktreePaths(root, state);
+      worktreePath = resolved.worktreePath;
+      if (worktreePath && fs.existsSync(worktreePath)) {
+        state = loadFlowState(worktreePath, specId);
+      }
+    }
+    if (state) return { state, specId, worktreePath };
+  } else if (activeFlows.length > 1) {
+    throw new Error(
+      `multiple active flows: ${activeFlows.map((f) => `${f.spec} (${f.mode})`).join(", ")}`
+    );
+  }
+
+  // Stage 3: scanAllFlows
+  const allFlows = scanAllFlows(root);
+  const active = allFlows.filter((f) => f.state != null);
+  if (active.length === 1) {
+    const { specId, state, location } = active[0];
+    const worktreePath = state.worktree ? location : null;
+    return { state, specId, worktreePath };
+  } else if (active.length > 1) {
+    throw new Error(
+      `multiple active flows: ${active.map((f) => `${f.specId} (${f.mode})`).join(", ")}`
+    );
+  }
+
+  return null;
+}

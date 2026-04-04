@@ -1,0 +1,151 @@
+{
+  "spec": "specs/133-restore-flow-resume/spec.md",
+  "baseBranch": "main",
+  "featureBranch": "feature/133-restore-flow-resume",
+  "steps": [
+    {
+      "id": "approach",
+      "status": "done"
+    },
+    {
+      "id": "branch",
+      "status": "done"
+    },
+    {
+      "id": "prepare-spec",
+      "status": "done"
+    },
+    {
+      "id": "draft",
+      "status": "done"
+    },
+    {
+      "id": "gate-draft",
+      "status": "pending"
+    },
+    {
+      "id": "spec",
+      "status": "done"
+    },
+    {
+      "id": "gate",
+      "status": "done"
+    },
+    {
+      "id": "approval",
+      "status": "done"
+    },
+    {
+      "id": "test",
+      "status": "done"
+    },
+    {
+      "id": "implement",
+      "status": "done"
+    },
+    {
+      "id": "gate-impl",
+      "status": "pending"
+    },
+    {
+      "id": "review",
+      "status": "done"
+    },
+    {
+      "id": "finalize",
+      "status": "pending"
+    },
+    {
+      "id": "commit",
+      "status": "pending"
+    },
+    {
+      "id": "push",
+      "status": "pending"
+    },
+    {
+      "id": "merge",
+      "status": "pending"
+    },
+    {
+      "id": "pr-create",
+      "status": "pending"
+    },
+    {
+      "id": "branch-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "pr-merge",
+      "status": "pending"
+    },
+    {
+      "id": "sync-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "docs-update",
+      "status": "pending"
+    },
+    {
+      "id": "docs-review",
+      "status": "pending"
+    },
+    {
+      "id": "docs-commit",
+      "status": "pending"
+    }
+  ],
+  "requirements": [
+    {
+      "desc": "共通ヘルパー resolveActiveFlow を flow-state.js に追加",
+      "status": "done"
+    },
+    {
+      "desc": "resume コマンドを run-resume.js に実装",
+      "status": "done"
+    },
+    {
+      "desc": "registry.js にトップレベルコマンドとして登録",
+      "status": "done"
+    },
+    {
+      "desc": "flow.js に resume ルーティング追加",
+      "status": "done"
+    },
+    {
+      "desc": "get-resolve-context を共通ヘルパーでリファクタ",
+      "status": "done"
+    },
+    {
+      "desc": "SKILL.md テンプレート更新",
+      "status": "done"
+    },
+    {
+      "desc": "sdd-forge upgrade でプロジェクト側反映",
+      "status": "pending"
+    }
+  ],
+  "issue": 78,
+  "request": "flow resume コマンドを復活させる。registry.js に登録し、3段階フォールバック探索ロジックを実装する",
+  "worktree": true,
+  "metrics": {
+    "plan": {
+      "docsRead": 2
+    },
+    "draft": {
+      "question": 5
+    },
+    "impl": {
+      "issueLog": 1
+    }
+  },
+  "notes": [
+    "approach: [1] Q&A で要件を整理してから仕様書を作成",
+    "draft: resume は独立コマンド flow resume として registry に登録（prepare と対称）",
+    "draft: フロー探索ロジックを共通ヘルパーに抽出し resume と get-resolve-context で共有",
+    "draft: scanAllFlows 3段目は共通ヘルパーに含め、resume/get-resolve-context 両方で使えるようにする",
+    "draft: resume の出力は JSON envelope 形式（get-resolve-context と同構造）",
+    "draft: スコープ = コマンド実装 + 共通ヘルパー抽出 + SKILL.md テンプレート更新 + upgrade 実行"
+  ]
+}

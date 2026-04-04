@@ -61,6 +61,12 @@ function resolveGateStepId(phase) {
 }
 
 export const FLOW_COMMANDS = {
+  resume: {
+    helpKey: "flow.resume",
+    requiresFlow: false,
+    command: () => import("./lib/run-resume.js"),
+    help: "Usage: sdd-forge flow resume\n\nDiscover and display the active flow context for recovery.",
+  },
   prepare: {
     helpKey: "flow.prepare",
     requiresFlow: false,

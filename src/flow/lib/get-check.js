@@ -45,11 +45,11 @@ function checkDirty(root) {
 }
 
 function checkGh() {
-  const pass = isGhAvailable();
+  const available = isGhAvailable();
   return {
-    pass,
-    summary: pass ? "gh available" : "gh command not found",
-    checks: [{ id: "gh", pass, message: pass ? "available" : "not available" }],
+    pass: available,
+    summary: available ? "gh available" : "gh command not found",
+    checks: [{ id: "gh", pass: available, message: available ? "available" : "not available" }],
   };
 }
 

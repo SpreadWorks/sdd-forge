@@ -1,0 +1,16 @@
+{
+  "entries": [
+    {
+      "step": "merge",
+      "reason": "Merge conflict detected. Run 'git rebase main' in the worktree and retry finalize.",
+      "timestamp": "2026-04-04T06:50:20.014Z"
+    },
+    {
+      "step": "finalize",
+      "reason": "Merge conflict in get-check.js and git-state.js during squash merge to main",
+      "trigger": "sdd-forge flow run finalize --mode all (squash merge)",
+      "resolution": "Manual conflict resolution in worktree",
+      "timestamp": "2026-04-04T06:50:28.703Z"
+    }
+  ]
+}

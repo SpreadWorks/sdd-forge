@@ -1,8 +1,9 @@
 /**
- * src/flow/lib/get-resolve-context.js
+ * src/flow/lib/run-resume.js
  *
- * Resolve worktree/repo paths and active flow for context recovery
- * after compaction.
+ * Resume command — discover and return context of the active flow.
+ * Uses the shared resolveActiveFlow() helper for 3-stage fallback discovery.
+ * Returns the same data structure as get-resolve-context for consistency.
  */
 
 import fs from "fs";
@@ -26,7 +27,11 @@ function extractSection(text, heading) {
   return result.join("\n").trim();
 }
 
-export default class GetResolveContextCommand extends FlowCommand {
+export default class RunResumeCommand extends FlowCommand {
+  constructor() {
+    super({ requiresFlow: false });
+  }
+
   execute(ctx) {
     const { root } = ctx;
 
@@ -55,14 +60,13 @@ export default class GetResolveContextCommand extends FlowCommand {
       scope = extractSection(specText, "Scope") || null;
     }
 
-    // Git/gh state (read-only)
+    // Git/gh state
     const { dirty, dirtyFiles } = getWorktreeStatus(effectiveRoot);
     const currentBranch = getCurrentBranch(effectiveRoot);
     const aheadCount = getAheadCount(effectiveRoot, state.baseBranch || "main");
     const lastCommit = getLastCommit(effectiveRoot);
     const ghAvailable = isGhAvailable();
 
-    // Determine recommended skill
     const phaseSkill = phase === "plan" ? "flow-plan"
       : phase === "impl" ? "flow-impl"
       : phase === "finalize" ? "flow-finalize"
