@@ -1,0 +1,24 @@
+{
+  "guardrails": [
+    {
+      "id": "require-doccomment",
+      "title": "Require Doc Comments",
+      "body": "All classes and functions shall have documentation comments. Use the language's standard format (JSDoc, PHPDoc, docstring, etc.).",
+      "meta": {
+        "phase": [
+          "impl"
+        ]
+      }
+    },
+    {
+      "id": "comment-intent-not-logic",
+      "title": "Comment Intent, Not Logic",
+      "body": "For non-obvious decisions or exceptional handling, leave comments explaining the intent (why), not the logic (what).",
+      "meta": {
+        "phase": [
+          "impl"
+        ]
+      }
+    }
+  ]
+}
