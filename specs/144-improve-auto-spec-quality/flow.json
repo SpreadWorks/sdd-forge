@@ -1,0 +1,126 @@
+{
+  "spec": "specs/144-improve-auto-spec-quality/spec.md",
+  "baseBranch": "main",
+  "featureBranch": "feature/144-improve-auto-spec-quality",
+  "steps": [
+    {
+      "id": "approach",
+      "status": "done"
+    },
+    {
+      "id": "branch",
+      "status": "done"
+    },
+    {
+      "id": "prepare-spec",
+      "status": "pending"
+    },
+    {
+      "id": "draft",
+      "status": "done"
+    },
+    {
+      "id": "gate-draft",
+      "status": "done"
+    },
+    {
+      "id": "spec",
+      "status": "done"
+    },
+    {
+      "id": "gate",
+      "status": "done"
+    },
+    {
+      "id": "approval",
+      "status": "done"
+    },
+    {
+      "id": "test",
+      "status": "done"
+    },
+    {
+      "id": "implement",
+      "status": "in_progress"
+    },
+    {
+      "id": "gate-impl",
+      "status": "done"
+    },
+    {
+      "id": "review",
+      "status": "skipped"
+    },
+    {
+      "id": "finalize",
+      "status": "pending"
+    },
+    {
+      "id": "commit",
+      "status": "pending"
+    },
+    {
+      "id": "push",
+      "status": "pending"
+    },
+    {
+      "id": "merge",
+      "status": "pending"
+    },
+    {
+      "id": "pr-create",
+      "status": "pending"
+    },
+    {
+      "id": "branch-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "pr-merge",
+      "status": "pending"
+    },
+    {
+      "id": "sync-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "docs-update",
+      "status": "pending"
+    },
+    {
+      "id": "docs-review",
+      "status": "pending"
+    },
+    {
+      "id": "docs-commit",
+      "status": "pending"
+    }
+  ],
+  "requirements": [
+    {
+      "desc": "Add Alternatives considered and Future extensibility to autoApprove self-Q&A checklist",
+      "status": "pending"
+    },
+    {
+      "desc": "Add same items to normal-mode Requirements category checklist",
+      "status": "pending"
+    },
+    {
+      "desc": "Add source code deep-read instruction when issue content is thin",
+      "status": "pending"
+    },
+    {
+      "desc": "Add Alternatives Considered section to DEFAULT_SPEC_TEMPLATE",
+      "status": "pending"
+    }
+  ],
+  "issue": 91,
+  "request": "auto mode の spec 品質向上",
+  "worktree": true,
+  "autoApprove": true,
+  "metrics": {
+    "plan": {
+      "docsRead": 1
+    }
+  }
+}

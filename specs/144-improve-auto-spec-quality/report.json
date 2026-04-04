@@ -1,0 +1,35 @@
+{
+  "data": {
+    "implementation": {
+      "diffStat": "specs/144-improve-auto-spec-quality/draft.md       |  49 ++++++++\n specs/144-improve-auto-spec-quality/flow.json      | 126 +++++++++++++++++++++\n specs/144-improve-auto-spec-quality/qa.md          |   9 ++\n specs/144-improve-auto-spec-quality/spec.md        |  74 ++++++++++++\n .../144-improve-auto-spec-quality/tests/README.md  |  22 ++++\n .../tests/verify-checklist-items.test.js           |  45 ++++++++\n src/flow/lib/run-prepare-spec.js                   |   3 +\n src/templates/skills/sdd-forge.flow-plan/SKILL.md  |   7 +-\n 8 files changed, 334 insertions(+), 1 deletion(-)",
+      "commits": [
+        "feat: feature/144-improve-auto-spec-quality",
+        "feat: improve auto mode spec quality with expanded checklist (#91)"
+      ]
+    },
+    "retro": {
+      "total": 4,
+      "done": 4,
+      "partial": 0,
+      "not_done": 0,
+      "rate": 1,
+      "notes": "All 4 requirements are fully satisfied. The deep-read trigger is correctly placed in the autoApprove section only (as specified by P2). The Alternatives Considered section is correctly positioned between Clarifications and User Confirmation in DEFAULT_SPEC_TEMPLATE. Unplanned changes are limited to SDD flow artifacts (specs/, tests/) and a minor but sensible consistency fix in the spec-phase fill instruction."
+    },
+    "issueLog": {
+      "count": 0,
+      "entries": []
+    },
+    "metrics": {
+      "docsRead": 1,
+      "srcRead": 0,
+      "question": 0,
+      "issueLog": 0
+    },
+    "tests": null,
+    "sync": {
+      "status": "skipped",
+      "reason": "sync was skipped"
+    }
+  },
+  "text": "  Report\n\n  Implementation\n  ────────────────────────────────────────────────\n    feat: feature/144-improve-auto-spec-quality\n    feat: improve auto mode spec quality with expanded checklist (#91)\n    8 files changed, 334 insertions(+), 1 deletion(-)\n\n  Retro\n  ────────────────────────────────────────────────\n    ████████ 100%  (4 done / 0 partial / 0 miss)\n\n  Metrics\n  ────────────────────────────────────────────────\n    docs 1  src 0  Q&A 0  issues 0\n\n  Documents\n  ────────────────────────────────────────────────\n    skipped: sync was skipped"
+}

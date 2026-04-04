@@ -113,6 +113,9 @@ const DEFAULT_SPEC_TEMPLATE = `# Feature Specification: {{SPEC_DIR}}
 - Q:
   - A:
 
+## Alternatives Considered
+-
+
 ## User Confirmation
 - [ ] User approved this spec
 - Confirmed at:
