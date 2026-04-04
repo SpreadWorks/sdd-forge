@@ -1,5 +1,5 @@
 {
-  "analyzedAt": "2026-04-04T14:27:36.831Z",
+  "analyzedAt": "2026-04-04T14:30:00.330Z",
   "package": {
     "entries": [
       {
@@ -2812,9 +2812,9 @@
       },
       {
         "file": "src/flow/lib/run-prepare-spec.js",
-        "hash": "fa33139b5f23419f1cd3b11b2f755646",
-        "lines": 322,
-        "mtime": "2026-04-04T08:09:59.595Z",
+        "hash": "7534f45b918e2479528f3ca7b73eead8",
+        "lines": 325,
+        "mtime": "2026-04-04T14:29:59.909Z",
         "className": "run-prepare-spec",
         "methods": [
           "RunPrepareSpecCommand",
@@ -2847,24 +2847,25 @@
         "extends": "FlowCommand",
         "usedBy": null,
         "id": "59eeacc6",
-        "summary": "RunPrepareSpecCommand initializes a new SDD flow by creating spec files, a git branch, and optionally a worktree, then persisting flow state.",
-        "detail": "Validates clean worktree state via ensureClean and base branch existence via ensureBaseBranch. Generates a sequential spec directory index with nextIndex. Creates the branch, optionally a linked worktree under .sdd-forge/worktree/, and writes spec.md and qa.md from templates (local overrides in .sdd-forge/templates/ take precedence via loadLocalTemplate). Saves initial flow state via saveFlowState and registers the flow in .active-flow via addActiveFlow. slugify normalizes the title to a valid branch name segment.",
+        "summary": "Implements the `prepare` flow command that scaffolds a new spec directory with spec.md and qa.md templates, creates a git branch or worktree, and initializes flow state.",
+        "detail": "RunPrepareSpecCommand extends FlowCommand and orchestrates the full spec preparation lifecycle: it validates a clean worktree, resolves the base branch, slugifies the title into a branch/directory name, computes the next numeric spec index, and writes templated spec.md and qa.md files. It supports local template overrides stored under .sdd-forge/templates/<lang>/specs/. After writing files it persists flow state via saveFlowState/addActiveFlow and registers the new branch in the git worktree when running inside a worktree context. Helper functions (runGit, slugify, nextIndex, ensureClean, ensureBaseBranch, detectBaseBranch) are module-private pure utilities. The DEFAULT_SPEC_TEMPLATE is overridable by a project-local file, enabling per-project spec scaffolding customization.",
         "chapter": "internal_design",
         "role": "controller",
         "enrich": {
-          "processedAt": "2026-04-04T08:17:46.932Z",
+          "processedAt": "2026-04-04T14:30:13.130Z",
           "attempts": 1
         },
         "keywords": [
-          "prepare spec",
-          "flow init",
+          "prepare",
+          "spec",
+          "scaffold",
           "worktree",
+          "flow-state",
           "branch",
-          "spec template",
-          "qa template",
-          "flow state",
+          "template",
+          "qa",
           "slugify",
-          "SDD setup"
+          "RunPrepareSpecCommand"
         ]
       },
       {
@@ -7587,5 +7588,5 @@
     },
     "dataSourceHash": "7d725e75d5031be445119323e4947c91"
   },
-  "enrichedAt": "2026-04-04T14:12:47.737Z"
+  "enrichedAt": "2026-04-04T14:30:13.130Z"
 }
