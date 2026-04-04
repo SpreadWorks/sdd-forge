@@ -38,7 +38,7 @@ src/lib/    (lib, config, model)
 | ディレクトリ | ファイル数 | 役割 |
 | --- | --- | --- |
 | src/docs | 40 | cli, controller, model, lib |
-| src/flow | 33 | lib, controller |
+| src/flow | 34 | lib, controller |
 | src/lib | 20 | lib, config, model |
 | src | 7 | controller, cli |
 <!-- {{/data}} -->
