@@ -18,6 +18,7 @@ import { loadFlowState } from "../../lib/flow-state.js";
 import { loadAgentConfig, callAgent, resolveAgent, ensureAgentWorkDir } from "../../lib/agent.js";
 import { runSync } from "../../lib/process.js";
 import { EXIT_ERROR } from "../../lib/exit-codes.js";
+import { VALID_PHASES } from "../lib/phases.js";
 
 /** Maximum retry iterations for review auto-fix loops (test and spec). */
 const MAX_REVIEW_RETRIES = 3;
@@ -27,6 +28,13 @@ const REVIEW_PHASES = {
   test: "test sufficiency",
   spec: "spec completeness",
 };
+
+// Validate REVIEW_PHASES keys are a subset of VALID_PHASES
+for (const key of Object.keys(REVIEW_PHASES)) {
+  if (!VALID_PHASES.includes(key)) {
+    throw new Error(`REVIEW_PHASES key '${key}' is not in VALID_PHASES`);
+  }
+}
 
 /**
  * Resolve review target files from spec scope or git diff fallback.

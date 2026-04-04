@@ -1,0 +1,140 @@
+{
+  "spec": "specs/135-consolidate-valid-phases/spec.md",
+  "baseBranch": "main",
+  "featureBranch": "feature/135-consolidate-valid-phases",
+  "steps": [
+    {
+      "id": "approach",
+      "status": "done"
+    },
+    {
+      "id": "branch",
+      "status": "done"
+    },
+    {
+      "id": "prepare-spec",
+      "status": "pending"
+    },
+    {
+      "id": "draft",
+      "status": "done"
+    },
+    {
+      "id": "gate-draft",
+      "status": "done"
+    },
+    {
+      "id": "spec",
+      "status": "done"
+    },
+    {
+      "id": "gate",
+      "status": "done"
+    },
+    {
+      "id": "approval",
+      "status": "done"
+    },
+    {
+      "id": "test",
+      "status": "done"
+    },
+    {
+      "id": "implement",
+      "status": "done"
+    },
+    {
+      "id": "gate-impl",
+      "status": "done"
+    },
+    {
+      "id": "review",
+      "status": "done"
+    },
+    {
+      "id": "finalize",
+      "status": "pending"
+    },
+    {
+      "id": "commit",
+      "status": "pending"
+    },
+    {
+      "id": "push",
+      "status": "pending"
+    },
+    {
+      "id": "merge",
+      "status": "pending"
+    },
+    {
+      "id": "pr-create",
+      "status": "pending"
+    },
+    {
+      "id": "branch-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "pr-merge",
+      "status": "pending"
+    },
+    {
+      "id": "sync-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "docs-update",
+      "status": "pending"
+    },
+    {
+      "id": "docs-review",
+      "status": "pending"
+    },
+    {
+      "id": "docs-commit",
+      "status": "pending"
+    }
+  ],
+  "requirements": [
+    {
+      "desc": "phases.js に VALID_PHASES 共有定数を定義",
+      "status": "done"
+    },
+    {
+      "desc": "get-guardrail.js がphases.jsからimport",
+      "status": "done"
+    },
+    {
+      "desc": "set-metric.js がphases.jsからimport",
+      "status": "done"
+    },
+    {
+      "desc": "review.js REVIEW_PHASES キーのsubset検証",
+      "status": "done"
+    },
+    {
+      "desc": "registry.js ヘルプテキスト更新",
+      "status": "done"
+    },
+    {
+      "desc": "既存CLIインターフェース不変",
+      "status": "done"
+    }
+  ],
+  "issue": 79,
+  "request": "VALID_PHASES を get-guardrail.js, set-metric.js, review.js から共有定数に統合し、ドリフトを解消する",
+  "worktree": true,
+  "autoApprove": true,
+  "metrics": {
+    "plan": {
+      "docsRead": 2
+    },
+    "draft": {
+      "srcRead": 2
+    },
+    "impl": {
+      "issueLog": 1
+    }
+  }
+}

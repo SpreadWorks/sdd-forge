@@ -9,6 +9,7 @@
  */
 
 import { updateStepStatus, incrementMetric, derivePhase, loadFlowState } from "../lib/flow-state.js";
+import { VALID_PHASES } from "./lib/phases.js";
 
 /**
  * Load flow state and derive the current phase.
@@ -124,7 +125,7 @@ export const FLOW_COMMANDS = {
       requiresFlow: false,
       command: () => import("./lib/get-guardrail.js"),
       args: { positional: ["phase"], options: ["--format"] },
-      help: "Usage: sdd-forge flow get guardrail <phase> [--format json]\n\nReturn guardrails filtered by phase. Phases: draft, spec, impl, lint.",
+      help: `Usage: sdd-forge flow get guardrail <phase> [--format json]\n\nReturn guardrails filtered by phase. Phases: ${VALID_PHASES.join(", ")}.`,
     },
     issue: {
       helpKey: "flow.get.issue",
@@ -203,7 +204,7 @@ export const FLOW_COMMANDS = {
       helpKey: "flow.set.metric",
       command: () => import("./lib/set-metric.js"),
       args: { positional: ["phase", "counter"] },
-      help: "Usage: sdd-forge flow set metric <phase> <counter>\n\nIncrement a metric counter in flow.json. Phases: draft, spec, gate, test, impl. Counters: question, redo, docsRead, srcRead.",
+      help: `Usage: sdd-forge flow set metric <phase> <counter>\n\nIncrement a metric counter in flow.json. Phases: ${VALID_PHASES.join(", ")}. Counters: question, redo, docsRead, srcRead.`,
     },
     "issue-log": {
       helpKey: "flow.set.issue-log",

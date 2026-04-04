@@ -1,0 +1,36 @@
+{
+  "data": {
+    "implementation": {
+      "diffStat": "specs/135-consolidate-valid-phases/draft.md        |  69 +++++\n specs/135-consolidate-valid-phases/flow.json       | 140 +++++++++\n specs/135-consolidate-valid-phases/issue-log.json  |  11 +\n specs/135-consolidate-valid-phases/qa.md           |   9 +\n specs/135-consolidate-valid-phases/review.md       |  33 ++\n specs/135-consolidate-valid-phases/spec.md         |  77 +++++\n specs/135-consolidate-valid-phases/tests/README.md |  24 ++\n .../tests/phases.test.js                           | 331 +++++++++++++++++++++\n specs/135-consolidate-valid-phases/tests/spec.md   | 141 +++++++++\n src/flow/commands/review.js                        |   8 +\n src/flow/lib/get-guardrail.js                      |   5 +-\n src/flow/lib/phases.js                             |   8 +\n src/flow/lib/set-metric.js                         |   5 +-\n src/flow/registry.js                               |   5 +-\n 14 files changed, 858 insertions(+), 8 deletions(-)",
+      "commits": [
+        "feat: feature/135-consolidate-valid-phases",
+        "refactor: derive registry help text from VALID_PHASES, remove unused import",
+        "fix: consolidate VALID_PHASES into shared constant (#79)"
+      ]
+    },
+    "retro": {
+      "total": 6,
+      "done": 6,
+      "partial": 0,
+      "not_done": 0,
+      "rate": 1,
+      "notes": "全6要件が完全に満たされている。phases.js の共有定数定義、3ファイルからの import、subset 検証、ヘルプテキストの動的生成、CLI インターフェースの不変性すべてが diff で確認できる。unplanned の変更はすべて SDD フロー成果物（specs/、tests/）であり、プロダクトコードへの予定外変更はない。"
+    },
+    "issueLog": {
+      "count": 0,
+      "entries": []
+    },
+    "metrics": {
+      "docsRead": 2,
+      "srcRead": 2,
+      "question": 0,
+      "issueLog": 1
+    },
+    "tests": null,
+    "sync": {
+      "status": "skipped",
+      "reason": "sync was skipped"
+    }
+  },
+  "text": "  Report\n\n  Implementation\n  ────────────────────────────────────────────────\n    feat: feature/135-consolidate-valid-phases\n    refactor: derive registry help text from VALID_PHASES, remove unused import\n    fix: consolidate VALID_PHASES into shared constant (#79)\n    14 files changed, 858 insertions(+), 8 deletions(-)\n\n  Retro\n  ────────────────────────────────────────────────\n    ████████ 100%  (6 done / 0 partial / 0 miss)\n\n  Metrics\n  ────────────────────────────────────────────────\n    docs 2  src 2  Q&A 0  issues 1\n\n  Documents\n  ────────────────────────────────────────────────\n    skipped: sync was skipped"
+}

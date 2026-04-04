@@ -1,0 +1,82 @@
+{
+  "spec": "specs/135-consolidate-valid-phases/spec.md",
+  "date": "2026-04-04T07:37:03.130Z",
+  "requirements": [
+    {
+      "desc": "phases.js に VALID_PHASES 共有定数を定義",
+      "status": "done",
+      "note": "src/flow/lib/phases.js が新規作成され、Object.freeze([\"draft\", \"spec\", \"gate\", \"impl\", \"test\", \"lint\"]) として export されている"
+    },
+    {
+      "desc": "get-guardrail.js がphases.jsからimport",
+      "status": "done",
+      "note": "ローカル VALID_PHASES 定義を削除し、phases.js からの import に置換済み。コメントも更新"
+    },
+    {
+      "desc": "set-metric.js がphases.jsからimport",
+      "status": "done",
+      "note": "ローカル VALID_PHASES 定義を削除し、phases.js からの import に置換済み。コメントも更新"
+    },
+    {
+      "desc": "review.js REVIEW_PHASES キーのsubset検証",
+      "status": "done",
+      "note": "VALID_PHASES を phases.js から import し、モジュールトップレベルで for ループによる subset 検証を実装。違反時は即座に Error を throw"
+    },
+    {
+      "desc": "registry.js ヘルプテキスト更新",
+      "status": "done",
+      "note": "VALID_PHASES を import し、ハードコードされたフェーズリストを VALID_PHASES.join(\", \") に置換。get guardrail と set metric の両方のヘルプテキストが更新済み"
+    },
+    {
+      "desc": "既存CLIインターフェース不変",
+      "status": "done",
+      "note": "コマンド引数構造(positional/options)、出力形式、終了コードに変更なし。バリデーションロジックの参照元が変わっただけで外部インターフェースは維持"
+    }
+  ],
+  "unplanned": [
+    {
+      "file": "specs/135-consolidate-valid-phases/draft.md",
+      "change": "ドラフト仕様書の新規追加（SDD フロー成果物）"
+    },
+    {
+      "file": "specs/135-consolidate-valid-phases/flow.json",
+      "change": "フロー状態管理ファイルの新規追加（SDD フロー成果物）"
+    },
+    {
+      "file": "specs/135-consolidate-valid-phases/issue-log.json",
+      "change": "issue-log の新規追加（SDD フロー成果物）"
+    },
+    {
+      "file": "specs/135-consolidate-valid-phases/qa.md",
+      "change": "Q&A ドキュメントの新規追加（SDD フロー成果物）"
+    },
+    {
+      "file": "specs/135-consolidate-valid-phases/review.md",
+      "change": "コードレビュー結果の新規追加（SDD フロー成果物）"
+    },
+    {
+      "file": "specs/135-consolidate-valid-phases/spec.md",
+      "change": "機能仕様書の新規追加（SDD フロー成果物）"
+    },
+    {
+      "file": "specs/135-consolidate-valid-phases/tests/README.md",
+      "change": "テスト説明ドキュメントの新規追加"
+    },
+    {
+      "file": "specs/135-consolidate-valid-phases/tests/phases.test.js",
+      "change": "テストスイートの新規追加（20テストケース）"
+    },
+    {
+      "file": "specs/135-consolidate-valid-phases/tests/spec.md",
+      "change": "テスト設計ドキュメントの新規追加"
+    }
+  ],
+  "summary": {
+    "total": 6,
+    "done": 6,
+    "partial": 0,
+    "not_done": 0,
+    "rate": 1,
+    "notes": "全6要件が完全に満たされている。phases.js の共有定数定義、3ファイルからの import、subset 検証、ヘルプテキストの動的生成、CLI インターフェースの不変性すべてが diff で確認できる。unplanned の変更はすべて SDD フロー成果物（specs/、tests/）であり、プロダクトコードへの予定外変更はない。"
+  }
+}

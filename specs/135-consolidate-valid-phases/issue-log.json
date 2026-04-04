@@ -1,0 +1,11 @@
+{
+  "entries": [
+    {
+      "step": "spec",
+      "reason": "spec review がファイル冒頭にゴミテキストを挿入し、末尾にChanges Appliedセクションを追加",
+      "trigger": "sdd-forge flow run review --phase spec",
+      "resolution": "手動でゴミ行とChanges Appliedセクションを削除",
+      "timestamp": "2026-04-04T07:14:45.728Z"
+    }
+  ]
+}

@@ -3,14 +3,13 @@
  *
  * Increment a metric counter in flow.json.
  *
- * ctx.phase   — one of: draft, spec, gate, test, impl
+ * ctx.phase   — one of VALID_PHASES (see phases.js)
  * ctx.counter — one of: question, redo, docsRead, srcRead
  */
 
 import { FlowCommand } from "./base-command.js";
 import { mutateFlowState } from "../../lib/flow-state.js";
-
-const VALID_PHASES = ["draft", "spec", "gate", "test", "impl"];
+import { VALID_PHASES } from "./phases.js";
 const VALID_COUNTERS = ["question", "redo", "docsRead", "srcRead"];
 
 export default class SetMetricCommand extends FlowCommand {
