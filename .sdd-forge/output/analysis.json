@@ -1,5 +1,5 @@
 {
-  "analyzedAt": "2026-04-04T06:57:23.607Z",
+  "analyzedAt": "2026-04-04T07:37:04.388Z",
   "package": {
     "entries": [
       {
@@ -2083,9 +2083,9 @@
       },
       {
         "file": "src/flow/commands/review.js",
-        "hash": "a6257f6064ff98ff83393a38e71de6a8",
-        "lines": 896,
-        "mtime": "2026-04-03T12:00:36.678Z",
+        "hash": "f259a4b98f9b334830e108663d5f9d78",
+        "lines": 904,
+        "mtime": "2026-04-04T07:37:04.194Z",
         "className": "review",
         "methods": [
           "resolveReviewTarget",
@@ -2123,7 +2123,8 @@
           "../../lib/flow-state.js",
           "../../lib/agent.js",
           "../../lib/process.js",
-          "../../lib/exit-codes.js"
+          "../../lib/exit-codes.js",
+          "../lib/phases.js"
         ],
         "exports": [
           "main",
@@ -2146,12 +2147,12 @@
         "extends": null,
         "usedBy": null,
         "id": "331cf497",
-        "summary": "Implements the SDD flow review command, orchestrating spec review, test review, and code review phases by invoking AI agents iteratively.",
-        "detail": "Defines three review phases (spec-review, test-review, final) and drives each through a retry loop (up to MAX_REVIEW_RETRIES). Spec review reads the spec file, sends it to an AI agent for proposal generation, merges verdicts, and rewrites the spec in place. Test review extracts requirements from the spec, collects existing test files, designs missing tests via AI, performs gap analysis, and applies generated test file fixes. Code review builds a diff-based prompt from implementation files, collects AI proposals, and writes results to review.md. All phases write structured markdown result files (spec-review.md, test-review.md, review.md) into the spec directory.",
+        "summary": "Flow review command that orchestrates spec review, test review, and code review phases using AI agents with retry loops.",
+        "detail": "Implements three distinct review pipelines: spec review (validates spec quality), test review (gap analysis between spec requirements and test files), and code review (proposal-based diff application). Each pipeline uses a retry loop (up to MAX_REVIEW_RETRIES=3) with AI agent calls for detection and fixing. Results are persisted as markdown files (spec-review.md, test-review.md, review.md) in the spec directory. Helper functions handle prompt building, proposal parsing, verdict merging, and test file collection from both project-level and spec-level test directories.",
         "chapter": "internal_design",
         "role": "controller",
         "enrich": {
-          "processedAt": "2026-04-03T12:01:07.319Z",
+          "processedAt": "2026-04-04T07:37:25.012Z",
           "attempts": 1
         },
         "keywords": [
@@ -2159,12 +2160,12 @@
           "spec-review",
           "test-review",
           "code-review",
+          "retry-loop",
           "AI agent",
-          "retry loop",
-          "gap analysis",
           "proposals",
+          "gap-analysis",
           "verdicts",
-          "flow command"
+          "flow"
         ]
       },
       {
@@ -2344,16 +2345,17 @@
       },
       {
         "file": "src/flow/lib/get-guardrail.js",
-        "hash": "b19632b61628e434cfc719da4ba24918",
-        "lines": 63,
-        "mtime": "2026-04-03T12:59:14.273Z",
+        "hash": "6ddd158481986aea194cf9983a77dae4",
+        "lines": 62,
+        "mtime": "2026-04-04T07:37:04.194Z",
         "className": "get-guardrail",
         "methods": [
           "toMarkdown"
         ],
         "imports": [
           "../../lib/guardrail.js",
-          "./base-command.js"
+          "./base-command.js",
+          "./phases.js"
         ],
         "exports": [
           "default"
@@ -2363,28 +2365,23 @@
           "src/lib/lint.js"
         ],
         "id": "f80cce52",
-        "summary": "Implements the 'flow get guardrail' command that retrieves and formats guardrail rules for a specific SDD phase as Markdown. Validates the phase parameter against a fixed list of valid phases.",
-        "detail": "GetGuardrailCommand extends FlowCommand and uses loadMergedGuardrails and filterByPhase from the guardrail library to fetch phase-specific rules. It validates that a phase argument is provided and that it matches one of the five valid phases: draft, spec, impl, test, or lint. Filtered guardrails are converted to Markdown via a local toMarkdown helper and returned as a result object. Error handling covers both missing and unrecognized phase values.",
-        "chapter": "cli_commands",
-        "role": "controller",
+        "summary": "FlowCommand subclass that loads and filters guardrails by phase, returning them as markdown.",
+        "detail": "Extends FlowCommand base class to implement the 'flow get guardrail' subcommand. Validates the requested phase against VALID_PHASES, then calls loadMergedGuardrails and filterByPhase to retrieve applicable guardrail rules. Converts the filtered guardrail list to markdown format via a toMarkdown helper. Returns a structured result object with the markdown string.",
+        "chapter": "internal_design",
+        "role": "lib",
         "enrich": {
-          "processedAt": "2026-04-03T12:59:22.798Z",
+          "processedAt": "2026-04-04T07:37:25.012Z",
           "attempts": 1
         },
         "keywords": [
           "guardrail",
-          "get-guardrail",
-          "flow get",
           "phase",
-          "filterByPhase",
-          "loadMergedGuardrails",
-          "FlowCommand",
+          "filter",
           "markdown",
-          "draft",
-          "spec",
-          "impl",
-          "test",
-          "lint"
+          "FlowCommand",
+          "get-guardrail",
+          "flow",
+          "rules"
         ]
       },
       {
@@ -2569,6 +2566,45 @@
           "derivePhase",
           "progress",
           "get-status"
+        ]
+      },
+      {
+        "file": "src/flow/lib/phases.js",
+        "hash": "1f57a95b47e40b4cf6f47b9cfe3462fa",
+        "lines": 9,
+        "mtime": "2026-04-04T07:37:04.194Z",
+        "className": "phases",
+        "methods": [],
+        "imports": [],
+        "exports": [
+          "VALID_PHASES"
+        ],
+        "extends": null,
+        "usedBy": [
+          "src/flow/lib/get-guardrail.js",
+          "src/flow/lib/set-metric.js",
+          "src/flow/registry.js"
+        ],
+        "id": "5d33316d",
+        "summary": "Defines and exports the frozen VALID_PHASES constant array used across the flow system for phase validation.",
+        "detail": "Single-export module that defines the canonical ordered list of valid flow phases: draft, spec, gate, impl, test, lint. Exported as a frozen array to prevent mutation. Referenced by multiple flow command modules (review.js, get-guardrail.js, set-metric.js, registry.js) for phase validation and error messaging.",
+        "chapter": "internal_design",
+        "role": "lib",
+        "enrich": {
+          "processedAt": "2026-04-04T07:37:25.012Z",
+          "attempts": 1
+        },
+        "keywords": [
+          "phases",
+          "VALID_PHASES",
+          "draft",
+          "spec",
+          "gate",
+          "impl",
+          "test",
+          "lint",
+          "constants",
+          "flow"
         ]
       },
       {
@@ -3165,14 +3201,15 @@
       },
       {
         "file": "src/flow/lib/set-metric.js",
-        "hash": "dd639199c4aca4bb36b88885fc33306a",
-        "lines": 44,
-        "mtime": "2026-04-03T01:07:47.872Z",
+        "hash": "1a4697eb3ebf16dcdd577fc7fcc33ed1",
+        "lines": 43,
+        "mtime": "2026-04-04T07:37:04.194Z",
         "className": "set-metric",
         "methods": [],
         "imports": [
           "./base-command.js",
-          "../../lib/flow-state.js"
+          "../../lib/flow-state.js",
+          "./phases.js"
         ],
         "exports": [
           "default"
@@ -3180,25 +3217,25 @@
         "extends": "FlowCommand",
         "usedBy": null,
         "id": "40d93087",
-        "summary": "Implements `flow set metric`, incrementing a named counter for a given SDD phase in flow.json.",
-        "detail": "Validates phase against VALID_PHASES (draft, spec, gate, test, impl) and counter against VALID_COUNTERS (question, redo, docsRead, srcRead). Calls mutateFlowState to increment the counter atomically. Returns the new value. Used by post-hooks in the registry to auto-record flow metrics.",
+        "summary": "FlowCommand subclass that increments a named metric counter for a given phase in the persisted flow state.",
+        "detail": "Implements the 'flow set metric' subcommand by validating both the phase (against VALID_PHASES) and counter name (against VALID_COUNTERS: question, redo, docsRead, srcRead). Calls mutateFlowState to atomically increment the specified counter within the phase's metrics object. Returns the updated phase, counter name, and new value. Used by post-hooks to automatically record AI interaction metrics during flow execution.",
         "chapter": "internal_design",
         "role": "lib",
         "enrich": {
-          "processedAt": "2026-04-03T03:15:49.316Z",
+          "processedAt": "2026-04-04T07:37:25.012Z",
           "attempts": 1
         },
         "keywords": [
           "metric",
           "counter",
+          "flow-state",
+          "increment",
           "phase",
-          "set-metric",
-          "flow-metrics",
           "question",
           "redo",
           "docsRead",
           "srcRead",
-          "increment"
+          "FlowCommand"
         ]
       },
       {
@@ -3411,9 +3448,9 @@
       },
       {
         "file": "src/flow/registry.js",
-        "hash": "2fc3ad24a1d504107b081fad92cf97aa",
-        "lines": 419,
-        "mtime": "2026-04-04T06:57:23.426Z",
+        "hash": "b91ee5eaffefda800bb7ea294fbe818e",
+        "lines": 420,
+        "mtime": "2026-04-04T07:37:04.194Z",
         "className": "registry",
         "methods": [
           "deriveActivePhase",
@@ -3423,7 +3460,8 @@
           "resolveGateStepId"
         ],
         "imports": [
-          "../lib/flow-state.js"
+          "../lib/flow-state.js",
+          "./lib/phases.js"
         ],
         "exports": [
           "FLOW_COMMANDS"
@@ -3433,23 +3471,25 @@
           "src/flow.js"
         ],
         "id": "d64f4095",
-        "summary": "Central registry that defines all `sdd-forge flow` commands, their argument schemas, pre/post hooks, and help text. Acts as the single source of truth for command wiring in the flow dispatcher.",
-        "detail": "Exports FLOW_COMMANDS as a structured map keyed by group and command name. Each entry declares a command class, argument definitions, optional pre/post lifecycle hooks, and help text. `stepPre` and `stepPost` factory functions generate hooks that update step statuses in flow.json before and after command execution. `resolveGateStepId` maps a phase name to its gate step ID. `deriveActivePhase` is a convenience wrapper that loads flow state and computes the current phase for use in conditional hook logic.",
-        "chapter": "internal_design",
+        "summary": "Central registry that maps flow subcommand names to their handler classes, args schemas, and pre/post hooks for step tracking and metrics.",
+        "detail": "Defines FLOW_COMMANDS as a flat map of command descriptors used by the flow dispatcher. Provides stepPre and stepPost hook factories that automatically update step status (in_progress/done) and increment metrics via tryUpdateStepStatus and incrementMetric. deriveActivePhase infers the current phase from flow state steps. resolveGateStepId maps phase names to gate step identifiers. Commands are registered with args definitions, help strings, command class references, and optional pre/post lifecycle hooks.",
+        "chapter": "cli_commands",
         "role": "controller",
         "enrich": {
-          "processedAt": "2026-04-04T06:58:00.015Z",
+          "processedAt": "2026-04-04T07:37:25.012Z",
           "attempts": 1
         },
         "keywords": [
           "registry",
-          "commands",
+          "FLOW_COMMANDS",
+          "dispatch",
           "hooks",
-          "pre post",
-          "step status",
-          "dispatch table",
-          "flow commands",
-          "wiring"
+          "step-status",
+          "metrics",
+          "pre-hook",
+          "post-hook",
+          "flow",
+          "subcommand"
         ]
       },
       {
@@ -7532,10 +7572,10 @@
       }
     ],
     "summary": {
-      "total": 222,
+      "total": 223,
       "totalMethods": 679
     },
     "dataSourceHash": "7d725e75d5031be445119323e4947c91"
   },
-  "enrichedAt": "2026-04-04T06:58:00.015Z"
+  "enrichedAt": "2026-04-04T07:37:25.012Z"
 }
