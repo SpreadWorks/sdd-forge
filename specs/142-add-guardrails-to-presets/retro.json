@@ -1,0 +1,83 @@
+{
+  "spec": "specs/142-add-guardrails-to-presets/spec.md",
+  "date": "2026-04-04T15:36:21.885Z",
+  "requirements": [
+    {
+      "desc": "R0: VALID_PHASES に review 追加",
+      "status": "done",
+      "note": "src/flow/lib/phases.js に \"review\" が追加されている"
+    },
+    {
+      "desc": "R1: webapp guardrail 6件追加",
+      "status": "done",
+      "note": "webapp/templates/en/guardrail.json と ja/guardrail.json に6件（authorization-flow-in-spec, queue-design-for-heavy-processing, cache-invalidation-strategy, no-queries-in-view-templates, detect-n-plus-one-queries, detect-missing-index-on-foreign-keys）が追加済み。phase も仕様通り"
+    },
+    {
+      "desc": "R2: php-webapp guardrail 1件新規作成",
+      "status": "done",
+      "note": "php-webapp/templates/en/guardrail.json と ja/guardrail.json が新規作成され、use-language-enum-for-fixed-values（phase: impl）が含まれている"
+    },
+    {
+      "desc": "R3: laravel guardrail 6件追加",
+      "status": "done",
+      "note": "laravel/templates/en/guardrail.json と ja/guardrail.json に6件（eager-loading-strategy-required, enable-prevent-lazy-loading, use-query-scopes-for-reusable-conditions, use-enum-casting-in-eloquent, use-factory-for-test-data, invokeable-controller-for-single-action）が追加済み。phase も仕様通り"
+    },
+    {
+      "desc": "R4: laravel no-unguarded-mass-assignment 文言調整",
+      "status": "done",
+      "note": "en: phase が [impl, review] に変更、body に migration 関連の追記あり。ja: 同様に phase 更新と body 追記あり"
+    },
+    {
+      "desc": "R5: NOTICE ファイル作成 (webapp/php-webapp/laravel)",
+      "status": "done",
+      "note": "3ファイルとも作成済み。フォーマット（Affected articles / Original source / License）準拠。ライセンス種別でグループ化されている"
+    },
+    {
+      "desc": "R6: en/ja 両言語で guardrail.json 更新",
+      "status": "done",
+      "note": "R1〜R4 すべてで en/ja 両方が更新されている。ID・phase は en/ja で一致"
+    }
+  ],
+  "unplanned": [
+    {
+      "file": "src/presets/laravel/templates/ja/guardrail.json",
+      "change": "既存4件の guardrail ID を en に合わせて修正（eloquent-query-builder → use-eloquent-or-query-builder, controller → no-business-logic-in-controllers, formrequest → use-form-request-validation, mass-assignment → no-unguarded-mass-assignment）。issue-log に記録あり、en/ja 不一致の修正"
+    },
+    {
+      "file": "specs/142-add-guardrails-to-presets/draft.md",
+      "change": "ドラフト文書の新規作成（spec 作成プロセスの成果物）"
+    },
+    {
+      "file": "specs/142-add-guardrails-to-presets/flow.json",
+      "change": "フロー管理ファイルの新規作成"
+    },
+    {
+      "file": "specs/142-add-guardrails-to-presets/issue-log.json",
+      "change": "issue-log の新規作成"
+    },
+    {
+      "file": "specs/142-add-guardrails-to-presets/qa.md",
+      "change": "Q&A ファイルの新規作成"
+    },
+    {
+      "file": "specs/142-add-guardrails-to-presets/review.md",
+      "change": "コードレビュー結果ファイル（本 feature とは無関係な既存コードの DRY 改善提案6件を記載）"
+    },
+    {
+      "file": "specs/142-add-guardrails-to-presets/spec.md",
+      "change": "仕様書の新規作成"
+    },
+    {
+      "file": "specs/142-add-guardrails-to-presets/tests/",
+      "change": "テスト設計書・検証テスト・README の新規作成（spec verification tests）"
+    }
+  ],
+  "summary": {
+    "total": 7,
+    "done": 7,
+    "partial": 0,
+    "not_done": 0,
+    "rate": 1,
+    "notes": "全7要件（R0〜R6）が完全に満たされている。guardrail の ID・title・body・phase はすべて仕様通り。NOTICE ファイルのフォーマット・出典・ライセンスグループ順序も準拠。唯一の仕様外変更は laravel/ja の既存4件の ID 修正（en との不一致解消）で、これは品質改善として妥当。specs/ 配下のファイルは SDD フロー成果物であり問題なし。review.md に記載された6件の DRY 改善提案は本 feature の diff には含まれていない（提案のみ）。"
+  }
+}
