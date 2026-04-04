@@ -1,5 +1,5 @@
 {
-  "analyzedAt": "2026-04-04T13:51:28.000Z",
+  "analyzedAt": "2026-04-04T13:57:06.929Z",
   "package": {
     "entries": [
       {
@@ -2576,9 +2576,9 @@
       },
       {
         "file": "src/flow/lib/phases.js",
-        "hash": "c8271f3e1381d5e41fb4777c95b5d34f",
-        "lines": 15,
-        "mtime": "2026-04-04T08:09:59.595Z",
+        "hash": "22fd09d92596cdae6d9becbcf10961ea",
+        "lines": 16,
+        "mtime": "2026-04-04T13:57:06.673Z",
         "className": "phases",
         "methods": [],
         "imports": [],
@@ -2592,23 +2592,27 @@
           "src/flow/registry.js"
         ],
         "id": "5d33316d",
-        "summary": "Defines and exports the VALID_PHASES frozen array, which enumerates all legal phase identifiers in the SDD flow.",
-        "detail": "Exports a single frozen constant array listing phase names such as draft, spec, pre, post, impl, review, and others. Being frozen prevents accidental mutation at runtime. This module serves as the single source of truth for phase identifiers referenced across gate, review, and registry modules.",
+        "summary": "Defines the single source of truth for valid SDD flow phase names as a frozen constant array.",
+        "detail": "Exports VALID_PHASES as an Object.freeze'd array of seven phase strings: draft, spec, gate, impl, test, lint, and review. This module acts as a shared constant to prevent duplication across flow subcommands. Being frozen, the array is immutable at runtime, guarding against accidental mutation. Its minimal design—no logic, just a constant export—makes it trivially importable by any flow layer component that needs phase validation or enumeration.",
         "chapter": "internal_design",
         "role": "lib",
         "enrich": {
-          "processedAt": "2026-04-04T08:17:46.932Z",
+          "processedAt": "2026-04-04T13:57:21.702Z",
           "attempts": 1
         },
         "keywords": [
           "phases",
           "VALID_PHASES",
-          "flow phases",
+          "flow phase",
           "constants",
           "draft",
           "spec",
+          "gate",
           "impl",
-          "review"
+          "review",
+          "lint",
+          "test",
+          "frozen"
         ]
       },
       {
@@ -7578,5 +7582,5 @@
     },
     "dataSourceHash": "7d725e75d5031be445119323e4947c91"
   },
-  "enrichedAt": "2026-04-04T13:52:16.857Z"
+  "enrichedAt": "2026-04-04T13:57:21.702Z"
 }
