@@ -59,7 +59,7 @@
     {
       "id": "prioritize-requirements",
       "title": "Prioritize Requirements",
-      "body": "When requirements exceed three items, specify their priority order. This prevents scope creep and ensures the most critical items are addressed first.",
+      "body": "When requirements exceed three items, specify their priority order.",
       "meta": {
         "phase": [
           "draft",
@@ -113,7 +113,7 @@
     {
       "id": "changes-require-test-coverage",
       "title": "Changes Require Test Coverage",
-      "body": "New features and bug fixes shall include corresponding tests. At minimum, tests for the primary success path (happy path) are required. Changes without tests shall state the reason in the spec.",
+      "body": "New features and bug fixes shall include tests covering at least the happy path. Changes without tests shall state the reason in the spec.",
       "meta": {
         "phase": [
           "spec",
@@ -124,7 +124,7 @@
     {
       "id": "test-covers-spec-requirements",
       "title": "Test Covers Spec Requirements",
-      "body": "Each requirement stated in the spec shall have a corresponding test. A state where the mapping between requirements and tests cannot be confirmed is insufficient.",
+      "body": "Each spec requirement shall have a corresponding test that verifies it.",
       "meta": {
         "phase": [
           "test"
@@ -134,7 +134,7 @@
     {
       "id": "spec-includes-test-strategy",
       "title": "Spec Includes Test Strategy",
-      "body": "The spec shall include a test strategy (what to test and how). Specs without a test strategy shall not pass the gate.",
+      "body": "The spec shall include a test strategy (what to test and how).",
       "meta": {
         "phase": [
           "spec"

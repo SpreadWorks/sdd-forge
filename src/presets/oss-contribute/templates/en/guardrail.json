@@ -14,7 +14,7 @@
     {
       "id": "small-focused-pr",
       "title": "Small Focused PR",
-      "body": "Keep PRs focused on a single concern. Reviewers are volunteers — large PRs are unlikely to be reviewed.",
+      "body": "Keep PRs focused on a single concern.",
       "meta": {
         "phase": [
           "spec"

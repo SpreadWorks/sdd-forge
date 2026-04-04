@@ -14,7 +14,7 @@
     {
       "id": "document-error-responses",
       "title": "Document Error Responses",
-      "body": "API error responses (status codes, format, messages) shall be included in the spec. Specs covering only success cases are incomplete.",
+      "body": "API error responses (status codes, format, messages) shall be included in the spec.",
       "meta": {
         "phase": [
           "spec"

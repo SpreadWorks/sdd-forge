@@ -33,7 +33,7 @@
     {
       "id": "add-type-definitions",
       "title": "Add Type Definitions",
-      "body": "For code quality, adding and strengthening type definitions is encouraged.",
+      "body": "For code quality, add type definitions to untyped code and strengthen weak types (any, unknown) when changing files.",
       "meta": {
         "phase": [
           "impl"
