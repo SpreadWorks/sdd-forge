@@ -11,4 +11,5 @@ export const VALID_PHASES = Object.freeze([
   "impl",
   "test",
   "lint",
+  "review",
 ]);

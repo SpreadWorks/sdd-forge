@@ -1,0 +1,35 @@
+{
+  "data": {
+    "implementation": {
+      "diffStat": "specs/145-review-subprocess-retry/draft.md         |  50 ++++++++\n specs/145-review-subprocess-retry/flow.json        | 126 +++++++++++++++++++++\n specs/145-review-subprocess-retry/qa.md            |   9 ++\n specs/145-review-subprocess-retry/review.md        |  41 +++++++\n specs/145-review-subprocess-retry/spec.md          |  89 +++++++++++++++\n specs/145-review-subprocess-retry/tests/README.md  |  19 ++++\n .../tests/retry-logic.test.js                      |  89 +++++++++++++++\n src/flow/lib/run-review.js                         |  39 ++++++-\n 8 files changed, 461 insertions(+), 1 deletion(-)",
+      "commits": [
+        "feat: feature/145-review-subprocess-retry",
+        "fix: add retry mechanism to review subprocess"
+      ]
+    },
+    "retro": {
+      "total": 4,
+      "done": 4,
+      "partial": 0,
+      "not_done": 0,
+      "rate": 1,
+      "notes": "全4要件が実装・テスト済み。runCmdWithRetry はリトライ回数・遅延・killed/signal除外・stderr進捗出力をすべて仕様通りに実装。テストは6ケースで仕様要求の4パターンを網羅。unplanned はすべてSDDワークフローの標準成果物であり問題なし。レビューで指摘された DRY 改善（agent.js との共通化）と モジュール配置（retry.js への分離）は approved だが未適用。これらは spec の Out of Scope に明記されている。"
+    },
+    "issueLog": {
+      "count": 0,
+      "entries": []
+    },
+    "metrics": {
+      "docsRead": 0,
+      "srcRead": 2,
+      "question": 0,
+      "issueLog": 0
+    },
+    "tests": null,
+    "sync": {
+      "status": "skipped",
+      "reason": "sync was skipped"
+    }
+  },
+  "text": "  Report\n\n  Implementation\n  ────────────────────────────────────────────────\n    feat: feature/145-review-subprocess-retry\n    fix: add retry mechanism to review subprocess\n    8 files changed, 461 insertions(+), 1 deletion(-)\n\n  Retro\n  ────────────────────────────────────────────────\n    ████████ 100%  (4 done / 0 partial / 0 miss)\n\n  Metrics\n  ────────────────────────────────────────────────\n    docs 0  src 2  Q&A 0  issues 0\n\n  Documents\n  ────────────────────────────────────────────────\n    skipped: sync was skipped"
+}

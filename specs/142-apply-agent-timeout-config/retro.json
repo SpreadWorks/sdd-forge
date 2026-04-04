@@ -1,0 +1,57 @@
+{
+  "spec": "specs/142-apply-agent-timeout-config/spec.md",
+  "date": "2026-04-04T13:51:26.748Z",
+  "requirements": [
+    {
+      "desc": "resolveAgent に timeoutMs フィールドを追加",
+      "status": "done",
+      "note": "src/lib/agent.js の resolveAgent に agentSection.timeout != null チェック付きで timeoutMs を算出し、両方の return パス（profiles なし／あり）に含めている"
+    },
+    {
+      "desc": "callAgent/callAgentAsync が agent.timeoutMs をデフォルトとして使用",
+      "status": "done",
+      "note": "callAgent と callAgentAsyncOnce の両方で timeout 解決を timeoutMs || agent.timeoutMs || DEFAULT_AGENT_TIMEOUT_MS に変更済み"
+    },
+    {
+      "desc": "text.js/forge.js/enrich.js の cfg.agent?.timeout 直接参照を削除",
+      "status": "done",
+      "note": "text.js: configTimeout 変数削除し agent.timeoutMs を使用。forge.js: config.agent?.timeout 三項演算子を agent?.timeoutMs に置換。enrich.js: config.agent?.timeout 変換を agent.timeoutMs || DEFAULT_AGENT_TIMEOUT_MS に置換"
+    },
+    {
+      "desc": "readme.js/translate.js/agents.js の DEFAULT_AGENT_TIMEOUT_MS 直接使用を置換",
+      "status": "done",
+      "note": "readme.js: DEFAULT_AGENT_TIMEOUT_MS import 削除、agent.timeoutMs を使用。translate.js: DEFAULT_AGENT_TIMEOUT_MS import と DEFAULT_TIMEOUT_MS エイリアス削除、agent.timeoutMs を使用。agents.js: DEFAULT_AGENT_TIMEOUT_MS import 削除、callAgent 第3引数を agent.timeoutMs に変更"
+    },
+    {
+      "desc": "run-review.js のハードコード 300000 を config 経由に置換",
+      "status": "done",
+      "note": "ハードコード 300000 を ctx.config?.agent?.timeout から算出した timeoutMs に置換。ただし resolveAgent 経由ではなく独自に変換しており、spec の一元化意図とは若干乖離（review.md でも指摘済み）"
+    }
+  ],
+  "unplanned": [
+    {
+      "file": "specs/142-apply-agent-timeout-config/",
+      "change": "spec ファイル群（draft.md, flow.json, issue-log.json, qa.md, review.md, spec.md, tests/README.md, tests/spec.md）の追加 — SDD フロー成果物であり実装外"
+    },
+    {
+      "file": "tests/e2e/142-agent-timeout-config.test.js",
+      "change": "静的解析回帰テストと resolveAgent 伝搬テストの新規追加（spec の Test Strategy に記載はあるが Requirements List には明示されていない）"
+    },
+    {
+      "file": "tests/unit/lib/agent.test.js",
+      "change": "callAgent/callAgentAsync のフォールバックチェーンテスト、resolveAgent の境界値テスト（timeout=0, null, 文字列）、既存テストの期待値に timeoutMs 追加"
+    },
+    {
+      "file": "src/lib/agent.js",
+      "change": "resolveAgent 内の profiles なしパスのコメントから「backward compat」を削除し spread + timeoutMs 付与に変更（コメント変更自体は要件外）"
+    }
+  ],
+  "summary": {
+    "total": 5,
+    "done": 5,
+    "partial": 0,
+    "not_done": 0,
+    "rate": 1,
+    "notes": "5件の要件すべてが実装済み。run-review.js のみ resolveAgent 経由ではなく独自に ctx.config?.agent?.timeout を変換しており、spec の「一元化」意図との軽微な乖離があるが、機能的にはハードコード 300000 の除去という要件は満たしている。テストは単体・E2E ともに追加されており、回帰防止の静的解析テストも含まれる。"
+  }
+}

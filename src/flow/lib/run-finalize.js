@@ -24,19 +24,21 @@ import { FLOW_COMMANDS } from "../registry.js";
  * @param {string} stepName
  * @returns {(ctx: object, err: Error) => void}
  */
-export function finalizeOnError(stepName) {
+export function finalizeOnError(stepName, trigger) {
   return (ctx, err) => {
     try {
       // Use mainRoot in worktree mode so issue-log persists after cleanup
       const logRoot = ctx.mainRoot || ctx.root;
       const issueLog = loadIssueLog(logRoot, ctx.flowState.spec);
-      issueLog.entries.push({
+      const entry = {
         step: stepName,
         reason: err.message || String(err),
         timestamp: new Date().toISOString(),
-      });
+      };
+      if (trigger) entry.trigger = trigger;
+      issueLog.entries.push(entry);
       saveIssueLog(logRoot, ctx.flowState.spec, issueLog);
-    } catch (_) { /* best effort */ }
+    } catch (e) { console.error("[issue-log hook]", e.message); }
   };
 }
 

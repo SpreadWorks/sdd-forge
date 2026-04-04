@@ -30,6 +30,22 @@
           "spec"
         ]
       }
+    },
+    {
+      "id": "strict-comparison-only",
+      "title": "厳密比較のみ",
+      "body": "比較演算を行う場合: === と !== のみを使用し、== と != を禁止すること。",
+      "meta": {
+        "phase": ["impl"]
+      }
+    },
+    {
+      "id": "no-else-after-return",
+      "title": "return/throw 後の else 禁止",
+      "body": "条件分岐を記述する場合: return または throw の後に else/elseif を書かず、早期リターンパターンでネストを浅くすること。",
+      "meta": {
+        "phase": ["impl"]
+      }
     }
   ]
 }

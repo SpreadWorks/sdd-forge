@@ -61,6 +61,65 @@ function findMethodsWithAttributes(content) {
   return results;
 }
 
+// ---------------------------------------------------------------------------
+// Shared parse helper (used by both parse() and analyzeControllers())
+// ---------------------------------------------------------------------------
+
+const SKIP_DI_TYPES = new Set(["Request", "array", "string", "int", "bool", "float"]);
+
+/**
+ * Parse Symfony controller content string and return raw parse result.
+ * No file I/O — caller provides content.
+ *
+ * @param {string} content - PHP source code
+ * @returns {{ className: string|null, parentClass: string, classRoutePrefix: string, actions: Array, diDeps: string[] }}
+ */
+function parseControllerContent(content) {
+  const classMatch = content.match(/class\s+(\w+)\s+(?:extends\s+(\w+))?/);
+  const className = classMatch ? classMatch[1] : null;
+  const parentClass = classMatch && classMatch[2] ? classMatch[2] : "";
+
+  // Class-level #[Route] prefix
+  const classRouteMatch = content.match(/#\[Route\s*\(\s*['"]([^'"]*)['"]/);
+  const classRoutePrefix = classRouteMatch ? classRouteMatch[1] : "";
+
+  // Public methods (actions) with #[Route] attributes
+  const actions = [];
+  const methodMatches = findMethodsWithAttributes(content);
+  for (const { methodName, attrBlock } of methodMatches) {
+    if (methodName === "__construct" || methodName.startsWith("_")) continue;
+
+    const routes = [];
+    const routeAttrRegex = /#\[Route\s*\(\s*['"]([^'"]*)['"]\s*(?:,\s*(?:name:\s*['"]([^'"]*)['"]\s*)?(?:,?\s*methods:\s*\[([^\]]*)\])?)?\s*\)/g;
+    let rm;
+    while ((rm = routeAttrRegex.exec(attrBlock)) !== null) {
+      const routePath = rm[1];
+      const routeName = rm[2] || "";
+      const methods = rm[3]
+        ? rm[3].match(/['"](\w+)['"]/g)?.map((s) => s.replace(/['"]/g, "")) || ["GET"]
+        : ["GET"];
+      routes.push({ path: classRoutePrefix + routePath, name: routeName, methods });
+    }
+
+    actions.push({ name: methodName, routes });
+  }
+
+  // Constructor DI dependencies
+  const diDeps = [];
+  const ctorMatch = content.match(/public\s+function\s+__construct\s*\(([^)]*)\)/s);
+  if (ctorMatch) {
+    const depRegex = /(?:private|protected|public)?\s*(?:readonly\s+)?(\w+)\s+\$\w+/g;
+    let dm;
+    while ((dm = depRegex.exec(ctorMatch[1])) !== null) {
+      if (!SKIP_DI_TYPES.has(dm[1])) {
+        diDeps.push(dm[1]);
+      }
+    }
+  }
+
+  return { className, parentClass, classRoutePrefix, actions, diDeps };
+}
+
 export default class SymfonyControllersSource extends ControllersSource {
   static Entry = ControllerEntry;
 
@@ -71,52 +130,12 @@ export default class SymfonyControllersSource extends ControllersSource {
   parse(absPath) {
     const entry = new ControllerEntry();
     const content = fs.readFileSync(absPath, "utf8");
+    const parsed = parseControllerContent(content);
 
-    const classMatch = content.match(/class\s+(\w+)\s+(?:extends\s+(\w+))?/);
-    entry.className = classMatch ? classMatch[1] : path.basename(absPath, ".php");
-    entry.parentClass = classMatch && classMatch[2] ? classMatch[2] : "";
-
-    // Class-level #[Route] prefix
-    const classRouteMatch = content.match(/#\[Route\s*\(\s*['"]([^'"]*)['"]/);
-    const classRoutePrefix = classRouteMatch ? classRouteMatch[1] : "";
-
-    // Public methods (actions) with #[Route] attributes
-    const actions = [];
-    const methodMatches = findMethodsWithAttributes(content);
-    for (const { methodName, attrBlock } of methodMatches) {
-      if (methodName === "__construct" || methodName.startsWith("_")) continue;
-
-      const routes = [];
-      const routeAttrRegex = /#\[Route\s*\(\s*['"]([^'"]*)['"]\s*(?:,\s*(?:name:\s*['"]([^'"]*)['"]\s*)?(?:,?\s*methods:\s*\[([^\]]*)\])?)?\s*\)/g;
-      let rm;
-      while ((rm = routeAttrRegex.exec(attrBlock)) !== null) {
-        const routePath = rm[1];
-        const routeName = rm[2] || "";
-        const methods = rm[3]
-          ? rm[3].match(/['"](\w+)['"]/g)?.map((s) => s.replace(/['"]/g, "")) || ["GET"]
-          : ["GET"];
-        routes.push({ path: classRoutePrefix + routePath, name: routeName, methods });
-      }
-
-      actions.push({ name: methodName, routes });
-    }
-    entry.actions = actions;
-
-    // Constructor DI dependencies
-    const diDeps = [];
-    const ctorMatch = content.match(/public\s+function\s+__construct\s*\(([^)]*)\)/s);
-    if (ctorMatch) {
-      const depRegex = /(?:private|protected|public)?\s*(?:readonly\s+)?(\w+)\s+\$\w+/g;
-      let dm;
-      while ((dm = depRegex.exec(ctorMatch[1])) !== null) {
-        const typeName = dm[1];
-        if (!["Request", "array", "string", "int", "bool", "float"].includes(typeName)) {
-          diDeps.push(typeName);
-        }
-      }
-    }
-
-    entry.components = diDeps;
+    entry.className = parsed.className ?? path.basename(absPath, ".php");
+    entry.parentClass = parsed.parentClass;
+    entry.actions = parsed.actions;
+    entry.components = parsed.diDeps;
     entry.uses = [];
 
     return entry;
@@ -176,65 +195,20 @@ export function analyzeControllers(sourceRoot) {
   if (!fs.existsSync(baseDir)) return { controllers: [], summary: { total: 0, totalActions: 0 } };
 
   const files = findFiles(baseDir, "*.php", [".gitkeep"], true);
-  const controllers = files.map((f) => ({
-    ...parseControllerFile(f.absPath, f.relPath),
-    lines: f.lines, hash: f.hash, mtime: f.mtime,
-  }));
+  const controllers = files.map((f) => {
+    const content = fs.readFileSync(f.absPath, "utf8");
+    const parsed = parseControllerContent(content);
+    return {
+      file: path.join("src/Controller", f.relPath),
+      className: parsed.className ?? path.basename(f.absPath, ".php"),
+      parentClass: parsed.parentClass,
+      actions: parsed.actions,
+      diDeps: parsed.diDeps,
+      classRoutePrefix: parsed.classRoutePrefix,
+      lines: f.lines, hash: f.hash, mtime: f.mtime,
+    };
+  });
 
   const totalActions = controllers.reduce((s, c) => s + c.actions.length, 0);
   return { controllers, summary: { total: controllers.length, totalActions } };
-}
-
-function parseControllerFile(filePath, relPath) {
-  const content = fs.readFileSync(filePath, "utf8");
-
-  const classMatch = content.match(/class\s+(\w+)\s+(?:extends\s+(\w+))?/);
-  const className = classMatch ? classMatch[1] : path.basename(filePath, ".php");
-  const parentClass = classMatch && classMatch[2] ? classMatch[2] : "";
-
-  const classRouteMatch = content.match(/#\[Route\s*\(\s*['"]([^'"]*)['"]/);
-  const classRoutePrefix = classRouteMatch ? classRouteMatch[1] : "";
-
-  const actions = [];
-  const methodMatches = findMethodsWithAttributes(content);
-  for (const { methodName, attrBlock } of methodMatches) {
-    if (methodName === "__construct" || methodName.startsWith("_")) continue;
-
-    const routes = [];
-    const routeAttrRegex = /#\[Route\s*\(\s*['"]([^'"]*)['"]\s*(?:,\s*(?:name:\s*['"]([^'"]*)['"]\s*)?(?:,?\s*methods:\s*\[([^\]]*)\])?)?\s*\)/g;
-    let rm;
-    while ((rm = routeAttrRegex.exec(attrBlock)) !== null) {
-      const routePath = rm[1];
-      const routeName = rm[2] || "";
-      const methods = rm[3]
-        ? rm[3].match(/['"](\w+)['"]/g)?.map((s) => s.replace(/['"]/g, "")) || ["GET"]
-        : ["GET"];
-      routes.push({ path: classRoutePrefix + routePath, name: routeName, methods });
-    }
-
-    actions.push({ name: methodName, routes });
-  }
-
-  // Constructor DI
-  const diDeps = [];
-  const ctorMatch = content.match(/public\s+function\s+__construct\s*\(([^)]*)\)/s);
-  if (ctorMatch) {
-    const depRegex = /(?:private|protected|public)?\s*(?:readonly\s+)?(\w+)\s+\$\w+/g;
-    let dm;
-    while ((dm = depRegex.exec(ctorMatch[1])) !== null) {
-      const typeName = dm[1];
-      if (!["Request", "array", "string", "int", "bool", "float"].includes(typeName)) {
-        diDeps.push(typeName);
-      }
-    }
-  }
-
-  return {
-    file: path.join("src/Controller", relPath),
-    className,
-    parentClass,
-    actions,
-    diDeps,
-    classRoutePrefix,
-  };
 }

@@ -85,6 +85,67 @@
           "impl"
         ]
       }
+    },
+    {
+      "id": "authorization-flow-in-spec",
+      "title": "Authorization Flow in Spec",
+      "body": "Changes involving access control shall include the authorization flow design in the spec.",
+      "meta": {
+        "phase": [
+          "spec"
+        ]
+      }
+    },
+    {
+      "id": "queue-design-for-heavy-processing",
+      "title": "Queue Design for Heavy Processing",
+      "body": "Operations that affect response time, such as external API calls, email delivery, and file processing, shall be designed with asynchronous processing in mind. If synchronous execution is required, document the reason in the spec.",
+      "meta": {
+        "phase": [
+          "spec"
+        ]
+      }
+    },
+    {
+      "id": "cache-invalidation-strategy",
+      "title": "Cache Invalidation Strategy",
+      "body": "Features that introduce caching shall document the timing and method of invalidation in the spec. Designs that rely solely on TTL shall explicitly note the risk of data inconsistency.",
+      "meta": {
+        "phase": [
+          "spec"
+        ]
+      }
+    },
+    {
+      "id": "no-queries-in-view-templates",
+      "title": "No Queries in View Templates",
+      "body": "Direct DB queries and lazy loading inside view templates are prohibited. Required data shall be fetched in the controller or equivalent layer beforehand.",
+      "meta": {
+        "phase": [
+          "impl",
+          "review"
+        ]
+      }
+    },
+    {
+      "id": "detect-n-plus-one-queries",
+      "title": "Detect N+1 Query Patterns",
+      "body": "Check for signs of N+1 queries such as relation access inside loops and dynamic relation expansion in templates. Flag missing eager loading.",
+      "meta": {
+        "phase": [
+          "review"
+        ]
+      }
+    },
+    {
+      "id": "detect-missing-index-on-foreign-keys",
+      "title": "Detect Unindexed Foreign Keys",
+      "body": "Verify that indexes are defined on foreign keys and frequently queried columns added or changed in migrations or schema updates.",
+      "meta": {
+        "phase": [
+          "review"
+        ]
+      }
     }
   ]
 }

@@ -1,5 +1,5 @@
 {
-  "analyzedAt": "2026-04-04T10:03:27.843Z",
+  "analyzedAt": "2026-04-04T14:45:09.797Z",
   "package": {
     "entries": [
       {
@@ -87,9 +87,9 @@
       },
       {
         "file": "src/docs/commands/agents.js",
-        "hash": "efcb3937faf843dc24f5ec1a767dd924",
+        "hash": "d03f5037eddf893e8c2538557796bb93",
         "lines": 229,
-        "mtime": "2026-04-01T16:34:36.487Z",
+        "mtime": "2026-04-04T13:51:27.784Z",
         "className": "agents",
         "methods": [
           "buildAgentsSystemPrompt",
@@ -118,22 +118,23 @@
         "extends": null,
         "usedBy": null,
         "id": "5684c584",
-        "summary": "Implements the `sdd-forge agents` command, which generates and AI-refines the AGENTS.md file for a project.",
-        "detail": "Reads existing AGENTS.md or creates a skeleton from the base preset template. Resolves `{{data}}` directives from analysis.json using createResolver, then sends the SDD section, project section, docs content, and package.json scripts to an AI agent via callAgent. The refined PROJECT section is written back using replaceProjectContent. Supports --sdd, --project, and --dry-run flags. Throws a structured error when analysis.json is missing.",
-        "chapter": "internal_design",
+        "summary": "Generates and updates AGENTS.md by combining project analysis, docs content, and SDD template directives via an AI agent call.",
+        "detail": "Loads analysis.json and chapter files to build context, resolves {{data}} and {{text}} directives in the existing AGENTS.md, then calls an AI agent with a refine prompt to produce enriched content. Uses buildRefinePrompt to inject package.json scripts and docs/README content. Writes the refined output back to AGENTS.md in-place. Falls back to a minimal template if AGENTS.md does not yet exist.",
+        "chapter": "cli_commands",
         "role": "cli",
         "enrich": {
-          "processedAt": "2026-04-02T16:07:58.173Z",
+          "processedAt": "2026-04-04T13:52:16.857Z",
           "attempts": 1
         },
         "keywords": [
           "agents",
           "AGENTS.md",
-          "AI refinement",
-          "directive resolution",
+          "agent context",
           "project context",
-          "dry-run",
-          "callAgent"
+          "directive",
+          "refine",
+          "SDD template",
+          "docs generation"
         ]
       },
       {
@@ -233,9 +234,9 @@
       },
       {
         "file": "src/docs/commands/enrich.js",
-        "hash": "d9e8cb33054fee8d0df4138e744bba2a",
+        "hash": "7856b47d7f484cf287c25a9fb6893cfe",
         "lines": 522,
-        "mtime": "2026-04-01T16:34:36.487Z",
+        "mtime": "2026-04-04T13:51:27.785Z",
         "className": "enrich",
         "methods": [
           "printHelp",
@@ -282,30 +283,30 @@
         "extends": null,
         "usedBy": null,
         "id": "abb7e5b3",
-        "summary": "Implements the `sdd-forge enrich` command, using AI to annotate each analysis entry with summary, detail, chapter, and role metadata.",
-        "detail": "Collects all analysis entries, splits them into token-bounded batches (default 10 000 tokens), and calls callAgentAsync concurrently (controlled by resolveConcurrency). Each batch prompt includes the chapter list and asks the model to return a JSON array of enriched fields. Responses are parsed with repairJson and merged back into analysis via mergeEnrichment. Progress is saved after each batch; failures dump the raw AI response for debugging. Supports --dry-run (stdout only) and --dump-on-error flags.",
-        "chapter": "internal_design",
-        "role": "controller",
+        "summary": "Enriches analysis.json entries with AI-generated summaries and metadata by batching source code and sending it to an AI agent.",
+        "detail": "Collects module entries from analysis.json, splits them into token-limited batches, and calls the AI agent asynchronously with configurable concurrency. Parses the JSON response and merges enrichment results back into the analysis object, saving progress periodically. On parse failure, dumps the raw response to a debug file for inspection. Supports retrying failed batches and outputs the final analysis.json or prints it to stdout.",
+        "chapter": "cli_commands",
+        "role": "cli",
         "enrich": {
-          "processedAt": "2026-04-02T16:07:58.173Z",
+          "processedAt": "2026-04-04T13:52:16.857Z",
           "attempts": 1
         },
         "keywords": [
           "enrich",
+          "analysis",
+          "batch",
           "AI enrichment",
-          "batch processing",
-          "analysis metadata",
-          "chapter classification",
+          "metadata",
           "concurrency",
-          "repairJson",
-          "token budget"
+          "token limit",
+          "scan pipeline"
         ]
       },
       {
         "file": "src/docs/commands/forge.js",
-        "hash": "d0391b8fd7d68573bf34b4531c6ac623",
+        "hash": "08603e0506948d9484718eb8258e6958",
         "lines": 445,
-        "mtime": "2026-04-04T08:09:59.594Z",
+        "mtime": "2026-04-04T13:51:27.785Z",
         "className": "forge",
         "methods": [
           "getTargetFiles",
@@ -342,24 +343,23 @@
         "extends": null,
         "usedBy": null,
         "id": "ef4fa5d9",
-        "summary": "The forge command drives AI-powered iterative documentation generation, invoking agents per-file and running review loops until quality gates pass or max runs are exhausted.",
-        "detail": "Parses CLI options (--spec, --prompt, --mode, --max-runs, --concurrency) and resolves target doc files via getChapterFiles. Supports three modes: local, assist, and agent, with agent mode invoking callAgentAsync with configurable timeout and concurrency. Each round builds prompts from spec and analysis context, then calls runPerFile which maps over target files with mapWithConcurrency. After each round, a review command is run and its exit code determines whether to loop or finalize. Post-generation steps include readme rebuild and optional translation.",
+        "summary": "Orchestrates the full docs-forge loop: fills text directives, runs review, and iterates up to a configurable max number of runs.",
+        "detail": "Supports three modes (local, assist, agent) and accepts a spec file or inline prompt. In each run, invokes the AI agent per target file with concurrency, then executes the review command to determine pass/fail. On failure it feeds back review output into the next iteration's prompt. After passing review, optionally regenerates README and runs translation. Exposes estimateRelevantFiles for narrowing which chapter files to process based on spec text.",
         "chapter": "cli_commands",
         "role": "cli",
         "enrich": {
-          "processedAt": "2026-04-04T08:17:46.932Z",
+          "processedAt": "2026-04-04T13:52:16.857Z",
           "attempts": 1
         },
         "keywords": [
           "forge",
-          "docs generation",
-          "agent",
-          "review loop",
-          "concurrency",
-          "AI",
-          "documentation",
-          "iterative",
-          "spec"
+          "docs loop",
+          "review cycle",
+          "text fill",
+          "spec",
+          "agent mode",
+          "iteration",
+          "review feedback"
         ]
       },
       {
@@ -414,9 +414,9 @@
       },
       {
         "file": "src/docs/commands/readme.js",
-        "hash": "92d9b92aac61f15f93d55014e1fed027",
+        "hash": "636d83e3b535e93231d6a3958befcedb",
         "lines": 191,
-        "mtime": "2026-04-01T16:34:36.487Z",
+        "mtime": "2026-04-04T13:51:27.785Z",
         "className": "readme",
         "methods": [
           "main"
@@ -442,23 +442,23 @@
         "extends": null,
         "usedBy": null,
         "id": "26628ac2",
-        "summary": "Implements the `sdd-forge readme` command, generating or updating the project README.md from the docs template.",
-        "detail": "Resolves the readme template through the preset chain, merges blocks, then resolves `{{data}}` directives via resolveDataDirectives with a custom resolver that injects the README's relative path for link directives. Unfilled `{{text}}` blocks are processed via processTemplate (imported from text.js) using an AI agent. Skips writing if the generated content is identical to the existing file. Accepts --output to redirect to a language-specific README path.",
+        "summary": "Generates or updates README.md by resolving templates, merging chapter data, and filling {{text}} directives via AI.",
+        "detail": "Resolves preset templates and merges them with project-local overrides, then applies data directives from analysis.json. Delegates {{text}} directive filling to the processTemplate function from text.js. Handles per-language output paths and supports an optional --output flag to write to an arbitrary location. Skips writing if the generated content is unchanged from the current file.",
         "chapter": "cli_commands",
-        "role": "controller",
+        "role": "cli",
         "enrich": {
-          "processedAt": "2026-04-02T16:07:58.173Z",
+          "processedAt": "2026-04-04T13:52:16.857Z",
           "attempts": 1
         },
         "keywords": [
           "readme",
           "README.md",
           "template merge",
-          "data directive",
-          "text directive",
-          "AI agent",
-          "output path",
-          "lang-specific"
+          "directive",
+          "text fill",
+          "docs generation",
+          "chapter",
+          "language"
         ]
       },
       {
@@ -572,9 +572,9 @@
       },
       {
         "file": "src/docs/commands/text.js",
-        "hash": "3ec2b971367fe00aa4b2a07fd43b15c3",
-        "lines": 773,
-        "mtime": "2026-04-02T16:02:33.709Z",
+        "hash": "71a06d1c24ed71775773081b9c4862d0",
+        "lines": 772,
+        "mtime": "2026-04-04T13:51:27.785Z",
         "className": "text",
         "methods": [
           "textFillFromAnalysis",
@@ -629,31 +629,30 @@
           "src/docs/commands/readme.js"
         ],
         "id": "7c5e7654",
-        "summary": "Implements the `sdd-forge text` command, filling `{{text(...)}}` directives in chapter files using AI batch generation.",
-        "detail": "Groups all unfilled text directives per file into a single batch JSON request, sends them to an AI agent, then applies the JSON response back to the file via applyBatchJsonToFile. Detects which chapters are affected by recent source changes via detectChangedChapters (hash-based). Validates the AI response for unexpected shrinkage (SHRINKAGE_THRESHOLD=0.5 over SHRINKAGE_MIN_LINES). Supports per-directive retries and exports processTemplate/textFillFromAnalysis for use by forge.js and readme.js.",
-        "chapter": "internal_design",
-        "role": "controller",
+        "summary": "Fills {{text}} directives in docs chapter files using AI-generated content, supporting batch JSON mode and per-directive mode.",
+        "detail": "Parses all {{text}} blocks in a document, builds prompts with surrounding context and analysis data, then calls the AI agent either in a single batch JSON request or per directive. Validates results against shrinkage thresholds and directive counts before applying. Applies fill results back to the file in-place. Exports textFillFromAnalysis for use by other commands, and detectChangedChapters to selectively re-fill only chapters whose source files have changed.",
+        "chapter": "cli_commands",
+        "role": "cli",
         "enrich": {
-          "processedAt": "2026-04-02T16:07:58.173Z",
+          "processedAt": "2026-04-04T13:52:16.857Z",
           "attempts": 1
         },
         "keywords": [
+          "text",
           "text directive",
-          "{{text}}",
-          "batch generation",
-          "AI agent",
-          "shrinkage check",
-          "changed chapters",
-          "applyBatchJsonToFile",
-          "processTemplate",
-          "textFillFromAnalysis"
+          "template fill",
+          "batch JSON",
+          "AI generation",
+          "docs pipeline",
+          "shrinkage validation",
+          "chapter fill"
         ]
       },
       {
         "file": "src/docs/commands/translate.js",
-        "hash": "e4ec1140cc2242873137f85fc8729e62",
-        "lines": 229,
-        "mtime": "2026-04-01T16:34:36.488Z",
+        "hash": "059f8586796027e32674ede220f6d035",
+        "lines": 228,
+        "mtime": "2026-04-04T13:51:27.785Z",
         "className": "translate",
         "methods": [
           "toneInstruction",
@@ -681,23 +680,23 @@
         "extends": null,
         "usedBy": null,
         "id": "fd496e07",
-        "summary": "Implements the `sdd-forge translate` command, translating docs chapter files and README into target languages via AI.",
-        "detail": "Builds a task list of (sourcePath, targetPath, lang) pairs, skipping files where the target is newer than the source unless --force is set. Calls callAgentAsync concurrently for each task, passing tone and language instructions via toneInstruction. Uses stripResponsePreamble to clean model preamble from translation output. Writes translated content to docs/<lang>/ subdirectories. Respects concurrency limits from resolveConcurrency.",
+        "summary": "Translates docs chapter files and README.md into target languages using an AI agent, skipping files that are already up to date.",
+        "detail": "Builds a list of translation tasks by comparing source and target file modification times, skipping targets that are newer. Calls callAgentAsync for each task with configurable concurrency. Applies tone instructions per language based on the configured docs style. Writes translated output to per-language subdirectories under docs/. Exports buildTranslationTasks for testing and reuse.",
         "chapter": "cli_commands",
-        "role": "controller",
+        "role": "cli",
         "enrich": {
-          "processedAt": "2026-04-02T16:07:58.173Z",
+          "processedAt": "2026-04-04T13:52:16.857Z",
           "attempts": 1
         },
         "keywords": [
           "translate",
-          "multi-language",
-          "AI translation",
-          "concurrency",
-          "force",
+          "i18n",
+          "localization",
+          "language",
+          "mtime",
+          "docs pipeline",
           "tone",
-          "mtime check",
-          "language directories"
+          "multi-language"
         ]
       },
       {
@@ -2577,9 +2576,9 @@
       },
       {
         "file": "src/flow/lib/phases.js",
-        "hash": "c8271f3e1381d5e41fb4777c95b5d34f",
-        "lines": 15,
-        "mtime": "2026-04-04T08:09:59.595Z",
+        "hash": "22fd09d92596cdae6d9becbcf10961ea",
+        "lines": 16,
+        "mtime": "2026-04-04T13:57:06.673Z",
         "className": "phases",
         "methods": [],
         "imports": [],
@@ -2593,37 +2592,41 @@
           "src/flow/registry.js"
         ],
         "id": "5d33316d",
-        "summary": "Defines and exports the VALID_PHASES frozen array, which enumerates all legal phase identifiers in the SDD flow.",
-        "detail": "Exports a single frozen constant array listing phase names such as draft, spec, pre, post, impl, review, and others. Being frozen prevents accidental mutation at runtime. This module serves as the single source of truth for phase identifiers referenced across gate, review, and registry modules.",
+        "summary": "Defines the single source of truth for valid SDD flow phase names as a frozen constant array.",
+        "detail": "Exports VALID_PHASES as an Object.freeze'd array of seven phase strings: draft, spec, gate, impl, test, lint, and review. This module acts as a shared constant to prevent duplication across flow subcommands. Being frozen, the array is immutable at runtime, guarding against accidental mutation. Its minimal design—no logic, just a constant export—makes it trivially importable by any flow layer component that needs phase validation or enumeration.",
         "chapter": "internal_design",
         "role": "lib",
         "enrich": {
-          "processedAt": "2026-04-04T08:17:46.932Z",
+          "processedAt": "2026-04-04T13:57:21.702Z",
           "attempts": 1
         },
         "keywords": [
           "phases",
           "VALID_PHASES",
-          "flow phases",
+          "flow phase",
           "constants",
           "draft",
           "spec",
+          "gate",
           "impl",
-          "review"
+          "review",
+          "lint",
+          "test",
+          "frozen"
         ]
       },
       {
         "file": "src/flow/lib/run-finalize.js",
-        "hash": "3392ea1db8e1b36df6d6bef65123f22b",
-        "lines": 333,
-        "mtime": "2026-04-04T08:09:59.595Z",
+        "hash": "91e60b83dd972d131f2827a5ee69cc89",
+        "lines": 338,
+        "mtime": "2026-04-04T14:12:31.497Z",
         "className": "run-finalize",
         "methods": [
           "finalizeOnError",
+          "commitOrSkip",
           "executeCommitPost",
           "RunFinalizeCommand",
           "executeCleanupImpl",
-          "commitOrSkip",
           "runSubStep"
         ],
         "imports": [
@@ -2639,6 +2642,7 @@
         ],
         "exports": [
           "finalizeOnError",
+          "commitOrSkip",
           "executeCommitPost",
           "RunFinalizeCommand",
           "default",
@@ -2647,24 +2651,25 @@
         "extends": "FlowCommand",
         "usedBy": null,
         "id": "c711309b",
-        "summary": "RunFinalizeCommand orchestrates the finalization pipeline of an SDD flow, including docs build, commit, merge, and worktree cleanup.",
-        "detail": "Defines STEP_MAP mapping step names to implementation functions: docs build (runs docs.js script), commit (calls commitOrSkip which checks for changes before committing), merge (delegates to merge.js command), report (generates flow report), and cleanup (removes worktree). Supports mode='all' or mode='select' with explicit step list. runSubStep wraps each step with error handling and returns structured status objects. executeCommitPost handles post-commit metadata. finalizeOnError is a higher-order function producing error handlers that run cleanup on failure.",
+        "summary": "Implements the finalize step of the SDD flow, handling commit, cleanup, docs build, and optional merge/PR creation after implementation is complete.",
+        "detail": "Exports RunFinalizeCommand extending FlowCommand, orchestrating sub-steps via STEP_MAP. Provides commitOrSkip for conditional git commits, executeCleanupImpl for worktree teardown, and executeCommitPost for post-commit processing. Integrates with git-helpers for GitHub issue commenting and git summary collection. Supports two execution modes ('all' or 'select') and two merge strategies ('squash' or 'pr'). Error handling is centralized via finalizeOnError which captures step name and trigger context.",
         "chapter": "internal_design",
         "role": "controller",
         "enrich": {
-          "processedAt": "2026-04-04T08:17:46.932Z",
+          "processedAt": "2026-04-04T14:12:47.737Z",
           "attempts": 1
         },
         "keywords": [
           "finalize",
           "commit",
-          "merge",
           "cleanup",
           "worktree",
-          "docs build",
-          "step map",
-          "flow finalization",
-          "pipeline"
+          "merge",
+          "squash",
+          "pr",
+          "flow",
+          "RunFinalizeCommand",
+          "STEP_MAP"
         ]
       },
       {
@@ -2807,9 +2812,9 @@
       },
       {
         "file": "src/flow/lib/run-prepare-spec.js",
-        "hash": "fa33139b5f23419f1cd3b11b2f755646",
-        "lines": 322,
-        "mtime": "2026-04-04T08:09:59.595Z",
+        "hash": "7534f45b918e2479528f3ca7b73eead8",
+        "lines": 325,
+        "mtime": "2026-04-04T14:29:59.909Z",
         "className": "run-prepare-spec",
         "methods": [
           "RunPrepareSpecCommand",
@@ -2842,24 +2847,25 @@
         "extends": "FlowCommand",
         "usedBy": null,
         "id": "59eeacc6",
-        "summary": "RunPrepareSpecCommand initializes a new SDD flow by creating spec files, a git branch, and optionally a worktree, then persisting flow state.",
-        "detail": "Validates clean worktree state via ensureClean and base branch existence via ensureBaseBranch. Generates a sequential spec directory index with nextIndex. Creates the branch, optionally a linked worktree under .sdd-forge/worktree/, and writes spec.md and qa.md from templates (local overrides in .sdd-forge/templates/ take precedence via loadLocalTemplate). Saves initial flow state via saveFlowState and registers the flow in .active-flow via addActiveFlow. slugify normalizes the title to a valid branch name segment.",
+        "summary": "Implements the `prepare` flow command that scaffolds a new spec directory with spec.md and qa.md templates, creates a git branch or worktree, and initializes flow state.",
+        "detail": "RunPrepareSpecCommand extends FlowCommand and orchestrates the full spec preparation lifecycle: it validates a clean worktree, resolves the base branch, slugifies the title into a branch/directory name, computes the next numeric spec index, and writes templated spec.md and qa.md files. It supports local template overrides stored under .sdd-forge/templates/<lang>/specs/. After writing files it persists flow state via saveFlowState/addActiveFlow and registers the new branch in the git worktree when running inside a worktree context. Helper functions (runGit, slugify, nextIndex, ensureClean, ensureBaseBranch, detectBaseBranch) are module-private pure utilities. The DEFAULT_SPEC_TEMPLATE is overridable by a project-local file, enabling per-project spec scaffolding customization.",
         "chapter": "internal_design",
         "role": "controller",
         "enrich": {
-          "processedAt": "2026-04-04T08:17:46.932Z",
+          "processedAt": "2026-04-04T14:30:13.130Z",
           "attempts": 1
         },
         "keywords": [
-          "prepare spec",
-          "flow init",
+          "prepare",
+          "spec",
+          "scaffold",
           "worktree",
+          "flow-state",
           "branch",
-          "spec template",
-          "qa template",
-          "flow state",
+          "template",
+          "qa",
           "slugify",
-          "SDD setup"
+          "RunPrepareSpecCommand"
         ]
       },
       {
@@ -2997,11 +3003,12 @@
       },
       {
         "file": "src/flow/lib/run-review.js",
-        "hash": "b852116101c0fb584b0b0417bd0e657d",
-        "lines": 157,
-        "mtime": "2026-04-04T09:10:17.960Z",
+        "hash": "b2e422a97d1594f1b7d4c660a4a03157",
+        "lines": 197,
+        "mtime": "2026-04-04T14:45:09.605Z",
         "className": "run-review",
         "methods": [
+          "runCmdWithRetry",
           "RunReviewCommand",
           "parseTestReviewOutput",
           "parseSpecReviewOutput"
@@ -3009,10 +3016,12 @@
         "imports": [
           "../../lib/cli.js",
           "../../lib/process.js",
+          "../../lib/agent.js",
           "./base-command.js",
           "path"
         ],
         "exports": [
+          "runCmdWithRetry",
           "RunReviewCommand",
           "default",
           "parseTestReviewOutput",
@@ -3021,25 +3030,25 @@
         "extends": "FlowCommand",
         "usedBy": null,
         "id": "d4e97204",
-        "summary": "FlowCommand subclass that spawns the review.js script as a subprocess and parses its structured output for integration into the flow orchestration layer.",
-        "detail": "RunReviewCommand extends FlowCommand and resolves the review.js script path via PKG_DIR, then invokes it with runCmd. Separate parse functions (parseTestReviewOutput, parseSpecReviewOutput) interpret stdout/stderr from the subprocess and throw on non-zero exit codes. The class acts as an adapter between the flow runner and the standalone review script, normalizing results into plain objects. Both parse functions and the command class are exported for use by the flow dispatcher.",
+        "summary": "Implements the review execution logic for SDD flow, including retry handling and output parsing for both test and spec review modes.",
+        "detail": "RunReviewCommand extends FlowCommand and orchestrates subprocess execution of review.js script via runCmd, dispatching to either parseTestReviewOutput or parseSpecReviewOutput based on review type. runCmdWithRetry provides configurable retry logic with delay between attempts, defaulting to 2 retries with 3000ms delay. Output parsers normalize subprocess results (res, stdout, stderr) into structured return objects or throw on failure. The module exports both the command class and the parser/retry utilities for reuse.",
         "chapter": "internal_design",
         "role": "lib",
         "enrich": {
-          "processedAt": "2026-04-04T09:10:30.550Z",
+          "processedAt": "2026-04-04T14:45:20.624Z",
           "attempts": 1
         },
         "keywords": [
-          "RunReviewCommand",
-          "FlowCommand",
+          "review",
+          "retry",
           "subprocess",
-          "runCmd",
+          "RunReviewCommand",
           "parseTestReviewOutput",
           "parseSpecReviewOutput",
+          "runCmdWithRetry",
           "flow",
-          "adapter",
-          "PKG_DIR",
-          "review"
+          "agent",
+          "timeout"
         ]
       },
       {
@@ -3140,7 +3149,8 @@
         "extends": "FlowCommand",
         "usedBy": [
           "src/flow/lib/run-finalize.js",
-          "src/flow/lib/run-report.js"
+          "src/flow/lib/run-report.js",
+          "src/flow/registry.js"
         ],
         "id": "65ac9e4f",
         "summary": "Provides load/save helpers for issue-log.json and the `flow set issue-log` command for appending log entries.",
@@ -3446,9 +3456,9 @@
       },
       {
         "file": "src/flow/registry.js",
-        "hash": "b91ee5eaffefda800bb7ea294fbe818e",
-        "lines": 420,
-        "mtime": "2026-04-04T07:37:04.194Z",
+        "hash": "29db0fec9e646681a4b079b579f337fb",
+        "lines": 452,
+        "mtime": "2026-04-04T14:12:31.497Z",
         "className": "registry",
         "methods": [
           "deriveActivePhase",
@@ -3459,7 +3469,8 @@
         ],
         "imports": [
           "../lib/flow-state.js",
-          "./lib/phases.js"
+          "./lib/phases.js",
+          "./lib/set-issue-log.js"
         ],
         "exports": [
           "FLOW_COMMANDS"
@@ -3469,25 +3480,25 @@
           "src/flow.js"
         ],
         "id": "d64f4095",
-        "summary": "Central registry that maps flow subcommand names to their handler classes, args schemas, and pre/post hooks for step tracking and metrics.",
-        "detail": "Defines FLOW_COMMANDS as a flat map of command descriptors used by the flow dispatcher. Provides stepPre and stepPost hook factories that automatically update step status (in_progress/done) and increment metrics via tryUpdateStepStatus and incrementMetric. deriveActivePhase infers the current phase from flow state steps. resolveGateStepId maps phase names to gate step identifiers. Commands are registered with args definitions, help strings, command class references, and optional pre/post lifecycle hooks.",
-        "chapter": "cli_commands",
-        "role": "controller",
+        "summary": "Central registry for SDD flow commands, defining pre/post hooks for step status tracking, phase derivation, and command dispatch logic.",
+        "detail": "Exports FLOW_COMMANDS object mapping command names to their handlers, help strings, and hook configurations. Provides stepPre and stepPost factory functions that wrap step execution with automatic status updates via updateStepStatus. deriveActivePhase resolves the current flow phase from persisted state. resolveGateStepId normalizes gate step identification across phases. Integrates with flow-state.js for metric tracking and issue-log for audit trail management.",
+        "chapter": "internal_design",
+        "role": "lib",
         "enrich": {
-          "processedAt": "2026-04-04T07:37:25.012Z",
+          "processedAt": "2026-04-04T14:12:47.737Z",
           "attempts": 1
         },
         "keywords": [
           "registry",
           "FLOW_COMMANDS",
+          "stepPre",
+          "stepPost",
+          "phase",
+          "hook",
           "dispatch",
-          "hooks",
-          "step-status",
-          "metrics",
-          "pre-hook",
-          "post-hook",
           "flow",
-          "subcommand"
+          "gate",
+          "metric"
         ]
       },
       {
@@ -3530,9 +3541,9 @@
       },
       {
         "file": "src/lib/agent.js",
-        "hash": "e4f9d4887dc09588bfb0cc42c42654e6",
-        "lines": 374,
-        "mtime": "2026-04-01T16:34:36.490Z",
+        "hash": "623e3da8c99422c90215daa455f0983b",
+        "lines": 378,
+        "mtime": "2026-04-04T13:51:27.785Z",
         "className": "agent",
         "methods": [
           "callAgent",
@@ -3576,24 +3587,25 @@
           "src/setup.js"
         ],
         "id": "13ddf392",
-        "summary": "Core agent invocation library providing synchronous and asynchronous callAgent functions, agent config resolution, context file management, and stdin-based prompt passing for large inputs.",
-        "detail": "buildAgentInvocation constructs the final argv and environment for the agent process, switching to stdin delivery when prompt size exceeds ARGV_SIZE_THRESHOLD. callAgent uses execFileSync for synchronous calls; callAgentAsync returns a Promise with optional retry logic via callAgentAsyncWithRetry. resolveAgent merges provider profile args with command-specific overrides from config. writeAgentContext writes prompt context to .claude/rules/ files for structured injection. ensureAgentWorkDir validates and creates the working directory within the project root.",
+        "summary": "Core library for invoking AI agents as subprocesses, supporting synchronous and asynchronous execution with retry, stdin injection, and system prompt handling.",
+        "detail": "Builds agent invocations via buildAgentInvocation, switching to stdin delivery when the prompt exceeds ARGV_SIZE_THRESHOLD bytes to avoid OS argument limits. callAgentAsync supports optional retry with configurable delay via callAgentAsyncWithRetry. resolveAgent merges provider profile args with command-specific overrides from config. ensureAgentWorkDir validates and creates the -C working directory, enforcing that it stays within the project root. writeAgentContext and cleanupAgentContext manage ephemeral rule files injected into the agent's .claude/rules/ directory.",
         "chapter": "internal_design",
         "role": "lib",
         "enrich": {
-          "processedAt": "2026-04-02T16:09:42.720Z",
+          "processedAt": "2026-04-04T13:52:16.857Z",
           "attempts": 1
         },
         "keywords": [
           "agent",
           "callAgent",
-          "AI agent",
-          "agent invocation",
-          "system prompt",
-          "async agent",
+          "callAgentAsync",
+          "subprocess",
+          "stdin",
           "retry",
+          "system prompt",
           "agent config",
-          "stdin prompt"
+          "workdir",
+          "agent context"
         ]
       },
       {
@@ -4920,9 +4932,9 @@
       },
       {
         "file": "src/presets/cakephp2/data/models.js",
-        "hash": "0ee7d80e8a3530fd2987c65217d3e080",
-        "lines": 540,
-        "mtime": "2026-03-26T03:13:47.934Z",
+        "hash": "b451d65a3cfbd6cdd4770b855db6079f",
+        "lines": 538,
+        "mtime": "2026-04-04T14:27:36.605Z",
         "className": "models",
         "methods": [
           "analyzeModels",
@@ -4932,6 +4944,7 @@
           "analyzeAppController",
           "analyzeAppModel",
           "extractStringProperty",
+          "parseModelContent",
           "inferTableName"
         ],
         "imports": [
@@ -5928,14 +5941,14 @@
       },
       {
         "file": "src/presets/laravel/data/controllers.js",
-        "hash": "3bffe00d7af0eabc565a365834f62305",
-        "lines": 194,
-        "mtime": "2026-03-26T03:13:47.938Z",
+        "hash": "552c46196274503f963f51fac41e5b25",
+        "lines": 177,
+        "mtime": "2026-04-04T14:27:36.605Z",
         "className": "controllers",
         "methods": [
           "LaravelControllerEntry",
           "analyzeControllers",
-          "parseControllerScan"
+          "parseControllerContent"
         ],
         "imports": [
           "fs",
@@ -5955,9 +5968,9 @@
       },
       {
         "file": "src/presets/laravel/data/models.js",
-        "hash": "52a6c2f7444f4e9240aa4c57de5cfa7c",
-        "lines": 292,
-        "mtime": "2026-03-26T03:13:47.938Z",
+        "hash": "24787216db282f7e8d4a1ae02d162c70",
+        "lines": 268,
+        "mtime": "2026-04-04T14:27:36.605Z",
         "className": "models",
         "methods": [
           "LaravelModelEntry",
@@ -5965,7 +5978,7 @@
           "extractArrayProp",
           "extractAssocProp",
           "extractRelations",
-          "parseModelScan"
+          "parseModelContent"
         ],
         "imports": [
           "fs",
@@ -7011,14 +7024,14 @@
       },
       {
         "file": "src/presets/symfony/data/controllers.js",
-        "hash": "9be2d34bd913403f6df1e8c2967cc001",
-        "lines": 241,
-        "mtime": "2026-03-26T03:13:47.943Z",
+        "hash": "8b8480be119d7cb2ce141c240d026dcd",
+        "lines": 215,
+        "mtime": "2026-04-04T14:27:36.605Z",
         "className": "controllers",
         "methods": [
           "analyzeControllers",
           "findMethodsWithAttributes",
-          "parseControllerFile"
+          "parseControllerContent"
         ],
         "imports": [
           "fs",
@@ -7037,16 +7050,16 @@
       },
       {
         "file": "src/presets/symfony/data/entities.js",
-        "hash": "6b128cd596f3cba8b5268d54da98e774",
-        "lines": 229,
-        "mtime": "2026-03-26T03:13:47.943Z",
+        "hash": "8da644bf2abadbcd05b3ce704e309654",
+        "lines": 233,
+        "mtime": "2026-04-04T14:27:36.605Z",
         "className": "entities",
         "methods": [
           "EntityEntry",
           "analyzeEntities",
           "extractColumns",
           "extractRelations",
-          "parseEntityFile"
+          "parseEntityContent"
         ],
         "imports": [
           "fs",
@@ -7575,9 +7588,9 @@
     ],
     "summary": {
       "total": 223,
-      "totalMethods": 682
+      "totalMethods": 684
     },
     "dataSourceHash": "7d725e75d5031be445119323e4947c91"
   },
-  "enrichedAt": "2026-04-04T09:45:51.691Z"
+  "enrichedAt": "2026-04-04T14:45:20.624Z"
 }

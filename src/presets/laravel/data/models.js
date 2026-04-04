@@ -25,132 +25,9 @@ export class LaravelModelEntry extends ModelEntry {
   accessors = null;
 }
 
-export default class LaravelModelsSource extends ModelsSource {
-  static Entry = LaravelModelEntry;
-
-  match(relPath) {
-    return (
-      relPath.startsWith("app/Models/") &&
-      relPath.endsWith(".php")
-    );
-  }
-
-  parse(absPath) {
-    const entry = new LaravelModelEntry();
-    const content = fs.readFileSync(absPath, "utf8");
-
-    // Only process Eloquent models
-    if (!/extends\s+Model\b/.test(content) && !/use\s+HasFactory\b/.test(content)) {
-      return entry;
-    }
-
-    // Class name
-    const classMatch = content.match(/class\s+(\w+)\s+extends\s+(\w+)/);
-    entry.className = classMatch ? classMatch[1] : null;
-    entry.parentClass = classMatch ? classMatch[2] : null;
-
-    // $table property
-    const tableMatch = content.match(
-      /protected\s+\$table\s*=\s*['"]([^'"]+)['"]/,
-    );
-    entry.tableName = tableMatch
-      ? tableMatch[1]
-      : entry.className
-        ? pluralize(camelToSnake(entry.className))
-        : null;
-
-    // $fillable
-    entry.fillable = extractArrayProp(content, "fillable");
-
-    // $guarded
-    entry.guarded = extractArrayProp(content, "guarded");
-
-    // $casts
-    entry.casts = extractAssocProp(content, "casts");
-
-    // $hidden
-    entry.hidden = extractArrayProp(content, "hidden");
-
-    // Relations
-    entry.relations = extractRelations(content);
-
-    // Scopes
-    const scopes = [];
-    const scopeRegex = /public\s+function\s+scope(\w+)\s*\(/g;
-    let m;
-    while ((m = scopeRegex.exec(content)) !== null) {
-      scopes.push(m[1]);
-    }
-    entry.scopes = scopes;
-
-    // Accessors (Laravel 9+ Attribute style + legacy getXxxAttribute)
-    const accessors = [];
-    const oldAccRegex = /public\s+function\s+get(\w+)Attribute\s*\(/g;
-    while ((m = oldAccRegex.exec(content)) !== null) {
-      accessors.push(m[1]);
-    }
-    const newAccRegex =
-      /protected\s+function\s+(\w+)\s*\(\)\s*:\s*Attribute\b/g;
-    while ((m = newAccRegex.exec(content)) !== null) {
-      accessors.push(m[1]);
-    }
-    entry.accessors = accessors;
-
-    return entry;
-  }
-
-  /** Model relations table. */
-  relations(analysis, labels) {
-    const models = analysis.models?.entries || [];
-    if (models.length === 0) return null;
-    const rows = [];
-    for (const model of models) {
-      if (!model.relations) continue;
-      const targets = [];
-      for (const [type, list] of Object.entries(model.relations)) {
-        if (Array.isArray(list) && list.length > 0) {
-          targets.push(`${type}: ${list.map((r) => r.model).join(", ")}`);
-        }
-      }
-      if (targets.length > 0) {
-        rows.push([model.className, targets.join(" / ")]);
-      }
-    }
-    if (rows.length === 0) return null;
-    rows.sort((a, b) => a[0].localeCompare(b[0]));
-    return this.toMarkdownTable(rows, labels);
-  }
-
-  /** Model scopes table. */
-  scopes(analysis, labels) {
-    const models = analysis.models?.entries || [];
-    if (models.length === 0) return null;
-    const rows = [];
-    for (const model of models) {
-      for (const scope of model.scopes || []) {
-        rows.push([model.className, scope]);
-      }
-    }
-    if (rows.length === 0) return null;
-    return this.toMarkdownTable(rows, labels);
-  }
-
-  /** Model attribute casts table. */
-  casts(analysis, labels) {
-    const models = analysis.models?.entries || [];
-    if (models.length === 0) return null;
-    const rows = [];
-    for (const model of models) {
-      for (const [attr, type] of Object.entries(model.casts || {})) {
-        rows.push([model.className, attr, type]);
-      }
-    }
-    if (rows.length === 0) return null;
-    return this.toMarkdownTable(rows, labels);
-  }
-}
-
-// --- helpers ---
+// ---------------------------------------------------------------------------
+// Shared parse helpers (used by both parse() and analyzeModels())
+// ---------------------------------------------------------------------------
 
 function extractArrayProp(content, propName) {
   const regex = new RegExp(
@@ -213,6 +90,142 @@ function extractRelations(content) {
   return relations;
 }
 
+/**
+ * Parse Laravel Eloquent model content string and return raw parse result.
+ * No file I/O — caller provides content.
+ *
+ * @param {string} content - PHP source code
+ * @returns {{ className: string|null, parentClass: string, tableName: string|null, fillable: string[], guarded: string[], casts: Object, hidden: string[], relations: Object, scopes: string[], accessors: string[] }}
+ */
+function parseModelContent(content) {
+  // Only process Eloquent models
+  if (!/extends\s+Model\b/.test(content) && !/use\s+HasFactory\b/.test(content)) {
+    return null;
+  }
+
+  const classMatch = content.match(/class\s+(\w+)\s+extends\s+(\w+)/);
+  const className = classMatch ? classMatch[1] : null;
+  const parentClass = classMatch ? classMatch[2] : "";
+
+  const tableMatch = content.match(
+    /protected\s+\$table\s*=\s*['"]([^'"]+)['"]/,
+  );
+  const tableName = tableMatch
+    ? tableMatch[1]
+    : className
+      ? pluralize(camelToSnake(className))
+      : null;
+
+  const fillable = extractArrayProp(content, "fillable");
+  const guarded = extractArrayProp(content, "guarded");
+  const casts = extractAssocProp(content, "casts");
+  const hidden = extractArrayProp(content, "hidden");
+  const relations = extractRelations(content);
+
+  // Scopes
+  const scopes = [];
+  const scopeRegex = /public\s+function\s+scope(\w+)\s*\(/g;
+  let m;
+  while ((m = scopeRegex.exec(content)) !== null) {
+    scopes.push(m[1]);
+  }
+
+  // Accessors (Laravel 9+ Attribute style + legacy getXxxAttribute)
+  const accessors = [];
+  const oldAccRegex = /public\s+function\s+get(\w+)Attribute\s*\(/g;
+  while ((m = oldAccRegex.exec(content)) !== null) {
+    accessors.push(m[1]);
+  }
+  const newAccRegex =
+    /protected\s+function\s+(\w+)\s*\(\)\s*:\s*Attribute\b/g;
+  while ((m = newAccRegex.exec(content)) !== null) {
+    accessors.push(m[1]);
+  }
+
+  return { className, parentClass, tableName, fillable, guarded, casts, hidden, relations, scopes, accessors };
+}
+
+export default class LaravelModelsSource extends ModelsSource {
+  static Entry = LaravelModelEntry;
+
+  match(relPath) {
+    return (
+      relPath.startsWith("app/Models/") &&
+      relPath.endsWith(".php")
+    );
+  }
+
+  parse(absPath) {
+    const entry = new LaravelModelEntry();
+    const content = fs.readFileSync(absPath, "utf8");
+    const parsed = parseModelContent(content);
+    if (!parsed) return entry;
+
+    entry.className = parsed.className;
+    entry.parentClass = parsed.parentClass;
+    entry.tableName = parsed.tableName;
+    entry.fillable = parsed.fillable;
+    entry.guarded = parsed.guarded;
+    entry.casts = parsed.casts;
+    entry.hidden = parsed.hidden;
+    entry.relations = parsed.relations;
+    entry.scopes = parsed.scopes;
+    entry.accessors = parsed.accessors;
+
+    return entry;
+  }
+
+  /** Model relations table. */
+  relations(analysis, labels) {
+    const models = analysis.models?.entries || [];
+    if (models.length === 0) return null;
+    const rows = [];
+    for (const model of models) {
+      if (!model.relations) continue;
+      const targets = [];
+      for (const [type, list] of Object.entries(model.relations)) {
+        if (Array.isArray(list) && list.length > 0) {
+          targets.push(`${type}: ${list.map((r) => r.model).join(", ")}`);
+        }
+      }
+      if (targets.length > 0) {
+        rows.push([model.className, targets.join(" / ")]);
+      }
+    }
+    if (rows.length === 0) return null;
+    rows.sort((a, b) => a[0].localeCompare(b[0]));
+    return this.toMarkdownTable(rows, labels);
+  }
+
+  /** Model scopes table. */
+  scopes(analysis, labels) {
+    const models = analysis.models?.entries || [];
+    if (models.length === 0) return null;
+    const rows = [];
+    for (const model of models) {
+      for (const scope of model.scopes || []) {
+        rows.push([model.className, scope]);
+      }
+    }
+    if (rows.length === 0) return null;
+    return this.toMarkdownTable(rows, labels);
+  }
+
+  /** Model attribute casts table. */
+  casts(analysis, labels) {
+    const models = analysis.models?.entries || [];
+    if (models.length === 0) return null;
+    const rows = [];
+    for (const model of models) {
+      for (const [attr, type] of Object.entries(model.casts || {})) {
+        rows.push([model.className, attr, type]);
+      }
+    }
+    if (rows.length === 0) return null;
+    return this.toMarkdownTable(rows, labels);
+  }
+}
+
 // ---------------------------------------------------------------------------
 // Directory-level analyzer (moved from scan/models.js, used by tests)
 // ---------------------------------------------------------------------------
@@ -228,64 +241,27 @@ export function analyzeModels(sourceRoot) {
   const models = [];
   for (const f of files) {
     const content = fs.readFileSync(f.absPath, "utf8");
-    if (/extends\s+Model\b/.test(content) || /use\s+HasFactory\b/.test(content)) {
-      models.push({
-        ...parseModelScan(f.absPath, f.relPath, baseDir),
-        lines: f.lines, hash: f.hash, mtime: f.mtime,
-      });
-    }
+    const parsed = parseModelContent(content);
+    if (!parsed) continue;
+
+    const isInModelsDir = baseDir.endsWith(path.join("app", "Models"));
+    const filePrefix = isInModelsDir ? "app/Models" : "app";
+
+    models.push({
+      file: path.join(filePrefix, f.relPath),
+      className: parsed.className ?? path.basename(f.absPath, ".php"),
+      parentClass: parsed.parentClass,
+      tableName: parsed.tableName,
+      fillable: parsed.fillable,
+      guarded: parsed.guarded,
+      casts: parsed.casts,
+      hidden: parsed.hidden,
+      relations: parsed.relations,
+      scopes: parsed.scopes,
+      accessors: parsed.accessors,
+      lines: f.lines, hash: f.hash, mtime: f.mtime,
+    });
   }
 
   return { models, summary: { total: models.length } };
-}
-
-function parseModelScan(filePath, relPath, baseDir) {
-  const content = fs.readFileSync(filePath, "utf8");
-
-  const classMatch = content.match(/class\s+(\w+)\s+extends\s+(\w+)/);
-  const className = classMatch ? classMatch[1] : path.basename(filePath, ".php");
-  const parentClass = classMatch ? classMatch[2] : "";
-
-  const tableMatch = content.match(/protected\s+\$table\s*=\s*['"]([^'"]+)['"]/);
-  const tableName = tableMatch ? tableMatch[1] : pluralize(camelToSnake(className));
-
-  const fillable = extractArrayProp(content, "fillable");
-  const guarded = extractArrayProp(content, "guarded");
-  const casts = extractAssocProp(content, "casts");
-  const hidden = extractArrayProp(content, "hidden");
-  const relations = extractRelations(content);
-
-  const scopes = [];
-  const scopeRegex = /public\s+function\s+scope(\w+)\s*\(/g;
-  let m;
-  while ((m = scopeRegex.exec(content)) !== null) {
-    scopes.push(m[1]);
-  }
-
-  const accessors = [];
-  const oldAccRegex = /public\s+function\s+get(\w+)Attribute\s*\(/g;
-  while ((m = oldAccRegex.exec(content)) !== null) {
-    accessors.push(m[1]);
-  }
-  const newAccRegex = /protected\s+function\s+(\w+)\s*\(\)\s*:\s*Attribute\b/g;
-  while ((m = newAccRegex.exec(content)) !== null) {
-    accessors.push(m[1]);
-  }
-
-  const isInModelsDir = baseDir.endsWith(path.join("app", "Models"));
-  const filePrefix = isInModelsDir ? "app/Models" : "app";
-
-  return {
-    file: path.join(filePrefix, relPath),
-    className,
-    parentClass,
-    tableName,
-    fillable,
-    guarded,
-    casts,
-    hidden,
-    relations,
-    scopes,
-    accessors,
-  };
 }

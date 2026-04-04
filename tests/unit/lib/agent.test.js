@@ -1,6 +1,6 @@
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
-import { callAgent, callAgentAsync, resolveAgent } from "../../../src/lib/agent.js";
+import { callAgent, callAgentAsync, resolveAgent, DEFAULT_AGENT_TIMEOUT_MS } from "../../../src/lib/agent.js";
 
 describe("callAgent", () => {
   it("calls a command and returns trimmed output", () => {
@@ -33,6 +33,27 @@ describe("callAgent", () => {
     const result = callAgent(agent, largePrompt);
     assert.equal(result, largePrompt);
   });
+
+  // --- GAP-2: callAgent timeoutMs fallback chain ---
+
+  it("uses explicit timeoutMs argument when provided", () => {
+    const agent = { command: "node", args: ["-e", "setTimeout(()=>{},5000)"], timeoutMs: 120000 };
+    // Explicit 50ms timeout should kill the process
+    assert.throws(() => callAgent(agent, "", 50));
+  });
+
+  it("falls back to agent.timeoutMs when timeoutMs argument is falsy", () => {
+    const agent = { command: "node", args: ["-e", "setTimeout(()=>{},5000)"], timeoutMs: 50 };
+    // agent.timeoutMs = 50 should cause timeout (undefined as explicit arg triggers fallback)
+    assert.throws(() => callAgent(agent, "", undefined));
+  });
+
+  it("falls back to DEFAULT_AGENT_TIMEOUT_MS when both are missing", () => {
+    const agent = { command: "echo", args: ["ok"] };
+    // Should succeed since DEFAULT (300s) is far longer than echo
+    const result = callAgent(agent, "test");
+    assert.equal(result, "ok test");
+  });
 });
 
 describe("callAgentAsync", () => {
@@ -47,6 +68,24 @@ describe("callAgentAsync", () => {
     const largePrompt = "Y".repeat(200_000);
     const result = await callAgentAsync(agent, largePrompt);
     assert.equal(result, largePrompt);
+  });
+
+  // --- GAP-3: callAgentAsync timeoutMs fallback chain ---
+
+  it("uses explicit timeoutMs argument when provided (async)", async () => {
+    const agent = { command: "node", args: ["-e", "setTimeout(()=>{},5000)"], timeoutMs: 120000 };
+    await assert.rejects(callAgentAsync(agent, "", 50));
+  });
+
+  it("falls back to agent.timeoutMs when timeoutMs argument is falsy (async)", async () => {
+    const agent = { command: "node", args: ["-e", "setTimeout(()=>{},5000)"], timeoutMs: 50 };
+    await assert.rejects(callAgentAsync(agent, "", undefined));
+  });
+
+  it("falls back to DEFAULT_AGENT_TIMEOUT_MS when both are missing (async)", async () => {
+    const agent = { command: "echo", args: ["{{PROMPT}}"] };
+    const result = await callAgentAsync(agent, "test");
+    assert.equal(result, "test");
   });
 });
 
@@ -136,7 +175,7 @@ describe("resolveAgent", () => {
       },
     };
     const result = resolveAgent(cfg);
-    assert.deepEqual(result, { command: "claude", args: [] });
+    assert.deepEqual(result, { command: "claude", args: [], timeoutMs: 300000 });
   });
 
   it("returns null when no agent configured", () => {
@@ -160,5 +199,66 @@ describe("resolveAgent", () => {
     const cfg = { agent: { providers: {} } };
     const result = resolveAgent(cfg, "nonexistent");
     assert.equal(result, null);
+  });
+
+  it("includes timeoutMs from config agent.timeout (seconds to ms)", () => {
+    const cfg = {
+      agent: {
+        default: "claude",
+        timeout: 600,
+        providers: { claude: { command: "claude", args: [] } },
+      },
+    };
+    const result = resolveAgent(cfg);
+    assert.equal(result.timeoutMs, 600000);
+  });
+
+  it("uses DEFAULT_AGENT_TIMEOUT_MS when agent.timeout is not set", () => {
+    const cfg = {
+      agent: {
+        default: "claude",
+        providers: { claude: { command: "claude", args: [] } },
+      },
+    };
+    const result = resolveAgent(cfg);
+    assert.equal(result.timeoutMs, 300000);
+  });
+
+  // --- GAP-1: resolveAgent boundary values ---
+
+  it("handles agent.timeout = 0 (returns timeoutMs: 0)", () => {
+    const cfg = {
+      agent: {
+        default: "claude",
+        timeout: 0,
+        providers: { claude: { command: "claude", args: [] } },
+      },
+    };
+    const result = resolveAgent(cfg);
+    assert.equal(result.timeoutMs, 0);
+  });
+
+  it("falls back to DEFAULT_AGENT_TIMEOUT_MS when agent.timeout is null", () => {
+    const cfg = {
+      agent: {
+        default: "claude",
+        timeout: null,
+        providers: { claude: { command: "claude", args: [] } },
+      },
+    };
+    const result = resolveAgent(cfg);
+    assert.equal(result.timeoutMs, DEFAULT_AGENT_TIMEOUT_MS);
+  });
+
+  it("handles agent.timeout as string number via implicit coercion", () => {
+    const cfg = {
+      agent: {
+        default: "claude",
+        timeout: "120",
+        providers: { claude: { command: "claude", args: [] } },
+      },
+    };
+    const result = resolveAgent(cfg);
+    assert.equal(result.timeoutMs, 120000);
   });
 });

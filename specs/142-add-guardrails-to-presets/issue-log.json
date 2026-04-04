@@ -1,0 +1,30 @@
+{
+  "entries": [
+    {
+      "step": "gate-draft",
+      "reason": "missing Q&A section; missing development type (開発種別); missing goal (目的)",
+      "trigger": "gate post hook (auto)",
+      "timestamp": "2026-04-04T14:16:20.910Z"
+    },
+    {
+      "step": "gate-draft",
+      "reason": "missing development type (開発種別); missing goal (目的)",
+      "trigger": "gate post hook (auto)",
+      "timestamp": "2026-04-04T14:16:56.307Z"
+    },
+    {
+      "step": "draft",
+      "reason": "draft フェーズの質問で Choice Format（選択肢形式）を使用していなかった",
+      "trigger": "ユーザーからの指摘",
+      "resolution": "以降の質問で Choice Format を使用する",
+      "timestamp": "2026-04-04T14:04:08.570Z"
+    },
+    {
+      "step": "implement",
+      "reason": "laravel ja guardrail.json の ID が en と不一致だった（eloquent-query-builder vs use-eloquent-or-query-builder 等）",
+      "trigger": "R3/R4 実装時に ja の guardrail.json を確認",
+      "resolution": "ja の ID を en に合わせて修正した",
+      "timestamp": "2026-04-04T15:17:06.126Z"
+    }
+  ]
+}

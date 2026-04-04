@@ -35,6 +35,61 @@ function extractStringProperty(src, propertyName) {
   return m ? m[1] : null;
 }
 
+// ---------------------------------------------------------------------------
+// Shared parse helper (used by both parse() and analyzeModels())
+// ---------------------------------------------------------------------------
+
+/**
+ * Parse CakePHP 2.x model content string (after stripBlockComments) and
+ * return raw parse result. No file I/O — caller provides content.
+ *
+ * @param {string} src - PHP source code with block comments already stripped
+ * @returns {null | { className: string, parentClass: string, useTable: string|null, useDbConfig: string|null, primaryKey: string|null, displayField: string|null, tableName: string, relations: Object, validateFields: string[], actsAs: string[] }}
+ */
+function parseModelContent(src) {
+  const classMatch = src.match(/class\s+(\w+)\s+extends\s+(\w+)/);
+  if (!classMatch) return null;
+
+  const className = classMatch[1];
+  const parentClass = classMatch[2];
+
+  const useTable = extractStringProperty(src, "useTable");
+  const useDbConfig = extractStringProperty(src, "useDbConfig");
+  const primaryKey = extractStringProperty(src, "primaryKey");
+  const displayField = extractStringProperty(src, "displayField");
+
+  const relations = {};
+  for (const relType of RELATION_TYPES) {
+    const body = extractArrayBody(src, relType);
+    if (body) {
+      relations[relType] = extractTopLevelKeys(body);
+    }
+  }
+
+  const validateBody = extractArrayBody(src, "validate");
+  const validateFields = validateBody
+    ? extractTopLevelKeys(validateBody)
+    : [];
+
+  const actsAsBody = extractArrayBody(src, "actsAs");
+  const actsAs = actsAsBody ? extractQuotedStrings(actsAsBody) : [];
+
+  const tableName = useTable || pluralize(camelToSnake(className));
+
+  return {
+    className,
+    parentClass,
+    useTable: useTable || null,
+    useDbConfig: useDbConfig || null,
+    primaryKey: primaryKey || null,
+    displayField: displayField || null,
+    tableName,
+    relations,
+    validateFields,
+    actsAs,
+  };
+}
+
 export default class CakephpModelsSource extends ModelsSource {
   static Entry = ModelEntry;
 
@@ -48,38 +103,21 @@ export default class CakephpModelsSource extends ModelsSource {
     const entry = new ModelEntry();
     const raw = fs.readFileSync(absPath, "utf8");
     const src = stripBlockComments(raw);
+    const parsed = parseModelContent(src);
+    if (!parsed) return entry;
 
-    const classMatch = src.match(/class\s+(\w+)\s+extends\s+(\w+)/);
-    if (!classMatch) return entry;
-
-    entry.className = classMatch[1];
-    entry.parentClass = classMatch[2];
-
-    entry.useTable = extractStringProperty(src, "useTable");
-    entry.useDbConfig = extractStringProperty(src, "useDbConfig");
-    entry.primaryKey = extractStringProperty(src, "primaryKey");
-    entry.displayField = extractStringProperty(src, "displayField");
-
-    const relations = {};
-    for (const relType of RELATION_TYPES) {
-      const body = extractArrayBody(src, relType);
-      if (body) {
-        relations[relType] = extractTopLevelKeys(body);
-      }
-    }
-    entry.relations = relations;
-
-    const validateBody = extractArrayBody(src, "validate");
-    entry.validateFields = validateBody
-      ? extractTopLevelKeys(validateBody)
-      : [];
-
-    const actsAsBody = extractArrayBody(src, "actsAs");
-    entry.actsAs = actsAsBody ? extractQuotedStrings(actsAsBody) : [];
-
-    entry.tableName = entry.useTable || pluralize(camelToSnake(entry.className));
+    entry.className = parsed.className;
+    entry.parentClass = parsed.parentClass;
+    entry.useTable = parsed.useTable;
+    entry.useDbConfig = parsed.useDbConfig;
+    entry.primaryKey = parsed.primaryKey;
+    entry.displayField = parsed.displayField;
+    entry.tableName = parsed.tableName;
+    entry.relations = parsed.relations;
+    entry.validateFields = parsed.validateFields;
+    entry.actsAs = parsed.actsAs;
     entry.isLogic = absPath.includes("/Logic/");
-    entry.isFe = entry.className.startsWith("Fe");
+    entry.isFe = parsed.className.startsWith("Fe");
 
     return entry;
   }
@@ -96,7 +134,7 @@ export default class CakephpModelsSource extends ModelsSource {
     const rows = this.toRows(items, (m) => [
       m.className,
       m.file,
-      m.summary || "—",
+      m.summary || "\u2014",
     ]);
     return this.toMarkdownTable(rows, labels);
   }
@@ -175,7 +213,7 @@ export default class CakephpModelsSource extends ModelsSource {
         .filter((m) => m.visibility === "public")
         .map((m) => m.name + "()")
         .join(", ");
-      return [lc.className, lc.extends, methods || "—"];
+      return [lc.className, lc.extends, methods || "\u2014"];
     });
     return this.toMarkdownTable(rows, labels);
   }
@@ -212,51 +250,25 @@ export function analyzeModels(appDir) {
 
       const raw = fs.readFileSync(filePath, "utf8");
       const src = stripBlockComments(raw);
+      const parsed = parseModelContent(src);
+      if (!parsed) continue;
 
-      const classMatch = src.match(/class\s+(\w+)\s+extends\s+(\w+)/);
-      if (!classMatch) continue;
-
-      const className = classMatch[1];
-      const parentClass = classMatch[2];
-
-      const useTable = extractStringProperty(src, "useTable");
-      const useDbConfig = extractStringProperty(src, "useDbConfig");
-      const primaryKey = extractStringProperty(src, "primaryKey");
-      const displayField = extractStringProperty(src, "displayField");
-
-      const relations = {};
-      for (const relType of RELATION_TYPES) {
-        const body = extractArrayBody(src, relType);
-        if (body) {
-          relations[relType] = extractTopLevelKeys(body);
-        }
-      }
-
-      const validateBody = extractArrayBody(src, "validate");
-      const validateFields = validateBody
-        ? extractTopLevelKeys(validateBody)
-        : [];
-
-      const actsAsBody = extractArrayBody(src, "actsAs");
-      const actsAs = actsAsBody ? extractQuotedStrings(actsAsBody) : [];
-
-      const tableName = useTable || inferTableName(className);
-      const isFe = className.startsWith("Fe");
+      const isFe = parsed.className.startsWith("Fe");
 
       models.push({
         file: path.relative(path.resolve(appDir, ".."), filePath),
-        className,
-        parentClass,
+        className: parsed.className,
+        parentClass: parsed.parentClass,
         isLogic,
         isFe,
-        useTable: useTable || null,
-        useDbConfig: useDbConfig || null,
-        primaryKey: primaryKey || null,
-        displayField: displayField || null,
-        tableName,
-        relations,
-        validateFields,
-        actsAs,
+        useTable: parsed.useTable,
+        useDbConfig: parsed.useDbConfig,
+        primaryKey: parsed.primaryKey,
+        displayField: parsed.displayField,
+        tableName: parsed.tableName,
+        relations: parsed.relations,
+        validateFields: parsed.validateFields,
+        actsAs: parsed.actsAs,
         ...getFileStats(filePath),
       });
     }
@@ -322,7 +334,7 @@ export function analyzeLogicClasses(appDir) {
 }
 
 // ---------------------------------------------------------------------------
-// TitlesGraphController アクション→Logic マッピング
+// TitlesGraphController action -> Logic mapping
 // ---------------------------------------------------------------------------
 export function analyzeTitlesGraphMapping(appDir) {
   const filePath = path.join(appDir, "Controller", "TitlesGraphController.php");
@@ -350,7 +362,7 @@ export function analyzeTitlesGraphMapping(appDir) {
       logics.add(lm[1]);
     }
 
-    let outputType = "画面表示";
+    let outputType = "\u753B\u9762\u8868\u793A";
     if (/OutputExcel|Excel/i.test(actionName)) outputType = "Excel";
     else if (/OutputCsv|Csv/i.test(actionName)) outputType = "CSV";
     else if (/ajax/i.test(actionName)) outputType = "JSON";
@@ -362,7 +374,7 @@ export function analyzeTitlesGraphMapping(appDir) {
 }
 
 // ---------------------------------------------------------------------------
-// Composer 依存パッケージ解析
+// Composer deps
 // ---------------------------------------------------------------------------
 export function analyzeComposerDeps(appDir) {
   const rootDir = path.dirname(appDir);
@@ -394,8 +406,7 @@ export function analyzeAppController(appDir) {
     methods: [],
   };
 
-  // components 配列から Session, Auth, Acl をトップレベルのみ抽出
-  // 括弧バランスで第一階層だけ読み取る
+  // components array - extract top-level only via bracket balancing
   const compSection = src.match(/\$components\s*=\s*array\s*\(/);
   if (compSection) {
     const startIdx = compSection.index + compSection[0].length;
@@ -408,7 +419,6 @@ export function analyzeAppController(appDir) {
     }
     const compBody = src.slice(startIdx, i - 1);
 
-    // トップレベルの要素を分割（depth=0 のカンマで区切る）
     let d = 0;
     let last = 0;
     const segments = [];
@@ -424,7 +434,6 @@ export function analyzeAppController(appDir) {
 
     for (const seg of segments) {
       if (!seg) continue;
-      // 'Session' or 'Auth' => array(...) or 'Acl'
       const nameMatch = seg.match(/^['"](\w+)['"]/);
       if (nameMatch) {
         result.components.push(nameMatch[1]);
@@ -436,7 +445,6 @@ export function analyzeAppController(appDir) {
   const helperMatch = src.match(/\$helpers\s*=\s*array\s*\(([^)]+)\)/);
   if (helperMatch) {
     const body = helperMatch[1];
-    // 'Html' => array('className' => 'MyHtml') パターン
     const helperRe = /['"](\w+)['"]\s*=>\s*array\s*\(\s*['"]className['"]\s*=>\s*['"](\w+)['"]/g;
     let hm;
     while ((hm = helperRe.exec(body)) !== null) {
@@ -444,31 +452,25 @@ export function analyzeAppController(appDir) {
     }
   }
 
-  // Auth 設定を抽出
+  // Auth config
   const authSection = src.match(/'Auth'\s*=>\s*array\s*\(([\s\S]*?)\),\s*'Acl'/);
   if (authSection) {
     const authBody = authSection[1];
-    // authorize
     const authorizeMatch = authBody.match(/['"]authorize['"]\s*=>\s*array\s*\(\s*['"](\w+)['"]/);
     if (authorizeMatch) result.authConfig.authorize = authorizeMatch[1];
-    // authenticate
     const authMatch = authBody.match(/['"]authenticate['"]\s*=>\s*array\s*\(\s*['"](\w+)['"]/);
     if (authMatch) result.authConfig.authenticate = authMatch[1];
-    // userModel
     const userModelMatch = authBody.match(/['"]userModel['"]\s*=>\s*['"](\w+)['"]/);
     if (userModelMatch) result.authConfig.userModel = userModelMatch[1];
-    // username field
     const fieldMatch = authBody.match(/['"]username['"]\s*=>\s*['"](\w+)['"]/);
     if (fieldMatch) result.authConfig.loginField = fieldMatch[1];
-    // loginRedirect
     const loginRedirMatch = authBody.match(/['"]loginRedirect['"]\s*=>\s*array\s*\(\s*['"]controller['"]\s*=>\s*['"](\w+)['"]/);
     if (loginRedirMatch) result.authConfig.loginRedirect = loginRedirMatch[1] + "/index";
-    // logoutRedirect
     const logoutRedirMatch = authBody.match(/['"]logoutRedirect['"]\s*=>\s*array\s*\(\s*['"]controller['"]\s*=>\s*['"](\w+)['"][^)]*['"]action['"]\s*=>\s*['"](\w+)['"]/);
     if (logoutRedirMatch) result.authConfig.logoutRedirect = logoutRedirMatch[1] + "/" + logoutRedirMatch[2];
   }
 
-  // メソッド一覧
+  // Methods
   const fnRe = /(public|protected|private)\s+function\s+(\w+)\s*\(/g;
   let fm;
   while ((fm = fnRe.exec(src)) !== null) {
@@ -479,7 +481,7 @@ export function analyzeAppController(appDir) {
 }
 
 // ---------------------------------------------------------------------------
-// AppModel 解析
+// AppModel analysis
 // ---------------------------------------------------------------------------
 export function analyzeAppModel(appDir) {
   const filePath = path.join(appDir, "Model", "AppModel.php");
@@ -495,34 +497,30 @@ export function analyzeAppModel(appDir) {
     methods: [],
   };
 
-  // actsAs
   const actsAsMatch = src.match(/\$actsAs\s*=\s*array\s*\(\s*["'](\w+)["']/);
   if (actsAsMatch) result.behaviors.push(actsAsMatch[1]);
 
-  // コールバック
   if (/function\s+beforeSave\s*\(/.test(src)) result.callbacks.push("beforeSave");
   if (/function\s+afterSave\s*\(/.test(src)) result.callbacks.push("afterSave");
 
-  // 監査フィールド
   const auditFields = ["created_by", "created_ts", "updated_by", "updated_ts"];
   for (const field of auditFields) {
     if (src.includes(`'${field}'`)) result.auditFields.push(field);
   }
 
-  // メソッド一覧
   const fnRe = /(public\s+)?function\s+(\w+)\s*\(/g;
   let fm;
   const methodDescs = {
-    picureWithSize: "画像横幅バリデーション（パイプ区切り）",
-    beforeSave: "自動タイムスタンプ・監査フィールド設定",
-    afterSave: "進捗管理更新・FEデータ削除フラグ処理",
-    invalidDate: "日付バリデーション",
-    sqldump: "SQL デバッグダンプ",
-    sql: "SQL テンプレートファイル読み込み・実行",
-    escapeQuote: "シングルクォートエスケープ",
-    replaseParam: "SQL パラメータ置換",
-    updateProcessUpdate: "コンテンツ・タイトル最終更新日時の更新",
-    saveAllAtOnce: "500件単位バッチ INSERT",
+    picureWithSize: "\u753B\u50CF\u6A2A\u5E45\u30D0\u30EA\u30C7\u30FC\u30B7\u30E7\u30F3\uFF08\u30D1\u30A4\u30D7\u533A\u5207\u308A\uFF09",
+    beforeSave: "\u81EA\u52D5\u30BF\u30A4\u30E0\u30B9\u30BF\u30F3\u30D7\u30FB\u76E3\u67FB\u30D5\u30A3\u30FC\u30EB\u30C9\u8A2D\u5B9A",
+    afterSave: "\u9032\u6357\u7BA1\u7406\u66F4\u65B0\u30FBFE\u30C7\u30FC\u30BF\u524A\u9664\u30D5\u30E9\u30B0\u51E6\u7406",
+    invalidDate: "\u65E5\u4ED8\u30D0\u30EA\u30C7\u30FC\u30B7\u30E7\u30F3",
+    sqldump: "SQL \u30C7\u30D0\u30C3\u30B0\u30C0\u30F3\u30D7",
+    sql: "SQL \u30C6\u30F3\u30D7\u30EC\u30FC\u30C8\u30D5\u30A1\u30A4\u30EB\u8AAD\u307F\u8FBC\u307F\u30FB\u5B9F\u884C",
+    escapeQuote: "\u30B7\u30F3\u30B0\u30EB\u30AF\u30A9\u30FC\u30C8\u30A8\u30B9\u30B1\u30FC\u30D7",
+    replaseParam: "SQL \u30D1\u30E9\u30E1\u30FC\u30BF\u7F6E\u63DB",
+    updateProcessUpdate: "\u30B3\u30F3\u30C6\u30F3\u30C4\u30FB\u30BF\u30A4\u30C8\u30EB\u6700\u7D42\u66F4\u65B0\u65E5\u6642\u306E\u66F4\u65B0",
+    saveAllAtOnce: "500\u4EF6\u5358\u4F4D\u30D0\u30C3\u30C1 INSERT",
     bulkInsert: "INSERT ON DUPLICATE KEY UPDATE",
   };
 

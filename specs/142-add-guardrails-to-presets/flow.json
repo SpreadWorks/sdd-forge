@@ -1,0 +1,152 @@
+{
+  "spec": "specs/142-add-guardrails-to-presets/spec.md",
+  "baseBranch": "main",
+  "featureBranch": "feature/142-add-guardrails-to-presets",
+  "steps": [
+    {
+      "id": "approach",
+      "status": "done"
+    },
+    {
+      "id": "branch",
+      "status": "done"
+    },
+    {
+      "id": "prepare-spec",
+      "status": "pending"
+    },
+    {
+      "id": "draft",
+      "status": "done"
+    },
+    {
+      "id": "gate-draft",
+      "status": "done"
+    },
+    {
+      "id": "spec",
+      "status": "done"
+    },
+    {
+      "id": "gate",
+      "status": "done"
+    },
+    {
+      "id": "approval",
+      "status": "done"
+    },
+    {
+      "id": "test",
+      "status": "done"
+    },
+    {
+      "id": "implement",
+      "status": "done"
+    },
+    {
+      "id": "gate-impl",
+      "status": "done"
+    },
+    {
+      "id": "review",
+      "status": "done"
+    },
+    {
+      "id": "finalize",
+      "status": "pending"
+    },
+    {
+      "id": "commit",
+      "status": "pending"
+    },
+    {
+      "id": "push",
+      "status": "pending"
+    },
+    {
+      "id": "merge",
+      "status": "pending"
+    },
+    {
+      "id": "pr-create",
+      "status": "pending"
+    },
+    {
+      "id": "branch-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "pr-merge",
+      "status": "pending"
+    },
+    {
+      "id": "sync-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "docs-update",
+      "status": "pending"
+    },
+    {
+      "id": "docs-review",
+      "status": "pending"
+    },
+    {
+      "id": "docs-commit",
+      "status": "pending"
+    }
+  ],
+  "requirements": [
+    {
+      "desc": "R0: VALID_PHASES に review 追加",
+      "status": "done"
+    },
+    {
+      "desc": "R1: webapp guardrail 6件追加",
+      "status": "done"
+    },
+    {
+      "desc": "R2: php-webapp guardrail 1件新規作成",
+      "status": "done"
+    },
+    {
+      "desc": "R3: laravel guardrail 6件追加",
+      "status": "done"
+    },
+    {
+      "desc": "R4: laravel no-unguarded-mass-assignment 文言調整",
+      "status": "done"
+    },
+    {
+      "desc": "R5: NOTICE ファイル作成 (webapp/php-webapp/laravel)",
+      "status": "done"
+    },
+    {
+      "desc": "R6: en/ja 両言語で guardrail.json 更新",
+      "status": "done"
+    }
+  ],
+  "issue": 93,
+  "request": "Laravel プリセット継承チェーン（base → webapp → php-webapp → laravel）に guardrail を追加する。webapp 5件、php-webapp 1件、laravel 6件の新規追加と、既存2件の文言調整。",
+  "worktree": true,
+  "metrics": {
+    "plan": {
+      "docsRead": 2,
+      "issueLog": 1
+    },
+    "draft": {
+      "question": 5
+    },
+    "test": {
+      "question": 1
+    },
+    "impl": {
+      "issueLog": 1
+    }
+  },
+  "notes": [
+    "approach: Q&Aで要件整理してから仕様書作成",
+    "review: コードレビューを行い改善を自動で行う",
+    "finalize: すべて実行"
+  ]
+}

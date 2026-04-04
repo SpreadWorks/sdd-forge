@@ -78,6 +78,9 @@ Note: `sdd-forge flow get context` automatically records these metrics via hooks
      3. Constraints — Non-functional requirements, guardrails, project rules?
      4. Edge cases — Boundary conditions, error cases?
      5. Test strategy — What to test and how?
+     6. Alternatives considered — What other approaches were evaluated? Why was this one chosen?
+     7. Future extensibility — How does this change affect future modifications or extensions?
+   - **Deep-read trigger:** If the linked Issue body is under 200 characters, read the relevant source code files directly (via Read tool or `sdd-forge flow get context <path> --raw`) to build sufficient understanding before answering the checklist questions.
    - **MUST: draft.md に以下の必須フィールドを含めること（gate-draft で検証される）:**
      - `**開発種別:** ...` — ラベル+コロンの太字形式。見出し形式（`## 開発種別`）では検出されない。英語の場合は `**Development Type:** ...`
      - `**目的:** ...` — ラベル+コロンの太字形式。見出し形式（`## 目的`）では検出されない。英語の場合は `**Goal:** ...`
@@ -103,6 +106,8 @@ Note: `sdd-forge flow get context` automatically records these metrics via hooks
      3. Constraints — Non-functional requirements, guardrails, project rules?
      4. Edge cases — Boundary conditions, error cases?
      5. Test strategy — What to test and how?
+     6. Alternatives considered — What other approaches were evaluated? Why was this one chosen?
+     7. Future extensibility — How does this change affect future modifications or extensions?
    - Draft is RFP/requirements level only. No implementation details or function-level design.
    - **Before starting draft discussion**:
      1. **If a GitHub Issue number is linked** (saved in flow.json via `--issue`):
@@ -147,7 +152,7 @@ Note: `sdd-forge flow get context` automatically records these metrics via hooks
      - For files needing deeper understanding, use `sdd-forge flow get context <path> --raw` to read them.
      - Load guardrail articles for the spec phase: `sdd-forge flow get guardrail spec`.
        If output is non-empty, follow these principles when writing the spec.
-   - Fill Goal, Scope, Out of Scope, Requirements, Acceptance Criteria.
+   - Fill Goal, Scope, Out of Scope, Requirements, Acceptance Criteria, Alternatives Considered (if applicable).
    - If draft phase was done, reflect draft Q&A and decisions in spec.md.
    - Don't just copy draft — organize and abstract (but don't invent).
    - Unresolved points → Open Questions. Do not fabricate answers.
@@ -220,6 +225,7 @@ Note: `sdd-forge flow get context` automatically records these metrics via hooks
    - **After test step is done**:
      - Run `sdd-forge flow get prompt plan.complete` and present the choices.
      - **autoApprove transition:** If `autoApprove: true`, treat [1] as selected and invoke `/sdd-forge.flow-impl` using the Skill tool.
+     - **Note:** For test-only specs (no production code changes), the impl phase will be automatically skipped in autoApprove mode. See flow-impl SKILL.md for details.
 
 ## Worktree Mode
 

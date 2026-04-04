@@ -1,0 +1,36 @@
+{
+  "data": {
+    "implementation": {
+      "diffStat": "specs/143-gate-fail-auto-issue-log/draft.md        |  56 +++++++++\n specs/143-gate-fail-auto-issue-log/flow.json       | 125 +++++++++++++++++++++\n specs/143-gate-fail-auto-issue-log/issue-log.json  |  11 ++\n specs/143-gate-fail-auto-issue-log/qa.md           |   9 ++\n specs/143-gate-fail-auto-issue-log/spec.md         |  84 ++++++++++++++\n specs/143-gate-fail-auto-issue-log/tests/README.md |  19 ++++\n .../tests/gate-hooks.test.js                       |  11 ++\n src/flow/lib/run-finalize.js                       |  10 +-\n src/flow/registry.js                               |  32 ++++++\n 9 files changed, 353 insertions(+), 4 deletions(-)",
+      "commits": [
+        "feat: feature/143-gate-fail-auto-issue-log",
+        "fix: update spec to allow inline onError implementation",
+        "feat: auto-record issue-log on gate FAIL via post/onError hooks (#89)"
+      ]
+    },
+    "retro": {
+      "total": 3,
+      "done": 3,
+      "partial": 0,
+      "not_done": 0,
+      "rate": 1,
+      "notes": "3つの要件すべてが正確に実装されている。post hook は FAIL 時のみ issue-log を記録し、onError hook は gate クラッシュ時に記録し、PASS 時は何も記録しない。実装は spec の Implementation Notes に忠実で、worktree-safe パターン（ctx.mainRoot || ctx.root）、best-effort try/catch、issues→reasons フォールバックも含まれている。unplanned 変更は finalizeOnError の trigger パラメータ一般化のみで、これは spec に明記された関連改善。"
+    },
+    "issueLog": {
+      "count": 0,
+      "entries": []
+    },
+    "metrics": {
+      "docsRead": 0,
+      "srcRead": 1,
+      "question": 0,
+      "issueLog": 1
+    },
+    "tests": null,
+    "sync": {
+      "status": "skipped",
+      "reason": "sync was skipped"
+    }
+  },
+  "text": "  Report\n\n  Implementation\n  ────────────────────────────────────────────────\n    feat: feature/143-gate-fail-auto-issue-log\n    fix: update spec to allow inline onError implementation\n    feat: auto-record issue-log on gate FAIL via post/onError hooks (#89)\n    9 files changed, 353 insertions(+), 4 deletions(-)\n\n  Retro\n  ────────────────────────────────────────────────\n    ████████ 100%  (3 done / 0 partial / 0 miss)\n\n  Metrics\n  ────────────────────────────────────────────────\n    docs 0  src 1  Q&A 0  issues 1\n\n  Documents\n  ────────────────────────────────────────────────\n    skipped: sync was skipped"
+}

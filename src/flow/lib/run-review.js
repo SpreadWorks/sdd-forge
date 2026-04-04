@@ -7,6 +7,7 @@
 
 import { PKG_DIR } from "../../lib/cli.js";
 import { runCmd } from "../../lib/process.js";
+import { DEFAULT_AGENT_TIMEOUT_MS } from "../../lib/agent.js";
 import { FlowCommand } from "./base-command.js";
 import path from "path";
 
@@ -88,6 +89,41 @@ function parseSpecReviewOutput(res, stdout, stderr) {
 
 export { parseTestReviewOutput, parseSpecReviewOutput };
 
+const DEFAULT_RETRY_COUNT = 2;
+const DEFAULT_RETRY_DELAY_MS = 3000;
+
+/**
+ * Run a command function with retry logic.
+ *
+ * @param {function} cmdFn - Function that returns { ok, status, stdout, stderr }
+ * @param {Object} [opts]
+ * @param {number} [opts.retryCount=2] - Number of retries (total attempts = retryCount + 1)
+ * @param {number} [opts.retryDelayMs=3000] - Delay between retries in milliseconds
+ * @returns {Promise<{ ok: boolean, status: number, stdout: string, stderr: string }>}
+ */
+export async function runCmdWithRetry(cmdFn, opts = {}) {
+  const retryCount = opts.retryCount ?? DEFAULT_RETRY_COUNT;
+  const retryDelayMs = opts.retryDelayMs ?? DEFAULT_RETRY_DELAY_MS;
+
+  let lastRes;
+  for (let attempt = 0; attempt <= retryCount; attempt++) {
+    lastRes = cmdFn();
+    if (lastRes.ok) return lastRes;
+
+    // Do not retry on killed/signal (timeout, external termination)
+    const stderr = lastRes.stderr || "";
+    if (/killed|signal/i.test(stderr)) return lastRes;
+
+    if (attempt < retryCount) {
+      const next = attempt + 2;
+      const total = retryCount + 1;
+      process.stderr.write(`[review] retry ${next}/${total} after ${retryDelayMs}ms...\n`);
+      await new Promise((r) => setTimeout(r, retryDelayMs));
+    }
+  }
+  return lastRes;
+}
+
 export class RunReviewCommand extends FlowCommand {
   async execute(ctx) {
     const { root } = ctx;
@@ -101,7 +137,11 @@ export class RunReviewCommand extends FlowCommand {
     if (dryRun) args.push("--dry-run");
     if (skipConfirm) args.push("--skip-confirm");
 
-    const res = runCmd("node", [scriptPath, ...args], { cwd: root, timeout: 300000 });
+    const agentTimeout = ctx.config?.agent?.timeout;
+    const timeoutMs = agentTimeout != null ? Number(agentTimeout) * 1000 : DEFAULT_AGENT_TIMEOUT_MS;
+    const res = await runCmdWithRetry(
+      () => runCmd("node", [scriptPath, ...args], { cwd: root, timeout: timeoutMs }),
+    );
 
     const stdout = (res.stdout || "").trim();
     const stderr = (res.stderr || "").trim();

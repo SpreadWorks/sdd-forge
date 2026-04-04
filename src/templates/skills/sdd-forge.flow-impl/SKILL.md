@@ -45,6 +45,12 @@ Before starting, run `sdd-forge flow get check impl` to verify prerequisites.
 1. Implement changes.
    - **On start**: `sdd-forge flow set step implement in_progress`
    - Read the spec to understand requirements.
+   - **Test-only spec detection (autoApprove mode):** If the spec's Goal, Scope, and Requirements indicate that only tests are being added (no production code changes), and `autoApprove: true`:
+     1. Set `sdd-forge flow set step implement skipped`
+     2. Set `sdd-forge flow set step gate-impl skipped`
+     3. Skip to step 3 (review).
+     4. Display: "auto: test-only spec detected — impl phase skipped"
+     - If unsure whether the spec is test-only, proceed with normal implementation (err on the side of caution).
    - Run `sdd-forge flow get context --raw` to understand the project structure. For files needing deeper understanding, use `sdd-forge flow get context <path> --raw`.
    - Run `sdd-forge flow get context --search "<spec goal>" --raw` to retrieve related entries with detail. Use the spec's Goal section as the search query.
    - Load guardrail articles for the implementation phase: `sdd-forge flow get guardrail impl`.

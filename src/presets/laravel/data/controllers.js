@@ -21,6 +21,57 @@ export class LaravelControllerEntry extends ControllerEntry {
   middleware = null;
 }
 
+// ---------------------------------------------------------------------------
+// Shared parse helper (used by both parse() and analyzeControllers())
+// ---------------------------------------------------------------------------
+
+const SKIP_DI_TYPES = new Set(["Request", "array", "string", "int", "bool"]);
+
+/**
+ * Parse Laravel controller content string and return raw parse result.
+ * No file I/O — caller provides content.
+ *
+ * @param {string} content - PHP source code
+ * @returns {{ className: string|null, parentClass: string, actions: string[], diDeps: string[], middleware: string[] }}
+ */
+function parseControllerContent(content) {
+  const classMatch = content.match(/class\s+(\w+)\s+extends\s+(\w+)/);
+  const className = classMatch ? classMatch[1] : null;
+  const parentClass = classMatch ? classMatch[2] : "";
+
+  // Public methods (actions)
+  const methodRegex = /public\s+function\s+(\w+)\s*\(/g;
+  const actions = [];
+  let m;
+  while ((m = methodRegex.exec(content)) !== null) {
+    if (m[1] !== "__construct" && !m[1].startsWith("_")) {
+      actions.push(m[1]);
+    }
+  }
+
+  // Constructor DI
+  const diDeps = [];
+  const ctorMatch = content.match(
+    /public\s+function\s+__construct\s*\(([^)]*)\)/s,
+  );
+  if (ctorMatch) {
+    const depRegex = /(\w+)\s+\$\w+/g;
+    let dm;
+    while ((dm = depRegex.exec(ctorMatch[1])) !== null) {
+      if (!SKIP_DI_TYPES.has(dm[1])) diDeps.push(dm[1]);
+    }
+  }
+
+  // middleware() calls
+  const middleware = [];
+  const mwRegex = /\$this->middleware\(\s*['"]([^'"]+)['"]/g;
+  while ((m = mwRegex.exec(content)) !== null) {
+    middleware.push(m[1]);
+  }
+
+  return { className, parentClass, actions, diDeps, middleware };
+}
+
 export default class LaravelControllersSource extends ControllersSource {
   static Entry = LaravelControllerEntry;
 
@@ -35,48 +86,15 @@ export default class LaravelControllersSource extends ControllersSource {
   parse(absPath) {
     const entry = new LaravelControllerEntry();
     const content = fs.readFileSync(absPath, "utf8");
+    const parsed = parseControllerContent(content);
 
-    // Class name
-    const classMatch = content.match(/class\s+(\w+)\s+extends\s+(\w+)/);
-    entry.className = classMatch ? classMatch[1] : null;
-    entry.parentClass = classMatch ? classMatch[2] : null;
-
-    // Public methods (actions)
-    const methodRegex = /public\s+function\s+(\w+)\s*\(/g;
-    const actions = [];
-    let m;
-    while ((m = methodRegex.exec(content)) !== null) {
-      if (m[1] !== "__construct" && !m[1].startsWith("_")) {
-        actions.push(m[1]);
-      }
-    }
-    entry.actions = actions;
-
-    // Constructor DI
-    const diDeps = [];
-    const ctorMatch = content.match(
-      /public\s+function\s+__construct\s*\(([^)]*)\)/s,
-    );
-    if (ctorMatch) {
-      const depRegex = /(\w+)\s+\$\w+/g;
-      const skip = new Set(["Request", "array", "string", "int", "bool"]);
-      let dm;
-      while ((dm = depRegex.exec(ctorMatch[1])) !== null) {
-        if (!skip.has(dm[1])) diDeps.push(dm[1]);
-      }
-    }
-    entry.diDeps = diDeps;
-
-    // middleware() calls
-    const middleware = [];
-    const mwRegex = /\$this->middleware\(\s*['"]([^'"]+)['"]/g;
-    while ((m = mwRegex.exec(content)) !== null) {
-      middleware.push(m[1]);
-    }
-    entry.middleware = middleware;
-
+    entry.className = parsed.className;
+    entry.parentClass = parsed.parentClass;
+    entry.actions = parsed.actions;
+    entry.diDeps = parsed.diDeps;
+    entry.middleware = parsed.middleware;
     entry.components = [];
-    entry.uses = diDeps;
+    entry.uses = parsed.diDeps;
 
     return entry;
   }
@@ -139,55 +157,20 @@ export function analyzeControllers(sourceRoot) {
   if (!fs.existsSync(baseDir)) return { controllers: [], summary: { total: 0, totalActions: 0 } };
 
   const files = findFiles(baseDir, "*.php", ["Controller.php"], true);
-  const controllers = files.map((f) => ({
-    ...parseControllerScan(f.absPath, f.relPath),
-    lines: f.lines, hash: f.hash, mtime: f.mtime,
-  }));
+  const controllers = files.map((f) => {
+    const content = fs.readFileSync(f.absPath, "utf8");
+    const parsed = parseControllerContent(content);
+    return {
+      file: path.join("app/Http/Controllers", f.relPath),
+      className: parsed.className ?? path.basename(f.absPath, ".php"),
+      parentClass: parsed.parentClass,
+      actions: parsed.actions,
+      diDeps: parsed.diDeps,
+      middleware: parsed.middleware,
+      lines: f.lines, hash: f.hash, mtime: f.mtime,
+    };
+  });
 
   const totalActions = controllers.reduce((s, c) => s + c.actions.length, 0);
   return { controllers, summary: { total: controllers.length, totalActions } };
-}
-
-function parseControllerScan(filePath, relPath) {
-  const content = fs.readFileSync(filePath, "utf8");
-
-  const classMatch = content.match(/class\s+(\w+)\s+extends\s+(\w+)/);
-  const className = classMatch ? classMatch[1] : path.basename(filePath, ".php");
-  const parentClass = classMatch ? classMatch[2] : "";
-
-  const methodRegex = /public\s+function\s+(\w+)\s*\(/g;
-  const actions = [];
-  let m;
-  while ((m = methodRegex.exec(content)) !== null) {
-    if (m[1] !== "__construct" && !m[1].startsWith("_")) {
-      actions.push(m[1]);
-    }
-  }
-
-  const diDeps = [];
-  const ctorMatch = content.match(/public\s+function\s+__construct\s*\(([^)]*)\)/s);
-  if (ctorMatch) {
-    const depRegex = /(\w+)\s+\$\w+/g;
-    let dm;
-    while ((dm = depRegex.exec(ctorMatch[1])) !== null) {
-      if (!["Request", "array", "string", "int", "bool"].includes(dm[1])) {
-        diDeps.push(dm[1]);
-      }
-    }
-  }
-
-  const middleware = [];
-  const mwRegex = /\$this->middleware\(\s*['"]([^'"]+)['"]/g;
-  while ((m = mwRegex.exec(content)) !== null) {
-    middleware.push(m[1]);
-  }
-
-  return {
-    file: path.join("app/Http/Controllers", relPath),
-    className,
-    parentClass,
-    actions,
-    diDeps,
-    middleware,
-  };
 }

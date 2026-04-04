@@ -30,6 +30,22 @@
           "spec"
         ]
       }
+    },
+    {
+      "id": "strict-comparison-only",
+      "title": "Strict Comparison Only",
+      "body": "When performing comparisons: use only === and !==. Prohibit == and !=.",
+      "meta": {
+        "phase": ["impl"]
+      }
+    },
+    {
+      "id": "no-else-after-return",
+      "title": "No else After return/throw",
+      "body": "When writing conditionals: do not write else/elseif after return or throw. Use the early-return pattern to reduce nesting.",
+      "meta": {
+        "phase": ["impl"]
+      }
     }
   ]
 }

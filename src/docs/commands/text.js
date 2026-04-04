@@ -687,11 +687,10 @@ async function main(ctx) {
     logger.verbose(`--id=${ctx.id}: per-directive mode forced.`);
   }
 
-  const configTimeout = cfg.agent?.timeout ? Number(cfg.agent.timeout) * 1000 : undefined;
   const retryCount = Number(cfg?.agent?.retryCount) || 0;
   const processFn = ctx.perDirective ? processTemplate : processTemplateFileBatch;
   if (!ctx.perDirective) {
-    if (!ctx.timeout) ctx.timeout = configTimeout || DEFAULT_TIMEOUT_MS;
+    if (!ctx.timeout) ctx.timeout = agent.timeoutMs || DEFAULT_TIMEOUT_MS;
     logger.verbose(`Mode: batch (file-level, ${targetFiles.length} file(s), concurrency=${concurrency}, timeout=${ctx.timeout}ms). Use --per-directive for single-call mode.`);
   }
 

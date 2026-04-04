@@ -1,0 +1,76 @@
+{
+  "spec": "specs/138-symfony-guardrails/spec.md",
+  "date": "2026-04-04T13:57:05.672Z",
+  "requirements": [
+    {
+      "desc": "R1: phases.jsにreview追加",
+      "status": "done",
+      "note": "VALID_PHASES配列に\"review\"を追加済み。既存フェーズの順序・名前は変更なし。"
+    },
+    {
+      "desc": "R2: Symfony spec guardrail 7件",
+      "status": "done",
+      "note": "ja/enともに7件すべて追加済み（no-bundle-for-app-code, env-vars-for-infra-only, use-messenger-for-async, ux-package-selection-criteria, live-component-performance-design, stable-public-interfaces, use-enums-for-fixed-values）。既存4件も維持。"
+    },
+    {
+      "desc": "R3: Symfony impl guardrail 19件",
+      "status": "done",
+      "note": "ja/enともに19件すべて追加済み。UX系のbodyに条件前置あり。"
+    },
+    {
+      "desc": "R4: Symfony impl+review guardrail 3件",
+      "status": "done",
+      "note": "no-container-get, no-direct-form-building-in-controller, trans-filter-required の3件がphase: [\"impl\", \"review\"]で追加済み。"
+    },
+    {
+      "desc": "R5: Symfony review guardrail 5件",
+      "status": "done",
+      "note": "5件すべて追加済み。ja版はレビュー時で始まり、UX系は「〜を使用するプロジェクトのレビュー時:」を前置。en版も\"During review\"で始まる。"
+    },
+    {
+      "desc": "R6: coding-rule guardrail 2件",
+      "status": "done",
+      "note": "strict-comparison-onlyとno-else-after-returnをja/enともに追加済み。既存3件も維持。"
+    },
+    {
+      "desc": "R7: NOTICE作成",
+      "status": "done",
+      "note": "src/presets/symfony/NOTICEを作成。出典3件（awesome-copilot, symfony-ux-skills, EasyAdminBundle）をMITライセンス・inspired by形式で記載。影響記事34件を列挙。"
+    },
+    {
+      "desc": "R8: ja/en両言語",
+      "status": "done",
+      "note": "R2-R6の全guardrailがja/en両ディレクトリに作成済み。テストでもja/enのid一致を検証。"
+    }
+  ],
+  "unplanned": [
+    {
+      "file": "src/presets/symfony/templates/en/guardrail.json",
+      "change": "既存4件のid名を変更（service-layer-separation→service, use-voter-for-authorization→voter, use-dto-for-external-input→dto）。specの既存id維持要件に反する可能性あり。"
+    },
+    {
+      "file": "src/presets/symfony/templates/en/guardrail.json",
+      "change": "既存4件のphase配列のフォーマットをmultilineからinline表記に変更（機能的変更なし）"
+    },
+    {
+      "file": "src/presets/symfony/templates/ja/guardrail.json",
+      "change": "既存4件のphase配列のフォーマットをmultilineからinline表記に変更（機能的変更なし）"
+    },
+    {
+      "file": "specs/138-symfony-guardrails/",
+      "change": "spec関連ファイル群（draft.md, flow.json, issue-log.json, qa.md, review.md, spec.md, tests/）の追加。SDDフロー成果物であり機能変更ではない。"
+    },
+    {
+      "file": "tests/unit/flow/phases-review.test.js",
+      "change": "phases.jsのreviewフェーズとfilterByPhaseのユニットテスト追加"
+    }
+  ],
+  "summary": {
+    "total": 8,
+    "done": 8,
+    "partial": 0,
+    "not_done": 0,
+    "rate": 1,
+    "notes": "全8要件が満たされている。ただし英語版guardrail.jsonで既存4件のidが変更されている（service-layer-separation→service等）。これはja版と一致させるための修正と思われるが、specには「既存4件は維持する」とあり、idの変更は既存guardrailへの参照を壊す可能性がある。機能的影響の確認が必要。"
+  }
+}

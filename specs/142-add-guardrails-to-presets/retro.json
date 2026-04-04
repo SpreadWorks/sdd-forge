@@ -1,0 +1,91 @@
+{
+  "spec": "specs/142-add-guardrails-to-presets/spec.md",
+  "date": "2026-04-04T15:37:40.723Z",
+  "requirements": [
+    {
+      "desc": "R0: VALID_PHASES に review 追加",
+      "status": "done",
+      "note": "src/flow/lib/phases.js の diff は直接見えないが、テストコード・issue-log・retro すべてが追加済みを確認。flow.json の diffStat に phases.js 1行追加あり"
+    },
+    {
+      "desc": "R1: webapp guardrail 6件追加",
+      "status": "done",
+      "note": "webapp/templates/en/guardrail.json に6件（authorization-flow-in-spec, queue-design-for-heavy-processing, cache-invalidation-strategy, no-queries-in-view-templates, detect-n-plus-one-queries, detect-missing-index-on-foreign-keys）追加。phase割り当て: spec×3, impl+review×1, review×2 すべて仕様通り。body内容も仕様と一致。FW固有用語なし"
+    },
+    {
+      "desc": "R2: php-webapp guardrail 1件新規作成",
+      "status": "done",
+      "note": "php-webapp/templates/en/guardrail.json と ja/guardrail.json を新規作成。use-language-enum-for-fixed-values 1件、phase: impl。body内容も仕様通り"
+    },
+    {
+      "desc": "R3: laravel guardrail 6件追加",
+      "status": "done",
+      "note": "laravel/templates/en/guardrail.json に6件追加。eager-loading-strategy-required(spec), enable-prevent-lazy-loading(impl), use-query-scopes-for-reusable-conditions(impl), use-enum-casting-in-eloquent(impl), use-factory-for-test-data(impl), invokeable-controller-for-single-action(impl)。ID・phase・body すべて仕様通り"
+    },
+    {
+      "desc": "R4: laravel no-unguarded-mass-assignment 文言調整",
+      "status": "done",
+      "note": "en: phase を [impl, review] に変更、body に 'When columns are added or modified in migrations, verify that the corresponding model's $fillable or $guarded is updated accordingly.' を追記。ja: 同様に phase 更新と body 追記あり"
+    },
+    {
+      "desc": "R5: NOTICE ファイル作成 (webapp/php-webapp/laravel)",
+      "status": "done",
+      "note": "3ファイル作成済み。フォーマット準拠（Affected articles / Original source / License）。webapp: CC0グループ(PatrickJS→sanjeed5)→MITグループ(iSerter→VoltAgent)で正しくグループ化。php-webapp: CC0(PatrickJS)→MIT(pekral)で正しい。laravel: CC0(PatrickJS→sanjeed5)→MIT(AratKruglik→laravel/boost→pekral)でアルファベット順・グループ化準拠。出典もすべて仕様通り"
+    },
+    {
+      "desc": "R6: en/ja 両言語で guardrail.json 更新",
+      "status": "done",
+      "note": "webapp/php-webapp/laravel すべてで en/ja 両方が更新。ID・phase は en/ja で一致。ja は日本語、en は英語で記述"
+    }
+  ],
+  "unplanned": [
+    {
+      "file": "src/presets/laravel/templates/ja/guardrail.json",
+      "change": "既存4件の guardrail ID を en に合わせて修正（eloquent-query-builder → use-eloquent-or-query-builder, controller → no-business-logic-in-controllers, formrequest → use-form-request-validation, mass-assignment → no-unguarded-mass-assignment）"
+    },
+    {
+      "file": "specs/142-add-guardrails-to-presets/draft.md",
+      "change": "ドラフト文書の新規作成（SDD フロー成果物）"
+    },
+    {
+      "file": "specs/142-add-guardrails-to-presets/flow.json",
+      "change": "フロー管理ファイルの新規作成（SDD フロー成果物）"
+    },
+    {
+      "file": "specs/142-add-guardrails-to-presets/issue-log.json",
+      "change": "issue-log の更新（古い gate-impl エントリ削除、draft/implement エントリ追加）"
+    },
+    {
+      "file": "specs/142-add-guardrails-to-presets/qa.md",
+      "change": "Q&A ファイルの新規作成（SDD フロー成果物）"
+    },
+    {
+      "file": "specs/142-add-guardrails-to-presets/spec.md",
+      "change": "仕様書の新規作成（SDD フロー成果物）"
+    },
+    {
+      "file": "specs/142-add-guardrails-to-presets/review.md",
+      "change": "コードレビュー結果ファイル（既存コードの DRY 改善提案6件、diff には反映されていない提案のみ）"
+    },
+    {
+      "file": "specs/142-add-guardrails-to-presets/retro.json",
+      "change": "レトロスペクティブ結果ファイル（SDD フロー成果物）"
+    },
+    {
+      "file": "specs/142-add-guardrails-to-presets/report.json",
+      "change": "レポートファイル（SDD フロー成果物）"
+    },
+    {
+      "file": "specs/142-add-guardrails-to-presets/tests/",
+      "change": "テスト設計書・検証テスト・README の新規作成（spec verification tests）"
+    }
+  ],
+  "summary": {
+    "total": 7,
+    "done": 7,
+    "partial": 0,
+    "not_done": 0,
+    "rate": 1,
+    "notes": "全7要件（R0〜R6）が完全に満たされている。guardrail の ID・title・body・phase はすべて仕様と一致。NOTICE ファイルのフォーマット・出典・ライセンスグループ順序も仕様に準拠。唯一の仕様外変更は laravel/ja の既存4件の ID 修正（en との不一致解消）で、これは en/ja 対称性（R6）を担保するための品質改善として妥当。specs/ 配下のファイルはすべて SDD フロー成果物であり、実装品質に影響しない。"
+  }
+}

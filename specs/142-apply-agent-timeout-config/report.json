@@ -1,0 +1,35 @@
+{
+  "data": {
+    "implementation": {
+      "diffStat": "specs/142-apply-agent-timeout-config/draft.md      |  64 ++++++++\n specs/142-apply-agent-timeout-config/flow.json     | 138 +++++++++++++++++\n .../142-apply-agent-timeout-config/issue-log.json  |  18 +++\n specs/142-apply-agent-timeout-config/qa.md         |   9 ++\n specs/142-apply-agent-timeout-config/review.md     |  29 ++++\n specs/142-apply-agent-timeout-config/spec.md       |  86 +++++++++++\n .../142-apply-agent-timeout-config/tests/README.md |  20 +++\n specs/142-apply-agent-timeout-config/tests/spec.md | 172 +++++++++++++++++++++\n src/docs/commands/agents.js                        |   4 +-\n src/docs/commands/enrich.js                        |   2 +-\n src/docs/commands/forge.js                         |   2 +-\n src/docs/commands/readme.js                        |   4 +-\n src/docs/commands/text.js                          |   3 +-\n src/docs/commands/translate.js                     |   5 +-\n src/flow/lib/run-review.js                         |   5 +-\n src/lib/agent.js                                   |  12 +-\n tests/e2e/142-agent-timeout-config.test.js         | 126 +++++++++++++++\n tests/unit/lib/agent.test.js                       | 104 ++++++++++++-\n 18 files changed, 785 insertions(+), 18 deletions(-)",
+      "commits": [
+        "feat: feature/142-apply-agent-timeout-config",
+        "feat: apply agent.timeout from config.json to all AI calls (#88)"
+      ]
+    },
+    "retro": {
+      "total": 5,
+      "done": 5,
+      "partial": 0,
+      "not_done": 0,
+      "rate": 1,
+      "notes": "5件の要件すべてが実装済み。run-review.js のみ resolveAgent 経由ではなく独自に ctx.config?.agent?.timeout を変換しており、spec の「一元化」意図との軽微な乖離があるが、機能的にはハードコード 300000 の除去という要件は満たしている。テストは単体・E2E ともに追加されており、回帰防止の静的解析テストも含まれる。"
+    },
+    "issueLog": {
+      "count": 0,
+      "entries": []
+    },
+    "metrics": {
+      "docsRead": 2,
+      "srcRead": 3,
+      "question": 0,
+      "issueLog": 2
+    },
+    "tests": null,
+    "sync": {
+      "status": "skipped",
+      "reason": "sync was skipped"
+    }
+  },
+  "text": "  Report\n\n  Implementation\n  ────────────────────────────────────────────────\n    feat: feature/142-apply-agent-timeout-config\n    feat: apply agent.timeout from config.json to all AI calls (#88)\n    18 files changed, 785 insertions(+), 18 deletions(-)\n\n  Retro\n  ────────────────────────────────────────────────\n    ████████ 100%  (5 done / 0 partial / 0 miss)\n\n  Metrics\n  ────────────────────────────────────────────────\n    docs 2  src 3  Q&A 0  issues 2\n\n  Documents\n  ────────────────────────────────────────────────\n    skipped: sync was skipped"
+}

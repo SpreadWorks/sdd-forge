@@ -1,0 +1,35 @@
+{
+  "data": {
+    "implementation": {
+      "diffStat": "specs/138-symfony-guardrails/draft.md              | 139 ++++++++++\n specs/138-symfony-guardrails/flow.json             | 157 +++++++++++\n specs/138-symfony-guardrails/issue-log.json        |  11 +\n specs/138-symfony-guardrails/qa.md                 |   9 +\n specs/138-symfony-guardrails/review.md             |  33 +++\n specs/138-symfony-guardrails/spec.md               | 175 ++++++++++++\n specs/138-symfony-guardrails/tests/README.md       |  31 +++\n .../tests/guardrail-content.test.js                | 212 +++++++++++++++\n src/flow/lib/phases.js                             |   1 +\n .../coding-rule/templates/en/guardrail.json        |  16 ++\n .../coding-rule/templates/ja/guardrail.json        |  16 ++\n src/presets/symfony/NOTICE                         |  51 ++++\n src/presets/symfony/templates/en/guardrail.json    | 297 +++++++++++++++++++--\n src/presets/symfony/templates/ja/guardrail.json    | 291 ++++++++++++++++++--\n tests/unit/flow/phases-review.test.js              |  34 +++\n 15 files changed, 1440 insertions(+), 33 deletions(-)",
+      "commits": [
+        "feat: feature/138-symfony-guardrails",
+        "feat: add framework-specific guardrails to Symfony preset"
+      ]
+    },
+    "retro": {
+      "total": 8,
+      "done": 8,
+      "partial": 0,
+      "not_done": 0,
+      "rate": 1,
+      "notes": "全8要件が満たされている。ただし英語版guardrail.jsonで既存4件のidが変更されている（service-layer-separation→service等）。これはja版と一致させるための修正と思われるが、specには「既存4件は維持する」とあり、idの変更は既存guardrailへの参照を壊す可能性がある。機能的影響の確認が必要。"
+    },
+    "issueLog": {
+      "count": 0,
+      "entries": []
+    },
+    "metrics": {
+      "docsRead": 4,
+      "srcRead": 1,
+      "question": 6,
+      "issueLog": 1
+    },
+    "tests": null,
+    "sync": {
+      "status": "skipped",
+      "reason": "sync was skipped"
+    }
+  },
+  "text": "  Report\n\n  Implementation\n  ────────────────────────────────────────────────\n    feat: feature/138-symfony-guardrails\n    feat: add framework-specific guardrails to Symfony preset\n    15 files changed, 1440 insertions(+), 33 deletions(-)\n\n  Retro\n  ────────────────────────────────────────────────\n    ████████ 100%  (8 done / 0 partial / 0 miss)\n\n  Metrics\n  ────────────────────────────────────────────────\n    docs 4  src 1  Q&A 6  issues 1\n\n  Documents\n  ────────────────────────────────────────────────\n    skipped: sync was skipped"
+}

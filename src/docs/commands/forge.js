@@ -206,7 +206,7 @@ async function main() {
   const t = translate();
   const agent = resolveAgent(config, "docs.forge");
   const mode = cli.mode || DEFAULT_MODE;
-  const timeoutMs = config.agent?.timeout ? Number(config.agent.timeout) * 1000 : undefined;
+  const timeoutMs = agent?.timeoutMs;
 
   if (mode === "agent" && !agent) {
     throw new Error(

@@ -25,85 +25,9 @@ export class EntityEntry extends AnalysisEntry {
   static summary = {};
 }
 
-export default class EntitiesSource extends WebappDataSource {
-  static Entry = EntityEntry;
-
-  match(relPath) {
-    return relPath.endsWith(".php") && relPath.startsWith("src/Entity/");
-  }
-
-  parse(absPath) {
-    const entry = new EntityEntry();
-    const content = fs.readFileSync(absPath, "utf8");
-
-    // Only parse files with Doctrine ORM annotations
-    if (!/#\[ORM\\Entity/.test(content) && !/#\[ORM\\Table/.test(content)) {
-      return entry;
-    }
-
-    // Class name
-    const classMatch = content.match(/class\s+(\w+)/);
-    entry.className = classMatch ? classMatch[1] : path.basename(absPath, ".php");
-
-    // #[ORM\Table(name: 'xxx')]
-    const tableMatch = content.match(/#\[ORM\\Table\s*\(\s*name:\s*['"](\w+)['"]/);
-    entry.tableName = tableMatch ? tableMatch[1] : camelToSnake(entry.className);
-
-    // #[ORM\Entity(repositoryClass: Xxx::class)]
-    const repoMatch = content.match(/#\[ORM\\Entity\s*\(\s*repositoryClass:\s*([\w\\]+)(?:::class)?/);
-    entry.repositoryClass = repoMatch ? repoMatch[1].split("\\").pop() : "";
-
-    // Columns (#[ORM\Column] attributes)
-    entry.columns = extractColumns(content);
-
-    // Relations
-    entry.relations = extractRelations(content);
-
-    return entry;
-  }
-
-  /** Entity relations table (grouped by relation type). */
-  relations(analysis, labels) {
-    const entities = analysis.entities?.entries || [];
-    if (entities.length === 0) return null;
-    const rows = [];
-    for (const entity of entities) {
-      if (!entity.relations) continue;
-      const targets = [];
-      for (const [type, list] of Object.entries(entity.relations)) {
-        if (Array.isArray(list) && list.length > 0) {
-          targets.push(`${type}: ${list.map((r) => r.target).join(", ")}`);
-        }
-      }
-      if (targets.length > 0) {
-        rows.push([entity.className, targets.join(" / ")]);
-      }
-    }
-    if (rows.length === 0) return null;
-    rows.sort((a, b) => a[0].localeCompare(b[0]));
-    return this.toMarkdownTable(rows, labels);
-  }
-
-  /** Entity columns table. */
-  columns(analysis, labels) {
-    const entities = analysis.entities?.entries || [];
-    if (entities.length === 0) return null;
-    const rows = [];
-    for (const entity of entities) {
-      for (const col of entity.columns || []) {
-        rows.push([
-          entity.className,
-          col.name,
-          col.type,
-          col.nullable ? "YES" : "NO",
-          col.id ? "PK" : "",
-        ]);
-      }
-    }
-    if (rows.length === 0) return null;
-    return this.toMarkdownTable(rows, labels);
-  }
-}
+// ---------------------------------------------------------------------------
+// Shared parse helpers (used by both parse() and analyzeEntities())
+// ---------------------------------------------------------------------------
 
 function extractColumns(content) {
   const columns = [];
@@ -178,6 +102,102 @@ function extractRelations(content) {
   return relations;
 }
 
+/**
+ * Parse Symfony Doctrine entity content string and return raw parse result.
+ * No file I/O — caller provides content.
+ *
+ * @param {string} content - PHP source code
+ * @returns {null | { className: string, tableName: string, repositoryClass: string, columns: Array, relations: Object }}
+ */
+function parseEntityContent(content) {
+  // Only parse files with Doctrine ORM annotations
+  if (!/#\[ORM\\Entity/.test(content) && !/#\[ORM\\Table/.test(content)) {
+    return null;
+  }
+
+  const classMatch = content.match(/class\s+(\w+)/);
+  const className = classMatch ? classMatch[1] : null;
+
+  const tableMatch = content.match(/#\[ORM\\Table\s*\(\s*name:\s*['"](\w+)['"]/);
+  const tableName = tableMatch ? tableMatch[1] : camelToSnake(className);
+
+  const repoMatch = content.match(/#\[ORM\\Entity\s*\(\s*repositoryClass:\s*([\w\\]+)(?:::class)?/);
+  const repositoryClass = repoMatch ? repoMatch[1].split("\\").pop() : "";
+
+  return {
+    className,
+    tableName,
+    repositoryClass,
+    columns: extractColumns(content),
+    relations: extractRelations(content),
+  };
+}
+
+export default class EntitiesSource extends WebappDataSource {
+  static Entry = EntityEntry;
+
+  match(relPath) {
+    return relPath.endsWith(".php") && relPath.startsWith("src/Entity/");
+  }
+
+  parse(absPath) {
+    const entry = new EntityEntry();
+    const content = fs.readFileSync(absPath, "utf8");
+    const parsed = parseEntityContent(content);
+    if (!parsed) return entry;
+
+    entry.className = parsed.className ?? path.basename(absPath, ".php");
+    entry.tableName = parsed.tableName;
+    entry.repositoryClass = parsed.repositoryClass;
+    entry.columns = parsed.columns;
+    entry.relations = parsed.relations;
+
+    return entry;
+  }
+
+  /** Entity relations table (grouped by relation type). */
+  relations(analysis, labels) {
+    const entities = analysis.entities?.entries || [];
+    if (entities.length === 0) return null;
+    const rows = [];
+    for (const entity of entities) {
+      if (!entity.relations) continue;
+      const targets = [];
+      for (const [type, list] of Object.entries(entity.relations)) {
+        if (Array.isArray(list) && list.length > 0) {
+          targets.push(`${type}: ${list.map((r) => r.target).join(", ")}`);
+        }
+      }
+      if (targets.length > 0) {
+        rows.push([entity.className, targets.join(" / ")]);
+      }
+    }
+    if (rows.length === 0) return null;
+    rows.sort((a, b) => a[0].localeCompare(b[0]));
+    return this.toMarkdownTable(rows, labels);
+  }
+
+  /** Entity columns table. */
+  columns(analysis, labels) {
+    const entities = analysis.entities?.entries || [];
+    if (entities.length === 0) return null;
+    const rows = [];
+    for (const entity of entities) {
+      for (const col of entity.columns || []) {
+        rows.push([
+          entity.className,
+          col.name,
+          col.type,
+          col.nullable ? "YES" : "NO",
+          col.id ? "PK" : "",
+        ]);
+      }
+    }
+    if (rows.length === 0) return null;
+    return this.toMarkdownTable(rows, labels);
+  }
+}
+
 // ---------------------------------------------------------------------------
 // Directory-level analyzer (moved from scan/entities.js, used by tests)
 // ---------------------------------------------------------------------------
@@ -194,35 +214,19 @@ export function analyzeEntities(sourceRoot) {
   const entities = [];
   for (const f of files) {
     const content = fs.readFileSync(f.absPath, "utf8");
-    if (/#\[ORM\\Entity/.test(content) || /#\[ORM\\Table/.test(content)) {
-      entities.push({
-        ...parseEntityFile(f.absPath, f.relPath),
-        lines: f.lines, hash: f.hash, mtime: f.mtime,
-      });
-    }
+    const parsed = parseEntityContent(content);
+    if (!parsed) continue;
+
+    entities.push({
+      file: path.join("src/Entity", f.relPath),
+      className: parsed.className ?? path.basename(f.absPath, ".php"),
+      tableName: parsed.tableName,
+      repositoryClass: parsed.repositoryClass,
+      columns: parsed.columns,
+      relations: parsed.relations,
+      lines: f.lines, hash: f.hash, mtime: f.mtime,
+    });
   }
 
   return { entities, summary: { total: entities.length } };
-}
-
-function parseEntityFile(filePath, relPath) {
-  const content = fs.readFileSync(filePath, "utf8");
-
-  const classMatch = content.match(/class\s+(\w+)/);
-  const className = classMatch ? classMatch[1] : path.basename(filePath, ".php");
-
-  const tableMatch = content.match(/#\[ORM\\Table\s*\(\s*name:\s*['"](\w+)['"]/);
-  const tableName = tableMatch ? tableMatch[1] : camelToSnake(className);
-
-  const repoMatch = content.match(/#\[ORM\\Entity\s*\(\s*repositoryClass:\s*([\w\\]+)(?:::class)?/);
-  const repositoryClass = repoMatch ? repoMatch[1].split("\\").pop() : "";
-
-  return {
-    file: path.join("src/Entity", relPath),
-    className,
-    tableName,
-    repositoryClass,
-    columns: extractColumns(content),
-    relations: extractRelations(content),
-  };
 }

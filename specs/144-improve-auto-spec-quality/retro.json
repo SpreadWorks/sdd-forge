@@ -1,0 +1,64 @@
+{
+  "spec": "specs/144-improve-auto-spec-quality/spec.md",
+  "date": "2026-04-04T14:29:58.698Z",
+  "requirements": [
+    {
+      "desc": "Add Alternatives considered and Future extensibility to autoApprove self-Q&A checklist",
+      "status": "done",
+      "note": "Lines added at SKILL.md around line 81: items 6 (Alternatives considered) and 7 (Future extensibility) added to the autoApprove self-Q&A checklist."
+    },
+    {
+      "desc": "Add same items to normal-mode Requirements category checklist",
+      "status": "done",
+      "note": "Same two items added to the normal-mode checklist around line 108 of SKILL.md."
+    },
+    {
+      "desc": "Add source code deep-read instruction when issue content is thin",
+      "status": "done",
+      "note": "Deep-read trigger instruction added after item 7 in autoApprove section: 'If the linked Issue body is under 200 characters, read the relevant source code files directly'."
+    },
+    {
+      "desc": "Add Alternatives Considered section to DEFAULT_SPEC_TEMPLATE",
+      "status": "done",
+      "note": "'## Alternatives Considered' section with '-' placeholder added in run-prepare-spec.js between '## Clarifications (Q&A)' and '## User Confirmation', matching the spec placement requirement."
+    }
+  ],
+  "unplanned": [
+    {
+      "file": "src/templates/skills/sdd-forge.flow-plan/SKILL.md",
+      "change": "Added 'Alternatives Considered (if applicable)' to the spec-phase fill instruction list (line 155). Not explicitly required but a reasonable consistency addition."
+    },
+    {
+      "file": "specs/144-improve-auto-spec-quality/tests/verify-checklist-items.test.js",
+      "change": "New spec-specific test file verifying the 4 requirements. Consistent with test strategy in spec but not listed as a requirement itself."
+    },
+    {
+      "file": "specs/144-improve-auto-spec-quality/tests/README.md",
+      "change": "Test documentation for spec 144."
+    },
+    {
+      "file": "specs/144-improve-auto-spec-quality/draft.md",
+      "change": "SDD flow artifact (draft)."
+    },
+    {
+      "file": "specs/144-improve-auto-spec-quality/flow.json",
+      "change": "SDD flow state file."
+    },
+    {
+      "file": "specs/144-improve-auto-spec-quality/qa.md",
+      "change": "SDD flow artifact (Q&A)."
+    },
+    {
+      "file": "specs/144-improve-auto-spec-quality/spec.md",
+      "change": "SDD flow artifact (spec)."
+    }
+  ],
+  "summary": {
+    "total": 4,
+    "done": 4,
+    "partial": 0,
+    "not_done": 0,
+    "rate": 1,
+    "notes": "All 4 requirements are fully satisfied. The deep-read trigger is correctly placed in the autoApprove section only (as specified by P2). The Alternatives Considered section is correctly positioned between Clarifications and User Confirmation in DEFAULT_SPEC_TEMPLATE. Unplanned changes are limited to SDD flow artifacts (specs/, tests/) and a minor but sensible consistency fix in the spec-phase fill instruction."
+  }
+}

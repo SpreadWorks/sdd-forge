@@ -441,7 +441,7 @@ async function main(ctx) {
   const batches = splitIntoBatches(pending, maxTokens);
   const concurrency = resolveConcurrency(config);
 
-  const timeoutMs = config.agent?.timeout ? Number(config.agent.timeout) * 1000 : DEFAULT_AGENT_TIMEOUT_MS;
+  const timeoutMs = agent.timeoutMs || DEFAULT_AGENT_TIMEOUT_MS;
   let totalEnriched = 0;
 
   logger.log(`${batches.length} batches (token limit: ${maxTokens}, concurrency: ${concurrency})`);

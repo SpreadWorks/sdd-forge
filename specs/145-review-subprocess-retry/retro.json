@@ -1,0 +1,60 @@
+{
+  "spec": "specs/145-review-subprocess-retry/spec.md",
+  "date": "2026-04-04T14:45:08.300Z",
+  "requirements": [
+    {
+      "desc": "R1: runCmd リトライ追加 (retryCount=2, delay=3000ms)",
+      "status": "done",
+      "note": "runCmdWithRetry を実装し、DEFAULT_RETRY_COUNT=2, DEFAULT_RETRY_DELAY_MS=3000 で定義。execute() 内の runCmd 呼び出しを runCmdWithRetry でラップ済み。"
+    },
+    {
+      "desc": "R2: killed/signal でリトライしない",
+      "status": "done",
+      "note": "/killed|signal/i.test(stderr) で判定し、マッチ時は即座に lastRes を返却。テストでも killed・signal 両パターンを検証済み。"
+    },
+    {
+      "desc": "R3: リトライ進捗を stderr 出力",
+      "status": "done",
+      "note": "process.stderr.write で `[review] retry N/M after Nms...` 形式のメッセージを出力。仕様通りのフォーマット。"
+    },
+    {
+      "desc": "R4: テスト追加",
+      "status": "done",
+      "note": "retry-logic.test.js に6テストケース: 即成功、失敗→成功、全失敗、killed即終了、signal即終了、retryCount=0。仕様の4パターンをすべてカバー。"
+    }
+  ],
+  "unplanned": [
+    {
+      "file": "specs/145-review-subprocess-retry/draft.md",
+      "change": "ドラフト仕様ドキュメントの追加（SDDワークフロー成果物）"
+    },
+    {
+      "file": "specs/145-review-subprocess-retry/flow.json",
+      "change": "フロー管理ファイルの追加（SDDワークフロー成果物）"
+    },
+    {
+      "file": "specs/145-review-subprocess-retry/qa.md",
+      "change": "Q&Aプレースホルダーの追加（SDDワークフロー成果物）"
+    },
+    {
+      "file": "specs/145-review-subprocess-retry/spec.md",
+      "change": "機能仕様書の追加（SDDワークフロー成果物）"
+    },
+    {
+      "file": "specs/145-review-subprocess-retry/review.md",
+      "change": "コードレビュー結果の追加（SDDワークフロー成果物）"
+    },
+    {
+      "file": "specs/145-review-subprocess-retry/tests/README.md",
+      "change": "テストREADMEの追加（SDDワークフロー成果物）"
+    }
+  ],
+  "summary": {
+    "total": 4,
+    "done": 4,
+    "partial": 0,
+    "not_done": 0,
+    "rate": 1,
+    "notes": "全4要件が実装・テスト済み。runCmdWithRetry はリトライ回数・遅延・killed/signal除外・stderr進捗出力をすべて仕様通りに実装。テストは6ケースで仕様要求の4パターンを網羅。unplanned はすべてSDDワークフローの標準成果物であり問題なし。レビューで指摘された DRY 改善（agent.js との共通化）と モジュール配置（retry.js への分離）は approved だが未適用。これらは spec の Out of Scope に明記されている。"
+  }
+}

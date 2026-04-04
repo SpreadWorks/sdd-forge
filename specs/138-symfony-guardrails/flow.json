@@ -1,0 +1,157 @@
+{
+  "spec": "specs/138-symfony-guardrails/spec.md",
+  "baseBranch": "main",
+  "featureBranch": "feature/138-symfony-guardrails",
+  "steps": [
+    {
+      "id": "approach",
+      "status": "done"
+    },
+    {
+      "id": "branch",
+      "status": "done"
+    },
+    {
+      "id": "prepare-spec",
+      "status": "pending"
+    },
+    {
+      "id": "draft",
+      "status": "done"
+    },
+    {
+      "id": "gate-draft",
+      "status": "done"
+    },
+    {
+      "id": "spec",
+      "status": "done"
+    },
+    {
+      "id": "gate",
+      "status": "done"
+    },
+    {
+      "id": "approval",
+      "status": "done"
+    },
+    {
+      "id": "test",
+      "status": "done"
+    },
+    {
+      "id": "implement",
+      "status": "done"
+    },
+    {
+      "id": "gate-impl",
+      "status": "done"
+    },
+    {
+      "id": "review",
+      "status": "done"
+    },
+    {
+      "id": "finalize",
+      "status": "pending"
+    },
+    {
+      "id": "commit",
+      "status": "pending"
+    },
+    {
+      "id": "push",
+      "status": "pending"
+    },
+    {
+      "id": "merge",
+      "status": "pending"
+    },
+    {
+      "id": "pr-create",
+      "status": "pending"
+    },
+    {
+      "id": "branch-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "pr-merge",
+      "status": "pending"
+    },
+    {
+      "id": "sync-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "docs-update",
+      "status": "pending"
+    },
+    {
+      "id": "docs-review",
+      "status": "pending"
+    },
+    {
+      "id": "docs-commit",
+      "status": "pending"
+    }
+  ],
+  "requirements": [
+    {
+      "desc": "R1: phases.jsにreview追加",
+      "status": "done"
+    },
+    {
+      "desc": "R2: Symfony spec guardrail 7件",
+      "status": "done"
+    },
+    {
+      "desc": "R3: Symfony impl guardrail 19件",
+      "status": "done"
+    },
+    {
+      "desc": "R4: Symfony impl+review guardrail 3件",
+      "status": "done"
+    },
+    {
+      "desc": "R5: Symfony review guardrail 5件",
+      "status": "done"
+    },
+    {
+      "desc": "R6: coding-rule guardrail 2件",
+      "status": "done"
+    },
+    {
+      "desc": "R7: NOTICE作成",
+      "status": "done"
+    },
+    {
+      "desc": "R8: ja/en両言語",
+      "status": "done"
+    }
+  ],
+  "issue": 83,
+  "request": "Symfonyプリセットにフレームワーク固有のguardrailを追加する（Issue #83）。3つの外部ソース（awesome-copilot, symfony-ux-skills, EasyAdminBundle AGENTS.md）からインスピレーションを得て、spec/impl/reviewの3フェーズに48件のguardrailルールを独自の文章で作成する。NOTICEファイルも追加する。",
+  "worktree": true,
+  "metrics": {
+    "plan": {
+      "docsRead": 2
+    },
+    "draft": {
+      "docsRead": 2,
+      "question": 6,
+      "srcRead": 1
+    },
+    "impl": {
+      "issueLog": 1
+    }
+  },
+  "notes": [
+    "draft: coding-ruleプリセットへの2件追加（厳密比較、早期リターン）もスコープに含める",
+    "draft: UX系guardrailは全10件入れる。bodyに条件前置（Stimulus/Turbo/LiveComponent/UX Icons/UX Mapを使用する場合）で誤誘導を回避する方式A",
+    "draft: VALID_PHASESにreviewを追加する。guardrail.jsonのphaseにreviewを指定可能にする",
+    "draft: ユーザー承認。Symfony 34件新規 + coding-rule 2件新規 + phases.js review追加 + NOTICE",
+    "review: コードレビュー+自動修正を選択",
+    "finalize: mode=all を選択"
+  ]
+}
