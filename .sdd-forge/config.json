@@ -153,6 +153,9 @@
       "flow.review.draft": {
         "agent": "codex"
       },
+      "flow.review.impl": {
+        "agent": "codex"
+      },
       "flow.review.final": {
         "agent": "claude",
         "profile": "opus"
