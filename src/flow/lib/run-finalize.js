@@ -290,7 +290,7 @@ export class RunFinalizeCommand extends FlowCommand {
           if (!buildRes.ok) {
             throw new Error((buildRes.stderr || buildRes.stdout || "").trim());
           }
-          runCmd("git", ["add", "docs/", "AGENTS.md", "CLAUDE.md", "README.md"], { cwd: syncCwd });
+          runCmd("git", ["add", "docs/", "AGENTS.md", "CLAUDE.md", "README.md", ".sdd-forge/output/analysis.json"], { cwd: syncCwd });
           let diffStat = null;
           let diffSummary = null;
           const statRes = runCmd("git", ["diff", "--cached", "--stat"], { cwd: syncCwd });
