@@ -1,0 +1,126 @@
+{
+  "spec": "specs/145-review-subprocess-retry/spec.md",
+  "baseBranch": "main",
+  "featureBranch": "feature/145-review-subprocess-retry",
+  "steps": [
+    {
+      "id": "approach",
+      "status": "done"
+    },
+    {
+      "id": "branch",
+      "status": "done"
+    },
+    {
+      "id": "prepare-spec",
+      "status": "pending"
+    },
+    {
+      "id": "draft",
+      "status": "done"
+    },
+    {
+      "id": "gate-draft",
+      "status": "done"
+    },
+    {
+      "id": "spec",
+      "status": "done"
+    },
+    {
+      "id": "gate",
+      "status": "done"
+    },
+    {
+      "id": "approval",
+      "status": "done"
+    },
+    {
+      "id": "test",
+      "status": "done"
+    },
+    {
+      "id": "implement",
+      "status": "done"
+    },
+    {
+      "id": "gate-impl",
+      "status": "done"
+    },
+    {
+      "id": "review",
+      "status": "done"
+    },
+    {
+      "id": "finalize",
+      "status": "pending"
+    },
+    {
+      "id": "commit",
+      "status": "pending"
+    },
+    {
+      "id": "push",
+      "status": "pending"
+    },
+    {
+      "id": "merge",
+      "status": "pending"
+    },
+    {
+      "id": "pr-create",
+      "status": "pending"
+    },
+    {
+      "id": "branch-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "pr-merge",
+      "status": "pending"
+    },
+    {
+      "id": "sync-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "docs-update",
+      "status": "pending"
+    },
+    {
+      "id": "docs-review",
+      "status": "pending"
+    },
+    {
+      "id": "docs-commit",
+      "status": "pending"
+    }
+  ],
+  "requirements": [
+    {
+      "desc": "R1: runCmd リトライ追加 (retryCount=2, delay=3000ms)",
+      "status": "done"
+    },
+    {
+      "desc": "R2: killed/signal でリトライしない",
+      "status": "done"
+    },
+    {
+      "desc": "R3: リトライ進捗を stderr 出力",
+      "status": "done"
+    },
+    {
+      "desc": "R4: テスト追加",
+      "status": "done"
+    }
+  ],
+  "issue": 94,
+  "request": "review サブプロセス（run-review.js）にリトライ機構を追加する（Issue #94）。src/lib/agent.js の callAgentAsyncWithRetry と同様のパターンで、runCmd 呼び出しにリトライ + スリープを導入する。",
+  "worktree": true,
+  "autoApprove": true,
+  "metrics": {
+    "draft": {
+      "srcRead": 2
+    }
+  }
+}
