@@ -35,7 +35,68 @@
     {
       "id": "no-unguarded-mass-assignment",
       "title": "No Unguarded Mass Assignment",
-      "body": "Models shall define `$guarded` or `$fillable`. Using `Model::unguard()` is prohibited.",
+      "body": "Models shall define `$guarded` or `$fillable`. Using `Model::unguard()` is prohibited. When columns are added or modified in migrations, verify that the corresponding model's `$fillable` or `$guarded` is updated accordingly.",
+      "meta": {
+        "phase": [
+          "impl",
+          "review"
+        ]
+      }
+    },
+    {
+      "id": "eager-loading-strategy-required",
+      "title": "Eager Loading Strategy Required",
+      "body": "Features that use relations shall document the eager loading policy using Eloquent's with()/load() in the spec.",
+      "meta": {
+        "phase": [
+          "spec"
+        ]
+      }
+    },
+    {
+      "id": "enable-prevent-lazy-loading",
+      "title": "Enable Lazy Loading Detection in Development",
+      "body": "Enable Model::preventLazyLoading() in AppServiceProvider for the development environment. Disable it in production and use logging instead.",
+      "meta": {
+        "phase": [
+          "impl"
+        ]
+      }
+    },
+    {
+      "id": "use-query-scopes-for-reusable-conditions",
+      "title": "Use Query Scopes for Reusable Conditions",
+      "body": "Query conditions used in two or more places shall be defined as Eloquent local scopes. Duplicating WHERE clauses is prohibited.",
+      "meta": {
+        "phase": [
+          "impl"
+        ]
+      }
+    },
+    {
+      "id": "use-enum-casting-in-eloquent",
+      "title": "Use Enum Casting in Eloquent",
+      "body": "Enum-typed attributes shall use Eloquent casts to specify the Enum. Place Enums under app/Enums and declare the type explicitly in the model's $casts.",
+      "meta": {
+        "phase": [
+          "impl"
+        ]
+      }
+    },
+    {
+      "id": "use-factory-for-test-data",
+      "title": "Use Factory for Test Data",
+      "body": "Creating test data directly with Model::create() or DB::insert() in test code is prohibited. Use Factories and override only the minimum necessary attributes.",
+      "meta": {
+        "phase": [
+          "impl"
+        ]
+      }
+    },
+    {
+      "id": "invokeable-controller-for-single-action",
+      "title": "Invokable Controller for Single Action",
+      "body": "Endpoints that perform a single operation outside of CRUD shall be implemented as an Invokable Controller with an __invoke() method.",
       "meta": {
         "phase": [
           "impl"

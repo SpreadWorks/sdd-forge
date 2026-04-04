@@ -85,6 +85,67 @@
           "impl"
         ]
       }
+    },
+    {
+      "id": "authorization-flow-in-spec",
+      "title": "認可フローの設計を spec に含めること",
+      "body": "アクセス制御を伴う変更は、認可フローの設計を spec に含めること。",
+      "meta": {
+        "phase": [
+          "spec"
+        ]
+      }
+    },
+    {
+      "id": "queue-design-for-heavy-processing",
+      "title": "重い処理のキュー設計",
+      "body": "外部API呼び出し・メール送信・ファイル処理等、レスポンスタイムに影響する処理は非同期処理を前提に設計すること。同期実行が必要な場合はその理由を spec に明記する。",
+      "meta": {
+        "phase": [
+          "spec"
+        ]
+      }
+    },
+    {
+      "id": "cache-invalidation-strategy",
+      "title": "キャッシュ無効化戦略",
+      "body": "キャッシュを導入する機能は、無効化のタイミングと方法を spec に記載すること。TTL のみに依存する設計はデータ不整合のリスクを明記する。",
+      "meta": {
+        "phase": [
+          "spec"
+        ]
+      }
+    },
+    {
+      "id": "no-queries-in-view-templates",
+      "title": "ビューテンプレート内でのクエリ禁止",
+      "body": "ビューテンプレート内で直接 DB クエリや遅延読み込みを行うことを禁止する。必要なデータはコントローラまたは同等の層で事前に取得すること。",
+      "meta": {
+        "phase": [
+          "impl",
+          "review"
+        ]
+      }
+    },
+    {
+      "id": "detect-n-plus-one-queries",
+      "title": "N+1 クエリの兆候検出",
+      "body": "ループ内でのリレーションアクセス、テンプレート内での動的リレーション展開等、N+1 クエリの兆候がないか確認する。事前読み込みの欠如を指摘する。",
+      "meta": {
+        "phase": [
+          "review"
+        ]
+      }
+    },
+    {
+      "id": "detect-missing-index-on-foreign-keys",
+      "title": "インデックス未設定の外部キー検出",
+      "body": "マイグレーションやスキーマ変更で追加された外部キーやクエリ頻出カラムにインデックスが設定されているか確認する。",
+      "meta": {
+        "phase": [
+          "review"
+        ]
+      }
     }
   ]
 }

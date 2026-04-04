@@ -1,7 +1,7 @@
 {
   "guardrails": [
     {
-      "id": "eloquent-query-builder",
+      "id": "use-eloquent-or-query-builder",
       "title": "Eloquent / Query Builder の使用",
       "body": "`DB::raw()` や生 SQL を使用する場合はバインディングを必須とする。クエリ内での文字列結合を禁止する。",
       "meta": {
@@ -12,7 +12,7 @@
       }
     },
     {
-      "id": "controller",
+      "id": "no-business-logic-in-controllers",
       "title": "Controller にビジネスロジックを書かない",
       "body": "ビジネスロジックは Service または Action クラスに分離すること。Controller は薄く保つこと。",
       "meta": {
@@ -23,7 +23,7 @@
       }
     },
     {
-      "id": "formrequest",
+      "id": "use-form-request-validation",
       "title": "FormRequest によるバリデーション",
       "body": "入力バリデーションは Controller 内で直接行わず、FormRequest クラスを使用すること。",
       "meta": {
@@ -33,9 +33,70 @@
       }
     },
     {
-      "id": "mass-assignment",
+      "id": "no-unguarded-mass-assignment",
       "title": "Mass Assignment の保護必須",
-      "body": "Model は `$guarded` または `$fillable` を定義すること。`Model::unguard()` の使用を禁止する。",
+      "body": "Model は `$guarded` または `$fillable` を定義すること。`Model::unguard()` の使用を禁止する。マイグレーションでカラムが追加・変更された場合、対応するモデルの `$fillable` または `$guarded` が更新されていることを確認する。",
+      "meta": {
+        "phase": [
+          "impl",
+          "review"
+        ]
+      }
+    },
+    {
+      "id": "eager-loading-strategy-required",
+      "title": "Eager Loading 戦略の明記",
+      "body": "リレーションを使用する機能は、Eloquent の with()/load() による Eager Loading の方針を spec に記載すること。",
+      "meta": {
+        "phase": [
+          "spec"
+        ]
+      }
+    },
+    {
+      "id": "enable-prevent-lazy-loading",
+      "title": "開発環境での Lazy Loading 検出有効化",
+      "body": "AppServiceProvider で Model::preventLazyLoading() を開発環境で有効にすること。本番環境では無効にし、代わりにログ記録する。",
+      "meta": {
+        "phase": [
+          "impl"
+        ]
+      }
+    },
+    {
+      "id": "use-query-scopes-for-reusable-conditions",
+      "title": "クエリスコープによる条件の再利用",
+      "body": "2箇所以上で使われるクエリ条件は Eloquent のローカルスコープとして定義すること。WHERE 句の重複記述を禁止する。",
+      "meta": {
+        "phase": [
+          "impl"
+        ]
+      }
+    },
+    {
+      "id": "use-enum-casting-in-eloquent",
+      "title": "Eloquent での Enum キャスト使用",
+      "body": "Enum 型の属性は Eloquent のキャストで Enum を指定すること。app/Enums に配置し、モデルの $casts で型を明示する。",
+      "meta": {
+        "phase": [
+          "impl"
+        ]
+      }
+    },
+    {
+      "id": "use-factory-for-test-data",
+      "title": "テストデータは Factory 経由で生成",
+      "body": "テストコード内で Model::create() や DB::insert() で直接テストデータを作成することを禁止する。Factory を使用し、必要最小限の属性のみオーバーライドすること。",
+      "meta": {
+        "phase": [
+          "impl"
+        ]
+      }
+    },
+    {
+      "id": "invokeable-controller-for-single-action",
+      "title": "単一アクションコントローラの採用",
+      "body": "CRUD 以外の単一操作を行うエンドポイントは __invoke() メソッドを持つ Invokeable Controller として実装すること。",
       "meta": {
         "phase": [
           "impl"

@@ -1,0 +1,14 @@
+{
+  "guardrails": [
+    {
+      "id": "use-language-enum-for-fixed-values",
+      "title": "Use Language Enum for Fixed Values",
+      "body": "When a fixed set of values (e.g. statuses, types, categories) is used in the codebase, it shall be defined as the language's built-in Enum type. Direct comparison with string or integer literals is prohibited.",
+      "meta": {
+        "phase": [
+          "impl"
+        ]
+      }
+    }
+  ]
+}

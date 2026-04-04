@@ -1,0 +1,14 @@
+{
+  "guardrails": [
+    {
+      "id": "use-language-enum-for-fixed-values",
+      "title": "Enum によるリテラル値の型安全化",
+      "body": "ステータス・種別等の固定値集合が使われている場合、言語組み込みの Enum 型として定義すること。文字列・整数リテラルの直接比較を禁止する。",
+      "meta": {
+        "phase": [
+          "impl"
+        ]
+      }
+    }
+  ]
+}
