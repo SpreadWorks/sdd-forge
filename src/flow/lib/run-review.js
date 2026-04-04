@@ -25,9 +25,11 @@ function parseTestReviewOutput(res, stdout, stderr) {
   if (reviewPathMatch) changed.push(reviewPathMatch[1]);
 
   if (!res.ok) {
-    const detail = gapCount !== null
-      ? `Test review FAIL: ${gapCount} gap(s) remaining`
-      : `Test review failed (subprocess error)`;
+    const detail = gapCount === 0
+      ? `Test review subprocess error (0 gaps reported but process exited with error)`
+      : gapCount !== null
+        ? `Test review FAIL: ${gapCount} gap(s) remaining`
+        : `Test review failed (subprocess error)`;
     throw new Error(
       [detail, ...(stderr ? [stderr] : []), ...(stdout ? [stdout] : [])].join("\n"),
     );
@@ -61,9 +63,11 @@ function parseSpecReviewOutput(res, stdout, stderr) {
   if (reviewPathMatch) changed.push(reviewPathMatch[1]);
 
   if (!res.ok) {
-    const detail = issueCount !== null
-      ? `Spec review FAIL: ${issueCount} issue(s) remaining`
-      : `Spec review failed (subprocess error)`;
+    const detail = issueCount === 0
+      ? `Spec review subprocess error (0 issues reported but process exited with error)`
+      : issueCount !== null
+        ? `Spec review FAIL: ${issueCount} issue(s) remaining`
+        : `Spec review failed (subprocess error)`;
     throw new Error(
       [detail, ...(stderr ? [stderr] : []), ...(stdout ? [stdout] : [])].join("\n"),
     );

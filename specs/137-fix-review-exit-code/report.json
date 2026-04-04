@@ -1,0 +1,35 @@
+{
+  "data": {
+    "implementation": {
+      "diffStat": "specs/137-fix-review-exit-code/draft.md            |  78 +++++++++\n specs/137-fix-review-exit-code/flow.json           | 143 ++++++++++++++++\n specs/137-fix-review-exit-code/issue-log.json      |  20 +++\n specs/137-fix-review-exit-code/qa.md               |   9 +\n specs/137-fix-review-exit-code/review.md           |  25 +++\n specs/137-fix-review-exit-code/spec.md             |  75 +++++++++\n specs/137-fix-review-exit-code/tests/README.md     |  23 +++\n .../tests/review-exit-code.test.js                 | 186 +++++++++++++++++++++\n src/flow/commands/review.js                        |  20 ++-\n src/flow/lib/run-review.js                         |  16 +-\n 10 files changed, 586 insertions(+), 9 deletions(-)",
+      "commits": [
+        "feat: feature/137-fix-review-exit-code",
+        "fix: review loop returns PASS when verification detect finds 0 issues (#82)"
+      ]
+    },
+    "retro": {
+      "total": 5,
+      "done": 5,
+      "partial": 0,
+      "not_done": 0,
+      "rate": 1,
+      "notes": "5件の要件すべてが実装・テスト済み。主要な変更は (1) runReviewLoop のループ後に verification detect ブロックを追加、(2) ループ内の最終イテレーションでも fix を実行するよう条件ガードを削除、(3) parseSpecReviewOutput / parseTestReviewOutput で count=0 時のエラーメッセージ分岐を追加。注目点として、ループ内の fix 条件変更（attempt < maxRetries - 1 ガード削除）は requirement に明示されていないが、verification detect が正しく機能するための必要な前提変更。specs/ 配下のファイルは SDD フローの成果物であり実質的な unplanned change ではない。"
+    },
+    "issueLog": {
+      "count": 0,
+      "entries": []
+    },
+    "metrics": {
+      "docsRead": 3,
+      "srcRead": 4,
+      "question": 0,
+      "issueLog": 2
+    },
+    "tests": null,
+    "sync": {
+      "status": "skipped",
+      "reason": "sync was skipped"
+    }
+  },
+  "text": "  Report\n\n  Implementation\n  ────────────────────────────────────────────────\n    feat: feature/137-fix-review-exit-code\n    fix: review loop returns PASS when verification detect finds 0 issues (#82)\n    10 files changed, 586 insertions(+), 9 deletions(-)\n\n  Retro\n  ────────────────────────────────────────────────\n    ████████ 100%  (5 done / 0 partial / 0 miss)\n\n  Metrics\n  ────────────────────────────────────────────────\n    docs 3  src 4  Q&A 0  issues 2\n\n  Documents\n  ────────────────────────────────────────────────\n    skipped: sync was skipped"
+}

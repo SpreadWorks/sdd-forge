@@ -1,0 +1,20 @@
+{
+  "entries": [
+    {
+      "step": "gate-draft",
+      "reason": "gate draft FAIL 2 times due to format mismatch: gate expects label:value pattern for development type and goal, but draft used heading format",
+      "trigger": "sdd-forge flow run gate --phase draft",
+      "resolution": "changed to bold label:value format",
+      "guardrailCandidate": "draft template should document required format for development type and goal fields",
+      "timestamp": "2026-04-04T08:51:09.371Z"
+    },
+    {
+      "step": "spec",
+      "reason": "spec review subprocess injected preamble text into spec.md (known issue #136)",
+      "trigger": "sdd-forge flow run review --phase spec",
+      "resolution": "manually rewrote spec.md incorporating valid review proposals",
+      "guardrailCandidate": "spec review should strip preamble before writing",
+      "timestamp": "2026-04-04T08:57:41.155Z"
+    }
+  ]
+}

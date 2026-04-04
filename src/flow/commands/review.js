@@ -243,9 +243,23 @@ async function runReviewLoop({ maxRetries, label, dryRun, detect, fix }) {
       break;
     }
 
-    if (attempt < maxRetries - 1) {
-      console.error(`  [${label}] Applying fixes...`);
-      await fix(raw);
+    console.error(`  [${label}] Applying fixes...`);
+    await fix(raw);
+  }
+
+  // Verification detect: if loop ended with issues, run one more detect to check
+  // whether the last fix resolved them. This handles the case where the previous
+  // code skipped fix on the last iteration, missing fixes that resolved all issues.
+  if (finalIssues.length > 0 && !dryRun) {
+    console.error(`  [${label}] Verification detect...`);
+    const { issues, raw } = await detect();
+    history.push(raw);
+    if (issues.length === 0) {
+      console.error(`  [${label}] Verification PASS — all issues resolved.`);
+      finalIssues = [];
+    } else {
+      console.error(`  [${label}] Verification: ${issues.length} issue(s) still remain.`);
+      finalIssues = issues;
     }
   }
 

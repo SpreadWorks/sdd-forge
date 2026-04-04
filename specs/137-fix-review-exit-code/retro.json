@@ -1,0 +1,77 @@
+{
+  "spec": "specs/137-fix-review-exit-code/spec.md",
+  "date": "2026-04-04T09:10:16.346Z",
+  "requirements": [
+    {
+      "desc": "runReviewLoop に verification detect を追加（fix 後に 0 issues なら PASS）",
+      "status": "done",
+      "note": "ループ終了後に finalIssues.length > 0 && !dryRun の条件で verification detect を1回実行し、issues が 0 件なら finalIssues を空にして PASS を返す実装が追加されている。テストでも確認済み。"
+    },
+    {
+      "desc": "fix が全て no-op なら FAIL を維持",
+      "status": "done",
+      "note": "全 fix が no-op の場合、verification detect でも同じ issues が検出されるため finalIssues が残り FAIL を維持する。テストケース「FAIL when all fixes are no-op」で検証済み。ただし実装上は明示的な no-op 検出ではなく verification detect の結果に依存する設計。"
+    },
+    {
+      "desc": "parseSpecReviewOutput で exit 1 + issues=0 のエラーメッセージ改善",
+      "status": "done",
+      "note": "issueCount === 0 の場合に「Spec review subprocess error (0 issues reported but process exited with error)」メッセージを返すよう分岐を追加。テストで「subprocess error」文字列の存在を検証済み。"
+    },
+    {
+      "desc": "parseTestReviewOutput で exit 1 + gaps=0 のエラーメッセージ改善",
+      "status": "done",
+      "note": "gapCount === 0 の場合に「Test review subprocess error (0 gaps reported but process exited with error)」メッセージを返すよう分岐を追加。テストで検証済み。"
+    },
+    {
+      "desc": "既存インターフェース（引数・戻り値の型）は変更しない",
+      "status": "done",
+      "note": "runReviewLoop の引数 { maxRetries, label, dryRun, detect, fix } と戻り値 { history, finalIssues, verdict } は変更なし。parseSpecReviewOutput / parseTestReviewOutput の引数・戻り値も同一。"
+    }
+  ],
+  "unplanned": [
+    {
+      "file": "specs/137-fix-review-exit-code/draft.md",
+      "change": "spec ドラフトファイルの追加（SDD フロー成果物）"
+    },
+    {
+      "file": "specs/137-fix-review-exit-code/flow.json",
+      "change": "SDD フロー管理ファイルの追加"
+    },
+    {
+      "file": "specs/137-fix-review-exit-code/issue-log.json",
+      "change": "issue ログファイルの追加"
+    },
+    {
+      "file": "specs/137-fix-review-exit-code/qa.md",
+      "change": "Q&A ファイルの追加"
+    },
+    {
+      "file": "specs/137-fix-review-exit-code/review.md",
+      "change": "コードレビュー結果ファイルの追加"
+    },
+    {
+      "file": "specs/137-fix-review-exit-code/spec.md",
+      "change": "機能仕様書の追加"
+    },
+    {
+      "file": "specs/137-fix-review-exit-code/tests/README.md",
+      "change": "テスト説明ファイルの追加"
+    },
+    {
+      "file": "specs/137-fix-review-exit-code/tests/review-exit-code.test.js",
+      "change": "spec verification テストの追加（12テストケース）"
+    },
+    {
+      "file": "src/flow/commands/review.js",
+      "change": "ループ内の fix 実行条件を変更: attempt < maxRetries - 1 ガードを削除し、全イテレーションで fix を実行するよう変更。これは verification detect の前提条件だが、requirement には明記されていない副次的変更"
+    }
+  ],
+  "summary": {
+    "total": 5,
+    "done": 5,
+    "partial": 0,
+    "not_done": 0,
+    "rate": 1,
+    "notes": "5件の要件すべてが実装・テスト済み。主要な変更は (1) runReviewLoop のループ後に verification detect ブロックを追加、(2) ループ内の最終イテレーションでも fix を実行するよう条件ガードを削除、(3) parseSpecReviewOutput / parseTestReviewOutput で count=0 時のエラーメッセージ分岐を追加。注目点として、ループ内の fix 条件変更（attempt < maxRetries - 1 ガード削除）は requirement に明示されていないが、verification detect が正しく機能するための必要な前提変更。specs/ 配下のファイルは SDD フローの成果物であり実質的な unplanned change ではない。"
+  }
+}

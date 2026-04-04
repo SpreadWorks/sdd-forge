@@ -1,0 +1,143 @@
+{
+  "spec": "specs/137-fix-review-exit-code/spec.md",
+  "baseBranch": "main",
+  "featureBranch": "feature/137-fix-review-exit-code",
+  "steps": [
+    {
+      "id": "approach",
+      "status": "done"
+    },
+    {
+      "id": "branch",
+      "status": "done"
+    },
+    {
+      "id": "prepare-spec",
+      "status": "pending"
+    },
+    {
+      "id": "draft",
+      "status": "done"
+    },
+    {
+      "id": "gate-draft",
+      "status": "done"
+    },
+    {
+      "id": "spec",
+      "status": "done"
+    },
+    {
+      "id": "gate",
+      "status": "done"
+    },
+    {
+      "id": "approval",
+      "status": "done"
+    },
+    {
+      "id": "test",
+      "status": "done"
+    },
+    {
+      "id": "implement",
+      "status": "done"
+    },
+    {
+      "id": "gate-impl",
+      "status": "done"
+    },
+    {
+      "id": "review",
+      "status": "done"
+    },
+    {
+      "id": "finalize",
+      "status": "pending"
+    },
+    {
+      "id": "commit",
+      "status": "pending"
+    },
+    {
+      "id": "push",
+      "status": "pending"
+    },
+    {
+      "id": "merge",
+      "status": "pending"
+    },
+    {
+      "id": "pr-create",
+      "status": "pending"
+    },
+    {
+      "id": "branch-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "pr-merge",
+      "status": "pending"
+    },
+    {
+      "id": "sync-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "docs-update",
+      "status": "pending"
+    },
+    {
+      "id": "docs-review",
+      "status": "pending"
+    },
+    {
+      "id": "docs-commit",
+      "status": "pending"
+    }
+  ],
+  "requirements": [
+    {
+      "desc": "runReviewLoop に verification detect を追加（fix 後に 0 issues なら PASS）",
+      "status": "done"
+    },
+    {
+      "desc": "fix が全て no-op なら FAIL を維持",
+      "status": "done"
+    },
+    {
+      "desc": "parseSpecReviewOutput で exit 1 + issues=0 のエラーメッセージ改善",
+      "status": "done"
+    },
+    {
+      "desc": "parseTestReviewOutput で exit 1 + gaps=0 のエラーメッセージ改善",
+      "status": "done"
+    },
+    {
+      "desc": "既存インターフェース（引数・戻り値の型）は変更しない",
+      "status": "done"
+    }
+  ],
+  "issue": 82,
+  "request": "spec review が 0 issues remaining なのに FAIL（exit code 1）を返す問題を修正",
+  "worktree": true,
+  "autoApprove": true,
+  "metrics": {
+    "plan": {
+      "docsRead": 3,
+      "issueLog": 1
+    },
+    "draft": {
+      "srcRead": 3
+    },
+    "impl": {
+      "issueLog": 1
+    },
+    "test": {
+      "srcRead": 1
+    }
+  },
+  "notes": [
+    "gate-draft: PASS on 3rd attempt (format issues)"
+  ]
+}
