@@ -1,0 +1,37 @@
+{
+  "data": {
+    "implementation": {
+      "diffStat": "specs/139-doc-draft-format-reqs/draft.md          |  21 ++++\n specs/139-doc-draft-format-reqs/flow.json         | 125 ++++++++++++++++++++++\n specs/139-doc-draft-format-reqs/issue-log.json    |  11 ++\n specs/139-doc-draft-format-reqs/qa.md             |   9 ++\n specs/139-doc-draft-format-reqs/spec.md           |  62 +++++++++++\n src/templates/skills/sdd-forge.flow-plan/SKILL.md |  10 ++\n 6 files changed, 238 insertions(+)",
+      "commits": [
+        "feat: feature/139-doc-draft-format-reqs",
+        "fix: remove upgrade from gate-verifiable requirements (#85)",
+        "fix: clarify acceptance criteria for upgrade step (#85)",
+        "docs: add gate-draft format requirements to flow-plan skill template (#85)"
+      ]
+    },
+    "retro": {
+      "total": 3,
+      "done": 3,
+      "partial": 0,
+      "not_done": 0,
+      "rate": 1,
+      "notes": "全3要件が満たされている。変更は src/templates/skills/sdd-forge.flow-plan/SKILL.md のみで、spec のスコープ通り。autoApprove セクションではフォーマット不一致時の具体的な失敗理由（見出し形式では検出されない等）を含む詳細版、非 autoApprove セクションでは簡潔版と、両方に必須フィールド指示が追加されている。specs/ 配下のファイルはフロー管理の成果物であり unplanned には該当しない。"
+    },
+    "issueLog": {
+      "count": 0,
+      "entries": []
+    },
+    "metrics": {
+      "docsRead": 0,
+      "srcRead": 1,
+      "question": 0,
+      "issueLog": 1
+    },
+    "tests": null,
+    "sync": {
+      "status": "skipped",
+      "reason": "sync was skipped"
+    }
+  },
+  "text": "  Report\n\n  Implementation\n  ────────────────────────────────────────────────\n    feat: feature/139-doc-draft-format-reqs\n    fix: remove upgrade from gate-verifiable requirements (#85)\n    fix: clarify acceptance criteria for upgrade step (#85)\n    docs: add gate-draft format requirements to flow-plan skill template (#85)\n    6 files changed, 238 insertions(+)\n\n  Retro\n  ────────────────────────────────────────────────\n    ████████ 100%  (3 done / 0 partial / 0 miss)\n\n  Metrics\n  ────────────────────────────────────────────────\n    docs 0  src 1  Q&A 0  issues 1\n\n  Documents\n  ────────────────────────────────────────────────\n    skipped: sync was skipped"
+}

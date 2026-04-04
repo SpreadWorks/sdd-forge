@@ -1,0 +1,125 @@
+{
+  "spec": "specs/139-doc-draft-format-reqs/spec.md",
+  "baseBranch": "main",
+  "featureBranch": "feature/139-doc-draft-format-reqs",
+  "steps": [
+    {
+      "id": "approach",
+      "status": "done"
+    },
+    {
+      "id": "branch",
+      "status": "done"
+    },
+    {
+      "id": "prepare-spec",
+      "status": "pending"
+    },
+    {
+      "id": "draft",
+      "status": "done"
+    },
+    {
+      "id": "gate-draft",
+      "status": "done"
+    },
+    {
+      "id": "spec",
+      "status": "done"
+    },
+    {
+      "id": "gate",
+      "status": "done"
+    },
+    {
+      "id": "approval",
+      "status": "done"
+    },
+    {
+      "id": "test",
+      "status": "skipped"
+    },
+    {
+      "id": "implement",
+      "status": "done"
+    },
+    {
+      "id": "gate-impl",
+      "status": "done"
+    },
+    {
+      "id": "review",
+      "status": "skipped"
+    },
+    {
+      "id": "finalize",
+      "status": "pending"
+    },
+    {
+      "id": "commit",
+      "status": "pending"
+    },
+    {
+      "id": "push",
+      "status": "pending"
+    },
+    {
+      "id": "merge",
+      "status": "pending"
+    },
+    {
+      "id": "pr-create",
+      "status": "pending"
+    },
+    {
+      "id": "branch-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "pr-merge",
+      "status": "pending"
+    },
+    {
+      "id": "sync-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "docs-update",
+      "status": "pending"
+    },
+    {
+      "id": "docs-review",
+      "status": "pending"
+    },
+    {
+      "id": "docs-commit",
+      "status": "pending"
+    }
+  ],
+  "requirements": [
+    {
+      "desc": "draft フェーズに gate-draft の全4必須フィールドのフォーマット要件を追加",
+      "status": "done"
+    },
+    {
+      "desc": "autoApprove/非autoApprove 両方で必須フィールド出力を指示",
+      "status": "done"
+    },
+    {
+      "desc": "sdd-forge upgrade でスキルに反映",
+      "status": "done"
+    }
+  ],
+  "issue": 85,
+  "request": "gate-draft のフォーマット要件（開発種別・目的のラベル形式）をスキルテンプレートに文書化",
+  "worktree": true,
+  "autoApprove": true,
+  "metrics": {
+    "draft": {
+      "srcRead": 1
+    },
+    "impl": {
+      "issueLog": 1
+    }
+  }
+}

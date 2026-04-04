@@ -1,0 +1,30 @@
+{
+  "spec": "specs/139-doc-draft-format-reqs/spec.md",
+  "date": "2026-04-04T09:58:35.860Z",
+  "requirements": [
+    {
+      "desc": "draft フェーズに gate-draft の全4必須フィールドのフォーマット要件を追加",
+      "status": "done",
+      "note": "autoApprove セクション（L81-85）と非 autoApprove セクション（L123-127）の両方に、開発種別・目的・Q&A・承認チェックボックスの4フィールドすべてのフォーマット要件が追加されている"
+    },
+    {
+      "desc": "autoApprove/非autoApprove 両方で必須フィールド出力を指示",
+      "status": "done",
+      "note": "両セクションに MUST 指示として追加済み。autoApprove 側はフォーマット詳細説明付き、非 autoApprove 側は簡潔版だが同じ4フィールドを指示している"
+    },
+    {
+      "desc": "sdd-forge upgrade でスキルに反映",
+      "status": "done",
+      "note": "ソーステンプレート src/templates/skills/sdd-forge.flow-plan/SKILL.md が変更されている。upgrade はランタイム操作のため diff には含まれないが、flow.json で status: done となっており実行済み"
+    }
+  ],
+  "unplanned": [],
+  "summary": {
+    "total": 3,
+    "done": 3,
+    "partial": 0,
+    "not_done": 0,
+    "rate": 1,
+    "notes": "全3要件が満たされている。変更は src/templates/skills/sdd-forge.flow-plan/SKILL.md のみで、spec のスコープ通り。autoApprove セクションではフォーマット不一致時の具体的な失敗理由（見出し形式では検出されない等）を含む詳細版、非 autoApprove セクションでは簡潔版と、両方に必須フィールド指示が追加されている。specs/ 配下のファイルはフロー管理の成果物であり unplanned には該当しない。"
+  }
+}

@@ -78,6 +78,11 @@ Note: `sdd-forge flow get context` automatically records these metrics via hooks
      3. Constraints — Non-functional requirements, guardrails, project rules?
      4. Edge cases — Boundary conditions, error cases?
      5. Test strategy — What to test and how?
+   - **MUST: draft.md に以下の必須フィールドを含めること（gate-draft で検証される）:**
+     - `**開発種別:** ...` — ラベル+コロンの太字形式。見出し形式（`## 開発種別`）では検出されない。英語の場合は `**Development Type:** ...`
+     - `**目的:** ...` — ラベル+コロンの太字形式。見出し形式（`## 目的`）では検出されない。英語の場合は `**Goal:** ...`
+     - `## Q&A` — `##` レベルの見出し。`###` やインラインテキストでは検出されない。
+     - `- [x] User approved this draft` — チェック済みチェックボックスの正確な構文。
    - Write the completed draft to `draft.md` and proceed to spec.
    - Mark draft as approved: `- [x] User approved this draft (autoApprove)`
 
@@ -115,6 +120,11 @@ Note: `sdd-forge flow get context` automatically records these metrics via hooks
      1. Try to resolve in ONE exchange.
      2. If unresolved, record in Open Questions and move on.
      3. Open Questions are resolved during spec filling or implementation.
+   - **MUST: draft.md に以下の必須フィールドを含めること（gate-draft で検証される）:**
+     - `**開発種別:** ...` or `**Development Type:** ...` — ラベル+コロン太字形式
+     - `**目的:** ...` or `**Goal:** ...` — ラベル+コロン太字形式
+     - `## Q&A` — `##` レベルの見出し
+     - `- [x] User approved this draft` — チェック済みチェックボックス
    - When requirements are sufficiently defined, ask the user for approval.
    - Update draft.md with `- [x] User approved this draft` and confirmation date.
    - Transfer Q&A and decisions to spec (step 5).

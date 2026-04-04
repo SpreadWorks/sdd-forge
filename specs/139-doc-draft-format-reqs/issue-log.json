@@ -1,0 +1,11 @@
+{
+  "entries": [
+    {
+      "step": "spec",
+      "reason": "spec review subprocess error (timeout or AI call failure), but spec.md was correctly updated with no preamble (stripPreamble fix from #84 working)",
+      "trigger": "sdd-forge flow run review --phase spec",
+      "resolution": "accepted review changes as-is, proceeded to gate re-validation",
+      "timestamp": "2026-04-04T09:54:40.403Z"
+    }
+  ]
+}
