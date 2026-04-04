@@ -9,14 +9,14 @@ import fs from "fs";
 import path from "path";
 import { isInsideWorktree } from "../../lib/cli.js";
 import { sddDir, DEFAULT_LANG } from "../../lib/config.js";
-import { runSync } from "../../lib/process.js";
+import { runCmd } from "../../lib/process.js";
 import { translate } from "../../lib/i18n.js";
 import { saveFlowState, buildInitialSteps, addActiveFlow, cleanStaleFlows } from "../../lib/flow-state.js";
-import { getWorktreeStatus } from "../../lib/git-state.js";
+import { getWorktreeStatus } from "../../lib/git-helpers.js";
 import { FlowCommand } from "./base-command.js";
 
 function runGit(root, args) {
-  const res = runSync("git", ["-C", root, ...args]);
+  const res = runCmd("git", ["-C", root, ...args]);
   if (res.ok) return res.stdout.trim();
   throw new Error(`git ${args.join(" ")} failed: ${(res.stderr || "").trim()}`);
 }

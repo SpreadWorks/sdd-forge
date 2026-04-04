@@ -6,8 +6,8 @@
 
 import fs from "fs";
 import path from "path";
-import { execFileSync } from "child_process";
 import { fileURLToPath } from "url";
+import { runCmd } from "./process.js";
 
 /**
  * sdd-forge パッケージの src/ ディレクトリの絶対パス。
@@ -25,15 +25,11 @@ export const PKG_DIR = path.resolve(path.dirname(fileURLToPath(import.meta.url))
  */
 export function repoRoot(importMetaUrl) {
   if (process.env.SDD_WORK_ROOT) return process.env.SDD_WORK_ROOT;
-  try {
-    return execFileSync("git", ["rev-parse", "--show-toplevel"], {
-      encoding: "utf8",
-    }).trim();
-  } catch (_) {
-    // npm パッケージとしてインストールされた場合、相対パス推定は
-    // node_modules/ 内部を指すため process.cwd() を使用する
-    return process.cwd();
-  }
+  const res = runCmd("git", ["rev-parse", "--show-toplevel"]);
+  if (res.ok) return res.stdout.trim();
+  // npm パッケージとしてインストールされた場合、相対パス推定は
+  // node_modules/ 内部を指すため process.cwd() を使用する
+  return process.cwd();
 }
 
 /**
@@ -108,11 +104,9 @@ export function isInsideWorktree(root) {
  * @returns {string} メインリポジトリの絶対パス
  */
 export function getMainRepoPath(root) {
-  const gitCommonDir = execFileSync(
-    "git",
-    ["-C", root, "rev-parse", "--git-common-dir"],
-    { encoding: "utf8" },
-  ).trim();
+  const res = runCmd("git", ["-C", root, "rev-parse", "--git-common-dir"]);
+  if (!res.ok) throw new Error(res.stderr || "failed to resolve git-common-dir");
+  const gitCommonDir = res.stdout.trim();
   // git-common-dir は絶対パスまたは root からの相対パスを返す
   const abs = path.resolve(root, gitCommonDir);
   return path.dirname(abs);

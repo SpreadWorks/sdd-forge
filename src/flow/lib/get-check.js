@@ -6,8 +6,8 @@
  * ctx.target — one of: impl, finalize, dirty, gh
  */
 
-import { execFileSync } from "child_process";
-import { isGhAvailable } from "../../lib/git-state.js";
+import { runCmd } from "../../lib/process.js";
+import { isGhAvailable } from "../../lib/git-helpers.js";
 import { FlowCommand } from "./base-command.js";
 
 const VALID_TARGETS = ["impl", "finalize", "dirty", "gh"];
@@ -30,18 +30,17 @@ function checkStepPrereqs(state, required) {
 }
 
 function checkDirty(root) {
-  try {
-    const out = execFileSync("git", ["status", "--short"], { cwd: root, encoding: "utf8" });
-    const lines = out.trim().split("\n").filter(Boolean);
-    const pass = lines.length === 0;
-    return {
-      pass,
-      summary: pass ? "working tree clean" : `${lines.length} uncommitted change(s)`,
-      checks: [{ id: "dirty", pass, message: pass ? "clean" : lines.join(", ") }],
-    };
-  } catch (e) {
-    return { pass: false, summary: "git status failed", checks: [{ id: "dirty", pass: false, message: e.message }] };
+  const res = runCmd("git", ["status", "--short"], { cwd: root });
+  if (!res.ok) {
+    return { pass: false, summary: "git status failed", checks: [{ id: "dirty", pass: false, message: res.stderr }] };
   }
+  const lines = res.stdout.trim().split("\n").filter(Boolean);
+  const pass = lines.length === 0;
+  return {
+    pass,
+    summary: pass ? "working tree clean" : `${lines.length} uncommitted change(s)`,
+    checks: [{ id: "dirty", pass, message: pass ? "clean" : lines.join(", ") }],
+  };
 }
 
 function checkGh() {

@@ -9,13 +9,13 @@
 
 import fs from "fs";
 import path from "path";
-import { execFileSync } from "child_process";
+import { runCmd } from "../../lib/process.js";
 import { PKG_DIR } from "../../lib/cli.js";
 import {
   resolveWorktreePaths, clearFlowState, specIdFromPath,
 } from "../../lib/flow-state.js";
 import { loadIssueLog, saveIssueLog } from "./set-issue-log.js";
-import { isGhAvailable, commentOnIssue } from "../../lib/git-state.js";
+import { isGhAvailable, commentOnIssue, collectGitSummary } from "../../lib/git-helpers.js";
 import { FlowCommand } from "./base-command.js";
 import { FLOW_COMMANDS } from "../registry.js";
 
@@ -55,13 +55,13 @@ function executeCleanupImpl({ root, flowState, worktreePath, mainRepoPath }) {
   if (worktree && mainRepoPath) {
     const wtPath = worktreePath || root;
     if (fs.existsSync(wtPath)) {
-      execFileSync("git", ["-C", mainRepoPath, "worktree", "remove", wtPath], { encoding: "utf8" });
+      runCmd("git", ["-C", mainRepoPath, "worktree", "remove", wtPath]);
     }
-    execFileSync("git", ["-C", mainRepoPath, "branch", "-D", featureBranch], { encoding: "utf8" });
+    runCmd("git", ["-C", mainRepoPath, "branch", "-D", featureBranch]);
     return { status: "done" };
   }
 
-  execFileSync("git", ["branch", "-D", featureBranch], { cwd: root, encoding: "utf8" });
+  runCmd("git", ["branch", "-D", featureBranch], { cwd: root });
   return { status: "done" };
 }
 
@@ -69,19 +69,16 @@ function executeCleanupImpl({ root, flowState, worktreePath, mainRepoPath }) {
  * Run git commit, returning { status: "skipped" } if there is nothing to commit.
  * Throws on real errors.
  * @param {string[]} args - git commit arguments (e.g. ["-m", "message"])
- * @param {{ cwd: string }} opts - execFileSync options
+ * @param {{ cwd: string }} opts - runCmd options
  * @returns {{ status: string, message?: string }}
  */
 function commitOrSkip(args, opts) {
-  try {
-    execFileSync("git", ["commit", ...args], { ...opts, encoding: "utf8" });
-    return { status: "done" };
-  } catch (e) {
-    if (/nothing to commit/i.test(String(e.stderr || e.message || ""))) {
-      return { status: "skipped", message: "nothing to commit" };
-    }
-    throw e;
+  const res = runCmd("git", ["commit", ...args], opts);
+  if (res.ok) return { status: "done" };
+  if (/nothing to commit/i.test(res.stderr || res.stdout)) {
+    return { status: "skipped", message: "nothing to commit" };
   }
+  throw new Error(res.stderr || res.stdout || "commit failed");
 }
 
 export const STEP_MAP = {
@@ -138,20 +135,7 @@ export async function executeCommitPost(ctx) {
   try {
     const { generateReport, saveReport } = await import("../commands/report.js");
 
-    let implDiffStat = "";
-    let commitMessages = [];
-    try {
-      implDiffStat = execFileSync(
-        "git", ["diff", "--stat", `${state.baseBranch}...HEAD`],
-        { cwd: root, encoding: "utf8" },
-      ).trim();
-    } catch (_) { /* no diff */ }
-    try {
-      commitMessages = execFileSync(
-        "git", ["log", "--format=%s", `${state.baseBranch}..HEAD`],
-        { cwd: root, encoding: "utf8" },
-      ).trim().split("\n").filter(Boolean);
-    } catch (_) { /* no commits */ }
+    const { diffStat: implDiffStat, commitMessages } = collectGitSummary(root, state.baseBranch);
 
     let issueLog = { entries: [] };
     try {
@@ -190,14 +174,11 @@ export async function executeCommitPost(ctx) {
   }
 
   // commit retro + report files
-  try {
-    execFileSync("git", ["add", "-A"], { cwd: root, encoding: "utf8" });
-    execFileSync("git", ["commit", "-m", "chore: add retro and report"], { cwd: root, encoding: "utf8" });
-  } catch (e) {
-    if (!/nothing to commit/i.test(String(e.stderr || e.message || ""))) {
-      if (results.report) {
-        results.report.commitNote = "retro/report commit failed: " + String(e.stderr || e.message).slice(0, 200);
-      }
+  runCmd("git", ["add", "-A"], { cwd: root });
+  const commitRes = runCmd("git", ["commit", "-m", "chore: add retro and report"], { cwd: root });
+  if (!commitRes.ok && !/nothing to commit/i.test(commitRes.stderr || commitRes.stdout)) {
+    if (results.report) {
+      results.report.commitNote = "retro/report commit failed: " + (commitRes.stderr || commitRes.stdout).slice(0, 200);
     }
   }
 }
@@ -251,7 +232,7 @@ export class RunFinalizeCommand extends FlowCommand {
         results.commit = { status: "dry-run", message: message || "(auto)" };
       } else {
         results.commit = await runSubStep("commit", () => {
-          execFileSync("git", ["add", "-A"], { cwd: root, encoding: "utf8" });
+          runCmd("git", ["add", "-A"], { cwd: root });
           const msg = message || `feat: ${state.featureBranch || "finalize"}`;
           const res = commitOrSkip(["-m", msg], { cwd: root });
           return { ...res, message: msg };
@@ -302,20 +283,17 @@ export class RunFinalizeCommand extends FlowCommand {
         results.sync = await runSubStep("sync", async () => {
           const syncCwd = (state.worktree && mainRepoPath) ? mainRepoPath : root;
           const buildScript = path.join(PKG_DIR, "docs.js");
-          const { runSync } = await import("../../lib/process.js");
-          const buildRes = runSync("node", [buildScript, "build"], { cwd: syncCwd });
+          const buildRes = runCmd("node", [buildScript, "build"], { cwd: syncCwd });
           if (!buildRes.ok) {
             throw new Error((buildRes.stderr || buildRes.stdout || "").trim());
           }
-          try {
-            execFileSync("git", ["add", "docs/", "AGENTS.md", "CLAUDE.md", "README.md"], { cwd: syncCwd, encoding: "utf8" });
-          } catch (_) { /* missing files ok */ }
+          runCmd("git", ["add", "docs/", "AGENTS.md", "CLAUDE.md", "README.md"], { cwd: syncCwd });
           let diffStat = null;
           let diffSummary = null;
-          try {
-            diffStat = execFileSync("git", ["diff", "--cached", "--stat"], { cwd: syncCwd, encoding: "utf8" }).trim();
-            diffSummary = execFileSync("git", ["diff", "--cached", "--name-only"], { cwd: syncCwd, encoding: "utf8" }).trim();
-          } catch (_) { /* non-critical */ }
+          const statRes = runCmd("git", ["diff", "--cached", "--stat"], { cwd: syncCwd });
+          if (statRes.ok) diffStat = statRes.stdout.trim();
+          const nameRes = runCmd("git", ["diff", "--cached", "--name-only"], { cwd: syncCwd });
+          if (nameRes.ok) diffSummary = nameRes.stdout.trim();
           const commitRes = commitOrSkip(["-m", "docs: sync documentation"], { cwd: syncCwd });
           return { ...commitRes, ...(diffStat && { diffStat }), ...(diffSummary && { diffSummary }) };
         }, ctx);

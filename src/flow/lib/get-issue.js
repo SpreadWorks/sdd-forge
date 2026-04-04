@@ -6,7 +6,7 @@
  * ctx.number — issue number (string or number)
  */
 
-import { execFileSync } from "child_process";
+import { runCmd } from "../../lib/process.js";
 import { FlowCommand } from "./base-command.js";
 
 export default class GetIssueCommand extends FlowCommand {
@@ -22,22 +22,21 @@ export default class GetIssueCommand extends FlowCommand {
       throw new Error("issue number required (positive integer)");
     }
 
-    try {
-      const raw = execFileSync(
-        "gh",
-        ["issue", "view", number, "--json", "title,body,labels,state"],
-        { cwd: root, encoding: "utf8", timeout: 15000 },
-      );
-      const data = JSON.parse(raw);
-      return {
-        number: Number(number),
-        title: data.title,
-        body: data.body,
-        labels: data.labels,
-        state: data.state,
-      };
-    } catch (e) {
-      throw new Error(e.message);
+    const res = runCmd(
+      "gh",
+      ["issue", "view", number, "--json", "title,body,labels,state"],
+      { cwd: root, timeout: 15000 },
+    );
+    if (!res.ok) {
+      throw new Error(res.stderr || "failed to fetch issue");
     }
+    const data = JSON.parse(res.stdout);
+    return {
+      number: Number(number),
+      title: data.title,
+      body: data.body,
+      labels: data.labels,
+      state: data.state,
+    };
   }
 }

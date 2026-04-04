@@ -11,18 +11,18 @@ import { join } from "path";
 const RUN_FINALIZE_PATH = join(process.cwd(), "src/flow/lib/run-finalize.js");
 
 describe("R2: import exists", () => {
-  it("run-finalize.js imports commentOnIssue from git-state.js", () => {
+  it("run-finalize.js imports commentOnIssue from git-helpers.js", () => {
     const content = readFileSync(RUN_FINALIZE_PATH, "utf8");
     assert.ok(
-      /import\s+\{[^}]*commentOnIssue[^}]*\}\s+from\s+["'].*git-state\.js["']/.test(content),
+      /import\s+\{[^}]*commentOnIssue[^}]*\}\s+from\s+["'].*git-helpers\.js["']/.test(content),
       "commentOnIssue import not found",
     );
   });
 
-  it("run-finalize.js imports isGhAvailable from git-state.js", () => {
+  it("run-finalize.js imports isGhAvailable from git-helpers.js", () => {
     const content = readFileSync(RUN_FINALIZE_PATH, "utf8");
     assert.ok(
-      /import\s+\{[^}]*isGhAvailable[^}]*\}\s+from\s+["'].*git-state\.js["']/.test(content),
+      /import\s+\{[^}]*isGhAvailable[^}]*\}\s+from\s+["'].*git-helpers\.js["']/.test(content),
       "isGhAvailable import not found",
     );
   });

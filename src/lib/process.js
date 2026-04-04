@@ -1,33 +1,88 @@
 /**
- * tools/lib/process.js
+ * src/lib/process.js
  *
- * spawnSync ラッパー。
+ * Unified command execution helpers.
+ * All functions return result objects — they never throw.
  */
 
-import { spawnSync } from "child_process";
+import { execFileSync, execFile } from "child_process";
 
 /**
- * コマンドを同期実行し、結果を返す。
+ * Run a command synchronously.
  *
- * @param {string}   cmd  - 実行コマンド
- * @param {string[]} args - 引数配列
+ * @param {string}   cmd  - Command to execute
+ * @param {string[]} args - Argument array
  * @param {Object}   [opts]
- * @param {string}   [opts.cwd]      - 作業ディレクトリ
- * @param {string}   [opts.encoding] - エンコーディング (default: "utf8")
- * @param {number}   [opts.timeout]  - タイムアウト (ms)
+ * @param {string}   [opts.cwd]       - Working directory
+ * @param {string}   [opts.encoding]  - Encoding (default: "utf8")
+ * @param {number}   [opts.timeout]   - Timeout in ms
+ * @param {number}   [opts.maxBuffer] - Max stdout/stderr buffer size in bytes
+ * @param {Object}   [opts.env]       - Environment variables
  * @returns {{ ok: boolean, status: number, stdout: string, stderr: string }}
  */
-export function runSync(cmd, args, opts = {}) {
-  const res = spawnSync(cmd, args, {
-    cwd: opts.cwd,
-    encoding: opts.encoding || "utf8",
-    timeout: opts.timeout,
-    ...(opts.env && { env: opts.env }),
+export function runCmd(cmd, args, opts = {}) {
+  try {
+    const stdout = execFileSync(cmd, args, {
+      cwd: opts.cwd,
+      encoding: opts.encoding || "utf8",
+      timeout: opts.timeout,
+      maxBuffer: opts.maxBuffer,
+      stdio: ["pipe", "pipe", "pipe"],
+      ...(opts.env && { env: opts.env }),
+    });
+    return { ok: true, status: 0, stdout: String(stdout || ""), stderr: "" };
+  } catch (e) {
+    return {
+      ok: false,
+      status: e.status ?? 1,
+      stdout: String(e.stdout || ""),
+      stderr: String(e.stderr || ""),
+    };
+  }
+}
+
+/**
+ * Run a command asynchronously.
+ *
+ * @param {string}   cmd  - Command to execute
+ * @param {string[]} args - Argument array
+ * @param {Object}   [opts]
+ * @param {string}   [opts.cwd]       - Working directory
+ * @param {string}   [opts.encoding]  - Encoding (default: "utf8")
+ * @param {number}   [opts.timeout]   - Timeout in ms
+ * @param {number}   [opts.maxBuffer] - Max stdout/stderr buffer size in bytes
+ * @param {Object}   [opts.env]       - Environment variables
+ * @returns {Promise<{ ok: boolean, status: number, stdout: string, stderr: string }>}
+ */
+export function runCmdAsync(cmd, args, opts = {}) {
+  return new Promise((resolve) => {
+    execFile(
+      cmd,
+      args,
+      {
+        cwd: opts.cwd,
+        encoding: opts.encoding || "utf8",
+        timeout: opts.timeout,
+        maxBuffer: opts.maxBuffer,
+        ...(opts.env && { env: opts.env }),
+      },
+      (err, stdout, stderr) => {
+        if (err) {
+          resolve({
+            ok: false,
+            status: err.code === "ENOENT" ? 1 : (err.code ?? 1),
+            stdout: String(stdout || ""),
+            stderr: String(stderr || err.message || ""),
+          });
+        } else {
+          resolve({
+            ok: true,
+            status: 0,
+            stdout: String(stdout || ""),
+            stderr: String(stderr || ""),
+          });
+        }
+      },
+    );
   });
-  return {
-    ok: res.status === 0,
-    status: res.status ?? 1,
-    stdout: String(res.stdout || ""),
-    stderr: String(res.stderr || ""),
-  };
 }

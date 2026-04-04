@@ -1,0 +1,163 @@
+{
+  "spec": "specs/135-consolidate-cmd-exec/spec.md",
+  "baseBranch": "main",
+  "featureBranch": "feature/135-consolidate-cmd-exec",
+  "steps": [
+    {
+      "id": "approach",
+      "status": "done"
+    },
+    {
+      "id": "branch",
+      "status": "done"
+    },
+    {
+      "id": "prepare-spec",
+      "status": "pending"
+    },
+    {
+      "id": "draft",
+      "status": "done"
+    },
+    {
+      "id": "gate-draft",
+      "status": "done"
+    },
+    {
+      "id": "spec",
+      "status": "done"
+    },
+    {
+      "id": "gate",
+      "status": "done"
+    },
+    {
+      "id": "approval",
+      "status": "done"
+    },
+    {
+      "id": "test",
+      "status": "done"
+    },
+    {
+      "id": "implement",
+      "status": "done"
+    },
+    {
+      "id": "gate-impl",
+      "status": "done"
+    },
+    {
+      "id": "review",
+      "status": "done"
+    },
+    {
+      "id": "finalize",
+      "status": "pending"
+    },
+    {
+      "id": "commit",
+      "status": "pending"
+    },
+    {
+      "id": "push",
+      "status": "pending"
+    },
+    {
+      "id": "merge",
+      "status": "pending"
+    },
+    {
+      "id": "pr-create",
+      "status": "pending"
+    },
+    {
+      "id": "branch-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "pr-merge",
+      "status": "pending"
+    },
+    {
+      "id": "sync-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "docs-update",
+      "status": "pending"
+    },
+    {
+      "id": "docs-review",
+      "status": "pending"
+    },
+    {
+      "id": "docs-commit",
+      "status": "pending"
+    }
+  ],
+  "requirements": [
+    {
+      "desc": "runCmd を process.js に実装",
+      "status": "pending"
+    },
+    {
+      "desc": "runCmdAsync を process.js に実装",
+      "status": "done"
+    },
+    {
+      "desc": "git-state.js を git-helpers.js にリネーム",
+      "status": "done"
+    },
+    {
+      "desc": "tryExec を runCmd に置換",
+      "status": "done"
+    },
+    {
+      "desc": "get-check.js の execFileSync を runCmd に置換",
+      "status": "done"
+    },
+    {
+      "desc": "commitOrSkip を runCmd ベースに書換",
+      "status": "done"
+    },
+    {
+      "desc": "全ファイルの execFileSync を runCmd に置換",
+      "status": "done"
+    },
+    {
+      "desc": "forge.js の runCommand を runCmdAsync に置換",
+      "status": "done"
+    },
+    {
+      "desc": "全ファイルの runSync を runCmd に置換",
+      "status": "done"
+    },
+    {
+      "desc": "runSync を削除",
+      "status": "done"
+    },
+    {
+      "desc": "全既存テスト通過",
+      "status": "done"
+    }
+  ],
+  "issue": 80,
+  "request": "git/gh コマンド実行の整理・共通化: execFileSync の直接呼び出しを共通ヘルパーに統合し、git/gh 状態取得関数を集約する",
+  "worktree": true,
+  "autoApprove": true,
+  "metrics": {
+    "plan": {
+      "docsRead": 2
+    },
+    "spec": {
+      "srcRead": 1
+    },
+    "impl": {
+      "issueLog": 2
+    }
+  },
+  "notes": [
+    "draft: Issue #80 の提案をそのまま採用。runCmd/runCmdAsync/runCmdStreaming の3ヘルパー + git-helpers.js への集約"
+  ]
+}

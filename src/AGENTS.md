@@ -27,7 +27,7 @@ src/
 │   ├── presets.js            プリセット自動探索・親チェーン解決
 │   ├── flow-state.js         SDD フロー状態永続化
 │   ├── flow-envelope.js      flow get/set/run の JSON envelope
-│   ├── git-state.js          git/gh 状態取得ヘルパー
+│   ├── git-helpers.js          git/gh 状態取得ヘルパー
 │   ├── include.js            include ディレクティブ展開
 │   ├── i18n.js               3層 i18n（ドメイン名前空間付き）
 │   └── types.js              型エイリアス解決・バリデーション

@@ -16,7 +16,7 @@ import { repoRoot, parseArgs } from "../../lib/cli.js";
 import { loadConfig } from "../../lib/config.js";
 import { loadFlowState } from "../../lib/flow-state.js";
 import { loadAgentConfig, callAgent, resolveAgent, ensureAgentWorkDir } from "../../lib/agent.js";
-import { runSync } from "../../lib/process.js";
+import { runCmd } from "../../lib/process.js";
 import { EXIT_ERROR } from "../../lib/exit-codes.js";
 import { VALID_PHASES } from "../lib/phases.js";
 
@@ -63,10 +63,10 @@ function resolveReviewTarget(root, flow) {
           const abs = path.resolve(root, f);
           if (!fs.existsSync(abs)) continue;
           // Committed changes against base branch
-          const committed = runSync("git", ["-C", root, "diff", flow.baseBranch, "--", f]);
+          const committed = runCmd("git", ["-C", root, "diff", flow.baseBranch, "--", f]);
           if (committed.ok && committed.stdout.trim()) diffs.push(committed.stdout);
           // Staged but uncommitted changes
-          const staged = runSync("git", ["-C", root, "diff", "--cached", "--", f]);
+          const staged = runCmd("git", ["-C", root, "diff", "--cached", "--", f]);
           if (staged.ok && staged.stdout.trim()) diffs.push(staged.stdout);
         }
         if (diffs.length > 0) return diffs.join("\n");
@@ -76,9 +76,9 @@ function resolveReviewTarget(root, flow) {
 
   // Fallback: committed diff against base branch + staged changes
   const parts = [];
-  const committed = runSync("git", ["-C", root, "diff", flow.baseBranch]);
+  const committed = runCmd("git", ["-C", root, "diff", flow.baseBranch]);
   if (committed.ok && committed.stdout.trim()) parts.push(committed.stdout);
-  const staged = runSync("git", ["-C", root, "diff", "--cached"]);
+  const staged = runCmd("git", ["-C", root, "diff", "--cached"]);
   if (staged.ok && staged.stdout.trim()) parts.push(staged.stdout);
   return parts.join("\n");
 }

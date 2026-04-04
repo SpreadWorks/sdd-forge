@@ -13,7 +13,7 @@
 
 import fs from "fs";
 import path from "path";
-import { execFile } from "child_process";
+import { runCmdAsync } from "../../lib/process.js";
 import { runIfDirect } from "../../lib/entrypoint.js";
 import { populateFromAnalysis } from "./data.js";
 import { textFillFromAnalysis } from "./text.js";
@@ -119,28 +119,14 @@ function printHelp() {
 }
 
 /**
- * コマンド文字列をコマンドと引数に分割して execFile で実行する。
+ * コマンド文字列をコマンドと引数に分割して実行する。
  * bash に依存しない。
  */
 function runCommand(cmdString, cwd) {
   const parts = cmdString.match(/"[^"]*"|'[^']*'|\S+/g) || [];
   const command = parts[0];
   const args = parts.slice(1).map((s) => s.replace(/^["']|["']$/g, ""));
-  return new Promise((resolve) => {
-    execFile(
-      command,
-      args,
-      { cwd, maxBuffer: 20 * 1024 * 1024 },
-      (err, stdout, stderr) => {
-        resolve({
-          ok: !err,
-          code: err?.code ?? 0,
-          stdout: String(stdout || ""),
-          stderr: String(stderr || ""),
-        });
-      }
-    );
-  });
+  return runCmdAsync(command, args, { cwd });
 }
 
 /**
@@ -397,7 +383,7 @@ async function main() {
     // docs/ を直接編集するため generate ステップは不要
 
     const review = await runCommand(cli.reviewCmd, root);
-    console.log(`[forge] review: ${review.ok ? "ok" : "failed"} (code=${review.code})`);
+    console.log(`[forge] review: ${review.ok ? "ok" : "failed"} (code=${review.status})`);
     if (review.ok) {
       console.log("[forge] review passed.");
       const readme = await runCommand(`node "${path.join(PKG_DIR, "docs", "commands", "readme.js")}"`, root);

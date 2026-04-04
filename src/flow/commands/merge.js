@@ -5,11 +5,11 @@
  * Called by finalize.js with ctx containing root, flowState, worktreePath, mainRepoPath, mergeStrategy.
  */
 
-import { execFileSync } from "child_process";
 import { readFileSync } from "fs";
+import { runCmd } from "../../lib/process.js";
 import path from "path";
 import { loadConfig } from "../../lib/config.js";
-import { isGhAvailable } from "../../lib/git-state.js";
+import { isGhAvailable } from "../../lib/git-helpers.js";
 
 /**
  * Resolve push remote from config.
@@ -165,14 +165,16 @@ function main(ctx) {
     const title = buildPrTitle(spec, fallbackTitle);
     const body = buildPrBody(state, spec);
 
-    execFileSync("git", ["push", "-u", remote, featureBranch], { stdio: "inherit" });
-    execFileSync("gh", [
+    const pushRes = runCmd("git", ["push", "-u", remote, featureBranch]);
+    if (!pushRes.ok) throw new Error(pushRes.stderr || "git push failed");
+    const prRes = runCmd("gh", [
       "pr", "create",
       "--base", baseBranch,
       "--head", featureBranch,
       "--title", title,
       ...(body ? ["--body", body] : []),
-    ], { stdio: "inherit" });
+    ]);
+    if (!prRes.ok) throw new Error(prRes.stderr || "gh pr create failed");
     return { strategy: "pr" };
   }
 
@@ -183,13 +185,13 @@ function main(ctx) {
   function runSquashMerge(gitPrefix, hint) {
     const mergeArgs = [...gitPrefix, "merge", "--squash", featureBranch];
     const resetArgs = [...gitPrefix, "reset", "--merge"];
-    try {
-      execFileSync("git", mergeArgs, { stdio: "inherit" });
-    } catch {
-      try { execFileSync("git", resetArgs, { stdio: "ignore" }); } catch {}
+    const mergeRes = runCmd("git", mergeArgs);
+    if (!mergeRes.ok) {
+      runCmd("git", resetArgs);
       throw new Error(`Merge conflict detected. ${hint}`);
     }
-    execFileSync("git", [...gitPrefix, "commit", "-m", commitMsg], { stdio: "inherit" });
+    const commitRes = runCmd("git", [...gitPrefix, "commit", "-m", commitMsg]);
+    if (!commitRes.ok) throw new Error(commitRes.stderr || "commit after squash merge failed");
   }
 
   if (worktree && mainRepoPath) {
@@ -198,7 +200,8 @@ function main(ctx) {
   }
 
   // Branch mode
-  execFileSync("git", ["checkout", baseBranch], { stdio: "inherit" });
+  const checkoutRes = runCmd("git", ["checkout", baseBranch]);
+  if (!checkoutRes.ok) throw new Error(checkoutRes.stderr || "git checkout failed");
   runSquashMerge([], `Run 'git rebase ${baseBranch}' and retry finalize.`);
   return { strategy: "squash" };
 }

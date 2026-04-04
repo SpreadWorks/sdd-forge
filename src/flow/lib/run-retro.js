@@ -7,7 +7,7 @@
 
 import fs from "fs";
 import path from "path";
-import { execFileSync } from "child_process";
+import { runCmd } from "../../lib/process.js";
 import { callAgent, resolveAgent } from "../../lib/agent.js";
 import { repairJson } from "../../lib/json-parse.js";
 import { FlowCommand } from "./base-command.js";
@@ -29,28 +29,16 @@ function extractRequirements(specText) {
  * Get git diff between base branch and HEAD.
  */
 function getDiff(root, baseBranch) {
-  try {
-    return execFileSync(
-      "git", ["diff", `${baseBranch}...HEAD`, "--stat"],
-      { cwd: root, encoding: "utf8", maxBuffer: 10 * 1024 * 1024 },
-    ).trim();
-  } catch (_) {
-    return "";
-  }
+  const res = runCmd("git", ["diff", `${baseBranch}...HEAD`, "--stat"], { cwd: root });
+  return res.ok ? res.stdout.trim() : "";
 }
 
 /**
  * Get detailed diff for AI evaluation.
  */
 function getDetailedDiff(root, baseBranch) {
-  try {
-    return execFileSync(
-      "git", ["diff", `${baseBranch}...HEAD`],
-      { cwd: root, encoding: "utf8", maxBuffer: 10 * 1024 * 1024 },
-    ).trim();
-  } catch (_) {
-    return "";
-  }
+  const res = runCmd("git", ["diff", `${baseBranch}...HEAD`], { cwd: root });
+  return res.ok ? res.stdout.trim() : "";
 }
 
 /**

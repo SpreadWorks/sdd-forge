@@ -5,9 +5,8 @@
  * requiresFlow: false (can run independently).
  */
 
-import { execFileSync } from "child_process";
 import { PKG_DIR } from "../../lib/cli.js";
-import { runSync } from "../../lib/process.js";
+import { runCmd } from "../../lib/process.js";
 import { FlowCommand } from "./base-command.js";
 import path from "path";
 
@@ -23,7 +22,7 @@ export class RunSyncCommand extends FlowCommand {
     const docsScript = path.join(PKG_DIR, "docs.js");
 
     // Step 1: build
-    const buildRes = runSync("node", [docsScript, "build"], { cwd: root });
+    const buildRes = runCmd("node", [docsScript, "build"], { cwd: root });
     const buildOutput = (buildRes.stdout || "").trim();
 
     if (!buildRes.ok) {
@@ -36,7 +35,7 @@ export class RunSyncCommand extends FlowCommand {
     }
 
     // Step 2: review
-    const reviewRes = runSync("node", [docsScript, "review"], { cwd: root });
+    const reviewRes = runCmd("node", [docsScript, "review"], { cwd: root });
     const reviewOutput = (reviewRes.stdout || "").trim();
 
     if (!reviewRes.ok) {
@@ -57,38 +56,21 @@ export class RunSyncCommand extends FlowCommand {
     }
 
     // Step 3: git add (ignore errors for missing files)
-    try {
-      execFileSync("git", ["add", "docs/", "AGENTS.md", "CLAUDE.md", "README.md", ".sdd-forge/output/"], {
-        cwd: root,
-        encoding: "utf8",
-      });
-    } catch (_) {
-      // some files may not exist — that's fine
-    }
+    runCmd("git", ["add", "docs/", "AGENTS.md", "CLAUDE.md", "README.md", ".sdd-forge/output/"], { cwd: root });
 
     // Collect changed files
     let changed = [];
-    try {
-      const diff = execFileSync("git", ["diff", "--cached", "--name-only"], {
-        cwd: root,
-        encoding: "utf8",
-      }).trim();
+    const diffRes = runCmd("git", ["diff", "--cached", "--name-only"], { cwd: root });
+    if (diffRes.ok) {
+      const diff = diffRes.stdout.trim();
       changed = diff ? diff.split("\n").filter(Boolean) : [];
-    } catch (_) {
-      // ignore
     }
 
     // Step 4: commit (skip if nothing to commit)
     if (changed.length > 0) {
-      try {
-        execFileSync("git", ["commit", "-m", "docs: sync documentation"], {
-          cwd: root,
-          encoding: "utf8",
-        });
-      } catch (e) {
-        if (!/nothing to commit/i.test(String(e.stderr || e.message || ""))) {
-          throw new Error(String(e.stderr || e.message));
-        }
+      const commitRes = runCmd("git", ["commit", "-m", "docs: sync documentation"], { cwd: root });
+      if (!commitRes.ok && !/nothing to commit/i.test(commitRes.stderr || commitRes.stdout)) {
+        throw new Error(commitRes.stderr || commitRes.stdout);
       }
     }
 

@@ -8,7 +8,7 @@
 
 import fs from "fs";
 import path from "path";
-import { execFileSync } from "child_process";
+import { runCmd } from "./process.js";
 import { sddDir } from "./config.js";
 import { isInsideWorktree, getMainRepoPath } from "./cli.js";
 
@@ -167,14 +167,9 @@ export function removeActiveFlow(workRoot, specId) {
  * @returns {boolean}
  */
 function worktreeExists(mainRoot, branch) {
-  try {
-    const output = execFileSync("git", ["-C", mainRoot, "worktree", "list", "--porcelain"], {
-      encoding: "utf8",
-    });
-    return output.includes(`branch refs/heads/${branch}`);
-  } catch (_) {
-    return true; // on error, assume exists (avoid accidental deletion)
-  }
+  const res = runCmd("git", ["-C", mainRoot, "worktree", "list", "--porcelain"]);
+  if (!res.ok) return true; // on error, assume exists (avoid accidental deletion)
+  return res.stdout.includes(`branch refs/heads/${branch}`);
 }
 
 /**
@@ -184,14 +179,9 @@ function worktreeExists(mainRoot, branch) {
  * @returns {boolean}
  */
 function branchExists(mainRoot, branch) {
-  try {
-    const output = execFileSync("git", ["-C", mainRoot, "branch", "--list", branch], {
-      encoding: "utf8",
-    });
-    return output.trim().length > 0;
-  } catch (_) {
-    return true; // on error, assume exists
-  }
+  const res = runCmd("git", ["-C", mainRoot, "branch", "--list", branch]);
+  if (!res.ok) return true; // on error, assume exists
+  return res.stdout.trim().length > 0;
 }
 
 /**
@@ -276,13 +266,9 @@ function resolveCurrentFlow(workRoot, flows) {
 
   // Try matching by current branch
   let currentBranch;
-  try {
-    currentBranch = execFileSync("git", ["-C", workRoot, "rev-parse", "--abbrev-ref", "HEAD"], {
-      encoding: "utf8",
-    }).trim();
-  } catch (_) {
-    return null;
-  }
+  const res = runCmd("git", ["-C", workRoot, "rev-parse", "--abbrev-ref", "HEAD"]);
+  if (!res.ok) return null;
+  currentBranch = res.stdout.trim();
 
   // Match feature/<spec-id>
   for (const entry of flows) {
@@ -355,16 +341,12 @@ export function loadFlowState(workRoot, specId) {
  * @returns {string|null}
  */
 function specIdFromBranch(workRoot) {
-  try {
-    const branch = execFileSync("git", ["-C", workRoot, "rev-parse", "--abbrev-ref", "HEAD"], {
-      encoding: "utf8",
-    }).trim();
-    const prefix = "feature/";
-    if (branch.startsWith(prefix)) return branch.slice(prefix.length);
-    return null;
-  } catch (_) {
-    return null;
-  }
+  const res = runCmd("git", ["-C", workRoot, "rev-parse", "--abbrev-ref", "HEAD"]);
+  if (!res.ok) return null;
+  const branch = res.stdout.trim();
+  const prefix = "feature/";
+  if (branch.startsWith(prefix)) return branch.slice(prefix.length);
+  return null;
 }
 
 /**
@@ -570,10 +552,9 @@ export function scanAllFlows(workRoot) {
   }
 
   // 2. Worktrees: scan each worktree's specs/*/flow.json
-  try {
-    const output = execFileSync("git", ["-C", mainRoot, "worktree", "list", "--porcelain"], {
-      encoding: "utf8",
-    });
+  const wtRes = runCmd("git", ["-C", mainRoot, "worktree", "list", "--porcelain"]);
+  if (wtRes.ok) {
+    const output = wtRes.stdout;
     let wtPath = null;
     for (const line of output.split("\n")) {
       if (line.startsWith("worktree ")) {
@@ -594,34 +575,29 @@ export function scanAllFlows(workRoot) {
         wtPath = null;
       }
     }
-  } catch (_) {
-    // git worktree list failed, skip
   }
 
   // 3. Branches: check feature/* branches for specs/*/flow.json
-  try {
-    const output = execFileSync("git", ["-C", mainRoot, "branch", "--list", "feature/*"], {
-      encoding: "utf8",
-    });
-    for (const line of output.split("\n")) {
+  const branchRes = runCmd("git", ["-C", mainRoot, "branch", "--list", "feature/*"]);
+  if (branchRes.ok) {
+    for (const line of branchRes.stdout.split("\n")) {
       const branch = line.replace(/^[*+ ]+/, "").trim();
       if (!branch) continue;
       const specId = branch.replace("feature/", "");
       if (seen.has(specId)) continue;
-      try {
-        const content = execFileSync(
-          "git", ["-C", mainRoot, "show", `${branch}:specs/${specId}/flow.json`],
-          { encoding: "utf8", stdio: ["pipe", "pipe", "ignore"] },
-        );
-        const state = JSON.parse(content);
-        results.push({ specId, mode: "branch", state, location: `branch:${branch}` });
-        seen.add(specId);
-      } catch (_) {
-        // no flow.json on this branch
+      const showRes = runCmd(
+        "git", ["-C", mainRoot, "show", `${branch}:specs/${specId}/flow.json`],
+      );
+      if (showRes.ok) {
+        try {
+          const state = JSON.parse(showRes.stdout);
+          results.push({ specId, mode: "branch", state, location: `branch:${branch}` });
+          seen.add(specId);
+        } catch (_) {
+          // invalid JSON, skip
+        }
       }
     }
-  } catch (_) {
-    // git branch list failed, skip
   }
 
   return results;

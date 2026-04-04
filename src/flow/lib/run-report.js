@@ -4,7 +4,7 @@
  * FlowCommand: report — generate a work report from the current flow state.
  */
 
-import { execFileSync } from "child_process";
+import { collectGitSummary } from "../../lib/git-helpers.js";
 import { generateReport, saveReport } from "../commands/report.js";
 import { loadIssueLog } from "./set-issue-log.js";
 import { FlowCommand } from "./base-command.js";
@@ -22,20 +22,7 @@ export class RunReportCommand extends FlowCommand {
       throw new Error("baseBranch not set in flow.json");
     }
 
-    let implDiffStat = "";
-    let commitMessages = [];
-    try {
-      implDiffStat = execFileSync(
-        "git", ["diff", "--stat", `${baseBranch}...HEAD`],
-        { cwd: root, encoding: "utf8" },
-      ).trim();
-    } catch (_) { /* no diff */ }
-    try {
-      commitMessages = execFileSync(
-        "git", ["log", "--format=%s", `${baseBranch}..HEAD`],
-        { cwd: root, encoding: "utf8" },
-      ).trim().split("\n").filter(Boolean);
-    } catch (_) { /* no commits */ }
+    const { diffStat: implDiffStat, commitMessages } = collectGitSummary(root, baseBranch);
 
     let redolog = { entries: [] };
     try { redolog = loadIssueLog(root, state.spec); } catch (_) { /* no redolog */ }

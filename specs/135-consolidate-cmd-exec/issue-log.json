@@ -1,0 +1,20 @@
+{
+  "entries": [
+    {
+      "step": "spec",
+      "reason": "spec review が spec.md にプリアンブル（Here is the updated spec...）を付加してしまった",
+      "trigger": "sdd-forge flow run review --phase spec",
+      "resolution": "手動でプリアンブルを除去",
+      "guardrailCandidate": "review コマンドが spec.md を上書きする際、プリアンブルテキストを含めないようパーサーを改善すべき",
+      "timestamp": "2026-04-04T07:32:50.501Z"
+    },
+    {
+      "step": "implement",
+      "reason": "gate impl が npm test 実行結果を diff から確認できず FAIL",
+      "trigger": "sdd-forge flow run gate --phase impl",
+      "resolution": "テストは実行済みで全パス（1420/1420）。gate impl は diff ベースの検証であり、テスト実行結果は確認できない構造的制約",
+      "guardrailCandidate": "gate impl でテスト実行結果を確認するには、テスト結果ファイルの生成とコミットが必要",
+      "timestamp": "2026-04-04T07:58:56.729Z"
+    }
+  ]
+}

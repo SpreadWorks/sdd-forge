@@ -12,7 +12,7 @@
 
 import fs from "fs";
 import path from "path";
-import { execFileSync } from "child_process";
+import { runCmd } from "../../lib/process.js";
 import { callAgent, resolveAgent } from "../../lib/agent.js";
 import { filterByPhase, loadMergedGuardrails } from "../../lib/guardrail.js";
 import { FlowCommand } from "./base-command.js";
@@ -411,14 +411,11 @@ export class RunGateCommand extends FlowCommand {
     const specText = fs.readFileSync(absSpecPath, "utf8");
 
     // Get git diff
-    let diff;
-    try {
-      diff = execFileSync("git", ["diff", `${state.baseBranch}...HEAD`], {
-        cwd: root, encoding: "utf8", maxBuffer: 10 * 1024 * 1024,
-      });
-    } catch (err) {
-      throw new Error(`failed to get git diff: ${err.message}`);
+    const diffRes = runCmd("git", ["diff", `${state.baseBranch}...HEAD`], { cwd: root });
+    if (!diffRes.ok) {
+      throw new Error(`failed to get git diff: ${diffRes.stderr}`);
     }
+    const diff = diffRes.stdout;
 
     if (!diff.trim()) {
       return gateFail("impl", specPath, [], ["no changes found against base branch"]);

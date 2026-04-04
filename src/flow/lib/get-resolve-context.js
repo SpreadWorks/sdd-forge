@@ -7,7 +7,7 @@
 
 import fs from "fs";
 import path from "path";
-import { getWorktreeStatus, getCurrentBranch, getAheadCount, getLastCommit, isGhAvailable } from "../../lib/git-state.js";
+import { getWorktreeStatus, getCurrentBranch, getAheadCount, getLastCommit, isGhAvailable } from "../../lib/git-helpers.js";
 import { resolveActiveFlow, derivePhase } from "../../lib/flow-state.js";
 import { FlowCommand } from "./base-command.js";
 

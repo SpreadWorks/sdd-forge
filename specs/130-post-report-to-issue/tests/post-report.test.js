@@ -6,7 +6,7 @@ import assert from "node:assert/strict";
 
 describe("issue comment posting conditions", () => {
   it("isGhAvailable returns boolean", async () => {
-    const { isGhAvailable } = await import("../../../src/lib/git-state.js");
+    const { isGhAvailable } = await import("../../../src/lib/git-helpers.js");
     const result = isGhAvailable();
     assert.equal(typeof result, "boolean");
   });
