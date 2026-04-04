@@ -1,5 +1,5 @@
 {
-  "analyzedAt": "2026-04-04T08:15:57.307Z",
+  "analyzedAt": "2026-04-04T08:34:56.871Z",
   "package": {
     "entries": [
       {
@@ -2083,9 +2083,9 @@
       },
       {
         "file": "src/flow/commands/review.js",
-        "hash": "79a8259938b65e1a64c295fdf9198964",
-        "lines": 904,
-        "mtime": "2026-04-04T08:09:59.594Z",
+        "hash": "57dafeceeea36d2679caf067fc3e7ffd",
+        "lines": 920,
+        "mtime": "2026-04-04T08:24:35.093Z",
         "className": "review",
         "methods": [
           "resolveReviewTarget",
@@ -2112,7 +2112,8 @@
           "buildSpecFixPrompt",
           "formatSpecReviewMd",
           "runSpecReview",
-          "main"
+          "main",
+          "isValidSpecOutput"
         ],
         "imports": [
           "fs",
@@ -2142,29 +2143,32 @@
           "runReviewLoop",
           "extractGoalAndScope",
           "buildSpecReviewPrompt",
-          "formatSpecReviewMd"
+          "formatSpecReviewMd",
+          "isValidSpecOutput",
+          "buildTestFixPrompt"
         ],
         "extends": null,
         "usedBy": null,
         "id": "331cf497",
-        "summary": "The review command orchestrates multi-phase AI-driven review of specs, tests, and implementation code within the SDD flow.",
-        "detail": "Implements three distinct review pipelines: runSpecReview (checks spec quality with guardrail-style prompts and applies AI fixes), runTestReview (designs test plans, collects existing test files, performs gap analysis, and writes missing tests), and a final code review phase that applies approved proposals to source files. Each pipeline uses runReviewLoop with configurable retries and persists results to markdown files in the spec directory. parseProposals and mergeVerdicts parse structured AI responses, while applyTestFixes writes generated test files to disk.",
+        "summary": "Implements the flow review command, orchestrating spec review, test review, and code review phases using AI agents with retry loops.",
+        "detail": "This module provides three review modes: spec review (validates the feature specification), test review (analyzes test coverage gaps and generates missing tests), and code review (reviews implementation against the spec). Each mode uses a multi-turn AI agent loop with configurable retry limits (MAX_REVIEW_RETRIES=3). Results are persisted as markdown files (spec-review.md, test-review.md, review.md) in the spec directory. Helper functions handle prompt construction, proposal parsing, verdict merging, and test file discovery across both project-level and spec-level test directories.",
         "chapter": "internal_design",
         "role": "controller",
         "enrich": {
-          "processedAt": "2026-04-04T08:17:46.932Z",
+          "processedAt": "2026-04-04T08:24:47.656Z",
           "attempts": 1
         },
         "keywords": [
           "review",
-          "spec review",
-          "test review",
-          "code review",
-          "AI agent",
-          "gap analysis",
-          "guardrail",
-          "SDD flow",
-          "proposals"
+          "spec-review",
+          "test-review",
+          "code-review",
+          "agent",
+          "retry",
+          "proposals",
+          "verdicts",
+          "gap-analysis",
+          "flow"
         ]
       },
       {
@@ -2988,9 +2992,9 @@
       },
       {
         "file": "src/flow/lib/run-review.js",
-        "hash": "07d5ec6ef9bd37c00ada7784a87d34ee",
-        "lines": 145,
-        "mtime": "2026-04-04T08:09:59.596Z",
+        "hash": "094f6b78b1fe4f04bf5e8f5de4f1861f",
+        "lines": 153,
+        "mtime": "2026-04-04T08:24:35.093Z",
         "className": "run-review",
         "methods": [
           "RunReviewCommand",
@@ -3005,27 +3009,32 @@
         ],
         "exports": [
           "RunReviewCommand",
-          "default"
+          "default",
+          "parseTestReviewOutput",
+          "parseSpecReviewOutput"
         ],
         "extends": "FlowCommand",
         "usedBy": null,
         "id": "d4e97204",
-        "summary": "RunReviewCommand is a thin wrapper that invokes the review.js script as a subprocess and parses its structured output.",
-        "detail": "Extends FlowCommand and constructs the script path using PKG_DIR. Executes the review script via runCmd with phase-specific arguments (test-review or spec-review). parseTestReviewOutput and parseSpecReviewOutput parse stdout/stderr from the subprocess, extracting issue counts and verdict from structured output lines. Throws on non-zero exit with stderr context. Returns a normalized result object with issues array, verdict, and raw output.",
+        "summary": "Provides the RunReviewCommand class and output parsers that invoke the review.js script as a subprocess and return structured results.",
+        "detail": "RunReviewCommand extends FlowCommand and delegates execution to the review.js CLI script via runCmd, passing phase flags (test-review, spec-review, or code review). Output parsers parseTestReviewOutput and parseSpecReviewOutput inspect the subprocess exit code and stdout/stderr to extract structured result objects or throw on failure. This separation keeps the review logic in review.js while run-review.js acts as the integration adapter within the flow command dispatch layer.",
         "chapter": "internal_design",
         "role": "lib",
         "enrich": {
-          "processedAt": "2026-04-04T08:17:46.932Z",
+          "processedAt": "2026-04-04T08:24:47.656Z",
           "attempts": 1
         },
         "keywords": [
-          "review wrapper",
+          "RunReviewCommand",
+          "FlowCommand",
           "subprocess",
-          "test review",
-          "spec review",
-          "output parsing",
-          "flow review",
-          "script invocation"
+          "parseTestReviewOutput",
+          "parseSpecReviewOutput",
+          "adapter",
+          "flow",
+          "review",
+          "dispatch",
+          "base-command"
         ]
       },
       {
@@ -5135,35 +5144,6 @@
         "id": "837e9382"
       },
       {
-        "file": "src/presets/ci/data/pipelines.js",
-        "hash": "abff191836bf39cbf2c1ac94bc30dfd0",
-        "lines": 362,
-        "mtime": "2026-03-26T03:13:47.936Z",
-        "className": "pipelines",
-        "methods": [
-          "parseWorkflow",
-          "PipelineEntry",
-          "parseTriggers",
-          "extractBranches",
-          "parseJobs",
-          "extractRefs"
-        ],
-        "imports": [
-          "fs",
-          "../../../docs/lib/data-source.js",
-          "../../../docs/lib/scan-source.js",
-          "../../../docs/lib/analysis-entry.js"
-        ],
-        "exports": [
-          "parseWorkflow",
-          "PipelineEntry",
-          "default"
-        ],
-        "extends": "AnalysisEntry",
-        "usedBy": null,
-        "id": "c0546c5c"
-      },
-      {
         "file": "src/presets/cli/data/commands.js",
         "hash": "87ee1c801c33efa2e58ef0d3f13e2928",
         "lines": 53,
@@ -5640,6 +5620,35 @@
         "extends": "AnalysisEntry",
         "usedBy": null,
         "id": "3a74faa5"
+      },
+      {
+        "file": "src/presets/github-actions/data/pipelines.js",
+        "hash": "efc31aa6776ec117982cd944ca1a1d04",
+        "lines": 362,
+        "mtime": "2026-04-04T08:34:56.689Z",
+        "className": "pipelines",
+        "methods": [
+          "parseWorkflow",
+          "PipelineEntry",
+          "parseTriggers",
+          "extractBranches",
+          "parseJobs",
+          "extractRefs"
+        ],
+        "imports": [
+          "fs",
+          "../../../docs/lib/data-source.js",
+          "../../../docs/lib/scan-source.js",
+          "../../../docs/lib/analysis-entry.js"
+        ],
+        "exports": [
+          "parseWorkflow",
+          "PipelineEntry",
+          "default"
+        ],
+        "extends": "AnalysisEntry",
+        "usedBy": null,
+        "id": "94262924"
       },
       {
         "file": "src/presets/graphql/data/schema.js",
@@ -7561,9 +7570,9 @@
     ],
     "summary": {
       "total": 223,
-      "totalMethods": 680
+      "totalMethods": 681
     },
     "dataSourceHash": "7d725e75d5031be445119323e4947c91"
   },
-  "enrichedAt": "2026-04-04T08:17:46.932Z"
+  "enrichedAt": "2026-04-04T08:24:47.656Z"
 }
