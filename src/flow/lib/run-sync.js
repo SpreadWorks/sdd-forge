@@ -58,7 +58,7 @@ export class RunSyncCommand extends FlowCommand {
 
     // Step 3: git add (ignore errors for missing files)
     try {
-      execFileSync("git", ["add", "docs/", "AGENTS.md", "CLAUDE.md", "README.md"], {
+      execFileSync("git", ["add", "docs/", "AGENTS.md", "CLAUDE.md", "README.md", ".sdd-forge/output/"], {
         cwd: root,
         encoding: "utf8",
       });
