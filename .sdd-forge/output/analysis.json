@@ -1,5 +1,5 @@
 {
-  "analyzedAt": "2026-04-04T14:21:13.954Z",
+  "analyzedAt": "2026-04-04T14:27:36.831Z",
   "package": {
     "entries": [
       {
@@ -4927,9 +4927,9 @@
       },
       {
         "file": "src/presets/cakephp2/data/models.js",
-        "hash": "0ee7d80e8a3530fd2987c65217d3e080",
-        "lines": 540,
-        "mtime": "2026-03-26T03:13:47.934Z",
+        "hash": "b451d65a3cfbd6cdd4770b855db6079f",
+        "lines": 538,
+        "mtime": "2026-04-04T14:27:36.605Z",
         "className": "models",
         "methods": [
           "analyzeModels",
@@ -4939,6 +4939,7 @@
           "analyzeAppController",
           "analyzeAppModel",
           "extractStringProperty",
+          "parseModelContent",
           "inferTableName"
         ],
         "imports": [
@@ -5935,14 +5936,14 @@
       },
       {
         "file": "src/presets/laravel/data/controllers.js",
-        "hash": "3bffe00d7af0eabc565a365834f62305",
-        "lines": 194,
-        "mtime": "2026-03-26T03:13:47.938Z",
+        "hash": "552c46196274503f963f51fac41e5b25",
+        "lines": 177,
+        "mtime": "2026-04-04T14:27:36.605Z",
         "className": "controllers",
         "methods": [
           "LaravelControllerEntry",
           "analyzeControllers",
-          "parseControllerScan"
+          "parseControllerContent"
         ],
         "imports": [
           "fs",
@@ -5962,9 +5963,9 @@
       },
       {
         "file": "src/presets/laravel/data/models.js",
-        "hash": "52a6c2f7444f4e9240aa4c57de5cfa7c",
-        "lines": 292,
-        "mtime": "2026-03-26T03:13:47.938Z",
+        "hash": "24787216db282f7e8d4a1ae02d162c70",
+        "lines": 268,
+        "mtime": "2026-04-04T14:27:36.605Z",
         "className": "models",
         "methods": [
           "LaravelModelEntry",
@@ -5972,7 +5973,7 @@
           "extractArrayProp",
           "extractAssocProp",
           "extractRelations",
-          "parseModelScan"
+          "parseModelContent"
         ],
         "imports": [
           "fs",
@@ -7018,14 +7019,14 @@
       },
       {
         "file": "src/presets/symfony/data/controllers.js",
-        "hash": "9be2d34bd913403f6df1e8c2967cc001",
-        "lines": 241,
-        "mtime": "2026-03-26T03:13:47.943Z",
+        "hash": "8b8480be119d7cb2ce141c240d026dcd",
+        "lines": 215,
+        "mtime": "2026-04-04T14:27:36.605Z",
         "className": "controllers",
         "methods": [
           "analyzeControllers",
           "findMethodsWithAttributes",
-          "parseControllerFile"
+          "parseControllerContent"
         ],
         "imports": [
           "fs",
@@ -7044,16 +7045,16 @@
       },
       {
         "file": "src/presets/symfony/data/entities.js",
-        "hash": "6b128cd596f3cba8b5268d54da98e774",
-        "lines": 229,
-        "mtime": "2026-03-26T03:13:47.943Z",
+        "hash": "8da644bf2abadbcd05b3ce704e309654",
+        "lines": 233,
+        "mtime": "2026-04-04T14:27:36.605Z",
         "className": "entities",
         "methods": [
           "EntityEntry",
           "analyzeEntities",
           "extractColumns",
           "extractRelations",
-          "parseEntityFile"
+          "parseEntityContent"
         ],
         "imports": [
           "fs",
@@ -7582,7 +7583,7 @@
     ],
     "summary": {
       "total": 223,
-      "totalMethods": 682
+      "totalMethods": 683
     },
     "dataSourceHash": "7d725e75d5031be445119323e4947c91"
   },
