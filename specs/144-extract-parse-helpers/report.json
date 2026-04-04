@@ -1,0 +1,29 @@
+{
+  "data": {
+    "implementation": {
+      "diffStat": "specs/144-extract-parse-helpers/flow.json | 104 ++++++++++\n specs/144-extract-parse-helpers/qa.md     |  23 +++\n specs/144-extract-parse-helpers/spec.md   |  76 +++++++\n src/presets/cakephp2/data/models.js       | 204 ++++++++++---------\n src/presets/laravel/data/controllers.js   | 159 +++++++--------\n src/presets/laravel/data/models.js        | 320 ++++++++++++++----------------\n src/presets/symfony/data/controllers.js   | 180 +++++++----------\n src/presets/symfony/data/entities.js      | 218 ++++++++++----------\n 8 files changed, 711 insertions(+), 573 deletions(-)",
+      "commits": [
+        "feat: feature/144-extract-parse-helpers",
+        "chore: check off acceptance criteria in spec",
+        "refactor: extract shared parse helpers in DataSource files"
+      ]
+    },
+    "retro": null,
+    "issueLog": {
+      "count": 0,
+      "entries": []
+    },
+    "metrics": {
+      "docsRead": 0,
+      "srcRead": 0,
+      "question": 0,
+      "issueLog": 0
+    },
+    "tests": null,
+    "sync": {
+      "status": "skipped",
+      "reason": "sync was skipped"
+    }
+  },
+  "text": "  Report\n\n  Implementation\n  ────────────────────────────────────────────────\n    feat: feature/144-extract-parse-helpers\n    chore: check off acceptance criteria in spec\n    refactor: extract shared parse helpers in DataSource files\n    8 files changed, 711 insertions(+), 573 deletions(-)\n\n  Retro\n  ────────────────────────────────────────────────\n    -\n\n  Metrics\n  ────────────────────────────────────────────────\n    docs 0  src 0  Q&A 0  issues 0\n\n  Documents\n  ────────────────────────────────────────────────\n    skipped: sync was skipped"
+}
