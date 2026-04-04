@@ -1,0 +1,11 @@
+{
+  "entries": [
+    {
+      "step": "spec",
+      "reason": "spec review が繰り返しサブプロセスエラーで失敗。Analysis→Applying fixes の段階でクラッシュ。guardrail内容は多いためプロンプトが長大化している可能性あり",
+      "trigger": "sdd-forge flow run review --phase spec",
+      "resolution": "spec review をスキップし、gate pass + ユーザー承認で進める",
+      "timestamp": "2026-04-04T13:20:43.984Z"
+    }
+  ]
+}

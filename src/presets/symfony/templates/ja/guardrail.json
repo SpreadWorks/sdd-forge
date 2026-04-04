@@ -5,10 +5,7 @@
       "title": "パラメータ化クエリの使用",
       "body": "DQL および QueryBuilder ではパラメータバインディングを必須とする。クエリ内での文字列結合を禁止する。",
       "meta": {
-        "phase": [
-          "spec",
-          "impl"
-        ]
+        "phase": ["spec", "impl"]
       }
     },
     {
@@ -16,10 +13,7 @@
       "title": "Service 層の分離",
       "body": "ビジネスロジックは Service クラスに置き、Controller は薄く保つこと。",
       "meta": {
-        "phase": [
-          "spec",
-          "impl"
-        ]
+        "phase": ["spec", "impl"]
       }
     },
     {
@@ -27,10 +21,7 @@
       "title": "Voter による認可",
       "body": "認可ロジックは Voter に集約すること。Controller 内での権限チェック分散を禁止する。",
       "meta": {
-        "phase": [
-          "spec",
-          "impl"
-        ]
+        "phase": ["spec", "impl"]
       }
     },
     {
@@ -38,9 +29,279 @@
       "title": "外部入力は DTO で受ける",
       "body": "外部入力は DTO + Validator で受け取ること。Request からエンティティへの直接マッピングを禁止する。",
       "meta": {
-        "phase": [
-          "impl"
-        ]
+        "phase": ["impl"]
+      }
+    },
+    {
+      "id": "no-bundle-for-app-code",
+      "title": "アプリケーションコードの Bundle 化禁止",
+      "body": "アプリケーションコードを追加する場合: Bundle にせず、デフォルトの Symfony ディレクトリ構造（config/, src/, templates/）を使い PHP ネームスペースで整理すること。",
+      "meta": {
+        "phase": ["spec"]
+      }
+    },
+    {
+      "id": "env-vars-for-infra-only",
+      "title": "環境変数はインフラ設定のみ",
+      "body": "設定方法を決定する場合: 環境変数はインフラ設定（DB 接続、外部 API URL 等）のみに使用し、アプリケーション挙動の制御には config/services.yaml のパラメータ（app. 接頭辞）を使うこと。",
+      "meta": {
+        "phase": ["spec"]
+      }
+    },
+    {
+      "id": "use-messenger-for-async",
+      "title": "非同期処理は Messenger",
+      "body": "非同期・バックグラウンド処理を設計する場合: Symfony Messenger を使用し、failure transport を必ず設定すること。",
+      "meta": {
+        "phase": ["spec"]
+      }
+    },
+    {
+      "id": "ux-package-selection-criteria",
+      "title": "UX パッケージ選択基準",
+      "body": "Symfony UX を採用しているプロジェクトでフロントエンド実装を設計する場合: 静的コンポーネント→TwigComponent、JS 動作付き→Stimulus、リアクティブ→LiveComponent、部分更新→Turbo Frame、マルチターゲット DOM 操作→Turbo Stream、リアルタイム→Mercure + Turbo Stream の基準で選択すること。",
+      "meta": {
+        "phase": ["spec"]
+      }
+    },
+    {
+      "id": "live-component-performance-design",
+      "title": "LiveComponent パフォーマンス設計",
+      "body": "Symfony UX LiveComponent を使用するプロジェクトの場合: 不要な再レンダリングを避ける設計を spec 段階で検討し、LiveProp の粒度・デバウンス・defer/lazy の適用箇所を明示すること。",
+      "meta": {
+        "phase": ["spec"]
+      }
+    },
+    {
+      "id": "stable-public-interfaces",
+      "title": "公開インターフェースの安定性",
+      "body": "公開インターフェース（Contracts/ 等）を変更する場合: 安定 API として扱い、破壊的変更は慎重に判断すること。",
+      "meta": {
+        "phase": ["spec"]
+      }
+    },
+    {
+      "id": "use-enums-for-fixed-values",
+      "title": "固定値は enum",
+      "body": "固定値の集合を定義する場合: 定数ではなく PHP 8.1 の enum で表現すること（case 名は UpperCamelCase）。",
+      "meta": {
+        "phase": ["spec"]
+      }
+    },
+    {
+      "id": "constructor-injection-only",
+      "title": "コンストラクタインジェクションのみ",
+      "body": "サービスを利用する場合: コンストラクタインジェクションのみを使用し、$container->get() によるサービス取得を禁止する。autowiring + autoconfiguration をデフォルトとし、サービスは private にすること。",
+      "meta": {
+        "phase": ["impl"]
+      }
+    },
+    {
+      "id": "forms-as-php-classes",
+      "title": "フォームは PHP クラス定義",
+      "body": "フォームを作成する場合: PHP クラスとして定義し、コントローラ内で直接ビルドしないこと。ボタンはテンプレートに配置し、バリデーション制約は対象オブジェクトに定義すること。",
+      "meta": {
+        "phase": ["impl"]
+      }
+    },
+    {
+      "id": "avoid-raw-filter",
+      "title": "|raw フィルタの使用制限",
+      "body": "Twig テンプレートを記述する場合: |raw フィルタは信頼済みかつサニタイズ済みコンテンツにのみ使用し、デフォルトのエスケープを無効化しないこと。",
+      "meta": {
+        "phase": ["impl"]
+      }
+    },
+    {
+      "id": "snake-case-templates",
+      "title": "テンプレート命名は snake_case",
+      "body": "テンプレートを作成する場合: テンプレート名・ディレクトリ名・変数名はすべて snake_case とし、フラグメントにはアンダースコア接頭辞（_partial.html.twig）を付けること。",
+      "meta": {
+        "phase": ["impl"]
+      }
+    },
+    {
+      "id": "key-based-translations",
+      "title": "翻訳はキーベース",
+      "body": "翻訳を実装する場合: リテラル文字列ではなく目的を表すキーを使用し、翻訳ファイルは XLIFF 形式とすること。",
+      "meta": {
+        "phase": ["impl"]
+      }
+    },
+    {
+      "id": "doctrine-attribute-mapping",
+      "title": "Doctrine マッピングは PHP 属性",
+      "body": "Doctrine エンティティを定義する場合: XML/YAML マッピングではなく PHP 属性（#[ORM\\Entity] 等）を使用すること。",
+      "meta": {
+        "phase": ["impl"]
+      }
+    },
+    {
+      "id": "schema-changes-via-migrations",
+      "title": "スキーマ変更はマイグレーション経由",
+      "body": "データベーススキーマを変更する場合: 直接操作を禁止し、Doctrine Migrations を使用すること。",
+      "meta": {
+        "phase": ["impl"]
+      }
+    },
+    {
+      "id": "use-asset-mapper",
+      "title": "Web アセットは AssetMapper",
+      "body": "Web アセットを管理する場合: AssetMapper を使用し、不要なフロントエンドビルドの複雑性を導入しないこと。",
+      "meta": {
+        "phase": ["impl"]
+      }
+    },
+    {
+      "id": "single-firewall-preferred",
+      "title": "ファイアウォール単一構成",
+      "body": "セキュリティ設定を構成する場合: 複数システムが必要な場合を除き単一ファイアウォールとし、パスワードハッシャーは auto を使用すること。",
+      "meta": {
+        "phase": ["impl"]
+      }
+    },
+    {
+      "id": "stimulus-controller-name-match",
+      "title": "Stimulus コントローラ名一致",
+      "body": "Stimulus を使用するプロジェクトの場合: コントローラファイル名（kebab-case）と HTML の data-controller 属性値が一致していることを確認すること。命名ミスマッチは最多バグ原因。",
+      "meta": {
+        "phase": ["impl"]
+      }
+    },
+    {
+      "id": "stimulus-no-dom-assumption-on-connect",
+      "title": "Stimulus connect() で DOM 前提にしない",
+      "body": "Stimulus を使用するプロジェクトの場合: connect() 時に DOM 要素の存在を前提にせず、要素の存在チェックまたは適切なライフサイクルフックを使うこと。",
+      "meta": {
+        "phase": ["impl"]
+      }
+    },
+    {
+      "id": "turbo-frame-id-match",
+      "title": "Turbo Frame id 一致",
+      "body": "Turbo を使用するプロジェクトの場合: Frame の id がサーバーレスポンスの <turbo-frame id> と一致しなければならない。不一致は無言で失敗する。",
+      "meta": {
+        "phase": ["impl"]
+      }
+    },
+    {
+      "id": "turbo-cache-js-reinit",
+      "title": "Turbo キャッシュ復元時の JS 再初期化",
+      "body": "Turbo を使用するプロジェクトの場合: Turbo Drive のキャッシュ復元時に Stimulus controller の connect() が再実行されないケースを考慮すること。",
+      "meta": {
+        "phase": ["impl"]
+      }
+    },
+    {
+      "id": "turbo-stream-redirect-loss",
+      "title": "Turbo Stream リダイレクト消失",
+      "body": "Turbo を使用するプロジェクトの場合: フォーム送信後のリダイレクトで Turbo Stream レスポンスが消えるケースを考慮すること。",
+      "meta": {
+        "phase": ["impl"]
+      }
+    },
+    {
+      "id": "twig-component-prop-leak",
+      "title": "TwigComponent props 漏れ",
+      "body": "TwigComponent を使用するプロジェクトの場合: ExposeInTemplate を適切に制御し、不要な props が HTML 属性に出力されないようにすること。",
+      "meta": {
+        "phase": ["impl"]
+      }
+    },
+    {
+      "id": "live-prop-required-for-state",
+      "title": "LiveProp 必須",
+      "body": "LiveComponent を使用するプロジェクトの場合: 状態を保持したいプロパティには必ず LiveProp 属性を付けること。LiveProp でないプロパティは再レンダリング時にリセットされる。",
+      "meta": {
+        "phase": ["impl"]
+      }
+    },
+    {
+      "id": "live-prop-no-complex-objects",
+      "title": "LiveProp に複雑オブジェクト禁止",
+      "body": "LiveComponent を使用するプロジェクトの場合: LiveProp にはスカラー値またはシンプルな DTO のみを使用し、複雑なオブジェクトを渡さないこと。ハイドレーションエラーの原因になる。",
+      "meta": {
+        "phase": ["impl"]
+      }
+    },
+    {
+      "id": "ux-icons-lock-before-deploy",
+      "title": "UX Icons ロック",
+      "body": "UX Icons を使用するプロジェクトの場合: 本番デプロイ前に ux:icons:lock を実行し、Iconify API 依存を排除すること。",
+      "meta": {
+        "phase": ["impl"]
+      }
+    },
+    {
+      "id": "ux-map-height-required",
+      "title": "UX Map height 必須",
+      "body": "UX Map を使用するプロジェクトの場合: マップコンテナに必ず明示的な CSS height を設定すること。未指定だと 0px に潰れる。",
+      "meta": {
+        "phase": ["impl"]
+      }
+    },
+    {
+      "id": "no-container-get",
+      "title": "$container->get() 禁止",
+      "body": "サービスを利用する場合: $container->get() によるサービスロケータパターンの使用を禁止する。コンストラクタインジェクションを使うこと。",
+      "meta": {
+        "phase": ["impl", "review"]
+      }
+    },
+    {
+      "id": "no-direct-form-building-in-controller",
+      "title": "コントローラ内フォーム直接ビルド禁止",
+      "body": "フォームを作成する場合: $this->createFormBuilder() 等のコントローラ内直接ビルドを禁止し、フォーム PHP クラスを使うこと。",
+      "meta": {
+        "phase": ["impl", "review"]
+      }
+    },
+    {
+      "id": "trans-filter-required",
+      "title": "|trans 必須",
+      "body": "ユーザー向けテキストを表示する場合: テンプレート内のすべてのユーザー向け文字列に |trans フィルタを適用すること。ハードコード禁止。",
+      "meta": {
+        "phase": ["impl", "review"]
+      }
+    },
+    {
+      "id": "detect-raw-filter-usage",
+      "title": "|raw 使用検出",
+      "body": "レビュー時: Twig テンプレート内の |raw フィルタの使用箇所を検出し、XSS リスクの正当性を確認すること。",
+      "meta": {
+        "phase": ["review"]
+      }
+    },
+    {
+      "id": "detect-stimulus-name-mismatch",
+      "title": "Stimulus 名不一致検出",
+      "body": "Stimulus を使用するプロジェクトのレビュー時: HTML の data-controller 属性値と controllers/ 配下のファイル名の対応を検証すること。",
+      "meta": {
+        "phase": ["review"]
+      }
+    },
+    {
+      "id": "detect-turbo-frame-id-mismatch",
+      "title": "turbo-frame id 不一致検出",
+      "body": "Turbo を使用するプロジェクトのレビュー時: リクエスト元とレスポンスの turbo-frame id 一致を検証すること。",
+      "meta": {
+        "phase": ["review"]
+      }
+    },
+    {
+      "id": "detect-live-prop-state-dependency",
+      "title": "LiveProp なし状態依存検出",
+      "body": "LiveComponent を使用するプロジェクトのレビュー時: LiveProp 属性のないプロパティに状態を保持しているパターンを検出すること。",
+      "meta": {
+        "phase": ["review"]
+      }
+    },
+    {
+      "id": "verify-ux-icons-lock",
+      "title": "ux:icons:lock 実行確認",
+      "body": "UX Icons を使用するプロジェクトのレビュー時: デプロイ設定に ux:icons:lock が含まれているか検証すること。",
+      "meta": {
+        "phase": ["review"]
       }
     }
   ]
