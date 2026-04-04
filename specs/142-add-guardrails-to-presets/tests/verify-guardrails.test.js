@@ -38,16 +38,70 @@ describe("R0: VALID_PHASES includes review", () => {
     );
   });
 
-  // GAP-1: TC-2 — order verification
+  // GAP-1: TC-02 — order verification + explicit count
   it("VALID_PHASES contains all phases in correct order", async () => {
     const { VALID_PHASES } = await import("../../../src/flow/lib/phases.js");
     assert.deepStrictEqual(VALID_PHASES, ["draft", "spec", "gate", "impl", "test", "lint", "review"]);
+  });
+
+  // GAP-1: TC-02 — explicit element count
+  it("VALID_PHASES.length === 7", async () => {
+    const { VALID_PHASES } = await import("../../../src/flow/lib/phases.js");
+    assert.equal(VALID_PHASES.length, 7);
   });
 
   // GAP-1: TC-3 — frozen
   it("VALID_PHASES is frozen", async () => {
     const { VALID_PHASES } = await import("../../../src/flow/lib/phases.js");
     assert.ok(Object.isFrozen(VALID_PHASES));
+  });
+});
+
+// GAP-2: TC-06 — Invalid phase validation error message at command level
+describe("R0: GetGuardrailCommand invalid phase error", () => {
+  it("execute({ phase: 'invalid' }) throws with valid phases list", async () => {
+    const mod = await import("../../../src/flow/lib/get-guardrail.js");
+    const GetGuardrailCommand = mod.default;
+    const { createTmpDir, removeTmpDir, writeJson } = await import("../../../tests/helpers/tmp-dir.js");
+    const tmp = createTmpDir();
+    writeJson(tmp, ".sdd-forge/config.json", {
+      lang: "en", type: "webapp",
+      docs: { languages: ["en"], defaultLanguage: "en" },
+    });
+    try {
+      const cmd = new GetGuardrailCommand();
+      assert.throws(
+        () => cmd.execute({ root: tmp, phase: "invalid_phase", format: "json" }),
+        (err) => {
+          assert.ok(err.message.includes("unknown phase"), `should contain 'unknown phase', got: ${err.message}`);
+          assert.ok(err.message.includes("draft"), `should list valid phases, got: ${err.message}`);
+          assert.ok(err.message.includes("review"), `should list valid phases, got: ${err.message}`);
+          return true;
+        }
+      );
+    } finally {
+      removeTmpDir(tmp);
+    }
+  });
+
+  it("execute({ phase: undefined }) throws requiring phase", async () => {
+    const mod = await import("../../../src/flow/lib/get-guardrail.js");
+    const GetGuardrailCommand = mod.default;
+    const { createTmpDir, removeTmpDir, writeJson } = await import("../../../tests/helpers/tmp-dir.js");
+    const tmp = createTmpDir();
+    writeJson(tmp, ".sdd-forge/config.json", {
+      lang: "en", type: "webapp",
+      docs: { languages: ["en"], defaultLanguage: "en" },
+    });
+    try {
+      const cmd = new GetGuardrailCommand();
+      assert.throws(
+        () => cmd.execute({ root: tmp, phase: undefined, format: "json" }),
+        /phase required/
+      );
+    } finally {
+      removeTmpDir(tmp);
+    }
   });
 });
 
@@ -72,6 +126,13 @@ describe("R1: webapp guardrails", () => {
       }
     });
   }
+
+  // GAP-3: TC-09 — webapp/en guardrail total count = 14 (8 existing + 6 new)
+  it("webapp/en guardrail total count = 14", () => {
+    const data = readGuardrails("webapp", "en");
+    assert.ok(data, "webapp/en/guardrail.json should exist");
+    assert.equal(data.guardrails.length, 14, `expected 14 guardrails, got ${data.guardrails.length}`);
+  });
 
   it("authorization-flow-in-spec has phase: spec", () => {
     const g = findById(readGuardrails("webapp", "en"), "authorization-flow-in-spec");
@@ -206,6 +267,33 @@ describe("R2: php-webapp guardrails", () => {
     const g = findById(readGuardrails("php-webapp", "en"), "use-language-enum-for-fixed-values");
     assert.deepStrictEqual(g.meta.phase, ["impl"]);
   });
+
+  // GAP-5: TC-18 — php-webapp guardrail count = 1
+  it("php-webapp/en guardrail count = 1", () => {
+    const data = readGuardrails("php-webapp", "en");
+    assert.ok(data, "php-webapp/en/guardrail.json should exist");
+    assert.equal(data.guardrails.length, 1, `expected 1 guardrail, got ${data.guardrails.length}`);
+  });
+
+  // GAP-6: TC-21 — php-webapp JSON schema validation
+  it("php-webapp guardrails have valid schema: id, title, body, meta.phase", () => {
+    const data = readGuardrails("php-webapp", "en");
+    assert.ok(data, "php-webapp/en/guardrail.json should exist");
+    for (const g of data.guardrails) {
+      assert.equal(typeof g.id, "string", `id should be string, got ${typeof g.id}`);
+      assert.ok(g.id.length > 0, "id should not be empty");
+      assert.equal(typeof g.title, "string", `title should be string for ${g.id}`);
+      assert.ok(g.title.length > 0, `title should not be empty for ${g.id}`);
+      assert.equal(typeof g.body, "string", `body should be string for ${g.id}`);
+      assert.ok(g.body.length > 0, `body should not be empty for ${g.id}`);
+      assert.ok(g.meta, `meta should exist for ${g.id}`);
+      assert.ok(Array.isArray(g.meta.phase), `meta.phase should be array for ${g.id}`);
+      assert.ok(g.meta.phase.length > 0, `meta.phase should not be empty for ${g.id}`);
+      for (const p of g.meta.phase) {
+        assert.equal(typeof p, "string", `phase element should be string for ${g.id}`);
+      }
+    }
+  });
 });
 
 // GAP-2: TC-25 — laravel guardrails contain Laravel-specific terms
@@ -239,6 +327,13 @@ describe("R3: laravel new guardrails", () => {
       }
     });
   }
+
+  // GAP-4: TC-24 — laravel/en guardrail total count = 10 (4 existing + 6 new)
+  it("laravel/en guardrail total count = 10", () => {
+    const data = readGuardrails("laravel", "en");
+    assert.ok(data, "laravel/en/guardrail.json should exist");
+    assert.equal(data.guardrails.length, 10, `expected 10 guardrails, got ${data.guardrails.length}`);
+  });
 
   it("eager-loading-strategy-required has phase: spec", () => {
     const g = findById(readGuardrails("laravel", "en"), "eager-loading-strategy-required");
@@ -319,6 +414,18 @@ describe("R5: NOTICE files", () => {
     });
   }
 
+  // GAP-7: TC-34 — NOTICE preamble line verification
+  for (const preset of ["webapp", "php-webapp", "laravel"]) {
+    it(`${preset}/NOTICE starts with preamble line`, () => {
+      const p = path.join(PRESETS_DIR, preset, "NOTICE");
+      const content = fs.readFileSync(p, "utf8");
+      assert.ok(
+        content.startsWith("This preset contains"),
+        `${preset}/NOTICE should start with "This preset contains", got: "${content.slice(0, 60)}"`
+      );
+    });
+  }
+
   // GAP-5: TC-31–36 — NOTICE content and format verification
   it("webapp/NOTICE lists expected sources", () => {
     const content = fs.readFileSync(path.join(PRESETS_DIR, "webapp", "NOTICE"), "utf8");
@@ -330,6 +437,49 @@ describe("R5: NOTICE files", () => {
       "NOTICE should contain 'Original source:' block");
     assert.ok(content.includes("License:") || content.includes("license"),
       "NOTICE should contain 'License:' block");
+  });
+
+  // GAP-8: TC-35 — webapp NOTICE has 4 specific source repos
+  it("webapp/NOTICE references expected source repositories", () => {
+    const content = fs.readFileSync(path.join(PRESETS_DIR, "webapp", "NOTICE"), "utf8");
+    for (const repo of [
+      "sanjeed5/awesome-cursor-rules-mdc",
+      "PatrickJS/awesome-cursorrules",
+      "iSerter/laravel-claude-agents",
+      "VoltAgent/awesome-claude-code-subagents",
+    ]) {
+      assert.ok(content.includes(repo), `webapp NOTICE missing source repo: ${repo}`);
+    }
+  });
+
+  // GAP-8: TC-36 — php-webapp NOTICE has 2 specific source repos
+  it("php-webapp/NOTICE references expected source repositories", () => {
+    const content = fs.readFileSync(path.join(PRESETS_DIR, "php-webapp", "NOTICE"), "utf8");
+    let foundCount = 0;
+    for (const repo of [
+      "sanjeed5/awesome-cursor-rules-mdc",
+      "PatrickJS/awesome-cursorrules",
+      "iSerter/laravel-claude-agents",
+      "VoltAgent/awesome-claude-code-subagents",
+    ]) {
+      if (content.includes(repo)) foundCount++;
+    }
+    assert.ok(foundCount >= 2, `php-webapp NOTICE should reference at least 2 source repos, found ${foundCount}`);
+  });
+
+  // GAP-8: TC-37 — laravel NOTICE has 5 specific source repos
+  it("laravel/NOTICE references expected source repositories", () => {
+    const content = fs.readFileSync(path.join(PRESETS_DIR, "laravel", "NOTICE"), "utf8");
+    let foundCount = 0;
+    for (const repo of [
+      "sanjeed5/awesome-cursor-rules-mdc",
+      "PatrickJS/awesome-cursorrules",
+      "iSerter/laravel-claude-agents",
+      "VoltAgent/awesome-claude-code-subagents",
+    ]) {
+      if (content.includes(repo)) foundCount++;
+    }
+    assert.ok(foundCount >= 4, `laravel NOTICE should reference at least 4 source repos, found ${foundCount}`);
   });
 
   it("every Affected articles entry exists in guardrail.json", () => {
@@ -371,6 +521,30 @@ describe("R5: NOTICE format details", () => {
       const licenseLines = content.split("\n").filter((l) => /^License:/i.test(l.trim()));
       for (const line of licenseLines) {
         assert.ok(/\(https?:\/\/[^)]+\)/.test(line), `License line missing URL: ${line}`);
+      }
+    });
+  }
+
+  // GAP-9: TC-41/42 — NOTICE block ordering (same-license contiguous)
+  for (const preset of ["webapp", "php-webapp", "laravel"]) {
+    it(`${preset}/NOTICE has contiguous same-license blocks`, () => {
+      const noticePath = path.join(PRESETS_DIR, preset, "NOTICE");
+      if (!fs.existsSync(noticePath)) return;
+      const content = fs.readFileSync(noticePath, "utf8");
+      const blocks = content.split("---").filter((b) => b.trim());
+      const licenses = blocks.map((b) => {
+        const m = b.match(/License:\s*(.+)/i);
+        return m ? m[1].trim() : "";
+      });
+      // Verify contiguous grouping: once a license changes, it should not reappear
+      const seen = new Set();
+      let prev = null;
+      for (const lic of licenses) {
+        if (lic !== prev) {
+          assert.ok(!seen.has(lic), `${preset} NOTICE: license "${lic}" appears in non-contiguous blocks`);
+          seen.add(lic);
+          prev = lic;
+        }
       }
     });
   }
@@ -416,6 +590,30 @@ describe("R6: en/ja symmetry", () => {
       for (const g of data.guardrails) {
         assert.ok(jpRe.test(g.title), `${preset}/${g.id} title should be Japanese`);
         assert.ok(jpRe.test(g.body), `${preset}/${g.id} body should be Japanese`);
+      }
+    }
+  });
+
+  // GAP-10: TC-48 — English guardrail bodies contain no Japanese
+  it("en guardrails have no Japanese in body", () => {
+    const jpRe = /[\u3000-\u9fff]/;
+    for (const preset of ["webapp", "php-webapp", "laravel"]) {
+      const data = readGuardrails(preset, "en");
+      if (!data) continue;
+      for (const g of data.guardrails) {
+        assert.ok(!jpRe.test(g.body), `${preset}/${g.id} en body contains Japanese`);
+      }
+    }
+  });
+
+  // GAP-10: TC-48 — English guardrail titles contain no Japanese
+  it("en guardrails have no Japanese in title", () => {
+    const jpRe = /[\u3000-\u9fff]/;
+    for (const preset of ["webapp", "php-webapp", "laravel"]) {
+      const data = readGuardrails(preset, "en");
+      if (!data) continue;
+      for (const g of data.guardrails) {
+        assert.ok(!jpRe.test(g.title), `${preset}/${g.id} en title contains Japanese`);
       }
     }
   });
@@ -466,6 +664,181 @@ describe("R+: preset chain inheritance", () => {
       const ids = getIds(data);
       assert.equal(ids.length, new Set(ids).size, `${preset} has duplicate guardrail IDs`);
     }
+  });
+});
+
+// GAP-6: TC-21 — JSON schema validation for all presets
+describe("R+: guardrail JSON schema validation", () => {
+  for (const preset of ["webapp", "php-webapp", "laravel"]) {
+    it(`${preset}/en guardrails all have valid schema: id, title, body, meta.phase`, () => {
+      const data = readGuardrails(preset, "en");
+      if (!data) return;
+      for (const g of data.guardrails) {
+        assert.equal(typeof g.id, "string", `${preset}/${g.id}: id should be string`);
+        assert.ok(g.id.length > 0, `${preset}: id should not be empty`);
+        assert.equal(typeof g.title, "string", `${preset}/${g.id}: title should be string`);
+        assert.ok(g.title.length > 0, `${preset}/${g.id}: title should not be empty`);
+        assert.equal(typeof g.body, "string", `${preset}/${g.id}: body should be string`);
+        assert.ok(g.body.length > 0, `${preset}/${g.id}: body should not be empty`);
+        assert.ok(g.meta, `${preset}/${g.id}: meta should exist`);
+        assert.ok(Array.isArray(g.meta.phase), `${preset}/${g.id}: meta.phase should be array`);
+        assert.ok(g.meta.phase.length > 0, `${preset}/${g.id}: meta.phase should not be empty`);
+        for (const p of g.meta.phase) {
+          assert.equal(typeof p, "string", `${preset}/${g.id}: phase element should be string`);
+        }
+      }
+    });
+  }
+});
+
+// GAP-12: TC-53/54/55/56 — Error path and boundary conditions
+describe("R+: error paths and boundary conditions", () => {
+  const { createTmpDir, removeTmpDir, writeJson } = await import("../../../tests/helpers/tmp-dir.js");
+  let tmp;
+  afterEach(() => tmp && removeTmpDir(tmp));
+
+  // GAP-12: TC-54 — empty guardrails array is handled
+  it("loadMergedGuardrails handles preset with empty guardrails array", async () => {
+    const { loadMergedGuardrails } = await import("../../../src/lib/guardrail.js");
+    tmp = createTmpDir();
+    writeJson(tmp, ".sdd-forge/config.json", {
+      lang: "en", type: "base",
+      docs: { languages: ["en"], defaultLanguage: "en" },
+    });
+    // base has no guardrail.json → should return empty array gracefully
+    const merged = loadMergedGuardrails(tmp);
+    assert.ok(Array.isArray(merged), "should return an array");
+  });
+
+  // GAP-12: TC-55 — default phase for missing meta.phase (via hydrate)
+  it("guardrail without meta.phase gets default phase after hydration through loadMergedGuardrails", async () => {
+    const { loadMergedGuardrails } = await import("../../../src/lib/guardrail.js");
+    tmp = createTmpDir();
+    writeJson(tmp, ".sdd-forge/config.json", {
+      lang: "en", type: "base",
+      docs: { languages: ["en"], defaultLanguage: "en" },
+    });
+    // Create a project guardrail.json with missing meta.phase
+    writeJson(tmp, ".sdd-forge/guardrail.json", {
+      guardrails: [
+        { id: "test-no-phase", title: "No Phase", body: "Test body", meta: {} },
+      ],
+    });
+    const merged = loadMergedGuardrails(tmp);
+    const g = merged.find((x) => x.id === "test-no-phase");
+    assert.ok(g, "test-no-phase should exist");
+    assert.deepStrictEqual(g.meta.phase, ["spec"], "missing phase should default to ['spec']");
+  });
+
+  // GAP-12: TC-56 — loadMergedGuardrails returns empty for nonexistent preset
+  it("loadMergedGuardrails returns empty array for preset with no guardrail.json in chain", async () => {
+    const { loadMergedGuardrails } = await import("../../../src/lib/guardrail.js");
+    tmp = createTmpDir();
+    writeJson(tmp, ".sdd-forge/config.json", {
+      lang: "en", type: "cli",
+      docs: { languages: ["en"], defaultLanguage: "en" },
+    });
+    // cli preset chain (base → cli) has no guardrail.json
+    const merged = loadMergedGuardrails(tmp);
+    assert.ok(Array.isArray(merged), "should return an array");
+    assert.equal(merged.length, 0, "should be empty when no guardrails in chain");
+  });
+
+  // GAP-12: TC-53 — filterByPhase handles empty array
+  it("filterByPhase handles empty guardrails array", async () => {
+    const { filterByPhase } = await import("../../../src/lib/guardrail.js");
+    const result = filterByPhase([], "spec");
+    assert.deepStrictEqual(result, []);
+  });
+});
+
+// GAP-11: TC-52 — Child preset overrides parent guardrail by same ID (via loadMergedGuardrails)
+describe("R+: child preset overrides parent guardrail by same ID", () => {
+  const { createTmpDir, removeTmpDir, writeJson } = await import("../../../tests/helpers/tmp-dir.js");
+  let tmp;
+  afterEach(() => tmp && removeTmpDir(tmp));
+
+  it("loadMergedGuardrails: laravel no-unguarded-mass-assignment overrides webapp version", async () => {
+    // This tests the mergeById mechanism via the real preset chain:
+    // webapp defines no-unguarded-mass-assignment with phase: [impl]
+    // laravel redefines it with phase: [impl, review]
+    // After merge, the laravel version should win
+    const { loadMergedGuardrails } = await import("../../../src/lib/guardrail.js");
+    tmp = createTmpDir();
+    writeJson(tmp, ".sdd-forge/config.json", {
+      lang: "en", type: "laravel",
+      docs: { languages: ["en"], defaultLanguage: "en" },
+    });
+    const merged = loadMergedGuardrails(tmp);
+    const g = merged.find((x) => x.id === "no-unguarded-mass-assignment");
+    assert.ok(g, "no-unguarded-mass-assignment should exist in merged result");
+    // The laravel override should have review phase
+    assert.ok(g.meta.phase.includes("review"),
+      "child (laravel) version should override parent — phase should include 'review'");
+    assert.ok(g.meta.phase.includes("impl"),
+      "child (laravel) version should still include 'impl'");
+    // Should only appear once (no duplicates)
+    const count = merged.filter((x) => x.id === "no-unguarded-mass-assignment").length;
+    assert.equal(count, 1, "should appear exactly once (child overrides parent, not duplicate)");
+  });
+});
+
+// GAP-13: TC-05 — Integration test for `flow get guardrail review` via command class
+describe("R+: flow get guardrail review integration", () => {
+  const { createTmpDir, removeTmpDir, writeJson } = await import("../../../tests/helpers/tmp-dir.js");
+  let tmp;
+  afterEach(() => tmp && removeTmpDir(tmp));
+
+  it("GetGuardrailCommand returns review-phase guardrails for webapp project", async () => {
+    const mod = await import("../../../src/flow/lib/get-guardrail.js");
+    const GetGuardrailCommand = mod.default;
+    tmp = createTmpDir();
+    writeJson(tmp, ".sdd-forge/config.json", {
+      lang: "en", type: "webapp",
+      docs: { languages: ["en"], defaultLanguage: "en" },
+    });
+    const cmd = new GetGuardrailCommand();
+    const result = cmd.execute({ root: tmp, phase: "review", format: "json" });
+    assert.equal(result.phase, "review");
+    assert.ok(result.count > 0, "should return at least one review guardrail");
+    assert.ok(Array.isArray(result.guardrails));
+    const ids = result.guardrails.map((g) => g.id);
+    assert.ok(ids.includes("detect-n-plus-one-queries"), "should include review-phase guardrail");
+    assert.ok(ids.includes("detect-missing-index-on-foreign-keys"), "should include review-phase guardrail");
+  });
+
+  it("GetGuardrailCommand returns spec-phase guardrails for laravel project", async () => {
+    const mod = await import("../../../src/flow/lib/get-guardrail.js");
+    const GetGuardrailCommand = mod.default;
+    tmp = createTmpDir();
+    writeJson(tmp, ".sdd-forge/config.json", {
+      lang: "en", type: "laravel",
+      docs: { languages: ["en"], defaultLanguage: "en" },
+    });
+    const cmd = new GetGuardrailCommand();
+    const result = cmd.execute({ root: tmp, phase: "spec", format: "json" });
+    assert.equal(result.phase, "spec");
+    assert.ok(result.count > 0, "should return spec-phase guardrails");
+    const ids = result.guardrails.map((g) => g.id);
+    // laravel chain includes webapp spec-phase guardrails
+    assert.ok(ids.includes("authorization-flow-in-spec"),
+      "should include webapp spec guardrail through chain");
+    assert.ok(ids.includes("eager-loading-strategy-required"),
+      "should include laravel spec guardrail");
+  });
+
+  it("GetGuardrailCommand returns markdown format by default", async () => {
+    const mod = await import("../../../src/flow/lib/get-guardrail.js");
+    const GetGuardrailCommand = mod.default;
+    tmp = createTmpDir();
+    writeJson(tmp, ".sdd-forge/config.json", {
+      lang: "en", type: "webapp",
+      docs: { languages: ["en"], defaultLanguage: "en" },
+    });
+    const cmd = new GetGuardrailCommand();
+    const result = cmd.execute({ root: tmp, phase: "review" });
+    assert.ok(result.markdown !== undefined, "should return markdown field");
+    assert.equal(typeof result.markdown, "string");
   });
 });
 

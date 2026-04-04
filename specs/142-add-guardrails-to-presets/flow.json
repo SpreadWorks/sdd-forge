@@ -45,11 +45,11 @@
     },
     {
       "id": "gate-impl",
-      "status": "in_progress"
+      "status": "done"
     },
     {
       "id": "review",
-      "status": "in_progress"
+      "status": "done"
     },
     {
       "id": "finalize",
@@ -145,6 +145,8 @@
     }
   },
   "notes": [
-    "approach: Q&Aで要件整理してから仕様書作成"
+    "approach: Q&Aで要件整理してから仕様書作成",
+    "review: コードレビューを行い改善を自動で行う",
+    "finalize: すべて実行"
   ]
 }

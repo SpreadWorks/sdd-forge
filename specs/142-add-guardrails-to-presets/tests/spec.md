@@ -8,56 +8,46 @@
 
 - **TC-01: "review" が VALID_PHASES に含まれる**
   - Type: unit
-  - Input: `import { VALID_PHASES } from "src/flow/lib/phases.js"`
+  - Input: `VALID_PHASES` 配列を参照
   - Expected: `VALID_PHASES.includes("review")` が `true`
 
-- **TC-02: 既存フェーズが全て保持されている**
+- **TC-02: VALID_PHASES の要素数が 7 である**
   - Type: unit
-  - Input: `VALID_PHASES` を取得
-  - Expected: `["draft", "spec", "gate", "impl", "test", "lint", "review"]` の全要素が含まれ、長さが 7
+  - Input: `VALID_PHASES.length`
+  - Expected: `7`（draft, spec, gate, impl, test, lint, review）
 
-- **TC-03: VALID_PHASES が freeze されている**
+- **TC-03: VALID_PHASES の順序が正しい**
+  - Type: unit
+  - Input: `VALID_PHASES` 配列
+  - Expected: `["draft", "spec", "gate", "impl", "test", "lint", "review"]` と厳密一致
+
+- **TC-04: VALID_PHASES が freeze されている**
   - Type: unit
   - Input: `Object.isFrozen(VALID_PHASES)`
-  - Expected: `true`（既存の freeze が維持されている）
+  - Expected: `true`
 
-- **TC-04: `flow get guardrail review` がバリデーションエラーにならない**
+- **TC-05: `flow get guardrail review` がバリデーションを通過する**
   - Type: integration
-  - Input: フロー状態をセットアップし `flow run` で review フェーズの guardrail を取得
-  - Expected: エラーなく review フェーズの guardrail 一覧が返る
+  - Input: `sdd-forge flow get guardrail review` を実行（guardrail が存在するプロジェクトで）
+  - Expected: エラーなく結果を返す（review フェーズの guardrail が 0 件以上）
+
+- **TC-06: 無効なフェーズ名はバリデーションエラーになる**
+  - Type: unit
+  - Input: `GetGuardrailCommand.execute({ phase: "invalid" })`
+  - Expected: `unknown phase 'invalid'. valid: draft, spec, gate, impl, test, lint, review` エラー
 
 ---
 
 #### R1: webapp guardrail.json に 6 件追加
 
-- **TC-05: webapp/en guardrail.json に 6 件の新規 guardrail が存在する**
+- **TC-07: webapp/en guardrail.json に新規 6 件の ID が存在する**
   - Type: unit
-  - Input: `src/presets/webapp/templates/en/guardrail.json` を読み込み
-  - Expected: `guardrails` 配列に `authorization-flow-in-spec`, `queue-design-for-heavy-processing`, `cache-invalidation-strategy`, `no-queries-in-view-templates`, `detect-n-plus-one-queries`, `detect-missing-index-on-foreign-keys` の 6 ID が含まれる
+  - Input: `src/presets/webapp/templates/en/guardrail.json` をパース
+  - Expected: `authorization-flow-in-spec`, `queue-design-for-heavy-processing`, `cache-invalidation-strategy`, `no-queries-in-view-templates`, `detect-n-plus-one-queries`, `detect-missing-index-on-foreign-keys` の 6 ID がすべて存在
 
-- **TC-06: webapp/ja guardrail.json に同一 6 件の guardrail が存在する（R6）**
+- **TC-08: 各 guardrail の phase が仕様通りである（en）**
   - Type: unit
-  - Input: `src/presets/webapp/templates/ja/guardrail.json` を読み込み
-  - Expected: en と同一の 6 ID が含まれ、title/body が日本語
-
-- **TC-07: en/ja で guardrail ID の集合が一致する**
-  - Type: unit
-  - Input: en と ja の guardrail.json を読み込み、ID を Set 比較
-  - Expected: 両者が完全一致
-
-- **TC-08: 既存の webapp guardrail が保持されている**
-  - Type: unit
-  - Input: webapp/en guardrail.json の guardrails 配列
-  - Expected: 変更前に存在した guardrail ID が全て残っている（既存 8 件 + 新規 6 件 = 14 件）
-
-- **TC-09: 各 guardrail の phase が VALID_PHASES の範囲内**
-  - Type: unit
-  - Input: 新規 6 件の `meta.phase` 配列
-  - Expected: 全要素が `VALID_PHASES` に含まれる
-
-- **TC-10: phase 割り当てが仕様通り**
-  - Type: unit
-  - Input: 新規 6 件の `meta.phase`
+  - Input: webapp/en の各 guardrail の `meta.phase`
   - Expected:
     - `authorization-flow-in-spec` → `["spec"]`
     - `queue-design-for-heavy-processing` → `["spec"]`
@@ -66,72 +56,87 @@
     - `detect-n-plus-one-queries` → `["review"]`
     - `detect-missing-index-on-foreign-keys` → `["review"]`
 
-- **TC-11: webapp guardrail に FW 固有用語が含まれない**
+- **TC-09: webapp/en guardrail.json の合計件数が正しい**
   - Type: unit
-  - Input: 新規 6 件の title + body を結合した文字列
-  - Expected: `Eloquent`, `Laravel`, `Symfony`, `CakePHP`, `ActiveRecord` 等の FW 固有語が含まれない
+  - Input: webapp/en の guardrails 配列長
+  - Expected: 既存 8 件 + 新規 6 件 = 14 件
 
-- **TC-12: filterByPhase("review") で webapp の review guardrail が返る**
-  - Type: integration
-  - Input: webapp の全 guardrail を `filterByPhase(guardrails, "review")` に渡す
+- **TC-10: webapp の guardrail に FW 固有用語が含まれていない**
+  - Type: unit
+  - Input: 新規 6 件の `title` と `body` テキスト
+  - Expected: "Laravel", "Rails", "Django", "Express" 等の FW 名が含まれない
+
+- **TC-11: webapp 内で guardrail ID が重複していない**
+  - Type: unit
+  - Input: webapp/en の guardrails 配列から全 ID を抽出
+  - Expected: ID のユニーク数 === 配列長
+
+- **TC-12: filterByPhase で review フェーズに webapp の guardrail がフィルタされる**
+  - Type: unit
+  - Input: `filterByPhase(webappGuardrails, "review")`
   - Expected: `no-queries-in-view-templates`, `detect-n-plus-one-queries`, `detect-missing-index-on-foreign-keys` の 3 件が返る
 
-- **TC-13: filterByPhase("spec") で webapp の spec guardrail が返る**
-  - Type: integration
-  - Input: webapp の全 guardrail を `filterByPhase(guardrails, "spec")` に渡す
-  - Expected: 新規 3 件（`authorization-flow-in-spec`, `queue-design-for-heavy-processing`, `cache-invalidation-strategy`）+ 既存 spec フェーズ guardrail が返る
+- **TC-13: filterByPhase で spec フェーズに webapp の新規 guardrail がフィルタされる**
+  - Type: unit
+  - Input: `filterByPhase(webappGuardrails, "spec")`
+  - Expected: 新規 3 件（authorization-flow-in-spec, queue-design-for-heavy-processing, cache-invalidation-strategy）を含む
+
+- **TC-14: no-queries-in-view-templates が impl と review 両方のフェーズでヒットする**
+  - Type: unit
+  - Input: `filterByPhase(guardrails, "impl")` と `filterByPhase(guardrails, "review")`
+  - Expected: 両方の結果に `no-queries-in-view-templates` が含まれる
 
 ---
 
-#### R2: php-webapp guardrail.json を新規作成
+#### R2: php-webapp guardrail.json 新規作成
 
-- **TC-14: php-webapp/en guardrail.json が存在し 1 件含む**
+- **TC-15: php-webapp/templates/en/guardrail.json が存在する**
   - Type: unit
-  - Input: `src/presets/php-webapp/templates/en/guardrail.json` を読み込み
-  - Expected: `guardrails` 配列に `use-language-enum-for-fixed-values` が 1 件存在
+  - Input: `fs.existsSync("src/presets/php-webapp/templates/en/guardrail.json")`
+  - Expected: `true`
 
-- **TC-15: php-webapp/ja guardrail.json が存在し同一 ID を含む**
+- **TC-16: php-webapp/templates/ja/guardrail.json が存在する**
   - Type: unit
-  - Input: `src/presets/php-webapp/templates/ja/guardrail.json` を読み込み
-  - Expected: `use-language-enum-for-fixed-values` が 1 件存在し、title/body が日本語
+  - Input: `fs.existsSync("src/presets/php-webapp/templates/ja/guardrail.json")`
+  - Expected: `true`
 
-- **TC-16: php-webapp guardrail の phase が `["impl"]`**
+- **TC-17: php-webapp/en に use-language-enum-for-fixed-values が存在し phase が impl**
   - Type: unit
-  - Input: `use-language-enum-for-fixed-values` の `meta.phase`
-  - Expected: `["impl"]`
+  - Input: php-webapp/en/guardrail.json をパース
+  - Expected: `id: "use-language-enum-for-fixed-values"`, `meta.phase: ["impl"]` のエントリが 1 件
 
-- **TC-17: readWithFallback がテンプレートのみの php-webapp ディレクトリで正しく動作する**
-  - Type: integration
-  - Input: `readWithFallback(phpWebappPresetDir, "en")` を呼び出し
-  - Expected: guardrail.json が正しく読み込まれ null でない結果が返る
+- **TC-18: php-webapp guardrail.json の件数が 1 件**
+  - Type: unit
+  - Input: php-webapp/en の guardrails 配列長
+  - Expected: `1`
 
-- **TC-18: readWithFallback の言語フォールバック（php-webapp で ja → en）**
+- **TC-19: readWithFallback がテンプレートのみ（マークダウン章なし）の php-webapp ディレクトリで動作する**
   - Type: integration
-  - Input: ja の guardrail.json が存在する状態で `readWithFallback(dir, "ja")` を呼び出し
-  - Expected: ja 版が返る。ja を削除した場合は en にフォールバック
+  - Input: `readWithFallback(phpWebappPresetDir, "en")`
+  - Expected: guardrail 1 件を含むオブジェクトを返す（null ではない）
 
-- **TC-19: php-webapp プリセットチェーン（php-webapp → webapp → base）で guardrail がマージされる**
-  - Type: integration
-  - Input: `loadPresetGuardrails("php-webapp", "en")` を呼び出し
-  - Expected: php-webapp 固有 1 件 + webapp の guardrail + base の guardrail が全てマージされている
+- **TC-20: readWithFallback で php-webapp の ja を要求し、ja が存在する場合は ja を返す**
+  - Type: unit
+  - Input: `readWithFallback(phpWebappDir, "ja")`
+  - Expected: 日本語版の guardrail を返す（en へのフォールバックではない）
+
+- **TC-21: php-webapp guardrail.json が正しい JSON スキーマに準拠する**
+  - Type: unit
+  - Input: php-webapp/en/guardrail.json のパース結果
+  - Expected: `{ "guardrails": [{ "id": string, "title": string, "body": string, "meta": { "phase": string[] } }] }` 構造
 
 ---
 
 #### R3: laravel guardrail.json に 6 件追加
 
-- **TC-20: laravel/en guardrail.json に 6 件の新規 guardrail が存在する**
+- **TC-22: laravel/en guardrail.json に新規 6 件の ID が存在する**
   - Type: unit
-  - Input: `src/presets/laravel/templates/en/guardrail.json` を読み込み
-  - Expected: `eager-loading-strategy-required`, `enable-prevent-lazy-loading`, `use-query-scopes-for-reusable-conditions`, `use-enum-casting-in-eloquent`, `use-factory-for-test-data`, `invokeable-controller-for-single-action` の 6 ID
+  - Input: laravel/en/guardrail.json をパース
+  - Expected: `eager-loading-strategy-required`, `enable-prevent-lazy-loading`, `use-query-scopes-for-reusable-conditions`, `use-enum-casting-in-eloquent`, `use-factory-for-test-data`, `invokeable-controller-for-single-action` の 6 ID が存在
 
-- **TC-21: laravel/ja guardrail.json に同一 6 件が日本語で存在する（R6）**
+- **TC-23: 各 laravel guardrail の phase が仕様通り**
   - Type: unit
-  - Input: laravel/ja の guardrail.json を読み込み
-  - Expected: en と同一の 6 ID、title/body が日本語
-
-- **TC-22: laravel の phase 割り当てが仕様通り**
-  - Type: unit
-  - Input: 新規 6 件の `meta.phase`
+  - Input: laravel/en の各新規 guardrail の `meta.phase`
   - Expected:
     - `eager-loading-strategy-required` → `["spec"]`
     - `enable-prevent-lazy-loading` → `["impl"]`
@@ -140,20 +145,15 @@
     - `use-factory-for-test-data` → `["impl"]`
     - `invokeable-controller-for-single-action` → `["impl"]`
 
-- **TC-23: 既存の laravel guardrail が保持されている**
+- **TC-24: laravel/en guardrail.json の合計件数**
   - Type: unit
-  - Input: laravel/en guardrail.json の guardrails 配列
-  - Expected: 変更前に存在した guardrail ID が全て残っている
+  - Input: laravel/en の guardrails 配列長
+  - Expected: 既存 4 件 + 新規 6 件 = 10 件
 
-- **TC-24: laravel プリセットチェーンで guardrail が正しくマージされる**
-  - Type: integration
-  - Input: `loadPresetGuardrails("laravel", "en")` を呼び出し
-  - Expected: laravel 固有 + php-webapp の `use-language-enum-for-fixed-values` + webapp の guardrail + base の guardrail が全てマージ
-
-- **TC-25: laravel の body に Laravel 固有用語（Eloquent, with(), Model:: 等）が含まれる**
+- **TC-25: laravel 内で guardrail ID が重複していない**
   - Type: unit
-  - Input: laravel 固有 guardrail の body
-  - Expected: Eloquent, `with()/load()`, `Model::preventLazyLoading()` 等の Laravel 固有用語が適切に含まれている（webapp と違い FW 固有で正しい）
+  - Input: laravel/en の全 ID
+  - Expected: ユニーク
 
 ---
 
@@ -161,163 +161,186 @@
 
 - **TC-26: no-unguarded-mass-assignment の phase が `["impl", "review"]` に変更されている**
   - Type: unit
-  - Input: laravel/en の `no-unguarded-mass-assignment` の `meta.phase`
+  - Input: laravel/en の `no-unguarded-mass-assignment` エントリの `meta.phase`
   - Expected: `["impl", "review"]`
 
-- **TC-27: no-unguarded-mass-assignment の body にマイグレーション関連の文言が追記されている**
+- **TC-27: no-unguarded-mass-assignment の body にマイグレーション関連の追記がある**
   - Type: unit
   - Input: laravel/en の `no-unguarded-mass-assignment` の `body`
-  - Expected: `"$fillable"` および `"$guarded"` と `"migration"` を含む文言が追記されている
+  - Expected: `"When columns are added or modified in migrations, verify that the corresponding model's $fillable or $guarded is updated accordingly."` を含む
 
-- **TC-28: ja 版も同様に phase と body が更新されている（R6）**
+- **TC-28: no-unguarded-mass-assignment が review フェーズでフィルタされる**
   - Type: unit
-  - Input: laravel/ja の `no-unguarded-mass-assignment`
-  - Expected: phase が `["impl", "review"]`、body にマイグレーション関連の日本語文言が追記
+  - Input: `filterByPhase(laravelGuardrails, "review")`
+  - Expected: 結果に `no-unguarded-mass-assignment` を含む
 
-- **TC-29: filterByPhase("review") で no-unguarded-mass-assignment が返る**
-  - Type: integration
-  - Input: laravel の全 guardrail を `filterByPhase(guardrails, "review")` に渡す
-  - Expected: 結果に `no-unguarded-mass-assignment` が含まれる（+ 継承元 webapp の review guardrail も含まれる）
+- **TC-29: no-unguarded-mass-assignment が impl フェーズでも引き続きフィルタされる**
+  - Type: unit
+  - Input: `filterByPhase(laravelGuardrails, "impl")`
+  - Expected: 結果に `no-unguarded-mass-assignment` を含む
+
+- **TC-30: ja 版の no-unguarded-mass-assignment も同様に phase が更新されている**
+  - Type: unit
+  - Input: laravel/ja の `no-unguarded-mass-assignment` の `meta.phase`
+  - Expected: `["impl", "review"]`
 
 ---
 
 #### R5: NOTICE ファイルの作成
 
-- **TC-30: webapp/NOTICE が存在し正しいフォーマット**
+- **TC-31: webapp/NOTICE が存在する**
   - Type: unit
-  - Input: `src/presets/webapp/NOTICE` を読み込み
-  - Expected: ヘッダー行 `"This preset contains guardrail articles inspired by the following sources."` で始まり、`---` 区切りで 4 ブロック存在
+  - Input: `fs.existsSync("src/presets/webapp/NOTICE")`
+  - Expected: `true`
 
-- **TC-31: webapp/NOTICE のライセンスグループ順序**
+- **TC-32: php-webapp/NOTICE が存在する**
   - Type: unit
-  - Input: NOTICE 内のブロック順序
-  - Expected: CC0-1.0 グループ（PatrickJS, sanjeed5 のアルファベット順）→ MIT グループ（iSerter, VoltAgent のアルファベット順）
+  - Input: `fs.existsSync("src/presets/php-webapp/NOTICE")`
+  - Expected: `true`
 
-- **TC-32: php-webapp/NOTICE が存在し正しいフォーマット**
+- **TC-33: laravel/NOTICE が存在する**
   - Type: unit
-  - Input: `src/presets/php-webapp/NOTICE` を読み込み
-  - Expected: 2 ブロック（CC0-1.0: PatrickJS → MIT: pekral）
+  - Input: `fs.existsSync("src/presets/laravel/NOTICE")`
+  - Expected: `true`
 
-- **TC-33: laravel/NOTICE が存在し正しいフォーマット**
+- **TC-34: NOTICE ファイルが所定のプリアンブルで始まる**
   - Type: unit
-  - Input: `src/presets/laravel/NOTICE` を読み込み
-  - Expected: 5 ブロック（CC0-1.0: PatrickJS, sanjeed5 → MIT: AratKruglik, laravel/boost, pekral のアルファベット順）
+  - Input: 各 NOTICE ファイルの先頭行
+  - Expected: `"This preset contains guardrail articles inspired by the following sources."` で始まる
 
-- **TC-34: 各 NOTICE の Affected articles が実在する guardrail ID を参照している**
+- **TC-35: webapp/NOTICE に指定された 4 出典が全て記載されている**
+  - Type: unit
+  - Input: webapp/NOTICE のテキスト
+  - Expected: `sanjeed5/awesome-cursor-rules-mdc`, `PatrickJS/awesome-cursorrules`, `iSerter/laravel-claude-agents`, `VoltAgent/awesome-claude-code-subagents` の 4 リポジトリが `Original source:` 行に存在
+
+- **TC-36: php-webapp/NOTICE に指定された 2 出典が全て記載されている**
+  - Type: unit
+  - Input: php-webapp/NOTICE のテキスト
+  - Expected: `pekral/cursor-rules`, `PatrickJS/awesome-cursorrules` の 2 リポジトリ
+
+- **TC-37: laravel/NOTICE に指定された 5 出典が全て記載されている**
+  - Type: unit
+  - Input: laravel/NOTICE のテキスト
+  - Expected: `laravel/boost`, `sanjeed5/awesome-cursor-rules-mdc`, `pekral/cursor-rules`, `PatrickJS/awesome-cursorrules`, `AratKruglik/claude-laravel` の 5 リポジトリ
+
+- **TC-38: NOTICE の各ブロックに Affected articles が存在する**
+  - Type: unit
+  - Input: 各 NOTICE を `---` で分割した各ブロック（プリアンブル除く）
+  - Expected: 各ブロックに `Affected articles:` セクションがあり、1 件以上の `- <guardrail-id>` がある
+
+- **TC-39: NOTICE の Affected articles に記載された guardrail ID がそのプリセットの guardrail.json に実在する**
   - Type: integration
-  - Input: NOTICE から Affected articles の ID を抽出し、対応する guardrail.json の ID と照合
-  - Expected: 全ての Affected articles ID が該当プリセット（または継承元）の guardrail.json に存在する
+  - Input: 各 NOTICE から ID を抽出し、対応する guardrail.json の ID セットと照合
+  - Expected: NOTICE 内の全 ID が guardrail.json に存在する（孤立した参照がない）
 
-- **TC-35: NOTICE 内の各ブロックに必須フィールドが含まれている**
+- **TC-40: NOTICE の各ブロックに License 行と URL が含まれる**
   - Type: unit
-  - Input: 各 NOTICE ファイルの全ブロック
-  - Expected: 各ブロックに `Affected articles:`, `Original source:`, `License:` が存在
+  - Input: 各ブロックの `License:` 行
+  - Expected: `License: <name> (<url>)` 形式。URL は `http` で始まる
 
-- **TC-36: License フィールドに URL が含まれている**
+- **TC-41: webapp/NOTICE のライセンスグループ内でリポジトリ名がアルファベット順**
   - Type: unit
-  - Input: 各 NOTICE の License 行
-  - Expected: `License: <name> (<url>)` の形式で URL が括弧内に含まれている
+  - Input: webapp/NOTICE のブロック順序
+  - Expected: CC0-1.0 グループ内で `PatrickJS/awesome-cursorrules` < `sanjeed5/awesome-cursor-rules-mdc`、MIT グループ内で `iSerter/laravel-claude-agents` < `VoltAgent/awesome-claude-code-subagents` のアルファベット順
+
+- **TC-42: NOTICE のブロックがライセンス種別でグループ化されている**
+  - Type: unit
+  - Input: 各 NOTICE のブロック順
+  - Expected: 同一ライセンスのブロックが連続している（ライセンス種別が交互に出現しない）
 
 ---
 
-#### R6: en/ja 両言語整合性（横断）
+#### R6: en/ja 両言語の対称性
 
-- **TC-37: webapp en/ja の guardrail ID 集合が一致**
+- **TC-43: webapp の en と ja で guardrail ID セットが一致する**
   - Type: unit
-  - Input: webapp の en/ja guardrail.json の ID 一覧
-  - Expected: 完全一致
+  - Input: webapp/en と webapp/ja の guardrails 配列から ID を抽出
+  - Expected: 同一の ID セット（順序不問）
 
-- **TC-38: php-webapp en/ja の guardrail ID 集合が一致**
+- **TC-44: php-webapp の en と ja で guardrail ID セットが一致する**
   - Type: unit
-  - Input: php-webapp の en/ja guardrail.json の ID 一覧
-  - Expected: 完全一致
+  - Input: php-webapp/en と php-webapp/ja の ID セット
+  - Expected: 同一
 
-- **TC-39: laravel en/ja の guardrail ID 集合が一致**
+- **TC-45: laravel の en と ja で guardrail ID セットが一致する**
   - Type: unit
-  - Input: laravel の en/ja guardrail.json の ID 一覧
-  - Expected: 完全一致
+  - Input: laravel/en と laravel/ja の ID セット
+  - Expected: 同一
 
-- **TC-40: 全プリセットで en/ja の meta.phase が ID ごとに一致**
+- **TC-46: en と ja で各 guardrail の phase が一致する**
   - Type: unit
-  - Input: webapp, php-webapp, laravel 各プリセットの en/ja guardrail を ID で突合
-  - Expected: 同一 ID の `meta.phase` が en と ja で完全一致
+  - Input: 全プリセット（webapp, php-webapp, laravel）で各 ID ごとに en/ja の `meta.phase` を比較
+  - Expected: 全 ID で `meta.phase` が完全一致
 
-- **TC-41: ja の title/body が日本語文字を含む**
+- **TC-47: ja の guardrail body が日本語で記述されている**
   - Type: unit
-  - Input: webapp, php-webapp, laravel の ja guardrail.json の全エントリ
-  - Expected: 各エントリの title または body にひらがな・カタカナ・漢字（`/[\u3040-\u9FFF]/`）が含まれる
+  - Input: 新規追加された ja guardrail の `body`
+  - Expected: 日本語文字（ひらがな・カタカナ・漢字）を含む
+
+- **TC-48: en の guardrail body が英語で記述されている**
+  - Type: unit
+  - Input: 新規追加された en guardrail の `body`
+  - Expected: 日本語文字を含まない
 
 ---
 
-#### エッジケース・境界条件
+#### プリセット継承チェーンの統合テスト
 
-- **TC-42: guardrail.json が空の guardrails 配列の場合**
-  - Type: unit
-  - Input: `{ "guardrails": [] }` を持つ guardrail.json を readWithFallback で読み込み
-  - Expected: null ではなく空配列として正常に返る
-
-- **TC-43: phase が複数指定されている guardrail の filterByPhase**
-  - Type: unit
-  - Input: `meta.phase: ["impl", "review"]` の guardrail を `filterByPhase(gs, "impl")` と `filterByPhase(gs, "review")` 両方で呼び出し
-  - Expected: 両方のフィルタ結果に含まれる
-
-- **TC-44: guardrail ID の重複がない**
-  - Type: unit
-  - Input: 各プリセット（webapp, php-webapp, laravel）の guardrail.json
-  - Expected: 同一ファイル内に同一 ID が 2 回以上出現しない
-
-- **TC-45: 子プリセットが親と同一 ID の guardrail を持つ場合のオーバーライド**
+- **TC-49: laravel の loadMergedGuardrails が base → webapp → php-webapp → laravel の全 guardrail をマージする**
   - Type: integration
-  - Input: laravel の `no-unguarded-mass-assignment`（R4 で変更）がチェーンマージされる
-  - Expected: laravel 版が webapp/base 版をオーバーライドし、phase `["impl", "review"]` が適用される
+  - Input: type=laravel のプロジェクトで `loadMergedGuardrails(root)` を実行
+  - Expected: webapp の guardrail（14 件）+ php-webapp（1 件）+ laravel（10 件）+ base 分がすべてマージされ、ID 重複なく返る
 
-- **TC-46: 存在しない phase で filterByPhase を呼んだ場合**
-  - Type: unit
-  - Input: `filterByPhase(guardrails, "nonexistent")`
-  - Expected: 空配列が返る（エラーにならない）
+- **TC-50: php-webapp の loadMergedGuardrails が webapp の guardrail を継承する**
+  - Type: integration
+  - Input: type=php-webapp のプロジェクトで `loadMergedGuardrails(root)` を実行
+  - Expected: webapp の 14 件 + php-webapp の 1 件が含まれる
 
----
+- **TC-51: laravel で review フェーズの guardrail を取得すると継承チェーン全体から集まる**
+  - Type: integration
+  - Input: type=laravel で `flow get guardrail review`
+  - Expected: webapp 由来の 3 件（no-queries-in-view-templates, detect-n-plus-one-queries, detect-missing-index-on-foreign-keys）+ laravel 由来の 1 件（no-unguarded-mass-assignment）= 4 件
 
-#### エラーパス
-
-- **TC-47: guardrail.json の JSON が不正な場合**
-  - Type: unit
-  - Input: 構文エラーのある JSON ファイルを readWithFallback で読み込み
-  - Expected: パースエラーが throw される（静かに無視されない）
-
-- **TC-48: templates ディレクトリのみ存在し guardrail.json がない場合**
-  - Type: unit
-  - Input: `templates/en/` ディレクトリが存在するが guardrail.json がないプリセット
-  - Expected: readWithFallback が `null` を返す
+- **TC-52: 子プリセットが親の guardrail を同一 ID で上書きできる**
+  - Type: integration
+  - Input: 親と子で同一 ID の guardrail を定義した場合の `mergeById` 結果
+  - Expected: 子の定義が優先される
 
 ---
 
-#### 受け入れテスト
+#### エラーパス・境界条件
 
-- **TC-49: laravel プリセットで flow get guardrail review を実行**
-  - Type: acceptance
-  - Input: laravel プリセットを設定した環境で `sdd-forge flow run gate` 相当の処理を実行し review フェーズ guardrail を取得
-  - Expected: webapp 継承分（`no-queries-in-view-templates`, `detect-n-plus-one-queries`, `detect-missing-index-on-foreign-keys`）+ laravel 固有分（`no-unguarded-mass-assignment`）が review フェーズとして出力される
+- **TC-53: guardrail.json が不正な JSON の場合エラーになる**
+  - Type: unit
+  - Input: `loadGuardrailFile()` に不正 JSON のパスを渡す
+  - Expected: JSON パースエラー
 
-- **TC-50: php-webapp プリセットで全フェーズ guardrail が親チェーンから正しく集約される**
-  - Type: acceptance
-  - Input: php-webapp プリセットの全 guardrail を取得
-  - Expected: base guardrail + webapp guardrail（14 件）+ php-webapp 固有（1 件）が全て含まれ、ID 重複なし
+- **TC-54: guardrails 配列が空の guardrail.json でも正常に処理される**
+  - Type: unit
+  - Input: `{ "guardrails": [] }` の guardrail.json
+  - Expected: 空配列が返り、エラーにならない
+
+- **TC-55: meta.phase が未指定の guardrail にデフォルト phase が適用される**
+  - Type: unit
+  - Input: `meta.phase` を省略した guardrail エントリ
+  - Expected: hydrate 後に `DEFAULT_PHASE`（`["spec"]`）が適用される
+
+- **TC-56: 存在しないプリセットで readWithFallback が null を返す**
+  - Type: unit
+  - Input: `readWithFallback("/nonexistent/path", "en")`
+  - Expected: `null`
+
+- **TC-57: NOTICE の Affected articles に guardrail.json に存在しない ID がない（逆方向チェック）**
+  - Type: integration
+  - Input: guardrail.json の全 ID のうち、NOTICE のどのブロックにも記載されていない ID
+  - Expected: NOTICE は出典のある guardrail のみを記載するため、全 ID が NOTICE に載る必要はない（エラーではない）が、NOTICE 内の ID は必ず guardrail.json に実在すること（TC-39 の再確認）
 
 ---
 
-### Summary
+#### テストタイプバランスまとめ
 
-| Type | Count |
-|------|-------|
-| Unit | 36 |
-| Integration | 10 |
-| Acceptance | 2 |
-| **Total** | **48** |
-
-**カバレッジの注目点:**
-- **R0** は R1/R3/R4 の前提条件のため、TC-04 で integration レベルで動作確認
-- **R2** は新規ディレクトリ作成を伴うため、`readWithFallback` のパス探索を重点的にテスト（TC-17〜19）
-- **R4** はオーバーライドの挙動が重要なため、チェーンマージのテスト（TC-45）を含む
-- **R5** はファイルフォーマットの検証が主体のため unit テスト中心。Affected articles の実在確認（TC-34）を integration で補完
-- **R6** は各 R1〜R4 のテスト内に組み込みつつ、TC-37〜41 で横断的に検証
+| Type | Count | Coverage |
+|------|-------|----------|
+| **Unit** | 42 | 静的ファイル検証、JSON スキーマ、phase マッピング、ID 一意性、言語対称性、NOTICE フォーマット |
+| **Integration** | 14 | readWithFallback、プリセット継承チェーン、filterByPhase × loadMergedGuardrails、`flow get guardrail` CLI |
+| **Acceptance** | 1 (TC-05) | エンドツーエンドでの `flow get guardrail review` 実行 |
