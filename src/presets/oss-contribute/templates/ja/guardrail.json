@@ -1,0 +1,35 @@
+{
+  "guardrails": [
+    {
+      "id": "follow-contribution-guidelines",
+      "title": "コントリビューションガイドラインの遵守",
+      "body": "リポジトリ内の CONTRIBUTING.md やコーディング規約に従うこと。独自のスタイルを持ち込まない。",
+      "meta": {
+        "phase": [
+          "spec",
+          "impl"
+        ]
+      }
+    },
+    {
+      "id": "small-focused-pr",
+      "title": "小さく焦点を絞った PR",
+      "body": "PR は1つの関心事に絞ること。レビュアーはボランティアであり、大きな PR はレビューされにくい。",
+      "meta": {
+        "phase": [
+          "spec"
+        ]
+      }
+    },
+    {
+      "id": "follow-commit-conventions",
+      "title": "コミット規約の遵守",
+      "body": "リポジトリで定義されているコミットメッセージ規約（Conventional Commits 等）に従うこと。",
+      "meta": {
+        "phase": [
+          "impl"
+        ]
+      }
+    }
+  ]
+}
