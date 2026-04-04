@@ -1,8 +1,9 @@
 {
   "data": {
     "implementation": {
-      "diffStat": "specs/142-add-guardrails-to-presets/draft.md       | 119 +++\n specs/142-add-guardrails-to-presets/flow.json      | 152 ++++\n specs/142-add-guardrails-to-presets/issue-log.json |  18 +\n specs/142-add-guardrails-to-presets/qa.md          |   9 +\n specs/142-add-guardrails-to-presets/review.md      |  49 ++\n specs/142-add-guardrails-to-presets/spec.md        | 201 +++++\n .../142-add-guardrails-to-presets/tests/README.md  |  26 +\n specs/142-add-guardrails-to-presets/tests/spec.md  | 346 ++++++++\n .../tests/verify-guardrails.test.js                | 913 +++++++++++++++++++++\n src/flow/lib/phases.js                             |   1 +\n src/presets/laravel/NOTICE                         |  51 ++\n src/presets/laravel/templates/en/guardrail.json    |  63 +-\n src/presets/laravel/templates/ja/guardrail.json    |  71 +-\n src/presets/php-webapp/NOTICE                      |  17 +\n src/presets/php-webapp/templates/en/guardrail.json |  14 +\n src/presets/php-webapp/templates/ja/guardrail.json |  14 +\n src/presets/webapp/NOTICE                          |  39 +\n src/presets/webapp/templates/en/guardrail.json     |  61 ++\n src/presets/webapp/templates/ja/guardrail.json     |  61 ++\n 19 files changed, 2219 insertions(+), 6 deletions(-)",
+      "diffStat": "specs/142-add-guardrails-to-presets/draft.md       | 119 +++\n specs/142-add-guardrails-to-presets/flow.json      | 152 ++++\n specs/142-add-guardrails-to-presets/issue-log.json |  42 +-\n specs/142-add-guardrails-to-presets/qa.md          |   9 +\n specs/142-add-guardrails-to-presets/report.json    |  38 +\n specs/142-add-guardrails-to-presets/retro.json     |  83 ++\n specs/142-add-guardrails-to-presets/review.md      |  49 ++\n specs/142-add-guardrails-to-presets/spec.md        | 201 +++++\n .../142-add-guardrails-to-presets/tests/README.md  |  26 +\n specs/142-add-guardrails-to-presets/tests/spec.md  | 346 ++++++++\n .../tests/verify-guardrails.test.js                | 913 +++++++++++++++++++++\n src/presets/laravel/NOTICE                         |  51 ++\n src/presets/laravel/templates/en/guardrail.json    |  63 +-\n src/presets/laravel/templates/ja/guardrail.json    |  71 +-\n src/presets/php-webapp/NOTICE                      |  17 +\n src/presets/php-webapp/templates/en/guardrail.json |  14 +\n src/presets/php-webapp/templates/ja/guardrail.json |  14 +\n src/presets/webapp/NOTICE                          |  39 +\n src/presets/webapp/templates/en/guardrail.json     |  61 ++\n src/presets/webapp/templates/ja/guardrail.json     |  61 ++\n 20 files changed, 2331 insertions(+), 38 deletions(-)",
       "commits": [
+        "chore: add retro and report",
         "feat: feature/142-add-guardrails-to-presets",
         "fix: sort php-webapp NOTICE groups (CC0 before MIT)",
         "fix: sort NOTICE groups by license (CC0 first) then alphabetically",
@@ -16,7 +17,7 @@
       "partial": 0,
       "not_done": 0,
       "rate": 1,
-      "notes": "全7要件（R0〜R6）が完全に満たされている。guardrail の ID・title・body・phase はすべて仕様通り。NOTICE ファイルのフォーマット・出典・ライセンスグループ順序も準拠。唯一の仕様外変更は laravel/ja の既存4件の ID 修正（en との不一致解消）で、これは品質改善として妥当。specs/ 配下のファイルは SDD フロー成果物であり問題なし。review.md に記載された6件の DRY 改善提案は本 feature の diff には含まれていない（提案のみ）。"
+      "notes": "全7要件（R0〜R6）が完全に満たされている。guardrail の ID・title・body・phase はすべて仕様と一致。NOTICE ファイルのフォーマット・出典・ライセンスグループ順序も仕様に準拠。唯一の仕様外変更は laravel/ja の既存4件の ID 修正（en との不一致解消）で、これは en/ja 対称性（R6）を担保するための品質改善として妥当。specs/ 配下のファイルはすべて SDD フロー成果物であり、実装品質に影響しない。"
     },
     "issueLog": {
       "count": 0,
@@ -34,5 +35,5 @@
       "reason": "sync was skipped"
     }
   },
-  "text": "  Report\n\n  Implementation\n  ────────────────────────────────────────────────\n    feat: feature/142-add-guardrails-to-presets\n    fix: sort php-webapp NOTICE groups (CC0 before MIT)\n    fix: sort NOTICE groups by license (CC0 first) then alphabetically\n    fix: reorder webapp NOTICE groups (CC0 before MIT)\n    feat: add guardrails to webapp, php-webapp, and laravel presets (#93)\n    19 files changed, 2219 insertions(+), 6 deletions(-)\n\n  Retro\n  ────────────────────────────────────────────────\n    ████████ 100%  (7 done / 0 partial / 0 miss)\n\n  Metrics\n  ────────────────────────────────────────────────\n    docs 2  src 0  Q&A 6  issues 2\n\n  Documents\n  ────────────────────────────────────────────────\n    skipped: sync was skipped"
+  "text": "  Report\n\n  Implementation\n  ────────────────────────────────────────────────\n    chore: add retro and report\n    feat: feature/142-add-guardrails-to-presets\n    fix: sort php-webapp NOTICE groups (CC0 before MIT)\n    fix: sort NOTICE groups by license (CC0 first) then alphabetically\n    fix: reorder webapp NOTICE groups (CC0 before MIT)\n    feat: add guardrails to webapp, php-webapp, and laravel presets (#93)\n    20 files changed, 2331 insertions(+), 38 deletions(-)\n\n  Retro\n  ────────────────────────────────────────────────\n    ████████ 100%  (7 done / 0 partial / 0 miss)\n\n  Metrics\n  ────────────────────────────────────────────────\n    docs 2  src 0  Q&A 6  issues 2\n\n  Documents\n  ────────────────────────────────────────────────\n    skipped: sync was skipped"
 }
