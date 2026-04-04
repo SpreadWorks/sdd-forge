@@ -1,0 +1,92 @@
+{
+  "spec": "specs/136-github-actions-preset/spec.md",
+  "date": "2026-04-04T08:34:55.587Z",
+  "requirements": [
+    {
+      "desc": "DataSource移動: ci/data/pipelines.js → github-actions/data/pipelines.js",
+      "status": "done",
+      "note": "git rename from ci/data/pipelines.js to github-actions/data/pipelines.js confirmed. Import paths unchanged (relative paths still valid). Comment updated from CI/CD to GitHub Actions."
+    },
+    {
+      "desc": "scan設定移動: ci → github-actions",
+      "status": "done",
+      "note": "ci/preset.json: scan block removed. github-actions/preset.json: scan.include added with .github/workflows/**/*.yml and .yaml patterns."
+    },
+    {
+      "desc": "ciテンプレート抽象化: {{text}} + {%block%}",
+      "status": "done",
+      "note": "Both en/ja ci_cd.md templates changed from {{data}} to {{text}} with prompt parameters. {%block%} directives retained. Each block (pipelines, jobs, env) now uses {{text}}."
+    },
+    {
+      "desc": "github-actionsテンプレート作成: {%extends%} + {{data}}",
+      "status": "done",
+      "note": "New en/ja ci_cd.md created under github-actions/templates/ with {%extends%} and {{data(\"github-actions.pipelines.*\")}} overrides for all three blocks."
+    },
+    {
+      "desc": "aliases削除: ci から github-actions を削除",
+      "status": "done",
+      "note": "ci/preset.json aliases changed from [\"github-actions\"] to []."
+    },
+    {
+      "desc": "移行手順明示: type ci → github-actions",
+      "status": "done",
+      "note": "Migration instructions documented in spec.md Impact on Existing Features section and draft.md."
+    },
+    {
+      "desc": "テストリネーム: ci-pipelines → github-actions-pipelines",
+      "status": "done",
+      "note": "File renamed from ci-pipelines.test.js to github-actions-pipelines.test.js. Import paths updated to github-actions/data/pipelines.js. Describe labels updated."
+    },
+    {
+      "desc": "全テストパス確認",
+      "status": "partial",
+      "note": "Test file changes look correct but the diff itself does not contain evidence of npm test execution results. issue-log.json notes tests passed with 0 failures but this is indirect evidence."
+    }
+  ],
+  "unplanned": [
+    {
+      "file": "specs/136-github-actions-preset/draft.md",
+      "change": "New draft document (part of SDD workflow, not a code change)"
+    },
+    {
+      "file": "specs/136-github-actions-preset/flow.json",
+      "change": "SDD flow state tracking file"
+    },
+    {
+      "file": "specs/136-github-actions-preset/issue-log.json",
+      "change": "Issue log for gate-impl false positive"
+    },
+    {
+      "file": "specs/136-github-actions-preset/qa.md",
+      "change": "Empty Q&A template (SDD workflow artifact)"
+    },
+    {
+      "file": "specs/136-github-actions-preset/review.md",
+      "change": "Code review results documenting 7 findings (4 approved, 3 rejected) — these are broader refactoring suggestions unrelated to this spec's scope"
+    },
+    {
+      "file": "specs/136-github-actions-preset/spec.md",
+      "change": "Feature specification document (SDD workflow artifact)"
+    },
+    {
+      "file": "specs/136-github-actions-preset/tests/README.md",
+      "change": "Test documentation for spec verification"
+    },
+    {
+      "file": "specs/136-github-actions-preset/tests/verify.test.js",
+      "change": "Spec verification test covering all requirements — useful but not explicitly required by the spec"
+    },
+    {
+      "file": "src/presets/github-actions/data/pipelines.js",
+      "change": "JSDoc comment changed from 'CI/CD pipelines' to 'GitHub Actions pipelines' — minor but not explicitly required"
+    }
+  ],
+  "summary": {
+    "total": 8,
+    "done": 7,
+    "partial": 1,
+    "not_done": 0,
+    "rate": 0.94,
+    "notes": "All 8 requirements are satisfied in the diff. The core implementation (DataSource move, scan config move, template abstraction, template inheritance, aliases removal, test rename) is complete and correct. The migration instructions are documented in spec artifacts. Test execution evidence is indirect (issue-log.json reference) rather than direct npm test output in the diff. The unplanned changes are all SDD workflow artifacts (specs/, review, verification tests) which are expected process outputs, not unintended code changes. The only actual code change not covered by requirements is the minor JSDoc comment update in pipelines.js."
+  }
+}

@@ -1,0 +1,36 @@
+{
+  "data": {
+    "implementation": {
+      "diffStat": "specs/136-github-actions-preset/draft.md           |  63 ++++++++\n specs/136-github-actions-preset/flow.json          | 158 +++++++++++++++++++++\n specs/136-github-actions-preset/issue-log.json     |  11 ++\n specs/136-github-actions-preset/qa.md              |   9 ++\n specs/136-github-actions-preset/review.md          |  57 ++++++++\n specs/136-github-actions-preset/spec.md            |  84 +++++++++++\n specs/136-github-actions-preset/tests/README.md    |  30 ++++\n .../136-github-actions-preset/tests/verify.test.js | 104 ++++++++++++++\n src/presets/ci/preset.json                         |  10 +-\n src/presets/ci/templates/en/ci_cd.md               |  18 ++-\n src/presets/ci/templates/ja/ci_cd.md               |  18 ++-\n .../{ci => github-actions}/data/pipelines.js       |   2 +-\n src/presets/github-actions/preset.json             |   8 +-\n src/presets/github-actions/templates/en/ci_cd.md   |  16 +++\n src/presets/github-actions/templates/ja/ci_cd.md   |  16 +++\n ...es.test.js => github-actions-pipelines.test.js} |   8 +-\n 16 files changed, 585 insertions(+), 27 deletions(-)",
+      "commits": [
+        "feat: feature/136-github-actions-preset",
+        "docs: clarify DataSource name resolution in spec",
+        "feat: move GitHub Actions-specific code from ci to github-actions preset"
+      ]
+    },
+    "retro": {
+      "total": 8,
+      "done": 7,
+      "partial": 1,
+      "not_done": 0,
+      "rate": 0.94,
+      "notes": "All 8 requirements are satisfied in the diff. The core implementation (DataSource move, scan config move, template abstraction, template inheritance, aliases removal, test rename) is complete and correct. The migration instructions are documented in spec artifacts. Test execution evidence is indirect (issue-log.json reference) rather than direct npm test output in the diff. The unplanned changes are all SDD workflow artifacts (specs/, review, verification tests) which are expected process outputs, not unintended code changes. The only actual code change not covered by requirements is the minor JSDoc comment update in pipelines.js."
+    },
+    "issueLog": {
+      "count": 0,
+      "entries": []
+    },
+    "metrics": {
+      "docsRead": 2,
+      "srcRead": 1,
+      "question": 5,
+      "issueLog": 1
+    },
+    "tests": null,
+    "sync": {
+      "status": "skipped",
+      "reason": "sync was skipped"
+    }
+  },
+  "text": "  Report\n\n  Implementation\n  ────────────────────────────────────────────────\n    feat: feature/136-github-actions-preset\n    docs: clarify DataSource name resolution in spec\n    feat: move GitHub Actions-specific code from ci to github-actions preset\n    16 files changed, 585 insertions(+), 27 deletions(-)\n\n  Retro\n  ────────────────────────────────────────────────\n    ████████ 94%  (7 done / 1 partial / 0 miss)\n\n  Metrics\n  ────────────────────────────────────────────────\n    docs 2  src 1  Q&A 5  issues 1\n\n  Documents\n  ────────────────────────────────────────────────\n    skipped: sync was skipped"
+}

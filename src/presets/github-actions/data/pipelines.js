@@ -1,5 +1,5 @@
 /**
- * PipelinesSource — CI/CD pipelines DataSource.
+ * PipelinesSource — GitHub Actions pipelines DataSource.
  *
  * Scans GitHub Actions workflow YAML files and provides
  * pipeline metadata as {{data}} directives.

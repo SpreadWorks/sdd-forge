@@ -10,18 +10,24 @@
 <!-- {%/block%} -->
 
 <!-- {%block "pipelines"%} -->
-<!-- {{data("ci.pipelines.list", {header: "## Pipelines\n", labels: "Name|File|Triggers|Jobs", ignoreError: true})}} -->
-<!-- {{/data}} -->
+## Pipelines
+
+<!-- {{text({prompt: "List the CI/CD pipelines in this project, including their names, files, triggers, and number of jobs."})}} -->
+<!-- {{/text}} -->
 <!-- {%/block%} -->
 
 <!-- {%block "jobs"%} -->
-<!-- {{data("ci.pipelines.jobs", {header: "## Job Details\n", labels: "Pipeline|Job|Runner|Steps|Dependencies", ignoreError: true})}} -->
-<!-- {{/data}} -->
+## Job Details
+
+<!-- {{text({prompt: "Describe the CI/CD jobs across all pipelines, including job names, runners, step counts, and dependencies."})}} -->
+<!-- {{/text}} -->
 <!-- {%/block%} -->
 
 <!-- {%block "env"%} -->
-<!-- {{data("ci.pipelines.env", {header: "## Secrets & Environment Variables\n", labels: "Pipeline|Secrets|Env Vars", ignoreError: true})}} -->
-<!-- {{/data}} -->
+## Secrets & Environment Variables
+
+<!-- {{text({prompt: "List the secrets and environment variables used across CI/CD pipelines."})}} -->
+<!-- {{/text}} -->
 <!-- {%/block%} -->
 
 <!-- {%/block%} -->

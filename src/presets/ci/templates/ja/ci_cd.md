@@ -10,18 +10,24 @@
 <!-- {%/block%} -->
 
 <!-- {%block "pipelines"%} -->
-<!-- {{data("ci.pipelines.list", {header: "## パイプライン\n", labels: "名前|ファイル|トリガー|ジョブ数", ignoreError: true})}} -->
-<!-- {{/data}} -->
+## パイプライン
+
+<!-- {{text({prompt: "このプロジェクトの CI/CD パイプラインを一覧にしてください。名前、ファイル、トリガー、ジョブ数を含めてください。"})}} -->
+<!-- {{/text}} -->
 <!-- {%/block%} -->
 
 <!-- {%block "jobs"%} -->
-<!-- {{data("ci.pipelines.jobs", {header: "## ジョブ詳細\n", labels: "パイプライン|ジョブ|ランナー|ステップ数|依存", ignoreError: true})}} -->
-<!-- {{/data}} -->
+## ジョブ詳細
+
+<!-- {{text({prompt: "全パイプラインの CI/CD ジョブを記述してください。ジョブ名、ランナー、ステップ数、依存関係を含めてください。"})}} -->
+<!-- {{/text}} -->
 <!-- {%/block%} -->
 
 <!-- {%block "env"%} -->
-<!-- {{data("ci.pipelines.env", {header: "## シークレットと環境変数\n", labels: "パイプライン|シークレット|環境変数", ignoreError: true})}} -->
-<!-- {{/data}} -->
+## シークレットと環境変数
+
+<!-- {{text({prompt: "CI/CD パイプラインで使用されているシークレットと環境変数を一覧にしてください。"})}} -->
+<!-- {{/text}} -->
 <!-- {%/block%} -->
 
 <!-- {%/block%} -->

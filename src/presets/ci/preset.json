@@ -1,15 +1,7 @@
 {
   "parent": "base",
   "label": "CI/CD",
-  "aliases": [
-    "github-actions"
-  ],
-  "scan": {
-    "include": [
-      ".github/workflows/**/*.yml",
-      ".github/workflows/**/*.yaml"
-    ]
-  },
+  "aliases": [],
   "chapters": [
     {
       "chapter": "overview.md",

@@ -1,5 +1,11 @@
 {
   "parent": "ci",
   "label": "GitHub Actions",
-  "aliases": []
+  "aliases": [],
+  "scan": {
+    "include": [
+      ".github/workflows/**/*.yml",
+      ".github/workflows/**/*.yaml"
+    ]
+  }
 }

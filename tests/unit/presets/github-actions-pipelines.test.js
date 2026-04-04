@@ -123,10 +123,10 @@ function setupProject(workflows) {
   return tmp;
 }
 
-describe("ci preset: scan/workflows.js", async () => {
+describe("github-actions preset: scan/workflows.js", async () => {
   // Dynamic import after file creation
   const { parseWorkflow } = await import(
-    "../../../src/presets/ci/data/pipelines.js"
+    "../../../src/presets/github-actions/data/pipelines.js"
   );
 
   describe("parseWorkflow", () => {
@@ -193,8 +193,8 @@ describe("ci preset: scan/workflows.js", async () => {
 // DataSource tests
 // ---------------------------------------------------------------------------
 
-describe("ci preset: data/pipelines.js", async () => {
-  const PipelinesSource = (await import("../../../src/presets/ci/data/pipelines.js")).default;
+describe("github-actions preset: data/pipelines.js", async () => {
+  const PipelinesSource = (await import("../../../src/presets/github-actions/data/pipelines.js")).default;
 
   const MOCK_ANALYSIS = {
     pipelines: {
