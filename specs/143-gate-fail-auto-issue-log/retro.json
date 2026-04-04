@@ -1,0 +1,43 @@
+{
+  "spec": "specs/143-gate-fail-auto-issue-log/spec.md",
+  "date": "2026-04-04T14:12:30.469Z",
+  "requirements": [
+    {
+      "desc": "gate FAIL 時に post hook で issue-log 自動記録",
+      "status": "done",
+      "note": "registry.js の post hook 内で result.result !== 'pass' を判定し、resolveGateStepId(ctx.phase) を step に、issues/reasons を reason に、'gate post hook (auto)' を trigger に設定して issue-log エントリを追加している。仕様通り。"
+    },
+    {
+      "desc": "gate クラッシュ時に onError hook で issue-log 記録",
+      "status": "done",
+      "note": "registry.js に onError hook が追加され、err.message を reason に、resolveGateStepId(ctx.phase) を step に、'gate onError hook (auto)' を trigger に設定して issue-log エントリを追加している。仕様通り。"
+    },
+    {
+      "desc": "gate PASS 時は issue-log に記録しない",
+      "status": "done",
+      "note": "post hook 内の issue-log 記録は if (result?.result !== 'pass') ガード内にあるため、PASS 時は実行されない。仕様通り。"
+    }
+  ],
+  "unplanned": [
+    {
+      "file": "src/flow/lib/run-finalize.js",
+      "change": "finalizeOnError に省略可能な trigger パラメータを追加し、catch 内を console.error に変更。spec の Implementation Notes に記載されている拡張だが、requirements リストには含まれていない。"
+    },
+    {
+      "file": "specs/143-gate-fail-auto-issue-log/tests/gate-hooks.test.js",
+      "change": "gate hooks の構造テスト追加（spec の Test Strategy に記載）"
+    },
+    {
+      "file": "specs/143-gate-fail-auto-issue-log/",
+      "change": "spec ファイル群（draft.md, spec.md, flow.json, issue-log.json, qa.md, tests/README.md）の追加。SDD フロー成果物。"
+    }
+  ],
+  "summary": {
+    "total": 3,
+    "done": 3,
+    "partial": 0,
+    "not_done": 0,
+    "rate": 1,
+    "notes": "3つの要件すべてが正確に実装されている。post hook は FAIL 時のみ issue-log を記録し、onError hook は gate クラッシュ時に記録し、PASS 時は何も記録しない。実装は spec の Implementation Notes に忠実で、worktree-safe パターン（ctx.mainRoot || ctx.root）、best-effort try/catch、issues→reasons フォールバックも含まれている。unplanned 変更は finalizeOnError の trigger パラメータ一般化のみで、これは spec に明記された関連改善。"
+  }
+}

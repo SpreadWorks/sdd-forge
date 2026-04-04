@@ -10,6 +10,7 @@
 
 import { updateStepStatus, incrementMetric, derivePhase, loadFlowState } from "../lib/flow-state.js";
 import { VALID_PHASES } from "./lib/phases.js";
+import { loadIssueLog, saveIssueLog } from "./lib/set-issue-log.js";
 
 /**
  * Load flow state and derive the current phase.
@@ -265,6 +266,37 @@ export const FLOW_COMMANDS = {
       post(ctx, result) {
         const status = result?.result === "pass" ? "done" : "in_progress";
         tryUpdateStepStatus(ctx.root, resolveGateStepId(ctx.phase), status);
+
+        // Auto-record issue-log on gate FAIL
+        if (result?.result !== "pass") {
+          try {
+            const logRoot = ctx.mainRoot || ctx.root;
+            const issueLog = loadIssueLog(logRoot, ctx.flowState?.spec);
+            const reasons = result?.artifacts?.issues?.length
+              ? result.artifacts.issues.join("; ")
+              : (result?.artifacts?.reasons || []).map(r => r.detail || r).join("; ");
+            issueLog.entries.push({
+              step: resolveGateStepId(ctx.phase),
+              reason: reasons || "gate FAIL (no details)",
+              trigger: "gate post hook (auto)",
+              timestamp: new Date().toISOString(),
+            });
+            saveIssueLog(logRoot, ctx.flowState?.spec, issueLog);
+          } catch (e) { console.error("[gate issue-log hook]", e.message); }
+        }
+      },
+      onError(ctx, err) {
+        try {
+          const logRoot = ctx.mainRoot || ctx.root;
+          const issueLog = loadIssueLog(logRoot, ctx.flowState?.spec);
+          issueLog.entries.push({
+            step: resolveGateStepId(ctx.phase),
+            reason: err.message || String(err),
+            trigger: "gate onError hook (auto)",
+            timestamp: new Date().toISOString(),
+          });
+          saveIssueLog(logRoot, ctx.flowState?.spec, issueLog);
+        } catch (e) { console.error("[gate issue-log hook]", e.message); }
       },
     },
     review: {

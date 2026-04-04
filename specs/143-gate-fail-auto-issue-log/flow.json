@@ -1,0 +1,125 @@
+{
+  "spec": "specs/143-gate-fail-auto-issue-log/spec.md",
+  "baseBranch": "main",
+  "featureBranch": "feature/143-gate-fail-auto-issue-log",
+  "steps": [
+    {
+      "id": "approach",
+      "status": "done"
+    },
+    {
+      "id": "branch",
+      "status": "done"
+    },
+    {
+      "id": "prepare-spec",
+      "status": "pending"
+    },
+    {
+      "id": "draft",
+      "status": "done"
+    },
+    {
+      "id": "gate-draft",
+      "status": "done"
+    },
+    {
+      "id": "spec",
+      "status": "done"
+    },
+    {
+      "id": "gate",
+      "status": "done"
+    },
+    {
+      "id": "approval",
+      "status": "done"
+    },
+    {
+      "id": "test",
+      "status": "done"
+    },
+    {
+      "id": "implement",
+      "status": "done"
+    },
+    {
+      "id": "gate-impl",
+      "status": "done"
+    },
+    {
+      "id": "review",
+      "status": "skipped"
+    },
+    {
+      "id": "finalize",
+      "status": "pending"
+    },
+    {
+      "id": "commit",
+      "status": "pending"
+    },
+    {
+      "id": "push",
+      "status": "pending"
+    },
+    {
+      "id": "merge",
+      "status": "pending"
+    },
+    {
+      "id": "pr-create",
+      "status": "pending"
+    },
+    {
+      "id": "branch-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "pr-merge",
+      "status": "pending"
+    },
+    {
+      "id": "sync-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "docs-update",
+      "status": "pending"
+    },
+    {
+      "id": "docs-review",
+      "status": "pending"
+    },
+    {
+      "id": "docs-commit",
+      "status": "pending"
+    }
+  ],
+  "requirements": [
+    {
+      "desc": "gate FAIL 時に post hook で issue-log 自動記録",
+      "status": "pending"
+    },
+    {
+      "desc": "gate クラッシュ時に onError hook で issue-log 記録",
+      "status": "pending"
+    },
+    {
+      "desc": "gate PASS 時は issue-log に記録しない",
+      "status": "pending"
+    }
+  ],
+  "issue": 89,
+  "request": "gate FAIL 時に issue-log を自動記録する post/onError フック",
+  "worktree": true,
+  "autoApprove": true,
+  "metrics": {
+    "draft": {
+      "srcRead": 1
+    },
+    "impl": {
+      "issueLog": 1
+    }
+  }
+}

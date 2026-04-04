@@ -1,0 +1,11 @@
+{
+  "entries": [
+    {
+      "step": "spec",
+      "reason": "spec review subprocess crashed during 3rd analysis iteration",
+      "trigger": "sdd-forge flow run review --phase spec",
+      "resolution": "spec was already updated by 2 iteration fixes. Proceeding with gate re-validation.",
+      "timestamp": "2026-04-04T14:05:12.991Z"
+    }
+  ]
+}
