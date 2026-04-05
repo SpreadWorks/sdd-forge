@@ -3,6 +3,8 @@
 !.sdd-forge/templates/
 !.sdd-forge/output/
 
+.codex
+
 node_modules
 /projects/
 /projects.json
