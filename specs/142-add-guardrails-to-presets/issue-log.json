@@ -47,6 +47,16 @@
       "reason": "R0 — VALID_PHASES に \"review\" を追加 — `src/flow/lib/phases.js` に \"review\" が追加されている; R1 — webapp/en guardrail.json に6件追加 — authorization-flow-in-spec, queue-design-for-heavy-processing, cache-invalidation-strategy, no-queries-in-view-templates, detect-n-plus-one-queries, detect-missing-index-on-foreign-keys の6件が追加されている; R1 — webapp/ja guardrail.json に6件追加 — 対応する日本語版6件が追加されている; R1 — webapp guardrail の phase 割り当て — 各 phase が仕様通り（spec×3, impl+review×1, review×2）; R1 — webapp guardrail に FW 固有用語なし — Eloquent/Laravel 等の語が含まれていない; R2 — php-webapp/en guardrail.json を新規作成し use-language-enum-for-fixed-values を追加 — 新規ファイルが作成されている; R2 — php-webapp/ja guardrail.json を新規作成 — 対応する日本語版が作成されている; R2 — use-language-enum-for-fixed-values の phase が impl — 仕様通り; R3 — laravel/en guardrail.json に6件追加 — eager-loading-strategy-required 等6件が追加されている; R3 — laravel/ja guardrail.json に6件追加（日本語） — 対応する日本語版6件が追加されている; R3 — laravel 新規6件の phase 割り当て — spec×1, impl×5 で仕様通り; R4 — no-unguarded-mass-assignment の phase を impl+review に変更 — en/ja 両方で `[\"impl\", \"review\"]` に更新されている; R4 — no-unguarded-mass-assignment の body にマイグレーション関連の文言を追記 — en/ja 両方で $fillable/$guarded とマイグレーション言及が追記されている; R5 — webapp/NOTICE を新規作成 — CC0/MIT グループ、Affected articles、Original source、License フォーマットで4ブロック作成されている; R5 — php-webapp/NOTICE を新規作成 — 2ブロック作成されている; R5 — laravel/NOTICE を新規作成 — 5ブロック作成されている; R5 — NOTICE のライセンスグループ順序 — webapp は CC0 (PatrickJS, sanjeed5) → MIT (iSerter, VoltAgent) の順で正しい; R5 — php-webapp/NOTICE のブロック順序 — 仕様では CC0: PatrickJS → MIT: pekral の順を想定するが、実際は MIT: pekral → CC0: PatrickJS の順になっており、CC0 ファーストの規則に違反している; R5 — laravel/NOTICE のブロック順序 — CC0 (PatrickJS, sanjeed5) → MIT (AratKruglik, laravel/boost, pekral) のアルファベット順で正しい; R5 — NOTICE の Affected articles が実在する guardrail ID を参照している — 各プリセットの guardrail.json に存在する ID のみ記載されている; R6 — en/ja 両言語で guardrail ID が対称 — webapp/php-webapp/laravel すべてで en と ja の ID 集合が一致している; R6 — en/ja で meta.phase が一致 — 各 ID の phase が en/ja 間で一致している; R6 — ja の title/body が日本語 — 各プリセットの ja guardrail に日本語が含まれている",
       "trigger": "gate post hook (auto)",
       "timestamp": "2026-04-04T15:24:47.601Z"
+    },
+    {
+      "step": "merge",
+      "reason": "Merge conflict detected. Run 'git rebase main' in the worktree and retry finalize.",
+      "timestamp": "2026-04-04T15:36:23.393Z"
+    },
+    {
+      "step": "merge",
+      "reason": "Merge conflict detected. Run 'git rebase main' in the worktree and retry finalize.",
+      "timestamp": "2026-04-04T15:37:41.969Z"
     }
   ]
 }

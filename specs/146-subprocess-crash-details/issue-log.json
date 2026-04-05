@@ -1,0 +1,33 @@
+{
+  "entries": [
+    {
+      "step": "gate-draft",
+      "reason": "missing development type (開発種別); missing goal (目的)",
+      "trigger": "gate post hook (auto)",
+      "timestamp": "2026-04-04T15:44:13.762Z"
+    },
+    {
+      "step": "gate",
+      "reason": "line 81: unchecked task/question (- [ ] なし)",
+      "trigger": "gate post hook (auto)",
+      "timestamp": "2026-04-04T15:45:34.660Z"
+    },
+    {
+      "step": "gate-impl",
+      "reason": "no changes found against base branch",
+      "trigger": "gate post hook (auto)",
+      "timestamp": "2026-04-05T01:02:20.310Z"
+    },
+    {
+      "step": "gate-impl",
+      "reason": "runCmd 返り値に signal/killed フィールド追加（成功時 null/false） — process.js の成功パスと catch パスの両方で signal/killed を返している; runCmdAsync 返り値に signal/killed フィールド追加（成功時 null/false） — success/error 両パスで signal/killed を返している; runCmdAsync status 型正規化（文字列 code → 1 フォールバック） — `typeof err.code === \"number\" ? err.code : 1` で文字列・null をフォールバック処理; formatError(res) を process.js に export — 関数追加・export 済み、パイプ区切り形式で signal/exit/stderr を結合; formatError の出力形式（signal あり killed あり） — `signal=SIGKILL (killed) | exit=137 | stderr` 形式を実装; formatError の出力形式（signal あり killed なし） — `signal=SIGTERM | exit=N` 形式（killed サフィックスなし）; formatError の stderr 空時省略 — `trimmed` が空のとき parts に追加しない; run — finalize.js commitOrSkip の throw に formatError 適用 — `throw new Error(\"commit failed: \" + formatError(res))`; run — finalize.js commitNote メタデータ記録に formatError 適用 — `results.report.commitNote = \"retro/report commit failed: \" + formatError(commitRes)`; run — finalize.js docs build 失敗パスに formatError 適用 — `throw new Error(\"docs build failed: \" + formatError(buildRes))`; run — gate.js git diff 失敗に formatError 適用 — `throw new Error(\"failed to get git diff: \" + formatError(diffRes))`; run — prepare-spec.js runGit ラッパーに formatError 適用 — `throw new Error(\\`git ... failed: \\` + formatError(res))`; run — review.js 汎用エラーパスに formatError 適用 — `throw new Error(\"review command failed: \" + formatError(res))`; run — sync.js docs build/review/commit エラーパスに formatError 適用 — 3 箇所すべて formatError 形式に置換; get — check.js checks[].message に formatError 適用 — `message: formatError(res)` に置換; get — issue.js throw に formatError 適用 — フォールバック `|| \"failed to fetch issue\"` を削除し `formatError` に統一; merge.js push/pr/commit/checkout エラーパスに formatError 適用 — フォールバック文字列を削除し 4 箇所を formatError 形式に統一; lint.js git diff 失敗に formatError 適用 — `throw new Error(\"git diff failed: \" + formatError(res))`; src/lib/cli.js のエラーメッセージ構築箇所に formatError 適用 — spec が「エラーメッセージ構築箇所あり」と明示しているが diff に cli.js の変更が含まれていない; runCmdWithRetry の signal 検出を res.signal || res.killed に置換 — 正規表現パースから フィールド参照に変更; runCmdWithRetry の JSDoc に signal/killed を追加 — @param と @returns 両方に型定義追加; formatError の呼び出し元フォールバック（|| \"...\"）削除 — merge.js・get-issue.js 等でフォールバック文字列を削除; テストに runCmd signal/killed フィールドのケースを追加 — 成功・失敗・シグナル kill・SIGKILL の各テスト追加; テストに runCmdAsync signal/killed/status 正規化のケースを追加 — ENOENT・maxBuffer・timeout kill・SIGKILL 等の境界条件テスト追加; テストに formatError ユニットテストを追加 — signal あり/なし・killed あり/なし・stderr あり/なし の各パターンを検証",
+      "trigger": "gate post hook (auto)",
+      "timestamp": "2026-04-05T01:03:46.253Z"
+    },
+    {
+      "step": "merge",
+      "reason": "Merge conflict detected. Run 'git rebase main' in the worktree and retry finalize.",
+      "timestamp": "2026-04-05T03:22:00.997Z"
+    }
+  ]
+}
