@@ -45,7 +45,7 @@
     },
     {
       "id": "gate-impl",
-      "status": "in_progress"
+      "status": "done"
     },
     {
       "id": "review",
@@ -127,7 +127,8 @@
     "draft Q2: process.js に formatError(res) ヘルパーを追加し、呼び出し元で統一的に使用する",
     "draft Q3: formatError はパイプ区切りスタイル（callAgentAsync と同じ）",
     "draft Q4: formatError を runCmd で ok===false のエラーメッセージ箇所全てに適用する",
-    "draft Q5: issue-log はスコープ外。formatError で改善されたメッセージが自然に --reason に含まれる"
+    "draft Q5: issue-log はスコープ外。formatError で改善されたメッセージが自然に --reason に含まれる",
+    "review: auto-fix review 実行、4件の修正案が approved"
   ],
   "metrics": {
     "plan": {
