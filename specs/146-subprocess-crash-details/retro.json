@@ -1,0 +1,61 @@
+{
+  "spec": "specs/146-subprocess-crash-details/spec.md",
+  "date": "2026-04-05T03:21:59.705Z",
+  "requirements": [
+    {
+      "desc": "runCmd 返り値に signal/killed 追加",
+      "status": "done",
+      "note": "runCmd の成功時は SUCCESS_BASE (signal:null, killed:false)、失敗時は normalizeErrorResult で signal/killed を設定。JSDoc も更新済み。"
+    },
+    {
+      "desc": "runCmdAsync 返り値に signal/killed 追加",
+      "status": "done",
+      "note": "runCmdAsync の成功時は SUCCESS_BASE、失敗時は normalizeErrorResult で統一。status の型正規化も normalizeErrorResult 内で typeof err.status === 'number' → typeof err.code === 'number' → 1 のフォールバックチェーンで実装済み。"
+    },
+    {
+      "desc": "formatError(res) ヘルパー関数を process.js に追加",
+      "status": "done",
+      "note": "src/lib/process.js に export function formatError(res) を追加。パイプ区切り形式、signal+killed表記、stderr省略、review指摘の || \"unknown error\" 防御コード削除済み。"
+    },
+    {
+      "desc": "ok===false のエラーメッセージ箇所全てで formatError 使用",
+      "status": "done",
+      "note": "merge.js (4箇所), get-check.js, get-issue.js, run-finalize.js (3箇所), run-gate.js, run-prepare-spec.js, run-review.js, run-sync.js (3箇所), cli.js, lint.js の全エラーメッセージ構築箇所で formatError に移行。フォールバック || パターンも削除済み。"
+    },
+    {
+      "desc": "runCmdWithRetry の signal 検出を res.signal/res.killed に置換",
+      "status": "done",
+      "note": "/killed|signal/i.test(stderr) を lastRes.signal || lastRes.killed に置換。JSDoc の @param と @returns に signal: string|null, killed: boolean を追加済み。"
+    }
+  ],
+  "unplanned": [
+    {
+      "file": "src/lib/process.js",
+      "change": "normalizeErrorResult 内部ヘルパー関数の追加（review指摘による runCmd/runCmdAsync 間の正規化ロジック共通化）"
+    },
+    {
+      "file": "src/lib/process.js",
+      "change": "SUCCESS_BASE 定数の追加（成功時の共通フィールドを DRY 化）"
+    },
+    {
+      "file": "src/flow/lib/run-sync.js",
+      "change": "review指摘に基づき buildOutput/reviewOutput の未使用変数を削除（dead code cleanup）"
+    },
+    {
+      "file": ".sdd-forge/output/analysis.json",
+      "change": "analyzedAt タイムスタンプの更新（sdd-forge scan 再実行による自動更新）"
+    },
+    {
+      "file": "specs/146-subprocess-crash-details/",
+      "change": "spec ディレクトリ一式（draft.md, flow.json, spec.md, qa.md, review.md, test-review.md, tests/）の追加 — SDD フローの成果物"
+    }
+  ],
+  "summary": {
+    "total": 5,
+    "done": 5,
+    "partial": 0,
+    "not_done": 0,
+    "rate": 1,
+    "notes": "5件の要件すべてが実装完了。runCmd/runCmdAsync の返り値に signal/killed を追加し、normalizeErrorResult で同期・非同期の正規化ロジックを共通化。formatError は仕様通りのパイプ区切り形式で実装。全エラーメッセージ構築箇所で formatError に移行済み。runCmdWithRetry の signal 検出はフィールド参照に置換。review 指摘の3件（normalizeErrorResult 抽出、未使用変数削除、防御コード削除）も反映済み。テストは TC-1〜TC-33 相当を網羅し、E2E・静的検証・回帰テストも含む。"
+  }
+}

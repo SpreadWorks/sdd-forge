@@ -1,0 +1,37 @@
+{
+  "data": {
+    "implementation": {
+      "diffStat": ".sdd-forge/output/analysis.json                    |   2 +-\n specs/146-subprocess-crash-details/draft.md        |  57 +++\n specs/146-subprocess-crash-details/flow.json       | 146 +++++++\n specs/146-subprocess-crash-details/issue-log.json  |  12 +\n specs/146-subprocess-crash-details/qa.md           |   9 +\n specs/146-subprocess-crash-details/review.md       |  49 +++\n specs/146-subprocess-crash-details/spec.md         | 119 ++++++\n specs/146-subprocess-crash-details/test-review.md  |  81 ++++\n specs/146-subprocess-crash-details/tests/README.md |  23 ++\n specs/146-subprocess-crash-details/tests/spec.md   | 204 +++++++++\n src/flow/commands/merge.js                         |  10 +-\n src/flow/lib/get-check.js                          |   4 +-\n src/flow/lib/get-issue.js                          |   4 +-\n src/flow/lib/run-finalize.js                       |   8 +-\n src/flow/lib/run-gate.js                           |   4 +-\n src/flow/lib/run-prepare-spec.js                   |   4 +-\n src/flow/lib/run-review.js                         |  13 +-\n src/flow/lib/run-sync.js                           |  18 +-\n src/lib/cli.js                                     |   4 +-\n src/lib/lint.js                                    |   4 +-\n src/lib/process.js                                 |  74 +++-\n tests/unit/lib/process.test.js                     | 454 ++++++++++++++++++++-\n 22 files changed, 1236 insertions(+), 67 deletions(-)",
+      "commits": [
+        "feat: feature/146-subprocess-crash-details",
+        "refactor: extract normalizeErrorResult helper and clean up test comments",
+        "fix: apply formatError to cli.js error message site",
+        "feat: add signal/killed to runCmd/runCmdAsync and formatError helper"
+      ]
+    },
+    "retro": {
+      "total": 5,
+      "done": 5,
+      "partial": 0,
+      "not_done": 0,
+      "rate": 1,
+      "notes": "5件の要件すべてが実装完了。runCmd/runCmdAsync の返り値に signal/killed を追加し、normalizeErrorResult で同期・非同期の正規化ロジックを共通化。formatError は仕様通りのパイプ区切り形式で実装。全エラーメッセージ構築箇所で formatError に移行済み。runCmdWithRetry の signal 検出はフィールド参照に置換。review 指摘の3件（normalizeErrorResult 抽出、未使用変数削除、防御コード削除）も反映済み。テストは TC-1〜TC-33 相当を網羅し、E2E・静的検証・回帰テストも含む。"
+    },
+    "issueLog": {
+      "count": 0,
+      "entries": []
+    },
+    "metrics": {
+      "docsRead": 2,
+      "srcRead": 4,
+      "question": 5,
+      "issueLog": 1
+    },
+    "tests": null,
+    "sync": {
+      "status": "skipped",
+      "reason": "sync was skipped"
+    }
+  },
+  "text": "  Report\n\n  Implementation\n  ────────────────────────────────────────────────\n    feat: feature/146-subprocess-crash-details\n    refactor: extract normalizeErrorResult helper and clean up test comments\n    fix: apply formatError to cli.js error message site\n    feat: add signal/killed to runCmd/runCmdAsync and formatError helper\n    22 files changed, 1236 insertions(+), 67 deletions(-)\n\n  Retro\n  ────────────────────────────────────────────────\n    ████████ 100%  (5 done / 0 partial / 0 miss)\n\n  Metrics\n  ────────────────────────────────────────────────\n    docs 2  src 4  Q&A 5  issues 1\n\n  Documents\n  ────────────────────────────────────────────────\n    skipped: sync was skipped"
+}
