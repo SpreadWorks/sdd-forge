@@ -40,7 +40,6 @@ describe("runCmd", () => {
     const result = runCmd("nonexistent_command_xyz_12345", []);
     assert.equal(result.ok, false);
     assert.notEqual(result.status, 0);
-    // GAP-2 (TC-05): ENOENT should have signal=null, killed=false
     assert.equal(result.signal, null);
     assert.equal(result.killed, false);
   });
@@ -91,7 +90,6 @@ describe("runCmd", () => {
     assert.equal(result.killed, false);
   });
 
-  // GAP-1 (TC-04): timeout sets signal="SIGTERM" specifically
   it("returns signal and killed=true when process is killed by timeout", () => {
     const result = runCmd("node", ["-e", "setTimeout(()=>{},10000)"], {
       timeout: 100,
@@ -102,9 +100,7 @@ describe("runCmd", () => {
     assert.equal(result.signal, "SIGTERM");
   });
 
-  // GAP-1 (TC-04): runCmd signal — execFileSync does not distinguish self-signal from parent-kill
-  // Note: execFileSync does not set e.killed property (unlike spawn). When signal is present
-  // and killed is undefined, we infer killed=true as a safe default.
+  // execFileSync does not set e.killed property — when signal is present, killed is inferred as true
   it("maps signal from exception object when process self-signals", () => {
     const result = runCmd("node", [
       "-e",
@@ -115,22 +111,16 @@ describe("runCmd", () => {
     // execFileSync lacks e.killed — inferred as true when signal is present
     assert.equal(result.killed, true);
   });
-
-  // GAP-3 (TC-03): runCmd SIGKILL signal verification
   it("returns SIGKILL signal when process is killed with SIGKILL", () => {
     const result = runCmd("node", ["-e", "process.kill(process.pid, 'SIGKILL')"]);
     assert.equal(result.ok, false);
     assert.equal(result.signal, "SIGKILL");
   });
-
-  // GAP-4 (TC-31/TC-32): Complete result shape regression test
   it("returns complete result shape with all fields (regression)", () => {
     const result = runCmd("echo", ["hello"]);
     const keys = Object.keys(result).sort();
     assert.deepEqual(keys, ["killed", "ok", "signal", "status", "stderr", "stdout"]);
   });
-
-  // GAP-5 (TC-06): normalizes undefined signal to null on non-zero exit
   it("normalizes undefined signal to null on non-zero exit", () => {
     const result = runCmd("node", ["-e", "process.exit(2)"]);
     assert.equal(result.signal, null, "signal should be null, not undefined");
@@ -145,8 +135,6 @@ describe("runCmdAsync", () => {
     assert.equal(result.status, 0);
     assert.match(result.stdout, /hello/);
   });
-
-  // GAP-3 (TC-07): runCmdAsync non-zero exit checks signal/killed/status
   it("returns ok=false for failing command", async () => {
     const result = await runCmdAsync("node", ["-e", "process.exit(1)"]);
     assert.equal(result.ok, false);
@@ -158,7 +146,6 @@ describe("runCmdAsync", () => {
   it("handles non-existent command gracefully", async () => {
     const result = await runCmdAsync("nonexistent_command_xyz_12345", []);
     assert.equal(result.ok, false);
-    // GAP-2 (TC-08): ENOENT should have signal=null, killed=false, status=1
     assert.equal(result.signal, null, "ENOENT should have signal=null");
     assert.equal(result.killed, false, "ENOENT should have killed=false");
     assert.equal(result.status, 1, "ENOENT should fall back to status=1");
@@ -187,23 +174,17 @@ describe("runCmdAsync", () => {
     const result = await runCmdAsync("nonexistent_command_xyz_12345", []);
     assert.equal(typeof result.status, "number");
   });
-
-  // GAP-3 (TC-12): runCmdAsync numeric status passthrough (err.status as number)
   it("returns err.status as-is when it is numeric (e.g. 130)", async () => {
     // Simulate Ctrl+C by sending SIGINT to self
     const result = await runCmdAsync("node", ["-e", "process.kill(process.pid, 'SIGINT')"]);
     assert.equal(result.ok, false);
     assert.equal(typeof result.status, "number");
   });
-
-  // GAP-6 (TC-11): runCmdAsync signal string when process exits via signal (non-timeout)
   it("returns signal string when process exits via signal (non-timeout)", async () => {
     const result = await runCmdAsync("node", ["-e", "process.kill(process.pid, 'SIGTERM')"]);
     assert.equal(result.ok, false);
     assert.equal(typeof result.signal, "string");
   });
-
-  // GAP-4 (TC-09): runCmdAsync maxBuffer overflow status normalization
   it("returns status=1 when maxBuffer is exceeded", async () => {
     const result = await runCmdAsync("node", [
       "-e",
@@ -214,8 +195,6 @@ describe("runCmdAsync", () => {
     // err.code is "ERR_CHILD_PROCESS_STDIO_MAXBUFFER" (a string), should fall back to 1
     assert.equal(result.status, 1);
   });
-
-  // GAP-5 (TC-10): runCmdAsync killed=true with code=null status fallback
   it("returns status=1 and killed=true when process is killed by timeout", async () => {
     const result = await runCmdAsync("node", [
       "-e",
@@ -227,23 +206,17 @@ describe("runCmdAsync", () => {
     assert.equal(result.killed, true);
     assert.equal(typeof result.signal, "string");
   });
-
-  // GAP-4 (TC-10): runCmdAsync SIGKILL — verifies signal field for async SIGKILL
   // This complements the sync SIGKILL test to ensure both paths expose the signal.
   it("returns SIGKILL signal when process is killed with SIGKILL (async)", async () => {
     const result = await runCmdAsync("node", ["-e", "process.kill(process.pid, 'SIGKILL')"]);
     assert.equal(result.ok, false);
     assert.equal(result.signal, "SIGKILL");
   });
-
-  // GAP-4 (TC-31/TC-32): Complete result shape regression test (async)
   it("returns complete result shape with all fields (regression)", async () => {
     const result = await runCmdAsync("echo", ["hello"]);
     const keys = Object.keys(result).sort();
     assert.deepEqual(keys, ["killed", "ok", "signal", "status", "stderr", "stdout"]);
   });
-
-  // GAP-5 (TC-14): status is always number type across all failure scenarios
   it("status is always number type across all failure scenarios", async () => {
     const cases = [
       await runCmdAsync("node", ["-e", "process.exit(1)"]),
@@ -277,8 +250,6 @@ describe("formatError", () => {
     assert.match(msg, /signal=SIGTERM/);
     assert.ok(!msg.includes("(killed)"));
   });
-
-  // GAP-1 (TC-14): formatError signal+killed=false with non-empty stderr and numeric status
   it("formats signal without killed flag but with stderr and status", () => {
     const res = { ok: false, status: 143, stderr: "terminated", signal: "SIGTERM", killed: false };
     const msg = formatError(res);
@@ -308,22 +279,16 @@ describe("formatError", () => {
     assert.ok(!msg.endsWith(" "));
     assert.ok(!msg.endsWith("\n"));
   });
-
-  // GAP-6 (TC-15): formatError signal+killed with empty stderr
   it("omits stderr when signal present but stderr empty", () => {
     const res = { ok: false, status: 137, stderr: "", signal: "SIGKILL", killed: true };
     const msg = formatError(res);
     assert.equal(msg, "signal=SIGKILL (killed) | exit=137");
   });
-
-  // GAP-7 (TC-18): formatError whitespace-only stderr treated as empty
   it("treats whitespace-only stderr as empty", () => {
     const res = { ok: false, status: 2, stderr: "  \n  ", signal: null, killed: false };
     const msg = formatError(res);
     assert.equal(msg, "exit=2");
   });
-
-  // GAP-8 (TC-19/TC-23): formatError multiline stderr preserves all content
   it("includes multiline stderr content", () => {
     const res = { ok: false, status: 1, stderr: "line1\nline2\nline3", signal: null, killed: false };
     const msg = formatError(res);
@@ -332,15 +297,11 @@ describe("formatError", () => {
     assert.match(msg, /line2/);
     assert.match(msg, /line3/);
   });
-
-  // GAP-9 (TC-20): formatError with status=0
   it("formats status=0 result", () => {
     const res = { ok: true, status: 0, stderr: "", signal: null, killed: false };
     const msg = formatError(res);
     assert.equal(msg, "exit=0");
   });
-
-  // GAP-4 (TC-39): formatError output is non-empty and suitable for Error message concatenation
   it("formatError output is non-empty and suitable for Error message concatenation", () => {
     const cases = [
       { ok: false, status: 1, stderr: "", signal: null, killed: false },
@@ -355,16 +316,12 @@ describe("formatError", () => {
     }
   });
 });
-
-// GAP-5 (TC-33): formatError export verification
 describe("formatError export verification", () => {
   it("formatError is exported as a function from process.js", async () => {
     const mod = await import("../../../src/lib/process.js");
     assert.equal(typeof mod.formatError, "function");
   });
 });
-
-// GAP-14 (TC-31): silent failure patterns unchanged — extended list
 describe("silent failure paths do not use formatError", () => {
   it("silent failure paths do not use formatError", () => {
     const silentFiles = [
@@ -390,8 +347,6 @@ describe("silent failure paths do not use formatError", () => {
     }
   });
 });
-
-// GAP-10 (TC-21 to TC-25): formatError migration integration tests
 describe("formatError migration integration", () => {
   // TC-21/TC-22/TC-23: Verify error message sites use formatError
   it("error message sites use formatError", () => {
@@ -456,7 +411,6 @@ describe("formatError migration integration", () => {
 });
 
 // ---------------------------------------------------------------------------
-// GAP-11 (TC-26 to TC-30): runCmdWithRetry signal-based retry logic
 //
 // Retry policy rationale (GAP-1/GAP-2 reconciliation):
 //
@@ -473,7 +427,6 @@ describe("formatError migration integration", () => {
 //   to be transient issues (temporary file lock, race condition, flaky test)
 //   that may succeed on retry.
 //
-// GAP-3 (TC-33) note: A "signal-then-success" retry test is intentionally
 // omitted because signal/killed exits do NOT trigger retries. If the process
 // is killed by a signal, runCmdWithRetry returns immediately without retrying.
 // ---------------------------------------------------------------------------
@@ -488,7 +441,6 @@ describe("runCmdWithRetry", () => {
   });
 
   // TC-26: signal → should NOT retry (signal-based exit is unrecoverable)
-  // GAP-1: Design specified signal → retry, but the implemented policy treats
   // signal exits as unrecoverable. See rationale above.
   it("does not retry when result has signal (signal exits are unrecoverable)", async () => {
     let calls = 0;
@@ -505,7 +457,6 @@ describe("runCmdWithRetry", () => {
   });
 
   // TC-27: killed=true → no retry (signal-based exit should not retry)
-  // GAP-1: Same rationale as TC-26 — killed processes are not retried.
   it("does not retry when result has killed=true", async () => {
     let calls = 0;
     const cmdFn = () => {
@@ -516,8 +467,6 @@ describe("runCmdWithRetry", () => {
     assert.equal(result.ok, false);
     assert.equal(calls, 1); // Should NOT retry on killed
   });
-
-  // GAP-1 (TC-35): killed=true with signal=null edge case — should NOT retry
   it("does not retry when killed=true even if signal is null (edge case)", async () => {
     let calls = 0;
     const cmdFn = () => {
@@ -530,7 +479,6 @@ describe("runCmdWithRetry", () => {
   });
 
   // TC-28: normal failure (signal=null, killed=false) → retry
-  // GAP-2: Design specified normal failure → no retry (deterministic error),
   // but the implemented policy retries normal failures as potentially transient.
   // See rationale above.
   it("retries on normal exit=1 failure", async () => {
@@ -548,7 +496,6 @@ describe("runCmdWithRetry", () => {
   });
 
   // TC-29: stderr "killed" text without signal field → should retry (regression test)
-  // GAP-5: Renamed from "does not false-positive on stderr content alone" to
   // clarify the actual intent: retry logic uses res.signal/res.killed fields,
   // NOT stderr text matching. When signal=null and killed=false, the failure is
   // treated as a normal (retryable) failure regardless of stderr content.
@@ -581,8 +528,6 @@ describe("runCmdWithRetry", () => {
     assert.ok(jsdoc.includes("killed"), "JSDoc should mention killed in return type");
   });
 });
-
-// GAP-2 (TC-37): E2E timeout → formatError pipeline
 describe("E2E formatError pipeline", () => {
   it("E2E: command killed by timeout produces actionable formatError output", () => {
     const res = runCmd("node", ["-e", "setTimeout(()=>{},60000)"], { timeout: 100 });
@@ -591,8 +536,6 @@ describe("E2E formatError pipeline", () => {
     assert.match(msg, /killed/i);
     assert.match(msg, /exit=/);
   });
-
-  // GAP-3 (TC-38): E2E ENOENT → formatError pipeline
   it("E2E: ENOENT produces actionable formatError output", async () => {
     const res = await runCmdAsync("nonexistent-binary-xyz", []);
     const msg = formatError(res);

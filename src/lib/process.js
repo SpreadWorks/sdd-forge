@@ -8,6 +8,31 @@
 import { execFileSync, execFile } from "child_process";
 
 /**
+ * Normalize a failed command's error properties into a consistent result shape.
+ * Handles differences between execFileSync (no `killed` property) and execFile callbacks.
+ *
+ * @param {Object} err - Error or exception object from child_process
+ * @param {string} stdout - Captured stdout
+ * @param {string} stderr - Captured stderr (falls back to err.message)
+ * @returns {{ ok: false, status: number, stdout: string, stderr: string, signal: string|null, killed: boolean }}
+ */
+function normalizeErrorResult(err, stdout, stderr) {
+  const status = typeof err.status === "number" ? err.status
+    : typeof err.code === "number" ? err.code
+    : 1;
+  return {
+    ok: false,
+    status,
+    stdout: String(stdout || ""),
+    stderr: String(stderr || err.message || ""),
+    signal: err.signal || null,
+    killed: err.killed != null ? !!err.killed : !!err.signal,
+  };
+}
+
+const SUCCESS_BASE = { ok: true, status: 0, signal: null, killed: false };
+
+/**
  * Run a command synchronously.
  *
  * @param {string}   cmd  - Command to execute
@@ -30,16 +55,9 @@ export function runCmd(cmd, args, opts = {}) {
       stdio: ["pipe", "pipe", "pipe"],
       ...(opts.env && { env: opts.env }),
     });
-    return { ok: true, status: 0, stdout: String(stdout || ""), stderr: "", signal: null, killed: false };
+    return { ...SUCCESS_BASE, stdout: String(stdout || ""), stderr: "" };
   } catch (e) {
-    return {
-      ok: false,
-      status: e.status ?? 1,
-      stdout: String(e.stdout || ""),
-      stderr: String(e.stderr || ""),
-      signal: e.signal || null,
-      killed: e.killed != null ? !!e.killed : !!e.signal,
-    };
+    return normalizeErrorResult(e, e.stdout, e.stderr);
   }
 }
 
@@ -70,24 +88,9 @@ export function runCmdAsync(cmd, args, opts = {}) {
       },
       (err, stdout, stderr) => {
         if (err) {
-          const status = typeof err.code === "number" ? err.code : 1;
-          resolve({
-            ok: false,
-            status,
-            stdout: String(stdout || ""),
-            stderr: String(stderr || err.message || ""),
-            signal: err.signal || null,
-            killed: !!err.killed,
-          });
+          resolve(normalizeErrorResult(err, stdout, stderr));
         } else {
-          resolve({
-            ok: true,
-            status: 0,
-            stdout: String(stdout || ""),
-            stderr: String(stderr || ""),
-            signal: null,
-            killed: false,
-          });
+          resolve({ ...SUCCESS_BASE, stdout: String(stdout || ""), stderr: String(stderr || "") });
         }
       },
     );
@@ -113,5 +116,5 @@ export function formatError(res) {
   if (trimmed) {
     parts.push(trimmed);
   }
-  return parts.join(" | ") || "unknown error";
+  return parts.join(" | ");
 }
