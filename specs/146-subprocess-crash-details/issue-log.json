@@ -7,6 +7,13 @@
       "resolution": "Update test to match execFileSync reality: when signal is present and killed property is absent, killed is inferred as true",
       "guardrailCandidate": "When writing tests for child_process, verify behavior with both execFileSync and spawn as they have different error properties",
       "timestamp": "2026-04-05T00:57:52.346Z"
+    },
+    {
+      "step": "finalize",
+      "reason": "Merge conflict detected during squash merge to main",
+      "trigger": "sdd-forge flow run finalize --mode all (merge step)",
+      "resolution": "Will rebase on main and retry",
+      "timestamp": "2026-04-05T03:22:06.939Z"
     }
   ]
 }
