@@ -7,7 +7,7 @@
 import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
-import { runCmd } from "./process.js";
+import { runCmd, formatError } from "./process.js";
 
 /**
  * sdd-forge パッケージの src/ ディレクトリの絶対パス。
@@ -105,7 +105,7 @@ export function isInsideWorktree(root) {
  */
 export function getMainRepoPath(root) {
   const res = runCmd("git", ["-C", root, "rev-parse", "--git-common-dir"]);
-  if (!res.ok) throw new Error(res.stderr || "failed to resolve git-common-dir");
+  if (!res.ok) throw new Error("failed to resolve git-common-dir: " + formatError(res));
   const gitCommonDir = res.stdout.trim();
   // git-common-dir は絶対パスまたは root からの相対パスを返す
   const abs = path.resolve(root, gitCommonDir);
