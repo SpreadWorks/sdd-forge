@@ -6,7 +6,7 @@
  */
 
 import { PKG_DIR } from "../../lib/cli.js";
-import { runCmd } from "../../lib/process.js";
+import { runCmd, formatError } from "../../lib/process.js";
 import { DEFAULT_AGENT_TIMEOUT_MS } from "../../lib/agent.js";
 import { FlowCommand } from "./base-command.js";
 import path from "path";
@@ -95,11 +95,11 @@ const DEFAULT_RETRY_DELAY_MS = 3000;
 /**
  * Run a command function with retry logic.
  *
- * @param {function} cmdFn - Function that returns { ok, status, stdout, stderr }
+ * @param {function} cmdFn - Function that returns { ok, status, stdout, stderr, signal: string|null, killed: boolean }
  * @param {Object} [opts]
  * @param {number} [opts.retryCount=2] - Number of retries (total attempts = retryCount + 1)
  * @param {number} [opts.retryDelayMs=3000] - Delay between retries in milliseconds
- * @returns {Promise<{ ok: boolean, status: number, stdout: string, stderr: string }>}
+ * @returns {Promise<{ ok: boolean, status: number, stdout: string, stderr: string, signal: string|null, killed: boolean }>}
  */
 export async function runCmdWithRetry(cmdFn, opts = {}) {
   const retryCount = opts.retryCount ?? DEFAULT_RETRY_COUNT;
@@ -111,8 +111,7 @@ export async function runCmdWithRetry(cmdFn, opts = {}) {
     if (lastRes.ok) return lastRes;
 
     // Do not retry on killed/signal (timeout, external termination)
-    const stderr = lastRes.stderr || "";
-    if (/killed|signal/i.test(stderr)) return lastRes;
+    if (lastRes.signal || lastRes.killed) return lastRes;
 
     if (attempt < retryCount) {
       const next = attempt + 2;
@@ -157,9 +156,7 @@ export class RunReviewCommand extends FlowCommand {
     }
 
     if (!res.ok) {
-      throw new Error(
-        ["review command failed", ...(stderr ? [stderr] : []), ...(stdout ? [stdout] : [])].join("\n"),
-      );
+      throw new Error("review command failed: " + formatError(res));
     }
 
     // Parse proposal counts from stderr (review writes progress to stderr)

@@ -9,7 +9,7 @@
 
 import fs from "fs";
 import path from "path";
-import { runCmd } from "../../lib/process.js";
+import { runCmd, formatError } from "../../lib/process.js";
 import { PKG_DIR } from "../../lib/cli.js";
 import {
   resolveWorktreePaths, clearFlowState, specIdFromPath,
@@ -83,7 +83,7 @@ export function commitOrSkip(args, opts) {
   if (/nothing to commit|no changes added to commit/i.test(output)) {
     return { status: "skipped", message: "nothing to commit" };
   }
-  throw new Error(output || "commit failed");
+  throw new Error("commit failed: " + formatError(res));
 }
 
 export const STEP_MAP = {
@@ -183,7 +183,7 @@ export async function executeCommitPost(ctx) {
   const commitRes = runCmd("git", ["commit", "-m", "chore: add retro and report"], { cwd: root });
   if (!commitRes.ok && !/nothing to commit/i.test(commitRes.stderr || commitRes.stdout)) {
     if (results.report) {
-      results.report.commitNote = "retro/report commit failed: " + (commitRes.stderr || commitRes.stdout).slice(0, 200);
+      results.report.commitNote = "retro/report commit failed: " + formatError(commitRes);
     }
   }
 }
@@ -290,7 +290,7 @@ export class RunFinalizeCommand extends FlowCommand {
           const buildScript = path.join(PKG_DIR, "docs.js");
           const buildRes = runCmd("node", [buildScript, "build"], { cwd: syncCwd });
           if (!buildRes.ok) {
-            throw new Error((buildRes.stderr || buildRes.stdout || "").trim());
+            throw new Error("docs build failed: " + formatError(buildRes));
           }
           runCmd("git", ["add", "docs/", "AGENTS.md", "CLAUDE.md", "README.md", ".sdd-forge/output/analysis.json"], { cwd: syncCwd });
           let diffStat = null;

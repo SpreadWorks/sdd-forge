@@ -7,7 +7,7 @@
 
 import fs from "fs";
 import path from "path";
-import { runCmd } from "./process.js";
+import { runCmd, formatError } from "./process.js";
 import { filterByPhase, matchScope } from "./guardrail.js";
 
 /**
@@ -37,7 +37,7 @@ export function validateLintGuardrails(guardrails) {
 export function getChangedFiles(root, base) {
   const res = runCmd("git", ["-C", root, "diff", "--name-only", `${base}...HEAD`]);
   if (!res.ok) {
-    throw new Error(`git diff failed: ${res.stderr.trim()}`);
+    throw new Error("git diff failed: " + formatError(res));
   }
   return res.stdout
     .split("\n")

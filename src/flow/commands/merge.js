@@ -6,7 +6,7 @@
  */
 
 import { readFileSync } from "fs";
-import { runCmd } from "../../lib/process.js";
+import { runCmd, formatError } from "../../lib/process.js";
 import path from "path";
 import { loadConfig } from "../../lib/config.js";
 import { isGhAvailable } from "../../lib/git-helpers.js";
@@ -166,7 +166,7 @@ function main(ctx) {
     const body = buildPrBody(state, spec);
 
     const pushRes = runCmd("git", ["push", "-u", remote, featureBranch]);
-    if (!pushRes.ok) throw new Error(pushRes.stderr || "git push failed");
+    if (!pushRes.ok) throw new Error("git push failed: " + formatError(pushRes));
     const prRes = runCmd("gh", [
       "pr", "create",
       "--base", baseBranch,
@@ -174,7 +174,7 @@ function main(ctx) {
       "--title", title,
       ...(body ? ["--body", body] : []),
     ]);
-    if (!prRes.ok) throw new Error(prRes.stderr || "gh pr create failed");
+    if (!prRes.ok) throw new Error("gh pr create failed: " + formatError(prRes));
     return { strategy: "pr" };
   }
 
@@ -191,7 +191,7 @@ function main(ctx) {
       throw new Error(`Merge conflict detected. ${hint}`);
     }
     const commitRes = runCmd("git", [...gitPrefix, "commit", "-m", commitMsg]);
-    if (!commitRes.ok) throw new Error(commitRes.stderr || "commit after squash merge failed");
+    if (!commitRes.ok) throw new Error("commit after squash merge failed: " + formatError(commitRes));
   }
 
   if (worktree && mainRepoPath) {
@@ -201,7 +201,7 @@ function main(ctx) {
 
   // Branch mode
   const checkoutRes = runCmd("git", ["checkout", baseBranch]);
-  if (!checkoutRes.ok) throw new Error(checkoutRes.stderr || "git checkout failed");
+  if (!checkoutRes.ok) throw new Error("git checkout failed: " + formatError(checkoutRes));
   runSquashMerge([], `Run 'git rebase ${baseBranch}' and retry finalize.`);
   return { strategy: "squash" };
 }

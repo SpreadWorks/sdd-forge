@@ -6,7 +6,7 @@
  */
 
 import { PKG_DIR } from "../../lib/cli.js";
-import { runCmd } from "../../lib/process.js";
+import { runCmd, formatError } from "../../lib/process.js";
 import { FlowCommand } from "./base-command.js";
 import path from "path";
 
@@ -26,12 +26,7 @@ export class RunSyncCommand extends FlowCommand {
     const buildOutput = (buildRes.stdout || "").trim();
 
     if (!buildRes.ok) {
-      throw new Error(
-        ["docs build failed",
-          ...(buildRes.stderr ? [buildRes.stderr.trim()] : []),
-          ...(buildOutput ? [buildOutput] : []),
-        ].join("\n"),
-      );
+      throw new Error("docs build failed: " + formatError(buildRes));
     }
 
     // Step 2: review
@@ -39,12 +34,7 @@ export class RunSyncCommand extends FlowCommand {
     const reviewOutput = (reviewRes.stdout || "").trim();
 
     if (!reviewRes.ok) {
-      throw new Error(
-        ["docs review failed",
-          ...(reviewRes.stderr ? [reviewRes.stderr.trim()] : []),
-          ...(reviewOutput ? [reviewOutput] : []),
-        ].join("\n"),
-      );
+      throw new Error("docs review failed: " + formatError(reviewRes));
     }
 
     if (dryRun) {
@@ -70,7 +60,7 @@ export class RunSyncCommand extends FlowCommand {
     if (changed.length > 0) {
       const commitRes = runCmd("git", ["commit", "-m", "docs: sync documentation"], { cwd: root });
       if (!commitRes.ok && !/nothing to commit/i.test(commitRes.stderr || commitRes.stdout)) {
-        throw new Error(commitRes.stderr || commitRes.stdout);
+        throw new Error("docs commit failed: " + formatError(commitRes));
       }
     }
 
