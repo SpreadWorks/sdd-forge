@@ -1,12 +1,12 @@
 {
-  "analyzedAt": "2026-04-04T14:45:09.797Z",
+  "analyzedAt": "2026-04-06T15:36:12.290Z",
   "package": {
     "entries": [
       {
         "file": "package.json",
-        "hash": "44ae17f206c3997d9d610523f68c640f",
+        "hash": "79b5999ed0b214e8c77fbb516be675e3",
         "lines": 36,
-        "mtime": "2026-04-02T16:24:42.435Z",
+        "mtime": "2026-04-05T09:45:33.768Z",
         "packageDeps": {
           "dependencies": {},
           "devDependencies": {}
@@ -19,25 +19,24 @@
         },
         "composerDeps": null,
         "id": "451a9f25",
-        "summary": "Root package manifest for the sdd-forge npm package, defining entry point, file inclusions, and test scripts.",
-        "detail": "Declares sdd-forge as an ES module CLI tool with the binary entry at src/sdd-forge.js. Published files are restricted to src/ (excluding preset test directories). Requires Node.js 18+. Defines four test scripts covering unit, e2e, and acceptance scopes via a custom test runner. Uses pnpm as the package manager with a pinned version hash.",
+        "summary": "Root package manifest for the sdd-forge npm package, defining entry point, scripts, and publish configuration.",
+        "detail": "Declares the CLI binary at src/sdd-forge.js and restricts published files to the src/ directory (excluding test directories). Uses ES module type and requires Node.js 18+. Defines four test scripts (unit, e2e, acceptance) all delegating to custom test runners. Package manager is pinned to pnpm with a checksum hash.",
         "chapter": "stack_and_ops",
         "role": "config",
         "enrich": {
-          "processedAt": "2026-04-02T17:31:50.544Z",
+          "processedAt": "2026-04-06T15:36:33.520Z",
           "attempts": 1
         },
         "keywords": [
           "package.json",
           "npm",
           "cli",
-          "binary",
-          "esm",
-          "node18",
+          "bin",
+          "entry-point",
+          "publish",
           "pnpm",
-          "test scripts",
-          "files",
-          "entry point"
+          "esm",
+          "node-version"
         ]
       }
     ],
@@ -3540,10 +3539,54 @@
         ]
       },
       {
+        "file": "src/lib/agent-log.js",
+        "hash": "9515786786fac127dafa2a8d1e4c0d3c",
+        "lines": 74,
+        "mtime": "2026-04-06T15:36:12.102Z",
+        "className": "agent-log",
+        "methods": [
+          "AgentLog",
+          "resolveLogDir",
+          "appendAgentLog"
+        ],
+        "imports": [
+          "fs",
+          "path"
+        ],
+        "exports": [
+          "AgentLog",
+          "resolveLogDir",
+          "appendAgentLog"
+        ],
+        "extends": null,
+        "usedBy": [
+          "src/lib/agent.js"
+        ],
+        "id": "62624ef1",
+        "summary": "Provides AgentLog class and utilities for writing agent prompt logs to a JSONL file on disk.",
+        "detail": "Exports resolveLogDir to compute the log directory path relative to the project working directory and sdd-forge config. The appendAgentLog function serializes an AgentLog instance as a JSON line and appends it to prompts.jsonl, creating the directory if needed. Errors during write are reported to stderr but do not propagate, making logging best-effort. The log file location is derived from the workDir config key.",
+        "chapter": "internal_design",
+        "role": "lib",
+        "enrich": {
+          "processedAt": "2026-04-06T15:36:33.520Z",
+          "attempts": 1
+        },
+        "keywords": [
+          "agent-log",
+          "logging",
+          "jsonl",
+          "prompts",
+          "append",
+          "log-dir",
+          "stderr",
+          "audit-trail"
+        ]
+      },
+      {
         "file": "src/lib/agent.js",
-        "hash": "623e3da8c99422c90215daa455f0983b",
-        "lines": 378,
-        "mtime": "2026-04-04T13:51:27.785Z",
+        "hash": "9818f38b8b37f12985decc726209898a",
+        "lines": 411,
+        "mtime": "2026-04-06T15:36:12.102Z",
         "className": "agent",
         "methods": [
           "callAgent",
@@ -3568,7 +3611,8 @@
           "crypto",
           "fs",
           "path",
-          "child_process"
+          "child_process",
+          "./agent-log.js"
         ],
         "exports": [
           "callAgent",
@@ -3587,25 +3631,26 @@
           "src/setup.js"
         ],
         "id": "13ddf392",
-        "summary": "Core library for invoking AI agents as subprocesses, supporting synchronous and asynchronous execution with retry, stdin injection, and system prompt handling.",
-        "detail": "Builds agent invocations via buildAgentInvocation, switching to stdin delivery when the prompt exceeds ARGV_SIZE_THRESHOLD bytes to avoid OS argument limits. callAgentAsync supports optional retry with configurable delay via callAgentAsyncWithRetry. resolveAgent merges provider profile args with command-specific overrides from config. ensureAgentWorkDir validates and creates the -C working directory, enforcing that it stays within the project root. writeAgentContext and cleanupAgentContext manage ephemeral rule files injected into the agent's .claude/rules/ directory.",
+        "summary": "Core agent invocation layer that resolves agent configuration and executes external AI agent processes synchronously or asynchronously.",
+        "detail": "Supports both sync (callAgent via execFileSync) and async (callAgentAsync, callAgentAsyncOnce) execution modes with configurable timeout and retry logic. Handles large prompts by switching to stdin-based delivery when the effective argv size exceeds ARGV_SIZE_THRESHOLD (100KB). resolveAgent merges provider profiles, command-specific overrides, and default settings from config.json. writeAgentContext and cleanupAgentContext manage temporary rule files injected into the agent's .claude/rules directory. loadAgentConfig validates that a default agent is configured before dispatch.",
         "chapter": "internal_design",
         "role": "lib",
         "enrich": {
-          "processedAt": "2026-04-04T13:52:16.857Z",
+          "processedAt": "2026-04-06T15:36:33.520Z",
           "attempts": 1
         },
         "keywords": [
           "agent",
-          "callAgent",
-          "callAgentAsync",
-          "subprocess",
-          "stdin",
+          "execFileSync",
+          "spawn",
+          "async",
           "retry",
-          "system prompt",
-          "agent config",
-          "workdir",
-          "agent context"
+          "timeout",
+          "stdin",
+          "claude",
+          "agent-config",
+          "work-dir",
+          "context-injection"
         ]
       },
       {
@@ -4527,9 +4572,9 @@
       },
       {
         "file": "src/lib/types.js",
-        "hash": "49576a8afd12f651fc8ac378d7eca4f3",
-        "lines": 323,
-        "mtime": "2026-04-02T15:07:32.623Z",
+        "hash": "8e8e956442bfb163a4abc0a33ff8d876",
+        "lines": 344,
+        "mtime": "2026-04-06T15:36:12.103Z",
         "className": "types",
         "methods": [
           "validateConfig",
@@ -4547,24 +4592,23 @@
           "src/setup.js"
         ],
         "id": "69d5afb4",
-        "summary": "Defines config validation logic for SddConfig objects and resolves the output configuration structure from a raw config. Serves as the single source of truth for required config fields.",
-        "detail": "validateConfig() checks for required fields (lang, type, docs, docs.languages, docs.defaultLanguage) and accumulates all errors before throwing, giving the user a complete list of problems at once. resolveOutputConfig() derives the output directory paths and language settings from a validated config, abstracting away the nested docs structure for consumers. VALID_TONES constrains the docs.style.tone field to a fixed set of allowed values.",
+        "summary": "Type validation and output config resolution utilities for sdd-forge configuration objects.",
+        "detail": "validateConfig performs structural validation on raw config objects, collecting errors and throwing a descriptive message listing all violations. Enforces required fields and constrained enum values such as VALID_TONES (polite, formal, casual). resolveOutputConfig normalises optional output-related config fields into a canonical object. Acts as the system boundary validator ensuring downstream code can trust config shape.",
         "chapter": "configuration",
         "role": "lib",
         "enrich": {
-          "processedAt": "2026-04-02T16:04:59.891Z",
+          "processedAt": "2026-04-06T15:36:33.520Z",
           "attempts": 1
         },
         "keywords": [
-          "config validation",
-          "SddConfig",
+          "config-validation",
+          "types",
           "schema",
-          "required fields",
-          "docs",
-          "lang",
           "tone",
-          "output config",
-          "validateConfig"
+          "SddConfig",
+          "validateConfig",
+          "resolveOutputConfig",
+          "boundary-validation"
         ]
       },
       {
@@ -7587,10 +7631,10 @@
       }
     ],
     "summary": {
-      "total": 223,
-      "totalMethods": 684
+      "total": 224,
+      "totalMethods": 687
     },
     "dataSourceHash": "7d725e75d5031be445119323e4947c91"
   },
-  "enrichedAt": "2026-04-04T14:45:20.624Z"
+  "enrichedAt": "2026-04-06T15:36:33.520Z"
 }
