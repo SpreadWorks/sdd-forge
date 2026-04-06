@@ -107,62 +107,49 @@
     },
     "commands": {
       "docs": {
-        "agent": "claude",
-        "profile": "default"
+	      "agent": "claude", "profile": "sonnet"
       },
       "docs.review": {
-        "agent": "claude",
-        "profile": "default"
+	      "agent": "claude", "profile": "sonnet"
       },
       "docs.forge": {
-        "agent": "claude",
-        "profile": "sonnet"
+	      "agent": "claude", "profile": "sonnet"
       },
       "spec": {
-        "agent": "claude",
-        "profile": "default"
+	      "agent": "claude", "profile": "sonnet"
       },
       "spec.gate": {
-        "agent": "claude",
-        "profile": "sonnet"
+	      "agent": "claude", "profile": "sonnet"
       },
       "flow": {
-        "agent": "claude",
-        "profile": "default"
+	      "agent": "claude", "profile": "sonnet"
       },
       "docs.enrich": {
-        "agent": "claude",
-        "profile": "sonnet"
+	      "agent": "claude", "profile": "sonnet"
       },
       "docs.text": {
-        "agent": "claude",
-        "profile": "sonnet"
+	      "agent": "claude", "profile": "sonnet"
       },
       "docs.readme": {
-        "agent": "claude",
-        "profile": "sonnet"
+	      "agent": "claude", "profile": "sonnet"
       },
       "docs.agents": {
-        "agent": "claude",
-        "profile": "sonnet"
+	      "agent": "claude", "profile": "sonnet"
       },
       "experimental.workflow.borad.to-issue": {
-        "agent": "claude",
-        "profile": "sonnet"
+	      "agent": "claude", "profile": "sonnet"
       },
       "flow.review.draft": {
-        "agent": "codex"
+	      "agent": "claude", "profile": "sonnet"
       },
       "flow.review.impl": {
-        "agent": "codex"
+	      "agent": "claude", "profile": "sonnet"
       },
       "flow.review.final": {
-        "agent": "claude",
-        "profile": "opus"
+	      "agent": "claude", "profile": "sonnet"
       },
       "docs.translate": {
-        "agent": "claude",
-        "profile": "sonnet"
+	      "agent": "claude", "profile": "sonnet"
       }
     }
   },
