@@ -1,5 +1,5 @@
 {
-  "analyzedAt": "2026-04-06T16:05:27.639Z",
+  "analyzedAt": "2026-04-06T23:47:15.255Z",
   "package": {
     "entries": [
       {
@@ -160,7 +160,9 @@
           "main"
         ],
         "extends": null,
-        "usedBy": null,
+        "usedBy": [
+          "src/lib/agent-log.js"
+        ],
         "id": "d83c89fb",
         "summary": "Implements the `sdd-forge changelog` command, generating a Markdown changelog from spec directory entries.",
         "detail": "Reads the specs/ directory, sorts subdirectory names, and parses each spec.md for title, status, and date metadata via parseSpecFile and parseDirName. Sanitizes content before writing to docs/change_log.md (or a custom --output path). Supports --lang to load locale config. No AI involvement; purely file-system driven.",
@@ -3149,7 +3151,8 @@
         "usedBy": [
           "src/flow/lib/run-finalize.js",
           "src/flow/lib/run-report.js",
-          "src/flow/registry.js"
+          "src/flow/registry.js",
+          "src/lib/agent-log.js"
         ],
         "id": "65ac9e4f",
         "summary": "Provides load/save helpers for issue-log.json and the `flow set issue-log` command for appending log entries.",
@@ -3540,56 +3543,47 @@
       },
       {
         "file": "src/lib/agent-log.js",
-        "hash": "88338368b90e5d9023f552f4130d6cd2",
-        "lines": 77,
-        "mtime": "2026-04-06T16:05:27.452Z",
+        "hash": "296f7f51466a840a2c8c6174ed8230b6",
+        "lines": 46,
+        "mtime": "2026-04-06T23:47:15.056Z",
         "className": "agent-log",
         "methods": [
-          "AgentLog",
-          "resolveLogDir",
-          "appendAgentLog"
+          "AgentLog"
         ],
         "imports": [
-          "fs",
-          "path",
-          "./cli.js"
+          "./log.js"
         ],
         "exports": [
-          "AgentLog",
-          "resolveLogDir",
-          "appendAgentLog"
+          "AgentLog"
         ],
-        "extends": null,
+        "extends": "Log",
         "usedBy": [
-          "src/lib/agent.js"
+          "src/lib/agent-log.js"
         ],
         "id": "62624ef1",
-        "summary": "Provides agent prompt log management, including directory resolution and JSONL append functionality for persisting agent interaction records.",
-        "detail": "The AgentLog class encapsulates structured log data with a toJSON serialization method. The resolveLogDir function determines the log output directory by resolving the repository root (handling worktree scenarios via isInsideWorktree/getMainRepoPath) and constructing a path under the configured work directory. The appendAgentLog function ensures the log directory exists, then appends serialized AgentLog entries as newline-delimited JSON to a prompts.jsonl file. Errors during write operations are reported to stderr without throwing, providing resilient logging behavior.",
+        "summary": "AgentLog extends the base Log class to provide agent-specific logging functionality, including prompt logging configuration.",
+        "detail": "AgentLog is a subclass of Log that adds agent-specific behavior such as checking whether prompt logging is enabled via the config's logs.prompts flag. It inherits the core log lifecycle and serialization from the Log base class. The class returns a structured object representing the log entry for agent interactions.",
         "chapter": "internal_design",
         "role": "lib",
         "enrich": {
-          "processedAt": "2026-04-06T16:05:38.483Z",
+          "processedAt": "2026-04-06T23:47:30.645Z",
           "attempts": 1
         },
         "keywords": [
-          "agent-log",
-          "prompt log",
-          "JSONL",
-          "log directory",
-          "worktree",
-          "appendAgentLog",
-          "resolveLogDir",
           "AgentLog",
+          "Log",
           "logging",
-          "prompts"
+          "prompt logging",
+          "agent log",
+          "log subclass",
+          "cfg.logs.prompts"
         ]
       },
       {
         "file": "src/lib/agent.js",
-        "hash": "9818f38b8b37f12985decc726209898a",
-        "lines": 411,
-        "mtime": "2026-04-06T15:36:12.102Z",
+        "hash": "2f3a4a84f4e21c9afaf8c20d5755ad01",
+        "lines": 377,
+        "mtime": "2026-04-06T23:47:15.056Z",
         "className": "agent",
         "methods": [
           "callAgent",
@@ -3614,8 +3608,7 @@
           "crypto",
           "fs",
           "path",
-          "child_process",
-          "./agent-log.js"
+          "child_process"
         ],
         "exports": [
           "callAgent",
@@ -3634,26 +3627,27 @@
           "src/setup.js"
         ],
         "id": "13ddf392",
-        "summary": "Core agent invocation layer that resolves agent configuration and executes external AI agent processes synchronously or asynchronously.",
-        "detail": "Supports both sync (callAgent via execFileSync) and async (callAgentAsync, callAgentAsyncOnce) execution modes with configurable timeout and retry logic. Handles large prompts by switching to stdin-based delivery when the effective argv size exceeds ARGV_SIZE_THRESHOLD (100KB). resolveAgent merges provider profiles, command-specific overrides, and default settings from config.json. writeAgentContext and cleanupAgentContext manage temporary rule files injected into the agent's .claude/rules directory. loadAgentConfig validates that a default agent is configured before dispatch.",
+        "summary": "Core agent invocation module providing synchronous and asynchronous agent call utilities, agent configuration resolution, and work directory management.",
+        "detail": "Exports callAgent and callAgentAsync for invoking external agents via child_process spawn/execFileSync, with support for retry logic and configurable timeouts (DEFAULT_AGENT_TIMEOUT = 300s). Provides buildAgentInvocation which resolves the final CLI arguments, environment, and stdin content based on prompt size thresholds (ARGV_SIZE_THRESHOLD = 100,000). Includes resolveAgent and loadAgentConfig for reading agent configuration from config.json, and ensureAgentWorkDir for validating that the working directory stays within the project root. writeAgentContext and cleanupAgentContext manage ephemeral .claude/rules/sdd-*.md context files injected into agent runs.",
         "chapter": "internal_design",
         "role": "lib",
         "enrich": {
-          "processedAt": "2026-04-06T15:36:33.520Z",
+          "processedAt": "2026-04-06T23:47:30.645Z",
           "attempts": 1
         },
         "keywords": [
-          "agent",
-          "execFileSync",
+          "callAgent",
+          "callAgentAsync",
+          "resolveAgent",
+          "loadAgentConfig",
+          "agent invocation",
+          "child_process",
           "spawn",
-          "async",
-          "retry",
           "timeout",
-          "stdin",
-          "claude",
-          "agent-config",
-          "work-dir",
-          "context-injection"
+          "retry",
+          "workdir",
+          "context injection",
+          "systemPrompt"
         ]
       },
       {
@@ -3737,7 +3731,8 @@
           "src/sdd-forge.js",
           "src/setup.js",
           "src/upgrade.js",
-          "src/lib/agent-log.js"
+          "src/lib/agent-log.js",
+          "src/lib/log.js"
         ],
         "id": "f351ecc4",
         "summary": "Core CLI utility module providing package directory resolution, repo root detection, argument parsing, worktree detection, and version retrieval.",
@@ -4341,6 +4336,53 @@
           "file content check",
           "lint rules",
           "filterByPhase"
+        ]
+      },
+      {
+        "file": "src/lib/log.js",
+        "hash": "7460883c3e10411a64fc197c46ffadeb",
+        "lines": 71,
+        "mtime": "2026-04-06T23:47:15.057Z",
+        "className": "log",
+        "methods": [
+          "Log",
+          "resolveLogDir",
+          "logger"
+        ],
+        "imports": [
+          "fs",
+          "path",
+          "./cli.js"
+        ],
+        "exports": [
+          "Log",
+          "resolveLogDir",
+          "logger"
+        ],
+        "extends": null,
+        "usedBy": [
+          "src/lib/agent-log.js"
+        ],
+        "id": "3d7bb5e6",
+        "summary": "Base Log class and logger utility providing structured append-only log file writing with worktree-aware directory resolution.",
+        "detail": "The Log base class defines the interface for log entries including toJSON serialization and a static filename property. resolveLogDir determines the log directory path by checking if the current working directory is inside a git worktree and resolving back to the main repo path when needed. The logger async function appends JSON-serialized log entries to a file within the resolved log directory, creating directories recursively as needed. Errors during log writes are reported to stderr but do not throw, ensuring logging failures are non-fatal.",
+        "chapter": "internal_design",
+        "role": "lib",
+        "enrich": {
+          "processedAt": "2026-04-06T23:47:30.645Z",
+          "attempts": 1
+        },
+        "keywords": [
+          "Log",
+          "logger",
+          "resolveLogDir",
+          "worktree",
+          "append log",
+          "log file",
+          "isInsideWorktree",
+          "getMainRepoPath",
+          "structured logging",
+          "JSON log"
         ]
       },
       {
@@ -5279,7 +5321,8 @@
           "src/lib/flow-state.js",
           "src/lib/i18n.js",
           "src/lib/skills.js",
-          "src/lib/agent-log.js"
+          "src/lib/agent-log.js",
+          "src/lib/log.js"
         ],
         "id": "1c8c8717"
       },
@@ -6643,7 +6686,8 @@
           "src/lib/flow-state.js",
           "src/lib/i18n.js",
           "src/lib/skills.js",
-          "src/lib/agent-log.js"
+          "src/lib/agent-log.js",
+          "src/lib/log.js"
         ],
         "id": "0c4cfb73"
       },
@@ -7637,10 +7681,10 @@
       }
     ],
     "summary": {
-      "total": 224,
-      "totalMethods": 687
+      "total": 225,
+      "totalMethods": 688
     },
     "dataSourceHash": "7d725e75d5031be445119323e4947c91"
   },
-  "enrichedAt": "2026-04-06T16:05:38.483Z"
+  "enrichedAt": "2026-04-06T23:47:30.645Z"
 }

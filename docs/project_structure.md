@@ -39,7 +39,7 @@ src/lib/    (lib, config, model)
 | --- | --- | --- |
 | src/docs | 40 | cli, controller, model, lib |
 | src/flow | 34 | controller, lib |
-| src/lib | 21 | lib, config, model |
+| src/lib | 22 | lib, config, model |
 | src | 7 | controller, cli |
 <!-- {{/data}} -->
 
