@@ -1,0 +1,52 @@
+{
+  "entries": [
+    {
+      "step": "gate-draft",
+      "reason": "単一責任 — experimental workflow の再設計という単一の関心事に集中しており、無関係な変更は含まれていない。; 要件の明確性 — 「将来拡張性の確保」「常駐トークン削減」等の目標が検証可能な条件で記述されていない（例: 削減行数、テストカバレッジ率等）。; 文脈の完全性 — Q6 の skill 自動提案、Q7 のテスト戦略など、「When/shall」の対が明示されていない要件が複数存在する（例: どのキーワード検知時に何を提案するか）。; 機密情報のハードコード禁止 — 機密情報に関する記述はなく、該当しない。; 要件の優先順位 — Q1 で「全体を1つの spec で進める」と明示し、変更対象も列挙されている。ただし要件間の優先順位は不明確だが、Q&A 形式でスコープを整理している。; 既存機能への影響 — 「既存機能への影響」セクションで board.js コマンド名変更・to-issue→publish 置換・config.json 拡張の影響を列挙している。; 推奨案は根拠付きで提示する — 各 Q&A に推奨案が提示されており、alpha版ポリシー（Q2）や既存パターン（Q5）等の根拠が示されている。; 探索できる質問はユーザーに聞かない — Q&A の回答はいずれも設計判断を要するものであり、コード探索で解決できる性質の質問は含まれていない。; 関連する影響を自発的に指摘する — `sdd-forge upgrade` への影響（skill 配置ロジック追加）は変更対象に記載されているが、既存の board.js を直接参照している外部スクリプトやドキュメントへの影響が指摘されていない。; 批判の前にブレインストーミング確認 — 該当する批判的な議論はなく、各 Q&A は決定事項として記録されている。; 脇道の知見を draft.md に記録する — 脇道にそれた議論の痕跡はなく、draft は主題に集中している。; draft は要件定義レベルに留める — 「experimental/workflow/lib/ — config.js, graphql.js, hash.js, issue.js, validation.js のリファクタ」等、モジュールレベルの実装詳細が含まれている。; CLI インターフェースの後方互換性 — Q2 で一括置き換え方針と「alpha版ポリシーにより後方互換は不要」が明示されており、移行方針が spec に含まれている。",
+      "trigger": "gate post hook (auto)",
+      "timestamp": "2026-04-06T16:24:33.561Z"
+    },
+    {
+      "step": "gate-draft",
+      "reason": "単一責任 — experimental workflow の再設計という一つの関心事に集中しており、無関係な変更は含まれていない。; 要件の明確性 — 「skill のトリガー条件 (2)」でキーワード一致後に「skill の利用を提案する」とあるが、提案の形式・タイミング・ユーザー拒否時の挙動が検証可能な条件で記述されていない。; 文脈の完全性 — `experimental.workflow.enable` が false の場合の挙動（無効化の意味：コマンド不存在？エラー返却？skill 非配置？）が When/shall の対で記述されていない。; 機密情報のハードコード禁止 — 機密情報のハードコードに関する記述はなく、該当する変更も含まれていない。; 要件の優先順位 — 変更の影響範囲リストは8項目あるが、Q1 で「全体を1つの spec で進める」と明示しており、Q&A 内に優先順位の文脈がある。ただし影響範囲の実装順序の優先順位は明示されていない。厳密には FAIL だが、alpha 版ポリシーで一括移行が明確なため PASS とする。; 既存機能への影響 — 「変更の影響範囲」セクションで影響領域と既存機能への影響を具体的に列挙している。; 推奨案は根拠付きで提示する — これは draft（Q&A形式）であり、推奨案提示の責務はレビュアー側にある。draft 自体への適用は不適。; 探索できる質問はユーザーに聞かない — Q&A の各質問は設計判断（優先順位・移行方針・スコープ）であり、コードベース探索では答えられない意思決定事項のみを扱っている。; 関連する影響を自発的に指摘する — `experimental/AGENTS.md` の更新、既存テストの更新など関連影響が自発的に列挙されている。; 批判の前にブレインストーミング確認 — draft はすでに User approved であり、ブレインストーミング段階ではない。適用外。; 脇道の知見を draft.md に記録する — 会話の記録ではなく draft 文書そのものであるため、この記事の適用対象外。; draft は要件定義レベルに留める — 関数シグネチャや実装詳細は含まれておらず、コマンド体系・設定スキーマ・テスト戦略の方針レベルに留まっている。; CLI インターフェースの後方互換性 — `board.js` → `workflow.js`、`to-issue` → `publish` のコマンド変更について「alpha版ポリシーにより後方互換は不要」とのみ記述されており、移行手順（既存スクリプトの更新方法、CLAUDE.md の更新タイミング等）が spec に含まれていない。",
+      "trigger": "gate post hook (auto)",
+      "timestamp": "2026-04-06T16:25:40.306Z"
+    },
+    {
+      "step": "gate-draft",
+      "reason": "単一責任 — experimental workflow の再設計という単一の関心事に集中しており、無関係な変更は含まれていない; 要件の明確性 — 「最小限のコマンドリファレンス」「必要に応じて」等の曖昧な表現が残っている。検証可能な条件になっていない箇所がある; 文脈の完全性 — Q4の分類タグ（RESEARCH, BUG, ENHANCE, OTHER）について、When/shall の対が記述されておらず、どのコンテキストで何が起きるかが不明; 機密情報のハードコード禁止 — 機密情報に関する記述はなく、該当しない; 要件の優先順位 — Q1で「全体を1つの specで進める」と明示し、移行手順に順序が示されている; 既存機能への影響 — 「変更の影響範囲」セクションで既存機能への影響を網羅的に列挙している; 推奨案は根拠付きで提示する — 各Q&AでA（決定）が明示されており、Q2ではalpha版ポリシーを根拠として示している; 探索できる質問はユーザーに聞かない — Q&Aの内容はコードベース探索では答えられない設計判断であり適切; 関連する影響を自発的に指摘する — `experimental/AGENTS.md` の更新・既存テストの更新など、関連影響が自発的に列挙されている; 批判の前にブレインストーミング確認 — 該当するブレインストーミング状況はなく適用外; 脇道の知見を draft.md に記録する — 議題の逸脱は見受けられず適用外; draft は要件定義レベルに留める — Q7のテスト戦略でユニットテスト対象モジュールを具体的に列挙するなど、実装詳細レベルの記述が含まれている; CLI インターフェースの後方互換性 — alpha版ポリシーにより後方互換不要と明示し、移行手順（6ステップ）が spec に含まれている",
+      "trigger": "gate post hook (auto)",
+      "timestamp": "2026-04-06T16:26:17.190Z"
+    },
+    {
+      "step": "gate-draft",
+      "reason": "単一責任 — experimental workflow の再設計という一つの関心事に集中しており、無関係な変更は含まれていない。; 要件の明確性 — 各 Q&A の回答は具体的な動作（`--status` オプション残存、`--category` の4種分類、タイトル付与ルール等）で記述されており、曖昧な形容詞は使われていない。; 文脈の完全性 — 各要件は背景・制約・影響範囲とともに記述され、Q&A 形式でトリガー条件と期待動作が対になっている。; 機密情報のハードコード禁止 — ドラフト内に API キーやトークン等の機密情報の直接記述はない。; 要件の優先順位 — 影響範囲に8領域（CLI、config、types.js、src/lib/、CLAUDE.md、skill、upgrade、テスト）が列挙されているが、実装優先順位が明示されていない（移行手順の順序はあるが、要件としての優先度ではない）。; 既存機能への影響 — 「既存機能への影響」セクションで board.js 削除、to-issue→publish 置き換え、config 追加、AGENTS.md 更新、既存テスト更新が明示されている。; 推奨案は根拠付きで提示する — 各 Q&A で推奨案が明示され、alpha版ポリシー・flow.js との統一性等の根拠が付されている。; 探索できる質問はユーザーに聞かない — Q&A の各質問はコードベース探索では決定できない設計判断（スコープ・移行方針・優先度）であり、ユーザーへの確認が妥当。; 関連する影響を自発的に指摘する — `experimental/AGENTS.md` 更新、既存テスト更新、upgrade コマンドへの影響など関連影響が自発的に列挙されている。; 批判の前にブレインストーミング確認 — ドラフト内容は確認済み設計判断であり、ブレインストーミング段階の意見批判には該当しない。; 脇道の知見を draft.md に記録する — ドラフトレビューのため本記事は適用対象外。; draft は要件定義レベルに留める — 関数レベルの実装詳細は含まれておらず、要件・移行手順・影響範囲の記述に留まっている。; CLI インターフェースの後方互換性 — `board.js` → `workflow.js`、`to-issue` → `publish` の移行について「移行手順」セクションで6ステップの手順が明記されている。",
+      "trigger": "gate post hook (auto)",
+      "timestamp": "2026-04-06T16:27:02.495Z"
+    },
+    {
+      "step": "gate",
+      "reason": "line 71: unresolved token (- publish 成功時、ボードアイテムのステータスを `Todo` に移動する); line 132: unresolved token (8. **REQ-PUBLISH-STATUS**: `publish` 成功時、ボードアイテムのステータスを `Todo` に移動すること); line 153: unresolved token (3. `node experimental/workflow.js publish <hash> --label enhancement` が Draft を GitHub Issue に変換し、ステータスを Todo に移動すること); line 191: unchecked task/question (- [ ] dispatcher パターンの共通化をどの程度行うか（src/flow.js からの共有 vs experimental 内での再実装）は実装時に判断する)",
+      "trigger": "gate post hook (auto)",
+      "timestamp": "2026-04-06T16:29:49.429Z"
+    },
+    {
+      "step": "gate",
+      "reason": "line 71: unresolved token (- publish 成功時、ボードアイテムのステータスを Todo に移動する); line 132: unresolved token (8. **REQ-PUBLISH-STATUS**: publish 成功時、ボードアイテムのステータスを Todo に移動すること); line 153: unresolved token (3. `node experimental/workflow.js publish <hash> --label enhancement` が Draft を GitHub Issue に変換し、ステータスを Todo に移動すること（GitHub Projects の Status フィールド値）)",
+      "trigger": "gate post hook (auto)",
+      "timestamp": "2026-04-06T16:30:12.090Z"
+    },
+    {
+      "step": "gate",
+      "reason": "line 71: unresolved token (- publish 成功時、ボードアイテムの GitHub Projects Status フィールドを \"Todo\" に変更する); line 132: unresolved token (8. **REQ-PUBLISH-STATUS**: publish 成功時、ボードアイテムの GitHub Projects Status フィールドを \"Todo\" に変更すること); line 153: unresolved token (3. `node experimental/workflow.js publish <hash> --label enhancement` が Draft を GitHub Issue に変換し、GitHub Projects Status フィールドを \"Todo\" に変更すること)",
+      "trigger": "gate post hook (auto)",
+      "timestamp": "2026-04-06T16:30:33.612Z"
+    },
+    {
+      "step": "gate",
+      "reason": "単一責任 — experimental workflow の再設計という一つの関心事に集中している; 要件の明確性 — 「`--status` デフォルトを `Ideas` にすること」「boolean 以外の値が入った場合にエラーを返すこと」等、検証可能な条件で記述されている; 文脈の完全性 — REQ-SHARED-FN（P2）は「プロジェクト非依存であること」という条件のみでトリガー条件（When/If）がなく、期待される振る舞いも不明確; 機密情報のハードコード禁止 — API キー等の機密情報はない; エラーの黙殺禁止 — REQ-EXIT-CODE でエラー時非ゼロ終了、REQ-CLI-OUTPUT で console.log/process.exit を呼ばない制約あり。エラー握りつぶし禁止の明示はないが設計上問題なし; 要件の優先順位 — 17件の要件を P0/P1/P2 で明示的に優先順位付けしている; 既存機能への影響 — Out of Scope に `src/flow.js` の変更なしを明示、Migration Steps に影響範囲を記載; リソース使用量の上限設定 — REQ-PUBLISH の AI エージェント翻訳処理について、タイムアウト・リトライ上限・翻訳文字数上限等の制約が記述されていない; 変更にはテストが必要 — Test Strategy セクションにユニットテストと E2E テストを含む; 仕様にテスト方針を含めること — Test Strategy セクションで何をどうテストするか具体的に記載されている; draft を整理・抽象化する — Requirements・Acceptance Criteria・Migration Steps に整理・構造化されており、単純コピーではない; 未解決事項は Open Questions に記録する — Open Questions セクションあり、解決済みは `[x]` でマーク; このアプローチを選んだ理由を記述する — Alternatives Considered に各案の採否理由が記述されている; CLI インターフェースの後方互換性 — alpha版ポリシーによる一括置き換えを明示し、Migration Steps に移行手順を記載; 終了コードの規約 — REQ-EXIT-CODE および REQ-ENABLE-CHECK で非ゼロ終了コードを明示",
+      "trigger": "gate post hook (auto)",
+      "timestamp": "2026-04-06T16:31:18.638Z"
+    }
+  ]
+}
