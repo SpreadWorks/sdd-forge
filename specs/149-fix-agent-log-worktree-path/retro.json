@@ -1,0 +1,40 @@
+{
+  "spec": "specs/149-fix-agent-log-worktree-path/spec.md",
+  "date": "2026-04-06T16:05:27.400Z",
+  "requirements": [
+    {
+      "desc": "cfg.logs.dir が設定されている場合は worktree 検出なしでそのまま返す",
+      "status": "done",
+      "note": "resolveLogDir の先頭で `if (cfg?.logs?.dir) return cfg.logs.dir;` により、worktree 検出前に即座に返す実装が確認できる"
+    },
+    {
+      "desc": "isInsideWorktree(cwd) が true の場合、getMainRepoPath(cwd) でメインリポジトリパスをベースにログディレクトリを解決する",
+      "status": "done",
+      "note": "`const repoRoot = isInsideWorktree(root) ? getMainRepoPath(root) : root;` により worktree 時はメインリポジトリパスをベースに使用する実装が確認できる"
+    },
+    {
+      "desc": "isInsideWorktree(cwd) が false の場合、従来通り cwd ベースでログディレクトリを解決する",
+      "status": "done",
+      "note": "三項演算子の else 側で `root`（= resolved cwd）をそのまま使用しており、従来動作を維持している"
+    },
+    {
+      "desc": "getMainRepoPath(cwd) が throw した場合、resolveLogDir はエラーをキャッチせず伝播させる",
+      "status": "done",
+      "note": "try/catch なしで `getMainRepoPath(root)` を呼び出しているため、エラーは自然に伝播する。req3 テストでも実際の git 解決失敗でエラー伝播を検証している"
+    }
+  ],
+  "unplanned": [
+    {
+      "file": "tests/helpers/tmp-dir.js",
+      "change": "`useTmpDir` ヘルパー関数を追加。before/after フックでの一時ディレクトリライフサイクル管理を共通化。テスト内で重複していたパターンを抽出したもので、コードレビュー(review.md)で承認済み"
+    }
+  ],
+  "summary": {
+    "total": 4,
+    "done": 4,
+    "partial": 0,
+    "not_done": 0,
+    "rate": 1,
+    "notes": "全4要件が実装・テストともに満たされている。`src/lib/agent-log.js` の変更は最小限（4行）で要件を正確に実装。`tests/helpers/tmp-dir.js` への `useTmpDir` 追加はスペック外だが、コードレビューで承認されたDRY改善であり問題なし。spec検証テストも req0〜req3 を網羅している。"
+  }
+}

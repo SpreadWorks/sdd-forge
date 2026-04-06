@@ -6,6 +6,7 @@
 
 import fs from "fs";
 import path from "path";
+import { isInsideWorktree, getMainRepoPath } from "./cli.js";
 
 export class AgentLog {
   /**
@@ -49,7 +50,9 @@ export class AgentLog {
 export function resolveLogDir(cwd, cfg) {
   if (cfg?.logs?.dir) return cfg.logs.dir;
   const workDir = cfg?.agent?.workDir || ".tmp";
-  return path.join(path.resolve(cwd || process.cwd(), workDir), "logs");
+  const root = path.resolve(cwd || process.cwd());
+  const repoRoot = isInsideWorktree(root) ? getMainRepoPath(root) : root;
+  return path.join(repoRoot, workDir, "logs");
 }
 
 /**
