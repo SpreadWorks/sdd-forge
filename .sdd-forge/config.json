@@ -140,7 +140,7 @@
 	      "agent": "claude", "profile": "sonnet"
       },
       "flow.review.draft": {
-	      "agent": "claude", "profile": "sonnet"
+	      "agent": "codex"
       },
       "flow.review.impl": {
 	      "agent": "claude", "profile": "sonnet"

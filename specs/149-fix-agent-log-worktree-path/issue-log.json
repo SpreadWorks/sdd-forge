@@ -1,0 +1,16 @@
+{
+  "entries": [
+    {
+      "step": "gate",
+      "reason": "単一責任 — `resolveLogDir` の worktree パス解決のみを対象としており、無関係な変更は含まない; 要件の明確性 — 各要件は `isInsideWorktree(cwd)` の真偽値や `cfg.logs.dir` の有無など検証可能な条件で記述されている; 文脈の完全性 — 各 req は条件（When/If）と期待振る舞い（shall）が対になっている; 機密情報のハードコード禁止 — 機密情報の記述なし; エラーの黙殺禁止 — req3 および Clarifications で `getMainRepoPath` 失敗時はエラーを伝播させると明記されている; 要件の優先順位 — 要件は4件（P1 必須）で優先順位が明示されている; 既存機能への影響 — Acceptance Criteria に「通常リポジトリでの動作は変わらない」「cfg.logs.dir 指定時は従来通り」と明記されている; リソース使用量の上限設定 — 再帰・リトライ・大量データ処理は本変更に含まれない; 変更にはテストが必要 — テストコードへの言及がなく、テストなしの理由も記述されていない; 仕様にテスト方針を含めること — テスト方針セクションが存在しない; draft を整理・抽象化する（コピーしない） — 要件は整理・抽象化されており単純コピーではない; 未解決事項は Open Questions に記録する — Open Questions セクションがあり「なし」と明示されている; このアプローチを選んだ理由を記述する — Alternatives Considered と Clarifications Q&A に採用理由が記述されている; CLI インターフェースの後方互換性 — CLI インターフェースの変更なし（内部関数の修正のみ）; 終了コードの規約 — CLI コマンドの終了コード変更なし（内部ライブラリの修正のみ）",
+      "trigger": "gate post hook (auto)",
+      "timestamp": "2026-04-06T15:51:13.864Z"
+    },
+    {
+      "step": "gate-impl",
+      "reason": "no changes found against base branch",
+      "trigger": "gate post hook (auto)",
+      "timestamp": "2026-04-06T15:59:27.661Z"
+    }
+  ]
+}
