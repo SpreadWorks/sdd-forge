@@ -51,10 +51,11 @@ Before starting, run `sdd-forge flow get check impl` to verify prerequisites.
      3. Skip to step 3 (review).
      4. Display: "auto: test-only spec detected — impl phase skipped"
      - If unsure whether the spec is test-only, proceed with normal implementation (err on the side of caution).
-   - Run `sdd-forge flow get context --raw` to understand the project structure. For files needing deeper understanding, use `sdd-forge flow get context <path> --raw`.
-   - Run `sdd-forge flow get context --search "<spec goal>" --raw` to retrieve related entries with detail. Use the spec's Goal section as the search query.
-   - Load guardrail articles for the implementation phase: `sdd-forge flow get guardrail impl`.
-     If output is non-empty, follow these principles during implementation.
+   - **Context gathering (supplement-first):** Build understanding in tiers — stop as soon as sufficient. Do NOT re-read material already in context.
+     1. The spec (just read above) and test files from the plan phase are the primary inputs. Proceed if they are sufficient.
+     2. If target files are not yet in context: `sdd-forge flow get context --search "<spec goal>" --raw` using the spec's Goal section as the query.
+     3. If project structure is still unclear after step 2: `sdd-forge flow get context --raw` for a broad overview; then `sdd-forge flow get context <path> --raw` for specific files.
+     4. If guardrail articles have NOT been loaded in this session: `sdd-forge flow get guardrail impl`. If output is non-empty, follow these principles. Skip if already present in context.
    - Code only after confirming gate PASS and test phase completion.
    - Aim to make tests pass.
    - **Update requirements as you go**: `sdd-forge flow set req <index> done` for each completed requirement.
@@ -66,7 +67,7 @@ Before starting, run `sdd-forge flow get check impl` to verify prerequisites.
 2. Run gate impl (after implementation, BEFORE review).
    - `sdd-forge flow run gate --phase impl` (step status is automatically managed by hooks: pre sets gate-impl to in_progress, post sets done on PASS)
    - Checks spec requirements against `git diff baseBranch...HEAD` + guardrail compliance via AI.
-   - If FAIL (`data.result === "fail"`): show ALL failures from `data.artifacts.reasons`. AI fixes implementation and re-runs gate.
+   - If FAIL (`data.result === "fail"`): show ALL failures from `data.artifacts.reasons`. Fix using only the failure reasons and `git diff baseBranch...HEAD` — do NOT re-read the full spec, context, or guardrail. Re-run gate.
    - **Retry limit: 5 attempts.** If gate does not PASS after 5 fix-and-rerun cycles, STOP and return control to the user.
    - Do not proceed until PASS (`data.result === "pass"`).
 
@@ -134,7 +135,7 @@ Before starting, run `sdd-forge flow get check impl` to verify prerequisites.
 
 3b. Re-run gate impl (after review, BEFORE finalize).
    - Run `sdd-forge flow run gate --phase impl` to re-validate that review's auto-corrections have not broken spec requirements or guardrail compliance.
-   - If FAIL: AI fixes implementation and re-runs gate.
+   - If FAIL (`data.result === "fail"`): show ALL failures from `data.artifacts.reasons`. Fix using only the failure reasons and `git diff baseBranch...HEAD` — do NOT re-read the full spec, context, or guardrail. Re-run gate.
    - **Retry limit: 5 attempts.** If gate does not PASS after 5 fix-and-rerun cycles, STOP and return control to the user.
    - If review was skipped (step 3 chose option 3), skip this step as well.
 
