@@ -1,5 +1,5 @@
 {
-  "analyzedAt": "2026-04-06T15:36:12.290Z",
+  "analyzedAt": "2026-04-06T16:05:27.639Z",
   "package": {
     "entries": [
       {
@@ -3540,9 +3540,9 @@
       },
       {
         "file": "src/lib/agent-log.js",
-        "hash": "9515786786fac127dafa2a8d1e4c0d3c",
-        "lines": 74,
-        "mtime": "2026-04-06T15:36:12.102Z",
+        "hash": "88338368b90e5d9023f552f4130d6cd2",
+        "lines": 77,
+        "mtime": "2026-04-06T16:05:27.452Z",
         "className": "agent-log",
         "methods": [
           "AgentLog",
@@ -3551,7 +3551,8 @@
         ],
         "imports": [
           "fs",
-          "path"
+          "path",
+          "./cli.js"
         ],
         "exports": [
           "AgentLog",
@@ -3563,23 +3564,25 @@
           "src/lib/agent.js"
         ],
         "id": "62624ef1",
-        "summary": "Provides AgentLog class and utilities for writing agent prompt logs to a JSONL file on disk.",
-        "detail": "Exports resolveLogDir to compute the log directory path relative to the project working directory and sdd-forge config. The appendAgentLog function serializes an AgentLog instance as a JSON line and appends it to prompts.jsonl, creating the directory if needed. Errors during write are reported to stderr but do not propagate, making logging best-effort. The log file location is derived from the workDir config key.",
+        "summary": "Provides agent prompt log management, including directory resolution and JSONL append functionality for persisting agent interaction records.",
+        "detail": "The AgentLog class encapsulates structured log data with a toJSON serialization method. The resolveLogDir function determines the log output directory by resolving the repository root (handling worktree scenarios via isInsideWorktree/getMainRepoPath) and constructing a path under the configured work directory. The appendAgentLog function ensures the log directory exists, then appends serialized AgentLog entries as newline-delimited JSON to a prompts.jsonl file. Errors during write operations are reported to stderr without throwing, providing resilient logging behavior.",
         "chapter": "internal_design",
         "role": "lib",
         "enrich": {
-          "processedAt": "2026-04-06T15:36:33.520Z",
+          "processedAt": "2026-04-06T16:05:38.483Z",
           "attempts": 1
         },
         "keywords": [
           "agent-log",
+          "prompt log",
+          "JSONL",
+          "log directory",
+          "worktree",
+          "appendAgentLog",
+          "resolveLogDir",
+          "AgentLog",
           "logging",
-          "jsonl",
-          "prompts",
-          "append",
-          "log-dir",
-          "stderr",
-          "audit-trail"
+          "prompts"
         ]
       },
       {
@@ -3733,7 +3736,8 @@
           "src/lib/skills.js",
           "src/sdd-forge.js",
           "src/setup.js",
-          "src/upgrade.js"
+          "src/upgrade.js",
+          "src/lib/agent-log.js"
         ],
         "id": "f351ecc4",
         "summary": "Core CLI utility module providing package directory resolution, repo root detection, argument parsing, worktree detection, and version retrieval.",
@@ -5274,7 +5278,8 @@
         "usedBy": [
           "src/lib/flow-state.js",
           "src/lib/i18n.js",
-          "src/lib/skills.js"
+          "src/lib/skills.js",
+          "src/lib/agent-log.js"
         ],
         "id": "1c8c8717"
       },
@@ -6637,7 +6642,8 @@
         "usedBy": [
           "src/lib/flow-state.js",
           "src/lib/i18n.js",
-          "src/lib/skills.js"
+          "src/lib/skills.js",
+          "src/lib/agent-log.js"
         ],
         "id": "0c4cfb73"
       },
@@ -7636,5 +7642,5 @@
     },
     "dataSourceHash": "7d725e75d5031be445119323e4947c91"
   },
-  "enrichedAt": "2026-04-06T15:36:33.520Z"
+  "enrichedAt": "2026-04-06T16:05:38.483Z"
 }
