@@ -140,6 +140,102 @@
           "spec"
         ]
       }
+    },
+    {
+      "id": "draft-recommend-with-reasoning",
+      "title": "Present Recommendations with Reasoning",
+      "body": "For each question, present a recommended answer. State the basis: (1) project docs/, (2) guardrail principles, or (3) existing code patterns. Lead with the recommendation and keep it concise.",
+      "meta": {
+        "phase": ["draft"]
+      }
+    },
+    {
+      "id": "draft-explore-before-asking",
+      "title": "Explore Before Asking",
+      "body": "If a question can be answered by reading docs/ or exploring the codebase, do so before asking the user.",
+      "meta": {
+        "phase": ["draft"]
+      }
+    },
+    {
+      "id": "draft-raise-implications",
+      "title": "Proactively Raise Related Implications",
+      "body": "When a decision has obvious related implications, raise them proactively. Do not wait for the user to notice the gap.",
+      "meta": {
+        "phase": ["draft"]
+      }
+    },
+    {
+      "id": "draft-confirm-brainstorm-vs-decide",
+      "title": "Confirm Brainstorm vs. Decision Before Critiquing",
+      "body": "Before critiquing a decision, confirm whether the user is brainstorming or deciding. Do not evaluate brainstorming ideas as final decisions.",
+      "meta": {
+        "phase": ["draft"]
+      }
+    },
+    {
+      "id": "draft-capture-digressions",
+      "title": "Capture Digressions in draft.md",
+      "body": "When a discussion digresses, capture key insights and decisions in draft.md before returning to the main thread.",
+      "meta": {
+        "phase": ["draft"]
+      }
+    },
+    {
+      "id": "draft-scope-boundary",
+      "title": "Draft Stays at Requirements Level",
+      "body": "Draft is RFP/requirements level only. Do not include implementation details or function-level design.",
+      "meta": {
+        "phase": ["draft"]
+      }
+    },
+    {
+      "id": "spec-synthesize-not-copy",
+      "title": "Synthesize Draft, Do Not Copy",
+      "body": "Organize and abstract draft content rather than copying it directly. Do not invent content not present in the draft.",
+      "meta": {
+        "phase": ["spec"]
+      }
+    },
+    {
+      "id": "spec-no-fabrication",
+      "title": "Record Unresolved Points as Open Questions",
+      "body": "Place unresolved points in the Open Questions section. Do not fabricate answers.",
+      "meta": {
+        "phase": ["spec"]
+      }
+    },
+    {
+      "id": "spec-include-rationale",
+      "title": "Include 'Why This Approach' Rationale",
+      "body": "The spec shall include the rationale for why this approach was chosen.",
+      "meta": {
+        "phase": ["spec"]
+      }
+    },
+    {
+      "id": "impl-test-conflict-escalation",
+      "title": "Escalate When New Tests Break Existing Tests",
+      "body": "If new tests cause existing tests to fail, inform the user and ask how to proceed.",
+      "meta": {
+        "phase": ["impl"]
+      }
+    },
+    {
+      "id": "impl-test-preservation",
+      "title": "Do Not Modify Existing Tests Without Approval",
+      "body": "Do not modify or delete existing tests without user approval.",
+      "meta": {
+        "phase": ["impl"]
+      }
+    },
+    {
+      "id": "impl-flag-obsolete-tests",
+      "title": "Flag Tests That Become Irrelevant",
+      "body": "If past tests become irrelevant due to feature changes, flag them to the user.",
+      "meta": {
+        "phase": ["impl"]
+      }
     }
   ]
 }

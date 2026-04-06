@@ -93,13 +93,7 @@ Note: `sdd-forge flow get context` automatically records these metrics via hooks
    - **ALL turns MUST end with a question.** The AI must never end a turn without asking the user something.
    - Add progress display `(n/N)` at the start of each question. Get `n` from `sdd-forge flow get qa-count`. `N` is the AI's estimate of remaining questions.
    - After each question: `sdd-forge flow set metric draft question`
-   - Present recommendations every turn — concise, with the recommended choice first.
    - Use selection-based questions as default (not free-form). Provide options the user can pick from.
-   - For each question, provide your recommended answer with reasoning. Base recommendations on: (1) project docs/, (2) guardrail principles, (3) existing code patterns. State which basis you used.
-   - When a decision has obvious related implications, proactively raise them. Do not wait for the user to notice gaps.
-   - If a question can be answered by reading docs/ or exploring the codebase, do so first rather than asking the user.
-   - Before critiquing a decision, confirm whether the user is brainstorming or deciding. Do not evaluate brainstorming ideas as final decisions.
-   - When a discussion digresses, capture key insights and decisions in draft.md before returning to the main thread.
    - **Requirements category checklist** (AI uses internally to check coverage):
      1. Goal & Scope — Is the goal clear? Is scope bounded?
      2. Impact on existing — What existing features/code/tests are affected?
@@ -108,7 +102,6 @@ Note: `sdd-forge flow get context` automatically records these metrics via hooks
      5. Test strategy — What to test and how?
      6. Alternatives considered — What other approaches were evaluated? Why was this one chosen?
      7. Future extensibility — How does this change affect future modifications or extensions?
-   - Draft is RFP/requirements level only. No implementation details or function-level design.
    - **Before starting draft discussion**:
      1. **If a GitHub Issue number is linked** (saved in flow.json via `--issue`):
         Fetch the issue content with `sdd-forge flow get issue <number>` and display the title and body before the first question.
@@ -153,9 +146,6 @@ Note: `sdd-forge flow get context` automatically records these metrics via hooks
      - If guardrail articles for spec have NOT been loaded in this session: `sdd-forge flow get guardrail spec`. If output is non-empty, follow these principles. Skip if already present in context.
    - Fill Goal, Scope, Out of Scope, Requirements, Acceptance Criteria, Alternatives Considered (if applicable).
    - If draft phase was done, reflect draft Q&A and decisions in spec.md.
-   - Don't just copy draft — organize and abstract (but don't invent).
-   - Unresolved points → Open Questions. Do not fabricate answers.
-   - Include "why this approach" rationale.
    - **On complete**: `sdd-forge flow set step spec done`
 
 7. Run gate spec (BEFORE approval).

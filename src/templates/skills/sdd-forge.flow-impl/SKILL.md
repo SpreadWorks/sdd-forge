@@ -186,12 +186,6 @@ Before starting, run `sdd-forge flow get check impl` to verify prerequisites.
 
 <!-- include("@templates/partials/issue-log-recording.md") -->
 
-## Test Maintenance
-
-- If new tests break existing tests, inform the user and ask how to proceed.
-- Do not modify or delete existing tests without user approval.
-- If past tests become irrelevant due to feature changes, flag them to the user.
-
 ## Commands
 
 ```bash

@@ -140,6 +140,102 @@
           "spec"
         ]
       }
+    },
+    {
+      "id": "draft-recommend-with-reasoning",
+      "title": "推奨案は根拠付きで提示する",
+      "body": "各質問に対して推奨案を提示すること。根拠は (1) project docs/、(2) guardrail 原則、(3) 既存コードパターンのいずれかを明示する。推奨案を先頭に置き、簡潔に提示すること。",
+      "meta": {
+        "phase": ["draft"]
+      }
+    },
+    {
+      "id": "draft-explore-before-asking",
+      "title": "探索できる質問はユーザーに聞かない",
+      "body": "docs/ やコードベースを探索して答えられる質問は、ユーザーに聞く前に自分で調べること。",
+      "meta": {
+        "phase": ["draft"]
+      }
+    },
+    {
+      "id": "draft-raise-implications",
+      "title": "関連する影響を自発的に指摘する",
+      "body": "決定事項に明らかな関連影響がある場合、ユーザーが気づくのを待たず自発的に指摘すること。",
+      "meta": {
+        "phase": ["draft"]
+      }
+    },
+    {
+      "id": "draft-confirm-brainstorm-vs-decide",
+      "title": "批判の前にブレインストーミング確認",
+      "body": "意見を批判する前に、ユーザーがブレインストーミング中なのか決定しようとしているのかを確認すること。ブレインストーミングのアイデアを確定した決定として評価しないこと。",
+      "meta": {
+        "phase": ["draft"]
+      }
+    },
+    {
+      "id": "draft-capture-digressions",
+      "title": "脇道の知見を draft.md に記録する",
+      "body": "議論が脇道にそれた場合、重要な知見と決定事項を draft.md に記録してから本筋に戻ること。",
+      "meta": {
+        "phase": ["draft"]
+      }
+    },
+    {
+      "id": "draft-scope-boundary",
+      "title": "draft は要件定義レベルに留める",
+      "body": "draft は RFP・要件定義レベルに留めること。実装詳細や関数レベルの設計を含めてはならない。",
+      "meta": {
+        "phase": ["draft"]
+      }
+    },
+    {
+      "id": "spec-synthesize-not-copy",
+      "title": "draft を整理・抽象化する（コピーしない）",
+      "body": "draft の内容を単純にコピーするのではなく、整理・抽象化すること。ただし、draft にない内容を創作してはならない。",
+      "meta": {
+        "phase": ["spec"]
+      }
+    },
+    {
+      "id": "spec-no-fabrication",
+      "title": "未解決事項は Open Questions に記録する",
+      "body": "未解決の論点は Open Questions セクションに記録すること。答えを捏造してはならない。",
+      "meta": {
+        "phase": ["spec"]
+      }
+    },
+    {
+      "id": "spec-include-rationale",
+      "title": "このアプローチを選んだ理由を記述する",
+      "body": "spec には「なぜこのアプローチを採用するのか」という根拠を含めること。",
+      "meta": {
+        "phase": ["spec"]
+      }
+    },
+    {
+      "id": "impl-test-conflict-escalation",
+      "title": "新しいテストが既存テストを壊した場合は報告する",
+      "body": "新しいテストが既存テストを失敗させた場合、ユーザーに報告し対応方針を確認すること。",
+      "meta": {
+        "phase": ["impl"]
+      }
+    },
+    {
+      "id": "impl-test-preservation",
+      "title": "既存テストをユーザー承認なしに変更しない",
+      "body": "既存テストの変更・削除はユーザーの承認なしに行ってはならない。",
+      "meta": {
+        "phase": ["impl"]
+      }
+    },
+    {
+      "id": "impl-flag-obsolete-tests",
+      "title": "不要になったテストをユーザーに知らせる",
+      "body": "機能変更によって過去のテストが不要になった場合、ユーザーに知らせること。",
+      "meta": {
+        "phase": ["impl"]
+      }
     }
   ]
 }
