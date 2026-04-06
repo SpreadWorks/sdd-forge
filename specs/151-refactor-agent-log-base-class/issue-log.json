@@ -1,0 +1,18 @@
+{
+  "entries": [
+    {
+      "step": "implement",
+      "reason": "buildLayers test failure in template-merger.test.js:57 is pre-existing, not caused by this spec",
+      "trigger": "npm test --scope unit",
+      "resolution": "ignored — failure exists on base branch",
+      "timestamp": "2026-04-06T23:35:40.310Z"
+    },
+    {
+      "step": "finalize",
+      "reason": "merge failed: untracked specs/151 dir in main repo conflicted with worktree merge",
+      "trigger": "finalize --mode all",
+      "resolution": "removed untracked dir from main repo",
+      "timestamp": "2026-04-06T23:47:04.320Z"
+    }
+  ]
+}

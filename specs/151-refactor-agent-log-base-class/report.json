@@ -1,0 +1,37 @@
+{
+  "data": {
+    "implementation": {
+      "diffStat": "specs/151-refactor-agent-log-base-class/draft.md   |  78 ++++++++++\n specs/151-refactor-agent-log-base-class/flow.json  | 142 ++++++++++++++++++\n .../issue-log.json                                 |  11 ++\n specs/151-refactor-agent-log-base-class/qa.md      |   9 ++\n specs/151-refactor-agent-log-base-class/review.md  |  51 +++++++\n specs/151-refactor-agent-log-base-class/spec.md    |  83 +++++++++++\n .../tests/README.md                                |  31 ++++\n src/lib/agent-log.js                               |  49 ++-----\n src/lib/agent.js                                   |  64 ++------\n src/lib/log.js                                     |  70 +++++++++\n tests/unit/lib/log.test.js                         | 162 +++++++++++++++++++++\n 11 files changed, 661 insertions(+), 89 deletions(-)",
+      "commits": [
+        "feat: feature/151-refactor-agent-log-base-class",
+        "refactor: apply review suggestions",
+        "refactor: make logger async to avoid sync I/O on hot path",
+        "refactor: extract Log base class and logger from agent-log"
+      ]
+    },
+    "retro": {
+      "total": 6,
+      "done": 6,
+      "partial": 0,
+      "not_done": 0,
+      "rate": 1,
+      "notes": "全6要件がすべて done。unplanned 変更はいずれも review で APPROVED された改善（stderr ガード追加、callAgentAsync の制御フロー簡略化）であり、spec の設計意図と一致している。動作への悪影響はなく、品質向上に寄与する変更のみ。"
+    },
+    "issueLog": {
+      "count": 0,
+      "entries": []
+    },
+    "metrics": {
+      "docsRead": 1,
+      "srcRead": 1,
+      "question": 0,
+      "issueLog": 1
+    },
+    "tests": null,
+    "sync": {
+      "status": "skipped",
+      "reason": "sync was skipped"
+    }
+  },
+  "text": "  Report\n\n  Implementation\n  ────────────────────────────────────────────────\n    feat: feature/151-refactor-agent-log-base-class\n    refactor: apply review suggestions\n    refactor: make logger async to avoid sync I/O on hot path\n    refactor: extract Log base class and logger from agent-log\n    11 files changed, 661 insertions(+), 89 deletions(-)\n\n  Retro\n  ────────────────────────────────────────────────\n    ████████ 100%  (6 done / 0 partial / 0 miss)\n\n  Metrics\n  ────────────────────────────────────────────────\n    docs 1  src 1  Q&A 0  issues 1\n\n  Documents\n  ────────────────────────────────────────────────\n    skipped: sync was skipped"
+}

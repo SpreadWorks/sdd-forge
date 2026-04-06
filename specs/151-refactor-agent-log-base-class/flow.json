@@ -1,0 +1,142 @@
+{
+  "spec": "specs/151-refactor-agent-log-base-class/spec.md",
+  "baseBranch": "development",
+  "featureBranch": "feature/151-refactor-agent-log-base-class",
+  "steps": [
+    {
+      "id": "approach",
+      "status": "done"
+    },
+    {
+      "id": "branch",
+      "status": "done"
+    },
+    {
+      "id": "prepare-spec",
+      "status": "pending"
+    },
+    {
+      "id": "draft",
+      "status": "done"
+    },
+    {
+      "id": "gate-draft",
+      "status": "done"
+    },
+    {
+      "id": "spec",
+      "status": "done"
+    },
+    {
+      "id": "gate",
+      "status": "done"
+    },
+    {
+      "id": "approval",
+      "status": "done"
+    },
+    {
+      "id": "test",
+      "status": "done"
+    },
+    {
+      "id": "implement",
+      "status": "done"
+    },
+    {
+      "id": "gate-impl",
+      "status": "done"
+    },
+    {
+      "id": "review",
+      "status": "done"
+    },
+    {
+      "id": "finalize",
+      "status": "pending"
+    },
+    {
+      "id": "commit",
+      "status": "pending"
+    },
+    {
+      "id": "push",
+      "status": "pending"
+    },
+    {
+      "id": "merge",
+      "status": "pending"
+    },
+    {
+      "id": "pr-create",
+      "status": "pending"
+    },
+    {
+      "id": "branch-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "pr-merge",
+      "status": "pending"
+    },
+    {
+      "id": "sync-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "docs-update",
+      "status": "pending"
+    },
+    {
+      "id": "docs-review",
+      "status": "pending"
+    },
+    {
+      "id": "docs-commit",
+      "status": "pending"
+    }
+  ],
+  "requirements": [
+    {
+      "desc": "Log 基底クラスの作成 (src/lib/log.js)",
+      "status": "done"
+    },
+    {
+      "desc": "logger 関数の作成 (src/lib/log.js)",
+      "status": "done"
+    },
+    {
+      "desc": "AgentLog の Log 継承化 (src/lib/agent-log.js)",
+      "status": "done"
+    },
+    {
+      "desc": "callAgent / callAgentAsync の agentLog,cfg 引数削除 (src/lib/agent.js)",
+      "status": "done"
+    },
+    {
+      "desc": "appendAgentLog と resolveLogDir の移動",
+      "status": "done"
+    },
+    {
+      "desc": "全呼び出し箇所の引数更新",
+      "status": "done"
+    }
+  ],
+  "issue": 103,
+  "request": "AgentLogのログ基盤リファクタリング（Log基底クラス導入）",
+  "worktree": true,
+  "autoApprove": true,
+  "metrics": {
+    "plan": {
+      "docsRead": 1
+    },
+    "impl": {
+      "srcRead": 1,
+      "issueLog": 1
+    }
+  },
+  "notes": [
+    "draft: autoApprove self-Q&A completed, 7 categories covered",
+    "approval: autoApprove, gate passed all 15 checks"
+  ]
+}

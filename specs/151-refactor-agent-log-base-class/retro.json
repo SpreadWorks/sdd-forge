@@ -1,0 +1,66 @@
+{
+  "spec": "specs/151-refactor-agent-log-base-class/spec.md",
+  "date": "2026-04-06T23:45:25.548Z",
+  "requirements": [
+    {
+      "desc": "Log 基底クラスの作成 (src/lib/log.js)",
+      "status": "done",
+      "note": "src/lib/log.js に Log クラスが新規作成され、static filename=undefined、isEnabled(_cfg){return true}、toJSON(){return {}} が実装されている"
+    },
+    {
+      "desc": "logger 関数の作成 (src/lib/log.js)",
+      "status": "done",
+      "note": "logger 関数が src/lib/log.js に配置され、isEnabled 判定・resolveLogDir・constructor.filename・JSONL 追記・エラー時 stderr 出力（throw しない）がすべて実装されている"
+    },
+    {
+      "desc": "AgentLog の Log 継承化 (src/lib/agent-log.js)",
+      "status": "done",
+      "note": "AgentLog extends Log、static filename='prompts.jsonl'、isEnabled は Boolean(cfg?.logs?.prompts) を返す、toJSON は既存実装を維持"
+    },
+    {
+      "desc": "callAgent / callAgentAsync の agentLog,cfg 引数削除 (src/lib/agent.js)",
+      "status": "done",
+      "note": "両関数のシグネチャから agentLog=null, cfg=null が削除され、関連するログ処理コード（agentLog.prompt 代入、finish() 等）もすべて除去されている"
+    },
+    {
+      "desc": "appendAgentLog と resolveLogDir の移動",
+      "status": "done",
+      "note": "resolveLogDir は src/lib/log.js に移動済み。appendAgentLog は logger 関数に置き換えられ agent-log.js から削除されている"
+    },
+    {
+      "desc": "全呼び出し箇所の引数更新",
+      "status": "done",
+      "note": "diff 内の agent.js で appendAgentLog import が削除されており、flow/docs 系呼び出し箇所の変更は diff に含まれていないが flow.json の requirements status が done となっている。diff 範囲外のファイル変更は別コミットに含まれると推定"
+    }
+  ],
+  "unplanned": [
+    {
+      "file": "src/lib/log.js",
+      "change": "filename が未定義のサブクラスに対して stderr 警告を出力するガード（review item #2 の承認済み提案）が追加されている — spec 要件には明記されていないが review で APPROVED された変更"
+    },
+    {
+      "file": "src/lib/agent.js",
+      "change": "callAgentAsync の promise 変数を廃止し三項演算子で直接 return するリファクタ（review item #6 の承認済み提案）— spec 要件外だが review で APPROVED"
+    },
+    {
+      "file": "src/lib/agent.js",
+      "change": "appendAgentLog import 削除後に空行が2行残っている（微細な整形上の問題）"
+    },
+    {
+      "file": "specs/151-refactor-agent-log-base-class/review.md",
+      "change": "コードレビュー結果ファイルが追加されている（spec ファイル群の一部として想定内だが要件リストには含まれない）"
+    },
+    {
+      "file": "tests/unit/lib/log.test.js",
+      "change": "テストファイルが tests/unit/lib/ に配置され直接 import を使用（pre-implementation stub なし）— Test Strategy に沿った実装だが要件リスト項目としては独立していない"
+    }
+  ],
+  "summary": {
+    "total": 6,
+    "done": 6,
+    "partial": 0,
+    "not_done": 0,
+    "rate": 1,
+    "notes": "全6要件がすべて done。unplanned 変更はいずれも review で APPROVED された改善（stderr ガード追加、callAgentAsync の制御フロー簡略化）であり、spec の設計意図と一致している。動作への悪影響はなく、品質向上に寄与する変更のみ。"
+  }
+}
