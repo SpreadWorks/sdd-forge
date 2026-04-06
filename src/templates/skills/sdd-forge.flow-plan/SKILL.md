@@ -113,10 +113,10 @@ Note: `sdd-forge flow get context` automatically records these metrics via hooks
      1. **If a GitHub Issue number is linked** (saved in flow.json via `--issue`):
         Fetch the issue content with `sdd-forge flow get issue <number>` and display the title and body before the first question.
         Use the issue content as context for the draft discussion.
-     2. Run `sdd-forge flow get context --raw` to understand the project structure. Use this output to identify relevant files and modules.
-     3. Run `sdd-forge flow get context --search "<request text or issue title>" --raw` to retrieve related entries with detail. Use the request text or issue title as the search query.
-     4. Load guardrail articles for the draft phase: `sdd-forge flow get guardrail draft`.
-        If output is non-empty, consider these principles as constraints when asking questions and making proposals.
+     2. **Context gathering (supplement-first):** Build understanding in tiers — stop as soon as sufficient. Do NOT re-read material already in context.
+        - If target files/modules are not yet in context: `sdd-forge flow get context --search "<request text or issue title>" --raw` using the request or issue title as the query.
+        - If project structure is still unclear after search: `sdd-forge flow get context --raw` for a broad overview.
+     3. If guardrail articles have NOT been loaded in this session: `sdd-forge flow get guardrail draft`. If output is non-empty, consider these principles as constraints. Skip if already present in context.
    - Create `specs/NNN-xxx/draft.md` in the spec directory created in step 3.
    - AI presents choices/proposals → user selects with short answers.
    - Ask ONE question at a time (do not batch questions, do not self-answer).
@@ -146,12 +146,11 @@ Note: `sdd-forge flow get context` automatically records these metrics via hooks
 6. Fill spec (`spec`).
    - **On start**: `sdd-forge flow set step spec in_progress`
    - **Before writing spec**:
-     - Read draft (if exists) and linked GitHub issue content.
-     - Run `sdd-forge flow get context --raw` to understand the project structure.
-     - Run `sdd-forge flow get context --search "<request text or issue title>" --raw` to retrieve related entries with detail.
-     - For files needing deeper understanding, use `sdd-forge flow get context <path> --raw` to read them.
-     - Load guardrail articles for the spec phase: `sdd-forge flow get guardrail spec`.
-       If output is non-empty, follow these principles when writing the spec.
+     - Read draft (if exists) and linked GitHub issue content. If draft was completed, treat it as the primary input — do NOT re-read context already gathered in the draft phase.
+     - **Context gathering (supplement-first):** Only read additional context when draft + issue are insufficient.
+       - If specific target files are unclear: `sdd-forge flow get context --search "<request text or issue title>" --raw`.
+       - If project structure is still unclear: `sdd-forge flow get context <path> --raw` for specific files; `sdd-forge flow get context --raw` only as a last resort.
+     - If guardrail articles for spec have NOT been loaded in this session: `sdd-forge flow get guardrail spec`. If output is non-empty, follow these principles. Skip if already present in context.
    - Fill Goal, Scope, Out of Scope, Requirements, Acceptance Criteria, Alternatives Considered (if applicable).
    - If draft phase was done, reflect draft Q&A and decisions in spec.md.
    - Don't just copy draft — organize and abstract (but don't invent).
@@ -195,8 +194,7 @@ Note: `sdd-forge flow get context` automatically records these metrics via hooks
 9. Test phase (after approval).
    - **On start**: `sdd-forge flow set step test in_progress`
    - Run `sdd-forge flow get prompt plan.test-mode` and present the choices.
-   - Load guardrail articles for the test phase: `sdd-forge flow get guardrail test`.
-     If output is non-empty, follow these principles when writing tests.
+   - If guardrail articles for the test phase have NOT been loaded in this session: `sdd-forge flow get guardrail test`. If output is non-empty, follow these principles when writing tests. Skip if already present in context.
    - If code changes exist, implementation verification test is required in principle.
    - AI decides the appropriate test type based on the project's test infrastructure (no separate test-type selection).
    - AI shares briefly which test framework will be used and what will be verified (not a separate approval gate).
