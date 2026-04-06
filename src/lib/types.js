@@ -66,6 +66,12 @@
  */
 
 /**
+ * @typedef {Object} LogsConfig
+ * @property {boolean} [prompts] - Enable agent prompt logging (default: false)
+ * @property {string}  [dir]     - Log output directory (default: {agent.workDir}/logs)
+ */
+
+/**
  * @typedef {Object} SddConfig
  * @property {string} [name]                 - Project name (optional, set by setup wizard)
  * @property {DocsConfig} docs               - Documentation configuration (required)
@@ -75,6 +81,7 @@
  * @property {AgentConfig} [agent]           - AI agent invocation settings
  * @property {FlowConfig} [flow]             - Flow configuration
  * @property {CommandsConfig} [commands]     - External command availability
+ * @property {LogsConfig} [logs]             - Logging configuration
  */
 
 // ---------------------------------------------------------------------------
@@ -271,6 +278,20 @@ export function validateConfig(raw) {
       const validGh = new Set(["enable", "disable"]);
       if (raw.commands.gh != null && !validGh.has(raw.commands.gh)) {
         errors.push(`'commands.gh' must be one of: ${[...validGh].join(", ")}`);
+      }
+    }
+  }
+
+  // logs (省略可)
+  if (raw.logs != null) {
+    if (typeof raw.logs !== "object") {
+      errors.push("'logs' must be an object");
+    } else {
+      if (raw.logs.prompts != null && typeof raw.logs.prompts !== "boolean") {
+        errors.push("'logs.prompts' must be a boolean if provided");
+      }
+      if (raw.logs.dir != null && typeof raw.logs.dir !== "string") {
+        errors.push("'logs.dir' must be a string if provided");
       }
     }
   }

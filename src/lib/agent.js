@@ -9,6 +9,7 @@ import crypto from "crypto";
 import fs from "fs";
 import path from "path";
 import { execFileSync, spawn } from "child_process";
+import { appendAgentLog } from "./agent-log.js";
 
 /** Default agent timeout in seconds. */
 export const DEFAULT_AGENT_TIMEOUT = 300;
@@ -98,19 +99,32 @@ function buildAgentInvocation(agent, prompt, options) {
  * @param {string} [options.systemPrompt] - System prompt text
  * @returns {string} Agent response (trimmed)
  */
-export function callAgent(agent, prompt, timeoutMs, cwd, options) {
+export function callAgent(agent, prompt, timeoutMs, cwd, options, agentLog = null, cfg = null) {
   const { finalArgs, env, stdinContent } = buildAgentInvocation(agent, prompt, options);
 
-  const result = execFileSync(agent.command, finalArgs, {
-    encoding: "utf8",
-    maxBuffer: 20 * 1024 * 1024,
-    timeout: timeoutMs || agent.timeoutMs || DEFAULT_AGENT_TIMEOUT_MS,
-    cwd: cwd || process.cwd(),
-    env,
-    ...(stdinContent != null ? { input: stdinContent } : {}),
-  });
+  if (agentLog) {
+    agentLog.prompt = prompt;
+    agentLog.executeStartAt = new Date();
+  }
 
-  return result.trim();
+  const startMs = Date.now();
+  try {
+    const result = execFileSync(agent.command, finalArgs, {
+      encoding: "utf8",
+      maxBuffer: 20 * 1024 * 1024,
+      timeout: timeoutMs || agent.timeoutMs || DEFAULT_AGENT_TIMEOUT_MS,
+      cwd: cwd || process.cwd(),
+      env,
+      ...(stdinContent != null ? { input: stdinContent } : {}),
+    });
+    return result.trim();
+  } finally {
+    if (agentLog) {
+      agentLog.executeEndAt = new Date();
+      agentLog.executeTime = (Date.now() - startMs) / 1000;
+      appendAgentLog(agentLog, cwd, cfg);
+    }
+  }
 }
 
 /**
@@ -132,12 +146,31 @@ export function callAgent(agent, prompt, timeoutMs, cwd, options) {
  * @param {number} [options.retryDelayMs=3000] - Delay between retries in milliseconds
  * @returns {Promise<string>} Agent response (trimmed)
  */
-export function callAgentAsync(agent, prompt, timeoutMs, cwd, options) {
+export function callAgentAsync(agent, prompt, timeoutMs, cwd, options, agentLog = null, cfg = null) {
   const { retryCount = 0, retryDelayMs = 3000, ...restOptions } = options || {};
-  if (retryCount <= 0) {
-    return callAgentAsyncOnce(agent, prompt, timeoutMs, cwd, restOptions);
+  if (agentLog) {
+    agentLog.prompt = prompt;
+    agentLog.executeStartAt = new Date();
   }
-  return callAgentAsyncWithRetry(agent, prompt, timeoutMs, cwd, restOptions, retryCount, retryDelayMs);
+  const startMs = Date.now();
+  const finish = () => {
+    if (agentLog) {
+      agentLog.executeEndAt = new Date();
+      agentLog.executeTime = (Date.now() - startMs) / 1000;
+      appendAgentLog(agentLog, cwd, cfg);
+    }
+  };
+
+  let promise;
+  if (retryCount <= 0) {
+    promise = callAgentAsyncOnce(agent, prompt, timeoutMs, cwd, restOptions);
+  } else {
+    promise = callAgentAsyncWithRetry(agent, prompt, timeoutMs, cwd, restOptions, retryCount, retryDelayMs);
+  }
+  return promise.then(
+    (result) => { finish(); return result; },
+    (err) => { finish(); throw err; },
+  );
 }
 
 async function callAgentAsyncWithRetry(agent, prompt, timeoutMs, cwd, options, retryCount, retryDelayMs) {

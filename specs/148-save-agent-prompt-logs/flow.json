@@ -1,0 +1,154 @@
+{
+  "spec": "specs/148-save-agent-prompt-logs/spec.md",
+  "baseBranch": "development",
+  "featureBranch": "feature/148-save-agent-prompt-logs",
+  "steps": [
+    {
+      "id": "approach",
+      "status": "done"
+    },
+    {
+      "id": "branch",
+      "status": "done"
+    },
+    {
+      "id": "prepare-spec",
+      "status": "pending"
+    },
+    {
+      "id": "draft",
+      "status": "done"
+    },
+    {
+      "id": "gate-draft",
+      "status": "done"
+    },
+    {
+      "id": "spec",
+      "status": "done"
+    },
+    {
+      "id": "gate",
+      "status": "done"
+    },
+    {
+      "id": "approval",
+      "status": "done"
+    },
+    {
+      "id": "test",
+      "status": "done"
+    },
+    {
+      "id": "implement",
+      "status": "done"
+    },
+    {
+      "id": "gate-impl",
+      "status": "done"
+    },
+    {
+      "id": "review",
+      "status": "done"
+    },
+    {
+      "id": "finalize",
+      "status": "pending"
+    },
+    {
+      "id": "commit",
+      "status": "pending"
+    },
+    {
+      "id": "push",
+      "status": "pending"
+    },
+    {
+      "id": "merge",
+      "status": "pending"
+    },
+    {
+      "id": "pr-create",
+      "status": "pending"
+    },
+    {
+      "id": "branch-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "pr-merge",
+      "status": "pending"
+    },
+    {
+      "id": "sync-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "docs-update",
+      "status": "pending"
+    },
+    {
+      "id": "docs-review",
+      "status": "pending"
+    },
+    {
+      "id": "docs-commit",
+      "status": "pending"
+    }
+  ],
+  "requirements": [
+    {
+      "desc": "When logs.prompts is true, callAgent/callAgentAsync shall append one JSON Lines entry per invocation",
+      "status": "done"
+    },
+    {
+      "desc": "When logs.prompts is false or absent, no log processing shall occur",
+      "status": "done"
+    },
+    {
+      "desc": "When AgentLog is not passed, no log processing shall occur",
+      "status": "done"
+    },
+    {
+      "desc": "Each log entry shall contain executeStartAt, executeEndAt, executeTime, spec, phase, prompt",
+      "status": "done"
+    },
+    {
+      "desc": "When callAgent/callAgentAsync fails, the log entry shall still be appended",
+      "status": "done"
+    },
+    {
+      "desc": "logs.dir sets log file path; defaults to agent.workDir/logs/prompts.jsonl",
+      "status": "done"
+    },
+    {
+      "desc": "logs/ directory shall be created automatically",
+      "status": "done"
+    },
+    {
+      "desc": "No size limit or rotation in v1",
+      "status": "done"
+    },
+    {
+      "desc": "Log write failure shall not be re-thrown; output to stderr; no retry",
+      "status": "done"
+    }
+  ],
+  "issue": 101,
+  "request": "agentに渡すプロンプトをファイルに保存し、後で活用できるようにする",
+  "worktree": true,
+  "metrics": {
+    "plan": {
+      "docsRead": 1
+    },
+    "draft": {
+      "docsRead": 1,
+      "srcRead": 1,
+      "question": 3
+    },
+    "impl": {
+      "srcRead": 1,
+      "issueLog": 2
+    }
+  }
+}
