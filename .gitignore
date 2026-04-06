@@ -2,6 +2,7 @@
 !.sdd-forge/config.json
 !.sdd-forge/templates/
 !.sdd-forge/output/
+.sdd-forge/output/acceptance-report-*.json
 
 .codex
 
