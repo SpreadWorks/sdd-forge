@@ -13,12 +13,13 @@
  */
 
 import fs from "fs";
+import path from "path";
 import { runIfDirect } from "./lib/entrypoint.js";
 import { repoRoot, parseArgs } from "./lib/cli.js";
 import { EXIT_ERROR } from "./lib/exit-codes.js";
 import { loadConfig, sddConfigPath } from "./lib/config.js";
 import { translate } from "./lib/i18n.js";
-import { deploySkills } from "./lib/skills.js";
+import { deploySkills, deployProjectSkills } from "./lib/skills.js";
 
 
 // ---------------------------------------------------------------------------
@@ -78,6 +79,20 @@ async function main() {
     } else {
       console.log(t("ui:upgrade.skillUnchanged", { name }));
     }
+  }
+
+  // 1b. Experimental skills (opt-in via config flags)
+  if (config.experimental?.workflow?.enable === true) {
+    const expDir = path.join(root, "experimental", "workflow", "templates", "skills");
+    const expResults = deployProjectSkills(root, expDir, config.lang, { dryRun });
+    for (const { name, status } of expResults) {
+      if (status === "updated") {
+        console.log(t("ui:upgrade.skillUpdated", { name }));
+      } else {
+        console.log(t("ui:upgrade.skillUnchanged", { name }));
+      }
+    }
+    skillResults.push(...expResults);
   }
 
   // 2. Migrate chapters format (string[] → object[])

@@ -1,0 +1,37 @@
+{
+  "data": {
+    "implementation": {
+      "diffStat": ".sdd-forge/config.json                             |  11 +-\n AGENTS.md                                          |  42 +--\n CLAUDE.md                                          |  42 +--\n experimental/AGENTS.md                             |   9 +-\n experimental/tests/workflow-category.test.js       |  39 +++\n .../tests/workflow-config-validation.test.js       |  85 +++++\n experimental/tests/workflow-dispatcher.test.js     |  56 ++++\n ...idation.test.js => workflow-validation.test.js} |   2 +-\n experimental/workflow.js                           | 153 +++++++++\n experimental/workflow/board.js                     | 346 ---------------------\n experimental/workflow/lib/base-command.js          |  10 +\n experimental/workflow/lib/board-helpers.js         |  38 +++\n experimental/workflow/lib/category.js              |  15 +\n experimental/workflow/lib/commands/add.js          |  45 +++\n experimental/workflow/lib/commands/list.js         |  23 ++\n experimental/workflow/lib/commands/publish.js      | 145 +++++++++\n experimental/workflow/lib/commands/search.js       |  25 ++\n experimental/workflow/lib/commands/show.js         |  27 ++\n experimental/workflow/lib/commands/update.js       |  54 ++++\n experimental/workflow/lib/issue.js                 |  12 -\n experimental/workflow/registry.js                  |  69 ++++\n .../skills/sdd-forge.exp.workflow/SKILL.md         |  60 ++++\n specs/150-redesign-exp-workflow/draft.md           |  94 ++++++\n specs/150-redesign-exp-workflow/flow.json          | 194 ++++++++++++\n specs/150-redesign-exp-workflow/issue-log.json     |  27 ++\n specs/150-redesign-exp-workflow/report.json        |  35 +++\n specs/150-redesign-exp-workflow/retro.json         | 125 ++++++++\n specs/150-redesign-exp-workflow/review.md          |  41 +++\n specs/150-redesign-exp-workflow/spec.md            | 203 ++++++++++++\n specs/150-redesign-exp-workflow/tests/README.md    |  48 +++\n .../tests/workflow-cli-e2e.test.js                 |  96 ++++++\n src/lib/skills.js                                  |  59 +++-\n src/lib/types.js                                   |  28 ++\n src/upgrade.js                                     |  17 +-\n tests/unit/experimental/workflow/issue.test.js     |  55 ----\n 35 files changed, 1838 insertions(+), 492 deletions(-)",
+      "commits": [
+        "chore: dedupe logs config and update issue-log",
+        "chore: add retro and report",
+        "feat: feature/150-redesign-exp-workflow",
+        "chore: add spec 150 draft and spec"
+      ]
+    },
+    "retro": {
+      "total": 17,
+      "done": 17,
+      "partial": 0,
+      "not_done": 0,
+      "rate": 1,
+      "notes": "17件の要件すべてが実装されており、not_done / partial は0件。主な注意点: REQ-PUBLISH-STATUS の 'Todo' 値は issue-log で一度 'To do'（スペースあり）との不一致が懸念されたが、spec.md の表は 'Todo'（スペースなし）であり実装と一致している。unplanned 変更のうち logs.prompts:true のフィールド順序変更のみが要件と無関係な純粋な設定変更。base-command.js、board-helpers.js、AGENTS.md 更新、skills.js リファクタはレビュー承認済みまたは要件の自然な実装上の判断であり機能的問題はない。SDD フロー成果物（spec.md、flow.json 等）は要件実装の副産物として正常"
+    },
+    "issueLog": {
+      "count": 0,
+      "entries": []
+    },
+    "metrics": {
+      "docsRead": 2,
+      "srcRead": 0,
+      "question": 7,
+      "issueLog": 2
+    },
+    "tests": null,
+    "sync": {
+      "status": "skipped",
+      "reason": "sync was skipped"
+    }
+  },
+  "text": "  Report\n\n  Implementation\n  ────────────────────────────────────────────────\n    chore: dedupe logs config and update issue-log\n    chore: add retro and report\n    feat: feature/150-redesign-exp-workflow\n    chore: add spec 150 draft and spec\n    35 files changed, 1838 insertions(+), 492 deletions(-)\n\n  Retro\n  ────────────────────────────────────────────────\n    ████████ 100%  (17 done / 0 partial / 0 miss)\n\n  Metrics\n  ────────────────────────────────────────────────\n    docs 2  src 0  Q&A 7  issues 2\n\n  Documents\n  ────────────────────────────────────────────────\n    skipped: sync was skipped"
+}

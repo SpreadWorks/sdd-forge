@@ -1,4 +1,12 @@
 {
+  "logs": {
+    "prompts": true
+  },
+  "experimental": {
+    "workflow": {
+      "enable": true
+    }
+  },
   "lang": "ja",
   "type": [
     "node-cli",
@@ -6,9 +14,6 @@
     "document"
   ],
   "concurrency": 4,
-  "logs": {
-    "prompts": true
-  },
   "docs": {
     "languages": [
       "ja",

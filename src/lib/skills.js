@@ -30,19 +30,21 @@ function removeIfSymlink(filePath) {
 }
 
 /**
- * Deploy skill files from templates to .agents/skills/ and .claude/skills/.
+ * Deploy every SKILL.md found under templatesDir into both
+ * .agents/skills/<name>/SKILL.md and .claude/skills/<name>/SKILL.md.
  *
- * @param {string} workRoot  Project root directory
- * @param {string} lang      Language code for include resolution (e.g. "en", "ja"). Does not affect template file selection (always SKILL.md).
- * @param {object} [opts]
- * @param {boolean} [opts.dryRun=false]  If true, skip writing files
+ * @param {object} args
+ * @param {string} args.templatesDir   Absolute path to a skills templates directory
+ * @param {string} args.workRoot       Project root directory
+ * @param {string} args.lang           Language code for include resolution
+ * @param {boolean} [args.dryRun=false]
  * @returns {{ name: string, status: "updated" | "unchanged" }[]}
  */
-export function deploySkills(workRoot, lang, opts = {}) {
-  const { dryRun = false } = opts;
+function deploySkillsFromDir({ templatesDir, workRoot, lang, dryRun = false }) {
+  if (!fs.existsSync(templatesDir)) return [];
+
   const agentsSkillsDir = path.join(workRoot, ".agents", "skills");
   const claudeSkillsDir = path.join(workRoot, ".claude", "skills");
-  const templatesDir = path.join(PKG_DIR, "templates", "skills");
 
   const skillDirs = fs.readdirSync(templatesDir, { withFileTypes: true })
     .filter((d) => d.isDirectory())
@@ -84,12 +86,10 @@ export function deploySkills(workRoot, lang, opts = {}) {
     }
 
     if (!dryRun) {
-      // .agents/skills/<name>/SKILL.md
       removeIfSymlink(agentsDest);
       fs.mkdirSync(path.dirname(agentsDest), { recursive: true });
       fs.writeFileSync(agentsDest, srcContent, "utf8");
 
-      // .claude/skills/<name>/SKILL.md
       removeIfSymlink(claudeDest);
       fs.mkdirSync(path.dirname(claudeDest), { recursive: true });
       fs.writeFileSync(claudeDest, srcContent, "utf8");
@@ -99,4 +99,43 @@ export function deploySkills(workRoot, lang, opts = {}) {
   }
 
   return results;
+}
+
+/**
+ * Deploy skill files from the bundled `src/templates/skills/` directory.
+ *
+ * @param {string} workRoot  Project root directory
+ * @param {string} lang      Language code for include resolution (e.g. "en", "ja"). Does not affect template file selection (always SKILL.md).
+ * @param {object} [opts]
+ * @param {boolean} [opts.dryRun=false]  If true, skip writing files
+ * @returns {{ name: string, status: "updated" | "unchanged" }[]}
+ */
+export function deploySkills(workRoot, lang, opts = {}) {
+  return deploySkillsFromDir({
+    templatesDir: path.join(PKG_DIR, "templates", "skills"),
+    workRoot,
+    lang,
+    dryRun: opts.dryRun,
+  });
+}
+
+/**
+ * Deploy skill files from a project-local templates directory.
+ * Used for opt-in skills that ship outside the main src/templates/skills/
+ * (e.g. experimental features enabled via config flags).
+ *
+ * @param {string} workRoot       Project root directory
+ * @param {string} templatesDir   Absolute path to a skills templates directory
+ * @param {string} lang           Language code for include resolution
+ * @param {object} [opts]
+ * @param {boolean} [opts.dryRun=false]
+ * @returns {{ name: string, status: "updated" | "unchanged" }[]}
+ */
+export function deployProjectSkills(workRoot, templatesDir, lang, opts = {}) {
+  return deploySkillsFromDir({
+    templatesDir,
+    workRoot,
+    lang,
+    dryRun: opts.dryRun,
+  });
 }

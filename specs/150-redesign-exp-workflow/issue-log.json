@@ -47,6 +47,33 @@
       "reason": "単一責任 — experimental workflow の再設計という一つの関心事に集中している; 要件の明確性 — 「`--status` デフォルトを `Ideas` にすること」「boolean 以外の値が入った場合にエラーを返すこと」等、検証可能な条件で記述されている; 文脈の完全性 — REQ-SHARED-FN（P2）は「プロジェクト非依存であること」という条件のみでトリガー条件（When/If）がなく、期待される振る舞いも不明確; 機密情報のハードコード禁止 — API キー等の機密情報はない; エラーの黙殺禁止 — REQ-EXIT-CODE でエラー時非ゼロ終了、REQ-CLI-OUTPUT で console.log/process.exit を呼ばない制約あり。エラー握りつぶし禁止の明示はないが設計上問題なし; 要件の優先順位 — 17件の要件を P0/P1/P2 で明示的に優先順位付けしている; 既存機能への影響 — Out of Scope に `src/flow.js` の変更なしを明示、Migration Steps に影響範囲を記載; リソース使用量の上限設定 — REQ-PUBLISH の AI エージェント翻訳処理について、タイムアウト・リトライ上限・翻訳文字数上限等の制約が記述されていない; 変更にはテストが必要 — Test Strategy セクションにユニットテストと E2E テストを含む; 仕様にテスト方針を含めること — Test Strategy セクションで何をどうテストするか具体的に記載されている; draft を整理・抽象化する — Requirements・Acceptance Criteria・Migration Steps に整理・構造化されており、単純コピーではない; 未解決事項は Open Questions に記録する — Open Questions セクションあり、解決済みは `[x]` でマーク; このアプローチを選んだ理由を記述する — Alternatives Considered に各案の採否理由が記述されている; CLI インターフェースの後方互換性 — alpha版ポリシーによる一括置き換えを明示し、Migration Steps に移行手順を記載; 終了コードの規約 — REQ-EXIT-CODE および REQ-ENABLE-CHECK で非ゼロ終了コードを明示",
       "trigger": "gate post hook (auto)",
       "timestamp": "2026-04-06T16:31:18.638Z"
+    },
+    {
+      "step": "implement",
+      "reason": "workflow-dispatcher.test.js の options 検査が --接頭辞なしを期待していたが、src/flow/registry.js の慣例では --接頭辞付きで保存する",
+      "trigger": "test execution after registry.js implementation",
+      "resolution": "テストの assertion を --status / --category / --body / --label に修正",
+      "guardrailCandidate": "registry の args 仕様は src/flow/registry.js の既存パターンに従う",
+      "timestamp": "2026-04-07T03:10:57.752Z"
+    },
+    {
+      "step": "implement",
+      "reason": "tests/unit/experimental/workflow/issue.test.js が experimental ルール違反の場所にあり、削除した issue.js（未使用）をテストしていた",
+      "trigger": "npm test 後の失敗発覚",
+      "resolution": "ユーザー承認のうえテストファイルを削除",
+      "guardrailCandidate": "experimental 配下のテストは experimental/tests/ にしか置かないこと",
+      "timestamp": "2026-04-07T03:20:39.565Z"
+    },
+    {
+      "step": "gate-impl",
+      "reason": "REQ — CLI-DISPATCHER — `experimental/workflow.js` implements dispatcher+registry pattern: parses args, looks up `WORKFLOW_COMMANDS[subcommand]`, calls `instance.run(ctx)` which delegates to `execute(ctx)`; REQ — CLI-COMMANDS — all 6 subcommands (`add`, `update`, `show`, `search`, `list`, `publish`) implemented as individual files under `experimental/workflow/lib/commands/`; REQ — CLI-OUTPUT — commands return values from `execute()`; dispatcher handles `output(ok/fail(...))` and `process.exit`; no `console.log`/`process.exit` calls inside command classes; REQ — CONFIG-SCHEMA — `src/lib/types.js` validates `experimental.workflow` with `enable` (boolean), `languages.source` (string), `languages.publish` (string); REQ — CONFIG-VALIDATE — `validateConfig()` validates `experimental.workflow` only when `experimental` field is present; existence-conditional validation implemented (lines 286–311); REQ — CONFIG-FALLBACK — `publish.js` uses `config.experimental?.workflow?.languages?.source ?? config.lang` and same pattern for `publishLang`; REQ — PUBLISH — `publish.js` translates via AI agent when source≠publish, wraps original in `<details>` tag; `PUBLISH_TIMEOUT_MS = 60_000`, `PUBLISH_RETRY_COUNT = 2`; REQ — PUBLISH-STATUS — spec requires Status field set to `\"To do\"` but implementation searches for `o.name === \"Todo\"` (no space); REQ — EXIT-CODE — `workflow.js` calls `process.exit(EXIT_ERROR)` on failure and `process.exit(EXIT_SUCCESS)` on success via dispatcher; REQ — ADD-DEFAULT — `add.js` line 12: `const status = ctx.status || \"Ideas\"`; REQ — ADD-CATEGORY — `--category` option defined in registry; `prefixCategory()` from `category.js` applies `[CATEGORY]` prefix after hash prefix; REQ — SKILL — `experimental/workflow/templates/skills/sdd-forge.exp.workflow/SKILL.md` created with TRIGGER keywords in `description` frontmatter and MUST rules in body; REQ — UPGRADE — `upgrade.js` lines 85–96: deploys experimental skills only when `config.experimental?.workflow?.enable === true`; REQ — CLAUDEMD — CLAUDE.md タスク管理 section contains only skill name reference (`sdd-forge.exp.workflow`) and `workflow.js` subcommand table; detailed MUST rules removed; REQ — ENABLE-CHECK — `workflow.js` lines 112–122: returns `\"workflow is not enabled\"` error and `process.exit(EXIT_ERROR)` when `enable` is falsy or missing; REQ — SHARED-FN — no new project-specific functions added to `src/lib/`; only `types.js` validation extended (generic) and existing `src/lib/` utilities reused; REQ — DELETE-OLD — `experimental/workflow/board.js` deleted (shown as ` D` in git status); `experimental/workflow/lib/issue.js` also deleted",
+      "trigger": "gate post hook (auto)",
+      "timestamp": "2026-04-07T04:26:58.214Z"
+    },
+    {
+      "step": "merge",
+      "reason": "Merge conflict detected. Run 'git rebase development' in the worktree and retry finalize.",
+      "timestamp": "2026-04-07T05:29:50.126Z"
     }
   ]
 }

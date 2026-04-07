@@ -1,0 +1,194 @@
+{
+  "spec": "specs/150-redesign-exp-workflow/spec.md",
+  "baseBranch": "development",
+  "featureBranch": "feature/150-redesign-exp-workflow",
+  "steps": [
+    {
+      "id": "approach",
+      "status": "done"
+    },
+    {
+      "id": "branch",
+      "status": "done"
+    },
+    {
+      "id": "prepare-spec",
+      "status": "pending"
+    },
+    {
+      "id": "draft",
+      "status": "done"
+    },
+    {
+      "id": "gate-draft",
+      "status": "done"
+    },
+    {
+      "id": "spec",
+      "status": "done"
+    },
+    {
+      "id": "gate",
+      "status": "done"
+    },
+    {
+      "id": "approval",
+      "status": "done"
+    },
+    {
+      "id": "test",
+      "status": "done"
+    },
+    {
+      "id": "implement",
+      "status": "done"
+    },
+    {
+      "id": "gate-impl",
+      "status": "done"
+    },
+    {
+      "id": "review",
+      "status": "done"
+    },
+    {
+      "id": "finalize",
+      "status": "pending"
+    },
+    {
+      "id": "commit",
+      "status": "pending"
+    },
+    {
+      "id": "push",
+      "status": "pending"
+    },
+    {
+      "id": "merge",
+      "status": "pending"
+    },
+    {
+      "id": "pr-create",
+      "status": "pending"
+    },
+    {
+      "id": "branch-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "pr-merge",
+      "status": "pending"
+    },
+    {
+      "id": "sync-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "docs-update",
+      "status": "pending"
+    },
+    {
+      "id": "docs-review",
+      "status": "pending"
+    },
+    {
+      "id": "docs-commit",
+      "status": "pending"
+    }
+  ],
+  "requirements": [
+    {
+      "desc": "REQ-CLI-DISPATCHER: workflow.js を src/flow.js と同じ dispatcher パターンで実装",
+      "status": "done"
+    },
+    {
+      "desc": "REQ-CLI-COMMANDS: add/update/show/search/list/publish の6サブコマンド実装",
+      "status": "done"
+    },
+    {
+      "desc": "REQ-CLI-OUTPUT: 全コマンドの出力を JSON envelope 形式に統一",
+      "status": "done"
+    },
+    {
+      "desc": "REQ-CONFIG-SCHEMA: config.json に experimental.workflow セクション追加",
+      "status": "done"
+    },
+    {
+      "desc": "REQ-CONFIG-VALIDATE: types.js で experimental.workflow を検証",
+      "status": "done"
+    },
+    {
+      "desc": "REQ-CONFIG-FALLBACK: languages.source/publish 未設定時は config.lang を使用",
+      "status": "done"
+    },
+    {
+      "desc": "REQ-PUBLISH: publish コマンドで Draft を Issue 化（翻訳＋タイムアウト60秒/リトライ2回）",
+      "status": "done"
+    },
+    {
+      "desc": "REQ-PUBLISH-STATUS: publish 成功時にステータスを Todo に変更",
+      "status": "done"
+    },
+    {
+      "desc": "REQ-EXIT-CODE: 失敗時は非ゼロ終了コード",
+      "status": "done"
+    },
+    {
+      "desc": "REQ-ADD-DEFAULT: add のデフォルト status を Ideas に",
+      "status": "done"
+    },
+    {
+      "desc": "REQ-ADD-CATEGORY: --category オプションで分類タグを追加",
+      "status": "done"
+    },
+    {
+      "desc": "REQ-SKILL: sdd-forge.exp.workflow skill 新設",
+      "status": "done"
+    },
+    {
+      "desc": "REQ-UPGRADE: enable=true 時のみ skill 配置",
+      "status": "done"
+    },
+    {
+      "desc": "REQ-CLAUDEMD: CLAUDE.md タスク管理セクションを skill 参照に更新",
+      "status": "done"
+    },
+    {
+      "desc": "REQ-ENABLE-CHECK: enable=false 時はエラーメッセージ + 非ゼロ終了",
+      "status": "done"
+    },
+    {
+      "desc": "REQ-SHARED-FN: src/lib/ への汎用関数追加はプロジェクト非依存",
+      "status": "done"
+    },
+    {
+      "desc": "REQ-DELETE-OLD: 旧 board.js 削除",
+      "status": "done"
+    }
+  ],
+  "issue": 102,
+  "request": "experimental workflow を常駐ルールではなくコマンドと skill 中心で運用できるよう再設計する",
+  "worktree": true,
+  "notes": [
+    "approach: Q&A で要件整理してから仕様書作成",
+    "draft: スコープは全体を1つのspecで進める",
+    "draft: CLI再編は一括置き換え。board.js削除しworkflow.jsに完全移行",
+    "draft: config.jsonフィールド追加 + types.jsで検証も含める",
+    "draft: board登録は--statusオプション残しつつデフォルトIdeas、分類タグ追加",
+    "draft: src/lib/に汎用関数追加OK（プロジェクト非依存の条件付き）",
+    "draft: skillは明示呼び出し+キーワード検知で自動提案の両方",
+    "draft: テストはユニット+コマンドレベルE2Eの両方"
+  ],
+  "metrics": {
+    "plan": {
+      "docsRead": 1
+    },
+    "draft": {
+      "docsRead": 1,
+      "question": 7
+    },
+    "impl": {
+      "issueLog": 2
+    }
+  }
+}

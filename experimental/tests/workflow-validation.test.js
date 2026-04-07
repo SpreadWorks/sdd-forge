@@ -6,7 +6,7 @@ import {
   assertJapaneseDraft,
 } from "../workflow/lib/validation.js";
 
-describe("board draft validation", () => {
+describe("workflow draft validation", () => {
   it("detects Japanese text", () => {
     assert.equal(containsJapanese("一時ファイル"), true);
     assert.equal(containsJapanese("temporary file"), false);

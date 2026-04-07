@@ -1,0 +1,153 @@
+{
+  "spec": "specs/150-redesign-exp-workflow/spec.md",
+  "date": "2026-04-07T05:37:00.494Z",
+  "requirements": [
+    {
+      "desc": "REQ-CLI-DISPATCHER: workflow.js を src/flow.js と同じ dispatcher パターンで実装",
+      "status": "done",
+      "note": "experimental/workflow.js が args parse → WORKFLOW_COMMANDS lookup → entry.command() → instance.run(ctx) → execute(ctx) の dispatcher+registry 構造で実装されている"
+    },
+    {
+      "desc": "REQ-CLI-COMMANDS: add/update/show/search/list/publish の6サブコマンド実装",
+      "status": "done",
+      "note": "experimental/workflow/lib/commands/ 配下に add.js, update.js, show.js, search.js, list.js, publish.js が個別ファイルで実装されている"
+    },
+    {
+      "desc": "REQ-CLI-OUTPUT: 全コマンドの出力を JSON envelope 形式に統一",
+      "status": "done",
+      "note": "各 command class は値を return し dispatcher 側で output(ok/fail(...)) を呼ぶ。コマンドクラス内に console.log / process.exit なし"
+    },
+    {
+      "desc": "REQ-CONFIG-SCHEMA: config.json に experimental.workflow セクション追加",
+      "status": "done",
+      "note": ".sdd-forge/config.json に experimental.workflow.enable: true が追加された。languages は省略可のため未設定でも仕様準拠"
+    },
+    {
+      "desc": "REQ-CONFIG-VALIDATE: types.js で experimental.workflow を検証",
+      "status": "done",
+      "note": "src/lib/types.js に experimental.workflow の enable(boolean)・languages.source(string)・languages.publish(string) 検証ブロックが追加された。experimental フィールドは任意で存在する場合のみ検証"
+    },
+    {
+      "desc": "REQ-CONFIG-FALLBACK: languages.source/publish 未設定時は config.lang を使用",
+      "status": "done",
+      "note": "publish.js が config.experimental?.workflow?.languages?.source ?? config.lang および publishLang で同パターンを使用"
+    },
+    {
+      "desc": "REQ-PUBLISH: publish コマンドで Draft を Issue 化（翻訳＋タイムアウト60秒/リトライ2回）",
+      "status": "done",
+      "note": "PUBLISH_TIMEOUT_MS=60_000、PUBLISH_RETRY_COUNT=2 で callTranslator メソッドが最大3回試行。source≠publish 時は AI 翻訳し <details> タグで原文保持"
+    },
+    {
+      "desc": "REQ-PUBLISH-STATUS: publish 成功時にステータスを Todo に変更",
+      "status": "done",
+      "note": "publish.js が o.name === 'Todo' で option を検索し setItemStatus を呼ぶ。spec.md の表も 'Todo'（スペースなし）と一致"
+    },
+    {
+      "desc": "REQ-EXIT-CODE: 失敗時は非ゼロ終了コード",
+      "status": "done",
+      "note": "workflow.js が失敗時 process.exit(EXIT_ERROR)、成功時 process.exit(EXIT_SUCCESS) を呼ぶ。dispatcher が全エラーパスをカバー"
+    },
+    {
+      "desc": "REQ-ADD-DEFAULT: add のデフォルト status を Ideas に",
+      "status": "done",
+      "note": "add.js: const status = ctx.status || 'Ideas' で Ideas がデフォルト値"
+    },
+    {
+      "desc": "REQ-ADD-CATEGORY: --category オプションで分類タグを追加",
+      "status": "done",
+      "note": "registry に --category オプション定義、category.js の prefixCategory() でハッシュID後に [CATEGORY] を付与。VALID_CATEGORIES は RESEARCH/BUG/ENHANCE/OTHER の4種"
+    },
+    {
+      "desc": "REQ-SKILL: sdd-forge.exp.workflow skill 新設",
+      "status": "done",
+      "note": "experimental/workflow/templates/skills/sdd-forge.exp.workflow/SKILL.md が TRIGGER キーワードと MUST ルールを含んで作成された"
+    },
+    {
+      "desc": "REQ-UPGRADE: enable=true 時のみ skill 配置",
+      "status": "done",
+      "note": "upgrade.js に config.experimental?.workflow?.enable === true の条件ガードが追加され、条件一致時のみ deployProjectSkills を呼ぶ"
+    },
+    {
+      "desc": "REQ-CLAUDEMD: CLAUDE.md タスク管理セクションを skill 参照に更新",
+      "status": "done",
+      "note": "CLAUDE.md のタスク管理セクションが skill 名 sdd-forge.exp.workflow + サブコマンド一覧のみに更新され、詳細 MUST ルール約30行が削除された"
+    },
+    {
+      "desc": "REQ-ENABLE-CHECK: enable=false 時はエラーメッセージ + 非ゼロ終了",
+      "status": "done",
+      "note": "workflow.js が !config.experimental?.workflow?.enable 時に 'workflow is not enabled' メッセージの JSON envelope を出力し process.exit(EXIT_ERROR) を返す"
+    },
+    {
+      "desc": "REQ-SHARED-FN: src/lib/ への汎用関数追加はプロジェクト非依存",
+      "status": "done",
+      "note": "deploySkillsFromDir と deployProjectSkills を src/lib/skills.js に追加。引数ベースで任意の templatesDir を受け取る汎用設計でプロジェクト固有情報なし"
+    },
+    {
+      "desc": "REQ-DELETE-OLD: 旧 board.js 削除",
+      "status": "done",
+      "note": "experimental/workflow/board.js および experimental/workflow/lib/issue.js が削除された"
+    }
+  ],
+  "unplanned": [
+    {
+      "file": ".sdd-forge/config.json",
+      "change": "logs.prompts: true フィールドの位置が変更された（順序の変更）。どの要件にも対応しない"
+    },
+    {
+      "file": "experimental/workflow/lib/base-command.js",
+      "change": "WorkflowCommand 基底クラスの新設。要件には明示されていないが dispatcher パターン実装に伴うアーキテクチャ上の判断"
+    },
+    {
+      "file": "experimental/workflow/lib/board-helpers.js",
+      "change": "findItem / formatItem / parseJsonResponse のヘルパー集約ファイル新設。要件外だが複数コマンドで共通ロジックを再利用するための抽出"
+    },
+    {
+      "file": "experimental/AGENTS.md",
+      "change": "workflow 関連記述を board.js → workflow.js パスに更新。REQ-CLAUDEMD は CLAUDE.md を対象としており AGENTS.md の更新は明示されていないが、CLAUDE.md がシンボリックリンクのため事実上同一内容"
+    },
+    {
+      "file": "src/lib/skills.js",
+      "change": "deploySkills を deploySkillsFromDir 内部ヘルパーにリファクタし、deployProjectSkills を公開 API として追加。コードレビュー item #2 で APPROVED されたが元の要件リストには含まれない"
+    },
+    {
+      "file": "experimental/tests/workflow-validation.test.js",
+      "change": "experimental/tests/board-validation.test.js からリネーム。テスト自体の変更は describe 文字列のみ"
+    },
+    {
+      "file": "specs/150-redesign-exp-workflow/draft.md",
+      "change": "仕様ドラフトファイルの新設。要件実装ではなく SDD フロー成果物"
+    },
+    {
+      "file": "specs/150-redesign-exp-workflow/flow.json",
+      "change": "フロー状態管理ファイルの新設。SDD フロー管理用メタデータ"
+    },
+    {
+      "file": "specs/150-redesign-exp-workflow/spec.md",
+      "change": "仕様書ファイルの新設。SDD フロー成果物"
+    },
+    {
+      "file": "specs/150-redesign-exp-workflow/review.md",
+      "change": "コードレビュー結果ファイルの新設。SDD フロー成果物"
+    },
+    {
+      "file": "specs/150-redesign-exp-workflow/retro.json",
+      "change": "振り返りファイルの新設。SDD フロー成果物"
+    },
+    {
+      "file": "specs/150-redesign-exp-workflow/report.json",
+      "change": "レポートファイルの新設。SDD フロー成果物"
+    },
+    {
+      "file": "specs/150-redesign-exp-workflow/issue-log.json",
+      "change": "issue-log への新規エントリ追加（implement/gate-impl/merge フェーズの記録）。SDD フロー成果物"
+    }
+  ],
+  "summary": {
+    "total": 17,
+    "done": 17,
+    "partial": 0,
+    "not_done": 0,
+    "rate": 1,
+    "notes": "17件の要件すべてが実装されており、not_done / partial は0件。主な注意点: REQ-PUBLISH-STATUS の 'Todo' 値は issue-log で一度 'To do'（スペースあり）との不一致が懸念されたが、spec.md の表は 'Todo'（スペースなし）であり実装と一致している。unplanned 変更のうち logs.prompts:true のフィールド順序変更のみが要件と無関係な純粋な設定変更。base-command.js、board-helpers.js、AGENTS.md 更新、skills.js リファクタはレビュー承認済みまたは要件の自然な実装上の判断であり機能的問題はない。SDD フロー成果物（spec.md、flow.json 等）は要件実装の副産物として正常"
+  }
+}

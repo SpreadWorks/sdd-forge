@@ -282,6 +282,34 @@ export function validateConfig(raw) {
     }
   }
 
+  // experimental (省略可)
+  if (raw.experimental != null) {
+    if (typeof raw.experimental !== "object") {
+      errors.push("'experimental' must be an object");
+    } else if (raw.experimental.workflow != null) {
+      const wf = raw.experimental.workflow;
+      if (typeof wf !== "object") {
+        errors.push("'experimental.workflow' must be an object");
+      } else {
+        if (wf.enable != null && typeof wf.enable !== "boolean") {
+          errors.push("'experimental.workflow.enable' must be a boolean if provided");
+        }
+        if (wf.languages != null) {
+          if (typeof wf.languages !== "object") {
+            errors.push("'experimental.workflow.languages' must be an object");
+          } else {
+            if (wf.languages.source != null && typeof wf.languages.source !== "string") {
+              errors.push("'experimental.workflow.languages.source' must be a string if provided");
+            }
+            if (wf.languages.publish != null && typeof wf.languages.publish !== "string") {
+              errors.push("'experimental.workflow.languages.publish' must be a string if provided");
+            }
+          }
+        }
+      }
+    }
+  }
+
   // logs (省略可)
   if (raw.logs != null) {
     if (typeof raw.logs !== "object") {
