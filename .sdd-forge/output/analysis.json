@@ -1,5 +1,5 @@
 {
-  "analyzedAt": "2026-04-07T02:56:25.469Z",
+  "analyzedAt": "2026-04-07T05:37:02.284Z",
   "package": {
     "entries": [
       {
@@ -4600,14 +4600,16 @@
       },
       {
         "file": "src/lib/skills.js",
-        "hash": "1afb03288a05d48094c7a9194215db12",
-        "lines": 103,
-        "mtime": "2026-03-31T12:57:20.419Z",
+        "hash": "d697554944cfa65e51b6da6c94ff22d6",
+        "lines": 142,
+        "mtime": "2026-04-07T05:37:02.069Z",
         "className": "skills",
         "methods": [
           "deploySkills",
+          "deployProjectSkills",
           "resolveSkillFile",
-          "removeIfSymlink"
+          "removeIfSymlink",
+          "deploySkillsFromDir"
         ],
         "imports": [
           "fs",
@@ -4616,7 +4618,8 @@
           "./include.js"
         ],
         "exports": [
-          "deploySkills"
+          "deploySkills",
+          "deployProjectSkills"
         ],
         "extends": null,
         "usedBy": [
@@ -4624,31 +4627,32 @@
           "src/upgrade.js"
         ],
         "id": "a1344e4a",
-        "summary": "Deploys SKILL.md files from the package templates into the project's .agents/skills/ and .claude/skills/ directories. Processes include directives before writing and skips files that are unchanged.",
-        "detail": "deploySkills() reads skill template files from PKG_DIR/templates/skills/, resolves <!-- include() --> directives with the full template and preset context, and writes the resolved content to both agent skill directories. Existing symlinks are unconditionally replaced to handle upgrades from older symlink-based deployments. Files whose content has not changed are skipped to avoid unnecessary writes. Results are returned as an array of { name, status } records indicating created, updated, or skipped.",
+        "summary": "Handles deployment of skill files (SKILL.md) from template directories to both .agents/skills/ and .claude/skills/ in the project root.",
+        "detail": "Provides two exported functions: deploySkills for built-in package skills and deployProjectSkills for project-specific skills. Core logic in deploySkillsFromDir reads SKILL.md files, processes include directives via resolveIncludes, and writes resolved content to both .agents and .claude skill destinations. Skips unchanged files by comparing existing content, and supports a dryRun mode. Symlink detection via lstatSync prevents accidental overwrites of symlinked skill files.",
         "chapter": "internal_design",
         "role": "lib",
         "enrich": {
-          "processedAt": "2026-04-02T16:04:59.891Z",
+          "processedAt": "2026-04-07T05:37:16.296Z",
           "attempts": 1
         },
         "keywords": [
           "skills",
-          "SKILL.md",
           "deploy",
+          "SKILL.md",
           "templates",
-          ".claude/skills",
-          ".agents/skills",
-          "include",
           "upgrade",
-          "symlink"
+          "symlink",
+          "include",
+          "agents",
+          "claude",
+          "dryRun"
         ]
       },
       {
         "file": "src/lib/types.js",
-        "hash": "8e8e956442bfb163a4abc0a33ff8d876",
-        "lines": 344,
-        "mtime": "2026-04-06T15:36:12.103Z",
+        "hash": "be1ac54deef39729d678f0bcf4db1428",
+        "lines": 372,
+        "mtime": "2026-04-07T05:37:02.069Z",
         "className": "types",
         "methods": [
           "validateConfig",
@@ -4666,23 +4670,24 @@
           "src/setup.js"
         ],
         "id": "69d5afb4",
-        "summary": "Type validation and output config resolution utilities for sdd-forge configuration objects.",
-        "detail": "validateConfig performs structural validation on raw config objects, collecting errors and throwing a descriptive message listing all violations. Enforces required fields and constrained enum values such as VALID_TONES (polite, formal, casual). resolveOutputConfig normalises optional output-related config fields into a canonical object. Acts as the system boundary validator ensuring downstream code can trust config shape.",
+        "summary": "Defines config validation logic and output config resolution for the sdd-forge configuration schema.",
+        "detail": "Exports validateConfig which validates a raw config object against required fields and allowed values, throwing descriptive errors on failure. VALID_TONES constrains the docs.style.tone field. resolveOutputConfig normalizes the config into a resolved output structure for downstream consumers. Acts as the single source of truth for config constraints.",
         "chapter": "configuration",
-        "role": "lib",
+        "role": "model",
         "enrich": {
-          "processedAt": "2026-04-06T15:36:33.520Z",
+          "processedAt": "2026-04-07T05:37:16.296Z",
           "attempts": 1
         },
         "keywords": [
-          "config-validation",
-          "types",
+          "config",
+          "validation",
           "schema",
-          "tone",
           "SddConfig",
-          "validateConfig",
+          "tone",
+          "output",
           "resolveOutputConfig",
-          "boundary-validation"
+          "validateConfig",
+          "types"
         ]
       },
       {
@@ -7668,9 +7673,9 @@
       },
       {
         "file": "src/upgrade.js",
-        "hash": "8b66b95c808d9793f6d7dc04ee6830b6",
-        "lines": 112,
-        "mtime": "2026-03-31T12:57:20.422Z",
+        "hash": "7bc6ce9e37d5240896e533cf826a443d",
+        "lines": 127,
+        "mtime": "2026-04-07T05:37:02.070Z",
         "className": "upgrade",
         "methods": [
           "parseUpgradeArgs",
@@ -7678,6 +7683,7 @@
         ],
         "imports": [
           "fs",
+          "path",
           "./lib/entrypoint.js",
           "./lib/cli.js",
           "./lib/exit-codes.js",
@@ -7691,30 +7697,33 @@
         "extends": null,
         "usedBy": null,
         "id": "a631f658",
-        "summary": "Implements the sdd-forge upgrade command, which refreshes skill files and optionally patches config.json to remove deprecated fields. Designed for running after package updates.",
-        "detail": "main() resolves the project root via repoRoot(), loads the existing config with loadConfig(), and calls deploySkills() to update .claude/skills/ and .agents/skills/ from the current package templates. Deprecated config keys are removed from the raw JSON and the file is rewritten if changes were made. Exits with EXIT_ERROR if config loading fails, providing a safe upgrade path that does not overwrite user customizations.",
+        "summary": "CLI entry point for the sdd-forge upgrade command, which syncs skills and templates to the current project.",
+        "detail": "Parses CLI arguments via parseUpgradeArgs, loads the project config, and orchestrates skill deployment using deploySkills and deployProjectSkills. Also handles experimental workflow skill deployment from the experimental/workflow/templates/skills directory when enabled. Updates config.json in-place after processing. Uses EXIT_ERROR for failure exits and i18n for user-facing messages.",
         "chapter": "cli_commands",
         "role": "cli",
         "enrich": {
-          "processedAt": "2026-04-02T16:04:59.891Z",
+          "processedAt": "2026-04-07T05:37:16.296Z",
           "attempts": 1
         },
         "keywords": [
           "upgrade",
-          "skills update",
-          "config migration",
-          "deprecated fields",
-          "deploySkills",
-          "package update",
-          "sdd-forge upgrade"
+          "CLI",
+          "deploy",
+          "skills",
+          "sync",
+          "templates",
+          "experimental",
+          "workflow",
+          "config",
+          "i18n"
         ]
       }
     ],
     "summary": {
       "total": 225,
-      "totalMethods": 693
+      "totalMethods": 695
     },
     "dataSourceHash": "7d725e75d5031be445119323e4947c91"
   },
-  "enrichedAt": "2026-04-07T02:53:27.930Z"
+  "enrichedAt": "2026-04-07T05:37:16.296Z"
 }
