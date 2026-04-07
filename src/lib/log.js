@@ -14,6 +14,7 @@ import { isInsideWorktree, getMainRepoPath } from "./cli.js";
  *   - static filename  — the JSONL file name
  *   - isEnabled(cfg)   — whether logging is active for this type
  *   - toJSON()         — the data to write
+ *   - finalize()       — called by Logger.log() before writing (optional)
  */
 export class Log {
   static filename = undefined;
@@ -25,6 +26,8 @@ export class Log {
   toJSON() {
     return {};
   }
+
+  finalize() {}
 }
 
 /**
@@ -52,7 +55,7 @@ export function resolveLogDir(cwd, cfg) {
  * @param {Object} cfg
  * @returns {Promise<void>}
  */
-export async function logger(log, cwd, cfg) {
+export async function writeLogEntry(log, cwd, cfg) {
   if (!log.isEnabled(cfg)) return;
   const logDir = resolveLogDir(cwd, cfg);
   const filename = log.constructor.filename;
@@ -66,5 +69,45 @@ export async function logger(log, cwd, cfg) {
     await fs.promises.appendFile(logFile, JSON.stringify(log.toJSON()) + "\n", "utf8");
   } catch (err) {
     process.stderr.write(`[sdd-forge] log write failed: ${err.message}\n`);
+  }
+}
+
+/**
+ * Singleton logger that holds cwd/cfg after init, so call sites only need `Logger.getInstance().log(entry)`.
+ */
+export class Logger {
+  static #instance = null;
+
+  #cwd = null;
+  #cfg = null;
+  #initialized = false;
+
+  static getInstance() {
+    if (!Logger.#instance) Logger.#instance = new Logger();
+    return Logger.#instance;
+  }
+
+  /** @internal Reset singleton for testing. */
+  static _resetForTest() {
+    Logger.#instance = null;
+  }
+
+  get initialized() {
+    return this.#initialized;
+  }
+
+  init(cwd, cfg) {
+    this.#cwd = cwd;
+    this.#cfg = cfg;
+    this.#initialized = true;
+  }
+
+  async log(entry) {
+    if (!this.#initialized) {
+      process.stderr.write("[sdd-forge] Logger not initialized — call Logger.getInstance().init(cwd, cfg) first. Log skipped.\n");
+      return;
+    }
+    entry.finalize();
+    await writeLogEntry(entry, this.#cwd, this.#cfg);
   }
 }

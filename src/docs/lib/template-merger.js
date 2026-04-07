@@ -13,7 +13,7 @@ import fs from "fs";
 import path from "path";
 import { parseBlocks, BLOCK_START_RE, BLOCK_END_RE } from "./directive-parser.js";
 import { resolveChainSafe, resolveMultiChains } from "../../lib/presets.js";
-import { callAgent } from "../../lib/agent.js";
+import { callAgentWithLog } from "../../lib/agent.js";
 
 const SPECIAL_FILES = new Set(["README.md", "AGENTS.sdd.md", "layout.md"]);
 
@@ -430,7 +430,7 @@ export function translateTemplate(content, fromLang, toLang, agent, root) {
   ].join("\n");
 
   try {
-    return callAgent(agent, prompt, 60000, root);
+    return callAgentWithLog(agent, prompt, { spec: null, phase: null }, 60000, root);
   } catch (err) {
     // Translation failed — return original
     return content;

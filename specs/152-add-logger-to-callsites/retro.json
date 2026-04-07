@@ -1,0 +1,70 @@
+{
+  "spec": "specs/152-add-logger-to-callsites/spec.md",
+  "date": "2026-04-07T02:51:54.080Z",
+  "requirements": [
+    {
+      "desc": "R1: Loggerシングルトン化",
+      "status": "done",
+      "note": "Logger クラスに getInstance(), init(cwd, cfg), 未初期化時の console.error 警告+スキップが log.js に実装されている"
+    },
+    {
+      "desc": "R2: Log基底クラスへのfinalizeフック追加",
+      "status": "done",
+      "note": "Log に空の finalize() を追加、Logger.log() 内で entry.finalize() を呼び出している"
+    },
+    {
+      "desc": "R3: AgentLogの自動計測",
+      "status": "done",
+      "note": "コンストラクタで executeStartAt = new Date()、finalize() で executeEndAt と executeTime を計算。テストも対応済み"
+    },
+    {
+      "desc": "R4: CLIエントリポイントでの初期化",
+      "status": "done",
+      "note": "sdd-forge.js で config 読み込み後に Logger.getInstance().init(root, cfg) を呼び出している"
+    },
+    {
+      "desc": "R5: flow系12箇所への導入",
+      "status": "done",
+      "note": "review.js(8箇所), run-gate.js(2箇所), run-retro.js(1箇所), get-context.js(1箇所) に callAgentWithLog/callAgentAwaitLog 導入済み。spec/phase 設定あり、fire-and-forget/await 使い分け、try/finally パターン適用"
+    },
+    {
+      "desc": "R6: docs系7箇所への導入",
+      "status": "done",
+      "note": "text.js(2), forge.js(1), enrich.js(1), init.js(1), translate.js(1), agents.js(1), template-merger.js(1) に導入済み。spec:null, phase:null 設定、sync は fire-and-forget、try/finally パターン適用"
+    }
+  ],
+  "unplanned": [
+    {
+      "file": "src/lib/log.js",
+      "change": "logger 関数を writeLogEntry にリネーム（review.md の提案 #2 に対応したリファクタ）"
+    },
+    {
+      "file": "src/lib/agent.js",
+      "change": "callAgentWithLog, callAgentAwaitLog, callAgentAsyncWithLog のヘルパー関数を追加（review.md の提案 #1 に対応したリファクタ）"
+    },
+    {
+      "file": "src/lib/flow-state.js",
+      "change": "getSpecName() ユーティリティ関数を追加（review.md の提案 #4 に対応した共通化）"
+    },
+    {
+      "file": "src/lib/agent-log.js",
+      "change": "コンストラクタに prompt パラメータを追加（呼び出し元でのログ生成時に直接渡せるよう）"
+    },
+    {
+      "file": "specs/152-add-logger-to-callsites/tests/callsite-coverage.test.js",
+      "change": "テスト内容が review 後の設計（ヘルパー経由）に合わせて更新。AgentLog/Logger.getInstance() の直接参照禁止チェックを追加"
+    },
+    {
+      "file": "tests/unit/lib/log.test.js",
+      "change": "Logger singleton, Log finalize hook, AgentLog constructor の新規テストスイートを大幅追加。writeLogEntry リネームへの追従も含む"
+    }
+  ],
+  "summary": {
+    "total": 6,
+    "done": 6,
+    "partial": 0,
+    "not_done": 0,
+    "rate": 1,
+    "notes": "全6要件が実装済み。加えて review.md の承認提案(#1 ヘルパー集約, #2 命名衝突解消, #3 テスト改善, #4 getSpecName共通化)も反映されており、計画外変更はすべてレビュー承認済みのリファクタに起因する。機能的スコープ逸脱はなく、品質向上として妥当。"
+  }
+}

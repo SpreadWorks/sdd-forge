@@ -12,8 +12,9 @@
  */
 
 import path from "path";
-import { PKG_DIR } from "./lib/cli.js";
+import { PKG_DIR, repoRoot } from "./lib/cli.js";
 import { EXIT_ERROR } from "./lib/exit-codes.js";
+import { Logger } from "./lib/log.js";
 
 const rawArgs = process.argv.slice(2);
 const [subCmd, ...rest] = rawArgs;
@@ -32,6 +33,14 @@ if (!subCmd || subCmd === "-h" || subCmd === "--help") {
   await import(helpPath);
   process.exit(0);
 }
+
+// Initialize Logger singleton (best-effort — config may not exist yet)
+try {
+  const { loadConfig } = await import("./lib/config.js");
+  const root = repoRoot();
+  const cfg = loadConfig(root);
+  Logger.getInstance().init(root, cfg);
+} catch { /* pre-setup or missing config — Logger stays uninitialized, logs silently skipped */ }
 
 /** Namespace dispatchers — receive subcommand + rest args */
 const NAMESPACE_DISPATCHERS = new Set(["docs", "flow"]);

@@ -28,7 +28,7 @@ import {
 import { repoRoot, parseArgs } from "../../lib/cli.js";
 import { loadConfig, resolveConcurrency, DEFAULT_CONCURRENCY } from "../../lib/config.js";
 import { createLogger } from "../../lib/progress.js";
-import { callAgent as callAgentBase, callAgentAsync as callAgentAsyncBase, ensureAgentWorkDir, loadAgentConfig, DEFAULT_AGENT_TIMEOUT_MS } from "../../lib/agent.js";
+import { callAgentWithLog, callAgentAsyncWithLog, ensureAgentWorkDir, loadAgentConfig, DEFAULT_AGENT_TIMEOUT_MS } from "../../lib/agent.js";
 import { translate } from "../../lib/i18n.js";
 import { resolveCommandContext, getChapterFiles, loadFullAnalysis } from "../lib/command-context.js";
 import { repairJson } from "../../lib/json-parse.js";
@@ -263,12 +263,12 @@ async function processTemplateFileBatch(text, analysis, fileName, agent, timeout
 // エージェント呼び出し
 // ---------------------------------------------------------------------------
 function callAgent(agent, prompt, timeoutMs, cwd, preamblePatterns, systemPrompt) {
-  const result = callAgentBase(agent, prompt, timeoutMs, cwd, { systemPrompt });
+  const result = callAgentWithLog(agent, prompt, { spec: null, phase: null }, timeoutMs, cwd, { systemPrompt });
   return stripPreamble(result, preamblePatterns);
 }
 
 async function callAgentAsync(agent, prompt, timeoutMs, cwd, preamblePatterns, systemPrompt, extraOptions) {
-  const result = await callAgentAsyncBase(agent, prompt, timeoutMs, cwd, { systemPrompt, ...extraOptions });
+  const result = await callAgentAsyncWithLog(agent, prompt, { spec: null, phase: null }, timeoutMs, cwd, { systemPrompt, ...extraOptions });
   return stripPreamble(result, preamblePatterns);
 }
 

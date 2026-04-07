@@ -15,7 +15,7 @@ import path from "path";
 import { sddOutputDir, loadConfig } from "../../lib/config.js";
 import { FlowCommand } from "./base-command.js";
 import { ANALYSIS_META_KEYS } from "../../docs/lib/analysis-entry.js";
-import { resolveAgent, callAgent } from "../../lib/agent.js";
+import { resolveAgent, callAgentWithLog } from "../../lib/agent.js";
 
 const EXCLUDE_FIELDS = new Set(["hash", "mtime", "lines", "id", "enrich", "detail"]);
 
@@ -221,7 +221,7 @@ function aiSearch(allEntries, analysis, query, root) {
   const prompt = buildKeywordSelectionPrompt(allKeywords, query);
   let response;
   try {
-    response = callAgent(agent, prompt, 30000, root);
+    response = callAgentWithLog(agent, prompt, { spec: null, phase: "context-search" }, 30000, root);
   } catch (_) {
     return fallbackSearch(allEntries, query);
   }

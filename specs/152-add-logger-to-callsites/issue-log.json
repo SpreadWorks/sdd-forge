@@ -1,0 +1,42 @@
+{
+  "entries": [
+    {
+      "step": "gate-draft",
+      "reason": "単一責任 — callAgent 呼び出し元へのロガー追加という単一の関心事のみを扱っている。; 要件の明確性 — 「全19箇所一括」「fire-and-forget」「未初期化時は console.error 警告＋スキップ」等、検証可能な条件で記述されている。; 文脈の完全性 — 各Q&Aはトリガーとなるケースと期待される振る舞いが対になっている（例: 例外時→try/finallyでログを残す）。; 機密情報のハードコード禁止 — APIキー・トークン等の機密情報は含まれていない。; 要件の優先順位 — 要件は設計決定サマリーの6項目で収まっており、3件超えているが、表形式で整理されており優先順位の明示は不要な量とも言えるが、優先順位の記述は欠如している。— FAIL; 要件の優先順位 — 設計決定項目が6件あるが、実装上の優先順位（どこから着手するか等）が明示されていない。; 既存機能への影響 — 「スコープ外」セクションでスコープを明示し、影響範囲（19箇所）を特定している。ただし、既存機能への副作用（例: パフォーマンスへの影響）の明示はないが、ログ追加であり破壊的影響はほぼない。; 推奨案は根拠付きで提示する — 各Q&Aで推奨案と根拠（既存パターン・リスク許容方針等）が明示されている。; 探索できる質問はユーザーに聞かない — Q&Aはコードベース探索で回答可能なものを自己解決した形で記載されており、ユーザーへの確認項目は残っていない。; 関連する影響を自発的に指摘する — loggerSync 不足・バケツリレー問題・統合JSONL設計等、関連する将来課題をスコープ外として自発的に記録している。; 批判の前にブレインストーミング確認 — 意見の批判を行うシーンはなく、当該ガードレールは適用外。; 脇道の知見を draft.md に記録する — スコープ外の知見（ffe7, 1877, 8469）がボード登録済みとして記録されている。; draft は要件定義レベルに留める — 呼び出し側のコードスニペットが含まれており、実装詳細に踏み込んでいる。— FAIL; draft は要件定義レベルに留める — Q4でコード例（`const log = new AgentLog(...)` / `try/finally` ブロック）が記述されており、関数レベルの実装詳細を含んでいる。; CLI インターフェースの後方互換性 — CLIの外部インターフェースに変更はなく、当該ガードレールは適用外。",
+      "trigger": "gate post hook (auto)",
+      "timestamp": "2026-04-07T01:56:04.050Z"
+    },
+    {
+      "step": "gate-draft",
+      "reason": "単一責任 — logger パターンを全 callAgent 呼び出し元に適用するという単一の関心事に集中している; 要件の明確性 — 各決定は「fire-and-forget」「シングルトン」「console.error 警告 + スキップ」等、検証可能な条件で記述されている; 文脈の完全性 — Q5「例外時のログ記録」は try/finally でログを残すと述べているが、\"When callAgent throws\" → \"shall record log with duration\" のトリガー/期待振る舞いの対が明示されていない。他の要件も同様にトリガー条件が省略されている箇所がある; 機密情報のハードコード禁止 — 機密情報に関する記述はなく、該当しない; 要件の優先順位 — 実装優先順位が1〜5で明示されている; 既存機能への影響 — スコープ外セクションで影響範囲を列挙し、ボードに登録済みの関連事項も明示されている; 推奨案は根拠付きで提示する — 各 Q&A で推奨案が先頭に示され、根拠（「分割するメリットが薄い」「ログ欠損リスクは許容」等）が添えられている; 探索できる質問はユーザーに聞かない — Q1〜Q6 はいずれもコードベース調査で答えられる内容であり、ユーザーへの質問形式ではなく自己解決済みの設計決定として記述されている; 関連する影響を自発的に指摘する — sync 関数でのログ欠損リスク、未初期化時の挙動、将来構想（ffe7/1877/8469）が自発的に指摘されている; 批判の前にブレインストーミング確認 — ブレインストーミング的な内容はなく、該当しない; 脇道の知見を draft.md に記録する — スコープ外の構想がボード登録済みとして明記されており、知見が記録されている; draft は要件定義レベルに留める — Q4「AgentLog のライフサイクル設計」でコンストラクタ・finalizeフック・メソッド呼び出し順序など実装レベルの詳細が含まれている。同様に Q3 でシングルトンの初期化コード例（`Logger.getInstance().init(cwd, cfg)`）が記述されており、要件定義レベルを超えている; CLI インターフェースの後方互換性 — CLI インターフェースの変更はなく、該当しない",
+      "trigger": "gate post hook (auto)",
+      "timestamp": "2026-04-07T01:56:45.926Z"
+    },
+    {
+      "step": "gate-draft",
+      "reason": "単一責任 — callAgent呼び出し元へのlogger追加という単一の関心事に集中している。スコープ外は明示的にボード登録済みとして分離されている。; 要件の明確性 — 「19箇所」「fire-and-forget」「console.error警告+スキップ」「try/finally」など検証可能な条件で記述されている。曖昧な形容詞は使われていない。; 文脈の完全性 — Q3の未初期化時、Q5の例外時など、各決定事項にトリガー条件と期待される振る舞いが対になっている。; 機密情報のハードコード禁止 — APIキー・パスワード等の機密情報に関する記述はなく、該当しない。; 要件の優先順位 — 実装優先順位が5段階で明示されている。; 既存機能への影響 — 「スコープ外（ボード登録済み）」セクションで影響範囲が整理されている。ただし既存の callAgent 呼び出し元の動作変化（try/finally 追加による副作用等）への言及が薄い。; 推奨案は根拠付きで提示する — 各Q&Aで推奨案と採用理由が記述されている（例: Q1「分割メリットが薄い」、Q3「シングルトン方式」の理由付け）。; 探索できる質問はユーザーに聞かない — Q&Aの回答はコードベース調査（19箇所の特定、sync関数の対象ファイル列挙）に基づいており、不明点をユーザーに丸投げしていない。; 関連する影響を自発的に指摘する — sync呼び出し元でのログ欠損リスク、未初期化時の挙動など関連影響が自発的に指摘されている。; 批判の前にブレインストーミング確認 — ドラフトレビュー文書であり、この観点は適用外。; 脇道の知見を draft.md に記録する — スコープ外の知見（loggerSync, callAgent引数のオブジェクト化等）がボード登録として記録されている。; draft は要件定義レベルに留める — Q4「コンストラクタで開始時刻を記録」「finalize で終了時刻と経過時間を自動計算」、優先順位4の「Log 基底クラスに finalize フック追加」など、実装詳細・クラス設計レベルの記述が含まれている。; CLI インターフェースの後方互換性 — CLIコマンド・オプションの変更はなく、該当しない。",
+      "trigger": "gate post hook (auto)",
+      "timestamp": "2026-04-07T01:57:22.204Z"
+    },
+    {
+      "step": "gate-impl",
+      "reason": "no changes found against base branch",
+      "trigger": "gate post hook (auto)",
+      "timestamp": "2026-04-07T02:34:22.393Z"
+    },
+    {
+      "step": "gate-impl",
+      "reason": "R1: Logger シングルトン化 — Logger.getInstance(), init(cwd, cfg), 未初期化時 console.error 警告+スキップ が log.js に実装されている; R2: Log 基底クラスへの finalize フック — Log クラスに空の finalize() 追加、Logger.log() 内で entry.finalize() を呼び出している; R3: AgentLog の自動計測 — コンストラクタで executeStartAt = new Date()、finalize() で executeEndAt と executeTime を計算; R4: CLI エントリポイントでの初期化 — sdd-forge.js で config 読み込み後、Logger.getInstance().init(root, cfg) を呼び出している; R5: flow 系 review.js 8 箇所 — review.js で 8 箇所（testDesign/detect/fix/detect/fix/draft/final + specNameFromFlow ヘルパー）に AgentLog + Logger.getInstance().log() 導入済み; R5: flow 系 run — gate.js 2 箇所 — checkGuardrail と gate-impl の 2 箇所に fire-and-forget で導入済み; R5: flow 系 run — retro.js 1 箇所 — await Logger.getInstance().log(log) を try/finally で導入済み; R5: flow 系 get — context.js 1 箇所 — aiSearch 関数に fire-and-forget で導入済み; R5: flow 系 spec/phase 設定 — specNameFromFlow(flow) で spec を取得し phase も設定されている; R5: sync 関数は fire — and-forget — run-gate.js と get-context.js は Logger.getInstance().log(log).catch(() => {}) を使用; R5: try/finally でログ記録 — 全 flow 系呼び出しが try/finally パターンを使用; R6: docs 系 text.js 2 箇所 — callAgent/callAgentAsync のラッパー関数に各 1 箇所、fire-and-forget と await で導入済み; R6: docs 系 forge.js 1 箇所 — invokeAgent 関数の try/finally に追加済み; R6: docs 系 enrich.js 1 箇所 — try/finally で await Logger.getInstance().log(log) 導入済み; R6: docs 系 init.js 1 箇所 — fire-and-forget で導入済み; R6: docs 系 translate.js 1 箇所 — try/finally で await Logger.getInstance().log(log) 導入済み; R6: docs 系 agents.js 1 箇所 — try/finally で await Logger.getInstance().log(log) 導入済み; R6: docs 系 template — merger.js 1 箇所 — fire-and-forget で導入済み; R6: docs 系 spec: null, phase: null — 全 docs 系で new AgentLog({ spec: null, phase: null, prompt }) を使用; R6: sync 関数は fire — and-forget — init.js と template-merger.js は .catch(() => {}) パターンを使用; R6: try/finally でログ記録 — 全 docs 系呼び出しが try/finally パターンを使用; 機密情報のハードコード禁止 — APIキー・パスワード・トークン等の機密情報はコードに含まれていない。; エラーの黙殺禁止 — catch ブロックはすべてエラーをログ出力またはリスローしている。`catch (_)` は `fallbackSearch` へフォールバックしており、黙殺ではない。`catch { /* pre-setup... */ }` は初期化の失敗を許容する設計で意図が明示されている。; リソース使用量の上限設定 — 新規追加コードに再帰・リトライ・大量データ処理はなく、既存の上限設定に影響を与えていない。; ログへの機密情報出力禁止 — ログに記録されるのは `spec`, `phase`, `prompt`（AIへ送るプロンプトテキスト）であり、パスワード・トークン・個人情報は含まれない。; 既存テストの無効化禁止 — 既存テストの skip・コメントアウト・削除は行われていない。; 新しいテストが既存テストを壊した場合は報告する — `log.test.js` 内の既存テスト `toJSON returns null for unset fields` のアサーション変更は `executeStartAt` の仕様変更（コンストラクタで自動設定）に合わせた正当な修正であり、テストの破壊ではない。; 既存テストをユーザー承認なしに変更しない — `tests/unit/lib/log.test.js` の既存テスト `toJSON returns null for unset fields` のテスト名とアサーション内容が変更されている（`executeStartAt` のアサートを `null` から `!== null` に変更）。ユーザー承認の記録が diff 内に見当たらない。; 不要になったテストをユーザーに知らせる — 削除されたテストはなく、既存テストはすべて維持されている。; 終了コードの規約 — 終了コードに関する変更はない。既存の `process.exit` パターンは変更されていない。; ホットパスでの同期 I/O 禁止 — 追加コードに同期 I/O はなく、ループ・バッチ処理内での `readFileSync` 等の追加もない。; エントリポイントでの入力バリデーション — `sdd-forge.js` のエントリポイント変更はロガー初期化の追加のみで、入力バリデーションのバイパスはない。",
+      "trigger": "gate post hook (auto)",
+      "timestamp": "2026-04-07T02:35:29.074Z"
+    },
+    {
+      "step": "implement",
+      "reason": "tests/unit/lib/log.test.js の既存テスト toJSON returns null for unset fields のアサーションを変更",
+      "trigger": "R3 の仕様変更（AgentLog コンストラクタで executeStartAt を自動設定）",
+      "resolution": "executeStartAt のアサートを null から !== null に変更し、テスト名にも (except executeStartAt) を追記。ユーザー承認済み。",
+      "guardrailCandidate": "spec で明示された設計変更に伴う既存テスト調整は、impl gate で承認記録を残す",
+      "timestamp": "2026-04-07T02:35:57.114Z"
+    }
+  ]
+}

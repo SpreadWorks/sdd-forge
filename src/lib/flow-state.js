@@ -15,6 +15,18 @@ import { isInsideWorktree, getMainRepoPath } from "./cli.js";
 const STATE_FILE = "flow.json";
 const ACTIVE_FLOW_FILE = ".active-flow";
 
+/**
+ * Extract the spec name (e.g. "152-add-logger-to-callsites") from a flow object or state.
+ * Both `flow.spec` and `state.spec` hold a relative path like "specs/152-.../spec.md".
+ *
+ * @param {{ spec?: string }|null|undefined} flowOrState
+ * @returns {string|null}
+ */
+export function getSpecName(flowOrState) {
+  if (!flowOrState?.spec) return null;
+  return path.basename(path.dirname(flowOrState.spec));
+}
+
 /** SDD workflow step IDs in order. */
 export const FLOW_STEPS = [
   "approach", "branch", "prepare-spec", "draft", "gate-draft", "spec",

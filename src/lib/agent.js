@@ -9,6 +9,8 @@ import crypto from "crypto";
 import fs from "fs";
 import path from "path";
 import { execFileSync, spawn } from "child_process";
+import { AgentLog } from "./agent-log.js";
+import { Logger } from "./log.js";
 
 
 /** Default agent timeout in seconds. */
@@ -137,6 +139,45 @@ export function callAgentAsync(agent, prompt, timeoutMs, cwd, options) {
   return retryCount <= 0
     ? callAgentAsyncOnce(agent, prompt, timeoutMs, cwd, restOptions)
     : callAgentAsyncWithRetry(agent, prompt, timeoutMs, cwd, restOptions, retryCount, retryDelayMs);
+}
+
+/**
+ * Sync callAgent wrapped with AgentLog + Logger.
+ * Use in sync function contexts. Logger.log() is fire-and-forget.
+ */
+export function callAgentWithLog(agent, prompt, logCtx, timeoutMs, cwd, options) {
+  const log = new AgentLog({ spec: logCtx?.spec ?? null, phase: logCtx?.phase ?? null, prompt });
+  try {
+    return callAgent(agent, prompt, timeoutMs, cwd, options);
+  } finally {
+    Logger.getInstance().log(log).catch(() => {});
+  }
+}
+
+/**
+ * Sync callAgent wrapped with AgentLog + Logger, awaited.
+ * Use in async function contexts where the existing code uses sync callAgent.
+ */
+export async function callAgentAwaitLog(agent, prompt, logCtx, timeoutMs, cwd, options) {
+  const log = new AgentLog({ spec: logCtx?.spec ?? null, phase: logCtx?.phase ?? null, prompt });
+  try {
+    return callAgent(agent, prompt, timeoutMs, cwd, options);
+  } finally {
+    await Logger.getInstance().log(log);
+  }
+}
+
+/**
+ * Async callAgentAsync (spawn-based) wrapped with AgentLog + Logger.
+ * Use in async function contexts where the existing code uses callAgentAsync.
+ */
+export async function callAgentAsyncWithLog(agent, prompt, logCtx, timeoutMs, cwd, options) {
+  const log = new AgentLog({ spec: logCtx?.spec ?? null, phase: logCtx?.phase ?? null, prompt });
+  try {
+    return await callAgentAsync(agent, prompt, timeoutMs, cwd, options);
+  } finally {
+    await Logger.getInstance().log(log);
+  }
 }
 
 async function callAgentAsyncWithRetry(agent, prompt, timeoutMs, cwd, options, retryCount, retryDelayMs) {

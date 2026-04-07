@@ -4,7 +4,7 @@ import fs from "node:fs";
 import path from "node:path";
 import os from "node:os";
 
-import { Log, logger, resolveLogDir } from "../../../src/lib/log.js";
+import { Log, Logger, writeLogEntry, resolveLogDir } from "../../../src/lib/log.js";
 import { AgentLog } from "../../../src/lib/agent-log.js";
 
 describe("Log base class", () => {
@@ -63,19 +63,19 @@ describe("AgentLog extends Log", () => {
     assert.equal(json.executeTime, 5);
   });
 
-  it("toJSON returns null for unset fields", () => {
+  it("toJSON returns null for unset fields (except executeStartAt)", () => {
     const log = new AgentLog();
     const json = log.toJSON();
     assert.equal(json.spec, null);
     assert.equal(json.phase, null);
     assert.equal(json.prompt, null);
-    assert.equal(json.executeStartAt, null);
+    assert.ok(json.executeStartAt !== null, "executeStartAt is auto-set in constructor");
     assert.equal(json.executeEndAt, null);
     assert.equal(json.executeTime, null);
   });
 });
 
-describe("logger", () => {
+describe("writeLogEntry", () => {
   let tmpDir;
 
   beforeEach(() => {
@@ -94,7 +94,7 @@ describe("logger", () => {
     log.executeTime = 1;
 
     const cfg = { logs: { prompts: true, dir: tmpDir } };
-    await logger(log, tmpDir, cfg);
+    await writeLogEntry(log, tmpDir, cfg);
 
     const logFile = path.join(tmpDir, "prompts.jsonl");
     assert.ok(fs.existsSync(logFile), "log file should exist");
@@ -111,7 +111,7 @@ describe("logger", () => {
   it("skips writing when isEnabled returns false", async () => {
     const log = new AgentLog({ spec: "s1", phase: "draft" });
     const cfg = { logs: { prompts: false, dir: tmpDir } };
-    await logger(log, tmpDir, cfg);
+    await writeLogEntry(log, tmpDir, cfg);
 
     const logFile = path.join(tmpDir, "prompts.jsonl");
     assert.ok(!fs.existsSync(logFile), "log file should not exist");
@@ -122,11 +122,11 @@ describe("logger", () => {
 
     const log1 = new AgentLog({ spec: "s1", phase: "draft" });
     log1.prompt = "first";
-    await logger(log1, tmpDir, cfg);
+    await writeLogEntry(log1, tmpDir, cfg);
 
     const log2 = new AgentLog({ spec: "s2", phase: "spec" });
     log2.prompt = "second";
-    await logger(log2, tmpDir, cfg);
+    await writeLogEntry(log2, tmpDir, cfg);
 
     const logFile = path.join(tmpDir, "prompts.jsonl");
     const lines = fs.readFileSync(logFile, "utf8").trim().split("\n");
@@ -140,7 +140,116 @@ describe("logger", () => {
     const cfg = { logs: { prompts: true, dir: "/nonexistent/path/that/cannot/exist" } };
 
     // Should not reject
-    await assert.doesNotReject(logger(log, "/nonexistent", cfg));
+    await assert.doesNotReject(writeLogEntry(log, "/nonexistent", cfg));
+  });
+});
+
+describe("Logger singleton", () => {
+  let tmpDir;
+
+  beforeEach(() => {
+    tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "logger-test-"));
+    Logger._resetForTest();
+  });
+
+  afterEach(() => {
+    fs.rmSync(tmpDir, { recursive: true, force: true });
+    Logger._resetForTest();
+  });
+
+  it("getInstance returns the same instance", () => {
+    const a = Logger.getInstance();
+    const b = Logger.getInstance();
+    assert.strictEqual(a, b);
+  });
+
+  it("init stores cwd and cfg", () => {
+    const inst = Logger.getInstance();
+    inst.init(tmpDir, { logs: { prompts: true, dir: tmpDir } });
+    assert.equal(inst.initialized, true);
+  });
+
+  it("log writes entry when initialized and enabled", async () => {
+    const inst = Logger.getInstance();
+    inst.init(tmpDir, { logs: { prompts: true, dir: tmpDir } });
+
+    const log = new AgentLog({ spec: "s1", phase: "draft" });
+    log.prompt = "test";
+    await inst.log(log);
+
+    const logFile = path.join(tmpDir, "prompts.jsonl");
+    assert.ok(fs.existsSync(logFile));
+    const entry = JSON.parse(fs.readFileSync(logFile, "utf8").trim());
+    assert.equal(entry.spec, "s1");
+    assert.equal(entry.prompt, "test");
+  });
+
+  it("log warns and skips when not initialized", async () => {
+    const inst = Logger.getInstance();
+    const log = new AgentLog({ spec: "s1", phase: "draft" });
+
+    const warnings = [];
+    const origWrite = process.stderr.write;
+    process.stderr.write = (msg) => { warnings.push(msg); return true; };
+    try {
+      await inst.log(log);
+    } finally {
+      process.stderr.write = origWrite;
+    }
+
+    assert.ok(warnings.some(w => w.includes("not initialized")), "should warn about not initialized");
+  });
+
+  it("log calls finalize before writing", async () => {
+    const inst = Logger.getInstance();
+    inst.init(tmpDir, { logs: { prompts: true, dir: tmpDir } });
+
+    const log = new AgentLog({ spec: "s1", phase: "draft" });
+    log.prompt = "test";
+    // executeStartAt is set in constructor, executeEndAt/Time should be set by finalize
+    assert.ok(log.executeStartAt instanceof Date, "executeStartAt should be set in constructor");
+    assert.equal(log.executeEndAt, null, "executeEndAt should be null before log()");
+
+    await inst.log(log);
+
+    assert.ok(log.executeEndAt instanceof Date, "executeEndAt should be set after log()");
+    assert.equal(typeof log.executeTime, "number", "executeTime should be a number after log()");
+  });
+});
+
+describe("Log finalize hook", () => {
+  it("Log base class finalize is a no-op", () => {
+    const log = new Log();
+    assert.doesNotThrow(() => log.finalize());
+  });
+
+  it("AgentLog finalize sets executeEndAt and executeTime", () => {
+    const log = new AgentLog({ spec: "s1", phase: "draft" });
+    // executeStartAt is set in constructor
+    assert.ok(log.executeStartAt instanceof Date);
+
+    log.finalize();
+
+    assert.ok(log.executeEndAt instanceof Date);
+    assert.equal(typeof log.executeTime, "number");
+    assert.ok(log.executeTime >= 0);
+  });
+});
+
+describe("AgentLog constructor sets executeStartAt", () => {
+  it("sets executeStartAt automatically", () => {
+    const before = new Date();
+    const log = new AgentLog({ spec: "test", phase: "draft" });
+    const after = new Date();
+
+    assert.ok(log.executeStartAt instanceof Date);
+    assert.ok(log.executeStartAt >= before);
+    assert.ok(log.executeStartAt <= after);
+  });
+
+  it("accepts prompt in constructor", () => {
+    const log = new AgentLog({ spec: "test", phase: "draft", prompt: "hello" });
+    assert.equal(log.prompt, "hello");
   });
 });
 

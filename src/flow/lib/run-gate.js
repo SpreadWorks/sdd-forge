@@ -13,8 +13,9 @@
 import fs from "fs";
 import path from "path";
 import { runCmd } from "../../lib/process.js";
-import { callAgent, resolveAgent } from "../../lib/agent.js";
+import { callAgentWithLog, resolveAgent } from "../../lib/agent.js";
 import { filterByPhase, loadMergedGuardrails } from "../../lib/guardrail.js";
+import { getSpecName } from "../../lib/flow-state.js";
 import { FlowCommand } from "./base-command.js";
 
 // ---------------------------------------------------------------------------
@@ -225,7 +226,7 @@ function checkGuardrail(root, targetText, config, phase, role) {
   const prompt = buildGuardrailPrompt(targetText, guardrails, phase, role);
   if (!prompt) return { passed: true, results: [] };
 
-  const response = callAgent(agent, prompt);
+  const response = callAgentWithLog(agent, prompt, { spec: null, phase: `gate-${phase}` });
   const results = parseGuardrailResponse(response);
   const passed = results.length > 0 && results.every((r) => r.passed);
 
@@ -426,7 +427,7 @@ export class RunGateCommand extends FlowCommand {
     if (!agent) throw new Error("no agent configured for spec.gate");
 
     const reqPrompt = buildImplCheckPrompt(specText, diff);
-    const reqResponse = callAgent(agent, reqPrompt);
+    const reqResponse = callAgentWithLog(agent, reqPrompt, { spec: getSpecName(state), phase: "gate-impl" });
     const reqResults = parseGuardrailResponse(reqResponse);
 
     const reasons = reqResults.map((r) => ({

@@ -8,8 +8,9 @@
 import fs from "fs";
 import path from "path";
 import { runCmd } from "../../lib/process.js";
-import { callAgent, resolveAgent } from "../../lib/agent.js";
+import { callAgentAwaitLog, resolveAgent } from "../../lib/agent.js";
 import { repairJson } from "../../lib/json-parse.js";
+import { getSpecName } from "../../lib/flow-state.js";
 import { FlowCommand } from "./base-command.js";
 
 /**
@@ -192,7 +193,7 @@ export class RunRetroCommand extends FlowCommand {
 
     let response;
     try {
-      response = callAgent(agent, prompt);
+      response = await callAgentAwaitLog(agent, prompt, { spec: getSpecName(state), phase: "retro" });
     } catch (e) {
       throw new Error(`AI agent call failed: ${e.message}`);
     }

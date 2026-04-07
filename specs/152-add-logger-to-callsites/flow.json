@@ -1,0 +1,144 @@
+{
+  "spec": "specs/152-add-logger-to-callsites/spec.md",
+  "baseBranch": "development",
+  "featureBranch": "feature/152-add-logger-to-callsites",
+  "steps": [
+    {
+      "id": "approach",
+      "status": "done"
+    },
+    {
+      "id": "branch",
+      "status": "done"
+    },
+    {
+      "id": "prepare-spec",
+      "status": "pending"
+    },
+    {
+      "id": "draft",
+      "status": "done"
+    },
+    {
+      "id": "gate-draft",
+      "status": "done"
+    },
+    {
+      "id": "spec",
+      "status": "done"
+    },
+    {
+      "id": "gate",
+      "status": "done"
+    },
+    {
+      "id": "approval",
+      "status": "done"
+    },
+    {
+      "id": "test",
+      "status": "done"
+    },
+    {
+      "id": "implement",
+      "status": "done"
+    },
+    {
+      "id": "gate-impl",
+      "status": "done"
+    },
+    {
+      "id": "review",
+      "status": "done"
+    },
+    {
+      "id": "finalize",
+      "status": "pending"
+    },
+    {
+      "id": "commit",
+      "status": "pending"
+    },
+    {
+      "id": "push",
+      "status": "pending"
+    },
+    {
+      "id": "merge",
+      "status": "pending"
+    },
+    {
+      "id": "pr-create",
+      "status": "pending"
+    },
+    {
+      "id": "branch-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "pr-merge",
+      "status": "pending"
+    },
+    {
+      "id": "sync-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "docs-update",
+      "status": "pending"
+    },
+    {
+      "id": "docs-review",
+      "status": "pending"
+    },
+    {
+      "id": "docs-commit",
+      "status": "pending"
+    }
+  ],
+  "requirements": [
+    {
+      "desc": "R1: Loggerシングルトン化",
+      "status": "done"
+    },
+    {
+      "desc": "R2: Log基底クラスへのfinalizeフック追加",
+      "status": "done"
+    },
+    {
+      "desc": "R3: AgentLogの自動計測",
+      "status": "done"
+    },
+    {
+      "desc": "R4: CLIエントリポイントでの初期化",
+      "status": "done"
+    },
+    {
+      "desc": "R5: flow系12箇所への導入",
+      "status": "done"
+    },
+    {
+      "desc": "R6: docs系7箇所への導入",
+      "status": "done"
+    }
+  ],
+  "issue": 104,
+  "request": "全callAgent呼び出し元にAgentLog+loggerパターンを追加する。flow系12箇所、docs系7箇所が対象。",
+  "worktree": true,
+  "notes": [
+    "approach: Q&Aで要件整理してから仕様書作成",
+    "draft: 全19箇所一括、シングルトンLogger、finalize()パターン、fire-and-forget for sync"
+  ],
+  "metrics": {
+    "plan": {
+      "docsRead": 1
+    },
+    "draft": {
+      "question": 5
+    },
+    "impl": {
+      "srcRead": 2,
+      "issueLog": 1
+    }
+  }
+}

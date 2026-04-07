@@ -14,8 +14,8 @@ import path from "path";
 import { runIfDirect } from "../../lib/entrypoint.js";
 import { repoRoot, parseArgs } from "../../lib/cli.js";
 import { loadConfig } from "../../lib/config.js";
-import { loadFlowState } from "../../lib/flow-state.js";
-import { loadAgentConfig, callAgent, resolveAgent, ensureAgentWorkDir } from "../../lib/agent.js";
+import { loadFlowState, getSpecName } from "../../lib/flow-state.js";
+import { loadAgentConfig, callAgentAwaitLog, resolveAgent, ensureAgentWorkDir } from "../../lib/agent.js";
 import { runCmd } from "../../lib/process.js";
 import { EXIT_ERROR } from "../../lib/exit-codes.js";
 import { VALID_PHASES } from "../lib/phases.js";
@@ -496,9 +496,11 @@ async function runTestReview(root, flow, config, dryRun) {
 
   // Step 1: Generate test design
   console.error("  [test-review] Generating test design...");
-  const testDesign = await callAgent(
+  const testDesignPrompt = buildTestDesignPrompt(requirements);
+  const testDesign = await callAgentAwaitLog(
     agent,
-    buildTestDesignPrompt(requirements),
+    testDesignPrompt,
+    { spec: getSpecName(flow), phase: "test-review" },
     undefined,
     root,
     { systemPrompt: "You are a test design expert. Output a structured test design." },
@@ -518,9 +520,11 @@ async function runTestReview(root, flow, config, dryRun) {
     label: "test-review",
     dryRun,
     async detect() {
-      const raw = await callAgent(
+      const detectPrompt = buildGapAnalysisPrompt(testDesign, testFiles);
+      const raw = await callAgentAwaitLog(
         agent,
-        buildGapAnalysisPrompt(testDesign, testFiles),
+        detectPrompt,
+        { spec: getSpecName(flow), phase: "test-review" },
         undefined,
         root,
         { systemPrompt: "You are a test quality reviewer. Identify gaps between test design and test code." },
@@ -528,9 +532,11 @@ async function runTestReview(root, flow, config, dryRun) {
       return { issues: parseGaps(raw), raw };
     },
     async fix(raw) {
-      const fixResult = await callAgent(
+      const fixPrompt = buildTestFixPrompt(raw, testFiles);
+      const fixResult = await callAgentAwaitLog(
         agent,
-        buildTestFixPrompt(raw, testFiles),
+        fixPrompt,
+        { spec: getSpecName(flow), phase: "test-review" },
         undefined,
         root,
         { systemPrompt: "You are a test engineer. Fix test gaps by writing complete updated test files." },
@@ -700,9 +706,11 @@ async function runSpecReview(root, flow, config, dryRun) {
           contextEntries = analysisData.ctxSearch(analysisData.entries, analysisData.analysis, searchQuery, root);
         }
       }
-      const raw = await callAgent(
+      const detectPrompt = buildSpecReviewPrompt(specText, contextEntries);
+      const raw = await callAgentAwaitLog(
         agent,
-        buildSpecReviewPrompt(specText, contextEntries),
+        detectPrompt,
+        { spec: getSpecName(flow), phase: "spec-review" },
         undefined,
         root,
         { systemPrompt: "You are a spec completeness reviewer. Identify oversights in the spec." },
@@ -714,16 +722,18 @@ async function runSpecReview(root, flow, config, dryRun) {
     async fix(raw) {
       const specText = fs.readFileSync(specPath, "utf8");
       const proposals = parseProposals(raw);
-      const validationResult = await callAgent(
+      const validationPrompt = [
+        "Validate these spec improvement proposals:",
+        "",
+        raw,
+        "",
+        "## Current spec for context:",
+        specText,
+      ].join("\n");
+      const validationResult = await callAgentAwaitLog(
         validationAgent,
-        [
-          "Validate these spec improvement proposals:",
-          "",
-          raw,
-          "",
-          "## Current spec for context:",
-          specText,
-        ].join("\n"),
+        validationPrompt,
+        { spec: getSpecName(flow), phase: "spec-review" },
         undefined,
         root,
         { systemPrompt: buildFinalSystemPrompt() },
@@ -739,9 +749,11 @@ async function runSpecReview(root, flow, config, dryRun) {
       console.error(`  [spec-review] ${approved.length} proposal(s) approved. Applying to spec...`);
 
       const approvedText = approved.map((p, i) => `### ${i + 1}. ${p.title}\n${p.body}`).join("\n\n");
-      const fixResult = await callAgent(
+      const specFixPrompt = buildSpecFixPrompt(specText, approvedText);
+      const fixResult = await callAgentAwaitLog(
         agent,
-        buildSpecFixPrompt(specText, approvedText),
+        specFixPrompt,
+        { spec: getSpecName(flow), phase: "spec-review" },
         undefined,
         root,
         { systemPrompt: "You are a spec writer. Apply the approved proposals to produce an updated spec." },
@@ -836,9 +848,10 @@ async function main() {
   console.error("  [draft] Generating proposals...");
   const draftAgent = loadAgentConfig(config, "flow.review.draft");
   ensureAgentWorkDir(draftAgent, root);
-  const draftResult = await callAgent(
+  const draftResult = await callAgentAwaitLog(
     draftAgent,
     diff,
+    { spec: getSpecName(flow), phase: "review" },
     undefined,
     root,
     { systemPrompt: buildDraftSystemPrompt() },
@@ -874,9 +887,10 @@ async function main() {
     diff,
   ].join("\n");
 
-  const finalResult = await callAgent(
+  const finalResult = await callAgentAwaitLog(
     finalAgent,
     finalPrompt,
+    { spec: getSpecName(flow), phase: "review" },
     undefined,
     root,
     { systemPrompt: buildFinalSystemPrompt() },

@@ -14,7 +14,7 @@ import path from "path";
 import { runIfDirect } from "../../lib/entrypoint.js";
 import { parseArgs } from "../../lib/cli.js";
 import { sddOutputDir, resolveConcurrency } from "../../lib/config.js";
-import { resolveAgent, callAgentAsync, DEFAULT_AGENT_TIMEOUT_MS, resolveWorkDir } from "../../lib/agent.js";
+import { resolveAgent, callAgentAsyncWithLog, DEFAULT_AGENT_TIMEOUT_MS, resolveWorkDir } from "../../lib/agent.js";
 import { minify } from "../lib/minify.js";
 import { mapWithConcurrency } from "../lib/concurrency.js";
 import { resolveCommandContext, loadFullAnalysis } from "../lib/command-context.js";
@@ -454,7 +454,7 @@ async function main(ctx) {
 
     let response;
     try {
-      response = await callAgentAsync(agent, prompt, timeoutMs, root, {
+      response = await callAgentAsyncWithLog(agent, prompt, { spec: null, phase: null }, timeoutMs, root, {
         retryCount,
       });
     } catch (err) {

@@ -13,7 +13,7 @@ import path from "path";
 import { runIfDirect } from "../../lib/entrypoint.js";
 import { repoRoot, parseArgs } from "../../lib/cli.js";
 import { loadPackageField } from "../../lib/config.js";
-import { callAgent } from "../../lib/agent.js";
+import { callAgentWithLog } from "../../lib/agent.js";
 import { resolveTemplates, mergeResolved, resolveChaptersOrder, translateTemplate } from "../lib/template-merger.js";
 import { summaryToText } from "../lib/forge-prompts.js";
 import { createLogger } from "../../lib/progress.js";
@@ -81,7 +81,7 @@ function aiFilterChapters(chapters, analysis, agent, root, purpose) {
 
   let response;
   try {
-    response = callAgent(agent, prompt, 60000, root);
+    response = callAgentWithLog(agent, prompt, { spec: null, phase: null }, 60000, root);
   } catch (err) {
     logger.log(`[init] WARN: AI chapter selection failed: ${err.message}`);
     return chapters;

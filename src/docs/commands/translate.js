@@ -15,7 +15,7 @@ import { runIfDirect } from "../../lib/entrypoint.js";
 import { parseArgs } from "../../lib/cli.js";
 import { resolveOutputConfig } from "../../lib/types.js";
 import { resolveConcurrency } from "../../lib/config.js";
-import { callAgentAsync } from "../../lib/agent.js";
+import { callAgentAsyncWithLog } from "../../lib/agent.js";
 import { createLogger } from "../../lib/progress.js";
 import { resolveCommandContext, getChapterFiles, stripResponsePreamble } from "../lib/command-context.js";
 import { mapWithConcurrency } from "../lib/concurrency.js";
@@ -71,7 +71,7 @@ async function translateDocument(content, fromLang, toLang, agent, root, documen
 
   const prompt = content;
 
-  const result = await callAgentAsync(agent, prompt, agent.timeoutMs, root, {
+  const result = await callAgentAsyncWithLog(agent, prompt, { spec: null, phase: null }, agent.timeoutMs, root, {
     systemPrompt,
   });
 

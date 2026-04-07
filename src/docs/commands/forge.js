@@ -22,7 +22,7 @@ import { PKG_DIR, repoRoot, parseArgs } from "../../lib/cli.js";
 import { loadConfig, resolveConcurrency } from "../../lib/config.js";
 import { loadFullAnalysis, loadAnalysisData, getChapterFiles, readText } from "../lib/command-context.js";
 import { createResolver } from "../lib/resolver-factory.js";
-import { callAgentAsync, DEFAULT_AGENT_TIMEOUT_MS, resolveAgent } from "../../lib/agent.js";
+import { callAgentAsyncWithLog, DEFAULT_AGENT_TIMEOUT_MS, resolveAgent } from "../../lib/agent.js";
 import { translate } from "../../lib/i18n.js";
 import { EXIT_ERROR } from "../../lib/exit-codes.js";
 import {
@@ -144,7 +144,7 @@ async function invokeAgent(agent, prompt, { cwd, timeoutMs, systemPrompt, verbos
     : null;
 
   try {
-    return await callAgentAsync(agent, prompt, timeout, cwd, {
+    return await callAgentAsyncWithLog(agent, prompt, { spec: null, phase: null }, timeout, cwd, {
       systemPrompt,
       onStdout: verbose ? (chunk) => process.stderr.write(chunk) : undefined,
       onStderr: verbose ? (chunk) => process.stderr.write(chunk) : undefined,
