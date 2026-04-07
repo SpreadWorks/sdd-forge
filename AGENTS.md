@@ -32,18 +32,8 @@
 
 ## タスク管理
 
-ボード操作は `node experimental/workflow.js` を使うこと。詳細な運用ルールは skill `sdd-forge.exp.workflow` に集約されている（`config.experimental.workflow.enable` を true にして `sdd-forge upgrade` で配置）。
-
-| サブコマンド | 用途 |
-|---|---|
-| `add <title> [--status Ideas\|Todo] [--category RESEARCH\|BUG\|ENHANCE\|OTHER] [--body <text>]` | 新規 Draft 作成 |
-| `update <hash> [--status <s>] [--body <text>] [--title <text>]` | Draft 更新 |
-| `show <hash>` | 詳細表示 |
-| `search <query>` | 全文検索 |
-| `list [--status <status>]` | 一覧表示 |
-| `publish <hash> [--label <l>]` | Draft を Issue 化 |
-
-出力は JSON envelope 形式（`{ ok, type, key, data, errors }`）。失敗時は非ゼロ終了コードで終了する。
+ボード操作は skill `sdd-forge.exp.workflow` を使うこと。
+（`config.experimental.workflow.enable` を true にして `sdd-forge upgrade` で配置）
 
 ## 設計思想
 
