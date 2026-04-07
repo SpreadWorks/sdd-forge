@@ -27,9 +27,7 @@ import { FLOW_COMMANDS } from "../registry.js";
 export function finalizeOnError(stepName, trigger) {
   return (ctx, err) => {
     try {
-      // Use mainRoot in worktree mode so issue-log persists after cleanup
-      const logRoot = ctx.mainRoot || ctx.root;
-      const issueLog = loadIssueLog(logRoot, ctx.flowState.spec);
+      const issueLog = loadIssueLog(ctx.root, ctx.flowState.spec);
       const entry = {
         step: stepName,
         reason: err.message || String(err),
@@ -37,7 +35,7 @@ export function finalizeOnError(stepName, trigger) {
       };
       if (trigger) entry.trigger = trigger;
       issueLog.entries.push(entry);
-      saveIssueLog(logRoot, ctx.flowState.spec, issueLog);
+      saveIssueLog(ctx.root, ctx.flowState.spec, issueLog);
     } catch (e) { console.error("[issue-log hook]", e.message); }
   };
 }
