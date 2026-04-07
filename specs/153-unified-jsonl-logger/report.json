@@ -1,0 +1,39 @@
+{
+  "data": {
+    "implementation": {
+      "diffStat": ".sdd-forge/config.json                             |   2 +-\n specs/153-unified-jsonl-logger/draft.md            | 134 ++++++\n specs/153-unified-jsonl-logger/flow.json           | 172 +++++++\n specs/153-unified-jsonl-logger/issue-log.json      |  47 ++\n specs/153-unified-jsonl-logger/qa.md               |   9 +\n specs/153-unified-jsonl-logger/review.md           |  41 ++\n specs/153-unified-jsonl-logger/spec.md             | 179 ++++++++\n specs/153-unified-jsonl-logger/tests/README.md     |  52 +++\n .../tests/e2e-flow-gate-logger.test.js             | 147 ++++++\n src/docs/commands/agents.js                        |   2 +-\n src/docs/commands/enrich.js                        |   2 +-\n src/docs/commands/forge.js                         |   2 +-\n src/docs/commands/init.js                          |   2 +-\n src/docs/commands/text.js                          |   4 +-\n src/docs/commands/translate.js                     |   2 +-\n src/docs/lib/template-merger.js                    |   2 +-\n src/flow/commands/review.js                        |  85 ++--\n src/flow/lib/get-context.js                        |   2 +-\n src/flow/lib/run-gate.js                           |   4 +-\n src/flow/lib/run-retro.js                          |   2 +-\n src/lib/agent-log.js                               |  51 ---\n src/lib/agent.js                                   | 142 +++++-\n src/lib/log.js                                     | 397 ++++++++++++++---\n src/lib/types.js                                   |   6 +-\n src/sdd-forge.js                                   |   7 +-\n tests/helpers/log-fixtures.js                      |  26 ++\n tests/unit/lib/agent-with-logger.test.js           | 140 ++++++\n tests/unit/lib/log.test.js                         | 492 ++++++++++++---------\n 28 files changed, 1755 insertions(+), 398 deletions(-)",
+      "commits": [
+        "feat: feature/153-unified-jsonl-logger",
+        "docs: clarify template config has no logs section",
+        "refactor: apply code review improvements",
+        "docs: clarify log.test.js rewrite preserves prior test scenarios",
+        "fix: surface Logger errors and preserve log.test.js path",
+        "feat: redesign Logger with unified JSONL + prompt file separation"
+      ]
+    },
+    "retro": {
+      "total": 12,
+      "done": 11,
+      "partial": 1,
+      "not_done": 0,
+      "rate": 0.96,
+      "notes": "12 要件のうち 11 件は完全に満たされている。R4 のみ 'partial': spec 文書では「init 時に保持」とあるが実装では end ログ時に lazy 解決する方式になっており、call site が引数を渡さなくても自動付与されるという本質的な動作要件は満たしているため実用上の問題はない。unplanned 変更は review.md で承認済みのリファクタ (flush/reset はテスト品質向上、callReviewAgent は review.js の可読性改善) であり、いずれも外部 API を変更しない内部変更または追加のみ。"
+    },
+    "issueLog": {
+      "count": 0,
+      "entries": []
+    },
+    "metrics": {
+      "docsRead": 1,
+      "srcRead": 1,
+      "question": 6,
+      "issueLog": 1
+    },
+    "tests": null,
+    "sync": {
+      "status": "skipped",
+      "reason": "sync was skipped"
+    }
+  },
+  "text": "  Report\n\n  Implementation\n  ────────────────────────────────────────────────\n    feat: feature/153-unified-jsonl-logger\n    docs: clarify template config has no logs section\n    refactor: apply code review improvements\n    docs: clarify log.test.js rewrite preserves prior test scenarios\n    fix: surface Logger errors and preserve log.test.js path\n    feat: redesign Logger with unified JSONL + prompt file separation\n    28 files changed, 1755 insertions(+), 398 deletions(-)\n\n  Retro\n  ────────────────────────────────────────────────\n    ████████ 96%  (11 done / 1 partial / 0 miss)\n\n  Metrics\n  ────────────────────────────────────────────────\n    docs 1  src 1  Q&A 6  issues 1\n\n  Documents\n  ────────────────────────────────────────────────\n    skipped: sync was skipped"
+}

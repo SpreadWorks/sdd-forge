@@ -39,7 +39,12 @@ try {
   const { loadConfig } = await import("./lib/config.js");
   const root = repoRoot();
   const cfg = loadConfig(root);
-  Logger.getInstance().init(root, cfg);
+  const entryCommand = rawArgs.join(" ");
+  // Deprecation warning: legacy cfg.logs.prompts → cfg.logs.enabled
+  if (cfg?.logs?.prompts != null && cfg?.logs?.enabled == null) {
+    process.stderr.write("[sdd-forge] WARN: cfg.logs.prompts is deprecated. Use cfg.logs.enabled instead.\n");
+  }
+  Logger.getInstance().init(root, cfg, { entryCommand });
 } catch { /* pre-setup or missing config — Logger stays uninitialized, logs silently skipped */ }
 
 /** Namespace dispatchers — receive subcommand + rest args */

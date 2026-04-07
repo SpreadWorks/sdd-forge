@@ -1,6 +1,6 @@
 {
   "logs": {
-    "prompts": true
+    "enabled": true
   },
   "experimental": {
     "workflow": {

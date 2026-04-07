@@ -16,6 +16,14 @@ import { repoRoot, parseArgs } from "../../lib/cli.js";
 import { loadConfig } from "../../lib/config.js";
 import { loadFlowState, getSpecName } from "../../lib/flow-state.js";
 import { loadAgentConfig, callAgentAwaitLog, resolveAgent, ensureAgentWorkDir } from "../../lib/agent.js";
+
+/**
+ * Local helper for review-phase agent invocations. All review calls use the
+ * same default timeout and pass `root` as cwd, so this collapses the repeated
+ * `(agent, prompt, undefined, root, { systemPrompt })` boilerplate.
+ */
+const callReviewAgent = (agent, prompt, root, systemPrompt) =>
+  callAgentAwaitLog(agent, prompt, undefined, root, { systemPrompt });
 import { runCmd } from "../../lib/process.js";
 import { EXIT_ERROR } from "../../lib/exit-codes.js";
 import { VALID_PHASES } from "../lib/phases.js";
@@ -497,13 +505,9 @@ async function runTestReview(root, flow, config, dryRun) {
   // Step 1: Generate test design
   console.error("  [test-review] Generating test design...");
   const testDesignPrompt = buildTestDesignPrompt(requirements);
-  const testDesign = await callAgentAwaitLog(
-    agent,
-    testDesignPrompt,
-    { spec: getSpecName(flow), phase: "test-review" },
-    undefined,
-    root,
-    { systemPrompt: "You are a test design expert. Output a structured test design." },
+  const testDesign = await callReviewAgent(
+    agent, testDesignPrompt, root,
+    "You are a test design expert. Output a structured test design.",
   );
   // Save test design as tests/spec.md
   const testsDir = path.resolve(root, specDir, "tests");
@@ -521,25 +525,17 @@ async function runTestReview(root, flow, config, dryRun) {
     dryRun,
     async detect() {
       const detectPrompt = buildGapAnalysisPrompt(testDesign, testFiles);
-      const raw = await callAgentAwaitLog(
-        agent,
-        detectPrompt,
-        { spec: getSpecName(flow), phase: "test-review" },
-        undefined,
-        root,
-        { systemPrompt: "You are a test quality reviewer. Identify gaps between test design and test code." },
+      const raw = await callReviewAgent(
+        agent, detectPrompt, root,
+        "You are a test quality reviewer. Identify gaps between test design and test code.",
       );
       return { issues: parseGaps(raw), raw };
     },
     async fix(raw) {
       const fixPrompt = buildTestFixPrompt(raw, testFiles);
-      const fixResult = await callAgentAwaitLog(
-        agent,
-        fixPrompt,
-        { spec: getSpecName(flow), phase: "test-review" },
-        undefined,
-        root,
-        { systemPrompt: "You are a test engineer. Fix test gaps by writing complete updated test files." },
+      const fixResult = await callReviewAgent(
+        agent, fixPrompt, root,
+        "You are a test engineer. Fix test gaps by writing complete updated test files.",
       );
       const written = applyTestFixes(fixResult, root);
       if (written.length > 0) {
@@ -707,13 +703,9 @@ async function runSpecReview(root, flow, config, dryRun) {
         }
       }
       const detectPrompt = buildSpecReviewPrompt(specText, contextEntries);
-      const raw = await callAgentAwaitLog(
-        agent,
-        detectPrompt,
-        { spec: getSpecName(flow), phase: "spec-review" },
-        undefined,
-        root,
-        { systemPrompt: "You are a spec completeness reviewer. Identify oversights in the spec." },
+      const raw = await callReviewAgent(
+        agent, detectPrompt, root,
+        "You are a spec completeness reviewer. Identify oversights in the spec.",
       );
       if (raw.includes("NO_PROPOSALS")) return { issues: [], raw };
       const issues = parseProposals(raw);
@@ -730,13 +722,8 @@ async function runSpecReview(root, flow, config, dryRun) {
         "## Current spec for context:",
         specText,
       ].join("\n");
-      const validationResult = await callAgentAwaitLog(
-        validationAgent,
-        validationPrompt,
-        { spec: getSpecName(flow), phase: "spec-review" },
-        undefined,
-        root,
-        { systemPrompt: buildFinalSystemPrompt() },
+      const validationResult = await callReviewAgent(
+        validationAgent, validationPrompt, root, buildFinalSystemPrompt(),
       );
       const results = mergeVerdicts(validationResult, proposals);
       const approved = results.filter((r) => r.verdict === "APPROVED");
@@ -750,13 +737,9 @@ async function runSpecReview(root, flow, config, dryRun) {
 
       const approvedText = approved.map((p, i) => `### ${i + 1}. ${p.title}\n${p.body}`).join("\n\n");
       const specFixPrompt = buildSpecFixPrompt(specText, approvedText);
-      const fixResult = await callAgentAwaitLog(
-        agent,
-        specFixPrompt,
-        { spec: getSpecName(flow), phase: "spec-review" },
-        undefined,
-        root,
-        { systemPrompt: "You are a spec writer. Apply the approved proposals to produce an updated spec." },
+      const fixResult = await callReviewAgent(
+        agent, specFixPrompt, root,
+        "You are a spec writer. Apply the approved proposals to produce an updated spec.",
       );
 
       // Strip preamble and markdown fences from AI output
@@ -848,14 +831,7 @@ async function main() {
   console.error("  [draft] Generating proposals...");
   const draftAgent = loadAgentConfig(config, "flow.review.draft");
   ensureAgentWorkDir(draftAgent, root);
-  const draftResult = await callAgentAwaitLog(
-    draftAgent,
-    diff,
-    { spec: getSpecName(flow), phase: "review" },
-    undefined,
-    root,
-    { systemPrompt: buildDraftSystemPrompt() },
-  );
+  const draftResult = await callReviewAgent(draftAgent, diff, root, buildDraftSystemPrompt());
 
   if (draftResult.includes("NO_PROPOSALS")) {
     console.log("No improvement proposals found. Code looks good.");
@@ -887,14 +863,7 @@ async function main() {
     diff,
   ].join("\n");
 
-  const finalResult = await callAgentAwaitLog(
-    finalAgent,
-    finalPrompt,
-    { spec: getSpecName(flow), phase: "review" },
-    undefined,
-    root,
-    { systemPrompt: buildFinalSystemPrompt() },
-  );
+  const finalResult = await callReviewAgent(finalAgent, finalPrompt, root, buildFinalSystemPrompt());
 
   const results = mergeVerdicts(finalResult, proposals);
   const approved = results.filter((r) => r.verdict === "APPROVED");

@@ -201,7 +201,7 @@ async function main(ctx) {
     const prompt = buildRefinePrompt(projectContent, combinedDocs, config, srcRoot, sddContent);
 
     try {
-      const result = await callAgentAwaitLog(agent, prompt, { spec: null, phase: null }, agent.timeoutMs, undefined, { systemPrompt });
+      const result = await callAgentAwaitLog(agent, prompt, agent.timeoutMs, undefined, { systemPrompt });
 
       let refined = result.trim();
 

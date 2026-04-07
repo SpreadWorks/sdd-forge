@@ -144,7 +144,7 @@ async function invokeAgent(agent, prompt, { cwd, timeoutMs, systemPrompt, verbos
     : null;
 
   try {
-    return await callAgentAsyncWithLog(agent, prompt, { spec: null, phase: null }, timeout, cwd, {
+    return await callAgentAsyncWithLog(agent, prompt, timeout, cwd, {
       systemPrompt,
       onStdout: verbose ? (chunk) => process.stderr.write(chunk) : undefined,
       onStderr: verbose ? (chunk) => process.stderr.write(chunk) : undefined,

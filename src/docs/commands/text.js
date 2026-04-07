@@ -263,12 +263,12 @@ async function processTemplateFileBatch(text, analysis, fileName, agent, timeout
 // エージェント呼び出し
 // ---------------------------------------------------------------------------
 function callAgent(agent, prompt, timeoutMs, cwd, preamblePatterns, systemPrompt) {
-  const result = callAgentWithLog(agent, prompt, { spec: null, phase: null }, timeoutMs, cwd, { systemPrompt });
+  const result = callAgentWithLog(agent, prompt, timeoutMs, cwd, { systemPrompt });
   return stripPreamble(result, preamblePatterns);
 }
 
 async function callAgentAsync(agent, prompt, timeoutMs, cwd, preamblePatterns, systemPrompt, extraOptions) {
-  const result = await callAgentAsyncWithLog(agent, prompt, { spec: null, phase: null }, timeoutMs, cwd, { systemPrompt, ...extraOptions });
+  const result = await callAgentAsyncWithLog(agent, prompt, timeoutMs, cwd, { systemPrompt, ...extraOptions });
   return stripPreamble(result, preamblePatterns);
 }
 

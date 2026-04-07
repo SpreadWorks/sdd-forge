@@ -9,8 +9,7 @@ import crypto from "crypto";
 import fs from "fs";
 import path from "path";
 import { execFileSync, spawn } from "child_process";
-import { AgentLog } from "./agent-log.js";
-import { Logger } from "./log.js";
+import { Logger, generateRequestId } from "./log.js";
 
 
 /** Default agent timeout in seconds. */
@@ -142,42 +141,139 @@ export function callAgentAsync(agent, prompt, timeoutMs, cwd, options) {
 }
 
 /**
- * Sync callAgent wrapped with AgentLog + Logger.
- * Use in sync function contexts. Logger.log() is fire-and-forget.
+ * Build a Logger.agent() end-event payload from a callAgent invocation.
  */
-export function callAgentWithLog(agent, prompt, logCtx, timeoutMs, cwd, options) {
-  const log = new AgentLog({ spec: logCtx?.spec ?? null, phase: logCtx?.phase ?? null, prompt });
+function buildAgentLogPayload(agent, prompt, options, response, exitCode, error, startedAt) {
+  return {
+    agentKey: agent?.command ?? null,
+    model: agent?.model ?? null,
+    prompt: {
+      system: options?.systemPrompt ?? null,
+      user: prompt,
+    },
+    response: {
+      text: response,
+      exitCode,
+      error,
+    },
+    durationSec: (Date.now() - startedAt) / 1000,
+  };
+}
+
+const STDERR_LOG = (e) => process.stderr.write(`[sdd-forge] Logger.agent failed: ${e.message}\n`);
+
+/**
+ * Async runner that wraps an agent invocation in Logger.agent start/end
+ * events. Used by both `callAgentAwaitLog` (sync inner call, awaited
+ * Logger I/O) and `callAgentAsyncWithLog` (async inner call).
+ *
+ * The two callers differ only in:
+ *   - whether the inner invoke is awaited (`asyncInvoke`)
+ *   - which property of the thrown error holds the exit code (`errCodeKey`)
+ *
+ * For the truly synchronous variant (`callAgentWithLog`), use
+ * `runWithAgentLoggingSync` below — sync mode cannot await Logger I/O,
+ * so its control flow differs enough to keep it as a separate small helper.
+ *
+ * @param {Object}   spec
+ * @param {boolean}  spec.asyncInvoke    — true if invoke returns a Promise
+ * @param {()=>any}  spec.invoke
+ * @param {Object}   spec.agent
+ * @param {string}   spec.prompt
+ * @param {Object}   [spec.options]
+ * @param {string}   spec.errCodeKey     — "status" (execFileSync) or "code" (spawn)
+ */
+async function runWithAgentLogging({ asyncInvoke, invoke, agent, prompt, options, errCodeKey }) {
+  const requestId = generateRequestId();
+  const startedAt = Date.now();
+  const logger = Logger.getInstance();
+  await logger.agent({ phase: "start", requestId });
+
+  let result = null;
+  let err = null;
   try {
-    return callAgent(agent, prompt, timeoutMs, cwd, options);
+    result = asyncInvoke ? await invoke() : invoke();
+    return result;
+  } catch (e) {
+    err = e;
+    throw e;
   } finally {
-    Logger.getInstance().log(log).catch(() => {});
+    const payload = buildAgentLogPayload(
+      agent,
+      prompt,
+      options,
+      result,
+      err ? (err[errCodeKey] ?? 1) : 0,
+      err ? err.message : null,
+      startedAt,
+    );
+    await logger.agent({ phase: "end", requestId, ...payload });
   }
 }
 
 /**
- * Sync callAgent wrapped with AgentLog + Logger, awaited.
+ * Sync callAgent wrapped with Logger.agent start/end events.
+ * End-event Logger.log() is fire-and-forget.
+ */
+export function callAgentWithLog(agent, prompt, timeoutMs, cwd, options) {
+  return runWithAgentLoggingSync({
+    invoke: () => callAgent(agent, prompt, timeoutMs, cwd, options),
+    agent, prompt, options,
+    errCodeKey: "status",
+  });
+}
+
+/** Sync variant — runs invoke synchronously, fires Logger calls without awaiting. */
+function runWithAgentLoggingSync({ invoke, agent, prompt, options, errCodeKey }) {
+  const requestId = generateRequestId();
+  const startedAt = Date.now();
+  const logger = Logger.getInstance();
+  logger.agent({ phase: "start", requestId }).catch(STDERR_LOG);
+  let result = null;
+  let err = null;
+  try {
+    result = invoke();
+    return result;
+  } catch (e) {
+    err = e;
+    throw e;
+  } finally {
+    const payload = buildAgentLogPayload(
+      agent,
+      prompt,
+      options,
+      result,
+      err ? (err[errCodeKey] ?? 1) : 0,
+      err ? err.message : null,
+      startedAt,
+    );
+    logger.agent({ phase: "end", requestId, ...payload }).catch(STDERR_LOG);
+  }
+}
+
+/**
+ * Sync callAgent wrapped with Logger.agent start/end events, awaited.
  * Use in async function contexts where the existing code uses sync callAgent.
  */
-export async function callAgentAwaitLog(agent, prompt, logCtx, timeoutMs, cwd, options) {
-  const log = new AgentLog({ spec: logCtx?.spec ?? null, phase: logCtx?.phase ?? null, prompt });
-  try {
-    return callAgent(agent, prompt, timeoutMs, cwd, options);
-  } finally {
-    await Logger.getInstance().log(log);
-  }
+export async function callAgentAwaitLog(agent, prompt, timeoutMs, cwd, options) {
+  return runWithAgentLogging({
+    asyncInvoke: false,
+    invoke: () => callAgent(agent, prompt, timeoutMs, cwd, options),
+    agent, prompt, options,
+    errCodeKey: "status",
+  });
 }
 
 /**
- * Async callAgentAsync (spawn-based) wrapped with AgentLog + Logger.
- * Use in async function contexts where the existing code uses callAgentAsync.
+ * Async callAgentAsync (spawn-based) wrapped with Logger.agent start/end events.
  */
-export async function callAgentAsyncWithLog(agent, prompt, logCtx, timeoutMs, cwd, options) {
-  const log = new AgentLog({ spec: logCtx?.spec ?? null, phase: logCtx?.phase ?? null, prompt });
-  try {
-    return await callAgentAsync(agent, prompt, timeoutMs, cwd, options);
-  } finally {
-    await Logger.getInstance().log(log);
-  }
+export async function callAgentAsyncWithLog(agent, prompt, timeoutMs, cwd, options) {
+  return runWithAgentLogging({
+    asyncInvoke: true,
+    invoke: () => callAgentAsync(agent, prompt, timeoutMs, cwd, options),
+    agent, prompt, options,
+    errCodeKey: "code",
+  });
 }
 
 async function callAgentAsyncWithRetry(agent, prompt, timeoutMs, cwd, options, retryCount, retryDelayMs) {

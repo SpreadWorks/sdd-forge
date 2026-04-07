@@ -193,7 +193,7 @@ export class RunRetroCommand extends FlowCommand {
 
     let response;
     try {
-      response = await callAgentAwaitLog(agent, prompt, { spec: getSpecName(state), phase: "retro" });
+      response = await callAgentAwaitLog(agent, prompt);
     } catch (e) {
       throw new Error(`AI agent call failed: ${e.message}`);
     }

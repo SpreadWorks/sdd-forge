@@ -226,7 +226,7 @@ function checkGuardrail(root, targetText, config, phase, role) {
   const prompt = buildGuardrailPrompt(targetText, guardrails, phase, role);
   if (!prompt) return { passed: true, results: [] };
 
-  const response = callAgentWithLog(agent, prompt, { spec: null, phase: `gate-${phase}` });
+  const response = callAgentWithLog(agent, prompt);
   const results = parseGuardrailResponse(response);
   const passed = results.length > 0 && results.every((r) => r.passed);
 
@@ -427,7 +427,7 @@ export class RunGateCommand extends FlowCommand {
     if (!agent) throw new Error("no agent configured for spec.gate");
 
     const reqPrompt = buildImplCheckPrompt(specText, diff);
-    const reqResponse = callAgentWithLog(agent, reqPrompt, { spec: getSpecName(state), phase: "gate-impl" });
+    const reqResponse = callAgentWithLog(agent, reqPrompt);
     const reqResults = parseGuardrailResponse(reqResponse);
 
     const reasons = reqResults.map((r) => ({

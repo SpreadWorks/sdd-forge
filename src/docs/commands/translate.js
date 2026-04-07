@@ -71,7 +71,7 @@ async function translateDocument(content, fromLang, toLang, agent, root, documen
 
   const prompt = content;
 
-  const result = await callAgentAsyncWithLog(agent, prompt, { spec: null, phase: null }, agent.timeoutMs, root, {
+  const result = await callAgentAsyncWithLog(agent, prompt, agent.timeoutMs, root, {
     systemPrompt,
   });
 

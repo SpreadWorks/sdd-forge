@@ -1,0 +1,104 @@
+{
+  "spec": "specs/153-unified-jsonl-logger/spec.md",
+  "date": "2026-04-07T13:31:29.848Z",
+  "requirements": [
+    {
+      "desc": "R1: 統合 JSONL ファイル生成 (.tmp/logs/sdd-forge-YYYY-MM-DD.jsonl)",
+      "status": "done",
+      "note": "log.js に todayLocal() + appendJsonl() が実装され、#agentImpl / #gitImpl / #eventImpl が sdd-forge-YYYY-MM-DD.jsonl へ append する。書き込み時点の new Date() をローカルタイムで整形している。"
+    },
+    {
+      "desc": "R2: プロンプトファイル分離 (.tmp/logs/prompts/YYYY-MM-DD/<requestId>.json)",
+      "status": "done",
+      "note": "writePromptFile() が prompts/YYYY-MM-DD/<requestId>.json に自己完結 JSON を書き込み、end レコードの promptFile フィールドに相対パスを記録している。"
+    },
+    {
+      "desc": "R3: agent start/end の 2 イベント記録",
+      "status": "done",
+      "note": "start は最小フィールド (ts/type/phase/requestId/entryCommand/callerFile/callerLine/pid)、end は denormalized リッチレコード (spec/sddPhase/agentKey/model/promptChars 等) を append している。"
+    },
+    {
+      "desc": "R4: spec/sddPhase の自動解決 (flow-state から)",
+      "status": "partial",
+      "note": "resolveFlowContext() が end イベント書き込み時に lazy import で flow-state を解決する実装になっている。spec の記述「Logger 初期化時に保持」とは異なりログ時解決だが、call site が引数を渡さなくても自動付与されるという動作要件は満たしている。"
+    },
+    {
+      "desc": "R5: 既存 callAgent* ヘルパーの内部書き換え (logCtx 引数廃止)",
+      "status": "done",
+      "note": "callAgentWithLog / callAgentAwaitLog / callAgentAsyncWithLog の logCtx 引数が削除され、runWithAgentLogging / runWithAgentLoggingSync を介して Logger.agent() start→invoke→end パターンに書き換えられた。外部シグネチャは維持されている。各 call site (agents.js, enrich.js, forge.js 等) からも logCtx 引数が削除されている。"
+    },
+    {
+      "desc": "R6: cfg.logs.enabled へのリネーム (cfg.logs.dir は維持)",
+      "status": "done",
+      "note": "#isActive() が cfg?.logs?.enabled === true のみ参照し、cfg.logs.dir は resolveLogDir で従来どおり読まれ、cfg.logs.prompts は参照されていない。types.js の JSDoc と validateConfig も更新済み。"
+    },
+    {
+      "desc": "R7: disabled 時の no-op",
+      "status": "done",
+      "note": "agent / git / event の各メソッドが #isActive() チェックで早期 return し、ファイル I/O を行わない。call site の if 分岐は不要。"
+    },
+    {
+      "desc": "R8: src/sdd-forge.js での Logger init",
+      "status": "done",
+      "note": "sdd-forge.js で cfg ロード直後に Logger.getInstance().init(root, cfg, { entryCommand }) を呼び、entryCommand = rawArgs.join(\" \") としている。"
+    },
+    {
+      "desc": "R9: Logger.git / Logger.event の API 提供のみ",
+      "status": "done",
+      "note": "git({ cmd, exitCode, stderr }) と event(name, fields) が実装され、enabled 時は JSONL を append、disabled 時は no-op。call site の置き換えは行われていない。"
+    },
+    {
+      "desc": "R10: 旧 API (Log/AgentLog/writeLogEntry) 削除",
+      "status": "done",
+      "note": "src/lib/agent-log.js が削除され、log.js から Log 基底クラスと writeLogEntry の公開 export が削除されている。generateRequestId と Logger のみ export されている。"
+    },
+    {
+      "desc": "R11: worktree からの書き込み先解決 (resolveLogDir 踏襲)",
+      "status": "done",
+      "note": "resolveLogDir が isInsideWorktree / getMainRepoPath (cli.js) を使用してメインリポジトリ側パスに解決する既存ロジックを踏襲している。"
+    },
+    {
+      "desc": "R12: requestId は crypto.randomBytes(4) の 8 文字 hex",
+      "status": "done",
+      "note": "generateRequestId() が crypto.randomBytes(4).toString('hex') で 8 文字 hex を生成し、start / end / promptFile 名を同一 requestId で紐付けている。"
+    }
+  ],
+  "unplanned": [
+    {
+      "file": "src/flow/commands/review.js",
+      "change": "callReviewAgent ローカルヘルパーを追加し、callAgentAwaitLog の繰り返し呼び出しパターンを整理（review.md item #3 の対応）。logCtx 引数削除の副次的整理を超えたリファクタ。"
+    },
+    {
+      "file": "src/lib/log.js",
+      "change": "Logger.flush() メソッドの追加（#pending Set でインフライト write を追跡し、テストから決定論的に待機できるようにする）。spec 要件にはない。"
+    },
+    {
+      "file": "src/lib/log.js",
+      "change": "Logger._resetForTest() の追加（テスト用シングルトンリセット）。spec 要件にはない。"
+    },
+    {
+      "file": "src/sdd-forge.js",
+      "change": "cfg.logs.prompts が設定されていて cfg.logs.enabled が未設定の場合に stderr に deprecation 警告を出力する処理を追加。spec.md の Migration セクションで言及されているが、要件リストには明示されていない。"
+    },
+    {
+      "file": "tests/helpers/log-fixtures.js",
+      "change": "todayLocal() / readJsonl() の共有テストヘルパーを新設（review.md item #4 の対応）。"
+    },
+    {
+      "file": "tests/unit/lib/agent-with-logger.test.js",
+      "change": "callAgent* 回帰テストの新規追加（spec テスト方針に含まれるが要件リストには未記載）。"
+    },
+    {
+      "file": "specs/153-unified-jsonl-logger/tests/e2e-flow-gate-logger.test.js",
+      "change": "e2e テストの新規追加（spec テスト方針に含まれるが要件リストには未記載）。"
+    }
+  ],
+  "summary": {
+    "total": 12,
+    "done": 11,
+    "partial": 1,
+    "not_done": 0,
+    "rate": 0.96,
+    "notes": "12 要件のうち 11 件は完全に満たされている。R4 のみ 'partial': spec 文書では「init 時に保持」とあるが実装では end ログ時に lazy 解決する方式になっており、call site が引数を渡さなくても自動付与されるという本質的な動作要件は満たしているため実用上の問題はない。unplanned 変更は review.md で承認済みのリファクタ (flush/reset はテスト品質向上、callReviewAgent は review.js の可読性改善) であり、いずれも外部 API を変更しない内部変更または追加のみ。"
+  }
+}

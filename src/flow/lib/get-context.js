@@ -221,7 +221,7 @@ function aiSearch(allEntries, analysis, query, root) {
   const prompt = buildKeywordSelectionPrompt(allKeywords, query);
   let response;
   try {
-    response = callAgentWithLog(agent, prompt, { spec: null, phase: "context-search" }, 30000, root);
+    response = callAgentWithLog(agent, prompt, 30000, root);
   } catch (_) {
     return fallbackSearch(allEntries, query);
   }

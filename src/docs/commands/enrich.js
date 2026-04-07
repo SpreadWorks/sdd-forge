@@ -454,7 +454,7 @@ async function main(ctx) {
 
     let response;
     try {
-      response = await callAgentAsyncWithLog(agent, prompt, { spec: null, phase: null }, timeoutMs, root, {
+      response = await callAgentAsyncWithLog(agent, prompt, timeoutMs, root, {
         retryCount,
       });
     } catch (err) {

@@ -430,7 +430,7 @@ export function translateTemplate(content, fromLang, toLang, agent, root) {
   ].join("\n");
 
   try {
-    return callAgentWithLog(agent, prompt, { spec: null, phase: null }, 60000, root);
+    return callAgentWithLog(agent, prompt, 60000, root);
   } catch (err) {
     // Translation failed — return original
     return content;

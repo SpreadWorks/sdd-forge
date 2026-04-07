@@ -81,7 +81,7 @@ function aiFilterChapters(chapters, analysis, agent, root, purpose) {
 
   let response;
   try {
-    response = callAgentWithLog(agent, prompt, { spec: null, phase: null }, 60000, root);
+    response = callAgentWithLog(agent, prompt, 60000, root);
   } catch (err) {
     logger.log(`[init] WARN: AI chapter selection failed: ${err.message}`);
     return chapters;

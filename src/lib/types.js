@@ -67,7 +67,7 @@
 
 /**
  * @typedef {Object} LogsConfig
- * @property {boolean} [prompts] - Enable agent prompt logging (default: false)
+ * @property {boolean} [enabled] - Enable unified JSONL logging (default: false)
  * @property {string}  [dir]     - Log output directory (default: {agent.workDir}/logs)
  */
 
@@ -315,8 +315,8 @@ export function validateConfig(raw) {
     if (typeof raw.logs !== "object") {
       errors.push("'logs' must be an object");
     } else {
-      if (raw.logs.prompts != null && typeof raw.logs.prompts !== "boolean") {
-        errors.push("'logs.prompts' must be a boolean if provided");
+      if (raw.logs.enabled != null && typeof raw.logs.enabled !== "boolean") {
+        errors.push("'logs.enabled' must be a boolean if provided");
       }
       if (raw.logs.dir != null && typeof raw.logs.dir !== "string") {
         errors.push("'logs.dir' must be a string if provided");

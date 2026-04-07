@@ -1,0 +1,172 @@
+{
+  "spec": "specs/153-unified-jsonl-logger/spec.md",
+  "baseBranch": "development",
+  "featureBranch": "feature/153-unified-jsonl-logger",
+  "steps": [
+    {
+      "id": "approach",
+      "status": "done"
+    },
+    {
+      "id": "branch",
+      "status": "done"
+    },
+    {
+      "id": "prepare-spec",
+      "status": "pending"
+    },
+    {
+      "id": "draft",
+      "status": "done"
+    },
+    {
+      "id": "gate-draft",
+      "status": "done"
+    },
+    {
+      "id": "spec",
+      "status": "done"
+    },
+    {
+      "id": "gate",
+      "status": "done"
+    },
+    {
+      "id": "approval",
+      "status": "done"
+    },
+    {
+      "id": "test",
+      "status": "done"
+    },
+    {
+      "id": "implement",
+      "status": "done"
+    },
+    {
+      "id": "gate-impl",
+      "status": "done"
+    },
+    {
+      "id": "review",
+      "status": "done"
+    },
+    {
+      "id": "finalize",
+      "status": "pending"
+    },
+    {
+      "id": "commit",
+      "status": "pending"
+    },
+    {
+      "id": "push",
+      "status": "pending"
+    },
+    {
+      "id": "merge",
+      "status": "pending"
+    },
+    {
+      "id": "pr-create",
+      "status": "pending"
+    },
+    {
+      "id": "branch-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "pr-merge",
+      "status": "pending"
+    },
+    {
+      "id": "sync-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "docs-update",
+      "status": "pending"
+    },
+    {
+      "id": "docs-review",
+      "status": "pending"
+    },
+    {
+      "id": "docs-commit",
+      "status": "pending"
+    }
+  ],
+  "requirements": [
+    {
+      "desc": "R1: 統合 JSONL ファイル生成 (.tmp/logs/sdd-forge-YYYY-MM-DD.jsonl)",
+      "status": "done"
+    },
+    {
+      "desc": "R2: プロンプトファイル分離 (.tmp/logs/prompts/YYYY-MM-DD/<requestId>.json)",
+      "status": "done"
+    },
+    {
+      "desc": "R3: agent start/end の 2 イベント記録",
+      "status": "done"
+    },
+    {
+      "desc": "R4: spec/sddPhase の自動解決 (flow-state から)",
+      "status": "done"
+    },
+    {
+      "desc": "R5: 既存 callAgent* ヘルパーの内部書き換え (logCtx 引数廃止)",
+      "status": "done"
+    },
+    {
+      "desc": "R6: cfg.logs.enabled へのリネーム (cfg.logs.dir は維持)",
+      "status": "done"
+    },
+    {
+      "desc": "R7: disabled 時の no-op",
+      "status": "done"
+    },
+    {
+      "desc": "R8: src/sdd-forge.js での Logger init",
+      "status": "done"
+    },
+    {
+      "desc": "R9: Logger.git / Logger.event の API 提供のみ",
+      "status": "done"
+    },
+    {
+      "desc": "R10: 旧 API (Log/AgentLog/writeLogEntry) 削除",
+      "status": "done"
+    },
+    {
+      "desc": "R11: worktree からの書き込み先解決 (resolveLogDir 踏襲)",
+      "status": "done"
+    },
+    {
+      "desc": "R12: requestId は crypto.randomBytes(4) の 8 文字 hex",
+      "status": "done"
+    }
+  ],
+  "issue": 105,
+  "request": "#105 統合JSONLログ設計（Logger API リデザイン + プロンプト分離）",
+  "worktree": true,
+  "metrics": {
+    "plan": {
+      "docsRead": 1
+    },
+    "draft": {
+      "srcRead": 1,
+      "question": 6
+    },
+    "impl": {
+      "issueLog": 1
+    }
+  },
+  "notes": [
+    "scope: Logger基盤刷新 + agent ログ移行のみ。git/event は API 提供のみ",
+    "Logger init で flow-state から spec/sddPhase を自動解決。logCtx 引数は廃止",
+    "init は常に呼ぶ。disabled は Logger 内部で no-op",
+    "cfg.logs.dir は維持。cfg.logs.prompts → cfg.logs.enabled に rename",
+    "command フィールドと extractCommandFromStack 廃止。entryCommand + callerFile/callerLine のみ",
+    "test: Logger 単体 + callAgent* 回帰 + e2e (flow run gate で JSONL/プロンプトファイル生成確認)"
+  ]
+}
