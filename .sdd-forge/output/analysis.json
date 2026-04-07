@@ -1,12 +1,12 @@
 {
-  "analyzedAt": "2026-04-07T13:31:31.518Z",
+  "analyzedAt": "2026-04-07T23:32:48.702Z",
   "package": {
     "entries": [
       {
         "file": "package.json",
-        "hash": "79b5999ed0b214e8c77fbb516be675e3",
+        "hash": "663afc936e1df328091080fed54e30dd",
         "lines": 36,
-        "mtime": "2026-04-05T09:45:33.768Z",
+        "mtime": "2026-04-07T15:34:49.976Z",
         "packageDeps": {
           "dependencies": {},
           "devDependencies": {}
@@ -19,24 +19,25 @@
         },
         "composerDeps": null,
         "id": "451a9f25",
-        "summary": "Root package manifest for the sdd-forge npm package, defining entry point, scripts, and publish configuration.",
-        "detail": "Declares the CLI binary at src/sdd-forge.js and restricts published files to the src/ directory (excluding test directories). Uses ES module type and requires Node.js 18+. Defines four test scripts (unit, e2e, acceptance) all delegating to custom test runners. Package manager is pinned to pnpm with a checksum hash.",
+        "summary": "Package manifest for sdd-forge, an npm CLI tool providing Spec-Driven Development workflow and automated documentation generation. Defines the binary entry point, file inclusions, and engine requirements.",
+        "detail": "Declares sdd-forge as an ES module package targeting Node.js 18+. The binary entry point is src/sdd-forge.js. Only the src/ directory is published to npm, excluding preset test directories. No runtime dependencies are declared, consistent with the project's no-external-dependencies policy. Test scripts support unit, e2e, and acceptance scopes via a custom test runner.",
         "chapter": "stack_and_ops",
         "role": "config",
         "enrich": {
-          "processedAt": "2026-04-06T15:36:33.520Z",
+          "processedAt": "2026-04-07T23:33:06.281Z",
           "attempts": 1
         },
         "keywords": [
           "package.json",
           "npm",
           "cli",
-          "bin",
-          "entry-point",
+          "binary",
+          "entry point",
+          "es module",
+          "no dependencies",
+          "node engine",
           "publish",
-          "pnpm",
-          "esm",
-          "node-version"
+          "files"
         ]
       }
     ],
@@ -3743,9 +3744,9 @@
       },
       {
         "file": "src/lib/config.js",
-        "hash": "f91fa14c479372c3c001a702be477244",
-        "lines": 113,
-        "mtime": "2026-03-15T16:29:39.195Z",
+        "hash": "033e53d47f624f7659b105303bb36695",
+        "lines": 115,
+        "mtime": "2026-04-07T23:32:48.453Z",
         "className": "config",
         "methods": [
           "resolveConcurrency",
@@ -3790,23 +3791,25 @@
           "src/upgrade.js"
         ],
         "id": "dff6e5b4",
-        "summary": "Configuration loading and path resolution utilities for sdd-forge projects. Loads, validates, and provides typed access to .sdd-forge/config.json.",
-        "detail": "sddDir, sddConfigPath, sddOutputDir, and sddDataDir compute canonical .sdd-forge subdirectory paths from project root. loadConfig reads config.json and passes it through validateConfig for schema enforcement. loadLang provides a quick language-only read with DEFAULT_LANG fallback. loadJsonFile is a generic JSON file reader with existence checking. DEFAULT_CONCURRENCY and DEFAULT_LANG define system defaults.",
+        "summary": "Core configuration loader for sdd-forge projects, providing path resolution helpers and config validation for the .sdd-forge directory structure. Exports utility functions used throughout the CLI for locating config, output, and data directories.",
+        "detail": "Defines canonical path helpers (sddDir, sddConfigPath, sddOutputDir, sddDataDir) that all resolve relative to a given project root under the .sdd-forge directory. loadConfig reads and validates config.json via the validateConfig type checker. loadLang extracts the language setting with a fallback to DEFAULT_LANG ('en'). loadJsonFile provides generic JSON loading with existence checks, and loadPackageField extracts arbitrary fields from a project's package.json. DEFAULT_CONCURRENCY is set to 5 and used as a fallback when not specified in config.",
         "chapter": "configuration",
-        "role": "config",
+        "role": "lib",
         "enrich": {
-          "processedAt": "2026-04-02T16:09:42.720Z",
+          "processedAt": "2026-04-07T23:33:06.281Z",
           "attempts": 1
         },
         "keywords": [
           "config",
+          "configuration",
           "loadConfig",
           "sddDir",
-          "config.json",
-          "configuration schema",
-          "lang",
+          "path resolution",
           "concurrency",
-          "project config"
+          "lang",
+          "package.json",
+          "validateConfig",
+          ".sdd-forge"
         ]
       },
       {
@@ -4084,9 +4087,9 @@
       },
       {
         "file": "src/lib/guardrail.js",
-        "hash": "635b7733adc8fdb29eb83868c9c26a0c",
-        "lines": 191,
-        "mtime": "2026-04-02T15:07:32.623Z",
+        "hash": "a3c8852c56c6cc5d61d0d8ddd42f218b",
+        "lines": 184,
+        "mtime": "2026-04-07T23:32:48.453Z",
         "className": "guardrail",
         "methods": [
           "filterByPhase",
@@ -4096,7 +4099,7 @@
           "hydrate",
           "loadGuardrailFile",
           "resolveGuardrailContext",
-          "readWithFallback",
+          "readGuardrailFile",
           "mergeById",
           "loadPresetGuardrails"
         ],
@@ -4117,24 +4120,26 @@
           "src/lib/lint.js"
         ],
         "id": "bb462f4e",
-        "summary": "Loads, filters, and merges guardrail rules from JSON files across the preset chain and project-level overrides. Guardrails define linting constraints applied during specific SDD phases.",
-        "detail": "Each guardrail entry is hydrated with a parsed lint regex via hydrate() before use. filterByPhase() selects rules applicable to the current workflow phase, defaulting to the spec phase. matchScope() checks whether a file path matches a guardrail's scope glob or filename pattern. loadMergedGuardrails() walks the preset inheritance chain via resolveChainSafe() and merges rules by ID, with project-level overrides taking precedence over preset defaults.",
+        "summary": "Shared guardrail loading and matching library that reads guardrail.json from preset chains and project overrides, merges them by ID, and filters by phase or file scope. Used by the SDD flow to enforce coding and documentation constraints.",
+        "detail": "loadMergedGuardrails resolves the active preset chain via resolveChainSafe, loads guardrail files from each preset directory, then merges with any project-level override using a mergeById strategy that allows project entries to override preset entries with the same ID. filterByPhase narrows the merged list to guardrails applicable to a given pipeline phase (defaulting to 'spec'). matchScope checks whether a file path matches a guardrail's scope patterns using patternToRegex. The hydrate function attaches parsed metadata (including compiled lint regexes from parseLintString) to each raw guardrail entry.",
         "chapter": "internal_design",
         "role": "lib",
         "enrich": {
-          "processedAt": "2026-04-02T16:04:59.891Z",
+          "processedAt": "2026-04-07T23:33:06.281Z",
           "attempts": 1
         },
         "keywords": [
           "guardrail",
-          "lint rules",
+          "guardrail.json",
           "phase filter",
-          "scope match",
+          "scope matching",
           "preset chain",
           "merge",
-          "JSON",
-          "validation",
-          "SDD constraints"
+          "lint",
+          "regex",
+          "loadMergedGuardrails",
+          "filterByPhase",
+          "matchScope"
         ]
       },
       {
@@ -7692,5 +7697,5 @@
     },
     "dataSourceHash": "7d725e75d5031be445119323e4947c91"
   },
-  "enrichedAt": "2026-04-07T13:32:57.482Z"
+  "enrichedAt": "2026-04-07T23:33:06.281Z"
 }

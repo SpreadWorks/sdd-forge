@@ -28,7 +28,7 @@ src/docs/lib/lang/    (lib)
 src/flow/    (config)
 src/flow/commands/    (controller, lib)
 src/flow/lib/    (lib, controller)
-src/lib/    (lib, config, model)
+src/lib/    (lib, model)
 ```
 <!-- {{/data}} -->
 
@@ -39,7 +39,7 @@ src/lib/    (lib, config, model)
 | --- | --- | --- |
 | src/docs | 40 | controller, cli, model, lib |
 | src/flow | 34 | controller, lib, config |
-| src/lib | 21 | lib, config, model |
+| src/lib | 21 | lib, model |
 | src | 7 | controller, cli |
 <!-- {{/data}} -->
 
