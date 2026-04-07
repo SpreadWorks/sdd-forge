@@ -21,12 +21,12 @@ This chapter describes the source layout of sdd-forge across three major directo
 <!-- {{data("base.structure.tree")}} -->
 ```
 src/    (controller, cli)
-src/docs/commands/    (cli, controller)
+src/docs/commands/    (controller, cli)
 src/docs/data/    (model)
 src/docs/lib/    (model, lib)
 src/docs/lib/lang/    (lib)
 src/flow/    (config)
-src/flow/commands/    (controller, lib, cli)
+src/flow/commands/    (controller, lib)
 src/flow/lib/    (lib, controller)
 src/lib/    (lib, config, model)
 ```
@@ -37,9 +37,9 @@ src/lib/    (lib, config, model)
 
 | Directory | Files | Role |
 | --- | --- | --- |
-| src/docs | 40 | cli, controller, model, lib |
-| src/flow | 34 | controller, lib, cli, config |
-| src/lib | 22 | lib, config, model |
+| src/docs | 40 | controller, cli, model, lib |
+| src/flow | 34 | controller, lib, config |
+| src/lib | 21 | lib, config, model |
 | src | 7 | controller, cli |
 <!-- {{/data}} -->
 

@@ -1,5 +1,5 @@
 {
-  "analyzedAt": "2026-04-07T05:37:02.284Z",
+  "analyzedAt": "2026-04-07T13:31:31.518Z",
   "package": {
     "entries": [
       {
@@ -86,9 +86,9 @@
       },
       {
         "file": "src/docs/commands/agents.js",
-        "hash": "5abb49bcba1a97f7f003417df8987aef",
+        "hash": "5842a1692fd666606a216946bd06b811",
         "lines": 229,
-        "mtime": "2026-04-07T02:51:55.056Z",
+        "mtime": "2026-04-07T13:31:31.296Z",
         "className": "agents",
         "methods": [
           "buildAgentsSystemPrompt",
@@ -117,23 +117,24 @@
         "extends": null,
         "usedBy": null,
         "id": "5684c584",
-        "summary": "Implements the `sdd-forge docs agents` command, which generates or updates the AGENTS.md file for a project by resolving directives and invoking an AI agent to refine content.",
-        "detail": "Reads the existing AGENTS.md (or creates one from a template), resolves `{{data}}` and `{{text}}` directives using the project's analysis.json, and calls an AI agent with a system prompt built from docs content, README, and package.json scripts. The refined output replaces the SDD and PROJECT sections of AGENTS.md while preserving user-authored content outside directives. Uses `resolveAgentsDirectives` to separate SDD scaffold content from project-specific documentation prior to AI refinement.",
-        "chapter": "cli_commands",
-        "role": "cli",
+        "summary": "Generates or updates AGENTS.md by resolving {{data}} and {{text}} directives from analysis and docs content, then refining SDD/project sections via AI agent call.",
+        "detail": "Loads the existing AGENTS.md (or creates a stub from template if absent), resolves data directives with the resolver factory, and builds system/refine prompts that include package.json scripts, docs chapters, and README content. Calls an AI agent to produce refined SDD and project sections, then writes the result back to AGENTS.md. Uses i18n for user-facing messages and the directive-parser for block replacement.",
+        "chapter": "internal_design",
+        "role": "controller",
         "enrich": {
-          "processedAt": "2026-04-07T02:53:27.930Z",
+          "processedAt": "2026-04-07T13:32:57.482Z",
           "attempts": 1
         },
         "keywords": [
-          "agents",
-          "AGENTS.md",
+          "agents.md",
+          "AGENTS",
           "directive",
-          "AI refinement",
-          "docs generation",
+          "agents command",
+          "sdd section",
+          "project section",
+          "refine",
           "template",
-          "scaffold",
-          "project context"
+          "docs generation"
         ]
       },
       {
@@ -236,9 +237,9 @@
       },
       {
         "file": "src/docs/commands/enrich.js",
-        "hash": "0f0a79d5c9826a593d0203a2ce39feb9",
+        "hash": "078ca96b8c661e6e04da862f2607fa96",
         "lines": 522,
-        "mtime": "2026-04-07T02:51:55.056Z",
+        "mtime": "2026-04-07T13:31:31.297Z",
         "className": "enrich",
         "methods": [
           "printHelp",
@@ -285,31 +286,31 @@
         "extends": null,
         "usedBy": null,
         "id": "abb7e5b3",
-        "summary": "Implements the `sdd-forge docs enrich` command, which augments analysis.json entries with AI-generated metadata (summary, keywords, chapter assignment) by processing entries in concurrent batches.",
-        "detail": "Reads analysis.json produced by `sdd-forge scan`, splits entries into token-limited batches, and calls an AI agent in parallel (configurable concurrency) to populate summary, detail, chapter, and keyword fields. Supports incremental enrichment via attempt tracking so retries do not re-process already-successful entries. Failed batches are dumped to disk for debugging. Progress is saved after each batch to allow resumption. Uses `mapWithConcurrency` for bounded parallel execution and `repairJson` for resilient response parsing.",
-        "chapter": "cli_commands",
-        "role": "cli",
+        "summary": "Enriches analysis.json entries with AI-generated summaries, keywords, and metadata by batching source files and calling an AI agent concurrently.",
+        "detail": "Reads analysis.json produced by the scan step, collects module entries, and splits them into token-limited batches. Each batch is sent to an AI agent with a prompt derived from chapter structure and source code. Responses are parsed and merged back into the analysis object with retry and progress-save logic. Supports --dry-run for stdout output and dumps failed batch responses for debugging.",
+        "chapter": "internal_design",
+        "role": "controller",
         "enrich": {
-          "processedAt": "2026-04-07T02:53:27.930Z",
+          "processedAt": "2026-04-07T13:32:57.482Z",
           "attempts": 1
         },
         "keywords": [
           "enrich",
           "analysis",
           "batch",
-          "concurrency",
-          "AI metadata",
+          "AI enrichment",
           "keywords",
-          "chapter",
-          "incremental",
+          "summary",
+          "concurrency",
+          "token limit",
           "progress save"
         ]
       },
       {
         "file": "src/docs/commands/forge.js",
-        "hash": "8b3c1fd68aaa4efa7165ef959161946b",
+        "hash": "75a82286e419e78835b7bac1570550ef",
         "lines": 445,
-        "mtime": "2026-04-07T02:51:55.056Z",
+        "mtime": "2026-04-07T13:31:31.297Z",
         "className": "forge",
         "methods": [
           "getTargetFiles",
@@ -346,32 +347,32 @@
         "extends": null,
         "usedBy": null,
         "id": "ef4fa5d9",
-        "summary": "Implements the `sdd-forge docs forge` command, an orchestration loop that runs docs generation followed by iterative AI-driven review until the review passes or the run limit is reached.",
-        "detail": "Supports three modes: `local` (run review CLI), `assist` (prompt user), and `agent` (invoke AI reviewer). In each round it populates `{{data}}` directives, fills `{{text}}` directives, runs a review step, and if the review finds issues it prompts an AI agent to fix them before retrying. Estimates relevant files from spec text to focus the fix prompt. Optionally runs `readme` and `translate` as post-processing steps after a passing review. Exits with a non-zero code if max runs are exhausted.",
+        "summary": "Orchestrates the full docs generation pipeline (data → text → readme → translate) in a review loop supporting local, assist, and agent execution modes.",
+        "detail": "Parses CLI options including --mode, --max-runs, --spec, and --prompt-file, then iteratively invokes data population, text fill, readme generation, and optional translation. In agent mode it spawns an AI agent per target doc file concurrently; in local/assist modes it runs review commands between rounds. Estimates relevant files from spec text to narrow the agent's scope. Exits with EXIT_ERROR if max runs are exhausted without a passing review.",
         "chapter": "cli_commands",
-        "role": "cli",
+        "role": "controller",
         "enrich": {
-          "processedAt": "2026-04-07T02:53:27.930Z",
+          "processedAt": "2026-04-07T13:32:57.482Z",
           "attempts": 1
         },
         "keywords": [
           "forge",
-          "docs generation",
+          "docs pipeline",
           "review loop",
-          "orchestration",
-          "AI fix",
-          "iterate",
+          "agent mode",
+          "local mode",
+          "assist mode",
           "max runs",
-          "mode",
-          "assist",
-          "agent"
+          "spec",
+          "translation",
+          "orchestration"
         ]
       },
       {
         "file": "src/docs/commands/init.js",
-        "hash": "7a0c5910849f126bf3e54620d0f64341",
+        "hash": "349fd00ec9a0f9c65ac181ba8c6d833b",
         "lines": 271,
-        "mtime": "2026-04-07T02:51:55.056Z",
+        "mtime": "2026-04-07T13:31:31.297Z",
         "className": "init",
         "methods": [
           "aiFilterChapters",
@@ -398,24 +399,24 @@
         "extends": null,
         "usedBy": null,
         "id": "62ef800b",
-        "summary": "Implements the `sdd-forge docs init` command, which initialises the `docs/` directory by resolving and merging preset template layers for the configured project type and language.",
-        "detail": "Resolves template files through the preset inheritance chain (project-local overrides > preset layers) and merges them using additive or override strategies. Detects conflicts with existing doc files and skips them by default. Optionally filters the chapter list with an AI agent based on the project's purpose before writing files. Strips existing `{{text}}` block contents so that subsequent `text` runs regenerate them cleanly.",
+        "summary": "Initializes the docs/ directory by resolving preset templates, optionally filtering chapters via AI, and writing merged template files.",
+        "detail": "Resolves templates from the preset chain for the configured language, merges them using template-merger, and writes output files to docs/. Skips files that already exist unless --force is set, reporting conflicts. An optional AI-based chapter filter trims the chapter list to those relevant for the project type and purpose. Uses i18n for error messages.",
         "chapter": "cli_commands",
-        "role": "cli",
+        "role": "controller",
         "enrich": {
-          "processedAt": "2026-04-07T02:53:27.930Z",
+          "processedAt": "2026-04-07T13:32:57.482Z",
           "attempts": 1
         },
         "keywords": [
           "init",
-          "docs",
+          "docs init",
           "template",
           "preset",
           "chapter",
-          "merge",
-          "scaffold",
           "AI filter",
-          "language"
+          "scaffold",
+          "language",
+          "merge"
         ]
       },
       {
@@ -578,9 +579,9 @@
       },
       {
         "file": "src/docs/commands/text.js",
-        "hash": "95afae0e7621aa0696024c468fb3fa98",
+        "hash": "d6f34a57216de984f4933233456768b5",
         "lines": 772,
-        "mtime": "2026-04-07T02:51:55.057Z",
+        "mtime": "2026-04-07T13:31:31.297Z",
         "className": "text",
         "methods": [
           "textFillFromAnalysis",
@@ -635,32 +636,32 @@
           "src/docs/commands/readme.js"
         ],
         "id": "7c5e7654",
-        "summary": "Implements the `sdd-forge docs text` command, which fills `{{text}}` directives in docs markdown files by invoking an AI agent to generate prose from analysis data.",
-        "detail": "Discovers unfilled `{{text}}` directives in chapter files, groups them into batches per file, and calls an AI agent (sync or async depending on configuration) to generate content. Validates responses for shrinkage and completeness before applying them. Supports a `--detect-changed` mode that only regenerates chapters whose source files have been modified (based on file hash). Includes retry logic, dry-run mode, and preamble stripping to handle varied AI response formats. Exports helper functions (`processTemplate`, `processTemplateFileBatch`, `applyBatchJsonToFile`, etc.) for reuse by the `forge` command.",
-        "chapter": "cli_commands",
-        "role": "cli",
+        "summary": "Fills {{text}} directives in docs Markdown files with AI-generated content, supporting batch JSON mode, per-directive mode, shrinkage validation, and incremental change detection.",
+        "detail": "Discovers unfilled {{text}} blocks in chapter files, builds prompts from surrounding analysis data, and calls AI agents synchronously or asynchronously with concurrency control. Batch mode sends all directives for a file in one JSON request and applies the response with applyBatchJsonToFile; single-directive mode falls back per block. Validates results against shrinkage thresholds and strips fill content for dry runs. detectChangedChapters uses file hashes to skip unchanged source files.",
+        "chapter": "internal_design",
+        "role": "controller",
         "enrich": {
-          "processedAt": "2026-04-07T02:53:27.930Z",
+          "processedAt": "2026-04-07T13:32:57.482Z",
           "attempts": 1
         },
         "keywords": [
-          "text",
+          "text fill",
           "directive",
-          "fill",
-          "AI generation",
-          "batch",
-          "prose",
+          "{{text}}",
+          "batch JSON",
           "shrinkage",
-          "retry",
-          "detect changed",
-          "preamble"
+          "AI fill",
+          "chapter",
+          "incremental",
+          "hash",
+          "concurrency"
         ]
       },
       {
         "file": "src/docs/commands/translate.js",
-        "hash": "b9338d3813235628b3f8ad264f95d86c",
+        "hash": "ae7297d331d69dc591660de5872d422e",
         "lines": 228,
-        "mtime": "2026-04-07T02:51:55.057Z",
+        "mtime": "2026-04-07T13:31:31.297Z",
         "className": "translate",
         "methods": [
           "toneInstruction",
@@ -688,24 +689,25 @@
         "extends": null,
         "usedBy": null,
         "id": "fd496e07",
-        "summary": "Implements the `sdd-forge docs translate` command, which translates docs markdown files and README.md from the default language into configured target languages using an AI agent.",
-        "detail": "Builds a task list by comparing source and target file modification times, skipping up-to-date translations unless `--force` is given. Runs translation tasks concurrently via `mapWithConcurrency`. Each task reads the source file, calls the AI agent with a tone-aware prompt, strips any response preamble, and writes the translated content to the per-language docs subdirectory. Target language directories are created automatically.",
+        "summary": "Translates docs Markdown files and README.md into target languages using AI agents, skipping files whose source has not changed since the last translation.",
+        "detail": "Builds a list of translation tasks by comparing source and target file mtimes. Runs tasks concurrently via mapWithConcurrency, calling an AI agent for each file with tone and language instructions. Strips response preamble before writing translated content. Supports --force to bypass mtime checks and reads output language configuration from resolveOutputConfig.",
         "chapter": "cli_commands",
-        "role": "cli",
+        "role": "controller",
         "enrich": {
-          "processedAt": "2026-04-07T02:53:27.930Z",
+          "processedAt": "2026-04-07T13:32:57.482Z",
           "attempts": 1
         },
         "keywords": [
           "translate",
           "i18n",
-          "multilingual",
           "language",
-          "concurrency",
           "mtime",
-          "force",
           "tone",
-          "README"
+          "AI translation",
+          "multilingual",
+          "README",
+          "concurrency",
+          "docs"
         ]
       },
       {
@@ -1772,9 +1774,9 @@
       },
       {
         "file": "src/docs/lib/template-merger.js",
-        "hash": "42eae567ccac8026b45657c99d1a7829",
+        "hash": "872ec72b3a24681712e1e3da13d37bf0",
         "lines": 605,
-        "mtime": "2026-04-07T02:51:55.057Z",
+        "mtime": "2026-04-07T13:31:31.297Z",
         "className": "template-merger",
         "methods": [
           "buildLayers",
@@ -1812,24 +1814,24 @@
           "src/docs/lib/command-context.js"
         ],
         "id": "88243459",
-        "summary": "Provides template resolution and merging logic for the docs init pipeline, assembling chapter content by layering preset inheritance chains with additive or override merge strategies.",
-        "detail": "Builds an ordered list of template directories from the preset chain (parent chains resolved via `resolveChainSafe`) plus an optional project-local override directory. For each chapter file, content from multiple layers is merged: additive merge concatenates new `{{block}}` sections not present in the parent, while override merge replaces the entire file. `resolveChaptersOrder` merges config-level chapter ordering with preset defaults. `translateTemplate` delegates template language conversion to an AI agent. Special files (README.md, AGENTS.sdd.md, layout.md) are excluded from normal chapter discovery.",
+        "summary": "Resolves and merges doc template files from a layered preset chain, combining parent and child content with additive or override strategies per named block.",
+        "detail": "buildLayers collects template directories from the preset inheritance chain plus an optional project-local override directory. resolveOneFile reads files from each layer and returns sources for merging. mergeResolved applies additive merging (concatenating non-duplicate blocks) or override merging (child wins per block). resolveChaptersOrder merges preset chapter lists with config overrides. translateTemplate delegates to an AI agent for language conversion of template content.",
         "chapter": "internal_design",
         "role": "lib",
         "enrich": {
-          "processedAt": "2026-04-07T02:53:27.930Z",
+          "processedAt": "2026-04-07T13:32:57.482Z",
           "attempts": 1
         },
         "keywords": [
           "template",
-          "merge",
-          "preset",
-          "layer",
-          "chain",
-          "additive",
-          "override",
-          "chapter order",
-          "block directive",
+          "merger",
+          "preset chain",
+          "layers",
+          "additive merge",
+          "block merge",
+          "chapters order",
+          "language",
+          "translate template",
           "inheritance"
         ]
       },
@@ -2094,9 +2096,9 @@
       },
       {
         "file": "src/flow/commands/review.js",
-        "hash": "37827b7bcb5757b4cf6e5bd232f9d74c",
-        "lines": 975,
-        "mtime": "2026-04-07T02:51:55.057Z",
+        "hash": "408c8f31db35bbced9a833fc2113f997",
+        "lines": 944,
+        "mtime": "2026-04-07T13:31:31.298Z",
         "className": "review",
         "methods": [
           "resolveReviewTarget",
@@ -2163,12 +2165,12 @@
         "extends": null,
         "usedBy": null,
         "id": "331cf497",
-        "summary": "Implements the `sdd-forge flow review` command, running multi-phase AI review loops (spec review, test review, code review) with proposal/verdict cycles and automated fix application.",
-        "detail": "Each review phase (draft, spec, pre, post, impl, test) uses `runReviewLoop` which iteratively calls an AI agent to detect issues, parses structured proposals, and if issues remain calls a second AI pass to apply fixes. Spec review validates the spec document structure and content using guardrail-style prompts. Test review performs a gap analysis between a generated test design and existing test files, writing new test files when gaps are found. Code review diffs the implementation branch, extracts approved proposals, and applies them via an AI agent. Results are saved as markdown review files in the spec directory.",
+        "summary": "Implements multi-phase flow review commands: spec review, test-gap review, and code review with AI-powered proposal generation and iterative fix loops.",
+        "detail": "runSpecReview validates a Feature Specification document through up to MAX_REVIEW_RETRIES rounds, parsing AI proposals and applying fixes. runTestReview extracts requirements from the spec, generates a test design, detects gaps against existing test files, and writes missing tests via applyTestFixes. The final code review phase diffs implementation against the spec, builds an apply prompt for approved proposals, and saves results to review.md. All phases use runReviewLoop which accumulates history and evaluates a pass/fail verdict.",
         "chapter": "cli_commands",
-        "role": "cli",
+        "role": "controller",
         "enrich": {
-          "processedAt": "2026-04-07T02:53:27.930Z",
+          "processedAt": "2026-04-07T13:32:57.482Z",
           "attempts": 1
         },
         "keywords": [
@@ -2176,12 +2178,12 @@
           "spec review",
           "test review",
           "code review",
-          "proposals",
-          "verdict",
           "gap analysis",
-          "loop",
-          "AI fix",
-          "guardrail"
+          "proposals",
+          "guardrail",
+          "AI review",
+          "SDD",
+          "flow phases"
         ]
       },
       {
@@ -2291,9 +2293,9 @@
       },
       {
         "file": "src/flow/lib/get-context.js",
-        "hash": "60b145de635a259bad0d1c56071ee6be",
+        "hash": "8a3ed5099257a7f908d2b6be20fe0fd0",
         "lines": 400,
-        "mtime": "2026-04-07T02:51:55.057Z",
+        "mtime": "2026-04-07T13:31:31.298Z",
         "className": "get-context",
         "methods": [
           "toSearchResult",
@@ -2338,25 +2340,25 @@
           "src/docs/commands/readme.js"
         ],
         "id": "1261e39f",
-        "summary": "Provides the `GetContextCommand` for the `flow get context` subcommand, searching analysis.json entries by query using ngram similarity or AI-assisted keyword selection.",
-        "detail": "Loads analysis.json and extracts a flat entry list. Supports three search modes: keyword exact match (`searchEntries`), bigram similarity scoring (`ngramSearch`), and AI-assisted keyword selection (`aiSearch`) which asks an AI agent to select relevant keywords from the full keyword corpus before filtering entries. Falls back gracefully to keyword search on AI failure. Also handles `flow get file` by reading raw file content. `filterEntry` strips internal fields (hash, mtime, lines) before returning results.",
+        "summary": "Provides context search over analysis entries using bigram n-gram similarity, keyword-based filtering, and optional AI-driven keyword selection for flow context queries.",
+        "detail": "contextSearch dispatches to ngramSearch (bigram similarity scoring) or aiSearch (AI selects relevant keywords then filters entries). collectAllKeywords aggregates and deduplicates keywords across all entries for prompt construction. filterEntry strips internal fields (hash, mtime, etc.) before returning results. loadAnalysisEntries reads and parses analysis.json, throwing descriptive errors on missing or malformed files. GetContextCommand exposes file-read and search actions as a FlowCommand subclass.",
         "chapter": "internal_design",
         "role": "lib",
         "enrich": {
-          "processedAt": "2026-04-07T02:53:27.930Z",
+          "processedAt": "2026-04-07T13:32:57.482Z",
           "attempts": 1
         },
         "keywords": [
-          "context",
-          "search",
+          "context search",
           "ngram",
           "bigram",
-          "AI search",
-          "analysis",
           "keywords",
-          "get context",
+          "analysis",
+          "flow context",
           "similarity",
-          "flow"
+          "AI search",
+          "get-context",
+          "FlowCommand"
         ]
       },
       {
@@ -2683,9 +2685,9 @@
       },
       {
         "file": "src/flow/lib/run-gate.js",
-        "hash": "a30eee4ce82e2914927b8b750ff72523",
+        "hash": "5a08c9aa02593438c271ff8e3eb8af21",
         "lines": 465,
-        "mtime": "2026-04-07T02:51:55.058Z",
+        "mtime": "2026-04-07T13:31:31.298Z",
         "className": "run-gate",
         "methods": [
           "RunGateCommand",
@@ -2720,25 +2722,25 @@
         "extends": "FlowCommand",
         "usedBy": null,
         "id": "b4aa4dad",
-        "summary": "Implements the `RunGateCommand` for the `flow run gate` action, validating spec documents and implementation diffs against structural rules and AI-evaluated guardrails.",
-        "detail": "Supports three gate phases: `draft` (validates draft.md structure), `spec`/`pre`/`post` (validates spec files using `checkSpecText` heuristics plus AI guardrail evaluation), and `impl` (compares git diff against spec requirements via AI). Guardrails are loaded from the merged preset chain via `loadMergedGuardrails` and filtered by phase. `parseGuardrailResponse` extracts per-guardrail pass/fail verdicts from AI responses. Returns structured `gatePass`/`gateFail` objects with reasons and next-step hints used by the flow orchestrator.",
+        "summary": "Implements gate check logic for SDD flow phases (draft, spec, pre, post, impl), validating documents against structural rules and AI guardrail evaluation.",
+        "detail": "checkSpecText and checkDraftText apply regex-based structural validators. checkGuardrail loads merged guardrail rules filtered by phase/role and calls an AI agent to score each rule, returning pass/fail with reasons. executeImpl computes a git diff against the base branch and uses buildImplCheckPrompt to verify implementation coverage. gatePass and gateFail construct result objects consumed by the flow dispatcher. PASS_NEXT/FAIL_NEXT maps drive the next-step routing.",
         "chapter": "internal_design",
         "role": "lib",
         "enrich": {
-          "processedAt": "2026-04-07T02:53:27.930Z",
+          "processedAt": "2026-04-07T13:32:57.482Z",
           "attempts": 1
         },
         "keywords": [
           "gate",
           "guardrail",
           "spec validation",
-          "draft",
+          "draft check",
           "impl check",
-          "phase",
-          "pass",
-          "fail",
-          "AI evaluation",
-          "flow control"
+          "flow phase",
+          "pass fail",
+          "AI gate",
+          "SDD",
+          "RunGateCommand"
         ]
       },
       {
@@ -2963,9 +2965,9 @@
       },
       {
         "file": "src/flow/lib/run-retro.js",
-        "hash": "e1d183e539c25271219e203e85390ce8",
+        "hash": "879c5b0e297a7e1684ab67c6bd4079c8",
         "lines": 234,
-        "mtime": "2026-04-07T02:51:55.058Z",
+        "mtime": "2026-04-07T13:31:31.298Z",
         "className": "run-retro",
         "methods": [
           "RunRetroCommand",
@@ -2994,12 +2996,12 @@
         "extends": "FlowCommand",
         "usedBy": null,
         "id": "862e7d08",
-        "summary": "Implements the `RunRetroCommand` for the `flow run retro` action, generating a JSON retrospective that scores how well the implementation satisfies spec requirements.",
-        "detail": "Extracts requirement items from the spec's Requirements section, retrieves the git diff between the implementation branch and the base branch, and calls an AI agent with a structured prompt to assess each requirement as met, partial, or missed. Parses the AI JSON response (with `repairJson` fallback) into a structured retro object. The result is saved as `retro.json` in the spec directory. Respects a `--force` flag to overwrite existing retros. Both `getDiff` and `getDetailedDiff` variants are available for different prompt verbosity levels.",
+        "summary": "Runs a retrospective analysis comparing the implementation diff against spec requirements and produces a structured retro.json verdict via AI.",
+        "detail": "extractRequirements parses the Requirements section from a spec file. getDiff and getDetailedDiff call git to produce summary and detailed diffs against the base branch. buildRetroPrompt assembles the requirements list and diff into an AI prompt requesting JSON-structured coverage verdicts per requirement. parseRetroResponse uses repairJson for resilient parsing. RunRetroCommand persists the result to retro.json in the spec directory with a --force override option.",
         "chapter": "internal_design",
         "role": "lib",
         "enrich": {
-          "processedAt": "2026-04-07T02:53:27.930Z",
+          "processedAt": "2026-04-07T13:32:57.482Z",
           "attempts": 1
         },
         "keywords": [
@@ -3007,12 +3009,12 @@
           "retrospective",
           "requirements",
           "diff",
-          "scoring",
-          "met",
-          "partial",
-          "missed",
+          "coverage",
+          "spec",
           "AI evaluation",
-          "spec"
+          "flow",
+          "RunRetroCommand",
+          "retro.json"
         ]
       },
       {
@@ -3555,49 +3557,10 @@
         ]
       },
       {
-        "file": "src/lib/agent-log.js",
-        "hash": "be843a360511cf80b111933493540b8d",
-        "lines": 52,
-        "mtime": "2026-04-07T02:51:55.058Z",
-        "className": "agent-log",
-        "methods": [
-          "AgentLog"
-        ],
-        "imports": [
-          "./log.js"
-        ],
-        "exports": [
-          "AgentLog"
-        ],
-        "extends": "Log",
-        "usedBy": [
-          "src/lib/agent-log.js",
-          "src/lib/agent.js"
-        ],
-        "id": "62624ef1",
-        "summary": "Extends the base `Log` class to provide agent-specific log record construction, gating prompt capture behind a config flag.",
-        "detail": "Overrides log record creation to include agent prompt content only when `cfg.logs.prompts` is truthy, preventing sensitive prompt data from being written to logs by default. Inherits all persistence and formatting behaviour from `Log`. Serves as the log writer used by the agent invocation functions in `agent.js`.",
-        "chapter": "internal_design",
-        "role": "lib",
-        "enrich": {
-          "processedAt": "2026-04-07T02:53:27.930Z",
-          "attempts": 1
-        },
-        "keywords": [
-          "agent log",
-          "logging",
-          "prompt logging",
-          "log record",
-          "config flag",
-          "AgentLog",
-          "Log"
-        ]
-      },
-      {
         "file": "src/lib/agent.js",
-        "hash": "071efdbd4dd066d7990a7fd7d1f9e4e1",
-        "lines": 418,
-        "mtime": "2026-04-07T02:51:55.058Z",
+        "hash": "80189c5aae063e4b8052f77c8a29d9e8",
+        "lines": 514,
+        "mtime": "2026-04-07T13:31:31.298Z",
         "className": "agent",
         "methods": [
           "callAgent",
@@ -3616,6 +3579,9 @@
           "resolvePromptArgs",
           "stripPromptFromArgs",
           "buildAgentInvocation",
+          "buildAgentLogPayload",
+          "runWithAgentLogging",
+          "runWithAgentLoggingSync",
           "callAgentAsyncWithRetry",
           "callAgentAsyncOnce",
           "resolveCommandSettings",
@@ -3626,7 +3592,6 @@
           "fs",
           "path",
           "child_process",
-          "./agent-log.js",
           "./log.js"
         ],
         "exports": [
@@ -3649,26 +3614,26 @@
           "src/setup.js"
         ],
         "id": "13ddf392",
-        "summary": "Core agent invocation library that builds CLI subprocess calls to external AI agents, handling prompt delivery via argv or stdin, retry logic, logging, and config-driven agent resolution.",
-        "detail": "Provides synchronous (`callAgent`) and asynchronous (`callAgentAsync`) execution paths, both building a subprocess invocation via `buildAgentInvocation` which selects stdin delivery for large prompts exceeding `ARGV_SIZE_THRESHOLD`. Async path supports configurable retry with exponential-like delay via `callAgentAsyncWithRetry`. Logging variants (`callAgentWithLog`, `callAgentAwaitLog`, `callAgentAsyncWithLog`) wrap the call with `AgentLog` recording. `resolveAgent` merges provider profile args with command-specific overrides from config. `ensureAgentWorkDir` validates and creates a `-C` working directory argument. `writeAgentContext` / `cleanupAgentContext` manage ephemeral rule files injected into agent sessions.",
+        "summary": "Core agent invocation library providing synchronous and asynchronous AI agent calls with structured logging, retry logic, workdir management, and config-driven agent resolution.",
+        "detail": "callAgent spawns the agent process synchronously via execFileSync; callAgentAsync uses spawn with streaming stdout/stderr. Large prompts above ARGV_SIZE_THRESHOLD are passed via stdin to avoid ARG_MAX limits. runWithAgentLogging wraps calls in Logger.agent start/end events with request IDs. resolveAgent merges provider profile args with command-specific overrides from config. ensureAgentWorkDir validates and creates -C path arguments. writeAgentContext injects rules files into .claude/rules/ for scoped agent instructions.",
         "chapter": "internal_design",
         "role": "lib",
         "enrich": {
-          "processedAt": "2026-04-07T02:53:27.930Z",
+          "processedAt": "2026-04-07T13:32:57.482Z",
           "attempts": 1
         },
         "keywords": [
           "agent",
-          "subprocess",
-          "CLI invocation",
+          "AI call",
+          "spawn",
           "stdin",
+          "async",
           "retry",
-          "timeout",
+          "logging",
+          "workdir",
           "resolveAgent",
           "callAgent",
-          "async",
-          "agent config",
-          "workdir"
+          "timeout"
         ]
       },
       {
@@ -4364,53 +4329,56 @@
       },
       {
         "file": "src/lib/log.js",
-        "hash": "4528e993e1416a04fa9c53eddcb6e8f7",
-        "lines": 114,
-        "mtime": "2026-04-07T02:51:55.058Z",
+        "hash": "b3e1dc7242b51ed1c9696d1ee4214d08",
+        "lines": 411,
+        "mtime": "2026-04-07T13:31:31.298Z",
         "className": "log",
         "methods": [
-          "Log",
+          "generateRequestId",
+          "Logger",
           "resolveLogDir",
-          "writeLogEntry",
-          "Logger"
+          "todayLocal",
+          "textStats",
+          "extractCaller",
+          "appendJsonl",
+          "writePromptFile",
+          "resolveFlowContext"
         ],
         "imports": [
+          "crypto",
           "fs",
           "path",
           "./cli.js"
         ],
         "exports": [
-          "Log",
-          "resolveLogDir",
-          "writeLogEntry",
+          "generateRequestId",
           "Logger"
         ],
         "extends": null,
         "usedBy": [
-          "src/lib/agent-log.js",
           "src/lib/agent.js",
           "src/sdd-forge.js"
         ],
         "id": "3d7bb5e6",
-        "summary": "Provides a structured logging system with a singleton Logger class and append-only JSONL log file writing, supporting per-entry typed Log subclasses.",
-        "detail": "Defines a base Log class with toJSON and a static filename convention; subclasses implement filename to route entries to specific log files. writeLogEntry resolves the log directory via resolveLogDir (respecting worktree vs main repo root), then appends serialized JSON to the appropriate file. Logger is a singleton initialized with cwd and config, and defers log directory resolution until write time. Errors during write are reported to stderr without throwing, maintaining non-fatal logging behavior.",
+        "summary": "Structured JSONL logging system that records agent calls, git events, and custom events to daily log files with optional prompt file persistence.",
+        "detail": "Logger is a singleton initialized with config; it writes JSON lines to .sdd-forge/logs/sdd-forge-YYYY-MM-DD.jsonl. Each agent log entry captures prompt/response text stats, caller file/line via stack trace parsing, flow phase from flow-state.json, and an optional prompt file reference written to a prompts/ subdirectory. resolveLogDir resolves the log directory relative to the repo root, handling worktree paths via getMainRepoPath. All writes are fire-and-forget promises tracked in a pending set.",
         "chapter": "internal_design",
         "role": "lib",
         "enrich": {
-          "processedAt": "2026-04-07T02:52:13.036Z",
+          "processedAt": "2026-04-07T13:32:57.482Z",
           "attempts": 1
         },
         "keywords": [
-          "logger",
-          "log",
+          "logging",
           "JSONL",
+          "Logger",
+          "agent log",
+          "prompt file",
+          "flow context",
           "singleton",
-          "writeLogEntry",
-          "resolveLogDir",
+          "daily log",
           "worktree",
-          "append",
-          "issue-log",
-          "stderr"
+          "structured log"
         ]
       },
       {
@@ -4650,9 +4618,9 @@
       },
       {
         "file": "src/lib/types.js",
-        "hash": "be1ac54deef39729d678f0bcf4db1428",
+        "hash": "8bd0e5c4856691d637912e4c2f908a67",
         "lines": 372,
-        "mtime": "2026-04-07T05:37:02.069Z",
+        "mtime": "2026-04-07T13:31:31.298Z",
         "className": "types",
         "methods": [
           "validateConfig",
@@ -4670,24 +4638,23 @@
           "src/setup.js"
         ],
         "id": "69d5afb4",
-        "summary": "Defines config validation logic and output config resolution for the sdd-forge configuration schema.",
-        "detail": "Exports validateConfig which validates a raw config object against required fields and allowed values, throwing descriptive errors on failure. VALID_TONES constrains the docs.style.tone field. resolveOutputConfig normalizes the config into a resolved output structure for downstream consumers. Acts as the single source of truth for config constraints.",
+        "summary": "Validates the sdd-forge config object and resolves the output language configuration with defaults.",
+        "detail": "validateConfig checks required fields (lang, type, docs.languages, docs.defaultLanguage) and collects all errors before throwing. resolveOutputConfig normalizes the docs output settings, providing defaultLanguage and languages array. VALID_TONES defines the allowed tone values for docs.style.tone.",
         "chapter": "configuration",
-        "role": "model",
+        "role": "lib",
         "enrich": {
-          "processedAt": "2026-04-07T05:37:16.296Z",
+          "processedAt": "2026-04-07T13:32:57.482Z",
           "attempts": 1
         },
         "keywords": [
-          "config",
-          "validation",
-          "schema",
-          "SddConfig",
-          "tone",
-          "output",
+          "config validation",
+          "types",
           "resolveOutputConfig",
-          "validateConfig",
-          "types"
+          "tone",
+          "docs config",
+          "defaultLanguage",
+          "schema",
+          "validateConfig"
         ]
       },
       {
@@ -7568,9 +7535,9 @@
       },
       {
         "file": "src/sdd-forge.js",
-        "hash": "ddd5313a69a28053f4628f5d61d95f3a",
-        "lines": 69,
-        "mtime": "2026-04-07T02:51:55.058Z",
+        "hash": "fc5574dfe7d758fa19b4ac846abef907",
+        "lines": 74,
+        "mtime": "2026-04-07T13:31:31.299Z",
         "className": "sdd-forge",
         "methods": [],
         "imports": [
@@ -7583,25 +7550,25 @@
         "extends": null,
         "usedBy": null,
         "id": "a8608997",
-        "summary": "Main CLI entry point for sdd-forge that dispatches subcommands to namespace dispatchers (docs, flow) or independent script handlers.",
-        "detail": "Parses raw process.argv to extract the subcommand and delegates execution by dynamically importing the appropriate dispatcher or script module. Namespace subcommands (docs, flow) are routed to their respective dispatcher files; independent commands map directly to script paths via INDEPENDENT lookup. Initializes the Logger singleton before dispatch. Handles --help/-h/help shortcircuiting and exits with EXIT_ERROR on unknown commands.",
+        "summary": "Main CLI entry point for sdd-forge, dispatching subcommands to namespace dispatchers (docs, flow) or independent command scripts.",
+        "detail": "Parses the first argument to determine the subcommand, initializes the Logger singleton with project config, and rewrites process.argv before dynamically importing the target script. Namespace commands (docs, flow) are forwarded to their dispatcher modules; standalone commands (setup, upgrade, presets, etc.) map directly to script paths via the INDEPENDENT lookup table. Handles --help/--version flags early and exits with EXIT_ERROR for unknown commands.",
         "chapter": "cli_commands",
         "role": "cli",
         "enrich": {
-          "processedAt": "2026-04-07T02:52:13.036Z",
+          "processedAt": "2026-04-07T13:32:57.482Z",
           "attempts": 1
         },
         "keywords": [
           "entry point",
           "dispatcher",
+          "CLI",
           "subcommand",
-          "dynamic import",
           "docs",
           "flow",
-          "CLI",
-          "process.argv",
-          "Logger",
-          "EXIT_ERROR"
+          "sdd-forge",
+          "dynamic import",
+          "namespace",
+          "routing"
         ]
       },
       {
@@ -7720,10 +7687,10 @@
       }
     ],
     "summary": {
-      "total": 225,
-      "totalMethods": 695
+      "total": 224,
+      "totalMethods": 702
     },
     "dataSourceHash": "7d725e75d5031be445119323e4947c91"
   },
-  "enrichedAt": "2026-04-07T05:37:16.296Z"
+  "enrichedAt": "2026-04-07T13:32:57.482Z"
 }
