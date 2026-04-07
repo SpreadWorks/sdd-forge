@@ -4,7 +4,11 @@
   },
   "experimental": {
     "workflow": {
-      "enable": true
+      "enable": true,
+      "languages": {
+        "source": "ja",
+        "publish": "en"
+      }
     }
   },
   "lang": "ja",
