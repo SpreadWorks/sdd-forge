@@ -6,6 +6,9 @@
     "document"
   ],
   "concurrency": 4,
+  "logs": {
+    "prompts": true
+  },
   "docs": {
     "languages": [
       "ja",
