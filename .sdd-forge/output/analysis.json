@@ -1,5 +1,5 @@
 {
-  "analyzedAt": "2026-04-08T02:08:59.125Z",
+  "analyzedAt": "2026-04-08T02:27:49.075Z",
   "package": {
     "entries": [
       {
@@ -2691,12 +2691,13 @@
       },
       {
         "file": "src/flow/lib/run-gate.js",
-        "hash": "74460dde3fcca2a135e6a2b88d591ed7",
-        "lines": 473,
-        "mtime": "2026-04-08T01:51:50.969Z",
+        "hash": "507d44b593a479d0f5c75687c0fe3a6e",
+        "lines": 483,
+        "mtime": "2026-04-08T02:27:48.861Z",
         "className": "run-gate",
         "methods": [
           "RunGateCommand",
+          "runGitDiff",
           "sectionAt",
           "checkSpecText",
           "buildDraftFieldPattern",
@@ -2729,27 +2730,25 @@
         "extends": "FlowCommand",
         "usedBy": null,
         "id": "b4aa4dad",
-        "summary": "Implements the gate-check command for SDD flow phases, validating draft, spec, and impl artifacts before allowing phase transitions. Provides both static text checks and AI-powered guardrail evaluation.",
-        "detail": "RunGateCommand extends FlowCommand and dispatches to three execution paths: draft gate (validates draft.md structure), spec gate (validates spec files for pre/post phases), and impl gate (checks implementation diff against spec). Static checkers (checkDraftText, checkSpecText) scan for missing sections or formatting issues using regex patterns. AI-driven guardrail evaluation (checkGuardrail) loads merged guardrail rules, filters by phase, builds a structured prompt, and parses a pass/fail response from the agent. Gate results carry a PASS_NEXT/FAIL_NEXT transition map to route the flow to the correct next step. Helper functions buildDraftFieldPattern and buildGuardrailPrompt construct the regex and prompt payloads respectively.",
+        "summary": "Implements the gate-check command for SDD flow phases (draft, spec, pre, post, impl), validating spec and draft documents against guardrails and structural rules.",
+        "detail": "RunGateCommand extends FlowCommand and dispatches to phase-specific execution methods (executeDraft, executeImpl, executeSpec). Each phase reads the target file, runs static text checks (checkSpecText, checkDraftText), and optionally calls an AI guardrail via callAgentWithLog. Results are returned as structured pass/fail objects with PASS_NEXT/FAIL_NEXT transition maps that drive the flow state machine. Git diff is used in the impl phase to verify that actual changes exist against the base branch.",
         "chapter": "internal_design",
         "role": "controller",
         "enrich": {
-          "processedAt": "2026-04-08T01:52:01.670Z",
+          "processedAt": "2026-04-08T02:28:06.724Z",
           "attempts": 1
         },
         "keywords": [
           "gate",
-          "flow gate",
-          "spec validation",
-          "draft check",
           "guardrail",
-          "phase transition",
-          "impl check",
-          "RunGateCommand",
-          "checkSpecText",
-          "checkDraftText",
-          "parseGuardrailResponse",
-          "agent prompt"
+          "spec",
+          "draft",
+          "flow",
+          "phase",
+          "validation",
+          "run-gate",
+          "SDD",
+          "impl check"
         ]
       },
       {
@@ -4649,9 +4648,9 @@
       },
       {
         "file": "src/lib/types.js",
-        "hash": "8bd0e5c4856691d637912e4c2f908a67",
-        "lines": 372,
-        "mtime": "2026-04-07T13:31:31.298Z",
+        "hash": "23ad1f109a576983522e9b4727314c25",
+        "lines": 373,
+        "mtime": "2026-04-08T02:15:25.311Z",
         "className": "types",
         "methods": [
           "validateConfig",
@@ -4669,22 +4668,23 @@
           "src/setup.js"
         ],
         "id": "69d5afb4",
-        "summary": "Validates the sdd-forge config object and resolves the output language configuration with defaults.",
-        "detail": "validateConfig checks required fields (lang, type, docs.languages, docs.defaultLanguage) and collects all errors before throwing. resolveOutputConfig normalizes the docs output settings, providing defaultLanguage and languages array. VALID_TONES defines the allowed tone values for docs.style.tone.",
+        "summary": "Defines TypeScript-style config validation and output resolution helpers for SDD config objects.",
+        "detail": "validateConfig performs runtime schema validation on a raw config object, collecting errors and throwing if any are found, then returns the typed SddConfig. resolveOutputConfig normalises the config into a resolved output descriptor with sensible defaults. VALID_TONES is a compile-time constant set used during validation. The module acts as the single source of truth for config shape enforcement across the codebase.",
         "chapter": "configuration",
-        "role": "lib",
+        "role": "model",
         "enrich": {
-          "processedAt": "2026-04-07T13:32:57.482Z",
+          "processedAt": "2026-04-08T02:28:06.724Z",
           "attempts": 1
         },
         "keywords": [
-          "config validation",
-          "types",
-          "resolveOutputConfig",
-          "tone",
-          "docs config",
-          "defaultLanguage",
+          "config",
+          "validation",
           "schema",
+          "SddConfig",
+          "types",
+          "tone",
+          "output",
+          "resolveOutputConfig",
           "validateConfig"
         ]
       },
@@ -7604,9 +7604,9 @@
       },
       {
         "file": "src/setup.js",
-        "hash": "6dc0f99dc9356dea807a67852008bc35",
-        "lines": 593,
-        "mtime": "2026-03-31T12:57:20.421Z",
+        "hash": "2c6d7f3d0827efef3c7f37cfae1c74a7",
+        "lines": 595,
+        "mtime": "2026-04-08T02:15:29.846Z",
         "className": "setup",
         "methods": [
           "ask",
@@ -7647,26 +7647,25 @@
         "extends": null,
         "usedBy": null,
         "id": "9820c9db",
-        "summary": "Interactive setup wizard that initializes a new sdd-forge project by collecting configuration, creating directory structure, writing config.json, and deploying skills and agent config files.",
-        "detail": "runWizard() prompts the user for project name, source path, language, preset type, and docs purpose/tone using readline-based ask() helpers. buildTreeItems() and select() drive an interactive preset picker in the terminal. ensureProjectDirs() creates .sdd-forge/, docs/, and specs/ directories. ensureGitignore() and ensureGitattributes() patch root-level git configuration files. ensureAgentConfigFile() injects the SDD directive block into AGENTS.md or CLAUDE.md, and deploySkills() copies skill templates into .claude/skills/ and .agents/skills/.",
+        "summary": "Interactive setup wizard that initialises a new sdd-forge project: prompts for config, creates directory structure, writes config.json, and deploys skills and agent files.",
+        "detail": "main() orchestrates the full setup flow: parse CLI args, run the interactive wizard (runWizard), register the project path, ensure required directories and git config files exist, write config.json, generate AGENTS.md/CLAUDE.md, and deploy skills via deploySkills. Helper functions handle gitignore and gitattributes patching, symlink correction for CLAUDE.md, and injecting the SDD directive block into existing agent config files. The wizard collects lang, preset, purpose, and tone from the user with readline prompts, falling back to existing config defaults.",
         "chapter": "cli_commands",
         "role": "cli",
         "enrich": {
-          "processedAt": "2026-04-02T16:04:59.891Z",
+          "processedAt": "2026-04-08T02:28:06.724Z",
           "attempts": 1
         },
         "keywords": [
           "setup",
           "wizard",
+          "init",
           "config.json",
-          "project init",
           "AGENTS.md",
           "CLAUDE.md",
-          "gitignore",
-          "gitattributes",
           "skills",
-          "readline",
-          "preset selection"
+          "gitignore",
+          "preset",
+          "interactive"
         ]
       },
       {
@@ -7719,9 +7718,9 @@
     ],
     "summary": {
       "total": 224,
-      "totalMethods": 716
+      "totalMethods": 717
     },
     "dataSourceHash": "7d725e75d5031be445119323e4947c91"
   },
-  "enrichedAt": "2026-04-08T02:09:07.844Z"
+  "enrichedAt": "2026-04-08T02:28:06.724Z"
 }
