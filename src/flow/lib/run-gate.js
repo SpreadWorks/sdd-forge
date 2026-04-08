@@ -114,6 +114,18 @@ function checkSpecText(text, opts) {
 // ---------------------------------------------------------------------------
 
 /**
+ * Build a regex that matches a draft field by either:
+ *   - `## Heading` format (anchored to line start with `m` flag)
+ *   - `**key:** value` or `key: value` colon format
+ *
+ * @param {string} labels - regex alternation of field name variants (e.g. "目的|goal")
+ * @returns {RegExp}
+ */
+function buildDraftFieldPattern(labels) {
+  return new RegExp(`(?:^\\s*##\\s+(?:${labels})|\\*{0,2}(?:${labels})\\*{0,2}\\s*[:：])`, "im");
+}
+
+/**
  * @param {string} text
  * @returns {string[]} issues
  */
@@ -132,17 +144,13 @@ function checkDraftText(text) {
     issues.push("draft approval is required: set `- [x] User approved this draft`");
   }
 
-  // Development type
-  const hasDevType =
-    /\*{0,2}(?:開発種別|dev(?:elopment)?\s*type)\*{0,2}\s*[:：]/i.test(text);
-  if (!hasDevType) {
+  // Development type — accepts both colon format and ## heading format (line-anchored)
+  if (!buildDraftFieldPattern("開発種別|dev(?:elopment)?\\s*type").test(text)) {
     issues.push("missing development type (開発種別)");
   }
 
-  // Goal
-  const hasGoal =
-    /\*{0,2}(?:目的|goal)\*{0,2}\s*[:：]/i.test(text);
-  if (!hasGoal) {
+  // Goal — accepts both colon format and ## heading format (line-anchored)
+  if (!buildDraftFieldPattern("目的|goal").test(text)) {
     issues.push("missing goal (目的)");
   }
 

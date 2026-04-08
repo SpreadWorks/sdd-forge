@@ -1,0 +1,60 @@
+{
+  "spec": "specs/156-fix-gate-draft-format-pattern/spec.md",
+  "date": "2026-04-08T01:51:49.898Z",
+  "requirements": [
+    {
+      "desc": "checkDraftText() の hasDevType パターンを拡張し ## 見出し形式を PASS と判定する",
+      "status": "done",
+      "note": "buildDraftFieldPattern('開発種別|dev(?:elopment)?\\s*type') により ^\\s*##\\s+ 形式を認識。m フラグで行頭アンカー済み"
+    },
+    {
+      "desc": "checkDraftText() の hasGoal パターンを拡張し ## 見出し形式を PASS と判定する",
+      "status": "done",
+      "note": "buildDraftFieldPattern('目的|goal') により ## 目的 / ## Goal を認識"
+    },
+    {
+      "desc": "既存のコロン形式 PASS 条件を壊さない",
+      "status": "done",
+      "note": "buildDraftFieldPattern の OR 第2分岐が \\*{0,2}...\\*{0,2}\\s*[:：] を維持。テスト Test1/2/5/6 で回帰確認"
+    },
+    {
+      "desc": "日本語・英語両対応（i フラグ）を維持する",
+      "status": "done",
+      "note": "buildDraftFieldPattern が 'im' フラグを使用し、大文字小文字非区別・多言語ラベルを保持"
+    }
+  ],
+  "unplanned": [
+    {
+      "file": "src/flow/lib/run-gate.js",
+      "change": "buildDraftFieldPattern() ヘルパー関数を新規追加（review.md の Item 1 APPROVED 指摘に基づくリファクタ）"
+    },
+    {
+      "file": "src/flow/lib/run-gate.js",
+      "change": "## 見出し検出に行頭アンカー（^\\s*## + m フラグ）を適用（review.md の Item 2 APPROVED 指摘に基づく修正）"
+    },
+    {
+      "file": "specs/156-fix-gate-draft-format-pattern/tests/check-draft-text.test.js",
+      "change": "spec ローカルテスト 11 件を新規追加（spec.md の Test Strategy に基づく実装）"
+    },
+    {
+      "file": "specs/156-fix-gate-draft-format-pattern/tests/README.md",
+      "change": "テストの背景・実行方法・期待結果を記述した README を新規追加"
+    },
+    {
+      "file": "specs/156-fix-gate-draft-format-pattern/review.md",
+      "change": "コードレビュー結果ファイルを新規追加（SDD フロー成果物）"
+    },
+    {
+      "file": "specs/156-fix-gate-draft-format-pattern/issue-log.json",
+      "change": "gate-impl での no-diff 問題のワークアラウンドと guardrailCandidate を記録（SDD フロー成果物）"
+    }
+  ],
+  "summary": {
+    "total": 4,
+    "done": 4,
+    "partial": 0,
+    "not_done": 0,
+    "rate": 1,
+    "notes": "全4要件が満たされている。unplanned 変更はすべて SDD フロー成果物（specs/ 配下）またはレビュー指摘に基づくリファクタ（buildDraftFieldPattern 抽出・行頭アンカー追加）であり、要件外ではあるが意図的かつ品質向上に寄与する変更。既存コロン形式の回帰はテストで保護されており安全性が確認できる。"
+  }
+}
