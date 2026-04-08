@@ -19,176 +19,139 @@ describe("052: agent command config", () => {
   let tmp;
   afterEach(() => tmp && removeTmpDir(tmp));
 
-  describe("resolveAgent with COMMAND_ID", () => {
+  describe("resolveAgent with useProfile / prefix match", () => {
 
-    it("resolves exact command match (docs.review)", async () => {
+    it("resolves provider via useProfile and exact profile entry", async () => {
       const { resolveAgent } = await import("../../src/lib/agent.js");
       const config = {
         agent: {
-          default: "claude",
+          default: "claude/sonnet",
           providers: {
-            claude: {
-              command: "claude",
-              args: ["-p", "{{PROMPT}}"],
-              profiles: {
-                default: [],
-                opus: ["--model", "opus"],
-                sonnet: ["--model", "sonnet"],
-              },
-            },
+            "claude/opus": { command: "claude", args: ["-p", "{{PROMPT}}", "--model", "opus"] },
+            "claude/sonnet": { command: "claude", args: ["-p", "{{PROMPT}}", "--model", "sonnet"] },
           },
-          commands: {
-            "docs": { agent: "claude", profile: "sonnet" },
-            "docs.review": { agent: "claude", profile: "opus" },
+          useProfile: "high",
+          profiles: {
+            high: { "docs": "claude/opus" },
           },
         },
       };
-      const agent = resolveAgent(config, "docs.review");
+      const agent = resolveAgent(config, "docs");
       assert.equal(agent.command, "claude");
-      assert.deepEqual(agent.args, ["--model", "opus", "-p", "{{PROMPT}}"]);
+      assert.ok(agent.args.includes("opus"));
     });
 
-    it("falls back to parent command (docs.forge → docs)", async () => {
+    it("prefix match: 'docs' profile entry matches 'docs.forge'", async () => {
       const { resolveAgent } = await import("../../src/lib/agent.js");
       const config = {
         agent: {
-          default: "claude",
+          default: "claude/sonnet",
           providers: {
-            claude: {
-              command: "claude",
-              args: ["-p", "{{PROMPT}}"],
-              profiles: {
-                default: [],
-                sonnet: ["--model", "sonnet"],
-              },
-            },
+            "claude/opus": { command: "claude", args: ["-p", "{{PROMPT}}", "--model", "opus"] },
+            "claude/sonnet": { command: "claude", args: ["-p", "{{PROMPT}}", "--model", "sonnet"] },
           },
-          commands: {
-            "docs": { agent: "claude", profile: "sonnet" },
+          useProfile: "high",
+          profiles: {
+            high: { "docs": "claude/opus" },
           },
         },
       };
       const agent = resolveAgent(config, "docs.forge");
       assert.equal(agent.command, "claude");
-      assert.deepEqual(agent.args, ["--model", "sonnet", "-p", "{{PROMPT}}"]);
+      assert.ok(agent.args.includes("opus"));
     });
 
-    it("falls back to default agent when no command match", async () => {
+    it("falls back to agent.default when no profile entry matches commandId", async () => {
       const { resolveAgent } = await import("../../src/lib/agent.js");
       const config = {
         agent: {
-          default: "claude",
+          default: "claude/sonnet",
           providers: {
-            claude: {
-              command: "claude",
-              args: ["-p", "{{PROMPT}}"],
-              profiles: { default: [] },
+            "claude/sonnet": { command: "claude", args: ["-p", "{{PROMPT}}", "--model", "sonnet"] },
+          },
+          useProfile: "fast",
+          profiles: {
+            fast: { "docs": "claude/sonnet" },
+          },
+        },
+      };
+      // "spec.gate" doesn't match "docs" prefix
+      const agent = resolveAgent(config, "spec.gate");
+      assert.equal(agent.command, "claude");
+      assert.ok(agent.args.includes("sonnet"));
+    });
+
+    it("more specific prefix wins: docs.review over docs", async () => {
+      const { resolveAgent } = await import("../../src/lib/agent.js");
+      const config = {
+        agent: {
+          default: "claude/sonnet",
+          providers: {
+            "claude/opus": { command: "claude", args: ["-p", "{{PROMPT}}", "--model", "opus"] },
+            "claude/sonnet": { command: "claude", args: ["-p", "{{PROMPT}}", "--model", "sonnet"] },
+          },
+          useProfile: "mixed",
+          profiles: {
+            mixed: {
+              "docs": "claude/sonnet",
+              "docs.review": "claude/opus",
             },
           },
-          commands: {},
         },
       };
       const agent = resolveAgent(config, "docs.review");
-      assert.equal(agent.command, "claude");
-      assert.deepEqual(agent.args, ["-p", "{{PROMPT}}"]);
+      assert.ok(agent.args.includes("opus")); // docs.review wins over docs
     });
 
-    it("profile concat: profiles[name] + provider.args", async () => {
+    it("resolves different provider via profile", async () => {
       const { resolveAgent } = await import("../../src/lib/agent.js");
       const config = {
         agent: {
-          default: "claude",
+          default: "claude/sonnet",
           providers: {
-            claude: {
-              command: "claude",
-              args: ["-p", "{{PROMPT}}"],
-              profiles: {
-                default: [],
-                custom: ["--model", "sonnet", "--output-format", "json"],
-              },
-            },
+            "claude/sonnet": { command: "claude", args: ["-p", "{{PROMPT}}", "--model", "sonnet"] },
+            "codex/gpt-5.3": { command: "codex", args: ["exec", "-m", "gpt-5.3-codex", "{{PROMPT}}"] },
           },
-          commands: {
-            "docs.text": { agent: "claude", profile: "custom" },
-          },
-        },
-      };
-      const agent = resolveAgent(config, "docs.text");
-      assert.deepEqual(agent.args, ["--model", "sonnet", "--output-format", "json", "-p", "{{PROMPT}}"]);
-    });
-
-    it("profile default produces provider.args only", async () => {
-      const { resolveAgent } = await import("../../src/lib/agent.js");
-      const config = {
-        agent: {
-          default: "claude",
-          providers: {
-            claude: {
-              command: "claude",
-              args: ["-p", "{{PROMPT}}"],
-              profiles: { default: [] },
-            },
-          },
-          commands: {
-            "docs.forge": { agent: "claude", profile: "default" },
-          },
-        },
-      };
-      const agent = resolveAgent(config, "docs.forge");
-      assert.deepEqual(agent.args, ["-p", "{{PROMPT}}"]);
-    });
-
-    it("resolves different provider via commands", async () => {
-      const { resolveAgent } = await import("../../src/lib/agent.js");
-      const config = {
-        agent: {
-          default: "claude",
-          providers: {
-            claude: {
-              command: "claude",
-              args: ["-p", "{{PROMPT}}"],
-              profiles: { default: [] },
-            },
-            codex: {
-              command: "codex",
-              args: ["{{PROMPT}}"],
-              profiles: {
-                default: [],
-                o3: ["--model", "o3"],
-              },
-            },
-          },
-          commands: {
-            "spec.gate": { agent: "codex", profile: "o3" },
+          useProfile: "fast",
+          profiles: {
+            fast: { "spec": "codex/gpt-5.3" },
           },
         },
       };
       const agent = resolveAgent(config, "spec.gate");
       assert.equal(agent.command, "codex");
-      assert.deepEqual(agent.args, ["--model", "o3", "{{PROMPT}}"]);
     });
 
-    it("resolveAgent(config) without COMMAND_ID returns default", async () => {
+    it("resolveAgent(config) without COMMAND_ID returns default provider", async () => {
       const { resolveAgent } = await import("../../src/lib/agent.js");
       const config = {
         agent: {
-          default: "claude",
+          default: "claude/sonnet",
           providers: {
-            claude: {
-              command: "claude",
-              args: ["-p", "{{PROMPT}}"],
-            },
+            "claude/sonnet": { command: "claude", args: ["-p", "{{PROMPT}}", "--model", "sonnet"] },
           },
         },
       };
       const agent = resolveAgent(config);
       assert.equal(agent.command, "claude");
-      assert.deepEqual(agent.args, ["-p", "{{PROMPT}}"]);
+      assert.ok(agent.args.includes("sonnet"));
+    });
+
+    it("throws when useProfile references non-existent profile", async () => {
+      const { resolveAgent } = await import("../../src/lib/agent.js");
+      const config = {
+        agent: {
+          default: "claude/sonnet",
+          useProfile: "unknown",
+          profiles: { fast: { docs: "claude/sonnet" } },
+        },
+      };
+      assert.throws(() => resolveAgent(config, "docs"), /Profile "unknown" is not defined/);
     });
   });
 
   describe("setup generates full config", () => {
-    it("claude default: generates both providers + all commands with default profile", () => {
+    it("claude default: generates minimal agent config with default=claude and workDir", () => {
       tmp = createTmpDir();
       writeJson(tmp, "package.json", { name: "test-proj" });
 
@@ -201,27 +164,14 @@ describe("052: agent command config", () => {
       assert.equal(result.status, 0, `stderr: ${result.stderr}`);
 
       const config = JSON.parse(fs.readFileSync(join(tmp, ".sdd-forge", "config.json"), "utf8"));
-      assert.equal(config.agent.default, "claude");
+      assert.equal(config.agent.default, "claude/sonnet");
+      assert.equal(config.agent.workDir, ".tmp");
 
-      // Both providers exist under agent.providers
-      assert.ok(config.agent.providers.claude, "claude provider should exist");
-      assert.ok(config.agent.providers.codex, "codex provider should exist");
-
-      // Profiles exist
-      assert.ok(config.agent.providers.claude.profiles, "claude profiles should exist");
-      assert.ok(config.agent.providers.codex.profiles, "codex profiles should exist");
-
-      // Commands exist with default profile under agent.commands
-      assert.ok(config.agent.commands, "commands section should exist");
-      const cmdKeys = Object.keys(config.agent.commands);
-      assert.ok(cmdKeys.length > 0, "should have command entries");
-      for (const key of cmdKeys) {
-        assert.equal(config.agent.commands[key].agent, "claude", `${key} should use default agent claude`);
-        assert.equal(config.agent.commands[key].profile, "default", `${key} should use default profile`);
-      }
+      // Setup no longer injects providers or commands — users add them manually
+      assert.equal(config.agent.commands, undefined, "commands section should not be generated by setup");
     });
 
-    it("codex default: generates both providers + all commands with default profile", () => {
+    it("codex default: generates minimal agent config with default=codex/gpt-5.4 and workDir", () => {
       tmp = createTmpDir();
       writeJson(tmp, "package.json", { name: "test-proj" });
 
@@ -234,17 +184,11 @@ describe("052: agent command config", () => {
       assert.equal(result.status, 0, `stderr: ${result.stderr}`);
 
       const config = JSON.parse(fs.readFileSync(join(tmp, ".sdd-forge", "config.json"), "utf8"));
-      assert.equal(config.agent.default, "codex");
+      assert.equal(config.agent.default, "codex/gpt-5.4");
+      assert.equal(config.agent.workDir, ".tmp");
 
-      // Both providers exist under agent.providers
-      assert.ok(config.agent.providers.claude, "claude provider should exist");
-      assert.ok(config.agent.providers.codex, "codex provider should exist");
-
-      // Commands use codex as default
-      for (const key of Object.keys(config.agent.commands)) {
-        assert.equal(config.agent.commands[key].agent, "codex", `${key} should use default agent codex`);
-        assert.equal(config.agent.commands[key].profile, "default", `${key} should use default profile`);
-      }
+      // Setup no longer injects providers or commands — users add them manually
+      assert.equal(config.agent.commands, undefined, "commands section should not be generated by setup");
     });
 
     it("setup agent choices do not include skip option", () => {

@@ -499,49 +499,15 @@ async function main() {
   if (!config.flow) config.flow = { merge: "squash" };
 
   if (settings.agent) {
-    const defaultAgent = {
-      default: settings.agent,
-      workDir: ".tmp",
-      providers: {
-        claude: {
-          command: "claude",
-          args: ["-p", "{{PROMPT}}"],
-          systemPromptFlag: "--system-prompt",
-          jsonOutputFlag: "--output-format json",
-          profiles: {
-            default: [],
-            opus: ["--model", "opus"],
-            sonnet: ["--model", "sonnet"],
-          },
-        },
-        codex: {
-          command: "codex",
-          args: ["exec", "--full-auto", "-C", ".tmp", "{{PROMPT}}"],
-          jsonOutputFlag: "--json",
-          profiles: {
-            default: [],
-            o3: ["--model", "o3"],
-          },
-        },
-      },
-      commands: {
-        "docs": { agent: settings.agent, profile: "default" },
-        "docs.review": { agent: settings.agent, profile: "default" },
-        "docs.forge": { agent: settings.agent, profile: "default" },
-        "spec": { agent: settings.agent, profile: "default" },
-        "spec.gate": { agent: settings.agent, profile: "default" },
-        "flow": { agent: settings.agent, profile: "default" },
-      },
-    };
+    // Normalize short names to namespaced provider keys used in BUILTIN_PROVIDERS
+    const AGENT_PROVIDER_DEFAULT = { claude: "claude/sonnet", codex: "codex/gpt-5.4" };
+    const resolvedDefault = AGENT_PROVIDER_DEFAULT[settings.agent] || settings.agent;
+    const defaultAgent = { default: resolvedDefault, workDir: ".tmp" };
 
     if (config.agent) {
       // Preserve existing customizations, only update wizard-managed fields
-      config.agent.default = settings.agent;
+      config.agent.default = resolvedDefault;
       if (!config.agent.workDir) config.agent.workDir = defaultAgent.workDir;
-      // Merge providers: keep custom providers/profiles, add missing defaults
-      config.agent.providers = { ...defaultAgent.providers, ...config.agent.providers };
-      // Merge commands: keep custom commands, add missing defaults
-      config.agent.commands = { ...defaultAgent.commands, ...config.agent.commands };
     } else {
       config.agent = defaultAgent;
     }

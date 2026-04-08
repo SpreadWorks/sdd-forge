@@ -1,0 +1,176 @@
+{
+  "spec": "specs/157-agent-profile-switching/spec.md",
+  "baseBranch": "development",
+  "featureBranch": "feature/157-agent-profile-switching",
+  "steps": [
+    {
+      "id": "approach",
+      "status": "done"
+    },
+    {
+      "id": "branch",
+      "status": "done"
+    },
+    {
+      "id": "prepare-spec",
+      "status": "pending"
+    },
+    {
+      "id": "draft",
+      "status": "done"
+    },
+    {
+      "id": "gate-draft",
+      "status": "done"
+    },
+    {
+      "id": "spec",
+      "status": "done"
+    },
+    {
+      "id": "gate",
+      "status": "done"
+    },
+    {
+      "id": "approval",
+      "status": "done"
+    },
+    {
+      "id": "test",
+      "status": "done"
+    },
+    {
+      "id": "implement",
+      "status": "done"
+    },
+    {
+      "id": "gate-impl",
+      "status": "done"
+    },
+    {
+      "id": "review",
+      "status": "done"
+    },
+    {
+      "id": "finalize",
+      "status": "pending"
+    },
+    {
+      "id": "commit",
+      "status": "pending"
+    },
+    {
+      "id": "push",
+      "status": "pending"
+    },
+    {
+      "id": "merge",
+      "status": "pending"
+    },
+    {
+      "id": "pr-create",
+      "status": "pending"
+    },
+    {
+      "id": "branch-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "pr-merge",
+      "status": "pending"
+    },
+    {
+      "id": "sync-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "docs-update",
+      "status": "pending"
+    },
+    {
+      "id": "docs-review",
+      "status": "pending"
+    },
+    {
+      "id": "docs-commit",
+      "status": "pending"
+    }
+  ],
+  "requirements": [
+    {
+      "desc": "agent.profiles フィールドを新設する",
+      "status": "done"
+    },
+    {
+      "desc": "agent.useProfile フィールドを新設する",
+      "status": "done"
+    },
+    {
+      "desc": "SDD_FORGE_PROFILE 環境変数によるプロファイルオーバーライド",
+      "status": "done"
+    },
+    {
+      "desc": "存在しないプロファイル名はエラーで停止",
+      "status": "done"
+    },
+    {
+      "desc": "プレフィックスマッチ方式でコマンドIDとプロファイルエントリをマッチング",
+      "status": "done"
+    },
+    {
+      "desc": "プロファイルにマッチしない場合は agent.default にフォールバック",
+      "status": "done"
+    },
+    {
+      "desc": "4つのビルトインプロバイダーを src/ に定義",
+      "status": "done"
+    },
+    {
+      "desc": "ユーザー定義がビルトイン定義より優先",
+      "status": "done"
+    },
+    {
+      "desc": "旧フィールド（agent.commands, provider-level profiles）は無視",
+      "status": "done"
+    },
+    {
+      "desc": "sdd-forge setup の初期 config.json を新フォーマットに更新",
+      "status": "done"
+    },
+    {
+      "desc": "src/README.md の agent 設定セクションを更新",
+      "status": "done"
+    },
+    {
+      "desc": "CHANGELOG.md に breaking change セクションを追加",
+      "status": "done"
+    },
+    {
+      "desc": "experimental.workflow.borad.to-issue の typo を修正",
+      "status": "done"
+    }
+  ],
+  "issue": 112,
+  "request": "config.jsonのagent設定を刷新し、useProfileによるプロファイル切り替えとSDD_FORGE_PROFILEによる環境変数オーバーライドを追加する",
+  "worktree": true,
+  "metrics": {
+    "draft": {
+      "question": 5
+    },
+    "test": {
+      "srcRead": 1
+    },
+    "impl": {
+      "srcRead": 1,
+      "issueLog": 3
+    }
+  },
+  "notes": [
+    "draft Q1: typo fix (borad→board) はこの spec に含める",
+    "draft Q2: SDD_FORGE_PROFILE（環境変数）が agent.useProfile（config）より優先",
+    "draft Q3: 存在しないプロファイルが指定された場合はエラーを投げて停止する",
+    "draft Q4: ビルトインプロバイダーは claude/opus, claude/sonnet, codex/gpt-5.4, codex/gpt-5.3 の4つ",
+    "draft Q5: 旧フィールド（agent.commands, provider.profiles）は黙って無視する（alpha ポリシー）"
+  ],
+  "autoApprove": true
+}

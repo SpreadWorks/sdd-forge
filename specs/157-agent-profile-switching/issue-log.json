@@ -1,0 +1,122 @@
+{
+  "entries": [
+    {
+      "step": "gate-draft",
+      "reason": "Single Responsibility — agent プロファイル切り替え機能に集中しており、typo 修正も同一ファイル内の関連変更として許容範囲; Unambiguous Requirements — 優先順位（環境変数 > config）、エラー時の挙動（停止）、フォールバック条件（default使用）が明確に記述されている; Complete Context — 各エッジケースに「条件 → 期待挙動」の形式で記述されている; No Hardcoded Secrets — 本 spec にシークレットの記述なし。ビルトインプロバイダー名のみ; Prioritize Requirements — 影響範囲に5件以上の変更対象が列挙されているが、優先順位の明示がない; Impact on Existing Features — 影響ファイル・既存フィールド（`agent.commands`）廃止・既存テスト更新が明示されている; Present Recommendations with Reasoning — Q2〜Q5 に推奨回答が明示されているが、根拠（docs/ポリシー/既存パターン）の記載が薄い。ただしQ5で「alpha ポリシー」と根拠を明示しているため合格水準と判断; Explore Before Asking — Q4（ビルトインプロバイダー列挙）等、コードベース探索結果を踏まえた回答形式になっている; Proactively Raise Related Implications — ビルトインとユーザー定義の名前衝突・`useProfile`未設定時のフォールバック等、関連含意が先回りして記述されている; Confirm Brainstorm vs. Decision Before Critiquing — Q&Aはすでに決定済みの形式。ブレスト段階での評価は行われていない; Capture Digressions in draft.md — typo 修正のスコープ包含（Q1）を draft 内で明示的に処理している; Draft Stays at Requirements Level — 関数名（`resolveAgent`等）が記載されているが、これは影響範囲の特定であり実装詳細レベルには至っていない; Backward — Compatible CLI Interface — `agent.commands` を廃止するという破壊的変更に対して、移行計画（マイグレーションガイド・警告メッセージ等）の記載がない。Q5で「黙って無視する」と記載されているが、移行計画とは言えない",
+      "trigger": "gate post hook (auto)",
+      "timestamp": "2026-04-08T02:34:58.475Z"
+    },
+    {
+      "step": "gate-draft",
+      "reason": "Single Responsibility — agent プロファイル切り替えに集中しており、typo 修正も同一ファイル内の関連変更として含まれる。ただし typo 修正は独立変更と明記されており境界は明確。; Unambiguous Requirements — 優先順位（環境変数 > config）、エラー時の挙動（停止）、フォールバック先（`agent.default`）など検証可能な条件で記述されている。; Complete Context — 各エッジケースに「When: 条件 → shall: 挙動」の形式が揃っている（Q3、エッジケースセクション）。; No Hardcoded Secrets — 設定ファイルのスキーマ変更のみであり、シークレットの直書きは含まない。; Prioritize Requirements — 影響範囲が1〜5の優先順位付きで列挙されている。; Impact on Existing Features — `agent.commands` 廃止・旧フィールド無視・移行計画を明示しており、影響範囲セクションで具体ファイルまで列挙されている。; Present Recommendations with Reasoning — Q&A 形式で各問いに推奨回答と根拠（alpha ポリシー等）が示されている。; Explore Before Asking — Q4（ビルトインプロバイダーリスト）やQ5（旧フィールド挙動）はコードベース参照を前提とした回答が含まれる。; Proactively Raise Related Implications — `agent.commands` 廃止によりテンプレート・プリセット内の既存 config サンプルへの影響、および `sdd-forge setup` で生成される初期 config.json への影響が明示されていない。; Confirm Brainstorm vs. Decision Before Critiquing — ドラフトはユーザー承認済み（`[x] User approved`）であり、決定済みとして扱われている。; Capture Digressions in draft.md — 移行計画・dcad 別 spec への言及など脱線した議題がドラフト内に記録されている。; Draft Stays at Requirements Level — 関数名（`resolveAgent` 等）への言及はあるが、実装詳細ではなく影響ファイルの特定に留まっており要件レベルの範囲内。; Backward — Compatible CLI Interface — CLI コマンド自体の変更はなく config スキーマの変更のみ。移行計画（手動更新・CHANGELOG 記載）が明示されている。",
+      "trigger": "gate post hook (auto)",
+      "timestamp": "2026-04-08T02:37:45.322Z"
+    },
+    {
+      "step": "gate-draft",
+      "reason": "Single Responsibility — agent profile switching に焦点。typo 修正は同ファイル内の関連変更として含まれており、無関係な機能変更ではない。; Unambiguous Requirements — 優先順位（環境変数 > config）、エラー時の停止、プレフィックスマッチのルール（より長いプレフィックス優先）など、検証可能な条件で記述されている。; Complete Context — Q&A・エッジケース各項目に「When/If + shall」構造が揃っている（例: 存在しないプロファイル→エラー停止、両方設定→環境変数優先）。; No Hardcoded Secrets — 機密情報に関する記述なし。環境変数 `SDD_FORGE_PROFILE` を使用する設計で適切。; Prioritize Requirements — 影響範囲に優先順位順と明記されているが、要件項目（Q&A・エッジケース・テスト戦略）が3項目超でも優先順位が付与されていない。設計決定4項目、エッジケース4項目に優先順位がない。; Impact on Existing Features — 影響範囲セクションで `agent.js`、`config.js`、`cli.js`、既存テスト、setup 生成 config、テンプレートへの影響を明示している。; Present Recommendations with Reasoning — 各 Q&A に推奨回答が提示され、alpha ポリシー・既存コードパターンを根拠として明記している。; Explore Before Asking — Q4（ビルトインプロバイダーリスト）はコードベース調査を前提とした具体的な回答が示されており、未確認のまま質問を投げていない。; Proactively Raise Related Implications — setup 生成 config・テンプレート更新・config バリデーション警告（dcad）への影響が「追加の影響」として先回りして記載されている。; Confirm Brainstorm vs. Decision Before Critiquing — 該当する批評行為なし。; Capture Digressions in draft.md — typo 修正の扱い（Q1）が draft 内で捕捉・決定されている。; Draft Stays at Requirements Level — 関数名（`resolveAgent` 等）が実装詳細として記載されているが、これは影響範囲の明確化であり関数レベル設計の規定ではない。許容範囲内。; Backward — Compatible CLI Interface — CLI コマンドの削除・変更はなく、config フォーマット変更の移行計画（手動更新・CHANGELOG/README への記載・dcad との連携）が明記されている。",
+      "trigger": "gate post hook (auto)",
+      "timestamp": "2026-04-08T02:38:19.688Z"
+    },
+    {
+      "step": "gate-draft",
+      "reason": "Single Responsibility — agent プロファイル切り替え機能に集中している。typo 修正は同ファイルへの小変更として含まれており、独立した懸念として明示されている; Unambiguous Requirements — 優先順位、エラー時の挙動、フォールバック条件はいずれも検証可能な条件で記述されている; Complete Context — 各エッジケースと設計決定にトリガー条件（When/If）と期待挙動（shall）が対応している; No Hardcoded Secrets — シークレット類は含まれない。ビルトインプロバイダー名はシークレットではない; Prioritize Requirements — 設計決定・影響範囲・エッジケースいずれも優先順位順に列挙されている; Impact on Existing Features — agent.js / config.js / cli.js / テスト / setup 生成ファイル / テンプレートへの影響が明示されている; Present Recommendations with Reasoning — Q1〜Q5 の各質問に推奨回答と根拠（alpha ポリシー、別 spec 分離など）が付記されている; Explore Before Asking — Q4（ビルトインプロバイダー一覧）はコードベース調査に基づくと推察され、Q5 は既存ポリシー（alpha）を参照している; Proactively Raise Related Implications — setup 生成 config・テンプレートサンプルへの影響、config バリデーション警告（dcad）との連携が追加影響として先回りして記載されている; Confirm Brainstorm vs. Decision Before Critiquing — ドラフトは決定済み内容のみ記載しており、ブレインストーミングと決定の混在はない; Capture Digressions in draft.md — typo 修正（`borad`→`board`）の扱いは Q1 で明示的に確認・記録されている; Draft Stays at Requirements Level — 関数名（`resolveAgent` 等）への言及があるが、要件の影響範囲特定のための参照に留まり、実装詳細（アルゴリズム・データ構造）は含まれていない; Backward — Compatible CLI Interface — `agent.commands` の廃止は CLI/config インターフェースの破壊的変更だが、移行計画が「CHANGELOG/README に記載する」と述べるのみで、具体的な移行ガイドの内容・掲載先・タイミングが明記されていない。CHANGELOG エントリの形式や README の更新箇所が verifiable な条件として不十分",
+      "trigger": "gate post hook (auto)",
+      "timestamp": "2026-04-08T02:38:57.425Z"
+    },
+    {
+      "step": "gate-draft",
+      "reason": "Single Responsibility — agent profiles 刷新という単一の関心事にまとまっている（typo 修正も同ファイル変更の範囲として含める判断済み）; Unambiguous Requirements — 優先順位・エラー挙動・フォールバック条件が具体的な動詞と条件で記述されている; Complete Context — 各要件に「When/If」相当のトリガー（例: `SDD_FORGE_PROFILE` 設定時、プロファイル不在時）と期待挙動が対になっている; No Hardcoded Secrets — ソースコードの秘密情報に関する要件は含まれない; Prioritize Requirements — 設計決定・影響範囲・エッジケースそれぞれに優先順位順の記述がある; Impact on Existing Features — `agent.js`・`config.js`・`cli.js`・既存テスト・`experimental/workflow.js`・setup 生成 config・テンプレートへの影響が明示されている; Present Recommendations with Reasoning — Q&A セクションで各質問に推奨回答と根拠（alpha ポリシー、既存動作維持等）が示されている; Explore Before Asking — ビルトインプロバイダーリスト・旧フィールド挙動・既存コマンドマッチング方式はコードを読んだ上で回答している前提で記述されている; Proactively Raise Related Implications — setup 生成 config・テンプレート更新・dcad との連携など、明示的に依頼されていない影響が自発的に挙げられている; Confirm Brainstorm vs. Decision Before Critiquing — ドラフトはユーザー承認済み（`User approved this draft`）であり、ブレインストーム段階ではない; Capture Digressions in draft.md — typo 修正の包含判断（Q1）はドラフト内に明示的に記録されている; Draft Stays at Requirements Level — 関数シグネチャや実装コードの詳細は含まれず、要件・影響範囲・テスト戦略にとどまっている; Backward — Compatible CLI Interface — `agent.commands` という既存 config フィールドを廃止するが、移行計画が「CHANGELOG 追記・README 更新」のドキュメント整備にとどまり、既存 CLI コマンドやオプションへの影響（`sdd-forge` 各サブコマンドの動作変化）の記述が不足している。コマンド（CLI インターフェース）自体の変更は伴わないとの明示もない",
+      "trigger": "gate post hook (auto)",
+      "timestamp": "2026-04-08T02:39:32.955Z"
+    },
+    {
+      "step": "gate",
+      "reason": "Single Responsibility — agent profile switching の単一機能に集中。typo 修正は同一変更セットとして明示的に含めている; Unambiguous Requirements — 各要件は「プレフィックスマッチ」「エラーを投げて停止」「環境変数が優先」等の検証可能な条件で記述されている; Complete Context — 各要件は When（トリガー条件）と Shall（期待動作）のペアで記述されている; No Hardcoded Secrets — コマンドテンプレートにモデル名等は含まれるが、API キーや認証情報の埋め込みはない; No Silent Error Swallowing — 要件4・Acceptance Criteria で「エラーを投げて処理を停止する」と明示。要件9の旧フィールド無視はサイレント失敗だが alpha ポリシーとして Q&A で明示的に設計判断として記録されている; Prioritize Requirements — 要件が13項目あるにも関わらず優先順位の記載がない; Impact on Existing Features — `agent.commands` / `agent.providers.*.profiles` の廃止、`setup` 生成フォーマットの変更、`CHANGELOG.md` への breaking change 記載が明示されている; Bounded Resource Usage — プレフィックスマッチは有限のプロファイルエントリを線形走査するのみで、再帰・リトライ・バルクロードの無制限処理は含まれない; Changes Require Test Coverage — Test Strategy セクションにハッピーパスを含む複数のテストケースが列挙されている; Spec Includes Test Strategy — Test Strategy セクションが設けられており、対象ファイル・テスト内容が明記されている; Synthesize Draft, Do Not Copy — Q&A・Alternatives Considered・Requirements 等に整理・抽象化された構造がある。Issue #112 のドラフトを直接コピーした形跡はない; Record Unresolved Points as Open Questions — Open Questions セクションに「なし」と明示されており、未解決事項の隠蔽は見られない; Include 'Why This Approach' Rationale — Why This Approach・Alternatives Considered セクションで採用理由と代替案の不採用理由が説明されている; Backward — Compatible CLI Interface — `agent.commands` 廃止の breaking change について `CHANGELOG.md` への移行手順例示（要件12）が含まれている; Exit Code Contract — Acceptance Criteria に「エラーメッセージとともに非ゼロ終了する」と明示されている",
+      "trigger": "gate post hook (auto)",
+      "timestamp": "2026-04-08T02:41:18.515Z"
+    },
+    {
+      "step": "gate",
+      "reason": "Single Responsibility — agentプロファイル切り替えという単一機能に集中している（typo修正は同一変更セットとして明示的に含めると説明されている）; Unambiguous Requirements — 各要件は「エラーを投げて停止」「プレフィックスマッチ」「ユーザー定義が優先」等の検証可能な条件で記述されている; Complete Context — 各要件はトリガー条件（「〜が設定されている場合」「〜が存在しない場合」等）と期待動作（shall）がペアで記述されている; No Hardcoded Secrets — specはビルトインプロバイダーのコマンドテンプレートを定義しているが、APIキーや認証情報は含まれていない; No Silent Error Swallowing — 要件4および受け入れ基準で「エラーメッセージとともに非ゼロ終了」が明示されている。旧フィールドの無視（要件9）はalpha版ポリシーに基づく意図的な設計と明示されている; Prioritize Requirements — 13項目の要件がP1/P2/P3の優先順位で整理されている; Impact on Existing Features — `agent.commands`廃止、provider-level `profiles`廃止、setup生成config変更の影響が明示されている; Bounded Resource Usage — プレフィックスマッチに上限が必要な無限再帰処理は含まれない。無境界処理の設計なし; Changes Require Test Coverage — テスト戦略セクションにhappy pathを含む5項目のテスト内容が記述されている; Spec Includes Test Strategy — 配置ファイル、テスト内容（ロジック別）が明記されている; Synthesize Draft, Do Not Copy — 要件・受け入れ基準・テスト戦略が構造化されており、ドラフトの単純コピーではなく整理されている; Record Unresolved Points as Open Questions — Open Questionsセクションが「なし」と明示されており、未解決事項の隠蔽なし; Include 'Why This Approach' Rationale — 「Why This Approach」セクションおよびAlternatives Consideredで設計根拠が説明されている; Backward — Compatible CLI Interface — `agent.commands`および`agent.providers.*.profiles`の廃止（breaking change）は明示されているが、ユーザーが既存config.jsonを移行するための具体的な移行手順がspec要件として記述されていない。CHANGELOG例示（要件12）のみであり、migration planとして不十分; Exit Code Contract — 受け入れ基準に「エラーメッセージとともに非ゼロ終了する」と明記されている",
+      "trigger": "gate post hook (auto)",
+      "timestamp": "2026-04-08T02:42:06.212Z"
+    },
+    {
+      "step": "gate",
+      "reason": "Single Responsibility — agent プロファイル切り替え機能に集中しており、typo修正も同一変更セットとして明示的に含めている; Unambiguous Requirements — 各要件は「プレフィックスマッチ」「非ゼロ終了」「ユーザー定義が優先」等、検証可能な条件で記述されている; Complete Context — 各要件に「〜の場合」のトリガー条件と「〜する」の期待動作が対で記述されている; No Hardcoded Secrets — コードを含まず、APIキーや秘密情報の記述はない; No Silent Error Swallowing — 要件4でエラーをthrowして停止する旨を明記。要件9の「黙って無視」はalphaポリシーの下での意図的な廃止フィールドの処理であり、エラーではない; Prioritize Requirements — P1/P2/P3の3段階優先順位が明記されている; Impact on Existing Features — `agent.commands`と`agent.providers.*.profiles`の廃止を明記し、CHANGELOGへの移行手順記載を要件として含む; Bounded Resource Usage — プレフィックスマッチのエントリ数や`agent.profiles`のプロファイル数・コマンドエントリ数に上限が定義されていない; Changes Require Test Coverage — Test Strategyセクションでハッピーパスを含む複数のテストケースを列挙している; Spec Includes Test Strategy — テスト配置ファイル・テスト内容・観点が明記されている; Synthesize Draft, Do Not Copy — ドラフトを整理・抽象化した形式で記述されており、内容の捏造も見られない; Record Unresolved Points as Open Questions — Open Questionsセクションに「なし」と明示されており、Q&AセクションでClarificationsが解決済みである; Include 'Why This Approach' Rationale — \"Why This Approach\"セクションで`agent.commands`の限界とプロファイル方式の優位性が説明されている; Backward — Compatible CLI Interface — CLIコマンド自体の変更はなく、config.jsonフィールドの廃止についてはCHANGELOGへの移行手順記載（要件12）を含む; Exit Code Contract — 要件4とAcceptance Criteriaで存在しないプロファイル指定時に「非ゼロ終了する」と明記されている",
+      "trigger": "gate post hook (auto)",
+      "timestamp": "2026-04-08T02:42:40.284Z"
+    },
+    {
+      "step": "gate",
+      "reason": "Single Responsibility — agent profile switching の一機能に集中。typo 修正は同一変更セットと明示されている。; Unambiguous Requirements — 条件と期待動作が具体的に記述されている（例: エラー throw・プレフィックスマッチ優先順位）。; Complete Context — 各要件に「〜の場合」トリガーと「〜する」動作がペアで記述されている。; No Hardcoded Secrets — ビルトインプロバイダーのコマンドテンプレートは `{{PROMPT}}` プレースホルダー形式で、シークレットを含まない。; No Silent Error Swallowing — 存在しないプロファイル名指定時はエラー throw・停止と明記。旧フィールドの無視は alpha ポリシーとして意図的に明示。; Prioritize Requirements — P1/P2/P3 の優先度順が明示されている。; Impact on Existing Features — `agent.commands` / provider-level `profiles` の廃止・無視、setup 生成 config の変更が明記されている。; Bounded Resource Usage — プレフィックスマッチは「線形走査のみ（再帰なし、リトライなし）。エントリ数は config.json のサイズで自然に制限」と明記。; Changes Require Test Coverage — Test Strategy セクションにテスト対象が列挙されており、既存テストの更新・拡張と明記。; Spec Includes Test Strategy — 配置ファイル・テスト内容が明確に記述されている。; Synthesize Draft, Do Not Copy — ドラフト（Issue #112）をもとに整理・抽象化された形式になっており、生コピーは見られない。; Record Unresolved Points as Open Questions — Open Questions セクションに「なし」と明示されており、Q&A で解決済みの点が整理されている。; Include 'Why This Approach' Rationale — \"Why This Approach\" セクションで旧方式の限界と新方式の利点が説明されている。; Backward — Compatible CLI Interface — `agent.commands` および provider-level `profiles` の廃止（breaking change）に対し、CHANGELOG への記載は要件にあるが、**migration plan が spec 本文に含まれていない**。CHANGELOG への委譲のみであり、spec 自体に移行手順が記載されていない。; Exit Code Contract — 非ゼロ終了が Acceptance Criteria に明示されている（`SDD_FORGE_PROFILE=nonexistent` 時）。",
+      "trigger": "gate post hook (auto)",
+      "timestamp": "2026-04-08T02:43:14.410Z"
+    },
+    {
+      "step": "gate",
+      "reason": "Single Responsibility — agent profile switching に単一の関心事（設定フォーマット刷新とプロファイル切り替え）が集約されている。typo修正の混在は懸念点だが、同一変更セットとして明記されている; Unambiguous Requirements — 各要件は「プレフィックスマッチ」「非ゼロ終了」「エラーを投げて停止」等、検証可能な条件で記述されている; Complete Context — 各要件は「〜の場合」という条件と「〜する」という期待挙動のペアで記述されている; No Hardcoded Secrets — ビルトインプロバイダーのコマンドテンプレートに `{{PROMPT}}` プレースホルダーを使用しており、シークレットの直書きはない; No Silent Error Swallowing — 要件9「旧フィールドが存在する場合は黙って無視する」はエラーをサイレントに破棄する設計であり、ガードレールに違反する。Migration Plan でも「エラーにはならない」と明記されている; Prioritize Requirements — P1/P2/P3 の優先順位が明示されている; Impact on Existing Features — Migration Plan セクションで既存フィールド（`agent.commands`、`agent.providers.*.profiles`）への影響が明示されている; Bounded Resource Usage — プレフィックスマッチは「線形走査のみ（再帰なし、リトライなし）」と明記され、エントリ数は config.json サイズで自然に制限されると記述されている; Changes Require Test Coverage — Test Strategy セクションで happy path を含むテスト対象が列挙されている; Spec Includes Test Strategy — テスト配置ファイル・テスト内容の両方が明記されている; Synthesize Draft, Do Not Copy — Clarifications の Q&A が構造化されており、ドラフトを抽象化して整理している; Record Unresolved Points as Open Questions — Open Questions セクションが「なし」と明示されている; Include 'Why This Approach' Rationale — \"Why This Approach\" セクションで旧 `agent.commands` の限界と新アプローチの根拠が説明されている; Backward — Compatible CLI Interface — `agent.commands` 廃止に対する Migration Plan（移行手順・新旧フォーマット例）が明記されている; Exit Code Contract — 要件4・AC3に「非ゼロ終了」が明記されており、失敗時はゼロ終了しない",
+      "trigger": "gate post hook (auto)",
+      "timestamp": "2026-04-08T02:43:45.213Z"
+    },
+    {
+      "step": "implement",
+      "reason": "existing resolveAgent tests use agent.commands and provider-level profiles which are removed in this spec",
+      "trigger": "implementation of spec 157 removes commands/provider.profiles support",
+      "resolution": "updated tests to use new agent.profiles/useProfile API — tests were testing removed functionality",
+      "guardrailCandidate": "when removing a feature, flag existing tests that test removed behavior before modifying them",
+      "timestamp": "2026-04-08T02:56:28.448Z"
+    },
+    {
+      "step": "gate-impl",
+      "reason": "agent.profiles フィールド新設 — resolveAgent で agentSection.profiles を参照し、プロファイルオブジェクトとして使用している; agent.useProfile フィールド新設（空文字列時は null 扱いでデフォルトフォールバック） — resolveProfileName で cfgProfile が falsy の場合 null を返す; SDD_FORGE_PROFILE 環境変数が agent.useProfile より優先 — resolveProfileName で env var を先にチェックしている; 存在しないプロファイル名指定時にエラー throw — `if (!profiles || !profiles[profileName])` で Error をスローしている; プレフィックスマッチ方式（より長いプレフィックスが優先） — resolveProviderKeyFromProfile でループし bestLen で最長一致を選択; プロファイルにマッチするエントリがない場合は agent.default にフォールバック — `resolveProviderKeyFromProfile(...) || defaultAgent` で保証; 4つのビルトインプロバイダーを src/ に定義 — BUILTIN_PROVIDERS に claude/opus, claude/sonnet, codex/gpt-5.4, codex/gpt-5.3 を定義; ユーザー定義プロバイダーがビルトインより優先される — `{ ...BUILTIN_PROVIDERS, ...userProviders }` でスプレッドにより上書き; 旧フィールド（agent.commands, agent.providers.*.profiles）は無視される — コード内でこれらを参照しなくなったため意図的に廃棄; setup.js の初期 config.json を新フォーマットに更新 — setup.js から providers/commands/profiles を生成するコードをすべて削除し最小構成（default, workDir）のみ生成; src/README.md の agent 設定セクション更新 — diff に src/README.md の変更が含まれておらず、ファイル自体も存在しない; CHANGELOG.md への breaking change セクション追加 — diff に CHANGELOG.md の変更が含まれておらず、ファイル自体も存在しない; typo 修正（experimental.workflow.borad.to — issue → board.to-issue） — .sdd-forge/config.json の diff で修正が確認できる",
+      "trigger": "gate post hook (auto)",
+      "timestamp": "2026-04-08T05:06:00.959Z"
+    },
+    {
+      "step": "gate-impl",
+      "reason": "agent.profiles フィールドの新設 — resolveAgent が agentSection.profiles を参照し、プロファイルオブジェクト（コマンドID→プロバイダーキー）として実装されている; agent.useProfile フィールドの新設と未設定時のデフォルトフォールバック — resolveProfileName で cfgProfile が falsy なら null を返し、resolveAgent は defaultAgent にフォールバックする; SDD_FORGE_PROFILE 環境変数が agent.useProfile より優先 — resolveProfileName で process.env.SDD_FORGE_PROFILE を先にチェックし、存在すれば即返す; 存在しないプロファイル名指定時にエラーを投げる — `if (!profiles || !profiles[profileName]) throw new Error(...)` が実装されている; プレフィックスマッチ方式（最長優先）の実装 — resolveProviderKeyFromProfile が exact match と startsWith(prefix+\".\") で線形走査し、最長プレフィックスを選択する; プロファイルにマッチするエントリがない場合 agent.default へフォールバック — `resolveProviderKeyFromProfile(...) || defaultAgent` で実現している; 4つのビルトインプロバイダーの定義 — BUILTIN_PROVIDERS に claude/opus, claude/sonnet, codex/gpt-5.4, codex/gpt-5.3 が正しい args で定義されている; ユーザー定義プロバイダーがビルトインを上書き — `{ ...BUILTIN_PROVIDERS, ...userProviders }` のマージ順序でユーザー定義が優先される; 旧フィールド（agent.commands, provider.profiles）の無視 — resolveAgent のコードはこれらフィールドを一切参照しない; sdd — forge setup の初期 config.json 新フォーマット対応 — setup.js から旧 providers/commands の生成コードが削除され、新フォーマット互換の最小構成のみ生成する; src/README.md の agent セクション更新 — agent.commands 記述が削除され、agent.profiles / agent.useProfile / SDD_FORGE_PROFILE の使用例が追加されている; CHANGELOG.md への breaking change 記載 — CHANGELOG.md は git status で未追跡ファイル（??）として存在するが diff に含まれておらず、内容を検証できない; experimental.workflow.borad.to — issue の typo 修正 — config.json の diff で \"borad\" が \"board\" に修正されている",
+      "trigger": "gate post hook (auto)",
+      "timestamp": "2026-04-08T05:08:13.124Z"
+    },
+    {
+      "step": "gate-impl",
+      "reason": "agent.profiles フィールド新設 — resolveAgent が agentSection.profiles を読み、プロファイルオブジェクトを使用するコードが実装されている; agent.useProfile フィールド新設 — resolveProfileName が useProfile を読む。空文字は null 扱いで defaultAgent にフォールバックする; SDD_FORGE_PROFILE 環境変数が useProfile より優先 — resolveProfileName が process.env.SDD_FORGE_PROFILE を先にチェックし、あれば返す; 存在しないプロファイル指定時にエラー throw — profiles[profileName] が無い場合に Error(\"Profile ... is not defined\") を throw している; プレフィックスマッチ方式（最長一致優先） — resolveProviderKeyFromProfile がリニアスキャンで最長プレフィックスを選択し、再帰なし; マッチなし時に agent.default フォールバック — resolveProviderKeyFromProfile() || defaultAgent で default を使用している; 4つのビルトインプロバイダーを BUILTIN_PROVIDERS として定義 — claude/opus, claude/sonnet, codex/gpt-5.4, codex/gpt-5.3 が正しいコマンド・args で定義されている; ユーザー定義がビルトインを上書き — `{ ...BUILTIN_PROVIDERS, ...userProviders }` のスプレッド順でユーザー定義が優先される; 旧フィールド（agent.commands, providers.*.profiles）を無視 — resolveAgent は両フィールドを一切参照しないため、存在しても無視される; sdd — forge setup が新フォーマット config.json を生成 — setup.js は providers/commands を生成せず、{default, workDir} のみの最小構成を生成する; src/README.md の agent 設定セクション更新 — src/README.md はリポジトリに存在しない。diff はルートの README.md を更新しているが、spec が指定したファイルパスと異なる; CHANGELOG.md に breaking change セクション追加 — 廃止フィールド・移行手順の before/after 例・新フィールド(useProfile/SDD_FORGE_PROFILE)がすべて記載されている; experimental.workflow.borad.to — issue の typo 修正 — .sdd-forge/config.json のキーが board に修正済み。src/ にこのキーを参照するコードは存在しない",
+      "trigger": "gate post hook (auto)",
+      "timestamp": "2026-04-08T05:10:53.411Z"
+    },
+    {
+      "step": "gate-impl",
+      "reason": "agent.profiles field 新設 — resolveAgent が agentSection.profiles を参照し、プロファイルエントリでコマンドIDをマッチングする実装が存在する; agent.useProfile field 新設 — resolveProfileName が agentSection.useProfile を読み取り、null 時は agent.default にフォールバックする; SDD_FORGE_PROFILE 環境変数が useProfile より優先 — resolveProfileName で process.env.SDD_FORGE_PROFILE を先にチェックしている; 存在しないプロファイル指定時にエラー throw — profiles[profileName] が falsy の場合 throw new Error(...) で停止する; プレフィックスマッチ（長い方が優先） — resolveProviderKeyFromProfile がすべてのエントリを走査し、bestLen より長いマッチを優先選択している; マッチなし時に agent.default へフォールバック — resolveProviderKeyFromProfile の戻り値が null の場合 `|| defaultAgent` でフォールバックする; 4つのビルトインプロバイダー定義 — BUILTIN_PROVIDERS に claude/opus, claude/sonnet, codex/gpt-5.4, codex/gpt-5.3 すべて定義済み（systemPromptFlag は既存設計通り別フィールド）; ユーザー定義がビルトインより優先 — `{ ...BUILTIN_PROVIDERS, ...userProviders }` でユーザー定義が上書きする; 旧フィールド（agent.commands, providers.*.profiles）を無視 — resolveAgent はこれらフィールドを一切参照しない; setup が生成する config.json を新フォーマットに更新 — 旧フォーマット（providers+commands の注入）を削除し、default+workDir のみの最小構成に変更済み; src/README.md の agent 設定セクション更新 — diff は root README.md のみ変更しており、src/README.md への変更が含まれていない; CHANGELOG.md に breaking change セクション追加 — 廃止フィールド・移行手順・useProfile/SDD_FORGE_PROFILE 説明・ビルトインプロバイダー表をすべて含む CHANGELOG.md が新規作成された; typo 修正 (borad → board) — .sdd-forge/config.json の experimental.workflow.board.to-issue として修正済み（ソースコード内に該当キーのハードコードなし）",
+      "trigger": "gate post hook (auto)",
+      "timestamp": "2026-04-08T05:13:02.429Z"
+    },
+    {
+      "step": "gate-impl",
+      "reason": "agent.profiles フィールド新設 — resolveAgent でプロファイルエントリを commandId→providerKey マッピングとして実装済み; agent.useProfile フィールド新設（未設定/空文字時は agent.default 使用） — resolveProfileName が falsy チェックで null を返し defaultAgent にフォールバック; SDD_FORGE_PROFILE 環境変数が agent.useProfile より優先 — resolveProfileName で env var を先に評価、agent-profiles.test.js でテスト済み; 存在しないプロファイル名指定時にエラー throw — `throw new Error(\\`Profile \"${profileName}\" is not defined in agent.profiles.\\`)` を実装、テスト済み; プレフィックスマッチ方式（長い方優先、線形走査） — resolveProviderKeyFromProfile がベストプレフィックスを bestLen で管理; プロファイルにマッチなしの場合 agent.default へフォールバック — `resolveProviderKeyFromProfile(...) || defaultAgent` で実装済み; 4種のビルトインプロバイダー定義（claude/opus, claude/sonnet, codex/gpt — 5.4, codex/gpt-5.3） — BUILTIN_PROVIDERS に正確なコマンド・args で定義済み; ユーザー定義プロバイダーがビルトインを上書き — `{ ...BUILTIN_PROVIDERS, ...userProviders }` のスプレッドで実装済み; 旧フィールド（agent.commands, agent.providers.*.profiles）を黙って無視 — コードがこれらフィールドを一切参照しないため自動的に無視される; sdd — forge setup が生成する初期 config.json を新フォーマットに更新 — setup.js から providers/commands 生成を削除し `{ default, workDir }` のみ生成; README.md の agent 設定セクション更新（agent.commands 削除, profiles/useProfile/SDD_FORGE_PROFILE 追加） — diff で確認済み; CHANGELOG.md に breaking change セクション追加（廃止フィールド・移行手順・新フィールド説明） — 新規ファイルとして追加済み; typo 修正（experimental.workflow.borad.to — issue → experimental.workflow.board.to-issue） — config.json の新プロファイルで正しいキーを使用、src/ に古い typo なし; No Hardcoded Secrets — コード内にAPIキー・パスワード・トークン等の秘密情報は含まれていない; No Silent Error Swallowing — 存在しないプロファイル指定時は `throw new Error(...)` で明示的にエラーを投げており、サイレント失敗なし; Bounded Resource Usage — `resolveProviderKeyFromProfile` はプロファイルエントリの線形走査のみ（再帰なし）。エントリ数はconfig.jsonサイズで自然に制限される; No Sensitive Data in Logs — ログ出力コードは変更されておらず、追加されたコードにも機密情報のログ出力はない; No Disabling Existing Tests — 既存テストを無効化・コメントアウト・削除せず、仕様変更に合わせてテスト内容を更新している; Escalate When New Tests Break Existing Tests — 新規テスト (`agent-profiles.test.js`) は既存テストファイルとは独立しており、既存テストへの干渉は確認されない; Do Not Modify Existing Tests Without Approval — `tests/unit/lib/agent.test.js` および `tests/e2e/052-agent-command-config.test.js` の既存テストが大幅に変更・削除されている。specにはテスト変更の承認記録がなく、ユーザー承認はfeat仕様のみ; Flag Tests That Become Irrelevant — `agent.commands` / `profiles` 廃止に伴い不要となったテストは削除・更新されており、仕様上の廃止理由も明記されている; Exit Code Contract — 存在しないプロファイル指定時は `throw new Error` で非ゼロ終了を保証している; No Synchronous I/O in Hot Paths — `resolveAgent`・`resolveProviderKeyFromProfile` はI/O操作を行わない純粋関数である; Validate User Input at Entry Point — `SDD_FORGE_PROFILE` 環境変数はエントリポイント (`resolveAgent`) で検証され、存在しないプロファイル名はエラーとして弾かれる",
+      "trigger": "gate post hook (auto)",
+      "timestamp": "2026-04-08T05:14:46.814Z"
+    },
+    {
+      "step": "implement",
+      "reason": "review.test.js の resolveAgent テストが旧 agent.commands 形式を使用しており新フォーマットと非互換",
+      "trigger": "npm test 実行で4テスト失敗（resolveAgent for flow.review, resolveAgent for flow.review.test）",
+      "resolution": "新フォーマット(useProfile/profiles)を使うようにテストを書き直す",
+      "guardrailCandidate": "breaking change 実装時は同ファイル内の全 resolveAgent テストを確認すること",
+      "timestamp": "2026-04-08T05:35:35.672Z"
+    },
+    {
+      "step": "merge",
+      "reason": "Merge conflict detected. Run 'git rebase development' in the worktree and retry finalize.",
+      "timestamp": "2026-04-08T05:41:53.637Z"
+    },
+    {
+      "step": "finalize",
+      "reason": "development ブランチとのマージコンフリクト",
+      "trigger": "sdd-forge flow run finalize --mode all でマージ失敗",
+      "resolution": "git rebase development を実行してコンフリクト解消後に finalize を再実行",
+      "timestamp": "2026-04-08T05:41:58.090Z"
+    }
+  ]
+}

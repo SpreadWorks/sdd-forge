@@ -116,8 +116,22 @@ See `sdd-forge help` or the [command reference](docs/cli_commands.md) for the fu
   "type": "node-cli",          // project type (preset name)
   "lang": "en",                // operating language
   "agent": {
-    "default": "claude",       // AI agent
-    "providers": { ... }       // agent settings
+    "default": "claude/sonnet",  // default provider key
+    "workDir": ".tmp",           // agent working directory
+    "providers": {               // provider definitions (built-ins are pre-loaded)
+      "claude/sonnet": { "command": "claude", "args": ["-p", "{{PROMPT}}", "--model", "sonnet"] }
+    },
+    "profiles": {                // named profiles: commandId prefix → provider key
+      "default": {
+        "docs": "claude/sonnet",
+        "spec": "claude/sonnet"
+      },
+      "fast": {
+        "docs": "claude/sonnet",
+        "spec": "claude/haiku"
+      }
+    },
+    "useProfile": "default"      // active profile (overridable via SDD_FORGE_PROFILE env var)
   }
 }
 ```

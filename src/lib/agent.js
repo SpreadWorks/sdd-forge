@@ -580,87 +580,119 @@ export function ensureAgentWorkDir(agent, projectRoot) {
 }
 
 /**
- * Resolve command-specific agent settings from commands config.
- * Lookup order: commands["docs.review"] → commands["docs"] → null.
- *
- * @param {Object} commands - cfg.commands object
- * @param {string} commandId - Dot-separated command ID (e.g. "docs.review")
- * @returns {{ agent?: string, profile?: string }|null}
+ * Built-in provider definitions. Users can override any entry by defining
+ * the same key in config.agent.providers.
  */
-function resolveCommandSettings(commands, commandId) {
-  if (!commands || !commandId) return null;
+export const BUILTIN_PROVIDERS = {
+  "claude/opus": {
+    command: "claude",
+    args: ["-p", "{{PROMPT}}", "--model", "opus"],
+    systemPromptFlag: "--system-prompt",
+  },
+  "claude/sonnet": {
+    command: "claude",
+    args: ["-p", "{{PROMPT}}", "--model", "sonnet"],
+    systemPromptFlag: "--system-prompt",
+  },
+  "codex/gpt-5.4": {
+    command: "codex",
+    args: ["exec", "-m", "gpt-5.4", "--full-auto", "-C", ".tmp", "{{PROMPT}}"],
+  },
+  "codex/gpt-5.3": {
+    command: "codex",
+    args: ["exec", "-m", "gpt-5.3-codex", "--full-auto", "-C", ".tmp", "{{PROMPT}}"],
+  },
+};
 
-  // Exact match
-  if (commands[commandId]) return commands[commandId];
-
-  // Parent fallback: "docs.review" → "docs"
-  const dotIdx = commandId.lastIndexOf(".");
-  if (dotIdx > 0) {
-    const parent = commandId.slice(0, dotIdx);
-    if (commands[parent]) return commands[parent];
-  }
-
+/**
+ * Resolve the active profile name.
+ * Priority: SDD_FORGE_PROFILE env var > agent.useProfile config.
+ *
+ * @param {Object} agentSection - cfg.agent object
+ * @returns {string|null} Profile name or null if not set
+ */
+function resolveProfileName(agentSection) {
+  const envProfile = process.env.SDD_FORGE_PROFILE;
+  if (envProfile) return envProfile;
+  const cfgProfile = agentSection.useProfile;
+  if (cfgProfile) return cfgProfile;
   return null;
 }
 
 /**
- * Build final args by concatenating profile args + provider base args.
+ * Find the best matching provider key from a profile for a given commandId.
+ * Uses prefix match: a profile entry "docs" matches "docs.review", "docs.text", etc.
+ * The longest (most specific) matching prefix wins.
  *
- * @param {Object} provider - Provider config ({ command, args, profiles? })
- * @param {string} [profileName] - Profile name to look up
- * @returns {string[]} Merged args array
+ * @param {Object} profile   - Profile object: { [prefix]: providerKey }
+ * @param {string} commandId - Dot-separated command ID (e.g. "docs.review")
+ * @returns {string|null} Provider key or null if no match
  */
-function mergeProfileArgs(provider, profileName) {
-  const baseArgs = Array.isArray(provider.args) ? [...provider.args] : [];
-  if (!profileName || !provider.profiles) return baseArgs;
+function buildAgentResult(providers, key, timeoutMs) {
+  const provider = providers[key];
+  if (!provider) return null;
+  return { ...provider, timeoutMs, providerKey: detectProviderKey(provider.command) };
+}
 
-  const profileArgs = provider.profiles[profileName];
-  if (!Array.isArray(profileArgs) || profileArgs.length === 0) return baseArgs;
-
-  return [...profileArgs, ...baseArgs];
+function resolveProviderKeyFromProfile(profile, commandId) {
+  if (!commandId) return null;
+  let bestKey = null;
+  let bestLen = -1;
+  for (const [prefix, providerKey] of Object.entries(profile)) {
+    if (commandId === prefix || commandId.startsWith(prefix + ".")) {
+      if (prefix.length > bestLen) {
+        bestLen = prefix.length;
+        bestKey = providerKey;
+      }
+    }
+  }
+  return bestKey;
 }
 
 /**
  * Resolve agent config from SddConfig.
  *
- * When commandId is provided, resolves via commands config with fallback:
- *   commands["docs.review"] → commands["docs"] → providers[defaultAgent]
+ * Resolution order:
+ *   1. Profile: SDD_FORGE_PROFILE env var > agent.useProfile config
+ *      - Profile must exist in agent.profiles (throws if not found)
+ *      - Command matched via prefix match within the profile
+ *      - Falls back to agent.default if no prefix match
+ *   2. No profile: uses agent.default directly
+ *
+ * Providers are merged: BUILTIN_PROVIDERS as base, user agent.providers override.
  *
  * @param {Object} cfg         - SddConfig object
  * @param {string} [commandId] - Dot-separated command ID (e.g. "docs.review")
- * @returns {Object|null} Agent config object with merged args, or null if not configured
+ * @returns {Object|null} Agent config object, or null if not configured
+ * @throws {Error} If the resolved profile name does not exist in agent.profiles
  */
 export function resolveAgent(cfg, commandId) {
   const agentSection = cfg.agent || {};
-  const commands = agentSection.commands;
-  const providers = agentSection.providers;
+  const userProviders = agentSection.providers || {};
   const defaultAgent = agentSection.default;
   const timeoutMs = agentSection.timeout != null
     ? Number(agentSection.timeout) * 1000
     : DEFAULT_AGENT_TIMEOUT_MS;
 
-  const cmdSettings = resolveCommandSettings(commands, commandId);
+  // Merge: built-in providers as base, user-defined providers override
+  const providers = { ...BUILTIN_PROVIDERS, ...userProviders };
 
-  const agentKey = cmdSettings?.agent || defaultAgent;
-  if (!agentKey) return null;
+  const profileName = resolveProfileName(agentSection);
 
-  const provider = providers?.[agentKey];
-  if (!provider) return null;
-
-  // No profiles support in provider → return as-is
-  if (!cmdSettings && !provider.profiles) {
-    return { ...provider, timeoutMs, providerKey: detectProviderKey(provider.command) };
+  if (profileName) {
+    const profiles = agentSection.profiles;
+    if (!profiles || !profiles[profileName]) {
+      throw new Error(`Profile "${profileName}" is not defined in agent.profiles.`);
+    }
+    const profile = profiles[profileName];
+    const providerKey = resolveProviderKeyFromProfile(profile, commandId) || defaultAgent;
+    if (!providerKey) return null;
+    return buildAgentResult(providers, providerKey, timeoutMs);
   }
 
-  const profileName = cmdSettings?.profile || "default";
-  const mergedArgs = mergeProfileArgs(provider, profileName);
-
-  return {
-    ...provider,
-    args: mergedArgs,
-    timeoutMs,
-    providerKey: detectProviderKey(provider.command),
-  };
+  // No profile — use default
+  if (!defaultAgent) return null;
+  return buildAgentResult(providers, defaultAgent, timeoutMs);
 }
 
 // ---------------------------------------------------------------------------

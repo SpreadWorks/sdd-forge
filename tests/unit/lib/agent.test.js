@@ -1,6 +1,6 @@
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
-import { callAgent, callAgentAsync, resolveAgent, DEFAULT_AGENT_TIMEOUT_MS } from "../../../src/lib/agent.js";
+import { callAgent, callAgentAsync, resolveAgent, BUILTIN_PROVIDERS, DEFAULT_AGENT_TIMEOUT_MS } from "../../../src/lib/agent.js";
 
 describe("callAgent", () => {
   it("calls a command and returns trimmed output", () => {
@@ -154,28 +154,17 @@ describe("callAgentAsync retry", () => {
 });
 
 describe("resolveAgent", () => {
-  it("resolves agent via commands config", () => {
-    const cfg = {
-      agent: {
-        default: "claude",
-        providers: { claude: { command: "claude", args: ["-p", "{{PROMPT}}"], profiles: { default: [], opus: ["--model", "opus"] } } },
-        commands: { "docs.review": { agent: "claude", profile: "opus" } },
-      },
-    };
-    const result = resolveAgent(cfg, "docs.review");
-    assert.equal(result.command, "claude");
-    assert.deepEqual(result.args, ["--model", "opus", "-p", "{{PROMPT}}"]);
-  });
-
   it("uses default agent when commandId not provided", () => {
     const cfg = {
       agent: {
-        default: "claude",
-        providers: { claude: { command: "claude", args: [] } },
+        default: "claude/sonnet",
+        providers: { "claude/sonnet": { command: "claude", args: ["-p", "{{PROMPT}}", "--model", "sonnet"] } },
       },
     };
     const result = resolveAgent(cfg);
-    assert.deepEqual(result, { command: "claude", args: [], timeoutMs: 300000, providerKey: "claude" });
+    assert.equal(result.command, "claude");
+    assert.equal(result.timeoutMs, 300000);
+    assert.equal(result.providerKey, "claude");
   });
 
   it("returns null when no agent configured", () => {
@@ -183,30 +172,58 @@ describe("resolveAgent", () => {
     assert.equal(result, null);
   });
 
-  it("falls back to parent command", () => {
+  it("resolves agent via useProfile and profile entry", () => {
     const cfg = {
       agent: {
-        default: "claude",
-        providers: { claude: { command: "claude", args: ["-p", "{{PROMPT}}"], profiles: { default: [], sonnet: ["--model", "sonnet"] } } },
-        commands: { "docs": { agent: "claude", profile: "sonnet" } },
+        default: "claude/sonnet",
+        providers: {
+          "claude/sonnet": { command: "claude", args: ["-p", "{{PROMPT}}", "--model", "sonnet"] },
+          "claude/opus": { command: "claude", args: ["-p", "{{PROMPT}}", "--model", "opus"] },
+        },
+        useProfile: "high",
+        profiles: { high: { docs: "claude/opus" } },
       },
     };
-    const result = resolveAgent(cfg, "docs.forge");
-    assert.deepEqual(result.args, ["--model", "sonnet", "-p", "{{PROMPT}}"]);
+    const result = resolveAgent(cfg, "docs");
+    assert.equal(result.command, "claude");
+    assert.ok(result.args.includes("opus"));
   });
 
-  it("returns null when provider not found", () => {
-    const cfg = { agent: { providers: {} } };
-    const result = resolveAgent(cfg, "nonexistent");
+  it("falls back to agent.default via prefix match when profile entry matches parent command", () => {
+    const cfg = {
+      agent: {
+        default: "claude/sonnet",
+        providers: {
+          "claude/sonnet": { command: "claude", args: ["-p", "{{PROMPT}}", "--model", "sonnet"] },
+          "claude/opus": { command: "claude", args: ["-p", "{{PROMPT}}", "--model", "opus"] },
+        },
+        useProfile: "high",
+        profiles: { high: { docs: "claude/opus" } },
+      },
+    };
+    // "docs" prefix matches "docs.review" via prefix match
+    const result = resolveAgent(cfg, "docs.review");
+    assert.equal(result.command, "claude");
+    assert.ok(result.args.includes("opus"));
+  });
+
+  it("returns null when provider not found in providers or builtins", () => {
+    const cfg = {
+      agent: {
+        default: "unknown-provider",
+        providers: {},
+      },
+    };
+    const result = resolveAgent(cfg);
     assert.equal(result, null);
   });
 
   it("includes timeoutMs from config agent.timeout (seconds to ms)", () => {
     const cfg = {
       agent: {
-        default: "claude",
+        default: "claude/sonnet",
         timeout: 600,
-        providers: { claude: { command: "claude", args: [] } },
+        providers: { "claude/sonnet": { command: "claude", args: [] } },
       },
     };
     const result = resolveAgent(cfg);
@@ -216,8 +233,8 @@ describe("resolveAgent", () => {
   it("uses DEFAULT_AGENT_TIMEOUT_MS when agent.timeout is not set", () => {
     const cfg = {
       agent: {
-        default: "claude",
-        providers: { claude: { command: "claude", args: [] } },
+        default: "claude/sonnet",
+        providers: { "claude/sonnet": { command: "claude", args: [] } },
       },
     };
     const result = resolveAgent(cfg);
@@ -229,9 +246,9 @@ describe("resolveAgent", () => {
   it("handles agent.timeout = 0 (returns timeoutMs: 0)", () => {
     const cfg = {
       agent: {
-        default: "claude",
+        default: "claude/sonnet",
         timeout: 0,
-        providers: { claude: { command: "claude", args: [] } },
+        providers: { "claude/sonnet": { command: "claude", args: [] } },
       },
     };
     const result = resolveAgent(cfg);
@@ -241,9 +258,9 @@ describe("resolveAgent", () => {
   it("falls back to DEFAULT_AGENT_TIMEOUT_MS when agent.timeout is null", () => {
     const cfg = {
       agent: {
-        default: "claude",
+        default: "claude/sonnet",
         timeout: null,
-        providers: { claude: { command: "claude", args: [] } },
+        providers: { "claude/sonnet": { command: "claude", args: [] } },
       },
     };
     const result = resolveAgent(cfg);
@@ -253,12 +270,48 @@ describe("resolveAgent", () => {
   it("handles agent.timeout as string number via implicit coercion", () => {
     const cfg = {
       agent: {
-        default: "claude",
+        default: "claude/sonnet",
         timeout: "120",
-        providers: { claude: { command: "claude", args: [] } },
+        providers: { "claude/sonnet": { command: "claude", args: [] } },
       },
     };
     const result = resolveAgent(cfg);
     assert.equal(result.timeoutMs, 120000);
+  });
+
+  it("uses built-in providers when config has no providers field", () => {
+    const cfg = { agent: { default: "claude/sonnet" } };
+    const result = resolveAgent(cfg);
+    assert.equal(result.command, "claude");
+    assert.ok(result.args.includes("sonnet"));
+  });
+
+  it("user-defined provider overrides built-in with same key", () => {
+    const cfg = {
+      agent: {
+        default: "claude/opus",
+        providers: { "claude/opus": { command: "my-claude", args: ["{{PROMPT}}"] } },
+      },
+    };
+    const result = resolveAgent(cfg);
+    assert.equal(result.command, "my-claude");
+  });
+
+  it("throws when useProfile references a non-existent profile", () => {
+    const cfg = {
+      agent: {
+        default: "claude/sonnet",
+        useProfile: "nonexistent",
+        profiles: { fast: { docs: "claude/sonnet" } },
+      },
+    };
+    assert.throws(() => resolveAgent(cfg, "docs"), /Profile "nonexistent" is not defined/);
+  });
+
+  it("BUILTIN_PROVIDERS exports all 4 standard providers", () => {
+    assert.ok(BUILTIN_PROVIDERS["claude/opus"]);
+    assert.ok(BUILTIN_PROVIDERS["claude/sonnet"]);
+    assert.ok(BUILTIN_PROVIDERS["codex/gpt-5.4"]);
+    assert.ok(BUILTIN_PROVIDERS["codex/gpt-5.3"]);
   });
 });

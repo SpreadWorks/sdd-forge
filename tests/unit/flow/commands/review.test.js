@@ -70,17 +70,21 @@ describe("flow run review --phase test CLI", () => {
 });
 
 describe("resolveAgent for flow.review", () => {
-  it("resolves flow.review.draft independently from flow.review.final", () => {
+  it("resolves flow.review.draft independently from flow.review.final via profiles", () => {
     const cfg = {
       agent: {
         default: "claude",
         providers: {
-          claude: { command: "claude", args: ["-p", "{{PROMPT}}"], profiles: { default: [], opus: ["--model", "opus"] } },
+          claude: { command: "claude", args: ["-p", "{{PROMPT}}"] },
+          "claude/opus": { command: "claude", args: ["-p", "{{PROMPT}}", "--model", "opus"] },
           codex: { command: "codex", args: ["exec", "{{PROMPT}}"] },
         },
-        commands: {
-          "flow.review.draft": { agent: "codex" },
-          "flow.review.final": { agent: "claude", profile: "opus" },
+        useProfile: "review",
+        profiles: {
+          review: {
+            "flow.review.draft": "codex",
+            "flow.review.final": "claude/opus",
+          },
         },
       },
     };
@@ -89,10 +93,10 @@ describe("resolveAgent for flow.review", () => {
 
     const final = resolveAgent(cfg, "flow.review.final");
     assert.equal(final.command, "claude");
-    assert.deepEqual(final.args, ["--model", "opus", "-p", "{{PROMPT}}"]);
+    assert.ok(final.args.includes("opus"));
   });
 
-  it("falls back to flow.review when specific phase not configured", () => {
+  it("falls back to flow.review prefix when specific phase not configured via profiles", () => {
     const cfg = {
       agent: {
         default: "claude",
@@ -100,11 +104,13 @@ describe("resolveAgent for flow.review", () => {
           claude: { command: "claude", args: ["-p", "{{PROMPT}}"] },
           codex: { command: "codex", args: ["exec", "{{PROMPT}}"] },
         },
-        commands: {
-          "flow.review": { agent: "codex" },
+        useProfile: "review",
+        profiles: {
+          review: { "flow.review": "codex" },
         },
       },
     };
+    // flow.review.draft matches "flow.review" prefix
     const draft = resolveAgent(cfg, "flow.review.draft");
     assert.equal(draft.command, "codex");
   });
@@ -124,7 +130,7 @@ describe("resolveAgent for flow.review", () => {
 });
 
 describe("resolveAgent for flow.review.test", () => {
-  it("resolves flow.review.test when explicitly configured", () => {
+  it("resolves flow.review.test when explicitly configured via profiles", () => {
     const cfg = {
       agent: {
         default: "claude",
@@ -132,9 +138,12 @@ describe("resolveAgent for flow.review.test", () => {
           claude: { command: "claude", args: ["-p", "{{PROMPT}}"] },
           codex: { command: "codex", args: ["exec", "{{PROMPT}}"] },
         },
-        commands: {
-          "flow.review.test": { agent: "codex" },
-          "flow.review.draft": { agent: "claude" },
+        useProfile: "review",
+        profiles: {
+          review: {
+            "flow.review.test": "codex",
+            "flow.review.draft": "claude",
+          },
         },
       },
     };
@@ -142,7 +151,7 @@ describe("resolveAgent for flow.review.test", () => {
     assert.equal(testAgent.command, "codex");
   });
 
-  it("falls back to flow.review when flow.review.test not configured", () => {
+  it("falls back to flow.review prefix when flow.review.test not in profile", () => {
     const cfg = {
       agent: {
         default: "claude",
@@ -150,11 +159,13 @@ describe("resolveAgent for flow.review.test", () => {
           claude: { command: "claude", args: ["-p", "{{PROMPT}}"] },
           codex: { command: "codex", args: ["exec", "{{PROMPT}}"] },
         },
-        commands: {
-          "flow.review": { agent: "codex" },
+        useProfile: "review",
+        profiles: {
+          review: { "flow.review": "codex" },
         },
       },
     };
+    // flow.review.test matches "flow.review" prefix
     const testAgent = resolveAgent(cfg, "flow.review.test");
     assert.equal(testAgent.command, "codex");
   });

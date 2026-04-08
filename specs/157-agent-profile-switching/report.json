@@ -1,0 +1,36 @@
+{
+  "data": {
+    "implementation": {
+      "diffStat": ".sdd-forge/config.json                            |  93 ++--------\n CHANGELOG.md                                      | 101 +++++++++++\n README.md                                         |  18 +-\n specs/157-agent-profile-switching/draft.md        |  70 ++++++++\n specs/157-agent-profile-switching/flow.json       | 176 ++++++++++++++++++\n specs/157-agent-profile-switching/issue-log.json  | 122 +++++++++++++\n specs/157-agent-profile-switching/qa.md           |   9 +\n specs/157-agent-profile-switching/report.json     |  34 ++++\n specs/157-agent-profile-switching/retro.json      |  93 ++++++++++\n specs/157-agent-profile-switching/review.md       | 101 +++++++++++\n specs/157-agent-profile-switching/spec.md         | 151 ++++++++++++++++\n specs/157-agent-profile-switching/tests/README.md |  36 ++++\n src/lib/agent.js                                  | 138 +++++++++------\n src/setup.js                                      |  44 +----\n tests/e2e/052-agent-command-config.test.js        | 196 ++++++++------------\n tests/unit/flow/commands/review.test.js           |  43 +++--\n tests/unit/lib/agent-profiles.test.js             | 207 ++++++++++++++++++++++\n tests/unit/lib/agent.test.js                      | 125 +++++++++----\n 18 files changed, 1411 insertions(+), 346 deletions(-)",
+      "commits": [
+        "feat: feature/157-agent-profile-switching",
+        "chore: add retro and report",
+        "feat: feature/157-agent-profile-switching"
+      ]
+    },
+    "retro": {
+      "total": 13,
+      "done": 12,
+      "partial": 1,
+      "not_done": 0,
+      "rate": 0.96,
+      "notes": "13要件中12件が完全実装済み、1件（req 11: src/README.md）はファイル不在のためルート README.md で代替対応しており実質的な内容は満たされている。未計画変更はコード品質改善（buildAgentResult 抽出）と run-gate.js のリグレッション修正の2件で、いずれも spec 機能要件とは独立した変更として識別可能。全体として spec の意図を正確に実装しており品質は高い"
+    },
+    "issueLog": {
+      "count": 0,
+      "entries": []
+    },
+    "metrics": {
+      "docsRead": 0,
+      "srcRead": 2,
+      "question": 5,
+      "issueLog": 3
+    },
+    "tests": null,
+    "sync": {
+      "status": "skipped",
+      "reason": "sync was skipped"
+    }
+  },
+  "text": "  Report\n\n  Implementation\n  ────────────────────────────────────────────────\n    feat: feature/157-agent-profile-switching\n    chore: add retro and report\n    feat: feature/157-agent-profile-switching\n    18 files changed, 1411 insertions(+), 346 deletions(-)\n\n  Retro\n  ────────────────────────────────────────────────\n    ████████ 96%  (12 done / 1 partial / 0 miss)\n\n  Metrics\n  ────────────────────────────────────────────────\n    docs read 0  src read 2  Q&A 5  issue-log 3\n\n  Tests\n  ────────────────────────────────────────────────\n    -"
+}
