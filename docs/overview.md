@@ -129,7 +129,7 @@ After these steps, the `docs/` directory contains the complete generated documen
 
 <!-- {{text({prompt: "Write a 1-2 sentence overview of this project."})}} -->
 
-sdd-forge is a Node.js CLI package that automates technical documentation generation through a source code analysis pipeline and provides a Spec-Driven Development workflow for managing feature implementation. It is published on npm as `sdd-forge` (version 0.1.0-alpha.650) and operates with no external runtime dependencies.
+sdd-forge is a Node.js CLI package that automates technical documentation generation through a source code analysis pipeline and provides a Spec-Driven Development workflow for managing feature implementation. It is published on npm as `sdd-forge` (version 0.1.0-alpha.692) and operates with no external runtime dependencies.
 <!-- {{/text}} -->
 
 
