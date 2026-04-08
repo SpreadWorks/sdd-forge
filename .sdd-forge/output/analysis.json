@@ -1,5 +1,5 @@
 {
-  "analyzedAt": "2026-04-08T01:51:51.189Z",
+  "analyzedAt": "2026-04-08T02:08:59.125Z",
   "package": {
     "entries": [
       {
@@ -3565,9 +3565,9 @@
       },
       {
         "file": "src/lib/agent.js",
-        "hash": "80189c5aae063e4b8052f77c8a29d9e8",
-        "lines": 514,
-        "mtime": "2026-04-07T13:31:31.298Z",
+        "hash": "4b5104f65c804d99ba5dd16bc4e60216",
+        "lines": 707,
+        "mtime": "2026-04-08T02:08:58.908Z",
         "className": "agent",
         "methods": [
           "callAgent",
@@ -3585,11 +3585,21 @@
           "resolveEffectivePrompt",
           "resolvePromptArgs",
           "stripPromptFromArgs",
+          "detectProviderKey",
+          "injectJsonFlag",
+          "parseClaudeOutput",
+          "parseCodexOutput",
+          "parseAgentOutput",
+          "resolveAgentResult",
           "buildAgentInvocation",
+          "callAgentRaw",
           "buildAgentLogPayload",
+          "extractAgentResult",
           "runWithAgentLogging",
           "runWithAgentLoggingSync",
           "callAgentAsyncWithRetry",
+          "callAgentAsyncRawOnce",
+          "callAgentAsyncRaw",
           "callAgentAsyncOnce",
           "resolveCommandSettings",
           "mergeProfileArgs"
@@ -3621,25 +3631,27 @@
           "src/setup.js"
         ],
         "id": "13ddf392",
-        "summary": "Core agent invocation library providing synchronous and asynchronous AI agent calls with structured logging, retry logic, workdir management, and config-driven agent resolution.",
-        "detail": "callAgent spawns the agent process synchronously via execFileSync; callAgentAsync uses spawn with streaming stdout/stderr. Large prompts above ARGV_SIZE_THRESHOLD are passed via stdin to avoid ARG_MAX limits. runWithAgentLogging wraps calls in Logger.agent start/end events with request IDs. resolveAgent merges provider profile args with command-specific overrides from config. ensureAgentWorkDir validates and creates -C path arguments. writeAgentContext injects rules files into .claude/rules/ for scoped agent instructions.",
+        "summary": "Agent invocation layer that handles calling external AI agents (Claude, Codex) synchronously and asynchronously, with logging, retry logic, and provider-specific output parsing.",
+        "detail": "Provides multiple call variants: synchronous `callAgent`/`callAgentWithLog`, async `callAgentAsync`/`callAgentAsyncWithLog`/`callAgentAwaitLog`, each delegating to shared raw invocation and logging infrastructure. Provider detection is based on the command name, and each provider has a dedicated output parser to normalize stdout into a common `{text, usage}` shape. Large prompts exceeding an argv size threshold are passed via stdin rather than as command-line arguments. Retry logic is implemented in `callAgentAsyncWithRetry` with configurable count and delay. Agent configuration is resolved via `resolveAgent`/`loadAgentConfig`, supporting profile-based argument merging and per-command command settings.",
         "chapter": "internal_design",
         "role": "lib",
         "enrich": {
-          "processedAt": "2026-04-07T13:32:57.482Z",
+          "processedAt": "2026-04-08T02:09:07.844Z",
           "attempts": 1
         },
         "keywords": [
           "agent",
-          "AI call",
+          "AI invocation",
+          "claude",
+          "codex",
+          "execFileSync",
           "spawn",
-          "stdin",
           "async",
           "retry",
           "logging",
-          "workdir",
-          "resolveAgent",
-          "callAgent",
+          "provider",
+          "output parsing",
+          "stdin",
           "timeout"
         ]
       },
@@ -7707,9 +7719,9 @@
     ],
     "summary": {
       "total": 224,
-      "totalMethods": 706
+      "totalMethods": 716
     },
     "dataSourceHash": "7d725e75d5031be445119323e4947c91"
   },
-  "enrichedAt": "2026-04-08T01:52:01.670Z"
+  "enrichedAt": "2026-04-08T02:09:07.844Z"
 }
