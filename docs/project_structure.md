@@ -20,20 +20,29 @@ This chapter describes the source tree of sdd-forge, which is organized into fiv
 
 <!-- {{data("base.structure.tree")}} -->
 ```
-src/    (controller, cli)
+src/    (cli)
 src/check/commands/    (cli)
-src/docs/commands/    (controller, cli)
+src/docs/commands/    (cli, lib, controller)
 src/docs/data/    (model)
-src/docs/lib/    (model, lib)
+src/docs/lib/    (lib, model)
 src/docs/lib/lang/    (lib)
 src/flow/    (config)
-src/flow/commands/    (controller, lib)
-src/flow/lib/    (lib, controller)
+src/flow/commands/    (controller)
+src/flow/lib/    (lib, config, controller, model)
 src/lib/    (lib, model)
 ```
 <!-- {{/data}} -->
 
 <!-- {{data("base.structure.directories", {header: "### Directory Responsibilities\n", labels: "Directory|Files|Role", ignoreError: true})}} -->
+### Directory Responsibilities
+
+| Directory | Files | Role |
+| --- | --- | --- |
+| src/docs | 40 | cli, lib, controller, model |
+| src/flow | 34 | controller, lib, config, model |
+| src/lib | 22 | lib, model |
+| src | 8 | cli |
+| src/check | 3 | cli |
 <!-- {{/data}} -->
 
 ### Shared Libraries
