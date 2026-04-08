@@ -1,0 +1,64 @@
+{
+  "spec": "specs/159-check-config-command/spec.md",
+  "date": "2026-04-08T05:54:59.681Z",
+  "requirements": [
+    {
+      "desc": "sdd-forge check config コマンドが実行できること",
+      "status": "done",
+      "note": "src/check.js に config エントリが追加され、src/check/commands/config.js が実装された。sdd-forge.js の NAMESPACE_DISPATCHERS に 'check' が追加されルーティングも完備"
+    },
+    {
+      "desc": "config.json が存在しない場合、エラーメッセージを stderr に出力して exit 1 すること",
+      "status": "done",
+      "note": "config.js の runChecks() で fs.existsSync チェックを行い、失敗時は stderr に出力して EXIT_ERROR (1) で終了する"
+    },
+    {
+      "desc": "config.json が無効な JSON の場合、パースエラーを報告して exit 1 すること",
+      "status": "done",
+      "note": "JSON.parse を try/catch で囲み、失敗時は err.message を含むエラーを返して exit 1 する"
+    },
+    {
+      "desc": "スキーマ検証エラーがある場合、最大50件までエラーを列挙して exit 1 すること",
+      "status": "done",
+      "note": "MAX_SCHEMA_ERRORS = 50 で slice し、validateConfig() の例外からエラーリストを生成。text format では stderr に列挙して exit 1"
+    },
+    {
+      "desc": "type に指定されたプリセットが存在しない場合、該当プリセット名を報告して exit 1 すること",
+      "status": "done",
+      "note": "PRESETS の key セットと比較し、不明なプリセット名を 'Preset not found: ${t}' として報告。配列 type にも対応"
+    },
+    {
+      "desc": "全チェックがパスした場合、config is valid を表示して exit 0 すること",
+      "status": "done",
+      "note": "ok が true の場合 stdout に 'config is valid\\n' を出力し、process.exit を呼ばず (暗黙の exit 0)"
+    },
+    {
+      "desc": "--format json オプションで JSON 形式の出力ができること",
+      "status": "done",
+      "note": "{ ok, checks } 構造の JSON を stdout に出力。ok=false 時は exit 1、ok=true 時は exit 0"
+    },
+    {
+      "desc": "-h / --help でヘルプを表示すること",
+      "status": "done",
+      "note": "cli.help で printHelp() を呼び出す。check.js レベルでも -h/--help に対応"
+    }
+  ],
+  "unplanned": [
+    {
+      "file": "src/sdd-forge.js",
+      "change": "catch ブロックを修正して ERR_MISSING_FILE 以外のエラーを stderr に出力するよう変更（Logger init の silent error swallowing 修正）。これは要件外だが issue-log.json の review エントリに記録された意図的な修正"
+    },
+    {
+      "file": "src/sdd-forge.js",
+      "change": "ファイル先頭 JSDoc コメントに 'check → src/check.js' の行を追加（ドキュメント同期）"
+    }
+  ],
+  "summary": {
+    "total": 8,
+    "done": 8,
+    "partial": 0,
+    "not_done": 0,
+    "rate": 1,
+    "notes": "全8要件が実装されており、テストコードも specs/159-check-config-command/tests/ に完備。unplanned な変更は2件あるが、どちらも意図的かつ軽微（Logger の silent catch 修正は gate-impl で指摘されたガードレール違反への対応、JSDoc 更新は review で指摘された一貫性修正）。要件の完成度は高い。"
+  }
+}
