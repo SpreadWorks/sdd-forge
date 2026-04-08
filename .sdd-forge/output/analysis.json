@@ -1,5 +1,5 @@
 {
-  "analyzedAt": "2026-04-08T05:43:34.427Z",
+  "analyzedAt": "2026-04-08T08:28:55.537Z",
   "package": {
     "entries": [
       {
@@ -3646,9 +3646,9 @@
       },
       {
         "file": "src/lib/agent.js",
-        "hash": "d1a7aeb05923432e5929e8d414e1fda3",
-        "lines": 739,
-        "mtime": "2026-04-08T05:43:34.202Z",
+        "hash": "f50c3b1da78b44e9de837d98eee173ef",
+        "lines": 744,
+        "mtime": "2026-04-08T08:28:55.315Z",
         "className": "agent",
         "methods": [
           "callAgent",
@@ -3714,28 +3714,30 @@
           "src/setup.js"
         ],
         "id": "13ddf392",
-        "summary": "Core agent invocation library that handles building, executing, and logging calls to AI agent processes (Claude, Codex, etc.). Provides both synchronous and asynchronous execution paths with retry logic and structured output parsing.",
-        "detail": "Implements provider-specific output parsers (parseClaudeOutput, parseCodexOutput) and normalizes results via resolveAgentResult. Supports multiple invocation strategies including stdin-based prompt injection and argv-based prompts, with ARGV_SIZE_THRESHOLD gating the choice. Includes retry logic in callAgentAsyncWithRetry and structured logging via runWithAgentLogging/runWithAgentLoggingSync wrappers. Agent resolution (resolveAgent) supports profile switching via SDD_FORGE_PROFILE env var and per-commandId provider key mapping. Also provides writeAgentContext/cleanupAgentContext for injecting temporary rule files into agent working directories.",
+        "summary": "Agent invocation layer that wraps CLI-based AI agents (Claude, Codex, etc.) with logging, retry, and async/sync execution modes. Handles prompt injection, JSON output parsing, provider detection, and agent context file management.",
+        "detail": "Provides both synchronous (callAgentWithLog) and asynchronous (callAgentAsyncWithLog, callAgentAwaitLog) entry points that wrap raw agent invocations with structured logging via Logger.agent phase start/end events. Detects provider type from command name to select appropriate output parsers (parseClaudeOutput, parseCodexOutput) and normalizes results into {text, usage} shape. Supports stdin-based prompt delivery when argv size exceeds ARGV_SIZE_THRESHOLD, and injects --output-format json flags for supported providers. Includes retry logic with configurable retryCount and retryDelayMs for async paths. Also manages agent context files written to .claude/rules/ for phase-specific prompt injection (writeAgentContext/cleanupAgentContext), and resolves agent configuration from config.json including profile switching via SDD_FORGE_PROFILE env var.",
         "chapter": "internal_design",
         "role": "lib",
         "enrich": {
-          "processedAt": "2026-04-08T05:43:49.846Z",
+          "processedAt": "2026-04-08T08:29:06.284Z",
           "attempts": 1
         },
         "keywords": [
           "agent",
-          "AI invocation",
+          "callAgent",
+          "execFileSync",
+          "spawn",
           "claude",
           "codex",
-          "spawn",
-          "execFileSync",
+          "provider",
           "retry",
           "async",
-          "provider",
-          "profile",
-          "stdin",
           "logging",
-          "timeout"
+          "stdin",
+          "json-output",
+          "profile",
+          "timeout",
+          "prompt-injection"
         ]
       },
       {
@@ -7845,5 +7847,5 @@
     },
     "dataSourceHash": "7d725e75d5031be445119323e4947c91"
   },
-  "enrichedAt": "2026-04-08T05:43:49.846Z"
+  "enrichedAt": "2026-04-08T08:29:06.284Z"
 }
