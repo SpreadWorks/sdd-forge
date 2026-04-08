@@ -1,5 +1,5 @@
 {
-  "analyzedAt": "2026-04-08T01:50:56.999Z",
+  "analyzedAt": "2026-04-08T01:51:51.189Z",
   "package": {
     "entries": [
       {
@@ -2691,14 +2691,15 @@
       },
       {
         "file": "src/flow/lib/run-gate.js",
-        "hash": "10acef9a6d08c1b59d0ec01475e948ca",
-        "lines": 465,
-        "mtime": "2026-04-08T00:40:05.731Z",
+        "hash": "74460dde3fcca2a135e6a2b88d591ed7",
+        "lines": 473,
+        "mtime": "2026-04-08T01:51:50.969Z",
         "className": "run-gate",
         "methods": [
           "RunGateCommand",
           "sectionAt",
           "checkSpecText",
+          "buildDraftFieldPattern",
           "checkDraftText",
           "buildGuardrailPrompt",
           "parseGuardrailResponse",
@@ -2728,25 +2729,27 @@
         "extends": "FlowCommand",
         "usedBy": null,
         "id": "b4aa4dad",
-        "summary": "Implements the gate check step for draft, spec, and impl phases of the SDD flow, running structural lint and AI-based guardrail checks. Returns pass/fail results with reasons.",
-        "detail": "Routes execution to executeDraft, executeSpec, or executeImpl based on phase. Structural checks (checkSpecText, checkDraftText) validate section presence and content. Guardrail checks call the agent via callAgentWithLog and parse LLM responses with parseGuardrailResponse. PASS_NEXT and FAIL_NEXT maps define next-step transitions. Exports RunGateCommand plus utility functions for testing.",
+        "summary": "Implements the gate-check command for SDD flow phases, validating draft, spec, and impl artifacts before allowing phase transitions. Provides both static text checks and AI-powered guardrail evaluation.",
+        "detail": "RunGateCommand extends FlowCommand and dispatches to three execution paths: draft gate (validates draft.md structure), spec gate (validates spec files for pre/post phases), and impl gate (checks implementation diff against spec). Static checkers (checkDraftText, checkSpecText) scan for missing sections or formatting issues using regex patterns. AI-driven guardrail evaluation (checkGuardrail) loads merged guardrail rules, filters by phase, builds a structured prompt, and parses a pass/fail response from the agent. Gate results carry a PASS_NEXT/FAIL_NEXT transition map to route the flow to the correct next step. Helper functions buildDraftFieldPattern and buildGuardrailPrompt construct the regex and prompt payloads respectively.",
         "chapter": "internal_design",
         "role": "controller",
         "enrich": {
-          "processedAt": "2026-04-08T00:40:49.364Z",
+          "processedAt": "2026-04-08T01:52:01.670Z",
           "attempts": 1
         },
         "keywords": [
           "gate",
+          "flow gate",
+          "spec validation",
+          "draft check",
           "guardrail",
-          "spec",
-          "draft",
-          "impl",
-          "phase",
-          "lint",
-          "AI review",
-          "flow",
-          "FlowCommand"
+          "phase transition",
+          "impl check",
+          "RunGateCommand",
+          "checkSpecText",
+          "checkDraftText",
+          "parseGuardrailResponse",
+          "agent prompt"
         ]
       },
       {
@@ -7704,9 +7707,9 @@
     ],
     "summary": {
       "total": 224,
-      "totalMethods": 705
+      "totalMethods": 706
     },
     "dataSourceHash": "7d725e75d5031be445119323e4947c91"
   },
-  "enrichedAt": "2026-04-08T00:40:49.364Z"
+  "enrichedAt": "2026-04-08T01:52:01.670Z"
 }
