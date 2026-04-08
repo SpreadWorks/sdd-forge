@@ -1,0 +1,140 @@
+{
+  "spec": "specs/159-fix-check-scan-report/spec.md",
+  "baseBranch": "development",
+  "featureBranch": "feature/159-fix-check-scan-report",
+  "steps": [
+    {
+      "id": "approach",
+      "status": "done"
+    },
+    {
+      "id": "branch",
+      "status": "done"
+    },
+    {
+      "id": "prepare-spec",
+      "status": "pending"
+    },
+    {
+      "id": "draft",
+      "status": "done"
+    },
+    {
+      "id": "gate-draft",
+      "status": "done"
+    },
+    {
+      "id": "spec",
+      "status": "done"
+    },
+    {
+      "id": "gate",
+      "status": "done"
+    },
+    {
+      "id": "approval",
+      "status": "done"
+    },
+    {
+      "id": "test",
+      "status": "done"
+    },
+    {
+      "id": "implement",
+      "status": "done"
+    },
+    {
+      "id": "gate-impl",
+      "status": "done"
+    },
+    {
+      "id": "review",
+      "status": "done"
+    },
+    {
+      "id": "finalize",
+      "status": "pending"
+    },
+    {
+      "id": "commit",
+      "status": "pending"
+    },
+    {
+      "id": "push",
+      "status": "pending"
+    },
+    {
+      "id": "merge",
+      "status": "pending"
+    },
+    {
+      "id": "pr-create",
+      "status": "pending"
+    },
+    {
+      "id": "branch-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "pr-merge",
+      "status": "pending"
+    },
+    {
+      "id": "sync-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "docs-update",
+      "status": "pending"
+    },
+    {
+      "id": "docs-review",
+      "status": "pending"
+    },
+    {
+      "id": "docs-commit",
+      "status": "pending"
+    }
+  ],
+  "requirements": [
+    {
+      "desc": "Include Coverage セクション（件数・%・リスト）をすべて削除",
+      "status": "done"
+    },
+    {
+      "desc": "DataSource Coverage の件数・%を出力の先頭に表示",
+      "status": "done"
+    },
+    {
+      "desc": "解析漏れファイルを拡張子ごとにグルーピングしたサマリーをリストより上に表示（件数降順）",
+      "status": "done"
+    },
+    {
+      "desc": "解析漏れファイルのリストはサマリーの下（デフォルト10件、--listで全件）",
+      "status": "done"
+    },
+    {
+      "desc": "walkAllFiles / allFiles / uncoveredByInclude の計算を削除",
+      "status": "done"
+    },
+    {
+      "desc": "text / json / md 全フォーマット対応",
+      "status": "done"
+    },
+    {
+      "desc": "json の includeCoverage キーを削除",
+      "status": "done"
+    }
+  ],
+  "request": "check scan の出力を改善: (1) Level1 uncoveredリスト（scan.include外ファイル列挙）を削除、(2) scan対象なのにanalysis.jsonに入っていないファイルを表示（Level2維持）、(3) DataSourceが存在しないファイルの表示を追加、(4) カバレッジ率を先頭に表示",
+  "worktree": true,
+  "metrics": {
+    "plan": {
+      "docsRead": 1
+    },
+    "draft": {
+      "docsRead": 1,
+      "question": 3
+    }
+  }
+}

@@ -1,0 +1,34 @@
+{
+  "data": {
+    "implementation": {
+      "diffStat": "specs/159-fix-check-scan-report/draft.md           |  56 +++++++++\n specs/159-fix-check-scan-report/flow.json          | 140 +++++++++++++++++++++\n specs/159-fix-check-scan-report/qa.md              |   9 ++\n specs/159-fix-check-scan-report/review.md          |  68 ++++++++++\n specs/159-fix-check-scan-report/spec.md            |  74 +++++++++++\n specs/159-fix-check-scan-report/tests/README.md    |  31 +++++\n .../tests/check-scan-report.test.js                | 121 ++++++++++++++++++\n src/check/commands/scan.js                         | 125 +++++++++---------\n 8 files changed, 558 insertions(+), 66 deletions(-)",
+      "commits": [
+        "feat: feature/159-fix-check-scan-report"
+      ]
+    },
+    "retro": {
+      "total": 7,
+      "done": 7,
+      "partial": 0,
+      "not_done": 0,
+      "rate": 1,
+      "notes": "全 7 要件が実装されており、いずれも done。unplanned 変更は 4 件あるが、いずれも仕様の意図に反するものではない。walkAllFiles のリネームは「不要な計算の削除」という意図を満たしつつ実装上の都合で関数を再利用した形。uncoveredByExtension の JSON 追加はサマリー情報をプログラム利用可能にする自然な拡張。export 追加はテスト戦略の要件を満たすための実装。全体として仕様を正確に満たした実装と評価できる。"
+    },
+    "issueLog": {
+      "count": 0,
+      "entries": []
+    },
+    "metrics": {
+      "docsRead": 2,
+      "srcRead": 0,
+      "question": 3,
+      "issueLog": 0
+    },
+    "tests": null,
+    "sync": {
+      "status": "skipped",
+      "reason": "sync was skipped"
+    }
+  },
+  "text": "  Report\n\n  Implementation\n  ────────────────────────────────────────────────\n    feat: feature/159-fix-check-scan-report\n    8 files changed, 558 insertions(+), 66 deletions(-)\n\n  Retro\n  ────────────────────────────────────────────────\n    ████████ 100%  (7 done / 0 partial / 0 miss)\n\n  Metrics\n  ────────────────────────────────────────────────\n    docs read 2  src read 0  Q&A 3  issue-log 0\n\n  Tests\n  ────────────────────────────────────────────────\n    -"
+}

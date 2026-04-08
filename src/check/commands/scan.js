@@ -4,9 +4,8 @@
  *
  * sdd-forge check scan — scan coverage report.
  *
- * Computes two-level coverage:
- *   Level 1 (include coverage): all project files vs scan.include matched files
- *   Level 2 (datasource coverage): include-matched files vs DataSource-analyzed files
+ * Shows DataSource coverage: scan.include matched files vs DataSource-analyzed files.
+ * Reports uncovered files grouped by extension (actionable summary) followed by the file list.
  */
 
 import fs from "fs";
@@ -37,15 +36,33 @@ function printHelp() {
 }
 
 /**
- * Walk baseDir recursively, collecting all files.
- * Skips .git, node_modules, vendor directories.
+ * Group files by extension, sorted by count descending then extension alphabetically.
+ *
+ * @param {string[]} files - relative file paths
+ * @returns {{ ext: string, count: number }[]}
+ */
+function groupByExtension(files) {
+  const counts = new Map();
+  for (const f of files) {
+    const ext = path.extname(f);
+    counts.set(ext, (counts.get(ext) ?? 0) + 1);
+  }
+  return [...counts.entries()]
+    .sort(([extA, countA], [extB, countB]) => countB - countA || extA.localeCompare(extB))
+    .map(([ext, count]) => ({ ext, count }));
+}
+
+/**
+ * Walk baseDir recursively, collecting files matched by includeMatchers.
+ * Skips .git, node_modules, vendor, .sdd-forge directories.
  * Applies excludeMatchers to relative paths.
  *
  * @param {string} baseDir
+ * @param {RegExp[]} includeMatchers
  * @param {RegExp[]} excludeMatchers
  * @returns {string[]} relative paths
  */
-function walkAllFiles(baseDir, excludeMatchers) {
+function walkIncludedFiles(baseDir, includeMatchers, excludeMatchers) {
   const results = [];
 
   function walk(dir, relPrefix) {
@@ -63,7 +80,7 @@ function walkAllFiles(baseDir, excludeMatchers) {
       } else if (entry.isFile()) {
         const relPath = relPrefix ? `${relPrefix}/${entry.name}` : entry.name;
         if (excludeMatchers.some((m) => m.test(relPath))) continue;
-        results.push(relPath);
+        if (includeMatchers.some((m) => m.test(relPath))) results.push(relPath);
       }
     }
   }
@@ -73,12 +90,12 @@ function walkAllFiles(baseDir, excludeMatchers) {
 }
 
 /**
- * Compute coverage data from config and analysis.json.
+ * Compute DataSource coverage from config and analysis.json.
  *
  * @param {string} root - work root
  * @param {string} src - source root
  * @param {Object} cfg - sdd config
- * @returns {{ includeCoverage, dataSourceCoverage }}
+ * @returns {{ dataSourceCoverage: { total, analyzed, uncovered } }}
  */
 function computeCoverage(root, src, cfg) {
   const outputPath = path.join(sddOutputDir(root), "analysis.json");
@@ -99,12 +116,10 @@ function computeCoverage(root, src, cfg) {
   const excludeMatchers = exclude.map((p) => globToRegex(p));
   const includeMatchers = include.map((p) => globToRegex(p));
 
-  // Level 1: all project files (excluding .git/node_modules/vendor + scan.exclude)
-  const allFiles = walkAllFiles(src, excludeMatchers);
-  const includedFiles = allFiles.filter((f) => includeMatchers.some((m) => m.test(f)));
-  const uncoveredByInclude = allFiles.filter((f) => !includeMatchers.some((m) => m.test(f)));
+  // scan.include matched files
+  const includedFiles = walkIncludedFiles(src, includeMatchers, excludeMatchers);
 
-  // Level 2: files analyzed by any DataSource (from analysis.json entries)
+  // Files analyzed by any DataSource (from analysis.json entries)
   const analyzedFiles = new Set();
   for (const key of Object.keys(analysis)) {
     if (META_KEYS.has(key)) continue;
@@ -115,47 +130,37 @@ function computeCoverage(root, src, cfg) {
     }
   }
 
-  const includedSet = new Set(includedFiles);
-  const uncoveredByDataSource = includedFiles.filter((f) => !analyzedFiles.has(f));
+  const uncovered = includedFiles.filter((f) => !analyzedFiles.has(f));
 
   return {
-    includeCoverage: {
-      total: allFiles.length,
-      matched: includedFiles.length,
-      uncovered: uncoveredByInclude,
-    },
     dataSourceCoverage: {
       total: includedFiles.length,
       analyzed: analyzedFiles.size,
-      uncovered: uncoveredByDataSource,
+      uncovered,
     },
   };
 }
 
 /**
- * Format as plain text (same layout as flow report).
+ * Format as plain text.
  */
 function formatText(data, showAll) {
-  const { includeCoverage: inc, dataSourceCoverage: ds } = data;
+  const { dataSourceCoverage: ds } = data;
   const lines = [];
-  const incPct = inc.total === 0 ? 0 : Math.round((inc.matched / inc.total) * 100);
   const dsPct = ds.total === 0 ? 0 : Math.round((ds.analyzed / ds.total) * 100);
 
-  lines.push("  Scan Coverage");
+  lines.push(`  DataSource: ${ds.analyzed} / ${ds.total} files (${dsPct}%)`);
 
-  pushSection(lines, "Include Coverage  (scan.include vs all project files)");
-  lines.push(`    ${inc.matched} / ${inc.total} files  (${incPct}%)`);
-  if (inc.uncovered.length > 0) {
-    const display = showAll ? inc.uncovered : inc.uncovered.slice(0, DEFAULT_MAX_FILES);
-    for (const f of display) lines.push(`      - ${f}`);
-    if (!showAll && inc.uncovered.length > DEFAULT_MAX_FILES) {
-      lines.push(`      ... and ${inc.uncovered.length - DEFAULT_MAX_FILES} more (use --list to show all)`);
-    }
-  }
-
-  pushSection(lines, "DataSource Coverage  (analyzed vs include-matched files)");
-  lines.push(`    ${ds.analyzed} / ${ds.total} files  (${dsPct}%)`);
   if (ds.uncovered.length > 0) {
+    const extGroups = groupByExtension(ds.uncovered);
+
+    pushSection(lines, "Uncovered by extension");
+    for (const { ext, count } of extGroups) {
+      const label = ext || "(no extension)";
+      lines.push(`    ${label.padEnd(12)} ${count} files`);
+    }
+
+    pushSection(lines, "Uncovered files");
     const display = showAll ? ds.uncovered : ds.uncovered.slice(0, DEFAULT_MAX_FILES);
     for (const f of display) lines.push(`      - ${f}`);
     if (!showAll && ds.uncovered.length > DEFAULT_MAX_FILES) {
@@ -170,35 +175,30 @@ function formatText(data, showAll) {
  * Format as Markdown.
  */
 function formatMarkdown(data, showAll) {
-  const { includeCoverage: inc, dataSourceCoverage: ds } = data;
-  const incPct = inc.total === 0 ? 0 : Math.round((inc.matched / inc.total) * 100);
+  const { dataSourceCoverage: ds } = data;
   const dsPct = ds.total === 0 ? 0 : Math.round((ds.analyzed / ds.total) * 100);
 
   const lines = [];
   lines.push("# Scan Coverage Report");
   lines.push("");
-  lines.push("## Include Coverage");
-  lines.push(`_scan.include vs all project files_`);
-  lines.push("");
-  lines.push(`**${inc.matched} / ${inc.total} files (${incPct}%)**`);
-  if (inc.uncovered.length > 0) {
-    lines.push("");
-    lines.push("Uncovered files:");
-    const display = showAll ? inc.uncovered : inc.uncovered.slice(0, DEFAULT_MAX_FILES);
-    for (const f of display) lines.push(`- \`${f}\``);
-    if (!showAll && inc.uncovered.length > DEFAULT_MAX_FILES) {
-      lines.push(`- _...and ${inc.uncovered.length - DEFAULT_MAX_FILES} more (use --list to show all)_`);
-    }
-  }
-
-  lines.push("");
   lines.push("## DataSource Coverage");
-  lines.push(`_analyzed vs include-matched files_`);
   lines.push("");
   lines.push(`**${ds.analyzed} / ${ds.total} files (${dsPct}%)**`);
+
   if (ds.uncovered.length > 0) {
+    const extGroups = groupByExtension(ds.uncovered);
+
     lines.push("");
-    lines.push("Unmatched files:");
+    lines.push("### Uncovered by extension");
+    lines.push("");
+    for (const { ext, count } of extGroups) {
+      const label = ext || "(no extension)";
+      lines.push(`- \`${label}\`  ${count} files`);
+    }
+
+    lines.push("");
+    lines.push("### Uncovered files");
+    lines.push("");
     const display = showAll ? ds.uncovered : ds.uncovered.slice(0, DEFAULT_MAX_FILES);
     for (const f of display) lines.push(`- \`${f}\``);
     if (!showAll && ds.uncovered.length > DEFAULT_MAX_FILES) {
@@ -249,23 +249,16 @@ async function main() {
   const showAll = cli.list;
 
   if (format === "json") {
-    const { includeCoverage: inc, dataSourceCoverage: ds } = data;
-    const incPct = inc.total === 0 ? 0 : Math.round((inc.matched / inc.total) * 100);
+    const { dataSourceCoverage: ds } = data;
     const dsPct = ds.total === 0 ? 0 : Math.round((ds.analyzed / ds.total) * 100);
     const out = {
-      includeCoverage: {
-        total: inc.total,
-        matched: inc.matched,
-        percent: incPct,
-        uncovered: showAll ? inc.uncovered : inc.uncovered.slice(0, DEFAULT_MAX_FILES),
-        uncoveredTotal: inc.uncovered.length,
-      },
       dataSourceCoverage: {
         total: ds.total,
         analyzed: ds.analyzed,
         percent: dsPct,
         uncovered: showAll ? ds.uncovered : ds.uncovered.slice(0, DEFAULT_MAX_FILES),
         uncoveredTotal: ds.uncovered.length,
+        uncoveredByExtension: groupByExtension(ds.uncovered),
       },
     };
     process.stdout.write(JSON.stringify(out, null, 2) + "\n");
@@ -276,5 +269,5 @@ async function main() {
   }
 }
 
-export { main };
+export { main, groupByExtension, computeCoverage, formatText };
 runIfDirect(import.meta.url, main);
