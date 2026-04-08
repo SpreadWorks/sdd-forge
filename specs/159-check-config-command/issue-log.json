@@ -1,0 +1,24 @@
+{
+  "entries": [
+    {
+      "step": "gate",
+      "reason": "Single Responsibility — `check config` コマンドの実装のみを対象としており、無関係な変更は含まれていない; Unambiguous Requirements — 各要件に \"exit 1\" \"stderr に出力\" \"全エラーを列挙\" 等の検証可能な条件が明記されている; Complete Context — 各要件はトリガー条件（〜の場合）と期待動作（出力・exit code）がペアで記述されている; No Hardcoded Secrets — 設定ファイルの検証ツールであり、シークレットのハードコードに関する懸念は本仕様の性質上該当しない; No Silent Error Swallowing — エラーは全て報告・exit 1 で処理される設計になっており、サイレント無視は規定されていない; Prioritize Requirements — 要件が8項目あるが、診断チェックの優先順位（JSONパース → スキーマ → preset の早期終了順）はClarificationsに明記されている; Impact on Existing Features — Out of Scope と Alternatives Considered で既存 `validateConfig()` / `PRESETS` の再利用のみであることを明示し、既存機能への影響がないことが読み取れる。ただし「既存機能への影響はなし」の明示的な記述がない — 軽微な不備だが致命的ではないためPASSとする; Bounded Resource Usage — スキーマ検証でエラーを「全エラーを列挙」する際の上限が未定義。大量エラー時の件数上限が規定されていない; Changes Require Test Coverage — テストカバレッジに関する記述が仕様に存在しない。Happy path・エラーケースのテスト有無が不明; Spec Includes Test Strategy — テスト戦略セクションが存在しない（何をどうテストするか未記載）; Synthesize Draft, Do Not Copy — Q&Aからの反映が明記されており、ドラフト内容を整理・抽象化した形跡がある; Record Unresolved Points as Open Questions — Open Questions セクションが存在し \"なし\" と明示されている; Include 'Why This Approach' Rationale — Alternatives Considered に関心の分離を維持する理由が記載されている; Backward — Compatible CLI Interface — 既存コマンドの変更・削除はなく、新規コマンド追加のみのため移行計画は不要; Exit Code Contract — 全エラーケースで exit 1、成功時 exit 0 が明確に規定されている",
+      "trigger": "gate post hook (auto)",
+      "timestamp": "2026-04-08T05:12:37.444Z"
+    },
+    {
+      "step": "gate-impl",
+      "reason": "`sdd — forge check config` コマンドが実行できること — `check.js`に`config`エントリが追加され、`check/commands/config.js`が実装されている; `config.json` が存在しない場合、エラーメッセージを stderr に出力して exit 1 すること — `fs.existsSync`で確認し、stderrへの出力とexit 1が実装されている（text format時）; `config.json` が無効な JSON の場合、パースエラーを報告して exit 1 すること — `JSON.parse`のtry/catchでエラーを捕捉してexit 1する; スキーマ検証エラーがある場合、最大50件までエラーを列挙して exit 1 すること — `MAX_SCHEMA_ERRORS = 50`でslice、失敗時exit 1; `type` に指定されたプリセットが存在しない場合、該当プリセット名を報告して exit 1 すること — `Preset not found: ${t}`メッセージでexit 1; 全チェックがパスした場合、\"config is valid\" を表示して exit 0 すること — `ok`の場合`\"config is valid\\n\"`を出力しexit 0; ` — -format json` オプションで JSON 形式の出力ができること — `{ ok, checks }`構造のJSONをstdoutに出力; ` — h` / `--help` でヘルプを表示すること — `cli.help`判定と`printHelp()`が実装されている; No Hardcoded Secrets — diff and spec contain no API keys, passwords, or tokens.; No Silent Error Swallowing — `sdd-forge.js` contains `} catch { /* ... logs silently skipped */ }` which discards errors without logging or re-throwing.; Bounded Resource Usage — spec explicitly caps schema error enumeration at 50件; no unbounded loops introduced.; No Sensitive Data in Logs — no logging of sensitive fields in diff or spec.; No Disabling Existing Tests — spec places new tests in `specs/159-check-config-command/tests/`; no existing tests touched.; Escalate When New Tests Break Existing Tests — new tests are outside `npm test` scope; no conflict with existing test suite.; Do Not Modify Existing Tests Without Approval — no existing test files modified.; Flag Tests That Become Irrelevant — no feature changes that obsolete existing tests.; Exit Code Contract — spec defines exit 0 on success and exit 1 on all failure conditions explicitly.; No Synchronous I/O in Hot Paths — implementation files (`check.js`, `check/commands/config.js`) not provided in diff; no synchronous I/O introduced in shown changes.; Validate User Input at Entry Point — spec defines `--format` validation (text/json); routing in `sdd-forge.js` delegates to `check.js` dispatcher; implementation files not shown but no unvalidated passthrough visible in diff.",
+      "trigger": "gate post hook (auto)",
+      "timestamp": "2026-04-08T05:52:13.884Z"
+    },
+    {
+      "step": "review",
+      "reason": "gate-impl flags pre-existing silent catch block in sdd-forge.js as No Silent Error Swallowing violation",
+      "trigger": "sdd-forge.js was modified in this spec (adding check to dispatchers), so gate analyzed the entire file including pre-existing catch block",
+      "resolution": "modified catch block to write stderr for unexpected errors while keeping silent for ERR_MISSING_FILE (pre-setup scenario)",
+      "guardrailCandidate": "when modifying any file, gate will analyze all pre-existing code in context — pre-existing guardrail violations in touched files must be fixed",
+      "timestamp": "2026-04-08T05:53:18.824Z"
+    }
+  ]
+}

@@ -1,0 +1,149 @@
+{
+  "spec": "specs/159-check-config-command/spec.md",
+  "baseBranch": "main",
+  "featureBranch": "feature/159-check-config-command",
+  "steps": [
+    {
+      "id": "approach",
+      "status": "done"
+    },
+    {
+      "id": "branch",
+      "status": "done"
+    },
+    {
+      "id": "prepare-spec",
+      "status": "pending"
+    },
+    {
+      "id": "draft",
+      "status": "done"
+    },
+    {
+      "id": "gate-draft",
+      "status": "done"
+    },
+    {
+      "id": "spec",
+      "status": "done"
+    },
+    {
+      "id": "gate",
+      "status": "done"
+    },
+    {
+      "id": "approval",
+      "status": "done"
+    },
+    {
+      "id": "test",
+      "status": "done"
+    },
+    {
+      "id": "implement",
+      "status": "done"
+    },
+    {
+      "id": "gate-impl",
+      "status": "done"
+    },
+    {
+      "id": "review",
+      "status": "done"
+    },
+    {
+      "id": "finalize",
+      "status": "pending"
+    },
+    {
+      "id": "commit",
+      "status": "pending"
+    },
+    {
+      "id": "push",
+      "status": "pending"
+    },
+    {
+      "id": "merge",
+      "status": "pending"
+    },
+    {
+      "id": "pr-create",
+      "status": "pending"
+    },
+    {
+      "id": "branch-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "pr-merge",
+      "status": "pending"
+    },
+    {
+      "id": "sync-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "docs-update",
+      "status": "pending"
+    },
+    {
+      "id": "docs-review",
+      "status": "pending"
+    },
+    {
+      "id": "docs-commit",
+      "status": "pending"
+    }
+  ],
+  "requirements": [
+    {
+      "desc": "sdd-forge check config コマンドが実行できること",
+      "status": "pending"
+    },
+    {
+      "desc": "config.json が存在しない場合、エラーメッセージを stderr に出力して exit 1 すること",
+      "status": "done"
+    },
+    {
+      "desc": "config.json が無効な JSON の場合、パースエラーを報告して exit 1 すること",
+      "status": "done"
+    },
+    {
+      "desc": "スキーマ検証エラーがある場合、最大50件までエラーを列挙して exit 1 すること",
+      "status": "done"
+    },
+    {
+      "desc": "type に指定されたプリセットが存在しない場合、該当プリセット名を報告して exit 1 すること",
+      "status": "done"
+    },
+    {
+      "desc": "全チェックがパスした場合、config is valid を表示して exit 0 すること",
+      "status": "done"
+    },
+    {
+      "desc": "--format json オプションで JSON 形式の出力ができること",
+      "status": "done"
+    },
+    {
+      "desc": "-h / --help でヘルプを表示すること",
+      "status": "done"
+    }
+  ],
+  "issue": 115,
+  "request": "sdd-forge check config コマンドの実装: config.json の必須フィールド・preset の存在確認・スキーマ整合性を診断する",
+  "worktree": true,
+  "autoApprove": true,
+  "metrics": {
+    "plan": {
+      "docsRead": 1
+    },
+    "draft": {
+      "srcRead": 1
+    },
+    "impl": {
+      "srcRead": 1,
+      "issueLog": 1
+    }
+  }
+}
