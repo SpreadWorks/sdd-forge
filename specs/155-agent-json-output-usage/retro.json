@@ -1,0 +1,62 @@
+{
+  "spec": "specs/155-agent-json-output-usage/spec.md",
+  "date": "2026-04-08T02:08:57.880Z",
+  "requirements": [
+    {
+      "desc": "jsonOutputFlag フィールドを agent config に追加し、設定値を実行時 args に追加する（既存 args に重複する場合は追加しない）",
+      "status": "done",
+      "note": "injectJsonFlag() が完全シーケンス一致で重複チェックし、flagParts を args に注入。buildAgentInvocation で jsonOutputFlag を split して適用。stdin fallback パスにも同様に適用済み。"
+    },
+    {
+      "desc": "agent.command の部分一致で provider を判定する（claude / codex / unknown）",
+      "status": "done",
+      "note": "detectProviderKey() が command.includes('claude'/'codex') で判定し、resolveAgent の両パスで providerKey を付与。"
+    },
+    {
+      "desc": "jsonOutputFlag が設定されており provider が claude または codex の場合、stdout を JSON として解析し usage を取り出す。パース失敗時は stderr 警告 + plain text fallback",
+      "status": "done",
+      "note": "parseClaudeOutput / parseCodexOutput + PROVIDER_PARSERS map で実装。parseAgentOutput の catch で STDERR_WARN + null return。resolveAgentResult が null 時に plain text fallback。"
+    },
+    {
+      "desc": "Logger.agent end-event payload に usage フィールドを追加し .tmp/logs/prompts.jsonl に記録する（未設定/unknown は usage: null）",
+      "status": "done",
+      "note": "buildAgentLogPayload に usage パラメータ追加。extractAgentResult で usage を取り出し、runWithAgentLogging / runWithAgentLoggingSync の両パスで payload に渡す。未設定/unknown は usage: null。"
+    },
+    {
+      "desc": "呼び出し元への戻り値は従来と同じ trimmed string のまま変更しない",
+      "status": "done",
+      "note": "callAgent は callAgentRaw(...).text を返し、callAgentAsync は .then(r => r.text) を返す。resolveAgentResult が text を trim して返す。"
+    },
+    {
+      "desc": "jsonOutputFlag 未設定時は agent.js の動作は現状と一切変わらない",
+      "status": "done",
+      "note": "jsonOutputFlag 未設定時は flagParts=[] で injectJsonFlag が args をそのまま返す。resolveAgentResult も agent.jsonOutputFlag が falsy なら plain text fallback を通る。"
+    }
+  ],
+  "unplanned": [
+    {
+      "file": "src/lib/agent.js",
+      "change": "callAgentAsync のリファクタリング: 旧実装（retryCount 分岐を直接持つ）を callAgentAsyncRaw に委譲する形に変更。callAgentAsyncWithRetry が { text, usage } を返す内部構造に変更され、result.text の truthy チェックに変更された。"
+    },
+    {
+      "file": "src/lib/agent.js",
+      "change": "callAgentAsyncRawOnce / callAgentAsyncRaw の新規追加: { text, usage } を返す async 内部ヘルパー。要件の直接的なスコープではなく、async パスへの usage 伝播のために追加された補助関数。"
+    },
+    {
+      "file": "src/lib/agent.js",
+      "change": "extractAgentResult ヘルパーの追加: invoke 結果が { text, usage } オブジェクトか文字列かを吸収する統一インターフェース。要件外だが logging wrappers の共通化のために導入。"
+    },
+    {
+      "file": "src/lib/agent.js",
+      "change": "buildAgentInvocation 内で providerKey チェックを追加: unknown provider の場合は jsonOutputFlag を無視する（flagParts=[]）。spec の要件4に対応する副次実装だが要件リストに明示されていない。"
+    }
+  ],
+  "summary": {
+    "total": 6,
+    "done": 6,
+    "partial": 0,
+    "not_done": 0,
+    "rate": 1,
+    "notes": "全6要件が実装済み。unplanned 変更はすべて要件を満たすための内部リファクタリング（async パスへの usage 伝播、logging wrapper の統一）であり、公開 API の変更はなく後方互換性を維持している。parseClaudeOutput / parseCodexOutput の返り値に raw フィールドが含まれていない点（review item 2 で指摘・修正済み）も確認できる。"
+  }
+}

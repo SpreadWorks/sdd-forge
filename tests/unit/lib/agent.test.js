@@ -175,7 +175,7 @@ describe("resolveAgent", () => {
       },
     };
     const result = resolveAgent(cfg);
-    assert.deepEqual(result, { command: "claude", args: [], timeoutMs: 300000 });
+    assert.deepEqual(result, { command: "claude", args: [], timeoutMs: 300000, providerKey: "claude" });
   });
 
   it("returns null when no agent configured", () => {

@@ -1,0 +1,145 @@
+{
+  "spec": "specs/155-agent-json-output-usage/spec.md",
+  "baseBranch": "development",
+  "featureBranch": "feature/155-agent-json-output-usage",
+  "steps": [
+    {
+      "id": "approach",
+      "status": "done"
+    },
+    {
+      "id": "branch",
+      "status": "done"
+    },
+    {
+      "id": "prepare-spec",
+      "status": "pending"
+    },
+    {
+      "id": "draft",
+      "status": "done"
+    },
+    {
+      "id": "gate-draft",
+      "status": "done"
+    },
+    {
+      "id": "spec",
+      "status": "done"
+    },
+    {
+      "id": "gate",
+      "status": "done"
+    },
+    {
+      "id": "approval",
+      "status": "done"
+    },
+    {
+      "id": "test",
+      "status": "done"
+    },
+    {
+      "id": "implement",
+      "status": "done"
+    },
+    {
+      "id": "gate-impl",
+      "status": "done"
+    },
+    {
+      "id": "review",
+      "status": "done"
+    },
+    {
+      "id": "finalize",
+      "status": "pending"
+    },
+    {
+      "id": "commit",
+      "status": "pending"
+    },
+    {
+      "id": "push",
+      "status": "pending"
+    },
+    {
+      "id": "merge",
+      "status": "pending"
+    },
+    {
+      "id": "pr-create",
+      "status": "pending"
+    },
+    {
+      "id": "branch-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "pr-merge",
+      "status": "pending"
+    },
+    {
+      "id": "sync-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "docs-update",
+      "status": "pending"
+    },
+    {
+      "id": "docs-review",
+      "status": "pending"
+    },
+    {
+      "id": "docs-commit",
+      "status": "pending"
+    }
+  ],
+  "requirements": [
+    {
+      "desc": "jsonOutputFlag フィールドを agent config に追加し、設定値を実行時 args に追加する（既存 args に重複する場合は追加しない）",
+      "status": "done"
+    },
+    {
+      "desc": "agent.command の部分一致で provider を判定する（claude / codex / unknown）",
+      "status": "done"
+    },
+    {
+      "desc": "jsonOutputFlag が設定されており provider が claude または codex の場合、stdout を JSON として解析し usage を取り出す。パース失敗時は stderr 警告 + plain text fallback",
+      "status": "done"
+    },
+    {
+      "desc": "Logger.agent end-event payload に usage フィールドを追加し .tmp/logs/prompts.jsonl に記録する（未設定/unknown は usage: null）",
+      "status": "done"
+    },
+    {
+      "desc": "呼び出し元への戻り値は従来と同じ trimmed string のまま変更しない",
+      "status": "done"
+    },
+    {
+      "desc": "jsonOutputFlag 未設定時は agent.js の動作は現状と一切変わらない",
+      "status": "done"
+    }
+  ],
+  "issue": 109,
+  "request": "agent 呼び出しの JSON 出力対応と usage 計測機構を追加する",
+  "worktree": true,
+  "metrics": {
+    "plan": {
+      "docsRead": 1
+    },
+    "draft": {
+      "srcRead": 1,
+      "question": 4
+    },
+    "impl": {
+      "issueLog": 3
+    }
+  },
+  "notes": [
+    "Q1: provider判定 = agent.command 部分一致 (claude/codex含む → 各provider、両方含まなければ unknown)",
+    "Q2/Q3: JSON出力は jsonOutputFlag (systemPromptFlagと同パターン)。設定あり→JSONモード、なし→plain text。provider判定はパース形式の選択に使用。",
+    "Q4: unknown provider時はplain text扱い (jsonOutputFlagは機能しない)"
+  ]
+}

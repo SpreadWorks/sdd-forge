@@ -59,6 +59,132 @@ function stripPromptFromArgs(args) {
 /** argv の合計バイト数がこの閾値を超えたら stdin 経由に切り替える */
 const ARGV_SIZE_THRESHOLD = 100_000;
 
+/**
+ * agent.command の部分一致で provider を判定する。
+ * "claude" を含む → "claude", "codex" を含む → "codex", それ以外 → "unknown"
+ *
+ * @param {string} command
+ * @returns {"claude"|"codex"|"unknown"}
+ */
+function detectProviderKey(command) {
+  if (!command) return "unknown";
+  if (command.includes("claude")) return "claude";
+  if (command.includes("codex")) return "codex";
+  return "unknown";
+}
+
+/**
+ * jsonOutputFlag を args に注入する。
+ * flagParts の全シーケンスがすでに args に連続して含まれている場合は追加しない（重複防止）。
+ * 先頭フラグのみのチェックでは --output-format stream のような別値との区別ができないため、
+ * 完全シーケンス一致で判定する。
+ *
+ * @param {string[]} flagParts - jsonOutputFlag を空白で分割した配列
+ * @param {string[]} args
+ * @returns {string[]}
+ */
+function injectJsonFlag(flagParts, args) {
+  if (flagParts.length === 0) return args;
+  // Full-sequence search: check if flagParts appears consecutively in args
+  const idx = args.findIndex((_, i) =>
+    flagParts.every((part, j) => args[i + j] === part),
+  );
+  if (idx !== -1) return args;
+  return [...flagParts, ...args];
+}
+
+/**
+ * claude の JSON 出力をパースして { text, usage } を返す。
+ * @returns {{ text: string, usage: object }}
+ */
+function parseClaudeOutput(stdout) {
+  const data = JSON.parse(stdout);
+  return {
+    text: String(data.result ?? ""),
+    usage: {
+      input_tokens: data.usage?.input_tokens ?? 0,
+      output_tokens: data.usage?.output_tokens ?? 0,
+      cache_read_tokens: data.usage?.cache_read_input_tokens ?? 0,
+      cache_creation_tokens: data.usage?.cache_creation_input_tokens ?? 0,
+      cost_usd: data.total_cost_usd ?? null,
+    },
+  };
+}
+
+/**
+ * codex の NDJSON 出力をパースして { text, usage } を返す。
+ * @returns {{ text: string, usage: object }}
+ */
+function parseCodexOutput(stdout) {
+  const lines = stdout.trim().split("\n");
+  let text = "";
+  let usageRaw = null;
+  for (const line of lines) {
+    if (!line.trim()) continue;
+    const event = JSON.parse(line);
+    if (event.type === "item.completed" && event.item?.type === "agent_message") {
+      text += String(event.item.text ?? "");
+    } else if (event.type === "turn.completed") {
+      usageRaw = event.usage;
+    }
+  }
+  return {
+    text,
+    usage: {
+      input_tokens: (usageRaw?.input_tokens ?? 0) - (usageRaw?.cached_input_tokens ?? 0),
+      output_tokens: usageRaw?.output_tokens ?? 0,
+      cache_read_tokens: usageRaw?.cached_input_tokens ?? 0,
+      cache_creation_tokens: 0,
+      cost_usd: null,
+    },
+  };
+}
+
+const STDERR_WARN = (msg) => process.stderr.write(`[sdd-forge] ${msg}\n`);
+
+/** Provider-to-parser mapping. Each parser throws on invalid input. */
+const PROVIDER_PARSERS = {
+  claude: parseClaudeOutput,
+  codex: parseCodexOutput,
+};
+
+/**
+ * agent stdout を JSON としてパースし { text, usage } を返す。
+ * provider が unknown、またはパース失敗の場合は null を返す。
+ *
+ * @param {"claude"|"codex"|"unknown"} providerKey
+ * @param {string} stdout
+ * @returns {{ text: string, usage: object }|null}
+ */
+function parseAgentOutput(providerKey, stdout) {
+  const parser = PROVIDER_PARSERS[providerKey];
+  if (!parser) return null; // unknown → plain text
+  try {
+    return parser(stdout);
+  } catch (e) {
+    STDERR_WARN(`JSON parse failed (${providerKey}): ${e.message}`);
+    return null;
+  }
+}
+
+/**
+ * agent の raw stdout から { text, usage } を解決する。
+ * jsonOutputFlag が設定されており provider が claude/codex の場合は JSON パースを試みる。
+ * それ以外または失敗時は plain text fallback。
+ *
+ * @param {Object} agent
+ * @param {string} rawOutput
+ * @returns {{ text: string, usage: object|null }}
+ */
+function resolveAgentResult(agent, rawOutput) {
+  const providerKey = agent.providerKey ?? "unknown";
+  if (agent.jsonOutputFlag && providerKey !== "unknown") {
+    const parsed = parseAgentOutput(providerKey, rawOutput.trim());
+    if (parsed) return { text: parsed.text.trim(), usage: parsed.usage };
+  }
+  return { text: rawOutput.trim(), usage: null };
+}
+
 function buildAgentInvocation(agent, prompt, options) {
   const { systemPrompt } = options || {};
   const args = Array.isArray(agent.args) ? [...agent.args] : [];
@@ -66,7 +192,15 @@ function buildAgentInvocation(agent, prompt, options) {
   const { prefix } = createSystemPromptPrefix(flag, systemPrompt);
   const effectivePrompt = resolveEffectivePrompt(prompt, systemPrompt, flag);
   const resolvedArgs = resolvePromptArgs(args, effectivePrompt);
-  const finalArgs = [...prefix, ...resolvedArgs];
+
+  // Inject jsonOutputFlag when provider is known
+  const providerKey = agent.providerKey ?? "unknown";
+  const flagParts = (agent.jsonOutputFlag && providerKey !== "unknown")
+    ? agent.jsonOutputFlag.trim().split(/\s+/)
+    : [];
+  const injectedArgs = injectJsonFlag(flagParts, resolvedArgs);
+
+  const finalArgs = [...prefix, ...injectedArgs];
   const env = { ...process.env };
   delete env.CLAUDECODE;
 
@@ -79,8 +213,34 @@ function buildAgentInvocation(agent, prompt, options) {
   // Stdin fallback: route the prompt through stdin instead of CLI args.
   // System prompt stays as CLI arg (small); only the prompt goes via stdin.
   const strippedArgs = stripPromptFromArgs(args);
-  const stdinFinalArgs = [...prefix, ...strippedArgs];
+  const injectedStrippedArgs = injectJsonFlag(flagParts, strippedArgs);
+  const stdinFinalArgs = [...prefix, ...injectedStrippedArgs];
   return { finalArgs: stdinFinalArgs, env, stdinContent: effectivePrompt };
+}
+
+/**
+ * Call an AI agent and return { text, usage }.
+ * Internal variant used by callAgent and logging wrappers.
+ *
+ * @param {Object} agent
+ * @param {string} prompt
+ * @param {number} [timeoutMs]
+ * @param {string} [cwd]
+ * @param {Object} [options]
+ * @returns {{ text: string, usage: object|null }}
+ */
+function callAgentRaw(agent, prompt, timeoutMs, cwd, options) {
+  const { finalArgs, env, stdinContent } = buildAgentInvocation(agent, prompt, options);
+
+  const rawOutput = execFileSync(agent.command, finalArgs, {
+    encoding: "utf8",
+    maxBuffer: 20 * 1024 * 1024,
+    timeout: timeoutMs || agent.timeoutMs || DEFAULT_AGENT_TIMEOUT_MS,
+    cwd: cwd || process.cwd(),
+    env,
+    ...(stdinContent != null ? { input: stdinContent } : {}),
+  });
+  return resolveAgentResult(agent, rawOutput);
 }
 
 /**
@@ -92,7 +252,7 @@ function buildAgentInvocation(agent, prompt, options) {
  *   - If no systemPromptFlag but systemPrompt is given,
  *     the system prompt is prepended to the user prompt (fallback).
  *
- * @param {Object} agent        - Agent config ({ command, args, systemPromptFlag? })
+ * @param {Object} agent        - Agent config ({ command, args, systemPromptFlag?, jsonOutputFlag?, providerKey? })
  * @param {string} prompt       - The prompt text
  * @param {number} [timeoutMs]  - Timeout in milliseconds (default: DEFAULT_AGENT_TIMEOUT * 1000)
  * @param {string} [cwd]        - Working directory
@@ -101,17 +261,7 @@ function buildAgentInvocation(agent, prompt, options) {
  * @returns {string} Agent response (trimmed)
  */
 export function callAgent(agent, prompt, timeoutMs, cwd, options) {
-  const { finalArgs, env, stdinContent } = buildAgentInvocation(agent, prompt, options);
-
-  const result = execFileSync(agent.command, finalArgs, {
-    encoding: "utf8",
-    maxBuffer: 20 * 1024 * 1024,
-    timeout: timeoutMs || agent.timeoutMs || DEFAULT_AGENT_TIMEOUT_MS,
-    cwd: cwd || process.cwd(),
-    env,
-    ...(stdinContent != null ? { input: stdinContent } : {}),
-  });
-  return result.trim();
+  return callAgentRaw(agent, prompt, timeoutMs, cwd, options).text;
 }
 
 /**
@@ -134,16 +284,22 @@ export function callAgent(agent, prompt, timeoutMs, cwd, options) {
  * @returns {Promise<string>} Agent response (trimmed)
  */
 export function callAgentAsync(agent, prompt, timeoutMs, cwd, options) {
-  const { retryCount = 0, retryDelayMs = 3000, ...restOptions } = options || {};
-  return retryCount <= 0
-    ? callAgentAsyncOnce(agent, prompt, timeoutMs, cwd, restOptions)
-    : callAgentAsyncWithRetry(agent, prompt, timeoutMs, cwd, restOptions, retryCount, retryDelayMs);
+  return callAgentAsyncRaw(agent, prompt, timeoutMs, cwd, options).then((r) => r.text);
 }
 
 /**
  * Build a Logger.agent() end-event payload from a callAgent invocation.
+ *
+ * @param {Object} agent
+ * @param {string} prompt
+ * @param {Object} options
+ * @param {string|null} response
+ * @param {number} exitCode
+ * @param {string|null} error
+ * @param {number} startedAt
+ * @param {object|null} [usage] - Normalized usage from parseAgentOutput
  */
-function buildAgentLogPayload(agent, prompt, options, response, exitCode, error, startedAt) {
+function buildAgentLogPayload(agent, prompt, options, response, exitCode, error, startedAt, usage) {
   return {
     agentKey: agent?.command ?? null,
     model: agent?.model ?? null,
@@ -156,6 +312,7 @@ function buildAgentLogPayload(agent, prompt, options, response, exitCode, error,
       exitCode,
       error,
     },
+    usage: usage ?? null,
     durationSec: (Date.now() - startedAt) / 1000,
   };
 }
@@ -163,17 +320,24 @@ function buildAgentLogPayload(agent, prompt, options, response, exitCode, error,
 const STDERR_LOG = (e) => process.stderr.write(`[sdd-forge] Logger.agent failed: ${e.message}\n`);
 
 /**
+ * invoke の結果から text と usage を取り出す。
+ * invoke が { text, usage } オブジェクトを返す場合はそれを使い、
+ * 文字列を返す場合は usage: null として扱う。
+ */
+function extractAgentResult(result) {
+  if (result !== null && typeof result === "object" && "text" in result) {
+    return { text: result.text, usage: result.usage ?? null };
+  }
+  return { text: result, usage: null };
+}
+
+/**
  * Async runner that wraps an agent invocation in Logger.agent start/end
  * events. Used by both `callAgentAwaitLog` (sync inner call, awaited
  * Logger I/O) and `callAgentAsyncWithLog` (async inner call).
  *
- * The two callers differ only in:
- *   - whether the inner invoke is awaited (`asyncInvoke`)
- *   - which property of the thrown error holds the exit code (`errCodeKey`)
- *
- * For the truly synchronous variant (`callAgentWithLog`), use
- * `runWithAgentLoggingSync` below — sync mode cannot await Logger I/O,
- * so its control flow differs enough to keep it as a separate small helper.
+ * invoke は { text, usage } または string を返す。
+ * 呼び出し元には text のみを返す。usage は Logger payload に記録される。
  *
  * @param {Object}   spec
  * @param {boolean}  spec.asyncInvoke    — true if invoke returns a Promise
@@ -189,23 +353,26 @@ async function runWithAgentLogging({ asyncInvoke, invoke, agent, prompt, options
   const logger = Logger.getInstance();
   await logger.agent({ phase: "start", requestId });
 
-  let result = null;
+  let agentResult = null;
   let err = null;
   try {
-    result = asyncInvoke ? await invoke() : invoke();
-    return result;
+    agentResult = asyncInvoke ? await invoke() : invoke();
+    const { text } = extractAgentResult(agentResult);
+    return text;
   } catch (e) {
     err = e;
     throw e;
   } finally {
+    const { text, usage } = extractAgentResult(agentResult);
     const payload = buildAgentLogPayload(
       agent,
       prompt,
       options,
-      result,
+      text,
       err ? (err[errCodeKey] ?? 1) : 0,
       err ? err.message : null,
       startedAt,
+      usage,
     );
     await logger.agent({ phase: "end", requestId, ...payload });
   }
@@ -217,7 +384,7 @@ async function runWithAgentLogging({ asyncInvoke, invoke, agent, prompt, options
  */
 export function callAgentWithLog(agent, prompt, timeoutMs, cwd, options) {
   return runWithAgentLoggingSync({
-    invoke: () => callAgent(agent, prompt, timeoutMs, cwd, options),
+    invoke: () => callAgentRaw(agent, prompt, timeoutMs, cwd, options),
     agent, prompt, options,
     errCodeKey: "status",
   });
@@ -229,23 +396,26 @@ function runWithAgentLoggingSync({ invoke, agent, prompt, options, errCodeKey })
   const startedAt = Date.now();
   const logger = Logger.getInstance();
   logger.agent({ phase: "start", requestId }).catch(STDERR_LOG);
-  let result = null;
+  let agentResult = null;
   let err = null;
   try {
-    result = invoke();
-    return result;
+    agentResult = invoke();
+    const { text } = extractAgentResult(agentResult);
+    return text;
   } catch (e) {
     err = e;
     throw e;
   } finally {
+    const { text, usage } = extractAgentResult(agentResult);
     const payload = buildAgentLogPayload(
       agent,
       prompt,
       options,
-      result,
+      text,
       err ? (err[errCodeKey] ?? 1) : 0,
       err ? err.message : null,
       startedAt,
+      usage,
     );
     logger.agent({ phase: "end", requestId, ...payload }).catch(STDERR_LOG);
   }
@@ -258,7 +428,7 @@ function runWithAgentLoggingSync({ invoke, agent, prompt, options, errCodeKey })
 export async function callAgentAwaitLog(agent, prompt, timeoutMs, cwd, options) {
   return runWithAgentLogging({
     asyncInvoke: false,
-    invoke: () => callAgent(agent, prompt, timeoutMs, cwd, options),
+    invoke: () => callAgentRaw(agent, prompt, timeoutMs, cwd, options),
     agent, prompt, options,
     errCodeKey: "status",
   });
@@ -270,7 +440,7 @@ export async function callAgentAwaitLog(agent, prompt, timeoutMs, cwd, options) 
 export async function callAgentAsyncWithLog(agent, prompt, timeoutMs, cwd, options) {
   return runWithAgentLogging({
     asyncInvoke: true,
-    invoke: () => callAgentAsync(agent, prompt, timeoutMs, cwd, options),
+    invoke: () => callAgentAsyncRaw(agent, prompt, timeoutMs, cwd, options),
     agent, prompt, options,
     errCodeKey: "code",
   });
@@ -280,8 +450,8 @@ async function callAgentAsyncWithRetry(agent, prompt, timeoutMs, cwd, options, r
   let lastError = null;
   for (let attempt = 0; attempt <= retryCount; attempt++) {
     try {
-      const result = await callAgentAsyncOnce(agent, prompt, timeoutMs, cwd, options);
-      if (result) return result;
+      const result = await callAgentAsyncRawOnce(agent, prompt, timeoutMs, cwd, options);
+      if (result.text) return result;
       lastError = new Error("empty response");
     } catch (err) {
       if (err.killed || err.signal) throw err;
@@ -292,6 +462,26 @@ async function callAgentAsyncWithRetry(agent, prompt, timeoutMs, cwd, options, r
     }
   }
   throw lastError;
+}
+
+/**
+ * Single async agent call returning { text, usage }.
+ * Internal variant used by callAgentAsyncWithLog and callAgentAsync.
+ */
+async function callAgentAsyncRawOnce(agent, prompt, timeoutMs, cwd, options) {
+  const rawOutput = await callAgentAsyncOnce(agent, prompt, timeoutMs, cwd, options);
+  return resolveAgentResult(agent, rawOutput);
+}
+
+/**
+ * callAgentAsync (with optional retry) returning { text, usage }.
+ * Internal variant used by callAgentAsyncWithLog.
+ */
+function callAgentAsyncRaw(agent, prompt, timeoutMs, cwd, options) {
+  const { retryCount = 0, retryDelayMs = 3000, ...restOptions } = options || {};
+  return retryCount <= 0
+    ? callAgentAsyncRawOnce(agent, prompt, timeoutMs, cwd, restOptions)
+    : callAgentAsyncWithRetry(agent, prompt, timeoutMs, cwd, restOptions, retryCount, retryDelayMs);
 }
 
 function callAgentAsyncOnce(agent, prompt, timeoutMs, cwd, options) {
@@ -458,7 +648,9 @@ export function resolveAgent(cfg, commandId) {
   if (!provider) return null;
 
   // No profiles support in provider → return as-is
-  if (!cmdSettings && !provider.profiles) return { ...provider, timeoutMs };
+  if (!cmdSettings && !provider.profiles) {
+    return { ...provider, timeoutMs, providerKey: detectProviderKey(provider.command) };
+  }
 
   const profileName = cmdSettings?.profile || "default";
   const mergedArgs = mergeProfileArgs(provider, profileName);
@@ -467,6 +659,7 @@ export function resolveAgent(cfg, commandId) {
     ...provider,
     args: mergedArgs,
     timeoutMs,
+    providerKey: detectProviderKey(provider.command),
   };
 }
 

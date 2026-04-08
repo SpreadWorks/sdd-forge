@@ -1,0 +1,28 @@
+#!/usr/bin/env node
+/**
+ * Mock claude agent fixture for spec tests.
+ *
+ * When called as an executable (not `node -e`), injected flags like
+ * --output-format go to process.argv and do NOT break node.
+ *
+ * Behavior:
+ *   - If --output-format is in argv → output claude-format JSON
+ *   - Otherwise → output "no-flag"
+ *
+ * Usage: ./mock-claude-agent [--output-format json] [prompt]
+ */
+const args = process.argv.slice(2);
+const hasFlag = args.includes("--output-format");
+
+const claudeJson = JSON.stringify({
+  result: "hello",
+  usage: {
+    input_tokens: 10,
+    output_tokens: 5,
+    cache_read_input_tokens: 100,
+    cache_creation_input_tokens: 0,
+  },
+  total_cost_usd: 0.001,
+});
+
+process.stdout.write(hasFlag ? claudeJson : "no-flag");
