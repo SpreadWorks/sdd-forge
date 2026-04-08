@@ -1,5 +1,5 @@
 {
-  "analyzedAt": "2026-04-08T08:28:55.537Z",
+  "analyzedAt": "2026-04-08T08:58:59.464Z",
   "package": {
     "entries": [
       {
@@ -84,13 +84,14 @@
       },
       {
         "file": "src/check/commands/scan.js",
-        "hash": "de809b78283eceef9a676a31e2829c8f",
-        "lines": 281,
-        "mtime": "2026-04-08T05:05:21.872Z",
+        "hash": "3a42466c795204e2d2ab74e2b9a85e6d",
+        "lines": 274,
+        "mtime": "2026-04-08T08:58:59.256Z",
         "className": "scan",
         "methods": [
           "printHelp",
-          "walkAllFiles",
+          "groupByExtension",
+          "walkIncludedFiles",
           "computeCoverage",
           "formatText",
           "formatMarkdown",
@@ -107,29 +108,33 @@
           "../../lib/exit-codes.js"
         ],
         "exports": [
-          "main"
+          "main",
+          "groupByExtension",
+          "computeCoverage",
+          "formatText"
         ],
         "extends": null,
         "usedBy": null,
         "id": "7cccb0de",
-        "summary": "Implements the `sdd-forge check scan` command, which computes and reports coverage between scanned source files and analysis.json. Supports text, JSON, and Markdown output formats.",
-        "detail": "Walks the repository source tree to collect all files, then compares them against the entries recorded in analysis.json to compute coverage ratios. Provides formatText and formatMarkdown helpers to render results for human or CI consumption. Accepts CLI flags including --format, --all, and --max-files to control output scope. Loads project config via loadConfig and resolves the analysis.json path through sddOutputDir. Exits with EXIT_ERROR on unknown format, missing config, or analysis.json not found.",
+        "summary": "CLI command that computes and reports scan coverage by comparing analysis.json output against actual source files in the repository. Supports text, JSON, and Markdown output formats.",
+        "detail": "Reads analysis.json produced by 'sdd-forge docs scan' and walks the source directory using include/exclude glob matchers from config to enumerate all eligible files. Computes coverage metrics by comparing analyzed files against total discovered files, grouping uncovered files by extension. Provides formatText and formatMarkdown renderers that optionally show all uncovered files or truncate to a configurable maximum (DEFAULT_MAX_FILES=10). Exits with EXIT_ERROR on config load failures, missing analysis.json, or unknown format flags.",
         "chapter": "cli_commands",
         "role": "cli",
         "enrich": {
-          "processedAt": "2026-04-08T05:05:43.612Z",
+          "processedAt": "2026-04-08T08:59:08.299Z",
           "attempts": 1
         },
         "keywords": [
-          "check scan",
+          "scan",
           "coverage",
           "analysis.json",
-          "file walk",
-          "source coverage",
-          "report",
-          "markdown",
-          "json output",
-          "scan coverage"
+          "check",
+          "uncovered",
+          "glob",
+          "walkIncludedFiles",
+          "groupByExtension",
+          "computeCoverage",
+          "report"
         ]
       },
       {
@@ -7843,9 +7848,9 @@
     ],
     "summary": {
       "total": 227,
-      "totalMethods": 724
+      "totalMethods": 725
     },
     "dataSourceHash": "7d725e75d5031be445119323e4947c91"
   },
-  "enrichedAt": "2026-04-08T08:29:06.284Z"
+  "enrichedAt": "2026-04-08T08:59:08.299Z"
 }
