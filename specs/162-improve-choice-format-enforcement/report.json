@@ -1,0 +1,34 @@
+{
+  "data": {
+    "implementation": {
+      "diffStat": "docs/project_structure.md                          |  91 +++++++++-----\n .../162-improve-choice-format-enforcement/draft.md |  33 +++++\n .../flow.json                                      | 138 +++++++++++++++++++++\n .../issue-log.json                                 |  98 +++++++++++++++\n specs/162-improve-choice-format-enforcement/qa.md  |   9 ++\n .../review.md                                      |  82 ++++++++++++\n .../162-improve-choice-format-enforcement/spec.md  |  60 +++++++++\n .../tests/README.md                                |  22 ++++\n .../tests/spec.md                                  |  81 ++++++++++++\n src/templates/skills/sdd-forge.flow-plan/SKILL.md  |   2 +-\n tests/unit/lib/skills-include.test.js              |   8 ++\n 11 files changed, 590 insertions(+), 34 deletions(-)",
+      "commits": [
+        "feat: feature/162-improve-choice-format-enforcement"
+      ]
+    },
+    "retro": {
+      "total": 3,
+      "done": 3,
+      "partial": 0,
+      "not_done": 0,
+      "rate": 1,
+      "notes": "All three requirements are fully satisfied by the two-file change (SKILL.md wording update + skills-include.test.js assertions). The specs/ additions are expected SDD workflow artifacts and do not affect product behavior. The docs/project_structure.md change is unplanned and introduces a structural defect: the first {{text}} directive is left unclosed ({{/text}} removed) and the Shared Libraries {{text}} block lacks a closing tag — this matches the APPROVED proposals in review.md but those fixes were not applied before finalize."
+    },
+    "issueLog": {
+      "count": 0,
+      "entries": []
+    },
+    "metrics": {
+      "docsRead": 1,
+      "srcRead": 0,
+      "question": 4,
+      "issueLog": 9
+    },
+    "tests": null,
+    "sync": {
+      "status": "skipped",
+      "reason": "sync was skipped"
+    }
+  },
+  "text": "  Report\n\n  Implementation\n  ────────────────────────────────────────────────\n    feat: feature/162-improve-choice-format-enforcement\n    11 files changed, 590 insertions(+), 34 deletions(-)\n\n  Retro\n  ────────────────────────────────────────────────\n    ████████ 100%  (3 done / 0 partial / 0 miss)\n\n  Metrics\n  ────────────────────────────────────────────────\n    docs read 1  src read 0  Q&A 4  issue-log 9\n\n  Tests\n  ────────────────────────────────────────────────\n    -"
+}

@@ -1,0 +1,98 @@
+{
+  "entries": [
+    {
+      "step": "prepare-spec",
+      "reason": "flow prepare succeeded but prepare-spec step remained pending",
+      "trigger": "status check after prepare",
+      "resolution": "set step prepare-spec done manually",
+      "guardrailCandidate": "after prepare, verify step state and correct if inconsistent",
+      "timestamp": "2026-04-08T13:45:04.262Z"
+    },
+    {
+      "step": "draft",
+      "reason": "failed to locate skill file in worktree path",
+      "trigger": "rg on .agents/skills path inside worktree",
+      "resolution": "search repository for target phrase instead of assuming skill file path",
+      "guardrailCandidate": "in worktree mode, verify path existence before targeted search",
+      "timestamp": "2026-04-08T13:46:49.611Z"
+    },
+    {
+      "step": "gate",
+      "reason": "line 54: unchecked task/question (- [ ] None)",
+      "trigger": "gate post hook (auto)",
+      "timestamp": "2026-04-08T13:53:34.318Z"
+    },
+    {
+      "step": "gate",
+      "reason": "spec gate failed due to unchecked open-question checkbox",
+      "trigger": "sdd-forge flow run gate",
+      "resolution": "replace '- [ ] None' with non-checkbox 'None'",
+      "guardrailCandidate": "do not use unchecked checkbox when there are no open questions",
+      "timestamp": "2026-04-08T13:53:42.500Z"
+    },
+    {
+      "step": "gate",
+      "reason": "Single Responsibility — spec addresses only the Choice Format wording enforcement in flow-plan skill template.; Unambiguous Requirements — requirements use \"shall\", \"no exceptions\", \"no free-form\" with verifiable conditions; no vague adjectives.; Complete Context — each requirement has a trigger (When…) and expected behavior (shall…).; No Hardcoded Secrets — no source code or secrets present in this spec.; No Silent Error Swallowing — no error handling patterns discussed; inapplicable by nature.; Prioritize Requirements — three requirements total; priority ordering not required below the threshold.; Impact on Existing Features — \"No unrelated skill template is modified by this spec\" states impact explicitly.; Bounded Resource Usage — no recursive processing or bulk loading involved; inapplicable by nature.; Changes Require Test Coverage — requirement 3 and Acceptance Criteria explicitly require tests for the wording change.; Spec Includes Test Strategy — the spec states tests shall exist and pass, but does not describe what to test (e.g., substring match, regex check) or how (unit test runner, file read assertion); the strategy is absent.; Synthesize Draft, Do Not Copy — spec is organized and abstracted; no raw draft content copied verbatim.; Record Unresolved Points as Open Questions — Open Questions section is present and explicitly states \"None\".; Include 'Why This Approach' Rationale — \"Why This Approach\" section explains the targeted-change rationale.; Backward — Compatible CLI Interface — no CLI commands or options are modified; inapplicable by nature.; Exit Code Contract — no command exit behavior is changed; inapplicable by nature.",
+      "trigger": "gate post hook (auto)",
+      "timestamp": "2026-04-08T13:53:59.956Z"
+    },
+    {
+      "step": "gate",
+      "reason": "spec gate failed due to missing explicit test strategy",
+      "trigger": "sdd-forge flow run gate",
+      "resolution": "add Test Strategy section with target assertions and test runner",
+      "guardrailCandidate": "spec must describe what and how to test, not only require tests",
+      "timestamp": "2026-04-08T13:54:04.936Z"
+    },
+    {
+      "step": "implement",
+      "reason": "flow-impl skill file not found under worktree-relative .agents path",
+      "trigger": "cat .agents/skills/sdd-forge.flow-impl/SKILL.md",
+      "resolution": "read skill definition from repository root .agents path",
+      "guardrailCandidate": "for worktree runs, resolve skill docs from root if .agents is absent in worktree",
+      "timestamp": "2026-04-08T14:03:28.859Z"
+    },
+    {
+      "step": "implement",
+      "reason": "review step became in_progress before implement step in auto transition",
+      "trigger": "status check at impl start",
+      "resolution": "reset review to pending and proceed with implement sequence",
+      "guardrailCandidate": "verify step ordering after automatic phase transition",
+      "timestamp": "2026-04-08T14:03:47.693Z"
+    },
+    {
+      "step": "implement",
+      "reason": "requirement index used as 1-based caused out-of-range error",
+      "trigger": "sdd-forge flow set req 3 done",
+      "resolution": "use 0-based indexing and set req 0 done",
+      "guardrailCandidate": "confirm req index base from status output before bulk updates",
+      "timestamp": "2026-04-08T14:04:02.636Z"
+    },
+    {
+      "step": "review",
+      "reason": "review output inconsistent: proposalCount=0 but output lists approved proposals",
+      "trigger": "sdd-forge flow run review",
+      "resolution": "inspect generated review.md and rely on file content for action",
+      "guardrailCandidate": "when tool summary and text output conflict, verify review artifact directly",
+      "timestamp": "2026-04-08T14:06:51.886Z"
+    },
+    {
+      "step": "commit",
+      "reason": "commit failed: exit=128 | fatal: Unable to create '/home/nakano/workspace/sdd-forge/.git/worktrees/feature-162-improve-choice-format-enforcement/index.lock': Read-only file system\n",
+      "timestamp": "2026-04-08T14:07:40.539Z"
+    },
+    {
+      "step": "merge",
+      "reason": "Merge conflict detected. Run 'git rebase main' in the worktree and retry finalize.",
+      "timestamp": "2026-04-08T14:07:40.550Z"
+    },
+    {
+      "step": "finalize",
+      "reason": "finalize commit failed due to read-only filesystem lock under .git/worktrees",
+      "trigger": "sdd-forge flow run finalize --mode all",
+      "resolution": "rerun finalize with escalated permissions outside sandbox",
+      "guardrailCandidate": "if finalize hits git lock permission errors, rerun with escalation immediately",
+      "timestamp": "2026-04-08T14:07:50.918Z"
+    }
+  ]
+}

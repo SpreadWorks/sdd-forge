@@ -1,0 +1,67 @@
+{
+  "spec": "specs/162-improve-choice-format-enforcement/spec.md",
+  "date": "2026-04-08T14:09:08.821Z",
+  "requirements": [
+    {
+      "desc": "flow-plan draft rule mandates Choice Format for every user question with no exceptions",
+      "status": "done",
+      "note": "SKILL.md line changed from 'Use selection-based questions as default' to 'MUST: Every question to the user … MUST use the Choice Format. No free-form questions. No exceptions.'"
+    },
+    {
+      "desc": "confirmation questions after applying user-requested changes must also use Choice Format",
+      "status": "done",
+      "note": "The new SKILL.md wording explicitly includes 'including confirmations after applying user-requested changes' in the same MUST clause"
+    },
+    {
+      "desc": "unit tests must fail if strict no-free-form/no-exceptions wording is removed",
+      "status": "done",
+      "note": "Two assertions added to skills-include.test.js: one for 'including confirmations after applying user-requested changes' and one for 'No free-form questions. No exceptions.' — removing either phrase from SKILL.md will cause these assertions to fail"
+    }
+  ],
+  "unplanned": [
+    {
+      "file": "docs/project_structure.md",
+      "change": "Overview paragraph reworded, {{/text}} closing tag removed, directory layout expanded with full presets/ subtree, table row for src/presets added, Shared Libraries table replaced with a single-row partial table and duplicate {{text}} directive structure introduced"
+    },
+    {
+      "file": "specs/162-improve-choice-format-enforcement/draft.md",
+      "change": "New SDD flow artifact (draft phase output) — workflow scaffolding, not a product change"
+    },
+    {
+      "file": "specs/162-improve-choice-format-enforcement/flow.json",
+      "change": "New SDD flow state file tracking step/requirement status and metrics — workflow scaffolding"
+    },
+    {
+      "file": "specs/162-improve-choice-format-enforcement/issue-log.json",
+      "change": "New SDD issue-log artifact recording flow execution incidents — workflow scaffolding"
+    },
+    {
+      "file": "specs/162-improve-choice-format-enforcement/qa.md",
+      "change": "New SDD Q&A clarification template artifact — workflow scaffolding"
+    },
+    {
+      "file": "specs/162-improve-choice-format-enforcement/review.md",
+      "change": "New code review artifact with three proposals (two APPROVED, one REJECTED regarding test brittleness) — workflow scaffolding"
+    },
+    {
+      "file": "specs/162-improve-choice-format-enforcement/spec.md",
+      "change": "New formal feature specification document — workflow scaffolding"
+    },
+    {
+      "file": "specs/162-improve-choice-format-enforcement/tests/README.md",
+      "change": "New test documentation file explaining what was tested and how to run — workflow scaffolding"
+    },
+    {
+      "file": "specs/162-improve-choice-format-enforcement/tests/spec.md",
+      "change": "New test design document with 14 test cases (TC-1 through TC-14) covering unit, integration, and acceptance levels — workflow scaffolding, not executed tests"
+    }
+  ],
+  "summary": {
+    "total": 3,
+    "done": 3,
+    "partial": 0,
+    "not_done": 0,
+    "rate": 1,
+    "notes": "All three requirements are fully satisfied by the two-file change (SKILL.md wording update + skills-include.test.js assertions). The specs/ additions are expected SDD workflow artifacts and do not affect product behavior. The docs/project_structure.md change is unplanned and introduces a structural defect: the first {{text}} directive is left unclosed ({{/text}} removed) and the Shared Libraries {{text}} block lacks a closing tag — this matches the APPROVED proposals in review.md but those fixes were not applied before finalize."
+  }
+}

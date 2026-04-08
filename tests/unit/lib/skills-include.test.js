@@ -50,6 +50,14 @@ describe("deploySkills include resolution", () => {
         content.includes("Description") || content.includes("description") || content.includes("choices"),
         "flow-plan SKILL.md should contain expanded Choice Format content",
       );
+      assert.ok(
+        content.includes("including confirmations after applying user-requested changes"),
+        "flow-plan SKILL.md should enforce Choice Format for confirmation questions",
+      );
+      assert.ok(
+        content.includes("No free-form questions. No exceptions."),
+        "flow-plan SKILL.md should explicitly disallow free-form questions without exceptions",
+      );
     }
   });
 });

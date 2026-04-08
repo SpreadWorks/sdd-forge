@@ -93,7 +93,7 @@ Note: `sdd-forge flow get context` automatically records these metrics via hooks
    - **ALL turns MUST end with a question.** The AI must never end a turn without asking the user something.
    - Add progress display `(n/N)` at the start of each question. Get `n` from `sdd-forge flow get qa-count`. `N` is the AI's estimate of remaining questions.
    - After each question: `sdd-forge flow set metric draft question`
-   - Use selection-based questions as default (not free-form). Provide options the user can pick from.
+   - **MUST: Every question to the user — including confirmations after applying user-requested changes — MUST use the Choice Format. No free-form questions. No exceptions.**
    - **Requirements category checklist** (AI uses internally to check coverage):
      1. Goal & Scope — Is the goal clear? Is scope bounded?
      2. Impact on existing — What existing features/code/tests are affected?

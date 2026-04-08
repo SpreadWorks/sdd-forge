@@ -1,0 +1,138 @@
+{
+  "spec": "specs/162-improve-choice-format-enforcement/spec.md",
+  "baseBranch": "main",
+  "featureBranch": "feature/162-improve-choice-format-enforcement",
+  "steps": [
+    {
+      "id": "approach",
+      "status": "done"
+    },
+    {
+      "id": "branch",
+      "status": "done"
+    },
+    {
+      "id": "prepare-spec",
+      "status": "done"
+    },
+    {
+      "id": "draft",
+      "status": "done"
+    },
+    {
+      "id": "gate-draft",
+      "status": "done"
+    },
+    {
+      "id": "spec",
+      "status": "done"
+    },
+    {
+      "id": "gate",
+      "status": "done"
+    },
+    {
+      "id": "approval",
+      "status": "done"
+    },
+    {
+      "id": "test",
+      "status": "done"
+    },
+    {
+      "id": "implement",
+      "status": "done"
+    },
+    {
+      "id": "gate-impl",
+      "status": "done"
+    },
+    {
+      "id": "review",
+      "status": "done"
+    },
+    {
+      "id": "finalize",
+      "status": "pending"
+    },
+    {
+      "id": "commit",
+      "status": "pending"
+    },
+    {
+      "id": "push",
+      "status": "pending"
+    },
+    {
+      "id": "merge",
+      "status": "pending"
+    },
+    {
+      "id": "pr-create",
+      "status": "pending"
+    },
+    {
+      "id": "branch-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "pr-merge",
+      "status": "pending"
+    },
+    {
+      "id": "sync-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "docs-update",
+      "status": "pending"
+    },
+    {
+      "id": "docs-review",
+      "status": "pending"
+    },
+    {
+      "id": "docs-commit",
+      "status": "pending"
+    }
+  ],
+  "requirements": [
+    {
+      "desc": "flow-plan draft rule mandates Choice Format for every user question with no exceptions",
+      "status": "done"
+    },
+    {
+      "desc": "confirmation questions after applying user-requested changes must also use Choice Format",
+      "status": "done"
+    },
+    {
+      "desc": "unit tests must fail if strict no-free-form/no-exceptions wording is removed",
+      "status": "done"
+    }
+  ],
+  "issue": 119,
+  "request": "#119 issueを進めてください。",
+  "worktree": true,
+  "notes": [
+    "branch: [1] worktree + base main",
+    "approach: [1] Q&Aで要件整理",
+    "draft-scope: [1] #119は文言修正のみ、docs更新は別タスク",
+    "impact: [1] flow-plan template + related tests only",
+    "acceptance: [1] MUST文言強化 + 関連テスト検証で確定",
+    "test-mode: auto [1] テストコードを作成する",
+    "finalize-mode: auto [1] all"
+  ],
+  "metrics": {
+    "plan": {
+      "issueLog": 5,
+      "docsRead": 1
+    },
+    "draft": {
+      "question": 4
+    },
+    "impl": {
+      "issueLog": 4
+    }
+  },
+  "autoApprove": true
+}
