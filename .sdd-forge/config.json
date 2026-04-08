@@ -98,21 +98,21 @@
       },
       "codex/gpt-5.4": {
         "command": "codex",
-        "args": ["exec", "--full-auto", "-m", "gtp-5.4", "-C", ".tmp", "{{PROMPT}}"],
+        "args": ["exec", "--full-auto", "-m", "gpt-5.4", "-C", ".tmp", "{{PROMPT}}"],
         "jsonOutputFlag": "--json"
       },
       "codex/gpt-5.3": {
         "command": "codex",
-        "args": ["exec", "--full-auto", "-m", "gtp-5.3-codex", "-C", ".tmp", "{{PROMPT}}"],
+        "args": ["exec", "--full-auto", "-m", "gpt-5.3-codex", "-C", ".tmp", "{{PROMPT}}"],
         "jsonOutputFlag": "--json"
       }
     },
     "profiles": {
       "default": {
-        "docs": "codex/gtp-5.3",
+        "docs": "codex/gpt-5.3",
         "flow": "claude/sonnet",
         "experimental.workflow.board.to-issue": "claude/sonnet",
-        "flow.review.draft": "codex/gtp-5.3"
+        "flow.review.draft": "codex/gpt-5.3"
       }
     }
   },
