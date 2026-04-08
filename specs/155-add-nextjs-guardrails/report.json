@@ -1,0 +1,39 @@
+{
+  "data": {
+    "implementation": {
+      "diffStat": "specs/155-add-nextjs-guardrails/draft.md           |   5 +\n specs/155-add-nextjs-guardrails/flow.json          | 133 +++++++++++++++++++++\n specs/155-add-nextjs-guardrails/issue-log.json     |  46 +++++++\n specs/155-add-nextjs-guardrails/qa.md              |   9 ++\n specs/155-add-nextjs-guardrails/report.json        |  37 ++++++\n specs/155-add-nextjs-guardrails/retro.json         |  53 ++++++++\n specs/155-add-nextjs-guardrails/spec.md            |  96 +++++++++++++++\n specs/155-add-nextjs-guardrails/tests/README.md    |  28 +++++\n .../tests/verify-guardrails.test.js                | 107 +++++++++++++++++\n src/presets/nextjs/NOTICE                          |  19 +++\n src/presets/nextjs/guardrail.json                  |  92 ++++++++++++++\n 11 files changed, 625 insertions(+)",
+      "commits": [
+        "chore(flow): update flow state and issue-log",
+        "chore: add retro and report",
+        "feat: feature/155-add-nextjs-guardrails",
+        "docs(spec): clarify sdd-forge upgrade requirement and gitignore constraint",
+        "docs(spec): record upgrade and test verification results",
+        "feat(nextjs): add 9 framework-specific guardrails and NOTICE file"
+      ]
+    },
+    "retro": {
+      "total": 5,
+      "done": 5,
+      "partial": 0,
+      "not_done": 0,
+      "rate": 1,
+      "notes": "全5要件がすべて満たされている。コアの実装要件（guardrail.json 9件追加、NOTICEファイル作成）は正確に実装されており、フェーズ・フィールド構成もすべて仕様通り。未計画変更はspecs/配下のフロー管理ファイル群とspec検証テストのみで、プロダクトコードへの影響はない。"
+    },
+    "issueLog": {
+      "count": 0,
+      "entries": []
+    },
+    "metrics": {
+      "docsRead": 1,
+      "srcRead": 0,
+      "question": 2,
+      "issueLog": 1
+    },
+    "tests": null,
+    "sync": {
+      "status": "skipped",
+      "reason": "sync was skipped"
+    }
+  },
+  "text": "  Report\n\n  Implementation\n  ────────────────────────────────────────────────\n    chore(flow): update flow state and issue-log\n    chore: add retro and report\n    feat: feature/155-add-nextjs-guardrails\n    docs(spec): clarify sdd-forge upgrade requirement and gitignore constraint\n    docs(spec): record upgrade and test verification results\n    feat(nextjs): add 9 framework-specific guardrails and NOTICE file\n    11 files changed, 625 insertions(+)\n\n  Retro\n  ────────────────────────────────────────────────\n    ████████ 100%  (5 done / 0 partial / 0 miss)\n\n  Metrics\n  ────────────────────────────────────────────────\n    docs read 1  src read 0  Q&A 2  issue-log 1\n\n  Tests\n  ────────────────────────────────────────────────\n    -"
+}

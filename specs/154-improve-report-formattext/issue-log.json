@@ -1,0 +1,23 @@
+{
+  "entries": [
+    {
+      "step": "gate-draft",
+      "reason": "Single Responsibility — 単一の関心事（`formatText()` の改善）のみを扱っている; Unambiguous Requirements — 4つの変更は具体的な条件（`data.tests === null` 時に `- ` を表示する等）で記述されており、曖昧な形容詞はない; Complete Context — 各要件にトリガー条件（現在の挙動）と期待動作（変更後）が明記されている; No Hardcoded Secrets — ソースコードの秘密情報に関する内容は含まれず、該当なし; Prioritize Requirements — 4つの改善項目が列挙されているが、優先順位が明示されていない（Q1 で \"4 concrete improvements\" と記載されているが、順序・優先度の根拠がない）; Impact on Existing Features — Q2 にて既存の呼び出し元・テスト・データ構造への影響が明示されている; Present Recommendations with Reasoning — 各Q&Aで推奨案と根拠（例：Q6の代替案却下理由）が示されている; Explore Before Asking — Q2・Q4でコードを調査した上で回答しており（`generateReport()` の行番号、`data.tests` の導出元等）、ユーザーへの確認前に調査が行われている; Proactively Raise Related Implications — Q4でエッジケース、Q7で将来の影響が先回りして記載されている; Confirm Brainstorm vs. Decision Before Critiquing — ドラフトは決定事項として記述されており、ブレインストーミング/決定の混同は見られない; Capture Digressions in draft.md — 脱線したトピックは見当たらず、該当なし; Draft Stays at Requirements Level — 実装詳細（関数設計等）は含まれず、要件レベルに留まっている; Backward — Compatible CLI Interface — CLIコマンド・オプションの変更はなく、該当なし",
+      "trigger": "gate post hook (auto)",
+      "timestamp": "2026-04-07T23:35:02.983Z"
+    },
+    {
+      "step": "gate-impl",
+      "reason": "no changes found against base branch",
+      "trigger": "gate post hook (auto)",
+      "timestamp": "2026-04-08T00:00:07.707Z"
+    },
+    {
+      "step": "review",
+      "reason": "Review proposals 1 and 2 reference config.js and guardrail.js which are outside this spec's scope — skipped in auto mode",
+      "trigger": "sdd-forge flow run review output",
+      "resolution": "Applied only in-scope proposals (4, 5)",
+      "timestamp": "2026-04-08T00:03:27.775Z"
+    }
+  ]
+}

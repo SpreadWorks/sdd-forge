@@ -32,7 +32,9 @@ export function resolveConcurrency(cfg) {
  */
 export function loadJsonFile(filePath) {
   if (!fs.existsSync(filePath)) {
-    throw new Error(`Missing file: ${filePath}`);
+    const err = new Error(`Missing file: ${filePath}`);
+    err.code = "ERR_MISSING_FILE";
+    throw err;
   }
   return JSON.parse(fs.readFileSync(filePath, "utf8"));
 }

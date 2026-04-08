@@ -1,0 +1,36 @@
+{
+  "data": {
+    "implementation": {
+      "diffStat": "specs/154-guardrail-english-only/draft.md          |  55 ++++\n specs/154-guardrail-english-only/flow.json         | 134 +++++++++\n specs/154-guardrail-english-only/issue-log.json    |  16 ++\n specs/154-guardrail-english-only/qa.md             |   6 +\n specs/154-guardrail-english-only/review.md         |  41 +++\n specs/154-guardrail-english-only/spec.md           |  83 ++++++\n specs/154-guardrail-english-only/tests/README.md   |  34 +++\n .../tests/guardrail-migration.test.js              | 113 ++++++++\n src/lib/config.js                                  |   4 +-\n src/lib/guardrail.js                               |  35 +--\n src/presets/api/{templates/en => }/guardrail.json  |   0\n src/presets/api/templates/ja/guardrail.json        |  25 --\n .../architecture/{templates/en => }/guardrail.json |   0\n .../architecture/templates/ja/guardrail.json       |  15 -\n src/presets/base/{templates/en => }/guardrail.json |   0\n src/presets/base/templates/ja/guardrail.json       | 241 ----------------\n .../cakephp2/{templates/en => }/guardrail.json     |   0\n src/presets/cakephp2/templates/ja/guardrail.json   |  46 ---\n src/presets/ci/{templates/en => }/guardrail.json   |   0\n src/presets/ci/templates/ja/guardrail.json         |  25 --\n src/presets/cli/{templates/en => }/guardrail.json  |   0\n src/presets/cli/templates/ja/guardrail.json        |  26 --\n .../coding-rule/{templates/en => }/guardrail.json  |   0\n .../coding-rule/templates/ja/guardrail.json        |  51 ----\n .../database/{templates/en => }/guardrail.json     |   0\n src/presets/database/templates/ja/guardrail.json   |  58 ----\n .../document/{templates/en => }/guardrail.json     |   0\n src/presets/document/templates/ja/guardrail.json   |  24 --\n src/presets/edge/{templates/en => }/guardrail.json |   0\n src/presets/edge/templates/ja/guardrail.json       |  35 ---\n .../{templates/en => }/guardrail.json              |   0\n .../github-actions/templates/ja/guardrail.json     |  34 ---\n .../graphql/{templates/en => }/guardrail.json      |   0\n src/presets/graphql/templates/ja/guardrail.json    |  36 ---\n .../greenfield/{templates/en => }/guardrail.json   |   0\n src/presets/greenfield/templates/ja/guardrail.json |  65 -----\n .../{templates/en => }/guardrail.json              |   0\n .../infrastructure/templates/ja/guardrail.json     |  15 -\n .../js-webapp/{templates/en => }/guardrail.json    |   0\n src/presets/js-webapp/templates/ja/guardrail.json  |  14 -\n .../laravel/{templates/en => }/guardrail.json      |   0\n src/presets/laravel/templates/ja/guardrail.json    |  46 ---\n .../library/{templates/en => }/guardrail.json      |   0\n src/presets/library/templates/ja/guardrail.json    |  36 ---\n .../maintenance/{templates/en => }/guardrail.json  |   0\n .../maintenance/templates/ja/guardrail.json        |  45 ---\n .../monorepo/{templates/en => }/guardrail.json     |   0\n src/presets/monorepo/templates/ja/guardrail.json   |  26 --\n .../nextjs/{templates/en => }/guardrail.json       |   0\n src/presets/nextjs/templates/ja/guardrail.json     |  36 ---\n .../node-cli/{templates/en => }/guardrail.json     |   0\n src/presets/node-cli/templates/ja/guardrail.json   |  24 --\n .../{templates/en => }/guardrail.json              |   0\n .../oss-contribute/templates/ja/guardrail.json     |  35 ---\n src/presets/rest/{templates/en => }/guardrail.json |   0\n src/presets/rest/templates/ja/guardrail.json       |  15 -\n .../storage/{templates/en => }/guardrail.json      |   0\n src/presets/storage/templates/ja/guardrail.json    |  26 --\n .../symfony/{templates/en => }/guardrail.json      |   0\n src/presets/symfony/templates/ja/guardrail.json    | 308 ---------------------\n .../web-design/{templates/en => }/guardrail.json   |   0\n src/presets/web-design/templates/ja/guardrail.json |  75 -----\n .../webapp/{templates/en => }/guardrail.json       |   0\n src/presets/webapp/templates/ja/guardrail.json     |  90 ------\n .../workers/{templates/en => }/guardrail.json      |   0\n src/presets/workers/templates/ja/guardrail.json    |  15 -\n 66 files changed, 499 insertions(+), 1509 deletions(-)",
+      "commits": [
+        "refactor: apply review suggestions for guardrail English unification",
+        "fix(guardrail): re-throw unexpected errors from loadConfig in resolveGuardrailContext",
+        "feat: unify guardrail files to English and remove multilingual support"
+      ]
+    },
+    "retro": {
+      "total": 6,
+      "done": 6,
+      "partial": 0,
+      "not_done": 0,
+      "rate": 1,
+      "notes": "All 6 requirements are fully satisfied. Two unplanned changes exist in src/lib/: an error code discriminator added to loadJsonFile and a targeted catch in resolveGuardrailContext — both are defensive quality improvements approved during review (review item #4) and gate (issue-log entry). Preset count discrepancy (28 actual vs 17 in spec) is a spec undercount, not an over-delivery issue; the requirement intent ('all presets') is met."
+    },
+    "issueLog": {
+      "count": 0,
+      "entries": []
+    },
+    "metrics": {
+      "docsRead": 0,
+      "srcRead": 1,
+      "question": 0,
+      "issueLog": 0
+    },
+    "tests": null,
+    "sync": {
+      "status": "skipped",
+      "reason": "sync was skipped"
+    }
+  },
+  "text": "  Report\n\n  Implementation\n  ────────────────────────────────────────────────\n    refactor: apply review suggestions for guardrail English unification\n    fix(guardrail): re-throw unexpected errors from loadConfig in resolveGuardrailContext\n    feat: unify guardrail files to English and remove multilingual support\n    66 files changed, 499 insertions(+), 1509 deletions(-)\n\n  Retro\n  ────────────────────────────────────────────────\n    ████████ 100%  (6 done / 0 partial / 0 miss)\n\n  Metrics\n  ────────────────────────────────────────────────\n    docs 0  src 1  Q&A 0  issues 0\n\n  Documents\n  ────────────────────────────────────────────────\n    skipped: sync was skipped"
+}

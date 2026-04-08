@@ -1,0 +1,37 @@
+{
+  "data": {
+    "implementation": {
+      "diffStat": "specs/154-subprocess-crash-details/draft.md        |  45 +++++++\n specs/154-subprocess-crash-details/flow.json       | 134 +++++++++++++++++++++\n specs/154-subprocess-crash-details/issue-log.json  |  37 ++++++\n specs/154-subprocess-crash-details/qa.md           |   9 ++\n specs/154-subprocess-crash-details/review.md       |  41 +++++++\n specs/154-subprocess-crash-details/spec.md         | 102 ++++++++++++++++\n specs/154-subprocess-crash-details/tests/README.md |  43 +++++++\n .../tests/run-cmd-with-retry-signal.test.js        |  88 ++++++++++++++\n src/flow/commands/merge.js                         |  10 +-\n src/flow/lib/get-issue.js                          |   4 +-\n src/flow/lib/run-finalize.js                       |   6 +-\n src/flow/lib/run-gate.js                           |   4 +-\n src/flow/lib/run-prepare-spec.js                   |   4 +-\n src/flow/lib/run-review.js                         |   7 +-\n src/flow/lib/run-sync.js                           |   4 +-\n src/lib/cli.js                                     |   4 +-\n src/lib/git-helpers.js                             |   4 +-\n src/lib/lint.js                                    |   4 +-\n src/lib/process.js                                 |  44 ++++++-\n tests/unit/lib/process.test.js                     |  76 +++++++++++-\n 20 files changed, 639 insertions(+), 31 deletions(-)",
+      "commits": [
+        "feat: feature/154-subprocess-crash-details",
+        "test: add spec verification tests for runCmdWithRetry signal detection",
+        "refactor: extract assertOk helper to eliminate repeated failure-check pattern",
+        "feat: add signal/killed fields to runCmd/runCmdAsync, add formatError helper"
+      ]
+    },
+    "retro": {
+      "total": 5,
+      "done": 5,
+      "partial": 0,
+      "not_done": 0,
+      "rate": 1,
+      "notes": "全5要件が完全に実装されている。assertOk ヘルパーは spec の明示要件外だが、review.md で APPROVED された提案であり、12箇所以上の重複パターンを排除する正当な追加。get-issue.js の if (!res.ok) { assertOk(...) } は冗長だが機能的に正しい。全要件の受け入れ基準（formatError フォーマット、signal/killed フィールド、status 数値正規化、シグナル判定置き換え）がテストで検証済み。"
+    },
+    "issueLog": {
+      "count": 0,
+      "entries": []
+    },
+    "metrics": {
+      "docsRead": 0,
+      "srcRead": 1,
+      "question": 1,
+      "issueLog": 2
+    },
+    "tests": null,
+    "sync": {
+      "status": "skipped",
+      "reason": "sync was skipped"
+    }
+  },
+  "text": "  Report\n\n  Implementation\n  ────────────────────────────────────────────────\n    feat: feature/154-subprocess-crash-details\n    test: add spec verification tests for runCmdWithRetry signal detection\n    refactor: extract assertOk helper to eliminate repeated failure-check pattern\n    feat: add signal/killed fields to runCmd/runCmdAsync, add formatError helper\n    20 files changed, 639 insertions(+), 31 deletions(-)\n\n  Retro\n  ────────────────────────────────────────────────\n    ████████ 100%  (5 done / 0 partial / 0 miss)\n\n  Metrics\n  ────────────────────────────────────────────────\n    docs read 0  src read 1  Q&A 1  issue-log 2\n\n  Tests\n  ────────────────────────────────────────────────\n    -"
+}

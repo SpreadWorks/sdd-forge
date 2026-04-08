@@ -1,0 +1,73 @@
+{
+  "spec": "specs/155-add-nextjs-guardrails/spec.md",
+  "date": "2026-04-08T01:50:55.703Z",
+  "requirements": [
+    {
+      "desc": "guardrail.json に9件追加（既存3件は変更しない）",
+      "status": "done",
+      "note": "diffで既存3件（no-server-code-in-client-bundle, audit-next-public-env-vars, verify-against-official-docs）は変更なし。9件が新規追加され合計12件。"
+    },
+    {
+      "desc": "各エントリは id/title/body/meta.phase を持つ",
+      "status": "done",
+      "note": "追加された全9件がid/title/body/meta.phaseフィールドを持ち、await-async-request-apisのbodyには「In Next.js 15 and later」が含まれる。"
+    },
+    {
+      "desc": "src/presets/nextjs/NOTICE を新規作成（web-design/NOTICE 形式に準拠）",
+      "status": "done",
+      "note": "NOTICEファイルが新規作成され、9件の記事名一覧、github/awesome-copilot（MIT）、PatrickJS/awesome-cursorrules（CC0 1.0）の出典が記載されている。"
+    },
+    {
+      "desc": "実装後に sdd-forge upgrade を実行",
+      "status": "done",
+      "note": "spec.mdのImplementation Notesに「sdd-forge upgrade 実行済み（2026-04-08）。スキル9件が更新された」と記録。.claude/は.gitignore対象のためdiffに証跡は残らないがspec注記で説明済み。"
+    },
+    {
+      "desc": "npm test で既存テストが PASS することを確認",
+      "status": "done",
+      "note": "spec.mdのImplementation Notesに「npm test 実行済み（2026-04-08）。101 suites PASS、not ok なし」と記録されている。"
+    }
+  ],
+  "unplanned": [
+    {
+      "file": "specs/155-add-nextjs-guardrails/tests/verify-guardrails.test.js",
+      "change": "specに「新規テストは不要」と明記されているが、spec検証テストファイルが追加されている（specs/配下の検証用であり、tests/への追加ではないため制約には抵触しない）"
+    },
+    {
+      "file": "specs/155-add-nextjs-guardrails/tests/README.md",
+      "change": "テストの説明READMEが追加されている（要件に記載なし）"
+    },
+    {
+      "file": "specs/155-add-nextjs-guardrails/qa.md",
+      "change": "Q&Aファイルが追加されている（フローの一部として生成されたと思われるが要件には記載なし）"
+    },
+    {
+      "file": "specs/155-add-nextjs-guardrails/flow.json",
+      "change": "フロー管理ファイルが新規作成されている（フロー実行の付随物）"
+    },
+    {
+      "file": "specs/155-add-nextjs-guardrails/issue-log.json",
+      "change": "issue-logファイルが新規作成されている（フロー実行の付随物）"
+    },
+    {
+      "file": "specs/155-add-nextjs-guardrails/retro.json",
+      "change": "レトロスペクティブファイルが新規作成されている（フロー実行の付随物）"
+    },
+    {
+      "file": "specs/155-add-nextjs-guardrails/report.json",
+      "change": "レポートファイルが新規作成されている（フロー実行の付随物）"
+    },
+    {
+      "file": "specs/155-add-nextjs-guardrails/draft.md",
+      "change": "「関連する影響事項」セクションが追加されている（sdd-forge upgrade要否とNOTICEファイルの影響についての説明）"
+    }
+  ],
+  "summary": {
+    "total": 5,
+    "done": 5,
+    "partial": 0,
+    "not_done": 0,
+    "rate": 1,
+    "notes": "全5要件がすべて満たされている。コアの実装要件（guardrail.json 9件追加、NOTICEファイル作成）は正確に実装されており、フェーズ・フィールド構成もすべて仕様通り。未計画変更はspecs/配下のフロー管理ファイル群とspec検証テストのみで、プロダクトコードへの影響はない。"
+  }
+}

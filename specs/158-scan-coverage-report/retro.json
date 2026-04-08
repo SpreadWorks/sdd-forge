@@ -1,0 +1,83 @@
+{
+  "spec": "specs/158-scan-coverage-report/spec.md",
+  "date": "2026-04-08T05:05:20.799Z",
+  "requirements": [
+    {
+      "desc": "src/lib/formatter.js に pushSection/formatText 共通ヘルパーを実装し report.js を移行する",
+      "status": "done",
+      "note": "src/lib/formatter.js に pushSection と DIVIDER を実装。report.js は pushSection をインポートし、ローカル定義を削除して移行済み。formatText は report.js 内のプライベート関数として残存（共通化対象外）。"
+    },
+    {
+      "desc": "src/sdd-forge.js に check サブコマンドのルーティングを追加する",
+      "status": "done",
+      "note": "NAMESPACE_DISPATCHERS に 'check' を追加済み。"
+    },
+    {
+      "desc": "src/check.js を作成し check グループのディスパッチャとして機能させる",
+      "status": "done",
+      "note": "src/check.js 作成済み。引数なし・--help 時にサブコマンド一覧を表示し、未知コマンド時は非ゼロ終了。scan へのルーティングも実装済み。"
+    },
+    {
+      "desc": "src/check/commands/scan.js を実装する（--format text|json|md、--list）",
+      "status": "done",
+      "note": "--format text|json|md（デフォルト text）と --list フラグを実装。text 出力は formatter.js の pushSection を使用。"
+    },
+    {
+      "desc": "sdd-forge check scan で include カバレッジと DataSource カバレッジの2段階を計算・表示する",
+      "status": "done",
+      "note": "computeCoverage 関数で Level1（全ファイル vs include マッチ）と Level2（include マッチ vs DataSource 解析済み）の両方を計算・表示。"
+    },
+    {
+      "desc": "未カバーファイルはデフォルト最大10件表示し超過時は --list を案内する",
+      "status": "done",
+      "note": "DEFAULT_MAX_FILES=10 で slice し、超過時に '... and N more (use --list to show all)' を表示。includeCoverage・dataSourceCoverage 両セクションで対応。"
+    },
+    {
+      "desc": "エラー時は非ゼロ終了コードで終了し analysis.json 不在時はエラーメッセージを表示する",
+      "status": "done",
+      "note": "analysis.json 不在時に Error をスローし、main() で catch して stderr に出力後 EXIT_ERROR で終了。config 読み込み失敗時も同様。"
+    }
+  ],
+  "unplanned": [
+    {
+      "file": "specs/158-scan-coverage-report/draft.md",
+      "change": "ドラフトファイルの新規追加（spec プロセス成果物）"
+    },
+    {
+      "file": "specs/158-scan-coverage-report/flow.json",
+      "change": "フロー管理ファイルの新規追加（spec プロセス成果物）"
+    },
+    {
+      "file": "specs/158-scan-coverage-report/issue-log.json",
+      "change": "issue ログファイルの新規追加（spec プロセス成果物）"
+    },
+    {
+      "file": "specs/158-scan-coverage-report/qa.md",
+      "change": "Q&A ファイルの新規追加（spec プロセス成果物）"
+    },
+    {
+      "file": "specs/158-scan-coverage-report/spec.md",
+      "change": "仕様書ファイルの新規追加（spec プロセス成果物）"
+    },
+    {
+      "file": "specs/158-scan-coverage-report/tests/README.md",
+      "change": "テスト説明ファイルの新規追加"
+    },
+    {
+      "file": "specs/158-scan-coverage-report/tests/scan-check.test.js",
+      "change": "spec 検証テストの新規追加（仕様書の Test Strategy に記載あり、requirements には明示なし）"
+    },
+    {
+      "file": "tests/unit/lib/formatter.test.js",
+      "change": "formatter ユニットテストの新規追加（仕様書の Test Strategy に記載あり、requirements には明示なし）"
+    }
+  ],
+  "summary": {
+    "total": 7,
+    "done": 7,
+    "partial": 0,
+    "not_done": 0,
+    "rate": 1,
+    "notes": "全7要件が完全に実装されている。未計画変更は spec プロセス成果物（draft/flow/issue-log/qa/spec）とテストファイル群であり、いずれも仕様書の Test Strategy に記載された意図的な追加。要件外の副作用や破壊的変更はなし。"
+  }
+}

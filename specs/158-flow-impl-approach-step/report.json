@@ -1,0 +1,34 @@
+{
+  "data": {
+    "implementation": {
+      "diffStat": "specs/158-flow-impl-approach-step/draft.md         |  39 ++++++\n specs/158-flow-impl-approach-step/flow.json        | 144 +++++++++++++++++++++\n specs/158-flow-impl-approach-step/issue-log.json   |  24 ++++\n specs/158-flow-impl-approach-step/qa.md            |   9 ++\n specs/158-flow-impl-approach-step/review.md        |  93 +++++++++++++\n specs/158-flow-impl-approach-step/spec.md          |  73 +++++++++++\n specs/158-flow-impl-approach-step/tests/README.md  |  31 +++++\n .../tests/skill-approach-step.test.js              |  81 ++++++++++++\n src/lib/agent.js                                   |   5 +\n src/templates/skills/sdd-forge.flow-impl/SKILL.md  |  35 ++++-\n 10 files changed, 533 insertions(+), 1 deletion(-)",
+      "commits": [
+        "feat: feature/158-flow-impl-approach-step"
+      ]
+    },
+    "retro": {
+      "total": 6,
+      "done": 6,
+      "partial": 0,
+      "not_done": 0,
+      "rate": 1,
+      "notes": "全6要件が SKILL.md への追記で満たされている。変更内容はスコープと一致しており CLI コマンド新設・ファイル保存・step ID 追加はいずれも行われていない。unplanned として src/lib/agent.js の codex フラグ順序修正が含まれるが、これは issue-log に記録された既存バグへの対処であり機能的な退行リスクは低い。spec 要件の充足度は 6/6。"
+    },
+    "issueLog": {
+      "count": 0,
+      "entries": []
+    },
+    "metrics": {
+      "docsRead": 1,
+      "srcRead": 5,
+      "question": 1,
+      "issueLog": 1
+    },
+    "tests": null,
+    "sync": {
+      "status": "skipped",
+      "reason": "sync was skipped"
+    }
+  },
+  "text": "  Report\n\n  Implementation\n  ────────────────────────────────────────────────\n    feat: feature/158-flow-impl-approach-step\n    10 files changed, 533 insertions(+), 1 deletion(-)\n\n  Retro\n  ────────────────────────────────────────────────\n    ████████ 100%  (6 done / 0 partial / 0 miss)\n\n  Metrics\n  ────────────────────────────────────────────────\n    docs read 1  src read 5  Q&A 1  issue-log 1\n\n  Tests\n  ────────────────────────────────────────────────\n    -"
+}

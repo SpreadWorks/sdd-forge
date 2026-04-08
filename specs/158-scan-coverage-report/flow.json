@@ -1,0 +1,152 @@
+{
+  "spec": "specs/158-scan-coverage-report/spec.md",
+  "baseBranch": "development",
+  "featureBranch": "feature/158-scan-coverage-report",
+  "steps": [
+    {
+      "id": "approach",
+      "status": "done"
+    },
+    {
+      "id": "branch",
+      "status": "done"
+    },
+    {
+      "id": "prepare-spec",
+      "status": "pending"
+    },
+    {
+      "id": "draft",
+      "status": "done"
+    },
+    {
+      "id": "gate-draft",
+      "status": "done"
+    },
+    {
+      "id": "spec",
+      "status": "done"
+    },
+    {
+      "id": "gate",
+      "status": "done"
+    },
+    {
+      "id": "approval",
+      "status": "done"
+    },
+    {
+      "id": "test",
+      "status": "done"
+    },
+    {
+      "id": "implement",
+      "status": "done"
+    },
+    {
+      "id": "gate-impl",
+      "status": "done"
+    },
+    {
+      "id": "review",
+      "status": "skipped"
+    },
+    {
+      "id": "finalize",
+      "status": "pending"
+    },
+    {
+      "id": "commit",
+      "status": "pending"
+    },
+    {
+      "id": "push",
+      "status": "pending"
+    },
+    {
+      "id": "merge",
+      "status": "pending"
+    },
+    {
+      "id": "pr-create",
+      "status": "pending"
+    },
+    {
+      "id": "branch-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "pr-merge",
+      "status": "pending"
+    },
+    {
+      "id": "sync-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "docs-update",
+      "status": "pending"
+    },
+    {
+      "id": "docs-review",
+      "status": "pending"
+    },
+    {
+      "id": "docs-commit",
+      "status": "pending"
+    }
+  ],
+  "requirements": [
+    {
+      "desc": "src/lib/formatter.js に pushSection/formatText 共通ヘルパーを実装し report.js を移行する",
+      "status": "done"
+    },
+    {
+      "desc": "src/sdd-forge.js に check サブコマンドのルーティングを追加する",
+      "status": "done"
+    },
+    {
+      "desc": "src/check.js を作成し check グループのディスパッチャとして機能させる",
+      "status": "done"
+    },
+    {
+      "desc": "src/check/commands/scan.js を実装する（--format text|json|md、--list）",
+      "status": "done"
+    },
+    {
+      "desc": "sdd-forge check scan で include カバレッジと DataSource カバレッジの2段階を計算・表示する",
+      "status": "done"
+    },
+    {
+      "desc": "未カバーファイルはデフォルト最大10件表示し超過時は --list を案内する",
+      "status": "done"
+    },
+    {
+      "desc": "エラー時は非ゼロ終了コードで終了し analysis.json 不在時はエラーメッセージを表示する",
+      "status": "done"
+    }
+  ],
+  "issue": 113,
+  "request": "scan がプロジェクト全体の何%のファイルをカバーしているかを可視化する機能",
+  "worktree": true,
+  "metrics": {
+    "plan": {
+      "docsRead": 1
+    },
+    "draft": {
+      "docsRead": 1,
+      "srcRead": 1,
+      "question": 4
+    },
+    "impl": {
+      "srcRead": 1,
+      "issueLog": 1
+    }
+  },
+  "notes": [
+    "カバレッジ定義: 両方（src全ファイルvsincludeマッチ、includeマッチvsDataSource解析）",
+    "出力: sdd-forge check scan + checkディスパッチャ骨格。freshness/configは別spec",
+    "出力: --format text|json|md (default text)。未カバーファイルはデフォルト10件、超過時は--listを案内。textレイアウトはflow report(pushSection/formatText)と共通化。共通モジュール src/lib/formatter.js 等に抽出",
+    "全ファイル除外: scan.exclude + デフォルト除外(node_modules/.git/dist/*.lock)"
+  ]
+}

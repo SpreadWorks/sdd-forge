@@ -1,0 +1,89 @@
+{
+  "spec": "specs/157-agent-profile-switching/spec.md",
+  "date": "2026-04-08T05:43:33.220Z",
+  "requirements": [
+    {
+      "desc": "agent.profiles フィールドを新設する",
+      "status": "done",
+      "note": ".sdd-forge/config.json に profiles.default が追加され、src/lib/agent.js の resolveAgent が agentSection.profiles を参照する実装が確認できる"
+    },
+    {
+      "desc": "agent.useProfile フィールドを新設する",
+      "status": "done",
+      "note": "resolveProfileName が agentSection.useProfile を読み取り、falsy の場合は null を返して agent.default にフォールバックする"
+    },
+    {
+      "desc": "SDD_FORGE_PROFILE 環境変数によるプロファイルオーバーライド",
+      "status": "done",
+      "note": "resolveProfileName で process.env.SDD_FORGE_PROFILE を先にチェックし、存在すれば即返す。テストも追加済み"
+    },
+    {
+      "desc": "存在しないプロファイル名はエラーで停止",
+      "status": "done",
+      "note": "!profiles || !profiles[profileName] の場合に throw new Error('Profile ... is not defined in agent.profiles.') で停止する"
+    },
+    {
+      "desc": "プレフィックスマッチ方式でコマンドIDとプロファイルエントリをマッチング",
+      "status": "done",
+      "note": "resolveProviderKeyFromProfile が commandId === prefix || commandId.startsWith(prefix + '.') で線形走査し、bestLen で最長一致を選択。再帰なし"
+    },
+    {
+      "desc": "プロファイルにマッチしない場合は agent.default にフォールバック",
+      "status": "done",
+      "note": "resolveProviderKeyFromProfile() || defaultAgent で実現"
+    },
+    {
+      "desc": "4つのビルトインプロバイダーを src/ に定義",
+      "status": "done",
+      "note": "BUILTIN_PROVIDERS に claude/opus, claude/sonnet, codex/gpt-5.4, codex/gpt-5.3 が正しい command/args/systemPromptFlag で定義され export されている"
+    },
+    {
+      "desc": "ユーザー定義がビルトイン定義より優先",
+      "status": "done",
+      "note": "{ ...BUILTIN_PROVIDERS, ...userProviders } のスプレッド順でユーザー定義が上書きする。テストで検証済み"
+    },
+    {
+      "desc": "旧フィールド（agent.commands, provider-level profiles）は無視",
+      "status": "done",
+      "note": "resolveAgent は agent.commands も providers.*.profiles も一切参照しないため、残存していても自動的に無視される"
+    },
+    {
+      "desc": "sdd-forge setup の初期 config.json を新フォーマットに更新",
+      "status": "done",
+      "note": "setup.js で AGENT_PROVIDER_DEFAULT マッピングによる名前正規化（claude→claude/sonnet, codex→codex/gpt-5.4）を追加し、{ default, workDir } のみの最小構成を生成"
+    },
+    {
+      "desc": "src/README.md の agent 設定セクションを更新",
+      "status": "partial",
+      "note": "diff はルート README.md を更新（agent.commands 削除、profiles/useProfile/SDD_FORGE_PROFILE 追加）しているが、spec が指定した src/README.md は当リポジトリに存在しないため代替対応。実質的な内容は満たされている"
+    },
+    {
+      "desc": "CHANGELOG.md に breaking change セクションを追加",
+      "status": "done",
+      "note": "新規 CHANGELOG.md に廃止フィールド・before/after 移行例・useProfile/SDD_FORGE_PROFILE 説明・ビルトインプロバイダー表がすべて含まれている"
+    },
+    {
+      "desc": "experimental.workflow.borad.to-issue の typo を修正",
+      "status": "done",
+      "note": ".sdd-forge/config.json の profiles.default キーが experimental.workflow.board.to-issue（board）に修正されている"
+    }
+  ],
+  "unplanned": [
+    {
+      "file": "src/lib/agent.js",
+      "change": "buildAgentResult ヘルパー関数を抽出。resolveAgent 内で provider lookup + null guard + spread return が2箇所重複していたため共通化。spec 要件には含まれないが CLAUDE.md のコード品質ルール（同パターン2箇所以上で共通ヘルパー抽出）に基づく変更"
+    },
+    {
+      "file": "src/flow/lib/run-gate.js",
+      "change": "diffStat に 14行の変更が記録されているが本 diff には含まれていない。retro.json によれば uncommitted diff 検出の2段階取得ロジック復元（committed + uncommitted）と runGitDiff ヘルパー抽出。spec #157 実装中に発覚した別バグのリグレッション修正"
+    }
+  ],
+  "summary": {
+    "total": 13,
+    "done": 12,
+    "partial": 1,
+    "not_done": 0,
+    "rate": 0.96,
+    "notes": "13要件中12件が完全実装済み、1件（req 11: src/README.md）はファイル不在のためルート README.md で代替対応しており実質的な内容は満たされている。未計画変更はコード品質改善（buildAgentResult 抽出）と run-gate.js のリグレッション修正の2件で、いずれも spec 機能要件とは独立した変更として識別可能。全体として spec の意図を正確に実装しており品質は高い"
+  }
+}

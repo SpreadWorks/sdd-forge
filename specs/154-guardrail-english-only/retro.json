@@ -1,0 +1,54 @@
+{
+  "spec": "specs/154-guardrail-english-only/spec.md",
+  "date": "2026-04-07T23:32:47.322Z",
+  "requirements": [
+    {
+      "desc": "When flow get guardrail is called, load from <preset>/guardrail.json (not templates/<lang>/)",
+      "status": "done",
+      "note": "readGuardrailFile(dir) now reads path.join(dir, GUARDRAIL_FILENAME) directly, replacing the templates/<lang>/ path construction in readWithFallback()"
+    },
+    {
+      "desc": "Preset chain loader shall not perform language-based path construction or fallback",
+      "status": "done",
+      "note": "readWithFallback() removed entirely; readGuardrailFile() has no lang parameter, no primary/fallback branching"
+    },
+    {
+      "desc": "Move en/guardrail.json content to <preset>/guardrail.json for all 17 presets",
+      "status": "done",
+      "note": "All renames show similarity index 100% preserving English content. Actual count is 28 presets (spec undercounted at 17), but all presets that had guardrail files are covered"
+    },
+    {
+      "desc": "Delete all templates/en/guardrail.json and templates/ja/guardrail.json files",
+      "status": "done",
+      "note": "All templates/ja/guardrail.json files deleted; all templates/en/guardrail.json files renamed out of templates/ to preset root (effectively removed from templates/)"
+    },
+    {
+      "desc": "Remove lang parameter from internal preset chain guardrail loader",
+      "status": "done",
+      "note": "lang removed from resolveGuardrailContext return value, loadPresetGuardrails signature, and loadMergedGuardrails call site"
+    },
+    {
+      "desc": "All existing callers (get-guardrail, run-gate, run-lint) continue to work without modification",
+      "status": "done",
+      "note": "loadMergedGuardrails(root) public signature unchanged; diff contains no changes to get-guardrail.js, run-gate.js, or run-lint.js"
+    }
+  ],
+  "unplanned": [
+    {
+      "file": "src/lib/config.js",
+      "change": "loadJsonFile now attaches err.code = 'ERR_MISSING_FILE' to the thrown error — not in requirements, added to support discriminated error handling in resolveGuardrailContext (review item #4)"
+    },
+    {
+      "file": "src/lib/guardrail.js",
+      "change": "resolveGuardrailContext now rethrows errors whose code is not ERR_MISSING_FILE instead of silently swallowing all errors — not in requirements, fixes silent error suppression identified in gate/review"
+    }
+  ],
+  "summary": {
+    "total": 6,
+    "done": 6,
+    "partial": 0,
+    "not_done": 0,
+    "rate": 1,
+    "notes": "All 6 requirements are fully satisfied. Two unplanned changes exist in src/lib/: an error code discriminator added to loadJsonFile and a targeted catch in resolveGuardrailContext — both are defensive quality improvements approved during review (review item #4) and gate (issue-log entry). Preset count discrepancy (28 actual vs 17 in spec) is a spec undercount, not an over-delivery issue; the requirement intent ('all presets') is met."
+  }
+}

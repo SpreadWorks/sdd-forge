@@ -1,0 +1,12 @@
+#!/usr/bin/env node
+/**
+ * Mock fixture: always outputs codex NDJSON.
+ * MOCK_RESULT env var overrides the text (default: "codex response text").
+ */
+const text = process.env.MOCK_RESULT ?? "codex response text";
+const lines = [
+  JSON.stringify({ type: "thread.started", thread_id: "t1" }),
+  JSON.stringify({ type: "item.completed", item: { type: "agent_message", text } }),
+  JSON.stringify({ type: "turn.completed", usage: { input_tokens: 20, cached_input_tokens: 5, output_tokens: 8 } }),
+];
+process.stdout.write(lines.join("\n"));

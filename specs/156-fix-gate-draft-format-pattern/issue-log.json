@@ -1,0 +1,30 @@
+{
+  "entries": [
+    {
+      "step": "gate-draft",
+      "reason": "Single Responsibility — 正規表現パターン拡張のみを扱い、他の変更を含まない; Unambiguous Requirements — 「両方を受け付ける」「既存のPASS条件を壊さない」と検証可能な条件で記述されている; Complete Context — Q2でトリガー条件（見出し形式が拒否される）と期待動作（両形式を受理）が対になっている; No Hardcoded Secrets — 秘密情報に関係しない内容; Prioritize Requirements — 要件は3項目以下（拡張・後退なし・多言語維持）のため優先順位付け不要; Impact on Existing Features — Q3でスコープ境界を明示し、他フェーズへの影響なしと明記している; Present Recommendations with Reasoning — 各QAに推奨案と根拠（コード確認済み）を提示している; Explore Before Asking — Q1でソースコードの該当箇所（L136–146）を実際に確認した上で回答している; Proactively Raise Related Implications — 見出し形式PASSにした場合、見出し後の内容が空でもPASSとするQ5の判断が仕様として妥当かどうか、他の検出項目（spec/implフェーズ）で同様の問題が起きていないかという波及について触れていない; Confirm Brainstorm vs. Decision Before Critiquing — 意思決定フェーズであり、ブレスト判定不要; Capture Digressions in draft.md — 脱線なし; Draft Stays at Requirements Level — 関数名・行番号への言及はあるが、実装詳細（正規表現の具体的な書き方）は含まれていない; Backward — Compatible CLI Interface — CLIインターフェースの変更なし",
+      "trigger": "gate post hook (auto)",
+      "timestamp": "2026-04-08T01:00:47.239Z"
+    },
+    {
+      "step": "gate",
+      "reason": "Single Responsibility — 正規表現パターン拡張のみに限定されている; Unambiguous Requirements — 具体的なパターン文字列・PASS/FAIL条件が明記されている; Complete Context — 各要件にトリガー（形式）と期待動作（PASS判定）が対応している; No Hardcoded Secrets — 該当なし（正規表現変更のみ）; No Silent Error Swallowing — 該当なし（エラーハンドリング変更なし）; Prioritize Requirements — 要件は4件だが、独立した拡張項目であり優先順位付け不要の性質; Impact on Existing Features — 既存コロン形式の継続PASS、`checkSpecText()`への非影響が明記されている; Bounded Resource Usage — 再帰・リトライ・バルク処理なし; Changes Require Test Coverage — テストカバレッジの言及がない。Acceptance Criteriaはあるがテストコードの追加方針が未記載; Spec Includes Test Strategy — テスト戦略セクションが存在しない（何をどうテストするか未記載）; Synthesize Draft, Do Not Copy — Q&Aを整理・構造化しており直接コピーではない; Record Unresolved Points as Open Questions — Open Questions セクションに「なし」と明記されている; Include 'Why This Approach' Rationale — Alternatives Consideredで他案を比較し正規表現修正を選択した理由が示されている; Backward — Compatible CLI Interface — CLIインターフェースの変更なし; Exit Code Contract — 該当なし（exit codeの変更なし）",
+      "trigger": "gate post hook (auto)",
+      "timestamp": "2026-04-08T01:02:04.970Z"
+    },
+    {
+      "step": "gate-impl",
+      "reason": "no changes found against base branch",
+      "trigger": "gate post hook (auto)",
+      "timestamp": "2026-04-08T01:10:13.619Z"
+    },
+    {
+      "step": "gate-impl",
+      "reason": "gate impl reports 'no changes found' because changes are uncommitted at gate time — pre-existing design issue (ef3a)",
+      "trigger": "sdd-forge flow run gate --phase impl detected no diff against base branch",
+      "resolution": "committed implementation changes before gate impl to make diff visible",
+      "guardrailCandidate": "gate impl should check staged/unstaged changes in addition to committed diff, or flow should commit before gate impl",
+      "timestamp": "2026-04-08T01:10:30.464Z"
+    }
+  ]
+}

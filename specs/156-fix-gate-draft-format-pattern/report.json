@@ -1,0 +1,36 @@
+{
+  "data": {
+    "implementation": {
+      "diffStat": "specs/156-fix-gate-draft-format-pattern/draft.md   |  58 +++++++++\n specs/156-fix-gate-draft-format-pattern/flow.json  | 129 +++++++++++++++++++++\n .../issue-log.json                                 |  30 +++++\n specs/156-fix-gate-draft-format-pattern/qa.md      |   9 ++\n specs/156-fix-gate-draft-format-pattern/review.md  |  41 +++++++\n specs/156-fix-gate-draft-format-pattern/spec.md    |  79 +++++++++++++\n .../tests/README.md                                |  36 ++++++\n .../tests/check-draft-text.test.js                 | 105 +++++++++++++++++\n src/flow/lib/run-gate.js                           |  24 ++--\n 9 files changed, 503 insertions(+), 8 deletions(-)",
+      "commits": [
+        "feat: feature/156-fix-gate-draft-format-pattern",
+        "refactor: extract buildDraftFieldPattern helper and anchor heading detection",
+        "fix: relax gate draft format detection to accept ## heading format"
+      ]
+    },
+    "retro": {
+      "total": 4,
+      "done": 4,
+      "partial": 0,
+      "not_done": 0,
+      "rate": 1,
+      "notes": "全4要件が満たされている。unplanned 変更はすべて SDD フロー成果物（specs/ 配下）またはレビュー指摘に基づくリファクタ（buildDraftFieldPattern 抽出・行頭アンカー追加）であり、要件外ではあるが意図的かつ品質向上に寄与する変更。既存コロン形式の回帰はテストで保護されており安全性が確認できる。"
+    },
+    "issueLog": {
+      "count": 0,
+      "entries": []
+    },
+    "metrics": {
+      "docsRead": 0,
+      "srcRead": 1,
+      "question": 0,
+      "issueLog": 1
+    },
+    "tests": null,
+    "sync": {
+      "status": "skipped",
+      "reason": "sync was skipped"
+    }
+  },
+  "text": "  Report\n\n  Implementation\n  ────────────────────────────────────────────────\n    feat: feature/156-fix-gate-draft-format-pattern\n    refactor: extract buildDraftFieldPattern helper and anchor heading detection\n    fix: relax gate draft format detection to accept ## heading format\n    9 files changed, 503 insertions(+), 8 deletions(-)\n\n  Retro\n  ────────────────────────────────────────────────\n    ████████ 100%  (4 done / 0 partial / 0 miss)\n\n  Metrics\n  ────────────────────────────────────────────────\n    docs read 0  src read 1  Q&A 0  issue-log 1\n\n  Tests\n  ────────────────────────────────────────────────\n    -"
+}

@@ -90,38 +90,32 @@ export function matchScope(filePath, scope) {
 }
 
 /**
- * Resolve guardrail context (lang, presetKey) from config.
+ * Resolve guardrail context (presetKey) from config.
  *
  * @param {string} root - project root
- * @returns {{ lang: string, presetKey: string }}
+ * @returns {{ presetKey: string }}
  */
 function resolveGuardrailContext(root) {
-  let lang = "en";
   let presetKey = "base";
   try {
     const config = loadConfig(root);
-    lang = config.lang || config.docs?.defaultLanguage || "en";
     if (config.type) presetKey = Array.isArray(config.type) ? config.type[0] : config.type;
-  } catch (_) {
-    // No config — use defaults
+  } catch (err) {
+    if (err.code !== "ERR_MISSING_FILE") throw err;
+    // No config file — use defaults
   }
-  return { lang, presetKey };
+  return { presetKey };
 }
 
 /**
- * Read a guardrail JSON file with lang → en fallback.
+ * Read a guardrail JSON file from the preset root directory.
  *
  * @param {string} dir - Preset directory
- * @param {string} lang - Locale code
  * @returns {Object[]|null} Array of guardrails or null
  */
-function readWithFallback(dir, lang) {
-  const primary = path.join(dir, "templates", lang, GUARDRAIL_FILENAME);
-  if (fs.existsSync(primary)) return loadGuardrailFile(primary);
-  if (lang !== "en") {
-    const fallback = path.join(dir, "templates", "en", GUARDRAIL_FILENAME);
-    if (fs.existsSync(fallback)) return loadGuardrailFile(fallback);
-  }
+function readGuardrailFile(dir) {
+  const filePath = path.join(dir, GUARDRAIL_FILENAME);
+  if (fs.existsSync(filePath)) return loadGuardrailFile(filePath);
   return null;
 }
 
@@ -153,14 +147,13 @@ function mergeById(base, additions) {
  * Load all guardrails from preset chain.
  *
  * @param {string} presetKey - Preset name
- * @param {string} lang - Locale code
  * @returns {Object[]}
  */
-function loadPresetGuardrails(presetKey, lang) {
+function loadPresetGuardrails(presetKey) {
   const chain = resolveChainSafe(presetKey);
   let guardrails = [];
   for (const preset of chain) {
-    const loaded = readWithFallback(preset.dir, lang);
+    const loaded = readGuardrailFile(preset.dir);
     if (!loaded) continue;
     guardrails = mergeById(guardrails, loaded);
   }
@@ -174,10 +167,10 @@ function loadPresetGuardrails(presetKey, lang) {
  * @returns {Object[]} merged guardrails
  */
 export function loadMergedGuardrails(root) {
-  const { lang, presetKey } = resolveGuardrailContext(root);
+  const { presetKey } = resolveGuardrailContext(root);
 
   // 1. Collect guardrails from preset chain
-  let guardrails = loadPresetGuardrails(presetKey, lang);
+  let guardrails = loadPresetGuardrails(presetKey);
 
   // 2. Merge guardrails from project (.sdd-forge/guardrail.json)
   const projectPath = path.join(sddDir(root), GUARDRAIL_FILENAME);

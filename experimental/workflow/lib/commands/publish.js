@@ -128,13 +128,7 @@ ${sourceBody}
     let lastErr = null;
     for (let attempt = 0; attempt <= PUBLISH_RETRY_COUNT; attempt++) {
       try {
-        return callAgentWithLog(
-          agent,
-          prompt,
-          { spec: null, phase: "publish" },
-          PUBLISH_TIMEOUT_MS,
-          root,
-        );
+        return callAgentWithLog(agent, prompt, PUBLISH_TIMEOUT_MS, root);
       } catch (err) {
         lastErr = err;
         if (attempt < PUBLISH_RETRY_COUNT) continue;

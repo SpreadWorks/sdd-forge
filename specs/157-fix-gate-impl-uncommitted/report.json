@@ -1,0 +1,34 @@
+{
+  "data": {
+    "implementation": {
+      "diffStat": "specs/157-fix-gate-impl-uncommitted/draft.md       |  75 +++++++++\n specs/157-fix-gate-impl-uncommitted/flow.json      | 129 ++++++++++++++++\n specs/157-fix-gate-impl-uncommitted/issue-log.json |  18 +++\n specs/157-fix-gate-impl-uncommitted/qa.md          |   9 ++\n specs/157-fix-gate-impl-uncommitted/review.md      |  29 ++++\n specs/157-fix-gate-impl-uncommitted/spec.md        |  69 +++++++++\n .../157-fix-gate-impl-uncommitted/tests/README.md  |  34 +++++\n .../tests/gate-impl-uncommitted.test.js            | 167 +++++++++++++++++++++\n src/flow/lib/run-gate.js                           |  24 ++-\n 9 files changed, 547 insertions(+), 7 deletions(-)",
+      "commits": [
+        "feat: feature/157-fix-gate-impl-uncommitted"
+      ]
+    },
+    "retro": {
+      "total": 3,
+      "done": 3,
+      "partial": 0,
+      "not_done": 0,
+      "rate": 1,
+      "notes": "3つの要件はすべて実装済み。runGitDiff ヘルパーの抽出は spec 外だが review フィードバックへの対応であり品質向上に寄与する。テストファイルは spec.md の Test Strategy に明示されており計画内。review.md が指摘した agent.js の改善は本 diff には含まれておらず未対応だが、これは spec のスコープ外でもある。"
+    },
+    "issueLog": {
+      "count": 0,
+      "entries": []
+    },
+    "metrics": {
+      "docsRead": 1,
+      "srcRead": 2,
+      "question": 0,
+      "issueLog": 1
+    },
+    "tests": null,
+    "sync": {
+      "status": "skipped",
+      "reason": "sync was skipped"
+    }
+  },
+  "text": "  Report\n\n  Implementation\n  ────────────────────────────────────────────────\n    feat: feature/157-fix-gate-impl-uncommitted\n    9 files changed, 547 insertions(+), 7 deletions(-)\n\n  Retro\n  ────────────────────────────────────────────────\n    ████████ 100%  (3 done / 0 partial / 0 miss)\n\n  Metrics\n  ────────────────────────────────────────────────\n    docs read 1  src read 2  Q&A 0  issue-log 1\n\n  Tests\n  ────────────────────────────────────────────────\n    -"
+}

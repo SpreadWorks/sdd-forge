@@ -1,0 +1,34 @@
+{
+  "data": {
+    "implementation": {
+      "diffStat": "specs/158-scan-coverage-report/draft.md            |  41 +++\n specs/158-scan-coverage-report/flow.json           | 152 +++++++++++\n specs/158-scan-coverage-report/issue-log.json      |  30 +++\n specs/158-scan-coverage-report/qa.md               |   9 +\n specs/158-scan-coverage-report/spec.md             |  90 +++++++\n specs/158-scan-coverage-report/tests/README.md     |  28 +++\n .../tests/scan-check.test.js                       | 177 +++++++++++++\n src/check.js                                       |  39 +++\n src/check/commands/scan.js                         | 280 +++++++++++++++++++++\n src/flow/commands/report.js                        |   9 +-\n src/lib/formatter.js                               |  21 ++\n src/sdd-forge.js                                   |   2 +-\n tests/unit/lib/formatter.test.js                   |  37 +++\n 13 files changed, 907 insertions(+), 8 deletions(-)",
+      "commits": [
+        "feat: feature/158-scan-coverage-report"
+      ]
+    },
+    "retro": {
+      "total": 7,
+      "done": 7,
+      "partial": 0,
+      "not_done": 0,
+      "rate": 1,
+      "notes": "全7要件が完全に実装されている。未計画変更は spec プロセス成果物（draft/flow/issue-log/qa/spec）とテストファイル群であり、いずれも仕様書の Test Strategy に記載された意図的な追加。要件外の副作用や破壊的変更はなし。"
+    },
+    "issueLog": {
+      "count": 0,
+      "entries": []
+    },
+    "metrics": {
+      "docsRead": 2,
+      "srcRead": 2,
+      "question": 4,
+      "issueLog": 1
+    },
+    "tests": null,
+    "sync": {
+      "status": "skipped",
+      "reason": "sync was skipped"
+    }
+  },
+  "text": "  Report\n\n  Implementation\n  ────────────────────────────────────────────────\n    feat: feature/158-scan-coverage-report\n    13 files changed, 907 insertions(+), 8 deletions(-)\n\n  Retro\n  ────────────────────────────────────────────────\n    ████████ 100%  (7 done / 0 partial / 0 miss)\n\n  Metrics\n  ────────────────────────────────────────────────\n    docs read 2  src read 2  Q&A 4  issue-log 1\n\n  Tests\n  ────────────────────────────────────────────────\n    -"
+}

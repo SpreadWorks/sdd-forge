@@ -6,7 +6,7 @@
  */
 
 import { PKG_DIR } from "../../lib/cli.js";
-import { runCmd } from "../../lib/process.js";
+import { runCmd, assertOk } from "../../lib/process.js";
 import { FlowCommand } from "./base-command.js";
 import path from "path";
 
@@ -70,7 +70,7 @@ export class RunSyncCommand extends FlowCommand {
     if (changed.length > 0) {
       const commitRes = runCmd("git", ["commit", "-m", "docs: sync documentation"], { cwd: root });
       if (!commitRes.ok && !/nothing to commit/i.test(commitRes.stderr || commitRes.stdout)) {
-        throw new Error(commitRes.stderr || commitRes.stdout);
+        assertOk(commitRes, "git commit failed");
       }
     }
 

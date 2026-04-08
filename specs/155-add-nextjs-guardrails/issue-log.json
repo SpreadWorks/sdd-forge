@@ -1,0 +1,46 @@
+{
+  "entries": [
+    {
+      "step": "gate-draft",
+      "reason": "draft not found: /home/nakano/workspace/sdd-forge/.sdd-forge/worktree/feature-155-add-nextjs-guardrails/specs/155-add-nextjs-guardrails/draft.md",
+      "trigger": "gate onError hook (auto)",
+      "timestamp": "2026-04-08T00:57:24.357Z"
+    },
+    {
+      "step": "gate-draft",
+      "reason": "Single Responsibility — nextjs プリセットへの guardrail 追加のみを扱っており、単一の関心事に集中している; Unambiguous Requirements — 追加件数（9件）、対象ファイル、各 id と phase が具体的に列挙されており曖昧な形容詞はない; Complete Context — 各要件は「何を」「どのファイルに」「どの条件で」追加するかが明記されている; No Hardcoded Secrets — シークレット関連の変更は含まれない; Prioritize Requirements — 要件は4件以下の変更カテゴリ（guardrail追加・制約・影響範囲）であり優先順位付けは不要; Impact on Existing Features — 既存3件を変更しない旨、親プリセットへの影響なし、docs 表示件数の変化（3→12件）が明記されている; Present Recommendations with Reasoning — Q1・Q2 とも推奨案と根拠（Issue テキスト採用、データ変更のみで新規テスト不要）が記載されている; Explore Before Asking — Q&A は既存コンテンツ・テスト方針の確認であり、調査可能な事項は調査済みで回答されている; Proactively Raise Related Implications — `sdd-forge upgrade` によるスキル反映の要否、NOTICE ファイル追加が `sdd-forge build` 出力に与える影響について言及がない; Confirm Brainstorm vs. Decision Before Critiquing — ユーザー承認済み（✅）であり、決定事項として扱われている; Capture Digressions in draft.md — 議論の逸脱は見られない; Draft Stays at Requirements Level — 実装詳細（関数設計・JSON の具体的な構造等）は含まれず要件レベルに留まっている; Backward — Compatible CLI Interface — CLI インターフェースの変更は含まれない",
+      "trigger": "gate post hook (auto)",
+      "timestamp": "2026-04-08T00:57:45.953Z"
+    },
+    {
+      "step": "gate-impl",
+      "reason": "no changes found against base branch",
+      "trigger": "gate post hook (auto)",
+      "timestamp": "2026-04-08T01:15:34.078Z"
+    },
+    {
+      "step": "gate-impl",
+      "reason": "9件のguardrail追加（server — components-by-default） — guardrail.jsonに追加済み、phase: spec, impl; 9件のguardrail追加（route — handler-vs-server-action） — guardrail.jsonに追加済み、phase: spec; 9件のguardrail追加（use — nextjs-optimized-components） — guardrail.jsonに追加済み、phase: impl, review; 9件のguardrail追加（await — async-request-apis） — guardrail.jsonに追加済み、phase: impl; 9件のguardrail追加（suspense — boundary-for-search-params） — guardrail.jsonに追加済み、phase: impl; 9件のguardrail追加（parallel — route-default-required） — guardrail.jsonに追加済み、phase: impl; 9件のguardrail追加（error — boundary-client-component） — guardrail.jsonに追加済み、phase: impl; 9件のguardrail追加（no — dynamic-ssr-false-in-server-components） — guardrail.jsonに追加済み、phase: review; 9件のguardrail追加（no — route-page-coexistence） — guardrail.jsonに追加済み、phase: review; 各エントリにid/title/body/meta.phaseフィールドが存在 — 全9件が必須フィールドを持つ; await — async-request-apisのbodyに\"In Next.js 15 and later\"を記載 — body冒頭に記載済み; src/presets/nextjs/NOTICEファイルを新規作成 — diffに追加確認; NOTICEに影響を受けた9件の記事名一覧を記載 — 全9件の記事名が列挙されている; NOTICEにgithub/awesome — copilot MIT出典を記載 — URL・ライセンス表記あり; NOTICEにPatrickJS/awesome — cursorrules CC0 1.0出典を記載 — URL・ライセンス表記あり; 既存3件（no — server-code-in-client-bundle等）を変更しない — diffに既存エントリの変更なし; sdd — forge upgradeを実行すること — diffにupgrade実行の証跡（生成ファイルの変更等）が含まれていない; npm testで既存テストがすべてPASSすること — diffにテスト実行結果の証跡が含まれていない",
+      "trigger": "gate post hook (auto)",
+      "timestamp": "2026-04-08T01:16:12.775Z"
+    },
+    {
+      "step": "gate-impl",
+      "reason": "guardrail.json に9件追加（既存3件変更なし） — diff で既存3件は変更されず、9件が追加されている; server — components-by-default（phase: spec, impl） — id/title/body/meta.phase 全フィールド存在、phase 一致; route — handler-vs-server-action（phase: spec） — id/title/body/meta.phase 全フィールド存在、phase 一致; use — nextjs-optimized-components（phase: impl, review） — id/title/body/meta.phase 全フィールド存在、phase 一致; await — async-request-apis（phase: impl） — id/title/body/meta.phase 全フィールド存在、phase 一致; suspense — boundary-for-search-params（phase: impl） — id/title/body/meta.phase 全フィールド存在、phase 一致; parallel — route-default-required（phase: impl） — id/title/body/meta.phase 全フィールド存在、phase 一致; error — boundary-client-component（phase: impl） — id/title/body/meta.phase 全フィールド存在、phase 一致; no — dynamic-ssr-false-in-server-components（phase: review） — id/title/body/meta.phase 全フィールド存在、phase 一致; no — route-page-coexistence（phase: review） — id/title/body/meta.phase 全フィールド存在、phase 一致; 各エントリに id/title/body/meta.phase フィールドが存在する — 全9件で確認済み; await — async-request-apis の body に \"In Next.js 15 and later\" を含む — body 冒頭に記載済み; src/presets/nextjs/NOTICE を新規作成 — diff に追加確認; NOTICE に9件の記事名一覧を記載 — 9件すべて列挙されている; NOTICE に github/awesome — copilot MIT 出典を記載 — URL とライセンス表記あり; NOTICE に PatrickJS/awesome — cursorrules CC0 1.0 出典を記載 — URL とライセンス表記あり; NOTICE が web — design/NOTICE 形式に準拠 — 同様の構造（説明・記事一覧・出典）で記述; sdd — forge upgrade を実行すること — diff に upgrade 実行の証跡（生成ファイルの変更等）が存在しない（`.claude/` は .gitignore 対象のため diff に現れないと spec に注記あり）; npm test で既存テストが PASS すること — spec の Implementation Notes に「101 suites PASS、not ok なし」と記録されている",
+      "trigger": "gate post hook (auto)",
+      "timestamp": "2026-04-08T01:17:13.544Z"
+    },
+    {
+      "step": "merge",
+      "reason": "Merge conflict detected. Run 'git rebase development' in the worktree and retry finalize.",
+      "timestamp": "2026-04-08T01:49:45.340Z"
+    },
+    {
+      "step": "finalize",
+      "reason": "merge conflict detected between feature/155-add-nextjs-guardrails and development",
+      "trigger": "sdd-forge flow run finalize --mode all",
+      "resolution": "run git rebase development in worktree to incorporate upstream changes",
+      "timestamp": "2026-04-08T01:49:50.003Z"
+    }
+  ]
+}

@@ -28,6 +28,7 @@
  * @property {string[]} args     - コマンド引数（{{PROMPT}} プレースホルダー対応）
  * @property {number} [timeoutMs] - タイムアウト (ms)
  * @property {string} [systemPromptFlag] - system prompt フラグ (例: "--system-prompt", "--system-prompt-file")
+ * @property {string} [jsonOutputFlag] - JSON 出力フラグ (例: "--output-format json" for claude, "--json" for codex)
  */
 
 /**

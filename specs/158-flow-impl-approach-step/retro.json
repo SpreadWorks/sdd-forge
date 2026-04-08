@@ -1,0 +1,50 @@
+{
+  "spec": "specs/158-flow-impl-approach-step/spec.md",
+  "date": "2026-04-08T08:28:54.184Z",
+  "requirements": [
+    {
+      "desc": "flow-impl ステップ1冒頭でコード前に実装方針を提示する",
+      "status": "done",
+      "note": "SKILL.md に「Before writing any code, present an implementation approach and obtain approval」が追記された"
+    },
+    {
+      "desc": "提示フォーマット: 各要件ごとに方針・使う既存コード・設計上の判断を記載",
+      "status": "done",
+      "note": "Req N ごとに「方針 (Approach)」「既存コード (Existing code)」「設計判断 (Design decision)」を記載するフォーマットとサンプルが追加された"
+    },
+    {
+      "desc": "ユーザーが承認/差し戻しを選択できる（[1] 進める [2] 変更したい）",
+      "status": "done",
+      "note": "「[1] この方針で進める」「[2] 変更したい（→ 何を変えるか教えてください）」の選択肢が追加された"
+    },
+    {
+      "desc": "差し戻し時は修正指示を受けて再提示。リトライ上限3回",
+      "status": "done",
+      "note": "「If [2]: incorporate feedback, revise the plan, re-present. Retry limit: 3 rounds.」が明記された"
+    },
+    {
+      "desc": "autoApprove=true の場合は方針提示後に自動承認してコーディングへ進む",
+      "status": "done",
+      "note": "「If autoApprove: true: present the approach briefly, then auto-select [1] and proceed」と表示メッセージも定義された"
+    },
+    {
+      "desc": "承認後にコーディングを開始する（承認前にコード変更禁止）",
+      "status": "done",
+      "note": "「Code only after … approach approval」の条件追記と Hard Stops に「Do not write any code before the approach plan is approved by the user」が追加された"
+    }
+  ],
+  "unplanned": [
+    {
+      "file": "src/lib/agent.js",
+      "change": "injectJsonFlag 関数に「最初の引数がフラグでない場合（サブコマンド）はその直後に JSON フラグを挿入する」ロジックを追加。codex の --json フラグ順序問題（`codex --json exec` → `codex exec --json`）への対処。issue-log に記録された既知バグの修正だが、本 spec の要件には含まれない"
+    }
+  ],
+  "summary": {
+    "total": 6,
+    "done": 6,
+    "partial": 0,
+    "not_done": 0,
+    "rate": 1,
+    "notes": "全6要件が SKILL.md への追記で満たされている。変更内容はスコープと一致しており CLI コマンド新設・ファイル保存・step ID 追加はいずれも行われていない。unplanned として src/lib/agent.js の codex フラグ順序修正が含まれるが、これは issue-log に記録された既存バグへの対処であり機能的な退行リスクは低い。spec 要件の充足度は 6/6。"
+  }
+}

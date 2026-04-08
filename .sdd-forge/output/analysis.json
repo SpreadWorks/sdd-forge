@@ -1,12 +1,12 @@
 {
-  "analyzedAt": "2026-04-07T13:31:31.518Z",
+  "analyzedAt": "2026-04-08T08:58:59.464Z",
   "package": {
     "entries": [
       {
         "file": "package.json",
-        "hash": "79b5999ed0b214e8c77fbb516be675e3",
+        "hash": "663afc936e1df328091080fed54e30dd",
         "lines": 36,
-        "mtime": "2026-04-05T09:45:33.768Z",
+        "mtime": "2026-04-07T15:34:49.976Z",
         "packageDeps": {
           "dependencies": {},
           "devDependencies": {}
@@ -19,24 +19,25 @@
         },
         "composerDeps": null,
         "id": "451a9f25",
-        "summary": "Root package manifest for the sdd-forge npm package, defining entry point, scripts, and publish configuration.",
-        "detail": "Declares the CLI binary at src/sdd-forge.js and restricts published files to the src/ directory (excluding test directories). Uses ES module type and requires Node.js 18+. Defines four test scripts (unit, e2e, acceptance) all delegating to custom test runners. Package manager is pinned to pnpm with a checksum hash.",
+        "summary": "Package manifest for sdd-forge, an npm CLI tool providing Spec-Driven Development workflow and automated documentation generation. Defines the binary entry point, file inclusions, and engine requirements.",
+        "detail": "Declares sdd-forge as an ES module package targeting Node.js 18+. The binary entry point is src/sdd-forge.js. Only the src/ directory is published to npm, excluding preset test directories. No runtime dependencies are declared, consistent with the project's no-external-dependencies policy. Test scripts support unit, e2e, and acceptance scopes via a custom test runner.",
         "chapter": "stack_and_ops",
         "role": "config",
         "enrich": {
-          "processedAt": "2026-04-06T15:36:33.520Z",
+          "processedAt": "2026-04-07T23:33:06.281Z",
           "attempts": 1
         },
         "keywords": [
           "package.json",
           "npm",
           "cli",
-          "bin",
-          "entry-point",
+          "binary",
+          "entry point",
+          "es module",
+          "no dependencies",
+          "node engine",
           "publish",
-          "pnpm",
-          "esm",
-          "node-version"
+          "files"
         ]
       }
     ],
@@ -47,6 +48,95 @@
   },
   "modules": {
     "entries": [
+      {
+        "file": "src/check.js",
+        "hash": "edb1a125f5059d6d89a107e64c09dd6d",
+        "lines": 40,
+        "mtime": "2026-04-08T05:05:21.872Z",
+        "className": "check",
+        "methods": [],
+        "imports": [
+          "path",
+          "./lib/cli.js",
+          "./lib/exit-codes.js"
+        ],
+        "exports": [],
+        "extends": null,
+        "usedBy": null,
+        "id": "cfca7dd3",
+        "summary": "Entry point dispatcher for the `sdd-forge check` subcommand namespace. Routes sub-subcommands to their respective script files under the check/ directory.",
+        "detail": "Parses the first CLI argument to determine which check sub-script to invoke. Resolves the script path relative to PKG_DIR and delegates execution via dynamic import. Exits with EXIT_ERROR if the sub-script is not recognized. Follows the same dispatcher pattern used by docs.js and flow.js.",
+        "chapter": "project_structure",
+        "role": "cli",
+        "enrich": {
+          "processedAt": "2026-04-08T05:05:43.612Z",
+          "attempts": 1
+        },
+        "keywords": [
+          "check",
+          "dispatcher",
+          "subcommand",
+          "routing",
+          "dynamic import",
+          "PKG_DIR",
+          "entry point"
+        ]
+      },
+      {
+        "file": "src/check/commands/scan.js",
+        "hash": "3a42466c795204e2d2ab74e2b9a85e6d",
+        "lines": 274,
+        "mtime": "2026-04-08T08:58:59.256Z",
+        "className": "scan",
+        "methods": [
+          "printHelp",
+          "groupByExtension",
+          "walkIncludedFiles",
+          "computeCoverage",
+          "formatText",
+          "formatMarkdown",
+          "main"
+        ],
+        "imports": [
+          "fs",
+          "path",
+          "../../lib/entrypoint.js",
+          "../../lib/cli.js",
+          "../../lib/config.js",
+          "../../docs/lib/scanner.js",
+          "../../lib/formatter.js",
+          "../../lib/exit-codes.js"
+        ],
+        "exports": [
+          "main",
+          "groupByExtension",
+          "computeCoverage",
+          "formatText"
+        ],
+        "extends": null,
+        "usedBy": null,
+        "id": "7cccb0de",
+        "summary": "CLI command that computes and reports scan coverage by comparing analysis.json output against actual source files in the repository. Supports text, JSON, and Markdown output formats.",
+        "detail": "Reads analysis.json produced by 'sdd-forge docs scan' and walks the source directory using include/exclude glob matchers from config to enumerate all eligible files. Computes coverage metrics by comparing analyzed files against total discovered files, grouping uncovered files by extension. Provides formatText and formatMarkdown renderers that optionally show all uncovered files or truncate to a configurable maximum (DEFAULT_MAX_FILES=10). Exits with EXIT_ERROR on config load failures, missing analysis.json, or unknown format flags.",
+        "chapter": "cli_commands",
+        "role": "cli",
+        "enrich": {
+          "processedAt": "2026-04-08T08:59:08.299Z",
+          "attempts": 1
+        },
+        "keywords": [
+          "scan",
+          "coverage",
+          "analysis.json",
+          "check",
+          "uncovered",
+          "glob",
+          "walkIncludedFiles",
+          "groupByExtension",
+          "computeCoverage",
+          "report"
+        ]
+      },
       {
         "file": "src/docs.js",
         "hash": "28cd38d87b7e8dce36f3b8e6c4c31fd2",
@@ -2002,9 +2092,9 @@
       },
       {
         "file": "src/flow/commands/merge.js",
-        "hash": "095032f48dbfe91a0c3f42166877b5a0",
+        "hash": "159dc22ff88591be40d9e1b3d6271e3b",
         "lines": 210,
-        "mtime": "2026-04-04T08:09:59.594Z",
+        "mtime": "2026-04-08T00:40:05.731Z",
         "className": "merge",
         "methods": [
           "resolveRemote",
@@ -2031,31 +2121,32 @@
         "extends": null,
         "usedBy": null,
         "id": "3a0db928",
-        "summary": "The merge command resolves the merge strategy (PR via GitHub CLI or local squash) for the SDD flow finalization step.",
-        "detail": "Reads flow state and config to determine the remote and merge strategy. Checks gh CLI availability via isGhAvailable and falls back to squash merge if not available or if config does not specify PR route. Parses spec content to extract PR title and body sections using extractSection. buildPrBody assembles a structured PR description from spec and flow state. runSquashMerge performs a squash merge with conflict detection, returning a strategy result object.",
+        "summary": "Handles the merge step of the SDD flow, supporting both squash-merge and GitHub PR strategies. Builds PR title/body from spec content and delegates to gh CLI or git merge.",
+        "detail": "Resolves the remote from config and determines merge strategy (skip, pr, squash) based on gh availability and config. Parses spec markdown to extract sections for PR title and body generation. Implements squash merge via git with conflict detection. Exports main, parseSpec, buildPrTitle, buildPrBody for use by the flow dispatcher.",
         "chapter": "internal_design",
         "role": "controller",
         "enrich": {
-          "processedAt": "2026-04-04T08:17:46.932Z",
+          "processedAt": "2026-04-08T00:40:49.364Z",
           "attempts": 1
         },
         "keywords": [
           "merge",
-          "PR",
           "squash",
-          "GitHub CLI",
-          "gh",
           "pull request",
-          "flow finalize",
-          "strategy",
-          "spec"
+          "pr",
+          "gh cli",
+          "spec",
+          "flow",
+          "git merge",
+          "PR body",
+          "PR title"
         ]
       },
       {
         "file": "src/flow/commands/report.js",
-        "hash": "b9e5b478010b4e3d0f9f946ffb255334",
-        "lines": 208,
-        "mtime": "2026-04-03T01:07:47.870Z",
+        "hash": "61fae3f0be09271db1db84397681b9d1",
+        "lines": 187,
+        "mtime": "2026-04-08T05:05:21.872Z",
         "className": "report",
         "methods": [
           "generateReport",
@@ -2066,7 +2157,8 @@
         "imports": [
           "fs",
           "path",
-          "../lib/set-issue-log.js"
+          "../lib/set-issue-log.js",
+          "../../lib/formatter.js"
         ],
         "exports": [
           "generateReport",
@@ -2075,23 +2167,23 @@
         "extends": null,
         "usedBy": null,
         "id": "5f80ffd2",
-        "summary": "Generates and persists a structured flow report by aggregating metrics and issue-log entries.",
-        "detail": "aggregateMetrics computes totals across metric phases (question, redo, docsRead, srcRead). generateReport combines metrics and issue-log into a { data, text } envelope where formatText produces a human-readable summary. saveReport writes report.json alongside the spec file in the spec directory. Used as a late-stage step in finalize to capture quality signals for the completed flow.",
+        "summary": "Provides report generation and persistence logic for the SDD flow. Aggregates per-phase metrics and serializes the report alongside the spec file.",
+        "detail": "Exports generateReport which combines raw issue-log data with aggregated metrics into a structured {data, text} result. aggregateMetrics folds per-entry metric objects into totals. formatText renders a human-readable summary using pushSection/DIVIDER from formatter.js. saveReport resolves the spec directory and writes report.json next to the spec file. Follows the pure-function pattern of the flow lib layer.",
         "chapter": "internal_design",
         "role": "lib",
         "enrich": {
-          "processedAt": "2026-04-03T03:15:49.316Z",
+          "processedAt": "2026-04-08T05:05:43.612Z",
           "attempts": 1
         },
         "keywords": [
-          "report",
+          "flow report",
           "metrics",
           "aggregation",
-          "issue-log",
+          "issue log",
           "report.json",
-          "finalize",
-          "quality",
-          "flow-report"
+          "generateReport",
+          "saveReport",
+          "spec"
         ]
       },
       {
@@ -2404,9 +2496,9 @@
       },
       {
         "file": "src/flow/lib/get-issue.js",
-        "hash": "47664720dae5590eb013b4264a23012b",
+        "hash": "cb71e1f166d6d7accedaf1e986411c2e",
         "lines": 43,
-        "mtime": "2026-04-04T08:09:59.595Z",
+        "mtime": "2026-04-08T00:40:05.731Z",
         "className": "get-issue",
         "methods": [],
         "imports": [
@@ -2419,21 +2511,22 @@
         "extends": "FlowCommand",
         "usedBy": null,
         "id": "7aec11d1",
-        "summary": "GetIssueCommand fetches a GitHub issue by number using the gh CLI and returns structured issue data.",
-        "detail": "Extends FlowCommand and validates that a positive integer issue number is provided. Executes gh issue view with JSON output format via runCmd. Parses the JSON response and returns a normalized result object. Throws descriptive errors for missing issue number, gh command failures, or parse errors.",
+        "summary": "FlowCommand subclass that fetches a GitHub issue by number and returns structured issue data. Used during flow to retrieve issue context.",
+        "detail": "Extends FlowCommand base class and validates that a positive integer issue number is provided. Invokes the gh CLI via runCmd to fetch issue data as JSON. Parses and returns a structured result object. Throws on invalid input or command failure.",
         "chapter": "internal_design",
-        "role": "lib",
+        "role": "controller",
         "enrich": {
-          "processedAt": "2026-04-04T08:17:46.932Z",
+          "processedAt": "2026-04-08T00:40:49.364Z",
           "attempts": 1
         },
         "keywords": [
-          "GitHub issue",
-          "gh CLI",
-          "issue fetch",
-          "flow context",
-          "issue number",
-          "JSON"
+          "issue",
+          "github",
+          "gh",
+          "get issue",
+          "flow command",
+          "FlowCommand",
+          "issue number"
         ]
       },
       {
@@ -2628,9 +2721,9 @@
       },
       {
         "file": "src/flow/lib/run-finalize.js",
-        "hash": "f86240cfd70de070f14899f5d06644fe",
+        "hash": "377fd9af968f55eb79510d649d67fb5b",
         "lines": 336,
-        "mtime": "2026-04-06T23:59:22.480Z",
+        "mtime": "2026-04-08T00:40:05.731Z",
         "className": "run-finalize",
         "methods": [
           "finalizeOnError",
@@ -2662,37 +2755,39 @@
         "extends": "FlowCommand",
         "usedBy": null,
         "id": "c711309b",
-        "summary": "Implements the `RunFinalizeCommand` for the `flow run finalize` action, orchestrating commit, docs build, merge/PR creation, and worktree cleanup as discrete named steps.",
-        "detail": "Defines a `STEP_MAP` of named sub-steps (commit, docs, merge, cleanup) that can be run in full (`--mode all`) or selectively (`--mode select --steps ...`). Each sub-step is executed via `runSubStep` which wraps the function and normalises success/failure results. `commitOrSkip` checks for staged changes before committing. `executeCleanupImpl` removes the worktree path after merge. `executeCommitPost` hooks into the flow registry's post-commit lifecycle to update step status. Supports `--merge-strategy squash|pr` to control how the feature branch is integrated.",
+        "summary": "Implements the finalize step of the SDD flow, orchestrating commit, docs sync, merge, and worktree cleanup sub-steps. Supports 'all' and 'select' modes.",
+        "detail": "Defines STEP_MAP mapping step names to handler functions and dispatches sub-steps via runSubStep. Handles commit-or-skip logic, docs build invocation via PKG_DIR script path, and worktree cleanup. Integrates with issue-log (formerly redolog) for tracking. Exports commitOrSkip, executeCommitPost, finalizeOnError, and RunFinalizeCommand. Validates --mode and --merge-strategy flags on entry.",
         "chapter": "internal_design",
-        "role": "lib",
+        "role": "controller",
         "enrich": {
-          "processedAt": "2026-04-07T02:53:27.930Z",
+          "processedAt": "2026-04-08T00:40:49.364Z",
           "attempts": 1
         },
         "keywords": [
           "finalize",
           "commit",
-          "merge",
-          "PR",
           "worktree",
           "cleanup",
-          "docs build",
-          "step",
-          "squash",
-          "flow lifecycle"
+          "merge",
+          "docs sync",
+          "flow",
+          "step map",
+          "issue log",
+          "FlowCommand"
         ]
       },
       {
         "file": "src/flow/lib/run-gate.js",
-        "hash": "5a08c9aa02593438c271ff8e3eb8af21",
-        "lines": 465,
-        "mtime": "2026-04-07T13:31:31.298Z",
+        "hash": "507d44b593a479d0f5c75687c0fe3a6e",
+        "lines": 483,
+        "mtime": "2026-04-08T02:27:48.861Z",
         "className": "run-gate",
         "methods": [
           "RunGateCommand",
+          "runGitDiff",
           "sectionAt",
           "checkSpecText",
+          "buildDraftFieldPattern",
           "checkDraftText",
           "buildGuardrailPrompt",
           "parseGuardrailResponse",
@@ -2722,25 +2817,25 @@
         "extends": "FlowCommand",
         "usedBy": null,
         "id": "b4aa4dad",
-        "summary": "Implements gate check logic for SDD flow phases (draft, spec, pre, post, impl), validating documents against structural rules and AI guardrail evaluation.",
-        "detail": "checkSpecText and checkDraftText apply regex-based structural validators. checkGuardrail loads merged guardrail rules filtered by phase/role and calls an AI agent to score each rule, returning pass/fail with reasons. executeImpl computes a git diff against the base branch and uses buildImplCheckPrompt to verify implementation coverage. gatePass and gateFail construct result objects consumed by the flow dispatcher. PASS_NEXT/FAIL_NEXT maps drive the next-step routing.",
+        "summary": "Implements the gate-check command for SDD flow phases (draft, spec, pre, post, impl), validating spec and draft documents against guardrails and structural rules.",
+        "detail": "RunGateCommand extends FlowCommand and dispatches to phase-specific execution methods (executeDraft, executeImpl, executeSpec). Each phase reads the target file, runs static text checks (checkSpecText, checkDraftText), and optionally calls an AI guardrail via callAgentWithLog. Results are returned as structured pass/fail objects with PASS_NEXT/FAIL_NEXT transition maps that drive the flow state machine. Git diff is used in the impl phase to verify that actual changes exist against the base branch.",
         "chapter": "internal_design",
-        "role": "lib",
+        "role": "controller",
         "enrich": {
-          "processedAt": "2026-04-07T13:32:57.482Z",
+          "processedAt": "2026-04-08T02:28:06.724Z",
           "attempts": 1
         },
         "keywords": [
           "gate",
           "guardrail",
-          "spec validation",
-          "draft check",
-          "impl check",
-          "flow phase",
-          "pass fail",
-          "AI gate",
+          "spec",
+          "draft",
+          "flow",
+          "phase",
+          "validation",
+          "run-gate",
           "SDD",
-          "RunGateCommand"
+          "impl check"
         ]
       },
       {
@@ -2825,9 +2920,9 @@
       },
       {
         "file": "src/flow/lib/run-prepare-spec.js",
-        "hash": "7534f45b918e2479528f3ca7b73eead8",
+        "hash": "88d80ed53154d0133c7d376f27cc85ee",
         "lines": 325,
-        "mtime": "2026-04-04T14:29:59.909Z",
+        "mtime": "2026-04-08T00:40:05.731Z",
         "className": "run-prepare-spec",
         "methods": [
           "RunPrepareSpecCommand",
@@ -2860,25 +2955,25 @@
         "extends": "FlowCommand",
         "usedBy": null,
         "id": "59eeacc6",
-        "summary": "Implements the `prepare` flow command that scaffolds a new spec directory with spec.md and qa.md templates, creates a git branch or worktree, and initializes flow state.",
-        "detail": "RunPrepareSpecCommand extends FlowCommand and orchestrates the full spec preparation lifecycle: it validates a clean worktree, resolves the base branch, slugifies the title into a branch/directory name, computes the next numeric spec index, and writes templated spec.md and qa.md files. It supports local template overrides stored under .sdd-forge/templates/<lang>/specs/. After writing files it persists flow state via saveFlowState/addActiveFlow and registers the new branch in the git worktree when running inside a worktree context. Helper functions (runGit, slugify, nextIndex, ensureClean, ensureBaseBranch, detectBaseBranch) are module-private pure utilities. The DEFAULT_SPEC_TEMPLATE is overridable by a project-local file, enabling per-project spec scaffolding customization.",
+        "summary": "Prepares a new spec branch and scaffolds spec/qa markdown files for a new SDD flow. Handles worktree creation, branch naming, and initial flow state setup.",
+        "detail": "Validates clean working tree and base branch existence before creating a feature branch. Generates sequential spec directory names by scanning existing specs/. Writes spec.md and qa.md from templates, preferring local overrides in .sdd-forge/templates/. Creates a git worktree when configured and saves initial flow state via saveFlowState and addActiveFlow. Exports RunPrepareSpecCommand.",
         "chapter": "internal_design",
         "role": "controller",
         "enrich": {
-          "processedAt": "2026-04-04T14:30:13.130Z",
+          "processedAt": "2026-04-08T00:40:49.364Z",
           "attempts": 1
         },
         "keywords": [
           "prepare",
           "spec",
-          "scaffold",
-          "worktree",
-          "flow-state",
           "branch",
+          "worktree",
+          "scaffold",
           "template",
+          "flow state",
           "qa",
           "slugify",
-          "RunPrepareSpecCommand"
+          "FlowCommand"
         ]
       },
       {
@@ -3019,9 +3114,9 @@
       },
       {
         "file": "src/flow/lib/run-review.js",
-        "hash": "b2e422a97d1594f1b7d4c660a4a03157",
-        "lines": 197,
-        "mtime": "2026-04-04T14:45:09.605Z",
+        "hash": "779f5656b7917117338450c1e248eefd",
+        "lines": 196,
+        "mtime": "2026-04-08T00:40:05.731Z",
         "className": "run-review",
         "methods": [
           "runCmdWithRetry",
@@ -3046,32 +3141,30 @@
         "extends": "FlowCommand",
         "usedBy": null,
         "id": "d4e97204",
-        "summary": "Implements the review execution logic for SDD flow, including retry handling and output parsing for both test and spec review modes.",
-        "detail": "RunReviewCommand extends FlowCommand and orchestrates subprocess execution of review.js script via runCmd, dispatching to either parseTestReviewOutput or parseSpecReviewOutput based on review type. runCmdWithRetry provides configurable retry logic with delay between attempts, defaulting to 2 retries with 3000ms delay. Output parsers normalize subprocess results (res, stdout, stderr) into structured return objects or throw on failure. The module exports both the command class and the parser/retry utilities for reuse.",
+        "summary": "Implements the review step of the SDD flow, running test-review or spec-review scripts as subprocesses with retry logic. Parses structured output from review scripts.",
+        "detail": "Delegates to review.js script via PKG_DIR path using runCmd. Provides runCmdWithRetry with configurable retry count and delay for transient failures. parseTestReviewOutput and parseSpecReviewOutput extract structured results from stdout/stderr. Throws descriptive errors on non-zero exit. Exports RunReviewCommand and parse utilities.",
         "chapter": "internal_design",
-        "role": "lib",
+        "role": "controller",
         "enrich": {
-          "processedAt": "2026-04-04T14:45:20.624Z",
+          "processedAt": "2026-04-08T00:40:49.364Z",
           "attempts": 1
         },
         "keywords": [
           "review",
+          "test review",
+          "spec review",
           "retry",
           "subprocess",
-          "RunReviewCommand",
-          "parseTestReviewOutput",
-          "parseSpecReviewOutput",
-          "runCmdWithRetry",
           "flow",
-          "agent",
-          "timeout"
+          "FlowCommand",
+          "parse output"
         ]
       },
       {
         "file": "src/flow/lib/run-sync.js",
-        "hash": "407f3ff2758cf3cf1a36e4a5358ca2f3",
+        "hash": "b7cfb93db92b8118b54fc1d7cda18b4c",
         "lines": 86,
-        "mtime": "2026-04-04T08:09:59.596Z",
+        "mtime": "2026-04-08T00:40:05.731Z",
         "className": "run-sync",
         "methods": [
           "RunSyncCommand"
@@ -3089,22 +3182,22 @@
         "extends": "FlowCommand",
         "usedBy": null,
         "id": "6cc87b22",
-        "summary": "RunSyncCommand runs the docs build pipeline and optionally commits the resulting documentation changes.",
-        "detail": "Extends FlowCommand and resolves the docs script path via PKG_DIR. Executes the docs.js build script via runCmd and throws a descriptive error on failure. If commit mode is enabled, stages and commits the generated docs changes, returning diffStat in the result. Returns a structured object indicating changed files and build status, used by the flow sync step in the finalization pipeline.",
+        "summary": "Implements the sync step of the SDD flow, invoking the docs build pipeline to regenerate documentation. Returns structured success or error results.",
+        "detail": "Constructs the docs.js script path from PKG_DIR and invokes it via runCmd. Uses assertOk to enforce success. Returns result objects indicating docs sync outcome. Throws descriptive errors on failure. Exports RunSyncCommand.",
         "chapter": "internal_design",
-        "role": "lib",
+        "role": "controller",
         "enrich": {
-          "processedAt": "2026-04-04T08:17:46.932Z",
+          "processedAt": "2026-04-08T00:40:49.364Z",
           "attempts": 1
         },
         "keywords": [
           "sync",
-          "docs build",
-          "commit",
-          "documentation",
-          "flow sync",
-          "pipeline step",
-          "diffStat"
+          "docs",
+          "build",
+          "docs pipeline",
+          "flow",
+          "FlowCommand",
+          "RunSyncCommand"
         ]
       },
       {
@@ -3558,9 +3651,9 @@
       },
       {
         "file": "src/lib/agent.js",
-        "hash": "80189c5aae063e4b8052f77c8a29d9e8",
-        "lines": 514,
-        "mtime": "2026-04-07T13:31:31.298Z",
+        "hash": "f50c3b1da78b44e9de837d98eee173ef",
+        "lines": 744,
+        "mtime": "2026-04-08T08:28:55.315Z",
         "className": "agent",
         "methods": [
           "callAgent",
@@ -3578,14 +3671,25 @@
           "resolveEffectivePrompt",
           "resolvePromptArgs",
           "stripPromptFromArgs",
+          "detectProviderKey",
+          "injectJsonFlag",
+          "parseClaudeOutput",
+          "parseCodexOutput",
+          "parseAgentOutput",
+          "resolveAgentResult",
           "buildAgentInvocation",
+          "callAgentRaw",
           "buildAgentLogPayload",
+          "extractAgentResult",
           "runWithAgentLogging",
           "runWithAgentLoggingSync",
           "callAgentAsyncWithRetry",
+          "callAgentAsyncRawOnce",
+          "callAgentAsyncRaw",
           "callAgentAsyncOnce",
-          "resolveCommandSettings",
-          "mergeProfileArgs"
+          "resolveProfileName",
+          "buildAgentResult",
+          "resolveProviderKeyFromProfile"
         ],
         "imports": [
           "crypto",
@@ -3607,33 +3711,38 @@
           "writeAgentContext",
           "cleanupAgentContext",
           "DEFAULT_AGENT_TIMEOUT",
-          "DEFAULT_AGENT_TIMEOUT_MS"
+          "DEFAULT_AGENT_TIMEOUT_MS",
+          "BUILTIN_PROVIDERS"
         ],
         "extends": null,
         "usedBy": [
           "src/setup.js"
         ],
         "id": "13ddf392",
-        "summary": "Core agent invocation library providing synchronous and asynchronous AI agent calls with structured logging, retry logic, workdir management, and config-driven agent resolution.",
-        "detail": "callAgent spawns the agent process synchronously via execFileSync; callAgentAsync uses spawn with streaming stdout/stderr. Large prompts above ARGV_SIZE_THRESHOLD are passed via stdin to avoid ARG_MAX limits. runWithAgentLogging wraps calls in Logger.agent start/end events with request IDs. resolveAgent merges provider profile args with command-specific overrides from config. ensureAgentWorkDir validates and creates -C path arguments. writeAgentContext injects rules files into .claude/rules/ for scoped agent instructions.",
+        "summary": "Agent invocation layer that wraps CLI-based AI agents (Claude, Codex, etc.) with logging, retry, and async/sync execution modes. Handles prompt injection, JSON output parsing, provider detection, and agent context file management.",
+        "detail": "Provides both synchronous (callAgentWithLog) and asynchronous (callAgentAsyncWithLog, callAgentAwaitLog) entry points that wrap raw agent invocations with structured logging via Logger.agent phase start/end events. Detects provider type from command name to select appropriate output parsers (parseClaudeOutput, parseCodexOutput) and normalizes results into {text, usage} shape. Supports stdin-based prompt delivery when argv size exceeds ARGV_SIZE_THRESHOLD, and injects --output-format json flags for supported providers. Includes retry logic with configurable retryCount and retryDelayMs for async paths. Also manages agent context files written to .claude/rules/ for phase-specific prompt injection (writeAgentContext/cleanupAgentContext), and resolves agent configuration from config.json including profile switching via SDD_FORGE_PROFILE env var.",
         "chapter": "internal_design",
         "role": "lib",
         "enrich": {
-          "processedAt": "2026-04-07T13:32:57.482Z",
+          "processedAt": "2026-04-08T08:29:06.284Z",
           "attempts": 1
         },
         "keywords": [
           "agent",
-          "AI call",
-          "spawn",
-          "stdin",
-          "async",
-          "retry",
-          "logging",
-          "workdir",
-          "resolveAgent",
           "callAgent",
-          "timeout"
+          "execFileSync",
+          "spawn",
+          "claude",
+          "codex",
+          "provider",
+          "retry",
+          "async",
+          "logging",
+          "stdin",
+          "json-output",
+          "profile",
+          "timeout",
+          "prompt-injection"
         ]
       },
       {
@@ -3676,9 +3785,9 @@
       },
       {
         "file": "src/lib/cli.js",
-        "hash": "1cf95d9e1ec1588aa110461301bf1e79",
+        "hash": "051ed955aaa7c6bb5e3d1e12a9de6b39",
         "lines": 144,
-        "mtime": "2026-04-04T08:09:59.596Z",
+        "mtime": "2026-04-08T00:40:05.732Z",
         "className": "cli",
         "methods": [
           "repoRoot",
@@ -3713,39 +3822,40 @@
           "src/help.js",
           "src/lib/flow-state.js",
           "src/lib/i18n.js",
+          "src/lib/log.js",
           "src/lib/skills.js",
           "src/sdd-forge.js",
           "src/setup.js",
           "src/upgrade.js",
-          "src/lib/agent-log.js",
-          "src/lib/log.js"
+          "src/check.js"
         ],
         "id": "f351ecc4",
-        "summary": "Core CLI utility module providing package directory resolution, repo root detection, argument parsing, worktree detection, and version retrieval.",
-        "detail": "PKG_DIR is resolved from import.meta.url to locate the package's src/ directory regardless of installation path. repoRoot checks SDD_WORK_ROOT env var first, then runs git rev-parse, falling back to process.cwd(). parseArgs is a lightweight option parser supporting typed spec definitions with unknown-option rejection. isInsideWorktree detects linked worktrees by checking if .git is a file rather than a directory. getMainRepoPath reads the commondir from the .git file to navigate back to the main repository root.",
+        "summary": "Core CLI utility module providing repo root resolution, argument parsing, worktree detection, and package metadata helpers. Used throughout the CLI and flow layers.",
+        "detail": "Exports PKG_DIR as the resolved package directory. repoRoot() prefers SDD_WORK_ROOT env var, falls back to git rev-parse, then cwd. parseArgs() implements a minimal flag/positional parser from an argv spec. isInsideWorktree() detects git worktrees by checking if .git is a file rather than a directory. getMainRepoPath() resolves the main repo from a worktree. Provides formatUTCTimestamp for consistent log timestamps.",
         "chapter": "internal_design",
         "role": "lib",
         "enrich": {
-          "processedAt": "2026-04-04T08:17:46.932Z",
+          "processedAt": "2026-04-08T00:40:49.364Z",
           "attempts": 1
         },
         "keywords": [
+          "cli",
+          "repo root",
           "PKG_DIR",
-          "repoRoot",
-          "parseArgs",
+          "parse args",
           "worktree",
-          "CLI utilities",
-          "version",
-          "SDD_WORK_ROOT",
-          "git root",
-          "argument parser"
+          "git",
+          "main repo",
+          "package version",
+          "timestamp",
+          "SDD_WORK_ROOT"
         ]
       },
       {
         "file": "src/lib/config.js",
-        "hash": "f91fa14c479372c3c001a702be477244",
-        "lines": 113,
-        "mtime": "2026-03-15T16:29:39.195Z",
+        "hash": "033e53d47f624f7659b105303bb36695",
+        "lines": 115,
+        "mtime": "2026-04-07T23:32:48.453Z",
         "className": "config",
         "methods": [
           "resolveConcurrency",
@@ -3790,23 +3900,25 @@
           "src/upgrade.js"
         ],
         "id": "dff6e5b4",
-        "summary": "Configuration loading and path resolution utilities for sdd-forge projects. Loads, validates, and provides typed access to .sdd-forge/config.json.",
-        "detail": "sddDir, sddConfigPath, sddOutputDir, and sddDataDir compute canonical .sdd-forge subdirectory paths from project root. loadConfig reads config.json and passes it through validateConfig for schema enforcement. loadLang provides a quick language-only read with DEFAULT_LANG fallback. loadJsonFile is a generic JSON file reader with existence checking. DEFAULT_CONCURRENCY and DEFAULT_LANG define system defaults.",
+        "summary": "Core configuration loader for sdd-forge projects, providing path resolution helpers and config validation for the .sdd-forge directory structure. Exports utility functions used throughout the CLI for locating config, output, and data directories.",
+        "detail": "Defines canonical path helpers (sddDir, sddConfigPath, sddOutputDir, sddDataDir) that all resolve relative to a given project root under the .sdd-forge directory. loadConfig reads and validates config.json via the validateConfig type checker. loadLang extracts the language setting with a fallback to DEFAULT_LANG ('en'). loadJsonFile provides generic JSON loading with existence checks, and loadPackageField extracts arbitrary fields from a project's package.json. DEFAULT_CONCURRENCY is set to 5 and used as a fallback when not specified in config.",
         "chapter": "configuration",
-        "role": "config",
+        "role": "lib",
         "enrich": {
-          "processedAt": "2026-04-02T16:09:42.720Z",
+          "processedAt": "2026-04-07T23:33:06.281Z",
           "attempts": 1
         },
         "keywords": [
           "config",
+          "configuration",
           "loadConfig",
           "sddDir",
-          "config.json",
-          "configuration schema",
-          "lang",
+          "path resolution",
           "concurrency",
-          "project config"
+          "lang",
+          "package.json",
+          "validateConfig",
+          ".sdd-forge"
         ]
       },
       {
@@ -3872,7 +3984,8 @@
           "src/presets-cmd.js",
           "src/sdd-forge.js",
           "src/setup.js",
-          "src/upgrade.js"
+          "src/upgrade.js",
+          "src/check.js"
         ],
         "id": "82a3b684",
         "summary": "Defines numeric exit code constants EXIT_SUCCESS (0) and EXIT_ERROR (1) used consistently across all CLI entry points.",
@@ -4034,10 +4147,45 @@
         ]
       },
       {
+        "file": "src/lib/formatter.js",
+        "hash": "348d372e21f4c22d0f206c4a98ce5dd7",
+        "lines": 22,
+        "mtime": "2026-04-08T05:05:21.872Z",
+        "className": "formatter",
+        "methods": [
+          "pushSection"
+        ],
+        "imports": [],
+        "exports": [
+          "pushSection",
+          "DIVIDER"
+        ],
+        "extends": null,
+        "usedBy": null,
+        "id": "994720ab",
+        "summary": "Minimal shared formatting utility exporting a divider constant and a pushSection helper used across CLI output renderers.",
+        "detail": "Exports DIVIDER as a fixed Unicode box-drawing line string for visual separation in terminal output. pushSection appends a titled block with an optional custom divider to a lines array, providing a consistent section-header pattern. Used by check/scan, flow/report, and other output formatters throughout the codebase.",
+        "chapter": "internal_design",
+        "role": "lib",
+        "enrich": {
+          "processedAt": "2026-04-08T05:05:43.612Z",
+          "attempts": 1
+        },
+        "keywords": [
+          "formatter",
+          "DIVIDER",
+          "pushSection",
+          "terminal output",
+          "section header",
+          "utility",
+          "CLI formatting"
+        ]
+      },
+      {
         "file": "src/lib/git-helpers.js",
-        "hash": "bf21f716b72bb3ce8d29ec69e5e22ba7",
+        "hash": "56236f738f9b70f6c9890a7baa774fff",
         "lines": 71,
-        "mtime": "2026-04-04T08:09:59.596Z",
+        "mtime": "2026-04-08T00:40:05.732Z",
         "className": "git-helpers",
         "methods": [
           "getWorktreeStatus",
@@ -4063,30 +4211,32 @@
         "extends": null,
         "usedBy": null,
         "id": "61b28e9c",
-        "summary": "Git utility helpers providing worktree status, branch detection, ahead count, last commit, GitHub CLI availability check, and issue commenting.",
-        "detail": "getWorktreeStatus runs git status --porcelain and returns dirty flag with file list. getCurrentBranch uses git rev-parse --abbrev-ref HEAD. getAheadCount computes commits ahead of baseBranch via git rev-list. collectGitSummary aggregates diffStat and commit messages for report generation. commentOnIssue calls gh issue comment to post flow summaries to GitHub issues. isGhAvailable runs gh --version with a 5-second timeout to check CLI presence.",
+        "summary": "Git helper utilities for worktree status, branch info, commit history, gh CLI availability, and issue commenting. Used across flow commands.",
+        "detail": "getWorktreeStatus() returns dirty flag and list of dirty files via git status. getCurrentBranch() and getLastCommit() provide branch/commit info. getAheadCount() computes commits ahead of a base branch. isGhAvailable() probes gh CLI with a timeout. collectGitSummary() aggregates diffStat and commit messages for finalize/PR steps. commentOnIssue() posts a comment via gh CLI.",
         "chapter": "internal_design",
         "role": "lib",
         "enrich": {
-          "processedAt": "2026-04-04T08:17:46.932Z",
+          "processedAt": "2026-04-08T00:40:49.364Z",
           "attempts": 1
         },
         "keywords": [
-          "git helpers",
-          "worktree status",
+          "git",
+          "worktree",
           "branch",
-          "ahead count",
-          "gh CLI",
+          "commit",
+          "gh cli",
           "issue comment",
-          "git utilities",
-          "dirty check"
+          "diff stat",
+          "dirty",
+          "ahead count",
+          "git helpers"
         ]
       },
       {
         "file": "src/lib/guardrail.js",
-        "hash": "635b7733adc8fdb29eb83868c9c26a0c",
-        "lines": 191,
-        "mtime": "2026-04-02T15:07:32.623Z",
+        "hash": "a3c8852c56c6cc5d61d0d8ddd42f218b",
+        "lines": 184,
+        "mtime": "2026-04-07T23:32:48.453Z",
         "className": "guardrail",
         "methods": [
           "filterByPhase",
@@ -4096,7 +4246,7 @@
           "hydrate",
           "loadGuardrailFile",
           "resolveGuardrailContext",
-          "readWithFallback",
+          "readGuardrailFile",
           "mergeById",
           "loadPresetGuardrails"
         ],
@@ -4117,24 +4267,26 @@
           "src/lib/lint.js"
         ],
         "id": "bb462f4e",
-        "summary": "Loads, filters, and merges guardrail rules from JSON files across the preset chain and project-level overrides. Guardrails define linting constraints applied during specific SDD phases.",
-        "detail": "Each guardrail entry is hydrated with a parsed lint regex via hydrate() before use. filterByPhase() selects rules applicable to the current workflow phase, defaulting to the spec phase. matchScope() checks whether a file path matches a guardrail's scope glob or filename pattern. loadMergedGuardrails() walks the preset inheritance chain via resolveChainSafe() and merges rules by ID, with project-level overrides taking precedence over preset defaults.",
+        "summary": "Shared guardrail loading and matching library that reads guardrail.json from preset chains and project overrides, merges them by ID, and filters by phase or file scope. Used by the SDD flow to enforce coding and documentation constraints.",
+        "detail": "loadMergedGuardrails resolves the active preset chain via resolveChainSafe, loads guardrail files from each preset directory, then merges with any project-level override using a mergeById strategy that allows project entries to override preset entries with the same ID. filterByPhase narrows the merged list to guardrails applicable to a given pipeline phase (defaulting to 'spec'). matchScope checks whether a file path matches a guardrail's scope patterns using patternToRegex. The hydrate function attaches parsed metadata (including compiled lint regexes from parseLintString) to each raw guardrail entry.",
         "chapter": "internal_design",
         "role": "lib",
         "enrich": {
-          "processedAt": "2026-04-02T16:04:59.891Z",
+          "processedAt": "2026-04-07T23:33:06.281Z",
           "attempts": 1
         },
         "keywords": [
           "guardrail",
-          "lint rules",
+          "guardrail.json",
           "phase filter",
-          "scope match",
+          "scope matching",
           "preset chain",
           "merge",
-          "JSON",
-          "validation",
-          "SDD constraints"
+          "lint",
+          "regex",
+          "loadMergedGuardrails",
+          "filterByPhase",
+          "matchScope"
         ]
       },
       {
@@ -4283,9 +4435,9 @@
       },
       {
         "file": "src/lib/lint.js",
-        "hash": "8f85f3ef53e06ed57b16f90e3b894747",
+        "hash": "7d1cd2033a82b7e116c17ddfc41a05b0",
         "lines": 125,
-        "mtime": "2026-04-04T08:09:59.596Z",
+        "mtime": "2026-04-08T00:40:05.732Z",
         "className": "lint",
         "methods": [
           "validateLintGuardrails",
@@ -4308,23 +4460,25 @@
         "extends": null,
         "usedBy": null,
         "id": "aa4a324d",
-        "summary": "Lint module that validates guardrail lint rules against changed files, reporting failures per file and guardrail.",
-        "detail": "validateLintGuardrails checks guardrail definitions for required lint fields and returns warnings for malformed entries. getChangedFiles runs git diff against a base ref to obtain the list of modified file paths. runLintChecks iterates changed files, reads their content, and tests each against matched guardrails using matchScope pattern filtering. runLint orchestrates the full pipeline: filter lint-phase guardrails via filterByPhase, collect changed files, and run checks, returning ok status, warning list, and detailed failures.",
+        "summary": "Lint guardrail runner that filters guardrail rules by phase, checks changed files against regex patterns, and reports failures. Used in the gate step.",
+        "detail": "validateLintGuardrails() checks guardrail config for required fields and returns warnings. getChangedFiles() retrieves files changed against a base branch via git diff. runLintChecks() reads each file and tests content against guardrail regex patterns scoped by matchScope. runLint() orchestrates the full lint pipeline, returning ok flag, warnings, failure list, and counts.",
         "chapter": "internal_design",
         "role": "lib",
         "enrich": {
-          "processedAt": "2026-04-04T08:17:46.932Z",
+          "processedAt": "2026-04-08T00:40:49.364Z",
           "attempts": 1
         },
         "keywords": [
           "lint",
           "guardrail",
+          "regex",
           "changed files",
+          "phase filter",
+          "scope",
+          "git diff",
           "validation",
-          "scope matching",
-          "file content check",
-          "lint rules",
-          "filterByPhase"
+          "runLint",
+          "failures"
         ]
       },
       {
@@ -4481,20 +4635,24 @@
       },
       {
         "file": "src/lib/process.js",
-        "hash": "769d9402c413d9c6a47ee5353401d77a",
-        "lines": 89,
-        "mtime": "2026-04-04T08:09:59.596Z",
+        "hash": "5c125dfa3656788748c66aa661c53428",
+        "lines": 125,
+        "mtime": "2026-04-08T00:40:05.732Z",
         "className": "process",
         "methods": [
           "runCmd",
-          "runCmdAsync"
+          "runCmdAsync",
+          "formatError",
+          "assertOk"
         ],
         "imports": [
           "child_process"
         ],
         "exports": [
           "runCmd",
-          "runCmdAsync"
+          "runCmdAsync",
+          "formatError",
+          "assertOk"
         ],
         "extends": null,
         "usedBy": [
@@ -4504,23 +4662,23 @@
           "src/lib/lint.js"
         ],
         "id": "6196b26c",
-        "summary": "Low-level process execution module providing synchronous and asynchronous command runners built on Node.js child_process.",
-        "detail": "runCmd wraps execFileSync with try/catch, capturing stdout and stderr as strings and returning a result object with ok boolean, status code, stdout, and stderr. Accepts opts for cwd, timeout, and environment. runCmdAsync wraps execFile in a Promise with the same result shape, enabling non-blocking command execution used by the forge command for concurrent agent invocations. Both functions avoid shell interpolation by using execFile/execFileSync rather than exec.",
+        "summary": "Low-level process execution module wrapping execFileSync and execFile for synchronous and async command invocation. Provides assertOk and formatError helpers.",
+        "detail": "runCmd() executes commands synchronously via execFileSync, normalizing output into {ok, status, stdout, stderr, signal, killed}. runCmdAsync() wraps execFile in a Promise with the same result shape. formatError() concatenates stderr, stdout, and exit code into a readable string. assertOk() throws a formatted error if ok is false. Used as the universal subprocess primitive across the entire codebase.",
         "chapter": "internal_design",
         "role": "lib",
         "enrich": {
-          "processedAt": "2026-04-04T08:17:46.932Z",
+          "processedAt": "2026-04-08T00:40:49.364Z",
           "attempts": 1
         },
         "keywords": [
           "process",
+          "exec",
           "runCmd",
-          "runCmdAsync",
-          "execFile",
-          "child_process",
-          "command execution",
-          "async",
+          "assertOk",
           "subprocess",
+          "execFileSync",
+          "async",
+          "formatError",
           "stdout",
           "stderr"
         ]
@@ -4618,9 +4776,9 @@
       },
       {
         "file": "src/lib/types.js",
-        "hash": "8bd0e5c4856691d637912e4c2f908a67",
-        "lines": 372,
-        "mtime": "2026-04-07T13:31:31.298Z",
+        "hash": "23ad1f109a576983522e9b4727314c25",
+        "lines": 373,
+        "mtime": "2026-04-08T02:15:25.311Z",
         "className": "types",
         "methods": [
           "validateConfig",
@@ -4638,22 +4796,23 @@
           "src/setup.js"
         ],
         "id": "69d5afb4",
-        "summary": "Validates the sdd-forge config object and resolves the output language configuration with defaults.",
-        "detail": "validateConfig checks required fields (lang, type, docs.languages, docs.defaultLanguage) and collects all errors before throwing. resolveOutputConfig normalizes the docs output settings, providing defaultLanguage and languages array. VALID_TONES defines the allowed tone values for docs.style.tone.",
+        "summary": "Defines TypeScript-style config validation and output resolution helpers for SDD config objects.",
+        "detail": "validateConfig performs runtime schema validation on a raw config object, collecting errors and throwing if any are found, then returns the typed SddConfig. resolveOutputConfig normalises the config into a resolved output descriptor with sensible defaults. VALID_TONES is a compile-time constant set used during validation. The module acts as the single source of truth for config shape enforcement across the codebase.",
         "chapter": "configuration",
-        "role": "lib",
+        "role": "model",
         "enrich": {
-          "processedAt": "2026-04-07T13:32:57.482Z",
+          "processedAt": "2026-04-08T02:28:06.724Z",
           "attempts": 1
         },
         "keywords": [
-          "config validation",
-          "types",
-          "resolveOutputConfig",
-          "tone",
-          "docs config",
-          "defaultLanguage",
+          "config",
+          "validation",
           "schema",
+          "SddConfig",
+          "types",
+          "tone",
+          "output",
+          "resolveOutputConfig",
           "validateConfig"
         ]
       },
@@ -7535,9 +7694,9 @@
       },
       {
         "file": "src/sdd-forge.js",
-        "hash": "fc5574dfe7d758fa19b4ac846abef907",
+        "hash": "2f2bc70c57414b234050a888cff61b9d",
         "lines": 74,
-        "mtime": "2026-04-07T13:31:31.299Z",
+        "mtime": "2026-04-08T05:05:21.872Z",
         "className": "sdd-forge",
         "methods": [],
         "imports": [
@@ -7550,32 +7709,31 @@
         "extends": null,
         "usedBy": null,
         "id": "a8608997",
-        "summary": "Main CLI entry point for sdd-forge, dispatching subcommands to namespace dispatchers (docs, flow) or independent command scripts.",
-        "detail": "Parses the first argument to determine the subcommand, initializes the Logger singleton with project config, and rewrites process.argv before dynamically importing the target script. Namespace commands (docs, flow) are forwarded to their dispatcher modules; standalone commands (setup, upgrade, presets, etc.) map directly to script paths via the INDEPENDENT lookup table. Handles --help/--version flags early and exits with EXIT_ERROR for unknown commands.",
-        "chapter": "cli_commands",
+        "summary": "Top-level entry point for the sdd-forge CLI. Dispatches to namespace dispatchers (docs, flow, check) or independent command scripts based on the first CLI argument.",
+        "detail": "Resolves the raw subcommand from process.argv and routes to one of three namespace dispatcher scripts or a set of independent scripts defined in INDEPENDENT map. Handles the special-cased `help` command by importing help.js directly. Emits a deprecation warning if cfg.logs.prompts is detected in config. Uses dynamic import with process.argv mutation to pass arguments to child scripts. Exits with EXIT_ERROR for unrecognized subcommands.",
+        "chapter": "project_structure",
         "role": "cli",
         "enrich": {
-          "processedAt": "2026-04-07T13:32:57.482Z",
+          "processedAt": "2026-04-08T05:05:43.612Z",
           "attempts": 1
         },
         "keywords": [
+          "sdd-forge",
           "entry point",
           "dispatcher",
-          "CLI",
           "subcommand",
-          "docs",
-          "flow",
-          "sdd-forge",
-          "dynamic import",
           "namespace",
-          "routing"
+          "routing",
+          "dynamic import",
+          "CLI",
+          "main"
         ]
       },
       {
         "file": "src/setup.js",
-        "hash": "6dc0f99dc9356dea807a67852008bc35",
-        "lines": 593,
-        "mtime": "2026-03-31T12:57:20.421Z",
+        "hash": "e036f650f7ab259a17940c5e0323b032",
+        "lines": 561,
+        "mtime": "2026-04-08T05:43:34.202Z",
         "className": "setup",
         "methods": [
           "ask",
@@ -7616,26 +7774,28 @@
         "extends": null,
         "usedBy": null,
         "id": "9820c9db",
-        "summary": "Interactive setup wizard that initializes a new sdd-forge project by collecting configuration, creating directory structure, writing config.json, and deploying skills and agent config files.",
-        "detail": "runWizard() prompts the user for project name, source path, language, preset type, and docs purpose/tone using readline-based ask() helpers. buildTreeItems() and select() drive an interactive preset picker in the terminal. ensureProjectDirs() creates .sdd-forge/, docs/, and specs/ directories. ensureGitignore() and ensureGitattributes() patch root-level git configuration files. ensureAgentConfigFile() injects the SDD directive block into AGENTS.md or CLAUDE.md, and deploySkills() copies skill templates into .claude/skills/ and .agents/skills/.",
+        "summary": "Interactive setup wizard that initializes a new sdd-forge project by prompting for configuration, writing config.json, deploying skills, and generating AGENTS.md/CLAUDE.md. Handles directory scaffolding, .gitignore, .gitattributes, and symlink management.",
+        "detail": "Reads existing config defaults via loadExistingDefaults and guides the user through preset selection, language, agent provider, and docs purpose via runWizard. Creates project directory structure (ensureProjectDirs) including .sdd-forge/output, docs/, and specs/. Manages .gitignore and .gitattributes entries for generated files. Generates AGENTS.md content with SDD directives via ensureAgentConfigFile, and fixes CLAUDE.md from a regular file to a symlink via fixClaudeMdSymlink. Deploys skills via deploySkills and validates the final config with validateConfig before writing.",
         "chapter": "cli_commands",
         "role": "cli",
         "enrich": {
-          "processedAt": "2026-04-02T16:04:59.891Z",
+          "processedAt": "2026-04-08T05:43:49.846Z",
           "attempts": 1
         },
         "keywords": [
           "setup",
           "wizard",
           "config.json",
-          "project init",
+          "scaffolding",
           "AGENTS.md",
           "CLAUDE.md",
+          "skills",
+          "preset",
           "gitignore",
           "gitattributes",
-          "skills",
+          "i18n",
           "readline",
-          "preset selection"
+          "interactive"
         ]
       },
       {
@@ -7687,10 +7847,10 @@
       }
     ],
     "summary": {
-      "total": 224,
-      "totalMethods": 702
+      "total": 227,
+      "totalMethods": 725
     },
     "dataSourceHash": "7d725e75d5031be445119323e4947c91"
   },
-  "enrichedAt": "2026-04-07T13:32:57.482Z"
+  "enrichedAt": "2026-04-08T08:59:08.299Z"
 }

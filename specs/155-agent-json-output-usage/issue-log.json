@@ -1,0 +1,50 @@
+{
+  "entries": [
+    {
+      "step": "gate-draft",
+      "reason": "Single Responsibility — agent JSON output parsing と usage 計測に限定されており、単一の関心事を扱っている。; Unambiguous Requirements — `jsonOutputFlag` の有無、provider 判定の部分一致条件、fallback 条件など、検証可能な条件で記述されている。; Complete Context — 各要件に「jsonOutputFlag が設定されている場合のみ」「unknown の場合は」等のトリガー条件と期待動作が対になっている。; No Hardcoded Secrets — API キーやトークン等の機密情報は含まれていない。; Prioritize Requirements — 要件は5項目を超えるが、Phase 0 として戻り値変更なし・ログ追加のみという優先順位が明示されている。; Impact on Existing Features — 呼び出し側 12 箇所への影響なし、未設定時の完全後方互換性が明示されている。; Present Recommendations with Reasoning — Q1〜Q4 各質問に推奨案と理由（将来拡張性、既存ユーザーへの影響）が示されている。; Explore Before Asking — Q&A で既存パターン（`systemPromptFlag` との一致）や既存ログ保存先を参照して回答している。; Proactively Raise Related Implications — `unknown` provider 時の `jsonOutputFlag` 無効化、パース失敗時の fallback など関連する影響が先回りして記述されている。; Confirm Brainstorm vs. Decision Before Critiquing — Q&A は決定事項として記述されており、ユーザー承認済み（`[x] User approved this draft`）。; Capture Digressions in draft.md — 脱線の兆候はなく、適用外。; Draft Stays at Requirements Level — 正規化スキーマの具体的フィールド名、`parseAgentOutput(providerKey, stdout)` の関数シグネチャ、NDJSON 複数行パース方法など、実装詳細・関数レベルの設計が含まれている。要件レベル（何を達成するか）に留めるべき。; Backward — Compatible CLI Interface — CLI コマンドの変更はなく、config への任意フィールド追加のみ。マイグレーション計画は不要。",
+      "trigger": "gate post hook (auto)",
+      "timestamp": "2026-04-08T01:07:52.873Z"
+    },
+    {
+      "step": "gate",
+      "reason": "Single Responsibility — agent.js の usage 計測・ログ記録という単一の関心事に絞られている; Unambiguous Requirements — 「部分一致」「trimmed string」「usage: null」など検証可能な条件で記述されている; Complete Context — 各要件に条件（jsonOutputFlag 設定時/未設定時/unknown 時）と期待動作がペアで記述されている; No Hardcoded Secrets — ソースコードの変更仕様であり、シークレットの直書きに関する記述はない; No Silent Error Swallowing — 要件3に「パース失敗時は plain text fallback（エラー伝播なし）」と明記されており、エラーを黙って捨てる設計が要件として規定されている。ログへの記録やデバッグ出力の有無が未定義; Prioritize Requirements — 要件が優先度順（高→低）で明示されている; Impact on Existing Features — 「12箇所の既存呼び出し側のコードは変更不要」と明記されている; Bounded Resource Usage — 再帰・リトライ・バルクロードは含まれない仕様のため該当なし; Changes Require Test Coverage — Test Strategy セクションでハッピーパスを含むテストケースが列挙されている; Spec Includes Test Strategy — Test Strategy セクションに何をどのようにテストするかが記述されている; Synthesize Draft, Do Not Copy — Clarifications・Alternatives・Why This Approach が整理・抽象化されており、ドラフトの直接コピーではない; Record Unresolved Points as Open Questions — Open Questions セクションに「なし」と明記されており、未解決点を捏造していない; Include 'Why This Approach' Rationale — 既存 systemPromptFlag パターンへの準拠と呼び出し側への影響ゼロの根拠が記述されている; Backward — Compatible CLI Interface — CLI コマンド・オプションの削除・変更は含まれない; Exit Code Contract — exit code に関する変更は含まれない仕様のため該当なし",
+      "trigger": "gate post hook (auto)",
+      "timestamp": "2026-04-08T01:09:37.731Z"
+    },
+    {
+      "step": "gate-impl",
+      "reason": "no changes found against base branch",
+      "trigger": "gate post hook (auto)",
+      "timestamp": "2026-04-08T01:54:44.632Z"
+    },
+    {
+      "step": "review",
+      "reason": "Review detected buildDraftFieldPattern missing from run-gate.js (heading-format support regression)",
+      "trigger": "AI code review scan of codebase",
+      "resolution": "Out of scope for this spec — recorded for future fix",
+      "guardrailCandidate": "When review flags issues in files not changed by current spec, record in issue-log rather than fixing silently",
+      "timestamp": "2026-04-08T01:59:00.298Z"
+    },
+    {
+      "step": "review",
+      "reason": "Existing deepEqual test for resolveAgent needed providerKey field added to expected value",
+      "trigger": "npm test failure after resolveAgent now returns providerKey",
+      "resolution": "Updated test expected object to include providerKey: 'claude' — spec-mandated API change, not a workaround",
+      "guardrailCandidate": "When a spec adds fields to an existing public API return value, update deepEqual assertions in existing tests to match",
+      "timestamp": "2026-04-08T02:04:58.158Z"
+    },
+    {
+      "step": "gate-impl",
+      "reason": "jsonOutputFlag サポート — `injectJsonFlag`で flagParts を args に追加、重複チェック（完全シーケンス一致）も実装済み; provider 判定 — `detectProviderKey`が `command.includes(\"claude\"/\"codex\")` 部分一致で claude/codex/unknown を判定し、`resolveAgent` で providerKey を付与; JSON パースと usage 正規化 — `parseClaudeOutput`/`parseCodexOutput` 実装済み、`parseAgentOutput` でパース失敗時に stderr 警告（`STDERR_WARN`）＋ null 返却（plain text fallback）; usage のログ記録 — `buildAgentLogPayload` に `usage` パラメータ追加、`extractAgentResult` で usage を取り出し、未設定/unknown は `usage: null` として記録; 戻り値の互換性 — `callAgent` は `callAgentRaw(...).text`、`callAgentAsync` は `.then(r => r.text)` を返し、trimmed string を維持; 既存動作の完全保持 — `jsonOutputFlag` が未設定時は `flagParts=[]` で `injectJsonFlag` が args をそのまま返し、`resolveAgentResult` も plain text fallback を通る; No Hardcoded Secrets — コードにAPIキー・トークン等のシークレットは含まれていない。; No Silent Error Swallowing — `parseAgentOutput` のcatchブロックで `STDERR_WARN` により警告を出力しており、エラーを無言で捨てていない。; Bounded Resource Usage — `callAgentAsyncWithRetry` は `retryCount` で上限が明示されており、再帰・無制限ループなし。; No Sensitive Data in Logs — ログに記録されるのはトークン数・cost等のメトリクスのみ。プロンプト本文やトークン値は機密ではない。; No Disabling Existing Tests — 既存テストを削除・スキップしていない。; Escalate When New Tests Break Existing Tests — `issue-log.json` に既存テスト修正の記録あり。`resolveAgent` の戻り値に `providerKey` を追加したことによる `deepEqual` 失敗を検出し、テストの期待値を更新している。`issue-log` に記録・対処済み。; Do Not Modify Existing Tests Without Approval — `tests/unit/lib/agent.test.js` の既存 `deepEqual` アサーションに `providerKey: \"claude\"` を追加しているが、ユーザー承認の明示的な記録がない（issue-log に事後記録のみ）。; Flag Tests That Become Irrelevant — 既存テストが不要になったケースなし。`providerKey` 追加はAPI拡張であり既存テストは引き続き有効。; Exit Code Contract — exit code に関する変更なし。エラー時は例外をre-throwしている。; No Synchronous I/O in Hot Paths — `execFileSync` はループ外の単一呼び出し点のみ。`parseCodexOutput` のループはメモリ上の文字列処理のみでI/Oなし。; Validate User Input at Entry Point — `agent.command` は `resolveAgent` でconfig由来の内部値であり、ユーザー入力ではない。CLI境界のバリデーションは変更なし。",
+      "trigger": "gate post hook (auto)",
+      "timestamp": "2026-04-08T02:05:37.387Z"
+    },
+    {
+      "step": "review",
+      "reason": "User approved existing test modification: resolveAgent deepEqual updated to include providerKey",
+      "resolution": "Approval confirmed — spec-mandated API change (Req 2), test updated with explicit user approval",
+      "timestamp": "2026-04-08T02:06:14.061Z"
+    }
+  ]
+}

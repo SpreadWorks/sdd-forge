@@ -6,7 +6,7 @@
  * ctx.number — issue number (string or number)
  */
 
-import { runCmd } from "../../lib/process.js";
+import { runCmd, assertOk } from "../../lib/process.js";
 import { FlowCommand } from "./base-command.js";
 
 export default class GetIssueCommand extends FlowCommand {
@@ -28,7 +28,7 @@ export default class GetIssueCommand extends FlowCommand {
       { cwd: root, timeout: 15000 },
     );
     if (!res.ok) {
-      throw new Error(res.stderr || "failed to fetch issue");
+      assertOk(res, "failed to fetch issue");
     }
     const data = JSON.parse(res.stdout);
     return {

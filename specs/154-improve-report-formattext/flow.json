@@ -1,0 +1,129 @@
+{
+  "spec": "specs/154-improve-report-formattext/spec.md",
+  "baseBranch": "development",
+  "featureBranch": "feature/154-improve-report-formattext",
+  "steps": [
+    {
+      "id": "approach",
+      "status": "done"
+    },
+    {
+      "id": "branch",
+      "status": "done"
+    },
+    {
+      "id": "prepare-spec",
+      "status": "done"
+    },
+    {
+      "id": "draft",
+      "status": "done"
+    },
+    {
+      "id": "gate-draft",
+      "status": "done"
+    },
+    {
+      "id": "spec",
+      "status": "done"
+    },
+    {
+      "id": "gate",
+      "status": "done"
+    },
+    {
+      "id": "approval",
+      "status": "done"
+    },
+    {
+      "id": "test",
+      "status": "done"
+    },
+    {
+      "id": "implement",
+      "status": "done"
+    },
+    {
+      "id": "gate-impl",
+      "status": "done"
+    },
+    {
+      "id": "review",
+      "status": "done"
+    },
+    {
+      "id": "finalize",
+      "status": "pending"
+    },
+    {
+      "id": "commit",
+      "status": "pending"
+    },
+    {
+      "id": "push",
+      "status": "pending"
+    },
+    {
+      "id": "merge",
+      "status": "pending"
+    },
+    {
+      "id": "pr-create",
+      "status": "pending"
+    },
+    {
+      "id": "branch-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "pr-merge",
+      "status": "pending"
+    },
+    {
+      "id": "sync-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "docs-update",
+      "status": "pending"
+    },
+    {
+      "id": "docs-review",
+      "status": "pending"
+    },
+    {
+      "id": "docs-commit",
+      "status": "pending"
+    }
+  ],
+  "requirements": [
+    {
+      "desc": "Remove Documents section from formatText() output",
+      "status": "done"
+    },
+    {
+      "desc": "Clarify Metrics labels: docs read, src read, issue-log",
+      "status": "done"
+    },
+    {
+      "desc": "Issue Log shows only reason per entry (no resolution suffix)",
+      "status": "done"
+    },
+    {
+      "desc": "Tests section always rendered even when data.tests is null",
+      "status": "done"
+    }
+  ],
+  "issue": 107,
+  "request": "report.js の formatText() 改善: Documents セクション削除、Metricsラベル明確化、Issue Logサマリー表示、Tests常時表示",
+  "worktree": true,
+  "autoApprove": true,
+  "metrics": {
+    "draft": {
+      "srcRead": 1
+    },
+    "impl": {
+      "issueLog": 1
+    }
+  }
+}

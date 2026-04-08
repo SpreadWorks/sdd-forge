@@ -1,0 +1,67 @@
+{
+  "spec": "specs/159-fix-check-scan-report/spec.md",
+  "date": "2026-04-08T08:58:59.206Z",
+  "requirements": [
+    {
+      "desc": "Include Coverage セクション（件数・%・リスト）をすべて削除",
+      "status": "done",
+      "note": "computeCoverage から includeCoverage キー削除、formatText/formatMarkdown/JSON から Include Coverage セクションをすべて除去済み"
+    },
+    {
+      "desc": "DataSource Coverage の件数・%を出力の先頭に表示",
+      "status": "done",
+      "note": "formatText の最初の push が `DataSource: ${ds.analyzed} / ${ds.total} files (${dsPct}%)` に変更済み。Markdown は ## DataSource Coverage を先頭セクションとして配置"
+    },
+    {
+      "desc": "解析漏れファイルを拡張子ごとにグルーピングしたサマリーをリストより上に表示（件数降順）",
+      "status": "done",
+      "note": "groupByExtension 関数を追加し、countB - countA || extA.localeCompare(extB) でソート。formatText・formatMarkdown ともにサマリーをリストより前に pushしている"
+    },
+    {
+      "desc": "解析漏れファイルのリストはサマリーの下（デフォルト10件、--listで全件）",
+      "status": "done",
+      "note": "DEFAULT_MAX_FILES でスライスし showAll=true で全件表示。サマリーセクションの後にリストを配置"
+    },
+    {
+      "desc": "walkAllFiles / allFiles / uncoveredByInclude の計算を削除",
+      "status": "done",
+      "note": "walkAllFiles を walkIncludedFiles にリネーム・改修し、allFiles / uncoveredByInclude の変数を computeCoverage から完全に削除"
+    },
+    {
+      "desc": "text / json / md 全フォーマット対応",
+      "status": "done",
+      "note": "formatText・formatMarkdown・JSON ブランチの 3 パスすべてで Include Coverage 削除・DataSource 先頭表示・拡張子サマリー追加が反映されている"
+    },
+    {
+      "desc": "json の includeCoverage キーを削除",
+      "status": "done",
+      "note": "JSON 出力オブジェクトから includeCoverage プロパティを削除し dataSourceCoverage のみを返す実装になっている"
+    }
+  ],
+  "unplanned": [
+    {
+      "file": "src/check/commands/scan.js",
+      "change": "walkAllFiles を walkIncludedFiles にリネームし includeMatchers を引数に追加。仕様は「walkAllFiles の計算を削除」とあるが、関数自体はリネーム・改修されて残っている（削除ではなく置換）"
+    },
+    {
+      "file": "src/check/commands/scan.js",
+      "change": "JSON 出力に uncoveredByExtension フィールドを追加。仕様要件には記載なし"
+    },
+    {
+      "file": "src/check/commands/scan.js",
+      "change": "groupByExtension / computeCoverage / formatText を export に追加。テスト戦略の要求ではあるが Requirements には含まれない"
+    },
+    {
+      "file": "src/check/commands/scan.js",
+      "change": ".sdd-forge を walkIncludedFiles のスキップ対象ディレクトリに追加（コメントのみ変更）"
+    }
+  ],
+  "summary": {
+    "total": 7,
+    "done": 7,
+    "partial": 0,
+    "not_done": 0,
+    "rate": 1,
+    "notes": "全 7 要件が実装されており、いずれも done。unplanned 変更は 4 件あるが、いずれも仕様の意図に反するものではない。walkAllFiles のリネームは「不要な計算の削除」という意図を満たしつつ実装上の都合で関数を再利用した形。uncoveredByExtension の JSON 追加はサマリー情報をプログラム利用可能にする自然な拡張。export 追加はテスト戦略の要件を満たすための実装。全体として仕様を正確に満たした実装と評価できる。"
+  }
+}

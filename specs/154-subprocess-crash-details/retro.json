@@ -1,0 +1,49 @@
+{
+  "spec": "specs/154-subprocess-crash-details/spec.md",
+  "date": "2026-04-08T00:40:04.698Z",
+  "requirements": [
+    {
+      "desc": "runCmd の返り値に signal/killed フィールドを追加",
+      "status": "done",
+      "note": "成功時に signal: null, killed: false、失敗時に signal: e.signal ?? null, killed: e.killed ?? false を追加済み"
+    },
+    {
+      "desc": "runCmdAsync の返り値に signal/killed フィールドを追加し status を数値正規化",
+      "status": "done",
+      "note": "成功・失敗両方に signal/killed を追加。status は typeof err.code === 'number' ? err.code : 1 で数値正規化済み"
+    },
+    {
+      "desc": "formatError(res) ヘルパーを src/lib/process.js に export",
+      "status": "done",
+      "note": "export function formatError(res) を process.js に追加。signal/killed/status/stderr を仕様通りフォーマット"
+    },
+    {
+      "desc": "ok===false でエラーメッセージを生成する全箇所で formatError を使用",
+      "status": "done",
+      "note": "lint.js, cli.js, git-helpers.js, get-issue.js, run-finalize.js(2箇所), run-sync.js, run-prepare-spec.js, run-gate.js, merge.js(4箇所) すべて assertOk または formatError に移行済み"
+    },
+    {
+      "desc": "runCmdWithRetry のシグナル判定を res.signal || res.killed に置き換え",
+      "status": "done",
+      "note": "run-review.js の /killed|signal/i.test(stderr) を lastRes.signal || lastRes.killed に置き換え済み。JSDoc も更新済み"
+    }
+  ],
+  "unplanned": [
+    {
+      "file": "src/lib/process.js",
+      "change": "assertOk(res, context) ヘルパー関数を追加・export。spec には明示的な要件として記載されていないが、review.md の提案#1(APPROVED)を受けて実装"
+    },
+    {
+      "file": "src/flow/lib/get-issue.js",
+      "change": "if (!res.ok) { assertOk(res, ...) } の形式（if ブロック内に assertOk を呼ぶ冗長構造）。assertOk 自体が ok チェックを行うため if ブロックが不要だが動作上は問題なし"
+    }
+  ],
+  "summary": {
+    "total": 5,
+    "done": 5,
+    "partial": 0,
+    "not_done": 0,
+    "rate": 1,
+    "notes": "全5要件が完全に実装されている。assertOk ヘルパーは spec の明示要件外だが、review.md で APPROVED された提案であり、12箇所以上の重複パターンを排除する正当な追加。get-issue.js の if (!res.ok) { assertOk(...) } は冗長だが機能的に正しい。全要件の受け入れ基準（formatError フォーマット、signal/killed フィールド、status 数値正規化、シグナル判定置き換え）がテストで検証済み。"
+  }
+}

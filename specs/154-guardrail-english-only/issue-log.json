@@ -1,0 +1,16 @@
+{
+  "entries": [
+    {
+      "step": "gate-impl",
+      "reason": "no changes found against base branch",
+      "trigger": "gate post hook (auto)",
+      "timestamp": "2026-04-07T23:25:42.845Z"
+    },
+    {
+      "step": "gate-impl",
+      "reason": "Load guardrails from `<preset>/guardrail.json` — `readGuardrailFile` reads `path.join(dir, GUARDRAIL_FILENAME)` directly, replacing `templates/<lang>/` path construction; No language — based path construction or fallback — `readGuardrailFile` has no lang branching; `resolveGuardrailContext` no longer reads `lang` from config; English content moved to `<preset>/guardrail.json` for all presets — all renames show `similarity index 100%`, preserving original English content; No `templates/en/guardrail.json` or `templates/ja/guardrail.json` remain — all `en/` files renamed out, all `ja/` files deleted; `lang` parameter removed from internal preset chain loader — removed from `resolveGuardrailContext`, `loadPresetGuardrails`, and `loadMergedGuardrails`; Existing callers continue to work without modification — `loadMergedGuardrails(root)` signature unchanged; no changes to `get-guardrail.js`, `run-gate.js`, or `run-lint.js`; 機密情報のハードコード禁止 — diff内にAPIキー・パスワード・トークン等のハードコードなし; エラーの黙殺禁止 — `resolveGuardrailContext` の `catch (_) { // No config — use defaults }` がエラーをログなしで握りつぶしている; リソース使用量の上限設定 — プリセットチェーン走査は有限（`resolveChainSafe` が制限を持つ前提）、新たな無制限ループは導入されていない; ログへの機密情報出力禁止 — ログ出力コードなし、機密情報の出力リスクなし; 既存テストの無効化禁止 — 既存テストのskip・削除・コメントアウトなし; 新しいテストが既存テストを壊した場合は報告する — 新規テストは `npm test` 対象外のspecスコープのみ、既存テストへの影響なしと確認済み; 既存テストをユーザー承認なしに変更しない — 既存テストファイルの変更なし; 不要になったテストをユーザーに知らせる — specに既存テストへの影響なしと明記されており、不要化したテストなし; 終了コードの規約 — CLIエントリポイントの変更なし、終了コード処理に関係しない; ホットパスでの同期 I/O 禁止 — `readGuardrailFile` の同期I/Oはプリセットチェーン（数件）のconfig読み込みであり、大量データループのホットパスに該当しない; エントリポイントでの入力バリデーション — `loadMergedGuardrails(root)` は内部APIであり、CLIエントリポイントでのバリデーション責務は変更対象外",
+      "trigger": "gate post hook (auto)",
+      "timestamp": "2026-04-07T23:27:02.600Z"
+    }
+  ]
+}

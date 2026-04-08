@@ -12,6 +12,7 @@ import { EXIT_ERROR } from "./lib/exit-codes.js";
 /** Subcommand → script mapping */
 const SCRIPTS = {
   config: "check/commands/config.js",
+  scan: "check/commands/scan.js",
 };
 
 const args = process.argv.slice(2);

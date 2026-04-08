@@ -1,0 +1,44 @@
+{
+  "spec": "specs/154-improve-report-formattext/spec.md",
+  "date": "2026-04-08T00:36:23.961Z",
+  "requirements": [
+    {
+      "desc": "Remove Documents section from formatText() output",
+      "status": "done",
+      "note": "The entire Documents section block (header, sync.status branches) is removed from formatText() in report.js"
+    },
+    {
+      "desc": "Clarify Metrics labels: docs read, src read, issue-log",
+      "status": "done",
+      "note": "Metrics line changed from 'docs ${m.docsRead}  src ${m.srcRead}  Q&A ${m.question}  issues ${m.issueLog}' to 'docs read ${m.docsRead}  src read ${m.srcRead}  Q&A ${m.question}  issue-log ${m.issueLog}'"
+    },
+    {
+      "desc": "Issue Log shows only reason per entry (no resolution suffix)",
+      "status": "done",
+      "note": "Entry rendering changed from '[step] reason -> resolution' to '[step] reason' — the conditional resolution suffix is removed"
+    },
+    {
+      "desc": "Tests section always rendered even when data.tests is null",
+      "status": "done",
+      "note": "pushSection for Tests is now called unconditionally; else branch adds '    -' placeholder when data.tests is falsy"
+    }
+  ],
+  "unplanned": [
+    {
+      "file": "src/flow/commands/report.js",
+      "change": "Extracted pushSection() helper function to deduplicate the repeated blank-line + title + divider triple across all sections (Implementation, Retro, Metrics, Tests, Issue Log)"
+    },
+    {
+      "file": "specs/154-improve-report-formattext/qa.md",
+      "change": "Replaced empty Q:/A: template placeholder with a meaningful 'No open clarification questions' note — cleanup of dead documentation"
+    }
+  ],
+  "summary": {
+    "total": 4,
+    "done": 4,
+    "partial": 0,
+    "not_done": 0,
+    "rate": 1,
+    "notes": "All 4 requirements are fully satisfied. Two unplanned changes are present: the pushSection helper extraction (prompted by review proposal #4, which was in-scope as an approved review item) and the qa.md placeholder cleanup (review proposal #5). Both are low-risk improvements consistent with project coding rules. No requirement gaps or partial implementations detected."
+  }
+}

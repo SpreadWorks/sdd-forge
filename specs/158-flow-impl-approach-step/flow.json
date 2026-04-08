@@ -1,0 +1,144 @@
+{
+  "spec": "specs/158-flow-impl-approach-step/spec.md",
+  "baseBranch": "development",
+  "featureBranch": "feature/158-flow-impl-approach-step",
+  "steps": [
+    {
+      "id": "approach",
+      "status": "done"
+    },
+    {
+      "id": "branch",
+      "status": "done"
+    },
+    {
+      "id": "prepare-spec",
+      "status": "pending"
+    },
+    {
+      "id": "draft",
+      "status": "done"
+    },
+    {
+      "id": "gate-draft",
+      "status": "done"
+    },
+    {
+      "id": "spec",
+      "status": "done"
+    },
+    {
+      "id": "gate",
+      "status": "done"
+    },
+    {
+      "id": "approval",
+      "status": "done"
+    },
+    {
+      "id": "test",
+      "status": "done"
+    },
+    {
+      "id": "implement",
+      "status": "done"
+    },
+    {
+      "id": "gate-impl",
+      "status": "done"
+    },
+    {
+      "id": "review",
+      "status": "done"
+    },
+    {
+      "id": "finalize",
+      "status": "pending"
+    },
+    {
+      "id": "commit",
+      "status": "pending"
+    },
+    {
+      "id": "push",
+      "status": "pending"
+    },
+    {
+      "id": "merge",
+      "status": "pending"
+    },
+    {
+      "id": "pr-create",
+      "status": "pending"
+    },
+    {
+      "id": "branch-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "pr-merge",
+      "status": "pending"
+    },
+    {
+      "id": "sync-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "docs-update",
+      "status": "pending"
+    },
+    {
+      "id": "docs-review",
+      "status": "pending"
+    },
+    {
+      "id": "docs-commit",
+      "status": "pending"
+    }
+  ],
+  "requirements": [
+    {
+      "desc": "flow-impl ステップ1冒頭でコード前に実装方針を提示する",
+      "status": "done"
+    },
+    {
+      "desc": "提示フォーマット: 各要件ごとに方針・使う既存コード・設計上の判断を記載",
+      "status": "done"
+    },
+    {
+      "desc": "ユーザーが承認/差し戻しを選択できる（[1] 進める [2] 変更したい）",
+      "status": "done"
+    },
+    {
+      "desc": "差し戻し時は修正指示を受けて再提示。リトライ上限3回",
+      "status": "done"
+    },
+    {
+      "desc": "autoApprove=true の場合は方針提示後に自動承認してコーディングへ進む",
+      "status": "done"
+    },
+    {
+      "desc": "承認後にコーディングを開始する（承認前にコード変更禁止）",
+      "status": "done"
+    }
+  ],
+  "issue": 114,
+  "request": "flow-impl の冒頭で実装方針を提示して承認を得るステップを追加する",
+  "worktree": true,
+  "metrics": {
+    "plan": {
+      "docsRead": 1
+    },
+    "draft": {
+      "srcRead": 3,
+      "question": 1
+    },
+    "impl": {
+      "srcRead": 2,
+      "issueLog": 1
+    }
+  },
+  "notes": [
+    "review: [1] auto-fix"
+  ]
+}

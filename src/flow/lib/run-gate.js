@@ -12,7 +12,7 @@
 
 import fs from "fs";
 import path from "path";
-import { runCmd } from "../../lib/process.js";
+import { runCmd, assertOk } from "../../lib/process.js";
 import { callAgentWithLog, resolveAgent } from "../../lib/agent.js";
 import { filterByPhase, loadMergedGuardrails } from "../../lib/guardrail.js";
 import { getSpecName } from "../../lib/flow-state.js";
@@ -21,6 +21,19 @@ import { FlowCommand } from "./base-command.js";
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
+
+/**
+ * Run `git diff <args>` and return stdout. Throws if the command fails.
+ * @param {string[]} args - git diff arguments
+ * @param {string} errorMessage - context for error
+ * @param {string} cwd - working directory
+ * @returns {string}
+ */
+function runGitDiff(args, errorMessage, cwd) {
+  const res = runCmd("git", ["diff", ...args], { cwd });
+  assertOk(res, errorMessage);
+  return res.stdout;
+}
 
 /**
  * Detect which section a line belongs to by scanning headings above it.
@@ -114,6 +127,18 @@ function checkSpecText(text, opts) {
 // ---------------------------------------------------------------------------
 
 /**
+ * Build a regex that matches a draft field by either:
+ *   - `## Heading` format (anchored to line start with `m` flag)
+ *   - `**key:** value` or `key: value` colon format
+ *
+ * @param {string} labels - regex alternation of field name variants (e.g. "目的|goal")
+ * @returns {RegExp}
+ */
+function buildDraftFieldPattern(labels) {
+  return new RegExp(`(?:^\\s*##\\s+(?:${labels})|\\*{0,2}(?:${labels})\\*{0,2}\\s*[:：])`, "im");
+}
+
+/**
  * @param {string} text
  * @returns {string[]} issues
  */
@@ -132,17 +157,13 @@ function checkDraftText(text) {
     issues.push("draft approval is required: set `- [x] User approved this draft`");
   }
 
-  // Development type
-  const hasDevType =
-    /\*{0,2}(?:開発種別|dev(?:elopment)?\s*type)\*{0,2}\s*[:：]/i.test(text);
-  if (!hasDevType) {
+  // Development type — accepts both colon format and ## heading format (line-anchored)
+  if (!buildDraftFieldPattern("開発種別|dev(?:elopment)?\\s*type").test(text)) {
     issues.push("missing development type (開発種別)");
   }
 
-  // Goal
-  const hasGoal =
-    /\*{0,2}(?:目的|goal)\*{0,2}\s*[:：]/i.test(text);
-  if (!hasGoal) {
+  // Goal — accepts both colon format and ## heading format (line-anchored)
+  if (!buildDraftFieldPattern("目的|goal").test(text)) {
     issues.push("missing goal (目的)");
   }
 
@@ -411,15 +432,12 @@ export class RunGateCommand extends FlowCommand {
 
     const specText = fs.readFileSync(absSpecPath, "utf8");
 
-    // Get git diff
-    const diffRes = runCmd("git", ["diff", `${state.baseBranch}...HEAD`], { cwd: root });
-    if (!diffRes.ok) {
-      throw new Error(`failed to get git diff: ${diffRes.stderr}`);
-    }
-    const diff = diffRes.stdout;
+    const committed = runGitDiff([`${state.baseBranch}...HEAD`], "failed to get git diff", root);
+    const uncommitted = runGitDiff(["HEAD"], "failed to get uncommitted git diff", root);
+    const diff = committed + uncommitted;
 
     if (!diff.trim()) {
-      return gateFail("impl", specPath, [], ["no changes found against base branch"]);
+      return gateFail("impl", specPath, [], ["no changes found (committed or uncommitted) against base branch"]);
     }
 
     // Requirements check via AI

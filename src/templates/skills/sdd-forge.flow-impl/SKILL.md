@@ -56,7 +56,39 @@ Before starting, run `sdd-forge flow get check impl` to verify prerequisites.
      2. If target files are not yet in context: `sdd-forge flow get context --search "<spec goal>" --raw` using the spec's Goal section as the query.
      3. If project structure is still unclear after step 2: `sdd-forge flow get context --raw` for a broad overview; then `sdd-forge flow get context <path> --raw` for specific files.
      4. If guardrail articles have NOT been loaded in this session: `sdd-forge flow get guardrail impl`. If output is non-empty, follow these principles. Skip if already present in context.
-   - Code only after confirming gate PASS and test phase completion.
+   - **Before writing any code**, present an implementation approach and obtain approval:
+     - For each spec requirement, describe:
+       - **方針 (Approach):** how you plan to implement it
+       - **既存コード (Existing code):** which existing modules/functions/patterns you will reuse (or "none")
+       - **設計判断 (Design decision):** any meaningful architectural choice being made (function signature, pattern selection, data structure)
+     - Omit routine additions that follow an existing pattern with no design decision.
+     - Example format:
+       ```
+       実装方針:
+
+       Req 1: <requirement text>
+         方針: <how to implement>
+         既存コード: <what existing code is reused>
+         設計判断: <architectural choice, or "なし">
+
+       Req 2: <requirement text>
+         方針: <how to implement>
+         既存コード: <what existing code is reused>
+         設計判断: <architectural choice, or "なし">
+       ```
+     - Present with:
+       ```
+       ──────────────────────────────────────────────────────────
+         実装方針を確認してください。
+       ──────────────────────────────────────────────────────────
+
+         [1] この方針で進める
+         [2] 変更したい（→ 何を変えるか教えてください）
+
+       ```
+     - If [2]: incorporate feedback, revise the plan, re-present. **Retry limit: 3 rounds.**
+     - **If `autoApprove: true`**: present the approach briefly, then auto-select [1] and proceed. Display: "auto: approach confirmed → proceeding to implementation"
+   - Code only after confirming gate PASS, test phase completion, and approach approval.
    - Aim to make tests pass.
    - **Update requirements as you go**: `sdd-forge flow set req <index> done` for each completed requirement.
    - Run tests to verify: use the test command from `package.json` scripts or the project's test runner.
@@ -177,6 +209,7 @@ Before starting, run `sdd-forge flow get check impl` to verify prerequisites.
 ## Hard Stops
 
 - Do not implement before gate PASS and test phase completion.
+- Do not write any code before the approach plan is approved by the user.
 - Do not finalize without asking the user.
 - Do not proceed to next step without user confirmation.
 

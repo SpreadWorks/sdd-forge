@@ -1,0 +1,17 @@
+#!/usr/bin/env node
+/**
+ * Mock fixture: always outputs claude-format JSON.
+ * MOCK_RESULT env var overrides the result text (default: "hello").
+ * Injected flags go to process.argv and do NOT break node.
+ */
+const result = process.env.MOCK_RESULT ?? "hello";
+process.stdout.write(JSON.stringify({
+  result,
+  usage: {
+    input_tokens: 10,
+    output_tokens: 5,
+    cache_read_input_tokens: 100,
+    cache_creation_input_tokens: 0,
+  },
+  total_cost_usd: 0.001,
+}));

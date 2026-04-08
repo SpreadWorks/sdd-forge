@@ -80,88 +80,35 @@
     "merge": "squash"
   },
   "agent": {
-    "default": "claude",
+    "default": "claude/sonnet",
     "workDir": ".tmp",
     "timeout": 600,
     "providers": {
-      "claude": {
+      "claude/sonnet": {
         "command": "claude",
-        "args": [
-          "-p",
-          "{{PROMPT}}"
-        ],
+        "args": ["-p", "{{PROMPT}}", "--model", "sonnet"],
         "systemPromptFlag": "--system-prompt",
-        "profiles": {
-          "default": [],
-          "opus": [
-            "--model",
-            "opus"
-          ],
-          "sonnet": [
-            "--model",
-            "sonnet"
-          ]
-        }
+        "jsonOutputFlag": "--output-format json"
+      },
+      "claude/opus": {
+        "command": "claude",
+        "args": ["-p", "{{PROMPT}}", "--model", "opus"],
+        "systemPromptFlag": "--system-prompt",
+        "jsonOutputFlag": "--output-format json"
       },
       "codex": {
         "command": "codex",
-        "args": [
-          "exec",
-          "--full-auto",
-          "-C",
-          ".tmp",
-          "{{PROMPT}}"
-        ],
-        "profiles": {
-          "default": []
-        }
+        "args": ["exec", "--full-auto", "-C", ".tmp", "{{PROMPT}}"],
+        "jsonOutputFlag": "--json"
       }
     },
-    "commands": {
-      "docs": {
-	      "agent": "claude", "profile": "sonnet"
-      },
-      "docs.review": {
-	      "agent": "claude", "profile": "sonnet"
-      },
-      "docs.forge": {
-	      "agent": "claude", "profile": "sonnet"
-      },
-      "spec": {
-	      "agent": "claude", "profile": "sonnet"
-      },
-      "spec.gate": {
-	      "agent": "claude", "profile": "sonnet"
-      },
-      "flow": {
-	      "agent": "claude", "profile": "sonnet"
-      },
-      "docs.enrich": {
-	      "agent": "claude", "profile": "sonnet"
-      },
-      "docs.text": {
-	      "agent": "claude", "profile": "sonnet"
-      },
-      "docs.readme": {
-	      "agent": "claude", "profile": "sonnet"
-      },
-      "docs.agents": {
-	      "agent": "claude", "profile": "sonnet"
-      },
-      "experimental.workflow.borad.to-issue": {
-	      "agent": "claude", "profile": "sonnet"
-      },
-      "flow.review.draft": {
-	      "agent": "codex"
-      },
-      "flow.review.impl": {
-	      "agent": "claude", "profile": "sonnet"
-      },
-      "flow.review.final": {
-	      "agent": "claude", "profile": "sonnet"
-      },
-      "docs.translate": {
-	      "agent": "claude", "profile": "sonnet"
+    "profiles": {
+      "default": {
+        "docs": "claude/sonnet",
+        "spec": "claude/sonnet",
+        "flow": "claude/sonnet",
+        "experimental.workflow.board.to-issue": "claude/sonnet",
+        "flow.review.draft": "codex"
       }
     }
   },

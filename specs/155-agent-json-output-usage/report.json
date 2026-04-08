@@ -1,0 +1,37 @@
+{
+  "data": {
+    "implementation": {
+      "diffStat": "specs/155-agent-json-output-usage/draft.md         |  81 ++++++\n specs/155-agent-json-output-usage/flow.json        | 145 +++++++++++\n specs/155-agent-json-output-usage/issue-log.json   |  50 ++++\n specs/155-agent-json-output-usage/qa.md            |   9 +\n specs/155-agent-json-output-usage/review.md        |  41 +++\n specs/155-agent-json-output-usage/spec.md          |  91 +++++++\n specs/155-agent-json-output-usage/tests/README.md  |  45 ++++\n .../tests/agent-json-output.test.js                | 275 +++++++++++++++++++++\n .../tests/fixtures/mock-claude-agent               |  28 +++\n .../tests/fixtures/mock-claude-json                |  17 ++\n .../tests/fixtures/mock-codex-ndjson               |  12 +\n src/lib/agent.js                                   | 273 +++++++++++++++++---\n tests/unit/lib/agent.test.js                       |   2 +-\n 13 files changed, 1028 insertions(+), 41 deletions(-)",
+      "commits": [
+        "feat: feature/155-agent-json-output-usage",
+        "docs: record user approval for existing test modification",
+        "refactor: apply code review fixes to agent.js",
+        "feat: add jsonOutputFlag and usage logging to agent.js"
+      ]
+    },
+    "retro": {
+      "total": 6,
+      "done": 6,
+      "partial": 0,
+      "not_done": 0,
+      "rate": 1,
+      "notes": "全6要件が実装済み。unplanned 変更はすべて要件を満たすための内部リファクタリング（async パスへの usage 伝播、logging wrapper の統一）であり、公開 API の変更はなく後方互換性を維持している。parseClaudeOutput / parseCodexOutput の返り値に raw フィールドが含まれていない点（review item 2 で指摘・修正済み）も確認できる。"
+    },
+    "issueLog": {
+      "count": 0,
+      "entries": []
+    },
+    "metrics": {
+      "docsRead": 1,
+      "srcRead": 1,
+      "question": 4,
+      "issueLog": 3
+    },
+    "tests": null,
+    "sync": {
+      "status": "skipped",
+      "reason": "sync was skipped"
+    }
+  },
+  "text": "  Report\n\n  Implementation\n  ────────────────────────────────────────────────\n    feat: feature/155-agent-json-output-usage\n    docs: record user approval for existing test modification\n    refactor: apply code review fixes to agent.js\n    feat: add jsonOutputFlag and usage logging to agent.js\n    13 files changed, 1028 insertions(+), 41 deletions(-)\n\n  Retro\n  ────────────────────────────────────────────────\n    ████████ 100%  (6 done / 0 partial / 0 miss)\n\n  Metrics\n  ────────────────────────────────────────────────\n    docs read 1  src read 1  Q&A 4  issue-log 3\n\n  Tests\n  ────────────────────────────────────────────────\n    -"
+}

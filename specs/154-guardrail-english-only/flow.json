@@ -1,0 +1,134 @@
+{
+  "spec": "specs/154-guardrail-english-only/spec.md",
+  "baseBranch": "development",
+  "featureBranch": "feature/154-guardrail-english-only",
+  "steps": [
+    {
+      "id": "approach",
+      "status": "done"
+    },
+    {
+      "id": "branch",
+      "status": "done"
+    },
+    {
+      "id": "prepare-spec",
+      "status": "done"
+    },
+    {
+      "id": "draft",
+      "status": "done"
+    },
+    {
+      "id": "gate-draft",
+      "status": "done"
+    },
+    {
+      "id": "spec",
+      "status": "done"
+    },
+    {
+      "id": "gate",
+      "status": "done"
+    },
+    {
+      "id": "approval",
+      "status": "done"
+    },
+    {
+      "id": "test",
+      "status": "done"
+    },
+    {
+      "id": "implement",
+      "status": "done"
+    },
+    {
+      "id": "gate-impl",
+      "status": "done"
+    },
+    {
+      "id": "review",
+      "status": "done"
+    },
+    {
+      "id": "finalize",
+      "status": "pending"
+    },
+    {
+      "id": "commit",
+      "status": "pending"
+    },
+    {
+      "id": "push",
+      "status": "pending"
+    },
+    {
+      "id": "merge",
+      "status": "pending"
+    },
+    {
+      "id": "pr-create",
+      "status": "pending"
+    },
+    {
+      "id": "branch-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "pr-merge",
+      "status": "pending"
+    },
+    {
+      "id": "sync-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "docs-update",
+      "status": "pending"
+    },
+    {
+      "id": "docs-review",
+      "status": "pending"
+    },
+    {
+      "id": "docs-commit",
+      "status": "pending"
+    }
+  ],
+  "requirements": [
+    {
+      "desc": "When flow get guardrail is called, load from <preset>/guardrail.json (not templates/<lang>/)",
+      "status": "done"
+    },
+    {
+      "desc": "Preset chain loader shall not perform language-based path construction or fallback",
+      "status": "done"
+    },
+    {
+      "desc": "Move en/guardrail.json content to <preset>/guardrail.json for all 17 presets",
+      "status": "done"
+    },
+    {
+      "desc": "Delete all templates/en/guardrail.json and templates/ja/guardrail.json files",
+      "status": "done"
+    },
+    {
+      "desc": "Remove lang parameter from internal preset chain guardrail loader",
+      "status": "done"
+    },
+    {
+      "desc": "All existing callers (get-guardrail, run-gate, run-lint) continue to work without modification",
+      "status": "done"
+    }
+  ],
+  "issue": 106,
+  "request": "guardrail の多言語対応を廃止し英語に統一する。guardrail は AI 向け制約なので英語のみにする。言語別 guardrail ファイル・ディレクトリを削除し、多言語ロード機構を廃止する。",
+  "worktree": true,
+  "autoApprove": true,
+  "metrics": {
+    "draft": {
+      "srcRead": 1
+    }
+  }
+}
