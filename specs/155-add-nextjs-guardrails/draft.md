@@ -50,6 +50,11 @@ A: `npm test` を実行して既存テストが通ることを確認するのみ
 - nextjs プリセットのみ。親プリセット（webapp / js-webapp）には変更なし
 - docs 生成時の guardrail 表示件数が 3 → 12 件に増加
 
+### 関連する影響事項
+
+- **`sdd-forge upgrade` の要否**: `src/presets/` 配下の変更に該当するため、実装後に `sdd-forge upgrade` を実行する。guardrail.json はスキルテンプレートではないためスキル更新は発生しないが、CLAUDE.md のルールに従い実行する。
+- **NOTICE ファイルと `sdd-forge build` 出力**: NOTICE は npm パッケージ同梱の属性表示ファイルであり、docs 生成パイプライン（scan/data/text）の対象外。`sdd-forge build` の出力には影響しない。
+
 ---
 
 - [x] User approved this draft
