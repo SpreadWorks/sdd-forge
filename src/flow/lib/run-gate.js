@@ -12,7 +12,7 @@
 
 import fs from "fs";
 import path from "path";
-import { runCmd } from "../../lib/process.js";
+import { runCmd, assertOk } from "../../lib/process.js";
 import { callAgentWithLog, resolveAgent } from "../../lib/agent.js";
 import { filterByPhase, loadMergedGuardrails } from "../../lib/guardrail.js";
 import { getSpecName } from "../../lib/flow-state.js";
@@ -414,7 +414,7 @@ export class RunGateCommand extends FlowCommand {
     // Get git diff
     const diffRes = runCmd("git", ["diff", `${state.baseBranch}...HEAD`], { cwd: root });
     if (!diffRes.ok) {
-      throw new Error(`failed to get git diff: ${diffRes.stderr}`);
+      assertOk(diffRes, "failed to get git diff");
     }
     const diff = diffRes.stdout;
 

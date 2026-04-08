@@ -1,0 +1,37 @@
+{
+  "entries": [
+    {
+      "step": "gate-draft",
+      "reason": "単一責任 — サブプロセスクラッシュ詳細の露出という単一の関心事に対応している; 要件の明確性 — `signal: string|null`、`killed: boolean`、`status` は常に数値、フォーマット形式が具体的に記述されている; 文脈の完全性 — 各決定事項にトリガー条件（`ok === false` で throw する箇所等）と期待振る舞いが対になっている; 機密情報のハードコード禁止 — 機密情報に関する記述はなく該当しない; 要件の優先順位 — 決定事項が5項目あるが優先順位が明示されていない; 既存機能への影響 — 後方互換性あり・エラーメッセージ形式変更・`runCmdWithRetry` 正規表現置き換えが明示されている; 推奨案は根拠付きで提示する — Q&A で根拠（PR #97 の要件）を明示して推奨案を提示している; 探索できる質問はユーザーに聞かない — Q&A の質問はコードベース探索では確定できない設計判断であり適切; 関連する影響を自発的に指摘する — `runCmdWithRetry` の正規表現置き換えという関連影響が自発的に記載されている; 批判の前にブレインストーミング確認 — 該当する批判場面はない; 脇道の知見を draft.md に記録する — Q&A で脇道の判断（`git-helpers.js` の適用範囲）が記録されている; draft は要件定義レベルに留める — フォーマット例は含むが関数シグネチャ・実装詳細には踏み込んでいない; CLI インターフェースの後方互換性 — CLI インターフェースの変更はなく該当しない",
+      "trigger": "gate post hook (auto)",
+      "timestamp": "2026-04-07T23:23:21.623Z"
+    },
+    {
+      "step": "implement",
+      "reason": "execFileSync タイムアウト時の e.killed は undefined（true ではない）— ETIMEDOUT エラーは signal は設定するが killed は設定しない Node.js の仕様",
+      "trigger": "process.test.js のタイムアウトテストが killed=true の期待で失敗",
+      "resolution": "テスト期待値を killed===true から typeof killed==='boolean' に修正",
+      "timestamp": "2026-04-08T00:00:41.390Z"
+    },
+    {
+      "step": "gate-impl",
+      "reason": "no changes found against base branch",
+      "trigger": "gate post hook (auto)",
+      "timestamp": "2026-04-08T00:31:51.112Z"
+    },
+    {
+      "step": "review",
+      "reason": "guardrail.js の resolveGuardrailContext が catch-all で全エラーを黙殺している — 本 spec のスコープ外ファイルのため未修正",
+      "trigger": "コードレビューで提案 #3 として APPROVED",
+      "resolution": "issue-log に記録してスキップ。本 spec では変更していないファイルのため対応不要",
+      "guardrailCandidate": "スコープ外ファイルの catch-all も review で発見されたら issue-log に記録する",
+      "timestamp": "2026-04-08T00:37:45.264Z"
+    },
+    {
+      "step": "gate-impl",
+      "reason": "runCmd 成功時に signal: null, killed: false を追加 — process.js の ok=true return に両フィールドあり; runCmd 失敗時に signal: e.signal ?? null, killed: e.killed ?? false を追加 — catch ブロックに両フィールドあり; runCmdAsync 成功時に signal: null, killed: false を追加 — else ブランチに両フィールドあり; runCmdAsync 失敗時に signal: err.signal ?? null, killed: err.killed ?? false を追加 — err ブランチに両フィールドあり; runCmdAsync の status を数値正規化 — `typeof err.code === \"number\" ? err.code : 1` で文字列/null を 1 にフォールバック; formatError(res) を src/lib/process.js に export — export function formatError あり; res.signal がある場合のフォーマット signal=<name>[ (killed)] | exit=<status>[ | <stderr>] — 実装・テストで確認; res.signal がない場合のフォーマット exit=<status>[ | <stderr>] — 実装・テストで確認; res.stderr が空の場合は省略 — `if (res.stderr)` で条件分岐あり; コンテキスト付加は呼び出し元の責務 — assertOk が `context + \": \" + formatError(res)` パターンで実装; lint.js の throw を assertOk に置き換え — assertOk(res, \"git diff failed\") に変更済み; cli.js の throw を assertOk に置き換え — assertOk(res, \"failed to resolve git-common-dir\") に変更済み; git — helpers.js の { ok: false, error: res.stderr } を formatError に置き換え — formatError(res) に変更済み; get — issue.js の throw を assertOk に置き換え — assertOk(res, \"failed to fetch issue\") に変更済み; run — finalize.js の throw new Error(output || \"commit failed\") を assertOk に置き換え — assertOk(res, \"commit failed\") に変更済み（\"nothing to commit\" ロジックは変更なし）; run — finalize.js の throw new Error((buildRes.stderr || buildRes.stdout || \"\").trim()) を assertOk に置き換え — assertOk(buildRes, \"docs build failed\") に変更済み; run — sync.js の throw を assertOk に置き換え — assertOk(commitRes, \"git commit failed\") に変更済み; run — prepare-spec.js の throw を assertOk に置き換え — assertOk(res, `git ${args.join(\" \")} failed`) に変更済み; run — gate.js の throw を assertOk に置き換え — assertOk(diffRes, \"failed to get git diff\") に変更済み; merge.js の複数 throw を assertOk に置き換え — 4箇所すべて assertOk に変更済み; || \"fallback\" フォールバックを削除 — assertOk 移行後にフォールバック文字列が残っていない; run — review.js の /killed|signal/i.test(stderr) を lastRes.signal || lastRes.killed に置き換え — 変更済み; runCmdWithRetry の JSDoc に signal: string|null, killed: boolean を追加 — @param と @returns 両方更新済み; process.test.js に runCmd の signal/killed フィールド確認テスト追加 — 3テスト追加済み; process.test.js に runCmdAsync の status 数値正規化テスト追加 — ENOENT で status===1 のテストあり; formatError の各フォーマットパターンテスト追加 — 5パターンのテストあり; runCmdWithRetry のシグナル判定テストを specs/154 — subprocess-crash-details/tests/ に追加 — diff に該当テストファイルが存在しない",
+      "trigger": "gate post hook (auto)",
+      "timestamp": "2026-04-08T00:38:24.842Z"
+    }
+  ]
+}

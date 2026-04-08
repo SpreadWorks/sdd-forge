@@ -5,7 +5,7 @@
  * Includes both read-only state queries and GitHub actions (e.g. issue comments).
  */
 
-import { runCmd } from "./process.js";
+import { runCmd, formatError } from "./process.js";
 
 /** @returns {{ dirty: boolean, dirtyFiles: string[] }} */
 export function getWorktreeStatus(cwd) {
@@ -66,5 +66,5 @@ export function commentOnIssue(issueNumber, body, cwd) {
     cwd,
     timeout: 30000,
   });
-  return res.ok ? { ok: true } : { ok: false, error: res.stderr };
+  return res.ok ? { ok: true } : { ok: false, error: formatError(res) };
 }

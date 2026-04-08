@@ -1,0 +1,134 @@
+{
+  "spec": "specs/154-subprocess-crash-details/spec.md",
+  "baseBranch": "development",
+  "featureBranch": "feature/154-subprocess-crash-details",
+  "steps": [
+    {
+      "id": "approach",
+      "status": "done"
+    },
+    {
+      "id": "branch",
+      "status": "done"
+    },
+    {
+      "id": "prepare-spec",
+      "status": "pending"
+    },
+    {
+      "id": "draft",
+      "status": "done"
+    },
+    {
+      "id": "gate-draft",
+      "status": "done"
+    },
+    {
+      "id": "spec",
+      "status": "done"
+    },
+    {
+      "id": "gate",
+      "status": "done"
+    },
+    {
+      "id": "approval",
+      "status": "done"
+    },
+    {
+      "id": "test",
+      "status": "done"
+    },
+    {
+      "id": "implement",
+      "status": "done"
+    },
+    {
+      "id": "gate-impl",
+      "status": "done"
+    },
+    {
+      "id": "review",
+      "status": "done"
+    },
+    {
+      "id": "finalize",
+      "status": "pending"
+    },
+    {
+      "id": "commit",
+      "status": "pending"
+    },
+    {
+      "id": "push",
+      "status": "pending"
+    },
+    {
+      "id": "merge",
+      "status": "pending"
+    },
+    {
+      "id": "pr-create",
+      "status": "pending"
+    },
+    {
+      "id": "branch-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "pr-merge",
+      "status": "pending"
+    },
+    {
+      "id": "sync-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "docs-update",
+      "status": "pending"
+    },
+    {
+      "id": "docs-review",
+      "status": "pending"
+    },
+    {
+      "id": "docs-commit",
+      "status": "pending"
+    }
+  ],
+  "requirements": [
+    {
+      "desc": "runCmd の返り値に signal/killed フィールドを追加",
+      "status": "done"
+    },
+    {
+      "desc": "runCmdAsync の返り値に signal/killed フィールドを追加し status を数値正規化",
+      "status": "done"
+    },
+    {
+      "desc": "formatError(res) ヘルパーを src/lib/process.js に export",
+      "status": "done"
+    },
+    {
+      "desc": "ok===false でエラーメッセージを生成する全箇所で formatError を使用",
+      "status": "done"
+    },
+    {
+      "desc": "runCmdWithRetry のシグナル判定を res.signal || res.killed に置き換え",
+      "status": "done"
+    }
+  ],
+  "issue": 95,
+  "request": "サブプロセスのクラッシュ詳細（signal、exit code、killed フラグ）をエラーメッセージに含める。runCmd/runCmdAsync の返り値に signal/killed フィールドを追加し、formatError ヘルパーを作成する。PR #97 の実装内容を参考にして進める。",
+  "worktree": true,
+  "metrics": {
+    "draft": {
+      "question": 1
+    },
+    "impl": {
+      "srcRead": 1,
+      "issueLog": 2
+    }
+  },
+  "autoApprove": true
+}

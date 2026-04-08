@@ -9,7 +9,7 @@
 
 import fs from "fs";
 import path from "path";
-import { runCmd } from "../../lib/process.js";
+import { runCmd, assertOk } from "../../lib/process.js";
 import { PKG_DIR } from "../../lib/cli.js";
 import {
   resolveWorktreePaths, clearFlowState, specIdFromPath,
@@ -81,7 +81,7 @@ export function commitOrSkip(args, opts) {
   if (/nothing to commit|no changes added to commit/i.test(output)) {
     return { status: "skipped", message: "nothing to commit" };
   }
-  throw new Error(output || "commit failed");
+  assertOk(res, "commit failed");
 }
 
 export const STEP_MAP = {
@@ -288,7 +288,7 @@ export class RunFinalizeCommand extends FlowCommand {
           const buildScript = path.join(PKG_DIR, "docs.js");
           const buildRes = runCmd("node", [buildScript, "build"], { cwd: syncCwd });
           if (!buildRes.ok) {
-            throw new Error((buildRes.stderr || buildRes.stdout || "").trim());
+            assertOk(buildRes, "docs build failed");
           }
           runCmd("git", ["add", "docs/", "AGENTS.md", "CLAUDE.md", "README.md", ".sdd-forge/output/analysis.json"], { cwd: syncCwd });
           let diffStat = null;
