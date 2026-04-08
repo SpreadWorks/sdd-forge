@@ -1,5 +1,5 @@
 {
-  "analyzedAt": "2026-04-07T23:32:48.702Z",
+  "analyzedAt": "2026-04-08T00:36:25.337Z",
   "package": {
     "entries": [
       {
@@ -2054,14 +2054,15 @@
       },
       {
         "file": "src/flow/commands/report.js",
-        "hash": "b9e5b478010b4e3d0f9f946ffb255334",
-        "lines": 208,
-        "mtime": "2026-04-03T01:07:47.870Z",
+        "hash": "a688dd2e54b41519c57b72d96d6608cb",
+        "lines": 192,
+        "mtime": "2026-04-08T00:36:25.114Z",
         "className": "report",
         "methods": [
           "generateReport",
           "saveReport",
           "aggregateMetrics",
+          "pushSection",
           "formatText"
         ],
         "imports": [
@@ -2076,12 +2077,12 @@
         "extends": null,
         "usedBy": null,
         "id": "5f80ffd2",
-        "summary": "Generates and persists a structured flow report by aggregating metrics and issue-log entries.",
-        "detail": "aggregateMetrics computes totals across metric phases (question, redo, docsRead, srcRead). generateReport combines metrics and issue-log into a { data, text } envelope where formatText produces a human-readable summary. saveReport writes report.json alongside the spec file in the spec directory. Used as a late-stage step in finalize to capture quality signals for the completed flow.",
+        "summary": "Report generation module for SDD flow that aggregates metrics, formats output, and saves report artifacts to disk.",
+        "detail": "Provides three main exports: generateReport which produces both data and text representations from input, saveReport which persists the report as report.json alongside the spec file, and aggregateMetrics which computes totals from raw metrics. The module reads issue log data via loadIssueLog and formats it into human-readable sections using pushSection and formatText helpers. Report files are written to the same directory as the spec path, making them co-located with their source spec.",
         "chapter": "internal_design",
         "role": "lib",
         "enrich": {
-          "processedAt": "2026-04-03T03:15:49.316Z",
+          "processedAt": "2026-04-08T00:36:32.323Z",
           "attempts": 1
         },
         "keywords": [
@@ -2089,10 +2090,12 @@
           "metrics",
           "aggregation",
           "issue-log",
-          "report.json",
-          "finalize",
-          "quality",
-          "flow-report"
+          "generateReport",
+          "saveReport",
+          "flow",
+          "spec",
+          "output",
+          "summary"
         ]
       },
       {
@@ -7693,9 +7696,9 @@
     ],
     "summary": {
       "total": 224,
-      "totalMethods": 702
+      "totalMethods": 703
     },
     "dataSourceHash": "7d725e75d5031be445119323e4947c91"
   },
-  "enrichedAt": "2026-04-07T23:33:06.281Z"
+  "enrichedAt": "2026-04-08T00:36:32.323Z"
 }
