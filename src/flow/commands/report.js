@@ -103,6 +103,18 @@ export function generateReport(input) {
 }
 
 /**
+ * Push a section header (blank line + title + divider) onto lines.
+ * @param {string[]} lines
+ * @param {string} title
+ * @param {string} thin - divider string
+ */
+function pushSection(lines, title, thin) {
+  lines.push("");
+  lines.push(`  ${title}`);
+  lines.push(`  ${thin}`);
+}
+
+/**
  * Format report data as human-readable plain text.
  * @param {Object} data - structured report data
  * @returns {string}
@@ -114,9 +126,7 @@ function formatText(data) {
   lines.push("  Report");
 
   // Implementation
-  lines.push("");
-  lines.push(`  Implementation`);
-  lines.push(`  ${thin}`);
+  pushSection(lines, "Implementation", thin);
   if (data.implementation.commits.length > 0) {
     for (const msg of data.implementation.commits) {
       lines.push(`    ${msg}`);
@@ -131,9 +141,7 @@ function formatText(data) {
   }
 
   // Retro
-  lines.push("");
-  lines.push("  Retro");
-  lines.push(`  ${thin}`);
+  pushSection(lines, "Retro", thin);
   if (data.retro) {
     const r = data.retro;
     const pct = (r.rate * 100).toFixed(0);
@@ -146,49 +154,25 @@ function formatText(data) {
   }
 
   // Metrics (single line)
-  lines.push("");
-  lines.push("  Metrics");
-  lines.push(`  ${thin}`);
+  pushSection(lines, "Metrics", thin);
   const m = data.metrics;
-  lines.push(`    docs ${m.docsRead}  src ${m.srcRead}  Q&A ${m.question}  issues ${m.issueLog}`);
+  lines.push(`    docs read ${m.docsRead}  src read ${m.srcRead}  Q&A ${m.question}  issue-log ${m.issueLog}`);
 
-  // Tests
+  // Tests (always shown)
+  pushSection(lines, "Tests", thin);
   if (data.tests) {
-    lines.push("");
-    lines.push("  Tests");
-    lines.push(`  ${thin}`);
     const t = data.tests;
     lines.push(`    unit ${t.unit}  integration ${t.integration}  acceptance ${t.acceptance}  total ${t.total}`);
+  } else {
+    lines.push("    -");
   }
 
   // Redo (only if entries exist)
   if (data.issueLog.count > 0) {
-    lines.push("");
-    lines.push(`  Issue Log (${data.issueLog.count})`);
-    lines.push(`  ${thin}`);
+    pushSection(lines, `Issue Log (${data.issueLog.count})`, thin);
     for (const e of data.issueLog.entries) {
-      lines.push(`    [${e.step}] ${e.reason}${e.resolution ? ` -> ${e.resolution}` : ""}`);
+      lines.push(`    [${e.step}] ${e.reason}`);
     }
-  }
-
-  // Documents
-  lines.push("");
-  lines.push("  Documents");
-  lines.push(`  ${thin}`);
-  if (data.sync.status === "skipped") {
-    lines.push(`    skipped: ${data.sync.reason}`);
-  } else if (data.sync.status === "done") {
-    if (data.sync.diffSummary) {
-      for (const f of data.sync.diffSummary.split("\n").filter(Boolean)) {
-        lines.push(`    ${f}`);
-      }
-    }
-    if (data.sync.diffStat) {
-      const last = data.sync.diffStat.split("\n").pop()?.trim();
-      if (last) lines.push(`    ${last}`);
-    }
-  } else {
-    lines.push(`    ${data.sync.status}${data.sync.reason ? ": " + data.sync.reason : ""}`);
   }
 
   return lines.join("\n");

@@ -1,0 +1,36 @@
+{
+  "data": {
+    "implementation": {
+      "diffStat": "specs/154-improve-report-formattext/draft.md       |  75 ++++++++\n specs/154-improve-report-formattext/flow.json      | 129 +++++++++++++\n specs/154-improve-report-formattext/issue-log.json |  23 +++\n specs/154-improve-report-formattext/qa.md          |   6 +\n specs/154-improve-report-formattext/review.md      |  41 ++++\n specs/154-improve-report-formattext/spec.md        |  68 +++++++\n .../154-improve-report-formattext/tests/README.md  |  32 ++++\n .../tests/verify.test.js                           | 211 +++++++++++++++++++++\n src/flow/commands/report.js                        |  60 +++---\n 9 files changed, 607 insertions(+), 38 deletions(-)",
+      "commits": [
+        "feat: feature/154-improve-report-formattext",
+        "refactor(report): extract pushSection helper, clean qa.md placeholder",
+        "feat(report): improve formatText() output"
+      ]
+    },
+    "retro": {
+      "total": 4,
+      "done": 4,
+      "partial": 0,
+      "not_done": 0,
+      "rate": 1,
+      "notes": "All 4 requirements are fully satisfied. Two unplanned changes are present: the pushSection helper extraction (prompted by review proposal #4, which was in-scope as an approved review item) and the qa.md placeholder cleanup (review proposal #5). Both are low-risk improvements consistent with project coding rules. No requirement gaps or partial implementations detected."
+    },
+    "issueLog": {
+      "count": 0,
+      "entries": []
+    },
+    "metrics": {
+      "docsRead": 0,
+      "srcRead": 1,
+      "question": 0,
+      "issueLog": 1
+    },
+    "tests": null,
+    "sync": {
+      "status": "skipped",
+      "reason": "sync was skipped"
+    }
+  },
+  "text": "  Report\n\n  Implementation\n  ────────────────────────────────────────────────\n    feat: feature/154-improve-report-formattext\n    refactor(report): extract pushSection helper, clean qa.md placeholder\n    feat(report): improve formatText() output\n    9 files changed, 607 insertions(+), 38 deletions(-)\n\n  Retro\n  ────────────────────────────────────────────────\n    ████████ 100%  (4 done / 0 partial / 0 miss)\n\n  Metrics\n  ────────────────────────────────────────────────\n    docs 0  src 1  Q&A 0  issues 1\n\n  Documents\n  ────────────────────────────────────────────────\n    skipped: sync was skipped"
+}
