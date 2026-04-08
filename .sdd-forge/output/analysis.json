@@ -1,5 +1,5 @@
 {
-  "analyzedAt": "2026-04-08T08:58:59.464Z",
+  "analyzedAt": "2026-04-08T12:40:34.026Z",
   "package": {
     "entries": [
       {
@@ -50,9 +50,9 @@
     "entries": [
       {
         "file": "src/check.js",
-        "hash": "edb1a125f5059d6d89a107e64c09dd6d",
-        "lines": 40,
-        "mtime": "2026-04-08T05:05:21.872Z",
+        "hash": "eccf63df6dfa0de7dabbe1f310d49770",
+        "lines": 41,
+        "mtime": "2026-04-08T09:17:48.268Z",
         "className": "check",
         "methods": [],
         "imports": [
@@ -64,12 +64,12 @@
         "extends": null,
         "usedBy": null,
         "id": "cfca7dd3",
-        "summary": "Entry point dispatcher for the `sdd-forge check` subcommand namespace. Routes sub-subcommands to their respective script files under the check/ directory.",
-        "detail": "Parses the first CLI argument to determine which check sub-script to invoke. Resolves the script path relative to PKG_DIR and delegates execution via dynamic import. Exits with EXIT_ERROR if the sub-script is not recognized. Follows the same dispatcher pattern used by docs.js and flow.js.",
-        "chapter": "project_structure",
-        "role": "cli",
+        "summary": "Entry point dispatcher for the `sdd-forge check` subcommand namespace. Routes check sub-subcommands to their corresponding script files.",
+        "detail": "Parses the first CLI argument to select a script from the SCRIPTS map and dynamically imports it via `await import()`. Uses PKG_DIR to construct absolute script paths. Exits with EXIT_ERROR if the sub-subcommand is not recognized. Delegates argument forwarding by mutating process.argv before the dynamic import.",
+        "chapter": "cli_commands",
+        "role": "controller",
         "enrich": {
-          "processedAt": "2026-04-08T05:05:43.612Z",
+          "processedAt": "2026-04-08T12:40:58.699Z",
           "attempts": 1
         },
         "keywords": [
@@ -78,8 +78,61 @@
           "subcommand",
           "routing",
           "dynamic import",
-          "PKG_DIR",
-          "entry point"
+          "CLI entry point",
+          "PKG_DIR"
+        ]
+      },
+      {
+        "file": "src/check/commands/config.js",
+        "hash": "4c3b2dc2e265953d4d0774b9603a865f",
+        "lines": 141,
+        "mtime": "2026-04-08T09:17:33.707Z",
+        "className": "config",
+        "methods": [
+          "printHelp",
+          "runChecks",
+          "main"
+        ],
+        "imports": [
+          "fs",
+          "../../lib/entrypoint.js",
+          "../../lib/cli.js",
+          "../../lib/config.js",
+          "../../lib/types.js",
+          "../../lib/presets.js",
+          "../../lib/exit-codes.js"
+        ],
+        "exports": [
+          "main"
+        ],
+        "extends": null,
+        "usedBy": [
+          "src/lib/flow-state.js",
+          "src/lib/guardrail.js",
+          "src/lib/i18n.js",
+          "src/presets/base/tests/acceptance/fixtures/src/index.js",
+          "src/presets/cli/tests/acceptance/fixtures/src/cli.js",
+          "src/presets/js-webapp/tests/acceptance/fixtures/src/index.js",
+          "src/presets/node-cli/tests/acceptance/fixtures/src/cli.js"
+        ],
+        "id": "1b9f6fe7",
+        "summary": "Implements the `sdd-forge check config` command which validates the project's sdd-forge configuration file. Outputs results in text or JSON format.",
+        "detail": "Reads and parses the config JSON from the path returned by `sddConfigPath()`. Runs a series of checks: file existence, JSON parse validity, schema validation via `validateConfig`, and preset resolution via `PRESETS`. Supports `--format json` output mode that emits a structured `{ ok, checks }` object to stdout. Exits with EXIT_ERROR on any validation failure in text mode. Limits schema error output to MAX_SCHEMA_ERRORS (50) to avoid flooding the terminal.",
+        "chapter": "cli_commands",
+        "role": "cli",
+        "enrich": {
+          "processedAt": "2026-04-08T12:40:58.699Z",
+          "attempts": 1
+        },
+        "keywords": [
+          "check config",
+          "config validation",
+          "validateConfig",
+          "schema errors",
+          "preset",
+          "JSON output",
+          "sddConfigPath",
+          "exit code"
         ]
       },
       {
@@ -1114,9 +1167,9 @@
       },
       {
         "file": "src/docs/lib/command-context.js",
-        "hash": "ceec97b054c0814f409495cc832ee4ba",
+        "hash": "ed0b0ef92e7136ffc284bf3de918997e",
         "lines": 181,
-        "mtime": "2026-03-31T12:57:20.415Z",
+        "mtime": "2026-04-08T12:40:33.804Z",
         "className": "command-context",
         "methods": [
           "resolveCommandContext",
@@ -1152,22 +1205,24 @@
           "src/docs/commands/readme.js"
         ],
         "id": "10a78227",
-        "summary": "Resolves and exposes the shared command context object (paths, config, agent) used by all docs pipeline commands.",
-        "detail": "resolveCommandContext reads config.json, validates it, resolves root/docsDir/lang/preset/agent fields, and returns a frozen context bag. loadFullAnalysis and loadAnalysisData load analysis.json from the output directory. getChapterFiles returns an ordered list of chapter filenames by consulting preset chapters, config overrides via resolveChaptersOrder, and filtering against the filesystem. readText and stripResponsePreamble are string helpers shared across commands.",
+        "summary": "Provides shared context resolution and file loading utilities used by docs subcommands. Centralizes config loading, output JSON reading, and chapter file enumeration.",
+        "detail": "Exports `resolveCommandContext` which builds a unified context object from CLI flags, overrides, config file, and agent resolution. Provides `loadAnalysisData` and `loadFullAnalysis` for reading `analysis.json` from the `.sdd-forge/output/` directory. `getChapterFiles` enumerates markdown chapter files in the docs directory while excluding layout and special files. `stripResponsePreamble` trims leading preamble lines from LLM responses. `readText` safely reads a file or returns an empty string if missing.",
         "chapter": "internal_design",
         "role": "lib",
         "enrich": {
-          "processedAt": "2026-04-02T16:07:58.173Z",
+          "processedAt": "2026-04-08T12:40:58.699Z",
           "attempts": 1
         },
         "keywords": [
           "command context",
+          "docs pipeline",
+          "analysis.json",
+          "chapter files",
           "resolveCommandContext",
-          "getChapterFiles",
-          "loadFullAnalysis",
+          "loadAnalysisData",
           "stripResponsePreamble",
-          "config loading",
-          "context bag"
+          "docsDir",
+          "sddOutputDir"
         ]
       },
       {
@@ -3785,9 +3840,9 @@
       },
       {
         "file": "src/lib/cli.js",
-        "hash": "051ed955aaa7c6bb5e3d1e12a9de6b39",
+        "hash": "598fe39cfb8675912e57bfb5140e16d7",
         "lines": 144,
-        "mtime": "2026-04-08T00:40:05.732Z",
+        "mtime": "2026-04-08T12:40:33.805Z",
         "className": "cli",
         "methods": [
           "repoRoot",
@@ -3817,6 +3872,7 @@
         ],
         "extends": null,
         "usedBy": [
+          "src/check.js",
           "src/docs.js",
           "src/flow.js",
           "src/help.js",
@@ -3826,29 +3882,28 @@
           "src/lib/skills.js",
           "src/sdd-forge.js",
           "src/setup.js",
-          "src/upgrade.js",
-          "src/check.js"
+          "src/upgrade.js"
         ],
         "id": "f351ecc4",
-        "summary": "Core CLI utility module providing repo root resolution, argument parsing, worktree detection, and package metadata helpers. Used throughout the CLI and flow layers.",
-        "detail": "Exports PKG_DIR as the resolved package directory. repoRoot() prefers SDD_WORK_ROOT env var, falls back to git rev-parse, then cwd. parseArgs() implements a minimal flag/positional parser from an argv spec. isInsideWorktree() detects git worktrees by checking if .git is a file rather than a directory. getMainRepoPath() resolves the main repo from a worktree. Provides formatUTCTimestamp for consistent log timestamps.",
+        "summary": "Core CLI utility library providing repository root resolution, argument parsing, worktree detection, and package metadata helpers.",
+        "detail": "Exports `PKG_DIR` computed from `import.meta.url` for locating package-internal scripts. `repoRoot` resolves the project root via `SDD_FORGE_WORK_ROOT` env var or `git rev-parse`, falling back to `process.cwd()`. `sourceRoot` similarly respects `SDD_FORGE_SOURCE_ROOT`. `parseArgs` implements a minimal option parser supporting the spec object pattern. `isInsideWorktree` detects git worktrees by checking if `.git` is a file rather than a directory. Includes `getPackageVersion` and `formatUTCTimestamp` utility helpers.",
         "chapter": "internal_design",
         "role": "lib",
         "enrich": {
-          "processedAt": "2026-04-08T00:40:49.364Z",
+          "processedAt": "2026-04-08T12:40:58.699Z",
           "attempts": 1
         },
         "keywords": [
-          "cli",
-          "repo root",
+          "repoRoot",
           "PKG_DIR",
-          "parse args",
+          "parseArgs",
           "worktree",
+          "sourceRoot",
           "git",
-          "main repo",
-          "package version",
-          "timestamp",
-          "SDD_WORK_ROOT"
+          "SDD_FORGE_WORK_ROOT",
+          "SDD_FORGE_SOURCE_ROOT",
+          "CLI utilities",
+          "package version"
         ]
       },
       {
@@ -6326,9 +6381,9 @@
       },
       {
         "file": "src/presets/laravel/tests/e2e/integration.test.js",
-        "hash": "324ed11ff9674febd78222ae770f829f",
+        "hash": "bde167890ef6595a69cff7c3f94114fc",
         "lines": 120,
-        "mtime": "2026-03-26T03:13:47.940Z",
+        "mtime": "2026-04-08T12:40:33.805Z",
         "className": "integration.test",
         "methods": [],
         "imports": [
@@ -7408,9 +7463,9 @@
       },
       {
         "file": "src/presets/symfony/tests/e2e/integration.test.js",
-        "hash": "47c6fe25b250e34139686ecd6e2f017d",
+        "hash": "fb3644ebdcd7f70395b84582952e257d",
         "lines": 127,
-        "mtime": "2026-03-26T03:13:47.944Z",
+        "mtime": "2026-04-08T12:40:33.805Z",
         "className": "integration.test",
         "methods": [],
         "imports": [
@@ -7694,9 +7749,9 @@
       },
       {
         "file": "src/sdd-forge.js",
-        "hash": "2f2bc70c57414b234050a888cff61b9d",
-        "lines": 74,
-        "mtime": "2026-04-08T05:05:21.872Z",
+        "hash": "146b1faac10ef5b44e7a5de2c13affcc",
+        "lines": 78,
+        "mtime": "2026-04-08T09:17:33.707Z",
         "className": "sdd-forge",
         "methods": [],
         "imports": [
@@ -7709,24 +7764,25 @@
         "extends": null,
         "usedBy": null,
         "id": "a8608997",
-        "summary": "Top-level entry point for the sdd-forge CLI. Dispatches to namespace dispatchers (docs, flow, check) or independent command scripts based on the first CLI argument.",
-        "detail": "Resolves the raw subcommand from process.argv and routes to one of three namespace dispatcher scripts or a set of independent scripts defined in INDEPENDENT map. Handles the special-cased `help` command by importing help.js directly. Emits a deprecation warning if cfg.logs.prompts is detected in config. Uses dynamic import with process.argv mutation to pass arguments to child scripts. Exits with EXIT_ERROR for unrecognized subcommands.",
-        "chapter": "project_structure",
-        "role": "cli",
+        "summary": "Top-level CLI entry point for `sdd-forge`. Dispatches to namespace dispatchers (docs, flow, check) or independent command scripts.",
+        "detail": "Parses raw argv to extract the subcommand and delegates to namespace dispatcher scripts or standalone scripts via dynamic `await import()`. Handles `--help`/`--version` flags before dispatching. Initializes the Logger after loading config, with a deprecation warning for the old `cfg.logs.prompts` key. Uses two dispatch sets: `NAMESPACE_DISPATCHERS` for multi-level subcommand namespaces and `INDEPENDENT` for flat single-level commands. Mutates `process.argv` before importing the target script to pass arguments transparently.",
+        "chapter": "cli_commands",
+        "role": "controller",
         "enrich": {
-          "processedAt": "2026-04-08T05:05:43.612Z",
+          "processedAt": "2026-04-08T12:40:58.699Z",
           "attempts": 1
         },
         "keywords": [
           "sdd-forge",
           "entry point",
           "dispatcher",
-          "subcommand",
           "namespace",
-          "routing",
           "dynamic import",
-          "CLI",
-          "main"
+          "Logger",
+          "subcommand",
+          "INDEPENDENT",
+          "NAMESPACE_DISPATCHERS",
+          "argv"
         ]
       },
       {
@@ -7847,10 +7903,10 @@
       }
     ],
     "summary": {
-      "total": 227,
-      "totalMethods": 725
+      "total": 228,
+      "totalMethods": 728
     },
     "dataSourceHash": "7d725e75d5031be445119323e4947c91"
   },
-  "enrichedAt": "2026-04-08T08:59:08.299Z"
+  "enrichedAt": "2026-04-08T12:40:58.699Z"
 }
