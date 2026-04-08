@@ -6,6 +6,7 @@
  * Routes top-level subcommands to dedicated dispatchers:
  *   docs    → src/docs.js
  *   flow    → src/flow.js
+ *   check   → src/check.js
  *   setup   → src/setup.js
  *   upgrade → src/upgrade.js
  *   help    → src/help.js
@@ -45,10 +46,13 @@ try {
     process.stderr.write("[sdd-forge] WARN: cfg.logs.prompts is deprecated. Use cfg.logs.enabled instead.\n");
   }
   Logger.getInstance().init(root, cfg, { entryCommand });
-} catch { /* pre-setup or missing config — Logger stays uninitialized, logs silently skipped */ }
+} catch (err) {
+  /* pre-setup or missing config — Logger stays uninitialized */
+  if (err?.code !== "ERR_MISSING_FILE") process.stderr.write(`[sdd-forge] Logger init failed: ${err?.message}\n`);
+}
 
 /** Namespace dispatchers — receive subcommand + rest args */
-const NAMESPACE_DISPATCHERS = new Set(["docs", "flow"]);
+const NAMESPACE_DISPATCHERS = new Set(["docs", "flow", "check"]);
 
 /** Independent commands — receive rest args directly */
 const INDEPENDENT = {
