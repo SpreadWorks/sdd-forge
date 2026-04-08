@@ -19,6 +19,18 @@
       "resolution": "modified catch block to write stderr for unexpected errors while keeping silent for ERR_MISSING_FILE (pre-setup scenario)",
       "guardrailCandidate": "when modifying any file, gate will analyze all pre-existing code in context — pre-existing guardrail violations in touched files must be fixed",
       "timestamp": "2026-04-08T05:53:18.824Z"
+    },
+    {
+      "step": "merge",
+      "reason": "Merge conflict detected. Run 'git rebase main' in the worktree and retry finalize.",
+      "timestamp": "2026-04-08T05:55:00.783Z"
+    },
+    {
+      "step": "finalize",
+      "reason": "merge conflict detected during squash merge — worktree branch diverged from current main",
+      "trigger": "sdd-forge flow run finalize --mode all executed merge step",
+      "resolution": "running git rebase main in worktree and retrying finalize",
+      "timestamp": "2026-04-08T05:55:10.326Z"
     }
   ]
 }
