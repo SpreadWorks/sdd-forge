@@ -1,0 +1,34 @@
+{
+  "data": {
+    "implementation": {
+      "diffStat": ".sdd-forge/output/analysis.json                    | 2636 +++-----------------\n README.md                                          |   12 +-\n docs/change_log.md                                 |  421 ++++\n docs/cli_commands.md                               |  387 ---\n docs/configuration.md                              |  172 +-\n docs/internal_design.md                            |  204 --\n docs/overview.md                                   |  106 +-\n docs/project_structure.md                          |   35 +-\n docs/stack_and_ops.md                              |   97 +-\n specs/161-fix-log-usage-recording/draft.md         |   68 +\n specs/161-fix-log-usage-recording/flow.json        |  130 +\n specs/161-fix-log-usage-recording/issue-log.json   |   11 +\n specs/161-fix-log-usage-recording/qa.md            |    9 +\n specs/161-fix-log-usage-recording/review.md        |   67 +\n specs/161-fix-log-usage-recording/spec.md          |   79 +\n specs/161-fix-log-usage-recording/tests/README.md  |   36 +\n .../tests/log-usage-recording.test.js              |  228 ++\n src/lib/log.js                                     |    8 +\n 18 files changed, 1618 insertions(+), 3088 deletions(-)",
+      "commits": [
+        "feat: feature/161-fix-log-usage-recording"
+      ]
+    },
+    "retro": {
+      "total": 2,
+      "done": 2,
+      "partial": 0,
+      "not_done": 0,
+      "rate": 1,
+      "notes": "2件の必須要件はいずれも src/lib/log.js の変更で完全に満たされている。per-request JSON への usage: entry.usage ?? null 追加と、JSONL end-event への条件付きスプレッドによるフラットフィールド追加は仕様通りの実装。レビューで APPROVED された normalizeUsage ヘルパーの抽出は未実装だが、これは spec スコープ外の提案であり要件の充足には影響しない。その他の変更（docs 更新・spec ファイル群・analysis.json 再生成）は SDD フロー正常実行の成果物であり、意図しない機能変更ではない。"
+    },
+    "issueLog": {
+      "count": 0,
+      "entries": []
+    },
+    "metrics": {
+      "docsRead": 1,
+      "srcRead": 1,
+      "question": 2,
+      "issueLog": 1
+    },
+    "tests": null,
+    "sync": {
+      "status": "skipped",
+      "reason": "sync was skipped"
+    }
+  },
+  "text": "  Report\n\n  Implementation\n  ────────────────────────────────────────────────\n    feat: feature/161-fix-log-usage-recording\n    18 files changed, 1618 insertions(+), 3088 deletions(-)\n\n  Retro\n  ────────────────────────────────────────────────\n    ████████ 100%  (2 done / 0 partial / 0 miss)\n\n  Metrics\n  ────────────────────────────────────────────────\n    docs read 1  src read 1  Q&A 2  issue-log 1\n\n  Tests\n  ────────────────────────────────────────────────\n    -"
+}

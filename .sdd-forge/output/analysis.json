@@ -1,12 +1,12 @@
 {
-  "analyzedAt": "2026-04-08T12:40:34.026Z",
+  "analyzedAt": "2026-04-08T13:12:12.835Z",
   "package": {
     "entries": [
       {
         "file": "package.json",
         "hash": "663afc936e1df328091080fed54e30dd",
         "lines": 36,
-        "mtime": "2026-04-07T15:34:49.976Z",
+        "mtime": "2026-04-08T13:00:38.885Z",
         "packageDeps": {
           "dependencies": {},
           "devDependencies": {}
@@ -18,27 +18,7 @@
           "test:acceptance": "node tests/acceptance/run.js"
         },
         "composerDeps": null,
-        "id": "451a9f25",
-        "summary": "Package manifest for sdd-forge, an npm CLI tool providing Spec-Driven Development workflow and automated documentation generation. Defines the binary entry point, file inclusions, and engine requirements.",
-        "detail": "Declares sdd-forge as an ES module package targeting Node.js 18+. The binary entry point is src/sdd-forge.js. Only the src/ directory is published to npm, excluding preset test directories. No runtime dependencies are declared, consistent with the project's no-external-dependencies policy. Test scripts support unit, e2e, and acceptance scopes via a custom test runner.",
-        "chapter": "stack_and_ops",
-        "role": "config",
-        "enrich": {
-          "processedAt": "2026-04-07T23:33:06.281Z",
-          "attempts": 1
-        },
-        "keywords": [
-          "package.json",
-          "npm",
-          "cli",
-          "binary",
-          "entry point",
-          "es module",
-          "no dependencies",
-          "node engine",
-          "publish",
-          "files"
-        ]
+        "id": "451a9f25"
       }
     ],
     "summary": {
@@ -52,7 +32,7 @@
         "file": "src/check.js",
         "hash": "eccf63df6dfa0de7dabbe1f310d49770",
         "lines": 41,
-        "mtime": "2026-04-08T09:17:48.268Z",
+        "mtime": "2026-04-08T13:00:38.940Z",
         "className": "check",
         "methods": [],
         "imports": [
@@ -63,30 +43,13 @@
         "exports": [],
         "extends": null,
         "usedBy": null,
-        "id": "cfca7dd3",
-        "summary": "Entry point dispatcher for the `sdd-forge check` subcommand namespace. Routes check sub-subcommands to their corresponding script files.",
-        "detail": "Parses the first CLI argument to select a script from the SCRIPTS map and dynamically imports it via `await import()`. Uses PKG_DIR to construct absolute script paths. Exits with EXIT_ERROR if the sub-subcommand is not recognized. Delegates argument forwarding by mutating process.argv before the dynamic import.",
-        "chapter": "cli_commands",
-        "role": "controller",
-        "enrich": {
-          "processedAt": "2026-04-08T12:40:58.699Z",
-          "attempts": 1
-        },
-        "keywords": [
-          "check",
-          "dispatcher",
-          "subcommand",
-          "routing",
-          "dynamic import",
-          "CLI entry point",
-          "PKG_DIR"
-        ]
+        "id": "cfca7dd3"
       },
       {
         "file": "src/check/commands/config.js",
         "hash": "4c3b2dc2e265953d4d0774b9603a865f",
         "lines": 141,
-        "mtime": "2026-04-08T09:17:33.707Z",
+        "mtime": "2026-04-08T13:00:38.940Z",
         "className": "config",
         "methods": [
           "printHelp",
@@ -115,31 +78,13 @@
           "src/presets/js-webapp/tests/acceptance/fixtures/src/index.js",
           "src/presets/node-cli/tests/acceptance/fixtures/src/cli.js"
         ],
-        "id": "1b9f6fe7",
-        "summary": "Implements the `sdd-forge check config` command which validates the project's sdd-forge configuration file. Outputs results in text or JSON format.",
-        "detail": "Reads and parses the config JSON from the path returned by `sddConfigPath()`. Runs a series of checks: file existence, JSON parse validity, schema validation via `validateConfig`, and preset resolution via `PRESETS`. Supports `--format json` output mode that emits a structured `{ ok, checks }` object to stdout. Exits with EXIT_ERROR on any validation failure in text mode. Limits schema error output to MAX_SCHEMA_ERRORS (50) to avoid flooding the terminal.",
-        "chapter": "cli_commands",
-        "role": "cli",
-        "enrich": {
-          "processedAt": "2026-04-08T12:40:58.699Z",
-          "attempts": 1
-        },
-        "keywords": [
-          "check config",
-          "config validation",
-          "validateConfig",
-          "schema errors",
-          "preset",
-          "JSON output",
-          "sddConfigPath",
-          "exit code"
-        ]
+        "id": "1b9f6fe7"
       },
       {
         "file": "src/check/commands/scan.js",
         "hash": "3a42466c795204e2d2ab74e2b9a85e6d",
         "lines": 274,
-        "mtime": "2026-04-08T08:58:59.256Z",
+        "mtime": "2026-04-08T13:00:38.940Z",
         "className": "scan",
         "methods": [
           "printHelp",
@@ -168,33 +113,13 @@
         ],
         "extends": null,
         "usedBy": null,
-        "id": "7cccb0de",
-        "summary": "CLI command that computes and reports scan coverage by comparing analysis.json output against actual source files in the repository. Supports text, JSON, and Markdown output formats.",
-        "detail": "Reads analysis.json produced by 'sdd-forge docs scan' and walks the source directory using include/exclude glob matchers from config to enumerate all eligible files. Computes coverage metrics by comparing analyzed files against total discovered files, grouping uncovered files by extension. Provides formatText and formatMarkdown renderers that optionally show all uncovered files or truncate to a configurable maximum (DEFAULT_MAX_FILES=10). Exits with EXIT_ERROR on config load failures, missing analysis.json, or unknown format flags.",
-        "chapter": "cli_commands",
-        "role": "cli",
-        "enrich": {
-          "processedAt": "2026-04-08T08:59:08.299Z",
-          "attempts": 1
-        },
-        "keywords": [
-          "scan",
-          "coverage",
-          "analysis.json",
-          "check",
-          "uncovered",
-          "glob",
-          "walkIncludedFiles",
-          "groupByExtension",
-          "computeCoverage",
-          "report"
-        ]
+        "id": "7cccb0de"
       },
       {
         "file": "src/docs.js",
         "hash": "28cd38d87b7e8dce36f3b8e6c4c31fd2",
         "lines": 231,
-        "mtime": "2026-04-02T15:39:00.205Z",
+        "mtime": "2026-04-08T13:00:38.940Z",
         "className": "docs",
         "methods": [],
         "imports": [
@@ -208,30 +133,13 @@
         "exports": [],
         "extends": null,
         "usedBy": null,
-        "id": "086d52a1",
-        "summary": "Top-level dispatcher for the `sdd-forge docs` subcommand group, routing CLI arguments to individual docs pipeline commands.",
-        "detail": "Parses the first positional argument to select a subcommand (scan, enrich, init, data, text, readme, agents, translate, build, forge, review, changelog). Each handler is dynamically imported at runtime to avoid loading unused modules. The build command orchestrates a full pipeline: scan → enrich → init → data → readme → agents → translate per language. Context is forwarded via baseCtx/langCtx spread objects. Unrecognised subcommands exit with code 1.",
-        "chapter": "cli_commands",
-        "role": "controller",
-        "enrich": {
-          "processedAt": "2026-04-02T16:07:58.173Z",
-          "attempts": 1
-        },
-        "keywords": [
-          "dispatcher",
-          "subcommand",
-          "docs pipeline",
-          "dynamic import",
-          "build",
-          "multi-language",
-          "exit code"
-        ]
+        "id": "086d52a1"
       },
       {
         "file": "src/docs/commands/agents.js",
         "hash": "5842a1692fd666606a216946bd06b811",
         "lines": 229,
-        "mtime": "2026-04-07T13:31:31.296Z",
+        "mtime": "2026-04-08T13:00:38.940Z",
         "className": "agents",
         "methods": [
           "buildAgentsSystemPrompt",
@@ -259,32 +167,13 @@
         ],
         "extends": null,
         "usedBy": null,
-        "id": "5684c584",
-        "summary": "Generates or updates AGENTS.md by resolving {{data}} and {{text}} directives from analysis and docs content, then refining SDD/project sections via AI agent call.",
-        "detail": "Loads the existing AGENTS.md (or creates a stub from template if absent), resolves data directives with the resolver factory, and builds system/refine prompts that include package.json scripts, docs chapters, and README content. Calls an AI agent to produce refined SDD and project sections, then writes the result back to AGENTS.md. Uses i18n for user-facing messages and the directive-parser for block replacement.",
-        "chapter": "internal_design",
-        "role": "controller",
-        "enrich": {
-          "processedAt": "2026-04-07T13:32:57.482Z",
-          "attempts": 1
-        },
-        "keywords": [
-          "agents.md",
-          "AGENTS",
-          "directive",
-          "agents command",
-          "sdd section",
-          "project section",
-          "refine",
-          "template",
-          "docs generation"
-        ]
+        "id": "5684c584"
       },
       {
         "file": "src/docs/commands/changelog.js",
         "hash": "f7ff875d6c26f75fe81c7d2aeec601a3",
         "lines": 243,
-        "mtime": "2026-03-31T12:57:20.413Z",
+        "mtime": "2026-04-08T13:00:38.940Z",
         "className": "changelog",
         "methods": [
           "sanitize",
@@ -305,33 +194,15 @@
         ],
         "extends": null,
         "usedBy": [
-          "src/lib/agent-log.js",
           "src/lib/agent.js"
         ],
-        "id": "d83c89fb",
-        "summary": "Implements the `sdd-forge changelog` command, generating a Markdown changelog from spec directory entries.",
-        "detail": "Reads the specs/ directory, sorts subdirectory names, and parses each spec.md for title, status, and date metadata via parseSpecFile and parseDirName. Sanitizes content before writing to docs/change_log.md (or a custom --output path). Supports --lang to load locale config. No AI involvement; purely file-system driven.",
-        "chapter": "cli_commands",
-        "role": "cli",
-        "enrich": {
-          "processedAt": "2026-04-02T16:07:58.173Z",
-          "attempts": 1
-        },
-        "keywords": [
-          "changelog",
-          "specs",
-          "spec.md",
-          "Markdown generation",
-          "parseDirName",
-          "history",
-          "release notes"
-        ]
+        "id": "d83c89fb"
       },
       {
         "file": "src/docs/commands/data.js",
         "hash": "8a9f28aad0173840ce6d669cb317b996",
         "lines": 194,
-        "mtime": "2026-04-01T16:34:36.487Z",
+        "mtime": "2026-04-08T13:00:38.941Z",
         "className": "data",
         "methods": [
           "populateFromAnalysis",
@@ -359,30 +230,13 @@
         "usedBy": [
           "src/docs/commands/forge.js"
         ],
-        "id": "83404fb1",
-        "summary": "Implements the `sdd-forge data` command, filling `{{data(...)}}` directives in docs chapters from analysis.json.",
-        "detail": "Loads analysis.json from the .sdd-forge/output directory and instantiates a resolver via createResolver. Iterates over all chapter files in docs/, calling resolveDataDirectives for each. FILE_CONTEXT_RULES injects per-file context (e.g. relative path) into resolver calls. Changed files are written back; unchanged files are skipped. Exports populateFromAnalysis for use by forge.js and other orchestrators.",
-        "chapter": "internal_design",
-        "role": "controller",
-        "enrich": {
-          "processedAt": "2026-04-02T16:07:58.173Z",
-          "attempts": 1
-        },
-        "keywords": [
-          "data directive",
-          "{{data}}",
-          "analysis.json",
-          "resolver",
-          "populateFromAnalysis",
-          "chapter population",
-          "template fill"
-        ]
+        "id": "83404fb1"
       },
       {
         "file": "src/docs/commands/enrich.js",
         "hash": "078ca96b8c661e6e04da862f2607fa96",
         "lines": 522,
-        "mtime": "2026-04-07T13:31:31.297Z",
+        "mtime": "2026-04-08T13:00:38.941Z",
         "className": "enrich",
         "methods": [
           "printHelp",
@@ -428,32 +282,13 @@
         ],
         "extends": null,
         "usedBy": null,
-        "id": "abb7e5b3",
-        "summary": "Enriches analysis.json entries with AI-generated summaries, keywords, and metadata by batching source files and calling an AI agent concurrently.",
-        "detail": "Reads analysis.json produced by the scan step, collects module entries, and splits them into token-limited batches. Each batch is sent to an AI agent with a prompt derived from chapter structure and source code. Responses are parsed and merged back into the analysis object with retry and progress-save logic. Supports --dry-run for stdout output and dumps failed batch responses for debugging.",
-        "chapter": "internal_design",
-        "role": "controller",
-        "enrich": {
-          "processedAt": "2026-04-07T13:32:57.482Z",
-          "attempts": 1
-        },
-        "keywords": [
-          "enrich",
-          "analysis",
-          "batch",
-          "AI enrichment",
-          "keywords",
-          "summary",
-          "concurrency",
-          "token limit",
-          "progress save"
-        ]
+        "id": "abb7e5b3"
       },
       {
         "file": "src/docs/commands/forge.js",
         "hash": "75a82286e419e78835b7bac1570550ef",
         "lines": 445,
-        "mtime": "2026-04-07T13:31:31.297Z",
+        "mtime": "2026-04-08T13:00:38.941Z",
         "className": "forge",
         "methods": [
           "getTargetFiles",
@@ -489,33 +324,13 @@
         ],
         "extends": null,
         "usedBy": null,
-        "id": "ef4fa5d9",
-        "summary": "Orchestrates the full docs generation pipeline (data → text → readme → translate) in a review loop supporting local, assist, and agent execution modes.",
-        "detail": "Parses CLI options including --mode, --max-runs, --spec, and --prompt-file, then iteratively invokes data population, text fill, readme generation, and optional translation. In agent mode it spawns an AI agent per target doc file concurrently; in local/assist modes it runs review commands between rounds. Estimates relevant files from spec text to narrow the agent's scope. Exits with EXIT_ERROR if max runs are exhausted without a passing review.",
-        "chapter": "cli_commands",
-        "role": "controller",
-        "enrich": {
-          "processedAt": "2026-04-07T13:32:57.482Z",
-          "attempts": 1
-        },
-        "keywords": [
-          "forge",
-          "docs pipeline",
-          "review loop",
-          "agent mode",
-          "local mode",
-          "assist mode",
-          "max runs",
-          "spec",
-          "translation",
-          "orchestration"
-        ]
+        "id": "ef4fa5d9"
       },
       {
         "file": "src/docs/commands/init.js",
         "hash": "349fd00ec9a0f9c65ac181ba8c6d833b",
         "lines": 271,
-        "mtime": "2026-04-07T13:31:31.297Z",
+        "mtime": "2026-04-08T13:00:38.941Z",
         "className": "init",
         "methods": [
           "aiFilterChapters",
@@ -541,32 +356,13 @@
         ],
         "extends": null,
         "usedBy": null,
-        "id": "62ef800b",
-        "summary": "Initializes the docs/ directory by resolving preset templates, optionally filtering chapters via AI, and writing merged template files.",
-        "detail": "Resolves templates from the preset chain for the configured language, merges them using template-merger, and writes output files to docs/. Skips files that already exist unless --force is set, reporting conflicts. An optional AI-based chapter filter trims the chapter list to those relevant for the project type and purpose. Uses i18n for error messages.",
-        "chapter": "cli_commands",
-        "role": "controller",
-        "enrich": {
-          "processedAt": "2026-04-07T13:32:57.482Z",
-          "attempts": 1
-        },
-        "keywords": [
-          "init",
-          "docs init",
-          "template",
-          "preset",
-          "chapter",
-          "AI filter",
-          "scaffold",
-          "language",
-          "merge"
-        ]
+        "id": "62ef800b"
       },
       {
         "file": "src/docs/commands/readme.js",
         "hash": "636d83e3b535e93231d6a3958befcedb",
         "lines": 191,
-        "mtime": "2026-04-04T13:51:27.785Z",
+        "mtime": "2026-04-08T13:00:38.941Z",
         "className": "readme",
         "methods": [
           "main"
@@ -591,31 +387,13 @@
         ],
         "extends": null,
         "usedBy": null,
-        "id": "26628ac2",
-        "summary": "Generates or updates README.md by resolving templates, merging chapter data, and filling {{text}} directives via AI.",
-        "detail": "Resolves preset templates and merges them with project-local overrides, then applies data directives from analysis.json. Delegates {{text}} directive filling to the processTemplate function from text.js. Handles per-language output paths and supports an optional --output flag to write to an arbitrary location. Skips writing if the generated content is unchanged from the current file.",
-        "chapter": "cli_commands",
-        "role": "cli",
-        "enrich": {
-          "processedAt": "2026-04-04T13:52:16.857Z",
-          "attempts": 1
-        },
-        "keywords": [
-          "readme",
-          "README.md",
-          "template merge",
-          "directive",
-          "text fill",
-          "docs generation",
-          "chapter",
-          "language"
-        ]
+        "id": "26628ac2"
       },
       {
         "file": "src/docs/commands/review.js",
         "hash": "063a176635cfb583196881d07db029f8",
         "lines": 310,
-        "mtime": "2026-03-26T03:13:47.932Z",
+        "mtime": "2026-04-08T13:00:38.941Z",
         "className": "review",
         "methods": [
           "stripInlineCode",
@@ -640,31 +418,13 @@
         ],
         "extends": null,
         "usedBy": null,
-        "id": "f3a5a725",
-        "summary": "Implements the `sdd-forge review` command, validating docs for integrity, unfilled directives, minimum line counts, and analysis coverage.",
-        "detail": "Checks each chapter file for exposed `{{data}}`/`{{text}}` directives, broken HTML comments, residual block tags, and content below MIN_LINES (15). Also verifies README.md exists, confirms analysis.json is present, validates translated language directories, and checks that enriched entries contain summary/detail. Collects all failures and throws at the end so the forge loop can act on review output. Uses RESIDUAL_BLOCK_RE and checkOutputIntegrity for structural validation.",
-        "chapter": "cli_commands",
-        "role": "controller",
-        "enrich": {
-          "processedAt": "2026-04-02T16:07:58.173Z",
-          "attempts": 1
-        },
-        "keywords": [
-          "review",
-          "validation",
-          "unfilled directives",
-          "integrity check",
-          "minimum lines",
-          "analysis coverage",
-          "translation validation",
-          "residual blocks"
-        ]
+        "id": "f3a5a725"
       },
       {
         "file": "src/docs/commands/scan.js",
         "hash": "2629d56ff3212d9651e60dd394388876",
         "lines": 479,
-        "mtime": "2026-03-31T12:57:20.414Z",
+        "mtime": "2026-04-08T13:00:38.941Z",
         "className": "scan",
         "methods": [
           "printHelp",
@@ -700,31 +460,13 @@
         ],
         "extends": null,
         "usedBy": null,
-        "id": "e229cdd1",
-        "summary": "Implements the `sdd-forge scan` command, traversing source files and building analysis.json via registered DataSources.",
-        "detail": "Loads DataSource plugins from the preset chain's data/ directories, each contributing structured entries (modules, routes, configs, etc.). Computes MD5 hashes of source files and DataSource files to enable incremental re-scan. Existing entries are matched by a composite key (category + file + subkey) to preserve IDs across runs. Supports --reset [category] to clear specific categories. Writes output to .sdd-forge/output/analysis.json and emits it to stdout in --stdout mode.",
-        "chapter": "internal_design",
-        "role": "controller",
-        "enrich": {
-          "processedAt": "2026-04-02T16:07:58.173Z",
-          "attempts": 1
-        },
-        "keywords": [
-          "scan",
-          "analysis.json",
-          "DataSource",
-          "incremental scan",
-          "MD5 hash",
-          "entry ID",
-          "preset chain",
-          "file traversal"
-        ]
+        "id": "e229cdd1"
       },
       {
         "file": "src/docs/commands/text.js",
         "hash": "d6f34a57216de984f4933233456768b5",
         "lines": 772,
-        "mtime": "2026-04-07T13:31:31.297Z",
+        "mtime": "2026-04-08T13:00:38.941Z",
         "className": "text",
         "methods": [
           "textFillFromAnalysis",
@@ -778,33 +520,13 @@
           "src/docs/commands/forge.js",
           "src/docs/commands/readme.js"
         ],
-        "id": "7c5e7654",
-        "summary": "Fills {{text}} directives in docs Markdown files with AI-generated content, supporting batch JSON mode, per-directive mode, shrinkage validation, and incremental change detection.",
-        "detail": "Discovers unfilled {{text}} blocks in chapter files, builds prompts from surrounding analysis data, and calls AI agents synchronously or asynchronously with concurrency control. Batch mode sends all directives for a file in one JSON request and applies the response with applyBatchJsonToFile; single-directive mode falls back per block. Validates results against shrinkage thresholds and strips fill content for dry runs. detectChangedChapters uses file hashes to skip unchanged source files.",
-        "chapter": "internal_design",
-        "role": "controller",
-        "enrich": {
-          "processedAt": "2026-04-07T13:32:57.482Z",
-          "attempts": 1
-        },
-        "keywords": [
-          "text fill",
-          "directive",
-          "{{text}}",
-          "batch JSON",
-          "shrinkage",
-          "AI fill",
-          "chapter",
-          "incremental",
-          "hash",
-          "concurrency"
-        ]
+        "id": "7c5e7654"
       },
       {
         "file": "src/docs/commands/translate.js",
         "hash": "ae7297d331d69dc591660de5872d422e",
         "lines": 228,
-        "mtime": "2026-04-07T13:31:31.297Z",
+        "mtime": "2026-04-08T13:00:38.941Z",
         "className": "translate",
         "methods": [
           "toneInstruction",
@@ -831,33 +553,13 @@
         ],
         "extends": null,
         "usedBy": null,
-        "id": "fd496e07",
-        "summary": "Translates docs Markdown files and README.md into target languages using AI agents, skipping files whose source has not changed since the last translation.",
-        "detail": "Builds a list of translation tasks by comparing source and target file mtimes. Runs tasks concurrently via mapWithConcurrency, calling an AI agent for each file with tone and language instructions. Strips response preamble before writing translated content. Supports --force to bypass mtime checks and reads output language configuration from resolveOutputConfig.",
-        "chapter": "cli_commands",
-        "role": "controller",
-        "enrich": {
-          "processedAt": "2026-04-07T13:32:57.482Z",
-          "attempts": 1
-        },
-        "keywords": [
-          "translate",
-          "i18n",
-          "language",
-          "mtime",
-          "tone",
-          "AI translation",
-          "multilingual",
-          "README",
-          "concurrency",
-          "docs"
-        ]
+        "id": "fd496e07"
       },
       {
         "file": "src/docs/data/agents.js",
         "hash": "a888c3df53ce2ee3fcdfe9ee56d28bc2",
         "lines": 140,
-        "mtime": "2026-03-23T00:51:17.205Z",
+        "mtime": "2026-04-08T13:00:38.942Z",
         "className": "agents",
         "methods": [],
         "imports": [
@@ -873,30 +575,13 @@
         ],
         "extends": "DataSource",
         "usedBy": null,
-        "id": "861d6c47",
-        "summary": "DataSource providing data for AGENTS.md generation, including the SDD template, config, and package.json scripts.",
-        "detail": "Extends DataSource and exposes methods for reading the base preset's AGENTS.sdd.md template (language-aware), loading .sdd-forge/config.json, reading package.json scripts, and returning the configured language. Used by agents.js to supply template content and project metadata for directive resolution and AI prompt construction.",
-        "chapter": "internal_design",
-        "role": "model",
-        "enrich": {
-          "processedAt": "2026-04-02T16:07:58.173Z",
-          "attempts": 1
-        },
-        "keywords": [
-          "AgentsSource",
-          "DataSource",
-          "AGENTS.md",
-          "SDD template",
-          "config.json",
-          "package.json scripts",
-          "language"
-        ]
+        "id": "861d6c47"
       },
       {
         "file": "src/docs/data/docs.js",
         "hash": "d6cad83298744d27552ed17facad80db",
         "lines": 288,
-        "mtime": "2026-03-31T12:57:20.414Z",
+        "mtime": "2026-04-08T13:00:38.942Z",
         "className": "docs",
         "methods": [],
         "imports": [
@@ -912,31 +597,13 @@
         ],
         "extends": "DataSource",
         "usedBy": null,
-        "id": "273334ae",
-        "summary": "DataSource providing documentation structure metadata including chapter listings, navigation links, and language-relative paths.",
-        "detail": "Reads docs/ chapter files, extracts titles from H1 headers, and builds Markdown tables of chapter links with descriptions. Computes prev/next navigation strings for chapter files. Resolves language-relative paths for cross-language links (docs/<lang>/file.md vs relative paths) based on the calling file's location. Loads language display names from locale/*/ui.json. Reads repository URL from package.json to construct GitHub blob links.",
-        "chapter": "internal_design",
-        "role": "model",
-        "enrich": {
-          "processedAt": "2026-04-02T16:07:58.173Z",
-          "attempts": 1
-        },
-        "keywords": [
-          "DocsSource",
-          "DataSource",
-          "chapter listing",
-          "navigation",
-          "language path",
-          "repo URL",
-          "Markdown table",
-          "i18n"
-        ]
+        "id": "273334ae"
       },
       {
         "file": "src/docs/data/lang.js",
         "hash": "4aa9b6ce24aa96bf96152cf227ba9009",
         "lines": 110,
-        "mtime": "2026-03-31T12:57:20.414Z",
+        "mtime": "2026-04-08T13:00:38.942Z",
         "className": "lang",
         "methods": [],
         "imports": [
@@ -949,30 +616,13 @@
         ],
         "extends": "DataSource",
         "usedBy": null,
-        "id": "780c6d68",
-        "summary": "DataSource providing language navigation links (globe icon link list) for multi-language documentation.",
-        "detail": "Extends DataSource with LANG_NAMES mapping for display names. Computes relative paths between language variants of a doc file and assembles a globe-prefixed Markdown link list (e.g. `🌐 [English](../overview.md) | [日本語](ja/overview.md)`). Path resolution considers whether the file is in the default docs root or a language subdirectory. Loads config via loadJsonFile.",
-        "chapter": "internal_design",
-        "role": "model",
-        "enrich": {
-          "processedAt": "2026-04-02T16:07:58.173Z",
-          "attempts": 1
-        },
-        "keywords": [
-          "LangSource",
-          "DataSource",
-          "language links",
-          "navigation",
-          "relative path",
-          "multi-language",
-          "globe icon"
-        ]
+        "id": "780c6d68"
       },
       {
         "file": "src/docs/data/project.js",
         "hash": "77555fd2f4dcaec44f08bbb4bbb4bdea",
         "lines": 57,
-        "mtime": "2026-03-13T15:18:01.234Z",
+        "mtime": "2026-04-08T13:00:38.942Z",
         "className": "project",
         "methods": [],
         "imports": [
@@ -985,30 +635,13 @@
         ],
         "extends": "DataSource",
         "usedBy": null,
-        "id": "dd4d31db",
-        "summary": "DataSource providing core project metadata (name, description, version) from package.json.",
-        "detail": "Reads and caches package.json on first access. Exposes projectName (falling back to directory basename), projectDescription, and projectVersion (falling back to '0.0.0'). Builds a Markdown table row for overview sections. Minimal implementation that acts as the authoritative source for package-level project identity fields.",
-        "chapter": "internal_design",
-        "role": "model",
-        "enrich": {
-          "processedAt": "2026-04-02T16:07:58.173Z",
-          "attempts": 1
-        },
-        "keywords": [
-          "ProjectSource",
-          "DataSource",
-          "package.json",
-          "project name",
-          "version",
-          "description",
-          "metadata"
-        ]
+        "id": "dd4d31db"
       },
       {
         "file": "src/docs/data/text.js",
         "hash": "491123ced9822ff78b431b10b17cbbd2",
         "lines": 33,
-        "mtime": "2026-03-20T14:43:31.957Z",
+        "mtime": "2026-04-08T13:00:38.942Z",
         "className": "text",
         "methods": [],
         "imports": [
@@ -1022,28 +655,13 @@
           "src/docs/commands/forge.js",
           "src/docs/commands/readme.js"
         ],
-        "id": "cca2c9bc",
-        "summary": "Minimal DataSource stub for text content that always returns null.",
-        "detail": "Extends DataSource without implementing any data methods, serving as a placeholder registration point for the text category in the DataSource registry. All method calls fall through to the base class defaults. Intended to be replaced or extended if text-specific data retrieval is needed in the future.",
-        "chapter": "internal_design",
-        "role": "model",
-        "enrich": {
-          "processedAt": "2026-04-02T16:07:58.173Z",
-          "attempts": 1
-        },
-        "keywords": [
-          "TextSource",
-          "DataSource",
-          "stub",
-          "placeholder",
-          "text category"
-        ]
+        "id": "cca2c9bc"
       },
       {
         "file": "src/docs/lib/analysis-entry.js",
         "hash": "33f98c4631b5fc051bff2b96fc3aca8d",
         "lines": 79,
-        "mtime": "2026-03-26T03:13:47.933Z",
+        "mtime": "2026-04-08T13:00:38.942Z",
         "className": "analysis-entry",
         "methods": [
           "AnalysisEntry",
@@ -1064,30 +682,13 @@
           "src/docs/lib/scan-source.js",
           "src/docs/lib/text-prompts.js"
         ],
-        "id": "17953885",
-        "summary": "Defines the AnalysisEntry base class, ANALYSIS_META_KEYS constant, and utility functions for entry inspection and summarisation.",
-        "detail": "ANALYSIS_META_KEYS enumerates top-level timestamp keys (analyzedAt, enrichedAt, generatedAt) so consumers can skip them when iterating categories. AnalysisEntry provides a static from() factory that copies plain objects. isEmptyEntry returns true when an entry has no keys beyond COMMON_KEYS (file, hash, lines, mtime). buildSummary aggregates counts and non-empty entry lists per category for prompt construction.",
-        "chapter": "internal_design",
-        "role": "model",
-        "enrich": {
-          "processedAt": "2026-04-02T16:07:58.173Z",
-          "attempts": 1
-        },
-        "keywords": [
-          "AnalysisEntry",
-          "ANALYSIS_META_KEYS",
-          "isEmptyEntry",
-          "buildSummary",
-          "analysis schema",
-          "meta keys",
-          "entry factory"
-        ]
+        "id": "17953885"
       },
       {
         "file": "src/docs/lib/analysis-filter.js",
         "hash": "a8ee25914eb0ead02b53ecf292853159",
         "lines": 61,
-        "mtime": "2026-04-01T16:34:36.488Z",
+        "mtime": "2026-04-08T13:00:38.942Z",
         "className": "analysis-filter",
         "methods": [
           "filterByDocsExclude",
@@ -1103,29 +704,13 @@
         ],
         "extends": null,
         "usedBy": null,
-        "id": "f3ac0c38",
-        "summary": "Utility functions for filtering analysis entries by the docsExclude glob patterns defined in config.json.",
-        "detail": "filterByDocsExclude filters a flat array of entries, converting each glob pattern to a RegExp via globToRegex and excluding entries whose file path matches any pattern. filterAnalysisByDocsExclude applies the same logic across all categories of a full analysis object, skipping ANALYSIS_META_KEYS. Used by enrich.js and data.js to honour per-project exclusion rules.",
-        "chapter": "internal_design",
-        "role": "lib",
-        "enrich": {
-          "processedAt": "2026-04-02T16:07:58.173Z",
-          "attempts": 1
-        },
-        "keywords": [
-          "analysis filter",
-          "docsExclude",
-          "glob pattern",
-          "filterByDocsExclude",
-          "filterAnalysisByDocsExclude",
-          "exclusion rules"
-        ]
+        "id": "f3ac0c38"
       },
       {
         "file": "src/docs/lib/chapter-resolver.js",
         "hash": "ecf7037f15ce342623fbcbb8a44c98b6",
         "lines": 142,
-        "mtime": "2026-03-31T12:57:20.414Z",
+        "mtime": "2026-04-08T13:00:38.942Z",
         "className": "chapter-resolver",
         "methods": [
           "mergeChapters",
@@ -1146,30 +731,13 @@
         ],
         "extends": null,
         "usedBy": null,
-        "id": "1e787be2",
-        "summary": "Resolves chapter ordering and category-to-chapter mappings by merging preset and config chapter definitions.",
-        "detail": "mergeChapters combines a preset's chapter array with project-level overrides, with the config taking precedence. extractDataCategories scans a template string for `{{data(...)}}` directives and collects referenced categories. buildCategoryToChapterMap inverts the chapter→categories mapping into a category→chapter lookup. buildCategoryMapFromDocs reads all chapter files in docs/ and builds the category map from their actual directives, making the mapping dynamic and authoritative.",
-        "chapter": "internal_design",
-        "role": "lib",
-        "enrich": {
-          "processedAt": "2026-04-02T16:07:58.173Z",
-          "attempts": 1
-        },
-        "keywords": [
-          "chapter resolver",
-          "category map",
-          "mergeChapters",
-          "buildCategoryMapFromDocs",
-          "preset chapters",
-          "config chapters",
-          "directive categories"
-        ]
+        "id": "1e787be2"
       },
       {
         "file": "src/docs/lib/command-context.js",
         "hash": "ed0b0ef92e7136ffc284bf3de918997e",
         "lines": 181,
-        "mtime": "2026-04-08T12:40:33.804Z",
+        "mtime": "2026-04-08T13:00:38.942Z",
         "className": "command-context",
         "methods": [
           "resolveCommandContext",
@@ -1204,32 +772,13 @@
           "src/docs/commands/forge.js",
           "src/docs/commands/readme.js"
         ],
-        "id": "10a78227",
-        "summary": "Provides shared context resolution and file loading utilities used by docs subcommands. Centralizes config loading, output JSON reading, and chapter file enumeration.",
-        "detail": "Exports `resolveCommandContext` which builds a unified context object from CLI flags, overrides, config file, and agent resolution. Provides `loadAnalysisData` and `loadFullAnalysis` for reading `analysis.json` from the `.sdd-forge/output/` directory. `getChapterFiles` enumerates markdown chapter files in the docs directory while excluding layout and special files. `stripResponsePreamble` trims leading preamble lines from LLM responses. `readText` safely reads a file or returns an empty string if missing.",
-        "chapter": "internal_design",
-        "role": "lib",
-        "enrich": {
-          "processedAt": "2026-04-08T12:40:58.699Z",
-          "attempts": 1
-        },
-        "keywords": [
-          "command context",
-          "docs pipeline",
-          "analysis.json",
-          "chapter files",
-          "resolveCommandContext",
-          "loadAnalysisData",
-          "stripResponsePreamble",
-          "docsDir",
-          "sddOutputDir"
-        ]
+        "id": "10a78227"
       },
       {
         "file": "src/docs/lib/concurrency.js",
         "hash": "a7e70617fe36d5216b7b1d34d45b1cf2",
         "lines": 48,
-        "mtime": "2026-03-07T12:21:11.955Z",
+        "mtime": "2026-04-08T13:00:38.942Z",
         "className": "concurrency",
         "methods": [
           "mapWithConcurrency"
@@ -1240,29 +789,13 @@
         ],
         "extends": null,
         "usedBy": null,
-        "id": "6e3ef4f1",
-        "summary": "Provides mapWithConcurrency, a concurrency-limited async map utility used throughout the docs pipeline.",
-        "detail": "Implements a slot-based scheduler: maintains a pool of `concurrency` active promises, starts the next item as each slot frees, and collects all results in order. Returns a Promise that resolves to the full results array after all items complete. Used by enrich.js, forge.js, text.js, and translate.js to control parallel AI agent calls.",
-        "chapter": "internal_design",
-        "role": "lib",
-        "enrich": {
-          "processedAt": "2026-04-02T16:07:58.173Z",
-          "attempts": 1
-        },
-        "keywords": [
-          "concurrency",
-          "mapWithConcurrency",
-          "async map",
-          "parallelism",
-          "slot-based",
-          "Promise pool"
-        ]
+        "id": "6e3ef4f1"
       },
       {
         "file": "src/docs/lib/data-source-loader.js",
         "hash": "4231396643d77aa2ce1b5ab1493df5a1",
         "lines": 46,
-        "mtime": "2026-03-31T12:57:20.415Z",
+        "mtime": "2026-04-08T13:00:38.942Z",
         "className": "data-source-loader",
         "methods": [
           "loadDataSources"
@@ -1279,30 +812,13 @@
         "usedBy": [
           "src/docs/lib/resolver-factory.js"
         ],
-        "id": "d1cdb1d8",
-        "summary": "Dynamically loads DataSource plugin instances from a directory of .js files.",
-        "detail": "Iterates .js files in a dataDir, imports each as an ES module, instantiates the default export (expected to be a DataSource subclass) with root and docsDir arguments, and registers it under the file basename as a key. Attaches _sourceFilePath for hash-based change detection in scan.js. Returns the accumulated sources map after processing all files.",
-        "chapter": "internal_design",
-        "role": "lib",
-        "enrich": {
-          "processedAt": "2026-04-02T16:07:58.173Z",
-          "attempts": 1
-        },
-        "keywords": [
-          "DataSource loader",
-          "plugin",
-          "dynamic import",
-          "data sources",
-          "scan",
-          "ES module",
-          "_sourceFilePath"
-        ]
+        "id": "d1cdb1d8"
       },
       {
         "file": "src/docs/lib/data-source.js",
         "hash": "4c94fbb481e50f1c35796d75016cb61e",
         "lines": 92,
-        "mtime": "2026-03-26T03:13:47.933Z",
+        "mtime": "2026-04-08T13:00:38.942Z",
         "className": "data-source",
         "methods": [
           "DataSource"
@@ -1315,30 +831,13 @@
         "usedBy": [
           "src/docs/lib/scan-source.js"
         ],
-        "id": "f0f9731d",
-        "summary": "Base class for all DataSource implementations, providing the method dispatch protocol and Markdown table helper.",
-        "detail": "The primary entry point is the unnamed dispatch method (called by the resolver) that routes to _desc(section, key) returning '—' by default. withOverrides wraps an item array so each item's summary can be replaced by a project-local override loaded via _loadOverrides. toMarkdownTable formats a rows array into a pipe-delimited GFM table with a separator row. Subclasses override individual methods to supply domain-specific data.",
-        "chapter": "internal_design",
-        "role": "model",
-        "enrich": {
-          "processedAt": "2026-04-02T16:07:58.173Z",
-          "attempts": 1
-        },
-        "keywords": [
-          "DataSource",
-          "base class",
-          "toMarkdownTable",
-          "withOverrides",
-          "method dispatch",
-          "plugin interface",
-          "GFM table"
-        ]
+        "id": "f0f9731d"
       },
       {
         "file": "src/docs/lib/directive-parser.js",
         "hash": "0159608f9b7a8733397895d9c36b3e31",
         "lines": 513,
-        "mtime": "2026-03-22T13:22:06.958Z",
+        "mtime": "2026-04-08T13:00:38.942Z",
         "className": "directive-parser",
         "methods": [
           "parseDirectives",
@@ -1371,32 +870,13 @@
           "src/docs/lib/chapter-resolver.js",
           "src/docs/lib/template-merger.js"
         ],
-        "id": "bbb893ea",
-        "summary": "Parses and manipulates `{{data(...)}}`, `{{text(...)}}`, and block/extends template directives in Markdown files.",
-        "detail": "parseDirectives performs a full line-by-line scan producing a list of directive descriptors (type, line range, fields). resolveDataDirectives iterates directives and calls resolveFn for each data block, replacing content in-place. replaceBlockDirective and replaceInlineDirective handle the two syntactic forms. stripBlockDirectives removes block/extends lines without altering content. parseBlocks extracts named blocks and extends declarations for template inheritance in template-merger. findClosingTag throws on unclosed directives.",
-        "chapter": "internal_design",
-        "role": "lib",
-        "enrich": {
-          "processedAt": "2026-04-02T16:07:58.173Z",
-          "attempts": 1
-        },
-        "keywords": [
-          "directive parser",
-          "{{data}}",
-          "{{text}}",
-          "block directive",
-          "extends",
-          "template inheritance",
-          "parseDirectives",
-          "resolveDataDirectives",
-          "stripBlockDirectives"
-        ]
+        "id": "bbb893ea"
       },
       {
         "file": "src/docs/lib/forge-prompts.js",
         "hash": "f1ace411f929c9c4f7335bf23ab35d79",
         "lines": 183,
-        "mtime": "2026-03-26T03:13:47.933Z",
+        "mtime": "2026-04-08T13:00:38.942Z",
         "className": "forge-prompts",
         "methods": [
           "summaryToText",
@@ -1417,30 +897,13 @@
         ],
         "extends": null,
         "usedBy": null,
-        "id": "42300b03",
-        "summary": "Builds AI prompt strings for the forge command: system prompt, per-file prompt, and analysis summary serialisation.",
-        "detail": "summaryToText delegates to enrichedSummaryToText which formats analysis categories into a structured text block listing each entry's file, summary, and detail for inclusion in prompts. buildForgeSystemPrompt constructs the top-level system instruction combining language, user prompt, spec content, and analysis summary. buildForgeFilePrompt generates a per-file round prompt with review feedback and round counter. buildForgePrompt is the combined full-context variant used in assist mode.",
-        "chapter": "internal_design",
-        "role": "lib",
-        "enrich": {
-          "processedAt": "2026-04-02T16:07:58.173Z",
-          "attempts": 1
-        },
-        "keywords": [
-          "forge prompts",
-          "system prompt",
-          "analysis summary",
-          "summaryToText",
-          "buildForgeSystemPrompt",
-          "buildForgeFilePrompt",
-          "AI prompt construction"
-        ]
+        "id": "42300b03"
       },
       {
         "file": "src/docs/lib/lang-factory.js",
         "hash": "1e7cc8c085af338d7ba6286188965431",
         "lines": 38,
-        "mtime": "2026-03-31T12:57:20.415Z",
+        "mtime": "2026-04-08T13:00:38.942Z",
         "className": "lang-factory",
         "methods": [
           "getLangHandler"
@@ -1460,28 +923,13 @@
           "src/docs/lib/minify.js",
           "src/docs/lib/scanner.js"
         ],
-        "id": "8f8393ac",
-        "summary": "Factory module that maps file extensions to language-specific handler objects (js, php, py, yaml). Returns the appropriate handler for a given file path via getLangHandler().",
-        "detail": "Maintains an EXT_MAP dictionary keyed by file extension (e.g., .js, .php, .py, .yml, .yaml). The getLangHandler function extracts the lowercased extension and looks it up in the map, returning null for unsupported types. Acts as a single dispatch point so callers never need to branch on file type themselves.",
-        "chapter": "internal_design",
-        "role": "lib",
-        "enrich": {
-          "processedAt": "2026-04-02T16:09:42.720Z",
-          "attempts": 1
-        },
-        "keywords": [
-          "language handler",
-          "file extension",
-          "dispatch",
-          "lang factory",
-          "parser registry"
-        ]
+        "id": "8f8393ac"
       },
       {
         "file": "src/docs/lib/lang/js.js",
         "hash": "16390ece61630c233b18c8423cc0207a",
         "lines": 164,
-        "mtime": "2026-04-02T01:11:08.566Z",
+        "mtime": "2026-04-08T13:00:38.942Z",
         "className": "js",
         "methods": [
           "minify",
@@ -1515,30 +963,13 @@
         "usedBy": [
           "src/docs/lib/lang-factory.js"
         ],
-        "id": "dcea4940",
-        "summary": "JavaScript language handler providing parse, minify, extractImports, extractExports, and extractEssential operations on JS source text. Used by the scanner and minifier pipeline.",
-        "detail": "Implements comment stripping (block and line), indent normalization, and minification. The parse() function extracts className, parentClass, methods, and relations from JS source using regex. extractEssential() filters to lines that reference fs, path, JSON, process, or child_process APIs to produce a condensed representation. Exports follow the standard lang handler interface consumed by lang-factory.js.",
-        "chapter": "internal_design",
-        "role": "lib",
-        "enrich": {
-          "processedAt": "2026-04-02T16:09:42.720Z",
-          "attempts": 1
-        },
-        "keywords": [
-          "javascript parser",
-          "minify",
-          "extract imports",
-          "extract exports",
-          "AST",
-          "code analysis",
-          "lang handler"
-        ]
+        "id": "dcea4940"
       },
       {
         "file": "src/docs/lib/lang/php.js",
         "hash": "7fc70c9176260c276553b55da64117ed",
         "lines": 174,
-        "mtime": "2026-04-02T01:11:08.566Z",
+        "mtime": "2026-04-08T13:00:38.942Z",
         "className": "php",
         "methods": [
           "minify",
@@ -1564,29 +995,13 @@
         "usedBy": [
           "src/docs/lib/lang-factory.js"
         ],
-        "id": "8da3c9aa",
-        "summary": "PHP language handler mirroring the JS handler interface, with additional hash-comment stripping specific to PHP. Parses class name, parent class, methods, properties, and relations from PHP source.",
-        "detail": "Strips block comments, line comments, and PHP-style hash comments before minification. The parse() function uses regex to detect class declarations, inheritance, method signatures, and property visibility. extractImports/extractExports follow the shared lang handler contract. removeHashComments handles inline and full-line # comments while preserving URL-style double-slash sequences.",
-        "chapter": "internal_design",
-        "role": "lib",
-        "enrich": {
-          "processedAt": "2026-04-02T16:09:42.720Z",
-          "attempts": 1
-        },
-        "keywords": [
-          "PHP parser",
-          "minify",
-          "class extraction",
-          "lang handler",
-          "comment stripping",
-          "PHP analysis"
-        ]
+        "id": "8da3c9aa"
       },
       {
         "file": "src/docs/lib/lang/py.js",
         "hash": "68bcb38c4a6d2e9378fec579b62adf33",
         "lines": 35,
-        "mtime": "2026-04-02T01:11:08.566Z",
+        "mtime": "2026-04-08T13:00:38.942Z",
         "className": "py",
         "methods": [
           "minify",
@@ -1602,28 +1017,13 @@
         "usedBy": [
           "src/docs/lib/lang-factory.js"
         ],
-        "id": "d894c726",
-        "summary": "Python language handler with hash-comment removal and extractEssential filtering. Implements the minimal lang handler interface required by lang-factory.",
-        "detail": "Provides removeHashComments() to strip # comments from each line and a minify() function that delegates to it. extractEssential() filters lines to produce a condensed representation. Does not implement parse() or extractImports/extractExports, reflecting Python's simpler scan requirements in the current pipeline.",
-        "chapter": "internal_design",
-        "role": "lib",
-        "enrich": {
-          "processedAt": "2026-04-02T16:09:42.720Z",
-          "attempts": 1
-        },
-        "keywords": [
-          "Python parser",
-          "minify",
-          "hash comment",
-          "lang handler",
-          "code analysis"
-        ]
+        "id": "d894c726"
       },
       {
         "file": "src/docs/lib/lang/yaml.js",
         "hash": "6cf81f55e64a846823eb3ef7a47dff23",
         "lines": 20,
-        "mtime": "2026-03-31T12:57:20.415Z",
+        "mtime": "2026-04-08T13:00:38.942Z",
         "className": "yaml",
         "methods": [
           "minify",
@@ -1637,28 +1037,13 @@
         "usedBy": [
           "src/docs/lib/lang-factory.js"
         ],
-        "id": "ef1dd14d",
-        "summary": "YAML language handler providing only hash-comment stripping and minification. Implements the minimal lang handler interface.",
-        "detail": "Contains removeHashComments() and a minify() function identical in shape to the Python handler. YAML files do not need parse or import/export extraction, so no other functions are exported. Registered in lang-factory's EXT_MAP for .yml and .yaml extensions.",
-        "chapter": "internal_design",
-        "role": "lib",
-        "enrich": {
-          "processedAt": "2026-04-02T16:09:42.720Z",
-          "attempts": 1
-        },
-        "keywords": [
-          "YAML parser",
-          "minify",
-          "hash comment",
-          "lang handler",
-          "config file"
-        ]
+        "id": "ef1dd14d"
       },
       {
         "file": "src/docs/lib/minify.js",
         "hash": "c7b4266a51f47a302b3e2ff7501971ee",
         "lines": 50,
-        "mtime": "2026-04-02T01:11:08.566Z",
+        "mtime": "2026-04-08T13:00:38.942Z",
         "className": "minify",
         "methods": [
           "minify",
@@ -1675,29 +1060,13 @@
         "usedBy": [
           "src/docs/lib/text-prompts.js"
         ],
-        "id": "212fe46f",
-        "summary": "Top-level minifier that dispatches to language-specific handlers via lang-factory and applies shared blank-line and trailing-whitespace removal. Entry point for all code minification in the docs pipeline.",
-        "detail": "The minify() function retrieves the appropriate lang handler for the given filePath and calls either extractEssential() (when opts.essential is set) or the handler's minify(). Falls back gracefully when no handler exists. removeBlankLines and removeTrailingWhitespace are applied as post-processing steps to produce compact output for prompt context.",
-        "chapter": "internal_design",
-        "role": "lib",
-        "enrich": {
-          "processedAt": "2026-04-02T16:09:42.720Z",
-          "attempts": 1
-        },
-        "keywords": [
-          "minify",
-          "code compression",
-          "essential extraction",
-          "lang handler",
-          "prompt context",
-          "blank lines"
-        ]
+        "id": "212fe46f"
       },
       {
         "file": "src/docs/lib/php-array-parser.js",
         "hash": "58b74a01d9ac3166516ff4b2b93e9223",
         "lines": 139,
-        "mtime": "2026-03-01T01:37:45.272Z",
+        "mtime": "2026-04-08T13:00:38.942Z",
         "className": "php-array-parser",
         "methods": [
           "stripBlockComments",
@@ -1718,30 +1087,13 @@
         ],
         "extends": null,
         "usedBy": null,
-        "id": "b6019adb",
-        "summary": "Utility library for parsing PHP array literals: strips comments, extracts array bodies and keys, parses quoted strings, and provides camelToSnake and pluralize helpers.",
-        "detail": "stripBlockComments removes /* */ style comments. extractArrayBody locates a named PHP property array by bracket counting and returns the raw body string. extractTopLevelKeys and extractQuotedStrings use regex scanning on the body. camelToSnake converts camelCase identifiers for CakePHP conventions. pluralize handles simple English pluralization with capital-letter awareness. Re-exported by scanner.js for wider use.",
-        "chapter": "internal_design",
-        "role": "lib",
-        "enrich": {
-          "processedAt": "2026-04-02T16:09:42.720Z",
-          "attempts": 1
-        },
-        "keywords": [
-          "PHP array",
-          "parser",
-          "camelToSnake",
-          "pluralize",
-          "quoted strings",
-          "CakePHP",
-          "array extraction"
-        ]
+        "id": "b6019adb"
       },
       {
         "file": "src/docs/lib/resolver-factory.js",
         "hash": "61cf4307bbc3c3f6ed9903653b41fe21",
         "lines": 158,
-        "mtime": "2026-03-20T03:07:17.808Z",
+        "mtime": "2026-04-08T13:00:38.942Z",
         "className": "resolver-factory",
         "methods": [
           "createResolver",
@@ -1763,30 +1115,13 @@
         ],
         "extends": null,
         "usedBy": null,
-        "id": "cb355898",
-        "summary": "Factory that constructs a resolver object combining preset chain data sources, project overrides, and a desc() helper for looking up override values. Central wiring point for the data pipeline.",
-        "detail": "loadDataSources wraps the base loader with resolved context. loadOverridesFor reads overrides.json from the project's .sdd-forge directory and caches it. descFactory returns a curried function that checks overrides before falling back to '—'. createResolver resolves multi-chain presets, loads their data sources, and returns a resolver with resolve(), resolveAll(), and listSources() methods. Handles async loading and missing data gracefully.",
-        "chapter": "internal_design",
-        "role": "lib",
-        "enrich": {
-          "processedAt": "2026-04-02T16:09:42.720Z",
-          "attempts": 1
-        },
-        "keywords": [
-          "resolver",
-          "data source",
-          "preset chain",
-          "overrides",
-          "factory",
-          "docs pipeline",
-          "data resolution"
-        ]
+        "id": "cb355898"
       },
       {
         "file": "src/docs/lib/review-parser.js",
         "hash": "7acba81ef1417d2a7d0295ec49533248",
         "lines": 85,
-        "mtime": "2026-03-31T12:57:20.415Z",
+        "mtime": "2026-04-08T13:00:38.943Z",
         "className": "review-parser",
         "methods": [
           "extractNeedsInput",
@@ -1803,29 +1138,13 @@
         ],
         "extends": null,
         "usedBy": null,
-        "id": "0806e627",
-        "summary": "Parses AI review output text to extract unanswered questions, generate a summary of failures, and classify files as passed or failed. Used by the review pipeline to process agent responses.",
-        "detail": "extractNeedsInput scans output for question-formatted lines and returns non-empty entries. summarizeReview picks the first failed or ambiguous file verdict as a representative summary. parseFileResults matches output lines against a list of expected files by basename comparison, splitting results into passedFiles and failedFiles sets.",
-        "chapter": "internal_design",
-        "role": "lib",
-        "enrich": {
-          "processedAt": "2026-04-02T16:09:42.720Z",
-          "attempts": 1
-        },
-        "keywords": [
-          "review parser",
-          "AI output",
-          "file results",
-          "pass fail",
-          "needs input",
-          "code review"
-        ]
+        "id": "0806e627"
       },
       {
         "file": "src/docs/lib/scan-source.js",
         "hash": "a1c1d5862a48ec07f7f8b6ee5c3e0e14",
         "lines": 76,
-        "mtime": "2026-03-26T03:13:47.933Z",
+        "mtime": "2026-04-08T13:00:38.943Z",
         "className": "scan-source",
         "methods": [],
         "imports": [
@@ -1841,29 +1160,13 @@
         "usedBy": [
           "src/docs/lib/scan-source.js"
         ],
-        "id": "6b08f3c0",
-        "summary": "Provides the Scannable mixin that adds scan-source capability to DataSource base classes. Defines the contract for scannable entries including a default empty-entry factory.",
-        "detail": "Scannable is a class factory (mixin pattern) that wraps a Base class and adds a boolean scan-guard and a newEntry() factory method returning a fresh Entry instance via this.constructor.Entry. Allows DataSource subclasses to opt into incremental scanning without duplicating the interface.",
-        "chapter": "internal_design",
-        "role": "lib",
-        "enrich": {
-          "processedAt": "2026-04-02T16:09:42.720Z",
-          "attempts": 1
-        },
-        "keywords": [
-          "mixin",
-          "scannable",
-          "data source",
-          "entry factory",
-          "scan source",
-          "class composition"
-        ]
+        "id": "6b08f3c0"
       },
       {
         "file": "src/docs/lib/scanner.js",
         "hash": "399429dc7d2b862e53e6670e0ad1eb5b",
         "lines": 290,
-        "mtime": "2026-03-31T12:57:20.415Z",
+        "mtime": "2026-04-08T13:00:38.943Z",
         "className": "scanner",
         "methods": [
           "patternToRegex",
@@ -1898,30 +1201,13 @@
         "usedBy": [
           "src/docs/lib/analysis-filter.js"
         ],
-        "id": "cf9f71e2",
-        "summary": "Core file scanning utilities: pattern matching, file stat collection, recursive directory walking, and language-aware file parsing. Foundation for the sdd-forge scan pipeline.",
-        "detail": "patternToRegex and globToRegex convert glob/pattern strings to RegExp. getFileStats reads file content and metadata (hash, mtime, size). findFiles and collectFiles walk directory trees applying include/exclude rules and return sorted relative-path lists. parseFile dispatches to the correct lang handler via getLangHandler. parsePHPFile and parseJSFile are legacy-compatible wrappers. Re-exports camelToSnake and pluralize from php-array-parser.",
-        "chapter": "internal_design",
-        "role": "lib",
-        "enrich": {
-          "processedAt": "2026-04-02T16:09:42.720Z",
-          "attempts": 1
-        },
-        "keywords": [
-          "file scanner",
-          "glob",
-          "directory walk",
-          "file stats",
-          "parse file",
-          "include exclude",
-          "crypto hash"
-        ]
+        "id": "cf9f71e2"
       },
       {
         "file": "src/docs/lib/template-merger.js",
         "hash": "872ec72b3a24681712e1e3da13d37bf0",
         "lines": 605,
-        "mtime": "2026-04-07T13:31:31.297Z",
+        "mtime": "2026-04-08T13:00:38.943Z",
         "className": "template-merger",
         "methods": [
           "buildLayers",
@@ -1958,33 +1244,13 @@
         "usedBy": [
           "src/docs/lib/command-context.js"
         ],
-        "id": "88243459",
-        "summary": "Resolves and merges doc template files from a layered preset chain, combining parent and child content with additive or override strategies per named block.",
-        "detail": "buildLayers collects template directories from the preset inheritance chain plus an optional project-local override directory. resolveOneFile reads files from each layer and returns sources for merging. mergeResolved applies additive merging (concatenating non-duplicate blocks) or override merging (child wins per block). resolveChaptersOrder merges preset chapter lists with config overrides. translateTemplate delegates to an AI agent for language conversion of template content.",
-        "chapter": "internal_design",
-        "role": "lib",
-        "enrich": {
-          "processedAt": "2026-04-07T13:32:57.482Z",
-          "attempts": 1
-        },
-        "keywords": [
-          "template",
-          "merger",
-          "preset chain",
-          "layers",
-          "additive merge",
-          "block merge",
-          "chapters order",
-          "language",
-          "translate template",
-          "inheritance"
-        ]
+        "id": "88243459"
       },
       {
         "file": "src/docs/lib/test-env-detection.js",
         "hash": "8052dc933cc6c56920e83425204f7f90",
         "lines": 59,
-        "mtime": "2026-03-26T03:13:47.933Z",
+        "mtime": "2026-04-08T13:00:38.943Z",
         "className": "test-env-detection",
         "methods": [
           "detectTestEnvironment"
@@ -1995,30 +1261,13 @@
         ],
         "extends": null,
         "usedBy": null,
-        "id": "7e368a23",
-        "summary": "Detects test framework environment from analysis data by checking for known test framework signatures. Returns presence flag, detected frameworks list, and inferred test command.",
-        "detail": "Defines TEST_FRAMEWORKS as a list of known framework identifiers to match against analysis entries. detectTestEnvironment iterates the analysis to find matching entries and derives the appropriate test command string. Returns a structured result used by text-prompts and other documentation generators to include testing context.",
-        "chapter": "internal_design",
-        "role": "lib",
-        "enrich": {
-          "processedAt": "2026-04-02T16:09:42.720Z",
-          "attempts": 1
-        },
-        "keywords": [
-          "test detection",
-          "test framework",
-          "analysis",
-          "environment detection",
-          "test command",
-          "Jest",
-          "PHPUnit"
-        ]
+        "id": "7e368a23"
       },
       {
         "file": "src/docs/lib/text-prompts.js",
         "hash": "c0231d97952453dde0f73cf2cc3af09b",
         "lines": 296,
-        "mtime": "2026-04-01T15:39:20.410Z",
+        "mtime": "2026-04-08T13:00:38.943Z",
         "className": "text-prompts",
         "methods": [
           "getAnalysisContext",
@@ -2049,30 +1298,13 @@
         ],
         "extends": null,
         "usedBy": null,
-        "id": "7ddd8579",
-        "summary": "Builds AI prompts for documentation text generation, including system prompts, per-directive prompts, batch prompts, and enriched source context. Central prompt construction library for the text pipeline.",
-        "detail": "getAnalysisContext assembles structured analysis data keyed by ANALYSIS_META_KEYS for injection into prompts. getEnrichedContext reads source files, applies minification, and produces enriched context with a character limit. buildTextSystemPrompt constructs the base system prompt from documentStyle and language settings. buildPrompt and buildBatchPrompt format per-directive and multi-directive generation requests. buildFileSystemPrompt appends serialized analysis JSON to the base system prompt. formatLimitRule derives conciseness instructions from directive parameters.",
-        "chapter": "internal_design",
-        "role": "lib",
-        "enrich": {
-          "processedAt": "2026-04-02T16:09:42.720Z",
-          "attempts": 1
-        },
-        "keywords": [
-          "text prompts",
-          "AI prompt",
-          "system prompt",
-          "batch prompt",
-          "analysis context",
-          "enriched context",
-          "documentation generation"
-        ]
+        "id": "7ddd8579"
       },
       {
         "file": "src/docs/lib/toml-parser.js",
         "hash": "d71d17192cf9acb2aa72bbbfb575fa5c",
         "lines": 136,
-        "mtime": "2026-03-21T14:51:37.485Z",
+        "mtime": "2026-04-08T13:00:38.943Z",
         "className": "toml-parser",
         "methods": [
           "parseTOML",
@@ -2085,28 +1317,13 @@
         ],
         "extends": null,
         "usedBy": null,
-        "id": "9fb7acbd",
-        "summary": "Minimal TOML parser supporting string, array, and key-value pair extraction. Used to parse configuration files in TOML format within the docs pipeline.",
-        "detail": "parseTOML iterates lines to build a result object, handling section headers and key=value assignments. parseValue distinguishes quoted strings, arrays, and bare values. parseArray handles comma-separated bracketed lists with basic string tokenization. Does not support nested tables or multi-line strings, covering only the subset of TOML needed by sdd-forge.",
-        "chapter": "internal_design",
-        "role": "lib",
-        "enrich": {
-          "processedAt": "2026-04-02T16:09:42.720Z",
-          "attempts": 1
-        },
-        "keywords": [
-          "TOML",
-          "config parser",
-          "key value",
-          "array parsing",
-          "configuration"
-        ]
+        "id": "9fb7acbd"
       },
       {
         "file": "src/flow.js",
         "hash": "deba01043970475bba1a7eac002a1302",
         "lines": 216,
-        "mtime": "2026-04-04T06:57:23.425Z",
+        "mtime": "2026-04-08T13:00:38.943Z",
         "className": "flow",
         "methods": [
           "resolveCtx",
@@ -2125,31 +1342,13 @@
         "exports": [],
         "extends": null,
         "usedBy": null,
-        "id": "1ab08f2b",
-        "summary": "Main entry point and dispatcher for the `sdd-forge flow` CLI subcommand. Parses arguments, resolves execution context, and routes to the appropriate flow command handler.",
-        "detail": "Imports the FLOW_COMMANDS registry and uses it to dispatch to named command entries. The `resolveCtx()` function builds a shared context object containing root paths, config, flow state, spec ID, and worktree flag. The `parseEntryArgs` helper maps raw CLI args onto each command's declared parameter schema. `runEntry` wraps command execution with envelope handling (ok/fail). Special-cased routes exist for `resume` and `prepare-spec` actions before falling through to the generic dispatch path.",
-        "chapter": "cli_commands",
-        "role": "cli",
-        "enrich": {
-          "processedAt": "2026-04-04T06:58:00.015Z",
-          "attempts": 1
-        },
-        "keywords": [
-          "flow",
-          "dispatcher",
-          "CLI",
-          "entry point",
-          "routing",
-          "context",
-          "argv",
-          "subcommand"
-        ]
+        "id": "1ab08f2b"
       },
       {
         "file": "src/flow/commands/merge.js",
         "hash": "159dc22ff88591be40d9e1b3d6271e3b",
         "lines": 210,
-        "mtime": "2026-04-08T00:40:05.731Z",
+        "mtime": "2026-04-08T13:00:38.943Z",
         "className": "merge",
         "methods": [
           "resolveRemote",
@@ -2175,33 +1374,13 @@
         ],
         "extends": null,
         "usedBy": null,
-        "id": "3a0db928",
-        "summary": "Handles the merge step of the SDD flow, supporting both squash-merge and GitHub PR strategies. Builds PR title/body from spec content and delegates to gh CLI or git merge.",
-        "detail": "Resolves the remote from config and determines merge strategy (skip, pr, squash) based on gh availability and config. Parses spec markdown to extract sections for PR title and body generation. Implements squash merge via git with conflict detection. Exports main, parseSpec, buildPrTitle, buildPrBody for use by the flow dispatcher.",
-        "chapter": "internal_design",
-        "role": "controller",
-        "enrich": {
-          "processedAt": "2026-04-08T00:40:49.364Z",
-          "attempts": 1
-        },
-        "keywords": [
-          "merge",
-          "squash",
-          "pull request",
-          "pr",
-          "gh cli",
-          "spec",
-          "flow",
-          "git merge",
-          "PR body",
-          "PR title"
-        ]
+        "id": "3a0db928"
       },
       {
         "file": "src/flow/commands/report.js",
         "hash": "61fae3f0be09271db1db84397681b9d1",
         "lines": 187,
-        "mtime": "2026-04-08T05:05:21.872Z",
+        "mtime": "2026-04-08T13:00:38.943Z",
         "className": "report",
         "methods": [
           "generateReport",
@@ -2221,31 +1400,13 @@
         ],
         "extends": null,
         "usedBy": null,
-        "id": "5f80ffd2",
-        "summary": "Provides report generation and persistence logic for the SDD flow. Aggregates per-phase metrics and serializes the report alongside the spec file.",
-        "detail": "Exports generateReport which combines raw issue-log data with aggregated metrics into a structured {data, text} result. aggregateMetrics folds per-entry metric objects into totals. formatText renders a human-readable summary using pushSection/DIVIDER from formatter.js. saveReport resolves the spec directory and writes report.json next to the spec file. Follows the pure-function pattern of the flow lib layer.",
-        "chapter": "internal_design",
-        "role": "lib",
-        "enrich": {
-          "processedAt": "2026-04-08T05:05:43.612Z",
-          "attempts": 1
-        },
-        "keywords": [
-          "flow report",
-          "metrics",
-          "aggregation",
-          "issue log",
-          "report.json",
-          "generateReport",
-          "saveReport",
-          "spec"
-        ]
+        "id": "5f80ffd2"
       },
       {
         "file": "src/flow/commands/review.js",
         "hash": "408c8f31db35bbced9a833fc2113f997",
         "lines": 944,
-        "mtime": "2026-04-07T13:31:31.298Z",
+        "mtime": "2026-04-08T13:00:38.943Z",
         "className": "review",
         "methods": [
           "resolveReviewTarget",
@@ -2311,33 +1472,13 @@
         ],
         "extends": null,
         "usedBy": null,
-        "id": "331cf497",
-        "summary": "Implements multi-phase flow review commands: spec review, test-gap review, and code review with AI-powered proposal generation and iterative fix loops.",
-        "detail": "runSpecReview validates a Feature Specification document through up to MAX_REVIEW_RETRIES rounds, parsing AI proposals and applying fixes. runTestReview extracts requirements from the spec, generates a test design, detects gaps against existing test files, and writes missing tests via applyTestFixes. The final code review phase diffs implementation against the spec, builds an apply prompt for approved proposals, and saves results to review.md. All phases use runReviewLoop which accumulates history and evaluates a pass/fail verdict.",
-        "chapter": "cli_commands",
-        "role": "controller",
-        "enrich": {
-          "processedAt": "2026-04-07T13:32:57.482Z",
-          "attempts": 1
-        },
-        "keywords": [
-          "review",
-          "spec review",
-          "test review",
-          "code review",
-          "gap analysis",
-          "proposals",
-          "guardrail",
-          "AI review",
-          "SDD",
-          "flow phases"
-        ]
+        "id": "331cf497"
       },
       {
         "file": "src/flow/lib/base-command.js",
         "hash": "f53df55dd91b67127133491595f327e7",
         "lines": 41,
-        "mtime": "2026-04-03T01:07:47.870Z",
+        "mtime": "2026-04-08T13:00:38.943Z",
         "className": "base-command",
         "methods": [
           "FlowCommand"
@@ -2362,6 +1503,7 @@
           "src/flow/lib/run-lint.js",
           "src/flow/lib/run-prepare-spec.js",
           "src/flow/lib/run-report.js",
+          "src/flow/lib/run-resume.js",
           "src/flow/lib/run-retro.js",
           "src/flow/lib/run-review.js",
           "src/flow/lib/run-sync.js",
@@ -2374,34 +1516,15 @@
           "src/flow/lib/set-request.js",
           "src/flow/lib/set-step.js",
           "src/flow/lib/set-summary.js",
-          "src/flow/lib/set-test-summary.js",
-          "src/flow/lib/run-resume.js"
+          "src/flow/lib/set-test-summary.js"
         ],
-        "id": "83f60bd3",
-        "summary": "Abstract base class for all FlowCommand implementations, enforcing a no-CLI contract in the logic layer.",
-        "detail": "Provides a run(ctx) method that validates active flow state before delegating to the subclass execute(ctx). Throws a standard error if flow.json is not found. Explicitly documents that output, parseArgs, and process.exitCode are forbidden in this layer. Subclasses must implement execute(ctx) and return plain objects; failures are signaled by throwing errors.",
-        "chapter": "internal_design",
-        "role": "lib",
-        "enrich": {
-          "processedAt": "2026-04-03T03:15:49.316Z",
-          "attempts": 1
-        },
-        "keywords": [
-          "base-command",
-          "FlowCommand",
-          "abstract",
-          "execute",
-          "flow",
-          "pattern",
-          "layer",
-          "inheritance"
-        ]
+        "id": "83f60bd3"
       },
       {
         "file": "src/flow/lib/get-check.js",
         "hash": "ca45dc398ca9e14d7140bf34fe9be5c3",
         "lines": 85,
-        "mtime": "2026-04-04T08:09:59.595Z",
+        "mtime": "2026-04-08T13:00:38.944Z",
         "className": "get-check",
         "methods": [
           "checkStepPrereqs",
@@ -2418,31 +1541,13 @@
         ],
         "extends": "FlowCommand",
         "usedBy": null,
-        "id": "10eecc8b",
-        "summary": "GetCheckCommand validates prerequisites for specific flow targets (impl, finalize, dirty, gh) by inspecting git state and flow step completion.",
-        "detail": "Extends FlowCommand and dispatches to one of four check functions based on the target argument. checkDirty runs git status and returns pass/fail with dirty file details. checkGh calls isGhAvailable and returns availability status. checkStepPrereqs inspects flow state steps against a PREREQS map to ensure required steps are completed before advancing. Results are returned as structured objects with pass boolean, summary string, and checks array.",
-        "chapter": "internal_design",
-        "role": "lib",
-        "enrich": {
-          "processedAt": "2026-04-04T08:17:46.932Z",
-          "attempts": 1
-        },
-        "keywords": [
-          "prerequisite check",
-          "dirty check",
-          "gh check",
-          "flow steps",
-          "impl",
-          "finalize",
-          "gate",
-          "validation"
-        ]
+        "id": "10eecc8b"
       },
       {
         "file": "src/flow/lib/get-context.js",
         "hash": "8a3ed5099257a7f908d2b6be20fe0fd0",
         "lines": 400,
-        "mtime": "2026-04-07T13:31:31.298Z",
+        "mtime": "2026-04-08T13:00:38.944Z",
         "className": "get-context",
         "methods": [
           "toSearchResult",
@@ -2486,33 +1591,13 @@
           "src/docs/commands/forge.js",
           "src/docs/commands/readme.js"
         ],
-        "id": "1261e39f",
-        "summary": "Provides context search over analysis entries using bigram n-gram similarity, keyword-based filtering, and optional AI-driven keyword selection for flow context queries.",
-        "detail": "contextSearch dispatches to ngramSearch (bigram similarity scoring) or aiSearch (AI selects relevant keywords then filters entries). collectAllKeywords aggregates and deduplicates keywords across all entries for prompt construction. filterEntry strips internal fields (hash, mtime, etc.) before returning results. loadAnalysisEntries reads and parses analysis.json, throwing descriptive errors on missing or malformed files. GetContextCommand exposes file-read and search actions as a FlowCommand subclass.",
-        "chapter": "internal_design",
-        "role": "lib",
-        "enrich": {
-          "processedAt": "2026-04-07T13:32:57.482Z",
-          "attempts": 1
-        },
-        "keywords": [
-          "context search",
-          "ngram",
-          "bigram",
-          "keywords",
-          "analysis",
-          "flow context",
-          "similarity",
-          "AI search",
-          "get-context",
-          "FlowCommand"
-        ]
+        "id": "1261e39f"
       },
       {
         "file": "src/flow/lib/get-guardrail.js",
         "hash": "6ddd158481986aea194cf9983a77dae4",
         "lines": 62,
-        "mtime": "2026-04-04T07:37:04.194Z",
+        "mtime": "2026-04-08T13:00:38.944Z",
         "className": "get-guardrail",
         "methods": [
           "toMarkdown"
@@ -2529,31 +1614,13 @@
         "usedBy": [
           "src/lib/lint.js"
         ],
-        "id": "f80cce52",
-        "summary": "FlowCommand subclass that loads and filters guardrails by phase, returning them as markdown.",
-        "detail": "Extends FlowCommand base class to implement the 'flow get guardrail' subcommand. Validates the requested phase against VALID_PHASES, then calls loadMergedGuardrails and filterByPhase to retrieve applicable guardrail rules. Converts the filtered guardrail list to markdown format via a toMarkdown helper. Returns a structured result object with the markdown string.",
-        "chapter": "internal_design",
-        "role": "lib",
-        "enrich": {
-          "processedAt": "2026-04-04T07:37:25.012Z",
-          "attempts": 1
-        },
-        "keywords": [
-          "guardrail",
-          "phase",
-          "filter",
-          "markdown",
-          "FlowCommand",
-          "get-guardrail",
-          "flow",
-          "rules"
-        ]
+        "id": "f80cce52"
       },
       {
         "file": "src/flow/lib/get-issue.js",
         "hash": "cb71e1f166d6d7accedaf1e986411c2e",
         "lines": 43,
-        "mtime": "2026-04-08T00:40:05.731Z",
+        "mtime": "2026-04-08T13:00:38.944Z",
         "className": "get-issue",
         "methods": [],
         "imports": [
@@ -2565,30 +1632,13 @@
         ],
         "extends": "FlowCommand",
         "usedBy": null,
-        "id": "7aec11d1",
-        "summary": "FlowCommand subclass that fetches a GitHub issue by number and returns structured issue data. Used during flow to retrieve issue context.",
-        "detail": "Extends FlowCommand base class and validates that a positive integer issue number is provided. Invokes the gh CLI via runCmd to fetch issue data as JSON. Parses and returns a structured result object. Throws on invalid input or command failure.",
-        "chapter": "internal_design",
-        "role": "controller",
-        "enrich": {
-          "processedAt": "2026-04-08T00:40:49.364Z",
-          "attempts": 1
-        },
-        "keywords": [
-          "issue",
-          "github",
-          "gh",
-          "get issue",
-          "flow command",
-          "FlowCommand",
-          "issue number"
-        ]
+        "id": "7aec11d1"
       },
       {
         "file": "src/flow/lib/get-prompt.js",
         "hash": "d5e4bdc6cb16b00fdfff994b5371491b",
         "lines": 362,
-        "mtime": "2026-04-03T01:07:47.870Z",
+        "mtime": "2026-04-08T13:00:38.944Z",
         "className": "get-prompt",
         "methods": [
           "validKinds"
@@ -2601,31 +1651,13 @@
         ],
         "extends": "FlowCommand",
         "usedBy": null,
-        "id": "410dfcc9",
-        "summary": "Implements `flow get prompt`, returning predefined prompt strings by kind and language.",
-        "detail": "PROMPTS_BY_LANG is a static map keyed by language (e.g., ja) then by kind (e.g., spec, retro). validKinds() derives allowed values from the ja locale keys. Throws on missing kind or unknown kind values. Returns a { prompt } object suitable for AI agent consumption in flow skill steps.",
-        "chapter": "cli_commands",
-        "role": "lib",
-        "enrich": {
-          "processedAt": "2026-04-03T03:15:49.316Z",
-          "attempts": 1
-        },
-        "keywords": [
-          "prompt",
-          "language",
-          "i18n",
-          "kind",
-          "flow-prompt",
-          "AI-prompt",
-          "template",
-          "get-prompt"
-        ]
+        "id": "410dfcc9"
       },
       {
         "file": "src/flow/lib/get-qa-count.js",
         "hash": "da58bfb6ac183caceb3eff77ae195141",
         "lines": 17,
-        "mtime": "2026-04-03T01:07:47.871Z",
+        "mtime": "2026-04-08T13:00:38.944Z",
         "className": "get-qa-count",
         "methods": [],
         "imports": [
@@ -2636,29 +1668,13 @@
         ],
         "extends": "FlowCommand",
         "usedBy": null,
-        "id": "28b15622",
-        "summary": "Implements `flow get qa-count`, returning the number of QA items in the active flow's qa.md.",
-        "detail": "Reads the QA file path from flow state and counts entries. Returns { count } as a plain object. Relies on FlowCommand base class to enforce active flow requirement.",
-        "chapter": "cli_commands",
-        "role": "lib",
-        "enrich": {
-          "processedAt": "2026-04-03T03:15:49.316Z",
-          "attempts": 1
-        },
-        "keywords": [
-          "qa",
-          "count",
-          "qa.md",
-          "flow-qa",
-          "test-count",
-          "get-qa-count"
-        ]
+        "id": "28b15622"
       },
       {
         "file": "src/flow/lib/get-resolve-context.js",
         "hash": "da8c98ca41076ae32f6595ea36ca1cda",
         "lines": 100,
-        "mtime": "2026-04-04T08:09:59.595Z",
+        "mtime": "2026-04-08T13:00:38.944Z",
         "className": "get-resolve-context",
         "methods": [
           "extractSection"
@@ -2678,31 +1694,13 @@
           "src/docs/commands/forge.js",
           "src/docs/commands/readme.js"
         ],
-        "id": "c2848d40",
-        "summary": "GetResolveContextCommand aggregates flow context needed for resuming or resolving an active SDD flow, including worktree state, branch, and spec content.",
-        "detail": "Extends FlowCommand and calls resolveActiveFlow to locate the current flow. Resolves the effective root between worktree and main repo paths. Reads spec text and extracts sections using extractSection. Gathers git metadata via getWorktreeStatus, getCurrentBranch, getAheadCount, getLastCommit, and isGhAvailable. Returns a comprehensive context object used by skills to reconstruct flow state after context compaction.",
-        "chapter": "internal_design",
-        "role": "lib",
-        "enrich": {
-          "processedAt": "2026-04-04T08:17:46.932Z",
-          "attempts": 1
-        },
-        "keywords": [
-          "resolve context",
-          "flow context",
-          "worktree",
-          "branch",
-          "spec",
-          "resume",
-          "active flow",
-          "git metadata"
-        ]
+        "id": "c2848d40"
       },
       {
         "file": "src/flow/lib/get-status.js",
         "hash": "328f78a71bd7ac5bec857d34d06a3321",
         "lines": 39,
-        "mtime": "2026-04-03T01:07:47.871Z",
+        "mtime": "2026-04-08T13:00:38.944Z",
         "className": "get-status",
         "methods": [],
         "imports": [
@@ -2714,30 +1712,13 @@
         ],
         "extends": "FlowCommand",
         "usedBy": null,
-        "id": "9aca938f",
-        "summary": "Implements `flow get status`, returning the current phase and step progress of the active flow.",
-        "detail": "Delegates to derivePhase from flow-state to compute the current SDD phase from step statuses. Returns a structured object with phase and full step list. Minimal implementation relying on FlowCommand base for flow validation.",
-        "chapter": "cli_commands",
-        "role": "lib",
-        "enrich": {
-          "processedAt": "2026-04-03T03:15:49.316Z",
-          "attempts": 1
-        },
-        "keywords": [
-          "status",
-          "phase",
-          "steps",
-          "flow-status",
-          "derivePhase",
-          "progress",
-          "get-status"
-        ]
+        "id": "9aca938f"
       },
       {
         "file": "src/flow/lib/phases.js",
         "hash": "22fd09d92596cdae6d9becbcf10961ea",
         "lines": 16,
-        "mtime": "2026-04-04T13:57:06.673Z",
+        "mtime": "2026-04-08T13:00:38.944Z",
         "className": "phases",
         "methods": [],
         "imports": [],
@@ -2750,35 +1731,13 @@
           "src/flow/lib/set-metric.js",
           "src/flow/registry.js"
         ],
-        "id": "5d33316d",
-        "summary": "Defines the single source of truth for valid SDD flow phase names as a frozen constant array.",
-        "detail": "Exports VALID_PHASES as an Object.freeze'd array of seven phase strings: draft, spec, gate, impl, test, lint, and review. This module acts as a shared constant to prevent duplication across flow subcommands. Being frozen, the array is immutable at runtime, guarding against accidental mutation. Its minimal design—no logic, just a constant export—makes it trivially importable by any flow layer component that needs phase validation or enumeration.",
-        "chapter": "internal_design",
-        "role": "lib",
-        "enrich": {
-          "processedAt": "2026-04-04T13:57:21.702Z",
-          "attempts": 1
-        },
-        "keywords": [
-          "phases",
-          "VALID_PHASES",
-          "flow phase",
-          "constants",
-          "draft",
-          "spec",
-          "gate",
-          "impl",
-          "review",
-          "lint",
-          "test",
-          "frozen"
-        ]
+        "id": "5d33316d"
       },
       {
         "file": "src/flow/lib/run-finalize.js",
         "hash": "377fd9af968f55eb79510d649d67fb5b",
         "lines": 336,
-        "mtime": "2026-04-08T00:40:05.731Z",
+        "mtime": "2026-04-08T13:00:38.944Z",
         "className": "run-finalize",
         "methods": [
           "finalizeOnError",
@@ -2809,33 +1768,13 @@
         ],
         "extends": "FlowCommand",
         "usedBy": null,
-        "id": "c711309b",
-        "summary": "Implements the finalize step of the SDD flow, orchestrating commit, docs sync, merge, and worktree cleanup sub-steps. Supports 'all' and 'select' modes.",
-        "detail": "Defines STEP_MAP mapping step names to handler functions and dispatches sub-steps via runSubStep. Handles commit-or-skip logic, docs build invocation via PKG_DIR script path, and worktree cleanup. Integrates with issue-log (formerly redolog) for tracking. Exports commitOrSkip, executeCommitPost, finalizeOnError, and RunFinalizeCommand. Validates --mode and --merge-strategy flags on entry.",
-        "chapter": "internal_design",
-        "role": "controller",
-        "enrich": {
-          "processedAt": "2026-04-08T00:40:49.364Z",
-          "attempts": 1
-        },
-        "keywords": [
-          "finalize",
-          "commit",
-          "worktree",
-          "cleanup",
-          "merge",
-          "docs sync",
-          "flow",
-          "step map",
-          "issue log",
-          "FlowCommand"
-        ]
+        "id": "c711309b"
       },
       {
         "file": "src/flow/lib/run-gate.js",
         "hash": "507d44b593a479d0f5c75687c0fe3a6e",
         "lines": 483,
-        "mtime": "2026-04-08T02:27:48.861Z",
+        "mtime": "2026-04-08T13:00:38.944Z",
         "className": "run-gate",
         "methods": [
           "RunGateCommand",
@@ -2871,33 +1810,13 @@
         ],
         "extends": "FlowCommand",
         "usedBy": null,
-        "id": "b4aa4dad",
-        "summary": "Implements the gate-check command for SDD flow phases (draft, spec, pre, post, impl), validating spec and draft documents against guardrails and structural rules.",
-        "detail": "RunGateCommand extends FlowCommand and dispatches to phase-specific execution methods (executeDraft, executeImpl, executeSpec). Each phase reads the target file, runs static text checks (checkSpecText, checkDraftText), and optionally calls an AI guardrail via callAgentWithLog. Results are returned as structured pass/fail objects with PASS_NEXT/FAIL_NEXT transition maps that drive the flow state machine. Git diff is used in the impl phase to verify that actual changes exist against the base branch.",
-        "chapter": "internal_design",
-        "role": "controller",
-        "enrich": {
-          "processedAt": "2026-04-08T02:28:06.724Z",
-          "attempts": 1
-        },
-        "keywords": [
-          "gate",
-          "guardrail",
-          "spec",
-          "draft",
-          "flow",
-          "phase",
-          "validation",
-          "run-gate",
-          "SDD",
-          "impl check"
-        ]
+        "id": "b4aa4dad"
       },
       {
         "file": "src/flow/lib/run-impl-confirm.js",
         "hash": "c4048ef3570dbe7c9726cc09c25b284c",
         "lines": 98,
-        "mtime": "2026-04-04T08:09:59.595Z",
+        "mtime": "2026-04-08T13:00:38.944Z",
         "className": "run-impl-confirm",
         "methods": [
           "RunImplConfirmCommand",
@@ -2916,29 +1835,13 @@
         ],
         "extends": "FlowCommand",
         "usedBy": null,
-        "id": "e6534160",
-        "summary": "RunImplConfirmCommand summarizes implementation progress by collecting changed files and parsing requirement statuses from flow state.",
-        "detail": "Extends FlowCommand and reads the current flow state to access requirements and spec path. getChangedFiles runs git diff against the base branch to list modified files. summarizeRequirements counts requirements by status (done, pending, inProgress) from flow state. Returns a structured result with spec existence flag, changed file list, and requirement summary for use by implementation-phase skills.",
-        "chapter": "internal_design",
-        "role": "lib",
-        "enrich": {
-          "processedAt": "2026-04-04T08:17:46.932Z",
-          "attempts": 1
-        },
-        "keywords": [
-          "impl confirm",
-          "requirements",
-          "changed files",
-          "implementation progress",
-          "flow state",
-          "status summary"
-        ]
+        "id": "e6534160"
       },
       {
         "file": "src/flow/lib/run-lint.js",
         "hash": "aa00527b6d76e9e9914b6a5bfa15b03b",
         "lines": 62,
-        "mtime": "2026-04-03T01:07:47.871Z",
+        "mtime": "2026-04-08T13:00:38.944Z",
         "className": "run-lint",
         "methods": [
           "RunLintCommand"
@@ -2954,30 +1857,13 @@
         ],
         "extends": "FlowCommand",
         "usedBy": null,
-        "id": "4fb3080f",
-        "summary": "Implements `flow run lint`, running lint checks against the implementation diff using loaded guardrails.",
-        "detail": "Loads merged guardrails and delegates to the runLint library function with the base branch and guardrail set. Returns { passed, results } or throws a formatted error listing violations. Resolves baseBranch from args or active flow state.",
-        "chapter": "cli_commands",
-        "role": "lib",
-        "enrich": {
-          "processedAt": "2026-04-03T03:15:49.316Z",
-          "attempts": 1
-        },
-        "keywords": [
-          "lint",
-          "guardrail",
-          "diff",
-          "flow-lint",
-          "run-lint",
-          "code-quality",
-          "baseBranch"
-        ]
+        "id": "4fb3080f"
       },
       {
         "file": "src/flow/lib/run-prepare-spec.js",
         "hash": "88d80ed53154d0133c7d376f27cc85ee",
         "lines": 325,
-        "mtime": "2026-04-08T00:40:05.731Z",
+        "mtime": "2026-04-08T13:00:38.944Z",
         "className": "run-prepare-spec",
         "methods": [
           "RunPrepareSpecCommand",
@@ -3009,33 +1895,13 @@
         ],
         "extends": "FlowCommand",
         "usedBy": null,
-        "id": "59eeacc6",
-        "summary": "Prepares a new spec branch and scaffolds spec/qa markdown files for a new SDD flow. Handles worktree creation, branch naming, and initial flow state setup.",
-        "detail": "Validates clean working tree and base branch existence before creating a feature branch. Generates sequential spec directory names by scanning existing specs/. Writes spec.md and qa.md from templates, preferring local overrides in .sdd-forge/templates/. Creates a git worktree when configured and saves initial flow state via saveFlowState and addActiveFlow. Exports RunPrepareSpecCommand.",
-        "chapter": "internal_design",
-        "role": "controller",
-        "enrich": {
-          "processedAt": "2026-04-08T00:40:49.364Z",
-          "attempts": 1
-        },
-        "keywords": [
-          "prepare",
-          "spec",
-          "branch",
-          "worktree",
-          "scaffold",
-          "template",
-          "flow state",
-          "qa",
-          "slugify",
-          "FlowCommand"
-        ]
+        "id": "59eeacc6"
       },
       {
         "file": "src/flow/lib/run-report.js",
         "hash": "b9c3fdfd2a72ed5534111642fa4a46ce",
         "lines": 57,
-        "mtime": "2026-04-04T08:09:59.595Z",
+        "mtime": "2026-04-08T13:00:38.945Z",
         "className": "run-report",
         "methods": [
           "RunReportCommand"
@@ -3053,30 +1919,13 @@
         ],
         "extends": "FlowCommand",
         "usedBy": null,
-        "id": "43872d6b",
-        "summary": "RunReportCommand generates and persists a flow completion report combining git summary and issue log data.",
-        "detail": "Extends FlowCommand and reads the current flow state to obtain baseBranch. Calls collectGitSummary to get commit messages and diff stats, and loadIssueLog to retrieve recorded issues. Delegates report generation to generateReport and persistence to saveReport from the report command module. Returns changed file paths pointing to report.json in the spec directory.",
-        "chapter": "internal_design",
-        "role": "lib",
-        "enrich": {
-          "processedAt": "2026-04-04T08:17:46.932Z",
-          "attempts": 1
-        },
-        "keywords": [
-          "report",
-          "flow report",
-          "git summary",
-          "issue log",
-          "retro",
-          "completion",
-          "metrics"
-        ]
+        "id": "43872d6b"
       },
       {
         "file": "src/flow/lib/run-resume.js",
         "hash": "9bc3f6d2bcea504abdfe58aad85fd07b",
         "lines": 104,
-        "mtime": "2026-04-04T08:09:59.595Z",
+        "mtime": "2026-04-08T13:00:38.945Z",
         "className": "run-resume",
         "methods": [
           "extractSection"
@@ -3093,31 +1942,13 @@
         ],
         "extends": "FlowCommand",
         "usedBy": null,
-        "id": "abe5ac21",
-        "summary": "RunResumeCommand builds a comprehensive context summary for resuming an active SDD flow after context compaction.",
-        "detail": "Extends FlowCommand and mirrors GetResolveContextCommand in structure, calling resolveActiveFlow to find the current flow. Resolves effective root between worktree and main repo. Reads spec text and extracts relevant sections with extractSection. Collects git metadata (branch, ahead count, last commit, worktree dirty status, gh availability) and returns a unified context object that skills use to reconstruct the conversation state.",
-        "chapter": "internal_design",
-        "role": "lib",
-        "enrich": {
-          "processedAt": "2026-04-04T08:17:46.932Z",
-          "attempts": 1
-        },
-        "keywords": [
-          "resume",
-          "flow resume",
-          "context summary",
-          "worktree",
-          "branch",
-          "spec",
-          "context compaction",
-          "active flow"
-        ]
+        "id": "abe5ac21"
       },
       {
         "file": "src/flow/lib/run-retro.js",
         "hash": "879c5b0e297a7e1684ab67c6bd4079c8",
         "lines": 234,
-        "mtime": "2026-04-07T13:31:31.298Z",
+        "mtime": "2026-04-08T13:00:38.945Z",
         "className": "run-retro",
         "methods": [
           "RunRetroCommand",
@@ -3145,33 +1976,13 @@
         ],
         "extends": "FlowCommand",
         "usedBy": null,
-        "id": "862e7d08",
-        "summary": "Runs a retrospective analysis comparing the implementation diff against spec requirements and produces a structured retro.json verdict via AI.",
-        "detail": "extractRequirements parses the Requirements section from a spec file. getDiff and getDetailedDiff call git to produce summary and detailed diffs against the base branch. buildRetroPrompt assembles the requirements list and diff into an AI prompt requesting JSON-structured coverage verdicts per requirement. parseRetroResponse uses repairJson for resilient parsing. RunRetroCommand persists the result to retro.json in the spec directory with a --force override option.",
-        "chapter": "internal_design",
-        "role": "lib",
-        "enrich": {
-          "processedAt": "2026-04-07T13:32:57.482Z",
-          "attempts": 1
-        },
-        "keywords": [
-          "retro",
-          "retrospective",
-          "requirements",
-          "diff",
-          "coverage",
-          "spec",
-          "AI evaluation",
-          "flow",
-          "RunRetroCommand",
-          "retro.json"
-        ]
+        "id": "862e7d08"
       },
       {
         "file": "src/flow/lib/run-review.js",
         "hash": "779f5656b7917117338450c1e248eefd",
         "lines": 196,
-        "mtime": "2026-04-08T00:40:05.731Z",
+        "mtime": "2026-04-08T13:00:38.945Z",
         "className": "run-review",
         "methods": [
           "runCmdWithRetry",
@@ -3195,31 +2006,13 @@
         ],
         "extends": "FlowCommand",
         "usedBy": null,
-        "id": "d4e97204",
-        "summary": "Implements the review step of the SDD flow, running test-review or spec-review scripts as subprocesses with retry logic. Parses structured output from review scripts.",
-        "detail": "Delegates to review.js script via PKG_DIR path using runCmd. Provides runCmdWithRetry with configurable retry count and delay for transient failures. parseTestReviewOutput and parseSpecReviewOutput extract structured results from stdout/stderr. Throws descriptive errors on non-zero exit. Exports RunReviewCommand and parse utilities.",
-        "chapter": "internal_design",
-        "role": "controller",
-        "enrich": {
-          "processedAt": "2026-04-08T00:40:49.364Z",
-          "attempts": 1
-        },
-        "keywords": [
-          "review",
-          "test review",
-          "spec review",
-          "retry",
-          "subprocess",
-          "flow",
-          "FlowCommand",
-          "parse output"
-        ]
+        "id": "d4e97204"
       },
       {
         "file": "src/flow/lib/run-sync.js",
         "hash": "b7cfb93db92b8118b54fc1d7cda18b4c",
         "lines": 86,
-        "mtime": "2026-04-08T00:40:05.731Z",
+        "mtime": "2026-04-08T13:00:38.945Z",
         "className": "run-sync",
         "methods": [
           "RunSyncCommand"
@@ -3236,30 +2029,13 @@
         ],
         "extends": "FlowCommand",
         "usedBy": null,
-        "id": "6cc87b22",
-        "summary": "Implements the sync step of the SDD flow, invoking the docs build pipeline to regenerate documentation. Returns structured success or error results.",
-        "detail": "Constructs the docs.js script path from PKG_DIR and invokes it via runCmd. Uses assertOk to enforce success. Returns result objects indicating docs sync outcome. Throws descriptive errors on failure. Exports RunSyncCommand.",
-        "chapter": "internal_design",
-        "role": "controller",
-        "enrich": {
-          "processedAt": "2026-04-08T00:40:49.364Z",
-          "attempts": 1
-        },
-        "keywords": [
-          "sync",
-          "docs",
-          "build",
-          "docs pipeline",
-          "flow",
-          "FlowCommand",
-          "RunSyncCommand"
-        ]
+        "id": "6cc87b22"
       },
       {
         "file": "src/flow/lib/set-auto.js",
         "hash": "d0465224a882b65f200aaaff114c70d8",
         "lines": 29,
-        "mtime": "2026-04-03T01:07:47.871Z",
+        "mtime": "2026-04-08T13:00:38.945Z",
         "className": "set-auto",
         "methods": [],
         "imports": [
@@ -3271,30 +2047,13 @@
         ],
         "extends": "FlowCommand",
         "usedBy": null,
-        "id": "2c71e989",
-        "summary": "Implements `flow set auto`, toggling the autoApprove flag in flow.json.",
-        "detail": "Accepts 'on' or 'off' as the sole argument. Calls mutateFlowState to patch the autoApprove boolean in the active flow.json. Returns { autoApprove } reflecting the new state.",
-        "chapter": "cli_commands",
-        "role": "lib",
-        "enrich": {
-          "processedAt": "2026-04-03T03:15:49.316Z",
-          "attempts": 1
-        },
-        "keywords": [
-          "auto",
-          "autoApprove",
-          "set-auto",
-          "flow-auto",
-          "mutate",
-          "toggle",
-          "flow-state"
-        ]
+        "id": "2c71e989"
       },
       {
         "file": "src/flow/lib/set-issue-log.js",
         "hash": "267f3568761ce9d147818987fafb3d94",
         "lines": 74,
-        "mtime": "2026-04-03T01:07:47.871Z",
+        "mtime": "2026-04-08T13:00:38.945Z",
         "className": "set-issue-log",
         "methods": [
           "loadIssueLog",
@@ -3315,35 +2074,15 @@
           "src/flow/lib/run-finalize.js",
           "src/flow/lib/run-report.js",
           "src/flow/registry.js",
-          "src/lib/agent-log.js",
           "src/lib/agent.js"
         ],
-        "id": "65ac9e4f",
-        "summary": "Provides load/save helpers for issue-log.json and the `flow set issue-log` command for appending log entries.",
-        "detail": "loadIssueLog reads issue-log.json from the spec directory, validates the entries array, and returns a default empty log if absent. saveIssueLog writes atomically with pretty-printed JSON. SetIssueLogCommand requires --step and --reason arguments and appends a timestamped entry to the log. Used by finalize and retro steps to track issues encountered during the flow.",
-        "chapter": "internal_design",
-        "role": "lib",
-        "enrich": {
-          "processedAt": "2026-04-03T03:15:49.316Z",
-          "attempts": 1
-        },
-        "keywords": [
-          "issue-log",
-          "log",
-          "entries",
-          "set-issue-log",
-          "flow-log",
-          "load",
-          "save",
-          "finalize",
-          "retro"
-        ]
+        "id": "65ac9e4f"
       },
       {
         "file": "src/flow/lib/set-issue.js",
         "hash": "7b58c42adb909e1fec71ddda27b2b2c7",
         "lines": 30,
-        "mtime": "2026-04-03T01:07:47.871Z",
+        "mtime": "2026-04-08T13:00:38.945Z",
         "className": "set-issue",
         "methods": [],
         "imports": [
@@ -3355,29 +2094,13 @@
         ],
         "extends": "FlowCommand",
         "usedBy": null,
-        "id": "c3865b58",
-        "summary": "Implements `flow set issue`, recording the GitHub issue number linked to the active flow.",
-        "detail": "Validates the argument is a positive integer. Calls setIssue from flow-state to persist the issue number in flow.json. Returns { issue: num }.",
-        "chapter": "cli_commands",
-        "role": "lib",
-        "enrich": {
-          "processedAt": "2026-04-03T03:15:49.316Z",
-          "attempts": 1
-        },
-        "keywords": [
-          "issue",
-          "set-issue",
-          "GitHub",
-          "flow-state",
-          "link",
-          "issue-number"
-        ]
+        "id": "c3865b58"
       },
       {
         "file": "src/flow/lib/set-metric.js",
         "hash": "1a4697eb3ebf16dcdd577fc7fcc33ed1",
         "lines": 43,
-        "mtime": "2026-04-04T07:37:04.194Z",
+        "mtime": "2026-04-08T13:00:38.945Z",
         "className": "set-metric",
         "methods": [],
         "imports": [
@@ -3390,33 +2113,13 @@
         ],
         "extends": "FlowCommand",
         "usedBy": null,
-        "id": "40d93087",
-        "summary": "FlowCommand subclass that increments a named metric counter for a given phase in the persisted flow state.",
-        "detail": "Implements the 'flow set metric' subcommand by validating both the phase (against VALID_PHASES) and counter name (against VALID_COUNTERS: question, redo, docsRead, srcRead). Calls mutateFlowState to atomically increment the specified counter within the phase's metrics object. Returns the updated phase, counter name, and new value. Used by post-hooks to automatically record AI interaction metrics during flow execution.",
-        "chapter": "internal_design",
-        "role": "lib",
-        "enrich": {
-          "processedAt": "2026-04-04T07:37:25.012Z",
-          "attempts": 1
-        },
-        "keywords": [
-          "metric",
-          "counter",
-          "flow-state",
-          "increment",
-          "phase",
-          "question",
-          "redo",
-          "docsRead",
-          "srcRead",
-          "FlowCommand"
-        ]
+        "id": "40d93087"
       },
       {
         "file": "src/flow/lib/set-note.js",
         "hash": "888706fbd3372c31f1fce7e61ef173f6",
         "lines": 25,
-        "mtime": "2026-04-03T01:07:47.872Z",
+        "mtime": "2026-04-08T13:00:38.945Z",
         "className": "set-note",
         "methods": [],
         "imports": [
@@ -3428,29 +2131,13 @@
         ],
         "extends": "FlowCommand",
         "usedBy": null,
-        "id": "7c2ef03f",
-        "summary": "Implements `flow set note`, appending a free-text note to the active flow's note list.",
-        "detail": "Requires a non-empty text argument. Calls addNote from flow-state to append to flow.json. Returns { note: text }.",
-        "chapter": "cli_commands",
-        "role": "lib",
-        "enrich": {
-          "processedAt": "2026-04-03T03:15:49.316Z",
-          "attempts": 1
-        },
-        "keywords": [
-          "note",
-          "set-note",
-          "flow-note",
-          "addNote",
-          "annotation",
-          "flow-state"
-        ]
+        "id": "7c2ef03f"
       },
       {
         "file": "src/flow/lib/set-req.js",
         "hash": "375ed7b07a051e12b1d86e425d3390af",
         "lines": 31,
-        "mtime": "2026-04-03T01:07:47.872Z",
+        "mtime": "2026-04-08T13:00:38.945Z",
         "className": "set-req",
         "methods": [],
         "imports": [
@@ -3462,30 +2149,13 @@
         ],
         "extends": "FlowCommand",
         "usedBy": null,
-        "id": "6dd22e12",
-        "summary": "Implements `flow set req`, updating the status of a requirement by index in flow.json.",
-        "detail": "Validates the index argument as a non-negative integer. Calls updateRequirement from flow-state with the parsed index and status string. Returns { index, status }.",
-        "chapter": "cli_commands",
-        "role": "lib",
-        "enrich": {
-          "processedAt": "2026-04-03T03:15:49.316Z",
-          "attempts": 1
-        },
-        "keywords": [
-          "requirement",
-          "set-req",
-          "status",
-          "index",
-          "updateRequirement",
-          "flow-state",
-          "requirements"
-        ]
+        "id": "6dd22e12"
       },
       {
         "file": "src/flow/lib/set-request.js",
         "hash": "05bca1c7db54365ec2719f12fe6de3af",
         "lines": 25,
-        "mtime": "2026-04-03T01:07:47.872Z",
+        "mtime": "2026-04-08T13:00:38.945Z",
         "className": "set-request",
         "methods": [],
         "imports": [
@@ -3497,29 +2167,13 @@
         ],
         "extends": "FlowCommand",
         "usedBy": null,
-        "id": "546ef334",
-        "summary": "Implements `flow set request`, storing the original user request text in flow.json.",
-        "detail": "Requires a non-empty text argument. Calls setRequest from flow-state. Returns { request: text }. Used at flow initialization to preserve the user's original feature request.",
-        "chapter": "cli_commands",
-        "role": "lib",
-        "enrich": {
-          "processedAt": "2026-04-03T03:15:49.316Z",
-          "attempts": 1
-        },
-        "keywords": [
-          "request",
-          "set-request",
-          "user-request",
-          "flow-state",
-          "setRequest",
-          "initialization"
-        ]
+        "id": "546ef334"
       },
       {
         "file": "src/flow/lib/set-step.js",
         "hash": "bc653d2afc87dfebec8e3ed5da208df5",
         "lines": 26,
-        "mtime": "2026-04-03T01:07:47.872Z",
+        "mtime": "2026-04-08T13:00:38.945Z",
         "className": "set-step",
         "methods": [],
         "imports": [
@@ -3531,30 +2185,13 @@
         ],
         "extends": "FlowCommand",
         "usedBy": null,
-        "id": "d4cb8d93",
-        "summary": "Implements `flow set step`, updating the status of a named step in flow.json.",
-        "detail": "Requires id and status arguments. Calls updateStepStatus from flow-state. Returns { id, status }. Used by registry pre/post hooks and manually by skill steps to track progress.",
-        "chapter": "cli_commands",
-        "role": "lib",
-        "enrich": {
-          "processedAt": "2026-04-03T03:15:49.316Z",
-          "attempts": 1
-        },
-        "keywords": [
-          "step",
-          "set-step",
-          "status",
-          "updateStepStatus",
-          "flow-state",
-          "progress",
-          "step-id"
-        ]
+        "id": "d4cb8d93"
       },
       {
         "file": "src/flow/lib/set-summary.js",
         "hash": "ac99c7eefd5d079c479d1fc293c5e5e8",
         "lines": 36,
-        "mtime": "2026-04-03T01:07:47.872Z",
+        "mtime": "2026-04-08T13:00:38.945Z",
         "className": "set-summary",
         "methods": [],
         "imports": [
@@ -3566,29 +2203,13 @@
         ],
         "extends": "FlowCommand",
         "usedBy": null,
-        "id": "f62c866f",
-        "summary": "Implements `flow set summary`, replacing the requirements array in flow.json with a parsed JSON array of strings.",
-        "detail": "Parses the raw JSON argument and validates it is a string array. Calls setRequirements from flow-state. Returns { count }. Throws descriptive errors on parse failure or wrong type.",
-        "chapter": "cli_commands",
-        "role": "lib",
-        "enrich": {
-          "processedAt": "2026-04-03T03:15:49.316Z",
-          "attempts": 1
-        },
-        "keywords": [
-          "summary",
-          "requirements",
-          "set-summary",
-          "JSON-array",
-          "flow-state",
-          "setRequirements"
-        ]
+        "id": "f62c866f"
       },
       {
         "file": "src/flow/lib/set-test-summary.js",
         "hash": "ded47c3965169cb923441fb460772467",
         "lines": 40,
-        "mtime": "2026-04-03T01:07:47.872Z",
+        "mtime": "2026-04-08T13:00:38.945Z",
         "className": "set-test-summary",
         "methods": [],
         "imports": [
@@ -3600,31 +2221,13 @@
         ],
         "extends": "FlowCommand",
         "usedBy": null,
-        "id": "962cab89",
-        "summary": "Implements `flow set test-summary`, recording test counts by type (unit, integration, acceptance) in flow.json.",
-        "detail": "Parses --unit, --integration, and --acceptance flags as non-negative integers. Validates at least one is provided. Calls setTestSummary from flow-state. Returns { summary }. Used in the test phase to capture test coverage metrics.",
-        "chapter": "cli_commands",
-        "role": "lib",
-        "enrich": {
-          "processedAt": "2026-04-03T03:15:49.316Z",
-          "attempts": 1
-        },
-        "keywords": [
-          "test-summary",
-          "unit",
-          "integration",
-          "acceptance",
-          "flow-state",
-          "setTestSummary",
-          "test-count",
-          "metrics"
-        ]
+        "id": "962cab89"
       },
       {
         "file": "src/flow/registry.js",
         "hash": "115bef177d99ccfa0600f191f19196aa",
         "lines": 450,
-        "mtime": "2026-04-06T23:59:10.443Z",
+        "mtime": "2026-04-08T13:00:38.945Z",
         "className": "registry",
         "methods": [
           "deriveActivePhase",
@@ -3645,32 +2248,13 @@
         "usedBy": [
           "src/flow.js"
         ],
-        "id": "d64f4095",
-        "summary": "Central registry for all `sdd-forge flow` commands, defining their argument schemas, help text, pre/post lifecycle hooks for step status tracking, and metric recording.",
-        "detail": "Exports the `FLOW_COMMANDS` map keyed by action name (e.g. `gate`, `retro`, `finalize`, `get`). Each entry specifies `args`, `help`, `command` (a FlowCommand subclass instance), and optional `pre`/`post` hooks. Pre-hooks call `tryUpdateStepStatus` to mark steps as `in_progress`; post-hooks update status to `done`/`failed` and call `incrementMetric` for telemetry. `resolveGateStepId` maps gate phase names to the canonical step identifier. `deriveActivePhase` provides a convenience wrapper over `derivePhase` from flow-state.",
-        "chapter": "internal_design",
-        "role": "config",
-        "enrich": {
-          "processedAt": "2026-04-07T02:53:27.930Z",
-          "attempts": 1
-        },
-        "keywords": [
-          "registry",
-          "flow commands",
-          "lifecycle hooks",
-          "step status",
-          "metrics",
-          "pre hook",
-          "post hook",
-          "dispatch",
-          "action map"
-        ]
+        "id": "d64f4095"
       },
       {
         "file": "src/help.js",
         "hash": "48119a7f1beeb0aaad357111d01dc518",
         "lines": 76,
-        "mtime": "2026-03-31T12:57:20.418Z",
+        "mtime": "2026-04-08T13:00:38.945Z",
         "className": "help",
         "methods": [
           "main"
@@ -3686,29 +2270,13 @@
         ],
         "extends": null,
         "usedBy": null,
-        "id": "4ac07fa0",
-        "summary": "Implements the `sdd-forge help` command, displaying a formatted list of available commands with their i18n-translated descriptions.",
-        "detail": "LAYOUT defines the ordered list of command groups and entries. main() maps entries to name/desc pairs using the translate function keyed by ui:help.commands.*. runIfDirect ensures main() only executes when the file is run directly. Exports both main and the LAYOUT constant for reuse in other help contexts.",
-        "chapter": "cli_commands",
-        "role": "cli",
-        "enrich": {
-          "processedAt": "2026-04-02T16:09:42.720Z",
-          "attempts": 1
-        },
-        "keywords": [
-          "help",
-          "command listing",
-          "CLI help",
-          "i18n",
-          "command descriptions",
-          "usage"
-        ]
+        "id": "4ac07fa0"
       },
       {
         "file": "src/lib/agent.js",
         "hash": "f50c3b1da78b44e9de837d98eee173ef",
         "lines": 744,
-        "mtime": "2026-04-08T08:28:55.315Z",
+        "mtime": "2026-04-08T13:00:38.946Z",
         "className": "agent",
         "methods": [
           "callAgent",
@@ -3773,38 +2341,13 @@
         "usedBy": [
           "src/setup.js"
         ],
-        "id": "13ddf392",
-        "summary": "Agent invocation layer that wraps CLI-based AI agents (Claude, Codex, etc.) with logging, retry, and async/sync execution modes. Handles prompt injection, JSON output parsing, provider detection, and agent context file management.",
-        "detail": "Provides both synchronous (callAgentWithLog) and asynchronous (callAgentAsyncWithLog, callAgentAwaitLog) entry points that wrap raw agent invocations with structured logging via Logger.agent phase start/end events. Detects provider type from command name to select appropriate output parsers (parseClaudeOutput, parseCodexOutput) and normalizes results into {text, usage} shape. Supports stdin-based prompt delivery when argv size exceeds ARGV_SIZE_THRESHOLD, and injects --output-format json flags for supported providers. Includes retry logic with configurable retryCount and retryDelayMs for async paths. Also manages agent context files written to .claude/rules/ for phase-specific prompt injection (writeAgentContext/cleanupAgentContext), and resolves agent configuration from config.json including profile switching via SDD_FORGE_PROFILE env var.",
-        "chapter": "internal_design",
-        "role": "lib",
-        "enrich": {
-          "processedAt": "2026-04-08T08:29:06.284Z",
-          "attempts": 1
-        },
-        "keywords": [
-          "agent",
-          "callAgent",
-          "execFileSync",
-          "spawn",
-          "claude",
-          "codex",
-          "provider",
-          "retry",
-          "async",
-          "logging",
-          "stdin",
-          "json-output",
-          "profile",
-          "timeout",
-          "prompt-injection"
-        ]
+        "id": "13ddf392"
       },
       {
         "file": "src/lib/agents-md.js",
         "hash": "ebcec14ba063408e6858a6e2b896aadb",
         "lines": 26,
-        "mtime": "2026-03-13T15:18:01.235Z",
+        "mtime": "2026-04-08T13:00:38.946Z",
         "className": "agents-md",
         "methods": [
           "loadSddTemplate"
@@ -3821,28 +2364,13 @@
         "usedBy": [
           "src/setup.js"
         ],
-        "id": "9f3f55f7",
-        "summary": "Loads the SDD section template from the base preset's AGENTS.sdd.md file for a given language. Used during AGENTS.md generation to inject the SDD template block.",
-        "detail": "loadSddTemplate resolves the template path under PRESETS_DIR/base/templates/<lang>/AGENTS.sdd.md and reads it if present, returning an empty string as fallback. Called by the agents command to obtain the canonical SDD section content before AI augmentation of the PROJECT section.",
-        "chapter": "internal_design",
-        "role": "lib",
-        "enrich": {
-          "processedAt": "2026-04-02T16:09:42.720Z",
-          "attempts": 1
-        },
-        "keywords": [
-          "AGENTS.md",
-          "SDD template",
-          "agents template",
-          "base preset",
-          "template loading"
-        ]
+        "id": "9f3f55f7"
       },
       {
         "file": "src/lib/cli.js",
         "hash": "598fe39cfb8675912e57bfb5140e16d7",
         "lines": 144,
-        "mtime": "2026-04-08T12:40:33.805Z",
+        "mtime": "2026-04-08T13:00:38.946Z",
         "className": "cli",
         "methods": [
           "repoRoot",
@@ -3884,33 +2412,13 @@
           "src/setup.js",
           "src/upgrade.js"
         ],
-        "id": "f351ecc4",
-        "summary": "Core CLI utility library providing repository root resolution, argument parsing, worktree detection, and package metadata helpers.",
-        "detail": "Exports `PKG_DIR` computed from `import.meta.url` for locating package-internal scripts. `repoRoot` resolves the project root via `SDD_FORGE_WORK_ROOT` env var or `git rev-parse`, falling back to `process.cwd()`. `sourceRoot` similarly respects `SDD_FORGE_SOURCE_ROOT`. `parseArgs` implements a minimal option parser supporting the spec object pattern. `isInsideWorktree` detects git worktrees by checking if `.git` is a file rather than a directory. Includes `getPackageVersion` and `formatUTCTimestamp` utility helpers.",
-        "chapter": "internal_design",
-        "role": "lib",
-        "enrich": {
-          "processedAt": "2026-04-08T12:40:58.699Z",
-          "attempts": 1
-        },
-        "keywords": [
-          "repoRoot",
-          "PKG_DIR",
-          "parseArgs",
-          "worktree",
-          "sourceRoot",
-          "git",
-          "SDD_FORGE_WORK_ROOT",
-          "SDD_FORGE_SOURCE_ROOT",
-          "CLI utilities",
-          "package version"
-        ]
+        "id": "f351ecc4"
       },
       {
         "file": "src/lib/config.js",
         "hash": "033e53d47f624f7659b105303bb36695",
         "lines": 115,
-        "mtime": "2026-04-07T23:32:48.453Z",
+        "mtime": "2026-04-08T13:00:38.946Z",
         "className": "config",
         "methods": [
           "resolveConcurrency",
@@ -3954,33 +2462,13 @@
           "src/setup.js",
           "src/upgrade.js"
         ],
-        "id": "dff6e5b4",
-        "summary": "Core configuration loader for sdd-forge projects, providing path resolution helpers and config validation for the .sdd-forge directory structure. Exports utility functions used throughout the CLI for locating config, output, and data directories.",
-        "detail": "Defines canonical path helpers (sddDir, sddConfigPath, sddOutputDir, sddDataDir) that all resolve relative to a given project root under the .sdd-forge directory. loadConfig reads and validates config.json via the validateConfig type checker. loadLang extracts the language setting with a fallback to DEFAULT_LANG ('en'). loadJsonFile provides generic JSON loading with existence checks, and loadPackageField extracts arbitrary fields from a project's package.json. DEFAULT_CONCURRENCY is set to 5 and used as a fallback when not specified in config.",
-        "chapter": "configuration",
-        "role": "lib",
-        "enrich": {
-          "processedAt": "2026-04-07T23:33:06.281Z",
-          "attempts": 1
-        },
-        "keywords": [
-          "config",
-          "configuration",
-          "loadConfig",
-          "sddDir",
-          "path resolution",
-          "concurrency",
-          "lang",
-          "package.json",
-          "validateConfig",
-          ".sdd-forge"
-        ]
+        "id": "dff6e5b4"
       },
       {
         "file": "src/lib/entrypoint.js",
         "hash": "7d6cb00fe4e88adde588ae75cf791fe1",
         "lines": 25,
-        "mtime": "2026-03-31T12:57:20.418Z",
+        "mtime": "2026-04-08T13:00:38.946Z",
         "className": "entrypoint",
         "methods": [
           "isDirectRun",
@@ -4001,29 +2489,13 @@
           "src/setup.js",
           "src/upgrade.js"
         ],
-        "id": "5c7afa99",
-        "summary": "Provides isDirectRun and runIfDirect utilities to guard top-level script execution, ensuring modules only self-execute when invoked directly rather than imported.",
-        "detail": "isDirectRun compares the resolved argv[1] path with the module's own file path via fileURLToPath. runIfDirect wraps a main() function in a try/catch, exiting with EXIT_ERROR on failure. Used across commands/scan.js, review.js, changelog.js, and others to prevent side effects on import.",
-        "chapter": "internal_design",
-        "role": "lib",
-        "enrich": {
-          "processedAt": "2026-04-02T16:09:42.720Z",
-          "attempts": 1
-        },
-        "keywords": [
-          "entrypoint",
-          "isDirectRun",
-          "runIfDirect",
-          "direct run guard",
-          "module guard",
-          "ES module"
-        ]
+        "id": "5c7afa99"
       },
       {
         "file": "src/lib/exit-codes.js",
         "hash": "00a85e1713fd36d9396a79ffd35d24e6",
         "lines": 9,
-        "mtime": "2026-03-31T12:57:20.418Z",
+        "mtime": "2026-04-08T13:00:38.946Z",
         "className": "exit-codes",
         "methods": [],
         "imports": [],
@@ -4033,37 +2505,22 @@
         ],
         "extends": null,
         "usedBy": [
+          "src/check.js",
           "src/docs.js",
           "src/flow.js",
           "src/lib/entrypoint.js",
           "src/presets-cmd.js",
           "src/sdd-forge.js",
           "src/setup.js",
-          "src/upgrade.js",
-          "src/check.js"
+          "src/upgrade.js"
         ],
-        "id": "82a3b684",
-        "summary": "Defines numeric exit code constants EXIT_SUCCESS (0) and EXIT_ERROR (1) used consistently across all CLI entry points.",
-        "detail": "A minimal constants module with two named exports. Centralizing exit codes prevents magic number scatter and makes process.exit() calls searchable. Imported by flow.js, review.js, gate.js, and numerous other command files.",
-        "chapter": "internal_design",
-        "role": "lib",
-        "enrich": {
-          "processedAt": "2026-04-02T16:09:42.720Z",
-          "attempts": 1
-        },
-        "keywords": [
-          "exit codes",
-          "EXIT_SUCCESS",
-          "EXIT_ERROR",
-          "process exit",
-          "constants"
-        ]
+        "id": "82a3b684"
       },
       {
         "file": "src/lib/flow-envelope.js",
         "hash": "6ac0e4c42598bb2547946453d8a113cf",
         "lines": 62,
-        "mtime": "2026-04-02T15:07:32.622Z",
+        "mtime": "2026-04-08T13:00:38.946Z",
         "className": "flow-envelope",
         "methods": [
           "ok",
@@ -4082,30 +2539,13 @@
         "usedBy": [
           "src/flow.js"
         ],
-        "id": "4f01cb50",
-        "summary": "Defines the flow envelope protocol with ok(), fail(), warn(), and output() functions for structured JSON communication between flow commands and their callers.",
-        "detail": "ok() constructs a success envelope with type, key, data, and empty errors. fail() constructs a failure envelope with error code and messages array. warn() combines a data payload with non-fatal warning codes. output() serializes the envelope to stdout as pretty-printed JSON and sets process.exitCode (not process.exit()) to allow post-hooks to run. This protocol is the universal return format for all flow command handlers.",
-        "chapter": "internal_design",
-        "role": "lib",
-        "enrich": {
-          "processedAt": "2026-04-02T16:09:42.720Z",
-          "attempts": 1
-        },
-        "keywords": [
-          "flow envelope",
-          "ok fail",
-          "JSON protocol",
-          "structured output",
-          "command response",
-          "process.exitCode",
-          "envelope pattern"
-        ]
+        "id": "4f01cb50"
       },
       {
         "file": "src/lib/flow-state.js",
         "hash": "a75ea4d47b27bd398b781a5514c6c680",
         "lines": 677,
-        "mtime": "2026-04-07T02:51:55.058Z",
+        "mtime": "2026-04-08T13:00:38.946Z",
         "className": "flow-state",
         "methods": [
           "getSpecName",
@@ -4179,33 +2619,13 @@
         "usedBy": [
           "src/flow.js"
         ],
-        "id": "5bb0bb76",
-        "summary": "Manages persistent flow state for SDD workflows, including active flow tracking, step/phase management, and worktree path resolution.",
-        "detail": "Provides read/write operations for flow.json state files stored under specs/<specId>/. Tracks active flows via a .active-flow registry file in the sdd directory, supporting concurrent worktree-based flows. Exposes mutation helpers (updateStepStatus, setRequirements, incrementMetric, etc.) that load-mutate-save atomically via mutateFlowState. Includes utilities to derive the current phase from completed steps using PHASE_MAP, and to scan all flow states across both main repo and worktrees.",
-        "chapter": "internal_design",
-        "role": "model",
-        "enrich": {
-          "processedAt": "2026-04-07T02:52:13.036Z",
-          "attempts": 1
-        },
-        "keywords": [
-          "flow state",
-          "flow.json",
-          "active flow",
-          "worktree",
-          "spec",
-          "step status",
-          "phase",
-          "FLOW_STEPS",
-          "PHASE_MAP",
-          "persist"
-        ]
+        "id": "5bb0bb76"
       },
       {
         "file": "src/lib/formatter.js",
         "hash": "348d372e21f4c22d0f206c4a98ce5dd7",
         "lines": 22,
-        "mtime": "2026-04-08T05:05:21.872Z",
+        "mtime": "2026-04-08T13:00:38.946Z",
         "className": "formatter",
         "methods": [
           "pushSection"
@@ -4217,30 +2637,13 @@
         ],
         "extends": null,
         "usedBy": null,
-        "id": "994720ab",
-        "summary": "Minimal shared formatting utility exporting a divider constant and a pushSection helper used across CLI output renderers.",
-        "detail": "Exports DIVIDER as a fixed Unicode box-drawing line string for visual separation in terminal output. pushSection appends a titled block with an optional custom divider to a lines array, providing a consistent section-header pattern. Used by check/scan, flow/report, and other output formatters throughout the codebase.",
-        "chapter": "internal_design",
-        "role": "lib",
-        "enrich": {
-          "processedAt": "2026-04-08T05:05:43.612Z",
-          "attempts": 1
-        },
-        "keywords": [
-          "formatter",
-          "DIVIDER",
-          "pushSection",
-          "terminal output",
-          "section header",
-          "utility",
-          "CLI formatting"
-        ]
+        "id": "994720ab"
       },
       {
         "file": "src/lib/git-helpers.js",
         "hash": "56236f738f9b70f6c9890a7baa774fff",
         "lines": 71,
-        "mtime": "2026-04-08T00:40:05.732Z",
+        "mtime": "2026-04-08T13:00:38.946Z",
         "className": "git-helpers",
         "methods": [
           "getWorktreeStatus",
@@ -4265,33 +2668,13 @@
         ],
         "extends": null,
         "usedBy": null,
-        "id": "61b28e9c",
-        "summary": "Git helper utilities for worktree status, branch info, commit history, gh CLI availability, and issue commenting. Used across flow commands.",
-        "detail": "getWorktreeStatus() returns dirty flag and list of dirty files via git status. getCurrentBranch() and getLastCommit() provide branch/commit info. getAheadCount() computes commits ahead of a base branch. isGhAvailable() probes gh CLI with a timeout. collectGitSummary() aggregates diffStat and commit messages for finalize/PR steps. commentOnIssue() posts a comment via gh CLI.",
-        "chapter": "internal_design",
-        "role": "lib",
-        "enrich": {
-          "processedAt": "2026-04-08T00:40:49.364Z",
-          "attempts": 1
-        },
-        "keywords": [
-          "git",
-          "worktree",
-          "branch",
-          "commit",
-          "gh cli",
-          "issue comment",
-          "diff stat",
-          "dirty",
-          "ahead count",
-          "git helpers"
-        ]
+        "id": "61b28e9c"
       },
       {
         "file": "src/lib/guardrail.js",
         "hash": "a3c8852c56c6cc5d61d0d8ddd42f218b",
         "lines": 184,
-        "mtime": "2026-04-07T23:32:48.453Z",
+        "mtime": "2026-04-08T13:00:38.946Z",
         "className": "guardrail",
         "methods": [
           "filterByPhase",
@@ -4321,34 +2704,13 @@
         "usedBy": [
           "src/lib/lint.js"
         ],
-        "id": "bb462f4e",
-        "summary": "Shared guardrail loading and matching library that reads guardrail.json from preset chains and project overrides, merges them by ID, and filters by phase or file scope. Used by the SDD flow to enforce coding and documentation constraints.",
-        "detail": "loadMergedGuardrails resolves the active preset chain via resolveChainSafe, loads guardrail files from each preset directory, then merges with any project-level override using a mergeById strategy that allows project entries to override preset entries with the same ID. filterByPhase narrows the merged list to guardrails applicable to a given pipeline phase (defaulting to 'spec'). matchScope checks whether a file path matches a guardrail's scope patterns using patternToRegex. The hydrate function attaches parsed metadata (including compiled lint regexes from parseLintString) to each raw guardrail entry.",
-        "chapter": "internal_design",
-        "role": "lib",
-        "enrich": {
-          "processedAt": "2026-04-07T23:33:06.281Z",
-          "attempts": 1
-        },
-        "keywords": [
-          "guardrail",
-          "guardrail.json",
-          "phase filter",
-          "scope matching",
-          "preset chain",
-          "merge",
-          "lint",
-          "regex",
-          "loadMergedGuardrails",
-          "filterByPhase",
-          "matchScope"
-        ]
+        "id": "bb462f4e"
       },
       {
         "file": "src/lib/i18n.js",
         "hash": "66be72f7a607bdc776226b5911b2b529",
         "lines": 276,
-        "mtime": "2026-03-20T03:07:17.809Z",
+        "mtime": "2026-04-08T13:00:38.946Z",
         "className": "i18n",
         "methods": [
           "deepMerge",
@@ -4384,33 +2746,13 @@
           "src/setup.js",
           "src/upgrade.js"
         ],
-        "id": "45a1457c",
-        "summary": "Implements the i18n translation system, loading message files from locale directories in the package, preset, and project layers. Exposes createI18n() and translate() factory functions that return a typed t() lookup function.",
-        "detail": "Messages are organized by domain (ui, messages, prompts) and merged in priority order: package locale < preset locale < project locale. deepMerge() performs recursive object merging so individual keys can be overridden without replacing entire domain files. interpolate() handles {{key}} placeholders within message strings. translate() is a lazy factory that defers locale dir resolution until first call, reading config and preset from the project root.",
-        "chapter": "internal_design",
-        "role": "lib",
-        "enrich": {
-          "processedAt": "2026-04-02T16:04:59.891Z",
-          "attempts": 1
-        },
-        "keywords": [
-          "i18n",
-          "translation",
-          "locale",
-          "messages",
-          "domain",
-          "interpolate",
-          "deepMerge",
-          "multilingual",
-          "t()",
-          "createI18n"
-        ]
+        "id": "45a1457c"
       },
       {
         "file": "src/lib/include.js",
         "hash": "cf3701097c97792c9390a57812bd0110",
         "lines": 114,
-        "mtime": "2026-03-31T12:57:20.419Z",
+        "mtime": "2026-04-08T13:00:38.946Z",
         "className": "include",
         "methods": [
           "resolveIncludes",
@@ -4427,32 +2769,13 @@
         "usedBy": [
           "src/lib/skills.js"
         ],
-        "id": "d35107ed",
-        "summary": "Resolves <!-- include(\"path\") --> directives in template content by reading referenced files and substituting their contents inline. Enforces path traversal restrictions and detects circular includes.",
-        "detail": "resolveIncludePath() maps include paths to absolute locations using a priority chain: templatesDir, presetsDir, pkgDir, then baseDir. Path segments starting with ../ or ./ are explicitly forbidden to prevent directory traversal. Circular include detection is implemented via a visited Set passed recursively through resolveIncludes(). Included files are themselves processed for nested includes, and baseDir is updated to the directory of the included file for relative resolution.",
-        "chapter": "internal_design",
-        "role": "lib",
-        "enrich": {
-          "processedAt": "2026-04-02T16:04:59.891Z",
-          "attempts": 1
-        },
-        "keywords": [
-          "include",
-          "template",
-          "directive",
-          "path resolution",
-          "circular detection",
-          "traversal protection",
-          "file inclusion",
-          "presetsDir",
-          "templatesDir"
-        ]
+        "id": "d35107ed"
       },
       {
         "file": "src/lib/json-parse.js",
         "hash": "e92d31bdef2c8d8b6508229b747c6532",
         "lines": 287,
-        "mtime": "2026-03-31T14:35:15.797Z",
+        "mtime": "2026-04-08T13:00:38.946Z",
         "className": "json-parse",
         "methods": [
           "repairJson",
@@ -4468,31 +2791,13 @@
         ],
         "extends": null,
         "usedBy": null,
-        "id": "a2f5875b",
-        "summary": "Provides a repairJson() function that tolerates malformed JSON (unquoted keys, trailing commas, markdown fences) and returns a valid JSON string. Used to parse LLM-generated JSON responses.",
-        "detail": "The parser is a hand-written recursive descent that processes characters one by one, emitting corrected output. It handles objects, arrays, strings, numbers, and keywords (true/false/null) with error recovery rather than failure. stripMarkdownFences() strips ```json ... ``` wrappers before parsing, and findJsonStart() locates the first { or [ to skip leading prose. escapeControl() ensures control characters inside strings are properly escaped as \\uXXXX sequences.",
-        "chapter": "internal_design",
-        "role": "lib",
-        "enrich": {
-          "processedAt": "2026-04-02T16:04:59.891Z",
-          "attempts": 1
-        },
-        "keywords": [
-          "JSON repair",
-          "malformed JSON",
-          "LLM output",
-          "JSON parse",
-          "recursive descent",
-          "markdown fence",
-          "error recovery",
-          "repairJson"
-        ]
+        "id": "a2f5875b"
       },
       {
         "file": "src/lib/lint.js",
         "hash": "7d1cd2033a82b7e116c17ddfc41a05b0",
         "lines": 125,
-        "mtime": "2026-04-08T00:40:05.732Z",
+        "mtime": "2026-04-08T13:00:38.947Z",
         "className": "lint",
         "methods": [
           "validateLintGuardrails",
@@ -4514,33 +2819,13 @@
         ],
         "extends": null,
         "usedBy": null,
-        "id": "aa4a324d",
-        "summary": "Lint guardrail runner that filters guardrail rules by phase, checks changed files against regex patterns, and reports failures. Used in the gate step.",
-        "detail": "validateLintGuardrails() checks guardrail config for required fields and returns warnings. getChangedFiles() retrieves files changed against a base branch via git diff. runLintChecks() reads each file and tests content against guardrail regex patterns scoped by matchScope. runLint() orchestrates the full lint pipeline, returning ok flag, warnings, failure list, and counts.",
-        "chapter": "internal_design",
-        "role": "lib",
-        "enrich": {
-          "processedAt": "2026-04-08T00:40:49.364Z",
-          "attempts": 1
-        },
-        "keywords": [
-          "lint",
-          "guardrail",
-          "regex",
-          "changed files",
-          "phase filter",
-          "scope",
-          "git diff",
-          "validation",
-          "runLint",
-          "failures"
-        ]
+        "id": "aa4a324d"
       },
       {
         "file": "src/lib/log.js",
-        "hash": "b3e1dc7242b51ed1c9696d1ee4214d08",
-        "lines": 411,
-        "mtime": "2026-04-07T13:31:31.298Z",
+        "hash": "645bee43913c7f854e1e5d9b05cf2d92",
+        "lines": 419,
+        "mtime": "2026-04-08T13:09:06.141Z",
         "className": "log",
         "methods": [
           "generateRequestId",
@@ -4568,33 +2853,13 @@
           "src/lib/agent.js",
           "src/sdd-forge.js"
         ],
-        "id": "3d7bb5e6",
-        "summary": "Structured JSONL logging system that records agent calls, git events, and custom events to daily log files with optional prompt file persistence.",
-        "detail": "Logger is a singleton initialized with config; it writes JSON lines to .sdd-forge/logs/sdd-forge-YYYY-MM-DD.jsonl. Each agent log entry captures prompt/response text stats, caller file/line via stack trace parsing, flow phase from flow-state.json, and an optional prompt file reference written to a prompts/ subdirectory. resolveLogDir resolves the log directory relative to the repo root, handling worktree paths via getMainRepoPath. All writes are fire-and-forget promises tracked in a pending set.",
-        "chapter": "internal_design",
-        "role": "lib",
-        "enrich": {
-          "processedAt": "2026-04-07T13:32:57.482Z",
-          "attempts": 1
-        },
-        "keywords": [
-          "logging",
-          "JSONL",
-          "Logger",
-          "agent log",
-          "prompt file",
-          "flow context",
-          "singleton",
-          "daily log",
-          "worktree",
-          "structured log"
-        ]
+        "id": "3d7bb5e6"
       },
       {
         "file": "src/lib/multi-select.js",
         "hash": "f8d74daace389a4cd41deb3545ce03c0",
         "lines": 266,
-        "mtime": "2026-03-20T16:27:01.901Z",
+        "mtime": "2026-04-08T13:00:38.947Z",
         "className": "multi-select",
         "methods": [
           "buildTreeItems",
@@ -4610,32 +2875,13 @@
         "usedBy": [
           "src/setup.js"
         ],
-        "id": "9a04a164",
-        "summary": "Renders an interactive terminal tree-based single/multi-select UI for choosing presets during setup. Supports keyboard navigation and ANSI color output.",
-        "detail": "buildTreeItems() walks the preset tree recursively to produce flat items with indentation prefix strings for visual hierarchy. renderLine() applies ANSI color codes to highlight the cursor position and selected items differently for single vs. multi-select modes. select() sets up raw stdin input, handles arrow key sequences and space/enter events, manages viewport scrolling, and resolves the Promise with the selected key(s) on confirmation. Falls back to the first item when stdin is not a TTY.",
-        "chapter": "internal_design",
-        "role": "lib",
-        "enrich": {
-          "processedAt": "2026-04-02T16:04:59.891Z",
-          "attempts": 1
-        },
-        "keywords": [
-          "multi-select",
-          "terminal UI",
-          "preset selection",
-          "interactive",
-          "ANSI",
-          "TTY",
-          "tree view",
-          "keyboard navigation",
-          "single select"
-        ]
+        "id": "9a04a164"
       },
       {
         "file": "src/lib/presets.js",
         "hash": "53634c5c53a8c908f58f5b934890a79c",
         "lines": 154,
-        "mtime": "2026-03-20T03:07:17.809Z",
+        "mtime": "2026-04-08T13:00:38.947Z",
         "className": "presets",
         "methods": [
           "resolveChain",
@@ -4667,32 +2913,13 @@
           "src/presets-cmd.js",
           "src/setup.js"
         ],
-        "id": "ae76d513",
-        "summary": "Discovers all available presets from the src/presets/ directory and provides chain resolution for preset inheritance. Exposes the PRESETS constant and helpers to look up or traverse the parent chain.",
-        "detail": "discoverPresets() reads each subdirectory for a preset.json manifest and builds a list of { key, dir, parent, label } objects. resolveChain() follows the parent field recursively to build an ordered inheritance chain, detecting circular references and missing parents with explicit errors. resolveMultiChains() merges chains for multiple preset types, deduplicating entries by key. resolveChainSafe() wraps resolveChain() to return an empty or base-only array on failure, used in contexts where missing presets should not abort execution.",
-        "chapter": "project_structure",
-        "role": "lib",
-        "enrich": {
-          "processedAt": "2026-04-02T16:04:59.891Z",
-          "attempts": 1
-        },
-        "keywords": [
-          "presets",
-          "preset chain",
-          "inheritance",
-          "parent chain",
-          "resolveChain",
-          "PRESETS_DIR",
-          "preset discovery",
-          "multi-chain",
-          "leaf key"
-        ]
+        "id": "ae76d513"
       },
       {
         "file": "src/lib/process.js",
         "hash": "5c125dfa3656788748c66aa661c53428",
         "lines": 125,
-        "mtime": "2026-04-08T00:40:05.732Z",
+        "mtime": "2026-04-08T13:00:38.947Z",
         "className": "process",
         "methods": [
           "runCmd",
@@ -4716,33 +2943,13 @@
           "src/lib/git-helpers.js",
           "src/lib/lint.js"
         ],
-        "id": "6196b26c",
-        "summary": "Low-level process execution module wrapping execFileSync and execFile for synchronous and async command invocation. Provides assertOk and formatError helpers.",
-        "detail": "runCmd() executes commands synchronously via execFileSync, normalizing output into {ok, status, stdout, stderr, signal, killed}. runCmdAsync() wraps execFile in a Promise with the same result shape. formatError() concatenates stderr, stdout, and exit code into a readable string. assertOk() throws a formatted error if ok is false. Used as the universal subprocess primitive across the entire codebase.",
-        "chapter": "internal_design",
-        "role": "lib",
-        "enrich": {
-          "processedAt": "2026-04-08T00:40:49.364Z",
-          "attempts": 1
-        },
-        "keywords": [
-          "process",
-          "exec",
-          "runCmd",
-          "assertOk",
-          "subprocess",
-          "execFileSync",
-          "async",
-          "formatError",
-          "stdout",
-          "stderr"
-        ]
+        "id": "6196b26c"
       },
       {
         "file": "src/lib/progress.js",
         "hash": "6f13b68a007f59055dbf7ef08ccf5caa",
         "lines": 218,
-        "mtime": "2026-03-13T15:18:01.236Z",
+        "mtime": "2026-04-08T13:00:38.947Z",
         "className": "progress",
         "methods": [
           "createLogger",
@@ -4757,33 +2964,13 @@
         ],
         "extends": null,
         "usedBy": null,
-        "id": "fa23a1ba",
-        "summary": "Implements a terminal progress bar and spinner with multi-step tracking, elapsed time display, and verbose logging. Renders to stderr to avoid polluting stdout output.",
-        "detail": "createProgress() returns an instance with step(), log(), warn(), and done() methods that update a shared progress bar rendered as an ASCII block bar. A setInterval-driven spinner animates the current step while it runs. initScreen() clears the terminal and reserves lines for the header and bar using ANSI escape codes when stderr is a TTY; non-TTY environments fall back to plain line output. createLogger() provides a simpler prefix-tagged logging interface without progress tracking.",
-        "chapter": "internal_design",
-        "role": "lib",
-        "enrich": {
-          "processedAt": "2026-04-02T16:04:59.891Z",
-          "attempts": 1
-        },
-        "keywords": [
-          "progress bar",
-          "spinner",
-          "TTY",
-          "terminal",
-          "ANSI",
-          "elapsed time",
-          "stderr",
-          "multi-step",
-          "logging",
-          "createProgress"
-        ]
+        "id": "fa23a1ba"
       },
       {
         "file": "src/lib/skills.js",
         "hash": "d697554944cfa65e51b6da6c94ff22d6",
         "lines": 142,
-        "mtime": "2026-04-07T05:37:02.069Z",
+        "mtime": "2026-04-08T13:00:38.947Z",
         "className": "skills",
         "methods": [
           "deploySkills",
@@ -4807,33 +2994,13 @@
           "src/setup.js",
           "src/upgrade.js"
         ],
-        "id": "a1344e4a",
-        "summary": "Handles deployment of skill files (SKILL.md) from template directories to both .agents/skills/ and .claude/skills/ in the project root.",
-        "detail": "Provides two exported functions: deploySkills for built-in package skills and deployProjectSkills for project-specific skills. Core logic in deploySkillsFromDir reads SKILL.md files, processes include directives via resolveIncludes, and writes resolved content to both .agents and .claude skill destinations. Skips unchanged files by comparing existing content, and supports a dryRun mode. Symlink detection via lstatSync prevents accidental overwrites of symlinked skill files.",
-        "chapter": "internal_design",
-        "role": "lib",
-        "enrich": {
-          "processedAt": "2026-04-07T05:37:16.296Z",
-          "attempts": 1
-        },
-        "keywords": [
-          "skills",
-          "deploy",
-          "SKILL.md",
-          "templates",
-          "upgrade",
-          "symlink",
-          "include",
-          "agents",
-          "claude",
-          "dryRun"
-        ]
+        "id": "a1344e4a"
       },
       {
         "file": "src/lib/types.js",
         "hash": "23ad1f109a576983522e9b4727314c25",
         "lines": 373,
-        "mtime": "2026-04-08T02:15:25.311Z",
+        "mtime": "2026-04-08T13:00:38.947Z",
         "className": "types",
         "methods": [
           "validateConfig",
@@ -4850,32 +3017,13 @@
           "src/lib/config.js",
           "src/setup.js"
         ],
-        "id": "69d5afb4",
-        "summary": "Defines TypeScript-style config validation and output resolution helpers for SDD config objects.",
-        "detail": "validateConfig performs runtime schema validation on a raw config object, collecting errors and throwing if any are found, then returns the typed SddConfig. resolveOutputConfig normalises the config into a resolved output descriptor with sensible defaults. VALID_TONES is a compile-time constant set used during validation. The module acts as the single source of truth for config shape enforcement across the codebase.",
-        "chapter": "configuration",
-        "role": "model",
-        "enrich": {
-          "processedAt": "2026-04-08T02:28:06.724Z",
-          "attempts": 1
-        },
-        "keywords": [
-          "config",
-          "validation",
-          "schema",
-          "SddConfig",
-          "types",
-          "tone",
-          "output",
-          "resolveOutputConfig",
-          "validateConfig"
-        ]
+        "id": "69d5afb4"
       },
       {
         "file": "src/presets-cmd.js",
         "hash": "b960b9bf595e9acdabd0fc09639ec3bd",
         "lines": 84,
-        "mtime": "2026-03-31T12:57:20.419Z",
+        "mtime": "2026-04-08T13:00:38.948Z",
         "className": "presets-cmd",
         "methods": [
           "printTree"
@@ -4889,31 +3037,13 @@
         "exports": [],
         "extends": null,
         "usedBy": null,
-        "id": "85926390",
-        "summary": "CLI entry point for the sdd-forge presets subcommand. Prints a tree view of available presets including their template directories.",
-        "detail": "The script reads process.argv[2] to dispatch between subcommands (currently only the default tree view). printTree() iterates over PRESETS and calls printNode() recursively to render the hierarchy with prefix strings and template presence indicators. Exits with EXIT_ERROR for unknown subcommands.",
-        "chapter": "cli_commands",
-        "role": "cli",
-        "enrich": {
-          "processedAt": "2026-04-02T16:04:59.891Z",
-          "attempts": 1
-        },
-        "keywords": [
-          "presets",
-          "CLI",
-          "tree view",
-          "preset list",
-          "subcommand",
-          "printTree",
-          "templates",
-          "preset hierarchy"
-        ]
+        "id": "85926390"
       },
       {
         "file": "src/presets/base/data/package.js",
         "hash": "1200fa2a3fc5ff4cbdf4144572ea8a3c",
         "lines": 61,
-        "mtime": "2026-03-26T03:13:47.933Z",
+        "mtime": "2026-04-08T13:00:38.948Z",
         "className": "package",
         "methods": [
           "PackageEntry"
@@ -4937,7 +3067,7 @@
         "file": "src/presets/base/data/structure.js",
         "hash": "08f2509fafc96420636e631603d5a035",
         "lines": 110,
-        "mtime": "2026-03-31T12:57:20.419Z",
+        "mtime": "2026-04-08T13:00:38.948Z",
         "className": "structure",
         "methods": [
           "allItems",
@@ -4960,7 +3090,7 @@
         "file": "src/presets/base/tests/acceptance/fixtures/src/config.js",
         "hash": "569289ed2afa967167a1d3bb421fc88d",
         "lines": 56,
-        "mtime": "2026-03-26T03:13:47.934Z",
+        "mtime": "2026-04-08T13:00:38.949Z",
         "className": "config",
         "methods": [
           "loadConfig",
@@ -4990,7 +3120,7 @@
         "file": "src/presets/base/tests/acceptance/fixtures/src/http-client.js",
         "hash": "cf2e199e931686b890c56a235b99bd59",
         "lines": 89,
-        "mtime": "2026-03-26T03:13:47.934Z",
+        "mtime": "2026-04-08T13:00:38.949Z",
         "className": "http-client",
         "methods": [
           "HttpClient"
@@ -5013,7 +3143,7 @@
         "file": "src/presets/base/tests/acceptance/fixtures/src/index.js",
         "hash": "994993300bf63cd748746fee7be84457",
         "lines": 52,
-        "mtime": "2026-03-26T03:13:47.934Z",
+        "mtime": "2026-04-08T13:00:38.949Z",
         "className": "index",
         "methods": [
           "main",
@@ -5036,7 +3166,7 @@
         "file": "src/presets/base/tests/acceptance/fixtures/src/logger.js",
         "hash": "f78538b465784021bdb33616d7a8da31",
         "lines": 44,
-        "mtime": "2026-03-26T03:13:47.934Z",
+        "mtime": "2026-04-08T13:00:38.949Z",
         "className": "logger",
         "methods": [
           "createLogger",
@@ -5058,7 +3188,7 @@
         "file": "src/presets/base/tests/acceptance/test.js",
         "hash": "4c7c8235f24a3b7f70c50cdd6288b97c",
         "lines": 7,
-        "mtime": "2026-03-26T03:13:47.934Z",
+        "mtime": "2026-04-08T13:00:38.949Z",
         "className": "test",
         "methods": [],
         "imports": [
@@ -5073,7 +3203,7 @@
         "file": "src/presets/cakephp2/data/commands.js",
         "hash": "d9e2f894813272595ab4a380be7faf92",
         "lines": 130,
-        "mtime": "2026-03-26T03:13:47.934Z",
+        "mtime": "2026-04-08T13:00:38.949Z",
         "className": "commands",
         "methods": [
           "analyzeCommandDetails"
@@ -5097,7 +3227,7 @@
         "file": "src/presets/cakephp2/data/config.js",
         "hash": "6f0a5eee5f10707004c275f08fec400e",
         "lines": 830,
-        "mtime": "2026-03-26T03:13:47.934Z",
+        "mtime": "2026-04-08T13:00:38.949Z",
         "className": "config",
         "methods": [
           "ConfigEntry",
@@ -5146,7 +3276,7 @@
         "file": "src/presets/cakephp2/data/controllers.js",
         "hash": "1cc57e6ca5d57d2fbe7efff567c7b8ef",
         "lines": 177,
-        "mtime": "2026-03-26T03:13:47.934Z",
+        "mtime": "2026-04-08T13:00:38.949Z",
         "className": "controllers",
         "methods": [
           "analyzePermissionComponent",
@@ -5172,7 +3302,7 @@
         "file": "src/presets/cakephp2/data/docker.js",
         "hash": "12af567ea5ea9b4dbdcd8e2337d91d0c",
         "lines": 18,
-        "mtime": "2026-03-05T15:53:34.691Z",
+        "mtime": "2026-04-08T13:00:38.950Z",
         "className": "docker",
         "methods": [],
         "imports": [
@@ -5189,7 +3319,7 @@
         "file": "src/presets/cakephp2/data/email.js",
         "hash": "8a3a6814876b84cf18a6ab70660a8fca",
         "lines": 178,
-        "mtime": "2026-03-26T03:13:47.934Z",
+        "mtime": "2026-04-08T13:00:38.950Z",
         "className": "email",
         "methods": [
           "EmailEntry",
@@ -5215,7 +3345,7 @@
         "file": "src/presets/cakephp2/data/libs.js",
         "hash": "87933a995ac84fcd8845c8f18d59b9d6",
         "lines": 153,
-        "mtime": "2026-03-26T03:13:47.934Z",
+        "mtime": "2026-04-08T13:00:38.950Z",
         "className": "libs",
         "methods": [
           "LibEntry"
@@ -5238,7 +3368,7 @@
         "file": "src/presets/cakephp2/data/models.js",
         "hash": "b451d65a3cfbd6cdd4770b855db6079f",
         "lines": 538,
-        "mtime": "2026-04-04T14:27:36.605Z",
+        "mtime": "2026-04-08T13:00:38.950Z",
         "className": "models",
         "methods": [
           "analyzeModels",
@@ -5276,7 +3406,7 @@
         "file": "src/presets/cakephp2/data/tables.js",
         "hash": "f44f81e2ebf0b05dbfb4605f90aa3031",
         "lines": 123,
-        "mtime": "2026-03-26T03:13:47.934Z",
+        "mtime": "2026-04-08T13:00:38.950Z",
         "className": "tables",
         "methods": [
           "resolveDbName"
@@ -5296,7 +3426,7 @@
         "file": "src/presets/cakephp2/data/tests.js",
         "hash": "a5018ae74f15c8a66cb80ab3c6f43cf0",
         "lines": 84,
-        "mtime": "2026-03-26T03:13:47.935Z",
+        "mtime": "2026-04-08T13:00:38.950Z",
         "className": "tests",
         "methods": [
           "TestEntry",
@@ -5321,7 +3451,7 @@
         "file": "src/presets/cakephp2/data/views.js",
         "hash": "546d262f56786ff63a92b9bf5ab757a5",
         "lines": 326,
-        "mtime": "2026-03-26T03:13:47.935Z",
+        "mtime": "2026-04-08T13:00:38.950Z",
         "className": "views",
         "methods": [
           "ViewEntry",
@@ -5358,7 +3488,7 @@
         "file": "src/presets/cakephp2/tests/acceptance/test.js",
         "hash": "5511634911bd6310b2aa9b2ce4caa93e",
         "lines": 6,
-        "mtime": "2026-03-26T03:13:47.936Z",
+        "mtime": "2026-04-08T13:00:38.951Z",
         "className": "test",
         "methods": [],
         "imports": [
@@ -5373,7 +3503,7 @@
         "file": "src/presets/cakephp2/tests/unit/analyzers-assets-config.test.js",
         "hash": "150d529e8600dd97734b248396ff62d2",
         "lines": 275,
-        "mtime": "2026-03-26T03:13:47.936Z",
+        "mtime": "2026-04-08T13:00:38.951Z",
         "className": "analyzers-assets-config.test",
         "methods": [],
         "imports": [
@@ -5392,7 +3522,7 @@
         "file": "src/presets/cakephp2/tests/unit/analyzers-models-business.test.js",
         "hash": "33eae88cf2cb404324b1dd9a65e33d7e",
         "lines": 467,
-        "mtime": "2026-03-26T03:13:47.936Z",
+        "mtime": "2026-04-08T13:00:38.951Z",
         "className": "analyzers-models-business.test",
         "methods": [],
         "imports": [
@@ -5413,7 +3543,7 @@
         "file": "src/presets/cakephp2/tests/unit/analyzers-security.test.js",
         "hash": "640dc0bfbf3cb832ced07b96bbf02c7a",
         "lines": 137,
-        "mtime": "2026-03-26T03:13:47.936Z",
+        "mtime": "2026-04-08T13:00:38.951Z",
         "className": "analyzers-security.test",
         "methods": [],
         "imports": [
@@ -5431,7 +3561,7 @@
         "file": "src/presets/cakephp2/tests/unit/analyzers-views-commands.test.js",
         "hash": "730ea38f882aee0ee1e34036439a7e7f",
         "lines": 529,
-        "mtime": "2026-03-26T03:13:47.936Z",
+        "mtime": "2026-04-08T13:00:38.952Z",
         "className": "analyzers-views-commands.test",
         "methods": [],
         "imports": [
@@ -5452,7 +3582,7 @@
         "file": "src/presets/cakephp2/tests/unit/commands-match.test.js",
         "hash": "923c185ee8bd3480adcebe83c58e76dc",
         "lines": 50,
-        "mtime": "2026-03-26T03:13:47.936Z",
+        "mtime": "2026-04-08T13:00:38.952Z",
         "className": "commands-match.test",
         "methods": [],
         "imports": [
@@ -5469,7 +3599,7 @@
         "file": "src/presets/cli/data/commands.js",
         "hash": "87ee1c801c33efa2e58ef0d3f13e2928",
         "lines": 53,
-        "mtime": "2026-03-26T03:13:47.936Z",
+        "mtime": "2026-04-08T13:00:38.952Z",
         "className": "commands",
         "methods": [
           "cliItems"
@@ -5488,7 +3618,7 @@
         "file": "src/presets/cli/data/modules.js",
         "hash": "7d725e75d5031be445119323e4947c91",
         "lines": 65,
-        "mtime": "2026-03-31T12:57:20.420Z",
+        "mtime": "2026-04-08T13:00:38.952Z",
         "className": "modules",
         "methods": [
           "ModuleEntry"
@@ -5513,7 +3643,7 @@
         "file": "src/presets/cli/tests/acceptance/fixtures/src/cli.js",
         "hash": "32ab28459ccdf40c284588cce876b58e",
         "lines": 68,
-        "mtime": "2026-03-26T03:13:47.937Z",
+        "mtime": "2026-04-08T13:00:38.953Z",
         "className": "cli",
         "methods": [
           "run",
@@ -5534,9 +3664,8 @@
         "usedBy": [
           "src/lib/flow-state.js",
           "src/lib/i18n.js",
-          "src/lib/skills.js",
-          "src/lib/agent-log.js",
-          "src/lib/log.js"
+          "src/lib/log.js",
+          "src/lib/skills.js"
         ],
         "id": "1c8c8717"
       },
@@ -5544,7 +3673,7 @@
         "file": "src/presets/cli/tests/acceptance/fixtures/src/commands/format.js",
         "hash": "3dfaca1eef0d2779b105d362cdad00c9",
         "lines": 80,
-        "mtime": "2026-03-26T03:13:47.937Z",
+        "mtime": "2026-04-08T13:00:38.953Z",
         "className": "format",
         "methods": [
           "format",
@@ -5572,7 +3701,7 @@
         "file": "src/presets/cli/tests/acceptance/fixtures/src/commands/lint.js",
         "hash": "145d10341623c27338a1c653161553fd",
         "lines": 96,
-        "mtime": "2026-03-26T03:13:47.937Z",
+        "mtime": "2026-04-08T13:00:38.953Z",
         "className": "lint",
         "methods": [
           "lint",
@@ -5601,7 +3730,7 @@
         "file": "src/presets/cli/tests/acceptance/fixtures/src/commands/parse.js",
         "hash": "1fb6dc26cab932fa41942b920a3b50d2",
         "lines": 53,
-        "mtime": "2026-03-26T03:13:47.937Z",
+        "mtime": "2026-04-08T13:00:38.953Z",
         "className": "parse",
         "methods": [
           "parse",
@@ -5626,7 +3755,7 @@
         "file": "src/presets/cli/tests/acceptance/fixtures/src/commands/toc.js",
         "hash": "07763ea2701588b413e0bc48f2b23389",
         "lines": 83,
-        "mtime": "2026-03-26T03:13:47.937Z",
+        "mtime": "2026-04-08T13:00:38.953Z",
         "className": "toc",
         "methods": [
           "toc",
@@ -5652,7 +3781,7 @@
         "file": "src/presets/cli/tests/acceptance/fixtures/src/config.js",
         "hash": "9d1b90e3e3c920aa5a46762977b4c123",
         "lines": 29,
-        "mtime": "2026-03-26T03:13:47.937Z",
+        "mtime": "2026-04-08T13:00:38.953Z",
         "className": "config",
         "methods": [
           "loadConfig"
@@ -5680,7 +3809,7 @@
         "file": "src/presets/cli/tests/acceptance/fixtures/src/lib/parser.js",
         "hash": "44ccf6c9369b9823de45bd5a466efa4d",
         "lines": 102,
-        "mtime": "2026-03-26T03:13:47.937Z",
+        "mtime": "2026-04-08T13:00:38.953Z",
         "className": "parser",
         "methods": [
           "Parser"
@@ -5703,7 +3832,7 @@
         "file": "src/presets/cli/tests/acceptance/fixtures/src/lib/renderer.js",
         "hash": "037c24d0f6448ba56f343ccce381d841",
         "lines": 113,
-        "mtime": "2026-03-26T03:13:47.937Z",
+        "mtime": "2026-04-08T13:00:38.953Z",
         "className": "renderer",
         "methods": [
           "Renderer"
@@ -5720,7 +3849,7 @@
         "file": "src/presets/cli/tests/acceptance/fixtures/src/lib/rules/code-block.js",
         "hash": "2357927b59351afc0cef8198a91f31c6",
         "lines": 29,
-        "mtime": "2026-03-26T03:13:47.937Z",
+        "mtime": "2026-04-08T13:00:38.953Z",
         "className": "code-block",
         "methods": [
           "matchCodeBlock"
@@ -5741,7 +3870,7 @@
         "file": "src/presets/cli/tests/acceptance/fixtures/src/lib/rules/heading.js",
         "hash": "030df2b7cfcde432f885ff04ff86761c",
         "lines": 16,
-        "mtime": "2026-03-26T03:13:47.937Z",
+        "mtime": "2026-04-08T13:00:38.953Z",
         "className": "heading",
         "methods": [
           "matchHeading"
@@ -5762,7 +3891,7 @@
         "file": "src/presets/cli/tests/acceptance/fixtures/src/lib/rules/link.js",
         "hash": "6968387a0366d4ae64c601cd40704806",
         "lines": 22,
-        "mtime": "2026-03-26T03:13:47.937Z",
+        "mtime": "2026-04-08T13:00:38.953Z",
         "className": "link",
         "methods": [
           "matchLink"
@@ -5783,7 +3912,7 @@
         "file": "src/presets/cli/tests/acceptance/fixtures/src/lib/rules/list.js",
         "hash": "6715d30d2bb8cb58463a28844f94f203",
         "lines": 32,
-        "mtime": "2026-03-26T03:13:47.937Z",
+        "mtime": "2026-04-08T13:00:38.953Z",
         "className": "list",
         "methods": [
           "matchList"
@@ -5804,7 +3933,7 @@
         "file": "src/presets/cli/tests/acceptance/fixtures/src/lib/tokenizer.js",
         "hash": "a04e7a69936b04131982cbad58fd14a1",
         "lines": 114,
-        "mtime": "2026-03-26T03:13:47.937Z",
+        "mtime": "2026-04-08T13:00:38.953Z",
         "className": "tokenizer",
         "methods": [
           "Tokenizer"
@@ -5825,7 +3954,7 @@
         "file": "src/presets/cli/tests/acceptance/test.js",
         "hash": "eb0cbf12f5910ba09c682000536a21fa",
         "lines": 7,
-        "mtime": "2026-03-26T03:13:47.937Z",
+        "mtime": "2026-04-08T13:00:38.953Z",
         "className": "test",
         "methods": [],
         "imports": [
@@ -5840,7 +3969,7 @@
         "file": "src/presets/database/data/schema.js",
         "hash": "5287e8750b6d874dcd0c761098fbc3fa",
         "lines": 39,
-        "mtime": "2026-03-26T03:13:47.937Z",
+        "mtime": "2026-04-08T13:00:38.953Z",
         "className": "schema",
         "methods": [],
         "imports": [
@@ -5857,7 +3986,7 @@
         "file": "src/presets/drizzle/data/schema.js",
         "hash": "6f946d4091ca94c86056a3ab511486c6",
         "lines": 232,
-        "mtime": "2026-03-26T03:13:47.937Z",
+        "mtime": "2026-04-08T13:00:38.954Z",
         "className": "schema",
         "methods": [
           "DrizzleSchemaEntry",
@@ -5887,7 +4016,7 @@
         "file": "src/presets/drizzle/tests/unit/analyzers.test.js",
         "hash": "e7274551756c1ec8a1048532a6e958f4",
         "lines": 223,
-        "mtime": "2026-03-26T03:13:47.937Z",
+        "mtime": "2026-04-08T13:00:38.954Z",
         "className": "analyzers.test",
         "methods": [],
         "imports": [
@@ -5924,7 +4053,7 @@
         "file": "src/presets/edge/data/runtime.js",
         "hash": "1413afc9b41d7afed82631fb33ad1b68",
         "lines": 107,
-        "mtime": "2026-03-26T03:13:47.937Z",
+        "mtime": "2026-04-08T13:00:38.954Z",
         "className": "runtime",
         "methods": [
           "EdgeRuntimeEntry"
@@ -5949,7 +4078,7 @@
         "file": "src/presets/github-actions/data/pipelines.js",
         "hash": "efc31aa6776ec117982cd944ca1a1d04",
         "lines": 362,
-        "mtime": "2026-04-04T08:34:56.689Z",
+        "mtime": "2026-04-08T13:00:38.954Z",
         "className": "pipelines",
         "methods": [
           "parseWorkflow",
@@ -5978,7 +4107,7 @@
         "file": "src/presets/graphql/data/schema.js",
         "hash": "d6db0255b86d610e46d68f85ba996a17",
         "lines": 199,
-        "mtime": "2026-03-26T03:13:47.938Z",
+        "mtime": "2026-04-08T13:00:38.955Z",
         "className": "schema",
         "methods": [
           "parseSchemaContent",
@@ -6006,7 +4135,7 @@
         "file": "src/presets/graphql/tests/unit/analyzers.test.js",
         "hash": "56d31d77418b6367d4f7e7c321911ba7",
         "lines": 274,
-        "mtime": "2026-03-26T03:13:47.938Z",
+        "mtime": "2026-04-08T13:00:38.955Z",
         "className": "analyzers.test",
         "methods": [],
         "imports": [
@@ -6024,7 +4153,7 @@
         "file": "src/presets/hono/data/middleware.js",
         "hash": "e9ce29204f895fa317f6d697ebbee9bd",
         "lines": 138,
-        "mtime": "2026-03-26T03:13:47.938Z",
+        "mtime": "2026-04-08T13:00:38.955Z",
         "className": "middleware",
         "methods": [
           "MiddlewareEntry",
@@ -6049,7 +4178,7 @@
         "file": "src/presets/hono/tests/unit/analyzers.test.js",
         "hash": "5da2db18c1cc0e025166db95049ee686",
         "lines": 146,
-        "mtime": "2026-03-26T03:13:47.938Z",
+        "mtime": "2026-04-08T13:00:38.955Z",
         "className": "analyzers.test",
         "methods": [],
         "imports": [
@@ -6080,7 +4209,7 @@
         "file": "src/presets/js-webapp/tests/acceptance/fixtures/src/config.js",
         "hash": "569289ed2afa967167a1d3bb421fc88d",
         "lines": 56,
-        "mtime": "2026-03-26T03:13:47.938Z",
+        "mtime": "2026-04-08T13:00:38.956Z",
         "className": "config",
         "methods": [
           "loadConfig",
@@ -6110,7 +4239,7 @@
         "file": "src/presets/js-webapp/tests/acceptance/fixtures/src/http-client.js",
         "hash": "cf2e199e931686b890c56a235b99bd59",
         "lines": 89,
-        "mtime": "2026-03-26T03:13:47.938Z",
+        "mtime": "2026-04-08T13:00:38.956Z",
         "className": "http-client",
         "methods": [
           "HttpClient"
@@ -6133,7 +4262,7 @@
         "file": "src/presets/js-webapp/tests/acceptance/fixtures/src/index.js",
         "hash": "994993300bf63cd748746fee7be84457",
         "lines": 52,
-        "mtime": "2026-03-26T03:13:47.938Z",
+        "mtime": "2026-04-08T13:00:38.956Z",
         "className": "index",
         "methods": [
           "main",
@@ -6156,7 +4285,7 @@
         "file": "src/presets/js-webapp/tests/acceptance/fixtures/src/logger.js",
         "hash": "f78538b465784021bdb33616d7a8da31",
         "lines": 44,
-        "mtime": "2026-03-26T03:13:47.938Z",
+        "mtime": "2026-04-08T13:00:38.956Z",
         "className": "logger",
         "methods": [
           "createLogger",
@@ -6178,7 +4307,7 @@
         "file": "src/presets/js-webapp/tests/acceptance/test.js",
         "hash": "53e30a4177ff34a03be9697720a6bf1a",
         "lines": 6,
-        "mtime": "2026-03-26T03:13:47.938Z",
+        "mtime": "2026-04-08T13:00:38.956Z",
         "className": "test",
         "methods": [],
         "imports": [
@@ -6193,7 +4322,7 @@
         "file": "src/presets/laravel/data/commands.js",
         "hash": "2348251274aea565cec53cb8f63f42dd",
         "lines": 22,
-        "mtime": "2026-03-26T03:13:47.938Z",
+        "mtime": "2026-04-08T13:00:38.956Z",
         "className": "commands",
         "methods": [],
         "imports": [
@@ -6211,7 +4340,7 @@
         "file": "src/presets/laravel/data/config.js",
         "hash": "b13e6355fc123ec9113ef173d61ebbbd",
         "lines": 336,
-        "mtime": "2026-03-26T03:13:47.938Z",
+        "mtime": "2026-04-08T13:00:38.956Z",
         "className": "config",
         "methods": [
           "ConfigEntry",
@@ -6249,7 +4378,7 @@
         "file": "src/presets/laravel/data/controllers.js",
         "hash": "552c46196274503f963f51fac41e5b25",
         "lines": 177,
-        "mtime": "2026-04-04T14:27:36.605Z",
+        "mtime": "2026-04-08T13:00:38.956Z",
         "className": "controllers",
         "methods": [
           "LaravelControllerEntry",
@@ -6276,7 +4405,7 @@
         "file": "src/presets/laravel/data/models.js",
         "hash": "24787216db282f7e8d4a1ae02d162c70",
         "lines": 268,
-        "mtime": "2026-04-04T14:27:36.605Z",
+        "mtime": "2026-04-08T13:00:38.956Z",
         "className": "models",
         "methods": [
           "LaravelModelEntry",
@@ -6306,7 +4435,7 @@
         "file": "src/presets/laravel/data/routes.js",
         "hash": "bc5fce7121b2304d9cf133746cc0ba17",
         "lines": 270,
-        "mtime": "2026-03-26T03:13:47.939Z",
+        "mtime": "2026-04-08T13:00:38.956Z",
         "className": "routes",
         "methods": [
           "LaravelRouteEntry",
@@ -6340,7 +4469,7 @@
         "file": "src/presets/laravel/data/tables.js",
         "hash": "b937a366376707ef22e798aee513e501",
         "lines": 306,
-        "mtime": "2026-03-26T03:13:47.939Z",
+        "mtime": "2026-04-08T13:00:38.957Z",
         "className": "tables",
         "methods": [
           "MigrationEntry",
@@ -6368,7 +4497,7 @@
         "file": "src/presets/laravel/tests/acceptance/test.js",
         "hash": "21b7f788a796e089ba88cabdfb765132",
         "lines": 6,
-        "mtime": "2026-03-26T03:13:47.940Z",
+        "mtime": "2026-04-08T13:00:38.958Z",
         "className": "test",
         "methods": [],
         "imports": [
@@ -6383,7 +4512,7 @@
         "file": "src/presets/laravel/tests/e2e/integration.test.js",
         "hash": "bde167890ef6595a69cff7c3f94114fc",
         "lines": 120,
-        "mtime": "2026-04-08T12:40:33.805Z",
+        "mtime": "2026-04-08T13:00:38.958Z",
         "className": "integration.test",
         "methods": [],
         "imports": [
@@ -6402,7 +4531,7 @@
         "file": "src/presets/laravel/tests/e2e/scan.test.js",
         "hash": "424a35f6032c38731473ab4a88261d1d",
         "lines": 36,
-        "mtime": "2026-03-22T15:41:29.264Z",
+        "mtime": "2026-04-08T13:00:38.958Z",
         "className": "scan.test",
         "methods": [],
         "imports": [
@@ -6421,7 +4550,7 @@
         "file": "src/presets/laravel/tests/unit/analyzers.test.js",
         "hash": "c5d69686ba10b75a29c32fd957bc6578",
         "lines": 291,
-        "mtime": "2026-03-26T03:13:47.940Z",
+        "mtime": "2026-04-08T13:00:38.958Z",
         "className": "analyzers.test",
         "methods": [],
         "imports": [
@@ -6443,7 +4572,7 @@
         "file": "src/presets/laravel/tests/unit/commands-match.test.js",
         "hash": "0ece17dcf923c9e829e09fa669237e8e",
         "lines": 50,
-        "mtime": "2026-03-26T03:13:47.940Z",
+        "mtime": "2026-04-08T13:00:38.958Z",
         "className": "commands-match.test",
         "methods": [],
         "imports": [
@@ -6460,7 +4589,7 @@
         "file": "src/presets/laravel/tests/unit/scan-parser-bugs.test.js",
         "hash": "67a23f577ee79a361c8c8f9c17fd94d2",
         "lines": 191,
-        "mtime": "2026-03-26T03:13:47.940Z",
+        "mtime": "2026-04-08T13:00:38.958Z",
         "className": "scan-parser-bugs.test",
         "methods": [],
         "imports": [
@@ -6481,7 +4610,7 @@
         "file": "src/presets/lib/composer-utils.js",
         "hash": "00309987ad54ebf5985f87d2395c0f85",
         "lines": 62,
-        "mtime": "2026-03-07T12:21:11.955Z",
+        "mtime": "2026-04-08T13:00:38.958Z",
         "className": "composer-utils",
         "methods": [
           "parseComposer",
@@ -6503,7 +4632,7 @@
         "file": "src/presets/library/tests/acceptance/fixtures/src/index.js",
         "hash": "00fcb14b25f82a75f8eaed29420569bb",
         "lines": 28,
-        "mtime": "2026-03-26T03:13:47.940Z",
+        "mtime": "2026-04-08T13:00:38.959Z",
         "className": "index",
         "methods": [
           "parse",
@@ -6525,7 +4654,7 @@
         "file": "src/presets/library/tests/acceptance/fixtures/src/parser.js",
         "hash": "c4d964527792897b4f1cc03609c44e44",
         "lines": 112,
-        "mtime": "2026-03-26T03:13:47.940Z",
+        "mtime": "2026-04-08T13:00:38.959Z",
         "className": "parser",
         "methods": [
           "Parser"
@@ -6550,7 +4679,7 @@
         "file": "src/presets/library/tests/acceptance/fixtures/src/renderer.js",
         "hash": "e619f1c072cb8c83208c74377637bc3d",
         "lines": 91,
-        "mtime": "2026-03-26T03:13:47.940Z",
+        "mtime": "2026-04-08T13:00:38.959Z",
         "className": "renderer",
         "methods": [
           "Renderer"
@@ -6569,7 +4698,7 @@
         "file": "src/presets/library/tests/acceptance/fixtures/src/rules/code-block.js",
         "hash": "6467d0dd746613b7a406ba39825f2cc8",
         "lines": 27,
-        "mtime": "2026-03-26T03:13:47.940Z",
+        "mtime": "2026-04-08T13:00:38.959Z",
         "className": "code-block",
         "methods": [
           "CodeBlockRule"
@@ -6590,7 +4719,7 @@
         "file": "src/presets/library/tests/acceptance/fixtures/src/rules/emphasis.js",
         "hash": "08f4964d13e3dd71003bf2732b21b89e",
         "lines": 52,
-        "mtime": "2026-03-26T03:13:47.940Z",
+        "mtime": "2026-04-08T13:00:38.959Z",
         "className": "emphasis",
         "methods": [
           "EmphasisRule"
@@ -6609,7 +4738,7 @@
         "file": "src/presets/library/tests/acceptance/fixtures/src/rules/heading.js",
         "hash": "815a9e56767e6dfd29b4bc926d6e1fdc",
         "lines": 27,
-        "mtime": "2026-03-26T03:13:47.940Z",
+        "mtime": "2026-04-08T13:00:38.959Z",
         "className": "heading",
         "methods": [
           "HeadingRule"
@@ -6630,7 +4759,7 @@
         "file": "src/presets/library/tests/acceptance/fixtures/src/rules/link.js",
         "hash": "e946b4d0056da623bf9dca2ef7fcb876",
         "lines": 37,
-        "mtime": "2026-03-26T03:13:47.940Z",
+        "mtime": "2026-04-08T13:00:38.959Z",
         "className": "link",
         "methods": [
           "LinkRule"
@@ -6651,7 +4780,7 @@
         "file": "src/presets/library/tests/acceptance/fixtures/src/rules/list.js",
         "hash": "2d9663261cb0be1c9d5c922550aaac0d",
         "lines": 30,
-        "mtime": "2026-03-26T03:13:47.940Z",
+        "mtime": "2026-04-08T13:00:38.959Z",
         "className": "list",
         "methods": [
           "ListRule"
@@ -6672,7 +4801,7 @@
         "file": "src/presets/library/tests/acceptance/fixtures/src/rules/table.js",
         "hash": "4d7cee76d4df17152ed39bc25c8e2608",
         "lines": 48,
-        "mtime": "2026-03-26T03:13:47.940Z",
+        "mtime": "2026-04-08T13:00:38.959Z",
         "className": "table",
         "methods": [
           "TableRule"
@@ -6691,7 +4820,7 @@
         "file": "src/presets/library/tests/acceptance/fixtures/src/tokenizer.js",
         "hash": "ad42ffc5335cd1aa2348142343ab0b0e",
         "lines": 118,
-        "mtime": "2026-03-26T03:13:47.940Z",
+        "mtime": "2026-04-08T13:00:38.959Z",
         "className": "tokenizer",
         "methods": [
           "Tokenizer"
@@ -6712,7 +4841,7 @@
         "file": "src/presets/library/tests/acceptance/fixtures/src/utils/escape.js",
         "hash": "fdff48f0fee5dd38acee183bdbc45a03",
         "lines": 20,
-        "mtime": "2026-03-26T03:13:47.941Z",
+        "mtime": "2026-04-08T13:00:38.959Z",
         "className": "escape",
         "methods": [
           "escapeHtml"
@@ -6731,7 +4860,7 @@
         "file": "src/presets/library/tests/acceptance/fixtures/src/utils/normalize.js",
         "hash": "b1c09d8b99b364ca2cb3d189d6b513cb",
         "lines": 11,
-        "mtime": "2026-03-26T03:13:47.941Z",
+        "mtime": "2026-04-08T13:00:38.959Z",
         "className": "normalize",
         "methods": [
           "normalizeWhitespace"
@@ -6748,7 +4877,7 @@
         "file": "src/presets/library/tests/acceptance/test.js",
         "hash": "64a0ddd2b362b917d654a406c75862b5",
         "lines": 6,
-        "mtime": "2026-03-26T03:13:47.941Z",
+        "mtime": "2026-04-08T13:00:38.959Z",
         "className": "test",
         "methods": [],
         "imports": [
@@ -6763,7 +4892,7 @@
         "file": "src/presets/monorepo/data/monorepo.js",
         "hash": "d7b83f107af00f27c54db9497fd7fc35",
         "lines": 80,
-        "mtime": "2026-03-31T12:57:20.420Z",
+        "mtime": "2026-04-08T13:00:38.959Z",
         "className": "monorepo",
         "methods": [],
         "imports": [
@@ -6783,7 +4912,7 @@
         "file": "src/presets/nextjs/data/components.js",
         "hash": "77db394f6f70eab924170c6c9e25ff26",
         "lines": 140,
-        "mtime": "2026-03-26T03:13:47.941Z",
+        "mtime": "2026-04-08T13:00:38.959Z",
         "className": "components",
         "methods": [
           "ComponentEntry",
@@ -6812,7 +4941,7 @@
         "file": "src/presets/nextjs/data/routes.js",
         "hash": "9772104c7ec36447050e3c0b79837894",
         "lines": 326,
-        "mtime": "2026-03-26T03:13:47.941Z",
+        "mtime": "2026-04-08T13:00:38.959Z",
         "className": "routes",
         "methods": [
           "NextjsRouteEntry",
@@ -6845,7 +4974,7 @@
         "file": "src/presets/nextjs/tests/unit/analyzers.test.js",
         "hash": "add5feb84f3c6e827e951a22146eb67e",
         "lines": 262,
-        "mtime": "2026-03-26T03:13:47.941Z",
+        "mtime": "2026-04-08T13:00:38.960Z",
         "className": "analyzers.test",
         "methods": [
           "GET",
@@ -6878,7 +5007,7 @@
         "file": "src/presets/node-cli/tests/acceptance/fixtures/src/cli.js",
         "hash": "32ab28459ccdf40c284588cce876b58e",
         "lines": 68,
-        "mtime": "2026-03-26T03:13:47.941Z",
+        "mtime": "2026-04-08T13:00:38.961Z",
         "className": "cli",
         "methods": [
           "run",
@@ -6899,9 +5028,8 @@
         "usedBy": [
           "src/lib/flow-state.js",
           "src/lib/i18n.js",
-          "src/lib/skills.js",
-          "src/lib/agent-log.js",
-          "src/lib/log.js"
+          "src/lib/log.js",
+          "src/lib/skills.js"
         ],
         "id": "0c4cfb73"
       },
@@ -6909,7 +5037,7 @@
         "file": "src/presets/node-cli/tests/acceptance/fixtures/src/commands/format.js",
         "hash": "3dfaca1eef0d2779b105d362cdad00c9",
         "lines": 80,
-        "mtime": "2026-03-26T03:13:47.941Z",
+        "mtime": "2026-04-08T13:00:38.961Z",
         "className": "format",
         "methods": [
           "format",
@@ -6937,7 +5065,7 @@
         "file": "src/presets/node-cli/tests/acceptance/fixtures/src/commands/lint.js",
         "hash": "145d10341623c27338a1c653161553fd",
         "lines": 96,
-        "mtime": "2026-03-26T03:13:47.941Z",
+        "mtime": "2026-04-08T13:00:38.961Z",
         "className": "lint",
         "methods": [
           "lint",
@@ -6966,7 +5094,7 @@
         "file": "src/presets/node-cli/tests/acceptance/fixtures/src/commands/parse.js",
         "hash": "1fb6dc26cab932fa41942b920a3b50d2",
         "lines": 53,
-        "mtime": "2026-03-26T03:13:47.941Z",
+        "mtime": "2026-04-08T13:00:38.961Z",
         "className": "parse",
         "methods": [
           "parse",
@@ -6991,7 +5119,7 @@
         "file": "src/presets/node-cli/tests/acceptance/fixtures/src/commands/toc.js",
         "hash": "07763ea2701588b413e0bc48f2b23389",
         "lines": 83,
-        "mtime": "2026-03-26T03:13:47.941Z",
+        "mtime": "2026-04-08T13:00:38.961Z",
         "className": "toc",
         "methods": [
           "toc",
@@ -7017,7 +5145,7 @@
         "file": "src/presets/node-cli/tests/acceptance/fixtures/src/config.js",
         "hash": "9d1b90e3e3c920aa5a46762977b4c123",
         "lines": 29,
-        "mtime": "2026-03-26T03:13:47.941Z",
+        "mtime": "2026-04-08T13:00:38.961Z",
         "className": "config",
         "methods": [
           "loadConfig"
@@ -7045,7 +5173,7 @@
         "file": "src/presets/node-cli/tests/acceptance/fixtures/src/lib/parser.js",
         "hash": "44ccf6c9369b9823de45bd5a466efa4d",
         "lines": 102,
-        "mtime": "2026-03-26T03:13:47.941Z",
+        "mtime": "2026-04-08T13:00:38.961Z",
         "className": "parser",
         "methods": [
           "Parser"
@@ -7068,7 +5196,7 @@
         "file": "src/presets/node-cli/tests/acceptance/fixtures/src/lib/renderer.js",
         "hash": "037c24d0f6448ba56f343ccce381d841",
         "lines": 113,
-        "mtime": "2026-03-26T03:13:47.941Z",
+        "mtime": "2026-04-08T13:00:38.961Z",
         "className": "renderer",
         "methods": [
           "Renderer"
@@ -7085,7 +5213,7 @@
         "file": "src/presets/node-cli/tests/acceptance/fixtures/src/lib/rules/code-block.js",
         "hash": "2357927b59351afc0cef8198a91f31c6",
         "lines": 29,
-        "mtime": "2026-03-26T03:13:47.942Z",
+        "mtime": "2026-04-08T13:00:38.961Z",
         "className": "code-block",
         "methods": [
           "matchCodeBlock"
@@ -7106,7 +5234,7 @@
         "file": "src/presets/node-cli/tests/acceptance/fixtures/src/lib/rules/heading.js",
         "hash": "030df2b7cfcde432f885ff04ff86761c",
         "lines": 16,
-        "mtime": "2026-03-26T03:13:47.942Z",
+        "mtime": "2026-04-08T13:00:38.961Z",
         "className": "heading",
         "methods": [
           "matchHeading"
@@ -7127,7 +5255,7 @@
         "file": "src/presets/node-cli/tests/acceptance/fixtures/src/lib/rules/link.js",
         "hash": "6968387a0366d4ae64c601cd40704806",
         "lines": 22,
-        "mtime": "2026-03-26T03:13:47.942Z",
+        "mtime": "2026-04-08T13:00:38.961Z",
         "className": "link",
         "methods": [
           "matchLink"
@@ -7148,7 +5276,7 @@
         "file": "src/presets/node-cli/tests/acceptance/fixtures/src/lib/rules/list.js",
         "hash": "6715d30d2bb8cb58463a28844f94f203",
         "lines": 32,
-        "mtime": "2026-03-26T03:13:47.942Z",
+        "mtime": "2026-04-08T13:00:38.961Z",
         "className": "list",
         "methods": [
           "matchList"
@@ -7169,7 +5297,7 @@
         "file": "src/presets/node-cli/tests/acceptance/fixtures/src/lib/tokenizer.js",
         "hash": "a04e7a69936b04131982cbad58fd14a1",
         "lines": 114,
-        "mtime": "2026-03-26T03:13:47.942Z",
+        "mtime": "2026-04-08T13:00:38.961Z",
         "className": "tokenizer",
         "methods": [
           "Tokenizer"
@@ -7190,7 +5318,7 @@
         "file": "src/presets/node-cli/tests/acceptance/test.js",
         "hash": "357d56874fddffd7306b3c1de7d81784",
         "lines": 6,
-        "mtime": "2026-03-26T03:13:47.942Z",
+        "mtime": "2026-04-08T13:00:38.961Z",
         "className": "test",
         "methods": [],
         "imports": [
@@ -7205,7 +5333,7 @@
         "file": "src/presets/php-webapp/tests/acceptance/test.js",
         "hash": "fce3498d16f6c7d44c8bef51d6d3ea09",
         "lines": 6,
-        "mtime": "2026-03-26T03:13:47.942Z",
+        "mtime": "2026-04-08T13:00:38.962Z",
         "className": "test",
         "methods": [],
         "imports": [
@@ -7220,7 +5348,7 @@
         "file": "src/presets/postgres/data/database.js",
         "hash": "40654dc56f02f0e3be72ffb8b03539e8",
         "lines": 20,
-        "mtime": "2026-03-20T03:07:17.818Z",
+        "mtime": "2026-04-08T13:00:38.962Z",
         "className": "database",
         "methods": [],
         "imports": [
@@ -7237,7 +5365,7 @@
         "file": "src/presets/r2/data/storage.js",
         "hash": "92593a17f5e6e393cc3ce914a01bd44a",
         "lines": 79,
-        "mtime": "2026-03-26T03:13:47.942Z",
+        "mtime": "2026-04-08T13:00:38.962Z",
         "className": "storage",
         "methods": [
           "StorageEntry"
@@ -7262,7 +5390,7 @@
         "file": "src/presets/storage/data/buckets.js",
         "hash": "1da17691712f251f3ca8e4829599d5e1",
         "lines": 24,
-        "mtime": "2026-03-26T03:13:47.942Z",
+        "mtime": "2026-04-08T13:00:38.963Z",
         "className": "buckets",
         "methods": [],
         "imports": [
@@ -7279,7 +5407,7 @@
         "file": "src/presets/symfony/data/commands.js",
         "hash": "48994b6472a58df9043a4fa54a0ac1be",
         "lines": 42,
-        "mtime": "2026-03-26T03:13:47.942Z",
+        "mtime": "2026-04-08T13:00:38.963Z",
         "className": "commands",
         "methods": [],
         "imports": [
@@ -7298,7 +5426,7 @@
         "file": "src/presets/symfony/data/config.js",
         "hash": "bad18ca08c4a5757ce871b7ddf122736",
         "lines": 273,
-        "mtime": "2026-03-26T03:13:47.942Z",
+        "mtime": "2026-04-08T13:00:38.963Z",
         "className": "config",
         "methods": [
           "SymfonyConfigEntry",
@@ -7334,7 +5462,7 @@
         "file": "src/presets/symfony/data/controllers.js",
         "hash": "8b8480be119d7cb2ce141c240d026dcd",
         "lines": 215,
-        "mtime": "2026-04-04T14:27:36.605Z",
+        "mtime": "2026-04-08T13:00:38.963Z",
         "className": "controllers",
         "methods": [
           "analyzeControllers",
@@ -7360,7 +5488,7 @@
         "file": "src/presets/symfony/data/entities.js",
         "hash": "8da644bf2abadbcd05b3ce704e309654",
         "lines": 233,
-        "mtime": "2026-04-04T14:27:36.605Z",
+        "mtime": "2026-04-08T13:00:38.963Z",
         "className": "entities",
         "methods": [
           "EntityEntry",
@@ -7390,7 +5518,7 @@
         "file": "src/presets/symfony/data/routes.js",
         "hash": "56dc8da83bc607931cf75f3feffc1c80",
         "lines": 333,
-        "mtime": "2026-03-26T03:13:47.943Z",
+        "mtime": "2026-04-08T13:00:38.963Z",
         "className": "routes",
         "methods": [
           "SymfonyRouteEntry",
@@ -7421,7 +5549,7 @@
         "file": "src/presets/symfony/data/tables.js",
         "hash": "ed2654c9eed1b006fb26d4a6112cb152",
         "lines": 234,
-        "mtime": "2026-03-26T03:13:47.943Z",
+        "mtime": "2026-04-08T13:00:38.963Z",
         "className": "tables",
         "methods": [
           "MigrationEntry",
@@ -7450,7 +5578,7 @@
         "file": "src/presets/symfony/tests/acceptance/test.js",
         "hash": "2c17a505fa6998ba04615b5fbaceb51f",
         "lines": 6,
-        "mtime": "2026-03-26T03:13:47.944Z",
+        "mtime": "2026-04-08T13:00:38.964Z",
         "className": "test",
         "methods": [],
         "imports": [
@@ -7465,7 +5593,7 @@
         "file": "src/presets/symfony/tests/e2e/integration.test.js",
         "hash": "fb3644ebdcd7f70395b84582952e257d",
         "lines": 127,
-        "mtime": "2026-04-08T12:40:33.805Z",
+        "mtime": "2026-04-08T13:00:38.965Z",
         "className": "integration.test",
         "methods": [],
         "imports": [
@@ -7484,7 +5612,7 @@
         "file": "src/presets/symfony/tests/e2e/scan.test.js",
         "hash": "af11561b5f49a99dbf7e7b580a5567f2",
         "lines": 37,
-        "mtime": "2026-03-22T15:41:29.264Z",
+        "mtime": "2026-04-08T13:00:38.965Z",
         "className": "scan.test",
         "methods": [],
         "imports": [
@@ -7503,7 +5631,7 @@
         "file": "src/presets/symfony/tests/unit/analyzers.test.js",
         "hash": "8fbf21a209db1b17463e654cab8b7966",
         "lines": 441,
-        "mtime": "2026-03-26T03:13:47.944Z",
+        "mtime": "2026-04-08T13:00:38.965Z",
         "className": "analyzers.test",
         "methods": [],
         "imports": [
@@ -7525,7 +5653,7 @@
         "file": "src/presets/symfony/tests/unit/commands-match.test.js",
         "hash": "d59a89a4494a40a9f778ba73cca5ca40",
         "lines": 43,
-        "mtime": "2026-03-26T03:13:47.944Z",
+        "mtime": "2026-04-08T13:00:38.965Z",
         "className": "commands-match.test",
         "methods": [],
         "imports": [
@@ -7542,7 +5670,7 @@
         "file": "src/presets/symfony/tests/unit/regex-backtracking.test.js",
         "hash": "fb336fee698c7b03a16b164d4bdba956",
         "lines": 141,
-        "mtime": "2026-03-26T03:13:47.944Z",
+        "mtime": "2026-04-08T13:00:38.965Z",
         "className": "regex-backtracking.test",
         "methods": [],
         "imports": [
@@ -7561,7 +5689,7 @@
         "file": "src/presets/webapp/data/commands.js",
         "hash": "a730fccb2849324e1f0cb346b06d1880",
         "lines": 48,
-        "mtime": "2026-03-26T03:13:47.944Z",
+        "mtime": "2026-04-08T13:00:38.965Z",
         "className": "commands",
         "methods": [
           "CommandEntry"
@@ -7583,7 +5711,7 @@
         "file": "src/presets/webapp/data/controllers.js",
         "hash": "4d9436d0f9356a40540b1299511a8071",
         "lines": 65,
-        "mtime": "2026-03-26T03:13:47.944Z",
+        "mtime": "2026-04-08T13:00:38.965Z",
         "className": "controllers",
         "methods": [
           "ControllerEntry"
@@ -7605,7 +5733,7 @@
         "file": "src/presets/webapp/data/models.js",
         "hash": "4d2b0a450d2527bf5b4ab98f5c57d86d",
         "lines": 78,
-        "mtime": "2026-03-26T03:13:47.944Z",
+        "mtime": "2026-04-08T13:00:38.965Z",
         "className": "models",
         "methods": [
           "ModelEntry"
@@ -7627,7 +5755,7 @@
         "file": "src/presets/webapp/data/routes.js",
         "hash": "ba1c3acdf60229fd0a0b4f2ec5610070",
         "lines": 64,
-        "mtime": "2026-03-26T03:13:47.944Z",
+        "mtime": "2026-04-08T13:00:38.965Z",
         "className": "routes",
         "methods": [
           "RouteEntry"
@@ -7649,7 +5777,7 @@
         "file": "src/presets/webapp/data/tables.js",
         "hash": "8a9e047d5d34e3fdb44f7bd4c5b5fbf8",
         "lines": 52,
-        "mtime": "2026-03-26T03:13:47.944Z",
+        "mtime": "2026-04-08T13:00:38.965Z",
         "className": "tables",
         "methods": [],
         "imports": [
@@ -7666,7 +5794,7 @@
         "file": "src/presets/webapp/data/webapp-data-source.js",
         "hash": "023e9b62045e539b027b20ab27c2cfc7",
         "lines": 12,
-        "mtime": "2026-03-26T03:13:47.944Z",
+        "mtime": "2026-04-08T13:00:38.965Z",
         "className": "webapp-data-source",
         "methods": [],
         "imports": [
@@ -7691,7 +5819,7 @@
         "file": "src/presets/webapp/tests/acceptance/test.js",
         "hash": "b0619930771023b081657d3e240856e5",
         "lines": 7,
-        "mtime": "2026-03-26T03:13:47.945Z",
+        "mtime": "2026-04-08T13:00:38.966Z",
         "className": "test",
         "methods": [],
         "imports": [
@@ -7706,7 +5834,7 @@
         "file": "src/presets/workers/data/bindings.js",
         "hash": "3cbb8aaa2bd9d29ca9a832425f8c9992",
         "lines": 298,
-        "mtime": "2026-03-26T03:13:47.945Z",
+        "mtime": "2026-04-08T13:00:38.966Z",
         "className": "bindings",
         "methods": [
           "BindingsEntry",
@@ -7733,7 +5861,7 @@
         "file": "src/presets/workers/tests/unit/analyzers.test.js",
         "hash": "a61a4a02897e1f028b14011836038552",
         "lines": 374,
-        "mtime": "2026-03-26T03:13:47.945Z",
+        "mtime": "2026-04-08T13:00:38.966Z",
         "className": "analyzers.test",
         "methods": [],
         "imports": [
@@ -7751,7 +5879,7 @@
         "file": "src/sdd-forge.js",
         "hash": "146b1faac10ef5b44e7a5de2c13affcc",
         "lines": 78,
-        "mtime": "2026-04-08T09:17:33.707Z",
+        "mtime": "2026-04-08T13:00:38.966Z",
         "className": "sdd-forge",
         "methods": [],
         "imports": [
@@ -7763,33 +5891,13 @@
         "exports": [],
         "extends": null,
         "usedBy": null,
-        "id": "a8608997",
-        "summary": "Top-level CLI entry point for `sdd-forge`. Dispatches to namespace dispatchers (docs, flow, check) or independent command scripts.",
-        "detail": "Parses raw argv to extract the subcommand and delegates to namespace dispatcher scripts or standalone scripts via dynamic `await import()`. Handles `--help`/`--version` flags before dispatching. Initializes the Logger after loading config, with a deprecation warning for the old `cfg.logs.prompts` key. Uses two dispatch sets: `NAMESPACE_DISPATCHERS` for multi-level subcommand namespaces and `INDEPENDENT` for flat single-level commands. Mutates `process.argv` before importing the target script to pass arguments transparently.",
-        "chapter": "cli_commands",
-        "role": "controller",
-        "enrich": {
-          "processedAt": "2026-04-08T12:40:58.699Z",
-          "attempts": 1
-        },
-        "keywords": [
-          "sdd-forge",
-          "entry point",
-          "dispatcher",
-          "namespace",
-          "dynamic import",
-          "Logger",
-          "subcommand",
-          "INDEPENDENT",
-          "NAMESPACE_DISPATCHERS",
-          "argv"
-        ]
+        "id": "a8608997"
       },
       {
         "file": "src/setup.js",
         "hash": "e036f650f7ab259a17940c5e0323b032",
         "lines": 561,
-        "mtime": "2026-04-08T05:43:34.202Z",
+        "mtime": "2026-04-08T13:00:38.966Z",
         "className": "setup",
         "methods": [
           "ask",
@@ -7829,36 +5937,13 @@
         ],
         "extends": null,
         "usedBy": null,
-        "id": "9820c9db",
-        "summary": "Interactive setup wizard that initializes a new sdd-forge project by prompting for configuration, writing config.json, deploying skills, and generating AGENTS.md/CLAUDE.md. Handles directory scaffolding, .gitignore, .gitattributes, and symlink management.",
-        "detail": "Reads existing config defaults via loadExistingDefaults and guides the user through preset selection, language, agent provider, and docs purpose via runWizard. Creates project directory structure (ensureProjectDirs) including .sdd-forge/output, docs/, and specs/. Manages .gitignore and .gitattributes entries for generated files. Generates AGENTS.md content with SDD directives via ensureAgentConfigFile, and fixes CLAUDE.md from a regular file to a symlink via fixClaudeMdSymlink. Deploys skills via deploySkills and validates the final config with validateConfig before writing.",
-        "chapter": "cli_commands",
-        "role": "cli",
-        "enrich": {
-          "processedAt": "2026-04-08T05:43:49.846Z",
-          "attempts": 1
-        },
-        "keywords": [
-          "setup",
-          "wizard",
-          "config.json",
-          "scaffolding",
-          "AGENTS.md",
-          "CLAUDE.md",
-          "skills",
-          "preset",
-          "gitignore",
-          "gitattributes",
-          "i18n",
-          "readline",
-          "interactive"
-        ]
+        "id": "9820c9db"
       },
       {
         "file": "src/upgrade.js",
         "hash": "7bc6ce9e37d5240896e533cf826a443d",
         "lines": 127,
-        "mtime": "2026-04-07T05:37:02.070Z",
+        "mtime": "2026-04-08T13:00:38.967Z",
         "className": "upgrade",
         "methods": [
           "parseUpgradeArgs",
@@ -7879,27 +5964,7 @@
         ],
         "extends": null,
         "usedBy": null,
-        "id": "a631f658",
-        "summary": "CLI entry point for the sdd-forge upgrade command, which syncs skills and templates to the current project.",
-        "detail": "Parses CLI arguments via parseUpgradeArgs, loads the project config, and orchestrates skill deployment using deploySkills and deployProjectSkills. Also handles experimental workflow skill deployment from the experimental/workflow/templates/skills directory when enabled. Updates config.json in-place after processing. Uses EXIT_ERROR for failure exits and i18n for user-facing messages.",
-        "chapter": "cli_commands",
-        "role": "cli",
-        "enrich": {
-          "processedAt": "2026-04-07T05:37:16.296Z",
-          "attempts": 1
-        },
-        "keywords": [
-          "upgrade",
-          "CLI",
-          "deploy",
-          "skills",
-          "sync",
-          "templates",
-          "experimental",
-          "workflow",
-          "config",
-          "i18n"
-        ]
+        "id": "a631f658"
       }
     ],
     "summary": {
@@ -7907,6 +5972,5 @@
       "totalMethods": 728
     },
     "dataSourceHash": "7d725e75d5031be445119323e4947c91"
-  },
-  "enrichedAt": "2026-04-08T12:40:58.699Z"
+  }
 }

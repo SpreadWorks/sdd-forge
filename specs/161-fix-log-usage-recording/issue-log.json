@@ -1,0 +1,11 @@
+{
+  "entries": [
+    {
+      "step": "implement",
+      "reason": "scan-related tests (72,74,75,80,98) fail in npm test — pre-existing failures unrelated to log.js changes",
+      "trigger": "npm test run during impl verification",
+      "resolution": "confirmed by git diff: only src/lib/log.js was modified; scan failures are independent of this spec",
+      "timestamp": "2026-04-08T13:12:02.923Z"
+    }
+  ]
+}

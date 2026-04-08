@@ -325,6 +325,7 @@ export class Logger {
       execution: {
         durationSec: entry.durationSec ?? null,
       },
+      usage: entry.usage ?? null,
     };
 
     const promptFileAbs = await writePromptFile(promptDir, entry.requestId, promptPayload);
@@ -353,6 +354,13 @@ export class Logger {
       durationSec: entry.durationSec ?? null,
       exitCode: responseObj.exitCode ?? null,
       promptFile: promptFileRel,
+      ...(entry.usage != null && {
+        cacheReadTokens: entry.usage.cache_read_tokens,
+        cacheCreationTokens: entry.usage.cache_creation_tokens,
+        inputTokens: entry.usage.input_tokens,
+        outputTokens: entry.usage.output_tokens,
+        costUsd: entry.usage.cost_usd,
+      }),
     };
     await appendJsonl(jsonl, line);
   }

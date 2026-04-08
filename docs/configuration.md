@@ -8,7 +8,7 @@
 
 <!-- {{text({prompt: "Write a 1-2 sentence overview of this chapter. Include the types of config files, range of configurable items, and customization points."})}} -->
 
-sdd-forge reads a single JSON configuration file placed inside your project's `.sdd-forge/` directory and exposes a broad range of settings covering documentation output language, writing style, source-scanning patterns, AI agent behavior, chapter ordering, and Git flow strategy. Validation is enforced at load time, reporting all constraint violations at once so you can correct every issue in one pass.
+sdd-forge reads a single JSON configuration file per project, through which users can control documentation output languages and style, AI agent selection and execution behavior, file scanning scope, Git flow strategy, and logging. Customization spans from high-level presets and per-command agent overrides to fine-grained concurrency tuning and experimental workflow features.
 <!-- {{/text}} -->
 
 ## Content
@@ -19,8 +19,12 @@ sdd-forge reads a single JSON configuration file placed inside your project's `.
 
 | File | Location | Role |
 |------|----------|------|
-| `config.json` | `.sdd-forge/config.json` | Primary project configuration. Loaded by `loadConfig()` and fully validated by `validateConfig()` on every read. |
-| `package.json` | `<project-root>/package.json` | Read on demand by `loadPackageField()` to retrieve individual fields such as `name` or `version`. Not validated by sdd-forge. |
+| `config.json` | `.sdd-forge/config.json` | Primary project configuration. Loaded and validated at startup by `loadConfig()` in `src/lib/config.js`. Required for all documentation and flow commands. |
+| `package.json` | Project root | Read by `loadPackageField()` to retrieve optional project metadata fields, and by `getPackageVersion()` to resolve the sdd-forge version string. |
+| `analysis.json` | `.sdd-forge/output/analysis.json` | Source-code analysis data produced by `sdd-forge scan`. Loaded in command context to supply data for documentation generation. |
+| `preset.json` | `src/presets/{key}/preset.json` | Preset metadata loaded by `resolveChainSafe()` in `src/lib/presets.js`. Defines the chapter structure and DataSources for the selected preset chain. |
+| `state.json` | `.sdd-forge/flow/{spec}/state.json` | Per-spec flow state snapshot read by `src/lib/flow-state.js` during flow operations. |
+| Locale files | `src/locale/{lang}.json` | Internationalization strings loaded by `src/lib/i18n.js` based on the configured `lang` value. |
 <!-- {{/text}} -->
 
 ### Configuration Reference
@@ -29,119 +33,144 @@ sdd-forge reads a single JSON configuration file placed inside your project's `.
 
 | Field | Required | Type | Default | Description |
 |-------|----------|------|---------|-------------|
-| `lang` | Required | string | — | Language code for the generated documentation (e.g., `"en"`). |
-| `type` | Required | string \| string[] | — | Project preset identifier (e.g., `"node-cli"`, `"laravel"`). An array selects multiple presets. |
-| `docs` | Required | object | — | Top-level documentation output configuration. |
-| `docs.languages` | Required | string[] | — | Non-empty list of output language codes (e.g., `["en", "ja"]`). |
-| `docs.defaultLanguage` | Required | string | — | Default output language; must be a member of `docs.languages`. |
-| `docs.mode` | Optional | `"translate"` \| `"generate"` | `"translate"` | Controls whether secondary-language docs are produced by translation or independent generation. |
-| `docs.style` | Optional | object | — | Writing-style hints passed to the AI text generator. |
-| `docs.style.purpose` | Required if `docs.style` present | string | — | Short description of the documentation's intended audience and purpose. |
-| `docs.style.tone` | Required if `docs.style` present | `"polite"` \| `"formal"` \| `"casual"` | — | Tone applied to all generated prose. |
-| `docs.style.customInstruction` | Optional | string | — | Free-form additional instruction appended to AI generation prompts. |
-| `docs.exclude` | Optional | string[] | — | Glob patterns for source files to omit from documentation. |
-| `concurrency` | Optional | number | `5` | Maximum number of simultaneous AI requests. |
-| `chapters` | Optional | object[] | — | Per-project chapter ordering overrides. Each entry: `{ chapter: "name.md", desc?: string, exclude?: boolean }`. |
-| `agent.workDir` | Optional | string | — | Working directory used when invoking the AI agent process. |
-| `agent.timeout` | Optional | number | — | Timeout in milliseconds for a single agent call. |
-| `agent.retryCount` | Optional | number | — | Number of retry attempts on agent failure. |
-| `agent.batchTokenLimit` | Optional | number (≥ 1000) | — | Upper token limit per AI request batch. |
-| `agent.providers` | Optional | object | — | Named AI provider definitions. Each entry requires `command` (string) and `args` (array). |
-| `scan.include` | Required if `scan` present | string[] | — | Glob patterns that define which source files are scanned. |
-| `scan.exclude` | Optional | string[] | — | Glob patterns for source files excluded from scanning. |
-| `flow.merge` | Optional | `"squash"` \| `"ff-only"` \| `"merge"` | — | Git merge strategy used by flow finalization commands. |
-| `flow.push.remote` | Optional | string | — | Git remote name used when the flow pushes branches. |
-| `flow.commands.context.search.mode` | Optional | `"ngram"` \| `"ai"` | — | Strategy for context retrieval during flow execution. |
-| `commands.gh` | Optional | `"enable"` \| `"disable"` | — | Enables or disables GitHub CLI integration in flow commands. |
+| `lang` | Required | string | — | Operating language for the CLI, generated AGENTS.md, skills, and specs (e.g. `"ja"`, `"en"`). |
+| `type` | Required | string \| string[] | — | Preset name or ordered list of preset names that define the documentation template chain. |
+| `docs` | Required | object | — | Container for all documentation output settings. |
+| `docs.languages` | Required | string[] | — | Non-empty list of output language codes (e.g. `["ja"]` or `["en", "ja"]`). |
+| `docs.defaultLanguage` | Required | string | — | Default output language; must be present in `docs.languages`. |
+| `docs.style.purpose` | Required (if `docs.style` is set) | string | — | Document purpose descriptor. Built-in options: `"developer-guide"`, `"user-guide"`, `"api-reference"`. Custom strings are accepted. |
+| `docs.style.tone` | Required (if `docs.style` is set) | `"polite"` \| `"formal"` \| `"casual"` | — | Tone applied to AI-generated documentation. |
+| `name` | Optional | string | — | Project name, typically set by the setup wizard. |
+| `concurrency` | Optional | number | `5` | Maximum number of files processed in parallel during documentation generation. Must be a positive integer. |
+| `docs.mode` | Optional | `"translate"` \| `"generate"` | `"translate"` | Strategy for producing non-default language output. |
+| `docs.style.customInstruction` | Optional | string | `""` | Additional free-form instructions passed to the AI agent during documentation generation. |
+| `docs.exclude` | Optional | string[] | — | Glob patterns for documentation files to exclude from output. |
+| `scan.include` | Optional | string[] | — | Custom glob patterns that extend the default preset scanning rules. |
+| `scan.exclude` | Optional | string[] | — | Glob patterns that exclude source files from scanning. |
+| `agent.default` | Optional | string | — | Default AI agent provider key (e.g. `"claude/sonnet"`). |
+| `agent.workDir` | Optional | string | `".tmp"` | Working directory used for agent execution and log output. |
+| `agent.timeout` | Optional | number | `300` | Agent execution timeout in seconds. |
+| `agent.retryCount` | Optional | number | — | Number of retries for `docs enrich` agent calls. Must be a positive integer. |
+| `agent.batchTokenLimit` | Optional | number | — | Token limit for batch operations. Minimum value: `1000`. |
+| `agent.providers` | Optional | object | Built-in providers | Map of custom agent provider definitions. User-defined entries override built-in providers with the same key. |
+| `agent.providers.{key}.command` | Required (per provider) | string | — | Executable command for the agent (e.g. `"claude"`). |
+| `agent.providers.{key}.args` | Required (per provider) | string[] | — | Command arguments. Use `{{PROMPT}}` as a placeholder for the prompt string. |
+| `agent.providers.{key}.systemPromptFlag` | Optional | string | — | CLI flag used to pass the system prompt (e.g. `"--system-prompt"`). |
+| `agent.providers.{key}.jsonOutputFlag` | Optional | string | — | CLI flag that requests JSON output from the agent (e.g. `"--output-format json"`). |
+| `agent.providers.{key}.profiles` | Optional | object | — | Named profile configurations within the provider definition. |
+| `agent.commands` | Optional | object | — | Per-command agent and profile overrides (e.g. map `"docs.enrich"` to a specific provider/profile). |
+| `flow.merge` | Optional | `"squash"` \| `"ff-only"` \| `"merge"` | `"squash"` | Git merge strategy used by flow operations. |
+| `flow.push.remote` | Optional | string | `"origin"` | Git remote used for push operations in flow commands. |
+| `flow.commands.context.search.mode` | Optional | `"ngram"` \| `"ai"` | — | Search mode for resolving flow context. |
+| `commands.gh` | Optional | `"enable"` \| `"disable"` | `"disable"` | Controls whether GitHub CLI integration is active in flow commands. |
+| `logs.enabled` | Optional | boolean | `false` | When `true`, enables unified JSONL logging of agent activity. |
+| `logs.dir` | Optional | string | `{agent.workDir}/logs` | Directory for JSONL log files. Relative paths are resolved from the main repository root. |
+| `experimental.workflow.enable` | Optional | boolean | — | Enables experimental workflow board features. Requires `sdd-forge upgrade` after enabling. |
+| `experimental.workflow.languages.source` | Optional | string | — | Source language for the experimental workflow. |
+| `experimental.workflow.languages.publish` | Optional | string | — | Publish language for the experimental workflow. |
 <!-- {{/text}} -->
 
 ### Customization Points
 
 <!-- {{text({prompt: "Describe items that users can customize. Extract configurable items from the source code and include configuration examples for each.", mode: "deep"})}} -->
 
-**Documentation style**
+**Documentation language and style**
 
-Set `docs.style` to control how the AI writes prose across all generated chapters.
-
-```json
-"docs": {
-  "style": {
-    "purpose": "Internal reference for backend engineers",
-    "tone": "formal",
-    "customInstruction": "Prefer imperative mood and avoid passive voice."
-  }
-}
-```
-
-**Multi-language output**
-
-Define multiple languages in `docs.languages` and choose a default. Set `docs.mode` to `"generate"` to produce each language independently rather than by translation.
+Set `docs.languages` to an array of language codes to generate documentation in multiple languages. When more than one language is listed, `docs.mode` controls whether additional languages are translated from the default or generated independently. The `docs.style` block adjusts how the AI agent writes content.
 
 ```json
 "docs": {
   "languages": ["en", "ja"],
   "defaultLanguage": "en",
-  "mode": "generate"
+  "mode": "translate",
+  "style": {
+    "purpose": "user-guide",
+    "tone": "formal",
+    "customInstruction": "Always include a code example for each feature."
+  }
 }
 ```
 
-**Chapter ordering**
+**AI agent selection and per-command overrides**
 
-Override the preset's default chapter sequence or exclude chapters for the current project.
+Set `agent.default` to choose the agent used for all documentation commands. Use `agent.commands` to override the agent or profile for individual commands.
 
 ```json
-"chapters": [
-  { "chapter": "overview.md" },
-  { "chapter": "cli_commands.md" },
-  { "chapter": "configuration.md", "desc": "Project-specific config guide" },
-  { "chapter": "internal_design.md", "exclude": true }
-]
+"agent": {
+  "default": "claude/sonnet",
+  "timeout": 600,
+  "retryCount": 2,
+  "commands": {
+    "docs.enrich": { "agent": "claude/sonnet", "profile": "high-quality" },
+    "docs.text": { "agent": "claude/sonnet" }
+  }
+}
 ```
 
-**Concurrency**
+**Custom agent providers**
 
-Adjust the number of parallel AI requests to match your API rate limits.
+Define providers under `agent.providers` to integrate any CLI-based AI agent. The `{{PROMPT}}` placeholder in `args` is replaced with the actual prompt at runtime.
+
+```json
+"agent": {
+  "providers": {
+    "my-agent": {
+      "command": "my-agent-cli",
+      "args": ["--prompt", "{{PROMPT}}", "--format", "json"],
+      "jsonOutputFlag": "--format json"
+    }
+  }
+}
+```
+
+**File scanning scope**
+
+Use `scan.include` and `scan.exclude` to refine which source files the tool analyses, supplementing or narrowing the default preset patterns.
+
+```json
+"scan": {
+  "include": ["plugins/**/*.php"],
+  "exclude": ["legacy/**", "**/*.generated.js"]
+}
+```
+
+**Parallel processing concurrency**
+
+Adjust `concurrency` to balance throughput against API rate limits. The default is `5` parallel operations.
 
 ```json
 "concurrency": 3
 ```
 
-**Agent providers**
+**Git flow strategy**
 
-Register one or more named AI providers with custom invocation commands.
-
-```json
-"agent": {
-  "default": "claude",
-  "providers": {
-    "claude": {
-      "command": "claude",
-      "args": ["--model", "claude-opus-4-5"]
-    }
-  },
-  "timeout": 120000,
-  "retryCount": 2
-}
-```
-
-**Source scanning scope**
-
-Use `scan.include` and `scan.exclude` to limit which files are analysed.
-
-```json
-"scan": {
-  "include": ["src/**/*.js"],
-  "exclude": ["src/**/*.test.js", "src/fixtures/**"]
-}
-```
-
-**Flow merge strategy**
-
-Control how feature branches are merged when a flow is finalized.
+Set `flow.merge` to control how feature branches are merged during flow operations, and `flow.push.remote` if your primary remote is not `origin`.
 
 ```json
 "flow": {
-  "merge": "squash"
+  "merge": "squash",
+  "push": { "remote": "upstream" }
+}
+```
+
+**Unified logging**
+
+Enable JSONL logging for all agent activity by setting `logs.enabled` to `true`. Logs are written to `logs.dir`, which defaults to `{agent.workDir}/logs`.
+
+```json
+"logs": {
+  "enabled": true,
+  "dir": ".tmp/logs"
+}
+```
+
+**GitHub CLI integration**
+
+Set `commands.gh` to `"enable"` to allow flow commands to interact with GitHub (e.g. creating pull requests automatically).
+
+```json
+"commands": {
+  "gh": "enable"
 }
 ```
 <!-- {{/text}} -->
@@ -150,7 +179,12 @@ Control how feature branches are merged when a flow is finalized.
 
 <!-- {{text({prompt: "List all environment variables referenced by the tool and their purposes in table format. Extract from process.env references in the source code.", mode: "deep"})}} -->
 
-The configuration source files (`src/lib/config.js` and `src/lib/types.js`) do not reference any environment variables directly. Environment variable handling for sdd-forge (such as project root resolution) is performed in the top-level CLI entry point rather than in the configuration layer, and falls outside the scope of the analyzed files.
+| Variable | Purpose |
+|----------|---------|
+| `SDD_FORGE_WORK_ROOT` | Overrides the working root directory detected via `git rev-parse`. When set, its value is used directly as the project root instead of the result of automatic detection. |
+| `SDD_FORGE_SOURCE_ROOT` | Overrides the source directory used for scanning. When set, its value is used instead of the automatically detected root. Useful in monorepo layouts where source and config live in different directories. |
+| `SDD_FORGE_PROFILE` | Overrides the agent profile selected by `agent.useProfile` in the configuration. Takes precedence over the config value, allowing profile selection at runtime (e.g. in CI environments). |
+| `CLAUDECODE` | Internal Claude Code environment marker. sdd-forge removes this variable from the environment before invoking agent subprocesses to prevent it from being passed through to child commands. |
 <!-- {{/text}} -->
 
 ---

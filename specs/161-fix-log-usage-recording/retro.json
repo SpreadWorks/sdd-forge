@@ -1,0 +1,94 @@
+{
+  "spec": "specs/161-fix-log-usage-recording/spec.md",
+  "date": "2026-04-08T13:21:27.388Z",
+  "requirements": [
+    {
+      "desc": "per-request JSON のトップレベルに usage フィールド（entry.usage ?? null）を追加する",
+      "status": "done",
+      "note": "src/lib/log.js line 328: `usage: entry.usage ?? null` が promptPayload のトップレベルに追加されている"
+    },
+    {
+      "desc": "JSONL end-event に cacheReadTokens / cacheCreationTokens / inputTokens / outputTokens / costUsd をフラットに追加する（entry.usage が null の場合は省略）",
+      "status": "done",
+      "note": "src/lib/log.js lines 357-363: `...(entry.usage != null && { ... })` スプレッドで5フィールドをフラットに追加、null 時は省略される"
+    }
+  ],
+  "unplanned": [
+    {
+      "file": ".sdd-forge/output/analysis.json",
+      "change": "再スキャン実行により enrichedAt・summary/detail/keywords 等の enrich データが削除され、analyzedAt が更新された"
+    },
+    {
+      "file": "README.md",
+      "change": "docs データディレクティブのチャプターサマリーが空文字に置き換えられた（enrich データ削除の影響）"
+    },
+    {
+      "file": "docs/change_log.md",
+      "change": "新規ファイル追加（sdd-forge changelog コマンドで自動生成）"
+    },
+    {
+      "file": "docs/cli_commands.md",
+      "change": "text ディレクティブ内の生成済みコンテンツがクリアされた（空のディレクティブ状態に戻った）"
+    },
+    {
+      "file": "docs/configuration.md",
+      "change": "text ディレクティブ内のコンテンツが再生成された（概要・設定リファレンス・カスタマイズ例等）"
+    },
+    {
+      "file": "docs/internal_design.md",
+      "change": "text ディレクティブ内の生成済みコンテンツがクリアされた"
+    },
+    {
+      "file": "docs/overview.md",
+      "change": "text ディレクティブ内のコンテンツが変更され、System Overview セクションが新たに追加された"
+    },
+    {
+      "file": "docs/project_structure.md",
+      "change": "Shared Libraries テーブルが更新された（モジュール一覧の大幅な拡充）"
+    },
+    {
+      "file": "docs/stack_and_ops.md",
+      "change": "技術スタック・依存関係・デプロイ・オペレーションセクションの記述が全面更新された"
+    },
+    {
+      "file": "specs/161-fix-log-usage-recording/draft.md",
+      "change": "仕様検討ドラフトが新規追加された（SDD フロー成果物）"
+    },
+    {
+      "file": "specs/161-fix-log-usage-recording/flow.json",
+      "change": "フロー状態ファイルが新規追加された（SDD フロー成果物）"
+    },
+    {
+      "file": "specs/161-fix-log-usage-recording/issue-log.json",
+      "change": "イシューログが新規追加された（テスト失敗の事前調査記録）"
+    },
+    {
+      "file": "specs/161-fix-log-usage-recording/qa.md",
+      "change": "Q&A ファイルが新規追加された（SDD フロー成果物）"
+    },
+    {
+      "file": "specs/161-fix-log-usage-recording/review.md",
+      "change": "コードレビュー結果が新規追加された（normalizeUsage helper 抽出提案が APPROVED だが未実装）"
+    },
+    {
+      "file": "specs/161-fix-log-usage-recording/spec.md",
+      "change": "フィーチャー仕様書が新規追加された（SDD フロー成果物）"
+    },
+    {
+      "file": "specs/161-fix-log-usage-recording/tests/README.md",
+      "change": "テスト説明ドキュメントが新規追加された"
+    },
+    {
+      "file": "specs/161-fix-log-usage-recording/tests/log-usage-recording.test.js",
+      "change": "spec 検証テストファイルが新規追加された（npm test 対象外）"
+    }
+  ],
+  "summary": {
+    "total": 2,
+    "done": 2,
+    "partial": 0,
+    "not_done": 0,
+    "rate": 1,
+    "notes": "2件の必須要件はいずれも src/lib/log.js の変更で完全に満たされている。per-request JSON への usage: entry.usage ?? null 追加と、JSONL end-event への条件付きスプレッドによるフラットフィールド追加は仕様通りの実装。レビューで APPROVED された normalizeUsage ヘルパーの抽出は未実装だが、これは spec スコープ外の提案であり要件の充足には影響しない。その他の変更（docs 更新・spec ファイル群・analysis.json 再生成）は SDD フロー正常実行の成果物であり、意図しない機能変更ではない。"
+  }
+}
