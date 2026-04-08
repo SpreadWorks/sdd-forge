@@ -507,6 +507,7 @@ async function main() {
           command: "claude",
           args: ["-p", "{{PROMPT}}"],
           systemPromptFlag: "--system-prompt",
+          jsonOutputFlag: "--output-format json",
           profiles: {
             default: [],
             opus: ["--model", "opus"],
@@ -516,6 +517,7 @@ async function main() {
         codex: {
           command: "codex",
           args: ["exec", "--full-auto", "-C", ".tmp", "{{PROMPT}}"],
+          jsonOutputFlag: "--json",
           profiles: {
             default: [],
             o3: ["--model", "o3"],

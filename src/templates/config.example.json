@@ -21,6 +21,7 @@
         "command": "claude",
         "args": ["-p", "{{PROMPT}}"],
         "systemPromptFlag": "--system-prompt",
+        "jsonOutputFlag": "--output-format json",
         "profiles": {
           "default": ["--model", "sonnet"],
           "opus": ["--model", "opus"],
