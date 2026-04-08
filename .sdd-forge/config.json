@@ -91,6 +91,7 @@
           "{{PROMPT}}"
         ],
         "systemPromptFlag": "--system-prompt",
+        "jsonOutputFlag": "--output-format json",
         "profiles": {
           "default": [],
           "opus": [
@@ -112,6 +113,7 @@
           ".tmp",
           "{{PROMPT}}"
         ],
+        "jsonOutputFlag": "--json",
         "profiles": {
           "default": []
         }
