@@ -1,0 +1,129 @@
+{
+  "spec": "specs/157-fix-gate-impl-uncommitted/spec.md",
+  "baseBranch": "development",
+  "featureBranch": "feature/157-fix-gate-impl-uncommitted",
+  "steps": [
+    {
+      "id": "approach",
+      "status": "done"
+    },
+    {
+      "id": "branch",
+      "status": "done"
+    },
+    {
+      "id": "prepare-spec",
+      "status": "pending"
+    },
+    {
+      "id": "draft",
+      "status": "done"
+    },
+    {
+      "id": "gate-draft",
+      "status": "done"
+    },
+    {
+      "id": "spec",
+      "status": "done"
+    },
+    {
+      "id": "gate",
+      "status": "done"
+    },
+    {
+      "id": "approval",
+      "status": "done"
+    },
+    {
+      "id": "test",
+      "status": "done"
+    },
+    {
+      "id": "implement",
+      "status": "done"
+    },
+    {
+      "id": "gate-impl",
+      "status": "done"
+    },
+    {
+      "id": "review",
+      "status": "done"
+    },
+    {
+      "id": "finalize",
+      "status": "pending"
+    },
+    {
+      "id": "commit",
+      "status": "pending"
+    },
+    {
+      "id": "push",
+      "status": "pending"
+    },
+    {
+      "id": "merge",
+      "status": "pending"
+    },
+    {
+      "id": "pr-create",
+      "status": "pending"
+    },
+    {
+      "id": "branch-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "pr-merge",
+      "status": "pending"
+    },
+    {
+      "id": "sync-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "docs-update",
+      "status": "pending"
+    },
+    {
+      "id": "docs-review",
+      "status": "pending"
+    },
+    {
+      "id": "docs-commit",
+      "status": "pending"
+    }
+  ],
+  "requirements": [
+    {
+      "desc": "gate impl は git diff baseBranch...HEAD と git diff HEAD の結合 diff を使用して要件充足チェックを行う",
+      "status": "done"
+    },
+    {
+      "desc": "結合 diff が空の場合は \"no changes found (committed or uncommitted) against base branch\" で FAIL する",
+      "status": "done"
+    },
+    {
+      "desc": "worktree モードで正しく動作する（cwd は worktree root）",
+      "status": "done"
+    }
+  ],
+  "issue": 111,
+  "request": "gate impl がコミット前の変更を検出できない問題を修正する",
+  "worktree": true,
+  "autoApprove": true,
+  "metrics": {
+    "plan": {
+      "docsRead": 1
+    },
+    "draft": {
+      "srcRead": 1
+    },
+    "impl": {
+      "srcRead": 1,
+      "issueLog": 1
+    }
+  }
+}

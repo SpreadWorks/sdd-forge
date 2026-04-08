@@ -23,6 +23,19 @@ import { FlowCommand } from "./base-command.js";
 // ---------------------------------------------------------------------------
 
 /**
+ * Run `git diff <args>` and return stdout. Throws if the command fails.
+ * @param {string[]} args - git diff arguments
+ * @param {string} errorMessage - context for error
+ * @param {string} cwd - working directory
+ * @returns {string}
+ */
+function runGitDiff(args, errorMessage, cwd) {
+  const res = runCmd("git", ["diff", ...args], { cwd });
+  assertOk(res, errorMessage);
+  return res.stdout;
+}
+
+/**
  * Detect which section a line belongs to by scanning headings above it.
  */
 function sectionAt(lines, lineIdx) {
@@ -419,15 +432,12 @@ export class RunGateCommand extends FlowCommand {
 
     const specText = fs.readFileSync(absSpecPath, "utf8");
 
-    // Get git diff
-    const diffRes = runCmd("git", ["diff", `${state.baseBranch}...HEAD`], { cwd: root });
-    if (!diffRes.ok) {
-      assertOk(diffRes, "failed to get git diff");
-    }
-    const diff = diffRes.stdout;
+    const committed = runGitDiff([`${state.baseBranch}...HEAD`], "failed to get git diff", root);
+    const uncommitted = runGitDiff(["HEAD"], "failed to get uncommitted git diff", root);
+    const diff = committed + uncommitted;
 
     if (!diff.trim()) {
-      return gateFail("impl", specPath, [], ["no changes found against base branch"]);
+      return gateFail("impl", specPath, [], ["no changes found (committed or uncommitted) against base branch"]);
     }
 
     // Requirements check via AI

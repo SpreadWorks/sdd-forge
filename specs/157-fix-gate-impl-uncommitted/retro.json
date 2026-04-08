@@ -1,0 +1,39 @@
+{
+  "spec": "specs/157-fix-gate-impl-uncommitted/spec.md",
+  "date": "2026-04-08T02:27:47.868Z",
+  "requirements": [
+    {
+      "desc": "gate impl は git diff baseBranch...HEAD と git diff HEAD の結合 diff を使用して要件充足チェックを行う",
+      "status": "done",
+      "note": "src/flow/lib/run-gate.js の executeImpl() で committed = runGitDiff([`${state.baseBranch}...HEAD`]) と uncommitted = runGitDiff(['HEAD']) を取得し、diff = committed + uncommitted で結合している"
+    },
+    {
+      "desc": "結合 diff が空の場合は \"no changes found (committed or uncommitted) against base branch\" で FAIL する",
+      "status": "done",
+      "note": "gateFail の第4引数が \"no changes found (committed or uncommitted) against base branch\" に更新されており、結合 diff が空の場合にこのメッセージで FAIL する"
+    },
+    {
+      "desc": "worktree モードで正しく動作する（cwd は worktree root）",
+      "status": "done",
+      "note": "runGitDiff ヘルパーは cwd パラメータを受け取り、呼び出し側で root（worktree root）を渡している。既存の cwd 制御を引き継いでいるため worktree モードは維持される"
+    }
+  ],
+  "unplanned": [
+    {
+      "file": "src/flow/lib/run-gate.js",
+      "change": "runGitDiff ヘルパー関数の抽出（review.md でレビュー指摘として言及されており、spec 要件には明示されていないが review フィードバックへの対応として追加）"
+    },
+    {
+      "file": "specs/157-fix-gate-impl-uncommitted/review.md",
+      "change": "agent.js の runWithAgentLogging / runWithAgentLoggingSync の重複削減および result 変数のリネームを指摘しているが、実際の diff にはこれらの変更は含まれていない（指摘のみで未対応）"
+    }
+  ],
+  "summary": {
+    "total": 3,
+    "done": 3,
+    "partial": 0,
+    "not_done": 0,
+    "rate": 1,
+    "notes": "3つの要件はすべて実装済み。runGitDiff ヘルパーの抽出は spec 外だが review フィードバックへの対応であり品質向上に寄与する。テストファイルは spec.md の Test Strategy に明示されており計画内。review.md が指摘した agent.js の改善は本 diff には含まれておらず未対応だが、これは spec のスコープ外でもある。"
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "entries": [
+    {
+      "step": "gate-impl",
+      "reason": "no changes found against base branch",
+      "trigger": "gate post hook (auto)",
+      "timestamp": "2026-04-08T02:17:52.186Z"
+    },
+    {
+      "step": "gate-impl",
+      "reason": "gate impl bootstrapping problem: sdd-forge binary uses main repo code, not worktree code, so it cannot see uncommitted worktree changes via git diff HEAD (new behavior)",
+      "trigger": "sdd-forge flow run gate --phase impl fails with 'no changes found against base branch'",
+      "resolution": "run gate using node src/flow.js from worktree to use the fixed code, which can see uncommitted changes via git diff HEAD",
+      "guardrailCandidate": "when the fix itself changes gate-impl behavior, gate cannot self-verify without committing first — consider noting this in flow-impl skill",
+      "timestamp": "2026-04-08T02:19:26.266Z"
+    }
+  ]
+}
