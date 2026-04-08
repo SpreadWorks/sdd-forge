@@ -442,7 +442,7 @@ export class RunGateCommand extends FlowCommand {
 
     // Requirements check via AI
     const agent = resolveAgent(ctx.config, "spec.gate");
-    if (!agent) throw new Error("no agent configured for spec.gate");
+    if (!agent) throw new Error("no AI agent configured (agent.default or agent.profiles.<name>.spec.gate)");
 
     const reqPrompt = buildImplCheckPrompt(specText, diff);
     const reqResponse = callAgentWithLog(agent, reqPrompt);

@@ -10,7 +10,7 @@
 
 ### 更新日時
 
-- generated_at: 2026-04-08 13:12:03 UTC
+- generated_at: 2026-04-08 14:10:59 UTC
 
 ### シリーズ最新インデックス
 
@@ -44,6 +44,7 @@
 | `centralize-timeout-and-threshold-constants` | `115-centralize-timeout-and-threshold-constants` | Draft | 2026-03-31 | [spec](../specs/115-centralize-timeout-and-threshold-constants/spec.md) |
 | `chapter-nav-links` | `075-chapter-nav-links` | Draft | 2026-03-19 | [spec](../specs/075-chapter-nav-links/spec.md) |
 | `check-config-command` | `159-check-config-command` | Approved | 2026-04-08 | [spec](../specs/159-check-config-command/spec.md) |
+| `check-freshness` | `160-check-freshness` | Draft | 2026-04-08 | [spec](../specs/160-check-freshness/spec.md) |
 | `ci-cd-preset` | `077-ci-cd-preset` | Draft | 2026-03-20 | [spec](../specs/077-ci-cd-preset/spec.md) |
 | `cli-progress-and-verbose-logging` | `005-cli-progress-and-verbose-logging` | Draft | 2026-03-03 | [spec](../specs/005-cli-progress-and-verbose-logging/spec.md) |
 | `commandify-flow-impl-merge` | `058-commandify-flow-impl-merge` | Draft | 2026-03-15 | [spec](../specs/058-commandify-flow-impl-merge/spec.md) |
@@ -67,6 +68,7 @@
 | `extract-parse-helpers` | `144-extract-parse-helpers` | Approved | 2026-04-04 | [spec](../specs/144-extract-parse-helpers/spec.md) |
 | `fill-skill-guardrail-gaps` | `134-fill-skill-guardrail-gaps` | Draft | 2026-04-03 | [spec](../specs/134-fill-skill-guardrail-gaps/spec.md) |
 | `fix-acceptance-test-fixtures` | `087-fix-acceptance-test-fixtures` | Draft | 2026-03-22 | [spec](../specs/087-fix-acceptance-test-fixtures/spec.md) |
+| `fix-agent-commands-entries` | `162-fix-agent-commands-entries` | Draft | 2026-04-08 | [spec](../specs/162-fix-agent-commands-entries/spec.md) |
 | `fix-agent-log-worktree-path` | `149-fix-agent-log-worktree-path` | Draft | 2026-04-06 | [spec](../specs/149-fix-agent-log-worktree-path/spec.md) |
 | `fix-chapters-exclude-true-ignored` | `115-fix-chapters-exclude-true-ignored` | Draft | 2026-03-31 | [spec](../specs/115-fix-chapters-exclude-true-ignored/spec.md) |
 | `fix-check-scan-report` | `159-fix-check-scan-report` | Draft | 2026-04-08 | [spec](../specs/159-fix-check-scan-report/spec.md) |
@@ -416,6 +418,8 @@
 | `158-scan-coverage-report` | Draft | 2026-04-08 | 158-scan-coverage-report | Issue #113 | [draft.md](../specs/158-scan-coverage-report/draft.md), [qa.md](../specs/158-scan-coverage-report/qa.md), [spec.md](../specs/158-scan-coverage-report/spec.md) |
 | `159-check-config-command` | Approved | 2026-04-08 | 159-check-config-command | GitHub Issue #115 | [draft.md](../specs/159-check-config-command/draft.md), [qa.md](../specs/159-check-config-command/qa.md), [review.md](../specs/159-check-config-command/review.md), [spec.md](../specs/159-check-config-command/spec.md) |
 | `159-fix-check-scan-report` | Draft | 2026-04-08 | 159-fix-check-scan-report | User request | [draft.md](../specs/159-fix-check-scan-report/draft.md), [qa.md](../specs/159-fix-check-scan-report/qa.md), [review.md](../specs/159-fix-check-scan-report/review.md), [spec.md](../specs/159-fix-check-scan-report/spec.md) |
+| `160-check-freshness` | Draft | 2026-04-08 | 160-check-freshness | Issue #117 | [draft.md](../specs/160-check-freshness/draft.md), [qa.md](../specs/160-check-freshness/qa.md), [review.md](../specs/160-check-freshness/review.md), [spec.md](../specs/160-check-freshness/spec.md) |
 | `160-unify-sdd-forge-env-prefix` | Draft | 2026-04-08 | 160-unify-sdd-forge-env-prefix | Issue #118 | [draft.md](../specs/160-unify-sdd-forge-env-prefix/draft.md), [qa.md](../specs/160-unify-sdd-forge-env-prefix/qa.md), [review.md](../specs/160-unify-sdd-forge-env-prefix/review.md), [spec.md](../specs/160-unify-sdd-forge-env-prefix/spec.md) |
-| `161-fix-log-usage-recording` | Draft | 2026-04-08 | 161-fix-log-usage-recording | User request | [draft.md](../specs/161-fix-log-usage-recording/draft.md), [qa.md](../specs/161-fix-log-usage-recording/qa.md), [spec.md](../specs/161-fix-log-usage-recording/spec.md) |
+| `161-fix-log-usage-recording` | Draft | 2026-04-08 | 161-fix-log-usage-recording | User request | [draft.md](../specs/161-fix-log-usage-recording/draft.md), [qa.md](../specs/161-fix-log-usage-recording/qa.md), [review.md](../specs/161-fix-log-usage-recording/review.md), [spec.md](../specs/161-fix-log-usage-recording/spec.md) |
+| `162-fix-agent-commands-entries` | Draft | 2026-04-08 | 162-fix-agent-commands-entries | GitHub Issue #120 | [draft.md](../specs/162-fix-agent-commands-entries/draft.md), [qa.md](../specs/162-fix-agent-commands-entries/qa.md), [spec.md](../specs/162-fix-agent-commands-entries/spec.md) |
 <!-- AUTO-GEN:END -->

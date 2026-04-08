@@ -4,6 +4,8 @@
  * JSDoc 型定義と config / context のバリデーション関数。
  */
 
+import { BUILTIN_PROVIDERS } from "./agent.js";
+
 // ---------------------------------------------------------------------------
 // JSDoc 型定義
 // ---------------------------------------------------------------------------
@@ -63,7 +65,7 @@
  * @property {number} [timeout]              - Agent execution timeout in seconds
  * @property {number} [retryCount]           - Retry count for docs enrich agent calls
  * @property {Object<string, AgentProvider>} [providers] - Agent provider definitions
- * @property {Object} [commands]             - Per-command agent and profile overrides
+ * @property {Object<string, Object<string, string>>} [profiles] - Named profiles mapping commandId prefixes to provider keys
  */
 
 /**
@@ -342,6 +344,37 @@ export function validateConfig(raw) {
           errors.push(`'agent.providers.${key}.args' must be an array`);
         }
       }
+    }
+  }
+
+  // agent.profiles (省略可)
+  if (raw.agent?.profiles != null) {
+    if (typeof raw.agent.profiles !== "object" || Array.isArray(raw.agent.profiles)) {
+      errors.push("'agent.profiles' must be an object");
+    } else {
+      const allProviders = { ...BUILTIN_PROVIDERS, ...(raw.agent?.providers || {}) };
+      for (const [profileName, profile] of Object.entries(raw.agent.profiles)) {
+        if (typeof profile !== "object" || profile == null || Array.isArray(profile)) {
+          errors.push(`'agent.profiles.${profileName}' must be an object`);
+          continue;
+        }
+        for (const [commandId, providerKey] of Object.entries(profile)) {
+          if (typeof providerKey !== "string") {
+            errors.push(`'agent.profiles.${profileName}.${commandId}' must be a string`);
+          } else if (!allProviders[providerKey]) {
+            errors.push(`'agent.profiles.${profileName}.${commandId}': unknown provider "${providerKey}"`);
+          }
+        }
+      }
+    }
+  }
+
+  // agent.useProfile (省略可)
+  if (raw.agent?.useProfile != null) {
+    if (typeof raw.agent.useProfile !== "string") {
+      errors.push("'agent.useProfile' must be a string");
+    } else if (raw.agent.profiles && !raw.agent.profiles[raw.agent.useProfile]) {
+      errors.push(`'agent.useProfile': profile "${raw.agent.useProfile}" is not defined in agent.profiles`);
     }
   }
 

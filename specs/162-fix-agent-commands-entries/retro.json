@@ -1,0 +1,80 @@
+{
+  "spec": "specs/162-fix-agent-commands-entries/spec.md",
+  "date": "2026-04-08T23:37:00.538Z",
+  "requirements": [
+    {
+      "desc": "R1: AgentConfig typedef から [commands] を削除し [profiles] を追加する",
+      "status": "done",
+      "note": "src/lib/types.js の @property {Object} [commands] を削除し、{Object<string, Object<string, string>>} [profiles] を追加。型も正確に定義されている"
+    },
+    {
+      "desc": "R2: validateConfig に agent.profiles バリデーションを追加する（BUILTIN_PROVIDERS 参照整合性チェック含む）",
+      "status": "done",
+      "note": "BUILTIN_PROVIDERS を agent.js からインポート済み。profiles がオブジェクトであること、各プロファイル値がオブジェクトであること、各エントリ値が文字列であること、allProviders（BUILTIN + user providers マージ）への参照整合性チェックがすべて実装されている"
+    },
+    {
+      "desc": "R3: config.example.json を agent.profiles.default 形式に書き直し、未登録 commandId 5件を追加する",
+      "status": "done",
+      "note": "agent.commands ブロック削除済み。agent.profiles.default に既存 commandId 9件と新規 5件（docs.init, flow.review.test, flow.review.spec, flow.retro, context.search）を追加。providers 内の profiles フィールドも削除済み"
+    },
+    {
+      "desc": "R4: init.js に commandId: docs.init を追加、run-retro.js のエラーメッセージを修正する",
+      "status": "done",
+      "note": "init.js で resolveCommandContext(cli, { commandId: \"docs.init\" }) に修正済み。run-retro.js のエラーメッセージが agent.commands.flow.retro から agent.profiles.<name>.flow.retro に修正済み"
+    }
+  ],
+  "unplanned": [
+    {
+      "file": "src/flow/lib/run-gate.js",
+      "change": "spec.gate のエラーメッセージを \"no agent configured for spec.gate\" から \"no AI agent configured (agent.default or agent.profiles.<name>.spec.gate)\" に変更。スペックに記載なし"
+    },
+    {
+      "file": "src/lib/types.js",
+      "change": "agent.useProfile のバリデーションを追加（文字列チェックと profiles 内の存在確認）。要件 R1〜R4 のいずれにも記載されていない"
+    },
+    {
+      "file": "src/templates/config.example.json",
+      "change": "agent.default を \"claude\" から \"claude/sonnet\" に変更。また claude/opus プロバイダーを新規追加、codex を codex/gpt-5.4 にリネーム。スペックはプロバイダー構成変更を明示していない"
+    },
+    {
+      "file": "docs/cli_commands.md",
+      "change": "{{text}} ディレクティブの内容が大幅に刷新（コマンド一覧・詳細説明の全面書き直し）。スペックのスコープ外"
+    },
+    {
+      "file": "docs/configuration.md",
+      "change": "設定リファレンスの内容が大幅に書き換えられ、一部 {{text}} ディレクティブのクローズタグが欠落している構造的バグが混入（review.md で指摘済み）"
+    },
+    {
+      "file": "docs/internal_design.md",
+      "change": "ソースツリー図・モジュール一覧・依存関係図・データフロー記述の全面刷新。スペックのスコープ外"
+    },
+    {
+      "file": "docs/overview.md",
+      "change": "ツール概要・アーキテクチャ図・用語集・典型的使用フローの大幅改訂。スペックのスコープ外"
+    },
+    {
+      "file": "docs/project_structure.md",
+      "change": "ディレクトリ説明・共有ライブラリ一覧の全面刷新。{{text}} ディレクティブの重複記述も発生（review.md で指摘済み）"
+    },
+    {
+      "file": "docs/stack_and_ops.md",
+      "change": "技術スタック・依存関係・デプロイフロー記述の全面改訂。ナビゲーションブロックが中間に移動（review.md で指摘済み）"
+    },
+    {
+      "file": ".sdd-forge/output/analysis.json",
+      "change": "enrich データ（summary, detail, chapter, role, keywords）が全エントリから削除され、analyzedAt と mtime が更新された"
+    },
+    {
+      "file": "README.md",
+      "change": "ドキュメントチャプターの Summary 列が空になった（analysis.json の enrich データ削除の副作用）"
+    }
+  ],
+  "summary": {
+    "total": 4,
+    "done": 4,
+    "partial": 0,
+    "not_done": 0,
+    "rate": 1,
+    "notes": "4つの要件はすべて実装済み（done）。コード変更品質は高く、テストファイルも spec.md の Test Strategy に従って追加されている。主な懸念は計画外の変更の多さ：run-gate.js のエラーメッセージ修正、agent.useProfile バリデーション追加、config.example.json のプロバイダー構成変更（providers 追加・リネーム）は未記載の変更。また docs/*.md の大規模な再生成はスペックのスコープ外であり、review.md が指摘するように configuration.md・project_structure.md・stack_and_ops.md に構造的なバグ（{{text}} タグ未クローズ、重複タグ、ナビゲーションブロック誤配置）が混入している。これらは docs ビルドパイプラインの次回実行時に問題を起こす可能性がある"
+  }
+}

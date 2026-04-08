@@ -12,40 +12,46 @@
     }
   },
   "agent": {
-    "default": "claude",
+    "default": "claude/sonnet",
     "workDir": ".tmp",
     "timeout": 300,
     "retryCount": 1,
     "providers": {
-      "claude": {
+      "claude/sonnet": {
         "command": "claude",
-        "args": ["-p", "{{PROMPT}}"],
+        "args": ["-p", "{{PROMPT}}", "--model", "sonnet"],
         "systemPromptFlag": "--system-prompt",
-        "jsonOutputFlag": "--output-format json",
-        "profiles": {
-          "default": ["--model", "sonnet"],
-          "opus": ["--model", "opus"],
-          "sonnet": ["--model", "sonnet"]
-        }
+        "jsonOutputFlag": "--output-format json"
       },
-      "codex": {
+      "claude/opus": {
+        "command": "claude",
+        "args": ["-p", "{{PROMPT}}", "--model", "opus"],
+        "systemPromptFlag": "--system-prompt",
+        "jsonOutputFlag": "--output-format json"
+      },
+      "codex/gpt-5.4": {
         "command": "codex",
         "args": ["exec", "--full-auto", "-C", ".tmp", "{{PROMPT}}"],
-        "profiles": {
-          "default": []
-        }
+        "jsonOutputFlag": "--json"
       }
     },
-    "commands": {
-      "docs.enrich":       { "agent": "claude", "profile": "opus" },
-      "docs.text":         { "agent": "claude", "profile": "opus" },
-      "docs.forge":        { "agent": "claude", "profile": "opus" },
-      "docs.readme":       { "agent": "claude", "profile": "sonnet" },
-      "docs.agents":       { "agent": "claude", "profile": "opus" },
-      "spec.gate":         { "agent": "claude", "profile": "sonnet" },
-      "flow.review.draft": { "agent": "codex" },
-      "flow.review.final": { "agent": "claude", "profile": "opus" },
-      "docs.translate":    { "agent": "codex" }
+    "profiles": {
+      "default": {
+        "docs.init":         "claude/sonnet",
+        "docs.enrich":       "claude/opus",
+        "docs.text":         "claude/opus",
+        "docs.forge":        "claude/opus",
+        "docs.readme":       "claude/sonnet",
+        "docs.agents":       "claude/opus",
+        "docs.translate":    "codex/gpt-5.4",
+        "spec.gate":         "claude/sonnet",
+        "flow.review.draft": "codex/gpt-5.4",
+        "flow.review.final": "claude/opus",
+        "flow.review.test":  "claude/sonnet",
+        "flow.review.spec":  "claude/sonnet",
+        "flow.retro":        "claude/sonnet",
+        "context.search":    "claude/sonnet"
+      }
     }
   }
 }

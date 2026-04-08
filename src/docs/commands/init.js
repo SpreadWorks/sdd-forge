@@ -141,7 +141,7 @@ function main(ctx) {
       console.log([h.usage, "", h.desc, "", "Options:", `  ${o.type}`, `  ${o.force}`, `  ${o.dryRun}`, `  ${o.help}`].join("\n"));
       return;
     }
-    ctx = resolveCommandContext(cli);
+    ctx = resolveCommandContext(cli, { commandId: "docs.init" });
     ctx.force = cli.force;
     ctx.dryRun = cli.dryRun;
   }

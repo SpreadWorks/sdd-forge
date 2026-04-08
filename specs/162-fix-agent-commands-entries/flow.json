@@ -1,0 +1,143 @@
+{
+  "spec": "specs/162-fix-agent-commands-entries/spec.md",
+  "baseBranch": "main",
+  "featureBranch": "feature/162-fix-agent-commands-entries",
+  "steps": [
+    {
+      "id": "approach",
+      "status": "done"
+    },
+    {
+      "id": "branch",
+      "status": "done"
+    },
+    {
+      "id": "prepare-spec",
+      "status": "pending"
+    },
+    {
+      "id": "draft",
+      "status": "done"
+    },
+    {
+      "id": "gate-draft",
+      "status": "done"
+    },
+    {
+      "id": "spec",
+      "status": "in_progress"
+    },
+    {
+      "id": "gate",
+      "status": "done"
+    },
+    {
+      "id": "approval",
+      "status": "done"
+    },
+    {
+      "id": "test",
+      "status": "done"
+    },
+    {
+      "id": "implement",
+      "status": "done"
+    },
+    {
+      "id": "gate-impl",
+      "status": "done"
+    },
+    {
+      "id": "review",
+      "status": "in_progress"
+    },
+    {
+      "id": "finalize",
+      "status": "pending"
+    },
+    {
+      "id": "commit",
+      "status": "pending"
+    },
+    {
+      "id": "push",
+      "status": "pending"
+    },
+    {
+      "id": "merge",
+      "status": "pending"
+    },
+    {
+      "id": "pr-create",
+      "status": "pending"
+    },
+    {
+      "id": "branch-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "pr-merge",
+      "status": "pending"
+    },
+    {
+      "id": "sync-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "docs-update",
+      "status": "pending"
+    },
+    {
+      "id": "docs-review",
+      "status": "pending"
+    },
+    {
+      "id": "docs-commit",
+      "status": "pending"
+    }
+  ],
+  "requirements": [
+    {
+      "desc": "R1: AgentConfig typedef から [commands] を削除し [profiles] を追加する",
+      "status": "done"
+    },
+    {
+      "desc": "R2: validateConfig に agent.profiles バリデーションを追加する（BUILTIN_PROVIDERS 参照整合性チェック含む）",
+      "status": "done"
+    },
+    {
+      "desc": "R3: config.example.json を agent.profiles.default 形式に書き直し、未登録 commandId 5件を追加する",
+      "status": "done"
+    },
+    {
+      "desc": "R4: init.js に commandId: docs.init を追加、run-retro.js のエラーメッセージを修正する",
+      "status": "done"
+    }
+  ],
+  "issue": 120,
+  "request": "make a resume command",
+  "worktree": true,
+  "metrics": {
+    "plan": {
+      "docsRead": 1,
+      "issueLog": 7
+    },
+    "draft": {
+      "question": 7
+    },
+    "spec": {
+      "docsRead": 1
+    }
+  },
+  "notes": [
+    "approach: draft first",
+    "first note",
+    "second note",
+    "new note"
+  ],
+  "test": {
+    "summary": {
+      "unit": 2
+    }
+  }
+}

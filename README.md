@@ -129,12 +129,12 @@ See the [configuration reference](docs/configuration.md) for details.
 <!-- {{data("cli.docs.chapters", {header: "", labels: "Chapter|Summary", ignoreError: true})}} -->
 | Chapter | Summary |
 | --- | --- |
-| [Tool Overview and Architecture](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/overview.md) | This chapter provides a concise introduction to sdd-forge — a CLI tool that generates structured technical documentat… |
-| [Technology Stack and Operations](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/stack_and_ops.md) | This chapter covers the technology stack and operational procedures for sdd-forge, a Node.js CLI tool built with ES M… |
-| [Project Structure](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/project_structure.md) | This chapter describes the source tree of sdd-forge, which is organized into five major directories: src/docs (docume… |
-| [CLI Command Reference](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/cli_commands.md) | sdd-forge exposes over 35 commands organized across three namespace groups — docs, flow, and check — plus four standa… |
-| [Configuration and Customization](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/configuration.md) | sdd-forge reads a single JSON configuration file per project, through which users can control documentation output la… |
-| [Internal Design](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/internal_design.md) | sdd-forge is a Node.js CLI tool organized into three primary source layers — src/docs/ for documentation pipeline com… |
+| [Tool Overview and Architecture](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/overview.md) |  |
+| [Technology Stack and Operations](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/stack_and_ops.md) |  |
+| [Project Structure](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/project_structure.md) |  |
+| [CLI Command Reference](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/cli_commands.md) |  |
+| [Configuration and Customization](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/configuration.md) |  |
+| [Internal Design](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/internal_design.md) |  |
 <!-- {{/data}} -->
 
 ## License

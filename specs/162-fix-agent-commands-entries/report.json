@@ -1,0 +1,34 @@
+{
+  "data": {
+    "implementation": {
+      "diffStat": ".sdd-forge/output/analysis.json                    | 2553 +++-----------------\n README.md                                          |   12 +-\n docs/change_log.md                                 |    8 +-\n docs/cli_commands.md                               |  668 +++--\n docs/configuration.md                              |  244 +-\n docs/internal_design.md                            |  443 ++--\n docs/overview.md                                   |  246 +-\n docs/project_structure.md                          |   68 +-\n docs/stack_and_ops.md                              |  103 +-\n specs/162-fix-agent-commands-entries/draft.md      |   54 +\n specs/162-fix-agent-commands-entries/flow.json     |  143 ++\n .../162-fix-agent-commands-entries/issue-log.json  |   61 +\n specs/162-fix-agent-commands-entries/qa.md         |    9 +\n specs/162-fix-agent-commands-entries/review.md     |   90 +\n specs/162-fix-agent-commands-entries/spec.md       |  106 +\n .../162-fix-agent-commands-entries/tests/README.md |   36 +\n specs/162-fix-agent-commands-entries/tests/spec.md |  214 ++\n src/docs/commands/init.js                          |    2 +-\n src/flow/lib/run-gate.js                           |    2 +-\n src/flow/lib/run-retro.js                          |    2 +-\n src/lib/types.js                                   |   35 +-\n src/templates/config.example.json                  |   52 +-\n tests/e2e/162-agent-commands-entries.test.js       |   73 +\n tests/unit/lib/types-agent-profiles.test.js        |  210 ++\n 24 files changed, 2188 insertions(+), 3246 deletions(-)",
+      "commits": [
+        "feat: feature/162-fix-agent-commands-entries"
+      ]
+    },
+    "retro": {
+      "total": 4,
+      "done": 4,
+      "partial": 0,
+      "not_done": 0,
+      "rate": 1,
+      "notes": "4つの要件はすべて実装済み（done）。コード変更品質は高く、テストファイルも spec.md の Test Strategy に従って追加されている。主な懸念は計画外の変更の多さ：run-gate.js のエラーメッセージ修正、agent.useProfile バリデーション追加、config.example.json のプロバイダー構成変更（providers 追加・リネーム）は未記載の変更。また docs/*.md の大規模な再生成はスペックのスコープ外であり、review.md が指摘するように configuration.md・project_structure.md・stack_and_ops.md に構造的なバグ（{{text}} タグ未クローズ、重複タグ、ナビゲーションブロック誤配置）が混入している。これらは docs ビルドパイプラインの次回実行時に問題を起こす可能性がある"
+    },
+    "issueLog": {
+      "count": 0,
+      "entries": []
+    },
+    "metrics": {
+      "docsRead": 2,
+      "srcRead": 0,
+      "question": 7,
+      "issueLog": 6
+    },
+    "tests": null,
+    "sync": {
+      "status": "skipped",
+      "reason": "sync was skipped"
+    }
+  },
+  "text": "  Report\n\n  Implementation\n  ────────────────────────────────────────────────\n    feat: feature/162-fix-agent-commands-entries\n    24 files changed, 2188 insertions(+), 3246 deletions(-)\n\n  Retro\n  ────────────────────────────────────────────────\n    ████████ 100%  (4 done / 0 partial / 0 miss)\n\n  Metrics\n  ────────────────────────────────────────────────\n    docs read 2  src read 0  Q&A 7  issue-log 6\n\n  Tests\n  ────────────────────────────────────────────────\n    -"
+}
