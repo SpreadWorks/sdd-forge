@@ -63,7 +63,7 @@ Schema::create('users', function (Blueprint \$table) {
 
     const result = execFileSync("node", [CMD, "--stdout"], {
       encoding: "utf8",
-      env: { ...process.env, SDD_WORK_ROOT: tmp, SDD_SOURCE_ROOT: tmp },
+      env: { ...process.env, SDD_FORGE_WORK_ROOT: tmp, SDD_FORGE_SOURCE_ROOT: tmp },
     });
 
     const analysis = JSON.parse(result);
@@ -110,7 +110,7 @@ Schema::create('users', function (Blueprint \$table) {
 
     const result = execFileSync("node", [CMD, "--stdout"], {
       encoding: "utf8",
-      env: { ...process.env, SDD_WORK_ROOT: tmp, SDD_SOURCE_ROOT: tmp },
+      env: { ...process.env, SDD_FORGE_WORK_ROOT: tmp, SDD_FORGE_SOURCE_ROOT: tmp },
     });
 
     const analysis = JSON.parse(result);

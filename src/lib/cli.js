@@ -17,14 +17,14 @@ export const PKG_DIR = path.resolve(path.dirname(fileURLToPath(import.meta.url))
 
 /**
  * 作業ルートを返す。
- * SDD_WORK_ROOT 環境変数が設定されている場合はそれを使用する（プロジェクトモード）。
+ * SDD_FORGE_WORK_ROOT 環境変数が設定されている場合はそれを使用する（プロジェクトモード）。
  * それ以外は git rev-parse でリポジトリルートを取得し、失敗時は process.cwd() を返す。
  *
  * @param {string} [importMetaUrl] - 呼び出し元の import.meta.url（後方互換用）
  * @returns {string} 作業ルートの絶対パス
  */
 export function repoRoot(importMetaUrl) {
-  if (process.env.SDD_WORK_ROOT) return process.env.SDD_WORK_ROOT;
+  if (process.env.SDD_FORGE_WORK_ROOT) return process.env.SDD_FORGE_WORK_ROOT;
   const res = runCmd("git", ["rev-parse", "--show-toplevel"]);
   if (res.ok) return res.stdout.trim();
   // npm パッケージとしてインストールされた場合、相対パス推定は
@@ -34,13 +34,13 @@ export function repoRoot(importMetaUrl) {
 
 /**
  * ソースルートを返す。
- * SDD_SOURCE_ROOT 環境変数が設定されている場合はそれを使用する（プロジェクトモード）。
- * それ以外は repoRoot() と同じ値を返す（既存動作との後方互換）。
+ * SDD_FORGE_SOURCE_ROOT 環境変数が設定されている場合はそれを使用する（プロジェクトモード）。
+ * それ以外は repoRoot() と同じ値を返す。
  *
  * @returns {string} ソースルートの絶対パス
  */
 export function sourceRoot() {
-  if (process.env.SDD_SOURCE_ROOT) return process.env.SDD_SOURCE_ROOT;
+  if (process.env.SDD_FORGE_SOURCE_ROOT) return process.env.SDD_FORGE_SOURCE_ROOT;
   return repoRoot();
 }
 

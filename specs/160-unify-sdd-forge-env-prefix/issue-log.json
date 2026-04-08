@@ -1,0 +1,35 @@
+{
+  "entries": [
+    {
+      "step": "gate-draft",
+      "reason": "Single Responsibility — 環境変数プレフィックス統一のみを扱っており、無関係な変更は含まれない; Unambiguous Requirements — 対象変数名と変更後の名前が明示されており、曖昧な形容詞はない; Complete Context — 変更対象ファイル・変数名・トリガー（alpha ポリシー）・期待動作（リネーム）が揃っている; No Hardcoded Secrets — 環境変数名のリネーム仕様であり、シークレット値のハードコードは含まれない; Prioritize Requirements — 要件は3件以下（2変数のリネーム）のため優先順位付け不要; Impact on Existing Features — Q4 で既存ユーザーへの影響（移行必要）と alpha 期間での breaking change 許容を明示している; Present Recommendations with Reasoning — 各 Q&A で推奨回答とその根拠（alpha ポリシー、自動生成等）が示されている; Explore Before Asking — Q2・Q5・Q6 等でコードベース探索に基づいた具体的ファイル・箇所の特定が行われている; Proactively Raise Related Implications — Q5（JS定数は対象外）、Q6（docs自動生成）、Q7（歴史的specsは変更しない）で関連する影響を先回りして整理している; Confirm Brainstorm vs. Decision Before Critiquing — ドラフト内容は決定事項として記述されており、ブレインストーミングとの混同はない; Capture Digressions in draft.md — 議論の逸脱は見られず、Q&A は全て主題に沿っている; Draft Stays at Requirements Level — 実装詳細（関数設計等）は含まれず、要件レベルに留まっている; Backward — Compatible CLI Interface — 環境変数はCLIオプションではないが、外部から設定するインターフェースであり、破壊的変更に対するマイグレーションガイド（例: リリースノートへの記載方法、移行手順の周知方法）が仕様に明示されていない。Q4 で「移行が必要」と言及はあるが、具体的な移行案の提示がない",
+      "trigger": "gate post hook (auto)",
+      "timestamp": "2026-04-08T10:26:38.759Z"
+    },
+    {
+      "step": "gate-draft",
+      "reason": "gate-draft FAIL: 環境変数のマイグレーションガイドが draft に未記載",
+      "trigger": "Backward-Compatible CLI Interface guardrail: 外部インターフェースへの破壊的変更に移行案が必要",
+      "resolution": "draft.md に移行手順（CHANGELOG への記載方針）を追加",
+      "timestamp": "2026-04-08T10:26:44.478Z"
+    },
+    {
+      "step": "gate-draft",
+      "reason": "Single Responsibility — 環境変数プレフィックスの統一という単一の関心事のみ扱っている; Unambiguous Requirements — 変更対象の変数名が具体的に列挙されており、曖昧な形容詞はない; Complete Context — 各変更箇所に対してトリガー（変数名）と期待される振る舞い（新名称）が明示されている; No Hardcoded Secrets — 環境変数名の変更であり、シークレット情報は含まれていない; Prioritize Requirements — 変更項目は3つ以下（2変数）であり、優先順位付けは不要; Impact on Existing Features — Q4で既存ユーザーへの影響（移行が必要）が明示されている; Present Recommendations with Reasoning — 各QにA（推奨）と根拠（alpha ポリシー等）が示されている; Explore Before Asking — 変更対象ファイルが具体的に列挙されており、コードベース調査済みであることが示されている; Proactively Raise Related Implications — CHANGELOG への記載、README 更新、フォールバック不要の方針が先回りして言及されている; Confirm Brainstorm vs. Decision Before Critiquing — Q&A 形式の意思決定ドキュメントであり、ブレインストームとの混同は生じない; Capture Digressions in draft.md — 本ドラフトに脱線はなく、各設問が主題に集中している; Draft Stays at Requirements Level — ファイル名と変数名の列挙にとどまり、関数レベルの実装詳細は含まれていない; Backward — Compatible CLI Interface — CLI コマンドへの影響ではなく環境変数の変更であるが、移行計画として「CHANGELOG に記載」のみ示されており、ユーザーが旧変数名を使用し続けた場合の挙動（サイレント無視）や警告の有無が明示されていない",
+      "trigger": "gate post hook (auto)",
+      "timestamp": "2026-04-08T10:27:10.025Z"
+    },
+    {
+      "step": "gate-draft",
+      "reason": "Single Responsibility — 環境変数プレフィックスの統一という単一の関心事に絞られている; Unambiguous Requirements — 変更対象の変数名と変更後の名前が具体的に列挙されており、検証可能; Complete Context — Q1〜Q8 で各要件にトリガー条件と期待動作が対になっている; No Hardcoded Secrets — 環境変数名のリネームのみ。シークレット値の埋め込みなし; Prioritize Requirements — 変更箇所が3件以下（cli.js, command-context.js, e2eテスト2件）であり優先順位付けは不要; Impact on Existing Features — Q4 で既存ユーザーへの影響（変数名移行が必要）を明示し、alpha breaking change として許容する旨を記載; Present Recommendations with Reasoning — 各 Q&A に推奨回答とその根拠（alpha ポリシー等）が明示されている; Explore Before Asking — Q2 で変更対象ファイルをコード探索で特定済み。Q5 でJS定数と環境変数を区別するコード確認も実施; Proactively Raise Related Implications — Q6（AGENTS.md自動更新）、Q7（過去specs不変）、Q8（CHANGELOG記載）と関連波及を先出しで扱っている; Confirm Brainstorm vs. Decision Before Critiquing — `autoApprove` により決定済みの draft。ブレスト段階ではない; Capture Digressions in draft.md — 顕著な脱線なし。各Qは本題に関連; Draft Stays at Requirements Level — 関数レベルの設計詳細は含まれていない。ファイル名と変数名の列挙は要件レベルに留まる; Backward — Compatible CLI Interface — CLI コマンド・オプションの変更ではなく環境変数のリネームだが、Q8 で「CHANGELOG に記載」とあるのみで、ユーザーが旧変数名を使い続けた場合のサイレント無視（警告なし）について移行ガイドの提供手段が CHANGELOG 記載だけでは不十分。移行手段（警告出力・旧名検出方法等）の欠如が breaking change 対応として明示されていない",
+      "trigger": "gate post hook (auto)",
+      "timestamp": "2026-04-08T10:27:34.305Z"
+    },
+    {
+      "step": "gate-draft",
+      "reason": "Single Responsibility — 環境変数プレフィックス統一という単一の関心事のみを扱っている; Unambiguous Requirements — 変更対象の変数名・ファイル・箇所数が具体的に列挙されており、曖昧な形容詞はない; Complete Context — Q&A 形式で各変更のトリガー条件と期待される結果が明示されている; No Hardcoded Secrets — 環境変数名のリネームのみで、シークレット値の記載はない; Prioritize Requirements — 要件は3項目以下（2変数のリネーム）で優先順位の明示は不要; Impact on Existing Features — Q4で既存ユーザーへの影響（移行必要）を明示し、alpha期間中の breaking change として許容することを明記している; Present Recommendations with Reasoning — 各 Q&A で推奨案とその根拠（alpha ポリシー、breaking change 許容）が示されている; Explore Before Asking — 変更対象ファイルと箇所数が具体的に調査済みで列挙されている; Proactively Raise Related Implications — Q5でJS定数の除外、Q6でドキュメント自動更新、Q7で歴史的ファイルの除外など関連事項が網羅されている; Confirm Brainstorm vs. Decision Before Critiquing — ドラフト段階のチェックであり、ブレインストーミング評価の文脈はない; Capture Digressions in draft.md — 脱線はなく全Q&Aが主題に関連している; Draft Stays at Requirements Level — ファイル名・変数名レベルの要件記述に留まり、関数設計等の実装詳細は含まない; Backward — Compatible CLI Interface — CLIコマンド・オプションへの影響は明示的に「なし」と記載されていない。環境変数はCLIインターフェースに準じる外部インターフェースであり、旧変数名をサイレント無視する方針（CHANGELOG記載のみ）が十分な移行計画かどうか明記が必要",
+      "trigger": "gate post hook (auto)",
+      "timestamp": "2026-04-08T10:28:04.058Z"
+    }
+  ]
+}

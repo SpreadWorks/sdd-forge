@@ -1,0 +1,137 @@
+{
+  "spec": "specs/160-unify-sdd-forge-env-prefix/spec.md",
+  "baseBranch": "main",
+  "featureBranch": "feature/160-unify-sdd-forge-env-prefix",
+  "steps": [
+    {
+      "id": "approach",
+      "status": "done"
+    },
+    {
+      "id": "branch",
+      "status": "done"
+    },
+    {
+      "id": "prepare-spec",
+      "status": "pending"
+    },
+    {
+      "id": "draft",
+      "status": "done"
+    },
+    {
+      "id": "gate-draft",
+      "status": "done"
+    },
+    {
+      "id": "spec",
+      "status": "done"
+    },
+    {
+      "id": "gate",
+      "status": "done"
+    },
+    {
+      "id": "approval",
+      "status": "done"
+    },
+    {
+      "id": "test",
+      "status": "done"
+    },
+    {
+      "id": "implement",
+      "status": "done"
+    },
+    {
+      "id": "gate-impl",
+      "status": "done"
+    },
+    {
+      "id": "review",
+      "status": "done"
+    },
+    {
+      "id": "finalize",
+      "status": "pending"
+    },
+    {
+      "id": "commit",
+      "status": "pending"
+    },
+    {
+      "id": "push",
+      "status": "pending"
+    },
+    {
+      "id": "merge",
+      "status": "pending"
+    },
+    {
+      "id": "pr-create",
+      "status": "pending"
+    },
+    {
+      "id": "branch-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "pr-merge",
+      "status": "pending"
+    },
+    {
+      "id": "sync-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "docs-update",
+      "status": "pending"
+    },
+    {
+      "id": "docs-review",
+      "status": "pending"
+    },
+    {
+      "id": "docs-commit",
+      "status": "pending"
+    }
+  ],
+  "requirements": [
+    {
+      "desc": "SDD_FORGE_WORK_ROOTを設定した場合repoRoot()がその値を返す",
+      "status": "done"
+    },
+    {
+      "desc": "SDD_FORGE_SOURCE_ROOTを設定した場合sourceRoot()がその値を返す",
+      "status": "done"
+    },
+    {
+      "desc": "src/lib/cli.jsのSDD_WORK_ROOT/SDD_SOURCE_ROOT参照をSDD_FORGE_*に変更",
+      "status": "done"
+    },
+    {
+      "desc": "e2eテスト(laravel/symfony)のenv設定をSDD_FORGE_*に更新",
+      "status": "done"
+    },
+    {
+      "desc": "src/docs/lib/command-context.jsのJSDocコメントを更新",
+      "status": "done"
+    }
+  ],
+  "issue": 118,
+  "request": "環境変数プレフィックスを SDD_ から SDD_FORGE_ に統一する",
+  "worktree": true,
+  "autoApprove": true,
+  "metrics": {
+    "plan": {
+      "docsRead": 1,
+      "issueLog": 1
+    },
+    "draft": {
+      "srcRead": 1
+    },
+    "impl": {
+      "srcRead": 1
+    }
+  }
+}

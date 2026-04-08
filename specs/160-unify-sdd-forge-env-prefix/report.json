@@ -1,0 +1,34 @@
+{
+  "data": {
+    "implementation": {
+      "diffStat": "specs/160-unify-sdd-forge-env-prefix/draft.md      |  61 +++++++++\n specs/160-unify-sdd-forge-env-prefix/flow.json     | 137 +++++++++++++++++++++\n .../160-unify-sdd-forge-env-prefix/issue-log.json  |  35 ++++++\n specs/160-unify-sdd-forge-env-prefix/qa.md         |   9 ++\n specs/160-unify-sdd-forge-env-prefix/review.md     |  72 +++++++++++\n specs/160-unify-sdd-forge-env-prefix/spec.md       |  76 ++++++++++++\n .../160-unify-sdd-forge-env-prefix/tests/README.md |  28 +++++\n .../tests/env-prefix.test.js                       |  80 ++++++++++++\n src/docs/lib/command-context.js                    |   4 +-\n src/lib/cli.js                                     |  10 +-\n src/presets/laravel/tests/e2e/integration.test.js  |   4 +-\n src/presets/symfony/tests/e2e/integration.test.js  |   4 +-\n 12 files changed, 509 insertions(+), 11 deletions(-)",
+      "commits": [
+        "feat: feature/160-unify-sdd-forge-env-prefix"
+      ]
+    },
+    "retro": {
+      "total": 5,
+      "done": 5,
+      "partial": 0,
+      "not_done": 0,
+      "rate": 1,
+      "notes": "R1〜R4 の全要件が満たされている。旧変数名の参照は対象ファイルから完全に除去されており、コメント・JSDoc・e2e テストのいずれも新変数名に統一されている。追加変更は spec 検証テストと SDD ワークフロー成果物のみで、いずれも意図した実装スコープの範囲内と判断できる。"
+    },
+    "issueLog": {
+      "count": 0,
+      "entries": []
+    },
+    "metrics": {
+      "docsRead": 1,
+      "srcRead": 2,
+      "question": 0,
+      "issueLog": 1
+    },
+    "tests": null,
+    "sync": {
+      "status": "skipped",
+      "reason": "sync was skipped"
+    }
+  },
+  "text": "  Report\n\n  Implementation\n  ────────────────────────────────────────────────\n    feat: feature/160-unify-sdd-forge-env-prefix\n    12 files changed, 509 insertions(+), 11 deletions(-)\n\n  Retro\n  ────────────────────────────────────────────────\n    ████████ 100%  (5 done / 0 partial / 0 miss)\n\n  Metrics\n  ────────────────────────────────────────────────\n    docs read 1  src read 2  Q&A 0  issue-log 1\n\n  Tests\n  ────────────────────────────────────────────────\n    -"
+}

@@ -1,0 +1,57 @@
+{
+  "spec": "specs/160-unify-sdd-forge-env-prefix/spec.md",
+  "date": "2026-04-08T12:40:32.086Z",
+  "requirements": [
+    {
+      "desc": "SDD_FORGE_WORK_ROOTを設定した場合repoRoot()がその値を返す",
+      "status": "done",
+      "note": "src/lib/cli.js の repoRoot() が process.env.SDD_FORGE_WORK_ROOT を参照するよう変更済み。specs/160-.../tests/env-prefix.test.js にて happy path テストも追加されている"
+    },
+    {
+      "desc": "SDD_FORGE_SOURCE_ROOTを設定した場合sourceRoot()がその値を返す",
+      "status": "done",
+      "note": "src/lib/cli.js の sourceRoot() が process.env.SDD_FORGE_SOURCE_ROOT を参照するよう変更済み。テストも追加されている"
+    },
+    {
+      "desc": "src/lib/cli.jsのSDD_WORK_ROOT/SDD_SOURCE_ROOT参照をSDD_FORGE_*に変更",
+      "status": "done",
+      "note": "repoRoot() / sourceRoot() の実装コードおよび JSDoc コメントの両方で旧変数名が新変数名に置換されている"
+    },
+    {
+      "desc": "e2eテスト(laravel/symfony)のenv設定をSDD_FORGE_*に更新",
+      "status": "done",
+      "note": "laravel と symfony の integration.test.js それぞれ2箇所ずつ、計4箇所の env オプションが SDD_FORGE_WORK_ROOT / SDD_FORGE_SOURCE_ROOT に更新されている"
+    },
+    {
+      "desc": "src/docs/lib/command-context.jsのJSDocコメントを更新",
+      "status": "done",
+      "note": "@typedef CommandContext の root / srcRoot プロパティの説明コメントが SDD_FORGE_WORK_ROOT / SDD_FORGE_SOURCE_ROOT に更新されている"
+    }
+  ],
+  "unplanned": [
+    {
+      "file": "specs/160-unify-sdd-forge-env-prefix/tests/env-prefix.test.js",
+      "change": "spec 検証用ユニットテストを新規追加（R1/R2 の acceptance criteria を検証する spec-local テスト。npm test 対象外）"
+    },
+    {
+      "file": "specs/160-unify-sdd-forge-env-prefix/tests/README.md",
+      "change": "spec 検証テストの説明 README を新規追加"
+    },
+    {
+      "file": "specs/160-unify-sdd-forge-env-prefix/draft.md, spec.md, flow.json, qa.md, issue-log.json, review.md",
+      "change": "SDD ワークフロー成果物（draft / spec / flow 管理ファイル / レビュー結果）を新規追加。実装要件外だが SDD フロー上の標準生成物"
+    },
+    {
+      "file": "src/lib/cli.js",
+      "change": "sourceRoot() の JSDoc コメントから「（既存動作との後方互換）」という記述を削除。R2 の「関連するコメントも合わせて更新」の範囲内と解釈可能だが、spec には明示されていない削除"
+    }
+  ],
+  "summary": {
+    "total": 5,
+    "done": 5,
+    "partial": 0,
+    "not_done": 0,
+    "rate": 1,
+    "notes": "R1〜R4 の全要件が満たされている。旧変数名の参照は対象ファイルから完全に除去されており、コメント・JSDoc・e2e テストのいずれも新変数名に統一されている。追加変更は spec 検証テストと SDD ワークフロー成果物のみで、いずれも意図した実装スコープの範囲内と判断できる。"
+  }
+}

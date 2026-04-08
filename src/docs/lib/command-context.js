@@ -16,8 +16,8 @@ import { resolveChaptersOrder } from "./template-merger.js";
 
 /**
  * @typedef {Object} CommandContext
- * @property {string} root - 作業ルート（SDD_WORK_ROOT or git root）
- * @property {string} srcRoot - ソースルート（SDD_SOURCE_ROOT or root）
+ * @property {string} root - 作業ルート（SDD_FORGE_WORK_ROOT or git root）
+ * @property {string} srcRoot - ソースルート（SDD_FORGE_SOURCE_ROOT or root）
  * @property {Object} config - .sdd-forge/config.json の内容
  * @property {string} lang - 操作言語（config.lang）
  * @property {string} outputLang - 出力デフォルト言語（config.output.default）
