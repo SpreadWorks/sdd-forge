@@ -90,6 +90,11 @@ function injectJsonFlag(flagParts, args) {
     flagParts.every((part, j) => args[i + j] === part),
   );
   if (idx !== -1) return args;
+  // If first arg is a subcommand (not a flag), inject after it so that
+  // e.g. `codex exec --json ...` is produced instead of `codex --json exec ...`.
+  if (args.length > 0 && !args[0].startsWith("-")) {
+    return [args[0], ...flagParts, ...args.slice(1)];
+  }
   return [...flagParts, ...args];
 }
 

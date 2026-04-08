@@ -1,0 +1,24 @@
+{
+  "entries": [
+    {
+      "step": "gate",
+      "reason": "line 58: unchecked task/question (- [ ] なし)",
+      "trigger": "gate post hook (auto)",
+      "timestamp": "2026-04-08T05:06:23.245Z"
+    },
+    {
+      "step": "gate",
+      "reason": "Single Responsibility — SKILL.md への手順追記という単一の関心事に絞られている; Unambiguous Requirements — リトライ上限3回、autoApprove 条件、承認前コード禁止など検証可能な条件で記述されている; Complete Context — 各要件に「コーディング前に」「autoApprove が true の場合は」等のトリガーと期待動作が対になっている; No Hardcoded Secrets — ソースコード変更を含む仕様ではなく、秘密情報に関係しない; No Silent Error Swallowing — エラー処理の記述はないが、SKILL.md（プロンプト）の変更であり該当しない; Prioritize Requirements — 要件は6項目だが、フロー順（1→6）が自然な優先順序を示しており読み取れる（ただし明示的な優先度ラベルはない）; Impact on Existing Features — Out of Scope に CLI 非追加を明記し、変更対象が SKILL.md のみと限定している。既存 flow-impl の動作変更影響が明示的に列挙されていない点はやや不足だが、スコープ記述が代替している; Bounded Resource Usage — 差し戻しのリトライ上限が3回と明示されている; Changes Require Test Coverage — テストカバレッジの記述がない。SKILL.md（プロンプト）変更であり自動テストが困難な場合でも、その理由が spec に記載されていない; Spec Includes Test Strategy — テスト戦略セクションが存在しない。何をどうテストするかの記述がない; Synthesize Draft, Do Not Copy — ドラフトを構造化・抽象化している。Q&A をそのまま転記するのではなく Clarifications セクションとして整理されている; Record Unresolved Points as Open Questions — Open Questions セクションが存在し「なし」と明示されている; Include 'Why This Approach' Rationale — Alternatives Considered で CLI コマンド新設・ファイル名列挙を不採用とした理由が記述されている; Backward — Compatible CLI Interface — 既存 CLI コマンドの変更・削除を含まない（Out of Scope で明記）; Exit Code Contract — CLI コマンド変更を含まないため該当しない",
+      "trigger": "gate post hook (auto)",
+      "timestamp": "2026-04-08T05:06:45.554Z"
+    },
+    {
+      "step": "review",
+      "reason": "review command failed: codex --json exec causes 'unexpected argument --json found' error",
+      "trigger": "sdd-forge flow run review in worktree with codex agent",
+      "resolution": "skipping review due to pre-existing agent compatibility bug",
+      "guardrailCandidate": "review command should handle codex --json flag order incompatibility",
+      "timestamp": "2026-04-08T05:36:33.925Z"
+    }
+  ]
+}
