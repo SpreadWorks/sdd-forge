@@ -1,0 +1,148 @@
+{
+  "spec": "specs/160-check-freshness/spec.md",
+  "baseBranch": "main",
+  "featureBranch": "feature/160-check-freshness",
+  "steps": [
+    {
+      "id": "approach",
+      "status": "done"
+    },
+    {
+      "id": "branch",
+      "status": "done"
+    },
+    {
+      "id": "prepare-spec",
+      "status": "pending"
+    },
+    {
+      "id": "draft",
+      "status": "done"
+    },
+    {
+      "id": "gate-draft",
+      "status": "done"
+    },
+    {
+      "id": "spec",
+      "status": "done"
+    },
+    {
+      "id": "gate",
+      "status": "done"
+    },
+    {
+      "id": "approval",
+      "status": "done"
+    },
+    {
+      "id": "test",
+      "status": "done"
+    },
+    {
+      "id": "implement",
+      "status": "done"
+    },
+    {
+      "id": "gate-impl",
+      "status": "done"
+    },
+    {
+      "id": "review",
+      "status": "done"
+    },
+    {
+      "id": "finalize",
+      "status": "pending"
+    },
+    {
+      "id": "commit",
+      "status": "pending"
+    },
+    {
+      "id": "push",
+      "status": "pending"
+    },
+    {
+      "id": "merge",
+      "status": "pending"
+    },
+    {
+      "id": "pr-create",
+      "status": "pending"
+    },
+    {
+      "id": "branch-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "pr-merge",
+      "status": "pending"
+    },
+    {
+      "id": "sync-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "docs-update",
+      "status": "pending"
+    },
+    {
+      "id": "docs-review",
+      "status": "pending"
+    },
+    {
+      "id": "docs-commit",
+      "status": "pending"
+    }
+  ],
+  "requirements": [
+    {
+      "desc": "When docs/ does not exist, output never-built and exit 1",
+      "status": "done"
+    },
+    {
+      "desc": "When src is newer than docs/, output stale and exit 1",
+      "status": "done"
+    },
+    {
+      "desc": "When docs/ is equal or newer than src, output fresh and exit 0",
+      "status": "done"
+    },
+    {
+      "desc": "Support --format text|json output options",
+      "status": "done"
+    },
+    {
+      "desc": "Register freshness in src/check.js SCRIPTS map",
+      "status": "done"
+    },
+    {
+      "desc": "Add src/check/commands/freshness.js as new file",
+      "status": "done"
+    },
+    {
+      "desc": "Bound file traversal to 10000 files per side with warning on overflow",
+      "status": "done"
+    }
+  ],
+  "issue": 117,
+  "request": "sdd-forge check freshness: docs と src の鮮度チェックコマンドを実装する",
+  "worktree": true,
+  "autoApprove": true,
+  "metrics": {
+    "plan": {
+      "docsRead": 1
+    },
+    "draft": {
+      "srcRead": 1
+    },
+    "test": {
+      "srcRead": 1
+    },
+    "impl": {
+      "srcRead": 1,
+      "issueLog": 1
+    }
+  }
+}

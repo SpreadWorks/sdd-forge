@@ -1,0 +1,42 @@
+{
+  "entries": [
+    {
+      "step": "gate",
+      "reason": "line 78: unchecked task/question (- [ ] `SDD_SOURCE_ROOT` が未設定のケース（`sdd-forge` 経由でなく直接 node で実行した場合）。→ `repoRoot()` にフォールバックする。)",
+      "trigger": "gate post hook (auto)",
+      "timestamp": "2026-04-08T12:37:06.926Z"
+    },
+    {
+      "step": "gate",
+      "reason": "Single Responsibility — `check freshness` コマンド実装のみに集中しており、無関係な変更は含まれない。; Unambiguous Requirements — mtime 比較、exit code、JSON スキーマ等、全て検証可能な条件で記述されている。; Complete Context — 各要件に When〜shall の形式でトリガーと期待動作が明示されている。; No Hardcoded Secrets — シークレット情報の記述なし。環境変数 `SDD_SOURCE_ROOT` の参照のみ。; No Silent Error Swallowing — エラーハンドリングの言及なし（新規実装 spec であり設計上問題なし）。; Prioritize Requirements — 要件は6項目だが、それぞれが独立した状態を扱い、相互に優先度を要しない構造になっている。; Impact on Existing Features — \"既存機能への影響なし\" の明示的記述はないが、Scope に `src/check.js` への追加エントリが列挙されており、破壊的変更がないことが読み取れる。明示的な記述がない点は軽微なFAILとも取れるが判断が微妙。→ FAIL: Impact on Existing Features — `src/check.js` への変更が既存 `check` サブコマンド群に与える影響（例：`--help` 表示変化以外）が明示されていない。; Bounded Resource Usage — `SDD_SOURCE_ROOT` 配下の「全ファイル」の mtime 走査に上限（最大ファイル数・ディレクトリ深度）が設定されていない。; Changes Require Test Coverage — Test Strategy セクションに happy path を含む4ケースのテストが定義されている。; Spec Includes Test Strategy — テスト場所・フレームワーク・テスト内容が明示されている。; Synthesize Draft, Do Not Copy — Issue #117 の内容をそのまま転写せず、Q&A・Alternatives 等で整理・抽象化されている。; Record Unresolved Points as Open Questions — Open Questions に未解決点が記録され、解決済みは `[x]` で明示されている。; Include 'Why This Approach' Rationale — Alternatives Considered で analysis.json 案・フィルタリング案の不採用理由が説明されている。; Backward — Compatible CLI Interface — 新規コマンド追加のみ。既存コマンドの削除・意味変更なし。; Exit Code Contract — 要件2で `stale` 時に exit 1 を定義しているが、`never-built` 時に exit 0 を返す（要件1）。`never-built` は build 未実行という異常状態とも解釈でき、exit 0 とする根拠（CI での意図的な0返却等）が spec に明記されていない。",
+      "trigger": "gate post hook (auto)",
+      "timestamp": "2026-04-08T12:44:31.712Z"
+    },
+    {
+      "step": "gate",
+      "reason": "Single Responsibility — `check freshness` コマンドの新規実装のみを対象としており、関連しない変更は含まれていない。; Unambiguous Requirements — mtime 比較条件、exit code、JSON スキーマ、ファイル上限数（10,000）がすべて検証可能な条件で記述されている。; Complete Context — 全要件に \"When ... the command shall ...\" の形式でトリガーと期待動作が明示されている。; No Hardcoded Secrets — 本 spec にソースコードは含まれず、API キー等の機密情報もない。; No Silent Error Swallowing — 本 spec はコードではなく仕様書であり、エラー握り潰しの記述はない。; Prioritize Requirements — 要件は7項目あるが、各要件は独立した状態ケースに対応しており依存関係が明確。ただし優先順位の明示はないため FAIL も検討できるが、相互に排他的なケース定義のため優先順位付けは不要と判断する。; Impact on Existing Features — \"Impact on Existing Features\" セクションで変更箇所と非変更箇所が明示されている。; Bounded Resource Usage — 要件7でファイル走査上限を10,000件と明示し、超過時の挙動も規定されている。; Changes Require Test Coverage — Test Strategy セクションで happy path を含む4ケースのテストが定義されている。; Spec Includes Test Strategy — テスト場所、フレームワーク、テスト内容が明示されている。; Synthesize Draft, Do Not Copy — Q&A・代替案・根拠が整理・抽象化されており、draft の直接コピーではない。; Record Unresolved Points as Open Questions — Open Questions セクションに未解決点が記録されており、`SDD_SOURCE_ROOT` 未設定ケースの解決策も明示されている。; Include 'Why This Approach' Rationale — Alternatives Considered セクションと要件1の Rationale 注釈で選択理由が説明されている。; Backward — Compatible CLI Interface — 既存コマンドの削除・意味変更はなく、新規サブコマンドの追加のみ。マイグレーション計画は不要。; Exit Code Contract — 要件1で `never-built` 状態を exit code 0 としているが、この状態は「build が一度も実行されていない」ことを示す診断結果であり、CI パイプラインが `stale` と区別できない可能性がある。`never-built` を exit code 2 等の非ゼロで返す選択肢が検討されていないため、exit code 契約の観点から根拠の補強が必要。",
+      "trigger": "gate post hook (auto)",
+      "timestamp": "2026-04-08T12:51:20.185Z"
+    },
+    {
+      "step": "gate",
+      "reason": "Single Responsibility — 単一機能（check freshness コマンド）のみ扱っている; Unambiguous Requirements — 各要件は mtime 比較・exit code・JSON スキーマなど検証可能な条件で記述されている; Complete Context — 全要件に When〜shall の形式でトリガーと期待動作が明記されている; No Hardcoded Secrets — 秘密情報を含むコードは存在しない; No Silent Error Swallowing — エラーハンドリングへの言及なし。該当コードが存在しないため適用外; Prioritize Requirements — 要件は7項目だが、鮮度判定の3状態・フォーマット・登録・境界値と論理的に整理されており優先順位付けは不要な構造; Impact on Existing Features — SCRIPTS マップへの1行追加・help 表示変化・既存コマンドへの影響なし、が明示されている; Bounded Resource Usage — 要件7でソース・docs それぞれ最大10,000ファイルの上限が明示されている; Changes Require Test Coverage — `never-built` ケースのテスト戦略で「exit 0」と記載されているが、要件1では「exit code 1」と定義されており、テスト戦略とプロダクト要件が矛盾している; Spec Includes Test Strategy — Test Strategy セクションにテスト場所・フレームワーク・4ケースの内容が記載されている; Synthesize Draft, Do Not Copy — spec は構造化・抽象化されており、草案の直接コピーではない; Record Unresolved Points as Open Questions — `SDD_SOURCE_ROOT` 未設定ケースが Open Questions に記録されており、回答も付記されている; Include 'Why This Approach' Rationale — Alternatives Considered セクションと要件1のRationaleで設計判断の根拠が説明されている; Backward — Compatible CLI Interface — 既存コマンドの変更なし、新規コマンドの追加のみ; Exit Code Contract — 要件1〜3でstale/never-builtはexit 1、freshはexit 0と明示されている",
+      "trigger": "gate post hook (auto)",
+      "timestamp": "2026-04-08T12:51:57.961Z"
+    },
+    {
+      "step": "gate-impl",
+      "reason": "never — built状態でexit 1 — `docs/`が存在しない場合に`result: \"never-built\"`を返し、`process.exit(EXIT_ERROR)`で終了; stale状態でexit 1 — srcMsがdocsMsより新しい場合に`result: \"stale\"`を返し、`process.exit(EXIT_ERROR)`で終了; fresh状態でexit 0 — docsMsがsrcMsと等しいか新しい場合に`result: \"fresh\"`を返し、正常終了（exit 0）; - — format jsonでJSONオブジェクト出力 — `{ ok, result, srcNewest, docsNewest }`形式のJSONをISO 8601タイムスタンプまたはnullで出力; - — format textでhuman-readableな1行出力 — switch文で`fresh`/`stale`/`never-built`それぞれのメッセージをstdoutへ出力; check.jsのSCRIPTSマップへのfreshnessエントリ追加 — `freshness: \"check/commands/freshness.js\"`が追加されアクセス可能; ファイル走査の上限10,000件制限と警告 — `FILE_LIMIT = 10_000`を設定し、超過時にstderrへ警告メッセージを出力; No Hardcoded Secrets — No API keys, passwords, or tokens found in the implementation.; No Silent Error Swallowing — `walkFiles` の catch は読み取れないファイルをスキップするのみで、エラー情報を握りつぶしてもディレクトリ走査の継続は妥当。`newestMtime` の catch も同様に unreadable ファイルのスキップであり、致命的エラーではない。; Bounded Resource Usage — `FILE_LIMIT = 10_000` で明示的な上限を設定し、超過時は警告を stderr に出力している（Requirement 7 対応）。; No Sensitive Data in Logs — ログに出力されるのはファイル数上限の警告メッセージのみ。パスワードや PII は含まない。; No Disabling Existing Tests — テストコードへの変更なし。; Escalate When New Tests Break Existing Tests — 新規テストは `specs/160-check-freshness/tests/` に配置され `npm test` から独立しており、既存テストへの影響なし。; Do Not Modify Existing Tests Without Approval — 既存テストファイルへの変更なし。; Flag Tests That Become Irrelevant — 既存機能への変更なし。; Exit Code Contract — `fresh` → exit 0、`stale` / `never-built` → `process.exit(EXIT_ERROR)`（非ゼロ）で正しく実装されている。; No Synchronous I/O in Hot Paths — `walkFiles` 内のループで `fs.readdirSync` と `newestMtime` 内のループで `fs.statSync` を使用しており、最大 10,000 ファイルをループ内で同期 I/O している。; Validate User Input at Entry Point — `--format` オプションは `main()` 入口で `[\"text\", \"json\"].includes(format)` によりバリデーションされ、不正値は即時エラー終了する。",
+      "trigger": "gate post hook (auto)",
+      "timestamp": "2026-04-08T13:07:44.130Z"
+    },
+    {
+      "step": "review",
+      "reason": "env var prefix inconsistency: SDD_WORK_ROOT/SDD_SOURCE_ROOT vs SDD_FORGE_PROFILE co-exist in the codebase",
+      "trigger": "review AI flagged prefix split across cli.js and agent.js",
+      "resolution": "out of scope for spec 160 — pre-existing inconsistency, deferred to a separate spec",
+      "guardrailCandidate": "when renaming env vars, update all references atomically including locale, docs, and AGENTS.md",
+      "timestamp": "2026-04-08T13:23:58.780Z"
+    }
+  ]
+}

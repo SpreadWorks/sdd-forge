@@ -1,0 +1,83 @@
+{
+  "spec": "specs/160-check-freshness/spec.md",
+  "date": "2026-04-08T13:27:39.258Z",
+  "requirements": [
+    {
+      "desc": "When docs/ does not exist, output never-built and exit 1",
+      "status": "done",
+      "note": "freshness.js: access() check returns {result:'never-built'}, main() calls process.exit(EXIT_ERROR) for !ok result"
+    },
+    {
+      "desc": "When src is newer than docs/, output stale and exit 1",
+      "status": "done",
+      "note": "checkFreshness() returns 'stale' when srcMs > docsMs; main() exits EXIT_ERROR for stale in both text and json paths"
+    },
+    {
+      "desc": "When docs/ is equal or newer than src, output fresh and exit 0",
+      "status": "done",
+      "note": "result = srcMs > docsMs ? 'stale' : 'fresh' — equal mtime yields 'fresh'; fresh path returns without calling process.exit"
+    },
+    {
+      "desc": "Support --format text|json output options",
+      "status": "done",
+      "note": "parseArgs with --format option and default 'text'; validation against ['text','json']; separate output branches for each format"
+    },
+    {
+      "desc": "Register freshness in src/check.js SCRIPTS map",
+      "status": "done",
+      "note": "src/check.js: freshness: 'check/commands/freshness.js' added to SCRIPTS map"
+    },
+    {
+      "desc": "Add src/check/commands/freshness.js as new file",
+      "status": "done",
+      "note": "src/check/commands/freshness.js created with 205 lines"
+    },
+    {
+      "desc": "Bound file traversal to 10000 files per side with warning on overflow",
+      "status": "done",
+      "note": "FILE_LIMIT=10_000 constant; walkFiles() sets truncated=true at limit; stderr warnings emitted for srcTruncated and docsTruncated"
+    }
+  ],
+  "unplanned": [
+    {
+      "file": "specs/160-check-freshness/draft.md",
+      "change": "New spec artifact file added (planning document)"
+    },
+    {
+      "file": "specs/160-check-freshness/flow.json",
+      "change": "New flow tracking file added (workflow state)"
+    },
+    {
+      "file": "specs/160-check-freshness/issue-log.json",
+      "change": "New issue log file added (gate review records)"
+    },
+    {
+      "file": "specs/160-check-freshness/qa.md",
+      "change": "New Q&A clarification file added"
+    },
+    {
+      "file": "specs/160-check-freshness/review.md",
+      "change": "New code review results file added"
+    },
+    {
+      "file": "specs/160-check-freshness/spec.md",
+      "change": "New feature specification file added"
+    },
+    {
+      "file": "specs/160-check-freshness/tests/README.md",
+      "change": "New test documentation file added"
+    },
+    {
+      "file": "specs/160-check-freshness/tests/freshness.test.js",
+      "change": "New spec-scoped verification test file added (not run by npm test)"
+    }
+  ],
+  "summary": {
+    "total": 7,
+    "done": 7,
+    "partial": 0,
+    "not_done": 0,
+    "rate": 1,
+    "notes": "All 7 requirements are fully satisfied. The implementation correctly handles all three freshness states with proper exit codes, supports both text and JSON output formats, registers in the SCRIPTS map, and bounds file traversal at 10,000 files per side with warnings. The unplanned changes are all spec/flow artifact files (draft, flow.json, issue-log, qa, review, spec, tests) which are expected SDD workflow outputs rather than unintended code changes."
+  }
+}
