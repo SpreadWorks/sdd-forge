@@ -1,5 +1,5 @@
 {
-  "analyzedAt": "2026-04-08T02:27:49.075Z",
+  "analyzedAt": "2026-04-08T05:05:22.098Z",
   "package": {
     "entries": [
       {
@@ -48,6 +48,90 @@
   },
   "modules": {
     "entries": [
+      {
+        "file": "src/check.js",
+        "hash": "edb1a125f5059d6d89a107e64c09dd6d",
+        "lines": 40,
+        "mtime": "2026-04-08T05:05:21.872Z",
+        "className": "check",
+        "methods": [],
+        "imports": [
+          "path",
+          "./lib/cli.js",
+          "./lib/exit-codes.js"
+        ],
+        "exports": [],
+        "extends": null,
+        "usedBy": null,
+        "id": "cfca7dd3",
+        "summary": "Entry point dispatcher for the `sdd-forge check` subcommand namespace. Routes sub-subcommands to their respective script files under the check/ directory.",
+        "detail": "Parses the first CLI argument to determine which check sub-script to invoke. Resolves the script path relative to PKG_DIR and delegates execution via dynamic import. Exits with EXIT_ERROR if the sub-script is not recognized. Follows the same dispatcher pattern used by docs.js and flow.js.",
+        "chapter": "project_structure",
+        "role": "cli",
+        "enrich": {
+          "processedAt": "2026-04-08T05:05:43.612Z",
+          "attempts": 1
+        },
+        "keywords": [
+          "check",
+          "dispatcher",
+          "subcommand",
+          "routing",
+          "dynamic import",
+          "PKG_DIR",
+          "entry point"
+        ]
+      },
+      {
+        "file": "src/check/commands/scan.js",
+        "hash": "de809b78283eceef9a676a31e2829c8f",
+        "lines": 281,
+        "mtime": "2026-04-08T05:05:21.872Z",
+        "className": "scan",
+        "methods": [
+          "printHelp",
+          "walkAllFiles",
+          "computeCoverage",
+          "formatText",
+          "formatMarkdown",
+          "main"
+        ],
+        "imports": [
+          "fs",
+          "path",
+          "../../lib/entrypoint.js",
+          "../../lib/cli.js",
+          "../../lib/config.js",
+          "../../docs/lib/scanner.js",
+          "../../lib/formatter.js",
+          "../../lib/exit-codes.js"
+        ],
+        "exports": [
+          "main"
+        ],
+        "extends": null,
+        "usedBy": null,
+        "id": "7cccb0de",
+        "summary": "Implements the `sdd-forge check scan` command, which computes and reports coverage between scanned source files and analysis.json. Supports text, JSON, and Markdown output formats.",
+        "detail": "Walks the repository source tree to collect all files, then compares them against the entries recorded in analysis.json to compute coverage ratios. Provides formatText and formatMarkdown helpers to render results for human or CI consumption. Accepts CLI flags including --format, --all, and --max-files to control output scope. Loads project config via loadConfig and resolves the analysis.json path through sddOutputDir. Exits with EXIT_ERROR on unknown format, missing config, or analysis.json not found.",
+        "chapter": "cli_commands",
+        "role": "cli",
+        "enrich": {
+          "processedAt": "2026-04-08T05:05:43.612Z",
+          "attempts": 1
+        },
+        "keywords": [
+          "check scan",
+          "coverage",
+          "analysis.json",
+          "file walk",
+          "source coverage",
+          "report",
+          "markdown",
+          "json output",
+          "scan coverage"
+        ]
+      },
       {
         "file": "src/docs.js",
         "hash": "28cd38d87b7e8dce36f3b8e6c4c31fd2",
@@ -2055,21 +2139,21 @@
       },
       {
         "file": "src/flow/commands/report.js",
-        "hash": "a688dd2e54b41519c57b72d96d6608cb",
-        "lines": 192,
-        "mtime": "2026-04-08T00:36:25.114Z",
+        "hash": "61fae3f0be09271db1db84397681b9d1",
+        "lines": 187,
+        "mtime": "2026-04-08T05:05:21.872Z",
         "className": "report",
         "methods": [
           "generateReport",
           "saveReport",
           "aggregateMetrics",
-          "pushSection",
           "formatText"
         ],
         "imports": [
           "fs",
           "path",
-          "../lib/set-issue-log.js"
+          "../lib/set-issue-log.js",
+          "../../lib/formatter.js"
         ],
         "exports": [
           "generateReport",
@@ -2078,25 +2162,23 @@
         "extends": null,
         "usedBy": null,
         "id": "5f80ffd2",
-        "summary": "Report generation module for SDD flow that aggregates metrics, formats output, and saves report artifacts to disk.",
-        "detail": "Provides three main exports: generateReport which produces both data and text representations from input, saveReport which persists the report as report.json alongside the spec file, and aggregateMetrics which computes totals from raw metrics. The module reads issue log data via loadIssueLog and formats it into human-readable sections using pushSection and formatText helpers. Report files are written to the same directory as the spec path, making them co-located with their source spec.",
+        "summary": "Provides report generation and persistence logic for the SDD flow. Aggregates per-phase metrics and serializes the report alongside the spec file.",
+        "detail": "Exports generateReport which combines raw issue-log data with aggregated metrics into a structured {data, text} result. aggregateMetrics folds per-entry metric objects into totals. formatText renders a human-readable summary using pushSection/DIVIDER from formatter.js. saveReport resolves the spec directory and writes report.json next to the spec file. Follows the pure-function pattern of the flow lib layer.",
         "chapter": "internal_design",
         "role": "lib",
         "enrich": {
-          "processedAt": "2026-04-08T00:36:32.323Z",
+          "processedAt": "2026-04-08T05:05:43.612Z",
           "attempts": 1
         },
         "keywords": [
-          "report",
+          "flow report",
           "metrics",
           "aggregation",
-          "issue-log",
+          "issue log",
+          "report.json",
           "generateReport",
           "saveReport",
-          "flow",
-          "spec",
-          "output",
-          "summary"
+          "spec"
         ]
       },
       {
@@ -3735,7 +3817,8 @@
           "src/lib/skills.js",
           "src/sdd-forge.js",
           "src/setup.js",
-          "src/upgrade.js"
+          "src/upgrade.js",
+          "src/check.js"
         ],
         "id": "f351ecc4",
         "summary": "Core CLI utility module providing repo root resolution, argument parsing, worktree detection, and package metadata helpers. Used throughout the CLI and flow layers.",
@@ -3892,7 +3975,8 @@
           "src/presets-cmd.js",
           "src/sdd-forge.js",
           "src/setup.js",
-          "src/upgrade.js"
+          "src/upgrade.js",
+          "src/check.js"
         ],
         "id": "82a3b684",
         "summary": "Defines numeric exit code constants EXIT_SUCCESS (0) and EXIT_ERROR (1) used consistently across all CLI entry points.",
@@ -4051,6 +4135,41 @@
           "FLOW_STEPS",
           "PHASE_MAP",
           "persist"
+        ]
+      },
+      {
+        "file": "src/lib/formatter.js",
+        "hash": "348d372e21f4c22d0f206c4a98ce5dd7",
+        "lines": 22,
+        "mtime": "2026-04-08T05:05:21.872Z",
+        "className": "formatter",
+        "methods": [
+          "pushSection"
+        ],
+        "imports": [],
+        "exports": [
+          "pushSection",
+          "DIVIDER"
+        ],
+        "extends": null,
+        "usedBy": null,
+        "id": "994720ab",
+        "summary": "Minimal shared formatting utility exporting a divider constant and a pushSection helper used across CLI output renderers.",
+        "detail": "Exports DIVIDER as a fixed Unicode box-drawing line string for visual separation in terminal output. pushSection appends a titled block with an optional custom divider to a lines array, providing a consistent section-header pattern. Used by check/scan, flow/report, and other output formatters throughout the codebase.",
+        "chapter": "internal_design",
+        "role": "lib",
+        "enrich": {
+          "processedAt": "2026-04-08T05:05:43.612Z",
+          "attempts": 1
+        },
+        "keywords": [
+          "formatter",
+          "DIVIDER",
+          "pushSection",
+          "terminal output",
+          "section header",
+          "utility",
+          "CLI formatting"
         ]
       },
       {
@@ -7566,9 +7685,9 @@
       },
       {
         "file": "src/sdd-forge.js",
-        "hash": "fc5574dfe7d758fa19b4ac846abef907",
+        "hash": "2f2bc70c57414b234050a888cff61b9d",
         "lines": 74,
-        "mtime": "2026-04-07T13:31:31.299Z",
+        "mtime": "2026-04-08T05:05:21.872Z",
         "className": "sdd-forge",
         "methods": [],
         "imports": [
@@ -7581,25 +7700,24 @@
         "extends": null,
         "usedBy": null,
         "id": "a8608997",
-        "summary": "Main CLI entry point for sdd-forge, dispatching subcommands to namespace dispatchers (docs, flow) or independent command scripts.",
-        "detail": "Parses the first argument to determine the subcommand, initializes the Logger singleton with project config, and rewrites process.argv before dynamically importing the target script. Namespace commands (docs, flow) are forwarded to their dispatcher modules; standalone commands (setup, upgrade, presets, etc.) map directly to script paths via the INDEPENDENT lookup table. Handles --help/--version flags early and exits with EXIT_ERROR for unknown commands.",
-        "chapter": "cli_commands",
+        "summary": "Top-level entry point for the sdd-forge CLI. Dispatches to namespace dispatchers (docs, flow, check) or independent command scripts based on the first CLI argument.",
+        "detail": "Resolves the raw subcommand from process.argv and routes to one of three namespace dispatcher scripts or a set of independent scripts defined in INDEPENDENT map. Handles the special-cased `help` command by importing help.js directly. Emits a deprecation warning if cfg.logs.prompts is detected in config. Uses dynamic import with process.argv mutation to pass arguments to child scripts. Exits with EXIT_ERROR for unrecognized subcommands.",
+        "chapter": "project_structure",
         "role": "cli",
         "enrich": {
-          "processedAt": "2026-04-07T13:32:57.482Z",
+          "processedAt": "2026-04-08T05:05:43.612Z",
           "attempts": 1
         },
         "keywords": [
+          "sdd-forge",
           "entry point",
           "dispatcher",
-          "CLI",
           "subcommand",
-          "docs",
-          "flow",
-          "sdd-forge",
-          "dynamic import",
           "namespace",
-          "routing"
+          "routing",
+          "dynamic import",
+          "CLI",
+          "main"
         ]
       },
       {
@@ -7717,10 +7835,10 @@
       }
     ],
     "summary": {
-      "total": 224,
-      "totalMethods": 717
+      "total": 227,
+      "totalMethods": 723
     },
     "dataSourceHash": "7d725e75d5031be445119323e4947c91"
   },
-  "enrichedAt": "2026-04-08T02:28:06.724Z"
+  "enrichedAt": "2026-04-08T05:05:43.612Z"
 }
