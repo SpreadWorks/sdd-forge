@@ -8,6 +8,7 @@
 import fs from "fs";
 import path from "path";
 import { loadIssueLog } from "../lib/set-issue-log.js";
+import { pushSection, DIVIDER } from "../../lib/formatter.js";
 
 /**
  * Aggregate metrics across all phases.
@@ -108,12 +109,6 @@ export function generateReport(input) {
  * @param {string} title
  * @param {string} thin - divider string
  */
-function pushSection(lines, title, thin) {
-  lines.push("");
-  lines.push(`  ${title}`);
-  lines.push(`  ${thin}`);
-}
-
 /**
  * Format report data as human-readable plain text.
  * @param {Object} data - structured report data
@@ -121,7 +116,7 @@ function pushSection(lines, title, thin) {
  */
 function formatText(data) {
   const lines = [];
-  const thin = "────────────────────────────────────────────────";
+  const thin = DIVIDER;
 
   lines.push("  Report");
 

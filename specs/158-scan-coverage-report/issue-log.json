@@ -1,0 +1,30 @@
+{
+  "entries": [
+    {
+      "step": "gate-draft",
+      "reason": "Single Responsibility — `sdd-forge check scan` の追加に限定。`check` グループの骨格作成も直接関連する。; Unambiguous Requirements — カバレッジは「ファイル数の比率」で定義され、表示件数は「10件」と明示。`--format` オプションも列挙形式で明確。; Complete Context — Q&A 形式で各要件に「何が」「どう動くか」が対応付けられている。; No Hardcoded Secrets — 設定ファイル解析ツールであり、秘密情報は関与しない。; Prioritize Requirements — 影響範囲に6件の変更項目があるが、優先順序（新規コマンド実装 vs リファクタ等）が明示されていない。; Impact on Existing Features — 既存の `sdd-forge docs scan` への影響なしと明示。; Present Recommendations with Reasoning — 各 Q に対し推奨案と根拠（既存パターン参照等）が示されている。; Explore Before Asking — `report.js` の `pushSection` / `formatText` パターンを調査した上で共通化方針を提示している。; Proactively Raise Related Implications — `check` グループ導入による `sdd-forge.js` ルーティング更新と help テキスト更新を先回りして列挙している。; Confirm Brainstorm vs. Decision Before Critiquing — ドラフトは決定事項として記載されており、ブレインストーミング段階ではない。; Capture Digressions in draft.md — `freshness` / `60d8` 等の関連 spec を別 spec と明示して分離している。; Draft Stays at Requirements Level — 関数名（`pushSection`）への言及はあるが、実装詳細の指定ではなく「共通化先の候補」として要件を記述している。許容範囲内。; Backward — Compatible CLI Interface — 既存コマンドの変更なし。新規コマンド追加のみ。",
+      "trigger": "gate post hook (auto)",
+      "timestamp": "2026-04-08T02:59:14.038Z"
+    },
+    {
+      "step": "gate-draft",
+      "reason": "Single Responsibility — `sdd-forge check scan` コマンド追加という単一の関心事に絞られている。`check` ディスパッチャ骨格は前提インフラとして同一 spec に含まれており妥当。; Unambiguous Requirements — カバレッジは「全ファイル数 vs マッチ数」「マッチ数 vs 解析数」と数値で定義されており、曖昧な形容詞は使われていない。; Complete Context — Q&A 形式で各要件にトリガー（コマンド実行）と期待動作（2段階表示、フォーマット等）が対応している。; No Hardcoded Secrets — コマンドツール仕様であり、シークレットに関する要素は存在しない。; Prioritize Requirements — 影響範囲が1〜6の優先順で明示されている。; Impact on Existing Features — `sdd-forge docs scan` の動作は変更しないと明記されており、既存機能への影響が説明されている。; Present Recommendations with Reasoning — 各 Q に対して推奨案が示されており、Q3 では既存コードパターン（`report.js`）を根拠として明示している。; Explore Before Asking — Q3 で `src/flow/commands/report.js` の既存パターンを参照しており、コード探索済みであることが示されている。; Proactively Raise Related Implications — `src/lib/formatter.js` 抽出（影響範囲1→2）という設計変更が `report.js` 以外にも波及する可能性（他コマンドの formatter 利用有無、破壊的変更リスク）が言及されていない。; Confirm Brainstorm vs. Decision Before Critiquing — 「User approved this draft」とあり、決定済みとして扱われている。批評の前に確認が必要な状況ではない。; Capture Digressions in draft.md — `freshness` / `config` の別 spec（ボード 1ce3 / 60d8）を明示して分離しており、脱線を適切に処理している。; Draft Stays at Requirements Level — 共通モジュール抽出の方針は示しているが、関数シグネチャや実装詳細には踏み込んでいない。要件レベルに留まっている。; Backward — Compatible CLI Interface — 新コマンド追加のみであり、既存コマンドの意味変更・削除はない。移行計画は不要。",
+      "trigger": "gate post hook (auto)",
+      "timestamp": "2026-04-08T02:59:41.984Z"
+    },
+    {
+      "step": "gate",
+      "reason": "line 90: unchecked task/question (- [ ] デフォルト除外リスト（`node_modules`, `.git`, `dist`, `*.lock` 等）の具体的なパターンは実装時に `scanner.js` の既存除外ロジックを参照して決定する。)",
+      "trigger": "gate post hook (auto)",
+      "timestamp": "2026-04-08T03:01:04.689Z"
+    },
+    {
+      "step": "review",
+      "reason": "codex agent が --json フラグを exec の前に渡してエラー（'codex --json exec' → 'codex exec --json' が正しい）",
+      "trigger": "sdd-forge flow run review 実行時",
+      "resolution": "review ステップをスキップ。codex agent の引数順序バグは別 spec で対処",
+      "guardrailCandidate": "agent コマンド呼び出しは CLI のフラグ順序をテストで検証する",
+      "timestamp": "2026-04-08T03:24:55.818Z"
+    }
+  ]
+}

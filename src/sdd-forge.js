@@ -48,7 +48,7 @@ try {
 } catch { /* pre-setup or missing config — Logger stays uninitialized, logs silently skipped */ }
 
 /** Namespace dispatchers — receive subcommand + rest args */
-const NAMESPACE_DISPATCHERS = new Set(["docs", "flow"]);
+const NAMESPACE_DISPATCHERS = new Set(["docs", "flow", "check"]);
 
 /** Independent commands — receive rest args directly */
 const INDEPENDENT = {
