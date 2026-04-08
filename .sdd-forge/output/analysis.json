@@ -1,5 +1,5 @@
 {
-  "analyzedAt": "2026-04-08T05:05:22.098Z",
+  "analyzedAt": "2026-04-08T05:43:34.427Z",
   "package": {
     "entries": [
       {
@@ -3646,9 +3646,9 @@
       },
       {
         "file": "src/lib/agent.js",
-        "hash": "4b5104f65c804d99ba5dd16bc4e60216",
-        "lines": 707,
-        "mtime": "2026-04-08T02:08:58.908Z",
+        "hash": "d1a7aeb05923432e5929e8d414e1fda3",
+        "lines": 739,
+        "mtime": "2026-04-08T05:43:34.202Z",
         "className": "agent",
         "methods": [
           "callAgent",
@@ -3682,8 +3682,9 @@
           "callAgentAsyncRawOnce",
           "callAgentAsyncRaw",
           "callAgentAsyncOnce",
-          "resolveCommandSettings",
-          "mergeProfileArgs"
+          "resolveProfileName",
+          "buildAgentResult",
+          "resolveProviderKeyFromProfile"
         ],
         "imports": [
           "crypto",
@@ -3705,19 +3706,20 @@
           "writeAgentContext",
           "cleanupAgentContext",
           "DEFAULT_AGENT_TIMEOUT",
-          "DEFAULT_AGENT_TIMEOUT_MS"
+          "DEFAULT_AGENT_TIMEOUT_MS",
+          "BUILTIN_PROVIDERS"
         ],
         "extends": null,
         "usedBy": [
           "src/setup.js"
         ],
         "id": "13ddf392",
-        "summary": "Agent invocation layer that handles calling external AI agents (Claude, Codex) synchronously and asynchronously, with logging, retry logic, and provider-specific output parsing.",
-        "detail": "Provides multiple call variants: synchronous `callAgent`/`callAgentWithLog`, async `callAgentAsync`/`callAgentAsyncWithLog`/`callAgentAwaitLog`, each delegating to shared raw invocation and logging infrastructure. Provider detection is based on the command name, and each provider has a dedicated output parser to normalize stdout into a common `{text, usage}` shape. Large prompts exceeding an argv size threshold are passed via stdin rather than as command-line arguments. Retry logic is implemented in `callAgentAsyncWithRetry` with configurable count and delay. Agent configuration is resolved via `resolveAgent`/`loadAgentConfig`, supporting profile-based argument merging and per-command command settings.",
+        "summary": "Core agent invocation library that handles building, executing, and logging calls to AI agent processes (Claude, Codex, etc.). Provides both synchronous and asynchronous execution paths with retry logic and structured output parsing.",
+        "detail": "Implements provider-specific output parsers (parseClaudeOutput, parseCodexOutput) and normalizes results via resolveAgentResult. Supports multiple invocation strategies including stdin-based prompt injection and argv-based prompts, with ARGV_SIZE_THRESHOLD gating the choice. Includes retry logic in callAgentAsyncWithRetry and structured logging via runWithAgentLogging/runWithAgentLoggingSync wrappers. Agent resolution (resolveAgent) supports profile switching via SDD_FORGE_PROFILE env var and per-commandId provider key mapping. Also provides writeAgentContext/cleanupAgentContext for injecting temporary rule files into agent working directories.",
         "chapter": "internal_design",
         "role": "lib",
         "enrich": {
-          "processedAt": "2026-04-08T02:09:07.844Z",
+          "processedAt": "2026-04-08T05:43:49.846Z",
           "attempts": 1
         },
         "keywords": [
@@ -3725,14 +3727,14 @@
           "AI invocation",
           "claude",
           "codex",
-          "execFileSync",
           "spawn",
-          "async",
+          "execFileSync",
           "retry",
-          "logging",
+          "async",
           "provider",
-          "output parsing",
+          "profile",
           "stdin",
+          "logging",
           "timeout"
         ]
       },
@@ -7722,9 +7724,9 @@
       },
       {
         "file": "src/setup.js",
-        "hash": "2c6d7f3d0827efef3c7f37cfae1c74a7",
-        "lines": 595,
-        "mtime": "2026-04-08T02:15:29.846Z",
+        "hash": "e036f650f7ab259a17940c5e0323b032",
+        "lines": 561,
+        "mtime": "2026-04-08T05:43:34.202Z",
         "className": "setup",
         "methods": [
           "ask",
@@ -7765,24 +7767,27 @@
         "extends": null,
         "usedBy": null,
         "id": "9820c9db",
-        "summary": "Interactive setup wizard that initialises a new sdd-forge project: prompts for config, creates directory structure, writes config.json, and deploys skills and agent files.",
-        "detail": "main() orchestrates the full setup flow: parse CLI args, run the interactive wizard (runWizard), register the project path, ensure required directories and git config files exist, write config.json, generate AGENTS.md/CLAUDE.md, and deploy skills via deploySkills. Helper functions handle gitignore and gitattributes patching, symlink correction for CLAUDE.md, and injecting the SDD directive block into existing agent config files. The wizard collects lang, preset, purpose, and tone from the user with readline prompts, falling back to existing config defaults.",
+        "summary": "Interactive setup wizard that initializes a new sdd-forge project by prompting for configuration, writing config.json, deploying skills, and generating AGENTS.md/CLAUDE.md. Handles directory scaffolding, .gitignore, .gitattributes, and symlink management.",
+        "detail": "Reads existing config defaults via loadExistingDefaults and guides the user through preset selection, language, agent provider, and docs purpose via runWizard. Creates project directory structure (ensureProjectDirs) including .sdd-forge/output, docs/, and specs/. Manages .gitignore and .gitattributes entries for generated files. Generates AGENTS.md content with SDD directives via ensureAgentConfigFile, and fixes CLAUDE.md from a regular file to a symlink via fixClaudeMdSymlink. Deploys skills via deploySkills and validates the final config with validateConfig before writing.",
         "chapter": "cli_commands",
         "role": "cli",
         "enrich": {
-          "processedAt": "2026-04-08T02:28:06.724Z",
+          "processedAt": "2026-04-08T05:43:49.846Z",
           "attempts": 1
         },
         "keywords": [
           "setup",
           "wizard",
-          "init",
           "config.json",
+          "scaffolding",
           "AGENTS.md",
           "CLAUDE.md",
           "skills",
-          "gitignore",
           "preset",
+          "gitignore",
+          "gitattributes",
+          "i18n",
+          "readline",
           "interactive"
         ]
       },
@@ -7836,9 +7841,9 @@
     ],
     "summary": {
       "total": 227,
-      "totalMethods": 723
+      "totalMethods": 724
     },
     "dataSourceHash": "7d725e75d5031be445119323e4947c91"
   },
-  "enrichedAt": "2026-04-08T05:05:43.612Z"
+  "enrichedAt": "2026-04-08T05:43:49.846Z"
 }
