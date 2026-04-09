@@ -12,6 +12,8 @@
 <!-- {{text({prompt: "Write a 1-2 sentence overview of this chapter. Include the number of major directories and their roles."})}} -->
 
 The source tree is organized into four major directories, each with a distinct role: `src/lib/` provides core shared utilities used across the entire codebase, `src/docs/` contains the documentation generation pipeline (CLI commands, DataSources, and engine libraries), `src/flow/` orchestrates the Spec-Driven Development workflow, and `src/check/` implements quality-gate checks.
+<!-- {{/text}} -->
+
 ## Content
 
 ### Directory Layout
@@ -36,8 +38,6 @@ src/lib/    (lib, model)
 
 ### Shared Libraries
 
-<!-- {{text({prompt: "List the shared libraries with class name, file path, and responsibility in table format."})}} -->
-<!-- {{/text}} -->
 <!-- {{text({prompt: "List the shared libraries with class name, file path, and responsibility in table format."})}} -->
 
 The following modules in `src/lib/` are shared across the docs, flow, and check layers.
@@ -66,3 +66,4 @@ The following modules in `src/lib/` are shared across the docs, flow, and check 
 | progress | `src/lib/progress.js` | Progress bar and pipeline logging with ANSI-aware header pinning |
 | skills | `src/lib/skills.js` | Skill template deployment to `.agents/skills/` and `.claude/skills/` |
 | types | `src/lib/types.js` | JSDoc type definitions and config validation (`SddConfig`, `AgentProvider`, `DocumentStyle`, etc.) |
+<!-- {{/text}} -->
