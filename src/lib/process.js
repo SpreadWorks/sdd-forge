@@ -6,6 +6,7 @@
  */
 
 import { execFileSync, execFile } from "child_process";
+import { Logger } from "./log.js";
 
 /**
  * Run a command synchronously.
@@ -30,9 +31,11 @@ export function runCmd(cmd, args, opts = {}) {
       stdio: ["pipe", "pipe", "pipe"],
       ...(opts.env && { env: opts.env }),
     });
-    return { ok: true, status: 0, stdout: String(stdout || ""), stderr: "", signal: null, killed: false };
+    const result = { ok: true, status: 0, stdout: String(stdout || ""), stderr: "", signal: null, killed: false };
+    if (cmd === "git") Logger.getInstance().git({ cmd: [cmd, ...args], exitCode: 0, stderr: "" });
+    return result;
   } catch (e) {
-    return {
+    const result = {
       ok: false,
       status: e.status ?? 1,
       stdout: String(e.stdout || ""),
@@ -40,6 +43,8 @@ export function runCmd(cmd, args, opts = {}) {
       signal: e.signal ?? null,
       killed: e.killed ?? false,
     };
+    if (cmd === "git") Logger.getInstance().git({ cmd: [cmd, ...args], exitCode: result.status, stderr: result.stderr });
+    return result;
   }
 }
 
@@ -69,25 +74,28 @@ export function runCmdAsync(cmd, args, opts = {}) {
         ...(opts.env && { env: opts.env }),
       },
       (err, stdout, stderr) => {
+        let result;
         if (err) {
-          resolve({
+          result = {
             ok: false,
             status: typeof err.code === "number" ? err.code : 1,
             stdout: String(stdout || ""),
             stderr: String(stderr || err.message || ""),
             signal: err.signal ?? null,
             killed: err.killed ?? false,
-          });
+          };
         } else {
-          resolve({
+          result = {
             ok: true,
             status: 0,
             stdout: String(stdout || ""),
             stderr: String(stderr || ""),
             signal: null,
             killed: false,
-          });
+          };
         }
+        if (cmd === "git") Logger.getInstance().git({ cmd: [cmd, ...args], exitCode: result.status, stderr: result.stderr });
+        resolve(result);
       },
     );
   });

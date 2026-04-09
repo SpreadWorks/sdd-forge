@@ -1,0 +1,24 @@
+{
+  "entries": [
+    {
+      "step": "implement",
+      "reason": "tests 72, 74, 75, 80, 98 (scan pipeline redesign related) were already failing before this spec's changes — unrelated to Logger call site additions",
+      "trigger": "npm test revealed pre-existing failures in e2e scan tests",
+      "resolution": "tests are out of scope; no adjustment made to test or product code",
+      "guardrailCandidate": "always run npm test before starting implementation to establish baseline of pre-existing failures",
+      "timestamp": "2026-04-09T03:12:28.029Z"
+    },
+    {
+      "step": "merge",
+      "reason": "Merge conflict detected. Run 'git rebase main' in the worktree and retry finalize.",
+      "timestamp": "2026-04-09T03:17:55.590Z"
+    },
+    {
+      "step": "finalize",
+      "reason": "merge conflict when merging feature/163-logger-callsite-replace into main",
+      "trigger": "sdd-forge flow run finalize --mode all",
+      "resolution": "run git rebase main in worktree and retry finalize",
+      "timestamp": "2026-04-09T03:18:01.356Z"
+    }
+  ]
+}

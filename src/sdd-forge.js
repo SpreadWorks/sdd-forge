@@ -37,7 +37,7 @@ if (!subCmd || subCmd === "-h" || subCmd === "--help") {
 
 // Initialize Logger singleton (best-effort — config may not exist yet)
 try {
-  const { loadConfig } = await import("./lib/config.js");
+  const { loadConfig, sddConfigPath } = await import("./lib/config.js");
   const root = repoRoot();
   const cfg = loadConfig(root);
   const entryCommand = rawArgs.join(" ");
@@ -46,6 +46,7 @@ try {
     process.stderr.write("[sdd-forge] WARN: cfg.logs.prompts is deprecated. Use cfg.logs.enabled instead.\n");
   }
   Logger.getInstance().init(root, cfg, { entryCommand });
+  Logger.getInstance().event("config-loaded", { path: sddConfigPath(root), keys: Object.keys(cfg) });
 } catch (err) {
   /* pre-setup or missing config — Logger stays uninitialized */
   if (err?.code !== "ERR_MISSING_FILE") process.stderr.write(`[sdd-forge] Logger init failed: ${err?.message}\n`);

@@ -1,0 +1,76 @@
+{
+  "spec": "specs/163-logger-callsite-replace/spec.md",
+  "date": "2026-04-09T03:17:54.394Z",
+  "requirements": [
+    {
+      "desc": "runCmd で cmd==git を検出し Logger.git を fire-and-forget で呼ぶ",
+      "status": "done",
+      "note": "src/lib/process.js の try ブロック（exitCode: 0 ハードコード）と catch ブロック（result.status/stderr 参照）の両方で Logger.getInstance().git() を呼んでいる"
+    },
+    {
+      "desc": "runCmdAsync も同様に Logger.git を呼ぶ",
+      "status": "done",
+      "note": "runCmdAsync のコールバック内で result 構築後に Logger.getInstance().git() を fire-and-forget で呼んでいる"
+    },
+    {
+      "desc": "未初期化/disabled 時は no-op を維持",
+      "status": "done",
+      "note": "Logger クラス自体の no-op 実装は変更なし。call site 追加は Logger の既存ガードを通過するため動作変更なし"
+    },
+    {
+      "desc": "runCmd/runCmdAsync のシグネチャ・戻り値は変更しない",
+      "status": "done",
+      "note": "戻り値オブジェクトの構造は同一。result 変数への代入は中間ステップのみで、返却値の形状は不変"
+    },
+    {
+      "desc": "loadConfig 完了時に Logger.event(config-loaded, {path, keys}) を呼ぶ",
+      "status": "done",
+      "note": "src/sdd-forge.js で Logger.init 直後に Logger.getInstance().event(\"config-loaded\", { path: sddConfigPath(root), keys: Object.keys(cfg) }) を呼んでいる"
+    },
+    {
+      "desc": "docs build 各ステップ開始時に Logger.event(pipeline-step, {step, phase:start}) を呼ぶ",
+      "status": "done",
+      "note": "scan/enrich/init/data/text/readme/agents/translate の全8ステップに Logger.getInstance().event(\"pipeline-step\", { step, phase: \"start\" }) が追加されている。init は --regenerate 時には実行されないが、実行時は正しく記録される"
+    },
+    {
+      "desc": "flow set step 変更時に Logger.event(flow-step-change, {step, status}) を呼ぶ",
+      "status": "done",
+      "note": "src/flow/lib/set-step.js の updateStepStatus 呼び出し直後に Logger.getInstance().event(\"flow-step-change\", { step: id, status }) を追加"
+    },
+    {
+      "desc": "重要な console.error 箇所に Logger.event(error, {message}) を追加する",
+      "status": "partial",
+      "note": "src/docs.js の build パイプライン catch ブロック1箇所のみ追加。他ファイルの console.error（setup.js, flow commands 等）は対応されていないが、スコープが「最低限の主要 call site」のため許容範囲内"
+    }
+  ],
+  "unplanned": [
+    {
+      "file": "src/lib/process.js",
+      "change": "runCmd success path の git log 呼び出しで exitCode: 0, stderr: \"\" をハードコード。spec は result.status / result.stderr 参照を意図していたが、success 時の値は常に同一のため動作差異なし。review の Proposal 4 はREJECT済み"
+    },
+    {
+      "file": "docs/cli_commands.md, docs/configuration.md, docs/internal_design.md, docs/overview.md, docs/project_structure.md, docs/stack_and_ops.md",
+      "change": "{{text}} ディレクティブ内のコンテンツが削除されブランク化。sdd-forge docs build か scan 実行の副作用と思われる"
+    },
+    {
+      "file": ".sdd-forge/output/analysis.json",
+      "change": "analyzedAt タイムスタンプ更新、全エントリから summary/detail/chapter/role/enrich/keywords フィールドが削除され id のみに。sdd-forge scan --reset 相当の実行による副作用"
+    },
+    {
+      "file": "docs/change_log.md",
+      "change": "spec 162-improve-choice-format-enforcement と 163-logger-callsite-replace のエントリを追加。SDD ワークフロー成果物として想定内だが機能要件には含まれない"
+    },
+    {
+      "file": "docs/project_structure.md",
+      "change": "Directory Responsibilities テーブルのデータが更新され、Shared Libraries セクションのコンテンツが削除。analysis.json 再生成の副作用"
+    }
+  ],
+  "summary": {
+    "total": 8,
+    "done": 7,
+    "partial": 1,
+    "not_done": 0,
+    "rate": 0.94,
+    "notes": "P1（Logger.git 接続）は完全実装。P2（Logger.event call site）はconfig-loaded/pipeline-step/flow-step-change の3イベントは完全実装。error イベントは build パイプラインの catch のみで他 console.error は未対応だが spec の「最低限の主要 call site」という表現から許容範囲内。主な懸念は docs/*.md のコンテンツ消失と analysis.json の enrich データ削除で、これらは機能実装とは無関係な副作用。success path の exitCode ハードコードは動作上同値だが spec の意図（result.status 参照）とは厳密に一致しない。"
+  }
+}

@@ -8,6 +8,7 @@
 import fs from "fs";
 import path from "path";
 import { PKG_DIR } from "./lib/cli.js";
+import { Logger } from "./lib/log.js";
 import { resolveCommandContext } from "./docs/lib/command-context.js";
 import { resolveOutputConfig } from "./lib/types.js";
 import { EXIT_ERROR } from "./lib/exit-codes.js";
@@ -99,11 +100,13 @@ if (subCmd === "build") {
 
   try {
     // 1. scan
+    Logger.getInstance().event("pipeline-step", { step: "scan", phase: "start" });
     progress.start("scan");
     await scanMain({ ...baseCtx });
     progress.stepDone();
 
     // 2. enrich
+    Logger.getInstance().event("pipeline-step", { step: "enrich", phase: "start" });
     progress.start("enrich");
     if (hasAgent) {
       await enrichMain({ ...baseCtx, commandId: "docs.enrich" });
@@ -122,17 +125,20 @@ if (subCmd === "build") {
         process.exit(EXIT_ERROR);
       }
     } else {
+      Logger.getInstance().event("pipeline-step", { step: "init", phase: "start" });
       progress.start("init");
       await initMain({ ...baseCtx, force: hasForce, dryRun: isDryRun, commandId: "docs.init" });
       progress.stepDone();
     }
 
     // 4. data
+    Logger.getInstance().event("pipeline-step", { step: "data", phase: "start" });
     progress.start("data");
     await dataMain({ ...baseCtx, dryRun: isDryRun });
     progress.stepDone();
 
     // 5. text — delegate file selection, diff detection, and strip to text.js
+    Logger.getInstance().event("pipeline-step", { step: "text", phase: "start" });
     progress.start("text");
     if (hasAgent) {
       const textResult = await textMain({ ...baseCtx, dryRun: isDryRun, commandId: "docs.text", force: hasForce });
@@ -145,17 +151,20 @@ if (subCmd === "build") {
     progress.stepDone();
 
     // 6. readme
+    Logger.getInstance().event("pipeline-step", { step: "readme", phase: "start" });
     progress.start("readme");
     await readmeMain({ ...baseCtx, dryRun: isDryRun, commandId: "docs.readme" });
     progress.stepDone();
 
     // 7. agents
+    Logger.getInstance().event("pipeline-step", { step: "agents", phase: "start" });
     progress.start("agents");
     await agentsMain({ ...baseCtx, dryRun: isDryRun, commandId: "docs.agents" });
     progress.stepDone();
 
     // 8. Multi-language: generate non-default languages
     if (outputCfg.isMultiLang) {
+      Logger.getInstance().event("pipeline-step", { step: "translate", phase: "start" });
       progress.start("translate");
       const nonDefaultLangs = outputCfg.languages.filter((l) => l !== outputCfg.default);
       const docsDir = baseCtx.docsDir;
@@ -210,6 +219,7 @@ if (subCmd === "build") {
     progress.done();
   } catch (err) {
     progress.done();
+    Logger.getInstance().event("error", { message: err.message });
     console.error(`[build] ERROR: ${err.message}`);
     process.exit(EXIT_ERROR);
   }

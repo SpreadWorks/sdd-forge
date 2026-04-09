@@ -9,6 +9,7 @@
 
 import { FlowCommand } from "./base-command.js";
 import { updateStepStatus } from "../../lib/flow-state.js";
+import { Logger } from "../../lib/log.js";
 
 export default class SetStepCommand extends FlowCommand {
   execute(ctx) {
@@ -19,6 +20,7 @@ export default class SetStepCommand extends FlowCommand {
     }
 
     updateStepStatus(ctx.root, id, status);
+    Logger.getInstance().event("flow-step-change", { step: id, status });
 
     return { id, status };
   }

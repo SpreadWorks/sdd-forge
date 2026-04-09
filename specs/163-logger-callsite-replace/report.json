@@ -1,0 +1,34 @@
+{
+  "data": {
+    "implementation": {
+      "diffStat": ".sdd-forge/output/analysis.json                    | 2628 +++-----------------\n docs/change_log.md                                 |    8 +-\n docs/cli_commands.md                               |  431 ----\n docs/configuration.md                              |   98 +-\n docs/internal_design.md                            |  189 --\n docs/overview.md                                   |  200 --\n docs/project_structure.md                          |   49 +-\n docs/stack_and_ops.md                              |   39 +-\n specs/163-logger-callsite-replace/draft.md         |   63 +\n specs/163-logger-callsite-replace/flow.json        |  157 ++\n specs/163-logger-callsite-replace/issue-log.json   |   12 +\n specs/163-logger-callsite-replace/qa.md            |    9 +\n specs/163-logger-callsite-replace/review.md        |   84 +\n specs/163-logger-callsite-replace/spec.md          |   92 +\n specs/163-logger-callsite-replace/tests/README.md  |   28 +\n .../tests/logger-callsite.test.js                  |  151 ++\n src/docs.js                                        |   10 +\n src/flow/lib/set-step.js                           |    2 +\n src/lib/process.js                                 |   20 +-\n src/sdd-forge.js                                   |    3 +-\n 20 files changed, 1034 insertions(+), 3239 deletions(-)",
+      "commits": [
+        "feat: feature/163-logger-callsite-replace"
+      ]
+    },
+    "retro": {
+      "total": 8,
+      "done": 7,
+      "partial": 1,
+      "not_done": 0,
+      "rate": 0.94,
+      "notes": "P1（Logger.git 接続）は完全実装。P2（Logger.event call site）はconfig-loaded/pipeline-step/flow-step-change の3イベントは完全実装。error イベントは build パイプラインの catch のみで他 console.error は未対応だが spec の「最低限の主要 call site」という表現から許容範囲内。主な懸念は docs/*.md のコンテンツ消失と analysis.json の enrich データ削除で、これらは機能実装とは無関係な副作用。success path の exitCode ハードコードは動作上同値だが spec の意図（result.status 参照）とは厳密に一致しない。"
+    },
+    "issueLog": {
+      "count": 0,
+      "entries": []
+    },
+    "metrics": {
+      "docsRead": 2,
+      "srcRead": 1,
+      "question": 6,
+      "issueLog": 1
+    },
+    "tests": null,
+    "sync": {
+      "status": "skipped",
+      "reason": "sync was skipped"
+    }
+  },
+  "text": "  Report\n\n  Implementation\n  ────────────────────────────────────────────────\n    feat: feature/163-logger-callsite-replace\n    20 files changed, 1034 insertions(+), 3239 deletions(-)\n\n  Retro\n  ────────────────────────────────────────────────\n    ████████ 94%  (7 done / 1 partial / 0 miss)\n\n  Metrics\n  ────────────────────────────────────────────────\n    docs read 2  src read 1  Q&A 6  issue-log 1\n\n  Tests\n  ────────────────────────────────────────────────\n    -"
+}

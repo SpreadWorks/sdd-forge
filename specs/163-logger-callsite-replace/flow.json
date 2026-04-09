@@ -1,0 +1,161 @@
+{
+  "spec": "specs/163-logger-callsite-replace/spec.md",
+  "baseBranch": "main",
+  "featureBranch": "feature/163-logger-callsite-replace",
+  "steps": [
+    {
+      "id": "approach",
+      "status": "done"
+    },
+    {
+      "id": "branch",
+      "status": "done"
+    },
+    {
+      "id": "prepare-spec",
+      "status": "pending"
+    },
+    {
+      "id": "draft",
+      "status": "done"
+    },
+    {
+      "id": "gate-draft",
+      "status": "done"
+    },
+    {
+      "id": "spec",
+      "status": "done"
+    },
+    {
+      "id": "gate",
+      "status": "done"
+    },
+    {
+      "id": "approval",
+      "status": "done"
+    },
+    {
+      "id": "test",
+      "status": "done"
+    },
+    {
+      "id": "implement",
+      "status": "done"
+    },
+    {
+      "id": "gate-impl",
+      "status": "done"
+    },
+    {
+      "id": "review",
+      "status": "done"
+    },
+    {
+      "id": "finalize",
+      "status": "pending"
+    },
+    {
+      "id": "commit",
+      "status": "pending"
+    },
+    {
+      "id": "push",
+      "status": "pending"
+    },
+    {
+      "id": "merge",
+      "status": "pending"
+    },
+    {
+      "id": "pr-create",
+      "status": "pending"
+    },
+    {
+      "id": "branch-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "pr-merge",
+      "status": "pending"
+    },
+    {
+      "id": "sync-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "docs-update",
+      "status": "pending"
+    },
+    {
+      "id": "docs-review",
+      "status": "pending"
+    },
+    {
+      "id": "docs-commit",
+      "status": "pending"
+    }
+  ],
+  "requirements": [
+    {
+      "desc": "runCmd で cmd==git を検出し Logger.git を fire-and-forget で呼ぶ",
+      "status": "done"
+    },
+    {
+      "desc": "runCmdAsync も同様に Logger.git を呼ぶ",
+      "status": "done"
+    },
+    {
+      "desc": "未初期化/disabled 時は no-op を維持",
+      "status": "done"
+    },
+    {
+      "desc": "runCmd/runCmdAsync のシグネチャ・戻り値は変更しない",
+      "status": "done"
+    },
+    {
+      "desc": "loadConfig 完了時に Logger.event(config-loaded, {path, keys}) を呼ぶ",
+      "status": "done"
+    },
+    {
+      "desc": "docs build 各ステップ開始時に Logger.event(pipeline-step, {step, phase:start}) を呼ぶ",
+      "status": "done"
+    },
+    {
+      "desc": "flow set step 変更時に Logger.event(flow-step-change, {step, status}) を呼ぶ",
+      "status": "done"
+    },
+    {
+      "desc": "重要な console.error 箇所に Logger.event(error, {message}) を追加する",
+      "status": "done"
+    }
+  ],
+  "issue": 123,
+  "request": "make a resume command",
+  "worktree": true,
+  "metrics": {
+    "plan": {
+      "docsRead": 1
+    },
+    "draft": {
+      "docsRead": 1,
+      "srcRead": 1,
+      "question": 6
+    },
+    "impl": {
+      "issueLog": 2
+    }
+  },
+  "notes": [
+    "Q1: Logger.git フック位置 → runCmd 内で cmd === 'git' を検出",
+    "Q2: runCmdAsync も Logger.git フック対象に含める",
+    "Q3: Logger.event イベント名 → kebab-case（config-loaded, pipeline-step 等）",
+    "Q4: catch ブロックの二重ログ（stderr + JSONL）→ 許容する",
+    "Q5: pipeline-step フィールド → { step, phase } のシンプル構造",
+    "approach: draft first",
+    "first note",
+    "second note",
+    "new note"
+  ],
+  "autoApprove": true
+}
