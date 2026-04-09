@@ -1,12 +1,12 @@
 {
-  "analyzedAt": "2026-04-08T14:11:07.961Z",
+  "analyzedAt": "2026-04-08T23:37:38.479Z",
   "package": {
     "entries": [
       {
         "file": "package.json",
-        "hash": "663afc936e1df328091080fed54e30dd",
+        "hash": "f5eb73648d03a74cb9ea6670ba375fbd",
         "lines": 36,
-        "mtime": "2026-04-08T13:48:21.310Z",
+        "mtime": "2026-04-08T14:19:29.766Z",
         "packageDeps": {
           "dependencies": {},
           "devDependencies": {}
@@ -18,7 +18,26 @@
           "test:acceptance": "node tests/acceptance/run.js"
         },
         "composerDeps": null,
-        "id": "451a9f25"
+        "id": "451a9f25",
+        "summary": "NPM package manifest for sdd-forge, defining entry point, file inclusions, and test scripts.",
+        "detail": "Declares the CLI binary at src/sdd-forge.js and restricts published files to src/ while excluding preset test directories. Uses ES module format with Node.js >=18 requirement. Defines four test scripts: full suite, unit-only, e2e-only, and acceptance. No runtime dependencies are declared, reflecting the no-external-deps policy. Includes standard keywords for discoverability on npmjs.com.",
+        "chapter": "stack_and_ops",
+        "role": "config",
+        "enrich": {
+          "processedAt": "2026-04-08T23:39:23.750Z",
+          "attempts": 1
+        },
+        "keywords": [
+          "package.json",
+          "npm",
+          "bin",
+          "entry point",
+          "files",
+          "scripts",
+          "dependencies",
+          "ES module",
+          "CLI"
+        ]
       }
     ],
     "summary": {
@@ -43,7 +62,24 @@
         "exports": [],
         "extends": null,
         "usedBy": null,
-        "id": "cfca7dd3"
+        "id": "cfca7dd3",
+        "summary": "Top-level dispatcher for the `sdd-forge check` subcommand group, routing to individual check scripts.",
+        "detail": "Reads the first CLI argument to select a subcommand from a SCRIPTS map and dynamically imports the matching script path relative to PKG_DIR. Exits with 0 on success or EXIT_ERROR if the subcommand is unknown. Delegates process.argv forwarding so each sub-script sees its own arguments. Follows the same dispatch pattern used by docs.js and flow.js.",
+        "chapter": "cli_commands",
+        "role": "cli",
+        "enrich": {
+          "processedAt": "2026-04-08T23:39:23.750Z",
+          "attempts": 1
+        },
+        "keywords": [
+          "check",
+          "dispatcher",
+          "subcommand",
+          "router",
+          "dynamic import",
+          "CLI entry",
+          "process.argv"
+        ]
       },
       {
         "file": "src/check/commands/config.js",
@@ -78,7 +114,25 @@
           "src/presets/js-webapp/tests/acceptance/fixtures/src/index.js",
           "src/presets/node-cli/tests/acceptance/fixtures/src/cli.js"
         ],
-        "id": "1b9f6fe7"
+        "id": "1b9f6fe7",
+        "summary": "Validates the project's sdd-forge config.json against schema and known preset types.",
+        "detail": "Loads the config from the sdd-forge config path and runs a series of structural checks: file existence, JSON parseability, schema validation via validateConfig, and preset type lookup via PRESETS. Accumulates up to MAX_SCHEMA_ERRORS (50) error messages. Supports --format text|json output and exits with EXIT_ERROR when any check fails. Exported main and runChecks functions allow programmatic use.",
+        "chapter": "cli_commands",
+        "role": "cli",
+        "enrich": {
+          "processedAt": "2026-04-08T23:39:23.750Z",
+          "attempts": 1
+        },
+        "keywords": [
+          "config",
+          "validation",
+          "schema",
+          "preset",
+          "check",
+          "lint",
+          "config.json",
+          "EXIT_ERROR"
+        ]
       },
       {
         "file": "src/check/commands/freshness.js",
@@ -106,7 +160,25 @@
         ],
         "extends": null,
         "usedBy": null,
-        "id": "b9efb503"
+        "id": "b9efb503",
+        "summary": "Checks whether docs/ is stale relative to source files by comparing most-recent modification times.",
+        "detail": "Walks both the source tree and docs/ directory up to FILE_LIMIT (10,000) files to find the newest mtime. Returns one of three states: fresh, stale, or never-built. Handles missing docs/ gracefully by returning never-built. Supports --format text|json output and sets a non-zero exit code when docs are stale or absent. Exports checkFreshness for programmatic use.",
+        "chapter": "cli_commands",
+        "role": "cli",
+        "enrich": {
+          "processedAt": "2026-04-08T23:39:23.750Z",
+          "attempts": 1
+        },
+        "keywords": [
+          "freshness",
+          "stale",
+          "mtime",
+          "docs",
+          "source",
+          "check",
+          "file walk",
+          "never-built"
+        ]
       },
       {
         "file": "src/check/commands/scan.js",
@@ -141,7 +213,25 @@
         ],
         "extends": null,
         "usedBy": null,
-        "id": "7cccb0de"
+        "id": "7cccb0de",
+        "summary": "Reports scan coverage by comparing analysis.json entries against the actual included source files.",
+        "detail": "Reads analysis.json from the sdd output directory and computes coverage by walking included files using glob/exclude matchers from config. Groups files by extension and identifies files present in the filesystem but absent from analysis. Supports text, json, and markdown output formats. Exports computeCoverage and formatText for reuse in other tools. Defaults to showing only the first DEFAULT_MAX_FILES (10) uncovered files unless --all is passed.",
+        "chapter": "cli_commands",
+        "role": "cli",
+        "enrich": {
+          "processedAt": "2026-04-08T23:39:23.750Z",
+          "attempts": 1
+        },
+        "keywords": [
+          "scan",
+          "coverage",
+          "analysis.json",
+          "check",
+          "include",
+          "exclude",
+          "glob",
+          "file coverage"
+        ]
       },
       {
         "file": "src/docs.js",
@@ -161,7 +251,27 @@
         "exports": [],
         "extends": null,
         "usedBy": null,
-        "id": "086d52a1"
+        "id": "086d52a1",
+        "summary": "Top-level dispatcher for the `sdd-forge docs` subcommand group, including the `build` pipeline orchestrator.",
+        "detail": "Routes CLI arguments to individual docs command modules loaded dynamically via PKG_DIR-relative paths. Implements the full `build` pipeline by sequencing scan → enrich → init → data → text → readme → agents and optionally translate for each configured language. Handles per-language docs directories and README paths. Uses resolveOutputConfig and resolveCommandContext for consistent context passing. Exits with EXIT_ERROR on pipeline failures.",
+        "chapter": "cli_commands",
+        "role": "cli",
+        "enrich": {
+          "processedAt": "2026-04-08T23:39:23.750Z",
+          "attempts": 1
+        },
+        "keywords": [
+          "docs",
+          "build",
+          "pipeline",
+          "dispatcher",
+          "subcommand",
+          "scan",
+          "enrich",
+          "init",
+          "translate",
+          "orchestrator"
+        ]
       },
       {
         "file": "src/docs/commands/agents.js",
@@ -195,7 +305,25 @@
         ],
         "extends": null,
         "usedBy": null,
-        "id": "5684c584"
+        "id": "5684c584",
+        "summary": "Generates or refines AGENTS.md (project context file for AI agents) using source analysis and existing docs.",
+        "detail": "Reads AGENTS.md if present, otherwise bootstraps it from an SDD template. Resolves {{data}} and {{project}} block directives, then calls an AI agent with a refine prompt that includes package.json scripts, chapter docs content, and README. Writes the result back to AGENTS.md preserving non-directive sections. Uses resolveAgentsDirectives and replaceProjectContent helpers for targeted directive replacement. Exports main for use by docs.js build pipeline.",
+        "chapter": "cli_commands",
+        "role": "cli",
+        "enrich": {
+          "processedAt": "2026-04-08T23:39:23.750Z",
+          "attempts": 1
+        },
+        "keywords": [
+          "agents",
+          "AGENTS.md",
+          "AI",
+          "prompt",
+          "directive",
+          "project context",
+          "CLAUDE.md",
+          "refine"
+        ]
       },
       {
         "file": "src/docs/commands/changelog.js",
@@ -224,7 +352,23 @@
         "usedBy": [
           "src/lib/agent.js"
         ],
-        "id": "d83c89fb"
+        "id": "d83c89fb",
+        "summary": "Generates a CHANGELOG markdown file by aggregating spec.md files from the specs/ directory.",
+        "detail": "Walks specs/ subdirectories sorted by name, parses each spec.md for title and metadata, and extracts date from directory names via parseDirName. Sanitizes spec content before writing to the output file, defaulting to docs/change_log.md. Uses loadConfig to resolve language settings. Exports main and parseDirName for external use.",
+        "chapter": "cli_commands",
+        "role": "cli",
+        "enrich": {
+          "processedAt": "2026-04-08T23:39:23.750Z",
+          "attempts": 1
+        },
+        "keywords": [
+          "changelog",
+          "specs",
+          "spec.md",
+          "change log",
+          "history",
+          "docs generation"
+        ]
       },
       {
         "file": "src/docs/commands/data.js",
@@ -258,7 +402,25 @@
         "usedBy": [
           "src/docs/commands/forge.js"
         ],
-        "id": "83404fb1"
+        "id": "83404fb1",
+        "summary": "Resolves and populates {{data}} directives in docs chapter files using analysis.json and DataSource resolvers.",
+        "detail": "Loads analysis.json and creates a DataSource resolver via createResolver. Iterates chapter files in docs/, reads each, and calls resolveDataDirectives to replace {{data:source.method}} placeholders with resolved values. Tracks changed files and writes updates in place. FILE_CONTEXT_RULES provide per-file resolver overrides for relative-path handling. Exports populateFromAnalysis for use by the build pipeline.",
+        "chapter": "internal_design",
+        "role": "lib",
+        "enrich": {
+          "processedAt": "2026-04-08T23:39:23.750Z",
+          "attempts": 1
+        },
+        "keywords": [
+          "data",
+          "directive",
+          "{{data}}",
+          "DataSource",
+          "resolver",
+          "analysis",
+          "template",
+          "populate"
+        ]
       },
       {
         "file": "src/docs/commands/enrich.js",
@@ -310,7 +472,26 @@
         ],
         "extends": null,
         "usedBy": null,
-        "id": "abb7e5b3"
+        "id": "abb7e5b3",
+        "summary": "Enriches analysis.json entries with AI-generated summaries and metadata using batched agent calls.",
+        "detail": "Collects unenriched entries, splits them into token-limited batches (DEFAULT_BATCH_TOKEN_LIMIT=10000), and invokes the AI agent in parallel with configurable concurrency. Parses JSON responses via repairJson and merges enrichment back into the analysis object with mergeEnrichment. Saves incremental progress after each batch to avoid data loss on failure. Dumps failed batch responses to .sdd-forge/tmp for debugging. Exports mergeEnrichment, buildEnrichPrompt, and saveAnalysis for reuse.",
+        "chapter": "internal_design",
+        "role": "lib",
+        "enrich": {
+          "processedAt": "2026-04-08T23:39:23.750Z",
+          "attempts": 1
+        },
+        "keywords": [
+          "enrich",
+          "AI",
+          "analysis",
+          "batch",
+          "concurrency",
+          "summary",
+          "metadata",
+          "JSON repair",
+          "progress"
+        ]
       },
       {
         "file": "src/docs/commands/forge.js",
@@ -352,7 +533,27 @@
         ],
         "extends": null,
         "usedBy": null,
-        "id": "ef4fa5d9"
+        "id": "ef4fa5d9",
+        "summary": "Implements the `docs forge` iterative write-review loop that drives AI-assisted doc generation to completion.",
+        "detail": "Supports three modes: local (runs sdd-forge commands directly), assist, and agent. Selects target files based on type (chapters or readme), estimates relevant files from spec text, and invokes an AI agent per file in parallel. After each round, runs the review command and checks for pass/fail; repeats up to maxRuns times. On success, regenerates README and optionally runs translation. Uses runCmdAsync for subprocess execution and callAgentAsyncWithLog for AI calls.",
+        "chapter": "cli_commands",
+        "role": "cli",
+        "enrich": {
+          "processedAt": "2026-04-08T23:39:23.750Z",
+          "attempts": 1
+        },
+        "keywords": [
+          "forge",
+          "iterative",
+          "write-review loop",
+          "AI agent",
+          "docs generation",
+          "review",
+          "spec",
+          "mode",
+          "local",
+          "assist"
+        ]
       },
       {
         "file": "src/docs/commands/init.js",
@@ -384,7 +585,25 @@
         ],
         "extends": null,
         "usedBy": null,
-        "id": "62ef800b"
+        "id": "62ef800b",
+        "summary": "Initializes docs/ chapter files from resolved preset templates, with optional AI-assisted chapter filtering.",
+        "detail": "Resolves templates via resolveTemplates and mergeResolved using the project's preset chain and language. Optionally calls aiFilterChapters to let an AI select the most relevant chapters based on analysis summary. Writes output chapter files to docs/, skipping existing files unless --force is set. Translates template content via translateTemplate for non-default languages. Guards against writing when no templates are found.",
+        "chapter": "cli_commands",
+        "role": "cli",
+        "enrich": {
+          "processedAt": "2026-04-08T23:39:23.750Z",
+          "attempts": 1
+        },
+        "keywords": [
+          "init",
+          "templates",
+          "preset",
+          "chapters",
+          "docs",
+          "AI filter",
+          "scaffold",
+          "initialize"
+        ]
       },
       {
         "file": "src/docs/commands/readme.js",
@@ -415,7 +634,25 @@
         ],
         "extends": null,
         "usedBy": null,
-        "id": "26628ac2"
+        "id": "26628ac2",
+        "summary": "Generates or updates the project README.md by merging preset templates and filling data/text directives.",
+        "detail": "Resolves the readme template from the preset chain, merges it with any project-local overrides, and runs both resolveDataDirectives and processTemplate (AI text fill) on the result. Handles output path overrides for multi-language README variants. Uses a custom resolver that injects the readme's relative path as a label for relative-link data methods. Writes the final content only when it differs from the current file.",
+        "chapter": "cli_commands",
+        "role": "cli",
+        "enrich": {
+          "processedAt": "2026-04-08T23:39:23.750Z",
+          "attempts": 1
+        },
+        "keywords": [
+          "readme",
+          "README.md",
+          "template",
+          "merge",
+          "data directive",
+          "text fill",
+          "AI",
+          "multi-language"
+        ]
       },
       {
         "file": "src/docs/commands/review.js",
@@ -446,7 +683,25 @@
         ],
         "extends": null,
         "usedBy": null,
-        "id": "f3a5a725"
+        "id": "f3a5a725",
+        "summary": "Validates generated docs for structural integrity, content completeness, and cross-reference consistency.",
+        "detail": "Checks each chapter file for minimum line count, residual block directives, exposed template markers, and broken HTML comments. Verifies README.md presence and that analysis.json exists. For multi-language docs, validates translated chapter files in per-language subdirectories. Also checks that all analysis entries have non-empty summaries. Throws on first failure with a localized error message; exits with EXIT_ERROR.",
+        "chapter": "cli_commands",
+        "role": "cli",
+        "enrich": {
+          "processedAt": "2026-04-08T23:39:23.750Z",
+          "attempts": 1
+        },
+        "keywords": [
+          "review",
+          "validation",
+          "integrity",
+          "docs check",
+          "residual directives",
+          "min lines",
+          "analysis",
+          "multi-language"
+        ]
       },
       {
         "file": "src/docs/commands/scan.js",
@@ -488,7 +743,25 @@
         ],
         "extends": null,
         "usedBy": null,
-        "id": "e229cdd1"
+        "id": "e229cdd1",
+        "summary": "Scans source files and builds analysis.json by collecting file metadata and DataSource entries.",
+        "detail": "Uses collectFiles from scanner.js to walk the source tree according to include/exclude patterns. Loads DataSource definitions from preset chain data directories via loadDataSources. Assigns stable entry IDs using an existing ID index or generates new hex IDs. Computes MD5 hashes of DataSource files to detect changes. Supports --reset to clear specific categories. Writes the result to .sdd-forge/output/analysis.json and optionally prints to stdout.",
+        "chapter": "internal_design",
+        "role": "lib",
+        "enrich": {
+          "processedAt": "2026-04-08T23:39:23.750Z",
+          "attempts": 1
+        },
+        "keywords": [
+          "scan",
+          "analysis.json",
+          "DataSource",
+          "file walk",
+          "hash",
+          "entry ID",
+          "preset",
+          "source analysis"
+        ]
       },
       {
         "file": "src/docs/commands/text.js",
@@ -548,7 +821,26 @@
           "src/docs/commands/forge.js",
           "src/docs/commands/readme.js"
         ],
-        "id": "7c5e7654"
+        "id": "7c5e7654",
+        "summary": "Fills {{text}} directives in docs chapter files with AI-generated content using batched concurrent agent calls.",
+        "detail": "Parses TEXT_OPEN_RE directives from each chapter file, groups them into a single batch prompt per file, and calls the AI agent via callAgentAsyncWithLog. Parses the JSON response with repairJson and applies fills back to the file via applyBatchJsonToFile. Validates output with validateBatchResult, checking for shrinkage (SHRINKAGE_THRESHOLD=0.5) and empty responses. Detects changed chapters via source file hash comparison to skip unchanged files. Exports textFillFromAnalysis and processTemplate for pipeline reuse.",
+        "chapter": "internal_design",
+        "role": "lib",
+        "enrich": {
+          "processedAt": "2026-04-08T23:39:23.750Z",
+          "attempts": 1
+        },
+        "keywords": [
+          "text",
+          "{{text}}",
+          "directive",
+          "AI fill",
+          "batch",
+          "concurrency",
+          "shrinkage",
+          "JSON repair",
+          "chapter"
+        ]
       },
       {
         "file": "src/docs/commands/translate.js",
@@ -581,7 +873,26 @@
         ],
         "extends": null,
         "usedBy": null,
-        "id": "fd496e07"
+        "id": "fd496e07",
+        "summary": "Translates docs chapter files and README into configured target languages using AI agent calls.",
+        "detail": "Builds translation tasks via buildTranslationTasks, skipping files where target mtime is newer than source unless --force is set. Runs translations concurrently with mapWithConcurrency. Each task calls translateDocument, which invokes callAgentAsyncWithLog with a tone-aware instruction and strips response preambles. Creates per-language subdirectories in docs/ as needed. Supports documentStyle (purpose/tone) for register-appropriate translation.",
+        "chapter": "cli_commands",
+        "role": "cli",
+        "enrich": {
+          "processedAt": "2026-04-08T23:39:23.750Z",
+          "attempts": 1
+        },
+        "keywords": [
+          "translate",
+          "i18n",
+          "multi-language",
+          "AI",
+          "docs",
+          "mtime",
+          "concurrency",
+          "tone",
+          "language"
+        ]
       },
       {
         "file": "src/docs/data/agents.js",
@@ -603,7 +914,24 @@
         ],
         "extends": "DataSource",
         "usedBy": null,
-        "id": "861d6c47"
+        "id": "861d6c47",
+        "summary": "DataSource providing AGENTS.md template content, config, and package.json data for the agents command.",
+        "detail": "Extends DataSource base class and exposes methods for loading the base AGENTS.sdd.md template for the project language, reading the sdd-forge config.json, and retrieving package.json. Uses PRESETS_DIR to locate the base template. Provides formatUTCTimestamp for timestamp fields. Designed to supply all metadata needed to bootstrap or refine AGENTS.md.",
+        "chapter": "internal_design",
+        "role": "model",
+        "enrich": {
+          "processedAt": "2026-04-08T23:39:23.750Z",
+          "attempts": 1
+        },
+        "keywords": [
+          "DataSource",
+          "AGENTS.md",
+          "template",
+          "config",
+          "package.json",
+          "agents",
+          "data source"
+        ]
       },
       {
         "file": "src/docs/data/docs.js",
@@ -625,7 +953,26 @@
         ],
         "extends": "DataSource",
         "usedBy": null,
-        "id": "273334ae"
+        "id": "273334ae",
+        "summary": "DataSource providing docs structure metadata including chapter table of contents, language links, navigation, and repo URLs.",
+        "detail": "Reads docs/ chapter files via getChapterFiles and extracts titles and descriptions to build a markdown TOC table. Computes language-relative paths for cross-language links using _computeLangRelativePath with context-aware relative path resolution. Reads locale/ui.json for localized language names. Provides navigation prev/next links by scanning adjacent chapter files. Constructs GitHub blob URLs from the package.json repository field.",
+        "chapter": "internal_design",
+        "role": "model",
+        "enrich": {
+          "processedAt": "2026-04-08T23:39:23.750Z",
+          "attempts": 1
+        },
+        "keywords": [
+          "DataSource",
+          "docs",
+          "TOC",
+          "navigation",
+          "language links",
+          "repo URL",
+          "chapter",
+          "i18n",
+          "relative path"
+        ]
       },
       {
         "file": "src/docs/data/lang.js",
@@ -644,7 +991,25 @@
         ],
         "extends": "DataSource",
         "usedBy": null,
-        "id": "780c6d68"
+        "id": "780c6d68",
+        "summary": "DataSource providing language navigation links and language-relative path resolution for multi-language docs.",
+        "detail": "Extends DataSource and provides a method to generate flag-emoji language navigation links (e.g. 🌐 EN | JA). Computes relative file paths between languages using context from the current file's path. Reads config.json to determine available languages. Shares similar path resolution logic with docs.js DataSource but is scoped to language-switching use cases.",
+        "chapter": "internal_design",
+        "role": "model",
+        "enrich": {
+          "processedAt": "2026-04-08T23:39:23.750Z",
+          "attempts": 1
+        },
+        "keywords": [
+          "DataSource",
+          "language",
+          "lang",
+          "navigation",
+          "multi-language",
+          "relative path",
+          "i18n",
+          "flag emoji"
+        ]
       },
       {
         "file": "src/docs/data/project.js",
@@ -663,7 +1028,25 @@
         ],
         "extends": "DataSource",
         "usedBy": null,
-        "id": "dd4d31db"
+        "id": "dd4d31db",
+        "summary": "DataSource providing core project metadata: name, description, version, and a dependency summary table.",
+        "detail": "Reads package.json once and caches it in _pkgCache. Exposes name (falls back to directory basename), description, and version fields. Builds a markdown table of package dependencies from package.json for inclusion in docs. Follows the standard DataSource extension pattern used across all data/ modules.",
+        "chapter": "internal_design",
+        "role": "model",
+        "enrich": {
+          "processedAt": "2026-04-08T23:39:23.750Z",
+          "attempts": 1
+        },
+        "keywords": [
+          "DataSource",
+          "project",
+          "package.json",
+          "name",
+          "version",
+          "description",
+          "dependencies",
+          "metadata"
+        ]
       },
       {
         "file": "src/docs/data/text.js",
@@ -683,7 +1066,23 @@
           "src/docs/commands/forge.js",
           "src/docs/commands/readme.js"
         ],
-        "id": "cca2c9bc"
+        "id": "cca2c9bc",
+        "summary": "Stub DataSource for {{text}} directives; returns null for all resolver calls.",
+        "detail": "Extends DataSource with a minimal implementation that always returns null. Serves as a placeholder so the resolver factory can include a 'text' source in its registry without failing when text directives are encountered during data resolution. All actual text content is generated by the AI-based text.js command, not by this DataSource.",
+        "chapter": "internal_design",
+        "role": "model",
+        "enrich": {
+          "processedAt": "2026-04-08T23:39:23.750Z",
+          "attempts": 1
+        },
+        "keywords": [
+          "DataSource",
+          "text",
+          "stub",
+          "placeholder",
+          "{{text}}",
+          "resolver"
+        ]
       },
       {
         "file": "src/docs/lib/analysis-entry.js",
@@ -710,7 +1109,25 @@
           "src/docs/lib/scan-source.js",
           "src/docs/lib/text-prompts.js"
         ],
-        "id": "17953885"
+        "id": "17953885",
+        "summary": "Defines the AnalysisEntry base class and utility functions for working with analysis.json entries.",
+        "detail": "Exports ANALYSIS_META_KEYS (analyzedAt, enrichedAt, generatedAt) as a Set for use in filters. Provides a static from() factory on AnalysisEntry for typed deserialization. isEmptyEntry checks whether an entry has any keys beyond the standard COMMON_KEYS set. buildSummary aggregates an array of entries into a summary map keyed by EntryClass properties. Used across scan, enrich, and filter modules.",
+        "chapter": "internal_design",
+        "role": "model",
+        "enrich": {
+          "processedAt": "2026-04-08T23:39:23.750Z",
+          "attempts": 1
+        },
+        "keywords": [
+          "AnalysisEntry",
+          "analysis",
+          "entry",
+          "meta keys",
+          "isEmptyEntry",
+          "buildSummary",
+          "schema",
+          "deserialization"
+        ]
       },
       {
         "file": "src/docs/lib/analysis-filter.js",
@@ -732,7 +1149,24 @@
         ],
         "extends": null,
         "usedBy": null,
-        "id": "f3ac0c38"
+        "id": "f3ac0c38",
+        "summary": "Filters analysis.json entries by applying docs.exclude glob patterns to remove excluded source files.",
+        "detail": "Converts string glob patterns to regexes via globToRegex and filters the entries array to exclude any entry whose file path matches. filterAnalysisByDocsExclude operates on the full analysis object (skipping ANALYSIS_META_KEYS) and returns a filtered copy. Used by enrich.js and data.js to avoid processing excluded files. Keeps filter logic centralized and reusable.",
+        "chapter": "internal_design",
+        "role": "lib",
+        "enrich": {
+          "processedAt": "2026-04-08T23:39:23.750Z",
+          "attempts": 1
+        },
+        "keywords": [
+          "filter",
+          "analysis",
+          "exclude",
+          "glob",
+          "docs.exclude",
+          "pattern",
+          "analysis-filter"
+        ]
       },
       {
         "file": "src/docs/lib/chapter-resolver.js",
@@ -759,7 +1193,25 @@
         ],
         "extends": null,
         "usedBy": null,
-        "id": "1e787be2"
+        "id": "1e787be2",
+        "summary": "Resolves and merges chapter configurations from preset and config sources, and builds category-to-chapter mappings from docs directory.",
+        "detail": "mergeChapters combines preset-defined and config-defined chapter lists. extractDataCategories scans template content for {{data}} directive categories. buildCategoryToChapterMap and buildCategoryMapFromDocs construct reverse-lookup maps used during docs generation to route data sources to the correct chapter file.",
+        "chapter": "internal_design",
+        "role": "lib",
+        "enrich": {
+          "processedAt": "2026-04-08T23:43:05.913Z",
+          "attempts": 1
+        },
+        "keywords": [
+          "chapter",
+          "merge",
+          "category",
+          "mapping",
+          "template",
+          "directive",
+          "preset",
+          "docs"
+        ]
       },
       {
         "file": "src/docs/lib/command-context.js",
@@ -800,7 +1252,25 @@
           "src/docs/commands/forge.js",
           "src/docs/commands/readme.js"
         ],
-        "id": "10a78227"
+        "id": "10a78227",
+        "summary": "Resolves the shared command context (config, docs dir, agent, chapters) used by all docs subcommands, and provides utilities for loading analysis data and listing chapter files.",
+        "detail": "resolveCommandContext builds a canonical context object by reading config.json, resolving the docs directory, loading agent settings, and computing chapter order. loadAnalysisData and loadFullAnalysis both read analysis.json from the sdd output directory. getChapterFiles enumerates existing chapter markdown files while excluding special files like README.md and AGENTS.sdd.md. stripResponsePreamble trims preamble lines from AI responses.",
+        "chapter": "internal_design",
+        "role": "lib",
+        "enrich": {
+          "processedAt": "2026-04-08T23:43:05.913Z",
+          "attempts": 1
+        },
+        "keywords": [
+          "command context",
+          "config",
+          "analysis",
+          "chapter files",
+          "docs dir",
+          "agent",
+          "i18n",
+          "preamble"
+        ]
       },
       {
         "file": "src/docs/lib/concurrency.js",
@@ -817,7 +1287,24 @@
         ],
         "extends": null,
         "usedBy": null,
-        "id": "6e3ef4f1"
+        "id": "6e3ef4f1",
+        "summary": "Provides a concurrency-limited async map utility for processing arrays of items with a bounded number of parallel workers.",
+        "detail": "mapWithConcurrency accepts an items array, a concurrency limit, and an async worker function. It uses a promise-based queue with a next() dispatcher to keep at most `concurrency` workers running at once, collecting results in order. This is used to throttle parallel agent calls during docs generation.",
+        "chapter": "internal_design",
+        "role": "lib",
+        "enrich": {
+          "processedAt": "2026-04-08T23:43:05.913Z",
+          "attempts": 1
+        },
+        "keywords": [
+          "concurrency",
+          "parallel",
+          "async",
+          "map",
+          "throttle",
+          "worker",
+          "queue"
+        ]
       },
       {
         "file": "src/docs/lib/data-source-loader.js",
@@ -840,7 +1327,23 @@
         "usedBy": [
           "src/docs/lib/resolver-factory.js"
         ],
-        "id": "d1cdb1d8"
+        "id": "d1cdb1d8",
+        "summary": "Dynamically loads DataSource plugin modules from a directory, instantiating each and attaching metadata.",
+        "detail": "loadDataSources scans a given directory for .js files, dynamically imports each one, and instantiates the exported class. It attaches _sourceFilePath to each instance for traceability. A logger is used to report loading progress. This supports the preset data source extension mechanism.",
+        "chapter": "internal_design",
+        "role": "lib",
+        "enrich": {
+          "processedAt": "2026-04-08T23:43:05.913Z",
+          "attempts": 1
+        },
+        "keywords": [
+          "data source",
+          "dynamic import",
+          "plugin",
+          "loader",
+          "preset",
+          "extension"
+        ]
       },
       {
         "file": "src/docs/lib/data-source.js",
@@ -859,7 +1362,24 @@
         "usedBy": [
           "src/docs/lib/scan-source.js"
         ],
-        "id": "f0f9731d"
+        "id": "f0f9731d",
+        "summary": "Base class for DataSource plugins, providing description lookup, item mapping, override application, and markdown table formatting.",
+        "detail": "DataSource defines the interface that all preset data source plugins implement. It exposes _desc for keyed description lookup with a fallback, methods for mapping items with overrides, and a markdown table builder (header, separator, body). Subclasses implement _loadOverrides and the primary data-fetching methods called by the resolver.",
+        "chapter": "internal_design",
+        "role": "model",
+        "enrich": {
+          "processedAt": "2026-04-08T23:43:05.913Z",
+          "attempts": 1
+        },
+        "keywords": [
+          "DataSource",
+          "base class",
+          "plugin",
+          "override",
+          "markdown table",
+          "preset",
+          "description"
+        ]
       },
       {
         "file": "src/docs/lib/directive-parser.js",
@@ -898,7 +1418,26 @@
           "src/docs/lib/chapter-resolver.js",
           "src/docs/lib/template-merger.js"
         ],
-        "id": "bbb893ea"
+        "id": "bbb893ea",
+        "summary": "Parses and manipulates {{data}}, {{text}}, and {%block%} directives inside markdown template files, supporting block inheritance via {%extends%}.",
+        "detail": "parseDirectives iterates lines to locate and parse all directive types, returning structured descriptor objects. resolveDataDirectives replaces {{data}} blocks in-place using a provided resolver function. parseBlocks extracts named blocks and inheritance declarations for the template merger. replaceBlockDirective and replaceInlineDirective update specific directive regions with new content. Regex constants (TEXT_OPEN_RE, BLOCK_START_RE, etc.) are exported for use by other modules.",
+        "chapter": "internal_design",
+        "role": "lib",
+        "enrich": {
+          "processedAt": "2026-04-08T23:43:05.913Z",
+          "attempts": 1
+        },
+        "keywords": [
+          "directive",
+          "parser",
+          "template",
+          "block",
+          "extends",
+          "data directive",
+          "text directive",
+          "markdown",
+          "inheritance"
+        ]
       },
       {
         "file": "src/docs/lib/forge-prompts.js",
@@ -925,7 +1464,25 @@
         ],
         "extends": null,
         "usedBy": null,
-        "id": "42300b03"
+        "id": "42300b03",
+        "summary": "Builds system and file prompts for the forge docs-generation AI workflow, converting analysis summaries into structured prompt text.",
+        "detail": "summaryToText and enrichedSummaryToText convert analysis JSON into human-readable summaries injected into prompts. buildForgeSystemPrompt assembles the top-level system prompt including language, user instructions, spec text, and analysis context. buildForgeFilePrompt and buildForgePrompt construct per-file and batch prompts with review feedback and retry round information.",
+        "chapter": "internal_design",
+        "role": "lib",
+        "enrich": {
+          "processedAt": "2026-04-08T23:43:05.913Z",
+          "attempts": 1
+        },
+        "keywords": [
+          "prompt",
+          "forge",
+          "AI",
+          "analysis",
+          "system prompt",
+          "docs generation",
+          "review feedback",
+          "i18n"
+        ]
       },
       {
         "file": "src/docs/lib/lang-factory.js",
@@ -951,7 +1508,25 @@
           "src/docs/lib/minify.js",
           "src/docs/lib/scanner.js"
         ],
-        "id": "8f8393ac"
+        "id": "8f8393ac",
+        "summary": "Factory that maps file extensions to the appropriate language handler module (js, php, py, yaml).",
+        "detail": "EXT_MAP associates extensions like .js, .mjs, .cjs, .php, .py, .yml, .yaml to their respective handler modules. getLangHandler extracts the lowercased extension from a file path and returns the matching handler or null. This single lookup point allows the rest of the pipeline to remain language-agnostic.",
+        "chapter": "internal_design",
+        "role": "lib",
+        "enrich": {
+          "processedAt": "2026-04-08T23:43:05.913Z",
+          "attempts": 1
+        },
+        "keywords": [
+          "language handler",
+          "factory",
+          "extension",
+          "js",
+          "php",
+          "python",
+          "yaml",
+          "dispatch"
+        ]
       },
       {
         "file": "src/docs/lib/lang/js.js",
@@ -991,7 +1566,26 @@
         "usedBy": [
           "src/docs/lib/lang-factory.js"
         ],
-        "id": "dcea4940"
+        "id": "dcea4940",
+        "summary": "JavaScript/ESM language handler providing minification, AST-less class/method parsing, import/export extraction, and essential-code filtering.",
+        "detail": "minify removes block and line comments, normalizes indentation, and strips blank lines. parse performs regex-based extraction of class declarations, method signatures, and parent class relationships, using the filename as className fallback. extractImports and extractExports identify module dependency edges. extractEssential retains only structurally significant lines (imports, exports, class/function declarations) plus lines referencing Node.js built-in APIs.",
+        "chapter": "internal_design",
+        "role": "lib",
+        "enrich": {
+          "processedAt": "2026-04-08T23:43:05.913Z",
+          "attempts": 1
+        },
+        "keywords": [
+          "JavaScript",
+          "minify",
+          "parse",
+          "import",
+          "export",
+          "class",
+          "method",
+          "AST-less",
+          "essential"
+        ]
       },
       {
         "file": "src/docs/lib/lang/php.js",
@@ -1023,7 +1617,26 @@
         "usedBy": [
           "src/docs/lib/lang-factory.js"
         ],
-        "id": "8da3c9aa"
+        "id": "8da3c9aa",
+        "summary": "PHP language handler providing minification, class/method/property parsing, import (use/require) extraction, and essential-code filtering.",
+        "detail": "Mirrors the JS handler structure but targets PHP syntax. removeBlockComments, removeLineComments, and removeHashComments strip PHP comment styles. parse extracts class name, parent class (extends), methods, properties, and use-based relations using regex. extractImports collects use and require statements. extractEssential retains class/function/method declarations and key structural lines.",
+        "chapter": "internal_design",
+        "role": "lib",
+        "enrich": {
+          "processedAt": "2026-04-08T23:43:05.913Z",
+          "attempts": 1
+        },
+        "keywords": [
+          "PHP",
+          "minify",
+          "parse",
+          "class",
+          "method",
+          "property",
+          "import",
+          "use statement",
+          "essential"
+        ]
       },
       {
         "file": "src/docs/lib/lang/py.js",
@@ -1045,7 +1658,23 @@
         "usedBy": [
           "src/docs/lib/lang-factory.js"
         ],
-        "id": "d894c726"
+        "id": "d894c726",
+        "summary": "Python language handler providing comment removal (minification) and essential-code extraction.",
+        "detail": "removeHashComments strips # comments from Python source lines. minify delegates directly to removeHashComments. extractEssential filters to retain structurally significant lines such as import statements, class and def declarations, and key assignments.",
+        "chapter": "internal_design",
+        "role": "lib",
+        "enrich": {
+          "processedAt": "2026-04-08T23:43:05.913Z",
+          "attempts": 1
+        },
+        "keywords": [
+          "Python",
+          "minify",
+          "hash comment",
+          "essential",
+          "parse",
+          "language handler"
+        ]
       },
       {
         "file": "src/docs/lib/lang/yaml.js",
@@ -1065,7 +1694,22 @@
         "usedBy": [
           "src/docs/lib/lang-factory.js"
         ],
-        "id": "ef1dd14d"
+        "id": "ef1dd14d",
+        "summary": "YAML language handler providing hash-comment removal as its minification step.",
+        "detail": "Implements the minimal language handler interface for YAML files. removeHashComments strips inline and full-line # comments from each line. minify is a direct alias. No parse, extractImports, or extractExports are needed for YAML as it is treated as configuration data rather than code.",
+        "chapter": "internal_design",
+        "role": "lib",
+        "enrich": {
+          "processedAt": "2026-04-08T23:43:05.913Z",
+          "attempts": 1
+        },
+        "keywords": [
+          "YAML",
+          "minify",
+          "hash comment",
+          "language handler",
+          "config"
+        ]
       },
       {
         "file": "src/docs/lib/minify.js",
@@ -1088,7 +1732,24 @@
         "usedBy": [
           "src/docs/lib/text-prompts.js"
         ],
-        "id": "212fe46f"
+        "id": "212fe46f",
+        "summary": "Top-level minification dispatcher that routes to language-specific handlers and applies shared post-processing (blank line and trailing whitespace removal).",
+        "detail": "minify looks up the language handler via getLangHandler; if the handler exposes extractEssential and the essential option is set it calls that, otherwise it calls handler.minify. removeBlankLines and removeTrailingWhitespace are applied as shared post-processors regardless of language. Returns the original code unchanged if no handler is found.",
+        "chapter": "internal_design",
+        "role": "lib",
+        "enrich": {
+          "processedAt": "2026-04-08T23:43:05.913Z",
+          "attempts": 1
+        },
+        "keywords": [
+          "minify",
+          "dispatch",
+          "language handler",
+          "blank lines",
+          "trailing whitespace",
+          "essential",
+          "code reduction"
+        ]
       },
       {
         "file": "src/docs/lib/php-array-parser.js",
@@ -1115,7 +1776,25 @@
         ],
         "extends": null,
         "usedBy": null,
-        "id": "b6019adb"
+        "id": "b6019adb",
+        "summary": "Utility library for parsing PHP array syntax: strips comments, extracts array bodies and keys, and provides naming conversion helpers.",
+        "detail": "stripBlockComments removes /* */ comment blocks from PHP source text. extractArrayBody locates a named property's array literal and returns its raw body string. extractTopLevelKeys and extractQuotedStrings parse array entries to retrieve key names and string values respectively. camelToSnake and pluralize provide naming convention utilities used when inferring route/model names from PHP class structures.",
+        "chapter": "internal_design",
+        "role": "lib",
+        "enrich": {
+          "processedAt": "2026-04-08T23:43:05.913Z",
+          "attempts": 1
+        },
+        "keywords": [
+          "PHP",
+          "array parser",
+          "camelToSnake",
+          "pluralize",
+          "keys",
+          "quoted strings",
+          "Laravel",
+          "parsing"
+        ]
       },
       {
         "file": "src/docs/lib/resolver-factory.js",
@@ -1143,7 +1822,25 @@
         ],
         "extends": null,
         "usedBy": null,
-        "id": "cb355898"
+        "id": "cb355898",
+        "summary": "Factory that creates a unified data resolver by loading data sources from the full preset chain and the project's local data directory.",
+        "detail": "createResolver resolves the preset chain via resolveMultiChains, loads DataSource modules from each preset's data/ directory and the common built-in data dir, then returns a resolver object with a resolve(source, method, labels) dispatcher. loadChainDataSources iterates chain links to aggregate sources. descFactory and loadOverridesFor provide description and override lookup keyed by project root. The resolver exposes listSources() for introspection.",
+        "chapter": "internal_design",
+        "role": "lib",
+        "enrich": {
+          "processedAt": "2026-04-08T23:43:05.913Z",
+          "attempts": 1
+        },
+        "keywords": [
+          "resolver",
+          "factory",
+          "data source",
+          "preset chain",
+          "overrides",
+          "description",
+          "DataSource",
+          "multi-chain"
+        ]
       },
       {
         "file": "src/docs/lib/review-parser.js",
@@ -1166,7 +1863,25 @@
         ],
         "extends": null,
         "usedBy": null,
-        "id": "0806e627"
+        "id": "0806e627",
+        "summary": "Parses AI agent review output to extract unanswered questions, summarize failures, and classify files as passed or failed.",
+        "detail": "extractNeedsInput scans output text for question lines and returns non-empty results. summarizeReview picks the first failed or flagged section from a structured review response. parseFileResults matches file-level verdict lines against a provided file list to produce passedFiles and failedFiles arrays, using basename comparison as fallback.",
+        "chapter": "internal_design",
+        "role": "lib",
+        "enrich": {
+          "processedAt": "2026-04-08T23:43:05.913Z",
+          "attempts": 1
+        },
+        "keywords": [
+          "review",
+          "parser",
+          "AI output",
+          "pass",
+          "fail",
+          "file result",
+          "question",
+          "verdict"
+        ]
       },
       {
         "file": "src/docs/lib/scan-source.js",
@@ -1188,7 +1903,23 @@
         "usedBy": [
           "src/docs/lib/scan-source.js"
         ],
-        "id": "6b08f3c0"
+        "id": "6b08f3c0",
+        "summary": "Scannable mixin that adds scan-related lifecycle methods (isScannable, createEntry) to a base class via class expression composition.",
+        "detail": "The Scannable higher-order function wraps a base class and adds isScannable (returns false by default, intended for override) and createEntry (constructs a new Entry instance via this.constructor.Entry). This mixin pattern allows scanner classes to opt into the scan pipeline without a deep inheritance hierarchy.",
+        "chapter": "internal_design",
+        "role": "lib",
+        "enrich": {
+          "processedAt": "2026-04-08T23:43:05.913Z",
+          "attempts": 1
+        },
+        "keywords": [
+          "mixin",
+          "scannable",
+          "scan",
+          "entry",
+          "composition",
+          "base class"
+        ]
       },
       {
         "file": "src/docs/lib/scanner.js",
@@ -1229,7 +1960,26 @@
         "usedBy": [
           "src/docs/lib/analysis-filter.js"
         ],
-        "id": "cf9f71e2"
+        "id": "cf9f71e2",
+        "summary": "Core file-system scanning utilities: finds files by glob pattern, parses JS and PHP source files into structured metadata, and collects files with include/exclude glob filtering.",
+        "detail": "findFiles performs a recursive directory walk filtered by a compiled pattern regex and an exclude list, returning relative paths sorted alphabetically. parsePHPFile and parseJSFile read and delegate to their respective lang handler parse functions. parseFile generalizes this with lang-factory dispatch and a fallback for unknown types. collectFiles uses glob-to-regex conversion for include/exclude patterns. getFileStats returns content, line count, hash, and mtime. globToRegex and camelToSnake/pluralize are re-exported for downstream use.",
+        "chapter": "internal_design",
+        "role": "lib",
+        "enrich": {
+          "processedAt": "2026-04-08T23:43:05.913Z",
+          "attempts": 1
+        },
+        "keywords": [
+          "scanner",
+          "find files",
+          "glob",
+          "parse",
+          "JS",
+          "PHP",
+          "file stats",
+          "hash",
+          "recursive walk"
+        ]
       },
       {
         "file": "src/docs/lib/template-merger.js",
@@ -1272,7 +2022,26 @@
         "usedBy": [
           "src/docs/lib/command-context.js"
         ],
-        "id": "88243459"
+        "id": "88243459",
+        "summary": "Template merger that resolves layered markdown templates from a preset chain, merges block-based inheritance, and manages chapter order resolution.",
+        "detail": "buildLayers assembles an ordered list of template directories from the preset chain and the project-local override directory. resolveOneFile reads the first matching file per layer, while mergeResolved and mergeSourcesAdditive combine content by appending child additions to parent blocks. resolveTemplates discovers all chapter filenames and returns per-file resolution results. resolveChaptersOrder derives the final chapter ordering from preset defaults and config overrides. translateTemplate calls the agent to produce a translated version of template content.",
+        "chapter": "internal_design",
+        "role": "lib",
+        "enrich": {
+          "processedAt": "2026-04-08T23:43:05.913Z",
+          "attempts": 1
+        },
+        "keywords": [
+          "template",
+          "merger",
+          "layer",
+          "block",
+          "extends",
+          "preset chain",
+          "chapter order",
+          "translation",
+          "additive merge"
+        ]
       },
       {
         "file": "src/docs/lib/test-env-detection.js",
@@ -1289,7 +2058,25 @@
         ],
         "extends": null,
         "usedBy": null,
-        "id": "7e368a23"
+        "id": "7e368a23",
+        "summary": "Detects the test environment and testing frameworks present in a project by examining analysis metadata.",
+        "detail": "detectTestEnvironment inspects the analysis object for known TEST_FRAMEWORKS identifiers. It returns a result object with hasTestEnv (boolean), frameworks (array of detected names), and testCommand (the inferred command string). This is used during docs generation to tailor testing-related documentation sections.",
+        "chapter": "internal_design",
+        "role": "lib",
+        "enrich": {
+          "processedAt": "2026-04-08T23:43:05.913Z",
+          "attempts": 1
+        },
+        "keywords": [
+          "test environment",
+          "detection",
+          "framework",
+          "analysis",
+          "test command",
+          "Jest",
+          "Vitest",
+          "PHPUnit"
+        ]
       },
       {
         "file": "src/docs/lib/text-prompts.js",
@@ -1326,7 +2113,25 @@
         ],
         "extends": null,
         "usedBy": null,
-        "id": "7ddd8579"
+        "id": "7ddd8579",
+        "summary": "Builds AI prompts for {{text}} directive generation, mapping analysis data to documentation sections and constructing structured system/batch prompts.",
+        "detail": "CATEGORY_TO_SECTIONS maps analysis category names to documentation section labels. getAnalysisContext selects relevant analysis fields for a given set of directives. getEnrichedContext reads and minifies source files referenced in the analysis for context injection. buildTextSystemPrompt and buildPrompt produce the system-level and per-directive prompts sent to the AI agent. buildBatchPrompt formats multiple text directives into a single batch request with id, prompt, and limit metadata.",
+        "chapter": "internal_design",
+        "role": "lib",
+        "enrich": {
+          "processedAt": "2026-04-08T23:43:05.913Z",
+          "attempts": 1
+        },
+        "keywords": [
+          "text prompt",
+          "AI prompt",
+          "directive",
+          "analysis context",
+          "batch",
+          "system prompt",
+          "minify",
+          "i18n"
+        ]
       },
       {
         "file": "src/docs/lib/toml-parser.js",
@@ -1345,7 +2150,24 @@
         ],
         "extends": null,
         "usedBy": null,
-        "id": "9fb7acbd"
+        "id": "9fb7acbd",
+        "summary": "Minimal TOML parser supporting scalar values, quoted strings, and inline arrays for reading simple TOML configuration files.",
+        "detail": "parseTOML iterates lines to detect section headers and key-value pairs, calling parseValue on each raw value string. parseValue handles quoted strings (stripping delimiters), arrays (delegating to parseArray), and raw values. parseArray splits bracketed comma-separated content and recursively calls parseValue on each element. This avoids any external TOML library dependency.",
+        "chapter": "internal_design",
+        "role": "lib",
+        "enrich": {
+          "processedAt": "2026-04-08T23:43:05.913Z",
+          "attempts": 1
+        },
+        "keywords": [
+          "TOML",
+          "parser",
+          "config",
+          "scalar",
+          "array",
+          "no dependency",
+          "key-value"
+        ]
       },
       {
         "file": "src/flow.js",
@@ -1370,7 +2192,25 @@
         "exports": [],
         "extends": null,
         "usedBy": null,
-        "id": "1ab08f2b"
+        "id": "1ab08f2b",
+        "summary": "Main entry point and dispatcher for the `sdd-forge flow` CLI, routing subcommands to registered FlowCommand handlers.",
+        "detail": "Parses process.argv, resolves root/config/flowState context via resolveCtx(), and looks up the matching command entry in FLOW_COMMANDS registry. parseEntryArgs maps raw CLI args to structured parameters per entry definition. runEntry executes the command and writes the envelope result as JSON to stdout. Special pre-dispatch handling covers the `run` group with resume and prepare-spec routes. Exits with EXIT_ERROR on missing commands or execution failures.",
+        "chapter": "cli_commands",
+        "role": "cli",
+        "enrich": {
+          "processedAt": "2026-04-08T23:43:05.913Z",
+          "attempts": 1
+        },
+        "keywords": [
+          "flow",
+          "dispatcher",
+          "CLI",
+          "entry point",
+          "registry",
+          "subcommand",
+          "envelope",
+          "process.argv"
+        ]
       },
       {
         "file": "src/flow/commands/merge.js",
@@ -1402,7 +2242,25 @@
         ],
         "extends": null,
         "usedBy": null,
-        "id": "3a0db928"
+        "id": "3a0db928",
+        "summary": "Implements the merge step of the SDD flow, choosing between a squash-merge and a GitHub PR route based on config and gh availability.",
+        "detail": "resolveRemote reads the push remote from config. parseSpec extracts Goal, Background, and Scope sections from spec markdown. buildPrTitle and buildPrBody compose PR metadata from spec content and flow state. main determines the merge strategy: skip (spec-only), pr (gh available and configured), or squash. runSquashMerge executes git merge --squash with conflict detection. The PR route uses gh pr create with the constructed title/body.",
+        "chapter": "internal_design",
+        "role": "controller",
+        "enrich": {
+          "processedAt": "2026-04-08T23:43:05.913Z",
+          "attempts": 1
+        },
+        "keywords": [
+          "merge",
+          "squash",
+          "PR",
+          "GitHub",
+          "gh",
+          "spec",
+          "flow finalize",
+          "git merge"
+        ]
       },
       {
         "file": "src/flow/commands/report.js",
@@ -1428,7 +2286,25 @@
         ],
         "extends": null,
         "usedBy": null,
-        "id": "5f80ffd2"
+        "id": "5f80ffd2",
+        "summary": "Generates and persists a structured flow completion report aggregating metrics from the issue log and git summary.",
+        "detail": "aggregateMetrics totals agent call counts, token usage, and elapsed time across metric entries. generateReport combines aggregated metrics with a formatted text summary via formatText. saveReport writes report.json adjacent to the spec file. The text output is formatted with pushSection/DIVIDER helpers for consistent layout.",
+        "chapter": "internal_design",
+        "role": "lib",
+        "enrich": {
+          "processedAt": "2026-04-08T23:43:05.913Z",
+          "attempts": 1
+        },
+        "keywords": [
+          "report",
+          "metrics",
+          "issue log",
+          "token usage",
+          "git summary",
+          "flow",
+          "aggregation",
+          "JSON"
+        ]
       },
       {
         "file": "src/flow/commands/review.js",
@@ -1500,7 +2376,26 @@
         ],
         "extends": null,
         "usedBy": null,
-        "id": "331cf497"
+        "id": "331cf497",
+        "summary": "Comprehensive review command covering spec review, test review, and code review phases within the SDD flow, each using AI agent loop retries.",
+        "detail": "runReviewLoop drives a detect→fix→verify cycle up to maxRetries, accumulating history. runSpecReview validates and auto-fixes spec markdown via AI proposals, saving spec-review.md. runTestReview generates a test design from requirements, performs gap analysis against existing test files, and writes fixes via applyTestFixes. The code review phase collects changed files, builds a review prompt, parses proposals, and applies approved changes. Each phase writes a markdown result file to the spec directory.",
+        "chapter": "cli_commands",
+        "role": "controller",
+        "enrich": {
+          "processedAt": "2026-04-08T23:43:05.913Z",
+          "attempts": 1
+        },
+        "keywords": [
+          "review",
+          "spec review",
+          "test review",
+          "code review",
+          "AI loop",
+          "proposals",
+          "gap analysis",
+          "test design",
+          "retry"
+        ]
       },
       {
         "file": "src/flow/lib/base-command.js",
@@ -1546,7 +2441,24 @@
           "src/flow/lib/set-summary.js",
           "src/flow/lib/set-test-summary.js"
         ],
-        "id": "83f60bd3"
+        "id": "83f60bd3",
+        "summary": "Abstract base class for all FlowCommand implementations, enforcing active-flow presence and delegating execution to subclass execute() methods.",
+        "detail": "FlowCommand.run() checks that flowState is present and throws a descriptive error if not, then calls this.execute(ctx) which must be implemented by each subclass. The class comment explicitly prohibits CLI concerns (output, parseArgs, process.exitCode) in this layer, ensuring clean separation between the command logic layer and the CLI dispatcher.",
+        "chapter": "internal_design",
+        "role": "lib",
+        "enrich": {
+          "processedAt": "2026-04-08T23:43:05.913Z",
+          "attempts": 1
+        },
+        "keywords": [
+          "FlowCommand",
+          "base class",
+          "abstract",
+          "flow state",
+          "execute",
+          "SDD",
+          "separation of concerns"
+        ]
       },
       {
         "file": "src/flow/lib/get-check.js",
@@ -1569,7 +2481,25 @@
         ],
         "extends": "FlowCommand",
         "usedBy": null,
-        "id": "10eecc8b"
+        "id": "10eecc8b",
+        "summary": "Implements the `flow get check` command, verifying prerequisites for impl, finalize, dirty-worktree, and gh availability targets.",
+        "detail": "PREREQS maps target names to required flow step completion states. checkStepPrereqs iterates required steps and checks their done/skipped status in flow state. checkDirty runs git status --porcelain to detect uncommitted changes. checkGh delegates to isGhAvailable. execute dispatches to the correct check based on the target argument and throws on unknown targets.",
+        "chapter": "internal_design",
+        "role": "lib",
+        "enrich": {
+          "processedAt": "2026-04-08T23:43:05.913Z",
+          "attempts": 1
+        },
+        "keywords": [
+          "check",
+          "prerequisites",
+          "dirty",
+          "gh",
+          "git status",
+          "flow steps",
+          "validation",
+          "GetCheck"
+        ]
       },
       {
         "file": "src/flow/lib/get-context.js",
@@ -1619,7 +2549,26 @@
           "src/docs/commands/forge.js",
           "src/docs/commands/readme.js"
         ],
-        "id": "1261e39f"
+        "id": "1261e39f",
+        "summary": "Implements the `flow get context` command, providing keyword-based and AI-assisted search over analysis.json entries for implementation context retrieval.",
+        "detail": "contextSearch dispatches to aiSearch or ngramSearch depending on the mode parameter. ngramSearch computes bigram similarity scores between query and entry keywords for fuzzy matching. aiSearch uses an AI agent to select relevant keywords from a candidate pool, then falls back to simple string matching. filterEntry removes internal/transient fields before returning results. loadAnalysisEntries reads and parses analysis.json, throwing descriptive errors if missing. The class also supports direct file content retrieval and full analysis dump modes.",
+        "chapter": "internal_design",
+        "role": "lib",
+        "enrich": {
+          "processedAt": "2026-04-08T23:43:05.913Z",
+          "attempts": 1
+        },
+        "keywords": [
+          "context",
+          "search",
+          "analysis",
+          "ngram",
+          "bigram",
+          "AI search",
+          "keyword",
+          "GetContext",
+          "similarity"
+        ]
       },
       {
         "file": "src/flow/lib/get-guardrail.js",
@@ -1642,7 +2591,24 @@
         "usedBy": [
           "src/lib/lint.js"
         ],
-        "id": "f80cce52"
+        "id": "f80cce52",
+        "summary": "Implements the `flow get guardrail` command, loading merged guardrails and filtering them to the requested phase, returning markdown output.",
+        "detail": "execute validates the phase argument against VALID_PHASES, calls loadMergedGuardrails to combine project and preset guardrail files, then applies filterByPhase to select applicable rules. toMarkdown converts the guardrail array to a bullet-list markdown string. The result is returned as { markdown } for envelope serialization.",
+        "chapter": "internal_design",
+        "role": "lib",
+        "enrich": {
+          "processedAt": "2026-04-08T23:43:05.913Z",
+          "attempts": 1
+        },
+        "keywords": [
+          "guardrail",
+          "phase",
+          "filter",
+          "markdown",
+          "GetGuardrail",
+          "validation",
+          "flow"
+        ]
       },
       {
         "file": "src/flow/lib/get-issue.js",
@@ -1660,7 +2626,24 @@
         ],
         "extends": "FlowCommand",
         "usedBy": null,
-        "id": "7aec11d1"
+        "id": "7aec11d1",
+        "summary": "Implements the `flow get issue` command, fetching a GitHub issue by number via the gh CLI and returning structured issue data.",
+        "detail": "execute validates that the issue argument is a positive integer, runs gh issue view --json to retrieve title, body, state, and labels, and parses the JSON response. Throws descriptive errors for invalid input or gh failures. Returns the issue data object for envelope serialization.",
+        "chapter": "internal_design",
+        "role": "lib",
+        "enrich": {
+          "processedAt": "2026-04-08T23:43:05.913Z",
+          "attempts": 1
+        },
+        "keywords": [
+          "issue",
+          "GitHub",
+          "gh CLI",
+          "GetIssue",
+          "flow",
+          "JSON",
+          "validation"
+        ]
       },
       {
         "file": "src/flow/lib/get-prompt.js",
@@ -1679,7 +2662,25 @@
         ],
         "extends": "FlowCommand",
         "usedBy": null,
-        "id": "410dfcc9"
+        "id": "410dfcc9",
+        "summary": "Implements the `flow get prompt` command, returning predefined prompt templates keyed by kind and language.",
+        "detail": "PROMPTS_BY_LANG defines prompt text for each supported language (ja, en) and kind (e.g., draft, impl, review). validKinds derives the list of accepted kind values from the ja map. execute validates kind, selects the prompt for the resolved language with fallback to ja, and returns { prompt } for envelope serialization.",
+        "chapter": "internal_design",
+        "role": "lib",
+        "enrich": {
+          "processedAt": "2026-04-08T23:43:05.913Z",
+          "attempts": 1
+        },
+        "keywords": [
+          "prompt",
+          "template",
+          "kind",
+          "language",
+          "GetPrompt",
+          "flow",
+          "i18n",
+          "predefined"
+        ]
       },
       {
         "file": "src/flow/lib/get-qa-count.js",
@@ -1696,7 +2697,22 @@
         ],
         "extends": "FlowCommand",
         "usedBy": null,
-        "id": "28b15622"
+        "id": "28b15622",
+        "summary": "Implements the `flow get qa-count` command, returning the number of QA items recorded in the current flow state.",
+        "detail": "execute reads qaItems (or equivalent) from flowState and returns { count } as the result. This provides a lightweight way for skill scripts to determine how many QA verification steps are pending without loading the full flow context.",
+        "chapter": "internal_design",
+        "role": "lib",
+        "enrich": {
+          "processedAt": "2026-04-08T23:43:05.913Z",
+          "attempts": 1
+        },
+        "keywords": [
+          "QA",
+          "count",
+          "flow state",
+          "GetQaCount",
+          "verification"
+        ]
       },
       {
         "file": "src/flow/lib/get-resolve-context.js",
@@ -1722,7 +2738,25 @@
           "src/docs/commands/forge.js",
           "src/docs/commands/readme.js"
         ],
-        "id": "c2848d40"
+        "id": "c2848d40",
+        "summary": "Implements the `flow get resolve-context` command, assembling branch status, commit info, and spec content needed for a flow resolution step.",
+        "detail": "execute resolves the active flow and its worktree path, reads git status (branch, ahead count, last commit, worktree cleanliness), and optionally reads spec text to extract the Goal section. The result object bundles specId, branch, aheadCount, lastCommit, worktreeStatus, isGhAvailable, and goalText for use by resolve/finalize skill scripts.",
+        "chapter": "internal_design",
+        "role": "lib",
+        "enrich": {
+          "processedAt": "2026-04-08T23:43:05.913Z",
+          "attempts": 1
+        },
+        "keywords": [
+          "resolve context",
+          "worktree",
+          "branch",
+          "ahead count",
+          "spec",
+          "goal",
+          "GetResolveContext",
+          "git"
+        ]
       },
       {
         "file": "src/flow/lib/get-status.js",
@@ -1740,7 +2774,23 @@
         ],
         "extends": "FlowCommand",
         "usedBy": null,
-        "id": "9aca938f"
+        "id": "9aca938f",
+        "summary": "Implements the `flow get status` command, returning current flow state enriched with a derived phase label.",
+        "detail": "execute calls derivePhase(state) to compute the current phase (draft, spec, impl, review, finalize, done) from step completion flags, then merges it into the returned state object. This is the primary status query used by skill scripts and the flow-status display.",
+        "chapter": "internal_design",
+        "role": "lib",
+        "enrich": {
+          "processedAt": "2026-04-08T23:43:05.913Z",
+          "attempts": 1
+        },
+        "keywords": [
+          "status",
+          "phase",
+          "flow state",
+          "GetStatus",
+          "derive phase",
+          "steps"
+        ]
       },
       {
         "file": "src/flow/lib/phases.js",
@@ -1759,7 +2809,26 @@
           "src/flow/lib/set-metric.js",
           "src/flow/registry.js"
         ],
-        "id": "5d33316d"
+        "id": "5d33316d",
+        "summary": "Defines and exports the canonical list of valid SDD flow phase names as a frozen array.",
+        "detail": "VALID_PHASES is a frozen array constant containing phase strings such as draft, spec, pre, post, impl, review, and finalize. It is imported by gate, guardrail, and review modules to validate phase arguments and filter phase-specific rules, ensuring a single source of truth for phase naming.",
+        "chapter": "internal_design",
+        "role": "config",
+        "enrich": {
+          "processedAt": "2026-04-08T23:43:05.913Z",
+          "attempts": 1
+        },
+        "keywords": [
+          "phases",
+          "VALID_PHASES",
+          "flow",
+          "draft",
+          "spec",
+          "impl",
+          "review",
+          "finalize",
+          "constants"
+        ]
       },
       {
         "file": "src/flow/lib/run-finalize.js",
@@ -1796,13 +2865,32 @@
         ],
         "extends": "FlowCommand",
         "usedBy": null,
-        "id": "c711309b"
+        "id": "c711309b",
+        "summary": "Implements the `flow run finalize` command, orchestrating the multi-step finalization sequence: docs build, commit, merge/PR, and worktree cleanup.",
+        "detail": "STEP_MAP enumerates named sub-steps (docs, commit, merge, cleanup) with their handler functions. RunFinalizeCommand supports mode=all (run all steps) or mode=select (run a subset). executeCommitPost handles the post-commit side effects. commitOrSkip wraps git commit with a nothing-to-commit guard. executeCleanupImpl removes the worktree branch and directory. finalizeOnError produces an error handler that saves the failure to the issue log for a named step. Each sub-step result is accumulated into the final response object.",
+        "chapter": "internal_design",
+        "role": "controller",
+        "enrich": {
+          "processedAt": "2026-04-08T23:43:05.913Z",
+          "attempts": 1
+        },
+        "keywords": [
+          "finalize",
+          "commit",
+          "merge",
+          "cleanup",
+          "worktree",
+          "docs build",
+          "steps",
+          "RunFinalize",
+          "flow"
+        ]
       },
       {
         "file": "src/flow/lib/run-gate.js",
-        "hash": "507d44b593a479d0f5c75687c0fe3a6e",
+        "hash": "fd72590e5cf931f360458325b07654c9",
         "lines": 483,
-        "mtime": "2026-04-08T13:48:21.369Z",
+        "mtime": "2026-04-08T23:37:38.234Z",
         "className": "run-gate",
         "methods": [
           "RunGateCommand",
@@ -1838,7 +2926,27 @@
         ],
         "extends": "FlowCommand",
         "usedBy": null,
-        "id": "b4aa4dad"
+        "id": "b4aa4dad",
+        "summary": "Implements the `flow run gate` command, validating draft, spec, and implementation artifacts through structural checks and optional AI guardrail evaluation.",
+        "detail": "executeDraft reads draft.md, runs checkDraftText for structural issues, then optionally runs the guardrail AI check for the draft phase. executeSpec reads the spec file, runs checkSpecText for required sections and disallowed patterns, and applies guardrail checks for pre/post phases. executeImpl diffs the branch against base, builds a prompt for AI implementation validation, and checks guardrail rules for the impl phase. gatePass and gateFail construct normalized response objects with next-step guidance. buildGuardrailPrompt and parseGuardrailResponse handle the AI interaction.",
+        "chapter": "internal_design",
+        "role": "controller",
+        "enrich": {
+          "processedAt": "2026-04-08T23:43:05.913Z",
+          "attempts": 1
+        },
+        "keywords": [
+          "gate",
+          "validation",
+          "draft",
+          "spec",
+          "impl",
+          "guardrail",
+          "AI check",
+          "RunGate",
+          "flow",
+          "phase"
+        ]
       },
       {
         "file": "src/flow/lib/run-impl-confirm.js",
@@ -1863,7 +2971,24 @@
         ],
         "extends": "FlowCommand",
         "usedBy": null,
-        "id": "e6534160"
+        "id": "e6534160",
+        "summary": "Implements the `flow run impl-confirm` command, summarizing changed files and requirement completion status for the implementation confirmation step.",
+        "detail": "getChangedFiles runs git diff --name-only against the base branch to list modified files. summarizeRequirements parses the requirements section of the spec to count total, done, in-progress, and pending items. execute loads the spec if it exists and returns a structured object with changedFiles, specExists, and requirementsSummary for display by the skill script.",
+        "chapter": "internal_design",
+        "role": "lib",
+        "enrich": {
+          "processedAt": "2026-04-08T23:43:05.913Z",
+          "attempts": 1
+        },
+        "keywords": [
+          "impl confirm",
+          "changed files",
+          "requirements",
+          "summary",
+          "RunImplConfirm",
+          "flow",
+          "git diff"
+        ]
       },
       {
         "file": "src/flow/lib/run-lint.js",
@@ -1885,7 +3010,24 @@
         ],
         "extends": "FlowCommand",
         "usedBy": null,
-        "id": "4fb3080f"
+        "id": "4fb3080f",
+        "summary": "Implements the `flow run lint` command, running lint checks using merged guardrails against a git diff.",
+        "detail": "RunLintCommand resolves the base branch from args or flow state (throwing if neither is available), loads merged guardrails, and calls the shared runLint utility. Returns a structured result with lint findings. The command acts as a thin adapter between the flow registry and the core lint logic in lib/lint.js.",
+        "chapter": "internal_design",
+        "role": "lib",
+        "enrich": {
+          "processedAt": "2026-04-08T23:43:05.913Z",
+          "attempts": 1
+        },
+        "keywords": [
+          "lint",
+          "guardrail",
+          "RunLint",
+          "flow",
+          "git diff",
+          "base branch",
+          "validation"
+        ]
       },
       {
         "file": "src/flow/lib/run-prepare-spec.js",
@@ -1923,7 +3065,26 @@
         ],
         "extends": "FlowCommand",
         "usedBy": null,
-        "id": "59eeacc6"
+        "id": "59eeacc6",
+        "summary": "Implements the `flow run prepare-spec` command, creating a new spec directory with branch, spec.md, qa.md, and initial flow.json for a new SDD feature.",
+        "detail": "RunPrepareSpecCommand validates preconditions (clean worktree, title present, config exists), computes the next sequential spec index via nextIndex, slugifies the title into a branch name, and optionally creates a git worktree. writeSpecFiles creates the spec directory and initializes spec.md and qa.md from templates (with local override support). writeFlowState persists the initial flow.json with base branch, spec path, and initial step list via buildInitialSteps. addActiveFlow and cleanStaleFlows update the global active-flows registry.",
+        "chapter": "internal_design",
+        "role": "controller",
+        "enrich": {
+          "processedAt": "2026-04-08T23:43:05.913Z",
+          "attempts": 1
+        },
+        "keywords": [
+          "prepare spec",
+          "spec template",
+          "branch",
+          "worktree",
+          "flow.json",
+          "RunPrepareSpec",
+          "slugify",
+          "QA template",
+          "initial steps"
+        ]
       },
       {
         "file": "src/flow/lib/run-report.js",
@@ -1947,7 +3108,24 @@
         ],
         "extends": "FlowCommand",
         "usedBy": null,
-        "id": "43872d6b"
+        "id": "43872d6b",
+        "summary": "Implements the `flow run report` command, generating a completion report from git history and the issue log and saving it to the spec directory.",
+        "detail": "RunReportCommand reads baseBranch from flow state (throwing if absent), calls collectGitSummary to aggregate commit history, loads the issue log via loadIssueLog, and passes both to generateReport. The resulting report data is saved via saveReport and the changed file path is returned in the result for the finalize step tracker.",
+        "chapter": "internal_design",
+        "role": "lib",
+        "enrich": {
+          "processedAt": "2026-04-08T23:43:05.913Z",
+          "attempts": 1
+        },
+        "keywords": [
+          "report",
+          "RunReport",
+          "flow",
+          "git summary",
+          "issue log",
+          "metrics",
+          "spec dir"
+        ]
       },
       {
         "file": "src/flow/lib/run-resume.js",
@@ -1970,7 +3148,26 @@
         ],
         "extends": "FlowCommand",
         "usedBy": null,
-        "id": "abe5ac21"
+        "id": "abe5ac21",
+        "summary": "Implements the `flow run resume` command, reconstructing full flow context (branch, worktree, spec content, phase) for resuming an interrupted SDD flow.",
+        "detail": "RunResumeCommand resolves the active flow and its worktree path, reads git state (branch, ahead count, last commit, gh availability), extracts the Goal and current phase from spec text and flow state, and returns a comprehensive context object. This mirrors GetResolveContextCommand but is optimized for the resume skill script's display needs. extractSection parses markdown headings to isolate specific sections.",
+        "chapter": "internal_design",
+        "role": "lib",
+        "enrich": {
+          "processedAt": "2026-04-08T23:43:05.913Z",
+          "attempts": 1
+        },
+        "keywords": [
+          "resume",
+          "RunResume",
+          "flow",
+          "worktree",
+          "branch",
+          "spec",
+          "phase",
+          "context",
+          "git"
+        ]
       },
       {
         "file": "src/flow/lib/run-retro.js",
@@ -2004,7 +3201,25 @@
         ],
         "extends": "FlowCommand",
         "usedBy": null,
-        "id": "862e7d08"
+        "id": "862e7d08",
+        "summary": "Implements the retrospective analysis command that compares implementation against spec requirements using an AI agent.",
+        "detail": "Reads the spec file and extracts requirements, computes git diff between base branch and HEAD, then builds a prompt for the AI agent to evaluate implementation quality. Parses the AI response JSON (with repair fallback) and writes the result to retro.json in the spec directory. Exports helper functions for prompt building and response parsing for testability.",
+        "chapter": "internal_design",
+        "role": "controller",
+        "enrich": {
+          "processedAt": "2026-04-08T23:39:42.623Z",
+          "attempts": 1
+        },
+        "keywords": [
+          "retro",
+          "retrospective",
+          "review",
+          "AI agent",
+          "diff",
+          "requirements",
+          "spec",
+          "flow"
+        ]
       },
       {
         "file": "src/flow/lib/run-review.js",
@@ -2034,7 +3249,25 @@
         ],
         "extends": "FlowCommand",
         "usedBy": null,
-        "id": "d4e97204"
+        "id": "d4e97204",
+        "summary": "Implements the review command that runs test or spec review scripts via subprocess, with retry logic.",
+        "detail": "Dispatches to a review.js script using runCmd and parses stdout/stderr into structured results for both test and spec review modes. Provides a generic runCmdWithRetry utility for retrying failed commands with configurable delay and count. Extends FlowCommand base class and uses DEFAULT_AGENT_TIMEOUT_MS for timeout management.",
+        "chapter": "internal_design",
+        "role": "controller",
+        "enrich": {
+          "processedAt": "2026-04-08T23:39:42.623Z",
+          "attempts": 1
+        },
+        "keywords": [
+          "review",
+          "test",
+          "spec",
+          "retry",
+          "subprocess",
+          "stdout",
+          "stderr",
+          "flow"
+        ]
       },
       {
         "file": "src/flow/lib/run-sync.js",
@@ -2057,7 +3290,23 @@
         ],
         "extends": "FlowCommand",
         "usedBy": null,
-        "id": "6cc87b22"
+        "id": "6cc87b22",
+        "summary": "Implements the sync command that triggers documentation build via the docs.js script.",
+        "detail": "Resolves the docs.js script path from PKG_DIR and executes it as a subprocess using runCmd/assertOk. Returns structured success/failure objects conforming to the FlowCommand result contract. Minimal implementation that delegates all doc generation logic to the docs pipeline.",
+        "chapter": "internal_design",
+        "role": "controller",
+        "enrich": {
+          "processedAt": "2026-04-08T23:39:42.623Z",
+          "attempts": 1
+        },
+        "keywords": [
+          "sync",
+          "docs",
+          "documentation",
+          "build",
+          "subprocess",
+          "flow"
+        ]
       },
       {
         "file": "src/flow/lib/set-auto.js",
@@ -2075,7 +3324,23 @@
         ],
         "extends": "FlowCommand",
         "usedBy": null,
-        "id": "2c71e989"
+        "id": "2c71e989",
+        "summary": "Implements the 'flow set auto' command to toggle autoApprove mode in flow state.",
+        "detail": "Validates the on/off argument and calls mutateFlowState to persist the autoApprove boolean. Throws a usage error for invalid arguments. Simple single-responsibility command following the FlowCommand pattern.",
+        "chapter": "cli_commands",
+        "role": "controller",
+        "enrich": {
+          "processedAt": "2026-04-08T23:39:42.623Z",
+          "attempts": 1
+        },
+        "keywords": [
+          "auto",
+          "autoApprove",
+          "flow",
+          "set",
+          "toggle",
+          "state"
+        ]
       },
       {
         "file": "src/flow/lib/set-issue-log.js",
@@ -2104,7 +3369,24 @@
           "src/flow/registry.js",
           "src/lib/agent.js"
         ],
-        "id": "65ac9e4f"
+        "id": "65ac9e4f",
+        "summary": "Manages the issue-log.json file that records issues encountered during a flow, and exposes load/save helpers.",
+        "detail": "Provides loadIssueLog and saveIssueLog pure functions that read/write issue-log.json relative to the spec directory. Validates that the entries field is an array on load and initializes an empty log when the file does not exist. The SetIssueLogCommand appends a new entry with step and reason fields, returning the updated entry count.",
+        "chapter": "internal_design",
+        "role": "model",
+        "enrich": {
+          "processedAt": "2026-04-08T23:39:42.623Z",
+          "attempts": 1
+        },
+        "keywords": [
+          "issue-log",
+          "redo",
+          "entries",
+          "flow state",
+          "spec",
+          "persistence",
+          "log"
+        ]
       },
       {
         "file": "src/flow/lib/set-issue.js",
@@ -2122,7 +3404,22 @@
         ],
         "extends": "FlowCommand",
         "usedBy": null,
-        "id": "c3865b58"
+        "id": "c3865b58",
+        "summary": "Implements the 'flow set issue' command to associate a GitHub issue number with the current flow.",
+        "detail": "Parses and validates the issue number argument, then delegates to the setIssue flow-state mutation. Throws descriptive errors for missing or non-numeric arguments. Follows the minimal FlowCommand pattern.",
+        "chapter": "cli_commands",
+        "role": "controller",
+        "enrich": {
+          "processedAt": "2026-04-08T23:39:42.623Z",
+          "attempts": 1
+        },
+        "keywords": [
+          "issue",
+          "GitHub",
+          "flow state",
+          "set",
+          "number"
+        ]
       },
       {
         "file": "src/flow/lib/set-metric.js",
@@ -2141,7 +3438,25 @@
         ],
         "extends": "FlowCommand",
         "usedBy": null,
-        "id": "40d93087"
+        "id": "40d93087",
+        "summary": "Implements the 'flow set metric' command to increment a named counter for a given phase.",
+        "detail": "Validates phase against VALID_PHASES and counter against VALID_COUNTERS before calling mutateFlowState. Supported counters are question, redo, docsRead, and srcRead. Returns the updated phase, counter, and new value.",
+        "chapter": "cli_commands",
+        "role": "controller",
+        "enrich": {
+          "processedAt": "2026-04-08T23:39:42.623Z",
+          "attempts": 1
+        },
+        "keywords": [
+          "metric",
+          "counter",
+          "phase",
+          "question",
+          "redo",
+          "docsRead",
+          "srcRead",
+          "flow"
+        ]
       },
       {
         "file": "src/flow/lib/set-note.js",
@@ -2159,7 +3474,22 @@
         ],
         "extends": "FlowCommand",
         "usedBy": null,
-        "id": "7c2ef03f"
+        "id": "7c2ef03f",
+        "summary": "Implements the 'flow set note' command to append a text note to flow state.",
+        "detail": "Validates that a non-empty text argument is provided, then delegates to addNote for flow-state mutation. Returns the stored note text. Minimal single-responsibility command.",
+        "chapter": "cli_commands",
+        "role": "controller",
+        "enrich": {
+          "processedAt": "2026-04-08T23:39:42.623Z",
+          "attempts": 1
+        },
+        "keywords": [
+          "note",
+          "flow state",
+          "annotation",
+          "set",
+          "text"
+        ]
       },
       {
         "file": "src/flow/lib/set-req.js",
@@ -2177,7 +3507,23 @@
         ],
         "extends": "FlowCommand",
         "usedBy": null,
-        "id": "6dd22e12"
+        "id": "6dd22e12",
+        "summary": "Implements the 'flow set req' command to update the status of a requirement by index.",
+        "detail": "Parses and validates the requirement index as a non-negative integer, then calls updateRequirement to persist the status change. Throws descriptive errors for missing or invalid arguments. Returns the updated index and status.",
+        "chapter": "cli_commands",
+        "role": "controller",
+        "enrich": {
+          "processedAt": "2026-04-08T23:39:42.623Z",
+          "attempts": 1
+        },
+        "keywords": [
+          "requirement",
+          "status",
+          "index",
+          "flow state",
+          "set",
+          "update"
+        ]
       },
       {
         "file": "src/flow/lib/set-request.js",
@@ -2195,7 +3541,22 @@
         ],
         "extends": "FlowCommand",
         "usedBy": null,
-        "id": "546ef334"
+        "id": "546ef334",
+        "summary": "Implements the 'flow set request' command to store the user's feature request text in flow state.",
+        "detail": "Validates that a non-empty request text is provided and calls setRequest for persistence. Returns the stored request text. Follows the minimal FlowCommand pattern.",
+        "chapter": "cli_commands",
+        "role": "controller",
+        "enrich": {
+          "processedAt": "2026-04-08T23:39:42.623Z",
+          "attempts": 1
+        },
+        "keywords": [
+          "request",
+          "feature request",
+          "flow state",
+          "set",
+          "text"
+        ]
       },
       {
         "file": "src/flow/lib/set-step.js",
@@ -2213,7 +3574,23 @@
         ],
         "extends": "FlowCommand",
         "usedBy": null,
-        "id": "d4cb8d93"
+        "id": "d4cb8d93",
+        "summary": "Implements the 'flow set step' command to update the status of a named flow step.",
+        "detail": "Accepts a step ID and status string, delegates to updateStepStatus for flow-state mutation. Returns the updated step ID and status. Minimal implementation with usage validation.",
+        "chapter": "cli_commands",
+        "role": "controller",
+        "enrich": {
+          "processedAt": "2026-04-08T23:39:42.623Z",
+          "attempts": 1
+        },
+        "keywords": [
+          "step",
+          "status",
+          "flow state",
+          "set",
+          "update",
+          "progress"
+        ]
       },
       {
         "file": "src/flow/lib/set-summary.js",
@@ -2231,7 +3608,23 @@
         ],
         "extends": "FlowCommand",
         "usedBy": null,
-        "id": "f62c866f"
+        "id": "f62c866f",
+        "summary": "Implements the 'flow set summary' command to replace the requirements list in flow state with a JSON array.",
+        "detail": "Parses and validates the raw JSON argument, ensures it is an array of strings, then calls setRequirements for persistence. Throws descriptive errors for missing, invalid JSON, or wrong-type arguments. Returns the count of stored requirements.",
+        "chapter": "cli_commands",
+        "role": "controller",
+        "enrich": {
+          "processedAt": "2026-04-08T23:39:42.623Z",
+          "attempts": 1
+        },
+        "keywords": [
+          "summary",
+          "requirements",
+          "JSON array",
+          "flow state",
+          "set",
+          "parse"
+        ]
       },
       {
         "file": "src/flow/lib/set-test-summary.js",
@@ -2249,7 +3642,24 @@
         ],
         "extends": "FlowCommand",
         "usedBy": null,
-        "id": "962cab89"
+        "id": "962cab89",
+        "summary": "Implements the 'flow set test-summary' command to record test counts by type in flow state.",
+        "detail": "Accepts --unit, --integration, and --acceptance flags with numeric values and validates them. Builds a summary object and calls setTestSummary for persistence. Throws if no valid flag is provided or a value is not a non-negative integer.",
+        "chapter": "cli_commands",
+        "role": "controller",
+        "enrich": {
+          "processedAt": "2026-04-08T23:39:42.623Z",
+          "attempts": 1
+        },
+        "keywords": [
+          "test summary",
+          "unit",
+          "integration",
+          "acceptance",
+          "flow state",
+          "set",
+          "counts"
+        ]
       },
       {
         "file": "src/flow/registry.js",
@@ -2276,7 +3686,25 @@
         "usedBy": [
           "src/flow.js"
         ],
-        "id": "d64f4095"
+        "id": "d64f4095",
+        "summary": "Central registry that defines all flow commands with their args, help text, pre/post hooks, and command classes.",
+        "detail": "Exports the FLOW_COMMANDS map that associates command identifiers with metadata including argument specs, help strings, and hook functions. Pre/post hooks use stepPre/stepPost helpers to automatically update step statuses and trigger commit logic. Helper functions deriveActivePhase and resolveGateStepId encapsulate phase resolution used by multiple commands.",
+        "chapter": "cli_commands",
+        "role": "controller",
+        "enrich": {
+          "processedAt": "2026-04-08T23:39:42.623Z",
+          "attempts": 1
+        },
+        "keywords": [
+          "registry",
+          "flow commands",
+          "hooks",
+          "pre",
+          "post",
+          "dispatch",
+          "step",
+          "phase"
+        ]
       },
       {
         "file": "src/help.js",
@@ -2298,7 +3726,23 @@
         ],
         "extends": null,
         "usedBy": null,
-        "id": "4ac07fa0"
+        "id": "4ac07fa0",
+        "summary": "Entry point for the 'sdd-forge help' command that prints available subcommands with i18n descriptions.",
+        "detail": "Defines a LAYOUT array of command entries and maps each to a localized description via the translate function. Exports both the main function and the LAYOUT for use by other modules. Uses runIfDirect to support both direct execution and programmatic import.",
+        "chapter": "cli_commands",
+        "role": "cli",
+        "enrich": {
+          "processedAt": "2026-04-08T23:39:42.623Z",
+          "attempts": 1
+        },
+        "keywords": [
+          "help",
+          "commands",
+          "i18n",
+          "translate",
+          "layout",
+          "entry point"
+        ]
       },
       {
         "file": "src/lib/agent.js",
@@ -2370,7 +3814,27 @@
           "src/lib/types.js",
           "src/setup.js"
         ],
-        "id": "13ddf392"
+        "id": "13ddf392",
+        "summary": "Core AI agent invocation library supporting synchronous, asynchronous, and logged call modes across multiple providers.",
+        "detail": "Detects the provider (claude, codex, unknown) from the command name and applies provider-specific argument injection and output parsing. Supports stdin-based prompt delivery for large prompts exceeding ARGV_SIZE_THRESHOLD. Implements retry logic for async calls and structured logging via Logger. Exports resolveAgent for config-driven agent resolution and ensureAgentWorkDir/writeAgentContext for workspace management.",
+        "chapter": "internal_design",
+        "role": "lib",
+        "enrich": {
+          "processedAt": "2026-04-08T23:39:42.623Z",
+          "attempts": 1
+        },
+        "keywords": [
+          "agent",
+          "AI",
+          "claude",
+          "codex",
+          "invoke",
+          "async",
+          "sync",
+          "retry",
+          "logging",
+          "provider"
+        ]
       },
       {
         "file": "src/lib/agents-md.js",
@@ -2393,7 +3857,23 @@
         "usedBy": [
           "src/setup.js"
         ],
-        "id": "9f3f55f7"
+        "id": "9f3f55f7",
+        "summary": "Loads the AGENTS.sdd.md template for a given language from the base preset's templates directory.",
+        "detail": "Constructs the template path using PRESETS_DIR and the language code, falling back gracefully to an empty string if the file does not exist. Used during the agents doc generation step to inject SDD-specific content into AGENTS.md.",
+        "chapter": "internal_design",
+        "role": "lib",
+        "enrich": {
+          "processedAt": "2026-04-08T23:39:42.623Z",
+          "attempts": 1
+        },
+        "keywords": [
+          "AGENTS.md",
+          "template",
+          "SDD",
+          "language",
+          "preset",
+          "load"
+        ]
       },
       {
         "file": "src/lib/cli.js",
@@ -2441,7 +3921,24 @@
           "src/setup.js",
           "src/upgrade.js"
         ],
-        "id": "f351ecc4"
+        "id": "f351ecc4",
+        "summary": "CLI utility module providing path resolution, argument parsing, worktree detection, and package metadata helpers.",
+        "detail": "Exports PKG_DIR derived from import.meta.url for reliable package-relative path resolution. repoRoot resolves the project root via SDD_FORGE_WORK_ROOT env var or git rev-parse. parseArgs provides a lightweight flag parser without external dependencies. isInsideWorktree and getMainRepoPath support git worktree detection for concurrent flow support.",
+        "chapter": "internal_design",
+        "role": "lib",
+        "enrich": {
+          "processedAt": "2026-04-08T23:39:42.623Z",
+          "attempts": 1
+        },
+        "keywords": [
+          "CLI",
+          "PKG_DIR",
+          "repo root",
+          "worktree",
+          "parse args",
+          "package version",
+          "path resolution"
+        ]
       },
       {
         "file": "src/lib/config.js",
@@ -2491,7 +3988,25 @@
           "src/setup.js",
           "src/upgrade.js"
         ],
-        "id": "dff6e5b4"
+        "id": "dff6e5b4",
+        "summary": "Configuration loading module that reads and validates config.json from the .sdd-forge directory.",
+        "detail": "Exports path helpers (sddDir, sddConfigPath, sddOutputDir, sddDataDir) for consistent .sdd-forge directory access. loadConfig reads config.json and passes it through validateConfig for schema enforcement. Also provides loadJsonFile for generic JSON loading and loadPackageField for reading arbitrary package.json fields.",
+        "chapter": "configuration",
+        "role": "model",
+        "enrich": {
+          "processedAt": "2026-04-08T23:39:42.623Z",
+          "attempts": 1
+        },
+        "keywords": [
+          "config",
+          "config.json",
+          "sddDir",
+          "load",
+          "validate",
+          "concurrency",
+          "lang",
+          "path"
+        ]
       },
       {
         "file": "src/lib/entrypoint.js",
@@ -2518,7 +4033,23 @@
           "src/setup.js",
           "src/upgrade.js"
         ],
-        "id": "5c7afa99"
+        "id": "5c7afa99",
+        "summary": "Provides isDirectRun and runIfDirect helpers for safe module entry point detection.",
+        "detail": "Compares resolved argv[1] against the module's file URL to determine if the script was invoked directly. runIfDirect wraps the main function with process.exit on success or error. Used by all top-level script modules to support both direct CLI execution and programmatic import.",
+        "chapter": "internal_design",
+        "role": "lib",
+        "enrich": {
+          "processedAt": "2026-04-08T23:39:42.623Z",
+          "attempts": 1
+        },
+        "keywords": [
+          "entry point",
+          "direct run",
+          "process.exit",
+          "import.meta.url",
+          "CLI",
+          "main"
+        ]
       },
       {
         "file": "src/lib/exit-codes.js",
@@ -2543,7 +4074,22 @@
           "src/setup.js",
           "src/upgrade.js"
         ],
-        "id": "82a3b684"
+        "id": "82a3b684",
+        "summary": "Defines standardized process exit code constants for success and error states.",
+        "detail": "Exports EXIT_SUCCESS (0) and EXIT_ERROR (1) as named constants to avoid magic numbers across the codebase. Used by CLI entry points and error handlers to signal process termination status.",
+        "chapter": "internal_design",
+        "role": "lib",
+        "enrich": {
+          "processedAt": "2026-04-08T23:39:42.623Z",
+          "attempts": 1
+        },
+        "keywords": [
+          "exit code",
+          "EXIT_SUCCESS",
+          "EXIT_ERROR",
+          "process",
+          "constants"
+        ]
       },
       {
         "file": "src/lib/flow-envelope.js",
@@ -2568,7 +4114,25 @@
         "usedBy": [
           "src/flow.js"
         ],
-        "id": "4f01cb50"
+        "id": "4f01cb50",
+        "summary": "Defines the flow command result envelope format with ok/fail/warn constructors and a JSON output function.",
+        "detail": "Provides ok, fail, and warn factory functions that produce consistently structured envelope objects with type, key, data, and errors fields. The output function serializes the envelope to stdout as pretty-printed JSON and sets process.exitCode without calling process.exit, allowing post-hooks to run. Used by all flow commands to standardize their output contract.",
+        "chapter": "internal_design",
+        "role": "lib",
+        "enrich": {
+          "processedAt": "2026-04-08T23:39:42.623Z",
+          "attempts": 1
+        },
+        "keywords": [
+          "envelope",
+          "ok",
+          "fail",
+          "warn",
+          "output",
+          "JSON",
+          "exit code",
+          "flow result"
+        ]
       },
       {
         "file": "src/lib/flow-state.js",
@@ -2648,7 +4212,26 @@
         "usedBy": [
           "src/flow.js"
         ],
-        "id": "5bb0bb76"
+        "id": "5bb0bb76",
+        "summary": "Manages all flow state persistence, including step status, requirements, metrics, active flows, and worktree paths.",
+        "detail": "Flow state is stored as flow.json under specs/<specId>/ and discovered via an .active-flow index file in the main repo's .sdd-forge directory. Exports granular mutators (updateStepStatus, incrementMetric, setRequirements, etc.) that all delegate to mutateFlowState for atomic read-modify-write. Supports multi-worktree scenarios by scanning both main repo and worktree specs directories in scanAllFlows. derivePhase computes the current phase from the last completed step using PHASE_MAP.",
+        "chapter": "internal_design",
+        "role": "model",
+        "enrich": {
+          "processedAt": "2026-04-08T23:39:42.623Z",
+          "attempts": 1
+        },
+        "keywords": [
+          "flow state",
+          "flow.json",
+          "step",
+          "phase",
+          "active flow",
+          "worktree",
+          "requirements",
+          "metrics",
+          "persistence"
+        ]
       },
       {
         "file": "src/lib/formatter.js",
@@ -2666,7 +4249,23 @@
         ],
         "extends": null,
         "usedBy": null,
-        "id": "994720ab"
+        "id": "994720ab",
+        "summary": "Provides shared UI formatting constants and helpers for consistent terminal output.",
+        "detail": "Exports a DIVIDER string of Unicode box-drawing characters and a pushSection helper that appends a titled section with divider to a lines array. Used by status and context display commands for consistent formatting.",
+        "chapter": "internal_design",
+        "role": "lib",
+        "enrich": {
+          "processedAt": "2026-04-08T23:39:42.623Z",
+          "attempts": 1
+        },
+        "keywords": [
+          "formatter",
+          "divider",
+          "section",
+          "terminal",
+          "UI",
+          "output"
+        ]
       },
       {
         "file": "src/lib/git-helpers.js",
@@ -2697,7 +4296,25 @@
         ],
         "extends": null,
         "usedBy": null,
-        "id": "61b28e9c"
+        "id": "61b28e9c",
+        "summary": "Git interaction helpers for worktree status, branch info, commit history, and GitHub CLI operations.",
+        "detail": "Wraps runCmd calls for common git operations: dirty file detection, current branch, ahead count vs base branch, and last commit hash. isGhAvailable checks if the gh CLI is installed by running gh --version. collectGitSummary combines diff stat and commit messages for use in retro/sync prompts. commentOnIssue posts a comment via gh CLI and returns a structured ok/error result.",
+        "chapter": "internal_design",
+        "role": "lib",
+        "enrich": {
+          "processedAt": "2026-04-08T23:39:42.623Z",
+          "attempts": 1
+        },
+        "keywords": [
+          "git",
+          "worktree",
+          "branch",
+          "commit",
+          "gh CLI",
+          "GitHub",
+          "diff",
+          "ahead count"
+        ]
       },
       {
         "file": "src/lib/guardrail.js",
@@ -2733,7 +4350,26 @@
         "usedBy": [
           "src/lib/lint.js"
         ],
-        "id": "bb462f4e"
+        "id": "bb462f4e",
+        "summary": "Loads, merges, filters, and matches guardrail rules from preset and project-level guardrail.json files.",
+        "detail": "Resolves the preset chain for the project and loads guardrail.json files from each preset directory, merging them by ID with project-level rules taking precedence. filterByPhase filters guardrails to those applicable to a given phase (defaulting to spec). matchScope checks whether a file path matches a guardrail's scope using basename or glob pattern matching via patternToRegex. parseLintString converts lint rule strings to RegExp objects.",
+        "chapter": "internal_design",
+        "role": "lib",
+        "enrich": {
+          "processedAt": "2026-04-08T23:39:42.623Z",
+          "attempts": 1
+        },
+        "keywords": [
+          "guardrail",
+          "lint",
+          "phase",
+          "scope",
+          "merge",
+          "preset",
+          "pattern",
+          "regex",
+          "filter"
+        ]
       },
       {
         "file": "src/lib/i18n.js",
@@ -2775,7 +4411,25 @@
           "src/setup.js",
           "src/upgrade.js"
         ],
-        "id": "45a1457c"
+        "id": "45a1457c",
+        "summary": "Internationalization module that loads and merges locale JSON files from package, preset, and project directories.",
+        "detail": "Supports three domains (ui, messages, prompts) and resolves locale directories in priority order: package defaults, preset locale, project-level locale. createI18n returns a translation function t(key, params) with {{param}} interpolation. The translate singleton factory auto-detects language and preset from project config. deepMerge enables additive overrides without full replacement of locale objects.",
+        "chapter": "internal_design",
+        "role": "lib",
+        "enrich": {
+          "processedAt": "2026-04-08T23:39:42.623Z",
+          "attempts": 1
+        },
+        "keywords": [
+          "i18n",
+          "locale",
+          "translate",
+          "interpolate",
+          "domain",
+          "merge",
+          "language",
+          "preset"
+        ]
       },
       {
         "file": "src/lib/include.js",
@@ -2798,7 +4452,24 @@
         "usedBy": [
           "src/lib/skills.js"
         ],
-        "id": "d35107ed"
+        "id": "d35107ed",
+        "summary": "Resolves and inlines file includes in template content using an HTML comment syntax.",
+        "detail": "Detects <!-- include(\"path\") --> directives and resolves paths relative to templatesDir, presetsDir, pkgDir, or baseDir in priority order. Prevents path traversal via ../ and ./ prefix checks. Detects circular includes by tracking a visited set. Recursively processes included files so nested includes are supported.",
+        "chapter": "internal_design",
+        "role": "lib",
+        "enrich": {
+          "processedAt": "2026-04-08T23:39:42.623Z",
+          "attempts": 1
+        },
+        "keywords": [
+          "include",
+          "template",
+          "directive",
+          "resolve",
+          "circular",
+          "path traversal",
+          "inline"
+        ]
       },
       {
         "file": "src/lib/json-parse.js",
@@ -2820,7 +4491,24 @@
         ],
         "extends": null,
         "usedBy": null,
-        "id": "a2f5875b"
+        "id": "a2f5875b",
+        "summary": "Implements a lenient JSON repair parser that recovers valid JSON from malformed or markdown-wrapped AI output.",
+        "detail": "Uses a hand-written recursive descent parser that tolerates missing quotes, trailing commas, and other common AI output artifacts. Strips markdown code fences and locates the first JSON object or array before parsing. Exported repairJson is used as a fallback when JSON.parse fails in AI response handling. Helper functions cover all JSON value types including strings, numbers, arrays, objects, and keywords.",
+        "chapter": "internal_design",
+        "role": "lib",
+        "enrich": {
+          "processedAt": "2026-04-08T23:39:42.623Z",
+          "attempts": 1
+        },
+        "keywords": [
+          "JSON repair",
+          "parse",
+          "malformed",
+          "AI output",
+          "markdown fence",
+          "recursive descent",
+          "fallback"
+        ]
       },
       {
         "file": "src/lib/lint.js",
@@ -2848,7 +4536,25 @@
         ],
         "extends": null,
         "usedBy": null,
-        "id": "aa4a324d"
+        "id": "aa4a324d",
+        "summary": "Runs lint guardrail checks against changed files using regex pattern matching on file content.",
+        "detail": "getChangedFiles retrieves the list of files changed since a base branch using git diff. runLintChecks iterates over files, applies scope filtering via matchScope, reads file content, and tests each lint regex pattern. validateLintGuardrails checks guardrail definitions for validity and returns warnings. runLint orchestrates the full lint pipeline and returns a structured result with ok, failures, and counts.",
+        "chapter": "internal_design",
+        "role": "lib",
+        "enrich": {
+          "processedAt": "2026-04-08T23:39:42.623Z",
+          "attempts": 1
+        },
+        "keywords": [
+          "lint",
+          "guardrail",
+          "changed files",
+          "git diff",
+          "regex",
+          "scope",
+          "validation",
+          "check"
+        ]
       },
       {
         "file": "src/lib/log.js",
@@ -2882,7 +4588,25 @@
           "src/lib/agent.js",
           "src/sdd-forge.js"
         ],
-        "id": "3d7bb5e6"
+        "id": "3d7bb5e6",
+        "summary": "Singleton Logger class that writes structured JSONL entries and prompt files for agent calls, git operations, and events.",
+        "detail": "Uses a singleton pattern with lazy initialization from project config. Supports agent, git, and event log methods that append to daily JSONL files under a configurable log directory. Prompt payloads are written as individual JSON files in a prompts subdirectory keyed by request ID. Resolves flow context (spec and phase) from flow.json for log enrichment. All writes are non-blocking and use Promise.allSettled to avoid blocking the main flow.",
+        "chapter": "internal_design",
+        "role": "lib",
+        "enrich": {
+          "processedAt": "2026-04-08T23:39:42.623Z",
+          "attempts": 1
+        },
+        "keywords": [
+          "logger",
+          "JSONL",
+          "logging",
+          "agent",
+          "prompt",
+          "singleton",
+          "flow context",
+          "request ID"
+        ]
       },
       {
         "file": "src/lib/multi-select.js",
@@ -2904,7 +4628,25 @@
         "usedBy": [
           "src/setup.js"
         ],
-        "id": "9a04a164"
+        "id": "9a04a164",
+        "summary": "Provides an interactive terminal multi-select UI for preset and option selection.",
+        "detail": "buildTreeItems converts a nested preset hierarchy into a flat list with tree-prefix strings for display. The select function renders a scrollable list with cursor navigation, supporting both single and multi-select modes. Falls back to returning the first item or empty array when stdin is not a TTY. Uses ANSI escape codes for colored hints and cursor movement without external dependencies.",
+        "chapter": "internal_design",
+        "role": "lib",
+        "enrich": {
+          "processedAt": "2026-04-08T23:39:42.623Z",
+          "attempts": 1
+        },
+        "keywords": [
+          "multi-select",
+          "interactive",
+          "TTY",
+          "terminal",
+          "preset tree",
+          "cursor",
+          "ANSI",
+          "select"
+        ]
       },
       {
         "file": "src/lib/presets.js",
@@ -2942,7 +4684,25 @@
           "src/presets-cmd.js",
           "src/setup.js"
         ],
-        "id": "ae76d513"
+        "id": "ae76d513",
+        "summary": "Discovers and loads preset manifests, resolves preset inheritance chains, and provides preset lookup utilities.",
+        "detail": "Scans the presets directory for subdirectories containing preset.json manifests and builds the PRESETS array at module load time. resolveChain walks the parent chain for a leaf preset key, detecting circular references and missing parents. resolveMultiChains merges chains for multiple preset types. presetByLeaf and presetsForArch support single-preset lookup and child discovery.",
+        "chapter": "internal_design",
+        "role": "lib",
+        "enrich": {
+          "processedAt": "2026-04-08T23:39:42.623Z",
+          "attempts": 1
+        },
+        "keywords": [
+          "preset",
+          "chain",
+          "inheritance",
+          "manifest",
+          "discover",
+          "parent",
+          "resolve",
+          "leaf"
+        ]
       },
       {
         "file": "src/lib/process.js",
@@ -2972,7 +4732,26 @@
           "src/lib/git-helpers.js",
           "src/lib/lint.js"
         ],
-        "id": "6196b26c"
+        "id": "6196b26c",
+        "summary": "Low-level process execution wrapper providing synchronous and asynchronous command runners with structured results.",
+        "detail": "runCmd wraps execFileSync and catches errors to always return a structured result object with ok, status, stdout, stderr, signal, and killed fields. runCmdAsync provides the same interface using execFile with a Promise wrapper. assertOk throws a formatted error if the result is not ok. formatError concatenates status, signal, and stderr for readable error messages.",
+        "chapter": "internal_design",
+        "role": "lib",
+        "enrich": {
+          "processedAt": "2026-04-08T23:39:42.623Z",
+          "attempts": 1
+        },
+        "keywords": [
+          "process",
+          "exec",
+          "runCmd",
+          "subprocess",
+          "stdout",
+          "stderr",
+          "async",
+          "sync",
+          "assertOk"
+        ]
       },
       {
         "file": "src/lib/progress.js",
@@ -2993,7 +4772,26 @@
         ],
         "extends": null,
         "usedBy": null,
-        "id": "fa23a1ba"
+        "id": "fa23a1ba",
+        "summary": "Progress and spinner display utilities for multi-step CLI operations with TTY-aware rendering.",
+        "detail": "createProgress manages a weighted progress bar across named steps with spinner animation using stderr for output. Supports TTY mode with in-place updates via ANSI escape sequences and non-TTY mode with simple line output. createLogger provides prefix-based info/error logging to stderr. formatElapsed converts milliseconds to a human-readable hours/minutes/seconds string.",
+        "chapter": "internal_design",
+        "role": "lib",
+        "enrich": {
+          "processedAt": "2026-04-08T23:39:42.623Z",
+          "attempts": 1
+        },
+        "keywords": [
+          "progress",
+          "spinner",
+          "TTY",
+          "ANSI",
+          "stderr",
+          "steps",
+          "bar",
+          "elapsed",
+          "verbose"
+        ]
       },
       {
         "file": "src/lib/skills.js",
@@ -3023,13 +4821,32 @@
           "src/setup.js",
           "src/upgrade.js"
         ],
-        "id": "a1344e4a"
+        "id": "a1344e4a",
+        "summary": "Deploys skill definition files from templates to .agents/skills and .claude/skills directories with include resolution.",
+        "detail": "deploySkillsFromDir scans a templates/skills directory, resolves SKILL.md content (including nested includes), and writes it to both .agents/skills and .claude/skills target paths. Skips unchanged files by content comparison and handles symlink replacement. deploySkills and deployProjectSkills provide convenient wrappers for package-level and project-level skill deployment respectively.",
+        "chapter": "development",
+        "role": "lib",
+        "enrich": {
+          "processedAt": "2026-04-08T23:39:42.623Z",
+          "attempts": 1
+        },
+        "keywords": [
+          "skills",
+          "deploy",
+          "SKILL.md",
+          "templates",
+          ".claude",
+          ".agents",
+          "upgrade",
+          "include",
+          "symlink"
+        ]
       },
       {
         "file": "src/lib/types.js",
-        "hash": "02e177868767a76b5ea5b9470efa7644",
-        "lines": 397,
-        "mtime": "2026-04-08T14:06:56.506Z",
+        "hash": "4ecdad1c52328af51843cd8045a4683e",
+        "lines": 406,
+        "mtime": "2026-04-08T23:37:38.234Z",
         "className": "types",
         "methods": [
           "validateConfig",
@@ -3048,7 +4865,26 @@
           "src/lib/config.js",
           "src/setup.js"
         ],
-        "id": "69d5afb4"
+        "id": "69d5afb4",
+        "summary": "Config schema validation and output config resolution for sdd-forge project configuration.",
+        "detail": "validateConfig checks required fields (lang, type, docs.languages, docs.defaultLanguage) and validates optional fields like docs.style.tone against VALID_TONES and agent.providers against BUILTIN_PROVIDERS. Throws a descriptive error listing all validation failures. resolveOutputConfig builds a normalized output config object with defaults.",
+        "chapter": "configuration",
+        "role": "model",
+        "enrich": {
+          "processedAt": "2026-04-08T23:39:42.623Z",
+          "attempts": 1
+        },
+        "keywords": [
+          "config",
+          "validate",
+          "schema",
+          "tone",
+          "provider",
+          "output config",
+          "lang",
+          "type",
+          "docs"
+        ]
       },
       {
         "file": "src/presets-cmd.js",
@@ -3068,7 +4904,24 @@
         "exports": [],
         "extends": null,
         "usedBy": null,
-        "id": "85926390"
+        "id": "85926390",
+        "summary": "CLI entry point for the 'sdd-forge presets' command that lists available presets in a tree format.",
+        "detail": "Dispatches to printTree or a detail view based on the subcommand argument. printTree recursively renders the preset hierarchy with ASCII tree prefixes and indicates whether each preset has a templates directory. Uses PRESETS and presetByLeaf from the presets library for data access.",
+        "chapter": "cli_commands",
+        "role": "cli",
+        "enrich": {
+          "processedAt": "2026-04-08T23:39:42.623Z",
+          "attempts": 1
+        },
+        "keywords": [
+          "presets",
+          "list",
+          "tree",
+          "CLI",
+          "manifest",
+          "templates",
+          "hierarchy"
+        ]
       },
       {
         "file": "src/presets/base/data/package.js",
@@ -5922,7 +7775,26 @@
         "exports": [],
         "extends": null,
         "usedBy": null,
-        "id": "a8608997"
+        "id": "a8608997",
+        "summary": "Main CLI entry point that dispatches sdd-forge subcommands to their respective script modules.",
+        "detail": "Handles built-in shortcuts for --help and --version before delegating to namespace dispatchers (docs, flow, check) or independent command scripts via dynamic import. Sets process.argv to simulate direct script invocation for each subcommand. Initializes the Logger singleton from project config before dispatch, suppressing non-critical init errors. NAMESPACE_DISPATCHERS and INDEPENDENT maps define the routing table.",
+        "chapter": "cli_commands",
+        "role": "cli",
+        "enrich": {
+          "processedAt": "2026-04-08T23:39:42.623Z",
+          "attempts": 1
+        },
+        "keywords": [
+          "entry point",
+          "dispatch",
+          "subcommand",
+          "CLI",
+          "import",
+          "logger",
+          "namespace",
+          "routing",
+          "sdd-forge"
+        ]
       },
       {
         "file": "src/setup.js",
@@ -5968,7 +7840,27 @@
         ],
         "extends": null,
         "usedBy": null,
-        "id": "9820c9db"
+        "id": "9820c9db",
+        "summary": "Interactive setup wizard that initializes a new sdd-forge project by prompting the user for configuration, creating directory structure, and deploying skills and agent config files.",
+        "detail": "Reads existing config defaults from `.sdd-forge/config.json` if present, then runs an interactive CLI wizard to collect project name, language, preset type, docs purpose, and agent provider settings. Creates required directories (`.sdd-forge/output`, `docs`, `specs`), updates `.gitignore` and `.gitattributes`, writes `config.json`, and generates or patches the `AGENTS.md` / `CLAUDE.md` agent context file. Deploys Claude Code skills via `deploySkills` and ensures the agent work directory exists. Supports a `--dry-run` flag that prints the resulting config JSON without writing files.",
+        "chapter": "cli_commands",
+        "role": "cli",
+        "enrich": {
+          "processedAt": "2026-04-08T23:37:52.366Z",
+          "attempts": 1
+        },
+        "keywords": [
+          "setup",
+          "wizard",
+          "init",
+          "config",
+          "scaffold",
+          "interactive",
+          "skills",
+          "AGENTS.md",
+          "CLAUDE.md",
+          "gitignore"
+        ]
       },
       {
         "file": "src/upgrade.js",
@@ -5995,7 +7887,27 @@
         ],
         "extends": null,
         "usedBy": null,
-        "id": "a631f658"
+        "id": "a631f658",
+        "summary": "Upgrade command that updates deployed skills and project-level skill files to match the latest templates bundled with sdd-forge.",
+        "detail": "Parses upgrade-specific CLI args, loads the current project config via `loadConfig`, and calls `deploySkills` and `deployProjectSkills` to diff and overwrite only changed skill files. Also handles optional experimental workflow template deployment from `experimental/workflow/templates/skills`. Reads and rewrites `config.json` to apply any schema migrations needed for the current version. Exits with `EXIT_ERROR` on failure.",
+        "chapter": "cli_commands",
+        "role": "cli",
+        "enrich": {
+          "processedAt": "2026-04-08T23:37:52.366Z",
+          "attempts": 1
+        },
+        "keywords": [
+          "upgrade",
+          "skills",
+          "deploy",
+          "templates",
+          "migration",
+          "config",
+          "experimental",
+          "workflow",
+          "sync",
+          "update"
+        ]
       }
     ],
     "summary": {
@@ -6003,5 +7915,6 @@
       "totalMethods": 733
     },
     "dataSourceHash": "7d725e75d5031be445119323e4947c91"
-  }
+  },
+  "enrichedAt": "2026-04-08T23:43:05.913Z"
 }
