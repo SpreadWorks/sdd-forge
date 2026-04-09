@@ -75,6 +75,7 @@
     "dryRunHeader": "[upgrade] DRY-RUN: showing changes without writing files.",
     "skillUpdated": "[upgrade] skill updated: {{name}}/SKILL.md",
     "skillUnchanged": "[upgrade] skill unchanged: {{name}}/SKILL.md",
+    "skillRemoved": "[upgrade] skill removed (obsolete): {{name}}",
     "agentsUpdated": "[upgrade] AGENTS.md SDD section updated.",
     "agentsNotFound": "[upgrade] AGENTS.md not found or has no SDD section. Skipped.",
     "agentsUnchanged": "[upgrade] AGENTS.md SDD section unchanged.",

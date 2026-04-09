@@ -7,6 +7,12 @@ import path from "path";
 import { PKG_DIR } from "./cli.js";
 import { resolveIncludes } from "./include.js";
 
+/** Canonical path to the bundled main skill templates directory. */
+export const MAIN_SKILLS_TEMPLATES_DIR = path.join(PKG_DIR, "templates", "skills");
+
+/** Directories under workRoot where skills are deployed. */
+const SKILL_TARGET_BASES = [".agents", ".claude"];
+
 /**
  * Resolve the skill template file in the given directory.
  */
@@ -43,8 +49,8 @@ function removeIfSymlink(filePath) {
 function deploySkillsFromDir({ templatesDir, workRoot, lang, dryRun = false }) {
   if (!fs.existsSync(templatesDir)) return [];
 
-  const agentsSkillsDir = path.join(workRoot, ".agents", "skills");
-  const claudeSkillsDir = path.join(workRoot, ".claude", "skills");
+  const agentsSkillsDir = path.join(workRoot, SKILL_TARGET_BASES[0], "skills");
+  const claudeSkillsDir = path.join(workRoot, SKILL_TARGET_BASES[1], "skills");
 
   const skillDirs = fs.readdirSync(templatesDir, { withFileTypes: true })
     .filter((d) => d.isDirectory())
@@ -112,7 +118,7 @@ function deploySkillsFromDir({ templatesDir, workRoot, lang, dryRun = false }) {
  */
 export function deploySkills(workRoot, lang, opts = {}) {
   return deploySkillsFromDir({
-    templatesDir: path.join(PKG_DIR, "templates", "skills"),
+    templatesDir: MAIN_SKILLS_TEMPLATES_DIR,
     workRoot,
     lang,
     dryRun: opts.dryRun,
@@ -138,4 +144,50 @@ export function deployProjectSkills(workRoot, templatesDir, lang, opts = {}) {
     lang,
     dryRun: opts.dryRun,
   });
+}
+
+/**
+ * Remove sdd-forge.* skill directories from .claude/skills/ and .agents/skills/
+ * that are no longer present in any of the provided template directories.
+ *
+ * Only directories whose names start with "sdd-forge." are considered.
+ * Skills found in any of the validTemplatesDirs are kept; all others are removed.
+ *
+ * @param {string} workRoot          Project root directory
+ * @param {string[]} validTemplatesDirs  All active skill template directories (main + experimental)
+ * @param {object} [opts]
+ * @param {boolean} [opts.dryRun=false]
+ * @returns {{ name: string, status: "removed" }[]}
+ */
+export function cleanupObsoleteSkills(workRoot, validTemplatesDirs, opts = {}) {
+  const { dryRun = false } = opts;
+
+  const validNames = new Set(
+    validTemplatesDirs.flatMap((dir) => {
+      if (!fs.existsSync(dir)) return [];
+      return fs.readdirSync(dir, { withFileTypes: true })
+        .filter((d) => d.isDirectory())
+        .map((d) => d.name);
+    })
+  );
+
+  const obsoleteNames = new Set();
+  for (const base of SKILL_TARGET_BASES) {
+    const skillsDir = path.join(workRoot, base, "skills");
+    if (!fs.existsSync(skillsDir)) continue;
+    for (const entry of fs.readdirSync(skillsDir, { withFileTypes: true })) {
+      if (!entry.isDirectory() || !entry.name.startsWith("sdd-forge.")) continue;
+      if (!validNames.has(entry.name)) obsoleteNames.add(entry.name);
+    }
+  }
+
+  if (!dryRun) {
+    for (const name of obsoleteNames) {
+      for (const base of SKILL_TARGET_BASES) {
+        fs.rmSync(path.join(workRoot, base, "skills", name), { recursive: true, force: true });
+      }
+    }
+  }
+
+  return [...obsoleteNames].map((name) => ({ name, status: "removed" }));
 }

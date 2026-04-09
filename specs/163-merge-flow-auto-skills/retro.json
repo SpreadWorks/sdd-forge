@@ -1,0 +1,104 @@
+{
+  "spec": "specs/163-merge-flow-auto-skills/spec.md",
+  "date": "2026-04-09T03:24:53.516Z",
+  "requirements": [
+    {
+      "desc": "sdd-forge.flow-auto スキル（on/off/引数なし対応）を新規作成する",
+      "status": "done",
+      "note": "src/templates/skills/sdd-forge.flow-auto/SKILL.md が作成（flow-auto-on からリネーム・拡張）。on/off/引数なし/不正引数の4ケースを網羅する Procedure セクションが含まれている"
+    },
+    {
+      "desc": "引数が on/off 以外の場合エラーメッセージを表示して STOP する",
+      "status": "done",
+      "note": "SKILL.md の「If argument is anything else」セクションに「Display: 'Unknown argument: ...' and STOP」が明記されている"
+    },
+    {
+      "desc": "on（または引数なし）の場合 flow-auto-on と同じ手順を実行する",
+      "status": "done",
+      "note": "SKILL.md の「If argument is on or no argument」セクションが旧 flow-auto-on の全手順（フロー確認→autoApprove有効化→フロー継続）を再現している"
+    },
+    {
+      "desc": "off の場合 flow-auto-off と同じ手順を実行する",
+      "status": "done",
+      "note": "SKILL.md の「If argument is off」セクションが旧 flow-auto-off の手順（autoApprove無効化→確認表示）を再現している"
+    },
+    {
+      "desc": "sdd-forge upgrade 実行時にテンプレートに存在しない sdd-forge.* スキルを自動削除する",
+      "status": "done",
+      "note": "cleanupObsoleteSkills() を src/lib/skills.js に追加し、upgrade.js の 1c ステップで呼び出している。sdd-forge. プレフィックスを持つディレクトリのみを対象として正しく絞り込んでいる"
+    },
+    {
+      "desc": "experimental スキルを削除対象から除外する",
+      "status": "done",
+      "note": "validTemplatesDirs に expDir を push した後で cleanupObsoleteSkills を呼び出しているため、experimental テンプレートに存在するスキルは validNames に含まれ削除されない"
+    },
+    {
+      "desc": "upgrade ログに削除されたスキル名を表示する",
+      "status": "done",
+      "note": "removedSkills の各エントリに対して t('ui:upgrade.skillRemoved', { name }) を出力。en/ui.json と ja/ui.json の両方にロケール文字列が追加されている"
+    },
+    {
+      "desc": "core-principle.md の /sdd-forge.flow-auto-on 参照を /sdd-forge.flow-auto に更新する",
+      "status": "done",
+      "note": "src/templates/partials/core-principle.md の該当行が /sdd-forge.flow-auto-on から /sdd-forge.flow-auto に置き換えられている"
+    }
+  ],
+  "unplanned": [
+    {
+      "file": "src/lib/skills.js",
+      "change": "SKILL_TARGET_BASES 定数を導入し、deploySkillsFromDir 内のハードコード文字列をインデックスアクセスに置き換え。要件には含まれないリファクタリング"
+    },
+    {
+      "file": "src/lib/skills.js",
+      "change": "MAIN_SKILLS_TEMPLATES_DIR をモジュール export として公開。upgrade.js から参照するために追加されたが、要件には明示されていない"
+    },
+    {
+      "file": "src/upgrade.js",
+      "change": "logSkillResults ヘルパー関数を導入してスキル結果ログのコードを共通化。要件外のリファクタリング"
+    },
+    {
+      "file": "src/upgrade.js",
+      "change": "logSkillResults の else ブランチが status === 'removed' を含む未知ステータスを 'unchanged' として扱う catch-all になっており、review.md で APPROVED された修正（明示的 3 分岐 + throw）が適用されていない"
+    },
+    {
+      "file": "docs/overview.md",
+      "change": "docs テキストが大幅に再生成・置き換えられている（{{text}} ディレクティブの再充填）。要件外の docs 更新"
+    },
+    {
+      "file": "docs/cli_commands.md",
+      "change": "コマンド一覧テーブルと各コマンド詳細の全面更新。要件外の docs 更新"
+    },
+    {
+      "file": "docs/internal_design.md",
+      "change": "内部設計の説明テキストが全面的に再生成されている。要件外の docs 更新"
+    },
+    {
+      "file": "docs/project_structure.md",
+      "change": "プロジェクト構造の説明が再生成されている。要件外の docs 更新"
+    },
+    {
+      "file": "docs/stack_and_ops.md",
+      "change": "スタック・運用手順の説明が再生成されている。要件外の docs 更新"
+    },
+    {
+      "file": "README.md",
+      "change": "ドキュメントチャプターテーブルの Summary 列が埋められている（docs build による更新）。要件外"
+    },
+    {
+      "file": ".sdd-forge/output/analysis.json",
+      "change": "全エントリの mtime 更新と summary/detail/keywords 等の enrich フィールドが除去されている。sdd-forge scan の再実行による副作用"
+    },
+    {
+      "file": "docs/change_log.md",
+      "change": "spec 163 と 162 のエントリが追加・更新されている。SDD フロー管理の副産物"
+    }
+  ],
+  "summary": {
+    "total": 8,
+    "done": 8,
+    "partial": 0,
+    "not_done": 0,
+    "rate": 1,
+    "notes": "全8要件が実装されており、コア機能（スキル統合・upgrade クリーンアップ・ログ表示・参照更新）はすべて要件通りに満たされている。計画外の変更としては upgrade.js の logSkillResults リファクタリング、skills.js の定数導入、および docs/* の大規模再生成がある。review.md で APPROVED されていた logSkillResults の else catch-all 問題（unknown status を 'unchanged' として扱う）は適用されていない点に注意が必要。"
+  }
+}

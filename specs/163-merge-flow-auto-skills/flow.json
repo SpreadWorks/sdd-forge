@@ -1,0 +1,170 @@
+{
+  "spec": "specs/163-merge-flow-auto-skills/spec.md",
+  "baseBranch": "main",
+  "featureBranch": "feature/163-merge-flow-auto-skills",
+  "steps": [
+    {
+      "id": "approach",
+      "status": "done"
+    },
+    {
+      "id": "branch",
+      "status": "done"
+    },
+    {
+      "id": "prepare-spec",
+      "status": "pending"
+    },
+    {
+      "id": "draft",
+      "status": "done"
+    },
+    {
+      "id": "gate-draft",
+      "status": "done"
+    },
+    {
+      "id": "spec",
+      "status": "done"
+    },
+    {
+      "id": "gate",
+      "status": "done"
+    },
+    {
+      "id": "approval",
+      "status": "done"
+    },
+    {
+      "id": "test",
+      "status": "done"
+    },
+    {
+      "id": "implement",
+      "status": "done"
+    },
+    {
+      "id": "gate-impl",
+      "status": "done"
+    },
+    {
+      "id": "review",
+      "status": "in_progress"
+    },
+    {
+      "id": "finalize",
+      "status": "pending"
+    },
+    {
+      "id": "commit",
+      "status": "pending"
+    },
+    {
+      "id": "push",
+      "status": "pending"
+    },
+    {
+      "id": "merge",
+      "status": "pending"
+    },
+    {
+      "id": "pr-create",
+      "status": "pending"
+    },
+    {
+      "id": "branch-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "pr-merge",
+      "status": "pending"
+    },
+    {
+      "id": "sync-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "docs-update",
+      "status": "pending"
+    },
+    {
+      "id": "docs-review",
+      "status": "pending"
+    },
+    {
+      "id": "docs-commit",
+      "status": "pending"
+    }
+  ],
+  "requirements": [
+    {
+      "desc": "sdd-forge.flow-auto スキル（on/off/引数なし対応）を新規作成する",
+      "status": "done"
+    },
+    {
+      "desc": "引数が on/off 以外の場合エラーメッセージを表示して STOP する",
+      "status": "done"
+    },
+    {
+      "desc": "on（または引数なし）の場合 flow-auto-on と同じ手順を実行する",
+      "status": "done"
+    },
+    {
+      "desc": "off の場合 flow-auto-off と同じ手順を実行する",
+      "status": "done"
+    },
+    {
+      "desc": "sdd-forge upgrade 実行時にテンプレートに存在しない sdd-forge.* スキルを自動削除する",
+      "status": "done"
+    },
+    {
+      "desc": "experimental スキルを削除対象から除外する",
+      "status": "done"
+    },
+    {
+      "desc": "upgrade ログに削除されたスキル名を表示する",
+      "status": "done"
+    },
+    {
+      "desc": "core-principle.md の /sdd-forge.flow-auto-on 参照を /sdd-forge.flow-auto に更新する",
+      "status": "done"
+    }
+  ],
+  "issue": 122,
+  "request": "make a resume command",
+  "worktree": true,
+  "metrics": {
+    "plan": {
+      "docsRead": 1
+    },
+    "draft": {
+      "question": 8
+    },
+    "impl": {
+      "srcRead": 1,
+      "issueLog": 13
+    },
+    "spec": {
+      "docsRead": 2
+    }
+  },
+  "notes": [
+    "approach: draft first",
+    "first note",
+    "second note",
+    "new note",
+    "approach: draft first",
+    "first note",
+    "second note",
+    "new note",
+    "approach: draft first",
+    "first note",
+    "second note",
+    "new note"
+  ],
+  "test": {
+    "summary": {
+      "unit": 2
+    }
+  }
+}

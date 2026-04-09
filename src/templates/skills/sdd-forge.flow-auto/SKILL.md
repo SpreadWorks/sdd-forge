@@ -1,13 +1,30 @@
 ---
-name: sdd-forge.flow-auto-on
-description: Enable autoApprove mode for the current SDD flow. The AI will automatically select default choices (id=1) and proceed without user confirmation.
+name: sdd-forge.flow-auto
+description: Toggle autoApprove mode for the current SDD flow. Use "on" to enable (default) or "off" to disable.
 ---
 
-# SDD Flow Auto ON
+# SDD Flow Auto
 
-Enable autoApprove mode and continue the current flow automatically.
+Toggle autoApprove mode for the current SDD flow.
+
+**Usage:** `/sdd-forge.flow-auto [on|off]`
+- No argument → treated as `on`
+- `on` → enable autoApprove and continue the flow automatically
+- `off` → disable autoApprove
+- Any other argument → show error and stop
 
 ## Procedure
+
+### If argument is `off`
+
+1. Disable autoApprove.
+   - Run `sdd-forge flow set auto off`.
+   - If it fails (e.g. no active flow), display the error message and STOP.
+
+2. Confirm.
+   - Display: "autoApprove mode has been disabled. The AI will ask for confirmation at each step."
+
+### If argument is `on` or no argument
 
 1. Check flow state.
    - Run `sdd-forge flow get status`.
@@ -29,3 +46,7 @@ Enable autoApprove mode and continue the current flow automatically.
      - If all plan and impl steps are `done` but finalize-phase steps (commit, push, merge, pr-create, branch-cleanup) have any not `done` → invoke `/sdd-forge.flow-finalize`
      - If all steps are `done` → display "All steps are already complete." and STOP.
    - Use the Skill tool to invoke the determined skill.
+
+### If argument is anything else
+
+- Display: "Unknown argument: '<argument>'. Usage: /sdd-forge.flow-auto [on|off]" and STOP.

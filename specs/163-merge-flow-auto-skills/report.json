@@ -1,0 +1,37 @@
+{
+  "data": {
+    "implementation": {
+      "diffStat": ".sdd-forge/output/analysis.json                    | 2607 +++-----------------\n README.md                                          |   12 +-\n docs/change_log.md                                 |    8 +-\n docs/cli_commands.md                               |  499 ++--\n docs/internal_design.md                            |  448 ++--\n docs/overview.md                                   |  295 +--\n specs/163-merge-flow-auto-skills/draft.md          |   59 +\n specs/163-merge-flow-auto-skills/flow.json         |  170 ++\n specs/163-merge-flow-auto-skills/issue-log.json    |  154 ++\n specs/163-merge-flow-auto-skills/qa.md             |    9 +\n specs/163-merge-flow-auto-skills/report.json       |   35 +\n specs/163-merge-flow-auto-skills/retro.json        |  108 +\n specs/163-merge-flow-auto-skills/review.md         |   91 +\n specs/163-merge-flow-auto-skills/spec.md           |   82 +\n specs/163-merge-flow-auto-skills/tests/README.md   |   50 +\n specs/163-merge-flow-auto-skills/tests/spec.md     |  148 ++\n .../tests/test-upgrade-cleanup.js                  |  213 ++\n src/lib/skills.js                                  |   58 +-\n src/locale/en/ui.json                              |    1 +\n src/locale/ja/ui.json                              |    1 +\n src/templates/partials/core-principle.md           |    2 +-\n .../skills/sdd-forge.flow-auto-off/SKILL.md        |   17 -\n .../SKILL.md                                       |   29 +-\n src/upgrade.js                                     |   38 +-\n 24 files changed, 2194 insertions(+), 2940 deletions(-)",
+      "commits": [
+        "chore: update flow state and issue-log",
+        "chore: add retro and report",
+        "feat: feature/163-merge-flow-auto-skills",
+        "feat: merge flow-auto-on/off into flow-auto skill"
+      ]
+    },
+    "retro": {
+      "total": 8,
+      "done": 8,
+      "partial": 0,
+      "not_done": 0,
+      "rate": 1,
+      "notes": "全8要件が実装されており、コア機能（スキル統合・upgrade クリーンアップ・ログ表示・参照更新）はすべて要件通りに満たされている。計画外の変更としては upgrade.js の logSkillResults リファクタリング、skills.js の定数導入、および docs/* の大規模再生成がある。review.md で APPROVED されていた logSkillResults の else catch-all 問題（unknown status を 'unchanged' として扱う）は適用されていない点に注意が必要。"
+    },
+    "issueLog": {
+      "count": 0,
+      "entries": []
+    },
+    "metrics": {
+      "docsRead": 3,
+      "srcRead": 1,
+      "question": 8,
+      "issueLog": 13
+    },
+    "tests": null,
+    "sync": {
+      "status": "skipped",
+      "reason": "sync was skipped"
+    }
+  },
+  "text": "  Report\n\n  Implementation\n  ────────────────────────────────────────────────\n    chore: update flow state and issue-log\n    chore: add retro and report\n    feat: feature/163-merge-flow-auto-skills\n    feat: merge flow-auto-on/off into flow-auto skill\n    24 files changed, 2194 insertions(+), 2940 deletions(-)\n\n  Retro\n  ────────────────────────────────────────────────\n    ████████ 100%  (8 done / 0 partial / 0 miss)\n\n  Metrics\n  ────────────────────────────────────────────────\n    docs read 3  src read 1  Q&A 8  issue-log 13\n\n  Tests\n  ────────────────────────────────────────────────\n    -"
+}

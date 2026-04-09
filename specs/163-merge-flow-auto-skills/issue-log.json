@@ -1,0 +1,154 @@
+{
+  "entries": [
+    {
+      "step": "gate-draft",
+      "reason": "Single Responsibility — スキル統合とクリーンアップ仕組みの導入は同一の関心事（`flow-auto` スキル一元化）に収まっている; Unambiguous Requirements — 削除対象の判定条件が具体的に列挙されており、曖昧な形容詞は使われていない; Complete Context — 各変更項目にトリガー条件（`upgrade` 実行時等）と期待動作が明記されている; No Hardcoded Secrets — シークレット情報に関する変更は含まれていない; Prioritize Requirements — 要件は3項目以内に収まっており、優先順位付けの義務は生じない; Impact on Existing Features — 「影響範囲」セクションに既存ユーザーへの影響（旧スキル自動削除）が明記されている; Present Recommendations with Reasoning — Q&A の各回答に推奨案と根拠（既存コードパターン・設計方針）が示されている; Explore Before Asking — Q1 の設計判断はコードパターン（`deploySkillsFromDir`、`upgrade.js`）を参照した上で回答されている; Proactively Raise Related Implications — `sdd-forge.flow-auto` に引数なしで `on` 扱いにする挙動（Q2）を定めているが、引数が `on`/`off` 以外の不正値を渡された場合の挙動が言及されていない; Confirm Brainstorm vs. Decision Before Critiquing — ドラフトはユーザー承認済みの決定事項として記述されており、ブレインストーム段階への批評は生じない; Capture Digressions in draft.md — 逸脱した議論の記録が必要な脱線は確認されない; Draft Stays at Requirements Level — 実装詳細（関数名レベルの設計）への言及はあるが、これは Q&A の設計選択肢の説明であり、仕様全体は要件レベルに留まっている; Backward — Compatible CLI Interface — `/sdd-forge.flow-auto-on` と `/sdd-forge.flow-auto-off` というスキル呼び出しインターフェースが削除されるが、既存ユーザー向けのマイグレーション案（移行期の警告表示や移行手順の案内）がスペックに含まれていない",
+      "trigger": "gate post hook (auto)",
+      "timestamp": "2026-04-09T02:14:09.204Z"
+    },
+    {
+      "step": "gate",
+      "reason": "Single Responsibility — 旧スキル統合と upgrade クリーンアップは密接に関連する1つの懸念事項; Unambiguous Requirements — 各要件は「引数なしは `on` として扱う」「`on`/`off` 以外はエラーメッセージを表示して STOP」等、検証可能な条件で記述されている; Complete Context — 各要件はトリガー条件（引数の状態）と期待動作がペアで記述されている; No Hardcoded Secrets — スキルのマージと upgrade ロジックの仕様であり、シークレット情報は含まれない; No Silent Error Swallowing — 不正引数時はエラーメッセージを表示して STOP することが明示されている; Prioritize Requirements — 要件が8項目あるが優先順位が指定されていない; Impact on Existing Features — Acceptance Criteria で旧スキル削除・新スキル作成・experimental スキルの非削除・core-principle.md 更新を明示している; Bounded Resource Usage — `sdd-forge.*` スキルに対象を限定しており、対象集合が自然に有界; Changes Require Test Coverage — テストカバレッジへの言及がない; Spec Includes Test Strategy — テスト戦略セクションが存在しない; Synthesize Draft, Do Not Copy — 草稿から整理・抽象化されており、直接コピーは認められない; Record Unresolved Points as Open Questions — Open Questions セクションに「none」と明記されており、未解決点の捏造もない; Include 'Why This Approach' Rationale — Alternatives Considered セクションで deprecated リスト静的定義案を却下した理由（メンテナンスコスト）が記載されている; Backward — Compatible CLI Interface — alpha ポリシーにより後方互換不要と Out of Scope で明示。移行計画の代わりに `upgrade` での自動クリーンアップが仕組みとして組み込まれている; Exit Code Contract — スキルファイル（SKILL.md）の仕様であり CLI exit code は直接対象外。ただし不正引数時の STOP が定義されており、exit code 契約違反は見られない",
+      "trigger": "gate post hook (auto)",
+      "timestamp": "2026-04-09T02:15:40.318Z"
+    },
+    {
+      "step": "gate",
+      "reason": "Single Responsibility — スキル統合とupgradeクリーンアップは密接に関連した1つの機能変更として扱われている; Unambiguous Requirements — 各要件は「引数なしはonとして扱う」「on/off以外はエラー表示してSTOP」など検証可能な条件で記述されている; Complete Context — 全要件にトリガー条件（引数の値）と期待動作がペアで記述されている; No Hardcoded Secrets — 秘密情報に関する内容は含まれない; No Silent Error Swallowing — エラー時はメッセージ表示してSTOPする旨が明記されている（要件2）; Prioritize Requirements — 8件の要件がPriority 1/2/3で優先順位付けされている; Impact on Existing Features — Out of Scope で既存CLI変更なしを明記。既存スキル削除の影響（flow-auto-on/offの廃止）がAcceptance Criteriaに記載されている; Bounded Resource Usage — スキルディレクトリの削除対象は「配置元テンプレートに存在しない`sdd-forge.*`」という有界な集合に限定されている; Changes Require Test Coverage — upgradeクリーンアップの検証スクリプトは`npm test`に含めないと明記されており、自動テストによる継続的な品質保証が担保されていない。スキル(SKILL.md)の手動確認は許容されるが、upgrade JSロジックのテストを自動テストから除外する理由が記載されていない; Spec Includes Test Strategy — upgradeクリーンアップのJSロジックテストについて「`npm test`に含めない」理由が未記載。テスト戦略が不完全; Synthesize Draft, Do Not Copy — 仕様は整理・抽象化されており、ドラフトの直接コピーではない; Record Unresolved Points as Open Questions — Open Questionsセクションに「(none)」と明示されており、未解決点の捏造はない; Include 'Why This Approach' Rationale — Alternatives Consideredで静的リスト案の却下理由（メンテコスト）が明記されている; Backward — Compatible CLI Interface — alpha版ポリシーにより後方互換不要と明示。Out of Scopeにも記載されており意図的な決定として文書化されている; Exit Code Contract — SKILL.mdはAI指示テキストであり、CLIコマンドの終了コード契約は適用外。upgrade.jsの変更はエラー処理の変更を含まない",
+      "trigger": "gate post hook (auto)",
+      "timestamp": "2026-04-09T02:16:22.333Z"
+    },
+    {
+      "step": "gate-impl",
+      "reason": "`/sdd — forge.flow-auto` accepts on/off/no-arg — new SKILL.md is in untracked directory (`?? src/templates/skills/sdd-forge.flow-auto/`) and its content is not included in the diff; cannot verify; Invalid argument shows error and STOPs — SKILL.md content not in diff; cannot verify; `on`/no — arg runs same steps as former `sdd-forge.flow-auto-on` — SKILL.md content not in diff; cannot verify; `off` runs same steps as former `sdd — forge.flow-auto-off` — SKILL.md content not in diff; cannot verify; `sdd — forge upgrade` auto-deletes obsolete `sdd-forge.*` skill dirs — `cleanupObsoleteSkills` implemented in `src/lib/skills.js` and called from `src/upgrade.js` with correct logic; experimental skills excluded from deletion — `validTemplatesDirs` includes `expDir` when `experimental.workflow.enable === true` before `cleanupObsoleteSkills` is called; upgrade log shows removed skill names — `t(\"ui:upgrade.skillRemoved\", { name })` emitted per removed skill; locale strings added in both `en/ui.json` and `ja/ui.json`; `core — principle.md` reference updated to `/sdd-forge.flow-auto` — diff shows replacement of `/sdd-forge.flow-auto-on` with `/sdd-forge.flow-auto`",
+      "trigger": "gate post hook (auto)",
+      "timestamp": "2026-04-09T03:04:11.300Z"
+    },
+    {
+      "step": "draft",
+      "reason": "wrong scope",
+      "timestamp": "2026-04-09T03:04:16.078Z"
+    },
+    {
+      "step": "draft",
+      "reason": "first",
+      "timestamp": "2026-04-09T03:04:16.255Z"
+    },
+    {
+      "step": "spec",
+      "reason": "second",
+      "timestamp": "2026-04-09T03:04:16.385Z"
+    },
+    {
+      "step": "gate",
+      "reason": "test",
+      "timestamp": "2026-04-09T03:04:16.483Z"
+    },
+    {
+      "step": "draft",
+      "reason": "unclear requirement",
+      "trigger": "user correction",
+      "resolution": "added clarification",
+      "guardrailCandidate": "Always verify scope boundaries",
+      "timestamp": "2026-04-09T03:04:16.586Z"
+    },
+    {
+      "step": "draft",
+      "reason": "test",
+      "timestamp": "2026-04-09T03:04:16.926Z"
+    },
+    {
+      "step": "gate",
+      "reason": "Single Responsibility — 単一の spec であり、複数の無関係な変更を束ねていない; Unambiguous Requirements — 受け入れ基準が \"done\" のみで、検証可能な条件が記述されていない; Complete Context — トリガー条件（When/If）と期待される振る舞い（shall）のペアが一切存在しない; No Hardcoded Secrets — ソースコードを含まないため対象外; No Silent Error Swallowing — ソースコードを含まないため対象外; Prioritize Requirements — 要件が3件以下（実質ゼロ）のため優先順位付け不要; Impact on Existing Features — 既存機能への影響が記述されておらず、影響なしの明示もない; Bounded Resource Usage — 再帰・リトライ・バルク処理の記述がないため対象外; Changes Require Test Coverage — テストの記述がなく、その理由も明記されていない; Spec Includes Test Strategy — テスト戦略（何をどのようにテストするか）が含まれていない; Synthesize Draft, Do Not Copy — ドラフト内容の直接コピーは確認されない; Record Unresolved Points as Open Questions — Open Questions セクションは存在し、未解決点の捏造もない; Include 'Why This Approach' Rationale — このアプローチを選んだ理由（Why This Approach）が記載されていない; Backward — Compatible CLI Interface — CLI コマンドの削除・変更の記述がないため対象外; Exit Code Contract — コマンド定義が存在しないため対象外",
+      "trigger": "gate post hook (auto)",
+      "timestamp": "2026-04-09T03:04:44.602Z"
+    },
+    {
+      "step": "gate",
+      "reason": "missing section: ## Clarifications; missing section: ## Open Questions; missing section: ## User Confirmation; missing section: ## Acceptance Criteria (or ## User Scenarios & Testing)",
+      "trigger": "gate post hook (auto)",
+      "timestamp": "2026-04-09T03:04:44.767Z"
+    },
+    {
+      "step": "gate",
+      "reason": "Single Responsibility — spec に複数の懸念事項は含まれていない（内容自体がほぼ空）; Unambiguous Requirements — Acceptance Criteria が \"done\" のみで検証可能な条件が記述されていない; Complete Context — トリガー条件（When/If）と期待動作（shall）のペアが一切存在しない; No Hardcoded Secrets — ソースコードや設定値の記述がないため該当しない; No Silent Error Swallowing — コード実装の記述がないため該当しない; Prioritize Requirements — 要件が存在しないため優先順位の評価不可（要件記述自体が欠如）; Impact on Existing Features — 既存機能への影響が明示されていない; Bounded Resource Usage — リソース使用に関する設計記述がないため該当しない; Changes Require Test Coverage — テストカバレッジへの言及が存在しない; Spec Includes Test Strategy — テスト戦略セクションが存在しない; Synthesize Draft, Do Not Copy — spec 本文が空であり、要件の整理・抽象化が行われていない; Record Unresolved Points as Open Questions — Open Questions セクションは存在する（空だが未解決点もない）; Include 'Why This Approach' Rationale — アプローチの選択理由が記述されていない; Backward — Compatible CLI Interface — CLIの変更に関する記述がないため該当しない; Exit Code Contract — コマンド実装の記述がないため該当しない",
+      "trigger": "gate post hook (auto)",
+      "timestamp": "2026-04-09T03:04:57.940Z"
+    },
+    {
+      "step": "gate",
+      "reason": "Single Responsibility — 単一の変更対象を扱うスペックであることが否定できない（内容が空のため判定不可だが違反は確認されない）; Unambiguous Requirements — 要件が「done」のみで、検証可能な条件が一切記述されていない; Complete Context — トリガー条件（When/If）と期待される振る舞い（shall）のペアが存在しない; No Hardcoded Secrets — ソースコードを含まないため該当なし; No Silent Error Swallowing — ソースコードを含まないため該当なし; Prioritize Requirements — 要件が3件を超えるかどうか以前に、要件自体が記述されていない; Impact on Existing Features — 既存機能への影響が明示されていない; Bounded Resource Usage — リソース上限に関する記述がない（設計内容がないため判断不能だが明示もなし）; Changes Require Test Coverage — テストカバレッジの記述がなく、その理由も記載されていない; Spec Includes Test Strategy — テスト戦略（何を・どのようにテストするか）が記述されていない; Synthesize Draft, Do Not Copy — Clarifications セクションが空で、ドラフト内容の整理・抽象化が行われていない; Record Unresolved Points as Open Questions — Open Questions セクションは存在しており、捏造された回答もない; Include 'Why This Approach' Rationale — このアプローチを選んだ根拠が記述されていない; Backward — Compatible CLI Interface — CLI変更の記述がないため該当なし; Exit Code Contract — コマンド実装の記述がないため該当なし",
+      "trigger": "gate post hook (auto)",
+      "timestamp": "2026-04-09T03:05:10.583Z"
+    },
+    {
+      "step": "draft",
+      "reason": "wrong scope",
+      "timestamp": "2026-04-09T03:21:20.638Z"
+    },
+    {
+      "step": "draft",
+      "reason": "first",
+      "timestamp": "2026-04-09T03:21:20.734Z"
+    },
+    {
+      "step": "spec",
+      "reason": "second",
+      "timestamp": "2026-04-09T03:21:20.855Z"
+    },
+    {
+      "step": "gate",
+      "reason": "test",
+      "timestamp": "2026-04-09T03:21:20.949Z"
+    },
+    {
+      "step": "draft",
+      "reason": "unclear requirement",
+      "trigger": "user correction",
+      "resolution": "added clarification",
+      "guardrailCandidate": "Always verify scope boundaries",
+      "timestamp": "2026-04-09T03:21:21.056Z"
+    },
+    {
+      "step": "draft",
+      "reason": "test",
+      "timestamp": "2026-04-09T03:21:21.231Z"
+    },
+    {
+      "step": "gate",
+      "reason": "Single Responsibility — 単一の仕様として提示されており、複数の無関係な変更は見られない; Unambiguous Requirements — 受入基準が \"done\" のみで検証可能な条件が記述されていない; Complete Context — トリガー条件（When/If）と期待される振る舞い（shall）のペアが存在しない; No Hardcoded Secrets — ソースコードを含まない仕様文書のため該当しない; No Silent Error Swallowing — ソースコードを含まない仕様文書のため該当しない; Prioritize Requirements — 要件が3件以下（実質ゼロ）のため優先順位付け不要; Impact on Existing Features — 既存機能への影響が記載されていない（明示的な「影響なし」の記述もない）; Bounded Resource Usage — 再帰処理・リトライ・大量データ処理の設計が含まれないため該当しない; Changes Require Test Coverage — テストカバレッジの記述がなく、その理由も記載されていない; Spec Includes Test Strategy — テスト戦略（何を・どのようにテストするか）が記載されていない; Synthesize Draft, Do Not Copy — Clarifications セクションが空であり、ドラフト内容の整理・抽象化が行われていない; Record Unresolved Points as Open Questions — Open Questions セクションは存在する（空だが未解決事項なしと解釈可能）; Include 'Why This Approach' Rationale — このアプローチを選んだ理由の記述が存在しない; Backward — Compatible CLI Interface — CLI変更の記述がないため該当しない; Exit Code Contract — コマンドの終了コードに関する記述がないため該当しない",
+      "trigger": "gate post hook (auto)",
+      "timestamp": "2026-04-09T03:21:43.168Z"
+    },
+    {
+      "step": "gate",
+      "reason": "missing section: ## Clarifications; missing section: ## Open Questions; missing section: ## User Confirmation; missing section: ## Acceptance Criteria (or ## User Scenarios & Testing)",
+      "trigger": "gate post hook (auto)",
+      "timestamp": "2026-04-09T03:21:43.313Z"
+    },
+    {
+      "step": "gate",
+      "reason": "Single Responsibility — spec body is empty; no concern is described, so single-responsibility cannot be verified; Unambiguous Requirements — \"done\" is not a verifiable condition; no concrete requirements are stated; Complete Context — no trigger conditions (When/If) or expected behaviors (shall) are present; No Hardcoded Secrets — no source code is included in the content; No Silent Error Swallowing — no source code is included in the content; Prioritize Requirements — no requirements are listed; priority order is absent; Impact on Existing Features — no statement about impact on existing features or explicit declaration that none are affected; Bounded Resource Usage — no recursive processing, retries, or bulk loading is described; Changes Require Test Coverage — no tests are specified and no reason for omission is stated; Spec Includes Test Strategy — no test strategy (what to test, how) is present; Synthesize Draft, Do Not Copy — no draft content is present; inapplicable; Record Unresolved Points as Open Questions — Open Questions section exists and is empty; acceptable if genuinely none remain; Include 'Why This Approach' Rationale — no rationale for the chosen approach is provided; Backward — Compatible CLI Interface — no CLI changes are described; inapplicable; Exit Code Contract — no commands are described; inapplicable",
+      "trigger": "gate post hook (auto)",
+      "timestamp": "2026-04-09T03:21:58.346Z"
+    },
+    {
+      "step": "gate",
+      "reason": "Single Responsibility — 単一の仕様のみを対象としており、複数の無関係な変更は含まれていない; Unambiguous Requirements — 受け入れ基準が \"done\" のみで、検証可能な条件が記述されていない; Complete Context — トリガー条件 (When/If) と期待される動作 (shall) のペアが一切存在しない; No Hardcoded Secrets — ソースコードや設定値は含まれておらず、秘密情報の記述はない; No Silent Error Swallowing — エラーハンドリングに関するコードは含まれていない; Prioritize Requirements — 要件の記述が \"done\" のみで優先順位付けが不可能な状態; Impact on Existing Features — 既存機能への影響が明示されていない; Bounded Resource Usage — 再帰処理・リトライ・一括ロードに関する記述はない; Changes Require Test Coverage — テストの記述も「テストなしの理由」も存在しない; Spec Includes Test Strategy — テスト戦略（何をどのようにテストするか）が存在しない; Synthesize Draft, Do Not Copy — 仕様本体が空であり、ドラフト内容の整理・抽象化が行われていない; Record Unresolved Points as Open Questions — Open Questions セクションは存在するが、内容が空である（捏造はない）; Include 'Why This Approach' Rationale — このアプローチを選択した理由が記述されていない; Backward — Compatible CLI Interface — CLIコマンドの変更に関する記述はない; Exit Code Contract — 終了コードに関するコードや記述はない",
+      "trigger": "gate post hook (auto)",
+      "timestamp": "2026-04-09T03:22:10.481Z"
+    },
+    {
+      "step": "merge",
+      "reason": "Merge conflict detected. Run 'git rebase main' in the worktree and retry finalize.",
+      "timestamp": "2026-04-09T03:23:19.559Z"
+    },
+    {
+      "step": "finalize",
+      "reason": "merge conflict detected when squash-merging feature branch into main",
+      "trigger": "sdd-forge flow run finalize --mode all",
+      "resolution": "run git rebase main in worktree and retry finalize",
+      "timestamp": "2026-04-09T03:23:30.097Z"
+    }
+  ]
+}

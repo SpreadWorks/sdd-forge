@@ -75,6 +75,7 @@
     "dryRunHeader": "[upgrade] DRY-RUN: ファイルを変更せず差分を表示します。",
     "skillUpdated": "[upgrade] スキル更新: {{name}}/SKILL.md",
     "skillUnchanged": "[upgrade] スキル変更なし: {{name}}/SKILL.md",
+    "skillRemoved": "[upgrade] スキル削除（廃止）: {{name}}",
     "agentsUpdated": "[upgrade] AGENTS.md の SDD セクションを更新しました。",
     "agentsNotFound": "[upgrade] AGENTS.md が見つからないか SDD セクションがありません。スキップしました。",
     "agentsUnchanged": "[upgrade] AGENTS.md の SDD セクションに変更はありません。",

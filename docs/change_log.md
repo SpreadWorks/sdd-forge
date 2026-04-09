@@ -10,7 +10,7 @@
 
 ### 更新日時
 
-- generated_at: 2026-04-08 14:10:59 UTC
+- generated_at: 2026-04-09 03:02:55 UTC
 
 ### シリーズ最新インデックス
 
@@ -128,6 +128,7 @@
 | `implement-missing-datasources` | `083-implement-missing-datasources` | Approved | 2026-03-21 | [spec](../specs/083-implement-missing-datasources/spec.md) |
 | `improve-acceptance-report` | `083-improve-acceptance-report` | Draft | 2026-03-21 | [spec](../specs/083-improve-acceptance-report/spec.md) |
 | `improve-auto-spec-quality` | `144-improve-auto-spec-quality` | Draft | 2026-04-04 | [spec](../specs/144-improve-auto-spec-quality/spec.md) |
+| `improve-choice-format-enforcement` | `162-improve-choice-format-enforcement` | Draft | 2026-04-08 | [spec](../specs/162-improve-choice-format-enforcement/spec.md) |
 | `improve-enrich-speed` | `117-improve-enrich-speed` | Draft | 2026-04-01 | [spec](../specs/117-improve-enrich-speed/spec.md) |
 | `improve-report-formattext` | `154-improve-report-formattext` | Draft | 2026-04-07 | [spec](../specs/154-improve-report-formattext/spec.md) |
 | `improve-silent-error-catch` | `109-improve-silent-error-catch` | Draft | 2026-03-31 | [spec](../specs/109-improve-silent-error-catch/spec.md) |
@@ -147,6 +148,7 @@
 | `laravel-preset` | `002-laravel-preset` | Draft | 2026-03-02 | [spec](../specs/002-laravel-preset/spec.md) |
 | `locale-override` | `039-locale-override` | Draft | 2026-03-11 | [spec](../specs/039-locale-override/spec.md) |
 | `mechanical-extraction-of-structural-info-and-fac` | `108-mechanical-extraction-of-structural-info-and-fac` | Draft | 2026-03-31 | [spec](../specs/108-mechanical-extraction-of-structural-info-and-fac/spec.md) |
+| `merge-flow-auto-skills` | `163-merge-flow-auto-skills` | Draft | 2026-04-09 | [spec](../specs/163-merge-flow-auto-skills/spec.md) |
 | `migrate-directive-syntax-to-double-braces` | `016-migrate-directive-syntax-to-double-braces` | Draft | 2026-03-05 | [spec](../specs/016-migrate-directive-syntax-to-double-braces/spec.md) |
 | `migrate-flow-state` | `086-migrate-flow-state` | Draft | 2026-03-22 | [spec](../specs/086-migrate-flow-state/spec.md) |
 | `migrate-guardrail-data-format-to-json` | `121-migrate-guardrail-data-format-to-json` | Draft | 2026-04-02 | [spec](../specs/121-migrate-guardrail-data-format-to-json/spec.md) |
@@ -421,5 +423,7 @@
 | `160-check-freshness` | Draft | 2026-04-08 | 160-check-freshness | Issue #117 | [draft.md](../specs/160-check-freshness/draft.md), [qa.md](../specs/160-check-freshness/qa.md), [review.md](../specs/160-check-freshness/review.md), [spec.md](../specs/160-check-freshness/spec.md) |
 | `160-unify-sdd-forge-env-prefix` | Draft | 2026-04-08 | 160-unify-sdd-forge-env-prefix | Issue #118 | [draft.md](../specs/160-unify-sdd-forge-env-prefix/draft.md), [qa.md](../specs/160-unify-sdd-forge-env-prefix/qa.md), [review.md](../specs/160-unify-sdd-forge-env-prefix/review.md), [spec.md](../specs/160-unify-sdd-forge-env-prefix/spec.md) |
 | `161-fix-log-usage-recording` | Draft | 2026-04-08 | 161-fix-log-usage-recording | User request | [draft.md](../specs/161-fix-log-usage-recording/draft.md), [qa.md](../specs/161-fix-log-usage-recording/qa.md), [review.md](../specs/161-fix-log-usage-recording/review.md), [spec.md](../specs/161-fix-log-usage-recording/spec.md) |
-| `162-fix-agent-commands-entries` | Draft | 2026-04-08 | 162-fix-agent-commands-entries | GitHub Issue #120 | [draft.md](../specs/162-fix-agent-commands-entries/draft.md), [qa.md](../specs/162-fix-agent-commands-entries/qa.md), [spec.md](../specs/162-fix-agent-commands-entries/spec.md) |
+| `162-fix-agent-commands-entries` | Draft | 2026-04-08 | 162-fix-agent-commands-entries | GitHub Issue #120 | [draft.md](../specs/162-fix-agent-commands-entries/draft.md), [qa.md](../specs/162-fix-agent-commands-entries/qa.md), [review.md](../specs/162-fix-agent-commands-entries/review.md), [spec.md](../specs/162-fix-agent-commands-entries/spec.md) |
+| `162-improve-choice-format-enforcement` | Draft | 2026-04-08 | 162-improve-choice-format-enforcement | Issue #119 | [draft.md](../specs/162-improve-choice-format-enforcement/draft.md), [qa.md](../specs/162-improve-choice-format-enforcement/qa.md), [review.md](../specs/162-improve-choice-format-enforcement/review.md), [spec.md](../specs/162-improve-choice-format-enforcement/spec.md) |
+| `163-merge-flow-auto-skills` | Draft | 2026-04-09 | 163-merge-flow-auto-skills | Issue #122 | [draft.md](../specs/163-merge-flow-auto-skills/draft.md), [qa.md](../specs/163-merge-flow-auto-skills/qa.md), [review.md](../specs/163-merge-flow-auto-skills/review.md), [spec.md](../specs/163-merge-flow-auto-skills/spec.md) |
 <!-- AUTO-GEN:END -->
