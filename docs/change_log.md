@@ -10,7 +10,7 @@
 
 ### 更新日時
 
-- generated_at: 2026-04-09 03:13:43 UTC
+- generated_at: 2026-04-09 09:48:24 UTC
 
 ### シリーズ最新インデックス
 
@@ -149,6 +149,7 @@
 | `locale-override` | `039-locale-override` | Draft | 2026-03-11 | [spec](../specs/039-locale-override/spec.md) |
 | `logger-callsite-replace` | `163-logger-callsite-replace` | Draft | 2026-04-09 | [spec](../specs/163-logger-callsite-replace/spec.md) |
 | `mechanical-extraction-of-structural-info-and-fac` | `108-mechanical-extraction-of-structural-info-and-fac` | Draft | 2026-03-31 | [spec](../specs/108-mechanical-extraction-of-structural-info-and-fac/spec.md) |
+| `merge-flow-auto-skills` | `163-merge-flow-auto-skills` | Draft | 2026-04-09 | [spec](../specs/163-merge-flow-auto-skills/spec.md) |
 | `migrate-directive-syntax-to-double-braces` | `016-migrate-directive-syntax-to-double-braces` | Draft | 2026-03-05 | [spec](../specs/016-migrate-directive-syntax-to-double-braces/spec.md) |
 | `migrate-flow-state` | `086-migrate-flow-state` | Draft | 2026-03-22 | [spec](../specs/086-migrate-flow-state/spec.md) |
 | `migrate-guardrail-data-format-to-json` | `121-migrate-guardrail-data-format-to-json` | Draft | 2026-04-02 | [spec](../specs/121-migrate-guardrail-data-format-to-json/spec.md) |
@@ -168,6 +169,7 @@
 | `preset-hierarchy-redesign` | `065-preset-hierarchy-redesign` | Draft | 2026-03-17 | [spec](../specs/065-preset-hierarchy-redesign/spec.md) |
 | `preset-plugin-phase1` | `009-preset-plugin-phase1` | Draft | 2026-03-04 | [spec](../specs/009-preset-plugin-phase1/spec.md) |
 | `preset-template-enhancements` | `042-preset-template-enhancements` | Draft | 2026-03-11 | [spec](../specs/042-preset-template-enhancements/spec.md) |
+| `prevent-bg-cmd-in-flow` | `163-prevent-bg-cmd-in-flow` | Draft | 2026-04-09 | [spec](../specs/163-prevent-bg-cmd-in-flow/spec.md) |
 | `project-local-chapters` | `041-project-local-chapters` | Draft | 2026-03-11 | [spec](../specs/041-project-local-chapters/spec.md) |
 | `project-local-template-customization` | `013-project-local-template-customization` | Draft | 2026-03-05 | [spec](../specs/013-project-local-template-customization/spec.md) |
 | `project-local-templates` | `014-project-local-templates` | Draft | 2026-03-05 | [spec](../specs/014-project-local-templates/spec.md) |
@@ -425,5 +427,7 @@
 | `161-fix-log-usage-recording` | Draft | 2026-04-08 | 161-fix-log-usage-recording | User request | [draft.md](../specs/161-fix-log-usage-recording/draft.md), [qa.md](../specs/161-fix-log-usage-recording/qa.md), [review.md](../specs/161-fix-log-usage-recording/review.md), [spec.md](../specs/161-fix-log-usage-recording/spec.md) |
 | `162-fix-agent-commands-entries` | Draft | 2026-04-08 | 162-fix-agent-commands-entries | GitHub Issue #120 | [draft.md](../specs/162-fix-agent-commands-entries/draft.md), [qa.md](../specs/162-fix-agent-commands-entries/qa.md), [review.md](../specs/162-fix-agent-commands-entries/review.md), [spec.md](../specs/162-fix-agent-commands-entries/spec.md) |
 | `162-improve-choice-format-enforcement` | Draft | 2026-04-08 | 162-improve-choice-format-enforcement | Issue #119 | [draft.md](../specs/162-improve-choice-format-enforcement/draft.md), [qa.md](../specs/162-improve-choice-format-enforcement/qa.md), [review.md](../specs/162-improve-choice-format-enforcement/review.md), [spec.md](../specs/162-improve-choice-format-enforcement/spec.md) |
-| `163-logger-callsite-replace` | Draft | 2026-04-09 | 163-logger-callsite-replace | GitHub Issue #123 | [draft.md](../specs/163-logger-callsite-replace/draft.md), [qa.md](../specs/163-logger-callsite-replace/qa.md), [spec.md](../specs/163-logger-callsite-replace/spec.md) |
+| `163-logger-callsite-replace` | Draft | 2026-04-09 | 163-logger-callsite-replace | GitHub Issue #123 | [draft.md](../specs/163-logger-callsite-replace/draft.md), [qa.md](../specs/163-logger-callsite-replace/qa.md), [review.md](../specs/163-logger-callsite-replace/review.md), [spec.md](../specs/163-logger-callsite-replace/spec.md) |
+| `163-merge-flow-auto-skills` | Draft | 2026-04-09 | 163-merge-flow-auto-skills | Issue #122 | [draft.md](../specs/163-merge-flow-auto-skills/draft.md), [qa.md](../specs/163-merge-flow-auto-skills/qa.md), [review.md](../specs/163-merge-flow-auto-skills/review.md), [spec.md](../specs/163-merge-flow-auto-skills/spec.md) |
+| `163-prevent-bg-cmd-in-flow` | Draft | 2026-04-09 | 163-prevent-bg-cmd-in-flow | Issue #121 | [draft.md](../specs/163-prevent-bg-cmd-in-flow/draft.md), [qa.md](../specs/163-prevent-bg-cmd-in-flow/qa.md), [review.md](../specs/163-prevent-bg-cmd-in-flow/review.md), [spec.md](../specs/163-prevent-bg-cmd-in-flow/spec.md) |
 <!-- AUTO-GEN:END -->
