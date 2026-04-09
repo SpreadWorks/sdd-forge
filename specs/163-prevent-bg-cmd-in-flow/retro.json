@@ -1,0 +1,68 @@
+{
+  "spec": "specs/163-prevent-bg-cmd-in-flow/spec.md",
+  "date": "2026-04-09T02:59:44.698Z",
+  "requirements": [
+    {
+      "desc": "core-principle.md の「NEVER chain or background」直後にバックグラウンド移行時の待機義務を MUST で追記する",
+      "status": "done",
+      "note": "「NEVER chain or background」ルールの文末に追記（同一段落内マージ）。review.md の APPROVED 提案に従い矛盾を避ける形で統合されている"
+    },
+    {
+      "desc": "追記ルールは sdd-forge コマンド全体を対象とする",
+      "status": "done",
+      "note": "\"If a `sdd-forge` command nevertheless ends up in the background\" と汎用表現で記述。特定サブコマンドへの限定なし"
+    },
+    {
+      "desc": "「完了通知を受け取るまで次フェーズに進んではならない」という待機義務を明示する",
+      "status": "done",
+      "note": "\"wait for its completion notification before proceeding — do not treat it as complete or advance to the next step until the command's result has been received and read\" と明記"
+    },
+    {
+      "desc": "sdd-forge upgrade を実行してプロジェクトの SKILL.md に反映する",
+      "status": "done",
+      "note": "src/templates/skills/sdd-forge.flow-finalize/SKILL.md（テンプレートソース）が diff に含まれている。.claude/ は gitignore 対象のため upgrade 結果は diff に現れないが、spec の要件定義通り"
+    }
+  ],
+  "unplanned": [
+    {
+      "file": "specs/163-prevent-bg-cmd-in-flow/draft.md",
+      "change": "SDD ワークフロー成果物（draft フェーズの Q&A と決定事項）。要件外だが SDD プロセスの想定内"
+    },
+    {
+      "file": "specs/163-prevent-bg-cmd-in-flow/flow.json",
+      "change": "SDD ワークフロー成果物（フロー状態管理ファイル）。要件外だが SDD プロセスの想定内"
+    },
+    {
+      "file": "specs/163-prevent-bg-cmd-in-flow/issue-log.json",
+      "change": "SDD ワークフロー成果物（gate チェック履歴）。要件外だが SDD プロセスの想定内"
+    },
+    {
+      "file": "specs/163-prevent-bg-cmd-in-flow/qa.md",
+      "change": "SDD ワークフロー成果物（Clarification Q&A）。要件外だが SDD プロセスの想定内"
+    },
+    {
+      "file": "specs/163-prevent-bg-cmd-in-flow/review.md",
+      "change": "SDD ワークフロー成果物（コードレビュー記録）。要件外だが SDD プロセスの想定内"
+    },
+    {
+      "file": "specs/163-prevent-bg-cmd-in-flow/spec.md",
+      "change": "SDD ワークフロー成果物（フィーチャースペック）。要件外だが SDD プロセスの想定内"
+    },
+    {
+      "file": "specs/163-prevent-bg-cmd-in-flow/tests/README.md",
+      "change": "スペック検証テストの説明ファイル。要件には明示されていないが spec.md の Test Strategy に記載あり"
+    },
+    {
+      "file": "specs/163-prevent-bg-cmd-in-flow/tests/verify-core-principle.js",
+      "change": "core-principle.md の内容を grep ベースで検証するテスト。要件には明示されていないが spec.md の Test Strategy に記載あり"
+    }
+  ],
+  "summary": {
+    "total": 4,
+    "done": 4,
+    "partial": 0,
+    "not_done": 0,
+    "rate": 1,
+    "notes": "全4要件が満たされている。core-principle.md への MUST ルール追記はレビューで承認された「矛盾解消マージ」形式で実装され、SKILL.md テンプレートソースにも同様の変更が反映されている。unplanned として挙げた8ファイルはすべて SDD プロセスの想定内成果物であり、機能要件への副作用はない"
+  }
+}

@@ -1,0 +1,28 @@
+{
+  "entries": [
+    {
+      "step": "gate",
+      "reason": "Single Responsibility — テンプレートへの待機ルール追記のみを扱っており、単一の懸念に絞られている; Unambiguous Requirements — 「完了通知を受け取るまで次フェーズに進んではならない」など検証可能な条件で記述されている; Complete Context — 各要件はトリガー（バックグラウンド移行時）と期待動作（待機義務）がペアになっている; No Hardcoded Secrets — テンプレートテキスト変更のみ。シークレット類は無関係; No Silent Error Swallowing — プロダクションコード変更なし。該当しない; Prioritize Requirements — 要件が4項目あるが優先順位が指定されていない; Impact on Existing Features — 「全フローの各スキルに反映される」と影響範囲を明記している; Bounded Resource Usage — 再帰処理・リトライ・大量データ読み込みは無関係; Changes Require Test Coverage — プロダクションコード変更なし。テスト不要の理由を明記している; Spec Includes Test Strategy — 目視確認による検証方法と自動テスト不要の理由を記載している; Synthesize Draft, Do Not Copy — Q&Aや代替案が構造化・抽象化されており、草稿の単純コピーではない; Record Unresolved Points as Open Questions — Open Questions セクションに「なし」と明示されている; Include 'Why This Approach' Rationale — 「Why This Approach」セクションで一元管理・保守性・変更量最小の理由を説明している; Backward — Compatible CLI Interface — CLI コマンドの削除・意味変更なし。該当しない; Exit Code Contract — プロダクションコード変更なし。該当しない",
+      "trigger": "gate post hook (auto)",
+      "timestamp": "2026-04-09T02:16:02.378Z"
+    },
+    {
+      "step": "gate",
+      "reason": "Single Responsibility — テンプレートへのMUSTルール追記という単一の懸念事項のみ扱っている; Unambiguous Requirements — 「完了通知を受け取るまで次フェーズに進んではならない」など検証可能な条件で記述されている; Complete Context — 各要件にトリガー条件（バックグラウンド移行時）と期待動作（待機義務）が明示されている; No Hardcoded Secrets — ソースコード変更を含まず、秘密情報の記述もない; No Silent Error Swallowing — エラー処理に関わるプロダクトコード変更はない; Prioritize Requirements — 要件4件に対して優先順位（最高/高/高/中）が明示されている; Impact on Existing Features — Out of Scope でプロダクトコードへの影響がないことを明示している; Bounded Resource Usage — 再帰処理・リトライ・バルク処理を含まない; Changes Require Test Coverage — 自動テスト不要と述べているが、SKILL.md に特定ルールが含まれることを確認する自動テスト（例: ファイル内容のgrep検証）は実施可能であり、理由の妥当性が薄い; Spec Includes Test Strategy — テスト戦略セクションで「何をテストするか・どのようにテストするか」を記述している; Synthesize Draft, Do Not Copy — Clarifications・Alternatives等に整理された形で記述されており、ドラフト直接コピーではない; Record Unresolved Points as Open Questions — 「なし」と明示されており、未解決点の隠蔽はない; Include 'Why This Approach' Rationale — 「Why This Approach」セクションで3点の根拠を明記している; Backward — Compatible CLI Interface — 既存CLIコマンドの削除・意味変更を含まない; Exit Code Contract — 終了コードに関わるプロダクトコード変更はない",
+      "trigger": "gate post hook (auto)",
+      "timestamp": "2026-04-09T02:16:33.616Z"
+    },
+    {
+      "step": "gate-impl",
+      "reason": "core — principle.md の「NEVER chain or background」直後に MUST ルールを追記 — diff で該当行の直後に追記されている; 追記ルールが sdd — forge コマンド全体を対象としている — \"a `sdd-forge` command\" と汎用的に記述し特定サブコマンドに限定していない; 完了通知を受け取るまで次フェーズに進んではならない待機義務を明示 — \"wait for its completion notification before proceeding to the next phase or step\" が含まれている; sdd — forge upgrade を実行してプロジェクトの SKILL.md に反映 — diff は flow-finalize の SKILL.md テンプレート側の変更のみ。`.claude/skills/` 配下への upgrade 反映は diff に含まれていない",
+      "trigger": "gate post hook (auto)",
+      "timestamp": "2026-04-09T02:33:04.681Z"
+    },
+    {
+      "step": "gate-impl",
+      "reason": "core — principle.md の「NEVER chain or background」直後に MUST ルールを追記 — diff で確認、既存ルールの直後（空行1行挟んで）に追記されている; sdd — forge コマンド全体を対象とする記述 — \"If a `sdd-forge` command goes to background\" と汎用表現で記述、特定サブコマンドへの限定なし; 完了通知受信まで次フェーズに進んではならない待機義務の明示 — \"wait for its completion notification before proceeding to the next phase or step\" と明記されている; sdd — forge upgrade の実行によるプロジェクト SKILL.md への反映 — diff からは upgrade コマンドの実行有無を確認できない（.claude/ は gitignore 対象のため diff に現れない）",
+      "trigger": "gate post hook (auto)",
+      "timestamp": "2026-04-09T02:34:14.335Z"
+    }
+  ]
+}

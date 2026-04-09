@@ -1,0 +1,34 @@
+{
+  "data": {
+    "implementation": {
+      "diffStat": "specs/163-prevent-bg-cmd-in-flow/draft.md          |  38 ++++++\n specs/163-prevent-bg-cmd-in-flow/flow.json         | 136 +++++++++++++++++++++\n specs/163-prevent-bg-cmd-in-flow/issue-log.json    |  28 +++++\n specs/163-prevent-bg-cmd-in-flow/qa.md             |   9 ++\n specs/163-prevent-bg-cmd-in-flow/review.md         |  29 +++++\n specs/163-prevent-bg-cmd-in-flow/spec.md           |  75 ++++++++++++\n specs/163-prevent-bg-cmd-in-flow/tests/README.md   |  25 ++++\n .../tests/verify-core-principle.js                 |  65 ++++++++++\n src/templates/partials/core-principle.md           |   2 +-\n .../skills/sdd-forge.flow-finalize/SKILL.md        |   2 +-\n 10 files changed, 407 insertions(+), 2 deletions(-)",
+      "commits": [
+        "feat: feature/163-prevent-bg-cmd-in-flow"
+      ]
+    },
+    "retro": {
+      "total": 4,
+      "done": 4,
+      "partial": 0,
+      "not_done": 0,
+      "rate": 1,
+      "notes": "全4要件が満たされている。core-principle.md への MUST ルール追記はレビューで承認された「矛盾解消マージ」形式で実装され、SKILL.md テンプレートソースにも同様の変更が反映されている。unplanned として挙げた8ファイルはすべて SDD プロセスの想定内成果物であり、機能要件への副作用はない"
+    },
+    "issueLog": {
+      "count": 0,
+      "entries": []
+    },
+    "metrics": {
+      "docsRead": 1,
+      "srcRead": 2,
+      "question": 5,
+      "issueLog": 0
+    },
+    "tests": null,
+    "sync": {
+      "status": "skipped",
+      "reason": "sync was skipped"
+    }
+  },
+  "text": "  Report\n\n  Implementation\n  ────────────────────────────────────────────────\n    feat: feature/163-prevent-bg-cmd-in-flow\n    10 files changed, 407 insertions(+), 2 deletions(-)\n\n  Retro\n  ────────────────────────────────────────────────\n    ████████ 100%  (4 done / 0 partial / 0 miss)\n\n  Metrics\n  ────────────────────────────────────────────────\n    docs read 1  src read 2  Q&A 5  issue-log 0\n\n  Tests\n  ────────────────────────────────────────────────\n    -"
+}

@@ -1,0 +1,136 @@
+{
+  "spec": "specs/163-prevent-bg-cmd-in-flow/spec.md",
+  "baseBranch": "main",
+  "featureBranch": "feature/163-prevent-bg-cmd-in-flow",
+  "steps": [
+    {
+      "id": "approach",
+      "status": "done"
+    },
+    {
+      "id": "branch",
+      "status": "done"
+    },
+    {
+      "id": "prepare-spec",
+      "status": "pending"
+    },
+    {
+      "id": "draft",
+      "status": "done"
+    },
+    {
+      "id": "gate-draft",
+      "status": "done"
+    },
+    {
+      "id": "spec",
+      "status": "done"
+    },
+    {
+      "id": "gate",
+      "status": "done"
+    },
+    {
+      "id": "approval",
+      "status": "done"
+    },
+    {
+      "id": "test",
+      "status": "done"
+    },
+    {
+      "id": "implement",
+      "status": "done"
+    },
+    {
+      "id": "gate-impl",
+      "status": "done"
+    },
+    {
+      "id": "review",
+      "status": "done"
+    },
+    {
+      "id": "finalize",
+      "status": "pending"
+    },
+    {
+      "id": "commit",
+      "status": "pending"
+    },
+    {
+      "id": "push",
+      "status": "pending"
+    },
+    {
+      "id": "merge",
+      "status": "pending"
+    },
+    {
+      "id": "pr-create",
+      "status": "pending"
+    },
+    {
+      "id": "branch-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "pr-merge",
+      "status": "pending"
+    },
+    {
+      "id": "sync-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "docs-update",
+      "status": "pending"
+    },
+    {
+      "id": "docs-review",
+      "status": "pending"
+    },
+    {
+      "id": "docs-commit",
+      "status": "pending"
+    }
+  ],
+  "requirements": [
+    {
+      "desc": "core-principle.md の「NEVER chain or background」直後にバックグラウンド移行時の待機義務を MUST で追記する",
+      "status": "done"
+    },
+    {
+      "desc": "追記ルールは sdd-forge コマンド全体を対象とする",
+      "status": "done"
+    },
+    {
+      "desc": "「完了通知を受け取るまで次フェーズに進んではならない」という待機義務を明示する",
+      "status": "done"
+    },
+    {
+      "desc": "sdd-forge upgrade を実行してプロジェクトの SKILL.md に反映する",
+      "status": "done"
+    }
+  ],
+  "issue": 121,
+  "request": "flow 中にバックグラウンド実行されるコマンドを防ぐ対策",
+  "worktree": true,
+  "metrics": {
+    "plan": {
+      "docsRead": 1
+    },
+    "draft": {
+      "srcRead": 1,
+      "question": 5
+    },
+    "impl": {
+      "srcRead": 1
+    }
+  },
+  "notes": [
+    "review: auto-fix selected",
+    "finalize: all steps selected"
+  ]
+}
