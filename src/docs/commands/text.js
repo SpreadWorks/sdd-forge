@@ -218,7 +218,11 @@ function applyBatchJsonToFile(text, textFills, jsonData) {
  * @returns {{ text: string, filled: number, skipped: number }}
  */
 async function processTemplateFileBatch(text, analysis, fileName, agent, timeoutMs, cwd, dryRun, _preamblePatterns, systemPrompt, _filterId, _concurrency, lang, srcRoot, retryCount) {
-  const directives = parseDirectives(text);
+  // cleanText を先に計算してから parseDirectives を呼ぶ。
+  // stripFillContent は既存コンテンツを除去するため行数が変わる。
+  // parseDirectives の行番号は applyBatchJsonToFile に渡す text と一致させる必要がある。
+  const cleanText = stripFillContent(text);
+  const directives = parseDirectives(cleanText);
   const textFills = directives.filter((d) => d.type === "text");
 
   if (textFills.length === 0) return { text, filled: 0, skipped: 0 };
@@ -227,8 +231,6 @@ async function processTemplateFileBatch(text, analysis, fileName, agent, timeout
   const hasDeep = textFills.some((d) => d.params?.mode === "deep");
   const batchMode = hasDeep ? "deep" : "light";
   const enriched = getEnrichedContext(analysis, fileName, batchMode, srcRoot);
-
-  const cleanText = stripFillContent(text);
   let prompt = buildBatchPrompt(fileName, cleanText, textFills, lang);
   if (enriched) {
     prompt = enriched + "\n\n" + prompt;

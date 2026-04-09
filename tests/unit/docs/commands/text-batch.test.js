@@ -55,6 +55,75 @@ describe("processTemplateFileBatch", () => {
     assert.ok(typeof result.filled === "number", "result.filled should be a number");
   });
 
+  it("replaces existing content between {{text}} tags without duplicating opening tag", async () => {
+    tmp = createTmpDir();
+
+    // 2回目の実行を想定: すでにコンテンツが挿入済みのテンプレート
+    const templateContent = [
+      "# Test Document",
+      "",
+      "## Overview",
+      '<!-- {{text({prompt: "describe the overview"})}} -->',
+      "",
+      "Old overview content that should be replaced.",
+      "",
+      "<!-- {{/text}} -->",
+      "",
+      "## Details",
+      '<!-- {{text({prompt: "describe the details"})}} -->',
+      "",
+      "Old details content.",
+      "",
+      "<!-- {{/text}} -->",
+      "",
+    ].join("\n");
+
+    const jsonResponse = JSON.stringify({
+      d0: "New overview content.",
+      d1: "New details content.",
+    });
+    const agent = {
+      command: "node",
+      args: ["-e", `process.stdout.write(${JSON.stringify(jsonResponse)})`, "{{PROMPT}}"],
+    };
+
+    const result = await processTemplateFileBatch(
+      templateContent,
+      { structure: {} },
+      "test.md",
+      agent,
+      10000,
+      tmp,
+      false,
+      [],
+      "",
+      undefined,
+      undefined,
+      "en",
+    );
+
+    assert.ok(result, "should return a result");
+    assert.ok(typeof result.text === "string", "result.text should be a string");
+
+    // 開きタグが重複していないこと
+    const openTagCount = (result.text.match(/<!-- {{text\(/g) || []).length;
+    assert.strictEqual(openTagCount, 2, `opening tags should appear exactly twice, got ${openTagCount}`);
+
+    // 閉じタグが重複していないこと
+    const closeTagCount = (result.text.match(/<!-- {{\/text}} -->/g) || []).length;
+    assert.strictEqual(closeTagCount, 2, `closing tags should appear exactly twice, got ${closeTagCount}`);
+
+    // 新しいコンテンツが含まれていること
+    assert.ok(result.text.includes("New overview content."), "should contain new overview content");
+    assert.ok(result.text.includes("New details content."), "should contain new details content");
+
+    // 古いコンテンツが残っていないこと
+    assert.ok(!result.text.includes("Old overview content"), "should not contain old overview content");
+    assert.ok(!result.text.includes("Old details content"), "should not contain old details content");
+
+    assert.strictEqual(result.filled, 2);
+  });
+
   it("returns null text on empty agent response in dry-run", async () => {
     tmp = createTmpDir();
 
