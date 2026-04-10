@@ -1,12 +1,12 @@
 {
-  "analyzedAt": "2026-04-09T09:48:34.774Z",
+  "analyzedAt": "2026-04-10T04:33:41.110Z",
   "package": {
     "entries": [
       {
         "file": "package.json",
-        "hash": "98e511308410900cf77249affb7e2065",
+        "hash": "53638204877204ec2e80f0ba8da55d82",
         "lines": 36,
-        "mtime": "2026-04-09T03:26:22.685Z",
+        "mtime": "2026-04-09T14:39:14.895Z",
         "packageDeps": {
           "dependencies": {},
           "devDependencies": {}
@@ -32,7 +32,7 @@
         "file": "src/check.js",
         "hash": "5de97c6fb3ac23fec9ee11db464de760",
         "lines": 42,
-        "mtime": "2026-04-08T13:27:40.766Z",
+        "mtime": "2026-04-09T14:39:14.996Z",
         "className": "check",
         "methods": [],
         "imports": [
@@ -49,7 +49,7 @@
         "file": "src/check/commands/config.js",
         "hash": "4c3b2dc2e265953d4d0774b9603a865f",
         "lines": 141,
-        "mtime": "2026-04-08T09:17:33.707Z",
+        "mtime": "2026-04-09T14:39:14.996Z",
         "className": "config",
         "methods": [
           "printHelp",
@@ -84,7 +84,7 @@
         "file": "src/check/commands/freshness.js",
         "hash": "872eabd3e5aaf34726d84bff803ca99e",
         "lines": 206,
-        "mtime": "2026-04-08T13:27:40.766Z",
+        "mtime": "2026-04-09T14:39:14.996Z",
         "className": "freshness",
         "methods": [
           "printHelp",
@@ -112,7 +112,7 @@
         "file": "src/check/commands/scan.js",
         "hash": "3a42466c795204e2d2ab74e2b9a85e6d",
         "lines": 274,
-        "mtime": "2026-04-08T09:17:36.519Z",
+        "mtime": "2026-04-09T14:39:14.996Z",
         "className": "scan",
         "methods": [
           "printHelp",
@@ -147,7 +147,7 @@
         "file": "src/docs.js",
         "hash": "2f32728c9e96b54407ba1589be9ab036",
         "lines": 241,
-        "mtime": "2026-04-09T03:28:08.629Z",
+        "mtime": "2026-04-09T14:39:14.996Z",
         "className": "docs",
         "methods": [],
         "imports": [
@@ -168,7 +168,7 @@
         "file": "src/docs/commands/agents.js",
         "hash": "5842a1692fd666606a216946bd06b811",
         "lines": 229,
-        "mtime": "2026-04-07T15:34:49.981Z",
+        "mtime": "2026-04-09T14:39:14.996Z",
         "className": "agents",
         "methods": [
           "buildAgentsSystemPrompt",
@@ -202,7 +202,7 @@
         "file": "src/docs/commands/changelog.js",
         "hash": "f7ff875d6c26f75fe81c7d2aeec601a3",
         "lines": 243,
-        "mtime": "2026-04-05T09:45:33.798Z",
+        "mtime": "2026-04-09T14:39:14.996Z",
         "className": "changelog",
         "methods": [
           "sanitize",
@@ -232,7 +232,7 @@
         "file": "src/docs/commands/data.js",
         "hash": "8a9f28aad0173840ce6d669cb317b996",
         "lines": 194,
-        "mtime": "2026-04-05T09:45:33.798Z",
+        "mtime": "2026-04-09T14:39:14.996Z",
         "className": "data",
         "methods": [
           "populateFromAnalysis",
@@ -266,7 +266,7 @@
         "file": "src/docs/commands/enrich.js",
         "hash": "078ca96b8c661e6e04da862f2607fa96",
         "lines": 522,
-        "mtime": "2026-04-07T15:34:49.981Z",
+        "mtime": "2026-04-09T14:39:14.996Z",
         "className": "enrich",
         "methods": [
           "printHelp",
@@ -318,7 +318,7 @@
         "file": "src/docs/commands/forge.js",
         "hash": "75a82286e419e78835b7bac1570550ef",
         "lines": 445,
-        "mtime": "2026-04-07T15:34:49.981Z",
+        "mtime": "2026-04-09T14:39:14.997Z",
         "className": "forge",
         "methods": [
           "getTargetFiles",
@@ -360,7 +360,7 @@
         "file": "src/docs/commands/init.js",
         "hash": "fbcb3f001058aa9b478487874e180e2e",
         "lines": 271,
-        "mtime": "2026-04-08T23:37:38.234Z",
+        "mtime": "2026-04-09T14:39:14.997Z",
         "className": "init",
         "methods": [
           "aiFilterChapters",
@@ -392,7 +392,7 @@
         "file": "src/docs/commands/readme.js",
         "hash": "636d83e3b535e93231d6a3958befcedb",
         "lines": 191,
-        "mtime": "2026-04-05T09:45:33.799Z",
+        "mtime": "2026-04-09T14:39:14.997Z",
         "className": "readme",
         "methods": [
           "main"
@@ -423,7 +423,7 @@
         "file": "src/docs/commands/review.js",
         "hash": "063a176635cfb583196881d07db029f8",
         "lines": 310,
-        "mtime": "2026-03-26T03:13:47.932Z",
+        "mtime": "2026-04-09T14:39:14.997Z",
         "className": "review",
         "methods": [
           "stripInlineCode",
@@ -454,7 +454,7 @@
         "file": "src/docs/commands/scan.js",
         "hash": "2629d56ff3212d9651e60dd394388876",
         "lines": 479,
-        "mtime": "2026-04-05T09:45:33.799Z",
+        "mtime": "2026-04-09T14:39:14.997Z",
         "className": "scan",
         "methods": [
           "printHelp",
@@ -494,9 +494,9 @@
       },
       {
         "file": "src/docs/commands/text.js",
-        "hash": "d6f34a57216de984f4933233456768b5",
-        "lines": 772,
-        "mtime": "2026-04-09T09:43:23.924Z",
+        "hash": "82f0cfb9040d1ebb71d208edea6904f3",
+        "lines": 774,
+        "mtime": "2026-04-09T14:39:14.997Z",
         "className": "text",
         "methods": [
           "textFillFromAnalysis",
@@ -556,7 +556,7 @@
         "file": "src/docs/commands/translate.js",
         "hash": "ae7297d331d69dc591660de5872d422e",
         "lines": 228,
-        "mtime": "2026-04-07T15:34:49.981Z",
+        "mtime": "2026-04-09T14:39:14.997Z",
         "className": "translate",
         "methods": [
           "toneInstruction",
@@ -589,7 +589,7 @@
         "file": "src/docs/data/agents.js",
         "hash": "a888c3df53ce2ee3fcdfe9ee56d28bc2",
         "lines": 140,
-        "mtime": "2026-03-23T00:51:17.205Z",
+        "mtime": "2026-04-09T14:39:14.997Z",
         "className": "agents",
         "methods": [],
         "imports": [
@@ -611,7 +611,7 @@
         "file": "src/docs/data/docs.js",
         "hash": "d6cad83298744d27552ed17facad80db",
         "lines": 288,
-        "mtime": "2026-04-05T09:45:33.799Z",
+        "mtime": "2026-04-09T14:39:14.997Z",
         "className": "docs",
         "methods": [],
         "imports": [
@@ -633,7 +633,7 @@
         "file": "src/docs/data/lang.js",
         "hash": "4aa9b6ce24aa96bf96152cf227ba9009",
         "lines": 110,
-        "mtime": "2026-04-05T09:45:33.799Z",
+        "mtime": "2026-04-09T14:39:14.997Z",
         "className": "lang",
         "methods": [],
         "imports": [
@@ -652,7 +652,7 @@
         "file": "src/docs/data/project.js",
         "hash": "77555fd2f4dcaec44f08bbb4bbb4bdea",
         "lines": 57,
-        "mtime": "2026-03-13T15:18:01.234Z",
+        "mtime": "2026-04-09T14:39:14.997Z",
         "className": "project",
         "methods": [],
         "imports": [
@@ -671,7 +671,7 @@
         "file": "src/docs/data/text.js",
         "hash": "491123ced9822ff78b431b10b17cbbd2",
         "lines": 33,
-        "mtime": "2026-03-20T14:43:31.957Z",
+        "mtime": "2026-04-09T14:39:14.998Z",
         "className": "text",
         "methods": [],
         "imports": [
@@ -691,7 +691,7 @@
         "file": "src/docs/lib/analysis-entry.js",
         "hash": "33f98c4631b5fc051bff2b96fc3aca8d",
         "lines": 79,
-        "mtime": "2026-03-26T03:13:47.933Z",
+        "mtime": "2026-04-09T14:39:14.998Z",
         "className": "analysis-entry",
         "methods": [
           "AnalysisEntry",
@@ -718,7 +718,7 @@
         "file": "src/docs/lib/analysis-filter.js",
         "hash": "a8ee25914eb0ead02b53ecf292853159",
         "lines": 61,
-        "mtime": "2026-04-05T09:45:33.799Z",
+        "mtime": "2026-04-09T14:39:14.998Z",
         "className": "analysis-filter",
         "methods": [
           "filterByDocsExclude",
@@ -740,7 +740,7 @@
         "file": "src/docs/lib/chapter-resolver.js",
         "hash": "ecf7037f15ce342623fbcbb8a44c98b6",
         "lines": 142,
-        "mtime": "2026-04-05T09:45:33.799Z",
+        "mtime": "2026-04-09T14:39:14.998Z",
         "className": "chapter-resolver",
         "methods": [
           "mergeChapters",
@@ -767,7 +767,7 @@
         "file": "src/docs/lib/command-context.js",
         "hash": "ed0b0ef92e7136ffc284bf3de918997e",
         "lines": 181,
-        "mtime": "2026-04-08T12:40:33.804Z",
+        "mtime": "2026-04-09T14:39:14.998Z",
         "className": "command-context",
         "methods": [
           "resolveCommandContext",
@@ -808,7 +808,7 @@
         "file": "src/docs/lib/concurrency.js",
         "hash": "a7e70617fe36d5216b7b1d34d45b1cf2",
         "lines": 48,
-        "mtime": "2026-03-07T12:21:11.955Z",
+        "mtime": "2026-04-09T14:39:14.998Z",
         "className": "concurrency",
         "methods": [
           "mapWithConcurrency"
@@ -825,7 +825,7 @@
         "file": "src/docs/lib/data-source-loader.js",
         "hash": "4231396643d77aa2ce1b5ab1493df5a1",
         "lines": 46,
-        "mtime": "2026-04-05T09:45:33.799Z",
+        "mtime": "2026-04-09T14:39:14.998Z",
         "className": "data-source-loader",
         "methods": [
           "loadDataSources"
@@ -848,7 +848,7 @@
         "file": "src/docs/lib/data-source.js",
         "hash": "4c94fbb481e50f1c35796d75016cb61e",
         "lines": 92,
-        "mtime": "2026-03-26T03:13:47.933Z",
+        "mtime": "2026-04-09T14:39:14.998Z",
         "className": "data-source",
         "methods": [
           "DataSource"
@@ -867,7 +867,7 @@
         "file": "src/docs/lib/directive-parser.js",
         "hash": "0159608f9b7a8733397895d9c36b3e31",
         "lines": 513,
-        "mtime": "2026-03-22T13:22:06.958Z",
+        "mtime": "2026-04-09T14:39:14.998Z",
         "className": "directive-parser",
         "methods": [
           "parseDirectives",
@@ -906,7 +906,7 @@
         "file": "src/docs/lib/forge-prompts.js",
         "hash": "f1ace411f929c9c4f7335bf23ab35d79",
         "lines": 183,
-        "mtime": "2026-03-26T03:13:47.933Z",
+        "mtime": "2026-04-09T14:39:14.998Z",
         "className": "forge-prompts",
         "methods": [
           "summaryToText",
@@ -933,7 +933,7 @@
         "file": "src/docs/lib/lang-factory.js",
         "hash": "1e7cc8c085af338d7ba6286188965431",
         "lines": 38,
-        "mtime": "2026-04-05T09:45:33.799Z",
+        "mtime": "2026-04-09T14:39:14.998Z",
         "className": "lang-factory",
         "methods": [
           "getLangHandler"
@@ -959,7 +959,7 @@
         "file": "src/docs/lib/lang/js.js",
         "hash": "16390ece61630c233b18c8423cc0207a",
         "lines": 164,
-        "mtime": "2026-04-05T09:45:33.799Z",
+        "mtime": "2026-04-09T14:39:14.998Z",
         "className": "js",
         "methods": [
           "minify",
@@ -999,7 +999,7 @@
         "file": "src/docs/lib/lang/php.js",
         "hash": "7fc70c9176260c276553b55da64117ed",
         "lines": 174,
-        "mtime": "2026-04-05T09:45:33.800Z",
+        "mtime": "2026-04-09T14:39:14.998Z",
         "className": "php",
         "methods": [
           "minify",
@@ -1031,7 +1031,7 @@
         "file": "src/docs/lib/lang/py.js",
         "hash": "68bcb38c4a6d2e9378fec579b62adf33",
         "lines": 35,
-        "mtime": "2026-04-05T09:45:33.800Z",
+        "mtime": "2026-04-09T14:39:14.998Z",
         "className": "py",
         "methods": [
           "minify",
@@ -1053,7 +1053,7 @@
         "file": "src/docs/lib/lang/yaml.js",
         "hash": "6cf81f55e64a846823eb3ef7a47dff23",
         "lines": 20,
-        "mtime": "2026-04-05T09:45:33.800Z",
+        "mtime": "2026-04-09T14:39:14.998Z",
         "className": "yaml",
         "methods": [
           "minify",
@@ -1073,7 +1073,7 @@
         "file": "src/docs/lib/minify.js",
         "hash": "c7b4266a51f47a302b3e2ff7501971ee",
         "lines": 50,
-        "mtime": "2026-04-05T09:45:33.800Z",
+        "mtime": "2026-04-09T14:39:14.998Z",
         "className": "minify",
         "methods": [
           "minify",
@@ -1096,7 +1096,7 @@
         "file": "src/docs/lib/php-array-parser.js",
         "hash": "58b74a01d9ac3166516ff4b2b93e9223",
         "lines": 139,
-        "mtime": "2026-03-01T01:37:45.272Z",
+        "mtime": "2026-04-09T14:39:14.998Z",
         "className": "php-array-parser",
         "methods": [
           "stripBlockComments",
@@ -1123,7 +1123,7 @@
         "file": "src/docs/lib/resolver-factory.js",
         "hash": "61cf4307bbc3c3f6ed9903653b41fe21",
         "lines": 158,
-        "mtime": "2026-03-20T03:07:17.808Z",
+        "mtime": "2026-04-09T14:39:14.998Z",
         "className": "resolver-factory",
         "methods": [
           "createResolver",
@@ -1151,7 +1151,7 @@
         "file": "src/docs/lib/review-parser.js",
         "hash": "7acba81ef1417d2a7d0295ec49533248",
         "lines": 85,
-        "mtime": "2026-04-05T09:45:33.800Z",
+        "mtime": "2026-04-09T14:39:14.998Z",
         "className": "review-parser",
         "methods": [
           "extractNeedsInput",
@@ -1174,7 +1174,7 @@
         "file": "src/docs/lib/scan-source.js",
         "hash": "a1c1d5862a48ec07f7f8b6ee5c3e0e14",
         "lines": 76,
-        "mtime": "2026-03-26T03:13:47.933Z",
+        "mtime": "2026-04-09T14:39:14.998Z",
         "className": "scan-source",
         "methods": [],
         "imports": [
@@ -1196,7 +1196,7 @@
         "file": "src/docs/lib/scanner.js",
         "hash": "399429dc7d2b862e53e6670e0ad1eb5b",
         "lines": 290,
-        "mtime": "2026-04-05T09:45:33.800Z",
+        "mtime": "2026-04-09T14:39:14.999Z",
         "className": "scanner",
         "methods": [
           "patternToRegex",
@@ -1237,7 +1237,7 @@
         "file": "src/docs/lib/template-merger.js",
         "hash": "872ec72b3a24681712e1e3da13d37bf0",
         "lines": 605,
-        "mtime": "2026-04-07T15:34:49.982Z",
+        "mtime": "2026-04-09T14:39:14.999Z",
         "className": "template-merger",
         "methods": [
           "buildLayers",
@@ -1280,7 +1280,7 @@
         "file": "src/docs/lib/test-env-detection.js",
         "hash": "8052dc933cc6c56920e83425204f7f90",
         "lines": 59,
-        "mtime": "2026-03-26T03:13:47.933Z",
+        "mtime": "2026-04-09T14:39:14.999Z",
         "className": "test-env-detection",
         "methods": [
           "detectTestEnvironment"
@@ -1297,7 +1297,7 @@
         "file": "src/docs/lib/text-prompts.js",
         "hash": "c0231d97952453dde0f73cf2cc3af09b",
         "lines": 296,
-        "mtime": "2026-04-05T09:45:33.800Z",
+        "mtime": "2026-04-09T14:39:14.999Z",
         "className": "text-prompts",
         "methods": [
           "getAnalysisContext",
@@ -1334,7 +1334,7 @@
         "file": "src/docs/lib/toml-parser.js",
         "hash": "d71d17192cf9acb2aa72bbbfb575fa5c",
         "lines": 136,
-        "mtime": "2026-03-21T14:51:37.485Z",
+        "mtime": "2026-04-09T14:39:14.999Z",
         "className": "toml-parser",
         "methods": [
           "parseTOML",
@@ -1353,7 +1353,7 @@
         "file": "src/flow.js",
         "hash": "deba01043970475bba1a7eac002a1302",
         "lines": 216,
-        "mtime": "2026-04-05T09:45:33.800Z",
+        "mtime": "2026-04-09T14:39:14.999Z",
         "className": "flow",
         "methods": [
           "resolveCtx",
@@ -1378,7 +1378,7 @@
         "file": "src/flow/commands/merge.js",
         "hash": "159dc22ff88591be40d9e1b3d6271e3b",
         "lines": 210,
-        "mtime": "2026-04-08T09:17:36.519Z",
+        "mtime": "2026-04-09T14:39:14.999Z",
         "className": "merge",
         "methods": [
           "resolveRemote",
@@ -1408,14 +1408,16 @@
       },
       {
         "file": "src/flow/commands/report.js",
-        "hash": "61fae3f0be09271db1db84397681b9d1",
-        "lines": 187,
-        "mtime": "2026-04-08T09:17:36.519Z",
+        "hash": "c86a4ae8d30678d17b7b21d6e2727c73",
+        "lines": 229,
+        "mtime": "2026-04-10T03:24:07.140Z",
         "className": "report",
         "methods": [
           "generateReport",
           "saveReport",
-          "aggregateMetrics",
+          "forEachPhase",
+          "aggregateActivityMetrics",
+          "aggregateTokenMetrics",
           "formatText"
         ],
         "imports": [
@@ -1436,7 +1438,7 @@
         "file": "src/flow/commands/review.js",
         "hash": "408c8f31db35bbced9a833fc2113f997",
         "lines": 944,
-        "mtime": "2026-04-07T15:34:49.982Z",
+        "mtime": "2026-04-09T14:39:14.999Z",
         "className": "review",
         "methods": [
           "resolveReviewTarget",
@@ -1508,7 +1510,7 @@
         "file": "src/flow/lib/base-command.js",
         "hash": "f53df55dd91b67127133491595f327e7",
         "lines": 41,
-        "mtime": "2026-04-05T09:45:33.801Z",
+        "mtime": "2026-04-09T14:39:14.999Z",
         "className": "base-command",
         "methods": [
           "FlowCommand"
@@ -1554,7 +1556,7 @@
         "file": "src/flow/lib/get-check.js",
         "hash": "ca45dc398ca9e14d7140bf34fe9be5c3",
         "lines": 85,
-        "mtime": "2026-04-05T09:45:33.801Z",
+        "mtime": "2026-04-09T14:39:14.999Z",
         "className": "get-check",
         "methods": [
           "checkStepPrereqs",
@@ -1577,7 +1579,7 @@
         "file": "src/flow/lib/get-context.js",
         "hash": "8a3ed5099257a7f908d2b6be20fe0fd0",
         "lines": 400,
-        "mtime": "2026-04-07T15:34:49.982Z",
+        "mtime": "2026-04-09T14:39:15.000Z",
         "className": "get-context",
         "methods": [
           "toSearchResult",
@@ -1627,7 +1629,7 @@
         "file": "src/flow/lib/get-guardrail.js",
         "hash": "6ddd158481986aea194cf9983a77dae4",
         "lines": 62,
-        "mtime": "2026-04-05T09:45:33.801Z",
+        "mtime": "2026-04-09T14:39:15.000Z",
         "className": "get-guardrail",
         "methods": [
           "toMarkdown"
@@ -1650,7 +1652,7 @@
         "file": "src/flow/lib/get-issue.js",
         "hash": "cb71e1f166d6d7accedaf1e986411c2e",
         "lines": 43,
-        "mtime": "2026-04-08T09:17:36.519Z",
+        "mtime": "2026-04-09T14:39:15.000Z",
         "className": "get-issue",
         "methods": [],
         "imports": [
@@ -1668,7 +1670,7 @@
         "file": "src/flow/lib/get-prompt.js",
         "hash": "d5e4bdc6cb16b00fdfff994b5371491b",
         "lines": 362,
-        "mtime": "2026-04-05T09:45:33.801Z",
+        "mtime": "2026-04-09T14:39:15.000Z",
         "className": "get-prompt",
         "methods": [
           "validKinds"
@@ -1687,7 +1689,7 @@
         "file": "src/flow/lib/get-qa-count.js",
         "hash": "da58bfb6ac183caceb3eff77ae195141",
         "lines": 17,
-        "mtime": "2026-04-05T09:45:33.801Z",
+        "mtime": "2026-04-09T14:39:15.000Z",
         "className": "get-qa-count",
         "methods": [],
         "imports": [
@@ -1704,7 +1706,7 @@
         "file": "src/flow/lib/get-resolve-context.js",
         "hash": "da8c98ca41076ae32f6595ea36ca1cda",
         "lines": 100,
-        "mtime": "2026-04-05T09:45:33.801Z",
+        "mtime": "2026-04-09T14:39:15.000Z",
         "className": "get-resolve-context",
         "methods": [
           "extractSection"
@@ -1730,7 +1732,7 @@
         "file": "src/flow/lib/get-status.js",
         "hash": "328f78a71bd7ac5bec857d34d06a3321",
         "lines": 39,
-        "mtime": "2026-04-05T09:45:33.801Z",
+        "mtime": "2026-04-09T14:39:15.000Z",
         "className": "get-status",
         "methods": [],
         "imports": [
@@ -1748,7 +1750,7 @@
         "file": "src/flow/lib/phases.js",
         "hash": "22fd09d92596cdae6d9becbcf10961ea",
         "lines": 16,
-        "mtime": "2026-04-05T09:45:33.801Z",
+        "mtime": "2026-04-09T14:39:15.001Z",
         "className": "phases",
         "methods": [],
         "imports": [],
@@ -1767,7 +1769,7 @@
         "file": "src/flow/lib/run-finalize.js",
         "hash": "377fd9af968f55eb79510d649d67fb5b",
         "lines": 336,
-        "mtime": "2026-04-08T09:17:36.519Z",
+        "mtime": "2026-04-09T14:39:15.001Z",
         "className": "run-finalize",
         "methods": [
           "finalizeOnError",
@@ -1804,7 +1806,7 @@
         "file": "src/flow/lib/run-gate.js",
         "hash": "fd72590e5cf931f360458325b07654c9",
         "lines": 483,
-        "mtime": "2026-04-08T23:37:38.234Z",
+        "mtime": "2026-04-09T14:39:15.001Z",
         "className": "run-gate",
         "methods": [
           "RunGateCommand",
@@ -1846,7 +1848,7 @@
         "file": "src/flow/lib/run-impl-confirm.js",
         "hash": "c4048ef3570dbe7c9726cc09c25b284c",
         "lines": 98,
-        "mtime": "2026-04-05T09:45:33.801Z",
+        "mtime": "2026-04-09T14:39:15.003Z",
         "className": "run-impl-confirm",
         "methods": [
           "RunImplConfirmCommand",
@@ -1871,7 +1873,7 @@
         "file": "src/flow/lib/run-lint.js",
         "hash": "aa00527b6d76e9e9914b6a5bfa15b03b",
         "lines": 62,
-        "mtime": "2026-04-05T09:45:33.802Z",
+        "mtime": "2026-04-09T14:39:15.003Z",
         "className": "run-lint",
         "methods": [
           "RunLintCommand"
@@ -1893,7 +1895,7 @@
         "file": "src/flow/lib/run-prepare-spec.js",
         "hash": "88d80ed53154d0133c7d376f27cc85ee",
         "lines": 325,
-        "mtime": "2026-04-08T09:17:36.519Z",
+        "mtime": "2026-04-09T14:39:15.003Z",
         "className": "run-prepare-spec",
         "methods": [
           "RunPrepareSpecCommand",
@@ -1931,7 +1933,7 @@
         "file": "src/flow/lib/run-report.js",
         "hash": "b9c3fdfd2a72ed5534111642fa4a46ce",
         "lines": 57,
-        "mtime": "2026-04-05T09:45:33.802Z",
+        "mtime": "2026-04-09T14:39:15.003Z",
         "className": "run-report",
         "methods": [
           "RunReportCommand"
@@ -1955,7 +1957,7 @@
         "file": "src/flow/lib/run-resume.js",
         "hash": "9bc3f6d2bcea504abdfe58aad85fd07b",
         "lines": 104,
-        "mtime": "2026-04-05T09:45:33.802Z",
+        "mtime": "2026-04-09T14:39:15.003Z",
         "className": "run-resume",
         "methods": [
           "extractSection"
@@ -1978,7 +1980,7 @@
         "file": "src/flow/lib/run-retro.js",
         "hash": "bbfca4f6b1dd36dc4016ca7fcdf707f9",
         "lines": 234,
-        "mtime": "2026-04-08T23:37:38.234Z",
+        "mtime": "2026-04-09T14:39:15.003Z",
         "className": "run-retro",
         "methods": [
           "RunRetroCommand",
@@ -2012,7 +2014,7 @@
         "file": "src/flow/lib/run-review.js",
         "hash": "779f5656b7917117338450c1e248eefd",
         "lines": 196,
-        "mtime": "2026-04-08T09:17:36.519Z",
+        "mtime": "2026-04-09T14:39:15.003Z",
         "className": "run-review",
         "methods": [
           "runCmdWithRetry",
@@ -2042,7 +2044,7 @@
         "file": "src/flow/lib/run-sync.js",
         "hash": "b7cfb93db92b8118b54fc1d7cda18b4c",
         "lines": 86,
-        "mtime": "2026-04-08T09:17:36.519Z",
+        "mtime": "2026-04-09T14:39:15.003Z",
         "className": "run-sync",
         "methods": [
           "RunSyncCommand"
@@ -2065,7 +2067,7 @@
         "file": "src/flow/lib/set-auto.js",
         "hash": "d0465224a882b65f200aaaff114c70d8",
         "lines": 29,
-        "mtime": "2026-04-05T09:45:33.802Z",
+        "mtime": "2026-04-09T14:39:15.003Z",
         "className": "set-auto",
         "methods": [],
         "imports": [
@@ -2083,7 +2085,7 @@
         "file": "src/flow/lib/set-issue-log.js",
         "hash": "267f3568761ce9d147818987fafb3d94",
         "lines": 74,
-        "mtime": "2026-04-05T09:45:33.802Z",
+        "mtime": "2026-04-09T14:39:15.003Z",
         "className": "set-issue-log",
         "methods": [
           "loadIssueLog",
@@ -2113,7 +2115,7 @@
         "file": "src/flow/lib/set-issue.js",
         "hash": "7b58c42adb909e1fec71ddda27b2b2c7",
         "lines": 30,
-        "mtime": "2026-04-05T09:45:33.802Z",
+        "mtime": "2026-04-09T14:39:15.003Z",
         "className": "set-issue",
         "methods": [],
         "imports": [
@@ -2131,7 +2133,7 @@
         "file": "src/flow/lib/set-metric.js",
         "hash": "1a4697eb3ebf16dcdd577fc7fcc33ed1",
         "lines": 43,
-        "mtime": "2026-04-05T09:45:33.802Z",
+        "mtime": "2026-04-09T14:39:15.003Z",
         "className": "set-metric",
         "methods": [],
         "imports": [
@@ -2150,7 +2152,7 @@
         "file": "src/flow/lib/set-note.js",
         "hash": "888706fbd3372c31f1fce7e61ef173f6",
         "lines": 25,
-        "mtime": "2026-04-05T09:45:33.802Z",
+        "mtime": "2026-04-09T14:39:15.003Z",
         "className": "set-note",
         "methods": [],
         "imports": [
@@ -2168,7 +2170,7 @@
         "file": "src/flow/lib/set-req.js",
         "hash": "375ed7b07a051e12b1d86e425d3390af",
         "lines": 31,
-        "mtime": "2026-04-05T09:45:33.802Z",
+        "mtime": "2026-04-09T14:39:15.003Z",
         "className": "set-req",
         "methods": [],
         "imports": [
@@ -2186,7 +2188,7 @@
         "file": "src/flow/lib/set-request.js",
         "hash": "05bca1c7db54365ec2719f12fe6de3af",
         "lines": 25,
-        "mtime": "2026-04-05T09:45:33.802Z",
+        "mtime": "2026-04-09T14:39:15.004Z",
         "className": "set-request",
         "methods": [],
         "imports": [
@@ -2204,7 +2206,7 @@
         "file": "src/flow/lib/set-step.js",
         "hash": "c0dece8ba2d414264bc72e113a5a09c1",
         "lines": 28,
-        "mtime": "2026-04-09T03:28:08.630Z",
+        "mtime": "2026-04-09T14:39:15.004Z",
         "className": "set-step",
         "methods": [],
         "imports": [
@@ -2223,7 +2225,7 @@
         "file": "src/flow/lib/set-summary.js",
         "hash": "ac99c7eefd5d079c479d1fc293c5e5e8",
         "lines": 36,
-        "mtime": "2026-04-05T09:45:33.802Z",
+        "mtime": "2026-04-09T14:39:15.004Z",
         "className": "set-summary",
         "methods": [],
         "imports": [
@@ -2241,7 +2243,7 @@
         "file": "src/flow/lib/set-test-summary.js",
         "hash": "ded47c3965169cb923441fb460772467",
         "lines": 40,
-        "mtime": "2026-04-05T09:45:33.802Z",
+        "mtime": "2026-04-09T14:39:15.004Z",
         "className": "set-test-summary",
         "methods": [],
         "imports": [
@@ -2259,7 +2261,7 @@
         "file": "src/flow/registry.js",
         "hash": "115bef177d99ccfa0600f191f19196aa",
         "lines": 450,
-        "mtime": "2026-04-07T15:34:49.982Z",
+        "mtime": "2026-04-09T14:39:15.004Z",
         "className": "registry",
         "methods": [
           "deriveActivePhase",
@@ -2286,7 +2288,7 @@
         "file": "src/help.js",
         "hash": "48119a7f1beeb0aaad357111d01dc518",
         "lines": 76,
-        "mtime": "2026-04-05T09:45:33.803Z",
+        "mtime": "2026-04-09T14:39:15.004Z",
         "className": "help",
         "methods": [
           "main"
@@ -2308,7 +2310,7 @@
         "file": "src/lib/agent.js",
         "hash": "f50c3b1da78b44e9de837d98eee173ef",
         "lines": 744,
-        "mtime": "2026-04-08T09:17:36.520Z",
+        "mtime": "2026-04-09T14:39:15.006Z",
         "className": "agent",
         "methods": [
           "callAgent",
@@ -2380,7 +2382,7 @@
         "file": "src/lib/agents-md.js",
         "hash": "ebcec14ba063408e6858a6e2b896aadb",
         "lines": 26,
-        "mtime": "2026-03-13T15:18:01.235Z",
+        "mtime": "2026-04-09T14:39:15.006Z",
         "className": "agents-md",
         "methods": [
           "loadSddTemplate"
@@ -2403,7 +2405,7 @@
         "file": "src/lib/cli.js",
         "hash": "598fe39cfb8675912e57bfb5140e16d7",
         "lines": 144,
-        "mtime": "2026-04-08T12:40:33.805Z",
+        "mtime": "2026-04-09T14:39:15.006Z",
         "className": "cli",
         "methods": [
           "repoRoot",
@@ -2451,7 +2453,7 @@
         "file": "src/lib/config.js",
         "hash": "033e53d47f624f7659b105303bb36695",
         "lines": 115,
-        "mtime": "2026-04-08T09:17:36.520Z",
+        "mtime": "2026-04-09T14:39:15.006Z",
         "className": "config",
         "methods": [
           "resolveConcurrency",
@@ -2501,7 +2503,7 @@
         "file": "src/lib/entrypoint.js",
         "hash": "7d6cb00fe4e88adde588ae75cf791fe1",
         "lines": 25,
-        "mtime": "2026-04-05T09:45:33.803Z",
+        "mtime": "2026-04-09T14:39:15.006Z",
         "className": "entrypoint",
         "methods": [
           "isDirectRun",
@@ -2528,7 +2530,7 @@
         "file": "src/lib/exit-codes.js",
         "hash": "00a85e1713fd36d9396a79ffd35d24e6",
         "lines": 9,
-        "mtime": "2026-04-05T09:45:33.803Z",
+        "mtime": "2026-04-09T14:39:15.006Z",
         "className": "exit-codes",
         "methods": [],
         "imports": [],
@@ -2553,7 +2555,7 @@
         "file": "src/lib/flow-envelope.js",
         "hash": "6ac0e4c42598bb2547946453d8a113cf",
         "lines": 62,
-        "mtime": "2026-04-05T09:45:33.803Z",
+        "mtime": "2026-04-09T14:39:15.006Z",
         "className": "flow-envelope",
         "methods": [
           "ok",
@@ -2576,9 +2578,9 @@
       },
       {
         "file": "src/lib/flow-state.js",
-        "hash": "a75ea4d47b27bd398b781a5514c6c680",
-        "lines": 677,
-        "mtime": "2026-04-07T15:34:49.983Z",
+        "hash": "dc53f6f3e7d4107a503c0f244bd853f1",
+        "lines": 726,
+        "mtime": "2026-04-10T02:21:59.579Z",
         "className": "flow-state",
         "methods": [
           "getSpecName",
@@ -2593,6 +2595,7 @@
           "loadFlowState",
           "clearFlowState",
           "mutateFlowState",
+          "accumulateAgentMetrics",
           "incrementMetric",
           "updateStepStatus",
           "setRequirements",
@@ -2633,6 +2636,7 @@
           "loadFlowState",
           "clearFlowState",
           "mutateFlowState",
+          "accumulateAgentMetrics",
           "incrementMetric",
           "updateStepStatus",
           "setRequirements",
@@ -2658,7 +2662,7 @@
         "file": "src/lib/formatter.js",
         "hash": "348d372e21f4c22d0f206c4a98ce5dd7",
         "lines": 22,
-        "mtime": "2026-04-08T09:17:36.520Z",
+        "mtime": "2026-04-09T14:39:15.006Z",
         "className": "formatter",
         "methods": [
           "pushSection"
@@ -2676,7 +2680,7 @@
         "file": "src/lib/git-helpers.js",
         "hash": "56236f738f9b70f6c9890a7baa774fff",
         "lines": 71,
-        "mtime": "2026-04-08T09:17:36.520Z",
+        "mtime": "2026-04-09T14:39:15.006Z",
         "className": "git-helpers",
         "methods": [
           "getWorktreeStatus",
@@ -2707,7 +2711,7 @@
         "file": "src/lib/guardrail.js",
         "hash": "a3c8852c56c6cc5d61d0d8ddd42f218b",
         "lines": 184,
-        "mtime": "2026-04-08T09:17:36.520Z",
+        "mtime": "2026-04-09T14:39:15.006Z",
         "className": "guardrail",
         "methods": [
           "filterByPhase",
@@ -2743,7 +2747,7 @@
         "file": "src/lib/i18n.js",
         "hash": "66be72f7a607bdc776226b5911b2b529",
         "lines": 276,
-        "mtime": "2026-03-20T03:07:17.809Z",
+        "mtime": "2026-04-09T14:39:15.007Z",
         "className": "i18n",
         "methods": [
           "deepMerge",
@@ -2785,7 +2789,7 @@
         "file": "src/lib/include.js",
         "hash": "cf3701097c97792c9390a57812bd0110",
         "lines": 114,
-        "mtime": "2026-04-05T09:45:33.803Z",
+        "mtime": "2026-04-09T14:39:15.007Z",
         "className": "include",
         "methods": [
           "resolveIncludes",
@@ -2808,7 +2812,7 @@
         "file": "src/lib/json-parse.js",
         "hash": "e92d31bdef2c8d8b6508229b747c6532",
         "lines": 287,
-        "mtime": "2026-04-05T09:45:33.803Z",
+        "mtime": "2026-04-09T14:39:15.007Z",
         "className": "json-parse",
         "methods": [
           "repairJson",
@@ -2830,7 +2834,7 @@
         "file": "src/lib/lint.js",
         "hash": "7d1cd2033a82b7e116c17ddfc41a05b0",
         "lines": 125,
-        "mtime": "2026-04-08T09:17:36.520Z",
+        "mtime": "2026-04-09T14:39:15.008Z",
         "className": "lint",
         "methods": [
           "validateLintGuardrails",
@@ -2856,9 +2860,9 @@
       },
       {
         "file": "src/lib/log.js",
-        "hash": "645bee43913c7f854e1e5d9b05cf2d92",
-        "lines": 419,
-        "mtime": "2026-04-08T13:21:27.451Z",
+        "hash": "15e4c72efa975410dbf212fd56218c69",
+        "lines": 432,
+        "mtime": "2026-04-10T02:22:06.306Z",
         "className": "log",
         "methods": [
           "generateRequestId",
@@ -2894,7 +2898,7 @@
         "file": "src/lib/multi-select.js",
         "hash": "f8d74daace389a4cd41deb3545ce03c0",
         "lines": 266,
-        "mtime": "2026-03-20T16:27:01.901Z",
+        "mtime": "2026-04-09T14:39:15.008Z",
         "className": "multi-select",
         "methods": [
           "buildTreeItems",
@@ -2916,7 +2920,7 @@
         "file": "src/lib/presets.js",
         "hash": "53634c5c53a8c908f58f5b934890a79c",
         "lines": 154,
-        "mtime": "2026-03-20T03:07:17.809Z",
+        "mtime": "2026-04-09T14:39:15.008Z",
         "className": "presets",
         "methods": [
           "resolveChain",
@@ -2954,7 +2958,7 @@
         "file": "src/lib/process.js",
         "hash": "55aa9ba27333e5bb080bfcf7e3ca1f44",
         "lines": 133,
-        "mtime": "2026-04-09T03:28:08.630Z",
+        "mtime": "2026-04-09T14:39:15.008Z",
         "className": "process",
         "methods": [
           "runCmd",
@@ -2985,7 +2989,7 @@
         "file": "src/lib/progress.js",
         "hash": "6f13b68a007f59055dbf7ef08ccf5caa",
         "lines": 218,
-        "mtime": "2026-03-13T15:18:01.236Z",
+        "mtime": "2026-04-09T14:39:15.008Z",
         "className": "progress",
         "methods": [
           "createLogger",
@@ -3006,7 +3010,7 @@
         "file": "src/lib/skills.js",
         "hash": "b0c956452f6a4eaa04549b3e92dc3f98",
         "lines": 194,
-        "mtime": "2026-04-09T03:25:40.412Z",
+        "mtime": "2026-04-09T14:39:15.008Z",
         "className": "skills",
         "methods": [
           "deploySkills",
@@ -3039,7 +3043,7 @@
         "file": "src/lib/types.js",
         "hash": "4ecdad1c52328af51843cd8045a4683e",
         "lines": 406,
-        "mtime": "2026-04-08T23:37:38.234Z",
+        "mtime": "2026-04-09T14:39:15.008Z",
         "className": "types",
         "methods": [
           "validateConfig",
@@ -3064,7 +3068,7 @@
         "file": "src/presets-cmd.js",
         "hash": "b960b9bf595e9acdabd0fc09639ec3bd",
         "lines": 84,
-        "mtime": "2026-04-05T09:45:33.804Z",
+        "mtime": "2026-04-09T14:39:15.009Z",
         "className": "presets-cmd",
         "methods": [
           "printTree"
@@ -3084,7 +3088,7 @@
         "file": "src/presets/base/data/package.js",
         "hash": "1200fa2a3fc5ff4cbdf4144572ea8a3c",
         "lines": 61,
-        "mtime": "2026-03-26T03:13:47.933Z",
+        "mtime": "2026-04-09T14:39:15.009Z",
         "className": "package",
         "methods": [
           "PackageEntry"
@@ -3108,7 +3112,7 @@
         "file": "src/presets/base/data/structure.js",
         "hash": "08f2509fafc96420636e631603d5a035",
         "lines": 110,
-        "mtime": "2026-04-05T09:45:33.805Z",
+        "mtime": "2026-04-09T14:39:15.009Z",
         "className": "structure",
         "methods": [
           "allItems",
@@ -3131,7 +3135,7 @@
         "file": "src/presets/base/tests/acceptance/fixtures/src/config.js",
         "hash": "569289ed2afa967167a1d3bb421fc88d",
         "lines": 56,
-        "mtime": "2026-03-26T03:13:47.934Z",
+        "mtime": "2026-04-09T14:39:15.010Z",
         "className": "config",
         "methods": [
           "loadConfig",
@@ -3161,7 +3165,7 @@
         "file": "src/presets/base/tests/acceptance/fixtures/src/http-client.js",
         "hash": "cf2e199e931686b890c56a235b99bd59",
         "lines": 89,
-        "mtime": "2026-03-26T03:13:47.934Z",
+        "mtime": "2026-04-09T14:39:15.010Z",
         "className": "http-client",
         "methods": [
           "HttpClient"
@@ -3184,7 +3188,7 @@
         "file": "src/presets/base/tests/acceptance/fixtures/src/index.js",
         "hash": "994993300bf63cd748746fee7be84457",
         "lines": 52,
-        "mtime": "2026-03-26T03:13:47.934Z",
+        "mtime": "2026-04-09T14:39:15.010Z",
         "className": "index",
         "methods": [
           "main",
@@ -3207,7 +3211,7 @@
         "file": "src/presets/base/tests/acceptance/fixtures/src/logger.js",
         "hash": "f78538b465784021bdb33616d7a8da31",
         "lines": 44,
-        "mtime": "2026-03-26T03:13:47.934Z",
+        "mtime": "2026-04-09T14:39:15.010Z",
         "className": "logger",
         "methods": [
           "createLogger",
@@ -3229,7 +3233,7 @@
         "file": "src/presets/base/tests/acceptance/test.js",
         "hash": "4c7c8235f24a3b7f70c50cdd6288b97c",
         "lines": 7,
-        "mtime": "2026-03-26T03:13:47.934Z",
+        "mtime": "2026-04-09T14:39:15.010Z",
         "className": "test",
         "methods": [],
         "imports": [
@@ -3244,7 +3248,7 @@
         "file": "src/presets/cakephp2/data/commands.js",
         "hash": "d9e2f894813272595ab4a380be7faf92",
         "lines": 130,
-        "mtime": "2026-03-26T03:13:47.934Z",
+        "mtime": "2026-04-09T14:39:15.010Z",
         "className": "commands",
         "methods": [
           "analyzeCommandDetails"
@@ -3268,7 +3272,7 @@
         "file": "src/presets/cakephp2/data/config.js",
         "hash": "6f0a5eee5f10707004c275f08fec400e",
         "lines": 830,
-        "mtime": "2026-03-26T03:13:47.934Z",
+        "mtime": "2026-04-09T14:39:15.010Z",
         "className": "config",
         "methods": [
           "ConfigEntry",
@@ -3317,7 +3321,7 @@
         "file": "src/presets/cakephp2/data/controllers.js",
         "hash": "1cc57e6ca5d57d2fbe7efff567c7b8ef",
         "lines": 177,
-        "mtime": "2026-03-26T03:13:47.934Z",
+        "mtime": "2026-04-09T14:39:15.011Z",
         "className": "controllers",
         "methods": [
           "analyzePermissionComponent",
@@ -3343,7 +3347,7 @@
         "file": "src/presets/cakephp2/data/docker.js",
         "hash": "12af567ea5ea9b4dbdcd8e2337d91d0c",
         "lines": 18,
-        "mtime": "2026-03-05T15:53:34.691Z",
+        "mtime": "2026-04-09T14:39:15.011Z",
         "className": "docker",
         "methods": [],
         "imports": [
@@ -3360,7 +3364,7 @@
         "file": "src/presets/cakephp2/data/email.js",
         "hash": "8a3a6814876b84cf18a6ab70660a8fca",
         "lines": 178,
-        "mtime": "2026-03-26T03:13:47.934Z",
+        "mtime": "2026-04-09T14:39:15.011Z",
         "className": "email",
         "methods": [
           "EmailEntry",
@@ -3386,7 +3390,7 @@
         "file": "src/presets/cakephp2/data/libs.js",
         "hash": "87933a995ac84fcd8845c8f18d59b9d6",
         "lines": 153,
-        "mtime": "2026-03-26T03:13:47.934Z",
+        "mtime": "2026-04-09T14:39:15.011Z",
         "className": "libs",
         "methods": [
           "LibEntry"
@@ -3409,7 +3413,7 @@
         "file": "src/presets/cakephp2/data/models.js",
         "hash": "b451d65a3cfbd6cdd4770b855db6079f",
         "lines": 538,
-        "mtime": "2026-04-05T09:45:33.805Z",
+        "mtime": "2026-04-09T14:39:15.011Z",
         "className": "models",
         "methods": [
           "analyzeModels",
@@ -3447,7 +3451,7 @@
         "file": "src/presets/cakephp2/data/tables.js",
         "hash": "f44f81e2ebf0b05dbfb4605f90aa3031",
         "lines": 123,
-        "mtime": "2026-03-26T03:13:47.934Z",
+        "mtime": "2026-04-09T14:39:15.011Z",
         "className": "tables",
         "methods": [
           "resolveDbName"
@@ -3467,7 +3471,7 @@
         "file": "src/presets/cakephp2/data/tests.js",
         "hash": "a5018ae74f15c8a66cb80ab3c6f43cf0",
         "lines": 84,
-        "mtime": "2026-03-26T03:13:47.935Z",
+        "mtime": "2026-04-09T14:39:15.011Z",
         "className": "tests",
         "methods": [
           "TestEntry",
@@ -3492,7 +3496,7 @@
         "file": "src/presets/cakephp2/data/views.js",
         "hash": "546d262f56786ff63a92b9bf5ab757a5",
         "lines": 326,
-        "mtime": "2026-03-26T03:13:47.935Z",
+        "mtime": "2026-04-09T14:39:15.011Z",
         "className": "views",
         "methods": [
           "ViewEntry",
@@ -3529,7 +3533,7 @@
         "file": "src/presets/cakephp2/tests/acceptance/test.js",
         "hash": "5511634911bd6310b2aa9b2ce4caa93e",
         "lines": 6,
-        "mtime": "2026-03-26T03:13:47.936Z",
+        "mtime": "2026-04-09T14:39:15.013Z",
         "className": "test",
         "methods": [],
         "imports": [
@@ -3544,7 +3548,7 @@
         "file": "src/presets/cakephp2/tests/unit/analyzers-assets-config.test.js",
         "hash": "150d529e8600dd97734b248396ff62d2",
         "lines": 275,
-        "mtime": "2026-03-26T03:13:47.936Z",
+        "mtime": "2026-04-09T14:39:15.013Z",
         "className": "analyzers-assets-config.test",
         "methods": [],
         "imports": [
@@ -3563,7 +3567,7 @@
         "file": "src/presets/cakephp2/tests/unit/analyzers-models-business.test.js",
         "hash": "33eae88cf2cb404324b1dd9a65e33d7e",
         "lines": 467,
-        "mtime": "2026-03-26T03:13:47.936Z",
+        "mtime": "2026-04-09T14:39:15.013Z",
         "className": "analyzers-models-business.test",
         "methods": [],
         "imports": [
@@ -3584,7 +3588,7 @@
         "file": "src/presets/cakephp2/tests/unit/analyzers-security.test.js",
         "hash": "640dc0bfbf3cb832ced07b96bbf02c7a",
         "lines": 137,
-        "mtime": "2026-03-26T03:13:47.936Z",
+        "mtime": "2026-04-09T14:39:15.013Z",
         "className": "analyzers-security.test",
         "methods": [],
         "imports": [
@@ -3602,7 +3606,7 @@
         "file": "src/presets/cakephp2/tests/unit/analyzers-views-commands.test.js",
         "hash": "730ea38f882aee0ee1e34036439a7e7f",
         "lines": 529,
-        "mtime": "2026-03-26T03:13:47.936Z",
+        "mtime": "2026-04-09T14:39:15.013Z",
         "className": "analyzers-views-commands.test",
         "methods": [],
         "imports": [
@@ -3623,7 +3627,7 @@
         "file": "src/presets/cakephp2/tests/unit/commands-match.test.js",
         "hash": "923c185ee8bd3480adcebe83c58e76dc",
         "lines": 50,
-        "mtime": "2026-03-26T03:13:47.936Z",
+        "mtime": "2026-04-09T14:39:15.013Z",
         "className": "commands-match.test",
         "methods": [],
         "imports": [
@@ -3640,7 +3644,7 @@
         "file": "src/presets/cli/data/commands.js",
         "hash": "87ee1c801c33efa2e58ef0d3f13e2928",
         "lines": 53,
-        "mtime": "2026-03-26T03:13:47.936Z",
+        "mtime": "2026-04-09T14:39:15.013Z",
         "className": "commands",
         "methods": [
           "cliItems"
@@ -3659,7 +3663,7 @@
         "file": "src/presets/cli/data/modules.js",
         "hash": "7d725e75d5031be445119323e4947c91",
         "lines": 65,
-        "mtime": "2026-04-05T09:45:33.806Z",
+        "mtime": "2026-04-09T14:39:15.013Z",
         "className": "modules",
         "methods": [
           "ModuleEntry"
@@ -3684,7 +3688,7 @@
         "file": "src/presets/cli/tests/acceptance/fixtures/src/cli.js",
         "hash": "32ab28459ccdf40c284588cce876b58e",
         "lines": 68,
-        "mtime": "2026-03-26T03:13:47.937Z",
+        "mtime": "2026-04-09T14:39:15.014Z",
         "className": "cli",
         "methods": [
           "run",
@@ -3714,7 +3718,7 @@
         "file": "src/presets/cli/tests/acceptance/fixtures/src/commands/format.js",
         "hash": "3dfaca1eef0d2779b105d362cdad00c9",
         "lines": 80,
-        "mtime": "2026-03-26T03:13:47.937Z",
+        "mtime": "2026-04-09T14:39:15.014Z",
         "className": "format",
         "methods": [
           "format",
@@ -3742,7 +3746,7 @@
         "file": "src/presets/cli/tests/acceptance/fixtures/src/commands/lint.js",
         "hash": "145d10341623c27338a1c653161553fd",
         "lines": 96,
-        "mtime": "2026-03-26T03:13:47.937Z",
+        "mtime": "2026-04-09T14:39:15.014Z",
         "className": "lint",
         "methods": [
           "lint",
@@ -3771,7 +3775,7 @@
         "file": "src/presets/cli/tests/acceptance/fixtures/src/commands/parse.js",
         "hash": "1fb6dc26cab932fa41942b920a3b50d2",
         "lines": 53,
-        "mtime": "2026-03-26T03:13:47.937Z",
+        "mtime": "2026-04-09T14:39:15.014Z",
         "className": "parse",
         "methods": [
           "parse",
@@ -3796,7 +3800,7 @@
         "file": "src/presets/cli/tests/acceptance/fixtures/src/commands/toc.js",
         "hash": "07763ea2701588b413e0bc48f2b23389",
         "lines": 83,
-        "mtime": "2026-03-26T03:13:47.937Z",
+        "mtime": "2026-04-09T14:39:15.014Z",
         "className": "toc",
         "methods": [
           "toc",
@@ -3822,7 +3826,7 @@
         "file": "src/presets/cli/tests/acceptance/fixtures/src/config.js",
         "hash": "9d1b90e3e3c920aa5a46762977b4c123",
         "lines": 29,
-        "mtime": "2026-03-26T03:13:47.937Z",
+        "mtime": "2026-04-09T14:39:15.014Z",
         "className": "config",
         "methods": [
           "loadConfig"
@@ -3850,7 +3854,7 @@
         "file": "src/presets/cli/tests/acceptance/fixtures/src/lib/parser.js",
         "hash": "44ccf6c9369b9823de45bd5a466efa4d",
         "lines": 102,
-        "mtime": "2026-03-26T03:13:47.937Z",
+        "mtime": "2026-04-09T14:39:15.014Z",
         "className": "parser",
         "methods": [
           "Parser"
@@ -3873,7 +3877,7 @@
         "file": "src/presets/cli/tests/acceptance/fixtures/src/lib/renderer.js",
         "hash": "037c24d0f6448ba56f343ccce381d841",
         "lines": 113,
-        "mtime": "2026-03-26T03:13:47.937Z",
+        "mtime": "2026-04-09T14:39:15.014Z",
         "className": "renderer",
         "methods": [
           "Renderer"
@@ -3890,7 +3894,7 @@
         "file": "src/presets/cli/tests/acceptance/fixtures/src/lib/rules/code-block.js",
         "hash": "2357927b59351afc0cef8198a91f31c6",
         "lines": 29,
-        "mtime": "2026-03-26T03:13:47.937Z",
+        "mtime": "2026-04-09T14:39:15.014Z",
         "className": "code-block",
         "methods": [
           "matchCodeBlock"
@@ -3911,7 +3915,7 @@
         "file": "src/presets/cli/tests/acceptance/fixtures/src/lib/rules/heading.js",
         "hash": "030df2b7cfcde432f885ff04ff86761c",
         "lines": 16,
-        "mtime": "2026-03-26T03:13:47.937Z",
+        "mtime": "2026-04-09T14:39:15.014Z",
         "className": "heading",
         "methods": [
           "matchHeading"
@@ -3932,7 +3936,7 @@
         "file": "src/presets/cli/tests/acceptance/fixtures/src/lib/rules/link.js",
         "hash": "6968387a0366d4ae64c601cd40704806",
         "lines": 22,
-        "mtime": "2026-03-26T03:13:47.937Z",
+        "mtime": "2026-04-09T14:39:15.014Z",
         "className": "link",
         "methods": [
           "matchLink"
@@ -3953,7 +3957,7 @@
         "file": "src/presets/cli/tests/acceptance/fixtures/src/lib/rules/list.js",
         "hash": "6715d30d2bb8cb58463a28844f94f203",
         "lines": 32,
-        "mtime": "2026-03-26T03:13:47.937Z",
+        "mtime": "2026-04-09T14:39:15.014Z",
         "className": "list",
         "methods": [
           "matchList"
@@ -3974,7 +3978,7 @@
         "file": "src/presets/cli/tests/acceptance/fixtures/src/lib/tokenizer.js",
         "hash": "a04e7a69936b04131982cbad58fd14a1",
         "lines": 114,
-        "mtime": "2026-03-26T03:13:47.937Z",
+        "mtime": "2026-04-09T14:39:15.015Z",
         "className": "tokenizer",
         "methods": [
           "Tokenizer"
@@ -3995,7 +3999,7 @@
         "file": "src/presets/cli/tests/acceptance/test.js",
         "hash": "eb0cbf12f5910ba09c682000536a21fa",
         "lines": 7,
-        "mtime": "2026-03-26T03:13:47.937Z",
+        "mtime": "2026-04-09T14:39:15.015Z",
         "className": "test",
         "methods": [],
         "imports": [
@@ -4010,7 +4014,7 @@
         "file": "src/presets/database/data/schema.js",
         "hash": "5287e8750b6d874dcd0c761098fbc3fa",
         "lines": 39,
-        "mtime": "2026-03-26T03:13:47.937Z",
+        "mtime": "2026-04-09T14:39:15.015Z",
         "className": "schema",
         "methods": [],
         "imports": [
@@ -4027,7 +4031,7 @@
         "file": "src/presets/drizzle/data/schema.js",
         "hash": "6f946d4091ca94c86056a3ab511486c6",
         "lines": 232,
-        "mtime": "2026-03-26T03:13:47.937Z",
+        "mtime": "2026-04-09T14:39:15.015Z",
         "className": "schema",
         "methods": [
           "DrizzleSchemaEntry",
@@ -4057,7 +4061,7 @@
         "file": "src/presets/drizzle/tests/unit/analyzers.test.js",
         "hash": "e7274551756c1ec8a1048532a6e958f4",
         "lines": 223,
-        "mtime": "2026-03-26T03:13:47.937Z",
+        "mtime": "2026-04-09T14:39:15.016Z",
         "className": "analyzers.test",
         "methods": [],
         "imports": [
@@ -4094,7 +4098,7 @@
         "file": "src/presets/edge/data/runtime.js",
         "hash": "1413afc9b41d7afed82631fb33ad1b68",
         "lines": 107,
-        "mtime": "2026-03-26T03:13:47.937Z",
+        "mtime": "2026-04-09T14:39:15.016Z",
         "className": "runtime",
         "methods": [
           "EdgeRuntimeEntry"
@@ -4119,7 +4123,7 @@
         "file": "src/presets/github-actions/data/pipelines.js",
         "hash": "efc31aa6776ec117982cd944ca1a1d04",
         "lines": 362,
-        "mtime": "2026-04-05T09:45:33.807Z",
+        "mtime": "2026-04-09T14:39:15.016Z",
         "className": "pipelines",
         "methods": [
           "parseWorkflow",
@@ -4148,7 +4152,7 @@
         "file": "src/presets/graphql/data/schema.js",
         "hash": "d6db0255b86d610e46d68f85ba996a17",
         "lines": 199,
-        "mtime": "2026-03-26T03:13:47.938Z",
+        "mtime": "2026-04-09T14:39:15.016Z",
         "className": "schema",
         "methods": [
           "parseSchemaContent",
@@ -4176,7 +4180,7 @@
         "file": "src/presets/graphql/tests/unit/analyzers.test.js",
         "hash": "56d31d77418b6367d4f7e7c321911ba7",
         "lines": 274,
-        "mtime": "2026-03-26T03:13:47.938Z",
+        "mtime": "2026-04-09T14:39:15.017Z",
         "className": "analyzers.test",
         "methods": [],
         "imports": [
@@ -4194,7 +4198,7 @@
         "file": "src/presets/hono/data/middleware.js",
         "hash": "e9ce29204f895fa317f6d697ebbee9bd",
         "lines": 138,
-        "mtime": "2026-03-26T03:13:47.938Z",
+        "mtime": "2026-04-09T14:39:15.017Z",
         "className": "middleware",
         "methods": [
           "MiddlewareEntry",
@@ -4219,7 +4223,7 @@
         "file": "src/presets/hono/tests/unit/analyzers.test.js",
         "hash": "5da2db18c1cc0e025166db95049ee686",
         "lines": 146,
-        "mtime": "2026-03-26T03:13:47.938Z",
+        "mtime": "2026-04-09T14:39:15.017Z",
         "className": "analyzers.test",
         "methods": [],
         "imports": [
@@ -4250,7 +4254,7 @@
         "file": "src/presets/js-webapp/tests/acceptance/fixtures/src/config.js",
         "hash": "569289ed2afa967167a1d3bb421fc88d",
         "lines": 56,
-        "mtime": "2026-03-26T03:13:47.938Z",
+        "mtime": "2026-04-09T14:39:15.018Z",
         "className": "config",
         "methods": [
           "loadConfig",
@@ -4280,7 +4284,7 @@
         "file": "src/presets/js-webapp/tests/acceptance/fixtures/src/http-client.js",
         "hash": "cf2e199e931686b890c56a235b99bd59",
         "lines": 89,
-        "mtime": "2026-03-26T03:13:47.938Z",
+        "mtime": "2026-04-09T14:39:15.018Z",
         "className": "http-client",
         "methods": [
           "HttpClient"
@@ -4303,7 +4307,7 @@
         "file": "src/presets/js-webapp/tests/acceptance/fixtures/src/index.js",
         "hash": "994993300bf63cd748746fee7be84457",
         "lines": 52,
-        "mtime": "2026-03-26T03:13:47.938Z",
+        "mtime": "2026-04-09T14:39:15.018Z",
         "className": "index",
         "methods": [
           "main",
@@ -4326,7 +4330,7 @@
         "file": "src/presets/js-webapp/tests/acceptance/fixtures/src/logger.js",
         "hash": "f78538b465784021bdb33616d7a8da31",
         "lines": 44,
-        "mtime": "2026-03-26T03:13:47.938Z",
+        "mtime": "2026-04-09T14:39:15.018Z",
         "className": "logger",
         "methods": [
           "createLogger",
@@ -4348,7 +4352,7 @@
         "file": "src/presets/js-webapp/tests/acceptance/test.js",
         "hash": "53e30a4177ff34a03be9697720a6bf1a",
         "lines": 6,
-        "mtime": "2026-03-26T03:13:47.938Z",
+        "mtime": "2026-04-09T14:39:15.018Z",
         "className": "test",
         "methods": [],
         "imports": [
@@ -4363,7 +4367,7 @@
         "file": "src/presets/laravel/data/commands.js",
         "hash": "2348251274aea565cec53cb8f63f42dd",
         "lines": 22,
-        "mtime": "2026-03-26T03:13:47.938Z",
+        "mtime": "2026-04-09T14:39:15.018Z",
         "className": "commands",
         "methods": [],
         "imports": [
@@ -4381,7 +4385,7 @@
         "file": "src/presets/laravel/data/config.js",
         "hash": "b13e6355fc123ec9113ef173d61ebbbd",
         "lines": 336,
-        "mtime": "2026-03-26T03:13:47.938Z",
+        "mtime": "2026-04-09T14:39:15.018Z",
         "className": "config",
         "methods": [
           "ConfigEntry",
@@ -4419,7 +4423,7 @@
         "file": "src/presets/laravel/data/controllers.js",
         "hash": "552c46196274503f963f51fac41e5b25",
         "lines": 177,
-        "mtime": "2026-04-05T09:45:33.808Z",
+        "mtime": "2026-04-09T14:39:15.018Z",
         "className": "controllers",
         "methods": [
           "LaravelControllerEntry",
@@ -4446,7 +4450,7 @@
         "file": "src/presets/laravel/data/models.js",
         "hash": "24787216db282f7e8d4a1ae02d162c70",
         "lines": 268,
-        "mtime": "2026-04-05T09:45:33.808Z",
+        "mtime": "2026-04-09T14:39:15.018Z",
         "className": "models",
         "methods": [
           "LaravelModelEntry",
@@ -4476,7 +4480,7 @@
         "file": "src/presets/laravel/data/routes.js",
         "hash": "bc5fce7121b2304d9cf133746cc0ba17",
         "lines": 270,
-        "mtime": "2026-03-26T03:13:47.939Z",
+        "mtime": "2026-04-09T14:39:15.018Z",
         "className": "routes",
         "methods": [
           "LaravelRouteEntry",
@@ -4510,7 +4514,7 @@
         "file": "src/presets/laravel/data/tables.js",
         "hash": "b937a366376707ef22e798aee513e501",
         "lines": 306,
-        "mtime": "2026-03-26T03:13:47.939Z",
+        "mtime": "2026-04-09T14:39:15.018Z",
         "className": "tables",
         "methods": [
           "MigrationEntry",
@@ -4538,7 +4542,7 @@
         "file": "src/presets/laravel/tests/acceptance/test.js",
         "hash": "21b7f788a796e089ba88cabdfb765132",
         "lines": 6,
-        "mtime": "2026-03-26T03:13:47.940Z",
+        "mtime": "2026-04-09T14:39:15.022Z",
         "className": "test",
         "methods": [],
         "imports": [
@@ -4553,7 +4557,7 @@
         "file": "src/presets/laravel/tests/e2e/integration.test.js",
         "hash": "bde167890ef6595a69cff7c3f94114fc",
         "lines": 120,
-        "mtime": "2026-04-08T12:40:33.805Z",
+        "mtime": "2026-04-09T14:39:15.022Z",
         "className": "integration.test",
         "methods": [],
         "imports": [
@@ -4572,7 +4576,7 @@
         "file": "src/presets/laravel/tests/e2e/scan.test.js",
         "hash": "424a35f6032c38731473ab4a88261d1d",
         "lines": 36,
-        "mtime": "2026-03-22T15:41:29.264Z",
+        "mtime": "2026-04-09T14:39:15.022Z",
         "className": "scan.test",
         "methods": [],
         "imports": [
@@ -4591,7 +4595,7 @@
         "file": "src/presets/laravel/tests/unit/analyzers.test.js",
         "hash": "c5d69686ba10b75a29c32fd957bc6578",
         "lines": 291,
-        "mtime": "2026-03-26T03:13:47.940Z",
+        "mtime": "2026-04-09T14:39:15.022Z",
         "className": "analyzers.test",
         "methods": [],
         "imports": [
@@ -4613,7 +4617,7 @@
         "file": "src/presets/laravel/tests/unit/commands-match.test.js",
         "hash": "0ece17dcf923c9e829e09fa669237e8e",
         "lines": 50,
-        "mtime": "2026-03-26T03:13:47.940Z",
+        "mtime": "2026-04-09T14:39:15.022Z",
         "className": "commands-match.test",
         "methods": [],
         "imports": [
@@ -4630,7 +4634,7 @@
         "file": "src/presets/laravel/tests/unit/scan-parser-bugs.test.js",
         "hash": "67a23f577ee79a361c8c8f9c17fd94d2",
         "lines": 191,
-        "mtime": "2026-03-26T03:13:47.940Z",
+        "mtime": "2026-04-09T14:39:15.023Z",
         "className": "scan-parser-bugs.test",
         "methods": [],
         "imports": [
@@ -4651,7 +4655,7 @@
         "file": "src/presets/lib/composer-utils.js",
         "hash": "00309987ad54ebf5985f87d2395c0f85",
         "lines": 62,
-        "mtime": "2026-03-07T12:21:11.955Z",
+        "mtime": "2026-04-09T14:39:15.023Z",
         "className": "composer-utils",
         "methods": [
           "parseComposer",
@@ -4673,7 +4677,7 @@
         "file": "src/presets/library/tests/acceptance/fixtures/src/index.js",
         "hash": "00fcb14b25f82a75f8eaed29420569bb",
         "lines": 28,
-        "mtime": "2026-03-26T03:13:47.940Z",
+        "mtime": "2026-04-09T14:39:15.023Z",
         "className": "index",
         "methods": [
           "parse",
@@ -4695,7 +4699,7 @@
         "file": "src/presets/library/tests/acceptance/fixtures/src/parser.js",
         "hash": "c4d964527792897b4f1cc03609c44e44",
         "lines": 112,
-        "mtime": "2026-03-26T03:13:47.940Z",
+        "mtime": "2026-04-09T14:39:15.024Z",
         "className": "parser",
         "methods": [
           "Parser"
@@ -4720,7 +4724,7 @@
         "file": "src/presets/library/tests/acceptance/fixtures/src/renderer.js",
         "hash": "e619f1c072cb8c83208c74377637bc3d",
         "lines": 91,
-        "mtime": "2026-03-26T03:13:47.940Z",
+        "mtime": "2026-04-09T14:39:15.024Z",
         "className": "renderer",
         "methods": [
           "Renderer"
@@ -4739,7 +4743,7 @@
         "file": "src/presets/library/tests/acceptance/fixtures/src/rules/code-block.js",
         "hash": "6467d0dd746613b7a406ba39825f2cc8",
         "lines": 27,
-        "mtime": "2026-03-26T03:13:47.940Z",
+        "mtime": "2026-04-09T14:39:15.024Z",
         "className": "code-block",
         "methods": [
           "CodeBlockRule"
@@ -4760,7 +4764,7 @@
         "file": "src/presets/library/tests/acceptance/fixtures/src/rules/emphasis.js",
         "hash": "08f4964d13e3dd71003bf2732b21b89e",
         "lines": 52,
-        "mtime": "2026-03-26T03:13:47.940Z",
+        "mtime": "2026-04-09T14:39:15.024Z",
         "className": "emphasis",
         "methods": [
           "EmphasisRule"
@@ -4779,7 +4783,7 @@
         "file": "src/presets/library/tests/acceptance/fixtures/src/rules/heading.js",
         "hash": "815a9e56767e6dfd29b4bc926d6e1fdc",
         "lines": 27,
-        "mtime": "2026-03-26T03:13:47.940Z",
+        "mtime": "2026-04-09T14:39:15.024Z",
         "className": "heading",
         "methods": [
           "HeadingRule"
@@ -4800,7 +4804,7 @@
         "file": "src/presets/library/tests/acceptance/fixtures/src/rules/link.js",
         "hash": "e946b4d0056da623bf9dca2ef7fcb876",
         "lines": 37,
-        "mtime": "2026-03-26T03:13:47.940Z",
+        "mtime": "2026-04-09T14:39:15.024Z",
         "className": "link",
         "methods": [
           "LinkRule"
@@ -4821,7 +4825,7 @@
         "file": "src/presets/library/tests/acceptance/fixtures/src/rules/list.js",
         "hash": "2d9663261cb0be1c9d5c922550aaac0d",
         "lines": 30,
-        "mtime": "2026-03-26T03:13:47.940Z",
+        "mtime": "2026-04-09T14:39:15.024Z",
         "className": "list",
         "methods": [
           "ListRule"
@@ -4842,7 +4846,7 @@
         "file": "src/presets/library/tests/acceptance/fixtures/src/rules/table.js",
         "hash": "4d7cee76d4df17152ed39bc25c8e2608",
         "lines": 48,
-        "mtime": "2026-03-26T03:13:47.940Z",
+        "mtime": "2026-04-09T14:39:15.024Z",
         "className": "table",
         "methods": [
           "TableRule"
@@ -4861,7 +4865,7 @@
         "file": "src/presets/library/tests/acceptance/fixtures/src/tokenizer.js",
         "hash": "ad42ffc5335cd1aa2348142343ab0b0e",
         "lines": 118,
-        "mtime": "2026-03-26T03:13:47.940Z",
+        "mtime": "2026-04-09T14:39:15.024Z",
         "className": "tokenizer",
         "methods": [
           "Tokenizer"
@@ -4882,7 +4886,7 @@
         "file": "src/presets/library/tests/acceptance/fixtures/src/utils/escape.js",
         "hash": "fdff48f0fee5dd38acee183bdbc45a03",
         "lines": 20,
-        "mtime": "2026-03-26T03:13:47.941Z",
+        "mtime": "2026-04-09T14:39:15.024Z",
         "className": "escape",
         "methods": [
           "escapeHtml"
@@ -4901,7 +4905,7 @@
         "file": "src/presets/library/tests/acceptance/fixtures/src/utils/normalize.js",
         "hash": "b1c09d8b99b364ca2cb3d189d6b513cb",
         "lines": 11,
-        "mtime": "2026-03-26T03:13:47.941Z",
+        "mtime": "2026-04-09T14:39:15.024Z",
         "className": "normalize",
         "methods": [
           "normalizeWhitespace"
@@ -4918,7 +4922,7 @@
         "file": "src/presets/library/tests/acceptance/test.js",
         "hash": "64a0ddd2b362b917d654a406c75862b5",
         "lines": 6,
-        "mtime": "2026-03-26T03:13:47.941Z",
+        "mtime": "2026-04-09T14:39:15.024Z",
         "className": "test",
         "methods": [],
         "imports": [
@@ -4933,7 +4937,7 @@
         "file": "src/presets/monorepo/data/monorepo.js",
         "hash": "d7b83f107af00f27c54db9497fd7fc35",
         "lines": 80,
-        "mtime": "2026-04-05T09:45:33.809Z",
+        "mtime": "2026-04-09T14:39:15.024Z",
         "className": "monorepo",
         "methods": [],
         "imports": [
@@ -4953,7 +4957,7 @@
         "file": "src/presets/nextjs/data/components.js",
         "hash": "77db394f6f70eab924170c6c9e25ff26",
         "lines": 140,
-        "mtime": "2026-03-26T03:13:47.941Z",
+        "mtime": "2026-04-09T14:39:15.024Z",
         "className": "components",
         "methods": [
           "ComponentEntry",
@@ -4982,7 +4986,7 @@
         "file": "src/presets/nextjs/data/routes.js",
         "hash": "9772104c7ec36447050e3c0b79837894",
         "lines": 326,
-        "mtime": "2026-03-26T03:13:47.941Z",
+        "mtime": "2026-04-09T14:39:15.024Z",
         "className": "routes",
         "methods": [
           "NextjsRouteEntry",
@@ -5015,7 +5019,7 @@
         "file": "src/presets/nextjs/tests/unit/analyzers.test.js",
         "hash": "add5feb84f3c6e827e951a22146eb67e",
         "lines": 262,
-        "mtime": "2026-03-26T03:13:47.941Z",
+        "mtime": "2026-04-09T14:39:15.025Z",
         "className": "analyzers.test",
         "methods": [
           "GET",
@@ -5048,7 +5052,7 @@
         "file": "src/presets/node-cli/tests/acceptance/fixtures/src/cli.js",
         "hash": "32ab28459ccdf40c284588cce876b58e",
         "lines": 68,
-        "mtime": "2026-03-26T03:13:47.941Z",
+        "mtime": "2026-04-09T14:39:15.026Z",
         "className": "cli",
         "methods": [
           "run",
@@ -5078,7 +5082,7 @@
         "file": "src/presets/node-cli/tests/acceptance/fixtures/src/commands/format.js",
         "hash": "3dfaca1eef0d2779b105d362cdad00c9",
         "lines": 80,
-        "mtime": "2026-03-26T03:13:47.941Z",
+        "mtime": "2026-04-09T14:39:15.026Z",
         "className": "format",
         "methods": [
           "format",
@@ -5106,7 +5110,7 @@
         "file": "src/presets/node-cli/tests/acceptance/fixtures/src/commands/lint.js",
         "hash": "145d10341623c27338a1c653161553fd",
         "lines": 96,
-        "mtime": "2026-03-26T03:13:47.941Z",
+        "mtime": "2026-04-09T14:39:15.026Z",
         "className": "lint",
         "methods": [
           "lint",
@@ -5135,7 +5139,7 @@
         "file": "src/presets/node-cli/tests/acceptance/fixtures/src/commands/parse.js",
         "hash": "1fb6dc26cab932fa41942b920a3b50d2",
         "lines": 53,
-        "mtime": "2026-03-26T03:13:47.941Z",
+        "mtime": "2026-04-09T14:39:15.026Z",
         "className": "parse",
         "methods": [
           "parse",
@@ -5160,7 +5164,7 @@
         "file": "src/presets/node-cli/tests/acceptance/fixtures/src/commands/toc.js",
         "hash": "07763ea2701588b413e0bc48f2b23389",
         "lines": 83,
-        "mtime": "2026-03-26T03:13:47.941Z",
+        "mtime": "2026-04-09T14:39:15.026Z",
         "className": "toc",
         "methods": [
           "toc",
@@ -5186,7 +5190,7 @@
         "file": "src/presets/node-cli/tests/acceptance/fixtures/src/config.js",
         "hash": "9d1b90e3e3c920aa5a46762977b4c123",
         "lines": 29,
-        "mtime": "2026-03-26T03:13:47.941Z",
+        "mtime": "2026-04-09T14:39:15.026Z",
         "className": "config",
         "methods": [
           "loadConfig"
@@ -5214,7 +5218,7 @@
         "file": "src/presets/node-cli/tests/acceptance/fixtures/src/lib/parser.js",
         "hash": "44ccf6c9369b9823de45bd5a466efa4d",
         "lines": 102,
-        "mtime": "2026-03-26T03:13:47.941Z",
+        "mtime": "2026-04-09T14:39:15.026Z",
         "className": "parser",
         "methods": [
           "Parser"
@@ -5237,7 +5241,7 @@
         "file": "src/presets/node-cli/tests/acceptance/fixtures/src/lib/renderer.js",
         "hash": "037c24d0f6448ba56f343ccce381d841",
         "lines": 113,
-        "mtime": "2026-03-26T03:13:47.941Z",
+        "mtime": "2026-04-09T14:39:15.026Z",
         "className": "renderer",
         "methods": [
           "Renderer"
@@ -5254,7 +5258,7 @@
         "file": "src/presets/node-cli/tests/acceptance/fixtures/src/lib/rules/code-block.js",
         "hash": "2357927b59351afc0cef8198a91f31c6",
         "lines": 29,
-        "mtime": "2026-03-26T03:13:47.942Z",
+        "mtime": "2026-04-09T14:39:15.026Z",
         "className": "code-block",
         "methods": [
           "matchCodeBlock"
@@ -5275,7 +5279,7 @@
         "file": "src/presets/node-cli/tests/acceptance/fixtures/src/lib/rules/heading.js",
         "hash": "030df2b7cfcde432f885ff04ff86761c",
         "lines": 16,
-        "mtime": "2026-03-26T03:13:47.942Z",
+        "mtime": "2026-04-09T14:39:15.026Z",
         "className": "heading",
         "methods": [
           "matchHeading"
@@ -5296,7 +5300,7 @@
         "file": "src/presets/node-cli/tests/acceptance/fixtures/src/lib/rules/link.js",
         "hash": "6968387a0366d4ae64c601cd40704806",
         "lines": 22,
-        "mtime": "2026-03-26T03:13:47.942Z",
+        "mtime": "2026-04-09T14:39:15.026Z",
         "className": "link",
         "methods": [
           "matchLink"
@@ -5317,7 +5321,7 @@
         "file": "src/presets/node-cli/tests/acceptance/fixtures/src/lib/rules/list.js",
         "hash": "6715d30d2bb8cb58463a28844f94f203",
         "lines": 32,
-        "mtime": "2026-03-26T03:13:47.942Z",
+        "mtime": "2026-04-09T14:39:15.026Z",
         "className": "list",
         "methods": [
           "matchList"
@@ -5338,7 +5342,7 @@
         "file": "src/presets/node-cli/tests/acceptance/fixtures/src/lib/tokenizer.js",
         "hash": "a04e7a69936b04131982cbad58fd14a1",
         "lines": 114,
-        "mtime": "2026-03-26T03:13:47.942Z",
+        "mtime": "2026-04-09T14:39:15.026Z",
         "className": "tokenizer",
         "methods": [
           "Tokenizer"
@@ -5359,7 +5363,7 @@
         "file": "src/presets/node-cli/tests/acceptance/test.js",
         "hash": "357d56874fddffd7306b3c1de7d81784",
         "lines": 6,
-        "mtime": "2026-03-26T03:13:47.942Z",
+        "mtime": "2026-04-09T14:39:15.026Z",
         "className": "test",
         "methods": [],
         "imports": [
@@ -5374,7 +5378,7 @@
         "file": "src/presets/php-webapp/tests/acceptance/test.js",
         "hash": "fce3498d16f6c7d44c8bef51d6d3ea09",
         "lines": 6,
-        "mtime": "2026-03-26T03:13:47.942Z",
+        "mtime": "2026-04-09T14:39:15.027Z",
         "className": "test",
         "methods": [],
         "imports": [
@@ -5389,7 +5393,7 @@
         "file": "src/presets/postgres/data/database.js",
         "hash": "40654dc56f02f0e3be72ffb8b03539e8",
         "lines": 20,
-        "mtime": "2026-03-20T03:07:17.818Z",
+        "mtime": "2026-04-09T14:39:15.027Z",
         "className": "database",
         "methods": [],
         "imports": [
@@ -5406,7 +5410,7 @@
         "file": "src/presets/r2/data/storage.js",
         "hash": "92593a17f5e6e393cc3ce914a01bd44a",
         "lines": 79,
-        "mtime": "2026-03-26T03:13:47.942Z",
+        "mtime": "2026-04-09T14:39:15.027Z",
         "className": "storage",
         "methods": [
           "StorageEntry"
@@ -5431,7 +5435,7 @@
         "file": "src/presets/storage/data/buckets.js",
         "hash": "1da17691712f251f3ca8e4829599d5e1",
         "lines": 24,
-        "mtime": "2026-03-26T03:13:47.942Z",
+        "mtime": "2026-04-09T14:39:15.028Z",
         "className": "buckets",
         "methods": [],
         "imports": [
@@ -5448,7 +5452,7 @@
         "file": "src/presets/symfony/data/commands.js",
         "hash": "48994b6472a58df9043a4fa54a0ac1be",
         "lines": 42,
-        "mtime": "2026-03-26T03:13:47.942Z",
+        "mtime": "2026-04-09T14:39:15.028Z",
         "className": "commands",
         "methods": [],
         "imports": [
@@ -5467,7 +5471,7 @@
         "file": "src/presets/symfony/data/config.js",
         "hash": "bad18ca08c4a5757ce871b7ddf122736",
         "lines": 273,
-        "mtime": "2026-03-26T03:13:47.942Z",
+        "mtime": "2026-04-09T14:39:15.028Z",
         "className": "config",
         "methods": [
           "SymfonyConfigEntry",
@@ -5503,7 +5507,7 @@
         "file": "src/presets/symfony/data/controllers.js",
         "hash": "8b8480be119d7cb2ce141c240d026dcd",
         "lines": 215,
-        "mtime": "2026-04-05T09:45:33.810Z",
+        "mtime": "2026-04-09T14:39:15.028Z",
         "className": "controllers",
         "methods": [
           "analyzeControllers",
@@ -5529,7 +5533,7 @@
         "file": "src/presets/symfony/data/entities.js",
         "hash": "8da644bf2abadbcd05b3ce704e309654",
         "lines": 233,
-        "mtime": "2026-04-05T09:45:33.810Z",
+        "mtime": "2026-04-09T14:39:15.028Z",
         "className": "entities",
         "methods": [
           "EntityEntry",
@@ -5559,7 +5563,7 @@
         "file": "src/presets/symfony/data/routes.js",
         "hash": "56dc8da83bc607931cf75f3feffc1c80",
         "lines": 333,
-        "mtime": "2026-03-26T03:13:47.943Z",
+        "mtime": "2026-04-09T14:39:15.028Z",
         "className": "routes",
         "methods": [
           "SymfonyRouteEntry",
@@ -5590,7 +5594,7 @@
         "file": "src/presets/symfony/data/tables.js",
         "hash": "ed2654c9eed1b006fb26d4a6112cb152",
         "lines": 234,
-        "mtime": "2026-03-26T03:13:47.943Z",
+        "mtime": "2026-04-09T14:39:15.028Z",
         "className": "tables",
         "methods": [
           "MigrationEntry",
@@ -5619,7 +5623,7 @@
         "file": "src/presets/symfony/tests/acceptance/test.js",
         "hash": "2c17a505fa6998ba04615b5fbaceb51f",
         "lines": 6,
-        "mtime": "2026-03-26T03:13:47.944Z",
+        "mtime": "2026-04-09T14:39:15.030Z",
         "className": "test",
         "methods": [],
         "imports": [
@@ -5634,7 +5638,7 @@
         "file": "src/presets/symfony/tests/e2e/integration.test.js",
         "hash": "fb3644ebdcd7f70395b84582952e257d",
         "lines": 127,
-        "mtime": "2026-04-08T12:40:33.805Z",
+        "mtime": "2026-04-09T14:39:15.030Z",
         "className": "integration.test",
         "methods": [],
         "imports": [
@@ -5653,7 +5657,7 @@
         "file": "src/presets/symfony/tests/e2e/scan.test.js",
         "hash": "af11561b5f49a99dbf7e7b580a5567f2",
         "lines": 37,
-        "mtime": "2026-03-22T15:41:29.264Z",
+        "mtime": "2026-04-09T14:39:15.030Z",
         "className": "scan.test",
         "methods": [],
         "imports": [
@@ -5672,7 +5676,7 @@
         "file": "src/presets/symfony/tests/unit/analyzers.test.js",
         "hash": "8fbf21a209db1b17463e654cab8b7966",
         "lines": 441,
-        "mtime": "2026-03-26T03:13:47.944Z",
+        "mtime": "2026-04-09T14:39:15.030Z",
         "className": "analyzers.test",
         "methods": [],
         "imports": [
@@ -5694,7 +5698,7 @@
         "file": "src/presets/symfony/tests/unit/commands-match.test.js",
         "hash": "d59a89a4494a40a9f778ba73cca5ca40",
         "lines": 43,
-        "mtime": "2026-03-26T03:13:47.944Z",
+        "mtime": "2026-04-09T14:39:15.030Z",
         "className": "commands-match.test",
         "methods": [],
         "imports": [
@@ -5711,7 +5715,7 @@
         "file": "src/presets/symfony/tests/unit/regex-backtracking.test.js",
         "hash": "fb336fee698c7b03a16b164d4bdba956",
         "lines": 141,
-        "mtime": "2026-03-26T03:13:47.944Z",
+        "mtime": "2026-04-09T14:39:15.030Z",
         "className": "regex-backtracking.test",
         "methods": [],
         "imports": [
@@ -5730,7 +5734,7 @@
         "file": "src/presets/webapp/data/commands.js",
         "hash": "a730fccb2849324e1f0cb346b06d1880",
         "lines": 48,
-        "mtime": "2026-03-26T03:13:47.944Z",
+        "mtime": "2026-04-09T14:39:15.030Z",
         "className": "commands",
         "methods": [
           "CommandEntry"
@@ -5752,7 +5756,7 @@
         "file": "src/presets/webapp/data/controllers.js",
         "hash": "4d9436d0f9356a40540b1299511a8071",
         "lines": 65,
-        "mtime": "2026-03-26T03:13:47.944Z",
+        "mtime": "2026-04-09T14:39:15.030Z",
         "className": "controllers",
         "methods": [
           "ControllerEntry"
@@ -5774,7 +5778,7 @@
         "file": "src/presets/webapp/data/models.js",
         "hash": "4d2b0a450d2527bf5b4ab98f5c57d86d",
         "lines": 78,
-        "mtime": "2026-03-26T03:13:47.944Z",
+        "mtime": "2026-04-09T14:39:15.030Z",
         "className": "models",
         "methods": [
           "ModelEntry"
@@ -5796,7 +5800,7 @@
         "file": "src/presets/webapp/data/routes.js",
         "hash": "ba1c3acdf60229fd0a0b4f2ec5610070",
         "lines": 64,
-        "mtime": "2026-03-26T03:13:47.944Z",
+        "mtime": "2026-04-09T14:39:15.030Z",
         "className": "routes",
         "methods": [
           "RouteEntry"
@@ -5818,7 +5822,7 @@
         "file": "src/presets/webapp/data/tables.js",
         "hash": "8a9e047d5d34e3fdb44f7bd4c5b5fbf8",
         "lines": 52,
-        "mtime": "2026-03-26T03:13:47.944Z",
+        "mtime": "2026-04-09T14:39:15.030Z",
         "className": "tables",
         "methods": [],
         "imports": [
@@ -5835,7 +5839,7 @@
         "file": "src/presets/webapp/data/webapp-data-source.js",
         "hash": "023e9b62045e539b027b20ab27c2cfc7",
         "lines": 12,
-        "mtime": "2026-03-26T03:13:47.944Z",
+        "mtime": "2026-04-09T14:39:15.030Z",
         "className": "webapp-data-source",
         "methods": [],
         "imports": [
@@ -5860,7 +5864,7 @@
         "file": "src/presets/webapp/tests/acceptance/test.js",
         "hash": "b0619930771023b081657d3e240856e5",
         "lines": 7,
-        "mtime": "2026-03-26T03:13:47.945Z",
+        "mtime": "2026-04-09T14:39:15.031Z",
         "className": "test",
         "methods": [],
         "imports": [
@@ -5875,7 +5879,7 @@
         "file": "src/presets/workers/data/bindings.js",
         "hash": "3cbb8aaa2bd9d29ca9a832425f8c9992",
         "lines": 298,
-        "mtime": "2026-03-26T03:13:47.945Z",
+        "mtime": "2026-04-09T14:39:15.031Z",
         "className": "bindings",
         "methods": [
           "BindingsEntry",
@@ -5902,7 +5906,7 @@
         "file": "src/presets/workers/tests/unit/analyzers.test.js",
         "hash": "a61a4a02897e1f028b14011836038552",
         "lines": 374,
-        "mtime": "2026-03-26T03:13:47.945Z",
+        "mtime": "2026-04-09T14:39:15.032Z",
         "className": "analyzers.test",
         "methods": [],
         "imports": [
@@ -5920,7 +5924,7 @@
         "file": "src/sdd-forge.js",
         "hash": "a8ef56aee9127d46db8ea486c121f91d",
         "lines": 79,
-        "mtime": "2026-04-09T03:28:08.630Z",
+        "mtime": "2026-04-09T14:39:15.032Z",
         "className": "sdd-forge",
         "methods": [],
         "imports": [
@@ -5938,7 +5942,7 @@
         "file": "src/setup.js",
         "hash": "e036f650f7ab259a17940c5e0323b032",
         "lines": 561,
-        "mtime": "2026-04-08T09:17:36.522Z",
+        "mtime": "2026-04-09T14:39:15.032Z",
         "className": "setup",
         "methods": [
           "ask",
@@ -5984,7 +5988,7 @@
         "file": "src/upgrade.js",
         "hash": "169f9f5cbcec86a6c83051d7360e61a1",
         "lines": 133,
-        "mtime": "2026-04-09T03:25:40.413Z",
+        "mtime": "2026-04-09T14:39:15.033Z",
         "className": "upgrade",
         "methods": [
           "parseUpgradeArgs",
@@ -6010,7 +6014,7 @@
     ],
     "summary": {
       "total": 229,
-      "totalMethods": 734
+      "totalMethods": 737
     },
     "dataSourceHash": "7d725e75d5031be445119323e4947c91"
   }

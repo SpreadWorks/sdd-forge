@@ -130,10 +130,10 @@ See the [configuration reference](docs/configuration.md) for details.
 | Chapter | Summary |
 | --- | --- |
 | [Tool Overview and Architecture](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/overview.md) |  |
-| [Technology Stack and Operations](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/stack_and_ops.md) |  |
-| [Project Structure](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/project_structure.md) |  |
-| [CLI Command Reference](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/cli_commands.md) |  |
-| [Configuration and Customization](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/configuration.md) |  |
+| [Technology Stack and Operations](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/stack_and_ops.md) | This chapter covers the technology stack, dependency management, and operational procedures for sdd-forge, a command-… |
+| [Project Structure](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/project_structure.md) | This chapter documents the layout and responsibilities of the seven major directories that make up the src/ package: … |
+| [CLI Command Reference](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/cli_commands.md) | The sdd-forge CLI provides 7 top-level commands — help, setup, upgrade, presets, docs, flow, and check — totaling ove… |
+| [Configuration and Customization](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/configuration.md) | sdd-forge is configured through a single project-level JSON file alongside several generated state files, covering ev… |
 | [Internal Design](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/internal_design.md) |  |
 <!-- {{/data}} -->
 

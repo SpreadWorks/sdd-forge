@@ -1,0 +1,193 @@
+{
+  "spec": "specs/164-flow-metrics-recording/spec.md",
+  "baseBranch": "main",
+  "featureBranch": "feature/164-flow-metrics-recording",
+  "steps": [
+    {
+      "id": "approach",
+      "status": "done"
+    },
+    {
+      "id": "branch",
+      "status": "done"
+    },
+    {
+      "id": "prepare-spec",
+      "status": "pending"
+    },
+    {
+      "id": "draft",
+      "status": "done"
+    },
+    {
+      "id": "gate-draft",
+      "status": "done"
+    },
+    {
+      "id": "spec",
+      "status": "done"
+    },
+    {
+      "id": "gate",
+      "status": "done"
+    },
+    {
+      "id": "approval",
+      "status": "done"
+    },
+    {
+      "id": "test",
+      "status": "done"
+    },
+    {
+      "id": "implement",
+      "status": "done"
+    },
+    {
+      "id": "gate-impl",
+      "status": "done"
+    },
+    {
+      "id": "review",
+      "status": "in_progress"
+    },
+    {
+      "id": "finalize",
+      "status": "pending"
+    },
+    {
+      "id": "commit",
+      "status": "pending"
+    },
+    {
+      "id": "push",
+      "status": "pending"
+    },
+    {
+      "id": "merge",
+      "status": "pending"
+    },
+    {
+      "id": "pr-create",
+      "status": "pending"
+    },
+    {
+      "id": "branch-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "pr-merge",
+      "status": "pending"
+    },
+    {
+      "id": "sync-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "docs-update",
+      "status": "pending"
+    },
+    {
+      "id": "docs-review",
+      "status": "pending"
+    },
+    {
+      "id": "docs-commit",
+      "status": "pending"
+    }
+  ],
+  "requirements": [
+    {
+      "desc": "R1-1: active flow中のagent完了後にtoken数/コスト/回数/文字数/モデル名をflowJsonのmetricsに累積",
+      "status": "done"
+    },
+    {
+      "desc": "R1-2: sddPhaseがnullの場合は記録をスキップ",
+      "status": "done"
+    },
+    {
+      "desc": "R1-3: cost_usdがnullの場合はコスト加算のみスキップ・他フィールドは記録",
+      "status": "done"
+    },
+    {
+      "desc": "R1-4: metricsの書き込み失敗はstderr出力し、agentのtext返却は妨げない",
+      "status": "done"
+    },
+    {
+      "desc": "R2-1: バックフィルスクリプトが.tmp/logs/のログをspec×phase単位で集計してflow.jsonに書き込む",
+      "status": "done"
+    },
+    {
+      "desc": "R2-2: バックフィルは既存metricsフィールドを上書きせずtoken/cost系のみ追記",
+      "status": "done"
+    },
+    {
+      "desc": "R2-3: バックフィルスクリプトはnpmパッケージに含めない",
+      "status": "done"
+    },
+    {
+      "desc": "R2-4: バックフィルは逐次処理・1ファイル50MB上限・処理完了後に件数を表示",
+      "status": "done"
+    },
+    {
+      "desc": "R2-5: specやflow.jsonが存在しないログファイルはスキップ",
+      "status": "done"
+    },
+    {
+      "desc": "R2-6: バックフィル正常終了=exit 0、致命的エラー=exit 1+stderr出力",
+      "status": "done"
+    },
+    {
+      "desc": "R3-1: flow run reportにフェーズ別token数/コスト/呼び出し回数を追加",
+      "status": "done"
+    },
+    {
+      "desc": "R3-2: コストが記録されていないフェーズはN/Aと表示（0や空欄にしない）",
+      "status": "done"
+    }
+  ],
+  "issue": 127,
+  "request": "make a resume command",
+  "worktree": true,
+  "metrics": {
+    "plan": {
+      "docsRead": 1,
+      "issueLog": 6
+    },
+    "draft": {
+      "srcRead": 2,
+      "question": 18
+    },
+    "impl": {
+      "srcRead": 1,
+      "issueLog": 31
+    },
+    "spec": {
+      "docsRead": 6
+    }
+  },
+  "notes": [
+    "scope: バックフィルスクリプト含める",
+    "scope: report.js も更新してtoken/cost表示",
+    "cost_usd null時: cost加算スキップ。モデル名+トークン数は記録して後から計算可能に",
+    "sddPhase null時: スキップ（flow外の呼び出しは記録しない）",
+    "impl: log.js end イベントで accumulateAgentMetrics 呼び出し。flow-state.js に新関数追加。report.js に aggregateTokenMetrics 追加。.tmp/migrate-metrics.js 作成",
+    "approach: draft first",
+    "first note",
+    "second note",
+    "new note",
+    "approach: draft first",
+    "first note",
+    "second note",
+    "new note",
+    "approach: draft first",
+    "first note",
+    "second note",
+    "new note"
+  ],
+  "test": {
+    "summary": {
+      "unit": 2
+    }
+  }
+}

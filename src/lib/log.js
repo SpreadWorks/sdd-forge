@@ -363,6 +363,19 @@ export class Logger {
       }),
     };
     await appendJsonl(jsonl, line);
+
+    // Accumulate token/cost metrics into flow.json (R1-1).
+    // Only when an active SDD phase is known; silently skips otherwise (R1-2).
+    if (ctx.sddPhase) {
+      const { accumulateAgentMetrics } = await import("./flow-state.js");
+      accumulateAgentMetrics(
+        this.#cwd,
+        ctx.sddPhase,
+        entry.usage ?? null,
+        responseStats.chars,
+        entry.model ?? null,
+      );
+    }
   }
 
   /**

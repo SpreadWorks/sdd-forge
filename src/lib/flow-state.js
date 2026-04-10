@@ -389,6 +389,55 @@ export function mutateFlowState(workRoot, mutator) {
 }
 
 /**
+ * Accumulate agent invocation metrics into flow.json.
+ * Called after each agent invocation completes during an active SDD flow.
+ * Silently no-ops when phase is null (outside any flow).
+ * On write failure, logs to stderr but does not throw (non-fatal per R1-4).
+ *
+ * @param {string} workRoot
+ * @param {string|null} phase - current SDD step id (e.g. "draft", "impl"); null = skip
+ * @param {object|null} usage - normalized usage from agent.js: { input_tokens, output_tokens, cache_read_tokens, cache_creation_tokens, cost_usd }
+ * @param {number} responseChars - character count of the agent response
+ * @param {string|null} model - model identifier (e.g. "claude-sonnet-4-6")
+ */
+export function accumulateAgentMetrics(workRoot, phase, usage, responseChars, model) {
+  if (!phase) return; // R1-2: skip when no active flow
+  try {
+    mutateFlowState(workRoot, (state) => {
+      if (!state.metrics) state.metrics = {};
+      if (!state.metrics[phase]) state.metrics[phase] = {};
+      const m = state.metrics[phase];
+
+      // tokens
+      if (usage) {
+        if (!m.tokens) m.tokens = { input: 0, output: 0, cacheRead: 0, cacheCreation: 0 };
+        m.tokens.input = (m.tokens.input || 0) + (usage.input_tokens || 0);
+        m.tokens.output = (m.tokens.output || 0) + (usage.output_tokens || 0);
+        m.tokens.cacheRead = (m.tokens.cacheRead || 0) + (usage.cache_read_tokens || 0);
+        m.tokens.cacheCreation = (m.tokens.cacheCreation || 0) + (usage.cache_creation_tokens || 0);
+        // R1-3: skip cost when cost_usd is null
+        if (usage.cost_usd != null) {
+          m.cost = (m.cost || 0) + usage.cost_usd;
+        }
+      }
+
+      // callCount and responseChars are always recorded
+      m.callCount = (m.callCount || 0) + 1;
+      m.responseChars = (m.responseChars || 0) + (responseChars || 0);
+
+      // model call count (for post-hoc cost calculation when cost_usd is null)
+      if (model) {
+        if (!m.models) m.models = {};
+        m.models[model] = (m.models[model] || 0) + 1;
+      }
+    });
+  } catch (err) {
+    // R1-4: non-fatal — log to stderr, do not throw
+    process.stderr.write(`[sdd-forge] failed to accumulate agent metrics: ${err.message}\n`);
+  }
+}
+
+/**
  * Increment a metric counter in flow.json.
  * Silently no-ops if no active flow exists (e.g. outside a flow).
  * @param {string} workRoot

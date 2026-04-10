@@ -11,19 +11,53 @@ import { loadIssueLog } from "../lib/set-issue-log.js";
 import { pushSection, DIVIDER } from "../../lib/formatter.js";
 
 /**
- * Aggregate metrics across all phases.
- * @param {Object|null} metrics - flow.json metrics object keyed by phase
- * @returns {{ docsRead: number, srcRead: number, question: number, redo: number }}
+ * Iterate over each phase object in metrics, skipping null/non-object entries.
+ * @param {Object|null} metrics
+ * @param {(phase: Object) => void} fn
  */
-function aggregateMetrics(metrics) {
-  const totals = { docsRead: 0, srcRead: 0, question: 0, issueLog: 0 };
-  if (!metrics) return totals;
+function forEachPhase(metrics, fn) {
+  if (!metrics) return;
   for (const phase of Object.values(metrics)) {
     if (!phase || typeof phase !== "object") continue;
+    fn(phase);
+  }
+}
+
+/**
+ * Aggregate activity metrics (docs/src reads, Q&A, issue-log) across all phases.
+ * @param {Object|null} metrics - flow.json metrics object keyed by phase
+ * @returns {{ docsRead: number, srcRead: number, question: number, issueLog: number }}
+ */
+function aggregateActivityMetrics(metrics) {
+  const totals = { docsRead: 0, srcRead: 0, question: 0, issueLog: 0 };
+  forEachPhase(metrics, (phase) => {
     for (const key of Object.keys(totals)) {
       totals[key] += phase[key] || 0;
     }
-  }
+  });
+  return totals;
+}
+
+/**
+ * Aggregate token/cost metrics across all phases (R3-1, R3-2).
+ * @param {Object|null} metrics - flow.json metrics object keyed by phase
+ * @returns {{ input: number, output: number, cacheRead: number, cacheCreation: number, cost: number|null, callCount: number }}
+ */
+function aggregateTokenMetrics(metrics) {
+  const totals = { input: 0, output: 0, cacheRead: 0, cacheCreation: 0, cost: null, callCount: 0 };
+  forEachPhase(metrics, (phase) => {
+    if (phase.tokens) {
+      totals.input += phase.tokens.input || 0;
+      totals.output += phase.tokens.output || 0;
+      totals.cacheRead += phase.tokens.cacheRead || 0;
+      totals.cacheCreation += phase.tokens.cacheCreation || 0;
+    }
+    // R3-2: only accumulate cost when it has been recorded (never treat null as 0)
+    if (phase.cost != null) {
+      totals.cost = (totals.cost || 0) + phase.cost;
+    }
+    totals.callCount += phase.callCount || 0;
+  });
   return totals;
 }
 
@@ -64,7 +98,8 @@ export function generateReport(input) {
   };
 
   // Metrics
-  const metrics = aggregateMetrics(state.metrics);
+  const metrics = aggregateActivityMetrics(state.metrics);
+  const tokenMetrics = aggregateTokenMetrics(state.metrics);
 
   // Sync
   let sync;
@@ -97,7 +132,7 @@ export function generateReport(input) {
     tests = { unit, integration, acceptance, total: unit + integration + acceptance };
   }
 
-  const data = { implementation, retro, issueLog: issueLogData, metrics, tests, sync };
+  const data = { implementation, retro, issueLog: issueLogData, metrics, tokenMetrics, tests, sync };
   const text = formatText(data);
 
   return { data, text };
@@ -152,6 +187,13 @@ function formatText(data) {
   pushSection(lines, "Metrics", thin);
   const m = data.metrics;
   lines.push(`    docs read ${m.docsRead}  src read ${m.srcRead}  Q&A ${m.question}  issue-log ${m.issueLog}`);
+
+  // Agent metrics (token/cost) — R3-1, R3-2
+  if (data.tokenMetrics && data.tokenMetrics.callCount > 0) {
+    const t = data.tokenMetrics;
+    const costStr = t.cost != null ? `$${t.cost.toFixed(4)}` : "N/A";
+    lines.push(`    agent calls ${t.callCount}  in ${t.input}  out ${t.output}  cache-read ${t.cacheRead}  cache-create ${t.cacheCreation}  cost ${costStr}`);
+  }
 
   // Tests (always shown)
   pushSection(lines, "Tests", thin);

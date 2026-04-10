@@ -1,0 +1,108 @@
+{
+  "spec": "specs/164-flow-metrics-recording/spec.md",
+  "date": "2026-04-10T05:05:46.091Z",
+  "requirements": [
+    {
+      "desc": "R1-1: active flow中のagent完了後にtoken数/コスト/回数/文字数/モデル名をflowJsonのmetricsに累積",
+      "status": "done",
+      "note": "flow-state.jsにaccumulateAgentMetrics()を追加。tokens(input/output/cacheRead/cacheCreation)・cost・callCount・responseChars・modelsマップを累積。log.jsのlogAgentEnd内でctx.sddPhase存在時に呼び出し。"
+    },
+    {
+      "desc": "R1-2: sddPhaseがnullの場合は記録をスキップ",
+      "status": "done",
+      "note": "accumulateAgentMetrics先頭のif (!phase) return;ガードと、log.jsのif (ctx.sddPhase)条件の二重チェックで対応済み。"
+    },
+    {
+      "desc": "R1-3: cost_usdがnullの場合はコスト加算のみスキップ・他フィールドは記録",
+      "status": "done",
+      "note": "flow-state.jsで if (usage.cost_usd != null) { m.cost = ... } によりコストのみ条件付き。tokens/callCount/responseChars/modelsは無条件に記録される。"
+    },
+    {
+      "desc": "R1-4: metricsの書き込み失敗はstderr出力し、agentのtext返却は妨げない",
+      "status": "done",
+      "note": "accumulateAgentMetrics全体をtry/catchで囲み、エラー時はprocess.stderr.writeに書き込み再throwしない。JSONL書き込み完了後に呼び出されるため、agentのtext返却には影響しない。"
+    },
+    {
+      "desc": "R2-1: バックフィルスクリプトが.tmp/logs/のログをspec×phase単位で集計してflow.jsonに書き込む",
+      "status": "not_done",
+      "note": "スクリプト(.tmp/migrate-metrics.js)はgitignored設計のためdiffに存在しない。spec.mdおよびflow.jsonはP2をgate検証対象外と明記しており、実装の有無をdiffから検証不可。"
+    },
+    {
+      "desc": "R2-2: バックフィルは既存metricsフィールドを上書きせずtoken/cost系のみ追記",
+      "status": "not_done",
+      "note": "バックフィルスクリプトがdiffに存在しないため検証不可。spec gate対象外。"
+    },
+    {
+      "desc": "R2-3: バックフィルスクリプトはnpmパッケージに含めない",
+      "status": "done",
+      "note": "スクリプトは.tmp/配置(gitignored)。package.jsonのfiles: [\"src/\"]により.tmp/は公開パッケージに含まれない。コミット履歴(e9003e9, d628fc6)でも.tmp/への意図的配置が確認できる。"
+    },
+    {
+      "desc": "R2-4: バックフィルは逐次処理・1ファイル50MB上限・処理完了後に件数を表示",
+      "status": "not_done",
+      "note": "バックフィルスクリプトがdiffに存在しないため検証不可。spec gate対象外。"
+    },
+    {
+      "desc": "R2-5: specやflow.jsonが存在しないログファイルはスキップ",
+      "status": "not_done",
+      "note": "バックフィルスクリプトがdiffに存在しないため検証不可。spec gate対象外。"
+    },
+    {
+      "desc": "R2-6: バックフィル正常終了=exit 0、致命的エラー=exit 1+stderr出力",
+      "status": "not_done",
+      "note": "バックフィルスクリプトがdiffに存在しないため検証不可。spec gate対象外。"
+    },
+    {
+      "desc": "R3-1: flow run reportにフェーズ別token数/コスト/呼び出し回数を追加",
+      "status": "done",
+      "note": "report.jsにaggregateTokenMetrics()を追加し、formatText()でinput/output/cacheRead/cacheCreation/callCountを'agent calls N  in X  out Y ...'形式で出力。"
+    },
+    {
+      "desc": "R3-2: コストが記録されていないフェーズはN/Aと表示（0や空欄にしない）",
+      "status": "done",
+      "note": "aggregateTokenMetricsのtotals.cost初期値をnullとし、phase.cost != nullの場合のみ加算。formatText内でt.cost != null ? `$${t.cost.toFixed(4)}` : 'N/A'で表示。"
+    }
+  ],
+  "unplanned": [
+    {
+      "file": "docs/cli_commands.md",
+      "change": "sdd-forge docs build相当の実行によりコマンドリスト・グローバルオプション・コマンド詳細・exit codeの大量のドキュメント内容が追加生成された。"
+    },
+    {
+      "file": "docs/configuration.md",
+      "change": "設定リファレンステーブルおよびカスタマイズ例のドキュメント内容が更新・再生成された。"
+    },
+    {
+      "file": "docs/internal_design.md",
+      "change": "ディレクトリ構造・モジュール責務表・依存グラフ(mermaid)・処理フロー・拡張ポイントのドキュメント内容が大幅に更新された。"
+    },
+    {
+      "file": "docs/project_structure.md",
+      "change": "共有ライブラリ一覧のドキュメント内容が更新され、nav footerが追加された。"
+    },
+    {
+      "file": "docs/stack_and_ops.md",
+      "change": "Technology Stack・Dependencies・Deployment Flow・Operations Flowのドキュメント内容が再生成・拡充された。"
+    },
+    {
+      "file": "docs/overview.md",
+      "change": "{{text}}ディレクティブの生成済みコンテンツが削除され、空のディレクティブブロックのみ残った（ドキュメントパイプライン操作の副作用）。"
+    },
+    {
+      "file": "README.md",
+      "change": "ドキュメントチャプター一覧の各行にサマリテキストが追加された。"
+    },
+    {
+      "file": "docs/change_log.md",
+      "change": "164-flow-metrics-recordingのエントリが変更履歴に追加された（SDD worflowアーティファクト）。"
+    }
+  ],
+  "summary": {
+    "total": 12,
+    "done": 7,
+    "partial": 0,
+    "not_done": 5,
+    "rate": 0.58,
+    "notes": "P1(R1-1〜R1-4)とP3(R3-1, R3-2)は全て実装済み。flow-state.jsのaccumulateAgentMetrics()とlog.jsの呼び出しフック、report.jsのaggregateTokenMetrics()は仕様を正確に満たしている。P2(R2-1〜R2-6)はspec.mdが明示的にgate対象外と宣言しており、スクリプトはgitignored設計のためdiffから検証不可（R2-3のみnpmパッケージ非包含はファイル配置ポリシーで確認可能）。未計画の変更はすべてdocsディレクトリへの自動生成コンテンツであり、sdd-forge docs buildの実行による副産物と判断される。"
+  }
+}

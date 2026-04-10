@@ -10,7 +10,7 @@
 
 ### 更新日時
 
-- generated_at: 2026-04-09 09:48:24 UTC
+- generated_at: 2026-04-10 04:33:32 UTC
 
 ### シリーズ最新インデックス
 
@@ -104,6 +104,7 @@
 | `flow-impl-approach-step` | `158-flow-impl-approach-step` | Draft | 2026-04-08 | [spec](../specs/158-flow-impl-approach-step/spec.md) |
 | `flow-impl-finalize-rework` | `097-flow-impl-finalize-rework` | Draft | 2026-03-29 | [spec](../specs/097-flow-impl-finalize-rework/spec.md) |
 | `flow-logic-cli-separation` | `130-flow-logic-cli-separation` | Draft | 2026-04-02 | [spec](../specs/130-flow-logic-cli-separation/spec.md) |
+| `flow-metrics-recording` | `164-flow-metrics-recording` | Draft | 2026-04-09 | [spec](../specs/164-flow-metrics-recording/spec.md) |
 | `flow-plan-rework` | `096-flow-plan-rework` | Draft | 2026-03-29 | [spec](../specs/096-flow-plan-rework/spec.md) |
 | `flow-resume-and-compaction-resilience` | `061-flow-resume-and-compaction-resilience` | Draft | 2026-03-16 | [spec](../specs/061-flow-resume-and-compaction-resilience/spec.md) |
 | `flow-review` | `053-flow-review` | Draft | 2026-03-14 | [spec](../specs/053-flow-review/spec.md) |
@@ -430,4 +431,5 @@
 | `163-logger-callsite-replace` | Draft | 2026-04-09 | 163-logger-callsite-replace | GitHub Issue #123 | [draft.md](../specs/163-logger-callsite-replace/draft.md), [qa.md](../specs/163-logger-callsite-replace/qa.md), [review.md](../specs/163-logger-callsite-replace/review.md), [spec.md](../specs/163-logger-callsite-replace/spec.md) |
 | `163-merge-flow-auto-skills` | Draft | 2026-04-09 | 163-merge-flow-auto-skills | Issue #122 | [draft.md](../specs/163-merge-flow-auto-skills/draft.md), [qa.md](../specs/163-merge-flow-auto-skills/qa.md), [review.md](../specs/163-merge-flow-auto-skills/review.md), [spec.md](../specs/163-merge-flow-auto-skills/spec.md) |
 | `163-prevent-bg-cmd-in-flow` | Draft | 2026-04-09 | 163-prevent-bg-cmd-in-flow | Issue #121 | [draft.md](../specs/163-prevent-bg-cmd-in-flow/draft.md), [qa.md](../specs/163-prevent-bg-cmd-in-flow/qa.md), [review.md](../specs/163-prevent-bg-cmd-in-flow/review.md), [spec.md](../specs/163-prevent-bg-cmd-in-flow/spec.md) |
+| `164-flow-metrics-recording` | Draft | 2026-04-09 | 164-flow-metrics-recording | GitHub Issue #127 | [draft.md](../specs/164-flow-metrics-recording/draft.md), [qa.md](../specs/164-flow-metrics-recording/qa.md), [review.md](../specs/164-flow-metrics-recording/review.md), [spec.md](../specs/164-flow-metrics-recording/spec.md) |
 <!-- AUTO-GEN:END -->
