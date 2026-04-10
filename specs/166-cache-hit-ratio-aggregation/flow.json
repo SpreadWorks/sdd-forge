@@ -1,0 +1,202 @@
+{
+  "spec": "specs/166-cache-hit-ratio-aggregation/spec.md",
+  "baseBranch": "main",
+  "featureBranch": "feature/166-cache-hit-ratio-aggregation",
+  "steps": [
+    {
+      "id": "approach",
+      "status": "done"
+    },
+    {
+      "id": "branch",
+      "status": "done"
+    },
+    {
+      "id": "prepare-spec",
+      "status": "done"
+    },
+    {
+      "id": "draft",
+      "status": "done"
+    },
+    {
+      "id": "gate-draft",
+      "status": "done"
+    },
+    {
+      "id": "spec",
+      "status": "done"
+    },
+    {
+      "id": "gate",
+      "status": "done"
+    },
+    {
+      "id": "approval",
+      "status": "done"
+    },
+    {
+      "id": "test",
+      "status": "done"
+    },
+    {
+      "id": "implement",
+      "status": "done"
+    },
+    {
+      "id": "gate-impl",
+      "status": "done"
+    },
+    {
+      "id": "review",
+      "status": "done"
+    },
+    {
+      "id": "finalize",
+      "status": "pending"
+    },
+    {
+      "id": "commit",
+      "status": "pending"
+    },
+    {
+      "id": "push",
+      "status": "pending"
+    },
+    {
+      "id": "merge",
+      "status": "pending"
+    },
+    {
+      "id": "pr-create",
+      "status": "pending"
+    },
+    {
+      "id": "branch-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "pr-merge",
+      "status": "pending"
+    },
+    {
+      "id": "sync-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "docs-update",
+      "status": "pending"
+    },
+    {
+      "id": "docs-review",
+      "status": "pending"
+    },
+    {
+      "id": "docs-commit",
+      "status": "pending"
+    }
+  ],
+  "requirements": [
+    {
+      "desc": "R1: metrics token は独立トップレベルコマンド",
+      "status": "done"
+    },
+    {
+      "desc": "R2: 実行時データは specs/*/flow.json のみ",
+      "status": "done"
+    },
+    {
+      "desc": "R3: --format text/json/csv で同一集計値",
+      "status": "done"
+    },
+    {
+      "desc": "R4: text はフェーズ別・日付行・指定列で表示",
+      "status": "done"
+    },
+    {
+      "desc": "R5: 欠損値は N/A 表示で継続",
+      "status": "done"
+    },
+    {
+      "desc": "R6: 実行時エラーは非0終了",
+      "status": "done"
+    },
+    {
+      "desc": "R7: flow.json 最大5000件の上限",
+      "status": "done"
+    },
+    {
+      "desc": "R8: metrics.json キャッシュの鮮度判定で再生成/再利用",
+      "status": "done"
+    }
+  ],
+  "issue": 125,
+  "request": "#125 issueの対応をすすめてください。",
+  "worktree": true,
+  "notes": [
+    "approach: [1] Q&A で要件整理してから仕様書を作成",
+    "branch: [1] worktree / base [1] main",
+    "draft: [2] #125 は CLI 組み込みまで含める。参照=board 8690",
+    "draft: metrics は check 配下ではなく独立トップレベルコマンドとして実装",
+    "draft: metrics入力はflow.jsonのみ。tmpにのみあるデータはflow.jsonへbackfillすべき旨を指摘/警告する",
+    "draft: tmp-onlyデータ検知の警告は出さない。flow.jsonのみで静かに集計",
+    "draft: 出力はtext主、csv/jsonも同リリースで対応",
+    "draft: metricsキャッシュ再生成は specs/*/flow.json と output/metrics.json のmtime比較のみ",
+    "draft: ACは text/csv/json 同一集計結果 + キャッシュ再利用/再生成動作を必須",
+    "draft: ユーザー指摘により metrics サブコマンド設計を追加確認",
+    "draft: metrics は token サブコマンドのみ実装。--format text(default)/json/csv",
+    "draft: tokenサブコマンドの出力項目を追加で確定する",
+    "draft: token text出力は phase別ブロック、縦軸=日付、横軸=input/output/cache read/create/call count/cost の表形式",
+    "draft: token text表に difficulty列を含める（値なし時はN/A）",
+    "approval: [1] 仕様承認",
+    "test: formal e2e test を tests/e2e/metrics/token.test.js に追加（実装前のため失敗確認済み）",
+    "implement: [1] 実装方針を承認して実装を実施",
+    "finalize: [1] すべて実行"
+  ],
+  "metrics": {
+    "plan": {
+      "docsRead": 1,
+      "issueLog": 3
+    },
+    "draft": {
+      "question": 13
+    },
+    "gate-draft": {
+      "tokens": {
+        "input": 2,
+        "output": 493,
+        "cacheRead": 10815,
+        "cacheCreation": 9627
+      },
+      "cost": 0.046746750000000004,
+      "callCount": 1,
+      "responseChars": 1868
+    },
+    "gate": {
+      "tokens": {
+        "input": 2,
+        "output": 887,
+        "cacheRead": 10815,
+        "cacheCreation": 10244
+      },
+      "cost": 0.0549705,
+      "callCount": 1,
+      "responseChars": 1529
+    },
+    "impl": {
+      "srcRead": 2,
+      "issueLog": 3
+    },
+    "gate-impl": {
+      "tokens": {
+        "input": 7,
+        "output": 4049,
+        "cacheRead": 108958,
+        "cacheCreation": 24555
+      },
+      "cost": 0.18552465,
+      "callCount": 2,
+      "responseChars": 2984
+    }
+  }
+}

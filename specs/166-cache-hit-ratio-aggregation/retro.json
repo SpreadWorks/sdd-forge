@@ -1,0 +1,96 @@
+{
+  "spec": "specs/166-cache-hit-ratio-aggregation/spec.md",
+  "date": "2026-04-10T14:32:51.097Z",
+  "requirements": [
+    {
+      "desc": "R1: metrics token は独立トップレベルコマンド",
+      "status": "done",
+      "note": "`src/sdd-forge.js` で `metrics` をトップレベルに追加し、`src/metrics.js` で `token` サブコマンドを独立実行している。`check` 経由は不要。"
+    },
+    {
+      "desc": "R2: 実行時データは specs/*/flow.json のみ",
+      "status": "partial",
+      "note": "`.tmp/logs/**` を読む処理はないが、`listFlowFiles()` は `specs/` 以下を再帰走査しており、厳密な `specs/*/flow.json`（1階層）より広い。"
+    },
+    {
+      "desc": "R3: --format text/json/csv で同一集計値",
+      "status": "done",
+      "note": "既定値は `text`。`text/json/csv` は同じ `rows` 集計結果を別フォーマットで出力している。"
+    },
+    {
+      "desc": "R4: text はフェーズ別・日付行・指定列で表示",
+      "status": "done",
+      "note": "`formatText()` が `PHASE <name>` ブロック、日付行、difficulty/token in/out/cache read/create/call count/cost 列を出力している。"
+    },
+    {
+      "desc": "R5: 欠損値は N/A 表示で継続",
+      "status": "partial",
+      "note": "欠損時 `N/A` 表示と継続は実装済み。ただし `difficulty` を `flow.json` から読み取る処理がなく、常に `N/A` になる。"
+    },
+    {
+      "desc": "R6: 実行時エラーは非0終了",
+      "status": "done",
+      "note": "`main().catch()` でエラー表示後 `EXIT_ERROR` 退出。JSON不正・読込失敗・書込失敗などは非0終了する。"
+    },
+    {
+      "desc": "R7: flow.json 最大5000件の上限",
+      "status": "done",
+      "note": "`MAX_FLOW_FILES = 5000` を超えると例外を投げて失敗し、最終的に非0終了する。"
+    },
+    {
+      "desc": "R8: metrics.json キャッシュの鮮度判定で再生成/再利用",
+      "status": "done",
+      "note": "`.sdd-forge/output/metrics.json` が欠落または任意の `flow.json` より古い場合は再生成、そうでなければ再利用する実装。"
+    }
+  ],
+  "unplanned": [
+    {
+      "file": "specs/166-cache-hit-ratio-aggregation/draft.md",
+      "change": "要件評価対象の実装仕様とは別に、ドラフト文書を新規追加。"
+    },
+    {
+      "file": "specs/166-cache-hit-ratio-aggregation/flow.json",
+      "change": "フロー進捗・メモ・内部メトリクス記録を追加（機能要件外の運用データ）。"
+    },
+    {
+      "file": "specs/166-cache-hit-ratio-aggregation/issue-log.json",
+      "change": "ゲート結果や失敗履歴の運用ログを追加。"
+    },
+    {
+      "file": "specs/166-cache-hit-ratio-aggregation/qa.md",
+      "change": "QAテンプレート文書を追加。"
+    },
+    {
+      "file": "specs/166-cache-hit-ratio-aggregation/review.md",
+      "change": "コードレビュー記録文書を追加。"
+    },
+    {
+      "file": "specs/166-cache-hit-ratio-aggregation/spec.md",
+      "change": "機能仕様書本体を新規追加（実装そのものではない）。"
+    },
+    {
+      "file": "specs/166-cache-hit-ratio-aggregation/tests/README.md",
+      "change": "spec配下にテスト計画READMEを追加。"
+    },
+    {
+      "file": "src/help.js",
+      "change": "`metrics token` をヘルプ表示に追加（要件本文には明示されていない周辺UI変更）。"
+    },
+    {
+      "file": "src/locale/en/ui.json",
+      "change": "`metrics token` の英語説明文を追加（i18n文言追加）。"
+    },
+    {
+      "file": "src/locale/ja/ui.json",
+      "change": "`metrics token` の日本語説明文を追加（i18n文言追加）。"
+    }
+  ],
+  "summary": {
+    "total": 8,
+    "done": 6,
+    "partial": 2,
+    "not_done": 0,
+    "rate": 0.88,
+    "notes": "主要要件は概ね満たしている。未充足リスクは、R2の入力スコープが `specs/*/flow.json` より広い点と、R5で `difficulty` を常に `N/A` としてしまう点。"
+  }
+}

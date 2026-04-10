@@ -1,0 +1,42 @@
+{
+  "data": {
+    "implementation": {
+      "diffStat": "specs/166-cache-hit-ratio-aggregation/draft.md     |  60 +++++\n specs/166-cache-hit-ratio-aggregation/flow.json    | 202 +++++++++++++++\n .../166-cache-hit-ratio-aggregation/issue-log.json |  92 +++++++\n specs/166-cache-hit-ratio-aggregation/qa.md        |   9 +\n specs/166-cache-hit-ratio-aggregation/review.md    |  29 +++\n specs/166-cache-hit-ratio-aggregation/spec.md      | 103 ++++++++\n .../tests/README.md                                |  28 ++\n src/help.js                                        |   2 +\n src/locale/en/ui.json                              |   1 +\n src/locale/ja/ui.json                              |   1 +\n src/metrics.js                                     |  38 +++\n src/metrics/commands/token.js                      | 288 +++++++++++++++++++++\n src/sdd-forge.js                                   |  12 +-\n tests/e2e/metrics/token.test.js                    |  67 +++++\n 14 files changed, 929 insertions(+), 3 deletions(-)",
+      "commits": [
+        "feat: feature/166-cache-hit-ratio-aggregation"
+      ]
+    },
+    "retro": {
+      "total": 8,
+      "done": 6,
+      "partial": 2,
+      "not_done": 0,
+      "rate": 0.88,
+      "notes": "主要要件は概ね満たしている。未充足リスクは、R2の入力スコープが `specs/*/flow.json` より広い点と、R5で `difficulty` を常に `N/A` としてしまう点。"
+    },
+    "issueLog": {
+      "count": 0,
+      "entries": []
+    },
+    "metrics": {
+      "docsRead": 1,
+      "srcRead": 2,
+      "question": 13,
+      "issueLog": 6
+    },
+    "tokenMetrics": {
+      "input": 11,
+      "output": 5429,
+      "cacheRead": 130588,
+      "cacheCreation": 44426,
+      "cost": 0.28724190000000005,
+      "callCount": 4
+    },
+    "tests": null,
+    "sync": {
+      "status": "skipped",
+      "reason": "sync was skipped"
+    }
+  },
+  "text": "  Report\n\n  Implementation\n  ────────────────────────────────────────────────\n    feat: feature/166-cache-hit-ratio-aggregation\n    14 files changed, 929 insertions(+), 3 deletions(-)\n\n  Retro\n  ────────────────────────────────────────────────\n    ███████░ 88%  (6 done / 2 partial / 0 miss)\n\n  Metrics\n  ────────────────────────────────────────────────\n    docs read ................... 1\n    src read .................... 2\n    Q&A ......................... 13\n    issue-log ................... 6\n    agent calls ................. 4\n    input tokens ................ 11\n    output tokens ............... 5,429\n    cache-read tokens ........... 130,588\n    cache-create tokens ......... 44,426\n    cost ........................ $0.2872\n\n  Tests\n  ────────────────────────────────────────────────\n    -"
+}

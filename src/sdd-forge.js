@@ -7,6 +7,7 @@
  *   docs    → src/docs.js
  *   flow    → src/flow.js
  *   check   → src/check.js
+ *   metrics → src/metrics.js
  *   setup   → src/setup.js
  *   upgrade → src/upgrade.js
  *   help    → src/help.js
@@ -57,7 +58,12 @@ try {
 }
 
 /** Namespace dispatchers — receive subcommand + rest args */
-const NAMESPACE_DISPATCHERS = new Set(["docs", "flow", "check"]);
+const NAMESPACE_SCRIPTS = {
+  docs: "docs",
+  flow: "flow",
+  check: "check",
+  metrics: "metrics",
+};
 
 /** Independent commands — receive rest args directly */
 const INDEPENDENT = {
@@ -67,8 +73,8 @@ const INDEPENDENT = {
   help:    "help",
 };
 
-if (NAMESPACE_DISPATCHERS.has(subCmd)) {
-  const dispatcherPath = path.join(PKG_DIR, `${subCmd}.js`);
+if (NAMESPACE_SCRIPTS[subCmd]) {
+  const dispatcherPath = path.join(PKG_DIR, `${NAMESPACE_SCRIPTS[subCmd]}.js`);
   process.argv = [process.argv[0], dispatcherPath, ...rest];
   await import(dispatcherPath);
 } else if (INDEPENDENT[subCmd]) {

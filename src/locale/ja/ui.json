@@ -107,6 +107,7 @@
       "flow get": "フロー状態を取得（status, check, prompt, guardrail, ...）",
       "flow set": "フロー状態を更新（step, req, note, metric, ...）",
       "flow run": "フローアクションを実行（prepare-spec, gate, finalize, ...）",
+      "metrics token": "token/cache/cost メトリクスを集計して表示",
       "presets list": "プリセット継承ツリーを表示"
     },
     "cmdHelp": {

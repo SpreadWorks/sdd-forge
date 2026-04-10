@@ -1,0 +1,92 @@
+{
+  "entries": [
+    {
+      "step": "gate-draft",
+      "reason": "Single Responsibility — draft addresses one concern: adding `sdd-forge metrics token` subcommand with aggregation and output formats.; Unambiguous Requirements — output formats (`text|csv|json`), cache invalidation trigger (newer `flow.json`), and column layout are stated as verifiable conditions.; Complete Context — \"Edge cases: missing metrics fields should be handled as N/A without crashing\" lacks trigger/shall structure (e.g., \"When a `flow.json` field is missing, the column shall render as `N/A`\").; No Hardcoded Secrets — no secrets, API keys, or credentials are involved in this feature.; Prioritize Requirements — the checklist lists multiple requirements (format parity, cache invalidation, edge cases, test strategy) without specifying priority order among them.; Impact on Existing Features — explicitly states \"adds new top-level command surface, no `check` behavior change.\"; Present Recommendations with Reasoning — all 10 Q&A items provide a recommended answer; most are concise, though basis citation (docs/guardrails/code) is not always explicit.; Explore Before Asking — Q&A decisions reference issue #125 and board memo `8690`, indicating prior investigation.; Proactively Raise Related Implications — Q8 proactively defers `efficiency` subcommand; Q7 addresses acceptance criteria strictness.; Confirm Brainstorm vs. Decision Before Critiquing — inapplicable; draft is a finalized requirements document, not a brainstorm session.; Capture Digressions in draft.md — inapplicable; this is the draft itself, and no digression threads are present.; Draft Stays at Requirements Level — no function-level design or implementation details are included.; Backward — Compatible CLI Interface — adds a new command; no existing command is removed or changed, so no migration plan is needed.",
+      "trigger": "gate post hook (auto)",
+      "timestamp": "2026-04-10T13:41:43.007Z"
+    },
+    {
+      "step": "gate-draft",
+      "reason": "gate-draft failed due to incomplete trigger/shall wording and missing requirement priority",
+      "trigger": "sdd-forge flow run gate --phase draft",
+      "resolution": "update draft with explicit When/shall statements and P1/P2 priority list",
+      "guardrailCandidate": "all draft requirements must include trigger+shall and explicit priority when requirements >3",
+      "timestamp": "2026-04-10T13:41:56.525Z"
+    },
+    {
+      "step": "gate",
+      "reason": "line 87: unchecked task/question (- [ ] Should `sdd-forge metrics efficiency` be introduced in a separate follow-up spec.)",
+      "trigger": "gate post hook (auto)",
+      "timestamp": "2026-04-10T13:43:17.132Z"
+    },
+    {
+      "step": "gate",
+      "reason": "spec gate failed because Open Questions contained unchecked checklist item",
+      "trigger": "sdd-forge flow run gate",
+      "resolution": "replace unchecked Open Questions checkbox with resolved plain text note",
+      "guardrailCandidate": "spec gate pre-check should reject unresolved checklist syntax in final spec",
+      "timestamp": "2026-04-10T13:43:26.150Z"
+    },
+    {
+      "step": "gate",
+      "reason": "Single Responsibility — specは `sdd-forge metrics token` コマンドの追加という単一の関心事に限定されている。; Unambiguous Requirements — 各要件は「shall read only」「shall render `N/A`」「shall default to `text`」等、検証可能な条件で記述されている。; Complete Context — 全要件が When/If トリガーと shall 期待動作のペアで記述されている。; No Hardcoded Secrets — specにAPIキーやトークン等のシークレットは含まれない。; No Silent Error Swallowing — R5にて欠損フィールドは `N/A` で継続（エラー隠蔽ではなく明示的処理）。サイレント隠蔽なし。; Prioritize Requirements — 要件は P1 > P2 の優先順位付きで記述されている。; Impact on Existing Features — 既存機能への影響が明示され、`sdd-forge check` は変更なしと明記されている。; Bounded Resource Usage — `specs/*/flow.json` のグロブ展開（件数上限なし）およびキャッシュ再生成処理に上限（最大ファイル数・最大サイズ等）が指定されていない。; Changes Require Test Coverage — テスト戦略セクションが存在する（Acceptance Criteria が検証条件を兼ねている）。; Spec Includes Test Strategy — 「何をどのようにテストするか」を明示したテスト戦略セクションが独立して存在しない。Acceptance Criteria があるが、ユニット/統合/E2Eの区分・テスト手法の記述がない。; Synthesize Draft, Do Not Copy — Q&A・代替案・目標が整理・抽象化されており、ドラフトの単純コピーではない。; Record Unresolved Points as Open Questions — Open Questions セクションに「efficiency は別specで対処」と明記されており、未解決点は捏造されていない。; Include 'Why This Approach' Rationale — \"Why This Approach\" セクションにてboard memo 8690・flow.json 選択・スコープ限定の根拠が記述されている。; Backward — Compatible CLI Interface — 既存コマンドの意味変更はなく、新コマンド追加のみのため移行計画は不要。その旨も明記されている。; Exit Code Contract — `sdd-forge metrics token` の失敗時の非ゼロ終了コードについて明示的な記述はないが、R5でエラー継続が指定され、正常終了ケースのみ定義されている。ただし異常時の終了コード要件が未記述のため FAIL とする。; Exit Code Contract — コマンド失敗時（例：`specs/` が存在しない、ファイル読み取りエラー等）の非ゼロ終了コードに関する要件が記述されていない。",
+      "trigger": "gate post hook (auto)",
+      "timestamp": "2026-04-10T13:43:56.771Z"
+    },
+    {
+      "step": "gate",
+      "reason": "spec gate failed due to missing bounded resource limits, explicit test strategy section, and exit-code contract",
+      "trigger": "sdd-forge flow run gate",
+      "resolution": "add bounded scan limits, add dedicated test strategy section, and define non-zero exit on runtime failures",
+      "guardrailCandidate": "spec template should include mandatory sections for bounds/test-strategy/exit-code",
+      "timestamp": "2026-04-10T13:44:26.224Z"
+    },
+    {
+      "step": "implement",
+      "reason": "failed to set requirement index 8 because flow summary currently has 7 items",
+      "trigger": "sdd-forge flow set req 8 done",
+      "resolution": "verify current requirement count and keep statuses aligned to existing indices",
+      "guardrailCandidate": "after summary updates, verify requirement count before setting req statuses",
+      "timestamp": "2026-04-10T14:07:11.303Z"
+    },
+    {
+      "step": "gate-impl",
+      "reason": "P1 — R1 (standalone top-level command) — `sdd-forge.js` adds `metrics` to namespace dispatchers; `metrics.js` routes to `token` subcommand independently without requiring `check`.; P1 — R2 (read only specs/*/flow.json) — `listFlowFiles()` scans `specs/` directory for `flow.json` files only; no `.tmp/logs` path referenced.; P1 — R3 (--format text|json|csv, text default) — `DEFAULT_FORMAT = \"text\"`, `SUPPORTED_FORMATS = new Set([\"text\",\"json\",\"csv\"])`, all three renderers produce same aggregation fields.; P1 — R4 (text output: phase blocks, date rows, columns difficulty/tokenIn/tokenOut/cacheRead/cacheCreate/callCount/cost) — `formatText()` emits `PHASE <name>` headers, per-date rows, and all seven required columns.; P1 — R5 (missing fields render as N/A) — `createEmptyRow()` initializes all fields to `null`; `asDisplayValue(null)` returns `\"N/A\"`; processing continues.; P1 — R6 (runtime failure → non-zero exit) — `main().catch()` calls `process.exit(EXIT_ERROR)`; JSON parse errors, unreadable files, and cache write failures all throw and are caught.; P1 — R7 (5000 file bound, non-zero exit on overflow) — `MAX_FLOW_FILES = 5000`; `listFlowFiles()` throws when `files.length > MAX_FLOW_FILES`, which propagates to `EXIT_ERROR`.; P2 — R8 (cache freshness: regenerate when any flow.json newer than metrics.json) — `isCacheFresh()` compares cache mtime against the *latest* flow.json mtime, not against each individual file. If the cache was written after the newest flow.json, it returns true and reuses the cache. This is correct behavior for the spec's stated rule (\"newer than `.sdd-forge/output/metrics.json`\"), so this is actually a PASS.; P2 — R8 (cache freshness check) — `isCacheFresh()` compares `cachePath` mtime against `latestFlowMtimeMs` (max of all flow.json mtimes); cache is regenerated when missing or older than any source file.",
+      "trigger": "gate post hook (auto)",
+      "timestamp": "2026-04-10T14:18:39.109Z"
+    },
+    {
+      "step": "gate-impl",
+      "reason": "gate-impl reported contradictory R8 result (FAIL text says actually PASS)",
+      "trigger": "sdd-forge flow run gate --phase impl after review",
+      "resolution": "make cache freshness check explicitly compare cache mtime against every flow.json file to remove ambiguity",
+      "guardrailCandidate": "gate diagnostics should avoid contradictory verdict text",
+      "timestamp": "2026-04-10T14:18:51.561Z"
+    },
+    {
+      "step": "gate-impl",
+      "reason": "P1 — R1 (CLI top-level routing) — `sdd-forge.js` adds `metrics` to `NAMESPACE_SCRIPTS` and `help.js` registers `metrics token`; the command is reachable as an independent top-level entry without going through `check`.; P1 — R1 (handler implementation) — `src/metrics.js` / `src/metrics/` are listed as untracked files but their contents are absent from the provided diff; the subcommand handler itself cannot be verified.; P1 — R2 — No code reading `specs/*/flow.json` (and excluding `.tmp/logs/**`) is present in the diff.; P1 — R3 — `--format text|json|csv` flag parsing and default-to-text behavior are not present in the diff.; P1 — R4 — Text rendering with `PHASE <name>` blocks, date rows, and metric columns is not present in the diff.; P1 — R5 — `N/A` fallback for missing source fields is not present in the diff.; P1 — R6 — Error-and-non-zero-exit on runtime failures is not present in the diff.; P1 — R7 — 5000-file bound enforcement is not present in the diff.; P2 — R8 — Cache freshness check against `specs/*/flow.json` mtimes is not present in the diff.",
+      "trigger": "gate post hook (auto)",
+      "timestamp": "2026-04-10T14:19:48.766Z"
+    },
+    {
+      "step": "commit",
+      "reason": "commit failed: exit=128 | fatal: Unable to create '/home/nakano/workspace/sdd-forge/.git/worktrees/feature-166-cache-hit-ratio-aggregation/index.lock': Read-only file system\n",
+      "timestamp": "2026-04-10T14:31:28.530Z"
+    },
+    {
+      "step": "merge",
+      "reason": "Merge conflict detected. Run 'git rebase main' in the worktree and retry finalize.",
+      "timestamp": "2026-04-10T14:31:28.545Z"
+    },
+    {
+      "step": "finalize",
+      "reason": "finalize commit failed due to sandbox read-only lockfile error",
+      "trigger": "sdd-forge flow run finalize --mode all",
+      "resolution": "retry finalize with escalated permissions",
+      "guardrailCandidate": "when git index.lock write fails in sandbox, rerun finalize with escalated permissions immediately",
+      "timestamp": "2026-04-10T14:31:41.366Z"
+    }
+  ]
+}

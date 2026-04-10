@@ -107,6 +107,7 @@
       "flow get": "Read flow state (status, check, prompt, guardrail, ...)",
       "flow set": "Update flow state (step, req, note, metric, ...)",
       "flow run": "Execute flow actions (prepare-spec, gate, finalize, ...)",
+      "metrics token": "Aggregate and display token/cache/cost metrics",
       "presets list": "Show preset inheritance tree"
     },
     "cmdHelp": {
