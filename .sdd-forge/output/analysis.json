@@ -1,5 +1,5 @@
 {
-  "analyzedAt": "2026-04-10T05:05:47.515Z",
+  "analyzedAt": "2026-04-10T07:21:55.862Z",
   "package": {
     "entries": [
       {
@@ -5154,9 +5154,9 @@
       },
       {
         "file": "src/presets/cakephp2/data/config.js",
-        "hash": "6f0a5eee5f10707004c275f08fec400e",
-        "lines": 830,
-        "mtime": "2026-04-09T14:39:15.010Z",
+        "hash": "b308f40bd113e49c14646c76cf36dae6",
+        "lines": 832,
+        "mtime": "2026-04-10T07:21:55.552Z",
         "className": "config",
         "methods": [
           "ConfigEntry",
@@ -5180,7 +5180,8 @@
           "path",
           "../../webapp/data/webapp-data-source.js",
           "../../../docs/lib/analysis-entry.js",
-          "../../../docs/lib/php-array-parser.js"
+          "../../../docs/lib/php-array-parser.js",
+          "../../lib/path-match.js"
         ],
         "exports": [
           "ConfigEntry",
@@ -5246,9 +5247,9 @@
       },
       {
         "file": "src/presets/cakephp2/data/email.js",
-        "hash": "8a3a6814876b84cf18a6ab70660a8fca",
-        "lines": 178,
-        "mtime": "2026-04-09T14:39:15.011Z",
+        "hash": "f0e52f9adfc09b518eef0fff07114c57",
+        "lines": 179,
+        "mtime": "2026-04-10T07:21:55.552Z",
         "className": "email",
         "methods": [
           "EmailEntry",
@@ -5259,7 +5260,8 @@
           "path",
           "../../webapp/data/webapp-data-source.js",
           "../../../docs/lib/analysis-entry.js",
-          "../../../docs/lib/php-array-parser.js"
+          "../../../docs/lib/php-array-parser.js",
+          "../../lib/path-match.js"
         ],
         "exports": [
           "EmailEntry",
@@ -5272,9 +5274,9 @@
       },
       {
         "file": "src/presets/cakephp2/data/libs.js",
-        "hash": "87933a995ac84fcd8845c8f18d59b9d6",
-        "lines": 153,
-        "mtime": "2026-04-09T14:39:15.011Z",
+        "hash": "f3f0983df9b66f1cd63d02d86181dad3",
+        "lines": 154,
+        "mtime": "2026-04-10T07:21:55.552Z",
         "className": "libs",
         "methods": [
           "LibEntry"
@@ -5283,7 +5285,8 @@
           "fs",
           "../../webapp/data/webapp-data-source.js",
           "../../../docs/lib/analysis-entry.js",
-          "../../../docs/lib/php-array-parser.js"
+          "../../../docs/lib/php-array-parser.js",
+          "../../lib/path-match.js"
         ],
         "exports": [
           "LibEntry",
@@ -5353,9 +5356,9 @@
       },
       {
         "file": "src/presets/cakephp2/data/tests.js",
-        "hash": "a5018ae74f15c8a66cb80ab3c6f43cf0",
-        "lines": 84,
-        "mtime": "2026-04-09T14:39:15.011Z",
+        "hash": "e3961ba81efade3628c37cfc2df68c2c",
+        "lines": 85,
+        "mtime": "2026-04-10T07:21:55.552Z",
         "className": "tests",
         "methods": [
           "TestEntry",
@@ -5365,7 +5368,8 @@
           "fs",
           "path",
           "../../webapp/data/webapp-data-source.js",
-          "../../../docs/lib/analysis-entry.js"
+          "../../../docs/lib/analysis-entry.js",
+          "../../lib/path-match.js"
         ],
         "exports": [
           "TestEntry",
@@ -5378,9 +5382,9 @@
       },
       {
         "file": "src/presets/cakephp2/data/views.js",
-        "hash": "546d262f56786ff63a92b9bf5ab757a5",
-        "lines": 326,
-        "mtime": "2026-04-09T14:39:15.011Z",
+        "hash": "647945d0438573005fb415550b81a804",
+        "lines": 327,
+        "mtime": "2026-04-10T07:21:55.552Z",
         "className": "views",
         "methods": [
           "ViewEntry",
@@ -5397,7 +5401,8 @@
           "../../../docs/lib/scanner.js",
           "../../webapp/data/webapp-data-source.js",
           "../../../docs/lib/analysis-entry.js",
-          "../../../docs/lib/php-array-parser.js"
+          "../../../docs/lib/php-array-parser.js",
+          "../../lib/path-match.js"
         ],
         "exports": [
           "ViewEntry",
@@ -6249,14 +6254,15 @@
       },
       {
         "file": "src/presets/laravel/data/commands.js",
-        "hash": "2348251274aea565cec53cb8f63f42dd",
-        "lines": 22,
-        "mtime": "2026-04-09T14:39:15.018Z",
+        "hash": "f117c02e2b409994b7681be1a3dbaf37",
+        "lines": 23,
+        "mtime": "2026-04-10T07:21:55.553Z",
         "className": "commands",
         "methods": [],
         "imports": [
           "../../webapp/data/commands.js",
-          "../../webapp/data/commands.js"
+          "../../webapp/data/commands.js",
+          "../../lib/path-match.js"
         ],
         "exports": [
           "default"
@@ -6267,9 +6273,9 @@
       },
       {
         "file": "src/presets/laravel/data/config.js",
-        "hash": "b13e6355fc123ec9113ef173d61ebbbd",
-        "lines": 336,
-        "mtime": "2026-04-09T14:39:15.018Z",
+        "hash": "fa11061c5c79a7f1260129f951a5843a",
+        "lines": 337,
+        "mtime": "2026-04-10T07:21:55.553Z",
         "className": "config",
         "methods": [
           "ConfigEntry",
@@ -6284,6 +6290,7 @@
           "path",
           "../../webapp/data/webapp-data-source.js",
           "../../../docs/lib/analysis-entry.js",
+          "../../lib/path-match.js",
           "../../lib/composer-utils.js"
         ],
         "exports": [
@@ -6305,9 +6312,9 @@
       },
       {
         "file": "src/presets/laravel/data/controllers.js",
-        "hash": "552c46196274503f963f51fac41e5b25",
-        "lines": 177,
-        "mtime": "2026-04-09T14:39:15.018Z",
+        "hash": "9419cd45e164a7bbbe3158f7553692cb",
+        "lines": 178,
+        "mtime": "2026-04-10T07:21:55.553Z",
         "className": "controllers",
         "methods": [
           "LaravelControllerEntry",
@@ -6319,7 +6326,8 @@
           "path",
           "../../webapp/data/controllers.js",
           "../../webapp/data/controllers.js",
-          "../../../docs/lib/scanner.js"
+          "../../../docs/lib/scanner.js",
+          "../../lib/path-match.js"
         ],
         "exports": [
           "LaravelControllerEntry",
@@ -6332,9 +6340,9 @@
       },
       {
         "file": "src/presets/laravel/data/models.js",
-        "hash": "24787216db282f7e8d4a1ae02d162c70",
-        "lines": 268,
-        "mtime": "2026-04-09T14:39:15.018Z",
+        "hash": "c87ce181a1d829d91766e3e92d338630",
+        "lines": 269,
+        "mtime": "2026-04-10T07:21:55.553Z",
         "className": "models",
         "methods": [
           "LaravelModelEntry",
@@ -6349,7 +6357,8 @@
           "path",
           "../../webapp/data/models.js",
           "../../webapp/data/models.js",
-          "../../../docs/lib/scanner.js"
+          "../../../docs/lib/scanner.js",
+          "../../lib/path-match.js"
         ],
         "exports": [
           "LaravelModelEntry",
@@ -6362,9 +6371,9 @@
       },
       {
         "file": "src/presets/laravel/data/routes.js",
-        "hash": "bc5fce7121b2304d9cf133746cc0ba17",
-        "lines": 270,
-        "mtime": "2026-04-09T14:39:15.018Z",
+        "hash": "0132469fca22b06be27c255f24987961",
+        "lines": 271,
+        "mtime": "2026-04-10T07:21:55.553Z",
         "className": "routes",
         "methods": [
           "LaravelRouteEntry",
@@ -6383,7 +6392,8 @@
           "fs",
           "path",
           "../../webapp/data/routes.js",
-          "../../webapp/data/routes.js"
+          "../../webapp/data/routes.js",
+          "../../lib/path-match.js"
         ],
         "exports": [
           "LaravelRouteEntry",
@@ -6396,9 +6406,9 @@
       },
       {
         "file": "src/presets/laravel/data/tables.js",
-        "hash": "b937a366376707ef22e798aee513e501",
-        "lines": 306,
-        "mtime": "2026-04-09T14:39:15.018Z",
+        "hash": "567fbe62ccc4b1bd1df422300ea09d8d",
+        "lines": 307,
+        "mtime": "2026-04-10T07:21:55.553Z",
         "className": "tables",
         "methods": [
           "MigrationEntry",
@@ -6411,7 +6421,8 @@
           "fs",
           "path",
           "../../webapp/data/tables.js",
-          "../../../docs/lib/analysis-entry.js"
+          "../../../docs/lib/analysis-entry.js",
+          "../../lib/path-match.js"
         ],
         "exports": [
           "MigrationEntry",
@@ -6556,6 +6567,31 @@
         "extends": null,
         "usedBy": null,
         "id": "9ca3399d"
+      },
+      {
+        "file": "src/presets/lib/path-match.js",
+        "hash": "52ee5a41419d6ba8a44d6152ddf129fd",
+        "lines": 37,
+        "mtime": "2026-04-10T07:21:55.553Z",
+        "className": "path-match",
+        "methods": [
+          "hasPathPrefix",
+          "hasSegmentPath",
+          "hasAnyPathPrefix",
+          "normalizeRelPath",
+          "trimOuterSlashes",
+          "trimLeadingSlashes",
+          "escapeRegExp"
+        ],
+        "imports": [],
+        "exports": [
+          "hasPathPrefix",
+          "hasSegmentPath",
+          "hasAnyPathPrefix"
+        ],
+        "extends": null,
+        "usedBy": null,
+        "id": "3e7b5448"
       },
       {
         "file": "src/presets/library/tests/acceptance/fixtures/src/index.js",
@@ -6839,9 +6875,9 @@
       },
       {
         "file": "src/presets/nextjs/data/components.js",
-        "hash": "77db394f6f70eab924170c6c9e25ff26",
-        "lines": 140,
-        "mtime": "2026-04-09T14:39:15.024Z",
+        "hash": "1849746d26aeb436f73633dcd8b34248",
+        "lines": 141,
+        "mtime": "2026-04-10T07:21:55.553Z",
         "className": "components",
         "methods": [
           "ComponentEntry",
@@ -6855,7 +6891,8 @@
           "../../../docs/lib/data-source.js",
           "../../../docs/lib/scan-source.js",
           "../../../docs/lib/analysis-entry.js",
-          "../../../docs/lib/scanner.js"
+          "../../../docs/lib/scanner.js",
+          "../../lib/path-match.js"
         ],
         "exports": [
           "ComponentEntry",
@@ -6868,9 +6905,9 @@
       },
       {
         "file": "src/presets/nextjs/data/routes.js",
-        "hash": "9772104c7ec36447050e3c0b79837894",
-        "lines": 326,
-        "mtime": "2026-04-09T14:39:15.024Z",
+        "hash": "72b0ed88a52b19c27b09604f9fb94813",
+        "lines": 327,
+        "mtime": "2026-04-10T07:21:55.553Z",
         "className": "routes",
         "methods": [
           "NextjsRouteEntry",
@@ -6888,7 +6925,8 @@
           "../../../docs/lib/data-source.js",
           "../../../docs/lib/scan-source.js",
           "../../../docs/lib/analysis-entry.js",
-          "../../../docs/lib/scanner.js"
+          "../../../docs/lib/scanner.js",
+          "../../lib/path-match.js"
         ],
         "exports": [
           "NextjsRouteEntry",
@@ -7334,15 +7372,16 @@
       },
       {
         "file": "src/presets/symfony/data/commands.js",
-        "hash": "48994b6472a58df9043a4fa54a0ac1be",
-        "lines": 42,
-        "mtime": "2026-04-09T14:39:15.028Z",
+        "hash": "c1b87dc8dfd869a915e054a0d265155e",
+        "lines": 43,
+        "mtime": "2026-04-10T07:21:55.553Z",
         "className": "commands",
         "methods": [],
         "imports": [
           "fs",
           "../../webapp/data/commands.js",
-          "../../webapp/data/commands.js"
+          "../../webapp/data/commands.js",
+          "../../lib/path-match.js"
         ],
         "exports": [
           "default"
@@ -7353,9 +7392,9 @@
       },
       {
         "file": "src/presets/symfony/data/config.js",
-        "hash": "bad18ca08c4a5757ce871b7ddf122736",
-        "lines": 273,
-        "mtime": "2026-04-09T14:39:15.028Z",
+        "hash": "8b7ff0ae4ace4ec2999cfc8444de700d",
+        "lines": 274,
+        "mtime": "2026-04-10T07:21:55.554Z",
         "className": "config",
         "methods": [
           "SymfonyConfigEntry",
@@ -7368,6 +7407,7 @@
           "path",
           "../../webapp/data/webapp-data-source.js",
           "../../../docs/lib/analysis-entry.js",
+          "../../lib/path-match.js",
           "../../lib/composer-utils.js"
         ],
         "exports": [
@@ -7389,9 +7429,9 @@
       },
       {
         "file": "src/presets/symfony/data/controllers.js",
-        "hash": "8b8480be119d7cb2ce141c240d026dcd",
-        "lines": 215,
-        "mtime": "2026-04-09T14:39:15.028Z",
+        "hash": "b9feb1af74758d419ebb69e12a3fed3b",
+        "lines": 216,
+        "mtime": "2026-04-10T07:21:55.554Z",
         "className": "controllers",
         "methods": [
           "analyzeControllers",
@@ -7403,7 +7443,8 @@
           "path",
           "../../webapp/data/controllers.js",
           "../../webapp/data/controllers.js",
-          "../../../docs/lib/scanner.js"
+          "../../../docs/lib/scanner.js",
+          "../../lib/path-match.js"
         ],
         "exports": [
           "analyzeControllers",
@@ -7415,9 +7456,9 @@
       },
       {
         "file": "src/presets/symfony/data/entities.js",
-        "hash": "8da644bf2abadbcd05b3ce704e309654",
-        "lines": 233,
-        "mtime": "2026-04-09T14:39:15.028Z",
+        "hash": "c4cbab3bec1dbf655caf248c53762a79",
+        "lines": 234,
+        "mtime": "2026-04-10T07:21:55.554Z",
         "className": "entities",
         "methods": [
           "EntityEntry",
@@ -7432,7 +7473,8 @@
           "../../webapp/data/webapp-data-source.js",
           "../../../docs/lib/analysis-entry.js",
           "../../../docs/lib/php-array-parser.js",
-          "../../../docs/lib/scanner.js"
+          "../../../docs/lib/scanner.js",
+          "../../lib/path-match.js"
         ],
         "exports": [
           "EntityEntry",
@@ -7445,9 +7487,9 @@
       },
       {
         "file": "src/presets/symfony/data/routes.js",
-        "hash": "56dc8da83bc607931cf75f3feffc1c80",
-        "lines": 333,
-        "mtime": "2026-04-09T14:39:15.028Z",
+        "hash": "7c3047bf21b7d093e0f77ba91b11c8c1",
+        "lines": 334,
+        "mtime": "2026-04-10T07:21:55.554Z",
         "className": "routes",
         "methods": [
           "SymfonyRouteEntry",
@@ -7463,7 +7505,8 @@
           "path",
           "../../webapp/data/routes.js",
           "../../webapp/data/routes.js",
-          "../../../docs/lib/scanner.js"
+          "../../../docs/lib/scanner.js",
+          "../../lib/path-match.js"
         ],
         "exports": [
           "SymfonyRouteEntry",
@@ -7476,9 +7519,9 @@
       },
       {
         "file": "src/presets/symfony/data/tables.js",
-        "hash": "ed2654c9eed1b006fb26d4a6112cb152",
-        "lines": 234,
-        "mtime": "2026-04-09T14:39:15.028Z",
+        "hash": "8f8b7c74ea86965a7b61b5a828481a50",
+        "lines": 235,
+        "mtime": "2026-04-10T07:21:55.554Z",
         "className": "tables",
         "methods": [
           "MigrationEntry",
@@ -7492,7 +7535,8 @@
           "fs",
           "path",
           "../../webapp/data/tables.js",
-          "../../../docs/lib/analysis-entry.js"
+          "../../../docs/lib/analysis-entry.js",
+          "../../lib/path-match.js"
         ],
         "exports": [
           "MigrationEntry",
@@ -7955,8 +7999,8 @@
       }
     ],
     "summary": {
-      "total": 229,
-      "totalMethods": 737
+      "total": 230,
+      "totalMethods": 744
     },
     "dataSourceHash": "7d725e75d5031be445119323e4947c91"
   },
