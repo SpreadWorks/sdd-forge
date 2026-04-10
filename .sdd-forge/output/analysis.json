@@ -1,24 +1,40 @@
 {
-  "analyzedAt": "2026-04-10T07:56:58.802Z",
+  "analyzedAt": "2026-04-10T12:35:55.834Z",
   "package": {
     "entries": [
       {
         "file": "package.json",
-        "hash": "53638204877204ec2e80f0ba8da55d82",
-        "lines": 36,
-        "mtime": "2026-04-10T06:35:13.029Z",
+        "hash": "edb3c981192fe13bdde1ab03376c752e",
+        "lines": 39,
+        "mtime": "2026-04-10T08:28:57.273Z",
         "packageDeps": {
           "dependencies": {},
           "devDependencies": {}
         },
         "packageScripts": {
-          "test": "node tests/run.js",
           "test:unit": "node tests/run.js --scope unit",
           "test:e2e": "node tests/run.js --scope e2e",
           "test:acceptance": "node tests/acceptance/run.js"
         },
         "composerDeps": null,
-        "id": "451a9f25"
+        "id": "451a9f25",
+        "summary": "This package manifest defines `sdd-forge` as an ESM CLI and API-distributed Node.js tool. It exposes command entry points, runtime constraints, test scripts, and publish-time file boundaries.",
+        "detail": "The package uses `type: module` and maps both a CLI binary (`src/sdd-forge.js`) and a programmatic API export (`src/api.js`). It enforces a Node.js engine floor of `>=18.19.0`, aligning the runtime contract with modern built-in APIs. Distribution is scoped to `src/` with explicit exclusion of preset test folders, which keeps published artifacts focused and minimal. The script set separates unit, e2e, and acceptance execution paths, indicating layered validation in development workflows.",
+        "chapter": "stack_and_ops",
+        "role": "config",
+        "enrich": {
+          "processedAt": "2026-04-10T12:37:22.721Z",
+          "attempts": 1
+        },
+        "keywords": [
+          "package manifest",
+          "npm metadata",
+          "esm module",
+          "cli entrypoint",
+          "node engine",
+          "publish files",
+          "test scripts"
+        ]
       }
     ],
     "summary": {
@@ -28,6 +44,41 @@
   },
   "modules": {
     "entries": [
+      {
+        "file": "src/api.js",
+        "hash": "74f9f3ae1482d178b9c20f8340a28e73",
+        "lines": 13,
+        "mtime": "2026-04-10T08:28:12.967Z",
+        "className": "api",
+        "methods": [],
+        "imports": [
+          "sdd-forge/api"
+        ],
+        "exports": [
+          "DataSource",
+          "Scannable",
+          "AnalysisEntry"
+        ],
+        "extends": null,
+        "usedBy": null,
+        "id": "83853cd8",
+        "summary": "This module provides the public API surface by re-exporting core documentation analysis primitives. It acts as a stable import boundary for consumers.",
+        "detail": "The file performs only named re-exports for `DataSource`, `Scannable`, and `AnalysisEntry`. This keeps public API curation centralized while implementation files remain internal. The pattern reduces coupling by letting downstream users import from a single API endpoint. It also supports package export mapping where `./api` remains concise and explicit.",
+        "chapter": "internal_design",
+        "role": "lib",
+        "enrich": {
+          "processedAt": "2026-04-10T12:37:22.721Z",
+          "attempts": 1
+        },
+        "keywords": [
+          "public api",
+          "re-export",
+          "datasource",
+          "analysis entry",
+          "scan source",
+          "module boundary"
+        ]
+      },
       {
         "file": "src/check.js",
         "hash": "5de97c6fb3ac23fec9ee11db464de760",
@@ -43,7 +94,22 @@
         "exports": [],
         "extends": null,
         "usedBy": null,
-        "id": "cfca7dd3"
+        "id": "cfca7dd3",
+        "summary": "This file is the top-level dispatcher for `check` subcommands. It resolves script paths and forwards CLI arguments to specific command modules.",
+        "detail": "It uses package-root path resolution to dynamically import the selected subcommand implementation. Argument slicing and process argument rewriting allow delegated scripts to behave like first-class entrypoints. It returns success or failure via explicit process exit codes. The design keeps command routing lightweight while separating subcommand logic into dedicated files.",
+        "chapter": "cli_commands",
+        "role": "cli",
+        "enrich": {
+          "processedAt": "2026-04-10T12:37:22.721Z",
+          "attempts": 1
+        },
+        "keywords": [
+          "command dispatcher",
+          "subcommand routing",
+          "dynamic import",
+          "cli bootstrap",
+          "exit codes"
+        ]
       },
       {
         "file": "src/check/commands/config.js",
@@ -78,7 +144,22 @@
           "src/presets/js-webapp/tests/acceptance/fixtures/src/index.js",
           "src/presets/node-cli/tests/acceptance/fixtures/src/cli.js"
         ],
-        "id": "1b9f6fe7"
+        "id": "1b9f6fe7",
+        "summary": "This command validates project configuration and reports issues in text or JSON. It is a schema-driven config health check for CLI workflows.",
+        "detail": "The implementation loads config from the repository root and runs structured validation through shared type utilities. It caps schema error output with a maximum threshold to avoid overwhelming terminal logs. Output formatting is selectable (`text` or `json`) to support both human and machine consumption. Failure paths consistently map to non-zero exit status for CI and automation compatibility.",
+        "chapter": "configuration",
+        "role": "cli",
+        "enrich": {
+          "processedAt": "2026-04-10T12:37:22.721Z",
+          "attempts": 1
+        },
+        "keywords": [
+          "config validation",
+          "schema check",
+          "json output",
+          "cli diagnostics",
+          "configuration lint"
+        ]
       },
       {
         "file": "src/check/commands/freshness.js",
@@ -106,7 +187,22 @@
         ],
         "extends": null,
         "usedBy": null,
-        "id": "b9efb503"
+        "id": "b9efb503",
+        "summary": "This command checks whether generated docs are fresh relative to source files. It compares newest modification times with bounded file traversal.",
+        "detail": "The module walks source and docs directories up to a file cap to avoid unbounded filesystem work. It computes newest timestamps and classifies state as `fresh`, `stale`, or `never-built`. Truncation warnings are emitted when scan limits are reached, preserving transparency in approximate checks. It supports both text and JSON output modes and exits with error status for stale or missing docs states.",
+        "chapter": "cli_commands",
+        "role": "cli",
+        "enrich": {
+          "processedAt": "2026-04-10T12:37:22.721Z",
+          "attempts": 1
+        },
+        "keywords": [
+          "freshness check",
+          "mtime comparison",
+          "docs staleness",
+          "filesystem walk",
+          "build guard"
+        ]
       },
       {
         "file": "src/check/commands/scan.js",
@@ -141,7 +237,23 @@
         ],
         "extends": null,
         "usedBy": null,
-        "id": "7cccb0de"
+        "id": "7cccb0de",
+        "summary": "This command verifies scan coverage by comparing included source files against analysis output. It provides summarized extension and coverage reporting.",
+        "detail": "It expands include and exclude globs into regex matchers, then recursively gathers candidate files from source roots. Coverage is computed by mapping analyzed entries back to expected files and grouping by extension for visibility. The module supports text, markdown, and JSON report formats for different consumption contexts. Missing analysis artifacts and parse failures are surfaced as actionable errors with guidance.",
+        "chapter": "internal_design",
+        "role": "cli",
+        "enrich": {
+          "processedAt": "2026-04-10T12:37:22.721Z",
+          "attempts": 1
+        },
+        "keywords": [
+          "coverage report",
+          "scan verification",
+          "glob matching",
+          "analysis.json",
+          "markdown report",
+          "file extension stats"
+        ]
       },
       {
         "file": "src/docs.js",
@@ -162,7 +274,22 @@
         "exports": [],
         "extends": null,
         "usedBy": null,
-        "id": "086d52a1"
+        "id": "086d52a1",
+        "summary": "This is the main `docs` command orchestrator that dispatches and composes documentation subcommands. It coordinates scan, enrich, init, data filling, text generation, README creation, agents generation, and translation.",
+        "detail": "The file routes subcommands through dynamic imports and shared command context resolution. It includes higher-level composite flows that run multiple steps in sequence with consistent options like `dry-run` and `force`. Language-aware branches handle localized docs and README generation paths. Centralized error handling enforces predictable process exits across the docs toolchain.",
+        "chapter": "cli_commands",
+        "role": "controller",
+        "enrich": {
+          "processedAt": "2026-04-10T12:37:22.721Z",
+          "attempts": 1
+        },
+        "keywords": [
+          "docs pipeline",
+          "command orchestration",
+          "subcommand dispatcher",
+          "localization flow",
+          "dynamic module loading"
+        ]
       },
       {
         "file": "src/docs/commands/agents.js",
@@ -196,7 +323,22 @@
         ],
         "extends": null,
         "usedBy": null,
-        "id": "5684c584"
+        "id": "5684c584",
+        "summary": "This command generates or refines `AGENTS.md` content using analysis and docs context. It merges directive resolution with AI-assisted polishing.",
+        "detail": "It builds system and refinement prompts from project docs, template content, repository metadata, and optional script definitions. Directive parsing and block replacement are used to preserve structured generated sections while updating targeted content. The command initializes `AGENTS.md` from templates when missing, then enriches it with context-aware edits. Agent invocation, logging, and failure propagation are handled through shared agent utilities.",
+        "chapter": "development",
+        "role": "cli",
+        "enrich": {
+          "processedAt": "2026-04-10T12:37:22.721Z",
+          "attempts": 1
+        },
+        "keywords": [
+          "agents.md generation",
+          "prompt assembly",
+          "directive resolution",
+          "ai refinement",
+          "developer guidance docs"
+        ]
       },
       {
         "file": "src/docs/commands/changelog.js",
@@ -226,7 +368,22 @@
           "src/lib/agent.js",
           "src/lib/process.js"
         ],
-        "id": "d83c89fb"
+        "id": "d83c89fb",
+        "summary": "This command builds a changelog document from spec directories and metadata. It converts spec artifacts into a normalized markdown timeline.",
+        "detail": "It scans `specs/` entries, parses dated folder names, and extracts relevant spec file content. Text sanitization and structured rendering keep output clean and consistent. The default output targets `docs/change_log.md`, with CLI override support for custom paths. The flow is deterministic and file-system based, making it suitable for repeatable documentation updates.",
+        "chapter": "cli_commands",
+        "role": "cli",
+        "enrich": {
+          "processedAt": "2026-04-10T12:37:22.721Z",
+          "attempts": 1
+        },
+        "keywords": [
+          "changelog generation",
+          "spec parsing",
+          "markdown output",
+          "release history",
+          "documentation automation"
+        ]
       },
       {
         "file": "src/docs/commands/data.js",
@@ -260,7 +417,22 @@
         "usedBy": [
           "src/docs/commands/forge.js"
         ],
-        "id": "83404fb1"
+        "id": "83404fb1",
+        "summary": "This command resolves `{{data}}` directives in docs using analysis-derived values and data sources. It performs structured template population across chapter files.",
+        "detail": "It loads analysis output, applies docs-exclude filtering, and creates a resolver for directive evaluation. Per-file context rules adjust label handling so path-relative lookups stay accurate. Changes are written only when content differs, enabling idempotent runs and clear update tracking. The module also exposes `populateFromAnalysis` as reusable logic for higher-level orchestration commands.",
+        "chapter": "internal_design",
+        "role": "cli",
+        "enrich": {
+          "processedAt": "2026-04-10T12:37:22.721Z",
+          "attempts": 1
+        },
+        "keywords": [
+          "data directives",
+          "template population",
+          "analysis resolver",
+          "docs generation",
+          "idempotent write"
+        ]
       },
       {
         "file": "src/docs/commands/enrich.js",
@@ -312,7 +484,23 @@
         ],
         "extends": null,
         "usedBy": null,
-        "id": "abb7e5b3"
+        "id": "abb7e5b3",
+        "summary": "This command enriches analysis entries by calling an AI agent in controlled batches. It updates analysis metadata and persists progress safely.",
+        "detail": "Entries are collected, token-estimated, and split into bounded batches to keep prompts tractable. The command builds chapter-aware prompts, parses potentially imperfect JSON with repair logic, and merges enrichment fields back into analysis objects. It tracks attempts, supports concurrency controls, and saves incremental checkpoints to reduce recovery cost on failures. Error paths include dumping raw responses for debugging when parsing fails.",
+        "chapter": "internal_design",
+        "role": "cli",
+        "enrich": {
+          "processedAt": "2026-04-10T12:37:22.721Z",
+          "attempts": 1
+        },
+        "keywords": [
+          "analysis enrichment",
+          "batch processing",
+          "json repair",
+          "agent integration",
+          "checkpointing",
+          "concurrency control"
+        ]
       },
       {
         "file": "src/docs/commands/forge.js",
@@ -354,7 +542,23 @@
         ],
         "extends": null,
         "usedBy": null,
-        "id": "ef4fa5d9"
+        "id": "ef4fa5d9",
+        "summary": "This command orchestrates iterative documentation forging with optional agent and review loops. It manages target file selection, generation rounds, and quality gates.",
+        "detail": "It parses operational modes (`local`, `assist`, `agent`), timeout/concurrency settings, and run limits from CLI options. Relevant documentation targets are inferred from spec text and chapter metadata, then processed either per-file or as a whole. The workflow can invoke external review commands between rounds and stop on persistent failures. It integrates shared generation primitives (`data`, `text`, `readme`, `translate`) into a higher-level controlled loop.",
+        "chapter": "development",
+        "role": "controller",
+        "enrich": {
+          "processedAt": "2026-04-10T12:37:22.721Z",
+          "attempts": 1
+        },
+        "keywords": [
+          "iterative generation",
+          "review loop",
+          "forge workflow",
+          "agent mode",
+          "quality gate",
+          "round-based docs build"
+        ]
       },
       {
         "file": "src/docs/commands/init.js",
@@ -386,7 +590,22 @@
         ],
         "extends": null,
         "usedBy": null,
-        "id": "62ef800b"
+        "id": "62ef800b",
+        "summary": "This command initializes docs chapters from templates and analysis context. It supports optional AI-based chapter filtering before file creation.",
+        "detail": "Template resolution merges base and project-local template layers and honors configured chapter order. The command can request AI assistance to choose relevant chapters for a specific purpose using analysis summaries. It creates missing docs directories and writes output chapters while checking for conflicts unless forced. Directive blocks are preserved or stripped as needed to keep initialized files generation-ready.",
+        "chapter": "project_structure",
+        "role": "cli",
+        "enrich": {
+          "processedAt": "2026-04-10T12:37:22.721Z",
+          "attempts": 1
+        },
+        "keywords": [
+          "docs init",
+          "template merge",
+          "chapter selection",
+          "bootstrap docs",
+          "conflict detection"
+        ]
       },
       {
         "file": "src/docs/commands/readme.js",
@@ -417,7 +636,22 @@
         ],
         "extends": null,
         "usedBy": null,
-        "id": "26628ac2"
+        "id": "26628ac2",
+        "summary": "This command generates or updates README content using templates, data directives, and optional text-filling logic. It aligns README generation with docs pipeline conventions.",
+        "detail": "It resolves template chains, evaluates directives with a context-aware resolver, and applies output-path-specific label handling. The command supports writing to default root README or custom output paths for localized variants. Existing file comparison avoids unnecessary rewrites when content is unchanged. It shares infrastructure with docs generation modules for consistent behavior and config-driven control.",
+        "chapter": "cli_commands",
+        "role": "cli",
+        "enrich": {
+          "processedAt": "2026-04-10T12:37:22.721Z",
+          "attempts": 1
+        },
+        "keywords": [
+          "readme generation",
+          "template resolver",
+          "directive parser",
+          "content sync",
+          "localized readme"
+        ]
       },
       {
         "file": "src/docs/commands/review.js",
@@ -448,7 +682,22 @@
         ],
         "extends": null,
         "usedBy": null,
-        "id": "f3a5a725"
+        "id": "f3a5a725",
+        "summary": "This command reviews generated documentation for structural integrity and quality checks. It enforces directive safety and minimum content expectations.",
+        "detail": "It validates chapter presence, line-count thresholds, unresolved directive leakage, and malformed comment/block markers. The command inspects both docs chapter files and README when available, and can include localized docs paths. Analysis metadata key leakage checks prevent internal fields from appearing in output documents. Failures are aggregated and raised as a single review error suitable for CI gating.",
+        "chapter": "development",
+        "role": "cli",
+        "enrich": {
+          "processedAt": "2026-04-10T12:37:22.721Z",
+          "attempts": 1
+        },
+        "keywords": [
+          "docs review",
+          "integrity check",
+          "directive leakage",
+          "quality gate",
+          "ci validation"
+        ]
       },
       {
         "file": "src/docs/commands/scan.js",
@@ -490,7 +739,23 @@
         ],
         "extends": null,
         "usedBy": null,
-        "id": "e229cdd1"
+        "id": "e229cdd1",
+        "summary": "This command scans source and preset data to produce `analysis.json` as the core intermediate artifact. It handles entry identity, reset modes, and data source hashing.",
+        "detail": "It loads scanner data sources, traverses files, and resolves preset chains to build categorized analysis entries. Entry IDs are stabilized using match keys and existing index maps to reduce churn across runs. Reset options support selective category refresh while preserving unrelated analysis data. Final output is serialized to `.sdd-forge/analysis.json` with optional stdout mode and progress logging.",
+        "chapter": "internal_design",
+        "role": "cli",
+        "enrich": {
+          "processedAt": "2026-04-10T12:37:22.721Z",
+          "attempts": 1
+        },
+        "keywords": [
+          "source scanning",
+          "analysis.json",
+          "entry id stability",
+          "preset chain",
+          "data source hash",
+          "incremental scan"
+        ]
       },
       {
         "file": "src/docs/commands/text.js",
@@ -550,7 +815,23 @@
           "src/docs/commands/forge.js",
           "src/docs/commands/readme.js"
         ],
-        "id": "7c5e7654"
+        "id": "7c5e7654",
+        "summary": "This command fills `{{text}}` directives by generating narrative content from analysis using AI. It includes batching, validation, retry, and chapter change detection logic.",
+        "detail": "The module parses text directives, builds prompts, and can process either per-directive or JSON batch responses for efficiency. It validates generated output against shrinkage and structural heuristics to prevent destructive rewrites. Changed-source detection allows targeted chapter regeneration based on hash diffs in analysis entries. The command exposes reusable helpers and returns structured error collections for orchestrators.",
+        "chapter": "internal_design",
+        "role": "cli",
+        "enrich": {
+          "processedAt": "2026-04-10T12:37:22.721Z",
+          "attempts": 1
+        },
+        "keywords": [
+          "text directives",
+          "ai text generation",
+          "batch fill",
+          "output validation",
+          "chapter diff detection",
+          "retry logic"
+        ]
       },
       {
         "file": "src/docs/commands/translate.js",
@@ -583,7 +864,22 @@
         ],
         "extends": null,
         "usedBy": null,
-        "id": "fd496e07"
+        "id": "fd496e07",
+        "summary": "This command translates docs and README into configured target languages using an AI agent. It schedules translation tasks based on freshness and force options.",
+        "detail": "It derives translation jobs from chapter files and README availability, creating per-language output directories as needed. Translation is skipped when targets are newer unless `--force` is used, minimizing redundant work. The command applies style/tone instructions and strips model preambles from returned content. Concurrency controls and progress logging allow scalable translation runs in multi-language projects.",
+        "chapter": "cli_commands",
+        "role": "cli",
+        "enrich": {
+          "processedAt": "2026-04-10T12:37:22.721Z",
+          "attempts": 1
+        },
+        "keywords": [
+          "document translation",
+          "multilingual docs",
+          "freshness-based skip",
+          "agent translation",
+          "localization pipeline"
+        ]
       },
       {
         "file": "src/docs/data/agents.js",
@@ -605,7 +901,22 @@
         ],
         "extends": "DataSource",
         "usedBy": null,
-        "id": "861d6c47"
+        "id": "861d6c47",
+        "summary": "This data source provides project and template values for generating `AGENTS.md`. It reads config/package context and emits structured text sections.",
+        "detail": "It loads language-specific AGENTS templates from presets with fallback handling. The class exposes helpers for package metadata, script listings, and timestamp formatting for directive expansion. It relies on shared DataSource conventions so directive methods are discoverable and composable. Missing config or package data is handled gracefully with null/empty fallbacks.",
+        "chapter": "internal_design",
+        "role": "model",
+        "enrich": {
+          "processedAt": "2026-04-10T12:37:22.721Z",
+          "attempts": 1
+        },
+        "keywords": [
+          "datasource class",
+          "agents template",
+          "package metadata",
+          "directive data",
+          "template fallback"
+        ]
       },
       {
         "file": "src/docs/data/docs.js",
@@ -627,7 +938,23 @@
         ],
         "extends": "DataSource",
         "usedBy": null,
-        "id": "273334ae"
+        "id": "273334ae",
+        "summary": "This data source serves documentation-centric computed values such as links, navigation, and language metadata. It supports cross-language path and repository URL generation.",
+        "detail": "It derives repository links from package repository settings and normalizes git-style URLs. The class computes language-relative paths for docs and README references across default and localized directories. It loads locale language names from UI translation files with fallback to English. Chapter listing, title extraction, and markdown table rendering provide reusable docs index primitives.",
+        "chapter": "internal_design",
+        "role": "model",
+        "enrich": {
+          "processedAt": "2026-04-10T12:37:22.721Z",
+          "attempts": 1
+        },
+        "keywords": [
+          "docs datasource",
+          "cross-language links",
+          "repo url mapping",
+          "navigation helpers",
+          "localization metadata",
+          "markdown table"
+        ]
       },
       {
         "file": "src/docs/data/lang.js",
@@ -646,7 +973,22 @@
         ],
         "extends": "DataSource",
         "usedBy": null,
-        "id": "780c6d68"
+        "id": "780c6d68",
+        "summary": "This data source provides language names and localized navigation link generation. It focuses on compact helpers for multilingual docs text.",
+        "detail": "The class maintains a language-name map and computes relative links based on current and target language contexts. It detects language from file paths and defaults when no locale segment exists. Configuration loading is lightweight and fault-tolerant, returning empty objects on missing files. Output methods are intended for directive expansion in templates and docs bodies.",
+        "chapter": "internal_design",
+        "role": "model",
+        "enrich": {
+          "processedAt": "2026-04-10T12:37:22.721Z",
+          "attempts": 1
+        },
+        "keywords": [
+          "language datasource",
+          "localization links",
+          "language detection",
+          "relative path helper",
+          "multilingual navigation"
+        ]
       },
       {
         "file": "src/docs/data/project.js",
@@ -665,7 +1007,22 @@
         ],
         "extends": "DataSource",
         "usedBy": null,
-        "id": "dd4d31db"
+        "id": "dd4d31db",
+        "summary": "This data source exposes project-level metadata for documentation templates. It reads package fields and renders summary tables.",
+        "detail": "It caches parsed `package.json` data to avoid repeated file I/O during directive resolution. Methods return name, description, and version with sensible fallbacks. A table-formatting helper is used to provide markdown-friendly structured output. The implementation is small and focused, aligning with the DataSource contract.",
+        "chapter": "overview",
+        "role": "model",
+        "enrich": {
+          "processedAt": "2026-04-10T12:37:22.721Z",
+          "attempts": 1
+        },
+        "keywords": [
+          "project metadata",
+          "package.json reader",
+          "template datasource",
+          "version info",
+          "markdown summary"
+        ]
       },
       {
         "file": "src/docs/data/text.js",
@@ -685,7 +1042,22 @@
           "src/docs/commands/forge.js",
           "src/docs/commands/readme.js"
         ],
-        "id": "cca2c9bc"
+        "id": "cca2c9bc",
+        "summary": "This minimal data source acts as a placeholder for text-related directive endpoints. It currently returns null behavior with DataSource compatibility.",
+        "detail": "The class extends the base DataSource type but intentionally provides almost no custom logic. It preserves a stable module slot for future text-specific data expansion. Keeping this stub explicit avoids ad-hoc conditionals elsewhere in resolver code. The pattern supports progressive feature growth without interface churn.",
+        "chapter": "internal_design",
+        "role": "model",
+        "enrich": {
+          "processedAt": "2026-04-10T12:37:22.721Z",
+          "attempts": 1
+        },
+        "keywords": [
+          "stub datasource",
+          "placeholder module",
+          "text source",
+          "interface stability",
+          "extensibility"
+        ]
       },
       {
         "file": "src/docs/lib/analysis-entry.js",
@@ -712,7 +1084,22 @@
           "src/docs/lib/scan-source.js",
           "src/docs/lib/text-prompts.js"
         ],
-        "id": "17953885"
+        "id": "17953885",
+        "summary": "This module defines analysis entry metadata keys and utility functions for entry handling. It provides normalization and summary-building primitives.",
+        "detail": "It distinguishes common payload fields from generated metadata like `analyzedAt`, `enrichedAt`, and `generatedAt`. `AnalysisEntry.from` constructs typed instances from raw objects while preserving data shape. Emptiness checks ignore structural keys to detect meaningful content presence. Summary helpers aggregate entries into compact statistics structures consumed by higher-level commands.",
+        "chapter": "internal_design",
+        "role": "lib",
+        "enrich": {
+          "processedAt": "2026-04-10T12:37:22.721Z",
+          "attempts": 1
+        },
+        "keywords": [
+          "analysis model",
+          "meta keys",
+          "entry normalization",
+          "summary builder",
+          "utility functions"
+        ]
       },
       {
         "file": "src/docs/lib/analysis-filter.js",
@@ -734,7 +1121,22 @@
         ],
         "extends": null,
         "usedBy": null,
-        "id": "f3ac0c38"
+        "id": "f3ac0c38",
+        "summary": "This module filters analysis results based on docs exclusion glob patterns. It offers entry-level and whole-analysis filtering functions.",
+        "detail": "Glob patterns are converted to regexes and applied against each entry's source file path. The entry filter supports direct list filtering, while the analysis filter applies the same logic category by category. Metadata keys are preserved so structural analysis context remains intact. The utility is used to keep generated docs aligned with configured include/exclude scope.",
+        "chapter": "internal_design",
+        "role": "lib",
+        "enrich": {
+          "processedAt": "2026-04-10T12:37:22.721Z",
+          "attempts": 1
+        },
+        "keywords": [
+          "analysis filtering",
+          "exclude patterns",
+          "glob regex",
+          "docs scope",
+          "category filter"
+        ]
       },
       {
         "file": "src/docs/lib/chapter-resolver.js",
@@ -761,7 +1163,10 @@
         ],
         "extends": null,
         "usedBy": null,
-        "id": "1e787be2"
+        "id": "1e787be2",
+        "enrich": {
+          "attempts": 1
+        }
       },
       {
         "file": "src/docs/lib/command-context.js",
@@ -802,7 +1207,10 @@
           "src/docs/commands/forge.js",
           "src/docs/commands/readme.js"
         ],
-        "id": "10a78227"
+        "id": "10a78227",
+        "enrich": {
+          "attempts": 1
+        }
       },
       {
         "file": "src/docs/lib/concurrency.js",
@@ -819,7 +1227,10 @@
         ],
         "extends": null,
         "usedBy": null,
-        "id": "6e3ef4f1"
+        "id": "6e3ef4f1",
+        "enrich": {
+          "attempts": 1
+        }
       },
       {
         "file": "src/docs/lib/data-source-loader.js",
@@ -842,7 +1253,10 @@
         "usedBy": [
           "src/docs/lib/resolver-factory.js"
         ],
-        "id": "d1cdb1d8"
+        "id": "d1cdb1d8",
+        "enrich": {
+          "attempts": 1
+        }
       },
       {
         "file": "src/docs/lib/data-source.js",
@@ -861,7 +1275,10 @@
         "usedBy": [
           "src/docs/lib/scan-source.js"
         ],
-        "id": "f0f9731d"
+        "id": "f0f9731d",
+        "enrich": {
+          "attempts": 1
+        }
       },
       {
         "file": "src/docs/lib/directive-parser.js",
@@ -900,7 +1317,10 @@
           "src/docs/lib/chapter-resolver.js",
           "src/docs/lib/template-merger.js"
         ],
-        "id": "bbb893ea"
+        "id": "bbb893ea",
+        "enrich": {
+          "attempts": 1
+        }
       },
       {
         "file": "src/docs/lib/forge-prompts.js",
@@ -927,7 +1347,10 @@
         ],
         "extends": null,
         "usedBy": null,
-        "id": "42300b03"
+        "id": "42300b03",
+        "enrich": {
+          "attempts": 1
+        }
       },
       {
         "file": "src/docs/lib/lang-factory.js",
@@ -953,7 +1376,10 @@
           "src/docs/lib/minify.js",
           "src/docs/lib/scanner.js"
         ],
-        "id": "8f8393ac"
+        "id": "8f8393ac",
+        "enrich": {
+          "attempts": 1
+        }
       },
       {
         "file": "src/docs/lib/lang/js.js",
@@ -993,7 +1419,10 @@
         "usedBy": [
           "src/docs/lib/lang-factory.js"
         ],
-        "id": "dcea4940"
+        "id": "dcea4940",
+        "enrich": {
+          "attempts": 1
+        }
       },
       {
         "file": "src/docs/lib/lang/php.js",
@@ -1025,7 +1454,10 @@
         "usedBy": [
           "src/docs/lib/lang-factory.js"
         ],
-        "id": "8da3c9aa"
+        "id": "8da3c9aa",
+        "enrich": {
+          "attempts": 1
+        }
       },
       {
         "file": "src/docs/lib/lang/py.js",
@@ -1047,7 +1479,10 @@
         "usedBy": [
           "src/docs/lib/lang-factory.js"
         ],
-        "id": "d894c726"
+        "id": "d894c726",
+        "enrich": {
+          "attempts": 1
+        }
       },
       {
         "file": "src/docs/lib/lang/yaml.js",
@@ -1067,7 +1502,10 @@
         "usedBy": [
           "src/docs/lib/lang-factory.js"
         ],
-        "id": "ef1dd14d"
+        "id": "ef1dd14d",
+        "enrich": {
+          "attempts": 1
+        }
       },
       {
         "file": "src/docs/lib/minify.js",
@@ -1090,7 +1528,10 @@
         "usedBy": [
           "src/docs/lib/text-prompts.js"
         ],
-        "id": "212fe46f"
+        "id": "212fe46f",
+        "enrich": {
+          "attempts": 1
+        }
       },
       {
         "file": "src/docs/lib/php-array-parser.js",
@@ -1117,7 +1558,10 @@
         ],
         "extends": null,
         "usedBy": null,
-        "id": "b6019adb"
+        "id": "b6019adb",
+        "enrich": {
+          "attempts": 1
+        }
       },
       {
         "file": "src/docs/lib/resolver-factory.js",
@@ -1145,7 +1589,10 @@
         ],
         "extends": null,
         "usedBy": null,
-        "id": "cb355898"
+        "id": "cb355898",
+        "enrich": {
+          "attempts": 1
+        }
       },
       {
         "file": "src/docs/lib/review-parser.js",
@@ -1168,7 +1615,10 @@
         ],
         "extends": null,
         "usedBy": null,
-        "id": "0806e627"
+        "id": "0806e627",
+        "enrich": {
+          "attempts": 1
+        }
       },
       {
         "file": "src/docs/lib/scan-source.js",
@@ -1190,7 +1640,10 @@
         "usedBy": [
           "src/docs/lib/scan-source.js"
         ],
-        "id": "6b08f3c0"
+        "id": "6b08f3c0",
+        "enrich": {
+          "attempts": 1
+        }
       },
       {
         "file": "src/docs/lib/scanner.js",
@@ -1231,7 +1684,10 @@
         "usedBy": [
           "src/docs/lib/analysis-filter.js"
         ],
-        "id": "cf9f71e2"
+        "id": "cf9f71e2",
+        "enrich": {
+          "attempts": 1
+        }
       },
       {
         "file": "src/docs/lib/template-merger.js",
@@ -1274,7 +1730,10 @@
         "usedBy": [
           "src/docs/lib/command-context.js"
         ],
-        "id": "88243459"
+        "id": "88243459",
+        "enrich": {
+          "attempts": 1
+        }
       },
       {
         "file": "src/docs/lib/test-env-detection.js",
@@ -1291,7 +1750,10 @@
         ],
         "extends": null,
         "usedBy": null,
-        "id": "7e368a23"
+        "id": "7e368a23",
+        "enrich": {
+          "attempts": 1
+        }
       },
       {
         "file": "src/docs/lib/text-prompts.js",
@@ -1328,7 +1790,10 @@
         ],
         "extends": null,
         "usedBy": null,
-        "id": "7ddd8579"
+        "id": "7ddd8579",
+        "enrich": {
+          "attempts": 1
+        }
       },
       {
         "file": "src/docs/lib/toml-parser.js",
@@ -1347,7 +1812,10 @@
         ],
         "extends": null,
         "usedBy": null,
-        "id": "9fb7acbd"
+        "id": "9fb7acbd",
+        "enrich": {
+          "attempts": 1
+        }
       },
       {
         "file": "src/flow.js",
@@ -1372,7 +1840,10 @@
         "exports": [],
         "extends": null,
         "usedBy": null,
-        "id": "1ab08f2b"
+        "id": "1ab08f2b",
+        "enrich": {
+          "attempts": 1
+        }
       },
       {
         "file": "src/flow/commands/merge.js",
@@ -1404,13 +1875,16 @@
         ],
         "extends": null,
         "usedBy": null,
-        "id": "3a0db928"
+        "id": "3a0db928",
+        "enrich": {
+          "attempts": 1
+        }
       },
       {
         "file": "src/flow/commands/report.js",
-        "hash": "c86a4ae8d30678d17b7b21d6e2727c73",
-        "lines": 229,
-        "mtime": "2026-04-10T06:35:13.096Z",
+        "hash": "8220460707c43919ddebaeb08ef00606",
+        "lines": 243,
+        "mtime": "2026-04-10T08:28:57.267Z",
         "className": "report",
         "methods": [
           "generateReport",
@@ -1432,7 +1906,10 @@
         ],
         "extends": null,
         "usedBy": null,
-        "id": "5f80ffd2"
+        "id": "5f80ffd2",
+        "enrich": {
+          "attempts": 1
+        }
       },
       {
         "file": "src/flow/commands/review.js",
@@ -1504,7 +1981,10 @@
         ],
         "extends": null,
         "usedBy": null,
-        "id": "331cf497"
+        "id": "331cf497",
+        "enrich": {
+          "attempts": 1
+        }
       },
       {
         "file": "src/flow/lib/base-command.js",
@@ -1550,7 +2030,10 @@
           "src/flow/lib/set-summary.js",
           "src/flow/lib/set-test-summary.js"
         ],
-        "id": "83f60bd3"
+        "id": "83f60bd3",
+        "enrich": {
+          "attempts": 1
+        }
       },
       {
         "file": "src/flow/lib/get-check.js",
@@ -1573,7 +2056,10 @@
         ],
         "extends": "FlowCommand",
         "usedBy": null,
-        "id": "10eecc8b"
+        "id": "10eecc8b",
+        "enrich": {
+          "attempts": 1
+        }
       },
       {
         "file": "src/flow/lib/get-context.js",
@@ -1623,7 +2109,10 @@
           "src/docs/commands/forge.js",
           "src/docs/commands/readme.js"
         ],
-        "id": "1261e39f"
+        "id": "1261e39f",
+        "enrich": {
+          "attempts": 1
+        }
       },
       {
         "file": "src/flow/lib/get-guardrail.js",
@@ -1646,7 +2135,10 @@
         "usedBy": [
           "src/lib/lint.js"
         ],
-        "id": "f80cce52"
+        "id": "f80cce52",
+        "enrich": {
+          "attempts": 1
+        }
       },
       {
         "file": "src/flow/lib/get-issue.js",
@@ -1664,7 +2156,10 @@
         ],
         "extends": "FlowCommand",
         "usedBy": null,
-        "id": "7aec11d1"
+        "id": "7aec11d1",
+        "enrich": {
+          "attempts": 1
+        }
       },
       {
         "file": "src/flow/lib/get-prompt.js",
@@ -1683,7 +2178,10 @@
         ],
         "extends": "FlowCommand",
         "usedBy": null,
-        "id": "410dfcc9"
+        "id": "410dfcc9",
+        "enrich": {
+          "attempts": 1
+        }
       },
       {
         "file": "src/flow/lib/get-qa-count.js",
@@ -1700,7 +2198,10 @@
         ],
         "extends": "FlowCommand",
         "usedBy": null,
-        "id": "28b15622"
+        "id": "28b15622",
+        "enrich": {
+          "attempts": 1
+        }
       },
       {
         "file": "src/flow/lib/get-resolve-context.js",
@@ -1726,7 +2227,10 @@
           "src/docs/commands/forge.js",
           "src/docs/commands/readme.js"
         ],
-        "id": "c2848d40"
+        "id": "c2848d40",
+        "enrich": {
+          "attempts": 1
+        }
       },
       {
         "file": "src/flow/lib/get-status.js",
@@ -1744,7 +2248,10 @@
         ],
         "extends": "FlowCommand",
         "usedBy": null,
-        "id": "9aca938f"
+        "id": "9aca938f",
+        "enrich": {
+          "attempts": 1
+        }
       },
       {
         "file": "src/flow/lib/phases.js",
@@ -1763,7 +2270,10 @@
           "src/flow/lib/set-metric.js",
           "src/flow/registry.js"
         ],
-        "id": "5d33316d"
+        "id": "5d33316d",
+        "enrich": {
+          "attempts": 1
+        }
       },
       {
         "file": "src/flow/lib/run-finalize.js",
@@ -1800,7 +2310,10 @@
         ],
         "extends": "FlowCommand",
         "usedBy": null,
-        "id": "c711309b"
+        "id": "c711309b",
+        "enrich": {
+          "attempts": 1
+        }
       },
       {
         "file": "src/flow/lib/run-gate.js",
@@ -1842,7 +2355,10 @@
         ],
         "extends": "FlowCommand",
         "usedBy": null,
-        "id": "b4aa4dad"
+        "id": "b4aa4dad",
+        "enrich": {
+          "attempts": 1
+        }
       },
       {
         "file": "src/flow/lib/run-impl-confirm.js",
@@ -1867,7 +2383,10 @@
         ],
         "extends": "FlowCommand",
         "usedBy": null,
-        "id": "e6534160"
+        "id": "e6534160",
+        "enrich": {
+          "attempts": 1
+        }
       },
       {
         "file": "src/flow/lib/run-lint.js",
@@ -1889,7 +2408,10 @@
         ],
         "extends": "FlowCommand",
         "usedBy": null,
-        "id": "4fb3080f"
+        "id": "4fb3080f",
+        "enrich": {
+          "attempts": 1
+        }
       },
       {
         "file": "src/flow/lib/run-prepare-spec.js",
@@ -1927,7 +2449,10 @@
         ],
         "extends": "FlowCommand",
         "usedBy": null,
-        "id": "59eeacc6"
+        "id": "59eeacc6",
+        "enrich": {
+          "attempts": 1
+        }
       },
       {
         "file": "src/flow/lib/run-report.js",
@@ -1951,7 +2476,10 @@
         ],
         "extends": "FlowCommand",
         "usedBy": null,
-        "id": "43872d6b"
+        "id": "43872d6b",
+        "enrich": {
+          "attempts": 1
+        }
       },
       {
         "file": "src/flow/lib/run-resume.js",
@@ -1974,7 +2502,10 @@
         ],
         "extends": "FlowCommand",
         "usedBy": null,
-        "id": "abe5ac21"
+        "id": "abe5ac21",
+        "enrich": {
+          "attempts": 1
+        }
       },
       {
         "file": "src/flow/lib/run-retro.js",
@@ -2008,7 +2539,10 @@
         ],
         "extends": "FlowCommand",
         "usedBy": null,
-        "id": "862e7d08"
+        "id": "862e7d08",
+        "enrich": {
+          "attempts": 1
+        }
       },
       {
         "file": "src/flow/lib/run-review.js",
@@ -2038,7 +2572,10 @@
         ],
         "extends": "FlowCommand",
         "usedBy": null,
-        "id": "d4e97204"
+        "id": "d4e97204",
+        "enrich": {
+          "attempts": 1
+        }
       },
       {
         "file": "src/flow/lib/run-sync.js",
@@ -2061,7 +2598,10 @@
         ],
         "extends": "FlowCommand",
         "usedBy": null,
-        "id": "6cc87b22"
+        "id": "6cc87b22",
+        "enrich": {
+          "attempts": 1
+        }
       },
       {
         "file": "src/flow/lib/set-auto.js",
@@ -2079,7 +2619,10 @@
         ],
         "extends": "FlowCommand",
         "usedBy": null,
-        "id": "2c71e989"
+        "id": "2c71e989",
+        "enrich": {
+          "attempts": 1
+        }
       },
       {
         "file": "src/flow/lib/set-issue-log.js",
@@ -2109,7 +2652,10 @@
           "src/lib/agent.js",
           "src/lib/process.js"
         ],
-        "id": "65ac9e4f"
+        "id": "65ac9e4f",
+        "enrich": {
+          "attempts": 1
+        }
       },
       {
         "file": "src/flow/lib/set-issue.js",
@@ -2127,7 +2673,10 @@
         ],
         "extends": "FlowCommand",
         "usedBy": null,
-        "id": "c3865b58"
+        "id": "c3865b58",
+        "enrich": {
+          "attempts": 1
+        }
       },
       {
         "file": "src/flow/lib/set-metric.js",
@@ -2146,7 +2695,10 @@
         ],
         "extends": "FlowCommand",
         "usedBy": null,
-        "id": "40d93087"
+        "id": "40d93087",
+        "enrich": {
+          "attempts": 1
+        }
       },
       {
         "file": "src/flow/lib/set-note.js",
@@ -2164,7 +2716,10 @@
         ],
         "extends": "FlowCommand",
         "usedBy": null,
-        "id": "7c2ef03f"
+        "id": "7c2ef03f",
+        "enrich": {
+          "attempts": 1
+        }
       },
       {
         "file": "src/flow/lib/set-req.js",
@@ -2182,7 +2737,10 @@
         ],
         "extends": "FlowCommand",
         "usedBy": null,
-        "id": "6dd22e12"
+        "id": "6dd22e12",
+        "enrich": {
+          "attempts": 1
+        }
       },
       {
         "file": "src/flow/lib/set-request.js",
@@ -2200,7 +2758,10 @@
         ],
         "extends": "FlowCommand",
         "usedBy": null,
-        "id": "546ef334"
+        "id": "546ef334",
+        "enrich": {
+          "attempts": 1
+        }
       },
       {
         "file": "src/flow/lib/set-step.js",
@@ -2219,7 +2780,10 @@
         ],
         "extends": "FlowCommand",
         "usedBy": null,
-        "id": "d4cb8d93"
+        "id": "d4cb8d93",
+        "enrich": {
+          "attempts": 1
+        }
       },
       {
         "file": "src/flow/lib/set-summary.js",
@@ -2237,7 +2801,10 @@
         ],
         "extends": "FlowCommand",
         "usedBy": null,
-        "id": "f62c866f"
+        "id": "f62c866f",
+        "enrich": {
+          "attempts": 1
+        }
       },
       {
         "file": "src/flow/lib/set-test-summary.js",
@@ -2255,7 +2822,10 @@
         ],
         "extends": "FlowCommand",
         "usedBy": null,
-        "id": "962cab89"
+        "id": "962cab89",
+        "enrich": {
+          "attempts": 1
+        }
       },
       {
         "file": "src/flow/registry.js",
@@ -2282,7 +2852,10 @@
         "usedBy": [
           "src/flow.js"
         ],
-        "id": "d64f4095"
+        "id": "d64f4095",
+        "enrich": {
+          "attempts": 1
+        }
       },
       {
         "file": "src/help.js",
@@ -2304,13 +2877,16 @@
         ],
         "extends": null,
         "usedBy": null,
-        "id": "4ac07fa0"
+        "id": "4ac07fa0",
+        "enrich": {
+          "attempts": 1
+        }
       },
       {
         "file": "src/lib/agent.js",
-        "hash": "f50c3b1da78b44e9de837d98eee173ef",
+        "hash": "cdee50407dd9a2706c0c1ad48b241e52",
         "lines": 744,
-        "mtime": "2026-04-10T06:35:13.099Z",
+        "mtime": "2026-04-10T09:23:52.011Z",
         "className": "agent",
         "methods": [
           "callAgent",
@@ -2376,7 +2952,10 @@
           "src/lib/types.js",
           "src/setup.js"
         ],
-        "id": "13ddf392"
+        "id": "13ddf392",
+        "enrich": {
+          "attempts": 1
+        }
       },
       {
         "file": "src/lib/agents-md.js",
@@ -2399,7 +2978,10 @@
         "usedBy": [
           "src/setup.js"
         ],
-        "id": "9f3f55f7"
+        "id": "9f3f55f7",
+        "enrich": {
+          "attempts": 1
+        }
       },
       {
         "file": "src/lib/cli.js",
@@ -2447,7 +3029,10 @@
           "src/setup.js",
           "src/upgrade.js"
         ],
-        "id": "f351ecc4"
+        "id": "f351ecc4",
+        "enrich": {
+          "attempts": 1
+        }
       },
       {
         "file": "src/lib/config.js",
@@ -2495,7 +3080,10 @@
           "src/setup.js",
           "src/upgrade.js"
         ],
-        "id": "dff6e5b4"
+        "id": "dff6e5b4",
+        "enrich": {
+          "attempts": 1
+        }
       },
       {
         "file": "src/lib/entrypoint.js",
@@ -2522,7 +3110,10 @@
           "src/setup.js",
           "src/upgrade.js"
         ],
-        "id": "5c7afa99"
+        "id": "5c7afa99",
+        "enrich": {
+          "attempts": 1
+        }
       },
       {
         "file": "src/lib/exit-codes.js",
@@ -2547,7 +3138,10 @@
           "src/setup.js",
           "src/upgrade.js"
         ],
-        "id": "82a3b684"
+        "id": "82a3b684",
+        "enrich": {
+          "attempts": 1
+        }
       },
       {
         "file": "src/lib/flow-envelope.js",
@@ -2572,7 +3166,10 @@
         "usedBy": [
           "src/flow.js"
         ],
-        "id": "4f01cb50"
+        "id": "4f01cb50",
+        "enrich": {
+          "attempts": 1
+        }
       },
       {
         "file": "src/lib/flow-state.js",
@@ -2654,7 +3251,10 @@
         "usedBy": [
           "src/flow.js"
         ],
-        "id": "5bb0bb76"
+        "id": "5bb0bb76",
+        "enrich": {
+          "attempts": 1
+        }
       },
       {
         "file": "src/lib/formatter.js",
@@ -2672,7 +3272,10 @@
         ],
         "extends": null,
         "usedBy": null,
-        "id": "994720ab"
+        "id": "994720ab",
+        "enrich": {
+          "attempts": 1
+        }
       },
       {
         "file": "src/lib/git-helpers.js",
@@ -2703,7 +3306,10 @@
         ],
         "extends": null,
         "usedBy": null,
-        "id": "61b28e9c"
+        "id": "61b28e9c",
+        "enrich": {
+          "attempts": 1
+        }
       },
       {
         "file": "src/lib/guardrail.js",
@@ -2739,7 +3345,10 @@
         "usedBy": [
           "src/lib/lint.js"
         ],
-        "id": "bb462f4e"
+        "id": "bb462f4e",
+        "enrich": {
+          "attempts": 1
+        }
       },
       {
         "file": "src/lib/i18n.js",
@@ -2781,7 +3390,10 @@
           "src/setup.js",
           "src/upgrade.js"
         ],
-        "id": "45a1457c"
+        "id": "45a1457c",
+        "enrich": {
+          "attempts": 1
+        }
       },
       {
         "file": "src/lib/include.js",
@@ -2804,7 +3416,10 @@
         "usedBy": [
           "src/lib/skills.js"
         ],
-        "id": "d35107ed"
+        "id": "d35107ed",
+        "enrich": {
+          "attempts": 1
+        }
       },
       {
         "file": "src/lib/json-parse.js",
@@ -2826,7 +3441,10 @@
         ],
         "extends": null,
         "usedBy": null,
-        "id": "a2f5875b"
+        "id": "a2f5875b",
+        "enrich": {
+          "attempts": 1
+        }
       },
       {
         "file": "src/lib/lint.js",
@@ -2854,7 +3472,10 @@
         ],
         "extends": null,
         "usedBy": null,
-        "id": "aa4a324d"
+        "id": "aa4a324d",
+        "enrich": {
+          "attempts": 1
+        }
       },
       {
         "file": "src/lib/log.js",
@@ -2890,7 +3511,10 @@
           "src/lib/process.js",
           "src/sdd-forge.js"
         ],
-        "id": "3d7bb5e6"
+        "id": "3d7bb5e6",
+        "enrich": {
+          "attempts": 1
+        }
       },
       {
         "file": "src/lib/multi-select.js",
@@ -2912,13 +3536,16 @@
         "usedBy": [
           "src/setup.js"
         ],
-        "id": "9a04a164"
+        "id": "9a04a164",
+        "enrich": {
+          "attempts": 1
+        }
       },
       {
         "file": "src/lib/presets.js",
-        "hash": "3a8b5ea40a0296fac5e3ac5f55265ac8",
-        "lines": 203,
-        "mtime": "2026-04-10T07:30:52.461Z",
+        "hash": "11a34c9d63a1e0bb50ead5b289acd566",
+        "lines": 210,
+        "mtime": "2026-04-10T12:35:55.522Z",
         "className": "presets",
         "methods": [
           "resolveChain",
@@ -2932,7 +3559,8 @@
         "imports": [
           "fs",
           "path",
-          "url"
+          "url",
+          "./progress.js"
         ],
         "exports": [
           "resolveChain",
@@ -2951,7 +3579,10 @@
           "src/presets-cmd.js",
           "src/setup.js"
         ],
-        "id": "ae76d513"
+        "id": "ae76d513",
+        "enrich": {
+          "attempts": 1
+        }
       },
       {
         "file": "src/lib/process.js",
@@ -2982,7 +3613,10 @@
           "src/lib/git-helpers.js",
           "src/lib/lint.js"
         ],
-        "id": "6196b26c"
+        "id": "6196b26c",
+        "enrich": {
+          "attempts": 1
+        }
       },
       {
         "file": "src/lib/progress.js",
@@ -3002,8 +3636,13 @@
           "createProgress"
         ],
         "extends": null,
-        "usedBy": null,
-        "id": "fa23a1ba"
+        "usedBy": [
+          "src/lib/presets.js"
+        ],
+        "id": "fa23a1ba",
+        "enrich": {
+          "attempts": 1
+        }
       },
       {
         "file": "src/lib/skills.js",
@@ -3036,13 +3675,16 @@
           "src/setup.js",
           "src/upgrade.js"
         ],
-        "id": "a1344e4a"
+        "id": "a1344e4a",
+        "enrich": {
+          "attempts": 1
+        }
       },
       {
         "file": "src/lib/types.js",
-        "hash": "4ecdad1c52328af51843cd8045a4683e",
+        "hash": "1579a4713f1484ca4b9eea07939b4035",
         "lines": 406,
-        "mtime": "2026-04-10T06:35:13.100Z",
+        "mtime": "2026-04-10T09:22:42.667Z",
         "className": "types",
         "methods": [
           "validateConfig",
@@ -3061,7 +3703,32 @@
           "src/lib/config.js",
           "src/setup.js"
         ],
-        "id": "69d5afb4"
+        "id": "69d5afb4",
+        "enrich": {
+          "attempts": 1
+        }
+      },
+      {
+        "file": "src/loader.js",
+        "hash": "a710da80fe6b4710fa5277534bd35018",
+        "lines": 37,
+        "mtime": "2026-04-10T08:28:12.967Z",
+        "className": "loader",
+        "methods": [
+          "resolve"
+        ],
+        "imports": [
+          "sdd-forge/api"
+        ],
+        "exports": [
+          "resolve"
+        ],
+        "extends": null,
+        "usedBy": null,
+        "id": "bc582fbf",
+        "enrich": {
+          "attempts": 1
+        }
       },
       {
         "file": "src/presets-cmd.js",
@@ -3081,7 +3748,10 @@
         "exports": [],
         "extends": null,
         "usedBy": null,
-        "id": "85926390"
+        "id": "85926390",
+        "enrich": {
+          "attempts": 1
+        }
       },
       {
         "file": "src/presets/base/data/package.js",
@@ -3269,9 +3939,9 @@
       },
       {
         "file": "src/presets/cakephp2/data/config.js",
-        "hash": "6f0a5eee5f10707004c275f08fec400e",
-        "lines": 830,
-        "mtime": "2026-04-10T06:35:13.102Z",
+        "hash": "b308f40bd113e49c14646c76cf36dae6",
+        "lines": 832,
+        "mtime": "2026-04-10T07:21:55.552Z",
         "className": "config",
         "methods": [
           "ConfigEntry",
@@ -3295,7 +3965,8 @@
           "path",
           "../../webapp/data/webapp-data-source.js",
           "../../../docs/lib/analysis-entry.js",
-          "../../../docs/lib/php-array-parser.js"
+          "../../../docs/lib/php-array-parser.js",
+          "../../lib/path-match.js"
         ],
         "exports": [
           "ConfigEntry",
@@ -3361,9 +4032,9 @@
       },
       {
         "file": "src/presets/cakephp2/data/email.js",
-        "hash": "8a3a6814876b84cf18a6ab70660a8fca",
-        "lines": 178,
-        "mtime": "2026-04-10T06:35:13.103Z",
+        "hash": "f0e52f9adfc09b518eef0fff07114c57",
+        "lines": 179,
+        "mtime": "2026-04-10T07:21:55.552Z",
         "className": "email",
         "methods": [
           "EmailEntry",
@@ -3374,7 +4045,8 @@
           "path",
           "../../webapp/data/webapp-data-source.js",
           "../../../docs/lib/analysis-entry.js",
-          "../../../docs/lib/php-array-parser.js"
+          "../../../docs/lib/php-array-parser.js",
+          "../../lib/path-match.js"
         ],
         "exports": [
           "EmailEntry",
@@ -3387,9 +4059,9 @@
       },
       {
         "file": "src/presets/cakephp2/data/libs.js",
-        "hash": "87933a995ac84fcd8845c8f18d59b9d6",
-        "lines": 153,
-        "mtime": "2026-04-10T06:35:13.103Z",
+        "hash": "f3f0983df9b66f1cd63d02d86181dad3",
+        "lines": 154,
+        "mtime": "2026-04-10T07:21:55.552Z",
         "className": "libs",
         "methods": [
           "LibEntry"
@@ -3398,7 +4070,8 @@
           "fs",
           "../../webapp/data/webapp-data-source.js",
           "../../../docs/lib/analysis-entry.js",
-          "../../../docs/lib/php-array-parser.js"
+          "../../../docs/lib/php-array-parser.js",
+          "../../lib/path-match.js"
         ],
         "exports": [
           "LibEntry",
@@ -3468,9 +4141,9 @@
       },
       {
         "file": "src/presets/cakephp2/data/tests.js",
-        "hash": "a5018ae74f15c8a66cb80ab3c6f43cf0",
-        "lines": 84,
-        "mtime": "2026-04-10T06:35:13.103Z",
+        "hash": "e3961ba81efade3628c37cfc2df68c2c",
+        "lines": 85,
+        "mtime": "2026-04-10T07:21:55.552Z",
         "className": "tests",
         "methods": [
           "TestEntry",
@@ -3480,7 +4153,8 @@
           "fs",
           "path",
           "../../webapp/data/webapp-data-source.js",
-          "../../../docs/lib/analysis-entry.js"
+          "../../../docs/lib/analysis-entry.js",
+          "../../lib/path-match.js"
         ],
         "exports": [
           "TestEntry",
@@ -3493,9 +4167,9 @@
       },
       {
         "file": "src/presets/cakephp2/data/views.js",
-        "hash": "546d262f56786ff63a92b9bf5ab757a5",
-        "lines": 326,
-        "mtime": "2026-04-10T06:35:13.103Z",
+        "hash": "647945d0438573005fb415550b81a804",
+        "lines": 327,
+        "mtime": "2026-04-10T07:21:55.552Z",
         "className": "views",
         "methods": [
           "ViewEntry",
@@ -3512,7 +4186,8 @@
           "../../../docs/lib/scanner.js",
           "../../webapp/data/webapp-data-source.js",
           "../../../docs/lib/analysis-entry.js",
-          "../../../docs/lib/php-array-parser.js"
+          "../../../docs/lib/php-array-parser.js",
+          "../../lib/path-match.js"
         ],
         "exports": [
           "ViewEntry",
@@ -4364,14 +5039,15 @@
       },
       {
         "file": "src/presets/laravel/data/commands.js",
-        "hash": "2348251274aea565cec53cb8f63f42dd",
-        "lines": 22,
-        "mtime": "2026-04-10T06:35:13.110Z",
+        "hash": "f117c02e2b409994b7681be1a3dbaf37",
+        "lines": 23,
+        "mtime": "2026-04-10T07:21:55.553Z",
         "className": "commands",
         "methods": [],
         "imports": [
           "../../webapp/data/commands.js",
-          "../../webapp/data/commands.js"
+          "../../webapp/data/commands.js",
+          "../../lib/path-match.js"
         ],
         "exports": [
           "default"
@@ -4382,9 +5058,9 @@
       },
       {
         "file": "src/presets/laravel/data/config.js",
-        "hash": "b13e6355fc123ec9113ef173d61ebbbd",
-        "lines": 336,
-        "mtime": "2026-04-10T06:35:13.110Z",
+        "hash": "fa11061c5c79a7f1260129f951a5843a",
+        "lines": 337,
+        "mtime": "2026-04-10T07:21:55.553Z",
         "className": "config",
         "methods": [
           "ConfigEntry",
@@ -4399,6 +5075,7 @@
           "path",
           "../../webapp/data/webapp-data-source.js",
           "../../../docs/lib/analysis-entry.js",
+          "../../lib/path-match.js",
           "../../lib/composer-utils.js"
         ],
         "exports": [
@@ -4420,9 +5097,9 @@
       },
       {
         "file": "src/presets/laravel/data/controllers.js",
-        "hash": "552c46196274503f963f51fac41e5b25",
-        "lines": 177,
-        "mtime": "2026-04-10T06:35:13.110Z",
+        "hash": "9419cd45e164a7bbbe3158f7553692cb",
+        "lines": 178,
+        "mtime": "2026-04-10T07:21:55.553Z",
         "className": "controllers",
         "methods": [
           "LaravelControllerEntry",
@@ -4434,7 +5111,8 @@
           "path",
           "../../webapp/data/controllers.js",
           "../../webapp/data/controllers.js",
-          "../../../docs/lib/scanner.js"
+          "../../../docs/lib/scanner.js",
+          "../../lib/path-match.js"
         ],
         "exports": [
           "LaravelControllerEntry",
@@ -4447,9 +5125,9 @@
       },
       {
         "file": "src/presets/laravel/data/models.js",
-        "hash": "24787216db282f7e8d4a1ae02d162c70",
-        "lines": 268,
-        "mtime": "2026-04-10T06:35:13.110Z",
+        "hash": "c87ce181a1d829d91766e3e92d338630",
+        "lines": 269,
+        "mtime": "2026-04-10T07:21:55.553Z",
         "className": "models",
         "methods": [
           "LaravelModelEntry",
@@ -4464,7 +5142,8 @@
           "path",
           "../../webapp/data/models.js",
           "../../webapp/data/models.js",
-          "../../../docs/lib/scanner.js"
+          "../../../docs/lib/scanner.js",
+          "../../lib/path-match.js"
         ],
         "exports": [
           "LaravelModelEntry",
@@ -4477,9 +5156,9 @@
       },
       {
         "file": "src/presets/laravel/data/routes.js",
-        "hash": "bc5fce7121b2304d9cf133746cc0ba17",
-        "lines": 270,
-        "mtime": "2026-04-10T06:35:13.110Z",
+        "hash": "0132469fca22b06be27c255f24987961",
+        "lines": 271,
+        "mtime": "2026-04-10T07:21:55.553Z",
         "className": "routes",
         "methods": [
           "LaravelRouteEntry",
@@ -4498,7 +5177,8 @@
           "fs",
           "path",
           "../../webapp/data/routes.js",
-          "../../webapp/data/routes.js"
+          "../../webapp/data/routes.js",
+          "../../lib/path-match.js"
         ],
         "exports": [
           "LaravelRouteEntry",
@@ -4511,9 +5191,9 @@
       },
       {
         "file": "src/presets/laravel/data/tables.js",
-        "hash": "b937a366376707ef22e798aee513e501",
-        "lines": 306,
-        "mtime": "2026-04-10T06:35:13.110Z",
+        "hash": "567fbe62ccc4b1bd1df422300ea09d8d",
+        "lines": 307,
+        "mtime": "2026-04-10T07:21:55.553Z",
         "className": "tables",
         "methods": [
           "MigrationEntry",
@@ -4526,7 +5206,8 @@
           "fs",
           "path",
           "../../webapp/data/tables.js",
-          "../../../docs/lib/analysis-entry.js"
+          "../../../docs/lib/analysis-entry.js",
+          "../../lib/path-match.js"
         ],
         "exports": [
           "MigrationEntry",
@@ -4671,6 +5352,31 @@
         "extends": null,
         "usedBy": null,
         "id": "9ca3399d"
+      },
+      {
+        "file": "src/presets/lib/path-match.js",
+        "hash": "52ee5a41419d6ba8a44d6152ddf129fd",
+        "lines": 37,
+        "mtime": "2026-04-10T07:21:55.553Z",
+        "className": "path-match",
+        "methods": [
+          "hasPathPrefix",
+          "hasSegmentPath",
+          "hasAnyPathPrefix",
+          "normalizeRelPath",
+          "trimOuterSlashes",
+          "trimLeadingSlashes",
+          "escapeRegExp"
+        ],
+        "imports": [],
+        "exports": [
+          "hasPathPrefix",
+          "hasSegmentPath",
+          "hasAnyPathPrefix"
+        ],
+        "extends": null,
+        "usedBy": null,
+        "id": "422e2dc9"
       },
       {
         "file": "src/presets/library/tests/acceptance/fixtures/src/index.js",
@@ -4954,9 +5660,9 @@
       },
       {
         "file": "src/presets/nextjs/data/components.js",
-        "hash": "77db394f6f70eab924170c6c9e25ff26",
-        "lines": 140,
-        "mtime": "2026-04-10T06:35:13.113Z",
+        "hash": "1849746d26aeb436f73633dcd8b34248",
+        "lines": 141,
+        "mtime": "2026-04-10T07:21:55.553Z",
         "className": "components",
         "methods": [
           "ComponentEntry",
@@ -4970,7 +5676,8 @@
           "../../../docs/lib/data-source.js",
           "../../../docs/lib/scan-source.js",
           "../../../docs/lib/analysis-entry.js",
-          "../../../docs/lib/scanner.js"
+          "../../../docs/lib/scanner.js",
+          "../../lib/path-match.js"
         ],
         "exports": [
           "ComponentEntry",
@@ -4983,9 +5690,9 @@
       },
       {
         "file": "src/presets/nextjs/data/routes.js",
-        "hash": "9772104c7ec36447050e3c0b79837894",
-        "lines": 326,
-        "mtime": "2026-04-10T06:35:13.113Z",
+        "hash": "72b0ed88a52b19c27b09604f9fb94813",
+        "lines": 327,
+        "mtime": "2026-04-10T07:21:55.553Z",
         "className": "routes",
         "methods": [
           "NextjsRouteEntry",
@@ -5003,7 +5710,8 @@
           "../../../docs/lib/data-source.js",
           "../../../docs/lib/scan-source.js",
           "../../../docs/lib/analysis-entry.js",
-          "../../../docs/lib/scanner.js"
+          "../../../docs/lib/scanner.js",
+          "../../lib/path-match.js"
         ],
         "exports": [
           "NextjsRouteEntry",
@@ -5449,15 +6157,16 @@
       },
       {
         "file": "src/presets/symfony/data/commands.js",
-        "hash": "48994b6472a58df9043a4fa54a0ac1be",
-        "lines": 42,
-        "mtime": "2026-04-10T06:35:13.116Z",
+        "hash": "c1b87dc8dfd869a915e054a0d265155e",
+        "lines": 43,
+        "mtime": "2026-04-10T07:21:55.553Z",
         "className": "commands",
         "methods": [],
         "imports": [
           "fs",
           "../../webapp/data/commands.js",
-          "../../webapp/data/commands.js"
+          "../../webapp/data/commands.js",
+          "../../lib/path-match.js"
         ],
         "exports": [
           "default"
@@ -5468,9 +6177,9 @@
       },
       {
         "file": "src/presets/symfony/data/config.js",
-        "hash": "bad18ca08c4a5757ce871b7ddf122736",
-        "lines": 273,
-        "mtime": "2026-04-10T06:35:13.116Z",
+        "hash": "8b7ff0ae4ace4ec2999cfc8444de700d",
+        "lines": 274,
+        "mtime": "2026-04-10T07:21:55.554Z",
         "className": "config",
         "methods": [
           "SymfonyConfigEntry",
@@ -5483,6 +6192,7 @@
           "path",
           "../../webapp/data/webapp-data-source.js",
           "../../../docs/lib/analysis-entry.js",
+          "../../lib/path-match.js",
           "../../lib/composer-utils.js"
         ],
         "exports": [
@@ -5504,9 +6214,9 @@
       },
       {
         "file": "src/presets/symfony/data/controllers.js",
-        "hash": "8b8480be119d7cb2ce141c240d026dcd",
-        "lines": 215,
-        "mtime": "2026-04-10T06:35:13.117Z",
+        "hash": "b9feb1af74758d419ebb69e12a3fed3b",
+        "lines": 216,
+        "mtime": "2026-04-10T07:21:55.554Z",
         "className": "controllers",
         "methods": [
           "analyzeControllers",
@@ -5518,7 +6228,8 @@
           "path",
           "../../webapp/data/controllers.js",
           "../../webapp/data/controllers.js",
-          "../../../docs/lib/scanner.js"
+          "../../../docs/lib/scanner.js",
+          "../../lib/path-match.js"
         ],
         "exports": [
           "analyzeControllers",
@@ -5530,9 +6241,9 @@
       },
       {
         "file": "src/presets/symfony/data/entities.js",
-        "hash": "8da644bf2abadbcd05b3ce704e309654",
-        "lines": 233,
-        "mtime": "2026-04-10T06:35:13.117Z",
+        "hash": "c4cbab3bec1dbf655caf248c53762a79",
+        "lines": 234,
+        "mtime": "2026-04-10T07:21:55.554Z",
         "className": "entities",
         "methods": [
           "EntityEntry",
@@ -5547,7 +6258,8 @@
           "../../webapp/data/webapp-data-source.js",
           "../../../docs/lib/analysis-entry.js",
           "../../../docs/lib/php-array-parser.js",
-          "../../../docs/lib/scanner.js"
+          "../../../docs/lib/scanner.js",
+          "../../lib/path-match.js"
         ],
         "exports": [
           "EntityEntry",
@@ -5560,9 +6272,9 @@
       },
       {
         "file": "src/presets/symfony/data/routes.js",
-        "hash": "56dc8da83bc607931cf75f3feffc1c80",
-        "lines": 333,
-        "mtime": "2026-04-10T06:35:13.117Z",
+        "hash": "7c3047bf21b7d093e0f77ba91b11c8c1",
+        "lines": 334,
+        "mtime": "2026-04-10T07:21:55.554Z",
         "className": "routes",
         "methods": [
           "SymfonyRouteEntry",
@@ -5578,7 +6290,8 @@
           "path",
           "../../webapp/data/routes.js",
           "../../webapp/data/routes.js",
-          "../../../docs/lib/scanner.js"
+          "../../../docs/lib/scanner.js",
+          "../../lib/path-match.js"
         ],
         "exports": [
           "SymfonyRouteEntry",
@@ -5591,9 +6304,9 @@
       },
       {
         "file": "src/presets/symfony/data/tables.js",
-        "hash": "ed2654c9eed1b006fb26d4a6112cb152",
-        "lines": 234,
-        "mtime": "2026-04-10T06:35:13.117Z",
+        "hash": "8f8b7c74ea86965a7b61b5a828481a50",
+        "lines": 235,
+        "mtime": "2026-04-10T07:21:55.554Z",
         "className": "tables",
         "methods": [
           "MigrationEntry",
@@ -5607,7 +6320,8 @@
           "fs",
           "path",
           "../../webapp/data/tables.js",
-          "../../../docs/lib/analysis-entry.js"
+          "../../../docs/lib/analysis-entry.js",
+          "../../lib/path-match.js"
         ],
         "exports": [
           "MigrationEntry",
@@ -5921,21 +6635,26 @@
       },
       {
         "file": "src/sdd-forge.js",
-        "hash": "a8ef56aee9127d46db8ea486c121f91d",
-        "lines": 79,
-        "mtime": "2026-04-10T06:35:13.120Z",
+        "hash": "d84ebc5093fc86394485879bdc0abfdf",
+        "lines": 83,
+        "mtime": "2026-04-10T08:28:12.967Z",
         "className": "sdd-forge",
         "methods": [],
         "imports": [
+          "node:module",
           "path",
           "./lib/cli.js",
           "./lib/exit-codes.js",
-          "./lib/log.js"
+          "./lib/log.js",
+          "sdd-forge/api"
         ],
         "exports": [],
         "extends": null,
         "usedBy": null,
-        "id": "a8608997"
+        "id": "a8608997",
+        "enrich": {
+          "attempts": 1
+        }
       },
       {
         "file": "src/setup.js",
@@ -5981,7 +6700,25 @@
         ],
         "extends": null,
         "usedBy": null,
-        "id": "9820c9db"
+        "id": "9820c9db",
+        "summary": "Implements the `setup` CLI flow that initializes an SDD-enabled project and writes baseline configuration. It combines argument parsing, interactive prompts, file-system bootstrapping, and agent/skill setup into one orchestration entrypoint.",
+        "detail": "The module parses setup flags, loads existing defaults from `.sdd-forge/config.json`, and falls back to interactive wizard inputs when values are missing. It creates required project directories (`.sdd-forge`, output, docs, specs), enforces repository hygiene through `.gitignore` and `.gitattributes`, and validates filesystem paths before registration. It generates or updates agent instruction files by replacing a bounded SDD directive block, preserving surrounding user-managed content. It also handles migration-like fixes such as converting `CLAUDE.md` symlinks to regular files and deploys skill assets for the selected language and workspace. The main routine assembles final config with provider defaults, persists JSON deterministically, and exits with standardized error codes on failure.",
+        "chapter": "cli_commands",
+        "role": "cli",
+        "enrich": {
+          "processedAt": "2026-04-10T12:36:19.560Z",
+          "attempts": 1
+        },
+        "keywords": [
+          "setup command",
+          "project bootstrap",
+          "interactive wizard",
+          "config initialization",
+          "agent file generation",
+          "skills deployment",
+          "filesystem scaffolding",
+          "CLI orchestration"
+        ]
       },
       {
         "file": "src/upgrade.js",
@@ -6008,13 +6745,32 @@
         ],
         "extends": null,
         "usedBy": null,
-        "id": "a631f658"
+        "id": "a631f658",
+        "summary": "Implements the `upgrade` CLI command that refreshes skill templates and project-side skill assets. It focuses on synchronization and cleanup of generated skill artifacts based on current configuration.",
+        "detail": "The module parses upgrade-specific arguments, resolves repository/config paths, and loads runtime settings before performing updates. It calls centralized skill deployment helpers for core and project scopes, then removes obsolete skill files to keep generated assets consistent. It includes localized logging paths via i18n utilities and uses a dedicated result logger to report per-skill actions. The command also normalizes written JSON content formatting when updating config-related files. Error handling is centralized through shared exit-code conventions and direct-entrypoint wiring.",
+        "chapter": "development",
+        "role": "cli",
+        "enrich": {
+          "processedAt": "2026-04-10T12:36:19.560Z",
+          "attempts": 1
+        },
+        "keywords": [
+          "upgrade command",
+          "skill sync",
+          "template refresh",
+          "artifact cleanup",
+          "project maintenance",
+          "config rewrite",
+          "CLI migration",
+          "tooling workflow"
+        ]
       }
     ],
     "summary": {
-      "total": 229,
-      "totalMethods": 737
+      "total": 232,
+      "totalMethods": 745
     },
     "dataSourceHash": "7d725e75d5031be445119323e4947c91"
-  }
+  },
+  "enrichedAt": "2026-04-10T12:38:20.225Z"
 }

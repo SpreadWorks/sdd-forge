@@ -130,11 +130,11 @@ See the [configuration reference](docs/configuration.md) for details.
 | Chapter | Summary |
 | --- | --- |
 | [Tool Overview and Architecture](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/overview.md) | This chapter introduces sdd-forge, a CLI tool that automates documentation generation from source code analysis and e… |
-| [Technology Stack and Operations](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/stack_and_ops.md) | This chapter covers the technology stack and operational procedures for sdd-forge, a CLI tool written in JavaScript (… |
-| [Project Structure](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/project_structure.md) | The sdd-forge project is organized around six major directories, each with a distinct role. |
-| [CLI Command Reference](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/cli_commands.md) |  |
-| [Configuration and Customization](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/configuration.md) | sdd-forge is configured primarily through a single JSON file located at .sdd-forge/config.json, supplemented by proje… |
-| [Internal Design](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/internal_design.md) |  |
+| [Technology Stack and Operations](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/stack_and_ops.md) | This chapter covers the technology stack, dependency management, deployment, and operations procedures for sdd-forge,… |
+| [Project Structure](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/project_structure.md) | This chapter describes the overall directory organization of the sdd-forge project, which is structured around seven … |
+| [CLI Command Reference](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/cli_commands.md) | This chapter documents 8 CLI entrypoints and routed commands in the analyzed files: setup, check, check freshness, do… |
+| [Configuration and Customization](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/configuration.md) | sdd-forge is configured through a single project-level JSON file (.sdd-forge/config.json) and optionally extended by … |
+| [Internal Design](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/internal_design.md) | This chapter describes the internal structure of sdd-forge: a layered CLI tool built entirely on Node.js built-in mod… |
 <!-- {{/data}} -->
 
 ## License

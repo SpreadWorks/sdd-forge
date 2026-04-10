@@ -19,9 +19,30 @@ This chapter describes the overall directory organization of the sdd-forge proje
 ### Directory Layout
 
 <!-- {{data("base.structure.tree")}} -->
+```
+src/    (lib, cli, controller)
+src/check/commands/    (cli)
+src/docs/commands/    (cli, controller)
+src/docs/data/    (model)
+src/docs/lib/    (lib)
+src/docs/lib/lang/    
+src/flow/    
+src/flow/commands/    
+src/flow/lib/    
+src/lib/    
+```
 <!-- {{/data}} -->
 
 <!-- {{data("base.structure.directories", {header: "### Directory Responsibilities\n", labels: "Directory|Files|Role", ignoreError: true})}} -->
+### Directory Responsibilities
+
+| Directory | Files | Role |
+| --- | --- | --- |
+| src/docs | 40 | cli, controller, model, lib |
+| src/flow | 34 | — |
+| src/lib | 22 | — |
+| src | 10 | lib, cli, controller |
+| src/check | 3 | cli |
 <!-- {{/data}} -->
 
 ### Shared Libraries
