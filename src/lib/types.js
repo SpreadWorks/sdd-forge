@@ -28,7 +28,7 @@ import { BUILTIN_PROVIDERS } from "./agent.js";
  * @property {string} name       - 表示名
  * @property {string} command    - 実行コマンド
  * @property {string[]} args     - コマンド引数（{{PROMPT}} プレースホルダー対応）
- * @property {number} [timeoutMs] - タイムアウト (ms)
+ * @property {number} [timeout]  - タイムアウト (秒)
  * @property {string} [systemPromptFlag] - system prompt フラグ (例: "--system-prompt", "--system-prompt-file")
  * @property {string} [jsonOutputFlag] - JSON 出力フラグ (例: "--output-format json" for claude, "--json" for codex)
  */

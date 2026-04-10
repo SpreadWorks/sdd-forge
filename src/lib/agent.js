@@ -625,18 +625,18 @@ function resolveProfileName(agentSection) {
 }
 
 /**
- * Find the best matching provider key from a profile for a given commandId.
- * Uses prefix match: a profile entry "docs" matches "docs.review", "docs.text", etc.
- * The longest (most specific) matching prefix wins.
+ * Build a final agent result object by merging provider settings and resolving timeout.
  *
- * @param {Object} profile   - Profile object: { [prefix]: providerKey }
- * @param {string} commandId - Dot-separated command ID (e.g. "docs.review")
- * @returns {string|null} Provider key or null if no match
+ * @param {Object} providers       - Provider dictionary
+ * @param {string} key             - Provider key to look up
+ * @param {number} globalTimeoutMs - Fallback timeout in milliseconds
+ * @returns {Object|null}
  */
-function buildAgentResult(providers, key, timeoutMs) {
+function buildAgentResult(providers, key, globalTimeoutMs) {
   const provider = providers[key];
   if (!provider) return null;
-  return { ...provider, timeoutMs, providerKey: detectProviderKey(provider.command) };
+  const effectiveTimeoutMs = provider.timeoutMs || (provider.timeout ? provider.timeout * 1000 : globalTimeoutMs);
+  return { ...provider, timeoutMs: effectiveTimeoutMs, providerKey: detectProviderKey(provider.command) };
 }
 
 function resolveProviderKeyFromProfile(profile, commandId) {
