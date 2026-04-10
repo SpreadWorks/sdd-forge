@@ -11,7 +11,7 @@
 
 <!-- {{text({prompt: "Write a 1-2 sentence overview of this chapter. Include the number of major directories and their roles."})}} -->
 
-This chapter covers the directory layout and module organization of the sdd-forge codebase, which is organized into six major top-level directories. These directories serve distinct roles: `src` (CLI entry point), `src/docs` (documentation pipeline — CLI, library, and model), `src/flow` (spec-driven workflow — controller, library, config, and model), `src/lib` (shared utilities — library and model), `src/check` (input validation CLI), and `src/presets` (preset definitions and test fixtures).
+This chapter covers a `src/`-centered layout with 10 major directories that separate CLI entry points and commands, documentation generation components, flow control/configuration, and reusable library/model layers. The structure distinguishes execution surfaces (`check`, `docs`, `flow` commands) from shared logic and data-handling modules (`docs/lib`, `flow/lib`, `lib`, and `docs/data`).
 <!-- {{/text}} -->
 
 ## Content
@@ -20,7 +20,7 @@ This chapter covers the directory layout and module organization of the sdd-forg
 
 <!-- {{data("base.structure.tree")}} -->
 ```
-src/    (cli)
+src/    (lib, cli, middleware)
 src/check/commands/    (cli)
 src/docs/commands/    (cli, lib)
 src/docs/data/    (model)
@@ -41,7 +41,7 @@ src/lib/    (lib, model)
 | src/docs | 40 | cli, lib, model |
 | src/flow | 34 | controller, lib, config, model |
 | src/lib | 22 | lib, model |
-| src | 8 | cli |
+| src | 10 | lib, cli, middleware |
 | src/check | 3 | cli |
 <!-- {{/data}} -->
 
@@ -49,30 +49,13 @@ src/lib/    (lib, model)
 
 <!-- {{text({prompt: "List the shared libraries with class name, file path, and responsibility in table format."})}} -->
 
-| Module | File Path | Responsibility |
+| Class Name | File Path | Responsibility |
 | --- | --- | --- |
-| `presets` | `src/lib/presets.js` | Discovers presets from `src/presets/` and resolves parent-chain inheritance for multi-preset configurations |
-| `config` | `src/lib/config.js` | Loads JSON and package.json files, retrieves SDD configuration, and resolves concurrency settings |
-| `cli` | `src/lib/cli.js` | Core CLI utilities for repository root resolution, environment variable handling, and argument parsing |
-| `agent` | `src/lib/agent.js` | AI agent invocation with system prompt handling and prompt argument resolution |
-| `flow-state` | `src/lib/flow-state.js` | Manages SDD workflow state via `.active-flow` pointer and `flow.json`, and derives phases from step IDs |
-| `flow-envelope` | `src/lib/flow-envelope.js` | Creates structured JSON envelope objects for flow command responses (success, failure, warning) |
-| `git-helpers` | `src/lib/git-helpers.js` | Shared helpers for querying Git state and GitHub CLI availability |
-| `guardrail` | `src/lib/guardrail.js` | Loads, filters, matches, and merges guardrails from JSON configuration |
-| `i18n` | `src/lib/i18n.js` | Internationalization with domain-namespaced translation and locale fallback |
-| `include` | `src/lib/include.js` | Resolves `include()` directives in templates with recursive includes and multiple path resolution schemes |
-| `json-parse` | `src/lib/json-parse.js` | Repairs malformed JSON from AI responses (unescaped quotes, truncation, markdown fences) |
-| `lint` | `src/lib/lint.js` | Validates files against lint guardrail patterns and retrieves lists of changed files |
-| `Logger` | `src/lib/log.js` | Unified JSONL logger with daily rotation and `agent()`, `git()`, `event()` channels for prompt storage |
-| `process` | `src/lib/process.js` | Unified command execution helpers (`runCmd`, `runCmdAsync`, `assertOk`) that return result objects without throwing |
-| `Progress` | `src/lib/progress.js` | Progress bar and pipeline logging utility with TTY/non-TTY handling |
-| `skills` | `src/lib/skills.js` | Discovers skill templates and deploys them to `.agents` and `.claude` directories |
-| `types` | `src/lib/types.js` | JSDoc type definitions and validation functions for config and context objects |
-| `formatter` | `src/lib/formatter.js` | Shared text formatting helpers for CLI output, including section headers and dividers |
-| `agents-md` | `src/lib/agents-md.js` | Loads SDD section markdown templates from preset directories with locale fallback to `en` |
-| `multi-select` | `src/lib/multi-select.js` | Builds flattened tree item lists from presets for interactive terminal selection |
-| `entrypoint` | `src/lib/entrypoint.js` | Detects whether a module is run directly and executes a main function with unified error handling |
-| `exit-codes` | `src/lib/exit-codes.js` | Defines unified exit code constants (`EXIT_SUCCESS`, `EXIT_ERROR`) shared across CLI commands |
+| `FlowCommand` | `src/flow/lib/base-command.js` | Base class for flow commands, defining shared command behavior and execution structure. |
+| `DataSource` | `src/docs/lib/data-source.js` | Base class for `{{data}}` directive resolvers used by documentation data sources. |
+| `AnalysisEntry` | `src/docs/lib/analysis-entry.js` | Base class for `analysis.json` entries, including common metadata fields and restoration helpers. |
+| N/A (module exports) | `src/flow/registry.js` | Central registry for flow subcommand metadata, command resolution, and hook wiring for the flow dispatcher. |
+| N/A (module exports) | `src/lib/presets.js` | Preset discovery and inheritance-chain resolution utilities, including safe and multi-chain resolution helpers. |
 <!-- {{/text}} -->
 
 ---

@@ -1,12 +1,12 @@
 {
-  "analyzedAt": "2026-04-10T07:21:55.862Z",
+  "analyzedAt": "2026-04-10T08:28:13.410Z",
   "package": {
     "entries": [
       {
         "file": "package.json",
-        "hash": "53638204877204ec2e80f0ba8da55d82",
-        "lines": 36,
-        "mtime": "2026-04-09T14:39:14.895Z",
+        "hash": "a0d8607366d1cf6cbeeeaf86b6ebc65d",
+        "lines": 40,
+        "mtime": "2026-04-10T08:28:12.966Z",
         "packageDeps": {
           "dependencies": {},
           "devDependencies": {}
@@ -19,24 +19,25 @@
         },
         "composerDeps": null,
         "id": "451a9f25",
-        "summary": "Root package manifest for the sdd-forge npm package, defining CLI entry point, file inclusions, and test scripts.",
-        "detail": "Declares the package as an ES module with no runtime dependencies, relying solely on Node.js built-ins. The `bin` field maps the `sdd-forge` command to `src/sdd-forge.js`. The `files` field restricts the published payload to `src/` while excluding preset test directories. Supported Node.js versions are pinned to >=18.0.0. Test scripts delegate to a custom `tests/run.js` runner with scope flags for unit, e2e, and acceptance test separation.",
+        "summary": "npm package manifest for sdd-forge defining ESM entry points, exports map, and Node.js engine requirements.",
+        "detail": "Declares the package as an ES module (type: module) with a binary entry at src/sdd-forge.js and two named export paths: the main entry (.) and a public API surface (./api). The files field restricts published content to src/ while excluding preset test directories. Requires Node.js >=18.19.0. Test scripts support unit, e2e, and acceptance scopes via node tests/run.js.",
         "chapter": "stack_and_ops",
         "role": "config",
         "enrich": {
-          "processedAt": "2026-04-10T05:07:49.974Z",
+          "processedAt": "2026-04-10T08:28:52.697Z",
           "attempts": 1
         },
         "keywords": [
           "package.json",
           "npm",
+          "manifest",
+          "ESM",
+          "exports-map",
           "bin",
-          "entry-point",
-          "ES module",
-          "no-dependencies",
-          "node-engines",
-          "publish",
-          "scripts"
+          "engine",
+          "node",
+          "pnpm",
+          "entry-point"
         ]
       }
     ],
@@ -47,6 +48,44 @@
   },
   "modules": {
     "entries": [
+      {
+        "file": "src/api.js",
+        "hash": "74f9f3ae1482d178b9c20f8340a28e73",
+        "lines": 13,
+        "mtime": "2026-04-10T08:28:12.967Z",
+        "className": "api",
+        "methods": [],
+        "imports": [
+          "sdd-forge/api"
+        ],
+        "exports": [
+          "DataSource",
+          "Scannable",
+          "AnalysisEntry"
+        ],
+        "extends": null,
+        "usedBy": null,
+        "id": "64d5fa98",
+        "summary": "Public programmatic API surface for sdd-forge, re-exporting core source-analysis classes for external consumers.",
+        "detail": "Aggregates and re-exports three core abstractions—DataSource, Scannable, and AnalysisEntry—from their respective internal lib modules. Corresponds to the ./api export path defined in package.json's exports map, providing a stable interface for programmatic use. Keeps the public API surface minimal and decoupled from the CLI entry point. Acts as a facade that shields consumers from internal module paths.",
+        "chapter": "internal_design",
+        "role": "lib",
+        "enrich": {
+          "processedAt": "2026-04-10T08:28:52.697Z",
+          "attempts": 1
+        },
+        "keywords": [
+          "api",
+          "public-api",
+          "DataSource",
+          "Scannable",
+          "AnalysisEntry",
+          "re-export",
+          "facade",
+          "programmatic",
+          "exports"
+        ]
+      },
       {
         "file": "src/check.js",
         "hash": "5de97c6fb3ac23fec9ee11db464de760",
@@ -4933,6 +4972,44 @@
         ]
       },
       {
+        "file": "src/loader.js",
+        "hash": "a710da80fe6b4710fa5277534bd35018",
+        "lines": 37,
+        "mtime": "2026-04-10T08:28:12.967Z",
+        "className": "loader",
+        "methods": [
+          "resolve"
+        ],
+        "imports": [
+          "sdd-forge/api"
+        ],
+        "exports": [
+          "resolve"
+        ],
+        "extends": null,
+        "usedBy": null,
+        "id": "7c03d66a",
+        "summary": "Custom Node.js ES module loader that intercepts sdd-forge/ prefixed specifiers for package-local resolution.",
+        "detail": "Implements a resolve hook compatible with the Node.js module registration API (node:module register). Detects specifiers beginning with the SDDFORGE_PREFIX constant ('sdd-forge/') and applies custom resolution logic, delegating all other specifiers to the default nextResolve. Registered from src/sdd-forge.js at process startup before any subcommand dispatch occurs, ensuring the hook is active for all subsequent dynamic imports.",
+        "chapter": "project_structure",
+        "role": "middleware",
+        "enrich": {
+          "processedAt": "2026-04-10T08:28:52.697Z",
+          "attempts": 1
+        },
+        "keywords": [
+          "loader",
+          "module-resolver",
+          "ESM",
+          "custom-loader",
+          "resolve-hook",
+          "specifier",
+          "node:module",
+          "register",
+          "prefix"
+        ]
+      },
+      {
         "file": "src/presets-cmd.js",
         "hash": "b960b9bf595e9acdabd0fc09639ec3bd",
         "lines": 84,
@@ -7850,38 +7927,42 @@
       },
       {
         "file": "src/sdd-forge.js",
-        "hash": "a8ef56aee9127d46db8ea486c121f91d",
-        "lines": 79,
-        "mtime": "2026-04-09T14:39:15.032Z",
+        "hash": "d84ebc5093fc86394485879bdc0abfdf",
+        "lines": 83,
+        "mtime": "2026-04-10T08:28:12.967Z",
         "className": "sdd-forge",
         "methods": [],
         "imports": [
+          "node:module",
           "path",
           "./lib/cli.js",
           "./lib/exit-codes.js",
-          "./lib/log.js"
+          "./lib/log.js",
+          "sdd-forge/api"
         ],
         "exports": [],
         "extends": null,
         "usedBy": null,
         "id": "a8608997",
-        "summary": "Main CLI entry point for sdd-forge that initializes logging and dispatches to namespace or independent subcommand scripts via dynamic import.",
-        "detail": "Handles --version and --help flags before any dispatch. Initializes the Logger singleton from project config when available. NAMESPACE_DISPATCHERS (docs, flow, check) forward to their dedicated dispatcher scripts. INDEPENDENT maps short command names to their script paths. Rewrites process.argv before dynamic import to preserve downstream argument parsing semantics. Exits with EXIT_ERROR for unknown commands.",
+        "summary": "Main CLI entry point that registers the custom module loader, parses the first argument as a subcommand, and dispatches to namespace or independent handler modules via dynamic import.",
+        "detail": "Registers the custom loader via node:module register() before any other imports to ensure hook coverage. Handles the help subcommand by rewriting process.argv and dynamically importing help.js. Partitions subcommands into NAMESPACE_DISPATCHERS (docs, flow, check) and an INDEPENDENT command map, routing each to its corresponding dispatcher script path under PKG_DIR. Passes arguments by mutating process.argv before each dynamic import. Emits a deprecation warning for the legacy cfg.logs.prompts config field and exits with EXIT_ERROR for unrecognized subcommands.",
         "chapter": "cli_commands",
         "role": "cli",
         "enrich": {
-          "processedAt": "2026-04-10T05:10:15.006Z",
+          "processedAt": "2026-04-10T08:28:52.697Z",
           "attempts": 1
         },
         "keywords": [
-          "entry point",
-          "CLI dispatcher",
-          "sdd-forge",
-          "namespace",
+          "CLI",
+          "entry-point",
+          "dispatcher",
           "subcommand",
-          "dynamic import",
-          "routing",
-          "sdd-forge.js"
+          "dynamic-import",
+          "namespace",
+          "loader",
+          "process.argv",
+          "exit-code",
+          "routing"
         ]
       },
       {
@@ -7999,10 +8080,10 @@
       }
     ],
     "summary": {
-      "total": 230,
-      "totalMethods": 744
+      "total": 232,
+      "totalMethods": 745
     },
     "dataSourceHash": "7d725e75d5031be445119323e4947c91"
   },
-  "enrichedAt": "2026-04-10T05:10:15.006Z"
+  "enrichedAt": "2026-04-10T08:28:52.697Z"
 }

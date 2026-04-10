@@ -129,9 +129,9 @@ See the [configuration reference](docs/configuration.md) for details.
 <!-- {{data("cli.docs.chapters", {header: "", labels: "Chapter|Summary", ignoreError: true})}} -->
 | Chapter | Summary |
 | --- | --- |
-| [Tool Overview and Architecture](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/overview.md) | This chapter introduces sdd-forge, a CLI tool that automates technical documentation generation from source code anal… |
-| [Technology Stack and Operations](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/stack_and_ops.md) | sdd-forge is a JavaScript CLI tool built entirely on Node.js (>=18.0.0) with no external runtime dependencies, using … |
-| [Project Structure](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/project_structure.md) | This chapter covers the directory layout and module organization of the sdd-forge codebase, which is organized into s… |
+| [Tool Overview and Architecture](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/overview.md) | sdd-forge is a Node.js CLI for Spec-Driven Development that combines source-code analysis, template-based documentati… |
+| [Technology Stack and Operations](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/stack_and_ops.md) | This chapter summarizes the stack and operating model of sdd-forge, a JavaScript CLI built on Node.js with ES Modules… |
+| [Project Structure](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/project_structure.md) | This chapter covers a src/-centered layout with 10 major directories that separate CLI entry points and commands, doc… |
 | [CLI Command Reference](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/cli_commands.md) | sdd-forge exposes over 40 commands organized across three namespace dispatchers — docs, flow, and check — alongside f… |
 | [Configuration and Customization](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/configuration.md) | sdd-forge uses a single JSON configuration file stored in the .sdd-forge/ directory, supplemented by selective reads … |
 | [Internal Design](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/internal_design.md) | sdd-forge is organized into three subsystems — docs (documentation pipeline), flow (Spec-Driven Development workflow)… |
