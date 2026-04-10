@@ -15,6 +15,7 @@ import path from "path";
 import ControllersSource from "../../webapp/data/controllers.js";
 import { ControllerEntry } from "../../webapp/data/controllers.js";
 import { findFiles } from "../../../docs/lib/scanner.js";
+import { hasPathPrefix } from "../../lib/path-match.js";
 
 const METHOD_RE = /public\s+function\s+(\w+)\s*\(/g;
 const ATTR_LINE_RE = /^\s*#\[/;
@@ -124,7 +125,7 @@ export default class SymfonyControllersSource extends ControllersSource {
   static Entry = ControllerEntry;
 
   match(relPath) {
-    return relPath.endsWith(".php") && relPath.startsWith("src/Controller/");
+    return relPath.endsWith(".php") && hasPathPrefix(relPath, "src/Controller/");
   }
 
   parse(absPath) {

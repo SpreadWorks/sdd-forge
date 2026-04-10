@@ -15,6 +15,7 @@ import path from "path";
 import ModelsSource from "../../webapp/data/models.js";
 import { ModelEntry } from "../../webapp/data/models.js";
 import { camelToSnake, pluralize, findFiles } from "../../../docs/lib/scanner.js";
+import { hasPathPrefix } from "../../lib/path-match.js";
 
 export class LaravelModelEntry extends ModelEntry {
   fillable = null;
@@ -150,7 +151,7 @@ export default class LaravelModelsSource extends ModelsSource {
 
   match(relPath) {
     return (
-      relPath.startsWith("app/Models/") &&
+      hasPathPrefix(relPath, "app/Models/") &&
       relPath.endsWith(".php")
     );
   }

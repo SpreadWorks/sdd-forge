@@ -19,6 +19,7 @@ import fs from "fs";
 import path from "path";
 import TablesSource from "../../webapp/data/tables.js";
 import { AnalysisEntry } from "../../../docs/lib/analysis-entry.js";
+import { hasPathPrefix } from "../../lib/path-match.js";
 
 export class MigrationEntry extends AnalysisEntry {
   /** Table operations extracted from this migration file. */
@@ -32,7 +33,7 @@ export default class LaravelTablesSource extends TablesSource {
 
   match(relPath) {
     return (
-      relPath.startsWith("database/migrations/") &&
+      hasPathPrefix(relPath, "database/migrations/") &&
       relPath.endsWith(".php")
     );
   }

@@ -22,6 +22,7 @@ import path from "path";
 import RoutesSource from "../../webapp/data/routes.js";
 import { RouteEntry } from "../../webapp/data/routes.js";
 import { findFiles } from "../../../docs/lib/scanner.js";
+import { hasPathPrefix } from "../../lib/path-match.js";
 
 export class SymfonyRouteEntry extends RouteEntry {
   name = null;
@@ -35,7 +36,7 @@ export default class SymfonyRoutesSource extends RoutesSource {
   static Entry = SymfonyRouteEntry;
 
   match(relPath) {
-    return relPath.startsWith("config/routes") && /\.(yaml|yml|xml|php)$/.test(relPath);
+    return hasPathPrefix(relPath, "config/routes") && /\.(yaml|yml|xml|php)$/.test(relPath);
   }
 
   parse(absPath) {

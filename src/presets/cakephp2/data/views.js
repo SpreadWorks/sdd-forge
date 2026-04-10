@@ -8,6 +8,7 @@ import { getFileStats } from "../../../docs/lib/scanner.js";
 import WebappDataSource from "../../webapp/data/webapp-data-source.js";
 import { AnalysisEntry } from "../../../docs/lib/analysis-entry.js";
 import { stripBlockComments } from "../../../docs/lib/php-array-parser.js";
+import { hasPathPrefix } from "../../lib/path-match.js";
 
 export class ViewEntry extends AnalysisEntry {
   /** "helper" | "layout" | "element" */
@@ -24,7 +25,7 @@ export default class CakephpViewsSource extends WebappDataSource {
   static Entry = ViewEntry;
 
   match(relPath) {
-    return /^app\/View\//.test(relPath);
+    return hasPathPrefix(relPath, "app/View/");
   }
 
   parse(absPath) {

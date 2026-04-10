@@ -238,3 +238,73 @@ describe("DataSource methods respect custom labels", () => {
     }
   });
 });
+
+// ---------------------------------------------------------------------------
+// 4. match(relPath) coverage audit
+// ---------------------------------------------------------------------------
+
+const UPDATED_MATCH_SOURCES = [
+  "cakephp2/config",
+  "cakephp2/email",
+  "cakephp2/libs",
+  "cakephp2/tests",
+  "cakephp2/views",
+  "laravel/commands",
+  "laravel/config",
+  "laravel/controllers",
+  "laravel/models",
+  "laravel/routes",
+  "laravel/tables",
+  "nextjs/components",
+  "nextjs/routes",
+  "symfony/commands",
+  "symfony/config",
+  "symfony/controllers",
+  "symfony/entities",
+  "symfony/routes",
+  "symfony/tables",
+];
+
+const UNCHANGED_MATCH_SOURCES = [
+  "base/package",
+  "cakephp2/commands",
+  "cakephp2/controllers",
+  "cakephp2/models",
+  "cli/modules",
+  "drizzle/schema",
+  "edge/runtime",
+  "github-actions/pipelines",
+  "graphql/schema",
+  "hono/middleware",
+  "r2/storage",
+  "webapp/commands",
+  "webapp/controllers",
+  "webapp/models",
+  "webapp/routes",
+  "workers/bindings",
+];
+
+function collectMatchSourceIds() {
+  const presetsDir = path.join(process.cwd(), "src/presets");
+  const ids = [];
+  for (const preset of fs.readdirSync(presetsDir)) {
+    const dataDir = path.join(presetsDir, preset, "data");
+    if (!fs.existsSync(dataDir)) continue;
+    for (const file of fs.readdirSync(dataDir)) {
+      if (!file.endsWith(".js")) continue;
+      const absPath = path.join(dataDir, file);
+      const content = fs.readFileSync(absPath, "utf8");
+      if (!/^\s*match\(relPath\)/m.test(content)) continue;
+      ids.push(`${preset}/${path.basename(file, ".js")}`);
+    }
+  }
+  return ids.sort();
+}
+
+describe("match(relPath) coverage audit", () => {
+  it("classifies all match sources as updated or unchanged", () => {
+    const expected = [...UPDATED_MATCH_SOURCES, ...UNCHANGED_MATCH_SOURCES].sort();
+    const detected = collectMatchSourceIds();
+    assert.deepEqual(expected, detected);
+  });
+});

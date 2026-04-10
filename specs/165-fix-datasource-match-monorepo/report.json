@@ -1,0 +1,42 @@
+{
+  "data": {
+    "implementation": {
+      "diffStat": "README.md                                          |  12 +-\n docs/cli_commands.md                               | 504 ++++++++++++++-------\n docs/configuration.md                              | 200 ++++----\n docs/internal_design.md                            | 347 +++++---------\n docs/overview.md                                   | 261 ++++++-----\n docs/project_structure.md                          |  93 +++-\n docs/stack_and_ops.md                              |  71 +--\n specs/165-fix-datasource-match-monorepo/draft.md   |  54 +++\n specs/165-fix-datasource-match-monorepo/flow.json  | 183 ++++++++\n .../issue-log.json                                 |  92 ++++\n specs/165-fix-datasource-match-monorepo/qa.md      |   9 +\n specs/165-fix-datasource-match-monorepo/review.md  |  89 ++++\n specs/165-fix-datasource-match-monorepo/spec.md    |  76 ++++\n .../tests/README.md                                |  43 ++\n src/presets/cakephp2/data/config.js                |  20 +-\n src/presets/cakephp2/data/email.js                 |   9 +-\n src/presets/cakephp2/data/libs.js                  |   7 +-\n src/presets/cakephp2/data/tests.js                 |   3 +-\n src/presets/cakephp2/data/views.js                 |   3 +-\n src/presets/laravel/data/commands.js               |   3 +-\n src/presets/laravel/data/config.js                 |  11 +-\n src/presets/laravel/data/controllers.js            |   3 +-\n src/presets/laravel/data/models.js                 |   3 +-\n src/presets/laravel/data/routes.js                 |   3 +-\n src/presets/laravel/data/tables.js                 |   3 +-\n src/presets/lib/path-match.js                      |  36 ++\n src/presets/nextjs/data/components.js              |   5 +-\n src/presets/nextjs/data/routes.js                  |   5 +-\n src/presets/symfony/data/commands.js               |   3 +-\n src/presets/symfony/data/config.js                 |   9 +-\n src/presets/symfony/data/controllers.js            |   3 +-\n src/presets/symfony/data/entities.js               |   3 +-\n src/presets/symfony/data/routes.js                 |   3 +-\n src/presets/symfony/data/tables.js                 |   3 +-\n .../unit/presets/monorepo-match-regression.test.js | 144 ++++++\n tests/unit/presets/preset-datasources.test.js      |  70 +++\n 36 files changed, 1629 insertions(+), 757 deletions(-)",
+      "commits": [
+        "feat: feature/165-fix-datasource-match-monorepo"
+      ]
+    },
+    "retro": {
+      "total": 6,
+      "done": 6,
+      "partial": 0,
+      "not_done": 0,
+      "rate": 1,
+      "notes": "All 6 requirements are fully satisfied. The shared path-match helper cleanly addresses nested-path matching (R1), boundary safety (R2), and root-level regression preservation (R3) via the (^|/) regex pattern. Extension and naming constraints (R4, R5) are retained verbatim in every modified match() body. Coverage audit (R6) is enforced by two independent filesystem-scan assertions and documented in a README artifact. Unplanned changes fall into two categories: (1) auto-generated documentation regenerations across docs/ and README.md, which are substantial in volume but are expected SDD finalize-pipeline artifacts; (2) SDD workflow tracking files under specs/. Additionally, review.md records three APPROVED suggestions (rename hasPathPrefix, merge duplicate import statements, merge test audit arrays) that were not implemented — these remain open improvement opportunities but do not affect requirement compliance or correctness."
+    },
+    "issueLog": {
+      "count": 0,
+      "entries": []
+    },
+    "metrics": {
+      "docsRead": 1,
+      "srcRead": 1,
+      "question": 11,
+      "issueLog": 3
+    },
+    "tokenMetrics": {
+      "input": 22,
+      "output": 26104,
+      "cacheRead": 258943,
+      "cacheCreation": 160869,
+      "cost": 1.0725676499999999,
+      "callCount": 10
+    },
+    "tests": null,
+    "sync": {
+      "status": "skipped",
+      "reason": "sync was skipped"
+    }
+  },
+  "text": "  Report\n\n  Implementation\n  ────────────────────────────────────────────────\n    feat: feature/165-fix-datasource-match-monorepo\n    36 files changed, 1629 insertions(+), 757 deletions(-)\n\n  Retro\n  ────────────────────────────────────────────────\n    ████████ 100%  (6 done / 0 partial / 0 miss)\n\n  Metrics\n  ────────────────────────────────────────────────\n    docs read 1  src read 1  Q&A 11  issue-log 3\n    agent calls 10  in 22  out 26104  cache-read 258943  cache-create 160869  cost $1.0726\n\n  Tests\n  ────────────────────────────────────────────────\n    -"
+}

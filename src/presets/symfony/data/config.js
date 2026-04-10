@@ -17,6 +17,7 @@ import fs from "fs";
 import path from "path";
 import WebappDataSource from "../../webapp/data/webapp-data-source.js";
 import { AnalysisEntry } from "../../../docs/lib/analysis-entry.js";
+import { hasPathPrefix, hasSegmentPath } from "../../lib/path-match.js";
 
 export class SymfonyConfigEntry extends AnalysisEntry {
   /** Entry type: "composer" | "env" | "bundle" | "package" | "services" | "kernel" */
@@ -41,10 +42,10 @@ export default class ConfigSource extends WebappDataSource {
   static Entry = SymfonyConfigEntry;
 
   match(relPath) {
-    return relPath.startsWith("config/") ||
-      relPath === ".env" ||
-      relPath === ".env.local" ||
-      relPath === "composer.json";
+    return hasPathPrefix(relPath, "config/") ||
+      hasSegmentPath(relPath, ".env") ||
+      hasSegmentPath(relPath, ".env.local") ||
+      hasSegmentPath(relPath, "composer.json");
   }
 
   parse(absPath) {

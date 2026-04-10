@@ -14,6 +14,7 @@ import fs from "fs";
 import path from "path";
 import TablesSource from "../../webapp/data/tables.js";
 import { AnalysisEntry } from "../../../docs/lib/analysis-entry.js";
+import { hasPathPrefix } from "../../lib/path-match.js";
 
 export class MigrationEntry extends AnalysisEntry {
   tables = null;
@@ -25,7 +26,7 @@ export default class SymfonyTablesSource extends TablesSource {
   static Entry = MigrationEntry;
 
   match(relPath) {
-    return relPath.endsWith(".php") && relPath.startsWith("migrations/");
+    return relPath.endsWith(".php") && hasPathPrefix(relPath, "migrations/");
   }
 
   parse(absPath) {

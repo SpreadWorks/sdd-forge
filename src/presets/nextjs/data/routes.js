@@ -12,8 +12,9 @@ import { DataSource } from "../../../docs/lib/data-source.js";
 import { Scannable } from "../../../docs/lib/scan-source.js";
 import { AnalysisEntry } from "../../../docs/lib/analysis-entry.js";
 import { collectFiles } from "../../../docs/lib/scanner.js";
+import { hasAnyPathPrefix } from "../../lib/path-match.js";
 
-const ROUTE_FILES = /^(app|pages|src\/app|src\/pages)\//;
+const ROUTE_FILE_PREFIXES = ["app/", "pages/", "src/app/", "src/pages/"];
 const ROUTE_EXT = /\.(ts|tsx|js|jsx)$/;
 
 /** Convert directory-based path to URL route path. */
@@ -76,7 +77,7 @@ export default class RoutesSource extends Scannable(DataSource) {
   static Entry = NextjsRouteEntry;
 
   match(relPath) {
-    return ROUTE_EXT.test(relPath) && ROUTE_FILES.test(relPath);
+    return ROUTE_EXT.test(relPath) && hasAnyPathPrefix(relPath, ROUTE_FILE_PREFIXES);
   }
 
   parse(absPath) {

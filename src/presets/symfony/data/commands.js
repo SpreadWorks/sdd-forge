@@ -10,12 +10,13 @@
 import fs from "fs";
 import CommandsSource from "../../webapp/data/commands.js";
 import { CommandEntry } from "../../webapp/data/commands.js";
+import { hasPathPrefix } from "../../lib/path-match.js";
 
 export default class SymfonyCommandsSource extends CommandsSource {
   static Entry = CommandEntry;
 
   match(relPath) {
-    return relPath.startsWith("src/Command/") && relPath.endsWith(".php");
+    return hasPathPrefix(relPath, "src/Command/") && relPath.endsWith(".php");
   }
 
   parse(absPath) {

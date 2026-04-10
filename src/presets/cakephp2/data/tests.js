@@ -6,6 +6,7 @@ import fs from "fs";
 import path from "path";
 import WebappDataSource from "../../webapp/data/webapp-data-source.js";
 import { AnalysisEntry } from "../../../docs/lib/analysis-entry.js";
+import { hasPathPrefix } from "../../lib/path-match.js";
 
 export class TestEntry extends AnalysisEntry {
   /** "controllerTest" | "modelTest" | "fixture" */
@@ -18,7 +19,7 @@ export default class CakephpTestsSource extends WebappDataSource {
   static Entry = TestEntry;
 
   match(relPath) {
-    return /^app\/Test\//.test(relPath);
+    return hasPathPrefix(relPath, "app/Test/");
   }
 
   parse(absPath) {

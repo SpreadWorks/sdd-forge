@@ -11,6 +11,7 @@ import path from "path";
 import WebappDataSource from "../../webapp/data/webapp-data-source.js";
 import { AnalysisEntry } from "../../../docs/lib/analysis-entry.js";
 import { stripBlockComments } from "../../../docs/lib/php-array-parser.js";
+import { hasPathPrefix, hasSegmentPath } from "../../lib/path-match.js";
 
 export class EmailEntry extends AnalysisEntry {
   /** "template" | "config" | "usage" */
@@ -29,10 +30,10 @@ export default class CakephpEmailSource extends WebappDataSource {
   static Entry = EmailEntry;
 
   match(relPath) {
-    return /^app\/View\/Emails\//.test(relPath)
-      || /^app\/Config\/email\.php$/.test(relPath)
-      || /^app\/Console\/Command\/\w+\.php$/.test(relPath)
-      || /^app\/Lib\/\w+\.php$/.test(relPath);
+    return hasPathPrefix(relPath, "app/View/Emails/")
+      || hasSegmentPath(relPath, "app/Config/email.php")
+      || (hasPathPrefix(relPath, "app/Console/Command/") && /\w+\.php$/.test(relPath))
+      || (hasPathPrefix(relPath, "app/Lib/") && /\w+\.php$/.test(relPath));
   }
 
   parse(absPath) {

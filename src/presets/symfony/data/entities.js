@@ -14,6 +14,7 @@ import WebappDataSource from "../../webapp/data/webapp-data-source.js";
 import { AnalysisEntry } from "../../../docs/lib/analysis-entry.js";
 import { camelToSnake } from "../../../docs/lib/php-array-parser.js";
 import { findFiles } from "../../../docs/lib/scanner.js";
+import { hasPathPrefix } from "../../lib/path-match.js";
 
 export class EntityEntry extends AnalysisEntry {
   className = null;
@@ -137,7 +138,7 @@ export default class EntitiesSource extends WebappDataSource {
   static Entry = EntityEntry;
 
   match(relPath) {
-    return relPath.endsWith(".php") && relPath.startsWith("src/Entity/");
+    return relPath.endsWith(".php") && hasPathPrefix(relPath, "src/Entity/");
   }
 
   parse(absPath) {

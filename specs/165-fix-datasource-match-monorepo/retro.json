@@ -1,0 +1,102 @@
+{
+  "spec": "specs/165-fix-datasource-match-monorepo/spec.md",
+  "date": "2026-04-10T07:21:54.180Z",
+  "requirements": [
+    {
+      "desc": "Ensure nested monorepo paths match across all presets with exact segment boundaries",
+      "status": "done",
+      "note": "src/presets/lib/path-match.js introduces hasPathPrefix/hasSegmentPath/hasAnyPathPrefix using (^|/) regex anchoring. Applied across cakephp2 (5 sources), laravel (6), nextjs (2), and symfony (6). monorepo-match-regression.test.js asserts both root-level and nested positive cases for all 19 updated sources."
+    },
+    {
+      "desc": "Prevent look-alike segment false positives (e.g. ControllerX vs Controller)",
+      "status": "done",
+      "note": "Trailing slash in prefix arguments (e.g. 'src/Controller/') ensures the regex does not match 'src/ControllerX/'. NEGATIVE_CASES in monorepo-match-regression.test.js explicitly verify ViewX, ControllerX, appx, and EntityX are rejected."
+    },
+    {
+      "desc": "Preserve existing root-level match outcomes",
+      "status": "done",
+      "note": "hasPathPrefix matches via ^ anchor for root-level paths, preserving existing startsWith semantics. Every CASE in the regression test asserts the root-level sample still returns true alongside the nested variant."
+    },
+    {
+      "desc": "Preserve preset-specific extension constraints",
+      "status": "done",
+      "note": "All extension checks (.php, .tsx/.jsx, .ts/.tsx/.js/.jsx, /(yaml|yml|xml|php)$/) are retained unchanged in every modified match() body alongside the new helper calls. No extension guard was removed or weakened."
+    },
+    {
+      "desc": "Preserve preset-specific additional naming/path constraints",
+      "status": "done",
+      "note": "laravel/controllers retains !relPath.endsWith('/Controller.php'); cakephp2/config retains specific file guards (AppController.php, AppModel.php, PermissionComponent.php, TitlesGraphController.php) via hasSegmentPath; symfony/config retains .env/.env.local/composer.json; symfony/routes retains prefix-without-trailing-slash for config/routes to match both files and subdirectories."
+    },
+    {
+      "desc": "Cover all presets with match(relPath) and document unchanged ones",
+      "status": "done",
+      "note": "Two independent coverage-audit tests (monorepo-match-regression.test.js and preset-datasources.test.js) enumerate UPDATED_SOURCES (19) and UNCHANGED_SOURCES (16) and verify the union equals all filesystem-detected match(relPath) definitions. specs/165-.../tests/README.md provides human-readable audit documentation."
+    }
+  ],
+  "unplanned": [
+    {
+      "file": "README.md",
+      "change": "Chapter summary table regenerated with updated description text (auto-generated docs sync)"
+    },
+    {
+      "file": "docs/cli_commands.md",
+      "change": "Extensive regeneration: all command descriptions, options tables, exit code and stdout/stderr conventions replaced with new AI-generated content"
+    },
+    {
+      "file": "docs/configuration.md",
+      "change": "Configuration reference table, customization points, and environment variable sections regenerated"
+    },
+    {
+      "file": "docs/internal_design.md",
+      "change": "Module list, Mermaid dependency diagram, data flow walkthrough, and extension points sections regenerated"
+    },
+    {
+      "file": "docs/overview.md",
+      "change": "Purpose/problem statement, architecture diagram, concept glossary, and typical usage steps regenerated"
+    },
+    {
+      "file": "docs/project_structure.md",
+      "change": "Directory tree expanded with all preset subdirectories; shared libraries table regenerated"
+    },
+    {
+      "file": "docs/stack_and_ops.md",
+      "change": "Technology stack, dependencies, deployment flow, and operations sections regenerated"
+    },
+    {
+      "file": "specs/165-fix-datasource-match-monorepo/draft.md",
+      "change": "SDD flow artifact: draft document"
+    },
+    {
+      "file": "specs/165-fix-datasource-match-monorepo/flow.json",
+      "change": "SDD flow artifact: workflow state tracking file"
+    },
+    {
+      "file": "specs/165-fix-datasource-match-monorepo/issue-log.json",
+      "change": "SDD flow artifact: issue log with gate and implementation events"
+    },
+    {
+      "file": "specs/165-fix-datasource-match-monorepo/qa.md",
+      "change": "SDD flow artifact: clarification Q&A template"
+    },
+    {
+      "file": "specs/165-fix-datasource-match-monorepo/review.md",
+      "change": "SDD flow artifact: code review results. Three APPROVED findings (hasPathPrefix naming, duplicate imports, test array structure) were not acted upon in the diff."
+    },
+    {
+      "file": "specs/165-fix-datasource-match-monorepo/spec.md",
+      "change": "SDD flow artifact: feature specification"
+    },
+    {
+      "file": "specs/165-fix-datasource-match-monorepo/tests/README.md",
+      "change": "SDD flow artifact: test coverage audit documentation"
+    }
+  ],
+  "summary": {
+    "total": 6,
+    "done": 6,
+    "partial": 0,
+    "not_done": 0,
+    "rate": 1,
+    "notes": "All 6 requirements are fully satisfied. The shared path-match helper cleanly addresses nested-path matching (R1), boundary safety (R2), and root-level regression preservation (R3) via the (^|/) regex pattern. Extension and naming constraints (R4, R5) are retained verbatim in every modified match() body. Coverage audit (R6) is enforced by two independent filesystem-scan assertions and documented in a README artifact. Unplanned changes fall into two categories: (1) auto-generated documentation regenerations across docs/ and README.md, which are substantial in volume but are expected SDD finalize-pipeline artifacts; (2) SDD workflow tracking files under specs/. Additionally, review.md records three APPROVED suggestions (rename hasPathPrefix, merge duplicate import statements, merge test audit arrays) that were not implemented — these remain open improvement opportunities but do not affect requirement compliance or correctness."
+  }
+}

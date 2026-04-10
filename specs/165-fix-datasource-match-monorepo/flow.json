@@ -1,0 +1,183 @@
+{
+  "spec": "specs/165-fix-datasource-match-monorepo/spec.md",
+  "baseBranch": "main",
+  "featureBranch": "feature/165-fix-datasource-match-monorepo",
+  "steps": [
+    {
+      "id": "approach",
+      "status": "done"
+    },
+    {
+      "id": "branch",
+      "status": "done"
+    },
+    {
+      "id": "prepare-spec",
+      "status": "done"
+    },
+    {
+      "id": "draft",
+      "status": "done"
+    },
+    {
+      "id": "gate-draft",
+      "status": "done"
+    },
+    {
+      "id": "spec",
+      "status": "done"
+    },
+    {
+      "id": "gate",
+      "status": "done"
+    },
+    {
+      "id": "approval",
+      "status": "done"
+    },
+    {
+      "id": "test",
+      "status": "done"
+    },
+    {
+      "id": "implement",
+      "status": "done"
+    },
+    {
+      "id": "gate-impl",
+      "status": "done"
+    },
+    {
+      "id": "review",
+      "status": "done"
+    },
+    {
+      "id": "finalize",
+      "status": "pending"
+    },
+    {
+      "id": "commit",
+      "status": "pending"
+    },
+    {
+      "id": "push",
+      "status": "pending"
+    },
+    {
+      "id": "merge",
+      "status": "pending"
+    },
+    {
+      "id": "pr-create",
+      "status": "pending"
+    },
+    {
+      "id": "branch-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "pr-merge",
+      "status": "pending"
+    },
+    {
+      "id": "sync-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "docs-update",
+      "status": "pending"
+    },
+    {
+      "id": "docs-review",
+      "status": "pending"
+    },
+    {
+      "id": "docs-commit",
+      "status": "pending"
+    }
+  ],
+  "requirements": [
+    {
+      "desc": "Ensure nested monorepo paths match across all presets with exact segment boundaries",
+      "status": "pending"
+    },
+    {
+      "desc": "Prevent look-alike segment false positives (e.g. ControllerX vs Controller)",
+      "status": "done"
+    },
+    {
+      "desc": "Preserve existing root-level match outcomes",
+      "status": "done"
+    },
+    {
+      "desc": "Preserve preset-specific extension constraints",
+      "status": "done"
+    },
+    {
+      "desc": "Preserve preset-specific additional naming/path constraints",
+      "status": "done"
+    },
+    {
+      "desc": "Cover all presets with match(relPath) and document unchanged ones",
+      "status": "done"
+    }
+  ],
+  "issue": 128,
+  "request": "#128 issueの対応を進めてください。",
+  "worktree": true,
+  "notes": [
+    "approach: [1] Q&A で要件を整理してから仕様書を作成する",
+    "branch: [1] worktree from main",
+    "draft-q1: scope=[2] include cross-preset path-prefix audit",
+    "draft-q2: policy=[2], require per-datasource judgment (no bulk replace)",
+    "draft-q3: target=[2] all presets mandatory, no omissions",
+    "draft-digression: user asked shared helper for stable quality",
+    "draft-q7: user requested details for helper argumentization",
+    "draft-clarify: per-source specifics remain as config and extra predicates",
+    "finalize: auto [1] all mode"
+  ],
+  "metrics": {
+    "plan": {
+      "docsRead": 1
+    },
+    "draft": {
+      "srcRead": 1,
+      "question": 11,
+      "tokens": {
+        "input": 10,
+        "output": 9083,
+        "cacheRead": 43944,
+        "cacheCreation": 60708
+      },
+      "cost": 0.37711320000000004,
+      "callCount": 5,
+      "responseChars": 5779
+    },
+    "spec": {
+      "tokens": {
+        "input": 6,
+        "output": 7763,
+        "cacheRead": 21630,
+        "cacheCreation": 41200
+      },
+      "cost": 0.277452,
+      "callCount": 3,
+      "responseChars": 4245
+    },
+    "impl": {
+      "issueLog": 3
+    },
+    "gate-impl": {
+      "tokens": {
+        "input": 6,
+        "output": 9258,
+        "cacheRead": 193369,
+        "cacheCreation": 58961
+      },
+      "cost": 0.41800245,
+      "callCount": 2,
+      "responseChars": 2951
+    }
+  },
+  "autoApprove": true
+}

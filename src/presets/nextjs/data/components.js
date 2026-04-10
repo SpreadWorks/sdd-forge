@@ -12,8 +12,9 @@ import { DataSource } from "../../../docs/lib/data-source.js";
 import { Scannable } from "../../../docs/lib/scan-source.js";
 import { AnalysisEntry } from "../../../docs/lib/analysis-entry.js";
 import { collectFiles } from "../../../docs/lib/scanner.js";
+import { hasAnyPathPrefix } from "../../lib/path-match.js";
 
-const COMPONENT_DIRS = /^(app|components|src\/components|src\/app)\//;
+const COMPONENT_DIR_PREFIXES = ["app/", "components/", "src/components/", "src/app/"];
 const COMPONENT_EXT = /\.(tsx|jsx)$/;
 
 function classifyComponent(absPath, content) {
@@ -33,7 +34,7 @@ export default class NextjsComponentsSource extends Scannable(DataSource) {
   static Entry = ComponentEntry;
 
   match(relPath) {
-    return COMPONENT_EXT.test(relPath) && COMPONENT_DIRS.test(relPath);
+    return COMPONENT_EXT.test(relPath) && hasAnyPathPrefix(relPath, COMPONENT_DIR_PREFIXES);
   }
 
   parse(absPath) {

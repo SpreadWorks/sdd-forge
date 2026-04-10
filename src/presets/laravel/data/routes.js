@@ -17,6 +17,7 @@ import fs from "fs";
 import path from "path";
 import RoutesSource from "../../webapp/data/routes.js";
 import { RouteEntry } from "../../webapp/data/routes.js";
+import { hasPathPrefix } from "../../lib/path-match.js";
 
 export class LaravelRouteEntry extends RouteEntry {
   /** All routes extracted from a single route file. */
@@ -30,7 +31,7 @@ export default class LaravelRoutesSource extends RoutesSource {
 
   match(relPath) {
     return (
-      relPath.startsWith("routes/") &&
+      hasPathPrefix(relPath, "routes/") &&
       relPath.endsWith(".php")
     );
   }

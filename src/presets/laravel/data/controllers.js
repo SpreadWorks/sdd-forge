@@ -15,6 +15,7 @@ import path from "path";
 import ControllersSource from "../../webapp/data/controllers.js";
 import { ControllerEntry } from "../../webapp/data/controllers.js";
 import { findFiles } from "../../../docs/lib/scanner.js";
+import { hasPathPrefix } from "../../lib/path-match.js";
 
 export class LaravelControllerEntry extends ControllerEntry {
   diDeps = null;
@@ -77,7 +78,7 @@ export default class LaravelControllersSource extends ControllersSource {
 
   match(relPath) {
     return (
-      relPath.startsWith("app/Http/Controllers/") &&
+      hasPathPrefix(relPath, "app/Http/Controllers/") &&
       relPath.endsWith(".php") &&
       !relPath.endsWith("/Controller.php")
     );

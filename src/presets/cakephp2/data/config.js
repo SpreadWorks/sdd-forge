@@ -13,6 +13,7 @@ import path from "path";
 import WebappDataSource from "../../webapp/data/webapp-data-source.js";
 import { AnalysisEntry } from "../../../docs/lib/analysis-entry.js";
 import { stripBlockComments } from "../../../docs/lib/php-array-parser.js";
+import { hasPathPrefix, hasSegmentPath } from "../../lib/path-match.js";
 
 export class ConfigEntry extends AnalysisEntry {
   /** Identifies which config file type this entry came from */
@@ -411,15 +412,16 @@ export default class CakephpConfigSource extends WebappDataSource {
   static Entry = ConfigEntry;
 
   match(relPath) {
-    return /^app\/Config\//.test(relPath)
-      || /^app\/Controller\/AppController\.php$/.test(relPath)
-      || /^app\/Model\/AppModel\.php$/.test(relPath)
-      || /^app\/Controller\/Component\/PermissionComponent\.php$/.test(relPath)
-      || /^app\/Model\/Logic\/\w+\.php$/.test(relPath)
-      || /^app\/Controller\/TitlesGraphController\.php$/.test(relPath)
-      || /^app\/webroot\/(js|css)\//.test(relPath)
-      || /^app\/Console\/Command\/\w+Shell\.php$/.test(relPath)
-      || path.basename(relPath) === "composer.json";
+    return hasPathPrefix(relPath, "app/Config/")
+      || hasSegmentPath(relPath, "app/Controller/AppController.php")
+      || hasSegmentPath(relPath, "app/Model/AppModel.php")
+      || hasSegmentPath(relPath, "app/Controller/Component/PermissionComponent.php")
+      || (hasPathPrefix(relPath, "app/Model/Logic/") && /\w+\.php$/.test(relPath))
+      || hasSegmentPath(relPath, "app/Controller/TitlesGraphController.php")
+      || hasPathPrefix(relPath, "app/webroot/js/")
+      || hasPathPrefix(relPath, "app/webroot/css/")
+      || (hasPathPrefix(relPath, "app/Console/Command/") && /\w+Shell\.php$/.test(relPath))
+      || hasSegmentPath(relPath, "composer.json");
   }
 
   parse(absPath) {

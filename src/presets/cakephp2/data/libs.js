@@ -6,6 +6,7 @@ import fs from "fs";
 import WebappDataSource from "../../webapp/data/webapp-data-source.js";
 import { AnalysisEntry } from "../../../docs/lib/analysis-entry.js";
 import { stripBlockComments } from "../../../docs/lib/php-array-parser.js";
+import { hasPathPrefix } from "../../lib/path-match.js";
 
 export class LibEntry extends AnalysisEntry {
   /** "library" | "behavior" | "sql" */
@@ -25,9 +26,9 @@ export default class CakephpLibsSource extends WebappDataSource {
   static Entry = LibEntry;
 
   match(relPath) {
-    return /^app\/Lib\//.test(relPath)
-      || /^app\/Model\/Behavior\//.test(relPath)
-      || /^app\/Console\/Command\/Sql\//.test(relPath);
+    return hasPathPrefix(relPath, "app/Lib/")
+      || hasPathPrefix(relPath, "app/Model/Behavior/")
+      || hasPathPrefix(relPath, "app/Console/Command/Sql/");
   }
 
   parse(absPath) {

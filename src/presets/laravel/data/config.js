@@ -17,6 +17,7 @@ import fs from "fs";
 import path from "path";
 import WebappDataSource from "../../webapp/data/webapp-data-source.js";
 import { AnalysisEntry } from "../../../docs/lib/analysis-entry.js";
+import { hasPathPrefix, hasSegmentPath } from "../../lib/path-match.js";
 
 export class ConfigEntry extends AnalysisEntry {
   /** Discriminator: "env" | "configFile" | "provider" | "middleware" */
@@ -41,11 +42,11 @@ export default class ConfigSource extends WebappDataSource {
 
   match(relPath) {
     return (
-      (relPath.startsWith("config/") && relPath.endsWith(".php")) ||
-      relPath === ".env.example" ||
-      relPath === ".env" ||
-      (relPath.startsWith("app/Providers/") && relPath.endsWith(".php")) ||
-      (relPath.startsWith("app/Http/Middleware/") && relPath.endsWith(".php"))
+      (hasPathPrefix(relPath, "config/") && relPath.endsWith(".php")) ||
+      hasSegmentPath(relPath, ".env.example") ||
+      hasSegmentPath(relPath, ".env") ||
+      (hasPathPrefix(relPath, "app/Providers/") && relPath.endsWith(".php")) ||
+      (hasPathPrefix(relPath, "app/Http/Middleware/") && relPath.endsWith(".php"))
     );
   }
 
