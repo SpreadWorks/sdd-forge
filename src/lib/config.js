@@ -76,10 +76,6 @@ export function sddOutputDir(root) {
   return path.join(root, SDD_DIR_NAME, "output");
 }
 
-export function sddDataDir(root) {
-  return path.join(root, SDD_DIR_NAME, "data");
-}
-
 /**
  * .sdd-forge/config.json から lang を読み込む。
  * ファイルが存在しないかパースに失敗した場合は "en" を返す。

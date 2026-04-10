@@ -1,0 +1,42 @@
+{
+  "data": {
+    "implementation": {
+      "diffStat": ".sdd-forge/output/analysis.json                    | 2644 +++-----------------\n README.md                                          |   12 +-\n docs/change_log.md                                 |    4 +-\n docs/cli_commands.md                               |  361 ---\n docs/configuration.md                              |  221 +-\n docs/internal_design.md                            |  355 +--\n docs/overview.md                                   |  262 +-\n docs/project_structure.md                          |   62 +-\n docs/stack_and_ops.md                              |  106 +-\n specs/165-project-local-presets/draft.md           |   55 +\n specs/165-project-local-presets/flow.json          |  207 ++\n specs/165-project-local-presets/issue-log.json     |  104 +\n specs/165-project-local-presets/qa.md              |    9 +\n specs/165-project-local-presets/review.md          |   77 +\n specs/165-project-local-presets/spec.md            |   80 +\n specs/165-project-local-presets/tests/README.md    |   39 +\n .../tests/project-local-presets.test.js            |   88 +\n specs/165-project-local-presets/tests/spec.md      |  187 ++\n src/docs/commands/scan.js                          |    7 +-\n src/docs/lib/resolver-factory.js                   |   20 +-\n src/lib/config.js                                  |    4 -\n src/lib/presets.js                                 |   70 +-\n tests/unit/lib/project-local-presets.test.js       |  111 +\n 23 files changed, 1897 insertions(+), 3188 deletions(-)",
+      "commits": [
+        "feat: feature/165-project-local-presets"
+      ]
+    },
+    "retro": {
+      "total": 6,
+      "done": 5,
+      "partial": 1,
+      "not_done": 0,
+      "rate": 0.92,
+      "notes": "要件 1〜5 は完全に実装されている。要件 6（deprecation 警告）は createResolver()（data フェーズ）にのみ実装されており、scan.js には対応がないため partial。scan のみ実行した場合は警告が出ない点が仕様の意図（「いずれかのコマンド実行時」）と微妙にずれる。計画外変更はドキュメント再生成・flow 管理ファイル・resolveChainSafe 改善が主で、機能要件には影響しない。"
+    },
+    "issueLog": {
+      "count": 0,
+      "entries": []
+    },
+    "metrics": {
+      "docsRead": 2,
+      "srcRead": 2,
+      "question": 5,
+      "issueLog": 7
+    },
+    "tokenMetrics": {
+      "input": 33,
+      "output": 51705,
+      "cacheRead": 649105,
+      "cacheCreation": 729398,
+      "cost": 3.705648,
+      "callCount": 15
+    },
+    "tests": null,
+    "sync": {
+      "status": "skipped",
+      "reason": "sync was skipped"
+    }
+  },
+  "text": "  Report\n\n  Implementation\n  ────────────────────────────────────────────────\n    feat: feature/165-project-local-presets\n    23 files changed, 1897 insertions(+), 3188 deletions(-)\n\n  Retro\n  ────────────────────────────────────────────────\n    ███████░ 92%  (5 done / 1 partial / 0 miss)\n\n  Metrics\n  ────────────────────────────────────────────────\n    docs read ................... 2\n    src read .................... 2\n    Q&A ......................... 5\n    issue-log ................... 7\n    agent calls ................. 15\n    input tokens ................ 33\n    output tokens ............... 51,705\n    cache-read tokens ........... 649,105\n    cache-create tokens ......... 729,398\n    cost ........................ $3.7056\n\n  Tests\n  ────────────────────────────────────────────────\n    -"
+}

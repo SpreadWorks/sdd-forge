@@ -8,7 +8,7 @@
 
 <!-- {{text({prompt: "Write a 1-2 sentence overview of this chapter. Include the tool's purpose, the problem it solves, and its primary use cases."})}} -->
 
-sdd-forge is a Node.js CLI for Spec-Driven Development that combines source-code analysis, template-based documentation generation, and flow-state orchestration for implementation workflows. It solves drifting specs/docs and inconsistent AI-assisted development through deterministic commands for docs pipelines, gate checks, and phase-based execution (`plan`, `implement`, `finalize`).
+This chapter introduces sdd-forge, a CLI tool that automates documentation generation from source code analysis and enforces a Spec-Driven Development (SDD) workflow. It describes the tool's purpose—eliminating documentation drift and ungoverned AI implementation—along with its internal architecture and primary use cases for teams working with AI coding agents.
 <!-- {{/text}} -->
 
 ## Content
@@ -17,11 +17,9 @@ sdd-forge is a Node.js CLI for Spec-Driven Development that combines source-code
 
 <!-- {{text({prompt: "Describe the problem this CLI tool solves and its target users. Derive the purpose from package.json and README."})}} -->
 
-This CLI addresses two recurring problems: documentation that falls out of sync with code, and feature delivery without a controlled path from request to specification, implementation, and wrap-up.
+Engineering teams using AI coding agents face two persistent problems: documentation that drifts out of sync with evolving source code, and AI agents that implement features without validated specifications. sdd-forge addresses both by providing a pipeline that automatically regenerates structured documentation from live source analysis, and a three-phase SDD workflow that gates implementation behind programmatic spec validation. The tool targets software development teams—particularly those using Claude Code, Codex CLI, or similar AI agents—who need always-current documentation and a disciplined process for feature development.
 
-From `package.json` and `README.md`, its purpose is "Spec-Driven Development tooling for automated documentation generation," implemented as a spec-first flow manager for AI coding agents.
-
-Its target users are developers and teams maintaining existing codebases, onboarding into unfamiliar repositories, or running AI-assisted feature work that requires explicit gates, guardrails, and persistent workflow state.
+The package is distributed as a Node.js CLI (`sdd-forge`) and requires no external npm dependencies, relying solely on Node.js built-in modules. It is configured per project via `.sdd-forge/config.json` and supports over 35 built-in presets covering technology stacks such as Node.js CLI tools, Next.js, Laravel, Hono, Drizzle ORM, Cloudflare Workers, and more.
 <!-- {{/text}} -->
 
 ### Architecture Overview
@@ -30,30 +28,26 @@ Its target users are developers and teams maintaining existing codebases, onboar
 
 ```mermaid
 flowchart TD
-  A[User CLI Input\n` sdd-forge <command> ... `] --> B[src/sdd-forge.js\nTop-level router]
+    A["src/sdd-forge.js\nEntry Point"] --> B{Namespace Dispatch}
 
-  B -->|docs| C[src/docs.js\nDocs dispatcher]
-  B -->|flow| D[src/flow.js\nFlow dispatcher]
-  B -->|check| E[src/check.js\nCheck dispatcher]
-  B -->|setup| F[src/setup.js]
-  B -->|upgrade| G[src/upgrade.js]
-  B -->|help| H[src/help.js]
-  B -->|presets| I[src/presets-cmd.js]
+    B --> C["src/docs.js"]
+    B --> D["src/flow.js"]
+    B --> E["src/check.js"]
+    B --> F["Independent Commands\nsetup · upgrade · presets · help"]
 
-  C --> C1[docs build pipeline\nscan -> enrich -> init -> data -> text -> readme -> agents -> translate]
-  C --> C2[docs subcommands\nscan/enrich/init/data/text/readme/forge/review/changelog/agents/translate]
+    C --> G["docs/commands/\nscan · enrich · init · data · text\nreadme · agents · translate"]
+    D --> H["flow/registry.js\nget · set · run"]
+    E --> I["check/commands/\nconfig · freshness · scan"]
 
-  D --> D1[resolve context\nroot/config/flowState]
-  D1 --> D2[FLOW_COMMANDS registry\nprepare/resume/get/set/run]
-  D2 --> D3[Command execution + hooks\npre/post/onError/finally]
-
-  E --> E1[config validation]
-  E --> E2[freshness check]
-  E --> E3[scan coverage check]
-
-  C1 --> O1[Generated outputs\ndocs/*, README.md, AGENTS.md, .sdd-forge/output/analysis.json]
-  D3 --> O2[Flow outputs\nspecs/*/flow.json, reports, git actions]
-  E1 --> O3[Validation/coverage results\ntext or JSON]
+    J(["Source Files"]) --> K["scan"]
+    K --> L[("analysis.json")]
+    L --> M["enrich"]
+    M --> L
+    L --> N["data / text"]
+    N -->|reads| O["src/presets/\nTemplates + DataSources"]
+    N --> P[("docs/*.md")]
+    P --> Q["readme / agents"]
+    Q --> R(["README.md\nAGENTS.md"])
 ```
 <!-- {{/text}} -->
 
@@ -61,28 +55,41 @@ flowchart TD
 
 <!-- {{text({prompt: "Explain the key concepts and terminology needed to understand this tool in table format. Extract the main concepts from source code."})}} -->
 
-| Concept | Meaning in this project | Where it appears |
-|---|---|---|
-| Preset (`type`) | Project-type definition chain used to determine scan rules, templates, and data sources. | `src/lib/presets.js`, `src/presets/*`, `.sdd-forge/config.json` |
-| DataSource / Scannable | Parser units that match files and extract structured analysis entries during scanning. | `src/docs/commands/scan.js`, `src/docs/lib/data-source-loader.js`, `src/presets/*/data/*.js` |
-| `analysis.json` | Central machine-readable analysis artifact used by later docs stages. | `.sdd-forge/output/analysis.json`, `scan -> enrich -> data -> text` pipeline |
-| `{{data}}` directive | Template directive resolved from analysis data into markdown content. | `src/docs/commands/data.js`, `src/docs/lib/directive-parser.js` |
-| `{{text}}` directive | Template directive filled by configured AI agent with generated prose. | `src/docs/commands/text.js`, `src/docs/lib/text-prompts.js` |
-| Flow state (`flow.json`) | Persistent state for SDD steps, requirements, notes, issue linkage, and phase progress. | `specs/<id>/flow.json`, `src/lib/flow-state.js` |
-| Active flow pointer (`.active-flow`) | Pointer list to active flows for resume/recovery across branch/worktree contexts. | `.sdd-forge/.active-flow`, `src/lib/flow-state.js` |
-| Guardrail | Project principles used in gate/lint checks to evaluate specs and implementation changes. | `src/lib/guardrail.js`, `src/flow/lib/run-gate.js`, preset `guardrail.json` files |
-| Agent provider/profile | AI execution config for commands (provider command/args + commandId-based profile routing). | `src/lib/agent.js`, `src/lib/types.js`, `.sdd-forge/config.json` |
+| Concept | Description |
+|---|---|
+| **Preset** | A named bundle of scan patterns, chapter templates, and DataSource classes (e.g., `node-cli`, `laravel`). Presets form a single-inheritance chain via the `parent` field in `preset.json`. |
+| **Analysis** | A structured JSON snapshot (`.sdd-forge/output/analysis.json`) produced by `docs scan`, containing file metadata, classes, methods, imports, exports, and configuration values extracted from source code. |
+| **DataSource** | A class that reads `analysis.json` and returns structured data for insertion into a documentation template via `{{data(...)}}` directives. |
+| **Directive** | A special comment in a markdown template: `{{data(...)}}` for structured data tables and `{{text(...)}}` for AI-generated prose. Both are replaced in-place during the pipeline. |
+| **Pipeline** | The ordered documentation generation sequence: `scan → enrich → init → data → text → readme → agents → [translate]`. Each stage is also executable individually. |
+| **Flow** | A single SDD cycle with three phases—Plan, Implement, Finalize—whose state is persisted in `specs/<NNN>/flow.json`. |
+| **Spec** | A specification document (`spec.md`) created in the Plan phase that defines requirements and acceptance criteria before any implementation begins. |
+| **Guardrail** | A set of design principles defined in a preset's `guardrail.json` that a spec must satisfy, validated by `flow run gate` before implementation is allowed. |
+| **Template** | A markdown file in a preset's `templates/` directory that structures a documentation chapter using directives and `{%block%}` inheritance markers. |
+| **Template Inheritance** | The `{%extends%}` / `{%block%}` mechanism that allows child preset templates to override specific sections of a parent template without duplicating the entire file. |
 <!-- {{/text}} -->
 
 ### Typical Usage Flow
 
 <!-- {{text({prompt: "Describe the typical steps from installation to first output in step format. Derive the steps from help output and command definitions in the source code."})}} -->
 
-1. Install Node.js 18+ and install the CLI globally: `npm install -g sdd-forge`.
-2. In your project, run `sdd-forge setup` to create `.sdd-forge/config.json` and initialize required directories.
-3. Confirm available commands with `sdd-forge help`.
-4. Run `sdd-forge docs build` to execute the docs pipeline (`scan -> enrich -> init -> data -> text -> readme -> agents -> translate`).
-5. Open the first generated outputs in your repository (`docs/`, `README.md`, and `.sdd-forge/output/analysis.json`).
+1. **Install the package globally** — Run `npm install -g sdd-forge` to make the `sdd-forge` command available in your terminal.
+
+2. **Run the interactive setup wizard** — In your project root, run `sdd-forge setup`. The wizard prompts for your project's type (preset, e.g., `node-cli`), documentation output languages, default language, and AI agent provider. It writes `.sdd-forge/config.json` and creates the initial skill files.
+
+3. **Scan source code** — Run `sdd-forge docs scan`. The scanner traverses source files defined by the preset's scan patterns and produces `.sdd-forge/output/analysis.json` with structured metadata.
+
+4. **Enrich the analysis** — Run `sdd-forge docs enrich`. The AI agent adds summaries, chapter assignments, and role annotations to the entries in `analysis.json`.
+
+5. **Initialize chapter templates** — Run `sdd-forge docs init`. The preset's template inheritance chain is resolved and chapter files are written to `docs/`.
+
+6. **Populate structured data** — Run `sdd-forge docs data`. Each `{{data(...)}}` directive in `docs/*.md` is replaced with a generated table from the corresponding DataSource.
+
+7. **Generate AI prose** — Run `sdd-forge docs text`. Each `{{text(...)}}` directive is replaced with AI-generated content based on the directive's prompt and the current analysis.
+
+8. **Build README and agent context** — Run `sdd-forge docs readme` and `sdd-forge docs agents` to produce `README.md` and `AGENTS.md`.
+
+9. **Run the full pipeline at once** — Use `sdd-forge docs build` as a shortcut to execute steps 3–8 in a single command.
 <!-- {{/text}} -->
 
 # System Overview
@@ -92,7 +99,7 @@ flowchart TD
 
 <!-- {{text({prompt: "Write a 1-2 sentence overview of this project."})}} -->
 
-sdd-forge is a spec-first development CLI that unifies workflow orchestration and automated documentation generation from source code. It provides deterministic command pipelines for scanning code, generating docs, enforcing gates and guardrails, and tracking flow state across planning, implementation, and finalization.
+sdd-forge is a CLI tool that automates documentation generation from source code analysis and provides a Spec-Driven Development workflow for teams building with AI coding agents. It keeps project documentation synchronized with the codebase and enforces specification validation before implementation begins.
 <!-- {{/text}} -->
 
 
@@ -103,7 +110,7 @@ sdd-forge is a spec-first development CLI that unifies workflow orchestration an
 
 <!-- {{text({prompt: "Write a 1-2 sentence overview of this chapter. Include the project's architecture and whether it integrates with external systems."})}} -->
 
-This chapter explains a modular CLI architecture centered on a single entrypoint router, with dedicated dispatchers for docs generation, flow execution, and quality checks, plus shared libraries for config, agent invocation, and state persistence. The project integrates with external systems through command-line interfaces (Git, GitHub CLI, and AI agent CLIs such as Claude/Codex), while keeping orchestration logic in local Node.js modules.
+This chapter describes the internal component architecture of sdd-forge, showing how the CLI dispatcher, documentation pipeline, SDD flow engine, preset system, and shared libraries relate to one another. The tool integrates with external AI agent providers (Claude CLI, Codex CLI, or custom commands) and optionally with Git and the GitHub CLI for branch management and pull request workflows.
 <!-- {{/text}} -->
 
 ## Content
@@ -112,36 +119,38 @@ This chapter explains a modular CLI architecture centered on a single entrypoint
 <!-- {{text({prompt: "Generate a mermaid flowchart showing the project architecture. Include data flows between major components. Output only the mermaid code block."})}} -->
 
 ```mermaid
-flowchart LR
-  U[Developer / AI agent] --> CLI[sdd-forge CLI]
+flowchart TD
+    Entry["src/sdd-forge.js\nCLI Entry"] --> Dispatch{Namespace Dispatch}
 
-  CLI --> SETUP[setup.js]
-  CLI --> UPGRADE[upgrade.js]
-  CLI --> DOCS[docs.js dispatcher]
-  CLI --> FLOW[flow.js dispatcher]
-  CLI --> CHECK[check.js dispatcher]
+    Dispatch --> DocsSrc["src/docs.js"]
+    Dispatch --> FlowSrc["src/flow.js"]
+    Dispatch --> CheckSrc["src/check.js"]
+    Dispatch --> Indep["setup / upgrade / presets"]
 
-  SETUP --> CFG[.sdd-forge/config.json]
-  UPGRADE --> SKILLS[Skill/template-managed files]
+    DocsSrc --> Pipeline["docs/commands/*.js\nPipeline Stages"]
+    Pipeline --> Scanner["scan → analysis.json"]
+    Scanner --> AnalysisDB[("analysis.json\n.sdd-forge/output/")]
+    AnalysisDB --> Enrich["enrich"]
+    Enrich -->|AI call| AgentLib["src/lib/agent.js"]
+    AgentLib --> AI(["AI Agent\nClaude / Codex / Custom"])
+    Enrich --> AnalysisDB
+    AnalysisDB --> DataText["data + text"]
+    DataText --> PresetSys["src/presets/\nTemplates + DataSources"]
+    DataText --> DocsDir[("docs/*.md")]
+    DocsDir --> ReadmeAgents["readme + agents"]
+    ReadmeAgents --> Output(["README.md\nAGENTS.md"])
 
-  DOCS --> SCAN[scan: DataSources parse source files]
-  SCAN --> ANALYSIS[.sdd-forge/output/analysis.json]
-  DOCS --> ENRICH[enrich: AI metadata augmentation]
-  ENRICH --> ANALYSIS
-  DOCS --> DATA[data: resolve {{data}}]
-  DOCS --> TEXT[text: resolve {{text}} via agent]
-  DOCS --> DOCOUT[docs/*.md + README.md + AGENTS.md]
+    FlowSrc --> Registry["flow/registry.js"]
+    Registry --> GetSet["flow/lib/get-*.js\nflow/lib/set-*.js"]
+    Registry --> RunActions["flow/lib/run-*.js\ngate · review · finalize"]
+    GetSet <--> FlowState[("specs/NNN/flow.json")]
+    RunActions --> AgentLib
+    RunActions --> GitLib["src/lib/git-helpers.js"]
+    GitLib --> Git(["git / gh CLI"])
 
-  FLOW --> STATE[specs/<id>/flow.json + .active-flow]
-  FLOW --> GATE[gate/review/lint/finalize actions]
-  GATE --> GIT[git repository state]
-
-  CHECK --> REPORT[config/freshness/scan reports]
-
-  AI[Agent CLI\nclaude/codex] <--> DOCS
-  AI <--> FLOW
-  GH[GitHub CLI gh] <--> FLOW
-  GIT <--> FLOW
+    Config[("config.json\n.sdd-forge/")] --> DocsSrc
+    Config --> FlowSrc
+    Config --> AgentLib
 ```
 <!-- {{/text}} -->
 ### Component Responsibilities
@@ -150,33 +159,56 @@ flowchart LR
 
 | Component | Location | Responsibility | Input | Output |
 |---|---|---|---|---|
-| CLI entrypoint/router | `src/sdd-forge.js` | Parses top-level args, initializes logging, dispatches namespaces and independent commands. | `process.argv`, project config | Routed execution, version/help/error output |
-| Docs dispatcher + pipeline | `src/docs.js`, `src/docs/commands/*.js`, `src/docs/lib/*` | Runs docs subcommands and orchestrates `build` pipeline stages. | Source tree, templates, config, optional agent | `docs/*.md`, `README.md`, `AGENTS.md`, `.sdd-forge/output/analysis.json` |
-| Flow dispatcher + registry | `src/flow.js`, `src/flow/registry.js`, `src/flow/lib/*` | Resolves context/state and executes flow commands with lifecycle hooks. | Flow args, `flow.json`, git state | JSON envelopes, updated step/requirement state, finalize artifacts |
-| Check commands | `src/check.js`, `src/check/commands/*.js` | Validates config, doc freshness, and scan coverage. | `.sdd-forge/config.json`, `docs/`, `analysis.json`, source files | Pass/fail reports (text/json/md), exit status |
-| Setup/Upgrade | `src/setup.js`, `src/upgrade.js` | Initializes project configuration and updates template-managed skills/files. | Interactive answers or CLI flags, existing config | `.sdd-forge/config.json`, directories, updated skills/template sections |
-| Shared runtime libraries | `src/lib/*` | Common services: config validation, agent invocation, git/process wrappers, i18n, logging, flow-state persistence. | Command context and config | Normalized command behavior and reusable utilities |
-| Preset ecosystem | `src/presets/*` | Defines scan include/exclude, DataSources, templates, and guardrails per project type. | `type` chain from config | Merged scan/template/guardrail behavior used by docs/flow/check |
+| **CLI Entry** | `src/sdd-forge.js` | Parse the top-level command and dispatch to namespace handlers or independent commands | Raw CLI arguments | Delegated command invocation |
+| **Docs Dispatcher** | `src/docs.js` | Route `docs <subcmd>` to the corresponding pipeline stage handler | `docs` subcommand + args | Pipeline stage execution |
+| **Flow Dispatcher** | `src/flow.js` | Route `flow <subcmd>` to registry-defined handlers with hook support | `flow` subcommand + args | Registry-resolved command execution |
+| **Flow Registry** | `src/flow/registry.js` | Single declarative source of truth for all flow subcommands; manages lazy imports, argument schemas, and pre/post hooks | Command name lookup | Resolved handler, hooks, and argument spec |
+| **Scanner** | `src/docs/commands/scan.js` | Traverse source files, invoke language parsers, and write analysis metadata | Source files (via scan patterns in preset) | `.sdd-forge/output/analysis.json` |
+| **Enricher** | `src/docs/commands/enrich.js` | Invoke AI agent to add summaries, chapter assignments, and role metadata to analysis entries | `analysis.json` | Enriched `analysis.json` |
+| **Template Init** | `src/docs/commands/init.js` | Resolve preset parent chain, merge `{%block%}` overrides, and write chapter files | Preset templates, parent chain | `docs/*.md` chapter files |
+| **Data Stage** | `src/docs/commands/data.js` | Execute `{{data(...)}}` directives by calling DataSource classes with analysis data | `docs/*.md`, `analysis.json`, DataSources | Updated `docs/*.md` with data tables |
+| **Text Stage** | `src/docs/commands/text.js` | Execute `{{text(...)}}` directives via AI agent calls using per-directive prompts | `docs/*.md`, `analysis.json`, AI prompts | Updated `docs/*.md` with generated prose |
+| **Readme Builder** | `src/docs/commands/readme.js` | Assemble `README.md` from chapter summaries, navigation links, and project metadata | `docs/*.md`, `config.json` | `README.md` |
+| **Agents Builder** | `src/docs/commands/agents.js` | Generate the AI agent context file from project metadata, structure, and docs | `package.json`, `config.json`, `docs/` | `AGENTS.md` |
+| **Preset System** | `src/presets/`, `src/lib/presets.js` | Auto-discover built-in and project-local presets; resolve inheritance chains; expose templates and DataSources | `config.json` `type` field | Resolved preset object with full parent chain |
+| **Config Loader** | `src/lib/config.js` | Load, parse, and validate `.sdd-forge/config.json`; expose path helper utilities | `.sdd-forge/config.json` | Validated config object |
+| **Agent Spawner** | `src/lib/agent.js` | Spawn AI agent subprocesses for enrichment, prose generation, and code review | Provider config, system prompt, user prompt | Parsed JSON response string |
+| **Flow State** | `src/lib/flow-state.js` | Read and write `flow.json`; manage step statuses, phases, requirements, and metrics | `specs/<NNN>/flow.json` | Typed flow state object |
+| **Language Parsers** | `src/docs/lib/lang/*.js` | Parse, minify, and extract structural metadata from source files per language (JS, PHP, etc.) | Raw source file content | Structured analysis entries |
+| **Directive Parser** | `src/docs/lib/directive-parser.js` | Identify and resolve `{{data}}`, `{{text}}`, and `{%block%}` directives within markdown | Template markdown string | Resolved markdown content |
+| **Git Helpers** | `src/lib/git-helpers.js` | Wrap `git` and `gh` CLI operations used in flow actions | Command parameters | Git operation results or error |
+| **Check Commands** | `src/check/commands/*.js` | Validate configuration schema, detect stale documentation, and verify scan integrity | `config.json`, `analysis.json`, `docs/` | Validation report with pass/fail status |
 <!-- {{/text}} -->
 ### External Integrations
 
 <!-- {{text({prompt: "If there are external system integrations, describe their purpose and connection method in table format."})}} -->
 
-| External system | Purpose | Connection method |
+| System | Purpose | Connection Method |
 |---|---|---|
-| Git (`git`) | Branch/worktree operations, diff/log collection, commit/merge/finalize actions. | Child-process execution through `runCmd` wrappers (`src/lib/process.js`, `src/lib/git-helpers.js`). |
-| GitHub CLI (`gh`) | Fetch linked issue content and post issue comments during flow tasks. | `gh issue view ... --json ...` and `gh issue comment ...` from flow/git helper modules. |
-| AI agent CLIs (`claude`, `codex`) | Generate/enrich documentation text, translate content, and run review/gate-related AI checks. | Provider command+args defined in config or built-ins and invoked via `execFileSync`/`spawn` in `src/lib/agent.js`. |
+| **Claude CLI** | AI prose generation for `{{text}}` directives, analysis enrichment, spec gate validation, and code review | Spawned as a subprocess by `src/lib/agent.js`; configured via `agent.providers.claude` in `config.json`; communicates via stdout/stderr |
+| **Codex CLI** | Alternative AI agent provider for all AI-driven pipeline steps | Spawned as a subprocess by `src/lib/agent.js`; configured via `agent.providers.codex`; same interface as Claude CLI |
+| **Custom AI Providers** | Support for any AI agent accessible via a CLI command | Defined in `agent.providers` as a command template with argument placeholders; spawned as a subprocess by `agent.js` |
+| **Git CLI** | Branch creation, worktree management, commit, merge, and push operations during SDD flow execution | Called directly via `git` CLI in `src/lib/git-helpers.js`; must be installed and available on PATH |
+| **GitHub CLI (`gh`)** | Link flow specs to GitHub Issues and support pull request creation and management during finalization | Called via `src/lib/git-helpers.js`; requires `gh` installed, authenticated, and `commands.gh: "enable"` set in `config.json` |
 <!-- {{/text}} -->
 ### Environment Differences
 
 <!-- {{text({prompt: "Describe the configuration differences across environments (local/staging/production)."})}} -->
 
-| Environment | Built-in config differences | Practical implication |
+sdd-forge is a local developer CLI tool and does not have built-in environment tiers (local, staging, production). All configuration is stored in a single `.sdd-forge/config.json` file at the project root.
+
+Differences across runtime contexts are managed through the following configuration fields:
+
+| Field | Local Development | CI / Automated Pipelines |
 |---|---|---|
-| Local | No dedicated `local` schema block; uses a single `.sdd-forge/config.json` schema (`docs`, `type`, `agent`, `flow`, `commands`, `logs`, `experimental`, etc.). | Local behavior is controlled by standard config values and selected agent/profile, not by environment-specific sections. |
-| Staging | No dedicated `staging` configuration model in the validated schema. | Staging behavior requires separate config values supplied externally; the CLI does not define a staging layer. |
-| Production | No dedicated `production` configuration model in the validated schema. | Production behavior is handled through different config values/profiles outside a built-in environment switch. |
+| `agent.timeout` | Can be left at the default; interactive sessions tolerate longer waits | Recommended to set explicitly to prevent pipeline hangs |
+| `agent.retryCount` | Lower values acceptable for interactive use | Higher values recommended for unattended runs |
+| `concurrency` | Default (5) suits most workstations | May be increased on CI hosts with more CPU cores |
+| `agent.profiles` | Named profiles can point to a developer's local AI provider | Profiles can be switched to a CI-appropriate provider command |
+| `commands.gh` | Set to `"enable"` when `gh` is authenticated on the developer's machine | Set to `"enable"` only if the CI runner has `gh` authenticated with a token |
+| `logs.enabled` | Optional; useful for debugging agent calls locally | Can be enabled to capture JSONL prompt logs for audit trails |
+
+Documentation output files (`docs/`, `README.md`, `AGENTS.md`) are generated artifacts committed to the repository and are not environment-specific. The SDD flow state in `specs/<NNN>/flow.json` is local to the developer's worktree and is not shared between environments.
 <!-- {{/text}} -->
 
 ---

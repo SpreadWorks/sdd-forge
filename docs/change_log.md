@@ -10,14 +10,13 @@
 
 ### 更新日時
 
-- generated_at: 2026-04-10 08:03:51 UTC
+- generated_at: 2026-04-10 07:56:49 UTC
 
 ### シリーズ最新インデックス
 
 | series | latest | status | created | spec |
 | --- | --- | --- | --- | --- |
 | `acceptance-tests` | `069-acceptance-tests` | Draft | 2026-03-17 | [spec](../specs/069-acceptance-tests/spec.md) |
-| `add-api-entry-module-loader` | `165-add-api-entry-module-loader` | Draft | 2026-04-10 | [spec](../specs/165-add-api-entry-module-loader/spec.md) |
 | `add-dry-run-to-commands` | `003-add-dry-run-to-commands` | Draft | 2026-03-02 | [spec](../specs/003-add-dry-run-to-commands/spec.md) |
 | `add-logger-to-callsites` | `152-add-logger-to-callsites` | Draft | 2026-04-07 | [spec](../specs/152-add-logger-to-callsites/spec.md) |
 | `add-new-presets` | `072-add-new-presets` | Draft | 2026-03-18 | [spec](../specs/072-add-new-presets/spec.md) |
@@ -173,6 +172,7 @@
 | `preset-template-enhancements` | `042-preset-template-enhancements` | Draft | 2026-03-11 | [spec](../specs/042-preset-template-enhancements/spec.md) |
 | `prevent-bg-cmd-in-flow` | `163-prevent-bg-cmd-in-flow` | Draft | 2026-04-09 | [spec](../specs/163-prevent-bg-cmd-in-flow/spec.md) |
 | `project-local-chapters` | `041-project-local-chapters` | Draft | 2026-03-11 | [spec](../specs/041-project-local-chapters/spec.md) |
+| `project-local-presets` | `165-project-local-presets` | Draft | 2026-04-10 | [spec](../specs/165-project-local-presets/spec.md) |
 | `project-local-template-customization` | `013-project-local-template-customization` | Draft | 2026-03-05 | [spec](../specs/013-project-local-template-customization/spec.md) |
 | `project-local-templates` | `014-project-local-templates` | Draft | 2026-03-05 | [spec](../specs/014-project-local-templates/spec.md) |
 | `rebuild-json-parser-with-backtracking` | `114-rebuild-json-parser-with-backtracking` | Draft | 2026-03-31 | [spec](../specs/114-rebuild-json-parser-with-backtracking/spec.md) |
@@ -433,5 +433,5 @@
 | `163-merge-flow-auto-skills` | Draft | 2026-04-09 | 163-merge-flow-auto-skills | Issue #122 | [draft.md](../specs/163-merge-flow-auto-skills/draft.md), [qa.md](../specs/163-merge-flow-auto-skills/qa.md), [review.md](../specs/163-merge-flow-auto-skills/review.md), [spec.md](../specs/163-merge-flow-auto-skills/spec.md) |
 | `163-prevent-bg-cmd-in-flow` | Draft | 2026-04-09 | 163-prevent-bg-cmd-in-flow | Issue #121 | [draft.md](../specs/163-prevent-bg-cmd-in-flow/draft.md), [qa.md](../specs/163-prevent-bg-cmd-in-flow/qa.md), [review.md](../specs/163-prevent-bg-cmd-in-flow/review.md), [spec.md](../specs/163-prevent-bg-cmd-in-flow/spec.md) |
 | `164-flow-metrics-recording` | Draft | 2026-04-09 | 164-flow-metrics-recording | GitHub Issue #127 | [draft.md](../specs/164-flow-metrics-recording/draft.md), [qa.md](../specs/164-flow-metrics-recording/qa.md), [review.md](../specs/164-flow-metrics-recording/review.md), [spec.md](../specs/164-flow-metrics-recording/spec.md) |
-| `165-add-api-entry-module-loader` | Draft | 2026-04-10 | 165-add-api-entry-module-loader | GitHub Issue #129 | [draft.md](../specs/165-add-api-entry-module-loader/draft.md), [qa.md](../specs/165-add-api-entry-module-loader/qa.md), [spec.md](../specs/165-add-api-entry-module-loader/spec.md) |
+| `165-project-local-presets` | Draft | 2026-04-10 | 165-project-local-presets | Issue #130 | [draft.md](../specs/165-project-local-presets/draft.md), [qa.md](../specs/165-project-local-presets/qa.md), [spec.md](../specs/165-project-local-presets/spec.md) |
 <!-- AUTO-GEN:END -->

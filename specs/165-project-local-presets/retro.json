@@ -1,0 +1,94 @@
+{
+  "spec": "specs/165-project-local-presets/spec.md",
+  "date": "2026-04-10T08:57:59.288Z",
+  "requirements": [
+    {
+      "desc": "config.type に指定されたプリセット名を .sdd-forge/presets/ → src/presets/ の順で探索",
+      "status": "done",
+      "note": "resolveChain(leafKey, projectRoot) が resolveProjectPreset() を先に評価し、null 時のみ PRESETS.find() にフォールバックする実装になっている"
+    },
+    {
+      "desc": "preset.json が存在する場合はその定義を使用",
+      "status": "done",
+      "note": "resolveProjectPreset() が manifestPath を読み込み parent/scan/chapters を取得してオブジェクトを構築している"
+    },
+    {
+      "desc": "preset.json が省略された場合: built-in 同名があれば設定を継承して DataSource のみ上書き、なければ bare プリセット",
+      "status": "done",
+      "note": "PRESETS.find(p => p.key === key) で同名 built-in を探し、あれば { ...builtin, dir: projectDir }、なければ parent:null の bare オブジェクトを返す"
+    },
+    {
+      "desc": ".sdd-forge/presets/<name>/data/ の DataSource を scan・data 両フェーズでロード",
+      "status": "done",
+      "note": "scan.js と resolver-factory.js の両方で resolveMultiChains(types, root) に root を渡すよう変更され、プロジェクトプリセットの dir/data/ がチェーン経由でロードされる"
+    },
+    {
+      "desc": ".sdd-forge/data/ からのロードを廃止（存在しても読まない）",
+      "status": "done",
+      "note": "scan.js の sddDataDir/loadScanSources 呼び出し削除、resolver-factory.js の loadDataSources(projectDataDir) 削除、config.js から sddDataDir エクスポート自体を削除"
+    },
+    {
+      "desc": ".sdd-forge/data/ 存在時に deprecation 警告を標準エラーへ出力",
+      "status": "partial",
+      "note": "createResolver() 内（data フェーズ）でのみ警告を出力。scan フェーズ（scan.js）には対応する警告がないため、docs scan のみ実行した場合は警告が出ない"
+    }
+  ],
+  "unplanned": [
+    {
+      "file": "src/lib/presets.js",
+      "change": "resolveChainSafe の catch ブロックを改善: silent catch を logger.verbose + projectRoot フォールバック付きに変更。spec 要件外だが review.md 承認済み(Issue #5)"
+    },
+    {
+      "file": "src/lib/presets.js",
+      "change": "createLogger('presets') をモジュールレベルで追加。上記 resolveChainSafe 改善に付随"
+    },
+    {
+      "file": "src/lib/presets.js",
+      "change": "resolveProjectPreset 関数を export せず内部関数として実装（設計判断）"
+    },
+    {
+      "file": "docs/cli_commands.md",
+      "change": "{{text}} ディレクティブの生成済みコンテンツが全て削除され空になっている（ドキュメント再生成の副作用）"
+    },
+    {
+      "file": "docs/configuration.md",
+      "change": "設定リファレンスと Customization Points の内容が大幅に書き換えられ、project-local presets の説明が追加された"
+    },
+    {
+      "file": "docs/internal_design.md",
+      "change": "アーキテクチャ概要・モジュール一覧・依存関係図が書き換えられた（ドキュメント再生成）"
+    },
+    {
+      "file": "docs/overview.md",
+      "change": "概要・アーキテクチャ図・コンポーネント説明が書き換えられた（ドキュメント再生成）"
+    },
+    {
+      "file": "docs/project_structure.md",
+      "change": "共有ライブラリ一覧が大幅に書き換えられた（ドキュメント再生成）"
+    },
+    {
+      "file": "docs/stack_and_ops.md",
+      "change": "デプロイフロー・オペレーション手順が書き換えられた（ドキュメント再生成）"
+    },
+    {
+      "file": "README.md",
+      "change": "ドキュメントチャプター一覧のサマリーテキストが更新された"
+    },
+    {
+      "file": ".sdd-forge/output/analysis.json",
+      "change": "再スキャンにより analyzedAt・mtime 更新、enrichment データ（summary/detail/keywords）が全エントリから削除された"
+    },
+    {
+      "file": "docs/change_log.md",
+      "change": "spec 165-project-local-presets の新規エントリが追加された"
+    }
+  ],
+  "summary": {
+    "total": 6,
+    "done": 5,
+    "partial": 1,
+    "not_done": 0,
+    "rate": 0.92,
+    "notes": "要件 1〜5 は完全に実装されている。要件 6（deprecation 警告）は createResolver()（data フェーズ）にのみ実装されており、scan.js には対応がないため partial。scan のみ実行した場合は警告が出ない点が仕様の意図（「いずれかのコマンド実行時」）と微妙にずれる。計画外変更はドキュメント再生成・flow 管理ファイル・resolveChainSafe 改善が主で、機能要件には影響しない。"
+  }
+}

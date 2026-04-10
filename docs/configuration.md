@@ -8,7 +8,7 @@
 
 <!-- {{text({prompt: "Write a 1-2 sentence overview of this chapter. Include the types of config files, range of configurable items, and customization points."})}} -->
 
-This chapter explains how `sdd-forge` is configured through project-level JSON files (`.sdd-forge/config.json`, optional `.sdd-forge/overrides.json`) plus built-in preset manifests (`src/presets/*/preset.json`) and flow state files used by the workflow engine. It covers documentation output settings, scan scope, chapter composition, agent routing, flow behavior, logging, and extension points such as custom DataSources and descriptor overrides.
+sdd-forge is configured through a single project-level JSON file (`.sdd-forge/config.json`) and optionally extended by project-local preset definitions. Configurable items span documentation output languages and style, agent provider selection and execution parameters, scan scope, flow and Git integration, and logging, with additional customization available through preset overrides and environment variables.
 <!-- {{/text}} -->
 
 ## Content
@@ -18,12 +18,11 @@ This chapter explains how `sdd-forge` is configured through project-level JSON f
 <!-- {{text({prompt: "List all configuration files this tool reads, including their locations and roles, in table format. Extract from file reading logic in the source code."})}} -->
 
 | File | Location | Role |
-| --- | --- | --- |
-| `config.json` | `<project-root>/.sdd-forge/config.json` | Primary runtime configuration loaded by command context, setup, docs, flow, check, and logger initialization. |
-| `overrides.json` | `<project-root>/.sdd-forge/overrides.json` | Optional descriptor override map used by resolver factory (`desc(section,key)`). |
-| `preset.json` | `<package>/src/presets/<preset-key>/preset.json` | Preset manifest auto-discovered at startup; provides preset metadata, scan include/exclude patterns, and chapter definitions. |
-| `.active-flow` | `<main-repo>/.sdd-forge/.active-flow` | Active-flow pointer list for resolving current spec context across local/worktree/branch modes. |
-| `flow.json` | `<project-root>/specs/<spec-id>/flow.json` | Per-spec workflow state (steps, requirements, request, issue, merge strategy, metrics, auto-approve flag). |
+|------|----------|------|
+| `config.json` | `.sdd-forge/config.json` | Primary project configuration — defines language, preset type, docs settings, agent providers, scan patterns, and flow options. Required for all `sdd-forge` commands. |
+| `preset.json` (built-in) | `src/presets/<key>/preset.json` | Built-in preset manifests bundled with the npm package. Auto-discovered at startup and define chapter structure, scan defaults, and template associations. |
+| `preset.json` (project-local) | `.sdd-forge/presets/<key>/preset.json` | Project-local preset overrides. When present, takes precedence over the built-in preset of the same key. Supports the same schema as built-in presets and may declare a `parent` for inheritance. |
+| `package.json` | Project root | Loaded selectively via `loadPackageField()` to read arbitrary project metadata into documentation generation context. |
 <!-- {{/text}} -->
 
 ### Configuration Reference
@@ -31,45 +30,182 @@ This chapter explains how `sdd-forge` is configured through project-level JSON f
 <!-- {{text({prompt: "Describe all configuration fields in table format. Include field name, required/optional, type, default value, and description. Extract from validation logic and default value definitions in the source code.", mode: "deep"})}} -->
 
 | Field | Required | Type | Default | Description |
-| --- | --- | --- | --- | --- |
-| `name` | Optional | `string` | None | Project display name written by setup wizard. |
-| `lang` | Required | `string` | None in config (`"en"` fallback only when config is missing) | CLI/skill operating language. |
-| `type` | Required | `string` or `string[]` | None | Preset key(s); drives scan/data/template chain resolution. |
-| `docs.languages`, `docs.defaultLanguage` | Required | `string[]`, `string` | None | Output language set and default output language (`defaultLanguage` must be included in `languages`). |
-| `docs.mode`, `docs.style.purpose`, `docs.style.tone`, `docs.style.customInstruction`, `docs.exclude` | Optional | `"translate"\|"generate"`, object, `string[]` | `docs.mode="translate"`; others none | Controls multilingual generation mode, writing style, and path-based exclusion from docs data/enrich pipelines. |
-| `chapters[]` (`chapter`, `desc`, `exclude`) | Optional | object array | None | Overrides preset chapter order/content; `exclude:true` removes a chapter. |
-| `concurrency` | Optional | `number` (`>=1`) | `5` | Parallelism for per-file processing. |
-| `scan.include`, `scan.exclude` | Optional (`scan` object) | `string[]` | If absent, preset scan patterns are used | Explicit scan target/exclusion globs for docs scan/check. |
-| `agent.default`, `agent.workDir`, `agent.timeout`, `agent.retryCount`, `agent.batchTokenLimit`, `agent.useProfile` | Optional | `string`, `string`, `number`, `number`, `number`, `string` | `workDir=".tmp"`, `timeout=300` sec, `retryCount=0` at call sites, `batchTokenLimit=10000` in enrich, others none | Selects default agent/provider profile and execution behavior for AI calls. |
-| `agent.providers.<key>`, `agent.profiles.<profile>.<commandId>` | Optional | provider/profile maps | Built-ins are merged in (`claude/*`, `codex/*`) | Defines custom providers and command-prefix routing; profile can be selected by config or env. |
-| `flow.merge`, `flow.push.remote`, `flow.commands.context.search.mode`, `commands.gh`, `experimental.workflow.*`, `logs.enabled`, `logs.dir`, `monorepo.apps` | Optional | mixed | `flow.merge="squash"`, `flow.push.remote="origin"`, search mode `"ngram"`, `commands.gh="disable"`, `logs.enabled=false`, `logs.dir={agent.workDir}/logs`, others none | Controls finalize merge strategy/push remote/context-search backend, GitHub CLI mode, experimental workflow deployment, logging output, and monorepo app labeling. |
+|-------|----------|------|---------|-------------|
+| `lang` | Yes | string | — | Operating language for the CLI, generated AGENTS.md, skills, and spec files (e.g., `"en"`, `"ja"`). |
+| `type` | Yes | string \| string[] | — | Preset name(s) to activate (e.g., `"symfony"` or `["symfony", "postgres"]`). Leaf name only — path-style values are not supported. |
+| `docs` | Yes | object | — | Container for all documentation output settings. |
+| `docs.languages` | Yes | string[] | — | List of language codes for documentation output (e.g., `["en"]` or `["ja", "en"]`). |
+| `docs.defaultLanguage` | Yes | string | — | Primary language; must appear in `docs.languages`. |
+| `docs.mode` | No | `"translate"` \| `"generate"` | `"translate"` | How non-default-language documents are produced. |
+| `docs.style.purpose` | No | string | — | Document purpose hint: `"developer-guide"`, `"user-guide"`, `"api-reference"`, or a custom string. |
+| `docs.style.tone` | No | string | — | Writing tone: `"polite"`, `"formal"`, or `"casual"`. |
+| `docs.style.customInstruction` | No | string | — | Additional free-form instructions passed to the documentation generation agent. |
+| `docs.exclude` | No | string[] | — | Glob patterns for source files to exclude from documentation scanning. |
+| `name` | No | string | — | Project name, set by the setup wizard. |
+| `concurrency` | No | number | `5` | Maximum number of files processed in parallel during pipeline execution. |
+| `scan.include` | Yes (if `scan` present) | string[] | — | Glob patterns specifying which source files to include in a scan. |
+| `scan.exclude` | No | string[] | `[]` | Glob patterns for files to exclude from the scan. |
+| `agent.default` | No | string | — | Default agent provider key (e.g., `"claude/sonnet"`). |
+| `agent.workDir` | No | string | `".tmp"` | Working directory for agent execution, relative to the project root. |
+| `agent.timeout` | No | number | `300` | Agent execution timeout in seconds. |
+| `agent.retryCount` | No | number | — | Retry count for `docs enrich` agent calls on failure. |
+| `agent.batchTokenLimit` | No | number | — | Maximum tokens per processing batch; must be ≥ 1000 if set. |
+| `agent.providers` | No | object | `{}` | Map of custom agent provider definitions keyed by a user-chosen identifier. |
+| `agent.providers[key].command` | Yes (per provider) | string | — | Executable to invoke (e.g., `"claude"`, `"codex"`). |
+| `agent.providers[key].args` | Yes (per provider) | string[] | — | Arguments passed to the command. Use `{{PROMPT}}` as the placeholder for the generated prompt. |
+| `agent.providers[key].systemPromptFlag` | No | string | — | CLI flag used to pass a system prompt (e.g., `"--system-prompt"`). |
+| `agent.providers[key].jsonOutputFlag` | No | string | — | CLI flag that requests JSON-formatted output from the agent. |
+| `agent.profiles` | No | object | — | Named profiles mapping command prefixes to provider keys, enabling per-command agent selection. |
+| `agent.useProfile` | No | string | — | Name of the profile to activate; overridden by the `SDD_FORGE_PROFILE` environment variable. |
+| `flow.merge` | No | `"squash"` \| `"ff-only"` \| `"merge"` | `"squash"` | Git merge strategy applied when closing a flow. |
+| `flow.push.remote` | No | string | `"origin"` | Git remote used for push operations during flow finalization. |
+| `flow.commands.context.search.mode` | No | `"ngram"` \| `"ai"` | — | Search mode used when retrieving flow context. |
+| `commands.gh` | No | `"enable"` \| `"disable"` | `"disable"` | Whether the GitHub CLI (`gh`) is available for PR-related flow steps. |
+| `logs.enabled` | No | boolean | `false` | Enable unified JSONL logging of agent requests and responses. |
+| `logs.dir` | No | string | `"{agent.workDir}/logs"` | Directory where log files are written. |
+| `chapters` | No | object[] | preset defaults | Override or reorder the chapter list. Each entry requires a `chapter` filename and supports optional `desc` and `exclude` fields. |
+| `experimental.workflow.enable` | No | boolean | `false` | Enable the experimental workflow feature. |
+| `experimental.workflow.languages.source` | No | string | — | Source language for the experimental workflow. |
+| `experimental.workflow.languages.publish` | No | string | — | Target publish language for the experimental workflow. |
 <!-- {{/text}} -->
 
 ### Customization Points
 
 <!-- {{text({prompt: "Describe items that users can customize. Extract configurable items from the source code and include configuration examples for each.", mode: "deep"})}} -->
 
-| Customization point | How to customize | Example |
-| --- | --- | --- |
-| Preset composition | Set single or multiple preset keys in `type`. | `"type": ["nextjs", "rest", "postgres"]` |
-| Scan scope | Override file collection patterns in `scan`. | `"scan": { "include": ["src/**/*.ts"], "exclude": ["**/*.test.ts"] }` |
-| Chapter order/content | Provide `chapters` entries to reorder, rename description, or exclude chapters. | `"chapters": [{"chapter":"overview.md"},{"chapter":"internal_design.md","exclude":true}]` |
-| Doc output languages and style | Configure `docs.languages`, `docs.defaultLanguage`, `docs.mode`, and `docs.style`. | `"docs": {"languages":["en","ja"],"defaultLanguage":"en","mode":"translate","style":{"purpose":"user-guide","tone":"formal"}}` |
-| Agent routing and execution | Set `agent.default`, custom `agent.providers`, command-specific `agent.profiles`, retries, timeout, and work directory. | `"agent": {"default":"codex/gpt-5.4","useProfile":"default","retryCount":1,"providers":{"my-agent":{"command":"codex","args":["exec","{{PROMPT}}"]}}}` |
-| Flow/finalize behavior | Configure merge strategy, push remote, GitHub CLI mode, and context search mode. | `"flow": {"merge":"ff-only","push":{"remote":"upstream"},"commands":{"context":{"search":{"mode":"ai"}}}}, "commands":{"gh":"enable"}` |
-| Extension files | Add project-local DataSources under `.sdd-forge/data/*.js` and optional text overrides in `.sdd-forge/overrides.json`. | Create `.sdd-forge/data/security.js` with a `DataSource` class and set `.sdd-forge/overrides.json` to override section/key descriptions. |
+**Agent Providers**
+
+You can define custom agent providers or override built-in ones under `agent.providers`. Built-in providers include `claude/opus`, `claude/sonnet`, `codex/gpt-5.4`, and `codex/gpt-5.3`. Use `{{PROMPT}}` in the `args` array as the injection point for the generated prompt.
+
+```json
+{
+  "agent": {
+    "default": "claude/sonnet",
+    "providers": {
+      "my-claude": {
+        "command": "claude",
+        "args": ["-p", "{{PROMPT}}", "--model", "claude-3-7-sonnet-20250219"],
+        "systemPromptFlag": "--system-prompt"
+      }
+    }
+  }
+}
+```
+
+**Agent Profiles**
+
+Profiles map command prefixes to provider keys, allowing different agent providers to be used for different sdd-forge operations. Activate a profile with `agent.useProfile` or the `SDD_FORGE_PROFILE` environment variable.
+
+```json
+{
+  "agent": {
+    "profiles": {
+      "ci": {
+        "docs": "codex/gpt-5.4",
+        "flow": "claude/sonnet"
+      }
+    },
+    "useProfile": "ci"
+  }
+}
+```
+
+**Documentation Style**
+
+Control the tone and purpose of generated documents through `docs.style`. The `customInstruction` field passes additional free-form guidance to the generation agent.
+
+```json
+{
+  "docs": {
+    "languages": ["en"],
+    "defaultLanguage": "en",
+    "style": {
+      "purpose": "user-guide",
+      "tone": "polite",
+      "customInstruction": "Avoid jargon and include code examples wherever possible."
+    }
+  }
+}
+```
+
+**Multi-Language Output**
+
+Set `docs.languages` to an array of language codes and configure `docs.mode` to control how secondary languages are produced.
+
+```json
+{
+  "docs": {
+    "languages": ["en", "ja"],
+    "defaultLanguage": "en",
+    "mode": "translate"
+  }
+}
+```
+
+**Project-Local Presets**
+
+Place a `preset.json` (and optional templates) under `.sdd-forge/presets/<key>/` to override or extend any built-in preset. The project-local definition takes precedence over the same-named built-in preset. Declare a `parent` field to inherit from an existing preset.
+
+```json
+{
+  "parent": "symfony",
+  "label": "My Symfony Project",
+  "chapters": [
+    {"chapter": "overview.md"},
+    {"chapter": "deployment.md", "desc": "Deployment procedures"}
+  ]
+}
+```
+
+**Scan Scope**
+
+Restrict or expand which files are analysed by configuring `scan.include` and `scan.exclude` with glob patterns.
+
+```json
+{
+  "scan": {
+    "include": ["src/**/*.php", "config/**/*.yaml"],
+    "exclude": ["src/migrations/**"]
+  }
+}
+```
+
+**Flow and Git Integration**
+
+Configure how sdd-forge interacts with Git during flow finalization.
+
+```json
+{
+  "flow": {
+    "merge": "squash",
+    "push": {"remote": "upstream"}
+  }
+}
+```
+
+**Logging**
+
+Enable JSONL logging to record agent prompts and responses. Logs are written as daily `.jsonl` files and per-request JSON files under the configured directory.
+
+```json
+{
+  "logs": {
+    "enabled": true,
+    "dir": ".tmp/logs"
+  }
+}
+```
 <!-- {{/text}} -->
 
 ### Environment Variables
 
 <!-- {{text({prompt: "List all environment variables referenced by the tool and their purposes in table format. Extract from process.env references in the source code.", mode: "deep"})}} -->
 
-| Environment variable | Purpose |
-| --- | --- |
-| `SDD_FORGE_WORK_ROOT` | Overrides repository root resolution; used as the working root for command context and config loading. |
-| `SDD_FORGE_SOURCE_ROOT` | Overrides source root resolution for scanning/reading source files independently from work root. |
-| `SDD_FORGE_PROFILE` | Selects the active `agent.profiles` entry; takes priority over `agent.useProfile` in config. |
-| `CLAUDECODE` | Explicitly removed from spawned agent environments before invocation to avoid leaking that variable into agent subprocesses. |
+| Variable | Purpose |
+|----------|---------|
+| `SDD_FORGE_WORK_ROOT` | Overrides the automatically detected work root (normally the Git repository root). When set, all file resolution is anchored to this path instead of the result of `git rev-parse --show-toplevel`. |
+| `SDD_FORGE_SOURCE_ROOT` | Overrides the source root used for scanning and documentation generation. When set, takes precedence over the value derived from `SDD_FORGE_WORK_ROOT` or the Git root. |
+| `SDD_FORGE_PROFILE` | Specifies the active agent profile name. Takes priority over the `agent.useProfile` field in `config.json`, allowing the profile to be switched per invocation without modifying the config file. |
 <!-- {{/text}} -->
 
 ---

@@ -22,7 +22,7 @@ import crypto from "crypto";
 import { fileURLToPath } from "url";
 import { runIfDirect } from "../../lib/entrypoint.js";
 import { repoRoot, parseArgs } from "../../lib/cli.js";
-import { sddDataDir, sddOutputDir } from "../../lib/config.js";
+import { sddOutputDir } from "../../lib/config.js";
 import { collectFiles } from "../lib/scanner.js";
 import { loadDataSources } from "../lib/data-source-loader.js";
 import { presetByLeaf, resolveChainSafe, resolveMultiChains } from "../../lib/presets.js";
@@ -289,7 +289,7 @@ async function main(ctx) {
   const currentFilePaths = new Set(files.map((f) => f.relPath));
 
   // 3. Load Scannable DataSources from preset chain
-  const chains = resolveMultiChains(types);
+  const chains = resolveMultiChains(types, root);
   const seenDirs = new Set();
 
   let dataSources = new Map();
@@ -300,9 +300,6 @@ async function main(ctx) {
       dataSources = await loadScanSources(path.join(p.dir, "data"), dataSources);
     }
   }
-
-  const projectDataDir = sddDataDir(root);
-  dataSources = await loadScanSources(projectDataDir, dataSources);
 
   // 3b. DataSource hash detection: clear entry hashes for categories whose DataSource changed
   if (existing) {

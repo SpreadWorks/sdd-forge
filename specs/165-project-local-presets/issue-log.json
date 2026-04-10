@@ -1,0 +1,116 @@
+{
+  "entries": [
+    {
+      "step": "gate-draft",
+      "reason": "Single Responsibility — `.sdd-forge/data/` 廃止とプロジェクト固有プリセット統合は一つの関心事（探索機構の統一）として一貫している; Unambiguous Requirements — ファイル名・ディレクトリパス・関数名が具体的に列挙されており、検証可能な条件として記述されている; Complete Context — スコープ項目（例: `presets.js` の探索追加、`sddDataDir()` 削除）がトリガー条件（When/If）と期待動作（shall）のペアでなく、タスクリスト形式になっている; No Hardcoded Secrets — 本ドラフトに秘密情報は含まれていない（該当なし）; Prioritize Requirements — スコープ項目が4件あるにもかかわらず、優先順位が明示されていない; Impact on Existing Features — `.sdd-forge/data/` 利用プロジェクト・built-in プリセット解決・`sdd-forge check config` への影響が明示されている; Present Recommendations with Reasoning — Q1〜Q3 それぞれに回答と根拠（並列開発の文脈、探索順の論理）が示されている; Explore Before Asking — 「移行ガイドはどのドキュメントに記載するか」は upgrade コマンドのヘルプや README 構造を探索すれば答えられる可能性が高く、Open Question として残すべきでない; Proactively Raise Related Implications — `sdd-forge check config` での認識が必要な点、`~/.sdd-forge/presets/` が将来スコープであることを先回りして明記している; Confirm Brainstorm vs. Decision Before Critiquing — ドラフトは既にユーザー承認済みであり、該当なし; Capture Digressions in draft.md — 静的ドキュメントのチェックのため該当なし; Draft Stays at Requirements Level — `presets.js`・`resolver-factory.js`・`scan.js`・`config.js`・`sddDataDir()` など実装レベルのファイル名・関数名が要件として混入している; Backward — Compatible CLI Interface — 削除されるのは内部ディレクトリ規約（`.sdd-forge/data/`）であり、CLI コマンド・オプションの変更ではない",
+      "trigger": "gate post hook (auto)",
+      "timestamp": "2026-04-10T07:03:19.262Z"
+    },
+    {
+      "step": "gate-draft",
+      "reason": "Single Responsibility — プリセット探索・ロード経路の変更と `.sdd-forge/data/` 廃止通知という単一の関心事に絞られている; Unambiguous Requirements — 各要件はフェーズ名・ディレクトリパス・動詞（〜しなければならない）で検証可能な条件を明示している; Complete Context — 全要件に「〜が存在する場合 / 〜が指定されている場合」というトリガーと「〜しなければならない」という期待動作が対になっている; No Hardcoded Secrets — 要件ドキュメントであり、APIキーやパスワード等の秘密情報は含まれない; Prioritize Requirements — 要件セクションが「優先順」と明示され、1〜4（必須）→ 5（推奨）の順で記述されている; Impact on Existing Features — 「既存機能への影響」セクションで `.sdd-forge/data/`・built-in 解決・check config・~/.sdd-forge/presets/ への影響を明示している; Present Recommendations with Reasoning — Q&A 各項目に推奨回答と根拠（既存パターン参照、4ea8 との分離方針等）が示されている; Explore Before Asking — Q4 で「既存パターン」を参照した上で警告形式を回答しており、コードベース探索済みであることが示唆されている; Proactively Raise Related Implications — 目的に「`.sdd-forge/data/` を廃止する」と記載されているが、要件 5 は警告のみで実際の削除・無効化ステップが未定義。廃止の完結タイミング・方法という明白な含意が未対処; Confirm Brainstorm vs. Decision Before Critiquing — ドラフトは「User approved this draft」で承認済みであり、意思決定フェーズでの評価である; Capture Digressions in draft.md — 未解決の脱線は見当たらず、スコープ外事項（4ea8, ~/.sdd-forge/presets/）は明示的に除外されている; Draft Stays at Requirements Level — Q4 で `process.stderr.write(\"[sdd-forge] WARN: ...\")` という具体的な API 呼び出し形式を記述しており、要件レベルを超えた実装詳細が含まれている; Backward — Compatible CLI Interface — 既存 CLI コマンド・オプションの変更・削除はなく、移行計画不要",
+      "trigger": "gate post hook (auto)",
+      "timestamp": "2026-04-10T07:05:22.868Z"
+    },
+    {
+      "step": "implement",
+      "reason": "scan-multi-type.test.js (3件), scan.test.js (6件), scan-reset.test.js が main ブランチでも失敗 — このスペックの変更と無関係の preexisting failures",
+      "trigger": "npm test 実行時に既存テストの失敗を検出",
+      "resolution": "main ブランチでも同一失敗を確認。このスペックのスコープ外",
+      "timestamp": "2026-04-10T08:01:44.423Z"
+    },
+    {
+      "step": "gate-impl",
+      "reason": "プロジェクトローカルプリセット優先探索 — `resolveChain(leafKey, projectRoot)` が `resolveProjectPreset` を先に呼び出し、`.sdd-forge/presets/<name>/` が存在する場合に組み込みより優先して返す; `preset.json` 存在時の設定使用 — `resolveProjectPreset` が `preset.json` を読み込み `parent`/`scan`/`chapters` を返す; `preset.json` 省略時の fallback — 同名 built-in があれば `{...builtin, dir: projectDir}` で継承、なければ bare プリセットを返す; `.sdd — forge/presets/<name>/data/` の scan/data 両フェーズでのロード — `resolveMultiChains(types, root)` がプロジェクトプリセットをチェーンに含め、scan.js・resolver-factory.js の双方がチェーン経由でデータディレクトリをロードする; `.sdd — forge/data/` からの DataSource ロード廃止 — `sddDataDir` 関数の削除と scan.js・resolver-factory.js 双方での明示的ロード処理の削除により実施; `.sdd — forge/data/` 存在時の deprecation 警告出力 — `createResolver` 内で `fs.existsSync(deprecatedDataDir)` を確認し `process.stderr.write` で警告と移行先パスを出力; No Hardcoded Secrets — 変更コードに API キー・パスワード・トークン類は含まれない。; No Silent Error Swallowing — `resolveChainSafe` の `catch (_)` は既存の意図的な安全変形パターンであり、新規コードでは `resolveProjectPreset` の例外は呼び出し元へ伝播する。; Bounded Resource Usage — `resolveChain` は既存の visited セットによるサイクル検出を持ち、新規の `resolveProjectPreset` にはループなし。; No Sensitive Data in Logs — deprecation 警告はパス名のみを stderr に出力し、機密情報を含まない。; No Disabling Existing Tests — 既存テストのスキップ・コメントアウト・削除は行われていない。; Escalate When New Tests Break Existing Tests — 新規テストファイル (`project-local-presets.test.js`) の内容が diff に含まれないため既存テストへの影響を確認できないが、既存テストを壊す操作は観測されない。; Do Not Modify Existing Tests Without Approval — 変更されたファイルに既存テストコードは含まれない。; Flag Tests That Become Irrelevant — `sddDataDir` が `src/lib/config.js` から削除されたが、この関数に対する既存のユニットテストが存在する場合、当該テストは破損または無効となる。差分にはそれらのテスト削除・更新が含まれておらず、ユーザーへの確認が必要。; Exit Code Contract — 新規コードは exit code を変更しない。deprecation 警告は stderr 出力のみで exit code に影響しない。; No Synchronous I/O in Hot Paths — `resolveProjectPreset` の `existsSync`/`readFileSync` はプリセット解決時の1回限りの初期化処理であり、バルク処理ループ内には存在しない。; Validate User Input at Entry Point — 不正なプリセット名は `resolveChain` が `Error: Preset not found` をスローして通知する。プロジェクトローカルプリセットが存在しない場合も同様に処理される。",
+      "trigger": "gate post hook (auto)",
+      "timestamp": "2026-04-10T08:14:47.347Z"
+    },
+    {
+      "step": "gate-impl",
+      "reason": "`.sdd — forge/presets/<key>/` を built-in より優先して探索 — `resolveChain` が `resolveProjectPreset` を先に呼び、null 時のみ `PRESETS.find()` にフォールバックするよう変更されている; `preset.json` 存在時はその定義を使用 — `resolveProjectPreset` 内で `manifest.parent`/`manifest.scan`/`manifest.chapters` を読み込むブランチが実装されている; `preset.json` 省略時の fallback 処理 — built-in 同名があれば `{ ...builtin, dir: projectDir }` で継承、なければ bare プリセットを返す処理が実装されている; `.sdd — forge/presets/<name>/data/` を scan・data 両フェーズでロード — `scan.js` と `resolver-factory.js` の両方で `resolveMultiChains(types, root)` に `root` を渡すよう変更され、project preset の `dir` 経由でロードされる; `.sdd — forge/data/` からのロード廃止 — `scan.js` の `sddDataDir` 呼び出し削除、`resolver-factory.js` の `loadDataSources(projectDataDir, ...)` 削除、`config.js` から `sddDataDir` エクスポート自体が削除されている; `.sdd — forge/data/` 存在時の deprecation 警告 — `createResolver` 内で `fs.existsSync(deprecatedDataDir)` を確認し `process.stderr.write` で警告を出力している; No Hardcoded Secrets — ソースコード内に API キー・パスワード・トークン等のシークレットは含まれていない。; No Silent Error Swallowing — `resolveChainSafe` の `catch (_)` ブロックがエラーをログ出力・再スローせずに無視している（`[]` へのフォールバックはドキュメント化されているが、エラー情報が失われる）。; Bounded Resource Usage — `resolveChain` 内の親チェーン探索は `seen` セットによる循環検出で上限が保証されており、再帰・無制限ループは存在しない。; No Sensitive Data in Logs — `process.stderr.write` で出力する deprecation 警告にはパスワード・トークン・PII は含まれていない。; No Disabling Existing Tests — 既存テストのスキップ・コメントアウト・削除は diff に見当たらない。; Escalate When New Tests Break Existing Tests — 新規テストファイル追加のみで、既存テストとの衝突を示す証拠はない。; Do Not Modify Existing Tests Without Approval — 変更された既存テストファイルは diff に含まれていない。; Flag Tests That Become Irrelevant — `sddDataDir` の削除による既存テストへの影響は diff 内のテストファイルには確認されない（テスト対象自体が存在していた形跡がない）。; Exit Code Contract — 新規追加コードに `process.exit(0)` を失敗時に返すパターンは見当たらない。; No Synchronous I/O in Hot Paths — `resolveProjectPreset` 内の `existsSync`/`readFileSync` はファイルループの外側（コマンド起動時の一度きり）で呼ばれており、ホットパスに該当しない。; Validate User Input at Entry Point — `type` フィールドは `validateConfig` でシステム境界で検証され、`resolveProjectPreset` は内部インターフェースとして受け取る。",
+      "trigger": "gate post hook (auto)",
+      "timestamp": "2026-04-10T08:16:46.799Z"
+    },
+    {
+      "step": "gate-impl",
+      "reason": "プロジェクトローカルプリセットを built — in より優先して探索 — `resolveChain(leafKey, projectRoot)` で `resolveProjectPreset` を先に呼び出し、結果があれば built-in より優先して返す; `preset.json` が存在する場合その定義（parent, scan, chapters）を使用 — `resolveProjectPreset` 内で `manifest.parent/scan/chapters` を読み込み返却している; `preset.json` 省略時の fallback — built-in 同名があれば `{...builtin, dir: projectDir}` を返し、なければ bare プリセット（parent: null）を返す; `.sdd — forge/presets/<name>/data/` を scan・data 両フェーズでロード — `scan.js` と `resolver-factory.js` の両方が `resolveMultiChains(types, root)` を呼び、解決されたプリセットの `dir/data/` をロードする; `.sdd — forge/data/` からの DataSource ロードを廃止 — `scan.js` と `resolver-factory.js` から `sddDataDir` を使ったロードを削除、`config.js` から `sddDataDir` 関数自体も除去; `.sdd — forge/data/` 存在時の deprecation 警告 — `createResolver` 内で `fs.existsSync(deprecatedDataDir)` を確認し `process.stderr.write` で警告を出力; No Hardcoded Secrets — The diff contains only file-path manipulation and preset configuration logic; no API keys, passwords, or tokens are present.; No Silent Error Swallowing — `resolveChainSafe` contains `catch (_) { ... }` that silently discards the error without logging or rethrowing it (`src/lib/presets.js`).; Bounded Resource Usage — `resolveChain` uses a `seen` Set to detect circular preset references and throws on cycles; no unbounded recursion is introduced.; No Sensitive Data in Logs — The deprecation warning written to `process.stderr` contains only a static path hint (`src/docs/lib/resolver-factory.js`); no user data or secrets are logged.; No Disabling Existing Tests — No existing test files are skipped, commented out, or deleted in the diff.; Escalate When New Tests Break Existing Tests — The diff introduces a new test file (`tests/unit/lib/project-local-presets.test.js`) but provides no evidence that it breaks existing tests.; Do Not Modify Existing Tests Without Approval — No existing test files are modified; only a new test file is added.; Flag Tests That Become Irrelevant — `sddDataDir` is removed from `src/lib/config.js`, making any existing unit tests that import or exercise this export irrelevant; no such tests are flagged.; Exit Code Contract — Error paths throw `Error` objects (caught upstream and converted to non-zero exit codes) or use the existing `EXIT_ERROR` pattern; no failure path exits with `0`.; No Synchronous I/O in Hot Paths — `fs.existsSync` and `fs.readFileSync` in `resolveProjectPreset` are called once per command invocation during chain resolution, outside any file-processing loop.; Validate User Input at Entry Point — The `type` field from config is validated by the existing `validateConfig` in `src/lib/types.js`; internal path construction uses `fs.existsSync` guards before any read operations.",
+      "trigger": "gate post hook (auto)",
+      "timestamp": "2026-04-10T08:18:44.633Z"
+    },
+    {
+      "step": "draft",
+      "reason": "wrong scope",
+      "timestamp": "2026-04-10T08:20:09.421Z"
+    },
+    {
+      "step": "draft",
+      "reason": "first",
+      "timestamp": "2026-04-10T08:20:09.511Z"
+    },
+    {
+      "step": "spec",
+      "reason": "second",
+      "timestamp": "2026-04-10T08:20:09.592Z"
+    },
+    {
+      "step": "gate",
+      "reason": "test",
+      "timestamp": "2026-04-10T08:20:09.673Z"
+    },
+    {
+      "step": "draft",
+      "reason": "unclear requirement",
+      "trigger": "user correction",
+      "resolution": "added clarification",
+      "guardrailCandidate": "Always verify scope boundaries",
+      "timestamp": "2026-04-10T08:20:09.751Z"
+    },
+    {
+      "step": "draft",
+      "reason": "test",
+      "timestamp": "2026-04-10T08:20:09.909Z"
+    },
+    {
+      "step": "gate",
+      "reason": "Single Responsibility — spec本文が存在せず、何の関心事を扱うか特定できない; Unambiguous Requirements — 要件が一切記述されておらず、検証可能な条件がない; Complete Context — トリガー条件も期待動作も記述なし; No Hardcoded Secrets — ソースコード不在につき非該当; No Silent Error Swallowing — ソースコード不在につき非該当; Prioritize Requirements — 要件が3件以下（ゼロ件）につき優先順位付け不要; Impact on Existing Features — 既存機能への影響の記述なし; Bounded Resource Usage — 設計内容不在につき非該当; Changes Require Test Coverage — テストカバレッジへの言及なし（理由も未記載）; Spec Includes Test Strategy — テスト戦略の記述なし; Synthesize Draft, Do Not Copy — ドラフト原文不在につき非該当; Record Unresolved Points as Open Questions — 未解決点の明示なし、Open Questions空欄で矛盾なし; Include 'Why This Approach' Rationale — アプローチ選択の根拠記述なし; Backward — Compatible CLI Interface — CLI変更の記述なし、非該当; Exit Code Contract — コマンド定義なし、非該当",
+      "trigger": "gate post hook (auto)",
+      "timestamp": "2026-04-10T08:20:39.841Z"
+    },
+    {
+      "step": "gate",
+      "reason": "missing section: ## Clarifications; missing section: ## Open Questions; missing section: ## User Confirmation; missing section: ## Acceptance Criteria (or ## User Scenarios & Testing)",
+      "trigger": "gate post hook (auto)",
+      "timestamp": "2026-04-10T08:20:39.976Z"
+    },
+    {
+      "step": "gate",
+      "reason": "Single Responsibility — 仕様の対象となる関心事が何も記述されていない。何を扱うspecか不明。; Unambiguous Requirements — 受け入れ基準が \"done\" のみであり、検証可能な条件が一切ない。; Complete Context — トリガー条件（When/If）と期待動作（shall）を持つ要件が一件も存在しない。; No Hardcoded Secrets — ソースコードが含まれていないため該当しない。; No Silent Error Swallowing — ソースコードが含まれていないため該当しない。; Prioritize Requirements — 要件が3件以下（ゼロ）のため優先順位付けは不要。; Impact on Existing Features — 既存機能への影響について記述が存在しない（「影響なし」の明示もない）。; Bounded Resource Usage — 再帰処理・リトライ・一括読み込みの記述がないため該当しない。; Changes Require Test Coverage — テストカバレッジの記述もなく、省略理由も明示されていない。; Spec Includes Test Strategy — テスト戦略（何をどのようにテストするか）が存在しない。; Synthesize Draft, Do Not Copy — ドラフト素材の取り扱いを評価する対象コンテンツがないため該当しない。; Record Unresolved Points as Open Questions — Open Questions セクションが存在し、未解決事項の捏造もない。; Include 'Why This Approach' Rationale — このアプローチを選択した根拠が一切記述されていない。; Backward — Compatible CLI Interface — CLIコマンド・オプションの変更が記述されていないため該当しない。; Exit Code Contract — コマンド動作の記述がないため該当しない。",
+      "trigger": "gate post hook (auto)",
+      "timestamp": "2026-04-10T08:21:08.200Z"
+    },
+    {
+      "step": "gate",
+      "reason": "Single Responsibility — 仕様に内容がないため複数関心事の混在は発生していない; Unambiguous Requirements — Acceptance Criteria が \"done\" のみで検証可能な条件が記述されていない; Complete Context — When/If + shall の形式を持つ要件が一切存在しない; No Hardcoded Secrets — ソースコードの記述がないため該当しない; No Silent Error Swallowing — ソースコードの記述がないため該当しない; Prioritize Requirements — 要件が3件を超えていないため優先順位付け義務は発生しない; Impact on Existing Features — 既存機能への影響について言及がない（「影響なし」の明示もない）; Bounded Resource Usage — 再帰処理・リトライ・バルク読み込みの記述がないため該当しない; Changes Require Test Coverage — テストカバレッジの記述も除外理由の明示もない; Spec Includes Test Strategy — テスト戦略（何をどのようにテストするか）が記載されていない; Synthesize Draft, Do Not Copy — ドラフト内容が存在しないため該当しない; Record Unresolved Points as Open Questions — Open Questions セクションが存在し、空であることは容認される; Include 'Why This Approach' Rationale — このアプローチを選んだ根拠・理由が記載されていない; Backward — Compatible CLI Interface — CLI の変更・削除の記述がないため該当しない; Exit Code Contract — コマンド動作の記述がないため該当しない",
+      "trigger": "gate post hook (auto)",
+      "timestamp": "2026-04-10T08:21:37.834Z"
+    },
+    {
+      "step": "gate-impl",
+      "reason": "プロジェクトローカルプリセットを built — in より優先して探索 — `resolveChain()` で `resolveProjectPreset(leafKey, projectRoot)` を先に評価し、該当すれば built-in の `PRESETS.find()` を使わない実装になっている; `.sdd — forge/presets/<name>/preset.json` が存在する場合その定義を使用 — `resolveProjectPreset()` で `manifestPath` を読み込み、`parent / scan / chapters` を取得してオブジェクトを構築している; `preset.json` 省略時に built — in 同名があれば設定を引き継ぎ、なければ bare プリセットとして機能 — `const builtin = PRESETS.find(p => p.key === key); if (builtin) return { ...builtin, dir: projectDir };` で継承し、フォールバックで `parent: null` の bare オブジェクトを返す; `.sdd — forge/presets/<name>/data/` を scan フェーズと data 解決フェーズの両方でロード — scan.js は `resolveMultiChains(types, root)` で root を渡すことで chain にプロジェクトプリセットを含め、resolver-factory.js の `loadChainDataSources` は `preset.dir + \"/data\"` を chain 順にロードする; `.sdd — forge/data/` からの DataSource ロードを廃止 — scan.js の `loadScanSources(projectDataDir, ...)` 呼び出しと、resolver-factory.js の `loadDataSources(projectDataDir, ...)` 呼び出しをいずれも削除。`config.js` の `sddDataDir()` エクスポートも削除済み; `.sdd — forge/data/` が存在する場合に deprecation 警告を stderr へ出力 — `createResolver()` 内で `fs.existsSync(deprecatedDataDir)` を確認し、存在すれば `process.stderr.write(\"[sdd-forge] WARN: ...\")` で警告を出力している; No Hardcoded Secrets — No API keys, tokens, passwords, or secrets appear in any changed source file.; No Silent Error Swallowing — In `resolveChainSafe`, the caught error is logged via `logger.verbose(err.message)` before fallback logic executes; the error is not discarded silently.; Bounded Resource Usage — `resolveProjectPreset` does not recurse; `resolveChain`/`resolveMultiChains` delegate to the pre-existing chain resolver which already carries cycle detection (visited-set guard visible in surrounding unchanged code).; No Sensitive Data in Logs — The deprecation warning in `resolver-factory.js` emits only a fixed-format path string; `logger.verbose` in `presets.js` emits only the preset key and `err.message`, neither of which contain credentials or PII.; No Disabling Existing Tests — No test files are modified, commented out, or deleted in this diff.; Escalate When New Tests Break Existing Tests — The only test change is the addition of a new untracked file (`tests/unit/lib/project-local-presets.test.js`); no evidence of new tests conflicting with existing ones appears in the diff.; Flag Tests That Become Irrelevant — `sddDataDir` is removed from `src/lib/config.js` and all its call sites in `scan.js` and `resolver-factory.js` are deleted. Any existing unit or integration tests that imported `sddDataDir` or tested `.sdd-forge/data/` DataSource loading are now irrelevant (or broken) and must be flagged to the user.; Exit Code Contract — No `process.exit(0)` on failure paths; the deprecation warning writes to stderr only and does not affect exit codes.; No Synchronous I/O in Hot Paths — `fs.existsSync`/`fs.readFileSync` calls in `resolveProjectPreset` and `createResolver` execute once per command invocation during preset-chain initialization, not inside per-file processing loops.; Validate User Input at Entry Point — The `leafKey` (derived from `config.type`) is validated by `validateConfig()` at config load time before reaching `resolveChain`; `projectRoot` originates from `repoRoot()` (git-derived), not raw user input.",
+      "trigger": "gate post hook (auto)",
+      "timestamp": "2026-04-10T08:24:18.251Z"
+    },
+    {
+      "step": "merge",
+      "reason": "Merge conflict detected. Run 'git rebase main' in the worktree and retry finalize.",
+      "timestamp": "2026-04-10T08:58:00.422Z"
+    },
+    {
+      "step": "finalize",
+      "reason": "merge conflict detected during finalize squash merge",
+      "trigger": "sdd-forge flow run finalize --mode all",
+      "resolution": "run git rebase main in worktree to resolve conflicts, then retry finalize --mode select --steps 2,3,4",
+      "timestamp": "2026-04-10T12:28:28.398Z"
+    }
+  ]
+}

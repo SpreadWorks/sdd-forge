@@ -1,0 +1,207 @@
+{
+  "spec": "specs/165-project-local-presets/spec.md",
+  "baseBranch": "main",
+  "featureBranch": "feature/165-project-local-presets",
+  "steps": [
+    {
+      "id": "approach",
+      "status": "done"
+    },
+    {
+      "id": "branch",
+      "status": "done"
+    },
+    {
+      "id": "prepare-spec",
+      "status": "pending"
+    },
+    {
+      "id": "draft",
+      "status": "done"
+    },
+    {
+      "id": "gate-draft",
+      "status": "done"
+    },
+    {
+      "id": "spec",
+      "status": "done"
+    },
+    {
+      "id": "gate",
+      "status": "done"
+    },
+    {
+      "id": "approval",
+      "status": "done"
+    },
+    {
+      "id": "test",
+      "status": "done"
+    },
+    {
+      "id": "implement",
+      "status": "done"
+    },
+    {
+      "id": "gate-impl",
+      "status": "done"
+    },
+    {
+      "id": "review",
+      "status": "done"
+    },
+    {
+      "id": "finalize",
+      "status": "pending"
+    },
+    {
+      "id": "commit",
+      "status": "pending"
+    },
+    {
+      "id": "push",
+      "status": "pending"
+    },
+    {
+      "id": "merge",
+      "status": "pending"
+    },
+    {
+      "id": "pr-create",
+      "status": "pending"
+    },
+    {
+      "id": "branch-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "pr-merge",
+      "status": "pending"
+    },
+    {
+      "id": "sync-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "docs-update",
+      "status": "pending"
+    },
+    {
+      "id": "docs-review",
+      "status": "pending"
+    },
+    {
+      "id": "docs-commit",
+      "status": "pending"
+    }
+  ],
+  "requirements": [
+    {
+      "desc": "config.type に指定されたプリセット名を .sdd-forge/presets/ → src/presets/ の順で探索",
+      "status": "done"
+    },
+    {
+      "desc": "preset.json が存在する場合はその定義を使用",
+      "status": "done"
+    },
+    {
+      "desc": "preset.json が省略された場合: built-in 同名があれば設定を継承して DataSource のみ上書き、なければ bare プリセット",
+      "status": "done"
+    },
+    {
+      "desc": ".sdd-forge/presets/<name>/data/ の DataSource を scan・data 両フェーズでロード",
+      "status": "done"
+    },
+    {
+      "desc": ".sdd-forge/data/ からのロードを廃止（存在しても読まない）",
+      "status": "done"
+    },
+    {
+      "desc": ".sdd-forge/data/ 存在時に deprecation 警告を標準エラーへ出力",
+      "status": "done"
+    }
+  ],
+  "issue": 130,
+  "request": "make a resume command",
+  "worktree": true,
+  "metrics": {
+    "plan": {
+      "docsRead": 1
+    },
+    "draft": {
+      "question": 5,
+      "srcRead": 1
+    },
+    "gate-draft": {
+      "tokens": {
+        "input": 4,
+        "output": 6060,
+        "cacheRead": 21946,
+        "cacheCreation": 20209
+      },
+      "cost": 0.17327955,
+      "callCount": 2,
+      "responseChars": 2551
+    },
+    "impl": {
+      "srcRead": 1,
+      "issueLog": 8
+    },
+    "gate-impl": {
+      "tokens": {
+        "input": 16,
+        "output": 32571,
+        "cacheRead": 553746,
+        "cacheCreation": 466308
+      },
+      "cost": 2.4033918,
+      "callCount": 8,
+      "responseChars": 10121
+    },
+    "spec": {
+      "docsRead": 1
+    },
+    "gate": {
+      "tokens": {
+        "input": 9,
+        "output": 4871,
+        "cacheRead": 51467,
+        "cacheCreation": 9274
+      },
+      "cost": 0.12330959999999999,
+      "callCount": 3,
+      "responseChars": 2746
+    },
+    "review": {
+      "tokens": {
+        "input": 4,
+        "output": 8203,
+        "cacheRead": 21946,
+        "cacheCreation": 233607
+      },
+      "cost": 1.00566705,
+      "callCount": 2,
+      "responseChars": 3221
+    }
+  },
+  "notes": [
+    "approach: Q&A でドラフト整理, worktree, base=main",
+    "scope: 解決機構のみ実装。DataSourceのimport解決(4ea8)は含めない",
+    "preset.json省略時: built-in同名があれば引き継ぎ、なければbareプリセット",
+    "approach: draft first",
+    "first note",
+    "second note",
+    "new note",
+    "implement: approach confirmed - resolveChain(key, root?), removeDataDir, deprecation warning in createResolver",
+    "approach: draft first",
+    "first note",
+    "second note",
+    "new note"
+  ],
+  "test": {
+    "summary": {
+      "unit": 2
+    }
+  }
+}

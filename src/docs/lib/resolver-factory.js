@@ -8,7 +8,7 @@
 
 import fs from "fs";
 import path from "path";
-import { sddDir, sddDataDir } from "../../lib/config.js";
+import { sddDir } from "../../lib/config.js";
 import { loadDataSources as loadDataSourcesBase } from "./data-source-loader.js";
 import { resolveMultiChains, resolveChainSafe } from "../../lib/presets.js";
 import { createLogger } from "../../lib/progress.js";
@@ -66,17 +66,13 @@ const COMMON_DATA_DIR = path.resolve(
  * @param {Object} ctx - 共有コンテキスト
  * @returns {Promise<Map<string, Object>>} DataSource マップ
  */
-async function loadChainDataSources(chain, root, ctx) {
+async function loadChainDataSources(chain, ctx) {
   let dataSources = await loadDataSources(COMMON_DATA_DIR, ctx);
 
   for (const preset of chain) {
     const dataDir = path.join(preset.dir, "data");
     dataSources = await loadDataSources(dataDir, ctx, dataSources);
   }
-
-  // プロジェクト固有 DataSource（最高優先）
-  const projectDataDir = sddDataDir(root);
-  dataSources = await loadDataSources(projectDataDir, ctx, dataSources);
 
   return dataSources;
 }
@@ -92,11 +88,19 @@ async function loadChainDataSources(chain, root, ctx) {
  * @returns {Promise<{ resolve: (preset: string, source: string, method: string, analysis: Object, labels: string[]) => string|null }>}
  */
 export async function createResolver(type, root, opts) {
+  // Warn about deprecated .sdd-forge/data/ directory
+  if (root) {
+    const deprecatedDataDir = path.join(root, ".sdd-forge", "data");
+    if (fs.existsSync(deprecatedDataDir)) {
+      process.stderr.write(`[sdd-forge] WARN: .sdd-forge/data/ is deprecated. Move DataSources to .sdd-forge/presets/<type>/data/ instead.\n`);
+    }
+  }
+
   const desc = descFactory(root);
   const loadOverrides = () => loadOverridesFor(root);
   const ctx = { desc, loadOverrides, root, docsDir: opts?.docsDir, type, configChapters: opts?.configChapters };
 
-  const chains = resolveMultiChains(type);
+  const chains = resolveMultiChains(type, root);
 
   // 各チェーンの leaf key → DataSource マップ
   const resolverMap = new Map();
@@ -104,7 +108,7 @@ export async function createResolver(type, root, opts) {
   const ancestorMap = new Map();
   for (const chain of chains) {
     const leafKey = chain[chain.length - 1].key;
-    const dataSources = await loadChainDataSources(chain, root, ctx);
+    const dataSources = await loadChainDataSources(chain, ctx);
     resolverMap.set(leafKey, dataSources);
     // chain 内の全プリセットを ancestor マップに登録
     for (const p of chain) {
