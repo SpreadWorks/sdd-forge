@@ -183,16 +183,30 @@ function formatText(data) {
     lines.push("    -");
   }
 
-  // Metrics (single line)
+  const formatInt = (value) => Number(value || 0).toLocaleString("en-US");
+  const metricLine = (label, value) => {
+    const dots = ".".repeat(Math.max(1, 28 - label.length));
+    return `    ${label} ${dots} ${value}`;
+  };
+
+  // Metrics
   pushSection(lines, "Metrics", thin);
   const m = data.metrics;
-  lines.push(`    docs read ${m.docsRead}  src read ${m.srcRead}  Q&A ${m.question}  issue-log ${m.issueLog}`);
+  lines.push(metricLine("docs read", formatInt(m.docsRead)));
+  lines.push(metricLine("src read", formatInt(m.srcRead)));
+  lines.push(metricLine("Q&A", formatInt(m.question)));
+  lines.push(metricLine("issue-log", formatInt(m.issueLog)));
 
   // Agent metrics (token/cost) — R3-1, R3-2
   if (data.tokenMetrics && data.tokenMetrics.callCount > 0) {
     const t = data.tokenMetrics;
     const costStr = t.cost != null ? `$${t.cost.toFixed(4)}` : "N/A";
-    lines.push(`    agent calls ${t.callCount}  in ${t.input}  out ${t.output}  cache-read ${t.cacheRead}  cache-create ${t.cacheCreation}  cost ${costStr}`);
+    lines.push(metricLine("agent calls", formatInt(t.callCount)));
+    lines.push(metricLine("input tokens", formatInt(t.input)));
+    lines.push(metricLine("output tokens", formatInt(t.output)));
+    lines.push(metricLine("cache-read tokens", formatInt(t.cacheRead)));
+    lines.push(metricLine("cache-create tokens", formatInt(t.cacheCreation)));
+    lines.push(metricLine("cost", costStr));
   }
 
   // Tests (always shown)

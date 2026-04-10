@@ -84,6 +84,7 @@
     "default": "claude/sonnet",
     "workDir": ".tmp",
     "timeout": 600,
+    "useProfile": "codex",
     "providers": {
       "claude/sonnet": {
         "command": "claude",
@@ -110,6 +111,11 @@
     },
     "profiles": {
       "default": {
+        "docs": "codex/gpt-5.3",
+        "flow": "claude/sonnet",
+        "flow.review.draft": "codex/gpt-5.3"
+      },
+      "codex": {
         "docs": "codex/gpt-5.3",
         "flow": "codex/gpt-5.3",
         "flow.review.draft": "codex/gpt-5.3"
