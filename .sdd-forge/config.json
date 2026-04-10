@@ -1,4 +1,5 @@
 {
+  "name": "sdd-forge",
   "logs": {
     "enabled": true
   },
@@ -110,11 +111,9 @@
     "profiles": {
       "default": {
         "docs": "codex/gpt-5.3",
-        "flow": "claude/sonnet",
-        "experimental.workflow.board.to-issue": "claude/sonnet",
+        "flow": "codex/gpt-5.3",
         "flow.review.draft": "codex/gpt-5.3"
       }
     }
-  },
-  "name": "sdd-forge"
+  }
 }
