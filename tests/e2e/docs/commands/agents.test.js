@@ -20,7 +20,7 @@ describe("agents CLI", () => {
     assert.ok(!fs.existsSync(join(tmp, "AGENTS.md")), "AGENTS.md should not exist before");
     execFileSync("node", [CMD], {
       encoding: "utf8",
-      env: { ...process.env, SDD_WORK_ROOT: tmp, SDD_SOURCE_ROOT: tmp },
+      env: { ...process.env, SDD_FORGE_WORK_ROOT: tmp, SDD_FORGE_SOURCE_ROOT: tmp },
     });
     assert.ok(fs.existsSync(join(tmp, "AGENTS.md")), "AGENTS.md should be created");
     const content = fs.readFileSync(join(tmp, "AGENTS.md"), "utf8");
@@ -38,7 +38,7 @@ describe("agents CLI", () => {
     try {
       execFileSync("node", [CMD], {
         encoding: "utf8",
-        env: { ...process.env, SDD_WORK_ROOT: tmp, SDD_SOURCE_ROOT: tmp },
+        env: { ...process.env, SDD_FORGE_WORK_ROOT: tmp, SDD_FORGE_SOURCE_ROOT: tmp },
       });
       assert.fail("should exit non-zero");
     } catch (err) {
@@ -64,7 +64,7 @@ describe("agents CLI", () => {
     try {
       execFileSync("node", [CMD], {
         encoding: "utf8",
-        env: { ...process.env, SDD_WORK_ROOT: tmp, SDD_SOURCE_ROOT: tmp },
+        env: { ...process.env, SDD_FORGE_WORK_ROOT: tmp, SDD_FORGE_SOURCE_ROOT: tmp },
       });
       assert.fail("should exit non-zero");
     } catch (err) {
@@ -93,7 +93,7 @@ describe("agents CLI", () => {
     // No project directive = no AI needed = should succeed without agent
     execFileSync("node", [CMD], {
       encoding: "utf8",
-      env: { ...process.env, SDD_WORK_ROOT: tmp, SDD_SOURCE_ROOT: tmp },
+      env: { ...process.env, SDD_FORGE_WORK_ROOT: tmp, SDD_FORGE_SOURCE_ROOT: tmp },
     });
 
     const content = fs.readFileSync(join(tmp, "AGENTS.md"), "utf8");

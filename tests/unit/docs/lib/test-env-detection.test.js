@@ -28,7 +28,7 @@ describe("scan scripts extraction", () => {
       const CMD = join(process.cwd(), "src/docs/commands/scan.js");
       const result = execFileSync("node", [CMD, "--stdout"], {
         encoding: "utf8",
-        env: { ...process.env, SDD_WORK_ROOT: tmp, SDD_SOURCE_ROOT: tmp },
+        env: { ...process.env, SDD_FORGE_WORK_ROOT: tmp, SDD_FORGE_SOURCE_ROOT: tmp },
       });
       const analysis = JSON.parse(result);
 
@@ -61,7 +61,7 @@ describe("scan scripts extraction", () => {
       const CMD = join(process.cwd(), "src/docs/commands/scan.js");
       const result = execFileSync("node", [CMD, "--stdout"], {
         encoding: "utf8",
-        env: { ...process.env, SDD_WORK_ROOT: tmp, SDD_SOURCE_ROOT: tmp },
+        env: { ...process.env, SDD_FORGE_WORK_ROOT: tmp, SDD_FORGE_SOURCE_ROOT: tmp },
       });
       const analysis = JSON.parse(result);
 

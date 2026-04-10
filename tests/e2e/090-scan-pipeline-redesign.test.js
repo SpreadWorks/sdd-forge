@@ -28,7 +28,7 @@ describe("scan pipeline redesign — analysis[cat].entries structure", () => {
   function runScan() {
     execFileSync("node", [CMD], {
       encoding: "utf8",
-      env: { ...process.env, SDD_WORK_ROOT: tmp, SDD_SOURCE_ROOT: tmp },
+      env: { ...process.env, SDD_FORGE_WORK_ROOT: tmp, SDD_FORGE_SOURCE_ROOT: tmp },
     });
     const outputPath = join(tmp, ".sdd-forge/output/analysis.json");
     return JSON.parse(fs.readFileSync(outputPath, "utf8"));
@@ -175,7 +175,7 @@ describe("scan pipeline redesign — analysis[cat].entries structure", () => {
       () => {
         execFileSync("node", [CMD], {
           encoding: "utf8",
-          env: { ...process.env, SDD_WORK_ROOT: tmp, SDD_SOURCE_ROOT: tmp },
+          env: { ...process.env, SDD_FORGE_WORK_ROOT: tmp, SDD_FORGE_SOURCE_ROOT: tmp },
         });
       },
       (err) => err.status !== 0,

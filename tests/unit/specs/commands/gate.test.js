@@ -260,7 +260,7 @@ describe("gate CLI", () => {
       join(process.cwd(), "src/sdd-forge.js"),
       "flow", "run", "gate",
       "--spec", join(tmp, "spec.md"),
-    ], { encoding: "utf8", env: { ...process.env, SDD_WORK_ROOT: tmp } });
+    ], { encoding: "utf8", env: { ...process.env, SDD_FORGE_WORK_ROOT: tmp } });
     const envelope = JSON.parse(result);
     assert.equal(envelope.ok, true);
   });
@@ -274,7 +274,7 @@ describe("gate CLI", () => {
       join(process.cwd(), "src/sdd-forge.js"),
       "flow", "run", "gate",
       "--spec", join(tmp, "spec.md"),
-    ], { encoding: "utf8", env: { ...process.env, SDD_WORK_ROOT: tmp } });
+    ], { encoding: "utf8", env: { ...process.env, SDD_FORGE_WORK_ROOT: tmp } });
     const envelope = JSON.parse(result);
     assert.equal(envelope.ok, true);
     assert.equal(envelope.data.result, "fail");

@@ -14,7 +14,7 @@ import { createTmpDir, removeTmpDir, writeJson, writeFile } from "../../../helpe
 const CMD = join(process.cwd(), "src/docs/commands/scan.js");
 
 function makeEnv(tmp) {
-  return { ...process.env, SDD_WORK_ROOT: tmp, SDD_SOURCE_ROOT: tmp };
+  return { ...process.env, SDD_FORGE_WORK_ROOT: tmp, SDD_FORGE_SOURCE_ROOT: tmp };
 }
 
 describe("scan multi-type pattern merging", () => {

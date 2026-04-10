@@ -47,7 +47,7 @@ describe("flow get prompt i18n — Japanese", () => {
     setupFlowState(tmp, "ja");
     const result = execFileSync(
       "node", [FLOW_CMD, "get", "prompt", "plan.approach"],
-      { encoding: "utf8", env: { ...process.env, SDD_WORK_ROOT: tmp } },
+      { encoding: "utf8", env: { ...process.env, SDD_FORGE_WORK_ROOT: tmp } },
     );
     const envelope = JSON.parse(result);
     assert.equal(envelope.ok, true);
@@ -59,7 +59,7 @@ describe("flow get prompt i18n — Japanese", () => {
     setupFlowState(tmp, "ja");
     const result = execFileSync(
       "node", [FLOW_CMD, "get", "prompt", "plan.work-environment"],
-      { encoding: "utf8", env: { ...process.env, SDD_WORK_ROOT: tmp } },
+      { encoding: "utf8", env: { ...process.env, SDD_FORGE_WORK_ROOT: tmp } },
     );
     const envelope = JSON.parse(result);
     const labels = envelope.data.choices.map((c) => c.label);
@@ -71,7 +71,7 @@ describe("flow get prompt i18n — Japanese", () => {
     setupFlowState(tmp, "ja");
     const result = execFileSync(
       "node", [FLOW_CMD, "get", "prompt", "plan.approval"],
-      { encoding: "utf8", env: { ...process.env, SDD_WORK_ROOT: tmp } },
+      { encoding: "utf8", env: { ...process.env, SDD_FORGE_WORK_ROOT: tmp } },
     );
     const envelope = JSON.parse(result);
     assert.ok(envelope.data.description.includes("承認"), `should be Japanese: ${envelope.data.description}`);
@@ -87,7 +87,7 @@ describe("flow get prompt i18n — English", () => {
     setupFlowState(tmp, "en");
     const result = execFileSync(
       "node", [FLOW_CMD, "get", "prompt", "plan.approach"],
-      { encoding: "utf8", env: { ...process.env, SDD_WORK_ROOT: tmp } },
+      { encoding: "utf8", env: { ...process.env, SDD_FORGE_WORK_ROOT: tmp } },
     );
     const envelope = JSON.parse(result);
     assert.equal(envelope.ok, true);
@@ -99,7 +99,7 @@ describe("flow get prompt i18n — English", () => {
     setupFlowState(tmp, "en");
     const result = execFileSync(
       "node", [FLOW_CMD, "get", "prompt", "plan.approval"],
-      { encoding: "utf8", env: { ...process.env, SDD_WORK_ROOT: tmp } },
+      { encoding: "utf8", env: { ...process.env, SDD_FORGE_WORK_ROOT: tmp } },
     );
     const envelope = JSON.parse(result);
     const labels = envelope.data.choices.map((c) => c.label);
@@ -111,7 +111,7 @@ describe("flow get prompt i18n — English", () => {
     setupFlowState(tmp, "en");
     const result = execFileSync(
       "node", [FLOW_CMD, "get", "prompt", "plan.test-mode"],
-      { encoding: "utf8", env: { ...process.env, SDD_WORK_ROOT: tmp } },
+      { encoding: "utf8", env: { ...process.env, SDD_FORGE_WORK_ROOT: tmp } },
     );
     const envelope = JSON.parse(result);
     assert.ok(envelope.data.description.includes("test"), `should be English: ${envelope.data.description}`);

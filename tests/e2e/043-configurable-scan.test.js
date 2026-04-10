@@ -192,7 +192,7 @@ describe("scan config override", () => {
 
     const result = execFileSync("node", [CMD, "--stdout"], {
       encoding: "utf8",
-      env: { ...process.env, SDD_WORK_ROOT: tmp, SDD_SOURCE_ROOT: tmp },
+      env: { ...process.env, SDD_FORGE_WORK_ROOT: tmp, SDD_FORGE_SOURCE_ROOT: tmp },
     });
     const analysis = JSON.parse(result);
 
@@ -233,7 +233,7 @@ describe("analysis.json top-level structure (no extras)", () => {
 
     const result = execFileSync("node", [CMD, "--stdout"], {
       encoding: "utf8",
-      env: { ...process.env, SDD_WORK_ROOT: tmp, SDD_SOURCE_ROOT: tmp },
+      env: { ...process.env, SDD_FORGE_WORK_ROOT: tmp, SDD_FORGE_SOURCE_ROOT: tmp },
     });
     const analysis = JSON.parse(result);
 
@@ -267,7 +267,7 @@ describe("preserveEnrichment recursive hash search", () => {
     // 1st scan
     execFileSync("node", [CMD], {
       encoding: "utf8",
-      env: { ...process.env, SDD_WORK_ROOT: tmp, SDD_SOURCE_ROOT: tmp },
+      env: { ...process.env, SDD_FORGE_WORK_ROOT: tmp, SDD_FORGE_SOURCE_ROOT: tmp },
     });
 
     const outputPath = join(tmp, ".sdd-forge/output/analysis.json");
@@ -287,7 +287,7 @@ describe("preserveEnrichment recursive hash search", () => {
     // 2nd scan (same source)
     execFileSync("node", [CMD], {
       encoding: "utf8",
-      env: { ...process.env, SDD_WORK_ROOT: tmp, SDD_SOURCE_ROOT: tmp },
+      env: { ...process.env, SDD_FORGE_WORK_ROOT: tmp, SDD_FORGE_SOURCE_ROOT: tmp },
     });
 
     const second = JSON.parse(fs.readFileSync(outputPath, "utf8"));
@@ -330,7 +330,7 @@ describe("single DataSource match (first wins)", () => {
 
     const result = execFileSync("node", [CMD, "--stdout"], {
       encoding: "utf8",
-      env: { ...process.env, SDD_WORK_ROOT: tmp, SDD_SOURCE_ROOT: tmp },
+      env: { ...process.env, SDD_FORGE_WORK_ROOT: tmp, SDD_FORGE_SOURCE_ROOT: tmp },
     });
     const analysis = JSON.parse(result);
     // config DataSource matches AppController.php first (first-match-wins)

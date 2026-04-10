@@ -159,7 +159,7 @@ describe("052: agent command config", () => {
         encoding: "utf8",
         cwd: tmp,
         timeout: 10000,
-        env: { ...process.env, SDD_WORK_ROOT: tmp, SDD_SOURCE_ROOT: tmp },
+        env: { ...process.env, SDD_FORGE_WORK_ROOT: tmp, SDD_FORGE_SOURCE_ROOT: tmp },
       });
       assert.equal(result.status, 0, `stderr: ${result.stderr}`);
 
@@ -179,7 +179,7 @@ describe("052: agent command config", () => {
         encoding: "utf8",
         cwd: tmp,
         timeout: 10000,
-        env: { ...process.env, SDD_WORK_ROOT: tmp, SDD_SOURCE_ROOT: tmp },
+        env: { ...process.env, SDD_FORGE_WORK_ROOT: tmp, SDD_FORGE_SOURCE_ROOT: tmp },
       });
       assert.equal(result.status, 0, `stderr: ${result.stderr}`);
 

@@ -12,7 +12,7 @@ const INIT_CMD = join(process.cwd(), "src/docs/commands/init.js");
 const DATA_CMD = join(process.cwd(), "src/docs/commands/data.js");
 
 function makeEnv(tmp) {
-  return { ...process.env, SDD_WORK_ROOT: tmp, SDD_SOURCE_ROOT: tmp };
+  return { ...process.env, SDD_FORGE_WORK_ROOT: tmp, SDD_FORGE_SOURCE_ROOT: tmp };
 }
 
 function setupFromFixture(tmp, fixtureName, configOverrides) {

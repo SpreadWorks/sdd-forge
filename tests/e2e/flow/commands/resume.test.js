@@ -21,7 +21,7 @@ describe("flow set request", () => {
     setupFlow(tmp);
     execFileSync("node", [FLOW_CMD, "set", "request", "make a resume command"], {
       encoding: "utf8",
-      env: { ...process.env, SDD_WORK_ROOT: tmp },
+      env: { ...process.env, SDD_FORGE_WORK_ROOT: tmp },
     });
     const updated = loadFlowState(tmp);
     assert.equal(updated.request, "make a resume command");
@@ -37,7 +37,7 @@ describe("flow set note", () => {
     setupFlow(tmp);
     execFileSync("node", [FLOW_CMD, "set", "note", "approach: draft first"], {
       encoding: "utf8",
-      env: { ...process.env, SDD_WORK_ROOT: tmp },
+      env: { ...process.env, SDD_FORGE_WORK_ROOT: tmp },
     });
     const updated = loadFlowState(tmp);
     assert.deepEqual(updated.notes, ["approach: draft first"]);
@@ -48,11 +48,11 @@ describe("flow set note", () => {
     setupFlow(tmp);
     execFileSync("node", [FLOW_CMD, "set", "note", "first note"], {
       encoding: "utf8",
-      env: { ...process.env, SDD_WORK_ROOT: tmp },
+      env: { ...process.env, SDD_FORGE_WORK_ROOT: tmp },
     });
     execFileSync("node", [FLOW_CMD, "set", "note", "second note"], {
       encoding: "utf8",
-      env: { ...process.env, SDD_WORK_ROOT: tmp },
+      env: { ...process.env, SDD_FORGE_WORK_ROOT: tmp },
     });
     const updated = loadFlowState(tmp);
     assert.deepEqual(updated.notes, ["first note", "second note"]);
@@ -66,7 +66,7 @@ describe("flow set note", () => {
     addActiveFlow(tmp, "001-test", "local");
     execFileSync("node", [FLOW_CMD, "set", "note", "new note"], {
       encoding: "utf8",
-      env: { ...process.env, SDD_WORK_ROOT: tmp },
+      env: { ...process.env, SDD_FORGE_WORK_ROOT: tmp },
     });
     const updated = loadFlowState(tmp);
     assert.ok(Array.isArray(updated.notes));

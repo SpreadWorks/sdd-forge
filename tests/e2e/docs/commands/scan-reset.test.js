@@ -25,7 +25,7 @@ function setupEnrichedProject() {
   // Run scan to generate analysis.json
   execFileSync("node", [CMD], {
     encoding: "utf8",
-    env: { ...process.env, SDD_WORK_ROOT: tmp, SDD_SOURCE_ROOT: tmp },
+    env: { ...process.env, SDD_FORGE_WORK_ROOT: tmp, SDD_FORGE_SOURCE_ROOT: tmp },
   });
 
   const outputPath = join(tmp, ".sdd-forge/output/analysis.json");
@@ -55,7 +55,7 @@ describe("scan --reset", () => {
 
     const proc = spawnSync("node", [CMD, "--reset"], {
       encoding: "utf8",
-      env: { ...process.env, SDD_WORK_ROOT: tmp, SDD_SOURCE_ROOT: tmp },
+      env: { ...process.env, SDD_FORGE_WORK_ROOT: tmp, SDD_FORGE_SOURCE_ROOT: tmp },
     });
     assert.equal(proc.status, 0);
 
@@ -88,7 +88,7 @@ describe("scan --reset", () => {
 
     execFileSync("node", [CMD], {
       encoding: "utf8",
-      env: { ...process.env, SDD_WORK_ROOT: tmp, SDD_SOURCE_ROOT: tmp },
+      env: { ...process.env, SDD_FORGE_WORK_ROOT: tmp, SDD_FORGE_SOURCE_ROOT: tmp },
     });
 
     const outputPath = join(tmp, ".sdd-forge/output/analysis.json");
@@ -103,7 +103,7 @@ describe("scan --reset", () => {
 
     const proc = spawnSync("node", [CMD, "--reset", targetCat], {
       encoding: "utf8",
-      env: { ...process.env, SDD_WORK_ROOT: tmp, SDD_SOURCE_ROOT: tmp },
+      env: { ...process.env, SDD_FORGE_WORK_ROOT: tmp, SDD_FORGE_SOURCE_ROOT: tmp },
     });
     assert.equal(proc.status, 0);
 
@@ -130,7 +130,7 @@ describe("scan --reset", () => {
 
     const proc = spawnSync("node", [CMD, "--reset", "modules,extras"], {
       encoding: "utf8",
-      env: { ...process.env, SDD_WORK_ROOT: tmp, SDD_SOURCE_ROOT: tmp },
+      env: { ...process.env, SDD_FORGE_WORK_ROOT: tmp, SDD_FORGE_SOURCE_ROOT: tmp },
     });
     assert.equal(proc.status, 0);
 
@@ -147,7 +147,7 @@ describe("scan --reset", () => {
 
     spawnSync("node", [CMD, "--reset"], {
       encoding: "utf8",
-      env: { ...process.env, SDD_WORK_ROOT: tmp, SDD_SOURCE_ROOT: tmp },
+      env: { ...process.env, SDD_FORGE_WORK_ROOT: tmp, SDD_FORGE_SOURCE_ROOT: tmp },
     });
 
     const after = JSON.parse(fs.readFileSync(outputPath, "utf8"));
@@ -167,7 +167,7 @@ describe("scan --reset", () => {
 
     const proc = spawnSync("node", [CMD, "--reset", "nonexistent"], {
       encoding: "utf8",
-      env: { ...process.env, SDD_WORK_ROOT: tmp, SDD_SOURCE_ROOT: tmp },
+      env: { ...process.env, SDD_FORGE_WORK_ROOT: tmp, SDD_FORGE_SOURCE_ROOT: tmp },
     });
     assert.equal(proc.status, 0);
     assert.match(proc.stderr, /nonexistent/, "stderr should mention the unknown category");
@@ -183,7 +183,7 @@ describe("scan --reset", () => {
 
     const proc = spawnSync("node", [CMD, "--reset"], {
       encoding: "utf8",
-      env: { ...process.env, SDD_WORK_ROOT: tmp, SDD_SOURCE_ROOT: tmp },
+      env: { ...process.env, SDD_FORGE_WORK_ROOT: tmp, SDD_FORGE_SOURCE_ROOT: tmp },
     });
     assert.equal(proc.status, 0);
     assert.match(proc.stderr, /analysis\.json|nothing to reset/i, "stderr should indicate no analysis.json");
@@ -198,7 +198,7 @@ describe("scan --reset", () => {
     // Reset
     spawnSync("node", [CMD, "--reset"], {
       encoding: "utf8",
-      env: { ...process.env, SDD_WORK_ROOT: tmp, SDD_SOURCE_ROOT: tmp },
+      env: { ...process.env, SDD_FORGE_WORK_ROOT: tmp, SDD_FORGE_SOURCE_ROOT: tmp },
     });
 
     // Verify hash is null
@@ -208,7 +208,7 @@ describe("scan --reset", () => {
     // Re-scan
     execFileSync("node", [CMD], {
       encoding: "utf8",
-      env: { ...process.env, SDD_WORK_ROOT: tmp, SDD_SOURCE_ROOT: tmp },
+      env: { ...process.env, SDD_FORGE_WORK_ROOT: tmp, SDD_FORGE_SOURCE_ROOT: tmp },
     });
 
     // Hash should be restored (re-parsed)
@@ -223,7 +223,7 @@ describe("scan --reset", () => {
 
     const proc = spawnSync("node", [CMD, "--reset"], {
       encoding: "utf8",
-      env: { ...process.env, SDD_WORK_ROOT: tmp, SDD_SOURCE_ROOT: tmp },
+      env: { ...process.env, SDD_FORGE_WORK_ROOT: tmp, SDD_FORGE_SOURCE_ROOT: tmp },
     });
     assert.equal(proc.status, 0);
     assert.match(proc.stderr, /modules/, "stderr should mention category name");

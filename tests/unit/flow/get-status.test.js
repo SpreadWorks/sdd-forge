@@ -38,7 +38,7 @@ describe("flow get status", () => {
     setupFlowState(tmp);
     const result = execFileSync("node", [FLOW_CMD, "get", "status"], {
       encoding: "utf8",
-      env: { ...process.env, SDD_WORK_ROOT: tmp },
+      env: { ...process.env, SDD_FORGE_WORK_ROOT: tmp },
     });
     const envelope = JSON.parse(result);
     assert.equal(envelope.ok, true);
@@ -53,7 +53,7 @@ describe("flow get status", () => {
     try {
       execFileSync("node", [FLOW_CMD, "get", "status"], {
         encoding: "utf8",
-        env: { ...process.env, SDD_WORK_ROOT: tmp },
+        env: { ...process.env, SDD_FORGE_WORK_ROOT: tmp },
       });
       assert.fail("should exit non-zero");
     } catch (err) {

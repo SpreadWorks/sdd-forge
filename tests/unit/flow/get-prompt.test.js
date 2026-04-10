@@ -37,7 +37,7 @@ describe("flow get prompt", () => {
     setupFlowState(tmp);
     const result = execFileSync(
       "node", [FLOW_CMD, "get", "prompt", "plan.approach"],
-      { encoding: "utf8", env: { ...process.env, SDD_WORK_ROOT: tmp } },
+      { encoding: "utf8", env: { ...process.env, SDD_FORGE_WORK_ROOT: tmp } },
     );
     const envelope = JSON.parse(result);
     assert.equal(envelope.ok, true);
@@ -56,7 +56,7 @@ describe("flow get prompt", () => {
     setupFlowState(tmp);
     const result = execFileSync(
       "node", [FLOW_CMD, "get", "prompt", "plan.draft"],
-      { encoding: "utf8", env: { ...process.env, SDD_WORK_ROOT: tmp } },
+      { encoding: "utf8", env: { ...process.env, SDD_FORGE_WORK_ROOT: tmp } },
     );
     const envelope = JSON.parse(result);
     assert.equal(envelope.ok, true);
@@ -71,7 +71,7 @@ describe("flow get prompt", () => {
     try {
       execFileSync(
         "node", [FLOW_CMD, "get", "prompt", "unknown.kind"],
-        { encoding: "utf8", env: { ...process.env, SDD_WORK_ROOT: tmp } },
+        { encoding: "utf8", env: { ...process.env, SDD_FORGE_WORK_ROOT: tmp } },
       );
       assert.fail("should exit non-zero");
     } catch (err) {
@@ -86,7 +86,7 @@ describe("flow get prompt", () => {
     setupFlowState(tmp);
     const result = execFileSync(
       "node", [FLOW_CMD, "get", "prompt", "finalize.merge-strategy"],
-      { encoding: "utf8", env: { ...process.env, SDD_WORK_ROOT: tmp } },
+      { encoding: "utf8", env: { ...process.env, SDD_FORGE_WORK_ROOT: tmp } },
     );
     const envelope = JSON.parse(result);
     assert.ok(envelope.data.description);

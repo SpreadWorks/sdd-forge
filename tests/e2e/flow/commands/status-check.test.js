@@ -20,7 +20,7 @@ describe("flow get check impl", () => {
     addActiveFlow(tmp, "001-test", "local");
     const result = execFileSync("node", [FLOW_CMD, "get", "check", "impl"], {
       encoding: "utf8",
-      env: { ...process.env, SDD_WORK_ROOT: tmp },
+      env: { ...process.env, SDD_FORGE_WORK_ROOT: tmp },
     });
     assert.match(result, /pass.*true/is);
   });
@@ -34,7 +34,7 @@ describe("flow get check impl", () => {
     addActiveFlow(tmp, "001-test", "local");
     const result = execFileSync("node", [FLOW_CMD, "get", "check", "impl"], {
       encoding: "utf8",
-      env: { ...process.env, SDD_WORK_ROOT: tmp },
+      env: { ...process.env, SDD_FORGE_WORK_ROOT: tmp },
     });
     assert.match(result, /pass.*true/is);
   });
@@ -47,7 +47,7 @@ describe("flow get check impl", () => {
     addActiveFlow(tmp, "001-test", "local");
     const result = execFileSync("node", [FLOW_CMD, "get", "check", "impl"], {
       encoding: "utf8",
-      env: { ...process.env, SDD_WORK_ROOT: tmp },
+      env: { ...process.env, SDD_FORGE_WORK_ROOT: tmp },
     });
     assert.match(result, /pass.*false/is);
     assert.match(result, /gate/);
@@ -61,7 +61,7 @@ describe("flow get check impl", () => {
     addActiveFlow(tmp, "001-test", "local");
     const result = execFileSync("node", [FLOW_CMD, "get", "check", "impl"], {
       encoding: "utf8",
-      env: { ...process.env, SDD_WORK_ROOT: tmp },
+      env: { ...process.env, SDD_FORGE_WORK_ROOT: tmp },
     });
     assert.match(result, /pass.*false/is);
     assert.match(result, /test/);
@@ -72,7 +72,7 @@ describe("flow get check impl", () => {
     try {
       execFileSync("node", [FLOW_CMD, "get", "check", "impl"], {
         encoding: "utf8",
-        env: { ...process.env, SDD_WORK_ROOT: tmp },
+        env: { ...process.env, SDD_FORGE_WORK_ROOT: tmp },
       });
       assert.fail("should exit non-zero");
     } catch (err) {

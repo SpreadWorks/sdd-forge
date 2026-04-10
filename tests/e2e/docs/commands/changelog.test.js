@@ -29,7 +29,7 @@ describe("changelog CLI", () => {
 
     execFileSync("node", [CMD], {
       encoding: "utf8",
-      env: { ...process.env, SDD_WORK_ROOT: tmp, SDD_SOURCE_ROOT: tmp },
+      env: { ...process.env, SDD_FORGE_WORK_ROOT: tmp, SDD_FORGE_SOURCE_ROOT: tmp },
     });
 
     const outFile = join(tmp, "docs", "change_log.md");
@@ -46,7 +46,7 @@ describe("changelog CLI", () => {
 
     execFileSync("node", [CMD], {
       encoding: "utf8",
-      env: { ...process.env, SDD_WORK_ROOT: tmp, SDD_SOURCE_ROOT: tmp },
+      env: { ...process.env, SDD_FORGE_WORK_ROOT: tmp, SDD_FORGE_SOURCE_ROOT: tmp },
     });
 
     const outFile = join(tmp, "docs", "change_log.md");
@@ -70,7 +70,7 @@ describe("changelog CLI", () => {
 
     const result = execFileSync("node", [CMD, "--dry-run"], {
       encoding: "utf8",
-      env: { ...process.env, SDD_WORK_ROOT: tmp, SDD_SOURCE_ROOT: tmp },
+      env: { ...process.env, SDD_FORGE_WORK_ROOT: tmp, SDD_FORGE_SOURCE_ROOT: tmp },
     });
     assert.match(result, /Change Log/);
     assert.match(result, /001-test-feature/);
@@ -88,7 +88,7 @@ describe("changelog CLI", () => {
 
     execFileSync("node", [CMD], {
       encoding: "utf8",
-      env: { ...process.env, SDD_WORK_ROOT: tmp, SDD_SOURCE_ROOT: tmp },
+      env: { ...process.env, SDD_FORGE_WORK_ROOT: tmp, SDD_FORGE_SOURCE_ROOT: tmp },
     });
 
     const content = fs.readFileSync(outFile, "utf8");

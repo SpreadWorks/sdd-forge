@@ -16,7 +16,7 @@ function setupTmp() {
 function runReview(tmp) {
   return execFileSync("node", [CMD], {
     encoding: "utf8",
-    env: { ...process.env, SDD_WORK_ROOT: tmp },
+    env: { ...process.env, SDD_FORGE_WORK_ROOT: tmp },
   });
 }
 
@@ -24,7 +24,7 @@ function runReviewExpectFail(tmp) {
   try {
     execFileSync("node", [CMD], {
       encoding: "utf8",
-      env: { ...process.env, SDD_WORK_ROOT: tmp },
+      env: { ...process.env, SDD_FORGE_WORK_ROOT: tmp },
     });
     assert.fail("should have exited non-zero");
   } catch (err) {

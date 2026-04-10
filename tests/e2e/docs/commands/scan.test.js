@@ -23,7 +23,7 @@ describe("scan CLI", () => {
 
     const result = execFileSync("node", [CMD, "--stdout"], {
       encoding: "utf8",
-      env: { ...process.env, SDD_WORK_ROOT: tmp, SDD_SOURCE_ROOT: tmp },
+      env: { ...process.env, SDD_FORGE_WORK_ROOT: tmp, SDD_FORGE_SOURCE_ROOT: tmp },
     });
     const analysis = JSON.parse(result);
     assert.ok(analysis.analyzedAt);
@@ -43,7 +43,7 @@ describe("scan CLI", () => {
 
     const proc = spawnSync("node", [CMD, "--stdout"], {
       encoding: "utf8",
-      env: { ...process.env, SDD_WORK_ROOT: tmp, SDD_SOURCE_ROOT: tmp },
+      env: { ...process.env, SDD_FORGE_WORK_ROOT: tmp, SDD_FORGE_SOURCE_ROOT: tmp },
     });
     assert.equal(proc.status, 0);
     assert.ok(!proc.stderr.includes("WARN"), `unexpected WARN in stderr: ${proc.stderr}`);
@@ -63,7 +63,7 @@ describe("scan CLI", () => {
 
     execFileSync("node", [CMD], {
       encoding: "utf8",
-      env: { ...process.env, SDD_WORK_ROOT: tmp, SDD_SOURCE_ROOT: tmp },
+      env: { ...process.env, SDD_FORGE_WORK_ROOT: tmp, SDD_FORGE_SOURCE_ROOT: tmp },
     });
 
     const outputPath = join(tmp, ".sdd-forge/output/analysis.json");
@@ -90,7 +90,7 @@ describe("scan CLI", () => {
 
     const result = execFileSync("node", [CMD, "--dry-run"], {
       encoding: "utf8",
-      env: { ...process.env, SDD_WORK_ROOT: tmp, SDD_SOURCE_ROOT: tmp },
+      env: { ...process.env, SDD_FORGE_WORK_ROOT: tmp, SDD_FORGE_SOURCE_ROOT: tmp },
     });
     const analysis = JSON.parse(result);
     assert.ok(analysis.analyzedAt);
@@ -101,7 +101,7 @@ describe("scan CLI", () => {
   it("shows help with --help", () => {
     const result = execFileSync("node", [CMD, "--help"], {
       encoding: "utf8",
-      env: { ...process.env, SDD_WORK_ROOT: "/tmp" },
+      env: { ...process.env, SDD_FORGE_WORK_ROOT: "/tmp" },
     });
     assert.match(result, /--stdout/);
   });
@@ -124,7 +124,7 @@ describe("scan CLI", () => {
 
     const result = execFileSync("node", [CMD, "--stdout"], {
       encoding: "utf8",
-      env: { ...process.env, SDD_WORK_ROOT: tmp, SDD_SOURCE_ROOT: tmp },
+      env: { ...process.env, SDD_FORGE_WORK_ROOT: tmp, SDD_FORGE_SOURCE_ROOT: tmp },
     });
     const analysis = JSON.parse(result);
     assert.ok(analysis.analyzedAt);
@@ -147,7 +147,7 @@ describe("scan CLI", () => {
     // 1st scan
     execFileSync("node", [CMD], {
       encoding: "utf8",
-      env: { ...process.env, SDD_WORK_ROOT: tmp, SDD_SOURCE_ROOT: tmp },
+      env: { ...process.env, SDD_FORGE_WORK_ROOT: tmp, SDD_FORGE_SOURCE_ROOT: tmp },
     });
 
     const outputPath = join(tmp, ".sdd-forge/output/analysis.json");
@@ -166,7 +166,7 @@ describe("scan CLI", () => {
     // 2nd scan (same source, no changes)
     execFileSync("node", [CMD], {
       encoding: "utf8",
-      env: { ...process.env, SDD_WORK_ROOT: tmp, SDD_SOURCE_ROOT: tmp },
+      env: { ...process.env, SDD_FORGE_WORK_ROOT: tmp, SDD_FORGE_SOURCE_ROOT: tmp },
     });
 
     const second = JSON.parse(fs.readFileSync(outputPath, "utf8"));
@@ -192,7 +192,7 @@ describe("scan CLI", () => {
     // 1st scan
     execFileSync("node", [CMD], {
       encoding: "utf8",
-      env: { ...process.env, SDD_WORK_ROOT: tmp, SDD_SOURCE_ROOT: tmp },
+      env: { ...process.env, SDD_FORGE_WORK_ROOT: tmp, SDD_FORGE_SOURCE_ROOT: tmp },
     });
 
     const outputPath = join(tmp, ".sdd-forge/output/analysis.json");
@@ -208,7 +208,7 @@ describe("scan CLI", () => {
     // 2nd scan
     execFileSync("node", [CMD], {
       encoding: "utf8",
-      env: { ...process.env, SDD_WORK_ROOT: tmp, SDD_SOURCE_ROOT: tmp },
+      env: { ...process.env, SDD_FORGE_WORK_ROOT: tmp, SDD_FORGE_SOURCE_ROOT: tmp },
     });
 
     const second = JSON.parse(fs.readFileSync(outputPath, "utf8"));
@@ -231,7 +231,7 @@ describe("scan CLI", () => {
 
     const result = execFileSync("node", [CMD, "--stdout"], {
       encoding: "utf8",
-      env: { ...process.env, SDD_WORK_ROOT: tmp, SDD_SOURCE_ROOT: tmp },
+      env: { ...process.env, SDD_FORGE_WORK_ROOT: tmp, SDD_FORGE_SOURCE_ROOT: tmp },
     });
     const analysis = JSON.parse(result);
     assert.ok(analysis.package, "package should be at top level");

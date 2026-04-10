@@ -37,7 +37,7 @@ describe("flow get prompt plan.test-mode (reworked)", () => {
     setupFlowState(tmp);
     const result = execFileSync(
       "node", [FLOW_CMD, "get", "prompt", "plan.test-mode"],
-      { encoding: "utf8", env: { ...process.env, SDD_WORK_ROOT: tmp } },
+      { encoding: "utf8", env: { ...process.env, SDD_FORGE_WORK_ROOT: tmp } },
     );
     const envelope = JSON.parse(result);
     assert.equal(envelope.ok, true);
@@ -49,7 +49,7 @@ describe("flow get prompt plan.test-mode (reworked)", () => {
     setupFlowState(tmp);
     const result = execFileSync(
       "node", [FLOW_CMD, "get", "prompt", "plan.test-mode"],
-      { encoding: "utf8", env: { ...process.env, SDD_WORK_ROOT: tmp } },
+      { encoding: "utf8", env: { ...process.env, SDD_FORGE_WORK_ROOT: tmp } },
     );
     const envelope = JSON.parse(result);
     const labels = envelope.data.choices.map((c) => c.label);

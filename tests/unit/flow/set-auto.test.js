@@ -32,7 +32,7 @@ function runSetAuto(tmp, value) {
   const result = execFileSync("node", [script, ...args], {
     encoding: "utf8",
     cwd: tmp,
-    env: { ...process.env, SDD_WORK_ROOT: tmp },
+    env: { ...process.env, SDD_FORGE_WORK_ROOT: tmp },
   });
   return JSON.parse(result.trim());
 }

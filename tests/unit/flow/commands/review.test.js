@@ -35,7 +35,7 @@ describe("flow run review CLI", () => {
     try {
       execFileSync("node", [FLOW_CMD, "run", "review"], {
         encoding: "utf8",
-        env: { ...process.env, SDD_WORK_ROOT: tmp },
+        env: { ...process.env, SDD_FORGE_WORK_ROOT: tmp },
       });
       assert.fail("should exit non-zero");
     } catch (err) {
@@ -59,7 +59,7 @@ describe("flow run review --phase test CLI", () => {
     try {
       execFileSync("node", [FLOW_CMD, "run", "review", "--phase", "test"], {
         encoding: "utf8",
-        env: { ...process.env, SDD_WORK_ROOT: tmp },
+        env: { ...process.env, SDD_FORGE_WORK_ROOT: tmp },
       });
       assert.fail("should exit non-zero");
     } catch (err) {

@@ -32,7 +32,7 @@ describe("flow set test-summary", () => {
     tmp = setupFlowEnv(createTmpDir());
     const result = execFileSync("node", [FLOW_CMD, "set", "test-summary", "--unit", "3", "--integration", "2"], {
       encoding: "utf8",
-      env: { ...process.env, SDD_WORK_ROOT: tmp },
+      env: { ...process.env, SDD_FORGE_WORK_ROOT: tmp },
     });
     const parsed = JSON.parse(result);
     assert.equal(parsed.ok, true);
@@ -47,7 +47,7 @@ describe("flow set test-summary", () => {
     try {
       execFileSync("node", [FLOW_CMD, "set", "test-summary"], {
         encoding: "utf8",
-        env: { ...process.env, SDD_WORK_ROOT: tmp },
+        env: { ...process.env, SDD_FORGE_WORK_ROOT: tmp },
       });
       assert.fail("should exit non-zero");
     } catch (err) {
@@ -62,11 +62,11 @@ describe("flow set test-summary", () => {
     tmp = setupFlowEnv(createTmpDir());
     execFileSync("node", [FLOW_CMD, "set", "test-summary", "--unit", "5"], {
       encoding: "utf8",
-      env: { ...process.env, SDD_WORK_ROOT: tmp },
+      env: { ...process.env, SDD_FORGE_WORK_ROOT: tmp },
     });
     execFileSync("node", [FLOW_CMD, "set", "test-summary", "--acceptance", "1"], {
       encoding: "utf8",
-      env: { ...process.env, SDD_WORK_ROOT: tmp },
+      env: { ...process.env, SDD_FORGE_WORK_ROOT: tmp },
     });
     const flow = loadFlowState(tmp);
     assert.deepEqual(flow.test.summary, { acceptance: 1 });
@@ -77,7 +77,7 @@ describe("flow set test-summary", () => {
     tmp = setupFlowEnv(createTmpDir());
     execFileSync("node", [FLOW_CMD, "set", "test-summary", "--unit", "2"], {
       encoding: "utf8",
-      env: { ...process.env, SDD_WORK_ROOT: tmp },
+      env: { ...process.env, SDD_FORGE_WORK_ROOT: tmp },
     });
     const flow = loadFlowState(tmp);
     assert.ok(flow.steps, "steps preserved");

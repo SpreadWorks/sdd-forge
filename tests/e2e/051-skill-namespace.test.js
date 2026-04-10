@@ -61,7 +61,7 @@ describe("051: skill namespace with dot separator", () => {
         encoding: "utf8",
         cwd: tmp,
         timeout: 10000,
-        env: { ...process.env, SDD_WORK_ROOT: tmp, SDD_SOURCE_ROOT: tmp },
+        env: { ...process.env, SDD_FORGE_WORK_ROOT: tmp, SDD_FORGE_SOURCE_ROOT: tmp },
       });
       assert.equal(result.status, 0, `stderr: ${result.stderr}`);
 
@@ -94,7 +94,7 @@ describe("051: skill namespace with dot separator", () => {
         encoding: "utf8",
         cwd: tmp,
         timeout: 10000,
-        env: { ...process.env, SDD_WORK_ROOT: tmp, SDD_SOURCE_ROOT: tmp },
+        env: { ...process.env, SDD_FORGE_WORK_ROOT: tmp, SDD_FORGE_SOURCE_ROOT: tmp },
       });
 
       const claudeSkills = join(tmp, ".claude", "skills");
@@ -123,7 +123,7 @@ describe("051: skill namespace with dot separator", () => {
         encoding: "utf8",
         cwd: tmp,
         timeout: 10000,
-        env: { ...process.env, SDD_WORK_ROOT: tmp, SDD_SOURCE_ROOT: tmp },
+        env: { ...process.env, SDD_FORGE_WORK_ROOT: tmp, SDD_FORGE_SOURCE_ROOT: tmp },
       });
 
       const templatesDir = join(process.cwd(), "src", "templates", "skills");
@@ -164,7 +164,7 @@ describe("051: skill namespace with dot separator", () => {
         encoding: "utf8",
         cwd: tmp,
         timeout: 10000,
-        env: { ...process.env, SDD_WORK_ROOT: tmp, SDD_SOURCE_ROOT: tmp },
+        env: { ...process.env, SDD_FORGE_WORK_ROOT: tmp, SDD_FORGE_SOURCE_ROOT: tmp },
       });
 
       const agentsPath = join(tmp, "AGENTS.md");
@@ -182,7 +182,7 @@ describe("051: skill namespace with dot separator", () => {
         encoding: "utf8",
         cwd: tmp,
         timeout: 10000,
-        env: { ...process.env, SDD_WORK_ROOT: tmp, SDD_SOURCE_ROOT: tmp },
+        env: { ...process.env, SDD_FORGE_WORK_ROOT: tmp, SDD_FORGE_SOURCE_ROOT: tmp },
       });
 
       const claudePath = join(tmp, "CLAUDE.md");
@@ -200,7 +200,7 @@ describe("051: skill namespace with dot separator", () => {
         encoding: "utf8",
         cwd: tmp,
         timeout: 10000,
-        env: { ...process.env, SDD_WORK_ROOT: tmp, SDD_SOURCE_ROOT: tmp },
+        env: { ...process.env, SDD_FORGE_WORK_ROOT: tmp, SDD_FORGE_SOURCE_ROOT: tmp },
       });
 
       // Recursively check no symlinks exist

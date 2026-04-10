@@ -37,7 +37,7 @@ describe("flow set metric", () => {
     setupFlowState(tmp);
     const result = execFileSync(
       "node", [FLOW_CMD, "set", "metric", "draft", "question"],
-      { encoding: "utf8", env: { ...process.env, SDD_WORK_ROOT: tmp } },
+      { encoding: "utf8", env: { ...process.env, SDD_FORGE_WORK_ROOT: tmp } },
     );
     const envelope = JSON.parse(result);
     assert.equal(envelope.ok, true);
@@ -53,11 +53,11 @@ describe("flow set metric", () => {
     setupFlowState(tmp);
     execFileSync(
       "node", [FLOW_CMD, "set", "metric", "draft", "question"],
-      { encoding: "utf8", env: { ...process.env, SDD_WORK_ROOT: tmp } },
+      { encoding: "utf8", env: { ...process.env, SDD_FORGE_WORK_ROOT: tmp } },
     );
     execFileSync(
       "node", [FLOW_CMD, "set", "metric", "draft", "question"],
-      { encoding: "utf8", env: { ...process.env, SDD_WORK_ROOT: tmp } },
+      { encoding: "utf8", env: { ...process.env, SDD_FORGE_WORK_ROOT: tmp } },
     );
     const loaded = loadFlowState(tmp);
     assert.equal(loaded.metrics.draft.question, 2);
@@ -68,7 +68,7 @@ describe("flow set metric", () => {
     setupFlowState(tmp);
     execFileSync(
       "node", [FLOW_CMD, "set", "metric", "spec", "docsRead"],
-      { encoding: "utf8", env: { ...process.env, SDD_WORK_ROOT: tmp } },
+      { encoding: "utf8", env: { ...process.env, SDD_FORGE_WORK_ROOT: tmp } },
     );
     const loaded = loadFlowState(tmp);
     assert.equal(loaded.metrics.spec.docsRead, 1);

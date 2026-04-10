@@ -99,7 +99,7 @@ describe("forge CLI validation", () => {
   afterEach(() => tmp && removeTmpDir(tmp));
 
   function makeEnv(t) {
-    return { ...process.env, SDD_WORK_ROOT: t, SDD_SOURCE_ROOT: t };
+    return { ...process.env, SDD_FORGE_WORK_ROOT: t, SDD_FORGE_SOURCE_ROOT: t };
   }
 
   it("rejects invalid --max-runs", () => {
@@ -137,7 +137,7 @@ describe("forge CLI validation", () => {
     try {
       execFileSync("node", [CMD], {
         encoding: "utf8",
-        env: { ...process.env, SDD_WORK_ROOT: tmp, SDD_SOURCE_ROOT: tmp },
+        env: { ...process.env, SDD_FORGE_WORK_ROOT: tmp, SDD_FORGE_SOURCE_ROOT: tmp },
       });
       assert.fail("should exit non-zero");
     } catch (err) {
@@ -151,7 +151,7 @@ describe("forge CLI validation", () => {
 
     const result = execFileSync("node", [CMD, "--help"], {
       encoding: "utf8",
-      env: { ...process.env, SDD_WORK_ROOT: tmp, SDD_SOURCE_ROOT: tmp },
+      env: { ...process.env, SDD_FORGE_WORK_ROOT: tmp, SDD_FORGE_SOURCE_ROOT: tmp },
     });
     assert.match(result, /--prompt/);
   });
@@ -167,7 +167,7 @@ describe("forge CLI validation", () => {
       "--dry-run",
     ], {
       encoding: "utf8",
-      env: { ...process.env, SDD_WORK_ROOT: tmp, SDD_SOURCE_ROOT: tmp },
+      env: { ...process.env, SDD_FORGE_WORK_ROOT: tmp, SDD_FORGE_SOURCE_ROOT: tmp },
     });
     assert.match(result, /DRY-RUN/);
     assert.match(result, /DONE \(dry-run\)/);
@@ -191,7 +191,7 @@ describe("forge CLI validation", () => {
       "--max-runs", "1",
     ], {
       encoding: "utf8",
-      env: { ...process.env, SDD_WORK_ROOT: tmp, SDD_SOURCE_ROOT: tmp },
+      env: { ...process.env, SDD_FORGE_WORK_ROOT: tmp, SDD_FORGE_SOURCE_ROOT: tmp },
     });
     assert.match(result, /DONE/);
   });
@@ -225,7 +225,7 @@ describe("forge CLI validation", () => {
       "--max-runs", "1",
     ], {
       encoding: "utf8",
-      env: { ...process.env, SDD_WORK_ROOT: tmp, SDD_SOURCE_ROOT: tmp },
+      env: { ...process.env, SDD_FORGE_WORK_ROOT: tmp, SDD_FORGE_SOURCE_ROOT: tmp },
     });
     assert.match(result, /per-file mode/);
     assert.match(result, /2 files/);
@@ -259,7 +259,7 @@ describe("forge CLI validation", () => {
       "--max-runs", "1",
     ], {
       encoding: "utf8",
-      env: { ...process.env, SDD_WORK_ROOT: tmp, SDD_SOURCE_ROOT: tmp },
+      env: { ...process.env, SDD_FORGE_WORK_ROOT: tmp, SDD_FORGE_SOURCE_ROOT: tmp },
     });
     // Should NOT show per-file mode
     assert.ok(!result.includes("per-file mode"), "should not use per-file mode");

@@ -46,7 +46,7 @@ describe("gate guardrail integration", () => {
       "--spec", join(tmp, "spec.md"),
     ], {
       encoding: "utf8",
-      env: { ...process.env, SDD_WORK_ROOT: tmp },
+      env: { ...process.env, SDD_FORGE_WORK_ROOT: tmp },
     });
 
     // Gate should still pass — JSON envelope with ok: true
@@ -81,7 +81,7 @@ describe("gate guardrail integration", () => {
       "--spec", join(tmp, "spec.md"),
     ], {
       encoding: "utf8",
-      env: { ...process.env, SDD_WORK_ROOT: tmp },
+      env: { ...process.env, SDD_FORGE_WORK_ROOT: tmp },
     });
 
     const envelope = JSON.parse(result);
@@ -118,7 +118,7 @@ describe("gate guardrail integration", () => {
       "--skip-guardrail",
     ], {
       encoding: "utf8",
-      env: { ...process.env, SDD_WORK_ROOT: tmp },
+      env: { ...process.env, SDD_FORGE_WORK_ROOT: tmp },
     });
 
     const envelope = JSON.parse(result);

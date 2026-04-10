@@ -22,7 +22,7 @@ describe("init CLI", () => {
 
     execFileSync("node", [CMD, "--type", "node-cli"], {
       encoding: "utf8",
-      env: { ...process.env, SDD_WORK_ROOT: tmp, SDD_SOURCE_ROOT: tmp },
+      env: { ...process.env, SDD_FORGE_WORK_ROOT: tmp, SDD_FORGE_SOURCE_ROOT: tmp },
     });
 
     const docsDir = join(tmp, "docs");
@@ -42,7 +42,7 @@ describe("init CLI", () => {
 
     const result = execFileSync("node", [CMD, "--type", "node-cli", "--dry-run"], {
       encoding: "utf8",
-      env: { ...process.env, SDD_WORK_ROOT: tmp, SDD_SOURCE_ROOT: tmp },
+      env: { ...process.env, SDD_FORGE_WORK_ROOT: tmp, SDD_FORGE_SOURCE_ROOT: tmp },
     });
     assert.match(result, /DRY-RUN/);
     // docs/ should NOT have chapter files
@@ -59,7 +59,7 @@ describe("init CLI", () => {
 
     const result = execFileSync("node", [CMD, "--help"], {
       encoding: "utf8",
-      env: { ...process.env, SDD_WORK_ROOT: tmp, SDD_SOURCE_ROOT: tmp },
+      env: { ...process.env, SDD_FORGE_WORK_ROOT: tmp, SDD_FORGE_SOURCE_ROOT: tmp },
     });
     assert.match(result, /--type/);
   });
@@ -79,7 +79,7 @@ describe("init CLI", () => {
 
     execFileSync("node", [CMD, "--type", "webapp", "--force"], {
       encoding: "utf8",
-      env: { ...process.env, SDD_WORK_ROOT: tmp, SDD_SOURCE_ROOT: tmp },
+      env: { ...process.env, SDD_FORGE_WORK_ROOT: tmp, SDD_FORGE_SOURCE_ROOT: tmp },
     });
 
     const docsDir = join(tmp, "docs");
@@ -104,7 +104,7 @@ describe("init CLI", () => {
 
     execFileSync("node", [CMD, "--type", "webapp", "--force"], {
       encoding: "utf8",
-      env: { ...process.env, SDD_WORK_ROOT: tmp, SDD_SOURCE_ROOT: tmp },
+      env: { ...process.env, SDD_FORGE_WORK_ROOT: tmp, SDD_FORGE_SOURCE_ROOT: tmp },
     });
 
     const docsDir = join(tmp, "docs");
@@ -146,8 +146,8 @@ describe("init CLI", () => {
       encoding: "utf8",
       env: {
         ...process.env,
-        SDD_WORK_ROOT: tmp,
-        SDD_SOURCE_ROOT: tmp,
+        SDD_FORGE_WORK_ROOT: tmp,
+        SDD_FORGE_SOURCE_ROOT: tmp,
         PROMPT_CAPTURE: promptCapture,
       },
     });
@@ -190,8 +190,8 @@ describe("init CLI", () => {
       encoding: "utf8",
       env: {
         ...process.env,
-        SDD_WORK_ROOT: tmp,
-        SDD_SOURCE_ROOT: tmp,
+        SDD_FORGE_WORK_ROOT: tmp,
+        SDD_FORGE_SOURCE_ROOT: tmp,
         PROMPT_CAPTURE: promptCapture,
       },
     });
