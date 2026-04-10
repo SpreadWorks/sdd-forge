@@ -32,7 +32,8 @@ export function runCmd(cmd, args, opts = {}) {
       ...(opts.env && { env: opts.env }),
     });
     const result = { ok: true, status: 0, stdout: String(stdout || ""), stderr: "", signal: null, killed: false };
-    if (cmd === "git") Logger.getInstance().git({ cmd: [cmd, ...args], exitCode: 0, stderr: "" });
+    // TODO: git logging in runCmd causes infinite recursion via resolveLogDir → getMainRepoPath → runCmd
+    // if (cmd === "git") Logger.getInstance().git({ cmd: [cmd, ...args], exitCode: 0, stderr: "" });
     return result;
   } catch (e) {
     const result = {
@@ -43,7 +44,8 @@ export function runCmd(cmd, args, opts = {}) {
       signal: e.signal ?? null,
       killed: e.killed ?? false,
     };
-    if (cmd === "git") Logger.getInstance().git({ cmd: [cmd, ...args], exitCode: result.status, stderr: result.stderr });
+    // TODO: git logging in runCmd causes infinite recursion via resolveLogDir → getMainRepoPath → runCmd
+    // if (cmd === "git") Logger.getInstance().git({ cmd: [cmd, ...args], exitCode: result.status, stderr: result.stderr });
     return result;
   }
 }
@@ -94,7 +96,8 @@ export function runCmdAsync(cmd, args, opts = {}) {
             killed: false,
           };
         }
-        if (cmd === "git") Logger.getInstance().git({ cmd: [cmd, ...args], exitCode: result.status, stderr: result.stderr });
+        // TODO: git logging in runCmdAsync causes infinite recursion via resolveLogDir → getMainRepoPath → runCmd
+        // if (cmd === "git") Logger.getInstance().git({ cmd: [cmd, ...args], exitCode: result.status, stderr: result.stderr });
         resolve(result);
       },
     );
