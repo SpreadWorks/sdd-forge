@@ -1,0 +1,77 @@
+{
+  "spec": "specs/165-add-api-entry-module-loader/spec.md",
+  "date": "2026-04-10T08:22:08.382Z",
+  "requirements": [
+    {
+      "desc": "公開 API エントリポイントの作成（DataSource・Scannable・AnalysisEntry の3クラスを export）",
+      "status": "done",
+      "note": "src/api.js が新規作成され、DataSource・Scannable・AnalysisEntry の3クラスのみを re-export している。tests/unit/api.test.js で過不足なしを検証済み"
+    },
+    {
+      "desc": "package.json の exports マップに sdd-forge/api サブパスを追加（ルートパスも維持）",
+      "status": "done",
+      "note": "package.json に exports フィールドが追加され、\".\" → ./src/sdd-forge.js と \"./api\" → ./src/api.js の両エントリが定義されている。未定義パスへのアクセスはブロックされる"
+    },
+    {
+      "desc": "engines.node を >=18.19.0 に引き上げ",
+      "status": "done",
+      "note": "package.json の engines.node が >=18.0.0 から >=18.19.0 に変更されている"
+    },
+    {
+      "desc": "sdd-forge 起動時にモジュールローダーフックを登録（外部ファイルから sdd-forge/api が import 可能になる）",
+      "status": "done",
+      "note": "src/sdd-forge.js に node:module の register() 呼び出しが追加され、src/loader.js が resolve フックを export している。ローダーは sdd-forge/* specifier を src/<subpath>.js に解決する"
+    },
+    {
+      "desc": "ローダーフックの自動テストを npm test に含める",
+      "status": "done",
+      "note": "tests/unit/api.test.js と tests/unit/lib/loader.test.js が追加されており、npm run test:unit（npm test に含まれる）で実行される。specs/165.../tests/external-import.test.js は npm test 対象外だが spec 検証用途に分離されている"
+    }
+  ],
+  "unplanned": [
+    {
+      "file": "docs/cli_commands.md",
+      "change": "コマンドリファレンスが大幅に書き直され、flow run / flow set / flow get の全サブコマンドが詳述されるようになった"
+    },
+    {
+      "file": "docs/configuration.md",
+      "change": "設定リファレンスのフィールド一覧と例が全面的に改訂された"
+    },
+    {
+      "file": "docs/internal_design.md",
+      "change": "内部設計章のテキスト指令ブロック内容がすべて削除され、{{text}} ディレクティブのみが残るスケルトン状態になった"
+    },
+    {
+      "file": "docs/overview.md",
+      "change": "ツール概要章のアーキテクチャ図・ユースケース説明・用語集が全面的に書き直された"
+    },
+    {
+      "file": "docs/project_structure.md",
+      "change": "プロジェクト構造章の説明文と共有ライブラリ一覧が改訂された"
+    },
+    {
+      "file": "docs/stack_and_ops.md",
+      "change": "技術スタック章の各セクション（依存関係・デプロイ・運用）が改訂された"
+    },
+    {
+      "file": "README.md",
+      "change": "ドキュメントチャプターリストの各行の概要テキストが更新された"
+    },
+    {
+      "file": "docs/change_log.md",
+      "change": "165-add-api-entry-module-loader のエントリが changelog に追加された"
+    },
+    {
+      "file": ".sdd-forge/output/analysis.json",
+      "change": "analysis.json の全エントリから summary/detail/keywords/enrich 等の enrichment フィールドが削除され、新ファイル（src/api.js, src/loader.js）のエントリが追加された"
+    }
+  ],
+  "summary": {
+    "total": 5,
+    "done": 5,
+    "partial": 0,
+    "not_done": 0,
+    "rate": 1,
+    "notes": "5件の要件はすべて実装済み。src/api.js（公開APIエントリ）・src/loader.js（ローダーフック）・package.json の exports/engines 変更・src/sdd-forge.js への register() 追加・unit テスト2ファイルの追加がそれぞれ対応している。予定外の変更としてドキュメント全章の大規模更新が含まれており、analysis.json も再スキャン結果に差し替えられている。ドキュメント更新は spec の要件対象外だが機能実装への影響はない"
+  }
+}

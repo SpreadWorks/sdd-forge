@@ -10,13 +10,14 @@
 
 ### 更新日時
 
-- generated_at: 2026-04-10 04:33:32 UTC
+- generated_at: 2026-04-10 08:03:51 UTC
 
 ### シリーズ最新インデックス
 
 | series | latest | status | created | spec |
 | --- | --- | --- | --- | --- |
 | `acceptance-tests` | `069-acceptance-tests` | Draft | 2026-03-17 | [spec](../specs/069-acceptance-tests/spec.md) |
+| `add-api-entry-module-loader` | `165-add-api-entry-module-loader` | Draft | 2026-04-10 | [spec](../specs/165-add-api-entry-module-loader/spec.md) |
 | `add-dry-run-to-commands` | `003-add-dry-run-to-commands` | Draft | 2026-03-02 | [spec](../specs/003-add-dry-run-to-commands/spec.md) |
 | `add-logger-to-callsites` | `152-add-logger-to-callsites` | Draft | 2026-04-07 | [spec](../specs/152-add-logger-to-callsites/spec.md) |
 | `add-new-presets` | `072-add-new-presets` | Draft | 2026-03-18 | [spec](../specs/072-add-new-presets/spec.md) |
@@ -432,4 +433,5 @@
 | `163-merge-flow-auto-skills` | Draft | 2026-04-09 | 163-merge-flow-auto-skills | Issue #122 | [draft.md](../specs/163-merge-flow-auto-skills/draft.md), [qa.md](../specs/163-merge-flow-auto-skills/qa.md), [review.md](../specs/163-merge-flow-auto-skills/review.md), [spec.md](../specs/163-merge-flow-auto-skills/spec.md) |
 | `163-prevent-bg-cmd-in-flow` | Draft | 2026-04-09 | 163-prevent-bg-cmd-in-flow | Issue #121 | [draft.md](../specs/163-prevent-bg-cmd-in-flow/draft.md), [qa.md](../specs/163-prevent-bg-cmd-in-flow/qa.md), [review.md](../specs/163-prevent-bg-cmd-in-flow/review.md), [spec.md](../specs/163-prevent-bg-cmd-in-flow/spec.md) |
 | `164-flow-metrics-recording` | Draft | 2026-04-09 | 164-flow-metrics-recording | GitHub Issue #127 | [draft.md](../specs/164-flow-metrics-recording/draft.md), [qa.md](../specs/164-flow-metrics-recording/qa.md), [review.md](../specs/164-flow-metrics-recording/review.md), [spec.md](../specs/164-flow-metrics-recording/spec.md) |
+| `165-add-api-entry-module-loader` | Draft | 2026-04-10 | 165-add-api-entry-module-loader | GitHub Issue #129 | [draft.md](../specs/165-add-api-entry-module-loader/draft.md), [qa.md](../specs/165-add-api-entry-module-loader/qa.md), [spec.md](../specs/165-add-api-entry-module-loader/spec.md) |
 <!-- AUTO-GEN:END -->

@@ -1,0 +1,52 @@
+{
+  "entries": [
+    {
+      "step": "gate-draft",
+      "reason": "Single Responsibility — 外部プリセットへの基底クラス公開という単一の関心事に絞られており、クロスimportは明示的に b554 へ分離されている; Unambiguous Requirements — 要件はバージョン番号・エントリ名・クラス名など検証可能な条件で記述されており、曖昧な形容詞はない; Complete Context — 各要件に「なぜ必要か（背景）」と「何を満たすか（期待動作）」が対応している; No Hardcoded Secrets — API キー・トークン等の秘匿情報は含まれていない; Prioritize Requirements — 要件が5項目あるが優先順位が指定されていない（3項目超のため必須）; Impact on Existing Features — 「既存機能への影響」セクションでビルトインプリセット・テスト・CLI ユーザー・Node.js バージョンへの影響が網羅的に列挙されている; Present Recommendations with Reasoning — Q&A の各回答に alpha ポリシー・API 最小化方針・ボード分離といった根拠が明示されている; Explore Before Asking — Q&A は現行 engines フィールドや `WebappDataSource` の実装を参照した上で回答されており、探索なしに質問していない; Proactively Raise Related Implications — exports 追加による内部パス直接参照のブロック・Node.js バージョン切り捨て範囲を先回りして明記している; Confirm Brainstorm vs. Decision Before Critiquing — Q&A はすべて決定済み（A: 形式）であり、ブレストと決定の混在はない; Capture Digressions in draft.md — 脱線は観察されない; Draft Stays at Requirements Level — 要件3（`export function resolve(specifier, context, nextResolve)` の関数シグネチャ）・要件4（`module.register()` 呼び出し）は実装レベルの詳細であり、要件レベルを超えている; Backward — Compatible CLI Interface — 既存 CLI コマンド・オプションの削除・意味変更はなく、移行計画の対象外",
+      "trigger": "gate post hook (auto)",
+      "timestamp": "2026-04-10T06:58:07.537Z"
+    },
+    {
+      "step": "gate-draft",
+      "reason": "Single Responsibility — all items (api.js, exports, loader, engines) are tightly coupled to one concern: enabling `import 'sdd-forge/api'` from external presets; Unambiguous Requirements — class names (`DataSource`, `Scannable`, `AnalysisEntry`), paths (`./api`), and version (`>=18.19.0`) are stated specifically; no vague adjectives; Complete Context — requirement 3 (engines bump) states only the configuration change, not the trigger condition nor the expected behavioral outcome that necessitates it; No Hardcoded Secrets — no API keys, tokens, or passwords present in the draft; Prioritize Requirements — five requirements are explicitly ranked 高/中/低; Impact on Existing Features — dedicated section covers built-in presets, test code, CLI users, and Node.js version range; states \"影響なし\" where applicable; Present Recommendations with Reasoning — Q1–Q4 each lead with a clear answer and cite the basis (alpha policy, API minimalism, board separation, package name constraint); Explore Before Asking — Q1 cites the actual current `engines` value (`>=18.0.0`) and `module.register()` availability, confirming the answers derive from codebase state; Proactively Raise Related Implications — adding an `exports` field without a `\".\"` entry would silently break `import 'sdd-forge'` (root-path import); this implication is not raised; Confirm Brainstorm vs. Decision Before Critiquing — inapplicable; draft is at approved decision stage (user approved 2026-04-10); Capture Digressions in draft.md — inapplicable; no digressions are present in the content; Draft Stays at Requirements Level — requirements name specific files (`src/api.js`, `src/loader.js`) and specify which file registers the hook (`sdd-forge.js`), which is implementation detail beyond requirements level; Backward — Compatible CLI Interface — no existing CLI commands or options are removed or changed; engines bump is not a CLI interface change",
+      "trigger": "gate post hook (auto)",
+      "timestamp": "2026-04-10T07:01:55.918Z"
+    },
+    {
+      "step": "gate-draft",
+      "reason": "Single Responsibility — 全要件が「外部ファイルから `sdd-forge/api` を import できるようにする」という単一の関心事に集中している; Unambiguous Requirements — 各要件は「3クラスを export する」「サブパスでアクセスできる」「ブロックされる」等、検証可能な条件で記述されている。「透過的」は「既存コマンドの動作に変化なし」と対で記述され検証可能; Complete Context — 各要件にトリガー条件（外部ファイルが import する時、プロセス起動時など）と期待動作が対になっている。要件5は設計方針に近いが許容範囲内; No Hardcoded Secrets — 機密情報に関する記述なし。性質上非該当; Prioritize Requirements — 5要件に [高]・[中]・[低] の優先順位が明示され、依存関係に基づく順序づけの根拠も説明されている; Impact on Existing Features — 「既存機能への影響」セクションでビルトインプリセット・テストコード・CLIユーザー・Node.js バージョンへの影響を明示している; Present Recommendations with Reasoning — Q&A の各設問に推奨案と根拠（alpha ポリシー・最小API原則・既存ボード b554 との分離）が記述されている; Explore Before Asking — Q1で「現 engines は `>=18.0.0`」と現状確認済み。Q2で既存クラス構造を確認した上で除外判断している; Proactively Raise Related Implications — exports 追加による内部パスブロック・Node.js バージョン影響・クロスimport の b554 分離を先回りで明記している; Confirm Brainstorm vs. Decision Before Critiquing — 静的ドラフトコンテンツへの適用外。ユーザー承認済みの決定事項; Capture Digressions in draft.md — クロスimport の議論は b554 として整理され、スコープ外であることが明示されている; Draft Stays at Requirements Level — スコープ節に `src/api.js`・`src/loader.js`・`sdd-forge.js` という具体的なファイル名と `module.register()` API への言及が含まれており、実装レベルの詳細が混入している; Backward — Compatible CLI Interface — CLI コマンド・オプションの変更はない。exports 追加による内部パスブロックは alpha ポリシー下で許容され、影響も「既存機能への影響」セクションで明示済み",
+      "trigger": "gate post hook (auto)",
+      "timestamp": "2026-04-10T07:03:34.619Z"
+    },
+    {
+      "step": "gate-draft",
+      "reason": "Single Responsibility — 全変更が「外部ファイルから sdd-forge/api を import 可能にする」という単一の目的に収束している; Unambiguous Requirements — 要件5「単体でテスト可能な状態に保つ」およびテスト方針の「動作確認」に検証可能な合否条件がない; Complete Context — 各要件に「外部ファイルが import する場合」「起動時に」等のトリガー条件と期待動作が対になっている; No Hardcoded Secrets — API キー・トークン等の機密情報を扱う内容ではなく非該当; Prioritize Requirements — 5件の要件に [高/高/高/中/低] の優先順位ラベルが明示されている; Impact on Existing Features — 「既存機能への影響」セクションでビルトインプリセット・テストコード・CLIユーザー・Node.jsバージョンを個別に列挙している; Present Recommendations with Reasoning — Q1〜Q4すべてに推奨回答と根拠（alpha方針・最小API・b554分離）が記載されている; Explore Before Asking — 各Q&Aの根拠が既存コードパターン（ビルトインプリセットの相対import）やプロジェクト方針を参照している; Proactively Raise Related Implications — Node.js 18.0–18.18.x 環境の利用不可、クロスimport分離（b554）を先回りで明記している; Confirm Brainstorm vs. Decision Before Critiquing — ユーザー承認済みの確定ドラフトであり、ブレスト/決定の区別確認は非該当; Capture Digressions in draft.md — Q&Aセクションが議論の派生論点（WebappDataSource除外、クロスimport分離）を記録している; Draft Stays at Requirements Level — `src/api.js` という具体的なファイルパスと「独立したモジュールに分離」という内部構造指定が実装詳細に踏み込んでいる; Backward — Compatible CLI Interface — 既存コマンド・オプションの意味変更はなく、Node.jsバージョン要件変更は既存機能への影響セクションで alpha 許容として明示されている",
+      "trigger": "gate post hook (auto)",
+      "timestamp": "2026-04-10T07:04:48.713Z"
+    },
+    {
+      "step": "gate-draft",
+      "reason": "Single Responsibility — APIエントリポイント・exportsマップ・ローダーフック・バージョン要件はすべて「外部ファイルからの `sdd-forge/api` import」という1つの関心事に収束している; Unambiguous Requirements — 要件5「CLI 全体を起動しなくても個別に検証できる形でなければならない」が曖昧。「個別に検証できる形」が何を意味するか（単体テスト・スタンドアロンスクリプト・エクスポート関数等）が特定されていない; Complete Context — 各要件に対象（外部ファイル・パッケージ・プロセス起動時等）と期待動作（export可能・アクセスブロック・登録等）が対になっている; No Hardcoded Secrets — APIキー・パスワード・トークン類の記載なし; Prioritize Requirements — 5項目に対して [高/高/高/中/低] の優先順位が明示されている; Impact on Existing Features — 「既存機能への影響」セクションでビルトインプリセット・テストコード・CLIユーザー・Node.jsバージョンへの影響が明示されている; Present Recommendations with Reasoning — Q1〜Q4すべてに推奨回答と根拠（alpha期間ポリシー・API最小化方針・ボード分離）が示されている; Explore Before Asking — Q1でNode.js 18.19+の安定版要件を調査済み、Q2でWebappDataSourceの構造を確認済みの記述がある; Proactively Raise Related Implications — exportsマップ追加による内部パスブロック・Node.js 18.0〜18.18.x切り捨て・クロスimport分離（b554）の影響が先回りして記載されている; Confirm Brainstorm vs. Decision Before Critiquing — Q&Aは決定事項として記述されており、ブレインストーミングと混同する記載なし; Capture Digressions in draft.md — 本文中に脱線の兆候なし（該当なし）; Draft Stays at Requirements Level — 要件4で「import specifier をパッケージ自身のインストールパスに解決するローダーフック」という解決アルゴリズムを指定しており実装レベルに踏み込んでいる。Q1で `module.register()` という具体的APIも言及されている; Backward — Compatible CLI Interface — 既存コマンド・オプションの削除・意味変更はなく、マイグレーション計画が不要な変更内容",
+      "trigger": "gate post hook (auto)",
+      "timestamp": "2026-04-10T07:06:39.014Z"
+    },
+    {
+      "step": "gate-impl",
+      "reason": "公開 API エントリポイント（DataSource・Scannable・AnalysisEntry の3クラスのみ） — analysis.json の diff で src/api.js の exports が `[\"DataSource\",\"Scannable\",\"AnalysisEntry\"]` の3クラスであることを確認; exports マップの定義（sdd — forge/api サブパス・ルートパス継続・内部パスブロック） — package.json に `\".\": \"./src/sdd-forge.js\"` と `\"./api\": \"./src/api.js\"` が追加され、exports フィールドにより未定義パスへのアクセスがブロックされる; Node.js バージョン要件の引き上げ（>=18.19.0） — package.json の engines.node が `>=18.0.0` から `>=18.19.0` に変更されている; モジュールローダーフックの登録（プロセス起動時・既存コマンド影響なし） — src/sdd-forge.js に `import { register } from \"node:module\"` と `register(new URL(\"./loader.js\", import.meta.url), ...)` が追加されており、src/loader.js が `resolve` メソッドを export していることを analysis.json で確認; ローダーフックの自動テスト（npm test ターゲット含む） — tests/unit/lib/loader.test.js と tests/unit/api.test.js が git status に `??` で存在するが、いずれも diff に含まれておらず未コミット状態のため実装の確認ができない",
+      "trigger": "gate post hook (auto)",
+      "timestamp": "2026-04-10T08:15:05.931Z"
+    },
+    {
+      "step": "merge",
+      "reason": "Merge conflict detected. Run 'git rebase main' in the worktree and retry finalize.",
+      "timestamp": "2026-04-10T08:22:09.557Z"
+    },
+    {
+      "step": "finalize",
+      "reason": "squash merge failed with conflict when merging feature/165-add-api-entry-module-loader into main",
+      "trigger": "sdd-forge flow run finalize --mode all",
+      "resolution": "running git rebase main in worktree before retrying finalize",
+      "timestamp": "2026-04-10T08:22:18.082Z"
+    }
+  ]
+}

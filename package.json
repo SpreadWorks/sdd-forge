@@ -10,12 +10,16 @@
   "bin": {
     "sdd-forge": "./src/sdd-forge.js"
   },
+  "exports": {
+    ".": "./src/sdd-forge.js",
+    "./api": "./src/api.js"
+  },
   "files": [
     "src/",
     "!src/presets/*/tests/"
   ],
   "engines": {
-    "node": ">=18.0.0"
+    "node": ">=18.19.0"
   },
   "keywords": [
     "sdd",

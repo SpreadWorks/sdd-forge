@@ -1,0 +1,42 @@
+{
+  "data": {
+    "implementation": {
+      "diffStat": ".sdd-forge/output/analysis.json                    | 2665 +++-----------------\n README.md                                          |   12 +-\n docs/change_log.md                                 |    4 +-\n docs/cli_commands.md                               |  657 +++--\n docs/configuration.md                              |  229 +-\n docs/internal_design.md                            |  244 --\n docs/overview.md                                   |  276 +-\n docs/project_structure.md                          |   43 +-\n docs/stack_and_ops.md                              |  101 +-\n package.json                                       |    6 +-\n specs/165-add-api-entry-module-loader/draft.md     |   62 +\n specs/165-add-api-entry-module-loader/flow.json    |  167 ++\n .../165-add-api-entry-module-loader/issue-log.json |   40 +\n specs/165-add-api-entry-module-loader/qa.md        |    9 +\n specs/165-add-api-entry-module-loader/review.md    |   95 +\n specs/165-add-api-entry-module-loader/spec.md      |   83 +\n .../tests/README.md                                |   38 +\n .../tests/external-import.test.js                  |   64 +\n src/api.js                                         |   12 +\n src/loader.js                                      |   36 +\n src/sdd-forge.js                                   |    4 +\n tests/unit/api.test.js                             |   72 +\n tests/unit/lib/loader.test.js                      |   54 +\n 23 files changed, 1962 insertions(+), 3011 deletions(-)",
+      "commits": [
+        "feat: feature/165-add-api-entry-module-loader"
+      ]
+    },
+    "retro": {
+      "total": 5,
+      "done": 5,
+      "partial": 0,
+      "not_done": 0,
+      "rate": 1,
+      "notes": "5件の要件はすべて実装済み。src/api.js（公開APIエントリ）・src/loader.js（ローダーフック）・package.json の exports/engines 変更・src/sdd-forge.js への register() 追加・unit テスト2ファイルの追加がそれぞれ対応している。予定外の変更としてドキュメント全章の大規模更新が含まれており、analysis.json も再スキャン結果に差し替えられている。ドキュメント更新は spec の要件対象外だが機能実装への影響はない"
+    },
+    "issueLog": {
+      "count": 0,
+      "entries": []
+    },
+    "metrics": {
+      "docsRead": 1,
+      "srcRead": 0,
+      "question": 9,
+      "issueLog": 0
+    },
+    "tokenMetrics": {
+      "input": 12,
+      "output": 21186,
+      "cacheRead": 54865,
+      "cacheCreation": 173174,
+      "cost": 0.9836879999999999,
+      "callCount": 6
+    },
+    "tests": null,
+    "sync": {
+      "status": "skipped",
+      "reason": "sync was skipped"
+    }
+  },
+  "text": "  Report\n\n  Implementation\n  ────────────────────────────────────────────────\n    feat: feature/165-add-api-entry-module-loader\n    23 files changed, 1962 insertions(+), 3011 deletions(-)\n\n  Retro\n  ────────────────────────────────────────────────\n    ████████ 100%  (5 done / 0 partial / 0 miss)\n\n  Metrics\n  ────────────────────────────────────────────────\n    docs read 1  src read 0  Q&A 9  issue-log 0\n    agent calls 6  in 12  out 21186  cache-read 54865  cache-create 173174  cost $0.9837\n\n  Tests\n  ────────────────────────────────────────────────\n    -"
+}

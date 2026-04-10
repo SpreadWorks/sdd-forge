@@ -12,10 +12,14 @@
  *   help    → src/help.js
  */
 
+import { register } from "node:module";
 import path from "path";
 import { PKG_DIR, repoRoot } from "./lib/cli.js";
 import { EXIT_ERROR } from "./lib/exit-codes.js";
 import { Logger } from "./lib/log.js";
+
+// Register module loader hook so external presets can use `import 'sdd-forge/api'`
+register(new URL("./loader.js", import.meta.url), import.meta.url);
 
 const rawArgs = process.argv.slice(2);
 const [subCmd, ...rest] = rawArgs;

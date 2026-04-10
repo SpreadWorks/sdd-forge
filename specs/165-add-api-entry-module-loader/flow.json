@@ -1,0 +1,170 @@
+{
+  "spec": "specs/165-add-api-entry-module-loader/spec.md",
+  "baseBranch": "main",
+  "featureBranch": "feature/165-add-api-entry-module-loader",
+  "steps": [
+    {
+      "id": "approach",
+      "status": "done"
+    },
+    {
+      "id": "branch",
+      "status": "done"
+    },
+    {
+      "id": "prepare-spec",
+      "status": "pending"
+    },
+    {
+      "id": "draft",
+      "status": "done"
+    },
+    {
+      "id": "gate-draft",
+      "status": "done"
+    },
+    {
+      "id": "spec",
+      "status": "done"
+    },
+    {
+      "id": "gate",
+      "status": "done"
+    },
+    {
+      "id": "approval",
+      "status": "done"
+    },
+    {
+      "id": "test",
+      "status": "done"
+    },
+    {
+      "id": "implement",
+      "status": "done"
+    },
+    {
+      "id": "gate-impl",
+      "status": "done"
+    },
+    {
+      "id": "review",
+      "status": "done"
+    },
+    {
+      "id": "finalize",
+      "status": "pending"
+    },
+    {
+      "id": "commit",
+      "status": "pending"
+    },
+    {
+      "id": "push",
+      "status": "pending"
+    },
+    {
+      "id": "merge",
+      "status": "pending"
+    },
+    {
+      "id": "pr-create",
+      "status": "pending"
+    },
+    {
+      "id": "branch-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "pr-merge",
+      "status": "pending"
+    },
+    {
+      "id": "sync-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "docs-update",
+      "status": "pending"
+    },
+    {
+      "id": "docs-review",
+      "status": "pending"
+    },
+    {
+      "id": "docs-commit",
+      "status": "pending"
+    }
+  ],
+  "requirements": [
+    {
+      "desc": "公開 API エントリポイントの作成（DataSource・Scannable・AnalysisEntry の3クラスを export）",
+      "status": "done"
+    },
+    {
+      "desc": "package.json の exports マップに sdd-forge/api サブパスを追加（ルートパスも維持）",
+      "status": "done"
+    },
+    {
+      "desc": "engines.node を >=18.19.0 に引き上げ",
+      "status": "done"
+    },
+    {
+      "desc": "sdd-forge 起動時にモジュールローダーフックを登録（外部ファイルから sdd-forge/api が import 可能になる）",
+      "status": "done"
+    },
+    {
+      "desc": "ローダーフックの自動テストを npm test に含める",
+      "status": "done"
+    }
+  ],
+  "issue": 129,
+  "request": "make a resume command",
+  "worktree": true,
+  "metrics": {
+    "plan": {
+      "docsRead": 1
+    },
+    "draft": {
+      "question": 9
+    },
+    "gate-draft": {
+      "tokens": {
+        "input": 10,
+        "output": 17663,
+        "cacheRead": 43892,
+        "cacheCreation": 64314
+      },
+      "cost": 0.5193201,
+      "callCount": 5,
+      "responseChars": 6942
+    },
+    "gate-impl": {
+      "tokens": {
+        "input": 2,
+        "output": 3523,
+        "cacheRead": 10973,
+        "cacheCreation": 108860
+      },
+      "cost": 0.4643679,
+      "callCount": 1,
+      "responseChars": 848
+    },
+    "impl": {
+      "issueLog": 1
+    }
+  },
+  "notes": [
+    "Node.js version: bump engines to >=18.19.0 for module.register()",
+    "WebappDataSource: 除外。api.js は DataSource/Scannable/AnalysisEntry の3クラスのみ",
+    "implement: approach approved - src/api.js, src/loader.js, package.json exports+engines, sdd-forge.js register()",
+    "approach: draft first",
+    "first note",
+    "second note",
+    "new note",
+    "approach: draft first",
+    "first note",
+    "second note",
+    "new note"
+  ]
+}
