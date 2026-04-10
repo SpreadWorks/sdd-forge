@@ -24,12 +24,13 @@ src/    (lib, cli, controller)
 src/check/commands/    (cli)
 src/docs/commands/    (cli, controller)
 src/docs/data/    (model)
-src/docs/lib/    (lib)
-src/docs/lib/lang/    
+src/docs/lib/    (lib, model)
+src/docs/lib/lang/    (lib)
 src/flow/    
-src/flow/commands/    
-src/flow/lib/    
+src/flow/commands/    (controller)
+src/flow/lib/    (model, controller, lib, config)
 src/lib/    
+src/metrics/commands/    (cli)
 ```
 <!-- {{/data}} -->
 
@@ -39,10 +40,11 @@ src/lib/
 | ディレクトリ | ファイル数 | 役割 |
 | --- | --- | --- |
 | src/docs | 40 | cli, controller, model, lib |
-| src/flow | 34 | — |
+| src/flow | 34 | controller, model, lib, config |
 | src/lib | 22 | — |
-| src | 10 | lib, cli, controller |
+| src | 11 | lib, cli, controller |
 | src/check | 3 | cli |
+| src/metrics | 1 | cli |
 <!-- {{/data}} -->
 
 ### 共通ライブラリ
