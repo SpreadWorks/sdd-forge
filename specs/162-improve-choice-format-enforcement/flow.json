@@ -134,5 +134,12 @@
       "issueLog": 4
     }
   },
-  "autoApprove": true
+  "autoApprove": true,
+  "reviewCount": {
+    "spec": 3,
+    "test": 0,
+    "impl": 0
+  },
+  "redoCount": 13,
+  "requestChars": 19
 }

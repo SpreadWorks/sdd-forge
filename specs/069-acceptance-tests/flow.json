@@ -108,5 +108,17 @@
     "branch: development から feature/069-acceptance-tests を作成",
     "docs-update: skipped by user",
     "docs-review: skipped by user"
-  ]
+  ],
+  "reviewCount": {
+    "spec": 1,
+    "test": 0,
+    "impl": 0
+  },
+  "redoCount": 0,
+  "metrics": {
+    "draft": {
+      "question": 1
+    }
+  },
+  "requestChars": 118
 }

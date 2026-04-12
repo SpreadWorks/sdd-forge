@@ -150,5 +150,12 @@
     "draft: 細切れにせず、設問結果をまとめてコマンドに渡し内部で一括処理。AIの判断回数を減らす",
     "draft: merge現状維持。resolve-contextは読み取りのみ(get)。状態変更を伴うものはrunに",
     "draft: flow run merge/cleanup削除、flow run finalizeに統合。alpha版ポリシー"
-  ]
+  ],
+  "reviewCount": {
+    "spec": 6,
+    "test": 0,
+    "impl": 0
+  },
+  "redoCount": 0,
+  "requestChars": 61
 }

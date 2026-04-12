@@ -148,5 +148,12 @@
     "出力: sdd-forge check scan + checkディスパッチャ骨格。freshness/configは別spec",
     "出力: --format text|json|md (default text)。未カバーファイルはデフォルト10件、超過時は--listを案内。textレイアウトはflow report(pushSection/formatText)と共通化。共通モジュール src/lib/formatter.js 等に抽出",
     "全ファイル除外: scan.exclude + デフォルト除外(node_modules/.git/dist/*.lock)"
-  ]
+  ],
+  "reviewCount": {
+    "spec": 0,
+    "test": 0,
+    "impl": 0
+  },
+  "redoCount": 4,
+  "requestChars": 39
 }

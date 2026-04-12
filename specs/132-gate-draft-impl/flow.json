@@ -156,5 +156,12 @@
     "gate impl diff: baseBranch との diff (git diff baseBranch...HEAD)。feature ブランチ全体の変更",
     "review: auto-fix mode selected",
     "finalize: all mode selected"
-  ]
+  ],
+  "reviewCount": {
+    "spec": 5,
+    "test": 0,
+    "impl": 0
+  },
+  "redoCount": 0,
+  "requestChars": 28
 }

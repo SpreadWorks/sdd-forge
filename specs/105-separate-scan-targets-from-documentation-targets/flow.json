@@ -111,5 +111,17 @@
   "request": "Issue #35: scan対象とドキュメント対象の分離（docs.exclude の導入）",
   "notes": [
     "approach: 直接仕様書作成。議論済みの設計をそのまま spec 化。worktree mode, base=development"
-  ]
+  ],
+  "reviewCount": {
+    "spec": 0,
+    "test": 0,
+    "impl": 0
+  },
+  "redoCount": 0,
+  "metrics": {
+    "draft": {
+      "question": 1
+    }
+  },
+  "requestChars": 47
 }

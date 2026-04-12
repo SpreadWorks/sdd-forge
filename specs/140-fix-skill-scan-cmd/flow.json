@@ -105,5 +105,17 @@
   "issue": 86,
   "request": "flow-plan スキルの draft 手順から存在しない flow run scan コマンドを修正",
   "worktree": true,
-  "autoApprove": true
+  "autoApprove": true,
+  "reviewCount": {
+    "spec": 0,
+    "test": 0,
+    "impl": 0
+  },
+  "redoCount": 0,
+  "metrics": {
+    "draft": {
+      "question": 1
+    }
+  },
+  "requestChars": 52
 }

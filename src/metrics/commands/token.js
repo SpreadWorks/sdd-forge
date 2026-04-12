@@ -14,6 +14,17 @@ import { EXIT_ERROR, EXIT_SUCCESS } from "../../lib/exit-codes.js";
 const DEFAULT_FORMAT = "text";
 const SUPPORTED_FORMATS = new Set(["text", "json", "csv"]);
 const MAX_FLOW_FILES = 5000;
+const DIFFICULTY_BASELINES = {
+  specMdChars: 10000,
+  requirementCount: 20,
+  testCount: 30,
+  redoCount: 10,
+  reviewCount: 30,
+  issueLogEntries: 10,
+};
+const PRECISION_NORMALIZER = 100;
+const PRECISION_MIN = 0.3;
+const PRECISION_MAX = 3.0;
 
 function formatUsage() {
   return [
@@ -48,12 +59,14 @@ function addMetric(acc, field, value) {
 function asDisplayValue(value, kind = "number") {
   if (value == null) return "N/A";
   if (kind === "cost") return Number(value).toFixed(6);
+  if (kind === "difficulty") return Number(value).toFixed(2);
   return String(value);
 }
 
 function asCsvValue(value, kind = "number") {
   if (value == null) return "N/A";
   if (kind === "cost") return Number(value).toFixed(6);
+  if (kind === "difficulty") return Number(value).toFixed(2);
   return String(value);
 }
 
@@ -87,7 +100,7 @@ function formatText(rows) {
     lines.push("--------------------------------------------------------------------------------------");
     for (const row of phaseRows) {
       const date = row.date.padEnd(11, " ");
-      const diff = asDisplayValue(row.difficulty).padEnd(11, " ");
+      const diff = asDisplayValue(row.difficulty, "difficulty").padEnd(11, " ");
       const inTok = asDisplayValue(row.tokenInput).padEnd(7, " ");
       const outTok = asDisplayValue(row.tokenOutput).padEnd(7, " ");
       const read = asDisplayValue(row.cacheRead).padEnd(6, " ");
@@ -113,7 +126,7 @@ function formatCsv(rows) {
     lines.push([
       row.date,
       row.phase,
-      asCsvValue(row.difficulty),
+      asCsvValue(row.difficulty, "difficulty"),
       asCsvValue(row.tokenInput),
       asCsvValue(row.tokenOutput),
       asCsvValue(row.cacheRead),
@@ -179,7 +192,108 @@ function createEmptyRow(date, phase) {
     cacheCreate: null,
     callCount: null,
     cost: null,
+    _difficultySum: 0,
+    _difficultyCount: 0,
   };
+}
+
+async function safeReadJson(filePath) {
+  try {
+    const text = await fs.readFile(filePath, "utf8");
+    return JSON.parse(text);
+  } catch {
+    return null;
+  }
+}
+
+async function countFilesRecursive(dirPath) {
+  try {
+    const entries = await fs.readdir(dirPath, { withFileTypes: true });
+    let count = 0;
+    for (const entry of entries) {
+      if (entry.isSymbolicLink()) continue;
+      const fullPath = path.join(dirPath, entry.name);
+      if (entry.isDirectory()) {
+        const nestedCount = await countFilesRecursive(fullPath);
+        if (nestedCount == null) return null;
+        count += nestedCount;
+      } else if (entry.isFile()) {
+        count += 1;
+      }
+    }
+    return count;
+  } catch {
+    return null;
+  }
+}
+
+function sumReviewCount(reviewCount) {
+  if (!reviewCount || typeof reviewCount !== "object") return null;
+  const values = ["spec", "test", "impl"].map((k) => toNumberOrNull(reviewCount[k]));
+  if (values.some((v) => v == null)) return null;
+  return values[0] + values[1] + values[2];
+}
+
+function computeRequirementCount(flowState) {
+  if (Array.isArray(flowState.summary)) return flowState.summary.length;
+  if (Array.isArray(flowState.requirements)) return flowState.requirements.length;
+  return null;
+}
+
+function computeRequestChars(flowState) {
+  const explicit = toNumberOrNull(flowState.requestChars);
+  if (explicit != null) return explicit;
+  if (typeof flowState.request === "string") return flowState.request.length;
+  return null;
+}
+
+function clamp(value, min, max) {
+  return Math.min(max, Math.max(min, value));
+}
+
+function normalizeToHundred(value, baseline) {
+  return clamp(value / baseline, 0, 1) * 100;
+}
+
+function average(values) {
+  return values.reduce((acc, n) => acc + n, 0) / values.length;
+}
+
+async function computeSpecDifficulty(flowState, specDir) {
+  const specMdPath = path.join(specDir, "spec.md");
+  let specMdChars = null;
+  try {
+    const specText = await fs.readFile(specMdPath, "utf8");
+    specMdChars = specText.length;
+  } catch {
+    return null;
+  }
+
+  const requirementCount = computeRequirementCount(flowState);
+  const testCountRaw = await countFilesRecursive(path.join(specDir, "tests"));
+  const testCount = testCountRaw == null ? 0 : testCountRaw;
+  const redoCount = toNumberOrNull(flowState.redoCount);
+  const reviewCount = sumReviewCount(flowState.reviewCount);
+  const issueLog = await safeReadJson(path.join(specDir, "issue-log.json"));
+  const issueLogEntries = Array.isArray(issueLog?.entries) ? issueLog.entries.length : 0;
+  const qaCountRaw = toNumberOrNull(flowState?.metrics?.draft?.question);
+  const qaCount = qaCountRaw == null ? 0 : qaCountRaw;
+  const requestChars = computeRequestChars(flowState);
+
+  const required = [specMdChars, requirementCount, redoCount, reviewCount, requestChars];
+  if (required.some((v) => v == null)) return null;
+  if (requestChars <= 0) return null;
+
+  const baseDifficulty = average([
+    normalizeToHundred(specMdChars, DIFFICULTY_BASELINES.specMdChars),
+    normalizeToHundred(requirementCount, DIFFICULTY_BASELINES.requirementCount),
+    normalizeToHundred(testCount, DIFFICULTY_BASELINES.testCount),
+    normalizeToHundred(redoCount, DIFFICULTY_BASELINES.redoCount),
+    normalizeToHundred(reviewCount, DIFFICULTY_BASELINES.reviewCount),
+    normalizeToHundred(issueLogEntries, DIFFICULTY_BASELINES.issueLogEntries),
+  ]);
+  const precision = clamp((qaCount / requestChars) * PRECISION_NORMALIZER, PRECISION_MIN, PRECISION_MAX);
+  return baseDifficulty * precision;
 }
 
 async function buildRows(flowFiles) {
@@ -193,6 +307,8 @@ async function buildRows(flowFiles) {
     } catch (err) {
       throw new Error(`invalid JSON in ${file.path}: ${err.message}`);
     }
+    const specDir = path.dirname(file.path);
+    const specDifficulty = await computeSpecDifficulty(parsed, specDir);
     const metrics = parsed?.metrics;
     if (!metrics || typeof metrics !== "object") continue;
 
@@ -208,9 +324,24 @@ async function buildRows(flowFiles) {
       addMetric(row, "cacheCreate", tokens.cacheCreation);
       addMetric(row, "callCount", phaseData.callCount);
       addMetric(row, "cost", phaseData.cost);
+      if (specDifficulty != null) {
+        row._difficultySum += specDifficulty;
+        row._difficultyCount += 1;
+      }
     }
   }
-  return sortRows([...rows.values()]);
+  const finalized = [...rows.values()].map((row) => ({
+    date: row.date,
+    phase: row.phase,
+    difficulty: row._difficultyCount > 0 ? row._difficultySum / row._difficultyCount : null,
+    tokenInput: row.tokenInput,
+    tokenOutput: row.tokenOutput,
+    cacheRead: row.cacheRead,
+    cacheCreate: row.cacheCreate,
+    callCount: row.callCount,
+    cost: row.cost,
+  }));
+  return sortRows(finalized);
 }
 
 async function readCacheRows(cachePath) {

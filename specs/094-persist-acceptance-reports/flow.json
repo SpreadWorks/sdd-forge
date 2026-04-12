@@ -115,5 +115,17 @@
   "request": "Issue #24: Persist acceptance test reports to .sdd-forge/output/ with preset name suffix (e.g., acceptance-report-cakephp2.json)",
   "notes": [
     "draft: approved. persist to project root .sdd-forge/output/, both temp+root, filename acceptance-report-{preset}.json, overwrite on re-run, no summary report"
-  ]
+  ],
+  "reviewCount": {
+    "spec": 3,
+    "test": 0,
+    "impl": 0
+  },
+  "redoCount": 0,
+  "metrics": {
+    "draft": {
+      "question": 1
+    }
+  },
+  "requestChars": 128
 }

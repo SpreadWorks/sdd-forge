@@ -96,5 +96,17 @@
   ],
   "request": "ルートに test.txt を作成する検証用タスク",
   "worktree": true,
-  "autoApprove": true
+  "autoApprove": true,
+  "reviewCount": {
+    "spec": 0,
+    "test": 0,
+    "impl": 0
+  },
+  "redoCount": 0,
+  "metrics": {
+    "draft": {
+      "question": 1
+    }
+  },
+  "requestChars": 25
 }

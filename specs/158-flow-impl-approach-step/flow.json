@@ -140,5 +140,12 @@
   },
   "notes": [
     "review: [1] auto-fix"
-  ]
+  ],
+  "reviewCount": {
+    "spec": 4,
+    "test": 0,
+    "impl": 0
+  },
+  "redoCount": 3,
+  "requestChars": 37
 }

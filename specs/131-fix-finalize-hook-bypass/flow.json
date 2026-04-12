@@ -121,5 +121,12 @@
       "docsRead": 2,
       "srcRead": 4
     }
-  }
+  },
+  "reviewCount": {
+    "spec": 5,
+    "test": 0,
+    "impl": 0
+  },
+  "redoCount": 0,
+  "requestChars": 52
 }

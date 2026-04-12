@@ -141,5 +141,12 @@
     "Q1: provider判定 = agent.command 部分一致 (claude/codex含む → 各provider、両方含まなければ unknown)",
     "Q2/Q3: JSON出力は jsonOutputFlag (systemPromptFlagと同パターン)。設定あり→JSONモード、なし→plain text。provider判定はパース形式の選択に使用。",
     "Q4: unknown provider時はplain text扱い (jsonOutputFlagは機能しない)"
-  ]
+  ],
+  "reviewCount": {
+    "spec": 5,
+    "test": 0,
+    "impl": 0
+  },
+  "redoCount": 7,
+  "requestChars": 38
 }

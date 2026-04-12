@@ -117,5 +117,17 @@
   "request": "I2: モノレポでの対象アプリケーション表示 — 各章ヘッダーに対象アプリを明示する機能",
   "notes": [
     "draft: architecture/monorepo preset, type配列対応, ignoreError=trueパラメータ, AI検出+config定義, バッジ風表示"
-  ]
+  ],
+  "reviewCount": {
+    "spec": 5,
+    "test": 0,
+    "impl": 0
+  },
+  "redoCount": 0,
+  "metrics": {
+    "draft": {
+      "question": 1
+    }
+  },
+  "requestChars": 44
 }

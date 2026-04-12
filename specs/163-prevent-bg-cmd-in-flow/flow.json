@@ -132,5 +132,12 @@
   "notes": [
     "review: auto-fix selected",
     "finalize: all steps selected"
-  ]
+  ],
+  "reviewCount": {
+    "spec": 2,
+    "test": 0,
+    "impl": 0
+  },
+  "redoCount": 4,
+  "requestChars": 29
 }

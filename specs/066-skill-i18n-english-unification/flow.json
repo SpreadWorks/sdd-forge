@@ -106,5 +106,17 @@
       "status": "done"
     }
   ],
-  "request": "SKILL.md の英語統一と config.lang 翻訳指示の追加。setup.js のモノレポ関連 i18n キー未定義の修正。"
+  "request": "SKILL.md の英語統一と config.lang 翻訳指示の追加。setup.js のモノレポ関連 i18n キー未定義の修正。",
+  "reviewCount": {
+    "spec": 4,
+    "test": 0,
+    "impl": 0
+  },
+  "redoCount": 0,
+  "metrics": {
+    "draft": {
+      "question": 1
+    }
+  },
+  "requestChars": 67
 }

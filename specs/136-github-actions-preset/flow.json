@@ -154,5 +154,12 @@
     "impl": {
       "issueLog": 1
     }
-  }
+  },
+  "reviewCount": {
+    "spec": 7,
+    "test": 0,
+    "impl": 0
+  },
+  "redoCount": 1,
+  "requestChars": 49
 }

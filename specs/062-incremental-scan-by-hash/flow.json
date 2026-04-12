@@ -105,5 +105,17 @@
     "text差分: 影響章のディレクティブをクリアして再生成",
     "test: ユニットテスト7観点（scan差分5, text差分2）",
     "merge: 個別に選択する"
-  ]
+  ],
+  "reviewCount": {
+    "spec": 8,
+    "test": 0,
+    "impl": 0
+  },
+  "redoCount": 0,
+  "metrics": {
+    "draft": {
+      "question": 1
+    }
+  },
+  "requestChars": 94
 }

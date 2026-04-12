@@ -125,5 +125,12 @@
     "draft": {
       "question": 5
     }
-  }
+  },
+  "reviewCount": {
+    "spec": 0,
+    "test": 0,
+    "impl": 0
+  },
+  "redoCount": 0,
+  "requestChars": 86
 }

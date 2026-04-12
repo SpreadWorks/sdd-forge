@@ -1,0 +1,40 @@
+{
+  "entries": [
+    {
+      "step": "gate-impl",
+      "reason": "P1 — R1: spec単位difficulty算出（board 8690確定式） — `computeSpecDifficulty`でbaseDifficulty・precision_multiplier・difficultyを正しく実装; P1 — R2: 必須入力欠損時にN/A — `required.some(v => v == null)`でいずれか欠損時にnull返却; P1 — R3: date×phase行のdifficulty = 寄与spec平均値 — `_difficultySum/_difficultyCount`で平均算出、全N/A時はnull; P1 — R4: text/csvは小数2桁、欠損はN/A — `asDisplayValue/asCsvValue`に`difficulty`kind追加で`.toFixed(2)`実装; P1 — R5: fill-flow-counts.js提供 — `specs/167-metrics-token-difficulty/fill-flow-counts.js`を新規追加; P1 — R5: reviewCount = review.mdのspecとして設定、test/implは0 — `countReviewItems`でspec設定、test/implは0固定; P1 — R5: redoCount = issue-log.json entries.length — `countIssueLogEntries`で実装; P1 — R5: 既存値がある場合は上書きしない — `!Number.isFinite(flow.redoCount)`等で既存値チェック; P1 — R5: --spec/--all/--dry-runサポート — `parseArgs`で3オプション実装; P2 — R6: 既存token/cache/cost集計を壊さない — buildRowsのmap/sort構造を維持しつつdifficultyフィールド追加; AC1: required揃う場合に数値difficulty — e2eテスト`computes numeric difficulty when required fields exist`追加; AC2: reviewCount/redoCount欠損時にN/A — e2eテスト`returns N/A difficulty when reviewCount/redoCount are missing`追加; AC3: fill — flow-counts.js --spec --dry-run動作確認テスト — AC3の自動テストがテストファイルに存在しない; AC4: テストファイル更新 — e2eテストにdifficulty算出/欠損ケース追加済み",
+      "trigger": "gate post hook (auto)",
+      "timestamp": "2026-04-12T14:06:39.642Z"
+    },
+    {
+      "step": "gate-impl",
+      "reason": "P1 — R1 difficulty formula — `computeSpecDifficulty` implements all 6 baseline components, precision_multiplier with clamp(0.3,3.0), and final product exactly as specified; P1 — R2 N/A on missing required inputs — `qaCount`, `testCount`, `issueLogEntries` default to `0` via `?? 0` / catch-fallback rather than `null`, so their absence never triggers N/A; only `specMdChars`, `requirementCount`, `redoCount`, `reviewCount`, `requestChars` correctly cause N/A; P1 — R3 date×phase row difficulty as average of contributing specs — `_difficultySum`/`_difficultyCount` accumulated per row; finalized as `sum/count` when count>0, else `null` (→ N/A); P1 — R4 text/csv 2-decimal formatting, N/A for missing — `asDisplayValue`/`asCsvValue` with `\"difficulty\"` kind calls `.toFixed(2)`; `value==null` path returns `\"N/A\"`; P1 — R5 fill-flow-counts.js provided — file exists at `specs/167-metrics-token-difficulty/fill-flow-counts.js`; `--spec`/`--all`/`--dry-run` supported; `reviewCount.spec` from review.md item count, `test`/`impl` set to 0; `redoCount` from `issue-log.json entries.length`; existing finite values not overwritten; P2 — R6 existing aggregation/cache not broken — token/cache/cost accumulation logic unchanged; `_difficultySum`/`_difficultyCount` stripped before output via `finalized` mapping",
+      "trigger": "gate post hook (auto)",
+      "timestamp": "2026-04-12T14:08:30.061Z"
+    },
+    {
+      "step": "gate-impl",
+      "reason": "P1 — R1 difficulty 計算式の実装 — `computeSpecDifficulty` で `base_difficulty = average(...)` と `precision_multiplier = clamp(...)` が仕様通り実装されている; P1 — R2 必須入力欠損時に N/A — `required` 配列のいずれかが `null` の場合 `return null` し、呼び出し元で `null` を `N/A` 表示に使用している; P1 — R3 date×phase 行の difficulty は寄与 spec の平均値 — `_difficultySum / _difficultyCount` で平均を計算し、寄与 spec がすべて N/A の場合は `_difficultyCount === 0` で `null` (N/A) になる; P1 — R4 text/csv は小数2桁、欠損は N/A — `asDisplayValue` / `asCsvValue` に `\"difficulty\"` kind を追加し `toFixed(2)`、`null` は `\"N/A\"` を返す; P1 — R5 fill-flow-counts.js の提供 — `specs/167-metrics-token-difficulty/fill-flow-counts.js` が追加され、`reviewCount`/`redoCount` 補完・既存値の非上書き・`--spec`/`--all`/`--dry-run` を実装している; P1 — R5 reviewCount.spec は review.md の項目数 — `countReviewItems` が `### [ ] N.` / `### [x] N.` をカウントし `spec` フィールドに設定、`test/impl` は 0; P1 — R5 redoCount は issue-log.json entries.length — `countIssueLogEntries` が `entries.length` を返し `redoCount` に設定している; P1 — R5 既存値がある場合は上書きしない — `Number.isFinite` チェックで既存値があればスキップしている; P2 — R6 既存集計・キャッシュ挙動を壊さない — difficulty 関連は `_difficultySum`/`_difficultyCount` として独立して集計され、既存フィールド (`tokenInput` 等) の処理に変更なし; AC1 json format で difficulty が数値 — e2e テスト `\"computes numeric difficulty when required fields exist\"` で `typeof row.difficulty === \"number\"` を検証; AC2 reviewCount/redoCount 欠損時 CSV の difficulty 列が N/A — e2e テスト `\"returns N/A difficulty when reviewCount/redoCount are missing\"` で `cols[2] === \"N/A\"` を検証; AC3 fill — flow-counts.js --dry-run が更新内容を表示し --all で複数 spec を補完 — `fill-flow-counts.js` 自体は実装済みだが、`tests/e2e/metrics/fill-flow-counts.test.js` はステータスに `??` (未追跡・新規) として存在するものの diff に含まれていないため、テストによる検証が確認できない; AC4 npm run test:unit / test:e2e が通過 — diff 内のテスト追加自体は完了しており、既存テストへの破壊的変更もない（実行結果は diff からは確認不可だが実装上の問題なし）",
+      "trigger": "gate post hook (auto)",
+      "timestamp": "2026-04-12T14:09:18.019Z"
+    },
+    {
+      "step": "commit",
+      "reason": "commit failed: exit=128 | fatal: Unable to create '/home/nakano/workspace/sdd-forge/.git/worktrees/feature-167-metrics-token-difficulty/index.lock': Read-only file system\n",
+      "timestamp": "2026-04-12T14:44:36.411Z"
+    },
+    {
+      "step": "merge",
+      "reason": "Merge conflict detected. Run 'git rebase main' in the worktree and retry finalize.",
+      "timestamp": "2026-04-12T14:44:36.427Z"
+    },
+    {
+      "step": "finalize",
+      "reason": "finalize commit failed due to index.lock write error (read-only file system)",
+      "trigger": "flow run finalize --mode all",
+      "resolution": "recorded failure and paused before retry; escalation needed for git write",
+      "guardrailCandidate": "when finalize fails on git lock/write, record issue-log immediately before any retry",
+      "timestamp": "2026-04-12T14:44:45.782Z"
+    }
+  ]
+}

@@ -143,5 +143,17 @@
   "notes": [
     "approach: 直接仕様書作成（合意済み方針あり）",
     "finalize: all, merge strategy=merge"
-  ]
+  ],
+  "reviewCount": {
+    "spec": 0,
+    "test": 0,
+    "impl": 0
+  },
+  "redoCount": 0,
+  "metrics": {
+    "draft": {
+      "question": 1
+    }
+  },
+  "requestChars": 42
 }

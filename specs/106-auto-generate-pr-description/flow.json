@@ -114,5 +114,17 @@
     "work-env: worktree, base: development",
     "review: auto-fix",
     "finalize: all, squash merge"
-  ]
+  ],
+  "reviewCount": {
+    "spec": 0,
+    "test": 0,
+    "impl": 0
+  },
+  "redoCount": 0,
+  "metrics": {
+    "draft": {
+      "question": 1
+    }
+  },
+  "requestChars": 87
 }

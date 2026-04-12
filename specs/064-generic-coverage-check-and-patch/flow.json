@@ -131,5 +131,17 @@
     "draft: カバレッジ検知はエントリ単位（個々のファイル/クラスが docs に記述されているか）",
     "draft: 10(analysis鮮度),13(スナップショット差分)は削除。snapshot機能自体も削除。残りのWARNはすべてFAILに昇格。forgeで解決できないケースの対処方法を検討する",
     "draft: forgeが解決できず例外終了した場合、AIがエラー内容を読んでユーザーに解決方法を提示する（現状の暗黙の動作を明文化）"
-  ]
+  ],
+  "reviewCount": {
+    "spec": 6,
+    "test": 0,
+    "impl": 0
+  },
+  "redoCount": 0,
+  "metrics": {
+    "draft": {
+      "question": 1
+    }
+  },
+  "requestChars": 105
 }

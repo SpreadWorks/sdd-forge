@@ -135,7 +135,8 @@
       "docsRead": 1
     },
     "draft": {
-      "srcRead": 1
+      "srcRead": 1,
+      "question": 1
     },
     "test": {
       "srcRead": 1
@@ -144,5 +145,12 @@
       "srcRead": 1,
       "issueLog": 1
     }
-  }
+  },
+  "reviewCount": {
+    "spec": 4,
+    "test": 0,
+    "impl": 0
+  },
+  "redoCount": 6,
+  "requestChars": 54
 }

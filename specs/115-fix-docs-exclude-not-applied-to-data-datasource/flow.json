@@ -109,5 +109,17 @@
     "approach: [1] Q&A with self-Q&A (autoApprove). work-env: [1] worktree, base=development",
     "draft: analysis をフィルタして DataSource に渡す方針。filterByDocsExclude を共有化"
   ],
-  "autoApprove": true
+  "autoApprove": true,
+  "reviewCount": {
+    "spec": 4,
+    "test": 0,
+    "impl": 0
+  },
+  "redoCount": 0,
+  "metrics": {
+    "draft": {
+      "question": 1
+    }
+  },
+  "requestChars": 65
 }

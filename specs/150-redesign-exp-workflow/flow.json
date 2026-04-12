@@ -190,5 +190,12 @@
     "impl": {
       "issueLog": 2
     }
-  }
+  },
+  "reviewCount": {
+    "spec": 5,
+    "test": 0,
+    "impl": 0
+  },
+  "redoCount": 12,
+  "requestChars": 59
 }

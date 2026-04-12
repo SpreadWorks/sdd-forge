@@ -121,5 +121,16 @@
       "desc": "既存スキルに --note 記録指示追加",
       "status": "done"
     }
-  ]
+  ],
+  "reviewCount": {
+    "spec": 6,
+    "test": 0,
+    "impl": 0
+  },
+  "redoCount": 0,
+  "metrics": {
+    "draft": {
+      "question": 1
+    }
+  }
 }

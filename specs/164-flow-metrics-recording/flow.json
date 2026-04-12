@@ -189,5 +189,12 @@
     "summary": {
       "unit": 2
     }
-  }
+  },
+  "reviewCount": {
+    "spec": 4,
+    "test": 0,
+    "impl": 0
+  },
+  "redoCount": 71,
+  "requestChars": 21
 }

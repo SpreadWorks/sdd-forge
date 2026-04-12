@@ -128,10 +128,18 @@
       "issueLog": 1
     },
     "draft": {
-      "srcRead": 1
+      "srcRead": 1,
+      "question": 1
     },
     "impl": {
       "srcRead": 1
     }
-  }
+  },
+  "reviewCount": {
+    "spec": 4,
+    "test": 0,
+    "impl": 0
+  },
+  "redoCount": 5,
+  "requestChars": 37
 }

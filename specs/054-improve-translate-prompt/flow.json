@@ -61,5 +61,16 @@
       "desc": "呼び出し元から documentStyle を渡す",
       "status": "done"
     }
-  ]
+  ],
+  "reviewCount": {
+    "spec": 0,
+    "test": 0,
+    "impl": 0
+  },
+  "redoCount": 0,
+  "metrics": {
+    "draft": {
+      "question": 1
+    }
+  }
 }

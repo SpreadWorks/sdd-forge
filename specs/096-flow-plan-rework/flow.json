@@ -138,5 +138,17 @@
     "draft: 全skillテンプレートのコマンドを新体系(flow get/set/run)に一括置換",
     "draft: specs/<spec>/tests のディレクトリ作成・テスト実行の仕組みを本スコープに含める。CLIコマンドは不要、skill指示+規約で実現",
     "draft: plan.test-mode選択肢変更→テストコード作成する/作成しない/その他"
-  ]
+  ],
+  "reviewCount": {
+    "spec": 5,
+    "test": 0,
+    "impl": 0
+  },
+  "redoCount": 0,
+  "metrics": {
+    "draft": {
+      "question": 1
+    }
+  },
+  "requestChars": 90
 }

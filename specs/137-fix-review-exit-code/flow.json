@@ -128,7 +128,8 @@
       "issueLog": 1
     },
     "draft": {
-      "srcRead": 3
+      "srcRead": 3,
+      "question": 1
     },
     "impl": {
       "issueLog": 1
@@ -139,5 +140,12 @@
   },
   "notes": [
     "gate-draft: PASS on 3rd attempt (format issues)"
-  ]
+  ],
+  "reviewCount": {
+    "spec": 3,
+    "test": 0,
+    "impl": 0
+  },
+  "redoCount": 2,
+  "requestChars": 62
 }

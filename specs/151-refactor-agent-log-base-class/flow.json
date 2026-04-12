@@ -133,10 +133,20 @@
     "impl": {
       "srcRead": 1,
       "issueLog": 1
+    },
+    "draft": {
+      "question": 1
     }
   },
   "notes": [
     "draft: autoApprove self-Q&A completed, 7 categories covered",
     "approval: autoApprove, gate passed all 15 checks"
-  ]
+  ],
+  "reviewCount": {
+    "spec": 6,
+    "test": 0,
+    "impl": 0
+  },
+  "redoCount": 2,
+  "requestChars": 33
 }

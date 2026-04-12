@@ -157,5 +157,12 @@
     "second note",
     "new note"
   ],
-  "autoApprove": true
+  "autoApprove": true,
+  "reviewCount": {
+    "spec": 4,
+    "test": 0,
+    "impl": 0
+  },
+  "redoCount": 3,
+  "requestChars": 21
 }

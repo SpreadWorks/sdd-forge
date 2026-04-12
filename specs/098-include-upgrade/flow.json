@@ -139,5 +139,17 @@
     "draft: resolveIncludes()はthrowのみ。process.exitは呼ばない。親側(upgrade.js)でキャッチ・制御",
     "draft: include仕組み+実際のskillテンプレート切り出しを両方やる",
     "review: SKILL.en.md/ja.mdをSKILL.md 1本に統一。config.lang翻訳指示方式に変更"
-  ]
+  ],
+  "reviewCount": {
+    "spec": 4,
+    "test": 0,
+    "impl": 0
+  },
+  "redoCount": 0,
+  "metrics": {
+    "draft": {
+      "question": 1
+    }
+  },
+  "requestChars": 59
 }

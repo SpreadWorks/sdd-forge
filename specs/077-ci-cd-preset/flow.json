@@ -4,5 +4,17 @@
   "featureBranch": "feature/077-ci-cd-preset",
   "worktree": true,
   "request": "I4: CI/CD プリセットを新設。.github/workflows/*.yml 等の CI 設定を scan し ci_cd.md 章を生成する",
-  "status": "archived"
+  "status": "archived",
+  "reviewCount": {
+    "spec": 0,
+    "test": 0,
+    "impl": 0
+  },
+  "redoCount": 0,
+  "metrics": {
+    "draft": {
+      "question": 1
+    }
+  },
+  "requestChars": 75
 }

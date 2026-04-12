@@ -140,5 +140,12 @@
       "srcRead": 2,
       "issueLog": 1
     }
-  }
+  },
+  "reviewCount": {
+    "spec": 5,
+    "test": 0,
+    "impl": 0
+  },
+  "redoCount": 6,
+  "requestChars": 63
 }

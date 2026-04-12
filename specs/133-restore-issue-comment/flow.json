@@ -122,5 +122,12 @@
     "approach: Q&A → spec. work-env: worktree from main. issue comment: report.text をそのまま投稿（旧コード復元）",
     "review: auto-fix mode selected",
     "finalize: all mode selected"
-  ]
+  ],
+  "reviewCount": {
+    "spec": 4,
+    "test": 0,
+    "impl": 0
+  },
+  "redoCount": 0,
+  "requestChars": 28
 }

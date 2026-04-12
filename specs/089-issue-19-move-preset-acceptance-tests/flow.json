@@ -130,5 +130,17 @@
     "review: applied approved proposals 1,2,4 and re-ran follow-up tests (report.test, parent-chain.test, acceptance run node, preset nonexistent)",
     "finalize: run all steps"
   ],
-  "request": "$sdd-forge.flow-plan issue #19 の対応を進めてください。"
+  "request": "$sdd-forge.flow-plan issue #19 の対応を進めてください。",
+  "reviewCount": {
+    "spec": 4,
+    "test": 0,
+    "impl": 0
+  },
+  "redoCount": 0,
+  "metrics": {
+    "draft": {
+      "question": 9
+    }
+  },
+  "requestChars": 43
 }

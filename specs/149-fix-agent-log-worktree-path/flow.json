@@ -125,5 +125,12 @@
     "Q2: resolveLogDir 内で isInsideWorktree/getMainRepoPath を使って自動解決",
     "Q3: getMainRepoPath 失敗時は throw して終了（ログ書き込み不可は致命的エラー扱い）",
     "review: auto-fix"
-  ]
+  ],
+  "reviewCount": {
+    "spec": 3,
+    "test": 0,
+    "impl": 0
+  },
+  "redoCount": 2,
+  "requestChars": 38
 }

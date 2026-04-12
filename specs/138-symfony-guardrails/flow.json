@@ -153,5 +153,12 @@
     "draft: ユーザー承認。Symfony 34件新規 + coding-rule 2件新規 + phases.js review追加 + NOTICE",
     "review: コードレビュー+自動修正を選択",
     "finalize: mode=all を選択"
-  ]
+  ],
+  "reviewCount": {
+    "spec": 4,
+    "test": 0,
+    "impl": 0
+  },
+  "redoCount": 1,
+  "requestChars": 202
 }

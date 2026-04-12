@@ -179,5 +179,12 @@
       "responseChars": 2951
     }
   },
-  "autoApprove": true
+  "autoApprove": true,
+  "reviewCount": {
+    "spec": 5,
+    "test": 0,
+    "impl": 0
+  },
+  "redoCount": 14,
+  "requestChars": 22
 }

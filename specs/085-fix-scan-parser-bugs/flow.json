@@ -127,5 +127,17 @@
     "bug3-symfony: business_logic.md に model-relations ブロック override 追加",
     "review: #1 parseAliasMap共通化, #2 withMiddleware事前チェック削除, #4 filterResourceActions抽出を適用",
     "merge: PR route"
-  ]
+  ],
+  "reviewCount": {
+    "spec": 6,
+    "test": 0,
+    "impl": 0
+  },
+  "redoCount": 0,
+  "metrics": {
+    "draft": {
+      "question": 1
+    }
+  },
+  "requestChars": 100
 }

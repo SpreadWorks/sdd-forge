@@ -113,5 +113,17 @@
   "notes": [
     "approach: direct spec, worktree from development, autoApprove",
     "finalize: autoApprove all mode"
-  ]
+  ],
+  "reviewCount": {
+    "spec": 1,
+    "test": 0,
+    "impl": 0
+  },
+  "redoCount": 0,
+  "metrics": {
+    "draft": {
+      "question": 1
+    }
+  },
+  "requestChars": 101
 }

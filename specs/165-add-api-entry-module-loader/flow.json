@@ -166,5 +166,12 @@
     "first note",
     "second note",
     "new note"
-  ]
+  ],
+  "reviewCount": {
+    "spec": 5,
+    "test": 0,
+    "impl": 0
+  },
+  "redoCount": 8,
+  "requestChars": 21
 }

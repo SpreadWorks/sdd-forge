@@ -110,5 +110,17 @@
     "draft: self-Q&A完了。run/review.jsのSDD_WORK_ROOT override削除が修正方針",
     "review: skipped - this is the exact bug being fixed (flow run review fails in worktree mode)"
   ],
-  "autoApprove": true
+  "autoApprove": true,
+  "reviewCount": {
+    "spec": 0,
+    "test": 0,
+    "impl": 0
+  },
+  "redoCount": 0,
+  "metrics": {
+    "draft": {
+      "question": 1
+    }
+  },
+  "requestChars": 89
 }

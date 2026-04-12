@@ -131,10 +131,18 @@
       "docsRead": 2
     },
     "draft": {
-      "srcRead": 2
+      "srcRead": 2,
+      "question": 1
     },
     "impl": {
       "issueLog": 1
     }
-  }
+  },
+  "reviewCount": {
+    "spec": 4,
+    "test": 0,
+    "impl": 0
+  },
+  "redoCount": 1,
+  "requestChars": 78
 }

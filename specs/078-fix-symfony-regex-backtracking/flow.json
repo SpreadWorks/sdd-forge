@@ -4,5 +4,17 @@
   "featureBranch": "feature/078-fix-symfony-regex-backtracking",
   "worktree": true,
   "request": "GitHub Issue #1: fix catastrophic backtracking in symfony scan regex",
-  "status": "archived"
+  "status": "archived",
+  "reviewCount": {
+    "spec": 0,
+    "test": 0,
+    "impl": 0
+  },
+  "redoCount": 0,
+  "metrics": {
+    "draft": {
+      "question": 1
+    }
+  },
+  "requestChars": 68
 }

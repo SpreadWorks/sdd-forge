@@ -113,6 +113,16 @@
   "metrics": {
     "spec": {
       "srcRead": 1
+    },
+    "draft": {
+      "question": 1
     }
-  }
+  },
+  "reviewCount": {
+    "spec": 1,
+    "test": 0,
+    "impl": 0
+  },
+  "redoCount": 0,
+  "requestChars": 123
 }

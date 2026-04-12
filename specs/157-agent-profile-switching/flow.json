@@ -172,5 +172,12 @@
     "draft Q4: ビルトインプロバイダーは claude/opus, claude/sonnet, codex/gpt-5.4, codex/gpt-5.3 の4つ",
     "draft Q5: 旧フィールド（agent.commands, provider.profiles）は黙って無視する（alpha ポリシー）"
   ],
-  "autoApprove": true
+  "autoApprove": true,
+  "reviewCount": {
+    "spec": 5,
+    "test": 0,
+    "impl": 0
+  },
+  "redoCount": 19,
+  "requestChars": 84
 }

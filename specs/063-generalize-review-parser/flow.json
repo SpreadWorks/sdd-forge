@@ -97,5 +97,17 @@
   "request": "review-parser の汎用化: CakePHP ハードコードされたファイルパスをプリセット側に移動し、全プリセットで forge local モードを機能させる",
   "notes": [
     "draft: 死んだコード(patchGeneratedForMisses, parseReviewMisses等)を削除。forge.jsのmissesパッチブロックも除去。summarizeReview, parseFileResults, extractNeedsInputは残す"
-  ]
+  ],
+  "reviewCount": {
+    "spec": 0,
+    "test": 0,
+    "impl": 0
+  },
+  "redoCount": 0,
+  "metrics": {
+    "draft": {
+      "question": 1
+    }
+  },
+  "requestChars": 84
 }

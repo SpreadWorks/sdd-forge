@@ -147,5 +147,17 @@
     "draft: finalize.mode のchoiceにdescription追加。prompt.jsを更新",
     "draft: merge/cleanupの分岐判断をCLI側(flow run merge/cleanup)に寄せる。skillは結果を使って次の行動を決めるだけ",
     "draft: prompt更新 impl.review-mode(自動改善/レビューのみ/しない), impl.confirmation(承認/概要/詳細/その他), finalize.mode(description追加)"
-  ]
+  ],
+  "reviewCount": {
+    "spec": 3,
+    "test": 0,
+    "impl": 0
+  },
+  "redoCount": 0,
+  "metrics": {
+    "draft": {
+      "question": 1
+    }
+  },
+  "requestChars": 107
 }

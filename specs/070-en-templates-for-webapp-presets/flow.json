@@ -101,5 +101,17 @@
     "draft: 4テスト観点で合意。aiFilterChapters に export 追加してユニットテスト可能にする",
     "docs-update: skipped by user",
     "docs-review: skipped by user"
-  ]
+  ],
+  "reviewCount": {
+    "spec": 0,
+    "test": 0,
+    "impl": 0
+  },
+  "redoCount": 0,
+  "metrics": {
+    "draft": {
+      "question": 1
+    }
+  },
+  "requestChars": 91
 }

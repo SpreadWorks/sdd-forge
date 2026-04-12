@@ -198,5 +198,12 @@
       "callCount": 2,
       "responseChars": 2984
     }
-  }
+  },
+  "reviewCount": {
+    "spec": 3,
+    "test": 0,
+    "impl": 0
+  },
+  "redoCount": 13,
+  "requestChars": 23
 }

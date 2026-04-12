@@ -114,5 +114,12 @@
     "draft: enrich失敗ダンプを.tmp/(agent.workDir)に移動",
     "draft: agent.workDirをtemp用に使う。新設定は追加しない",
     "draft: 既存ファイルのクリーンアップはしない。新規分のみ.tmp/に書く"
-  ]
+  ],
+  "reviewCount": {
+    "spec": 0,
+    "test": 0,
+    "impl": 0
+  },
+  "redoCount": 0,
+  "requestChars": 38
 }

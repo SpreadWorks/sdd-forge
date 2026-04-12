@@ -119,11 +119,19 @@
       "docsRead": 1
     },
     "draft": {
-      "srcRead": 1
+      "srcRead": 1,
+      "question": 1
     },
     "impl": {
       "srcRead": 1,
       "issueLog": 1
     }
-  }
+  },
+  "reviewCount": {
+    "spec": 1,
+    "test": 0,
+    "impl": 0
+  },
+  "redoCount": 2,
+  "requestChars": 33
 }

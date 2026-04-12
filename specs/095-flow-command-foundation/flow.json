@@ -171,5 +171,17 @@
     "draft: envelope は warnings なし。errors[{level:warn|fatal,code,messages}] で統一。元資料の warnings は level:warn に吸収",
     "draft: spec init/gate/guardrail show のロジックを flow/ に移動。spec コマンドは廃止",
     "draft: spec guardrail show のみ flow get guardrail に移動。spec guardrail init/update は残す。spec コマンド全体の整理は別途"
-  ]
+  ],
+  "reviewCount": {
+    "spec": 4,
+    "test": 0,
+    "impl": 0
+  },
+  "redoCount": 0,
+  "metrics": {
+    "draft": {
+      "question": 1
+    }
+  },
+  "requestChars": 75
 }

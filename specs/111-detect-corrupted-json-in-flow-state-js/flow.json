@@ -97,5 +97,17 @@
   "worktree": true,
   "issue": 46,
   "request": "Issue #46: flow-state.js の JSON 破損検出",
-  "autoApprove": true
+  "autoApprove": true,
+  "reviewCount": {
+    "spec": 0,
+    "test": 0,
+    "impl": 0
+  },
+  "redoCount": 0,
+  "metrics": {
+    "draft": {
+      "question": 1
+    }
+  },
+  "requestChars": 36
 }

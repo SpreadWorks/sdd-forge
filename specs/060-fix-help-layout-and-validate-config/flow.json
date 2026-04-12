@@ -97,5 +97,16 @@
       "desc": "テスト修正",
       "status": "done"
     }
-  ]
+  ],
+  "reviewCount": {
+    "spec": 5,
+    "test": 0,
+    "impl": 0
+  },
+  "redoCount": 0,
+  "metrics": {
+    "draft": {
+      "question": 1
+    }
+  }
 }

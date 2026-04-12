@@ -138,5 +138,12 @@
       "redo": 1
     }
   },
-  "autoApprove": true
+  "autoApprove": true,
+  "reviewCount": {
+    "spec": 1,
+    "test": 0,
+    "impl": 0
+  },
+  "redoCount": 0,
+  "requestChars": 52
 }

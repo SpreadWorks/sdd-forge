@@ -136,5 +136,12 @@
       "docsRead": 1,
       "question": 3
     }
-  }
+  },
+  "reviewCount": {
+    "spec": 3,
+    "test": 0,
+    "impl": 0
+  },
+  "redoCount": 0,
+  "requestChars": 165
 }

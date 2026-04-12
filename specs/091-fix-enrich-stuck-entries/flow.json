@@ -140,5 +140,17 @@
     "review: flow review は agent 設定失敗のため未使用、ローカルレビューで1件修正し関連テスト再実行",
     "finalize: 個別選択で commit, merge, branch-cleanup, record を実行。merge 方式は merge"
   ],
-  "request": "issue #21の対応を進めてください。AIがスキップしたエントリが永遠にunenrichedのまま残るバグと空レスポンス時のリトライを計画する。"
+  "request": "issue #21の対応を進めてください。AIがスキップしたエントリが永遠にunenrichedのまま残るバグと空レスポンス時のリトライを計画する。",
+  "reviewCount": {
+    "spec": 0,
+    "test": 0,
+    "impl": 0
+  },
+  "redoCount": 0,
+  "metrics": {
+    "draft": {
+      "question": 6
+    }
+  },
+  "requestChars": 74
 }

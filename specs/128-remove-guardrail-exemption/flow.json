@@ -108,7 +108,15 @@
   "autoApprove": true,
   "metrics": {
     "draft": {
-      "srcRead": 1
+      "srcRead": 1,
+      "question": 1
     }
-  }
+  },
+  "reviewCount": {
+    "spec": 4,
+    "test": 0,
+    "impl": 0
+  },
+  "redoCount": 0,
+  "requestChars": 46
 }

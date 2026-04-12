@@ -100,5 +100,17 @@
   "issue": 92,
   "request": "DataSource の parse() と analyze*() で重複するパースロジックを共有ヘルパーに抽出する",
   "worktree": true,
-  "autoApprove": true
+  "autoApprove": true,
+  "reviewCount": {
+    "spec": 0,
+    "test": 0,
+    "impl": 0
+  },
+  "redoCount": 3,
+  "metrics": {
+    "draft": {
+      "question": 4
+    }
+  },
+  "requestChars": 58
 }

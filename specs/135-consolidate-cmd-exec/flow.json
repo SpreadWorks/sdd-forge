@@ -155,9 +155,19 @@
     },
     "impl": {
       "issueLog": 2
+    },
+    "draft": {
+      "question": 1
     }
   },
   "notes": [
     "draft: Issue #80 の提案をそのまま採用。runCmd/runCmdAsync/runCmdStreaming の3ヘルパー + git-helpers.js への集約"
-  ]
+  ],
+  "reviewCount": {
+    "spec": 6,
+    "test": 0,
+    "impl": 0
+  },
+  "redoCount": 2,
+  "requestChars": 72
 }

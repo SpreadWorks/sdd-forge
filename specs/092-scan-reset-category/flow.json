@@ -136,5 +136,17 @@
   "notes": [
     "draft: --reset option name, hash-only clear, no scan execution, argv detection",
     "draft: normalization layer out of scope (board 83f6), enrich skip uses enrich.processedAt not summary"
-  ]
+  ],
+  "reviewCount": {
+    "spec": 4,
+    "test": 0,
+    "impl": 0
+  },
+  "redoCount": 0,
+  "metrics": {
+    "draft": {
+      "question": 1
+    }
+  },
+  "requestChars": 60
 }

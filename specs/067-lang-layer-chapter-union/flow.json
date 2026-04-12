@@ -106,5 +106,17 @@
       "status": "done"
     }
   ],
-  "request": "lang 層の chapters を parent チェーンの chapters と union マージし、テンプレート合成を自動化する"
+  "request": "lang 層の chapters を parent チェーンの chapters と union マージし、テンプレート合成を自動化する",
+  "reviewCount": {
+    "spec": 1,
+    "test": 0,
+    "impl": 0
+  },
+  "redoCount": 0,
+  "metrics": {
+    "draft": {
+      "question": 1
+    }
+  },
+  "requestChars": 68
 }

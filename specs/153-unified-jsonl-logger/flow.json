@@ -168,5 +168,12 @@
     "cfg.logs.dir は維持。cfg.logs.prompts → cfg.logs.enabled に rename",
     "command フィールドと extractCommandFromStack 廃止。entryCommand + callerFile/callerLine のみ",
     "test: Logger 単体 + callAgent* 回帰 + e2e (flow run gate で JSONL/プロンプトファイル生成確認)"
-  ]
+  ],
+  "reviewCount": {
+    "spec": 5,
+    "test": 0,
+    "impl": 0
+  },
+  "redoCount": 7,
+  "requestChars": 44
 }
