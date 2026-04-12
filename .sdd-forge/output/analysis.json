@@ -1,5 +1,5 @@
 {
-  "analyzedAt": "2026-04-10T14:32:52.657Z",
+  "analyzedAt": "2026-04-12T14:50:58.644Z",
   "package": {
     "entries": [
       {
@@ -3057,7 +3057,7 @@
         "usedBy": null,
         "id": "862e7d08",
         "enrich": {
-          "attempts": 2
+          "attempts": 3
         }
       },
       {
@@ -3090,7 +3090,7 @@
         "usedBy": null,
         "id": "d4e97204",
         "enrich": {
-          "attempts": 2
+          "attempts": 3
         }
       },
       {
@@ -3116,7 +3116,7 @@
         "usedBy": null,
         "id": "6cc87b22",
         "enrich": {
-          "attempts": 2
+          "attempts": 3
         }
       },
       {
@@ -3137,7 +3137,7 @@
         "usedBy": null,
         "id": "2c71e989",
         "enrich": {
-          "attempts": 2
+          "attempts": 3
         }
       },
       {
@@ -3170,7 +3170,7 @@
         ],
         "id": "65ac9e4f",
         "enrich": {
-          "attempts": 2
+          "attempts": 3
         }
       },
       {
@@ -3191,7 +3191,7 @@
         "usedBy": null,
         "id": "c3865b58",
         "enrich": {
-          "attempts": 2
+          "attempts": 3
         }
       },
       {
@@ -3213,7 +3213,7 @@
         "usedBy": null,
         "id": "40d93087",
         "enrich": {
-          "attempts": 2
+          "attempts": 3
         }
       },
       {
@@ -3234,7 +3234,7 @@
         "usedBy": null,
         "id": "7c2ef03f",
         "enrich": {
-          "attempts": 2
+          "attempts": 3
         }
       },
       {
@@ -3255,7 +3255,7 @@
         "usedBy": null,
         "id": "6dd22e12",
         "enrich": {
-          "attempts": 2
+          "attempts": 3
         }
       },
       {
@@ -3276,7 +3276,7 @@
         "usedBy": null,
         "id": "546ef334",
         "enrich": {
-          "attempts": 2
+          "attempts": 3
         }
       },
       {
@@ -3298,7 +3298,7 @@
         "usedBy": null,
         "id": "d4cb8d93",
         "enrich": {
-          "attempts": 2
+          "attempts": 3
         }
       },
       {
@@ -3319,7 +3319,7 @@
         "usedBy": null,
         "id": "f62c866f",
         "enrich": {
-          "attempts": 2
+          "attempts": 3
         }
       },
       {
@@ -3340,7 +3340,7 @@
         "usedBy": null,
         "id": "962cab89",
         "enrich": {
-          "attempts": 2
+          "attempts": 3
         }
       },
       {
@@ -3370,7 +3370,7 @@
         ],
         "id": "d64f4095",
         "enrich": {
-          "attempts": 2
+          "attempts": 3
         }
       },
       {
@@ -3395,7 +3395,7 @@
         "usedBy": null,
         "id": "4ac07fa0",
         "enrich": {
-          "attempts": 1
+          "attempts": 2
         }
       },
       {
@@ -3470,7 +3470,7 @@
         ],
         "id": "13ddf392",
         "enrich": {
-          "attempts": 2
+          "attempts": 3
         }
       },
       {
@@ -3496,7 +3496,7 @@
         ],
         "id": "9f3f55f7",
         "enrich": {
-          "attempts": 2
+          "attempts": 3
         }
       },
       {
@@ -3548,7 +3548,7 @@
         ],
         "id": "f351ecc4",
         "enrich": {
-          "attempts": 2
+          "attempts": 3
         }
       },
       {
@@ -3599,7 +3599,7 @@
         ],
         "id": "dff6e5b4",
         "enrich": {
-          "attempts": 2
+          "attempts": 3
         }
       },
       {
@@ -3629,7 +3629,7 @@
         ],
         "id": "5c7afa99",
         "enrich": {
-          "attempts": 2
+          "attempts": 3
         }
       },
       {
@@ -3658,7 +3658,7 @@
         ],
         "id": "82a3b684",
         "enrich": {
-          "attempts": 2
+          "attempts": 3
         }
       },
       {
@@ -3686,7 +3686,7 @@
         ],
         "id": "4f01cb50",
         "enrich": {
-          "attempts": 2
+          "attempts": 3
         }
       },
       {
@@ -3771,7 +3771,7 @@
         ],
         "id": "5bb0bb76",
         "enrich": {
-          "attempts": 2
+          "attempts": 3
         }
       },
       {
@@ -3792,7 +3792,7 @@
         "usedBy": null,
         "id": "994720ab",
         "enrich": {
-          "attempts": 2
+          "attempts": 3
         }
       },
       {
@@ -3826,7 +3826,7 @@
         "usedBy": null,
         "id": "61b28e9c",
         "enrich": {
-          "attempts": 2
+          "attempts": 3
         }
       },
       {
@@ -3865,7 +3865,7 @@
         ],
         "id": "bb462f4e",
         "enrich": {
-          "attempts": 2
+          "attempts": 3
         }
       },
       {
@@ -3910,7 +3910,7 @@
         ],
         "id": "45a1457c",
         "enrich": {
-          "attempts": 2
+          "attempts": 3
         }
       },
       {
@@ -3936,7 +3936,7 @@
         ],
         "id": "d35107ed",
         "enrich": {
-          "attempts": 2
+          "attempts": 3
         }
       },
       {
@@ -3961,7 +3961,7 @@
         "usedBy": null,
         "id": "a2f5875b",
         "enrich": {
-          "attempts": 2
+          "attempts": 3
         }
       },
       {
@@ -3992,7 +3992,7 @@
         "usedBy": null,
         "id": "aa4a324d",
         "enrich": {
-          "attempts": 2
+          "attempts": 3
         }
       },
       {
@@ -4031,7 +4031,7 @@
         ],
         "id": "3d7bb5e6",
         "enrich": {
-          "attempts": 2
+          "attempts": 3
         }
       },
       {
@@ -4056,7 +4056,7 @@
         ],
         "id": "9a04a164",
         "enrich": {
-          "attempts": 2
+          "attempts": 3
         }
       },
       {
@@ -4099,7 +4099,7 @@
         ],
         "id": "ae76d513",
         "enrich": {
-          "attempts": 2
+          "attempts": 3
         }
       },
       {
@@ -4133,7 +4133,7 @@
         ],
         "id": "6196b26c",
         "enrich": {
-          "attempts": 2
+          "attempts": 3
         }
       },
       {
@@ -4159,7 +4159,7 @@
         ],
         "id": "fa23a1ba",
         "enrich": {
-          "attempts": 2
+          "attempts": 3
         }
       },
       {
@@ -4195,7 +4195,7 @@
         ],
         "id": "a1344e4a",
         "enrich": {
-          "attempts": 2
+          "attempts": 3
         }
       },
       {
@@ -4223,7 +4223,7 @@
         ],
         "id": "69d5afb4",
         "enrich": {
-          "attempts": 2
+          "attempts": 3
         }
       },
       {
@@ -4245,7 +4245,7 @@
         "usedBy": null,
         "id": "bc582fbf",
         "enrich": {
-          "attempts": 2
+          "attempts": 3
         }
       },
       {
@@ -4265,14 +4265,14 @@
         "usedBy": null,
         "id": "0230d610",
         "enrich": {
-          "attempts": 1
+          "attempts": 2
         }
       },
       {
         "file": "src/metrics/commands/token.js",
-        "hash": "2a97ea528c223ed2eda70761b8209f15",
-        "lines": 289,
-        "mtime": "2026-04-10T14:32:52.372Z",
+        "hash": "b0e1466a7fb119ff320e0d1b084dd537",
+        "lines": 420,
+        "mtime": "2026-04-12T14:50:58.313Z",
         "className": "token",
         "methods": [
           "formatUsage",
@@ -4291,6 +4291,15 @@
           "isCacheFresh",
           "toRowKey",
           "createEmptyRow",
+          "safeReadJson",
+          "countFilesRecursive",
+          "sumReviewCount",
+          "computeRequirementCount",
+          "computeRequestChars",
+          "clamp",
+          "normalizeToHundred",
+          "average",
+          "computeSpecDifficulty",
           "buildRows",
           "readCacheRows",
           "writeCache",
@@ -4307,23 +4316,23 @@
         "extends": null,
         "usedBy": null,
         "id": "59edeaf2",
-        "summary": "Implements the `sdd-forge metrics token` CLI command to aggregate flow token metrics from `specs/**/flow.json` files. It supports text, JSON, and CSV output with optional date range filtering and cache reuse.",
-        "detail": "The command parses CLI flags, validates the output format, and prints usage or exits with an error code when arguments are invalid. It recursively scans the specs tree for `flow.json` files with a hard upper bound to prevent runaway traversal. Metrics are normalized into per-day, per-phase rows, with numeric-safe accumulation and deterministic sorting for stable output. A cache file under `.sdd-forge/output/metrics.json` is read when fresh and rewritten after recomputation to avoid unnecessary parsing work. Rendering is separated by formatter functions for text, JSON, and CSV so presentation stays isolated from aggregation logic.",
+        "summary": "Implements the `sdd-forge metrics token` CLI command to aggregate per-day and per-phase token and quality metrics from `flow.json` files. It supports text, JSON, and CSV output with cache-aware execution for faster repeated runs.",
+        "detail": "The command parses CLI options, validates format arguments, resolves repository paths, and emits standardized usage and exit behavior. It recursively scans `specs/*` for `flow.json` files with an upper-bound safety limit, then computes normalized metrics such as token totals, requirement counts, review counts, request length, and a derived spec difficulty score. Difficulty is estimated from multiple signals (spec length, requirement volume, test file count, issue history) and adjusted by precision controls with clamped bounds. Rows are keyed by phase and UTC date, merged through accumulator helpers, sorted deterministically, and optionally reused from a freshness-checked cache in `.sdd-forge/output/metrics.json` before rendering to the selected output format.",
         "chapter": "cli_commands",
         "role": "cli",
         "enrich": {
-          "processedAt": "2026-04-10T14:33:16.533Z",
+          "processedAt": "2026-04-12T14:51:17.029Z",
           "attempts": 1
         },
         "keywords": [
-          "token metrics",
           "CLI command",
-          "flow.json scan",
+          "metrics aggregation",
+          "token analytics",
+          "flow.json parsing",
           "cache freshness",
-          "date range filter",
-          "CSV export",
-          "JSON output",
-          "aggregation"
+          "CSV JSON text output",
+          "spec difficulty scoring",
+          "phase daily rollup"
         ]
       },
       {
@@ -7391,9 +7400,9 @@
     ],
     "summary": {
       "total": 234,
-      "totalMethods": 766
+      "totalMethods": 775
     },
     "dataSourceHash": "7d725e75d5031be445119323e4947c91"
   },
-  "enrichedAt": "2026-04-10T14:35:19.400Z"
+  "enrichedAt": "2026-04-12T14:53:01.942Z"
 }
