@@ -15,7 +15,7 @@
 import fs from "fs";
 import path from "path";
 import { runIfDirect } from "./lib/entrypoint.js";
-import { repoRoot, parseArgs } from "./lib/cli.js";
+import { repoRoot, parseArgs, PKG_DIR } from "./lib/cli.js";
 import { EXIT_ERROR } from "./lib/exit-codes.js";
 import { loadConfig, sddConfigPath } from "./lib/config.js";
 import { translate } from "./lib/i18n.js";
@@ -88,7 +88,7 @@ async function main() {
 
   // 1b. Experimental skills (opt-in via config flags)
   if (config.experimental?.workflow?.enable === true) {
-    const expDir = path.join(root, "experimental", "workflow", "templates", "skills");
+    const expDir = path.join(PKG_DIR, "..", "experimental", "workflow", "templates", "skills");
     validTemplatesDirs.push(expDir);
     const expResults = deployProjectSkills(root, expDir, config.lang, { dryRun });
     logSkillResults(expResults);

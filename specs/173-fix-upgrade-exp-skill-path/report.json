@@ -1,0 +1,42 @@
+{
+  "data": {
+    "implementation": {
+      "diffStat": "specs/173-fix-upgrade-exp-skill-path/draft.md      |  33 +++++\n specs/173-fix-upgrade-exp-skill-path/flow.json     | 164 +++++++++++++++++++++\n .../173-fix-upgrade-exp-skill-path/issue-log.json  |  29 ++++\n specs/173-fix-upgrade-exp-skill-path/qa.md         |   9 ++\n specs/173-fix-upgrade-exp-skill-path/review.md     |  41 ++++++\n specs/173-fix-upgrade-exp-skill-path/spec.md       |  58 ++++++++\n .../173-fix-upgrade-exp-skill-path/tests/README.md |  21 +++\n .../tests/exp-skill-path.test.js                   |  38 +++++\n src/upgrade.js                                     |   4 +-\n 9 files changed, 395 insertions(+), 2 deletions(-)",
+      "commits": [
+        "feat: feature/173-fix-upgrade-exp-skill-path"
+      ]
+    },
+    "retro": {
+      "total": 2,
+      "done": 2,
+      "partial": 0,
+      "not_done": 0,
+      "rate": 1,
+      "notes": "要求された2要件はコード差分上で満たされている。実装本体は src/upgrade.js の最小変更で、追加差分の大半は仕様運用用ドキュメントと spec テスト。"
+    },
+    "issueLog": {
+      "count": 0,
+      "entries": []
+    },
+    "metrics": {
+      "docsRead": 0,
+      "srcRead": 2,
+      "question": 2,
+      "issueLog": 1
+    },
+    "tokenMetrics": {
+      "input": 34181,
+      "output": 2230,
+      "cacheRead": 30760,
+      "cacheCreation": 19406,
+      "cost": 0.0973089,
+      "callCount": 5
+    },
+    "tests": null,
+    "sync": {
+      "status": "skipped",
+      "reason": "sync was skipped"
+    }
+  },
+  "text": "  Report\n\n  Implementation\n  ────────────────────────────────────────────────\n    feat: feature/173-fix-upgrade-exp-skill-path\n    9 files changed, 395 insertions(+), 2 deletions(-)\n\n  Retro\n  ────────────────────────────────────────────────\n    ████████ 100%  (2 done / 0 partial / 0 miss)\n\n  Metrics\n  ────────────────────────────────────────────────\n    docs read ................... 0\n    src read .................... 2\n    Q&A ......................... 2\n    issue-log ................... 1\n    agent calls ................. 5\n    input tokens ................ 34,181\n    output tokens ............... 2,230\n    cache-read tokens ........... 30,760\n    cache-create tokens ......... 19,406\n    cost ........................ $0.0973\n\n  Tests\n  ────────────────────────────────────────────────\n    -"
+}

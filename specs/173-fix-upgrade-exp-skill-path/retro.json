@@ -1,0 +1,58 @@
+{
+  "spec": "specs/173-fix-upgrade-exp-skill-path/spec.md",
+  "date": "2026-04-13T15:15:32.801Z",
+  "requirements": [
+    {
+      "desc": "experimental スキルテンプレートパスを PKG_DIR 基準で解決する",
+      "status": "done",
+      "note": "src/upgrade.js で expDir が path.join(root, ...) から path.join(PKG_DIR, \"..\", \"experimental\", \"workflow\", \"templates\", \"skills\") に変更され、PKG_DIR 基準になっている。"
+    },
+    {
+      "desc": "通常スキルデプロイの動作に影響を与えない",
+      "status": "done",
+      "note": "変更は experimental 分岐と PKG_DIR import のみに限定され、deploySkills の実装・呼び出しには変更がない。"
+    }
+  ],
+  "unplanned": [
+    {
+      "file": "specs/173-fix-upgrade-exp-skill-path/draft.md",
+      "change": "仕様ドラフト文書を新規追加。"
+    },
+    {
+      "file": "specs/173-fix-upgrade-exp-skill-path/flow.json",
+      "change": "フロー状態・要件管理用JSONを新規追加。"
+    },
+    {
+      "file": "specs/173-fix-upgrade-exp-skill-path/issue-log.json",
+      "change": "ゲート実行ログを新規追加。"
+    },
+    {
+      "file": "specs/173-fix-upgrade-exp-skill-path/qa.md",
+      "change": "Q&Aテンプレート文書を新規追加。"
+    },
+    {
+      "file": "specs/173-fix-upgrade-exp-skill-path/review.md",
+      "change": "レビュー記録文書を新規追加。"
+    },
+    {
+      "file": "specs/173-fix-upgrade-exp-skill-path/spec.md",
+      "change": "機能仕様文書を新規追加。"
+    },
+    {
+      "file": "specs/173-fix-upgrade-exp-skill-path/tests/README.md",
+      "change": "specテスト説明文書を新規追加。"
+    },
+    {
+      "file": "specs/173-fix-upgrade-exp-skill-path/tests/exp-skill-path.test.js",
+      "change": "expDir と PKG_DIR 利用を検証する spec テストを新規追加。"
+    }
+  ],
+  "summary": {
+    "total": 2,
+    "done": 2,
+    "partial": 0,
+    "not_done": 0,
+    "rate": 1,
+    "notes": "要求された2要件はコード差分上で満たされている。実装本体は src/upgrade.js の最小変更で、追加差分の大半は仕様運用用ドキュメントと spec テスト。"
+  }
+}

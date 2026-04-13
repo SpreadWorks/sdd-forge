@@ -1,0 +1,164 @@
+{
+  "spec": "specs/173-fix-upgrade-exp-skill-path/spec.md",
+  "baseBranch": "main",
+  "featureBranch": "feature/173-fix-upgrade-exp-skill-path",
+  "runId": "a512cfcc-ec93-461b-8128-90efe073c5f9",
+  "lifecycle": "active",
+  "steps": [
+    {
+      "id": "approach",
+      "status": "done"
+    },
+    {
+      "id": "branch",
+      "status": "done"
+    },
+    {
+      "id": "prepare-spec",
+      "status": "pending"
+    },
+    {
+      "id": "draft",
+      "status": "done"
+    },
+    {
+      "id": "gate-draft",
+      "status": "done"
+    },
+    {
+      "id": "spec",
+      "status": "done"
+    },
+    {
+      "id": "gate",
+      "status": "done"
+    },
+    {
+      "id": "approval",
+      "status": "done"
+    },
+    {
+      "id": "test",
+      "status": "done"
+    },
+    {
+      "id": "implement",
+      "status": "done"
+    },
+    {
+      "id": "gate-impl",
+      "status": "done"
+    },
+    {
+      "id": "review",
+      "status": "done"
+    },
+    {
+      "id": "finalize",
+      "status": "pending"
+    },
+    {
+      "id": "commit",
+      "status": "pending"
+    },
+    {
+      "id": "push",
+      "status": "pending"
+    },
+    {
+      "id": "merge",
+      "status": "pending"
+    },
+    {
+      "id": "pr-create",
+      "status": "pending"
+    },
+    {
+      "id": "branch-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "pr-merge",
+      "status": "pending"
+    },
+    {
+      "id": "sync-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "docs-update",
+      "status": "pending"
+    },
+    {
+      "id": "docs-review",
+      "status": "pending"
+    },
+    {
+      "id": "docs-commit",
+      "status": "pending"
+    }
+  ],
+  "requirements": [
+    {
+      "desc": "experimental スキルテンプレートパスを PKG_DIR 基準で解決する",
+      "status": "done"
+    },
+    {
+      "desc": "通常スキルデプロイの動作に影響を与えない",
+      "status": "done"
+    }
+  ],
+  "issue": 142,
+  "request": "sdd-forge upgrade で sdd-forge.exp.workflow スキルがインストールされないバグを修正。upgrade.js の experimental スキルテンプレートパスを PKG_DIR 基準に変更する。",
+  "worktree": true,
+  "metrics": {
+    "draft": {
+      "srcRead": 2,
+      "question": 2
+    },
+    "gate-draft": {
+      "tokens": {
+        "input": 2,
+        "output": 589,
+        "cacheRead": 11924,
+        "cacheCreation": 9539
+      },
+      "cost": 0.04818945000000001,
+      "callCount": 1,
+      "responseChars": 1069
+    },
+    "gate": {
+      "tokens": {
+        "input": 2,
+        "output": 569,
+        "cacheRead": 11924,
+        "cacheCreation": 9867
+      },
+      "cost": 0.049119449999999995,
+      "callCount": 1,
+      "responseChars": 1098
+    },
+    "gate-impl": {
+      "callCount": 1,
+      "responseChars": 0
+    },
+    "impl": {
+      "issueLog": 1
+    },
+    "review": {
+      "tokens": {
+        "input": 34177,
+        "output": 1072,
+        "cacheRead": 6912,
+        "cacheCreation": 0
+      },
+      "callCount": 2,
+      "responseChars": 1290
+    }
+  },
+  "notes": [
+    "draft: 影響範囲は upgrade.js:91 の1箇所のみ。PKG_DIR を import し expDir を PKG_DIR 基準に修正する方針で合意",
+    "draft: テストは specs/<spec>/tests/ に配置。expDir が PKG_DIR 基準で解決されることを検証"
+  ],
+  "autoApprove": true
+}
