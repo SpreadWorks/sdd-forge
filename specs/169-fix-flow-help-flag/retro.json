@@ -1,0 +1,59 @@
+{
+  "spec": "specs/169-fix-flow-help-flag/spec.md",
+  "date": "2026-04-13T05:35:01.358Z",
+  "requirements": [
+    {
+      "desc": "parseEntryArgs の positional-only 経路で -h/--help を検出し ctx.help=true を設定する",
+      "status": "done",
+      "note": "src/flow.js の positional-only 分岐に rawArgs から -h/--help を検出して ctx.help=true で return する処理が追加されている。"
+    },
+    {
+      "desc": "既存の positional 引数パースの動作が変わらないこと",
+      "status": "done",
+      "note": "help 検出以外の positional パース処理は維持され、通常引数時は従来の assignPositionalArgs 経路を通る。回帰確認テストも追加されている。"
+    },
+    {
+      "desc": "positional-only コマンド 11 件で --help が exit 0 + help テキスト出力",
+      "status": "done",
+      "note": "specs/169-fix-flow-help-flag/tests/help-flag.test.js で 11 コマンドすべての --help を実行し usage 出力を検証。execFileSync が例外なく完了するため exit 0 も担保される。"
+    }
+  ],
+  "unplanned": [
+    {
+      "file": "specs/169-fix-flow-help-flag/draft.md",
+      "change": "要件そのものではない設計ドラフト文書の新規追加。"
+    },
+    {
+      "file": "specs/169-fix-flow-help-flag/flow.json",
+      "change": "ワークフロー進捗・メトリクス管理ファイルの新規追加。"
+    },
+    {
+      "file": "specs/169-fix-flow-help-flag/issue-log.json",
+      "change": "実装ゲート/レビューのログ記録ファイルを追加。"
+    },
+    {
+      "file": "specs/169-fix-flow-help-flag/qa.md",
+      "change": "Q&A テンプレート文書の追加。"
+    },
+    {
+      "file": "specs/169-fix-flow-help-flag/review.md",
+      "change": "今回要件外のレビュー所見（redo/report関連含む）を記録した文書の追加。"
+    },
+    {
+      "file": "specs/169-fix-flow-help-flag/spec.md",
+      "change": "仕様書本体の新規追加（要件評価対象そのものではあるが、実装要件に直接対応するコード変更ではない）。"
+    },
+    {
+      "file": "specs/169-fix-flow-help-flag/tests/README.md",
+      "change": "テスト説明用 README の追加。"
+    }
+  ],
+  "summary": {
+    "total": 3,
+    "done": 3,
+    "partial": 0,
+    "not_done": 0,
+    "rate": 1,
+    "notes": "実装コード変更（src/flow.js）は要件1/2に整合し、追加テストで要件3の11コマンド --help 動作も検証されている。差分には要件外の仕様運用ドキュメント類が多数含まれる。"
+  }
+}

@@ -1,0 +1,24 @@
+{
+  "entries": [
+    {
+      "step": "gate-impl",
+      "reason": "positional — only 経路で `-h`/`--help` を検出し `ctx.help = true` を設定してリターン — diff の `rawArgs.some((a) => a === \"-h\" || a === \"--help\")` が正確に実装している; 既存の positional 引数パースの動作が変わらないこと — help チェックは `values = rawArgs.slice(0, positional.length)` の前に挿入されており、help フラグなし時の既存パスは変更なし; positional — only コマンド 11 件で `--help` 実行時に exit code 0 で help テキストが出力されること — diff はプロダクトコードのみ。`specs/169-fix-flow-help-flag/tests/` にテストコードが存在するか確認できず、テスト戦略で要求されたテスト配置が diff に含まれていない",
+      "trigger": "gate post hook (auto)",
+      "timestamp": "2026-04-13T05:28:59.269Z"
+    },
+    {
+      "step": "review",
+      "reason": "registry.js の redo エントリが execute を使用しており command パターンと不整合",
+      "trigger": "AI code review #1",
+      "resolution": "スコープ外のため未修正。別 spec で対応が必要",
+      "timestamp": "2026-04-13T05:31:25.459Z"
+    },
+    {
+      "step": "review",
+      "reason": "report.js のテストサマリー読み取りパスが state.metrics?.test?.summary で、setter 側の state.test.summary と不整合",
+      "trigger": "AI code review #2",
+      "resolution": "スコープ外のため未修正。別 spec で対応が必要",
+      "timestamp": "2026-04-13T05:31:31.974Z"
+    }
+  ]
+}

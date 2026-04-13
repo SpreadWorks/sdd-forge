@@ -138,6 +138,11 @@ function parseEntryArgs(entry, rawArgs, ctx) {
     return;
   }
 
+  if (rawArgs.some((a) => a === "-h" || a === "--help")) {
+    ctx.help = true;
+    return;
+  }
+
   const values = rawArgs.slice(0, positional.length);
   assignPositionalArgs(ctx, positional, values);
   if (rawArgs.length > positional.length) {

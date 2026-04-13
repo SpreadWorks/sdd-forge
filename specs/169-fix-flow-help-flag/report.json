@@ -1,0 +1,42 @@
+{
+  "data": {
+    "implementation": {
+      "diffStat": "specs/169-fix-flow-help-flag/draft.md              |  58 ++++++++\n specs/169-fix-flow-help-flag/flow.json             | 148 +++++++++++++++++++++\n specs/169-fix-flow-help-flag/issue-log.json        |  24 ++++\n specs/169-fix-flow-help-flag/qa.md                 |   9 ++\n specs/169-fix-flow-help-flag/review.md             |  41 ++++++\n specs/169-fix-flow-help-flag/spec.md               |  61 +++++++++\n specs/169-fix-flow-help-flag/tests/README.md       |  21 +++\n .../169-fix-flow-help-flag/tests/help-flag.test.js | 105 +++++++++++++++\n src/flow.js                                        |   5 +\n 9 files changed, 472 insertions(+)",
+      "commits": [
+        "feat: feature/169-fix-flow-help-flag"
+      ]
+    },
+    "retro": {
+      "total": 3,
+      "done": 3,
+      "partial": 0,
+      "not_done": 0,
+      "rate": 1,
+      "notes": "実装コード変更（src/flow.js）は要件1/2に整合し、追加テストで要件3の11コマンド --help 動作も検証されている。差分には要件外の仕様運用ドキュメント類が多数含まれる。"
+    },
+    "issueLog": {
+      "count": 0,
+      "entries": []
+    },
+    "metrics": {
+      "docsRead": 2,
+      "srcRead": 3,
+      "question": 3,
+      "issueLog": 2
+    },
+    "tokenMetrics": {
+      "input": 2,
+      "output": 279,
+      "cacheRead": 11924,
+      "cacheCreation": 9606,
+      "cost": 0.0437907,
+      "callCount": 1
+    },
+    "tests": null,
+    "sync": {
+      "status": "skipped",
+      "reason": "sync was skipped"
+    }
+  },
+  "text": "  Report\n\n  Implementation\n  ────────────────────────────────────────────────\n    feat: feature/169-fix-flow-help-flag\n    9 files changed, 472 insertions(+)\n\n  Retro\n  ────────────────────────────────────────────────\n    ████████ 100%  (3 done / 0 partial / 0 miss)\n\n  Metrics\n  ────────────────────────────────────────────────\n    docs read ................... 2\n    src read .................... 3\n    Q&A ......................... 3\n    issue-log ................... 2\n    agent calls ................. 1\n    input tokens ................ 2\n    output tokens ............... 279\n    cache-read tokens ........... 11,924\n    cache-create tokens ......... 9,606\n    cost ........................ $0.0438\n\n  Tests\n  ────────────────────────────────────────────────\n    -"
+}

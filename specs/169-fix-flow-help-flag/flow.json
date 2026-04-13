@@ -1,0 +1,148 @@
+{
+  "spec": "specs/169-fix-flow-help-flag/spec.md",
+  "baseBranch": "main",
+  "featureBranch": "feature/169-fix-flow-help-flag",
+  "steps": [
+    {
+      "id": "approach",
+      "status": "done"
+    },
+    {
+      "id": "branch",
+      "status": "done"
+    },
+    {
+      "id": "prepare-spec",
+      "status": "pending"
+    },
+    {
+      "id": "draft",
+      "status": "done"
+    },
+    {
+      "id": "gate-draft",
+      "status": "done"
+    },
+    {
+      "id": "spec",
+      "status": "done"
+    },
+    {
+      "id": "gate",
+      "status": "done"
+    },
+    {
+      "id": "approval",
+      "status": "done"
+    },
+    {
+      "id": "test",
+      "status": "done"
+    },
+    {
+      "id": "implement",
+      "status": "done"
+    },
+    {
+      "id": "gate-impl",
+      "status": "done"
+    },
+    {
+      "id": "review",
+      "status": "done"
+    },
+    {
+      "id": "finalize",
+      "status": "pending"
+    },
+    {
+      "id": "commit",
+      "status": "pending"
+    },
+    {
+      "id": "push",
+      "status": "pending"
+    },
+    {
+      "id": "merge",
+      "status": "pending"
+    },
+    {
+      "id": "pr-create",
+      "status": "pending"
+    },
+    {
+      "id": "branch-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "pr-merge",
+      "status": "pending"
+    },
+    {
+      "id": "sync-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "docs-update",
+      "status": "pending"
+    },
+    {
+      "id": "docs-review",
+      "status": "pending"
+    },
+    {
+      "id": "docs-commit",
+      "status": "pending"
+    }
+  ],
+  "requirements": [
+    {
+      "desc": "parseEntryArgs の positional-only 経路で -h/--help を検出し ctx.help=true を設定する",
+      "status": "done"
+    },
+    {
+      "desc": "既存の positional 引数パースの動作が変わらないこと",
+      "status": "done"
+    },
+    {
+      "desc": "positional-only コマンド 11 件で --help が exit 0 + help テキスト出力",
+      "status": "done"
+    }
+  ],
+  "issue": 135,
+  "request": "--help",
+  "worktree": true,
+  "metrics": {
+    "plan": {
+      "docsRead": 1
+    },
+    "draft": {
+      "docsRead": 1,
+      "srcRead": 2,
+      "question": 3
+    },
+    "test": {
+      "srcRead": 1
+    },
+    "gate-impl": {
+      "tokens": {
+        "input": 2,
+        "output": 279,
+        "cacheRead": 11924,
+        "cacheCreation": 9606
+      },
+      "cost": 0.0437907,
+      "callCount": 1,
+      "responseChars": 462
+    },
+    "impl": {
+      "issueLog": 2
+    }
+  },
+  "notes": [
+    "approach: [1] Q&A → draft → spec",
+    "draft: 影響範囲は positional-only の 11 コマンド。修正箇所は parseEntryArgs L140-146 の 1 箇所",
+    "--help"
+  ]
+}
