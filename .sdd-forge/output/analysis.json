@@ -1,5 +1,5 @@
 {
-  "analyzedAt": "2026-04-13T12:50:23.141Z",
+  "analyzedAt": "2026-04-13T12:56:41.954Z",
   "package": {
     "entries": [
       {
@@ -2085,9 +2085,9 @@
       },
       {
         "file": "src/flow.js",
-        "hash": "a9e2cd5d786cc768aa019b37d6b114c1",
-        "lines": 270,
-        "mtime": "2026-04-13T05:35:02.879Z",
+        "hash": "d13894a2f1342ab707b184ca69a80a36",
+        "lines": 276,
+        "mtime": "2026-04-13T12:56:41.650Z",
         "className": "flow",
         "methods": [
           "resolveCtx",
@@ -2112,23 +2112,21 @@
         "extends": null,
         "usedBy": null,
         "id": "1ab08f2b",
-        "summary": "This module is the main CLI dispatcher for `sdd-forge flow` commands. It parses arguments, resolves execution context, and routes to registered flow entries.",
-        "detail": "The file builds a runtime context with repository paths, config, flow state, spec ID, and worktree status before command execution. It separates option parsing into helpers that split positional and non-positional arguments, validate unexpected inputs, and map values into entry arguments. Command dispatch supports grouped commands and special flows like resume and prepare-spec, then executes handlers through a shared `runEntry` path. Error handling is centralized with explicit `process.exit` and `process.exitCode` usage plus envelope-based output functions (`ok`, `fail`, `output`). The design favors a thin CLI orchestrator with most behavior delegated to registry entries and reusable library helpers.",
+        "summary": "This file is the main dispatcher for `sdd-forge flow` subcommands. It parses CLI arguments, resolves runtime context, and routes execution to registered flow commands.",
+        "detail": "The module builds a command context containing repository roots, configuration, flow state, and worktree status before dispatch. It separates no-argument and positional parsing paths, validates unknown options, and produces command-specific help links. Execution is centralized in `runEntry`, which standardizes error handling and envelope output behavior. The `dispatch` function handles special command paths like resume and prepare-spec while preserving explicit exit codes for CLI reliability.",
         "chapter": "cli_commands",
         "role": "cli",
         "enrich": {
-          "processedAt": "2026-04-13T05:35:14.534Z",
+          "processedAt": "2026-04-13T12:57:13.817Z",
           "attempts": 1
         },
         "keywords": [
           "CLI dispatcher",
           "argument parsing",
-          "command routing",
-          "flow registry",
-          "execution context",
+          "subcommand routing",
           "exit codes",
-          "option validation",
-          "command handler"
+          "command envelope",
+          "flow command runner"
         ]
       },
       {
@@ -2351,7 +2349,8 @@
           "src/flow/lib/set-request.js",
           "src/flow/lib/set-step.js",
           "src/flow/lib/set-summary.js",
-          "src/flow/lib/set-test-summary.js"
+          "src/flow/lib/set-test-summary.js",
+          "src/flow/lib/set-init.js"
         ],
         "id": "83f60bd3",
         "enrich": {
@@ -2656,11 +2655,13 @@
       },
       {
         "file": "src/flow/lib/get-status.js",
-        "hash": "328f78a71bd7ac5bec857d34d06a3321",
-        "lines": 39,
-        "mtime": "2026-04-10T06:35:13.096Z",
+        "hash": "6ee64ebb7c3f765567381a814f63cf90",
+        "lines": 66,
+        "mtime": "2026-04-13T12:56:41.650Z",
         "className": "get-status",
-        "methods": [],
+        "methods": [
+          "buildStatusOutput"
+        ],
         "imports": [
           "../../lib/flow-state.js",
           "./base-command.js"
@@ -2671,20 +2672,21 @@
         "extends": "FlowCommand",
         "usedBy": null,
         "id": "9aca938f",
-        "enrich": {
-          "processedAt": "2026-04-10T14:34:55.016Z",
-          "attempts": 2
-        },
-        "summary": "Returns high-level flow status including derived phase information. It is a status endpoint command over active state data.",
-        "detail": "The command applies phase derivation logic to flow state to report where the workflow currently sits. It emits normalized status fields suitable for scripting and UI display. Its design keeps status lookup isolated from mutating flow operations.",
+        "summary": "This file implements the flow status command as a `FlowCommand` subclass. It returns normalized status output for either an active flow or a flow resolved by run ID.",
+        "detail": "A dedicated `buildStatusOutput` function formats returned state data consistently for downstream consumers. The command supports direct run-id resolution and throws explicit domain errors when the run ID cannot be found. Without a run ID, it requires an active flow in context and fails fast if none exists. It also computes current phase information by reusing shared flow-state derivation helpers.",
         "chapter": "cli_commands",
         "role": "controller",
+        "enrich": {
+          "processedAt": "2026-04-13T12:57:13.817Z",
+          "attempts": 1
+        },
         "keywords": [
-          "flow status",
-          "phase derivation",
-          "state query",
-          "workflow progress",
-          "status command"
+          "status command",
+          "run ID lookup",
+          "flow phase",
+          "command handler",
+          "state projection",
+          "active flow"
         ]
       },
       {
@@ -2921,9 +2923,9 @@
       },
       {
         "file": "src/flow/lib/run-prepare-spec.js",
-        "hash": "88d80ed53154d0133c7d376f27cc85ee",
-        "lines": 325,
-        "mtime": "2026-04-10T06:35:13.097Z",
+        "hash": "8d0bbc1520d6bc33407787ab74e5f190",
+        "lines": 338,
+        "mtime": "2026-04-13T12:56:41.650Z",
         "className": "run-prepare-spec",
         "methods": [
           "RunPrepareSpecCommand",
@@ -2956,20 +2958,21 @@
         "extends": "FlowCommand",
         "usedBy": null,
         "id": "59eeacc6",
-        "enrich": {
-          "processedAt": "2026-04-10T14:34:55.016Z",
-          "attempts": 2
-        },
-        "summary": "Prepares a new spec workspace by creating branch/worktree, spec files, and initial flow state. It is the bootstrap command for starting an SDD flow.",
-        "detail": "The module enforces clean workspace and base-branch preconditions, derives spec directory naming, and writes default or local template files. It supports localized templates and creates `spec.md` and `qa.md` when absent. It initializes flow state metadata, handles optional worktree mode, and records active-flow bookkeeping.",
-        "chapter": "cli_commands",
+        "summary": "This file prepares a new spec workflow by generating branch/spec metadata and initializing spec artifacts. It enforces repository preconditions and writes initial flow state.",
+        "detail": "The command validates cleanliness and branch requirements, then determines naming via slug logic and indexed spec directory allocation. It loads localized templates from project overrides under `.sdd-forge/templates` with built-in fallbacks for spec and QA documents. It creates spec directories and files idempotently, only writing files that do not already exist. The implementation encapsulates git checks, template rendering, and flow state bootstrap in one orchestration entrypoint aligned with `prepare-spec` semantics.",
+        "chapter": "development",
         "role": "controller",
+        "enrich": {
+          "processedAt": "2026-04-13T12:57:13.817Z",
+          "attempts": 1
+        },
         "keywords": [
           "prepare spec",
-          "flow bootstrap",
-          "worktree setup",
-          "spec template",
-          "initial state"
+          "template generation",
+          "git preflight",
+          "spec scaffolding",
+          "branch detection",
+          "workflow bootstrap"
         ]
       },
       {
@@ -3013,9 +3016,9 @@
       },
       {
         "file": "src/flow/lib/run-resume.js",
-        "hash": "9bc3f6d2bcea504abdfe58aad85fd07b",
-        "lines": 104,
-        "mtime": "2026-04-10T06:35:13.097Z",
+        "hash": "f9f5bcb756a2b716bc613c16353a8359",
+        "lines": 106,
+        "mtime": "2026-04-13T12:56:41.650Z",
         "className": "run-resume",
         "methods": [
           "extractSection"
@@ -3033,20 +3036,21 @@
         "extends": "FlowCommand",
         "usedBy": null,
         "id": "abe5ac21",
-        "enrich": {
-          "processedAt": "2026-04-10T14:34:55.016Z",
-          "attempts": 2
-        },
-        "summary": "Resumes an active flow by reconstructing current execution context and spec-derived highlights. It mirrors resolve-context behavior for resume-oriented UX.",
-        "detail": "The command resolves active flow identity, chooses effective repo root across worktree/main, and gathers git status metadata. It reads the spec file when present and extracts key sections to contextualize next actions. The returned payload is designed to quickly orient users and automation after interruption.",
+        "summary": "This file implements resume behavior for an active flow and reconstructs context needed to continue work. It reads flow metadata, resolves effective repository pathing, and extracts key spec sections.",
+        "detail": "The command finds the active flow, then decides between worktree and main repository paths depending on availability. It loads the spec document when present and uses heading-based extraction to produce concise contextual snippets. It augments output with repository status signals such as branch, ahead count, recent commit, and optional GitHub CLI availability. Errors are explicit for missing active flow to keep resume semantics deterministic.",
         "chapter": "cli_commands",
         "role": "controller",
+        "enrich": {
+          "processedAt": "2026-04-13T12:57:13.817Z",
+          "attempts": 1
+        },
         "keywords": [
           "resume command",
-          "active flow",
-          "context reconstruction",
-          "spec highlights",
-          "workflow continuation"
+          "active flow resolution",
+          "worktree fallback",
+          "spec context extraction",
+          "git status summary",
+          "flow continuation"
         ]
       },
       {
@@ -3215,6 +3219,39 @@
           "state mutation",
           "on off toggle",
           "command validation"
+        ]
+      },
+      {
+        "file": "src/flow/lib/set-init.js",
+        "hash": "452b79b08d78f5a0af463731a4225062",
+        "lines": 35,
+        "mtime": "2026-04-13T12:56:41.650Z",
+        "className": "set-init",
+        "methods": [],
+        "imports": [
+          "./base-command.js",
+          "../../lib/flow-state.js"
+        ],
+        "exports": [
+          "default"
+        ],
+        "extends": "FlowCommand",
+        "usedBy": null,
+        "id": "e407389c",
+        "summary": "This file defines a minimal initialization command that returns a run identifier. It serves as a lightweight entry in the flow command set.",
+        "detail": "The command follows the shared `FlowCommand` interface while keeping behavior intentionally small and predictable. It extracts `runId` from arguments and returns it in a normalized object payload. There is no additional state mutation or side-effect logic in this command. Its simplicity makes it a stable integration point for clients that need startup handshake data.",
+        "chapter": "cli_commands",
+        "role": "controller",
+        "enrich": {
+          "processedAt": "2026-04-13T12:57:13.817Z",
+          "attempts": 1
+        },
+        "keywords": [
+          "init command",
+          "run identifier",
+          "command payload",
+          "flow bootstrap",
+          "lightweight handler"
         ]
       },
       {
@@ -3532,9 +3569,9 @@
       },
       {
         "file": "src/flow/registry.js",
-        "hash": "df744459dd5535b4bdd3a36950d4b588",
-        "lines": 459,
-        "mtime": "2026-04-13T05:26:50.553Z",
+        "hash": "12bb65e49c94b981958ac46142648924",
+        "lines": 467,
+        "mtime": "2026-04-13T12:56:41.651Z",
         "className": "registry",
         "methods": [
           "deriveActivePhase",
@@ -3556,21 +3593,21 @@
           "src/flow.js"
         ],
         "id": "d64f4095",
-        "summary": "This file is the central registry that declares all flow command groups and hooks. It maps command IDs to implementations and pre/post step side effects.",
-        "detail": "It derives active phases from current flow state to support phase-aware command behavior. Pre/post hook helpers update step statuses and integrate metrics or issue-log updates around command execution. The registry also contains help text and wiring for nested command structures. This module acts as the authoritative composition root for flow command orchestration.",
+        "summary": "This file registers the flow command matrix and composes cross-cutting execution hooks. It is the central wiring point between command names, lifecycle hooks, and flow-state mutations.",
+        "detail": "It imports state update primitives and phase definitions, then applies pre/post wrappers for step progression and metrics updates. Helper functions derive active phase and gate-step mapping so command execution can consistently reflect workflow transitions. The registry also integrates ancillary concerns like issue-log persistence and command-specific help text. This design keeps command implementations focused while embedding orchestration policy in one map-based registration layer.",
         "chapter": "project_structure",
-        "role": "controller",
+        "role": "middleware",
         "enrich": {
-          "processedAt": "2026-04-13T05:28:46.709Z",
+          "processedAt": "2026-04-13T12:57:13.817Z",
           "attempts": 1
         },
         "keywords": [
           "command registry",
-          "flow orchestration",
-          "step hooks",
-          "phase derivation",
-          "command metadata",
-          "CLI composition"
+          "lifecycle hooks",
+          "step status",
+          "phase transitions",
+          "workflow orchestration",
+          "cross-cutting concerns"
         ]
       },
       {
@@ -3999,9 +4036,9 @@
       },
       {
         "file": "src/lib/flow-state.js",
-        "hash": "dc53f6f3e7d4107a503c0f244bd853f1",
-        "lines": 726,
-        "mtime": "2026-04-10T06:35:13.099Z",
+        "hash": "26d784e094e14fbafd6bd0ea2355ee89",
+        "lines": 910,
+        "mtime": "2026-04-13T12:56:41.651Z",
         "className": "flow-state",
         "methods": [
           "getSpecName",
@@ -4010,6 +4047,12 @@
           "addActiveFlow",
           "removeActiveFlow",
           "cleanStaleFlows",
+          "generateRunId",
+          "createPreparingFlow",
+          "loadPreparingFlow",
+          "deletePreparingFlow",
+          "listPreparingFlows",
+          "cleanStalePreparingFlows",
           "specIdFromPath",
           "buildInitialSteps",
           "saveFlowState",
@@ -4029,17 +4072,20 @@
           "resolveWorktreePaths",
           "scanAllFlows",
           "resolveActiveFlow",
+          "resolveByRunId",
           "activeFlowPath",
           "resolveMainRoot",
           "worktreeExists",
           "branchExists",
           "specFlowPath",
           "resolveCurrentFlow",
-          "specIdFromBranch"
+          "specIdFromBranch",
+          "loadFlowStateReadOnly"
         ],
         "imports": [
           "fs",
           "path",
+          "crypto",
           "./process.js",
           "./config.js",
           "./cli.js"
@@ -4051,6 +4097,12 @@
           "addActiveFlow",
           "removeActiveFlow",
           "cleanStaleFlows",
+          "generateRunId",
+          "createPreparingFlow",
+          "loadPreparingFlow",
+          "deletePreparingFlow",
+          "listPreparingFlows",
+          "cleanStalePreparingFlows",
           "specIdFromPath",
           "buildInitialSteps",
           "saveFlowState",
@@ -4070,6 +4122,7 @@
           "resolveWorktreePaths",
           "scanAllFlows",
           "resolveActiveFlow",
+          "resolveByRunId",
           "FLOW_STEPS",
           "PHASE_MAP"
         ],
@@ -4078,22 +4131,23 @@
           "src/flow.js"
         ],
         "id": "5bb0bb76",
-        "enrich": {
-          "processedAt": "2026-04-13T05:28:46.709Z",
-          "attempts": 5
-        },
-        "summary": "This module is the core model for flow state lifecycle, persistence, and active-flow resolution across repo/worktree contexts. It defines steps, phase mapping, and mutation helpers used by most flow commands.",
-        "detail": "It manages active-flow indexes, stale-flow cleanup, and spec-id derivation from paths and branch names. State persistence is file-based (`flow.json`) with helper APIs for reads, writes, and transactional mutations. Higher-level mutators handle requirements, issue links, notes, metrics, and step status transitions in one place. It also scans both main repo and worktree specs to build comprehensive flow inventories.",
+        "summary": "This file is the core flow-state library that persists, resolves, and mutates workflow state across main and worktree repositories. It provides the canonical data model and utility operations for run lifecycle management.",
+        "detail": "The module defines constants for state files, active-flow tracking, preparing-flow TTL handling, and phase derivation rules based on step completion. It includes CRUD-style helpers for active flows and preparing flows, plus cleanup routines for stale entries and missing branches/worktrees. It supports run ID generation, state loading/saving, mutation helpers, metrics accumulation, and requirement/test metadata updates through a unified API. Resolution logic spans current branch heuristics, spec path extraction, and run-id-based discovery, making it the backbone of flow persistence and lookup.",
         "chapter": "internal_design",
         "role": "model",
+        "enrich": {
+          "processedAt": "2026-04-13T12:57:13.817Z",
+          "attempts": 1
+        },
         "keywords": [
-          "flow state",
-          "state machine",
-          "phase map",
-          "active flow",
-          "worktree support",
           "state persistence",
-          "spec resolution"
+          "flow model",
+          "run lifecycle",
+          "worktree resolution",
+          "phase derivation",
+          "stale cleanup",
+          "state mutation",
+          "run ID"
         ]
       },
       {
@@ -7945,10 +7999,10 @@
       }
     ],
     "summary": {
-      "total": 234,
-      "totalMethods": 785
+      "total": 235,
+      "totalMethods": 794
     },
     "dataSourceHash": "7d725e75d5031be445119323e4947c91"
   },
-  "enrichedAt": "2026-04-13T12:50:33.599Z"
+  "enrichedAt": "2026-04-13T12:57:13.817Z"
 }
