@@ -1,5 +1,5 @@
 {
-  "analyzedAt": "2026-04-13T12:57:49.827Z",
+  "analyzedAt": "2026-04-13T14:16:20.146Z",
   "package": {
     "entries": [
       {
@@ -2758,9 +2758,9 @@
       },
       {
         "file": "src/flow/lib/run-gate.js",
-        "hash": "4d3b0e0bf3f8850e19ce1dc71ab175c7",
-        "lines": 496,
-        "mtime": "2026-04-13T12:57:49.487Z",
+        "hash": "ad72a74d9c7bce88673d5526f280d688",
+        "lines": 489,
+        "mtime": "2026-04-13T14:16:19.807Z",
         "className": "run-gate",
         "methods": [
           "RunGateCommand",
@@ -2798,23 +2798,9 @@
         "extends": "FlowCommand",
         "usedBy": null,
         "id": "b4aa4dad",
-        "summary": "Implements gate checks for draft, spec, and implementation phases with local lint-like rules and optional agent guardrail review. It decides pass/fail and next-step transitions in a structured result.",
-        "detail": "The file includes deterministic text checks for spec and draft documents, including section completeness and draft field patterns. It can invoke guardrail analysis by constructing role- and phase-aware prompts, parsing agent responses, and converting them into pass/fail reasons. Implementation-phase gating verifies there is meaningful diff content against the base branch before allowing progression. Common helpers produce standardized gate result objects that include target path, issues, reasons, and suggested next step. The command branches execution per phase while validating phase inputs against allowed constants.",
-        "chapter": "cli_commands",
-        "role": "cli",
         "enrich": {
-          "processedAt": "2026-04-13T12:58:47.344Z",
           "attempts": 1
-        },
-        "keywords": [
-          "gate checks",
-          "spec validation",
-          "draft validation",
-          "implementation gate",
-          "guardrail prompt",
-          "phase transition",
-          "quality gate"
-        ]
+        }
       },
       {
         "file": "src/flow/lib/run-impl-confirm.js",
@@ -3311,9 +3297,9 @@
       },
       {
         "file": "src/flow/lib/set-metric.js",
-        "hash": "9919f28942016f67ac20c8088167edfb",
+        "hash": "130d678e0b5e636a83001261d9aaa01a",
         "lines": 42,
-        "mtime": "2026-04-13T12:57:49.488Z",
+        "mtime": "2026-04-13T14:16:19.808Z",
         "className": "set-metric",
         "methods": [],
         "imports": [
@@ -3327,21 +3313,9 @@
         "extends": "FlowCommand",
         "usedBy": null,
         "id": "40d93087",
-        "summary": "Updates phase metrics in flow state by incrementing a validated counter. It serves as a controlled metric mutation endpoint.",
-        "detail": "The command requires both phase and counter arguments and validates each against centralized constants. It performs mutation via `mutateFlowState`, ensuring updates are transactional at the flow-state layer. The output reports phase, counter, and new value for visibility and scripting use. This pattern keeps metric writes consistent with other flow set commands. It also prevents invalid metric keys from entering persisted state.",
-        "chapter": "configuration",
-        "role": "cli",
         "enrich": {
-          "processedAt": "2026-04-13T12:58:47.344Z",
           "attempts": 1
-        },
-        "keywords": [
-          "flow metrics",
-          "counter increment",
-          "phase metrics",
-          "state mutation",
-          "telemetry counters"
-        ]
+        }
       },
       {
         "file": "src/flow/lib/set-note.js",
@@ -3547,9 +3521,9 @@
       },
       {
         "file": "src/flow/registry.js",
-        "hash": "f5d6ff527f2130e1f2188166e1bf6364",
-        "lines": 467,
-        "mtime": "2026-04-13T12:57:49.489Z",
+        "hash": "0ff2be4dd1cd67167c4aac11e0c7deae",
+        "lines": 466,
+        "mtime": "2026-04-13T14:16:19.808Z",
         "className": "registry",
         "methods": [
           "deriveActivePhase",
@@ -3571,22 +3545,9 @@
           "src/flow.js"
         ],
         "id": "d64f4095",
-        "summary": "Defines the flow command registry and step lifecycle hooks that synchronize command execution with flow-state step tracking. It is the central dispatcher for flow subcommands.",
-        "detail": "The module derives active phase context and provides helper wrappers to mark steps in progress and completed around command execution. It maps flow command names to implementations and embeds help text for command discovery. Shared post-hooks can update metrics, issue logs, and step statuses based on command results. Gate step resolution logic aligns phase-specific gate invocations with a stable step id model. This file acts as coordination glue between command implementations and workflow state transitions.",
-        "chapter": "project_structure",
-        "role": "controller",
         "enrich": {
-          "processedAt": "2026-04-13T12:58:47.344Z",
           "attempts": 1
-        },
-        "keywords": [
-          "command registry",
-          "dispatcher",
-          "step hooks",
-          "phase derivation",
-          "workflow orchestration",
-          "state synchronization"
-        ]
+        }
       },
       {
         "file": "src/help.js",
@@ -3891,9 +3852,9 @@
       },
       {
         "file": "src/lib/constants.js",
-        "hash": "afea2ba24bf2c68f1f4dd4fa41c9f53b",
-        "lines": 111,
-        "mtime": "2026-04-13T12:57:49.489Z",
+        "hash": "77d6f28208eb2506beceda8b13404841",
+        "lines": 110,
+        "mtime": "2026-04-13T14:16:19.808Z",
         "className": "constants",
         "methods": [],
         "imports": [],
@@ -3912,22 +3873,9 @@
         "extends": null,
         "usedBy": null,
         "id": "74b5e1c3",
-        "summary": "Provides frozen constant enums for phases, statuses, targets, and strategy options used across flow commands. It is the canonical validation source for CLI argument checking.",
-        "detail": "The module exports immutable arrays for valid phases, step statuses, gate phases, review phases, merge strategies, and related command enums. Command modules import these constants to enforce consistent input validation and error messaging. Centralizing these values reduces drift between commands and prevents duplicated literal sets. The constants also define behavior boundaries for mode switches and state transitions. This file functions as shared configuration schema for the flow subsystem.",
-        "chapter": "project_structure",
-        "role": "config",
         "enrich": {
-          "processedAt": "2026-04-13T12:58:47.344Z",
           "attempts": 1
-        },
-        "keywords": [
-          "constants",
-          "enum definitions",
-          "input validation",
-          "shared schema",
-          "flow phases",
-          "command options"
-        ]
+        }
       },
       {
         "file": "src/lib/entrypoint.js",
@@ -4054,9 +4002,9 @@
       },
       {
         "file": "src/lib/flow-state.js",
-        "hash": "26d784e094e14fbafd6bd0ea2355ee89",
+        "hash": "4dbb36ccd50f23363081b11d026667c3",
         "lines": 910,
-        "mtime": "2026-04-13T12:56:41.651Z",
+        "mtime": "2026-04-13T14:16:19.808Z",
         "className": "flow-state",
         "methods": [
           "getSpecName",
@@ -4149,24 +4097,9 @@
           "src/flow.js"
         ],
         "id": "5bb0bb76",
-        "summary": "This file is the core flow-state library that persists, resolves, and mutates workflow state across main and worktree repositories. It provides the canonical data model and utility operations for run lifecycle management.",
-        "detail": "The module defines constants for state files, active-flow tracking, preparing-flow TTL handling, and phase derivation rules based on step completion. It includes CRUD-style helpers for active flows and preparing flows, plus cleanup routines for stale entries and missing branches/worktrees. It supports run ID generation, state loading/saving, mutation helpers, metrics accumulation, and requirement/test metadata updates through a unified API. Resolution logic spans current branch heuristics, spec path extraction, and run-id-based discovery, making it the backbone of flow persistence and lookup.",
-        "chapter": "internal_design",
-        "role": "model",
         "enrich": {
-          "processedAt": "2026-04-13T12:57:13.817Z",
           "attempts": 1
-        },
-        "keywords": [
-          "state persistence",
-          "flow model",
-          "run lifecycle",
-          "worktree resolution",
-          "phase derivation",
-          "stale cleanup",
-          "state mutation",
-          "run ID"
-        ]
+        }
       },
       {
         "file": "src/lib/formatter.js",
@@ -4874,9 +4807,9 @@
       },
       {
         "file": "src/metrics/commands/token.js",
-        "hash": "b0e1466a7fb119ff320e0d1b084dd537",
-        "lines": 420,
-        "mtime": "2026-04-12T14:50:58.313Z",
+        "hash": "350db48279be466840f10f9a989127b7",
+        "lines": 417,
+        "mtime": "2026-04-13T14:16:19.808Z",
         "className": "token",
         "methods": [
           "formatUsage",
@@ -4920,24 +4853,9 @@
         "extends": null,
         "usedBy": null,
         "id": "59edeaf2",
-        "summary": "Implements the `sdd-forge metrics token` CLI command to aggregate per-day and per-phase token and quality metrics from `flow.json` files. It supports text, JSON, and CSV output with cache-aware execution for faster repeated runs.",
-        "detail": "The command parses CLI options, validates format arguments, resolves repository paths, and emits standardized usage and exit behavior. It recursively scans `specs/*` for `flow.json` files with an upper-bound safety limit, then computes normalized metrics such as token totals, requirement counts, review counts, request length, and a derived spec difficulty score. Difficulty is estimated from multiple signals (spec length, requirement volume, test file count, issue history) and adjusted by precision controls with clamped bounds. Rows are keyed by phase and UTC date, merged through accumulator helpers, sorted deterministically, and optionally reused from a freshness-checked cache in `.sdd-forge/output/metrics.json` before rendering to the selected output format.",
-        "chapter": "cli_commands",
-        "role": "cli",
         "enrich": {
-          "processedAt": "2026-04-12T14:51:17.029Z",
           "attempts": 1
-        },
-        "keywords": [
-          "CLI command",
-          "metrics aggregation",
-          "token analytics",
-          "flow.json parsing",
-          "cache freshness",
-          "CSV JSON text output",
-          "spec difficulty scoring",
-          "phase daily rollup"
-        ]
+        }
       },
       {
         "file": "src/presets-cmd.js",
@@ -8022,5 +7940,5 @@
     },
     "dataSourceHash": "7d725e75d5031be445119323e4947c91"
   },
-  "enrichedAt": "2026-04-13T12:58:47.344Z"
+  "enrichedAt": "2026-04-13T14:17:01.341Z"
 }

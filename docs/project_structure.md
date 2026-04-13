@@ -26,11 +26,11 @@ src/docs/commands/    (cli, controller)
 src/docs/data/    (model)
 src/docs/lib/    (lib, model)
 src/docs/lib/lang/    (lib)
-src/flow/    (controller)
+src/flow/    
 src/flow/commands/    (controller, lib, cli)
 src/flow/lib/    (model, cli, controller, lib)
-src/lib/    (lib, config, model, view)
-src/metrics/commands/    (cli)
+src/lib/    (lib, config, view, model)
+src/metrics/commands/    
 ```
 <!-- {{/data}} -->
 
@@ -41,10 +41,10 @@ src/metrics/commands/    (cli)
 | --- | --- | --- |
 | src/docs | 40 | cli, controller, model, lib |
 | src/flow | 34 | controller, lib, cli, model |
-| src/lib | 23 | lib, config, model, view |
+| src/lib | 23 | lib, config, view, model |
 | src | 11 | lib, cli, controller, middleware |
 | src/check | 3 | cli |
-| src/metrics | 1 | cli |
+| src/metrics | 1 | — |
 <!-- {{/data}} -->
 
 ### Shared Libraries
