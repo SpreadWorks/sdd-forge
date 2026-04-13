@@ -69,45 +69,85 @@ function resolveCtx() {
 // Parse entry args and merge into ctx
 // ---------------------------------------------------------------------------
 
+function throwUnexpectedArgs(extras) {
+  const unknownOpt = extras.find((v) => typeof v === "string" && v.startsWith("-"));
+  if (unknownOpt) {
+    throw new Error(`Unknown option: ${unknownOpt}`);
+  }
+  throw new Error(`Unexpected argument: ${extras[0]}`);
+}
+
+function assignPositionalArgs(ctx, positional, values) {
+  if (!positional || values.length === 0) return;
+  for (let i = 0; i < positional.length && i < values.length; i++) {
+    ctx[positional[i]] = values[i];
+  }
+}
+
+function parseNoArgEntry(rawArgs, ctx) {
+  if (rawArgs.length === 0) return;
+  if (rawArgs.length === 1 && (rawArgs[0] === "-h" || rawArgs[0] === "--help")) {
+    ctx.help = true;
+    return;
+  }
+  throwUnexpectedArgs(rawArgs);
+}
+
+function splitArgsBySpec(rawArgs, flags, options) {
+  const flagOptionSet = new Set([...(flags || []), ...(options || [])]);
+  const nonPositional = [];
+  const positionalValues = [];
+  for (let i = 0; i < rawArgs.length; i++) {
+    const a = rawArgs[i];
+    if (a === "-h" || a === "--help") {
+      nonPositional.push(a);
+      continue;
+    }
+    if (flagOptionSet.has(a)) {
+      nonPositional.push(a);
+      if ((options || []).includes(a) && i + 1 < rawArgs.length) {
+        nonPositional.push(rawArgs[++i]);
+      }
+      continue;
+    }
+    positionalValues.push(a);
+  }
+  return { nonPositional, positionalValues };
+}
+
 function parseEntryArgs(entry, rawArgs, ctx) {
-  if (!entry.args) return;
+  if (!entry.args) {
+    parseNoArgEntry(rawArgs, ctx);
+    return;
+  }
 
   const { positional, flags, options } = entry.args;
 
-  // Parse flags/options via parseArgs if defined
   if (flags || options) {
     const spec = { flags: flags || [], options: options || [] };
-    // Separate positional args from flag/option args
-    const flagOptionSet = new Set([...(flags || []), ...(options || [])]);
-    const nonPositional = [];
-    const positionalValues = [];
-    for (let i = 0; i < rawArgs.length; i++) {
-      const a = rawArgs[i];
-      if (a === "-h" || a === "--help") { nonPositional.push(a); continue; }
-      if (flagOptionSet.has(a)) {
-        nonPositional.push(a);
-        if ((options || []).includes(a) && i + 1 < rawArgs.length) {
-          nonPositional.push(rawArgs[++i]);
-        }
-        continue;
-      }
-      positionalValues.push(a);
-    }
+    const { nonPositional, positionalValues } = splitArgsBySpec(rawArgs, flags, options);
     const parsed = parseArgs(nonPositional, spec);
     Object.assign(ctx, parsed);
 
-    // Map positional values to named properties
-    if (positional && positionalValues.length > 0) {
-      for (let i = 0; i < positional.length && i < positionalValues.length; i++) {
-        ctx[positional[i]] = positionalValues[i];
-      }
+    assignPositionalArgs(ctx, positional, positionalValues);
+
+    const allowedPositionalCount = positional ? positional.length : 0;
+    if (positionalValues.length > allowedPositionalCount) {
+      throwUnexpectedArgs(positionalValues.slice(allowedPositionalCount));
     }
-  } else if (positional) {
-    // Only positional args (no flags/options)
-    for (let i = 0; i < positional.length && i < rawArgs.length; i++) {
-      ctx[positional[i]] = rawArgs[i];
-    }
+    return;
   }
+
+  const values = rawArgs.slice(0, positional.length);
+  assignPositionalArgs(ctx, positional, values);
+  if (rawArgs.length > positional.length) {
+    throwUnexpectedArgs(rawArgs.slice(positional.length));
+  }
+}
+
+function helpCommandFor(entry, groupKey, commandKey) {
+  if (entry?.helpPath) return entry.helpPath;
+  return `sdd-forge flow ${groupKey} ${commandKey} --help`;
 }
 
 // ---------------------------------------------------------------------------
@@ -116,7 +156,16 @@ function parseEntryArgs(entry, rawArgs, ctx) {
 
 async function runEntry(entry, ctx, envelopeType, envelopeKey) {
   // Parse args
-  parseEntryArgs(entry, ctx.args || [], ctx);
+  try {
+    parseEntryArgs(entry, ctx.args || [], ctx);
+  } catch (err) {
+    output(fail(envelopeType, envelopeKey, "ERROR", [
+      String(err.message || err),
+      `Run: ${helpCommandFor(entry, envelopeType, envelopeKey)}`,
+    ]));
+    process.exitCode = EXIT_ERROR;
+    return;
+  }
 
   // Help
   if (ctx.help && entry.help) {

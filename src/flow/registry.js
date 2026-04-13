@@ -65,12 +65,19 @@ function resolveGateStepId(phase) {
 export const FLOW_COMMANDS = {
   resume: {
     helpKey: "flow.resume",
+    helpPath: "sdd-forge flow resume --help",
     requiresFlow: false,
     command: () => import("./lib/run-resume.js"),
-    help: "Usage: sdd-forge flow resume\n\nDiscover and display the active flow context for recovery.",
+    help: [
+      "Usage: sdd-forge flow resume",
+      "",
+      "Discover and display active flow context for recovery.",
+      "Use `sdd-forge flow get status` for current-context status display.",
+    ].join("\n"),
   },
   prepare: {
     helpKey: "flow.prepare",
+    helpPath: "sdd-forge flow prepare --help",
     requiresFlow: false,
     command: () => import("./lib/run-prepare-spec.js"),
     args: {
@@ -96,7 +103,13 @@ export const FLOW_COMMANDS = {
     status: {
       helpKey: "flow.get.status",
       command: () => import("./lib/get-status.js"),
-      help: "Usage: sdd-forge flow get status\n\nReturn current flow state as JSON envelope.",
+      help: [
+        "Usage: sdd-forge flow get status",
+        "",
+        "Return active flow state for the current execution context.",
+        "This command does not accept target-spec options.",
+        "Use `sdd-forge flow resume` to discover or recover active flows.",
+      ].join("\n"),
     },
     "resolve-context": {
       helpKey: "flow.get.resolve-context",

@@ -95,4 +95,5 @@ Display the current state of the SDD workflow.
 
 - This skill is read-only. It does not modify any files or state.
 - If the spec file is missing or unreadable, show the path but note it cannot be read.
-- Use `sdd-forge flow get status` as the primary data source — it reads `specs/NNN/flow.json` via `.sdd-forge/.active-flow` pointer internally.
+- Use `sdd-forge flow get status` as the primary data source for the current execution context only.
+- `flow get status` is not for selecting arbitrary specs. Use `sdd-forge flow resume` when flow discovery/recovery is needed.

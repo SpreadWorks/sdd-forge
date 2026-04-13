@@ -1,0 +1,181 @@
+{
+  "spec": "specs/168-fix-flow-status-spec-mismatch/spec.md",
+  "baseBranch": "main",
+  "featureBranch": "feature/168-fix-flow-status-spec-mismatch",
+  "steps": [
+    {
+      "id": "approach",
+      "status": "done"
+    },
+    {
+      "id": "branch",
+      "status": "done"
+    },
+    {
+      "id": "prepare-spec",
+      "status": "pending"
+    },
+    {
+      "id": "draft",
+      "status": "done"
+    },
+    {
+      "id": "gate-draft",
+      "status": "done"
+    },
+    {
+      "id": "spec",
+      "status": "done"
+    },
+    {
+      "id": "gate",
+      "status": "done"
+    },
+    {
+      "id": "approval",
+      "status": "done"
+    },
+    {
+      "id": "test",
+      "status": "done"
+    },
+    {
+      "id": "implement",
+      "status": "done"
+    },
+    {
+      "id": "gate-impl",
+      "status": "done"
+    },
+    {
+      "id": "review",
+      "status": "done"
+    },
+    {
+      "id": "finalize",
+      "status": "in_progress"
+    },
+    {
+      "id": "commit",
+      "status": "pending"
+    },
+    {
+      "id": "push",
+      "status": "pending"
+    },
+    {
+      "id": "merge",
+      "status": "pending"
+    },
+    {
+      "id": "pr-create",
+      "status": "pending"
+    },
+    {
+      "id": "branch-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "pr-merge",
+      "status": "pending"
+    },
+    {
+      "id": "sync-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "docs-update",
+      "status": "pending"
+    },
+    {
+      "id": "docs-review",
+      "status": "pending"
+    },
+    {
+      "id": "docs-commit",
+      "status": "pending"
+    }
+  ],
+  "requirements": [
+    {
+      "desc": "R1. flow get 実行時、登録されていないオプションが指定された場合は失敗し、コマンドは実行されないこと。",
+      "status": "done"
+    },
+    {
+      "desc": "R2. sdd-forge flow get status に未定義オプションが与えられた場合、ERROR を返しプロセス終了コードが 1 になること。",
+      "status": "done"
+    },
+    {
+      "desc": "R3. R2 のエラーメッセージには、sdd-forge flow get status と sdd-forge flow get status --help の案内を含めること。",
+      "status": "done"
+    },
+    {
+      "desc": "R4. sdd-forge flow get status の help および関連 skill 文言に自身状態専用（対象 spec の切替不可）を明記すること。",
+      "status": "done"
+    },
+    {
+      "desc": "R5. flow resume の説明に get status との責務分離を記載し、用途混同を防ぐこと。",
+      "status": "done"
+    }
+  ],
+  "issue": 132,
+  "request": "$sdd-forge.flow-plan #132 issueの対応を進めてください。",
+  "worktree": true,
+  "notes": [
+    "approach: [1] Q&A で要件整理",
+    "work-env: [1] worktree, base: [1] main",
+    "draft: Q1=[2] 拡張修正（バグ修正 + リトライ上限/不一致バリデーション層）",
+    "draft: 調査実施。flow get 系で --spec が未定義のため無視される箇所を確認",
+    "draft: 論点整理。原因はエージェントの未定義オプション利用とCLI側の黙認の複合",
+    "draft: 方針候補。まずエージェント側で許可コマンド/許可オプションを厳密化し、勝手な --spec 付与を禁止",
+    "draft: 未定義オプション時にhelpを返す運用案を検討",
+    "draft: 方針確定。未定義オプションはERROR扱い、エラーメッセージにhelp案内を含める。exit code=1",
+    "draft: 質問。flow get status の利用箇所とresumeでの使用有無を確認",
+    "draft: Q flow get statusの責務を自身状態専用に限定し、resumeとの役割分離を明文化",
+    "test-mode: [1] テストコードを作成する",
+    "test: formal unit tests added at tests/unit/flow/get-unknown-options.test.js; expected-fail confirmed",
+    "review-mode: [1] auto-fix",
+    "review: auto-fix applied (#1,#2,#4) and gate-impl revalidated pass"
+  ],
+  "metrics": {
+    "draft": {
+      "question": 12,
+      "srcRead": 2
+    },
+    "gate-draft": {
+      "callCount": 3,
+      "responseChars": 0
+    },
+    "plan": {
+      "issueLog": 4
+    },
+    "spec": {
+      "callCount": 1,
+      "responseChars": 0
+    },
+    "gate-impl": {
+      "callCount": 4,
+      "responseChars": 2357,
+      "tokens": {
+        "input": 4,
+        "output": 919,
+        "cacheRead": 23532,
+        "cacheCreation": 24263
+      },
+      "cost": 0.11184285
+    },
+    "impl": {
+      "issueLog": 2
+    },
+    "finalize": {
+      "tokens": {
+        "input": 27259,
+        "output": 1994,
+        "cacheRead": 15232,
+        "cacheCreation": 0
+      },
+      "callCount": 1,
+      "responseChars": 2604
+    }
+  }
+}

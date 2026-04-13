@@ -1,0 +1,42 @@
+{
+  "data": {
+    "implementation": {
+      "diffStat": "specs/168-fix-flow-status-spec-mismatch/draft.md   |  55 +++++++\n specs/168-fix-flow-status-spec-mismatch/flow.json  | 171 +++++++++++++++++++++\n .../issue-log.json                                 | 104 +++++++++++++\n specs/168-fix-flow-status-spec-mismatch/qa.md      |   9 ++\n specs/168-fix-flow-status-spec-mismatch/review.md  |  41 +++++\n specs/168-fix-flow-status-spec-mismatch/spec.md    |  65 ++++++++\n .../tests/README.md                                |  29 ++++\n src/flow.js                                        | 107 +++++++++----\n src/flow/registry.js                               |  17 +-\n src/templates/partials/core-principle.md           |   1 +\n .../skills/sdd-forge.flow-status/SKILL.md          |   3 +-\n tests/unit/flow/get-unknown-options.test.js        |  74 +++++++++\n 12 files changed, 644 insertions(+), 32 deletions(-)",
+      "commits": [
+        "feat: feature/168-fix-flow-status-spec-mismatch"
+      ]
+    },
+    "retro": {
+      "total": 5,
+      "done": 4,
+      "partial": 1,
+      "not_done": 0,
+      "rate": 0.9,
+      "notes": "中核実装（未定義オプション拒否、ERROR応答、終了コード非0、help/skill/resume文言更新）は概ね要件充足。懸念はR3のみで、現状は `--help` 案内中心であり、`sdd-forge flow get status` の独立案内を必須と解釈する場合は追記余地がある。"
+    },
+    "issueLog": {
+      "count": 0,
+      "entries": []
+    },
+    "metrics": {
+      "docsRead": 0,
+      "srcRead": 2,
+      "question": 12,
+      "issueLog": 6
+    },
+    "tokenMetrics": {
+      "input": 4,
+      "output": 919,
+      "cacheRead": 23532,
+      "cacheCreation": 24263,
+      "cost": 0.11184285,
+      "callCount": 8
+    },
+    "tests": null,
+    "sync": {
+      "status": "skipped",
+      "reason": "sync was skipped"
+    }
+  },
+  "text": "  Report\n\n  Implementation\n  ────────────────────────────────────────────────\n    feat: feature/168-fix-flow-status-spec-mismatch\n    12 files changed, 644 insertions(+), 32 deletions(-)\n\n  Retro\n  ────────────────────────────────────────────────\n    ███████░ 90%  (4 done / 1 partial / 0 miss)\n\n  Metrics\n  ────────────────────────────────────────────────\n    docs read ................... 0\n    src read .................... 2\n    Q&A ......................... 12\n    issue-log ................... 6\n    agent calls ................. 8\n    input tokens ................ 4\n    output tokens ............... 919\n    cache-read tokens ........... 23,532\n    cache-create tokens ......... 24,263\n    cost ........................ $0.1118\n\n  Tests\n  ────────────────────────────────────────────────\n    -"
+}

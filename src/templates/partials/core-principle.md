@@ -3,6 +3,7 @@ The AI must not advance to the next step on its own.
 
 **autoApprove check (MANDATORY):**
 Before presenting any choice to the user, you MUST run `sdd-forge flow get status` and display the `autoApprove` field value. This is not optional — skipping this check is a protocol violation.
+- Run the command exactly as `sdd-forge flow get status` (no extra options).
 - If `autoApprove: false` (or field is missing): present the choice to the user and wait for input.
 - If `autoApprove: true`: treat choice id=1 as selected and proceed immediately. Display progress briefly (e.g. "auto: approach → [1] Q&A").
 - Continue to the next step without waiting for user input only when `autoApprove: true`.

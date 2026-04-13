@@ -1,0 +1,77 @@
+{
+  "spec": "specs/168-fix-flow-status-spec-mismatch/spec.md",
+  "date": "2026-04-13T01:48:40.737Z",
+  "requirements": [
+    {
+      "desc": "R1. flow get 実行時、登録されていないオプションが指定された場合は失敗し、コマンドは実行されないこと。",
+      "status": "done",
+      "note": "src/flow.js で未定義オプション/余剰引数を `parseEntryArgs` 段階で例外化し、`runEntry` で fail 応答して実行前に中断する実装になっている。"
+    },
+    {
+      "desc": "R2. sdd-forge flow get status に未定義オプションが与えられた場合、ERROR を返しプロセス終了コードが 1 になること。",
+      "status": "done",
+      "note": "未定義オプション時に `fail(..., \"ERROR\", ...)` を返し、`process.exitCode = EXIT_ERROR` を設定。追加テストでも非0終了を検証している。"
+    },
+    {
+      "desc": "R3. R2 のエラーメッセージには、sdd-forge flow get status と sdd-forge flow get status --help の案内を含めること。",
+      "status": "partial",
+      "note": "エラー時に `Run: sdd-forge flow get status --help` は案内されるが、`sdd-forge flow get status` を独立した案内行として明示はしていない。"
+    },
+    {
+      "desc": "R4. sdd-forge flow get status の help および関連 skill 文言に自身状態専用（対象 spec の切替不可）を明記すること。",
+      "status": "done",
+      "note": "help と skill テンプレートに「current execution context only」「target-spec options を受け付けない」旨が追記され、責務限定が明文化されている。"
+    },
+    {
+      "desc": "R5. flow resume の説明に get status との責務分離を記載し、用途混同を防ぐこと。",
+      "status": "done",
+      "note": "resume help と flow-status skill に、`get status` は現コンテキスト表示、`resume` は探索/復旧用途という分離説明が追加されている。"
+    }
+  ],
+  "unplanned": [
+    {
+      "file": "src/flow/registry.js",
+      "change": "`resume`/`prepare` に `helpPath` メタデータを追加（R1-R5で明示されていない補助設計変更）。"
+    },
+    {
+      "file": "src/templates/partials/core-principle.md",
+      "change": "autoApprove 手順に「`flow get status` を追加オプションなしで実行」の運用ルール追記（requirements外の運用強化）。"
+    },
+    {
+      "file": "specs/168-fix-flow-status-spec-mismatch/draft.md",
+      "change": "ドラフト仕様ドキュメント新規追加（実装要件そのものではない管理成果物）。"
+    },
+    {
+      "file": "specs/168-fix-flow-status-spec-mismatch/flow.json",
+      "change": "フロー進捗・要件状態管理ファイル新規追加（管理メタデータ）。"
+    },
+    {
+      "file": "specs/168-fix-flow-status-spec-mismatch/issue-log.json",
+      "change": "ゲート実行失敗/回避の運用ログ追加（機能要件外）。"
+    },
+    {
+      "file": "specs/168-fix-flow-status-spec-mismatch/qa.md",
+      "change": "Q&Aテンプレート追加（要件実装外）。"
+    },
+    {
+      "file": "specs/168-fix-flow-status-spec-mismatch/review.md",
+      "change": "レビュー結果ドキュメント追加（要件実装外）。"
+    },
+    {
+      "file": "specs/168-fix-flow-status-spec-mismatch/spec.md",
+      "change": "仕様書本体追加（実装成果の記録）。"
+    },
+    {
+      "file": "specs/168-fix-flow-status-spec-mismatch/tests/README.md",
+      "change": "spec用テスト計画ドキュメント追加（機能実装外）。"
+    }
+  ],
+  "summary": {
+    "total": 5,
+    "done": 4,
+    "partial": 1,
+    "not_done": 0,
+    "rate": 0.9,
+    "notes": "中核実装（未定義オプション拒否、ERROR応答、終了コード非0、help/skill/resume文言更新）は概ね要件充足。懸念はR3のみで、現状は `--help` 案内中心であり、`sdd-forge flow get status` の独立案内を必須と解釈する場合は追記余地がある。"
+  }
+}
