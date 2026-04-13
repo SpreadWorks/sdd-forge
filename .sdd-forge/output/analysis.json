@@ -1,5 +1,5 @@
 {
-  "analyzedAt": "2026-04-13T12:56:41.954Z",
+  "analyzedAt": "2026-04-13T12:57:49.827Z",
   "package": {
     "entries": [
       {
@@ -2222,9 +2222,9 @@
       },
       {
         "file": "src/flow/commands/review.js",
-        "hash": "408c8f31db35bbced9a833fc2113f997",
+        "hash": "159848b72c5454e11f9179cd70b6f29f",
         "lines": 944,
-        "mtime": "2026-04-10T06:35:13.096Z",
+        "mtime": "2026-04-13T12:57:49.487Z",
         "className": "review",
         "methods": [
           "resolveReviewTarget",
@@ -2265,7 +2265,7 @@
           "../../lib/agent.js",
           "../../lib/process.js",
           "../../lib/exit-codes.js",
-          "../lib/phases.js"
+          "../../lib/constants.js"
         ],
         "exports": [
           "main",
@@ -2291,20 +2291,22 @@
         "extends": null,
         "usedBy": null,
         "id": "331cf497",
-        "enrich": {
-          "processedAt": "2026-04-10T14:34:55.016Z",
-          "attempts": 2
-        },
-        "summary": "Implements AI-assisted review flows for spec, tests, and code review loops. It parses proposals, applies fixes, and writes review artifacts.",
-        "detail": "The module defines prompts for draft/final review phases, merges verdicts, and retries review cycles with capped attempts. It performs test-design and gap analysis workflows, can materialize suggested test file updates, and records review markdown outputs. It also validates spec output shape and manages command-line orchestration with explicit error exits.",
+        "summary": "Implements the flow review command that orchestrates code, spec, and test review loops with agent-assisted proposals and optional auto-fix. It writes structured review artifacts back into the active spec directory.",
+        "detail": "The module validates review phases and resolves the review target from flow state and filesystem paths. It builds dedicated prompts for draft checks, spec checks, test design, gap analysis, and patch application, then parses agent responses into normalized proposal objects. Retry-based review loops collect issue history, merge verdicts, and optionally apply approved fixes in-place for spec and test files. It persists outputs such as review markdown reports, generated test design files, and updated spec content, while enforcing exit behavior on hard failures. Utility helpers encapsulate requirements extraction, test file discovery, markdown formatting, and output sanity checks.",
         "chapter": "cli_commands",
-        "role": "controller",
+        "role": "cli",
+        "enrich": {
+          "processedAt": "2026-04-13T12:58:47.344Z",
+          "attempts": 1
+        },
         "keywords": [
           "review workflow",
-          "AI review loop",
+          "agent loop",
+          "spec review",
           "test gap analysis",
-          "proposal parser",
-          "review markdown"
+          "auto-fix",
+          "prompt orchestration",
+          "markdown report"
         ]
       },
       {
@@ -2371,9 +2373,9 @@
       },
       {
         "file": "src/flow/lib/get-check.js",
-        "hash": "ca45dc398ca9e14d7140bf34fe9be5c3",
-        "lines": 85,
-        "mtime": "2026-04-10T06:35:13.096Z",
+        "hash": "9af43e0d996d2d0c66ab7318e3161b84",
+        "lines": 84,
+        "mtime": "2026-04-13T12:57:49.487Z",
         "className": "get-check",
         "methods": [
           "checkStepPrereqs",
@@ -2383,6 +2385,7 @@
         "imports": [
           "../../lib/process.js",
           "../../lib/git-helpers.js",
+          "../../lib/constants.js",
           "./base-command.js"
         ],
         "exports": [
@@ -2391,20 +2394,21 @@
         "extends": "FlowCommand",
         "usedBy": null,
         "id": "10eecc8b",
-        "enrich": {
-          "processedAt": "2026-04-10T14:34:55.016Z",
-          "attempts": 2
-        },
-        "summary": "Implements prerequisite and environment checks for flow targets. It validates step progression, dirty state, and GitHub CLI availability.",
-        "detail": "The module defines required completed steps per target and computes pass/fail summaries with per-check records. It executes git status checks for workspace cleanliness and graceful diagnostics when commands fail. The command class validates target names and returns structured check results for caller-side decisions.",
+        "summary": "Provides prerequisite checks for flow targets such as repository cleanliness, GitHub CLI availability, and required step completion. It exposes these checks through a command class.",
+        "detail": "The file defines target-specific prerequisite maps and evaluates flow-state conditions against required steps. It includes concrete environment checks for `git status` and `gh` availability with pass/fail summaries and machine-readable check rows. Validation ensures the target is present and part of the allowed check targets constant set. If no active flow state is found for step-based checks, it fails fast with an explicit error. The command returns a normalized check result object used by higher-level flow tooling.",
         "chapter": "cli_commands",
-        "role": "controller",
+        "role": "cli",
+        "enrich": {
+          "processedAt": "2026-04-13T12:58:47.344Z",
+          "attempts": 1
+        },
         "keywords": [
-          "prerequisite check",
-          "flow gating",
-          "dirty worktree",
-          "gh availability",
-          "step validation"
+          "preflight checks",
+          "flow prerequisites",
+          "git status",
+          "gh cli",
+          "step validation",
+          "command guard"
         ]
       },
       {
@@ -2474,9 +2478,9 @@
       },
       {
         "file": "src/flow/lib/get-guardrail.js",
-        "hash": "6ddd158481986aea194cf9983a77dae4",
+        "hash": "bc869248dc1f0491b544a972aa12c4fa",
         "lines": 62,
-        "mtime": "2026-04-10T06:35:13.096Z",
+        "mtime": "2026-04-13T12:57:49.487Z",
         "className": "get-guardrail",
         "methods": [
           "toMarkdown"
@@ -2484,7 +2488,7 @@
         "imports": [
           "../../lib/guardrail.js",
           "./base-command.js",
-          "./phases.js"
+          "../../lib/constants.js"
         ],
         "exports": [
           "default"
@@ -2494,20 +2498,21 @@
           "src/lib/lint.js"
         ],
         "id": "f80cce52",
+        "summary": "Loads and renders phase-specific guardrails for flow execution. It returns both raw guardrail data and markdown output.",
+        "detail": "The module validates the requested phase against the global valid phase list and rejects missing or unknown values. It reads merged guardrails from configuration sources and filters them by phase. A formatter converts each guardrail into a concise markdown checklist line for terminal or report display. The command class wraps these operations into a single flow command entry point. The output shape supports both human-readable review and downstream automation.",
+        "chapter": "configuration",
+        "role": "cli",
         "enrich": {
-          "processedAt": "2026-04-10T14:34:55.016Z",
-          "attempts": 2
+          "processedAt": "2026-04-13T12:58:47.344Z",
+          "attempts": 1
         },
-        "summary": "Fetches and formats guardrails for a given flow phase. It returns both raw filtered data and markdown-rendered output.",
-        "detail": "The command validates phase names against the shared phase list before processing. It loads merged guardrail definitions and filters them by phase for targeted checks. Markdown formatting turns guardrails into list output suitable for CLI display or prompt embedding.",
-        "chapter": "cli_commands",
-        "role": "controller",
         "keywords": [
-          "guardrail command",
+          "guardrails",
           "phase filter",
           "policy checks",
-          "markdown formatting",
-          "flow safety"
+          "markdown rendering",
+          "flow governance",
+          "validation"
         ]
       },
       {
@@ -2690,44 +2695,10 @@
         ]
       },
       {
-        "file": "src/flow/lib/phases.js",
-        "hash": "22fd09d92596cdae6d9becbcf10961ea",
-        "lines": 16,
-        "mtime": "2026-04-10T06:35:13.096Z",
-        "className": "phases",
-        "methods": [],
-        "imports": [],
-        "exports": [
-          "VALID_PHASES"
-        ],
-        "extends": null,
-        "usedBy": [
-          "src/flow/lib/get-guardrail.js",
-          "src/flow/lib/set-metric.js",
-          "src/flow/registry.js"
-        ],
-        "id": "5d33316d",
-        "enrich": {
-          "processedAt": "2026-04-10T14:34:55.016Z",
-          "attempts": 2
-        },
-        "summary": "Defines the canonical valid flow phases list. It provides a frozen shared constant for validation across commands.",
-        "detail": "The module exports an immutable array used by guardrail, review, and status logic. Centralizing this list prevents drift between command validators and phase transitions. It acts as a schema primitive for flow phase semantics.",
-        "chapter": "internal_design",
-        "role": "config",
-        "keywords": [
-          "phase constants",
-          "workflow phases",
-          "validation list",
-          "shared schema",
-          "flow lifecycle"
-        ]
-      },
-      {
         "file": "src/flow/lib/run-finalize.js",
-        "hash": "334b6d4ef68c202fc2f9bbd0682e755c",
-        "lines": 374,
-        "mtime": "2026-04-13T12:50:22.616Z",
+        "hash": "dfaec73c47ab960c1b771ff5b53cd0ae",
+        "lines": 375,
+        "mtime": "2026-04-13T12:57:49.487Z",
         "className": "run-finalize",
         "methods": [
           "finalizeOnError",
@@ -2749,6 +2720,7 @@
           "../../lib/flow-state.js",
           "./set-issue-log.js",
           "../../lib/git-helpers.js",
+          "../../lib/constants.js",
           "./base-command.js",
           "../registry.js"
         ],
@@ -2766,31 +2738,29 @@
         "extends": "FlowCommand",
         "usedBy": null,
         "id": "c711309b",
-        "summary": "This module implements the flow finalization command and its supporting execution helpers. It coordinates preflight checks, step dispatch, commit behavior, and cleanup for the SDD finalize workflow.",
-        "detail": "The file defines utility functions to handle failure cleanup, commit-or-skip behavior, Git common directory resolution, and conversion of low-level filesystem errors into explicit preflight failures. It performs a finalize preflight by writing and removing a temporary lock file in the Git directory to verify write access before executing any mutating step. A step map and sub-step runner provide structured orchestration, normalizing results and converting thrown command/process errors into consistent status objects. The `RunFinalizeCommand` class validates mode and strategy options, supports selective step execution, runs post-commit reporting such as diff stats/summary, and executes final cleanup paths for worktree and repository state.",
+        "summary": "Implements finalize-stage orchestration for SDD flow, including preflight, selective step execution, commit/post actions, and cleanup. It also supports merge strategy validation and failure-safe cleanup hooks.",
+        "detail": "The module defines reusable finalize steps mapped to named operations and executes them with consistent status handling. It performs git write-access preflight by resolving the common git directory and verifying lock file creation before proceeding. Commit logic can skip clean trees, collect diff summaries, and run post-commit actions such as documentation build hooks and optional issue updates. Cleanup handles worktree teardown and spec-only mode behavior without assuming every path exists. Error helpers normalize low-level git or filesystem failures into user-facing finalize errors.",
         "chapter": "cli_commands",
         "role": "cli",
         "enrich": {
-          "processedAt": "2026-04-13T12:50:33.599Z",
+          "processedAt": "2026-04-13T12:58:47.344Z",
           "attempts": 1
         },
         "keywords": [
-          "finalize workflow",
-          "flow command",
-          "preflight check",
-          "git write access",
-          "step dispatcher",
+          "finalize pipeline",
+          "preflight",
+          "merge strategy",
+          "cleanup",
+          "worktree",
           "commit orchestration",
-          "cleanup routine",
-          "error handling",
-          "worktree management"
+          "post-commit hook"
         ]
       },
       {
         "file": "src/flow/lib/run-gate.js",
-        "hash": "4da60ef67f48ca8027722da7dd5c7679",
-        "lines": 490,
-        "mtime": "2026-04-13T02:06:58.989Z",
+        "hash": "4d3b0e0bf3f8850e19ce1dc71ab175c7",
+        "lines": 496,
+        "mtime": "2026-04-13T12:57:49.487Z",
         "className": "run-gate",
         "methods": [
           "RunGateCommand",
@@ -2813,6 +2783,7 @@
           "../../lib/agent.js",
           "../../lib/guardrail.js",
           "../../lib/flow-state.js",
+          "../../lib/constants.js",
           "./base-command.js"
         ],
         "exports": [
@@ -2827,28 +2798,29 @@
         "extends": "FlowCommand",
         "usedBy": null,
         "id": "b4aa4dad",
-        "summary": "This command module implements gate checks for draft, spec, and implementation phases. It enforces content quality and guardrail compliance before advancing flow steps.",
-        "detail": "It includes text validators for spec and draft documents, using heading-aware checks and pattern-based required field detection. Guardrail execution is delegated to AI prompts, with response parsing into pass/fail results and reason lists. Implementation gating inspects git diffs against the base branch and can fail when no effective changes exist. The command returns normalized gate outcomes with next-step mappings for both pass and fail paths.",
+        "summary": "Implements gate checks for draft, spec, and implementation phases with local lint-like rules and optional agent guardrail review. It decides pass/fail and next-step transitions in a structured result.",
+        "detail": "The file includes deterministic text checks for spec and draft documents, including section completeness and draft field patterns. It can invoke guardrail analysis by constructing role- and phase-aware prompts, parsing agent responses, and converting them into pass/fail reasons. Implementation-phase gating verifies there is meaningful diff content against the base branch before allowing progression. Common helpers produce standardized gate result objects that include target path, issues, reasons, and suggested next step. The command branches execution per phase while validating phase inputs against allowed constants.",
         "chapter": "cli_commands",
-        "role": "controller",
+        "role": "cli",
         "enrich": {
-          "processedAt": "2026-04-13T05:28:46.709Z",
+          "processedAt": "2026-04-13T12:58:47.344Z",
           "attempts": 1
         },
         "keywords": [
-          "quality gate",
+          "gate checks",
           "spec validation",
           "draft validation",
-          "guardrails",
-          "diff check",
-          "phase transition"
+          "implementation gate",
+          "guardrail prompt",
+          "phase transition",
+          "quality gate"
         ]
       },
       {
         "file": "src/flow/lib/run-impl-confirm.js",
-        "hash": "c4048ef3570dbe7c9726cc09c25b284c",
-        "lines": 98,
-        "mtime": "2026-04-10T06:35:13.097Z",
+        "hash": "c8409a974ac82c8e0e78609b76159df8",
+        "lines": 102,
+        "mtime": "2026-04-13T12:57:49.487Z",
         "className": "run-impl-confirm",
         "methods": [
           "RunImplConfirmCommand",
@@ -2859,6 +2831,7 @@
           "fs",
           "path",
           "../../lib/process.js",
+          "../../lib/constants.js",
           "./base-command.js"
         ],
         "exports": [
@@ -2868,20 +2841,21 @@
         "extends": "FlowCommand",
         "usedBy": null,
         "id": "e6534160",
+        "summary": "Provides implementation confirmation reporting by comparing changed files to requirement completion state. It supports multiple output modes through a flow command.",
+        "detail": "The module collects changed files from git diff against the configured base branch and normalizes file lists. It summarizes requirement status counts, including done, pending, and in-progress items, to produce compact progress signals. The command validates mode input against allowed confirm modes and inspects active flow state for spec presence. It conditionally checks whether the spec file still exists and returns a structured payload combining requirements and code-change context. This enables lightweight readiness checks before review or finalize phases.",
+        "chapter": "cli_commands",
+        "role": "cli",
         "enrich": {
-          "processedAt": "2026-04-10T14:34:55.016Z",
-          "attempts": 2
+          "processedAt": "2026-04-13T12:58:47.344Z",
+          "attempts": 1
         },
-        "summary": "Confirms implementation progress against spec requirements and changed files. It summarizes requirement completion states for review.",
-        "detail": "The module reads changed files relative to base branch and parses requirement checkboxes into status buckets. It computes totals for done, pending, and in-progress requirements with item-level details. The command returns a consolidated confirmation payload using active flow spec context when available.",
-        "chapter": "development",
-        "role": "controller",
         "keywords": [
           "implementation confirm",
-          "requirement summary",
+          "requirements status",
           "changed files",
-          "progress tracking",
-          "spec checklist"
+          "progress summary",
+          "diff inspection",
+          "readiness check"
         ]
       },
       {
@@ -3105,9 +3079,9 @@
       },
       {
         "file": "src/flow/lib/run-review.js",
-        "hash": "779f5656b7917117338450c1e248eefd",
-        "lines": 196,
-        "mtime": "2026-04-10T06:35:13.097Z",
+        "hash": "b2e963bd7be54ee8d5fc78278739dfbf",
+        "lines": 202,
+        "mtime": "2026-04-13T12:57:49.488Z",
         "className": "run-review",
         "methods": [
           "runCmdWithRetry",
@@ -3119,6 +3093,7 @@
           "../../lib/cli.js",
           "../../lib/process.js",
           "../../lib/agent.js",
+          "../../lib/constants.js",
           "./base-command.js",
           "path"
         ],
@@ -3132,21 +3107,21 @@
         "extends": "FlowCommand",
         "usedBy": null,
         "id": "d4e97204",
-        "enrich": {
-          "processedAt": "2026-04-13T05:28:46.709Z",
-          "attempts": 5
-        },
-        "summary": "This module executes flow review checks and normalizes outputs for test and spec review modes. It provides retry-aware command execution and structured error handling.",
-        "detail": "It defines dedicated parsers for review subprocess output to convert raw stdout/stderr into typed result objects. A reusable retry wrapper performs delayed re-attempts and logs retry status to stderr. The command invokes a packaged review script and routes behavior by requested review type. On failure, it throws descriptive errors with timeout and command context to aid debugging.",
+        "summary": "Runs review subcommands with retry behavior and parses their outputs into normalized results for test and spec review phases. It wraps the lower-level review script as a command-class interface.",
+        "detail": "The module defines parsers for test-review and spec-review command output, converting process result streams into explicit success/failure objects. A generic retry wrapper executes command functions with delay and bounded attempts, logging retry hints to stderr. Phase input is validated against allowed review phases before dispatching to the target review mode. The command invokes the review script via `runCmd`, then uses dedicated parsers to enforce expected output contracts. It returns structured results suitable for automation rather than raw shell output.",
         "chapter": "cli_commands",
-        "role": "controller",
+        "role": "cli",
+        "enrich": {
+          "processedAt": "2026-04-13T12:58:47.344Z",
+          "attempts": 1
+        },
         "keywords": [
-          "review command",
-          "retry logic",
-          "test review",
-          "spec review",
-          "subprocess parsing",
-          "timeout handling"
+          "review runner",
+          "retry policy",
+          "output parser",
+          "phase dispatch",
+          "command wrapper",
+          "resilience"
         ]
       },
       {
@@ -3190,14 +3165,15 @@
       },
       {
         "file": "src/flow/lib/set-auto.js",
-        "hash": "d0465224a882b65f200aaaff114c70d8",
-        "lines": 29,
-        "mtime": "2026-04-10T06:35:13.097Z",
+        "hash": "878a75c3f9f6fa0e07d90bc1dc9f8a97",
+        "lines": 30,
+        "mtime": "2026-04-13T12:57:49.488Z",
         "className": "set-auto",
         "methods": [],
         "imports": [
           "./base-command.js",
-          "../../lib/flow-state.js"
+          "../../lib/flow-state.js",
+          "../../lib/constants.js"
         ],
         "exports": [
           "default"
@@ -3205,20 +3181,20 @@
         "extends": "FlowCommand",
         "usedBy": null,
         "id": "2c71e989",
+        "summary": "Sets flow auto-approval mode in flow state with strict value validation. It exposes a minimal setter command.",
+        "detail": "The command validates input against the allowed auto values constant and throws usage errors for invalid forms. It mutates persisted flow state through a dedicated state helper rather than direct file handling. The response returns the resulting boolean-like auto-approve mode for downstream confirmation. The implementation is intentionally small and follows the standardized FlowCommand pattern. This module centralizes policy-safe toggling for automated progression.",
+        "chapter": "configuration",
+        "role": "cli",
         "enrich": {
-          "processedAt": "2026-04-13T05:28:46.709Z",
-          "attempts": 5
+          "processedAt": "2026-04-13T12:58:47.344Z",
+          "attempts": 1
         },
-        "summary": "This command toggles flow auto-approval mode on or off. It updates persisted flow state with a strict two-value interface.",
-        "detail": "It validates usage to only accept `on` or `off` and rejects anything else with a concise error. State mutation is done through a shared flow-state mutator to preserve centralized persistence logic. The returned payload echoes the resulting boolean mode for envelope output. Its narrow scope keeps behavior predictable and script-friendly.",
-        "chapter": "cli_commands",
-        "role": "controller",
         "keywords": [
           "auto approve",
-          "flow setting",
-          "state mutation",
-          "on off toggle",
-          "command validation"
+          "flow state mutation",
+          "input validation",
+          "setter command",
+          "automation toggle"
         ]
       },
       {
@@ -3302,9 +3278,9 @@
       },
       {
         "file": "src/flow/lib/set-issue.js",
-        "hash": "7b58c42adb909e1fec71ddda27b2b2c7",
-        "lines": 30,
-        "mtime": "2026-04-10T06:35:13.097Z",
+        "hash": "051cb43e0ac925e977d27aa8a8746167",
+        "lines": 35,
+        "mtime": "2026-04-13T12:57:49.488Z",
         "className": "set-issue",
         "methods": [],
         "imports": [
@@ -3317,33 +3293,33 @@
         "extends": "FlowCommand",
         "usedBy": null,
         "id": "c3865b58",
+        "summary": "Sets the linked GitHub issue number for the current flow with numeric validation. It provides a focused state mutation command.",
+        "detail": "The command enforces required input and validates that the value is a positive integer before state mutation. It rejects malformed and non-positive values with explicit error messages. Issue assignment is delegated to flow-state helpers to keep command logic thin and consistent. The return payload echoes the accepted issue number for auditability in CLI output. This module acts as a typed bridge between user input and persistent flow metadata.",
+        "chapter": "configuration",
+        "role": "cli",
         "enrich": {
-          "processedAt": "2026-04-13T05:28:46.709Z",
-          "attempts": 5
+          "processedAt": "2026-04-13T12:58:47.344Z",
+          "attempts": 1
         },
-        "summary": "This command sets the linked GitHub issue number in flow state. It performs strict numeric input validation.",
-        "detail": "It expects a single positional argument and throws a usage error when missing. The value is parsed to a number and rejected if not a valid integer-like input. State update is delegated to `setIssue` in the flow-state module. The command returns the final issue number for envelope serialization.",
-        "chapter": "cli_commands",
-        "role": "controller",
         "keywords": [
-          "set issue",
+          "issue binding",
+          "positive integer validation",
           "flow metadata",
-          "numeric validation",
-          "CLI setter",
-          "state update"
+          "state update",
+          "cli setter"
         ]
       },
       {
         "file": "src/flow/lib/set-metric.js",
-        "hash": "1a4697eb3ebf16dcdd577fc7fcc33ed1",
-        "lines": 43,
-        "mtime": "2026-04-10T06:35:13.097Z",
+        "hash": "9919f28942016f67ac20c8088167edfb",
+        "lines": 42,
+        "mtime": "2026-04-13T12:57:49.488Z",
         "className": "set-metric",
         "methods": [],
         "imports": [
           "./base-command.js",
           "../../lib/flow-state.js",
-          "./phases.js"
+          "../../lib/constants.js"
         ],
         "exports": [
           "default"
@@ -3351,20 +3327,20 @@
         "extends": "FlowCommand",
         "usedBy": null,
         "id": "40d93087",
+        "summary": "Updates phase metrics in flow state by incrementing a validated counter. It serves as a controlled metric mutation endpoint.",
+        "detail": "The command requires both phase and counter arguments and validates each against centralized constants. It performs mutation via `mutateFlowState`, ensuring updates are transactional at the flow-state layer. The output reports phase, counter, and new value for visibility and scripting use. This pattern keeps metric writes consistent with other flow set commands. It also prevents invalid metric keys from entering persisted state.",
+        "chapter": "configuration",
+        "role": "cli",
         "enrich": {
-          "processedAt": "2026-04-13T05:28:46.709Z",
-          "attempts": 5
+          "processedAt": "2026-04-13T12:58:47.344Z",
+          "attempts": 1
         },
-        "summary": "This command increments phase metrics counters in flow state. It enforces allowed phases and allowed counter keys.",
-        "detail": "It defines a constrained set of counter names and checks input against both phase and counter whitelists. Invalid arguments trigger explicit errors that include valid options for correction. Mutation uses shared state helpers and computes the new value atomically through a functional update. The command returns phase, counter, and resulting count to support logging and automation.",
-        "chapter": "cli_commands",
-        "role": "controller",
         "keywords": [
-          "metrics counter",
+          "flow metrics",
+          "counter increment",
           "phase metrics",
-          "increment",
-          "input validation",
-          "flow telemetry"
+          "state mutation",
+          "telemetry counters"
         ]
       },
       {
@@ -3402,14 +3378,15 @@
       },
       {
         "file": "src/flow/lib/set-req.js",
-        "hash": "375ed7b07a051e12b1d86e425d3390af",
-        "lines": 31,
-        "mtime": "2026-04-10T06:35:13.098Z",
+        "hash": "b8d70309375bbefc94428966f8d2649f",
+        "lines": 38,
+        "mtime": "2026-04-13T12:57:49.488Z",
         "className": "set-req",
         "methods": [],
         "imports": [
           "./base-command.js",
-          "../../lib/flow-state.js"
+          "../../lib/flow-state.js",
+          "../../lib/constants.js"
         ],
         "exports": [
           "default"
@@ -3417,20 +3394,20 @@
         "extends": "FlowCommand",
         "usedBy": null,
         "id": "6dd22e12",
+        "summary": "Updates individual requirement status entries by index within flow state. It validates both index format and status enum.",
+        "detail": "The command expects an index and status, failing fast on missing arguments or malformed values. It enforces non-negative integer index semantics and status membership in the valid requirement statuses set. Actual update logic is delegated to a dedicated requirement state helper. The result echoes the modified index and new status for deterministic CLI feedback. This keeps requirement lifecycle transitions explicit and script-friendly.",
+        "chapter": "configuration",
+        "role": "cli",
         "enrich": {
-          "processedAt": "2026-04-13T05:28:46.709Z",
-          "attempts": 5
+          "processedAt": "2026-04-13T12:58:47.344Z",
+          "attempts": 1
         },
-        "summary": "This command updates requirement status by index in flow state. It validates both index format and status input.",
-        "detail": "It expects two positional arguments and reports usage when either is missing. The requirement index is parsed numerically and rejected on invalid values. Update logic is delegated to the shared `updateRequirement` helper for consistency. The returned payload includes updated index and status for structured command output.",
-        "chapter": "cli_commands",
-        "role": "controller",
         "keywords": [
           "requirement status",
           "index update",
-          "flow requirements",
-          "CLI mutation",
-          "validation"
+          "status enum",
+          "flow state",
+          "cli mutation"
         ]
       },
       {
@@ -3468,14 +3445,15 @@
       },
       {
         "file": "src/flow/lib/set-step.js",
-        "hash": "c0dece8ba2d414264bc72e113a5a09c1",
-        "lines": 28,
-        "mtime": "2026-04-10T06:35:13.098Z",
+        "hash": "5d5fc18a0bef3adab512471fd3cd5aed",
+        "lines": 33,
+        "mtime": "2026-04-13T12:57:49.488Z",
         "className": "set-step",
         "methods": [],
         "imports": [
           "./base-command.js",
           "../../lib/flow-state.js",
+          "../../lib/constants.js",
           "../../lib/log.js"
         ],
         "exports": [
@@ -3484,27 +3462,27 @@
         "extends": "FlowCommand",
         "usedBy": null,
         "id": "d4cb8d93",
+        "summary": "Sets the status of a named flow step with enum validation and logging integration. It is the primary command for manual step-state correction.",
+        "detail": "The module validates usage and allowed step status values before applying changes. It calls a flow-state helper to update the target step by id, keeping command logic focused on input handling. Logger integration supports consistent runtime reporting with other flow commands. The return payload includes the affected step id and final status for machine consumption. This command helps align workflow progress markers with actual execution state.",
+        "chapter": "configuration",
+        "role": "cli",
         "enrich": {
-          "processedAt": "2026-04-13T05:28:46.709Z",
-          "attempts": 5
+          "processedAt": "2026-04-13T12:58:47.344Z",
+          "attempts": 1
         },
-        "summary": "This command sets step status within the flow lifecycle. It combines state mutation with logging utility imports for observability alignment.",
-        "detail": "It requires a step identifier and status value, failing fast on malformed usage. Actual transition updates are handled via `updateStepStatus` in the flow-state module. The response echoes the new step state for envelope-based consumers. The command follows the same thin-command, shared-model pattern used across other `set-*` actions.",
-        "chapter": "cli_commands",
-        "role": "controller",
         "keywords": [
           "step status",
-          "workflow state",
-          "lifecycle transition",
-          "CLI mutation",
-          "flow step"
+          "workflow progress",
+          "state correction",
+          "enum validation",
+          "flow control"
         ]
       },
       {
         "file": "src/flow/lib/set-summary.js",
-        "hash": "ac99c7eefd5d079c479d1fc293c5e5e8",
-        "lines": 36,
-        "mtime": "2026-04-10T06:35:13.098Z",
+        "hash": "f47e693d3d55f387111d9a5d01df5d1b",
+        "lines": 45,
+        "mtime": "2026-04-13T12:57:49.488Z",
         "className": "set-summary",
         "methods": [],
         "imports": [
@@ -3517,20 +3495,20 @@
         "extends": "FlowCommand",
         "usedBy": null,
         "id": "f62c866f",
+        "summary": "Sets summarized requirements from a JSON array payload in flow state. It validates schema shape and element types before persistence.",
+        "detail": "The command requires a JSON argument, parses it, and surfaces parser errors with explicit messages. It enforces that the payload is an array whose elements are either strings or `{text, status}` objects. Invalid items are rejected with index-aware diagnostics to aid quick correction. After validation, it delegates persistence to the flow-state summary setter. The response includes item count for confirmation and automation checks.",
+        "chapter": "configuration",
+        "role": "cli",
         "enrich": {
-          "processedAt": "2026-04-13T05:28:46.709Z",
-          "attempts": 5
+          "processedAt": "2026-04-13T12:58:47.344Z",
+          "attempts": 1
         },
-        "summary": "This command sets requirement summaries from a JSON array string. It validates both JSON parsing and element type constraints.",
-        "detail": "It expects one raw JSON argument and reports clear usage on missing input. Parsing errors are wrapped with original exception messages for easier correction. It enforces an array-of-strings contract to keep downstream requirement processing predictable. Valid data is persisted through shared state helpers and returns the saved count.",
-        "chapter": "cli_commands",
-        "role": "controller",
         "keywords": [
-          "summary setter",
-          "json array parse",
-          "requirement list",
-          "input validation",
-          "flow state"
+          "summary import",
+          "JSON parsing",
+          "schema validation",
+          "requirements list",
+          "state persistence"
         ]
       },
       {
@@ -3569,9 +3547,9 @@
       },
       {
         "file": "src/flow/registry.js",
-        "hash": "12bb65e49c94b981958ac46142648924",
+        "hash": "f5d6ff527f2130e1f2188166e1bf6364",
         "lines": 467,
-        "mtime": "2026-04-13T12:56:41.651Z",
+        "mtime": "2026-04-13T12:57:49.489Z",
         "className": "registry",
         "methods": [
           "deriveActivePhase",
@@ -3582,7 +3560,7 @@
         ],
         "imports": [
           "../lib/flow-state.js",
-          "./lib/phases.js",
+          "../lib/constants.js",
           "./lib/set-issue-log.js"
         ],
         "exports": [
@@ -3593,21 +3571,21 @@
           "src/flow.js"
         ],
         "id": "d64f4095",
-        "summary": "This file registers the flow command matrix and composes cross-cutting execution hooks. It is the central wiring point between command names, lifecycle hooks, and flow-state mutations.",
-        "detail": "It imports state update primitives and phase definitions, then applies pre/post wrappers for step progression and metrics updates. Helper functions derive active phase and gate-step mapping so command execution can consistently reflect workflow transitions. The registry also integrates ancillary concerns like issue-log persistence and command-specific help text. This design keeps command implementations focused while embedding orchestration policy in one map-based registration layer.",
+        "summary": "Defines the flow command registry and step lifecycle hooks that synchronize command execution with flow-state step tracking. It is the central dispatcher for flow subcommands.",
+        "detail": "The module derives active phase context and provides helper wrappers to mark steps in progress and completed around command execution. It maps flow command names to implementations and embeds help text for command discovery. Shared post-hooks can update metrics, issue logs, and step statuses based on command results. Gate step resolution logic aligns phase-specific gate invocations with a stable step id model. This file acts as coordination glue between command implementations and workflow state transitions.",
         "chapter": "project_structure",
-        "role": "middleware",
+        "role": "controller",
         "enrich": {
-          "processedAt": "2026-04-13T12:57:13.817Z",
+          "processedAt": "2026-04-13T12:58:47.344Z",
           "attempts": 1
         },
         "keywords": [
           "command registry",
-          "lifecycle hooks",
-          "step status",
-          "phase transitions",
+          "dispatcher",
+          "step hooks",
+          "phase derivation",
           "workflow orchestration",
-          "cross-cutting concerns"
+          "state synchronization"
         ]
       },
       {
@@ -3909,6 +3887,46 @@
           "work directory",
           "schema validation",
           "environment override"
+        ]
+      },
+      {
+        "file": "src/lib/constants.js",
+        "hash": "afea2ba24bf2c68f1f4dd4fa41c9f53b",
+        "lines": 111,
+        "mtime": "2026-04-13T12:57:49.489Z",
+        "className": "constants",
+        "methods": [],
+        "imports": [],
+        "exports": [
+          "VALID_PHASES",
+          "VALID_STEP_STATUSES",
+          "VALID_GATE_PHASES",
+          "VALID_METRIC_COUNTERS",
+          "VALID_CHECK_TARGETS",
+          "VALID_REVIEW_PHASES",
+          "VALID_IMPL_CONFIRM_MODES",
+          "VALID_MERGE_STRATEGIES",
+          "VALID_AUTO_VALUES",
+          "VALID_REQ_STATUSES"
+        ],
+        "extends": null,
+        "usedBy": null,
+        "id": "74b5e1c3",
+        "summary": "Provides frozen constant enums for phases, statuses, targets, and strategy options used across flow commands. It is the canonical validation source for CLI argument checking.",
+        "detail": "The module exports immutable arrays for valid phases, step statuses, gate phases, review phases, merge strategies, and related command enums. Command modules import these constants to enforce consistent input validation and error messaging. Centralizing these values reduces drift between commands and prevents duplicated literal sets. The constants also define behavior boundaries for mode switches and state transitions. This file functions as shared configuration schema for the flow subsystem.",
+        "chapter": "project_structure",
+        "role": "config",
+        "enrich": {
+          "processedAt": "2026-04-13T12:58:47.344Z",
+          "attempts": 1
+        },
+        "keywords": [
+          "constants",
+          "enum definitions",
+          "input validation",
+          "shared schema",
+          "flow phases",
+          "command options"
         ]
       },
       {
@@ -8004,5 +8022,5 @@
     },
     "dataSourceHash": "7d725e75d5031be445119323e4947c91"
   },
-  "enrichedAt": "2026-04-13T12:57:13.817Z"
+  "enrichedAt": "2026-04-13T12:58:47.344Z"
 }
