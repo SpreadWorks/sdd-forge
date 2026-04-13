@@ -1,5 +1,5 @@
 {
-  "analyzedAt": "2026-04-13T01:48:42.166Z",
+  "analyzedAt": "2026-04-13T05:25:39.219Z",
   "package": {
     "entries": [
       {
@@ -2111,7 +2111,7 @@
         "usedBy": null,
         "id": "1ab08f2b",
         "enrich": {
-          "attempts": 1
+          "attempts": 2
         }
       },
       {
@@ -2163,9 +2163,9 @@
       },
       {
         "file": "src/flow/commands/report.js",
-        "hash": "8220460707c43919ddebaeb08ef00606",
+        "hash": "106df9ca2b6c0affe6894f168b549200",
         "lines": 243,
-        "mtime": "2026-04-10T08:28:57.267Z",
+        "mtime": "2026-04-13T05:25:38.911Z",
         "className": "report",
         "methods": [
           "generateReport",
@@ -2189,20 +2189,8 @@
         "usedBy": null,
         "id": "5f80ffd2",
         "enrich": {
-          "processedAt": "2026-04-10T14:34:55.016Z",
-          "attempts": 2
-        },
-        "summary": "Generates and persists flow activity reports. It aggregates metrics and emits both machine-readable and formatted text outputs.",
-        "detail": "The module computes phase-level aggregates for activity counts and token usage from collected metrics. It formats readable report text with aligned labels and section dividers for CLI output. It also writes `report.json` beside the active spec to preserve artifacts for later inspection.",
-        "chapter": "development",
-        "role": "controller",
-        "keywords": [
-          "report generation",
-          "metrics aggregation",
-          "token usage",
-          "flow analytics",
-          "report.json"
-        ]
+          "attempts": 1
+        }
       },
       {
         "file": "src/flow/commands/review.js",
@@ -2754,9 +2742,9 @@
       },
       {
         "file": "src/flow/lib/run-gate.js",
-        "hash": "fd72590e5cf931f360458325b07654c9",
-        "lines": 483,
-        "mtime": "2026-04-10T06:35:13.097Z",
+        "hash": "4da60ef67f48ca8027722da7dd5c7679",
+        "lines": 490,
+        "mtime": "2026-04-13T02:06:58.989Z",
         "className": "run-gate",
         "methods": [
           "RunGateCommand",
@@ -2794,20 +2782,8 @@
         "usedBy": null,
         "id": "b4aa4dad",
         "enrich": {
-          "processedAt": "2026-04-10T14:34:55.016Z",
-          "attempts": 2
-        },
-        "summary": "Implements gate checks for draft/spec/impl phases with guardrail integration. It validates document quality and implementation diffs before phase advancement.",
-        "detail": "The module performs static checks on spec and draft text using section-aware heuristics and required-field patterns. It can call an agent-driven guardrail evaluator and parse structured PASS/FAIL outputs. For implementation phase, it inspects git diffs and maps pass/fail into next-step guidance using shared transition rules.",
-        "chapter": "cli_commands",
-        "role": "controller",
-        "keywords": [
-          "gate command",
-          "spec validation",
-          "guardrail check",
-          "diff inspection",
-          "phase transition"
-        ]
+          "attempts": 1
+        }
       },
       {
         "file": "src/flow/lib/run-impl-confirm.js",
@@ -3050,7 +3026,7 @@
         "usedBy": null,
         "id": "862e7d08",
         "enrich": {
-          "attempts": 4
+          "attempts": 5
         }
       },
       {
@@ -3083,7 +3059,7 @@
         "usedBy": null,
         "id": "d4e97204",
         "enrich": {
-          "attempts": 4
+          "attempts": 5
         }
       },
       {
@@ -3109,7 +3085,7 @@
         "usedBy": null,
         "id": "6cc87b22",
         "enrich": {
-          "attempts": 4
+          "attempts": 5
         }
       },
       {
@@ -3130,7 +3106,7 @@
         "usedBy": null,
         "id": "2c71e989",
         "enrich": {
-          "attempts": 4
+          "attempts": 5
         }
       },
       {
@@ -3163,7 +3139,7 @@
         ],
         "id": "65ac9e4f",
         "enrich": {
-          "attempts": 4
+          "attempts": 5
         }
       },
       {
@@ -3184,7 +3160,7 @@
         "usedBy": null,
         "id": "c3865b58",
         "enrich": {
-          "attempts": 4
+          "attempts": 5
         }
       },
       {
@@ -3206,7 +3182,7 @@
         "usedBy": null,
         "id": "40d93087",
         "enrich": {
-          "attempts": 4
+          "attempts": 5
         }
       },
       {
@@ -3227,7 +3203,7 @@
         "usedBy": null,
         "id": "7c2ef03f",
         "enrich": {
-          "attempts": 4
+          "attempts": 5
         }
       },
       {
@@ -3248,7 +3224,7 @@
         "usedBy": null,
         "id": "6dd22e12",
         "enrich": {
-          "attempts": 4
+          "attempts": 5
         }
       },
       {
@@ -3269,7 +3245,7 @@
         "usedBy": null,
         "id": "546ef334",
         "enrich": {
-          "attempts": 4
+          "attempts": 5
         }
       },
       {
@@ -3291,7 +3267,7 @@
         "usedBy": null,
         "id": "d4cb8d93",
         "enrich": {
-          "attempts": 4
+          "attempts": 5
         }
       },
       {
@@ -3312,7 +3288,7 @@
         "usedBy": null,
         "id": "f62c866f",
         "enrich": {
-          "attempts": 4
+          "attempts": 5
         }
       },
       {
@@ -3333,14 +3309,14 @@
         "usedBy": null,
         "id": "962cab89",
         "enrich": {
-          "attempts": 4
+          "attempts": 5
         }
       },
       {
         "file": "src/flow/registry.js",
-        "hash": "2cb1b6b3f97bd3faf3913a98c1226e8a",
-        "lines": 463,
-        "mtime": "2026-04-13T01:48:41.877Z",
+        "hash": "b7f809e2ee51e7a2b560cbeee075e0e6",
+        "lines": 464,
+        "mtime": "2026-04-13T02:06:53.263Z",
         "className": "registry",
         "methods": [
           "deriveActivePhase",
@@ -3388,7 +3364,7 @@
         "usedBy": null,
         "id": "4ac07fa0",
         "enrich": {
-          "attempts": 3
+          "attempts": 4
         }
       },
       {
@@ -3463,7 +3439,7 @@
         ],
         "id": "13ddf392",
         "enrich": {
-          "attempts": 4
+          "attempts": 5
         }
       },
       {
@@ -3489,7 +3465,7 @@
         ],
         "id": "9f3f55f7",
         "enrich": {
-          "attempts": 4
+          "attempts": 5
         }
       },
       {
@@ -3541,7 +3517,7 @@
         ],
         "id": "f351ecc4",
         "enrich": {
-          "attempts": 4
+          "attempts": 5
         }
       },
       {
@@ -3592,7 +3568,7 @@
         ],
         "id": "dff6e5b4",
         "enrich": {
-          "attempts": 4
+          "attempts": 5
         }
       },
       {
@@ -3622,7 +3598,7 @@
         ],
         "id": "5c7afa99",
         "enrich": {
-          "attempts": 4
+          "attempts": 5
         }
       },
       {
@@ -3651,7 +3627,7 @@
         ],
         "id": "82a3b684",
         "enrich": {
-          "attempts": 4
+          "attempts": 5
         }
       },
       {
@@ -3679,7 +3655,7 @@
         ],
         "id": "4f01cb50",
         "enrich": {
-          "attempts": 4
+          "attempts": 5
         }
       },
       {
@@ -3764,7 +3740,7 @@
         ],
         "id": "5bb0bb76",
         "enrich": {
-          "attempts": 4
+          "attempts": 5
         }
       },
       {
@@ -3785,7 +3761,7 @@
         "usedBy": null,
         "id": "994720ab",
         "enrich": {
-          "attempts": 4
+          "attempts": 5
         }
       },
       {
@@ -3819,7 +3795,7 @@
         "usedBy": null,
         "id": "61b28e9c",
         "enrich": {
-          "attempts": 4
+          "attempts": 5
         }
       },
       {
@@ -3858,7 +3834,7 @@
         ],
         "id": "bb462f4e",
         "enrich": {
-          "attempts": 4
+          "attempts": 5
         }
       },
       {
@@ -3903,7 +3879,7 @@
         ],
         "id": "45a1457c",
         "enrich": {
-          "attempts": 4
+          "attempts": 5
         }
       },
       {
@@ -3929,7 +3905,7 @@
         ],
         "id": "d35107ed",
         "enrich": {
-          "attempts": 4
+          "attempts": 5
         }
       },
       {
@@ -3954,7 +3930,7 @@
         "usedBy": null,
         "id": "a2f5875b",
         "enrich": {
-          "attempts": 4
+          "attempts": 5
         }
       },
       {
@@ -3985,7 +3961,7 @@
         "usedBy": null,
         "id": "aa4a324d",
         "enrich": {
-          "attempts": 4
+          "attempts": 5
         }
       },
       {
@@ -4024,7 +4000,7 @@
         ],
         "id": "3d7bb5e6",
         "enrich": {
-          "attempts": 4
+          "attempts": 5
         }
       },
       {
@@ -4049,7 +4025,7 @@
         ],
         "id": "9a04a164",
         "enrich": {
-          "attempts": 4
+          "attempts": 5
         }
       },
       {
@@ -4092,7 +4068,7 @@
         ],
         "id": "ae76d513",
         "enrich": {
-          "attempts": 4
+          "attempts": 5
         }
       },
       {
@@ -4126,7 +4102,7 @@
         ],
         "id": "6196b26c",
         "enrich": {
-          "attempts": 4
+          "attempts": 5
         }
       },
       {
@@ -4152,7 +4128,7 @@
         ],
         "id": "fa23a1ba",
         "enrich": {
-          "attempts": 4
+          "attempts": 5
         }
       },
       {
@@ -4188,8 +4164,22 @@
         ],
         "id": "a1344e4a",
         "enrich": {
-          "attempts": 4
-        }
+          "processedAt": "2026-04-13T05:26:02.189Z",
+          "attempts": 5
+        },
+        "summary": "This module manages skill template deployment into project-local agent directories. It also removes obsolete deployed skills that are no longer backed by templates.",
+        "detail": "It defines canonical template and destination roots, targeting both `.agents/skills` and `.claude/skills` under a workspace. The deployment flow discovers skill directories, resolves `SKILL.md`, renders include directives with package template/preset context, and writes synchronized outputs to both targets. It compares existing content and handles symlink edge cases to avoid stale or unsafe file states before writing. The functions support dry-run behavior and return structured per-skill results for callers. Cleanup logic computes valid skill names from template directories and recursively removes unmatched deployed skill folders.",
+        "chapter": "development",
+        "role": "lib",
+        "keywords": [
+          "skill deployment",
+          "template sync",
+          "include resolution",
+          "workspace scaffolding",
+          "obsolete cleanup",
+          "symlink handling",
+          "dry run"
+        ]
       },
       {
         "file": "src/lib/types.js",
@@ -4216,8 +4206,22 @@
         ],
         "id": "69d5afb4",
         "enrich": {
-          "attempts": 4
-        }
+          "processedAt": "2026-04-13T05:26:02.189Z",
+          "attempts": 5
+        },
+        "summary": "This module validates runtime configuration objects and normalizes output-related settings. It acts as a type-safe boundary before config is consumed by other subsystems.",
+        "detail": "It imports provider constants and keeps an internal allowlist for tone values to enforce constrained configuration semantics. Validation collects schema and value errors, then throws a single aggregated error message when violations exist. On success, it returns a typed configuration object for downstream logic. A separate resolver builds a normalized output configuration shape from the validated config. The implementation emphasizes explicit guardrails over permissive coercion.",
+        "chapter": "configuration",
+        "role": "config",
+        "keywords": [
+          "config validation",
+          "schema checks",
+          "type guard",
+          "tone constraints",
+          "provider settings",
+          "error aggregation",
+          "output normalization"
+        ]
       },
       {
         "file": "src/loader.js",
@@ -4238,8 +4242,21 @@
         "usedBy": null,
         "id": "bc582fbf",
         "enrich": {
-          "attempts": 4
-        }
+          "processedAt": "2026-04-13T05:26:02.189Z",
+          "attempts": 5
+        },
+        "summary": "This module provides a custom ESM loader resolver for `sdd-forge/`-prefixed imports. It rewrites prefixed specifiers before delegating to Node’s default resolver.",
+        "detail": "A fixed prefix constant marks virtual package-style specifiers intended for internal resolution. The `resolve` hook intercepts those imports and returns a rewritten URL/object path for loading. For all other specifiers, it passes control through to `nextResolve` unchanged. This keeps import ergonomics stable while preserving compatibility with standard resolution behavior. The code is intentionally minimal to reduce loader-side complexity.",
+        "chapter": "stack_and_ops",
+        "role": "middleware",
+        "keywords": [
+          "ESM loader",
+          "module resolution",
+          "import alias",
+          "specifier rewrite",
+          "Node resolve hook",
+          "runtime integration"
+        ]
       },
       {
         "file": "src/metrics.js",
@@ -4258,8 +4275,22 @@
         "usedBy": null,
         "id": "0230d610",
         "enrich": {
-          "attempts": 3
-        }
+          "processedAt": "2026-04-13T05:26:02.189Z",
+          "attempts": 4
+        },
+        "summary": "This module is a CLI entry dispatcher for metrics-related scripts. It maps subcommands to script paths, rewrites process arguments, and executes the selected script.",
+        "detail": "It defines a subcommand-to-script lookup table and reads CLI arguments from `process.argv`. When no or invalid subcommand is provided, it exits with explicit error behavior using shared exit codes. For valid commands, it resolves the script path relative to package root and reconstructs `process.argv` to match direct script execution. It then dynamically imports the script module to run it in-process. This design keeps the metrics command surface centralized while delegating implementation to dedicated scripts.",
+        "chapter": "cli_commands",
+        "role": "cli",
+        "keywords": [
+          "CLI dispatcher",
+          "subcommand routing",
+          "dynamic import",
+          "exit codes",
+          "argument forwarding",
+          "metrics scripts",
+          "command map"
+        ]
       },
       {
         "file": "src/metrics/commands/token.js",
@@ -7397,5 +7428,5 @@
     },
     "dataSourceHash": "7d725e75d5031be445119323e4947c91"
   },
-  "enrichedAt": "2026-04-13T01:50:53.835Z"
+  "enrichedAt": "2026-04-13T05:27:33.023Z"
 }

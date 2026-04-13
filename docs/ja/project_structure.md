@@ -20,7 +20,7 @@
 
 <!-- {{data("base.structure.tree")}} -->
 ```
-src/    (lib, cli, controller)
+src/    (lib, cli, controller, middleware)
 src/check/commands/    (cli)
 src/docs/commands/    (cli, controller)
 src/docs/data/    (model)
@@ -29,7 +29,7 @@ src/docs/lib/lang/    (lib)
 src/flow/    
 src/flow/commands/    (controller)
 src/flow/lib/    (model, controller, lib, config)
-src/lib/    
+src/lib/    (lib, config)
 src/metrics/commands/    (cli)
 ```
 <!-- {{/data}} -->
@@ -41,8 +41,8 @@ src/metrics/commands/    (cli)
 | --- | --- | --- |
 | src/docs | 40 | cli, controller, model, lib |
 | src/flow | 34 | controller, model, lib, config |
-| src/lib | 22 | — |
-| src | 11 | lib, cli, controller |
+| src/lib | 22 | lib, config |
+| src | 11 | lib, cli, controller, middleware |
 | src/check | 3 | cli |
 | src/metrics | 1 | cli |
 <!-- {{/data}} -->
