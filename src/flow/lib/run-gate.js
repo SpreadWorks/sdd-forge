@@ -317,6 +317,13 @@ export class RunGateCommand extends FlowCommand {
     const { root } = ctx;
     const phase = ctx.phase || "pre";
     const skipGuardrail = ctx.skipGuardrail || false;
+    const confirmSkipGuardrail = ctx.confirmSkipGuardrail || false;
+
+    if (skipGuardrail && !confirmSkipGuardrail) {
+      throw new Error(
+        "refusing to skip guardrail without explicit confirmation. Re-run with --skip-guardrail --confirm-skip-guardrail",
+      );
+    }
 
     if (phase === "draft") {
       return this.executeDraft(ctx, root, skipGuardrail);

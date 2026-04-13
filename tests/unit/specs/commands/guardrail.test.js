@@ -88,7 +88,54 @@ describe("gate guardrail integration", () => {
     assert.equal(envelope.ok, true);
   });
 
-  it("skips AI check with --skip-guardrail", () => {
+  it("requires explicit confirmation with --skip-guardrail", () => {
+    tmp = createTmpDir();
+    execFileSync("git", ["init", tmp], { stdio: "ignore" });
+    execFileSync("git", ["-C", tmp, "commit", "--allow-empty", "-m", "init"], { stdio: "ignore" });
+    setupFlow(tmp);
+    writeJson(tmp, ".sdd-forge/config.json", {
+      lang: "en",
+      type: "node-cli",
+      docs: { languages: ["en"], defaultLanguage: "en" },
+      agent: { default: "claude", providers: { claude: { command: "echo", args: ["FAIL"] } } },
+    });
+    writeFile(tmp, "spec.md", validSpec);
+    writeJson(tmp, ".sdd-forge/guardrail.json", {
+      guardrails: [
+        {
+          id: "rule",
+          title: "Rule",
+          body: "Some rule.",
+          meta: { phase: ["spec"] },
+        },
+      ],
+    });
+
+    let stdout = "";
+    try {
+      stdout = execFileSync("node", [
+        SDD_FORGE, "flow", "run", "gate",
+        "--spec", join(tmp, "spec.md"),
+        "--skip-guardrail",
+      ], {
+        encoding: "utf8",
+        env: { ...process.env, SDD_FORGE_WORK_ROOT: tmp },
+      });
+      assert.fail("expected command to fail without --confirm-skip-guardrail");
+    } catch (err) {
+      stdout = err.stdout;
+    }
+
+    const envelope = JSON.parse(stdout);
+    assert.equal(envelope.ok, false);
+    assert.equal(envelope.errors[0]?.code, "ERROR");
+    assert.match(
+      envelope.errors[0]?.messages?.[0] || "",
+      /refusing to skip guardrail without explicit confirmation/i,
+    );
+  });
+
+  it("skips AI check with --skip-guardrail when confirmation flag is set", () => {
     tmp = createTmpDir();
     execFileSync("git", ["init", tmp], { stdio: "ignore" });
     execFileSync("git", ["-C", tmp, "commit", "--allow-empty", "-m", "init"], { stdio: "ignore" });
@@ -116,6 +163,7 @@ describe("gate guardrail integration", () => {
       SDD_FORGE, "flow", "run", "gate",
       "--spec", join(tmp, "spec.md"),
       "--skip-guardrail",
+      "--confirm-skip-guardrail",
     ], {
       encoding: "utf8",
       env: { ...process.env, SDD_FORGE_WORK_ROOT: tmp },

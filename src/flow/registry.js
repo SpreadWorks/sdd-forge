@@ -264,7 +264,7 @@ export const FLOW_COMMANDS = {
       command: () => import("./lib/run-gate.js"),
       args: {
         options: ["--spec", "--phase"],
-        flags: ["--skip-guardrail"],
+        flags: ["--skip-guardrail", "--confirm-skip-guardrail"],
       },
       help: [
         "Usage: sdd-forge flow run gate [options]",
@@ -275,6 +275,7 @@ export const FLOW_COMMANDS = {
         "  --spec <path>                 Path to spec.md (auto-resolved from flow.json)",
         "  --phase <draft|pre|post|impl> Gate phase (default: pre)",
         "  --skip-guardrail              Skip AI guardrail compliance check",
+        "  --confirm-skip-guardrail      Required with --skip-guardrail",
       ].join("\n"),
       post(ctx, result) {
         const status = result?.result === "pass" ? "done" : "in_progress";
