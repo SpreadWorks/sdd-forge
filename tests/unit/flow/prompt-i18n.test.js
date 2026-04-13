@@ -42,16 +42,16 @@ describe("flow get prompt i18n — Japanese", () => {
   let tmp;
   afterEach(() => tmp && removeTmpDir(tmp));
 
-  it("returns Japanese description for plan.approach when lang=ja", () => {
+  it("returns Japanese description for plan.work-environment when lang=ja", () => {
     tmp = createTmpDir();
     setupFlowState(tmp, "ja");
     const result = execFileSync(
-      "node", [FLOW_CMD, "get", "prompt", "plan.approach"],
+      "node", [FLOW_CMD, "get", "prompt", "plan.work-environment"],
       { encoding: "utf8", env: { ...process.env, SDD_FORGE_WORK_ROOT: tmp } },
     );
     const envelope = JSON.parse(result);
     assert.equal(envelope.ok, true);
-    assert.ok(envelope.data.description.includes("仕様書"), `should be Japanese: ${envelope.data.description}`);
+    assert.ok(envelope.data.description.includes("作業環境"), `should be Japanese: ${envelope.data.description}`);
   });
 
   it("returns Japanese choices for plan.work-environment when lang=ja", () => {
@@ -82,11 +82,11 @@ describe("flow get prompt i18n — English", () => {
   let tmp;
   afterEach(() => tmp && removeTmpDir(tmp));
 
-  it("returns English description for plan.approach when lang=en", () => {
+  it("returns English description for plan.work-environment when lang=en", () => {
     tmp = createTmpDir();
     setupFlowState(tmp, "en");
     const result = execFileSync(
-      "node", [FLOW_CMD, "get", "prompt", "plan.approach"],
+      "node", [FLOW_CMD, "get", "prompt", "plan.work-environment"],
       { encoding: "utf8", env: { ...process.env, SDD_FORGE_WORK_ROOT: tmp } },
     );
     const envelope = JSON.parse(result);
@@ -130,7 +130,6 @@ describe("flow-plan SKILL.md has no hardcoded prompt text", () => {
     assert.ok(!content.includes("[1] Approve"), "should not hardcode approval choices");
     assert.ok(!content.includes("[1] Proceed to implementation"), "should not hardcode complete choices");
     // Should reference flow get prompt instead
-    assert.ok(content.includes("flow get prompt plan.approach"), "should reference prompt command");
     assert.ok(content.includes("flow get prompt plan.approval"), "should reference prompt command");
     assert.ok(content.includes("flow get prompt plan.test-mode"), "should reference prompt command");
   });

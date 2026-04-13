@@ -1,0 +1,96 @@
+{
+  "spec": "specs/170-fix-plan-ambiguous-input/spec.md",
+  "date": "2026-04-13T09:59:27.947Z",
+  "requirements": [
+    {
+      "desc": "R1: approach選択廃止、draft常に実行",
+      "status": "done",
+      "note": "SKILL.mdでStep 1のapproach選択が削除され、Draft phaseが条件なしで実行される記述に変更されている。"
+    },
+    {
+      "desc": "R2: 新Step1リクエスト解釈確認追加",
+      "status": "done",
+      "note": "SKILL.mdのStep 1が「Confirm request interpretation」に置換され、要約提示と確認取得の手順が明記されている。"
+    },
+    {
+      "desc": "R3: 入力解釈ルール明記(#N=Issue, spec N=ローカル, 数字のみ=曖昧確認)",
+      "status": "done",
+      "note": "SKILL.mdに`#<number>`/`issue <number>`/`spec <number>`/`specs/<number>-...`/裸の数字の解釈ルールが追加されている。"
+    },
+    {
+      "desc": "R4: 解釈確認完了までcontext search禁止",
+      "status": "done",
+      "note": "SKILL.mdに確認完了まで`flow get context --search`を実行しない旨が明示されている。"
+    },
+    {
+      "desc": "R5: #N→flow get issue実行、失敗時のみローカル切替確認",
+      "status": "done",
+      "note": "SKILL.mdで`#<number>`時に`flow get issue <number>`実行、失敗時のみローカルspec扱いにするか確認する手順が追加されている。"
+    },
+    {
+      "desc": "R6: autoApprove時は解釈確認スキップ",
+      "status": "done",
+      "note": "SKILL.mdに`autoApprove: true`時はStep 1をスキップするルールが追加されている。"
+    },
+    {
+      "desc": "R7: get-prompt.jsからplan.approach削除(ja/en)",
+      "status": "done",
+      "note": "src/flow/lib/get-prompt.jsの`PROMPTS_BY_LANG`から`plan.approach`がja/en両方で削除されている。"
+    },
+    {
+      "desc": "R8: SKILL.md step IDからapproach削除",
+      "status": "done",
+      "note": "SKILL.mdのAvailable step IDsから`approach`が削除されている。"
+    }
+  ],
+  "unplanned": [
+    {
+      "file": "tests/unit/flow/get-prompt.test.js",
+      "change": "既存テストを`plan.approach`成功ケースから削除後のエラー検証ケースへ変更。"
+    },
+    {
+      "file": "tests/unit/flow/prompt-i18n.test.js",
+      "change": "i18nテスト対象を`plan.approach`から`plan.work-environment`へ置換し、SKILL.md内の`plan.approach`参照アサーションを削除。"
+    },
+    {
+      "file": "specs/170-fix-plan-ambiguous-input/draft.md",
+      "change": "spec運用用ドキュメントを新規追加。"
+    },
+    {
+      "file": "specs/170-fix-plan-ambiguous-input/flow.json",
+      "change": "spec運用用フロー管理ファイルを新規追加。"
+    },
+    {
+      "file": "specs/170-fix-plan-ambiguous-input/issue-log.json",
+      "change": "gate/gate-implの評価ログを新規追加。"
+    },
+    {
+      "file": "specs/170-fix-plan-ambiguous-input/qa.md",
+      "change": "Q&Aテンプレート文書を新規追加。"
+    },
+    {
+      "file": "specs/170-fix-plan-ambiguous-input/review.md",
+      "change": "コードレビュー記録文書を新規追加。"
+    },
+    {
+      "file": "specs/170-fix-plan-ambiguous-input/spec.md",
+      "change": "機能仕様書を新規追加。"
+    },
+    {
+      "file": "specs/170-fix-plan-ambiguous-input/tests/README.md",
+      "change": "spec検証テスト説明文書を新規追加。"
+    },
+    {
+      "file": "specs/170-fix-plan-ambiguous-input/tests/verify-spec.test.js",
+      "change": "spec要件の検証用テストを新規追加。"
+    }
+  ],
+  "summary": {
+    "total": 8,
+    "done": 8,
+    "partial": 0,
+    "not_done": 0,
+    "rate": 1,
+    "notes": "要件R1〜R8はすべて差分上で満たされている。要件外として、テスト更新とspec運用関連ファイル群の追加が含まれている。"
+  }
+}

@@ -32,23 +32,24 @@ describe("flow get prompt", () => {
     addActiveFlow(dir, specId, "local");
   }
 
-  it("returns structured choices for plan.approach", () => {
+  it("returns error for removed plan.approach kind", () => {
     tmp = createTmpDir();
     setupFlowState(tmp);
-    const result = execFileSync(
-      "node", [FLOW_CMD, "get", "prompt", "plan.approach"],
-      { encoding: "utf8", env: { ...process.env, SDD_FORGE_WORK_ROOT: tmp } },
-    );
-    const envelope = JSON.parse(result);
-    assert.equal(envelope.ok, true);
-    assert.equal(envelope.type, "get");
-    assert.equal(envelope.key, "prompt");
-    assert.equal(envelope.data.phase, "plan");
-    assert.equal(envelope.data.step, "approach");
-    assert.ok(Array.isArray(envelope.data.choices));
-    assert.ok(envelope.data.choices.length >= 2);
-    assert.ok(envelope.data.choices[0].id);
-    assert.ok(envelope.data.choices[0].label);
+    try {
+      execFileSync(
+        "node", [FLOW_CMD, "get", "prompt", "plan.approach"],
+        { encoding: "utf8", env: { ...process.env, SDD_FORGE_WORK_ROOT: tmp } },
+      );
+      assert.fail("should exit non-zero");
+    } catch (err) {
+      const envelope = JSON.parse(err.stdout);
+      assert.equal(envelope.ok, false);
+      assert.equal(envelope.errors[0].level, "fatal");
+      assert.ok(
+        envelope.errors[0].messages[0].includes("unknown kind"),
+        `should mention unknown kind: ${envelope.errors[0].messages[0]}`,
+      );
+    }
   });
 
   it("returns empty choices for hybrid kind plan.draft", () => {

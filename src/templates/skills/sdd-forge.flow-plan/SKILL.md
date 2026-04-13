@@ -15,7 +15,7 @@ Run this workflow for any feature or fix request. This skill covers the planning
 
 <!-- include("@templates/partials/flow-tracking.md") -->
 
-Available step IDs (this skill): `approach`, `branch`, `prepare-spec`, `draft`, `gate-draft`, `spec`, `gate`, `approval`, `test`
+Available step IDs (this skill): `branch`, `prepare-spec`, `draft`, `gate-draft`, `spec`, `gate`, `approval`, `test`
 Available status values: `pending`, `in_progress`, `done`, `skipped`
 
 ## Context Recording (Compaction Resilience)
@@ -38,10 +38,24 @@ Note: `sdd-forge flow get context` automatically records these metrics via hooks
 
 ## Required Sequence
 
-1. Choose approach.
+1. Confirm request interpretation.
    - **Note**: `flow.json` does not exist yet at this point. Do NOT run `sdd-forge flow set` commands until after step 3.
-   - Run `sdd-forge flow get prompt plan.approach` and present the `description` and `choices` from the response using the Choice Format.
-   - Remember the choice for later. Proceed to step 2 regardless.
+   - **autoApprove skip**: If `autoApprove: true` (checked via `sdd-forge flow get status` before entering this skill), skip this step entirely. The request/issue is already confirmed in flow.json.
+   - **Input interpretation rules** — apply these rules to determine what the user's input refers to:
+     - `#<number>` → always interpret as a GitHub Issue first. Run `sdd-forge flow get issue <number>`.
+     - `issue <number>` or similar explicit forms → treat as a GitHub Issue.
+     - `spec <number>` or `specs/<number>-...` → treat as a local spec reference.
+     - A bare number (e.g., `133`) → ambiguous input. Always ask a clarifying question before proceeding.
+   - **Interpretation procedure**:
+     1. Parse the user's input using the rules above.
+     2. If a GitHub Issue number is identified, run `sdd-forge flow get issue <number>` to fetch it.
+        - On success: display the issue title and body.
+        - On failure: ask the user "GitHub Issue が見つかりませんでした。ローカル spec への参照として扱いますか？" and wait for confirmation.
+     3. Present a summary of your interpretation to the user and ask for confirmation:
+        - "リクエストの理解: [summary]. この理解で合っていますか？"
+        - Use the Choice Format with [1] はい [2] 修正する [3] その他.
+     4. Do NOT run `sdd-forge flow get context --search` until this confirmation is complete.
+   - After confirmation, proceed to step 2.
 
 2. Choose work environment.
    - **Auto-detect**: Check if `.git` is a file (not directory) in the project root.
@@ -62,11 +76,10 @@ Note: `sdd-forge flow get context` automatically records these metrics via hooks
      - No branch: `sdd-forge flow prepare --title "..." --no-branch [--issue N] [--request "..."]`
    - This creates the branch, `specs/NNN-xxx/` directory, `spec.md` skeleton, and `specs/NNN-xxx/flow.json`.
    - The base branch, issue number, and request are automatically recorded in flow.json.
-   - Steps approach/branch/prepare-spec are automatically set to done by prepare-spec.
+   - Steps branch/prepare-spec are automatically set to done by prepare-spec.
 
-4. Draft phase (if step 1 chose option 1).
+4. Draft phase.
    - **On start**: `sdd-forge flow set step draft in_progress`
-   - **If skipped** (step 1 chose option 2): `sdd-forge flow set step draft skipped`
 
    **autoApprove mode — self-Q&A draft:**
    When `autoApprove: true`, the AI conducts the draft phase autonomously:
@@ -129,7 +142,6 @@ Note: `sdd-forge flow get context` automatically records these metrics via hooks
    - **On complete**: `sdd-forge flow set step draft done`
 
 5. Run gate draft (after draft approval, BEFORE spec).
-   - **Skip condition**: If step 1 chose option 2 (skip draft), skip this step: `sdd-forge flow set step gate-draft skipped`
    - `sdd-forge flow run gate --phase draft` (step status is automatically managed by hooks: pre sets gate-draft to in_progress, post sets done on PASS)
    - Checks draft.md for: Q&A section, user approval, development type, goal + guardrail AI compliance.
    - If FAIL (`data.result === "fail"`): show ALL failures from `data.artifacts.issues` and `data.artifacts.reasons`. AI fixes draft.md and re-runs gate.

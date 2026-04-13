@@ -1,0 +1,178 @@
+{
+  "spec": "specs/170-fix-plan-ambiguous-input/spec.md",
+  "baseBranch": "main",
+  "featureBranch": "feature/170-fix-plan-ambiguous-input",
+  "steps": [
+    {
+      "id": "approach",
+      "status": "done"
+    },
+    {
+      "id": "branch",
+      "status": "done"
+    },
+    {
+      "id": "prepare-spec",
+      "status": "pending"
+    },
+    {
+      "id": "draft",
+      "status": "done"
+    },
+    {
+      "id": "gate-draft",
+      "status": "done"
+    },
+    {
+      "id": "spec",
+      "status": "done"
+    },
+    {
+      "id": "gate",
+      "status": "done"
+    },
+    {
+      "id": "approval",
+      "status": "done"
+    },
+    {
+      "id": "test",
+      "status": "done"
+    },
+    {
+      "id": "implement",
+      "status": "done"
+    },
+    {
+      "id": "gate-impl",
+      "status": "done"
+    },
+    {
+      "id": "review",
+      "status": "done"
+    },
+    {
+      "id": "finalize",
+      "status": "pending"
+    },
+    {
+      "id": "commit",
+      "status": "pending"
+    },
+    {
+      "id": "push",
+      "status": "pending"
+    },
+    {
+      "id": "merge",
+      "status": "pending"
+    },
+    {
+      "id": "pr-create",
+      "status": "pending"
+    },
+    {
+      "id": "branch-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "pr-merge",
+      "status": "pending"
+    },
+    {
+      "id": "sync-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "docs-update",
+      "status": "pending"
+    },
+    {
+      "id": "docs-review",
+      "status": "pending"
+    },
+    {
+      "id": "docs-commit",
+      "status": "pending"
+    }
+  ],
+  "requirements": [
+    {
+      "desc": "R1: approach選択廃止、draft常に実行",
+      "status": "done"
+    },
+    {
+      "desc": "R2: 新Step1リクエスト解釈確認追加",
+      "status": "done"
+    },
+    {
+      "desc": "R3: 入力解釈ルール明記(#N=Issue, spec N=ローカル, 数字のみ=曖昧確認)",
+      "status": "done"
+    },
+    {
+      "desc": "R4: 解釈確認完了までcontext search禁止",
+      "status": "done"
+    },
+    {
+      "desc": "R5: #N→flow get issue実行、失敗時のみローカル切替確認",
+      "status": "done"
+    },
+    {
+      "desc": "R6: autoApprove時は解釈確認スキップ",
+      "status": "done"
+    },
+    {
+      "desc": "R7: get-prompt.jsからplan.approach削除(ja/en)",
+      "status": "done"
+    },
+    {
+      "desc": "R8: SKILL.md step IDからapproach削除",
+      "status": "done"
+    }
+  ],
+  "issue": 136,
+  "request": "flow-plan: 曖昧入力時の解釈ロジック修正と明確化フェーズの必須化",
+  "worktree": true,
+  "metrics": {
+    "plan": {
+      "docsRead": 1
+    },
+    "draft": {
+      "srcRead": 6,
+      "question": 7
+    },
+    "gate": {
+      "tokens": {
+        "input": 2,
+        "output": 651,
+        "cacheRead": 11924,
+        "cacheCreation": 10839
+      },
+      "cost": 0.05399445,
+      "callCount": 1,
+      "responseChars": 1157
+    },
+    "test": {
+      "srcRead": 1
+    },
+    "gate-impl": {
+      "tokens": {
+        "input": 12,
+        "output": 3495,
+        "cacheRead": 71544,
+        "cacheCreation": 86273
+      },
+      "cost": 0.39744795,
+      "callCount": 6,
+      "responseChars": 6042
+    }
+  },
+  "notes": [
+    "approach: Q&A で要件整理してから仕様書を作成する",
+    "draft: スコープ=すべて1つのspecでまとめる（SKILL.md変更+exclude CLI拡張+promptの変更）",
+    "draft: Step1=approach廃止→リクエスト解釈確認に置換。#number=Issue優先、spec NNN=ローカル、数字のみ=曖昧確認必須。plan.approachプロンプト削除or変更",
+    "draft: autoApprove時はStep1(解釈確認)をスキップ。autoが有効=request/issueが確定済みなので確認不要",
+    "draft: --exclude CLI拡張は不要。SKILL.mdのルール変更（解釈確認→Issue優先→確認前にcontext searchしない）で対処",
+    "review: #4のみ適用（test assertion強化）。#1-#3はスコープ外"
+  ]
+}

@@ -5,7 +5,7 @@
  * Static kinds return full choices. Hybrid kinds return layout data only.
  * Responds in the language configured in .sdd-forge/config.json (lang field).
  *
- * ctx.kind — prompt kind (e.g. "plan.approach", "impl.review-mode")
+ * ctx.kind — prompt kind (e.g. "plan.work-environment", "impl.review-mode")
  */
 
 import { FlowCommand } from "./base-command.js";
@@ -18,15 +18,6 @@ import { FlowCommand } from "./base-command.js";
 /** Prompt definitions keyed by language then by kind. */
 const PROMPTS_BY_LANG = {
   ja: {
-    "plan.approach": {
-      phase: "plan", step: "approach",
-      description: "仕様書の作成方法を選択してください。",
-      recommendation: "Q&A で要件を整理してから仕様書を作成することを推奨します。",
-      choices: [
-        { id: 1, label: "Q&A で要件を整理してから仕様書を作成する", description: "", recommended: true },
-        { id: 2, label: "仕様書を作成する", description: "", recommended: false },
-      ],
-    },
     "plan.work-environment": {
       phase: "plan", step: "work-environment",
       description: "作業環境を選択してください。",
@@ -165,15 +156,6 @@ const PROMPTS_BY_LANG = {
     },
   },
   en: {
-    "plan.approach": {
-      phase: "plan", step: "approach",
-      description: "Choose how to create the spec.",
-      recommendation: "Recommended: organize requirements through Q&A before writing the spec.",
-      choices: [
-        { id: 1, label: "Organize requirements through Q&A before writing the spec", description: "", recommended: true },
-        { id: 2, label: "Write the spec directly", description: "", recommended: false },
-      ],
-    },
     "plan.work-environment": {
       phase: "plan", step: "work-environment",
       description: "Choose a work environment.",

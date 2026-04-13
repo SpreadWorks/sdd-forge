@@ -1,0 +1,42 @@
+{
+  "data": {
+    "implementation": {
+      "diffStat": "specs/170-fix-plan-ambiguous-input/draft.md        |  50 ++++++\n specs/170-fix-plan-ambiguous-input/flow.json       | 178 +++++++++++++++++++++\n specs/170-fix-plan-ambiguous-input/issue-log.json  |  28 ++++\n specs/170-fix-plan-ambiguous-input/qa.md           |   9 ++\n specs/170-fix-plan-ambiguous-input/review.md       |  33 ++++\n specs/170-fix-plan-ambiguous-input/spec.md         | 116 ++++++++++++++\n specs/170-fix-plan-ambiguous-input/tests/README.md |  23 +++\n .../tests/verify-spec.test.js                      |  79 +++++++++\n src/flow/lib/get-prompt.js                         |  20 +--\n src/templates/skills/sdd-forge.flow-plan/SKILL.md  |  28 +++-\n tests/unit/flow/get-prompt.test.js                 |  31 ++--\n tests/unit/flow/prompt-i18n.test.js                |  11 +-\n 12 files changed, 558 insertions(+), 48 deletions(-)",
+      "commits": [
+        "feat: feature/170-fix-plan-ambiguous-input"
+      ]
+    },
+    "retro": {
+      "total": 8,
+      "done": 8,
+      "partial": 0,
+      "not_done": 0,
+      "rate": 1,
+      "notes": "要件R1〜R8はすべて差分上で満たされている。要件外として、テスト更新とspec運用関連ファイル群の追加が含まれている。"
+    },
+    "issueLog": {
+      "count": 0,
+      "entries": []
+    },
+    "metrics": {
+      "docsRead": 1,
+      "srcRead": 7,
+      "question": 7,
+      "issueLog": 0
+    },
+    "tokenMetrics": {
+      "input": 14,
+      "output": 4146,
+      "cacheRead": 83468,
+      "cacheCreation": 97112,
+      "cost": 0.4514424,
+      "callCount": 7
+    },
+    "tests": null,
+    "sync": {
+      "status": "skipped",
+      "reason": "sync was skipped"
+    }
+  },
+  "text": "  Report\n\n  Implementation\n  ────────────────────────────────────────────────\n    feat: feature/170-fix-plan-ambiguous-input\n    12 files changed, 558 insertions(+), 48 deletions(-)\n\n  Retro\n  ────────────────────────────────────────────────\n    ████████ 100%  (8 done / 0 partial / 0 miss)\n\n  Metrics\n  ────────────────────────────────────────────────\n    docs read ................... 1\n    src read .................... 7\n    Q&A ......................... 7\n    issue-log ................... 0\n    agent calls ................. 7\n    input tokens ................ 14\n    output tokens ............... 4,146\n    cache-read tokens ........... 83,468\n    cache-create tokens ......... 97,112\n    cost ........................ $0.4514\n\n  Tests\n  ────────────────────────────────────────────────\n    -"
+}
