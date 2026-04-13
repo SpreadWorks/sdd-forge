@@ -208,7 +208,9 @@ Note: `sdd-forge flow get context` automatically records these metrics via hooks
      - Compare spec Requirements against actual code changes.
    - **If test environment needs to be set up**:
      - Treat as a separate spec (out of scope for current feature spec).
-   - **On complete**: `sdd-forge flow set step test done`
+   - **On complete**:
+     - Record test counts: `sdd-forge flow set test-summary --unit N --integration N --acceptance N` (use actual counts for each test type written; omit flags for types with zero tests).
+     - `sdd-forge flow set step test done`
    - **After test step is done**:
      - Run `sdd-forge flow get prompt plan.complete` and present the choices.
      - **autoApprove transition:** If `autoApprove: true`, treat [1] as selected and invoke `/sdd-forge.flow-impl` using the Skill tool.

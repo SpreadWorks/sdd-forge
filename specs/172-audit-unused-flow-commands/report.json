@@ -1,0 +1,42 @@
+{
+  "data": {
+    "implementation": {
+      "diffStat": "specs/172-audit-unused-flow-commands/draft.md      |  81 +++++++++\n specs/172-audit-unused-flow-commands/flow.json     | 195 +++++++++++++++++++++\n .../172-audit-unused-flow-commands/issue-log.json  |  47 +++++\n specs/172-audit-unused-flow-commands/qa.md         |   9 +\n specs/172-audit-unused-flow-commands/review.md     |  41 +++++\n specs/172-audit-unused-flow-commands/spec.md       | 123 +++++++++++++\n .../tests/172-integrate-targets.test.js            |  49 ++++++\n .../tests/172-remove-targets.test.js               |  65 +++++++\n .../172-audit-unused-flow-commands/tests/README.md |  23 +++\n src/AGENTS.md                                      |   2 +-\n src/flow/lib/run-gate.js                           |   7 -\n src/flow/lib/set-metric.js                         |   2 +-\n src/flow/registry.js                               |   7 +-\n src/lib/constants.js                               |   1 -\n src/lib/flow-state.js                              |   2 +-\n src/metrics/commands/token.js                      |   5 +-\n .../skills/sdd-forge.flow-finalize/SKILL.md        |   2 +\n src/templates/skills/sdd-forge.flow-impl/SKILL.md  |   4 +-\n src/templates/skills/sdd-forge.flow-plan/SKILL.md  |   4 +-\n tests/unit/specs/commands/guardrail.test.js        | 141 +++------------\n 20 files changed, 676 insertions(+), 134 deletions(-)",
+      "commits": [
+        "feat: feature/172-audit-unused-flow-commands"
+      ]
+    },
+    "retro": {
+      "total": 8,
+      "done": 6,
+      "partial": 2,
+      "not_done": 0,
+      "rate": 0.88,
+      "notes": "Core removal and integration requirements are mostly implemented (R1-R6 clearly done). R7 is only conditionally reflected in the finalize skill text, and R8 cannot be confirmed from code diff evidence alone. Several additional documentation and test refactors were included beyond the stated requirements."
+    },
+    "issueLog": {
+      "count": 0,
+      "entries": []
+    },
+    "metrics": {
+      "docsRead": 1,
+      "srcRead": 1,
+      "question": 12,
+      "issueLog": 1
+    },
+    "tokenMetrics": {
+      "input": 10,
+      "output": 2717,
+      "cacheRead": 90712,
+      "cacheCreation": 36923,
+      "cost": 0.20645985,
+      "callCount": 5
+    },
+    "tests": null,
+    "sync": {
+      "status": "skipped",
+      "reason": "sync was skipped"
+    }
+  },
+  "text": "  Report\n\n  Implementation\n  ────────────────────────────────────────────────\n    feat: feature/172-audit-unused-flow-commands\n    20 files changed, 676 insertions(+), 134 deletions(-)\n\n  Retro\n  ────────────────────────────────────────────────\n    ███████░ 88%  (6 done / 2 partial / 0 miss)\n\n  Metrics\n  ────────────────────────────────────────────────\n    docs read ................... 1\n    src read .................... 1\n    Q&A ......................... 12\n    issue-log ................... 1\n    agent calls ................. 5\n    input tokens ................ 10\n    output tokens ............... 2,717\n    cache-read tokens ........... 90,712\n    cache-create tokens ......... 36,923\n    cost ........................ $0.2065\n\n  Tests\n  ────────────────────────────────────────────────\n    -"
+}

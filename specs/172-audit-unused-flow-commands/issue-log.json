@@ -1,0 +1,47 @@
+{
+  "entries": [
+    {
+      "step": "gate-draft",
+      "reason": "Single Responsibility — flow未使用コマンド/オプションの棚卸しと整理という単一の関心事に限定されている; Unambiguous Requirements — 削除・組み込み対象が具体的なファイル名・フラグ名で明示されており、曖昧な形容詞は使われていない; Complete Context — 各要件に対象（When: 対象コマンド/ファイル）と期待動作（shall: 削除/スキル組み込み）が対になっている; No Hardcoded Secrets — シークレット・認証情報に関する内容は含まれない; Prioritize Requirements — In scope の3項目に番号付きで優先順序が明示されている; Impact on Existing Features — 「keep 対象は変更なし」「flow resume はスコープ外」と既存機能への影響が明示されている; Present Recommendations with Reasoning — Q&A セクションで各問いに推奨回答と判定根拠が明示されている; Explore Before Asking — 分類表に「判定根拠」列があり、コードベース調査結果が記載されている; Proactively Raise Related Implications — redo カウンターの別 issue 81d4、flow resume のスコープ外扱い、sdd-forge upgrade の実行必要性が先回りして言及されている; Confirm Brainstorm vs. Decision Before Critiquing — User approved が記録されており、決定済みドラフトとして扱われている; Capture Digressions in draft.md — 本ドキュメント自体が draft.md に相当し、flow resume や redo 再設計の余談が適切にキャプチャされている; Draft Stays at Requirements Level — 関数名・実装詳細（registry.js、run-gate.js 等のファイル名）が含まれており要件レベルを超えている; Backward — Compatible CLI Interface — `--confirm-skip-guardrail` の削除は既存 CLI インターフェースの変更だが、alpha ポリシーで migration plan 不要と述べるのみで、既存ユーザーへの周知や代替手段の説明が欠けている",
+      "trigger": "gate post hook (auto)",
+      "timestamp": "2026-04-13T13:26:51.189Z"
+    },
+    {
+      "step": "gate",
+      "reason": "Single Responsibility — flow コマンドの棚卸し・削除・スキル統合という単一の関心事に集中している; Unambiguous Requirements — 各要件は具体的なファイル名・フラグ名・コマンド名で検証可能な条件を記述している; Complete Context — 全要件に「When ... shall ...」形式でトリガーと期待動作が記述されている; No Hardcoded Secrets — シークレット情報に関する変更は含まれない; No Silent Error Swallowing — エラーハンドリングに関する変更は含まれない; Prioritize Requirements — 要件が8項目あり「Priority order (highest first)」で優先順位が明示されている; Impact on Existing Features — 「Impact on Existing Features」セクションで既存機能への影響が明示されている; Bounded Resource Usage — 再帰・リトライ・一括ロード処理を含む変更はない; Changes Require Test Coverage — Test Strategy セクションでテストカバレッジが指定されている; Spec Includes Test Strategy — 「Test Strategy」セクションで何をどうテストするかが記述されている; Synthesize Draft, Do Not Copy — Q&A・分類表・要件が整理・抽象化されており、ドラフトの直接コピーではない; Record Unresolved Points as Open Questions — Open Questions セクションがあり「(none)」と明示されている; Include 'Why This Approach' Rationale — 「Why This Approach」と「Alternatives Considered」セクションで選択根拠が記述されている; Backward — Compatible CLI Interface — `--confirm-skip-guardrail` の削除はCLIインターフェースの変更だが、マイグレーションプランがない。Clarifications で「CHANGELOGに記載する」とあるのみで、spec 内にマイグレーション手順が含まれていない; Exit Code Contract — 削除対象のコマンド/オプションに exit code 契約の変更はない",
+      "trigger": "gate post hook (auto)",
+      "timestamp": "2026-04-13T13:28:35.258Z"
+    },
+    {
+      "step": "gate-impl",
+      "reason": "- — confirm-skip-guardrail removal from run-gate.js — safety-check logic removed from run-gate.js:323; - — confirm-skip-guardrail removal from registry.js — flag removed from flags array and help text; redo removed from VALID_METRIC_COUNTERS in constants.js — entry deleted from constants.js:46; redoCount removed from token.js DIFFICULTY_BASELINES — removed from baselines, computeSpecDifficulty, and required array; AGENTS.md redo entry removed — set/ directory listing no longer includes redo; flow — plan skill includes test-summary instruction — `sdd-forge flow set test-summary` added to test step completion; flow — impl skill includes lint instruction — `sdd-forge flow run lint` added before implement step completion; flow — finalize skill includes retro instruction — `sdd-forge flow run retro` added for non-commit select mode path; sdd — forge upgrade run after template changes — no evidence of upgrade execution in the diff (runtime action, not verifiable from diff alone)",
+      "trigger": "gate post hook (auto)",
+      "timestamp": "2026-04-13T14:01:24.990Z"
+    },
+    {
+      "step": "gate-impl",
+      "reason": "- — confirm-skip-guardrail フラグ定義を registry.js から削除 — registry.js の flags 配列から `--confirm-skip-guardrail` が削除されている; run — gate.js から二重確認ロジックを削除 — `confirmSkipGuardrail` 変数と if ブロックが run-gate.js から削除されている; constants.js の VALID_METRIC_COUNTERS から `redo` を削除 — constants.js の `VALID_METRIC_COUNTERS` から `\"redo\"` が削除されている; token.js の DIFFICULTY_BASELINES から `redoCount` を削除 — `redoCount: 10` が DIFFICULTY_BASELINES から削除されている; token.js の難易度計算から `redoCount` の参照を削除 — `redoCount` 変数の宣言・`required` 配列・`normalizeToHundred` 呼び出しがすべて削除されている; AGENTS.md のディレクトリツリーから `redo` エントリを削除 — `set/` の列挙から `redo` が削除されている; flow — plan スキルテンプレートにテスト完了時の test-summary コール手順を追加 — `sdd-forge flow set test-summary --unit N ...` の指示が SKILL.md に追加されている; flow — impl スキルテンプレートに lint チェック手順を追加 — `sdd-forge flow run lint` の指示が実装完了ステップに追加されている; flow — finalize スキルテンプレートに retro コール手順を追加 — select モード時の `sdd-forge flow run retro` 手順と reference チートシートへの追加が確認できる; sdd — forge upgrade の実行 — diff にはテンプレート変更は含まれるが、upgrade 実行の証跡（live skills への反映）は diff 上では確認できない",
+      "trigger": "gate post hook (auto)",
+      "timestamp": "2026-04-13T14:04:41.069Z"
+    },
+    {
+      "step": "gate-impl",
+      "reason": "- — confirm-skip-guardrail フラグ定義を registry.js から削除 — registry.js の flags 配列から削除済み; - — confirm-skip-guardrail の安全チェックロジックを run-gate.js から削除 — confirmSkipGuardrail の条件分岐が削除済み; redo を VALID_METRIC_COUNTERS から削除 — constants.js から \"redo\" エントリが削除済み; flow set metric で redo を渡した場合に拒否 — VALID_METRIC_COUNTERS から削除されており、バリデーション済みの配列を使用; redoCount を token.js の DIFFICULTY_BASELINES から削除 — redoCount フィールドが削除済み; redoCount を difficulty 計算から削除 — required 配列と normalizeToHundred 呼び出しから削除済み; AGENTS.md のディレクトリツリーから redo エントリを削除 — src/AGENTS.md の set/ 一覧から redo が削除済み; flow — plan スキルのテストステップ完了時に test-summary を呼び出す指示を追加 — SKILL.md に `sdd-forge flow set test-summary` の指示が追加済み; flow — impl スキルの実装チェック時に lint を呼び出す指示を追加 — SKILL.md に `sdd-forge flow run lint` の指示が追加済み; flow — finalize スキルのレポート生成前に retro を呼び出す指示を追加 — SKILL.md に `sdd-forge flow run retro` の指示が追加済み（select モード時の手動実行説明あり）; sdd — forge upgrade の実行 — diff にはテンプレート変更のみが含まれ、upgrade 実行によるライブスキルへの反映が確認できない",
+      "trigger": "gate post hook (auto)",
+      "timestamp": "2026-04-13T14:06:04.096Z"
+    },
+    {
+      "step": "gate-impl",
+      "reason": "R8 (sdd-forge upgrade) は runtime action であり git diff からは検証不可能。upgrade は実行済みで .claude/skills/ と .agents/skills/ は手動で同期済み",
+      "trigger": "gate impl FAIL on R8",
+      "resolution": "gate impl の制約として受容。skill ファイルの変更は手動確認済み",
+      "timestamp": "2026-04-13T14:06:13.831Z"
+    },
+    {
+      "step": "gate-impl",
+      "reason": "refusing to skip guardrail without explicit confirmation. Re-run with --skip-guardrail --confirm-skip-guardrail",
+      "trigger": "gate onError hook (auto)",
+      "timestamp": "2026-04-13T14:06:17.486Z"
+    }
+  ]
+}

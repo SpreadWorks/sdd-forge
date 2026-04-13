@@ -1,0 +1,76 @@
+{
+  "spec": "specs/172-audit-unused-flow-commands/spec.md",
+  "date": "2026-04-13T14:16:18.576Z",
+  "requirements": [
+    {
+      "desc": "Remove --confirm-skip-guardrail flag and safety-check logic from gate",
+      "status": "done",
+      "note": "Flag removed from src/flow/registry.js and confirm-skip guard logic removed from src/flow/lib/run-gate.js."
+    },
+    {
+      "desc": "Remove redo from VALID_METRIC_COUNTERS in constants.js",
+      "status": "done",
+      "note": "\"redo\" was removed from VALID_METRIC_COUNTERS in src/lib/constants.js."
+    },
+    {
+      "desc": "Remove redoCount reference and baseline from token.js",
+      "status": "done",
+      "note": "redoCount baseline, variable usage, required check, and normalization were removed from src/metrics/commands/token.js."
+    },
+    {
+      "desc": "Remove redo from AGENTS.md directory tree",
+      "status": "done",
+      "note": "redo was removed from the set/ listing in src/AGENTS.md."
+    },
+    {
+      "desc": "Integrate flow set test-summary into flow-plan skill template",
+      "status": "done",
+      "note": "Instruction to run flow set test-summary was added to src/templates/skills/sdd-forge.flow-plan/SKILL.md."
+    },
+    {
+      "desc": "Integrate flow run lint into flow-impl skill template",
+      "status": "done",
+      "note": "Instruction to run flow run lint was added to src/templates/skills/sdd-forge.flow-impl/SKILL.md."
+    },
+    {
+      "desc": "Integrate flow run retro into flow-finalize skill template",
+      "status": "partial",
+      "note": "Retro instruction was added, but only explicitly for select mode without commit; requirement states retro should run before report when generating report."
+    },
+    {
+      "desc": "Run sdd-forge upgrade after template changes",
+      "status": "partial",
+      "note": "Template files changed, but no direct upgrade sync evidence (e.g., updated live skill outputs) appears in this diff."
+    }
+  ],
+  "unplanned": [
+    {
+      "file": "src/flow/registry.js",
+      "change": "Added VALID_METRIC_COUNTERS import and changed flow set metric help text to derive counters dynamically."
+    },
+    {
+      "file": "src/flow/lib/set-metric.js",
+      "change": "JSDoc updated to reference VALID_METRIC_COUNTERS instead of hardcoded counter names."
+    },
+    {
+      "file": "src/lib/flow-state.js",
+      "change": "Counter parameter comment updated (documentation-only adjustment)."
+    },
+    {
+      "file": "tests/unit/specs/commands/guardrail.test.js",
+      "change": "Large test refactor: fixture helpers extracted and confirm-skip specific tests replaced/updated."
+    },
+    {
+      "file": "specs/172-audit-unused-flow-commands/*",
+      "change": "Added spec process artifacts and spec-specific tests (draft/spec/flow/issue-log/review/qa and tests directory), which are not part of the 8 implementation requirements."
+    }
+  ],
+  "summary": {
+    "total": 8,
+    "done": 6,
+    "partial": 2,
+    "not_done": 0,
+    "rate": 0.88,
+    "notes": "Core removal and integration requirements are mostly implemented (R1-R6 clearly done). R7 is only conditionally reflected in the finalize skill text, and R8 cannot be confirmed from code diff evidence alone. Several additional documentation and test refactors were included beyond the stated requirements."
+  }
+}

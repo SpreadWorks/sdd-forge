@@ -66,6 +66,7 @@ Available status values: `pending`, `in_progress`, `done`, `skipped`
      - ドキュメントの同期: sdd-forge build または /sdd-forge.flow-sync
      ```
    - If the result includes `steps.retro`, display the retro summary or failure message. Retro runs automatically as part of the commit step (step 1) — no separate call is needed.
+   - **If step 1 was not included** (select mode without commit), retro was not run automatically. Run it manually: `sdd-forge flow run retro`. If retro.json already exists, use `--force` to overwrite. Use `--dry-run` to preview without writing.
    - **MUST: If `steps.report.text` exists in the result, display it as-is.** The report text is pre-formatted by the command — do not reformat, summarize, or interpret it. Just output the text directly.
    - Sync result (if available) should also be displayed: show `steps.sync.diffSummary` for the list of changed docs files.
 
@@ -101,5 +102,6 @@ sdd-forge flow get prompt <kind>
 sdd-forge flow set step <id> <val>
 sdd-forge flow set note "<text>"
 sdd-forge flow run finalize --mode all|select [--steps 1,2,3,4] [--merge-strategy squash|pr]
+sdd-forge flow run retro [--force] [--dry-run]
 sdd-forge flow run report [--dry-run]
 ```

@@ -94,7 +94,9 @@ Before starting, run `sdd-forge flow get check impl` to verify prerequisites.
    - Run tests to verify: use the test command from `package.json` scripts or the project's test runner.
    - **MUST: If test failures are caused by pre-existing bugs (not the current spec's changes)**, record them in issue-log (`sdd-forge flow set issue-log --step implement --reason "..."`) before applying a workaround or adjusting the test.
    - **Retry limit for test fixes: 5 attempts.** If tests do not pass after 5 fix-and-rerun cycles, STOP and return control to the user.
-   - **On complete**: `sdd-forge flow set step implement done`
+   - **On complete**:
+     - Run guardrail lint check: `sdd-forge flow run lint`. If violations are found, fix them before proceeding. If lint passes with no guardrail articles defined, this is normal — proceed.
+     - `sdd-forge flow set step implement done`
 
 2. Run gate impl (after implementation, BEFORE review).
    - `sdd-forge flow run gate --phase impl` (step status is automatically managed by hooks: pre sets gate-impl to in_progress, post sets done on PASS)

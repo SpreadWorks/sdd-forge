@@ -1,0 +1,195 @@
+{
+  "spec": "specs/172-audit-unused-flow-commands/spec.md",
+  "baseBranch": "main",
+  "featureBranch": "feature/172-audit-unused-flow-commands",
+  "steps": [
+    {
+      "id": "approach",
+      "status": "done"
+    },
+    {
+      "id": "branch",
+      "status": "done"
+    },
+    {
+      "id": "prepare-spec",
+      "status": "pending"
+    },
+    {
+      "id": "draft",
+      "status": "done"
+    },
+    {
+      "id": "gate-draft",
+      "status": "done"
+    },
+    {
+      "id": "spec",
+      "status": "done"
+    },
+    {
+      "id": "gate",
+      "status": "done"
+    },
+    {
+      "id": "approval",
+      "status": "done"
+    },
+    {
+      "id": "test",
+      "status": "done"
+    },
+    {
+      "id": "implement",
+      "status": "done"
+    },
+    {
+      "id": "gate-impl",
+      "status": "done"
+    },
+    {
+      "id": "review",
+      "status": "done"
+    },
+    {
+      "id": "finalize",
+      "status": "pending"
+    },
+    {
+      "id": "commit",
+      "status": "pending"
+    },
+    {
+      "id": "push",
+      "status": "pending"
+    },
+    {
+      "id": "merge",
+      "status": "pending"
+    },
+    {
+      "id": "pr-create",
+      "status": "pending"
+    },
+    {
+      "id": "branch-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "pr-merge",
+      "status": "pending"
+    },
+    {
+      "id": "sync-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "docs-update",
+      "status": "pending"
+    },
+    {
+      "id": "docs-review",
+      "status": "pending"
+    },
+    {
+      "id": "docs-commit",
+      "status": "pending"
+    }
+  ],
+  "requirements": [
+    {
+      "desc": "Remove --confirm-skip-guardrail flag and safety-check logic from gate",
+      "status": "pending"
+    },
+    {
+      "desc": "Remove redo from VALID_METRIC_COUNTERS in constants.js",
+      "status": "done"
+    },
+    {
+      "desc": "Remove redoCount reference and baseline from token.js",
+      "status": "done"
+    },
+    {
+      "desc": "Remove redo from AGENTS.md directory tree",
+      "status": "done"
+    },
+    {
+      "desc": "Integrate flow set test-summary into flow-plan skill template",
+      "status": "done"
+    },
+    {
+      "desc": "Integrate flow run lint into flow-impl skill template",
+      "status": "done"
+    },
+    {
+      "desc": "Integrate flow run retro into flow-finalize skill template",
+      "status": "done"
+    },
+    {
+      "desc": "Run sdd-forge upgrade after template changes",
+      "status": "done"
+    }
+  ],
+  "issue": 140,
+  "request": "flow 未使用サブコマンド/オプションの棚卸しと運用方針（廃止 or 活用）を決定",
+  "worktree": true,
+  "metrics": {
+    "plan": {
+      "docsRead": 1
+    },
+    "draft": {
+      "question": 12
+    },
+    "gate-draft": {
+      "tokens": {
+        "input": 2,
+        "output": 659,
+        "cacheRead": 11924,
+        "cacheCreation": 10534
+      },
+      "cost": 0.0529707,
+      "callCount": 1,
+      "responseChars": 1175
+    },
+    "gate": {
+      "tokens": {
+        "input": 2,
+        "output": 622,
+        "cacheRead": 11924,
+        "cacheCreation": 10843
+      },
+      "cost": 0.05357445000000001,
+      "callCount": 1,
+      "responseChars": 1208
+    },
+    "impl": {
+      "srcRead": 1,
+      "issueLog": 1
+    },
+    "gate-impl": {
+      "tokens": {
+        "input": 6,
+        "output": 1436,
+        "cacheRead": 66864,
+        "cacheCreation": 15546
+      },
+      "cost": 0.0999147,
+      "callCount": 3,
+      "responseChars": 3077
+    }
+  },
+  "runId": "ee960be5-6268-4c5e-b0dc-50bb24f64a14",
+  "notes": [
+    "draft: Q1 - 未使用コマンド/オプションはすべて remove（alpha ポリシーに従い一括削除）",
+    "draft: Q2 - flow resume はスコープ外（スキル自体は有用、今回は触れない）",
+    "draft: Q3 - redo 関連を一式削除。redo ログ登録ロジックの issue をボードに追加",
+    "draft: Q4 - alpha ポリシーに従い migration plan なしで削除",
+    "draft: Q5 - オプション: --confirm-skip-guardrail のみ削除。--skip-guardrail, --message, --dry-run は残す",
+    "draft: Q6 - 方針修正: 全コマンド/オプションの棚卸し分類表を作成する。削除だけでなく keep/integrate も含めて判断",
+    "draft: Q7 - 分類確定: keep(--skip-guardrail, --message, --dry-run sync), integrate(test-summary, lint, retro), remove(--confirm-skip-guardrail, redo関連)",
+    "draft: Q8 - スコープ確定: remove(confirm-skip-guardrail, redo関連), integrate(test-summary→plan, lint→impl, retro→finalize), keep(skip-guardrail, message, dry-run), 分類表を成果物に含める",
+    "implement: approach confirmed - proceed with all 8 requirements",
+    "review: auto-fix review selected",
+    "finalize: mode=all selected"
+  ]
+}

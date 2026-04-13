@@ -30,146 +30,61 @@ describe("gate guardrail integration", () => {
     "- done",
   ].join("\n");
 
-  it("warns when guardrail.json is absent", () => {
+  function createGateFixture({ config, guardrails } = {}) {
     tmp = createTmpDir();
     execFileSync("git", ["init", tmp], { stdio: "ignore" });
     execFileSync("git", ["-C", tmp, "commit", "--allow-empty", "-m", "init"], { stdio: "ignore" });
     setupFlow(tmp);
-    writeJson(tmp, ".sdd-forge/config.json", {
+    writeJson(tmp, ".sdd-forge/config.json", config || {
       lang: "en", type: "node-cli",
       docs: { languages: ["en"], defaultLanguage: "en" },
     });
     writeFile(tmp, "spec.md", validSpec);
+    if (guardrails) {
+      writeJson(tmp, ".sdd-forge/guardrail.json", { guardrails });
+    }
+    return tmp;
+  }
 
-    const result = execFileSync("node", [
+  function runGate(dir, extraArgs = []) {
+    return execFileSync("node", [
       SDD_FORGE, "flow", "run", "gate",
-      "--spec", join(tmp, "spec.md"),
+      "--spec", join(dir, "spec.md"),
+      ...extraArgs,
     ], {
       encoding: "utf8",
-      env: { ...process.env, SDD_FORGE_WORK_ROOT: tmp },
+      env: { ...process.env, SDD_FORGE_WORK_ROOT: dir },
     });
+  }
 
-    // Gate should still pass — JSON envelope with ok: true
-    const envelope = JSON.parse(result);
+  it("warns when guardrail.json is absent", () => {
+    createGateFixture();
+    const envelope = JSON.parse(runGate(tmp));
     assert.equal(envelope.ok, true);
   });
 
   it("passes with guardrail.json present (no agent = skip AI check with warn)", () => {
-    tmp = createTmpDir();
-    execFileSync("git", ["init", tmp], { stdio: "ignore" });
-    execFileSync("git", ["-C", tmp, "commit", "--allow-empty", "-m", "init"], { stdio: "ignore" });
-    setupFlow(tmp);
-    writeJson(tmp, ".sdd-forge/config.json", {
-      lang: "en",
-      type: "node-cli",
-      docs: { languages: ["en"], defaultLanguage: "en" },
-    });
-    writeFile(tmp, "spec.md", validSpec);
-    writeJson(tmp, ".sdd-forge/guardrail.json", {
+    createGateFixture({
       guardrails: [
-        {
-          id: "no-external-deps",
-          title: "No External Dependencies",
-          body: "Use only Node.js built-in modules.",
-          meta: { phase: ["spec"] },
-        },
+        { id: "no-external-deps", title: "No External Dependencies", body: "Use only Node.js built-in modules.", meta: { phase: ["spec"] } },
       ],
     });
-
-    const result = execFileSync("node", [
-      SDD_FORGE, "flow", "run", "gate",
-      "--spec", join(tmp, "spec.md"),
-    ], {
-      encoding: "utf8",
-      env: { ...process.env, SDD_FORGE_WORK_ROOT: tmp },
-    });
-
-    const envelope = JSON.parse(result);
+    const envelope = JSON.parse(runGate(tmp));
     assert.equal(envelope.ok, true);
   });
 
-  it("requires explicit confirmation with --skip-guardrail", () => {
-    tmp = createTmpDir();
-    execFileSync("git", ["init", tmp], { stdio: "ignore" });
-    execFileSync("git", ["-C", tmp, "commit", "--allow-empty", "-m", "init"], { stdio: "ignore" });
-    setupFlow(tmp);
-    writeJson(tmp, ".sdd-forge/config.json", {
-      lang: "en",
-      type: "node-cli",
-      docs: { languages: ["en"], defaultLanguage: "en" },
-      agent: { default: "claude", providers: { claude: { command: "echo", args: ["FAIL"] } } },
-    });
-    writeFile(tmp, "spec.md", validSpec);
-    writeJson(tmp, ".sdd-forge/guardrail.json", {
+  it("skips AI check with --skip-guardrail", () => {
+    createGateFixture({
+      config: {
+        lang: "en", type: "node-cli",
+        docs: { languages: ["en"], defaultLanguage: "en" },
+        agent: { default: "claude", providers: { claude: { command: "echo", args: ["FAIL"] } } },
+      },
       guardrails: [
-        {
-          id: "rule",
-          title: "Rule",
-          body: "Some rule.",
-          meta: { phase: ["spec"] },
-        },
+        { id: "rule", title: "Rule", body: "Some rule.", meta: { phase: ["spec"] } },
       ],
     });
-
-    let stdout = "";
-    try {
-      stdout = execFileSync("node", [
-        SDD_FORGE, "flow", "run", "gate",
-        "--spec", join(tmp, "spec.md"),
-        "--skip-guardrail",
-      ], {
-        encoding: "utf8",
-        env: { ...process.env, SDD_FORGE_WORK_ROOT: tmp },
-      });
-      assert.fail("expected command to fail without --confirm-skip-guardrail");
-    } catch (err) {
-      stdout = err.stdout;
-    }
-
-    const envelope = JSON.parse(stdout);
-    assert.equal(envelope.ok, false);
-    assert.equal(envelope.errors[0]?.code, "ERROR");
-    assert.match(
-      envelope.errors[0]?.messages?.[0] || "",
-      /refusing to skip guardrail without explicit confirmation/i,
-    );
-  });
-
-  it("skips AI check with --skip-guardrail when confirmation flag is set", () => {
-    tmp = createTmpDir();
-    execFileSync("git", ["init", tmp], { stdio: "ignore" });
-    execFileSync("git", ["-C", tmp, "commit", "--allow-empty", "-m", "init"], { stdio: "ignore" });
-    setupFlow(tmp);
-    writeJson(tmp, ".sdd-forge/config.json", {
-      lang: "en",
-      type: "node-cli",
-      docs: { languages: ["en"], defaultLanguage: "en" },
-      agent: { default: "claude", providers: { claude: { command: "echo", args: ["FAIL"] } } },
-    });
-    writeFile(tmp, "spec.md", validSpec);
-    writeJson(tmp, ".sdd-forge/guardrail.json", {
-      guardrails: [
-        {
-          id: "rule",
-          title: "Rule",
-          body: "Some rule.",
-          meta: { phase: ["spec"] },
-        },
-      ],
-    });
-
-    // With --skip-guardrail, gate should pass even though agent would return FAIL
-    const result = execFileSync("node", [
-      SDD_FORGE, "flow", "run", "gate",
-      "--spec", join(tmp, "spec.md"),
-      "--skip-guardrail",
-      "--confirm-skip-guardrail",
-    ], {
-      encoding: "utf8",
-      env: { ...process.env, SDD_FORGE_WORK_ROOT: tmp },
-    });
-
-    const envelope = JSON.parse(result);
+    const envelope = JSON.parse(runGate(tmp, ["--skip-guardrail"]));
     assert.equal(envelope.ok, true);
   });
 });

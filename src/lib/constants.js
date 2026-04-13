@@ -46,7 +46,6 @@ export const VALID_GATE_PHASES = Object.freeze([
 
 export const VALID_METRIC_COUNTERS = Object.freeze([
   "question",
-  "redo",
   "docsRead",
   "srcRead",
 ]);

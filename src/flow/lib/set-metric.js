@@ -4,7 +4,7 @@
  * Increment a metric counter in flow.json.
  *
  * ctx.phase   — one of VALID_PHASES (see constants.js)
- * ctx.counter — one of: question, redo, docsRead, srcRead
+ * ctx.counter — one of VALID_METRIC_COUNTERS (see constants.js)
  */
 
 import { FlowCommand } from "./base-command.js";

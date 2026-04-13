@@ -580,7 +580,7 @@ export function accumulateAgentMetrics(workRoot, phase, usage, responseChars, mo
  * Silently no-ops if no active flow exists (e.g. outside a flow).
  * @param {string} workRoot
  * @param {string} phase - e.g. "plan", "impl"
- * @param {string} counter - e.g. "docsRead", "srcRead", "redo"
+ * @param {string} counter - e.g. "docsRead", "srcRead"
  */
 export function incrementMetric(workRoot, phase, counter) {
   if (!phase) return;

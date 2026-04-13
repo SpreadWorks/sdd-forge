@@ -9,7 +9,7 @@
  */
 
 import { updateStepStatus, incrementMetric, derivePhase, loadFlowState } from "../lib/flow-state.js";
-import { VALID_PHASES } from "../lib/constants.js";
+import { VALID_PHASES, VALID_METRIC_COUNTERS } from "../lib/constants.js";
 import { loadIssueLog, saveIssueLog } from "./lib/set-issue-log.js";
 
 /**
@@ -220,7 +220,7 @@ export const FLOW_COMMANDS = {
       helpKey: "flow.set.metric",
       command: () => import("./lib/set-metric.js"),
       args: { positional: ["phase", "counter"] },
-      help: `Usage: sdd-forge flow set metric <phase> <counter>\n\nIncrement a metric counter in flow.json. Phases: ${VALID_PHASES.join(", ")}. Counters: question, redo, docsRead, srcRead.`,
+      help: `Usage: sdd-forge flow set metric <phase> <counter>\n\nIncrement a metric counter in flow.json. Phases: ${VALID_PHASES.join(", ")}. Counters: ${VALID_METRIC_COUNTERS.join(", ")}.`,
     },
     "issue-log": {
       helpKey: "flow.set.issue-log",
@@ -267,7 +267,7 @@ export const FLOW_COMMANDS = {
       command: () => import("./lib/run-gate.js"),
       args: {
         options: ["--spec", "--phase"],
-        flags: ["--skip-guardrail", "--confirm-skip-guardrail"],
+        flags: ["--skip-guardrail"],
       },
       help: [
         "Usage: sdd-forge flow run gate [options]",
@@ -278,7 +278,6 @@ export const FLOW_COMMANDS = {
         "  --spec <path>                 Path to spec.md (auto-resolved from flow.json)",
         "  --phase <draft|pre|post|impl> Gate phase (default: pre)",
         "  --skip-guardrail              Skip AI guardrail compliance check",
-        "  --confirm-skip-guardrail      Required with --skip-guardrail",
       ].join("\n"),
       post(ctx, result) {
         const status = result?.result === "pass" ? "done" : "in_progress";

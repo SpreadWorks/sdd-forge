@@ -18,7 +18,6 @@ const DIFFICULTY_BASELINES = {
   specMdChars: 10000,
   requirementCount: 20,
   testCount: 30,
-  redoCount: 10,
   reviewCount: 30,
   issueLogEntries: 10,
 };
@@ -272,7 +271,6 @@ async function computeSpecDifficulty(flowState, specDir) {
   const requirementCount = computeRequirementCount(flowState);
   const testCountRaw = await countFilesRecursive(path.join(specDir, "tests"));
   const testCount = testCountRaw == null ? 0 : testCountRaw;
-  const redoCount = toNumberOrNull(flowState.redoCount);
   const reviewCount = sumReviewCount(flowState.reviewCount);
   const issueLog = await safeReadJson(path.join(specDir, "issue-log.json"));
   const issueLogEntries = Array.isArray(issueLog?.entries) ? issueLog.entries.length : 0;
@@ -280,7 +278,7 @@ async function computeSpecDifficulty(flowState, specDir) {
   const qaCount = qaCountRaw == null ? 0 : qaCountRaw;
   const requestChars = computeRequestChars(flowState);
 
-  const required = [specMdChars, requirementCount, redoCount, reviewCount, requestChars];
+  const required = [specMdChars, requirementCount, reviewCount, requestChars];
   if (required.some((v) => v == null)) return null;
   if (requestChars <= 0) return null;
 
@@ -288,7 +286,6 @@ async function computeSpecDifficulty(flowState, specDir) {
     normalizeToHundred(specMdChars, DIFFICULTY_BASELINES.specMdChars),
     normalizeToHundred(requirementCount, DIFFICULTY_BASELINES.requirementCount),
     normalizeToHundred(testCount, DIFFICULTY_BASELINES.testCount),
-    normalizeToHundred(redoCount, DIFFICULTY_BASELINES.redoCount),
     normalizeToHundred(reviewCount, DIFFICULTY_BASELINES.reviewCount),
     normalizeToHundred(issueLogEntries, DIFFICULTY_BASELINES.issueLogEntries),
   ]);
