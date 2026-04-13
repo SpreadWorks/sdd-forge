@@ -1,5 +1,5 @@
 {
-  "analyzedAt": "2026-04-13T05:35:03.178Z",
+  "analyzedAt": "2026-04-13T06:50:37.688Z",
   "package": {
     "entries": [
       {
@@ -142,7 +142,9 @@
           "src/presets/base/tests/acceptance/fixtures/src/index.js",
           "src/presets/cli/tests/acceptance/fixtures/src/cli.js",
           "src/presets/js-webapp/tests/acceptance/fixtures/src/index.js",
-          "src/presets/node-cli/tests/acceptance/fixtures/src/cli.js"
+          "src/presets/node-cli/tests/acceptance/fixtures/src/cli.js",
+          "src/lib/agent.js",
+          "src/lib/log.js"
         ],
         "id": "1b9f6fe7",
         "summary": "This command validates project configuration and reports issues in text or JSON. It is a schema-driven config health check for CLI workflows.",
@@ -3597,9 +3599,9 @@
       },
       {
         "file": "src/lib/agent.js",
-        "hash": "cdee50407dd9a2706c0c1ad48b241e52",
+        "hash": "9f32e413d3632616ffa9bd155286e131",
         "lines": 744,
-        "mtime": "2026-04-10T09:23:52.011Z",
+        "mtime": "2026-04-13T06:50:37.382Z",
         "className": "agent",
         "methods": [
           "callAgent",
@@ -3642,6 +3644,7 @@
           "fs",
           "path",
           "child_process",
+          "./config.js",
           "./log.js"
         ],
         "exports": [
@@ -3666,22 +3669,23 @@
           "src/setup.js"
         ],
         "id": "13ddf392",
-        "enrich": {
-          "processedAt": "2026-04-13T05:28:46.709Z",
-          "attempts": 5
-        },
-        "summary": "This module provides provider-agnostic AI agent invocation, parsing, retry, and logging. It is the core abstraction for synchronous and asynchronous agent calls in the project.",
-        "detail": "It builds command arguments with prompt injection strategies, supports stdin and argv prompt modes, and enforces safe working directories. Provider-specific output parsers normalize usage/token metadata while fallback parsing remains resilient. Logging wrappers record start/end/error phases with request IDs and persisted prompt context for traceability. Configuration resolution supports default agents, named profiles, timeout inheritance, and environment-based profile selection.",
-        "chapter": "configuration",
+        "summary": "This module provides the core agent invocation layer for sdd-forge, including sync/async execution, provider-specific output parsing, and retry logic. It also resolves effective agent configuration, working directories, and temporary context file management.",
+        "detail": "The implementation builds command invocations by composing prompt arguments, optional system prompt injection, environment variables, and stdin fallback when argument size becomes too large. It normalizes provider behavior through provider-key detection and parser dispatch, with dedicated parsers for Claude and Codex JSON outputs and graceful fallback to raw text. Logging-aware wrappers capture start/end events, usage metadata, exit status, and error context through a shared Logger flow for both synchronous and asynchronous paths. Provider selection supports built-in definitions, profile-driven resolution, command-specific mapping, and timeout overrides, while enforcing safe in-repo `-C` directory handling. The module also includes helper utilities to write and clean transient agent context files under a rules directory.",
+        "chapter": "internal_design",
         "role": "lib",
+        "enrich": {
+          "processedAt": "2026-04-13T06:51:01.756Z",
+          "attempts": 1
+        },
         "keywords": [
-          "agent runtime",
-          "provider abstraction",
+          "agent invocation",
+          "provider parsing",
+          "retry mechanism",
+          "sync async execution",
           "prompt injection",
-          "retry policy",
-          "usage parsing",
-          "agent logging",
-          "profile resolution"
+          "timeout handling",
+          "context file cleanup",
+          "command orchestration"
         ]
       },
       {
@@ -3789,9 +3793,9 @@
       },
       {
         "file": "src/lib/config.js",
-        "hash": "e86baf2321d05ffb746c21bc113af79b",
-        "lines": 111,
-        "mtime": "2026-04-10T07:31:36.269Z",
+        "hash": "5c62ae89e492608c2d182a775244a4f3",
+        "lines": 128,
+        "mtime": "2026-04-13T06:50:37.382Z",
         "className": "config",
         "methods": [
           "resolveConcurrency",
@@ -3800,6 +3804,7 @@
           "sddDir",
           "sddConfigPath",
           "sddOutputDir",
+          "resolveWorkDir",
           "loadLang",
           "loadConfig"
         ],
@@ -3815,6 +3820,7 @@
           "sddDir",
           "sddConfigPath",
           "sddOutputDir",
+          "resolveWorkDir",
           "loadLang",
           "loadConfig",
           "DEFAULT_CONCURRENCY",
@@ -3823,9 +3829,11 @@
         "extends": null,
         "usedBy": [
           "src/flow.js",
+          "src/lib/agent.js",
           "src/lib/flow-state.js",
           "src/lib/guardrail.js",
           "src/lib/i18n.js",
+          "src/lib/log.js",
           "src/presets/base/tests/acceptance/fixtures/src/index.js",
           "src/presets/cli/tests/acceptance/fixtures/src/cli.js",
           "src/presets/js-webapp/tests/acceptance/fixtures/src/index.js",
@@ -3834,21 +3842,22 @@
           "src/upgrade.js"
         ],
         "id": "dff6e5b4",
-        "enrich": {
-          "processedAt": "2026-04-13T05:28:46.709Z",
-          "attempts": 5
-        },
-        "summary": "This module loads and validates configuration files and related project paths. It defines default values and helper functions for SDD directory conventions.",
-        "detail": "It exposes deterministic path builders for `.sdd-forge` config and output locations under a project root. JSON loading helpers provide explicit errors and optional package-field extraction behavior. Language and concurrency defaults are resolved through dedicated helper functions. `loadConfig` delegates final schema enforcement to type validation utilities.",
+        "summary": "This module handles core configuration and filesystem path resolution for sdd-forge. It centralizes defaults, JSON loading, package field access, and validated config retrieval.",
+        "detail": "It defines runtime defaults such as concurrency and language, then exposes lightweight resolvers that apply fallback behavior when fields are absent or invalid. JSON file loading is encapsulated with explicit existence checks and contextualized parse error messaging to improve diagnosability. The module standardizes `.sdd-forge` path derivations for config and output directories and resolves work directory precedence between environment variables and config values. Language loading reads from config with safe fallback to the default language when parsing fails or files are missing. Final config loading is delegated to schema validation to ensure downstream modules receive normalized settings.",
         "chapter": "configuration",
         "role": "config",
+        "enrich": {
+          "processedAt": "2026-04-13T06:51:01.756Z",
+          "attempts": 1
+        },
         "keywords": [
-          "config loader",
+          "configuration loader",
+          "path resolution",
+          "json parsing",
+          "default values",
+          "work directory",
           "schema validation",
-          "sdd directory",
-          "default language",
-          "concurrency",
-          "config path"
+          "environment override"
         ]
       },
       {
@@ -4384,9 +4393,9 @@
       },
       {
         "file": "src/lib/log.js",
-        "hash": "15e4c72efa975410dbf212fd56218c69",
+        "hash": "a00425f54e70e542a1b29ff616a92999",
         "lines": 432,
-        "mtime": "2026-04-10T06:35:13.100Z",
+        "mtime": "2026-04-13T06:50:37.382Z",
         "className": "log",
         "methods": [
           "generateRequestId",
@@ -4403,6 +4412,7 @@
           "crypto",
           "fs",
           "path",
+          "./config.js",
           "./cli.js"
         ],
         "exports": [
@@ -4417,21 +4427,23 @@
           "src/sdd-forge.js"
         ],
         "id": "3d7bb5e6",
-        "enrich": {
-          "processedAt": "2026-04-13T05:28:46.709Z",
-          "attempts": 5
-        },
-        "summary": "This module implements structured logging for agent, git, and generic event telemetry. It writes JSONL logs and optional prompt payload files with flow-aware context.",
-        "detail": "It resolves log directories relative to repo/worktree context and supports daily log partitioning. Utility functions collect caller metadata, text stats, and request IDs for richer records. The singleton logger tracks in-flight writes and offers initialization and graceful flush behavior. Logging failures are intentionally non-fatal and reported to stderr to avoid breaking command execution.",
-        "chapter": "development",
+        "summary": "This module implements structured logging infrastructure, including JSONL event persistence, prompt snapshot files, and request-level tracing metadata. It exposes a singleton Logger that records agent, git, and generic events with contextual flow information.",
+        "detail": "Log destination paths are derived from repository-aware workdir resolution, with daily log partitioning and prompt payload storage under a date-based directory layout. Utility helpers enrich entries with request IDs, text statistics, caller extraction from stack traces, process metadata, and optional flow-state context such as spec and phase. Writes are asynchronous and resilient, using guarded append and file creation helpers that report failures to stderr without crashing main execution paths. The Logger class tracks pending write promises, gates behavior behind config flags, and provides unified methods for agent lifecycle events and other telemetry categories. Relative prompt file references are normalized for portable log readability while preserving absolute paths internally when needed.",
+        "chapter": "internal_design",
         "role": "lib",
+        "enrich": {
+          "processedAt": "2026-04-13T06:51:01.756Z",
+          "attempts": 1
+        },
         "keywords": [
           "structured logging",
-          "jsonl",
+          "JSONL logs",
+          "request tracing",
+          "prompt snapshot",
           "telemetry",
-          "agent logs",
-          "request id",
-          "prompt artifacts"
+          "log rotation by date",
+          "flow context",
+          "singleton logger"
         ]
       },
       {
@@ -4950,7 +4962,9 @@
           "src/presets/base/tests/acceptance/fixtures/src/index.js",
           "src/presets/cli/tests/acceptance/fixtures/src/cli.js",
           "src/presets/js-webapp/tests/acceptance/fixtures/src/index.js",
-          "src/presets/node-cli/tests/acceptance/fixtures/src/cli.js"
+          "src/presets/node-cli/tests/acceptance/fixtures/src/cli.js",
+          "src/lib/agent.js",
+          "src/lib/log.js"
         ],
         "id": "4cbf369b"
       },
@@ -5107,7 +5121,9 @@
           "src/presets/base/tests/acceptance/fixtures/src/index.js",
           "src/presets/cli/tests/acceptance/fixtures/src/cli.js",
           "src/presets/js-webapp/tests/acceptance/fixtures/src/index.js",
-          "src/presets/node-cli/tests/acceptance/fixtures/src/cli.js"
+          "src/presets/node-cli/tests/acceptance/fixtures/src/cli.js",
+          "src/lib/agent.js",
+          "src/lib/log.js"
         ],
         "id": "447924de"
       },
@@ -5644,7 +5660,9 @@
           "src/presets/base/tests/acceptance/fixtures/src/index.js",
           "src/presets/cli/tests/acceptance/fixtures/src/cli.js",
           "src/presets/js-webapp/tests/acceptance/fixtures/src/index.js",
-          "src/presets/node-cli/tests/acceptance/fixtures/src/cli.js"
+          "src/presets/node-cli/tests/acceptance/fixtures/src/cli.js",
+          "src/lib/agent.js",
+          "src/lib/log.js"
         ],
         "id": "6a9e614f"
       },
@@ -6074,7 +6092,9 @@
           "src/presets/base/tests/acceptance/fixtures/src/index.js",
           "src/presets/cli/tests/acceptance/fixtures/src/cli.js",
           "src/presets/js-webapp/tests/acceptance/fixtures/src/index.js",
-          "src/presets/node-cli/tests/acceptance/fixtures/src/cli.js"
+          "src/presets/node-cli/tests/acceptance/fixtures/src/cli.js",
+          "src/lib/agent.js",
+          "src/lib/log.js"
         ],
         "id": "b881aa88"
       },
@@ -6215,7 +6235,9 @@
           "src/presets/base/tests/acceptance/fixtures/src/index.js",
           "src/presets/cli/tests/acceptance/fixtures/src/cli.js",
           "src/presets/js-webapp/tests/acceptance/fixtures/src/index.js",
-          "src/presets/node-cli/tests/acceptance/fixtures/src/cli.js"
+          "src/presets/node-cli/tests/acceptance/fixtures/src/cli.js",
+          "src/lib/agent.js",
+          "src/lib/log.js"
         ],
         "id": "ace46527"
       },
@@ -7041,7 +7063,9 @@
           "src/presets/base/tests/acceptance/fixtures/src/index.js",
           "src/presets/cli/tests/acceptance/fixtures/src/cli.js",
           "src/presets/js-webapp/tests/acceptance/fixtures/src/index.js",
-          "src/presets/node-cli/tests/acceptance/fixtures/src/cli.js"
+          "src/presets/node-cli/tests/acceptance/fixtures/src/cli.js",
+          "src/lib/agent.js",
+          "src/lib/log.js"
         ],
         "id": "b96d9baa"
       },
@@ -7332,7 +7356,9 @@
           "src/presets/base/tests/acceptance/fixtures/src/index.js",
           "src/presets/cli/tests/acceptance/fixtures/src/cli.js",
           "src/presets/js-webapp/tests/acceptance/fixtures/src/index.js",
-          "src/presets/node-cli/tests/acceptance/fixtures/src/cli.js"
+          "src/presets/node-cli/tests/acceptance/fixtures/src/cli.js",
+          "src/lib/agent.js",
+          "src/lib/log.js"
         ],
         "id": "f27da358"
       },
@@ -7906,9 +7932,9 @@
     ],
     "summary": {
       "total": 234,
-      "totalMethods": 780
+      "totalMethods": 781
     },
     "dataSourceHash": "7d725e75d5031be445119323e4947c91"
   },
-  "enrichedAt": "2026-04-13T05:35:14.534Z"
+  "enrichedAt": "2026-04-13T06:51:01.756Z"
 }
