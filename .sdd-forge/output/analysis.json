@@ -1,5 +1,5 @@
 {
-  "analyzedAt": "2026-04-13T15:00:05.095Z",
+  "analyzedAt": "2026-04-13T15:15:34.453Z",
   "package": {
     "entries": [
       {
@@ -2292,8 +2292,22 @@
         "usedBy": null,
         "id": "331cf497",
         "enrich": {
-          "attempts": 1
-        }
+          "processedAt": "2026-04-13T15:16:23.012Z",
+          "attempts": 2
+        },
+        "summary": "Implements the `flow review` command pipeline for code, spec, and test review phases with optional auto-fix loops. It orchestrates AI-driven proposal generation, verdict merging, markdown reporting, and retry-based remediation.",
+        "detail": "The module resolves review targets from flow state and spec references, then builds specialized prompts for draft, final, spec, and test review contexts. It parses structured AI output into proposals or gaps, merges verdicts, and renders deterministic review artifacts such as `review.md`, `spec-review.md`, and `test-review.md`. For fixable issues, it runs bounded retry loops that call a fix function and re-evaluate until pass/fail convergence. It also includes helpers for extracting requirements and scope, formatting test files for prompting, validating spec output shape, and stripping model preambles before writing. The `main` entrypoint validates CLI inputs and phase selection, then dispatches to test/spec/code review routines with consistent exit behavior.",
+        "chapter": "cli_commands",
+        "role": "cli",
+        "keywords": [
+          "review command",
+          "ai review loop",
+          "spec review",
+          "test gap analysis",
+          "auto-fix retries",
+          "markdown report",
+          "flow phase"
+        ]
       },
       {
         "file": "src/flow/lib/base-command.js",
@@ -2447,8 +2461,22 @@
         ],
         "id": "1261e39f",
         "enrich": {
-          "attempts": 1
-        }
+          "processedAt": "2026-04-13T15:16:23.012Z",
+          "attempts": 2
+        },
+        "summary": "Provides context retrieval and semantic search utilities over generated analysis entries for flow commands. It supports keyword, fallback text match, n-gram similarity, and optional AI-assisted keyword selection.",
+        "detail": "The file normalizes analysis entries into compact search results while excluding metadata-only fields. It offers deterministic matching via title/content/keyword filtering, plus a bigram-based similarity scorer to rank approximate matches. An AI path can select relevant keywords from a bounded vocabulary, then reuse the same deterministic filtering to keep output stable. It loads `analysis.json` from the configured output directory and throws explicit errors for missing or malformed data. The exported `GetContextCommand` reads file content or search results and returns structured context payloads for downstream prompt construction.",
+        "chapter": "internal_design",
+        "role": "lib",
+        "keywords": [
+          "context retrieval",
+          "semantic search",
+          "ngram similarity",
+          "keyword selection",
+          "analysis index",
+          "fallback matching",
+          "prompt context"
+        ]
       },
       {
         "file": "src/flow/lib/get-guardrail.js",
@@ -2773,8 +2801,22 @@
         "usedBy": null,
         "id": "b4aa4dad",
         "enrich": {
-          "attempts": 1
-        }
+          "processedAt": "2026-04-13T15:16:23.012Z",
+          "attempts": 2
+        },
+        "summary": "Implements gate checks for draft, spec, pre/post approval, and implementation phases in the flow lifecycle. It combines local static checks, git-diff validation, and optional AI guardrail evaluation to produce pass/fail transitions.",
+        "detail": "The module defines phase-specific validators such as draft field completeness and spec section integrity, including section-aware skip rules. It constructs guardrail prompts, parses guardrail responses into normalized findings, and aggregates pass/fail status with reasons. Implementation gating compares current work against a base branch and can fail early when no effective changes exist. Result helpers return structured gate payloads with next-step routing for success and failure paths. `RunGateCommand` resolves phase intent, dispatches to the proper executor, and enforces valid phase constraints from constants.",
+        "chapter": "cli_commands",
+        "role": "controller",
+        "keywords": [
+          "gate check",
+          "quality gate",
+          "guardrail validation",
+          "spec lint",
+          "draft validation",
+          "implementation diff",
+          "phase transition"
+        ]
       },
       {
         "file": "src/flow/lib/run-impl-confirm.js",
@@ -3021,8 +3063,22 @@
         "usedBy": null,
         "id": "862e7d08",
         "enrich": {
-          "attempts": 1
-        }
+          "processedAt": "2026-04-13T15:16:23.012Z",
+          "attempts": 2
+        },
+        "summary": "Implements retrospective generation for finalized flow work and writes normalized `retro.json` output under the spec directory. It extracts requirements, computes diff context, queries an AI agent, and validates/parses structured JSON results.",
+        "detail": "The command reads flow/spec state, enforces preconditions such as existing requirements and base branch availability, and rejects empty change sets. It builds a prompt that combines requirement text, requirement list, and detailed diff context for retrospective scoring. Response parsing uses strict JSON parsing with a repair fallback to tolerate minor formatting defects while preserving structure. It prevents accidental overwrite unless forced and records changed files in the command result payload. The implementation follows a clear controller pattern: validate inputs, collect evidence, call agent, parse, persist.",
+        "chapter": "cli_commands",
+        "role": "cli",
+        "keywords": [
+          "retrospective",
+          "postmortem",
+          "retro.json",
+          "requirement coverage",
+          "diff analysis",
+          "ai summary",
+          "flow finalize"
+        ]
       },
       {
         "file": "src/flow/lib/run-review.js",
@@ -3275,8 +3331,21 @@
         "usedBy": null,
         "id": "40d93087",
         "enrich": {
-          "attempts": 2
-        }
+          "processedAt": "2026-04-13T15:16:23.012Z",
+          "attempts": 3
+        },
+        "summary": "Defines a minimal flow command to increment a metric counter for a specific phase in flow state. It validates phase and counter values against shared constant allowlists before mutating state.",
+        "detail": "The class extends the common command base and expects positional arguments `<phase> <counter>`. It performs explicit usage and value validation, then delegates state updates to `mutateFlowState`-backed helpers. The command returns a compact payload containing phase, counter, and the new value. This keeps metric mutation logic centralized in flow-state while preserving a thin CLI surface. The file is intentionally small and focused on argument-to-state wiring.",
+        "chapter": "cli_commands",
+        "role": "cli",
+        "keywords": [
+          "metric counter",
+          "phase metrics",
+          "state mutation",
+          "command validation",
+          "flow telemetry",
+          "counter increment"
+        ]
       },
       {
         "file": "src/flow/lib/set-note.js",
@@ -3507,8 +3576,22 @@
         ],
         "id": "d64f4095",
         "enrich": {
-          "attempts": 2
-        }
+          "processedAt": "2026-04-13T15:16:23.012Z",
+          "attempts": 3
+        },
+        "summary": "Registers flow commands and lifecycle hooks that synchronize command execution with step status and metric counters. It acts as the orchestration map between CLI verbs and command implementations.",
+        "detail": "The module derives active phase from step state and provides helper wrappers for pre/post hooks that update step status consistently. It resolves gate-related step IDs and encapsulates safe updates so command failures do not corrupt state transitions. The exported `FLOW_COMMANDS` table binds command metadata, handlers, and optional lifecycle behavior in one central registry. It also integrates issue-log helpers for commands that manage issue data. This design keeps dispatch configuration declarative while reusing shared flow-state primitives.",
+        "chapter": "project_structure",
+        "role": "config",
+        "keywords": [
+          "command registry",
+          "dispatch table",
+          "lifecycle hooks",
+          "step status",
+          "phase derivation",
+          "flow orchestration",
+          "command map"
+        ]
       },
       {
         "file": "src/help.js",
@@ -3835,8 +3918,22 @@
         "usedBy": null,
         "id": "74b5e1c3",
         "enrich": {
-          "attempts": 2
-        }
+          "processedAt": "2026-04-13T15:16:23.012Z",
+          "attempts": 3
+        },
+        "summary": "Defines shared immutable allowlists for phases, statuses, gate targets, review phases, merge strategies, and related flow enums. It centralizes validation vocabularies used across CLI and state logic.",
+        "detail": "The file exports `Object.freeze` arrays to prevent accidental runtime mutation of core constants. These values are imported by command parsers, validators, and state transitions to ensure consistent behavior. Consolidating enum-like data in one module reduces drift between commands and simplifies error messaging for invalid inputs. The constants also codify policy boundaries such as valid counters and confirmation modes. It serves as low-level configuration infrastructure rather than executable workflow logic.",
+        "chapter": "configuration",
+        "role": "config",
+        "keywords": [
+          "constants",
+          "enum values",
+          "validation list",
+          "phase definitions",
+          "step statuses",
+          "merge strategy",
+          "shared config"
+        ]
       },
       {
         "file": "src/lib/entrypoint.js",
@@ -4059,8 +4156,22 @@
         ],
         "id": "5bb0bb76",
         "enrich": {
-          "attempts": 2
-        }
+          "processedAt": "2026-04-13T15:16:23.012Z",
+          "attempts": 3
+        },
+        "summary": "Implements persistent flow-state management, active flow tracking, preparing-flow lifecycle, and cross-worktree resolution utilities. It is the core model layer backing SDD flow progress, metadata, and metrics.",
+        "detail": "The module provides read/write primitives for `flow.json`, derives phase from step completion, and exposes mutation helpers for requirements, notes, issues, and step status. It manages active flow lists with stale-entry cleanup using branch/worktree existence checks and supports temporary preparing state files with TTL-based garbage collection. It includes path resolution utilities to map main repository and worktree contexts, plus scan functions to enumerate states across specs and worktrees. Metrics accumulation helpers aggregate agent usage and review counters in state, with resilient error handling for telemetry writes. The design keeps state transitions explicit and centralized, enabling higher-level commands to remain thin controllers.",
+        "chapter": "internal_design",
+        "role": "model",
+        "keywords": [
+          "flow state",
+          "state persistence",
+          "active flow",
+          "worktree resolution",
+          "phase derivation",
+          "metrics accumulation",
+          "spec tracking"
+        ]
       },
       {
         "file": "src/lib/formatter.js",
@@ -4815,8 +4926,22 @@
         "usedBy": null,
         "id": "59edeaf2",
         "enrich": {
-          "attempts": 2
-        }
+          "processedAt": "2026-04-13T15:16:23.012Z",
+          "attempts": 3
+        },
+        "summary": "Implements `metrics token` reporting that aggregates flow-level usage and quality-related indicators into text, JSON, or CSV outputs. It supports cache reuse, file discovery limits, and normalized scoring helpers.",
+        "detail": "The command parses CLI flags, validates output format, and scans `specs/*/flow.json` with a hard cap to avoid unbounded traversal. It computes per-row metrics, including requirement/request-derived signals and spec difficulty normalization based on baseline heuristics and precision clamping. Rows are grouped and sorted deterministically, then rendered through dedicated formatters for human and machine consumers. A cache file in `.sdd-forge/output/metrics.json` is checked for freshness using mtimes to skip unnecessary recomputation. Errors are surfaced with explicit diagnostics and standardized exit codes.",
+        "chapter": "cli_commands",
+        "role": "cli",
+        "keywords": [
+          "metrics report",
+          "token analytics",
+          "csv export",
+          "cache freshness",
+          "difficulty score",
+          "flow statistics",
+          "usage aggregation"
+        ]
       },
       {
         "file": "src/presets-cmd.js",
@@ -7851,9 +7976,9 @@
       },
       {
         "file": "src/upgrade.js",
-        "hash": "169f9f5cbcec86a6c83051d7360e61a1",
+        "hash": "32d1d4837867533d1644e4a3bcad9974",
         "lines": 133,
-        "mtime": "2026-04-10T06:35:13.122Z",
+        "mtime": "2026-04-13T15:15:34.157Z",
         "className": "upgrade",
         "methods": [
           "parseUpgradeArgs",
@@ -7875,23 +8000,22 @@
         "extends": null,
         "usedBy": null,
         "id": "a631f658",
-        "summary": "Implements the `upgrade` CLI command that refreshes skill templates and project-side skill assets. It focuses on synchronization and cleanup of generated skill artifacts based on current configuration.",
-        "detail": "The module parses upgrade-specific arguments, resolves repository/config paths, and loads runtime settings before performing updates. It calls centralized skill deployment helpers for core and project scopes, then removes obsolete skill files to keep generated assets consistent. It includes localized logging paths via i18n utilities and uses a dedicated result logger to report per-skill actions. The command also normalizes written JSON content formatting when updating config-related files. Error handling is centralized through shared exit-code conventions and direct-entrypoint wiring.",
+        "summary": "Implements the `upgrade` command that synchronizes skill/template assets and updates related project configuration. It coordinates deployment, cleanup, and optional experimental workflow integration.",
+        "detail": "The module parses upgrade-specific CLI options and loads project config to determine deployment targets. It invokes skill deployment helpers for shared and project-local skill templates, then removes obsolete skill files to keep generated assets in sync. It reports per-skill results and exits with standardized error handling when upgrade operations fail. The command also touches experimental workflow template paths and rewrites config JSON when needed. This file functions as a release/maintenance CLI entrypoint for keeping generated scaffolding current.",
         "chapter": "development",
         "role": "cli",
         "enrich": {
-          "processedAt": "2026-04-10T12:36:19.560Z",
+          "processedAt": "2026-04-13T15:16:23.012Z",
           "attempts": 1
         },
         "keywords": [
           "upgrade command",
-          "skill sync",
-          "template refresh",
-          "artifact cleanup",
-          "project maintenance",
+          "skill deployment",
+          "template sync",
+          "asset regeneration",
           "config rewrite",
-          "CLI migration",
-          "tooling workflow"
+          "maintenance tooling",
+          "scaffold update"
         ]
       }
     ],
@@ -7901,5 +8025,5 @@
     },
     "dataSourceHash": "7d725e75d5031be445119323e4947c91"
   },
-  "enrichedAt": "2026-04-13T15:00:49.449Z"
+  "enrichedAt": "2026-04-13T15:16:23.012Z"
 }
