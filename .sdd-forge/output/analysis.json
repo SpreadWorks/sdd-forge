@@ -1,5 +1,5 @@
 {
-  "analyzedAt": "2026-04-13T05:26:50.882Z",
+  "analyzedAt": "2026-04-13T05:35:03.178Z",
   "package": {
     "entries": [
       {
@@ -2083,9 +2083,9 @@
       },
       {
         "file": "src/flow.js",
-        "hash": "30aa9b7410e40dcb6788e83790a133de",
-        "lines": 265,
-        "mtime": "2026-04-13T01:48:41.877Z",
+        "hash": "a9e2cd5d786cc768aa019b37d6b114c1",
+        "lines": 270,
+        "mtime": "2026-04-13T05:35:02.879Z",
         "className": "flow",
         "methods": [
           "resolveCtx",
@@ -2110,21 +2110,23 @@
         "extends": null,
         "usedBy": null,
         "id": "1ab08f2b",
-        "enrich": {
-          "processedAt": "2026-04-13T05:28:46.709Z",
-          "attempts": 2
-        },
-        "summary": "This file is the main dispatcher for the `sdd-forge flow` CLI. It resolves runtime context and routes subcommands to registered flow command entries.",
-        "detail": "It parses top-level arguments, validates command groups, and rejects unknown or unexpected parameters early. It builds an execution context that includes repo roots, config, flow state, and active spec information. Argument parsing supports command-specific flag splitting and positional assignment rules. Execution is centralized in a `runEntry` helper that emits structured envelopes and normalizes process exit behavior.",
+        "summary": "This module is the main CLI dispatcher for `sdd-forge flow` commands. It parses arguments, resolves execution context, and routes to registered flow entries.",
+        "detail": "The file builds a runtime context with repository paths, config, flow state, spec ID, and worktree status before command execution. It separates option parsing into helpers that split positional and non-positional arguments, validate unexpected inputs, and map values into entry arguments. Command dispatch supports grouped commands and special flows like resume and prepare-spec, then executes handlers through a shared `runEntry` path. Error handling is centralized with explicit `process.exit` and `process.exitCode` usage plus envelope-based output functions (`ok`, `fail`, `output`). The design favors a thin CLI orchestrator with most behavior delegated to registry entries and reusable library helpers.",
         "chapter": "cli_commands",
         "role": "cli",
+        "enrich": {
+          "processedAt": "2026-04-13T05:35:14.534Z",
+          "attempts": 1
+        },
         "keywords": [
-          "flow dispatcher",
-          "command routing",
+          "CLI dispatcher",
           "argument parsing",
-          "CLI entrypoint",
-          "subcommand registry",
-          "exit handling"
+          "command routing",
+          "flow registry",
+          "execution context",
+          "exit codes",
+          "option validation",
+          "command handler"
         ]
       },
       {
@@ -7908,5 +7910,5 @@
     },
     "dataSourceHash": "7d725e75d5031be445119323e4947c91"
   },
-  "enrichedAt": "2026-04-13T05:28:46.709Z"
+  "enrichedAt": "2026-04-13T05:35:14.534Z"
 }
