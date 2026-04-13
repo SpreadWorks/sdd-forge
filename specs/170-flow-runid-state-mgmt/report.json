@@ -1,0 +1,40 @@
+{
+  "data": {
+    "implementation": {
+      "diffStat": "specs/170-flow-runid-state-mgmt/draft.md           | 100 +++++++++\n specs/170-flow-runid-state-mgmt/flow.json          | 213 ++++++++++++++++++\n specs/170-flow-runid-state-mgmt/issue-log.json     |  67 ++++++\n specs/170-flow-runid-state-mgmt/qa.md              |   9 +\n specs/170-flow-runid-state-mgmt/review.md          |  49 +++++\n specs/170-flow-runid-state-mgmt/spec.md            | 181 ++++++++++++++++\n specs/170-flow-runid-state-mgmt/tests/README.md    |  39 ++++\n .../tests/flow-init-prepare.test.js                | 183 ++++++++++++++++\n src/flow.js                                        |   6 +\n src/flow/lib/get-status.js                         |  79 ++++---\n src/flow/lib/run-prepare-spec.js                   |  17 +-\n src/flow/lib/run-resume.js                         |   2 +\n src/flow/lib/set-init.js                           |  34 +++\n src/flow/registry.js                               |  14 +-\n src/lib/flow-state.js                              | 208 ++++++++++++++++--\n src/templates/skills/sdd-forge.flow-plan/SKILL.md  |  14 +-\n tests/unit/flow.test.js                            |   6 +-\n tests/unit/lib/flow-state-runid.test.js            | 237 +++++++++++++++++++++\n 18 files changed, 1409 insertions(+), 49 deletions(-)",
+      "commits": [
+        "feat: feature/170-flow-runid-state-mgmt",
+        "refactor: apply review fixes - extract test helpers and read-only loader",
+        "doc: add explicit test modification approval to issue-log",
+        "doc: add explicit existing test modification approval section",
+        "doc: record existing test modification approval in spec",
+        "feat: add runId-based preparing state management"
+      ]
+    },
+    "retro": null,
+    "issueLog": {
+      "count": 0,
+      "entries": []
+    },
+    "metrics": {
+      "docsRead": 1,
+      "srcRead": 3,
+      "question": 7,
+      "issueLog": 2
+    },
+    "tokenMetrics": {
+      "input": 22,
+      "output": 13992,
+      "cacheRead": 131164,
+      "cacheCreation": 346685,
+      "cost": 1.5493639500000003,
+      "callCount": 11
+    },
+    "tests": null,
+    "sync": {
+      "status": "skipped",
+      "reason": "sync was skipped"
+    }
+  },
+  "text": "  Report\n\n  Implementation\n  ────────────────────────────────────────────────\n    feat: feature/170-flow-runid-state-mgmt\n    refactor: apply review fixes - extract test helpers and read-only loader\n    doc: add explicit test modification approval to issue-log\n    doc: add explicit existing test modification approval section\n    doc: record existing test modification approval in spec\n    feat: add runId-based preparing state management\n    18 files changed, 1409 insertions(+), 49 deletions(-)\n\n  Retro\n  ────────────────────────────────────────────────\n    -\n\n  Metrics\n  ────────────────────────────────────────────────\n    docs read ................... 1\n    src read .................... 3\n    Q&A ......................... 7\n    issue-log ................... 2\n    agent calls ................. 11\n    input tokens ................ 22\n    output tokens ............... 13,992\n    cache-read tokens ........... 131,164\n    cache-create tokens ......... 346,685\n    cost ........................ $1.5494\n\n  Tests\n  ────────────────────────────────────────────────\n    -"
+}

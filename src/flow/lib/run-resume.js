@@ -91,6 +91,8 @@ export default class RunResumeCommand extends FlowCommand {
       scope,
       requirements: state.requirements || [],
       notes: state.notes || [],
+      runId: state.runId || null,
+      lifecycle: state.lifecycle || null,
       dirty,
       dirtyFiles,
       currentBranch,

@@ -82,7 +82,7 @@ export const FLOW_COMMANDS = {
     command: () => import("./lib/run-prepare-spec.js"),
     args: {
       flags: ["--no-branch", "--worktree", "--dry-run"],
-      options: ["--title", "--base", "--issue", "--request"],
+      options: ["--title", "--base", "--issue", "--request", "--run-id"],
     },
     help: [
       "Usage: sdd-forge flow prepare [options]",
@@ -96,6 +96,7 @@ export const FLOW_COMMANDS = {
       "  --no-branch        Spec-only mode (no branch creation)",
       "  --issue <number>   GitHub Issue number to link",
       "  --request <text>   User request text to save in flow.json",
+      "  --run-id <runId>   Use existing runId from flow set init",
       "  --dry-run          Show what would happen without executing",
     ].join("\n"),
   },
@@ -103,11 +104,12 @@ export const FLOW_COMMANDS = {
     status: {
       helpKey: "flow.get.status",
       command: () => import("./lib/get-status.js"),
+      args: { positional: ["runId"] },
       help: [
-        "Usage: sdd-forge flow get status",
+        "Usage: sdd-forge flow get status [runId]",
         "",
         "Return active flow state for the current execution context.",
-        "This command does not accept target-spec options.",
+        "If runId is provided, resolve by runId instead of context.",
         "Use `sdd-forge flow resume` to discover or recover active flows.",
       ].join("\n"),
     },
@@ -229,6 +231,12 @@ export const FLOW_COMMANDS = {
         const phase = deriveActivePhase(ctx.root);
         if (phase) incrementMetric(ctx.root, phase, "issueLog");
       },
+    },
+    init: {
+      helpKey: "flow.set.init",
+      requiresFlow: false,
+      command: () => import("./lib/set-init.js"),
+      help: "Usage: sdd-forge flow set init\n\nInitialize a preparing flow state. Creates .active-flow.<runId> and returns the runId.",
     },
     auto: {
       helpKey: "flow.set.auto",

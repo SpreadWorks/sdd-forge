@@ -1,0 +1,213 @@
+{
+  "spec": "specs/170-flow-runid-state-mgmt/spec.md",
+  "baseBranch": "main",
+  "featureBranch": "feature/170-flow-runid-state-mgmt",
+  "steps": [
+    {
+      "id": "approach",
+      "status": "done"
+    },
+    {
+      "id": "branch",
+      "status": "done"
+    },
+    {
+      "id": "prepare-spec",
+      "status": "pending"
+    },
+    {
+      "id": "draft",
+      "status": "done"
+    },
+    {
+      "id": "gate-draft",
+      "status": "done"
+    },
+    {
+      "id": "spec",
+      "status": "done"
+    },
+    {
+      "id": "gate",
+      "status": "done"
+    },
+    {
+      "id": "approval",
+      "status": "done"
+    },
+    {
+      "id": "test",
+      "status": "done"
+    },
+    {
+      "id": "implement",
+      "status": "done"
+    },
+    {
+      "id": "gate-impl",
+      "status": "done"
+    },
+    {
+      "id": "review",
+      "status": "done"
+    },
+    {
+      "id": "finalize",
+      "status": "pending"
+    },
+    {
+      "id": "commit",
+      "status": "pending"
+    },
+    {
+      "id": "push",
+      "status": "pending"
+    },
+    {
+      "id": "merge",
+      "status": "pending"
+    },
+    {
+      "id": "pr-create",
+      "status": "pending"
+    },
+    {
+      "id": "branch-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "pr-merge",
+      "status": "pending"
+    },
+    {
+      "id": "sync-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "docs-update",
+      "status": "pending"
+    },
+    {
+      "id": "docs-review",
+      "status": "pending"
+    },
+    {
+      "id": "docs-commit",
+      "status": "pending"
+    }
+  ],
+  "requirements": [
+    {
+      "desc": "flow set init コマンド追加（runId生成 + .active-flow.<runId>作成）",
+      "status": "done"
+    },
+    {
+      "desc": "flow.json に runId フィールド追加",
+      "status": "done"
+    },
+    {
+      "desc": "flow.json に lifecycle フィールド追加",
+      "status": "done"
+    },
+    {
+      "desc": "loadFlowState で runId 透過的移行",
+      "status": "done"
+    },
+    {
+      "desc": "flow get status <runId> の runId 解決ロジック",
+      "status": "done"
+    },
+    {
+      "desc": "stale .active-flow.* の TTL(24h) 自動削除",
+      "status": "done"
+    },
+    {
+      "desc": "resume の runId 復元",
+      "status": "done"
+    },
+    {
+      "desc": "autoApprove: preparing 状態では false 固定",
+      "status": "done"
+    },
+    {
+      "desc": "競合ガード: 既存 preparing ファイル警告",
+      "status": "done"
+    },
+    {
+      "desc": "SKILL.md テンプレートに Step 0 追加",
+      "status": "done"
+    },
+    {
+      "desc": "flow set init が runId を返す",
+      "status": "done"
+    }
+  ],
+  "issue": 137,
+  "request": "flow-state: runIdベースのpreparing状態管理とresume復元",
+  "worktree": true,
+  "metrics": {
+    "plan": {
+      "docsRead": 1
+    },
+    "draft": {
+      "question": 7
+    },
+    "gate-draft": {
+      "tokens": {
+        "input": 2,
+        "output": 731,
+        "cacheRead": 11924,
+        "cacheCreation": 10578
+      },
+      "cost": 0.054215700000000006,
+      "callCount": 1,
+      "responseChars": 1243
+    },
+    "spec": {
+      "srcRead": 1
+    },
+    "gate": {
+      "tokens": {
+        "input": 2,
+        "output": 638,
+        "cacheRead": 11924,
+        "cacheCreation": 12302
+      },
+      "cost": 0.0592857,
+      "callCount": 1,
+      "responseChars": 1203
+    },
+    "test": {
+      "srcRead": 1
+    },
+    "impl": {
+      "srcRead": 1,
+      "issueLog": 3
+    },
+    "gate-impl": {
+      "tokens": {
+        "input": 18,
+        "output": 12623,
+        "cacheRead": 107316,
+        "cacheCreation": 323805
+      },
+      "cost": 1.4358625500000002,
+      "callCount": 9,
+      "responseChars": 24406
+    }
+  },
+  "notes": [
+    "approach: Q&A draft chosen",
+    "scope: Issue全体を1つのspecで実装する",
+    "active-flow.<runId>: flow.jsonと完全同一スキーマ、未定フィールドはnull",
+    "active-flow.<runId>: .sdd-forge/に配置、prepare昇格後は削除",
+    "get status: 引数なしは後方互換維持、runId指定時のみrunId解決",
+    "stale cleanup: flow prepare時にmtimeベースTTL超過で自動削除、明示コマンドは追加しない",
+    "migration: loadFlowState読み込み時にrunId無しなら自動採番して保存（透過的移行）",
+    "test: テストコードを作成する",
+    "implement: 実装方針承認済み",
+    "review: コードレビュー+自動改善",
+    "finalize: all mode selected"
+  ],
+  "runId": "b817c90f-d598-4dae-9b31-1e3e9d50d7ee"
+}

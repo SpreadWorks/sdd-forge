@@ -126,7 +126,11 @@ describe("flow-state (specs-based storage)", () => {
     addActiveFlow(tmp, specId, "local");
 
     const loaded = loadFlowState(tmp);
-    assert.deepEqual(loaded, state);
+    // Core fields must be preserved; runId is auto-assigned by transparent migration
+    assert.equal(loaded.spec, state.spec);
+    assert.equal(loaded.baseBranch, state.baseBranch);
+    assert.equal(loaded.featureBranch, state.featureBranch);
+    assert.ok(loaded.runId, "runId should be auto-assigned by transparent migration");
   });
 
   it("loadFlowState returns null when no .active-flow exists", () => {

@@ -11,7 +11,10 @@ import { isInsideWorktree } from "../../lib/cli.js";
 import { sddDir, DEFAULT_LANG } from "../../lib/config.js";
 import { runCmd, assertOk } from "../../lib/process.js";
 import { translate } from "../../lib/i18n.js";
-import { saveFlowState, buildInitialSteps, addActiveFlow, cleanStaleFlows } from "../../lib/flow-state.js";
+import {
+  saveFlowState, buildInitialSteps, addActiveFlow, cleanStaleFlows,
+  generateRunId, deletePreparingFlow, cleanStalePreparingFlows,
+} from "../../lib/flow-state.js";
 import { getWorktreeStatus } from "../../lib/git-helpers.js";
 import { FlowCommand } from "./base-command.js";
 
@@ -169,6 +172,7 @@ export class RunPrepareSpecCommand extends FlowCommand {
     const base = ctx.base || "";
     const issue = ctx.issue || "";
     const request = ctx.request || "";
+    const runIdArg = ctx.runId || "";
     const noBranch = ctx.noBranch || false;
     const useWorktreeFlag = ctx.worktree || false;
     const dryRun = ctx.dryRun || false;
@@ -234,6 +238,7 @@ export class RunPrepareSpecCommand extends FlowCommand {
     }
 
     // Helper: write flow.json state
+    const flowRunId = runIdArg || generateRunId();
     function writeFlowState(extra) {
       const steps = buildInitialSteps();
       for (const id of ["approach", "branch", "spec"]) {
@@ -244,6 +249,8 @@ export class RunPrepareSpecCommand extends FlowCommand {
         spec: `specs/${specDirName}/spec.md`,
         baseBranch: resolvedBase,
         featureBranch: branchName,
+        runId: flowRunId,
+        lifecycle: "active",
         steps,
         requirements: [],
         ...(issue ? { issue: Number(issue) } : {}),
@@ -253,8 +260,14 @@ export class RunPrepareSpecCommand extends FlowCommand {
       saveFlowState(specRoot, state);
     }
 
-    // Clean stale .active-flow entries before creating a new flow
+    // Clean stale .active-flow entries and preparing files before creating a new flow
     cleanStaleFlows(root);
+    cleanStalePreparingFlows(root);
+
+    // Delete the preparing file if --run-id was provided
+    if (runIdArg) {
+      deletePreparingFlow(root, runIdArg);
+    }
 
     const changed = [`specs/${specDirName}/spec.md`, `specs/${specDirName}/qa.md`];
     const lines = [];

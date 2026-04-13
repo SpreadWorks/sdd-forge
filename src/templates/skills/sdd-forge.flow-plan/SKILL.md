@@ -38,6 +38,11 @@ Note: `sdd-forge flow get context` automatically records these metrics via hooks
 
 ## Required Sequence
 
+0. Initialize flow state.
+   - Run `sdd-forge flow set init` to create a preparing state file (`.active-flow.<runId>`).
+   - Save the returned `runId` from `data.runId` for use in step 3.
+   - This ensures the flow is tracked from the earliest point, even before `flow.json` is created.
+
 1. Confirm request interpretation.
    - **Note**: `flow.json` does not exist yet at this point. Do NOT run `sdd-forge flow set` commands until after step 3.
    - **autoApprove skip**: If `autoApprove: true` (checked via `sdd-forge flow get status` before entering this skill), skip this step entirely. The request/issue is already confirmed in flow.json.
@@ -70,10 +75,10 @@ Note: `sdd-forge flow get context` automatically records these metrics via hooks
 3. Create or select spec (`prepare-spec`).
    - Run `sdd-forge flow prepare`. If it returns `{ok: false, code: "DIRTY_WORKTREE"}`, run `sdd-forge flow get prompt plan.dirty-worktree` and present the choices. Do not retry until the worktree is clean.
    - The `--title` value becomes the spec directory name and branch name. Keep it short: **max 30 characters**, lowercase English, hyphen-separated (e.g. "fix-scan-parser-bugs", "add-preset-datasources").
-   - Commands (based on step 2 choice). Add `--issue <number>` if a GitHub Issue was provided, and `--request "<text>"` with the user's original request:
-     - Worktree: `sdd-forge flow prepare --title "..." --base <branch> --worktree [--issue N] [--request "..."]`
-     - Branch: `sdd-forge flow prepare --title "..." --base <branch> [--issue N] [--request "..."]`
-     - No branch: `sdd-forge flow prepare --title "..." --no-branch [--issue N] [--request "..."]`
+   - Commands (based on step 2 choice). Add `--issue <number>` if a GitHub Issue was provided, `--request "<text>"` with the user's original request, and `--run-id <runId>` with the runId from step 0:
+     - Worktree: `sdd-forge flow prepare --title "..." --base <branch> --worktree [--issue N] [--request "..."] [--run-id <runId>]`
+     - Branch: `sdd-forge flow prepare --title "..." --base <branch> [--issue N] [--request "..."] [--run-id <runId>]`
+     - No branch: `sdd-forge flow prepare --title "..." --no-branch [--issue N] [--request "..."] [--run-id <runId>]`
    - This creates the branch, `specs/NNN-xxx/` directory, `spec.md` skeleton, and `specs/NNN-xxx/flow.json`.
    - The base branch, issue number, and request are automatically recorded in flow.json.
    - Steps branch/prepare-spec are automatically set to done by prepare-spec.

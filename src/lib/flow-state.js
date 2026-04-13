@@ -8,12 +8,16 @@
 
 import fs from "fs";
 import path from "path";
+import crypto from "crypto";
 import { runCmd } from "./process.js";
 import { sddDir } from "./config.js";
 import { isInsideWorktree, getMainRepoPath } from "./cli.js";
 
 const STATE_FILE = "flow.json";
 const ACTIVE_FLOW_FILE = ".active-flow";
+const PREPARING_PREFIX = ".active-flow.";
+const PREPARING_TTL_MS = 24 * 60 * 60 * 1000; // 24 hours
+const PREPARING_SCAN_LIMIT = 100;
 
 /**
  * Extract the spec name (e.g. "152-add-logger-to-callsites") from a flow object or state.
@@ -236,6 +240,121 @@ export function cleanStaleFlows(workRoot) {
   return valid;
 }
 
+// ── preparing state files (.active-flow.<runId>) ────────────────────────────
+
+/**
+ * Generate a new runId.
+ * @returns {string}
+ */
+export function generateRunId() {
+  return crypto.randomUUID();
+}
+
+/**
+ * Create a preparing state file (.active-flow.<runId>).
+ * @param {string} workRoot
+ * @param {string} runId
+ * @param {object} [extra] - additional fields to merge
+ * @returns {string} path to the created file
+ */
+export function createPreparingFlow(workRoot, runId, extra = {}) {
+  const mainRoot = resolveMainRoot(workRoot);
+  const dir = sddDir(mainRoot);
+  fs.mkdirSync(dir, { recursive: true });
+  const state = {
+    runId,
+    lifecycle: "preparing",
+    spec: null,
+    baseBranch: null,
+    featureBranch: null,
+    worktree: null,
+    steps: buildInitialSteps(),
+    requirements: [],
+    autoApprove: false,
+    ...extra,
+  };
+  const p = path.join(dir, `${PREPARING_PREFIX}${runId}`);
+  fs.writeFileSync(p, JSON.stringify(state, null, 2) + "\n", "utf8");
+  return p;
+}
+
+/**
+ * Load a preparing state file by runId.
+ * @param {string} workRoot
+ * @param {string} runId
+ * @returns {object|null}
+ */
+export function loadPreparingFlow(workRoot, runId) {
+  const mainRoot = resolveMainRoot(workRoot);
+  const p = path.join(sddDir(mainRoot), `${PREPARING_PREFIX}${runId}`);
+  if (!fs.existsSync(p)) return null;
+  try {
+    return JSON.parse(fs.readFileSync(p, "utf8"));
+  } catch (err) {
+    console.error(`[flow-state] WARN: failed to read preparing flow ${runId}: ${err.message}`);
+    return null;
+  }
+}
+
+/**
+ * Delete a preparing state file by runId.
+ * @param {string} workRoot
+ * @param {string} runId
+ */
+export function deletePreparingFlow(workRoot, runId) {
+  const mainRoot = resolveMainRoot(workRoot);
+  const p = path.join(sddDir(mainRoot), `${PREPARING_PREFIX}${runId}`);
+  try { fs.unlinkSync(p); } catch (err) { if (err.code !== "ENOENT") throw err; }
+}
+
+/**
+ * List existing preparing state files.
+ * @param {string} workRoot
+ * @returns {string[]} array of runIds
+ */
+export function listPreparingFlows(workRoot) {
+  const mainRoot = resolveMainRoot(workRoot);
+  const dir = sddDir(mainRoot);
+  if (!fs.existsSync(dir)) return [];
+  return fs.readdirSync(dir)
+    .filter((f) => f.startsWith(PREPARING_PREFIX))
+    .map((f) => f.slice(PREPARING_PREFIX.length))
+    .slice(0, PREPARING_SCAN_LIMIT);
+}
+
+/**
+ * Remove stale preparing files (mtime > TTL).
+ * @param {string} workRoot
+ * @returns {string[]} deleted runIds
+ */
+export function cleanStalePreparingFlows(workRoot) {
+  const mainRoot = resolveMainRoot(workRoot);
+  const dir = sddDir(mainRoot);
+  if (!fs.existsSync(dir)) return [];
+
+  const now = Date.now();
+  const deleted = [];
+  const entries = fs.readdirSync(dir)
+    .filter((f) => f.startsWith(PREPARING_PREFIX))
+    .slice(0, PREPARING_SCAN_LIMIT);
+
+  for (const f of entries) {
+    const p = path.join(dir, f);
+    try {
+      const stat = fs.statSync(p);
+      if (now - stat.mtimeMs > PREPARING_TTL_MS) {
+        fs.unlinkSync(p);
+        deleted.push(f.slice(PREPARING_PREFIX.length));
+      }
+    } catch (err) {
+      if (err.code !== "ENOENT") {
+        console.error(`[flow-state] WARN: stale cleanup failed for ${f}: ${err.message}`);
+      }
+    }
+  }
+  return deleted;
+}
+
 // ── spec ID helpers ─────────────────────────────────────────────────────────
 
 /**
@@ -322,28 +441,47 @@ export function saveFlowState(workRoot, state) {
  * @returns {FlowState|null}
  */
 export function loadFlowState(workRoot, specId) {
+  let state = null;
+  let resolvedPath = null;
+
   if (specId) {
     const p = specFlowPath(workRoot, specId);
     if (!fs.existsSync(p)) return null;
-    return JSON.parse(fs.readFileSync(p, "utf8"));
-  }
-
-  // Worktree shortcut: derive spec ID from branch name directly
-  if (isInsideWorktree(workRoot)) {
+    state = JSON.parse(fs.readFileSync(p, "utf8"));
+    resolvedPath = p;
+  } else if (isInsideWorktree(workRoot)) {
+    // Worktree shortcut: derive spec ID from branch name directly
     const id = specIdFromBranch(workRoot);
     if (id) {
       const p = specFlowPath(workRoot, id);
-      if (fs.existsSync(p)) return JSON.parse(fs.readFileSync(p, "utf8"));
+      if (fs.existsSync(p)) {
+        state = JSON.parse(fs.readFileSync(p, "utf8"));
+        resolvedPath = p;
+      }
     }
   }
 
-  const flows = loadActiveFlows(workRoot);
-  const current = resolveCurrentFlow(workRoot, flows);
-  if (!current) return null;
+  if (!state) {
+    const flows = loadActiveFlows(workRoot);
+    const current = resolveCurrentFlow(workRoot, flows);
+    if (!current) return null;
+    const p = specFlowPath(workRoot, current.spec);
+    if (!fs.existsSync(p)) return null;
+    state = JSON.parse(fs.readFileSync(p, "utf8"));
+    resolvedPath = p;
+  }
 
-  const p = specFlowPath(workRoot, current.spec);
-  if (!fs.existsSync(p)) return null;
-  return JSON.parse(fs.readFileSync(p, "utf8"));
+  // Transparent migration: auto-assign runId if missing
+  if (state && !state.runId) {
+    state.runId = generateRunId();
+    try {
+      fs.writeFileSync(resolvedPath, JSON.stringify(state, null, 2) + "\n", "utf8");
+    } catch (err) {
+      console.error(`[flow-state] WARN: failed to persist migrated runId: ${err.message}`);
+    }
+  }
+
+  return state;
 }
 
 /**
@@ -721,5 +859,51 @@ export function resolveActiveFlow(root, flowState) {
     );
   }
 
+  return null;
+}
+
+/**
+ * Read-only flow.json loader. Does NOT trigger transparent migration.
+ * Use this for resolution/lookup paths where side effects are undesirable.
+ * @param {string} workRoot
+ * @param {string} specId
+ * @returns {object|null}
+ */
+function loadFlowStateReadOnly(workRoot, specId) {
+  const p = specFlowPath(workRoot, specId);
+  if (!fs.existsSync(p)) return null;
+  try {
+    return JSON.parse(fs.readFileSync(p, "utf8"));
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Resolve flow state by runId.
+ * 1. Scan active flows' flow.json for matching runId (max PREPARING_SCAN_LIMIT entries)
+ * 2. Fall back to .active-flow.<runId> file
+ * 3. Return null if not found
+ *
+ * Uses read-only loader to avoid triggering transparent migration as a side effect.
+ *
+ * @param {string} workRoot
+ * @param {string} runId
+ * @returns {object|null} flow state object
+ */
+export function resolveByRunId(workRoot, runId) {
+  // Stage 1: check active flows (read-only — no migration side effects)
+  const activeFlows = loadActiveFlows(workRoot);
+  const limit = Math.min(activeFlows.length, PREPARING_SCAN_LIMIT);
+  for (let i = 0; i < limit; i++) {
+    const state = loadFlowStateReadOnly(workRoot, activeFlows[i].spec);
+    if (state?.runId === runId) return state;
+  }
+
+  // Stage 2: check preparing file
+  const preparing = loadPreparingFlow(workRoot, runId);
+  if (preparing) return preparing;
+
+  // Stage 3: not found
   return null;
 }

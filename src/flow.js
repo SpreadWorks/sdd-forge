@@ -143,6 +143,12 @@ function parseEntryArgs(entry, rawArgs, ctx) {
     return;
   }
 
+  // Reject unknown options (--something) when only positional args are expected
+  const unknownOpt = rawArgs.find((a) => a.startsWith("-"));
+  if (unknownOpt) {
+    throw new Error(`Unknown option: ${unknownOpt}`);
+  }
+
   const values = rawArgs.slice(0, positional.length);
   assignPositionalArgs(ctx, positional, values);
   if (rawArgs.length > positional.length) {
