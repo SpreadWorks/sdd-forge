@@ -1,5 +1,5 @@
 {
-  "analyzedAt": "2026-04-13T09:59:29.481Z",
+  "analyzedAt": "2026-04-13T12:50:23.141Z",
   "package": {
     "entries": [
       {
@@ -2723,16 +2723,20 @@
       },
       {
         "file": "src/flow/lib/run-finalize.js",
-        "hash": "377fd9af968f55eb79510d649d67fb5b",
-        "lines": 336,
-        "mtime": "2026-04-10T06:35:13.097Z",
+        "hash": "334b6d4ef68c202fc2f9bbd0682e755c",
+        "lines": 374,
+        "mtime": "2026-04-13T12:50:22.616Z",
         "className": "run-finalize",
         "methods": [
           "finalizeOnError",
           "commitOrSkip",
+          "resolveGitCommonDir",
+          "assertGitWriteAccess",
+          "runFinalizePreflight",
           "executeCommitPost",
           "RunFinalizeCommand",
           "executeCleanupImpl",
+          "buildFinalizePreflightError",
           "runSubStep"
         ],
         "imports": [
@@ -2749,6 +2753,9 @@
         "exports": [
           "finalizeOnError",
           "commitOrSkip",
+          "resolveGitCommonDir",
+          "assertGitWriteAccess",
+          "runFinalizePreflight",
           "executeCommitPost",
           "RunFinalizeCommand",
           "default",
@@ -2757,20 +2764,24 @@
         "extends": "FlowCommand",
         "usedBy": null,
         "id": "c711309b",
-        "enrich": {
-          "processedAt": "2026-04-10T14:34:55.016Z",
-          "attempts": 2
-        },
-        "summary": "Implements finalize workflow orchestration, including report/build/commit/merge/cleanup steps. It supports full-run and selective-step execution modes.",
-        "detail": "The module defines step maps, error handlers, and helper routines for commit decisions, merge strategy, and cleanup behavior. It integrates git summaries, issue-log updates, optional GitHub commenting, and post-commit/report generation artifacts. The command validates mode/strategy/steps, runs substeps with status normalization, and returns structured finalize outcomes.",
+        "summary": "This module implements the flow finalization command and its supporting execution helpers. It coordinates preflight checks, step dispatch, commit behavior, and cleanup for the SDD finalize workflow.",
+        "detail": "The file defines utility functions to handle failure cleanup, commit-or-skip behavior, Git common directory resolution, and conversion of low-level filesystem errors into explicit preflight failures. It performs a finalize preflight by writing and removing a temporary lock file in the Git directory to verify write access before executing any mutating step. A step map and sub-step runner provide structured orchestration, normalizing results and converting thrown command/process errors into consistent status objects. The `RunFinalizeCommand` class validates mode and strategy options, supports selective step execution, runs post-commit reporting such as diff stats/summary, and executes final cleanup paths for worktree and repository state.",
         "chapter": "cli_commands",
-        "role": "controller",
+        "role": "cli",
+        "enrich": {
+          "processedAt": "2026-04-13T12:50:33.599Z",
+          "attempts": 1
+        },
         "keywords": [
-          "finalize command",
-          "step orchestration",
-          "commit and merge",
-          "cleanup",
-          "flow automation"
+          "finalize workflow",
+          "flow command",
+          "preflight check",
+          "git write access",
+          "step dispatcher",
+          "commit orchestration",
+          "cleanup routine",
+          "error handling",
+          "worktree management"
         ]
       },
       {
@@ -7935,9 +7946,9 @@
     ],
     "summary": {
       "total": 234,
-      "totalMethods": 781
+      "totalMethods": 785
     },
     "dataSourceHash": "7d725e75d5031be445119323e4947c91"
   },
-  "enrichedAt": "2026-04-13T09:59:39.826Z"
+  "enrichedAt": "2026-04-13T12:50:33.599Z"
 }
