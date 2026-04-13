@@ -1,16 +1,27 @@
 {
-  "generatedAt": "2026-04-12T14:42:52.533Z",
+  "generatedAt": "2026-04-12T14:58:21.720Z",
   "rows": [
     {
       "date": "2026-04-12",
       "phase": "draft",
-      "difficulty": 44.15682652853348,
+      "difficulty": 44.2722111439181,
       "tokenInput": 12,
       "tokenOutput": 9666,
       "cacheRead": 55710,
       "cacheCreate": 70358,
       "callCount": 6,
       "cost": 0.42558150000000006
+    },
+    {
+      "date": "2026-04-12",
+      "phase": "finalize",
+      "difficulty": 46.59,
+      "tokenInput": null,
+      "tokenOutput": null,
+      "cacheRead": null,
+      "cacheCreate": null,
+      "callCount": null,
+      "cost": null
     },
     {
       "date": "2026-04-12",
@@ -37,7 +48,7 @@
     {
       "date": "2026-04-12",
       "phase": "gate-impl",
-      "difficulty": 120.16133333333332,
+      "difficulty": 123.16133333333332,
       "tokenInput": 37,
       "tokenOutput": 54938,
       "cacheRead": 902344,
