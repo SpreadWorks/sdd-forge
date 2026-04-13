@@ -1,0 +1,10 @@
+{
+  "entries": [
+    {
+      "step": "gate",
+      "reason": "Single Responsibility — `redo` エントリ削除という単一の懸念のみを扱っている; Unambiguous Requirements — 「`redo` エントリを削除する」は検証可能な条件で記述されている; Complete Context — Requirements P1 は対象ファイル・場所・変更内容が明示されており、Acceptance Criteria で期待結果も示されている; No Hardcoded Secrets — ソースコード変更を伴う仕様だが、シークレット関連の内容は一切含まれない; No Silent Error Swallowing — エラー処理の変更を含まず、該当しない; Prioritize Requirements — 要件は1件のみのため優先順位付け不要; Impact on Existing Features — Out of Scope に影響しない既存機能（`set-metric.js` の `VALID_COUNTERS`）が明示されている; Bounded Resource Usage — 再帰・リトライ・バルクロードを含まず、該当しない; Changes Require Test Coverage — 「回帰テストの追加」を Out of Scope としているが、その理由がSpec本文に記載されていない; Spec Includes Test Strategy — テスト戦略セクションが存在しない。Out of Scope とした理由も含め何をどう検証するかの記載がない; Synthesize Draft, Do Not Copy — Clarifications の Q&A を整理・抽象化しており、下書きの直接コピーではない; Record Unresolved Points as Open Questions — Open Questions セクションが存在し「なし」と明示されている; Include 'Why This Approach' Rationale — Alternatives Considered に互換 shim 案を却下した理由（alpha版ポリシー）が記載されている; Backward — Compatible CLI Interface — `flow set redo` は内部クラッシュしている未動作コマンドの削除であり、機能する既存コマンドの変更ではない。alpha版ポリシーも明記されている; Exit Code Contract — 終了コードの変更を含まず、該当しない",
+      "trigger": "gate post hook (auto)",
+      "timestamp": "2026-04-13T05:17:59.355Z"
+    }
+  ]
+}

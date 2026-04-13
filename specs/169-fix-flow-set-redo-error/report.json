@@ -1,0 +1,42 @@
+{
+  "data": {
+    "implementation": {
+      "diffStat": "specs/169-fix-flow-set-redo-error/draft.md         |  38 ++++++\n specs/169-fix-flow-set-redo-error/flow.json        | 131 +++++++++++++++++++++\n specs/169-fix-flow-set-redo-error/issue-log.json   |  10 ++\n specs/169-fix-flow-set-redo-error/qa.md            |   9 ++\n specs/169-fix-flow-set-redo-error/review.md        |   3 +\n specs/169-fix-flow-set-redo-error/spec.md          |  61 ++++++++++\n specs/169-fix-flow-set-redo-error/tests/README.md  |  17 +++\n .../tests/verify-redo-removed.js                   |  43 +++++++\n src/flow/registry.js                               |   5 -\n 9 files changed, 312 insertions(+), 5 deletions(-)",
+      "commits": [
+        "feat: feature/169-fix-flow-set-redo-error"
+      ]
+    },
+    "retro": {
+      "total": 1,
+      "done": 1,
+      "partial": 0,
+      "not_done": 0,
+      "rate": 1,
+      "notes": "要求事項（redo エントリ削除）は満たしている。一方で、要件に含まれていない仕様運用ファイル・検証用テストの追加が複数含まれる。"
+    },
+    "issueLog": {
+      "count": 0,
+      "entries": []
+    },
+    "metrics": {
+      "docsRead": 1,
+      "srcRead": 0,
+      "question": 4,
+      "issueLog": 0
+    },
+    "tokenMetrics": {
+      "input": 2,
+      "output": 632,
+      "cacheRead": 11924,
+      "cacheCreation": 9583,
+      "cost": 0.04899945,
+      "callCount": 1
+    },
+    "tests": null,
+    "sync": {
+      "status": "skipped",
+      "reason": "sync was skipped"
+    }
+  },
+  "text": "  Report\n\n  Implementation\n  ────────────────────────────────────────────────\n    feat: feature/169-fix-flow-set-redo-error\n    9 files changed, 312 insertions(+), 5 deletions(-)\n\n  Retro\n  ────────────────────────────────────────────────\n    ████████ 100%  (1 done / 0 partial / 0 miss)\n\n  Metrics\n  ────────────────────────────────────────────────\n    docs read ................... 1\n    src read .................... 0\n    Q&A ......................... 4\n    issue-log ................... 0\n    agent calls ................. 1\n    input tokens ................ 2\n    output tokens ............... 632\n    cache-read tokens ........... 11,924\n    cache-create tokens ......... 9,583\n    cost ........................ $0.0490\n\n  Tests\n  ────────────────────────────────────────────────\n    -"
+}

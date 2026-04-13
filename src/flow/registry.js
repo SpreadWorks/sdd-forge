@@ -230,11 +230,6 @@ export const FLOW_COMMANDS = {
         if (phase) incrementMetric(ctx.root, phase, "issueLog");
       },
     },
-    redo: {
-      helpKey: "flow.set.redo",
-      requiresFlow: false,
-      execute: () => Promise.resolve({ execute() { output(fail("set", "redo", "RENAMED", '"redo" has been renamed to "issue-log". Use: sdd-forge flow set issue-log')); } }),
-    },
     auto: {
       helpKey: "flow.set.auto",
       command: () => import("./lib/set-auto.js"),

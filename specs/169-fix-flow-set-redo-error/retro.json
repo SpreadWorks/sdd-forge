@@ -1,0 +1,53 @@
+{
+  "spec": "specs/169-fix-flow-set-redo-error/spec.md",
+  "date": "2026-04-13T05:26:49.422Z",
+  "requirements": [
+    {
+      "desc": "registry.js の set グループから redo エントリを削除する",
+      "status": "done",
+      "note": "src/flow/registry.js の set グループから redo エントリ（helpKey/requiresFlow/execute を含む定義）が削除されている。"
+    }
+  ],
+  "unplanned": [
+    {
+      "file": "specs/169-fix-flow-set-redo-error/draft.md",
+      "change": "仕様ドラフト文書を新規追加。"
+    },
+    {
+      "file": "specs/169-fix-flow-set-redo-error/flow.json",
+      "change": "フロー管理メタデータを新規追加。"
+    },
+    {
+      "file": "specs/169-fix-flow-set-redo-error/issue-log.json",
+      "change": "ゲート判定ログを新規追加。"
+    },
+    {
+      "file": "specs/169-fix-flow-set-redo-error/qa.md",
+      "change": "Q&A テンプレートを新規追加。"
+    },
+    {
+      "file": "specs/169-fix-flow-set-redo-error/review.md",
+      "change": "レビュー結果ファイルを新規追加。"
+    },
+    {
+      "file": "specs/169-fix-flow-set-redo-error/spec.md",
+      "change": "仕様書本体を新規追加。"
+    },
+    {
+      "file": "specs/169-fix-flow-set-redo-error/tests/README.md",
+      "change": "検証テスト説明を新規追加。"
+    },
+    {
+      "file": "specs/169-fix-flow-set-redo-error/tests/verify-redo-removed.js",
+      "change": "手動検証用テストスクリプトを新規追加。"
+    }
+  ],
+  "summary": {
+    "total": 1,
+    "done": 1,
+    "partial": 0,
+    "not_done": 0,
+    "rate": 1,
+    "notes": "要求事項（redo エントリ削除）は満たしている。一方で、要件に含まれていない仕様運用ファイル・検証用テストの追加が複数含まれる。"
+  }
+}

@@ -1,0 +1,131 @@
+{
+  "spec": "specs/169-fix-flow-set-redo-error/spec.md",
+  "baseBranch": "main",
+  "featureBranch": "feature/169-fix-flow-set-redo-error",
+  "steps": [
+    {
+      "id": "approach",
+      "status": "done"
+    },
+    {
+      "id": "branch",
+      "status": "done"
+    },
+    {
+      "id": "prepare-spec",
+      "status": "pending"
+    },
+    {
+      "id": "draft",
+      "status": "done"
+    },
+    {
+      "id": "gate-draft",
+      "status": "done"
+    },
+    {
+      "id": "spec",
+      "status": "done"
+    },
+    {
+      "id": "gate",
+      "status": "done"
+    },
+    {
+      "id": "approval",
+      "status": "done"
+    },
+    {
+      "id": "test",
+      "status": "done"
+    },
+    {
+      "id": "implement",
+      "status": "done"
+    },
+    {
+      "id": "gate-impl",
+      "status": "done"
+    },
+    {
+      "id": "review",
+      "status": "done"
+    },
+    {
+      "id": "finalize",
+      "status": "pending"
+    },
+    {
+      "id": "commit",
+      "status": "pending"
+    },
+    {
+      "id": "push",
+      "status": "pending"
+    },
+    {
+      "id": "merge",
+      "status": "pending"
+    },
+    {
+      "id": "pr-create",
+      "status": "pending"
+    },
+    {
+      "id": "branch-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "pr-merge",
+      "status": "pending"
+    },
+    {
+      "id": "sync-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "docs-update",
+      "status": "pending"
+    },
+    {
+      "id": "docs-review",
+      "status": "pending"
+    },
+    {
+      "id": "docs-commit",
+      "status": "pending"
+    }
+  ],
+  "requirements": [
+    {
+      "desc": "registry.js の set グループから redo エントリを削除する",
+      "status": "done"
+    }
+  ],
+  "issue": 134,
+  "request": "flow set redo が entry.command is not a function で失敗するバグを修正",
+  "worktree": true,
+  "metrics": {
+    "plan": {
+      "docsRead": 1
+    },
+    "draft": {
+      "question": 4
+    },
+    "gate": {
+      "tokens": {
+        "input": 2,
+        "output": 632,
+        "cacheRead": 11924,
+        "cacheCreation": 9583
+      },
+      "cost": 0.04899945,
+      "callCount": 1,
+      "responseChars": 1184
+    }
+  },
+  "notes": [
+    "approach: Q&A draft",
+    "draft: redo エントリ完全削除。互換shim不要(alpha policy)。metric redo カウンターは別物なので残す。テスト不要。"
+  ]
+}
