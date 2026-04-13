@@ -16,6 +16,7 @@ import { runCmd, assertOk } from "../../lib/process.js";
 import { callAgentWithLog, resolveAgent } from "../../lib/agent.js";
 import { filterByPhase, loadMergedGuardrails } from "../../lib/guardrail.js";
 import { getSpecName } from "../../lib/flow-state.js";
+import { VALID_GATE_PHASES } from "../../lib/constants.js";
 import { FlowCommand } from "./base-command.js";
 
 // ---------------------------------------------------------------------------
@@ -316,6 +317,11 @@ export class RunGateCommand extends FlowCommand {
   async execute(ctx) {
     const { root } = ctx;
     const phase = ctx.phase || "pre";
+
+    if (!VALID_GATE_PHASES.includes(phase)) {
+      throw new Error(`invalid phase: ${phase} (valid: ${VALID_GATE_PHASES.join(", ")})`);
+    }
+
     const skipGuardrail = ctx.skipGuardrail || false;
     const confirmSkipGuardrail = ctx.confirmSkipGuardrail || false;
 

@@ -8,9 +8,8 @@
 
 import { runCmd } from "../../lib/process.js";
 import { isGhAvailable } from "../../lib/git-helpers.js";
+import { VALID_CHECK_TARGETS } from "../../lib/constants.js";
 import { FlowCommand } from "./base-command.js";
-
-const VALID_TARGETS = ["impl", "finalize", "dirty", "gh"];
 
 const PREREQS = {
   impl: ["gate", "test"],
@@ -58,11 +57,11 @@ export default class GetCheckCommand extends FlowCommand {
     const target = ctx.target;
 
     if (!target) {
-      throw new Error(`target required. valid: ${VALID_TARGETS.join(", ")}`);
+      throw new Error(`target required. valid: ${VALID_CHECK_TARGETS.join(", ")}`);
     }
 
-    if (!VALID_TARGETS.includes(target)) {
-      throw new Error(`unknown target '${target}'. valid: ${VALID_TARGETS.join(", ")}`);
+    if (!VALID_CHECK_TARGETS.includes(target)) {
+      throw new Error(`unknown target '${target}'. valid: ${VALID_CHECK_TARGETS.join(", ")}`);
     }
 
     if (target === "dirty") {

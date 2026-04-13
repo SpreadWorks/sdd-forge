@@ -8,6 +8,7 @@
 import fs from "fs";
 import path from "path";
 import { runCmd } from "../../lib/process.js";
+import { VALID_IMPL_CONFIRM_MODES } from "../../lib/constants.js";
 import { FlowCommand } from "./base-command.js";
 
 /**
@@ -48,7 +49,10 @@ export class RunImplConfirmCommand extends FlowCommand {
     const { root } = ctx;
     const state = ctx.flowState;
 
-    const mode = ctx.mode === "detail" ? "detail" : "overview";
+    const mode = ctx.mode || "overview";
+    if (!VALID_IMPL_CONFIRM_MODES.includes(mode)) {
+      throw new Error(`invalid mode: ${mode} (valid: ${VALID_IMPL_CONFIRM_MODES.join(", ")})`);
+    }
     const requirements = summarizeRequirements(state.requirements);
 
     // Determine readiness

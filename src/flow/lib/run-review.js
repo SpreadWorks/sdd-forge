@@ -8,6 +8,7 @@
 import { PKG_DIR } from "../../lib/cli.js";
 import { runCmd } from "../../lib/process.js";
 import { DEFAULT_AGENT_TIMEOUT_MS } from "../../lib/agent.js";
+import { VALID_REVIEW_PHASES } from "../../lib/constants.js";
 import { FlowCommand } from "./base-command.js";
 import path from "path";
 
@@ -127,6 +128,11 @@ export class RunReviewCommand extends FlowCommand {
   async execute(ctx) {
     const { root } = ctx;
     const phase = ctx.phase || null;
+
+    if (phase && !VALID_REVIEW_PHASES.includes(phase)) {
+      throw new Error(`invalid phase: ${phase} (valid: ${VALID_REVIEW_PHASES.join(", ")})`);
+    }
+
     const dryRun = ctx.dryRun || false;
     const skipConfirm = ctx.skipConfirm || false;
 

@@ -16,6 +16,7 @@ import {
 } from "../../lib/flow-state.js";
 import { loadIssueLog, saveIssueLog } from "./set-issue-log.js";
 import { isGhAvailable, commentOnIssue, collectGitSummary } from "../../lib/git-helpers.js";
+import { VALID_MERGE_STRATEGIES } from "../../lib/constants.js";
 import { FlowCommand } from "./base-command.js";
 import { FLOW_COMMANDS } from "../registry.js";
 
@@ -233,8 +234,8 @@ export class RunFinalizeCommand extends FlowCommand {
     }
 
     const mergeStrategyInput = ctx.mergeStrategy || "";
-    if (mergeStrategyInput && !["squash", "pr"].includes(mergeStrategyInput)) {
-      throw new Error("--merge-strategy must be 'squash' or 'pr'");
+    if (mergeStrategyInput && !VALID_MERGE_STRATEGIES.includes(mergeStrategyInput)) {
+      throw new Error(`invalid merge strategy: ${mergeStrategyInput} (valid: ${VALID_MERGE_STRATEGIES.join(", ")})`);
     }
 
     // Determine which steps to execute

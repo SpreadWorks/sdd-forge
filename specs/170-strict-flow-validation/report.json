@@ -1,0 +1,42 @@
+{
+  "data": {
+    "implementation": {
+      "diffStat": "specs/170-strict-flow-validation/draft.md          |  76 ++++++\n specs/170-strict-flow-validation/flow.json         | 197 ++++++++++++++\n specs/170-strict-flow-validation/issue-log.json    |  28 ++\n specs/170-strict-flow-validation/qa.md             |   9 +\n specs/170-strict-flow-validation/review.md         |  41 +++\n specs/170-strict-flow-validation/spec.md           | 150 +++++++++++\n specs/170-strict-flow-validation/tests/README.md   |  21 ++\n .../tests/validation.test.js                       | 289 +++++++++++++++++++++\n src/flow/commands/review.js                        |   2 +-\n src/flow/lib/get-check.js                          |   9 +-\n src/flow/lib/get-guardrail.js                      |   4 +-\n src/flow/lib/phases.js                             |  15 --\n src/flow/lib/run-finalize.js                       |   5 +-\n src/flow/lib/run-gate.js                           |   6 +\n src/flow/lib/run-impl-confirm.js                   |   6 +-\n src/flow/lib/run-review.js                         |   6 +\n src/flow/lib/set-auto.js                           |   5 +-\n src/flow/lib/set-issue.js                          |  11 +-\n src/flow/lib/set-metric.js                         |   9 +-\n src/flow/lib/set-req.js                            |  13 +-\n src/flow/lib/set-step.js                           |   5 +\n src/flow/lib/set-summary.js                        |  11 +-\n src/flow/registry.js                               |   2 +-\n src/lib/constants.js                               | 110 ++++++++\n tests/unit/flow/phases-review.test.js              |   2 +-\n 25 files changed, 990 insertions(+), 42 deletions(-)",
+      "commits": [
+        "feat: feature/170-strict-flow-validation"
+      ]
+    },
+    "retro": {
+      "total": 12,
+      "done": 11,
+      "partial": 1,
+      "not_done": 0,
+      "rate": 0.96,
+      "notes": "Implementation is largely aligned with the 12 requirements; only R4 is partial because `{text, status}` object validation is not fully enforced (status field/type not required)."
+    },
+    "issueLog": {
+      "count": 0,
+      "entries": []
+    },
+    "metrics": {
+      "docsRead": 2,
+      "srcRead": 3,
+      "question": 6,
+      "issueLog": 0
+    },
+    "tokenMetrics": {
+      "input": 22,
+      "output": 6141,
+      "cacheRead": 220796,
+      "cacheCreation": 173758,
+      "cost": 0.8100123,
+      "callCount": 9
+    },
+    "tests": null,
+    "sync": {
+      "status": "skipped",
+      "reason": "sync was skipped"
+    }
+  },
+  "text": "  Report\n\n  Implementation\n  ────────────────────────────────────────────────\n    feat: feature/170-strict-flow-validation\n    25 files changed, 990 insertions(+), 42 deletions(-)\n\n  Retro\n  ────────────────────────────────────────────────\n    ████████ 96%  (11 done / 1 partial / 0 miss)\n\n  Metrics\n  ────────────────────────────────────────────────\n    docs read ................... 2\n    src read .................... 3\n    Q&A ......................... 6\n    issue-log ................... 0\n    agent calls ................. 9\n    input tokens ................ 22\n    output tokens ............... 6,141\n    cache-read tokens ........... 220,796\n    cache-create tokens ......... 173,758\n    cost ........................ $0.8100\n\n  Tests\n  ────────────────────────────────────────────────\n    -"
+}

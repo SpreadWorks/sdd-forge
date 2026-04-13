@@ -26,7 +26,7 @@ const callReviewAgent = (agent, prompt, root, systemPrompt) =>
   callAgentAwaitLog(agent, prompt, undefined, root, { systemPrompt });
 import { runCmd } from "../../lib/process.js";
 import { EXIT_ERROR } from "../../lib/exit-codes.js";
-import { VALID_PHASES } from "../lib/phases.js";
+import { VALID_PHASES } from "../../lib/constants.js";
 
 /** Maximum retry iterations for review auto-fix loops (test and spec). */
 const MAX_REVIEW_RETRIES = 3;

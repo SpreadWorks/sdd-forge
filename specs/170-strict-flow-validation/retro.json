@@ -1,0 +1,108 @@
+{
+  "spec": "specs/170-strict-flow-validation/spec.md",
+  "date": "2026-04-13T12:57:47.827Z",
+  "requirements": [
+    {
+      "desc": "R1: src/lib/constants.js 新設（全enum定数集約）",
+      "status": "done",
+      "note": "`src/lib/constants.js` was added and exports all required enums as `Object.freeze([...])`."
+    },
+    {
+      "desc": "R2: phases.js 廃止・import先変更",
+      "status": "done",
+      "note": "`src/flow/lib/phases.js` was deleted; imports were updated in target files and `tests/unit/flow/phases-review.test.js`."
+    },
+    {
+      "desc": "R3: flow set issue — 正の整数バリデーション",
+      "status": "done",
+      "note": "`set-issue.js` now enforces digit-only input and `>= 1`, rejecting 0/negative/decimal/non-numeric with positive-integer messaging."
+    },
+    {
+      "desc": "R4: flow set summary — 要素型バリデーション",
+      "status": "partial",
+      "note": "Array element validation was added, but object validation only requires `text` (does not strictly require full `{text, status}` shape). Empty array is accepted."
+    },
+    {
+      "desc": "R5: flow run gate --phase — enum バリデーション",
+      "status": "done",
+      "note": "`run-gate.js` validates against `VALID_GATE_PHASES`, includes valid values in error, and keeps default `pre`."
+    },
+    {
+      "desc": "R6: flow set step — status enum バリデーション",
+      "status": "done",
+      "note": "`set-step.js` validates `status` with `VALID_STEP_STATUSES` and reports allowed values."
+    },
+    {
+      "desc": "R7: flow set req — index範囲+status検証",
+      "status": "done",
+      "note": "`set-req.js` rejects negative/non-numeric index via strict non-negative integer parsing and validates `status` with `VALID_REQ_STATUSES`."
+    },
+    {
+      "desc": "R8: flow run review --phase — enum バリデーション",
+      "status": "done",
+      "note": "`run-review.js` now validates optional phase against `VALID_REVIEW_PHASES` and includes valid values in error."
+    },
+    {
+      "desc": "R9: flow run impl-confirm --mode — enum バリデーション",
+      "status": "done",
+      "note": "`run-impl-confirm.js` now validates mode with `VALID_IMPL_CONFIRM_MODES` and includes valid values in error."
+    },
+    {
+      "desc": "R10: flow run finalize --merge-strategy — 定数参照化",
+      "status": "done",
+      "note": "`run-finalize.js` replaced hardcoded merge strategies with `VALID_MERGE_STRATEGIES`."
+    },
+    {
+      "desc": "R11: flow set auto — 定数参照化",
+      "status": "done",
+      "note": "`set-auto.js` replaced hardcoded on/off checks with `VALID_AUTO_VALUES`."
+    },
+    {
+      "desc": "R12: 散在定数の移動",
+      "status": "done",
+      "note": "`set-metric.js` now uses `VALID_METRIC_COUNTERS`; `get-check.js` now uses `VALID_CHECK_TARGETS` from `constants.js`."
+    }
+  ],
+  "unplanned": [
+    {
+      "file": "specs/170-strict-flow-validation/draft.md",
+      "change": "New spec process document added; not part of R1-R12 implementation requirements."
+    },
+    {
+      "file": "specs/170-strict-flow-validation/flow.json",
+      "change": "New flow tracking metadata added; not covered by functional requirements."
+    },
+    {
+      "file": "specs/170-strict-flow-validation/issue-log.json",
+      "change": "New issue log metadata added; not covered by functional requirements."
+    },
+    {
+      "file": "specs/170-strict-flow-validation/qa.md",
+      "change": "New QA template/document added; not covered by R1-R12."
+    },
+    {
+      "file": "specs/170-strict-flow-validation/review.md",
+      "change": "New review notes file added; not covered by implementation requirements."
+    },
+    {
+      "file": "specs/170-strict-flow-validation/spec.md",
+      "change": "New feature spec document added; not itself a requirement outcome."
+    },
+    {
+      "file": "specs/170-strict-flow-validation/tests/README.md",
+      "change": "New spec-test documentation added; outside R1-R12."
+    },
+    {
+      "file": "specs/170-strict-flow-validation/tests/validation.test.js",
+      "change": "New dedicated spec verification tests added; not explicitly required in R1-R12 list."
+    }
+  ],
+  "summary": {
+    "total": 12,
+    "done": 11,
+    "partial": 1,
+    "not_done": 0,
+    "rate": 0.96,
+    "notes": "Implementation is largely aligned with the 12 requirements; only R4 is partial because `{text, status}` object validation is not fully enforced (status field/type not required)."
+  }
+}

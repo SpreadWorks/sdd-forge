@@ -8,13 +8,14 @@
 
 import { FlowCommand } from "./base-command.js";
 import { mutateFlowState } from "../../lib/flow-state.js";
+import { VALID_AUTO_VALUES } from "../../lib/constants.js";
 
 export default class SetAutoCommand extends FlowCommand {
   execute(ctx) {
     const value = ctx.value;
 
-    if (!value || (value !== "on" && value !== "off")) {
-      throw new Error('usage: flow set auto on|off');
+    if (!value || !VALID_AUTO_VALUES.includes(value)) {
+      throw new Error(`usage: flow set auto ${VALID_AUTO_VALUES.join("|")}`);
     }
 
     const autoApprove = value === "on";

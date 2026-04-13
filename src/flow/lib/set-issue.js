@@ -17,9 +17,14 @@ export default class SetIssueCommand extends FlowCommand {
       throw new Error("usage: flow set issue <number>");
     }
 
-    const num = parseInt(raw, 10);
-    if (Number.isNaN(num)) {
-      throw new Error(`not a valid number: ${raw}`);
+    const str = String(raw);
+    if (!/^\d+$/.test(str)) {
+      throw new Error(`not a valid positive integer: ${raw}`);
+    }
+
+    const num = parseInt(str, 10);
+    if (num < 1) {
+      throw new Error(`issue number must be a positive integer: ${raw}`);
     }
 
     setIssue(ctx.root, num);

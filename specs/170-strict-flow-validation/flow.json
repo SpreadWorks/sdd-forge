@@ -1,0 +1,197 @@
+{
+  "spec": "specs/170-strict-flow-validation/spec.md",
+  "baseBranch": "main",
+  "featureBranch": "feature/170-strict-flow-validation",
+  "steps": [
+    {
+      "id": "approach",
+      "status": "done"
+    },
+    {
+      "id": "branch",
+      "status": "done"
+    },
+    {
+      "id": "prepare-spec",
+      "status": "pending"
+    },
+    {
+      "id": "draft",
+      "status": "done"
+    },
+    {
+      "id": "gate-draft",
+      "status": "done"
+    },
+    {
+      "id": "spec",
+      "status": "done"
+    },
+    {
+      "id": "gate",
+      "status": "in_progress"
+    },
+    {
+      "id": "approval",
+      "status": "done"
+    },
+    {
+      "id": "test",
+      "status": "done"
+    },
+    {
+      "id": "implement",
+      "status": "done"
+    },
+    {
+      "id": "gate-impl",
+      "status": "done"
+    },
+    {
+      "id": "review",
+      "status": "done"
+    },
+    {
+      "id": "finalize",
+      "status": "pending"
+    },
+    {
+      "id": "commit",
+      "status": "pending"
+    },
+    {
+      "id": "push",
+      "status": "pending"
+    },
+    {
+      "id": "merge",
+      "status": "pending"
+    },
+    {
+      "id": "pr-create",
+      "status": "pending"
+    },
+    {
+      "id": "branch-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "pr-merge",
+      "status": "pending"
+    },
+    {
+      "id": "sync-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "docs-update",
+      "status": "pending"
+    },
+    {
+      "id": "docs-review",
+      "status": "pending"
+    },
+    {
+      "id": "docs-commit",
+      "status": "pending"
+    }
+  ],
+  "requirements": [
+    {
+      "desc": "R1: src/lib/constants.js 新設（全enum定数集約）",
+      "status": "done"
+    },
+    {
+      "desc": "R2: phases.js 廃止・import先変更",
+      "status": "done"
+    },
+    {
+      "desc": "R3: flow set issue — 正の整数バリデーション",
+      "status": "done"
+    },
+    {
+      "desc": "R4: flow set summary — 要素型バリデーション",
+      "status": "done"
+    },
+    {
+      "desc": "R5: flow run gate --phase — enum バリデーション",
+      "status": "done"
+    },
+    {
+      "desc": "R6: flow set step — status enum バリデーション",
+      "status": "done"
+    },
+    {
+      "desc": "R7: flow set req — index範囲+status検証",
+      "status": "done"
+    },
+    {
+      "desc": "R8: flow run review --phase — enum バリデーション",
+      "status": "done"
+    },
+    {
+      "desc": "R9: flow run impl-confirm --mode — enum バリデーション",
+      "status": "done"
+    },
+    {
+      "desc": "R10: flow run finalize --merge-strategy — 定数参照化",
+      "status": "done"
+    },
+    {
+      "desc": "R11: flow set auto — 定数参照化",
+      "status": "done"
+    },
+    {
+      "desc": "R12: 散在定数の移動",
+      "status": "done"
+    }
+  ],
+  "issue": 138,
+  "request": "flow 引数バリデーションの厳密化（issue正数・summary要素型・phase enum）",
+  "worktree": true,
+  "metrics": {
+    "plan": {
+      "docsRead": 1
+    },
+    "draft": {
+      "docsRead": 1,
+      "srcRead": 2,
+      "question": 6
+    },
+    "gate-draft": {
+      "tokens": {
+        "input": 2,
+        "output": 735,
+        "cacheRead": 11924,
+        "cacheCreation": 10153
+      },
+      "cost": 0.052681950000000005,
+      "callCount": 1,
+      "responseChars": 1148
+    },
+    "impl": {
+      "srcRead": 1
+    },
+    "gate": {
+      "tokens": {
+        "input": 33919,
+        "output": 7073,
+        "cacheRead": 212328,
+        "cacheCreation": 163605
+      },
+      "cost": 0.75733035,
+      "callCount": 9,
+      "responseChars": 16824
+    }
+  },
+  "notes": [
+    "approach: Q&A で要件整理してから仕様書作成",
+    "draft: scope=全箇所（issue記載3+追加発見6、LOW含む計9箇所）",
+    "draft: error-format=現行踏襲（throw Error、メッセージ内に許容値を含める）",
+    "draft: enum定数=共通モジュールに集約",
+    "draft: 定数配置=src/lib/constants.js に全定数集約。既存phases.jsは廃止しre-exportかimport先変更",
+    "impl: review=auto-fix",
+    "finalize: mode=all"
+  ],
+  "runId": "0e1d184f-0a12-4538-bfc4-8278235cbe2e"
+}

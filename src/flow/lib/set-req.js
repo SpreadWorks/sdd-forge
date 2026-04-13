@@ -9,6 +9,7 @@
 
 import { FlowCommand } from "./base-command.js";
 import { updateRequirement } from "../../lib/flow-state.js";
+import { VALID_REQ_STATUSES } from "../../lib/constants.js";
 
 export default class SetReqCommand extends FlowCommand {
   execute(ctx) {
@@ -18,9 +19,15 @@ export default class SetReqCommand extends FlowCommand {
       throw new Error("usage: flow set req <index> <status>");
     }
 
-    const index = parseInt(rawIndex, 10);
-    if (Number.isNaN(index)) {
-      throw new Error(`not a valid number: ${rawIndex}`);
+    const str = String(rawIndex);
+    if (!/^\d+$/.test(str)) {
+      throw new Error(`not a valid non-negative integer: ${rawIndex}`);
+    }
+
+    const index = parseInt(str, 10);
+
+    if (!VALID_REQ_STATUSES.includes(status)) {
+      throw new Error(`invalid status: ${status} (valid: ${VALID_REQ_STATUSES.join(", ")})`);
     }
 
     updateRequirement(ctx.root, index, status);

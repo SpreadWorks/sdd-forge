@@ -3,14 +3,13 @@
  *
  * Increment a metric counter in flow.json.
  *
- * ctx.phase   — one of VALID_PHASES (see phases.js)
+ * ctx.phase   — one of VALID_PHASES (see constants.js)
  * ctx.counter — one of: question, redo, docsRead, srcRead
  */
 
 import { FlowCommand } from "./base-command.js";
 import { mutateFlowState } from "../../lib/flow-state.js";
-import { VALID_PHASES } from "./phases.js";
-const VALID_COUNTERS = ["question", "redo", "docsRead", "srcRead"];
+import { VALID_PHASES, VALID_METRIC_COUNTERS } from "../../lib/constants.js";
 
 export default class SetMetricCommand extends FlowCommand {
   execute(ctx) {
@@ -24,8 +23,8 @@ export default class SetMetricCommand extends FlowCommand {
       throw new Error(`invalid phase: ${phase} (valid: ${VALID_PHASES.join(", ")})`);
     }
 
-    if (!VALID_COUNTERS.includes(counter)) {
-      throw new Error(`invalid counter: ${counter} (valid: ${VALID_COUNTERS.join(", ")})`);
+    if (!VALID_METRIC_COUNTERS.includes(counter)) {
+      throw new Error(`invalid counter: ${counter} (valid: ${VALID_METRIC_COUNTERS.join(", ")})`);
     }
 
     let newValue;

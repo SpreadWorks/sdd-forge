@@ -1,7 +1,7 @@
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
 
-const { VALID_PHASES } = await import("../../../src/flow/lib/phases.js");
+const { VALID_PHASES } = await import("../../../src/lib/constants.js");
 const { filterByPhase } = await import("../../../src/lib/guardrail.js");
 
 describe("VALID_PHASES includes review", () => {

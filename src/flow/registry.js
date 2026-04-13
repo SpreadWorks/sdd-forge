@@ -9,7 +9,7 @@
  */
 
 import { updateStepStatus, incrementMetric, derivePhase, loadFlowState } from "../lib/flow-state.js";
-import { VALID_PHASES } from "./lib/phases.js";
+import { VALID_PHASES } from "../lib/constants.js";
 import { loadIssueLog, saveIssueLog } from "./lib/set-issue-log.js";
 
 /**

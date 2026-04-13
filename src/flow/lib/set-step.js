@@ -9,6 +9,7 @@
 
 import { FlowCommand } from "./base-command.js";
 import { updateStepStatus } from "../../lib/flow-state.js";
+import { VALID_STEP_STATUSES } from "../../lib/constants.js";
 import { Logger } from "../../lib/log.js";
 
 export default class SetStepCommand extends FlowCommand {
@@ -17,6 +18,10 @@ export default class SetStepCommand extends FlowCommand {
 
     if (!id || !status) {
       throw new Error("usage: flow set step <id> <status>");
+    }
+
+    if (!VALID_STEP_STATUSES.includes(status)) {
+      throw new Error(`invalid status: ${status} (valid: ${VALID_STEP_STATUSES.join(", ")})`);
     }
 
     updateStepStatus(ctx.root, id, status);
