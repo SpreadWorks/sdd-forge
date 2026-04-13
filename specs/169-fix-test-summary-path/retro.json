@@ -1,0 +1,58 @@
+{
+  "spec": "specs/169-fix-test-summary-path/spec.md",
+  "date": "2026-04-13T05:25:37.887Z",
+  "requirements": [
+    {
+      "desc": "report.js shall read test summary from state.test?.summary instead of state.metrics?.test?.summary",
+      "status": "done",
+      "note": "src/flow/commands/report.js was changed from state.metrics?.test?.summary to state.test?.summary."
+    },
+    {
+      "desc": "After flow set test-summary, report shall display correct unit/integration/acceptance/total values",
+      "status": "partial",
+      "note": "Added tests verify report output for unit=3, integration=2, acceptance=1, total=6 when state.test.summary is populated, but no direct end-to-end test invoking flow set test-summary command is included in the diff."
+    }
+  ],
+  "unplanned": [
+    {
+      "file": "specs/169-fix-test-summary-path/draft.md",
+      "change": "New spec process draft document added (project/process artifact, not a runtime requirement)."
+    },
+    {
+      "file": "specs/169-fix-test-summary-path/flow.json",
+      "change": "New workflow tracking metadata added, including step status/metrics/notes."
+    },
+    {
+      "file": "specs/169-fix-test-summary-path/issue-log.json",
+      "change": "New issue log artifact added."
+    },
+    {
+      "file": "specs/169-fix-test-summary-path/qa.md",
+      "change": "New clarification template/QA artifact added."
+    },
+    {
+      "file": "specs/169-fix-test-summary-path/review.md",
+      "change": "New review results document added."
+    },
+    {
+      "file": "specs/169-fix-test-summary-path/spec.md",
+      "change": "New feature specification document added."
+    },
+    {
+      "file": "specs/169-fix-test-summary-path/tests/README.md",
+      "change": "New test README/documentation added."
+    },
+    {
+      "file": "specs/169-fix-test-summary-path/tests/report-test-summary.test.js",
+      "change": "New spec-level test file added (verification support, not explicitly a product requirement)."
+    }
+  ],
+  "summary": {
+    "total": 2,
+    "done": 1,
+    "partial": 1,
+    "not_done": 0,
+    "rate": 0.75,
+    "notes": "Core functional fix for report summary path is implemented. Display behavior is strongly supported by report-level tests, but strict command-to-report end-to-end proof via actual flow set execution is not shown in this diff."
+  }
+}

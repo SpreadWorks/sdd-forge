@@ -1,0 +1,42 @@
+{
+  "data": {
+    "implementation": {
+      "diffStat": "specs/169-fix-test-summary-path/draft.md           |  35 ++++++\n specs/169-fix-test-summary-path/flow.json          | 140 +++++++++++++++++++++\n specs/169-fix-test-summary-path/issue-log.json     |  10 ++\n specs/169-fix-test-summary-path/qa.md              |   9 ++\n specs/169-fix-test-summary-path/review.md          |  33 +++++\n specs/169-fix-test-summary-path/spec.md            |  60 +++++++++\n specs/169-fix-test-summary-path/tests/README.md    |  22 ++++\n .../tests/report-test-summary.test.js              |  50 ++++++++\n src/flow/commands/report.js                        |   2 +-\n 9 files changed, 360 insertions(+), 1 deletion(-)",
+      "commits": [
+        "feat: feature/169-fix-test-summary-path"
+      ]
+    },
+    "retro": {
+      "total": 2,
+      "done": 1,
+      "partial": 1,
+      "not_done": 0,
+      "rate": 0.75,
+      "notes": "Core functional fix for report summary path is implemented. Display behavior is strongly supported by report-level tests, but strict command-to-report end-to-end proof via actual flow set execution is not shown in this diff."
+    },
+    "issueLog": {
+      "count": 0,
+      "entries": []
+    },
+    "metrics": {
+      "docsRead": 2,
+      "srcRead": 2,
+      "question": 5,
+      "issueLog": 0
+    },
+    "tokenMetrics": {
+      "input": 2,
+      "output": 80,
+      "cacheRead": 11924,
+      "cacheCreation": 9360,
+      "cost": 0.0398832,
+      "callCount": 1
+    },
+    "tests": null,
+    "sync": {
+      "status": "skipped",
+      "reason": "sync was skipped"
+    }
+  },
+  "text": "  Report\n\n  Implementation\n  ────────────────────────────────────────────────\n    feat: feature/169-fix-test-summary-path\n    9 files changed, 360 insertions(+), 1 deletion(-)\n\n  Retro\n  ────────────────────────────────────────────────\n    ██████░░ 75%  (1 done / 1 partial / 0 miss)\n\n  Metrics\n  ────────────────────────────────────────────────\n    docs read ................... 2\n    src read .................... 2\n    Q&A ......................... 5\n    issue-log ................... 0\n    agent calls ................. 1\n    input tokens ................ 2\n    output tokens ............... 80\n    cache-read tokens ........... 11,924\n    cache-create tokens ......... 9,360\n    cost ........................ $0.0399\n\n  Tests\n  ────────────────────────────────────────────────\n    -"
+}

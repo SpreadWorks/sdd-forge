@@ -1,0 +1,140 @@
+{
+  "spec": "specs/169-fix-test-summary-path/spec.md",
+  "baseBranch": "main",
+  "featureBranch": "feature/169-fix-test-summary-path",
+  "steps": [
+    {
+      "id": "approach",
+      "status": "done"
+    },
+    {
+      "id": "branch",
+      "status": "done"
+    },
+    {
+      "id": "prepare-spec",
+      "status": "pending"
+    },
+    {
+      "id": "draft",
+      "status": "done"
+    },
+    {
+      "id": "gate-draft",
+      "status": "done"
+    },
+    {
+      "id": "spec",
+      "status": "done"
+    },
+    {
+      "id": "gate",
+      "status": "done"
+    },
+    {
+      "id": "approval",
+      "status": "done"
+    },
+    {
+      "id": "test",
+      "status": "done"
+    },
+    {
+      "id": "implement",
+      "status": "done"
+    },
+    {
+      "id": "gate-impl",
+      "status": "done"
+    },
+    {
+      "id": "review",
+      "status": "done"
+    },
+    {
+      "id": "finalize",
+      "status": "pending"
+    },
+    {
+      "id": "commit",
+      "status": "pending"
+    },
+    {
+      "id": "push",
+      "status": "pending"
+    },
+    {
+      "id": "merge",
+      "status": "pending"
+    },
+    {
+      "id": "pr-create",
+      "status": "pending"
+    },
+    {
+      "id": "branch-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "pr-merge",
+      "status": "pending"
+    },
+    {
+      "id": "sync-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "docs-update",
+      "status": "pending"
+    },
+    {
+      "id": "docs-review",
+      "status": "pending"
+    },
+    {
+      "id": "docs-commit",
+      "status": "pending"
+    }
+  ],
+  "requirements": [
+    {
+      "desc": "report.js shall read test summary from state.test?.summary instead of state.metrics?.test?.summary",
+      "status": "done"
+    },
+    {
+      "desc": "After flow set test-summary, report shall display correct unit/integration/acceptance/total values",
+      "status": "done"
+    }
+  ],
+  "issue": 133,
+  "request": "flow set test-summary の保存パス(state.test.summary)と report 参照パス(state.metrics?.test?.summary)の不一致を修正する",
+  "worktree": true,
+  "metrics": {
+    "plan": {
+      "docsRead": 1
+    },
+    "draft": {
+      "srcRead": 2,
+      "question": 5,
+      "docsRead": 1
+    },
+    "gate-impl": {
+      "tokens": {
+        "input": 2,
+        "output": 80,
+        "cacheRead": 11924,
+        "cacheCreation": 9360
+      },
+      "cost": 0.0398832,
+      "callCount": 1,
+      "responseChars": 314
+    }
+  },
+  "notes": [
+    "draft: Q1 - state.test.summary に統一。report 側の参照パスを修正する方針",
+    "draft: Q2 - docs は自動生成なので手動修正不要。コード修正のみ。他に修正箇所がないか調査する",
+    "draft: Q3 - 修正スコープ確定: report.js:126 の1箇所のみ。docs は自動再生成",
+    "draft: Q4 - テストは specs/169-fix-test-summary-path/tests/ に配置。スペック検証テスト",
+    "draft: Q5 - draft 承認"
+  ]
+}

@@ -123,7 +123,7 @@ export function generateReport(input) {
   }
 
   // Tests (R1, R3)
-  const testSummary = state.metrics?.test?.summary;
+  const testSummary = state.test?.summary;
   let tests = null;
   if (testSummary) {
     const unit = testSummary.unit || 0;

@@ -1,0 +1,10 @@
+{
+  "entries": [
+    {
+      "step": "gate-impl",
+      "reason": "report.js reads test summary from `state.test?.summary` instead of `state.metrics?.test?.summary` — diff shows exactly this change at line 126; flow set test — summary followed by report displays correct counts (unit/integration/acceptance/total) — no test file added in diff to verify end-to-end behavior",
+      "trigger": "gate post hook (auto)",
+      "timestamp": "2026-04-13T05:20:49.256Z"
+    }
+  ]
+}
