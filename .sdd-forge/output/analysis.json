@@ -1,5 +1,5 @@
 {
-  "analyzedAt": "2026-04-13T05:25:39.219Z",
+  "analyzedAt": "2026-04-13T05:26:50.882Z",
   "package": {
     "entries": [
       {
@@ -2111,8 +2111,21 @@
         "usedBy": null,
         "id": "1ab08f2b",
         "enrich": {
+          "processedAt": "2026-04-13T05:28:46.709Z",
           "attempts": 2
-        }
+        },
+        "summary": "This file is the main dispatcher for the `sdd-forge flow` CLI. It resolves runtime context and routes subcommands to registered flow command entries.",
+        "detail": "It parses top-level arguments, validates command groups, and rejects unknown or unexpected parameters early. It builds an execution context that includes repo roots, config, flow state, and active spec information. Argument parsing supports command-specific flag splitting and positional assignment rules. Execution is centralized in a `runEntry` helper that emits structured envelopes and normalizes process exit behavior.",
+        "chapter": "cli_commands",
+        "role": "cli",
+        "keywords": [
+          "flow dispatcher",
+          "command routing",
+          "argument parsing",
+          "CLI entrypoint",
+          "subcommand registry",
+          "exit handling"
+        ]
       },
       {
         "file": "src/flow/commands/merge.js",
@@ -2188,9 +2201,22 @@
         "extends": null,
         "usedBy": null,
         "id": "5f80ffd2",
+        "summary": "This module generates and persists flow report data for a spec run. It computes aggregate metrics and renders a human-readable report text.",
+        "detail": "It traverses per-phase metrics through helper iterators to accumulate activity counters and token usage totals. The report builder returns both structured `data` and formatted `text`, keeping machine and human outputs aligned. Text formatting uses section builders and divider utilities for consistent layout. Persistence writes `report.json` into the spec directory with deterministic pretty-printed JSON.",
+        "chapter": "cli_commands",
+        "role": "lib",
         "enrich": {
+          "processedAt": "2026-04-13T05:28:46.709Z",
           "attempts": 1
-        }
+        },
+        "keywords": [
+          "report generation",
+          "metrics aggregation",
+          "token usage",
+          "flow analytics",
+          "JSON report",
+          "text formatter"
+        ]
       },
       {
         "file": "src/flow/commands/review.js",
@@ -2781,9 +2807,22 @@
         "extends": "FlowCommand",
         "usedBy": null,
         "id": "b4aa4dad",
+        "summary": "This command module implements gate checks for draft, spec, and implementation phases. It enforces content quality and guardrail compliance before advancing flow steps.",
+        "detail": "It includes text validators for spec and draft documents, using heading-aware checks and pattern-based required field detection. Guardrail execution is delegated to AI prompts, with response parsing into pass/fail results and reason lists. Implementation gating inspects git diffs against the base branch and can fail when no effective changes exist. The command returns normalized gate outcomes with next-step mappings for both pass and fail paths.",
+        "chapter": "cli_commands",
+        "role": "controller",
         "enrich": {
+          "processedAt": "2026-04-13T05:28:46.709Z",
           "attempts": 1
-        }
+        },
+        "keywords": [
+          "quality gate",
+          "spec validation",
+          "draft validation",
+          "guardrails",
+          "diff check",
+          "phase transition"
+        ]
       },
       {
         "file": "src/flow/lib/run-impl-confirm.js",
@@ -3026,8 +3065,21 @@
         "usedBy": null,
         "id": "862e7d08",
         "enrich": {
+          "processedAt": "2026-04-13T05:28:46.709Z",
           "attempts": 5
-        }
+        },
+        "summary": "This module runs the retrospective command and writes `retro.json` for a spec. It extracts requirements and compares them against implementation diffs through an AI prompt.",
+        "detail": "It parses requirements from spec content and enforces prerequisites like configured base branch and non-empty diff output. Prompt construction includes requirement context plus detailed code changes to drive structured analysis. Response parsing is resilient, attempting normal JSON parsing and fallback repair before validation. The command writes normalized retrospective data to disk and reports changed paths for downstream flow tooling.",
+        "chapter": "cli_commands",
+        "role": "controller",
+        "keywords": [
+          "retrospective",
+          "requirements extraction",
+          "implementation diff",
+          "AI analysis",
+          "json repair",
+          "retro.json"
+        ]
       },
       {
         "file": "src/flow/lib/run-review.js",
@@ -3059,8 +3111,21 @@
         "usedBy": null,
         "id": "d4e97204",
         "enrich": {
+          "processedAt": "2026-04-13T05:28:46.709Z",
           "attempts": 5
-        }
+        },
+        "summary": "This module executes flow review checks and normalizes outputs for test and spec review modes. It provides retry-aware command execution and structured error handling.",
+        "detail": "It defines dedicated parsers for review subprocess output to convert raw stdout/stderr into typed result objects. A reusable retry wrapper performs delayed re-attempts and logs retry status to stderr. The command invokes a packaged review script and routes behavior by requested review type. On failure, it throws descriptive errors with timeout and command context to aid debugging.",
+        "chapter": "cli_commands",
+        "role": "controller",
+        "keywords": [
+          "review command",
+          "retry logic",
+          "test review",
+          "spec review",
+          "subprocess parsing",
+          "timeout handling"
+        ]
       },
       {
         "file": "src/flow/lib/run-sync.js",
@@ -3085,8 +3150,21 @@
         "usedBy": null,
         "id": "6cc87b22",
         "enrich": {
+          "processedAt": "2026-04-13T05:28:46.709Z",
           "attempts": 5
-        }
+        },
+        "summary": "This command runs documentation synchronization as part of flow automation. It executes the docs script and enforces success through assertions.",
+        "detail": "It resolves script paths from package directories and launches commands through shared process helpers. Command failures are promoted to explicit runtime errors with contextual messages. Success results include changed file metadata for follow-up flow reporting. The design keeps sync logic minimal and delegates heavy work to existing docs generation scripts.",
+        "chapter": "cli_commands",
+        "role": "controller",
+        "keywords": [
+          "docs sync",
+          "flow sync",
+          "script runner",
+          "assertOk",
+          "change tracking",
+          "automation command"
+        ]
       },
       {
         "file": "src/flow/lib/set-auto.js",
@@ -3106,8 +3184,20 @@
         "usedBy": null,
         "id": "2c71e989",
         "enrich": {
+          "processedAt": "2026-04-13T05:28:46.709Z",
           "attempts": 5
-        }
+        },
+        "summary": "This command toggles flow auto-approval mode on or off. It updates persisted flow state with a strict two-value interface.",
+        "detail": "It validates usage to only accept `on` or `off` and rejects anything else with a concise error. State mutation is done through a shared flow-state mutator to preserve centralized persistence logic. The returned payload echoes the resulting boolean mode for envelope output. Its narrow scope keeps behavior predictable and script-friendly.",
+        "chapter": "cli_commands",
+        "role": "controller",
+        "keywords": [
+          "auto approve",
+          "flow setting",
+          "state mutation",
+          "on off toggle",
+          "command validation"
+        ]
       },
       {
         "file": "src/flow/lib/set-issue-log.js",
@@ -3139,8 +3229,21 @@
         ],
         "id": "65ac9e4f",
         "enrich": {
+          "processedAt": "2026-04-13T05:28:46.709Z",
           "attempts": 5
-        }
+        },
+        "summary": "This module manages issue-log persistence for flow specs and exposes a command to append entries. It validates stored log structure before use.",
+        "detail": "Load/save helpers derive the spec-local `issue-log.json` path and ensure directories exist before writes. The loader enforces that `entries` is an array and fails fast on invalid schema. The command requires `--step` and `--reason`, appends a timestamped entry, and persists the updated log. It returns both the created entry and total count for downstream reporting.",
+        "chapter": "cli_commands",
+        "role": "lib",
+        "keywords": [
+          "issue log",
+          "json persistence",
+          "spec artifacts",
+          "flow history",
+          "validation",
+          "append entry"
+        ]
       },
       {
         "file": "src/flow/lib/set-issue.js",
@@ -3160,8 +3263,20 @@
         "usedBy": null,
         "id": "c3865b58",
         "enrich": {
+          "processedAt": "2026-04-13T05:28:46.709Z",
           "attempts": 5
-        }
+        },
+        "summary": "This command sets the linked GitHub issue number in flow state. It performs strict numeric input validation.",
+        "detail": "It expects a single positional argument and throws a usage error when missing. The value is parsed to a number and rejected if not a valid integer-like input. State update is delegated to `setIssue` in the flow-state module. The command returns the final issue number for envelope serialization.",
+        "chapter": "cli_commands",
+        "role": "controller",
+        "keywords": [
+          "set issue",
+          "flow metadata",
+          "numeric validation",
+          "CLI setter",
+          "state update"
+        ]
       },
       {
         "file": "src/flow/lib/set-metric.js",
@@ -3182,8 +3297,20 @@
         "usedBy": null,
         "id": "40d93087",
         "enrich": {
+          "processedAt": "2026-04-13T05:28:46.709Z",
           "attempts": 5
-        }
+        },
+        "summary": "This command increments phase metrics counters in flow state. It enforces allowed phases and allowed counter keys.",
+        "detail": "It defines a constrained set of counter names and checks input against both phase and counter whitelists. Invalid arguments trigger explicit errors that include valid options for correction. Mutation uses shared state helpers and computes the new value atomically through a functional update. The command returns phase, counter, and resulting count to support logging and automation.",
+        "chapter": "cli_commands",
+        "role": "controller",
+        "keywords": [
+          "metrics counter",
+          "phase metrics",
+          "increment",
+          "input validation",
+          "flow telemetry"
+        ]
       },
       {
         "file": "src/flow/lib/set-note.js",
@@ -3203,8 +3330,20 @@
         "usedBy": null,
         "id": "7c2ef03f",
         "enrich": {
+          "processedAt": "2026-04-13T05:28:46.709Z",
           "attempts": 5
-        }
+        },
+        "summary": "This command appends a free-form note to the current flow state. It is a small wrapper around shared note persistence.",
+        "detail": "It enforces presence of note text and throws a usage error for empty input. The implementation delegates storage and timestamp handling to `addNote` in flow-state utilities. Output returns the exact note text that was recorded. The command is intentionally minimal to keep note capture friction low.",
+        "chapter": "cli_commands",
+        "role": "controller",
+        "keywords": [
+          "flow note",
+          "annotation",
+          "state append",
+          "CLI setter",
+          "note logging"
+        ]
       },
       {
         "file": "src/flow/lib/set-req.js",
@@ -3224,8 +3363,20 @@
         "usedBy": null,
         "id": "6dd22e12",
         "enrich": {
+          "processedAt": "2026-04-13T05:28:46.709Z",
           "attempts": 5
-        }
+        },
+        "summary": "This command updates requirement status by index in flow state. It validates both index format and status input.",
+        "detail": "It expects two positional arguments and reports usage when either is missing. The requirement index is parsed numerically and rejected on invalid values. Update logic is delegated to the shared `updateRequirement` helper for consistency. The returned payload includes updated index and status for structured command output.",
+        "chapter": "cli_commands",
+        "role": "controller",
+        "keywords": [
+          "requirement status",
+          "index update",
+          "flow requirements",
+          "CLI mutation",
+          "validation"
+        ]
       },
       {
         "file": "src/flow/lib/set-request.js",
@@ -3245,8 +3396,20 @@
         "usedBy": null,
         "id": "546ef334",
         "enrich": {
+          "processedAt": "2026-04-13T05:28:46.709Z",
           "attempts": 5
-        }
+        },
+        "summary": "This command sets the original user request text in flow state. It provides a single, strict input path for request persistence.",
+        "detail": "It validates that request text is provided and emits a usage error otherwise. The state write is delegated to `setRequest`, keeping storage logic centralized. The command response returns the stored request string. This pattern supports downstream prompts that rely on canonical request context.",
+        "chapter": "cli_commands",
+        "role": "controller",
+        "keywords": [
+          "request capture",
+          "flow context",
+          "state setter",
+          "user input",
+          "CLI command"
+        ]
       },
       {
         "file": "src/flow/lib/set-step.js",
@@ -3267,8 +3430,20 @@
         "usedBy": null,
         "id": "d4cb8d93",
         "enrich": {
+          "processedAt": "2026-04-13T05:28:46.709Z",
           "attempts": 5
-        }
+        },
+        "summary": "This command sets step status within the flow lifecycle. It combines state mutation with logging utility imports for observability alignment.",
+        "detail": "It requires a step identifier and status value, failing fast on malformed usage. Actual transition updates are handled via `updateStepStatus` in the flow-state module. The response echoes the new step state for envelope-based consumers. The command follows the same thin-command, shared-model pattern used across other `set-*` actions.",
+        "chapter": "cli_commands",
+        "role": "controller",
+        "keywords": [
+          "step status",
+          "workflow state",
+          "lifecycle transition",
+          "CLI mutation",
+          "flow step"
+        ]
       },
       {
         "file": "src/flow/lib/set-summary.js",
@@ -3288,8 +3463,20 @@
         "usedBy": null,
         "id": "f62c866f",
         "enrich": {
+          "processedAt": "2026-04-13T05:28:46.709Z",
           "attempts": 5
-        }
+        },
+        "summary": "This command sets requirement summaries from a JSON array string. It validates both JSON parsing and element type constraints.",
+        "detail": "It expects one raw JSON argument and reports clear usage on missing input. Parsing errors are wrapped with original exception messages for easier correction. It enforces an array-of-strings contract to keep downstream requirement processing predictable. Valid data is persisted through shared state helpers and returns the saved count.",
+        "chapter": "cli_commands",
+        "role": "controller",
+        "keywords": [
+          "summary setter",
+          "json array parse",
+          "requirement list",
+          "input validation",
+          "flow state"
+        ]
       },
       {
         "file": "src/flow/lib/set-test-summary.js",
@@ -3309,14 +3496,27 @@
         "usedBy": null,
         "id": "962cab89",
         "enrich": {
+          "processedAt": "2026-04-13T05:28:46.709Z",
           "attempts": 5
-        }
+        },
+        "summary": "This command stores test summary counts for unit, integration, and acceptance categories. It supports optional category flags with numeric validation.",
+        "detail": "It defines fixed type keys and parses option values into non-negative numeric counts. Invalid values produce key-specific errors that identify the problematic flag. At least one supported flag is required, with usage guidance if none are provided. The final normalized summary object is persisted to flow state and returned.",
+        "chapter": "cli_commands",
+        "role": "controller",
+        "keywords": [
+          "test summary",
+          "unit tests",
+          "integration tests",
+          "acceptance tests",
+          "CLI flags",
+          "numeric parsing"
+        ]
       },
       {
         "file": "src/flow/registry.js",
-        "hash": "b7f809e2ee51e7a2b560cbeee075e0e6",
-        "lines": 464,
-        "mtime": "2026-04-13T02:06:53.263Z",
+        "hash": "df744459dd5535b4bdd3a36950d4b588",
+        "lines": 459,
+        "mtime": "2026-04-13T05:26:50.553Z",
         "className": "registry",
         "methods": [
           "deriveActivePhase",
@@ -3338,9 +3538,22 @@
           "src/flow.js"
         ],
         "id": "d64f4095",
+        "summary": "This file is the central registry that declares all flow command groups and hooks. It maps command IDs to implementations and pre/post step side effects.",
+        "detail": "It derives active phases from current flow state to support phase-aware command behavior. Pre/post hook helpers update step statuses and integrate metrics or issue-log updates around command execution. The registry also contains help text and wiring for nested command structures. This module acts as the authoritative composition root for flow command orchestration.",
+        "chapter": "project_structure",
+        "role": "controller",
         "enrich": {
+          "processedAt": "2026-04-13T05:28:46.709Z",
           "attempts": 1
-        }
+        },
+        "keywords": [
+          "command registry",
+          "flow orchestration",
+          "step hooks",
+          "phase derivation",
+          "command metadata",
+          "CLI composition"
+        ]
       },
       {
         "file": "src/help.js",
@@ -3364,8 +3577,21 @@
         "usedBy": null,
         "id": "4ac07fa0",
         "enrich": {
+          "processedAt": "2026-04-13T05:28:46.709Z",
           "attempts": 4
-        }
+        },
+        "summary": "This module renders CLI help output with i18n-backed command descriptions. It exports both runtime `main` and static command layout metadata.",
+        "detail": "It builds translated command lists by mapping layout entries through namespaced translation keys. Runtime wiring uses a direct-run helper so the file can act as both module and executable entry. It reads package version metadata for help header content. The structure separates display layout constants from execution logic for maintainability.",
+        "chapter": "cli_commands",
+        "role": "cli",
+        "keywords": [
+          "help command",
+          "i18n",
+          "command list",
+          "CLI UX",
+          "version display",
+          "entrypoint"
+        ]
       },
       {
         "file": "src/lib/agent.js",
@@ -3439,8 +3665,22 @@
         ],
         "id": "13ddf392",
         "enrich": {
+          "processedAt": "2026-04-13T05:28:46.709Z",
           "attempts": 5
-        }
+        },
+        "summary": "This module provides provider-agnostic AI agent invocation, parsing, retry, and logging. It is the core abstraction for synchronous and asynchronous agent calls in the project.",
+        "detail": "It builds command arguments with prompt injection strategies, supports stdin and argv prompt modes, and enforces safe working directories. Provider-specific output parsers normalize usage/token metadata while fallback parsing remains resilient. Logging wrappers record start/end/error phases with request IDs and persisted prompt context for traceability. Configuration resolution supports default agents, named profiles, timeout inheritance, and environment-based profile selection.",
+        "chapter": "configuration",
+        "role": "lib",
+        "keywords": [
+          "agent runtime",
+          "provider abstraction",
+          "prompt injection",
+          "retry policy",
+          "usage parsing",
+          "agent logging",
+          "profile resolution"
+        ]
       },
       {
         "file": "src/lib/agents-md.js",
@@ -3465,8 +3705,20 @@
         ],
         "id": "9f3f55f7",
         "enrich": {
+          "processedAt": "2026-04-13T05:28:46.709Z",
           "attempts": 5
-        }
+        },
+        "summary": "This helper loads the built-in AGENTS SDD template by language from preset directories. It returns empty content when a localized template is absent.",
+        "detail": "It resolves template paths via shared preset constants rather than hard-coded absolute paths. Existence checks guard reads and avoid exceptions for missing language files. The function is intentionally small and side-effect free. It supports template fallback behavior in higher-level generation flows.",
+        "chapter": "internal_design",
+        "role": "lib",
+        "keywords": [
+          "template loader",
+          "AGENTS.md",
+          "preset templates",
+          "language variant",
+          "file fallback"
+        ]
       },
       {
         "file": "src/lib/cli.js",
@@ -3517,8 +3769,21 @@
         ],
         "id": "f351ecc4",
         "enrich": {
+          "processedAt": "2026-04-13T05:28:46.709Z",
           "attempts": 5
-        }
+        },
+        "summary": "This module contains CLI environment utilities such as repo root detection, argument parsing, and package metadata helpers. It centralizes low-level command-line concerns used by many commands.",
+        "detail": "Root resolution honors explicit environment overrides before falling back to git-based detection and current directory defaults. The argument parser supports option specs, unknown-option rejection, and positional passthrough handling. Worktree detection and main-repo path resolution use git metadata to distinguish linked worktree contexts. It also provides UTC timestamp formatting and package version lookup for UI and logging features.",
+        "chapter": "project_structure",
+        "role": "lib",
+        "keywords": [
+          "cli utilities",
+          "repo root",
+          "arg parser",
+          "worktree detection",
+          "package version",
+          "timestamp format"
+        ]
       },
       {
         "file": "src/lib/config.js",
@@ -3568,8 +3833,21 @@
         ],
         "id": "dff6e5b4",
         "enrich": {
+          "processedAt": "2026-04-13T05:28:46.709Z",
           "attempts": 5
-        }
+        },
+        "summary": "This module loads and validates configuration files and related project paths. It defines default values and helper functions for SDD directory conventions.",
+        "detail": "It exposes deterministic path builders for `.sdd-forge` config and output locations under a project root. JSON loading helpers provide explicit errors and optional package-field extraction behavior. Language and concurrency defaults are resolved through dedicated helper functions. `loadConfig` delegates final schema enforcement to type validation utilities.",
+        "chapter": "configuration",
+        "role": "config",
+        "keywords": [
+          "config loader",
+          "schema validation",
+          "sdd directory",
+          "default language",
+          "concurrency",
+          "config path"
+        ]
       },
       {
         "file": "src/lib/entrypoint.js",
@@ -3598,8 +3876,20 @@
         ],
         "id": "5c7afa99",
         "enrich": {
+          "processedAt": "2026-04-13T05:28:46.709Z",
           "attempts": 5
-        }
+        },
+        "summary": "This module handles direct-run entrypoint behavior for executable files. It standardizes error handling and exit code behavior for CLI mains.",
+        "detail": "It compares `import.meta.url` with runtime argv path to determine whether a module is being run directly. The runner wraps `main` invocation in Promise handling for both sync and async implementations. Exceptions are printed and mapped to unified error exit codes. This keeps command entry files concise and consistent.",
+        "chapter": "cli_commands",
+        "role": "lib",
+        "keywords": [
+          "entrypoint helper",
+          "direct run",
+          "exit code",
+          "error wrapper",
+          "CLI bootstrap"
+        ]
       },
       {
         "file": "src/lib/exit-codes.js",
@@ -3627,8 +3917,20 @@
         ],
         "id": "82a3b684",
         "enrich": {
+          "processedAt": "2026-04-13T05:28:46.709Z",
           "attempts": 5
-        }
+        },
+        "summary": "This file defines standard process exit code constants. It provides a single source of truth for success and error statuses.",
+        "detail": "It exports explicit numeric values for success and generic error cases. Centralizing these values avoids magic numbers across commands. The constants are used by entrypoint and envelope modules to keep behavior consistent. The module remains intentionally minimal and dependency-free.",
+        "chapter": "stack_and_ops",
+        "role": "config",
+        "keywords": [
+          "exit codes",
+          "status constants",
+          "process status",
+          "success code",
+          "error code"
+        ]
       },
       {
         "file": "src/lib/flow-envelope.js",
@@ -3655,8 +3957,20 @@
         ],
         "id": "4f01cb50",
         "enrich": {
+          "processedAt": "2026-04-13T05:28:46.709Z",
           "attempts": 5
-        }
+        },
+        "summary": "This module defines the flow envelope contract for structured command output. It provides constructors for success, failure, and warning responses plus a unified emitter.",
+        "detail": "Envelope builders normalize fields like `ok`, `type`, `key`, `data`, and `errors` across flow commands. The output function prints pretty JSON and sets `process.exitCode` without forcing immediate process termination. That pattern allows post-hooks and cleanup logic to run reliably after command execution. It acts as the serialization boundary between internal command logic and CLI consumers.",
+        "chapter": "cli_commands",
+        "role": "lib",
+        "keywords": [
+          "response envelope",
+          "structured output",
+          "success fail warn",
+          "JSON emitter",
+          "exitCode handling"
+        ]
       },
       {
         "file": "src/lib/flow-state.js",
@@ -3740,8 +4054,22 @@
         ],
         "id": "5bb0bb76",
         "enrich": {
+          "processedAt": "2026-04-13T05:28:46.709Z",
           "attempts": 5
-        }
+        },
+        "summary": "This module is the core model for flow state lifecycle, persistence, and active-flow resolution across repo/worktree contexts. It defines steps, phase mapping, and mutation helpers used by most flow commands.",
+        "detail": "It manages active-flow indexes, stale-flow cleanup, and spec-id derivation from paths and branch names. State persistence is file-based (`flow.json`) with helper APIs for reads, writes, and transactional mutations. Higher-level mutators handle requirements, issue links, notes, metrics, and step status transitions in one place. It also scans both main repo and worktree specs to build comprehensive flow inventories.",
+        "chapter": "internal_design",
+        "role": "model",
+        "keywords": [
+          "flow state",
+          "state machine",
+          "phase map",
+          "active flow",
+          "worktree support",
+          "state persistence",
+          "spec resolution"
+        ]
       },
       {
         "file": "src/lib/formatter.js",
@@ -3761,8 +4089,20 @@
         "usedBy": null,
         "id": "994720ab",
         "enrich": {
+          "processedAt": "2026-04-13T05:28:46.709Z",
           "attempts": 5
-        }
+        },
+        "summary": "This formatting utility defines a standard divider and section-push helper for text reports. It provides a small shared abstraction for consistent console formatting.",
+        "detail": "The module exports a canonical divider string reused by reporting and summary outputs. `pushSection` appends titled sections into mutable line arrays with a stable style. Keeping this logic centralized avoids duplicated formatting literals. The implementation is intentionally lightweight and pure.",
+        "chapter": "internal_design",
+        "role": "lib",
+        "keywords": [
+          "formatter",
+          "section builder",
+          "divider",
+          "console layout",
+          "text rendering"
+        ]
       },
       {
         "file": "src/lib/git-helpers.js",
@@ -3795,8 +4135,21 @@
         "usedBy": null,
         "id": "61b28e9c",
         "enrich": {
+          "processedAt": "2026-04-13T05:28:46.709Z",
           "attempts": 5
-        }
+        },
+        "summary": "This module provides reusable Git helper operations for branch, diff, and issue-comment workflows. It wraps command execution and normalizes output for higher-level flow commands.",
+        "detail": "Functions expose worktree dirtiness, current branch, ahead count, and last commit retrieval with graceful fallback values. It aggregates git summary artifacts like diff stats and commit message lists for reporting contexts. GitHub CLI availability checks and issue comment posting are included behind thin wrappers. Error surfaces are normalized through shared process-format helpers.",
+        "chapter": "development",
+        "role": "lib",
+        "keywords": [
+          "git helpers",
+          "branch status",
+          "diff stat",
+          "commit metadata",
+          "gh cli",
+          "issue comment"
+        ]
       },
       {
         "file": "src/lib/guardrail.js",
@@ -3834,8 +4187,21 @@
         ],
         "id": "bb462f4e",
         "enrich": {
+          "processedAt": "2026-04-13T05:28:46.709Z",
           "attempts": 5
-        }
+        },
+        "summary": "This module implements guardrail loading, filtering, and scope matching across presets and project overrides. It merges guardrail sets into a single effective policy for checks.",
+        "detail": "It parses guardrail JSON entries, hydrates metadata, and supports regex-like lint string compilation. Phase filtering keeps checks context-aware, while scope matching supports path and filename patterns. Resolution combines preset-derived guardrails with project-local definitions under `.sdd-forge`. Merge-by-id logic preserves stable rule identity when layering sources.",
+        "chapter": "internal_design",
+        "role": "lib",
+        "keywords": [
+          "guardrails",
+          "policy merge",
+          "phase filter",
+          "scope matching",
+          "lint patterns",
+          "preset overrides"
+        ]
       },
       {
         "file": "src/lib/i18n.js",
@@ -3879,8 +4245,21 @@
         ],
         "id": "45a1457c",
         "enrich": {
+          "processedAt": "2026-04-13T05:28:46.709Z",
           "attempts": 5
-        }
+        },
+        "summary": "This i18n module loads and merges localized message domains from built-in, preset, and project directories. It exposes translation helpers with interpolation and namespaced key parsing.",
+        "detail": "It defines domain sets and deep-merge behavior so overrides can extend or replace nested translation trees safely. Locale directory resolution is preset-aware and can include project-level customizations. Translation helpers enforce `domain:key` format and provide graceful fallback behavior when keys are missing. Placeholder interpolation supports runtime parameter injection into localized strings.",
+        "chapter": "internal_design",
+        "role": "lib",
+        "keywords": [
+          "internationalization",
+          "locale merge",
+          "translation",
+          "namespaced key",
+          "interpolation",
+          "message domains"
+        ]
       },
       {
         "file": "src/lib/include.js",
@@ -3905,8 +4284,20 @@
         ],
         "id": "d35107ed",
         "enrich": {
+          "processedAt": "2026-04-13T05:28:46.709Z",
           "attempts": 5
-        }
+        },
+        "summary": "This module resolves HTML-comment include directives inside template content. It enforces safe path rules and prevents circular include recursion.",
+        "detail": "It validates include paths to reject traversal-like forms and supports symbolic roots such as `templates:` and `presets:`. Resolution is recursive, processing included content with updated base directories. Missing files raise explicit errors containing both logical and resolved paths. A visited-set style guard catches circular references to avoid infinite expansion.",
+        "chapter": "internal_design",
+        "role": "lib",
+        "keywords": [
+          "include resolver",
+          "template expansion",
+          "path safety",
+          "circular detection",
+          "content preprocessing"
+        ]
       },
       {
         "file": "src/lib/json-parse.js",
@@ -3930,8 +4321,20 @@
         "usedBy": null,
         "id": "a2f5875b",
         "enrich": {
+          "processedAt": "2026-04-13T05:28:46.709Z",
           "attempts": 5
-        }
+        },
+        "summary": "This module repairs malformed JSON-like text to improve parse success for AI outputs. It also strips markdown fences and locates JSON starts in mixed text.",
+        "detail": "The parser walks input character by character with structural token awareness and targeted correction rules. It handles object/array/string/number parsing paths and tries to preserve intended structure while fixing minor syntax issues. Helper functions normalize whitespace and escape control characters when needed. This utility is used as a fallback path when strict `JSON.parse` fails.",
+        "chapter": "internal_design",
+        "role": "lib",
+        "keywords": [
+          "JSON repair",
+          "fault-tolerant parsing",
+          "markdown fence strip",
+          "syntax recovery",
+          "AI output parsing"
+        ]
       },
       {
         "file": "src/lib/lint.js",
@@ -3961,8 +4364,21 @@
         "usedBy": null,
         "id": "aa4a324d",
         "enrich": {
+          "processedAt": "2026-04-13T05:28:46.709Z",
           "attempts": 5
-        }
+        },
+        "summary": "This module executes lint-style guardrail checks against changed files. It validates lint guardrail configuration and returns normalized failure records.",
+        "detail": "It retrieves changed file lists from git and filters guardrails to the active phase and lint-capable entries. For each relevant file, it applies scope matching and inspects file content against configured patterns. The top-level runner returns structured results including warnings, matched guardrail counts, and per-file failures. Empty-change and empty-rule conditions are handled explicitly as successful no-op outcomes.",
+        "chapter": "development",
+        "role": "lib",
+        "keywords": [
+          "lint checks",
+          "guardrail lint",
+          "changed files",
+          "pattern scan",
+          "quality enforcement",
+          "failure report"
+        ]
       },
       {
         "file": "src/lib/log.js",
@@ -4000,8 +4416,21 @@
         ],
         "id": "3d7bb5e6",
         "enrich": {
+          "processedAt": "2026-04-13T05:28:46.709Z",
           "attempts": 5
-        }
+        },
+        "summary": "This module implements structured logging for agent, git, and generic event telemetry. It writes JSONL logs and optional prompt payload files with flow-aware context.",
+        "detail": "It resolves log directories relative to repo/worktree context and supports daily log partitioning. Utility functions collect caller metadata, text stats, and request IDs for richer records. The singleton logger tracks in-flight writes and offers initialization and graceful flush behavior. Logging failures are intentionally non-fatal and reported to stderr to avoid breaking command execution.",
+        "chapter": "development",
+        "role": "lib",
+        "keywords": [
+          "structured logging",
+          "jsonl",
+          "telemetry",
+          "agent logs",
+          "request id",
+          "prompt artifacts"
+        ]
       },
       {
         "file": "src/lib/multi-select.js",
@@ -4025,8 +4454,21 @@
         ],
         "id": "9a04a164",
         "enrich": {
+          "processedAt": "2026-04-13T05:28:46.709Z",
           "attempts": 5
-        }
+        },
+        "summary": "This module provides an interactive TTY multi-select UI for preset selection. It supports both single and multi modes with keyboard navigation.",
+        "detail": "It builds tree-structured display items and renders viewport-aware lists with ANSI styling. Input handling covers arrow movement, space toggling, enter confirmation, and cleanup of terminal state. Non-TTY mode degrades to deterministic defaults for automation safety. Selection logic can include ancestor propagation to preserve hierarchical intent.",
+        "chapter": "cli_commands",
+        "role": "view",
+        "keywords": [
+          "interactive CLI",
+          "multi select",
+          "TTY UI",
+          "keyboard navigation",
+          "tree selection",
+          "ANSI rendering"
+        ]
       },
       {
         "file": "src/lib/presets.js",
@@ -4068,8 +4510,21 @@
         ],
         "id": "ae76d513",
         "enrich": {
+          "processedAt": "2026-04-13T05:28:46.709Z",
           "attempts": 5
-        }
+        },
+        "summary": "This module discovers and resolves preset manifests, including parent-chain composition and project overrides. It is the central preset model for inheritance and lookup.",
+        "detail": "It scans built-in preset directories, reads `preset.json`, and caches normalized preset metadata. Project-local preset folders can override built-ins while preserving fallback behavior for missing manifests. Chain resolution detects missing parents and circular references with explicit errors. Helper APIs expose safe chain resolution, leaf lookup, and architecture-level preset listing.",
+        "chapter": "project_structure",
+        "role": "model",
+        "keywords": [
+          "preset system",
+          "manifest discovery",
+          "inheritance chain",
+          "project override",
+          "parent resolution",
+          "circular guard"
+        ]
       },
       {
         "file": "src/lib/process.js",
@@ -4102,8 +4557,20 @@
         ],
         "id": "6196b26c",
         "enrich": {
+          "processedAt": "2026-04-13T05:28:46.709Z",
           "attempts": 5
-        }
+        },
+        "summary": "This module wraps child-process execution for sync and async command runs. It standardizes result objects, error formatting, and assertion behavior.",
+        "detail": "`runCmd` and `runCmdAsync` return consistent `{ok, stdout, stderr, code}` payloads instead of throwing by default. It integrates with logging utilities so command execution is observable across the toolchain. `formatError` composes concise diagnostic strings from command results. `assertOk` promotes failed command results to exceptions with contextual messages when strict behavior is needed.",
+        "chapter": "stack_and_ops",
+        "role": "lib",
+        "keywords": [
+          "process runner",
+          "subprocess wrapper",
+          "sync async exec",
+          "error formatting",
+          "assertion helper"
+        ]
       },
       {
         "file": "src/lib/progress.js",
@@ -4128,8 +4595,21 @@
         ],
         "id": "fa23a1ba",
         "enrich": {
+          "processedAt": "2026-04-13T05:28:46.709Z",
           "attempts": 5
-        }
+        },
+        "summary": "This module provides progress logging primitives, including spinner and weighted progress bar rendering. It supports both verbose text mode and interactive TTY updates.",
+        "detail": "It tracks global progress state and renders step labels, percentages, and elapsed time in a compact console format. TTY-specific behavior uses cursor control and reserved lines to repaint output cleanly. A lightweight logger API offers info/warn/error messaging with consistent prefixes. The progress factory returns an instance-oriented interface suitable for long-running multi-step commands.",
+        "chapter": "development",
+        "role": "view",
+        "keywords": [
+          "progress bar",
+          "spinner",
+          "TTY rendering",
+          "elapsed time",
+          "console logger",
+          "step tracker"
+        ]
       },
       {
         "file": "src/lib/skills.js",
@@ -7428,5 +7908,5 @@
     },
     "dataSourceHash": "7d725e75d5031be445119323e4947c91"
   },
-  "enrichedAt": "2026-04-13T05:27:33.023Z"
+  "enrichedAt": "2026-04-13T05:28:46.709Z"
 }
