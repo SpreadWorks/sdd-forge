@@ -77,6 +77,24 @@ export function sddOutputDir(root) {
 }
 
 /**
+ * Resolve agent work directory.
+ *
+ * Priority:
+ *   1) SDD_FORGE_WORK_DIR environment variable
+ *   2) config.agent.workDir
+ *   3) ".tmp" (default)
+ *
+ * @param {string} root - Repository root
+ * @param {Object} [cfg] - SDD config object
+ * @returns {string} Absolute path to work directory
+ */
+export function resolveWorkDir(root, cfg) {
+  const envWorkDir = process.env.SDD_FORGE_WORK_DIR;
+  const dir = envWorkDir || cfg?.agent?.workDir || ".tmp";
+  return path.resolve(root, dir);
+}
+
+/**
  * .sdd-forge/config.json から lang を読み込む。
  * ファイルが存在しないかパースに失敗した場合は "en" を返す。
  * ヘルプ表示など、バリデーション前に言語が必要な場面で使用する。
@@ -107,4 +125,3 @@ export function loadConfig(root) {
   const raw = loadJsonFile(sddConfigPath(root));
   return validateConfig(raw);
 }
-

@@ -1,0 +1,42 @@
+{
+  "data": {
+    "implementation": {
+      "diffStat": "specs/170-flow-runid-state-bootstrap/draft.md      |  50 ++++++\n specs/170-flow-runid-state-bootstrap/flow.json     | 170 +++++++++++++++++++++\n .../170-flow-runid-state-bootstrap/issue-log.json  |  51 +++++++\n specs/170-flow-runid-state-bootstrap/qa.md         |   9 ++\n specs/170-flow-runid-state-bootstrap/review.md     |  25 +++\n specs/170-flow-runid-state-bootstrap/spec.md       |  66 ++++++++\n .../170-flow-runid-state-bootstrap/tests/README.md |  25 +++\n src/lib/agent.js                                   |   4 +-\n src/lib/config.js                                  |  19 ++-\n src/lib/log.js                                     |   4 +-\n src/templates/partials/core-principle.md           |   5 +\n tests/unit/docs/enrich-dump-path.test.js           |  14 ++\n 12 files changed, 437 insertions(+), 5 deletions(-)",
+      "commits": [
+        "feat: feature/170-flow-runid-state-bootstrap"
+      ]
+    },
+    "retro": {
+      "total": 5,
+      "done": 5,
+      "partial": 0,
+      "not_done": 0,
+      "rate": 1,
+      "notes": "実装コード差分は R1〜R5 を満たしている。未要件変更は主に specs 配下のワークフロー/ドキュメント生成物。"
+    },
+    "issueLog": {
+      "count": 0,
+      "entries": []
+    },
+    "metrics": {
+      "docsRead": 0,
+      "srcRead": 0,
+      "question": 6,
+      "issueLog": 4
+    },
+    "tokenMetrics": {
+      "input": 6,
+      "output": 1524,
+      "cacheRead": 35298,
+      "cacheCreation": 34219,
+      "cost": 0.16178865,
+      "callCount": 3
+    },
+    "tests": null,
+    "sync": {
+      "status": "skipped",
+      "reason": "sync was skipped"
+    }
+  },
+  "text": "  Report\n\n  Implementation\n  ────────────────────────────────────────────────\n    feat: feature/170-flow-runid-state-bootstrap\n    12 files changed, 437 insertions(+), 5 deletions(-)\n\n  Retro\n  ────────────────────────────────────────────────\n    ████████ 100%  (5 done / 0 partial / 0 miss)\n\n  Metrics\n  ────────────────────────────────────────────────\n    docs read ................... 0\n    src read .................... 0\n    Q&A ......................... 6\n    issue-log ................... 4\n    agent calls ................. 3\n    input tokens ................ 6\n    output tokens ............... 1,524\n    cache-read tokens ........... 35,298\n    cache-create tokens ......... 34,219\n    cost ........................ $0.1618\n\n  Tests\n  ────────────────────────────────────────────────\n    -"
+}

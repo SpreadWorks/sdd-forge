@@ -9,6 +9,7 @@ import crypto from "crypto";
 import fs from "fs";
 import path from "path";
 import { execFileSync, spawn } from "child_process";
+import { resolveWorkDir as resolveConfiguredWorkDir } from "./config.js";
 import { Logger, generateRequestId } from "./log.js";
 
 
@@ -712,8 +713,7 @@ export function resolveAgent(cfg, commandId) {
  * @returns {string} 作業ディレクトリの絶対パス
  */
 export function resolveWorkDir(root, config) {
-  const dir = config?.agent?.workDir || ".tmp";
-  return path.resolve(root, dir);
+  return resolveConfiguredWorkDir(root, config);
 }
 
 /**

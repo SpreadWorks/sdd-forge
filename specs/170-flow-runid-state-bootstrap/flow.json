@@ -1,0 +1,170 @@
+{
+  "spec": "specs/170-flow-runid-state-bootstrap/spec.md",
+  "baseBranch": "main",
+  "featureBranch": "feature/170-flow-runid-state-bootstrap",
+  "steps": [
+    {
+      "id": "approach",
+      "status": "done"
+    },
+    {
+      "id": "branch",
+      "status": "done"
+    },
+    {
+      "id": "prepare-spec",
+      "status": "pending"
+    },
+    {
+      "id": "draft",
+      "status": "done"
+    },
+    {
+      "id": "gate-draft",
+      "status": "done"
+    },
+    {
+      "id": "spec",
+      "status": "done"
+    },
+    {
+      "id": "gate",
+      "status": "done"
+    },
+    {
+      "id": "approval",
+      "status": "done"
+    },
+    {
+      "id": "test",
+      "status": "done"
+    },
+    {
+      "id": "implement",
+      "status": "done"
+    },
+    {
+      "id": "gate-impl",
+      "status": "done"
+    },
+    {
+      "id": "review",
+      "status": "done"
+    },
+    {
+      "id": "finalize",
+      "status": "pending"
+    },
+    {
+      "id": "commit",
+      "status": "pending"
+    },
+    {
+      "id": "push",
+      "status": "pending"
+    },
+    {
+      "id": "merge",
+      "status": "pending"
+    },
+    {
+      "id": "pr-create",
+      "status": "pending"
+    },
+    {
+      "id": "branch-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "pr-merge",
+      "status": "pending"
+    },
+    {
+      "id": "sync-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "docs-update",
+      "status": "pending"
+    },
+    {
+      "id": "docs-review",
+      "status": "pending"
+    },
+    {
+      "id": "docs-commit",
+      "status": "pending"
+    }
+  ],
+  "requirements": [
+    {
+      "desc": "R1. CLI は一時作業ディレクトリ解決ヘルパーを提供し、SDD_FORGE_WORK_DIR、config.agent.workDir、.tmp の順で解決すること。",
+      "status": "done"
+    },
+    {
+      "desc": "R2. R1 の解決結果は既存の一時ログ保存処理で再利用され、/tmp 直書きを新規追加しないこと。",
+      "status": "done"
+    },
+    {
+      "desc": "R3. flow 系 skill の共有パーツに /tmp 直書き回避・解決済み workDir 利用ルールを明記すること。",
+      "status": "done"
+    },
+    {
+      "desc": "R4. config.agent.workDir 未設定時でも .tmp へのフォールバックにより既存運用を維持すること。",
+      "status": "done"
+    },
+    {
+      "desc": "R5. 解決ロジック（env/config/fallback）に対する単体テストを追加し、優先順位を固定すること。",
+      "status": "done"
+    }
+  ],
+  "request": "一時ファイル運用を /tmp 固定から config.agent.workDir 解決へ統一し、AGENTS/skill運用を整備する",
+  "worktree": true,
+  "notes": [
+    "approach: [1] Q&A で要件整理",
+    "prepare-spec: title=[1] flow-runid-state-bootstrap",
+    "work-env: [1] worktree, base: [1] main",
+    "draft: Q2=[1] config.agent.workDirベースの一時ファイル運用ルール化を対象",
+    "draft: request-source=notes (set request reflection mismatch logged)",
+    "draft: Q3=skill共有パーツ + CLI agent.workDir解決ヘルパー実装",
+    "draft: Q4=[1+3] workDir解決=env override > config.agent.workDir > .tmp",
+    "draft: approved [1] on 2026-04-13",
+    "spec: start after gate-draft pass",
+    "approval: [1] approved on 2026-04-13",
+    "test-mode: [1] テストコードを作成する",
+    "test: added env-override unit test (fails as expected before implementation)"
+  ],
+  "metrics": {
+    "draft": {
+      "question": 6
+    },
+    "plan": {
+      "issueLog": 3
+    },
+    "spec": {
+      "tokens": {
+        "input": 2,
+        "output": 743,
+        "cacheRead": 11766,
+        "cacheCreation": 10102
+      },
+      "cost": 0.0525633,
+      "callCount": 1,
+      "responseChars": 1260
+    },
+    "implement": {
+      "tokens": {
+        "input": 4,
+        "output": 781,
+        "cacheRead": 23532,
+        "cacheCreation": 24117
+      },
+      "cost": 0.10922535,
+      "callCount": 2,
+      "responseChars": 2010
+    },
+    "impl": {
+      "issueLog": 1
+    }
+  }
+}

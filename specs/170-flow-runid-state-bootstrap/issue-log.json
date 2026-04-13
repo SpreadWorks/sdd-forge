@@ -1,0 +1,51 @@
+{
+  "entries": [
+    {
+      "step": "draft",
+      "reason": "asked wrong scope question not aligned with immediate prior discussion",
+      "trigger": "draft Q1",
+      "resolution": "reset scope to workDir rule discussion and re-ask",
+      "guardrailCandidate": "before first draft question, restate last 1-2 turns and confirm scope",
+      "timestamp": "2026-04-13T05:36:11.267Z"
+    },
+    {
+      "step": "draft",
+      "reason": "flow set request returned ok but status.request remained unchanged",
+      "trigger": "scope reset after Q2",
+      "resolution": "treat notes as source-of-truth for updated request in this flow",
+      "guardrailCandidate": "after mutating flow state, verify via flow get status and log mismatch immediately",
+      "timestamp": "2026-04-13T05:37:01.282Z"
+    },
+    {
+      "step": "gate-draft",
+      "reason": "gate log redirection failed because agent.workDir (.tmp) did not exist",
+      "trigger": "sdd-forge flow run gate --phase draft > .tmp/gate-draft-170.log",
+      "resolution": "create agent.workDir before redirect and rerun gate",
+      "guardrailCandidate": "before redirecting command output, ensure agent.workDir exists",
+      "timestamp": "2026-04-13T05:42:03.594Z"
+    },
+    {
+      "step": "gate",
+      "reason": "line 66: unchecked task/question (- [ ] 既存テストで `/tmp` パス文字列を前提にしているケースがある場合、どの粒度で更新するか。)",
+      "trigger": "gate post hook (auto)",
+      "timestamp": "2026-04-13T05:43:36.269Z"
+    },
+    {
+      "step": "commit",
+      "reason": "commit failed: exit=128 | fatal: Unable to create '/home/nakano/workspace/sdd-forge/.git/worktrees/feature-170-flow-runid-state-bootstrap/index.lock': Read-only file system\n",
+      "timestamp": "2026-04-13T06:44:11.786Z"
+    },
+    {
+      "step": "merge",
+      "reason": "Merge conflict detected. Run 'git rebase main' in the worktree and retry finalize.",
+      "timestamp": "2026-04-13T06:44:11.803Z"
+    },
+    {
+      "step": "finalize",
+      "reason": "finalize commit failed: unable to create worktree index.lock (Read-only file system)",
+      "trigger": "sdd-forge flow run finalize --mode all",
+      "resolution": "stop and request user decision before retry/workaround",
+      "timestamp": "2026-04-13T06:44:28.792Z"
+    }
+  ]
+}

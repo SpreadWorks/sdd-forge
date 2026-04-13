@@ -24,6 +24,7 @@
 import crypto from "crypto";
 import fs from "fs";
 import path from "path";
+import { resolveWorkDir } from "./config.js";
 import { isInsideWorktree, getMainRepoPath } from "./cli.js";
 
 // ─── Internal helpers ──────────────────────────────────────────────────────
@@ -35,10 +36,9 @@ import { isInsideWorktree, getMainRepoPath } from "./cli.js";
  */
 function resolveLogDir(cwd, cfg) {
   if (cfg?.logs?.dir) return cfg.logs.dir;
-  const workDir = cfg?.agent?.workDir || ".tmp";
   const root = path.resolve(cwd || process.cwd());
   const repoRoot = isInsideWorktree(root) ? getMainRepoPath(root) : root;
-  return path.join(repoRoot, workDir, "logs");
+  return path.join(resolveWorkDir(repoRoot, cfg), "logs");
 }
 
 /** YYYY-MM-DD in local time, computed at write time. */

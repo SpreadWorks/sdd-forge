@@ -1,0 +1,69 @@
+{
+  "spec": "specs/170-flow-runid-state-bootstrap/spec.md",
+  "date": "2026-04-13T06:50:37.302Z",
+  "requirements": [
+    {
+      "desc": "R1. CLI は一時作業ディレクトリ解決ヘルパーを提供し、SDD_FORGE_WORK_DIR、config.agent.workDir、.tmp の順で解決すること。",
+      "status": "done",
+      "note": "src/lib/config.js に resolveWorkDir を追加し、env > config > .tmp の優先順位で解決している。src/lib/agent.js 側もこのヘルパーを利用。"
+    },
+    {
+      "desc": "R2. R1 の解決結果は既存の一時ログ保存処理で再利用され、/tmp 直書きを新規追加しないこと。",
+      "status": "done",
+      "note": "src/lib/log.js の resolveLogDir が resolveWorkDir(repoRoot, cfg) を再利用する実装に変更され、/tmp の新規直書き追加はない。"
+    },
+    {
+      "desc": "R3. flow 系 skill の共有パーツに /tmp 直書き回避・解決済み workDir 利用ルールを明記すること。",
+      "status": "done",
+      "note": "src/templates/partials/core-principle.md に /tmp 直書き回避と解決済み workDir 利用の明示ルールが追加されている。"
+    },
+    {
+      "desc": "R4. config.agent.workDir 未設定時でも .tmp へのフォールバックにより既存運用を維持すること。",
+      "status": "done",
+      "note": "resolveWorkDir の実装が cfg?.agent?.workDir 未設定時に \".tmp\" を返すため、既存フォールバック挙動を維持している。"
+    },
+    {
+      "desc": "R5. 解決ロジック（env/config/fallback）に対する単体テストを追加し、優先順位を固定すること。",
+      "status": "done",
+      "note": "tests/unit/docs/enrich-dump-path.test.js に env 優先テストを追加し、既存の config/fallback テストと合わせて優先順位を固定している。"
+    }
+  ],
+  "unplanned": [
+    {
+      "file": "specs/170-flow-runid-state-bootstrap/draft.md",
+      "change": "仕様ドラフト文書の新規追加（要件実装そのものではない管理成果物）。"
+    },
+    {
+      "file": "specs/170-flow-runid-state-bootstrap/flow.json",
+      "change": "フロー進捗・要件状態メタデータの新規追加（管理用）。"
+    },
+    {
+      "file": "specs/170-flow-runid-state-bootstrap/issue-log.json",
+      "change": "実行時の課題ログ記録ファイルを新規追加（管理用）。"
+    },
+    {
+      "file": "specs/170-flow-runid-state-bootstrap/qa.md",
+      "change": "Q&A テンプレート文書の新規追加（管理用）。"
+    },
+    {
+      "file": "specs/170-flow-runid-state-bootstrap/review.md",
+      "change": "コードレビュー記録の新規追加（管理用）。"
+    },
+    {
+      "file": "specs/170-flow-runid-state-bootstrap/spec.md",
+      "change": "機能仕様書の新規追加（管理用）。"
+    },
+    {
+      "file": "specs/170-flow-runid-state-bootstrap/tests/README.md",
+      "change": "テスト説明用 README の新規追加（補助ドキュメント）。"
+    }
+  ],
+  "summary": {
+    "total": 5,
+    "done": 5,
+    "partial": 0,
+    "not_done": 0,
+    "rate": 1,
+    "notes": "実装コード差分は R1〜R5 を満たしている。未要件変更は主に specs 配下のワークフロー/ドキュメント生成物。"
+  }
+}

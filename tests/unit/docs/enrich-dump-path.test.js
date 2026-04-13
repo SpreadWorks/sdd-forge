@@ -11,6 +11,20 @@ import path from "path";
 import { resolveWorkDir } from "../../../src/lib/agent.js";
 
 describe("enrich failure dump path", () => {
+  it("resolveWorkDir prefers SDD_FORGE_WORK_DIR over config.agent.workDir", () => {
+    const root = "/project";
+    const config = { agent: { workDir: ".tmp" } };
+    const prev = process.env.SDD_FORGE_WORK_DIR;
+    process.env.SDD_FORGE_WORK_DIR = ".sandbox-work";
+    try {
+      const result = resolveWorkDir(root, config);
+      assert.equal(result, "/project/.sandbox-work");
+    } finally {
+      if (prev == null) delete process.env.SDD_FORGE_WORK_DIR;
+      else process.env.SDD_FORGE_WORK_DIR = prev;
+    }
+  });
+
   it("resolveWorkDir returns agent.workDir from config", () => {
     const root = "/project";
     const config = { agent: { workDir: ".tmp" } };
