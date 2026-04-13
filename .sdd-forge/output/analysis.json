@@ -1,5 +1,5 @@
 {
-  "analyzedAt": "2026-04-13T14:16:20.146Z",
+  "analyzedAt": "2026-04-13T15:00:05.095Z",
   "package": {
     "entries": [
       {
@@ -2222,9 +2222,9 @@
       },
       {
         "file": "src/flow/commands/review.js",
-        "hash": "159848b72c5454e11f9179cd70b6f29f",
+        "hash": "65e270f2cbf15b1f3846693ad0e78d86",
         "lines": 944,
-        "mtime": "2026-04-13T12:57:49.487Z",
+        "mtime": "2026-04-13T15:00:04.769Z",
         "className": "review",
         "methods": [
           "resolveReviewTarget",
@@ -2291,23 +2291,9 @@
         "extends": null,
         "usedBy": null,
         "id": "331cf497",
-        "summary": "Implements the flow review command that orchestrates code, spec, and test review loops with agent-assisted proposals and optional auto-fix. It writes structured review artifacts back into the active spec directory.",
-        "detail": "The module validates review phases and resolves the review target from flow state and filesystem paths. It builds dedicated prompts for draft checks, spec checks, test design, gap analysis, and patch application, then parses agent responses into normalized proposal objects. Retry-based review loops collect issue history, merge verdicts, and optionally apply approved fixes in-place for spec and test files. It persists outputs such as review markdown reports, generated test design files, and updated spec content, while enforcing exit behavior on hard failures. Utility helpers encapsulate requirements extraction, test file discovery, markdown formatting, and output sanity checks.",
-        "chapter": "cli_commands",
-        "role": "cli",
         "enrich": {
-          "processedAt": "2026-04-13T12:58:47.344Z",
           "attempts": 1
-        },
-        "keywords": [
-          "review workflow",
-          "agent loop",
-          "spec review",
-          "test gap analysis",
-          "auto-fix",
-          "prompt orchestration",
-          "markdown report"
-        ]
+        }
       },
       {
         "file": "src/flow/lib/base-command.js",
@@ -2413,9 +2399,9 @@
       },
       {
         "file": "src/flow/lib/get-context.js",
-        "hash": "8a3ed5099257a7f908d2b6be20fe0fd0",
+        "hash": "7b783176b5d26b3c8b54777a800525e2",
         "lines": 400,
-        "mtime": "2026-04-10T06:35:13.096Z",
+        "mtime": "2026-04-13T15:00:04.769Z",
         "className": "get-context",
         "methods": [
           "toSearchResult",
@@ -2461,20 +2447,8 @@
         ],
         "id": "1261e39f",
         "enrich": {
-          "processedAt": "2026-04-10T14:34:55.016Z",
-          "attempts": 2
-        },
-        "summary": "Provides context retrieval and search over analysis entries for flow commands. It supports plain search, n-gram similarity, and optional AI keyword selection.",
-        "detail": "The module loads and validates analysis artifacts, filters metadata fields, and converts entries into compact search results. It offers multiple retrieval modes including direct keyword matching, fallback heuristics, and bigram-based approximate matching. The command can also return file content contexts and phase resolution information for downstream prompt construction.",
-        "chapter": "internal_design",
-        "role": "controller",
-        "keywords": [
-          "context retrieval",
-          "analysis search",
-          "ngram similarity",
-          "keyword selection",
-          "flow context"
-        ]
+          "attempts": 1
+        }
       },
       {
         "file": "src/flow/lib/get-guardrail.js",
@@ -2758,9 +2732,9 @@
       },
       {
         "file": "src/flow/lib/run-gate.js",
-        "hash": "ad72a74d9c7bce88673d5526f280d688",
+        "hash": "d7babd8c30ce753c7ddf23577b10b494",
         "lines": 489,
-        "mtime": "2026-04-13T14:16:19.807Z",
+        "mtime": "2026-04-13T15:00:04.769Z",
         "className": "run-gate",
         "methods": [
           "RunGateCommand",
@@ -3015,9 +2989,9 @@
       },
       {
         "file": "src/flow/lib/run-retro.js",
-        "hash": "bbfca4f6b1dd36dc4016ca7fcdf707f9",
+        "hash": "a223d86a11515a60ca8d5afe2ce8f459",
         "lines": 234,
-        "mtime": "2026-04-10T06:35:13.097Z",
+        "mtime": "2026-04-13T15:00:04.769Z",
         "className": "run-retro",
         "methods": [
           "RunRetroCommand",
@@ -3047,21 +3021,8 @@
         "usedBy": null,
         "id": "862e7d08",
         "enrich": {
-          "processedAt": "2026-04-13T05:28:46.709Z",
-          "attempts": 5
-        },
-        "summary": "This module runs the retrospective command and writes `retro.json` for a spec. It extracts requirements and compares them against implementation diffs through an AI prompt.",
-        "detail": "It parses requirements from spec content and enforces prerequisites like configured base branch and non-empty diff output. Prompt construction includes requirement context plus detailed code changes to drive structured analysis. Response parsing is resilient, attempting normal JSON parsing and fallback repair before validation. The command writes normalized retrospective data to disk and reports changed paths for downstream flow tooling.",
-        "chapter": "cli_commands",
-        "role": "controller",
-        "keywords": [
-          "retrospective",
-          "requirements extraction",
-          "implementation diff",
-          "AI analysis",
-          "json repair",
-          "retro.json"
-        ]
+          "attempts": 1
+        }
       },
       {
         "file": "src/flow/lib/run-review.js",
@@ -3314,7 +3275,7 @@
         "usedBy": null,
         "id": "40d93087",
         "enrich": {
-          "attempts": 1
+          "attempts": 2
         }
       },
       {
@@ -3546,7 +3507,7 @@
         ],
         "id": "d64f4095",
         "enrich": {
-          "attempts": 1
+          "attempts": 2
         }
       },
       {
@@ -3874,7 +3835,7 @@
         "usedBy": null,
         "id": "74b5e1c3",
         "enrich": {
-          "attempts": 1
+          "attempts": 2
         }
       },
       {
@@ -4098,7 +4059,7 @@
         ],
         "id": "5bb0bb76",
         "enrich": {
-          "attempts": 1
+          "attempts": 2
         }
       },
       {
@@ -4854,7 +4815,7 @@
         "usedBy": null,
         "id": "59edeaf2",
         "enrich": {
-          "attempts": 1
+          "attempts": 2
         }
       },
       {
@@ -7940,5 +7901,5 @@
     },
     "dataSourceHash": "7d725e75d5031be445119323e4947c91"
   },
-  "enrichedAt": "2026-04-13T14:17:01.341Z"
+  "enrichedAt": "2026-04-13T15:00:49.449Z"
 }
