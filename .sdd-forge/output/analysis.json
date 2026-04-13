@@ -1,5 +1,5 @@
 {
-  "analyzedAt": "2026-04-13T06:50:37.688Z",
+  "analyzedAt": "2026-04-13T09:59:29.481Z",
   "package": {
     "entries": [
       {
@@ -2546,9 +2546,9 @@
       },
       {
         "file": "src/flow/lib/get-prompt.js",
-        "hash": "d5e4bdc6cb16b00fdfff994b5371491b",
-        "lines": 362,
-        "mtime": "2026-04-10T06:35:13.096Z",
+        "hash": "e634fd2d9900cacb5f4a594ec7a97020",
+        "lines": 344,
+        "mtime": "2026-04-13T09:59:29.191Z",
         "className": "get-prompt",
         "methods": [
           "validKinds"
@@ -2562,20 +2562,23 @@
         "extends": "FlowCommand",
         "usedBy": null,
         "id": "410dfcc9",
-        "enrich": {
-          "processedAt": "2026-04-10T14:34:55.016Z",
-          "attempts": 2
-        },
-        "summary": "Returns localized canned prompts for flow interactions. It validates prompt kind and language maps.",
-        "detail": "The module stores prompt templates by language and computes valid prompt keys from the default locale map. The command validates requested kind and returns prompt metadata for consumers. This centralizes reusable instruction snippets and avoids scattered hardcoded text.",
-        "chapter": "configuration",
+        "summary": "This module defines a flow command that retrieves predefined prompt content by kind and language. It centralizes prompt lookup and enforces strict validation for supported prompt kinds.",
+        "detail": "The file declares a language-indexed prompt registry and uses the Japanese prompt map as the source of truth for valid kinds. A helper function derives allowed kinds dynamically from that registry, avoiding duplicated constant lists. The command class extends a shared `FlowCommand` base and performs input validation before processing. It throws explicit errors when `kind` is missing or unknown, and includes valid options in the message to improve CLI usability. After validation, it returns a structured result payload based on the requested kind and selected language context.",
+        "chapter": "cli_commands",
         "role": "lib",
+        "enrich": {
+          "processedAt": "2026-04-13T09:59:39.826Z",
+          "attempts": 1
+        },
         "keywords": [
-          "prompt catalog",
-          "localization",
-          "prompt kind",
-          "flow prompts",
-          "template lookup"
+          "prompt retrieval",
+          "flow command",
+          "input validation",
+          "command pattern",
+          "localized prompts",
+          "kind whitelist",
+          "error handling",
+          "CLI internals"
         ]
       },
       {
@@ -7936,5 +7939,5 @@
     },
     "dataSourceHash": "7d725e75d5031be445119323e4947c91"
   },
-  "enrichedAt": "2026-04-13T06:51:01.756Z"
+  "enrichedAt": "2026-04-13T09:59:39.826Z"
 }
