@@ -183,9 +183,9 @@ export class RunRetroCommand extends FlowCommand {
       throw new Error("failed to load config");
     }
 
-    const agent = resolveAgent(config, "flow.retro");
+    const agent = resolveAgent(config, "flow.finalize.retro");
     if (!agent) {
-      throw new Error("no AI agent configured (agent.default or agent.profiles.<name>.flow.retro)");
+      throw new Error("no AI agent configured (agent.default or agent.profiles.<name>.flow.finalize.retro)");
     }
 
     // Build prompt and call AI

@@ -242,7 +242,7 @@ function checkGuardrail(root, targetText, config, phase, role) {
   const guardrails = loadMergedGuardrails(root);
   if (guardrails.length === 0) return null;
 
-  const agent = resolveAgent(config, "spec.gate");
+  const agent = resolveAgent(config, "flow.spec.gate");
   if (!agent) return null;
 
   const prompt = buildGuardrailPrompt(targetText, guardrails, phase, role);
@@ -447,8 +447,8 @@ export class RunGateCommand extends FlowCommand {
     }
 
     // Requirements check via AI
-    const agent = resolveAgent(ctx.config, "spec.gate");
-    if (!agent) throw new Error("no AI agent configured (agent.default or agent.profiles.<name>.spec.gate)");
+    const agent = resolveAgent(ctx.config, "flow.spec.gate");
+    if (!agent) throw new Error("no AI agent configured (agent.default or agent.profiles.<name>.flow.spec.gate)");
 
     const reqPrompt = buildImplCheckPrompt(specText, diff);
     const reqResponse = callAgentWithLog(agent, reqPrompt);

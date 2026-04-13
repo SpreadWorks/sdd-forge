@@ -215,7 +215,7 @@ function aiSearch(allEntries, analysis, query, root) {
 
   let config;
   try { config = loadConfig(root); } catch (_) { config = {}; }
-  const agent = resolveAgent(config, "context.search");
+  const agent = resolveAgent(config, "flow.context.search");
   if (!agent) return fallbackSearch(allEntries, query);
 
   const prompt = buildKeywordSelectionPrompt(allKeywords, query);

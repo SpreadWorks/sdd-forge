@@ -4,6 +4,23 @@
 
 ### Breaking Changes
 
+#### Agent command ID renamed to phase-based hierarchy
+
+Agent profile command IDs have been systematically renamed along phase-based axes.
+If you have custom `agent.profiles` entries with old command IDs, update the keys manually.
+
+| Before | After |
+|---|---|
+| `context.search` | `flow.context.search` |
+| `spec.gate` | `flow.spec.gate` |
+| `flow.review.spec` | `flow.spec.review` |
+| `flow.review.draft` | `flow.impl.review.draft` |
+| `flow.review.final` | `flow.impl.review.final` |
+| `flow.review.test` | `flow.test.review` |
+| `flow.retro` | `flow.finalize.retro` |
+
+**Migration:** Open `.sdd-forge/config.json` and replace old keys in `agent.profiles.<name>` with the new names shown above. If you used `flow.review` as a prefix for bulk assignment, either set each new ID individually or use the `flow` prefix for all flow commands.
+
 #### Agent configuration redesign — `agent.commands` and `agent.providers.*.profiles` removed
 
 The following fields are no longer recognized and will be silently ignored:

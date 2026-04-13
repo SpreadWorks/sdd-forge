@@ -499,7 +499,7 @@ async function runTestReview(root, flow, config, dryRun) {
     process.exit(EXIT_ERROR);
   }
 
-  const agent = loadAgentConfig(config, "flow.review.test");
+  const agent = loadAgentConfig(config, "flow.test.review");
   ensureAgentWorkDir(agent, root);
 
   // Step 1: Generate test design
@@ -683,9 +683,9 @@ async function runSpecReview(root, flow, config, dryRun) {
     console.error(`  [spec-review] Warning: failed to load codebase context: ${e.message}`);
   }
 
-  const agent = loadAgentConfig(config, "flow.review.spec");
+  const agent = loadAgentConfig(config, "flow.spec.review");
   ensureAgentWorkDir(agent, root);
-  const validationAgent = loadAgentConfig(config, "flow.review.final");
+  const validationAgent = loadAgentConfig(config, "flow.impl.review.final");
   ensureAgentWorkDir(validationAgent, root);
 
   const { history, finalIssues, verdict } = await runReviewLoop({
@@ -829,7 +829,7 @@ async function main() {
 
   // --- Draft phase ---
   console.error("  [draft] Generating proposals...");
-  const draftAgent = loadAgentConfig(config, "flow.review.draft");
+  const draftAgent = loadAgentConfig(config, "flow.impl.review.draft");
   ensureAgentWorkDir(draftAgent, root);
   const draftResult = await callReviewAgent(draftAgent, diff, root, buildDraftSystemPrompt());
 
@@ -852,7 +852,7 @@ async function main() {
 
   // --- Final phase ---
   console.error("  [final] Validating proposals...");
-  const finalAgent = loadAgentConfig(config, "flow.review.final");
+  const finalAgent = loadAgentConfig(config, "flow.impl.review.final");
   ensureAgentWorkDir(finalAgent, root);
   const finalPrompt = [
     "Validate these refactoring proposals:",

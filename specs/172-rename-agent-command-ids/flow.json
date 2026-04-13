@@ -1,0 +1,176 @@
+{
+  "spec": "specs/172-rename-agent-command-ids/spec.md",
+  "baseBranch": "main",
+  "featureBranch": "feature/172-rename-agent-command-ids",
+  "runId": "3fa6abf3-e12f-4e44-8379-cbf86c8b641d",
+  "lifecycle": "active",
+  "steps": [
+    {
+      "id": "approach",
+      "status": "done"
+    },
+    {
+      "id": "branch",
+      "status": "done"
+    },
+    {
+      "id": "prepare-spec",
+      "status": "pending"
+    },
+    {
+      "id": "draft",
+      "status": "done"
+    },
+    {
+      "id": "gate-draft",
+      "status": "done"
+    },
+    {
+      "id": "spec",
+      "status": "done"
+    },
+    {
+      "id": "gate",
+      "status": "done"
+    },
+    {
+      "id": "approval",
+      "status": "done"
+    },
+    {
+      "id": "test",
+      "status": "done"
+    },
+    {
+      "id": "implement",
+      "status": "done"
+    },
+    {
+      "id": "gate-impl",
+      "status": "done"
+    },
+    {
+      "id": "review",
+      "status": "done"
+    },
+    {
+      "id": "finalize",
+      "status": "pending"
+    },
+    {
+      "id": "commit",
+      "status": "pending"
+    },
+    {
+      "id": "push",
+      "status": "pending"
+    },
+    {
+      "id": "merge",
+      "status": "pending"
+    },
+    {
+      "id": "pr-create",
+      "status": "pending"
+    },
+    {
+      "id": "branch-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "pr-merge",
+      "status": "pending"
+    },
+    {
+      "id": "sync-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "docs-update",
+      "status": "pending"
+    },
+    {
+      "id": "docs-review",
+      "status": "pending"
+    },
+    {
+      "id": "docs-commit",
+      "status": "pending"
+    }
+  ],
+  "requirements": [
+    {
+      "desc": "コマンドID文字列の変更（get-context.js, run-gate.js, review.js, run-retro.js）",
+      "status": "done"
+    },
+    {
+      "desc": "config.example.json の更新",
+      "status": "done"
+    },
+    {
+      "desc": "sdd-forge upgrade の実行",
+      "status": "done"
+    },
+    {
+      "desc": "CHANGELOG に対応表+マイグレーション手順を記載",
+      "status": "done"
+    }
+  ],
+  "issue": 141,
+  "request": "エージェントプロファイルのコマンドID命名をフェーズ軸で体系化リネームする",
+  "worktree": true,
+  "notes": [
+    "approach: [1] Q&A draft",
+    "draft Q1: flow.commands.context.search.mode はスコープ外。コマンドIDリネームのみ対象",
+    "draft Q2: alpha版ポリシーで旧ID即時廃止。マイグレーション対応なし",
+    "draft Q3: プレフィックスマッチの破壊は意図的。フェーズ軸体系化を優先",
+    "draft Q4: テストは既存テスト通過+grep検証のみ。新規テスト追加なし",
+    "review: 6件の提案あり。全てスコープ外のため適用なし"
+  ],
+  "metrics": {
+    "plan": {
+      "docsRead": 1
+    },
+    "draft": {
+      "docsRead": 1,
+      "srcRead": 2,
+      "question": 4
+    },
+    "gate-draft": {
+      "tokens": {
+        "input": 8,
+        "output": 2993,
+        "cacheRead": 47696,
+        "cacheCreation": 40155
+      },
+      "cost": 0.20980905000000002,
+      "callCount": 4,
+      "responseChars": 4839
+    },
+    "gate": {
+      "tokens": {
+        "input": 2,
+        "output": 595,
+        "cacheRead": 11924,
+        "cacheCreation": 10735
+      },
+      "cost": 0.052764450000000004,
+      "callCount": 1,
+      "responseChars": 1067
+    },
+    "gate-impl": {
+      "tokens": {
+        "input": 10,
+        "output": 2019,
+        "cacheRead": 59620,
+        "cacheCreation": 101934
+      },
+      "cost": 0.43045350000000004,
+      "callCount": 5,
+      "responseChars": 3411
+    },
+    "impl": {
+      "issueLog": 1
+    }
+  }
+}

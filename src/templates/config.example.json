@@ -44,13 +44,13 @@
         "docs.readme":       "claude/sonnet",
         "docs.agents":       "claude/opus",
         "docs.translate":    "codex/gpt-5.4",
-        "spec.gate":         "claude/sonnet",
-        "flow.review.draft": "codex/gpt-5.4",
-        "flow.review.final": "claude/opus",
-        "flow.review.test":  "claude/sonnet",
-        "flow.review.spec":  "claude/sonnet",
-        "flow.retro":        "claude/sonnet",
-        "context.search":    "claude/sonnet"
+        "flow.spec.gate":         "claude/sonnet",
+        "flow.spec.review":       "claude/sonnet",
+        "flow.impl.review.draft": "codex/gpt-5.4",
+        "flow.impl.review.final": "claude/opus",
+        "flow.test.review":       "claude/sonnet",
+        "flow.finalize.retro":    "claude/sonnet",
+        "flow.context.search":    "claude/sonnet"
       }
     }
   }

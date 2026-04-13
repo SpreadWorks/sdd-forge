@@ -1,0 +1,68 @@
+{
+  "spec": "specs/172-rename-agent-command-ids/spec.md",
+  "date": "2026-04-13T15:00:03.545Z",
+  "requirements": [
+    {
+      "desc": "コマンドID文字列の変更（get-context.js, run-gate.js, review.js, run-retro.js）",
+      "status": "done",
+      "note": "4ファイルで旧ID→新IDへの置換が実施され、run-gate.js / run-retro.js のエラーメッセージ内IDも新IDに更新されている。"
+    },
+    {
+      "desc": "config.example.json の更新",
+      "status": "done",
+      "note": "src/templates/config.example.json のプロファイル例キーが対応表どおり新IDへ更新されている。"
+    },
+    {
+      "desc": "sdd-forge upgrade の実行",
+      "status": "done",
+      "note": "diff上で実行結果ファイルの直接検証は不要要件。spec運用ファイル（flow.json/issue-log.json）上では実行済みとして記録されている。"
+    },
+    {
+      "desc": "CHANGELOG に対応表+マイグレーション手順を記載",
+      "status": "done",
+      "note": "CHANGELOG.md に旧→新ID対応表と、agent.profiles更新手順・flow.reviewプレフィックス利用時の移行手順が記載されている。"
+    }
+  ],
+  "unplanned": [
+    {
+      "file": "specs/172-rename-agent-command-ids/draft.md",
+      "change": "要件外の仕様ドラフト文書を新規追加。"
+    },
+    {
+      "file": "specs/172-rename-agent-command-ids/flow.json",
+      "change": "要件外のフロー進捗管理ファイルを新規追加。"
+    },
+    {
+      "file": "specs/172-rename-agent-command-ids/issue-log.json",
+      "change": "要件外の実装・ゲート記録ログを新規追加。"
+    },
+    {
+      "file": "specs/172-rename-agent-command-ids/qa.md",
+      "change": "要件外のQ&A補助文書を新規追加。"
+    },
+    {
+      "file": "specs/172-rename-agent-command-ids/review.md",
+      "change": "要件外のコードレビュー結果文書を新規追加。"
+    },
+    {
+      "file": "specs/172-rename-agent-command-ids/spec.md",
+      "change": "要件外の仕様書本体を新規追加。"
+    },
+    {
+      "file": "specs/172-rename-agent-command-ids/tests/README.md",
+      "change": "要件外のspec専用テストREADMEを新規追加。"
+    },
+    {
+      "file": "specs/172-rename-agent-command-ids/tests/verify-rename.test.js",
+      "change": "要件外のspec専用検証テストを新規追加。"
+    }
+  ],
+  "summary": {
+    "total": 4,
+    "done": 4,
+    "partial": 0,
+    "not_done": 0,
+    "rate": 1,
+    "notes": "要件4件はいずれも満たしている。加えて、requirements listには含まれていないspec管理・記録・検証用ファイル群が新規追加されている。"
+  }
+}

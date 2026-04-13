@@ -1,0 +1,42 @@
+{
+  "data": {
+    "implementation": {
+      "diffStat": "CHANGELOG.md                                       |  17 ++\n specs/172-rename-agent-command-ids/draft.md        |  67 ++++++++\n specs/172-rename-agent-command-ids/flow.json       | 176 +++++++++++++++++++++\n specs/172-rename-agent-command-ids/issue-log.json  |  72 +++++++++\n specs/172-rename-agent-command-ids/qa.md           |   9 ++\n specs/172-rename-agent-command-ids/review.md       |  34 ++++\n specs/172-rename-agent-command-ids/spec.md         |  92 +++++++++++\n specs/172-rename-agent-command-ids/tests/README.md |  23 +++\n .../tests/verify-rename.test.js                    |  82 ++++++++++\n src/flow/commands/review.js                        |  10 +-\n src/flow/lib/get-context.js                        |   2 +-\n src/flow/lib/run-gate.js                           |   6 +-\n src/flow/lib/run-retro.js                          |   4 +-\n src/templates/config.example.json                  |  14 +-\n 14 files changed, 590 insertions(+), 18 deletions(-)",
+      "commits": [
+        "feat: feature/172-rename-agent-command-ids"
+      ]
+    },
+    "retro": {
+      "total": 4,
+      "done": 4,
+      "partial": 0,
+      "not_done": 0,
+      "rate": 1,
+      "notes": "要件4件はいずれも満たしている。加えて、requirements listには含まれていないspec管理・記録・検証用ファイル群が新規追加されている。"
+    },
+    "issueLog": {
+      "count": 0,
+      "entries": []
+    },
+    "metrics": {
+      "docsRead": 2,
+      "srcRead": 2,
+      "question": 4,
+      "issueLog": 1
+    },
+    "tokenMetrics": {
+      "input": 20,
+      "output": 5607,
+      "cacheRead": 119240,
+      "cacheCreation": 152824,
+      "cost": 0.6930270000000001,
+      "callCount": 10
+    },
+    "tests": null,
+    "sync": {
+      "status": "skipped",
+      "reason": "sync was skipped"
+    }
+  },
+  "text": "  Report\n\n  Implementation\n  ────────────────────────────────────────────────\n    feat: feature/172-rename-agent-command-ids\n    14 files changed, 590 insertions(+), 18 deletions(-)\n\n  Retro\n  ────────────────────────────────────────────────\n    ████████ 100%  (4 done / 0 partial / 0 miss)\n\n  Metrics\n  ────────────────────────────────────────────────\n    docs read ................... 2\n    src read .................... 2\n    Q&A ......................... 4\n    issue-log ................... 1\n    agent calls ................. 10\n    input tokens ................ 20\n    output tokens ............... 5,607\n    cache-read tokens ........... 119,240\n    cache-create tokens ......... 152,824\n    cost ........................ $0.6930\n\n  Tests\n  ────────────────────────────────────────────────\n    -"
+}
