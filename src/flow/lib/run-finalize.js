@@ -84,6 +84,40 @@ export function commitOrSkip(args, opts) {
   assertOk(res, "commit failed");
 }
 
+export function resolveGitCommonDir(root) {
+  const res = runCmd("git", ["-C", root, "rev-parse", "--git-common-dir"]);
+  assertOk(res, "finalize preflight failed: unable to resolve git common dir");
+  return path.resolve(root, res.stdout.trim());
+}
+
+function buildFinalizePreflightError(err) {
+  const msg = [
+    `finalize preflight failed: ${err.message}`,
+    "Help:",
+    "- This environment cannot write under .git (lock file creation failed).",
+    "- Run finalize in a writable shell or with elevated permissions.",
+    "- Run: sdd-forge flow run finalize --help",
+  ].join("\n");
+  const e = new Error(msg);
+  e.code = "FINALIZE_PREFLIGHT_FAILED";
+  return e;
+}
+
+export async function assertGitWriteAccess(gitDir) {
+  const lockPath = path.join(gitDir, `.finalize-preflight-${process.pid}-${Date.now()}.lock`);
+  try {
+    await fs.promises.writeFile(lockPath, "preflight");
+    await fs.promises.unlink(lockPath);
+  } catch (err) {
+    throw buildFinalizePreflightError(err);
+  }
+}
+
+export async function runFinalizePreflight(root) {
+  const gitDir = resolveGitCommonDir(root);
+  await assertGitWriteAccess(gitDir);
+}
+
 export const STEP_MAP = {
   1: "commit",
   2: "merge",
@@ -218,6 +252,10 @@ export class RunFinalizeCommand extends FlowCommand {
     }
 
     const state = ctx.flowState;
+
+    if (!dryRun) {
+      await runFinalizePreflight(root);
+    }
 
     // Resolve merge strategy: explicit > auto
     const mergeStrategy = mergeStrategyInput || "auto";

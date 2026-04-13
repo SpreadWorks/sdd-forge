@@ -1,0 +1,43 @@
+{
+  "data": {
+    "implementation": {
+      "diffStat": "specs/171-finalize-preflight/flow.json         | 165 +++++++++++++++++++++++++\n specs/171-finalize-preflight/issue-log.json    |  40 ++++++\n specs/171-finalize-preflight/qa.md             |   9 ++\n specs/171-finalize-preflight/review.md         |  33 +++++\n specs/171-finalize-preflight/spec.md           |  54 ++++++++\n specs/171-finalize-preflight/tests/README.md   |  20 +++\n src/flow/lib/run-finalize.js                   |  38 ++++++\n tests/unit/flow/run-finalize-preflight.test.js |  42 +++++++\n 8 files changed, 401 insertions(+)",
+      "commits": [
+        "feat: feature/171-finalize-preflight",
+        "add finalize preflight for git write access"
+      ]
+    },
+    "retro": {
+      "total": 5,
+      "done": 3,
+      "partial": 2,
+      "not_done": 0,
+      "rate": 0.8,
+      "notes": "コア挙動（R1, R2, R5）は差分で満たしている。R3 と R4 は設計上満たしている可能性は高いが、`ok:false` と終了コード1をこの差分のみでは確証できず partial。"
+    },
+    "issueLog": {
+      "count": 0,
+      "entries": []
+    },
+    "metrics": {
+      "docsRead": 0,
+      "srcRead": 0,
+      "question": 0,
+      "issueLog": 2
+    },
+    "tokenMetrics": {
+      "input": 15,
+      "output": 7024,
+      "cacheRead": 146801,
+      "cacheCreation": 68563,
+      "cost": 0.40655654999999996,
+      "callCount": 6
+    },
+    "tests": null,
+    "sync": {
+      "status": "skipped",
+      "reason": "sync was skipped"
+    }
+  },
+  "text": "  Report\n\n  Implementation\n  ────────────────────────────────────────────────\n    feat: feature/171-finalize-preflight\n    add finalize preflight for git write access\n    8 files changed, 401 insertions(+)\n\n  Retro\n  ────────────────────────────────────────────────\n    ██████░░ 80%  (3 done / 2 partial / 0 miss)\n\n  Metrics\n  ────────────────────────────────────────────────\n    docs read ................... 0\n    src read .................... 0\n    Q&A ......................... 0\n    issue-log ................... 2\n    agent calls ................. 6\n    input tokens ................ 15\n    output tokens ............... 7,024\n    cache-read tokens ........... 146,801\n    cache-create tokens ......... 68,563\n    cost ........................ $0.4066\n\n  Tests\n  ────────────────────────────────────────────────\n    -"
+}

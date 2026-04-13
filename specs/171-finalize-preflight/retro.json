@@ -1,0 +1,69 @@
+{
+  "spec": "specs/171-finalize-preflight/spec.md",
+  "date": "2026-04-13T12:50:22.481Z",
+  "requirements": [
+    {
+      "desc": "R1. finalize 実行前に .git 書き込み可否 preflight を必須化",
+      "status": "done",
+      "note": "`RunFinalizeCommand.execute()` で本処理前に `runFinalizePreflight(root)` を実行している。"
+    },
+    {
+      "desc": "R2. preflight 失敗時は commit/merge/sync/cleanup を開始せず終了",
+      "status": "done",
+      "note": "preflight が `await` され、失敗時は例外で後続ステップ処理に進まない。"
+    },
+    {
+      "desc": "R3. preflight 失敗時は理由と次アクションを含む help を返す",
+      "status": "partial",
+      "note": "理由と次アクション付き help 文言は実装済みだが、`ok: false` をこの差分単体では直接確認できない。"
+    },
+    {
+      "desc": "R4. preflight 失敗時の終了コードは 1",
+      "status": "partial",
+      "note": "preflight 失敗時に例外は投げるが、終了コード 1 の明示設定は差分内にない（上位ハンドラ依存）。"
+    },
+    {
+      "desc": "R5. preflight 成功/失敗を単体テストで固定",
+      "status": "done",
+      "note": "`tests/unit/flow/run-finalize-preflight.test.js` で writable/readonly の成功・失敗を検証している。"
+    }
+  ],
+  "unplanned": [
+    {
+      "file": "specs/171-finalize-preflight/flow.json",
+      "change": "実装要件評価とは別のワークフロー進捗・メトリクス情報を新規追加。"
+    },
+    {
+      "file": "specs/171-finalize-preflight/issue-log.json",
+      "change": "ゲート判定履歴・運用ログを新規追加。"
+    },
+    {
+      "file": "specs/171-finalize-preflight/qa.md",
+      "change": "仕様確認用 Q&A テンプレートを新規追加。"
+    },
+    {
+      "file": "specs/171-finalize-preflight/review.md",
+      "change": "レビュー所見（採否含む）を新規追加。"
+    },
+    {
+      "file": "specs/171-finalize-preflight/spec.md",
+      "change": "機能仕様ドキュメント本体を新規追加。"
+    },
+    {
+      "file": "specs/171-finalize-preflight/tests/README.md",
+      "change": "テスト方針・実行方法の説明ドキュメントを新規追加。"
+    },
+    {
+      "file": "tests/unit/flow/run-finalize-preflight.test.js",
+      "change": "実行順序の確認をソース文字列マッチで検証するテストを追加（要件に直接明記なし）。"
+    }
+  ],
+  "summary": {
+    "total": 5,
+    "done": 3,
+    "partial": 2,
+    "not_done": 0,
+    "rate": 0.8,
+    "notes": "コア挙動（R1, R2, R5）は差分で満たしている。R3 と R4 は設計上満たしている可能性は高いが、`ok:false` と終了コード1をこの差分のみでは確証できず partial。"
+  }
+}

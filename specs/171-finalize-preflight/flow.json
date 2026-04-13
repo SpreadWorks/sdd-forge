@@ -1,0 +1,165 @@
+{
+  "spec": "specs/171-finalize-preflight/spec.md",
+  "baseBranch": "main",
+  "featureBranch": "feature/171-finalize-preflight",
+  "steps": [
+    {
+      "id": "approach",
+      "status": "done"
+    },
+    {
+      "id": "branch",
+      "status": "done"
+    },
+    {
+      "id": "prepare-spec",
+      "status": "pending"
+    },
+    {
+      "id": "draft",
+      "status": "skipped"
+    },
+    {
+      "id": "gate-draft",
+      "status": "skipped"
+    },
+    {
+      "id": "spec",
+      "status": "done"
+    },
+    {
+      "id": "gate",
+      "status": "done"
+    },
+    {
+      "id": "approval",
+      "status": "done"
+    },
+    {
+      "id": "test",
+      "status": "done"
+    },
+    {
+      "id": "implement",
+      "status": "done"
+    },
+    {
+      "id": "gate-impl",
+      "status": "done"
+    },
+    {
+      "id": "review",
+      "status": "done"
+    },
+    {
+      "id": "finalize",
+      "status": "pending"
+    },
+    {
+      "id": "commit",
+      "status": "pending"
+    },
+    {
+      "id": "push",
+      "status": "pending"
+    },
+    {
+      "id": "merge",
+      "status": "pending"
+    },
+    {
+      "id": "pr-create",
+      "status": "pending"
+    },
+    {
+      "id": "branch-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "pr-merge",
+      "status": "pending"
+    },
+    {
+      "id": "sync-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "docs-update",
+      "status": "pending"
+    },
+    {
+      "id": "docs-review",
+      "status": "pending"
+    },
+    {
+      "id": "docs-commit",
+      "status": "pending"
+    }
+  ],
+  "requirements": [
+    {
+      "desc": "R1. finalize 実行前に .git 書き込み可否 preflight を必須化",
+      "status": "done"
+    },
+    {
+      "desc": "R2. preflight 失敗時は commit/merge/sync/cleanup を開始せず終了",
+      "status": "done"
+    },
+    {
+      "desc": "R3. preflight 失敗時は理由と次アクションを含む help を返す",
+      "status": "done"
+    },
+    {
+      "desc": "R4. preflight 失敗時の終了コードは 1",
+      "status": "done"
+    },
+    {
+      "desc": "R5. preflight 成功/失敗を単体テストで固定",
+      "status": "done"
+    }
+  ],
+  "request": "flow run finalize 実行前に .git 書き込み可否の preflight を実装し、read-only時は即時に明確なエラーとヘルプを返す",
+  "worktree": true,
+  "notes": [
+    "draft: skipped (single clear request from user)",
+    "test: added run-finalize preflight unit tests and spec test README"
+  ],
+  "metrics": {
+    "spec": {
+      "tokens": {
+        "input": 2,
+        "output": 698,
+        "cacheRead": 11766,
+        "cacheCreation": 9872
+      },
+      "cost": 0.0510258,
+      "callCount": 1,
+      "responseChars": 1217
+    },
+    "implement": {
+      "tokens": {
+        "input": 11,
+        "output": 3930,
+        "cacheRead": 113214,
+        "cacheCreation": 58691
+      },
+      "cost": 0.31303844999999997,
+      "callCount": 4,
+      "responseChars": 3942
+    },
+    "gate-impl": {
+      "tokens": {
+        "input": 2,
+        "output": 2396,
+        "cacheRead": 21821,
+        "cacheCreation": 0
+      },
+      "cost": 0.0424923,
+      "callCount": 1,
+      "responseChars": 746
+    },
+    "impl": {
+      "issueLog": 2
+    }
+  }
+}

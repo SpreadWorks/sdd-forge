@@ -1,0 +1,40 @@
+{
+  "entries": [
+    {
+      "step": "gate-impl",
+      "reason": "R1. flow run finalize は本処理前に preflight を必ず実行する — `RunFinalizeCommand.execute()` 内で `runFinalizePreflight(root)` を本処理（commit/merge/sync/cleanup）より前に呼び出している; R2. preflight 失敗時は commit/merge/sync/cleanup を開始せずに終了する — `runFinalizePreflight` が throw すると以降のステップ処理に到達しない; R3. preflight 失敗時のエラーは ok:false で理由と次アクションを含む help を返す — `buildFinalizePreflightError` が read-only 理由と `sdd-forge flow run finalize --help` の次アクションを含むメッセージを生成し、`e.code = \"FINALIZE_PREFLIGHT_FAILED\"` を設定している（ok:false は上位の FlowCommand envelope が担う設計）; R4. preflight 失敗時の CLI 終了コードは 1 — throw された Error は上位ハンドラで捕捉されエラーコード 1 で終了する（既存パターンと同様）; R5. preflight の成功/失敗を単体テストで固定する — `tests/unit/flow/run-finalize-preflight.test.js` が書き込み可能・read-only 両ケースをテストしている; No Hardcoded Secrets — コード内にAPIキー・パスワード・トークン等のハードコードなし。; No Silent Error Swallowing — `assertGitWriteAccess` の catch ブロックは `buildFinalizePreflightError` でラップして再 throw している。; Bounded Resource Usage — 再帰・リトライ・バルクロードなし。単一ファイル書き込みのみ。; No Sensitive Data in Logs — エラーメッセージには PID・タイムスタンプのみ含まれ、機密情報なし。; No Disabling Existing Tests — 既存テストの skip・削除・コメントアウトなし。; Escalate When New Tests Break Existing Tests — 差分にテスト修正なし。この判定は実行結果次第だが、既存テストへの干渉は見られない。; Do Not Modify Existing Tests Without Approval — 既存テストファイルの変更なし。; Flag Tests That Become Irrelevant — 仕様変更ではなく機能追加のため、既存テストが無効化される要因なし。; Exit Code Contract — preflight 失敗時は Error を throw し、呼び出し元 CLI が非ゼロ終了コードを返す設計。仕様 R4 でも exit code 1 を明示。; No Synchronous I/O in Hot Paths — `assertGitWriteAccess` 内で `fs.writeFileSync` / `fs.unlinkSync` を使用。`RunFinalizeCommand` の実行パスはループではないが、同期 I/O を使用している点は規約違反。非同期 API（`fs.promises.writeFile` / `fs.promises.unlink`）に変更すべき。; Validate User Input at Entry Point — preflight は `root` を引数に受け取るが、入力バリデーションはエントリポイント（`RunFinalizeCommand`）で既存の flow 検証が行われており、新規追加関数は内部インターフェースとして適切に信頼している。",
+      "trigger": "gate post hook (auto)",
+      "timestamp": "2026-04-13T11:56:09.838Z"
+    },
+    {
+      "step": "gate-impl",
+      "reason": "R1. flow run finalize は本処理前に preflight を実行 — `RunFinalizeCommand` 内で merge 戦略解決より前に `runFinalizePreflight(root)` を呼び出している（dryRun 時のみスキップ、本処理も dryRun では実行されないため整合）; R2. preflight 失敗時に commit/merge/sync/cleanup を開始しない — `runFinalizePreflight` が throw した場合、後続の全ステップに到達しない; R3. preflight 失敗エラーに read — only 理由と次アクション help を含む — `buildFinalizePreflightError` が \"cannot write under .git\" と \"Run finalize in a writable shell\" などの help を error message に含め throw する（ok:false への変換は FlowCommand 基底クラスが担うアーキテクチャ）; R4. preflight 失敗時の CLI 終了コードは 1 — diff 内に exit code 1 を明示するコードが存在せず、CLI 層での処理は確認できない; R5. preflight の成功/失敗の単体テストを追加 — `tests/unit/flow/run-finalize-preflight.test.js` は git status で untracked として存在するが、提供された diff に含まれていない",
+      "trigger": "gate post hook (auto)",
+      "timestamp": "2026-04-13T12:00:09.707Z"
+    },
+    {
+      "step": "implement",
+      "reason": "gate-impl evaluated committed diff only; uncommitted changes were not reflected and caused false fail",
+      "trigger": "sdd-forge flow run gate --phase impl",
+      "resolution": "create implementation commit before gate-impl and rerun",
+      "timestamp": "2026-04-13T12:00:43.297Z"
+    },
+    {
+      "step": "commit",
+      "reason": "commit failed: exit=128 | fatal: Unable to create '/home/nakano/workspace/sdd-forge/.git/worktrees/feature-171-finalize-preflight/index.lock': Read-only file system\n",
+      "timestamp": "2026-04-13T12:49:25.248Z"
+    },
+    {
+      "step": "merge",
+      "reason": "Merge conflict detected. Run 'git rebase main' in the worktree and retry finalize.",
+      "timestamp": "2026-04-13T12:49:25.267Z"
+    },
+    {
+      "step": "finalize",
+      "reason": "finalize commit failed: unable to create worktree index.lock (Read-only file system)",
+      "trigger": "sdd-forge flow run finalize --mode all",
+      "resolution": "retry finalize with elevated permissions",
+      "timestamp": "2026-04-13T12:49:42.265Z"
+    }
+  ]
+}
