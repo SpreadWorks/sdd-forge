@@ -1,0 +1,204 @@
+{
+  "spec": "specs/175-fix-flow-test-phase-quality/spec.md",
+  "baseBranch": "main",
+  "featureBranch": "feature/175-fix-flow-test-phase-quality",
+  "runId": "516fdb2d-05e0-475c-8a74-e5eae2184b90",
+  "lifecycle": "active",
+  "steps": [
+    {
+      "id": "approach",
+      "status": "done"
+    },
+    {
+      "id": "branch",
+      "status": "done"
+    },
+    {
+      "id": "prepare-spec",
+      "status": "pending"
+    },
+    {
+      "id": "draft",
+      "status": "done"
+    },
+    {
+      "id": "gate-draft",
+      "status": "done"
+    },
+    {
+      "id": "spec",
+      "status": "done"
+    },
+    {
+      "id": "gate",
+      "status": "done"
+    },
+    {
+      "id": "approval",
+      "status": "done"
+    },
+    {
+      "id": "test",
+      "status": "done"
+    },
+    {
+      "id": "implement",
+      "status": "done"
+    },
+    {
+      "id": "gate-impl",
+      "status": "done"
+    },
+    {
+      "id": "review",
+      "status": "done"
+    },
+    {
+      "id": "finalize",
+      "status": "pending"
+    },
+    {
+      "id": "commit",
+      "status": "pending"
+    },
+    {
+      "id": "push",
+      "status": "pending"
+    },
+    {
+      "id": "merge",
+      "status": "pending"
+    },
+    {
+      "id": "pr-create",
+      "status": "pending"
+    },
+    {
+      "id": "branch-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "pr-merge",
+      "status": "pending"
+    },
+    {
+      "id": "sync-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "docs-update",
+      "status": "pending"
+    },
+    {
+      "id": "docs-review",
+      "status": "pending"
+    },
+    {
+      "id": "docs-commit",
+      "status": "pending"
+    }
+  ],
+  "requirements": [
+    {
+      "desc": "R1: plan.test-mode description を「テストを実行するか選択してください。」に変更する",
+      "status": "done"
+    },
+    {
+      "desc": "R2: ja 版選択肢を [実行する, 実行しない, その他] に変更する",
+      "status": "done"
+    },
+    {
+      "desc": "R3: en 版を Run tests? / [Run, Skip, Other] に変更する",
+      "status": "done"
+    },
+    {
+      "desc": "R4: flow-plan テストフェーズで plan.test-mode 提示前の自動判断を禁止する",
+      "status": "done"
+    },
+    {
+      "desc": "R5: flow-plan SKILL.md テンプレートのテストフェーズ冒頭に CRITICAL STOP を追加する",
+      "status": "done"
+    },
+    {
+      "desc": "R6: flow get test-result が flow.json summary とテストログを返す",
+      "status": "done"
+    },
+    {
+      "desc": "R7: テストログ不在時は log: null を返す（exit 0）",
+      "status": "done"
+    },
+    {
+      "desc": "R7a: flow.json 不在時は非ゼロ exit code でエラーを返す",
+      "status": "done"
+    },
+    {
+      "desc": "R8: gate-impl がテスト実行証跡を参照してテスト実行要件を判定する",
+      "status": "done"
+    },
+    {
+      "desc": "R9: テスト実行証跡なし時、gate-impl はテスト実行要件を SKIP として扱う",
+      "status": "done"
+    },
+    {
+      "desc": "R10: テストフェーズでテスト出力を agent.workDir 配下に保存する",
+      "status": "done"
+    }
+  ],
+  "issue": 146,
+  "request": "flow テストフェーズの品質改善（test-mode設問変更、CRITICAL STOP追加、gate-impl改善）",
+  "worktree": true,
+  "metrics": {
+    "plan": {
+      "docsRead": 1
+    },
+    "draft": {
+      "srcRead": 1,
+      "question": 6,
+      "callCount": 8,
+      "responseChars": 7695,
+      "tokens": {
+        "input": 43100,
+        "output": 6959,
+        "cacheRead": 96128,
+        "cacheCreation": 0
+      }
+    },
+    "spec": {
+      "tokens": {
+        "input": 21461,
+        "output": 1842,
+        "cacheRead": 19968,
+        "cacheCreation": 0
+      },
+      "callCount": 2,
+      "responseChars": 2998
+    },
+    "impl": {
+      "srcRead": 1,
+      "issueLog": 1
+    },
+    "gate-impl": {
+      "tokens": {
+        "input": 286352,
+        "output": 11579,
+        "cacheRead": 98560,
+        "cacheCreation": 0
+      },
+      "callCount": 10,
+      "responseChars": 13353
+    }
+  },
+  "notes": [
+    "draft: 3点の修正確認済み。test-mode設問変更、CRITICAL STOP追加、buildImplCheckPrompt改善",
+    "impl: 方針承認。5ファイル変更: get-prompt.js, SKILL.md, get-test-result.js(新規), registry.js, run-gate.js",
+    "review: [1] コードレビューを行い改善を自動で行う",
+    "finalize: [1] すべて実行"
+  ],
+  "test": {
+    "summary": {
+      "unit": 7,
+      "integration": 0,
+      "acceptance": 0
+    }
+  }
+}

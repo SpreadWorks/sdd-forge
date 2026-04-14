@@ -1,3 +1,5 @@
+import fs from "fs";
+import path from "path";
 import { saveFlowState, addActiveFlow, FLOW_STEPS } from "../../src/lib/flow-state.js";
 
 export function makeFlowState(overrides = {}) {
@@ -26,4 +28,18 @@ export function setStepDone(state, ...ids) {
     const step = state.steps.find((s) => s.id === id);
     if (step) step.status = "done";
   }
+}
+
+/**
+ * Write a .sdd-forge/config.json with the given language into tmp.
+ * Used by prompt tests that require language-aware output.
+ */
+export function setupFlowConfig(tmp, lang) {
+  const sddDir = path.join(tmp, ".sdd-forge");
+  fs.mkdirSync(sddDir, { recursive: true });
+  fs.writeFileSync(path.join(sddDir, "config.json"), JSON.stringify({
+    lang,
+    type: "base",
+    docs: { languages: [lang], defaultLanguage: lang },
+  }));
 }

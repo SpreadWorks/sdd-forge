@@ -1,0 +1,47 @@
+{
+  "data": {
+    "implementation": {
+      "diffStat": "specs/175-fix-flow-test-phase-quality/draft.md     |  73 ++++++++\n specs/175-fix-flow-test-phase-quality/flow.json    | 203 +++++++++++++++++++++\n .../175-fix-flow-test-phase-quality/issue-log.json |  88 +++++++++\n specs/175-fix-flow-test-phase-quality/qa.md        |   9 +\n specs/175-fix-flow-test-phase-quality/review.md    |  49 +++++\n specs/175-fix-flow-test-phase-quality/spec.md      | 104 +++++++++++\n .../tests/README.md                                |  34 ++++\n .../tests/test-phase-quality.test.js               |  32 ++++\n src/flow/lib/get-prompt.js                         |  12 +-\n src/flow/lib/get-test-result.js                    |  90 +++++++++\n src/flow/lib/run-gate.js                           |  62 ++++++-\n src/flow/registry.js                               |   5 +\n src/templates/skills/sdd-forge.flow-plan/SKILL.md  |   5 +\n tests/helpers/flow-setup.js                        |  16 ++\n tests/unit/flow/get-test-result.test.js            |  85 +++++++++\n tests/unit/flow/prompt-i18n.test.js                |  28 +--\n tests/unit/flow/prompt-test-mode.test.js           |  61 +++++--\n 17 files changed, 906 insertions(+), 50 deletions(-)",
+      "commits": [
+        "feat: feature/175-fix-flow-test-phase-quality"
+      ]
+    },
+    "retro": {
+      "total": 11,
+      "done": 8,
+      "partial": 3,
+      "not_done": 0,
+      "rate": 0.86,
+      "notes": "P1/P2 は実装差分上で満たされている。P3 も主要部分は実装されているが、R8/R9/R10 は『コマンド戻り値の直接利用』『SKIP判定の機械的担保』『ログ保存の強制』という厳密解釈では一部不足が残る。"
+    },
+    "issueLog": {
+      "count": 0,
+      "entries": []
+    },
+    "metrics": {
+      "docsRead": 1,
+      "srcRead": 2,
+      "question": 6,
+      "issueLog": 0
+    },
+    "tokenMetrics": {
+      "input": 350913,
+      "output": 20380,
+      "cacheRead": 214656,
+      "cacheCreation": 0,
+      "cost": null,
+      "callCount": 20
+    },
+    "tests": {
+      "unit": 7,
+      "integration": 0,
+      "acceptance": 0,
+      "total": 7
+    },
+    "sync": {
+      "status": "skipped",
+      "reason": "sync was skipped"
+    }
+  },
+  "text": "  Report\n\n  Implementation\n  ────────────────────────────────────────────────\n    feat: feature/175-fix-flow-test-phase-quality\n    17 files changed, 906 insertions(+), 50 deletions(-)\n\n  Retro\n  ────────────────────────────────────────────────\n    ███████░ 86%  (8 done / 3 partial / 0 miss)\n\n  Metrics\n  ────────────────────────────────────────────────\n    docs read ................... 1\n    src read .................... 2\n    Q&A ......................... 6\n    issue-log ................... 0\n    agent calls ................. 20\n    input tokens ................ 350,913\n    output tokens ............... 20,380\n    cache-read tokens ........... 214,656\n    cache-create tokens ......... 0\n    cost ........................ N/A\n\n  Tests\n  ────────────────────────────────────────────────\n    unit 7  integration 0  acceptance 0  total 7"
+}

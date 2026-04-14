@@ -16,6 +16,7 @@ import { runCmd, assertOk } from "../../lib/process.js";
 import { callAgentWithLog, resolveAgent } from "../../lib/agent.js";
 import { filterByPhase, loadMergedGuardrails } from "../../lib/guardrail.js";
 import { getSpecName } from "../../lib/flow-state.js";
+import { loadTestEvidence } from "./get-test-result.js";
 import { VALID_GATE_PHASES } from "../../lib/constants.js";
 import { FlowCommand } from "./base-command.js";
 
@@ -214,15 +215,28 @@ function buildGuardrailPrompt(targetText, guardrails, phase, role) {
 
 /**
  * Parse AI response into per-article results.
+ * Recognizes PASS, FAIL, and SKIP lines.
+ * SKIP indicates a requirement that cannot be verified without test execution.
  */
 function parseGuardrailResponse(response) {
   const results = [];
   for (const line of response.split("\n")) {
+    const skipM = line.match(/^SKIP\s*(?:\([^)]*\))?\s*:\s*(.+?)\s*[—–-]\s*(.+)/);
+    if (skipM) {
+      results.push({
+        title: skipM[1].trim(),
+        passed: false,
+        skipped: true,
+        reason: skipM[2].trim(),
+      });
+      continue;
+    }
     const m = line.match(/^(PASS|FAIL):\s*(.+?)\s*[—–-]\s*(.+)/);
     if (m) {
       results.push({
         title: m[2].trim(),
         passed: m[1] === "PASS",
+        skipped: false,
         reason: m[3].trim(),
       });
     }
@@ -261,14 +275,36 @@ function checkGuardrail(root, targetText, config, phase, role) {
 
 /**
  * Build AI prompt for implementation requirements check.
+ * @param {string} specText
+ * @param {string} diff
+ * @param {{ summary: Object|null, log: string|null }|null} testEvidence
  */
-function buildImplCheckPrompt(specText, diff) {
-  return [
+function buildImplCheckPrompt(specText, diff, testEvidence) {
+  const hasEvidence = testEvidence && (testEvidence.summary || testEvidence.log);
+  const lines = [
     "You are an implementation compliance checker.",
     "Check whether each requirement in the spec has been implemented in the diff.",
     "For each requirement, output exactly one line in this format:",
     "  PASS: <requirement summary> — <brief reason>",
     "  FAIL: <requirement summary> — <brief reason>",
+    "",
+  ];
+
+  if (hasEvidence) {
+    lines.push(
+      "Some requirements may refer to test execution results. Use the Test Execution Evidence",
+      "section below to verify those requirements.",
+    );
+  } else {
+    lines.push(
+      "No test execution evidence is available. Requirements that can only be verified by",
+      "running tests (e.g. 'tests pass', 'no regressions') cannot be determined from the diff.",
+      "For such requirements, output:",
+      "  SKIP (execution required): <requirement summary> — cannot verify without test execution",
+    );
+  }
+
+  lines.push(
     "",
     "Output ONLY the result lines. No preamble, no summary.",
     "",
@@ -277,7 +313,19 @@ function buildImplCheckPrompt(specText, diff) {
     "",
     "## Git Diff",
     diff,
-  ].join("\n");
+  );
+
+  if (hasEvidence) {
+    lines.push("", "## Test Execution Evidence");
+    if (testEvidence.summary) {
+      lines.push("Test summary: " + JSON.stringify(testEvidence.summary));
+    }
+    if (testEvidence.log) {
+      lines.push("", "Test output:", testEvidence.log);
+    }
+  }
+
+  return lines.join("\n");
 }
 
 // ---------------------------------------------------------------------------
@@ -450,16 +498,18 @@ export class RunGateCommand extends FlowCommand {
     const agent = resolveAgent(ctx.config, "flow.spec.gate");
     if (!agent) throw new Error("no AI agent configured (agent.default or agent.profiles.<name>.flow.spec.gate)");
 
-    const reqPrompt = buildImplCheckPrompt(specText, diff);
+    const testEvidence = loadTestEvidence(root, ctx.config, state);
+    const reqPrompt = buildImplCheckPrompt(specText, diff, testEvidence);
     const reqResponse = callAgentWithLog(agent, reqPrompt);
     const reqResults = parseGuardrailResponse(reqResponse);
 
     const reasons = reqResults.map((r) => ({
-      verdict: r.passed ? "PASS" : "FAIL",
+      verdict: r.skipped ? "SKIP" : (r.passed ? "PASS" : "FAIL"),
       detail: `${r.title} — ${r.reason}`,
     }));
 
-    const reqPassed = reqResults.length > 0 && reqResults.every((r) => r.passed);
+    // SKIP is acceptable (requirement needs test execution to verify)
+    const reqPassed = reqResults.length > 0 && reqResults.every((r) => r.passed || r.skipped);
     if (!reqPassed) {
       return gateFail("impl", specPath, reasons, []);
     }

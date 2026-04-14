@@ -11,31 +11,13 @@ import path from "path";
 import { execFileSync } from "child_process";
 import { join } from "path";
 import { createTmpDir, removeTmpDir } from "../../helpers/tmp-dir.js";
-import {
-  saveFlowState, buildInitialSteps, addActiveFlow,
-} from "../../../src/lib/flow-state.js";
+import { setupFlow, setupFlowConfig } from "../../helpers/flow-setup.js";
 
 const FLOW_CMD = join(process.cwd(), "src/flow.js");
 
 function setupFlowState(dir, lang) {
-  const specId = "001-test";
-  const state = {
-    spec: `specs/${specId}/spec.md`,
-    baseBranch: "main",
-    featureBranch: "feature/001-test",
-    steps: buildInitialSteps(),
-    requirements: [],
-  };
-  saveFlowState(dir, state);
-  addActiveFlow(dir, specId, "local");
-  // Write config with lang
-  const sddDir = path.join(dir, ".sdd-forge");
-  fs.mkdirSync(sddDir, { recursive: true });
-  fs.writeFileSync(path.join(sddDir, "config.json"), JSON.stringify({
-    lang,
-    type: "base",
-    docs: { languages: [lang], defaultLanguage: lang },
-  }));
+  setupFlow(dir);
+  setupFlowConfig(dir, lang);
 }
 
 describe("flow get prompt i18n — Japanese", () => {
@@ -114,9 +96,9 @@ describe("flow get prompt i18n — English", () => {
       { encoding: "utf8", env: { ...process.env, SDD_FORGE_WORK_ROOT: tmp } },
     );
     const envelope = JSON.parse(result);
-    assert.ok(envelope.data.description.includes("test"), `should be English: ${envelope.data.description}`);
+    assert.equal(envelope.data.description, "Run tests?", `should be exact English description, got: ${envelope.data.description}`);
     const labels = envelope.data.choices.map((c) => c.label);
-    assert.ok(labels.includes("Write test code"), `should have English label: ${labels}`);
+    assert.ok(labels.includes("Run"), `should have English label "Run": ${labels}`);
   });
 });
 

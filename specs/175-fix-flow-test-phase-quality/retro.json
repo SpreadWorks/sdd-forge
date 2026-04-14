@@ -1,0 +1,91 @@
+{
+  "spec": "specs/175-fix-flow-test-phase-quality/spec.md",
+  "date": "2026-04-14T08:20:10.320Z",
+  "requirements": [
+    {
+      "desc": "R1: plan.test-mode description を「テストを実行するか選択してください。」に変更する",
+      "status": "done",
+      "note": "`src/flow/lib/get-prompt.js` の ja `plan.test-mode` description が指定文言に変更されている。"
+    },
+    {
+      "desc": "R2: ja 版選択肢を [実行する, 実行しない, その他] に変更する",
+      "status": "done",
+      "note": "ja choices が `[実行する, 実行しない, その他]` に更新されている。"
+    },
+    {
+      "desc": "R3: en 版を Run tests? / [Run, Skip, Other] に変更する",
+      "status": "done",
+      "note": "en description が `Run tests?`、choices が `[Run, Skip, Other]` に更新されている。"
+    },
+    {
+      "desc": "R4: flow-plan テストフェーズで plan.test-mode 提示前の自動判断を禁止する",
+      "status": "done",
+      "note": "`src/templates/skills/sdd-forge.flow-plan/SKILL.md` に、提示と回答待ち前の自動決定禁止の CRITICAL 指示が追加されている。"
+    },
+    {
+      "desc": "R5: flow-plan SKILL.md テンプレートのテストフェーズ冒頭に CRITICAL STOP を追加する",
+      "status": "done",
+      "note": "テストフェーズ直前に `## CRITICAL: Test Phase — Present Options FIRST` が追加されている。"
+    },
+    {
+      "desc": "R6: flow get test-result が flow.json summary とテストログを返す",
+      "status": "done",
+      "note": "`src/flow/lib/get-test-result.js` 新規追加と `src/flow/registry.js` 登録により summary/log を返すコマンドが実装されている。"
+    },
+    {
+      "desc": "R7: テストログ不在時は log: null を返す（exit 0）",
+      "status": "done",
+      "note": "`get-test-result.js` で `ENOENT` 時に `null` を返す実装になっており、失敗扱いにしていない。"
+    },
+    {
+      "desc": "R7a: flow.json 不在時は非ゼロ exit code でエラーを返す",
+      "status": "done",
+      "note": "`ctx.flowState` 不在時に `Error` を throw する実装が追加され、単体テストでも非ゼロ系を確認している。"
+    },
+    {
+      "desc": "R8: gate-impl がテスト実行証跡を参照してテスト実行要件を判定する",
+      "status": "partial",
+      "note": "`run-gate.js` で test evidence を読み込んでプロンプトに注入しているが、要件文言どおりに `flow get test-result` コマンドの戻り値を直接利用してはいない（同等ロジックを関数呼び出しで共有）。"
+    },
+    {
+      "desc": "R9: テスト実行証跡なし時、gate-impl はテスト実行要件を SKIP として扱う",
+      "status": "partial",
+      "note": "SKIP 行のパースと許容は実装されたが、どの要件を SKIP にするかは AI 応答依存で、機械的な要件分類ロジックはない。"
+    },
+    {
+      "desc": "R10: テストフェーズでテスト出力を agent.workDir 配下に保存する",
+      "status": "partial",
+      "note": "flow-plan テンプレートに保存指示は追加されたが、実行時に必ず保存させる強制ロジックは追加されていない。"
+    }
+  ],
+  "unplanned": [
+    {
+      "file": "src/flow/lib/get-test-result.js",
+      "change": "ログ読込上限（512KB）と末尾切り出し、さらに秘密情報/PIIの簡易マスキングとファイル再書き込みを追加している（要件外の拡張）。"
+    },
+    {
+      "file": "tests/helpers/flow-setup.js",
+      "change": "`setupFlowConfig` ヘルパー追加（テスト共通化のリファクタ）。"
+    },
+    {
+      "file": "tests/unit/flow/prompt-i18n.test.js",
+      "change": "英語文言の検証を緩い includes から厳密一致へ強化（要件外のテスト厳格化）。"
+    },
+    {
+      "file": "specs/175-fix-flow-test-phase-quality/review.md",
+      "change": "レビュー記録ファイルを新規追加（要件実装そのものではない運用成果物）。"
+    },
+    {
+      "file": "specs/175-fix-flow-test-phase-quality/qa.md",
+      "change": "Q&A テンプレートファイルを新規追加（要件実装そのものではない運用成果物）。"
+    }
+  ],
+  "summary": {
+    "total": 11,
+    "done": 8,
+    "partial": 3,
+    "not_done": 0,
+    "rate": 0.86,
+    "notes": "P1/P2 は実装差分上で満たされている。P3 も主要部分は実装されているが、R8/R9/R10 は『コマンド戻り値の直接利用』『SKIP判定の機械的担保』『ログ保存の強制』という厳密解釈では一部不足が残る。"
+  }
+}

@@ -50,11 +50,11 @@ const PROMPTS_BY_LANG = {
     },
     "plan.test-mode": {
       phase: "plan", step: "test-mode",
-      description: "テストコードの作成方法を選択してください。",
+      description: "テストを実行するか選択してください。",
       recommendation: null,
       choices: [
-        { id: 1, label: "テストコードを作成する", description: "", recommended: true },
-        { id: 2, label: "テストコードを作成しない", description: "", recommended: false },
+        { id: 1, label: "実行する", description: "", recommended: true },
+        { id: 2, label: "実行しない", description: "", recommended: false },
         { id: 3, label: "その他", description: "", recommended: false },
       ],
     },
@@ -188,11 +188,11 @@ const PROMPTS_BY_LANG = {
     },
     "plan.test-mode": {
       phase: "plan", step: "test-mode",
-      description: "Choose test approach.",
+      description: "Run tests?",
       recommendation: null,
       choices: [
-        { id: 1, label: "Write test code", description: "", recommended: true },
-        { id: 2, label: "Skip test creation", description: "", recommended: false },
+        { id: 1, label: "Run", description: "", recommended: true },
+        { id: 2, label: "Skip", description: "", recommended: false },
         { id: 3, label: "Other", description: "", recommended: false },
       ],
     },

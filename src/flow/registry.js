@@ -124,6 +124,11 @@ export const FLOW_COMMANDS = {
       args: { positional: ["target"] },
       help: "Usage: sdd-forge flow get check <target>\n\nCheck a condition. Targets: dirty, gh, impl, finalize.",
     },
+    "test-result": {
+      helpKey: "flow.get.test-result",
+      command: () => import("./lib/get-test-result.js"),
+      help: "Usage: sdd-forge flow get test-result\n\nReturn test execution evidence: flow.json test summary and test output log.",
+    },
     prompt: {
       helpKey: "flow.get.prompt",
       requiresFlow: false,

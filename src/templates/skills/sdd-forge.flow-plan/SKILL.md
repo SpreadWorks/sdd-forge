@@ -185,6 +185,10 @@ Note: `sdd-forge flow get context` automatically records these metrics via hooks
      - Extract Requirements from spec.md and run: `sdd-forge flow set summary '["req 1", "req 2", ...]'`
      - `sdd-forge flow set step approval done`
 
+## CRITICAL: Test Phase — Present Options FIRST
+
+**STOP. Do NOT write tests, choose a test framework, or decide on test strategy. You MUST run `sdd-forge flow get prompt plan.test-mode`, present the choices to the user, and wait for their response before doing anything else in the test phase.**
+
 9. Test phase (after approval).
    - **On start**: `sdd-forge flow set step test in_progress`
    - Run `sdd-forge flow get prompt plan.test-mode` and present the choices.
@@ -196,6 +200,7 @@ Note: `sdd-forge flow get context` automatically records these metrics via hooks
      - **`tests/` (formal tests, run by `npm test`):** Public API / function interface contract tests, CLI command behavior specs, preset integrity checks — tests where breakage indicates a bug regardless of which spec introduced them.
      - **`specs/<spec>/tests/` (spec verification tests, NOT run by `npm test`):** Tests that only verify this spec's requirements are met, bug fix reproduction tests, temporary setup/integration verification. These are kept as history, not maintained long-term.
      - **Decision rule:** Ask "If a future change breaks this test, is that always a bug?" — YES → `tests/`, NO → `specs/<spec>/tests/`.
+   - **MUST: When running tests, save output to a log file** under the resolved work directory (priority: `SDD_FORGE_WORK_DIR` env > `config.agent.workDir` > `.tmp`): `node tests/run.js ... > <workDir>/logs/test-output.log 2>&1`. This enables `sdd-forge flow get test-result` to retrieve execution evidence for gate-impl.
    - Write test code (tests should fail initially).
    - **MUST: If a test reveals a production code bug that is outside the current spec's scope**, record it in issue-log (`sdd-forge flow set issue-log --step test --reason "..."`) before adjusting the test to match current behavior. Do not silently fix or skip the test.
    - **MUST: Create `specs/<spec>/tests/README.md`** documenting:
