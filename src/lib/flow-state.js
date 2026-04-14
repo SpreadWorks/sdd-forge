@@ -9,7 +9,7 @@
 import fs from "fs";
 import path from "path";
 import crypto from "crypto";
-import { runCmd } from "./process.js";
+import { runGit } from "./git-helpers.js";
 import { sddDir } from "./config.js";
 import { isInsideWorktree, getMainRepoPath } from "./cli.js";
 
@@ -18,6 +18,7 @@ const ACTIVE_FLOW_FILE = ".active-flow";
 const PREPARING_PREFIX = ".active-flow.";
 const PREPARING_TTL_MS = 24 * 60 * 60 * 1000; // 24 hours
 const PREPARING_SCAN_LIMIT = 100;
+const SCAN_FLOWS_LIMIT = 200;
 
 /**
  * Extract the spec name (e.g. "152-add-logger-to-callsites") from a flow object or state.
@@ -182,10 +183,29 @@ export function removeActiveFlow(workRoot, specId) {
  * @param {string} branch
  * @returns {boolean}
  */
+/**
+ * Run a git query and apply a stdout predicate; on git failure, log to stderr
+ * and return `true` (fail-open: prevents accidental deletion when status is unknown).
+ * @param {string[]} args - git arguments
+ * @param {(stdout: string) => boolean} predicate
+ * @param {string} contextLabel - label used in the stderr warning
+ * @returns {boolean}
+ */
+function runGitFailOpenBoolean(args, predicate, contextLabel) {
+  const res = runGit(args);
+  if (!res.ok) {
+    process.stderr.write(`[sdd-forge] ${contextLabel}: git ${args.join(" ")} failed, assuming exists: ${res.stderr}\n`);
+    return true;
+  }
+  return predicate(res.stdout);
+}
+
 function worktreeExists(mainRoot, branch) {
-  const res = runCmd("git", ["-C", mainRoot, "worktree", "list", "--porcelain"]);
-  if (!res.ok) return true; // on error, assume exists (avoid accidental deletion)
-  return res.stdout.includes(`branch refs/heads/${branch}`);
+  return runGitFailOpenBoolean(
+    ["-C", mainRoot, "worktree", "list", "--porcelain"],
+    (stdout) => stdout.includes(`branch refs/heads/${branch}`),
+    "worktreeExists",
+  );
 }
 
 /**
@@ -195,9 +215,11 @@ function worktreeExists(mainRoot, branch) {
  * @returns {boolean}
  */
 function branchExists(mainRoot, branch) {
-  const res = runCmd("git", ["-C", mainRoot, "branch", "--list", branch]);
-  if (!res.ok) return true; // on error, assume exists
-  return res.stdout.trim().length > 0;
+  return runGitFailOpenBoolean(
+    ["-C", mainRoot, "branch", "--list", branch],
+    (stdout) => stdout.trim().length > 0,
+    "branchExists",
+  );
 }
 
 /**
@@ -397,7 +419,7 @@ function resolveCurrentFlow(workRoot, flows) {
 
   // Try matching by current branch
   let currentBranch;
-  const res = runCmd("git", ["-C", workRoot, "rev-parse", "--abbrev-ref", "HEAD"]);
+  const res = runGit(["-C", workRoot, "rev-parse", "--abbrev-ref", "HEAD"]);
   if (!res.ok) return null;
   currentBranch = res.stdout.trim();
 
@@ -491,7 +513,7 @@ export function loadFlowState(workRoot, specId) {
  * @returns {string|null}
  */
 function specIdFromBranch(workRoot) {
-  const res = runCmd("git", ["-C", workRoot, "rev-parse", "--abbrev-ref", "HEAD"]);
+  const res = runGit(["-C", workRoot, "rev-parse", "--abbrev-ref", "HEAD"]);
   if (!res.ok) return null;
   const branch = res.stdout.trim();
   const prefix = "feature/";
@@ -732,12 +754,14 @@ export function scanAllFlows(workRoot) {
   const mainRoot = resolveMainRoot(workRoot);
   const results = [];
   const seen = new Set();
+  let truncated = false;
 
   // 1. Local: specs/*/ in main repo (with or without flow.json)
   const specsDir = path.join(mainRoot, "specs");
   if (fs.existsSync(specsDir)) {
     for (const entry of fs.readdirSync(specsDir, { withFileTypes: true })) {
       if (!entry.isDirectory() || !/^\d{3}-/.test(entry.name)) continue;
+      if (results.length >= SCAN_FLOWS_LIMIT) { truncated = true; break; }
       const fp = path.join(specsDir, entry.name, STATE_FILE);
       if (fs.existsSync(fp)) {
         const state = JSON.parse(fs.readFileSync(fp, "utf8"));
@@ -751,52 +775,62 @@ export function scanAllFlows(workRoot) {
   }
 
   // 2. Worktrees: scan each worktree's specs/*/flow.json
-  const wtRes = runCmd("git", ["-C", mainRoot, "worktree", "list", "--porcelain"]);
-  if (wtRes.ok) {
-    const output = wtRes.stdout;
-    let wtPath = null;
-    for (const line of output.split("\n")) {
-      if (line.startsWith("worktree ")) {
-        wtPath = line.slice("worktree ".length);
-      } else if (line === "" && wtPath && wtPath !== mainRoot) {
-        const wtSpecs = path.join(wtPath, "specs");
-        if (fs.existsSync(wtSpecs)) {
-          for (const entry of fs.readdirSync(wtSpecs, { withFileTypes: true })) {
-            if (!entry.isDirectory() || seen.has(entry.name)) continue;
-            const fp = path.join(wtSpecs, entry.name, STATE_FILE);
-            if (fs.existsSync(fp)) {
-              const state = JSON.parse(fs.readFileSync(fp, "utf8"));
-              results.push({ specId: entry.name, mode: "worktree", state, location: wtPath });
-              seen.add(entry.name);
+  if (!truncated) {
+    const wtRes = runGit(["-C", mainRoot, "worktree", "list", "--porcelain"]);
+    if (wtRes.ok) {
+      const output = wtRes.stdout;
+      let wtPath = null;
+      outer: for (const line of output.split("\n")) {
+        if (line.startsWith("worktree ")) {
+          wtPath = line.slice("worktree ".length);
+        } else if (line === "" && wtPath && wtPath !== mainRoot) {
+          const wtSpecs = path.join(wtPath, "specs");
+          if (fs.existsSync(wtSpecs)) {
+            for (const entry of fs.readdirSync(wtSpecs, { withFileTypes: true })) {
+              if (!entry.isDirectory() || seen.has(entry.name)) continue;
+              if (results.length >= SCAN_FLOWS_LIMIT) { truncated = true; break outer; }
+              const fp = path.join(wtSpecs, entry.name, STATE_FILE);
+              if (fs.existsSync(fp)) {
+                const state = JSON.parse(fs.readFileSync(fp, "utf8"));
+                results.push({ specId: entry.name, mode: "worktree", state, location: wtPath });
+                seen.add(entry.name);
+              }
             }
           }
+          wtPath = null;
         }
-        wtPath = null;
       }
     }
   }
 
   // 3. Branches: check feature/* branches for specs/*/flow.json
-  const branchRes = runCmd("git", ["-C", mainRoot, "branch", "--list", "feature/*"]);
-  if (branchRes.ok) {
-    for (const line of branchRes.stdout.split("\n")) {
-      const branch = line.replace(/^[*+ ]+/, "").trim();
-      if (!branch) continue;
-      const specId = branch.replace("feature/", "");
-      if (seen.has(specId)) continue;
-      const showRes = runCmd(
-        "git", ["-C", mainRoot, "show", `${branch}:specs/${specId}/flow.json`],
-      );
-      if (showRes.ok) {
-        try {
-          const state = JSON.parse(showRes.stdout);
-          results.push({ specId, mode: "branch", state, location: `branch:${branch}` });
-          seen.add(specId);
-        } catch (_) {
-          // invalid JSON, skip
+  if (!truncated) {
+    const branchRes = runGit(["-C", mainRoot, "branch", "--list", "feature/*"]);
+    if (branchRes.ok) {
+      for (const line of branchRes.stdout.split("\n")) {
+        const branch = line.replace(/^[*+ ]+/, "").trim();
+        if (!branch) continue;
+        const specId = branch.replace("feature/", "");
+        if (seen.has(specId)) continue;
+        if (results.length >= SCAN_FLOWS_LIMIT) { truncated = true; break; }
+        const showRes = runGit(
+          ["-C", mainRoot, "show", `${branch}:specs/${specId}/flow.json`],
+        );
+        if (showRes.ok) {
+          try {
+            const state = JSON.parse(showRes.stdout);
+            results.push({ specId, mode: "branch", state, location: `branch:${branch}` });
+            seen.add(specId);
+          } catch (e) {
+            process.stderr.write(`[sdd-forge] scanAllFlows: invalid JSON in ${branch}:specs/${specId}/flow.json: ${e.message}\n`);
+          }
         }
       }
     }
+  }
+
+  if (truncated) {
+    process.stderr.write(`[sdd-forge] scanAllFlows: truncated at ${SCAN_FLOWS_LIMIT} entries\n`);
   }
 
   return results;

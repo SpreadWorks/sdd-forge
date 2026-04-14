@@ -15,7 +15,7 @@ import {
   resolveWorktreePaths, clearFlowState, specIdFromPath,
 } from "../../lib/flow-state.js";
 import { loadIssueLog, saveIssueLog } from "./set-issue-log.js";
-import { isGhAvailable, commentOnIssue, collectGitSummary } from "../../lib/git-helpers.js";
+import { isGhAvailable, commentOnIssue, collectGitSummary, runGit } from "../../lib/git-helpers.js";
 import { VALID_MERGE_STRATEGIES } from "../../lib/constants.js";
 import { FlowCommand } from "./base-command.js";
 import { FLOW_COMMANDS } from "../registry.js";
@@ -58,13 +58,13 @@ function executeCleanupImpl({ root, flowState, worktreePath, mainRepoPath }) {
   if (worktree && mainRepoPath) {
     const wtPath = worktreePath || root;
     if (fs.existsSync(wtPath)) {
-      runCmd("git", ["-C", mainRepoPath, "worktree", "remove", wtPath]);
+      runGit(["-C", mainRepoPath, "worktree", "remove", wtPath]);
     }
-    runCmd("git", ["-C", mainRepoPath, "branch", "-D", featureBranch]);
+    runGit(["-C", mainRepoPath, "branch", "-D", featureBranch]);
     return { status: "done" };
   }
 
-  runCmd("git", ["branch", "-D", featureBranch], { cwd: root });
+  runGit(["branch", "-D", featureBranch], { cwd: root });
   return { status: "done" };
 }
 
@@ -76,7 +76,7 @@ function executeCleanupImpl({ root, flowState, worktreePath, mainRepoPath }) {
  * @returns {{ status: string, message?: string }}
  */
 export function commitOrSkip(args, opts) {
-  const res = runCmd("git", ["commit", ...args], opts);
+  const res = runGit(["commit", ...args], opts);
   if (res.ok) return { status: "done" };
   const output = res.stderr || res.stdout || "";
   if (/nothing to commit|no changes added to commit/i.test(output)) {
@@ -86,7 +86,7 @@ export function commitOrSkip(args, opts) {
 }
 
 export function resolveGitCommonDir(root) {
-  const res = runCmd("git", ["-C", root, "rev-parse", "--git-common-dir"]);
+  const res = runGit(["-C", root, "rev-parse", "--git-common-dir"]);
   assertOk(res, "finalize preflight failed: unable to resolve git common dir");
   return path.resolve(root, res.stdout.trim());
 }
@@ -212,11 +212,12 @@ export async function executeCommitPost(ctx) {
   }
 
   // commit retro + report files
-  runCmd("git", ["add", "-A"], { cwd: root });
-  const commitRes = runCmd("git", ["commit", "-m", "chore: add retro and report"], { cwd: root });
-  if (!commitRes.ok && !/nothing to commit/i.test(commitRes.stderr || commitRes.stdout)) {
+  runGit(["add", "-A"], { cwd: root });
+  try {
+    commitOrSkip(["-m", "chore: add retro and report"], { cwd: root });
+  } catch (e) {
     if (results.report) {
-      results.report.commitNote = "retro/report commit failed: " + (commitRes.stderr || commitRes.stdout).slice(0, 200);
+      results.report.commitNote = "retro/report commit failed: " + String(e.message || e).slice(0, 200);
     }
   }
 }
@@ -274,7 +275,7 @@ export class RunFinalizeCommand extends FlowCommand {
         results.commit = { status: "dry-run", message: message || "(auto)" };
       } else {
         results.commit = await runSubStep("commit", () => {
-          runCmd("git", ["add", "-A"], { cwd: root });
+          runGit(["add", "-A"], { cwd: root });
           const msg = message || `feat: ${state.featureBranch || "finalize"}`;
           const res = commitOrSkip(["-m", msg], { cwd: root });
           return { ...res, message: msg };
@@ -329,12 +330,12 @@ export class RunFinalizeCommand extends FlowCommand {
           if (!buildRes.ok) {
             assertOk(buildRes, "docs build failed");
           }
-          runCmd("git", ["add", "docs/", "AGENTS.md", "CLAUDE.md", "README.md", ".sdd-forge/output/analysis.json"], { cwd: syncCwd });
+          runGit(["add", "docs/", "AGENTS.md", "CLAUDE.md", "README.md", ".sdd-forge/output/analysis.json"], { cwd: syncCwd });
           let diffStat = null;
           let diffSummary = null;
-          const statRes = runCmd("git", ["diff", "--cached", "--stat"], { cwd: syncCwd });
+          const statRes = runGit(["diff", "--cached", "--stat"], { cwd: syncCwd });
           if (statRes.ok) diffStat = statRes.stdout.trim();
-          const nameRes = runCmd("git", ["diff", "--cached", "--name-only"], { cwd: syncCwd });
+          const nameRes = runGit(["diff", "--cached", "--name-only"], { cwd: syncCwd });
           if (nameRes.ok) diffSummary = nameRes.stdout.trim();
           const commitRes = commitOrSkip(["-m", "docs: sync documentation"], { cwd: syncCwd });
           return { ...commitRes, ...(diffStat && { diffStat }), ...(diffSummary && { diffSummary }) };

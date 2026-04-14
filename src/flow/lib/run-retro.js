@@ -7,7 +7,7 @@
 
 import fs from "fs";
 import path from "path";
-import { runCmd } from "../../lib/process.js";
+import { runGit } from "../../lib/git-helpers.js";
 import { callAgentAwaitLog, resolveAgent, ensureAgentWorkDir } from "../../lib/agent.js";
 import { repairJson } from "../../lib/json-parse.js";
 import { getSpecName } from "../../lib/flow-state.js";
@@ -30,7 +30,7 @@ function extractRequirements(specText) {
  * Get git diff between base branch and HEAD.
  */
 function getDiff(root, baseBranch) {
-  const res = runCmd("git", ["diff", `${baseBranch}...HEAD`, "--stat"], { cwd: root });
+  const res = runGit(["diff", `${baseBranch}...HEAD`, "--stat"], { cwd: root });
   return res.ok ? res.stdout.trim() : "";
 }
 
@@ -38,7 +38,7 @@ function getDiff(root, baseBranch) {
  * Get detailed diff for AI evaluation.
  */
 function getDetailedDiff(root, baseBranch) {
-  const res = runCmd("git", ["diff", `${baseBranch}...HEAD`], { cwd: root });
+  const res = runGit(["diff", `${baseBranch}...HEAD`], { cwd: root });
   return res.ok ? res.stdout.trim() : "";
 }
 

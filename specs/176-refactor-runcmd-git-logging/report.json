@@ -1,0 +1,40 @@
+{
+  "data": {
+    "implementation": {
+      "diffStat": "specs/176-refactor-runcmd-git-logging/draft.md     |  80 ++++++++++\n specs/176-refactor-runcmd-git-logging/flow.json    | 175 +++++++++++++++++++++\n .../176-refactor-runcmd-git-logging/issue-log.json |  72 +++++++++\n specs/176-refactor-runcmd-git-logging/qa.md        |   9 ++\n specs/176-refactor-runcmd-git-logging/review.md    |  41 +++++\n specs/176-refactor-runcmd-git-logging/spec.md      |  97 ++++++++++++\n .../tests/README.md                                |  31 ++++\n src/flow/commands/merge.js                         |  12 +-\n src/flow/commands/review.js                        |  33 ++--\n src/flow/lib/get-check.js                          |   5 +-\n src/flow/lib/run-finalize.js                       |  29 ++--\n src/flow/lib/run-gate.js                           |   5 +-\n src/flow/lib/run-impl-confirm.js                   |   4 +-\n src/flow/lib/run-prepare-spec.js                   |  27 ++--\n src/flow/lib/run-retro.js                          |   6 +-\n src/flow/lib/run-sync.js                           |   7 +-\n src/lib/cli.js                                     |   4 +\n src/lib/flow-state.js                              | 122 ++++++++------\n src/lib/git-helpers.js                             |  33 +++-\n src/lib/lint.js                                    |   5 +-\n src/lib/process.js                                 |  16 +-\n tests/unit/lib/git-helpers.test.js                 | 146 +++++++++++++++++\n 22 files changed, 837 insertions(+), 122 deletions(-)",
+      "commits": [
+        "feat: feature/176-refactor-runcmd-git-logging"
+      ]
+    },
+    "retro": null,
+    "issueLog": {
+      "count": 0,
+      "entries": []
+    },
+    "metrics": {
+      "docsRead": 1,
+      "srcRead": 0,
+      "question": 3,
+      "issueLog": 1
+    },
+    "tokenMetrics": {
+      "input": 751175,
+      "output": 14524,
+      "cacheRead": 167680,
+      "cacheCreation": 0,
+      "cost": null,
+      "callCount": 16
+    },
+    "tests": {
+      "unit": 4,
+      "integration": 0,
+      "acceptance": 0,
+      "total": 4
+    },
+    "sync": {
+      "status": "skipped",
+      "reason": "sync was skipped"
+    }
+  },
+  "text": "  Report\n\n  Implementation\n  ────────────────────────────────────────────────\n    feat: feature/176-refactor-runcmd-git-logging\n    22 files changed, 837 insertions(+), 122 deletions(-)\n\n  Retro\n  ────────────────────────────────────────────────\n    -\n\n  Metrics\n  ────────────────────────────────────────────────\n    docs read ................... 1\n    src read .................... 0\n    Q&A ......................... 3\n    issue-log ................... 1\n    agent calls ................. 16\n    input tokens ................ 751,175\n    output tokens ............... 14,524\n    cache-read tokens ........... 167,680\n    cache-create tokens ......... 0\n    cost ........................ N/A\n\n  Tests\n  ────────────────────────────────────────────────\n    unit 4  integration 0  acceptance 0  total 4"
+}

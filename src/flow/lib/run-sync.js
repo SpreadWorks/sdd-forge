@@ -7,6 +7,7 @@
 
 import { PKG_DIR } from "../../lib/cli.js";
 import { runCmd, assertOk } from "../../lib/process.js";
+import { runGit } from "../../lib/git-helpers.js";
 import { FlowCommand } from "./base-command.js";
 import path from "path";
 
@@ -56,11 +57,11 @@ export class RunSyncCommand extends FlowCommand {
     }
 
     // Step 3: git add (ignore errors for missing files)
-    runCmd("git", ["add", "docs/", "AGENTS.md", "CLAUDE.md", "README.md", ".sdd-forge/output/"], { cwd: root });
+    runGit(["add", "docs/", "AGENTS.md", "CLAUDE.md", "README.md", ".sdd-forge/output/"], { cwd: root });
 
     // Collect changed files
     let changed = [];
-    const diffRes = runCmd("git", ["diff", "--cached", "--name-only"], { cwd: root });
+    const diffRes = runGit(["diff", "--cached", "--name-only"], { cwd: root });
     if (diffRes.ok) {
       const diff = diffRes.stdout.trim();
       changed = diff ? diff.split("\n").filter(Boolean) : [];
@@ -68,7 +69,7 @@ export class RunSyncCommand extends FlowCommand {
 
     // Step 4: commit (skip if nothing to commit)
     if (changed.length > 0) {
-      const commitRes = runCmd("git", ["commit", "-m", "docs: sync documentation"], { cwd: root });
+      const commitRes = runGit(["commit", "-m", "docs: sync documentation"], { cwd: root });
       if (!commitRes.ok && !/nothing to commit/i.test(commitRes.stderr || commitRes.stdout)) {
         assertOk(commitRes, "git commit failed");
       }

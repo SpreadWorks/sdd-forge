@@ -24,7 +24,7 @@ import { loadAgentConfig, callAgentAwaitLog, resolveAgent, ensureAgentWorkDir } 
  */
 const callReviewAgent = (agent, prompt, root, systemPrompt) =>
   callAgentAwaitLog(agent, prompt, undefined, root, { systemPrompt });
-import { runCmd } from "../../lib/process.js";
+import { runGit } from "../../lib/git-helpers.js";
 import { EXIT_ERROR } from "../../lib/exit-codes.js";
 import { VALID_PHASES } from "../../lib/constants.js";
 
@@ -70,12 +70,7 @@ function resolveReviewTarget(root, flow) {
         for (const f of scopeFiles) {
           const abs = path.resolve(root, f);
           if (!fs.existsSync(abs)) continue;
-          // Committed changes against base branch
-          const committed = runCmd("git", ["-C", root, "diff", flow.baseBranch, "--", f]);
-          if (committed.ok && committed.stdout.trim()) diffs.push(committed.stdout);
-          // Staged but uncommitted changes
-          const staged = runCmd("git", ["-C", root, "diff", "--cached", "--", f]);
-          if (staged.ok && staged.stdout.trim()) diffs.push(staged.stdout);
+          diffs.push(...collectCommittedAndStagedDiff(root, flow.baseBranch, f));
         }
         if (diffs.length > 0) return diffs.join("\n");
       }
@@ -83,12 +78,24 @@ function resolveReviewTarget(root, flow) {
   }
 
   // Fallback: committed diff against base branch + staged changes
-  const parts = [];
-  const committed = runCmd("git", ["-C", root, "diff", flow.baseBranch]);
-  if (committed.ok && committed.stdout.trim()) parts.push(committed.stdout);
-  const staged = runCmd("git", ["-C", root, "diff", "--cached"]);
-  if (staged.ok && staged.stdout.trim()) parts.push(staged.stdout);
-  return parts.join("\n");
+  return collectCommittedAndStagedDiff(root, flow.baseBranch).join("\n");
+}
+
+/**
+ * Collect non-empty committed (vs base) and staged diff outputs.
+ * @param {string} root
+ * @param {string} baseBranch
+ * @param {string} [filePath] - optional path to scope the diff to
+ * @returns {string[]} array of non-empty diff outputs
+ */
+function collectCommittedAndStagedDiff(root, baseBranch, filePath) {
+  const out = [];
+  const fileArgs = filePath ? ["--", filePath] : [];
+  const committed = runGit(["-C", root, "diff", baseBranch, ...fileArgs]);
+  if (committed.ok && committed.stdout.trim()) out.push(committed.stdout);
+  const staged = runGit(["-C", root, "diff", "--cached", ...fileArgs]);
+  if (staged.ok && staged.stdout.trim()) out.push(staged.stdout);
+  return out;
 }
 
 /**

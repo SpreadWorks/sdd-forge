@@ -6,10 +6,12 @@
  */
 
 import { execFileSync, execFile } from "child_process";
-import { Logger } from "./log.js";
 
 /**
  * Run a command synchronously.
+ *
+ * Pure command runner: no domain-specific logging is performed here.
+ * For git command logging, callers should use `runGit` from `git-helpers.js`.
  *
  * @param {string}   cmd  - Command to execute
  * @param {string[]} args - Argument array
@@ -31,12 +33,9 @@ export function runCmd(cmd, args, opts = {}) {
       stdio: ["pipe", "pipe", "pipe"],
       ...(opts.env && { env: opts.env }),
     });
-    const result = { ok: true, status: 0, stdout: String(stdout || ""), stderr: "", signal: null, killed: false };
-    // TODO: git logging in runCmd causes infinite recursion via resolveLogDir → getMainRepoPath → runCmd
-    // if (cmd === "git") Logger.getInstance().git({ cmd: [cmd, ...args], exitCode: 0, stderr: "" });
-    return result;
+    return { ok: true, status: 0, stdout: String(stdout || ""), stderr: "", signal: null, killed: false };
   } catch (e) {
-    const result = {
+    return {
       ok: false,
       status: e.status ?? 1,
       stdout: String(e.stdout || ""),
@@ -44,9 +43,6 @@ export function runCmd(cmd, args, opts = {}) {
       signal: e.signal ?? null,
       killed: e.killed ?? false,
     };
-    // TODO: git logging in runCmd causes infinite recursion via resolveLogDir → getMainRepoPath → runCmd
-    // if (cmd === "git") Logger.getInstance().git({ cmd: [cmd, ...args], exitCode: result.status, stderr: result.stderr });
-    return result;
   }
 }
 
@@ -96,8 +92,6 @@ export function runCmdAsync(cmd, args, opts = {}) {
             killed: false,
           };
         }
-        // TODO: git logging in runCmdAsync causes infinite recursion via resolveLogDir → getMainRepoPath → runCmd
-        // if (cmd === "git") Logger.getInstance().git({ cmd: [cmd, ...args], exitCode: result.status, stderr: result.stderr });
         resolve(result);
       },
     );

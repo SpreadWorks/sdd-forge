@@ -12,7 +12,8 @@
 
 import fs from "fs";
 import path from "path";
-import { runCmd, assertOk } from "../../lib/process.js";
+import { assertOk } from "../../lib/process.js";
+import { runGit } from "../../lib/git-helpers.js";
 import { callAgentWithLog, resolveAgent, ensureAgentWorkDir } from "../../lib/agent.js";
 import { filterByPhase, loadMergedGuardrails } from "../../lib/guardrail.js";
 import { getSpecName } from "../../lib/flow-state.js";
@@ -32,7 +33,7 @@ import { FlowCommand } from "./base-command.js";
  * @returns {string}
  */
 function runGitDiff(args, errorMessage, cwd) {
-  const res = runCmd("git", ["diff", ...args], { cwd });
+  const res = runGit(["diff", ...args], { cwd });
   assertOk(res, errorMessage);
   return res.stdout;
 }

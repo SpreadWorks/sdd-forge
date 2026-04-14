@@ -6,10 +6,31 @@
  */
 
 import { runCmd, formatError } from "./process.js";
+import { Logger } from "./log.js";
+
+/**
+ * Run a git command and record a JSONL log entry via Logger.
+ *
+ * All "business" git operations (commit, push, diff, branch, merge, worktree, status, log, etc.)
+ * SHOULD go through this wrapper instead of calling `runCmd("git", ...)` directly,
+ * so they are uniformly logged.
+ *
+ * Exception: git invocations that the Logger itself depends on (repo top-level /
+ * git-common-dir resolution in `cli.js`) MUST stay on `runCmd` to avoid recursion.
+ *
+ * @param {string[]} args - git argument array (without the leading "git")
+ * @param {Object}   [opts] - same shape as runCmd opts
+ * @returns {{ ok: boolean, status: number, stdout: string, stderr: string, signal: string|null, killed: boolean }}
+ */
+export function runGit(args, opts = {}) {
+  const result = runCmd("git", args, opts);
+  Logger.getInstance().git({ cmd: ["git", ...args], exitCode: result.status, stderr: result.stderr });
+  return result;
+}
 
 /** @returns {{ dirty: boolean, dirtyFiles: string[] }} */
 export function getWorktreeStatus(cwd) {
-  const res = runCmd("git", ["status", "--short"], { cwd });
+  const res = runGit(["status", "--short"], { cwd });
   if (!res.ok) return { dirty: false, dirtyFiles: [] };
   const files = res.stdout.trim().split("\n").filter(Boolean);
   return { dirty: files.length > 0, dirtyFiles: files };
@@ -17,19 +38,19 @@ export function getWorktreeStatus(cwd) {
 
 /** @returns {string|null} */
 export function getCurrentBranch(cwd) {
-  const res = runCmd("git", ["rev-parse", "--abbrev-ref", "HEAD"], { cwd });
+  const res = runGit(["rev-parse", "--abbrev-ref", "HEAD"], { cwd });
   return res.ok ? res.stdout.trim() : null;
 }
 
 /** @returns {number} */
 export function getAheadCount(cwd, baseBranch) {
-  const res = runCmd("git", ["rev-list", "--count", `${baseBranch}..HEAD`], { cwd });
+  const res = runGit(["rev-list", "--count", `${baseBranch}..HEAD`], { cwd });
   return res.ok ? parseInt(res.stdout.trim(), 10) || 0 : 0;
 }
 
 /** @returns {string|null} */
 export function getLastCommit(cwd) {
-  const res = runCmd("git", ["log", "-1", "--oneline"], { cwd });
+  const res = runGit(["log", "-1", "--oneline"], { cwd });
   return res.ok ? res.stdout.trim() : null;
 }
 
@@ -47,9 +68,9 @@ export function isGhAvailable() {
 export function collectGitSummary(root, baseBranch) {
   let diffStat = "";
   let commitMessages = [];
-  const diffRes = runCmd("git", ["diff", "--stat", `${baseBranch}...HEAD`], { cwd: root });
+  const diffRes = runGit(["diff", "--stat", `${baseBranch}...HEAD`], { cwd: root });
   if (diffRes.ok) diffStat = diffRes.stdout.trim();
-  const logRes = runCmd("git", ["log", "--format=%s", `${baseBranch}..HEAD`], { cwd: root });
+  const logRes = runGit(["log", "--format=%s", `${baseBranch}..HEAD`], { cwd: root });
   if (logRes.ok) commitMessages = logRes.stdout.trim().split("\n").filter(Boolean);
   return { diffStat, commitMessages };
 }

@@ -6,8 +6,7 @@
  * ctx.target — one of: impl, finalize, dirty, gh
  */
 
-import { runCmd } from "../../lib/process.js";
-import { isGhAvailable } from "../../lib/git-helpers.js";
+import { isGhAvailable, runGit } from "../../lib/git-helpers.js";
 import { VALID_CHECK_TARGETS } from "../../lib/constants.js";
 import { FlowCommand } from "./base-command.js";
 
@@ -29,7 +28,7 @@ function checkStepPrereqs(state, required) {
 }
 
 function checkDirty(root) {
-  const res = runCmd("git", ["status", "--short"], { cwd: root });
+  const res = runGit(["status", "--short"], { cwd: root });
   if (!res.ok) {
     return { pass: false, summary: "git status failed", checks: [{ id: "dirty", pass: false, message: res.stderr }] };
   }

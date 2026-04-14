@@ -7,7 +7,8 @@
 
 import fs from "fs";
 import path from "path";
-import { runCmd, assertOk } from "./process.js";
+import { assertOk } from "./process.js";
+import { runGit } from "./git-helpers.js";
 import { filterByPhase, matchScope } from "./guardrail.js";
 
 /**
@@ -35,7 +36,7 @@ export function validateLintGuardrails(guardrails) {
  * @returns {string[]} Relative file paths
  */
 export function getChangedFiles(root, base) {
-  const res = runCmd("git", ["-C", root, "diff", "--name-only", `${base}...HEAD`]);
+  const res = runGit(["-C", root, "diff", "--name-only", `${base}...HEAD`]);
   if (!res.ok) {
     assertOk(res, "git diff failed");
   }

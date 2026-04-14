@@ -9,17 +9,17 @@ import fs from "fs";
 import path from "path";
 import { isInsideWorktree } from "../../lib/cli.js";
 import { sddDir, DEFAULT_LANG } from "../../lib/config.js";
-import { runCmd, assertOk } from "../../lib/process.js";
+import { assertOk } from "../../lib/process.js";
 import { translate } from "../../lib/i18n.js";
 import {
   saveFlowState, buildInitialSteps, addActiveFlow, cleanStaleFlows,
   generateRunId, deletePreparingFlow, cleanStalePreparingFlows,
 } from "../../lib/flow-state.js";
-import { getWorktreeStatus } from "../../lib/git-helpers.js";
+import { getWorktreeStatus, runGit } from "../../lib/git-helpers.js";
 import { FlowCommand } from "./base-command.js";
 
-function runGit(root, args) {
-  const res = runCmd("git", ["-C", root, ...args]);
+function runGitTrim(root, args) {
+  const res = runGit(["-C", root, ...args]);
   if (res.ok) return res.stdout.trim();
   assertOk(res, `git ${args.join(" ")} failed`);
 }
@@ -44,7 +44,7 @@ function nextIndex(root) {
     }
   }
 
-  const branchLines = runGit(root, ["branch", "--list", "feature/[0-9][0-9][0-9]-*"])
+  const branchLines = runGitTrim(root, ["branch", "--list", "feature/[0-9][0-9][0-9]-*"])
     .split("\n")
     .map((x) => x.replace(/^[* ]+/, "").trim())
     .filter(Boolean);
@@ -57,7 +57,7 @@ function nextIndex(root) {
 }
 
 function ensureClean(root) {
-  const status = runGit(root, ["status", "--porcelain"]);
+  const status = runGitTrim(root, ["status", "--porcelain"]);
   if (status.trim()) {
     throw new Error("worktree is dirty. commit/stash before spec.");
   }
@@ -65,16 +65,17 @@ function ensureClean(root) {
 
 function ensureBaseBranch(root, base) {
   try {
-    runGit(root, ["rev-parse", "--verify", base]);
-  } catch (_) {
-    throw new Error(`base branch not found: ${base}`);
+    runGitTrim(root, ["rev-parse", "--verify", base]);
+  } catch (e) {
+    throw new Error(`base branch not found: ${base}: ${e.message}`);
   }
 }
 
 function detectBaseBranch(root) {
   try {
-    return runGit(root, ["rev-parse", "--abbrev-ref", "HEAD"]).trim();
-  } catch (_) {
+    return runGitTrim(root, ["rev-parse", "--abbrev-ref", "HEAD"]).trim();
+  } catch (e) {
+    process.stderr.write(`[sdd-forge] failed to detect current branch, falling back to "main": ${e.message}\n`);
     return "main";
   }
 }
@@ -273,7 +274,7 @@ export class RunPrepareSpecCommand extends FlowCommand {
     const lines = [];
 
     if (useWorktree) {
-      runGit(root, ["worktree", "add", worktreePath, "-b", branchName, resolvedBase]);
+      runGitTrim(root, ["worktree", "add", worktreePath, "-b", branchName, resolvedBase]);
       writeSpecFiles();
       writeFlowState({ worktree: true });
       addActiveFlow(root, specDirName, "worktree");
@@ -303,7 +304,7 @@ export class RunPrepareSpecCommand extends FlowCommand {
         `3) start implementation`,
       );
     } else {
-      runGit(root, ["checkout", "-b", branchName, resolvedBase]);
+      runGitTrim(root, ["checkout", "-b", branchName, resolvedBase]);
       writeSpecFiles();
       writeFlowState();
       addActiveFlow(root, specDirName, "branch");

@@ -7,7 +7,7 @@
 
 import fs from "fs";
 import path from "path";
-import { runCmd } from "../../lib/process.js";
+import { runGit } from "../../lib/git-helpers.js";
 import { VALID_IMPL_CONFIRM_MODES } from "../../lib/constants.js";
 import { FlowCommand } from "./base-command.js";
 
@@ -18,7 +18,7 @@ import { FlowCommand } from "./base-command.js";
  * @returns {string[]} changed file paths
  */
 function getChangedFiles(root, baseBranch) {
-  const res = runCmd("git", ["-C", root, "diff", `${baseBranch}...HEAD`, "--name-only"]);
+  const res = runGit(["-C", root, "diff", `${baseBranch}...HEAD`, "--name-only"]);
   if (!res.ok) return [];
   return res.stdout.trim().split("\n").filter(Boolean);
 }

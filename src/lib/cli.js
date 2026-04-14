@@ -25,6 +25,8 @@ export const PKG_DIR = path.resolve(path.dirname(fileURLToPath(import.meta.url))
  */
 export function repoRoot(importMetaUrl) {
   if (process.env.SDD_FORGE_WORK_ROOT) return process.env.SDD_FORGE_WORK_ROOT;
+  // Logger 基盤の依存元のため runCmd を直接使う。runGit に変更してはならない
+  // （Logger.git → resolveLogDir → repoRoot → runGit → Logger.git で無限再帰になる）。
   const res = runCmd("git", ["rev-parse", "--show-toplevel"]);
   if (res.ok) return res.stdout.trim();
   // npm パッケージとしてインストールされた場合、相対パス推定は
@@ -104,6 +106,8 @@ export function isInsideWorktree(root) {
  * @returns {string} メインリポジトリの絶対パス
  */
 export function getMainRepoPath(root) {
+  // Logger 基盤の依存元のため runCmd を直接使う。runGit に変更してはならない
+  // （Logger.git → resolveLogDir → getMainRepoPath → runGit → Logger.git で無限再帰になる）。
   const res = runCmd("git", ["-C", root, "rev-parse", "--git-common-dir"]);
   assertOk(res, "failed to resolve git-common-dir");
   const gitCommonDir = res.stdout.trim();

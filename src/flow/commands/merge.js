@@ -9,7 +9,7 @@ import { readFileSync } from "fs";
 import { runCmd, assertOk } from "../../lib/process.js";
 import path from "path";
 import { loadConfig } from "../../lib/config.js";
-import { isGhAvailable } from "../../lib/git-helpers.js";
+import { isGhAvailable, runGit } from "../../lib/git-helpers.js";
 
 /**
  * Resolve push remote from config.
@@ -165,7 +165,7 @@ function main(ctx) {
     const title = buildPrTitle(spec, fallbackTitle);
     const body = buildPrBody(state, spec);
 
-    const pushRes = runCmd("git", ["push", "-u", remote, featureBranch]);
+    const pushRes = runGit(["push", "-u", remote, featureBranch]);
     assertOk(pushRes, "git push failed");
     const prRes = runCmd("gh", [
       "pr", "create",
@@ -185,12 +185,12 @@ function main(ctx) {
   function runSquashMerge(gitPrefix, hint) {
     const mergeArgs = [...gitPrefix, "merge", "--squash", featureBranch];
     const resetArgs = [...gitPrefix, "reset", "--merge"];
-    const mergeRes = runCmd("git", mergeArgs);
+    const mergeRes = runGit(mergeArgs);
     if (!mergeRes.ok) {
-      runCmd("git", resetArgs);
+      runGit(resetArgs);
       throw new Error(`Merge conflict detected. ${hint}`);
     }
-    const commitRes = runCmd("git", [...gitPrefix, "commit", "-m", commitMsg]);
+    const commitRes = runGit([...gitPrefix, "commit", "-m", commitMsg]);
     assertOk(commitRes, "commit after squash merge failed");
   }
 
@@ -200,7 +200,7 @@ function main(ctx) {
   }
 
   // Branch mode
-  const checkoutRes = runCmd("git", ["checkout", baseBranch]);
+  const checkoutRes = runGit(["checkout", baseBranch]);
   assertOk(checkoutRes, "git checkout failed");
   runSquashMerge([], `Run 'git rebase ${baseBranch}' and retry finalize.`);
   return { strategy: "squash" };

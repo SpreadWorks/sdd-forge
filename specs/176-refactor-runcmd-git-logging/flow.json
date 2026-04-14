@@ -1,0 +1,175 @@
+{
+  "spec": "specs/176-refactor-runcmd-git-logging/spec.md",
+  "baseBranch": "main",
+  "featureBranch": "feature/176-refactor-runcmd-git-logging",
+  "runId": "cfeaa31a-b154-4280-8886-b7693c802256",
+  "lifecycle": "active",
+  "steps": [
+    {
+      "id": "approach",
+      "status": "done"
+    },
+    {
+      "id": "branch",
+      "status": "done"
+    },
+    {
+      "id": "prepare-spec",
+      "status": "pending"
+    },
+    {
+      "id": "draft",
+      "status": "done"
+    },
+    {
+      "id": "gate-draft",
+      "status": "done"
+    },
+    {
+      "id": "spec",
+      "status": "done"
+    },
+    {
+      "id": "gate",
+      "status": "done"
+    },
+    {
+      "id": "approval",
+      "status": "done"
+    },
+    {
+      "id": "test",
+      "status": "done"
+    },
+    {
+      "id": "implement",
+      "status": "done"
+    },
+    {
+      "id": "gate-impl",
+      "status": "done"
+    },
+    {
+      "id": "review",
+      "status": "done"
+    },
+    {
+      "id": "finalize",
+      "status": "pending"
+    },
+    {
+      "id": "commit",
+      "status": "pending"
+    },
+    {
+      "id": "push",
+      "status": "pending"
+    },
+    {
+      "id": "merge",
+      "status": "pending"
+    },
+    {
+      "id": "pr-create",
+      "status": "pending"
+    },
+    {
+      "id": "branch-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "pr-merge",
+      "status": "pending"
+    },
+    {
+      "id": "sync-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "docs-update",
+      "status": "pending"
+    },
+    {
+      "id": "docs-review",
+      "status": "pending"
+    },
+    {
+      "id": "docs-commit",
+      "status": "pending"
+    }
+  ],
+  "requirements": [
+    {
+      "desc": "R1: 業務 git 操作のロギング (cmd, exitCode, stderr)",
+      "status": "done"
+    },
+    {
+      "desc": "R2: worktree 内で再帰なくログ記録",
+      "status": "done"
+    },
+    {
+      "desc": "R3: 基盤 git 操作はロギング対象外、コメント付与",
+      "status": "done"
+    },
+    {
+      "desc": "R4: 失敗時の exitCode/stderr 記録",
+      "status": "done"
+    },
+    {
+      "desc": "R5: 失敗時に ok:false かつ status 非 0",
+      "status": "done"
+    }
+  ],
+  "issue": 131,
+  "request": "issue #131 の対応を進める",
+  "worktree": true,
+  "metrics": {
+    "plan": {
+      "docsRead": 1
+    },
+    "draft": {
+      "question": 3
+    },
+    "gate-draft": {
+      "tokens": {
+        "input": 26110,
+        "output": 3068,
+        "cacheRead": 34432,
+        "cacheCreation": 0
+      },
+      "callCount": 3,
+      "responseChars": 3147
+    },
+    "gate": {
+      "tokens": {
+        "input": 6477,
+        "output": 1121,
+        "cacheRead": 14464,
+        "cacheCreation": 0
+      },
+      "callCount": 1,
+      "responseChars": 1161
+    },
+    "gate-impl": {
+      "tokens": {
+        "input": 718588,
+        "output": 10335,
+        "cacheRead": 118784,
+        "cacheCreation": 0
+      },
+      "callCount": 12,
+      "responseChars": 11910
+    },
+    "impl": {
+      "issueLog": 1
+    }
+  },
+  "test": {
+    "summary": {
+      "unit": 4
+    }
+  },
+  "notes": [
+    "gate-impl: ユーザー判断で FAIL を許容して review へ進行。残存 FAIL は board 7e83/08cd で別途扱う"
+  ]
+}
