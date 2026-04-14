@@ -40,20 +40,35 @@ export function searchItems(owner, project, queryText, limit = 20) {
   return result.data.organization.projectV2.items;
 }
 
-export function listItems(owner, project, limit = 100) {
-  const q = `
-    query {
-      organization(login: "${owner}") {
-        projectV2(number: ${project}) {
-          items(first: ${limit}) {
-            totalCount
-            nodes { ${ITEM_FIELDS} }
+export function listItems(owner, project) {
+  const pageSize = 100;
+  const allNodes = [];
+  let totalCount = 0;
+  let cursor = null;
+
+  while (true) {
+    const afterClause = cursor ? `, after: "${cursor}"` : "";
+    const q = `
+      query {
+        organization(login: "${owner}") {
+          projectV2(number: ${project}) {
+            items(first: ${pageSize}${afterClause}) {
+              totalCount
+              pageInfo { hasNextPage endCursor }
+              nodes { ${ITEM_FIELDS} }
+            }
           }
         }
-      }
-    }`;
-  const result = ghGraphQL(q);
-  return result.data.organization.projectV2.items;
+      }`;
+    const result = ghGraphQL(q);
+    const items = result.data.organization.projectV2.items;
+    totalCount = items.totalCount;
+    allNodes.push(...items.nodes);
+    if (!items.pageInfo.hasNextPage) break;
+    cursor = items.pageInfo.endCursor;
+  }
+
+  return { nodes: allNodes, totalCount };
 }
 
 export function getProjectMeta(owner, project) {
