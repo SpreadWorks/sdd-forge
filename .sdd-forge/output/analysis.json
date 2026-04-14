@@ -1,12 +1,12 @@
 {
-  "analyzedAt": "2026-04-14T08:21:38.821Z",
+  "analyzedAt": "2026-04-14T11:37:06.831Z",
   "package": {
     "entries": [
       {
         "file": "package.json",
-        "hash": "edb3c981192fe13bdde1ab03376c752e",
+        "hash": "180c5634536d85dc71e1dbb0c941ab4c",
         "lines": 39,
-        "mtime": "2026-04-10T08:28:57.273Z",
+        "mtime": "2026-04-14T08:26:28.215Z",
         "packageDeps": {
           "dependencies": {},
           "devDependencies": {}
@@ -18,12 +18,12 @@
         },
         "composerDeps": null,
         "id": "451a9f25",
-        "summary": "This package manifest defines `sdd-forge` as an ESM CLI and API-distributed Node.js tool. It exposes command entry points, runtime constraints, test scripts, and publish-time file boundaries.",
-        "detail": "The package uses `type: module` and maps both a CLI binary (`src/sdd-forge.js`) and a programmatic API export (`src/api.js`). It enforces a Node.js engine floor of `>=18.19.0`, aligning the runtime contract with modern built-in APIs. Distribution is scoped to `src/` with explicit exclusion of preset test folders, which keeps published artifacts focused and minimal. The script set separates unit, e2e, and acceptance execution paths, indicating layered validation in development workflows.",
+        "summary": "This package manifest defines sdd-forge as an ESM CLI and API package for spec-driven documentation workflows. It declares runtime requirements, publish scope, and core test commands.",
+        "detail": "The manifest exposes both a CLI entry (`sdd-forge`) and programmatic exports (`.` and `./api`) pointing to source modules under `src/`. It enforces Node.js 18.19+ and keeps distribution focused by publishing `src/` while excluding preset test folders. Script definitions separate unit, e2e, and acceptance test execution paths for predictable CI usage. Repository, licensing, keywords, and package manager pinning are configured to support reproducible development and publishing.",
         "chapter": "stack_and_ops",
         "role": "config",
         "enrich": {
-          "processedAt": "2026-04-10T12:37:22.721Z",
+          "processedAt": "2026-04-14T11:38:15.649Z",
           "attempts": 1
         },
         "keywords": [
@@ -295,9 +295,9 @@
       },
       {
         "file": "src/docs/commands/agents.js",
-        "hash": "5842a1692fd666606a216946bd06b811",
+        "hash": "f9e04e3b56cd241f65ba74bbda042571",
         "lines": 229,
-        "mtime": "2026-04-10T06:35:13.093Z",
+        "mtime": "2026-04-14T08:22:10.019Z",
         "className": "agents",
         "methods": [
           "buildAgentsSystemPrompt",
@@ -326,20 +326,21 @@
         "extends": null,
         "usedBy": null,
         "id": "5684c584",
-        "summary": "This command generates or refines `AGENTS.md` content using analysis and docs context. It merges directive resolution with AI-assisted polishing.",
-        "detail": "It builds system and refinement prompts from project docs, template content, repository metadata, and optional script definitions. Directive parsing and block replacement are used to preserve structured generated sections while updating targeted content. The command initializes `AGENTS.md` from templates when missing, then enriches it with context-aware edits. Agent invocation, logging, and failure propagation are handled through shared agent utilities.",
-        "chapter": "development",
+        "summary": "This command generates and refines `AGENTS.md` by combining project context, docs output, and directive resolution. It orchestrates agent prompting and writes the final file back to disk.",
+        "detail": "It reads CLI options, resolves project roots, and ensures `AGENTS.md` exists from a template when missing. The flow gathers analysis, docs chapter content, and README text to build a high-context refinement prompt. Directive blocks are parsed and resolved using a resolver pipeline so generated sections stay synchronized with analysis data. Agent execution is wrapped with logging and localized error handling, then transformed content is persisted as the updated agents guide.",
+        "chapter": "cli_commands",
         "role": "cli",
         "enrich": {
-          "processedAt": "2026-04-10T12:37:22.721Z",
+          "processedAt": "2026-04-14T11:38:15.649Z",
           "attempts": 1
         },
         "keywords": [
           "agents.md generation",
-          "prompt assembly",
           "directive resolution",
-          "ai refinement",
-          "developer guidance docs"
+          "prompt orchestration",
+          "analysis context",
+          "docs synthesis",
+          "command handler"
         ]
       },
       {
@@ -368,7 +369,8 @@
         "extends": null,
         "usedBy": [
           "src/lib/agent.js",
-          "src/lib/process.js"
+          "src/lib/process.js",
+          "src/lib/git-helpers.js"
         ],
         "id": "d83c89fb",
         "summary": "This command builds a changelog document from spec directories and metadata. It converts spec artifacts into a normalized markdown timeline.",
@@ -389,9 +391,9 @@
       },
       {
         "file": "src/docs/commands/data.js",
-        "hash": "8a9f28aad0173840ce6d669cb317b996",
+        "hash": "ef6836d08539fe96b1a82238d9bc2ba0",
         "lines": 194,
-        "mtime": "2026-04-10T06:35:13.093Z",
+        "mtime": "2026-04-14T08:22:10.019Z",
         "className": "data",
         "methods": [
           "populateFromAnalysis",
@@ -420,20 +422,21 @@
           "src/docs/commands/forge.js"
         ],
         "id": "83404fb1",
-        "summary": "This command resolves `{{data}}` directives in docs using analysis-derived values and data sources. It performs structured template population across chapter files.",
-        "detail": "It loads analysis output, applies docs-exclude filtering, and creates a resolver for directive evaluation. Per-file context rules adjust label handling so path-relative lookups stay accurate. Changes are written only when content differs, enabling idempotent runs and clear update tracking. The module also exposes `populateFromAnalysis` as reusable logic for higher-level orchestration commands.",
+        "summary": "This command populates docs templates by resolving `{{data}}` directives from analysis output. It updates only changed files and reports which chapters were modified.",
+        "detail": "The implementation validates prerequisites like `analysis.json` and constructs a resolver before processing chapter files. For each document, it parses directives, applies replacement logic, and tracks skipped directives when data is unavailable. It centralizes file writes behind change detection to avoid unnecessary rewrites. The module also applies analysis filtering rules and context-aware label handling so directive expansion remains stable across docs structures.",
         "chapter": "internal_design",
         "role": "cli",
         "enrich": {
-          "processedAt": "2026-04-10T12:37:22.721Z",
+          "processedAt": "2026-04-14T11:38:15.649Z",
           "attempts": 1
         },
         "keywords": [
-          "data directives",
+          "data directive",
           "template population",
           "analysis resolver",
-          "docs generation",
-          "idempotent write"
+          "chapter update",
+          "docs rendering",
+          "content injection"
         ]
       },
       {
@@ -506,9 +509,9 @@
       },
       {
         "file": "src/docs/commands/forge.js",
-        "hash": "75a82286e419e78835b7bac1570550ef",
+        "hash": "ba56dafcfd3d1ef05aa159194f8b5944",
         "lines": 445,
-        "mtime": "2026-04-10T06:35:13.093Z",
+        "mtime": "2026-04-14T08:22:10.019Z",
         "className": "forge",
         "methods": [
           "getTargetFiles",
@@ -545,21 +548,22 @@
         "extends": null,
         "usedBy": null,
         "id": "ef4fa5d9",
-        "summary": "This command orchestrates iterative documentation forging with optional agent and review loops. It manages target file selection, generation rounds, and quality gates.",
-        "detail": "It parses operational modes (`local`, `assist`, `agent`), timeout/concurrency settings, and run limits from CLI options. Relevant documentation targets are inferred from spec text and chapter metadata, then processed either per-file or as a whole. The workflow can invoke external review commands between rounds and stop on persistent failures. It integrates shared generation primitives (`data`, `text`, `readme`, `translate`) into a higher-level controlled loop.",
-        "chapter": "development",
-        "role": "controller",
+        "summary": "This is the high-level `docs forge` orchestrator that drives multi-round documentation generation and review. It supports local, assist, and agent modes with retry and concurrency controls.",
+        "detail": "The command parses extensive runtime options such as mode, timeout, max runs, and target file strategy. It estimates relevant chapter files from spec text, then executes per-file or bulk agent prompts with bounded parallelism. After generation, it chains post-steps like README generation and translation, and can invoke review commands to gate acceptance. Control flow includes explicit failure propagation and max-run enforcement, making it a central automation coordinator for docs production.",
+        "chapter": "cli_commands",
+        "role": "cli",
         "enrich": {
-          "processedAt": "2026-04-10T12:37:22.721Z",
+          "processedAt": "2026-04-14T11:38:15.649Z",
           "attempts": 1
         },
         "keywords": [
+          "forge pipeline",
           "iterative generation",
-          "review loop",
-          "forge workflow",
           "agent mode",
-          "quality gate",
-          "round-based docs build"
+          "concurrency control",
+          "review loop",
+          "docs automation",
+          "retry strategy"
         ]
       },
       {
@@ -613,9 +617,9 @@
       },
       {
         "file": "src/docs/commands/readme.js",
-        "hash": "636d83e3b535e93231d6a3958befcedb",
-        "lines": 191,
-        "mtime": "2026-04-10T06:35:13.093Z",
+        "hash": "05939e0d7dfeb2ba9d3457880edde760",
+        "lines": 192,
+        "mtime": "2026-04-14T08:22:10.019Z",
         "className": "readme",
         "methods": [
           "main"
@@ -641,27 +645,28 @@
         "extends": null,
         "usedBy": null,
         "id": "26628ac2",
-        "summary": "This command generates or updates README content using templates, data directives, and optional text-filling logic. It aligns README generation with docs pipeline conventions.",
-        "detail": "It resolves template chains, evaluates directives with a context-aware resolver, and applies output-path-specific label handling. The command supports writing to default root README or custom output paths for localized variants. Existing file comparison avoids unnecessary rewrites when content is unchanged. It shares infrastructure with docs generation modules for consistent behavior and config-driven control.",
+        "summary": "This command builds `README.md` from docs templates and resolved directive data. It merges templates, applies translation-aware transformations, and writes deterministic output.",
+        "detail": "It resolves project and output paths, then constructs resolver behavior tailored for README-relative links and labels. Template fragments are merged in chapter order and passed through directive parsing and text-processing stages. The module supports agent-assisted text fill using shared prompt builders and concurrency settings from config. Final output is compared against existing content before write, which helps keep filesystem changes minimal and predictable.",
         "chapter": "cli_commands",
         "role": "cli",
         "enrich": {
-          "processedAt": "2026-04-10T12:37:22.721Z",
+          "processedAt": "2026-04-14T11:38:15.649Z",
           "attempts": 1
         },
         "keywords": [
           "readme generation",
-          "template resolver",
+          "template merge",
+          "chapter ordering",
           "directive parser",
-          "content sync",
-          "localized readme"
+          "link resolution",
+          "content rendering"
         ]
       },
       {
         "file": "src/docs/commands/review.js",
-        "hash": "063a176635cfb583196881d07db029f8",
+        "hash": "140079445889d0301b92832dd1483125",
         "lines": 310,
-        "mtime": "2026-04-10T06:35:13.093Z",
+        "mtime": "2026-04-14T08:22:10.019Z",
         "className": "review",
         "methods": [
           "stripInlineCode",
@@ -687,20 +692,21 @@
         "extends": null,
         "usedBy": null,
         "id": "f3a5a725",
-        "summary": "This command reviews generated documentation for structural integrity and quality checks. It enforces directive safety and minimum content expectations.",
-        "detail": "It validates chapter presence, line-count thresholds, unresolved directive leakage, and malformed comment/block markers. The command inspects both docs chapter files and README when available, and can include localized docs paths. Analysis metadata key leakage checks prevent internal fields from appearing in output documents. Failures are aggregated and raised as a single review error suitable for CI gating.",
-        "chapter": "development",
+        "summary": "This command reviews generated documentation for structural integrity and quality gates. It validates chapter existence, directive leakage, and analysis metadata consistency.",
+        "detail": "The implementation scans docs targets and applies multiple static checks, including exposed directive markers and malformed block comments. It enforces baseline quality heuristics such as minimum line thresholds and required chapter presence. Review logic also inspects README and localized docs where applicable, then cross-checks against analysis metadata keys. Failures are reported through localized messages and terminate with an error to support CI gating.",
+        "chapter": "cli_commands",
         "role": "cli",
         "enrich": {
-          "processedAt": "2026-04-10T12:37:22.721Z",
+          "processedAt": "2026-04-14T11:38:15.649Z",
           "attempts": 1
         },
         "keywords": [
-          "docs review",
+          "documentation review",
           "integrity check",
-          "directive leakage",
           "quality gate",
-          "ci validation"
+          "directive leakage",
+          "static validation",
+          "ci guard"
         ]
       },
       {
@@ -763,9 +769,9 @@
       },
       {
         "file": "src/docs/commands/text.js",
-        "hash": "82f0cfb9040d1ebb71d208edea6904f3",
+        "hash": "2e8adc8951374202f1d9a39779bc1fdd",
         "lines": 774,
-        "mtime": "2026-04-10T06:35:13.094Z",
+        "mtime": "2026-04-14T08:22:10.020Z",
         "className": "text",
         "methods": [
           "textFillFromAnalysis",
@@ -820,28 +826,29 @@
           "src/docs/commands/readme.js"
         ],
         "id": "7c5e7654",
-        "summary": "This command fills `{{text}}` directives by generating narrative content from analysis using AI. It includes batching, validation, retry, and chapter change detection logic.",
-        "detail": "The module parses text directives, builds prompts, and can process either per-directive or JSON batch responses for efficiency. It validates generated output against shrinkage and structural heuristics to prevent destructive rewrites. Changed-source detection allows targeted chapter regeneration based on hash diffs in analysis entries. The command exposes reusable helpers and returns structured error collections for orchestrators.",
+        "summary": "This module implements text directive filling for docs using agent-generated content and batch JSON application. It also exports reusable helpers for validation and incremental chapter targeting.",
+        "detail": "Core logic parses `{{text}}` directives, builds prompts, calls the configured agent, and strips preambles from model output. A batch mode parses JSON responses and safely applies generated text blocks while tracking filled and skipped directives. Validation guards detect malformed or shrinking outputs and can retry based on configured limits. The command entrypoint coordinates changed-chapter detection, selective processing, concurrency, and error aggregation across files.",
         "chapter": "internal_design",
         "role": "cli",
         "enrich": {
-          "processedAt": "2026-04-10T12:37:22.721Z",
+          "processedAt": "2026-04-14T11:38:15.649Z",
           "attempts": 1
         },
         "keywords": [
-          "text directives",
-          "ai text generation",
-          "batch fill",
-          "output validation",
+          "text directive",
+          "batch generation",
+          "json repair",
+          "agent prompt",
           "chapter diff detection",
-          "retry logic"
+          "content validation",
+          "incremental update"
         ]
       },
       {
         "file": "src/docs/commands/translate.js",
-        "hash": "ae7297d331d69dc591660de5872d422e",
+        "hash": "ce12bd0cdb65e8211f364f0187ea9985",
         "lines": 228,
-        "mtime": "2026-04-10T06:35:13.094Z",
+        "mtime": "2026-04-14T08:22:10.020Z",
         "className": "translate",
         "methods": [
           "toneInstruction",
@@ -869,20 +876,21 @@
         "extends": null,
         "usedBy": null,
         "id": "fd496e07",
-        "summary": "This command translates docs and README into configured target languages using an AI agent. It schedules translation tasks based on freshness and force options.",
-        "detail": "It derives translation jobs from chapter files and README availability, creating per-language output directories as needed. Translation is skipped when targets are newer unless `--force` is used, minimizing redundant work. The command applies style/tone instructions and strips model preambles from returned content. Concurrency controls and progress logging allow scalable translation runs in multi-language projects.",
+        "summary": "This command translates docs and README into configured target languages using an agent backend. It builds translation tasks from file timestamps and optional force flags.",
+        "detail": "It computes translation workload by comparing source and target modification times, minimizing unnecessary rewrites. For each task, it sends style-aware translation prompts and strips response preambles before saving results. The implementation ensures target language directories exist and handles missing docs prerequisites with clear errors. Task execution is parallelized with concurrency controls to scale multi-language documentation updates.",
         "chapter": "cli_commands",
         "role": "cli",
         "enrich": {
-          "processedAt": "2026-04-10T12:37:22.721Z",
+          "processedAt": "2026-04-14T11:38:15.649Z",
           "attempts": 1
         },
         "keywords": [
           "document translation",
-          "multilingual docs",
-          "freshness-based skip",
-          "agent translation",
-          "localization pipeline"
+          "localization",
+          "mtime sync",
+          "language targets",
+          "parallel tasks",
+          "readme translation"
         ]
       },
       {
@@ -924,9 +932,9 @@
       },
       {
         "file": "src/docs/data/docs.js",
-        "hash": "d6cad83298744d27552ed17facad80db",
+        "hash": "2bade7f2970accd62009952bb7ce6b18",
         "lines": 288,
-        "mtime": "2026-04-10T06:35:13.094Z",
+        "mtime": "2026-04-14T08:22:10.020Z",
         "className": "docs",
         "methods": [],
         "imports": [
@@ -943,21 +951,22 @@
         "extends": "DataSource",
         "usedBy": null,
         "id": "273334ae",
-        "summary": "This data source serves documentation-centric computed values such as links, navigation, and language metadata. It supports cross-language path and repository URL generation.",
-        "detail": "It derives repository links from package repository settings and normalizes git-style URLs. The class computes language-relative paths for docs and README references across default and localized directories. It loads locale language names from UI translation files with fallback to English. Chapter listing, title extraction, and markdown table rendering provide reusable docs index primitives.",
+        "summary": "This `DocsSource` class provides docs-aware data access and link generation for template rendering. It encapsulates repository URL handling, language path logic, and navigation table output.",
+        "detail": "As a `DataSource` implementation, it reads project metadata and chapter files to expose structured documentation fields. The class computes language-relative links for README and docs contexts, including default-language and translated variants. It also generates markdown navigation rows and prev/next chapter links by extracting titles from files. Locale metadata is loaded with fallback behavior to keep language naming resilient when specific UI files are missing.",
         "chapter": "internal_design",
         "role": "model",
         "enrich": {
-          "processedAt": "2026-04-10T12:37:22.721Z",
+          "processedAt": "2026-04-14T11:38:15.649Z",
           "attempts": 1
         },
         "keywords": [
-          "docs datasource",
-          "cross-language links",
-          "repo url mapping",
-          "navigation helpers",
-          "localization metadata",
-          "markdown table"
+          "data source",
+          "docs navigation",
+          "language routing",
+          "markdown table",
+          "repository links",
+          "title extraction",
+          "localization metadata"
         ]
       },
       {
@@ -1186,9 +1195,9 @@
       },
       {
         "file": "src/docs/lib/command-context.js",
-        "hash": "ed0b0ef92e7136ffc284bf3de918997e",
-        "lines": 181,
-        "mtime": "2026-04-10T06:35:13.094Z",
+        "hash": "e8d0a62579afc8d743322bd0a6a154ff",
+        "lines": 183,
+        "mtime": "2026-04-14T08:22:10.020Z",
         "className": "command-context",
         "methods": [
           "resolveCommandContext",
@@ -1224,20 +1233,21 @@
           "src/docs/commands/readme.js"
         ],
         "id": "10a78227",
-        "enrich": {
-          "processedAt": "2026-04-10T14:34:55.016Z",
-          "attempts": 2
-        },
-        "summary": "Builds a normalized execution context for docs commands and utility readers. It centralizes path resolution, analysis loading, chapter file discovery, and text cleanup helpers.",
-        "detail": "The module resolves root-relative directories from CLI options and overrides, then returns a structured command context object. It provides safe JSON loading wrappers for outputs such as analysis artifacts and guards against missing files. It also filters chapter files with exclude rules, supports fallback file reads, and strips agent response preambles before downstream processing.",
-        "chapter": "cli_commands",
+        "summary": "This shared context module resolves docs command runtime state and analysis loading helpers. It centralizes root resolution, chapter discovery, and response preamble stripping.",
+        "detail": "It normalizes CLI and override inputs into a consistent command context containing root, docs directory, config, and agent data. Analysis loaders read generated JSON outputs safely and return null on absent files. Chapter file selection supports exclusions and ordered filtering through template merger integration. Utility helpers provide small, repeatable operations like safe text reads and model-output preamble removal used across command modules.",
+        "chapter": "internal_design",
         "role": "lib",
+        "enrich": {
+          "processedAt": "2026-04-14T11:38:15.649Z",
+          "attempts": 1
+        },
         "keywords": [
           "command context",
-          "path resolution",
+          "root resolution",
           "analysis loader",
-          "chapter files",
-          "text preamble strip"
+          "chapter discovery",
+          "shared utility",
+          "preamble stripping"
         ]
       },
       {
@@ -2135,9 +2145,9 @@
       },
       {
         "file": "src/flow/commands/merge.js",
-        "hash": "159dc22ff88591be40d9e1b3d6271e3b",
+        "hash": "8a05e8d40c2d06eb4fc96aa9ad3f6791",
         "lines": 210,
-        "mtime": "2026-04-10T06:35:13.095Z",
+        "mtime": "2026-04-14T11:37:06.522Z",
         "className": "merge",
         "methods": [
           "resolveRemote",
@@ -2164,20 +2174,21 @@
         "extends": null,
         "usedBy": null,
         "id": "3a0db928",
-        "enrich": {
-          "processedAt": "2026-04-10T14:34:55.016Z",
-          "attempts": 2
-        },
-        "summary": "Implements flow merge behavior for squash or PR strategies. It parses spec metadata and builds PR title/body content for GitHub-based merging.",
-        "detail": "The command reads spec files, extracts sections, and derives merge descriptions and fallback titles. It selects strategy based on config and environment, including `gh` availability checks for PR mode. Squash merge execution runs git commands with conflict detection and returns strategy-specific outcomes.",
+        "summary": "This flow command handles merge completion, including PR creation and squash-based strategies. It parses spec content to derive PR title/body metadata when available.",
+        "detail": "The module resolves merge strategy from flow configuration and checks prerequisites such as GitHub CLI availability for PR routing. It extracts structured sections from specs to build more informative pull request content. For local merge paths, it runs git operations and surfaces conflicts with actionable error hints. Return payloads encode the chosen strategy so upstream finalize steps can report deterministic outcomes.",
         "chapter": "cli_commands",
-        "role": "controller",
+        "role": "cli",
+        "enrich": {
+          "processedAt": "2026-04-14T11:38:15.649Z",
+          "attempts": 1
+        },
         "keywords": [
-          "merge command",
+          "flow merge",
+          "pull request route",
           "squash merge",
-          "pull request",
           "spec parsing",
-          "GitHub CLI"
+          "merge strategy",
+          "git conflict handling"
         ]
       },
       {
@@ -2226,12 +2237,13 @@
       },
       {
         "file": "src/flow/commands/review.js",
-        "hash": "65e270f2cbf15b1f3846693ad0e78d86",
-        "lines": 944,
-        "mtime": "2026-04-13T15:00:04.769Z",
+        "hash": "828429281e630f8132983a1d00b87ab2",
+        "lines": 951,
+        "mtime": "2026-04-14T11:37:06.522Z",
         "className": "review",
         "methods": [
           "resolveReviewTarget",
+          "collectCommittedAndStagedDiff",
           "buildDraftSystemPrompt",
           "buildFinalSystemPrompt",
           "parseProposals",
@@ -2267,7 +2279,7 @@
           "../../lib/config.js",
           "../../lib/flow-state.js",
           "../../lib/agent.js",
-          "../../lib/process.js",
+          "../../lib/git-helpers.js",
           "../../lib/exit-codes.js",
           "../../lib/constants.js"
         ],
@@ -2295,22 +2307,22 @@
         "extends": null,
         "usedBy": null,
         "id": "331cf497",
-        "enrich": {
-          "processedAt": "2026-04-13T15:16:23.012Z",
-          "attempts": 2
-        },
-        "summary": "Implements the `flow review` command pipeline for code, spec, and test review phases with optional auto-fix loops. It orchestrates AI-driven proposal generation, verdict merging, markdown reporting, and retry-based remediation.",
-        "detail": "The module resolves review targets from flow state and spec references, then builds specialized prompts for draft, final, spec, and test review contexts. It parses structured AI output into proposals or gaps, merges verdicts, and renders deterministic review artifacts such as `review.md`, `spec-review.md`, and `test-review.md`. For fixable issues, it runs bounded retry loops that call a fix function and re-evaluate until pass/fail convergence. It also includes helpers for extracting requirements and scope, formatting test files for prompting, validating spec output shape, and stripping model preambles before writing. The `main` entrypoint validates CLI inputs and phase selection, then dispatches to test/spec/code review routines with consistent exit behavior.",
-        "chapter": "cli_commands",
+        "summary": "This command runs iterative review workflows for code, spec, and tests inside the flow pipeline. It uses agent-driven proposal, verdict merge, and optional auto-fix loops.",
+        "detail": "It collects relevant diffs and context files, then builds specialized prompts for draft, spec, implementation, and test-gap analysis. Review cycles are bounded by retry limits and can apply approved fixes directly to source or test artifacts. Outputs are normalized into markdown reports (`review.md`, `spec-review.md`, `test-review.md`) under the spec directory. The command enforces phase validity and exits with explicit error codes on unresolved issues.",
+        "chapter": "development",
         "role": "cli",
+        "enrich": {
+          "processedAt": "2026-04-14T11:38:15.649Z",
+          "attempts": 1
+        },
         "keywords": [
-          "review command",
-          "ai review loop",
+          "review loop",
           "spec review",
           "test gap analysis",
-          "auto-fix retries",
-          "markdown report",
-          "flow phase"
+          "auto-fix",
+          "diff inspection",
+          "flow phase",
+          "quality feedback"
         ]
       },
       {
@@ -2378,9 +2390,9 @@
       },
       {
         "file": "src/flow/lib/get-check.js",
-        "hash": "9af43e0d996d2d0c66ab7318e3161b84",
-        "lines": 84,
-        "mtime": "2026-04-13T12:57:49.487Z",
+        "hash": "817db024654161edc92b0ff46ea47b3e",
+        "lines": 83,
+        "mtime": "2026-04-14T11:37:06.522Z",
         "className": "get-check",
         "methods": [
           "checkStepPrereqs",
@@ -2388,7 +2400,6 @@
           "checkGh"
         ],
         "imports": [
-          "../../lib/process.js",
           "../../lib/git-helpers.js",
           "../../lib/constants.js",
           "./base-command.js"
@@ -2399,28 +2410,28 @@
         "extends": "FlowCommand",
         "usedBy": null,
         "id": "10eecc8b",
-        "summary": "Provides prerequisite checks for flow targets such as repository cleanliness, GitHub CLI availability, and required step completion. It exposes these checks through a command class.",
-        "detail": "The file defines target-specific prerequisite maps and evaluates flow-state conditions against required steps. It includes concrete environment checks for `git status` and `gh` availability with pass/fail summaries and machine-readable check rows. Validation ensures the target is present and part of the allowed check targets constant set. If no active flow state is found for step-based checks, it fails fast with an explicit error. The command returns a normalized check result object used by higher-level flow tooling.",
+        "summary": "This module implements `flow get-check` prerequisite validation for flow targets. It evaluates workspace cleanliness, tool availability, and step-level requirements.",
+        "detail": "It defines target-to-prerequisite mappings and checks them against current flow state with structured pass/fail results. Git dirty-state detection and `gh` availability checks are wrapped into reusable check functions. The command class validates input target names against constant enums and throws clear errors for invalid usage. Results include summary text plus per-check diagnostics to support both human and automated consumers.",
         "chapter": "cli_commands",
         "role": "cli",
         "enrich": {
-          "processedAt": "2026-04-13T12:58:47.344Z",
+          "processedAt": "2026-04-14T11:38:15.649Z",
           "attempts": 1
         },
         "keywords": [
-          "preflight checks",
-          "flow prerequisites",
-          "git status",
-          "gh cli",
-          "step validation",
-          "command guard"
+          "prerequisite check",
+          "flow validation",
+          "dirty workspace",
+          "github cli check",
+          "step gating",
+          "diagnostic summary"
         ]
       },
       {
         "file": "src/flow/lib/get-context.js",
-        "hash": "7b783176b5d26b3c8b54777a800525e2",
-        "lines": 400,
-        "mtime": "2026-04-13T15:00:04.769Z",
+        "hash": "02481ac3f3cf3a7f1785c5b8be53ca92",
+        "lines": 401,
+        "mtime": "2026-04-14T08:22:10.020Z",
         "className": "get-context",
         "methods": [
           "toSearchResult",
@@ -2465,22 +2476,22 @@
           "src/docs/commands/readme.js"
         ],
         "id": "1261e39f",
-        "enrich": {
-          "processedAt": "2026-04-13T15:16:23.012Z",
-          "attempts": 2
-        },
-        "summary": "Provides context retrieval and semantic search utilities over generated analysis entries for flow commands. It supports keyword, fallback text match, n-gram similarity, and optional AI-assisted keyword selection.",
-        "detail": "The file normalizes analysis entries into compact search results while excluding metadata-only fields. It offers deterministic matching via title/content/keyword filtering, plus a bigram-based similarity scorer to rank approximate matches. An AI path can select relevant keywords from a bounded vocabulary, then reuse the same deterministic filtering to keep output stable. It loads `analysis.json` from the configured output directory and throws explicit errors for missing or malformed data. The exported `GetContextCommand` reads file content or search results and returns structured context payloads for downstream prompt construction.",
+        "summary": "This module powers `flow get-context` by loading analysis entries and searching them with keyword, fallback, and n-gram strategies. It also provides optional AI-assisted keyword selection.",
+        "detail": "It normalizes analysis records into searchable structures while excluding noisy metadata fields. Search modes include direct keyword matching, fuzzy bigram similarity ranking, and a guarded AI keyword picker with fallback behavior. The command can also return file snippets and phase-aware context payloads for downstream flow actions. Helper exports keep search primitives reusable across other flow tooling.",
         "chapter": "internal_design",
         "role": "lib",
+        "enrich": {
+          "processedAt": "2026-04-14T11:38:15.649Z",
+          "attempts": 1
+        },
         "keywords": [
           "context retrieval",
-          "semantic search",
+          "analysis search",
           "ngram similarity",
           "keyword selection",
-          "analysis index",
-          "fallback matching",
-          "prompt context"
+          "fuzzy match",
+          "phase context",
+          "flow support"
         ]
       },
       {
@@ -2744,9 +2755,9 @@
       },
       {
         "file": "src/flow/lib/run-finalize.js",
-        "hash": "dfaec73c47ab960c1b771ff5b53cd0ae",
-        "lines": 375,
-        "mtime": "2026-04-13T12:57:49.487Z",
+        "hash": "e431d0e39e4b70f4b78cdae60db8dd70",
+        "lines": 376,
+        "mtime": "2026-04-14T11:37:06.523Z",
         "className": "run-finalize",
         "methods": [
           "finalizeOnError",
@@ -2786,29 +2797,29 @@
         "extends": "FlowCommand",
         "usedBy": null,
         "id": "c711309b",
-        "summary": "Implements finalize-stage orchestration for SDD flow, including preflight, selective step execution, commit/post actions, and cleanup. It also supports merge strategy validation and failure-safe cleanup hooks.",
-        "detail": "The module defines reusable finalize steps mapped to named operations and executes them with consistent status handling. It performs git write-access preflight by resolving the common git directory and verifying lock file creation before proceeding. Commit logic can skip clean trees, collect diff summaries, and run post-commit actions such as documentation build hooks and optional issue updates. Cleanup handles worktree teardown and spec-only mode behavior without assuming every path exists. Error helpers normalize low-level git or filesystem failures into user-facing finalize errors.",
+        "summary": "This module implements the flow finalization pipeline, including preflight checks, commit/merge execution, and cleanup. It structures finalize steps into a selectable command map with error wrappers.",
+        "detail": "It verifies git write access before mutation and converts failures into actionable preflight errors. Step handlers cover commit decisions, documentation build hooks, merge execution, issue-log updates, and worktree cleanup. The `RunFinalizeCommand` validates mode and strategy inputs, supports partial step execution, and emits normalized status objects. Shared helpers collect git summaries and preserve robust failure boundaries across each finalize phase.",
         "chapter": "cli_commands",
         "role": "cli",
         "enrich": {
-          "processedAt": "2026-04-13T12:58:47.344Z",
+          "processedAt": "2026-04-14T11:38:15.649Z",
           "attempts": 1
         },
         "keywords": [
-          "finalize pipeline",
-          "preflight",
+          "flow finalize",
+          "preflight check",
+          "commit pipeline",
           "merge strategy",
-          "cleanup",
-          "worktree",
-          "commit orchestration",
-          "post-commit hook"
+          "cleanup workflow",
+          "step map",
+          "error handling"
         ]
       },
       {
         "file": "src/flow/lib/run-gate.js",
-        "hash": "446b9bdb1a0e26d499855828bea6554a",
-        "lines": 539,
-        "mtime": "2026-04-14T08:21:38.519Z",
+        "hash": "b4cb4b41ccedf32b2d73b658026fd4e6",
+        "lines": 542,
+        "mtime": "2026-04-14T11:37:06.523Z",
         "className": "run-gate",
         "methods": [
           "RunGateCommand",
@@ -2828,6 +2839,7 @@
           "fs",
           "path",
           "../../lib/process.js",
+          "../../lib/git-helpers.js",
           "../../lib/agent.js",
           "../../lib/guardrail.js",
           "../../lib/flow-state.js",
@@ -2847,29 +2859,29 @@
         "extends": "FlowCommand",
         "usedBy": null,
         "id": "b4aa4dad",
-        "summary": "RunGateCommand implements multi-phase gate checks for draft, spec, and implementation stages in the flow lifecycle. It validates artifacts, evaluates guardrails, and returns pass/fail decisions with actionable reasons.",
-        "detail": "The module combines local static checks with optional agent-based guardrail evaluation, using phase-specific logic and shared parsing helpers. It inspects markdown structure, draft completeness, and implementation evidence such as git diff and test outputs. Guardrail prompting and response parsing are isolated into dedicated functions so policy checks remain extensible. Gate outcomes are normalized through gatePass and gateFail factories, including next-step routing for workflow progression. The command supports explicit phase selection and active-flow fallback, with strict errors for missing specs or invalid phases.",
-        "chapter": "internal_design",
+        "summary": "This module enforces flow gate checks for draft, spec, and implementation phases. It combines structural linting, guardrail evaluation, diff inspection, and test-evidence checks.",
+        "detail": "Phase-specific routines validate required headings and anti-patterns in draft/spec text before any agent guardrail call. Guardrail prompts are generated from configured rules and parsed into pass/fail verdict details. Implementation gating inspects git diffs against the base branch and can include test evidence in the review prompt. Returned gate results contain next-step hints for both success and failure paths, aligning with flow state transitions.",
+        "chapter": "cli_commands",
         "role": "cli",
         "enrich": {
-          "processedAt": "2026-04-14T08:22:01.024Z",
+          "processedAt": "2026-04-14T11:38:15.649Z",
           "attempts": 1
         },
         "keywords": [
-          "quality gate",
-          "spec validation",
-          "guardrails",
-          "implementation check",
-          "workflow phase",
-          "git diff analysis",
-          "agent evaluation"
+          "gate validation",
+          "draft check",
+          "spec lint",
+          "guardrail policy",
+          "implementation gate",
+          "diff review",
+          "phase transition"
         ]
       },
       {
         "file": "src/flow/lib/run-impl-confirm.js",
-        "hash": "c8409a974ac82c8e0e78609b76159df8",
+        "hash": "e37144ed0778c0f2d9c0fb59145eb86f",
         "lines": 102,
-        "mtime": "2026-04-13T12:57:49.487Z",
+        "mtime": "2026-04-14T11:37:06.523Z",
         "className": "run-impl-confirm",
         "methods": [
           "RunImplConfirmCommand",
@@ -2879,7 +2891,7 @@
         "imports": [
           "fs",
           "path",
-          "../../lib/process.js",
+          "../../lib/git-helpers.js",
           "../../lib/constants.js",
           "./base-command.js"
         ],
@@ -2890,21 +2902,21 @@
         "extends": "FlowCommand",
         "usedBy": null,
         "id": "e6534160",
-        "summary": "Provides implementation confirmation reporting by comparing changed files to requirement completion state. It supports multiple output modes through a flow command.",
-        "detail": "The module collects changed files from git diff against the configured base branch and normalizes file lists. It summarizes requirement status counts, including done, pending, and in-progress items, to produce compact progress signals. The command validates mode input against allowed confirm modes and inspects active flow state for spec presence. It conditionally checks whether the spec file still exists and returns a structured payload combining requirements and code-change context. This enables lightweight readiness checks before review or finalize phases.",
+        "summary": "This module confirms implementation progress by comparing requirements status with changed files. It returns concise completion metrics for flow confirmation modes.",
+        "detail": "It gathers changed files from git relative to the base branch and summarizes requirement items into done, pending, and in-progress counts. The command validates mode values against constant enums and handles missing spec state safely. Spec existence is checked before metrics generation to keep status responses trustworthy. Results are returned in a structured format suitable for both CLI display and downstream automation.",
         "chapter": "cli_commands",
         "role": "cli",
         "enrich": {
-          "processedAt": "2026-04-13T12:58:47.344Z",
+          "processedAt": "2026-04-14T11:38:15.649Z",
           "attempts": 1
         },
         "keywords": [
           "implementation confirm",
-          "requirements status",
+          "requirement progress",
           "changed files",
-          "progress summary",
-          "diff inspection",
-          "readiness check"
+          "completion metrics",
+          "flow status",
+          "spec validation"
         ]
       },
       {
@@ -2946,13 +2958,13 @@
       },
       {
         "file": "src/flow/lib/run-prepare-spec.js",
-        "hash": "8d0bbc1520d6bc33407787ab74e5f190",
-        "lines": 338,
-        "mtime": "2026-04-13T12:56:41.650Z",
+        "hash": "4b1c8616dae198a316fa8102df79bdb6",
+        "lines": 339,
+        "mtime": "2026-04-14T11:37:06.523Z",
         "className": "run-prepare-spec",
         "methods": [
           "RunPrepareSpecCommand",
-          "runGit",
+          "runGitTrim",
           "slugify",
           "nextIndex",
           "ensureClean",
@@ -2981,22 +2993,9 @@
         "extends": "FlowCommand",
         "usedBy": null,
         "id": "59eeacc6",
-        "summary": "This file prepares a new spec workflow by generating branch/spec metadata and initializing spec artifacts. It enforces repository preconditions and writes initial flow state.",
-        "detail": "The command validates cleanliness and branch requirements, then determines naming via slug logic and indexed spec directory allocation. It loads localized templates from project overrides under `.sdd-forge/templates` with built-in fallbacks for spec and QA documents. It creates spec directories and files idempotently, only writing files that do not already exist. The implementation encapsulates git checks, template rendering, and flow state bootstrap in one orchestration entrypoint aligned with `prepare-spec` semantics.",
-        "chapter": "development",
-        "role": "controller",
         "enrich": {
-          "processedAt": "2026-04-13T12:57:13.817Z",
           "attempts": 1
-        },
-        "keywords": [
-          "prepare spec",
-          "template generation",
-          "git preflight",
-          "spec scaffolding",
-          "branch detection",
-          "workflow bootstrap"
-        ]
+        }
       },
       {
         "file": "src/flow/lib/run-report.js",
@@ -3078,9 +3077,9 @@
       },
       {
         "file": "src/flow/lib/run-retro.js",
-        "hash": "a223d86a11515a60ca8d5afe2ce8f459",
-        "lines": 234,
-        "mtime": "2026-04-13T15:00:04.769Z",
+        "hash": "b935c54e65f39d63544dfa6421e4b19a",
+        "lines": 235,
+        "mtime": "2026-04-14T11:37:06.523Z",
         "className": "run-retro",
         "methods": [
           "RunRetroCommand",
@@ -3093,7 +3092,7 @@
         "imports": [
           "fs",
           "path",
-          "../../lib/process.js",
+          "../../lib/git-helpers.js",
           "../../lib/agent.js",
           "../../lib/json-parse.js",
           "../../lib/flow-state.js",
@@ -3110,22 +3109,8 @@
         "usedBy": null,
         "id": "862e7d08",
         "enrich": {
-          "processedAt": "2026-04-13T15:16:23.012Z",
-          "attempts": 2
-        },
-        "summary": "Implements retrospective generation for finalized flow work and writes normalized `retro.json` output under the spec directory. It extracts requirements, computes diff context, queries an AI agent, and validates/parses structured JSON results.",
-        "detail": "The command reads flow/spec state, enforces preconditions such as existing requirements and base branch availability, and rejects empty change sets. It builds a prompt that combines requirement text, requirement list, and detailed diff context for retrospective scoring. Response parsing uses strict JSON parsing with a repair fallback to tolerate minor formatting defects while preserving structure. It prevents accidental overwrite unless forced and records changed files in the command result payload. The implementation follows a clear controller pattern: validate inputs, collect evidence, call agent, parse, persist.",
-        "chapter": "cli_commands",
-        "role": "cli",
-        "keywords": [
-          "retrospective",
-          "postmortem",
-          "retro.json",
-          "requirement coverage",
-          "diff analysis",
-          "ai summary",
-          "flow finalize"
-        ]
+          "attempts": 1
+        }
       },
       {
         "file": "src/flow/lib/run-review.js",
@@ -3176,9 +3161,9 @@
       },
       {
         "file": "src/flow/lib/run-sync.js",
-        "hash": "b7cfb93db92b8118b54fc1d7cda18b4c",
-        "lines": 86,
-        "mtime": "2026-04-10T06:35:13.097Z",
+        "hash": "a8b41d193e614509ccae6de008e483e9",
+        "lines": 87,
+        "mtime": "2026-04-14T11:37:06.523Z",
         "className": "run-sync",
         "methods": [
           "RunSyncCommand"
@@ -3186,6 +3171,7 @@
         "imports": [
           "../../lib/cli.js",
           "../../lib/process.js",
+          "../../lib/git-helpers.js",
           "./base-command.js",
           "path"
         ],
@@ -3197,21 +3183,8 @@
         "usedBy": null,
         "id": "6cc87b22",
         "enrich": {
-          "processedAt": "2026-04-13T05:28:46.709Z",
-          "attempts": 5
-        },
-        "summary": "This command runs documentation synchronization as part of flow automation. It executes the docs script and enforces success through assertions.",
-        "detail": "It resolves script paths from package directories and launches commands through shared process helpers. Command failures are promoted to explicit runtime errors with contextual messages. Success results include changed file metadata for follow-up flow reporting. The design keeps sync logic minimal and delegates heavy work to existing docs generation scripts.",
-        "chapter": "cli_commands",
-        "role": "controller",
-        "keywords": [
-          "docs sync",
-          "flow sync",
-          "script runner",
-          "assertOk",
-          "change tracking",
-          "automation command"
-        ]
+          "attempts": 1
+        }
       },
       {
         "file": "src/flow/lib/set-auto.js",
@@ -3306,7 +3279,8 @@
           "src/flow/lib/run-report.js",
           "src/flow/registry.js",
           "src/lib/agent.js",
-          "src/lib/process.js"
+          "src/lib/process.js",
+          "src/lib/git-helpers.js"
         ],
         "id": "65ac9e4f",
         "enrich": {
@@ -3809,9 +3783,9 @@
       },
       {
         "file": "src/lib/cli.js",
-        "hash": "598fe39cfb8675912e57bfb5140e16d7",
-        "lines": 144,
-        "mtime": "2026-04-10T06:35:13.099Z",
+        "hash": "3e539addd117f48d08cc7e97882bef10",
+        "lines": 148,
+        "mtime": "2026-04-14T11:37:06.523Z",
         "className": "cli",
         "methods": [
           "repoRoot",
@@ -3849,28 +3823,15 @@
           "src/lib/i18n.js",
           "src/lib/log.js",
           "src/lib/skills.js",
+          "src/metrics.js",
           "src/sdd-forge.js",
           "src/setup.js",
-          "src/upgrade.js",
-          "src/metrics.js"
+          "src/upgrade.js"
         ],
         "id": "f351ecc4",
         "enrich": {
-          "processedAt": "2026-04-13T05:28:46.709Z",
-          "attempts": 5
-        },
-        "summary": "This module contains CLI environment utilities such as repo root detection, argument parsing, and package metadata helpers. It centralizes low-level command-line concerns used by many commands.",
-        "detail": "Root resolution honors explicit environment overrides before falling back to git-based detection and current directory defaults. The argument parser supports option specs, unknown-option rejection, and positional passthrough handling. Worktree detection and main-repo path resolution use git metadata to distinguish linked worktree contexts. It also provides UTC timestamp formatting and package version lookup for UI and logging features.",
-        "chapter": "project_structure",
-        "role": "lib",
-        "keywords": [
-          "cli utilities",
-          "repo root",
-          "arg parser",
-          "worktree detection",
-          "package version",
-          "timestamp format"
-        ]
+          "attempts": 1
+        }
       },
       {
         "file": "src/lib/config.js",
@@ -4107,9 +4068,9 @@
       },
       {
         "file": "src/lib/flow-state.js",
-        "hash": "4dbb36ccd50f23363081b11d026667c3",
-        "lines": 910,
-        "mtime": "2026-04-13T14:16:19.808Z",
+        "hash": "38cc06c99ca5664ef63a8d5424aece07",
+        "lines": 944,
+        "mtime": "2026-04-14T11:37:06.523Z",
         "className": "flow-state",
         "methods": [
           "getSpecName",
@@ -4146,6 +4107,7 @@
           "resolveByRunId",
           "activeFlowPath",
           "resolveMainRoot",
+          "runGitFailOpenBoolean",
           "worktreeExists",
           "branchExists",
           "specFlowPath",
@@ -4157,7 +4119,7 @@
           "fs",
           "path",
           "crypto",
-          "./process.js",
+          "./git-helpers.js",
           "./config.js",
           "./cli.js"
         ],
@@ -4203,22 +4165,8 @@
         ],
         "id": "5bb0bb76",
         "enrich": {
-          "processedAt": "2026-04-13T15:16:23.012Z",
-          "attempts": 3
-        },
-        "summary": "Implements persistent flow-state management, active flow tracking, preparing-flow lifecycle, and cross-worktree resolution utilities. It is the core model layer backing SDD flow progress, metadata, and metrics.",
-        "detail": "The module provides read/write primitives for `flow.json`, derives phase from step completion, and exposes mutation helpers for requirements, notes, issues, and step status. It manages active flow lists with stale-entry cleanup using branch/worktree existence checks and supports temporary preparing state files with TTL-based garbage collection. It includes path resolution utilities to map main repository and worktree contexts, plus scan functions to enumerate states across specs and worktrees. Metrics accumulation helpers aggregate agent usage and review counters in state, with resilient error handling for telemetry writes. The design keeps state transitions explicit and centralized, enabling higher-level commands to remain thin controllers.",
-        "chapter": "internal_design",
-        "role": "model",
-        "keywords": [
-          "flow state",
-          "state persistence",
-          "active flow",
-          "worktree resolution",
-          "phase derivation",
-          "metrics accumulation",
-          "spec tracking"
-        ]
+          "attempts": 1
+        }
       },
       {
         "file": "src/lib/formatter.js",
@@ -4255,11 +4203,12 @@
       },
       {
         "file": "src/lib/git-helpers.js",
-        "hash": "56236f738f9b70f6c9890a7baa774fff",
-        "lines": 71,
-        "mtime": "2026-04-10T06:35:13.099Z",
+        "hash": "529f149cffefc4b96349b326cae8cc07",
+        "lines": 92,
+        "mtime": "2026-04-14T11:37:06.524Z",
         "className": "git-helpers",
         "methods": [
+          "runGit",
           "getWorktreeStatus",
           "getCurrentBranch",
           "getAheadCount",
@@ -4269,9 +4218,11 @@
           "commentOnIssue"
         ],
         "imports": [
-          "./process.js"
+          "./process.js",
+          "./log.js"
         ],
         "exports": [
+          "runGit",
           "getWorktreeStatus",
           "getCurrentBranch",
           "getAheadCount",
@@ -4281,24 +4232,14 @@
           "commentOnIssue"
         ],
         "extends": null,
-        "usedBy": null,
+        "usedBy": [
+          "src/lib/flow-state.js",
+          "src/lib/lint.js"
+        ],
         "id": "61b28e9c",
         "enrich": {
-          "processedAt": "2026-04-13T05:28:46.709Z",
-          "attempts": 5
-        },
-        "summary": "This module provides reusable Git helper operations for branch, diff, and issue-comment workflows. It wraps command execution and normalizes output for higher-level flow commands.",
-        "detail": "Functions expose worktree dirtiness, current branch, ahead count, and last commit retrieval with graceful fallback values. It aggregates git summary artifacts like diff stats and commit message lists for reporting contexts. GitHub CLI availability checks and issue comment posting are included behind thin wrappers. Error surfaces are normalized through shared process-format helpers.",
-        "chapter": "development",
-        "role": "lib",
-        "keywords": [
-          "git helpers",
-          "branch status",
-          "diff stat",
-          "commit metadata",
-          "gh cli",
-          "issue comment"
-        ]
+          "attempts": 1
+        }
       },
       {
         "file": "src/lib/guardrail.js",
@@ -4487,9 +4428,9 @@
       },
       {
         "file": "src/lib/lint.js",
-        "hash": "7d1cd2033a82b7e116c17ddfc41a05b0",
-        "lines": 125,
-        "mtime": "2026-04-10T06:35:13.100Z",
+        "hash": "6a57e44692c09dcc845eeceb086e86e3",
+        "lines": 126,
+        "mtime": "2026-04-14T11:37:06.524Z",
         "className": "lint",
         "methods": [
           "validateLintGuardrails",
@@ -4501,6 +4442,7 @@
           "fs",
           "path",
           "./process.js",
+          "./git-helpers.js",
           "./guardrail.js"
         ],
         "exports": [
@@ -4513,21 +4455,8 @@
         "usedBy": null,
         "id": "aa4a324d",
         "enrich": {
-          "processedAt": "2026-04-13T05:28:46.709Z",
-          "attempts": 5
-        },
-        "summary": "This module executes lint-style guardrail checks against changed files. It validates lint guardrail configuration and returns normalized failure records.",
-        "detail": "It retrieves changed file lists from git and filters guardrails to the active phase and lint-capable entries. For each relevant file, it applies scope matching and inspects file content against configured patterns. The top-level runner returns structured results including warnings, matched guardrail counts, and per-file failures. Empty-change and empty-rule conditions are handled explicitly as successful no-op outcomes.",
-        "chapter": "development",
-        "role": "lib",
-        "keywords": [
-          "lint checks",
-          "guardrail lint",
-          "changed files",
-          "pattern scan",
-          "quality enforcement",
-          "failure report"
-        ]
+          "attempts": 1
+        }
       },
       {
         "file": "src/lib/log.js",
@@ -4562,7 +4491,8 @@
           "src/docs.js",
           "src/lib/agent.js",
           "src/lib/process.js",
-          "src/sdd-forge.js"
+          "src/sdd-forge.js",
+          "src/lib/git-helpers.js"
         ],
         "id": "3d7bb5e6",
         "summary": "This module implements structured logging infrastructure, including JSONL event persistence, prompt snapshot files, and request-level tracing metadata. It exposes a singleton Logger that records agent, git, and generic events with contextual flow information.",
@@ -4680,9 +4610,9 @@
       },
       {
         "file": "src/lib/process.js",
-        "hash": "c749a533c9fe3cc6947b3c9869d6cb3b",
-        "lines": 136,
-        "mtime": "2026-04-10T06:35:13.100Z",
+        "hash": "1fd23200f1314bce3e48ddf9a28fe3e5",
+        "lines": 130,
+        "mtime": "2026-04-14T11:37:06.524Z",
         "className": "process",
         "methods": [
           "runCmd",
@@ -4691,8 +4621,7 @@
           "assertOk"
         ],
         "imports": [
-          "child_process",
-          "./log.js"
+          "child_process"
         ],
         "exports": [
           "runCmd",
@@ -4703,26 +4632,13 @@
         "extends": null,
         "usedBy": [
           "src/lib/cli.js",
-          "src/lib/flow-state.js",
           "src/lib/git-helpers.js",
           "src/lib/lint.js"
         ],
         "id": "6196b26c",
         "enrich": {
-          "processedAt": "2026-04-13T05:28:46.709Z",
-          "attempts": 5
-        },
-        "summary": "This module wraps child-process execution for sync and async command runs. It standardizes result objects, error formatting, and assertion behavior.",
-        "detail": "`runCmd` and `runCmdAsync` return consistent `{ok, stdout, stderr, code}` payloads instead of throwing by default. It integrates with logging utilities so command execution is observable across the toolchain. `formatError` composes concise diagnostic strings from command results. `assertOk` promotes failed command results to exceptions with contextual messages when strict behavior is needed.",
-        "chapter": "stack_and_ops",
-        "role": "lib",
-        "keywords": [
-          "process runner",
-          "subprocess wrapper",
-          "sync async exec",
-          "error formatting",
-          "assertion helper"
-        ]
+          "attempts": 1
+        }
       },
       {
         "file": "src/lib/progress.js",
@@ -8068,9 +7984,9 @@
     ],
     "summary": {
       "total": 236,
-      "totalMethods": 798
+      "totalMethods": 801
     },
     "dataSourceHash": "7d725e75d5031be445119323e4947c91"
   },
-  "enrichedAt": "2026-04-14T08:22:01.024Z"
+  "enrichedAt": "2026-04-14T11:38:15.649Z"
 }

@@ -22,14 +22,14 @@ This chapter describes the overall directory organization of the sdd-forge proje
 ```
 src/    (lib, cli, controller, middleware)
 src/check/commands/    (cli)
-src/docs/commands/    (cli, controller)
+src/docs/commands/    (cli)
 src/docs/data/    (model)
 src/docs/lib/    (lib, model)
 src/docs/lib/lang/    (lib)
 src/flow/    (cli)
-src/flow/commands/    (controller, lib, cli)
+src/flow/commands/    (cli, lib)
 src/flow/lib/    (model, cli, lib, controller)
-src/lib/    (lib, config, model, view)
+src/lib/    (lib, config, view, model)
 src/metrics/commands/    (cli)
 ```
 <!-- {{/data}} -->
@@ -39,9 +39,9 @@ src/metrics/commands/    (cli)
 
 | Directory | Files | Role |
 | --- | --- | --- |
-| src/docs | 40 | cli, controller, model, lib |
-| src/flow | 35 | controller, lib, cli, model |
-| src/lib | 23 | lib, config, model, view |
+| src/docs | 40 | cli, model, lib |
+| src/flow | 35 | cli, lib, model, controller |
+| src/lib | 23 | lib, config, view, model |
 | src | 11 | lib, cli, controller, middleware |
 | src/check | 3 | cli |
 | src/metrics | 1 | cli |
