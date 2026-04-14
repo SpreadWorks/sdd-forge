@@ -1,0 +1,64 @@
+{
+  "spec": "specs/174-fix-local-preset-init-build/spec.md",
+  "date": "2026-04-14T04:55:46.861Z",
+  "requirements": [
+    {
+      "desc": "docs init でプロジェクトローカルプリセットを Preset not found エラーなく解決し docs/ にファイルを生成できる",
+      "status": "done",
+      "note": "init.js で resolveChaptersOrder/resolveTemplates に project root を渡すよう修正され、template-merger 側も projectRoot を解決処理へ伝播。ローカルプリセット解決テストも追加されている。"
+    },
+    {
+      "desc": "docs build でプロジェクトローカルプリセットを Preset not found エラーなく解決しドキュメントを出力できる",
+      "status": "partial",
+      "note": "build が利用する init 経路の修正は入っておりロジック上は満たす見込みだが、diff内には docs build の直接的な実行検証（統合テスト/実行結果）がない。"
+    },
+    {
+      "desc": "setup でプロジェクトローカルプリセットを含む設定の確認・書き込みが Preset not found エラーなく完了する",
+      "status": "done",
+      "note": "setup.js のサマリー表示時と書き込み前の両方で resolveMultiChains に projectRoot を渡すよう変更され、対象の失敗経路を解消している。"
+    },
+    {
+      "desc": "既存プロジェクト（ローカルプリセット未使用）で docs init / docs build / setup の動作が変わらない",
+      "status": "partial",
+      "note": "projectRoot 未指定時の既存挙動維持を確認するユニットテストは追加済みだが、docs init/build/setup コマンド単位での回帰確認は diff 上で十分に示されていない。"
+    }
+  ],
+  "unplanned": [
+    {
+      "file": "specs/174-fix-local-preset-init-build/draft.md",
+      "change": "要件評価対象外のドラフト文書を新規追加。"
+    },
+    {
+      "file": "specs/174-fix-local-preset-init-build/flow.json",
+      "change": "ワークフロー実行状態・メトリクスを記録する管理ファイルを新規追加。"
+    },
+    {
+      "file": "specs/174-fix-local-preset-init-build/issue-log.json",
+      "change": "ゲート実行ログを新規追加。"
+    },
+    {
+      "file": "specs/174-fix-local-preset-init-build/qa.md",
+      "change": "QAテンプレート文書を新規追加。"
+    },
+    {
+      "file": "specs/174-fix-local-preset-init-build/review.md",
+      "change": "コードレビュー結果文書を新規追加。"
+    },
+    {
+      "file": "specs/174-fix-local-preset-init-build/spec.md",
+      "change": "仕様書本体を新規追加。"
+    },
+    {
+      "file": "specs/174-fix-local-preset-init-build/tests/README.md",
+      "change": "テスト説明ドキュメントを新規追加。"
+    }
+  ],
+  "summary": {
+    "total": 4,
+    "done": 2,
+    "partial": 2,
+    "not_done": 0,
+    "rate": 0.75,
+    "notes": "核心修正（projectRoot の伝播）は init/setup と template 解決層で適切に実装され、要件1・3は満たしている。要件2・4はロジック上は妥当だが、コマンド実行レベルの証跡が diff だけでは不足しており partial 判定。"
+  }
+}

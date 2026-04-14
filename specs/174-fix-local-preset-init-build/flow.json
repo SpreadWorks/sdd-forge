@@ -1,0 +1,156 @@
+{
+  "spec": "specs/174-fix-local-preset-init-build/spec.md",
+  "baseBranch": "main",
+  "featureBranch": "feature/174-fix-local-preset-init-build",
+  "runId": "bcfface5-6b24-4b13-b848-5e68df64b52e",
+  "lifecycle": "active",
+  "steps": [
+    {
+      "id": "approach",
+      "status": "done"
+    },
+    {
+      "id": "branch",
+      "status": "done"
+    },
+    {
+      "id": "prepare-spec",
+      "status": "pending"
+    },
+    {
+      "id": "draft",
+      "status": "done"
+    },
+    {
+      "id": "gate-draft",
+      "status": "done"
+    },
+    {
+      "id": "spec",
+      "status": "done"
+    },
+    {
+      "id": "gate",
+      "status": "done"
+    },
+    {
+      "id": "approval",
+      "status": "done"
+    },
+    {
+      "id": "test",
+      "status": "done"
+    },
+    {
+      "id": "implement",
+      "status": "done"
+    },
+    {
+      "id": "gate-impl",
+      "status": "done"
+    },
+    {
+      "id": "review",
+      "status": "done"
+    },
+    {
+      "id": "finalize",
+      "status": "pending"
+    },
+    {
+      "id": "commit",
+      "status": "pending"
+    },
+    {
+      "id": "push",
+      "status": "pending"
+    },
+    {
+      "id": "merge",
+      "status": "pending"
+    },
+    {
+      "id": "pr-create",
+      "status": "pending"
+    },
+    {
+      "id": "branch-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "pr-merge",
+      "status": "pending"
+    },
+    {
+      "id": "sync-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "docs-update",
+      "status": "pending"
+    },
+    {
+      "id": "docs-review",
+      "status": "pending"
+    },
+    {
+      "id": "docs-commit",
+      "status": "pending"
+    }
+  ],
+  "requirements": [
+    {
+      "desc": "docs init でプロジェクトローカルプリセットを Preset not found エラーなく解決し docs/ にファイルを生成できる",
+      "status": "done"
+    },
+    {
+      "desc": "docs build でプロジェクトローカルプリセットを Preset not found エラーなく解決しドキュメントを出力できる",
+      "status": "done"
+    },
+    {
+      "desc": "setup でプロジェクトローカルプリセットを含む設定の確認・書き込みが Preset not found エラーなく完了する",
+      "status": "done"
+    },
+    {
+      "desc": "既存プロジェクト（ローカルプリセット未使用）で docs init / docs build / setup の動作が変わらない",
+      "status": "done"
+    }
+  ],
+  "issue": 145,
+  "request": "プロジェクトローカルプリセットが docs init/build で解決されないバグの修正",
+  "worktree": true,
+  "metrics": {
+    "draft": {
+      "docsRead": 1,
+      "srcRead": 1,
+      "question": 2
+    },
+    "gate-draft": {
+      "callCount": 6,
+      "responseChars": 5689,
+      "tokens": {
+        "input": 42347,
+        "output": 3340,
+        "cacheRead": 40448,
+        "cacheCreation": 0
+      }
+    },
+    "impl": {
+      "srcRead": 1
+    },
+    "gate-impl": {
+      "tokens": {
+        "input": 18091,
+        "output": 1940,
+        "cacheRead": 30464,
+        "cacheCreation": 0
+      },
+      "callCount": 2,
+      "responseChars": 1911
+    }
+  },
+  "notes": [
+    "impl: 方針[1]承認 — buildLayers/resolveTemplates/resolveChaptersOrder に projectRoot 追加、init.js と setup.js の呼び出し側を更新",
+    "finalize: mode[1]すべて実行"
+  ]
+}

@@ -346,11 +346,15 @@ async function runWizard(defaults, t) {
 // Summary display
 // ---------------------------------------------------------------------------
 
-function buildSummaryLines(s, t) {
-  const allTypes = s.additionalTypes.length > 0
-    ? [s.type, ...s.additionalTypes] : [s.type];
-  const chains = resolveMultiChains(allTypes);
-  const leafTypes = chains.map((c) => c[c.length - 1].key);
+function resolveLeafTypes(primaryType, additionalTypes, projectRoot) {
+  const allTypes = additionalTypes.length > 0
+    ? [primaryType, ...additionalTypes] : [primaryType];
+  const chains = resolveMultiChains(allTypes, projectRoot);
+  return chains.map((chain) => chain[chain.length - 1].key);
+}
+
+function buildSummaryLines(s, t, projectRoot) {
+  const leafTypes = resolveLeafTypes(s.type, s.additionalTypes, projectRoot);
   const agentFile = s.agent === "claude" ? "CLAUDE.md" : "AGENTS.md";
 
   return [
@@ -447,7 +451,7 @@ async function main() {
       settings = await runWizard(defaults, t);
 
       // Show summary
-      const lines = buildSummaryLines(settings, t);
+      const lines = buildSummaryLines(settings, t, defaultPath);
       console.log("");
       for (const line of lines) console.log(line);
 
@@ -479,11 +483,7 @@ async function main() {
   let config = readConfigFile(configPath) || {};
 
   // Minimize type array: remove parents that are already implied by children
-  const allTypes = settings.additionalTypes.length > 0
-    ? [settings.type, ...settings.additionalTypes]
-    : [settings.type];
-  const chains = resolveMultiChains(allTypes);
-  const leafTypes = chains.map((chain) => chain[chain.length - 1].key);
+  const leafTypes = resolveLeafTypes(settings.type, settings.additionalTypes, workRoot);
   const finalType = leafTypes.length === 1 ? leafTypes[0] : leafTypes;
 
   // Wizard-managed fields (overwrite)

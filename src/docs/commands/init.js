@@ -169,12 +169,13 @@ function main(ctx) {
     ? configLangs
     : [...configLangs, "en"];
   const configChapters = config?.chapters;
-  const chaptersOrder = resolveChaptersOrder(type, configChapters);
+  const chaptersOrder = resolveChaptersOrder(type, configChapters, root);
 
   const resolutions = resolveTemplates(type, lang, {
     projectLocalDir,
     fallbackLangs,
     chaptersOrder,
+    projectRoot: root,
   });
 
   // 解決結果からチャプターを生成（README は除外）

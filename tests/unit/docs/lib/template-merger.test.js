@@ -9,6 +9,24 @@ import {
   mergeResolved,
   resolveChaptersOrder,
 } from "../../../../src/docs/lib/template-merger.js";
+import { createTmpDir, removeTmpDir, writeFile, writeJson } from "../../../helpers/tmp-dir.js";
+
+/**
+ * Create a temporary project root with a local preset fixture.
+ * Returns { tmpDir, cleanup }.
+ */
+function withLocalPreset(presetName, { chapters = null, templateContent = null, lang = "ja" } = {}) {
+  const tmpDir = createTmpDir("sdd-test-local-preset-");
+  writeFile(
+    tmpDir,
+    `.sdd-forge/presets/${presetName}/preset.json`,
+    JSON.stringify({ parent: null, ...(chapters ? { chapters } : {}) }),
+  );
+  if (templateContent !== null) {
+    writeFile(tmpDir, `.sdd-forge/presets/${presetName}/templates/${lang}/overview.md`, templateContent);
+  }
+  return { tmpDir, cleanup: () => removeTmpDir(tmpDir) };
+}
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const SRC_DIR = path.resolve(__dirname, "../../../../src");
@@ -271,6 +289,116 @@ describe("resolveTemplates", () => {
         assert.equal(typeof s.extends, "boolean");
       }
     }
+  });
+});
+
+// ---------------------------------------------------------------------------
+// project-local preset resolution via projectRoot
+// ---------------------------------------------------------------------------
+
+describe("buildLayers — projectRoot", () => {
+  it("includes project-local preset templates when projectRoot is provided", () => {
+    const { tmpDir, cleanup } = withLocalPreset("mypreset", { templateContent: "# Overview" });
+    try {
+      const layers = buildLayers("mypreset", "ja", null, tmpDir);
+      const localTemplateDir = path.join(tmpDir, ".sdd-forge", "presets", "mypreset", "templates", "ja");
+      assert.ok(
+        layers.includes(localTemplateDir),
+        `expected local preset template dir in layers, got: ${layers}`,
+      );
+    } finally {
+      cleanup();
+    }
+  });
+
+  it("resolves local preset as first non-project-local layer (highest priority)", () => {
+    const { tmpDir, cleanup } = withLocalPreset("mypreset", { templateContent: "# Overview" });
+    try {
+      const layers = buildLayers("mypreset", "ja", null, tmpDir);
+      const localTemplateDir = path.join(tmpDir, ".sdd-forge", "presets", "mypreset", "templates", "ja");
+      // When no projectLocalDir is given, the local preset template should be first
+      assert.equal(layers[0], localTemplateDir);
+    } finally {
+      cleanup();
+    }
+  });
+
+  it("without projectRoot, unknown preset name uses resolveChainSafe logged fallback to base", () => {
+    // resolveChainSafe intentionally logs via logger.verbose and falls back to base preset
+    // rather than propagating an error — this is its designed contract, not silent swallowing.
+    const layers = buildLayers("unknown-local-preset", "ja", null);
+    // Falls back to base preset layers (may be empty if no base templates exist for this lang)
+    assert.ok(Array.isArray(layers));
+  });
+
+  it("with projectRoot but no matching local preset, behaves same as without projectRoot", () => {
+    const { tmpDir, cleanup } = withLocalPreset("other-preset", {});
+    try {
+      // No "base" preset dir — should fall back to built-in preset
+      const layersWithRoot = buildLayers("base", "ja", null, tmpDir);
+      const layersWithoutRoot = buildLayers("base", "ja", null);
+      assert.deepEqual(layersWithRoot, layersWithoutRoot);
+    } finally {
+      cleanup();
+    }
+  });
+});
+
+describe("resolveChaptersOrder — projectRoot", () => {
+  it("returns local preset chapters when projectRoot is provided", () => {
+    const localChapters = ["intro.md", "usage.md", "faq.md"];
+    const { tmpDir, cleanup } = withLocalPreset("mypreset", { chapters: localChapters });
+    try {
+      const result = resolveChaptersOrder("mypreset", null, tmpDir);
+      assert.deepEqual(result, localChapters);
+    } finally {
+      cleanup();
+    }
+  });
+
+  it("without projectRoot, built-in preset chapters are returned unchanged", () => {
+    const chaptersWithout = resolveChaptersOrder("base");
+    const { tmpDir, cleanup } = withLocalPreset("other-preset", {});
+    try {
+      // No .sdd-forge/presets/base/ — should return same as without projectRoot
+      const chaptersWithRoot = resolveChaptersOrder("base", null, tmpDir);
+      assert.deepEqual(chaptersWithRoot, chaptersWithout);
+    } finally {
+      cleanup();
+    }
+  });
+});
+
+describe("resolveTemplates — projectRoot", () => {
+  it("resolves local preset templates without Preset not found error", () => {
+    const { tmpDir, cleanup } = withLocalPreset("mypreset", {
+      chapters: ["overview.md"],
+      templateContent: "# Overview\nContent here.",
+    });
+    try {
+      const resolutions = resolveTemplates("mypreset", "ja", {
+        chaptersOrder: ["overview.md"],
+        projectRoot: tmpDir,
+      });
+
+      assert.ok(resolutions.length > 0, "should resolve at least one template");
+      const overview = resolutions.find((r) => r.fileName === "overview.md");
+      assert.ok(overview, "should resolve overview.md from local preset");
+    } finally {
+      cleanup();
+    }
+  });
+
+  it("existing built-in preset resolution is unchanged when projectRoot is not passed", () => {
+    const chaptersOrder = resolveChaptersOrder("node-cli");
+    const withoutRoot = resolveTemplates("node-cli", "ja", { chaptersOrder });
+    // Passing undefined projectRoot explicitly — should be identical
+    const withUndefinedRoot = resolveTemplates("node-cli", "ja", {
+      chaptersOrder,
+      projectRoot: undefined,
+    });
+    const normalize = (resolutions) => resolutions.map(({ fileName, action }) => ({ fileName, action }));
+    assert.deepEqual(normalize(withoutRoot), normalize(withUndefinedRoot));
   });
 });
 

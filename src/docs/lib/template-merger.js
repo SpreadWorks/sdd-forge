@@ -28,9 +28,10 @@ const SPECIAL_FILES = new Set(["README.md", "AGENTS.sdd.md", "layout.md"]);
  * @param {string} presetKey - preset 名（例: "cakephp2", "node-cli"）
  * @param {string} lang - ロケール（例: "ja"）
  * @param {string|null} [projectLocalDir] - プロジェクトローカルテンプレートディレクトリ
+ * @param {string} [projectRoot] - プロジェクトルート（.sdd-forge/presets/ 検索用）
  * @returns {string[]} レイヤーディレクトリ配列（優先度高い順）
  */
-export function buildLayers(presetKey, lang, projectLocalDir) {
+export function buildLayers(presetKey, lang, projectLocalDir, projectRoot) {
   const layers = [];
 
   // 1. project-local（最高優先）
@@ -39,7 +40,7 @@ export function buildLayers(presetKey, lang, projectLocalDir) {
   }
 
   // 2. parent チェーンを leaf → root の順で追加（優先度高い順）
-  const chain = resolveChainSafe(presetKey);
+  const chain = resolveChainSafe(presetKey, projectRoot);
 
   // chain は root → leaf の順なので、逆順（leaf → root）で追加
   for (let i = chain.length - 1; i >= 0; i--) {
@@ -195,20 +196,21 @@ function mergeSourcesAdditive(sources) {
  * @param {string|null} [opts.projectLocalDir] - プロジェクトローカルテンプレートディレクトリ
  * @param {string[]} [opts.fallbackLangs] - フォールバック言語リスト
  * @param {string[]} [opts.chaptersOrder] - preset.json の chapters 順序配列
+ * @param {string} [opts.projectRoot] - プロジェクトルート（.sdd-forge/presets/ 検索用）
  * @returns {FileResolution[]}
  */
 export function resolveTemplates(typePath, lang, opts = {}) {
-  const { projectLocalDir, fallbackLangs, chaptersOrder } = opts;
+  const { projectLocalDir, fallbackLangs, chaptersOrder, projectRoot } = opts;
 
   const types = Array.isArray(typePath) ? typePath : [typePath];
 
   // 各チェーンの leaf key ごとにレイヤーセットを構築
-  const chains = resolveMultiChains(types);
+  const chains = resolveMultiChains(types, projectRoot);
   const chainLayerSets = chains.map((chain) => {
     const leafKey = chain[chain.length - 1].key;
     return {
       leafKey,
-      layers: buildLayers(leafKey, lang, projectLocalDir),
+      layers: buildLayers(leafKey, lang, projectLocalDir, projectRoot),
       fallbackSets: (fallbackLangs || [])
         .filter((l) => l !== lang)
         .map((fbLang) => ({
@@ -217,6 +219,7 @@ export function resolveTemplates(typePath, lang, opts = {}) {
             leafKey,
             fbLang,
             deriveFallbackProjectLocalDir(projectLocalDir, fbLang),
+            projectRoot,
           ),
         })),
     };
@@ -359,9 +362,10 @@ function discoverFileNames(layers, fallbackSets, chaptersOrder) {
  *
  * @param {string|string[]} presetKeys - preset 名または配列
  * @param {string[]} [configChapters] - config.json の chapters 配列（最優先）
+ * @param {string} [projectRoot] - プロジェクトルート（.sdd-forge/presets/ 検索用）
  * @returns {string[]} 章ファイル名の順序配列
  */
-export function resolveChaptersOrder(presetKeys, configChapters) {
+export function resolveChaptersOrder(presetKeys, configChapters, projectRoot) {
   // config.json の chapters が定義されていればプリセットを完全上書き
   if (configChapters?.length) {
     // Support both old string[] and new object[] formats
@@ -377,7 +381,7 @@ export function resolveChaptersOrder(presetKeys, configChapters) {
   const result = [];
 
   for (const key of keys) {
-    const chain = resolveChainSafe(key);
+    const chain = resolveChainSafe(key, projectRoot);
 
     // chain 内で最も具体的な（leaf 側の）chapters を使用する。
     // 子が chapters を定義していれば親の chapters は含めない（上書き）。

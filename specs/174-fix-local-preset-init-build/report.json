@@ -1,0 +1,42 @@
+{
+  "data": {
+    "implementation": {
+      "diffStat": "specs/174-fix-local-preset-init-build/draft.md     |  60 ++++++++\n specs/174-fix-local-preset-init-build/flow.json    | 156 +++++++++++++++++++++\n .../174-fix-local-preset-init-build/issue-log.json |  46 ++++++\n specs/174-fix-local-preset-init-build/qa.md        |   9 ++\n specs/174-fix-local-preset-init-build/review.md    |  41 ++++++\n specs/174-fix-local-preset-init-build/spec.md      |  90 ++++++++++++\n .../tests/README.md                                |  35 +++++\n src/docs/commands/init.js                          |   3 +-\n src/docs/lib/template-merger.js                    |  18 ++-\n src/setup.js                                       |  22 +--\n tests/unit/docs/lib/template-merger.test.js        | 128 +++++++++++++++++\n 11 files changed, 589 insertions(+), 19 deletions(-)",
+      "commits": [
+        "feat: feature/174-fix-local-preset-init-build"
+      ]
+    },
+    "retro": {
+      "total": 4,
+      "done": 2,
+      "partial": 2,
+      "not_done": 0,
+      "rate": 0.75,
+      "notes": "核心修正（projectRoot の伝播）は init/setup と template 解決層で適切に実装され、要件1・3は満たしている。要件2・4はロジック上は妥当だが、コマンド実行レベルの証跡が diff だけでは不足しており partial 判定。"
+    },
+    "issueLog": {
+      "count": 0,
+      "entries": []
+    },
+    "metrics": {
+      "docsRead": 1,
+      "srcRead": 2,
+      "question": 2,
+      "issueLog": 0
+    },
+    "tokenMetrics": {
+      "input": 60438,
+      "output": 5280,
+      "cacheRead": 70912,
+      "cacheCreation": 0,
+      "cost": null,
+      "callCount": 8
+    },
+    "tests": null,
+    "sync": {
+      "status": "skipped",
+      "reason": "sync was skipped"
+    }
+  },
+  "text": "  Report\n\n  Implementation\n  ────────────────────────────────────────────────\n    feat: feature/174-fix-local-preset-init-build\n    11 files changed, 589 insertions(+), 19 deletions(-)\n\n  Retro\n  ────────────────────────────────────────────────\n    ██████░░ 75%  (2 done / 2 partial / 0 miss)\n\n  Metrics\n  ────────────────────────────────────────────────\n    docs read ................... 1\n    src read .................... 2\n    Q&A ......................... 2\n    issue-log ................... 0\n    agent calls ................. 8\n    input tokens ................ 60,438\n    output tokens ............... 5,280\n    cache-read tokens ........... 70,912\n    cache-create tokens ......... 0\n    cost ........................ N/A\n\n  Tests\n  ────────────────────────────────────────────────\n    -"
+}
