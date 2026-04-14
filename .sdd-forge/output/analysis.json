@@ -1,5 +1,5 @@
 {
-  "analyzedAt": "2026-04-14T03:19:19.747Z",
+  "analyzedAt": "2026-04-14T04:55:48.321Z",
   "package": {
     "entries": [
       {
@@ -564,9 +564,9 @@
       },
       {
         "file": "src/docs/commands/init.js",
-        "hash": "fbcb3f001058aa9b478487874e180e2e",
-        "lines": 271,
-        "mtime": "2026-04-10T06:35:13.093Z",
+        "hash": "fb34980365c357712c8dd81c72a88e36",
+        "lines": 272,
+        "mtime": "2026-04-14T04:55:48.007Z",
         "className": "init",
         "methods": [
           "aiFilterChapters",
@@ -593,20 +593,22 @@
         "extends": null,
         "usedBy": null,
         "id": "62ef800b",
-        "summary": "This command initializes docs chapters from templates and analysis context. It supports optional AI-based chapter filtering before file creation.",
-        "detail": "Template resolution merges base and project-local template layers and honors configured chapter order. The command can request AI assistance to choose relevant chapters for a specific purpose using analysis summaries. It creates missing docs directories and writes output chapters while checking for conflicts unless forced. Directive blocks are preserved or stripped as needed to keep initialized files generation-ready.",
-        "chapter": "project_structure",
+        "summary": "This module implements the `docs init` command flow for generating initial documentation files from resolved templates. It also exposes an AI-assisted chapter filtering helper to reduce generated output based on project analysis and intent.",
+        "detail": "The command parses CLI arguments, validates required options, and resolves command context such as repository root, language, and analysis inputs. It loads templates through the template-merger utilities, optionally translates template content, and computes chapter ordering before writing outputs into the `docs` directory. The implementation checks for missing templates and existing output conflicts to avoid unsafe overwrites without explicit intent. It integrates with agent logging and prompt helpers so chapter selection and content adaptation can be guided by AI when available. The code follows a controller-style orchestration pattern, delegating parsing, merging, translation, and directive stripping to dedicated library modules.",
+        "chapter": "cli_commands",
         "role": "cli",
         "enrich": {
-          "processedAt": "2026-04-10T12:37:22.721Z",
+          "processedAt": "2026-04-14T04:56:09.021Z",
           "attempts": 1
         },
         "keywords": [
           "docs init",
-          "template merge",
-          "chapter selection",
-          "bootstrap docs",
-          "conflict detection"
+          "template resolution",
+          "chapter filtering",
+          "ai selection",
+          "command handler",
+          "documentation bootstrap",
+          "content generation"
         ]
       },
       {
@@ -1909,9 +1911,9 @@
       },
       {
         "file": "src/docs/lib/template-merger.js",
-        "hash": "872ec72b3a24681712e1e3da13d37bf0",
-        "lines": 605,
-        "mtime": "2026-04-10T06:35:13.095Z",
+        "hash": "28cca924aa0e8069b8c1d43dedd91e27",
+        "lines": 609,
+        "mtime": "2026-04-14T04:55:48.008Z",
         "className": "template-merger",
         "methods": [
           "buildLayers",
@@ -1949,20 +1951,22 @@
           "src/docs/lib/command-context.js"
         ],
         "id": "88243459",
-        "enrich": {
-          "processedAt": "2026-04-10T14:34:55.016Z",
-          "attempts": 2
-        },
-        "summary": "Resolves and merges template files across preset chains, language layers, and fallback layers. It is the core template composition engine for docs output.",
-        "detail": "The module discovers candidate files, resolves layer precedence, and supports additive or overriding merge behavior. It parses block directives and extends directives to merge nested blocks with preamble/postamble handling. It also computes chapter order and can call an agent to translate templates when language fallback conversion is required.",
+        "summary": "This library provides layered template resolution and merge logic across presets, languages, and fallback chains. It is the core engine that determines how final documentation templates are discovered, combined, and translated.",
+        "detail": "The module builds ordered template layers from preset chains and project-local overrides, then resolves file sources per template with fallback handling. It supports additive and merge modes, special-file handling, chapter-order-aware discovery, and multi-chain resolution for complex preset inheritance. Directive block parsing is central: nested blocks are collected and merged so child templates can override or extend parent sections predictably. Utility functions manage language fallback path derivation and text-level composition primitives (`addTexts`, `mergeTexts`) to preserve structure while combining content. Agent-assisted translation is integrated as an optional step, keeping translation separate from structural merge behavior.",
         "chapter": "internal_design",
         "role": "lib",
+        "enrich": {
+          "processedAt": "2026-04-14T04:56:09.021Z",
+          "attempts": 1
+        },
         "keywords": [
           "template merger",
-          "layer resolution",
-          "preset inheritance",
-          "block merge",
-          "chapter order"
+          "layered inheritance",
+          "fallback language",
+          "directive blocks",
+          "preset chain",
+          "content composition",
+          "translation pipeline"
         ]
       },
       {
@@ -7912,9 +7916,9 @@
       },
       {
         "file": "src/setup.js",
-        "hash": "e036f650f7ab259a17940c5e0323b032",
+        "hash": "f92d129aae39122cb2db5f2d3785496e",
         "lines": 561,
-        "mtime": "2026-04-10T06:35:13.120Z",
+        "mtime": "2026-04-14T04:55:48.008Z",
         "className": "setup",
         "methods": [
           "ask",
@@ -7930,6 +7934,7 @@
           "fixClaudeMdSymlink",
           "setupSkills",
           "runWizard",
+          "resolveLeafTypes",
           "buildSummaryLines",
           "main"
         ],
@@ -7955,23 +7960,22 @@
         "extends": null,
         "usedBy": null,
         "id": "9820c9db",
-        "summary": "Implements the `setup` CLI flow that initializes an SDD-enabled project and writes baseline configuration. It combines argument parsing, interactive prompts, file-system bootstrapping, and agent/skill setup into one orchestration entrypoint.",
-        "detail": "The module parses setup flags, loads existing defaults from `.sdd-forge/config.json`, and falls back to interactive wizard inputs when values are missing. It creates required project directories (`.sdd-forge`, output, docs, specs), enforces repository hygiene through `.gitignore` and `.gitattributes`, and validates filesystem paths before registration. It generates or updates agent instruction files by replacing a bounded SDD directive block, preserving surrounding user-managed content. It also handles migration-like fixes such as converting `CLAUDE.md` symlinks to regular files and deploys skill assets for the selected language and workspace. The main routine assembles final config with provider defaults, persists JSON deterministically, and exits with standardized error codes on failure.",
-        "chapter": "cli_commands",
+        "summary": "This module implements the project setup command and interactive wizard for initializing sdd-forge in a repository. It provisions directories, baseline config, ignore rules, and agent guidance files.",
+        "detail": "The command parses setup arguments, loads existing defaults, and collects user input through prompt helpers before assembling final configuration. It creates required `.sdd-forge` and project directories, writes `config.json`, and ensures `.gitignore` and `.gitattributes` entries are present without duplicating conflicting rules. Agent-facing files are generated or patched with directive-based sections, and symlink normalization is handled for compatibility. The setup path also deploys skills and resolves preset leaf types via multi-chain preset logic to keep generated configuration aligned with selected template families. Overall, the module acts as a high-level orchestration CLI that centralizes bootstrap-time filesystem and configuration mutations.",
+        "chapter": "configuration",
         "role": "cli",
         "enrich": {
-          "processedAt": "2026-04-10T12:36:19.560Z",
+          "processedAt": "2026-04-14T04:56:09.021Z",
           "attempts": 1
         },
         "keywords": [
-          "setup command",
-          "project bootstrap",
-          "interactive wizard",
+          "project setup",
+          "bootstrap wizard",
           "config initialization",
-          "agent file generation",
-          "skills deployment",
-          "filesystem scaffolding",
-          "CLI orchestration"
+          "filesystem provisioning",
+          "gitignore management",
+          "preset resolution",
+          "agent file generation"
         ]
       },
       {
@@ -8021,9 +8025,9 @@
     ],
     "summary": {
       "total": 235,
-      "totalMethods": 794
+      "totalMethods": 795
     },
     "dataSourceHash": "7d725e75d5031be445119323e4947c91"
   },
-  "enrichedAt": "2026-04-13T15:16:23.012Z"
+  "enrichedAt": "2026-04-14T04:56:09.021Z"
 }
