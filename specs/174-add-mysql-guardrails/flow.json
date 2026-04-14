@@ -1,0 +1,163 @@
+{
+  "spec": "specs/174-add-mysql-guardrails/spec.md",
+  "baseBranch": "main",
+  "featureBranch": "feature/174-add-mysql-guardrails",
+  "runId": "2884bbbd-7e6a-4bb3-b8fa-acd3980965f9",
+  "lifecycle": "active",
+  "steps": [
+    {
+      "id": "approach",
+      "status": "done"
+    },
+    {
+      "id": "branch",
+      "status": "done"
+    },
+    {
+      "id": "prepare-spec",
+      "status": "pending"
+    },
+    {
+      "id": "draft",
+      "status": "done"
+    },
+    {
+      "id": "gate-draft",
+      "status": "done"
+    },
+    {
+      "id": "spec",
+      "status": "done"
+    },
+    {
+      "id": "gate",
+      "status": "done"
+    },
+    {
+      "id": "approval",
+      "status": "done"
+    },
+    {
+      "id": "test",
+      "status": "done"
+    },
+    {
+      "id": "implement",
+      "status": "done"
+    },
+    {
+      "id": "gate-impl",
+      "status": "skipped"
+    },
+    {
+      "id": "review",
+      "status": "done"
+    },
+    {
+      "id": "finalize",
+      "status": "pending"
+    },
+    {
+      "id": "commit",
+      "status": "pending"
+    },
+    {
+      "id": "push",
+      "status": "pending"
+    },
+    {
+      "id": "merge",
+      "status": "pending"
+    },
+    {
+      "id": "pr-create",
+      "status": "pending"
+    },
+    {
+      "id": "branch-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "pr-merge",
+      "status": "pending"
+    },
+    {
+      "id": "sync-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "docs-update",
+      "status": "pending"
+    },
+    {
+      "id": "docs-review",
+      "status": "pending"
+    },
+    {
+      "id": "docs-commit",
+      "status": "pending"
+    }
+  ],
+  "requirements": [
+    {
+      "desc": "mysql preset を新規作成し database プリセットを親として継承すること",
+      "status": "done"
+    },
+    {
+      "desc": "mysql guardrail M-1〜M-13 の 13 件を含むこと（Issue #143 準拠）",
+      "status": "done"
+    },
+    {
+      "desc": "mysql プリセットに NOTICE ファイルを配置し出典を帰属すること",
+      "status": "done"
+    },
+    {
+      "desc": "webapp guardrail に W-1〜W-3 の 3 件を追記すること",
+      "status": "done"
+    },
+    {
+      "desc": "webapp NOTICE ファイルを新規作成し出典を帰属すること",
+      "status": "done"
+    },
+    {
+      "desc": "既存の preset 整合性テストが pass すること",
+      "status": "done"
+    }
+  ],
+  "issue": 143,
+  "request": "mysqlプリセットのguardrailを強化する。MySQL/InnoDB固有のguardrailをmysqlプリセットに、RDBMS共通のguardrailをwebappプリセットに追加する",
+  "worktree": true,
+  "metrics": {
+    "plan": {
+      "docsRead": 1
+    },
+    "draft": {
+      "docsRead": 1,
+      "question": 4
+    },
+    "gate-draft": {
+      "callCount": 5,
+      "responseChars": 5690,
+      "tokens": {
+        "input": 66692,
+        "output": 3624,
+        "cacheRead": 14848,
+        "cacheCreation": 0
+      }
+    },
+    "impl": {
+      "srcRead": 1,
+      "issueLog": 1
+    },
+    "gate-impl": {
+      "tokens": {
+        "input": 118023,
+        "output": 2285,
+        "cacheRead": 44928,
+        "cacheCreation": 0
+      },
+      "callCount": 5,
+      "responseChars": 4619
+    }
+  }
+}

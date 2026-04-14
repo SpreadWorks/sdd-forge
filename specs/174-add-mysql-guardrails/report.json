@@ -1,0 +1,45 @@
+{
+  "data": {
+    "implementation": {
+      "diffStat": "specs/174-add-mysql-guardrails/draft.md            |  46 +++++\n specs/174-add-mysql-guardrails/flow.json           | 163 +++++++++++++++++\n specs/174-add-mysql-guardrails/issue-log.json      |  72 ++++++++\n specs/174-add-mysql-guardrails/qa.md               |   9 +\n specs/174-add-mysql-guardrails/review.md           |  41 +++++\n specs/174-add-mysql-guardrails/spec.md             | 107 +++++++++++\n specs/174-add-mysql-guardrails/test-results.md     |  22 +++\n specs/174-add-mysql-guardrails/tests/README.md     |  32 ++++\n .../tests/mysql-guardrails.test.js                 | 197 +++++++++++++++++++++\n src/presets/mysql/NOTICE                           |  26 +++\n src/presets/mysql/guardrail.json                   | 108 +++++++++++\n src/presets/mysql/preset.json                      |   6 +\n src/presets/webapp/NOTICE                          |  16 ++\n src/presets/webapp/guardrail.json                  |  32 ++++\n 14 files changed, 877 insertions(+)",
+      "commits": [
+        "feat: feature/174-add-mysql-guardrails",
+        "test: refactor mysql-guardrails spec tests per code review",
+        "test: add test results for 174-add-mysql-guardrails",
+        "feat(presets): add mysql preset with guardrails and extend webapp guardrails"
+      ]
+    },
+    "retro": {
+      "total": 6,
+      "done": 5,
+      "partial": 1,
+      "not_done": 0,
+      "rate": 0.92,
+      "notes": "機能要件1〜5は実装差分上で満たしている。要件6はテスト成功の記述はあるが、diffだけでは実行証跡が限定的で部分達成評価。加えて specs 配下の管理・文書・補助テスト追加は要件リスト外の変更。"
+    },
+    "issueLog": {
+      "count": 0,
+      "entries": []
+    },
+    "metrics": {
+      "docsRead": 2,
+      "srcRead": 1,
+      "question": 4,
+      "issueLog": 1
+    },
+    "tokenMetrics": {
+      "input": 184715,
+      "output": 5909,
+      "cacheRead": 59776,
+      "cacheCreation": 0,
+      "cost": null,
+      "callCount": 10
+    },
+    "tests": null,
+    "sync": {
+      "status": "skipped",
+      "reason": "sync was skipped"
+    }
+  },
+  "text": "  Report\n\n  Implementation\n  ────────────────────────────────────────────────\n    feat: feature/174-add-mysql-guardrails\n    test: refactor mysql-guardrails spec tests per code review\n    test: add test results for 174-add-mysql-guardrails\n    feat(presets): add mysql preset with guardrails and extend webapp guardrails\n    14 files changed, 877 insertions(+)\n\n  Retro\n  ────────────────────────────────────────────────\n    ███████░ 92%  (5 done / 1 partial / 0 miss)\n\n  Metrics\n  ────────────────────────────────────────────────\n    docs read ................... 2\n    src read .................... 1\n    Q&A ......................... 4\n    issue-log ................... 1\n    agent calls ................. 10\n    input tokens ................ 184,715\n    output tokens ............... 5,909\n    cache-read tokens ........... 59,776\n    cache-create tokens ......... 0\n    cost ........................ N/A\n\n  Tests\n  ────────────────────────────────────────────────\n    -"
+}

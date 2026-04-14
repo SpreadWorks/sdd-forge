@@ -1,0 +1,82 @@
+{
+  "spec": "specs/174-add-mysql-guardrails/spec.md",
+  "date": "2026-04-14T02:52:27.976Z",
+  "requirements": [
+    {
+      "desc": "mysql preset を新規作成し database プリセットを親として継承すること",
+      "status": "done",
+      "note": "src/presets/mysql/preset.json が新規追加され、parent が \"database\" に設定されている。"
+    },
+    {
+      "desc": "mysql guardrail M-1〜M-13 の 13 件を含むこと（Issue #143 準拠）",
+      "status": "done",
+      "note": "src/presets/mysql/guardrail.json に指定の 13 ID がすべて追加され、phase も要件どおり。"
+    },
+    {
+      "desc": "mysql プリセットに NOTICE ファイルを配置し出典を帰属すること",
+      "status": "done",
+      "note": "src/presets/mysql/NOTICE が追加され、planetscale/database-skills と jarulraj/sqlcheck を帰属している。"
+    },
+    {
+      "desc": "webapp guardrail に W-1〜W-3 の 3 件を追記すること",
+      "status": "done",
+      "note": "src/presets/webapp/guardrail.json に no-select-star / cursor-pagination-over-offset / transaction-scope-minimization が追記されている。"
+    },
+    {
+      "desc": "webapp NOTICE ファイルを新規作成し出典を帰属すること",
+      "status": "done",
+      "note": "src/presets/webapp/NOTICE が新規追加され、指定の2出典を帰属している。"
+    },
+    {
+      "desc": "既存の preset 整合性テストが pass すること",
+      "status": "partial",
+      "note": "specs/174-add-mysql-guardrails/test-results.md に pass 記載はあるが、diff 内に実行ログそのものはなく厳密な検証証跡は限定的。"
+    }
+  ],
+  "unplanned": [
+    {
+      "file": "specs/174-add-mysql-guardrails/draft.md",
+      "change": "要件外のドラフト文書を新規追加。"
+    },
+    {
+      "file": "specs/174-add-mysql-guardrails/flow.json",
+      "change": "要件外のフロー管理メタデータを新規追加。"
+    },
+    {
+      "file": "specs/174-add-mysql-guardrails/issue-log.json",
+      "change": "要件外のゲート実行ログを新規追加。"
+    },
+    {
+      "file": "specs/174-add-mysql-guardrails/qa.md",
+      "change": "要件外のQAテンプレートを新規追加。"
+    },
+    {
+      "file": "specs/174-add-mysql-guardrails/review.md",
+      "change": "要件外のレビュー記録を新規追加。"
+    },
+    {
+      "file": "specs/174-add-mysql-guardrails/spec.md",
+      "change": "要件外の仕様文書を新規追加。"
+    },
+    {
+      "file": "specs/174-add-mysql-guardrails/test-results.md",
+      "change": "要件外のテスト結果サマリ文書を新規追加。"
+    },
+    {
+      "file": "specs/174-add-mysql-guardrails/tests/README.md",
+      "change": "要件外のスペック専用テスト説明を新規追加。"
+    },
+    {
+      "file": "specs/174-add-mysql-guardrails/tests/mysql-guardrails.test.js",
+      "change": "要件外のスペック検証用テストコードを新規追加。"
+    }
+  ],
+  "summary": {
+    "total": 6,
+    "done": 5,
+    "partial": 1,
+    "not_done": 0,
+    "rate": 0.92,
+    "notes": "機能要件1〜5は実装差分上で満たしている。要件6はテスト成功の記述はあるが、diffだけでは実行証跡が限定的で部分達成評価。加えて specs 配下の管理・文書・補助テスト追加は要件リスト外の変更。"
+  }
+}
