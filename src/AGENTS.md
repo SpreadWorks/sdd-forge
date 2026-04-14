@@ -295,6 +295,42 @@ export default class SchemaSource extends DataSource {
 - analysis にデータがあれば動作する（なければ null を返す）
 - **MUST**: このパターンを使う場合、読む analysis キーを書く scan DataSource がチェーン内に存在する必要がある。対応する scan がないなら data DataSource を作ってはならない
 
+### DataSource メソッドの戻り値型（設計方針）
+
+DataSource の resolve メソッド（`list()` / `tables()` 等、テンプレートから `{{data}}` で呼ばれるメソッド）の戻り値は、**レンダリング可能な値クラスのインスタンスまたは null** とする。生の Markdown 文字列を返してはならない。
+
+プロジェクトは TypeScript を採用しないため、値の構造は OOP（クラス）で表現する（プロジェクト `CLAUDE.md` の「OOP による型表現」を参照）。戻り値には以下の専用クラスを用いる。
+
+- `Table` — 表形式データ（labels と rows を保持、列数の整合を invariant として強制）
+- `MarkdownText` — そのまま埋め込む Markdown 断片
+- （必要に応じて）`BulletList` / `Heading` 等の追加クラス
+
+```javascript
+import { Table } from "../../../docs/lib/renderable.js";
+
+export default class RoutesSource extends DataSource {
+  list(analysis, labels) {
+    const routes = analysis.routes?.entries || [];
+    if (routes.length === 0) return null;
+    const rows = routes.map(r => [r.pattern, r.controller, r.action]);
+    return new Table(labels, rows);
+  }
+}
+```
+
+**利点**:
+
+- コンストラクタで invariant を強制（例: Table は列数一致、labels 非空）
+- `instanceof` による確実な型判別
+- `toMarkdown()` を型に所属させることで、出力形式の拡張（将来の `toHtml()` 等）が Open/Closed に従う
+- テンプレート展開層は `result.toMarkdown()` をポリモルフィックに呼ぶだけで済む
+- オブジェクトリテラル（`{ type: "table", ... }`）のような discriminated union もどきは採用しない
+
+**禁止事項**:
+
+- 基底 `DataSource` の `toMarkdownTable()` のような Markdown 文字列生成ヘルパーを新設してはならない（既存のものは `Table` クラスへの段階移行対象）
+- 戻り値として生の文字列を返してはならない。構造が単なるテキストなら `MarkdownText` でラップする
+
 ---
 
 ## テンプレート構文
