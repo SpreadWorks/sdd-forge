@@ -1,5 +1,5 @@
 {
-  "analyzedAt": "2026-04-14T04:55:48.321Z",
+  "analyzedAt": "2026-04-14T08:21:38.821Z",
   "package": {
     "entries": [
       {
@@ -2356,7 +2356,8 @@
           "src/flow/lib/set-step.js",
           "src/flow/lib/set-summary.js",
           "src/flow/lib/set-test-summary.js",
-          "src/flow/lib/set-init.js"
+          "src/flow/lib/set-init.js",
+          "src/flow/lib/get-test-result.js"
         ],
         "id": "83f60bd3",
         "enrich": {
@@ -2556,9 +2557,9 @@
       },
       {
         "file": "src/flow/lib/get-prompt.js",
-        "hash": "e634fd2d9900cacb5f4a594ec7a97020",
+        "hash": "8f98a5811142808f139e953541ddb386",
         "lines": 344,
-        "mtime": "2026-04-13T09:59:29.191Z",
+        "mtime": "2026-04-14T08:21:38.519Z",
         "className": "get-prompt",
         "methods": [
           "validKinds"
@@ -2572,23 +2573,21 @@
         "extends": "FlowCommand",
         "usedBy": null,
         "id": "410dfcc9",
-        "summary": "This module defines a flow command that retrieves predefined prompt content by kind and language. It centralizes prompt lookup and enforces strict validation for supported prompt kinds.",
-        "detail": "The file declares a language-indexed prompt registry and uses the Japanese prompt map as the source of truth for valid kinds. A helper function derives allowed kinds dynamically from that registry, avoiding duplicated constant lists. The command class extends a shared `FlowCommand` base and performs input validation before processing. It throws explicit errors when `kind` is missing or unknown, and includes valid options in the message to improve CLI usability. After validation, it returns a structured result payload based on the requested kind and selected language context.",
+        "summary": "GetPromptCommand returns localized prompt templates for flow operations and validates the requested prompt kind. It provides clear errors when input is missing or unsupported.",
+        "detail": "The module defines a language-keyed prompt map and derives valid prompt kinds from the Japanese prompt set. It centralizes kind validation through a helper so error messages always show the current allowed values. The command class extends the shared FlowCommand base and performs strict argument checks before returning prompt data. Its response payload is structured for downstream CLI consumers that expect a deterministic prompt object. This keeps prompt lookup logic compact and separate from command dispatch code.",
         "chapter": "cli_commands",
-        "role": "lib",
+        "role": "cli",
         "enrich": {
-          "processedAt": "2026-04-13T09:59:39.826Z",
+          "processedAt": "2026-04-14T08:22:01.024Z",
           "attempts": 1
         },
         "keywords": [
           "prompt retrieval",
-          "flow command",
-          "input validation",
-          "command pattern",
           "localized prompts",
-          "kind whitelist",
+          "kind validation",
+          "flow command",
           "error handling",
-          "CLI internals"
+          "template lookup"
         ]
       },
       {
@@ -2701,6 +2700,49 @@
         ]
       },
       {
+        "file": "src/flow/lib/get-test-result.js",
+        "hash": "51f5a155a81b73ff78e28b93d3e54d97",
+        "lines": 91,
+        "mtime": "2026-04-14T08:21:38.519Z",
+        "className": "get-test-result",
+        "methods": [
+          "loadTestEvidence",
+          "readLogFile",
+          "redactLog"
+        ],
+        "imports": [
+          "path",
+          "fs",
+          "./base-command.js",
+          "../../lib/config.js"
+        ],
+        "exports": [
+          "loadTestEvidence",
+          "default"
+        ],
+        "extends": "FlowCommand",
+        "usedBy": [
+          "src/flow/lib/run-gate.js"
+        ],
+        "id": "ebb0d8ed",
+        "summary": "GetTestResultCommand loads test evidence for the active flow, including summary data and log content. It also redacts and truncates logs to keep outputs safe and bounded.",
+        "detail": "The module resolves a fixed log path under the flow work directory and enforces a maximum byte window when reading large files. It uses low-level fs operations to seek from the end of oversized logs, which keeps memory and output size predictable. A redaction step sanitizes sensitive patterns before returning or rewriting log content. loadTestEvidence composes structured evidence by combining summary data with processed logs. The command throws when no active flow state exists, making failure explicit at the CLI boundary.",
+        "chapter": "cli_commands",
+        "role": "cli",
+        "enrich": {
+          "processedAt": "2026-04-14T08:22:01.024Z",
+          "attempts": 1
+        },
+        "keywords": [
+          "test evidence",
+          "log truncation",
+          "redaction",
+          "flow state",
+          "fs sync IO",
+          "result summary"
+        ]
+      },
+      {
         "file": "src/flow/lib/run-finalize.js",
         "hash": "dfaec73c47ab960c1b771ff5b53cd0ae",
         "lines": 375,
@@ -2764,9 +2806,9 @@
       },
       {
         "file": "src/flow/lib/run-gate.js",
-        "hash": "d7babd8c30ce753c7ddf23577b10b494",
-        "lines": 489,
-        "mtime": "2026-04-13T15:00:04.769Z",
+        "hash": "446b9bdb1a0e26d499855828bea6554a",
+        "lines": 539,
+        "mtime": "2026-04-14T08:21:38.519Z",
         "className": "run-gate",
         "methods": [
           "RunGateCommand",
@@ -2789,6 +2831,7 @@
           "../../lib/agent.js",
           "../../lib/guardrail.js",
           "../../lib/flow-state.js",
+          "./get-test-result.js",
           "../../lib/constants.js",
           "./base-command.js"
         ],
@@ -2804,22 +2847,22 @@
         "extends": "FlowCommand",
         "usedBy": null,
         "id": "b4aa4dad",
+        "summary": "RunGateCommand implements multi-phase gate checks for draft, spec, and implementation stages in the flow lifecycle. It validates artifacts, evaluates guardrails, and returns pass/fail decisions with actionable reasons.",
+        "detail": "The module combines local static checks with optional agent-based guardrail evaluation, using phase-specific logic and shared parsing helpers. It inspects markdown structure, draft completeness, and implementation evidence such as git diff and test outputs. Guardrail prompting and response parsing are isolated into dedicated functions so policy checks remain extensible. Gate outcomes are normalized through gatePass and gateFail factories, including next-step routing for workflow progression. The command supports explicit phase selection and active-flow fallback, with strict errors for missing specs or invalid phases.",
+        "chapter": "internal_design",
+        "role": "cli",
         "enrich": {
-          "processedAt": "2026-04-13T15:16:23.012Z",
-          "attempts": 2
+          "processedAt": "2026-04-14T08:22:01.024Z",
+          "attempts": 1
         },
-        "summary": "Implements gate checks for draft, spec, pre/post approval, and implementation phases in the flow lifecycle. It combines local static checks, git-diff validation, and optional AI guardrail evaluation to produce pass/fail transitions.",
-        "detail": "The module defines phase-specific validators such as draft field completeness and spec section integrity, including section-aware skip rules. It constructs guardrail prompts, parses guardrail responses into normalized findings, and aggregates pass/fail status with reasons. Implementation gating compares current work against a base branch and can fail early when no effective changes exist. Result helpers return structured gate payloads with next-step routing for success and failure paths. `RunGateCommand` resolves phase intent, dispatches to the proper executor, and enforces valid phase constraints from constants.",
-        "chapter": "cli_commands",
-        "role": "controller",
         "keywords": [
-          "gate check",
           "quality gate",
-          "guardrail validation",
-          "spec lint",
-          "draft validation",
-          "implementation diff",
-          "phase transition"
+          "spec validation",
+          "guardrails",
+          "implementation check",
+          "workflow phase",
+          "git diff analysis",
+          "agent evaluation"
         ]
       },
       {
@@ -3555,9 +3598,9 @@
       },
       {
         "file": "src/flow/registry.js",
-        "hash": "0ff2be4dd1cd67167c4aac11e0c7deae",
-        "lines": 466,
-        "mtime": "2026-04-13T14:16:19.808Z",
+        "hash": "c7c911f04ceb1ad7e28a3a02fca78991",
+        "lines": 471,
+        "mtime": "2026-04-14T08:21:38.520Z",
         "className": "registry",
         "methods": [
           "deriveActivePhase",
@@ -3579,22 +3622,22 @@
           "src/flow.js"
         ],
         "id": "d64f4095",
+        "summary": "registry.js defines the flow command registry and orchestration hooks that track step status, phase state, and operational metrics. It acts as the central wiring layer for flow subcommands.",
+        "detail": "The file imports state and metric utilities, then wraps them in pre/post execution helpers for consistent lifecycle updates. It derives active phases from persisted flow state and maps phase context to the correct gate step identifiers. Command entries in FLOW_COMMANDS include help text and execution bindings, giving a single source of truth for dispatch behavior. The registry also integrates issue log load/save helpers to preserve workflow diagnostics across runs. This design keeps command implementations focused while standardizing bookkeeping in one place.",
+        "chapter": "cli_commands",
+        "role": "cli",
         "enrich": {
-          "processedAt": "2026-04-13T15:16:23.012Z",
-          "attempts": 3
+          "processedAt": "2026-04-14T08:22:01.024Z",
+          "attempts": 1
         },
-        "summary": "Registers flow commands and lifecycle hooks that synchronize command execution with step status and metric counters. It acts as the orchestration map between CLI verbs and command implementations.",
-        "detail": "The module derives active phase from step state and provides helper wrappers for pre/post hooks that update step status consistently. It resolves gate-related step IDs and encapsulates safe updates so command failures do not corrupt state transitions. The exported `FLOW_COMMANDS` table binds command metadata, handlers, and optional lifecycle behavior in one central registry. It also integrates issue-log helpers for commands that manage issue data. This design keeps dispatch configuration declarative while reusing shared flow-state primitives.",
-        "chapter": "project_structure",
-        "role": "config",
         "keywords": [
           "command registry",
           "dispatch table",
-          "lifecycle hooks",
           "step status",
           "phase derivation",
+          "metrics tracking",
           "flow orchestration",
-          "command map"
+          "issue log"
         ]
       },
       {
@@ -8024,10 +8067,10 @@
       }
     ],
     "summary": {
-      "total": 235,
-      "totalMethods": 795
+      "total": 236,
+      "totalMethods": 798
     },
     "dataSourceHash": "7d725e75d5031be445119323e4947c91"
   },
-  "enrichedAt": "2026-04-14T04:56:09.021Z"
+  "enrichedAt": "2026-04-14T08:22:01.024Z"
 }
