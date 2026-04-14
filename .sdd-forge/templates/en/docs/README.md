@@ -87,9 +87,9 @@ If you already have source code, generate documentation to get a complete pictur
 
 | Command | Phase |
 |---|---|
-| `$sdd-forge flow prepare --title "..." --base main` | plan (create spec + branch) |
-| `$sdd-forge flow run review` | implement (AI code review) |
-| `$sdd-forge flow run finalize --mode all` | finalize (wrap-up) |
+| `$sdd-forge.flow-plan` | plan (specification) |
+| `$sdd-forge.flow-impl` | implement (coding + review) |
+| `$sdd-forge.flow-finalize` | finalize (commit, merge, docs sync, cleanup) |
 
 ## Commands
 
@@ -97,12 +97,6 @@ If you already have source code, generate documentation to get a complete pictur
 |---|---|
 | `setup` | Register project and generate config |
 | `docs build` | Run the full documentation pipeline |
-| `docs readme` | Generate `README.md` from `docs/` |
-| `docs review` | Check documentation quality |
-| `flow prepare` | Create spec and branch |
-| `flow get status` | Show flow progress |
-| `presets` | List available presets |
-| `help` | Show all commands |
 
 See `sdd-forge help` or the [command reference](docs/cli_commands.md) for the full list.
 
