@@ -1,5 +1,5 @@
 {
-  "analyzedAt": "2026-04-14T11:37:06.831Z",
+  "analyzedAt": "2026-04-14T14:41:22.829Z",
   "package": {
     "entries": [
       {
@@ -2994,8 +2994,22 @@
         "usedBy": null,
         "id": "59eeacc6",
         "enrich": {
-          "attempts": 1
-        }
+          "processedAt": "2026-04-14T14:42:01.552Z",
+          "attempts": 2
+        },
+        "summary": "Implements the flow command that prepares a new spec workspace and initial files. It validates repository state, derives branch and spec naming, and persists initial flow state.",
+        "detail": "This module defines helper routines for git execution, branch detection, slug generation, and sequential spec indexing under the `specs` directory. It enforces clean-worktree and base-branch preconditions before creating a new spec context. Template loading supports local overrides in `.sdd-forge/templates/<lang>/specs/` with built-in fallbacks for spec and QA files. The command computes paths differently for main repo vs worktree contexts and writes `spec.md`, `qa.md`, and flow metadata only when missing. The implementation centralizes state output in a `writeFlowState` pathway so downstream flow steps can rely on consistent structure.",
+        "chapter": "cli_commands",
+        "role": "controller",
+        "keywords": [
+          "spec preparation",
+          "flow bootstrap",
+          "worktree validation",
+          "template fallback",
+          "branch detection",
+          "slug generation",
+          "state initialization"
+        ]
       },
       {
         "file": "src/flow/lib/run-report.js",
@@ -3109,8 +3123,22 @@
         "usedBy": null,
         "id": "862e7d08",
         "enrich": {
-          "attempts": 1
-        }
+          "processedAt": "2026-04-14T14:42:01.552Z",
+          "attempts": 2
+        },
+        "summary": "Implements the retrospective flow command that generates `retro.json` from requirements and git diff context. It orchestrates AI prompt construction, response parsing, and file persistence.",
+        "detail": "The module extracts requirement text from `spec.md` and pairs it with stored requirement items from flow state. It gathers both compact and detailed diffs against the configured base branch to provide rich context for retrospective analysis. Prompt assembly is explicit and structured, while response parsing includes JSON repair fallback for malformed model output. The command validates preconditions such as existing spec, configured base branch, and non-empty diff, then writes normalized JSON output. It also exports parsing and prompt helpers to support reuse and targeted tests.",
+        "chapter": "development",
+        "role": "controller",
+        "keywords": [
+          "retrospective generation",
+          "AI prompt",
+          "requirements extraction",
+          "diff analysis",
+          "json repair",
+          "flow finalize",
+          "retro report"
+        ]
       },
       {
         "file": "src/flow/lib/run-review.js",
@@ -3183,8 +3211,21 @@
         "usedBy": null,
         "id": "6cc87b22",
         "enrich": {
-          "attempts": 1
-        }
+          "processedAt": "2026-04-14T14:42:01.552Z",
+          "attempts": 2
+        },
+        "summary": "Implements a flow command for syncing generated documentation from the current branch state. It wraps execution of the docs script with git-aware checks.",
+        "detail": "The command resolves the docs entry script from the package directory and executes it via process helpers. It uses command assertions to fail fast and surface clear operational errors. Git helper integration allows it to return changed files and sync status in a flow-friendly response. The class follows the shared `FlowCommand` contract, so it participates in the same lifecycle as other flow actions. The structure is intentionally thin, delegating heavy logic to dedicated process and git utilities.",
+        "chapter": "development",
+        "role": "controller",
+        "keywords": [
+          "docs sync",
+          "flow command",
+          "script runner",
+          "git change detection",
+          "automation",
+          "documentation pipeline"
+        ]
       },
       {
         "file": "src/flow/lib/set-auto.js",
@@ -3830,8 +3871,22 @@
         ],
         "id": "f351ecc4",
         "enrich": {
-          "attempts": 1
-        }
+          "processedAt": "2026-04-14T14:42:01.552Z",
+          "attempts": 2
+        },
+        "summary": "Provides core CLI utilities for path resolution, argument parsing, repository detection, and timestamp/version helpers. It defines package-level constants consumed by command modules.",
+        "detail": "The module derives package and repository roots with environment overrides for worktree and source scenarios. Argument parsing converts flag names to camelCase keys and throws on unknown options for strict CLI behavior. It detects worktree context via `.git` file semantics and can resolve the main repository path from git metadata. Runtime metadata helpers expose package version and normalized UTC timestamp formatting. These functions form a foundational utility layer used across command dispatch and operational checks.",
+        "chapter": "cli_commands",
+        "role": "lib",
+        "keywords": [
+          "cli utilities",
+          "argument parsing",
+          "repo root",
+          "worktree detection",
+          "package version",
+          "utc formatting",
+          "path resolution"
+        ]
       },
       {
         "file": "src/lib/config.js",
@@ -4165,8 +4220,23 @@
         ],
         "id": "5bb0bb76",
         "enrich": {
-          "attempts": 1
-        }
+          "processedAt": "2026-04-14T14:42:01.552Z",
+          "attempts": 2
+        },
+        "summary": "Implements flow-state persistence, active-flow tracking, and lifecycle helpers for spec-driven execution. It is the central state model for flow progress and metadata.",
+        "detail": "The module manages `flow.json`, active-flow markers, and temporary preparing-flow records with cleanup policies and TTL-based stale pruning. It includes phase derivation from step completion, run-id generation, and high-level mutators for requirements, metrics, notes, and issue linkage. Path resolution supports both main-repo and worktree execution, including scan and fallback logic for distributed state locations. Robustness patterns include fail-open git existence checks, capped scans, and graceful JSON recovery paths. It also provides flow discovery methods by spec path, branch, and run ID to support command-level orchestration.",
+        "chapter": "internal_design",
+        "role": "model",
+        "keywords": [
+          "flow state",
+          "state persistence",
+          "active flow tracking",
+          "worktree paths",
+          "step status",
+          "run id",
+          "stale cleanup",
+          "spec resolution"
+        ]
       },
       {
         "file": "src/lib/formatter.js",
@@ -4238,8 +4308,22 @@
         ],
         "id": "61b28e9c",
         "enrich": {
-          "attempts": 1
-        }
+          "processedAt": "2026-04-14T14:42:01.552Z",
+          "attempts": 2
+        },
+        "summary": "Provides shared git helper functions for command execution, repository status queries, and lightweight collaboration actions. It standardizes git interactions behind a small API.",
+        "detail": "The module wraps git invocations with process helpers and logger integration for consistent diagnostics. It exposes common operations such as worktree dirty checks, current branch lookup, ahead-count calculation, and last-commit retrieval. Higher-level helpers aggregate diff stats and commit messages for reporting and decision support. It includes environment capability checks like `gh` availability and issue-comment posting through CLI commands. This design keeps command modules focused on workflow logic rather than raw git command assembly.",
+        "chapter": "stack_and_ops",
+        "role": "lib",
+        "keywords": [
+          "git wrapper",
+          "worktree status",
+          "branch utilities",
+          "ahead count",
+          "commit summary",
+          "gh availability",
+          "issue comment"
+        ]
       },
       {
         "file": "src/lib/guardrail.js",
@@ -4455,8 +4539,22 @@
         "usedBy": null,
         "id": "aa4a324d",
         "enrich": {
-          "attempts": 1
-        }
+          "processedAt": "2026-04-14T14:42:01.552Z",
+          "attempts": 2
+        },
+        "summary": "Implements lint guardrail evaluation over changed files in a branch comparison. It filters applicable rules and reports structured failures and warnings.",
+        "detail": "The module validates guardrail definitions, selects lint-phase rules, and computes changed file paths from git diff output. It reads each existing target file and applies scope matching plus phase filters before evaluating constraints. The run function returns a normalized result object with counts, warnings, and per-file failures, including short-circuit cases for no rules or no files. The implementation is deterministic and file-based, avoiding external tooling dependencies. This keeps policy enforcement lightweight and aligned with repository-native flow checks.",
+        "chapter": "development",
+        "role": "lib",
+        "keywords": [
+          "lint guardrails",
+          "changed files",
+          "policy checks",
+          "scope matching",
+          "phase filter",
+          "static validation",
+          "quality gates"
+        ]
       },
       {
         "file": "src/lib/log.js",
@@ -4637,8 +4735,22 @@
         ],
         "id": "6196b26c",
         "enrich": {
-          "attempts": 1
-        }
+          "processedAt": "2026-04-14T14:42:01.552Z",
+          "attempts": 2
+        },
+        "summary": "Provides process execution primitives used throughout the CLI, including sync/async command runners and error normalization. It is the core boundary for shell interaction.",
+        "detail": "The synchronous runner returns a uniform result object with status, stdout, stderr, and signal metadata rather than throwing by default. The async variant mirrors this shape via Promise resolution, enabling consistent handling across workflows. `formatError` composes compact human-readable diagnostics from command outcomes. `assertOk` enforces fail-fast behavior when callers require strict success semantics. This abstraction centralizes command execution behavior and keeps higher layers simple and predictable.",
+        "chapter": "stack_and_ops",
+        "role": "lib",
+        "keywords": [
+          "process runner",
+          "command execution",
+          "sync async shell",
+          "error formatting",
+          "assertion helper",
+          "child process",
+          "result normalization"
+        ]
       },
       {
         "file": "src/lib/progress.js",
@@ -7988,5 +8100,5 @@
     },
     "dataSourceHash": "7d725e75d5031be445119323e4947c91"
   },
-  "enrichedAt": "2026-04-14T11:38:15.649Z"
+  "enrichedAt": "2026-04-14T14:42:01.552Z"
 }
