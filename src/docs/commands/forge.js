@@ -44,7 +44,7 @@ const DEFAULT_MODE = "local";
 
 function getTargetFiles(root, type, configChapters) {
   const docsDir = path.join(root, "docs");
-  return getChapterFiles(docsDir, { type, configChapters }).map((f) => `docs/${f}`);
+  return getChapterFiles(docsDir, { type, configChapters, projectRoot: root }).map((f) => `docs/${f}`);
 }
 
 /**

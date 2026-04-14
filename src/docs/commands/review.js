@@ -114,7 +114,7 @@ function main() {
   // Discover chapter files
   let chapterFiles = [];
   if (fs.existsSync(targetDir) && fs.statSync(targetDir).isDirectory()) {
-    chapterFiles = getChapterFiles(targetDir, { type, configChapters: config.chapters });
+    chapterFiles = getChapterFiles(targetDir, { type, configChapters: config.chapters, projectRoot: root });
   }
 
   if (chapterFiles.length === 0) {
@@ -232,7 +232,7 @@ function main() {
           reportFail("messages:review.langDirMissing", { lang });
           continue;
         }
-        const langFiles = getChapterFiles(langDir, { type, configChapters: config.chapters });
+        const langFiles = getChapterFiles(langDir, { type, configChapters: config.chapters, projectRoot: root });
         if (langFiles.length === 0) {
           reportFail("messages:review.langNoChapters", { lang });
           continue;

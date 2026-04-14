@@ -489,7 +489,7 @@ export async function textFillFromAnalysis(root, analysis, commandId, srcRoot, o
   const docsDir = path.join(root, "docs");
   const resolvedSrcRoot = srcRoot || root;
 
-  const targetFiles = opts?.files || getChapterFiles(docsDir, { type, configChapters: cfg.chapters });
+  const targetFiles = opts?.files || getChapterFiles(docsDir, { type, configChapters: cfg.chapters, projectRoot: root });
 
   const changedFiles = [];
   let totalFilled = 0;
@@ -640,7 +640,7 @@ async function main(ctx) {
   if (ctx.files) {
     targetFiles = ctx.files;
   } else {
-    targetFiles = getChapterFiles(docsDir, { type: ctx.type, configChapters: cfg.chapters });
+    targetFiles = getChapterFiles(docsDir, { type: ctx.type, configChapters: cfg.chapters, projectRoot: root });
 
     // Diff-based chapter filtering: skip chapters whose entries are unchanged
     if (!ctx.force) {

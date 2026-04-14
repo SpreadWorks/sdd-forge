@@ -75,11 +75,12 @@ async function main(ctx) {
 
   // ボトムアップでテンプレート解決
   const configChapters = config?.chapters;
-  const chaptersOrder = resolveChaptersOrder(type, configChapters);
+  const chaptersOrder = resolveChaptersOrder(type, configChapters, root);
   const resolutions = resolveTemplates(type, lang, {
     projectLocalDir,
     fallbackLangs,
     chaptersOrder,
+    projectRoot: root,
   });
 
   const readmeRes = resolutions.find((r) => r.fileName === "README.md");

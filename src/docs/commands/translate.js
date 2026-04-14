@@ -175,7 +175,7 @@ async function main(ctx) {
     throw new Error("docs/ directory not found. Run 'sdd-forge init' first.");
   }
 
-  const sourceFiles = getChapterFiles(docsDir, { type: ctx.type, configChapters: ctx.config?.chapters });
+  const sourceFiles = getChapterFiles(docsDir, { type: ctx.type, configChapters: ctx.config?.chapters, projectRoot: root });
   const readmePath = path.join(root, "README.md");
   const hasReadme = fs.existsSync(readmePath);
 

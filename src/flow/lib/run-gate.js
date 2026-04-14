@@ -13,7 +13,7 @@
 import fs from "fs";
 import path from "path";
 import { runCmd, assertOk } from "../../lib/process.js";
-import { callAgentWithLog, resolveAgent } from "../../lib/agent.js";
+import { callAgentWithLog, resolveAgent, ensureAgentWorkDir } from "../../lib/agent.js";
 import { filterByPhase, loadMergedGuardrails } from "../../lib/guardrail.js";
 import { getSpecName } from "../../lib/flow-state.js";
 import { loadTestEvidence } from "./get-test-result.js";
@@ -262,7 +262,8 @@ function checkGuardrail(root, targetText, config, phase, role) {
   const prompt = buildGuardrailPrompt(targetText, guardrails, phase, role);
   if (!prompt) return { passed: true, results: [] };
 
-  const response = callAgentWithLog(agent, prompt);
+  ensureAgentWorkDir(agent, root);
+  const response = callAgentWithLog(agent, prompt, undefined, root);
   const results = parseGuardrailResponse(response);
   const passed = results.length > 0 && results.every((r) => r.passed);
 
@@ -498,9 +499,10 @@ export class RunGateCommand extends FlowCommand {
     const agent = resolveAgent(ctx.config, "flow.spec.gate");
     if (!agent) throw new Error("no AI agent configured (agent.default or agent.profiles.<name>.flow.spec.gate)");
 
+    ensureAgentWorkDir(agent, root);
     const testEvidence = loadTestEvidence(root, ctx.config, state);
     const reqPrompt = buildImplCheckPrompt(specText, diff, testEvidence);
-    const reqResponse = callAgentWithLog(agent, reqPrompt);
+    const reqResponse = callAgentWithLog(agent, reqPrompt, undefined, root);
     const reqResults = parseGuardrailResponse(reqResponse);
 
     const reasons = reqResults.map((r) => ({

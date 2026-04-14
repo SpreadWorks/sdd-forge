@@ -170,7 +170,7 @@ export default class DocsSource extends DataSource {
     const docsDir = this._docsDir || path.join(this._root, "docs");
     if (!fs.existsSync(docsDir)) return null;
 
-    const files = getChapterFiles(docsDir, { type: this._type, configChapters: this._configChapters });
+    const files = getChapterFiles(docsDir, { type: this._type, configChapters: this._configChapters, projectRoot: this._root });
 
     if (files.length === 0) return null;
 
@@ -240,7 +240,7 @@ export default class DocsSource extends DataSource {
     const docsDir = this._docsDir || path.join(this._root, "docs");
     if (!fs.existsSync(docsDir)) return null;
 
-    const files = getChapterFiles(docsDir, { type: this._type, configChapters: this._configChapters });
+    const files = getChapterFiles(docsDir, { type: this._type, configChapters: this._configChapters, projectRoot: this._root });
     if (files.length <= 1) return null;
 
     // Find current file in the chapter list

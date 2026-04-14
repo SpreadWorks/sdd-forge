@@ -128,6 +128,7 @@ export function loadFullAnalysis(root) {
  * @param {Object} [options]
  * @param {string} [options.type] - プロジェクトタイプ（例: "cli/node-cli"）
  * @param {string[]} [options.configChapters] - config.json の chapters 配列（最優先）
+ * @param {string} [options.projectRoot] - プロジェクトルート（.sdd-forge/presets/ 検索用）
  * @returns {string[]} ファイル名の配列（順序付き）
  */
 export function getChapterFiles(docsDir, options) {
@@ -135,10 +136,11 @@ export function getChapterFiles(docsDir, options) {
 
   const type = options?.type;
   const configChapters = options?.configChapters;
+  const projectRoot = options?.projectRoot;
   const EXCLUDE = new Set(["README.md", "AGENTS.sdd.md", "layout.md"]);
 
   if (type || configChapters?.length) {
-    const chapters = resolveChaptersOrder(type || "base", configChapters);
+    const chapters = resolveChaptersOrder(type || "base", configChapters, projectRoot);
     if (chapters.length > 0) {
       const existing = chapters.filter((f) => fs.existsSync(path.join(docsDir, f)));
       if (existing.length > 0) return existing;
