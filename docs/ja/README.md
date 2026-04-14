@@ -88,9 +88,9 @@ npm install -g <!-- {{data("cli.project.name")}} -->sdd-forge<!-- {{/data}} -->
 
 | コマンド | フェーズ |
 |---|---|
-| `$sdd-forge flow prepare --title "..." --base main` | plan（仕様書 + ブランチ作成） |
-| `$sdd-forge flow run review` | implement（AI コードレビュー） |
-| `$sdd-forge flow run finalize --mode all` | finalize（終了処理） |
+| `$sdd-forge.flow-plan` | plan（仕様策定） |
+| `$sdd-forge.flow-impl` | implement（実装） |
+| `$sdd-forge.flow-finalize` | finalize（コミット、マージ、ドキュメント同期、クリーンアップ） |
 
 ## コマンド一覧
 
@@ -98,12 +98,6 @@ npm install -g <!-- {{data("cli.project.name")}} -->sdd-forge<!-- {{/data}} -->
 |---|---|
 | `setup` | プロジェクト登録・設定ファイル生成 |
 | `docs build` | ドキュメント生成パイプラインを一括実行 |
-| `docs readme` | `docs/` から `README.md` を生成 |
-| `docs review` | ドキュメント品質チェック |
-| `flow prepare` | 仕様書とブランチを作成 |
-| `flow get status` | フロー進捗を表示 |
-| `presets` | 利用可能なプリセット一覧を表示 |
-| `help` | 全コマンドの一覧を表示 |
 
 全コマンドの詳細は `sdd-forge help` または[コマンドリファレンス](docs/cli_commands.md)を参照してください。
 
