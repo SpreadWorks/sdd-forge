@@ -1,0 +1,47 @@
+{
+  "data": {
+    "implementation": {
+      "diffStat": "specs/174-record-test-summary/draft.md             |  34 +++++\n specs/174-record-test-summary/flow.json            | 160 +++++++++++++++++++++\n specs/174-record-test-summary/issue-log.json       |  48 +++++++\n specs/174-record-test-summary/qa.md                |   9 ++\n specs/174-record-test-summary/review.md            |  25 ++++\n specs/174-record-test-summary/spec.md              |  75 ++++++++++\n specs/174-record-test-summary/tests/README.md      |  32 +++++\n .../tests/verify-skill-sync.js                     |  40 ++++++\n 8 files changed, 423 insertions(+)",
+      "commits": [
+        "feat: feature/174-record-test-summary"
+      ]
+    },
+    "retro": {
+      "total": 3,
+      "done": 2,
+      "partial": 1,
+      "not_done": 0,
+      "rate": 0.83,
+      "notes": "要件2・3は満たしているが、要件1は diff 上で unit のみ確認でき、integration/acceptance まで含む完全達成は確認できない。加えて、要件外の運用・レビュー系ファイル追加が含まれる。"
+    },
+    "issueLog": {
+      "count": 0,
+      "entries": []
+    },
+    "metrics": {
+      "docsRead": 1,
+      "srcRead": 1,
+      "question": 4,
+      "issueLog": 1
+    },
+    "tokenMetrics": {
+      "input": 41469,
+      "output": 3699,
+      "cacheRead": 39424,
+      "cacheCreation": 0,
+      "cost": null,
+      "callCount": 5
+    },
+    "tests": {
+      "unit": 1,
+      "integration": 0,
+      "acceptance": 0,
+      "total": 1
+    },
+    "sync": {
+      "status": "skipped",
+      "reason": "sync was skipped"
+    }
+  },
+  "text": "  Report\n\n  Implementation\n  ────────────────────────────────────────────────\n    feat: feature/174-record-test-summary\n    8 files changed, 423 insertions(+)\n\n  Retro\n  ────────────────────────────────────────────────\n    ███████░ 83%  (2 done / 1 partial / 0 miss)\n\n  Metrics\n  ────────────────────────────────────────────────\n    docs read ................... 1\n    src read .................... 1\n    Q&A ......................... 4\n    issue-log ................... 1\n    agent calls ................. 5\n    input tokens ................ 41,469\n    output tokens ............... 3,699\n    cache-read tokens ........... 39,424\n    cache-create tokens ......... 0\n    cost ........................ N/A\n\n  Tests\n  ────────────────────────────────────────────────\n    unit 1  integration 0  acceptance 0  total 1"
+}

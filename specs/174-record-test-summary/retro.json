@@ -1,0 +1,47 @@
+{
+  "spec": "specs/174-record-test-summary/spec.md",
+  "date": "2026-04-14T03:19:18.387Z",
+  "requirements": [
+    {
+      "desc": "flow-plan テストフェーズ完了時（README 作成後）に unit/integration/acceptance 別のテスト数を記録する",
+      "status": "partial",
+      "note": "flow.json に test.summary.unit は記録されているが integration/acceptance の記録が確認できず、3区分の完全記録は diff 上で未達。"
+    },
+    {
+      "desc": "記録手段はテストランナー・言語固有の出力（TAP 等）に依存してはならない",
+      "status": "done",
+      "note": "diff 内の記録・検証は README ベースの手動カウント前提で、TAP 等のランナー出力パース実装は追加されていない。"
+    },
+    {
+      "desc": "flow-impl フェーズでの記録更新は行わない",
+      "status": "done",
+      "note": "flow-impl で test-summary を更新する変更は diff に存在しない。"
+    }
+  ],
+  "unplanned": [
+    {
+      "file": "specs/174-record-test-summary/qa.md",
+      "change": "要件評価に直接関係しない汎用 Q&A テンプレートの新規追加。"
+    },
+    {
+      "file": "specs/174-record-test-summary/review.md",
+      "change": "本仕様要件（test-summary 記録）と無関係な別トピックのレビュー結果を追加。"
+    },
+    {
+      "file": "specs/174-record-test-summary/issue-log.json",
+      "change": "ゲート実行ログ・運用メモの追加（機能要件そのものではない）。"
+    },
+    {
+      "file": "specs/174-record-test-summary/tests/verify-skill-sync.js",
+      "change": "インストール済みスキル文言の存在確認テストを追加（要件は test-summary 記録動作であり、同期確認は補助的）。"
+    }
+  ],
+  "summary": {
+    "total": 3,
+    "done": 2,
+    "partial": 1,
+    "not_done": 0,
+    "rate": 0.83,
+    "notes": "要件2・3は満たしているが、要件1は diff 上で unit のみ確認でき、integration/acceptance まで含む完全達成は確認できない。加えて、要件外の運用・レビュー系ファイル追加が含まれる。"
+  }
+}

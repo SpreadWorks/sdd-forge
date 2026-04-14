@@ -1,0 +1,160 @@
+{
+  "spec": "specs/174-record-test-summary/spec.md",
+  "baseBranch": "main",
+  "featureBranch": "feature/174-record-test-summary",
+  "runId": "0b6522a9-0a20-45ed-b371-19fe84f58e64",
+  "lifecycle": "active",
+  "steps": [
+    {
+      "id": "approach",
+      "status": "done"
+    },
+    {
+      "id": "branch",
+      "status": "done"
+    },
+    {
+      "id": "prepare-spec",
+      "status": "pending"
+    },
+    {
+      "id": "draft",
+      "status": "done"
+    },
+    {
+      "id": "gate-draft",
+      "status": "done"
+    },
+    {
+      "id": "spec",
+      "status": "done"
+    },
+    {
+      "id": "gate",
+      "status": "done"
+    },
+    {
+      "id": "approval",
+      "status": "done"
+    },
+    {
+      "id": "test",
+      "status": "done"
+    },
+    {
+      "id": "implement",
+      "status": "done"
+    },
+    {
+      "id": "gate-impl",
+      "status": "skipped"
+    },
+    {
+      "id": "review",
+      "status": "done"
+    },
+    {
+      "id": "finalize",
+      "status": "pending"
+    },
+    {
+      "id": "commit",
+      "status": "pending"
+    },
+    {
+      "id": "push",
+      "status": "pending"
+    },
+    {
+      "id": "merge",
+      "status": "pending"
+    },
+    {
+      "id": "pr-create",
+      "status": "pending"
+    },
+    {
+      "id": "branch-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "pr-merge",
+      "status": "pending"
+    },
+    {
+      "id": "sync-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "docs-update",
+      "status": "pending"
+    },
+    {
+      "id": "docs-review",
+      "status": "pending"
+    },
+    {
+      "id": "docs-commit",
+      "status": "pending"
+    }
+  ],
+  "requirements": [
+    {
+      "desc": "flow-plan テストフェーズ完了時（README 作成後）に unit/integration/acceptance 別のテスト数を記録する",
+      "status": "done"
+    },
+    {
+      "desc": "記録手段はテストランナー・言語固有の出力（TAP 等）に依存してはならない",
+      "status": "done"
+    },
+    {
+      "desc": "flow-impl フェーズでの記録更新は行わない",
+      "status": "done"
+    }
+  ],
+  "issue": 144,
+  "request": "レポートのTests欄にテスト結果を自動記録する",
+  "worktree": true,
+  "metrics": {
+    "plan": {
+      "docsRead": 1
+    },
+    "draft": {
+      "srcRead": 1,
+      "question": 4
+    },
+    "gate-draft": {
+      "callCount": 4,
+      "responseChars": 4923,
+      "tokens": {
+        "input": 25404,
+        "output": 2752,
+        "cacheRead": 34944,
+        "cacheCreation": 0
+      }
+    },
+    "gate": {
+      "tokens": {
+        "input": 16065,
+        "output": 947,
+        "cacheRead": 4480,
+        "cacheCreation": 0
+      },
+      "callCount": 1,
+      "responseChars": 1897
+    },
+    "impl": {
+      "issueLog": 1
+    }
+  },
+  "test": {
+    "summary": {
+      "unit": 1
+    }
+  },
+  "notes": [
+    "implement: sdd-forge upgrade で flow-plan SKILL.md を同期",
+    "review: auto-fix を選択",
+    "finalize: すべて実行を選択"
+  ]
+}
