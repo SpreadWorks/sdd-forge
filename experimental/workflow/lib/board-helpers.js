@@ -5,6 +5,35 @@
  */
 
 import { extractId } from "./hash.js";
+import { getProjectMeta, addSingleSelectOption } from "./graphql.js";
+
+const STATUS_NAME_MAX_LENGTH = 50;
+
+export function ensureStatusOption(boardConfig, statusName) {
+  if (typeof statusName !== "string" || statusName.length === 0) {
+    throw new Error(`status name is required`);
+  }
+  if (statusName.length > STATUS_NAME_MAX_LENGTH) {
+    throw new Error(
+      `status name too long: ${statusName.length} chars (max ${STATUS_NAME_MAX_LENGTH})`,
+    );
+  }
+  if (/[\x00-\x1f\x7f]/.test(statusName)) {
+    throw new Error(`status name contains control characters`);
+  }
+  const meta = getProjectMeta(boardConfig.owner, boardConfig.project);
+  if (!meta.statusField) {
+    throw new Error(
+      `board has no "Status" field. The board must have a SingleSelectField named "Status".`,
+    );
+  }
+  const existing = meta.statusField.options.find((o) => o.name === statusName);
+  if (existing) {
+    return { meta, optionId: existing.id };
+  }
+  const optionId = addSingleSelectOption(meta.statusField.id, statusName);
+  return { meta, optionId };
+}
 
 export function findItem(nodes, hash) {
   return nodes.find((n) => {

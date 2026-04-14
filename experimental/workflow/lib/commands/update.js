@@ -1,6 +1,6 @@
 import { WorkflowCommand } from "../base-command.js";
-import { searchItems, updateDraftIssue, getProjectMeta, setItemStatus } from "../graphql.js";
-import { findItem } from "../board-helpers.js";
+import { searchItems, updateDraftIssue, setItemStatus } from "../graphql.js";
+import { findItem, ensureStatusOption } from "../board-helpers.js";
 import { assertJapaneseDraft, stripHashPrefix } from "../validation.js";
 
 export default class UpdateCommand extends WorkflowCommand {
@@ -38,14 +38,8 @@ export default class UpdateCommand extends WorkflowCommand {
     }
 
     if (status !== null) {
-      const meta = getProjectMeta(boardConfig.owner, boardConfig.project);
-      const option = meta.statusField.options.find((o) => o.name === status);
-      if (!option) {
-        throw new Error(
-          `status "${status}" not found. choices: ${meta.statusField.options.map((o) => o.name).join(", ")}`,
-        );
-      }
-      setItemStatus(meta.projectId, item.id, meta.statusField.id, option.id);
+      const { meta, optionId } = ensureStatusOption(boardConfig, status);
+      setItemStatus(meta.projectId, item.id, meta.statusField.id, optionId);
       result.statusUpdated = status;
     }
 

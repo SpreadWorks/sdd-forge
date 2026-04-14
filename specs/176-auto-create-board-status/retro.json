@@ -1,0 +1,56 @@
+{
+  "spec": "specs/176-auto-create-board-status/spec.md",
+  "date": "2026-04-14T14:41:21.182Z",
+  "requirements": [
+    {
+      "desc": "status not-found エラーの解消（add/update/publish が必要 status を自動作成）",
+      "status": "done",
+      "note": "add/update/publish が `ensureStatusOption` を使う実装に変わり、status 未存在時は `addSingleSelectOption` で作成してから `setItemStatus` を実行する。"
+    },
+    {
+      "desc": "Status フィールド自体が無い場合は安全に non-zero exit で停止",
+      "status": "done",
+      "note": "`ensureStatusOption` が `meta.statusField` 不在時に即時 throw し、option 作成 mutation を呼ばないため安全停止の挙動を満たす。"
+    },
+    {
+      "desc": "既存ボード（status 揃い）では追加 GraphQL 呼び出しを 0 回に保つ",
+      "status": "done",
+      "note": "既存 option を検出した分岐では `addSingleSelectOption` を呼ばず既存 `optionId` を返すため、option 作成用 GraphQL 呼び出しは発生しない。"
+    },
+    {
+      "desc": "Status フィールド欠如時のエラー出力にフィールド名と SingleSelectField 必須の旨を含める",
+      "status": "done",
+      "note": "例外メッセージに `\"Status\"` と `SingleSelectField` 必須の文言が含まれている。"
+    }
+  ],
+  "unplanned": [
+    {
+      "file": "experimental/workflow/lib/board-helpers.js",
+      "change": "status 名に対する追加バリデーション（空文字禁止、50文字上限、制御文字禁止）を導入。"
+    },
+    {
+      "file": "experimental/workflow/lib/graphql.js",
+      "change": "SingleSelect option 数 50 上限チェックと、既存 option 一式を再送する更新方式（色を GRAY で追加）を導入。"
+    },
+    {
+      "file": "experimental/workflow/lib/commands/publish.js",
+      "change": "返却値 `statusUpdated` が条件付き null から常に `\"Todo\"` になるよう変更。"
+    },
+    {
+      "file": "experimental/tests/workflow-graphql-option.test.js",
+      "change": "`addSingleSelectOption` の export と引数個数（2）のみを検証する構造テストを追加。"
+    },
+    {
+      "file": "specs/176-auto-create-board-status/*",
+      "change": "仕様/フロー/レビュー/QA/テストREADME などのドキュメント・運用ファイルが新規追加。"
+    }
+  ],
+  "summary": {
+    "total": 4,
+    "done": 4,
+    "partial": 0,
+    "not_done": 0,
+    "rate": 1,
+    "notes": "4要件は実装差分上いずれも満たしている。機能外の追加として、status名バリデーション強化・option上限処理・publish返却値変更・周辺specファイル追加が含まれる。"
+  }
+}

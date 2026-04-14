@@ -1,0 +1,155 @@
+{
+  "spec": "specs/176-auto-create-board-status/spec.md",
+  "baseBranch": "main",
+  "featureBranch": "feature/176-auto-create-board-status",
+  "runId": "f2c13c1e-2889-42d0-9375-d5fc8acb5673",
+  "lifecycle": "active",
+  "steps": [
+    {
+      "id": "approach",
+      "status": "done"
+    },
+    {
+      "id": "branch",
+      "status": "done"
+    },
+    {
+      "id": "prepare-spec",
+      "status": "pending"
+    },
+    {
+      "id": "draft",
+      "status": "done"
+    },
+    {
+      "id": "gate-draft",
+      "status": "done"
+    },
+    {
+      "id": "spec",
+      "status": "done"
+    },
+    {
+      "id": "gate",
+      "status": "done"
+    },
+    {
+      "id": "approval",
+      "status": "done"
+    },
+    {
+      "id": "test",
+      "status": "done"
+    },
+    {
+      "id": "implement",
+      "status": "done"
+    },
+    {
+      "id": "gate-impl",
+      "status": "done"
+    },
+    {
+      "id": "review",
+      "status": "done"
+    },
+    {
+      "id": "finalize",
+      "status": "pending"
+    },
+    {
+      "id": "commit",
+      "status": "pending"
+    },
+    {
+      "id": "push",
+      "status": "pending"
+    },
+    {
+      "id": "merge",
+      "status": "pending"
+    },
+    {
+      "id": "pr-create",
+      "status": "pending"
+    },
+    {
+      "id": "branch-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "pr-merge",
+      "status": "pending"
+    },
+    {
+      "id": "sync-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "docs-update",
+      "status": "pending"
+    },
+    {
+      "id": "docs-review",
+      "status": "pending"
+    },
+    {
+      "id": "docs-commit",
+      "status": "pending"
+    }
+  ],
+  "requirements": [
+    {
+      "desc": "status not-found エラーの解消（add/update/publish が必要 status を自動作成）",
+      "status": "done"
+    },
+    {
+      "desc": "Status フィールド自体が無い場合は安全に non-zero exit で停止",
+      "status": "done"
+    },
+    {
+      "desc": "既存ボード（status 揃い）では追加 GraphQL 呼び出しを 0 回に保つ",
+      "status": "done"
+    },
+    {
+      "desc": "Status フィールド欠如時のエラー出力にフィールド名と SingleSelectField 必須の旨を含める",
+      "status": "done"
+    }
+  ],
+  "issue": 147,
+  "request": "#147 issue対応: ボードに必要なステータスが事前に存在しない場合の自動作成",
+  "worktree": true,
+  "metrics": {
+    "plan": {
+      "docsRead": 3
+    },
+    "draft": {
+      "question": 4
+    },
+    "gate-draft": {
+      "tokens": {
+        "input": 31415,
+        "output": 2540,
+        "cacheRead": 29824,
+        "cacheCreation": 0
+      },
+      "callCount": 3,
+      "responseChars": 5516
+    },
+    "gate-impl": {
+      "tokens": {
+        "input": 18076,
+        "output": 1496,
+        "cacheRead": 26368,
+        "cacheCreation": 0
+      },
+      "callCount": 2,
+      "responseChars": 1967
+    }
+  },
+  "test": {
+    "summary": {
+      "unit": 2
+    }
+  }
+}

@@ -138,6 +138,53 @@ export function getRepositoryId(owner, name) {
   return result.data.repository.id;
 }
 
+const MAX_SINGLE_SELECT_OPTIONS = 50;
+
+export function addSingleSelectOption(fieldId, optionName) {
+  const q = `
+    query {
+      node(id: "${fieldId}") {
+        ... on ProjectV2SingleSelectField {
+          options { name color description }
+        }
+      }
+    }`;
+  const existing = ghGraphQL(q).data.node.options;
+  if (existing.length >= MAX_SINGLE_SELECT_OPTIONS) {
+    throw new Error(
+      `cannot add option "${optionName}": SingleSelect field already has ${existing.length} options (limit ${MAX_SINGLE_SELECT_OPTIONS})`,
+    );
+  }
+
+  const optionsInput = [
+    ...existing.map(
+      (o) =>
+        `{ name: ${JSON.stringify(o.name)}, color: ${o.color}, description: ${JSON.stringify(o.description || "")} }`,
+    ),
+    `{ name: ${JSON.stringify(optionName)}, color: GRAY, description: "" }`,
+  ];
+
+  const m = `
+    mutation {
+      updateProjectV2Field(input: {
+        fieldId: "${fieldId}"
+        singleSelectOptions: [${optionsInput.join(", ")}]
+      }) {
+        projectV2Field {
+          ... on ProjectV2SingleSelectField {
+            options { id name }
+          }
+        }
+      }
+    }`;
+  const updated = ghGraphQL(m).data.updateProjectV2Field.projectV2Field.options;
+  const created = updated.find((o) => o.name === optionName);
+  if (!created) {
+    throw new Error(`failed to create status option "${optionName}"`);
+  }
+  return created.id;
+}
+
 export function setItemStatus(projectId, itemId, fieldId, optionId) {
   const q = `
     mutation {

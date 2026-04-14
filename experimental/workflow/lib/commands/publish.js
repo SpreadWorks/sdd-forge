@@ -5,10 +5,9 @@ import {
   updateDraftIssue,
   convertDraftToIssue,
   getRepositoryId,
-  getProjectMeta,
   setItemStatus,
 } from "../graphql.js";
-import { findItem, parseJsonResponse } from "../board-helpers.js";
+import { findItem, parseJsonResponse, ensureStatusOption } from "../board-helpers.js";
 import { assertJapaneseDraft, assertJapaneseDraftField, stripHashPrefix } from "../validation.js";
 import { callAgentWithLog, ensureAgentWorkDir, resolveAgent } from "../../../../src/lib/agent.js";
 
@@ -108,19 +107,15 @@ ${sourceBody}
       );
     }
 
-    // Move status to Todo
-    const meta = getProjectMeta(boardConfig.owner, boardConfig.project);
-    const todoOption = meta.statusField.options.find((o) => o.name === "Todo");
-    if (todoOption) {
-      setItemStatus(meta.projectId, item.id, meta.statusField.id, todoOption.id);
-    }
+    const { meta, optionId } = ensureStatusOption(boardConfig, "Todo");
+    setItemStatus(meta.projectId, item.id, meta.statusField.id, optionId);
 
     return {
       hash,
       issueNumber,
       issueUrl,
       labels,
-      statusUpdated: todoOption ? "Todo" : null,
+      statusUpdated: "Todo",
     };
   }
 
