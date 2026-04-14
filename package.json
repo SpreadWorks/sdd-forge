@@ -12,7 +12,8 @@
   },
   "exports": {
     ".": "./src/sdd-forge.js",
-    "./api": "./src/api.js"
+    "./api": "./src/api.js",
+    "./presets/*": "./src/presets/*"
   },
   "files": [
     "src/",
