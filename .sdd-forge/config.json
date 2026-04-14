@@ -111,14 +111,24 @@
     },
     "profiles": {
       "default": {
-        "docs": "codex/gpt-5.3",
-        "flow": "claude/sonnet",
-        "flow.review.draft": "codex/gpt-5.3"
+        "docs.init":         "claude/sonnet",
+        "docs.enrich":       "claude/opus",
+        "docs.text":         "claude/opus",
+        "docs.forge":        "claude/opus",
+        "docs.readme":       "claude/sonnet",
+        "docs.agents":       "claude/opus",
+        "docs.translate":    "codex/gpt-5.4",
+        "flow.spec.gate":         "claude/sonnet",
+        "flow.spec.review":       "claude/sonnet",
+        "flow.impl.review.draft": "codex/gpt-5.4",
+        "flow.impl.review.final": "claude/opus",
+        "flow.test.review":       "claude/sonnet",
+        "flow.finalize.retro":    "claude/sonnet",
+        "flow.context.search":    "claude/sonnet"
       },
       "codex": {
         "docs": "codex/gpt-5.3",
-        "flow": "codex/gpt-5.3",
-        "flow.review.draft": "codex/gpt-5.3"
+        "flow": "codex/gpt-5.3"
       }
     }
   }
