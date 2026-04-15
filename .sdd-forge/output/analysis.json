@@ -1,5 +1,5 @@
 {
-  "analyzedAt": "2026-04-15T06:47:49.346Z",
+  "analyzedAt": "2026-04-15T07:02:08.636Z",
   "package": {
     "entries": [
       {
@@ -1286,9 +1286,9 @@
       },
       {
         "file": "src/docs/lib/data-source-loader.js",
-        "hash": "4231396643d77aa2ce1b5ab1493df5a1",
-        "lines": 46,
-        "mtime": "2026-04-10T06:35:13.094Z",
+        "hash": "b648c05e7dcbf869c9c3648c4ba979da",
+        "lines": 58,
+        "mtime": "2026-04-15T07:02:08.300Z",
         "className": "data-source-loader",
         "methods": [
           "loadDataSources"
@@ -1296,7 +1296,7 @@
         "imports": [
           "fs",
           "path",
-          "../../lib/progress.js"
+          "url"
         ],
         "exports": [
           "loadDataSources"
@@ -1306,20 +1306,22 @@
           "src/docs/lib/resolver-factory.js"
         ],
         "id": "d1cdb1d8",
-        "enrich": {
-          "processedAt": "2026-04-10T14:34:55.016Z",
-          "attempts": 2
-        },
-        "summary": "Loads DataSource modules dynamically from a directory and initializes them. It returns instantiated sources keyed by file-derived names.",
-        "detail": "The loader scans a data directory for JavaScript files and imports each module at runtime. It constructs instances, annotates source file paths for diagnostics, and accumulates them in a source registry. Logging hooks are used for visibility so loading failures or progress can be reported clearly.",
+        "summary": "This module loads DataSource implementations from a directory and returns them as a named collection. It enforces safety limits and wraps load failures with contextual errors.",
+        "detail": "The loader reads entries from the target directory using async filesystem APIs and processes JavaScript files as candidate data sources. It derives each source name from the filename and builds absolute paths for dynamic loading. A hard cap on the number of files protects the system from unexpectedly large directories and potential resource abuse. Errors are rethrown with enriched messages that include the failing file path and preserve the original cause for debugging. The function returns a structured `sources` object keyed by DataSource name for downstream pipeline use.",
         "chapter": "internal_design",
         "role": "lib",
+        "enrich": {
+          "processedAt": "2026-04-15T07:02:17.452Z",
+          "attempts": 1
+        },
         "keywords": [
           "data source loader",
           "dynamic import",
-          "plugin loading",
-          "docs data",
-          "runtime registry"
+          "filesystem scan",
+          "error wrapping",
+          "source registry",
+          "plugin discovery",
+          "file-based loading"
         ]
       },
       {
@@ -8102,5 +8104,5 @@
     },
     "dataSourceHash": "7d725e75d5031be445119323e4947c91"
   },
-  "enrichedAt": "2026-04-15T06:48:02.878Z"
+  "enrichedAt": "2026-04-15T07:02:17.452Z"
 }
