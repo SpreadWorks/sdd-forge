@@ -107,7 +107,7 @@
   "init": {
     "noType": "ERROR: type is not set. Set \"type\" in .sdd-forge/config.json or use --type option.",
     "noTemplates": "ERROR: no template files found in chain",
-    "conflictsExist": "ERROR: {{count}} file(s) already exist in docs/:",
+    "conflictsExist": "WARN: {{count}} file(s) already exist in docs/:",
     "useForce": "Use --force to overwrite.",
     "aiFilterFailed": "[init] WARN: AI chapter selection failed: {{message}}",
     "aiResponseInvalid": "[init] WARN: AI response is not valid JSON, skipping AI filter.",

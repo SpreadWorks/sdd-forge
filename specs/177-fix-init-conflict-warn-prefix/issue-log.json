@@ -1,0 +1,42 @@
+{
+  "entries": [
+    {
+      "step": "gate-draft",
+      "reason": "Single Responsibility — The draft focuses on one concern: changing `conflictsExist` message prefix from `ERROR:` to `WARN:`.; Unambiguous Requirements — Scope and expected text changes are stated concretely with specific files and exact prefix replacement.; Complete Context — Requirements are not consistently written in explicit `When/If ... shall ...` form, so trigger-behavior pairing is not fully formalized.; No Hardcoded Secrets — No API keys, passwords, tokens, or secret material are present; article is inapplicable to this message-only change.; Prioritize Requirements — The actionable requirements are limited and do not exceed three, so explicit priority ordering is inapplicable.; Impact on Existing Features — The draft explicitly states impact is limited to i18n message text and that runtime behavior is unchanged.; Present Recommendations with Reasoning — Each Q&A provides a clear answer and concise rationale based on existing code behavior/patterns and guardrail-consistent scope control.; Explore Before Asking — The draft cites concrete code locations and decisions, indicating codebase exploration was done before conclusions.; Proactively Raise Related Implications — It proactively addresses test impact, alternatives, and future extensibility implications.; Confirm Brainstorm vs. Decision Before Critiquing — The content is already in decision state with explicit user approval, so brainstorm/decision confirmation is inapplicable.; Capture Digressions in draft.md — No meaningful digression is evident; key side discussions (alternatives/future) are already captured in the draft.; Draft Stays at Requirements Level — It includes implementation-level detail (exact file paths/line refs and test placement), exceeding pure RFP requirements level.; Backward — Compatible CLI Interface — No command/option removal or semantic CLI change is proposed, so migration-plan requirement is inapplicable.",
+      "trigger": "gate post hook (auto)",
+      "timestamp": "2026-04-14T16:13:55.779Z"
+    },
+    {
+      "step": "gate-draft",
+      "reason": "Single Responsibility — 変更対象は conflict 通知プレフィックスの整合に限定され、関心事は一つです。; Unambiguous Requirements — 要件は `ERROR:` を使わない／`WARN:` を使う等の検証可能条件で記述されています。; Complete Context — R1〜R4 はいずれも When/If の条件と shall の期待動作が対になっています。; No Hardcoded Secrets — 本文は仕様記述のみで、秘密情報や認証情報の埋め込みはありません。; Prioritize Requirements — 要件が4件ある一方で優先順位（P1/P2等）が明示されていません。; Impact on Existing Features — 既存機能への影響を「文言のみ・ロジック不変」と明示しています。; Present Recommendations with Reasoning — Q&Aに回答はあるものの、各回答の根拠を docs/・原則・既存コードのどれかとして明示的に整理していません。; Explore Before Asking — ユーザーへの未調査質問はなく、内容は既存慣習を前提に自己完結しています。; Proactively Raise Related Implications — i18n同期待ちや将来の構造化ログへの波及を先回りして記載しています。; Confirm Brainstorm vs. Decision Before Critiquing — ブレスト案を最終決定として批判する場面はなく、この観点は実質的に非該当です。; Capture Digressions in draft.md — 脱線した議論の痕跡はなく、記録漏れは見当たりません（非該当）。; Draft Stays at Requirements Level — 実装詳細や関数設計には踏み込まず、要求・制約・検証方針レベルに留まっています。; Backward — Compatible CLI Interface — 既存コマンド/オプションの意味変更や削除を伴わないため移行計画は不要です。",
+      "trigger": "gate post hook (auto)",
+      "timestamp": "2026-04-14T16:14:53.429Z"
+    },
+    {
+      "step": "gate-draft",
+      "reason": "Single Responsibility — Scope is limited to changing conflict notification prefix behavior for `docs init`.; Unambiguous Requirements — Requirements use verifiable conditions (`ERROR:` not used, `WARN:` used, locale consistency, behavior unchanged).; Complete Context — Each requirement includes a trigger (`When/If`) and an expected outcome (`shall`).; No Hardcoded Secrets — Inapplicable; the draft contains no source secrets or credential material.; Prioritize Requirements — Four requirements are explicitly prioritized as `P1` with rationale for equal priority.; Impact on Existing Features — It explicitly states impact is message text only and existing runtime behavior remains unchanged.; Present Recommendations with Reasoning — Each Q&A leads with a recommendation and cites code patterns, issue context, or project principles.; Explore Before Asking — The draft answers by referencing existing code/issue context instead of asking the user.; Proactively Raise Related Implications — It proactively covers alternatives, constraints, locale consistency, and future extensibility implications.; Confirm Brainstorm vs. Decision Before Critiquing — Alternatives are critiqued/rejected without explicitly confirming brainstorm vs final-decision mode.; Capture Digressions in draft.md — Inapplicable; no clear digression thread requiring separate capture is present.; Draft Stays at Requirements Level — It includes implementation-level specifics (e.g., message table key/file-level and control-flow details) beyond pure requirements.; Backward — Compatible CLI Interface — Inapplicable; no command/option removal or semantic CLI change is proposed.",
+      "trigger": "gate post hook (auto)",
+      "timestamp": "2026-04-14T16:16:01.349Z"
+    },
+    {
+      "step": "gate",
+      "reason": "line 49: unchecked task/question (- [ ] なし)",
+      "trigger": "gate post hook (auto)",
+      "timestamp": "2026-04-14T16:17:54.489Z"
+    },
+    {
+      "step": "gate",
+      "reason": "Single Responsibility — 仕様は conflict 通知プレフィックス整合という単一の関心事に限定されている。; Unambiguous Requirements — `ERROR:` を使わない / `WARN:` を使う / 全ロケール一致など検証可能な条件で記述されている。; Complete Context — 各要件が `When/If` の条件と `shall` の期待動作を対で持っている。; No Hardcoded Secrets — APIキー等の機密情報は含まれていない。; No Silent Error Swallowing — 例外処理コード自体を含まない仕様であり本条項は適用外。; Prioritize Requirements — 4件の要件すべてに `P1 / Must` が明示され、優先度指定がある。; Impact on Existing Features — R4 と Out of Scope で既存の終了コード・スキップ等を変更しない影響範囲が明示されている。; Bounded Resource Usage — 再帰・リトライ・大量ロードを導入する設計がなく本条項は適用外。; Changes Require Test Coverage — スコープに検証テスト追加を含み、受け入れ基準でも検証項目が定義されている。; Spec Includes Test Strategy — 受け入れ基準はあるが、テストを「どう実施するか」の戦略（手法・レベル・実行方法）が明示されていない。; Synthesize Draft, Do Not Copy — 元ドラフト本文が提示されておらず、直接コピー判定は適用外。; Record Unresolved Points as Open Questions — 未解決事項は `Open Questions: なし` として明示され、解決済みは Clarifications に整理されている。; Include 'Why This Approach' Rationale — Clarifications と Alternatives Considered に採用理由・却下理由が記載されている。; Backward — Compatible CLI Interface — 既存コマンド/オプションの意味変更や削除がなく、移行計画は不要。; Exit Code Contract — 失敗時に 0 を返す変更は提案されておらず、終了コード挙動は変更しないと明記されている。",
+      "trigger": "gate post hook (auto)",
+      "timestamp": "2026-04-14T16:18:21.429Z"
+    },
+    {
+      "step": "review",
+      "reason": "review proposal #3 (useForce message necessity) judged as no-op",
+      "trigger": "AI code review approved proposal suggesting useForce be shown only when applicable",
+      "resolution": "no change — existing guard 'if (conflicts.length > 0 && !ctx.force)' already ensures useForce is displayed only when --force would be useful; proposal also outside spec scope",
+      "guardrailCandidate": "レビュー提案が spec スコープ外に広がる場合、現状コードが既に要件を満たしていないか先に確認する",
+      "timestamp": "2026-04-15T06:46:25.900Z"
+    }
+  ]
+}

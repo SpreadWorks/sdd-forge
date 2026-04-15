@@ -107,7 +107,7 @@
   "init": {
     "noType": "ERROR: type が設定されていません。.sdd-forge/config.json に \"type\" を設定するか --type オプションを指定してください。",
     "noTemplates": "ERROR: テンプレートファイルがチェーン内に見つかりません",
-    "conflictsExist": "ERROR: {{count}} 件のファイルが docs/ に既に存在します:",
+    "conflictsExist": "WARN: {{count}} 件のファイルが docs/ に既に存在します:",
     "useForce": "--force で上書きできます。",
     "aiFilterFailed": "[init] WARN: AI 章選択に失敗: {{message}}",
     "aiResponseInvalid": "[init] WARN: AI レスポンスが有効な JSON ではありません。AI フィルタをスキップします。",

@@ -1,0 +1,156 @@
+{
+  "spec": "specs/177-fix-init-conflict-warn-prefix/spec.md",
+  "baseBranch": "main",
+  "featureBranch": "feature/177-fix-init-conflict-warn-prefix",
+  "runId": "d2e8187a-80dc-4d30-9adf-d8de7ffe7263",
+  "lifecycle": "active",
+  "steps": [
+    {
+      "id": "approach",
+      "status": "done"
+    },
+    {
+      "id": "branch",
+      "status": "done"
+    },
+    {
+      "id": "prepare-spec",
+      "status": "pending"
+    },
+    {
+      "id": "draft",
+      "status": "done"
+    },
+    {
+      "id": "gate-draft",
+      "status": "done"
+    },
+    {
+      "id": "spec",
+      "status": "done"
+    },
+    {
+      "id": "gate",
+      "status": "done"
+    },
+    {
+      "id": "approval",
+      "status": "done"
+    },
+    {
+      "id": "test",
+      "status": "done"
+    },
+    {
+      "id": "implement",
+      "status": "done"
+    },
+    {
+      "id": "gate-impl",
+      "status": "done"
+    },
+    {
+      "id": "review",
+      "status": "done"
+    },
+    {
+      "id": "finalize",
+      "status": "pending"
+    },
+    {
+      "id": "commit",
+      "status": "pending"
+    },
+    {
+      "id": "push",
+      "status": "pending"
+    },
+    {
+      "id": "merge",
+      "status": "pending"
+    },
+    {
+      "id": "pr-create",
+      "status": "pending"
+    },
+    {
+      "id": "branch-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "pr-merge",
+      "status": "pending"
+    },
+    {
+      "id": "sync-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "docs-update",
+      "status": "pending"
+    },
+    {
+      "id": "docs-review",
+      "status": "pending"
+    },
+    {
+      "id": "docs-commit",
+      "status": "pending"
+    }
+  ],
+  "requirements": [
+    {
+      "desc": "R1: conflict 通知プレフィックスに ERROR: を使用しない",
+      "status": "done"
+    },
+    {
+      "desc": "R2: conflict 通知プレフィックスに WARN: を使用する",
+      "status": "done"
+    },
+    {
+      "desc": "R3: 全ロケールでプレフィックス表記を統一する",
+      "status": "done"
+    },
+    {
+      "desc": "R4: 検出・スキップ・終了コード等の既存動作を変更しない",
+      "status": "done"
+    }
+  ],
+  "issue": 149,
+  "request": "issue #149: init の conflictsExist メッセージの ERROR プレフィックスを WARN に変更",
+  "worktree": true,
+  "autoApprove": true,
+  "notes": [
+    "draft: auto Q&A 完了、scope=ja/en conflictsExist の ERROR→WARN 置換"
+  ],
+  "metrics": {
+    "gate-draft": {
+      "tokens": {
+        "input": 26381,
+        "output": 2519,
+        "cacheRead": 35584,
+        "cacheCreation": 0
+      },
+      "callCount": 3,
+      "responseChars": 4733
+    },
+    "gate": {
+      "tokens": {
+        "input": 16720,
+        "output": 960,
+        "cacheRead": 3456,
+        "cacheCreation": 0
+      },
+      "callCount": 1,
+      "responseChars": 1196
+    },
+    "impl": {
+      "issueLog": 1
+    }
+  },
+  "test": {
+    "summary": {
+      "unit": 5
+    }
+  }
+}

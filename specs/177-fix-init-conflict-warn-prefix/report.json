@@ -1,0 +1,40 @@
+{
+  "data": {
+    "implementation": {
+      "diffStat": "specs/177-fix-init-conflict-warn-prefix/draft.md   |  85 +++++++++++\n specs/177-fix-init-conflict-warn-prefix/flow.json  | 156 +++++++++++++++++++++\n .../issue-log.json                                 |  42 ++++++\n specs/177-fix-init-conflict-warn-prefix/qa.md      |   9 ++\n specs/177-fix-init-conflict-warn-prefix/review.md  |  25 ++++\n specs/177-fix-init-conflict-warn-prefix/spec.md    |  73 ++++++++++\n .../tests/README.md                                |  28 ++++\n .../tests/conflict-warn-prefix.test.js             |  37 +++++\n src/locale/en/messages.json                        |   2 +-\n src/locale/ja/messages.json                        |   2 +-\n 10 files changed, 457 insertions(+), 2 deletions(-)",
+      "commits": [
+        "feat: feature/177-fix-init-conflict-warn-prefix"
+      ]
+    },
+    "retro": null,
+    "issueLog": {
+      "count": 0,
+      "entries": []
+    },
+    "metrics": {
+      "docsRead": 0,
+      "srcRead": 0,
+      "question": 0,
+      "issueLog": 1
+    },
+    "tokenMetrics": {
+      "input": 43101,
+      "output": 3479,
+      "cacheRead": 39040,
+      "cacheCreation": 0,
+      "cost": null,
+      "callCount": 4
+    },
+    "tests": {
+      "unit": 5,
+      "integration": 0,
+      "acceptance": 0,
+      "total": 5
+    },
+    "sync": {
+      "status": "skipped",
+      "reason": "sync was skipped"
+    }
+  },
+  "text": "  Report\n\n  Implementation\n  ────────────────────────────────────────────────\n    feat: feature/177-fix-init-conflict-warn-prefix\n    10 files changed, 457 insertions(+), 2 deletions(-)\n\n  Retro\n  ────────────────────────────────────────────────\n    -\n\n  Metrics\n  ────────────────────────────────────────────────\n    docs read ................... 0\n    src read .................... 0\n    Q&A ......................... 0\n    issue-log ................... 1\n    agent calls ................. 4\n    input tokens ................ 43,101\n    output tokens ............... 3,479\n    cache-read tokens ........... 39,040\n    cache-create tokens ......... 0\n    cost ........................ N/A\n\n  Tests\n  ────────────────────────────────────────────────\n    unit 5  integration 0  acceptance 0  total 5"
+}
