@@ -1,12 +1,12 @@
 {
-  "analyzedAt": "2026-04-14T14:41:22.829Z",
+  "analyzedAt": "2026-04-15T06:47:49.346Z",
   "package": {
     "entries": [
       {
         "file": "package.json",
-        "hash": "180c5634536d85dc71e1dbb0c941ab4c",
-        "lines": 39,
-        "mtime": "2026-04-14T08:26:28.215Z",
+        "hash": "8f42ef7ed01749a547fe13f5fd62be27",
+        "lines": 40,
+        "mtime": "2026-04-14T15:41:47.473Z",
         "packageDeps": {
           "dependencies": {},
           "devDependencies": {}
@@ -18,22 +18,24 @@
         },
         "composerDeps": null,
         "id": "451a9f25",
-        "summary": "This package manifest defines sdd-forge as an ESM CLI and API package for spec-driven documentation workflows. It declares runtime requirements, publish scope, and core test commands.",
-        "detail": "The manifest exposes both a CLI entry (`sdd-forge`) and programmatic exports (`.` and `./api`) pointing to source modules under `src/`. It enforces Node.js 18.19+ and keeps distribution focused by publishing `src/` while excluding preset test folders. Script definitions separate unit, e2e, and acceptance test execution paths for predictable CI usage. Repository, licensing, keywords, and package manager pinning are configured to support reproducible development and publishing.",
+        "summary": "This `package.json` defines the distributable metadata and runtime entry points for the `sdd-forge` CLI package. It also specifies execution requirements and test script commands for local development workflows.",
+        "detail": "The file declares an ESM package with a CLI binary mapping to `./src/sdd-forge.js`, and export paths for the main entry, API access, and preset subpaths. It controls publish contents through the `files` whitelist and explicitly excludes preset test directories from package artifacts. The `engines` field enforces a minimum Node.js version, aligning runtime expectations for users and CI environments. Script entries separate unit, e2e, and acceptance test scopes, indicating structured validation stages in the development lifecycle. Package identity fields such as repository URL, license, and package manager pin support reproducibility and ecosystem integration.",
         "chapter": "stack_and_ops",
         "role": "config",
         "enrich": {
-          "processedAt": "2026-04-14T11:38:15.649Z",
+          "processedAt": "2026-04-15T06:48:02.878Z",
           "attempts": 1
         },
         "keywords": [
           "package manifest",
           "npm metadata",
-          "esm module",
-          "cli entrypoint",
-          "node engine",
-          "publish files",
-          "test scripts"
+          "CLI entrypoint",
+          "ES module",
+          "Node.js engine requirement",
+          "exports map",
+          "publish files whitelist",
+          "test scripts",
+          "package configuration"
         ]
       }
     ],
@@ -8100,5 +8102,5 @@
     },
     "dataSourceHash": "7d725e75d5031be445119323e4947c91"
   },
-  "enrichedAt": "2026-04-14T14:42:01.552Z"
+  "enrichedAt": "2026-04-15T06:48:02.878Z"
 }
