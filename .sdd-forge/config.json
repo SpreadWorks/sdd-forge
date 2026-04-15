@@ -62,6 +62,10 @@
       "desc": "テンプレートエンジン、DataSource、enrich パイプライン、言語ハンドラ"
     },
     {
+      "chapter": "creating_presets.md",
+      "desc": "プリセット作成ガイド。preset.json スキーマ、DataSource 実装、テンプレート継承、scan/data ペアリング規則、AI 向け実行チェックリスト"
+    },
+    {
       "chapter": "development_testing.md",
       "exclude": true
     }

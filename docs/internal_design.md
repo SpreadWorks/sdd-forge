@@ -298,5 +298,5 @@ Add a handler module to `src/docs/lib/lang/` and register its file-extension map
 ---
 
 <!-- {{data("base.docs.nav")}} -->
-[← Configuration and Customization](configuration.md)
+[← Configuration and Customization](configuration.md) | [Preset Creation Guide →](creating_presets.md)
 <!-- {{/data}} -->

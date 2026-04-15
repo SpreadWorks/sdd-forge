@@ -222,5 +222,5 @@ graph TD
 ---
 
 <!-- {{data("base.docs.nav")}} -->
-[← 設定とカスタマイズ](configuration.md)
+[← 設定とカスタマイズ](configuration.md) | [プリセット作成ガイド →](creating_presets.md)
 <!-- {{/data}} -->

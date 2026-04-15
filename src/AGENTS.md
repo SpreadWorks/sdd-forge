@@ -152,16 +152,12 @@ base → api → graphql
 ```
 presets/<key>/
 ├── preset.json              プリセット定義
-├── data/                    DataSource クラス群
+├── data/                    DataSource クラス群（scan + resolve を兼ねる）
 │   ├── config.js            設定解析
 │   ├── controllers.js       コントローラ解析
 │   └── ...
-├── scan/                    scan パーサー群
-│   ├── routes.js            ルート解析
-│   ├── config.js            設定解析
-│   └── ...
 ├── tests/                   プリセット固有テスト
-│   ├── unit/                ユニットテスト（scan パーサー I/O テスト等）
+│   ├── unit/                ユニットテスト（DataSource の match/parse I/O テスト等）
 │   ├── e2e/                 E2E テスト（統合スキャンテスト等）
 │   └── acceptance/          acceptance テスト（preset ローカル fixture + test.js）
 └── templates/               章テンプレート
@@ -177,21 +173,36 @@ presets/<key>/
 
 ## プリセット作成ルール
 
+### MUST: プリセット作成ガイドとの同期
+
+プリセットの仕様・作成手順・契約（`preset.json` スキーマ、DataSource のインターフェース、`match()` / `parse()` の引数契約、resolve メソッドの戻り値型、import ルール、テンプレートディレクティブ、scan/data ペアリング規則等）を変更した場合、**`.sdd-forge/templates/*/docs/creating_presets.md`（全言語）を同じコミット内で必ず更新すること。**
+
+対象となる変更の例:
+
+- `src/api.js` の公開クラス追加・削除・シグネチャ変更
+- `package.json` の `exports` 変更
+- `DataSource` / `Scannable` / `AnalysisEntry` / `Table` / `MarkdownText` のインターフェース変更
+- `preset.json` スキーマの追加・変更
+- `data/` loader のロード規約変更
+- テンプレートディレクティブ（`{%extends%}`, `{%block%}`, `{{data}}`, `{{text}}`）の文法・挙動変更
+- プリセット作成手順・MUST ルールの追加・変更
+
+本ガイドは AI エージェントがプリセットを作成する際の単一の参照ドキュメントである。**ガイドが実装とズレるとプリセット作成が破綻する**ため、実装変更と文書更新を同一 PR で行うこと。別 PR に分割してはならない。
+
 ### MUST: プリセット作成手順（トップダウン設計）
 
 プリセットの構成要素は以下の順序で作成すること:
 
 1. **テンプレート** (`templates/`) — どんなドキュメントを出力するか定義する
-2. **DataSource** (`data/`) — テンプレートが必要とするデータを定義する
-3. **scan パーサー** (`scan/`) — DataSource にデータを供給するパーサーを実装する
+2. **DataSource** (`data/`) — テンプレートが必要とするデータを `Scannable` DataSource の `match` / `parse` / `scan` で収集し、resolve メソッドで提供する
 
-消費者（テンプレート）→ 仲介者（DataSource）→ 生産者（scan）の順に作ることで、不要なパーサーを書かず、必要なデータの漏れがなくなる。
+消費者（テンプレート）→ 生産者（DataSource）の順に作ることで、不要な解析を書かず、必要なデータの漏れがなくなる。scan 処理は独立した `scan/` ディレクトリではなく DataSource クラス自身が `Scannable` mixin 経由で担う。
 
 ### MUST: プリセットテストの作成
 
 プリセットは `tests/` ディレクトリを含むこと。
 
-- `tests/unit/` — scan パーサーの I/O テスト。最小限のフィクスチャを `createTmpDir()` で作成し、パーサー関数の入出力を検証する
+- `tests/unit/` — DataSource の `match` / `parse` I/O テスト。最小限のフィクスチャを `createTmpDir()` で作成し、入出力を検証する
 - `tests/e2e/` — preset.json の scan 設定検証、フルスキャンパイプラインテスト
 - `tests/acceptance/test.js` — preset ローカル fixture を使う acceptance テスト。共有処理は `tests/acceptance/lib/` を使う
 - テンプレートを作成・変更した場合は acceptance テストも実装し、実行すること

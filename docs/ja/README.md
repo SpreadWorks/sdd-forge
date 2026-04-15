@@ -129,6 +129,7 @@ npm install -g <!-- {{data("cli.project.name")}} -->sdd-forge<!-- {{/data}} -->
 | [CLI コマンドリファレンス](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/ja/cli_commands.md) | sdd-forge は docs・flow の 2 つの名前空間ディスパッチャーと setup・upgrade・presets・help の独立コマンドを合わせた 40 以上のサブコマンドを提供します。 |
 | [設定とカスタマイズ](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/ja/configuration.md) | sdd-forge は .sdd-forge/config.json を唯一の設定ファイルとして読み込み、ドキュメント出力言語・プロジェクトタイプ・エージェント動作・SDD フロー設定など幅広い項目を一括管理します。 |
 | [内部設計](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/ja/internal_design.md) | 本章では sdd-forge の src/ ディレクトリを中心としたモジュール構成と依存関係を解説します。 |
+| [プリセット作成ガイド](https://github.com/SpreadWorks/sdd-forge/blob/main/docs/ja/creating_presets.md) |  |
 <!-- {{/data}} -->
 
 ## License
