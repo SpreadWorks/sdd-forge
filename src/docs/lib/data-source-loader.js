@@ -6,9 +6,9 @@
 
 import fs from "fs";
 import path from "path";
-import { createLogger } from "../../lib/progress.js";
+import { pathToFileURL } from "url";
 
-const logger = createLogger("datasource");
+const MAX_DATA_SOURCE_FILES = 1000;
 
 /**
  * Load DataSource classes from a directory and instantiate them.
@@ -23,22 +23,34 @@ const logger = createLogger("datasource");
 export async function loadDataSources(dataDir, opts) {
   const { existing, onInstance } = opts || {};
   const sources = new Map(existing || []);
-  if (!fs.existsSync(dataDir)) return sources;
-
-  const files = fs.readdirSync(dataDir).filter((f) => f.endsWith(".js"));
+  let entries;
+  try {
+    entries = await fs.promises.readdir(dataDir);
+  } catch (err) {
+    if (err.code === "ENOENT") return sources;
+    throw err;
+  }
+  const files = entries.filter((f) => f.endsWith(".js"));
+  if (files.length > MAX_DATA_SOURCE_FILES) {
+    throw new Error(
+      `DataSource directory ${dataDir} contains ${files.length} files, exceeding limit ${MAX_DATA_SOURCE_FILES}`,
+    );
+  }
   for (const file of files) {
     const name = path.basename(file, ".js");
+    const filePath = path.join(dataDir, file);
+    let mod;
     try {
-      const mod = await import(path.join(dataDir, file));
-      const Source = mod.default;
-      if (typeof Source === "function") {
-        const instance = new Source();
-        instance._sourceFilePath = path.join(dataDir, file);
-        if (onInstance && onInstance(instance, name) === false) continue;
-        sources.set(name, instance);
-      }
+      mod = await import(pathToFileURL(filePath).href);
     } catch (err) {
-      logger.verbose(`failed to load DataSource ${name}: ${err.message}`);
+      throw new Error(`failed to load DataSource at ${filePath}: ${err.message}`, { cause: err });
+    }
+    const Source = mod.default;
+    if (typeof Source === "function") {
+      const instance = new Source();
+      instance._sourceFilePath = filePath;
+      if (onInstance && onInstance(instance, name) === false) continue;
+      sources.set(name, instance);
     }
   }
   return sources;

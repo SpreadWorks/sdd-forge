@@ -1,0 +1,47 @@
+{
+  "data": {
+    "implementation": {
+      "diffStat": "specs/177-fix-datasource-silent-fail/draft.md      |  91 ++++++++++++\n specs/177-fix-datasource-silent-fail/flow.json     | 160 +++++++++++++++++++++\n .../177-fix-datasource-silent-fail/issue-log.json  |  36 +++++\n specs/177-fix-datasource-silent-fail/qa.md         |   9 ++\n specs/177-fix-datasource-silent-fail/review.md     |  41 ++++++\n specs/177-fix-datasource-silent-fail/spec.md       |  87 +++++++++++\n .../177-fix-datasource-silent-fail/tests/README.md |  31 ++++\n src/docs/lib/data-source-loader.js                 |  40 ++++--\n tests/unit/docs/lib/data-source-loader.test.js     |  69 +++++++++\n 9 files changed, 550 insertions(+), 14 deletions(-)",
+      "commits": [
+        "feat: feature/177-fix-datasource-silent-fail"
+      ]
+    },
+    "retro": {
+      "total": 5,
+      "done": 3,
+      "partial": 2,
+      "not_done": 0,
+      "rate": 0.8,
+      "notes": "主要な必須要件（失敗の顕在化、失敗ファイル識別子、回帰テスト追加）は満たしている。一方で、正常系不変性に影響し得る新上限制約や要件外リファクタが混在しており、要件適合性は全体として「概ね達成だが一部逸脱あり」。"
+    },
+    "issueLog": {
+      "count": 0,
+      "entries": []
+    },
+    "metrics": {
+      "docsRead": 0,
+      "srcRead": 1,
+      "question": 0,
+      "issueLog": 1
+    },
+    "tokenMetrics": {
+      "input": 47960,
+      "output": 4920,
+      "cacheRead": 79616,
+      "cacheCreation": 0,
+      "cost": null,
+      "callCount": 6
+    },
+    "tests": {
+      "unit": 3,
+      "integration": 0,
+      "acceptance": 0,
+      "total": 3
+    },
+    "sync": {
+      "status": "skipped",
+      "reason": "sync was skipped"
+    }
+  },
+  "text": "  Report\n\n  Implementation\n  ────────────────────────────────────────────────\n    feat: feature/177-fix-datasource-silent-fail\n    9 files changed, 550 insertions(+), 14 deletions(-)\n\n  Retro\n  ────────────────────────────────────────────────\n    ██████░░ 80%  (3 done / 2 partial / 0 miss)\n\n  Metrics\n  ────────────────────────────────────────────────\n    docs read ................... 0\n    src read .................... 1\n    Q&A ......................... 0\n    issue-log ................... 1\n    agent calls ................. 6\n    input tokens ................ 47,960\n    output tokens ............... 4,920\n    cache-read tokens ........... 79,616\n    cache-create tokens ......... 0\n    cost ........................ N/A\n\n  Tests\n  ────────────────────────────────────────────────\n    unit 3  integration 0  acceptance 0  total 3"
+}

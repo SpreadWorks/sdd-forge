@@ -1,0 +1,160 @@
+{
+  "spec": "specs/177-fix-datasource-silent-fail/spec.md",
+  "baseBranch": "main",
+  "featureBranch": "feature/177-fix-datasource-silent-fail",
+  "runId": "b303789b-5ae0-4024-9558-e39e153375a8",
+  "lifecycle": "active",
+  "steps": [
+    {
+      "id": "approach",
+      "status": "done"
+    },
+    {
+      "id": "branch",
+      "status": "done"
+    },
+    {
+      "id": "prepare-spec",
+      "status": "pending"
+    },
+    {
+      "id": "draft",
+      "status": "done"
+    },
+    {
+      "id": "gate-draft",
+      "status": "done"
+    },
+    {
+      "id": "spec",
+      "status": "done"
+    },
+    {
+      "id": "gate",
+      "status": "done"
+    },
+    {
+      "id": "approval",
+      "status": "done"
+    },
+    {
+      "id": "test",
+      "status": "done"
+    },
+    {
+      "id": "implement",
+      "status": "done"
+    },
+    {
+      "id": "gate-impl",
+      "status": "done"
+    },
+    {
+      "id": "review",
+      "status": "done"
+    },
+    {
+      "id": "finalize",
+      "status": "pending"
+    },
+    {
+      "id": "commit",
+      "status": "pending"
+    },
+    {
+      "id": "push",
+      "status": "pending"
+    },
+    {
+      "id": "merge",
+      "status": "pending"
+    },
+    {
+      "id": "pr-create",
+      "status": "pending"
+    },
+    {
+      "id": "branch-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "pr-merge",
+      "status": "pending"
+    },
+    {
+      "id": "sync-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "docs-update",
+      "status": "pending"
+    },
+    {
+      "id": "docs-review",
+      "status": "pending"
+    },
+    {
+      "id": "docs-commit",
+      "status": "pending"
+    }
+  ],
+  "requirements": [
+    {
+      "desc": "[P1] DataSource ロード失敗を握りつぶさずエラーとして顕在化させる",
+      "status": "done"
+    },
+    {
+      "desc": "[P1] ロード失敗時にユーザーが問題ファイルを特定できる情報をエラー出力に含める",
+      "status": "done"
+    },
+    {
+      "desc": "[P1] 正常系で既存挙動と出力に差異を出さない",
+      "status": "done"
+    },
+    {
+      "desc": "[P1] ロード失敗時にプロセスを非ゼロ終了コードで終了させる",
+      "status": "done"
+    },
+    {
+      "desc": "[P2] リグレッションを npm test で検出できる自動テストを追加する",
+      "status": "done"
+    }
+  ],
+  "issue": 148,
+  "request": "DataSource ロード失敗がサイレントに無視される問題を修正",
+  "worktree": true,
+  "autoApprove": true,
+  "metrics": {
+    "draft": {
+      "srcRead": 1
+    },
+    "gate-draft": {
+      "tokens": {
+        "input": 12260,
+        "output": 1921,
+        "cacheRead": 29952,
+        "cacheCreation": 0
+      },
+      "callCount": 2,
+      "responseChars": 2777
+    },
+    "gate-impl": {
+      "tokens": {
+        "input": 35700,
+        "output": 2999,
+        "cacheRead": 49664,
+        "cacheCreation": 0
+      },
+      "callCount": 4,
+      "responseChars": 3301
+    },
+    "impl": {
+      "issueLog": 1
+    }
+  },
+  "test": {
+    "summary": {
+      "unit": 3
+    }
+  }
+}

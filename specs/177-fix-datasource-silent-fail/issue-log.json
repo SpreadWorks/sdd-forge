@@ -1,0 +1,36 @@
+{
+  "entries": [
+    {
+      "step": "gate-draft",
+      "reason": "Single Responsibility — `DataSource` ロード失敗のサイレント無視修正という単一の関心事に集中している。; Unambiguous Requirements — 受け入れ条件が具体的で検証可能（try-catch不在、例外throw、`npm test`通過）。; Complete Context — 要件の一部が「When/If + shall」の形式を満たさず、条件と期待動作の対が明示されていない。; No Hardcoded Secrets — APIキー・トークン等の機密情報は含まれていない。; Prioritize Requirements — 要件項目が複数あるが優先順位（P1/P2等）が明示されていない。; Impact on Existing Features — 既存機能への影響範囲と非影響ケースが明確に記載されている。; Present Recommendations with Reasoning — Q&Aで各論点に推奨結論を示し、方針・既存挙動・Node仕様を根拠にしている。; Explore Before Asking — Open Questions が「なし」で、ユーザーへの追加質問前に自己完結的に整理されている。; Proactively Raise Related Implications — 下流影響、代替案、将来拡張時の設計含意まで先回りして記載している。; Confirm Brainstorm vs. Decision Before Critiquing — 代替案を不採用評価しているが、ブレスト段階か意思決定段階かの確認記載がない。; Capture Digressions in draft.md — 脱線は見当たらず、このドラフト内に必要論点が集約されている。; Draft Stays at Requirements Level — 関数名・ファイルパス・テスト配置など実装/設計レベルの詳細に踏み込んでいる。; Backward — Compatible CLI Interface — 既存CLIコマンド/オプションの意味変更や削除を伴わないため移行計画は不要。",
+      "trigger": "gate post hook (auto)",
+      "timestamp": "2026-04-14T16:13:24.616Z"
+    },
+    {
+      "step": "gate-draft",
+      "reason": "Single Responsibility — The draft is focused on one concern: stopping silent DataSource load failures and making them fail-fast.; Unambiguous Requirements — Requirements use verifiable `When/If ... shall` statements with concrete expected outcomes.; Complete Context — Each listed requirement includes both a trigger condition and required behavior.; No Hardcoded Secrets — No API keys, passwords, tokens, or similar secrets are present in the draft.; Prioritize Requirements — More than three requirements are explicitly prioritized with P1/P2.; Impact on Existing Features — A dedicated impact section explains normal-path no-change and intended abnormal-path change.; Present Recommendations with Reasoning — Q&A answers are given, but the basis is not consistently and explicitly framed as docs/guardrails/code-pattern evidence per question.; Explore Before Asking — The draft resolves questions internally and states `Open Questions: none`, so no avoidable user question remains.; Proactively Raise Related Implications — It proactively covers downstream effects, scope boundaries, and future extension implications.; Confirm Brainstorm vs. Decision Before Critiquing — It explicitly states this is decision-stage, not brainstorming, before evaluating alternatives.; Capture Digressions in draft.md — No clear digression is present; all side discussions are captured within this draft.; Draft Stays at Requirements Level — It includes implementation-level details (e.g., `catch`/rethrow choice and specific test strategy/API-level approach).; Backward — Compatible CLI Interface — No command/option removal or semantic redefinition is proposed, so migration planning is not applicable.",
+      "trigger": "gate post hook (auto)",
+      "timestamp": "2026-04-14T16:14:30.682Z"
+    },
+    {
+      "step": "gate-impl",
+      "reason": "ロード失敗をサイレントに無視せずエラーとして顕在化する — `import` 失敗時に握りつぶしを廃止し `throw` で即時伝播する実装に変更されている。; ロード失敗時に問題ファイルを特定できる情報をエラー出力に含める — 例外メッセージに `filePath`（`failed to load DataSource at <path>`）を明示している。; 全 DataSource 正常時は既存挙動・出力に差異がない — 正常系のロード/インスタンス化処理は維持され、テストでも「every module is valid」が通過している。; ロード失敗時に非ゼロ終了コードで終了する — ローダーが例外を再送出するため失敗が上位へ伝播し、通常の未捕捉エラー終了契約を満たす実装になっている。; `npm test` で再発を検出できる回帰テスト状態である — fail-fast 回帰を検証するユニットテスト（失敗時伝播・正常時維持）が実行され全件 `pass` している。; No Hardcoded Secrets — No API keys, tokens, passwords, or similar secrets are present in the spec or diff.; No Silent Error Swallowing — The `catch` block now re-throws with context instead of silently ignoring load failures.; Bounded Resource Usage — DataSource loading processes all `.js` files in a directory with no explicit upper bound on file count/size.; No Sensitive Data in Logs — Verbose logging was removed; the surfaced error includes file path context but no credentials/PII.; No Disabling Existing Tests — The content adds regression tests and does not indicate skipping, deleting, or commenting out existing tests.; Escalate When New Tests Break Existing Tests — Inapplicable here because no evidence is shown that new tests caused existing tests to fail.; Do Not Modify Existing Tests Without Approval — No modifications or deletions of existing tests are shown in the provided content.; Flag Tests That Become Irrelevant — Inapplicable here because the change does not indicate any existing tests becoming obsolete.; Exit Code Contract — The spec explicitly requires non-zero exit on load failure, and error propagation via `throw` supports that behavior.; No Synchronous I/O in Hot Paths — `fs.readdirSync` is used in the DataSource bulk-loading path instead of async/streamed I/O.; Validate User Input at Entry Point — Inapplicable in this snippet because no CLI/stdin entry-point validation logic is shown.",
+      "trigger": "gate post hook (auto)",
+      "timestamp": "2026-04-15T06:48:38.659Z"
+    },
+    {
+      "step": "gate-impl",
+      "reason": "gate-impl が pre-existing の fs.readdirSync 使用と DataSource ファイル数の上限未設定を FAIL として検出",
+      "trigger": "gate-impl 初回実行",
+      "resolution": "本 spec の diff は try-catch 構造のみ変更しており pre-existing コードパスが指摘対象。spec の Out of Scope に明記して gate に認識させる",
+      "guardrailCandidate": "pre-existing な guardrail 違反は spec の Out of Scope で明示する",
+      "timestamp": "2026-04-15T06:49:03.311Z"
+    },
+    {
+      "step": "gate-impl",
+      "reason": "ロード失敗を黙殺せずエラーとして顕在化する — `import` 失敗時に `catch` で握りつぶさず `throw` する実装へ変更されている。; ロード失敗時のエラー出力に問題ファイル識別子を含む — 送出するエラーメッセージに `filePath`（`... at <path> ...`）を明示的に含めている。; 全 DataSource 正常時は既存挙動を維持する — 正常系のロード処理は維持されており、テスト「loads all DataSources when every module is valid」が通過している。; ロード失敗時に非ゼロ終了となる — ローダーが例外を呼び出し元へ伝播する実装になっており、CLI 実行では失敗として終了する契約を満たす。; 再発を `npm test` で検出可能である — fail-fast 回帰テスト（壊れたモジュールでエラー伝播）が追加され、提示されたテスト実行結果で通過している。; No Hardcoded Secrets — 提示された仕様・差分に API キーやパスワード等のハードコードはない。; No Silent Error Swallowing — `catch` で握りつぶさず `throw` しており、サイレント失敗を解消している。; Bounded Resource Usage — DataSource の件数・サイズ上限を導入しない方針が明記され、明示的な上限がない。; No Sensitive Data in Logs — 失敗時は例外送出のみで、機微情報をログ出力する実装は示されていない。; No Disabling Existing Tests — 既存テストを無効化・削除する記述はなく、回帰検出用テスト追加方針になっている。; Escalate When New Tests Break Existing Tests — 既存テスト失敗の発生事実が本文にないため、この条件は現時点で非適用。; Do Not Modify Existing Tests Without Approval — 既存テストの変更・削除は示されていないため違反は確認できない。; Flag Tests That Become Irrelevant — 既存テストが無関係化したという記載がなく、この条件は非適用。; Exit Code Contract — 失敗時に例外を伝播し非ゼロ終了コードを要求・担保する要件が明記されている。; No Synchronous I/O in Hot Paths — `loadDataSources` の一括処理経路で `fs.readdirSync` を継続利用している。; Validate User Input at Entry Point — 本差分は DataSource ローダー修正であり、CLI 入力検証の変更対象ではない。",
+      "trigger": "gate post hook (auto)",
+      "timestamp": "2026-04-15T06:49:54.387Z"
+    }
+  ]
+}

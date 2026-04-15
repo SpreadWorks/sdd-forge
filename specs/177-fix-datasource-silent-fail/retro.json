@@ -1,0 +1,57 @@
+{
+  "spec": "specs/177-fix-datasource-silent-fail/spec.md",
+  "date": "2026-04-15T07:02:06.813Z",
+  "requirements": [
+    {
+      "desc": "[P1] DataSource ロード失敗を握りつぶさずエラーとして顕在化させる",
+      "status": "done",
+      "note": "data-source-loader が import 失敗時に握りつぶさず throw する実装に変更されている。"
+    },
+    {
+      "desc": "[P1] ロード失敗時にユーザーが問題ファイルを特定できる情報をエラー出力に含める",
+      "status": "done",
+      "note": "throw する Error メッセージに `failed to load DataSource at <filePath>` を含め、失敗ファイルを特定できる。"
+    },
+    {
+      "desc": "[P1] 正常系で既存挙動と出力に差異を出さない",
+      "status": "partial",
+      "note": "通常の正常ケースは維持されるが、`MAX_DATA_SOURCE_FILES=1000` の新制限導入で従来成功していた一部正常ケースが失敗し得る。"
+    },
+    {
+      "desc": "[P1] ロード失敗時にプロセスを非ゼロ終了コードで終了させる",
+      "status": "partial",
+      "note": "ローダーは例外を伝播するため非ゼロ終了に繋がる実装だが、CLI レベルで終了コードを直接検証する変更・テストはこの diff にはない。"
+    },
+    {
+      "desc": "[P2] リグレッションを npm test で検出できる自動テストを追加する",
+      "status": "done",
+      "note": "`tests/unit/docs/lib/data-source-loader.test.js` が追加され、失敗時伝播・ファイル識別子含有・正常系維持を検証している。"
+    }
+  ],
+  "unplanned": [
+    {
+      "file": "src/docs/lib/data-source-loader.js",
+      "change": "DataSource 数に上限（1000件）を追加しており、要件にない新しい動作制約を導入している。"
+    },
+    {
+      "file": "src/docs/lib/data-source-loader.js",
+      "change": "同期 I/O (`existsSync`/`readdirSync`) から非同期 `fs.promises.readdir` へ変更しており、要件外の実装変更が含まれる。"
+    },
+    {
+      "file": "src/docs/lib/data-source-loader.js",
+      "change": "`pathToFileURL` を使った import 方式に変更しており、要件に直接含まれない堅牢化変更が入っている。"
+    },
+    {
+      "file": "specs/177-fix-datasource-silent-fail/*",
+      "change": "spec/flow/review/issue-log/qa/tests README などの運用・記録ファイル追加は、5つの機能要件そのものには含まれない。"
+    }
+  ],
+  "summary": {
+    "total": 5,
+    "done": 3,
+    "partial": 2,
+    "not_done": 0,
+    "rate": 0.8,
+    "notes": "主要な必須要件（失敗の顕在化、失敗ファイル識別子、回帰テスト追加）は満たしている。一方で、正常系不変性に影響し得る新上限制約や要件外リファクタが混在しており、要件適合性は全体として「概ね達成だが一部逸脱あり」。"
+  }
+}
