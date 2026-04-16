@@ -67,7 +67,7 @@ Available status values: `pending`, `in_progress`, `done`, `skipped`
      ```
    - If the result includes `steps.retro`, display the retro summary or failure message. Retro runs automatically as part of the commit step (step 1) — no separate call is needed.
    - **If step 1 was not included** (select mode without commit), retro was not run automatically. Run it manually: `sdd-forge flow run retro`. If retro.json already exists, use `--force` to overwrite. Use `--dry-run` to preview without writing.
-   - **MUST: If `steps.report.text` exists in the result, display it as-is.** The report text is pre-formatted by the command — do not reformat, summarize, or interpret it. Just output the text directly.
+   - `steps.report.text` is a pre-formatted, ready-to-show string. Output it inside a fenced code block, verbatim. Do not rewrap, re-align, drop/add separators, translate, summarize, or paraphrase — any visual change is a violation. If you want to add commentary, put it outside the code block.
    - Sync result (if available) should also be displayed: show `steps.sync.diffSummary` for the list of changed docs files.
 
 ## Worktree Mode
