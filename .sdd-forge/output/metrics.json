@@ -1,10 +1,10 @@
 {
-  "generatedAt": "2026-04-12T14:58:21.720Z",
+  "generatedAt": "2026-04-16T01:04:15.675Z",
   "rows": [
     {
       "date": "2026-04-12",
       "phase": "draft",
-      "difficulty": 44.2722111439181,
+      "difficulty": 44.794583372582196,
       "tokenInput": 12,
       "tokenOutput": 9666,
       "cacheRead": 55710,
@@ -13,9 +13,42 @@
       "cost": 0.42558150000000006
     },
     {
-      "date": "2026-04-12",
-      "phase": "finalize",
-      "difficulty": 46.59,
+      "date": "2026-04-13",
+      "phase": "draft",
+      "difficulty": null,
+      "tokenInput": null,
+      "tokenOutput": null,
+      "cacheRead": null,
+      "cacheCreate": null,
+      "callCount": null,
+      "cost": null
+    },
+    {
+      "date": "2026-04-14",
+      "phase": "draft",
+      "difficulty": null,
+      "tokenInput": 43100,
+      "tokenOutput": 6959,
+      "cacheRead": 96128,
+      "cacheCreate": 0,
+      "callCount": 8,
+      "cost": null
+    },
+    {
+      "date": "2026-04-15",
+      "phase": "draft",
+      "difficulty": null,
+      "tokenInput": null,
+      "tokenOutput": null,
+      "cacheRead": null,
+      "cacheCreate": null,
+      "callCount": null,
+      "cost": null
+    },
+    {
+      "date": "2026-04-16",
+      "phase": "draft",
+      "difficulty": null,
       "tokenInput": null,
       "tokenOutput": null,
       "cacheRead": null,
@@ -25,8 +58,30 @@
     },
     {
       "date": "2026-04-12",
+      "phase": "finalize",
+      "difficulty": 55.90800000000001,
+      "tokenInput": null,
+      "tokenOutput": null,
+      "cacheRead": null,
+      "cacheCreate": null,
+      "callCount": null,
+      "cost": null
+    },
+    {
+      "date": "2026-04-13",
+      "phase": "finalize",
+      "difficulty": null,
+      "tokenInput": 27259,
+      "tokenOutput": 1994,
+      "cacheRead": 15232,
+      "cacheCreate": 0,
+      "callCount": 1,
+      "cost": null
+    },
+    {
+      "date": "2026-04-12",
       "phase": "gate",
-      "difficulty": 151.015,
+      "difficulty": 121.21799999999999,
       "tokenInput": 11,
       "tokenOutput": 5758,
       "cacheRead": 62282,
@@ -35,9 +90,53 @@
       "cost": 0.1782801
     },
     {
+      "date": "2026-04-13",
+      "phase": "gate",
+      "difficulty": null,
+      "tokenInput": 33931,
+      "tokenOutput": 10780,
+      "cacheRead": 283872,
+      "cacheCreate": 227774,
+      "callCount": 15,
+      "cost": 1.0750683
+    },
+    {
+      "date": "2026-04-14",
+      "phase": "gate",
+      "difficulty": null,
+      "tokenInput": 22542,
+      "tokenOutput": 2068,
+      "cacheRead": 18944,
+      "cacheCreate": 0,
+      "callCount": 2,
+      "cost": null
+    },
+    {
+      "date": "2026-04-15",
+      "phase": "gate",
+      "difficulty": null,
+      "tokenInput": 16720,
+      "tokenOutput": 960,
+      "cacheRead": 3456,
+      "cacheCreate": 0,
+      "callCount": 1,
+      "cost": null
+    },
+    {
+      "date": "2026-04-16",
+      "phase": "gate",
+      "difficulty": null,
+      "tokenInput": 16115,
+      "tokenOutput": 2073,
+      "cacheRead": 29312,
+      "cacheCreate": 0,
+      "callCount": 2,
+      "cost": null
+    },
+    {
       "date": "2026-04-12",
       "phase": "gate-draft",
-      "difficulty": 141.02555555555554,
+      "difficulty": 113.23066666666666,
       "tokenInput": 16,
       "tokenOutput": 24216,
       "cacheRead": 76653,
@@ -46,9 +145,53 @@
       "cost": 0.7393464
     },
     {
+      "date": "2026-04-13",
+      "phase": "gate-draft",
+      "difficulty": null,
+      "tokenInput": 16,
+      "tokenOutput": 5707,
+      "cacheRead": 95392,
+      "cacheCreate": 80959,
+      "callCount": 11,
+      "cost": 0.41786685
+    },
+    {
+      "date": "2026-04-14",
+      "phase": "gate-draft",
+      "difficulty": null,
+      "tokenInput": 191968,
+      "tokenOutput": 15324,
+      "cacheRead": 154496,
+      "cacheCreate": 0,
+      "callCount": 21,
+      "cost": null
+    },
+    {
+      "date": "2026-04-15",
+      "phase": "gate-draft",
+      "difficulty": null,
+      "tokenInput": 38641,
+      "tokenOutput": 4440,
+      "cacheRead": 65536,
+      "cacheCreate": 0,
+      "callCount": 5,
+      "cost": null
+    },
+    {
+      "date": "2026-04-16",
+      "phase": "gate-draft",
+      "difficulty": null,
+      "tokenInput": 22068,
+      "tokenOutput": 1898,
+      "cacheRead": 20224,
+      "cacheCreate": 0,
+      "callCount": 2,
+      "cost": null
+    },
+    {
       "date": "2026-04-12",
       "phase": "gate-impl",
-      "difficulty": 123.16133333333332,
+      "difficulty": 102.19359999999999,
       "tokenInput": 37,
       "tokenOutput": 54938,
       "cacheRead": 902344,
@@ -57,9 +200,53 @@
       "cost": 4.15366545
     },
     {
+      "date": "2026-04-13",
+      "phase": "gate-impl",
+      "difficulty": null,
+      "tokenInput": 56,
+      "tokenOutput": 23247,
+      "cacheRead": 374545,
+      "cacheCreate": 570787,
+      "callCount": 31,
+      "cost": 2.6016877500000004
+    },
+    {
+      "date": "2026-04-14",
+      "phase": "gate-impl",
+      "difficulty": null,
+      "tokenInput": 1159130,
+      "tokenOutput": 27635,
+      "cacheRead": 319104,
+      "cacheCreate": 0,
+      "callCount": 31,
+      "cost": null
+    },
+    {
+      "date": "2026-04-15",
+      "phase": "gate-impl",
+      "difficulty": null,
+      "tokenInput": 35700,
+      "tokenOutput": 2999,
+      "cacheRead": 49664,
+      "cacheCreate": 0,
+      "callCount": 4,
+      "cost": null
+    },
+    {
+      "date": "2026-04-16",
+      "phase": "gate-impl",
+      "difficulty": null,
+      "tokenInput": 15875,
+      "tokenOutput": 1608,
+      "cacheRead": 73984,
+      "cacheCreate": 0,
+      "callCount": 1,
+      "cost": null
+    },
+    {
       "date": "2026-04-12",
       "phase": "impl",
-      "difficulty": 79.02292049649873,
+      "difficulty": 71.29130885461144,
       "tokenInput": null,
       "tokenOutput": null,
       "cacheRead": null,
@@ -68,9 +255,86 @@
       "cost": null
     },
     {
+      "date": "2026-04-13",
+      "phase": "impl",
+      "difficulty": null,
+      "tokenInput": null,
+      "tokenOutput": null,
+      "cacheRead": null,
+      "cacheCreate": null,
+      "callCount": null,
+      "cost": null
+    },
+    {
+      "date": "2026-04-14",
+      "phase": "impl",
+      "difficulty": null,
+      "tokenInput": null,
+      "tokenOutput": null,
+      "cacheRead": null,
+      "cacheCreate": null,
+      "callCount": null,
+      "cost": null
+    },
+    {
+      "date": "2026-04-15",
+      "phase": "impl",
+      "difficulty": null,
+      "tokenInput": null,
+      "tokenOutput": null,
+      "cacheRead": null,
+      "cacheCreate": null,
+      "callCount": null,
+      "cost": null
+    },
+    {
+      "date": "2026-04-13",
+      "phase": "implement",
+      "difficulty": null,
+      "tokenInput": 15,
+      "tokenOutput": 4711,
+      "cacheRead": 136746,
+      "cacheCreate": 82808,
+      "callCount": 6,
+      "cost": 0.42226379999999997
+    },
+    {
       "date": "2026-04-12",
       "phase": "plan",
-      "difficulty": 84.04036220579951,
+      "difficulty": 75.71062607267078,
+      "tokenInput": null,
+      "tokenOutput": null,
+      "cacheRead": null,
+      "cacheCreate": null,
+      "callCount": null,
+      "cost": null
+    },
+    {
+      "date": "2026-04-13",
+      "phase": "plan",
+      "difficulty": null,
+      "tokenInput": null,
+      "tokenOutput": null,
+      "cacheRead": null,
+      "cacheCreate": null,
+      "callCount": null,
+      "cost": null
+    },
+    {
+      "date": "2026-04-14",
+      "phase": "plan",
+      "difficulty": null,
+      "tokenInput": null,
+      "tokenOutput": null,
+      "cacheRead": null,
+      "cacheCreate": null,
+      "callCount": null,
+      "cost": null
+    },
+    {
+      "date": "2026-04-16",
+      "phase": "plan",
+      "difficulty": null,
       "tokenInput": null,
       "tokenOutput": null,
       "cacheRead": null,
@@ -81,7 +345,7 @@
     {
       "date": "2026-04-12",
       "phase": "review",
-      "difficulty": 147.2183333333333,
+      "difficulty": 116.66199999999999,
       "tokenInput": 4,
       "tokenOutput": 8203,
       "cacheRead": 21946,
@@ -90,9 +354,20 @@
       "cost": 1.00566705
     },
     {
+      "date": "2026-04-13",
+      "phase": "review",
+      "difficulty": null,
+      "tokenInput": 34177,
+      "tokenOutput": 1072,
+      "cacheRead": 6912,
+      "cacheCreate": 0,
+      "callCount": 2,
+      "cost": null
+    },
+    {
       "date": "2026-04-12",
       "phase": "spec",
-      "difficulty": 106.30849744052995,
+      "difficulty": 89.3757524841915,
       "tokenInput": 6,
       "tokenOutput": 7763,
       "cacheRead": 21630,
@@ -101,9 +376,42 @@
       "cost": 0.277452
     },
     {
+      "date": "2026-04-13",
+      "phase": "spec",
+      "difficulty": null,
+      "tokenInput": 4,
+      "tokenOutput": 1441,
+      "cacheRead": 23532,
+      "cacheCreate": 19974,
+      "callCount": 3,
+      "cost": 0.1035891
+    },
+    {
+      "date": "2026-04-14",
+      "phase": "spec",
+      "difficulty": null,
+      "tokenInput": 21461,
+      "tokenOutput": 1842,
+      "cacheRead": 19968,
+      "cacheCreate": 0,
+      "callCount": 2,
+      "cost": null
+    },
+    {
       "date": "2026-04-12",
       "phase": "test",
-      "difficulty": 83.07457437275986,
+      "difficulty": 77.52103046594982,
+      "tokenInput": null,
+      "tokenOutput": null,
+      "cacheRead": null,
+      "cacheCreate": null,
+      "callCount": null,
+      "cost": null
+    },
+    {
+      "date": "2026-04-13",
+      "phase": "test",
+      "difficulty": null,
       "tokenInput": null,
       "tokenOutput": null,
       "cacheRead": null,
