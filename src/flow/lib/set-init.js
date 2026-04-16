@@ -3,6 +3,8 @@
  *
  * Initialize a preparing flow state before flow prepare.
  * Creates .sdd-forge/.active-flow.<runId> with a flow.json-compatible schema.
+ * Accepts --issue and --request to seed the preparing state so that a later
+ * `flow prepare --run-id <id>` can inherit them.
  */
 
 import { FlowCommand } from "./base-command.js";
@@ -18,6 +20,16 @@ export default class SetInitCommand extends FlowCommand {
   execute(ctx) {
     const { root } = ctx;
 
+    const extra = {};
+    if (ctx.issue != null && ctx.issue !== "") {
+      const n = Number(ctx.issue);
+      if (!Number.isInteger(n) || n <= 0) {
+        throw new Error(`--issue must be a positive integer: ${ctx.issue}`);
+      }
+      extra.issue = n;
+    }
+    if (ctx.request) extra.request = ctx.request;
+
     // Conflict guard: warn if existing preparing files exist
     const existing = listPreparingFlows(root);
     if (existing.length > 0) {
@@ -27,8 +39,8 @@ export default class SetInitCommand extends FlowCommand {
     }
 
     const runId = generateRunId();
-    createPreparingFlow(root, runId);
+    createPreparingFlow(root, runId, extra);
 
-    return { runId };
+    return { runId, ...extra };
   }
 }

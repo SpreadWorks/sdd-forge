@@ -1,0 +1,106 @@
+{
+  "spec": "specs/178-remove-approach-phase/spec.md",
+  "date": "2026-04-16T00:24:23.785Z",
+  "requirements": [
+    {
+      "desc": "R1: 新規 flow.json の steps に approach が含まれない",
+      "status": "partial",
+      "note": "実装側では FLOW_STEPS と prepare 処理から approach を削除しているが、追加された specs/178-remove-approach-phase/flow.json には approach が残っており整合に揺れがある。"
+    },
+    {
+      "desc": "R2: flow get status の steps に approach が含まれない",
+      "status": "done",
+      "note": "状態モデルの FLOW_STEPS から approach が削除されており、新モデルの status 出力元から除外される。"
+    },
+    {
+      "desc": "R3: flow set init が --issue/--request を preparing-flow に保存する",
+      "status": "done",
+      "note": "set-init で --issue/--request を受け取り extra として createPreparingFlow に渡す実装が追加されている。"
+    },
+    {
+      "desc": "R4: flow prepare が preparing-flow から issue/request を flow.json に転記する",
+      "status": "done",
+      "note": "run-prepare-spec が resolvePreparingInputs を使い、CLI未指定時に preparing 値へフォールバックする処理になっている。"
+    },
+    {
+      "desc": "R5: PHASE_MAP が approach キーを含まない",
+      "status": "done",
+      "note": "PHASE_MAP から approach エントリが削除されている。"
+    },
+    {
+      "desc": "R6: flow-plan skill の質問順が work-env -> base-branch -> draft Q1 である",
+      "status": "done",
+      "note": "flow-plan SKILL の Required Sequence がその順序に再構成されている。"
+    },
+    {
+      "desc": "R7: draft Q1 が解釈要約 + Choice Format で提示される",
+      "status": "done",
+      "note": "flow-plan SKILL に issue/request 要約提示と `[1] はい [2] 修正する [3] その他` の確認が明記されている。"
+    },
+    {
+      "desc": "R8: Q1 承認時に skill が prepare を内部実行する",
+      "status": "done",
+      "note": "Q1 承認後に prepare-spec を内部実行する手順が明記され、ユーザー質問ではないことも記載されている。"
+    },
+    {
+      "desc": "R9: flow-auto が approach を判定条件に含めない",
+      "status": "done",
+      "note": "flow-auto SKILL の plan-phase step 列挙から approach が削除されている。"
+    },
+    {
+      "desc": "R10: flow-status が approach を表示しない",
+      "status": "done",
+      "note": "flow-status SKILL の表示例から approach 行が削除され、件数表記も更新されている。"
+    },
+    {
+      "desc": "R11: 既存のユニット/e2e テストが新 FLOW_STEPS でパスする",
+      "status": "partial",
+      "note": "関連テスト修正はあるが、diff内に `npm test` 全体成功の実行証跡はない。"
+    },
+    {
+      "desc": "R12: flow-plan skill description が approach を含まない",
+      "status": "done",
+      "note": "description が `Covers draft through test phases.` に変更され、approach を含まない。"
+    },
+    {
+      "desc": "R13: flow set init の引数不正時に非0終了 + ok=false",
+      "status": "partial",
+      "note": "不正 `--issue` で throw する検証は追加されたが、非0終了コードと JSON envelope `ok=false` の明示的テスト/証跡は diff から確認できない。"
+    },
+    {
+      "desc": "R14: flow prepare の preparing-flow 読み込み失敗時に非0終了 + ok=false",
+      "status": "partial",
+      "note": "run-id 指定で preparing 未存在時に throw する処理は追加されたが、非0終了コードと `ok=false` の明示的確認は diff からは不足している。"
+    }
+  ],
+  "unplanned": [
+    {
+      "file": "package.json",
+      "change": "バージョンを 0.1.0-alpha.775 に更新（要件一覧には明記なし）。"
+    },
+    {
+      "file": "src/templates/partials/core-principle.md",
+      "change": "autoApprove の進捗表示例文を `approach` から `draft` に変更（要件一覧には直接記載なし）。"
+    },
+    {
+      "file": "tests/e2e/flow/commands/set-request-note.test.js",
+      "change": "テストファイル名を resume から set-request-note に変更し、ノート文言も変更（要件一覧外のテスト整理）。"
+    },
+    {
+      "file": "specs/178-remove-approach-phase/flow.json",
+      "change": "新規追加された flow.json に `approach` ステップが含まれており、実装要件との整合を崩す管理ファイル変更が入っている。"
+    },
+    {
+      "file": "specs/178-remove-approach-phase/*",
+      "change": "draft/spec/review/issue-log/qa/tests などの仕様運用ドキュメント・補助スクリプトが多数追加（R1-R14 の機能要件には直接含まれない）。"
+    }
+  ],
+  "summary": {
+    "total": 14,
+    "done": 10,
+    "partial": 4,
+    "not_done": 0,
+    "rate": 0.86,
+    "notes": "P1/P2 の主要実装（approach 削除、set init/prepare の受け渡し、skill順序変更）は概ね反映されている。一方で、R11・R13・R14 は実行証跡/テスト根拠が不足し partial。加えて、追加された spec 用 flow.json に approach が残っており、成果物整合に注意が必要。"
+  }
+}

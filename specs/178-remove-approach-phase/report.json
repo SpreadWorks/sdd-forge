@@ -1,0 +1,47 @@
+{
+  "data": {
+    "implementation": {
+      "diffStat": "package.json                                       |   2 +-\n specs/178-remove-approach-phase/draft.md           |  92 +++++++++\n specs/178-remove-approach-phase/flow.json          | 212 +++++++++++++++++++++\n specs/178-remove-approach-phase/issue-log.json     |  40 ++++\n specs/178-remove-approach-phase/qa.md              |   9 +\n specs/178-remove-approach-phase/review.md          |  33 ++++\n specs/178-remove-approach-phase/spec.md            | 128 +++++++++++++\n specs/178-remove-approach-phase/tests/README.md    |  40 ++++\n .../tests/verify-spec-requirements.js              |  52 +++++\n src/flow/lib/run-prepare-spec.js                   |   7 +-\n src/flow/lib/set-init.js                           |  16 +-\n src/flow/registry.js                               |  12 +-\n src/lib/flow-state.js                              |  29 ++-\n src/templates/partials/core-principle.md           |   2 +-\n src/templates/skills/sdd-forge.flow-auto/SKILL.md  |   2 +-\n src/templates/skills/sdd-forge.flow-plan/SKILL.md  |  83 ++++----\n .../skills/sdd-forge.flow-status/SKILL.md          |  15 +-\n .../{resume.test.js => set-request-note.test.js}   |   4 +-\n tests/unit/flow/flow-steps.test.js                 |  10 +-\n tests/unit/flow/set-step.test.js                   |   6 +-\n 20 files changed, 724 insertions(+), 70 deletions(-)",
+      "commits": [
+        "feat: feature/178-remove-approach-phase"
+      ]
+    },
+    "retro": {
+      "total": 14,
+      "done": 10,
+      "partial": 4,
+      "not_done": 0,
+      "rate": 0.86,
+      "notes": "P1/P2 の主要実装（approach 削除、set init/prepare の受け渡し、skill順序変更）は概ね反映されている。一方で、R11・R13・R14 は実行証跡/テスト根拠が不足し partial。加えて、追加された spec 用 flow.json に approach が残っており、成果物整合に注意が必要。"
+    },
+    "issueLog": {
+      "count": 0,
+      "entries": []
+    },
+    "metrics": {
+      "docsRead": 2,
+      "srcRead": 0,
+      "question": 6,
+      "issueLog": 0
+    },
+    "tokenMetrics": {
+      "input": 54058,
+      "output": 5579,
+      "cacheRead": 123520,
+      "cacheCreation": 0,
+      "cost": null,
+      "callCount": 5
+    },
+    "tests": {
+      "unit": 0,
+      "integration": 0,
+      "acceptance": 1,
+      "total": 1
+    },
+    "sync": {
+      "status": "skipped",
+      "reason": "sync was skipped"
+    }
+  },
+  "text": "  Report\n\n  Implementation\n  ────────────────────────────────────────────────\n    feat: feature/178-remove-approach-phase\n    20 files changed, 724 insertions(+), 70 deletions(-)\n\n  Retro\n  ────────────────────────────────────────────────\n    ███████░ 86%  (10 done / 4 partial / 0 miss)\n\n  Metrics\n  ────────────────────────────────────────────────\n    docs read ................... 2\n    src read .................... 0\n    Q&A ......................... 6\n    issue-log ................... 0\n    agent calls ................. 5\n    input tokens ................ 54,058\n    output tokens ............... 5,579\n    cache-read tokens ........... 123,520\n    cache-create tokens ......... 0\n    cost ........................ N/A\n\n  Tests\n  ────────────────────────────────────────────────\n    unit 0  integration 0  acceptance 1  total 1"
+}

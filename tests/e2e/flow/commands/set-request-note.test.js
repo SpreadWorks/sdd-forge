@@ -35,12 +35,12 @@ describe("flow set note", () => {
   it("appends note to flow.json notes array", () => {
     tmp = createTmpDir();
     setupFlow(tmp);
-    execFileSync("node", [FLOW_CMD, "set", "note", "approach: draft first"], {
+    execFileSync("node", [FLOW_CMD, "set", "note", "draft: first note"], {
       encoding: "utf8",
       env: { ...process.env, SDD_FORGE_WORK_ROOT: tmp },
     });
     const updated = loadFlowState(tmp);
-    assert.deepEqual(updated.notes, ["approach: draft first"]);
+    assert.deepEqual(updated.notes, ["draft: first note"]);
   });
 
   it("appends multiple notes in order", () => {

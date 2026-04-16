@@ -1,6 +1,6 @@
 ---
 name: sdd-forge.flow-plan
-description: Run the SDD planning workflow. Use for spec creation, gate check, and test writing. Covers approach through test phases.
+description: Run the SDD planning workflow. Use for spec creation, gate check, and test writing. Covers draft through test phases.
 ---
 
 # SDD Flow Plan
@@ -39,51 +39,48 @@ Note: `sdd-forge flow get context` automatically records these metrics via hooks
 ## Required Sequence
 
 0. Initialize flow state.
-   - Run `sdd-forge flow set init` to create a preparing state file (`.active-flow.<runId>`).
-   - Save the returned `runId` from `data.runId` for use in step 3.
-   - This ensures the flow is tracked from the earliest point, even before `flow.json` is created.
-
-1. Confirm request interpretation.
-   - **Note**: `flow.json` does not exist yet at this point. Do NOT run `sdd-forge flow set` commands until after step 3.
-   - **autoApprove skip**: If `autoApprove: true` (checked via `sdd-forge flow get status` before entering this skill), skip this step entirely. The request/issue is already confirmed in flow.json.
-   - **Input interpretation rules** — apply these rules to determine what the user's input refers to:
-     - `#<number>` → always interpret as a GitHub Issue first. Run `sdd-forge flow get issue <number>`.
+   - **Input parsing rules** — apply these rules to the user's raw input before running `set init`:
+     - `#<number>` → always interpret as a GitHub Issue. Capture the number for `--issue`.
      - `issue <number>` or similar explicit forms → treat as a GitHub Issue.
-     - `spec <number>` or `specs/<number>-...` → treat as a local spec reference.
-     - A bare number (e.g., `133`) → ambiguous input. Always ask a clarifying question before proceeding.
-   - **Interpretation procedure**:
-     1. Parse the user's input using the rules above.
-     2. If a GitHub Issue number is identified, run `sdd-forge flow get issue <number>` to fetch it.
-        - On success: display the issue title and body.
-        - On failure: ask the user "GitHub Issue が見つかりませんでした。ローカル spec への参照として扱いますか？" and wait for confirmation.
-     3. Present a summary of your interpretation to the user and ask for confirmation:
-        - "リクエストの理解: [summary]. この理解で合っていますか？"
-        - Use the Choice Format with [1] はい [2] 修正する [3] その他.
-     4. Do NOT run `sdd-forge flow get context --search` until this confirmation is complete.
-   - After confirmation, proceed to step 2.
+     - `spec <number>` or `specs/<number>-...` → treat as a local spec reference (do not pass as `--issue`).
+     - A bare number (e.g., `133`) → ambiguous input. Do not pass as `--issue`; include in the request text so draft Q1 can disambiguate.
+   - Run `sdd-forge flow set init [--issue N] [--request "<user raw text>"]` to create a preparing state file (`.active-flow.<runId>`).
+   - Save the returned `runId` from `data.runId` for use in step 4.
+   - Issue number and request text are stored in the preparing file and will be inherited by `flow prepare --run-id <runId>` in step 4.
+   - Do NOT run `sdd-forge flow set` commands that require `flow.json` (step/metric/note/summary/req) until after step 4.
 
-2. Choose work environment.
+1. Choose work environment.
    - **Auto-detect**: Check if `.git` is a file (not directory) in the project root.
      - If yes → already in a worktree. Skip choice, use `--no-branch` automatically.
    - **User choice** (if not in a worktree):
      - Run `sdd-forge flow get prompt plan.work-environment` and present the choices.
-   - For options 1 and 2:
+
+2. Choose base branch.
+   - For work-environment options 1 (worktree) and 2 (branch):
      - Run `sdd-forge flow get prompt plan.base-branch` and present the choices. Append `` (`<current-branch>`) `` to the description.
      - 1 → use `--base <current-branch>`.
      - 2 → ask which branch and use `--base <user-specified-branch>`.
 
-3. Create or select spec (`prepare-spec`).
-   - Run `sdd-forge flow prepare`. If it returns `{ok: false, code: "DIRTY_WORKTREE"}`, run `sdd-forge flow get prompt plan.dirty-worktree` and present the choices. Do not retry until the worktree is clean.
-   - The `--title` value becomes the spec directory name and branch name. Keep it short: **max 30 characters**, lowercase English, hyphen-separated (e.g. "fix-scan-parser-bugs", "add-preset-datasources").
-   - Commands (based on step 2 choice). Add `--issue <number>` if a GitHub Issue was provided, `--request "<text>"` with the user's original request, and `--run-id <runId>` with the runId from step 0:
-     - Worktree: `sdd-forge flow prepare --title "..." --base <branch> --worktree [--issue N] [--request "..."] [--run-id <runId>]`
-     - Branch: `sdd-forge flow prepare --title "..." --base <branch> [--issue N] [--request "..."] [--run-id <runId>]`
-     - No branch: `sdd-forge flow prepare --title "..." --no-branch [--issue N] [--request "..."] [--run-id <runId>]`
+3. Draft Q1 — intent confirmation (first user-facing content question).
+   - **autoApprove skip**: If `autoApprove: true`, skip this interactive step. Use the Issue content / request text directly as the draft source.
+   - If an Issue number was captured in step 0, run `sdd-forge flow get issue <number>` to fetch the title and body.
+   - Present a concise summary of the AI's interpretation (from Issue content and/or request text).
+   - Ask the user with the Choice Format: `[1] はい [2] 修正する [3] その他`.
+   - **Retry limit: 1 round.** If `[3] その他` is selected, ask once more for clarification. If `[3]` is selected again, STOP and return control to the user.
+   - If `[2] 修正する`: incorporate the user's correction and re-ask with the Choice Format until `[1]` is selected (within the retry limit).
+   - Derive the spec `--title` from the confirmed intent: short, max 30 characters, lowercase English, hyphen-separated (e.g. "fix-scan-parser-bugs").
+
+4. Prepare spec (`prepare-spec`) — internal execution after Q1 approval.
+   - This step is not a user prompt; run it silently once Q1 is approved.
+   - Commands (based on step 1 choice). The `--run-id <runId>` from step 0 inherits `--issue` and `--request` from the preparing file:
+     - Worktree: `sdd-forge flow prepare --title "..." --base <branch> --worktree --run-id <runId>`
+     - Branch: `sdd-forge flow prepare --title "..." --base <branch> --run-id <runId>`
+     - No branch: `sdd-forge flow prepare --title "..." --no-branch --run-id <runId>`
+   - If it returns `{ok: false, code: "DIRTY_WORKTREE"}`, run `sdd-forge flow get prompt plan.dirty-worktree` and present the choices. Do not retry until the worktree is clean. The preparing file is preserved on failure so Q1 state is retained.
    - This creates the branch, `specs/NNN-xxx/` directory, `spec.md` skeleton, and `specs/NNN-xxx/flow.json`.
-   - The base branch, issue number, and request are automatically recorded in flow.json.
    - Steps branch/prepare-spec are automatically set to done by prepare-spec.
 
-4. Draft phase.
+5. Draft phase (remaining Q&A after Q1).
    - **On start**: `sdd-forge flow set step draft in_progress`
 
    **autoApprove mode — self-Q&A draft:**
@@ -128,7 +125,7 @@ Note: `sdd-forge flow get context` automatically records these metrics via hooks
         - If target files/modules are not yet in context: `sdd-forge flow get context --search "<request text or issue title>" --raw` using the request or issue title as the query.
         - If project structure is still unclear after search: `sdd-forge flow get context --raw` for a broad overview.
      3. If guardrail articles have NOT been loaded in this session: `sdd-forge flow get guardrail draft`. If output is non-empty, consider these principles as constraints. Skip if already present in context.
-   - Create `specs/NNN-xxx/draft.md` in the spec directory created in step 3.
+   - Create `specs/NNN-xxx/draft.md` in the spec directory created in step 4. Record the Q1 exchange (AI summary + user's `[1]` confirmation) as the first Q&A entry.
    - AI presents choices/proposals → user selects with short answers.
    - Ask ONE question at a time (do not batch questions, do not self-answer).
    - If a question leads to digression:
@@ -142,18 +139,18 @@ Note: `sdd-forge flow get context` automatically records these metrics via hooks
      - `- [x] User approved this draft` — チェック済みチェックボックス
    - When requirements are sufficiently defined, ask the user for approval.
    - Update draft.md with `- [x] User approved this draft` and confirmation date.
-   - Transfer Q&A and decisions to spec (step 5).
+   - Transfer Q&A and decisions to spec (step 7).
    - Keep `draft.md` in `specs/` (do not delete).
    - **On complete**: `sdd-forge flow set step draft done`
 
-5. Run gate draft (after draft approval, BEFORE spec).
+6. Run gate draft (after draft approval, BEFORE spec).
    - `sdd-forge flow run gate --phase draft` (step status is automatically managed by hooks: pre sets gate-draft to in_progress, post sets done on PASS)
    - Checks draft.md for: Q&A section, user approval, development type, goal + guardrail AI compliance.
    - If FAIL (`data.result === "fail"`): show ALL failures from `data.artifacts.issues` and `data.artifacts.reasons`. AI fixes draft.md and re-runs gate.
    - **Retry limit: 10 attempts.** If gate does not PASS after 10 fix-and-rerun cycles, STOP and return control to the user.
    - Do not proceed until PASS (`data.result === "pass"`).
 
-6. Fill spec (`spec`).
+7. Fill spec (`spec`).
    - **On start**: `sdd-forge flow set step spec in_progress`
    - **Before writing spec**:
      - Read draft (if exists) and linked GitHub issue content. If draft was completed, treat it as the primary input — do NOT re-read context already gathered in the draft phase.
@@ -165,15 +162,15 @@ Note: `sdd-forge flow get context` automatically records these metrics via hooks
    - If draft phase was done, reflect draft Q&A and decisions in spec.md.
    - **On complete**: `sdd-forge flow set step spec done`
 
-7. Run gate spec (BEFORE approval).
+8. Run gate spec (BEFORE approval).
    - `sdd-forge flow run gate` (step status is automatically managed by hooks: pre sets gate to in_progress, post sets done on PASS)
    - If FAIL (`data.result === "fail"`): show ALL failures from `data.artifacts.issues` and `data.artifacts.reasons`. AI fixes spec.md and re-runs gate.
    - **Retry limit: 20 attempts.** If gate does not PASS after 20 fix-and-rerun cycles, STOP and return control to the user.
    - Do not proceed until PASS (`data.result === "pass"`).
 
-8. Get explicit user approval (AFTER gate PASS).
+9. Get explicit user approval (AFTER gate PASS).
    - **On start**: `sdd-forge flow set step approval in_progress`
-   - **Do NOT re-run gate.** The gate already passed in step 7.
+   - **Do NOT re-run gate.** The gate already passed in step 8.
    - Present the FULL spec text (the gate-PASS version) to the user.
    - The user reads the gate-passed final spec and approves.
    - Wait for approval before any implementation.
@@ -189,7 +186,7 @@ Note: `sdd-forge flow get context` automatically records these metrics via hooks
 
 **STOP. Do NOT write tests, choose a test framework, or decide on test strategy. You MUST run `sdd-forge flow get prompt plan.test-mode`, present the choices to the user, and wait for their response before doing anything else in the test phase.**
 
-9. Test phase (after approval).
+10. Test phase (after approval).
    - **On start**: `sdd-forge flow set step test in_progress`
    - Run `sdd-forge flow get prompt plan.test-mode` and present the choices.
    - If guardrail articles for the test phase have NOT been loaded in this session: `sdd-forge flow get guardrail test`. If output is non-empty, follow these principles when writing tests. Skip if already present in context.
@@ -243,7 +240,7 @@ Note: `sdd-forge flow get context` automatically records these metrics via hooks
 
 ## Clarification Rule
 
-When requirements are ambiguous, ask concise Q&A before step 6.
+When requirements are ambiguous, ask concise Q&A before step 7.
 Record clarifications in `spec.md` under `## Clarifications (Q&A)` and `## Open Questions`.
 
 ## Test Maintenance

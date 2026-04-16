@@ -14,6 +14,7 @@ import { translate } from "../../lib/i18n.js";
 import {
   saveFlowState, buildInitialSteps, addActiveFlow, cleanStaleFlows,
   generateRunId, deletePreparingFlow, cleanStalePreparingFlows,
+  resolvePreparingInputs,
 } from "../../lib/flow-state.js";
 import { getWorktreeStatus, runGit } from "../../lib/git-helpers.js";
 import { FlowCommand } from "./base-command.js";
@@ -171,12 +172,12 @@ export class RunPrepareSpecCommand extends FlowCommand {
 
     const title = ctx.title || "";
     const base = ctx.base || "";
-    const issue = ctx.issue || "";
-    const request = ctx.request || "";
     const runIdArg = ctx.runId || "";
     const noBranch = ctx.noBranch || false;
     const useWorktreeFlag = ctx.worktree || false;
     const dryRun = ctx.dryRun || false;
+
+    const { issue, request } = resolvePreparingInputs(root, runIdArg, ctx.issue, ctx.request);
 
     if (!title) {
       throw new Error("--title is required");
@@ -242,7 +243,7 @@ export class RunPrepareSpecCommand extends FlowCommand {
     const flowRunId = runIdArg || generateRunId();
     function writeFlowState(extra) {
       const steps = buildInitialSteps();
-      for (const id of ["approach", "branch", "spec"]) {
+      for (const id of ["branch", "spec"]) {
         const step = steps.find((s) => s.id === id);
         if (step) step.status = "done";
       }

@@ -64,15 +64,14 @@ Display the current state of the SDD workflow.
      Title:            Flow state step tracking
      User approved:    Yes
 
-   Steps (4/10 done)
+   Steps (3/9 done)
    ────────────────────────────────
-      1. approach       ✓ done
-      2. branch         ✓ done
-      3. prepare-spec   ✓ done
-      4. draft          ✓ done
-      5. spec            > in_progress
-      6. gate              pending
-      7. approval          pending
+      1. branch         ✓ done
+      2. prepare-spec   ✓ done
+      3. draft          ✓ done
+      4. spec            > in_progress
+      5. gate              pending
+      6. approval          pending
       ...
 
    Requirements (1/3 done)

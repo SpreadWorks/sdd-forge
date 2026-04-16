@@ -1,0 +1,212 @@
+{
+  "spec": "specs/178-remove-approach-phase/spec.md",
+  "baseBranch": "main",
+  "featureBranch": "feature/178-remove-approach-phase",
+  "runId": "fbefbd79-7953-4b7d-ab29-a89cee21a080",
+  "lifecycle": "active",
+  "steps": [
+    {
+      "id": "approach",
+      "status": "done"
+    },
+    {
+      "id": "branch",
+      "status": "done"
+    },
+    {
+      "id": "prepare-spec",
+      "status": "pending"
+    },
+    {
+      "id": "draft",
+      "status": "done"
+    },
+    {
+      "id": "gate-draft",
+      "status": "done"
+    },
+    {
+      "id": "spec",
+      "status": "done"
+    },
+    {
+      "id": "gate",
+      "status": "done"
+    },
+    {
+      "id": "approval",
+      "status": "done"
+    },
+    {
+      "id": "test",
+      "status": "done"
+    },
+    {
+      "id": "implement",
+      "status": "done"
+    },
+    {
+      "id": "gate-impl",
+      "status": "done"
+    },
+    {
+      "id": "review",
+      "status": "done"
+    },
+    {
+      "id": "finalize",
+      "status": "pending"
+    },
+    {
+      "id": "commit",
+      "status": "pending"
+    },
+    {
+      "id": "push",
+      "status": "pending"
+    },
+    {
+      "id": "merge",
+      "status": "pending"
+    },
+    {
+      "id": "pr-create",
+      "status": "pending"
+    },
+    {
+      "id": "branch-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "pr-merge",
+      "status": "pending"
+    },
+    {
+      "id": "sync-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "docs-update",
+      "status": "pending"
+    },
+    {
+      "id": "docs-review",
+      "status": "pending"
+    },
+    {
+      "id": "docs-commit",
+      "status": "pending"
+    }
+  ],
+  "requirements": [
+    {
+      "desc": "R1: 新規 flow.json の steps に approach が含まれない",
+      "status": "done"
+    },
+    {
+      "desc": "R2: flow get status の steps に approach が含まれない",
+      "status": "done"
+    },
+    {
+      "desc": "R3: flow set init が --issue/--request を preparing-flow に保存する",
+      "status": "done"
+    },
+    {
+      "desc": "R4: flow prepare が preparing-flow から issue/request を flow.json に転記する",
+      "status": "done"
+    },
+    {
+      "desc": "R5: PHASE_MAP が approach キーを含まない",
+      "status": "done"
+    },
+    {
+      "desc": "R6: flow-plan skill の質問順が work-env -> base-branch -> draft Q1 である",
+      "status": "done"
+    },
+    {
+      "desc": "R7: draft Q1 が解釈要約 + Choice Format で提示される",
+      "status": "done"
+    },
+    {
+      "desc": "R8: Q1 承認時に skill が prepare を内部実行する",
+      "status": "done"
+    },
+    {
+      "desc": "R9: flow-auto が approach を判定条件に含めない",
+      "status": "done"
+    },
+    {
+      "desc": "R10: flow-status が approach を表示しない",
+      "status": "done"
+    },
+    {
+      "desc": "R11: 既存のユニット/e2e テストが新 FLOW_STEPS でパスする",
+      "status": "done"
+    },
+    {
+      "desc": "R12: flow-plan skill description が approach を含まない",
+      "status": "done"
+    },
+    {
+      "desc": "R13: flow set init の引数不正時に非0終了 + ok=false",
+      "status": "done"
+    },
+    {
+      "desc": "R14: flow prepare の preparing-flow 読み込み失敗時に非0終了 + ok=false",
+      "status": "done"
+    }
+  ],
+  "issue": 150,
+  "request": "#150 issueの対応を進めてください",
+  "worktree": true,
+  "metrics": {
+    "plan": {
+      "docsRead": 2
+    },
+    "draft": {
+      "question": 6
+    },
+    "gate-draft": {
+      "tokens": {
+        "input": 22068,
+        "output": 1898,
+        "cacheRead": 20224,
+        "cacheCreation": 0
+      },
+      "callCount": 2,
+      "responseChars": 3736
+    },
+    "gate": {
+      "tokens": {
+        "input": 16115,
+        "output": 2073,
+        "cacheRead": 29312,
+        "cacheCreation": 0
+      },
+      "callCount": 2,
+      "responseChars": 2280
+    },
+    "gate-impl": {
+      "tokens": {
+        "input": 15875,
+        "output": 1608,
+        "cacheRead": 73984,
+        "cacheCreation": 0
+      },
+      "callCount": 1,
+      "responseChars": 2201
+    }
+  },
+  "notes": [
+    "draft: scope = core + skills (A)",
+    "draft: order = A (prepare after user answers Q1). Helper command acceptable if it smooths issue/context fetch after Q1.",
+    "draft: plumbing = A (extend set init with --issue --request)",
+    "draft: Q1 form = A (AI summarizes interpretation, user confirms via Choice)",
+    "draft: order = 0 init -> 2 work-env -> 3 base-branch -> 1 draft Q1 (confirm) -> 4 prepare (silent, title from Q1) -> 5 draft rest -> 6 gate-draft"
+  ],
+  "test": {
+    "summary": {
+      "acceptance": 1
+    }
+  }
+}

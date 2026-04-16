@@ -241,7 +241,17 @@ export const FLOW_COMMANDS = {
       helpKey: "flow.set.init",
       requiresFlow: false,
       command: () => import("./lib/set-init.js"),
-      help: "Usage: sdd-forge flow set init\n\nInitialize a preparing flow state. Creates .active-flow.<runId> and returns the runId.",
+      args: { options: ["--issue", "--request"] },
+      help: [
+        "Usage: sdd-forge flow set init [--issue N] [--request \"<text>\"]",
+        "",
+        "Initialize a preparing flow state. Creates .active-flow.<runId>",
+        "and returns the runId.",
+        "",
+        "Options:",
+        "  --issue <number>   GitHub Issue number to seed into preparing state",
+        "  --request <text>   User request text to seed into preparing state",
+      ].join("\n"),
     },
     auto: {
       helpKey: "flow.set.auto",

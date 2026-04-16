@@ -34,7 +34,7 @@ export function getSpecName(flowOrState) {
 
 /** SDD workflow step IDs in order. */
 export const FLOW_STEPS = [
-  "approach", "branch", "prepare-spec", "draft", "gate-draft", "spec",
+  "branch", "prepare-spec", "draft", "gate-draft", "spec",
   "gate", "approval", "test", "implement", "gate-impl", "review", "finalize",
   "commit", "push", "merge", "pr-create", "branch-cleanup",
   "pr-merge", "sync-cleanup", "docs-update", "docs-review", "docs-commit",
@@ -42,7 +42,7 @@ export const FLOW_STEPS = [
 
 /** Step ID → phase mapping. */
 export const PHASE_MAP = {
-  approach: "plan", branch: "plan", "prepare-spec": "plan", draft: "plan",
+  branch: "plan", "prepare-spec": "plan", draft: "plan",
   "gate-draft": "plan", spec: "plan", gate: "plan", approval: "plan", test: "plan",
   implement: "impl", "gate-impl": "impl", review: "impl", finalize: "impl",
   commit: "finalize", push: "finalize", merge: "finalize",
@@ -316,6 +316,31 @@ export function loadPreparingFlow(workRoot, runId) {
     console.error(`[flow-state] WARN: failed to read preparing flow ${runId}: ${err.message}`);
     return null;
   }
+}
+
+/**
+ * Resolve { issue, request } from CLI args and a preparing-flow file.
+ * CLI values take precedence; empty CLI values fall back to preparing values.
+ * Throws when runId is provided but no preparing file exists.
+ *
+ * @param {string} workRoot
+ * @param {string} runId - runId from --run-id, or empty string when absent
+ * @param {string} cliIssue - raw --issue value (may be empty)
+ * @param {string} cliRequest - raw --request value (may be empty)
+ * @returns {{ issue: string, request: string }}
+ */
+export function resolvePreparingInputs(workRoot, runId, cliIssue, cliRequest) {
+  let issue = cliIssue || "";
+  let request = cliRequest || "";
+  if (!runId) return { issue, request };
+
+  const preparing = loadPreparingFlow(workRoot, runId);
+  if (!preparing) {
+    throw new Error(`preparing flow not found for runId: ${runId}`);
+  }
+  if (!issue && preparing.issue != null) issue = String(preparing.issue);
+  if (!request && preparing.request) request = preparing.request;
+  return { issue, request };
 }
 
 /**

@@ -37,7 +37,7 @@ describe("flow set step", () => {
     tmp = createTmpDir();
     setupFlowState(tmp);
     const result = execFileSync(
-      "node", [FLOW_CMD, "set", "step", "approach", "done"],
+      "node", [FLOW_CMD, "set", "step", "branch", "done"],
       { encoding: "utf8", env: { ...process.env, SDD_FORGE_WORK_ROOT: tmp } },
     );
     const envelope = JSON.parse(result);
@@ -46,8 +46,8 @@ describe("flow set step", () => {
     assert.equal(envelope.key, "step");
 
     const loaded = loadFlowState(tmp);
-    const approach = loaded.steps.find((s) => s.id === "approach");
-    assert.equal(approach.status, "done");
+    const branch = loaded.steps.find((s) => s.id === "branch");
+    assert.equal(branch.status, "done");
   });
 
   it("returns error for invalid step ID", () => {

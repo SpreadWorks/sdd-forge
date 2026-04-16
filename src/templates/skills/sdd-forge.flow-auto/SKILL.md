@@ -41,7 +41,7 @@ Toggle autoApprove mode for the current SDD flow.
 
 4. Resume the appropriate flow skill.
    - Determine which skill to invoke based on the steps in the status response:
-     - If any plan-phase steps (approach, branch, prepare-spec, draft, spec, gate, approval, test) are not `done` → invoke `/sdd-forge.flow-plan`
+     - If any plan-phase steps (branch, prepare-spec, draft, spec, gate, approval, test) are not `done` → invoke `/sdd-forge.flow-plan`
      - If all plan-phase steps are `done` but impl-phase steps (implement, review, finalize) have any not `done` → invoke `/sdd-forge.flow-impl`
      - If all plan and impl steps are `done` but finalize-phase steps (commit, push, merge, pr-create, branch-cleanup) have any not `done` → invoke `/sdd-forge.flow-finalize`
      - If all steps are `done` → display "All steps are already complete." and STOP.

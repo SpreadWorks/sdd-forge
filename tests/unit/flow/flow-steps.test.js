@@ -10,11 +10,15 @@ import { FLOW_STEPS, PHASE_MAP } from "../../../src/lib/flow-state.js";
 
 describe("FLOW_STEPS ordering (plan rework)", () => {
   it("has prepare-spec, draft, gate-draft, spec, gate, approval, test as plan steps", () => {
-    const first9 = FLOW_STEPS.slice(0, 9);
-    assert.deepEqual(first9, [
-      "approach", "branch", "prepare-spec", "draft", "gate-draft",
+    const first8 = FLOW_STEPS.slice(0, 8);
+    assert.deepEqual(first8, [
+      "branch", "prepare-spec", "draft", "gate-draft",
       "spec", "gate", "approval", "test",
     ]);
+  });
+
+  it("does not contain approach (removed in spec 178)", () => {
+    assert.ok(!FLOW_STEPS.includes("approach"), "approach should be removed");
   });
 
   it("does not contain fill-spec (renamed to spec)", () => {
