@@ -1,0 +1,47 @@
+{
+  "data": {
+    "implementation": {
+      "diffStat": "specs/184-preset-cross-import/draft.md        |  75 ++++++++\n specs/184-preset-cross-import/flow.json       | 157 +++++++++++++++++\n specs/184-preset-cross-import/issue-log.json  |  40 +++++\n specs/184-preset-cross-import/qa.md           |   9 +\n specs/184-preset-cross-import/spec.md         | 112 ++++++++++++\n specs/184-preset-cross-import/tests/README.md |  39 +++++\n src/loader.js                                 | 122 +++++++++++--\n src/sdd-forge.js                              |  39 ++++-\n tests/unit/lib/loader-cross-import.test.js    | 238 ++++++++++++++++++++++++++\n 9 files changed, 818 insertions(+), 13 deletions(-)",
+      "commits": [
+        "feat: feature/184-preset-cross-import"
+      ]
+    },
+    "retro": {
+      "total": 5,
+      "done": 4,
+      "partial": 1,
+      "not_done": 0,
+      "rate": 0.9,
+      "notes": "REQ-1/2/3/5 は実装で満たしている。REQ-4 はキャッシュ再利用自体は実装済みだが、上限付き eviction により要件文どおりの厳密な『2回目以降常に再利用』は部分充足。"
+    },
+    "issueLog": {
+      "count": 0,
+      "entries": []
+    },
+    "metrics": {
+      "docsRead": 2,
+      "srcRead": 0,
+      "question": 3,
+      "issueLog": 0
+    },
+    "tokenMetrics": {
+      "input": 6057,
+      "output": 862,
+      "cacheRead": 19072,
+      "cacheCreation": 0,
+      "cost": null,
+      "callCount": 12
+    },
+    "tests": {
+      "unit": 10,
+      "integration": 0,
+      "acceptance": 0,
+      "total": 10
+    },
+    "sync": {
+      "status": "skipped",
+      "reason": "sync was skipped"
+    }
+  },
+  "text": "  Report\n\n  Implementation\n  ────────────────────────────────────────────────\n    feat: feature/184-preset-cross-import\n    9 files changed, 818 insertions(+), 13 deletions(-)\n\n  Retro\n  ────────────────────────────────────────────────\n    ███████░ 90%  (4 done / 1 partial / 0 miss)\n\n  Metrics\n  ────────────────────────────────────────────────\n    docs read ................... 2\n    src read .................... 0\n    Q&A ......................... 3\n    issue-log ................... 0\n    agent calls ................. 12\n    input tokens ................ 6,057\n    output tokens ............... 862\n    cache-read tokens ........... 19,072\n    cache-create tokens ......... 0\n    cost ........................ N/A\n\n  Tests\n  ────────────────────────────────────────────────\n    unit 10  integration 0  acceptance 0  total 10"
+}

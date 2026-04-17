@@ -1,0 +1,157 @@
+{
+  "spec": "specs/184-preset-cross-import/spec.md",
+  "baseBranch": "main",
+  "featureBranch": "feature/184-preset-cross-import",
+  "runId": "640e5199-07fd-400c-b5c9-022ff8519aeb",
+  "lifecycle": "active",
+  "steps": [
+    {
+      "id": "branch",
+      "status": "done"
+    },
+    {
+      "id": "prepare-spec",
+      "status": "pending"
+    },
+    {
+      "id": "draft",
+      "status": "done"
+    },
+    {
+      "id": "gate-draft",
+      "status": "done"
+    },
+    {
+      "id": "spec",
+      "status": "done"
+    },
+    {
+      "id": "gate",
+      "status": "done"
+    },
+    {
+      "id": "approval",
+      "status": "done"
+    },
+    {
+      "id": "test",
+      "status": "done"
+    },
+    {
+      "id": "implement",
+      "status": "done"
+    },
+    {
+      "id": "gate-impl",
+      "status": "done"
+    },
+    {
+      "id": "review",
+      "status": "done"
+    },
+    {
+      "id": "finalize",
+      "status": "pending"
+    },
+    {
+      "id": "commit",
+      "status": "pending"
+    },
+    {
+      "id": "push",
+      "status": "pending"
+    },
+    {
+      "id": "merge",
+      "status": "pending"
+    },
+    {
+      "id": "pr-create",
+      "status": "pending"
+    },
+    {
+      "id": "branch-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "pr-merge",
+      "status": "pending"
+    },
+    {
+      "id": "sync-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "docs-update",
+      "status": "pending"
+    },
+    {
+      "id": "docs-review",
+      "status": "pending"
+    },
+    {
+      "id": "docs-commit",
+      "status": "pending"
+    }
+  ],
+  "requirements": [
+    {
+      "desc": "REQ-1: sdd-forge/presets/<name>/<subpath> を project→user→builtin の 3 層で解決",
+      "status": "done"
+    },
+    {
+      "desc": "REQ-2: 3 層いずれにも存在しない場合は Node 標準処理へ委譲",
+      "status": "done"
+    },
+    {
+      "desc": "REQ-3: sdd-forge/presets/ に一致しない既存 sdd-forge/<subpath> は従来通り解決",
+      "status": "done"
+    },
+    {
+      "desc": "REQ-4: 同一 specifier の 2 回目以降はキャッシュから返し fs アクセスしない",
+      "status": "done"
+    },
+    {
+      "desc": "REQ-5: loader にプロジェクトルートを引き渡し、不明なら project 層探索をスキップ",
+      "status": "done"
+    }
+  ],
+  "issue": 160,
+  "request": "#160 外部プリセット間のクロスimport（sdd-forge/preset/* ローダーフック拡張）",
+  "worktree": true,
+  "notes": [
+    "draft: Q1 approved — external preset cross-import via loader hook extension",
+    "finalize: auto-selected [1] all"
+  ],
+  "metrics": {
+    "plan": {
+      "docsRead": 2
+    },
+    "draft": {
+      "question": 3
+    },
+    "gate-draft": {
+      "tokens": {
+        "input": 6057,
+        "output": 862,
+        "cacheRead": 19072,
+        "cacheCreation": 0
+      },
+      "callCount": 1,
+      "responseChars": 1865
+    },
+    "gate-impl": {
+      "callCount": 11,
+      "responseChars": 10391
+    }
+  },
+  "autoApprove": true,
+  "test": {
+    "summary": {
+      "unit": 10
+    }
+  },
+  "state": {
+    "finalizedAt": "2026-04-17T10:40:00.358Z"
+  }
+}

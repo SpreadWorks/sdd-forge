@@ -1,0 +1,57 @@
+{
+  "spec": "specs/184-preset-cross-import/spec.md",
+  "date": "2026-04-17T10:40:31.842Z",
+  "requirements": [
+    {
+      "desc": "REQ-1: sdd-forge/presets/<name>/<subpath> を project→user→builtin の 3 層で解決",
+      "status": "done",
+      "note": "src/loader.js で PRESETS_PREFIX を判定し、projectRoot→userHome→builtin の順に <subpath>.js を探索して最初のヒットを返している。"
+    },
+    {
+      "desc": "REQ-2: 3 層いずれにも存在しない場合は Node 標準処理へ委譲",
+      "status": "done",
+      "note": "3 層で未検出時は loader で throw せず nextResolve(specifier, context) にフォールスルーしている。"
+    },
+    {
+      "desc": "REQ-3: sdd-forge/presets/ に一致しない既存 sdd-forge/<subpath> は従来通り解決",
+      "status": "done",
+      "note": "非 presets の sdd-forge/* は従来どおり <pkg>/src/<subpath>.js に shortCircuit で解決する分岐が維持されている。"
+    },
+    {
+      "desc": "REQ-4: 同一 specifier の 2 回目以降はキャッシュから返し fs アクセスしない",
+      "status": "partial",
+      "note": "成功した presets 解決は Map キャッシュ再利用で fs を回避できるが、キャッシュが 1024 件で eviction されるためプロセス寿命中の常時再利用は保証されない（未解決ケースもキャッシュされない）。"
+    },
+    {
+      "desc": "REQ-5: loader にプロジェクトルートを引き渡し、不明なら project 層探索をスキップ",
+      "status": "done",
+      "note": "src/sdd-forge.js で register(..., { data: { projectRoot, userHome } }) を渡し、projectRoot が null のとき loader 側で project tier を tiers に追加しない実装になっている。"
+    }
+  ],
+  "unplanned": [
+    {
+      "file": "src/loader.js",
+      "change": "キャッシュに MAX_CACHE_SIZE=1024 の上限と oldest eviction を追加（要件では無制限のプロセス寿命キャッシュ前提）。"
+    },
+    {
+      "file": "src/loader.js",
+      "change": "__resetForTest() のテスト専用エクスポートを追加。"
+    },
+    {
+      "file": "src/sdd-forge.js",
+      "change": "SDD_FORGE_WORK_ROOT の実在ディレクトリ検証と git rev-parse フォールバック（runCmd 利用）を追加。"
+    },
+    {
+      "file": "specs/184-preset-cross-import/*",
+      "change": "仕様運用用ドキュメント（draft/flow/spec/qa/issue-log/tests README）を新規追加。実装要件そのものには含まれない変更。"
+    }
+  ],
+  "summary": {
+    "total": 5,
+    "done": 4,
+    "partial": 1,
+    "not_done": 0,
+    "rate": 0.9,
+    "notes": "REQ-1/2/3/5 は実装で満たしている。REQ-4 はキャッシュ再利用自体は実装済みだが、上限付き eviction により要件文どおりの厳密な『2回目以降常に再利用』は部分充足。"
+  }
+}
