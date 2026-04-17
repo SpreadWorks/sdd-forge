@@ -11,7 +11,6 @@
  */
 
 import fs from "fs";
-import { runIfDirect } from "../../lib/entrypoint.js";
 import { repoRoot, parseArgs } from "../../lib/cli.js";
 import { sddConfigPath, validate } from "../../lib/config.js";
 import { PRESETS } from "../../lib/presets.js";
@@ -136,4 +135,3 @@ async function main() {
 }
 
 export { main };
-runIfDirect(import.meta.url, main);

@@ -5,7 +5,8 @@ import { join } from "path";
 import { execFileSync } from "child_process";
 import { createTmpDir, removeTmpDir, writeJson, writeFile } from "../helpers/tmp-dir.js";
 
-const CMD = join(process.cwd(), "src/docs/commands/scan.js");
+const CMD = join(process.cwd(), "src/sdd-forge.js");
+const CMD_ARGS = ["docs", "scan"];
 
 describe("scan pipeline redesign — analysis[cat].entries structure", () => {
   let tmp;
@@ -26,7 +27,7 @@ describe("scan pipeline redesign — analysis[cat].entries structure", () => {
   }
 
   function runScan() {
-    execFileSync("node", [CMD], {
+    execFileSync("node", [CMD, ...CMD_ARGS], {
       encoding: "utf8",
       env: { ...process.env, SDD_FORGE_WORK_ROOT: tmp, SDD_FORGE_SOURCE_ROOT: tmp },
     });
@@ -173,7 +174,7 @@ describe("scan pipeline redesign — analysis[cat].entries structure", () => {
 
     assert.throws(
       () => {
-        execFileSync("node", [CMD], {
+        execFileSync("node", [CMD, ...CMD_ARGS], {
           encoding: "utf8",
           env: { ...process.env, SDD_FORGE_WORK_ROOT: tmp, SDD_FORGE_SOURCE_ROOT: tmp },
         });

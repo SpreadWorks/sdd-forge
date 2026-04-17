@@ -1,87 +1,14 @@
 /**
  * sdd-forge/docs/lib/command-context.js
  *
- * コマンド共通のコンテキスト解決。
- * 全コマンドが同じ方法で root / lang / docsDir / type / config を取得する。
+ * docs コマンドから共通利用される analysis / chapters / text ヘルパー群。
+ * CLI コンテキスト解決は src/docs/lib/docs-context.js の resolveDocsContext() を参照。
  */
 
 import fs from "fs";
 import path from "path";
-import { repoRoot, sourceRoot } from "../../lib/cli.js";
-import { loadJsonFile, sddConfigPath, sddOutputDir, DEFAULT_LANG, validate } from "../../lib/config.js";
-import { resolveAgent } from "../../lib/agent.js";
-import { translate } from "../../lib/i18n.js";
+import { sddOutputDir } from "../../lib/config.js";
 import { resolveChaptersOrder } from "./template-merger.js";
-
-/**
- * @typedef {Object} CommandContext
- * @property {string} root - 作業ルート（SDD_FORGE_WORK_ROOT or git root）
- * @property {string} srcRoot - ソースルート（SDD_FORGE_SOURCE_ROOT or root）
- * @property {Object} config - .sdd-forge/config.json の内容
- * @property {string} lang - 操作言語（config.lang）
- * @property {string} outputLang - 出力デフォルト言語（config.output.default）
- * @property {string} type - 解決済みプロジェクトタイプ
- * @property {string} docsDir - docs ディレクトリの絶対パス
- * @property {Object|null} agent - AI エージェント設定
- * @property {Function} t - i18n 翻訳関数（domain: messages）
- */
-
-/**
- * CLI 引数と設定ファイルからコマンドコンテキストを解決する。
- *
- * @param {Object} [cli] - parseArgs() の結果（オプション）
- * @param {Object} [overrides] - 強制上書き値
- * @param {string} [overrides.root] - 作業ルート
- * @param {string} [overrides.lang] - 言語
- * @param {string} [overrides.docsDir] - docs ディレクトリ
- * @param {string} [overrides.type] - プロジェクトタイプ
- * @param {string} [overrides.commandId] - COMMAND_ID for per-command agent resolution
- * @returns {CommandContext}
- */
-export function resolveCommandContext(cli, overrides) {
-  const o = overrides || {};
-  const root = o.root || repoRoot();
-  const srcRoot = o.srcRoot || sourceRoot();
-
-  // config 読み込み — config が未作成 or バリデーション失敗の場合は空オブジェクトで続行。
-  // setup/help/readme 等、config 不在でも動作すべきコマンドの入口として使われるため、
-  // ここで throw するとそれらのコマンドが起動できなくなる。
-  let config;
-  try {
-    config = validate(loadJsonFile(sddConfigPath(root)));
-  } catch {
-    config = {};
-  }
-
-  const lang = o.lang || cli?.lang || config.lang || DEFAULT_LANG;
-  const outputLang = o.outputLang || cli?.lang || config.docs?.defaultLanguage || lang;
-  const rawType = o.type || cli?.type || config.type || "";
-  const type = rawType;
-
-  const docsDir = o.docsDir
-    ? path.resolve(root, o.docsDir)
-    : cli?.docsDir
-      ? path.resolve(root, cli.docsDir)
-      : path.join(root, "docs");
-
-  const commandId = o.commandId || undefined;
-  const agent = resolveAgent(config, commandId);
-
-  const t = translate();
-
-  return {
-    root,
-    srcRoot,
-    config,
-    lang,
-    outputLang,
-    type,
-    docsDir,
-    agent,
-    commandId,
-    t,
-  };
-}
 
 /**
  * .sdd-forge/output/ 配下の JSON ファイルを読み込む。

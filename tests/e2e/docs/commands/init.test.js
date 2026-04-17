@@ -5,7 +5,8 @@ import { join } from "path";
 import { execFileSync } from "child_process";
 import { createTmpDir, removeTmpDir, writeJson, writeFile } from "../../../helpers/tmp-dir.js";
 
-const CMD = join(process.cwd(), "src/docs/commands/init.js");
+const CMD = join(process.cwd(), "src/sdd-forge.js");
+const CMD_ARGS = ["docs", "init"];
 
 describe("init CLI", () => {
   let tmp;
@@ -20,7 +21,7 @@ describe("init CLI", () => {
       files: { summary: { total: 1 } },
     });
 
-    execFileSync("node", [CMD, "--type", "node-cli"], {
+    execFileSync("node", [CMD, ...CMD_ARGS, "--type", "node-cli"], {
       encoding: "utf8",
       env: { ...process.env, SDD_FORGE_WORK_ROOT: tmp, SDD_FORGE_SOURCE_ROOT: tmp },
     });
@@ -40,7 +41,7 @@ describe("init CLI", () => {
       files: { summary: { total: 1 } },
     });
 
-    const result = execFileSync("node", [CMD, "--type", "node-cli", "--dry-run"], {
+    const result = execFileSync("node", [CMD, ...CMD_ARGS, "--type", "node-cli", "--dry-run"], {
       encoding: "utf8",
       env: { ...process.env, SDD_FORGE_WORK_ROOT: tmp, SDD_FORGE_SOURCE_ROOT: tmp },
     });
@@ -57,7 +58,7 @@ describe("init CLI", () => {
     tmp = createTmpDir();
     writeJson(tmp, ".sdd-forge/config.json", { lang: "ja", type: "node-cli", docs: { languages: ["ja"], defaultLanguage: "ja" } });
 
-    const result = execFileSync("node", [CMD, "--help"], {
+    const result = execFileSync("node", [CMD, ...CMD_ARGS, "--help"], {
       encoding: "utf8",
       env: { ...process.env, SDD_FORGE_WORK_ROOT: tmp, SDD_FORGE_SOURCE_ROOT: tmp },
     });
@@ -77,7 +78,7 @@ describe("init CLI", () => {
       files: { summary: { total: 1 } },
     });
 
-    execFileSync("node", [CMD, "--type", "webapp", "--force"], {
+    execFileSync("node", [CMD, ...CMD_ARGS, "--type", "webapp", "--force"], {
       encoding: "utf8",
       env: { ...process.env, SDD_FORGE_WORK_ROOT: tmp, SDD_FORGE_SOURCE_ROOT: tmp },
     });
@@ -102,7 +103,7 @@ describe("init CLI", () => {
       files: { summary: { total: 1 } },
     });
 
-    execFileSync("node", [CMD, "--type", "webapp", "--force"], {
+    execFileSync("node", [CMD, ...CMD_ARGS, "--type", "webapp", "--force"], {
       encoding: "utf8",
       env: { ...process.env, SDD_FORGE_WORK_ROOT: tmp, SDD_FORGE_SOURCE_ROOT: tmp },
     });
@@ -142,7 +143,7 @@ describe("init CLI", () => {
       files: { summary: { total: 1 } },
     });
 
-    execFileSync("node", [CMD, "--type", "node-cli", "--force"], {
+    execFileSync("node", [CMD, ...CMD_ARGS, "--type", "node-cli", "--force"], {
       encoding: "utf8",
       env: {
         ...process.env,
@@ -186,7 +187,7 @@ describe("init CLI", () => {
       files: { summary: { total: 1 } },
     });
 
-    execFileSync("node", [CMD, "--type", "node-cli"], {
+    execFileSync("node", [CMD, ...CMD_ARGS, "--type", "node-cli"], {
       encoding: "utf8",
       env: {
         ...process.env,

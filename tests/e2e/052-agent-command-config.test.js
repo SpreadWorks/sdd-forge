@@ -5,7 +5,8 @@ import { join } from "path";
 import { spawnSync } from "child_process";
 import { createTmpDir, removeTmpDir, writeJson } from "../helpers/tmp-dir.js";
 
-const CMD = join(process.cwd(), "src/setup.js");
+const CMD = join(process.cwd(), "src/sdd-forge.js");
+const CMD_ARGS_PREFIX = ["setup"];
 
 /** Non-interactive CLI args */
 const NI_ARGS = [
@@ -155,7 +156,7 @@ describe("052: agent command config", () => {
       tmp = createTmpDir();
       writeJson(tmp, "package.json", { name: "test-proj" });
 
-      const result = spawnSync("node", [CMD, ...NI_ARGS, "--agent", "claude"], {
+      const result = spawnSync("node", [CMD, ...CMD_ARGS_PREFIX, ...NI_ARGS, "--agent", "claude"], {
         encoding: "utf8",
         cwd: tmp,
         timeout: 10000,
@@ -175,7 +176,7 @@ describe("052: agent command config", () => {
       tmp = createTmpDir();
       writeJson(tmp, "package.json", { name: "test-proj" });
 
-      const result = spawnSync("node", [CMD, ...NI_ARGS, "--agent", "codex"], {
+      const result = spawnSync("node", [CMD, ...CMD_ARGS_PREFIX, ...NI_ARGS, "--agent", "codex"], {
         encoding: "utf8",
         cwd: tmp,
         timeout: 10000,

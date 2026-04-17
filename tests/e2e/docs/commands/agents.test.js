@@ -5,7 +5,8 @@ import { join } from "path";
 import { execFileSync } from "child_process";
 import { createTmpDir, removeTmpDir, writeJson, writeFile } from "../../../helpers/tmp-dir.js";
 
-const CMD = join(process.cwd(), "src/docs/commands/agents.js");
+const CMD = join(process.cwd(), "src/sdd-forge.js");
+const CMD_ARGS = ["docs", "agents"];
 
 describe("agents CLI", () => {
   let tmp;
@@ -18,7 +19,7 @@ describe("agents CLI", () => {
     writeJson(tmp, "package.json", { name: "test-pkg", version: "1.0.0" });
 
     assert.ok(!fs.existsSync(join(tmp, "AGENTS.md")), "AGENTS.md should not exist before");
-    execFileSync("node", [CMD], {
+    execFileSync("node", [CMD, ...CMD_ARGS], {
       encoding: "utf8",
       env: { ...process.env, SDD_FORGE_WORK_ROOT: tmp, SDD_FORGE_SOURCE_ROOT: tmp },
     });
@@ -36,7 +37,7 @@ describe("agents CLI", () => {
     ].join("\n"));
 
     try {
-      execFileSync("node", [CMD], {
+      execFileSync("node", [CMD, ...CMD_ARGS], {
         encoding: "utf8",
         env: { ...process.env, SDD_FORGE_WORK_ROOT: tmp, SDD_FORGE_SOURCE_ROOT: tmp },
       });
@@ -62,7 +63,7 @@ describe("agents CLI", () => {
     ].join("\n"));
 
     try {
-      execFileSync("node", [CMD], {
+      execFileSync("node", [CMD, ...CMD_ARGS], {
         encoding: "utf8",
         env: { ...process.env, SDD_FORGE_WORK_ROOT: tmp, SDD_FORGE_SOURCE_ROOT: tmp },
       });
@@ -91,7 +92,7 @@ describe("agents CLI", () => {
     ].join("\n"));
 
     // No project directive = no AI needed = should succeed without agent
-    execFileSync("node", [CMD], {
+    execFileSync("node", [CMD, ...CMD_ARGS], {
       encoding: "utf8",
       env: { ...process.env, SDD_FORGE_WORK_ROOT: tmp, SDD_FORGE_SOURCE_ROOT: tmp },
     });

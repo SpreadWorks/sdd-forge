@@ -12,15 +12,16 @@
 
 import fs from "fs";
 import path from "path";
-import { runIfDirect } from "../../lib/entrypoint.js";
 import { resolveDataDirectives } from "../lib/directive-parser.js";
 import { createResolver } from "../lib/resolver-factory.js";
 import { repoRoot, parseArgs } from "../../lib/cli.js";
 import { sddOutputDir } from "../../lib/config.js";
 import { createLogger } from "../../lib/progress.js";
 import { translate } from "../../lib/i18n.js";
-import { resolveCommandContext, getChapterFiles } from "../lib/command-context.js";
+import { getChapterFiles } from "../lib/command-context.js";
 import { filterAnalysisByDocsExclude } from "../lib/analysis-filter.js";
+import { container } from "../../lib/container.js";
+import { resolveDocsContext } from "../lib/docs-context.js";
 
 const logger = createLogger("data");
 
@@ -110,7 +111,7 @@ async function main(ctx) {
       console.log([h.usage, "", h.desc, "", "Options:", `  ${o.dryRun}`, `  ${o.stdout}`, `  ${o.help}`].join("\n"));
       return;
     }
-    ctx = resolveCommandContext(cli);
+    ctx = resolveDocsContext(container, cli);
     ctx.dryRun = cli.dryRun;
     ctx.stdout = cli.stdout;
   }
@@ -190,4 +191,3 @@ async function main(ctx) {
 
 export { main };
 
-runIfDirect(import.meta.url, main);

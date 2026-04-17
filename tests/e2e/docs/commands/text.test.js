@@ -5,7 +5,8 @@ import { join } from "path";
 import { execFileSync } from "child_process";
 import { createTmpDir, removeTmpDir, writeJson, writeFile } from "../../../helpers/tmp-dir.js";
 
-const CMD = join(process.cwd(), "src/docs/commands/text.js");
+const CMD = join(process.cwd(), "src/sdd-forge.js");
+const CMD_ARGS = ["docs", "text"];
 
 function makeEnv(tmp) {
   return { ...process.env, SDD_FORGE_WORK_ROOT: tmp, SDD_FORGE_SOURCE_ROOT: tmp };
@@ -49,7 +50,7 @@ describe("text CLI", () => {
     setupProject(tmp);
     writeFile(tmp, "docs/overview.md", "# Overview\n\nNo text directives\n");
 
-    execFileSync("node", [CMD], {
+    execFileSync("node", [CMD, ...CMD_ARGS], {
       encoding: "utf8",
       env: makeEnv(tmp),
       stdio: ["pipe", "pipe", "pipe"],
@@ -69,7 +70,7 @@ describe("text CLI", () => {
     ].join("\n");
     writeFile(tmp, "docs/overview.md", original);
 
-    execFileSync("node", [CMD, "--dry-run"], {
+    execFileSync("node", [CMD, ...CMD_ARGS, "--dry-run"], {
       encoding: "utf8",
       env: makeEnv(tmp),
       stdio: ["pipe", "pipe", "pipe"],
@@ -83,7 +84,7 @@ describe("text CLI", () => {
     tmp = createTmpDir();
     setupProject(tmp);
 
-    const result = execFileSync("node", [CMD, "--help"], {
+    const result = execFileSync("node", [CMD, ...CMD_ARGS, "--help"], {
       encoding: "utf8",
       env: makeEnv(tmp),
     });
@@ -103,7 +104,7 @@ describe("text CLI", () => {
     ].join("\n"));
 
     // dry-run should complete without throwing
-    execFileSync("node", [CMD, "--dry-run"], {
+    execFileSync("node", [CMD, ...CMD_ARGS, "--dry-run"], {
       encoding: "utf8",
       env: makeEnv(tmp),
     });
@@ -126,7 +127,7 @@ describe("text CLI", () => {
     ].join("\n"));
 
     // Should complete without error
-    execFileSync("node", [CMD, "--dry-run"], {
+    execFileSync("node", [CMD, ...CMD_ARGS, "--dry-run"], {
       encoding: "utf8",
       env: makeEnv(tmp),
       stdio: ["pipe", "pipe", "pipe"],
@@ -154,7 +155,7 @@ describe("text CLI", () => {
     ].join("\n"));
 
     // --id=intro should only process overview.md, not cli_commands.md
-    execFileSync("node", [CMD, "--dry-run", "--id", "nonexistent"], {
+    execFileSync("node", [CMD, ...CMD_ARGS, "--dry-run", "--id", "nonexistent"], {
       encoding: "utf8",
       env: makeEnv(tmp),
       stdio: ["pipe", "pipe", "pipe"],

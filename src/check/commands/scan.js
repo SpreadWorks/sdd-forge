@@ -10,7 +10,6 @@
 
 import fs from "fs";
 import path from "path";
-import { runIfDirect } from "../../lib/entrypoint.js";
 import { repoRoot, sourceRoot, parseArgs } from "../../lib/cli.js";
 import { loadConfig, sddOutputDir } from "../../lib/config.js";
 import { globToRegex } from "../../docs/lib/scanner.js";
@@ -270,4 +269,3 @@ async function main() {
 }
 
 export { main, groupByExtension, computeCoverage, formatText };
-runIfDirect(import.meta.url, main);

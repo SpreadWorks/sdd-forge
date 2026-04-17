@@ -8,6 +8,10 @@
 import path from "path";
 import { PKG_DIR } from "./lib/cli.js";
 import { EXIT_ERROR } from "./lib/constants.js";
+import { initContainer } from "./lib/container.js";
+import { runModuleMain } from "./lib/command-runner.js";
+
+initContainer();
 
 /** Subcommand → script mapping */
 const SCRIPTS = {
@@ -36,6 +40,4 @@ if (!scriptRelPath) {
 }
 
 const scriptPath = path.join(PKG_DIR, scriptRelPath);
-process.argv = [process.argv[0], scriptPath, ...rest];
-
-await import(scriptPath);
+await runModuleMain(scriptPath, rest);

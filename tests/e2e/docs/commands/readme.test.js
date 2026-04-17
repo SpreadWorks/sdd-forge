@@ -5,7 +5,8 @@ import { join } from "path";
 import { execFileSync } from "child_process";
 import { createTmpDir, removeTmpDir, writeJson, writeFile } from "../../../helpers/tmp-dir.js";
 
-const CMD = join(process.cwd(), "src/docs/commands/readme.js");
+const CMD = join(process.cwd(), "src/sdd-forge.js");
+const CMD_ARGS = ["docs", "readme"];
 
 function makeEnv(tmp) {
   return { ...process.env, SDD_FORGE_WORK_ROOT: tmp, SDD_FORGE_SOURCE_ROOT: tmp };
@@ -21,7 +22,7 @@ describe("readme CLI", () => {
   afterEach(() => tmp && removeTmpDir(tmp));
 
   function runReadme(args = []) {
-    return execFileSync("node", [CMD, ...args], {
+    return execFileSync("node", [CMD, ...CMD_ARGS, ...args], {
       encoding: "utf8",
       env: makeEnv(tmp),
     });

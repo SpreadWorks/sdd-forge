@@ -10,7 +10,6 @@
 
 import fs from "fs";
 import path from "path";
-import { runIfDirect } from "../../lib/entrypoint.js";
 import { repoRoot, parseArgs } from "../../lib/cli.js";
 import { loadPackageField } from "../../lib/config.js";
 import { callAgentWithLog } from "../../lib/agent.js";
@@ -18,8 +17,10 @@ import { resolveTemplates, mergeResolved, resolveChaptersOrder, translateTemplat
 import { summaryToText } from "../lib/forge-prompts.js";
 import { createLogger } from "../../lib/progress.js";
 import { translate } from "../../lib/i18n.js";
-import { resolveCommandContext, loadFullAnalysis, loadAnalysisData } from "../lib/command-context.js";
+import { loadFullAnalysis, loadAnalysisData } from "../lib/command-context.js";
 import { stripBlockDirectives } from "../lib/directive-parser.js";
+import { container } from "../../lib/container.js";
+import { resolveDocsContext } from "../lib/docs-context.js";
 
 const logger = createLogger("init");
 
@@ -141,7 +142,7 @@ function main(ctx) {
       console.log([h.usage, "", h.desc, "", "Options:", `  ${o.type}`, `  ${o.force}`, `  ${o.dryRun}`, `  ${o.help}`].join("\n"));
       return;
     }
-    ctx = resolveCommandContext(cli, { commandId: "docs.init" });
+    ctx = resolveDocsContext(container, cli, { commandId: "docs.init" });
     ctx.force = cli.force;
     ctx.dryRun = cli.dryRun;
   }
@@ -268,4 +269,3 @@ function main(ctx) {
 
 export { main, aiFilterChapters };
 
-runIfDirect(import.meta.url, main);

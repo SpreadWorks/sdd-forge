@@ -13,9 +13,10 @@
 import fs from "fs";
 import path from "path";
 import crypto from "crypto";
-import { runIfDirect } from "../../lib/entrypoint.js";
 import { parseDirectives, TEXT_OPEN_RE } from "../lib/directive-parser.js";
 import { mapWithConcurrency } from "../lib/concurrency.js";
+import { container } from "../../lib/container.js";
+import { resolveDocsContext } from "../lib/docs-context.js";
 import {
   getAnalysisContext,
   getEnrichedContext,
@@ -30,7 +31,7 @@ import { loadConfig, resolveConcurrency, DEFAULT_CONCURRENCY } from "../../lib/c
 import { createLogger } from "../../lib/progress.js";
 import { callAgentWithLog, callAgentAsyncWithLog, ensureAgentWorkDir, loadAgentConfig, DEFAULT_AGENT_TIMEOUT_MS } from "../../lib/agent.js";
 import { translate } from "../../lib/i18n.js";
-import { resolveCommandContext, getChapterFiles, loadFullAnalysis } from "../lib/command-context.js";
+import { getChapterFiles, loadFullAnalysis } from "../lib/command-context.js";
 import { repairJson } from "../../lib/json-parse.js";
 import { EXIT_ERROR } from "../../lib/constants.js";
 
@@ -610,7 +611,7 @@ async function main(ctx) {
       return;
     }
 
-    ctx = resolveCommandContext(cli, { commandId: "docs.text" });
+    ctx = resolveDocsContext(container, cli, { commandId: "docs.text" });
     ctx.dryRun = cli.dryRun;
     ctx.perDirective = cli.perDirective;
     ctx.force = cli.force;
@@ -770,4 +771,3 @@ async function main(ctx) {
 
 export { main, stripFillContent, countFilledInBatch, processTemplateFileBatch, processTemplate, allTextDirectivesFilled, validateBatchResult, parseBatchJsonResponse, applyBatchJsonToFile, detectChangedChapters };
 
-runIfDirect(import.meta.url, main);

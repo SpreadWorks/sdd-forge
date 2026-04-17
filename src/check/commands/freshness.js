@@ -15,7 +15,6 @@
 
 import fs from "fs";
 import path from "path";
-import { runIfDirect } from "../../lib/entrypoint.js";
 import { repoRoot, sourceRoot, parseArgs } from "../../lib/cli.js";
 import { EXIT_ERROR } from "../../lib/constants.js";
 
@@ -202,4 +201,3 @@ async function main() {
 }
 
 export { main, checkFreshness };
-runIfDirect(import.meta.url, main);

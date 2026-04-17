@@ -4,7 +4,8 @@ import { join } from "path";
 import { execFileSync } from "child_process";
 import { createTmpDir, removeTmpDir, writeFile, writeJson } from "../../../helpers/tmp-dir.js";
 
-const CMD = join(process.cwd(), "src/docs/commands/review.js");
+const CMD = join(process.cwd(), "src/sdd-forge.js");
+const CMD_ARGS = ["docs", "review"];
 const MIN_CONFIG = { lang: "en", type: "node-cli", docs: { languages: ["en"], defaultLanguage: "en" } };
 
 function setupTmp() {
@@ -14,7 +15,7 @@ function setupTmp() {
 }
 
 function runReview(tmp) {
-  return execFileSync("node", [CMD], {
+  return execFileSync("node", [CMD, ...CMD_ARGS], {
     encoding: "utf8",
     env: { ...process.env, SDD_FORGE_WORK_ROOT: tmp },
   });
@@ -22,7 +23,7 @@ function runReview(tmp) {
 
 function runReviewExpectFail(tmp) {
   try {
-    execFileSync("node", [CMD], {
+    execFileSync("node", [CMD, ...CMD_ARGS], {
       encoding: "utf8",
       env: { ...process.env, SDD_FORGE_WORK_ROOT: tmp },
     });

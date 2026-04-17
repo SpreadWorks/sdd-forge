@@ -20,7 +20,6 @@ import fs from "fs";
 import path from "path";
 import crypto from "crypto";
 import { fileURLToPath } from "url";
-import { runIfDirect } from "../../lib/entrypoint.js";
 import { repoRoot, parseArgs } from "../../lib/cli.js";
 import { sddOutputDir } from "../../lib/config.js";
 import { collectFiles } from "../lib/scanner.js";
@@ -28,7 +27,9 @@ import { loadDataSources } from "../lib/data-source-loader.js";
 import { presetByLeaf, resolveChainSafe, resolveMultiChains } from "../../lib/presets.js";
 import { createLogger } from "../../lib/progress.js";
 import { translate } from "../../lib/i18n.js";
-import { resolveCommandContext } from "../lib/command-context.js";
+import { container } from "../../lib/container.js";
+import { resolveDocsContext } from "../lib/docs-context.js";
+
 import { isEmptyEntry, buildSummary, ANALYSIS_META_KEYS } from "../lib/analysis-entry.js";
 
 const logger = createLogger("scan");
@@ -228,7 +229,7 @@ async function main(ctx) {
       printHelp();
       return;
     }
-    ctx = resolveCommandContext(cli);
+    ctx = resolveDocsContext(container, cli);
     if (hasReset) {
       resetCategories(ctx.root, reset);
       return;
@@ -472,4 +473,3 @@ async function main(ctx) {
 
 export { main };
 
-runIfDirect(import.meta.url, main);

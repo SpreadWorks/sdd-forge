@@ -11,7 +11,8 @@ import {
   buildForgeFilePrompt,
 } from "../../../../src/docs/lib/forge-prompts.js";
 
-const CMD = join(process.cwd(), "src/docs/commands/forge.js");
+const CMD = join(process.cwd(), "src/sdd-forge.js");
+const CMD_ARGS_PREFIX = ["docs", "forge"];
 
 describe("buildForgeSystemPrompt", () => {
   it("includes user prompt and rules", () => {
@@ -106,7 +107,7 @@ describe("forge CLI validation", () => {
     tmp = createTmpDir();
     writeJson(tmp, ".sdd-forge/config.json", { lang: "ja", type: "node-cli", docs: { languages: ["ja"], defaultLanguage: "ja" } });
     try {
-      execFileSync("node", [CMD, "--prompt", "test", "--max-runs", "0"], {
+      execFileSync("node", [CMD, ...CMD_ARGS_PREFIX, "--prompt", "test", "--max-runs", "0"], {
         encoding: "utf8",
         env: makeEnv(tmp),
       });
@@ -120,7 +121,7 @@ describe("forge CLI validation", () => {
     tmp = createTmpDir();
     writeJson(tmp, ".sdd-forge/config.json", { lang: "ja", type: "node-cli", docs: { languages: ["ja"], defaultLanguage: "ja" } });
     try {
-      execFileSync("node", [CMD, "--prompt", "test", "--mode", "invalid"], {
+      execFileSync("node", [CMD, ...CMD_ARGS_PREFIX, "--prompt", "test", "--mode", "invalid"], {
         encoding: "utf8",
         env: makeEnv(tmp),
       });
@@ -135,7 +136,7 @@ describe("forge CLI validation", () => {
     writeJson(tmp, ".sdd-forge/config.json", { lang: "ja", type: "node-cli", docs: { languages: ["ja"], defaultLanguage: "ja" } });
 
     try {
-      execFileSync("node", [CMD], {
+      execFileSync("node", [CMD, ...CMD_ARGS_PREFIX], {
         encoding: "utf8",
         env: { ...process.env, SDD_FORGE_WORK_ROOT: tmp, SDD_FORGE_SOURCE_ROOT: tmp },
       });
@@ -149,7 +150,7 @@ describe("forge CLI validation", () => {
     tmp = createTmpDir();
     writeJson(tmp, ".sdd-forge/config.json", { lang: "ja", type: "node-cli", docs: { languages: ["ja"], defaultLanguage: "ja" } });
 
-    const result = execFileSync("node", [CMD, "--help"], {
+    const result = execFileSync("node", [CMD, ...CMD_ARGS_PREFIX, "--help"], {
       encoding: "utf8",
       env: { ...process.env, SDD_FORGE_WORK_ROOT: tmp, SDD_FORGE_SOURCE_ROOT: tmp },
     });
@@ -162,7 +163,7 @@ describe("forge CLI validation", () => {
     writeFile(tmp, "docs/test.md", "# Test\n\nContent\n");
 
     const result = execFileSync("node", [
-      CMD,
+      CMD, ...CMD_ARGS_PREFIX,
       "--prompt", "test",
       "--dry-run",
     ], {
@@ -185,7 +186,7 @@ describe("forge CLI validation", () => {
 
     // Use a review command that always passes
     const result = execFileSync("node", [
-      CMD,
+      CMD, ...CMD_ARGS_PREFIX,
       "--prompt", "test",
       "--review-cmd", "echo review-passed",
       "--max-runs", "1",
@@ -218,7 +219,7 @@ describe("forge CLI validation", () => {
     writeFile(tmp, "docs/arch.md", "# Arch\n\ncontent\n");
 
     const result = execFileSync("node", [
-      CMD,
+      CMD, ...CMD_ARGS_PREFIX,
       "--prompt", "improve",
       "--mode", "agent",
       "--review-cmd", "echo review-passed",
@@ -252,7 +253,7 @@ describe("forge CLI validation", () => {
     writeFile(tmp, "docs/01_test.md", "# Test\n\ncontent\n");
 
     const result = execFileSync("node", [
-      CMD,
+      CMD, ...CMD_ARGS_PREFIX,
       "--prompt", "improve",
       "--mode", "agent",
       "--review-cmd", "echo review-passed",

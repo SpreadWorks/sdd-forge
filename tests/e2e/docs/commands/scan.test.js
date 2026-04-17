@@ -5,7 +5,8 @@ import { join } from "path";
 import { execFileSync, spawnSync } from "child_process";
 import { createTmpDir, removeTmpDir, writeJson, writeFile } from "../../../helpers/tmp-dir.js";
 
-const CMD = join(process.cwd(), "src/docs/commands/scan.js");
+const CMD = join(process.cwd(), "src/sdd-forge.js");
+const CMD_ARGS = ["docs", "scan"];
 
 describe("scan CLI", () => {
   let tmp;
@@ -21,7 +22,7 @@ describe("scan CLI", () => {
     });
     writeFile(tmp, "src/index.js", 'export function hello() { return "hi"; }\n');
 
-    const result = execFileSync("node", [CMD, "--stdout"], {
+    const result = execFileSync("node", [CMD, ...CMD_ARGS, "--stdout"], {
       encoding: "utf8",
       env: { ...process.env, SDD_FORGE_WORK_ROOT: tmp, SDD_FORGE_SOURCE_ROOT: tmp },
     });
@@ -41,7 +42,7 @@ describe("scan CLI", () => {
     });
     writeFile(tmp, "src/index.js", 'export function hello() { return "hi"; }\n');
 
-    const proc = spawnSync("node", [CMD, "--stdout"], {
+    const proc = spawnSync("node", [CMD, ...CMD_ARGS, "--stdout"], {
       encoding: "utf8",
       env: { ...process.env, SDD_FORGE_WORK_ROOT: tmp, SDD_FORGE_SOURCE_ROOT: tmp },
     });
@@ -61,7 +62,7 @@ describe("scan CLI", () => {
     fs.mkdirSync(join(tmp, ".sdd-forge/output"), { recursive: true });
     writeFile(tmp, "src/main.js", "function main() {}\n");
 
-    execFileSync("node", [CMD], {
+    execFileSync("node", [CMD, ...CMD_ARGS], {
       encoding: "utf8",
       env: { ...process.env, SDD_FORGE_WORK_ROOT: tmp, SDD_FORGE_SOURCE_ROOT: tmp },
     });
@@ -88,7 +89,7 @@ describe("scan CLI", () => {
     writeFile(tmp, "src/index.js", 'export function hello() { return "hi"; }\n');
     fs.mkdirSync(join(tmp, ".sdd-forge/output"), { recursive: true });
 
-    const result = execFileSync("node", [CMD, "--dry-run"], {
+    const result = execFileSync("node", [CMD, ...CMD_ARGS, "--dry-run"], {
       encoding: "utf8",
       env: { ...process.env, SDD_FORGE_WORK_ROOT: tmp, SDD_FORGE_SOURCE_ROOT: tmp },
     });
@@ -99,7 +100,7 @@ describe("scan CLI", () => {
   });
 
   it("shows help with --help", () => {
-    const result = execFileSync("node", [CMD, "--help"], {
+    const result = execFileSync("node", [CMD, ...CMD_ARGS, "--help"], {
       encoding: "utf8",
       env: { ...process.env, SDD_FORGE_WORK_ROOT: "/tmp" },
     });
@@ -122,7 +123,7 @@ describe("scan CLI", () => {
       "}",
     ].join("\n"));
 
-    const result = execFileSync("node", [CMD, "--stdout"], {
+    const result = execFileSync("node", [CMD, ...CMD_ARGS, "--stdout"], {
       encoding: "utf8",
       env: { ...process.env, SDD_FORGE_WORK_ROOT: tmp, SDD_FORGE_SOURCE_ROOT: tmp },
     });
@@ -145,7 +146,7 @@ describe("scan CLI", () => {
     writeFile(tmp, "src/index.js", 'export function hello() { return "hi"; }\n');
 
     // 1st scan
-    execFileSync("node", [CMD], {
+    execFileSync("node", [CMD, ...CMD_ARGS], {
       encoding: "utf8",
       env: { ...process.env, SDD_FORGE_WORK_ROOT: tmp, SDD_FORGE_SOURCE_ROOT: tmp },
     });
@@ -164,7 +165,7 @@ describe("scan CLI", () => {
     fs.writeFileSync(outputPath, JSON.stringify(first) + "\n");
 
     // 2nd scan (same source, no changes)
-    execFileSync("node", [CMD], {
+    execFileSync("node", [CMD, ...CMD_ARGS], {
       encoding: "utf8",
       env: { ...process.env, SDD_FORGE_WORK_ROOT: tmp, SDD_FORGE_SOURCE_ROOT: tmp },
     });
@@ -190,7 +191,7 @@ describe("scan CLI", () => {
     writeFile(tmp, "src/index.js", 'export function hello() { return "hi"; }\n');
 
     // 1st scan
-    execFileSync("node", [CMD], {
+    execFileSync("node", [CMD, ...CMD_ARGS], {
       encoding: "utf8",
       env: { ...process.env, SDD_FORGE_WORK_ROOT: tmp, SDD_FORGE_SOURCE_ROOT: tmp },
     });
@@ -206,7 +207,7 @@ describe("scan CLI", () => {
     writeFile(tmp, "src/index.js", 'export function goodbye() { return "bye"; }\n');
 
     // 2nd scan
-    execFileSync("node", [CMD], {
+    execFileSync("node", [CMD, ...CMD_ARGS], {
       encoding: "utf8",
       env: { ...process.env, SDD_FORGE_WORK_ROOT: tmp, SDD_FORGE_SOURCE_ROOT: tmp },
     });
@@ -229,7 +230,7 @@ describe("scan CLI", () => {
       dependencies: { "express": "^4.0.0" },
     });
 
-    const result = execFileSync("node", [CMD, "--stdout"], {
+    const result = execFileSync("node", [CMD, ...CMD_ARGS, "--stdout"], {
       encoding: "utf8",
       env: { ...process.env, SDD_FORGE_WORK_ROOT: tmp, SDD_FORGE_SOURCE_ROOT: tmp },
     });

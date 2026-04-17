@@ -1,0 +1,207 @@
+{
+  "spec": "specs/182-container-infra/spec.md",
+  "baseBranch": "main",
+  "featureBranch": "feature/182-container-infra",
+  "runId": "a33d0faa-2a70-49ad-aa50-0eb2b2c76186",
+  "lifecycle": "active",
+  "steps": [
+    {
+      "id": "branch",
+      "status": "done"
+    },
+    {
+      "id": "prepare-spec",
+      "status": "pending"
+    },
+    {
+      "id": "draft",
+      "status": "done"
+    },
+    {
+      "id": "gate-draft",
+      "status": "done"
+    },
+    {
+      "id": "spec",
+      "status": "done"
+    },
+    {
+      "id": "gate",
+      "status": "done"
+    },
+    {
+      "id": "approval",
+      "status": "done"
+    },
+    {
+      "id": "test",
+      "status": "done"
+    },
+    {
+      "id": "implement",
+      "status": "done"
+    },
+    {
+      "id": "gate-impl",
+      "status": "done"
+    },
+    {
+      "id": "review",
+      "status": "done"
+    },
+    {
+      "id": "finalize",
+      "status": "pending"
+    },
+    {
+      "id": "commit",
+      "status": "pending"
+    },
+    {
+      "id": "push",
+      "status": "pending"
+    },
+    {
+      "id": "merge",
+      "status": "pending"
+    },
+    {
+      "id": "pr-create",
+      "status": "pending"
+    },
+    {
+      "id": "branch-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "pr-merge",
+      "status": "pending"
+    },
+    {
+      "id": "sync-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "docs-update",
+      "status": "pending"
+    },
+    {
+      "id": "docs-review",
+      "status": "pending"
+    },
+    {
+      "id": "docs-commit",
+      "status": "pending"
+    }
+  ],
+  "requirements": [
+    {
+      "desc": "R1: 初期化は1回のみ、全層が同一結果を参照",
+      "status": "pending"
+    },
+    {
+      "desc": "R2: 単一の取得インターフェースで依存を提供",
+      "status": "pending"
+    },
+    {
+      "desc": "R3: 未登録キーは例外送出",
+      "status": "pending"
+    },
+    {
+      "desc": "R4: パスサービスは絶対パス7項目",
+      "status": "pending"
+    },
+    {
+      "desc": "R5: 作業ディレクトリは env > config > .tmp 優先順",
+      "status": "pending"
+    },
+    {
+      "desc": "R6: CLI外部挙動は不変、既存テスト全PASS",
+      "status": "pending"
+    },
+    {
+      "desc": "R7: 旧コンテキスト解決関数を純粋関数に置換",
+      "status": "pending"
+    },
+    {
+      "desc": "R8: 単独起動ヘルパー廃止",
+      "status": "pending"
+    },
+    {
+      "desc": "R9: 未初期化時は明示エラー（lazy init しない）",
+      "status": "pending"
+    },
+    {
+      "desc": "R10: 新規コンポーネントに単体テスト",
+      "status": "pending"
+    },
+    {
+      "desc": "R11: 既存テスト改変は廃止関数参照の削除のみ",
+      "status": "pending"
+    },
+    {
+      "desc": "R12: 失敗時は非0終了コード",
+      "status": "pending"
+    }
+  ],
+  "issue": 155,
+  "request": "#155 issueを進めてください。",
+  "worktree": true,
+  "notes": [
+    "draft: Q1 approved — spec title container-infra, design 方針は issue 本文で決定済み",
+    "Q3: Container は全サービス register()/get() 統一。名前付きフィールドは持たない（テスタビリティ優先）",
+    "Q4: get() 未登録は throw。paths は 1 オブジェクトとして登録（container.get('paths').root）",
+    "Q5: 配布方式は module-level container.js（Issue 原案の引数渡しから変更）。sdd-forge.js で 1 回 init、他 module は import で参照",
+    "Q6: runIfDirect 廃止。resolveCommandContext は廃止し resolveDocsContext(container, cli) 純粋関数に置換。flow も resolveFlowContext(container) に切り出し",
+    "Q7: テスト戦略は Container 契約 unit + helper unit + 既存 acceptance/e2e 全 pass 維持",
+    "impl: approach approved - Container class + module-level init + resolveDocsContext/resolveFlowContext pure functions + remove runIfDirect/resolveCommandContext/resolveCtx"
+  ],
+  "metrics": {
+    "plan": {
+      "docsRead": 1
+    },
+    "draft": {
+      "question": 7
+    },
+    "gate-draft": {
+      "tokens": {
+        "input": 59879,
+        "output": 4579,
+        "cacheRead": 71040,
+        "cacheCreation": 0
+      },
+      "callCount": 5,
+      "responseChars": 8461
+    },
+    "gate": {
+      "tokens": {
+        "input": 3322,
+        "output": 1075,
+        "cacheRead": 22912,
+        "cacheCreation": 0
+      },
+      "callCount": 1,
+      "responseChars": 1163
+    },
+    "impl": {
+      "issueLog": 1
+    },
+    "gate-impl": {
+      "tokens": {
+        "input": 1091868,
+        "output": 15949,
+        "cacheRead": 73856,
+        "cacheCreation": 0
+      },
+      "callCount": 9,
+      "responseChars": 12143
+    }
+  },
+  "test": {
+    "summary": {
+      "unit": 1373,
+      "integration": 267,
+      "acceptance": 20
+    }
+  }
+}

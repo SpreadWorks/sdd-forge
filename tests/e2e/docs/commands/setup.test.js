@@ -5,7 +5,8 @@ import { join } from "path";
 import { execFileSync, spawnSync } from "child_process";
 import { createTmpDir, removeTmpDir, writeJson } from "../../../helpers/tmp-dir.js";
 
-const CMD = join(process.cwd(), "src/setup.js");
+const CMD = join(process.cwd(), "src/sdd-forge.js");
+const CMD_ARGS = ["setup"];
 
 /** Non-interactive CLI args that satisfy hasAllRequired */
 const NI_ARGS = [
@@ -21,7 +22,7 @@ describe("setup CLI", () => {
 
   it("shows help with --help", () => {
     tmp = createTmpDir();
-    const result = execFileSync("node", [CMD, "--help"], {
+    const result = execFileSync("node", [CMD, ...CMD_ARGS, "--help"], {
       encoding: "utf8",
       cwd: tmp,
       env: { ...process.env, SDD_FORGE_WORK_ROOT: tmp },
@@ -34,7 +35,7 @@ describe("setup CLI", () => {
     writeJson(tmp, "package.json", { name: "test-proj" });
 
     // Send empty input to trigger interactive prompt; it should ask for language
-    const result = spawnSync("node", [CMD], {
+    const result = spawnSync("node", [CMD, ...CMD_ARGS], {
       encoding: "utf8",
       cwd: tmp,
       input: "\n",
@@ -50,7 +51,7 @@ describe("setup CLI", () => {
     tmp = createTmpDir();
     writeJson(tmp, "package.json", { name: "test-proj" });
 
-    const result = spawnSync("node", [CMD, ...NI_ARGS], {
+    const result = spawnSync("node", [CMD, ...CMD_ARGS, ...NI_ARGS], {
       encoding: "utf8",
       cwd: tmp,
       timeout: 10000,

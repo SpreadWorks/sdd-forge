@@ -9,7 +9,11 @@ import fs from "fs";
 import path from "path";
 import { PKG_DIR } from "./lib/cli.js";
 import { Logger } from "./lib/log.js";
-import { resolveCommandContext } from "./docs/lib/command-context.js";
+import { container, initContainer } from "./lib/container.js";
+import { resolveDocsContext } from "./docs/lib/docs-context.js";
+import { runModuleMain } from "./lib/command-runner.js";
+
+initContainer();
 import { resolveOutputConfig } from "./lib/types.js";
 import { EXIT_ERROR } from "./lib/constants.js";
 
@@ -64,7 +68,7 @@ if (subCmd === "build") {
   const otherArgs = rest.filter((a) => !["--force", "--regenerate", "--verbose", "--dry-run"].includes(a));
 
   // Build shared context once
-  const baseCtx = resolveCommandContext(null);
+  const baseCtx = resolveDocsContext(container, null);
 
   const outputCfg = resolveOutputConfig(baseCtx.config);
   const hasTranslateStep = outputCfg.isMultiLang;
@@ -235,6 +239,4 @@ if (!scriptRelPath) {
 }
 
 const scriptPath = path.join(PKG_DIR, scriptRelPath);
-process.argv = [process.argv[0], scriptPath, ...rest];
-
-await import(scriptPath);
+await runModuleMain(scriptPath, rest);

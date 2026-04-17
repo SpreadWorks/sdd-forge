@@ -6,7 +6,6 @@
  * Language is determined by .sdd-forge/config.json lang, defaulting to "en".
  */
 
-import { runIfDirect } from "./lib/entrypoint.js";
 import { getPackageVersion } from "./lib/cli.js";
 import { translate } from "./lib/i18n.js";
 
@@ -74,4 +73,3 @@ function main() {
 
 export { main, LAYOUT as commands };
 
-runIfDirect(import.meta.url, main);

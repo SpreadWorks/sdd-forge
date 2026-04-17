@@ -14,7 +14,6 @@
 import fs from "fs";
 import path from "path";
 import { runCmdAsync } from "../../lib/process.js";
-import { runIfDirect } from "../../lib/entrypoint.js";
 import { populateFromAnalysis } from "./data.js";
 import { textFillFromAnalysis } from "./text.js";
 import { mapWithConcurrency } from "../lib/concurrency.js";
@@ -441,4 +440,3 @@ async function main() {
 
 export { main, estimateRelevantFiles };
 
-runIfDirect(import.meta.url, main);

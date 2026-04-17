@@ -5,7 +5,8 @@ import { join } from "path";
 import { execFileSync, spawnSync } from "child_process";
 import { createTmpDir, removeTmpDir, writeJson, writeFile } from "../../../helpers/tmp-dir.js";
 
-const CMD = join(process.cwd(), "src/docs/commands/scan.js");
+const CMD = join(process.cwd(), "src/sdd-forge.js");
+const CMD_ARGS = ["docs", "scan"];
 
 /**
  * Create a tmp project, run scan, then simulate enrichment on analysis.json.
@@ -23,7 +24,7 @@ function setupEnrichedProject() {
   writeFile(tmp, "src/utils.js", 'export function add(a, b) { return a + b; }\n');
 
   // Run scan to generate analysis.json
-  execFileSync("node", [CMD], {
+  execFileSync("node", [CMD, ...CMD_ARGS], {
     encoding: "utf8",
     env: { ...process.env, SDD_FORGE_WORK_ROOT: tmp, SDD_FORGE_SOURCE_ROOT: tmp },
   });
@@ -53,7 +54,7 @@ describe("scan --reset", () => {
     ({ tmp } = setupEnrichedProject());
     const outputPath = join(tmp, ".sdd-forge/output/analysis.json");
 
-    const proc = spawnSync("node", [CMD, "--reset"], {
+    const proc = spawnSync("node", [CMD, ...CMD_ARGS, "--reset"], {
       encoding: "utf8",
       env: { ...process.env, SDD_FORGE_WORK_ROOT: tmp, SDD_FORGE_SOURCE_ROOT: tmp },
     });
@@ -86,7 +87,7 @@ describe("scan --reset", () => {
       "}",
     ].join("\n"));
 
-    execFileSync("node", [CMD], {
+    execFileSync("node", [CMD, ...CMD_ARGS], {
       encoding: "utf8",
       env: { ...process.env, SDD_FORGE_WORK_ROOT: tmp, SDD_FORGE_SOURCE_ROOT: tmp },
     });
@@ -101,7 +102,7 @@ describe("scan --reset", () => {
     const otherCat = categories.find(c => c !== targetCat);
     const otherHashBefore = before[otherCat].entries[0].hash;
 
-    const proc = spawnSync("node", [CMD, "--reset", targetCat], {
+    const proc = spawnSync("node", [CMD, ...CMD_ARGS, "--reset", targetCat], {
       encoding: "utf8",
       env: { ...process.env, SDD_FORGE_WORK_ROOT: tmp, SDD_FORGE_SOURCE_ROOT: tmp },
     });
@@ -128,7 +129,7 @@ describe("scan --reset", () => {
     };
     fs.writeFileSync(outputPath, JSON.stringify(analysis) + "\n");
 
-    const proc = spawnSync("node", [CMD, "--reset", "modules,extras"], {
+    const proc = spawnSync("node", [CMD, ...CMD_ARGS, "--reset", "modules,extras"], {
       encoding: "utf8",
       env: { ...process.env, SDD_FORGE_WORK_ROOT: tmp, SDD_FORGE_SOURCE_ROOT: tmp },
     });
@@ -145,7 +146,7 @@ describe("scan --reset", () => {
     ({ tmp } = setupEnrichedProject());
     const outputPath = join(tmp, ".sdd-forge/output/analysis.json");
 
-    spawnSync("node", [CMD, "--reset"], {
+    spawnSync("node", [CMD, ...CMD_ARGS, "--reset"], {
       encoding: "utf8",
       env: { ...process.env, SDD_FORGE_WORK_ROOT: tmp, SDD_FORGE_SOURCE_ROOT: tmp },
     });
@@ -165,7 +166,7 @@ describe("scan --reset", () => {
   it("warns and exits 0 for nonexistent category", () => {
     ({ tmp } = setupEnrichedProject());
 
-    const proc = spawnSync("node", [CMD, "--reset", "nonexistent"], {
+    const proc = spawnSync("node", [CMD, ...CMD_ARGS, "--reset", "nonexistent"], {
       encoding: "utf8",
       env: { ...process.env, SDD_FORGE_WORK_ROOT: tmp, SDD_FORGE_SOURCE_ROOT: tmp },
     });
@@ -181,7 +182,7 @@ describe("scan --reset", () => {
       docs: { languages: ["ja"], defaultLanguage: "ja" },
     });
 
-    const proc = spawnSync("node", [CMD, "--reset"], {
+    const proc = spawnSync("node", [CMD, ...CMD_ARGS, "--reset"], {
       encoding: "utf8",
       env: { ...process.env, SDD_FORGE_WORK_ROOT: tmp, SDD_FORGE_SOURCE_ROOT: tmp },
     });
@@ -196,7 +197,7 @@ describe("scan --reset", () => {
     const originalHash = before.modules.entries[0].hash;
 
     // Reset
-    spawnSync("node", [CMD, "--reset"], {
+    spawnSync("node", [CMD, ...CMD_ARGS, "--reset"], {
       encoding: "utf8",
       env: { ...process.env, SDD_FORGE_WORK_ROOT: tmp, SDD_FORGE_SOURCE_ROOT: tmp },
     });
@@ -206,7 +207,7 @@ describe("scan --reset", () => {
     assert.equal(reset.modules.entries[0].hash, null);
 
     // Re-scan
-    execFileSync("node", [CMD], {
+    execFileSync("node", [CMD, ...CMD_ARGS], {
       encoding: "utf8",
       env: { ...process.env, SDD_FORGE_WORK_ROOT: tmp, SDD_FORGE_SOURCE_ROOT: tmp },
     });
@@ -221,7 +222,7 @@ describe("scan --reset", () => {
   it("displays reset counts per category on stderr", () => {
     ({ tmp } = setupEnrichedProject());
 
-    const proc = spawnSync("node", [CMD, "--reset"], {
+    const proc = spawnSync("node", [CMD, ...CMD_ARGS, "--reset"], {
       encoding: "utf8",
       env: { ...process.env, SDD_FORGE_WORK_ROOT: tmp, SDD_FORGE_SOURCE_ROOT: tmp },
     });

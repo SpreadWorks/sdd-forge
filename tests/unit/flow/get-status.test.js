@@ -13,7 +13,8 @@ import {
   saveFlowState, buildInitialSteps, addActiveFlow, FLOW_STEPS,
 } from "../../../src/lib/flow-state.js";
 
-const FLOW_CMD = join(process.cwd(), "src/flow.js");
+const FLOW_CMD = join(process.cwd(), "src/sdd-forge.js");
+const FLOW_CMD_ARGS_PREFIX = ["flow"];
 
 describe("flow get status", () => {
   let tmp;
@@ -36,7 +37,7 @@ describe("flow get status", () => {
   it("returns JSON envelope with ok: true", () => {
     tmp = createTmpDir();
     setupFlowState(tmp);
-    const result = execFileSync("node", [FLOW_CMD, "get", "status"], {
+    const result = execFileSync("node", [FLOW_CMD, ...FLOW_CMD_ARGS_PREFIX, "get", "status"], {
       encoding: "utf8",
       env: { ...process.env, SDD_FORGE_WORK_ROOT: tmp },
     });
@@ -51,7 +52,7 @@ describe("flow get status", () => {
   it("returns ok: false when no active flow", () => {
     tmp = createTmpDir();
     try {
-      execFileSync("node", [FLOW_CMD, "get", "status"], {
+      execFileSync("node", [FLOW_CMD, ...FLOW_CMD_ARGS_PREFIX, "get", "status"], {
         encoding: "utf8",
         env: { ...process.env, SDD_FORGE_WORK_ROOT: tmp },
       });

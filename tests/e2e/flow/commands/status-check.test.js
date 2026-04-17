@@ -6,7 +6,8 @@ import { createTmpDir, removeTmpDir } from "../../../helpers/tmp-dir.js";
 import { makeFlowState, setStepDone } from "../../../helpers/flow-setup.js";
 import { saveFlowState, addActiveFlow } from "../../../../src/lib/flow-state.js";
 
-const FLOW_CMD = join(process.cwd(), "src/flow.js");
+const FLOW_CMD = join(process.cwd(), "src/sdd-forge.js");
+const FLOW_CMD_ARGS_PREFIX = ["flow"];
 
 describe("flow get check impl", () => {
   let tmp;
@@ -18,7 +19,7 @@ describe("flow get check impl", () => {
     setStepDone(state, "gate", "test");
     saveFlowState(tmp, state);
     addActiveFlow(tmp, "001-test", "local");
-    const result = execFileSync("node", [FLOW_CMD, "get", "check", "impl"], {
+    const result = execFileSync("node", [FLOW_CMD, ...FLOW_CMD_ARGS_PREFIX, "get", "check", "impl"], {
       encoding: "utf8",
       env: { ...process.env, SDD_FORGE_WORK_ROOT: tmp },
     });
@@ -32,7 +33,7 @@ describe("flow get check impl", () => {
     state.steps.find((s) => s.id === "test").status = "skipped";
     saveFlowState(tmp, state);
     addActiveFlow(tmp, "001-test", "local");
-    const result = execFileSync("node", [FLOW_CMD, "get", "check", "impl"], {
+    const result = execFileSync("node", [FLOW_CMD, ...FLOW_CMD_ARGS_PREFIX, "get", "check", "impl"], {
       encoding: "utf8",
       env: { ...process.env, SDD_FORGE_WORK_ROOT: tmp },
     });
@@ -45,7 +46,7 @@ describe("flow get check impl", () => {
     setStepDone(state, "test");
     saveFlowState(tmp, state);
     addActiveFlow(tmp, "001-test", "local");
-    const result = execFileSync("node", [FLOW_CMD, "get", "check", "impl"], {
+    const result = execFileSync("node", [FLOW_CMD, ...FLOW_CMD_ARGS_PREFIX, "get", "check", "impl"], {
       encoding: "utf8",
       env: { ...process.env, SDD_FORGE_WORK_ROOT: tmp },
     });
@@ -59,7 +60,7 @@ describe("flow get check impl", () => {
     setStepDone(state, "gate");
     saveFlowState(tmp, state);
     addActiveFlow(tmp, "001-test", "local");
-    const result = execFileSync("node", [FLOW_CMD, "get", "check", "impl"], {
+    const result = execFileSync("node", [FLOW_CMD, ...FLOW_CMD_ARGS_PREFIX, "get", "check", "impl"], {
       encoding: "utf8",
       env: { ...process.env, SDD_FORGE_WORK_ROOT: tmp },
     });
@@ -70,7 +71,7 @@ describe("flow get check impl", () => {
   it("errors when no flow.json exists", () => {
     tmp = createTmpDir();
     try {
-      execFileSync("node", [FLOW_CMD, "get", "check", "impl"], {
+      execFileSync("node", [FLOW_CMD, ...FLOW_CMD_ARGS_PREFIX, "get", "check", "impl"], {
         encoding: "utf8",
         env: { ...process.env, SDD_FORGE_WORK_ROOT: tmp },
       });

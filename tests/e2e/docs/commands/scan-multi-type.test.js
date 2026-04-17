@@ -11,7 +11,8 @@ import { join } from "path";
 import { execFileSync } from "child_process";
 import { createTmpDir, removeTmpDir, writeJson, writeFile } from "../../../helpers/tmp-dir.js";
 
-const CMD = join(process.cwd(), "src/docs/commands/scan.js");
+const CMD = join(process.cwd(), "src/sdd-forge.js");
+const CMD_ARGS = ["docs", "scan"];
 
 function makeEnv(tmp) {
   return { ...process.env, SDD_FORGE_WORK_ROOT: tmp, SDD_FORGE_SOURCE_ROOT: tmp };
@@ -31,7 +32,7 @@ describe("scan multi-type pattern merging", () => {
     writeJson(tmp, "package.json", { name: "test", version: "1.0.0" });
     writeFile(tmp, "src/index.ts", "export default {};\n");
 
-    const result = execFileSync("node", [CMD, "--stdout"], {
+    const result = execFileSync("node", [CMD, ...CMD_ARGS, "--stdout"], {
       encoding: "utf8",
       env: makeEnv(tmp),
     });
@@ -52,7 +53,7 @@ describe("scan multi-type pattern merging", () => {
     writeJson(tmp, "package.json", { name: "test", version: "1.0.0" });
     writeFile(tmp, "src/index.js", 'export function hello() { return "hi"; }\n');
 
-    const result = execFileSync("node", [CMD, "--stdout"], {
+    const result = execFileSync("node", [CMD, ...CMD_ARGS, "--stdout"], {
       encoding: "utf8",
       env: makeEnv(tmp),
     });
@@ -72,7 +73,7 @@ describe("scan multi-type pattern merging", () => {
     writeJson(tmp, "package.json", { name: "test", version: "1.0.0" });
     writeFile(tmp, "src/index.js", 'export function hello() { return "hi"; }\n');
 
-    const result = execFileSync("node", [CMD, "--stdout"], {
+    const result = execFileSync("node", [CMD, ...CMD_ARGS, "--stdout"], {
       encoding: "utf8",
       env: makeEnv(tmp),
     });
@@ -97,7 +98,7 @@ describe("scan multi-type pattern merging", () => {
     // File in lib/ should be found
     writeFile(tmp, "lib/util.js", 'export function util() { return "u"; }\n');
 
-    const result = execFileSync("node", [CMD, "--stdout"], {
+    const result = execFileSync("node", [CMD, ...CMD_ARGS, "--stdout"], {
       encoding: "utf8",
       env: makeEnv(tmp),
     });

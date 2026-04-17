@@ -11,14 +11,15 @@
 
 import fs from "fs";
 import path from "path";
-import { runIfDirect } from "../../lib/entrypoint.js";
 import { parseArgs } from "../../lib/cli.js";
 import { resolveOutputConfig } from "../../lib/types.js";
 import { resolveConcurrency } from "../../lib/config.js";
 import { callAgentAsyncWithLog } from "../../lib/agent.js";
 import { createLogger } from "../../lib/progress.js";
-import { resolveCommandContext, getChapterFiles, stripResponsePreamble } from "../lib/command-context.js";
+import { getChapterFiles, stripResponsePreamble } from "../lib/command-context.js";
 import { mapWithConcurrency } from "../lib/concurrency.js";
+import { container } from "../../lib/container.js";
+import { resolveDocsContext } from "../lib/docs-context.js";
 
 const logger = createLogger("translate");
 
@@ -142,7 +143,7 @@ async function main(ctx) {
       return;
     }
 
-    ctx = resolveCommandContext(cli, { commandId: "docs.translate" });
+    ctx = resolveDocsContext(container, cli, { commandId: "docs.translate" });
     ctx.dryRun = cli.dryRun;
     ctx.force = cli.force;
     ctx.targetLang = cli.lang;
@@ -224,4 +225,3 @@ async function main(ctx) {
 
 export { main, buildTranslationTasks };
 
-runIfDirect(import.meta.url, main);

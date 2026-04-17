@@ -14,7 +14,6 @@
 
 import fs from "fs";
 import path from "path";
-import { runIfDirect } from "./lib/entrypoint.js";
 import { repoRoot, parseArgs, PKG_DIR } from "./lib/cli.js";
 import { EXIT_ERROR } from "./lib/constants.js";
 import { loadConfig, sddConfigPath } from "./lib/config.js";
@@ -127,6 +126,5 @@ async function main() {
   }
 }
 
-runIfDirect(import.meta.url, main);
 
 export { main };

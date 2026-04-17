@@ -15,9 +15,10 @@
 
 import { register } from "node:module";
 import path from "path";
-import { PKG_DIR, repoRoot } from "./lib/cli.js";
+import { PKG_DIR } from "./lib/cli.js";
 import { EXIT_ERROR } from "./lib/constants.js";
-import { Logger } from "./lib/log.js";
+import { initContainer } from "./lib/container.js";
+import { runModuleMain } from "./lib/command-runner.js";
 
 // Register module loader hook so external presets can use `import 'sdd-forge/api'`
 register(new URL("./loader.js", import.meta.url), import.meta.url);
@@ -34,28 +35,17 @@ if (subCmd === "-v" || subCmd === "--version" || subCmd === "-V") {
 
 // help (no args / -h / --help / help [topic])
 if (!subCmd || subCmd === "-h" || subCmd === "--help" || subCmd === "help") {
+  initContainer({ entryCommand: rawArgs.join(" ") });
   const helpPath = path.join(PKG_DIR, "help.js");
   process.argv = [process.argv[0], helpPath, ...rest];
-  await import(helpPath);
+  const helpMod = await import(helpPath);
+  if (typeof helpMod.main === "function") helpMod.main();
   process.exit(0);
 }
 
-// Initialize Logger singleton (best-effort — config may not exist yet)
-try {
-  const { loadConfig, sddConfigPath } = await import("./lib/config.js");
-  const root = repoRoot();
-  const cfg = loadConfig(root);
-  const entryCommand = rawArgs.join(" ");
-  // Deprecation warning: legacy cfg.logs.prompts → cfg.logs.enabled
-  if (cfg?.logs?.prompts != null && cfg?.logs?.enabled == null) {
-    process.stderr.write("[sdd-forge] WARN: cfg.logs.prompts is deprecated. Use cfg.logs.enabled instead.\n");
-  }
-  Logger.getInstance().init(root, cfg, { entryCommand });
-  Logger.getInstance().event("config-loaded", { path: sddConfigPath(root), keys: Object.keys(cfg) });
-} catch (err) {
-  /* pre-setup or missing config — Logger stays uninitialized */
-  if (err?.code !== "ERR_MISSING_FILE") process.stderr.write(`[sdd-forge] Logger init failed: ${err?.message}\n`);
-}
+// Initialize the shared dependency container once; dispatchers and commands
+// below import `container` directly from ./lib/container.js.
+initContainer({ entryCommand: rawArgs.join(" ") });
 
 /** Namespace dispatchers — receive subcommand + rest args */
 const NAMESPACE_SCRIPTS = {
@@ -78,8 +68,7 @@ if (NAMESPACE_SCRIPTS[subCmd]) {
   await import(dispatcherPath);
 } else if (INDEPENDENT[subCmd]) {
   const scriptPath = path.join(PKG_DIR, `${INDEPENDENT[subCmd]}.js`);
-  process.argv = [process.argv[0], scriptPath, ...rest];
-  await import(scriptPath);
+  await runModuleMain(scriptPath, rest);
 } else {
   console.error(`sdd-forge: unknown command '${subCmd}'`);
   console.error("Run: sdd-forge help");

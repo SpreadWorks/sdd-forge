@@ -9,7 +9,6 @@
 
 import fs from "fs";
 import path from "path";
-import { runIfDirect } from "../../lib/entrypoint.js";
 import { parseArgs } from "../../lib/cli.js";
 import { sddOutputDir } from "../../lib/config.js";
 import { callAgentAwaitLog, loadAgentConfig } from "../../lib/agent.js";
@@ -17,8 +16,10 @@ import { translate } from "../../lib/i18n.js";
 import { createResolver } from "../lib/resolver-factory.js";
 import { createLogger } from "../../lib/progress.js";
 import { parseDirectives, replaceBlockDirective, resolveDataDirectives } from "../lib/directive-parser.js";
-import { resolveCommandContext, loadFullAnalysis, getChapterFiles, readText } from "../lib/command-context.js";
+import { loadFullAnalysis, getChapterFiles, readText } from "../lib/command-context.js";
 import { loadSddTemplate } from "../../lib/agents-md.js";
+import { container } from "../../lib/container.js";
+import { resolveDocsContext } from "../lib/docs-context.js";
 
 const logger = createLogger("agents");
 
@@ -145,7 +146,7 @@ async function main(ctx) {
       return;
     }
 
-    ctx = resolveCommandContext(cli);
+    ctx = resolveDocsContext(container, cli);
     ctx.dryRun = cli.dryRun;
   }
 
@@ -225,4 +226,3 @@ async function main(ctx) {
 
 export { main };
 
-runIfDirect(import.meta.url, main);

@@ -7,9 +7,12 @@ import { createTmpDir, removeTmpDir, writeJson } from "../../../helpers/tmp-dir.
 import { copyFixtureInto } from "../../../acceptance/lib/pipeline.js";
 import { getAcceptanceFixtureDir } from "../../../acceptance/lib/targets.js";
 
-const SCAN_CMD = join(process.cwd(), "src/docs/commands/scan.js");
-const INIT_CMD = join(process.cwd(), "src/docs/commands/init.js");
-const DATA_CMD = join(process.cwd(), "src/docs/commands/data.js");
+const SCAN_CMD = join(process.cwd(), "src/sdd-forge.js");
+const SCAN_CMD_ARGS = ["docs", "scan"];
+const INIT_CMD = join(process.cwd(), "src/sdd-forge.js");
+const INIT_CMD_ARGS = ["docs", "init"];
+const DATA_CMD = join(process.cwd(), "src/sdd-forge.js");
+const DATA_CMD_ARGS = ["docs", "data"];
 
 function makeEnv(tmp) {
   return { ...process.env, SDD_FORGE_WORK_ROOT: tmp, SDD_FORGE_SOURCE_ROOT: tmp };
@@ -27,7 +30,7 @@ describe("parent chain: scan", () => {
     tmp = createTmpDir();
     setupFromFixture(tmp, "node-cli");
 
-    const result = execFileSync("node", [SCAN_CMD, "--stdout"], {
+    const result = execFileSync("node", [SCAN_CMD, ...SCAN_CMD_ARGS, "--stdout"], {
       encoding: "utf8",
       env: makeEnv(tmp),
     });
@@ -46,7 +49,7 @@ describe("parent chain: scan", () => {
     tmp = createTmpDir();
     setupFromFixture(tmp, "laravel");
 
-    const result = execFileSync("node", [SCAN_CMD, "--stdout"], {
+    const result = execFileSync("node", [SCAN_CMD, ...SCAN_CMD_ARGS, "--stdout"], {
       encoding: "utf8",
       env: makeEnv(tmp),
     });
@@ -88,7 +91,7 @@ describe("parent chain: init", () => {
       modules: { entries: [{ file: "src/cli.js", className: "cli.js", methods: ["run"] }], summary: { total: 1 } },
     });
 
-    execFileSync("node", [INIT_CMD, "--force"], {
+    execFileSync("node", [INIT_CMD, ...INIT_CMD_ARGS, "--force"], {
       encoding: "utf8",
       env: makeEnv(tmp),
     });
@@ -118,7 +121,7 @@ describe("parent chain: init", () => {
       models: { entries: [], summary: { total: 0 } },
     });
 
-    execFileSync("node", [INIT_CMD, "--force"], {
+    execFileSync("node", [INIT_CMD, ...INIT_CMD_ARGS, "--force"], {
       encoding: "utf8",
       env: makeEnv(tmp),
     });
@@ -159,7 +162,7 @@ describe("parent chain: data", () => {
       docs: { languages: ["ja"], defaultLanguage: "ja" },
     });
 
-    execFileSync("node", [INIT_CMD, "--force"], {
+    execFileSync("node", [INIT_CMD, ...INIT_CMD_ARGS, "--force"], {
       encoding: "utf8",
       env: makeEnv(tmp),
     });
@@ -185,12 +188,12 @@ describe("parent chain: data", () => {
       ],
     });
 
-    execFileSync("node", [SCAN_CMD], {
+    execFileSync("node", [SCAN_CMD, ...SCAN_CMD_ARGS], {
       encoding: "utf8",
       env: makeEnv(tmp),
     });
 
-    execFileSync("node", [INIT_CMD, "--force"], {
+    execFileSync("node", [INIT_CMD, ...INIT_CMD_ARGS, "--force"], {
       encoding: "utf8",
       env: makeEnv(tmp),
     });
@@ -212,7 +215,7 @@ describe("parent chain: data", () => {
       fs.writeFileSync(targetFile, content);
     }
 
-    execFileSync("node", [DATA_CMD], {
+    execFileSync("node", [DATA_CMD, ...DATA_CMD_ARGS], {
       encoding: "utf8",
       env: makeEnv(tmp),
     });

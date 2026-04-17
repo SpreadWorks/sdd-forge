@@ -25,8 +25,8 @@ describe("scan scripts extraction", () => {
       });
       writeFile(tmp, "src/index.js", 'export function hello() {}\n');
 
-      const CMD = join(process.cwd(), "src/docs/commands/scan.js");
-      const result = execFileSync("node", [CMD, "--stdout"], {
+      const CMD = join(process.cwd(), "src/sdd-forge.js");
+      const result = execFileSync("node", [CMD, "docs", "scan", "--stdout"], {
         encoding: "utf8",
         env: { ...process.env, SDD_FORGE_WORK_ROOT: tmp, SDD_FORGE_SOURCE_ROOT: tmp },
       });
@@ -58,8 +58,8 @@ describe("scan scripts extraction", () => {
       });
       writeFile(tmp, "src/index.js", 'export function hello() {}\n');
 
-      const CMD = join(process.cwd(), "src/docs/commands/scan.js");
-      const result = execFileSync("node", [CMD, "--stdout"], {
+      const CMD = join(process.cwd(), "src/sdd-forge.js");
+      const result = execFileSync("node", [CMD, "docs", "scan", "--stdout"], {
         encoding: "utf8",
         env: { ...process.env, SDD_FORGE_WORK_ROOT: tmp, SDD_FORGE_SOURCE_ROOT: tmp },
       });

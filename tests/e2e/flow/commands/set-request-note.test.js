@@ -6,7 +6,8 @@ import { createTmpDir, removeTmpDir } from "../../../helpers/tmp-dir.js";
 import { makeFlowState, setupFlow } from "../../../helpers/flow-setup.js";
 import { saveFlowState, loadFlowState, addActiveFlow } from "../../../../src/lib/flow-state.js";
 
-const FLOW_CMD = join(process.cwd(), "src/flow.js");
+const FLOW_CMD = join(process.cwd(), "src/sdd-forge.js");
+const FLOW_CMD_ARGS_PREFIX = ["flow"];
 
 // ---------------------------------------------------------------------------
 // flow set request / flow set note
@@ -19,7 +20,7 @@ describe("flow set request", () => {
   it("saves request to flow.json", () => {
     tmp = createTmpDir();
     setupFlow(tmp);
-    execFileSync("node", [FLOW_CMD, "set", "request", "make a resume command"], {
+    execFileSync("node", [FLOW_CMD, ...FLOW_CMD_ARGS_PREFIX, "set", "request", "make a resume command"], {
       encoding: "utf8",
       env: { ...process.env, SDD_FORGE_WORK_ROOT: tmp },
     });
@@ -35,7 +36,7 @@ describe("flow set note", () => {
   it("appends note to flow.json notes array", () => {
     tmp = createTmpDir();
     setupFlow(tmp);
-    execFileSync("node", [FLOW_CMD, "set", "note", "draft: first note"], {
+    execFileSync("node", [FLOW_CMD, ...FLOW_CMD_ARGS_PREFIX, "set", "note", "draft: first note"], {
       encoding: "utf8",
       env: { ...process.env, SDD_FORGE_WORK_ROOT: tmp },
     });
@@ -46,11 +47,11 @@ describe("flow set note", () => {
   it("appends multiple notes in order", () => {
     tmp = createTmpDir();
     setupFlow(tmp);
-    execFileSync("node", [FLOW_CMD, "set", "note", "first note"], {
+    execFileSync("node", [FLOW_CMD, ...FLOW_CMD_ARGS_PREFIX, "set", "note", "first note"], {
       encoding: "utf8",
       env: { ...process.env, SDD_FORGE_WORK_ROOT: tmp },
     });
-    execFileSync("node", [FLOW_CMD, "set", "note", "second note"], {
+    execFileSync("node", [FLOW_CMD, ...FLOW_CMD_ARGS_PREFIX, "set", "note", "second note"], {
       encoding: "utf8",
       env: { ...process.env, SDD_FORGE_WORK_ROOT: tmp },
     });
@@ -64,7 +65,7 @@ describe("flow set note", () => {
     delete state.notes;
     saveFlowState(tmp, state);
     addActiveFlow(tmp, "001-test", "local");
-    execFileSync("node", [FLOW_CMD, "set", "note", "new note"], {
+    execFileSync("node", [FLOW_CMD, ...FLOW_CMD_ARGS_PREFIX, "set", "note", "new note"], {
       encoding: "utf8",
       env: { ...process.env, SDD_FORGE_WORK_ROOT: tmp },
     });

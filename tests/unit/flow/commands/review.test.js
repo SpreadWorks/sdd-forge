@@ -6,7 +6,8 @@ import { createTmpDir, removeTmpDir } from "../../../helpers/tmp-dir.js";
 import { saveFlowState, loadFlowState, FLOW_STEPS } from "../../../../src/lib/flow-state.js";
 import { resolveAgent } from "../../../../src/lib/agent.js";
 
-const FLOW_CMD = join(process.cwd(), "src/flow.js");
+const FLOW_CMD = join(process.cwd(), "src/sdd-forge.js");
+const FLOW_CMD_ARGS_PREFIX = ["flow"];
 
 describe("FLOW_STEPS includes review", () => {
   it("has review between implement and finalize", () => {
@@ -21,7 +22,7 @@ describe("FLOW_STEPS includes review", () => {
 
 describe("flow run routes review action", () => {
   it("shows review in flow run help output", () => {
-    const result = execFileSync("node", [FLOW_CMD, "run", "--help"], { encoding: "utf8" });
+    const result = execFileSync("node", [FLOW_CMD, ...FLOW_CMD_ARGS_PREFIX, "run", "--help"], { encoding: "utf8" });
     assert.match(result, /review/);
   });
 });
@@ -33,7 +34,7 @@ describe("flow run review CLI", () => {
   it("errors when no active flow", () => {
     tmp = createTmpDir();
     try {
-      execFileSync("node", [FLOW_CMD, "run", "review"], {
+      execFileSync("node", [FLOW_CMD, ...FLOW_CMD_ARGS_PREFIX, "run", "review"], {
         encoding: "utf8",
         env: { ...process.env, SDD_FORGE_WORK_ROOT: tmp },
       });
@@ -50,14 +51,14 @@ describe("flow run review --phase test CLI", () => {
   afterEach(() => tmp && removeTmpDir(tmp));
 
   it("passes --phase test through to review command", () => {
-    const result = execFileSync("node", [FLOW_CMD, "run", "review", "--help"], { encoding: "utf8" });
+    const result = execFileSync("node", [FLOW_CMD, ...FLOW_CMD_ARGS_PREFIX, "run", "review", "--help"], { encoding: "utf8" });
     assert.match(result, /--phase/);
   });
 
   it("errors when no active flow with --phase test", () => {
     tmp = createTmpDir();
     try {
-      execFileSync("node", [FLOW_CMD, "run", "review", "--phase", "test"], {
+      execFileSync("node", [FLOW_CMD, ...FLOW_CMD_ARGS_PREFIX, "run", "review", "--phase", "test"], {
         encoding: "utf8",
         env: { ...process.env, SDD_FORGE_WORK_ROOT: tmp },
       });

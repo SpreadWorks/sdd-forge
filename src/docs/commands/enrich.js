@@ -11,13 +11,12 @@
 
 import fs from "fs";
 import path from "path";
-import { runIfDirect } from "../../lib/entrypoint.js";
 import { parseArgs } from "../../lib/cli.js";
 import { sddOutputDir, resolveConcurrency } from "../../lib/config.js";
 import { resolveAgent, callAgentAsyncWithLog, DEFAULT_AGENT_TIMEOUT_MS, resolveWorkDir } from "../../lib/agent.js";
 import { minify } from "../lib/minify.js";
 import { mapWithConcurrency } from "../lib/concurrency.js";
-import { resolveCommandContext, loadFullAnalysis } from "../lib/command-context.js";
+import { loadFullAnalysis } from "../lib/command-context.js";
 import { resolveChaptersOrder } from "../lib/template-merger.js";
 import { buildCategoryMapFromDocs, mergeChapters } from "../lib/chapter-resolver.js";
 import { filterByDocsExclude } from "../lib/analysis-filter.js";
@@ -25,6 +24,8 @@ import { createLogger } from "../../lib/progress.js";
 import { translate } from "../../lib/i18n.js";
 import { repairJson } from "../../lib/json-parse.js";
 import { ANALYSIS_META_KEYS } from "../lib/analysis-entry.js";
+import { container } from "../../lib/container.js";
+import { resolveDocsContext } from "../lib/docs-context.js";
 
 const logger = createLogger("enrich");
 const DEFAULT_BATCH_TOKEN_LIMIT = 10000;
@@ -341,7 +342,7 @@ async function main(ctx) {
       printHelp();
       return;
     }
-    ctx = resolveCommandContext(cli, { commandId: "docs.enrich" });
+    ctx = resolveDocsContext(container, cli, { commandId: "docs.enrich" });
     ctx.dryRun = cli.dryRun;
     ctx.stdout = cli.stdout;
   }
@@ -518,4 +519,3 @@ export {
   DEFAULT_BATCH_TOKEN_LIMIT,
 };
 
-runIfDirect(import.meta.url, main);

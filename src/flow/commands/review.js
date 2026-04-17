@@ -11,7 +11,6 @@
 
 import fs from "fs";
 import path from "path";
-import { runIfDirect } from "../../lib/entrypoint.js";
 import { repoRoot, parseArgs } from "../../lib/cli.js";
 import { loadConfig } from "../../lib/config.js";
 import { loadFlowState, getSpecName } from "../../lib/flow-state.js";
@@ -977,4 +976,3 @@ export {
   isValidSpecOutput, stripPreamble, buildTestFixPrompt,
 };
 
-runIfDirect(import.meta.url, main);

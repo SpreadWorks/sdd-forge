@@ -11,17 +11,18 @@
 
 import fs from "fs";
 import path from "path";
-import { runIfDirect } from "../../lib/entrypoint.js";
 import { parseArgs } from "../../lib/cli.js";
 import { resolveTemplates, mergeResolved, resolveChaptersOrder, translateTemplate } from "../lib/template-merger.js";
 import { createResolver } from "../lib/resolver-factory.js";
 import { resolveDataDirectives, stripBlockDirectives, parseDirectives } from "../lib/directive-parser.js";
 import { createLogger } from "../../lib/progress.js";
-import { resolveCommandContext, loadFullAnalysis } from "../lib/command-context.js";
+import { loadFullAnalysis } from "../lib/command-context.js";
 import { processTemplate } from "./text.js";
 import { buildTextSystemPrompt } from "../lib/text-prompts.js";
 import { loadConfig, resolveConcurrency } from "../../lib/config.js";
 import { loadAgentConfig, ensureAgentWorkDir } from "../../lib/agent.js";
+import { container } from "../../lib/container.js";
+import { resolveDocsContext } from "../lib/docs-context.js";
 
 const logger = createLogger("readme");
 
@@ -57,7 +58,7 @@ async function main(ctx) {
       return;
     }
 
-    ctx = resolveCommandContext(cli);
+    ctx = resolveDocsContext(container, cli);
     ctx.dryRun = cli.dryRun;
     ctx.output = cli.output;
   }
@@ -188,4 +189,3 @@ async function main(ctx) {
 
 export { main };
 
-runIfDirect(import.meta.url, main);

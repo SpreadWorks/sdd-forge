@@ -12,7 +12,8 @@ import { join } from "path";
 import { execFileSync } from "child_process";
 import { createTmpDir, removeTmpDir, writeJson, writeFile } from "../helpers/tmp-dir.js";
 
-const CMD = join(process.cwd(), "src/docs/commands/scan.js");
+const CMD = join(process.cwd(), "src/sdd-forge.js");
+const CMD_ARGS = ["docs", "scan"];
 
 // ---------------------------------------------------------------------------
 // 1. Language auto-detection from file extension
@@ -190,7 +191,7 @@ describe("scan config override", () => {
     writeFile(tmp, "src/index.js", 'export function inSrc() {}\n');
     writeFile(tmp, "lib/helper.js", 'export function inLib() {}\n');
 
-    const result = execFileSync("node", [CMD, "--stdout"], {
+    const result = execFileSync("node", [CMD, ...CMD_ARGS, "--stdout"], {
       encoding: "utf8",
       env: { ...process.env, SDD_FORGE_WORK_ROOT: tmp, SDD_FORGE_SOURCE_ROOT: tmp },
     });
@@ -231,7 +232,7 @@ describe("analysis.json top-level structure (no extras)", () => {
       scripts: { test: "node --test" },
     });
 
-    const result = execFileSync("node", [CMD, "--stdout"], {
+    const result = execFileSync("node", [CMD, ...CMD_ARGS, "--stdout"], {
       encoding: "utf8",
       env: { ...process.env, SDD_FORGE_WORK_ROOT: tmp, SDD_FORGE_SOURCE_ROOT: tmp },
     });
@@ -265,7 +266,7 @@ describe("preserveEnrichment recursive hash search", () => {
     });
 
     // 1st scan
-    execFileSync("node", [CMD], {
+    execFileSync("node", [CMD, ...CMD_ARGS], {
       encoding: "utf8",
       env: { ...process.env, SDD_FORGE_WORK_ROOT: tmp, SDD_FORGE_SOURCE_ROOT: tmp },
     });
@@ -285,7 +286,7 @@ describe("preserveEnrichment recursive hash search", () => {
     fs.writeFileSync(outputPath, JSON.stringify(first) + "\n");
 
     // 2nd scan (same source)
-    execFileSync("node", [CMD], {
+    execFileSync("node", [CMD, ...CMD_ARGS], {
       encoding: "utf8",
       env: { ...process.env, SDD_FORGE_WORK_ROOT: tmp, SDD_FORGE_SOURCE_ROOT: tmp },
     });
@@ -328,7 +329,7 @@ describe("single DataSource match (first wins)", () => {
       "}",
     ].join("\n"));
 
-    const result = execFileSync("node", [CMD, "--stdout"], {
+    const result = execFileSync("node", [CMD, ...CMD_ARGS, "--stdout"], {
       encoding: "utf8",
       env: { ...process.env, SDD_FORGE_WORK_ROOT: tmp, SDD_FORGE_SOURCE_ROOT: tmp },
     });

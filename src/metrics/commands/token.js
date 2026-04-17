@@ -410,7 +410,4 @@ async function main() {
   process.stdout.write(`${render(rows, format)}\n`);
 }
 
-main().catch((err) => {
-  process.stderr.write(`sdd-forge metrics token: ${err.message}\n`);
-  process.exit(EXIT_ERROR);
-});
+export { main };

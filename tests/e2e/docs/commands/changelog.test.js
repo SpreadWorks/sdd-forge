@@ -5,7 +5,8 @@ import { join } from "path";
 import { execFileSync } from "child_process";
 import { createTmpDir, removeTmpDir, writeFile } from "../../../helpers/tmp-dir.js";
 
-const CMD = join(process.cwd(), "src/docs/commands/changelog.js");
+const CMD = join(process.cwd(), "src/sdd-forge.js");
+const CMD_ARGS = ["docs", "changelog"];
 
 describe("changelog CLI", () => {
   let tmp;
@@ -27,7 +28,7 @@ describe("changelog CLI", () => {
     writeFile(tmp, "specs/001-test-feature/spec.md", specContent);
     fs.mkdirSync(join(tmp, "docs"), { recursive: true });
 
-    execFileSync("node", [CMD], {
+    execFileSync("node", [CMD, ...CMD_ARGS], {
       encoding: "utf8",
       env: { ...process.env, SDD_FORGE_WORK_ROOT: tmp, SDD_FORGE_SOURCE_ROOT: tmp },
     });
@@ -44,7 +45,7 @@ describe("changelog CLI", () => {
     tmp = createTmpDir();
     fs.mkdirSync(join(tmp, "docs"), { recursive: true });
 
-    execFileSync("node", [CMD], {
+    execFileSync("node", [CMD, ...CMD_ARGS], {
       encoding: "utf8",
       env: { ...process.env, SDD_FORGE_WORK_ROOT: tmp, SDD_FORGE_SOURCE_ROOT: tmp },
     });
@@ -68,7 +69,7 @@ describe("changelog CLI", () => {
     writeFile(tmp, "specs/001-test-feature/spec.md", specContent);
     fs.mkdirSync(join(tmp, "docs"), { recursive: true });
 
-    const result = execFileSync("node", [CMD, "--dry-run"], {
+    const result = execFileSync("node", [CMD, ...CMD_ARGS, "--dry-run"], {
       encoding: "utf8",
       env: { ...process.env, SDD_FORGE_WORK_ROOT: tmp, SDD_FORGE_SOURCE_ROOT: tmp },
     });
@@ -86,7 +87,7 @@ describe("changelog CLI", () => {
     const existing = "old content\n";
     fs.writeFileSync(outFile, existing);
 
-    execFileSync("node", [CMD], {
+    execFileSync("node", [CMD, ...CMD_ARGS], {
       encoding: "utf8",
       env: { ...process.env, SDD_FORGE_WORK_ROOT: tmp, SDD_FORGE_SOURCE_ROOT: tmp },
     });

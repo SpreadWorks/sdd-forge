@@ -8,7 +8,6 @@
 
 import fs from "fs";
 import path from "path";
-import { runIfDirect } from "../../lib/entrypoint.js";
 import { repoRoot, parseArgs } from "../../lib/cli.js";
 import { loadConfig, sddOutputDir } from "../../lib/config.js";
 import { translate } from "../../lib/i18n.js";
@@ -306,4 +305,3 @@ function main() {
 
 export { main };
 
-runIfDirect(import.meta.url, main);

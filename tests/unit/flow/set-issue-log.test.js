@@ -15,7 +15,8 @@ import {
   saveFlowState, buildInitialSteps, addActiveFlow,
 } from "../../../src/lib/flow-state.js";
 
-const FLOW_CMD = join(process.cwd(), "src/flow.js");
+const FLOW_CMD = join(process.cwd(), "src/sdd-forge.js");
+const FLOW_CMD_ARGS_PREFIX = ["flow"];
 
 describe("flow set issue-log", () => {
   let tmp;
@@ -38,7 +39,7 @@ describe("flow set issue-log", () => {
   it("creates issue-log.json in specs/<spec>/ directory", () => {
     tmp = createTmpDir();
     const specId = setupFlowState(tmp);
-    execFileSync("node", [FLOW_CMD, "set", "issue-log", "--step", "draft", "--reason", "wrong scope"], {
+    execFileSync("node", [FLOW_CMD, ...FLOW_CMD_ARGS_PREFIX, "set", "issue-log", "--step", "draft", "--reason", "wrong scope"], {
       encoding: "utf8",
       env: { ...process.env, SDD_FORGE_WORK_ROOT: tmp },
     });
@@ -53,11 +54,11 @@ describe("flow set issue-log", () => {
   it("appends to existing issue-log.json", () => {
     tmp = createTmpDir();
     const specId = setupFlowState(tmp);
-    execFileSync("node", [FLOW_CMD, "set", "issue-log", "--step", "draft", "--reason", "first"], {
+    execFileSync("node", [FLOW_CMD, ...FLOW_CMD_ARGS_PREFIX, "set", "issue-log", "--step", "draft", "--reason", "first"], {
       encoding: "utf8",
       env: { ...process.env, SDD_FORGE_WORK_ROOT: tmp },
     });
-    execFileSync("node", [FLOW_CMD, "set", "issue-log", "--step", "spec", "--reason", "second"], {
+    execFileSync("node", [FLOW_CMD, ...FLOW_CMD_ARGS_PREFIX, "set", "issue-log", "--step", "spec", "--reason", "second"], {
       encoding: "utf8",
       env: { ...process.env, SDD_FORGE_WORK_ROOT: tmp },
     });
@@ -69,7 +70,7 @@ describe("flow set issue-log", () => {
   it("returns JSON envelope with entry and total", () => {
     tmp = createTmpDir();
     setupFlowState(tmp);
-    const result = execFileSync("node", [FLOW_CMD, "set", "issue-log", "--step", "gate", "--reason", "test"], {
+    const result = execFileSync("node", [FLOW_CMD, ...FLOW_CMD_ARGS_PREFIX, "set", "issue-log", "--step", "gate", "--reason", "test"], {
       encoding: "utf8",
       env: { ...process.env, SDD_FORGE_WORK_ROOT: tmp },
     });
@@ -84,8 +85,7 @@ describe("flow set issue-log", () => {
   it("includes optional fields when provided", () => {
     tmp = createTmpDir();
     const specId = setupFlowState(tmp);
-    execFileSync("node", [
-      FLOW_CMD, "set", "issue-log",
+    execFileSync("node", [FLOW_CMD, ...FLOW_CMD_ARGS_PREFIX, "set", "issue-log",
       "--step", "draft",
       "--reason", "unclear requirement",
       "--trigger", "user correction",
@@ -108,7 +108,7 @@ describe("flow set issue-log", () => {
     tmp = createTmpDir();
     setupFlowState(tmp);
     try {
-      execFileSync("node", [FLOW_CMD, "set", "issue-log", "--reason", "test"], {
+      execFileSync("node", [FLOW_CMD, ...FLOW_CMD_ARGS_PREFIX, "set", "issue-log", "--reason", "test"], {
         encoding: "utf8",
         env: { ...process.env, SDD_FORGE_WORK_ROOT: tmp },
       });
@@ -123,7 +123,7 @@ describe("flow set issue-log", () => {
   it("does NOT store issue-log in flow.json", () => {
     tmp = createTmpDir();
     setupFlowState(tmp);
-    execFileSync("node", [FLOW_CMD, "set", "issue-log", "--step", "draft", "--reason", "test"], {
+    execFileSync("node", [FLOW_CMD, ...FLOW_CMD_ARGS_PREFIX, "set", "issue-log", "--step", "draft", "--reason", "test"], {
       encoding: "utf8",
       env: { ...process.env, SDD_FORGE_WORK_ROOT: tmp },
     });

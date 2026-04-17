@@ -4,7 +4,8 @@ import { join } from "path";
 import { execFileSync } from "child_process";
 import { createTmpDir, removeTmpDir, writeFile, writeJson } from "../../../../../tests/helpers/tmp-dir.js";
 
-const CMD = join(process.cwd(), "src/docs/commands/scan.js");
+const CMD = join(process.cwd(), "src/sdd-forge.js");
+const CMD_ARGS = ["docs", "scan"];
 
 describe("Symfony scan integration", () => {
   let tmp;
@@ -86,7 +87,7 @@ use Symfony\\Component\\HttpKernel\\Kernel as BaseKernel;
 class Kernel extends BaseKernel {}
 `);
 
-    const result = execFileSync("node", [CMD, "--stdout"], {
+    const result = execFileSync("node", [CMD, ...CMD_ARGS, "--stdout"], {
       encoding: "utf8",
       env: { ...process.env, SDD_FORGE_WORK_ROOT: tmp, SDD_FORGE_SOURCE_ROOT: tmp },
     });
@@ -115,7 +116,7 @@ class Kernel extends BaseKernel {}
 class Kernel {}
 `);
 
-    const result = execFileSync("node", [CMD, "--stdout"], {
+    const result = execFileSync("node", [CMD, ...CMD_ARGS, "--stdout"], {
       encoding: "utf8",
       env: { ...process.env, SDD_FORGE_WORK_ROOT: tmp, SDD_FORGE_SOURCE_ROOT: tmp },
     });

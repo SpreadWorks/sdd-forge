@@ -12,12 +12,14 @@
  *   sdd-forge flow run gate
  */
 
-import { repoRoot, isInsideWorktree, getMainRepoPath, parseArgs } from "./lib/cli.js";
-import { loadConfig } from "./lib/config.js";
-import { loadFlowState, specIdFromPath } from "./lib/flow-state.js";
+import { parseArgs } from "./lib/cli.js";
 import { ok, fail, output } from "./lib/flow-envelope.js";
 import { FLOW_COMMANDS } from "./flow/registry.js";
 import { EXIT_ERROR } from "./lib/constants.js";
+import { container, initContainer } from "./lib/container.js";
+import { resolveFlowContext } from "./flow/lib/flow-context.js";
+
+initContainer();
 
 // ---------------------------------------------------------------------------
 // Parse top-level args: flow <group> [cmd] [rest...]
@@ -41,28 +43,6 @@ if (!group || group === "-h" || group === "--help") {
   console.log(lines.join("\n"));
   if (!group) process.exit(EXIT_ERROR);
   process.exit(0);
-}
-
-// ---------------------------------------------------------------------------
-// Resolve ctx
-// ---------------------------------------------------------------------------
-
-function resolveCtx() {
-  const root = repoRoot();
-  const inWorktree = isInsideWorktree(root);
-  const mainRoot = inWorktree ? getMainRepoPath(root) : root;
-
-  let config;
-  try {
-    config = loadConfig(root);
-  } catch (_) {
-    config = null;
-  }
-
-  const flowState = loadFlowState(root);
-  const specId = flowState ? specIdFromPath(flowState.spec) : null;
-
-  return { root, mainRoot, config, flowState, specId, inWorktree };
 }
 
 // ---------------------------------------------------------------------------
@@ -219,7 +199,7 @@ async function dispatch() {
   // Top-level command: resume
   if (group === "resume") {
     const entry = FLOW_COMMANDS.resume;
-    const ctx = resolveCtx();
+    const ctx = resolveFlowContext(container);
     ctx.args = rest;
     await runEntry(entry, ctx, "run", "resume");
     return;
@@ -228,7 +208,7 @@ async function dispatch() {
   // Top-level command: prepare
   if (group === "prepare") {
     const entry = FLOW_COMMANDS.prepare;
-    const ctx = resolveCtx();
+    const ctx = resolveFlowContext(container);
     if (!ctx.config) {
       output(fail("flow", "prepare", "NO_CONFIG", "config.json not found. Run sdd-forge setup first."));
       process.exit(EXIT_ERROR);
@@ -266,7 +246,7 @@ async function dispatch() {
     process.exit(EXIT_ERROR);
   }
 
-  const ctx = resolveCtx();
+  const ctx = resolveFlowContext(container);
   ctx.args = cmdArgs;
 
   await runEntry(entry, ctx, group, cmd);

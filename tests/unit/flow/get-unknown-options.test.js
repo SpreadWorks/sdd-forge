@@ -13,7 +13,8 @@ import {
   saveFlowState, buildInitialSteps, addActiveFlow,
 } from "../../../src/lib/flow-state.js";
 
-const FLOW_CMD = join(process.cwd(), "src/flow.js");
+const FLOW_CMD = join(process.cwd(), "src/sdd-forge.js");
+const FLOW_CMD_ARGS_PREFIX = ["flow"];
 
 function setupFlowState(dir) {
   const specId = "001-test";
@@ -38,7 +39,7 @@ describe("flow get unknown options", () => {
 
     let threw = false;
     try {
-      execFileSync("node", [FLOW_CMD, "get", "status", "--spec", "specs/999/spec.md"], {
+      execFileSync("node", [FLOW_CMD, ...FLOW_CMD_ARGS_PREFIX, "get", "status", "--spec", "specs/999/spec.md"], {
         encoding: "utf8",
         env: { ...process.env, SDD_FORGE_WORK_ROOT: tmp },
       });
@@ -58,7 +59,7 @@ describe("flow get unknown options", () => {
 
     let threw = false;
     try {
-      execFileSync("node", [FLOW_CMD, "get", "qa-count", "--spec", "specs/999/spec.md"], {
+      execFileSync("node", [FLOW_CMD, ...FLOW_CMD_ARGS_PREFIX, "get", "qa-count", "--spec", "specs/999/spec.md"], {
         encoding: "utf8",
         env: { ...process.env, SDD_FORGE_WORK_ROOT: tmp },
       });

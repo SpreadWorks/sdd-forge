@@ -6,7 +6,8 @@ import { spawnSync } from "child_process";
 import { createTmpDir, removeTmpDir, writeJson } from "../helpers/tmp-dir.js";
 import { resolveIncludes } from "../../src/lib/include.js";
 
-const CMD = join(process.cwd(), "src/setup.js");
+const CMD = join(process.cwd(), "src/sdd-forge.js");
+const CMD_ARGS_PREFIX = ["setup"];
 const PKG_DIR = join(process.cwd(), "src");
 
 /** Non-interactive CLI args */
@@ -57,7 +58,7 @@ describe("051: skill namespace with dot separator", () => {
       tmp = createTmpDir();
       writeJson(tmp, "package.json", { name: "test-proj" });
 
-      const result = spawnSync("node", [CMD, ...NI_ARGS], {
+      const result = spawnSync("node", [CMD, ...CMD_ARGS_PREFIX, ...NI_ARGS], {
         encoding: "utf8",
         cwd: tmp,
         timeout: 10000,
@@ -90,7 +91,7 @@ describe("051: skill namespace with dot separator", () => {
       tmp = createTmpDir();
       writeJson(tmp, "package.json", { name: "test-proj" });
 
-      spawnSync("node", [CMD, ...NI_ARGS], {
+      spawnSync("node", [CMD, ...CMD_ARGS_PREFIX, ...NI_ARGS], {
         encoding: "utf8",
         cwd: tmp,
         timeout: 10000,
@@ -119,7 +120,7 @@ describe("051: skill namespace with dot separator", () => {
       tmp = createTmpDir();
       writeJson(tmp, "package.json", { name: "test-proj" });
 
-      spawnSync("node", [CMD, ...NI_ARGS], {
+      spawnSync("node", [CMD, ...CMD_ARGS_PREFIX, ...NI_ARGS], {
         encoding: "utf8",
         cwd: tmp,
         timeout: 10000,
@@ -160,7 +161,7 @@ describe("051: skill namespace with dot separator", () => {
       tmp = createTmpDir();
       writeJson(tmp, "package.json", { name: "test-proj" });
 
-      spawnSync("node", [CMD, ...NI_ARGS], {
+      spawnSync("node", [CMD, ...CMD_ARGS_PREFIX, ...NI_ARGS], {
         encoding: "utf8",
         cwd: tmp,
         timeout: 10000,
@@ -178,7 +179,7 @@ describe("051: skill namespace with dot separator", () => {
       tmp = createTmpDir();
       writeJson(tmp, "package.json", { name: "test-proj" });
 
-      spawnSync("node", [CMD, ...NI_ARGS], {
+      spawnSync("node", [CMD, ...CMD_ARGS_PREFIX, ...NI_ARGS], {
         encoding: "utf8",
         cwd: tmp,
         timeout: 10000,
@@ -196,7 +197,7 @@ describe("051: skill namespace with dot separator", () => {
       tmp = createTmpDir();
       writeJson(tmp, "package.json", { name: "test-proj" });
 
-      spawnSync("node", [CMD, ...NI_ARGS], {
+      spawnSync("node", [CMD, ...CMD_ARGS_PREFIX, ...NI_ARGS], {
         encoding: "utf8",
         cwd: tmp,
         timeout: 10000,

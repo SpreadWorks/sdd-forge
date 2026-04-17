@@ -1,0 +1,40 @@
+{
+  "data": {
+    "implementation": {
+      "diffStat": "specs/182-container-infra/draft.md                |  99 +++++++++++\n specs/182-container-infra/flow.json               | 207 ++++++++++++++++++++++\n specs/182-container-infra/issue-log.json          | 101 +++++++++++\n specs/182-container-infra/qa.md                   |   9 +\n specs/182-container-infra/review.md               |  49 +++++\n specs/182-container-infra/spec.md                 |  97 ++++++++++\n specs/182-container-infra/tests/README.md         |  40 +++++\n src/check.js                                      |   8 +-\n src/check/commands/config.js                      |   2 -\n src/check/commands/freshness.js                   |   2 -\n src/check/commands/scan.js                        |   2 -\n src/docs.js                                       |  12 +-\n src/docs/commands/agents.js                       |   8 +-\n src/docs/commands/changelog.js                    |   2 -\n src/docs/commands/data.js                         |   8 +-\n src/docs/commands/enrich.js                       |   8 +-\n src/docs/commands/forge.js                        |   2 -\n src/docs/commands/init.js                         |   8 +-\n src/docs/commands/readme.js                       |   8 +-\n src/docs/commands/review.js                       |   2 -\n src/docs/commands/scan.js                         |   8 +-\n src/docs/commands/text.js                         |   8 +-\n src/docs/commands/translate.js                    |   8 +-\n src/docs/lib/command-context.js                   |  79 +--------\n src/docs/lib/docs-context.js                      |  46 +++++\n src/flow.js                                       |  36 +---\n src/flow/commands/review.js                       |   2 -\n src/flow/lib/flow-context.js                      |  21 +++\n src/help.js                                       |   2 -\n src/lib/command-runner.js                         |  25 +++\n src/lib/container.js                              | 113 ++++++++++++\n src/lib/entrypoint.js                             |  24 ---\n src/metrics.js                                    |   7 +-\n src/metrics/commands/token.js                     |   5 +-\n src/presets-cmd.js                                |  37 ++--\n src/presets/laravel/tests/e2e/integration.test.js |   7 +-\n src/presets/symfony/tests/e2e/integration.test.js |   7 +-\n src/sdd-forge.js                                  |  31 ++--\n src/setup.js                                      |   2 -\n src/upgrade.js                                    |   2 -\n tests/e2e/043-configurable-scan.test.js           |  13 +-\n tests/e2e/051-skill-namespace.test.js             |  15 +-\n tests/e2e/052-agent-command-config.test.js        |   7 +-\n tests/e2e/062-incremental-scan.test.js            |   5 +-\n tests/e2e/090-scan-pipeline-redesign.test.js      |   7 +-\n tests/e2e/docs/commands/agents.test.js            |  11 +-\n tests/e2e/docs/commands/changelog.test.js         |  11 +-\n tests/e2e/docs/commands/data.test.js              |   5 +-\n tests/e2e/docs/commands/init.test.js              |  17 +-\n tests/e2e/docs/commands/parent-chain.test.js      |  25 +--\n tests/e2e/docs/commands/readme.test.js            |   5 +-\n tests/e2e/docs/commands/review.test.js            |   7 +-\n tests/e2e/docs/commands/scan-multi-type.test.js   |  11 +-\n tests/e2e/docs/commands/scan-reset.test.js        |  25 +--\n tests/e2e/docs/commands/scan.test.js              |  25 +--\n tests/e2e/docs/commands/setup.test.js             |   9 +-\n tests/e2e/docs/commands/text.test.js              |  15 +-\n tests/e2e/flow/commands/set-request-note.test.js  |  13 +-\n tests/e2e/flow/commands/status-check.test.js      |  13 +-\n tests/e2e/help.test.js                            |   5 +-\n tests/unit/docs/commands/forge.test.js            |  19 +-\n tests/unit/docs/lib/command-context.test.js       |  57 ------\n tests/unit/docs/lib/test-env-detection.test.js    |   8 +-\n tests/unit/flow/commands/review.test.js           |  11 +-\n tests/unit/flow/get-status.test.js                |   7 +-\n tests/unit/flow/get-unknown-options.test.js       |   7 +-\n tests/unit/flow/removed-commands.test.js          |   9 +-\n tests/unit/flow/routing.test.js                   |  11 +-\n tests/unit/flow/set-issue-log.test.js             |  18 +-\n tests/unit/flow/set-test-summary.test.js          |  15 +-\n tests/unit/lib/container.test.js                  |  65 +++++++\n tests/unit/lib/docs-context.test.js               |  71 ++++++++\n tests/unit/lib/flow-context.test.js               |  43 +++++\n 73 files changed, 1276 insertions(+), 453 deletions(-)",
+      "commits": [
+        "feat: feature/182-container-infra"
+      ]
+    },
+    "retro": null,
+    "issueLog": {
+      "count": 0,
+      "entries": []
+    },
+    "metrics": {
+      "docsRead": 1,
+      "srcRead": 0,
+      "question": 7,
+      "issueLog": 1
+    },
+    "tokenMetrics": {
+      "input": 1155069,
+      "output": 21603,
+      "cacheRead": 167808,
+      "cacheCreation": 0,
+      "cost": null,
+      "callCount": 15
+    },
+    "tests": {
+      "unit": 1373,
+      "integration": 267,
+      "acceptance": 20,
+      "total": 1660
+    },
+    "sync": {
+      "status": "skipped",
+      "reason": "sync was skipped"
+    }
+  },
+  "text": "  Report\n\n  Implementation\n  ────────────────────────────────────────────────\n    feat: feature/182-container-infra\n    73 files changed, 1276 insertions(+), 453 deletions(-)\n\n  Retro\n  ────────────────────────────────────────────────\n    -\n\n  Metrics\n  ────────────────────────────────────────────────\n    docs read ................... 1\n    src read .................... 0\n    Q&A ......................... 7\n    issue-log ................... 1\n    agent calls ................. 15\n    input tokens ................ 1,155,069\n    output tokens ............... 21,603\n    cache-read tokens ........... 167,808\n    cache-create tokens ......... 0\n    cost ........................ N/A\n\n  Tests\n  ────────────────────────────────────────────────\n    unit 1373  integration 267  acceptance 20  total 1660"
+}

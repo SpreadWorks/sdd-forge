@@ -13,7 +13,6 @@
 import fs from "fs";
 import path from "path";
 import readline from "readline";
-import { runIfDirect } from "./lib/entrypoint.js";
 import { parseArgs } from "./lib/cli.js";
 import { EXIT_ERROR } from "./lib/constants.js";
 import { validate } from "./lib/config.js";
@@ -555,6 +554,5 @@ async function main() {
   process.stdin.unref();
 }
 
-runIfDirect(import.meta.url, main);
 
 export { main };

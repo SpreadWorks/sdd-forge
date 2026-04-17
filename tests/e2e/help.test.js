@@ -4,7 +4,8 @@ import { join } from "path";
 import { execFileSync } from "child_process";
 import { commands } from "../../src/help.js";
 
-const CMD = join(process.cwd(), "src/help.js");
+const CMD = join(process.cwd(), "src/sdd-forge.js");
+const CMD_ARGS_PREFIX = ["help"];
 
 describe("help", () => {
   it("exports commands array", () => {
@@ -36,7 +37,7 @@ describe("help", () => {
   });
 
   it("prints help output via CLI", () => {
-    const result = execFileSync("node", [CMD], { encoding: "utf8" });
+    const result = execFileSync("node", [CMD, ...CMD_ARGS_PREFIX], { encoding: "utf8" });
     assert.match(result, /SDD Forge/);
     assert.match(result, /コマンド一覧/);
   });
