@@ -1,5 +1,5 @@
 {
-  "analyzedAt": "2026-04-16T00:24:25.270Z",
+  "analyzedAt": "2026-04-17T01:46:57.836Z",
   "package": {
     "entries": [
       {
@@ -2239,12 +2239,14 @@
       },
       {
         "file": "src/flow/commands/review.js",
-        "hash": "828429281e630f8132983a1d00b87ab2",
-        "lines": 951,
-        "mtime": "2026-04-14T11:37:06.522Z",
+        "hash": "de5fc60e04913032488f6211565d36db",
+        "lines": 981,
+        "mtime": "2026-04-17T01:46:53.423Z",
         "className": "review",
         "methods": [
           "resolveReviewTarget",
+          "buildReviewPathspec",
+          "runDiffOrThrow",
           "collectCommittedAndStagedDiff",
           "buildDraftSystemPrompt",
           "buildFinalSystemPrompt",
@@ -2309,22 +2311,24 @@
         "extends": null,
         "usedBy": null,
         "id": "331cf497",
-        "summary": "This command runs iterative review workflows for code, spec, and tests inside the flow pipeline. It uses agent-driven proposal, verdict merge, and optional auto-fix loops.",
-        "detail": "It collects relevant diffs and context files, then builds specialized prompts for draft, spec, implementation, and test-gap analysis. Review cycles are bounded by retry limits and can apply approved fixes directly to source or test artifacts. Outputs are normalized into markdown reports (`review.md`, `spec-review.md`, `test-review.md`) under the spec directory. The command enforces phase validity and exits with explicit error codes on unresolved issues.",
-        "chapter": "development",
+        "summary": "Implements the `flow review` command that runs automated review loops for code, spec, and tests, then writes review artifacts under the active spec directory. It orchestrates agent prompts, diff collection, proposal parsing, and optional auto-fix retries.",
+        "detail": "The module is a CLI controller that parses arguments, validates flow phase constraints, and dispatches into code-review, spec-review, and test-review paths. It builds targeted prompts for draft/final evaluation, proposal extraction, gap analysis, and patch application, then iterates with bounded retries until issues are resolved or retries are exhausted. For code review, it computes committed/staged diffs against the base branch with path exclusions, supports optional file-scoped review from spec references, and merges verdict metadata into structured review output. For spec and test review, it reads and rewrites spec/test files, persists intermediate documents such as `spec.md`, `spec-review.md`, `test-review.md`, and enforces minimal output-shape validation for generated spec content. Error handling is centralized through explicit exit codes, and final results are serialized as Markdown reports for downstream workflow steps.",
+        "chapter": "cli_commands",
         "role": "cli",
         "enrich": {
-          "processedAt": "2026-04-14T11:38:15.649Z",
+          "processedAt": "2026-04-17T01:47:12.189Z",
           "attempts": 1
         },
         "keywords": [
-          "review loop",
+          "flow review",
+          "CLI orchestration",
+          "automated code review",
           "spec review",
           "test gap analysis",
-          "auto-fix",
-          "diff inspection",
-          "flow phase",
-          "quality feedback"
+          "agent prompt loop",
+          "diff collection",
+          "auto-fix retries",
+          "markdown report generation"
         ]
       },
       {
@@ -8101,9 +8105,9 @@
     ],
     "summary": {
       "total": 236,
-      "totalMethods": 802
+      "totalMethods": 804
     },
     "dataSourceHash": "7d725e75d5031be445119323e4947c91"
   },
-  "enrichedAt": "2026-04-16T00:24:53.259Z"
+  "enrichedAt": "2026-04-17T01:47:12.189Z"
 }
