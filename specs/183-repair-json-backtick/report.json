@@ -1,0 +1,47 @@
+{
+  "data": {
+    "implementation": {
+      "diffStat": "specs/183-repair-json-backtick/draft.md        |  93 +++++++++++++++\n specs/183-repair-json-backtick/flow.json       | 153 +++++++++++++++++++++++++\n specs/183-repair-json-backtick/issue-log.json  |  34 ++++++\n specs/183-repair-json-backtick/qa.md           |   9 ++\n specs/183-repair-json-backtick/spec.md         |  97 ++++++++++++++++\n specs/183-repair-json-backtick/tests/README.md |  24 ++++\n src/lib/json-parse.js                          |  20 +++-\n tests/unit/lib/json-parse.test.js              |  38 ++++++\n 8 files changed, 463 insertions(+), 5 deletions(-)",
+      "commits": [
+        "feat: feature/183-repair-json-backtick"
+      ]
+    },
+    "retro": {
+      "total": 5,
+      "done": 4,
+      "partial": 1,
+      "not_done": 0,
+      "rate": 0.9,
+      "notes": "Core parser behavior for backtick-opened values (R1, R2, R3, R5) is implemented and test-covered in diff. R4 is only partially evidenced because full regression pass status is not directly proven by the shown diff. Several spec/process files were added beyond the behavior requirements."
+    },
+    "issueLog": {
+      "count": 0,
+      "entries": []
+    },
+    "metrics": {
+      "docsRead": 0,
+      "srcRead": 0,
+      "question": 0,
+      "issueLog": 0
+    },
+    "tokenMetrics": {
+      "input": 80768,
+      "output": 4223,
+      "cacheRead": 51840,
+      "cacheCreation": 0,
+      "cost": null,
+      "callCount": 5
+    },
+    "tests": {
+      "unit": 5,
+      "integration": 0,
+      "acceptance": 0,
+      "total": 5
+    },
+    "sync": {
+      "status": "skipped",
+      "reason": "sync was skipped"
+    }
+  },
+  "text": "  Report\n\n  Implementation\n  ────────────────────────────────────────────────\n    feat: feature/183-repair-json-backtick\n    8 files changed, 463 insertions(+), 5 deletions(-)\n\n  Retro\n  ────────────────────────────────────────────────\n    ███████░ 90%  (4 done / 1 partial / 0 miss)\n\n  Metrics\n  ────────────────────────────────────────────────\n    docs read ................... 0\n    src read .................... 0\n    Q&A ......................... 0\n    issue-log ................... 0\n    agent calls ................. 5\n    input tokens ................ 80,768\n    output tokens ............... 4,223\n    cache-read tokens ........... 51,840\n    cache-create tokens ......... 0\n    cost ........................ N/A\n\n  Tests\n  ────────────────────────────────────────────────\n    unit 5  integration 0  acceptance 0  total 5"
+}

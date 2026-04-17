@@ -1,0 +1,65 @@
+{
+  "spec": "specs/183-repair-json-backtick/spec.md",
+  "date": "2026-04-17T09:38:36.948Z",
+  "requirements": [
+    {
+      "desc": "R1: backtick at value start treated as opening double-quote",
+      "status": "done",
+      "note": "parseValue now accepts '`' and routes to parseString, which always emits '\"' as the opening quote."
+    },
+    {
+      "desc": "R2: backtick or double-quote followed by structural delimiter ends value",
+      "status": "done",
+      "note": "String close detection now accepts '\"' or '`' (for backtick-opened values), checks next non-space char for structural delimiter/EOF, and emits '\"' on close."
+    },
+    {
+      "desc": "R3: backticks inside value body preserved",
+      "status": "done",
+      "note": "Non-terminating backticks in backtick-opened strings are emitted as normal content; added test asserts inner `code` is preserved."
+    },
+    {
+      "desc": "R4: regression-free for valid JSON",
+      "status": "partial",
+      "note": "Code changes appear backward-safe for normal JSON and existing tests were not modified, but the diff alone does not prove the full pre-existing unit suite was executed/passed."
+    },
+    {
+      "desc": "R5: open and close backtick value both substituted",
+      "status": "done",
+      "note": "Backtick-open/backtick-close normalization is implemented and covered by added tests that parse successfully."
+    }
+  ],
+  "unplanned": [
+    {
+      "file": "specs/183-repair-json-backtick/draft.md",
+      "change": "New draft specification document added (process/documentation artifact, not a functional requirement)."
+    },
+    {
+      "file": "specs/183-repair-json-backtick/flow.json",
+      "change": "Flow lifecycle/metrics metadata added, outside runtime behavior requirements."
+    },
+    {
+      "file": "specs/183-repair-json-backtick/issue-log.json",
+      "change": "Gate evaluation log added, not part of parser behavior requirements."
+    },
+    {
+      "file": "specs/183-repair-json-backtick/qa.md",
+      "change": "Q&A template/confirmation file added, not tied to runtime requirements."
+    },
+    {
+      "file": "specs/183-repair-json-backtick/spec.md",
+      "change": "Full feature spec file added; documentation change not required by R1-R5 implementation behavior."
+    },
+    {
+      "file": "specs/183-repair-json-backtick/tests/README.md",
+      "change": "Test documentation README added; not a direct requirement item."
+    }
+  ],
+  "summary": {
+    "total": 5,
+    "done": 4,
+    "partial": 1,
+    "not_done": 0,
+    "rate": 0.9,
+    "notes": "Core parser behavior for backtick-opened values (R1, R2, R3, R5) is implemented and test-covered in diff. R4 is only partially evidenced because full regression pass status is not directly proven by the shown diff. Several spec/process files were added beyond the behavior requirements."
+  }
+}

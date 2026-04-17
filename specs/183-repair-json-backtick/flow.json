@@ -1,0 +1,153 @@
+{
+  "spec": "specs/183-repair-json-backtick/spec.md",
+  "baseBranch": "main",
+  "featureBranch": "feature/183-repair-json-backtick",
+  "runId": "ae64102c-05e8-4e21-8240-81eefd575e5a",
+  "lifecycle": "active",
+  "steps": [
+    {
+      "id": "branch",
+      "status": "done"
+    },
+    {
+      "id": "prepare-spec",
+      "status": "pending"
+    },
+    {
+      "id": "draft",
+      "status": "done"
+    },
+    {
+      "id": "gate-draft",
+      "status": "done"
+    },
+    {
+      "id": "spec",
+      "status": "done"
+    },
+    {
+      "id": "gate",
+      "status": "done"
+    },
+    {
+      "id": "approval",
+      "status": "done"
+    },
+    {
+      "id": "test",
+      "status": "done"
+    },
+    {
+      "id": "implement",
+      "status": "done"
+    },
+    {
+      "id": "gate-impl",
+      "status": "done"
+    },
+    {
+      "id": "review",
+      "status": "done"
+    },
+    {
+      "id": "finalize",
+      "status": "pending"
+    },
+    {
+      "id": "commit",
+      "status": "pending"
+    },
+    {
+      "id": "push",
+      "status": "pending"
+    },
+    {
+      "id": "merge",
+      "status": "pending"
+    },
+    {
+      "id": "pr-create",
+      "status": "pending"
+    },
+    {
+      "id": "branch-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "pr-merge",
+      "status": "pending"
+    },
+    {
+      "id": "sync-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "docs-update",
+      "status": "pending"
+    },
+    {
+      "id": "docs-review",
+      "status": "pending"
+    },
+    {
+      "id": "docs-commit",
+      "status": "pending"
+    }
+  ],
+  "requirements": [
+    {
+      "desc": "R1: backtick at value start treated as opening double-quote",
+      "status": "done"
+    },
+    {
+      "desc": "R2: backtick or double-quote followed by structural delimiter ends value",
+      "status": "done"
+    },
+    {
+      "desc": "R3: backticks inside value body preserved",
+      "status": "done"
+    },
+    {
+      "desc": "R4: regression-free for valid JSON",
+      "status": "done"
+    },
+    {
+      "desc": "R5: open and close backtick value both substituted",
+      "status": "done"
+    }
+  ],
+  "issue": 159,
+  "worktree": true,
+  "request": "repairJson に value 開始バッククォート修復を追加（retro JSON パース失敗の恒久対策）。Issue #159",
+  "autoApprove": true,
+  "metrics": {
+    "gate-draft": {
+      "tokens": {
+        "input": 54635,
+        "output": 3458,
+        "cacheRead": 45312,
+        "cacheCreation": 0
+      },
+      "callCount": 4,
+      "responseChars": 4852
+    },
+    "gate-impl": {
+      "tokens": {
+        "input": 26133,
+        "output": 765,
+        "cacheRead": 6528,
+        "cacheCreation": 0
+      },
+      "callCount": 1,
+      "responseChars": 1097
+    }
+  },
+  "test": {
+    "summary": {
+      "unit": 5
+    }
+  },
+  "state": {
+    "finalizedAt": "2026-04-17T09:38:06.882Z"
+  }
+}

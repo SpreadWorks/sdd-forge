@@ -46,6 +46,7 @@ export function repairJson(text) {
     if (c === "{") return parseObject();
     if (c === "[") return parseArray();
     if (c === '"') return parseString();
+    if (c === "`") return parseString(); // AI sometimes uses backtick as opening quote
     if (c === "-" || isDigit(c)) return parseNumber();
     if (tryKeyword("true") || tryKeyword("false") || tryKeyword("null")) return true;
     return false;
@@ -143,8 +144,9 @@ export function repairJson(text) {
   }
 
   function parseStringPass(stopAtDelimiter) {
+    const opener = ch(); // either '"' or '`' — both normalized to '"' on output
     emit('"');
-    i++; // skip opening "
+    i++; // skip opening quote
 
     while (!eof()) {
       const c = ch();
@@ -166,8 +168,10 @@ export function repairJson(text) {
         continue;
       }
 
-      // Candidate end quote
-      if (c === '"') {
+      // Candidate end quote: accept either `"` or `` ` `` (the latter only
+      // when the opener was backtick — otherwise inner backticks are content).
+      const isCandidateClose = c === '"' || (c === "`" && opener === "`");
+      if (isCandidateClose) {
         // Look ahead past whitespace for structural char
         let peek = i + 1;
         while (peek < input.length && isWhitespace(input[peek])) peek++;
@@ -181,8 +185,14 @@ export function repairJson(text) {
           return true;
         }
 
-        // Not followed by structural char — likely unescaped interior quote
-        emit('\\"');
+        // Double-quote not followed by structural char — likely unescaped
+        // interior quote. Backtick not followed by structural char is just
+        // an inner code fence; keep it as content.
+        if (c === '"') {
+          emit('\\"');
+        } else {
+          emit(c);
+        }
         i++;
         continue;
       }

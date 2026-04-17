@@ -144,3 +144,41 @@ describe("repairJson — edge cases", () => {
     assert.equal(result.c, 1e10);
   });
 });
+
+describe("repairJson — backtick-opened values (issue #159)", () => {
+  it("R1/R2: hybrid open backtick / close double-quote (real retro failure pattern)", () => {
+    const broken = '{ "note": `paths` サービスに 7 項目が提供され、している。" }';
+    const result = repairAndParse(broken);
+    assert.ok(typeof result.note === "string");
+    assert.ok(result.note.includes("paths"));
+    assert.ok(result.note.includes("サービス"));
+  });
+
+  it("R5: open backtick / close backtick value", () => {
+    const broken = '{ "note": `simple value` }';
+    const result = repairAndParse(broken);
+    assert.equal(result.note, "simple value");
+  });
+
+  it("R3: backticks inside the value body are preserved", () => {
+    const broken = '{ "note": `wrap `code` here" }';
+    const result = repairAndParse(broken);
+    assert.ok(result.note.includes("`code`"));
+    assert.ok(result.note.startsWith("wrap"));
+  });
+
+  it("R5: multiple backtick-opened values in one object", () => {
+    const broken = '{ "a": `first`, "b": `second`, "c": "third" }';
+    const result = repairAndParse(broken);
+    assert.equal(result.a, "first");
+    assert.equal(result.b, "second");
+    assert.equal(result.c, "third");
+  });
+
+  it("R1/R2: backtick-opened value followed by another field (hybrid close)", () => {
+    const broken = '{ "a": `hello", "b": 42 }';
+    const result = repairAndParse(broken);
+    assert.equal(result.a, "hello");
+    assert.equal(result.b, 42);
+  });
+});
