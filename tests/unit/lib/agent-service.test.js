@@ -26,7 +26,7 @@ function makeAgent({ config, paths } = {}) {
     ...(paths || {}),
   };
   const registry = new ProviderRegistry(cfg.agent?.providers || {});
-  const logger = Logger.getInstance();
+  const logger = new Logger({ logDir: os.tmpdir(), enabled: false });
   return new Agent({ config: cfg, paths: resolvedPaths, registry, logger });
 }
 

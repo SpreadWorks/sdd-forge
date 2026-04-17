@@ -9,7 +9,7 @@
 
 import { FlowCommand } from "./base-command.js";
 import { VALID_STEP_STATUSES } from "../../lib/constants.js";
-import { Logger } from "../../lib/log.js";
+import { container } from "../../lib/container.js";
 
 export default class SetStepCommand extends FlowCommand {
   execute(ctx) {
@@ -24,7 +24,9 @@ export default class SetStepCommand extends FlowCommand {
     }
 
     ctx.flowManager.updateStepStatus(id, status);
-    Logger.getInstance().event("flow-step-change", { step: id, status });
+    if (container.has("logger")) {
+      container.get("logger").event("flow-step-change", { step: id, status });
+    }
 
     return { id, status };
   }

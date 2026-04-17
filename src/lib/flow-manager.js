@@ -73,6 +73,20 @@ export class FlowManager {
     return this._store.accumulateAgentMetrics(phase, usage, responseChars, model);
   }
 
+  /**
+   * Resolve the current flow context for logging / metric accumulation.
+   * Returns { spec, sddPhase } derived from the active flow.json; both are
+   * null when no active flow is present (expected outside SDD contexts).
+   */
+  resolveCurrentContext() {
+    const state = this._store.load();
+    if (!state) return { spec: null, sddPhase: null };
+    const spec = specIdFromPath(state.spec) ?? null;
+    const inProgress = state.steps?.find?.((s) => s.status === "in_progress");
+    const sddPhase = inProgress?.id ?? null;
+    return { spec, sddPhase };
+  }
+
   // ── .active-flow (ActiveFlowRegistry) ───────────────────────────────────────
 
   loadActiveFlows() { return this._activeFlows.load(); }

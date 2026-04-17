@@ -194,7 +194,7 @@ export function extractQualityData(result) {
 export async function verifyWithAI(tmp, config, presetName) {
   const registry = new ProviderRegistry(config?.agent?.providers || {});
   const paths = { root: tmp, agentWorkDir: path.join(tmp, ".tmp") };
-  const agent = new Agent({ config, paths, registry, logger: Logger.getInstance() });
+  const agent = new Agent({ config, paths, registry, logger: new Logger({ logDir: os.tmpdir(), enabled: false }) });
   if (!agent.resolve()) {
     throw new Error("No agent configured. Set 'agent.default' in config.json.");
   }

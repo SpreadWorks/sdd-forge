@@ -46,17 +46,24 @@ export const container = new Container();
 /**
  * Build path service object. All fields are absolute paths.
  *
- * Work-directory priority: SDD_FORGE_WORK_DIR env > config.agent.workDir > .tmp
+ * Work-directory priority: SDD_FORGE_WORK_DIR env > config.agent.workDir > .tmp.
+ * `logDir` is computed once here and reused by Logger (R4): when inside a
+ * worktree, the log directory is resolved against the main repo so that
+ * logs written from a worktree land alongside main-repo logs.
  */
 function buildPaths(root, config) {
   const agentWorkDir = resolveWorkDir(root, config);
+  const logBase = isInsideWorktree(root) ? getMainRepoPath(root) : root;
+  const logDir = config?.logs?.dir
+    ? path.resolve(config.logs.dir)
+    : path.join(resolveWorkDir(logBase, config), "logs");
   return Object.freeze({
     root,
     srcRoot: sourceRoot(),
     sddDir: sddDir(root),
     outputDir: sddOutputDir(root),
     agentWorkDir,
-    logDir: path.join(agentWorkDir, "logs"),
+    logDir,
     configPath: sddConfigPath(root),
   });
 }
@@ -95,24 +102,30 @@ export function initContainer(opts = {}) {
 
   const paths = buildPaths(root, config);
 
-  const logger = Logger.getInstance();
-  if (configLoaded) {
-    logger.init(root, config, { entryCommand: opts.entryCommand });
-    logger.event("config-loaded", { path: paths.configPath, keys: Object.keys(config) });
-  }
-
   container.register("root", root);
   container.register("config", config);
   container.register("paths", paths);
-  container.register("logger", logger);
   const inWorktree = isInsideWorktree(root);
   const mainRoot = inWorktree ? getMainRepoPath(root) : root;
   container.register("inWorktree", inWorktree);
   container.register("mainRoot", mainRoot);
   const flowManager = new FlowManager({ root, mainRoot, inWorktree });
   container.register("flowManager", flowManager);
+
+  const logger = new Logger({
+    logDir: paths.logDir,
+    enabled: configLoaded && config?.logs?.enabled === true,
+    entryCommand: opts.entryCommand ?? null,
+    flowManager,
+    cwd: root,
+  });
+  container.register("logger", logger);
+  if (configLoaded) {
+    logger.event("config-loaded", { path: paths.configPath, keys: Object.keys(config) });
+  }
+
   const registry = new ProviderRegistry(config?.agent?.providers || {});
-  container.register("agent", new Agent({ config, paths, registry, logger }));
+  container.register("agent", new Agent({ config, paths, registry, logger, flowManager }));
   container.register("i18n", translate());
   container.register("lang", config?.lang);
 }

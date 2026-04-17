@@ -1,0 +1,167 @@
+{
+  "spec": "specs/186-logger-container-service/spec.md",
+  "baseBranch": "main",
+  "featureBranch": "feature/186-logger-container-service",
+  "runId": "e4415a2a-bb61-4fcc-b534-11d7b331280e",
+  "lifecycle": "active",
+  "steps": [
+    {
+      "id": "branch",
+      "status": "done"
+    },
+    {
+      "id": "prepare-spec",
+      "status": "pending"
+    },
+    {
+      "id": "draft",
+      "status": "done"
+    },
+    {
+      "id": "gate-draft",
+      "status": "done"
+    },
+    {
+      "id": "spec",
+      "status": "done"
+    },
+    {
+      "id": "gate",
+      "status": "done"
+    },
+    {
+      "id": "approval",
+      "status": "done"
+    },
+    {
+      "id": "test",
+      "status": "done"
+    },
+    {
+      "id": "implement",
+      "status": "done"
+    },
+    {
+      "id": "gate-impl",
+      "status": "done"
+    },
+    {
+      "id": "review",
+      "status": "done"
+    },
+    {
+      "id": "finalize",
+      "status": "pending"
+    },
+    {
+      "id": "commit",
+      "status": "pending"
+    },
+    {
+      "id": "push",
+      "status": "pending"
+    },
+    {
+      "id": "merge",
+      "status": "pending"
+    },
+    {
+      "id": "pr-create",
+      "status": "pending"
+    },
+    {
+      "id": "branch-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "pr-merge",
+      "status": "pending"
+    },
+    {
+      "id": "sync-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "docs-update",
+      "status": "pending"
+    },
+    {
+      "id": "docs-review",
+      "status": "pending"
+    },
+    {
+      "id": "docs-commit",
+      "status": "pending"
+    }
+  ],
+  "requirements": [
+    {
+      "desc": "R1: Logger singleton 廃止",
+      "status": "done"
+    },
+    {
+      "desc": "R2: 状態二重保持解消",
+      "status": "done"
+    },
+    {
+      "desc": "R3: メトリクス集計の責務分離",
+      "status": "done"
+    },
+    {
+      "desc": "R4: ログ出力先キャッシュ化",
+      "status": "done"
+    },
+    {
+      "desc": "R5: 呼び出し元判定の同一性判定化",
+      "status": "done"
+    },
+    {
+      "desc": "R6: 呼び出し箇所の Container 経由統一",
+      "status": "done"
+    },
+    {
+      "desc": "R7: テスト新 API 移行",
+      "status": "done"
+    }
+  ],
+  "issue": 165,
+  "request": "#165 issue を進める",
+  "worktree": true,
+  "notes": [
+    "q1: approved intent — logger → container service, separate metrics, cache resolveLogDir, fix extractCaller",
+    "q2: use existing container.get('logger') pattern",
+    "q3: draft approach approved — user delegated remainder",
+    "gate-impl: user accepted persistent 'No Sensitive Data in Logs' FAIL as pre-existing behavior; deferred to future spec"
+  ],
+  "metrics": {
+    "plan": {
+      "docsRead": 1
+    },
+    "draft": {
+      "question": 2
+    },
+    "gate-draft": {
+      "callCount": 6,
+      "responseChars": 8434
+    },
+    "gate": {
+      "callCount": 1,
+      "responseChars": 1177
+    },
+    "gate-impl": {
+      "callCount": 8,
+      "responseChars": 9117
+    },
+    "impl": {
+      "issueLog": 1
+    }
+  },
+  "test": {
+    "summary": {
+      "unit": 1411
+    }
+  },
+  "state": {
+    "finalizedAt": "2026-04-17T14:28:13.671Z"
+  }
+}

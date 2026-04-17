@@ -55,7 +55,7 @@ export function buildCtx(tmp) {
   const docsDir = path.join(tmp, "docs");
   const registry = new ProviderRegistry(config?.agent?.providers || {});
   const paths = { root: tmp, agentWorkDir: path.join(tmp, ".tmp") };
-  const agentService = new Agent({ config, paths, registry, logger: Logger.getInstance() });
+  const agentService = new Agent({ config, paths, registry, logger: new Logger({ logDir: os.tmpdir(), enabled: false }) });
   const agent = agentService.resolve() ? agentService : null;
   const t = createI18n(lang, { domain: "messages" });
 

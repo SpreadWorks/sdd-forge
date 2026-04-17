@@ -1,37 +1,18 @@
 /**
- * Tests for the unified JSONL Logger (spec 153-unified-jsonl-logger).
+ * Tests for the unified JSONL Logger.
  *
- * NOTE — This file is a REWRITE, not a deletion of the previous test suite.
- * It replaces the prior Log/AgentLog/writeLogEntry tests at the same path.
- * The old tests targeted classes that spec 153 R10 explicitly removes
- * (`Log`, `AgentLog`, `writeLogEntry` are deleted from src/lib/log.js and
- * src/lib/agent-log.js). The behaviors those tests guarded are preserved
- * and re-tested below against the replacement Logger API:
+ * Logger is a container-managed service. These tests construct Logger
+ * instances directly via `new Logger({ ... })` and verify:
  *
- *   Old: AgentLog.isEnabled checks cfg.logs.prompts
- *     → New: Logger#agent is no-op when cfg.logs.enabled !== true (R6, R7)
- *   Old: writeLogEntry appends JSONL / multiple entries / does not reject on FS error
- *     → New: Logger#agent appends to daily JSONL / handles I/O failure (R1, AC10)
- *   Old: Logger.getInstance singleton, init records cwd/cfg, warn when uninitialized
- *     → New: same — getInstance / init / not-initialized warning preserved
- *   Old: resolveLogDir uses cfg.logs.dir or workDir/logs
- *     → New: same internally; covered indirectly via cfg.logs.dir override in tests
- *
- * Targets the new Logger API:
- *   - Logger.getInstance().init(cwd, cfg, { entryCommand })
- *   - Logger.agent({ phase: "start" | "end", requestId, ... })
- *   - Logger.git({ cmd, exitCode, stderr })
- *   - Logger.event(name, fields)
- *
- * Verifies:
- *   R1  统合 JSONL ファイル生成
- *   R2  プロンプトファイル分離
- *   R3  agent start/end の 2 イベント
- *   R4  spec/sddPhase の自動解決
- *   R6  cfg.logs.enabled へのリネーム
- *   R7  disabled 時の no-op
- *   R9  Logger.git / Logger.event の API 提供
- *  R12  requestId 8 文字 hex
+ *   - No-op behavior when `enabled` is false (R7).
+ *   - Daily JSONL and per-request prompt JSON output (R1, R2, R3).
+ *   - spec / sddPhase auto-resolution via the injected FlowManager (R4).
+ *   - Logger.git / Logger.event API surface (R9).
+ *   - requestId 8-char hex linkage between start/end and prompt files (R12).
+ *   - I/O failure tolerance (AC10).
+ *   - Caller-frame extraction excludes Logger's own file regardless of
+ *     path representation differences (spec 186 R5).
+ *   - No metric accumulation is attempted by the Logger (spec 186 R3).
  */
 import { describe, it, beforeEach, afterEach } from "node:test";
 import assert from "node:assert/strict";
@@ -42,67 +23,46 @@ import os from "node:os";
 import { Logger } from "../../../src/lib/log.js";
 import { todayLocal, readJsonl } from "../../helpers/log-fixtures.js";
 
-describe("Logger.init / disabled behavior", () => {
+/** Build a Logger with sensible defaults for tests. */
+function buildLogger(tmpDir, opts = {}) {
+  return new Logger({
+    logDir: opts.logDir ?? tmpDir,
+    enabled: opts.enabled ?? true,
+    entryCommand: opts.entryCommand ?? "test",
+    flowManager: opts.flowManager ?? null,
+    cwd: opts.cwd ?? tmpDir,
+  });
+}
+
+describe("Logger — disabled behavior", () => {
   let tmpDir;
 
   beforeEach(() => {
     tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "logger-init-"));
-    Logger._resetForTest();
   });
-
   afterEach(() => {
     fs.rmSync(tmpDir, { recursive: true, force: true });
-    Logger._resetForTest();
   });
 
-  it("getInstance returns the same instance", () => {
-    const a = Logger.getInstance();
-    const b = Logger.getInstance();
-    assert.strictEqual(a, b);
-  });
-
-  it("init records cwd, cfg, and entryCommand", () => {
-    const inst = Logger.getInstance();
-    inst.init(tmpDir, { logs: { enabled: true, dir: tmpDir } }, { entryCommand: "flow run gate" });
-    assert.equal(inst.initialized, true);
-  });
-
-  it("agent() is no-op when not initialized (warns to stderr)", async () => {
-    const inst = Logger.getInstance();
-    const warnings = [];
-    const orig = process.stderr.write;
-    process.stderr.write = (msg) => { warnings.push(String(msg)); return true; };
-    try {
-      await inst.agent({ phase: "start", requestId: "abcdef01" });
-    } finally {
-      process.stderr.write = orig;
-    }
-    assert.ok(warnings.some((w) => w.includes("not initialized")), "should warn about not initialized");
-    // No file should have been written
-    assert.equal(fs.readdirSync(tmpDir).length, 0);
-  });
-
-  it("agent() is no-op when cfg.logs.enabled is not true", async () => {
-    const inst = Logger.getInstance();
-    inst.init(tmpDir, { logs: { dir: tmpDir } }, { entryCommand: "test" });
+  it("agent() is no-op when enabled=false", async () => {
+    const inst = buildLogger(tmpDir, { enabled: false });
     await inst.agent({ phase: "start", requestId: "abcdef01" });
     await inst.agent({ phase: "end", requestId: "abcdef01", prompt: { user: "x" }, response: { text: "y" } });
+    await inst.flush();
     assert.equal(fs.readdirSync(tmpDir).length, 0, "no files should be written when disabled");
   });
 
   it("git() and event() are no-op when disabled", async () => {
-    const inst = Logger.getInstance();
-    inst.init(tmpDir, { logs: { enabled: false, dir: tmpDir } }, { entryCommand: "test" });
+    const inst = buildLogger(tmpDir, { enabled: false });
     await inst.git({ cmd: ["status"], exitCode: 0, stderr: "" });
     await inst.event("test-event", { foo: "bar" });
+    await inst.flush();
     assert.equal(fs.readdirSync(tmpDir).length, 0);
   });
 
-  it("ignores legacy cfg.logs.prompts (must use cfg.logs.enabled)", async () => {
-    const inst = Logger.getInstance();
-    inst.init(tmpDir, { logs: { prompts: true, dir: tmpDir } }, { entryCommand: "test" });
-    await inst.agent({ phase: "start", requestId: "abcdef01" });
-    assert.equal(fs.readdirSync(tmpDir).length, 0, "legacy cfg.logs.prompts must not enable logging");
+  it("enabled flag reflects constructor value", () => {
+    assert.equal(buildLogger(tmpDir, { enabled: false }).enabled, false);
+    assert.equal(buildLogger(tmpDir, { enabled: true }).enabled, true);
   });
 });
 
@@ -113,20 +73,17 @@ describe("Logger.agent — start/end events and JSONL output", () => {
   beforeEach(() => {
     tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "logger-agent-"));
     logFile = path.join(tmpDir, `sdd-forge-${todayLocal()}.jsonl`);
-    Logger._resetForTest();
   });
-
   afterEach(() => {
     fs.rmSync(tmpDir, { recursive: true, force: true });
-    Logger._resetForTest();
   });
 
-  it("R1: writes start event with minimal fields to daily JSONL", async () => {
-    const inst = Logger.getInstance();
-    inst.init(tmpDir, { logs: { enabled: true, dir: tmpDir } }, { entryCommand: "flow run gate" });
+  it("writes start event with minimal fields to daily JSONL", async () => {
+    const inst = buildLogger(tmpDir, { entryCommand: "flow run gate" });
     await inst.agent({ phase: "start", requestId: "abcdef01" });
+    await inst.flush();
 
-    assert.ok(fs.existsSync(logFile), `expected file ${logFile} to exist`);
+    assert.ok(fs.existsSync(logFile));
     const entries = readJsonl(logFile);
     assert.equal(entries.length, 1);
     const e = entries[0];
@@ -134,16 +91,14 @@ describe("Logger.agent — start/end events and JSONL output", () => {
     assert.equal(e.phase, "start");
     assert.equal(e.requestId, "abcdef01");
     assert.equal(e.entryCommand, "flow run gate");
-    assert.ok(typeof e.ts === "string" && e.ts.length > 0, "ts should be ISO string");
-    assert.ok(typeof e.pid === "number", "pid should be number");
-    assert.ok(typeof e.callerFile === "string", "callerFile should be string");
-    assert.ok(typeof e.callerLine === "number", "callerLine should be number");
+    assert.ok(typeof e.ts === "string" && e.ts.length > 0);
+    assert.ok(typeof e.pid === "number");
+    assert.ok(typeof e.callerFile === "string");
+    assert.ok(typeof e.callerLine === "number");
   });
 
-  it("R3: writes end event with denormalized rich record", async () => {
-    const inst = Logger.getInstance();
-    inst.init(tmpDir, { logs: { enabled: true, dir: tmpDir } }, { entryCommand: "flow run gate" });
-
+  it("writes end event with denormalized rich record", async () => {
+    const inst = buildLogger(tmpDir, { entryCommand: "flow run gate" });
     await inst.agent({
       phase: "end",
       requestId: "abcdef01",
@@ -153,6 +108,7 @@ describe("Logger.agent — start/end events and JSONL output", () => {
       response: { text: "response body", exitCode: 0 },
       durationSec: 1.234,
     });
+    await inst.flush();
 
     const entries = readJsonl(logFile);
     assert.equal(entries.length, 1);
@@ -171,13 +127,11 @@ describe("Logger.agent — start/end events and JSONL output", () => {
     assert.equal(typeof e.responseLines, "number");
     assert.equal(typeof e.durationSec, "number");
     assert.equal(typeof e.promptFile, "string");
-    assert.ok(e.promptFile.includes("prompts/"), "promptFile path should be under prompts/");
+    assert.ok(e.promptFile.includes("prompts/"));
   });
 
-  it("R2: end event creates a self-contained prompt JSON file", async () => {
-    const inst = Logger.getInstance();
-    inst.init(tmpDir, { logs: { enabled: true, dir: tmpDir } }, { entryCommand: "flow run gate" });
-
+  it("end event creates a self-contained prompt JSON file", async () => {
+    const inst = buildLogger(tmpDir, { entryCommand: "flow run gate" });
     await inst.agent({
       phase: "end",
       requestId: "deadbeef",
@@ -187,78 +141,65 @@ describe("Logger.agent — start/end events and JSONL output", () => {
       response: { text: "response text", exitCode: 0 },
       durationSec: 0.5,
     });
+    await inst.flush();
 
     const entries = readJsonl(logFile);
     const promptFile = path.resolve(tmpDir, entries[0].promptFile);
-    assert.ok(fs.existsSync(promptFile), `prompt file should exist at ${promptFile}`);
+    assert.ok(fs.existsSync(promptFile));
 
     const promptJson = JSON.parse(fs.readFileSync(promptFile, "utf8"));
     assert.equal(promptJson.requestId, "deadbeef");
     assert.ok(promptJson.ts);
-    assert.ok(promptJson.context);
     assert.equal(promptJson.context.entryCommand, "flow run gate");
-    assert.ok(promptJson.agent);
     assert.equal(promptJson.agent.key, "spec.gate");
     assert.equal(promptJson.agent.model, "claude-opus-4-6");
-    assert.ok(promptJson.prompt);
     assert.equal(promptJson.prompt.system, "system text");
     assert.equal(promptJson.prompt.user, "user text");
-    assert.ok(promptJson.prompt.stats);
     assert.equal(typeof promptJson.prompt.stats.totalChars, "number");
-    assert.ok(promptJson.response);
     assert.equal(promptJson.response.text, "response text");
     assert.equal(promptJson.response.exitCode, 0);
-    assert.ok(promptJson.execution);
   });
 
-  it("R4: spec and sddPhase are auto-resolved from flow-state and added to end event", async () => {
-    // Set up a fake spec dir + flow.json that loadFlowState can resolve.
-    const specId = "153-unified-jsonl-logger";
-    const specsDir = path.join(tmpDir, "specs", specId);
-    fs.mkdirSync(specsDir, { recursive: true });
-    fs.writeFileSync(path.join(specsDir, "spec.md"), "# spec\n");
-    fs.writeFileSync(
-      path.join(specsDir, "flow.json"),
-      JSON.stringify({
-        spec: `specs/${specId}/spec.md`,
-        baseBranch: "main",
-        featureBranch: `feature/${specId}`,
-        steps: [{ id: "gate", status: "in_progress" }],
-      }),
-    );
-    // .sdd-forge/.active-flow pointer (array of {spec, mode})
-    const sddDir = path.join(tmpDir, ".sdd-forge");
-    fs.mkdirSync(sddDir, { recursive: true });
-    fs.writeFileSync(
-      path.join(sddDir, ".active-flow"),
-      JSON.stringify([{ spec: specId, mode: "local" }]),
-    );
-
-    const inst = Logger.getInstance();
-    inst.init(tmpDir, { logs: { enabled: true, dir: tmpDir } }, { entryCommand: "flow run gate" });
-
+  it("spec and sddPhase are resolved via injected flowManager", async () => {
+    const flowManager = {
+      resolveCurrentContext: () => ({ spec: "153-unified-jsonl-logger", sddPhase: "gate" }),
+    };
+    const inst = buildLogger(tmpDir, { flowManager });
     await inst.agent({
       phase: "end",
       requestId: "abcdef02",
       agentKey: "spec.gate",
-      model: "claude-opus-4-6",
+      model: "m",
       prompt: { user: "u" },
       response: { text: "r", exitCode: 0 },
       durationSec: 0.1,
     });
+    await inst.flush();
 
     const entries = readJsonl(logFile);
-    const e = entries[0];
-    // spec must be auto-resolved (call site did NOT pass it)
-    assert.equal(e.spec, "153-unified-jsonl-logger");
-    // sddPhase should be present (current in_progress step or similar)
-    assert.ok(typeof e.sddPhase === "string" && e.sddPhase.length > 0, "sddPhase should be set");
+    assert.equal(entries[0].spec, "153-unified-jsonl-logger");
+    assert.equal(entries[0].sddPhase, "gate");
   });
 
-  it("R12: requestId can be used to link start/end and prompt file name", async () => {
-    const inst = Logger.getInstance();
-    inst.init(tmpDir, { logs: { enabled: true, dir: tmpDir } }, { entryCommand: "test" });
+  it("spec/sddPhase are null when no flowManager is provided", async () => {
+    const inst = buildLogger(tmpDir);
+    await inst.agent({
+      phase: "end",
+      requestId: "abcdef03",
+      agentKey: "k",
+      model: "m",
+      prompt: { user: "u" },
+      response: { text: "r", exitCode: 0 },
+      durationSec: 0.1,
+    });
+    await inst.flush();
+    const entries = readJsonl(logFile);
+    assert.equal(entries[0].spec, null);
+    assert.equal(entries[0].sddPhase, null);
+  });
 
+  it("requestId links start/end and prompt file name", async () => {
+    const inst = buildLogger(tmpDir);
     const reqId = "12345678";
     await inst.agent({ phase: "start", requestId: reqId });
     await inst.agent({
@@ -270,25 +211,45 @@ describe("Logger.agent — start/end events and JSONL output", () => {
       response: { text: "r", exitCode: 0 },
       durationSec: 0.1,
     });
+    await inst.flush();
 
     const entries = readJsonl(logFile);
     assert.equal(entries.length, 2);
     assert.equal(entries[0].requestId, reqId);
     assert.equal(entries[1].requestId, reqId);
     const promptFile = path.resolve(tmpDir, entries[1].promptFile);
-    assert.ok(promptFile.endsWith(`${reqId}.json`), "prompt file name should be <requestId>.json");
+    assert.ok(promptFile.endsWith(`${reqId}.json`));
   });
 
   it("appends multiple events to the same daily file", async () => {
-    const inst = Logger.getInstance();
-    inst.init(tmpDir, { logs: { enabled: true, dir: tmpDir } }, { entryCommand: "test" });
-
+    const inst = buildLogger(tmpDir);
     await inst.agent({ phase: "start", requestId: "aaaaaaaa" });
     await inst.agent({ phase: "start", requestId: "bbbbbbbb" });
     await inst.agent({ phase: "start", requestId: "cccccccc" });
-
+    await inst.flush();
     const entries = readJsonl(logFile);
     assert.equal(entries.length, 3);
+  });
+
+  it("does not call accumulateAgentMetrics (metric is agent's responsibility)", async () => {
+    let called = false;
+    const flowManager = {
+      resolveCurrentContext: () => ({ spec: "186-logger-container-service", sddPhase: "test" }),
+      accumulateAgentMetrics: () => { called = true; },
+    };
+    const inst = buildLogger(tmpDir, { flowManager });
+    await inst.agent({
+      phase: "end",
+      requestId: "abcdef04",
+      agentKey: "k",
+      model: "m",
+      prompt: { user: "u" },
+      response: { text: "r", exitCode: 0 },
+      durationSec: 0.1,
+      usage: { input_tokens: 10, output_tokens: 5 },
+    });
+    await inst.flush();
+    assert.equal(called, false, "Logger must not accumulate metrics directly");
   });
 });
 
@@ -299,19 +260,15 @@ describe("Logger.git and Logger.event — API surface", () => {
   beforeEach(() => {
     tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "logger-git-"));
     logFile = path.join(tmpDir, `sdd-forge-${todayLocal()}.jsonl`);
-    Logger._resetForTest();
   });
-
   afterEach(() => {
     fs.rmSync(tmpDir, { recursive: true, force: true });
-    Logger._resetForTest();
   });
 
-  it("R9: git() writes a fixed-structure JSONL line when enabled", async () => {
-    const inst = Logger.getInstance();
-    inst.init(tmpDir, { logs: { enabled: true, dir: tmpDir } }, { entryCommand: "test" });
+  it("git() writes a fixed-structure JSONL line when enabled", async () => {
+    const inst = buildLogger(tmpDir);
     await inst.git({ cmd: ["git", "status"], exitCode: 0, stderr: "" });
-
+    await inst.flush();
     const entries = readJsonl(logFile);
     assert.equal(entries.length, 1);
     const e = entries[0];
@@ -323,11 +280,10 @@ describe("Logger.git and Logger.event — API surface", () => {
     assert.equal(e.entryCommand, "test");
   });
 
-  it("R9: event() writes a named event with arbitrary fields", async () => {
-    const inst = Logger.getInstance();
-    inst.init(tmpDir, { logs: { enabled: true, dir: tmpDir } }, { entryCommand: "test" });
+  it("event() writes a named event with arbitrary fields", async () => {
+    const inst = buildLogger(tmpDir);
     await inst.event("config-loaded", { provider: "claude", retries: 2 });
-
+    await inst.flush();
     const entries = readJsonl(logFile);
     assert.equal(entries.length, 1);
     const e = entries[0];
@@ -338,28 +294,43 @@ describe("Logger.git and Logger.event — API surface", () => {
   });
 });
 
-describe("Logger I/O failure tolerance", () => {
+describe("Logger — caller frame extraction", () => {
+  let tmpDir;
+  let logFile;
+
+  beforeEach(() => {
+    tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "logger-caller-"));
+    logFile = path.join(tmpDir, `sdd-forge-${todayLocal()}.jsonl`);
+  });
+  afterEach(() => {
+    fs.rmSync(tmpDir, { recursive: true, force: true });
+  });
+
+  it("callerFile points to the test file, not the Logger module", async () => {
+    const inst = buildLogger(tmpDir);
+    await inst.event("caller-check");
+    await inst.flush();
+    const entries = readJsonl(logFile);
+    assert.equal(entries.length, 1);
+    const cf = entries[0].callerFile;
+    assert.ok(cf, "callerFile should be set");
+    assert.ok(!cf.endsWith("/src/lib/log.js"), `callerFile should not be Logger itself: ${cf}`);
+    assert.ok(cf.endsWith("log.test.js") || cf.includes("log.test.js"), `callerFile should point to the test: ${cf}`);
+  });
+});
+
+describe("Logger — I/O failure tolerance", () => {
   let tmpDir;
 
   beforeEach(() => {
     tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "logger-fail-"));
-    Logger._resetForTest();
   });
-
   afterEach(() => {
     fs.rmSync(tmpDir, { recursive: true, force: true });
-    Logger._resetForTest();
   });
 
-  it("AC10: agent() does not throw when log dir cannot be created", async () => {
-    const inst = Logger.getInstance();
-    inst.init(
-      tmpDir,
-      { logs: { enabled: true, dir: "/nonexistent/cannot/write/here" } },
-      { entryCommand: "test" },
-    );
-    await assert.doesNotReject(
-      inst.agent({ phase: "start", requestId: "abcdef01" }),
-    );
+  it("agent() does not throw when log dir cannot be created", async () => {
+    const inst = buildLogger(tmpDir, { logDir: "/nonexistent/cannot/write/here" });
+    await assert.doesNotReject(inst.agent({ phase: "start", requestId: "abcdef01" }));
   });
 });

@@ -1,0 +1,40 @@
+{
+  "data": {
+    "implementation": {
+      "diffStat": "specs/186-logger-container-service/draft.md       | 139 ++++++++++\n specs/186-logger-container-service/flow.json      | 167 ++++++++++++\n specs/186-logger-container-service/issue-log.json |  72 ++++++\n specs/186-logger-container-service/qa.md          |   9 +\n specs/186-logger-container-service/spec.md        | 134 ++++++++++\n src/docs.js                                       |  19 +-\n src/flow/lib/set-step.js                          |   6 +-\n src/lib/agent.js                                  |  37 ++-\n src/lib/container.js                              |  33 ++-\n src/lib/flow-manager.js                           |  14 +\n src/lib/git-helpers.js                            |   6 +-\n src/lib/log.js                                    | 285 +++++++--------------\n tests/acceptance/lib/ai-verify.js                 |   2 +-\n tests/acceptance/lib/pipeline.js                  |   2 +-\n tests/unit/docs/commands/init.test.js             |   2 +-\n tests/unit/docs/commands/readme-text.test.js      |   3 +-\n tests/unit/docs/commands/text-batch.test.js       |   3 +-\n tests/unit/flow/commands/review.test.js           |   3 +-\n tests/unit/lib/agent-service.test.js              |   2 +-\n tests/unit/lib/agent-with-logger.test.js          | 111 ++++++--\n tests/unit/lib/agent.test.js                      |   2 +-\n tests/unit/lib/git-helpers.test.js                |  60 +++--\n tests/unit/lib/log.test.js                        | 299 ++++++++++------------\n 23 files changed, 957 insertions(+), 453 deletions(-)",
+      "commits": [
+        "feat: feature/186-logger-container-service"
+      ]
+    },
+    "retro": null,
+    "issueLog": {
+      "count": 0,
+      "entries": []
+    },
+    "metrics": {
+      "docsRead": 1,
+      "srcRead": 0,
+      "question": 2,
+      "issueLog": 1
+    },
+    "tokenMetrics": {
+      "input": 0,
+      "output": 0,
+      "cacheRead": 0,
+      "cacheCreation": 0,
+      "cost": null,
+      "callCount": 15
+    },
+    "tests": {
+      "unit": 1411,
+      "integration": 0,
+      "acceptance": 0,
+      "total": 1411
+    },
+    "sync": {
+      "status": "skipped",
+      "reason": "sync was skipped"
+    }
+  },
+  "text": "  Report\n\n  Implementation\n  ────────────────────────────────────────────────\n    feat: feature/186-logger-container-service\n    23 files changed, 957 insertions(+), 453 deletions(-)\n\n  Retro\n  ────────────────────────────────────────────────\n    -\n\n  Metrics\n  ────────────────────────────────────────────────\n    docs read ................... 1\n    src read .................... 0\n    Q&A ......................... 2\n    issue-log ................... 1\n    agent calls ................. 15\n    input tokens ................ 0\n    output tokens ............... 0\n    cache-read tokens ........... 0\n    cache-create tokens ......... 0\n    cost ........................ N/A\n\n  Tests\n  ────────────────────────────────────────────────\n    unit 1411  integration 0  acceptance 0  total 1411"
+}

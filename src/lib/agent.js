@@ -18,7 +18,7 @@
 import fs from "fs";
 import path from "path";
 import { spawn } from "child_process";
-import { Logger, generateRequestId } from "./log.js";
+import { generateRequestId } from "./log.js";
 import { ProviderRegistry } from "./provider.js";
 
 const DEFAULT_AGENT_TIMEOUT_MS = 300_000;
@@ -29,16 +29,18 @@ const DEFAULT_RETRY_DELAY_MS = 3000;
 class Agent {
   /**
    * @param {Object} opts
-   * @param {Object} opts.config   - SddConfig
-   * @param {Object} opts.paths    - Container paths ({ root, agentWorkDir, ... })
+   * @param {Object} opts.config       - SddConfig
+   * @param {Object} opts.paths        - Container paths ({ root, agentWorkDir, ... })
    * @param {ProviderRegistry} opts.registry
-   * @param {Object} opts.logger   - Logger instance
+   * @param {Object} opts.logger       - Logger instance
+   * @param {Object} [opts.flowManager] - FlowManager, used for metric accumulation
    */
-  constructor({ config, paths, registry, logger }) {
+  constructor({ config, paths, registry, logger, flowManager }) {
     this._config = config || {};
     this._paths = paths || {};
     this._registry = registry || new ProviderRegistry(this._config.agent?.providers || {});
-    this._logger = logger || Logger.getInstance();
+    this._logger = logger;
+    this._flowManager = flowManager || null;
   }
 
   /**
@@ -105,6 +107,7 @@ class Agent {
     const retry = this._normalizeRetryOptionsForTest(opts);
     return runWithLogging({
       logger: this._logger,
+      flowManager: this._flowManager,
       command: resolved.profile.command,
       systemPrompt: opts.systemPrompt ?? null,
       prompt,
@@ -340,7 +343,7 @@ function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-async function runWithLogging({ logger, command, systemPrompt, prompt, invoke }) {
+async function runWithLogging({ logger, flowManager, command, systemPrompt, prompt, invoke }) {
   const requestId = generateRequestId();
   const startedAt = Date.now();
   await logger.agent({ phase: "start", requestId });
@@ -356,6 +359,7 @@ async function runWithLogging({ logger, command, systemPrompt, prompt, invoke })
   } finally {
     const text = result?.text ?? null;
     const usage = result?.usage ?? null;
+    const responseStats = textStats(text);
     const payload = {
       agentKey: command ?? null,
       model: null,
@@ -369,7 +373,26 @@ async function runWithLogging({ logger, command, systemPrompt, prompt, invoke })
       durationSec: (Date.now() - startedAt) / 1000,
     };
     await logger.agent({ phase: "end", requestId, ...payload });
+
+    // Metric accumulation is the Agent's responsibility: it runs independently
+    // of cfg.logs.enabled so flow.json metrics are always up to date (R3).
+    if (flowManager) {
+      try {
+        const ctx = flowManager.resolveCurrentContext();
+        if (ctx.sddPhase) {
+          flowManager.accumulateAgentMetrics(ctx.sddPhase, usage, responseStats.chars, null);
+        }
+      } catch (metricErr) {
+        process.stderr.write(`[sdd-forge] agent: metric accumulation failed: ${metricErr.message}\n`);
+      }
+    }
   }
+}
+
+function textStats(s) {
+  if (s == null) return { chars: 0, lines: 0 };
+  const str = String(s);
+  return { chars: str.length, lines: str.length === 0 ? 0 : str.split("\n").length };
 }
 
 export { Agent };

@@ -1,4 +1,5 @@
 import { describe, it, afterEach } from "node:test";
+import os from "os";
 import assert from "node:assert/strict";
 import { join } from "path";
 import { execFileSync } from "child_process";
@@ -15,7 +16,7 @@ function resolveAgent(cfg, commandId) {
     config: cfg,
     paths: { root: process.cwd(), agentWorkDir: "/tmp" },
     registry,
-    logger: Logger.getInstance(),
+    logger: new Logger({ logDir: os.tmpdir(), enabled: false }),
   });
   const resolved = agent.resolve(commandId);
   return resolved ? resolved.profile : null;

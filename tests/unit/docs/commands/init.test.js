@@ -31,7 +31,7 @@ function makeAgent(profile) {
     config,
     paths: { root, agentWorkDir: path.join(root, ".tmp") },
     registry,
-    logger: Logger.getInstance(),
+    logger: new Logger({ logDir: os.tmpdir(), enabled: false }),
   });
 }
 

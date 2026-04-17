@@ -1,4 +1,5 @@
 import { describe, it, afterEach } from "node:test";
+import os from "os";
 import assert from "node:assert/strict";
 import { createTmpDir, removeTmpDir } from "../../../helpers/tmp-dir.js";
 import path from "path";
@@ -14,7 +15,7 @@ function makeAgent(profile, root) {
     config,
     paths: { root, agentWorkDir: path.join(root, ".tmp") },
     registry,
-    logger: Logger.getInstance(),
+    logger: new Logger({ logDir: os.tmpdir(), enabled: false }),
   });
 }
 

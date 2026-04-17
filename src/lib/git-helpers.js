@@ -6,7 +6,7 @@
  */
 
 import { runCmd, formatError } from "./process.js";
-import { Logger } from "./log.js";
+import { container } from "./container.js";
 
 /**
  * Run a git command and record a JSONL log entry via Logger.
@@ -24,7 +24,9 @@ import { Logger } from "./log.js";
  */
 export function runGit(args, opts = {}) {
   const result = runCmd("git", args, opts);
-  Logger.getInstance().git({ cmd: ["git", ...args], exitCode: result.status, stderr: result.stderr });
+  if (container.has("logger")) {
+    container.get("logger").git({ cmd: ["git", ...args], exitCode: result.status, stderr: result.stderr });
+  }
   return result;
 }
 

@@ -3,43 +3,33 @@
  *
  * Unified JSONL logger for sdd-forge.
  *
+ * Container-managed service. Construct once via `initContainer` with a
+ * pre-resolved log directory and dependencies; retrieve through
+ * `container.get("logger")`. No singleton / getInstance().
+ *
  * Two-tier output:
  *   - Daily JSONL `<logDir>/sdd-forge-YYYY-MM-DD.jsonl` (lightweight metadata)
- *   - Per-request prompt JSON `<logDir>/prompts/YYYY-MM-DD/<requestId>.json` (heavy bodies)
+ *   - Per-request prompt JSON `<logDir>/prompts/YYYY-MM-DD/<requestId>.json`
  *
- * Three domains exposed via the singleton instance:
- *   - Logger.getInstance().agent({ phase: "start"|"end", requestId, ... })
- *   - Logger.getInstance().git({ cmd, exitCode, stderr })
- *   - Logger.getInstance().event(name, fields)
+ * Three domains exposed on the instance:
+ *   - logger.agent({ phase: "start"|"end", requestId, ... })
+ *   - logger.git({ cmd, exitCode, stderr })
+ *   - logger.event(name, fields)
  *
- * The logger is opt-in via `cfg.logs.enabled === true`. When disabled or
- * uninitialized, all methods are no-ops (no I/O, no throws).
- *
- * `spec` and `sddPhase` for agent end events are auto-resolved from flow-state
- * at log time, so call sites do not need to pass them.
- *
- * See spec 153-unified-jsonl-logger for the design rationale.
+ * When `enabled` is false the methods are no-ops (no I/O, no throws). Flow
+ * context (spec, sddPhase) for agent end events is looked up through the
+ * FlowManager passed at construction; metric accumulation is NOT the
+ * logger's responsibility (it lives in the agent call path).
  */
 
 import crypto from "crypto";
 import fs from "fs";
 import path from "path";
-import { resolveWorkDir } from "./config.js";
-import { isInsideWorktree, getMainRepoPath } from "./cli.js";
+
+/** Absolute path of this module file, used to exclude own frames in extractCaller. */
+const SELF_FILE = new URL(import.meta.url).pathname;
 
 // ─── Internal helpers ──────────────────────────────────────────────────────
-
-/**
- * Resolve log directory from config.
- * Uses logs.dir if set; otherwise falls back to {agent.workDir}/logs relative to cwd.
- * When called from inside a git worktree, writes to the main repo side.
- */
-function resolveLogDir(cwd, cfg) {
-  if (cfg?.logs?.dir) return cfg.logs.dir;
-  const root = path.resolve(cwd || process.cwd());
-  const repoRoot = isInsideWorktree(root) ? getMainRepoPath(root) : root;
-  return path.join(resolveWorkDir(repoRoot, cfg), "logs");
-}
 
 /** YYYY-MM-DD in local time, computed at write time. */
 function todayLocal() {
@@ -55,7 +45,7 @@ export function generateRequestId() {
   return crypto.randomBytes(4).toString("hex");
 }
 
-/** Compute character / line counts for a string (used for prompt stats). */
+/** Character / line counts for a string (used for prompt stats). */
 function textStats(s) {
   if (s == null) return { chars: 0, lines: 0 };
   const str = String(s);
@@ -66,32 +56,32 @@ function textStats(s) {
 }
 
 /**
- * Extract the first stack frame outside of this file.
- * Returns { callerFile, callerLine } or { callerFile: null, callerLine: null }.
+ * Extract the first stack frame outside of this module.
+ * Uses absolute-path equality against SELF_FILE so frame filters do not
+ * depend on suffix matching, URL prefixes, or OS separators.
  */
 function extractCaller() {
   const err = new Error();
   const stack = err.stack || "";
-  const lines = stack.split("\n").slice(1); // skip "Error"
+  const lines = stack.split("\n").slice(1);
   for (const line of lines) {
-    // Match formats:  "    at fn (/path/file.js:12:34)"  or  "    at /path/file.js:12:34"
     const m = line.match(/\(([^()]+):(\d+):(\d+)\)\s*$/) || line.match(/at\s+([^\s()]+):(\d+):(\d+)\s*$/);
     if (!m) continue;
     let file = m[1];
     if (file.startsWith("file://")) {
-      try { file = new URL(file).pathname; } catch { /* keep as-is */ }
+      try {
+        file = new URL(file).pathname;
+      } catch (err) {
+        process.stderr.write(`[sdd-forge] extractCaller: URL parse failed for ${file}: ${err.message}\n`);
+      }
     }
-    // Skip frames inside this file
-    if (file.endsWith("/lib/log.js") || file.endsWith("\\lib\\log.js")) continue;
+    if (path.resolve(file) === path.resolve(SELF_FILE)) continue;
     return { callerFile: file, callerLine: Number(m[2]) };
   }
   return { callerFile: null, callerLine: null };
 }
 
-/**
- * Append a JSON object as one line to the given file. I/O failures are
- * reported to stderr; never throws.
- */
+/** Append a JSON object as one line to the given file. */
 async function appendJsonl(file, obj) {
   try {
     await fs.promises.mkdir(path.dirname(file), { recursive: true });
@@ -101,7 +91,7 @@ async function appendJsonl(file, obj) {
   }
 }
 
-/** Write a self-contained prompt JSON file. Returns the absolute path or null on failure. */
+/** Write a self-contained prompt JSON file. Returns absolute path or null. */
 async function writePromptFile(promptDir, requestId, payload) {
   const file = path.join(promptDir, `${requestId}.json`);
   try {
@@ -114,111 +104,42 @@ async function writePromptFile(promptDir, requestId, payload) {
   }
 }
 
-/**
- * Resolve { spec, sddPhase } from flow-state for the current cwd.
- *
- * - Returns { spec: null, sddPhase: null } as the normal "no active flow" case
- *   (e.g. running sdd-forge outside a spec). This is expected, not an error.
- * - Unexpected errors (corrupted flow.json, FS errors) are reported to stderr
- *   so they are not silently swallowed.
- *
- * Lazy import to avoid pulling flow-state on the hot path before it is needed.
- */
-async function resolveFlowContext(cwd) {
-  try {
-    const fm = await resolveFlowManagerForCwd(cwd);
-    if (!fm) return { spec: null, sddPhase: null };
-    const helpers = await import("./flow-helpers.js");
-    const state = fm.load();
-    if (!state) return { spec: null, sddPhase: null }; // expected: outside any spec
-    const spec = helpers.specIdFromPath(state.spec) ?? null;
-    const inProgress = state.steps?.find?.((s) => s.status === "in_progress");
-    const sddPhase = inProgress?.id ?? null;
-    return { spec, sddPhase };
-  } catch (err) {
-    process.stderr.write(`[sdd-forge] Logger: flow state read failed: ${err.message}\n`);
-    return { spec: null, sddPhase: null };
-  }
-}
+// ─── Logger ────────────────────────────────────────────────────────────────
 
 /**
- * Return the Container's FlowManager when it serves the same root as `cwd`;
- * otherwise construct a fresh one. This keeps mutation paths during a single
- * CLI invocation flowing through the cached Container instance and avoids
- * redundant `isInsideWorktree`/`getMainRepoPath` git spawns.
- */
-async function resolveFlowManagerForCwd(cwd) {
-  try {
-    const { container } = await import("./container.js");
-    if (container.has("flowManager") && container.has("paths")) {
-      const paths = container.get("paths");
-      if (paths.root === cwd) return container.get("flowManager");
-    }
-  } catch (err) {
-    process.stderr.write(`[sdd-forge] container lookup skipped: ${err.message}\n`);
-  }
-  try {
-    const { FlowManager } = await import("./flow-manager.js");
-    const cli = await import("./cli.js");
-    const inWorktree = cli.isInsideWorktree(cwd);
-    const mainRoot = inWorktree ? cli.getMainRepoPath(cwd) : cwd;
-    return new FlowManager({ root: cwd, mainRoot, inWorktree });
-  } catch (err) {
-    process.stderr.write(`[sdd-forge] Logger: failed to construct FlowManager: ${err.message}\n`);
-    return null;
-  }
-}
-
-// ─── Logger singleton ──────────────────────────────────────────────────────
-
-/**
- * Singleton logger holding cwd / cfg / entryCommand after init.
- * Disabled (or uninitialized) → all log methods are no-ops.
+ * Constructed once by `initContainer`. When `enabled=false` all log methods
+ * are no-ops, so Container always creates an instance even when logs are
+ * disabled or config is missing.
  */
 export class Logger {
-  static #instance = null;
-
-  #cwd = null;
-  #cfg = null;
-  #entryCommand = null;
-  #initialized = false;
+  #logDir;
+  #enabled;
+  #entryCommand;
+  #flowManager;
+  #cwd;
   #pending = new Set();
 
-  static getInstance() {
-    if (!Logger.#instance) Logger.#instance = new Logger();
-    return Logger.#instance;
-  }
-
-  /** @internal Reset singleton for testing. */
-  static _resetForTest() {
-    Logger.#instance = null;
-  }
-
-  get initialized() {
-    return this.#initialized;
-  }
-
   /**
-   * Initialize the logger. Called once at the sdd-forge entrypoint.
-   * Safe to call when cfg.logs.enabled is false — methods become no-ops.
-   *
-   * @param {string} cwd
-   * @param {Object} cfg
-   * @param {Object} [opts]
-   * @param {string} [opts.entryCommand] - User-typed command, e.g. "flow run gate"
+   * @param {Object} opts
+   * @param {string} opts.logDir        - Absolute log directory (pre-resolved).
+   * @param {boolean} opts.enabled      - Whether logging I/O is active.
+   * @param {string|null} [opts.entryCommand]  - Argv string for metadata.
+   * @param {Object|null} [opts.flowManager]   - FlowManager for end-event context.
+   * @param {string|null} [opts.cwd]    - Cwd for relative promptFile paths.
    */
-  init(cwd, cfg, opts = {}) {
-    this.#cwd = cwd;
-    this.#cfg = cfg;
-    this.#entryCommand = opts.entryCommand ?? null;
-    this.#initialized = true;
+  constructor({ logDir, enabled, entryCommand = null, flowManager = null, cwd = null }) {
+    this.#logDir = logDir;
+    this.#enabled = enabled === true;
+    this.#entryCommand = entryCommand ?? null;
+    this.#flowManager = flowManager ?? null;
+    this.#cwd = cwd ?? null;
   }
 
-  /**
-   * Wait for all in-flight log writes (including fire-and-forget ones started
-   * by the Agent service) to settle. Useful in tests to avoid timing-based
-   * waits when the caller does not await Logger calls directly.
-   */
+  get enabled() {
+    return this.#enabled;
+  }
+
+  /** Wait until all in-flight log writes settle. */
   async flush() {
     while (this.#pending.size > 0) {
       const snapshot = [...this.#pending];
@@ -226,17 +147,10 @@ export class Logger {
     }
   }
 
-  /** Track an in-flight write so flush() can wait for it. */
   #track(p) {
     this.#pending.add(p);
     p.finally(() => this.#pending.delete(p));
     return p;
-  }
-
-  /** True iff Logger is initialized AND cfg.logs.enabled === true. */
-  #isActive() {
-    if (!this.#initialized) return false;
-    return this.#cfg?.logs?.enabled === true;
   }
 
   #commonFields() {
@@ -247,21 +161,26 @@ export class Logger {
     };
   }
 
-  #logFile() {
-    const dir = resolveLogDir(this.#cwd, this.#cfg);
+  #logFiles() {
     return {
-      dir,
-      jsonl: path.join(dir, `sdd-forge-${todayLocal()}.jsonl`),
-      promptDir: path.join(dir, "prompts", todayLocal()),
+      jsonl: path.join(this.#logDir, `sdd-forge-${todayLocal()}.jsonl`),
+      promptDir: path.join(this.#logDir, "prompts", todayLocal()),
     };
+  }
+
+  /** Resolve flow context via the injected FlowManager. */
+  #flowContext() {
+    if (!this.#flowManager) return { spec: null, sddPhase: null };
+    try {
+      return this.#flowManager.resolveCurrentContext();
+    } catch (err) {
+      process.stderr.write(`[sdd-forge] Logger: flow state read failed: ${err.message}\n`);
+      return { spec: null, sddPhase: null };
+    }
   }
 
   /**
    * Record an agent invocation event.
-   *
-   * For phase "start", only minimal fields are written (hang detection marker).
-   * For phase "end", a denormalized rich record is written and a self-contained
-   * prompt JSON file is created under prompts/YYYY-MM-DD/<requestId>.json.
    *
    * @param {Object} entry
    * @param {"start"|"end"} entry.phase
@@ -271,40 +190,32 @@ export class Logger {
    * @param {{system?: string, user?: string}} [entry.prompt]
    * @param {{text?: string, exitCode?: number, error?: string|null}} [entry.response]
    * @param {number} [entry.durationSec]
+   * @param {Object} [entry.usage]
    */
   agent(entry) {
     return this.#track(this.#agentImpl(entry));
   }
 
   async #agentImpl(entry) {
-    if (!this.#initialized) {
-      process.stderr.write(
-        "[sdd-forge] Logger not initialized — call Logger.getInstance().init(cwd, cfg) first. Log skipped.\n",
-      );
-      return;
-    }
-    if (!this.#isActive()) return;
+    if (!this.#enabled) return;
     if (!entry || (entry.phase !== "start" && entry.phase !== "end")) return;
 
-    const { jsonl, promptDir } = this.#logFile();
+    const { jsonl, promptDir } = this.#logFiles();
     const caller = extractCaller();
 
     if (entry.phase === "start") {
-      // Start events do not need spec/sddPhase, so skip the flow-state read.
-      const line = {
+      await appendJsonl(jsonl, {
         ...this.#commonFields(),
         type: "agent",
         phase: "start",
         requestId: entry.requestId,
         callerFile: caller.callerFile,
         callerLine: caller.callerLine,
-      };
-      await appendJsonl(jsonl, line);
+      });
       return;
     }
 
-    // phase === "end" — resolve flow context now (only when needed).
-    const ctx = await resolveFlowContext(this.#cwd);
+    const ctx = this.#flowContext();
     const promptObj = entry.prompt || {};
     const responseObj = entry.response || {};
     const systemStats = textStats(promptObj.system);
@@ -353,12 +264,11 @@ export class Logger {
     };
 
     const promptFileAbs = await writePromptFile(promptDir, entry.requestId, promptPayload);
-    // Record promptFile as a path relative to cwd so it can be opened from the project root.
-    const promptFileRel = promptFileAbs
-      ? path.relative(this.#cwd || process.cwd(), promptFileAbs).split(path.sep).join("/")
-      : null;
+    const promptFileRel = promptFileAbs && this.#cwd
+      ? path.relative(this.#cwd, promptFileAbs).split(path.sep).join("/")
+      : promptFileAbs;
 
-    const line = {
+    await appendJsonl(jsonl, {
       ...this.#commonFields(),
       type: "agent",
       phase: "end",
@@ -385,24 +295,7 @@ export class Logger {
         outputTokens: entry.usage.output_tokens,
         costUsd: entry.usage.cost_usd,
       }),
-    };
-    await appendJsonl(jsonl, line);
-
-    // Accumulate token/cost metrics into flow.json (R1-1).
-    // Only when an active SDD phase is known; silently skips otherwise (R1-2).
-    if (ctx.sddPhase) {
-      try {
-        const fm = await resolveFlowManagerForCwd(this.#cwd);
-        fm?.accumulateAgentMetrics(
-          ctx.sddPhase,
-          entry.usage ?? null,
-          responseStats.chars,
-          entry.model ?? null,
-        );
-      } catch (err) {
-        process.stderr.write(`[sdd-forge] Logger: failed to accumulate metrics: ${err.message}\n`);
-      }
-    }
+    });
   }
 
   /**
@@ -417,10 +310,10 @@ export class Logger {
   }
 
   async #gitImpl(entry) {
-    if (!this.#isActive()) return;
-    const { jsonl } = this.#logFile();
+    if (!this.#enabled) return;
+    const { jsonl } = this.#logFiles();
     const caller = extractCaller();
-    const line = {
+    await appendJsonl(jsonl, {
       ...this.#commonFields(),
       type: "git",
       cmd: entry?.cmd ?? null,
@@ -428,8 +321,7 @@ export class Logger {
       stderr: entry?.stderr ?? "",
       callerFile: caller.callerFile,
       callerLine: caller.callerLine,
-    };
-    await appendJsonl(jsonl, line);
+    });
   }
 
   /**
@@ -442,17 +334,16 @@ export class Logger {
   }
 
   async #eventImpl(name, fields = {}) {
-    if (!this.#isActive()) return;
-    const { jsonl } = this.#logFile();
+    if (!this.#enabled) return;
+    const { jsonl } = this.#logFiles();
     const caller = extractCaller();
-    const line = {
+    await appendJsonl(jsonl, {
       ...this.#commonFields(),
       type: "event",
       name,
       ...fields,
       callerFile: caller.callerFile,
       callerLine: caller.callerLine,
-    };
-    await appendJsonl(jsonl, line);
+    });
   }
 }

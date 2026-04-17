@@ -27,7 +27,7 @@ function makeAgent(profile, { config, paths } = {}) {
     config: cfg,
     paths: { root, agentWorkDir, ...(paths || {}) },
     registry,
-    logger: Logger.getInstance(),
+    logger: new Logger({ logDir: os.tmpdir(), enabled: false }),
   });
 }
 

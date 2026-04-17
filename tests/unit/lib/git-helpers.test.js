@@ -1,5 +1,8 @@
 /**
- * Tests for runGit (spec 176-refactor-runcmd-git-logging).
+ * Tests for runGit.
+ *
+ * runGit reads the Logger from the Container, so tests register a test
+ * Logger into the container before exercising the helper.
  *
  * Verifies:
  *   R1  業務 git 操作のロギング (cmd, exitCode, stderr)
@@ -16,6 +19,7 @@ import os from "node:os";
 import { runGit } from "../../../src/lib/git-helpers.js";
 import { runCmd } from "../../../src/lib/process.js";
 import { Logger } from "../../../src/lib/log.js";
+import { container } from "../../../src/lib/container.js";
 import { todayLocal, readJsonl } from "../../helpers/log-fixtures.js";
 
 function initRepo(dir) {
@@ -27,20 +31,28 @@ function initRepo(dir) {
   runCmd("git", ["-C", dir, "commit", "-q", "-m", "init"]);
 }
 
+function registerLogger(logDir) {
+  fs.mkdirSync(logDir, { recursive: true });
+  const logger = new Logger({ logDir, enabled: true, entryCommand: "test" });
+  container.reset();
+  container.register("logger", logger);
+  return logger;
+}
+
 describe("runGit — basic logging", () => {
   let tmpDir;
+  let logger;
 
   beforeEach(() => {
     tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "rungit-"));
     initRepo(tmpDir);
-    Logger._resetForTest();
-    Logger.getInstance().init(tmpDir, { logs: { enabled: true, dir: path.join(tmpDir, "logs") } });
+    logger = registerLogger(path.join(tmpDir, "logs"));
   });
 
   afterEach(async () => {
-    await Logger.getInstance().flush();
+    await logger.flush();
     fs.rmSync(tmpDir, { recursive: true, force: true });
-    Logger._resetForTest();
+    container.reset();
   });
 
   it("R1: returns runCmd-compatible result on success and writes a git log record", async () => {
@@ -50,7 +62,7 @@ describe("runGit — basic logging", () => {
     assert.equal(typeof result.stdout, "string");
     assert.equal(typeof result.stderr, "string");
 
-    await Logger.getInstance().flush();
+    await logger.flush();
     const jsonl = path.join(tmpDir, "logs", `sdd-forge-${todayLocal()}.jsonl`);
     const lines = readJsonl(jsonl);
     const gitLines = lines.filter((l) => l.type === "git");
@@ -66,7 +78,7 @@ describe("runGit — basic logging", () => {
     assert.notEqual(result.status, 0);
     assert.ok(result.stderr.length > 0, "stderr should be captured");
 
-    await Logger.getInstance().flush();
+    await logger.flush();
     const jsonl = path.join(tmpDir, "logs", `sdd-forge-${todayLocal()}.jsonl`);
     const lines = readJsonl(jsonl);
     const gitLines = lines.filter((l) => l.type === "git");
@@ -76,9 +88,10 @@ describe("runGit — basic logging", () => {
   });
 });
 
-describe("runGit — worktree recursion regression (R2)", () => {
+describe("runGit — worktree regression (R2)", () => {
   let mainDir;
   let worktreeDir;
+  let logger;
 
   beforeEach(() => {
     mainDir = fs.mkdtempSync(path.join(os.tmpdir(), "rungit-main-"));
@@ -87,28 +100,23 @@ describe("runGit — worktree recursion regression (R2)", () => {
     const r = runCmd("git", ["-C", mainDir, "worktree", "add", "-b", "feature-x", worktreeDir]);
     if (!r.ok) throw new Error("worktree add failed: " + r.stderr);
 
-    Logger._resetForTest();
-    // Use logs.dir override so the recursion path through resolveLogDir/getMainRepoPath is exercised
-    // only if the implementation chooses to; either way runGit must not blow up inside a worktree.
-    Logger.getInstance().init(worktreeDir, { logs: { enabled: true } });
+    // Simulate container init with main-repo-side log dir (matches buildPaths behavior).
+    logger = registerLogger(path.join(mainDir, ".tmp", "logs"));
   });
 
   afterEach(async () => {
-    await Logger.getInstance().flush();
+    await logger.flush();
     runCmd("git", ["-C", mainDir, "worktree", "remove", "--force", worktreeDir]);
     fs.rmSync(mainDir, { recursive: true, force: true });
     fs.rmSync(worktreeDir, { recursive: true, force: true });
-    Logger._resetForTest();
+    container.reset();
   });
 
-  it("does not recurse when called inside a worktree", async () => {
-    // If recursion is reintroduced, this call will exhaust the stack.
+  it("logs to the main-repo-side log dir even when called inside a worktree", async () => {
     const result = runGit(["status", "--short"], { cwd: worktreeDir });
     assert.equal(result.ok, true);
-    await Logger.getInstance().flush();
-    // A log file must have been created on the main repo side (worktree-aware log dir resolution).
-    const mainLogDir = path.join(mainDir, ".tmp", "logs");
-    const jsonl = path.join(mainLogDir, `sdd-forge-${todayLocal()}.jsonl`);
+    await logger.flush();
+    const jsonl = path.join(mainDir, ".tmp", "logs", `sdd-forge-${todayLocal()}.jsonl`);
     assert.ok(fs.existsSync(jsonl), `expected log file at ${jsonl}`);
     const lines = readJsonl(jsonl);
     const gitLines = lines.filter((l) => l.type === "git");
@@ -118,29 +126,29 @@ describe("runGit — worktree recursion regression (R2)", () => {
 
 describe("runCmd no longer logs git commands", () => {
   let tmpDir;
+  let logger;
 
   beforeEach(() => {
     tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "rungit-rc-"));
     initRepo(tmpDir);
-    Logger._resetForTest();
-    Logger.getInstance().init(tmpDir, { logs: { enabled: true, dir: path.join(tmpDir, "logs") } });
+    logger = registerLogger(path.join(tmpDir, "logs"));
   });
 
   afterEach(async () => {
-    await Logger.getInstance().flush();
+    await logger.flush();
     fs.rmSync(tmpDir, { recursive: true, force: true });
-    Logger._resetForTest();
+    container.reset();
   });
 
   it("R3: runCmd('git', ...) does NOT emit a git log record (use runGit instead)", async () => {
     const result = runCmd("git", ["status", "--short"], { cwd: tmpDir });
     assert.equal(result.ok, true);
-    await Logger.getInstance().flush();
+    await logger.flush();
     const jsonl = path.join(tmpDir, "logs", `sdd-forge-${todayLocal()}.jsonl`);
     if (fs.existsSync(jsonl)) {
       const lines = readJsonl(jsonl);
       const gitLines = lines.filter((l) => l.type === "git");
-      assert.equal(gitLines.length, 0, "runCmd should not log git records (only runGit does)");
+      assert.equal(gitLines.length, 0);
     }
   });
 });
