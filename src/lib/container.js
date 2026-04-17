@@ -2,7 +2,7 @@
  * src/lib/container.js
  *
  * Dependency container for CLI-wide initialized services (config, logger, paths,
- * agentResolver, i18n, flowState, etc.). Built once in src/sdd-forge.js and
+ * agent, i18n, flowState, etc.). Built once in src/sdd-forge.js and
  * referenced by all dispatchers and commands via the module-level `container`
  * export.
  */
@@ -11,7 +11,8 @@ import path from "path";
 import { repoRoot, sourceRoot, isInsideWorktree, getMainRepoPath } from "./cli.js";
 import { loadConfig, sddConfigPath, sddDir, sddOutputDir, resolveWorkDir } from "./config.js";
 import { Logger } from "./log.js";
-import { resolveAgent } from "./agent.js";
+import { Agent } from "./agent.js";
+import { ProviderRegistry } from "./provider.js";
 import { translate } from "./i18n.js";
 import { loadFlowState } from "./flow-state.js";
 
@@ -107,7 +108,8 @@ export function initContainer(opts = {}) {
   container.register("inWorktree", isInsideWorktree(root));
   container.register("mainRoot", isInsideWorktree(root) ? getMainRepoPath(root) : root);
   container.register("flowState", loadFlowState(root));
-  container.register("agentResolver", (commandId) => resolveAgent(config, commandId));
+  const registry = new ProviderRegistry(config?.agent?.providers || {});
+  container.register("agent", new Agent({ config, paths, registry, logger }));
   container.register("i18n", translate());
   container.register("lang", config?.lang);
 }

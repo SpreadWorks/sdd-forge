@@ -12,7 +12,6 @@ import fs from "fs";
 import path from "path";
 import { repoRoot, parseArgs } from "../../lib/cli.js";
 import { loadPackageField } from "../../lib/config.js";
-import { callAgentWithLog } from "../../lib/agent.js";
 import { resolveTemplates, mergeResolved, resolveChaptersOrder, translateTemplate } from "../lib/template-merger.js";
 import { summaryToText } from "../lib/forge-prompts.js";
 import { createLogger } from "../../lib/progress.js";
@@ -38,7 +37,7 @@ const logger = createLogger("init");
  * @param {string} purpose - documentStyle.purpose
  * @returns {{ fileName: string, content: string }[]}
  */
-function aiFilterChapters(chapters, analysis, agent, root, purpose) {
+async function aiFilterChapters(chapters, analysis, agent, _root, purpose) {
   const summary = summaryToText(analysis);
   const chapterList = chapters.map((ch) => {
     // 章タイトル（最初の # 行）を抽出
@@ -82,7 +81,7 @@ function aiFilterChapters(chapters, analysis, agent, root, purpose) {
 
   let response;
   try {
-    response = callAgentWithLog(agent, prompt, 60000, root);
+    response = await agent.call(prompt, { commandId: "docs.init" });
   } catch (err) {
     logger.log(`[init] WARN: AI chapter selection failed: ${err.message}`);
     return chapters;
@@ -127,7 +126,7 @@ function aiFilterChapters(chapters, analysis, agent, root, purpose) {
 // ---------------------------------------------------------------------------
 // メイン処理
 // ---------------------------------------------------------------------------
-function main(ctx) {
+async function main(ctx) {
   // CLI モード: 引数をパースしてコンテキストを構築
   if (!ctx) {
     const cli = parseArgs(process.argv.slice(2), {
@@ -186,7 +185,7 @@ function main(ctx) {
     let content = mergeResolved(res.sources, res.additive);
     if (content === null) continue;
     if (res.action === "translate" && agent) {
-      content = translateTemplate(content, res.from, res.to, agent, root);
+      content = await translateTemplate(content, res.from, res.to, agent, root);
     }
     chapters.push({ fileName: res.fileName, content });
   }
@@ -210,7 +209,7 @@ function main(ctx) {
   } else if (analysis && agent) {
     logger.verbose("AI chapter selection...");
     const summaryData = loadAnalysisData(root);
-    filteredChapters = aiFilterChapters(
+    filteredChapters = await aiFilterChapters(
       filteredChapters,
       summaryData,
       agent,

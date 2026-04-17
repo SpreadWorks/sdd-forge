@@ -1,7 +1,22 @@
 import { describe, it, afterEach } from "node:test";
 import assert from "node:assert/strict";
 import { createTmpDir, removeTmpDir } from "../../../helpers/tmp-dir.js";
+import path from "path";
 import { processTemplateFileBatch, countFilledInBatch } from "../../../../src/docs/commands/text.js";
+import { Agent } from "../../../../src/lib/agent.js";
+import { ProviderRegistry } from "../../../../src/lib/provider.js";
+import { Logger } from "../../../../src/lib/log.js";
+
+function makeAgent(profile, root) {
+  const config = { agent: { default: "test/exec", providers: { "test/exec": profile }, timeout: 300 } };
+  const registry = new ProviderRegistry(config.agent.providers);
+  return new Agent({
+    config,
+    paths: { root, agentWorkDir: path.join(root, ".tmp") },
+    registry,
+    logger: Logger.getInstance(),
+  });
+}
 
 /**
  * README.md の {{text}} 処理に関するテスト。
@@ -46,18 +61,16 @@ describe("README.md text directive processing", () => {
       d0: "This is the project overview.",
       d1: "| Node.js | >= 18.0.0 |",
     });
-    const agent = {
+    const agent = makeAgent({
       command: "node",
       args: ["-e", `process.stdout.write(${JSON.stringify(jsonResponse)})`, "{{PROMPT}}"],
-    };
+    }, tmp);
 
     const result = await processTemplateFileBatch(
       readmeContent,
       {},
       "README.md",
       agent,
-      10000,
-      tmp,
       false,
       [],
       "",

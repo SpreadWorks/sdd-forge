@@ -13,7 +13,6 @@ import fs from "fs";
 import path from "path";
 import { parseBlocks, BLOCK_START_RE, BLOCK_END_RE } from "./directive-parser.js";
 import { resolveChainSafe, resolveMultiChains } from "../../lib/presets.js";
-import { callAgentWithLog } from "../../lib/agent.js";
 
 const SPECIAL_FILES = new Set(["README.md", "AGENTS.sdd.md", "layout.md"]);
 
@@ -418,7 +417,7 @@ export function resolveChaptersOrder(presetKeys, configChapters, projectRoot) {
  * @param {string} [root] - プロジェクトルート
  * @returns {string}
  */
-export function translateTemplate(content, fromLang, toLang, agent, root) {
+export async function translateTemplate(content, fromLang, toLang, agent, _root) {
   const prompt = [
     `Translate the following Markdown template from ${fromLang} to ${toLang}.`,
     "",
@@ -434,9 +433,9 @@ export function translateTemplate(content, fromLang, toLang, agent, root) {
   ].join("\n");
 
   try {
-    return callAgentWithLog(agent, prompt, 60000, root);
+    return await agent.call(prompt, { commandId: "docs.init" });
   } catch (err) {
-    // Translation failed — return original
+    process.stderr.write(`[sdd-forge] template translation failed: ${err.message}\n`);
     return content;
   }
 }

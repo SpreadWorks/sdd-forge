@@ -28,7 +28,7 @@ export function resolveDocsContext(container, cli, overrides) {
       : path.join(root, "docs");
 
   const commandId = o.commandId || undefined;
-  const agent = container.get("agentResolver")(commandId);
+  const agent = container.get("agent");
   const t = container.get("i18n");
 
   return {

@@ -1,0 +1,47 @@
+{
+  "data": {
+    "implementation": {
+      "diffStat": "specs/183-agent-service-refactor/draft.md        | 103 +++\n specs/183-agent-service-refactor/flow.json       | 191 +++++\n specs/183-agent-service-refactor/issue-log.json  | 101 +++\n specs/183-agent-service-refactor/qa.md           |   9 +\n specs/183-agent-service-refactor/spec.md         | 137 ++++\n specs/183-agent-service-refactor/tests/README.md |  30 +\n src/docs/commands/agents.js                      |  10 +-\n src/docs/commands/enrich.js                      |  10 +-\n src/docs/commands/forge.js                       |  31 +-\n src/docs/commands/init.js                        |  11 +-\n src/docs/commands/readme.js                      |  14 +-\n src/docs/commands/text.js                        |  54 +-\n src/docs/commands/translate.js                   |   6 +-\n src/docs/lib/docs-context.js                     |   2 +-\n src/docs/lib/template-merger.js                  |   7 +-\n src/flow/commands/review.js                      |  53 +-\n src/flow/lib/get-context.js                      |  25 +-\n src/flow/lib/run-gate.js                         |  30 +-\n src/flow/lib/run-retro.js                        |   9 +-\n src/flow/lib/run-review.js                       |   2 +-\n src/lib/agent.js                                 | 951 ++++++++---------------\n src/lib/config.js                                |   8 +-\n src/lib/container.js                             |   8 +-\n src/lib/log.js                                   |   2 +-\n src/lib/provider.js                              | 209 +++++\n src/setup.js                                     |  11 +-\n tests/acceptance/lib/ai-verify.js                |  15 +-\n tests/acceptance/lib/pipeline.js                 |   9 +-\n tests/e2e/052-agent-command-config.test.js       | 225 ------\n tests/e2e/142-agent-timeout-config.test.js       | 126 ---\n tests/unit/docs/commands/init.test.js            |  68 +-\n tests/unit/docs/commands/readme-text.test.js     |  21 +-\n tests/unit/docs/commands/text-batch.test.js      |  32 +-\n tests/unit/docs/enrich-dump-path.test.js         |   2 +-\n tests/unit/flow/commands/review.test.js          |  16 +-\n tests/unit/lib/agent-profiles.test.js            | 207 -----\n tests/unit/lib/agent-service.test.js             | 148 ++++\n tests/unit/lib/agent-with-logger.test.js         | 116 +--\n tests/unit/lib/agent.test.js                     | 325 +++-----\n tests/unit/lib/docs-context.test.js              |   2 +-\n tests/unit/lib/provider.test.js                  | 143 ++++\n 41 files changed, 1772 insertions(+), 1707 deletions(-)",
+      "commits": [
+        "feat: feature/183-agent-service-refactor"
+      ]
+    },
+    "retro": {
+      "total": 9,
+      "done": 8,
+      "partial": 1,
+      "not_done": 0,
+      "rate": 0.94,
+      "notes": "R1-R5, R7-R9 は概ね満たしている。主な未達は R6 で、provider 判定に command 文字列マッチが残存しているため完全達成ではない。"
+    },
+    "issueLog": {
+      "count": 0,
+      "entries": []
+    },
+    "metrics": {
+      "docsRead": 1,
+      "srcRead": 0,
+      "question": 6,
+      "issueLog": 2
+    },
+    "tokenMetrics": {
+      "input": 870200,
+      "output": 17125,
+      "cacheRead": 225152,
+      "cacheCreation": 0,
+      "cost": null,
+      "callCount": 17
+    },
+    "tests": {
+      "unit": 2,
+      "integration": 0,
+      "acceptance": 0,
+      "total": 2
+    },
+    "sync": {
+      "status": "skipped",
+      "reason": "sync was skipped"
+    }
+  },
+  "text": "  Report\n\n  Implementation\n  ────────────────────────────────────────────────\n    feat: feature/183-agent-service-refactor\n    41 files changed, 1772 insertions(+), 1707 deletions(-)\n\n  Retro\n  ────────────────────────────────────────────────\n    ████████ 94%  (8 done / 1 partial / 0 miss)\n\n  Metrics\n  ────────────────────────────────────────────────\n    docs read ................... 1\n    src read .................... 0\n    Q&A ......................... 6\n    issue-log ................... 2\n    agent calls ................. 17\n    input tokens ................ 870,200\n    output tokens ............... 17,125\n    cache-read tokens ........... 225,152\n    cache-create tokens ......... 0\n    cost ........................ N/A\n\n  Tests\n  ────────────────────────────────────────────────\n    unit 2  integration 0  acceptance 0  total 2"
+}

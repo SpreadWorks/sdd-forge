@@ -15,7 +15,7 @@ import path from "path";
 import { sddOutputDir, loadConfig } from "../../lib/config.js";
 import { FlowCommand } from "./base-command.js";
 import { ANALYSIS_META_KEYS } from "../../docs/lib/analysis-entry.js";
-import { resolveAgent, callAgentWithLog, ensureAgentWorkDir } from "../../lib/agent.js";
+import { container } from "../../lib/container.js";
 
 const EXCLUDE_FIELDS = new Set(["hash", "mtime", "lines", "id", "enrich", "detail"]);
 
@@ -209,21 +209,19 @@ function ngramSearch(allEntries, query) {
  * @param {string} root - Project root path
  * @returns {Object[]} Matched entries
  */
-function aiSearch(allEntries, analysis, query, root) {
+async function aiSearch(allEntries, analysis, query, _root) {
   const allKeywords = collectAllKeywords(analysis);
   if (allKeywords.length === 0) return fallbackSearch(allEntries, query);
 
-  let config;
-  try { config = loadConfig(root); } catch (_) { config = {}; }
-  const agent = resolveAgent(config, "flow.context.search");
-  if (!agent) return fallbackSearch(allEntries, query);
+  const agent = container.get("agent");
+  if (!agent.resolve("flow.context.search")) return fallbackSearch(allEntries, query);
 
   const prompt = buildKeywordSelectionPrompt(allKeywords, query);
-  ensureAgentWorkDir(agent, root);
   let response;
   try {
-    response = callAgentWithLog(agent, prompt, 30000, root);
-  } catch (_) {
+    response = await agent.call(prompt, { commandId: "flow.context.search" });
+  } catch (err) {
+    process.stderr.write(`[sdd-forge] context aiSearch agent call failed: ${err.message}\n`);
     return fallbackSearch(allEntries, query);
   }
 
@@ -233,7 +231,8 @@ function aiSearch(allEntries, analysis, query, root) {
     const cleaned = response.trim().replace(/^```(?:json)?\s*\n?/i, "").replace(/\n?```\s*$/i, "");
     selectedKeywords = JSON.parse(cleaned);
     if (!Array.isArray(selectedKeywords)) return fallbackSearch(allEntries, query);
-  } catch (_) {
+  } catch (err) {
+    process.stderr.write(`[sdd-forge] context aiSearch JSON parse failed: ${err.message}\n`);
     return fallbackSearch(allEntries, query);
   }
 
@@ -276,7 +275,7 @@ function aiSearch(allEntries, analysis, query, root) {
  * @param {string} mode - Search mode ("ngram" or "ai")
  * @returns {Object[]} Matched entries
  */
-function contextSearch(allEntries, analysis, query, root, mode = "ngram") {
+async function contextSearch(allEntries, analysis, query, root, mode = "ngram") {
   if (mode === "ai") {
     return aiSearch(allEntries, analysis, query, root);
   }
@@ -349,7 +348,7 @@ function loadAnalysisEntries(root) {
 }
 
 export default class GetContextCommand extends FlowCommand {
-  execute(ctx) {
+  async execute(ctx) {
     const { root } = ctx;
     const filePath = ctx.filePath || null;
     const searchQuery = ctx.searchQuery || null;
@@ -378,7 +377,7 @@ export default class GetContextCommand extends FlowCommand {
       let config;
       try { config = loadConfig(root); } catch (_e) { config = {}; }
       const searchMode = config?.flow?.commands?.context?.search?.mode ?? "ngram";
-      const results = contextSearch(allEntries, analysis, searchQuery, root, searchMode);
+      const results = await contextSearch(allEntries, analysis, searchQuery, root, searchMode);
 
       return {
         total: results.length,

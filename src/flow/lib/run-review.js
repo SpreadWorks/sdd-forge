@@ -7,7 +7,7 @@
 
 import { PKG_DIR } from "../../lib/cli.js";
 import { runCmd } from "../../lib/process.js";
-import { DEFAULT_AGENT_TIMEOUT_MS } from "../../lib/agent.js";
+const DEFAULT_AGENT_TIMEOUT_MS = 300_000;
 import { VALID_REVIEW_PHASES } from "../../lib/constants.js";
 import { FlowCommand } from "./base-command.js";
 import path from "path";

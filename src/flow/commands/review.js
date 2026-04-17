@@ -14,15 +14,23 @@ import path from "path";
 import { repoRoot, parseArgs } from "../../lib/cli.js";
 import { loadConfig } from "../../lib/config.js";
 import { loadFlowState, getSpecName } from "../../lib/flow-state.js";
-import { loadAgentConfig, callAgentAwaitLog, resolveAgent, ensureAgentWorkDir } from "../../lib/agent.js";
+import { container } from "../../lib/container.js";
 
 /**
- * Local helper for review-phase agent invocations. All review calls use the
- * same default timeout and pass `root` as cwd, so this collapses the repeated
- * `(agent, prompt, undefined, root, { systemPrompt })` boilerplate.
+ * Local helper for review-phase agent invocations. The Agent service handles
+ * timeout and cwd internally; callers only provide the system prompt and
+ * (optionally) commandId.
  */
-const callReviewAgent = (agent, prompt, root, systemPrompt) =>
-  callAgentAwaitLog(agent, prompt, undefined, root, { systemPrompt });
+const callReviewAgent = (agent, prompt, commandId, systemPrompt) =>
+  agent.call(prompt, { commandId, systemPrompt });
+
+function ensureAgent(commandId) {
+  const agent = container.get("agent");
+  if (!agent.resolve(commandId)) {
+    throw new Error(`no AI agent configured for ${commandId} (set agent.default in config.json)`);
+  }
+  return agent;
+}
 import { runGit } from "../../lib/git-helpers.js";
 import { EXIT_ERROR } from "../../lib/constants.js";
 import { VALID_PHASES } from "../../lib/constants.js";
@@ -535,14 +543,13 @@ async function runTestReview(root, flow, config, dryRun) {
     process.exit(EXIT_ERROR);
   }
 
-  const agent = loadAgentConfig(config, "flow.test.review");
-  ensureAgentWorkDir(agent, root);
+  const agent = ensureAgent("flow.test.review");
 
   // Step 1: Generate test design
   console.error("  [test-review] Generating test design...");
   const testDesignPrompt = buildTestDesignPrompt(requirements);
   const testDesign = await callReviewAgent(
-    agent, testDesignPrompt, root,
+    agent, testDesignPrompt, "flow.test.review",
     "You are a test design expert. Output a structured test design.",
   );
   // Save test design as tests/spec.md
@@ -562,7 +569,7 @@ async function runTestReview(root, flow, config, dryRun) {
     async detect() {
       const detectPrompt = buildGapAnalysisPrompt(testDesign, testFiles);
       const raw = await callReviewAgent(
-        agent, detectPrompt, root,
+        agent, detectPrompt, "flow.test.review",
         "You are a test quality reviewer. Identify gaps between test design and test code.",
       );
       return { issues: parseGaps(raw), raw };
@@ -570,7 +577,7 @@ async function runTestReview(root, flow, config, dryRun) {
     async fix(raw) {
       const fixPrompt = buildTestFixPrompt(raw, testFiles);
       const fixResult = await callReviewAgent(
-        agent, fixPrompt, root,
+        agent, fixPrompt, "flow.test.review",
         "You are a test engineer. Fix test gaps by writing complete updated test files.",
       );
       const written = applyTestFixes(fixResult, root);
@@ -719,10 +726,8 @@ async function runSpecReview(root, flow, config, dryRun) {
     console.error(`  [spec-review] Warning: failed to load codebase context: ${e.message}`);
   }
 
-  const agent = loadAgentConfig(config, "flow.spec.review");
-  ensureAgentWorkDir(agent, root);
-  const validationAgent = loadAgentConfig(config, "flow.impl.review.final");
-  ensureAgentWorkDir(validationAgent, root);
+  const agent = ensureAgent("flow.spec.review");
+  ensureAgent("flow.impl.review.final");
 
   const { history, finalIssues, verdict } = await runReviewLoop({
     maxRetries: MAX_REVIEW_RETRIES,
@@ -735,12 +740,12 @@ async function runSpecReview(root, flow, config, dryRun) {
       if (analysisData) {
         const searchQuery = extractGoalAndScope(specText);
         if (searchQuery) {
-          contextEntries = analysisData.ctxSearch(analysisData.entries, analysisData.analysis, searchQuery, root);
+          contextEntries = await analysisData.ctxSearch(analysisData.entries, analysisData.analysis, searchQuery, root);
         }
       }
       const detectPrompt = buildSpecReviewPrompt(specText, contextEntries);
       const raw = await callReviewAgent(
-        agent, detectPrompt, root,
+        agent, detectPrompt, "flow.spec.review",
         "You are a spec completeness reviewer. Identify oversights in the spec.",
       );
       if (raw.includes("NO_PROPOSALS")) return { issues: [], raw };
@@ -759,7 +764,7 @@ async function runSpecReview(root, flow, config, dryRun) {
         specText,
       ].join("\n");
       const validationResult = await callReviewAgent(
-        validationAgent, validationPrompt, root, buildFinalSystemPrompt(),
+        agent, validationPrompt, "flow.impl.review.final", buildFinalSystemPrompt(),
       );
       const results = mergeVerdicts(validationResult, proposals);
       const approved = results.filter((r) => r.verdict === "APPROVED");
@@ -774,7 +779,7 @@ async function runSpecReview(root, flow, config, dryRun) {
       const approvedText = approved.map((p, i) => `### ${i + 1}. ${p.title}\n${p.body}`).join("\n\n");
       const specFixPrompt = buildSpecFixPrompt(specText, approvedText);
       const fixResult = await callReviewAgent(
-        agent, specFixPrompt, root,
+        agent, specFixPrompt, "flow.spec.review",
         "You are a spec writer. Apply the approved proposals to produce an updated spec.",
       );
 
@@ -865,9 +870,8 @@ async function main() {
 
   // --- Draft phase ---
   console.error("  [draft] Generating proposals...");
-  const draftAgent = loadAgentConfig(config, "flow.impl.review.draft");
-  ensureAgentWorkDir(draftAgent, root);
-  const draftResult = await callReviewAgent(draftAgent, diff, root, buildDraftSystemPrompt());
+  const draftAgent = ensureAgent("flow.impl.review.draft");
+  const draftResult = await callReviewAgent(draftAgent, diff, "flow.impl.review.draft", buildDraftSystemPrompt());
 
   if (draftResult.includes("NO_PROPOSALS")) {
     console.log("No improvement proposals found. Code looks good.");
@@ -888,8 +892,7 @@ async function main() {
 
   // --- Final phase ---
   console.error("  [final] Validating proposals...");
-  const finalAgent = loadAgentConfig(config, "flow.impl.review.final");
-  ensureAgentWorkDir(finalAgent, root);
+  const finalAgent = ensureAgent("flow.impl.review.final");
   const finalPrompt = [
     "Validate these refactoring proposals:",
     "",
@@ -899,7 +902,7 @@ async function main() {
     diff,
   ].join("\n");
 
-  const finalResult = await callReviewAgent(finalAgent, finalPrompt, root, buildFinalSystemPrompt());
+  const finalResult = await callReviewAgent(finalAgent, finalPrompt, "flow.impl.review.final", buildFinalSystemPrompt());
 
   const results = mergeVerdicts(finalResult, proposals);
   const approved = results.filter((r) => r.verdict === "APPROVED");

@@ -1,0 +1,85 @@
+{
+  "spec": "specs/183-agent-service-refactor/spec.md",
+  "date": "2026-04-17T10:27:41.450Z",
+  "requirements": [
+    {
+      "desc": "R1: 共有のエージェントサービス経由でのみ呼び出し、旧公開関数を削除",
+      "status": "done",
+      "note": "呼び出し元は `container.get(\"agent\")` 経由に移行し、`src/lib/agent.js` から旧直接呼び出し関数 export は削除されている。"
+    },
+    {
+      "desc": "R2: 呼び出し API から timeoutMs/cwd 引数を廃止、内部解決",
+      "status": "done",
+      "note": "`Agent.call(prompt, options)` に統一され、timeout/cwd はサービス内部（config/paths）で解決される実装になっている。"
+    },
+    {
+      "desc": "R3: 子プロセス起動方式を hang しない非同期に統一、同期経路廃止",
+      "status": "done",
+      "note": "`execFileSync` 系は除去され、`spawn` ベース非同期呼び出しのみが残っている。"
+    },
+    {
+      "desc": "R4: provider 宣言の workDir フラグにサービスが設定解決済み workDir を自動付与",
+      "status": "done",
+      "note": "Provider.workDirFlag()` と `injectWorkDirFlag()` でサービスが workDir を自動注入し、codex builtin args の `-C .tmp` ハードコードも除去されている。"
+    },
+    {
+      "desc": "R5: argv 閾値を設定キー化、既定 100000 bytes",
+      "status": "done",
+      "note": "`agent.stdinFallbackThreshold` が設定スキーマに追加され、未指定時 `100000` を使って stdin フォールバック判定している。"
+    },
+    {
+      "desc": "R6: provider 別ドメイン知識を provider ごとの単一定義箇所に集約",
+      "status": "partial",
+      "note": "parse/jsonFlag/systemPromptFlag/workDirFlag/builtinProfiles は `src/lib/provider.js` に集約されたが、provider 判定で `resolveByCommand(command.includes(...))` の文字列マッチが残っている。"
+    },
+    {
+      "desc": "R7: 旧公開関数の export を全削除",
+      "status": "done",
+      "note": "`src/lib/agent.js` は `Agent` クラス export のみに整理され、旧 API export は見当たらない。"
+    },
+    {
+      "desc": "R8: 呼び出し元を非同期に統一",
+      "status": "done",
+      "note": "docs/flow 各呼び出し元が `await agent.call(...)` に移行し、同期呼び出し利用は削除されている。"
+    },
+    {
+      "desc": "R9: リトライは既定 0、上限 5、間隔既定 3000ms",
+      "status": "done",
+      "note": "`Agent` 内で `retryCount` は default 0・max 5 にクランプ、`retryDelayMs` default 3000ms を実装している。"
+    }
+  ],
+  "unplanned": [
+    {
+      "file": "src/flow/lib/run-review.js",
+      "change": "`DEFAULT_AGENT_TIMEOUT_MS` を `agent.js` import から固定値 `300_000` 定数へ変更している。"
+    },
+    {
+      "file": "src/docs/lib/template-merger.js",
+      "change": "翻訳失敗時の挙動が無言フォールバックから stderr ログ出力付きフォールバックに変更されている。"
+    },
+    {
+      "file": "src/flow/lib/get-context.js",
+      "change": "AI検索失敗/JSON parse失敗時に stderr へ警告ログを追加している。"
+    },
+    {
+      "file": "tests/e2e/052-agent-command-config.test.js",
+      "change": "E2E テストファイルを削除している（要件に明示なし）。"
+    },
+    {
+      "file": "tests/e2e/142-agent-timeout-config.test.js",
+      "change": "E2E テストファイルを削除している（要件に明示なし）。"
+    },
+    {
+      "file": "specs/183-agent-service-refactor/*",
+      "change": "spec/draft/flow/issue-log/qa/tests README などの仕様運用ファイルが新規追加されている。"
+    }
+  ],
+  "summary": {
+    "total": 9,
+    "done": 8,
+    "partial": 1,
+    "not_done": 0,
+    "rate": 0.94,
+    "notes": "R1-R5, R7-R9 は概ね満たしている。主な未達は R6 で、provider 判定に command 文字列マッチが残存しているため完全達成ではない。"
+  }
+}

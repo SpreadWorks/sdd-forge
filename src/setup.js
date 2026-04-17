@@ -21,7 +21,7 @@ import { createI18n } from "./lib/i18n.js";
 import { PRESETS, resolveMultiChains } from "./lib/presets.js";
 import { buildTreeItems, select } from "./lib/multi-select.js";
 import { loadSddTemplate } from "./lib/agents-md.js";
-import { ensureAgentWorkDir } from "./lib/agent.js";
+import { resolveWorkDir } from "./lib/config.js";
 import { deploySkills } from "./lib/skills.js";
 
 // ---------------------------------------------------------------------------
@@ -498,7 +498,7 @@ async function main() {
   if (!config.flow) config.flow = { merge: "squash" };
 
   if (settings.agent) {
-    // Normalize short names to namespaced provider keys used in BUILTIN_PROVIDERS
+    // Normalize short names to namespaced provider keys
     const AGENT_PROVIDER_DEFAULT = { claude: "claude/sonnet", codex: "codex/gpt-5.4" };
     const resolvedDefault = AGENT_PROVIDER_DEFAULT[settings.agent] || settings.agent;
     const defaultAgent = { default: resolvedDefault, workDir: ".tmp" };
@@ -524,9 +524,10 @@ async function main() {
   fs.writeFileSync(configPath, JSON.stringify(config, null, 2) + "\n", "utf8");
   console.log(t("setup.messages.configGenerated", { path: configPath }));
 
-  // Ensure agent work directories
-  for (const provider of Object.values(config.agent?.providers || {})) {
-    ensureAgentWorkDir(provider, workRoot);
+  // Ensure the resolved agent work directory exists
+  if (config.agent) {
+    const workDir = resolveWorkDir(workRoot, config);
+    fs.mkdirSync(workDir, { recursive: true });
   }
 
   // Agent config file

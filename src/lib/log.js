@@ -192,7 +192,7 @@ export class Logger {
 
   /**
    * Wait for all in-flight log writes (including fire-and-forget ones started
-   * by `callAgentWithLog`) to settle. Useful in tests to avoid timing-based
+   * by the Agent service) to settle. Useful in tests to avoid timing-based
    * waits when the caller does not await Logger calls directly.
    */
   async flush() {

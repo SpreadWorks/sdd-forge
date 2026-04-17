@@ -17,7 +17,7 @@ function buildContainer({ root = "/repo", config = {}, lang = "ja" } = {}) {
     logDir: path.join(root, ".tmp/logs"),
     configPath: path.join(root, ".sdd-forge/config.json"),
   });
-  c.register("agentResolver", () => null);
+  c.register("agent", { resolve: () => null, call: async () => "" });
   c.register("i18n", () => (k) => k);
   return c;
 }

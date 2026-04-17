@@ -14,7 +14,6 @@ import path from "path";
 import { parseArgs } from "../../lib/cli.js";
 import { resolveOutputConfig } from "../../lib/types.js";
 import { resolveConcurrency } from "../../lib/config.js";
-import { callAgentAsyncWithLog } from "../../lib/agent.js";
 import { createLogger } from "../../lib/progress.js";
 import { getChapterFiles, stripResponsePreamble } from "../lib/command-context.js";
 import { mapWithConcurrency } from "../lib/concurrency.js";
@@ -46,7 +45,7 @@ function toneInstruction(tone, toLang) {
   return map[tone] || "";
 }
 
-async function translateDocument(content, fromLang, toLang, agent, root, documentStyle) {
+async function translateDocument(content, fromLang, toLang, agent, _root, documentStyle) {
   const toneInstr = documentStyle?.tone ? toneInstruction(documentStyle.tone, toLang) : "";
 
   const systemPrompt = [
@@ -72,7 +71,8 @@ async function translateDocument(content, fromLang, toLang, agent, root, documen
 
   const prompt = content;
 
-  const result = await callAgentAsyncWithLog(agent, prompt, agent.timeoutMs, root, {
+  const result = await agent.call(prompt, {
+    commandId: "docs.translate",
     systemPrompt,
   });
 

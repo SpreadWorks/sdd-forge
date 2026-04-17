@@ -9,10 +9,10 @@
 import fs from "fs";
 import path from "path";
 import assert from "node:assert/strict";
-import { callAgent, loadAgentConfig } from "../../../src/lib/agent.js";
+import { Agent } from "../../../src/lib/agent.js";
+import { ProviderRegistry } from "../../../src/lib/provider.js";
+import { Logger } from "../../../src/lib/log.js";
 import { getChapterFiles } from "../../../src/docs/lib/command-context.js";
-
-const VERIFY_TIMEOUT_MS = 180000;
 
 const QUALITY_AXES = [
   "naturalness",
@@ -192,7 +192,12 @@ export function extractQualityData(result) {
  * @returns {{ quality: Object }} Evaluation results (throws on failure)
  */
 export async function verifyWithAI(tmp, config, presetName) {
-  const agent = loadAgentConfig(config);
+  const registry = new ProviderRegistry(config?.agent?.providers || {});
+  const paths = { root: tmp, agentWorkDir: path.join(tmp, ".tmp") };
+  const agent = new Agent({ config, paths, registry, logger: Logger.getInstance() });
+  if (!agent.resolve()) {
+    throw new Error("No agent configured. Set 'agent.default' in config.json.");
+  }
   const docsDir = path.join(tmp, "docs");
   const files = getChapterFiles(docsDir);
   const lang = config.docs?.defaultLanguage || config.lang || "en";
@@ -215,7 +220,7 @@ export async function verifyWithAI(tmp, config, presetName) {
   const fixtureDesc = buildFixtureDescription(tmp, presetName);
   const prompt = buildVerifyPrompt(fullDocs, fixtureDesc, lang);
 
-  const response = callAgent(agent, prompt, VERIFY_TIMEOUT_MS, tmp);
+  const response = await agent.call(prompt, {});
 
   let result;
   try {

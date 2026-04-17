@@ -1,14 +1,8 @@
 /**
- * Regression tests for callAgentWithLog / callAgentAwaitLog / callAgentAsyncWithLog
- * after they are rewritten to use the new Logger.agent() API.
+ * Logger integration tests for the Agent service.
  *
- * Spec 153-unified-jsonl-logger R5: external signature/return value preserved,
- * but the logCtx { spec, phase } argument is removed.
- *
- * Helpers should:
- *   - call Logger.agent({ phase: "start", requestId }) before invocation
- *   - call Logger.agent({ phase: "end", requestId, prompt, response, ... }) after
- *   - return the same trimmed response string as the underlying callAgent*
+ * The Agent service wraps every call() in Logger.agent() start/end events,
+ * preserving requestId across the pair and recording exitCode on failure.
  */
 import { describe, it, beforeEach, afterEach } from "node:test";
 import assert from "node:assert/strict";
@@ -16,20 +10,34 @@ import fs from "node:fs";
 import path from "node:path";
 import os from "node:os";
 
-import {
-  callAgentWithLog,
-  callAgentAwaitLog,
-  callAgentAsyncWithLog,
-} from "../../../src/lib/agent.js";
+import { Agent } from "../../../src/lib/agent.js";
+import { ProviderRegistry } from "../../../src/lib/provider.js";
 import { Logger } from "../../../src/lib/log.js";
 import { todayLocal, readJsonl } from "../../helpers/log-fixtures.js";
 
-describe("callAgentWithLog (sync) — Logger integration", () => {
+function makeAgentService(profile, tmpDir, configOverrides) {
+  const config = {
+    agent: {
+      default: "test/exec",
+      providers: { "test/exec": profile },
+      ...(configOverrides || {}),
+    },
+  };
+  const registry = new ProviderRegistry(config.agent.providers);
+  return new Agent({
+    config,
+    paths: { root: tmpDir, agentWorkDir: path.join(tmpDir, ".tmp") },
+    registry,
+    logger: Logger.getInstance(),
+  });
+}
+
+describe("Agent.call() — Logger integration", () => {
   let tmpDir;
   let logFile;
 
   beforeEach(() => {
-    tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "agent-log-sync-"));
+    tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "agent-log-"));
     logFile = path.join(tmpDir, `sdd-forge-${todayLocal()}.jsonl`);
     Logger._resetForTest();
     Logger.getInstance().init(tmpDir, { logs: { enabled: true, dir: tmpDir } }, { entryCommand: "test" });
@@ -40,15 +48,14 @@ describe("callAgentWithLog (sync) — Logger integration", () => {
     Logger._resetForTest();
   });
 
-  it("returns the same trimmed response as callAgent and writes start/end events", async () => {
-    const agent = { command: "echo", args: ["{{PROMPT}}"] };
-    const result = callAgentWithLog(agent, "hello");
+  it("returns the trimmed response and writes start + end events", async () => {
+    const agent = makeAgentService({ command: "echo", args: ["{{PROMPT}}"] }, tmpDir);
+    const result = await agent.call("hello", { commandId: "test" });
     assert.equal(result, "hello");
 
-    // callAgentWithLog fires Logger.agent without awaiting; flush deterministically.
     await Logger.getInstance().flush();
 
-    assert.ok(fs.existsSync(logFile), "log file should exist after callAgentWithLog");
+    assert.ok(fs.existsSync(logFile), "log file should exist after agent.call");
     const entries = readJsonl(logFile);
     const phases = entries.filter((e) => e.type === "agent").map((e) => e.phase);
     assert.ok(phases.includes("start"), "start event should be recorded");
@@ -59,38 +66,12 @@ describe("callAgentWithLog (sync) — Logger integration", () => {
     assert.equal(startEvent.requestId, endEvent.requestId, "start/end should share requestId");
   });
 
-  it("does NOT accept logCtx as a positional argument (R5: logCtx removed)", () => {
-    // The signature should have changed: no more logCtx between prompt and timeoutMs.
-    // Concretely, callAgentWithLog(agent, prompt, timeoutMs?, cwd?, options?)
-    // Passing 4 positional args (agent, prompt, timeoutMs, cwd) must work.
-    const agent = { command: "echo", args: ["{{PROMPT}}"] };
-    const result = callAgentWithLog(agent, "x", 5000, process.cwd());
-    assert.equal(result, "x");
-  });
-});
-
-describe("callAgentAwaitLog (sync awaited) — Logger integration", () => {
-  let tmpDir;
-  let logFile;
-
-  beforeEach(() => {
-    tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "agent-log-await-"));
-    logFile = path.join(tmpDir, `sdd-forge-${todayLocal()}.jsonl`);
-    Logger._resetForTest();
-    Logger.getInstance().init(tmpDir, { logs: { enabled: true, dir: tmpDir } }, { entryCommand: "test" });
-  });
-
-  afterEach(() => {
-    fs.rmSync(tmpDir, { recursive: true, force: true });
-    Logger._resetForTest();
-  });
-
-  it("awaits Logger.log and produces start + end + prompt file", async () => {
-    const agent = { command: "echo", args: ["{{PROMPT}}"] };
-    const result = await callAgentAwaitLog(agent, "world");
+  it("records the prompt file in the end event", async () => {
+    const agent = makeAgentService({ command: "echo", args: ["{{PROMPT}}"] }, tmpDir);
+    const result = await agent.call("world", { commandId: "test" });
     assert.equal(result, "world");
+    await Logger.getInstance().flush();
 
-    assert.ok(fs.existsSync(logFile));
     const entries = readJsonl(logFile);
     const endEvent = entries.find((e) => e.phase === "end");
     assert.ok(endEvent, "end event should be present");
@@ -98,38 +79,11 @@ describe("callAgentAwaitLog (sync awaited) — Logger integration", () => {
     const promptFilePath = path.resolve(tmpDir, endEvent.promptFile);
     assert.ok(fs.existsSync(promptFilePath), "prompt file should exist");
   });
-});
-
-describe("callAgentAsyncWithLog (async) — Logger integration", () => {
-  let tmpDir;
-  let logFile;
-
-  beforeEach(() => {
-    tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "agent-log-async-"));
-    logFile = path.join(tmpDir, `sdd-forge-${todayLocal()}.jsonl`);
-    Logger._resetForTest();
-    Logger.getInstance().init(tmpDir, { logs: { enabled: true, dir: tmpDir } }, { entryCommand: "test" });
-  });
-
-  afterEach(() => {
-    fs.rmSync(tmpDir, { recursive: true, force: true });
-    Logger._resetForTest();
-  });
-
-  it("records start + end events and returns trimmed response", async () => {
-    const agent = { command: "echo", args: ["{{PROMPT}}"] };
-    const result = await callAgentAsyncWithLog(agent, "async-hello");
-    assert.equal(result, "async-hello");
-
-    const entries = readJsonl(logFile);
-    const phases = entries.filter((e) => e.type === "agent").map((e) => e.phase);
-    assert.ok(phases.includes("start"));
-    assert.ok(phases.includes("end"));
-  });
 
   it("records end event with non-zero exitCode when agent fails", async () => {
-    const agent = { command: "node", args: ["-e", "process.exit(2)"] };
-    await assert.rejects(callAgentAsyncWithLog(agent, "x"));
+    const agent = makeAgentService({ command: "node", args: ["-e", "process.exit(2)"] }, tmpDir);
+    await assert.rejects(agent.call("x", { commandId: "test" }));
+    await Logger.getInstance().flush();
 
     assert.ok(fs.existsSync(logFile));
     const entries = readJsonl(logFile);

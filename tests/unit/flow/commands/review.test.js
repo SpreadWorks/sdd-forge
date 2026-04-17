@@ -4,7 +4,21 @@ import { join } from "path";
 import { execFileSync } from "child_process";
 import { createTmpDir, removeTmpDir } from "../../../helpers/tmp-dir.js";
 import { saveFlowState, loadFlowState, FLOW_STEPS } from "../../../../src/lib/flow-state.js";
-import { resolveAgent } from "../../../../src/lib/agent.js";
+import { Agent } from "../../../../src/lib/agent.js";
+import { ProviderRegistry } from "../../../../src/lib/provider.js";
+import { Logger } from "../../../../src/lib/log.js";
+
+function resolveAgent(cfg, commandId) {
+  const registry = new ProviderRegistry(cfg.agent?.providers || {});
+  const agent = new Agent({
+    config: cfg,
+    paths: { root: process.cwd(), agentWorkDir: "/tmp" },
+    registry,
+    logger: Logger.getInstance(),
+  });
+  const resolved = agent.resolve(commandId);
+  return resolved ? resolved.profile : null;
+}
 
 const FLOW_CMD = join(process.cwd(), "src/sdd-forge.js");
 const FLOW_CMD_ARGS_PREFIX = ["flow"];

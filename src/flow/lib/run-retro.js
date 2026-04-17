@@ -8,7 +8,7 @@
 import fs from "fs";
 import path from "path";
 import { runGit } from "../../lib/git-helpers.js";
-import { callAgentAwaitLog, resolveAgent, ensureAgentWorkDir } from "../../lib/agent.js";
+import { container } from "../../lib/container.js";
 import { repairJson } from "../../lib/json-parse.js";
 import { getSpecName } from "../../lib/flow-state.js";
 import { FlowCommand } from "./base-command.js";
@@ -183,18 +183,17 @@ export class RunRetroCommand extends FlowCommand {
       throw new Error("failed to load config");
     }
 
-    const agent = resolveAgent(config, "flow.finalize.retro");
-    if (!agent) {
+    const agent = container.get("agent");
+    if (!agent.resolve("flow.finalize.retro")) {
       throw new Error("no AI agent configured (agent.default or agent.profiles.<name>.flow.finalize.retro)");
     }
 
     // Build prompt and call AI
     const prompt = buildRetroPrompt(requirementsText, requirements, detailedDiff);
 
-    ensureAgentWorkDir(agent, root);
     let response;
     try {
-      response = await callAgentAwaitLog(agent, prompt, undefined, root);
+      response = await agent.call(prompt, { commandId: "flow.finalize.retro" });
     } catch (e) {
       throw new Error(`AI agent call failed: ${e.message}`);
     }

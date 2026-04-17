@@ -4,6 +4,20 @@ import fs from "fs";
 import path from "path";
 import { createTmpDir, removeTmpDir, writeFile, writeJson } from "../../../helpers/tmp-dir.js";
 import { processTemplateFileBatch } from "../../../../src/docs/commands/text.js";
+import { Agent } from "../../../../src/lib/agent.js";
+import { ProviderRegistry } from "../../../../src/lib/provider.js";
+import { Logger } from "../../../../src/lib/log.js";
+
+function makeAgent(profile, root) {
+  const config = { agent: { default: "test/exec", providers: { "test/exec": profile }, timeout: 300 } };
+  const registry = new ProviderRegistry(config.agent.providers);
+  return new Agent({
+    config,
+    paths: { root, agentWorkDir: path.join(root, ".tmp") },
+    registry,
+    logger: Logger.getInstance(),
+  });
+}
 
 describe("processTemplateFileBatch", () => {
   let tmp;
@@ -30,18 +44,16 @@ describe("processTemplateFileBatch", () => {
       d0: "This is the overview.",
       d1: "These are the details.",
     });
-    const agent = {
+    const agent = makeAgent({
       command: "node",
       args: ["-e", `process.stdout.write(${JSON.stringify(jsonResponse)})`, "{{PROMPT}}"],
-    };
+    }, tmp);
 
     const result = await processTemplateFileBatch(
       templateContent,
       { structure: {} },
       "test.md",
       agent,
-      10000,
-      tmp,
       false,
       [],
       "",
@@ -82,18 +94,16 @@ describe("processTemplateFileBatch", () => {
       d0: "New overview content.",
       d1: "New details content.",
     });
-    const agent = {
+    const agent = makeAgent({
       command: "node",
       args: ["-e", `process.stdout.write(${JSON.stringify(jsonResponse)})`, "{{PROMPT}}"],
-    };
+    }, tmp);
 
     const result = await processTemplateFileBatch(
       templateContent,
       { structure: {} },
       "test.md",
       agent,
-      10000,
-      tmp,
       false,
       [],
       "",
@@ -136,18 +146,16 @@ describe("processTemplateFileBatch", () => {
     ].join("\n");
 
     // agent that returns empty
-    const agent = {
+    const agent = makeAgent({
       command: "echo",
       args: ["-n", ""],
-    };
+    }, tmp);
 
     const result = await processTemplateFileBatch(
       templateContent,
       { structure: {} },
       "test.md",
       agent,
-      10000,
-      tmp,
       true,
       [],
       "",

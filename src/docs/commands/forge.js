@@ -21,7 +21,7 @@ import { PKG_DIR, repoRoot, parseArgs } from "../../lib/cli.js";
 import { loadConfig, resolveConcurrency } from "../../lib/config.js";
 import { loadFullAnalysis, loadAnalysisData, getChapterFiles, readText } from "../lib/command-context.js";
 import { createResolver } from "../lib/resolver-factory.js";
-import { callAgentAsyncWithLog, DEFAULT_AGENT_TIMEOUT_MS, resolveAgent } from "../../lib/agent.js";
+import { container } from "../../lib/container.js";
 import { translate } from "../../lib/i18n.js";
 import { EXIT_ERROR } from "../../lib/constants.js";
 import {
@@ -35,7 +35,6 @@ import {
   parseFileResults,
 } from "../lib/review-parser.js";
 
-const DEFAULT_TIMEOUT_MS = DEFAULT_AGENT_TIMEOUT_MS;
 const DEFAULT_WAIT_LOG_SEC = 1;
 const DEFAULT_MAX_RUNS = 3;
 const DEFAULT_REVIEW_CMD = "sdd-forge docs review";
@@ -132,18 +131,17 @@ function runCommand(cmdString, cwd) {
  * Thin wrapper around callAgentAsync that adds forge-specific UI:
  * label logging and a progress ticker.
  */
-async function invokeAgent(agent, prompt, { cwd, timeoutMs, systemPrompt, verbose, label }) {
-  const timeout = timeoutMs || Number(agent?.timeoutMs) || DEFAULT_TIMEOUT_MS;
-  const displayLabel = label || agent?.name || agent?.command || "agent";
-
-  console.log(`[agent] ${displayLabel} started (timeout: ${Math.floor(timeout / 1000)}s)`);
+async function invokeAgent(agent, prompt, { systemPrompt, verbose, label }) {
+  const displayLabel = label || "agent";
+  console.log(`[agent] ${displayLabel} started`);
 
   const ticker = !verbose
     ? setInterval(() => process.stderr.write("."), DEFAULT_WAIT_LOG_SEC * 1000)
     : null;
 
   try {
-    return await callAgentAsyncWithLog(agent, prompt, timeout, cwd, {
+    return await agent.call(prompt, {
+      commandId: "docs.forge",
       systemPrompt,
       onStdout: verbose ? (chunk) => process.stderr.write(chunk) : undefined,
       onStderr: verbose ? (chunk) => process.stderr.write(chunk) : undefined,
@@ -157,7 +155,7 @@ async function invokeAgent(agent, prompt, { cwd, timeoutMs, systemPrompt, verbos
  * Run agent for each file with concurrency control.
  * Returns an array of { file, ok, error? } results.
  */
-async function runPerFile({ agent, targetFiles, systemPrompt, lang, round, maxRuns, reviewFeedback, root, timeoutMs, concurrency, verbose }) {
+async function runPerFile({ agent, targetFiles, systemPrompt, lang, round, maxRuns, reviewFeedback, concurrency, verbose }) {
   const raw = await mapWithConcurrency(targetFiles, concurrency, async (file) => {
     const filePrompt = buildForgeFilePrompt({
       lang,
@@ -171,8 +169,6 @@ async function runPerFile({ agent, targetFiles, systemPrompt, lang, round, maxRu
 
     await invokeAgent(agent, filePrompt, {
       label: `forge:${path.basename(file)}`,
-      cwd: root,
-      timeoutMs,
       verbose,
       systemPrompt,
     });
@@ -203,11 +199,11 @@ async function main() {
   const type = config.type || "";
   const lang = config.docs.defaultLanguage;
   const t = translate();
-  const agent = resolveAgent(config, "docs.forge");
+  const agent = container.get("agent");
+  const hasAgent = !!agent.resolve("docs.forge");
   const mode = cli.mode || DEFAULT_MODE;
-  const timeoutMs = agent?.timeoutMs;
 
-  if (mode === "agent" && !agent) {
+  if (mode === "agent" && !hasAgent) {
     throw new Error(
       "forge: --mode=agent requires a configured provider (defaultAgent or --agent)",
     );
@@ -309,7 +305,8 @@ async function main() {
         }
       } else {
         const targetFiles = currentTargetFiles;
-        const usePerFile = !!agent.systemPromptFlag;
+        const resolvedAgent = agent.resolve("docs.forge");
+        const usePerFile = !!(resolvedAgent && resolvedAgent.provider.systemPromptFlag());
 
         if (usePerFile) {
           // Per-file async processing with system prompt separation
@@ -331,8 +328,6 @@ async function main() {
             round,
             maxRuns: effectiveMaxRuns,
             reviewFeedback,
-            root,
-            timeoutMs,
             concurrency,
             verbose: cli.verbose,
           });
@@ -359,8 +354,6 @@ async function main() {
           try {
             await invokeAgent(agent, prompt, {
               label: "forge.generate",
-              cwd: root,
-              timeoutMs,
               verbose: cli.verbose,
             });
             usedAgent = true;

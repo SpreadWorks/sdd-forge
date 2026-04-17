@@ -13,7 +13,7 @@ import fs from "fs";
 import path from "path";
 import { parseArgs } from "../../lib/cli.js";
 import { sddOutputDir, resolveConcurrency } from "../../lib/config.js";
-import { resolveAgent, callAgentAsyncWithLog, DEFAULT_AGENT_TIMEOUT_MS, resolveWorkDir } from "../../lib/agent.js";
+import { resolveWorkDir } from "../../lib/config.js";
 import { minify } from "../lib/minify.js";
 import { mapWithConcurrency } from "../lib/concurrency.js";
 import { loadFullAnalysis } from "../lib/command-context.js";
@@ -356,8 +356,8 @@ async function main(ctx) {
   }
 
   // Check for AI agent
-  const agent = resolveAgent(config, ctx.commandId || "docs.enrich");
-  if (!agent) {
+  const agent = container.get("agent");
+  if (!agent.resolve(ctx.commandId || "docs.enrich")) {
     logger.log("WARN: no agent configured, skipping enrich.");
     logger.log("Set 'defaultAgent' in config.json.");
     return;
@@ -442,7 +442,6 @@ async function main(ctx) {
   const batches = splitIntoBatches(pending, maxTokens);
   const concurrency = resolveConcurrency(config);
 
-  const timeoutMs = agent.timeoutMs || DEFAULT_AGENT_TIMEOUT_MS;
   let totalEnriched = 0;
 
   logger.log(`${batches.length} batches (token limit: ${maxTokens}, concurrency: ${concurrency})`);
@@ -455,7 +454,8 @@ async function main(ctx) {
 
     let response;
     try {
-      response = await callAgentAsyncWithLog(agent, prompt, timeoutMs, root, {
+      response = await agent.call(prompt, {
+        commandId: ctx.commandId || "docs.enrich",
         retryCount,
       });
     } catch (err) {

@@ -9,7 +9,9 @@ import fs from "fs";
 import path from "path";
 import { createTmpDir, removeTmpDir } from "../../helpers/tmp-dir.js";
 import { validate, loadJsonFile } from "../../../src/lib/config.js";
-import { resolveAgent } from "../../../src/lib/agent.js";
+import { Agent } from "../../../src/lib/agent.js";
+import { ProviderRegistry } from "../../../src/lib/provider.js";
+import { Logger } from "../../../src/lib/log.js";
 import { createI18n } from "../../../src/lib/i18n.js";
 import { resolveChaptersOrder } from "../../../src/docs/lib/template-merger.js";
 
@@ -51,7 +53,10 @@ export function buildCtx(tmp) {
   const outputLang = config.docs?.defaultLanguage || lang;
   const type = config.type || "base";
   const docsDir = path.join(tmp, "docs");
-  const agent = resolveAgent(config, undefined);
+  const registry = new ProviderRegistry(config?.agent?.providers || {});
+  const paths = { root: tmp, agentWorkDir: path.join(tmp, ".tmp") };
+  const agentService = new Agent({ config, paths, registry, logger: Logger.getInstance() });
+  const agent = agentService.resolve() ? agentService : null;
   const t = createI18n(lang, { domain: "messages" });
 
   return {

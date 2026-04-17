@@ -8,7 +8,7 @@ import { describe, it } from "node:test";
 import assert from "node:assert/strict";
 import fs from "fs";
 import path from "path";
-import { resolveWorkDir } from "../../../src/lib/agent.js";
+import { resolveWorkDir } from "../../../src/lib/config.js";
 
 describe("enrich failure dump path", () => {
   it("resolveWorkDir prefers SDD_FORGE_WORK_DIR over config.agent.workDir", () => {

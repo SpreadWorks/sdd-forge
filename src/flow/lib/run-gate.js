@@ -14,7 +14,7 @@ import fs from "fs";
 import path from "path";
 import { assertOk } from "../../lib/process.js";
 import { runGit } from "../../lib/git-helpers.js";
-import { callAgentWithLog, resolveAgent, ensureAgentWorkDir } from "../../lib/agent.js";
+import { container } from "../../lib/container.js";
 import { filterByPhase, loadMergedGuardrails } from "../../lib/guardrail.js";
 import { getSpecName } from "../../lib/flow-state.js";
 import { loadTestEvidence } from "./get-test-result.js";
@@ -253,18 +253,17 @@ function parseGuardrailResponse(response) {
  * @param {string} phase - "draft" | "spec" | "impl"
  * @param {string} [role] - checker role override
  */
-function checkGuardrail(root, targetText, config, phase, role) {
+async function checkGuardrail(root, targetText, _config, phase, role) {
   const guardrails = loadMergedGuardrails(root);
   if (guardrails.length === 0) return null;
 
-  const agent = resolveAgent(config, "flow.spec.gate");
-  if (!agent) return null;
+  const agent = container.get("agent");
+  if (!agent.resolve("flow.spec.gate")) return null;
 
   const prompt = buildGuardrailPrompt(targetText, guardrails, phase, role);
   if (!prompt) return { passed: true, results: [] };
 
-  ensureAgentWorkDir(agent, root);
-  const response = callAgentWithLog(agent, prompt, undefined, root);
+  const response = await agent.call(prompt, { commandId: "flow.spec.gate" });
   const results = parseGuardrailResponse(response);
   const passed = results.length > 0 && results.every((r) => r.passed);
 
@@ -386,7 +385,7 @@ export class RunGateCommand extends FlowCommand {
   /**
    * Gate draft: check draft.md structure + guardrail AI compliance.
    */
-  executeDraft(ctx, root, skipGuardrail) {
+  async executeDraft(ctx, root, skipGuardrail) {
     const state = ctx.flowState;
     const specDir = state?.spec ? path.dirname(path.resolve(root, state.spec)) : null;
     if (!specDir) throw new Error("no active flow found");
@@ -408,7 +407,7 @@ export class RunGateCommand extends FlowCommand {
     // Guardrail AI check
     const reasons = [];
     if (!skipGuardrail) {
-      const result = checkGuardrail(
+      const result = await checkGuardrail(
         root, text, ctx.config, "draft",
         "You are a draft compliance checker. Check whether the draft considered each guardrail perspective.",
       );
@@ -428,7 +427,7 @@ export class RunGateCommand extends FlowCommand {
   /**
    * Gate spec (pre/post): check spec.md structure + guardrail AI compliance.
    */
-  executeSpec(ctx, root, phase, skipGuardrail) {
+  async executeSpec(ctx, root, phase, skipGuardrail) {
     const spec = ctx.spec || "";
     const resolvedPhase = phase === "post" ? "post" : "pre";
 
@@ -458,7 +457,7 @@ export class RunGateCommand extends FlowCommand {
     // Guardrail AI compliance check
     const reasons = [];
     if (!skipGuardrail) {
-      const result = checkGuardrail(root, text, ctx.config, "spec");
+      const result = await checkGuardrail(root, text, ctx.config, "spec");
       if (result) {
         for (const r of result.results) {
           reasons.push({ verdict: r.passed ? "PASS" : "FAIL", detail: `${r.title} — ${r.reason}` });
@@ -475,7 +474,7 @@ export class RunGateCommand extends FlowCommand {
   /**
    * Gate impl: check spec requirements against git diff + guardrail AI compliance.
    */
-  executeImpl(ctx, root, skipGuardrail) {
+  async executeImpl(ctx, root, skipGuardrail) {
     const state = ctx.flowState;
     if (!state?.spec) throw new Error("no active flow found");
     if (!state.baseBranch) throw new Error("baseBranch not set in flow.json");
@@ -497,13 +496,12 @@ export class RunGateCommand extends FlowCommand {
     }
 
     // Requirements check via AI
-    const agent = resolveAgent(ctx.config, "flow.spec.gate");
-    if (!agent) throw new Error("no AI agent configured (agent.default or agent.profiles.<name>.flow.spec.gate)");
+    const agent = container.get("agent");
+    if (!agent.resolve("flow.spec.gate")) throw new Error("no AI agent configured (agent.default or agent.profiles.<name>.flow.spec.gate)");
 
-    ensureAgentWorkDir(agent, root);
     const testEvidence = loadTestEvidence(root, ctx.config, state);
     const reqPrompt = buildImplCheckPrompt(specText, diff, testEvidence);
-    const reqResponse = callAgentWithLog(agent, reqPrompt, undefined, root);
+    const reqResponse = await agent.call(reqPrompt, { commandId: "flow.spec.gate" });
     const reqResults = parseGuardrailResponse(reqResponse);
 
     const reasons = reqResults.map((r) => ({
@@ -519,7 +517,7 @@ export class RunGateCommand extends FlowCommand {
 
     // Guardrail AI check
     if (!skipGuardrail) {
-      const grResult = checkGuardrail(
+      const grResult = await checkGuardrail(
         root, `${specText}\n\n## Git Diff\n${diff}`, ctx.config, "impl",
         "You are an implementation compliance checker. Check the implementation against each guardrail.",
       );

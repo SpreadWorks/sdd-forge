@@ -6,7 +6,7 @@
 
 import fs from "fs";
 import path from "path";
-import { BUILTIN_PROVIDERS } from "./agent.js";
+import { ProviderRegistry } from "./provider.js";
 import { validateSchema } from "./schema-validate.js";
 
 /** Default concurrency for parallel file processing. */
@@ -176,6 +176,7 @@ const CONFIG_SCHEMA = {
         timeout: { type: "number", minimum: 1 },
         retryCount: { type: "number", minimum: 1 },
         batchTokenLimit: { type: "number", minimum: 1000 },
+        stdinFallbackThreshold: { type: "number", minimum: 1 },
         providers: {
           type: "object",
           additionalProperties: {
@@ -301,11 +302,12 @@ export function validate(raw) {
 
   // Cross-field validation: profile provider references must be valid
   if (raw.agent?.profiles) {
-    const allProviders = { ...BUILTIN_PROVIDERS, ...(raw.agent?.providers || {}) };
+    const registry = new ProviderRegistry(raw.agent?.providers || {});
+    const knownKeys = new Set(registry.profileKeys());
     for (const [profileName, profile] of Object.entries(raw.agent.profiles)) {
       if (typeof profile !== "object" || profile == null) continue;
       for (const [commandId, providerKey] of Object.entries(profile)) {
-        if (typeof providerKey === "string" && !allProviders[providerKey]) {
+        if (typeof providerKey === "string" && !knownKeys.has(providerKey)) {
           errors.push(`'agent.profiles.${profileName}.${commandId}': unknown provider "${providerKey}"`);
         }
       }

@@ -11,14 +11,13 @@ import fs from "fs";
 import path from "path";
 import { parseArgs } from "../../lib/cli.js";
 import { sddOutputDir } from "../../lib/config.js";
-import { callAgentAwaitLog, loadAgentConfig } from "../../lib/agent.js";
+import { container } from "../../lib/container.js";
 import { translate } from "../../lib/i18n.js";
 import { createResolver } from "../lib/resolver-factory.js";
 import { createLogger } from "../../lib/progress.js";
 import { parseDirectives, replaceBlockDirective, resolveDataDirectives } from "../lib/directive-parser.js";
 import { loadFullAnalysis, getChapterFiles, readText } from "../lib/command-context.js";
 import { loadSddTemplate } from "../../lib/agents-md.js";
-import { container } from "../../lib/container.js";
 import { resolveDocsContext } from "../lib/docs-context.js";
 
 const logger = createLogger("agents");
@@ -195,14 +194,17 @@ async function main(ctx) {
 
   // AI refinement for PROJECT section
   if (projectContent) {
-    const agent = loadAgentConfig(config, "docs.agents");
+    const agent = container.get("agent");
+    if (!agent.resolve("docs.agents")) {
+      throw new Error("No default agent configured. Set 'agent.default' in config.json or run 'sdd-forge setup'.");
+    }
 
     logger.log(t("messages:agents.refining"));
     const systemPrompt = buildAgentsSystemPrompt();
     const prompt = buildRefinePrompt(projectContent, combinedDocs, config, srcRoot, sddContent);
 
     try {
-      const result = await callAgentAwaitLog(agent, prompt, agent.timeoutMs, undefined, { systemPrompt });
+      const result = await agent.call(prompt, { commandId: "docs.agents", systemPrompt });
 
       let refined = result.trim();
 

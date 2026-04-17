@@ -29,7 +29,6 @@ import {
 import { repoRoot, parseArgs } from "../../lib/cli.js";
 import { loadConfig, resolveConcurrency, DEFAULT_CONCURRENCY } from "../../lib/config.js";
 import { createLogger } from "../../lib/progress.js";
-import { callAgentWithLog, callAgentAsyncWithLog, ensureAgentWorkDir, loadAgentConfig, DEFAULT_AGENT_TIMEOUT_MS } from "../../lib/agent.js";
 import { translate } from "../../lib/i18n.js";
 import { getChapterFiles, loadFullAnalysis } from "../lib/command-context.js";
 import { repairJson } from "../../lib/json-parse.js";
@@ -37,8 +36,6 @@ import { EXIT_ERROR } from "../../lib/constants.js";
 
 const logger = createLogger("text");
 
-/** Per-directive mode uses MID (180s), batch mode uses LONG (300s) */
-const DEFAULT_TIMEOUT_MS = DEFAULT_AGENT_TIMEOUT_MS;
 
 /**
  * i18n の messages:text.preamblePatterns を RegExp 配列に変換する。
@@ -218,7 +215,7 @@ function applyBatchJsonToFile(text, textFills, jsonData) {
  *
  * @returns {{ text: string, filled: number, skipped: number }}
  */
-async function processTemplateFileBatch(text, analysis, fileName, agent, timeoutMs, cwd, dryRun, _preamblePatterns, systemPrompt, _filterId, _concurrency, lang, srcRoot, retryCount) {
+async function processTemplateFileBatch(text, analysis, fileName, agent, dryRun, _preamblePatterns, systemPrompt, _filterId, _concurrency, lang, srcRoot, retryCount) {
   // cleanText を先に計算してから parseDirectives を呼ぶ。
   // stripFillContent は既存コンテンツを除去するため行数が変わる。
   // parseDirectives の行番号は applyBatchJsonToFile に渡す text と一致させる必要がある。
@@ -244,7 +241,7 @@ async function processTemplateFileBatch(text, analysis, fileName, agent, timeout
 
   logger.verbose(`Batch ${fileName}: ${textFills.length} directive(s) → 1 call`);
 
-  const result = await callAgentAsync(agent, prompt, timeoutMs, cwd, [], systemPrompt, { retryCount: retryCount || 0 });
+  const result = await invokeAgent(agent, prompt, [], systemPrompt, { retryCount: retryCount || 0 });
 
   if (!result) {
     throw new Error(`empty batch response for ${fileName}`);
@@ -265,13 +262,12 @@ async function processTemplateFileBatch(text, analysis, fileName, agent, timeout
 // ---------------------------------------------------------------------------
 // エージェント呼び出し
 // ---------------------------------------------------------------------------
-function callAgent(agent, prompt, timeoutMs, cwd, preamblePatterns, systemPrompt) {
-  const result = callAgentWithLog(agent, prompt, timeoutMs, cwd, { systemPrompt });
-  return stripPreamble(result, preamblePatterns);
-}
-
-async function callAgentAsync(agent, prompt, timeoutMs, cwd, preamblePatterns, systemPrompt, extraOptions) {
-  const result = await callAgentAsyncWithLog(agent, prompt, timeoutMs, cwd, { systemPrompt, ...extraOptions });
+async function invokeAgent(agent, prompt, preamblePatterns, systemPrompt, extraOptions) {
+  const result = await agent.call(prompt, {
+    commandId: "docs.text",
+    systemPrompt,
+    ...extraOptions,
+  });
   return stripPreamble(result, preamblePatterns);
 }
 
@@ -324,13 +320,11 @@ function stripPreamble(text, preamblePatterns) {
  * @param {string} text        - テンプレート全文
  * @param {Object} analysis    - analysis.json
  * @param {string} fileName    - ファイル名
- * @param {Object} agent       - エージェント設定
- * @param {number} timeoutMs   - タイムアウト
- * @param {string} cwd         - 作業ディレクトリ
+ * @param {Object} agent       - Agent service
  * @param {boolean} dryRun     - dry-run モード
  * @returns {{ text: string, filled: number, skipped: number }}
  */
-async function processTemplate(text, analysis, fileName, agent, timeoutMs, cwd, dryRun, preamblePatterns, systemPrompt, filterId, concurrency, lang, srcRoot, retryCount) {
+async function processTemplate(text, analysis, fileName, agent, dryRun, preamblePatterns, systemPrompt, filterId, concurrency, lang, srcRoot, retryCount) {
   const directives = parseDirectives(text);
   let textFills = directives.filter((d) => d.type === "text");
   if (filterId) {
@@ -370,7 +364,7 @@ async function processTemplate(text, analysis, fileName, agent, timeoutMs, cwd, 
   const maxConcurrency = concurrency || DEFAULT_CONCURRENCY;
   const results = await mapWithConcurrency(tasks, maxConcurrency, async ({ directive: d, prompt }) => {
     logger.verbose(`Processing ${fileName}:${d.line + 1}: ${d.prompt.slice(0, 60)}...`);
-    const generated = await callAgentAsync(agent, prompt, timeoutMs, cwd, preamblePatterns, fileSystemPrompt, { retryCount: retryCount || 0 });
+    const generated = await invokeAgent(agent, prompt, preamblePatterns, fileSystemPrompt, { retryCount: retryCount || 0 });
     return { generated };
   });
 
@@ -480,7 +474,10 @@ export async function textFillFromAnalysis(root, analysis, commandId, srcRoot, o
   if (!analysis) return { filled: 0, skipped: 0, files: [] };
 
   const cfg = loadConfig(root);
-  const agent = loadAgentConfig(cfg, commandId || "docs.text");
+  const agent = container.get("agent");
+  if (!agent.resolve(commandId || "docs.text")) {
+    throw new Error("No agent configured. Set 'agent.default' in config.json or run 'sdd-forge setup'.");
+  }
   const preamblePatterns = loadPreamblePatterns();
   const documentStyle = cfg.docs?.style;
   const lang = cfg.docs.defaultLanguage;
@@ -503,7 +500,7 @@ export async function textFillFromAnalysis(root, analysis, commandId, srcRoot, o
     const filePath = path.join(docsDir, file);
     const original = fs.readFileSync(filePath, "utf8");
     const retryCount = Number(cfg?.agent?.retryCount) || 0;
-    const result = await processTemplateFileBatch(original, analysis, file, agent, DEFAULT_TIMEOUT_MS, root, false, preamblePatterns, systemPrompt, undefined, undefined, lang, resolvedSrcRoot, retryCount);
+    const result = await processTemplateFileBatch(original, analysis, file, agent, false, preamblePatterns, systemPrompt, undefined, undefined, lang, resolvedSrcRoot, retryCount);
     return { file, filePath, original, result };
   });
 
@@ -594,10 +591,9 @@ async function main(ctx) {
   if (!ctx) {
     const cli = parseArgs(process.argv.slice(2), {
       flags: ["--dry-run", "--per-directive", "--force"],
-      options: ["--timeout", "--id", "--lang", "--docs-dir", "--files"],
-      defaults: { dryRun: false, timeout: String(DEFAULT_TIMEOUT_MS), perDirective: false, force: false, id: "", lang: "", docsDir: "", files: "" },
+      options: ["--id", "--lang", "--docs-dir", "--files"],
+      defaults: { dryRun: false, perDirective: false, force: false, id: "", lang: "", docsDir: "", files: "" },
     });
-    cli.timeout = Number(cli.timeout) || DEFAULT_TIMEOUT_MS;
     if (cli.help) {
       const t = translate();
       const h = t.raw("ui:help.cmdHelp.text");
@@ -605,7 +601,6 @@ async function main(ctx) {
       console.log([
         h.usage, "", "Options:",
         `  ${o.id}`, `  ${o.dryRun}`, `  ${o.perDirective}`,
-        `  ${t("ui:help.cmdHelp.text.options.timeout", { default: DEFAULT_TIMEOUT_MS })}`,
         `  ${o.help}`,
       ].join("\n"));
       return;
@@ -615,7 +610,6 @@ async function main(ctx) {
     ctx.dryRun = cli.dryRun;
     ctx.perDirective = cli.perDirective;
     ctx.force = cli.force;
-    ctx.timeout = cli.timeout;
     ctx.id = cli.id;
     if (cli.files) ctx.files = cli.files.split(",").map((f) => f.trim()).filter(Boolean);
   }
@@ -626,9 +620,10 @@ async function main(ctx) {
   if (Object.keys(analysis).length === 0) {
     logger.log("WARN: analysis.json not found. Proceeding with empty analysis context.");
   }
-  const agent = loadAgentConfig(cfg, ctx.commandId || "docs.text");
-
-  ensureAgentWorkDir(agent, root);
+  const agent = ctx.agent || container.get("agent");
+  if (!agent.resolve(ctx.commandId || "docs.text")) {
+    throw new Error("No agent configured. Set 'agent.default' in config.json or run 'sdd-forge setup'.");
+  }
 
   const preamblePatterns = loadPreamblePatterns();
   const documentStyle = cfg.docs?.style;
@@ -693,8 +688,7 @@ async function main(ctx) {
   const retryCount = Number(cfg?.agent?.retryCount) || 0;
   const processFn = ctx.perDirective ? processTemplate : processTemplateFileBatch;
   if (!ctx.perDirective) {
-    if (!ctx.timeout) ctx.timeout = agent.timeoutMs || DEFAULT_TIMEOUT_MS;
-    logger.verbose(`Mode: batch (file-level, ${targetFiles.length} file(s), concurrency=${concurrency}, timeout=${ctx.timeout}ms). Use --per-directive for single-call mode.`);
+    logger.verbose(`Mode: batch (file-level, ${targetFiles.length} file(s), concurrency=${concurrency}). Use --per-directive for single-call mode.`);
   }
 
   // Prepare file entries (filter for --id before parallel dispatch)
@@ -719,7 +713,7 @@ async function main(ctx) {
   const fileResults = await mapWithConcurrency(fileEntries, fileConcurrency, async (entry) => {
     const { file, original } = entry;
     logger.verbose(`start: ${file}`);
-    const result = await processFn(original, analysis, file, agent, ctx.timeout, root, ctx.dryRun, preamblePatterns, systemPrompt, ctx.id || undefined, concurrency, lang, srcRoot, retryCount);
+    const result = await processFn(original, analysis, file, agent, ctx.dryRun, preamblePatterns, systemPrompt, ctx.id || undefined, concurrency, lang, srcRoot, retryCount);
     logger.verbose(`done: ${file}`);
     return { ...entry, result };
   });

@@ -20,7 +20,6 @@ import { loadFullAnalysis } from "../lib/command-context.js";
 import { processTemplate } from "./text.js";
 import { buildTextSystemPrompt } from "../lib/text-prompts.js";
 import { loadConfig, resolveConcurrency } from "../../lib/config.js";
-import { loadAgentConfig, ensureAgentWorkDir } from "../../lib/agent.js";
 import { container } from "../../lib/container.js";
 import { resolveDocsContext } from "../lib/docs-context.js";
 
@@ -100,7 +99,7 @@ async function main(ctx) {
   if (readmeRes.action === "translate") {
     const agent = ctx.agent;
     if (agent) {
-      merged = translateTemplate(merged, readmeRes.from, readmeRes.to, agent, root);
+      merged = await translateTemplate(merged, readmeRes.from, readmeRes.to, agent, root);
     }
   }
 
@@ -145,16 +144,17 @@ async function main(ctx) {
   if (textDirectives.length > 0 && !ctx.dryRun) {
     try {
       const cfg = loadConfig(root);
-      const agent = loadAgentConfig(cfg, "docs.readme");
-      ensureAgentWorkDir(agent, root);
+      const agent = ctx.agent;
+      if (!agent || !agent.resolve("docs.readme")) {
+        throw new Error("No agent configured. Set 'agent.default' in config.json or run 'sdd-forge setup'.");
+      }
       const analysis = loadFullAnalysis(root) || {};
       const documentStyle = cfg.docs?.style;
       const systemPrompt = buildTextSystemPrompt(documentStyle, lang);
-      const timeoutMs = agent.timeoutMs;
 
       const result = await processTemplate(
-        resolved, analysis, "README.md", agent, timeoutMs,
-        root, false, [], systemPrompt, undefined, undefined, lang, ctx.srcRoot || root,
+        resolved, analysis, "README.md", agent,
+        false, [], systemPrompt, undefined, undefined, lang, ctx.srcRoot || root,
       );
       if (result.filled > 0) {
         resolved = result.text;
