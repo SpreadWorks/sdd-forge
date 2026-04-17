@@ -1,5 +1,5 @@
 {
-  "analyzedAt": "2026-04-17T10:40:33.667Z",
+  "analyzedAt": "2026-04-17T12:25:52.346Z",
   "package": {
     "entries": [
       {
@@ -715,9 +715,9 @@
       },
       {
         "file": "src/docs/commands/scan.js",
-        "hash": "df2fa2792374138e20df69688629b560",
-        "lines": 476,
-        "mtime": "2026-04-17T09:02:28.840Z",
+        "hash": "e6ab29420eb37bd841f47f20f5e6cb38",
+        "lines": 482,
+        "mtime": "2026-04-17T12:25:51.959Z",
         "className": "scan",
         "methods": [
           "printHelp",
@@ -746,7 +746,8 @@
           "../../lib/i18n.js",
           "../../lib/container.js",
           "../lib/docs-context.js",
-          "../lib/analysis-entry.js"
+          "../lib/analysis-entry.js",
+          "registered but matched no files"
         ],
         "exports": [
           "main"
@@ -754,21 +755,24 @@
         "extends": null,
         "usedBy": null,
         "id": "e229cdd1",
-        "summary": "This command scans source inputs and produces `analysis.json` as the canonical structured dataset for docs generation. It supports reset semantics and stable entry identity management.",
-        "detail": "It loads scanner data sources from presets, collects files, and computes hashes to detect changes in source and datasource files. Existing analysis can be indexed by multiple keys to preserve IDs across rescans and avoid unnecessary churn. Category resets allow partial regeneration without deleting all analysis content. Results can be printed to stdout or persisted under `.sdd-forge` output directories with logging.",
-        "chapter": "internal_design",
+        "summary": "This file implements the `scan` docs command that aggregates analysis entries from source scanners and data sources. It loads existing analysis state, updates entries deterministically where possible, and writes refreshed output plus summaries.",
+        "detail": "The command parses CLI arguments, supports help/reset flows, and can selectively clear categories in `analysis.json`. It loads scan data from preset chains and data directories, then computes content hashes to detect data source and file-level changes. To preserve stable references, it builds lookup indexes from existing entries and resolves IDs by composite match keys before generating new random IDs as a fallback. It filters empty entries, tracks metadata keys, emits JSON to stdout for dry-style inspection modes, and writes the final structured result to the SDD output directory with progress logging.",
+        "chapter": "cli_commands",
         "role": "cli",
         "enrich": {
-          "processedAt": "2026-04-17T09:03:42.668Z",
+          "processedAt": "2026-04-17T12:26:06.133Z",
           "attempts": 1
         },
         "keywords": [
-          "source scan",
+          "scan command",
+          "CLI parsing",
           "analysis.json",
-          "data sources",
-          "stable ids",
-          "incremental scan",
-          "hash tracking"
+          "data source loading",
+          "preset chain resolution",
+          "entry ID mapping",
+          "content hash",
+          "incremental analysis",
+          "summary generation"
         ]
       },
       {
@@ -8305,5 +8309,5 @@
     },
     "dataSourceHash": "7d725e75d5031be445119323e4947c91"
   },
-  "enrichedAt": "2026-04-17T10:41:52.427Z"
+  "enrichedAt": "2026-04-17T12:26:06.133Z"
 }
