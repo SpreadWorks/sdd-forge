@@ -1,0 +1,160 @@
+{
+  "spec": "specs/185-scan-dryrun-summary/spec.md",
+  "baseBranch": "main",
+  "featureBranch": "feature/185-scan-dryrun-summary",
+  "runId": "eccf585b-1d92-4a31-a798-b637fc38f263",
+  "lifecycle": "active",
+  "steps": [
+    {
+      "id": "branch",
+      "status": "done"
+    },
+    {
+      "id": "prepare-spec",
+      "status": "pending"
+    },
+    {
+      "id": "draft",
+      "status": "done"
+    },
+    {
+      "id": "gate-draft",
+      "status": "done"
+    },
+    {
+      "id": "spec",
+      "status": "done"
+    },
+    {
+      "id": "gate",
+      "status": "done"
+    },
+    {
+      "id": "approval",
+      "status": "done"
+    },
+    {
+      "id": "test",
+      "status": "done"
+    },
+    {
+      "id": "implement",
+      "status": "done"
+    },
+    {
+      "id": "gate-impl",
+      "status": "done"
+    },
+    {
+      "id": "review",
+      "status": "done"
+    },
+    {
+      "id": "finalize",
+      "status": "pending"
+    },
+    {
+      "id": "commit",
+      "status": "pending"
+    },
+    {
+      "id": "push",
+      "status": "pending"
+    },
+    {
+      "id": "merge",
+      "status": "pending"
+    },
+    {
+      "id": "pr-create",
+      "status": "pending"
+    },
+    {
+      "id": "branch-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "pr-merge",
+      "status": "pending"
+    },
+    {
+      "id": "sync-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "docs-update",
+      "status": "pending"
+    },
+    {
+      "id": "docs-review",
+      "status": "pending"
+    },
+    {
+      "id": "docs-commit",
+      "status": "pending"
+    }
+  ],
+  "requirements": [
+    {
+      "desc": "scan --dry-run outputs single-layer JSON of category-name to entry-count integers; analyzedAt and per-category structure shall be excluded",
+      "status": "done"
+    },
+    {
+      "desc": "--dry-run output shall include zero-count categories whose scan DataSource is registered",
+      "status": "done"
+    },
+    {
+      "desc": "--dry-run shall not write analysis.json",
+      "status": "done"
+    },
+    {
+      "desc": "--stdout shall output the full analysis JSON (existing behavior preserved)",
+      "status": "done"
+    },
+    {
+      "desc": "When --stdout and --dry-run are combined, --stdout takes precedence and full JSON is output",
+      "status": "done"
+    },
+    {
+      "desc": "Other subcommands --dry-run behavior shall remain unchanged",
+      "status": "done"
+    },
+    {
+      "desc": "Preset creation guide (ja/en) shall document summary form for --dry-run",
+      "status": "done"
+    },
+    {
+      "desc": "scan exit code contract: 0 on success, non-zero on error",
+      "status": "done"
+    }
+  ],
+  "issue": 164,
+  "worktree": true,
+  "autoApprove": true,
+  "request": "Issue #164: scan --dry-run の出力を summary 化する破壊的変更",
+  "metrics": {
+    "gate-draft": {
+      "callCount": 4,
+      "responseChars": 5812
+    },
+    "gate": {
+      "callCount": 3,
+      "responseChars": 4405
+    },
+    "plan": {
+      "issueLog": 1
+    },
+    "gate-impl": {
+      "callCount": 2,
+      "responseChars": 2211
+    }
+  },
+  "test": {
+    "summary": {
+      "acceptance": 5
+    }
+  },
+  "state": {
+    "finalizedAt": "2026-04-17T12:25:12.224Z"
+  }
+}

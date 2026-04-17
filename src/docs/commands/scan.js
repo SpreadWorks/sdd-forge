@@ -458,15 +458,21 @@ async function main(ctx) {
   }
 
   // 7. Output
-  const json = JSON.stringify(result, null, 2);
-
-  if (ctx.stdout || ctx.dryRun) {
-    process.stdout.write(json + "\n");
+  if (ctx.stdout) {
+    process.stdout.write(JSON.stringify(result, null, 2) + "\n");
+  } else if (ctx.dryRun) {
+    // Summary form: { categoryName: entryCount } for every registered scan DataSource.
+    // Zero-match categories are reported as 0 so consumers can distinguish
+    // "DataSource not registered" from "registered but matched no files".
+    const summary = {};
+    for (const name of dataSources.keys()) summary[name] = 0;
+    for (const [name, { entries }] of categoryEntries) summary[name] = entries.length;
+    process.stdout.write(JSON.stringify(summary, null, 2) + "\n");
   } else {
     if (!fs.existsSync(outputDir)) {
       fs.mkdirSync(outputDir, { recursive: true });
     }
-    fs.writeFileSync(outputPath, json + "\n");
+    fs.writeFileSync(outputPath, JSON.stringify(result, null, 2) + "\n");
     logger.log(`output: ${path.relative(root, outputPath)}`);
   }
 }

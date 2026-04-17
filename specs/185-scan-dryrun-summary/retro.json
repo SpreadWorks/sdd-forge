@@ -1,0 +1,88 @@
+{
+  "spec": "specs/185-scan-dryrun-summary/spec.md",
+  "date": "2026-04-17T12:25:50.411Z",
+  "requirements": [
+    {
+      "desc": "scan --dry-run outputs single-layer JSON of category-name to entry-count integers; analyzedAt and per-category structure shall be excluded",
+      "status": "done",
+      "note": "`src/docs/commands/scan.js` now outputs `{ [category]: count }` for `--dry-run` and does not emit full analysis fields like `analyzedAt`."
+    },
+    {
+      "desc": "--dry-run output shall include zero-count categories whose scan DataSource is registered",
+      "status": "done",
+      "note": "Dry-run summary is initialized from all registered `dataSources` with `0`, then overwritten with actual counts."
+    },
+    {
+      "desc": "--dry-run shall not write analysis.json",
+      "status": "done",
+      "note": "When `ctx.dryRun` is true (and `--stdout` is not), code only writes to stdout; file write branch is skipped."
+    },
+    {
+      "desc": "--stdout shall output the full analysis JSON (existing behavior preserved)",
+      "status": "done",
+      "note": "`ctx.stdout` branch prints `result` (full analysis JSON) directly."
+    },
+    {
+      "desc": "When --stdout and --dry-run are combined, --stdout takes precedence and full JSON is output",
+      "status": "done",
+      "note": "Output logic checks `ctx.stdout` first, then `ctx.dryRun`, so combined flags produce full analysis JSON."
+    },
+    {
+      "desc": "Other subcommands --dry-run behavior shall remain unchanged",
+      "status": "done",
+      "note": "Diff changes scan command only; no non-scan command implementation files were modified."
+    },
+    {
+      "desc": "Preset creation guide (ja/en) shall document summary form for --dry-run",
+      "status": "done",
+      "note": "Both ja/en preset guides were updated in templates and generated docs to describe summary JSON and zero-count category behavior."
+    },
+    {
+      "desc": "scan exit code contract: 0 on success, non-zero on error",
+      "status": "partial",
+      "note": "Success-path exit code 0 is covered by new tests, but this diff does not explicitly verify or change non-zero behavior on error cases."
+    }
+  ],
+  "unplanned": [
+    {
+      "file": "tests/e2e/docs/commands/scan-dryrun-summary.test.js",
+      "change": "New e2e contract test file added (test additions are not part of the 8 listed requirements)."
+    },
+    {
+      "file": "tests/e2e/docs/commands/scan.test.js",
+      "change": "Existing scan dry-run test was updated to new summary contract."
+    },
+    {
+      "file": "specs/185-scan-dryrun-summary/draft.md",
+      "change": "Spec draft document added."
+    },
+    {
+      "file": "specs/185-scan-dryrun-summary/flow.json",
+      "change": "Flow/state tracking metadata added."
+    },
+    {
+      "file": "specs/185-scan-dryrun-summary/issue-log.json",
+      "change": "Issue/gate log artifact added."
+    },
+    {
+      "file": "specs/185-scan-dryrun-summary/qa.md",
+      "change": "QA template/document added."
+    },
+    {
+      "file": "specs/185-scan-dryrun-summary/spec.md",
+      "change": "Full feature specification document added."
+    },
+    {
+      "file": "specs/185-scan-dryrun-summary/tests/README.md",
+      "change": "Spec-specific test documentation added."
+    }
+  ],
+  "summary": {
+    "total": 8,
+    "done": 7,
+    "partial": 1,
+    "not_done": 0,
+    "rate": 0.94,
+    "notes": "Core behavior requirements R1-R7 are implemented in code/docs as specified. R8 is mostly preserved, but error-path non-zero exit behavior is not directly evidenced by this diff."
+  }
+}

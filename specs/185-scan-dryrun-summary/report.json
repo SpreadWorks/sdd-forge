@@ -1,0 +1,47 @@
+{
+  "data": {
+    "implementation": {
+      "diffStat": ".sdd-forge/templates/en/docs/creating_presets.md   |  10 +-\n .sdd-forge/templates/ja/docs/creating_presets.md   |  10 +-\n docs/creating_presets.md                           |  10 +-\n docs/ja/creating_presets.md                        |  10 +-\n specs/185-scan-dryrun-summary/draft.md             |  95 ++++++++++++\n specs/185-scan-dryrun-summary/flow.json            | 160 +++++++++++++++++++++\n specs/185-scan-dryrun-summary/issue-log.json       |  48 +++++++\n specs/185-scan-dryrun-summary/qa.md                |   9 ++\n specs/185-scan-dryrun-summary/spec.md              | 114 +++++++++++++++\n specs/185-scan-dryrun-summary/tests/README.md      |  35 +++++\n src/docs/commands/scan.js                          |  16 ++-\n .../e2e/docs/commands/scan-dryrun-summary.test.js  | 133 +++++++++++++++++\n tests/e2e/docs/commands/scan.test.js               |   8 +-\n 13 files changed, 634 insertions(+), 24 deletions(-)",
+      "commits": [
+        "feat: feature/185-scan-dryrun-summary"
+      ]
+    },
+    "retro": {
+      "total": 8,
+      "done": 7,
+      "partial": 1,
+      "not_done": 0,
+      "rate": 0.94,
+      "notes": "Core behavior requirements R1-R7 are implemented in code/docs as specified. R8 is mostly preserved, but error-path non-zero exit behavior is not directly evidenced by this diff."
+    },
+    "issueLog": {
+      "count": 0,
+      "entries": []
+    },
+    "metrics": {
+      "docsRead": 0,
+      "srcRead": 0,
+      "question": 0,
+      "issueLog": 1
+    },
+    "tokenMetrics": {
+      "input": 0,
+      "output": 0,
+      "cacheRead": 0,
+      "cacheCreation": 0,
+      "cost": null,
+      "callCount": 9
+    },
+    "tests": {
+      "unit": 0,
+      "integration": 0,
+      "acceptance": 5,
+      "total": 5
+    },
+    "sync": {
+      "status": "skipped",
+      "reason": "sync was skipped"
+    }
+  },
+  "text": "  Report\n\n  Implementation\n  ────────────────────────────────────────────────\n    feat: feature/185-scan-dryrun-summary\n    13 files changed, 634 insertions(+), 24 deletions(-)\n\n  Retro\n  ────────────────────────────────────────────────\n    ████████ 94%  (7 done / 1 partial / 0 miss)\n\n  Metrics\n  ────────────────────────────────────────────────\n    docs read ................... 0\n    src read .................... 0\n    Q&A ......................... 0\n    issue-log ................... 1\n    agent calls ................. 9\n    input tokens ................ 0\n    output tokens ............... 0\n    cache-read tokens ........... 0\n    cache-create tokens ......... 0\n    cost ........................ N/A\n\n  Tests\n  ────────────────────────────────────────────────\n    unit 0  integration 0  acceptance 5  total 5"
+}

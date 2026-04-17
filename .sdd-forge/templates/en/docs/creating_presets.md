@@ -444,14 +444,16 @@ export default class SimpleSource extends WebappDataSource {
 ## 11. Validation Commands
 
 ```bash
-# Print scan patterns and results to stdout (does not rewrite analysis.json)
+# Print a per-category entry-count summary to stdout (does not rewrite analysis.json)
+# Output is a flat JSON object: { categoryName: integerCount, ... }.
+# Categories whose scan DataSource is registered but matched 0 files are reported as 0.
 sdd-forge docs scan --dry-run
+
+# Print the full analysis JSON to stdout (does not rewrite analysis.json)
+sdd-forge docs scan --stdout
 
 # Full run (updates .sdd-forge/output/analysis.json)
 sdd-forge docs scan
-
-# Inspect the entry count per category
-node -e 'const a=require("./.sdd-forge/output/analysis.json"); for(const k of Object.keys(a)){if(a[k]?.entries)console.log(k, a[k].entries.length)}'
 
 # Run the full pipeline
 sdd-forge docs build

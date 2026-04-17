@@ -1,0 +1,48 @@
+{
+  "entries": [
+    {
+      "step": "gate-draft",
+      "reason": "Single Responsibility — The draft stays focused on one concern: changing `scan --dry-run` output semantics and its direct fallout.; Unambiguous Requirements — Some requirements are vague/non-verifiable (e.g., “small wording update is enough,” “update as needed”).; Complete Context — Several requirement statements lack explicit trigger-condition + expected-behavior pairing.; No Hardcoded Secrets — No API keys, passwords, tokens, or secret literals are present; this draft is non-secret policy/design content.; Prioritize Requirements — There are many requirements, but no explicit priority ordering is given.; Impact on Existing Features — It explicitly discusses effects on `--stdout`, file-write skip behavior, tests, docs, and out-of-scope areas.; Present Recommendations with Reasoning — Each Q has a recommended answer with concise rationale grounded in issue intent, docs/spec, or code behavior.; Explore Before Asking — The draft cites prior checks of code paths, docs, and tests before locking decisions.; Proactively Raise Related Implications — It proactively covers flag precedence, zero-count categories, scope boundaries, alternatives, and future extensibility.; Confirm Brainstorm vs. Decision Before Critiquing — The content treats this as a decided direction with explicit user approval, not unresolved brainstorming.; Capture Digressions in draft.md — Inapplicable by format; the provided content itself is the draft artifact capturing side discussions.; Draft Stays at Requirements Level — It includes implementation-level details (specific files/lines, map initialization strategy, branch split instructions).; Backward — Compatible CLI Interface — It changes existing `--dry-run` meaning but does not include a concrete migration plan for users/scripts.",
+      "trigger": "gate post hook (auto)",
+      "timestamp": "2026-04-17T12:08:10.963Z"
+    },
+    {
+      "step": "gate-draft",
+      "reason": "Single Responsibility — 仕様は `docs scan --dry-run` 出力変更と関連する役割整理に集中しており、主題は一貫している。; Unambiguous Requirements — 各要件が具体的な入出力条件（JSON 形式、優先順位、非出力条件）で検証可能に定義されている。; Complete Context — R1〜R7 がいずれもトリガー条件と「期待される動作（shall 相当）」の組で記述されている。; No Hardcoded Secrets — 本文は仕様ドラフトのみで、API キー等の秘密情報や埋め込みコードは含まれない。; Prioritize Requirements — 要件が 7 件あり、P0/P1/P2 で優先度順が明示されている。; Impact on Existing Features — 既存挙動の維持点と影響範囲（外部 CI/スクリプト）および非影響範囲が明示されている。; Present Recommendations with Reasoning — 各 Q&A で推奨案を先に示し、方針・既存挙動・スコープに基づく理由が併記されている。; Explore Before Asking — テスト依存の事前確認結果を示したうえで結論化しており、調査先行の形になっている。; Proactively Raise Related Implications — 影響、スコープ外、移行計画、将来拡張まで関連含意を先回りして提示している。; Confirm Brainstorm vs. Decision Before Critiquing — 本文は最終判断済みドラフト（ユーザー承認済み）で、ブレスト案を最終決定として誤批評していない。; Capture Digressions in draft.md — 代替案・スコープ外事項・移行論点がドラフト内に明示的に記録されている。; Draft Stays at Requirements Level — `scan.js`/`docs.js` への言及や `tests/unit/` 配置など実装・設計レベルの詳細が含まれている。; Backward — Compatible CLI Interface — 既存オプション意味変更に対し、影響範囲・置換先（`--stdout`）・周知方法を含む移行計画が記載されている。",
+      "trigger": "gate post hook (auto)",
+      "timestamp": "2026-04-17T12:09:24.768Z"
+    },
+    {
+      "step": "gate-draft",
+      "reason": "Single Responsibility — `scan --dry-run`/`--stdout` の役割整理という単一テーマに収まり、関連事項も同一変更に付随している。; Unambiguous Requirements — 各要件が具体的な条件・出力形式・優先関係（整数、単層JSON、非出力対象）で検証可能。; Complete Context — 要件表で全項目がトリガー条件（When/If）と期待動作（shall相当）を対で記述している。; No Hardcoded Secrets — APIキーやトークン等の機密情報は含まれておらず、本内容では実質的に非該当。; Prioritize Requirements — 7件の要件に P0/P1/P2 の優先度が明示され、3件超の優先順位要件を満たす。; Impact on Existing Features — 既存挙動維持点・影響範囲・非影響範囲・移行対象を明示している。; Present Recommendations with Reasoning — 各Qに回答はあるが、全Qで「docs/・guardrail・既存コード」の根拠種別が明確に示されていない。; Explore Before Asking — ユーザーへの追加確認に頼らず、既存テスト依存有無などを事前確認した記述がある。; Proactively Raise Related Implications — 併用時優先順位、他サブコマンド影響、移行計画、将来拡張まで先回りで整理している。; Confirm Brainstorm vs. Decision Before Critiquing — 本文は最終ドラフトの決定整理が中心で、ブレスト案への批評運用は実質的に非該当。; Capture Digressions in draft.md — 代替案・スコープ外・将来拡張などの寄り道論点がドラフト内に明示的に記録されている。; Draft Stays at Requirements Level — 実装手順や関数設計に踏み込まず、仕様・挙動・テスト観点の要求レベルに留まっている。; Backward — Compatible CLI Interface — 破壊的CLI変更に対して対象影響と `--stdout` 置換手順を含む移行計画を提示している。",
+      "trigger": "gate post hook (auto)",
+      "timestamp": "2026-04-17T12:10:13.266Z"
+    },
+    {
+      "step": "gate",
+      "reason": "line 112: unchecked task/question (- [ ] なし（draft 段階で全て解消）)",
+      "trigger": "gate post hook (auto)",
+      "timestamp": "2026-04-17T12:12:25.010Z"
+    },
+    {
+      "step": "gate",
+      "reason": "Single Responsibility — The spec stays focused on one concern: redefining `docs scan --dry-run` output and its directly related docs/tests.; Unambiguous Requirements — Requirements and acceptance criteria are concrete and verifiable (specific flags, JSON shape, and expected fields).; Complete Context — Each requirement includes a trigger condition (flag/subcommand usage) and an expected shall-style behavior.; No Hardcoded Secrets — No code or credential material is included; this content contains no secrets.; No Silent Error Swallowing — Inapplicable here because the spec does not define catch/error-handling code paths.; Prioritize Requirements — Priority is explicitly defined (P0/P1/P2) and assigned to each requirement.; Impact on Existing Features — Impact is explicitly documented (affected `--dry-run` consumers, unaffected non-scan subcommands).; Bounded Resource Usage — Inapplicable because the design does not introduce recursion, retries, or unbounded bulk processing flows.; Changes Require Test Coverage — The spec requires unit tests for AC1–AC6 and explains the doc-only check approach for AC7.; Spec Includes Test Strategy — A dedicated Test Strategy section states what to test and how (fixtures, command-level checks).; Synthesize Draft, Do Not Copy — Inapplicable to assess from this artifact alone because no separate draft text is provided for comparison.; Record Unresolved Points as Open Questions — Open Questions section is present and explicitly states none remain unresolved.; Include 'Why This Approach' Rationale — A clear rationale section explains tradeoffs and selection reasoning.; Backward — Compatible CLI Interface — Since CLI meaning changes, the spec includes a migration plan with user-facing transition steps.; Exit Code Contract — The spec changes CLI behavior but does not state/confirm failure cases return non-zero exit codes.",
+      "trigger": "gate post hook (auto)",
+      "timestamp": "2026-04-17T12:12:54.697Z"
+    },
+    {
+      "step": "gate",
+      "reason": "Single Responsibility — `docs scan --dry-run` の出力仕様変更を中心に、関連する優先順位・回帰防止・文書更新まで同一関心内に収まっている。; Unambiguous Requirements — 要件と受け入れ基準が JSON 構造・優先順位・終了コードなど検証可能な条件で具体化されている。; Complete Context — 多くは `When/shall` 形式だが、R7 など一部要件に明示的なトリガー条件（When/If）がない。; No Hardcoded Secrets — 本文は仕様記述のみで、秘密情報の直書きは含まれていない（本件では実質的に非該当）。; No Silent Error Swallowing — 本仕様の主題は出力契約であり、例外握りつぶし実装を指示・容認する記述はない（非該当）。; Prioritize Requirements — 要件が P0/P1/P2 で明確に優先順位付けされている。; Impact on Existing Features — 影響範囲を Migration Plan で明示し、非対象サブコマンドの非変更も明記している。; Bounded Resource Usage — 再帰・リトライ・大量読込などの無界処理を導入する設計が含まれていない（非該当）。; Changes Require Test Coverage — AC1〜AC6 を対象にユニットテスト追加を要求し、`npm test` 通過条件も定義している。; Spec Includes Test Strategy — 専用の Test Strategy 節で何をどう検証するかを対応付けている。; Synthesize Draft, Do Not Copy — 入力 Issue をそのまま転写せず、目的・要件・受け入れ基準に再構成されている。; Record Unresolved Points as Open Questions — Open Questions 節に「なし」と明記し、未解決点の扱いが明確。; Include 'Why This Approach' Rationale — Why This Approach 節で採用理由とトレードオフを説明している。; Backward — Compatible CLI Interface — 既存 `--dry-run` 意味変更に対し Migration Plan で移行手順と通知方法を提示している。; Exit Code Contract — R8/AC9 で成功時 0・失敗時非ゼロを明示し、契約を定義している。",
+      "trigger": "gate post hook (auto)",
+      "timestamp": "2026-04-17T12:13:33.262Z"
+    },
+    {
+      "step": "test",
+      "reason": "existing test 'tests/e2e/docs/commands/scan.test.js: --dry-run outputs to stdout without writing file' asserts analysis.analyzedAt presence, which conflicts with new spec R1 (summary form excludes analyzedAt)",
+      "trigger": "spec 185 intentionally changes --dry-run output contract",
+      "resolution": "update existing test to match new contract (summary form). Not a bug fix; the test was validating the old contract that the spec replaces",
+      "guardrailCandidate": "when a spec intentionally changes a CLI output contract, update existing tests of that contract to the new shape and note in spec migration plan",
+      "timestamp": "2026-04-17T12:15:01.762Z"
+    }
+  ]
+}

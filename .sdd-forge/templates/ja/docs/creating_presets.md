@@ -444,14 +444,16 @@ export default class SimpleSource extends WebappDataSource {
 ## 11. 検証コマンド
 
 ```bash
-# scan パターン・結果を標準出力に出す（analysis.json を書き換えない）
+# カテゴリ別エントリ件数の summary を標準出力に出す（analysis.json を書き換えない）
+# 出力は単層 JSON: { カテゴリ名: 整数件数, ... }
+# scan DataSource が登録済みかつマッチ 0 件のカテゴリも値 0 で含まれる
 sdd-forge docs scan --dry-run
+
+# 全 analysis JSON を標準出力に出す（analysis.json を書き換えない）
+sdd-forge docs scan --stdout
 
 # 本実行（.sdd-forge/output/analysis.json を更新）
 sdd-forge docs scan
-
-# 各カテゴリのエントリ数を確認
-node -e 'const a=require("./.sdd-forge/output/analysis.json"); for(const k of Object.keys(a)){if(a[k]?.entries)console.log(k, a[k].entries.length)}'
 
 # 全パイプライン
 sdd-forge docs build

@@ -78,7 +78,7 @@ describe("scan CLI", () => {
     assert.ok(!fs.existsSync(summaryPath), "summary.json should not be generated");
   });
 
-  it("--dry-run outputs to stdout without writing file", () => {
+  it("--dry-run outputs summary to stdout without writing file", () => {
     tmp = createTmpDir();
     writeJson(tmp, ".sdd-forge/config.json", {
       lang: "ja",
@@ -93,8 +93,10 @@ describe("scan CLI", () => {
       encoding: "utf8",
       env: { ...process.env, SDD_FORGE_WORK_ROOT: tmp, SDD_FORGE_SOURCE_ROOT: tmp },
     });
-    const analysis = JSON.parse(result);
-    assert.ok(analysis.analyzedAt);
+    const summary = JSON.parse(result);
+    // spec 185: --dry-run emits a category-name → entry-count summary, not full analysis
+    assert.equal(summary.analyzedAt, undefined);
+    assert.equal(summary.modules, 1);
     // File should NOT be written
     assert.ok(!fs.existsSync(join(tmp, ".sdd-forge/output/analysis.json")));
   });
