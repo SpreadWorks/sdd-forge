@@ -1,5 +1,5 @@
 {
-  "analyzedAt": "2026-04-17T01:46:57.836Z",
+  "analyzedAt": "2026-04-17T03:48:03.386Z",
   "package": {
     "entries": [
       {
@@ -113,9 +113,9 @@
       },
       {
         "file": "src/check/commands/config.js",
-        "hash": "4c3b2dc2e265953d4d0774b9603a865f",
-        "lines": 141,
-        "mtime": "2026-04-10T06:35:13.092Z",
+        "hash": "d7af41cbc147e92d2e905ceaa3592d0c",
+        "lines": 140,
+        "mtime": "2026-04-17T03:48:03.042Z",
         "className": "config",
         "methods": [
           "printHelp",
@@ -127,7 +127,6 @@
           "../../lib/entrypoint.js",
           "../../lib/cli.js",
           "../../lib/config.js",
-          "../../lib/types.js",
           "../../lib/presets.js",
           "../../lib/exit-codes.js"
         ],
@@ -136,32 +135,20 @@
         ],
         "extends": null,
         "usedBy": [
+          "src/lib/agent.js",
           "src/lib/flow-state.js",
           "src/lib/guardrail.js",
           "src/lib/i18n.js",
+          "src/lib/log.js",
           "src/presets/base/tests/acceptance/fixtures/src/index.js",
           "src/presets/cli/tests/acceptance/fixtures/src/cli.js",
           "src/presets/js-webapp/tests/acceptance/fixtures/src/index.js",
-          "src/presets/node-cli/tests/acceptance/fixtures/src/cli.js",
-          "src/lib/agent.js",
-          "src/lib/log.js"
+          "src/presets/node-cli/tests/acceptance/fixtures/src/cli.js"
         ],
         "id": "1b9f6fe7",
-        "summary": "This command validates project configuration and reports issues in text or JSON. It is a schema-driven config health check for CLI workflows.",
-        "detail": "The implementation loads config from the repository root and runs structured validation through shared type utilities. It caps schema error output with a maximum threshold to avoid overwhelming terminal logs. Output formatting is selectable (`text` or `json`) to support both human and machine consumption. Failure paths consistently map to non-zero exit status for CI and automation compatibility.",
-        "chapter": "configuration",
-        "role": "cli",
         "enrich": {
-          "processedAt": "2026-04-10T12:37:22.721Z",
           "attempts": 1
-        },
-        "keywords": [
-          "config validation",
-          "schema check",
-          "json output",
-          "cli diagnostics",
-          "configuration lint"
-        ]
+        }
       },
       {
         "file": "src/check/commands/freshness.js",
@@ -1195,9 +1182,9 @@
       },
       {
         "file": "src/docs/lib/command-context.js",
-        "hash": "e8d0a62579afc8d743322bd0a6a154ff",
-        "lines": 183,
-        "mtime": "2026-04-14T08:22:10.020Z",
+        "hash": "24a501d0b4ec3459f1a33b5f8b4f4c86",
+        "lines": 184,
+        "mtime": "2026-04-17T03:48:03.043Z",
         "className": "command-context",
         "methods": [
           "resolveCommandContext",
@@ -1213,7 +1200,6 @@
           "path",
           "../../lib/cli.js",
           "../../lib/config.js",
-          "../../lib/types.js",
           "../../lib/agent.js",
           "../../lib/i18n.js",
           "./template-merger.js"
@@ -1233,22 +1219,9 @@
           "src/docs/commands/readme.js"
         ],
         "id": "10a78227",
-        "summary": "This shared context module resolves docs command runtime state and analysis loading helpers. It centralizes root resolution, chapter discovery, and response preamble stripping.",
-        "detail": "It normalizes CLI and override inputs into a consistent command context containing root, docs directory, config, and agent data. Analysis loaders read generated JSON outputs safely and return null on absent files. Chapter file selection supports exclusions and ordered filtering through template merger integration. Utility helpers provide small, repeatable operations like safe text reads and model-output preamble removal used across command modules.",
-        "chapter": "internal_design",
-        "role": "lib",
         "enrich": {
-          "processedAt": "2026-04-14T11:38:15.649Z",
           "attempts": 1
-        },
-        "keywords": [
-          "command context",
-          "root resolution",
-          "analysis loader",
-          "chapter discovery",
-          "shared utility",
-          "preamble stripping"
-        ]
+        }
       },
       {
         "file": "src/docs/lib/concurrency.js",
@@ -3769,7 +3742,8 @@
         "extends": null,
         "usedBy": [
           "src/lib/types.js",
-          "src/setup.js"
+          "src/setup.js",
+          "src/lib/config.js"
         ],
         "id": "13ddf392",
         "summary": "This module provides the core agent invocation layer for sdd-forge, including sync/async execution, provider-specific output parsing, and retry logic. It also resolves effective agent configuration, working directories, and temporary context file management.",
@@ -3897,9 +3871,9 @@
       },
       {
         "file": "src/lib/config.js",
-        "hash": "5c62ae89e492608c2d182a775244a4f3",
-        "lines": 128,
-        "mtime": "2026-04-13T06:50:37.382Z",
+        "hash": "e5656888a1468bbb509b3a7de01e1651",
+        "lines": 343,
+        "mtime": "2026-04-17T03:48:03.043Z",
         "className": "config",
         "methods": [
           "resolveConcurrency",
@@ -3910,12 +3884,14 @@
           "sddOutputDir",
           "resolveWorkDir",
           "loadLang",
+          "validate",
           "loadConfig"
         ],
         "imports": [
           "fs",
           "path",
-          "./types.js"
+          "./agent.js",
+          "./schema-validate.js"
         ],
         "exports": [
           "resolveConcurrency",
@@ -3926,6 +3902,7 @@
           "sddOutputDir",
           "resolveWorkDir",
           "loadLang",
+          "validate",
           "loadConfig",
           "DEFAULT_CONCURRENCY",
           "DEFAULT_LANG"
@@ -3946,23 +3923,9 @@
           "src/upgrade.js"
         ],
         "id": "dff6e5b4",
-        "summary": "This module handles core configuration and filesystem path resolution for sdd-forge. It centralizes defaults, JSON loading, package field access, and validated config retrieval.",
-        "detail": "It defines runtime defaults such as concurrency and language, then exposes lightweight resolvers that apply fallback behavior when fields are absent or invalid. JSON file loading is encapsulated with explicit existence checks and contextualized parse error messaging to improve diagnosability. The module standardizes `.sdd-forge` path derivations for config and output directories and resolves work directory precedence between environment variables and config values. Language loading reads from config with safe fallback to the default language when parsing fails or files are missing. Final config loading is delegated to schema validation to ensure downstream modules receive normalized settings.",
-        "chapter": "configuration",
-        "role": "config",
         "enrich": {
-          "processedAt": "2026-04-13T06:51:01.756Z",
           "attempts": 1
-        },
-        "keywords": [
-          "configuration loader",
-          "path resolution",
-          "json parsing",
-          "default values",
-          "work directory",
-          "schema validation",
-          "environment override"
-        ]
+        }
       },
       {
         "file": "src/lib/constants.js",
@@ -4801,6 +4764,30 @@
         ]
       },
       {
+        "file": "src/lib/schema-validate.js",
+        "hash": "8810f1797a6b09cf9198437a7d89b4da",
+        "lines": 136,
+        "mtime": "2026-04-17T03:48:03.043Z",
+        "className": "schema-validate",
+        "methods": [
+          "validateSchema",
+          "checkType",
+          "typeOf"
+        ],
+        "imports": [],
+        "exports": [
+          "validateSchema"
+        ],
+        "extends": null,
+        "usedBy": [
+          "src/lib/config.js"
+        ],
+        "id": "8bb94bbb",
+        "enrich": {
+          "attempts": 1
+        }
+      },
+      {
         "file": "src/lib/skills.js",
         "hash": "b0c956452f6a4eaa04549b3e92dc3f98",
         "lines": 194,
@@ -4852,45 +4839,25 @@
       },
       {
         "file": "src/lib/types.js",
-        "hash": "1579a4713f1484ca4b9eea07939b4035",
-        "lines": 406,
-        "mtime": "2026-04-10T09:22:42.667Z",
+        "hash": "9c1d5280897e498ddd6677a8803e491f",
+        "lines": 106,
+        "mtime": "2026-04-17T03:48:03.043Z",
         "className": "types",
         "methods": [
-          "validateConfig",
           "resolveOutputConfig"
         ],
-        "imports": [
-          "./agent.js"
-        ],
+        "imports": [],
         "exports": [
-          "validateConfig",
           "resolveOutputConfig"
         ],
         "extends": null,
         "usedBy": [
-          "src/docs.js",
-          "src/lib/config.js",
-          "src/setup.js"
+          "src/docs.js"
         ],
         "id": "69d5afb4",
         "enrich": {
-          "processedAt": "2026-04-13T05:26:02.189Z",
-          "attempts": 5
-        },
-        "summary": "This module validates runtime configuration objects and normalizes output-related settings. It acts as a type-safe boundary before config is consumed by other subsystems.",
-        "detail": "It imports provider constants and keeps an internal allowlist for tone values to enforce constrained configuration semantics. Validation collects schema and value errors, then throws a single aggregated error message when violations exist. On success, it returns a typed configuration object for downstream logic. A separate resolver builds a normalized output configuration shape from the validated config. The implementation emphasizes explicit guardrails over permissive coercion.",
-        "chapter": "configuration",
-        "role": "config",
-        "keywords": [
-          "config validation",
-          "schema checks",
-          "type guard",
-          "tone constraints",
-          "provider settings",
-          "error aggregation",
-          "output normalization"
-        ]
+          "attempts": 1
+        }
       },
       {
         "file": "src/loader.js",
@@ -7996,9 +7963,9 @@
       },
       {
         "file": "src/setup.js",
-        "hash": "f92d129aae39122cb2db5f2d3785496e",
+        "hash": "d472e9ea1378fdf149fbc4aa57ed4422",
         "lines": 561,
-        "mtime": "2026-04-14T04:55:48.008Z",
+        "mtime": "2026-04-17T03:48:03.043Z",
         "className": "setup",
         "methods": [
           "ask",
@@ -8025,7 +7992,7 @@
           "./lib/entrypoint.js",
           "./lib/cli.js",
           "./lib/exit-codes.js",
-          "./lib/types.js",
+          "./lib/config.js",
           "./lib/config.js",
           "./lib/i18n.js",
           "./lib/presets.js",
@@ -8040,23 +8007,9 @@
         "extends": null,
         "usedBy": null,
         "id": "9820c9db",
-        "summary": "This module implements the project setup command and interactive wizard for initializing sdd-forge in a repository. It provisions directories, baseline config, ignore rules, and agent guidance files.",
-        "detail": "The command parses setup arguments, loads existing defaults, and collects user input through prompt helpers before assembling final configuration. It creates required `.sdd-forge` and project directories, writes `config.json`, and ensures `.gitignore` and `.gitattributes` entries are present without duplicating conflicting rules. Agent-facing files are generated or patched with directive-based sections, and symlink normalization is handled for compatibility. The setup path also deploys skills and resolves preset leaf types via multi-chain preset logic to keep generated configuration aligned with selected template families. Overall, the module acts as a high-level orchestration CLI that centralizes bootstrap-time filesystem and configuration mutations.",
-        "chapter": "configuration",
-        "role": "cli",
         "enrich": {
-          "processedAt": "2026-04-14T04:56:09.021Z",
           "attempts": 1
-        },
-        "keywords": [
-          "project setup",
-          "bootstrap wizard",
-          "config initialization",
-          "filesystem provisioning",
-          "gitignore management",
-          "preset resolution",
-          "agent file generation"
-        ]
+        }
       },
       {
         "file": "src/upgrade.js",
@@ -8104,10 +8057,10 @@
       }
     ],
     "summary": {
-      "total": 236,
-      "totalMethods": 804
+      "total": 237,
+      "totalMethods": 807
     },
     "dataSourceHash": "7d725e75d5031be445119323e4947c91"
   },
-  "enrichedAt": "2026-04-17T01:47:12.189Z"
+  "enrichedAt": "2026-04-17T03:48:41.052Z"
 }
