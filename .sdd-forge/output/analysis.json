@@ -1,5 +1,5 @@
 {
-  "analyzedAt": "2026-04-17T10:27:43.149Z",
+  "analyzedAt": "2026-04-17T10:40:33.667Z",
   "package": {
     "entries": [
       {
@@ -3297,8 +3297,21 @@
         "usedBy": null,
         "id": "d4e97204",
         "enrich": {
-          "attempts": 1
-        }
+          "processedAt": "2026-04-17T10:41:52.427Z",
+          "attempts": 2
+        },
+        "summary": "Implements review execution for flow phases with resilient command retries and output parsing. It wraps phase-specific review behavior behind a command class.",
+        "detail": "The module defines retry defaults and a `runCmdWithRetry` helper that retries failed review invocations with delay and stderr progress logs. It contains dedicated parsers for test and spec review outputs and normalizes command results into structured return objects. `RunReviewCommand` validates the requested phase against allowed constants, builds the review script path, executes it, and routes parsing based on phase. It throws explicit errors for invalid phases and unexpected execution states to keep flow failures deterministic.",
+        "chapter": "cli_commands",
+        "role": "controller",
+        "keywords": [
+          "review command",
+          "retry logic",
+          "phase validation",
+          "flow review",
+          "command execution",
+          "result parsing"
+        ]
       },
       {
         "file": "src/flow/lib/run-sync.js",
@@ -3791,8 +3804,21 @@
         "usedBy": null,
         "id": "4ac07fa0",
         "enrich": {
-          "attempts": 5
-        }
+          "processedAt": "2026-04-17T10:41:52.427Z",
+          "attempts": 6
+        },
+        "summary": "Provides the CLI help command layout and localized command descriptions. It exposes command metadata for rendering help output.",
+        "detail": "The file defines a static command layout array and a `main` function that maps each command entry to translated descriptions. Localization is delegated to the i18n translator, so display text is resolved by key at runtime. It also exports both the executable entrypoint and raw layout for reuse by other parts of the CLI. The implementation stays minimal and data-driven, with no command-side effects.",
+        "chapter": "cli_commands",
+        "role": "cli",
+        "keywords": [
+          "help command",
+          "CLI layout",
+          "i18n",
+          "command list",
+          "usage output",
+          "localized descriptions"
+        ]
       },
       {
         "file": "src/lib/agent.js",
@@ -3827,8 +3853,21 @@
         ],
         "id": "13ddf392",
         "enrich": {
-          "attempts": 1
-        }
+          "processedAt": "2026-04-17T10:41:52.427Z",
+          "attempts": 2
+        },
+        "summary": "Defines the Agent runtime used to invoke external AI providers with profile-driven behavior. It centralizes command construction, retries, and logging integration.",
+        "detail": "The `Agent` class resolves provider profiles from config, validates selected profiles, and prepares invocation arguments and environment variables. It supports prompt token substitution, JSON flag injection, work directory injection, and stdin fallback for large prompts. Provider-specific output parsing is attempted safely, with parse failures logged and retried through bounded retry logic. The module also wraps calls with structured start/end/error logging and request IDs to tie execution telemetry together.",
+        "chapter": "internal_design",
+        "role": "lib",
+        "keywords": [
+          "agent runtime",
+          "provider profile",
+          "prompt injection",
+          "retry strategy",
+          "structured logging",
+          "AI command adapter"
+        ]
       },
       {
         "file": "src/lib/agents-md.js",
@@ -3918,8 +3957,21 @@
         ],
         "id": "f351ecc4",
         "enrich": {
-          "attempts": 6
-        }
+          "processedAt": "2026-04-17T10:41:52.427Z",
+          "attempts": 7
+        },
+        "summary": "Contains core CLI utility functions for root resolution, argument parsing, and package metadata access. It is a foundational helper module used across commands.",
+        "detail": "The module exports package directory constants, repository and source root resolvers, and worktree-related path helpers. It provides a lightweight option parser that maps long flags to camelCase keys and validates unknown flags. Version lookup and UTC timestamp formatting are also centralized here to avoid duplication. The utilities prefer environment overrides first, then git-based discovery, and finally safe process cwd fallbacks.",
+        "chapter": "cli_commands",
+        "role": "lib",
+        "keywords": [
+          "argument parser",
+          "repo root",
+          "worktree detection",
+          "package version",
+          "CLI utilities",
+          "path resolution"
+        ]
       },
       {
         "file": "src/lib/command-runner.js",
@@ -3945,8 +3997,21 @@
         ],
         "id": "102f6569",
         "enrich": {
-          "attempts": 5
-        }
+          "processedAt": "2026-04-17T10:41:52.427Z",
+          "attempts": 6
+        },
+        "summary": "Implements a generic module runner for command scripts with consistent process exit handling. It standardizes dynamic module execution behavior.",
+        "detail": "The function rewrites `process.argv` to match the target script and forwards remaining arguments. It imports the module dynamically, checks for a callable `main`, and executes it asynchronously. Failure paths emit errors and terminate with the shared error exit code constant. This keeps dispatch wrappers small while guaranteeing uniform error semantics across command entrypoints.",
+        "chapter": "cli_commands",
+        "role": "middleware",
+        "keywords": [
+          "module dispatcher",
+          "dynamic import",
+          "main runner",
+          "exit handling",
+          "CLI bootstrap",
+          "command wrapper"
+        ]
       },
       {
         "file": "src/lib/config.js",
@@ -4002,8 +4067,21 @@
         ],
         "id": "dff6e5b4",
         "enrich": {
-          "attempts": 1
-        }
+          "processedAt": "2026-04-17T10:41:52.427Z",
+          "attempts": 2
+        },
+        "summary": "Handles configuration loading, defaults, schema validation, and directory resolution. It defines the central config contract used by runtime components.",
+        "detail": "The module provides helpers to read JSON files safely, load package fields, and resolve language and concurrency defaults. It defines `.sdd-forge` path conventions and resolves work directories with environment override support. A schema object is used with `validateSchema` to validate config shape and raise readable validation errors. It also integrates provider profile schema support through `ProviderRegistry` so provider definitions remain consistent with runtime expectations.",
+        "chapter": "configuration",
+        "role": "config",
+        "keywords": [
+          "config loader",
+          "schema validation",
+          "defaults",
+          "work directory",
+          "language setting",
+          "provider config"
+        ]
       },
       {
         "file": "src/lib/constants.js",
@@ -4042,8 +4120,21 @@
         ],
         "id": "74b5e1c3",
         "enrich": {
-          "attempts": 6
-        }
+          "processedAt": "2026-04-17T10:41:52.427Z",
+          "attempts": 7
+        },
+        "summary": "Exports shared constants for phases, statuses, strategy enums, and process exit codes. It acts as the canonical source of allowed value sets.",
+        "detail": "The file freezes arrays of valid values for flow phases, review phases, merge modes, auto flags, and requirement statuses. These constants are used by command validators and state mutation utilities to enforce consistent domain rules. It also exposes `EXIT_SUCCESS` and `EXIT_ERROR` for unified process termination behavior. The module reduces magic strings and centralizes policy-level enumerations in one place.",
+        "chapter": "overview",
+        "role": "config",
+        "keywords": [
+          "domain constants",
+          "valid phases",
+          "status enums",
+          "exit codes",
+          "shared policy",
+          "immutable lists"
+        ]
       },
       {
         "file": "src/lib/container.js",
@@ -4081,8 +4172,21 @@
         ],
         "id": "fc4eae43",
         "enrich": {
-          "attempts": 1
-        }
+          "processedAt": "2026-04-17T10:41:52.427Z",
+          "attempts": 2
+        },
+        "summary": "Builds and initializes the dependency container for runtime services. It wires paths, config, logging, translation, providers, and flow state access.",
+        "detail": "The module defines a lightweight `Container` class for registering and resolving shared dependencies by name. `initContainer` computes root and source paths, loads config, derives work and log directories, and creates service instances. It registers utilities like `Logger`, `Agent`, `ProviderRegistry`, i18n translator, and flow state reader for downstream commands. Config load failures are reported to stderr with safe fallback behavior to keep startup resilient.",
+        "chapter": "project_structure",
+        "role": "middleware",
+        "keywords": [
+          "dependency injection",
+          "service container",
+          "runtime wiring",
+          "path bootstrap",
+          "logger setup",
+          "provider registry"
+        ]
       },
       {
         "file": "src/lib/flow-envelope.js",
@@ -4227,8 +4331,21 @@
         ],
         "id": "5bb0bb76",
         "enrich": {
-          "attempts": 4
-        }
+          "processedAt": "2026-04-17T10:41:52.427Z",
+          "attempts": 5
+        },
+        "summary": "Implements flow state persistence, active flow tracking, and lifecycle mutation utilities. It is the primary state model for Spec-Driven Development execution.",
+        "detail": "The module manages `flow.json`, active flow indexes, preparing-flow temp files, and stale entry cleanup across main repo and worktrees. It defines flow steps and phase derivation rules, plus helpers to load, save, mutate, and clear state atomically. It accumulates metrics, updates requirement and step status fields, and resolves flows by run ID or branch context. Git checks are fail-open in selected paths with diagnostic stderr logging to preserve operability under partial git failures.",
+        "chapter": "internal_design",
+        "role": "model",
+        "keywords": [
+          "flow state",
+          "state persistence",
+          "active flow",
+          "worktree mapping",
+          "metrics accumulation",
+          "lifecycle management"
+        ]
       },
       {
         "file": "src/lib/formatter.js",
@@ -4488,8 +4605,21 @@
         "usedBy": null,
         "id": "a2f5875b",
         "enrich": {
-          "attempts": 3
-        }
+          "processedAt": "2026-04-17T10:41:52.427Z",
+          "attempts": 4
+        },
+        "summary": "Provides a JSON repair utility that attempts to recover parseable JSON from malformed model output. It also strips markdown fences and locates JSON starts.",
+        "detail": "The parser walks input text with character-level routines for objects, arrays, strings, numbers, and keywords. It repairs common structural issues by emitting corrected output while tolerating incomplete or noisy fragments. Helper utilities normalize whitespace handling, digit checks, and control-character escaping. The function is designed for practical robustness rather than strict preservation of broken source text.",
+        "chapter": "internal_design",
+        "role": "lib",
+        "keywords": [
+          "JSON repair",
+          "fault-tolerant parser",
+          "markdown fence stripping",
+          "malformed output recovery",
+          "text normalization",
+          "parser utility"
+        ]
       },
       {
         "file": "src/lib/lint.js",
@@ -4574,8 +4704,21 @@
         ],
         "id": "3d7bb5e6",
         "enrich": {
-          "attempts": 1
-        }
+          "processedAt": "2026-04-17T10:41:52.427Z",
+          "attempts": 2
+        },
+        "summary": "Implements structured runtime logging for agent, git, and custom events. It writes JSONL logs and optional prompt snapshot files.",
+        "detail": "The module resolves log directories from work-dir config, creates per-day log files, and generates request IDs for traceability. It captures caller metadata, text statistics, process context, and flow context when available. The `Logger` class tracks async writes, supports enable/disable via config, and isolates each log channel through dedicated internal methods. Failures to write logs or prompt files are reported to stderr without aborting the caller flow.",
+        "chapter": "internal_design",
+        "role": "lib",
+        "keywords": [
+          "structured logging",
+          "JSONL",
+          "request id",
+          "prompt snapshot",
+          "flow context",
+          "telemetry"
+        ]
       },
       {
         "file": "src/lib/multi-select.js",
@@ -4696,7 +4839,8 @@
         "usedBy": [
           "src/lib/cli.js",
           "src/lib/git-helpers.js",
-          "src/lib/lint.js"
+          "src/lib/lint.js",
+          "src/sdd-forge.js"
         ],
         "id": "6196b26c",
         "enrich": {
@@ -4778,8 +4922,21 @@
         ],
         "id": "0e966da6",
         "enrich": {
-          "attempts": 1
-        }
+          "processedAt": "2026-04-17T10:41:52.427Z",
+          "attempts": 2
+        },
+        "summary": "Defines provider abstraction and concrete provider adapters for Claude, Codex, and user-defined commands. It standardizes parsing and CLI flag behaviors across providers.",
+        "detail": "A base `Provider` class declares parse and invocation extension points, while subclasses implement provider-specific output extraction and flags. `ClaudeProvider` parses JSON response payloads and exposes JSON/system prompt options; `CodexProvider` handles event-stream style lines. `UserProvider` supports profile-defined argument parsing and optional flags for custom commands. `ProviderRegistry` resolves merged profiles and returns provider-profile pairs for agent execution.",
+        "chapter": "configuration",
+        "role": "lib",
+        "keywords": [
+          "provider abstraction",
+          "Claude adapter",
+          "Codex adapter",
+          "custom provider",
+          "output parsing",
+          "profile registry"
+        ]
       },
       {
         "file": "src/lib/schema-validate.js",
@@ -4802,8 +4959,21 @@
         ],
         "id": "8bb94bbb",
         "enrich": {
-          "attempts": 7
-        }
+          "processedAt": "2026-04-17T10:41:52.427Z",
+          "attempts": 8
+        },
+        "summary": "Implements a lightweight schema validator used for config and structured input validation. It returns accumulated error messages instead of throwing immediately.",
+        "detail": "The validator supports object, array, primitive, and union-like type checks through recursive traversal. It validates required fields, nested properties, and array item schemas while carrying a path label for precise error location. Type detection includes null and array distinctions to avoid JavaScript `typeof` pitfalls. This utility keeps validation dependency-free and reusable across modules.",
+        "chapter": "configuration",
+        "role": "lib",
+        "keywords": [
+          "schema validator",
+          "recursive validation",
+          "type checking",
+          "config errors",
+          "path-aware diagnostics",
+          "dependency-free"
+        ]
       },
       {
         "file": "src/lib/skills.js",
@@ -4874,42 +5044,64 @@
         ],
         "id": "69d5afb4",
         "enrich": {
-          "attempts": 7
-        }
+          "processedAt": "2026-04-17T10:41:52.427Z",
+          "attempts": 8
+        },
+        "summary": "Contains type-related runtime helpers for output configuration resolution. It normalizes output settings into a stable object shape.",
+        "detail": "The module exports `resolveOutputConfig`, which derives effective output behavior from a config input. It applies defaults and ensures caller code receives predictable fields. The implementation is intentionally small and focused to keep output policy centralized. This reduces scattered conditional logic in command handlers.",
+        "chapter": "configuration",
+        "role": "config",
+        "keywords": [
+          "output config",
+          "normalization",
+          "runtime types",
+          "default resolution",
+          "settings helper"
+        ]
       },
       {
         "file": "src/loader.js",
-        "hash": "a710da80fe6b4710fa5277534bd35018",
-        "lines": 37,
-        "mtime": "2026-04-10T08:28:12.967Z",
+        "hash": "b20d0ac4d2841e8ff0cee1714336ddda",
+        "lines": 137,
+        "mtime": "2026-04-17T10:40:33.298Z",
         "className": "loader",
         "methods": [
-          "resolve"
+          "initialize",
+          "resolve",
+          "__resetForTest",
+          "fileExists",
+          "rememberResolution",
+          "presetSearchTiers"
         ],
         "imports": [
-          "sdd-forge/api"
+          "node:fs",
+          "node:fs/promises",
+          "node:path",
+          "node:url"
         ],
         "exports": [
-          "resolve"
+          "initialize",
+          "resolve",
+          "__resetForTest"
         ],
         "extends": null,
         "usedBy": null,
         "id": "bc582fbf",
-        "enrich": {
-          "processedAt": "2026-04-13T05:26:02.189Z",
-          "attempts": 5
-        },
-        "summary": "This module provides a custom ESM loader resolver for `sdd-forge/`-prefixed imports. It rewrites prefixed specifiers before delegating to Node’s default resolver.",
-        "detail": "A fixed prefix constant marks virtual package-style specifiers intended for internal resolution. The `resolve` hook intercepts those imports and returns a rewritten URL/object path for loading. For all other specifiers, it passes control through to `nextResolve` unchanged. This keeps import ergonomics stable while preserving compatibility with standard resolution behavior. The code is intentionally minimal to reduce loader-side complexity.",
-        "chapter": "stack_and_ops",
+        "summary": "Implements a custom ESM loader for resolving `sdd-forge/*` and preset imports across search tiers. It includes an in-memory resolution cache with test reset hooks.",
+        "detail": "The loader initializes with contextual data, then intercepts `resolve` calls to map virtual specifiers to concrete files. It searches project, user, and built-in preset directories in deterministic order. Successful resolutions are cached up to a bounded size to reduce filesystem checks on repeated imports. A test-only reset function clears internal state to make loader behavior deterministic during unit tests.",
+        "chapter": "project_structure",
         "role": "middleware",
+        "enrich": {
+          "processedAt": "2026-04-17T10:41:52.427Z",
+          "attempts": 1
+        },
         "keywords": [
           "ESM loader",
           "module resolution",
-          "import alias",
-          "specifier rewrite",
-          "Node resolve hook",
-          "runtime integration"
+          "preset tiers",
+          "resolution cache",
+          "virtual specifier",
+          "import hook"
         ]
       },
       {
@@ -4931,8 +5123,21 @@
         "usedBy": null,
         "id": "0230d610",
         "enrich": {
-          "attempts": 5
-        }
+          "processedAt": "2026-04-17T10:41:52.427Z",
+          "attempts": 6
+        },
+        "summary": "Acts as the metrics namespace dispatcher for subcommands. It initializes container context and forwards execution to command modules.",
+        "detail": "The script maps subcommand names to script paths and validates incoming arguments. It handles missing or unknown subcommands with consistent error exits. For valid commands, it resolves script paths from package root and executes them via `runModuleMain`. This keeps metrics command surface extensible while preserving uniform CLI behavior.",
+        "chapter": "cli_commands",
+        "role": "cli",
+        "keywords": [
+          "metrics CLI",
+          "subcommand dispatcher",
+          "namespace command",
+          "module forwarding",
+          "argument routing",
+          "error exit"
+        ]
       },
       {
         "file": "src/metrics/commands/token.js",
@@ -4986,8 +5191,21 @@
         "usedBy": null,
         "id": "59edeaf2",
         "enrich": {
-          "attempts": 4
-        }
+          "processedAt": "2026-04-17T10:41:52.427Z",
+          "attempts": 5
+        },
+        "summary": "Implements the `metrics token` command that aggregates per-phase daily metrics from flow states. It supports text, JSON, and CSV output with cache acceleration.",
+        "detail": "The module parses CLI flags, scans `specs/*/flow.json`, validates flow data, and builds normalized rows grouped by date and phase. It computes derived values such as difficulty, requirement counts, review totals, and request character metrics. A freshness check compares `finalizedAt` timestamps to reuse or rebuild `.sdd-forge/output/metrics.json` cache. The command includes robust file-read guards, graceful skips for malformed records, and deterministic renderers for each output format.",
+        "chapter": "cli_commands",
+        "role": "cli",
+        "keywords": [
+          "token metrics",
+          "flow aggregation",
+          "CSV output",
+          "JSON output",
+          "cache invalidation",
+          "daily phase stats"
+        ]
       },
       {
         "file": "src/presets-cmd.js",
@@ -5012,8 +5230,21 @@
         "usedBy": null,
         "id": "85926390",
         "enrich": {
-          "attempts": 5
-        }
+          "processedAt": "2026-04-17T10:41:52.427Z",
+          "attempts": 6
+        },
+        "summary": "Provides the presets command interface for listing and rendering preset trees. It is a read-oriented CLI for preset discovery.",
+        "detail": "The module loads preset metadata, handles language fallback, and dispatches subcommands for tree-style output. Tree rendering inspects template directory presence and prints hierarchical preset relationships. Errors are surfaced with explicit namespace-prefixed stderr messages and shared exit codes. The implementation keeps preset exploration logic separate from setup and runtime execution.",
+        "chapter": "cli_commands",
+        "role": "cli",
+        "keywords": [
+          "presets command",
+          "preset tree",
+          "preset discovery",
+          "localized output",
+          "CLI listing",
+          "template presence"
+        ]
       },
       {
         "file": "src/presets/base/data/package.js",
@@ -7920,27 +8151,46 @@
       },
       {
         "file": "src/sdd-forge.js",
-        "hash": "d73359688c453035cefee5e5511524e4",
-        "lines": 77,
-        "mtime": "2026-04-17T09:02:28.843Z",
+        "hash": "f71ef560afef8d8675c53a0f81d5172d",
+        "lines": 112,
+        "mtime": "2026-04-17T10:40:33.298Z",
         "className": "sdd-forge",
-        "methods": [],
+        "methods": [
+          "resolveProjectRoot"
+        ],
         "imports": [
           "node:module",
+          "node:fs",
+          "node:os",
           "path",
           "./lib/cli.js",
+          "./lib/process.js",
           "./lib/constants.js",
           "./lib/container.js",
           "./lib/command-runner.js",
-          "sdd-forge/api"
+          "sdd-forge/api",
+          "sdd-forge/presets/<name>/<subpath>"
         ],
         "exports": [],
         "extends": null,
         "usedBy": null,
         "id": "a8608997",
+        "summary": "Serves as the top-level `sdd-forge` CLI entrypoint with multi-namespace dispatch and loader registration. It routes commands to independent scripts or namespace dispatchers.",
+        "detail": "The file resolves project root using environment override, local config detection, and git fallback. It handles global flags like version and help, then maps subcommands to either namespace modules or standalone command scripts. Namespace dispatch mutates `process.argv` and imports the target dispatcher, while independent commands run through `runModuleMain`. It initializes container context and enforces consistent exit handling for unknown command paths.",
+        "chapter": "project_structure",
+        "role": "cli",
         "enrich": {
-          "attempts": 5
-        }
+          "processedAt": "2026-04-17T10:41:52.427Z",
+          "attempts": 1
+        },
+        "keywords": [
+          "CLI entrypoint",
+          "command routing",
+          "namespace dispatcher",
+          "loader registration",
+          "project root resolution",
+          "top-level bootstrap"
+        ]
       },
       {
         "file": "src/setup.js",
@@ -7988,8 +8238,21 @@
         "usedBy": null,
         "id": "9820c9db",
         "enrich": {
-          "attempts": 1
-        }
+          "processedAt": "2026-04-17T10:41:52.427Z",
+          "attempts": 2
+        },
+        "summary": "Implements the interactive setup command that initializes project config, directories, and agent guidance files. It orchestrates onboarding from prompts to persisted configuration.",
+        "detail": "The module parses setup options, loads defaults, runs interactive selection flows, and validates the resulting config payload before saving. It creates required project directories, updates ignore rules, fixes legacy symlink edge cases, and deploys skill assets. Agent instruction files are created or updated with embedded SDD directives while preserving existing content where possible. The command also resolves provider defaults and work directory paths to ensure the project is immediately runnable after setup.",
+        "chapter": "configuration",
+        "role": "cli",
+        "keywords": [
+          "setup wizard",
+          "project initialization",
+          "config generation",
+          "interactive prompts",
+          "skills deployment",
+          "agent instructions"
+        ]
       },
       {
         "file": "src/upgrade.js",
@@ -8038,9 +8301,9 @@
     ],
     "summary": {
       "total": 241,
-      "totalMethods": 790
+      "totalMethods": 796
     },
     "dataSourceHash": "7d725e75d5031be445119323e4947c91"
   },
-  "enrichedAt": "2026-04-17T10:29:11.846Z"
+  "enrichedAt": "2026-04-17T10:41:52.427Z"
 }
