@@ -15,7 +15,7 @@ import { runIfDirect } from "../../lib/entrypoint.js";
 import { repoRoot, parseArgs } from "../../lib/cli.js";
 import { sddConfigPath, validate } from "../../lib/config.js";
 import { PRESETS } from "../../lib/presets.js";
-import { EXIT_ERROR } from "../../lib/exit-codes.js";
+import { EXIT_ERROR } from "../../lib/constants.js";
 
 const MAX_SCHEMA_ERRORS = 50;
 

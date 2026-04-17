@@ -15,7 +15,7 @@ import path from "path";
 import readline from "readline";
 import { runIfDirect } from "./lib/entrypoint.js";
 import { parseArgs } from "./lib/cli.js";
-import { EXIT_ERROR } from "./lib/exit-codes.js";
+import { EXIT_ERROR } from "./lib/constants.js";
 import { validate } from "./lib/config.js";
 import { DEFAULT_LANG, sddDir as sddDirFn } from "./lib/config.js";
 import { createI18n } from "./lib/i18n.js";

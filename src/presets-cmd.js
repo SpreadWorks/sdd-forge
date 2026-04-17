@@ -9,7 +9,7 @@
 import fs from "fs";
 import path from "path";
 import { PRESETS, presetByLeaf } from "./lib/presets.js";
-import { EXIT_ERROR } from "./lib/exit-codes.js";
+import { EXIT_ERROR } from "./lib/constants.js";
 
 const subCmd = process.argv[2];
 

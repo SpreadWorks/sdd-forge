@@ -9,7 +9,7 @@
 import fs from "node:fs/promises";
 import path from "node:path";
 import { parseArgs, repoRoot } from "../../lib/cli.js";
-import { EXIT_ERROR, EXIT_SUCCESS } from "../../lib/exit-codes.js";
+import { EXIT_ERROR, EXIT_SUCCESS } from "../../lib/constants.js";
 
 const DEFAULT_FORMAT = "text";
 const SUPPORTED_FORMATS = new Set(["text", "json", "csv"]);

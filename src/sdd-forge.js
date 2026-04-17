@@ -16,7 +16,7 @@
 import { register } from "node:module";
 import path from "path";
 import { PKG_DIR, repoRoot } from "./lib/cli.js";
-import { EXIT_ERROR } from "./lib/exit-codes.js";
+import { EXIT_ERROR } from "./lib/constants.js";
 import { Logger } from "./lib/log.js";
 
 // Register module loader hook so external presets can use `import 'sdd-forge/api'`
@@ -32,10 +32,10 @@ if (subCmd === "-v" || subCmd === "--version" || subCmd === "-V") {
   process.exit(0);
 }
 
-// help (no args / -h / --help)
-if (!subCmd || subCmd === "-h" || subCmd === "--help") {
+// help (no args / -h / --help / help [topic])
+if (!subCmd || subCmd === "-h" || subCmd === "--help" || subCmd === "help") {
   const helpPath = path.join(PKG_DIR, "help.js");
-  process.argv = [process.argv[0], helpPath];
+  process.argv = [process.argv[0], helpPath, ...rest];
   await import(helpPath);
   process.exit(0);
 }
@@ -70,7 +70,6 @@ const INDEPENDENT = {
   setup:   "setup",
   upgrade: "upgrade",
   presets: "presets-cmd",
-  help:    "help",
 };
 
 if (NAMESPACE_SCRIPTS[subCmd]) {

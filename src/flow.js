@@ -17,7 +17,7 @@ import { loadConfig } from "./lib/config.js";
 import { loadFlowState, specIdFromPath } from "./lib/flow-state.js";
 import { ok, fail, output } from "./lib/flow-envelope.js";
 import { FLOW_COMMANDS } from "./flow/registry.js";
-import { EXIT_ERROR } from "./lib/exit-codes.js";
+import { EXIT_ERROR } from "./lib/constants.js";
 
 // ---------------------------------------------------------------------------
 // Parse top-level args: flow <group> [cmd] [rest...]

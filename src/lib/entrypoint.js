@@ -1,6 +1,6 @@
 import path from "path";
 import { fileURLToPath } from "url";
-import { EXIT_ERROR } from "./exit-codes.js";
+import { EXIT_ERROR } from "./constants.js";
 
 export function isDirectRun(importMetaUrl, argv1 = process.argv[1]) {
   if (!argv1) return false;

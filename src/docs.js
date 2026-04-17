@@ -11,7 +11,7 @@ import { PKG_DIR } from "./lib/cli.js";
 import { Logger } from "./lib/log.js";
 import { resolveCommandContext } from "./docs/lib/command-context.js";
 import { resolveOutputConfig } from "./lib/types.js";
-import { EXIT_ERROR } from "./lib/exit-codes.js";
+import { EXIT_ERROR } from "./lib/constants.js";
 
 /** Subcommand → script mapping */
 const SCRIPTS = {

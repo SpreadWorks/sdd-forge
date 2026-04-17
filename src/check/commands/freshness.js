@@ -17,7 +17,7 @@ import fs from "fs";
 import path from "path";
 import { runIfDirect } from "../../lib/entrypoint.js";
 import { repoRoot, sourceRoot, parseArgs } from "../../lib/cli.js";
-import { EXIT_ERROR } from "../../lib/exit-codes.js";
+import { EXIT_ERROR } from "../../lib/constants.js";
 
 const FILE_LIMIT = 10_000;
 

@@ -20,10 +20,9 @@ export const PKG_DIR = path.resolve(path.dirname(fileURLToPath(import.meta.url))
  * SDD_FORGE_WORK_ROOT 環境変数が設定されている場合はそれを使用する（プロジェクトモード）。
  * それ以外は git rev-parse でリポジトリルートを取得し、失敗時は process.cwd() を返す。
  *
- * @param {string} [importMetaUrl] - 呼び出し元の import.meta.url（後方互換用）
  * @returns {string} 作業ルートの絶対パス
  */
-export function repoRoot(importMetaUrl) {
+export function repoRoot() {
   if (process.env.SDD_FORGE_WORK_ROOT) return process.env.SDD_FORGE_WORK_ROOT;
   // Logger 基盤の依存元のため runCmd を直接使う。runGit に変更してはならない
   // （Logger.git → resolveLogDir → repoRoot → runGit → Logger.git で無限再帰になる）。

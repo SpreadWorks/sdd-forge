@@ -7,7 +7,7 @@
 
 import path from "path";
 import { PKG_DIR } from "./lib/cli.js";
-import { EXIT_ERROR } from "./lib/exit-codes.js";
+import { EXIT_ERROR } from "./lib/constants.js";
 
 /** Subcommand → script mapping */
 const SCRIPTS = {

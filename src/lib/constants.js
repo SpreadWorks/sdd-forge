@@ -107,3 +107,10 @@ export const VALID_REQ_STATUSES = Object.freeze([
   "done",
   "skipped",
 ]);
+
+// ---------------------------------------------------------------------------
+// Exit codes
+// ---------------------------------------------------------------------------
+
+export const EXIT_SUCCESS = 0;
+export const EXIT_ERROR = 1;

@@ -25,7 +25,7 @@ import { loadAgentConfig, callAgentAwaitLog, resolveAgent, ensureAgentWorkDir } 
 const callReviewAgent = (agent, prompt, root, systemPrompt) =>
   callAgentAwaitLog(agent, prompt, undefined, root, { systemPrompt });
 import { runGit } from "../../lib/git-helpers.js";
-import { EXIT_ERROR } from "../../lib/exit-codes.js";
+import { EXIT_ERROR } from "../../lib/constants.js";
 import { VALID_PHASES } from "../../lib/constants.js";
 
 /** Maximum retry iterations for review auto-fix loops (test and spec). */
@@ -805,7 +805,7 @@ async function runSpecReview(root, flow, config, dryRun) {
 }
 
 async function main() {
-  const root = repoRoot(import.meta.url);
+  const root = repoRoot();
   const cli = parseArgs(process.argv.slice(2), {
     flags: ["--dry-run", "--skip-confirm"],
     options: ["--phase"],

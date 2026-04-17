@@ -15,7 +15,7 @@ import { repoRoot, sourceRoot, parseArgs } from "../../lib/cli.js";
 import { loadConfig, sddOutputDir } from "../../lib/config.js";
 import { globToRegex } from "../../docs/lib/scanner.js";
 import { pushSection, DIVIDER } from "../../lib/formatter.js";
-import { EXIT_ERROR } from "../../lib/exit-codes.js";
+import { EXIT_ERROR } from "../../lib/constants.js";
 
 const DEFAULT_MAX_FILES = 10;
 

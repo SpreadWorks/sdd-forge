@@ -5,7 +5,6 @@
  * Provides a shared interface for calling configured AI agents.
  */
 
-import crypto from "crypto";
 import fs from "fs";
 import path from "path";
 import { execFileSync, spawn } from "child_process";
@@ -714,30 +713,4 @@ export function resolveAgent(cfg, commandId) {
  */
 export function resolveWorkDir(root, config) {
   return resolveConfiguredWorkDir(root, config);
-}
-
-/**
- * 作業ディレクトリに .claude/rules/ コンテキストファイルを書き込む。
- * Claude CLI が cwd から自動で読み込む。
- *
- * @param {string} workDir - 作業ディレクトリの絶対パス
- * @param {string} content - コンテキスト内容
- * @returns {string} 書き込んだファイルの絶対パス
- */
-export function writeAgentContext(workDir, content) {
-  const rulesDir = path.join(workDir, ".claude", "rules");
-  fs.mkdirSync(rulesDir, { recursive: true });
-  const id = crypto.randomUUID().slice(0, 8);
-  const filePath = path.join(rulesDir, `sdd-${id}.md`);
-  fs.writeFileSync(filePath, content, "utf8");
-  return filePath;
-}
-
-/**
- * コンテキストファイルを削除する。
- *
- * @param {string} filePath - writeAgentContext が返したパス
- */
-export function cleanupAgentContext(filePath) {
-  try { fs.unlinkSync(filePath); } catch (err) { if (err.code !== "ENOENT") console.error(err); }
 }

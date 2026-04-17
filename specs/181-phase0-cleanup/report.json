@@ -1,0 +1,47 @@
+{
+  "data": {
+    "implementation": {
+      "diffStat": "specs/181-phase0-cleanup/draft.md              | 141 ++++++++++++++++++++++\n specs/181-phase0-cleanup/flow.json             | 155 ++++++++++++++++++++++++\n specs/181-phase0-cleanup/issue-log.json        |  28 +++++\n specs/181-phase0-cleanup/qa.md                 |   9 ++\n specs/181-phase0-cleanup/review.md             |  33 ++++++\n specs/181-phase0-cleanup/spec.md               | 117 +++++++++++++++++++\n specs/181-phase0-cleanup/tests/README.md       |  25 ++++\n specs/181-phase0-cleanup/tests/cleanup.test.js | 156 +++++++++++++++++++++++++\n src/check.js                                   |   2 +-\n src/check/commands/config.js                   |   2 +-\n src/check/commands/freshness.js                |   2 +-\n src/check/commands/scan.js                     |   2 +-\n src/docs.js                                    |   2 +-\n src/docs/commands/forge.js                     |   4 +-\n src/docs/commands/text.js                      |   2 +-\n src/flow.js                                    |   2 +-\n src/flow/commands/review.js                    |   4 +-\n src/lib/agent.js                               |  27 -----\n src/lib/cli.js                                 |   3 +-\n src/lib/constants.js                           |   7 ++\n src/lib/entrypoint.js                          |   2 +-\n src/lib/exit-codes.js                          |   8 --\n src/metrics.js                                 |   2 +-\n src/metrics/commands/token.js                  |   2 +-\n src/presets-cmd.js                             |   2 +-\n src/sdd-forge.js                               |   9 +-\n src/setup.js                                   |   2 +-\n src/upgrade.js                                 |   2 +-\n 28 files changed, 693 insertions(+), 59 deletions(-)",
+      "commits": [
+        "feat: feature/181-phase0-cleanup"
+      ]
+    },
+    "retro": {
+      "total": 4,
+      "done": 3,
+      "partial": 1,
+      "not_done": 0,
+      "rate": 0.88,
+      "notes": "実装変更（`src/`）は R1-R3 を満たし、R4 も本体削除は完了している。未達は R4.2 の厳密条件（文字列の全コードベース0件）で、spec配下の追加ファイルに対象文字列が残っている点。"
+    },
+    "issueLog": {
+      "count": 0,
+      "entries": []
+    },
+    "metrics": {
+      "docsRead": 1,
+      "srcRead": 1,
+      "question": 1,
+      "issueLog": 0
+    },
+    "tokenMetrics": {
+      "input": 43190,
+      "output": 3405,
+      "cacheRead": 33920,
+      "cacheCreation": 0,
+      "cost": null,
+      "callCount": 3
+    },
+    "tests": {
+      "unit": 15,
+      "integration": 0,
+      "acceptance": 0,
+      "total": 15
+    },
+    "sync": {
+      "status": "skipped",
+      "reason": "sync was skipped"
+    }
+  },
+  "text": "  Report\n\n  Implementation\n  ────────────────────────────────────────────────\n    feat: feature/181-phase0-cleanup\n    28 files changed, 693 insertions(+), 59 deletions(-)\n\n  Retro\n  ────────────────────────────────────────────────\n    ███████░ 88%  (3 done / 1 partial / 0 miss)\n\n  Metrics\n  ────────────────────────────────────────────────\n    docs read ................... 1\n    src read .................... 1\n    Q&A ......................... 1\n    issue-log ................... 0\n    agent calls ................. 3\n    input tokens ................ 43,190\n    output tokens ............... 3,405\n    cache-read tokens ........... 33,920\n    cache-create tokens ......... 0\n    cost ........................ N/A\n\n  Tests\n  ────────────────────────────────────────────────\n    unit 15  integration 0  acceptance 0  total 15"
+}

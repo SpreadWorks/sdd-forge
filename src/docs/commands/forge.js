@@ -24,7 +24,7 @@ import { loadFullAnalysis, loadAnalysisData, getChapterFiles, readText } from ".
 import { createResolver } from "../lib/resolver-factory.js";
 import { callAgentAsyncWithLog, DEFAULT_AGENT_TIMEOUT_MS, resolveAgent } from "../../lib/agent.js";
 import { translate } from "../../lib/i18n.js";
-import { EXIT_ERROR } from "../../lib/exit-codes.js";
+import { EXIT_ERROR } from "../../lib/constants.js";
 import {
   summaryToText,
   buildForgeSystemPrompt,
@@ -199,7 +199,7 @@ async function main() {
     return;
   }
 
-  const root = repoRoot(import.meta.url);
+  const root = repoRoot();
   const config = loadConfig(root);
   const type = config.type || "";
   const lang = config.docs.defaultLanguage;

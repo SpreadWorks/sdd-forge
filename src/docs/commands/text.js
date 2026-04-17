@@ -32,7 +32,7 @@ import { callAgentWithLog, callAgentAsyncWithLog, ensureAgentWorkDir, loadAgentC
 import { translate } from "../../lib/i18n.js";
 import { resolveCommandContext, getChapterFiles, loadFullAnalysis } from "../lib/command-context.js";
 import { repairJson } from "../../lib/json-parse.js";
-import { EXIT_ERROR } from "../../lib/exit-codes.js";
+import { EXIT_ERROR } from "../../lib/constants.js";
 
 const logger = createLogger("text");
 

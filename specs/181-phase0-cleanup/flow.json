@@ -1,0 +1,155 @@
+{
+  "spec": "specs/181-phase0-cleanup/spec.md",
+  "baseBranch": "main",
+  "featureBranch": "feature/181-phase0-cleanup",
+  "runId": "b95e8bbd-65c0-4d8f-b983-129886253b48",
+  "lifecycle": "active",
+  "steps": [
+    {
+      "id": "branch",
+      "status": "done"
+    },
+    {
+      "id": "prepare-spec",
+      "status": "pending"
+    },
+    {
+      "id": "draft",
+      "status": "done"
+    },
+    {
+      "id": "gate-draft",
+      "status": "done"
+    },
+    {
+      "id": "spec",
+      "status": "done"
+    },
+    {
+      "id": "gate",
+      "status": "done"
+    },
+    {
+      "id": "approval",
+      "status": "done"
+    },
+    {
+      "id": "test",
+      "status": "done"
+    },
+    {
+      "id": "implement",
+      "status": "done"
+    },
+    {
+      "id": "gate-impl",
+      "status": "done"
+    },
+    {
+      "id": "review",
+      "status": "done"
+    },
+    {
+      "id": "finalize",
+      "status": "pending"
+    },
+    {
+      "id": "commit",
+      "status": "pending"
+    },
+    {
+      "id": "push",
+      "status": "pending"
+    },
+    {
+      "id": "merge",
+      "status": "pending"
+    },
+    {
+      "id": "pr-create",
+      "status": "pending"
+    },
+    {
+      "id": "branch-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "pr-merge",
+      "status": "pending"
+    },
+    {
+      "id": "sync-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "docs-update",
+      "status": "pending"
+    },
+    {
+      "id": "docs-review",
+      "status": "pending"
+    },
+    {
+      "id": "docs-commit",
+      "status": "pending"
+    }
+  ],
+  "requirements": [
+    {
+      "desc": "R1: 終了コード定数の単一ソース化",
+      "status": "done"
+    },
+    {
+      "desc": "R2: リポジトリルート解決関数の引数整理",
+      "status": "done"
+    },
+    {
+      "desc": "R3: help 処理経路の単一化",
+      "status": "done"
+    },
+    {
+      "desc": "R4: 配線ゼロ補助関数の除去",
+      "status": "done"
+    }
+  ],
+  "issue": 154,
+  "request": "#154 issueを進めてください",
+  "worktree": true,
+  "notes": [
+    "draft-q1: user approved AI summary of 4 cleanup tasks"
+  ],
+  "metrics": {
+    "plan": {
+      "docsRead": 1
+    },
+    "draft": {
+      "srcRead": 1,
+      "question": 1
+    },
+    "gate-draft": {
+      "tokens": {
+        "input": 24218,
+        "output": 2194,
+        "cacheRead": 27392,
+        "cacheCreation": 0
+      },
+      "callCount": 2,
+      "responseChars": 1996
+    },
+    "gate": {
+      "tokens": {
+        "input": 18972,
+        "output": 1211,
+        "cacheRead": 6528,
+        "cacheCreation": 0
+      },
+      "callCount": 1,
+      "responseChars": 1909
+    }
+  },
+  "test": {
+    "summary": {
+      "unit": 15
+    }
+  }
+}

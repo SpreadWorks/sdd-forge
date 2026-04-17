@@ -16,7 +16,7 @@ import fs from "fs";
 import path from "path";
 import { runIfDirect } from "./lib/entrypoint.js";
 import { repoRoot, parseArgs, PKG_DIR } from "./lib/cli.js";
-import { EXIT_ERROR } from "./lib/exit-codes.js";
+import { EXIT_ERROR } from "./lib/constants.js";
 import { loadConfig, sddConfigPath } from "./lib/config.js";
 import { translate } from "./lib/i18n.js";
 import { deploySkills, deployProjectSkills, cleanupObsoleteSkills, MAIN_SKILLS_TEMPLATES_DIR } from "./lib/skills.js";
