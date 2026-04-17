@@ -1,5 +1,5 @@
 {
-  "analyzedAt": "2026-04-17T14:28:53.600Z",
+  "analyzedAt": "2026-04-17T16:45:07.038Z",
   "package": {
     "entries": [
       {
@@ -2192,9 +2192,9 @@
       },
       {
         "file": "src/flow.js",
-        "hash": "cfd4bc494d2a36a8885fb4488834a257",
-        "lines": 256,
-        "mtime": "2026-04-17T09:02:28.841Z",
+        "hash": "5869c909ea1ae0eca8db07f06405a7fa",
+        "lines": 266,
+        "mtime": "2026-04-17T16:45:06.727Z",
         "className": "flow",
         "methods": [
           "throwUnexpectedArgs",
@@ -2218,21 +2218,21 @@
         "extends": null,
         "usedBy": null,
         "id": "1ab08f2b",
-        "summary": "This file is the dispatcher for `sdd-forge flow` commands and envelope-formatted execution results. It parses grouped command syntax and runs registered flow entries.",
-        "detail": "It supports command groups, positional argument assignment, and strict unknown-option detection for robust CLI behavior. Entry invocation is routed through a shared runner that wraps results in success/failure envelopes for machine-readable output. Special-case commands like resume and prepare-spec are handled with explicit dispatch branches. The module standardizes exit-code behavior and error propagation across all flow subcommands.",
+        "summary": "This file is the main CLI dispatcher for `sdd-forge flow`. It parses argv, resolves command groups, and executes matched entries with standardized success or error handling.",
+        "detail": "The module splits raw arguments into positional values, flags, and options using entry specs, then validates unknown or extra arguments early. It provides reusable helpers for mapping positional args onto the runtime flow context and generating command-specific help usage. `runEntry` wraps execution in a consistent envelope lifecycle, including pre/post hooks and error hooks, while preserving non-zero exit behavior. The top-level `dispatch` function routes shortcuts and normal group/command paths, then terminates with explicit exit codes for invalid input or failures. This keeps flow subcommands centralized while allowing each command entry to implement its own business logic.",
         "chapter": "cli_commands",
         "role": "cli",
         "enrich": {
-          "processedAt": "2026-04-17T09:03:42.668Z",
+          "processedAt": "2026-04-17T16:45:44.055Z",
           "attempts": 1
         },
         "keywords": [
-          "flow dispatcher",
-          "command registry",
-          "envelope output",
-          "argument parser",
-          "subcommand groups",
-          "exit handling"
+          "CLI dispatcher",
+          "argument parsing",
+          "subcommand routing",
+          "exit codes",
+          "command envelope",
+          "flow command runner"
         ]
       },
       {
@@ -2420,14 +2420,16 @@
       },
       {
         "file": "src/flow/lib/base-command.js",
-        "hash": "f53df55dd91b67127133491595f327e7",
-        "lines": 41,
-        "mtime": "2026-04-10T06:35:13.096Z",
+        "hash": "48e28fd12ff95110cc29aeb59c45afc5",
+        "lines": 54,
+        "mtime": "2026-04-17T16:45:06.727Z",
         "className": "base-command",
         "methods": [
           "FlowCommand"
         ],
-        "imports": [],
+        "imports": [
+          "./flow-context.js"
+        ],
         "exports": [
           "FlowCommand"
         ],
@@ -2441,6 +2443,7 @@
           "src/flow/lib/get-qa-count.js",
           "src/flow/lib/get-resolve-context.js",
           "src/flow/lib/get-status.js",
+          "src/flow/lib/get-test-result.js",
           "src/flow/lib/run-finalize.js",
           "src/flow/lib/run-gate.js",
           "src/flow/lib/run-impl-confirm.js",
@@ -2452,6 +2455,7 @@
           "src/flow/lib/run-review.js",
           "src/flow/lib/run-sync.js",
           "src/flow/lib/set-auto.js",
+          "src/flow/lib/set-init.js",
           "src/flow/lib/set-issue-log.js",
           "src/flow/lib/set-issue.js",
           "src/flow/lib/set-metric.js",
@@ -2460,25 +2464,24 @@
           "src/flow/lib/set-request.js",
           "src/flow/lib/set-step.js",
           "src/flow/lib/set-summary.js",
-          "src/flow/lib/set-test-summary.js",
-          "src/flow/lib/set-init.js",
-          "src/flow/lib/get-test-result.js"
+          "src/flow/lib/set-test-summary.js"
         ],
         "id": "83f60bd3",
-        "enrich": {
-          "processedAt": "2026-04-10T14:34:55.016Z",
-          "attempts": 2
-        },
-        "summary": "Defines the abstract base class for flow command implementations. It enforces a CLI-agnostic command execution contract.",
-        "detail": "The class checks active flow state where required and delegates actual behavior to subclass `execute` implementations. It explicitly documents that parsing/output concerns are outside this layer. This separation keeps flow logic reusable and testable independent of entrypoint wiring.",
+        "summary": "This file defines the abstract base class for flow commands. It standardizes context resolution and enforces an `execute()` contract for subclasses.",
+        "detail": "The class resolves the active flow context before any command logic runs, so subclasses operate on a consistent runtime state. It throws a clear error when no active flow exists, treating missing `flow.json` as a hard precondition failure. The `run` method acts as the stable template method that delegates to subclass implementations. `execute` is intentionally abstract and throws by default to prevent accidental direct use. This pattern keeps command lifecycle behavior centralized and implementation-specific logic isolated.",
         "chapter": "internal_design",
-        "role": "model",
+        "role": "lib",
+        "enrich": {
+          "processedAt": "2026-04-17T16:45:44.055Z",
+          "attempts": 1
+        },
         "keywords": [
-          "base command",
-          "abstract class",
-          "flow command contract",
-          "execution interface",
-          "layer separation"
+          "base class",
+          "template method",
+          "command abstraction",
+          "flow context",
+          "runtime contract",
+          "subclass execute"
         ]
       },
       {
@@ -2500,7 +2503,8 @@
         "usedBy": [
           "src/docs/commands/forge.js",
           "src/docs/commands/readme.js",
-          "src/flow.js"
+          "src/flow.js",
+          "src/flow/lib/base-command.js"
         ],
         "id": "e296da98",
         "enrich": {
@@ -2947,12 +2951,15 @@
       },
       {
         "file": "src/flow/lib/run-gate.js",
-        "hash": "5e173eaef287533391ec4462c1ee9eb5",
-        "lines": 540,
-        "mtime": "2026-04-17T12:39:55.911Z",
+        "hash": "ee05b574b6b5b3c982263e234ceb3a86",
+        "lines": 591,
+        "mtime": "2026-04-17T16:45:06.727Z",
         "className": "run-gate",
         "methods": [
           "RunGateCommand",
+          "resolveGateStepId",
+          "appendIssueLogFromGateResult",
+          "appendIssueLogFromGateError",
           "runGitDiff",
           "sectionAt",
           "checkSpecText",
@@ -2975,10 +2982,14 @@
           "../../lib/flow-helpers.js",
           "./get-test-result.js",
           "../../lib/constants.js",
-          "./base-command.js"
+          "./base-command.js",
+          "./set-issue-log.js"
         ],
         "exports": [
           "RunGateCommand",
+          "resolveGateStepId",
+          "appendIssueLogFromGateResult",
+          "appendIssueLogFromGateError",
           "default",
           "checkSpecText",
           "checkDraftText",
@@ -2989,21 +3000,22 @@
         "extends": "FlowCommand",
         "usedBy": null,
         "id": "b4aa4dad",
+        "summary": "This module implements the gate-check command for draft, spec, pre/post, and impl phases in the SDD flow. It evaluates text quality, guardrails, git diff evidence, and test signals to produce pass/fail gate results.",
+        "detail": "The file contains phase-specific validators, including markdown section checks for specs and drafts and structured guardrail prompt/response handling. It builds unified pass/fail payloads with next-step hints and reason lists so downstream workflow logic can react predictably. For implementation gates, it inspects repo changes against base branches and combines that with test evidence to detect missing implementation progress. The command class extends `FlowCommand`, validates supported phases, and dispatches to specialized execution paths per phase. It also exports issue-log append helpers so gate outcomes and errors can be persisted as workflow diagnostics.",
+        "chapter": "development",
+        "role": "controller",
         "enrich": {
-          "processedAt": "2026-04-17T14:30:33.210Z",
-          "attempts": 2
+          "processedAt": "2026-04-17T16:45:44.055Z",
+          "attempts": 1
         },
-        "summary": "This command runs phase-aware gate checks for draft, spec, and implementation stages. It combines static text checks, guardrail evaluation, and diff/test evidence inspection.",
-        "detail": "The file includes markdown section validation rules to detect incomplete or placeholder content in draft/spec artifacts. It builds guardrail prompts, parses structured guardrail responses, and maps pass/fail outcomes to next-phase transitions. For implementation gates, it validates that meaningful changes exist against the base branch and can include test evidence in the evaluation context. Results are returned in a consistent pass/fail object model with reasons and issues for downstream automation.",
-        "chapter": "cli_commands",
-        "role": "cli",
         "keywords": [
-          "gate command",
+          "quality gate",
           "phase validation",
-          "guardrails",
-          "spec quality check",
-          "implementation gate",
-          "test evidence"
+          "spec checks",
+          "guardrail evaluation",
+          "implementation diff",
+          "test evidence",
+          "workflow gating"
         ]
       },
       {
@@ -3445,7 +3457,8 @@
           "src/lib/agent.js",
           "src/lib/process.js",
           "src/lib/git-helpers.js",
-          "src/lib/container.js"
+          "src/lib/container.js",
+          "src/flow/lib/run-gate.js"
         ],
         "id": "65ac9e4f",
         "enrich": {
@@ -3727,21 +3740,21 @@
       },
       {
         "file": "src/flow/registry.js",
-        "hash": "033d7a71fa24bfc4ea55da69c210a11a",
+        "hash": "f43c7694e30bd2e08f3716e4c4c0a56b",
         "lines": 477,
-        "mtime": "2026-04-17T12:39:55.912Z",
+        "mtime": "2026-04-17T16:45:06.727Z",
         "className": "registry",
         "methods": [
           "deriveActivePhase",
           "tryUpdateStepStatus",
+          "tryAppendIssueLog",
           "stepPre",
           "stepPost",
           "resolveGateStepId"
         ],
         "imports": [
           "../lib/flow-helpers.js",
-          "../lib/constants.js",
-          "./lib/set-issue-log.js"
+          "../lib/constants.js"
         ],
         "exports": [
           "FLOW_COMMANDS"
@@ -3751,20 +3764,21 @@
           "src/flow.js"
         ],
         "id": "d64f4095",
+        "summary": "This file is the flow command registry and hook wiring layer. It maps command entries to lifecycle hooks for step status transitions, issue logging, and post-actions.",
+        "detail": "The module derives active workflow phase from current state and uses defensive wrapper helpers to update step status or append issue logs without breaking command execution. It defines reusable pre/post hook factories so entries can consistently mark steps `in_progress` and then resolve final statuses from command results. Registry-level helpers isolate error reporting for hook failures to stderr while preserving strict behavior where required. The exported `FLOW_COMMANDS` object serves as the declarative source of available flow commands and their metadata, handlers, and help text. This keeps command definitions centralized and minimizes duplicated lifecycle code across entries.",
+        "chapter": "project_structure",
+        "role": "config",
         "enrich": {
-          "processedAt": "2026-04-17T14:30:33.210Z",
-          "attempts": 2
+          "processedAt": "2026-04-17T16:45:44.055Z",
+          "attempts": 1
         },
-        "summary": "This registry wires flow command handlers with lifecycle hooks, derived phase logic, and step-status automation. It centralizes command metadata and execution wiring.",
-        "detail": "It exposes helpers that derive active phase from step state and update step status in pre/post hooks with fail-open logging. The command map contains usage text and references to concrete command implementations, including finalize commit post-processing. This design keeps CLI dispatch declarative while still supporting cross-cutting concerns like status transitions and issue log persistence. Errors in hook updates are downgraded to stderr notices to avoid blocking primary command execution.",
-        "chapter": "internal_design",
-        "role": "controller",
         "keywords": [
           "command registry",
           "lifecycle hooks",
+          "step status",
+          "issue log",
           "phase derivation",
-          "step automation",
-          "dispatch map"
+          "flow command map"
         ]
       },
       {
@@ -4222,42 +4236,37 @@
       },
       {
         "file": "src/lib/flow-envelope.js",
-        "hash": "6ac0e4c42598bb2547946453d8a113cf",
-        "lines": 62,
-        "mtime": "2026-04-10T06:35:13.099Z",
+        "hash": "68324e349b9b748964f1b9bf858d0d8c",
+        "lines": 84,
+        "mtime": "2026-04-17T16:45:06.727Z",
         "className": "flow-envelope",
         "methods": [
-          "ok",
-          "fail",
-          "warn",
-          "output"
+          "Envelope"
         ],
         "imports": [],
         "exports": [
-          "ok",
-          "fail",
-          "warn",
-          "output"
+          "Envelope"
         ],
         "extends": null,
         "usedBy": [
           "src/flow.js"
         ],
         "id": "4f01cb50",
-        "enrich": {
-          "processedAt": "2026-04-13T05:28:46.709Z",
-          "attempts": 5
-        },
-        "summary": "This module defines the flow envelope contract for structured command output. It provides constructors for success, failure, and warning responses plus a unified emitter.",
-        "detail": "Envelope builders normalize fields like `ok`, `type`, `key`, `data`, and `errors` across flow commands. The output function prints pretty JSON and sets `process.exitCode` without forcing immediate process termination. That pattern allows post-hooks and cleanup logic to run reliably after command execution. It acts as the serialization boundary between internal command logic and CLI consumers.",
+        "summary": "This file defines the envelope model used to normalize flow command outputs. It provides a consistent JSON schema for success, failure, and exception results with exit-code side effects.",
+        "detail": "The `Envelope` class exposes factory constructors for ok/error states so command handlers return predictable payload shapes. It serializes to JSON through `toJSON`, preserving typed keys, data payloads, and error arrays in a stable contract. The print method writes formatted JSON to stdout and sets `process.exitCode` rather than exiting immediately, allowing post hooks and cleanup to run. This design separates command business logic from process-level output behavior. It functions as the core interoperability object between flow execution and CLI-facing result reporting.",
         "chapter": "cli_commands",
-        "role": "lib",
+        "role": "model",
+        "enrich": {
+          "processedAt": "2026-04-17T16:45:44.055Z",
+          "attempts": 1
+        },
         "keywords": [
-          "response envelope",
-          "structured output",
-          "success fail warn",
-          "JSON emitter",
-          "exitCode handling"
+          "result envelope",
+          "output schema",
+          "success failure model",
+          "JSON serialization",
+          "exit code management",
+          "command result contract"
         ]
       },
       {
@@ -8410,9 +8419,9 @@
     ],
     "summary": {
       "total": 245,
-      "totalMethods": 766
+      "totalMethods": 767
     },
     "dataSourceHash": "7d725e75d5031be445119323e4947c91"
   },
-  "enrichedAt": "2026-04-17T14:30:33.210Z"
+  "enrichedAt": "2026-04-17T16:45:44.055Z"
 }
