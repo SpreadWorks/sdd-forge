@@ -729,6 +729,27 @@ export function addNote(workRoot, text) {
 }
 
 /**
+ * Write `state.finalizedAt` (ISO 8601 UTC) to a spec's flow.json.
+ *
+ * @param {string} workRoot
+ * @param {string} specId
+ * @param {string} iso - ISO 8601 UTC timestamp (must end with "Z")
+ */
+export function saveFinalizedAt(workRoot, specId, iso) {
+  if (typeof iso !== "string" || !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d+)?Z$/.test(iso)) {
+    throw new Error(`invalid finalizedAt: expected ISO 8601 UTC (e.g. 2026-04-17T10:00:00.000Z), got ${iso}`);
+  }
+  const p = specFlowPath(workRoot, specId);
+  if (!fs.existsSync(p)) {
+    throw new Error(`flow.json not found for spec ${specId}: ${p}`);
+  }
+  const state = JSON.parse(fs.readFileSync(p, "utf8"));
+  if (!state.state || typeof state.state !== "object") state.state = {};
+  state.state.finalizedAt = iso;
+  fs.writeFileSync(p, JSON.stringify(state, null, 2) + "\n", "utf8");
+}
+
+/**
  * flow.json のパスを返す。
  * .active-flow からコンテキストに対応する spec ID を解決し、specs/NNN/flow.json を返す。
  * @param {string} workRoot

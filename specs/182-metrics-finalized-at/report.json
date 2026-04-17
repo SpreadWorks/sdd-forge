@@ -1,0 +1,47 @@
+{
+  "data": {
+    "implementation": {
+      "diffStat": "specs/182-metrics-finalized-at/draft.md            | 110 +++++++++++++\n specs/182-metrics-finalized-at/flow.json           | 178 +++++++++++++++++++++\n specs/182-metrics-finalized-at/issue-log.json      |  64 ++++++++\n specs/182-metrics-finalized-at/qa.md               |   9 ++\n specs/182-metrics-finalized-at/review.md           |  41 +++++\n .../scripts/finalize-migration.js                  | 178 +++++++++++++++++++++\n specs/182-metrics-finalized-at/spec.md             | 125 +++++++++++++++\n specs/182-metrics-finalized-at/tests/README.md     |  31 ++++\n src/flow/lib/run-finalize.js                       |  30 +++-\n src/lib/flow-state.js                              |  21 +++\n src/metrics/commands/token.js                      |  82 +++++++---\n tests/e2e/metrics/token-finalized-at.test.js       | 137 ++++++++++++++++\n tests/e2e/metrics/token.test.js                    |  32 ++--\n tests/helpers/metrics-token.js                     |  34 ++++\n .../unit/flow/finalize-writes-finalized-at.test.js |  53 ++++++\n 15 files changed, 1076 insertions(+), 49 deletions(-)",
+      "commits": [
+        "feat: feature/182-metrics-finalized-at"
+      ]
+    },
+    "retro": {
+      "total": 8,
+      "done": 8,
+      "partial": 0,
+      "not_done": 0,
+      "rate": 1,
+      "notes": "All listed requirements R1-R8 are implemented in the diff. Main extra changes are test code refactoring and spec-process/documentation artifacts outside the requirement set."
+    },
+    "issueLog": {
+      "count": 0,
+      "entries": []
+    },
+    "metrics": {
+      "docsRead": 1,
+      "srcRead": 0,
+      "question": 4,
+      "issueLog": 0
+    },
+    "tokenMetrics": {
+      "input": 806575,
+      "output": 11555,
+      "cacheRead": 91008,
+      "cacheCreation": 0,
+      "cost": null,
+      "callCount": 11
+    },
+    "tests": {
+      "unit": 2,
+      "integration": 4,
+      "acceptance": 0,
+      "total": 6
+    },
+    "sync": {
+      "status": "skipped",
+      "reason": "sync was skipped"
+    }
+  },
+  "text": "  Report\n\n  Implementation\n  ────────────────────────────────────────────────\n    feat: feature/182-metrics-finalized-at\n    15 files changed, 1076 insertions(+), 49 deletions(-)\n\n  Retro\n  ────────────────────────────────────────────────\n    ████████ 100%  (8 done / 0 partial / 0 miss)\n\n  Metrics\n  ────────────────────────────────────────────────\n    docs read ................... 1\n    src read .................... 0\n    Q&A ......................... 4\n    issue-log ................... 0\n    agent calls ................. 11\n    input tokens ................ 806,575\n    output tokens ............... 11,555\n    cache-read tokens ........... 91,008\n    cache-create tokens ......... 0\n    cost ........................ N/A\n\n  Tests\n  ────────────────────────────────────────────────\n    unit 2  integration 4  acceptance 0  total 6"
+}

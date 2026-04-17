@@ -1,0 +1,96 @@
+{
+  "spec": "specs/182-metrics-finalized-at/spec.md",
+  "date": "2026-04-17T09:09:50.446Z",
+  "requirements": [
+    {
+      "desc": "R1: flow finalize writes state.finalizedAt (ISO 8601 UTC)",
+      "status": "done",
+      "note": "run-finalize now calls saveFinalizedAt(..., new Date().toISOString()) in commit step, and saveFinalizedAt enforces UTC ISO format with Z suffix."
+    },
+    {
+      "desc": "R2: metrics token uses state.finalizedAt as date axis",
+      "status": "done",
+      "note": "metrics token removed mtime-based date derivation and now builds row dates from parsed.state.finalizedAt."
+    },
+    {
+      "desc": "R3: specs missing state.finalizedAt are skipped with warning",
+      "status": "done",
+      "note": "buildRows emits a warning to stderr and continues (skips) when state.finalizedAt is missing/invalid."
+    },
+    {
+      "desc": "R4: metrics cache validity uses maxFinalizedAt",
+      "status": "done",
+      "note": "current maxFinalizedAt is computed from flow entries and compared with cached maxFinalizedAt in isCacheFresh."
+    },
+    {
+      "desc": "R5: cache missing maxFinalizedAt is invalidated",
+      "status": "done",
+      "note": "isCacheFresh returns false when parsed.maxFinalizedAt is absent or not a string, forcing recomputation."
+    },
+    {
+      "desc": "R6: backfill runs once during this spec finalize",
+      "status": "done",
+      "note": "finalize hook runs spec-local finalize-migration.js, and the script uses a persistent .backfill-done marker to prevent re-execution after first successful run."
+    },
+    {
+      "desc": "R7: backfill source is merge date with spec first-added fallback",
+      "status": "done",
+      "note": "migration script resolves merge timestamp via first-parent main log, then falls back to first-added timestamp via diff-filter=A."
+    },
+    {
+      "desc": "R8: existing metrics fixtures updated in-scope",
+      "status": "done",
+      "note": "existing metrics e2e fixture flows in tests/e2e/metrics/token.test.js were updated to include state.finalizedAt."
+    }
+  ],
+  "unplanned": [
+    {
+      "file": "tests/helpers/metrics-token.js",
+      "change": "New shared test helper module (runner/config abstraction) added; this refactor is not explicitly required by R1-R8."
+    },
+    {
+      "file": "tests/e2e/metrics/token.test.js",
+      "change": "Test setup refactor to use shared helper utilities (beyond the fixture finalizedAt updates required by R8)."
+    },
+    {
+      "file": "src/metrics/commands/token.js",
+      "change": "Additional cache read/parse error logging behavior was introduced; explicit logging behavior for cache read/parse failures is not specified in R1-R8."
+    },
+    {
+      "file": "specs/182-metrics-finalized-at/draft.md",
+      "change": "Spec process documentation artifact added (not an implementation requirement)."
+    },
+    {
+      "file": "specs/182-metrics-finalized-at/flow.json",
+      "change": "Spec workflow state artifact added (not an implementation requirement)."
+    },
+    {
+      "file": "specs/182-metrics-finalized-at/issue-log.json",
+      "change": "Spec gate/issue log artifact added (not an implementation requirement)."
+    },
+    {
+      "file": "specs/182-metrics-finalized-at/qa.md",
+      "change": "Spec Q&A template artifact added (not an implementation requirement)."
+    },
+    {
+      "file": "specs/182-metrics-finalized-at/review.md",
+      "change": "Spec review notes artifact added (not an implementation requirement)."
+    },
+    {
+      "file": "specs/182-metrics-finalized-at/spec.md",
+      "change": "Spec document artifact added (not an implementation requirement)."
+    },
+    {
+      "file": "specs/182-metrics-finalized-at/tests/README.md",
+      "change": "Spec-local test documentation artifact added (not an implementation requirement)."
+    }
+  ],
+  "summary": {
+    "total": 8,
+    "done": 8,
+    "partial": 0,
+    "not_done": 0,
+    "rate": 1,
+    "notes": "All listed requirements R1-R8 are implemented in the diff. Main extra changes are test code refactoring and spec-process/documentation artifacts outside the requirement set."
+  }
+}

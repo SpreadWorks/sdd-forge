@@ -1,10 +1,8 @@
 import { describe, it, afterEach } from "node:test";
 import assert from "node:assert/strict";
-import { join } from "node:path";
 import { execFileSync } from "node:child_process";
 import { createTmpDir, removeTmpDir, writeFile, writeJson } from "../../helpers/tmp-dir.js";
-
-const SDD_FORGE = join(process.cwd(), "src/sdd-forge.js");
+import { SDD_FORGE, writeBaseConfig } from "../../helpers/metrics-token.js";
 
 describe("metrics token command", () => {
   let tmp;
@@ -12,12 +10,9 @@ describe("metrics token command", () => {
 
   function setupProject() {
     tmp = createTmpDir("sdd-metrics-token-");
-    writeJson(tmp, ".sdd-forge/config.json", {
-      lang: "ja",
-      type: "base",
-      docs: { languages: ["ja"], defaultLanguage: "ja" },
-    });
+    writeBaseConfig(tmp);
     writeJson(tmp, "specs/001-alpha/flow.json", {
+      state: { finalizedAt: "2025-06-15T12:00:00.000Z" },
       metrics: {
         draft: {
           tokens: { input: 100, output: 50, cacheRead: 20, cacheCreation: 10 },
@@ -30,11 +25,7 @@ describe("metrics token command", () => {
 
   function setupProjectWithDifficultyData() {
     tmp = createTmpDir("sdd-metrics-token-diff-");
-    writeJson(tmp, ".sdd-forge/config.json", {
-      lang: "ja",
-      type: "base",
-      docs: { languages: ["ja"], defaultLanguage: "ja" },
-    });
+    writeBaseConfig(tmp);
     writeFile(tmp, "specs/001-alpha/spec.md", "# Spec\n\nA".repeat(200));
     writeFile(tmp, "specs/001-alpha/review.md", [
       "# Code Review Results",
@@ -47,6 +38,7 @@ describe("metrics token command", () => {
       entries: [{ step: "draft", reason: "r1" }],
     });
     writeJson(tmp, "specs/001-alpha/flow.json", {
+      state: { finalizedAt: "2025-06-15T12:00:00.000Z" },
       request: "metrics difficulty test request",
       summary: [{ desc: "r1" }, { desc: "r2" }],
       reviewCount: { spec: 2, test: 0, impl: 0 },
@@ -131,13 +123,10 @@ describe("metrics token command", () => {
 
   it("treats missing qaCount/testCount/issueLogEntries as zero for calculation", () => {
     tmp = createTmpDir("sdd-metrics-token-zeroable-");
-    writeJson(tmp, ".sdd-forge/config.json", {
-      lang: "ja",
-      type: "base",
-      docs: { languages: ["ja"], defaultLanguage: "ja" },
-    });
+    writeBaseConfig(tmp);
     writeFile(tmp, "specs/001-alpha/spec.md", "# Spec\n\nB".repeat(150));
     writeJson(tmp, "specs/001-alpha/flow.json", {
+      state: { finalizedAt: "2025-06-15T12:00:00.000Z" },
       request: "request for zero-fill fields",
       summary: [{ desc: "r1" }],
       reviewCount: { spec: 1, test: 0, impl: 0 },
@@ -164,13 +153,10 @@ describe("metrics token command", () => {
 
   it("returns N/A when requestChars resolves to zero", () => {
     tmp = createTmpDir("sdd-metrics-token-reqzero-");
-    writeJson(tmp, ".sdd-forge/config.json", {
-      lang: "ja",
-      type: "base",
-      docs: { languages: ["ja"], defaultLanguage: "ja" },
-    });
+    writeBaseConfig(tmp);
     writeFile(tmp, "specs/001-alpha/spec.md", "# Spec");
     writeJson(tmp, "specs/001-alpha/flow.json", {
+      state: { finalizedAt: "2025-06-15T12:00:00.000Z" },
       request: "",
       summary: [{ desc: "r1" }],
       reviewCount: { spec: 1, test: 0, impl: 0 },

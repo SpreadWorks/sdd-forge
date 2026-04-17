@@ -41,8 +41,10 @@ function usageError(message) {
   process.exit(EXIT_ERROR);
 }
 
-function toIsoDateUTC(ms) {
-  return new Date(ms).toISOString().slice(0, 10);
+function isoDateFromFinalizedAt(iso) {
+  if (typeof iso !== "string") return null;
+  if (!/^\d{4}-\d{2}-\d{2}T/.test(iso)) return null;
+  return iso.slice(0, 10);
 }
 
 function toNumberOrNull(value) {
@@ -152,8 +154,7 @@ async function listFlowFiles(specsDir) {
         continue;
       }
       if (!entry.isFile() || entry.name !== "flow.json") continue;
-      const stat = await fs.stat(fullPath);
-      files.push({ path: fullPath, mtimeMs: stat.mtimeMs });
+      files.push({ path: fullPath });
       if (files.length > MAX_FLOW_FILES) {
         throw new Error(`flow.json count exceeds limit (${MAX_FLOW_FILES})`);
       }
@@ -163,17 +164,37 @@ async function listFlowFiles(specsDir) {
   return files;
 }
 
-async function isCacheFresh(cachePath, flowFiles) {
-  if (!flowFiles.length) return false;
+function computeMaxFinalizedAt(flowEntries) {
+  let max = null;
+  for (const entry of flowEntries) {
+    const iso = entry?.parsed?.state?.finalizedAt;
+    if (typeof iso !== "string") continue;
+    if (max == null || iso > max) max = iso;
+  }
+  return max;
+}
+
+async function isCacheFresh(cachePath, maxFinalizedAt) {
+  if (!maxFinalizedAt) return false;
+  let text;
   try {
-    const stat = await fs.stat(cachePath);
-    for (const file of flowFiles) {
-      if (stat.mtimeMs < file.mtimeMs) return false;
+    text = await fs.readFile(cachePath, "utf8");
+  } catch (err) {
+    // ENOENT is expected on first run; anything else is a genuine error.
+    if (err.code !== "ENOENT") {
+      process.stderr.write(`sdd-forge metrics token: cache read failed (${err.code || err.message}), rebuilding\n`);
     }
-    return true;
-  } catch {
     return false;
   }
+  let parsed;
+  try {
+    parsed = JSON.parse(text);
+  } catch (err) {
+    process.stderr.write(`sdd-forge metrics token: cache parse failed (${err.message}), rebuilding\n`);
+    return false;
+  }
+  if (typeof parsed?.maxFinalizedAt !== "string") return false;
+  return parsed.maxFinalizedAt >= maxFinalizedAt;
 }
 
 function toRowKey(date, phase) {
@@ -293,18 +314,16 @@ async function computeSpecDifficulty(flowState, specDir) {
   return baseDifficulty * precision;
 }
 
-async function buildRows(flowFiles) {
+async function buildRows(flowEntries) {
   const rows = new Map();
-  for (const file of flowFiles) {
-    const date = toIsoDateUTC(file.mtimeMs);
-    const text = await fs.readFile(file.path, "utf8");
-    let parsed;
-    try {
-      parsed = JSON.parse(text);
-    } catch (err) {
-      throw new Error(`invalid JSON in ${file.path}: ${err.message}`);
+  for (const entry of flowEntries) {
+    const { path: filePath, parsed } = entry;
+    const date = isoDateFromFinalizedAt(parsed?.state?.finalizedAt);
+    if (!date) {
+      process.stderr.write(`sdd-forge metrics token: skipping ${filePath} — missing state.finalizedAt\n`);
+      continue;
     }
-    const specDir = path.dirname(file.path);
+    const specDir = path.dirname(filePath);
     const specDifficulty = await computeSpecDifficulty(parsed, specDir);
     const metrics = parsed?.metrics;
     if (!metrics || typeof metrics !== "object") continue;
@@ -350,10 +369,11 @@ async function readCacheRows(cachePath) {
   return sortRows(parsed.rows);
 }
 
-async function writeCache(cachePath, rows) {
+async function writeCache(cachePath, rows, maxFinalizedAt) {
   await fs.mkdir(path.dirname(cachePath), { recursive: true });
   const payload = {
     generatedAt: new Date().toISOString(),
+    maxFinalizedAt,
     rows: sortRows(rows),
   };
   await fs.writeFile(cachePath, `${JSON.stringify(payload, null, 2)}\n`, "utf8");
@@ -398,13 +418,25 @@ async function main() {
   if (!specsStat.isDirectory()) throw new Error(`specs path is not a directory: ${specsDir}`);
 
   const flowFiles = await listFlowFiles(specsDir);
+  const flowEntries = [];
+  for (const file of flowFiles) {
+    const text = await fs.readFile(file.path, "utf8");
+    let parsed;
+    try {
+      parsed = JSON.parse(text);
+    } catch (err) {
+      throw new Error(`invalid JSON in ${file.path}: ${err.message}`);
+    }
+    flowEntries.push({ path: file.path, parsed });
+  }
+  const maxFinalizedAt = computeMaxFinalizedAt(flowEntries);
   let rows;
-  const canReuseCache = await isCacheFresh(cachePath, flowFiles);
+  const canReuseCache = await isCacheFresh(cachePath, maxFinalizedAt);
   if (canReuseCache) {
     rows = await readCacheRows(cachePath);
   } else {
-    rows = await buildRows(flowFiles);
-    await writeCache(cachePath, rows);
+    rows = await buildRows(flowEntries);
+    await writeCache(cachePath, rows, maxFinalizedAt);
   }
 
   process.stdout.write(`${render(rows, format)}\n`);

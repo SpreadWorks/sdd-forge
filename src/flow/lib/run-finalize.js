@@ -12,7 +12,7 @@ import path from "path";
 import { runCmd, assertOk } from "../../lib/process.js";
 import { PKG_DIR } from "../../lib/cli.js";
 import {
-  resolveWorktreePaths, clearFlowState, specIdFromPath,
+  resolveWorktreePaths, clearFlowState, specIdFromPath, saveFinalizedAt,
 } from "../../lib/flow-state.js";
 import { loadIssueLog, saveIssueLog } from "./set-issue-log.js";
 import { isGhAvailable, commentOnIssue, collectGitSummary, runGit } from "../../lib/git-helpers.js";
@@ -222,6 +222,31 @@ export async function executeCommitPost(ctx) {
   }
 }
 
+/**
+ * Run a one-shot migration script bundled under the CURRENT spec's directory, if present.
+ *
+ * One-time execution guarantee comes from three layers:
+ *   1. SDD lifecycle — `flow finalize` runs exactly once per spec.
+ *   2. Scope — the hook looks up `<currentSpecDir>/scripts/finalize-migration.js`,
+ *      so it only fires for specs that explicitly ship such a script.
+ *   3. Idempotency — individual scripts are expected to be idempotent as a defence
+ *      against accidental re-invocation.
+ *
+ * The script is executed with `node` before `git add -A`, so any file changes
+ * it produces are included in the finalize commit.
+ *
+ * @param {string} root - worktree / repo root
+ * @param {string} specRelPath - flowState.spec (e.g. "specs/182-.../spec.md")
+ */
+function runMigrationHook(root, specRelPath) {
+  if (!specRelPath) return;
+  const specDir = path.dirname(specRelPath);
+  const scriptPath = path.join(root, specDir, "scripts", "finalize-migration.js");
+  if (!fs.existsSync(scriptPath)) return;
+  const res = runCmd("node", [scriptPath], { cwd: root });
+  assertOk(res, `finalize migration script failed: ${scriptPath}`);
+}
+
 export class RunFinalizeCommand extends FlowCommand {
   async execute(ctx) {
     const { root } = ctx;
@@ -275,6 +300,9 @@ export class RunFinalizeCommand extends FlowCommand {
         results.commit = { status: "dry-run", message: message || "(auto)" };
       } else {
         results.commit = await runSubStep("commit", () => {
+          runMigrationHook(root, state.spec);
+          const specId = specIdFromPath(state.spec);
+          saveFinalizedAt(root, specId, new Date().toISOString());
           runGit(["add", "-A"], { cwd: root });
           const msg = message || `feat: ${state.featureBranch || "finalize"}`;
           const res = commitOrSkip(["-m", msg], { cwd: root });

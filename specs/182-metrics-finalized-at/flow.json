@@ -1,0 +1,178 @@
+{
+  "spec": "specs/182-metrics-finalized-at/spec.md",
+  "baseBranch": "main",
+  "featureBranch": "feature/182-metrics-finalized-at",
+  "runId": "aa7164fd-36ef-4eb2-a59f-cb5c354143f8",
+  "lifecycle": "active",
+  "steps": [
+    {
+      "id": "branch",
+      "status": "done"
+    },
+    {
+      "id": "prepare-spec",
+      "status": "pending"
+    },
+    {
+      "id": "draft",
+      "status": "done"
+    },
+    {
+      "id": "gate-draft",
+      "status": "done"
+    },
+    {
+      "id": "spec",
+      "status": "done"
+    },
+    {
+      "id": "gate",
+      "status": "done"
+    },
+    {
+      "id": "approval",
+      "status": "done"
+    },
+    {
+      "id": "test",
+      "status": "done"
+    },
+    {
+      "id": "implement",
+      "status": "done"
+    },
+    {
+      "id": "gate-impl",
+      "status": "done"
+    },
+    {
+      "id": "review",
+      "status": "done"
+    },
+    {
+      "id": "finalize",
+      "status": "pending"
+    },
+    {
+      "id": "commit",
+      "status": "pending"
+    },
+    {
+      "id": "push",
+      "status": "pending"
+    },
+    {
+      "id": "merge",
+      "status": "pending"
+    },
+    {
+      "id": "pr-create",
+      "status": "pending"
+    },
+    {
+      "id": "branch-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "pr-merge",
+      "status": "pending"
+    },
+    {
+      "id": "sync-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "docs-update",
+      "status": "pending"
+    },
+    {
+      "id": "docs-review",
+      "status": "pending"
+    },
+    {
+      "id": "docs-commit",
+      "status": "pending"
+    }
+  ],
+  "requirements": [
+    {
+      "desc": "R1: flow finalize writes state.finalizedAt (ISO 8601 UTC)",
+      "status": "done"
+    },
+    {
+      "desc": "R2: metrics token uses state.finalizedAt as date axis",
+      "status": "done"
+    },
+    {
+      "desc": "R3: specs missing state.finalizedAt are skipped with warning",
+      "status": "done"
+    },
+    {
+      "desc": "R4: metrics cache validity uses maxFinalizedAt",
+      "status": "done"
+    },
+    {
+      "desc": "R5: cache missing maxFinalizedAt is invalidated",
+      "status": "done"
+    },
+    {
+      "desc": "R6: backfill runs once during this spec finalize",
+      "status": "done"
+    },
+    {
+      "desc": "R7: backfill source is merge date with spec first-added fallback",
+      "status": "done"
+    },
+    {
+      "desc": "R8: existing metrics fixtures updated in-scope",
+      "status": "done"
+    }
+  ],
+  "issue": 156,
+  "worktree": true,
+  "request": "metrics 日付軸を merge 日時（state.finalizedAt）ベースに変更し、flow.json へ保存する。backfill スクリプトも同梱。Issue #156",
+  "metrics": {
+    "plan": {
+      "docsRead": 1
+    },
+    "draft": {
+      "question": 4
+    },
+    "gate-draft": {
+      "tokens": {
+        "input": 25097,
+        "output": 1927,
+        "cacheRead": 25600,
+        "cacheCreation": 0
+      },
+      "callCount": 2,
+      "responseChars": 1989
+    },
+    "gate": {
+      "tokens": {
+        "input": 6507,
+        "output": 915,
+        "cacheRead": 19072,
+        "cacheCreation": 0
+      },
+      "callCount": 1,
+      "responseChars": 1840
+    },
+    "gate-impl": {
+      "tokens": {
+        "input": 774971,
+        "output": 8713,
+        "cacheRead": 46336,
+        "cacheCreation": 0
+      },
+      "callCount": 8,
+      "responseChars": 10328
+    }
+  },
+  "test": {
+    "summary": {
+      "unit": 2,
+      "integration": 4
+    }
+  }
+}
