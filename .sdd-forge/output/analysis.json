@@ -1,5 +1,5 @@
 {
-  "analyzedAt": "2026-04-17T03:48:03.386Z",
+  "analyzedAt": "2026-04-17T05:45:21.669Z",
   "package": {
     "entries": [
       {
@@ -81,41 +81,29 @@
       },
       {
         "file": "src/check.js",
-        "hash": "5de97c6fb3ac23fec9ee11db464de760",
+        "hash": "aece747f7dcc42f65147e2c3e62dcaa3",
         "lines": 42,
-        "mtime": "2026-04-10T06:35:13.092Z",
+        "mtime": "2026-04-17T05:45:21.326Z",
         "className": "check",
         "methods": [],
         "imports": [
           "path",
           "./lib/cli.js",
-          "./lib/exit-codes.js"
+          "./lib/constants.js"
         ],
         "exports": [],
         "extends": null,
         "usedBy": null,
         "id": "cfca7dd3",
-        "summary": "This file is the top-level dispatcher for `check` subcommands. It resolves script paths and forwards CLI arguments to specific command modules.",
-        "detail": "It uses package-root path resolution to dynamically import the selected subcommand implementation. Argument slicing and process argument rewriting allow delegated scripts to behave like first-class entrypoints. It returns success or failure via explicit process exit codes. The design keeps command routing lightweight while separating subcommand logic into dedicated files.",
-        "chapter": "cli_commands",
-        "role": "cli",
         "enrich": {
-          "processedAt": "2026-04-10T12:37:22.721Z",
           "attempts": 1
-        },
-        "keywords": [
-          "command dispatcher",
-          "subcommand routing",
-          "dynamic import",
-          "cli bootstrap",
-          "exit codes"
-        ]
+        }
       },
       {
         "file": "src/check/commands/config.js",
-        "hash": "d7af41cbc147e92d2e905ceaa3592d0c",
+        "hash": "77a41b288679ffdaf5543b656e8532dd",
         "lines": 140,
-        "mtime": "2026-04-17T03:48:03.042Z",
+        "mtime": "2026-04-17T05:45:21.327Z",
         "className": "config",
         "methods": [
           "printHelp",
@@ -128,7 +116,7 @@
           "../../lib/cli.js",
           "../../lib/config.js",
           "../../lib/presets.js",
-          "../../lib/exit-codes.js"
+          "../../lib/constants.js"
         ],
         "exports": [
           "main"
@@ -152,9 +140,9 @@
       },
       {
         "file": "src/check/commands/freshness.js",
-        "hash": "872eabd3e5aaf34726d84bff803ca99e",
+        "hash": "dd20afd678bf2f89be83372968fd2b72",
         "lines": 206,
-        "mtime": "2026-04-10T06:35:13.092Z",
+        "mtime": "2026-04-17T05:45:21.327Z",
         "className": "freshness",
         "methods": [
           "printHelp",
@@ -168,7 +156,7 @@
           "path",
           "../../lib/entrypoint.js",
           "../../lib/cli.js",
-          "../../lib/exit-codes.js"
+          "../../lib/constants.js"
         ],
         "exports": [
           "main",
@@ -177,27 +165,15 @@
         "extends": null,
         "usedBy": null,
         "id": "b9efb503",
-        "summary": "This command checks whether generated docs are fresh relative to source files. It compares newest modification times with bounded file traversal.",
-        "detail": "The module walks source and docs directories up to a file cap to avoid unbounded filesystem work. It computes newest timestamps and classifies state as `fresh`, `stale`, or `never-built`. Truncation warnings are emitted when scan limits are reached, preserving transparency in approximate checks. It supports both text and JSON output modes and exits with error status for stale or missing docs states.",
-        "chapter": "cli_commands",
-        "role": "cli",
         "enrich": {
-          "processedAt": "2026-04-10T12:37:22.721Z",
           "attempts": 1
-        },
-        "keywords": [
-          "freshness check",
-          "mtime comparison",
-          "docs staleness",
-          "filesystem walk",
-          "build guard"
-        ]
+        }
       },
       {
         "file": "src/check/commands/scan.js",
-        "hash": "3a42466c795204e2d2ab74e2b9a85e6d",
+        "hash": "d9a3b620706f60b87f4cbe13f4fe172b",
         "lines": 274,
-        "mtime": "2026-04-10T06:35:13.092Z",
+        "mtime": "2026-04-17T05:45:21.327Z",
         "className": "scan",
         "methods": [
           "printHelp",
@@ -216,7 +192,7 @@
           "../../lib/config.js",
           "../../docs/lib/scanner.js",
           "../../lib/formatter.js",
-          "../../lib/exit-codes.js"
+          "../../lib/constants.js"
         ],
         "exports": [
           "main",
@@ -227,28 +203,15 @@
         "extends": null,
         "usedBy": null,
         "id": "7cccb0de",
-        "summary": "This command verifies scan coverage by comparing included source files against analysis output. It provides summarized extension and coverage reporting.",
-        "detail": "It expands include and exclude globs into regex matchers, then recursively gathers candidate files from source roots. Coverage is computed by mapping analyzed entries back to expected files and grouping by extension for visibility. The module supports text, markdown, and JSON report formats for different consumption contexts. Missing analysis artifacts and parse failures are surfaced as actionable errors with guidance.",
-        "chapter": "internal_design",
-        "role": "cli",
         "enrich": {
-          "processedAt": "2026-04-10T12:37:22.721Z",
           "attempts": 1
-        },
-        "keywords": [
-          "coverage report",
-          "scan verification",
-          "glob matching",
-          "analysis.json",
-          "markdown report",
-          "file extension stats"
-        ]
+        }
       },
       {
         "file": "src/docs.js",
-        "hash": "2f32728c9e96b54407ba1589be9ab036",
+        "hash": "07106272311fa4c05a1139268f1c9312",
         "lines": 241,
-        "mtime": "2026-04-10T06:35:13.093Z",
+        "mtime": "2026-04-17T05:45:21.327Z",
         "className": "docs",
         "methods": [],
         "imports": [
@@ -258,27 +221,15 @@
           "./lib/log.js",
           "./docs/lib/command-context.js",
           "./lib/types.js",
-          "./lib/exit-codes.js"
+          "./lib/constants.js"
         ],
         "exports": [],
         "extends": null,
         "usedBy": null,
         "id": "086d52a1",
-        "summary": "This is the main `docs` command orchestrator that dispatches and composes documentation subcommands. It coordinates scan, enrich, init, data filling, text generation, README creation, agents generation, and translation.",
-        "detail": "The file routes subcommands through dynamic imports and shared command context resolution. It includes higher-level composite flows that run multiple steps in sequence with consistent options like `dry-run` and `force`. Language-aware branches handle localized docs and README generation paths. Centralized error handling enforces predictable process exits across the docs toolchain.",
-        "chapter": "cli_commands",
-        "role": "controller",
         "enrich": {
-          "processedAt": "2026-04-10T12:37:22.721Z",
           "attempts": 1
-        },
-        "keywords": [
-          "docs pipeline",
-          "command orchestration",
-          "subcommand dispatcher",
-          "localization flow",
-          "dynamic module loading"
-        ]
+        }
       },
       {
         "file": "src/docs/commands/agents.js",
@@ -496,9 +447,9 @@
       },
       {
         "file": "src/docs/commands/forge.js",
-        "hash": "ba56dafcfd3d1ef05aa159194f8b5944",
+        "hash": "5de8c8bf7f8f2958fe11292c85f23460",
         "lines": 445,
-        "mtime": "2026-04-14T08:22:10.019Z",
+        "mtime": "2026-04-17T05:45:21.327Z",
         "className": "forge",
         "methods": [
           "getTargetFiles",
@@ -524,7 +475,7 @@
           "../lib/resolver-factory.js",
           "../../lib/agent.js",
           "../../lib/i18n.js",
-          "../../lib/exit-codes.js",
+          "../../lib/constants.js",
           "../lib/forge-prompts.js",
           "../lib/review-parser.js"
         ],
@@ -535,23 +486,9 @@
         "extends": null,
         "usedBy": null,
         "id": "ef4fa5d9",
-        "summary": "This is the high-level `docs forge` orchestrator that drives multi-round documentation generation and review. It supports local, assist, and agent modes with retry and concurrency controls.",
-        "detail": "The command parses extensive runtime options such as mode, timeout, max runs, and target file strategy. It estimates relevant chapter files from spec text, then executes per-file or bulk agent prompts with bounded parallelism. After generation, it chains post-steps like README generation and translation, and can invoke review commands to gate acceptance. Control flow includes explicit failure propagation and max-run enforcement, making it a central automation coordinator for docs production.",
-        "chapter": "cli_commands",
-        "role": "cli",
         "enrich": {
-          "processedAt": "2026-04-14T11:38:15.649Z",
           "attempts": 1
-        },
-        "keywords": [
-          "forge pipeline",
-          "iterative generation",
-          "agent mode",
-          "concurrency control",
-          "review loop",
-          "docs automation",
-          "retry strategy"
-        ]
+        }
       },
       {
         "file": "src/docs/commands/init.js",
@@ -756,9 +693,9 @@
       },
       {
         "file": "src/docs/commands/text.js",
-        "hash": "2e8adc8951374202f1d9a39779bc1fdd",
+        "hash": "d24e78c612af1630988d022c2a2164dc",
         "lines": 774,
-        "mtime": "2026-04-14T08:22:10.020Z",
+        "mtime": "2026-04-17T05:45:21.327Z",
         "className": "text",
         "methods": [
           "textFillFromAnalysis",
@@ -792,7 +729,7 @@
           "../../lib/i18n.js",
           "../lib/command-context.js",
           "../../lib/json-parse.js",
-          "../../lib/exit-codes.js"
+          "../../lib/constants.js"
         ],
         "exports": [
           "textFillFromAnalysis",
@@ -813,23 +750,9 @@
           "src/docs/commands/readme.js"
         ],
         "id": "7c5e7654",
-        "summary": "This module implements text directive filling for docs using agent-generated content and batch JSON application. It also exports reusable helpers for validation and incremental chapter targeting.",
-        "detail": "Core logic parses `{{text}}` directives, builds prompts, calls the configured agent, and strips preambles from model output. A batch mode parses JSON responses and safely applies generated text blocks while tracking filled and skipped directives. Validation guards detect malformed or shrinking outputs and can retry based on configured limits. The command entrypoint coordinates changed-chapter detection, selective processing, concurrency, and error aggregation across files.",
-        "chapter": "internal_design",
-        "role": "cli",
         "enrich": {
-          "processedAt": "2026-04-14T11:38:15.649Z",
           "attempts": 1
-        },
-        "keywords": [
-          "text directive",
-          "batch generation",
-          "json repair",
-          "agent prompt",
-          "chapter diff detection",
-          "content validation",
-          "incremental update"
-        ]
+        }
       },
       {
         "file": "src/docs/commands/translate.js",
@@ -1220,7 +1143,7 @@
         ],
         "id": "10a78227",
         "enrich": {
-          "attempts": 1
+          "attempts": 2
         }
       },
       {
@@ -2074,9 +1997,9 @@
       },
       {
         "file": "src/flow.js",
-        "hash": "d13894a2f1342ab707b184ca69a80a36",
+        "hash": "360785acff02fc4acbfe2879f155802a",
         "lines": 276,
-        "mtime": "2026-04-13T12:56:41.650Z",
+        "mtime": "2026-04-17T05:45:21.327Z",
         "className": "flow",
         "methods": [
           "resolveCtx",
@@ -2095,28 +2018,15 @@
           "./lib/flow-state.js",
           "./lib/flow-envelope.js",
           "./flow/registry.js",
-          "./lib/exit-codes.js"
+          "./lib/constants.js"
         ],
         "exports": [],
         "extends": null,
         "usedBy": null,
         "id": "1ab08f2b",
-        "summary": "This file is the main dispatcher for `sdd-forge flow` subcommands. It parses CLI arguments, resolves runtime context, and routes execution to registered flow commands.",
-        "detail": "The module builds a command context containing repository roots, configuration, flow state, and worktree status before dispatch. It separates no-argument and positional parsing paths, validates unknown options, and produces command-specific help links. Execution is centralized in `runEntry`, which standardizes error handling and envelope output behavior. The `dispatch` function handles special command paths like resume and prepare-spec while preserving explicit exit codes for CLI reliability.",
-        "chapter": "cli_commands",
-        "role": "cli",
         "enrich": {
-          "processedAt": "2026-04-13T12:57:13.817Z",
           "attempts": 1
-        },
-        "keywords": [
-          "CLI dispatcher",
-          "argument parsing",
-          "subcommand routing",
-          "exit codes",
-          "command envelope",
-          "flow command runner"
-        ]
+        }
       },
       {
         "file": "src/flow/commands/merge.js",
@@ -2212,9 +2122,9 @@
       },
       {
         "file": "src/flow/commands/review.js",
-        "hash": "de5fc60e04913032488f6211565d36db",
+        "hash": "7474007ff05740659f2a18e915189f66",
         "lines": 981,
-        "mtime": "2026-04-17T01:46:53.423Z",
+        "mtime": "2026-04-17T05:45:21.328Z",
         "className": "review",
         "methods": [
           "resolveReviewTarget",
@@ -2257,7 +2167,7 @@
           "../../lib/flow-state.js",
           "../../lib/agent.js",
           "../../lib/git-helpers.js",
-          "../../lib/exit-codes.js",
+          "../../lib/constants.js",
           "../../lib/constants.js"
         ],
         "exports": [
@@ -2284,25 +2194,9 @@
         "extends": null,
         "usedBy": null,
         "id": "331cf497",
-        "summary": "Implements the `flow review` command that runs automated review loops for code, spec, and tests, then writes review artifacts under the active spec directory. It orchestrates agent prompts, diff collection, proposal parsing, and optional auto-fix retries.",
-        "detail": "The module is a CLI controller that parses arguments, validates flow phase constraints, and dispatches into code-review, spec-review, and test-review paths. It builds targeted prompts for draft/final evaluation, proposal extraction, gap analysis, and patch application, then iterates with bounded retries until issues are resolved or retries are exhausted. For code review, it computes committed/staged diffs against the base branch with path exclusions, supports optional file-scoped review from spec references, and merges verdict metadata into structured review output. For spec and test review, it reads and rewrites spec/test files, persists intermediate documents such as `spec.md`, `spec-review.md`, `test-review.md`, and enforces minimal output-shape validation for generated spec content. Error handling is centralized through explicit exit codes, and final results are serialized as Markdown reports for downstream workflow steps.",
-        "chapter": "cli_commands",
-        "role": "cli",
         "enrich": {
-          "processedAt": "2026-04-17T01:47:12.189Z",
           "attempts": 1
-        },
-        "keywords": [
-          "flow review",
-          "CLI orchestration",
-          "automated code review",
-          "spec review",
-          "test gap analysis",
-          "agent prompt loop",
-          "diff collection",
-          "auto-fix retries",
-          "markdown report generation"
-        ]
+        }
       },
       {
         "file": "src/flow/lib/base-command.js",
@@ -3675,9 +3569,9 @@
       },
       {
         "file": "src/lib/agent.js",
-        "hash": "9f32e413d3632616ffa9bd155286e131",
-        "lines": 744,
-        "mtime": "2026-04-13T06:50:37.382Z",
+        "hash": "4b1c899b4805f160b561ab2d7bbde3e8",
+        "lines": 717,
+        "mtime": "2026-04-17T05:45:21.328Z",
         "className": "agent",
         "methods": [
           "callAgent",
@@ -3689,8 +3583,6 @@
           "ensureAgentWorkDir",
           "resolveAgent",
           "resolveWorkDir",
-          "writeAgentContext",
-          "cleanupAgentContext",
           "createSystemPromptPrefix",
           "resolveEffectivePrompt",
           "resolvePromptArgs",
@@ -3716,7 +3608,6 @@
           "resolveProviderKeyFromProfile"
         ],
         "imports": [
-          "crypto",
           "fs",
           "path",
           "child_process",
@@ -3733,37 +3624,19 @@
           "ensureAgentWorkDir",
           "resolveAgent",
           "resolveWorkDir",
-          "writeAgentContext",
-          "cleanupAgentContext",
           "DEFAULT_AGENT_TIMEOUT",
           "DEFAULT_AGENT_TIMEOUT_MS",
           "BUILTIN_PROVIDERS"
         ],
         "extends": null,
         "usedBy": [
-          "src/lib/types.js",
-          "src/setup.js",
-          "src/lib/config.js"
+          "src/lib/config.js",
+          "src/setup.js"
         ],
         "id": "13ddf392",
-        "summary": "This module provides the core agent invocation layer for sdd-forge, including sync/async execution, provider-specific output parsing, and retry logic. It also resolves effective agent configuration, working directories, and temporary context file management.",
-        "detail": "The implementation builds command invocations by composing prompt arguments, optional system prompt injection, environment variables, and stdin fallback when argument size becomes too large. It normalizes provider behavior through provider-key detection and parser dispatch, with dedicated parsers for Claude and Codex JSON outputs and graceful fallback to raw text. Logging-aware wrappers capture start/end events, usage metadata, exit status, and error context through a shared Logger flow for both synchronous and asynchronous paths. Provider selection supports built-in definitions, profile-driven resolution, command-specific mapping, and timeout overrides, while enforcing safe in-repo `-C` directory handling. The module also includes helper utilities to write and clean transient agent context files under a rules directory.",
-        "chapter": "internal_design",
-        "role": "lib",
         "enrich": {
-          "processedAt": "2026-04-13T06:51:01.756Z",
           "attempts": 1
-        },
-        "keywords": [
-          "agent invocation",
-          "provider parsing",
-          "retry mechanism",
-          "sync async execution",
-          "prompt injection",
-          "timeout handling",
-          "context file cleanup",
-          "command orchestration"
-        ]
+        }
       },
       {
         "file": "src/lib/agents-md.js",
@@ -3805,9 +3678,9 @@
       },
       {
         "file": "src/lib/cli.js",
-        "hash": "3e539addd117f48d08cc7e97882bef10",
-        "lines": 148,
-        "mtime": "2026-04-14T11:37:06.523Z",
+        "hash": "17409bc43bb6a2538d9538f201f0f75c",
+        "lines": 147,
+        "mtime": "2026-04-17T05:45:21.328Z",
         "className": "cli",
         "methods": [
           "repoRoot",
@@ -3852,22 +3725,8 @@
         ],
         "id": "f351ecc4",
         "enrich": {
-          "processedAt": "2026-04-14T14:42:01.552Z",
-          "attempts": 2
-        },
-        "summary": "Provides core CLI utilities for path resolution, argument parsing, repository detection, and timestamp/version helpers. It defines package-level constants consumed by command modules.",
-        "detail": "The module derives package and repository roots with environment overrides for worktree and source scenarios. Argument parsing converts flag names to camelCase keys and throws on unknown options for strict CLI behavior. It detects worktree context via `.git` file semantics and can resolve the main repository path from git metadata. Runtime metadata helpers expose package version and normalized UTC timestamp formatting. These functions form a foundational utility layer used across command dispatch and operational checks.",
-        "chapter": "cli_commands",
-        "role": "lib",
-        "keywords": [
-          "cli utilities",
-          "argument parsing",
-          "repo root",
-          "worktree detection",
-          "package version",
-          "utc formatting",
-          "path resolution"
-        ]
+          "attempts": 1
+        }
       },
       {
         "file": "src/lib/config.js",
@@ -3924,14 +3783,14 @@
         ],
         "id": "dff6e5b4",
         "enrich": {
-          "attempts": 1
+          "attempts": 2
         }
       },
       {
         "file": "src/lib/constants.js",
-        "hash": "77d6f28208eb2506beceda8b13404841",
-        "lines": 110,
-        "mtime": "2026-04-13T14:16:19.808Z",
+        "hash": "82e9bde7c6f991c13540b1b37603903b",
+        "lines": 117,
+        "mtime": "2026-04-17T05:45:21.328Z",
         "className": "constants",
         "methods": [],
         "imports": [],
@@ -3945,34 +3804,32 @@
           "VALID_IMPL_CONFIRM_MODES",
           "VALID_MERGE_STRATEGIES",
           "VALID_AUTO_VALUES",
-          "VALID_REQ_STATUSES"
+          "VALID_REQ_STATUSES",
+          "EXIT_SUCCESS",
+          "EXIT_ERROR"
         ],
         "extends": null,
-        "usedBy": null,
+        "usedBy": [
+          "src/check.js",
+          "src/docs.js",
+          "src/flow.js",
+          "src/lib/entrypoint.js",
+          "src/metrics.js",
+          "src/presets-cmd.js",
+          "src/sdd-forge.js",
+          "src/setup.js",
+          "src/upgrade.js"
+        ],
         "id": "74b5e1c3",
         "enrich": {
-          "processedAt": "2026-04-13T15:16:23.012Z",
-          "attempts": 3
-        },
-        "summary": "Defines shared immutable allowlists for phases, statuses, gate targets, review phases, merge strategies, and related flow enums. It centralizes validation vocabularies used across CLI and state logic.",
-        "detail": "The file exports `Object.freeze` arrays to prevent accidental runtime mutation of core constants. These values are imported by command parsers, validators, and state transitions to ensure consistent behavior. Consolidating enum-like data in one module reduces drift between commands and simplifies error messaging for invalid inputs. The constants also codify policy boundaries such as valid counters and confirmation modes. It serves as low-level configuration infrastructure rather than executable workflow logic.",
-        "chapter": "configuration",
-        "role": "config",
-        "keywords": [
-          "constants",
-          "enum values",
-          "validation list",
-          "phase definitions",
-          "step statuses",
-          "merge strategy",
-          "shared config"
-        ]
+          "attempts": 1
+        }
       },
       {
         "file": "src/lib/entrypoint.js",
-        "hash": "7d6cb00fe4e88adde588ae75cf791fe1",
+        "hash": "cbe9621ab36692df84efbda22fb19635",
         "lines": 25,
-        "mtime": "2026-04-10T06:35:13.099Z",
+        "mtime": "2026-04-17T05:45:21.328Z",
         "className": "entrypoint",
         "methods": [
           "isDirectRun",
@@ -3981,7 +3838,7 @@
         "imports": [
           "path",
           "url",
-          "./exit-codes.js"
+          "./constants.js"
         ],
         "exports": [
           "isDirectRun",
@@ -3995,61 +3852,8 @@
         ],
         "id": "5c7afa99",
         "enrich": {
-          "processedAt": "2026-04-13T05:28:46.709Z",
-          "attempts": 5
-        },
-        "summary": "This module handles direct-run entrypoint behavior for executable files. It standardizes error handling and exit code behavior for CLI mains.",
-        "detail": "It compares `import.meta.url` with runtime argv path to determine whether a module is being run directly. The runner wraps `main` invocation in Promise handling for both sync and async implementations. Exceptions are printed and mapped to unified error exit codes. This keeps command entry files concise and consistent.",
-        "chapter": "cli_commands",
-        "role": "lib",
-        "keywords": [
-          "entrypoint helper",
-          "direct run",
-          "exit code",
-          "error wrapper",
-          "CLI bootstrap"
-        ]
-      },
-      {
-        "file": "src/lib/exit-codes.js",
-        "hash": "00a85e1713fd36d9396a79ffd35d24e6",
-        "lines": 9,
-        "mtime": "2026-04-10T06:35:13.099Z",
-        "className": "exit-codes",
-        "methods": [],
-        "imports": [],
-        "exports": [
-          "EXIT_SUCCESS",
-          "EXIT_ERROR"
-        ],
-        "extends": null,
-        "usedBy": [
-          "src/check.js",
-          "src/docs.js",
-          "src/flow.js",
-          "src/lib/entrypoint.js",
-          "src/presets-cmd.js",
-          "src/sdd-forge.js",
-          "src/setup.js",
-          "src/upgrade.js",
-          "src/metrics.js"
-        ],
-        "id": "82a3b684",
-        "enrich": {
-          "processedAt": "2026-04-13T05:28:46.709Z",
-          "attempts": 5
-        },
-        "summary": "This file defines standard process exit code constants. It provides a single source of truth for success and error statuses.",
-        "detail": "It exports explicit numeric values for success and generic error cases. Centralizing these values avoids magic numbers across commands. The constants are used by entrypoint and envelope modules to keep behavior consistent. The module remains intentionally minimal and dependency-free.",
-        "chapter": "stack_and_ops",
-        "role": "config",
-        "keywords": [
-          "exit codes",
-          "status constants",
-          "process status",
-          "success code",
-          "error code"
-        ]
+          "attempts": 1
+        }
       },
       {
         "file": "src/lib/flow-envelope.js",
@@ -4784,7 +4588,7 @@
         ],
         "id": "8bb94bbb",
         "enrich": {
-          "attempts": 1
+          "attempts": 2
         }
       },
       {
@@ -4856,7 +4660,7 @@
         ],
         "id": "69d5afb4",
         "enrich": {
-          "attempts": 1
+          "attempts": 2
         }
       },
       {
@@ -4896,43 +4700,29 @@
       },
       {
         "file": "src/metrics.js",
-        "hash": "7943f97faff5b2bbfde148d469bc6fe7",
+        "hash": "2fb66ef1e17969a59eff230bfa45bd44",
         "lines": 39,
-        "mtime": "2026-04-10T14:32:52.372Z",
+        "mtime": "2026-04-17T05:45:21.328Z",
         "className": "metrics",
         "methods": [],
         "imports": [
           "path",
           "./lib/cli.js",
-          "./lib/exit-codes.js"
+          "./lib/constants.js"
         ],
         "exports": [],
         "extends": null,
         "usedBy": null,
         "id": "0230d610",
         "enrich": {
-          "processedAt": "2026-04-13T05:26:02.189Z",
-          "attempts": 4
-        },
-        "summary": "This module is a CLI entry dispatcher for metrics-related scripts. It maps subcommands to script paths, rewrites process arguments, and executes the selected script.",
-        "detail": "It defines a subcommand-to-script lookup table and reads CLI arguments from `process.argv`. When no or invalid subcommand is provided, it exits with explicit error behavior using shared exit codes. For valid commands, it resolves the script path relative to package root and reconstructs `process.argv` to match direct script execution. It then dynamically imports the script module to run it in-process. This design keeps the metrics command surface centralized while delegating implementation to dedicated scripts.",
-        "chapter": "cli_commands",
-        "role": "cli",
-        "keywords": [
-          "CLI dispatcher",
-          "subcommand routing",
-          "dynamic import",
-          "exit codes",
-          "argument forwarding",
-          "metrics scripts",
-          "command map"
-        ]
+          "attempts": 1
+        }
       },
       {
         "file": "src/metrics/commands/token.js",
-        "hash": "350db48279be466840f10f9a989127b7",
+        "hash": "86c400a10d22ea9c7f82197b55aa672d",
         "lines": 417,
-        "mtime": "2026-04-13T14:16:19.808Z",
+        "mtime": "2026-04-17T05:45:21.328Z",
         "className": "token",
         "methods": [
           "formatUsage",
@@ -4970,35 +4760,21 @@
           "node:fs/promises",
           "node:path",
           "../../lib/cli.js",
-          "../../lib/exit-codes.js"
+          "../../lib/constants.js"
         ],
         "exports": [],
         "extends": null,
         "usedBy": null,
         "id": "59edeaf2",
         "enrich": {
-          "processedAt": "2026-04-13T15:16:23.012Z",
-          "attempts": 3
-        },
-        "summary": "Implements `metrics token` reporting that aggregates flow-level usage and quality-related indicators into text, JSON, or CSV outputs. It supports cache reuse, file discovery limits, and normalized scoring helpers.",
-        "detail": "The command parses CLI flags, validates output format, and scans `specs/*/flow.json` with a hard cap to avoid unbounded traversal. It computes per-row metrics, including requirement/request-derived signals and spec difficulty normalization based on baseline heuristics and precision clamping. Rows are grouped and sorted deterministically, then rendered through dedicated formatters for human and machine consumers. A cache file in `.sdd-forge/output/metrics.json` is checked for freshness using mtimes to skip unnecessary recomputation. Errors are surfaced with explicit diagnostics and standardized exit codes.",
-        "chapter": "cli_commands",
-        "role": "cli",
-        "keywords": [
-          "metrics report",
-          "token analytics",
-          "csv export",
-          "cache freshness",
-          "difficulty score",
-          "flow statistics",
-          "usage aggregation"
-        ]
+          "attempts": 1
+        }
       },
       {
         "file": "src/presets-cmd.js",
-        "hash": "b960b9bf595e9acdabd0fc09639ec3bd",
+        "hash": "7a8e2f78664668bd930b6ed2a141726f",
         "lines": 84,
-        "mtime": "2026-04-10T06:35:13.101Z",
+        "mtime": "2026-04-17T05:45:21.329Z",
         "className": "presets-cmd",
         "methods": [
           "printTree"
@@ -5007,28 +4783,15 @@
           "fs",
           "path",
           "./lib/presets.js",
-          "./lib/exit-codes.js"
+          "./lib/constants.js"
         ],
         "exports": [],
         "extends": null,
         "usedBy": null,
         "id": "85926390",
         "enrich": {
-          "processedAt": "2026-04-10T14:33:16.533Z",
-          "attempts": 2
-        },
-        "summary": "Provides the presets command entry that resolves a subcommand and prints preset tree information. It inspects preset template directories to indicate template availability.",
-        "detail": "The script reads the subcommand directly from `process.argv` and exits with an error code when command usage is invalid. It relies on `PRESETS` and `presetByLeaf` from the presets library as the canonical source of preset metadata and hierarchy. Tree rendering is handled via recursive node printing with prefix controls for branch visualization. For each preset node, it checks whether a `templates` directory exists to annotate output with implementation presence. The file is a thin CLI dispatcher/renderer specialized for preset discovery and structure introspection.",
-        "chapter": "project_structure",
-        "role": "cli",
-        "keywords": [
-          "preset tree",
-          "subcommand dispatch",
-          "template detection",
-          "hierarchy print",
-          "CLI utility",
-          "preset lookup"
-        ]
+          "attempts": 1
+        }
       },
       {
         "file": "src/presets/base/data/package.js",
@@ -7926,16 +7689,16 @@
       },
       {
         "file": "src/sdd-forge.js",
-        "hash": "deb3f75ecdd7af7d4ec9813c4eac055e",
-        "lines": 89,
-        "mtime": "2026-04-10T14:32:52.372Z",
+        "hash": "7211d4e3106660461272fc50b4cf7054",
+        "lines": 88,
+        "mtime": "2026-04-17T05:45:21.329Z",
         "className": "sdd-forge",
         "methods": [],
         "imports": [
           "node:module",
           "path",
           "./lib/cli.js",
-          "./lib/exit-codes.js",
+          "./lib/constants.js",
           "./lib/log.js",
           "sdd-forge/api"
         ],
@@ -7943,29 +7706,15 @@
         "extends": null,
         "usedBy": null,
         "id": "a8608997",
-        "summary": "Acts as the top-level `sdd-forge` executable dispatcher that routes subcommands to namespace dispatchers or standalone scripts. It also handles help/version-style entry behavior and logger bootstrap warnings.",
-        "detail": "The module slices raw CLI args, decides the target command path, and rewrites `process.argv` before dynamic `import` of the selected script. It defines namespace-level mappings for grouped command families and a separate map for independent commands, creating a two-path dispatch model. Early branches route help output and exit immediately with success, while unknown commands end with an error exit code. Before dispatching, it attempts logger initialization and emits deprecation or init-failure warnings without fully aborting normal command flow. The implementation centralizes process control and command routing in one executable entrypoint.",
-        "chapter": "project_structure",
-        "role": "controller",
         "enrich": {
-          "processedAt": "2026-04-10T14:33:16.533Z",
           "attempts": 1
-        },
-        "keywords": [
-          "entrypoint",
-          "command router",
-          "dynamic import",
-          "argv rewrite",
-          "subcommand mapping",
-          "CLI dispatcher",
-          "logger bootstrap"
-        ]
+        }
       },
       {
         "file": "src/setup.js",
-        "hash": "d472e9ea1378fdf149fbc4aa57ed4422",
+        "hash": "611cc4745422464b94579643fa45172e",
         "lines": 561,
-        "mtime": "2026-04-17T03:48:03.043Z",
+        "mtime": "2026-04-17T05:45:21.329Z",
         "className": "setup",
         "methods": [
           "ask",
@@ -7991,7 +7740,7 @@
           "readline",
           "./lib/entrypoint.js",
           "./lib/cli.js",
-          "./lib/exit-codes.js",
+          "./lib/constants.js",
           "./lib/config.js",
           "./lib/config.js",
           "./lib/i18n.js",
@@ -8007,15 +7756,30 @@
         "extends": null,
         "usedBy": null,
         "id": "9820c9db",
+        "summary": "This file implements the `setup` CLI workflow that initializes and configures an sdd-forge project. It combines argument parsing, interactive prompts, filesystem preparation, and agent/skill bootstrap into one command entrypoint.",
+        "detail": "The module parses setup flags, reads existing defaults from `.sdd-forge/config.json`, and falls back to interactive wizard input when values are missing. It creates required project directories such as `.sdd-forge`, `docs`, and `specs`, and enforces repository hygiene by updating `.gitignore` and `.gitattributes`. It generates or updates agent instruction files (for example `AGENTS.md`/`CLAUDE.md`) using a directive-based replacement strategy so managed sections can be refreshed safely. It also handles setup-time migration edge cases such as converting a `CLAUDE.md` symlink into a regular file, then deploys skills and writes normalized configuration JSON. Error handling follows CLI conventions with translated messages and explicit non-zero exits.",
+        "chapter": "cli_commands",
+        "role": "cli",
         "enrich": {
+          "processedAt": "2026-04-17T05:45:38.377Z",
           "attempts": 1
-        }
+        },
+        "keywords": [
+          "project setup",
+          "interactive wizard",
+          "configuration bootstrap",
+          "filesystem initialization",
+          "agent file generation",
+          "skills deployment",
+          "CLI entrypoint",
+          "argument parsing"
+        ]
       },
       {
         "file": "src/upgrade.js",
-        "hash": "32d1d4837867533d1644e4a3bcad9974",
+        "hash": "15a57cc017d64b33657f0ebe1c38b917",
         "lines": 133,
-        "mtime": "2026-04-13T15:15:34.157Z",
+        "mtime": "2026-04-17T05:45:21.329Z",
         "className": "upgrade",
         "methods": [
           "parseUpgradeArgs",
@@ -8026,7 +7790,7 @@
           "path",
           "./lib/entrypoint.js",
           "./lib/cli.js",
-          "./lib/exit-codes.js",
+          "./lib/constants.js",
           "./lib/config.js",
           "./lib/i18n.js",
           "./lib/skills.js"
@@ -8037,30 +7801,30 @@
         "extends": null,
         "usedBy": null,
         "id": "a631f658",
-        "summary": "Implements the `upgrade` command that synchronizes skill/template assets and updates related project configuration. It coordinates deployment, cleanup, and optional experimental workflow integration.",
-        "detail": "The module parses upgrade-specific CLI options and loads project config to determine deployment targets. It invokes skill deployment helpers for shared and project-local skill templates, then removes obsolete skill files to keep generated assets in sync. It reports per-skill results and exits with standardized error handling when upgrade operations fail. The command also touches experimental workflow template paths and rewrites config JSON when needed. This file functions as a release/maintenance CLI entrypoint for keeping generated scaffolding current.",
-        "chapter": "development",
+        "summary": "This file implements the `upgrade` CLI command that refreshes project-managed skills and related configuration assets. It serves as the maintenance path for propagating packaged template changes into an existing workspace.",
+        "detail": "The module parses upgrade-specific arguments and loads current project configuration before applying updates. It orchestrates multiple skill deployment operations, including core skills, project-local skills, and cleanup of obsolete generated files. It logs deployment results in a structured way so users can see what changed. The command also reads and rewrites configuration JSON with normalized formatting after upgrade-related adjustments. Like other CLI modules, it exits with standardized error codes on failure and is wired through `runIfDirect` for executable use.",
+        "chapter": "cli_commands",
         "role": "cli",
         "enrich": {
-          "processedAt": "2026-04-13T15:16:23.012Z",
+          "processedAt": "2026-04-17T05:45:38.377Z",
           "attempts": 1
         },
         "keywords": [
           "upgrade command",
-          "skill deployment",
-          "template sync",
-          "asset regeneration",
-          "config rewrite",
-          "maintenance tooling",
-          "scaffold update"
+          "skills synchronization",
+          "template refresh",
+          "configuration rewrite",
+          "obsolete cleanup",
+          "project maintenance",
+          "CLI orchestration"
         ]
       }
     ],
     "summary": {
-      "total": 237,
-      "totalMethods": 807
+      "total": 236,
+      "totalMethods": 805
     },
     "dataSourceHash": "7d725e75d5031be445119323e4947c91"
   },
-  "enrichedAt": "2026-04-17T03:48:41.052Z"
+  "enrichedAt": "2026-04-17T05:46:44.816Z"
 }

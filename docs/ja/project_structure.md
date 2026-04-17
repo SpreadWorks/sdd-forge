@@ -20,8 +20,8 @@
 
 <!-- {{data("base.structure.tree")}} -->
 ```
-src/    (lib, cli, controller, middleware)
-src/check/commands/    (cli)
+src/    (lib, cli, middleware)
+src/check/commands/    
 src/docs/commands/    (cli)
 src/docs/data/    (model)
 src/docs/lib/    (lib, model)
@@ -29,8 +29,8 @@ src/docs/lib/lang/    (lib)
 src/flow/    (controller)
 src/flow/commands/    (cli, lib)
 src/flow/lib/    (model, cli, lib, controller)
-src/lib/    (lib, config, model, view)
-src/metrics/commands/    (cli)
+src/lib/    (lib, model, view)
+src/metrics/commands/    
 ```
 <!-- {{/data}} -->
 
@@ -41,10 +41,10 @@ src/metrics/commands/    (cli)
 | --- | --- | --- |
 | src/docs | 40 | cli, model, lib |
 | src/flow | 35 | cli, lib, model, controller |
-| src/lib | 24 | lib, config, model, view |
-| src | 11 | lib, cli, controller, middleware |
-| src/check | 3 | cli |
-| src/metrics | 1 | cli |
+| src/lib | 23 | lib, model, view |
+| src | 11 | lib, cli, middleware |
+| src/check | 3 | — |
+| src/metrics | 1 | — |
 <!-- {{/data}} -->
 
 ### 共通ライブラリ
