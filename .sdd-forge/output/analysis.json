@@ -1,5 +1,5 @@
 {
-  "analyzedAt": "2026-04-17T05:45:21.669Z",
+  "analyzedAt": "2026-04-17T09:02:29.205Z",
   "package": {
     "entries": [
       {
@@ -81,29 +81,44 @@
       },
       {
         "file": "src/check.js",
-        "hash": "aece747f7dcc42f65147e2c3e62dcaa3",
-        "lines": 42,
-        "mtime": "2026-04-17T05:45:21.326Z",
+        "hash": "969a7e374d19d6084a9efc069b0c28fd",
+        "lines": 44,
+        "mtime": "2026-04-17T09:02:28.838Z",
         "className": "check",
         "methods": [],
         "imports": [
           "path",
           "./lib/cli.js",
-          "./lib/constants.js"
+          "./lib/constants.js",
+          "./lib/container.js",
+          "./lib/command-runner.js"
         ],
         "exports": [],
         "extends": null,
         "usedBy": null,
         "id": "cfca7dd3",
+        "summary": "This file is the entrypoint for the `sdd-forge check` command group and dispatches subcommands to dedicated scripts. It validates arguments, initializes runtime context, and forwards execution.",
+        "detail": "The module defines a static map from subcommand names to script paths, then reads CLI args from `process.argv`. It initializes the dependency container before running any selected subcommand, ensuring shared services are available. Subcommand execution is delegated through `runModuleMain`, which keeps command loading modular. It exits with success or error codes depending on command presence and runtime failures.",
+        "chapter": "cli_commands",
+        "role": "cli",
         "enrich": {
+          "processedAt": "2026-04-17T09:03:42.668Z",
           "attempts": 1
-        }
+        },
+        "keywords": [
+          "cli dispatcher",
+          "subcommand routing",
+          "entrypoint",
+          "process argv",
+          "exit codes",
+          "command runner"
+        ]
       },
       {
         "file": "src/check/commands/config.js",
-        "hash": "77a41b288679ffdaf5543b656e8532dd",
-        "lines": 140,
-        "mtime": "2026-04-17T05:45:21.327Z",
+        "hash": "062287dd9e947b1b23f25931e4415c3a",
+        "lines": 138,
+        "mtime": "2026-04-17T09:02:28.839Z",
         "className": "config",
         "methods": [
           "printHelp",
@@ -112,7 +127,6 @@
         ],
         "imports": [
           "fs",
-          "../../lib/entrypoint.js",
           "../../lib/cli.js",
           "../../lib/config.js",
           "../../lib/presets.js",
@@ -124,6 +138,7 @@
         "extends": null,
         "usedBy": [
           "src/lib/agent.js",
+          "src/lib/container.js",
           "src/lib/flow-state.js",
           "src/lib/guardrail.js",
           "src/lib/i18n.js",
@@ -134,15 +149,28 @@
           "src/presets/node-cli/tests/acceptance/fixtures/src/cli.js"
         ],
         "id": "1b9f6fe7",
+        "summary": "This command validates `sdd-forge` configuration files and reports schema or parsing issues. It supports both human-readable and JSON output modes.",
+        "detail": "The implementation builds a list of checks by locating config paths and verifying file existence before parsing JSON. It runs validation against schema and preset constraints, capping schema error verbosity with a maximum threshold. CLI options determine output format, and unknown format values trigger explicit failures. The command returns structured check results and sets non-zero exit codes when validation fails.",
+        "chapter": "configuration",
+        "role": "cli",
         "enrich": {
+          "processedAt": "2026-04-17T09:03:42.668Z",
           "attempts": 1
-        }
+        },
+        "keywords": [
+          "config validation",
+          "schema check",
+          "json parsing",
+          "preset verification",
+          "lint config",
+          "validation errors"
+        ]
       },
       {
         "file": "src/check/commands/freshness.js",
-        "hash": "dd20afd678bf2f89be83372968fd2b72",
-        "lines": 206,
-        "mtime": "2026-04-17T05:45:21.327Z",
+        "hash": "9b434419d8a5d78bb4aee5fc830d4a24",
+        "lines": 204,
+        "mtime": "2026-04-17T09:02:28.839Z",
         "className": "freshness",
         "methods": [
           "printHelp",
@@ -154,7 +182,6 @@
         "imports": [
           "fs",
           "path",
-          "../../lib/entrypoint.js",
           "../../lib/cli.js",
           "../../lib/constants.js"
         ],
@@ -165,15 +192,28 @@
         "extends": null,
         "usedBy": null,
         "id": "b9efb503",
+        "summary": "This command checks whether `docs/` is fresh relative to source files by comparing modification timestamps. It reports `fresh`, `stale`, or `never-built` states.",
+        "detail": "The code recursively walks directories with a file-count limit to avoid unbounded scans in large repositories. It computes newest mtimes for source and docs trees, handling missing docs as a distinct state. Truncation warnings are emitted when scanning limits are hit, preserving transparency around partial coverage. Output can be emitted as text or JSON, and stale or missing docs states return error exits to support automation.",
+        "chapter": "cli_commands",
+        "role": "cli",
         "enrich": {
+          "processedAt": "2026-04-17T09:03:42.668Z",
           "attempts": 1
-        }
+        },
+        "keywords": [
+          "freshness check",
+          "mtime comparison",
+          "docs drift",
+          "staleness detection",
+          "recursive walk",
+          "build required"
+        ]
       },
       {
         "file": "src/check/commands/scan.js",
-        "hash": "d9a3b620706f60b87f4cbe13f4fe172b",
-        "lines": 274,
-        "mtime": "2026-04-17T05:45:21.327Z",
+        "hash": "7338fea6669915ed2107c173e21acc8e",
+        "lines": 272,
+        "mtime": "2026-04-17T09:02:28.839Z",
         "className": "scan",
         "methods": [
           "printHelp",
@@ -187,7 +227,6 @@
         "imports": [
           "fs",
           "path",
-          "../../lib/entrypoint.js",
           "../../lib/cli.js",
           "../../lib/config.js",
           "../../docs/lib/scanner.js",
@@ -203,15 +242,28 @@
         "extends": null,
         "usedBy": null,
         "id": "7cccb0de",
+        "summary": "This command evaluates scan coverage by comparing expected files from include/exclude patterns against analyzed entries. It produces extension-level and file-level coverage summaries.",
+        "detail": "It resolves include and exclude globs into matchers, walks candidate files, and groups results by extension for reporting. Analysis input is loaded from `analysis.json`, with explicit guidance when scan output is missing or invalid. Text, Markdown, and JSON renderers are provided, each sharing the same computed coverage model. The command also filters metadata-only keys to focus on meaningful scan categories.",
+        "chapter": "internal_design",
+        "role": "cli",
         "enrich": {
+          "processedAt": "2026-04-17T09:03:42.668Z",
           "attempts": 1
-        }
+        },
+        "keywords": [
+          "coverage analysis",
+          "glob matching",
+          "analysis.json",
+          "file scanning",
+          "extension grouping",
+          "report formatter"
+        ]
       },
       {
         "file": "src/docs.js",
-        "hash": "07106272311fa4c05a1139268f1c9312",
-        "lines": 241,
-        "mtime": "2026-04-17T05:45:21.327Z",
+        "hash": "1ba693b2b1f7444e175aa2b396e84389",
+        "lines": 243,
+        "mtime": "2026-04-17T09:02:28.839Z",
         "className": "docs",
         "methods": [],
         "imports": [
@@ -219,7 +271,9 @@
           "path",
           "./lib/cli.js",
           "./lib/log.js",
-          "./docs/lib/command-context.js",
+          "./lib/container.js",
+          "./docs/lib/docs-context.js",
+          "./lib/command-runner.js",
           "./lib/types.js",
           "./lib/constants.js"
         ],
@@ -227,15 +281,28 @@
         "extends": null,
         "usedBy": null,
         "id": "086d52a1",
+        "summary": "This file is the top-level dispatcher for the `sdd-forge docs` command family and orchestrated docs workflows. It routes subcommands and implements higher-level composite flows.",
+        "detail": "A script map handles standard docs subcommands through dynamic loading and `runModuleMain`. For composite operations, it initializes shared context and sequentially invokes scan, enrich, init, data, text, readme, agents, and translation stages. It supports dry-run, force, and language-aware variants, including per-language README regeneration and selective data updates. Errors are normalized to consistent exit behavior for CLI usage and scripting.",
+        "chapter": "cli_commands",
+        "role": "cli",
         "enrich": {
+          "processedAt": "2026-04-17T09:03:42.668Z",
           "attempts": 1
-        }
+        },
+        "keywords": [
+          "docs pipeline",
+          "command orchestration",
+          "dynamic import",
+          "multilingual docs",
+          "dry-run",
+          "workflow controller"
+        ]
       },
       {
         "file": "src/docs/commands/agents.js",
-        "hash": "f9e04e3b56cd241f65ba74bbda042571",
+        "hash": "f7712eef0da8177df77db3cb5b64891b",
         "lines": 229,
-        "mtime": "2026-04-14T08:22:10.019Z",
+        "mtime": "2026-04-17T09:02:28.839Z",
         "className": "agents",
         "methods": [
           "buildAgentsSystemPrompt",
@@ -247,7 +314,6 @@
         "imports": [
           "fs",
           "path",
-          "../../lib/entrypoint.js",
           "../../lib/cli.js",
           "../../lib/config.js",
           "../../lib/agent.js",
@@ -256,7 +322,9 @@
           "../../lib/progress.js",
           "../lib/directive-parser.js",
           "../lib/command-context.js",
-          "../../lib/agents-md.js"
+          "../../lib/agents-md.js",
+          "../../lib/container.js",
+          "../lib/docs-context.js"
         ],
         "exports": [
           "main"
@@ -264,28 +332,28 @@
         "extends": null,
         "usedBy": null,
         "id": "5684c584",
-        "summary": "This command generates and refines `AGENTS.md` by combining project context, docs output, and directive resolution. It orchestrates agent prompting and writes the final file back to disk.",
-        "detail": "It reads CLI options, resolves project roots, and ensures `AGENTS.md` exists from a template when missing. The flow gathers analysis, docs chapter content, and README text to build a high-context refinement prompt. Directive blocks are parsed and resolved using a resolver pipeline so generated sections stay synchronized with analysis data. Agent execution is wrapped with logging and localized error handling, then transformed content is persisted as the updated agents guide.",
-        "chapter": "cli_commands",
+        "summary": "This command generates or refines `AGENTS.md` content from project analysis, docs, and templates. It resolves directives and optionally invokes an AI agent for refinement.",
+        "detail": "The implementation builds specialized prompts from project files, docs chapters, and SDD template content. It parses and replaces directive blocks, preserving structured sections while injecting resolved data. If `AGENTS.md` is missing, it bootstraps one from a default template before refinement. The command writes the final document back to source root and reports agent-call failures with explicit error messages.",
+        "chapter": "development",
         "role": "cli",
         "enrich": {
-          "processedAt": "2026-04-14T11:38:15.649Z",
+          "processedAt": "2026-04-17T09:03:42.668Z",
           "attempts": 1
         },
         "keywords": [
-          "agents.md generation",
+          "AGENTS.md",
           "directive resolution",
-          "prompt orchestration",
-          "analysis context",
-          "docs synthesis",
-          "command handler"
+          "prompt building",
+          "agent refinement",
+          "documentation synthesis",
+          "template bootstrap"
         ]
       },
       {
         "file": "src/docs/commands/changelog.js",
-        "hash": "f7ff875d6c26f75fe81c7d2aeec601a3",
-        "lines": 243,
-        "mtime": "2026-04-10T06:35:13.093Z",
+        "hash": "a82c300119c4d6e1906f254ad308be39",
+        "lines": 241,
+        "mtime": "2026-04-17T09:02:28.839Z",
         "className": "changelog",
         "methods": [
           "sanitize",
@@ -296,7 +364,6 @@
         "imports": [
           "fs",
           "path",
-          "../../lib/entrypoint.js",
           "../../lib/cli.js",
           "../../lib/config.js",
           "../../lib/i18n.js"
@@ -307,31 +374,32 @@
         "extends": null,
         "usedBy": [
           "src/lib/agent.js",
-          "src/lib/process.js",
+          "src/lib/container.js",
           "src/lib/git-helpers.js"
         ],
         "id": "d83c89fb",
-        "summary": "This command builds a changelog document from spec directories and metadata. It converts spec artifacts into a normalized markdown timeline.",
-        "detail": "It scans `specs/` entries, parses dated folder names, and extracts relevant spec file content. Text sanitization and structured rendering keep output clean and consistent. The default output targets `docs/change_log.md`, with CLI override support for custom paths. The flow is deterministic and file-system based, making it suitable for repeatable documentation updates.",
+        "summary": "This command builds a project changelog from spec directories and emits a Markdown timeline. It extracts metadata from spec documents and folder naming conventions.",
+        "detail": "The code sanitizes text fields to keep output safe and readable in Markdown. It parses spec files and directory names to derive version/date-like ordering metadata for entries. Output destination is configurable, with directory creation handled automatically. The command aggregates discovered specs into a single change log file under docs by default.",
         "chapter": "cli_commands",
         "role": "cli",
         "enrich": {
-          "processedAt": "2026-04-10T12:37:22.721Z",
+          "processedAt": "2026-04-17T09:03:42.668Z",
           "attempts": 1
         },
         "keywords": [
           "changelog generation",
           "spec parsing",
           "markdown output",
-          "release history",
-          "documentation automation"
+          "release notes",
+          "history synthesis",
+          "docs automation"
         ]
       },
       {
         "file": "src/docs/commands/data.js",
-        "hash": "ef6836d08539fe96b1a82238d9bc2ba0",
+        "hash": "512997a20305fd4c02bb335e2326bdec",
         "lines": 194,
-        "mtime": "2026-04-14T08:22:10.019Z",
+        "mtime": "2026-04-17T09:02:28.839Z",
         "className": "data",
         "methods": [
           "populateFromAnalysis",
@@ -341,7 +409,6 @@
         "imports": [
           "fs",
           "path",
-          "../../lib/entrypoint.js",
           "../lib/directive-parser.js",
           "../lib/resolver-factory.js",
           "../../lib/cli.js",
@@ -349,7 +416,9 @@
           "../../lib/progress.js",
           "../../lib/i18n.js",
           "../lib/command-context.js",
-          "../lib/analysis-filter.js"
+          "../lib/analysis-filter.js",
+          "../../lib/container.js",
+          "../lib/docs-context.js"
         ],
         "exports": [
           "populateFromAnalysis",
@@ -360,28 +429,28 @@
           "src/docs/commands/forge.js"
         ],
         "id": "83404fb1",
-        "summary": "This command populates docs templates by resolving `{{data}}` directives from analysis output. It updates only changed files and reports which chapters were modified.",
-        "detail": "The implementation validates prerequisites like `analysis.json` and constructs a resolver before processing chapter files. For each document, it parses directives, applies replacement logic, and tracks skipped directives when data is unavailable. It centralizes file writes behind change detection to avoid unnecessary rewrites. The module also applies analysis filtering rules and context-aware label handling so directive expansion remains stable across docs structures.",
+        "summary": "This command resolves `{{data}}` directives in docs templates using analysis output and resolver rules. It updates chapter files in place with generated content.",
+        "detail": "It loads analysis data, filters excluded items, and creates a resolver instance before template processing begins. A processing function enforces resolver availability and returns replacement/skipped counts for each file. The command includes file-context rules to adjust resolution behavior by target path and label hints. Changed files are rewritten while unchanged files are left intact, enabling incremental runs.",
         "chapter": "internal_design",
         "role": "cli",
         "enrich": {
-          "processedAt": "2026-04-14T11:38:15.649Z",
+          "processedAt": "2026-04-17T09:03:42.668Z",
           "attempts": 1
         },
         "keywords": [
-          "data directive",
+          "data directives",
           "template population",
           "analysis resolver",
-          "chapter update",
-          "docs rendering",
-          "content injection"
+          "incremental update",
+          "docs generation",
+          "directive engine"
         ]
       },
       {
         "file": "src/docs/commands/enrich.js",
-        "hash": "078ca96b8c661e6e04da862f2607fa96",
+        "hash": "bba1d38f87082e577613a09fc4c97eed",
         "lines": 522,
-        "mtime": "2026-04-10T06:35:13.093Z",
+        "mtime": "2026-04-17T09:02:28.839Z",
         "className": "enrich",
         "methods": [
           "printHelp",
@@ -400,7 +469,6 @@
         "imports": [
           "fs",
           "path",
-          "../../lib/entrypoint.js",
           "../../lib/cli.js",
           "../../lib/config.js",
           "../../lib/agent.js",
@@ -413,7 +481,9 @@
           "../../lib/progress.js",
           "../../lib/i18n.js",
           "../../lib/json-parse.js",
-          "../lib/analysis-entry.js"
+          "../lib/analysis-entry.js",
+          "../../lib/container.js",
+          "../lib/docs-context.js"
         ],
         "exports": [
           "main",
@@ -428,28 +498,28 @@
         "extends": null,
         "usedBy": null,
         "id": "abb7e5b3",
-        "summary": "This command enriches analysis entries by calling an AI agent in controlled batches. It updates analysis metadata and persists progress safely.",
-        "detail": "Entries are collected, token-estimated, and split into bounded batches to keep prompts tractable. The command builds chapter-aware prompts, parses potentially imperfect JSON with repair logic, and merges enrichment fields back into analysis objects. It tracks attempts, supports concurrency controls, and saves incremental checkpoints to reduce recovery cost on failures. Error paths include dumping raw responses for debugging when parsing fails.",
+        "summary": "This command enriches scan analysis entries using an AI agent in token-bounded batches. It merges generated enrichment back into `analysis.json` with progress persistence.",
+        "detail": "Entries are collected and keyed deterministically, then split into batches by token budget and processed with configurable concurrency. Prompt construction includes language/chapter context, and responses are repaired/parsing-validated before merge. The pipeline tracks attempts per entry, saves intermediate progress, and dumps invalid agent responses for debugging. Final output is written to the standard SDD output path with logs summarizing enrichment volume.",
         "chapter": "internal_design",
         "role": "cli",
         "enrich": {
-          "processedAt": "2026-04-10T12:37:22.721Z",
+          "processedAt": "2026-04-17T09:03:42.668Z",
           "attempts": 1
         },
         "keywords": [
           "analysis enrichment",
           "batch processing",
-          "json repair",
-          "agent integration",
-          "checkpointing",
-          "concurrency control"
+          "ai pipeline",
+          "token limit",
+          "progress save",
+          "json repair"
         ]
       },
       {
         "file": "src/docs/commands/forge.js",
-        "hash": "5de8c8bf7f8f2958fe11292c85f23460",
-        "lines": 445,
-        "mtime": "2026-04-17T05:45:21.327Z",
+        "hash": "832e3c2845bf88567fc0ae35724402e4",
+        "lines": 443,
+        "mtime": "2026-04-17T09:02:28.840Z",
         "className": "forge",
         "methods": [
           "getTargetFiles",
@@ -465,7 +535,6 @@
           "fs",
           "path",
           "../../lib/process.js",
-          "../../lib/entrypoint.js",
           "./data.js",
           "./text.js",
           "../lib/concurrency.js",
@@ -486,15 +555,28 @@
         "extends": null,
         "usedBy": null,
         "id": "ef4fa5d9",
+        "summary": "This command drives iterative docs forging by coordinating generation, review, and retry loops. It supports local, assist, and agent modes with per-file targeting.",
+        "detail": "It parses rich CLI options such as max runs, timeouts, concurrency, and review command overrides. Target files are selected from chapter configuration and optionally narrowed by relevance heuristics from prompt/spec text. Each run can invoke agent edits, execute review checks, and continue until success or run limit exhaustion. It also integrates downstream readme and translation refresh steps to keep final outputs consistent.",
+        "chapter": "development",
+        "role": "cli",
         "enrich": {
+          "processedAt": "2026-04-17T09:03:42.668Z",
           "attempts": 1
-        }
+        },
+        "keywords": [
+          "docs forge",
+          "iterative generation",
+          "review loop",
+          "agent mode",
+          "target file selection",
+          "automation workflow"
+        ]
       },
       {
         "file": "src/docs/commands/init.js",
-        "hash": "fb34980365c357712c8dd81c72a88e36",
+        "hash": "e6a801c848f2a4878dba5327b759ff38",
         "lines": 272,
-        "mtime": "2026-04-14T04:55:48.007Z",
+        "mtime": "2026-04-17T09:02:28.840Z",
         "className": "init",
         "methods": [
           "aiFilterChapters",
@@ -503,7 +585,6 @@
         "imports": [
           "fs",
           "path",
-          "../../lib/entrypoint.js",
           "../../lib/cli.js",
           "../../lib/config.js",
           "../../lib/agent.js",
@@ -512,7 +593,9 @@
           "../../lib/progress.js",
           "../../lib/i18n.js",
           "../lib/command-context.js",
-          "../lib/directive-parser.js"
+          "../lib/directive-parser.js",
+          "../../lib/container.js",
+          "../lib/docs-context.js"
         ],
         "exports": [
           "main",
@@ -521,29 +604,28 @@
         "extends": null,
         "usedBy": null,
         "id": "62ef800b",
-        "summary": "This module implements the `docs init` command flow for generating initial documentation files from resolved templates. It also exposes an AI-assisted chapter filtering helper to reduce generated output based on project analysis and intent.",
-        "detail": "The command parses CLI arguments, validates required options, and resolves command context such as repository root, language, and analysis inputs. It loads templates through the template-merger utilities, optionally translates template content, and computes chapter ordering before writing outputs into the `docs` directory. The implementation checks for missing templates and existing output conflicts to avoid unsafe overwrites without explicit intent. It integrates with agent logging and prompt helpers so chapter selection and content adaptation can be guided by AI when available. The code follows a controller-style orchestration pattern, delegating parsing, merging, translation, and directive stripping to dedicated library modules.",
-        "chapter": "cli_commands",
+        "summary": "This command initializes docs chapters from merged templates and optional AI-assisted chapter filtering. It creates missing docs files while handling conflicts and force behavior.",
+        "detail": "Template resolution combines built-in and project-local templates, then orders output via chapter ordering rules. Optional AI filtering narrows chapter scope based on analysis and purpose prompts. It verifies template availability, ensures docs directory existence, and detects overwrite conflicts unless forced. Generated chapter files are translated/normalized and written as UTF-8 Markdown.",
+        "chapter": "internal_design",
         "role": "cli",
         "enrich": {
-          "processedAt": "2026-04-14T04:56:09.021Z",
+          "processedAt": "2026-04-17T09:03:42.668Z",
           "attempts": 1
         },
         "keywords": [
           "docs init",
-          "template resolution",
-          "chapter filtering",
-          "ai selection",
-          "command handler",
-          "documentation bootstrap",
-          "content generation"
+          "template merge",
+          "chapter selection",
+          "force overwrite",
+          "scaffold generation",
+          "ai filtering"
         ]
       },
       {
         "file": "src/docs/commands/readme.js",
-        "hash": "05939e0d7dfeb2ba9d3457880edde760",
+        "hash": "a52d96b5ff99cbcdda9a3b05ca6ab175",
         "lines": 192,
-        "mtime": "2026-04-14T08:22:10.019Z",
+        "mtime": "2026-04-17T09:02:28.840Z",
         "className": "readme",
         "methods": [
           "main"
@@ -551,7 +633,6 @@
         "imports": [
           "fs",
           "path",
-          "../../lib/entrypoint.js",
           "../../lib/cli.js",
           "../lib/template-merger.js",
           "../lib/resolver-factory.js",
@@ -561,7 +642,9 @@
           "./text.js",
           "../lib/text-prompts.js",
           "../../lib/config.js",
-          "../../lib/agent.js"
+          "../../lib/agent.js",
+          "../../lib/container.js",
+          "../lib/docs-context.js"
         ],
         "exports": [
           "main"
@@ -569,28 +652,28 @@
         "extends": null,
         "usedBy": null,
         "id": "26628ac2",
-        "summary": "This command builds `README.md` from docs templates and resolved directive data. It merges templates, applies translation-aware transformations, and writes deterministic output.",
-        "detail": "It resolves project and output paths, then constructs resolver behavior tailored for README-relative links and labels. Template fragments are merged in chapter order and passed through directive parsing and text-processing stages. The module supports agent-assisted text fill using shared prompt builders and concurrency settings from config. Final output is compared against existing content before write, which helps keep filesystem changes minimal and predictable.",
+        "summary": "This command generates or updates `README.md` from docs templates, directives, and analysis context. It supports custom output paths and language-aware resolution behavior.",
+        "detail": "It resolves templates and directives similarly to chapter generation, but adapts resolver labels to README-relative context. Existing README content is compared before write to avoid unnecessary file churn. The command integrates configurable agent/concurrency settings for text fill behavior where applicable. It provides a consistent path for README regeneration within the broader docs workflow.",
         "chapter": "cli_commands",
         "role": "cli",
         "enrich": {
-          "processedAt": "2026-04-14T11:38:15.649Z",
+          "processedAt": "2026-04-17T09:03:42.668Z",
           "attempts": 1
         },
         "keywords": [
-          "readme generation",
-          "template merge",
-          "chapter ordering",
-          "directive parser",
-          "link resolution",
-          "content rendering"
+          "readme generator",
+          "template resolver",
+          "directive parsing",
+          "analysis-driven docs",
+          "path-aware rendering",
+          "incremental write"
         ]
       },
       {
         "file": "src/docs/commands/review.js",
-        "hash": "140079445889d0301b92832dd1483125",
-        "lines": 310,
-        "mtime": "2026-04-14T08:22:10.019Z",
+        "hash": "e69735c76687e9b33cd26fe2c96107ab",
+        "lines": 308,
+        "mtime": "2026-04-17T09:02:28.840Z",
         "className": "review",
         "methods": [
           "stripInlineCode",
@@ -601,7 +684,6 @@
         "imports": [
           "fs",
           "path",
-          "../../lib/entrypoint.js",
           "../../lib/cli.js",
           "../../lib/config.js",
           "../../lib/i18n.js",
@@ -616,28 +698,28 @@
         "extends": null,
         "usedBy": null,
         "id": "f3a5a725",
-        "summary": "This command reviews generated documentation for structural integrity and quality gates. It validates chapter existence, directive leakage, and analysis metadata consistency.",
-        "detail": "The implementation scans docs targets and applies multiple static checks, including exposed directive markers and malformed block comments. It enforces baseline quality heuristics such as minimum line thresholds and required chapter presence. Review logic also inspects README and localized docs where applicable, then cross-checks against analysis metadata keys. Failures are reported through localized messages and terminate with an error to support CI gating.",
-        "chapter": "cli_commands",
+        "summary": "This command performs integrity and quality checks over generated docs and README artifacts. It validates directive cleanup, structural sanity, and required outputs.",
+        "detail": "It scans target files for leaked directives, broken comments, and residual block markers that should not remain after generation. Additional checks enforce minimum content expectations and per-language document presence when configured. It loads analysis metadata to validate consistency-sensitive conditions tied to generation outputs. Failures are reported through localized messages and terminate with a non-zero status.",
+        "chapter": "development",
         "role": "cli",
         "enrich": {
-          "processedAt": "2026-04-14T11:38:15.649Z",
+          "processedAt": "2026-04-17T09:03:42.668Z",
           "attempts": 1
         },
         "keywords": [
-          "documentation review",
+          "docs review",
           "integrity check",
-          "quality gate",
           "directive leakage",
-          "static validation",
-          "ci guard"
+          "quality gate",
+          "artifact validation",
+          "lint generated docs"
         ]
       },
       {
         "file": "src/docs/commands/scan.js",
-        "hash": "dd8df3691a67cc0237700e06a36668cf",
+        "hash": "df2fa2792374138e20df69688629b560",
         "lines": 476,
-        "mtime": "2026-04-10T07:31:29.602Z",
+        "mtime": "2026-04-17T09:02:28.840Z",
         "className": "scan",
         "methods": [
           "printHelp",
@@ -657,7 +739,6 @@
           "path",
           "crypto",
           "url",
-          "../../lib/entrypoint.js",
           "../../lib/cli.js",
           "../../lib/config.js",
           "../lib/scanner.js",
@@ -665,7 +746,8 @@
           "../../lib/presets.js",
           "../../lib/progress.js",
           "../../lib/i18n.js",
-          "../lib/command-context.js",
+          "../../lib/container.js",
+          "../lib/docs-context.js",
           "../lib/analysis-entry.js"
         ],
         "exports": [
@@ -674,28 +756,28 @@
         "extends": null,
         "usedBy": null,
         "id": "e229cdd1",
-        "summary": "This command scans source and preset data to produce `analysis.json` as the core intermediate artifact. It handles entry identity, reset modes, and data source hashing.",
-        "detail": "It loads scanner data sources, traverses files, and resolves preset chains to build categorized analysis entries. Entry IDs are stabilized using match keys and existing index maps to reduce churn across runs. Reset options support selective category refresh while preserving unrelated analysis data. Final output is serialized to `.sdd-forge/analysis.json` with optional stdout mode and progress logging.",
+        "summary": "This command scans source inputs and produces `analysis.json` as the canonical structured dataset for docs generation. It supports reset semantics and stable entry identity management.",
+        "detail": "It loads scanner data sources from presets, collects files, and computes hashes to detect changes in source and datasource files. Existing analysis can be indexed by multiple keys to preserve IDs across rescans and avoid unnecessary churn. Category resets allow partial regeneration without deleting all analysis content. Results can be printed to stdout or persisted under `.sdd-forge` output directories with logging.",
         "chapter": "internal_design",
         "role": "cli",
         "enrich": {
-          "processedAt": "2026-04-10T12:37:22.721Z",
+          "processedAt": "2026-04-17T09:03:42.668Z",
           "attempts": 1
         },
         "keywords": [
-          "source scanning",
+          "source scan",
           "analysis.json",
-          "entry id stability",
-          "preset chain",
-          "data source hash",
-          "incremental scan"
+          "data sources",
+          "stable ids",
+          "incremental scan",
+          "hash tracking"
         ]
       },
       {
         "file": "src/docs/commands/text.js",
-        "hash": "d24e78c612af1630988d022c2a2164dc",
+        "hash": "6f64c99b06d2eae88bfcbfe20fc42099",
         "lines": 774,
-        "mtime": "2026-04-17T05:45:21.327Z",
+        "mtime": "2026-04-17T09:02:28.840Z",
         "className": "text",
         "methods": [
           "textFillFromAnalysis",
@@ -718,9 +800,10 @@
           "fs",
           "path",
           "crypto",
-          "../../lib/entrypoint.js",
           "../lib/directive-parser.js",
           "../lib/concurrency.js",
+          "../../lib/container.js",
+          "../lib/docs-context.js",
           "../lib/text-prompts.js",
           "../../lib/cli.js",
           "../../lib/config.js",
@@ -750,15 +833,28 @@
           "src/docs/commands/readme.js"
         ],
         "id": "7c5e7654",
+        "summary": "This command resolves `{{text}}` directives by calling an AI agent and writing generated prose into docs files. It includes batching, retry behavior, and output safety checks.",
+        "detail": "The implementation supports two processing paths: batch JSON replacement and per-directive generation, both with concurrency control. It strips agent preambles, repairs malformed JSON responses, and validates shrinkage/regression risks before applying changes. It tracks filled versus skipped directives, detects chapter-level source changes, and can reset stale fill blocks when needed. Errors are aggregated per file, and CLI exit codes signal partial or total failure.",
+        "chapter": "internal_design",
+        "role": "cli",
         "enrich": {
+          "processedAt": "2026-04-17T09:03:42.668Z",
           "attempts": 1
-        }
+        },
+        "keywords": [
+          "text directives",
+          "ai content fill",
+          "batch json apply",
+          "response repair",
+          "generation retry",
+          "content validation"
+        ]
       },
       {
         "file": "src/docs/commands/translate.js",
-        "hash": "ce12bd0cdb65e8211f364f0187ea9985",
+        "hash": "61807a4f52b1549630df80f1c393690b",
         "lines": 228,
-        "mtime": "2026-04-14T08:22:10.020Z",
+        "mtime": "2026-04-17T09:02:28.840Z",
         "className": "translate",
         "methods": [
           "toneInstruction",
@@ -770,14 +866,15 @@
         "imports": [
           "fs",
           "path",
-          "../../lib/entrypoint.js",
           "../../lib/cli.js",
           "../../lib/types.js",
           "../../lib/config.js",
           "../../lib/agent.js",
           "../../lib/progress.js",
           "../lib/command-context.js",
-          "../lib/concurrency.js"
+          "../lib/concurrency.js",
+          "../../lib/container.js",
+          "../lib/docs-context.js"
         ],
         "exports": [
           "main",
@@ -786,21 +883,21 @@
         "extends": null,
         "usedBy": null,
         "id": "fd496e07",
-        "summary": "This command translates docs and README into configured target languages using an agent backend. It builds translation tasks from file timestamps and optional force flags.",
-        "detail": "It computes translation workload by comparing source and target modification times, minimizing unnecessary rewrites. For each task, it sends style-aware translation prompts and strips response preambles before saving results. The implementation ensures target language directories exist and handles missing docs prerequisites with clear errors. Task execution is parallelized with concurrency controls to scale multi-language documentation updates.",
+        "summary": "This command translates generated docs and README into configured target languages using an AI agent. It skips up-to-date outputs unless forced.",
+        "detail": "It builds translation tasks from source chapter files and optional root README, creating per-language output directories as needed. A timestamp-based freshness check avoids redundant translations and reduces runtime cost. Translation prompts can adapt tone and document style, and responses are stripped of preamble noise. Work executes with configurable concurrency and logs each completed artifact.",
         "chapter": "cli_commands",
         "role": "cli",
         "enrich": {
-          "processedAt": "2026-04-14T11:38:15.649Z",
+          "processedAt": "2026-04-17T09:03:42.668Z",
           "attempts": 1
         },
         "keywords": [
-          "document translation",
-          "localization",
-          "mtime sync",
-          "language targets",
-          "parallel tasks",
-          "readme translation"
+          "documentation translation",
+          "multilingual output",
+          "freshness skip",
+          "concurrency",
+          "readme localization",
+          "ai translator"
         ]
       },
       {
@@ -1105,12 +1202,11 @@
       },
       {
         "file": "src/docs/lib/command-context.js",
-        "hash": "24a501d0b4ec3459f1a33b5f8b4f4c86",
-        "lines": 184,
-        "mtime": "2026-04-17T03:48:03.043Z",
+        "hash": "c97bcb977d661f3ea85fcf155bb89126",
+        "lines": 111,
+        "mtime": "2026-04-17T09:02:28.841Z",
         "className": "command-context",
         "methods": [
-          "resolveCommandContext",
           "loadAnalysisData",
           "loadFullAnalysis",
           "getChapterFiles",
@@ -1121,14 +1217,10 @@
         "imports": [
           "fs",
           "path",
-          "../../lib/cli.js",
           "../../lib/config.js",
-          "../../lib/agent.js",
-          "../../lib/i18n.js",
           "./template-merger.js"
         ],
         "exports": [
-          "resolveCommandContext",
           "loadAnalysisData",
           "loadFullAnalysis",
           "getChapterFiles",
@@ -1137,14 +1229,26 @@
         ],
         "extends": null,
         "usedBy": [
-          "src/docs.js",
           "src/docs/commands/forge.js",
           "src/docs/commands/readme.js"
         ],
         "id": "10a78227",
+        "summary": "This library provides shared context helpers for docs commands, including analysis loading and chapter file discovery. It centralizes common filesystem and response-normalization utilities.",
+        "detail": "`loadOutputJson` encapsulates reading files from the SDD output directory with null-safe behavior on missing files or parse failures. Chapter selection supports ordered chapter lists and excludes internal/non-target files such as layout and template helper documents. Utility readers return empty strings for absent files to simplify callers. It also strips response preambles to normalize agent output before downstream parsing.",
+        "chapter": "project_structure",
+        "role": "lib",
         "enrich": {
-          "attempts": 2
-        }
+          "processedAt": "2026-04-17T09:03:42.668Z",
+          "attempts": 1
+        },
+        "keywords": [
+          "command context",
+          "analysis loader",
+          "chapter discovery",
+          "output helpers",
+          "shared utility",
+          "response cleanup"
+        ]
       },
       {
         "file": "src/docs/lib/concurrency.js",
@@ -1304,6 +1408,46 @@
           "block inheritance",
           "regex parser",
           "markdown templating"
+        ]
+      },
+      {
+        "file": "src/docs/lib/docs-context.js",
+        "hash": "68e6c21f815ed12e8f31d81f44b1fa66",
+        "lines": 47,
+        "mtime": "2026-04-17T09:02:28.841Z",
+        "className": "docs-context",
+        "methods": [
+          "resolveDocsContext"
+        ],
+        "imports": [
+          "path",
+          "../../lib/config.js"
+        ],
+        "exports": [
+          "resolveDocsContext"
+        ],
+        "extends": null,
+        "usedBy": [
+          "src/docs.js",
+          "src/docs/commands/forge.js",
+          "src/docs/commands/readme.js"
+        ],
+        "id": "b447ebc8",
+        "summary": "This library resolves docs execution context by combining container defaults, CLI flags, and explicit overrides. It returns normalized root/docs/language settings for command handlers.",
+        "detail": "Docs directory resolution is precedence-based: override value, then CLI option, then default `docs` path under root. It normalizes paths with `path.resolve`/`path.join` and derives language using configured defaults. The function keeps context construction small and deterministic to reduce duplicated path logic across commands. It acts as a thin but central bridge between runtime container state and CLI command execution.",
+        "chapter": "project_structure",
+        "role": "lib",
+        "enrich": {
+          "processedAt": "2026-04-17T09:03:42.668Z",
+          "attempts": 1
+        },
+        "keywords": [
+          "context resolver",
+          "path normalization",
+          "command context",
+          "default language",
+          "cli overrides",
+          "runtime container"
         ]
       },
       {
@@ -1997,12 +2141,11 @@
       },
       {
         "file": "src/flow.js",
-        "hash": "360785acff02fc4acbfe2879f155802a",
-        "lines": 276,
-        "mtime": "2026-04-17T05:45:21.327Z",
+        "hash": "cfd4bc494d2a36a8885fb4488834a257",
+        "lines": 256,
+        "mtime": "2026-04-17T09:02:28.841Z",
         "className": "flow",
         "methods": [
-          "resolveCtx",
           "throwUnexpectedArgs",
           "assignPositionalArgs",
           "parseNoArgEntry",
@@ -2014,19 +2157,32 @@
         ],
         "imports": [
           "./lib/cli.js",
-          "./lib/config.js",
-          "./lib/flow-state.js",
           "./lib/flow-envelope.js",
           "./flow/registry.js",
-          "./lib/constants.js"
+          "./lib/constants.js",
+          "./lib/container.js",
+          "./flow/lib/flow-context.js"
         ],
         "exports": [],
         "extends": null,
         "usedBy": null,
         "id": "1ab08f2b",
+        "summary": "This file is the dispatcher for `sdd-forge flow` commands and envelope-formatted execution results. It parses grouped command syntax and runs registered flow entries.",
+        "detail": "It supports command groups, positional argument assignment, and strict unknown-option detection for robust CLI behavior. Entry invocation is routed through a shared runner that wraps results in success/failure envelopes for machine-readable output. Special-case commands like resume and prepare-spec are handled with explicit dispatch branches. The module standardizes exit-code behavior and error propagation across all flow subcommands.",
+        "chapter": "cli_commands",
+        "role": "cli",
         "enrich": {
+          "processedAt": "2026-04-17T09:03:42.668Z",
           "attempts": 1
-        }
+        },
+        "keywords": [
+          "flow dispatcher",
+          "command registry",
+          "envelope output",
+          "argument parser",
+          "subcommand groups",
+          "exit handling"
+        ]
       },
       {
         "file": "src/flow/commands/merge.js",
@@ -2122,9 +2278,9 @@
       },
       {
         "file": "src/flow/commands/review.js",
-        "hash": "7474007ff05740659f2a18e915189f66",
-        "lines": 981,
-        "mtime": "2026-04-17T05:45:21.328Z",
+        "hash": "9a6800ae95f42fa4a0aac490584924dd",
+        "lines": 979,
+        "mtime": "2026-04-17T09:02:28.841Z",
         "className": "review",
         "methods": [
           "resolveReviewTarget",
@@ -2161,7 +2317,6 @@
         "imports": [
           "fs",
           "path",
-          "../../lib/entrypoint.js",
           "../../lib/cli.js",
           "../../lib/config.js",
           "../../lib/flow-state.js",
@@ -2260,6 +2415,32 @@
           "execution interface",
           "layer separation"
         ]
+      },
+      {
+        "file": "src/flow/lib/flow-context.js",
+        "hash": "fb126ff9d99cb46df0d49ce5da59d0e2",
+        "lines": 22,
+        "mtime": "2026-04-17T09:02:28.841Z",
+        "className": "flow-context",
+        "methods": [
+          "resolveFlowContext"
+        ],
+        "imports": [
+          "../../lib/flow-state.js"
+        ],
+        "exports": [
+          "resolveFlowContext"
+        ],
+        "extends": null,
+        "usedBy": [
+          "src/docs/commands/forge.js",
+          "src/docs/commands/readme.js",
+          "src/flow.js"
+        ],
+        "id": "e296da98",
+        "enrich": {
+          "attempts": 1
+        }
       },
       {
         "file": "src/flow/lib/get-check.js",
@@ -3195,7 +3376,8 @@
           "src/flow/registry.js",
           "src/lib/agent.js",
           "src/lib/process.js",
-          "src/lib/git-helpers.js"
+          "src/lib/git-helpers.js",
+          "src/lib/container.js"
         ],
         "id": "65ac9e4f",
         "enrich": {
@@ -3531,15 +3713,14 @@
       },
       {
         "file": "src/help.js",
-        "hash": "8e876b35a00abe3c8850d5254c6d4f5e",
-        "lines": 78,
-        "mtime": "2026-04-10T14:32:52.371Z",
+        "hash": "484931fac113200e4f857fe3780041b7",
+        "lines": 76,
+        "mtime": "2026-04-17T09:02:28.841Z",
         "className": "help",
         "methods": [
           "main"
         ],
         "imports": [
-          "./lib/entrypoint.js",
           "./lib/cli.js",
           "./lib/i18n.js"
         ],
@@ -3551,21 +3732,8 @@
         "usedBy": null,
         "id": "4ac07fa0",
         "enrich": {
-          "processedAt": "2026-04-13T05:28:46.709Z",
-          "attempts": 4
-        },
-        "summary": "This module renders CLI help output with i18n-backed command descriptions. It exports both runtime `main` and static command layout metadata.",
-        "detail": "It builds translated command lists by mapping layout entries through namespaced translation keys. Runtime wiring uses a direct-run helper so the file can act as both module and executable entry. It reads package version metadata for help header content. The structure separates display layout constants from execution logic for maintainability.",
-        "chapter": "cli_commands",
-        "role": "cli",
-        "keywords": [
-          "help command",
-          "i18n",
-          "command list",
-          "CLI UX",
-          "version display",
-          "entrypoint"
-        ]
+          "attempts": 1
+        }
       },
       {
         "file": "src/lib/agent.js",
@@ -3631,11 +3799,12 @@
         "extends": null,
         "usedBy": [
           "src/lib/config.js",
-          "src/setup.js"
+          "src/setup.js",
+          "src/lib/container.js"
         ],
         "id": "13ddf392",
         "enrich": {
-          "attempts": 1
+          "attempts": 2
         }
       },
       {
@@ -3721,9 +3890,37 @@
           "src/metrics.js",
           "src/sdd-forge.js",
           "src/setup.js",
-          "src/upgrade.js"
+          "src/upgrade.js",
+          "src/lib/container.js"
         ],
         "id": "f351ecc4",
+        "enrich": {
+          "attempts": 2
+        }
+      },
+      {
+        "file": "src/lib/command-runner.js",
+        "hash": "c32dde14cde3c2ae892967d573804d50",
+        "lines": 26,
+        "mtime": "2026-04-17T09:02:28.841Z",
+        "className": "command-runner",
+        "methods": [
+          "runModuleMain"
+        ],
+        "imports": [
+          "./constants.js"
+        ],
+        "exports": [
+          "runModuleMain"
+        ],
+        "extends": null,
+        "usedBy": [
+          "src/check.js",
+          "src/docs.js",
+          "src/metrics.js",
+          "src/sdd-forge.js"
+        ],
+        "id": "102f6569",
         "enrich": {
           "attempts": 1
         }
@@ -3779,11 +3976,12 @@
           "src/presets/js-webapp/tests/acceptance/fixtures/src/index.js",
           "src/presets/node-cli/tests/acceptance/fixtures/src/cli.js",
           "src/setup.js",
-          "src/upgrade.js"
+          "src/upgrade.js",
+          "src/lib/container.js"
         ],
         "id": "dff6e5b4",
         "enrich": {
-          "attempts": 2
+          "attempts": 3
         }
       },
       {
@@ -3818,39 +4016,48 @@
           "src/presets-cmd.js",
           "src/sdd-forge.js",
           "src/setup.js",
-          "src/upgrade.js"
+          "src/upgrade.js",
+          "src/lib/command-runner.js"
         ],
         "id": "74b5e1c3",
         "enrich": {
-          "attempts": 1
+          "attempts": 2
         }
       },
       {
-        "file": "src/lib/entrypoint.js",
-        "hash": "cbe9621ab36692df84efbda22fb19635",
-        "lines": 25,
-        "mtime": "2026-04-17T05:45:21.328Z",
-        "className": "entrypoint",
+        "file": "src/lib/container.js",
+        "hash": "4adc170e6e7bb8767ded8acc90eeaad4",
+        "lines": 114,
+        "mtime": "2026-04-17T09:02:28.841Z",
+        "className": "container",
         "methods": [
-          "isDirectRun",
-          "runIfDirect"
+          "Container",
+          "initContainer",
+          "buildPaths"
         ],
         "imports": [
           "path",
-          "url",
-          "./constants.js"
+          "./cli.js",
+          "./config.js",
+          "./log.js",
+          "./agent.js",
+          "./i18n.js",
+          "./flow-state.js"
         ],
         "exports": [
-          "isDirectRun",
-          "runIfDirect"
+          "Container",
+          "initContainer",
+          "container"
         ],
         "extends": null,
         "usedBy": [
-          "src/help.js",
-          "src/setup.js",
-          "src/upgrade.js"
+          "src/check.js",
+          "src/docs.js",
+          "src/flow.js",
+          "src/metrics.js",
+          "src/sdd-forge.js"
         ],
-        "id": "5c7afa99",
+        "id": "fc4eae43",
         "enrich": {
           "attempts": 1
         }
@@ -3992,7 +4199,8 @@
         ],
         "extends": null,
         "usedBy": [
-          "src/flow.js"
+          "src/flow.js",
+          "src/lib/container.js"
         ],
         "id": "5bb0bb76",
         "summary": "This module provides the core flow-state model and persistence utilities for specs and worktrees. It manages active flow tracking, step progression, metrics, and stale-state cleanup.",
@@ -4191,7 +4399,8 @@
         "usedBy": [
           "src/help.js",
           "src/setup.js",
-          "src/upgrade.js"
+          "src/upgrade.js",
+          "src/lib/container.js"
         ],
         "id": "45a1457c",
         "enrich": {
@@ -4366,7 +4575,8 @@
           "src/lib/agent.js",
           "src/lib/process.js",
           "src/sdd-forge.js",
-          "src/lib/git-helpers.js"
+          "src/lib/git-helpers.js",
+          "src/lib/container.js"
         ],
         "id": "3d7bb5e6",
         "summary": "This module implements structured logging infrastructure, including JSONL event persistence, prompt snapshot files, and request-level tracing metadata. It exposes a singleton Logger that records agent, git, and generic events with contextual flow information.",
@@ -4588,7 +4798,7 @@
         ],
         "id": "8bb94bbb",
         "enrich": {
-          "attempts": 2
+          "attempts": 3
         }
       },
       {
@@ -4660,7 +4870,7 @@
         ],
         "id": "69d5afb4",
         "enrich": {
-          "attempts": 2
+          "attempts": 3
         }
       },
       {
@@ -4700,15 +4910,17 @@
       },
       {
         "file": "src/metrics.js",
-        "hash": "2fb66ef1e17969a59eff230bfa45bd44",
-        "lines": 39,
-        "mtime": "2026-04-17T05:45:21.328Z",
+        "hash": "bf3e1bfc428d5faa447491ebdcdfc2cb",
+        "lines": 42,
+        "mtime": "2026-04-17T09:02:28.841Z",
         "className": "metrics",
         "methods": [],
         "imports": [
           "path",
           "./lib/cli.js",
-          "./lib/constants.js"
+          "./lib/constants.js",
+          "./lib/container.js",
+          "./lib/command-runner.js"
         ],
         "exports": [],
         "extends": null,
@@ -4720,9 +4932,9 @@
       },
       {
         "file": "src/metrics/commands/token.js",
-        "hash": "86c400a10d22ea9c7f82197b55aa672d",
-        "lines": 417,
-        "mtime": "2026-04-17T05:45:21.328Z",
+        "hash": "dc3999f1cf1c9e4b220363d670c6685d",
+        "lines": 414,
+        "mtime": "2026-04-17T09:02:28.841Z",
         "className": "token",
         "methods": [
           "formatUsage",
@@ -4762,7 +4974,9 @@
           "../../lib/cli.js",
           "../../lib/constants.js"
         ],
-        "exports": [],
+        "exports": [
+          "main"
+        ],
         "extends": null,
         "usedBy": null,
         "id": "59edeaf2",
@@ -4772,11 +4986,12 @@
       },
       {
         "file": "src/presets-cmd.js",
-        "hash": "7a8e2f78664668bd930b6ed2a141726f",
-        "lines": 84,
-        "mtime": "2026-04-17T05:45:21.329Z",
+        "hash": "ffac6fa7f148114e3ae9e764cbd54b41",
+        "lines": 91,
+        "mtime": "2026-04-17T09:02:28.842Z",
         "className": "presets-cmd",
         "methods": [
+          "main",
           "printTree"
         ],
         "imports": [
@@ -4785,7 +5000,9 @@
           "./lib/presets.js",
           "./lib/constants.js"
         ],
-        "exports": [],
+        "exports": [
+          "main"
+        ],
         "extends": null,
         "usedBy": null,
         "id": "85926390",
@@ -4868,7 +5085,8 @@
           "src/presets/js-webapp/tests/acceptance/fixtures/src/index.js",
           "src/presets/node-cli/tests/acceptance/fixtures/src/cli.js",
           "src/lib/agent.js",
-          "src/lib/log.js"
+          "src/lib/log.js",
+          "src/lib/container.js"
         ],
         "id": "4cbf369b"
       },
@@ -5027,7 +5245,8 @@
           "src/presets/js-webapp/tests/acceptance/fixtures/src/index.js",
           "src/presets/node-cli/tests/acceptance/fixtures/src/cli.js",
           "src/lib/agent.js",
-          "src/lib/log.js"
+          "src/lib/log.js",
+          "src/lib/container.js"
         ],
         "id": "447924de"
       },
@@ -5428,7 +5647,8 @@
           "src/lib/flow-state.js",
           "src/lib/i18n.js",
           "src/lib/log.js",
-          "src/lib/skills.js"
+          "src/lib/skills.js",
+          "src/lib/container.js"
         ],
         "id": "1c8c8717"
       },
@@ -5566,7 +5786,8 @@
           "src/presets/js-webapp/tests/acceptance/fixtures/src/index.js",
           "src/presets/node-cli/tests/acceptance/fixtures/src/cli.js",
           "src/lib/agent.js",
-          "src/lib/log.js"
+          "src/lib/log.js",
+          "src/lib/container.js"
         ],
         "id": "6a9e614f"
       },
@@ -5998,7 +6219,8 @@
           "src/presets/js-webapp/tests/acceptance/fixtures/src/index.js",
           "src/presets/node-cli/tests/acceptance/fixtures/src/cli.js",
           "src/lib/agent.js",
-          "src/lib/log.js"
+          "src/lib/log.js",
+          "src/lib/container.js"
         ],
         "id": "b881aa88"
       },
@@ -6141,7 +6363,8 @@
           "src/presets/js-webapp/tests/acceptance/fixtures/src/index.js",
           "src/presets/node-cli/tests/acceptance/fixtures/src/cli.js",
           "src/lib/agent.js",
-          "src/lib/log.js"
+          "src/lib/log.js",
+          "src/lib/container.js"
         ],
         "id": "ace46527"
       },
@@ -6285,9 +6508,9 @@
       },
       {
         "file": "src/presets/laravel/tests/e2e/integration.test.js",
-        "hash": "bde167890ef6595a69cff7c3f94114fc",
-        "lines": 120,
-        "mtime": "2026-04-10T06:35:13.111Z",
+        "hash": "901d468b73f9a1737fbf1e9c2809b0f9",
+        "lines": 121,
+        "mtime": "2026-04-17T09:02:28.843Z",
         "className": "integration.test",
         "methods": [],
         "imports": [
@@ -6831,7 +7054,8 @@
           "src/lib/flow-state.js",
           "src/lib/i18n.js",
           "src/lib/log.js",
-          "src/lib/skills.js"
+          "src/lib/skills.js",
+          "src/lib/container.js"
         ],
         "id": "0c4cfb73"
       },
@@ -6969,7 +7193,8 @@
           "src/presets/js-webapp/tests/acceptance/fixtures/src/index.js",
           "src/presets/node-cli/tests/acceptance/fixtures/src/cli.js",
           "src/lib/agent.js",
-          "src/lib/log.js"
+          "src/lib/log.js",
+          "src/lib/container.js"
         ],
         "id": "b96d9baa"
       },
@@ -7262,7 +7487,8 @@
           "src/presets/js-webapp/tests/acceptance/fixtures/src/index.js",
           "src/presets/node-cli/tests/acceptance/fixtures/src/cli.js",
           "src/lib/agent.js",
-          "src/lib/log.js"
+          "src/lib/log.js",
+          "src/lib/container.js"
         ],
         "id": "f27da358"
       },
@@ -7403,9 +7629,9 @@
       },
       {
         "file": "src/presets/symfony/tests/e2e/integration.test.js",
-        "hash": "fb3644ebdcd7f70395b84582952e257d",
-        "lines": 127,
-        "mtime": "2026-04-10T06:35:13.118Z",
+        "hash": "c3800761d5b952711720ea226c928213",
+        "lines": 128,
+        "mtime": "2026-04-17T09:02:28.843Z",
         "className": "integration.test",
         "methods": [],
         "imports": [
@@ -7689,9 +7915,9 @@
       },
       {
         "file": "src/sdd-forge.js",
-        "hash": "7211d4e3106660461272fc50b4cf7054",
-        "lines": 88,
-        "mtime": "2026-04-17T05:45:21.329Z",
+        "hash": "d73359688c453035cefee5e5511524e4",
+        "lines": 77,
+        "mtime": "2026-04-17T09:02:28.843Z",
         "className": "sdd-forge",
         "methods": [],
         "imports": [
@@ -7699,7 +7925,8 @@
           "path",
           "./lib/cli.js",
           "./lib/constants.js",
-          "./lib/log.js",
+          "./lib/container.js",
+          "./lib/command-runner.js",
           "sdd-forge/api"
         ],
         "exports": [],
@@ -7712,9 +7939,9 @@
       },
       {
         "file": "src/setup.js",
-        "hash": "611cc4745422464b94579643fa45172e",
-        "lines": 561,
-        "mtime": "2026-04-17T05:45:21.329Z",
+        "hash": "5efa8ebc4b4ecf79389ff9e17df6be0a",
+        "lines": 559,
+        "mtime": "2026-04-17T09:02:28.843Z",
         "className": "setup",
         "methods": [
           "ask",
@@ -7738,7 +7965,6 @@
           "fs",
           "path",
           "readline",
-          "./lib/entrypoint.js",
           "./lib/cli.js",
           "./lib/constants.js",
           "./lib/config.js",
@@ -7756,30 +7982,15 @@
         "extends": null,
         "usedBy": null,
         "id": "9820c9db",
-        "summary": "This file implements the `setup` CLI workflow that initializes and configures an sdd-forge project. It combines argument parsing, interactive prompts, filesystem preparation, and agent/skill bootstrap into one command entrypoint.",
-        "detail": "The module parses setup flags, reads existing defaults from `.sdd-forge/config.json`, and falls back to interactive wizard input when values are missing. It creates required project directories such as `.sdd-forge`, `docs`, and `specs`, and enforces repository hygiene by updating `.gitignore` and `.gitattributes`. It generates or updates agent instruction files (for example `AGENTS.md`/`CLAUDE.md`) using a directive-based replacement strategy so managed sections can be refreshed safely. It also handles setup-time migration edge cases such as converting a `CLAUDE.md` symlink into a regular file, then deploys skills and writes normalized configuration JSON. Error handling follows CLI conventions with translated messages and explicit non-zero exits.",
-        "chapter": "cli_commands",
-        "role": "cli",
         "enrich": {
-          "processedAt": "2026-04-17T05:45:38.377Z",
           "attempts": 1
-        },
-        "keywords": [
-          "project setup",
-          "interactive wizard",
-          "configuration bootstrap",
-          "filesystem initialization",
-          "agent file generation",
-          "skills deployment",
-          "CLI entrypoint",
-          "argument parsing"
-        ]
+        }
       },
       {
         "file": "src/upgrade.js",
-        "hash": "15a57cc017d64b33657f0ebe1c38b917",
-        "lines": 133,
-        "mtime": "2026-04-17T05:45:21.329Z",
+        "hash": "6541ea774d44c95248d2ac7dfb657657",
+        "lines": 131,
+        "mtime": "2026-04-17T09:02:28.843Z",
         "className": "upgrade",
         "methods": [
           "parseUpgradeArgs",
@@ -7788,7 +7999,6 @@
         "imports": [
           "fs",
           "path",
-          "./lib/entrypoint.js",
           "./lib/cli.js",
           "./lib/constants.js",
           "./lib/config.js",
@@ -7801,30 +8011,16 @@
         "extends": null,
         "usedBy": null,
         "id": "a631f658",
-        "summary": "This file implements the `upgrade` CLI command that refreshes project-managed skills and related configuration assets. It serves as the maintenance path for propagating packaged template changes into an existing workspace.",
-        "detail": "The module parses upgrade-specific arguments and loads current project configuration before applying updates. It orchestrates multiple skill deployment operations, including core skills, project-local skills, and cleanup of obsolete generated files. It logs deployment results in a structured way so users can see what changed. The command also reads and rewrites configuration JSON with normalized formatting after upgrade-related adjustments. Like other CLI modules, it exits with standardized error codes on failure and is wired through `runIfDirect` for executable use.",
-        "chapter": "cli_commands",
-        "role": "cli",
         "enrich": {
-          "processedAt": "2026-04-17T05:45:38.377Z",
           "attempts": 1
-        },
-        "keywords": [
-          "upgrade command",
-          "skills synchronization",
-          "template refresh",
-          "configuration rewrite",
-          "obsolete cleanup",
-          "project maintenance",
-          "CLI orchestration"
-        ]
+        }
       }
     ],
     "summary": {
-      "total": 236,
-      "totalMethods": 805
+      "total": 239,
+      "totalMethods": 808
     },
     "dataSourceHash": "7d725e75d5031be445119323e4947c91"
   },
-  "enrichedAt": "2026-04-17T05:46:44.816Z"
+  "enrichedAt": "2026-04-17T09:04:18.334Z"
 }

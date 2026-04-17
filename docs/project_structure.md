@@ -21,7 +21,7 @@ This chapter describes the overall directory organization of the sdd-forge proje
 <!-- {{data("base.structure.tree")}} -->
 ```
 src/    (lib, cli, middleware)
-src/check/commands/    
+src/check/commands/    (cli)
 src/docs/commands/    (cli)
 src/docs/data/    (model)
 src/docs/lib/    (lib, model)
@@ -39,11 +39,11 @@ src/metrics/commands/
 
 | Directory | Files | Role |
 | --- | --- | --- |
-| src/docs | 40 | cli, model, lib |
-| src/flow | 35 | cli, lib, model, controller |
-| src/lib | 23 | lib, model, view |
+| src/docs | 41 | cli, model, lib |
+| src/flow | 36 | cli, lib, model, controller |
+| src/lib | 24 | lib, model, view |
 | src | 11 | lib, cli, middleware |
-| src/check | 3 | — |
+| src/check | 3 | cli |
 | src/metrics | 1 | — |
 <!-- {{/data}} -->
 
