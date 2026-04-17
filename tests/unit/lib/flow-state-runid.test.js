@@ -1,13 +1,10 @@
 import { describe, it, afterEach } from "node:test";
+import { makeFlowManager } from "../../helpers/flow-setup.js";
 import assert from "node:assert/strict";
 import fs from "fs";
 import { join } from "path";
 import { createTmpDir, removeTmpDir, writeJson } from "../../helpers/tmp-dir.js";
-import {
-  saveFlowState, loadFlowState, buildInitialSteps,
-  addActiveFlow, loadActiveFlows,
-} from "../../../src/lib/flow-state.js";
-
+import { buildInitialSteps } from "../../../src/lib/flow-helpers.js";
 // ── shared helpers ─────────────────────────────────────────────────────────
 
 function makeState(overrides = {}) {
@@ -34,10 +31,10 @@ describe("flow-state runId management", () => {
     tmp = createTmpDir();
     const state = makeState();
     // Save without runId
-    saveFlowState(tmp, state);
-    addActiveFlow(tmp, "001-test", "local");
+    makeFlowManager(tmp).save(state);
+    makeFlowManager(tmp).addActiveFlow("001-test", "local");
 
-    const loaded = loadFlowState(tmp, "001-test");
+    const loaded = makeFlowManager(tmp).load("001-test");
     assert.ok(loaded.runId, "runId should be auto-assigned");
     assert.equal(typeof loaded.runId, "string");
     assert.ok(loaded.runId.length > 0);
@@ -50,10 +47,10 @@ describe("flow-state runId management", () => {
   it("loadFlowState preserves existing runId", () => {
     tmp = createTmpDir();
     const state = makeState({ runId: "existing-run-id-123" });
-    saveFlowState(tmp, state);
-    addActiveFlow(tmp, "001-test", "local");
+    makeFlowManager(tmp).save(state);
+    makeFlowManager(tmp).addActiveFlow("001-test", "local");
 
-    const loaded = loadFlowState(tmp, "001-test");
+    const loaded = makeFlowManager(tmp).load("001-test");
     assert.equal(loaded.runId, "existing-run-id-123");
   });
 
@@ -61,11 +58,11 @@ describe("flow-state runId management", () => {
     tmp = createTmpDir();
     const state1 = makeState({ spec: "specs/001-test/spec.md" });
     const state2 = makeState({ spec: "specs/002-other/spec.md", featureBranch: "feature/002-other" });
-    saveFlowState(tmp, state1);
-    saveFlowState(tmp, state2);
+    makeFlowManager(tmp).save(state1);
+    makeFlowManager(tmp).save(state2);
 
-    const loaded1 = loadFlowState(tmp, "001-test");
-    const loaded2 = loadFlowState(tmp, "002-other");
+    const loaded1 = makeFlowManager(tmp).load("001-test");
+    const loaded2 = makeFlowManager(tmp).load("002-other");
     assert.ok(loaded1.runId);
     assert.ok(loaded2.runId);
     assert.notEqual(loaded1.runId, loaded2.runId);
@@ -76,9 +73,9 @@ describe("flow-state runId management", () => {
   it("flow.json supports lifecycle field", () => {
     tmp = createTmpDir();
     const state = makeState({ lifecycle: "active", runId: "test-run" });
-    saveFlowState(tmp, state);
+    makeFlowManager(tmp).save(state);
 
-    const loaded = loadFlowState(tmp, "001-test");
+    const loaded = makeFlowManager(tmp).load("001-test");
     assert.equal(loaded.lifecycle, "active");
     assert.equal(loaded.runId, "test-run");
   });
@@ -88,9 +85,9 @@ describe("flow-state runId management", () => {
   it("loadFlowState returns runId in state object", () => {
     tmp = createTmpDir();
     const state = makeState({ runId: "my-run-id" });
-    saveFlowState(tmp, state);
+    makeFlowManager(tmp).save(state);
 
-    const loaded = loadFlowState(tmp, "001-test");
+    const loaded = makeFlowManager(tmp).load("001-test");
     assert.equal(loaded.runId, "my-run-id");
   });
 });
@@ -206,16 +203,16 @@ describe("preparing state files (.active-flow.<runId>)", () => {
 
     // Simulate promotion: save flow.json + add to .active-flow + delete preparing file
     const state = makeState({ runId, lifecycle: "active" });
-    saveFlowState(tmp, state);
-    addActiveFlow(tmp, "001-test", "local");
+    makeFlowManager(tmp).save(state);
+    makeFlowManager(tmp).addActiveFlow("001-test", "local");
     fs.unlinkSync(preparingFile);
 
     // Verify: flow.json exists, .active-flow has entry, preparing file gone
-    const loaded = loadFlowState(tmp, "001-test");
+    const loaded = makeFlowManager(tmp).load("001-test");
     assert.equal(loaded.runId, runId);
     assert.equal(loaded.lifecycle, "active");
     assert.ok(!fs.existsSync(preparingFile));
-    const flows = loadActiveFlows(tmp);
+    const flows = makeFlowManager(tmp).loadActiveFlows();
     assert.equal(flows.length, 1);
   });
 

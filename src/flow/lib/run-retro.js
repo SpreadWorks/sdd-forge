@@ -10,7 +10,7 @@ import path from "path";
 import { runGit } from "../../lib/git-helpers.js";
 import { container } from "../../lib/container.js";
 import { repairJson } from "../../lib/json-parse.js";
-import { getSpecName } from "../../lib/flow-state.js";
+import { getSpecName } from "../../lib/flow-helpers.js";
 import { FlowCommand } from "./base-command.js";
 
 /**

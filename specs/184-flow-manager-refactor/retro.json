@@ -1,0 +1,63 @@
+{
+  "spec": "specs/184-flow-manager-refactor/spec.md",
+  "date": "2026-04-17T12:39:54.396Z",
+  "requirements": [
+    {
+      "desc": "R1: Container 経由で状態管理 (バイパスなし)",
+      "status": "partial",
+      "note": "旧 flow-state.js 直接 import は削除されたが、`new FlowManager(...)` の直接生成（例: logger のフォールバック、一部テスト）が残り、全経路が `container.get(\"flowManager\")` に統一されたとは言い切れない。"
+    },
+    {
+      "desc": "R2: workRoot 引数の全廃",
+      "status": "partial",
+      "note": "旧APIの `workRoot` 引数は呼び出し側からほぼ除去されたが、`flowManager.forRoot(specRoot)` のように呼び出し側がルートパスを渡して新インスタンスを作る経路が残っている。"
+    },
+    {
+      "desc": "R3: 旧 flow-state.js の全機能を新サービスでカバー",
+      "status": "done",
+      "note": "flow.json I/O、active/preparing 管理、mutation 系、runId/resolve 系、path 解決系まで FlowManager + 内部クラスへ移管され、旧モジュールは削除されている。"
+    },
+    {
+      "desc": "R4: 既存テスト全て pass (新 API 書換)",
+      "status": "partial",
+      "note": "テストは広範囲に新APIへ書換済みだが、diff上の実測結果は主に spec/issue-log 内の記述ベースで、実行結果そのものは添付されていない。"
+    },
+    {
+      "desc": "R5: 内部 3 クラス分割 + ファサード",
+      "status": "done",
+      "note": "`FlowStore`・`ActiveFlowRegistry`・`PreparingFlowStore` を新設し、`FlowManager` が外部ファサードとして統合している。"
+    },
+    {
+      "desc": "R6: pure helper はモジュール export 据置",
+      "status": "done",
+      "note": "純粋関数/定数は `flow-helpers.js` へ分離され、サービス非依存で import 可能な形になっている。"
+    },
+    {
+      "desc": "R7: git spawn の重複排除",
+      "status": "partial",
+      "note": "Container 初期化時の `inWorktree/mainRoot` 一回解決と再利用は導入されたが、logger の cwd 不一致フォールバックでは再度解決処理が走る経路が残る。"
+    }
+  ],
+  "unplanned": [
+    {
+      "file": "src/flow/registry.js",
+      "change": "step 更新失敗時の無視方針を変更し、stderr へ常時ログ出力する挙動に変更（エラー時の観測可能性が増加）。"
+    },
+    {
+      "file": "src/lib/flow-store.js",
+      "change": "metric 更新失敗時の silent catch をやめて stderr 出力するよう変更（ログ出力挙動の変更）。"
+    },
+    {
+      "file": "specs/184-flow-manager-refactor/*",
+      "change": "仕様ドラフト・QA・issue-log・tests README など運用ドキュメント一式を新規追加（実装要件そのもの以外の成果物）。"
+    }
+  ],
+  "summary": {
+    "total": 7,
+    "done": 3,
+    "partial": 4,
+    "not_done": 0,
+    "rate": 0.71,
+    "notes": "中核リファクタ（旧 flow-state.js の分解、FlowManager 導入、helper 分離、呼び出し側移行）は概ね達成。未充足/曖昧点は「Container 経由の厳密統一」「パス引数廃止の厳密性」「git 解決重複ゼロの厳密保証」「テスト全passの実行証跡の明示」。"
+  }
+}

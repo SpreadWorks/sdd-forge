@@ -3,9 +3,7 @@ import assert from "node:assert/strict";
 import { join } from "path";
 import { execFileSync } from "child_process";
 import { createTmpDir, removeTmpDir } from "../../../helpers/tmp-dir.js";
-import { makeFlowState, setupFlow } from "../../../helpers/flow-setup.js";
-import { saveFlowState, loadFlowState, addActiveFlow } from "../../../../src/lib/flow-state.js";
-
+import { makeFlowState, setupFlow, makeFlowManager } from "../../../helpers/flow-setup.js";
 const FLOW_CMD = join(process.cwd(), "src/sdd-forge.js");
 const FLOW_CMD_ARGS_PREFIX = ["flow"];
 
@@ -24,7 +22,7 @@ describe("flow set request", () => {
       encoding: "utf8",
       env: { ...process.env, SDD_FORGE_WORK_ROOT: tmp },
     });
-    const updated = loadFlowState(tmp);
+    const updated = makeFlowManager(tmp).load();
     assert.equal(updated.request, "make a resume command");
   });
 });
@@ -40,7 +38,7 @@ describe("flow set note", () => {
       encoding: "utf8",
       env: { ...process.env, SDD_FORGE_WORK_ROOT: tmp },
     });
-    const updated = loadFlowState(tmp);
+    const updated = makeFlowManager(tmp).load();
     assert.deepEqual(updated.notes, ["draft: first note"]);
   });
 
@@ -55,7 +53,7 @@ describe("flow set note", () => {
       encoding: "utf8",
       env: { ...process.env, SDD_FORGE_WORK_ROOT: tmp },
     });
-    const updated = loadFlowState(tmp);
+    const updated = makeFlowManager(tmp).load();
     assert.deepEqual(updated.notes, ["first note", "second note"]);
   });
 
@@ -63,13 +61,13 @@ describe("flow set note", () => {
     tmp = createTmpDir();
     const state = makeFlowState();
     delete state.notes;
-    saveFlowState(tmp, state);
-    addActiveFlow(tmp, "001-test", "local");
+    makeFlowManager(tmp).save(state);
+    makeFlowManager(tmp).addActiveFlow("001-test", "local");
     execFileSync("node", [FLOW_CMD, ...FLOW_CMD_ARGS_PREFIX, "set", "note", "new note"], {
       encoding: "utf8",
       env: { ...process.env, SDD_FORGE_WORK_ROOT: tmp },
     });
-    const updated = loadFlowState(tmp);
+    const updated = makeFlowManager(tmp).load();
     assert.ok(Array.isArray(updated.notes));
     assert.deepEqual(updated.notes, ["new note"]);
   });

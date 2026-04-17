@@ -7,7 +7,6 @@
  */
 
 import { FlowCommand } from "./base-command.js";
-import { addNote } from "../../lib/flow-state.js";
 
 export default class SetNoteCommand extends FlowCommand {
   execute(ctx) {
@@ -17,7 +16,7 @@ export default class SetNoteCommand extends FlowCommand {
       throw new Error('usage: flow set note "<text>"');
     }
 
-    addNote(ctx.root, text);
+    ctx.flowManager.addNote(text);
 
     return { note: text };
   }

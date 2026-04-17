@@ -1,11 +1,11 @@
 import { describe, it, beforeEach, afterEach } from "node:test";
+import { makeFlowManager } from "../../helpers/flow-setup.js";
 import assert from "node:assert/strict";
 import fs from "fs";
 import path from "path";
 import os from "os";
 import { execFileSync } from "node:child_process";
-import { saveFlowState, loadFlowState, buildInitialSteps, addActiveFlow } from "../../../src/lib/flow-state.js";
-
+import { buildInitialSteps } from "../../../src/lib/flow-helpers.js";
 function createTmpProject() {
   const tmp = fs.mkdtempSync(path.join(os.tmpdir(), "set-auto-"));
   fs.mkdirSync(path.join(tmp, ".sdd-forge"), { recursive: true });
@@ -21,8 +21,8 @@ function createFlowState(tmp) {
     featureBranch: "feature/001-test",
     steps: buildInitialSteps(),
   };
-  saveFlowState(tmp, state);
-  addActiveFlow(tmp, "001-test", "branch");
+  makeFlowManager(tmp).save(state);
+  makeFlowManager(tmp).addActiveFlow("001-test", "branch");
 }
 
 function runSetAuto(tmp, value) {
@@ -54,7 +54,7 @@ describe("flow set auto", () => {
     assert.equal(result.ok, true);
     assert.equal(result.data.autoApprove, true);
 
-    const state = loadFlowState(tmp);
+    const state = makeFlowManager(tmp).load();
     assert.equal(state.autoApprove, true);
   });
 
@@ -64,7 +64,7 @@ describe("flow set auto", () => {
     assert.equal(result.ok, true);
     assert.equal(result.data.autoApprove, false);
 
-    const state = loadFlowState(tmp);
+    const state = makeFlowManager(tmp).load();
     assert.equal(state.autoApprove, false);
   });
 

@@ -11,11 +11,7 @@ import { isInsideWorktree } from "../../lib/cli.js";
 import { sddDir, DEFAULT_LANG } from "../../lib/config.js";
 import { assertOk } from "../../lib/process.js";
 import { translate } from "../../lib/i18n.js";
-import {
-  saveFlowState, buildInitialSteps, addActiveFlow, cleanStaleFlows,
-  generateRunId, deletePreparingFlow, cleanStalePreparingFlows,
-  resolvePreparingInputs,
-} from "../../lib/flow-state.js";
+import { buildInitialSteps } from "../../lib/flow-helpers.js";
 import { getWorktreeStatus, runGit } from "../../lib/git-helpers.js";
 import { FlowCommand } from "./base-command.js";
 
@@ -162,7 +158,7 @@ export class RunPrepareSpecCommand extends FlowCommand {
   }
 
   async execute(ctx) {
-    const { root } = ctx;
+    const { root, flowManager } = ctx;
 
     // Dirty worktree check — abort early if uncommitted changes exist
     const { dirty, dirtyFiles } = getWorktreeStatus(root);
@@ -177,7 +173,7 @@ export class RunPrepareSpecCommand extends FlowCommand {
     const useWorktreeFlag = ctx.worktree || false;
     const dryRun = ctx.dryRun || false;
 
-    const { issue, request } = resolvePreparingInputs(root, runIdArg, ctx.issue, ctx.request);
+    const { issue, request } = flowManager.resolvePreparingInputs(runIdArg, ctx.issue, ctx.request);
 
     if (!title) {
       throw new Error("--title is required");
@@ -240,7 +236,7 @@ export class RunPrepareSpecCommand extends FlowCommand {
     }
 
     // Helper: write flow.json state
-    const flowRunId = runIdArg || generateRunId();
+    const flowRunId = runIdArg || flowManager.generateRunId();
     function writeFlowState(extra) {
       const steps = buildInitialSteps();
       for (const id of ["branch", "spec"]) {
@@ -259,16 +255,16 @@ export class RunPrepareSpecCommand extends FlowCommand {
         ...(request ? { request } : {}),
         ...extra,
       };
-      saveFlowState(specRoot, state);
+      flowManager.forRoot(specRoot).save(state);
     }
 
     // Clean stale .active-flow entries and preparing files before creating a new flow
-    cleanStaleFlows(root);
-    cleanStalePreparingFlows(root);
+    flowManager.cleanStaleFlows();
+    flowManager.cleanStalePreparingFlows();
 
     // Delete the preparing file if --run-id was provided
     if (runIdArg) {
-      deletePreparingFlow(root, runIdArg);
+      flowManager.deletePreparingFlow(runIdArg);
     }
 
     const changed = [`specs/${specDirName}/spec.md`, `specs/${specDirName}/qa.md`];
@@ -278,7 +274,7 @@ export class RunPrepareSpecCommand extends FlowCommand {
       runGitTrim(root, ["worktree", "add", worktreePath, "-b", branchName, resolvedBase]);
       writeSpecFiles();
       writeFlowState({ worktree: true });
-      addActiveFlow(root, specDirName, "worktree");
+      flowManager.addActiveFlow(specDirName, "worktree");
       lines.push(
         `created worktree: ${worktreePath}`,
         `created branch: ${branchName} (from ${resolvedBase})`,
@@ -294,7 +290,7 @@ export class RunPrepareSpecCommand extends FlowCommand {
     } else if (skipBranch) {
       writeSpecFiles();
       writeFlowState();
-      addActiveFlow(root, specDirName, "local");
+      flowManager.addActiveFlow(specDirName, "local");
       lines.push(
         `created spec: specs/${specDirName}/spec.md`,
         `created qa: specs/${specDirName}/qa.md`,
@@ -308,7 +304,7 @@ export class RunPrepareSpecCommand extends FlowCommand {
       runGitTrim(root, ["checkout", "-b", branchName, resolvedBase]);
       writeSpecFiles();
       writeFlowState();
-      addActiveFlow(root, specDirName, "branch");
+      flowManager.addActiveFlow(specDirName, "branch");
       lines.push(
         `created branch: ${branchName} (from ${resolvedBase})`,
         `created spec: specs/${specDirName}/spec.md`,

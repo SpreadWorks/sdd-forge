@@ -8,7 +8,7 @@
 import fs from "fs";
 import path from "path";
 import { getWorktreeStatus, getCurrentBranch, getAheadCount, getLastCommit, isGhAvailable } from "../../lib/git-helpers.js";
-import { resolveActiveFlow, derivePhase } from "../../lib/flow-state.js";
+import { derivePhase } from "../../lib/flow-helpers.js";
 import { FlowCommand } from "./base-command.js";
 
 function extractSection(text, heading) {
@@ -28,9 +28,9 @@ function extractSection(text, heading) {
 
 export default class GetResolveContextCommand extends FlowCommand {
   execute(ctx) {
-    const { root } = ctx;
+    const { root, flowManager } = ctx;
 
-    const resolved = resolveActiveFlow(root, ctx.flowState);
+    const resolved = flowManager.resolveActiveFlow(ctx.flowState);
     if (!resolved) {
       throw new Error("no active flow found");
     }

@@ -5,14 +5,12 @@
  */
 
 import { describe, it, afterEach } from "node:test";
+import { makeFlowManager } from "../../helpers/flow-setup.js";
 import assert from "node:assert/strict";
 import { execFileSync } from "child_process";
 import { join } from "path";
 import { createTmpDir, removeTmpDir } from "../../helpers/tmp-dir.js";
-import {
-  saveFlowState, buildInitialSteps, addActiveFlow, FLOW_STEPS,
-} from "../../../src/lib/flow-state.js";
-
+import { buildInitialSteps, FLOW_STEPS } from "../../../src/lib/flow-helpers.js";
 const FLOW_CMD = join(process.cwd(), "src/sdd-forge.js");
 const FLOW_CMD_ARGS_PREFIX = ["flow"];
 
@@ -29,8 +27,8 @@ describe("flow get status", () => {
       steps: buildInitialSteps(),
       requirements: [],
     };
-    saveFlowState(dir, state);
-    addActiveFlow(dir, specId, "local");
+    makeFlowManager(dir).save(state);
+    makeFlowManager(dir).addActiveFlow(specId, "local");
     return state;
   }
 

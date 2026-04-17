@@ -1,6 +1,27 @@
 import fs from "fs";
 import path from "path";
-import { saveFlowState, addActiveFlow, FLOW_STEPS } from "../../src/lib/flow-state.js";
+import { Container } from "../../src/lib/container.js";
+import { FlowManager } from "../../src/lib/flow-manager.js";
+import { FLOW_STEPS } from "../../src/lib/flow-helpers.js";
+
+/**
+ * Build a fresh Container instance with `flowManager` registered for a test
+ * tmp root. Mirrors the production Container.register("flowManager", ...) wiring
+ * so tests exercise the same `container.get("flowManager")` access path.
+ *
+ * Tests run outside any real worktree, so `inWorktree` is always false
+ * and `mainRoot === root`.
+ */
+export function makeContainer(root) {
+  const c = new Container();
+  c.register("flowManager", new FlowManager({ root, mainRoot: root, inWorktree: false }));
+  return c;
+}
+
+/** Convenience accessor used by tests: returns the per-test container's flowManager. */
+export function makeFlowManager(root) {
+  return makeContainer(root).get("flowManager");
+}
 
 export function makeFlowState(overrides = {}) {
   const steps = FLOW_STEPS.map((id) => ({ id, status: "pending" }));
@@ -16,10 +37,11 @@ export function makeFlowState(overrides = {}) {
 
 export function setupFlow(tmp, overrides = {}) {
   const state = makeFlowState(overrides);
-  saveFlowState(tmp, state);
+  const fm = makeFlowManager(tmp);
+  fm.save(state);
   const specId = state.spec.split("/")[1];
   const mode = state.worktree ? "worktree" : state.featureBranch === state.baseBranch ? "local" : "branch";
-  addActiveFlow(tmp, specId, mode);
+  fm.addActiveFlow(specId, mode);
   return state;
 }
 
@@ -32,7 +54,6 @@ export function setStepDone(state, ...ids) {
 
 /**
  * Write a .sdd-forge/config.json with the given language into tmp.
- * Used by prompt tests that require language-aware output.
  */
 export function setupFlowConfig(tmp, lang) {
   const sddDir = path.join(tmp, ".sdd-forge");

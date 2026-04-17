@@ -1,11 +1,11 @@
 import { describe, it, beforeEach, afterEach } from "node:test";
+import { makeFlowManager } from "../../helpers/flow-setup.js";
 import assert from "node:assert/strict";
 import fs from "fs";
 import path from "path";
 import os from "os";
 import { execFileSync } from "node:child_process";
-import { saveFlowState, loadFlowState, mutateFlowState, buildInitialSteps, addActiveFlow } from "../../../src/lib/flow-state.js";
-
+import { buildInitialSteps } from "../../../src/lib/flow-helpers.js";
 function createTmpProject() {
   const tmp = fs.mkdtempSync(path.join(os.tmpdir(), "flow-auto-"));
   fs.mkdirSync(path.join(tmp, ".sdd-forge"), { recursive: true });
@@ -21,8 +21,8 @@ function createFlowState(tmp) {
     featureBranch: "feature/001-test",
     steps: buildInitialSteps(),
   };
-  saveFlowState(tmp, state);
-  addActiveFlow(tmp, "001-test", "branch");
+  makeFlowManager(tmp).save(state);
+  makeFlowManager(tmp).addActiveFlow("001-test", "branch");
   return state;
 }
 
@@ -39,39 +39,39 @@ describe("flow-state autoApprove", () => {
   });
 
   it("sets autoApprove to true via mutateFlowState", () => {
-    mutateFlowState(tmp, (state) => {
+    makeFlowManager(tmp).mutate((state) => {
       state.autoApprove = true;
     });
-    const loaded = loadFlowState(tmp);
+    const loaded = makeFlowManager(tmp).load();
     assert.equal(loaded.autoApprove, true);
   });
 
   it("sets autoApprove to false via mutateFlowState", () => {
     // First set to true
-    mutateFlowState(tmp, (state) => {
+    makeFlowManager(tmp).mutate((state) => {
       state.autoApprove = true;
     });
     // Then set to false
-    mutateFlowState(tmp, (state) => {
+    makeFlowManager(tmp).mutate((state) => {
       state.autoApprove = false;
     });
-    const loaded = loadFlowState(tmp);
+    const loaded = makeFlowManager(tmp).load();
     assert.equal(loaded.autoApprove, false);
   });
 
   it("autoApprove defaults to undefined when not set", () => {
-    const loaded = loadFlowState(tmp);
+    const loaded = makeFlowManager(tmp).load();
     assert.equal(loaded.autoApprove, undefined);
   });
 
   it("preserves autoApprove across other mutations", () => {
-    mutateFlowState(tmp, (state) => {
+    makeFlowManager(tmp).mutate((state) => {
       state.autoApprove = true;
     });
-    mutateFlowState(tmp, (state) => {
+    makeFlowManager(tmp).mutate((state) => {
       state.request = "test request";
     });
-    const loaded = loadFlowState(tmp);
+    const loaded = makeFlowManager(tmp).load();
     assert.equal(loaded.autoApprove, true);
     assert.equal(loaded.request, "test request");
   });

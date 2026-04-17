@@ -16,7 +16,7 @@ import { assertOk } from "../../lib/process.js";
 import { runGit } from "../../lib/git-helpers.js";
 import { container } from "../../lib/container.js";
 import { filterByPhase, loadMergedGuardrails } from "../../lib/guardrail.js";
-import { getSpecName } from "../../lib/flow-state.js";
+import { getSpecName } from "../../lib/flow-helpers.js";
 import { loadTestEvidence } from "./get-test-result.js";
 import { VALID_GATE_PHASES } from "../../lib/constants.js";
 import { FlowCommand } from "./base-command.js";

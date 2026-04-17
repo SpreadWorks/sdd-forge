@@ -125,23 +125,47 @@ async function writePromptFile(promptDir, requestId, payload) {
  * Lazy import to avoid pulling flow-state on the hot path before it is needed.
  */
 async function resolveFlowContext(cwd) {
-  let mod;
   try {
-    mod = await import("./flow-state.js");
-  } catch (err) {
-    process.stderr.write(`[sdd-forge] Logger: failed to load flow-state: ${err.message}\n`);
-    return { spec: null, sddPhase: null };
-  }
-  try {
-    const state = mod.loadFlowState(cwd);
+    const fm = await resolveFlowManagerForCwd(cwd);
+    if (!fm) return { spec: null, sddPhase: null };
+    const helpers = await import("./flow-helpers.js");
+    const state = fm.load();
     if (!state) return { spec: null, sddPhase: null }; // expected: outside any spec
-    const spec = mod.specIdFromPath(state.spec) ?? null;
+    const spec = helpers.specIdFromPath(state.spec) ?? null;
     const inProgress = state.steps?.find?.((s) => s.status === "in_progress");
     const sddPhase = inProgress?.id ?? null;
     return { spec, sddPhase };
   } catch (err) {
-    process.stderr.write(`[sdd-forge] Logger: flow-state read failed: ${err.message}\n`);
+    process.stderr.write(`[sdd-forge] Logger: flow state read failed: ${err.message}\n`);
     return { spec: null, sddPhase: null };
+  }
+}
+
+/**
+ * Return the Container's FlowManager when it serves the same root as `cwd`;
+ * otherwise construct a fresh one. This keeps mutation paths during a single
+ * CLI invocation flowing through the cached Container instance and avoids
+ * redundant `isInsideWorktree`/`getMainRepoPath` git spawns.
+ */
+async function resolveFlowManagerForCwd(cwd) {
+  try {
+    const { container } = await import("./container.js");
+    if (container.has("flowManager") && container.has("paths")) {
+      const paths = container.get("paths");
+      if (paths.root === cwd) return container.get("flowManager");
+    }
+  } catch (err) {
+    process.stderr.write(`[sdd-forge] container lookup skipped: ${err.message}\n`);
+  }
+  try {
+    const { FlowManager } = await import("./flow-manager.js");
+    const cli = await import("./cli.js");
+    const inWorktree = cli.isInsideWorktree(cwd);
+    const mainRoot = inWorktree ? cli.getMainRepoPath(cwd) : cwd;
+    return new FlowManager({ root: cwd, mainRoot, inWorktree });
+  } catch (err) {
+    process.stderr.write(`[sdd-forge] Logger: failed to construct FlowManager: ${err.message}\n`);
+    return null;
   }
 }
 
@@ -367,14 +391,17 @@ export class Logger {
     // Accumulate token/cost metrics into flow.json (R1-1).
     // Only when an active SDD phase is known; silently skips otherwise (R1-2).
     if (ctx.sddPhase) {
-      const { accumulateAgentMetrics } = await import("./flow-state.js");
-      accumulateAgentMetrics(
-        this.#cwd,
-        ctx.sddPhase,
-        entry.usage ?? null,
-        responseStats.chars,
-        entry.model ?? null,
-      );
+      try {
+        const fm = await resolveFlowManagerForCwd(this.#cwd);
+        fm?.accumulateAgentMetrics(
+          ctx.sddPhase,
+          entry.usage ?? null,
+          responseStats.chars,
+          entry.model ?? null,
+        );
+      } catch (err) {
+        process.stderr.write(`[sdd-forge] Logger: failed to accumulate metrics: ${err.message}\n`);
+      }
     }
   }
 

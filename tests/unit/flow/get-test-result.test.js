@@ -10,9 +10,7 @@ import { execFileSync } from "child_process";
 import { join } from "path";
 import { mkdirSync, writeFileSync } from "fs";
 import { createTmpDir, removeTmpDir } from "../../helpers/tmp-dir.js";
-import { setupFlow } from "../../helpers/flow-setup.js";
-import { setTestSummary } from "../../../src/lib/flow-state.js";
-
+import { setupFlow, makeFlowManager } from "../../helpers/flow-setup.js";
 const FLOW_CMD = join(process.cwd(), "src/flow.js");
 
 describe("flow get test-result", () => {
@@ -35,7 +33,7 @@ describe("flow get test-result", () => {
   it("returns test summary from flow.json when set", () => {
     tmp = createTmpDir();
     setupFlow(tmp);
-    setTestSummary(tmp, { unit: 3, integration: 1 });
+    makeFlowManager(tmp).setTestSummary({ unit: 3, integration: 1 });
     const result = execFileSync(
       "node", [FLOW_CMD, "get", "test-result"],
       { encoding: "utf8", env: { ...process.env, SDD_FORGE_WORK_ROOT: tmp } },

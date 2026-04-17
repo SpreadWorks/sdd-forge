@@ -3,9 +3,7 @@ import assert from "node:assert/strict";
 import { join } from "path";
 import { execFileSync } from "child_process";
 import { createTmpDir, removeTmpDir } from "../../../helpers/tmp-dir.js";
-import { makeFlowState, setStepDone } from "../../../helpers/flow-setup.js";
-import { saveFlowState, addActiveFlow } from "../../../../src/lib/flow-state.js";
-
+import { makeFlowState, setStepDone, makeFlowManager } from "../../../helpers/flow-setup.js";
 const FLOW_CMD = join(process.cwd(), "src/sdd-forge.js");
 const FLOW_CMD_ARGS_PREFIX = ["flow"];
 
@@ -17,8 +15,8 @@ describe("flow get check impl", () => {
     tmp = createTmpDir();
     const state = makeFlowState();
     setStepDone(state, "gate", "test");
-    saveFlowState(tmp, state);
-    addActiveFlow(tmp, "001-test", "local");
+    makeFlowManager(tmp).save(state);
+    makeFlowManager(tmp).addActiveFlow("001-test", "local");
     const result = execFileSync("node", [FLOW_CMD, ...FLOW_CMD_ARGS_PREFIX, "get", "check", "impl"], {
       encoding: "utf8",
       env: { ...process.env, SDD_FORGE_WORK_ROOT: tmp },
@@ -31,8 +29,8 @@ describe("flow get check impl", () => {
     const state = makeFlowState();
     setStepDone(state, "gate");
     state.steps.find((s) => s.id === "test").status = "skipped";
-    saveFlowState(tmp, state);
-    addActiveFlow(tmp, "001-test", "local");
+    makeFlowManager(tmp).save(state);
+    makeFlowManager(tmp).addActiveFlow("001-test", "local");
     const result = execFileSync("node", [FLOW_CMD, ...FLOW_CMD_ARGS_PREFIX, "get", "check", "impl"], {
       encoding: "utf8",
       env: { ...process.env, SDD_FORGE_WORK_ROOT: tmp },
@@ -44,8 +42,8 @@ describe("flow get check impl", () => {
     tmp = createTmpDir();
     const state = makeFlowState();
     setStepDone(state, "test");
-    saveFlowState(tmp, state);
-    addActiveFlow(tmp, "001-test", "local");
+    makeFlowManager(tmp).save(state);
+    makeFlowManager(tmp).addActiveFlow("001-test", "local");
     const result = execFileSync("node", [FLOW_CMD, ...FLOW_CMD_ARGS_PREFIX, "get", "check", "impl"], {
       encoding: "utf8",
       env: { ...process.env, SDD_FORGE_WORK_ROOT: tmp },
@@ -58,8 +56,8 @@ describe("flow get check impl", () => {
     tmp = createTmpDir();
     const state = makeFlowState();
     setStepDone(state, "gate");
-    saveFlowState(tmp, state);
-    addActiveFlow(tmp, "001-test", "local");
+    makeFlowManager(tmp).save(state);
+    makeFlowManager(tmp).addActiveFlow("001-test", "local");
     const result = execFileSync("node", [FLOW_CMD, ...FLOW_CMD_ARGS_PREFIX, "get", "check", "impl"], {
       encoding: "utf8",
       env: { ...process.env, SDD_FORGE_WORK_ROOT: tmp },

@@ -1,11 +1,11 @@
 import { describe, it, afterEach } from "node:test";
+import { makeFlowManager } from "../../helpers/flow-setup.js";
 import assert from "node:assert/strict";
 import { join } from "path";
 import { execFileSync } from "child_process";
 import { readFileSync } from "fs";
 import { createTmpDir, removeTmpDir, writeJson, writeFile } from "../../helpers/tmp-dir.js";
-import { saveFlowState, loadFlowState, buildInitialSteps, addActiveFlow, specIdFromPath } from "../../../src/lib/flow-state.js";
-
+import { buildInitialSteps, specIdFromPath } from "../../../src/lib/flow-helpers.js";
 const FLOW_CMD = join(process.cwd(), "src/sdd-forge.js");
 const FLOW_CMD_ARGS_PREFIX = ["flow"];
 
@@ -15,13 +15,13 @@ function setupFlowEnv(tmp) {
   const specDir = "specs/999-test";
   writeFile(tmp, `${specDir}/spec.md`, "# Spec\n## Requirements\n- REQ-1\n");
   const specPath = `${specDir}/spec.md`;
-  saveFlowState(tmp, {
+  makeFlowManager(tmp).save({
     spec: specPath,
     baseBranch: "main",
     featureBranch: "feature/test",
     steps: buildInitialSteps(),
   });
-  addActiveFlow(tmp, specIdFromPath(specPath), "branch");
+  makeFlowManager(tmp).addActiveFlow(specIdFromPath(specPath), "branch");
   return tmp;
 }
 
@@ -39,7 +39,7 @@ describe("flow set test-summary", () => {
     assert.equal(parsed.ok, true);
     assert.deepEqual(parsed.data.summary, { unit: 3, integration: 2 });
 
-    const flow = loadFlowState(tmp);
+    const flow = makeFlowManager(tmp).load();
     assert.deepEqual(flow.test.summary, { unit: 3, integration: 2 });
   });
 
@@ -69,7 +69,7 @@ describe("flow set test-summary", () => {
       encoding: "utf8",
       env: { ...process.env, SDD_FORGE_WORK_ROOT: tmp },
     });
-    const flow = loadFlowState(tmp);
+    const flow = makeFlowManager(tmp).load();
     assert.deepEqual(flow.test.summary, { acceptance: 1 });
     assert.equal(flow.test.summary.unit, undefined);
   });
@@ -80,7 +80,7 @@ describe("flow set test-summary", () => {
       encoding: "utf8",
       env: { ...process.env, SDD_FORGE_WORK_ROOT: tmp },
     });
-    const flow = loadFlowState(tmp);
+    const flow = makeFlowManager(tmp).load();
     assert.ok(flow.steps, "steps preserved");
     assert.ok(flow.spec, "spec preserved");
     assert.ok(flow.baseBranch, "baseBranch preserved");

@@ -13,7 +13,7 @@ import fs from "fs";
 import path from "path";
 import { repoRoot, parseArgs } from "../../lib/cli.js";
 import { loadConfig } from "../../lib/config.js";
-import { loadFlowState, getSpecName } from "../../lib/flow-state.js";
+import { getSpecName } from "../../lib/flow-helpers.js";
 import { container } from "../../lib/container.js";
 
 /**
@@ -835,7 +835,7 @@ async function main() {
     process.exit(EXIT_ERROR);
   }
 
-  const flow = loadFlowState(root);
+  const flow = container.get("flowManager").load();
   if (!flow) {
     console.error("Error: no active flow (flow.json not found)");
     process.exit(EXIT_ERROR);

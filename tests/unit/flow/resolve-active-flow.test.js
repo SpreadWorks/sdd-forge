@@ -1,17 +1,14 @@
 /**
  * tests/unit/flow/resolve-active-flow.test.js
  *
- * Tests for the resolveActiveFlow() shared helper in flow-state.js.
+ * Tests for the makeFlowManager().resolveActiveFlow() shared helper in flow-state.js.
  */
 
 import { describe, it, afterEach } from "node:test";
+import { makeFlowManager } from "../../helpers/flow-setup.js";
 import assert from "node:assert/strict";
 import { createTmpDir, removeTmpDir } from "../../helpers/tmp-dir.js";
-import {
-  saveFlowState, buildInitialSteps, addActiveFlow,
-  resolveActiveFlow,
-} from "../../../src/lib/flow-state.js";
-
+import { buildInitialSteps } from "../../../src/lib/flow-helpers.js";
 describe("resolveActiveFlow", () => {
   let tmp;
   afterEach(() => tmp && removeTmpDir(tmp));
@@ -24,15 +21,15 @@ describe("resolveActiveFlow", () => {
       steps: buildInitialSteps(),
       requirements: [],
     };
-    saveFlowState(dir, state);
-    addActiveFlow(dir, specId, "local");
+    makeFlowManager(dir).save(state);
+    makeFlowManager(dir).addActiveFlow(specId, "local");
     return state;
   }
 
   it("returns flow from flowState when provided", () => {
     tmp = createTmpDir();
     const state = setupFlow(tmp);
-    const result = resolveActiveFlow(tmp, state);
+    const result = makeFlowManager(tmp).resolveActiveFlow(state);
     assert.ok(result);
     assert.equal(result.specId, "001-test");
     assert.deepEqual(result.state.spec, state.spec);
@@ -41,14 +38,14 @@ describe("resolveActiveFlow", () => {
   it("falls back to loadActiveFlows when flowState is null", () => {
     tmp = createTmpDir();
     setupFlow(tmp);
-    const result = resolveActiveFlow(tmp, null);
+    const result = makeFlowManager(tmp).resolveActiveFlow(null);
     assert.ok(result);
     assert.equal(result.specId, "001-test");
   });
 
   it("returns null when no flow exists", () => {
     tmp = createTmpDir();
-    const result = resolveActiveFlow(tmp, null);
+    const result = makeFlowManager(tmp).resolveActiveFlow(null);
     assert.equal(result, null);
   });
 
@@ -63,11 +60,11 @@ describe("resolveActiveFlow", () => {
       steps: buildInitialSteps(),
       requirements: [],
     };
-    saveFlowState(tmp, state2);
-    addActiveFlow(tmp, "002-second", "local");
+    makeFlowManager(tmp).save(state2);
+    makeFlowManager(tmp).addActiveFlow("002-second", "local");
 
     assert.throws(
-      () => resolveActiveFlow(tmp, null),
+      () => makeFlowManager(tmp).resolveActiveFlow(null),
       /multiple active flows/i,
     );
   });

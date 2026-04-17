@@ -11,9 +11,7 @@ import fs from "fs";
 import path from "path";
 import { runCmd, assertOk } from "../../lib/process.js";
 import { PKG_DIR } from "../../lib/cli.js";
-import {
-  resolveWorktreePaths, clearFlowState, specIdFromPath, saveFinalizedAt,
-} from "../../lib/flow-state.js";
+import { specIdFromPath } from "../../lib/flow-helpers.js";
 import { loadIssueLog, saveIssueLog } from "./set-issue-log.js";
 import { isGhAvailable, commentOnIssue, collectGitSummary, runGit } from "../../lib/git-helpers.js";
 import { VALID_MERGE_STRATEGIES } from "../../lib/constants.js";
@@ -44,16 +42,16 @@ export function finalizeOnError(stepName, trigger) {
 /**
  * Execute cleanup: clear flow state, remove worktree/branch.
  */
-function executeCleanupImpl({ root, flowState, worktreePath, mainRepoPath }) {
+function executeCleanupImpl({ root, flowState, flowManager, worktreePath, mainRepoPath }) {
   const { baseBranch, featureBranch, worktree } = flowState;
   const specId = specIdFromPath(flowState.spec);
 
   if (featureBranch === baseBranch) {
-    clearFlowState(root, specId);
+    flowManager.clearFlowState(specId);
     return { status: "done", message: "spec-only mode" };
   }
 
-  clearFlowState(root, specId);
+  flowManager.clearFlowState(specId);
 
   if (worktree && mainRepoPath) {
     const wtPath = worktreePath || root;
@@ -288,7 +286,7 @@ export class RunFinalizeCommand extends FlowCommand {
     const mergeStrategy = mergeStrategyInput || "auto";
 
     // Resolve paths once
-    const { worktreePath, mainRepoPath } = resolveWorktreePaths(root, state);
+    const { worktreePath, mainRepoPath } = ctx.flowManager.resolveWorktreePaths(state);
     const results = {};
 
     // Share results with post hooks via ctx
@@ -302,7 +300,7 @@ export class RunFinalizeCommand extends FlowCommand {
         results.commit = await runSubStep("commit", () => {
           runMigrationHook(root, state.spec);
           const specId = specIdFromPath(state.spec);
-          saveFinalizedAt(root, specId, new Date().toISOString());
+          ctx.flowManager.saveFinalizedAt(specId, new Date().toISOString());
           runGit(["add", "-A"], { cwd: root });
           const msg = message || `feat: ${state.featureBranch || "finalize"}`;
           const res = commitOrSkip(["-m", msg], { cwd: root });
@@ -377,7 +375,7 @@ export class RunFinalizeCommand extends FlowCommand {
         results.cleanup = { status: "dry-run" };
       } else {
         results.cleanup = await runSubStep("cleanup", () => {
-          return executeCleanupImpl({ root, flowState: state, worktreePath, mainRepoPath });
+          return executeCleanupImpl({ root, flowState: state, flowManager: ctx.flowManager, worktreePath, mainRepoPath });
         }, ctx);
       }
     }

@@ -7,7 +7,6 @@
  */
 
 import { FlowCommand } from "./base-command.js";
-import { setRequirements } from "../../lib/flow-state.js";
 
 export default class SetSummaryCommand extends FlowCommand {
   execute(ctx) {
@@ -37,7 +36,7 @@ export default class SetSummaryCommand extends FlowCommand {
       }
     }
 
-    setRequirements(ctx.root, parsed);
+    ctx.flowManager.setRequirements(parsed);
 
     return { count: parsed.length };
   }

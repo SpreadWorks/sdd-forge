@@ -8,7 +8,6 @@
  */
 
 import { FlowCommand } from "./base-command.js";
-import { updateRequirement } from "../../lib/flow-state.js";
 import { VALID_REQ_STATUSES } from "../../lib/constants.js";
 
 export default class SetReqCommand extends FlowCommand {
@@ -30,7 +29,7 @@ export default class SetReqCommand extends FlowCommand {
       throw new Error(`invalid status: ${status} (valid: ${VALID_REQ_STATUSES.join(", ")})`);
     }
 
-    updateRequirement(ctx.root, index, status);
+    ctx.flowManager.updateRequirement(index, status);
 
     return { index, status };
   }

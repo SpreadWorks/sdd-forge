@@ -5,15 +5,17 @@
  * dependency container. Replaces the former resolveCtx() in src/flow.js.
  */
 
-import { specIdFromPath } from "../../lib/flow-state.js";
+import { specIdFromPath } from "../../lib/flow-helpers.js";
 
 export function resolveFlowContext(container) {
-  const flowState = container.get("flowState");
   const paths = container.get("paths");
+  const flowManager = container.get("flowManager");
+  const flowState = flowManager.load();
   return {
     root: paths.root,
     mainRoot: container.get("mainRoot"),
     config: container.get("config"),
+    flowManager,
     flowState,
     specId: flowState ? specIdFromPath(flowState.spec) : null,
     inWorktree: container.get("inWorktree"),

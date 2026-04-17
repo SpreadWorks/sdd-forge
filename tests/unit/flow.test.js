@@ -1,15 +1,11 @@
 import { describe, it, afterEach } from "node:test";
+import { makeFlowManager } from "../helpers/flow-setup.js";
 import assert from "node:assert/strict";
 import fs from "fs";
 import { join } from "path";
 import { execFileSync } from "child_process";
 import { createTmpDir, removeTmpDir, writeJson } from "../helpers/tmp-dir.js";
-import {
-  saveFlowState, loadFlowState, clearFlowState, buildInitialSteps,
-  updateStepStatus, setIssue, FLOW_STEPS,
-  loadActiveFlows, addActiveFlow, removeActiveFlow,
-} from "../../src/lib/flow-state.js";
-
+import { buildInitialSteps, FLOW_STEPS } from "../../src/lib/flow-helpers.js";
 const FLOW_CMD = join(process.cwd(), "src/flow.js");
 
 // ── .active-flow pointer tests ──────────────────────────────────────────────
@@ -20,14 +16,14 @@ describe("active-flow pointer", () => {
 
   it("loadActiveFlows returns empty array when .active-flow does not exist", () => {
     tmp = createTmpDir();
-    const flows = loadActiveFlows(tmp);
+    const flows = makeFlowManager(tmp).loadActiveFlows();
     assert.deepEqual(flows, []);
   });
 
   it("addActiveFlow creates .active-flow with one entry", () => {
     tmp = createTmpDir();
-    addActiveFlow(tmp, "086-migrate-flow-state", "worktree");
-    const flows = loadActiveFlows(tmp);
+    makeFlowManager(tmp).addActiveFlow("086-migrate-flow-state", "worktree");
+    const flows = makeFlowManager(tmp).loadActiveFlows();
     assert.equal(flows.length, 1);
     assert.equal(flows[0].spec, "086-migrate-flow-state");
     assert.equal(flows[0].mode, "worktree");
@@ -35,9 +31,9 @@ describe("active-flow pointer", () => {
 
   it("addActiveFlow appends to existing entries", () => {
     tmp = createTmpDir();
-    addActiveFlow(tmp, "086-migrate", "worktree");
-    addActiveFlow(tmp, "087-other", "branch");
-    const flows = loadActiveFlows(tmp);
+    makeFlowManager(tmp).addActiveFlow("086-migrate", "worktree");
+    makeFlowManager(tmp).addActiveFlow("087-other", "branch");
+    const flows = makeFlowManager(tmp).loadActiveFlows();
     assert.equal(flows.length, 2);
     assert.equal(flows[0].spec, "086-migrate");
     assert.equal(flows[1].spec, "087-other");
@@ -46,34 +42,34 @@ describe("active-flow pointer", () => {
 
   it("removeActiveFlow removes matching entry and keeps others", () => {
     tmp = createTmpDir();
-    addActiveFlow(tmp, "086-migrate", "worktree");
-    addActiveFlow(tmp, "087-other", "branch");
-    removeActiveFlow(tmp, "086-migrate");
-    const flows = loadActiveFlows(tmp);
+    makeFlowManager(tmp).addActiveFlow("086-migrate", "worktree");
+    makeFlowManager(tmp).addActiveFlow("087-other", "branch");
+    makeFlowManager(tmp).removeActiveFlow("086-migrate");
+    const flows = makeFlowManager(tmp).loadActiveFlows();
     assert.equal(flows.length, 1);
     assert.equal(flows[0].spec, "087-other");
   });
 
   it("removeActiveFlow deletes .active-flow file when last entry is removed", () => {
     tmp = createTmpDir();
-    addActiveFlow(tmp, "086-migrate", "worktree");
-    removeActiveFlow(tmp, "086-migrate");
-    const flows = loadActiveFlows(tmp);
+    makeFlowManager(tmp).addActiveFlow("086-migrate", "worktree");
+    makeFlowManager(tmp).removeActiveFlow("086-migrate");
+    const flows = makeFlowManager(tmp).loadActiveFlows();
     assert.deepEqual(flows, []);
     assert.ok(!fs.existsSync(join(tmp, ".sdd-forge", ".active-flow")));
   });
 
   it("removeActiveFlow is a no-op when spec ID does not exist", () => {
     tmp = createTmpDir();
-    addActiveFlow(tmp, "086-migrate", "worktree");
-    removeActiveFlow(tmp, "999-nonexistent");
-    const flows = loadActiveFlows(tmp);
+    makeFlowManager(tmp).addActiveFlow("086-migrate", "worktree");
+    makeFlowManager(tmp).removeActiveFlow("999-nonexistent");
+    const flows = makeFlowManager(tmp).loadActiveFlows();
     assert.equal(flows.length, 1);
   });
 
   it(".active-flow is stored as valid JSON", () => {
     tmp = createTmpDir();
-    addActiveFlow(tmp, "086-migrate", "local");
+    makeFlowManager(tmp).addActiveFlow("086-migrate", "local");
     const raw = fs.readFileSync(join(tmp, ".sdd-forge", ".active-flow"), "utf8");
     const parsed = JSON.parse(raw);
     assert.ok(Array.isArray(parsed));
@@ -96,7 +92,7 @@ describe("flow-state (specs-based storage)", () => {
       baseBranch: "main",
       featureBranch: "feature/001-test",
     };
-    saveFlowState(tmp, state);
+    makeFlowManager(tmp).save(state);
     assert.ok(fs.existsSync(join(tmp, "specs", specId, "flow.json")));
   });
 
@@ -107,7 +103,7 @@ describe("flow-state (specs-based storage)", () => {
       baseBranch: "main",
       featureBranch: "feature/001-test",
     };
-    saveFlowState(tmp, state);
+    makeFlowManager(tmp).save(state);
     assert.ok(!fs.existsSync(join(tmp, ".sdd-forge", "flow.json")));
   });
 
@@ -123,9 +119,9 @@ describe("flow-state (specs-based storage)", () => {
     const flowDir = join(tmp, "specs", specId);
     fs.mkdirSync(flowDir, { recursive: true });
     fs.writeFileSync(join(flowDir, "flow.json"), JSON.stringify(state, null, 2) + "\n");
-    addActiveFlow(tmp, specId, "local");
+    makeFlowManager(tmp).addActiveFlow(specId, "local");
 
-    const loaded = loadFlowState(tmp);
+    const loaded = makeFlowManager(tmp).load();
     // Core fields must be preserved; runId is auto-assigned by transparent migration
     assert.equal(loaded.spec, state.spec);
     assert.equal(loaded.baseBranch, state.baseBranch);
@@ -135,7 +131,7 @@ describe("flow-state (specs-based storage)", () => {
 
   it("loadFlowState returns null when no .active-flow exists", () => {
     tmp = createTmpDir();
-    assert.equal(loadFlowState(tmp), null);
+    assert.equal(makeFlowManager(tmp).load(), null);
   });
 
   it("clearFlowState removes entry from .active-flow but keeps flow.json", () => {
@@ -146,13 +142,13 @@ describe("flow-state (specs-based storage)", () => {
       baseBranch: "main",
       featureBranch: "feature/001-test",
     };
-    saveFlowState(tmp, state);
-    addActiveFlow(tmp, specId, "local");
+    makeFlowManager(tmp).save(state);
+    makeFlowManager(tmp).addActiveFlow(specId, "local");
 
-    clearFlowState(tmp, specId);
+    makeFlowManager(tmp).clearFlowState(specId);
 
     // .active-flow entry should be removed
-    const flows = loadActiveFlows(tmp);
+    const flows = makeFlowManager(tmp).loadActiveFlows();
     assert.equal(flows.length, 0);
     // flow.json should still exist
     assert.ok(fs.existsSync(join(tmp, "specs", specId, "flow.json")));
@@ -174,8 +170,8 @@ describe("flow-state steps and requirements", () => {
       steps: buildInitialSteps(),
       requirements: [],
     };
-    saveFlowState(dir, state);
-    addActiveFlow(dir, specId, "local");
+    makeFlowManager(dir).save(state);
+    makeFlowManager(dir).addActiveFlow(specId, "local");
     return specId;
   }
 
@@ -194,8 +190,8 @@ describe("flow-state steps and requirements", () => {
   it("updateStepStatus updates the correct step", () => {
     tmp = createTmpDir();
     const specId = setupFlow(tmp);
-    updateStepStatus(tmp, "gate", "done");
-    const loaded = loadFlowState(tmp);
+    makeFlowManager(tmp).updateStepStatus("gate", "done");
+    const loaded = makeFlowManager(tmp).load();
     const gate = loaded.steps.find((s) => s.id === "gate");
     assert.equal(gate.status, "done");
   });
@@ -216,25 +212,25 @@ describe("setIssue", () => {
       steps: buildInitialSteps(),
       requirements: [],
     };
-    saveFlowState(dir, state);
-    addActiveFlow(dir, specId, "local");
+    makeFlowManager(dir).save(state);
+    makeFlowManager(dir).addActiveFlow(specId, "local");
     return specId;
   }
 
   it("sets issue number in flow.json", () => {
     tmp = createTmpDir();
     setupFlow(tmp);
-    setIssue(tmp, 17);
-    const loaded = loadFlowState(tmp);
+    makeFlowManager(tmp).setIssue(17);
+    const loaded = makeFlowManager(tmp).load();
     assert.equal(loaded.issue, 17);
   });
 
   it("overwrites existing issue number", () => {
     tmp = createTmpDir();
     setupFlow(tmp);
-    setIssue(tmp, 10);
-    setIssue(tmp, 25);
-    const loaded = loadFlowState(tmp);
+    makeFlowManager(tmp).setIssue(10);
+    makeFlowManager(tmp).setIssue(25);
+    const loaded = makeFlowManager(tmp).load();
     assert.equal(loaded.issue, 25);
   });
 });

@@ -7,7 +7,6 @@
  */
 
 import { FlowCommand } from "./base-command.js";
-import { setRequest } from "../../lib/flow-state.js";
 
 export default class SetRequestCommand extends FlowCommand {
   execute(ctx) {
@@ -17,7 +16,7 @@ export default class SetRequestCommand extends FlowCommand {
       throw new Error('usage: flow set request "<text>"');
     }
 
-    setRequest(ctx.root, text);
+    ctx.flowManager.setRequest(text);
 
     return { request: text };
   }

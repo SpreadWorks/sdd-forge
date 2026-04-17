@@ -16,9 +16,10 @@ function buildContainer({ root = "/repo", config = {}, flowState = null } = {}) 
     logDir: path.join(root, ".tmp/logs"),
     configPath: path.join(root, ".sdd-forge/config.json"),
   });
-  c.register("flowState", flowState);
   c.register("inWorktree", false);
   c.register("mainRoot", root);
+  // Stub flowManager whose load() returns the desired snapshot.
+  c.register("flowManager", { load: () => flowState });
   return c;
 }
 

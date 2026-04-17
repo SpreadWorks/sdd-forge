@@ -7,7 +7,6 @@
  */
 
 import { FlowCommand } from "./base-command.js";
-import { setIssue } from "../../lib/flow-state.js";
 
 export default class SetIssueCommand extends FlowCommand {
   execute(ctx) {
@@ -27,7 +26,7 @@ export default class SetIssueCommand extends FlowCommand {
       throw new Error(`issue number must be a positive integer: ${raw}`);
     }
 
-    setIssue(ctx.root, num);
+    ctx.flowManager.setIssue(num);
 
     return { issue: num };
   }

@@ -5,7 +5,7 @@
  * Supports optional runId argument for runId-based resolution.
  */
 
-import { derivePhase, resolveByRunId } from "../../lib/flow-state.js";
+import { derivePhase } from "../../lib/flow-helpers.js";
 import { FlowCommand } from "./base-command.js";
 
 function buildStatusOutput(state) {
@@ -49,7 +49,7 @@ export default class GetStatusCommand extends FlowCommand {
 
     if (runId) {
       // runId-based resolution
-      const state = resolveByRunId(ctx.root, runId);
+      const state = ctx.flowManager.resolveByRunId(runId);
       if (!state) {
         throw new Error(`RUN_ID_NOT_FOUND: ${runId}`);
       }

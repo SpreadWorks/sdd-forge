@@ -8,7 +8,6 @@
  */
 
 import { FlowCommand } from "./base-command.js";
-import { mutateFlowState } from "../../lib/flow-state.js";
 import { VALID_PHASES, VALID_METRIC_COUNTERS } from "../../lib/constants.js";
 
 export default class SetMetricCommand extends FlowCommand {
@@ -28,7 +27,7 @@ export default class SetMetricCommand extends FlowCommand {
     }
 
     let newValue;
-    mutateFlowState(ctx.root, (state) => {
+    ctx.flowManager.mutate((state) => {
       if (!state.metrics) state.metrics = {};
       if (!state.metrics[phase]) state.metrics[phase] = {};
       const current = state.metrics[phase][counter] || 0;

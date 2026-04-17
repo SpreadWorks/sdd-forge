@@ -8,46 +8,42 @@
  * Used by flow.js dispatcher and help.js.
  */
 
-import { updateStepStatus, incrementMetric, derivePhase, loadFlowState } from "../lib/flow-state.js";
+import { derivePhase } from "../lib/flow-helpers.js";
 import { VALID_PHASES, VALID_METRIC_COUNTERS } from "../lib/constants.js";
 import { loadIssueLog, saveIssueLog } from "./lib/set-issue-log.js";
 
 /**
  * Load flow state and derive the current phase.
- * @param {string} root
- * @returns {string|null} phase name or null
  */
-function deriveActivePhase(root) {
-  const state = loadFlowState(root);
+function deriveActivePhase(ctx) {
+  const state = ctx.flowManager.load();
   return derivePhase(state?.steps);
 }
 
 /**
- * Best-effort step status update. Silently ignores errors (e.g. flow.json absent after cleanup).
+ * Best-effort step status update. Hooks fire after `cleanup` removes flow.json
+ * (and during early init before flow.json exists), so a "no active flow" error
+ * is the expected non-failure mode. Other errors are also swallowed because
+ * step-status updates are advisory and must never abort the user's command.
  */
-function tryUpdateStepStatus(root, stepId, status) {
-  try { updateStepStatus(root, stepId, status); } catch {}
+function tryUpdateStepStatus(ctx, stepId, status) {
+  try {
+    ctx.flowManager.updateStepStatus(stepId, status);
+  } catch (err) {
+    // The "no active flow" case is expected (post-cleanup hooks, early init);
+    // other errors are operationally meaningful so we always surface them.
+    process.stderr.write(`[sdd-forge] step-status update skipped (${stepId}=${status}): ${err.message}\n`);
+  }
 }
 
-/**
- * Create a pre hook that sets a step to in_progress.
- * @param {string} stepId
- * @returns {(ctx: object) => void}
- */
 function stepPre(stepId) {
-  return (ctx) => tryUpdateStepStatus(ctx.root, stepId, "in_progress");
+  return (ctx) => tryUpdateStepStatus(ctx, stepId, "in_progress");
 }
 
-/**
- * Create a post hook that sets a step status based on result.
- * @param {string} stepId
- * @param {(result: object) => string} [statusFn] - derive status from result; defaults to "done"
- * @returns {(ctx: object, result: object) => void}
- */
 function stepPost(stepId, statusFn) {
   return (ctx, result) => {
     const status = statusFn ? statusFn(result) : "done";
-    tryUpdateStepStatus(ctx.root, stepId, status);
+    tryUpdateStepStatus(ctx, stepId, status);
   };
 }
 
@@ -171,15 +167,15 @@ export const FLOW_COMMANDS = {
         "  --search <query>   Search entries by keyword (matches against keywords array)",
       ].join("\n"),
       post(ctx, result) {
-        const phase = deriveActivePhase(ctx.root);
+        const phase = deriveActivePhase(ctx);
         if (!phase) return;
 
         if (result?.type) {
           // File mode: result.type is "docs" or "src"
-          incrementMetric(ctx.root, phase, result.type === "docs" ? "docsRead" : "srcRead");
+          ctx.flowManager.incrementMetric(phase, result.type === "docs" ? "docsRead" : "srcRead");
         } else if (result?.entries || result?.total != null) {
           // List mode or search mode: reads analysis.json → docsRead
-          incrementMetric(ctx.root, phase, "docsRead");
+          ctx.flowManager.incrementMetric(phase, "docsRead");
         }
       },
     },
@@ -233,8 +229,8 @@ export const FLOW_COMMANDS = {
       args: { options: ["--step", "--reason", "--trigger", "--resolution", "--guardrail-candidate"] },
       help: "Usage: sdd-forge flow set issue-log --step <id> --reason <text> [--trigger <text>] [--resolution <text>] [--guardrail-candidate <text>]\n\nRecord an issue-log entry in issue-log.json.",
       post(ctx) {
-        const phase = deriveActivePhase(ctx.root);
-        if (phase) incrementMetric(ctx.root, phase, "issueLog");
+        const phase = deriveActivePhase(ctx);
+        if (phase) ctx.flowManager.incrementMetric(phase, "issueLog");
       },
     },
     init: {
@@ -277,7 +273,7 @@ export const FLOW_COMMANDS = {
     gate: {
       helpKey: "flow.run.gate",
       pre(ctx) {
-        tryUpdateStepStatus(ctx.root, resolveGateStepId(ctx.phase), "in_progress");
+        tryUpdateStepStatus(ctx, resolveGateStepId(ctx.phase), "in_progress");
       },
       command: () => import("./lib/run-gate.js"),
       args: {
@@ -296,7 +292,7 @@ export const FLOW_COMMANDS = {
       ].join("\n"),
       post(ctx, result) {
         const status = result?.result === "pass" ? "done" : "in_progress";
-        tryUpdateStepStatus(ctx.root, resolveGateStepId(ctx.phase), status);
+        tryUpdateStepStatus(ctx, resolveGateStepId(ctx.phase), status);
 
         // Auto-record issue-log on gate FAIL
         if (result?.result !== "pass") {

@@ -8,9 +8,6 @@
  */
 
 import { FlowCommand } from "./base-command.js";
-import {
-  generateRunId, createPreparingFlow, listPreparingFlows,
-} from "../../lib/flow-state.js";
 
 export default class SetInitCommand extends FlowCommand {
   constructor() {
@@ -18,7 +15,7 @@ export default class SetInitCommand extends FlowCommand {
   }
 
   execute(ctx) {
-    const { root } = ctx;
+    const { flowManager } = ctx;
 
     const extra = {};
     if (ctx.issue != null && ctx.issue !== "") {
@@ -31,15 +28,15 @@ export default class SetInitCommand extends FlowCommand {
     if (ctx.request) extra.request = ctx.request;
 
     // Conflict guard: warn if existing preparing files exist
-    const existing = listPreparingFlows(root);
+    const existing = flowManager.listPreparingFlows();
     if (existing.length > 0) {
       console.error(
         `[flow] WARN: ${existing.length} preparing flow(s) already exist: ${existing.join(", ")}`
       );
     }
 
-    const runId = generateRunId();
-    createPreparingFlow(root, runId, extra);
+    const runId = flowManager.generateRunId();
+    flowManager.createPreparingFlow(runId, extra);
 
     return { runId, ...extra };
   }

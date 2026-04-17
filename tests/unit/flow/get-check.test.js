@@ -5,15 +5,12 @@
  */
 
 import { describe, it, afterEach } from "node:test";
+import { makeFlowManager } from "../../helpers/flow-setup.js";
 import assert from "node:assert/strict";
 import { execFileSync } from "child_process";
 import { join } from "path";
 import { createTmpDir, removeTmpDir } from "../../helpers/tmp-dir.js";
-import {
-  saveFlowState, loadFlowState, buildInitialSteps, addActiveFlow,
-  updateStepStatus,
-} from "../../../src/lib/flow-state.js";
-
+import { buildInitialSteps } from "../../../src/lib/flow-helpers.js";
 const FLOW_CMD = join(process.cwd(), "src/flow.js");
 
 describe("flow get check", () => {
@@ -29,15 +26,15 @@ describe("flow get check", () => {
       steps: buildInitialSteps(),
       requirements: [],
     };
-    saveFlowState(dir, state);
-    addActiveFlow(dir, specId, "local");
+    makeFlowManager(dir).save(state);
+    makeFlowManager(dir).addActiveFlow(specId, "local");
   }
 
   it("returns JSON envelope with pass and checks array", () => {
     tmp = createTmpDir();
     setupFlowState(tmp);
-    updateStepStatus(tmp, "gate", "done");
-    updateStepStatus(tmp, "test", "done");
+    makeFlowManager(tmp).updateStepStatus("gate", "done");
+    makeFlowManager(tmp).updateStepStatus("test", "done");
     const result = execFileSync(
       "node", [FLOW_CMD, "get", "check", "impl"],
       { encoding: "utf8", env: { ...process.env, SDD_FORGE_WORK_ROOT: tmp } },

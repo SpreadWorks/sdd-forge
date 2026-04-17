@@ -1,22 +1,16 @@
 /**
  * tests/unit/lib/flow-state-agent-metrics.test.js
  *
- * Tests for `accumulateAgentMetrics()` in flow-state.js.
+ * Tests for `makeFlowManager().accumulateAgentMetrics()` in flow-state.js.
  * Verifies that agent call metrics (tokens, cost, callCount, responseChars, model)
  * are correctly accumulated into flow.json metrics per phase.
  */
 
 import { describe, it, afterEach } from "node:test";
+import { makeFlowManager } from "../../helpers/flow-setup.js";
 import assert from "node:assert/strict";
 import { createTmpDir, removeTmpDir } from "../../helpers/tmp-dir.js";
-import {
-  saveFlowState,
-  loadFlowState,
-  buildInitialSteps,
-  addActiveFlow,
-  accumulateAgentMetrics,
-} from "../../../src/lib/flow-state.js";
-
+import { buildInitialSteps } from "../../../src/lib/flow-helpers.js";
 function makeUsage({ input = 100, output = 50, cacheRead = 20, cacheCreation = 10, cost = 0.005 } = {}) {
   return {
     input_tokens: input,
@@ -42,8 +36,8 @@ describe("accumulateAgentMetrics", () => {
     // Set the given phase to in_progress
     const step = state.steps.find((s) => s.id === phase);
     if (step) step.status = "in_progress";
-    saveFlowState(dir, state);
-    addActiveFlow(dir, specId, "local");
+    makeFlowManager(dir).save(state);
+    makeFlowManager(dir).addActiveFlow(specId, "local");
   }
 
   it("accumulates token counts, cost, callCount, responseChars, and model on happy path", () => {
@@ -51,9 +45,9 @@ describe("accumulateAgentMetrics", () => {
     setupFlow(tmp, "draft");
 
     const usage = makeUsage();
-    accumulateAgentMetrics(tmp, "draft", usage, 1500, "claude-sonnet-4-6");
+    makeFlowManager(tmp).accumulateAgentMetrics("draft", usage, 1500, "claude-sonnet-4-6");
 
-    const loaded = loadFlowState(tmp);
+    const loaded = makeFlowManager(tmp).load();
     const m = loaded.metrics.draft;
     assert.equal(m.tokens.input, 100);
     assert.equal(m.tokens.output, 50);
@@ -70,9 +64,9 @@ describe("accumulateAgentMetrics", () => {
     setupFlow(tmp, "spec");
 
     const usage = makeUsage({ cost: null });
-    accumulateAgentMetrics(tmp, "spec", usage, 800, "gpt-5-codex");
+    makeFlowManager(tmp).accumulateAgentMetrics("spec", usage, 800, "gpt-5-codex");
 
-    const loaded = loadFlowState(tmp);
+    const loaded = makeFlowManager(tmp).load();
     const m = loaded.metrics.spec;
     assert.equal(m.tokens.input, 100);
     assert.equal(m.tokens.output, 50);
@@ -87,10 +81,10 @@ describe("accumulateAgentMetrics", () => {
     tmp = createTmpDir();
     setupFlow(tmp, "draft");
 
-    accumulateAgentMetrics(tmp, "draft", makeUsage({ input: 100, output: 50, cost: 0.005 }), 1000, "claude-sonnet-4-6");
-    accumulateAgentMetrics(tmp, "draft", makeUsage({ input: 200, output: 80, cost: 0.010 }), 2000, "claude-sonnet-4-6");
+    makeFlowManager(tmp).accumulateAgentMetrics("draft", makeUsage({ input: 100, output: 50, cost: 0.005 }), 1000, "claude-sonnet-4-6");
+    makeFlowManager(tmp).accumulateAgentMetrics("draft", makeUsage({ input: 200, output: 80, cost: 0.010 }), 2000, "claude-sonnet-4-6");
 
-    const loaded = loadFlowState(tmp);
+    const loaded = makeFlowManager(tmp).load();
     const m = loaded.metrics.draft;
     assert.equal(m.tokens.input, 300);
     assert.equal(m.tokens.output, 130);
@@ -105,9 +99,9 @@ describe("accumulateAgentMetrics", () => {
     setupFlow(tmp, "gate");
 
     const usage = makeUsage();
-    accumulateAgentMetrics(tmp, "gate", usage, 500, "claude-opus-4-6");
+    makeFlowManager(tmp).accumulateAgentMetrics("gate", usage, 500, "claude-opus-4-6");
 
-    const loaded = loadFlowState(tmp);
+    const loaded = makeFlowManager(tmp).load();
     assert.ok(loaded.metrics, "metrics should be initialized");
     assert.ok(loaded.metrics.gate, "phase key should be initialized");
     assert.ok(loaded.metrics.gate.tokens, "tokens object should be initialized");
@@ -117,11 +111,11 @@ describe("accumulateAgentMetrics", () => {
     tmp = createTmpDir();
     setupFlow(tmp, "impl");
 
-    accumulateAgentMetrics(tmp, "impl", makeUsage({ cost: null }), 500, "claude-sonnet-4-6");
-    accumulateAgentMetrics(tmp, "impl", makeUsage({ cost: null }), 400, "gpt-5-codex");
-    accumulateAgentMetrics(tmp, "impl", makeUsage({ cost: null }), 300, "claude-sonnet-4-6");
+    makeFlowManager(tmp).accumulateAgentMetrics("impl", makeUsage({ cost: null }), 500, "claude-sonnet-4-6");
+    makeFlowManager(tmp).accumulateAgentMetrics("impl", makeUsage({ cost: null }), 400, "gpt-5-codex");
+    makeFlowManager(tmp).accumulateAgentMetrics("impl", makeUsage({ cost: null }), 300, "claude-sonnet-4-6");
 
-    const loaded = loadFlowState(tmp);
+    const loaded = makeFlowManager(tmp).load();
     const models = loaded.metrics.impl.models;
     assert.equal(models["claude-sonnet-4-6"], 2);
     assert.equal(models["gpt-5-codex"], 1);
@@ -132,13 +126,13 @@ describe("accumulateAgentMetrics", () => {
     setupFlow(tmp, "draft");
 
     // Pre-set an existing counter
-    const state = loadFlowState(tmp);
+    const state = makeFlowManager(tmp).load();
     state.metrics = { draft: { question: 5, srcRead: 2 } };
-    saveFlowState(tmp, state);
+    makeFlowManager(tmp).save(state);
 
-    accumulateAgentMetrics(tmp, "draft", makeUsage(), 1000, "claude-sonnet-4-6");
+    makeFlowManager(tmp).accumulateAgentMetrics("draft", makeUsage(), 1000, "claude-sonnet-4-6");
 
-    const loaded = loadFlowState(tmp);
+    const loaded = makeFlowManager(tmp).load();
     assert.equal(loaded.metrics.draft.question, 5, "existing question counter should be unchanged");
     assert.equal(loaded.metrics.draft.srcRead, 2, "existing srcRead counter should be unchanged");
     assert.equal(loaded.metrics.draft.callCount, 1, "callCount should be added");
@@ -149,7 +143,7 @@ describe("accumulateAgentMetrics", () => {
     // No flow state created — simulates being outside any flow
     // Should not throw
     assert.doesNotThrow(() => {
-      accumulateAgentMetrics(tmp, null, makeUsage(), 500, "claude-sonnet-4-6");
+      makeFlowManager(tmp).accumulateAgentMetrics(null, makeUsage(), 500, "claude-sonnet-4-6");
     });
   });
 });

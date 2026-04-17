@@ -5,14 +5,12 @@
  */
 
 import { describe, it, afterEach } from "node:test";
+import { makeFlowManager } from "../../helpers/flow-setup.js";
 import assert from "node:assert/strict";
 import { execFileSync } from "child_process";
 import { join } from "path";
 import { createTmpDir, removeTmpDir } from "../../helpers/tmp-dir.js";
-import {
-  saveFlowState, loadFlowState, buildInitialSteps, addActiveFlow,
-} from "../../../src/lib/flow-state.js";
-
+import { buildInitialSteps } from "../../../src/lib/flow-helpers.js";
 const FLOW_CMD = join(process.cwd(), "src/flow.js");
 
 describe("flow set step", () => {
@@ -28,8 +26,8 @@ describe("flow set step", () => {
       steps: buildInitialSteps(),
       requirements: [],
     };
-    saveFlowState(dir, state);
-    addActiveFlow(dir, specId, "local");
+    makeFlowManager(dir).save(state);
+    makeFlowManager(dir).addActiveFlow(specId, "local");
     return state;
   }
 
@@ -45,7 +43,7 @@ describe("flow set step", () => {
     assert.equal(envelope.type, "set");
     assert.equal(envelope.key, "step");
 
-    const loaded = loadFlowState(tmp);
+    const loaded = makeFlowManager(tmp).load();
     const branch = loaded.steps.find((s) => s.id === "branch");
     assert.equal(branch.status, "done");
   });

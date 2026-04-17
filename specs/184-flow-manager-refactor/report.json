@@ -1,0 +1,47 @@
+{
+  "data": {
+    "implementation": {
+      "diffStat": "specs/184-flow-manager-refactor/draft.md           |  89 ++\n specs/184-flow-manager-refactor/flow.json          | 163 ++++\n specs/184-flow-manager-refactor/issue-log.json     |  84 ++\n specs/184-flow-manager-refactor/qa.md              |   9 +\n specs/184-flow-manager-refactor/spec.md            | 112 +++\n specs/184-flow-manager-refactor/tests/README.md    |  35 +\n src/flow/commands/review.js                        |   4 +-\n src/flow/lib/flow-context.js                       |   6 +-\n src/flow/lib/get-resolve-context.js                |   6 +-\n src/flow/lib/get-status.js                         |   4 +-\n src/flow/lib/run-finalize.js                       |  16 +-\n src/flow/lib/run-gate.js                           |   2 +-\n src/flow/lib/run-prepare-spec.js                   |  26 +-\n src/flow/lib/run-resume.js                         |   6 +-\n src/flow/lib/run-retro.js                          |   2 +-\n src/flow/lib/set-auto.js                           |   3 +-\n src/flow/lib/set-init.js                           |  11 +-\n src/flow/lib/set-issue.js                          |   3 +-\n src/flow/lib/set-metric.js                         |   3 +-\n src/flow/lib/set-note.js                           |   3 +-\n src/flow/lib/set-req.js                            |   3 +-\n src/flow/lib/set-request.js                        |   3 +-\n src/flow/lib/set-step.js                           |   3 +-\n src/flow/lib/set-summary.js                        |   3 +-\n src/flow/lib/set-test-summary.js                   |   3 +-\n src/flow/registry.js                               |  52 +-\n src/lib/active-flow-registry.js                    | 133 +++\n src/lib/container.js                               |  13 +-\n src/lib/flow-helpers.js                            |  89 ++\n src/lib/flow-manager.js                            | 271 ++++++\n src/lib/flow-state.js                              | 989 ---------------------\n src/lib/flow-store.js                              | 259 ++++++\n src/lib/log.js                                     |  63 +-\n src/lib/preparing-flow-store.js                    | 139 +++\n tests/e2e/flow/commands/set-request-note.test.js   |  16 +-\n tests/e2e/flow/commands/status-check.test.js       |  20 +-\n tests/helpers/flow-setup.js                        |  29 +-\n tests/unit/flow.test.js                            |  82 +-\n tests/unit/flow/commands/review.test.js            |   3 +-\n .../unit/flow/finalize-writes-finalized-at.test.js |   7 +-\n tests/unit/flow/flow-steps.test.js                 |   3 +-\n tests/unit/flow/get-check.test.js                  |  15 +-\n tests/unit/flow/get-prompt.test.js                 |  10 +-\n tests/unit/flow/get-status.test.js                 |  10 +-\n tests/unit/flow/get-test-result.test.js            |   6 +-\n tests/unit/flow/get-unknown-options.test.js        |  10 +-\n tests/unit/flow/prompt-impl-finalize.test.js       |  10 +-\n tests/unit/flow/resolve-active-flow.test.js        |  25 +-\n tests/unit/flow/resolve-context-extended.test.js   |  10 +-\n tests/unit/flow/set-auto.test.js                   |  12 +-\n tests/unit/flow/set-issue-log.test.js              |  10 +-\n tests/unit/flow/set-metric.test.js                 |  16 +-\n tests/unit/flow/set-step.test.js                   |  12 +-\n tests/unit/flow/set-test-summary.test.js           |  14 +-\n tests/unit/lib/flow-context.test.js                |   3 +-\n tests/unit/lib/flow-state-agent-metrics.test.js    |  52 +-\n tests/unit/lib/flow-state-auto.test.js             |  26 +-\n tests/unit/lib/flow-state-runid.test.js            |  43 +-\n 58 files changed, 1719 insertions(+), 1335 deletions(-)",
+      "commits": [
+        "feat: feature/184-flow-manager-refactor"
+      ]
+    },
+    "retro": {
+      "total": 7,
+      "done": 3,
+      "partial": 4,
+      "not_done": 0,
+      "rate": 0.71,
+      "notes": "中核リファクタ（旧 flow-state.js の分解、FlowManager 導入、helper 分離、呼び出し側移行）は概ね達成。未充足/曖昧点は「Container 経由の厳密統一」「パス引数廃止の厳密性」「git 解決重複ゼロの厳密保証」「テスト全passの実行証跡の明示」。"
+    },
+    "issueLog": {
+      "count": 0,
+      "entries": []
+    },
+    "metrics": {
+      "docsRead": 1,
+      "srcRead": 0,
+      "question": 3,
+      "issueLog": 1
+    },
+    "tokenMetrics": {
+      "input": 0,
+      "output": 0,
+      "cacheRead": 0,
+      "cacheCreation": 0,
+      "cost": null,
+      "callCount": 16
+    },
+    "tests": {
+      "unit": 0,
+      "integration": 0,
+      "acceptance": 0,
+      "total": 0
+    },
+    "sync": {
+      "status": "skipped",
+      "reason": "sync was skipped"
+    }
+  },
+  "text": "  Report\n\n  Implementation\n  ────────────────────────────────────────────────\n    feat: feature/184-flow-manager-refactor\n    58 files changed, 1719 insertions(+), 1335 deletions(-)\n\n  Retro\n  ────────────────────────────────────────────────\n    ██████░░ 71%  (3 done / 4 partial / 0 miss)\n\n  Metrics\n  ────────────────────────────────────────────────\n    docs read ................... 1\n    src read .................... 0\n    Q&A ......................... 3\n    issue-log ................... 1\n    agent calls ................. 16\n    input tokens ................ 0\n    output tokens ............... 0\n    cache-read tokens ........... 0\n    cache-create tokens ......... 0\n    cost ........................ N/A\n\n  Tests\n  ────────────────────────────────────────────────\n    unit 0  integration 0  acceptance 0  total 0"
+}

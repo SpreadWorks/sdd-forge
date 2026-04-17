@@ -7,7 +7,6 @@
  */
 
 import { FlowCommand } from "./base-command.js";
-import { mutateFlowState } from "../../lib/flow-state.js";
 import { VALID_AUTO_VALUES } from "../../lib/constants.js";
 
 export default class SetAutoCommand extends FlowCommand {
@@ -20,7 +19,7 @@ export default class SetAutoCommand extends FlowCommand {
 
     const autoApprove = value === "on";
 
-    mutateFlowState(ctx.root, (state) => {
+    ctx.flowManager.mutate((state) => {
       state.autoApprove = autoApprove;
     });
 

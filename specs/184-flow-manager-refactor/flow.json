@@ -1,0 +1,163 @@
+{
+  "spec": "specs/184-flow-manager-refactor/spec.md",
+  "baseBranch": "main",
+  "featureBranch": "feature/184-flow-manager-refactor",
+  "runId": "95e95b19-81ff-4018-907b-6e5aea49e001",
+  "lifecycle": "active",
+  "steps": [
+    {
+      "id": "branch",
+      "status": "done"
+    },
+    {
+      "id": "prepare-spec",
+      "status": "pending"
+    },
+    {
+      "id": "draft",
+      "status": "done"
+    },
+    {
+      "id": "gate-draft",
+      "status": "done"
+    },
+    {
+      "id": "spec",
+      "status": "done"
+    },
+    {
+      "id": "gate",
+      "status": "done"
+    },
+    {
+      "id": "approval",
+      "status": "done"
+    },
+    {
+      "id": "test",
+      "status": "done"
+    },
+    {
+      "id": "implement",
+      "status": "done"
+    },
+    {
+      "id": "gate-impl",
+      "status": "done"
+    },
+    {
+      "id": "review",
+      "status": "skipped"
+    },
+    {
+      "id": "finalize",
+      "status": "pending"
+    },
+    {
+      "id": "commit",
+      "status": "pending"
+    },
+    {
+      "id": "push",
+      "status": "pending"
+    },
+    {
+      "id": "merge",
+      "status": "pending"
+    },
+    {
+      "id": "pr-create",
+      "status": "pending"
+    },
+    {
+      "id": "branch-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "pr-merge",
+      "status": "pending"
+    },
+    {
+      "id": "sync-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "docs-update",
+      "status": "pending"
+    },
+    {
+      "id": "docs-review",
+      "status": "pending"
+    },
+    {
+      "id": "docs-commit",
+      "status": "pending"
+    }
+  ],
+  "requirements": [
+    {
+      "desc": "R1: Container 経由で状態管理 (バイパスなし)",
+      "status": "done"
+    },
+    {
+      "desc": "R2: workRoot 引数の全廃",
+      "status": "done"
+    },
+    {
+      "desc": "R3: 旧 flow-state.js の全機能を新サービスでカバー",
+      "status": "done"
+    },
+    {
+      "desc": "R4: 既存テスト全て pass (新 API 書換)",
+      "status": "done"
+    },
+    {
+      "desc": "R5: 内部 3 クラス分割 + ファサード",
+      "status": "done"
+    },
+    {
+      "desc": "R6: pure helper はモジュール export 据置",
+      "status": "done"
+    },
+    {
+      "desc": "R7: git spawn の重複排除",
+      "status": "done"
+    }
+  ],
+  "issue": 163,
+  "request": "#163 issueを進めてください",
+  "worktree": true,
+  "metrics": {
+    "plan": {
+      "docsRead": 1
+    },
+    "draft": {
+      "question": 3
+    },
+    "gate-draft": {
+      "callCount": 2,
+      "responseChars": 2977
+    },
+    "gate": {
+      "callCount": 2,
+      "responseChars": 3028
+    },
+    "gate-impl": {
+      "callCount": 12,
+      "responseChars": 13557
+    },
+    "impl": {
+      "issueLog": 1
+    }
+  },
+  "test": {
+    "summary": {
+      "unit": 0,
+      "integration": 0,
+      "acceptance": 0
+    }
+  },
+  "state": {
+    "finalizedAt": "2026-04-17T12:39:02.812Z"
+  }
+}
