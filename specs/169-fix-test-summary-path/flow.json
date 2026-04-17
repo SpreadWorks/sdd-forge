@@ -136,5 +136,8 @@
     "draft: Q3 - 修正スコープ確定: report.js:126 の1箇所のみ。docs は自動再生成",
     "draft: Q4 - テストは specs/169-fix-test-summary-path/tests/ に配置。スペック検証テスト",
     "draft: Q5 - draft 承認"
-  ]
+  ],
+  "state": {
+    "finalizedAt": "2026-04-13T05:25:38.000Z"
+  }
 }

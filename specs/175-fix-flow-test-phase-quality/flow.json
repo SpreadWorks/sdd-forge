@@ -200,5 +200,8 @@
       "integration": 0,
       "acceptance": 0
     }
+  },
+  "state": {
+    "finalizedAt": "2026-04-14T08:21:38.000Z"
   }
 }

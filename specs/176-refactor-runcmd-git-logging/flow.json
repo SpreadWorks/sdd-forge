@@ -171,5 +171,8 @@
   },
   "notes": [
     "gate-impl: ユーザー判断で FAIL を許容して review へ進行。残存 FAIL は board 7e83/08cd で別途扱う"
-  ]
+  ],
+  "state": {
+    "finalizedAt": "2026-04-14T11:37:06.000Z"
+  }
 }

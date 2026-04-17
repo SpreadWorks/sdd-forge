@@ -193,5 +193,8 @@
     "impl: review=auto-fix",
     "finalize: mode=all"
   ],
-  "runId": "0e1d184f-0a12-4538-bfc4-8278235cbe2e"
+  "runId": "0e1d184f-0a12-4538-bfc4-8278235cbe2e",
+  "state": {
+    "finalizedAt": "2026-04-13T12:57:49.000Z"
+  }
 }

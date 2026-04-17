@@ -159,5 +159,8 @@
       "callCount": 5,
       "responseChars": 4619
     }
+  },
+  "state": {
+    "finalizedAt": "2026-04-14T02:52:29.000Z"
   }
 }

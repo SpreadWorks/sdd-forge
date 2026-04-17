@@ -136,5 +136,8 @@
     "impl": 0
   },
   "redoCount": 7,
-  "requestChars": 41
+  "requestChars": 41,
+  "state": {
+    "finalizedAt": "2026-04-08T09:17:53.000Z"
+  }
 }

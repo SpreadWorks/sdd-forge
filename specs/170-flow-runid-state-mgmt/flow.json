@@ -209,5 +209,8 @@
     "review: コードレビュー+自動改善",
     "finalize: all mode selected"
   ],
-  "runId": "b817c90f-d598-4dae-9b31-1e3e9d50d7ee"
+  "runId": "b817c90f-d598-4dae-9b31-1e3e9d50d7ee",
+  "state": {
+    "finalizedAt": "2026-04-13T12:56:41.000Z"
+  }
 }

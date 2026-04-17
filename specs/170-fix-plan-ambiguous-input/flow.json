@@ -174,5 +174,8 @@
     "draft: autoApprove時はStep1(解釈確認)をスキップ。autoが有効=request/issueが確定済みなので確認不要",
     "draft: --exclude CLI拡張は不要。SKILL.mdのルール変更（解釈確認→Issue優先→確認前にcontext searchしない）で対処",
     "review: #4のみ適用（test assertion強化）。#1-#3はスコープ外"
-  ]
+  ],
+  "state": {
+    "finalizedAt": "2026-04-13T09:59:29.000Z"
+  }
 }

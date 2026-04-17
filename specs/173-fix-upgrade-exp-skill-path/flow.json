@@ -160,5 +160,8 @@
     "draft: 影響範囲は upgrade.js:91 の1箇所のみ。PKG_DIR を import し expDir を PKG_DIR 基準に修正する方針で合意",
     "draft: テストは specs/<spec>/tests/ に配置。expDir が PKG_DIR 基準で解決されることを検証"
   ],
-  "autoApprove": true
+  "autoApprove": true,
+  "state": {
+    "finalizedAt": "2026-04-13T15:15:34.000Z"
+  }
 }

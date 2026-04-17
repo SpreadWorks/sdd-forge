@@ -127,5 +127,8 @@
   "notes": [
     "approach: Q&A draft",
     "draft: redo エントリ完全削除。互換shim不要(alpha policy)。metric redo カウンターは別物なので残す。テスト不要。"
-  ]
+  ],
+  "state": {
+    "finalizedAt": "2026-04-13T05:26:50.000Z"
+  }
 }

@@ -152,5 +152,8 @@
   "notes": [
     "impl: 方針[1]承認 — buildLayers/resolveTemplates/resolveChaptersOrder に projectRoot 追加、init.js と setup.js の呼び出し側を更新",
     "finalize: mode[1]すべて実行"
-  ]
+  ],
+  "state": {
+    "finalizedAt": "2026-04-14T04:55:48.000Z"
+  }
 }

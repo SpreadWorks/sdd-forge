@@ -183,5 +183,8 @@
       "unit": 30,
       "acceptance": 9
     }
+  },
+  "state": {
+    "finalizedAt": "2026-04-17T03:48:03.000Z"
   }
 }

@@ -156,5 +156,8 @@
     "implement: sdd-forge upgrade で flow-plan SKILL.md を同期",
     "review: auto-fix を選択",
     "finalize: すべて実行を選択"
-  ]
+  ],
+  "state": {
+    "finalizedAt": "2026-04-14T03:19:19.000Z"
+  }
 }

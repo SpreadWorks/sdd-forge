@@ -161,5 +161,8 @@
     "impl": {
       "issueLog": 2
     }
+  },
+  "state": {
+    "finalizedAt": "2026-04-13T12:50:22.000Z"
   }
 }

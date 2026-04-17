@@ -208,5 +208,8 @@
     "summary": {
       "acceptance": 1
     }
+  },
+  "state": {
+    "finalizedAt": "2026-04-16T00:24:24.000Z"
   }
 }

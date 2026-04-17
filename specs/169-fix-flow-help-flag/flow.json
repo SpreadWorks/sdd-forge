@@ -144,5 +144,8 @@
     "approach: [1] Q&A → draft → spec",
     "draft: 影響範囲は positional-only の 11 コマンド。修正箇所は parseEntryArgs L140-146 の 1 箇所",
     "--help"
-  ]
+  ],
+  "state": {
+    "finalizedAt": "2026-04-13T05:35:02.000Z"
+  }
 }

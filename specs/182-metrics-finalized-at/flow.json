@@ -174,5 +174,8 @@
       "unit": 2,
       "integration": 4
     }
+  },
+  "state": {
+    "finalizedAt": "2026-04-17T09:09:51.000Z"
   }
 }

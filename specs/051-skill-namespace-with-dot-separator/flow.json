@@ -55,5 +55,8 @@
     "draft": {
       "question": 1
     }
+  },
+  "state": {
+    "finalizedAt": "2026-03-14T12:45:15.000Z"
   }
 }

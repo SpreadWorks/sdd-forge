@@ -121,5 +121,8 @@
       "question": 1
     }
   },
-  "requestChars": 65
+  "requestChars": 65,
+  "state": {
+    "finalizedAt": "2026-04-01T16:34:36.000Z"
+  }
 }
