@@ -9,10 +9,12 @@ import {
 } from "../graphql.js";
 import { findItem, parseJsonResponse, ensureStatusOption } from "../board-helpers.js";
 import { assertJapaneseDraft, assertJapaneseDraftField, stripHashPrefix } from "../validation.js";
-import { callAgentWithLog, ensureAgentWorkDir, resolveAgent } from "../../../../src/lib/agent.js";
+import { Agent } from "../../../../src/lib/agent.js";
+import { ProviderRegistry } from "../../../../src/lib/provider.js";
+import { Logger } from "../../../../src/lib/log.js";
+import { resolveWorkDir } from "../../../../src/lib/config.js";
 
 const COMMAND_ID = "experimental.workflow.publish";
-const PUBLISH_TIMEOUT_MS = 60_000;
 const PUBLISH_RETRY_COUNT = 2;
 
 export default class PublishCommand extends WorkflowCommand {
@@ -56,13 +58,15 @@ Title: ${sourceTitle}
 Body:
 ${sourceBody || "(empty)"}`;
 
-      const agent = resolveAgent(config, COMMAND_ID);
-      if (!agent) {
+      const agent = buildAgent(config, root);
+      if (!agent.resolve(COMMAND_ID)) {
         throw new Error(`no agent configured for ${COMMAND_ID}`);
       }
-      ensureAgentWorkDir(agent, root);
 
-      const translated = this.callTranslator(agent, prompt, root);
+      const translated = await agent.call(prompt, {
+        commandId: COMMAND_ID,
+        retryCount: PUBLISH_RETRY_COUNT,
+      });
       const result = parseJsonResponse(translated);
       issueTitle = `${hash}: ${result.title}`;
       assertJapaneseDraftField("draft title", sourceTitle);
@@ -119,16 +123,12 @@ ${sourceBody}
     };
   }
 
-  callTranslator(agent, prompt, root) {
-    let lastErr = null;
-    for (let attempt = 0; attempt <= PUBLISH_RETRY_COUNT; attempt++) {
-      try {
-        return callAgentWithLog(agent, prompt, PUBLISH_TIMEOUT_MS, root);
-      } catch (err) {
-        lastErr = err;
-        if (attempt < PUBLISH_RETRY_COUNT) continue;
-      }
-    }
-    throw new Error(`translator agent failed after ${PUBLISH_RETRY_COUNT + 1} attempts: ${lastErr?.message}`);
-  }
+}
+
+function buildAgent(config, root) {
+  const agentWorkDir = resolveWorkDir(root, config);
+  const paths = { root, agentWorkDir };
+  const registry = new ProviderRegistry(config.agent?.providers || {});
+  const logger = Logger.getInstance();
+  return new Agent({ config, paths, registry, logger });
 }
