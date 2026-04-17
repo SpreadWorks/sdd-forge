@@ -1,5 +1,5 @@
 {
-  "analyzedAt": "2026-04-17T09:48:23.647Z",
+  "analyzedAt": "2026-04-17T10:27:43.149Z",
   "package": {
     "entries": [
       {
@@ -300,9 +300,9 @@
       },
       {
         "file": "src/docs/commands/agents.js",
-        "hash": "f7712eef0da8177df77db3cb5b64891b",
-        "lines": 229,
-        "mtime": "2026-04-17T09:02:28.839Z",
+        "hash": "142ae453be9d1dc51e041ee119b58bab",
+        "lines": 231,
+        "mtime": "2026-04-17T10:27:42.795Z",
         "className": "agents",
         "methods": [
           "buildAgentsSystemPrompt",
@@ -316,14 +316,13 @@
           "path",
           "../../lib/cli.js",
           "../../lib/config.js",
-          "../../lib/agent.js",
+          "../../lib/container.js",
           "../../lib/i18n.js",
           "../lib/resolver-factory.js",
           "../../lib/progress.js",
           "../lib/directive-parser.js",
           "../lib/command-context.js",
           "../../lib/agents-md.js",
-          "../../lib/container.js",
           "../lib/docs-context.js"
         ],
         "exports": [
@@ -332,21 +331,21 @@
         "extends": null,
         "usedBy": null,
         "id": "5684c584",
-        "summary": "This command generates or refines `AGENTS.md` content from project analysis, docs, and templates. It resolves directives and optionally invokes an AI agent for refinement.",
-        "detail": "The implementation builds specialized prompts from project files, docs chapters, and SDD template content. It parses and replaces directive blocks, preserving structured sections while injecting resolved data. If `AGENTS.md` is missing, it bootstraps one from a default template before refinement. The command writes the final document back to source root and reports agent-call failures with explicit error messages.",
-        "chapter": "development",
+        "summary": "Implements the `docs agents` command that creates or updates `AGENTS.md` using project analysis and template directives. It orchestrates prompt construction, directive resolution, and AI-assisted refinement of project-specific guidance.",
+        "detail": "The command parses CLI flags, resolves repository and docs context, and ensures an `AGENTS.md` file exists by bootstrapping from a template when missing. It loads analysis output, chapter documents, and README content to assemble a rich prompt context for refinement. Directive blocks are parsed and resolved through resolver factories so embedded data directives are expanded before writing. It explicitly validates that a default AI agent is configured and wraps agent call failures with command-specific errors. Finally, it writes the merged output back to disk in UTF-8.",
+        "chapter": "cli_commands",
         "role": "cli",
         "enrich": {
-          "processedAt": "2026-04-17T09:03:42.668Z",
+          "processedAt": "2026-04-17T10:29:11.846Z",
           "attempts": 1
         },
         "keywords": [
-          "AGENTS.md",
+          "agents command",
+          "AGENTS.md generation",
           "directive resolution",
-          "prompt building",
-          "agent refinement",
-          "documentation synthesis",
-          "template bootstrap"
+          "AI refinement",
+          "docs context",
+          "command orchestration"
         ]
       },
       {
@@ -448,9 +447,9 @@
       },
       {
         "file": "src/docs/commands/enrich.js",
-        "hash": "bba1d38f87082e577613a09fc4c97eed",
+        "hash": "d429cbb95bea5a30ab9d1310990770ad",
         "lines": 522,
-        "mtime": "2026-04-17T09:02:28.839Z",
+        "mtime": "2026-04-17T10:27:42.796Z",
         "className": "enrich",
         "methods": [
           "printHelp",
@@ -471,7 +470,7 @@
           "path",
           "../../lib/cli.js",
           "../../lib/config.js",
-          "../../lib/agent.js",
+          "../../lib/config.js",
           "../lib/minify.js",
           "../lib/concurrency.js",
           "../lib/command-context.js",
@@ -498,28 +497,29 @@
         "extends": null,
         "usedBy": null,
         "id": "abb7e5b3",
-        "summary": "This command enriches scan analysis entries using an AI agent in token-bounded batches. It merges generated enrichment back into `analysis.json` with progress persistence.",
-        "detail": "Entries are collected and keyed deterministically, then split into batches by token budget and processed with configurable concurrency. Prompt construction includes language/chapter context, and responses are repaired/parsing-validated before merge. The pipeline tracks attempts per entry, saves intermediate progress, and dumps invalid agent responses for debugging. Final output is written to the standard SDD output path with logs summarizing enrichment volume.",
+        "summary": "Implements the `docs enrich` command that enriches analysis entries with structured metadata in batched AI calls. It handles batching, retries, merge logic, progress persistence, and failure diagnostics.",
+        "detail": "The module collects analysis entries, computes stable entry keys, and splits work into token-bounded batches for scalable enrichment. It builds localized prompts, parses and repairs JSON responses, then merges enriched fields back into the analysis object while preserving core metadata keys. The command supports concurrent batch processing, incremental save points, and retry-aware attempt tracking by entry. On parsing or agent failures, it emits detailed batch-specific errors and dumps raw AI responses for debugging. It can print to stdout or save `analysis.json` under the configured output directory.",
         "chapter": "internal_design",
         "role": "cli",
         "enrich": {
-          "processedAt": "2026-04-17T09:03:42.668Z",
+          "processedAt": "2026-04-17T10:29:11.846Z",
           "attempts": 1
         },
         "keywords": [
-          "analysis enrichment",
+          "metadata enrichment",
           "batch processing",
-          "ai pipeline",
           "token limit",
-          "progress save",
-          "json repair"
+          "JSON repair",
+          "analysis pipeline",
+          "concurrency control",
+          "progress save"
         ]
       },
       {
         "file": "src/docs/commands/forge.js",
-        "hash": "832e3c2845bf88567fc0ae35724402e4",
-        "lines": 443,
-        "mtime": "2026-04-17T09:02:28.840Z",
+        "hash": "190605de467b21cfce3db87edc8648af",
+        "lines": 436,
+        "mtime": "2026-04-17T10:27:42.796Z",
         "className": "forge",
         "methods": [
           "getTargetFiles",
@@ -542,7 +542,7 @@
           "../../lib/config.js",
           "../lib/command-context.js",
           "../lib/resolver-factory.js",
-          "../../lib/agent.js",
+          "../../lib/container.js",
           "../../lib/i18n.js",
           "../../lib/constants.js",
           "../lib/forge-prompts.js",
@@ -555,28 +555,28 @@
         "extends": null,
         "usedBy": null,
         "id": "ef4fa5d9",
-        "summary": "This command drives iterative docs forging by coordinating generation, review, and retry loops. It supports local, assist, and agent modes with per-file targeting.",
-        "detail": "It parses rich CLI options such as max runs, timeouts, concurrency, and review command overrides. Target files are selected from chapter configuration and optionally narrowed by relevance heuristics from prompt/spec text. Each run can invoke agent edits, execute review checks, and continue until success or run limit exhaustion. It also integrates downstream readme and translation refresh steps to keep final outputs consistent.",
-        "chapter": "development",
+        "summary": "Implements the `docs forge` command that drives iterative documentation generation with review-and-fix loops. It supports multiple execution modes, per-file targeting, and convergence checks.",
+        "detail": "The command parses advanced CLI options such as mode, max runs, concurrency, and prompt/spec inputs, then validates constraints before execution. It estimates relevant docs files from spec text, invokes an agent per file or globally, and optionally runs review commands between rounds. Agent invocation is wrapped with optional streaming and periodic wait indicators for long-running tasks. The workflow can regenerate README and translations as post-steps and exits with error status when review loops do not converge within limits. It exposes helper functions for file relevance estimation to keep generation scoped.",
+        "chapter": "cli_commands",
         "role": "cli",
         "enrich": {
-          "processedAt": "2026-04-17T09:03:42.668Z",
+          "processedAt": "2026-04-17T10:29:11.846Z",
           "attempts": 1
         },
         "keywords": [
-          "docs forge",
+          "forge command",
           "iterative generation",
           "review loop",
-          "agent mode",
-          "target file selection",
-          "automation workflow"
+          "per-file mode",
+          "agent orchestration",
+          "documentation synthesis"
         ]
       },
       {
         "file": "src/docs/commands/init.js",
-        "hash": "e6a801c848f2a4878dba5327b759ff38",
-        "lines": 272,
-        "mtime": "2026-04-17T09:02:28.840Z",
+        "hash": "db96190dc2f6d601a2b7aacab7517050",
+        "lines": 271,
+        "mtime": "2026-04-17T10:27:42.796Z",
         "className": "init",
         "methods": [
           "aiFilterChapters",
@@ -587,7 +587,6 @@
           "path",
           "../../lib/cli.js",
           "../../lib/config.js",
-          "../../lib/agent.js",
           "../lib/template-merger.js",
           "../lib/forge-prompts.js",
           "../../lib/progress.js",
@@ -604,28 +603,28 @@
         "extends": null,
         "usedBy": null,
         "id": "62ef800b",
-        "summary": "This command initializes docs chapters from merged templates and optional AI-assisted chapter filtering. It creates missing docs files while handling conflicts and force behavior.",
-        "detail": "Template resolution combines built-in and project-local templates, then orders output via chapter ordering rules. Optional AI filtering narrows chapter scope based on analysis and purpose prompts. It verifies template availability, ensures docs directory existence, and detects overwrite conflicts unless forced. Generated chapter files are translated/normalized and written as UTF-8 Markdown.",
-        "chapter": "internal_design",
+        "summary": "Implements the `docs init` command that initializes chapter files from resolved templates and optional AI-based chapter filtering. It materializes localized docs skeletons while handling merge and conflict behavior.",
+        "detail": "The module resolves template layers, chapter order, and translation behavior from presets and project-local overrides. It can call an AI filter step to narrow chapter outputs based on analysis context and purpose, with conservative fallback to full chapter lists on parse errors. The command checks required type input, ensures templates and output directories exist, and handles overwrite or conflict detection. Generated files are rendered from merged sources with directive stripping where appropriate. Logging and i18n wrappers provide localized command feedback.",
+        "chapter": "cli_commands",
         "role": "cli",
         "enrich": {
-          "processedAt": "2026-04-17T09:03:42.668Z",
+          "processedAt": "2026-04-17T10:29:11.846Z",
           "attempts": 1
         },
         "keywords": [
-          "docs init",
-          "template merge",
-          "chapter selection",
-          "force overwrite",
-          "scaffold generation",
-          "ai filtering"
+          "init command",
+          "template initialization",
+          "chapter filtering",
+          "preset merge",
+          "docs scaffolding",
+          "localized docs"
         ]
       },
       {
         "file": "src/docs/commands/readme.js",
-        "hash": "a52d96b5ff99cbcdda9a3b05ca6ab175",
+        "hash": "a5f892bb5efacd7549108a1c1ed6ba56",
         "lines": 192,
-        "mtime": "2026-04-17T09:02:28.840Z",
+        "mtime": "2026-04-17T10:27:42.796Z",
         "className": "readme",
         "methods": [
           "main"
@@ -642,7 +641,6 @@
           "./text.js",
           "../lib/text-prompts.js",
           "../../lib/config.js",
-          "../../lib/agent.js",
           "../../lib/container.js",
           "../lib/docs-context.js"
         ],
@@ -652,21 +650,21 @@
         "extends": null,
         "usedBy": null,
         "id": "26628ac2",
-        "summary": "This command generates or updates `README.md` from docs templates, directives, and analysis context. It supports custom output paths and language-aware resolution behavior.",
-        "detail": "It resolves templates and directives similarly to chapter generation, but adapts resolver labels to README-relative context. Existing README content is compared before write to avoid unnecessary file churn. The command integrates configurable agent/concurrency settings for text fill behavior where applicable. It provides a consistent path for README regeneration within the broader docs workflow.",
+        "summary": "Implements the `docs readme` command that regenerates README content from templates, directives, and analysis data. It supports AI text fill integration and custom output paths.",
+        "detail": "The command resolves README template sources through the same layer-merging system used by chapter docs and builds resolver labels based on output location. It processes block and data directives, then optionally runs AI-assisted text generation with system prompts and concurrency settings. Existing README content is read to support idempotent updates and overwrite decisions. It validates agent configuration when AI text fill is required and writes the final content to either default `README.md` or a user-provided target. The implementation shares resolver and docs-context utilities with other docs commands for consistent behavior.",
         "chapter": "cli_commands",
         "role": "cli",
         "enrich": {
-          "processedAt": "2026-04-17T09:03:42.668Z",
+          "processedAt": "2026-04-17T10:29:11.846Z",
           "attempts": 1
         },
         "keywords": [
-          "readme generator",
-          "template resolver",
-          "directive parsing",
-          "analysis-driven docs",
-          "path-aware rendering",
-          "incremental write"
+          "readme generation",
+          "template processing",
+          "data directives",
+          "text fill",
+          "resolver labels",
+          "output path"
         ]
       },
       {
@@ -775,9 +773,9 @@
       },
       {
         "file": "src/docs/commands/text.js",
-        "hash": "6f64c99b06d2eae88bfcbfe20fc42099",
-        "lines": 774,
-        "mtime": "2026-04-17T09:02:28.840Z",
+        "hash": "07780cfe9e7e748df0bcaa2fa9069256",
+        "lines": 768,
+        "mtime": "2026-04-17T10:27:42.796Z",
         "className": "text",
         "methods": [
           "textFillFromAnalysis",
@@ -788,8 +786,7 @@
           "parseBatchJsonResponse",
           "applyBatchJsonToFile",
           "processTemplateFileBatch",
-          "callAgent",
-          "callAgentAsync",
+          "invokeAgent",
           "stripPreamble",
           "processTemplate",
           "allTextDirectivesFilled",
@@ -808,7 +805,6 @@
           "../../lib/cli.js",
           "../../lib/config.js",
           "../../lib/progress.js",
-          "../../lib/agent.js",
           "../../lib/i18n.js",
           "../lib/command-context.js",
           "../../lib/json-parse.js",
@@ -833,28 +829,29 @@
           "src/docs/commands/readme.js"
         ],
         "id": "7c5e7654",
-        "summary": "This command resolves `{{text}}` directives by calling an AI agent and writing generated prose into docs files. It includes batching, retry behavior, and output safety checks.",
-        "detail": "The implementation supports two processing paths: batch JSON replacement and per-directive generation, both with concurrency control. It strips agent preambles, repairs malformed JSON responses, and validates shrinkage/regression risks before applying changes. It tracks filled versus skipped directives, detects chapter-level source changes, and can reset stale fill blocks when needed. Errors are aggregated per file, and CLI exit codes signal partial or total failure.",
+        "summary": "Implements the `docs text` pipeline for filling `{{text}}` directives in docs files via batched AI generation. It includes batch validation, preamble stripping, retry handling, and selective chapter updates.",
+        "detail": "The module parses directives, builds prompts, and processes files in concurrency-controlled batches to reduce latency and token pressure. It validates AI output quality with shrinkage and completeness checks, repairs malformed JSON responses, and applies structured replacements back to source text. It tracks filled and skipped counters per file, aggregates errors, and supports dry-run and filter-based execution paths. Change detection for chapters is implemented via source hash comparison from analysis entries to avoid unnecessary regeneration. The command exposes many helper exports for reuse and testing of parsing and application primitives.",
         "chapter": "internal_design",
         "role": "cli",
         "enrich": {
-          "processedAt": "2026-04-17T09:03:42.668Z",
+          "processedAt": "2026-04-17T10:29:11.846Z",
           "attempts": 1
         },
         "keywords": [
           "text directives",
-          "ai content fill",
-          "batch json apply",
-          "response repair",
-          "generation retry",
-          "content validation"
+          "batch JSON response",
+          "preamble stripping",
+          "retry logic",
+          "chapter change detection",
+          "AI content fill",
+          "concurrent processing"
         ]
       },
       {
         "file": "src/docs/commands/translate.js",
-        "hash": "61807a4f52b1549630df80f1c393690b",
+        "hash": "06f0bf690b37b5bcfecb35a1f1b9c9a1",
         "lines": 228,
-        "mtime": "2026-04-17T09:02:28.840Z",
+        "mtime": "2026-04-17T10:27:42.797Z",
         "className": "translate",
         "methods": [
           "toneInstruction",
@@ -869,7 +866,6 @@
           "../../lib/cli.js",
           "../../lib/types.js",
           "../../lib/config.js",
-          "../../lib/agent.js",
           "../../lib/progress.js",
           "../lib/command-context.js",
           "../lib/concurrency.js",
@@ -883,21 +879,21 @@
         "extends": null,
         "usedBy": null,
         "id": "fd496e07",
-        "summary": "This command translates generated docs and README into configured target languages using an AI agent. It skips up-to-date outputs unless forced.",
-        "detail": "It builds translation tasks from source chapter files and optional root README, creating per-language output directories as needed. A timestamp-based freshness check avoids redundant translations and reduces runtime cost. Translation prompts can adapt tone and document style, and responses are stripped of preamble noise. Work executes with configurable concurrency and logs each completed artifact.",
+        "summary": "Implements the `docs translate` command that translates docs and README into target languages with incremental update checks. It builds translation task lists and executes them concurrently via an AI agent.",
+        "detail": "The module computes whether translation is needed using mtime comparisons unless forced mode is enabled. It constructs source-to-target task objects for chapter files and optional README, creating language directories as needed. Translation prompts include tone and document style instructions and strip common AI preambles from outputs. The command validates agent and docs directory prerequisites before execution. It writes translated content per task and reports labels for progress visibility.",
         "chapter": "cli_commands",
         "role": "cli",
         "enrich": {
-          "processedAt": "2026-04-17T09:03:42.668Z",
+          "processedAt": "2026-04-17T10:29:11.846Z",
           "attempts": 1
         },
         "keywords": [
-          "documentation translation",
-          "multilingual output",
-          "freshness skip",
-          "concurrency",
-          "readme localization",
-          "ai translator"
+          "translation command",
+          "mtime sync",
+          "multilingual docs",
+          "translation tasks",
+          "document tone",
+          "incremental update"
         ]
       },
       {
@@ -1412,9 +1408,9 @@
       },
       {
         "file": "src/docs/lib/docs-context.js",
-        "hash": "68e6c21f815ed12e8f31d81f44b1fa66",
+        "hash": "543c32ef8d6689d679121bf67ac2ea8b",
         "lines": 47,
-        "mtime": "2026-04-17T09:02:28.841Z",
+        "mtime": "2026-04-17T10:27:42.797Z",
         "className": "docs-context",
         "methods": [
           "resolveDocsContext"
@@ -1433,21 +1429,21 @@
           "src/docs/commands/readme.js"
         ],
         "id": "b447ebc8",
-        "summary": "This library resolves docs execution context by combining container defaults, CLI flags, and explicit overrides. It returns normalized root/docs/language settings for command handlers.",
-        "detail": "Docs directory resolution is precedence-based: override value, then CLI option, then default `docs` path under root. It normalizes paths with `path.resolve`/`path.join` and derives language using configured defaults. The function keeps context construction small and deterministic to reduce duplicated path logic across commands. It acts as a thin but central bridge between runtime container state and CLI command execution.",
-        "chapter": "project_structure",
+        "summary": "Provides docs context resolution used by docs commands to normalize root, language, and docs directory paths. It centralizes path derivation from container state and CLI overrides.",
+        "detail": "The function derives defaults from container-managed root and configured default language, then applies explicit override precedence. It resolves absolute docs paths consistently whether set from options or fallback conventions. Returned context objects are shaped for downstream command consumption to avoid duplicated root/docs path logic. This keeps command modules thin and reduces inconsistency in path handling across docs workflows.",
+        "chapter": "internal_design",
         "role": "lib",
         "enrich": {
-          "processedAt": "2026-04-17T09:03:42.668Z",
+          "processedAt": "2026-04-17T10:29:11.846Z",
           "attempts": 1
         },
         "keywords": [
           "context resolver",
+          "docs directory",
           "path normalization",
-          "command context",
-          "default language",
-          "cli overrides",
-          "runtime container"
+          "language default",
+          "CLI overrides",
+          "shared utility"
         ]
       },
       {
@@ -1558,8 +1554,21 @@
         ],
         "id": "49646805",
         "enrich": {
-          "attempts": 1
-        }
+          "processedAt": "2026-04-17T10:29:11.846Z",
+          "attempts": 2
+        },
+        "summary": "Defines preserved comment-prefix detection utilities for language handlers. It standardizes recognition of `WHY`, `HACK`, and `SECURITY` markers across comment syntaxes.",
+        "detail": "The module exports a canonical prefix list and builds regex variants for slash and hash comment forms. Helper functions expose boolean checks that downstream minifiers use to keep important inline rationale comments. This avoids accidental stripping of safety or intent annotations during code condensation. The logic is intentionally small and shared to keep behavior consistent in JS, PHP, and hash-comment languages.",
+        "chapter": "internal_design",
+        "role": "lib",
+        "keywords": [
+          "comment preservation",
+          "security comments",
+          "hack markers",
+          "regex prefix",
+          "language utilities",
+          "minifier support"
+        ]
       },
       {
         "file": "src/docs/lib/lang/js.js",
@@ -1602,8 +1611,21 @@
         ],
         "id": "dcea4940",
         "enrich": {
-          "attempts": 1
-        }
+          "processedAt": "2026-04-17T10:29:11.846Z",
+          "attempts": 2
+        },
+        "summary": "Implements JavaScript language utilities for minification, parsing, and essential-line extraction used by docs analysis. It removes non-essential comments while preserving tagged rationale comments.",
+        "detail": "The module strips block and line comments with safeguards for preserved prefixes and normalizes indentation widths for compact output. It exposes a parser that extracts class-level structure, inheritance, and method/property placeholders from source content. Additional helpers extract import/export statements and compute an essential subset emphasizing IO/process-relevant lines. The implementation is pattern-driven rather than AST-based, prioritizing lightweight, dependency-free processing.",
+        "chapter": "internal_design",
+        "role": "lib",
+        "keywords": [
+          "javascript parser",
+          "code minify",
+          "import extraction",
+          "export extraction",
+          "essential code",
+          "comment stripping"
+        ]
       },
       {
         "file": "src/docs/lib/lang/php.js",
@@ -1638,8 +1660,21 @@
         ],
         "id": "8da3c9aa",
         "enrich": {
-          "attempts": 1
-        }
+          "processedAt": "2026-04-17T10:29:11.846Z",
+          "attempts": 2
+        },
+        "summary": "Implements PHP language utilities parallel to the JS handler, including minification, structural parsing, and import/export extraction. It supports both slash and hash comment conventions with preserved markers.",
+        "detail": "The module removes block, line, and hash comments while retaining designated rationale prefixes to protect intent-critical annotations. It derives class names, inheritance, and members through regex-based parsing and returns normalized structural summaries. Import/export extraction and essential-line filtering are provided for downstream analysis and prompt compaction. The design mirrors the JS handler to keep cross-language behavior consistent.",
+        "chapter": "internal_design",
+        "role": "lib",
+        "keywords": [
+          "php parser",
+          "comment removal",
+          "class extraction",
+          "dependency-free analysis",
+          "essential lines",
+          "language handler"
+        ]
       },
       {
         "file": "src/docs/lib/lang/py.js",
@@ -1665,8 +1700,21 @@
         ],
         "id": "d894c726",
         "enrich": {
-          "attempts": 1
-        }
+          "processedAt": "2026-04-17T10:29:11.846Z",
+          "attempts": 2
+        },
+        "summary": "Implements Python comment-minification and essential-line extraction helpers for docs analysis. It preserves special hash-prefixed rationale annotations.",
+        "detail": "The module removes standard hash comments line-by-line unless they match preserved prefixes such as security or hack markers. It provides a minimal minify function for prompt-friendly compression without external parsers. Essential extraction keeps relevant operational lines while reducing noise. The implementation stays intentionally small to fit the repository’s no-dependency policy.",
+        "chapter": "internal_design",
+        "role": "lib",
+        "keywords": [
+          "python minify",
+          "hash comments",
+          "preserved prefixes",
+          "essential extraction",
+          "lightweight parser",
+          "docs analysis"
+        ]
       },
       {
         "file": "src/docs/lib/lang/yaml.js",
@@ -1690,8 +1738,20 @@
         ],
         "id": "ef1dd14d",
         "enrich": {
-          "attempts": 1
-        }
+          "processedAt": "2026-04-17T10:29:11.846Z",
+          "attempts": 2
+        },
+        "summary": "Implements YAML comment-minification support for docs analysis workflows. It strips non-preserved hash comments while retaining designated critical prefixes.",
+        "detail": "The module follows the same hash-comment preservation contract as other language utilities for consistency. Its minifier is line-oriented and dependency-free, producing compact text suitable for analysis prompts. By sharing prefix semantics, it ensures cross-language handling of `WHY/HACK/SECURITY` annotations remains uniform. The focused API keeps integration simple in the broader minify pipeline.",
+        "chapter": "internal_design",
+        "role": "lib",
+        "keywords": [
+          "yaml minify",
+          "comment stripping",
+          "prefix preservation",
+          "analysis preprocessing",
+          "lightweight utility"
+        ]
       },
       {
         "file": "src/docs/lib/minify.js",
@@ -1949,9 +2009,9 @@
       },
       {
         "file": "src/docs/lib/template-merger.js",
-        "hash": "28cca924aa0e8069b8c1d43dedd91e27",
-        "lines": 609,
-        "mtime": "2026-04-14T04:55:48.008Z",
+        "hash": "4ffc373f0175946ce03854cd56c52d92",
+        "lines": 608,
+        "mtime": "2026-04-17T10:27:42.797Z",
         "className": "template-merger",
         "methods": [
           "buildLayers",
@@ -1974,8 +2034,7 @@
           "fs",
           "path",
           "./directive-parser.js",
-          "../../lib/presets.js",
-          "../../lib/agent.js"
+          "../../lib/presets.js"
         ],
         "exports": [
           "buildLayers",
@@ -1989,22 +2048,22 @@
           "src/docs/lib/command-context.js"
         ],
         "id": "88243459",
-        "summary": "This library provides layered template resolution and merge logic across presets, languages, and fallback chains. It is the core engine that determines how final documentation templates are discovered, combined, and translated.",
-        "detail": "The module builds ordered template layers from preset chains and project-local overrides, then resolves file sources per template with fallback handling. It supports additive and merge modes, special-file handling, chapter-order-aware discovery, and multi-chain resolution for complex preset inheritance. Directive block parsing is central: nested blocks are collected and merged so child templates can override or extend parent sections predictably. Utility functions manage language fallback path derivation and text-level composition primitives (`addTexts`, `mergeTexts`) to preserve structure while combining content. Agent-assisted translation is integrated as an optional step, keeping translation separate from structural merge behavior.",
+        "summary": "Implements template-layer resolution and merge logic for docs generation, including fallback chains and block-aware additive merging. It is the core engine behind preset inheritance and localized template selection.",
+        "detail": "The module builds layer stacks from preset chains, project-local overrides, and optional fallback language sets, then resolves per-file source lists. It merges template texts using block directives and additive rules, with special-file handling and chapter-order driven discovery. Functions support multi-chain resolution and fallback derivation for missing localized files. It also includes template translation via agent call with graceful fallback on failure. This module centralizes template composition semantics used by init/readme workflows.",
         "chapter": "internal_design",
         "role": "lib",
         "enrich": {
-          "processedAt": "2026-04-14T04:56:09.021Z",
+          "processedAt": "2026-04-17T10:29:11.846Z",
           "attempts": 1
         },
         "keywords": [
           "template merger",
-          "layered inheritance",
-          "fallback language",
-          "directive blocks",
-          "preset chain",
-          "content composition",
-          "translation pipeline"
+          "preset inheritance",
+          "layer resolution",
+          "fallback chain",
+          "block directives",
+          "chapter order",
+          "additive merge"
         ]
       },
       {
@@ -2264,11 +2323,12 @@
       },
       {
         "file": "src/flow/commands/review.js",
-        "hash": "9a6800ae95f42fa4a0aac490584924dd",
-        "lines": 979,
-        "mtime": "2026-04-17T09:02:28.841Z",
+        "hash": "f0c5f39e89f622a82de7bda1e3eb0d5a",
+        "lines": 982,
+        "mtime": "2026-04-17T10:27:42.797Z",
         "className": "review",
         "methods": [
+          "ensureAgent",
           "resolveReviewTarget",
           "buildReviewPathspec",
           "runDiffOrThrow",
@@ -2306,7 +2366,7 @@
           "../../lib/cli.js",
           "../../lib/config.js",
           "../../lib/flow-state.js",
-          "../../lib/agent.js",
+          "../../lib/container.js",
           "../../lib/git-helpers.js",
           "../../lib/constants.js",
           "../../lib/constants.js"
@@ -2335,9 +2395,23 @@
         "extends": null,
         "usedBy": null,
         "id": "331cf497",
+        "summary": "Implements `flow review` command workflows for spec, test, and code review phases with iterative AI proposal/fix loops. It produces review artifacts and can apply approved fixes automatically.",
+        "detail": "The command resolves review targets from spec or git diffs, excludes non-code paths, and runs structured review prompts against configured agents. It parses proposal/verdict formats, merges review outcomes, and writes markdown reports into the active spec directory. Separate flows handle test design and gap analysis, including patch-style file updates generated by AI responses. Retry-limited loops support detect/fix cycles for both tests and spec text, with exit code control for failure states. Utility functions enforce phase validity and output sanity checks.",
+        "chapter": "cli_commands",
+        "role": "cli",
         "enrich": {
-          "attempts": 4
-        }
+          "processedAt": "2026-04-17T10:29:11.846Z",
+          "attempts": 1
+        },
+        "keywords": [
+          "flow review",
+          "spec review",
+          "test gap analysis",
+          "AI proposals",
+          "git diff review",
+          "iterative fix loop",
+          "review report"
+        ]
       },
       {
         "file": "src/flow/lib/base-command.js",
@@ -2425,8 +2499,20 @@
         ],
         "id": "e296da98",
         "enrich": {
-          "attempts": 4
-        }
+          "processedAt": "2026-04-17T10:29:11.846Z",
+          "attempts": 5
+        },
+        "summary": "Provides flow context resolution utilities that derive canonical flow identifiers and related runtime metadata. It serves as a thin shared adapter for flow commands.",
+        "detail": "The function maps container state into a normalized context object keyed by spec path-derived identifiers. This reduces duplicated state-lookup logic across flow command implementations. It keeps command code focused on behavior while centralizing minimal context shaping. The module is intentionally compact and compositional.",
+        "chapter": "internal_design",
+        "role": "lib",
+        "keywords": [
+          "flow context",
+          "spec id",
+          "context adapter",
+          "command shared state",
+          "flow utilities"
+        ]
       },
       {
         "file": "src/flow/lib/get-check.js",
@@ -2469,9 +2555,9 @@
       },
       {
         "file": "src/flow/lib/get-context.js",
-        "hash": "02481ac3f3cf3a7f1785c5b8be53ca92",
-        "lines": 401,
-        "mtime": "2026-04-14T08:22:10.020Z",
+        "hash": "1ad2b93d907a1717271de6c6acdf67b6",
+        "lines": 400,
+        "mtime": "2026-04-17T10:27:42.797Z",
         "className": "get-context",
         "methods": [
           "toSearchResult",
@@ -2494,7 +2580,7 @@
           "../../lib/config.js",
           "./base-command.js",
           "../../docs/lib/analysis-entry.js",
-          "../../lib/agent.js"
+          "../../lib/container.js"
         ],
         "exports": [
           "default",
@@ -2516,22 +2602,22 @@
           "src/docs/commands/readme.js"
         ],
         "id": "1261e39f",
-        "summary": "This module powers `flow get-context` by loading analysis entries and searching them with keyword, fallback, and n-gram strategies. It also provides optional AI-assisted keyword selection.",
-        "detail": "It normalizes analysis records into searchable structures while excluding noisy metadata fields. Search modes include direct keyword matching, fuzzy bigram similarity ranking, and a guarded AI keyword picker with fallback behavior. The command can also return file snippets and phase-aware context payloads for downstream flow actions. Helper exports keep search primitives reusable across other flow tooling.",
+        "summary": "Implements context retrieval and semantic search utilities for flow workflows, including keyword, fallback, and n-gram matching modes. It also defines a `GetContextCommand` for file/context lookup.",
+        "detail": "The module loads and filters analysis entries, excludes noisy metadata fields, and converts entries into compact search result payloads. It supports multiple search strategies: direct keyword matching, AI-guided keyword selection, fallback lexical matching, and bigram similarity ranking. Prompt builders and JSON-repair parsing are used to stabilize AI-assisted selection. The command class can return file contents, filtered entries, and phase-aware context snapshots for downstream flow tools. Error handling covers missing analysis output and malformed JSON state.",
         "chapter": "internal_design",
-        "role": "lib",
+        "role": "cli",
         "enrich": {
-          "processedAt": "2026-04-14T11:38:15.649Z",
+          "processedAt": "2026-04-17T10:29:11.846Z",
           "attempts": 1
         },
         "keywords": [
-          "context retrieval",
-          "analysis search",
+          "context search",
           "ngram similarity",
           "keyword selection",
-          "fuzzy match",
-          "phase context",
-          "flow support"
+          "analysis entries",
+          "flow command",
+          "JSON repair",
+          "semantic retrieval"
         ]
       },
       {
@@ -2839,14 +2925,28 @@
         "usedBy": null,
         "id": "c711309b",
         "enrich": {
-          "attempts": 3
-        }
+          "processedAt": "2026-04-17T10:29:11.846Z",
+          "attempts": 4
+        },
+        "summary": "Implements finalize-phase orchestration for flow workflows, including preflight checks, commit/merge/push steps, and cleanup. It defines step mapping, error finalizers, and migration hook execution.",
+        "detail": "The module verifies git write access with lock-file preflight before running finalize steps to fail fast on repository permission issues. It executes selectable substeps through a shared wrapper that normalizes success/failure status and messages. Commit behavior can be skipped when no changes exist, and post-commit logic can run docs build or migration hooks tied to spec directories. Cleanup handles worktree and flow-state removal paths depending on mode and workspace layout. The `RunFinalizeCommand` validates options such as merge strategy and step selection against known constants.",
+        "chapter": "cli_commands",
+        "role": "cli",
+        "keywords": [
+          "flow finalize",
+          "preflight check",
+          "git write access",
+          "step orchestration",
+          "commit and merge",
+          "cleanup workflow",
+          "migration hook"
+        ]
       },
       {
         "file": "src/flow/lib/run-gate.js",
-        "hash": "b4cb4b41ccedf32b2d73b658026fd4e6",
-        "lines": 542,
-        "mtime": "2026-04-14T11:37:06.523Z",
+        "hash": "4d9a13cf115dca91f1d8a8de11aa5ff2",
+        "lines": 540,
+        "mtime": "2026-04-17T10:27:42.797Z",
         "className": "run-gate",
         "methods": [
           "RunGateCommand",
@@ -2867,7 +2967,7 @@
           "path",
           "../../lib/process.js",
           "../../lib/git-helpers.js",
-          "../../lib/agent.js",
+          "../../lib/container.js",
           "../../lib/guardrail.js",
           "../../lib/flow-state.js",
           "./get-test-result.js",
@@ -2886,22 +2986,22 @@
         "extends": "FlowCommand",
         "usedBy": null,
         "id": "b4aa4dad",
-        "summary": "This module enforces flow gate checks for draft, spec, and implementation phases. It combines structural linting, guardrail evaluation, diff inspection, and test-evidence checks.",
-        "detail": "Phase-specific routines validate required headings and anti-patterns in draft/spec text before any agent guardrail call. Guardrail prompts are generated from configured rules and parsed into pass/fail verdict details. Implementation gating inspects git diffs against the base branch and can include test evidence in the review prompt. Returned gate results contain next-step hints for both success and failure paths, aligning with flow state transitions.",
+        "summary": "Implements flow gate checks for draft/spec/impl phases, combining static rule checks, guardrail prompts, and diff/test evidence validation. It returns structured pass/fail transitions for workflow automation.",
+        "detail": "The module validates phase input, reads draft/spec files, and applies section-level heuristics to detect missing or draft-placeholder content. It can run guardrail checks via AI prompts and parse machine-readable results into reasons and issues. Implementation-phase gating inspects git diffs against base branch and integrates test evidence summaries into review prompts. Pass/fail helpers encode next-phase transitions and standardized response shapes. The command class dispatches phase-specific execution paths with shared error messaging.",
         "chapter": "cli_commands",
         "role": "cli",
         "enrich": {
-          "processedAt": "2026-04-14T11:38:15.649Z",
+          "processedAt": "2026-04-17T10:29:11.846Z",
           "attempts": 1
         },
         "keywords": [
-          "gate validation",
-          "draft check",
-          "spec lint",
-          "guardrail policy",
+          "gate command",
+          "phase validation",
+          "guardrail check",
+          "draft quality",
           "implementation gate",
-          "diff review",
-          "phase transition"
+          "test evidence",
+          "workflow transition"
         ]
       },
       {
@@ -3118,9 +3218,9 @@
       },
       {
         "file": "src/flow/lib/run-retro.js",
-        "hash": "b935c54e65f39d63544dfa6421e4b19a",
-        "lines": 235,
-        "mtime": "2026-04-14T11:37:06.523Z",
+        "hash": "06db41f48695aca7299658fa70faea82",
+        "lines": 234,
+        "mtime": "2026-04-17T10:27:42.797Z",
         "className": "run-retro",
         "methods": [
           "RunRetroCommand",
@@ -3134,7 +3234,7 @@
           "fs",
           "path",
           "../../lib/git-helpers.js",
-          "../../lib/agent.js",
+          "../../lib/container.js",
           "../../lib/json-parse.js",
           "../../lib/flow-state.js",
           "./base-command.js"
@@ -3149,29 +3249,29 @@
         "extends": "FlowCommand",
         "usedBy": null,
         "id": "862e7d08",
+        "summary": "Implements retrospective generation for finalized flows by mapping requirements to delivered changes and producing `retro.json`. It uses spec parsing, diff extraction, and AI-structured output validation.",
+        "detail": "The command extracts requirement sections from spec content, loads base branch context from flow state, and computes both summary and detailed git diffs. It builds a strict JSON prompt and parses responses with JSON repair fallback to improve robustness. It enforces overwrite rules unless forced and validates presence of spec, requirements, and diffs before agent calls. Generated retrospectives are written under the spec directory and returned with changed-path metadata. The implementation emphasizes deterministic output shape for downstream auditability.",
+        "chapter": "cli_commands",
+        "role": "cli",
         "enrich": {
-          "processedAt": "2026-04-14T14:42:01.552Z",
-          "attempts": 2
+          "processedAt": "2026-04-17T10:29:11.846Z",
+          "attempts": 1
         },
-        "summary": "Implements the retrospective flow command that generates `retro.json` from requirements and git diff context. It orchestrates AI prompt construction, response parsing, and file persistence.",
-        "detail": "The module extracts requirement text from `spec.md` and pairs it with stored requirement items from flow state. It gathers both compact and detailed diffs against the configured base branch to provide rich context for retrospective analysis. Prompt assembly is explicit and structured, while response parsing includes JSON repair fallback for malformed model output. The command validates preconditions such as existing spec, configured base branch, and non-empty diff, then writes normalized JSON output. It also exports parsing and prompt helpers to support reuse and targeted tests.",
-        "chapter": "development",
-        "role": "controller",
         "keywords": [
           "retrospective generation",
-          "AI prompt",
-          "requirements extraction",
+          "retro.json",
+          "requirements traceability",
           "diff analysis",
-          "json repair",
-          "flow finalize",
-          "retro report"
+          "AI JSON parsing",
+          "finalize audit",
+          "flow command"
         ]
       },
       {
         "file": "src/flow/lib/run-review.js",
-        "hash": "b2e963bd7be54ee8d5fc78278739dfbf",
+        "hash": "a6f6bde87cf7c3cc5a08dcaa11f1aa00",
         "lines": 202,
-        "mtime": "2026-04-13T12:57:49.488Z",
+        "mtime": "2026-04-17T10:27:42.798Z",
         "className": "run-review",
         "methods": [
           "runCmdWithRetry",
@@ -3182,7 +3282,6 @@
         "imports": [
           "../../lib/cli.js",
           "../../lib/process.js",
-          "../../lib/agent.js",
           "../../lib/constants.js",
           "./base-command.js",
           "path"
@@ -3197,22 +3296,9 @@
         "extends": "FlowCommand",
         "usedBy": null,
         "id": "d4e97204",
-        "summary": "Runs review subcommands with retry behavior and parses their outputs into normalized results for test and spec review phases. It wraps the lower-level review script as a command-class interface.",
-        "detail": "The module defines parsers for test-review and spec-review command output, converting process result streams into explicit success/failure objects. A generic retry wrapper executes command functions with delay and bounded attempts, logging retry hints to stderr. Phase input is validated against allowed review phases before dispatching to the target review mode. The command invokes the review script via `runCmd`, then uses dedicated parsers to enforce expected output contracts. It returns structured results suitable for automation rather than raw shell output.",
-        "chapter": "cli_commands",
-        "role": "cli",
         "enrich": {
-          "processedAt": "2026-04-13T12:58:47.344Z",
           "attempts": 1
-        },
-        "keywords": [
-          "review runner",
-          "retry policy",
-          "output parser",
-          "phase dispatch",
-          "command wrapper",
-          "resilience"
-        ]
+        }
       },
       {
         "file": "src/flow/lib/run-sync.js",
@@ -3705,79 +3791,43 @@
         "usedBy": null,
         "id": "4ac07fa0",
         "enrich": {
-          "attempts": 4
+          "attempts": 5
         }
       },
       {
         "file": "src/lib/agent.js",
-        "hash": "4b1c899b4805f160b561ab2d7bbde3e8",
-        "lines": 717,
-        "mtime": "2026-04-17T05:45:21.328Z",
+        "hash": "1bf9643dec3b39748da9e67b79f3606c",
+        "lines": 376,
+        "mtime": "2026-04-17T10:27:42.798Z",
         "className": "agent",
         "methods": [
-          "callAgent",
-          "callAgentAsync",
-          "callAgentWithLog",
-          "callAgentAwaitLog",
-          "callAgentAsyncWithLog",
-          "loadAgentConfig",
-          "ensureAgentWorkDir",
-          "resolveAgent",
-          "resolveWorkDir",
-          "createSystemPromptPrefix",
-          "resolveEffectivePrompt",
-          "resolvePromptArgs",
-          "stripPromptFromArgs",
-          "detectProviderKey",
+          "matchProfilePrefix",
+          "substitutePromptToken",
+          "stripPromptArgs",
           "injectJsonFlag",
-          "parseClaudeOutput",
-          "parseCodexOutput",
-          "parseAgentOutput",
-          "resolveAgentResult",
-          "buildAgentInvocation",
-          "callAgentRaw",
-          "buildAgentLogPayload",
-          "extractAgentResult",
-          "runWithAgentLogging",
-          "runWithAgentLoggingSync",
-          "callAgentAsyncWithRetry",
-          "callAgentAsyncRawOnce",
-          "callAgentAsyncRaw",
-          "callAgentAsyncOnce",
-          "resolveProfileName",
-          "buildAgentResult",
-          "resolveProviderKeyFromProfile"
+          "injectWorkDirFlag",
+          "ensureWorkDir",
+          "tryParseProvider",
+          "sleep",
+          "runWithLogging"
         ],
         "imports": [
           "fs",
           "path",
           "child_process",
-          "./config.js",
-          "./log.js"
+          "./log.js",
+          "./provider.js"
         ],
         "exports": [
-          "callAgent",
-          "callAgentAsync",
-          "callAgentWithLog",
-          "callAgentAwaitLog",
-          "callAgentAsyncWithLog",
-          "loadAgentConfig",
-          "ensureAgentWorkDir",
-          "resolveAgent",
-          "resolveWorkDir",
-          "DEFAULT_AGENT_TIMEOUT",
-          "DEFAULT_AGENT_TIMEOUT_MS",
-          "BUILTIN_PROVIDERS"
+          "Agent"
         ],
         "extends": null,
         "usedBy": [
-          "src/lib/config.js",
-          "src/setup.js",
           "src/lib/container.js"
         ],
         "id": "13ddf392",
         "enrich": {
-          "attempts": 5
+          "attempts": 1
         }
       },
       {
@@ -3868,7 +3918,7 @@
         ],
         "id": "f351ecc4",
         "enrich": {
-          "attempts": 5
+          "attempts": 6
         }
       },
       {
@@ -3895,14 +3945,14 @@
         ],
         "id": "102f6569",
         "enrich": {
-          "attempts": 4
+          "attempts": 5
         }
       },
       {
         "file": "src/lib/config.js",
-        "hash": "e5656888a1468bbb509b3a7de01e1651",
-        "lines": 343,
-        "mtime": "2026-04-17T03:48:03.043Z",
+        "hash": "cf1db86c79ccdf1fa6f9244ac62f2bb3",
+        "lines": 345,
+        "mtime": "2026-04-17T10:27:42.798Z",
         "className": "config",
         "methods": [
           "resolveConcurrency",
@@ -3919,7 +3969,7 @@
         "imports": [
           "fs",
           "path",
-          "./agent.js",
+          "./provider.js",
           "./schema-validate.js"
         ],
         "exports": [
@@ -3938,8 +3988,7 @@
         ],
         "extends": null,
         "usedBy": [
-          "src/flow.js",
-          "src/lib/agent.js",
+          "src/lib/container.js",
           "src/lib/flow-state.js",
           "src/lib/guardrail.js",
           "src/lib/i18n.js",
@@ -3949,12 +3998,11 @@
           "src/presets/js-webapp/tests/acceptance/fixtures/src/index.js",
           "src/presets/node-cli/tests/acceptance/fixtures/src/cli.js",
           "src/setup.js",
-          "src/upgrade.js",
-          "src/lib/container.js"
+          "src/upgrade.js"
         ],
         "id": "dff6e5b4",
         "enrich": {
-          "attempts": 6
+          "attempts": 1
         }
       },
       {
@@ -3994,14 +4042,14 @@
         ],
         "id": "74b5e1c3",
         "enrich": {
-          "attempts": 5
+          "attempts": 6
         }
       },
       {
         "file": "src/lib/container.js",
-        "hash": "4adc170e6e7bb8767ded8acc90eeaad4",
-        "lines": 114,
-        "mtime": "2026-04-17T09:02:28.841Z",
+        "hash": "99028a7624dc047c9af21eb61b781a7b",
+        "lines": 116,
+        "mtime": "2026-04-17T10:27:42.798Z",
         "className": "container",
         "methods": [
           "Container",
@@ -4014,6 +4062,7 @@
           "./config.js",
           "./log.js",
           "./agent.js",
+          "./provider.js",
           "./i18n.js",
           "./flow-state.js"
         ],
@@ -4032,7 +4081,7 @@
         ],
         "id": "fc4eae43",
         "enrich": {
-          "attempts": 4
+          "attempts": 1
         }
       },
       {
@@ -4178,7 +4227,7 @@
         ],
         "id": "5bb0bb76",
         "enrich": {
-          "attempts": 3
+          "attempts": 4
         }
       },
       {
@@ -4439,7 +4488,7 @@
         "usedBy": null,
         "id": "a2f5875b",
         "enrich": {
-          "attempts": 2
+          "attempts": 3
         }
       },
       {
@@ -4490,9 +4539,9 @@
       },
       {
         "file": "src/lib/log.js",
-        "hash": "a00425f54e70e542a1b29ff616a92999",
+        "hash": "532f2390bda6fe98a5d5caa1c62f72e4",
         "lines": 432,
-        "mtime": "2026-04-13T06:50:37.382Z",
+        "mtime": "2026-04-17T10:27:42.798Z",
         "className": "log",
         "methods": [
           "generateRequestId",
@@ -4520,30 +4569,13 @@
         "usedBy": [
           "src/docs.js",
           "src/lib/agent.js",
-          "src/lib/process.js",
-          "src/sdd-forge.js",
-          "src/lib/git-helpers.js",
-          "src/lib/container.js"
+          "src/lib/container.js",
+          "src/lib/git-helpers.js"
         ],
         "id": "3d7bb5e6",
-        "summary": "This module implements structured logging infrastructure, including JSONL event persistence, prompt snapshot files, and request-level tracing metadata. It exposes a singleton Logger that records agent, git, and generic events with contextual flow information.",
-        "detail": "Log destination paths are derived from repository-aware workdir resolution, with daily log partitioning and prompt payload storage under a date-based directory layout. Utility helpers enrich entries with request IDs, text statistics, caller extraction from stack traces, process metadata, and optional flow-state context such as spec and phase. Writes are asynchronous and resilient, using guarded append and file creation helpers that report failures to stderr without crashing main execution paths. The Logger class tracks pending write promises, gates behavior behind config flags, and provides unified methods for agent lifecycle events and other telemetry categories. Relative prompt file references are normalized for portable log readability while preserving absolute paths internally when needed.",
-        "chapter": "internal_design",
-        "role": "lib",
         "enrich": {
-          "processedAt": "2026-04-13T06:51:01.756Z",
           "attempts": 1
-        },
-        "keywords": [
-          "structured logging",
-          "JSONL logs",
-          "request tracing",
-          "prompt snapshot",
-          "telemetry",
-          "log rotation by date",
-          "flow context",
-          "singleton logger"
-        ]
+        }
       },
       {
         "file": "src/lib/multi-select.js",
@@ -4725,6 +4757,31 @@
         ]
       },
       {
+        "file": "src/lib/provider.js",
+        "hash": "29c41974d93ff7aa2b8fbc91d859931d",
+        "lines": 210,
+        "mtime": "2026-04-17T10:27:42.798Z",
+        "className": "provider",
+        "methods": [],
+        "imports": [],
+        "exports": [
+          "Provider",
+          "ClaudeProvider",
+          "CodexProvider",
+          "ProviderRegistry"
+        ],
+        "extends": "Provider",
+        "usedBy": [
+          "src/lib/agent.js",
+          "src/lib/config.js",
+          "src/lib/container.js"
+        ],
+        "id": "0e966da6",
+        "enrich": {
+          "attempts": 1
+        }
+      },
+      {
         "file": "src/lib/schema-validate.js",
         "hash": "8810f1797a6b09cf9198437a7d89b4da",
         "lines": 136,
@@ -4745,7 +4802,7 @@
         ],
         "id": "8bb94bbb",
         "enrich": {
-          "attempts": 6
+          "attempts": 7
         }
       },
       {
@@ -4817,7 +4874,7 @@
         ],
         "id": "69d5afb4",
         "enrich": {
-          "attempts": 6
+          "attempts": 7
         }
       },
       {
@@ -4874,7 +4931,7 @@
         "usedBy": null,
         "id": "0230d610",
         "enrich": {
-          "attempts": 4
+          "attempts": 5
         }
       },
       {
@@ -4929,7 +4986,7 @@
         "usedBy": null,
         "id": "59edeaf2",
         "enrich": {
-          "attempts": 3
+          "attempts": 4
         }
       },
       {
@@ -4955,7 +5012,7 @@
         "usedBy": null,
         "id": "85926390",
         "enrich": {
-          "attempts": 4
+          "attempts": 5
         }
       },
       {
@@ -7882,14 +7939,14 @@
         "usedBy": null,
         "id": "a8608997",
         "enrich": {
-          "attempts": 4
+          "attempts": 5
         }
       },
       {
         "file": "src/setup.js",
-        "hash": "5efa8ebc4b4ecf79389ff9e17df6be0a",
-        "lines": 559,
-        "mtime": "2026-04-17T09:02:28.843Z",
+        "hash": "f808c48be3d2c7a6cdfc9eb9ffc73a22",
+        "lines": 560,
+        "mtime": "2026-04-17T10:27:42.798Z",
         "className": "setup",
         "methods": [
           "ask",
@@ -7921,7 +7978,7 @@
           "./lib/presets.js",
           "./lib/multi-select.js",
           "./lib/agents-md.js",
-          "./lib/agent.js",
+          "./lib/config.js",
           "./lib/skills.js"
         ],
         "exports": [
@@ -7931,7 +7988,7 @@
         "usedBy": null,
         "id": "9820c9db",
         "enrich": {
-          "attempts": 4
+          "attempts": 1
         }
       },
       {
@@ -7980,10 +8037,10 @@
       }
     ],
     "summary": {
-      "total": 240,
-      "totalMethods": 813
+      "total": 241,
+      "totalMethods": 790
     },
     "dataSourceHash": "7d725e75d5031be445119323e4947c91"
   },
-  "enrichedAt": "2026-04-17T09:49:54.634Z"
+  "enrichedAt": "2026-04-17T10:29:11.846Z"
 }

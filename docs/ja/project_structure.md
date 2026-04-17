@@ -25,10 +25,10 @@ src/check/commands/    (cli)
 src/docs/commands/    (cli)
 src/docs/data/    (model)
 src/docs/lib/    (lib, model)
-src/docs/lib/lang/    
+src/docs/lib/lang/    (lib)
 src/flow/    (controller)
 src/flow/commands/    (cli, lib)
-src/flow/lib/    (model, cli, lib, controller)
+src/flow/lib/    (model, lib, cli, controller)
 src/lib/    (lib, view, model)
 src/metrics/commands/    
 ```
@@ -41,7 +41,7 @@ src/metrics/commands/
 | --- | --- | --- |
 | src/docs | 42 | cli, model, lib |
 | src/flow | 36 | cli, lib, model, controller |
-| src/lib | 24 | lib, view, model |
+| src/lib | 25 | lib, view, model |
 | src | 11 | lib, cli, middleware |
 | src/check | 3 | cli |
 | src/metrics | 1 | — |
