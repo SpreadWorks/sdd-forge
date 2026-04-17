@@ -13,7 +13,7 @@
  */
 
 import { parseArgs } from "./lib/cli.js";
-import { ok, fail, output } from "./lib/flow-envelope.js";
+import { Envelope } from "./lib/flow-envelope.js";
 import { FLOW_COMMANDS } from "./flow/registry.js";
 import { EXIT_ERROR } from "./lib/constants.js";
 import { container, initContainer } from "./lib/container.js";
@@ -145,50 +145,67 @@ function helpCommandFor(entry, groupKey, commandKey) {
 // Run a registry entry: parseArgs → help → pre → command.run → ok/fail → post
 // ---------------------------------------------------------------------------
 
-async function runEntry(entry, ctx, envelopeType, envelopeKey) {
-  // Parse args
+async function runEntry(entry, rawArgs, envelopeType, envelopeKey) {
+  // Parse args into a plain input object (CLI flags / options / positional)
+  const input = {};
   try {
-    parseEntryArgs(entry, ctx.args || [], ctx);
+    parseEntryArgs(entry, rawArgs, input);
   } catch (err) {
-    output(fail(envelopeType, envelopeKey, "ERROR", [
+    Envelope.fail(envelopeType, envelopeKey, "ERROR", [
       String(err.message || err),
       `Run: ${helpCommandFor(entry, envelopeType, envelopeKey)}`,
-    ]));
+    ]).output();
     process.exitCode = EXIT_ERROR;
     return;
   }
 
   // Help
-  if (ctx.help && entry.help) {
+  if (input.help && entry.help) {
     console.log(entry.help);
     return;
   }
 
+  // Build hook ctx from container + parsed input. The base FlowCommand
+  // assembles its own ctx from container; hooks share this object.
+  const ctx = { ...resolveFlowContext(container), ...input };
+
   // requiresFlow check
   const requiresFlow = entry.requiresFlow !== false;
   if (requiresFlow && !ctx.flowState) {
-    output(fail(envelopeType, envelopeKey, "NO_FLOW", "no active flow (flow.json not found)"));
+    Envelope.fail(envelopeType, envelopeKey, "NO_FLOW", "no active flow (flow.json not found)").output();
     process.exit(EXIT_ERROR);
   }
 
   // Pre hook
   if (entry.pre) entry.pre(ctx);
 
+  let envelope;
   try {
     const mod = await entry.command();
     const Command = mod.default;
     const cmd = new Command();
-    const result = await cmd.run(ctx);
+    const result = await cmd.run(container, input);
+    envelope = Envelope.ok(envelopeType, envelopeKey, result || {});
 
-    output(ok(envelopeType, envelopeKey, result || {}));
-
-    if (entry.post) entry.post(ctx, result);
+    // Post hook runs BEFORE output so failures land in the envelope as warnings
+    if (entry.post) {
+      try {
+        await entry.post(ctx, result);
+      } catch (postErr) {
+        envelope.addWarning("POST_HOOK_FAILED", postErr.message || String(postErr));
+      }
+    }
   } catch (err) {
-    output(fail(envelopeType, envelopeKey, err.code || "ERROR", err.message));
-    if (entry.onError) entry.onError(ctx, err);
-  } finally {
-    if (entry.finally) entry.finally(ctx);
+    envelope = Envelope.fail(envelopeType, envelopeKey, err.code || "ERROR", err.message);
+    if (entry.onError) {
+      try {
+        await entry.onError(ctx, err);
+      } catch (onErrorErr) {
+        envelope.addWarning("ON_ERROR_HOOK_FAILED", onErrorErr.message || String(onErrorErr));
+      }
+    }
   }
+  envelope.output();
 }
 
 // ---------------------------------------------------------------------------
@@ -199,22 +216,18 @@ async function dispatch() {
   // Top-level command: resume
   if (group === "resume") {
     const entry = FLOW_COMMANDS.resume;
-    const ctx = resolveFlowContext(container);
-    ctx.args = rest;
-    await runEntry(entry, ctx, "run", "resume");
+    await runEntry(entry, rest, "run", "resume");
     return;
   }
 
   // Top-level command: prepare
   if (group === "prepare") {
     const entry = FLOW_COMMANDS.prepare;
-    const ctx = resolveFlowContext(container);
-    if (!ctx.config) {
-      output(fail("flow", "prepare", "NO_CONFIG", "config.json not found. Run sdd-forge setup first."));
+    if (!container.get("config") || Object.keys(container.get("config")).length === 0) {
+      Envelope.fail("flow", "prepare", "NO_CONFIG", "config.json not found. Run sdd-forge setup first.").output();
       process.exit(EXIT_ERROR);
     }
-    ctx.args = rest;
-    await runEntry(entry, ctx, "run", "prepare-spec");
+    await runEntry(entry, rest, "run", "prepare-spec");
     return;
   }
 
@@ -246,10 +259,7 @@ async function dispatch() {
     process.exit(EXIT_ERROR);
   }
 
-  const ctx = resolveFlowContext(container);
-  ctx.args = cmdArgs;
-
-  await runEntry(entry, ctx, group, cmd);
+  await runEntry(entry, cmdArgs, group, cmd);
 }
 
 await dispatch();

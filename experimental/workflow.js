@@ -17,7 +17,7 @@
 import { repoRoot, parseArgs } from "../src/lib/cli.js";
 import { loadConfig } from "../src/lib/config.js";
 import { initContainer } from "../src/lib/container.js";
-import { ok, fail, output } from "../src/lib/flow-envelope.js";
+import { Envelope } from "../src/lib/flow-envelope.js";
 import { EXIT_ERROR, EXIT_SUCCESS } from "../src/lib/constants.js";
 import { WORKFLOW_COMMANDS } from "./workflow/registry.js";
 import { loadBoardConfig } from "./workflow/lib/config.js";
@@ -90,7 +90,7 @@ async function dispatch() {
 
   const entry = WORKFLOW_COMMANDS[subcommand];
   if (!entry) {
-    output(fail("workflow", subcommand, "UNKNOWN_COMMAND", `unknown subcommand: ${subcommand}`));
+    Envelope.fail("workflow", subcommand, "UNKNOWN_COMMAND", `unknown subcommand: ${subcommand}`).output();
     process.exit(EXIT_ERROR);
   }
 
@@ -107,19 +107,17 @@ async function dispatch() {
     config = loadConfig(root);
     initContainer({ entryCommand: `workflow ${argv.join(" ")}` });
   } catch (err) {
-    output(fail("workflow", subcommand, "NO_CONFIG", err.message));
+    Envelope.fail("workflow", subcommand, "NO_CONFIG", err.message).output();
     process.exit(EXIT_ERROR);
   }
 
   if (!config.experimental?.workflow?.enable) {
-    output(
-      fail(
-        "workflow",
-        subcommand,
-        "NOT_ENABLED",
-        "workflow is not enabled. set 'experimental.workflow.enable' to true in .sdd-forge/config.json",
-      ),
-    );
+    Envelope.fail(
+      "workflow",
+      subcommand,
+      "NOT_ENABLED",
+      "workflow is not enabled. set 'experimental.workflow.enable' to true in .sdd-forge/config.json",
+    ).output();
     process.exit(EXIT_ERROR);
   }
 
@@ -135,7 +133,7 @@ async function dispatch() {
   try {
     ctx.boardConfig = loadBoardConfig();
   } catch (err) {
-    output(fail("workflow", subcommand, "NO_BOARD", err.message));
+    Envelope.fail("workflow", subcommand, "NO_BOARD", err.message).output();
     process.exit(EXIT_ERROR);
   }
 
@@ -146,9 +144,9 @@ async function dispatch() {
     const Command = mod.default;
     const instance = new Command();
     const result = await instance.run(ctx);
-    output(ok("workflow", subcommand, result || {}));
+    Envelope.ok("workflow", subcommand, result || {}).output();
   } catch (err) {
-    output(fail("workflow", subcommand, err.code || "ERROR", err.message));
+    Envelope.fail("workflow", subcommand, err.code || "ERROR", err.message).output();
   }
 }
 

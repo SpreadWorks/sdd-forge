@@ -1,0 +1,164 @@
+{
+  "spec": "specs/187-flow-dispatcher-cleanup/spec.md",
+  "baseBranch": "main",
+  "featureBranch": "feature/187-flow-dispatcher-cleanup",
+  "runId": "2f3e9ad0-3d1f-484a-ab09-ae903b012984",
+  "lifecycle": "active",
+  "steps": [
+    {
+      "id": "branch",
+      "status": "done"
+    },
+    {
+      "id": "prepare-spec",
+      "status": "pending"
+    },
+    {
+      "id": "draft",
+      "status": "done"
+    },
+    {
+      "id": "gate-draft",
+      "status": "done"
+    },
+    {
+      "id": "spec",
+      "status": "done"
+    },
+    {
+      "id": "gate",
+      "status": "done"
+    },
+    {
+      "id": "approval",
+      "status": "done"
+    },
+    {
+      "id": "test",
+      "status": "done"
+    },
+    {
+      "id": "implement",
+      "status": "done"
+    },
+    {
+      "id": "gate-impl",
+      "status": "done"
+    },
+    {
+      "id": "review",
+      "status": "done"
+    },
+    {
+      "id": "finalize",
+      "status": "pending"
+    },
+    {
+      "id": "commit",
+      "status": "pending"
+    },
+    {
+      "id": "push",
+      "status": "pending"
+    },
+    {
+      "id": "merge",
+      "status": "pending"
+    },
+    {
+      "id": "pr-create",
+      "status": "pending"
+    },
+    {
+      "id": "branch-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "pr-merge",
+      "status": "pending"
+    },
+    {
+      "id": "sync-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "docs-update",
+      "status": "pending"
+    },
+    {
+      "id": "docs-review",
+      "status": "pending"
+    },
+    {
+      "id": "docs-commit",
+      "status": "pending"
+    }
+  ],
+  "requirements": [
+    {
+      "desc": "R1: FlowCommand の Container 接続",
+      "status": "done"
+    },
+    {
+      "desc": "R2: registry hook から domain logic 分離",
+      "status": "done"
+    },
+    {
+      "desc": "R3: 非定型エラーの再 throw",
+      "status": "done"
+    },
+    {
+      "desc": "R4: post hook 実行タイミング",
+      "status": "done"
+    },
+    {
+      "desc": "R5: Envelope の OOP 化",
+      "status": "done"
+    },
+    {
+      "desc": "R6: 未使用 finally スロット削除",
+      "status": "done"
+    }
+  ],
+  "issue": 166,
+  "request": "issue #166 (5a25): flow ディスパッチャ・registry・hook 層の整理 (Phase3)",
+  "worktree": true,
+  "notes": [
+    "draft: Q1 approved — 6項目の整理タスクを実施",
+    "draft Q2: 1つの spec で6項目まとめて実施",
+    "draft Q3: post hook を output 前に実行 + 失敗を envelope.warn に含める",
+    "draft Q4: 既存テスト緑維持 + Envelope unit test 追加"
+  ],
+  "metrics": {
+    "plan": {
+      "docsRead": 1
+    },
+    "draft": {
+      "question": 3
+    },
+    "gate-draft": {
+      "callCount": 3,
+      "responseChars": 3699
+    },
+    "gate": {
+      "callCount": 2,
+      "responseChars": 2894
+    },
+    "impl": {
+      "issueLog": 2
+    },
+    "gate-impl": {
+      "callCount": 11,
+      "responseChars": 13439
+    }
+  },
+  "autoApprove": true,
+  "test": {
+    "summary": {
+      "unit": 1
+    }
+  },
+  "state": {
+    "finalizedAt": "2026-04-17T16:44:23.683Z"
+  }
+}

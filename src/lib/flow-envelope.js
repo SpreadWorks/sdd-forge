@@ -1,61 +1,83 @@
 /**
  * src/lib/flow-envelope.js
  *
- * JSON envelope utility for flow get/set/run commands.
- * All flow commands return this common envelope format.
+ * Envelope: result type for flow get/set/run commands.
+ * Encapsulates ok/fail/warn construction, JSON serialization,
+ * and stdout output + process.exitCode side effects.
  */
 
-/**
- * Create a success envelope.
- * @param {string} type - "get", "set", or "run"
- * @param {string} key - command key (e.g. "status", "step", "merge")
- * @param {*} data - response data
- * @returns {{ ok: true, type: string, key: string, data: *, errors: [] }}
- */
-export function ok(type, key, data) {
-  return { ok: true, type, key, data, errors: [] };
-}
+export class Envelope {
+  constructor({ ok, type, key, data, errors }) {
+    this.ok = ok;
+    this.type = type;
+    this.key = key;
+    this.data = data;
+    this.errors = errors;
+  }
 
-/**
- * Create a failure envelope.
- * @param {string} type - "get", "set", or "run"
- * @param {string} key - command key
- * @param {string} code - machine-readable error code
- * @param {string|string[]} messages - human-readable error message(s)
- * @returns {{ ok: false, type: string, key: string, data: null, errors: Array }}
- */
-export function fail(type, key, code, messages) {
-  const msgs = Array.isArray(messages) ? messages : [messages];
-  return {
-    ok: false, type, key, data: null,
-    errors: [{ level: "fatal", code, messages: msgs }],
-  };
-}
+  /**
+   * @param {string} type - "get", "set", or "run"
+   * @param {string} key - command key (e.g. "status", "step", "merge")
+   * @param {*} data - response data
+   */
+  static ok(type, key, data) {
+    return new Envelope({ ok: true, type, key, data, errors: [] });
+  }
 
-/**
- * Create a success envelope with a warning.
- * @param {string} type - "get", "set", or "run"
- * @param {string} key - command key
- * @param {*} data - response data
- * @param {string} code - warning code
- * @param {string|string[]} messages - warning message(s)
- * @returns {{ ok: true, type: string, key: string, data: *, errors: Array }}
- */
-export function warn(type, key, data, code, messages) {
-  const msgs = Array.isArray(messages) ? messages : [messages];
-  return {
-    ok: true, type, key, data,
-    errors: [{ level: "warn", code, messages: msgs }],
-  };
-}
+  /**
+   * @param {string} type
+   * @param {string} key
+   * @param {string} code - machine-readable error code
+   * @param {string|string[]} messages
+   */
+  static fail(type, key, code, messages) {
+    const msgs = Array.isArray(messages) ? messages : [messages];
+    return new Envelope({
+      ok: false, type, key, data: null,
+      errors: [{ level: "fatal", code, messages: msgs }],
+    });
+  }
 
-/**
- * Print envelope as JSON to stdout and set exit code.
- * Uses process.exitCode (not process.exit()) to allow post hooks
- * and finally blocks in the call chain to complete before exiting.
- * @param {Object} envelope - envelope from ok(), fail(), or warn()
- */
-export function output(envelope) {
-  console.log(JSON.stringify(envelope, null, 2));
-  process.exitCode = envelope.ok ? 0 : 1;
+  /**
+   * @param {string} type
+   * @param {string} key
+   * @param {*} data
+   * @param {string} code - warning code
+   * @param {string|string[]} messages
+   */
+  static warn(type, key, data, code, messages) {
+    const msgs = Array.isArray(messages) ? messages : [messages];
+    return new Envelope({
+      ok: true, type, key, data,
+      errors: [{ level: "warn", code, messages: msgs }],
+    });
+  }
+
+  /**
+   * Append a warn-level entry. Does not flip ok.
+   */
+  addWarning(code, messages) {
+    const msgs = Array.isArray(messages) ? messages : [messages];
+    this.errors.push({ level: "warn", code, messages: msgs });
+  }
+
+  toJSON() {
+    return {
+      ok: this.ok,
+      type: this.type,
+      key: this.key,
+      data: this.data,
+      errors: this.errors,
+    };
+  }
+
+  /**
+   * Print envelope JSON to stdout and set process.exitCode.
+   * Uses process.exitCode (not process.exit()) so post hooks and
+   * finally blocks complete before exit.
+   */
+  output() {
+    console.log(JSON.stringify(this.toJSON(), null, 2));
+    process.exitCode = this.ok ? 0 : 1;
+  }
 }

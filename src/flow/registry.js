@@ -10,7 +10,6 @@
 
 import { derivePhase } from "../lib/flow-helpers.js";
 import { VALID_PHASES, VALID_METRIC_COUNTERS } from "../lib/constants.js";
-import { loadIssueLog, saveIssueLog } from "./lib/set-issue-log.js";
 
 /**
  * Load flow state and derive the current phase.
@@ -21,18 +20,38 @@ function deriveActivePhase(ctx) {
 }
 
 /**
- * Best-effort step status update. Hooks fire after `cleanup` removes flow.json
- * (and during early init before flow.json exists), so a "no active flow" error
- * is the expected non-failure mode. Other errors are also swallowed because
- * step-status updates are advisory and must never abort the user's command.
+ * Best-effort step status update. Hooks may fire after `cleanup` removes
+ * flow.json (and during early init before it exists), so a missing-file
+ * error is the expected non-failure mode. Any other error is operationally
+ * meaningful and is re-thrown so the dispatcher can surface it as a
+ * post-hook warning in the envelope.
  */
 function tryUpdateStepStatus(ctx, stepId, status) {
   try {
     ctx.flowManager.updateStepStatus(stepId, status);
   } catch (err) {
-    // The "no active flow" case is expected (post-cleanup hooks, early init);
-    // other errors are operationally meaningful so we always surface them.
-    process.stderr.write(`[sdd-forge] step-status update skipped (${stepId}=${status}): ${err.message}\n`);
+    if (err?.code === "ERR_MISSING_FILE") {
+      process.stderr.write(`[sdd-forge] step-status update skipped (${stepId}=${status}): ${err.message}\n`);
+      return;
+    }
+    throw err;
+  }
+}
+
+/**
+ * Wrap an issue-log append. Same expected-error contract as
+ * tryUpdateStepStatus: only swallow `ERR_MISSING_FILE` (no flow.json yet
+ * or post-cleanup), re-throw the rest so the dispatcher can warn.
+ */
+function tryAppendIssueLog(fn) {
+  try {
+    fn();
+  } catch (err) {
+    if (err?.code === "ERR_MISSING_FILE") {
+      process.stderr.write(`[sdd-forge] issue-log append skipped: ${err.message}\n`);
+      return;
+    }
+    throw err;
   }
 }
 
@@ -48,9 +67,8 @@ function stepPost(stepId, statusFn) {
 }
 
 /**
- * Map gate --phase value to the corresponding step ID.
- * @param {string} [phase]
- * @returns {string}
+ * Resolve the step id targeted by a `gate` invocation. Defined locally
+ * (mirroring run-gate.js) so registry stays free of domain imports.
  */
 function resolveGateStepId(phase) {
   if (phase === "draft") return "gate-draft";
@@ -290,38 +308,20 @@ export const FLOW_COMMANDS = {
         "  --phase <draft|pre|post|impl> Gate phase (default: pre)",
         "  --skip-guardrail              Skip AI guardrail compliance check",
       ].join("\n"),
-      post(ctx, result) {
+      async post(ctx, result) {
         const status = result?.result === "pass" ? "done" : "in_progress";
         tryUpdateStepStatus(ctx, resolveGateStepId(ctx.phase), status);
 
-        // Auto-record issue-log on gate FAIL
+        // Auto-record issue-log on gate FAIL — delegate to run-gate.js so
+        // the registry hook stays free of issue-log domain logic.
         if (result?.result !== "pass") {
-          try {
-            const issueLog = loadIssueLog(ctx.root, ctx.flowState?.spec);
-            const reasons = result?.artifacts?.issues?.length
-              ? result.artifacts.issues.join("; ")
-              : (result?.artifacts?.reasons || []).map(r => r.detail || r).join("; ");
-            issueLog.entries.push({
-              step: resolveGateStepId(ctx.phase),
-              reason: reasons || "gate FAIL (no details)",
-              trigger: "gate post hook (auto)",
-              timestamp: new Date().toISOString(),
-            });
-            saveIssueLog(ctx.root, ctx.flowState?.spec, issueLog);
-          } catch (e) { console.error("[gate issue-log hook]", e.message); }
+          const { appendIssueLogFromGateResult } = await import("./lib/run-gate.js");
+          tryAppendIssueLog(() => appendIssueLogFromGateResult(ctx, result));
         }
       },
-      onError(ctx, err) {
-        try {
-          const issueLog = loadIssueLog(ctx.root, ctx.flowState?.spec);
-          issueLog.entries.push({
-            step: resolveGateStepId(ctx.phase),
-            reason: err.message || String(err),
-            trigger: "gate onError hook (auto)",
-            timestamp: new Date().toISOString(),
-          });
-          saveIssueLog(ctx.root, ctx.flowState?.spec, issueLog);
-        } catch (e) { console.error("[gate issue-log hook]", e.message); }
+      async onError(ctx, err) {
+        const { appendIssueLogFromGateError } = await import("./lib/run-gate.js");
+        tryAppendIssueLog(() => appendIssueLogFromGateError(ctx, err));
       },
     },
     review: {

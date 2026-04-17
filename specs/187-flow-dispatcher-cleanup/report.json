@@ -1,0 +1,47 @@
+{
+  "data": {
+    "implementation": {
+      "diffStat": "experimental/workflow.js                          |  26 ++--\n specs/187-flow-dispatcher-cleanup/draft.md        | 110 +++++++++++++++\n specs/187-flow-dispatcher-cleanup/flow.json       | 164 ++++++++++++++++++++++\n specs/187-flow-dispatcher-cleanup/issue-log.json  |  60 ++++++++\n specs/187-flow-dispatcher-cleanup/qa.md           |   9 ++\n specs/187-flow-dispatcher-cleanup/spec.md         | 146 +++++++++++++++++++\n specs/187-flow-dispatcher-cleanup/tests/README.md |  32 +++++\n src/flow.js                                       |  68 +++++----\n src/flow/lib/base-command.js                      |  33 +++--\n src/flow/lib/run-gate.js                          |  51 +++++++\n src/flow/registry.js                              |  74 +++++-----\n src/lib/flow-envelope.js                          | 126 ++++++++++-------\n tests/unit/flow/envelope.test.js                  |  47 +++++--\n tests/unit/lib/envelope.test.js                   | 121 ++++++++++++++++\n 14 files changed, 915 insertions(+), 152 deletions(-)",
+      "commits": [
+        "feat: feature/187-flow-dispatcher-cleanup"
+      ]
+    },
+    "retro": {
+      "total": 6,
+      "done": 6,
+      "partial": 0,
+      "not_done": 0,
+      "rate": 1,
+      "notes": "R1〜R6 は差分上すべて満たしている。主な未計画差分は、spec運用用ドキュメント群の追加と、onError hook失敗のwarning化など要件外の補強変更。"
+    },
+    "issueLog": {
+      "count": 0,
+      "entries": []
+    },
+    "metrics": {
+      "docsRead": 1,
+      "srcRead": 0,
+      "question": 3,
+      "issueLog": 2
+    },
+    "tokenMetrics": {
+      "input": 0,
+      "output": 0,
+      "cacheRead": 0,
+      "cacheCreation": 0,
+      "cost": null,
+      "callCount": 16
+    },
+    "tests": {
+      "unit": 1,
+      "integration": 0,
+      "acceptance": 0,
+      "total": 1
+    },
+    "sync": {
+      "status": "skipped",
+      "reason": "sync was skipped"
+    }
+  },
+  "text": "  Report\n\n  Implementation\n  ────────────────────────────────────────────────\n    feat: feature/187-flow-dispatcher-cleanup\n    14 files changed, 915 insertions(+), 152 deletions(-)\n\n  Retro\n  ────────────────────────────────────────────────\n    ████████ 100%  (6 done / 0 partial / 0 miss)\n\n  Metrics\n  ────────────────────────────────────────────────\n    docs read ................... 1\n    src read .................... 0\n    Q&A ......................... 3\n    issue-log ................... 2\n    agent calls ................. 16\n    input tokens ................ 0\n    output tokens ............... 0\n    cache-read tokens ........... 0\n    cache-create tokens ......... 0\n    cost ........................ N/A\n\n  Tests\n  ────────────────────────────────────────────────\n    unit 1  integration 0  acceptance 0  total 1"
+}

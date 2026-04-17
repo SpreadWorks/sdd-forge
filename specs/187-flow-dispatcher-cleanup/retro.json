@@ -1,0 +1,78 @@
+{
+  "spec": "specs/187-flow-dispatcher-cleanup/spec.md",
+  "date": "2026-04-17T16:45:05.247Z",
+  "requirements": [
+    {
+      "desc": "R1: FlowCommand の Container 接続",
+      "status": "done",
+      "note": "`FlowCommand.run(container, input)` に変更され、基底で `resolveFlowContext(container)` から ctx を組み立て、dispatcher (`runEntry`) も `cmd.run(container, input)` を直接呼んでいる。"
+    },
+    {
+      "desc": "R2: registry hook から domain logic 分離",
+      "status": "done",
+      "note": "gate の `post/onError` から issue-log の直接 I/O が削除され、`run-gate.js` の export ヘルパー (`appendIssueLogFromGateResult/Error`) に委譲されている。hook 内で `flowState.spec` 直接参照もない。"
+    },
+    {
+      "desc": "R3: 非定型エラーの再 throw",
+      "status": "done",
+      "note": "`tryUpdateStepStatus` と `tryAppendIssueLog` は `ERR_MISSING_FILE` のみ stderr 警告で継続し、それ以外は `throw` している。"
+    },
+    {
+      "desc": "R4: post hook 実行タイミング",
+      "status": "done",
+      "note": "`runEntry` で post hook は `envelope.output()` 前に実行され、失敗時は `envelope.addWarning(...)` で warnings に反映、`ok` は維持されるため本体の成否を変えない。"
+    },
+    {
+      "desc": "R5: Envelope の OOP 化",
+      "status": "done",
+      "note": "`src/lib/flow-envelope.js` が `Envelope` クラス（`ok/fail/warn`, `toJSON`, `output`）へ移行し、旧関数 export は削除。呼び出し側も `Envelope.*(...).output()` に追従している。"
+    },
+    {
+      "desc": "R6: 未使用 finally スロット削除",
+      "status": "done",
+      "note": "`src/flow.js` の `if (entry.finally)` 分岐が削除され、registry 側でも `finally` スロット定義は見当たらない。"
+    }
+  ],
+  "unplanned": [
+    {
+      "file": "src/flow.js",
+      "change": "onError hook 自体の失敗を `ON_ERROR_HOOK_FAILED` warning として envelope に追加する処理が追加されている（要件は post hook 失敗の扱い中心）。"
+    },
+    {
+      "file": "src/flow.js",
+      "change": "`prepare` の NO_CONFIG 判定が `ctx.config` ベースから `container.get(\"config\")` + 空判定に変更されている。"
+    },
+    {
+      "file": "specs/187-flow-dispatcher-cleanup/draft.md",
+      "change": "仕様ドラフト文書の新規追加（実装要件 R1-R6 そのものではない成果物）。"
+    },
+    {
+      "file": "specs/187-flow-dispatcher-cleanup/flow.json",
+      "change": "フロー実行状態・要件進捗メタデータの新規追加。"
+    },
+    {
+      "file": "specs/187-flow-dispatcher-cleanup/issue-log.json",
+      "change": "spec/gate/implement の監査ログ記録ファイルを新規追加。"
+    },
+    {
+      "file": "specs/187-flow-dispatcher-cleanup/qa.md",
+      "change": "Q&A テンプレート文書の新規追加。"
+    },
+    {
+      "file": "specs/187-flow-dispatcher-cleanup/spec.md",
+      "change": "機能仕様書本体の新規追加。"
+    },
+    {
+      "file": "specs/187-flow-dispatcher-cleanup/tests/README.md",
+      "change": "spec 187 用テスト方針 README の新規追加。"
+    }
+  ],
+  "summary": {
+    "total": 6,
+    "done": 6,
+    "partial": 0,
+    "not_done": 0,
+    "rate": 1,
+    "notes": "R1〜R6 は差分上すべて満たしている。主な未計画差分は、spec運用用ドキュメント群の追加と、onError hook失敗のwarning化など要件外の補強変更。"
+  }
+}

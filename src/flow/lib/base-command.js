@@ -2,9 +2,18 @@
  * src/flow/lib/base-command.js
  *
  * Base class for all flow commands.
- * Subclasses implement execute(ctx) which returns a plain object or throws Error.
- * No CLI concerns (output, parseArgs, process.exitCode) allowed in this layer.
+ *
+ * Container connection point (spec 187 R1):
+ *   - run(container, input) is the entrypoint called by the dispatcher.
+ *   - The base class stores the container, assembles the execution context
+ *     from it (root, mainRoot, config, flowManager, flowState, …), merges
+ *     parsed CLI input, and calls execute(ctx).
+ *   - Subclasses access shared dependencies via this.container.get(name)
+ *     or via the ctx fields built by the base; they do not reach back into
+ *     the dispatcher for re-resolution.
  */
+
+import { resolveFlowContext } from "./flow-context.js";
 
 export class FlowCommand {
   /**
@@ -16,12 +25,16 @@ export class FlowCommand {
   }
 
   /**
-   * Run the command with common validation.
-   * @param {Object} ctx - Command context (root, flowState, config, parsed CLI args merged in)
-   * @returns {Promise<Object>|Object} - Plain result object
-   * @throws {Error} - On failure
+   * Run the command. The dispatcher passes the shared container and a
+   * parsed input object (CLI flags / options / positional values).
+   * @param {import("../../lib/container.js").Container} container
+   * @param {Object} [input={}]
+   * @returns {Promise<Object>|Object}
+   * @throws {Error}
    */
-  async run(ctx) {
+  async run(container, input = {}) {
+    this.container = container;
+    const ctx = { ...resolveFlowContext(container), ...input };
     if (this.requiresFlow && !ctx.flowState) {
       throw new Error("no active flow (flow.json not found)");
     }
@@ -30,9 +43,9 @@ export class FlowCommand {
 
   /**
    * Command logic. Must be overridden by subclasses.
-   * @param {Object} ctx
-   * @returns {Promise<Object>|Object} - Plain result object
-   * @throws {Error} - On failure
+   * @param {Object} ctx - resolved flow context merged with parsed CLI input
+   * @returns {Promise<Object>|Object}
+   * @throws {Error}
    */
   execute(ctx) {
     throw new Error("execute() must be implemented by subclass");

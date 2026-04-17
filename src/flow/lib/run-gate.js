@@ -20,6 +20,7 @@ import { getSpecName } from "../../lib/flow-helpers.js";
 import { loadTestEvidence } from "./get-test-result.js";
 import { VALID_GATE_PHASES } from "../../lib/constants.js";
 import { FlowCommand } from "./base-command.js";
+import { loadIssueLog, saveIssueLog } from "./set-issue-log.js";
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -537,3 +538,53 @@ export class RunGateCommand extends FlowCommand {
 
 export default RunGateCommand;
 export { checkSpecText, checkDraftText, buildGuardrailPrompt, parseGuardrailResponse, checkGuardrail };
+
+/**
+ * Resolve the step id targeted by a `gate` invocation.
+ * Mirrors the dispatcher-side helper used by the gate registry hooks.
+ * @param {string} [phase]
+ * @returns {string}
+ */
+export function resolveGateStepId(phase) {
+  if (phase === "draft") return "gate-draft";
+  if (phase === "impl") return "gate-impl";
+  return "gate";
+}
+
+/**
+ * Append an issue-log entry summarising a gate failure result.
+ * Used by registry's gate post hook to keep domain logic out of the
+ * registry layer.
+ * @param {Object} ctx - dispatcher ctx (root, flowState, phase)
+ * @param {Object} result - gate result envelope.data
+ */
+export function appendIssueLogFromGateResult(ctx, result) {
+  const issueLog = loadIssueLog(ctx.root, ctx.flowState?.spec);
+  const reasons = result?.artifacts?.issues?.length
+    ? result.artifacts.issues.join("; ")
+    : (result?.artifacts?.reasons || []).map((r) => r.detail || r).join("; ");
+  issueLog.entries.push({
+    step: resolveGateStepId(ctx.phase),
+    reason: reasons || "gate FAIL (no details)",
+    trigger: "gate post hook (auto)",
+    timestamp: new Date().toISOString(),
+  });
+  saveIssueLog(ctx.root, ctx.flowState?.spec, issueLog);
+}
+
+/**
+ * Append an issue-log entry recording a thrown error from the gate command.
+ * Used by registry's gate onError hook.
+ * @param {Object} ctx - dispatcher ctx (root, flowState, phase)
+ * @param {Error} err
+ */
+export function appendIssueLogFromGateError(ctx, err) {
+  const issueLog = loadIssueLog(ctx.root, ctx.flowState?.spec);
+  issueLog.entries.push({
+    step: resolveGateStepId(ctx.phase),
+    reason: err.message || String(err),
+    trigger: "gate onError hook (auto)",
+    timestamp: new Date().toISOString(),
+  });
+  saveIssueLog(ctx.root, ctx.flowState?.spec, issueLog);
+}
