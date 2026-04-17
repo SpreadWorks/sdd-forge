@@ -1,5 +1,5 @@
 {
-  "analyzedAt": "2026-04-17T09:02:29.205Z",
+  "analyzedAt": "2026-04-17T09:09:52.001Z",
   "package": {
     "entries": [
       {
@@ -2350,7 +2350,7 @@
         "usedBy": null,
         "id": "331cf497",
         "enrich": {
-          "attempts": 1
+          "attempts": 2
         }
       },
       {
@@ -2439,7 +2439,7 @@
         ],
         "id": "e296da98",
         "enrich": {
-          "attempts": 1
+          "attempts": 2
         }
       },
       {
@@ -2809,9 +2809,9 @@
       },
       {
         "file": "src/flow/lib/run-finalize.js",
-        "hash": "e431d0e39e4b70f4b78cdae60db8dd70",
-        "lines": 376,
-        "mtime": "2026-04-14T11:37:06.523Z",
+        "hash": "fe6ca16ae4dad51a8f1e612a2c1e2399",
+        "lines": 404,
+        "mtime": "2026-04-17T09:09:51.668Z",
         "className": "run-finalize",
         "methods": [
           "finalizeOnError",
@@ -2823,7 +2823,8 @@
           "RunFinalizeCommand",
           "executeCleanupImpl",
           "buildFinalizePreflightError",
-          "runSubStep"
+          "runSubStep",
+          "runMigrationHook"
         ],
         "imports": [
           "fs",
@@ -2851,23 +2852,9 @@
         "extends": "FlowCommand",
         "usedBy": null,
         "id": "c711309b",
-        "summary": "This module implements the flow finalization pipeline, including preflight checks, commit/merge execution, and cleanup. It structures finalize steps into a selectable command map with error wrappers.",
-        "detail": "It verifies git write access before mutation and converts failures into actionable preflight errors. Step handlers cover commit decisions, documentation build hooks, merge execution, issue-log updates, and worktree cleanup. The `RunFinalizeCommand` validates mode and strategy inputs, supports partial step execution, and emits normalized status objects. Shared helpers collect git summaries and preserve robust failure boundaries across each finalize phase.",
-        "chapter": "cli_commands",
-        "role": "cli",
         "enrich": {
-          "processedAt": "2026-04-14T11:38:15.649Z",
           "attempts": 1
-        },
-        "keywords": [
-          "flow finalize",
-          "preflight check",
-          "commit pipeline",
-          "merge strategy",
-          "cleanup workflow",
-          "step map",
-          "error handling"
-        ]
+        }
       },
       {
         "file": "src/flow/lib/run-gate.js",
@@ -3732,7 +3719,7 @@
         "usedBy": null,
         "id": "4ac07fa0",
         "enrich": {
-          "attempts": 1
+          "attempts": 2
         }
       },
       {
@@ -3804,7 +3791,7 @@
         ],
         "id": "13ddf392",
         "enrich": {
-          "attempts": 2
+          "attempts": 3
         }
       },
       {
@@ -3895,7 +3882,7 @@
         ],
         "id": "f351ecc4",
         "enrich": {
-          "attempts": 2
+          "attempts": 3
         }
       },
       {
@@ -3922,7 +3909,7 @@
         ],
         "id": "102f6569",
         "enrich": {
-          "attempts": 1
+          "attempts": 2
         }
       },
       {
@@ -3981,7 +3968,7 @@
         ],
         "id": "dff6e5b4",
         "enrich": {
-          "attempts": 3
+          "attempts": 4
         }
       },
       {
@@ -4021,7 +4008,7 @@
         ],
         "id": "74b5e1c3",
         "enrich": {
-          "attempts": 2
+          "attempts": 3
         }
       },
       {
@@ -4059,7 +4046,7 @@
         ],
         "id": "fc4eae43",
         "enrich": {
-          "attempts": 1
+          "attempts": 2
         }
       },
       {
@@ -4104,9 +4091,9 @@
       },
       {
         "file": "src/lib/flow-state.js",
-        "hash": "7189fbb83a8039c8f9d2e4ad00dafaff",
-        "lines": 969,
-        "mtime": "2026-04-16T00:24:24.948Z",
+        "hash": "1c7ab6a0414a9851482068a547b699cb",
+        "lines": 990,
+        "mtime": "2026-04-17T09:09:51.668Z",
         "className": "flow-state",
         "methods": [
           "getSpecName",
@@ -4137,6 +4124,7 @@
           "setRequest",
           "setIssue",
           "addNote",
+          "saveFinalizedAt",
           "flowStatePath",
           "resolveWorktreePaths",
           "scanAllFlows",
@@ -4189,6 +4177,7 @@
           "setRequest",
           "setIssue",
           "addNote",
+          "saveFinalizedAt",
           "flowStatePath",
           "resolveWorktreePaths",
           "scanAllFlows",
@@ -4199,28 +4188,12 @@
         ],
         "extends": null,
         "usedBy": [
-          "src/flow.js",
           "src/lib/container.js"
         ],
         "id": "5bb0bb76",
-        "summary": "This module provides the core flow-state model and persistence utilities for specs and worktrees. It manages active flow tracking, step progression, metrics, and stale-state cleanup.",
-        "detail": "It defines canonical constants, flow-step ordering, and phase mapping, then exposes helpers for deriving phase and resolving current flow context. Persistence is file-backed (`flow.json`, active markers, preparing files) with robust path resolution across main repository and worktree layouts. The module includes lifecycle operations such as create/load/delete for preparing flows, active flow add/remove, and cleanup with TTL and git-aware existence checks. It offers mutation APIs for requirements, test summaries, notes, issue/request fields, and metric accumulation to keep state updates centralized. It also implements scan and resolution utilities (`scanAllFlows`, `resolveByRunId`, path-based spec ID parsing) to support cross-flow introspection.",
-        "chapter": "internal_design",
-        "role": "model",
         "enrich": {
-          "processedAt": "2026-04-16T00:24:53.259Z",
           "attempts": 1
-        },
-        "keywords": [
-          "state persistence",
-          "flow model",
-          "worktree resolution",
-          "phase derivation",
-          "active flows",
-          "stale cleanup",
-          "run id mapping",
-          "json state file"
-        ]
+        }
       },
       {
         "file": "src/lib/formatter.js",
@@ -4798,7 +4771,7 @@
         ],
         "id": "8bb94bbb",
         "enrich": {
-          "attempts": 3
+          "attempts": 4
         }
       },
       {
@@ -4870,7 +4843,7 @@
         ],
         "id": "69d5afb4",
         "enrich": {
-          "attempts": 3
+          "attempts": 4
         }
       },
       {
@@ -4927,19 +4900,19 @@
         "usedBy": null,
         "id": "0230d610",
         "enrich": {
-          "attempts": 1
+          "attempts": 2
         }
       },
       {
         "file": "src/metrics/commands/token.js",
-        "hash": "dc3999f1cf1c9e4b220363d670c6685d",
-        "lines": 414,
-        "mtime": "2026-04-17T09:02:28.841Z",
+        "hash": "55931267120e1bc82d5f66e54be8a754",
+        "lines": 446,
+        "mtime": "2026-04-17T09:09:51.668Z",
         "className": "token",
         "methods": [
           "formatUsage",
           "usageError",
-          "toIsoDateUTC",
+          "isoDateFromFinalizedAt",
           "toNumberOrNull",
           "addMetric",
           "asDisplayValue",
@@ -4950,6 +4923,7 @@
           "formatJson",
           "formatCsv",
           "listFlowFiles",
+          "computeMaxFinalizedAt",
           "isCacheFresh",
           "toRowKey",
           "createEmptyRow",
@@ -5007,7 +4981,7 @@
         "usedBy": null,
         "id": "85926390",
         "enrich": {
-          "attempts": 1
+          "attempts": 2
         }
       },
       {
@@ -7934,7 +7908,7 @@
         "usedBy": null,
         "id": "a8608997",
         "enrich": {
-          "attempts": 1
+          "attempts": 2
         }
       },
       {
@@ -7983,7 +7957,7 @@
         "usedBy": null,
         "id": "9820c9db",
         "enrich": {
-          "attempts": 1
+          "attempts": 2
         }
       },
       {
@@ -8012,15 +7986,15 @@
         "usedBy": null,
         "id": "a631f658",
         "enrich": {
-          "attempts": 1
+          "attempts": 2
         }
       }
     ],
     "summary": {
       "total": 239,
-      "totalMethods": 808
+      "totalMethods": 811
     },
     "dataSourceHash": "7d725e75d5031be445119323e4947c91"
   },
-  "enrichedAt": "2026-04-17T09:04:18.334Z"
+  "enrichedAt": "2026-04-17T09:11:15.628Z"
 }
