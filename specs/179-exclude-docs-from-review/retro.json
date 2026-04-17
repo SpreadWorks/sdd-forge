@@ -1,0 +1,58 @@
+{
+  "spec": "specs/179-exclude-docs-from-review/spec.md",
+  "date": "2026-04-17T01:46:52.318Z",
+  "requirements": [
+    {
+      "desc": "R1: 全体diff に docs/ が含まれない",
+      "status": "done",
+      "note": "`buildReviewPathspec()` fallbackで `:!docs/` を常に付与しているため。"
+    },
+    {
+      "desc": "R2: 全体diff に README.md が含まれない",
+      "status": "done",
+      "note": "fallback除外リストに `README.md` が追加され、`git diff` pathspec除外に反映されている。"
+    },
+    {
+      "desc": "R3: 全体diff に AGENTS.md が含まれない",
+      "status": "done",
+      "note": "fallback除外リストに `AGENTS.md` が追加され、`git diff` pathspec除外に反映されている。"
+    },
+    {
+      "desc": "R4: 全体diff に .sdd-forge/output/ が含まれない",
+      "status": "done",
+      "note": "fallback除外リストに `.sdd-forge/output/` が追加され、配下変更が除外される。"
+    },
+    {
+      "desc": "R5: spec Scope経由では除外パス未適用",
+      "status": "done",
+      "note": "`filePath` 指定時は `['--', filePath]` を返し、除外pathspecは適用されない。"
+    },
+    {
+      "desc": "R6: 除外対象のみ変更時は空diff",
+      "status": "done",
+      "note": "除外後に `git diff` 出力が空なら `out` に追加されず、最終的に空diffとして扱われる。"
+    }
+  ],
+  "unplanned": [
+    {
+      "file": "src/flow/commands/review.js",
+      "change": "`runDiffOrThrow()` を追加し、`git diff` 失敗時に例外送出する挙動へ変更（失敗時の扱い変更）。"
+    },
+    {
+      "file": "src/flow/commands/review.js",
+      "change": "重複していた diff 実行処理のリファクタ（`buildReviewPathspec()`/`runDiffOrThrow()` 抽出）。"
+    },
+    {
+      "file": "specs/179-exclude-docs-from-review/*",
+      "change": "spec運用用ファイル（draft/flow/issue-log/qa/review/test README/verify script等）の新規追加。要件R1-R6自体の実装要件ではない変更。"
+    }
+  ],
+  "summary": {
+    "total": 6,
+    "done": 6,
+    "partial": 0,
+    "not_done": 0,
+    "rate": 1,
+    "notes": "要件R1-R6は実装差分上すべて満たしている。加えて、エラーハンドリング強化とリファクタ、およびspec管理ファイル追加が要件外変更として含まれる。"
+  }
+}

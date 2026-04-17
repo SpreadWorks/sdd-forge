@@ -1,0 +1,175 @@
+{
+  "spec": "specs/179-exclude-docs-from-review/spec.md",
+  "baseBranch": "main",
+  "featureBranch": "feature/179-exclude-docs-from-review",
+  "runId": "42a8c556-eaca-4f84-9fca-03dff8f4f4e8",
+  "lifecycle": "active",
+  "steps": [
+    {
+      "id": "branch",
+      "status": "done"
+    },
+    {
+      "id": "prepare-spec",
+      "status": "pending"
+    },
+    {
+      "id": "draft",
+      "status": "done"
+    },
+    {
+      "id": "gate-draft",
+      "status": "done"
+    },
+    {
+      "id": "spec",
+      "status": "done"
+    },
+    {
+      "id": "gate",
+      "status": "done"
+    },
+    {
+      "id": "approval",
+      "status": "done"
+    },
+    {
+      "id": "test",
+      "status": "done"
+    },
+    {
+      "id": "implement",
+      "status": "done"
+    },
+    {
+      "id": "gate-impl",
+      "status": "done"
+    },
+    {
+      "id": "review",
+      "status": "done"
+    },
+    {
+      "id": "finalize",
+      "status": "pending"
+    },
+    {
+      "id": "commit",
+      "status": "pending"
+    },
+    {
+      "id": "push",
+      "status": "pending"
+    },
+    {
+      "id": "merge",
+      "status": "pending"
+    },
+    {
+      "id": "pr-create",
+      "status": "pending"
+    },
+    {
+      "id": "branch-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "pr-merge",
+      "status": "pending"
+    },
+    {
+      "id": "sync-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "docs-update",
+      "status": "pending"
+    },
+    {
+      "id": "docs-review",
+      "status": "pending"
+    },
+    {
+      "id": "docs-commit",
+      "status": "pending"
+    }
+  ],
+  "requirements": [
+    {
+      "desc": "R1: 全体diff に docs/ が含まれない",
+      "status": "done"
+    },
+    {
+      "desc": "R2: 全体diff に README.md が含まれない",
+      "status": "done"
+    },
+    {
+      "desc": "R3: 全体diff に AGENTS.md が含まれない",
+      "status": "done"
+    },
+    {
+      "desc": "R4: 全体diff に .sdd-forge/output/ が含まれない",
+      "status": "done"
+    },
+    {
+      "desc": "R5: spec Scope経由では除外パス未適用",
+      "status": "done"
+    },
+    {
+      "desc": "R6: 除外対象のみ変更時は空diff",
+      "status": "done"
+    }
+  ],
+  "issue": 152,
+  "request": "#152 flow run review の diff 対象から docs/ と README.md を除外する",
+  "worktree": true,
+  "metrics": {
+    "draft": {
+      "srcRead": 1,
+      "question": 4
+    },
+    "gate-draft": {
+      "tokens": {
+        "input": 50526,
+        "output": 2589,
+        "cacheRead": 22656,
+        "cacheCreation": 0
+      },
+      "callCount": 3,
+      "responseChars": 4427
+    },
+    "gate": {
+      "tokens": {
+        "input": 4692,
+        "output": 723,
+        "cacheRead": 19072,
+        "cacheCreation": 0
+      },
+      "callCount": 1,
+      "responseChars": 1513
+    },
+    "gate-impl": {
+      "tokens": {
+        "input": 414166,
+        "output": 4147,
+        "cacheRead": 67584,
+        "cacheCreation": 0
+      },
+      "callCount": 6,
+      "responseChars": 5556
+    },
+    "impl": {
+      "issueLog": 1
+    }
+  },
+  "notes": [
+    "draft: Q1 = A (git diff args direct), diff整理は別issue",
+    "draft: Q2 = docs/, README.md, AGENTS.md, .sdd-forge/output/",
+    "draft: Q3 = A (fallback only)"
+  ],
+  "test": {
+    "summary": {
+      "acceptance": 1
+    }
+  }
+}

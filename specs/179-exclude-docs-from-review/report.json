@@ -1,0 +1,47 @@
+{
+  "data": {
+    "implementation": {
+      "diffStat": "specs/179-exclude-docs-from-review/draft.md        |  49 ++++++\n specs/179-exclude-docs-from-review/flow.json       | 175 +++++++++++++++++++++\n specs/179-exclude-docs-from-review/issue-log.json  |  53 +++++++\n specs/179-exclude-docs-from-review/qa.md           |   9 ++\n specs/179-exclude-docs-from-review/review.md       |  25 +++\n specs/179-exclude-docs-from-review/spec.md         |  82 ++++++++++\n specs/179-exclude-docs-from-review/tests/README.md |  23 +++\n .../tests/verify-spec-requirements.js              |  49 ++++++\n src/flow/commands/review.js                        |  40 ++++-\n 9 files changed, 500 insertions(+), 5 deletions(-)",
+      "commits": [
+        "feat: feature/179-exclude-docs-from-review"
+      ]
+    },
+    "retro": {
+      "total": 6,
+      "done": 6,
+      "partial": 0,
+      "not_done": 0,
+      "rate": 1,
+      "notes": "要件R1-R6は実装差分上すべて満たしている。加えて、エラーハンドリング強化とリファクタ、およびspec管理ファイル追加が要件外変更として含まれる。"
+    },
+    "issueLog": {
+      "count": 0,
+      "entries": []
+    },
+    "metrics": {
+      "docsRead": 0,
+      "srcRead": 1,
+      "question": 4,
+      "issueLog": 1
+    },
+    "tokenMetrics": {
+      "input": 469384,
+      "output": 7459,
+      "cacheRead": 109312,
+      "cacheCreation": 0,
+      "cost": null,
+      "callCount": 10
+    },
+    "tests": {
+      "unit": 0,
+      "integration": 0,
+      "acceptance": 1,
+      "total": 1
+    },
+    "sync": {
+      "status": "skipped",
+      "reason": "sync was skipped"
+    }
+  },
+  "text": "  Report\n\n  Implementation\n  ────────────────────────────────────────────────\n    feat: feature/179-exclude-docs-from-review\n    9 files changed, 500 insertions(+), 5 deletions(-)\n\n  Retro\n  ────────────────────────────────────────────────\n    ████████ 100%  (6 done / 0 partial / 0 miss)\n\n  Metrics\n  ────────────────────────────────────────────────\n    docs read ................... 0\n    src read .................... 1\n    Q&A ......................... 4\n    issue-log ................... 1\n    agent calls ................. 10\n    input tokens ................ 469,384\n    output tokens ............... 7,459\n    cache-read tokens ........... 109,312\n    cache-create tokens ......... 0\n    cost ........................ N/A\n\n  Tests\n  ────────────────────────────────────────────────\n    unit 0  integration 0  acceptance 1  total 1"
+}
