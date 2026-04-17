@@ -1,6 +1,6 @@
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
-import { validateConfig } from "../../../src/lib/types.js";
+import { validate } from "../../../src/lib/config.js";
 
 describe("validateConfig — agent.profiles", () => {
   const base = {
@@ -23,7 +23,7 @@ describe("validateConfig — agent.profiles", () => {
         },
       },
     };
-    const result = validateConfig(cfg);
+    const result = validate(cfg);
     assert.equal(result.agent.profiles.default["docs.text"], "claude/sonnet");
   });
 
@@ -43,7 +43,7 @@ describe("validateConfig — agent.profiles", () => {
         },
       },
     };
-    assert.doesNotThrow(() => validateConfig(cfg));
+    assert.doesNotThrow(() => validate(cfg));
   });
 
   // R2: 存在しない provider キーを参照した場合はエラー
@@ -58,7 +58,7 @@ describe("validateConfig — agent.profiles", () => {
         },
       },
     };
-    assert.throws(() => validateConfig(cfg), /profiles.*nonexistent-provider|nonexistent-provider.*profiles/i);
+    assert.throws(() => validate(cfg), /profiles.*nonexistent-provider|nonexistent-provider.*profiles/i);
   });
 
   // R2: profiles がオブジェクトでない場合はエラー
@@ -67,7 +67,7 @@ describe("validateConfig — agent.profiles", () => {
       ...base,
       agent: { profiles: "invalid" },
     };
-    assert.throws(() => validateConfig(cfg), /agent\.profiles/);
+    assert.throws(() => validate(cfg), /agent\.profiles/);
   });
 
   // R2: 各プロファイルがオブジェクトでない場合はエラー
@@ -78,7 +78,7 @@ describe("validateConfig — agent.profiles", () => {
         profiles: { default: "not-an-object" },
       },
     };
-    assert.throws(() => validateConfig(cfg), /agent\.profiles/);
+    assert.throws(() => validate(cfg), /agent\.profiles/);
   });
 
   // R2: プロファイルエントリの値が文字列でない場合はエラー
@@ -91,7 +91,7 @@ describe("validateConfig — agent.profiles", () => {
         },
       },
     };
-    assert.throws(() => validateConfig(cfg), /agent\.profiles/);
+    assert.throws(() => validate(cfg), /agent\.profiles/);
   });
 
   // R1: profiles が存在しない場合は通常通りパスする（省略可）
@@ -100,7 +100,7 @@ describe("validateConfig — agent.profiles", () => {
       ...base,
       agent: { default: "claude/sonnet" },
     };
-    assert.doesNotThrow(() => validateConfig(cfg));
+    assert.doesNotThrow(() => validate(cfg));
   });
 
   // GAP-3: profiles が配列の場合はエラー
@@ -109,7 +109,7 @@ describe("validateConfig — agent.profiles", () => {
       ...base,
       agent: { profiles: [] },
     };
-    assert.throws(() => validateConfig(cfg), /agent\.profiles/);
+    assert.throws(() => validate(cfg), /agent\.profiles/);
   });
 
   // GAP-4: プロファイルエントリの値が null の場合はエラー
@@ -122,7 +122,7 @@ describe("validateConfig — agent.profiles", () => {
         },
       },
     };
-    assert.throws(() => validateConfig(cfg), /agent\.profiles/);
+    assert.throws(() => validate(cfg), /agent\.profiles/);
   });
 
   // GAP-5: カスタム providers がある場合でも BUILTIN key を参照できる
@@ -141,7 +141,7 @@ describe("validateConfig — agent.profiles", () => {
         },
       },
     };
-    assert.doesNotThrow(() => validateConfig(cfg));
+    assert.doesNotThrow(() => validate(cfg));
   });
 
   // GAP-6: 1つ有効 + 1つ不正な provider キーの場合、不正キーをエラーメッセージに含む
@@ -158,7 +158,7 @@ describe("validateConfig — agent.profiles", () => {
         },
       },
     };
-    assert.throws(() => validateConfig(cfg), /ghost/);
+    assert.throws(() => validate(cfg), /ghost/);
   });
 
   // GAP-7: profiles が空オブジェクト、またはプロファイルが空オブジェクトの場合はパスする
@@ -167,7 +167,7 @@ describe("validateConfig — agent.profiles", () => {
       ...base,
       agent: { profiles: {} },
     };
-    assert.doesNotThrow(() => validateConfig(cfg));
+    assert.doesNotThrow(() => validate(cfg));
   });
 
   it("accepts profiles: { default: {} } (empty profile)", () => {
@@ -177,7 +177,7 @@ describe("validateConfig — agent.profiles", () => {
         profiles: { default: {} },
       },
     };
-    assert.doesNotThrow(() => validateConfig(cfg));
+    assert.doesNotThrow(() => validate(cfg));
   });
 
   // GAP-8: validateConfig のフルラウンドトリップ — 戻り値が利用可能なオブジェクトを返す
@@ -197,7 +197,7 @@ describe("validateConfig — agent.profiles", () => {
         },
       },
     };
-    const result = validateConfig(cfg);
+    const result = validate(cfg);
     assert.equal(typeof result, "object");
     assert.equal(result.agent.profiles.default["docs.text"], "claude/sonnet");
     assert.equal(result.agent.profiles.fast["docs.text"], "codex/gpt-5.3");

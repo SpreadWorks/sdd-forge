@@ -1,6 +1,6 @@
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
-import { validateConfig } from "../../../src/lib/types.js";
+import { validate } from "../../../src/lib/config.js";
 
 const base = {
   lang: "ja",
@@ -14,7 +14,7 @@ const base = {
 
 describe("validateConfig chapters (object array format)", () => {
   it("accepts chapters as object array", () => {
-    const result = validateConfig({
+    const result = validate({
       ...base,
       chapters: [{ chapter: "overview.md" }, { chapter: "cli_commands.md", desc: "CLI" }],
     });
@@ -22,7 +22,7 @@ describe("validateConfig chapters (object array format)", () => {
   });
 
   it("accepts chapters with desc and exclude fields", () => {
-    const result = validateConfig({
+    const result = validate({
       ...base,
       chapters: [
         { chapter: "overview.md", desc: "Project overview" },
@@ -33,48 +33,48 @@ describe("validateConfig chapters (object array format)", () => {
   });
 
   it("accepts config without chapters", () => {
-    const result = validateConfig({ ...base });
+    const result = validate({ ...base });
     assert.ok(result);
   });
 
   it("rejects chapters as string array (old format)", () => {
     assert.throws(
-      () => validateConfig({ ...base, chapters: ["overview.md", "cli_commands.md"] }),
+      () => validate({ ...base, chapters: ["overview.md", "cli_commands.md"] }),
       /chapters/i,
     );
   });
 
   it("rejects chapters entry without chapter field", () => {
     assert.throws(
-      () => validateConfig({ ...base, chapters: [{ desc: "no chapter field" }] }),
+      () => validate({ ...base, chapters: [{ desc: "no chapter field" }] }),
       /chapter/i,
     );
   });
 
   it("rejects chapters entry with non-string chapter", () => {
     assert.throws(
-      () => validateConfig({ ...base, chapters: [{ chapter: 123 }] }),
+      () => validate({ ...base, chapters: [{ chapter: 123 }] }),
       /chapter/i,
     );
   });
 
   it("rejects chapters entry with non-string desc", () => {
     assert.throws(
-      () => validateConfig({ ...base, chapters: [{ chapter: "a.md", desc: 42 }] }),
+      () => validate({ ...base, chapters: [{ chapter: "a.md", desc: 42 }] }),
       /desc/i,
     );
   });
 
   it("rejects chapters entry with non-boolean exclude", () => {
     assert.throws(
-      () => validateConfig({ ...base, chapters: [{ chapter: "a.md", exclude: "yes" }] }),
+      () => validate({ ...base, chapters: [{ chapter: "a.md", exclude: "yes" }] }),
       /exclude/i,
     );
   });
 
   it("rejects non-array chapters", () => {
     assert.throws(
-      () => validateConfig({ ...base, chapters: "overview.md" }),
+      () => validate({ ...base, chapters: "overview.md" }),
       /chapters/i,
     );
   });

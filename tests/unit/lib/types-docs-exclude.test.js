@@ -1,6 +1,6 @@
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
-import { validateConfig } from "../../../src/lib/types.js";
+import { validate } from "../../../src/lib/config.js";
 
 const base = {
   lang: "ja",
@@ -10,7 +10,7 @@ const base = {
 
 describe("validateConfig docs.exclude", () => {
   it("accepts docs.exclude as string array", () => {
-    const result = validateConfig({
+    const result = validate({
       ...base,
       docs: { ...base.docs, exclude: ["src/presets/*/tests/**"] },
     });
@@ -18,12 +18,12 @@ describe("validateConfig docs.exclude", () => {
   });
 
   it("accepts docs without exclude", () => {
-    const result = validateConfig({ ...base });
+    const result = validate({ ...base });
     assert.ok(result);
   });
 
   it("accepts empty docs.exclude array", () => {
-    const result = validateConfig({
+    const result = validate({
       ...base,
       docs: { ...base.docs, exclude: [] },
     });
@@ -32,7 +32,7 @@ describe("validateConfig docs.exclude", () => {
 
   it("rejects non-array docs.exclude", () => {
     assert.throws(
-      () => validateConfig({
+      () => validate({
         ...base,
         docs: { ...base.docs, exclude: "src/presets/**" },
       }),
@@ -42,7 +42,7 @@ describe("validateConfig docs.exclude", () => {
 
   it("rejects docs.exclude with non-string entries", () => {
     assert.throws(
-      () => validateConfig({
+      () => validate({
         ...base,
         docs: { ...base.docs, exclude: [123] },
       }),

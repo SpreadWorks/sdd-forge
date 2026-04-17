@@ -16,7 +16,7 @@ import readline from "readline";
 import { runIfDirect } from "./lib/entrypoint.js";
 import { parseArgs } from "./lib/cli.js";
 import { EXIT_ERROR } from "./lib/exit-codes.js";
-import { validateConfig } from "./lib/types.js";
+import { validate } from "./lib/config.js";
 import { DEFAULT_LANG, sddDir as sddDirFn } from "./lib/config.js";
 import { createI18n } from "./lib/i18n.js";
 import { PRESETS, resolveMultiChains } from "./lib/presets.js";
@@ -513,7 +513,7 @@ async function main() {
     }
   }
 
-  validateConfig(config);
+  validate(config);
 
   if (cli.dryRun) {
     console.log("[setup] DRY-RUN: config.json content:");

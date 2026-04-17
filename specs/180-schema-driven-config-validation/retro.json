@@ -1,0 +1,58 @@
+{
+  "spec": "specs/180-schema-driven-config-validation/spec.md",
+  "date": "2026-04-17T03:48:01.890Z",
+  "requirements": [
+    {
+      "desc": "R1: スキーマ定義の作成 (config.js に private 定数)",
+      "status": "done",
+      "note": "`src/lib/config.js` に非公開の `CONFIG_SCHEMA` が追加され、export されていない。"
+    },
+    {
+      "desc": "R2: 汎用スキーマバリデータの新設 (schema-validate.js)",
+      "status": "done",
+      "note": "`src/lib/schema-validate.js` を新設し、指定語彙（type/required/properties/additionalProperties/enum/oneOf/items/minimum/minLength/minItems/deprecated）を実装。再帰はスキーマ走査で有限。"
+    },
+    {
+      "desc": "R3: validate() 関数の実装 (config.js)",
+      "status": "done",
+      "note": "`loadConfig()` から `validate(raw)` を呼び、スキーマ検証後に `defaultLanguage` と provider 参照の2つのポストチェックを実施し、複数エラーを結合して throw している。"
+    },
+    {
+      "desc": "R4: validateConfig() の削除と移行 (types.js)",
+      "status": "done",
+      "note": "`src/lib/types.js` から `validateConfig()` と `VALID_TONES` が削除され、`setup.js` 含む呼び出し側が `config.js` の `validate` に移行されている。"
+    },
+    {
+      "desc": "R5: config.example.json の削除",
+      "status": "done",
+      "note": "`src/templates/config.example.json` が削除されている。"
+    },
+    {
+      "desc": "R6: 既存テストの修正",
+      "status": "done",
+      "note": "`tests/e2e/162-agent-commands-entries.test.js` から `config.example.json` 参照ブロックが削除され、当該依存が除去されている。"
+    }
+  ],
+  "unplanned": [
+    {
+      "file": "src/lib/config.js",
+      "change": "要件の2項目に加えて追加のポストチェック（`agent.useProfile` が `agent.profiles` を参照可能か）を実装。"
+    },
+    {
+      "file": "tests/unit/lib/schema-validate.test.js",
+      "change": "汎用スキーマバリデータの新規ユニットテストを追加（要件では既存テスト修正のみ明示）。"
+    },
+    {
+      "file": "specs/180-schema-driven-config-validation/*",
+      "change": "draft/flow/issue-log/review/spec/qa/verify など、仕様運用用ドキュメントと検証ファイルを多数追加。"
+    }
+  ],
+  "summary": {
+    "total": 6,
+    "done": 6,
+    "partial": 0,
+    "not_done": 0,
+    "rate": 1,
+    "notes": "R1〜R6は実装差分上すべて満たしている。加えて、要件外の追加変更（useProfile整合性チェック、新規テスト群、spec運用ファイル追加）が含まれる。"
+  }
+}

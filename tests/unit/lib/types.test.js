@@ -1,8 +1,8 @@
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
-import { validateConfig } from "../../../src/lib/types.js";
+import { validate } from "../../../src/lib/config.js";
 
-describe("validateConfig", () => {
+describe("validate (config)", () => {
   const validConfig = {
     lang: "ja",
     type: "node-cli",
@@ -10,44 +10,44 @@ describe("validateConfig", () => {
   };
 
   it("accepts minimal valid config", () => {
-    const result = validateConfig({ ...validConfig });
+    const result = validate({ ...validConfig });
     assert.equal(result.lang, "ja");
     assert.equal(result.type, "node-cli");
   });
 
   it("throws on non-object input", () => {
-    assert.throws(() => validateConfig(null), /non-null object/);
-    assert.throws(() => validateConfig("string"), /non-null object/);
+    assert.throws(() => validate(null), /non-null object/);
+    assert.throws(() => validate("string"), /non-null object/);
   });
 
   it("throws when lang is missing", () => {
-    assert.throws(() => validateConfig({ type: "cli", docs: { languages: ["ja"], defaultLanguage: "ja" } }), /lang/);
+    assert.throws(() => validate({ type: "cli", docs: { languages: ["ja"], defaultLanguage: "ja" } }), /lang/);
   });
 
   it("throws when type is missing", () => {
-    assert.throws(() => validateConfig({ lang: "ja", docs: { languages: ["ja"], defaultLanguage: "ja" } }), /type/);
+    assert.throws(() => validate({ lang: "ja", docs: { languages: ["ja"], defaultLanguage: "ja" } }), /type/);
   });
 
   it("throws when docs is missing", () => {
-    assert.throws(() => validateConfig({ lang: "ja", type: "cli" }), /docs/);
+    assert.throws(() => validate({ lang: "ja", type: "cli" }), /docs/);
   });
 
   it("accepts type as array of strings", () => {
     const cfg = { ...validConfig, type: ["symfony", "postgres"] };
-    const result = validateConfig(cfg);
+    const result = validate(cfg);
     assert.deepEqual(result.type, ["symfony", "postgres"]);
   });
 
   it("rejects empty type array", () => {
     assert.throws(
-      () => validateConfig({ ...validConfig, type: [] }),
+      () => validate({ ...validConfig, type: [] }),
       /type/,
     );
   });
 
   it("rejects non-string entries in type array", () => {
     assert.throws(
-      () => validateConfig({ ...validConfig, type: ["symfony", 123] }),
+      () => validate({ ...validConfig, type: ["symfony", 123] }),
       /type/,
     );
   });
@@ -57,13 +57,13 @@ describe("validateConfig", () => {
       ...validConfig,
       docs: { ...validConfig.docs, style: { purpose: "developer-guide", tone: "polite" } },
     };
-    const result = validateConfig(cfg);
+    const result = validate(cfg);
     assert.equal(result.docs.style.purpose, "developer-guide");
   });
 
   it("rejects invalid docs.style tone", () => {
     assert.throws(
-      () => validateConfig({
+      () => validate({
         ...validConfig,
         docs: { ...validConfig.docs, style: { purpose: "x", tone: "invalid" } },
       }),
@@ -76,7 +76,7 @@ describe("validateConfig", () => {
       ...validConfig,
       agent: { providers: { claude: { command: "claude", args: ["-p", "{{PROMPT}}"] } } },
     };
-    const result = validateConfig(cfg);
+    const result = validate(cfg);
     assert.deepEqual(result.agent.providers.claude.args, ["-p", "{{PROMPT}}"]);
   });
 
@@ -85,33 +85,33 @@ describe("validateConfig", () => {
       ...validConfig,
       agent: { retryCount: 3 },
     };
-    const result = validateConfig(cfg);
+    const result = validate(cfg);
     assert.equal(result.agent.retryCount, 3);
   });
 
   it("rejects invalid agent.retryCount", () => {
     assert.throws(
-      () => validateConfig({ ...validConfig, agent: { retryCount: 0 } }),
-      /agent\.retryCount/,
+      () => validate({ ...validConfig, agent: { retryCount: 0 } }),
+      /retryCount/i,
     );
   });
 
   it("rejects agent.providers entry without command", () => {
     assert.throws(
-      () => validateConfig({ ...validConfig, agent: { providers: { bad: { args: [] } } } }),
+      () => validate({ ...validConfig, agent: { providers: { bad: { args: [] } } } }),
       /command/,
     );
   });
 
   it("validates flow config", () => {
     const cfg = { ...validConfig, flow: { merge: "squash" } };
-    assert.equal(validateConfig(cfg).flow.merge, "squash");
+    assert.equal(validate(cfg).flow.merge, "squash");
   });
 
   it("rejects invalid flow merge strategy", () => {
     assert.throws(
-      () => validateConfig({ ...validConfig, flow: { merge: "rebase" } }),
-      /flow\.merge/,
+      () => validate({ ...validConfig, flow: { merge: "rebase" } }),
+      /merge/i,
     );
   });
 
@@ -120,17 +120,31 @@ describe("validateConfig", () => {
       ...validConfig,
       docs: { languages: ["ja", "en"], defaultLanguage: "ja" },
     };
-    const result = validateConfig(cfg);
+    const result = validate(cfg);
     assert.deepEqual(result.docs.languages, ["ja", "en"]);
   });
 
   it("rejects docs.defaultLanguage not in languages", () => {
     assert.throws(
-      () => validateConfig({
+      () => validate({
         ...validConfig,
         docs: { languages: ["ja"], defaultLanguage: "en" },
       }),
       /defaultLanguage/,
+    );
+  });
+
+  it("rejects unknown fields", () => {
+    assert.throws(
+      () => validate({ ...validConfig, unknownField: "value" }),
+      /unknownField/,
+    );
+  });
+
+  it("rejects deprecated fields", () => {
+    assert.throws(
+      () => validate({ ...validConfig, output: { default: "ja" } }),
+      /deprecated/i,
     );
   });
 });

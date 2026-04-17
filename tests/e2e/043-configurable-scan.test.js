@@ -106,7 +106,7 @@ describe("Scannable mixin match()", async () => {
 // 4. config.json scan validation
 // ---------------------------------------------------------------------------
 describe("scan config validation", async () => {
-  const { validateConfig } = await import("../../src/lib/types.js");
+  const { validate } = await import("../../src/lib/config.js");
 
   const baseConfig = {
     lang: "ja",
@@ -119,7 +119,7 @@ describe("scan config validation", async () => {
       ...baseConfig,
       scan: { include: ["src/**/*.js"], exclude: ["src/legacy/**"] },
     };
-    const result = validateConfig(cfg);
+    const result = validate(cfg);
     assert.deepEqual(result.scan.include, ["src/**/*.js"]);
     assert.deepEqual(result.scan.exclude, ["src/legacy/**"]);
   });
@@ -129,7 +129,7 @@ describe("scan config validation", async () => {
       ...baseConfig,
       scan: { include: ["src/**/*.js"] },
     };
-    const result = validateConfig(cfg);
+    const result = validate(cfg);
     assert.deepEqual(result.scan.include, ["src/**/*.js"]);
   });
 
@@ -138,7 +138,7 @@ describe("scan config validation", async () => {
       ...baseConfig,
       scan: { exclude: ["foo"] },
     };
-    assert.throws(() => validateConfig(cfg), /scan\.include/);
+    assert.throws(() => validate(cfg), /scan\.include/);
   });
 
   it("rejects scan.include that is not an array", () => {
@@ -146,7 +146,7 @@ describe("scan config validation", async () => {
       ...baseConfig,
       scan: { include: "src/**/*.js" },
     };
-    assert.throws(() => validateConfig(cfg), /scan\.include/);
+    assert.throws(() => validate(cfg), /scan\.include/);
   });
 
   it("rejects scan.include with empty array", () => {
@@ -154,7 +154,7 @@ describe("scan config validation", async () => {
       ...baseConfig,
       scan: { include: [] },
     };
-    assert.throws(() => validateConfig(cfg), /scan\.include/);
+    assert.throws(() => validate(cfg), /scan\.include/);
   });
 
   it("rejects scan.exclude that is not an array", () => {
@@ -162,11 +162,11 @@ describe("scan config validation", async () => {
       ...baseConfig,
       scan: { include: ["src/**/*.js"], exclude: "foo" },
     };
-    assert.throws(() => validateConfig(cfg), /scan\.exclude/);
+    assert.throws(() => validate(cfg), /scan\.exclude/);
   });
 
   it("config without scan passes validation (uses preset default)", () => {
-    const result = validateConfig({ ...baseConfig });
+    const result = validate({ ...baseConfig });
     assert.equal(result.scan, undefined);
   });
 });

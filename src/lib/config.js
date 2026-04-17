@@ -6,7 +6,8 @@
 
 import fs from "fs";
 import path from "path";
-import { validateConfig } from "./types.js";
+import { BUILTIN_PROVIDERS } from "./agent.js";
+import { validateSchema } from "./schema-validate.js";
 
 /** Default concurrency for parallel file processing. */
 export const DEFAULT_CONCURRENCY = 5;
@@ -112,6 +113,220 @@ export function loadLang(root) {
 }
 
 // ---------------------------------------------------------------------------
+// Config schema (JSON Schema subset — private, not exported)
+// ---------------------------------------------------------------------------
+
+const CONFIG_SCHEMA = {
+  type: "object",
+  required: ["lang", "type", "docs"],
+  additionalProperties: false,
+  properties: {
+    name: { type: "string" },
+
+    // Deprecated fields (旧フォーマット)
+    output: { deprecated: true },
+
+    lang: { type: "string", minLength: 1 },
+
+    type: {
+      oneOf: [
+        { type: "string", minLength: 1 },
+        { type: "array", items: { type: "string", minLength: 1 }, minItems: 1 },
+      ],
+    },
+
+    concurrency: { type: "number", minimum: 1 },
+
+    docs: {
+      type: "object",
+      required: ["languages", "defaultLanguage"],
+      properties: {
+        languages: { type: "array", items: { type: "string" }, minItems: 1 },
+        defaultLanguage: { type: "string", minLength: 1 },
+        mode: { type: "string", enum: ["translate", "generate"] },
+        style: {
+          type: "object",
+          properties: {
+            purpose: { type: "string", minLength: 1 },
+            tone: { type: "string", enum: ["polite", "formal", "casual"] },
+            customInstruction: { type: "string" },
+          },
+        },
+        exclude: { type: "array", items: { type: "string" } },
+      },
+    },
+
+    chapters: {
+      type: "array",
+      items: {
+        type: "object",
+        required: ["chapter"],
+        properties: {
+          chapter: { type: "string" },
+          desc: { type: "string" },
+          exclude: { type: "boolean" },
+        },
+      },
+    },
+
+    agent: {
+      type: "object",
+      properties: {
+        workDir: { type: "string" },
+        timeout: { type: "number", minimum: 1 },
+        retryCount: { type: "number", minimum: 1 },
+        batchTokenLimit: { type: "number", minimum: 1000 },
+        providers: {
+          type: "object",
+          additionalProperties: {
+            type: "object",
+            required: ["command", "args"],
+            properties: {
+              command: { type: "string", minLength: 1 },
+              args: { type: "array" },
+              systemPromptFlag: { type: "string" },
+              jsonOutputFlag: { type: "string" },
+            },
+          },
+        },
+        profiles: {
+          type: "object",
+          additionalProperties: {
+            type: "object",
+            additionalProperties: { type: "string" },
+          },
+        },
+        useProfile: { type: "string" },
+      },
+    },
+
+    scan: {
+      type: "object",
+      required: ["include"],
+      properties: {
+        include: { type: "array", items: { type: "string" }, minItems: 1 },
+        exclude: { type: "array", items: { type: "string" } },
+      },
+    },
+
+    flow: {
+      type: "object",
+      properties: {
+        merge: { type: "string", enum: ["squash", "ff-only", "merge"] },
+        push: {
+          type: "object",
+          properties: {
+            remote: { type: "string" },
+          },
+        },
+        commands: {
+          type: "object",
+          properties: {
+            context: {
+              type: "object",
+              properties: {
+                search: {
+                  type: "object",
+                  properties: {
+                    mode: { type: "string", enum: ["ngram", "ai"] },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+
+    commands: {
+      type: "object",
+      properties: {
+        gh: { type: "string", enum: ["enable", "disable"] },
+      },
+    },
+
+    experimental: {
+      type: "object",
+      properties: {
+        workflow: {
+          type: "object",
+          properties: {
+            enable: { type: "boolean" },
+            languages: {
+              type: "object",
+              properties: {
+                source: { type: "string" },
+                publish: { type: "string" },
+              },
+            },
+          },
+        },
+      },
+    },
+
+    logs: {
+      type: "object",
+      properties: {
+        enabled: { type: "boolean" },
+        dir: { type: "string" },
+      },
+    },
+  },
+};
+
+// ---------------------------------------------------------------------------
+// Config validation
+// ---------------------------------------------------------------------------
+
+/**
+ * Validate a config object against the schema.
+ * Throws on any validation failure.
+ *
+ * @param {*} raw - Parsed config object
+ * @returns {import("./types.js").SddConfig} Validated config
+ */
+export function validate(raw) {
+  if (!raw || typeof raw !== "object") {
+    throw new Error("config must be a non-null object");
+  }
+
+  const errors = validateSchema(raw, CONFIG_SCHEMA);
+
+  // Cross-field validation: defaultLanguage must be in languages
+  if (Array.isArray(raw.docs?.languages) && typeof raw.docs?.defaultLanguage === "string") {
+    if (!raw.docs.languages.includes(raw.docs.defaultLanguage)) {
+      errors.push("'docs.defaultLanguage' must be one of 'docs.languages'");
+    }
+  }
+
+  // Cross-field validation: profile provider references must be valid
+  if (raw.agent?.profiles) {
+    const allProviders = { ...BUILTIN_PROVIDERS, ...(raw.agent?.providers || {}) };
+    for (const [profileName, profile] of Object.entries(raw.agent.profiles)) {
+      if (typeof profile !== "object" || profile == null) continue;
+      for (const [commandId, providerKey] of Object.entries(profile)) {
+        if (typeof providerKey === "string" && !allProviders[providerKey]) {
+          errors.push(`'agent.profiles.${profileName}.${commandId}': unknown provider "${providerKey}"`);
+        }
+      }
+    }
+  }
+
+  // Cross-field validation: useProfile must reference a defined profile
+  if (typeof raw.agent?.useProfile === "string" && raw.agent.profiles) {
+    if (!raw.agent.profiles[raw.agent.useProfile]) {
+      errors.push(`'agent.useProfile': profile "${raw.agent.useProfile}" is not defined in agent.profiles`);
+    }
+  }
+
+  if (errors.length > 0) {
+    throw new Error(`Config validation failed:\n  - ${errors.join("\n  - ")}`);
+  }
+
+  return /** @type {import("./types.js").SddConfig} */ (raw);
+}
+
+// ---------------------------------------------------------------------------
 // SDD 設定管理
 // ---------------------------------------------------------------------------
 
@@ -123,5 +338,5 @@ export function loadLang(root) {
  */
 export function loadConfig(root) {
   const raw = loadJsonFile(sddConfigPath(root));
-  return validateConfig(raw);
+  return validate(raw);
 }

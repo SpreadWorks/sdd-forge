@@ -13,8 +13,7 @@
 import fs from "fs";
 import { runIfDirect } from "../../lib/entrypoint.js";
 import { repoRoot, parseArgs } from "../../lib/cli.js";
-import { sddConfigPath } from "../../lib/config.js";
-import { validateConfig } from "../../lib/types.js";
+import { sddConfigPath, validate } from "../../lib/config.js";
 import { PRESETS } from "../../lib/presets.js";
 import { EXIT_ERROR } from "../../lib/exit-codes.js";
 
@@ -63,7 +62,7 @@ function runChecks(root) {
 
   // Check 2: schema validation
   try {
-    validateConfig(raw);
+    validate(raw);
     checks.push({ name: "schema", result: "pass", errors: [] });
   } catch (err) {
     const errors = err.message

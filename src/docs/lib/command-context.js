@@ -8,8 +8,7 @@
 import fs from "fs";
 import path from "path";
 import { repoRoot, sourceRoot } from "../../lib/cli.js";
-import { loadJsonFile, sddConfigPath, sddOutputDir, DEFAULT_LANG } from "../../lib/config.js";
-import { validateConfig } from "../../lib/types.js";
+import { loadJsonFile, sddConfigPath, sddOutputDir, DEFAULT_LANG, validate } from "../../lib/config.js";
 import { resolveAgent } from "../../lib/agent.js";
 import { translate } from "../../lib/i18n.js";
 import { resolveChaptersOrder } from "./template-merger.js";
@@ -44,11 +43,13 @@ export function resolveCommandContext(cli, overrides) {
   const root = o.root || repoRoot();
   const srcRoot = o.srcRoot || sourceRoot();
 
-  // config 読み込み（失敗時は空オブジェクト — setup/help 等で config がないケース）
+  // config 読み込み — config が未作成 or バリデーション失敗の場合は空オブジェクトで続行。
+  // setup/help/readme 等、config 不在でも動作すべきコマンドの入口として使われるため、
+  // ここで throw するとそれらのコマンドが起動できなくなる。
   let config;
   try {
-    config = validateConfig(loadJsonFile(sddConfigPath(root)));
-  } catch (_) {
+    config = validate(loadJsonFile(sddConfigPath(root)));
+  } catch {
     config = {};
   }
 

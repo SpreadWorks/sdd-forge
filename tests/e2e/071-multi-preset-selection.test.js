@@ -32,29 +32,29 @@ describe("validateConfig: type as string | string[]", () => {
   };
 
   it("accepts type as string", async () => {
-    const { validateConfig } = await import("../../src/lib/types.js");
+    const { validate } = await import("../../src/lib/config.js");
     const cfg = { ...baseConfig, type: "symfony" };
-    const result = validateConfig(cfg);
+    const result = validate(cfg);
     assert.equal(result.type, "symfony");
   });
 
   it("accepts type as string array", async () => {
-    const { validateConfig } = await import("../../src/lib/types.js");
+    const { validate } = await import("../../src/lib/config.js");
     const cfg = { ...baseConfig, type: ["node-cli", "postgres"] };
-    const result = validateConfig(cfg);
+    const result = validate(cfg);
     assert.deepEqual(result.type, ["node-cli", "postgres"]);
   });
 
   it("rejects empty array", async () => {
-    const { validateConfig } = await import("../../src/lib/types.js");
+    const { validate } = await import("../../src/lib/config.js");
     const cfg = { ...baseConfig, type: [] };
-    assert.throws(() => validateConfig(cfg), /type/);
+    assert.throws(() => validate(cfg), /type/);
   });
 
   it("rejects non-string elements in array", async () => {
-    const { validateConfig } = await import("../../src/lib/types.js");
+    const { validate } = await import("../../src/lib/config.js");
     const cfg = { ...baseConfig, type: ["symfony", 123] };
-    assert.throws(() => validateConfig(cfg), /type/);
+    assert.throws(() => validate(cfg), /type/);
   });
 });
 

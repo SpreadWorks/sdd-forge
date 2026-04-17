@@ -8,8 +8,7 @@
 import fs from "fs";
 import path from "path";
 import { createTmpDir, removeTmpDir } from "../../helpers/tmp-dir.js";
-import { validateConfig } from "../../../src/lib/types.js";
-import { loadJsonFile } from "../../../src/lib/config.js";
+import { validate, loadJsonFile } from "../../../src/lib/config.js";
 import { resolveAgent } from "../../../src/lib/agent.js";
 import { createI18n } from "../../../src/lib/i18n.js";
 import { resolveChaptersOrder } from "../../../src/docs/lib/template-merger.js";
@@ -47,7 +46,7 @@ export function copyFixture(fixtureDir, configOverrides) {
  */
 export function buildCtx(tmp) {
   const configPath = path.join(tmp, ".sdd-forge", "config.json");
-  const config = validateConfig(loadJsonFile(configPath));
+  const config = validate(loadJsonFile(configPath));
   const lang = config.lang || "en";
   const outputLang = config.docs?.defaultLanguage || lang;
   const type = config.type || "base";

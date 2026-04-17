@@ -1,7 +1,7 @@
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
 import { commands } from "../../src/help.js";
-import { validateConfig } from "../../src/lib/types.js";
+import { validate } from "../../src/lib/config.js";
 
 // ---------------------------------------------------------------------------
 // A: help.js LAYOUT — flow subcommands
@@ -42,7 +42,7 @@ function baseConfig() {
 describe("060-B: validateConfig with nested agent structure", () => {
   it("accepts config without agent section", () => {
     const cfg = baseConfig();
-    assert.doesNotThrow(() => validateConfig(cfg));
+    assert.doesNotThrow(() => validate(cfg));
   });
 
   it("accepts valid nested agent.providers", () => {
@@ -58,7 +58,7 @@ describe("060-B: validateConfig with nested agent structure", () => {
         },
       },
     };
-    assert.doesNotThrow(() => validateConfig(cfg));
+    assert.doesNotThrow(() => validate(cfg));
   });
 
   it("rejects agent.providers entry missing command", () => {
@@ -73,7 +73,7 @@ describe("060-B: validateConfig with nested agent structure", () => {
         },
       },
     };
-    assert.throws(() => validateConfig(cfg), /agent\.providers\.claude\.command/);
+    assert.throws(() => validate(cfg), /agent\.providers\.claude\.command/);
   });
 
   it("rejects agent.providers entry missing args", () => {
@@ -88,10 +88,10 @@ describe("060-B: validateConfig with nested agent structure", () => {
         },
       },
     };
-    assert.throws(() => validateConfig(cfg), /agent\.providers\.claude\.args/);
+    assert.throws(() => validate(cfg), /agent\.providers\.claude\.args/);
   });
 
-  it("does not validate flat providers (removed)", () => {
+  it("rejects flat providers as unknown field", () => {
     const cfg = {
       ...baseConfig(),
       providers: {
@@ -101,8 +101,8 @@ describe("060-B: validateConfig with nested agent structure", () => {
         },
       },
     };
-    // flat providers should be ignored — no error, no validation
-    assert.doesNotThrow(() => validateConfig(cfg));
+    // flat providers is an unknown top-level field — rejected by additionalProperties: false
+    assert.throws(() => validate(cfg), /providers/);
   });
 
   it("accepts full config matching real .sdd-forge/config.json structure", () => {
@@ -146,6 +146,6 @@ describe("060-B: validateConfig with nested agent structure", () => {
         },
       },
     };
-    assert.doesNotThrow(() => validateConfig(cfg));
+    assert.doesNotThrow(() => validate(cfg));
   });
 });

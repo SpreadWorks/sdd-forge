@@ -1,0 +1,47 @@
+{
+  "data": {
+    "implementation": {
+      "diffStat": "specs/180-schema-driven-config-validation/draft.md |  65 +++++\n .../180-schema-driven-config-validation/flow.json  | 187 +++++++++++++\n .../issue-log.json                                 | 145 ++++++++++\n specs/180-schema-driven-config-validation/qa.md    |   9 +\n .../180-schema-driven-config-validation/review.md  |  41 +++\n specs/180-schema-driven-config-validation/spec.md  | 111 ++++++++\n .../tests/README.md                                |  25 ++\n .../tests/verify.test.js                           | 108 ++++++++\n src/check/commands/config.js                       |   5 +-\n src/docs/lib/command-context.js                    |  11 +-\n src/lib/config.js                                  | 219 ++++++++++++++-\n src/lib/schema-validate.js                         | 135 +++++++++\n src/lib/types.js                                   | 302 +--------------------\n src/setup.js                                       |   4 +-\n src/templates/config.example.json                  |  57 ----\n tests/acceptance/lib/pipeline.js                   |   5 +-\n tests/e2e/043-configurable-scan.test.js            |  16 +-\n tests/e2e/060-help-layout-validate-config.test.js  |  18 +-\n tests/e2e/071-multi-preset-selection.test.js       |  16 +-\n tests/e2e/081-config-commands.test.js              |  16 +-\n tests/e2e/162-agent-commands-entries.test.js       |  40 ---\n tests/unit/lib/schema-validate.test.js             | 293 ++++++++++++++++++++\n tests/unit/lib/types-agent-profiles.test.js        |  30 +-\n tests/unit/lib/types-chapters.test.js              |  20 +-\n tests/unit/lib/types-docs-exclude.test.js          |  12 +-\n tests/unit/lib/types.test.js                       |  60 ++--\n 26 files changed, 1450 insertions(+), 500 deletions(-)",
+      "commits": [
+        "feat: feature/180-schema-driven-config-validation"
+      ]
+    },
+    "retro": {
+      "total": 6,
+      "done": 6,
+      "partial": 0,
+      "not_done": 0,
+      "rate": 1,
+      "notes": "R1〜R6は実装差分上すべて満たしている。加えて、要件外の追加変更（useProfile整合性チェック、新規テスト群、spec運用ファイル追加）が含まれる。"
+    },
+    "issueLog": {
+      "count": 0,
+      "entries": []
+    },
+    "metrics": {
+      "docsRead": 1,
+      "srcRead": 5,
+      "question": 15,
+      "issueLog": 2
+    },
+    "tokenMetrics": {
+      "input": 927063,
+      "output": 24748,
+      "cacheRead": 286976,
+      "cacheCreation": 0,
+      "cost": null,
+      "callCount": 26
+    },
+    "tests": {
+      "unit": 30,
+      "integration": 0,
+      "acceptance": 9,
+      "total": 39
+    },
+    "sync": {
+      "status": "skipped",
+      "reason": "sync was skipped"
+    }
+  },
+  "text": "  Report\n\n  Implementation\n  ────────────────────────────────────────────────\n    feat: feature/180-schema-driven-config-validation\n    26 files changed, 1450 insertions(+), 500 deletions(-)\n\n  Retro\n  ────────────────────────────────────────────────\n    ████████ 100%  (6 done / 0 partial / 0 miss)\n\n  Metrics\n  ────────────────────────────────────────────────\n    docs read ................... 1\n    src read .................... 5\n    Q&A ......................... 15\n    issue-log ................... 2\n    agent calls ................. 26\n    input tokens ................ 927,063\n    output tokens ............... 24,748\n    cache-read tokens ........... 286,976\n    cache-create tokens ......... 0\n    cost ........................ N/A\n\n  Tests\n  ────────────────────────────────────────────────\n    unit 30  integration 0  acceptance 9  total 39"
+}
