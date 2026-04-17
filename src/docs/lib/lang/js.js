@@ -4,6 +4,7 @@
  */
 
 import path from "node:path";
+import { hasSlashPrefix } from "./comments.js";
 
 // ---------------------------------------------------------------------------
 // Minify
@@ -18,7 +19,10 @@ function removeBlockComments(code) {
 function removeLineComments(code, pattern) {
   return code
     .split("\n")
-    .map((line) => line.replace(pattern, "").trimEnd())
+    .map((line) => {
+      if (hasSlashPrefix(line)) return line;
+      return line.replace(pattern, "").trimEnd();
+    })
     .filter((line) => line.trim() !== "")
     .join("\n");
 }

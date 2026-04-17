@@ -1,0 +1,47 @@
+{
+  "data": {
+    "implementation": {
+      "diffStat": "specs/183-prefix-comments/draft.md        |  99 ++++++++++++++++\n specs/183-prefix-comments/flow.json       | 186 ++++++++++++++++++++++++++++++\n specs/183-prefix-comments/issue-log.json  |  47 ++++++++\n specs/183-prefix-comments/qa.md           |   9 ++\n specs/183-prefix-comments/spec.md         |  85 ++++++++++++++\n specs/183-prefix-comments/tests/README.md |  38 ++++++\n src/docs/lib/lang/comments.js             |  26 +++++\n src/docs/lib/lang/js.js                   |   6 +-\n src/docs/lib/lang/php.js                  |   7 +-\n src/docs/lib/lang/py.js                   |   3 +\n src/docs/lib/lang/yaml.js                 |   3 +\n src/presets/document/guardrail.json       |   4 +-\n tests/unit/docs/lib/minify.test.js        | 155 +++++++++++++++++++++++++\n 13 files changed, 664 insertions(+), 4 deletions(-)",
+      "commits": [
+        "feat: feature/183-prefix-comments"
+      ]
+    },
+    "retro": {
+      "total": 7,
+      "done": 7,
+      "partial": 0,
+      "not_done": 0,
+      "rate": 1,
+      "notes": "R1〜R7 は実装・テスト・guardrail 更新で満たされている。未計画変更は主に SDD 運用由来の仕様/ログ文書追加と、一部の付随的な文言・回帰テスト追加。"
+    },
+    "issueLog": {
+      "count": 0,
+      "entries": []
+    },
+    "metrics": {
+      "docsRead": 1,
+      "srcRead": 0,
+      "question": 4,
+      "issueLog": 1
+    },
+    "tokenMetrics": {
+      "input": 173076,
+      "output": 5530,
+      "cacheRead": 69376,
+      "cacheCreation": 0,
+      "cost": null,
+      "callCount": 6
+    },
+    "tests": {
+      "unit": 24,
+      "integration": 0,
+      "acceptance": 0,
+      "total": 24
+    },
+    "sync": {
+      "status": "skipped",
+      "reason": "sync was skipped"
+    }
+  },
+  "text": "  Report\n\n  Implementation\n  ────────────────────────────────────────────────\n    feat: feature/183-prefix-comments\n    13 files changed, 664 insertions(+), 4 deletions(-)\n\n  Retro\n  ────────────────────────────────────────────────\n    ████████ 100%  (7 done / 0 partial / 0 miss)\n\n  Metrics\n  ────────────────────────────────────────────────\n    docs read ................... 1\n    src read .................... 0\n    Q&A ......................... 4\n    issue-log ................... 1\n    agent calls ................. 6\n    input tokens ................ 173,076\n    output tokens ............... 5,530\n    cache-read tokens ........... 69,376\n    cache-create tokens ......... 0\n    cost ........................ N/A\n\n  Tests\n  ────────────────────────────────────────────────\n    unit 24  integration 0  acceptance 0  total 24"
+}

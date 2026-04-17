@@ -202,6 +202,161 @@ describe("minify edge cases", () => {
 });
 
 // ---------------------------------------------------------------------------
+// Prefix comment preservation (WHY: / HACK: / SECURITY:)
+// ---------------------------------------------------------------------------
+
+describe("prefix comment preservation (JS)", () => {
+  it("keeps full-line // WHY: comments", () => {
+    const code = "// WHY: deliberate choice for cache invariance\nconst x = 1;\n";
+    const result = minify(code, "file.js");
+    assert.ok(result.includes("// WHY: deliberate choice for cache invariance"));
+    assert.ok(result.includes("const x = 1"));
+  });
+
+  it("keeps full-line // HACK: comments", () => {
+    const code = "// HACK: workaround for legacy parser bug\nconst x = 1;\n";
+    const result = minify(code, "file.js");
+    assert.ok(result.includes("// HACK: workaround for legacy parser bug"));
+  });
+
+  it("keeps full-line // SECURITY: comments", () => {
+    const code = "// SECURITY: constant-time comparison required\nconst x = 1;\n";
+    const result = minify(code, "file.js");
+    assert.ok(result.includes("// SECURITY: constant-time comparison required"));
+  });
+
+  it("keeps indented prefix comments", () => {
+    const code = "function f() {\n  // WHY: early return for clarity\n  return 1;\n}\n";
+    const result = minify(code, "file.js");
+    assert.ok(result.includes("// WHY: early return for clarity"));
+  });
+
+  it("removes lowercase why: comments", () => {
+    const code = "// why: not recognized\nconst x = 1;\n";
+    const result = minify(code, "file.js");
+    assert.ok(!result.includes("why: not recognized"));
+  });
+
+  it("removes mixed-case Why: comments", () => {
+    const code = "// Why: not recognized\nconst x = 1;\n";
+    const result = minify(code, "file.js");
+    assert.ok(!result.includes("Why: not recognized"));
+  });
+
+  it("removes unknown prefix comments", () => {
+    const code = "// TODO: not a recognized prefix\nconst x = 1;\n";
+    const result = minify(code, "file.js");
+    assert.ok(!result.includes("TODO: not a recognized prefix"));
+  });
+
+  it("removes end-of-line WHY: comments (prefix not preserved in trailing position)", () => {
+    const code = "const x = 1; // WHY: trailing\nconst y = 2;\n";
+    const result = minify(code, "file.js");
+    assert.ok(!result.includes("WHY: trailing"));
+    assert.ok(result.includes("const x = 1;"));
+  });
+
+  it("keeps prefix comments alongside regular code", () => {
+    const code = "// WHY: reasoning here\n// regular comment\nconst x = 1;\n";
+    const result = minify(code, "file.js");
+    assert.ok(result.includes("// WHY: reasoning here"));
+    assert.ok(!result.includes("regular comment"));
+  });
+});
+
+describe("prefix comment preservation (PHP)", () => {
+  it("keeps full-line // WHY: comments", () => {
+    const code = "// WHY: business rule override\n$x = 1;\n";
+    const result = minify(code, "file.php");
+    assert.ok(result.includes("// WHY: business rule override"));
+  });
+
+  it("keeps full-line # HACK: comments", () => {
+    const code = "# HACK: workaround for php 5 compat\n$x = 1;\n";
+    const result = minify(code, "file.php");
+    assert.ok(result.includes("# HACK: workaround for php 5 compat"));
+  });
+
+  it("keeps full-line # SECURITY: comments", () => {
+    const code = "# SECURITY: sanitize input here\n$x = 1;\n";
+    const result = minify(code, "file.php");
+    assert.ok(result.includes("# SECURITY: sanitize input here"));
+  });
+
+  it("removes lowercase # why: comments", () => {
+    const code = "# why: not recognized\n$x = 1;\n";
+    const result = minify(code, "file.php");
+    assert.ok(!result.includes("why: not recognized"));
+  });
+
+  it("still preserves shebang", () => {
+    const code = "#!/usr/bin/env php\n# regular\n$x = 1;\n";
+    const result = minify(code, "file.php");
+    assert.ok(result.includes("#!/usr/bin/env php"));
+    assert.ok(!result.includes("# regular"));
+  });
+});
+
+describe("prefix comment preservation (Python)", () => {
+  it("keeps full-line # WHY: comments", () => {
+    const code = "# WHY: chosen for list mutation safety\nx = 1\n";
+    const result = minify(code, "file.py");
+    assert.ok(result.includes("# WHY: chosen for list mutation safety"));
+  });
+
+  it("keeps full-line # HACK: comments", () => {
+    const code = "# HACK: workaround for CPython GIL\nx = 1\n";
+    const result = minify(code, "file.py");
+    assert.ok(result.includes("# HACK: workaround for CPython GIL"));
+  });
+
+  it("keeps full-line # SECURITY: comments", () => {
+    const code = "# SECURITY: hash with bcrypt\nx = 1\n";
+    const result = minify(code, "file.py");
+    assert.ok(result.includes("# SECURITY: hash with bcrypt"));
+  });
+
+  it("removes lowercase # why: comments", () => {
+    const code = "# why: not recognized\nx = 1\n";
+    const result = minify(code, "file.py");
+    assert.ok(!result.includes("why: not recognized"));
+  });
+
+  it("removes end-of-line WHY: comments", () => {
+    const code = "x = 1  # WHY: trailing\n";
+    const result = minify(code, "file.py");
+    assert.ok(!result.includes("WHY: trailing"));
+    assert.ok(result.includes("x = 1"));
+  });
+});
+
+describe("prefix comment preservation (YAML)", () => {
+  it("keeps full-line # WHY: comments", () => {
+    const code = "# WHY: required for backward compat\nkey: value\n";
+    const result = minify(code, "file.yaml");
+    assert.ok(result.includes("# WHY: required for backward compat"));
+  });
+
+  it("keeps full-line # HACK: comments", () => {
+    const code = "# HACK: workaround until issue #42\nkey: value\n";
+    const result = minify(code, "file.yml");
+    assert.ok(result.includes("# HACK: workaround until issue #42"));
+  });
+
+  it("keeps full-line # SECURITY: comments", () => {
+    const code = "# SECURITY: never commit secrets\nkey: value\n";
+    const result = minify(code, "file.yaml");
+    assert.ok(result.includes("# SECURITY: never commit secrets"));
+  });
+
+  it("removes lowercase # why: comments", () => {
+    const code = "# why: not recognized\nkey: value\n";
+    const result = minify(code, "file.yaml");
+    assert.ok(!result.includes("why: not recognized"));
+  });
+});
+
+// ---------------------------------------------------------------------------
 // Essential mode
 // ---------------------------------------------------------------------------
 

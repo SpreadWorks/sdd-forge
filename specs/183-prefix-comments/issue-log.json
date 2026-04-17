@@ -1,0 +1,47 @@
+{
+  "entries": [
+    {
+      "step": "gate-draft",
+      "reason": "Single Responsibility — ドラフトは「プリフィックス付きコメントを保持してドキュメント品質を上げる」という単一の関心に集中している。; Unambiguous Requirements — プリフィックス種別・書式・対象言語・対象位置などが具体的で検証可能な条件として定義されている。; Complete Context — 仕様項目の一部が制約列挙に留まり、`When/If` と `shall` の組で明示された要求文になっていない。; No Hardcoded Secrets — APIキーやトークン等の秘密情報は含まれておらず、この内容では実質的に非該当。; Prioritize Requirements — 要件が3項目超で提示されているが、優先順位（P1/P2等）の明示がない。; Impact on Existing Features — 既存minify挙動への影響（通常コメント削除継続、ブロックコメント扱い維持、末尾コメント除外）が明示されている。; Present Recommendations with Reasoning — 各論点で選択肢に対する推奨結論と理由（YAGNI・運用方針・既存挙動）が併記されている。; Explore Before Asking — 現行実装（各言語ハンドラとminify挙動）を先に確認した上で質問設計されている。; Proactively Raise Related Implications — 代替案の却下理由と将来拡張（追加プリフィックス、共通化方針）を先回りで示している。; Confirm Brainstorm vs. Decision Before Critiquing — Q1で意図確認し、最終的にユーザー承認（2026-04-17）を取得してから確定している。; Capture Digressions in draft.md — 目立つ脱線はなく、必要な検討事項はドラフト内に記録されているため非該当。; Draft Stays at Requirements Level — 正規表現やファイル単位の実装・共通化方針まで踏み込んでおり、要件レベルを超える記述がある。; Backward — Compatible CLI Interface — 既存CLIコマンド/オプションの意味変更や削除を伴う提案がないため移行計画要件は非該当。",
+      "trigger": "gate post hook (auto)",
+      "timestamp": "2026-04-17T09:34:58.267Z"
+    },
+    {
+      "step": "gate-draft",
+      "reason": "Single Responsibility — Guardrail更新とminify挙動変更はいずれも「プリフィックスコメント保持」という単一目的に収束している。; Unambiguous Requirements — 接頭辞・大文字/コロン・対象言語・保持/削除条件が検証可能な形で具体化されている。; Complete Context — R4/R7 などに `When/If` のトリガー文脈がなく、条件と期待動作の対が揃っていない要件がある。; No Hardcoded Secrets — APIキー等の秘密情報は記載されておらず、本内容の性質上も非該当。; Prioritize Requirements — 要件が7件あり、P1/P2の優先順位が明示されている。; Impact on Existing Features — 非プリフィックス削除継続・末尾コメント削除継続・ブロックコメント据え置きなど既存挙動への影響が明記されている。; Present Recommendations with Reasoning — Q&Aに選択理由はあるが、各問いで「推奨案を先頭提示し根拠種別（docs/guardrail/code pattern）」を明示する形式になっていない。; Explore Before Asking — docs/や既存コードを先に調査した記録や根拠提示がなく、先行探索済みであることを示せていない。; Proactively Raise Related Implications — 代替案却下理由や将来拡張（追加プリフィックス候補）まで先回りで整理されている。; Confirm Brainstorm vs. Decision Before Critiquing — Q1で意図確認を行い、末尾でユーザー承認日付まで明示して意思決定状態を確定している。; Capture Digressions in draft.md — 代替案検討や将来拡張といった脱線しやすい論点をドラフト内に記録できている。; Draft Stays at Requirements Level — `src/presets/document/guardrail.json` や `src/docs/lib/lang/` など実装ファイル単位の詳細が含まれている。; Backward — Compatible CLI Interface — CLIコマンド/オプションの削除・意味変更を含む提案ではないため移行計画は非該当。",
+      "trigger": "gate post hook (auto)",
+      "timestamp": "2026-04-17T09:36:14.579Z"
+    },
+    {
+      "step": "gate-draft",
+      "reason": "Single Responsibility — 変更対象は「プリフィックスコメントを保持する仕組み」に一貫しており、関心事が分離されている。; Unambiguous Requirements — 各要件は対象条件と判定基準（対象プリフィックス・書式・言語）を具体的に定義している。; Complete Context — R1〜R7 はいずれも When/If と shall の期待動作が対になっている。; No Hardcoded Secrets — APIキー・トークン・パスワード等の秘匿情報は含まれていない。; Prioritize Requirements — 4件超の要件に対して `P1 > P2` の優先順位が明示されている。; Impact on Existing Features — 現行挙動の維持点（非一致コメント削除・ブロックコメント処理維持）と変更点が記載されている。; Present Recommendations with Reasoning — 各Qで推奨案を先に示し、根拠種別（docs/原則/既存パターン）を明記している。; Explore Before Asking — 「事前探索」で既存実装・既存パターン・方針を確認した上で論点化している。; Proactively Raise Related Implications — 代替案の却下理由、除外範囲、将来拡張方針まで先回りして記載している。; Confirm Brainstorm vs. Decision Before Critiquing — Q&Aで選択結果と最終のユーザー承認日が明示され、検討段階と決定段階が区別されている。; Capture Digressions in draft.md — 代替案検討や将来拡張の寄り道内容がドラフト内（Q6）に記録されている。; Draft Stays at Requirements Level — `getLangHandler(filePath)` や `tests/unit/` など実装・配置レベルの詳細が含まれている。; Backward — Compatible CLI Interface — 本ドラフトはCLIコマンド/オプションの意味変更を扱っておらず本条項は適用外。",
+      "trigger": "gate post hook (auto)",
+      "timestamp": "2026-04-17T09:37:22.080Z"
+    },
+    {
+      "step": "gate",
+      "reason": "line 24: unresolved token (- `TODO:` / `NOTE:` / `INVARIANT:` / `PERF:` / `COMPAT:` / `DEPRECATED:` 等、初期 3 種以外のプリフィックス); line 29: unresolved token (- A: `WHY:` / `HACK:` / `SECURITY:` の 3 種。ドキュメント生成への入力価値を重視し、開発者メモ色の強い `TODO:` や乱用リスクの高い `NOTE:` は初期セットから除外。); line 42: unresolved token (- **Issue 原案の 5 種 (`WHY` / `TODO` / `HACK` / `NOTE` / `SECURITY`)**: `TODO:` は開発者向けでドキュメントに載せたくない、`NOTE:` は乱用リスクがあるため却下。); line 75: unchecked task/question (- [ ] なし)",
+      "trigger": "gate post hook (auto)",
+      "timestamp": "2026-04-17T09:38:48.419Z"
+    },
+    {
+      "step": "gate",
+      "reason": "Single Responsibility — The spec focuses on one concern: structured prefix comments and their minify/guardrail handling.; Unambiguous Requirements — Requirements define concrete, verifiable conditions (exact prefixes, casing, comment forms, target languages).; Complete Context — Each requirement provides trigger context (When/If) and expected behavior (shall).; No Hardcoded Secrets — No API keys, passwords, tokens, or similar secrets appear in the content.; No Silent Error Swallowing — Inapplicable: the spec does not define error-handling code paths where errors could be swallowed.; Prioritize Requirements — Priorities are explicitly defined and applied (P1 > P2, each requirement labeled).; Impact on Existing Features — The spec does not explicitly provide a clear impact statement for existing features (or explicitly say none are affected).; Bounded Resource Usage — Inapplicable: no recursion, retry loops, or bulk-loading behavior is introduced.; Changes Require Test Coverage — The spec requires unit tests for the new/changed minify behavior across handlers.; Spec Includes Test Strategy — Acceptance criteria describe what to test and indicate how (unit tests per language handler behavior).; Synthesize Draft, Do Not Copy — Inapplicable: no source draft text is provided here to verify copy-vs-synthesis.; Record Unresolved Points as Open Questions — Open Questions is present and explicitly states none, with clarifications resolved in Q&A.; Include 'Why This Approach' Rationale — Rationale is provided through Goal, Clarifications, and Alternatives Considered with rejection reasons.; Backward — Compatible CLI Interface — Inapplicable: no CLI command/option removal or semantic change is specified.; Exit Code Contract — Inapplicable: the spec does not define command failure/success exit-code behavior.",
+      "trigger": "gate post hook (auto)",
+      "timestamp": "2026-04-17T09:39:32.197Z"
+    },
+    {
+      "step": "gate-impl",
+      "reason": "R1 (recognized `WHY:`/`HACK:`/`SECURITY:` single — line comments are preserved) — Minify handlers now keep prefixed full-line comments, and dedicated JS/PHP/Python/YAML tests pass.; R2 (non — matching prefixes are removed) — Logic only preserves strict uppercase prefixes; lowercase/mixed/unknown prefix removal is covered by new passing unit tests.; R3 (end — of-line comments are removed regardless of prefix) — Existing inline-comment stripping remains, and new JS/Python tests confirm trailing `WHY:` comments are removed.; R4 (apply same prefix set across JS/PHP/Python/YAML comment syntaxes) — All four language handlers were updated to use shared prefix checks for their line-comment forms (`//` and/or `#`), with per-language tests passing.; R5 (`document` guardrail uses MUST wording for structured prefixes) — `comment-intent-not-logic` was rewritten to explicit MUST/MUST NOT rules and enumerates exactly `WHY:`/`HACK:`/`SECURITY:`.; R6 (guardrail requires comment body language to follow `config.docs.defaultLanguage`) — Guardrail body explicitly states this in MUST form.; R7 (block comment behavior remains unchanged) — Block-comment removal logic was not modified, and existing block-comment minify tests continue to pass.; No Hardcoded Secrets — No API keys, passwords, tokens, or other secrets are present in the spec or diff.; No Silent Error Swallowing — No `catch` blocks or error-discarding logic appear in the provided changes.; Bounded Resource Usage — Line processing uses full `split(\"\\n\")` over entire input with no explicit size/depth/count bounds.; No Sensitive Data in Logs — No logging changes are present, so no sensitive data is being logged.; No Disabling Existing Tests — Existing tests are not skipped, removed, or commented out; new tests were added.; Escalate When New Tests Break Existing Tests — No evidence in the provided content that new tests broke existing tests.; Do Not Modify Existing Tests Without Approval — The diff adds test cases and does not modify/delete prior test intent.; Flag Tests That Become Irrelevant — No test obsolescence is indicated by the provided feature scope and diff.; Exit Code Contract — No command/CLI failure-handling behavior or exit-code logic is changed here.; No Synchronous I/O in Hot Paths — No synchronous file/network I/O was introduced in loop or bulk-processing paths.; Validate User Input at Entry Point — No CLI argument/stdin entry-point changes are included in this content.",
+      "trigger": "gate post hook (auto)",
+      "timestamp": "2026-04-17T09:46:34.036Z"
+    },
+    {
+      "step": "gate-impl",
+      "reason": "gate-impl flagged Bounded Resource Usage on minify's split('\\n'); this pattern is pre-existing (unchanged by this spec) and the scan pipeline already filters files by size/glob",
+      "trigger": "gate AI review of impl",
+      "resolution": "re-run gate; bounded resource applies to new code paths, not pre-existing patterns outside spec scope",
+      "timestamp": "2026-04-17T09:46:48.780Z"
+    }
+  ]
+}

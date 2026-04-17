@@ -1,0 +1,83 @@
+{
+  "spec": "specs/183-prefix-comments/spec.md",
+  "date": "2026-04-17T09:48:21.995Z",
+  "requirements": [
+    {
+      "desc": "R1: minify は WHY:/HACK:/SECURITY: の単一行コメントを保持する",
+      "status": "done",
+      "note": "JS/PHP/Python/YAML の各ハンドラで行頭プレフィックス検出を追加し、該当行を保持する実装とテストが追加されている。"
+    },
+    {
+      "desc": "R2: 上記以外の単一行コメントは削除する",
+      "status": "done",
+      "note": "保持条件は WHY/HACK/SECURITY の厳格一致のみで、既存のコメント削除処理が維持され、lowercase/mixed/未知プレフィックス削除テストも追加されている。"
+    },
+    {
+      "desc": "R3: 末尾コメントはプリフィックス有無に関わらず削除する",
+      "status": "done",
+      "note": "保持判定は行頭コメントのみ対象のため末尾コメントは従来どおり削除され、JS/Python で末尾 WHY コメント削除テストが明示されている。"
+    },
+    {
+      "desc": "R4: 対象言語は JS/PHP/Python/YAML の 4 つ",
+      "status": "done",
+      "note": "4言語すべてのハンドラが更新され、PHP は // と # の両構文に対応し、同一プレフィックス集合を適用している。"
+    },
+    {
+      "desc": "R5: document プリセットの guardrail がプリフィックス記述を MUST で指示する",
+      "status": "done",
+      "note": "guardrail の comment-intent-not-logic が MUST/MUST NOT 表現に更新され、WHY/HACK/SECURITY の使用規約が明記された。"
+    },
+    {
+      "desc": "R6: コメント本文は config.docs.defaultLanguage で書く",
+      "status": "done",
+      "note": "guardrail 本文に `config.docs.defaultLanguage` の自然言語で書くことを MUST として追加している。"
+    },
+    {
+      "desc": "R7: ブロックコメントの現行挙動を維持する",
+      "status": "done",
+      "note": "ブロックコメント除去ロジック自体は変更されておらず、変更は単一行コメント保持判定に限定されている。"
+    }
+  ],
+  "unplanned": [
+    {
+      "file": "specs/183-prefix-comments/draft.md",
+      "change": "要件実装とは別に、ドラフト仕様書が新規追加されている。"
+    },
+    {
+      "file": "specs/183-prefix-comments/flow.json",
+      "change": "SDD 実行状態・メトリクス情報の管理ファイルが追加されている。"
+    },
+    {
+      "file": "specs/183-prefix-comments/issue-log.json",
+      "change": "ゲート判定ログの記録ファイルが追加されている。"
+    },
+    {
+      "file": "specs/183-prefix-comments/qa.md",
+      "change": "QA テンプレート文書が追加されている。"
+    },
+    {
+      "file": "specs/183-prefix-comments/spec.md",
+      "change": "仕様書本体が新規追加されている（実装コード変更とは別の成果物）。"
+    },
+    {
+      "file": "specs/183-prefix-comments/tests/README.md",
+      "change": "テスト説明用 README が追加されている。"
+    },
+    {
+      "file": "src/presets/document/guardrail.json",
+      "change": "要件外の文言変更として guardrail タイトルが `Comment Intent, Not Logic` から `Comment Intent with Structured Prefixes` に変更されている。"
+    },
+    {
+      "file": "tests/unit/docs/lib/minify.test.js",
+      "change": "要件直接対象外の回帰確認として shebang 維持テストが追加されている。"
+    }
+  ],
+  "summary": {
+    "total": 7,
+    "done": 7,
+    "partial": 0,
+    "not_done": 0,
+    "rate": 1,
+    "notes": "R1〜R7 は実装・テスト・guardrail 更新で満たされている。未計画変更は主に SDD 運用由来の仕様/ログ文書追加と、一部の付随的な文言・回帰テスト追加。"
+  }
+}

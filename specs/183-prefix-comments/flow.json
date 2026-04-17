@@ -1,0 +1,186 @@
+{
+  "spec": "specs/183-prefix-comments/spec.md",
+  "baseBranch": "main",
+  "featureBranch": "feature/183-prefix-comments",
+  "runId": "89d084b3-9b1a-4384-8f44-6bbe13bc935f",
+  "lifecycle": "active",
+  "steps": [
+    {
+      "id": "branch",
+      "status": "done"
+    },
+    {
+      "id": "prepare-spec",
+      "status": "pending"
+    },
+    {
+      "id": "draft",
+      "status": "done"
+    },
+    {
+      "id": "gate-draft",
+      "status": "done"
+    },
+    {
+      "id": "spec",
+      "status": "done"
+    },
+    {
+      "id": "gate",
+      "status": "done"
+    },
+    {
+      "id": "approval",
+      "status": "done"
+    },
+    {
+      "id": "test",
+      "status": "done"
+    },
+    {
+      "id": "implement",
+      "status": "done"
+    },
+    {
+      "id": "gate-impl",
+      "status": "done"
+    },
+    {
+      "id": "review",
+      "status": "done"
+    },
+    {
+      "id": "finalize",
+      "status": "pending"
+    },
+    {
+      "id": "commit",
+      "status": "pending"
+    },
+    {
+      "id": "push",
+      "status": "pending"
+    },
+    {
+      "id": "merge",
+      "status": "pending"
+    },
+    {
+      "id": "pr-create",
+      "status": "pending"
+    },
+    {
+      "id": "branch-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "pr-merge",
+      "status": "pending"
+    },
+    {
+      "id": "sync-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "docs-update",
+      "status": "pending"
+    },
+    {
+      "id": "docs-review",
+      "status": "pending"
+    },
+    {
+      "id": "docs-commit",
+      "status": "pending"
+    }
+  ],
+  "requirements": [
+    {
+      "desc": "R1: minify は WHY:/HACK:/SECURITY: の単一行コメントを保持する",
+      "status": "done"
+    },
+    {
+      "desc": "R2: 上記以外の単一行コメントは削除する",
+      "status": "done"
+    },
+    {
+      "desc": "R3: 末尾コメントはプリフィックス有無に関わらず削除する",
+      "status": "done"
+    },
+    {
+      "desc": "R4: 対象言語は JS/PHP/Python/YAML の 4 つ",
+      "status": "done"
+    },
+    {
+      "desc": "R5: document プリセットの guardrail がプリフィックス記述を MUST で指示する",
+      "status": "done"
+    },
+    {
+      "desc": "R6: コメント本文は config.docs.defaultLanguage で書く",
+      "status": "done"
+    },
+    {
+      "desc": "R7: ブロックコメントの現行挙動を維持する",
+      "status": "done"
+    }
+  ],
+  "issue": 157,
+  "request": "#157 issue を進めてください",
+  "worktree": true,
+  "notes": [
+    "draft: Q1 intent approved — prefix comments (WHY/TODO/HACK/NOTE/SECURITY) for guardrail + minify",
+    "draft Q2: prefix set = WHY/HACK/SECURITY (3 種、ドキュメント価値優先、YAGNI)",
+    "draft Q3: 推奨 (厳格書式/単一行/行頭/JS+PHP+Py+YAML) + コメント本文は docs.defaultLanguage に従う",
+    "draft Q4: guardrail comment-intent-not-logic を拡張 / MUST 強制表現で書く"
+  ],
+  "metrics": {
+    "plan": {
+      "docsRead": 1
+    },
+    "draft": {
+      "question": 4
+    },
+    "gate-draft": {
+      "tokens": {
+        "input": 33728,
+        "output": 3404,
+        "cacheRead": 42368,
+        "cacheCreation": 0
+      },
+      "callCount": 3,
+      "responseChars": 3328
+    },
+    "gate": {
+      "tokens": {
+        "input": 6244,
+        "output": 869,
+        "cacheRead": 19072,
+        "cacheCreation": 0
+      },
+      "callCount": 1,
+      "responseChars": 1899
+    },
+    "gate-impl": {
+      "tokens": {
+        "input": 133104,
+        "output": 1257,
+        "cacheRead": 7936,
+        "cacheCreation": 0
+      },
+      "callCount": 2,
+      "responseChars": 2547
+    },
+    "impl": {
+      "issueLog": 1
+    }
+  },
+  "autoApprove": true,
+  "test": {
+    "summary": {
+      "unit": 24
+    }
+  },
+  "state": {
+    "finalizedAt": "2026-04-17T09:47:45.442Z"
+  }
+}
