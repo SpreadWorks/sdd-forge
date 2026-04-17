@@ -9,10 +9,7 @@ import {
 } from "../graphql.js";
 import { findItem, parseJsonResponse, ensureStatusOption } from "../board-helpers.js";
 import { assertJapaneseDraft, assertJapaneseDraftField, stripHashPrefix } from "../validation.js";
-import { Agent } from "../../../../src/lib/agent.js";
-import { ProviderRegistry } from "../../../../src/lib/provider.js";
-import { Logger } from "../../../../src/lib/log.js";
-import { resolveWorkDir } from "../../../../src/lib/config.js";
+import { container } from "../../../../src/lib/container.js";
 
 const COMMAND_ID = "experimental.workflow.publish";
 const PUBLISH_RETRY_COUNT = 2;
@@ -58,7 +55,7 @@ Title: ${sourceTitle}
 Body:
 ${sourceBody || "(empty)"}`;
 
-      const agent = buildAgent(config, root);
+      const agent = container.get("agent");
       if (!agent.resolve(COMMAND_ID)) {
         throw new Error(`no agent configured for ${COMMAND_ID}`);
       }
@@ -123,12 +120,4 @@ ${sourceBody}
     };
   }
 
-}
-
-function buildAgent(config, root) {
-  const agentWorkDir = resolveWorkDir(root, config);
-  const paths = { root, agentWorkDir };
-  const registry = new ProviderRegistry(config.agent?.providers || {});
-  const logger = Logger.getInstance();
-  return new Agent({ config, paths, registry, logger });
 }

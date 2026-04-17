@@ -16,6 +16,7 @@
 
 import { repoRoot, parseArgs } from "../src/lib/cli.js";
 import { loadConfig } from "../src/lib/config.js";
+import { initContainer } from "../src/lib/container.js";
 import { ok, fail, output } from "../src/lib/flow-envelope.js";
 import { EXIT_ERROR, EXIT_SUCCESS } from "../src/lib/constants.js";
 import { WORKFLOW_COMMANDS } from "./workflow/registry.js";
@@ -104,6 +105,7 @@ async function dispatch() {
   let config;
   try {
     config = loadConfig(root);
+    initContainer({ entryCommand: `workflow ${argv.join(" ")}` });
   } catch (err) {
     output(fail("workflow", subcommand, "NO_CONFIG", err.message));
     process.exit(EXIT_ERROR);
