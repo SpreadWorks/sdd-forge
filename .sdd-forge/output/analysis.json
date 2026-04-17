@@ -1,5 +1,5 @@
 {
-  "analyzedAt": "2026-04-17T09:38:38.566Z",
+  "analyzedAt": "2026-04-17T09:48:23.647Z",
   "package": {
     "entries": [
       {
@@ -1534,10 +1534,38 @@
         ]
       },
       {
+        "file": "src/docs/lib/lang/comments.js",
+        "hash": "56bea18fd63c0ab9a0454c7d3e28045b",
+        "lines": 27,
+        "mtime": "2026-04-17T09:48:23.286Z",
+        "className": "comments",
+        "methods": [
+          "hasSlashPrefix",
+          "hasHashPrefix"
+        ],
+        "imports": [],
+        "exports": [
+          "hasSlashPrefix",
+          "hasHashPrefix",
+          "PRESERVED_PREFIXES"
+        ],
+        "extends": null,
+        "usedBy": [
+          "src/docs/lib/lang/js.js",
+          "src/docs/lib/lang/php.js",
+          "src/docs/lib/lang/py.js",
+          "src/docs/lib/lang/yaml.js"
+        ],
+        "id": "49646805",
+        "enrich": {
+          "attempts": 1
+        }
+      },
+      {
         "file": "src/docs/lib/lang/js.js",
-        "hash": "16390ece61630c233b18c8423cc0207a",
-        "lines": 164,
-        "mtime": "2026-04-10T06:35:13.095Z",
+        "hash": "544289b008e4bb31c96182c3f5e33827",
+        "lines": 168,
+        "mtime": "2026-04-17T09:48:23.286Z",
         "className": "js",
         "methods": [
           "minify",
@@ -1553,6 +1581,7 @@
         ],
         "imports": [
           "node:path",
+          "./comments.js",
           "..."
         ],
         "exports": [
@@ -1573,26 +1602,14 @@
         ],
         "id": "dcea4940",
         "enrich": {
-          "processedAt": "2026-04-10T14:34:55.016Z",
-          "attempts": 2
-        },
-        "summary": "Implements JavaScript language utilities for parsing, minifying, and extracting structural signals. It provides import/export and essential-line extraction helpers.",
-        "detail": "The module removes block and line comments, normalizes indentation, and compacts code for prompt/context use. Its parser derives class name, parent class, method list, and placeholder relation metadata from content and file path. It also extracts imports/exports and keeps high-signal lines related to runtime behavior and key APIs.",
-        "chapter": "internal_design",
-        "role": "lib",
-        "keywords": [
-          "JavaScript parser",
-          "code minify",
-          "import extraction",
-          "method detection",
-          "essential lines"
-        ]
+          "attempts": 1
+        }
       },
       {
         "file": "src/docs/lib/lang/php.js",
-        "hash": "7fc70c9176260c276553b55da64117ed",
-        "lines": 174,
-        "mtime": "2026-04-10T06:35:13.095Z",
+        "hash": "b75e761b1f0ba109cfbbf4bb1beed524",
+        "lines": 179,
+        "mtime": "2026-04-17T09:48:23.286Z",
         "className": "php",
         "methods": [
           "minify",
@@ -1605,7 +1622,8 @@
           "removeHashComments"
         ],
         "imports": [
-          "node:path"
+          "node:path",
+          "./comments.js"
         ],
         "exports": [
           "minify",
@@ -1620,33 +1638,23 @@
         ],
         "id": "8da3c9aa",
         "enrich": {
-          "processedAt": "2026-04-10T14:34:55.016Z",
-          "attempts": 2
-        },
-        "summary": "Implements PHP language utilities mirroring the JS handler responsibilities. It parses class metadata, removes comments, and extracts imports/exports and essential code.",
-        "detail": "The module handles multiple PHP comment styles including block, slash, and hash patterns before compression. It extracts class inheritance, methods, properties, and relation hints from source text. It exposes import/export and essential-line selectors so PHP files can participate in the same analysis and prompt pipelines.",
-        "chapter": "internal_design",
-        "role": "lib",
-        "keywords": [
-          "PHP parser",
-          "comment stripping",
-          "class metadata",
-          "property extraction",
-          "essential code"
-        ]
+          "attempts": 1
+        }
       },
       {
         "file": "src/docs/lib/lang/py.js",
-        "hash": "68bcb38c4a6d2e9378fec579b62adf33",
-        "lines": 35,
-        "mtime": "2026-04-10T06:35:13.095Z",
+        "hash": "67734c7563bc8a32a507128e8b8df452",
+        "lines": 38,
+        "mtime": "2026-04-17T09:48:23.286Z",
         "className": "py",
         "methods": [
           "minify",
           "extractEssential",
           "removeHashComments"
         ],
-        "imports": [],
+        "imports": [
+          "./comments.js"
+        ],
         "exports": [
           "minify",
           "extractEssential"
@@ -1657,32 +1665,22 @@
         ],
         "id": "d894c726",
         "enrich": {
-          "processedAt": "2026-04-10T14:34:55.016Z",
-          "attempts": 2
-        },
-        "summary": "Provides lightweight Python text processing helpers for minification and essential extraction. It focuses on hash-comment cleanup and signal retention.",
-        "detail": "The module strips inline hash comments while preserving code lines and spacing intent. Its minifier returns compacted text suitable for prompt contexts without full AST parsing. Essential extraction keeps high-value lines for analysis summaries and contextual snippets.",
-        "chapter": "internal_design",
-        "role": "lib",
-        "keywords": [
-          "Python minify",
-          "comment removal",
-          "essential extraction",
-          "language helper",
-          "source compaction"
-        ]
+          "attempts": 1
+        }
       },
       {
         "file": "src/docs/lib/lang/yaml.js",
-        "hash": "6cf81f55e64a846823eb3ef7a47dff23",
-        "lines": 20,
-        "mtime": "2026-04-10T06:35:13.095Z",
+        "hash": "b4e73138727938af87047650da574783",
+        "lines": 23,
+        "mtime": "2026-04-17T09:48:23.286Z",
         "className": "yaml",
         "methods": [
           "minify",
           "removeHashComments"
         ],
-        "imports": [],
+        "imports": [
+          "./comments.js"
+        ],
         "exports": [
           "minify"
         ],
@@ -1692,20 +1690,8 @@
         ],
         "id": "ef1dd14d",
         "enrich": {
-          "processedAt": "2026-04-10T14:34:55.016Z",
-          "attempts": 2
-        },
-        "summary": "Provides YAML-focused minification helpers through comment stripping. It supports compacting configuration-style files for analysis contexts.",
-        "detail": "The module removes hash-based comments line-by-line while preserving remaining YAML content. It exposes a narrow minify function intended for shared minify pipelines. The implementation is intentionally simple and parser-free for predictable behavior.",
-        "chapter": "internal_design",
-        "role": "lib",
-        "keywords": [
-          "YAML minify",
-          "comment stripping",
-          "config compaction",
-          "language utility",
-          "text cleanup"
-        ]
+          "attempts": 1
+        }
       },
       {
         "file": "src/docs/lib/minify.js",
@@ -2350,7 +2336,7 @@
         "usedBy": null,
         "id": "331cf497",
         "enrich": {
-          "attempts": 3
+          "attempts": 4
         }
       },
       {
@@ -2439,7 +2425,7 @@
         ],
         "id": "e296da98",
         "enrich": {
-          "attempts": 3
+          "attempts": 4
         }
       },
       {
@@ -2853,7 +2839,7 @@
         "usedBy": null,
         "id": "c711309b",
         "enrich": {
-          "attempts": 2
+          "attempts": 3
         }
       },
       {
@@ -3719,7 +3705,7 @@
         "usedBy": null,
         "id": "4ac07fa0",
         "enrich": {
-          "attempts": 3
+          "attempts": 4
         }
       },
       {
@@ -3791,7 +3777,7 @@
         ],
         "id": "13ddf392",
         "enrich": {
-          "attempts": 4
+          "attempts": 5
         }
       },
       {
@@ -3882,7 +3868,7 @@
         ],
         "id": "f351ecc4",
         "enrich": {
-          "attempts": 4
+          "attempts": 5
         }
       },
       {
@@ -3909,7 +3895,7 @@
         ],
         "id": "102f6569",
         "enrich": {
-          "attempts": 3
+          "attempts": 4
         }
       },
       {
@@ -3968,7 +3954,7 @@
         ],
         "id": "dff6e5b4",
         "enrich": {
-          "attempts": 5
+          "attempts": 6
         }
       },
       {
@@ -4008,7 +3994,7 @@
         ],
         "id": "74b5e1c3",
         "enrich": {
-          "attempts": 4
+          "attempts": 5
         }
       },
       {
@@ -4046,7 +4032,7 @@
         ],
         "id": "fc4eae43",
         "enrich": {
-          "attempts": 3
+          "attempts": 4
         }
       },
       {
@@ -4192,7 +4178,7 @@
         ],
         "id": "5bb0bb76",
         "enrich": {
-          "attempts": 2
+          "attempts": 3
         }
       },
       {
@@ -4453,7 +4439,7 @@
         "usedBy": null,
         "id": "a2f5875b",
         "enrich": {
-          "attempts": 1
+          "attempts": 2
         }
       },
       {
@@ -4759,7 +4745,7 @@
         ],
         "id": "8bb94bbb",
         "enrich": {
-          "attempts": 5
+          "attempts": 6
         }
       },
       {
@@ -4831,7 +4817,7 @@
         ],
         "id": "69d5afb4",
         "enrich": {
-          "attempts": 5
+          "attempts": 6
         }
       },
       {
@@ -4888,7 +4874,7 @@
         "usedBy": null,
         "id": "0230d610",
         "enrich": {
-          "attempts": 3
+          "attempts": 4
         }
       },
       {
@@ -4943,7 +4929,7 @@
         "usedBy": null,
         "id": "59edeaf2",
         "enrich": {
-          "attempts": 2
+          "attempts": 3
         }
       },
       {
@@ -4969,7 +4955,7 @@
         "usedBy": null,
         "id": "85926390",
         "enrich": {
-          "attempts": 3
+          "attempts": 4
         }
       },
       {
@@ -7896,7 +7882,7 @@
         "usedBy": null,
         "id": "a8608997",
         "enrich": {
-          "attempts": 3
+          "attempts": 4
         }
       },
       {
@@ -7945,7 +7931,7 @@
         "usedBy": null,
         "id": "9820c9db",
         "enrich": {
-          "attempts": 3
+          "attempts": 4
         }
       },
       {
@@ -7974,15 +7960,30 @@
         "usedBy": null,
         "id": "a631f658",
         "enrich": {
-          "attempts": 3
-        }
+          "processedAt": "2026-04-17T09:48:37.249Z",
+          "attempts": 4
+        },
+        "summary": "This module implements the `upgrade` CLI workflow for syncing project skills and related configuration with packaged templates. It coordinates argument parsing, deployment steps, logging, and failure handling in one command entrypoint.",
+        "detail": "The file wires together CLI helpers (`parseArgs`, `repoRoot`) with upgrade-specific services such as skill deployment and obsolete-skill cleanup. It defines a dedicated argument parser for the upgrade command and a `main` function that executes the end-to-end flow asynchronously. The implementation includes structured result logging for skill operations and exits with a defined error code on fatal failures. It also reads and rewrites JSON configuration files, and references the experimental workflow skills template directory to keep project-level assets aligned with package updates.",
+        "chapter": "cli_commands",
+        "role": "cli",
+        "keywords": [
+          "upgrade command",
+          "CLI entrypoint",
+          "argument parsing",
+          "skills deployment",
+          "obsolete cleanup",
+          "config rewrite",
+          "error exit code",
+          "template sync"
+        ]
       }
     ],
     "summary": {
-      "total": 239,
-      "totalMethods": 811
+      "total": 240,
+      "totalMethods": 813
     },
     "dataSourceHash": "7d725e75d5031be445119323e4947c91"
   },
-  "enrichedAt": "2026-04-17T09:40:09.122Z"
+  "enrichedAt": "2026-04-17T09:49:54.634Z"
 }
