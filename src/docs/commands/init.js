@@ -10,7 +10,8 @@
 
 import fs from "fs";
 import path from "path";
-import { repoRoot, parseArgs } from "../../lib/cli.js";
+import { parseArgs } from "../../lib/cli.js";
+import { Command } from "../../lib/command.js";
 import { loadPackageField } from "../../lib/config.js";
 import { resolveTemplates, mergeResolved, resolveChaptersOrder, translateTemplate } from "../lib/template-merger.js";
 import { summaryToText } from "../lib/forge-prompts.js";
@@ -126,10 +127,10 @@ async function aiFilterChapters(chapters, analysis, agent, _root, purpose) {
 // ---------------------------------------------------------------------------
 // メイン処理
 // ---------------------------------------------------------------------------
-async function main(ctx) {
+async function runInit(ctx, rawArgs) {
   // CLI モード: 引数をパースしてコンテキストを構築
   if (!ctx) {
-    const cli = parseArgs(process.argv.slice(2), {
+    const cli = parseArgs(rawArgs, {
       flags: ["--force", "--dry-run"],
       options: ["--type", "--lang", "--docs-dir"],
       defaults: { type: "", force: false, dryRun: false, lang: "", docsDir: "" },
@@ -266,5 +267,12 @@ async function main(ctx) {
   }
 }
 
-export { main, aiFilterChapters };
+export { aiFilterChapters };
+
+export default class DocsInitCommand extends Command {
+  static outputMode = "raw";
+  async execute(ctx) {
+    return runInit(ctx.docsCtx, ctx._rawArgs || []);
+  }
+}
 

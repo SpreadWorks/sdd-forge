@@ -8,7 +8,7 @@
 import { readFileSync } from "fs";
 import { runCmd, assertOk } from "../../lib/process.js";
 import path from "path";
-import { loadConfig } from "../../lib/config.js";
+import { container } from "../../lib/container.js";
 import { isGhAvailable, runGit } from "../../lib/git-helpers.js";
 
 /**
@@ -132,8 +132,9 @@ function loadSpec(state, root) {
  * @param {string} ctx.mergeStrategy - "squash" | "pr" | "auto"
  * @returns {{ strategy: string }} - the resolved strategy
  */
-function main(ctx) {
-  const { root, flowState: state, mainRepoPath, mergeStrategy } = ctx;
+function runMerge(ctx) {
+  const { flowState: state, mainRepoPath, mergeStrategy } = ctx;
+  const root = ctx.root || container.get("root");
   const { baseBranch, featureBranch, worktree } = state;
 
   // Spec-only: featureBranch == baseBranch
@@ -144,8 +145,7 @@ function main(ctx) {
   // Resolve strategy
   let usePr = mergeStrategy === "pr";
   if (mergeStrategy === "auto") {
-    let cfg;
-    try { cfg = loadConfig(root); } catch (_) { cfg = {}; }
+    const cfg = container.get("config") || {};
     const ghEnabled = cfg?.commands?.gh === "enable";
     if (ghEnabled && isGhAvailable()) {
       usePr = true;
@@ -157,8 +157,7 @@ function main(ctx) {
     if (!isGhAvailable()) {
       throw new Error("gh command is not available. Install GitHub CLI to use PR route.");
     }
-    let cfg;
-    try { cfg = loadConfig(root); } catch (_) { cfg = {}; }
+    const cfg = container.get("config") || {};
     const remote = resolveRemote(cfg);
     const spec = loadSpec(state, root);
     const fallbackTitle = state.spec?.replace(/^specs\/\d+-/, "").replace(/\/spec\.md$/, "") || featureBranch;
@@ -206,4 +205,4 @@ function main(ctx) {
   return { strategy: "squash" };
 }
 
-export { main, parseSpec, buildPrTitle, buildPrBody };
+export { runMerge, parseSpec, buildPrTitle, buildPrBody };

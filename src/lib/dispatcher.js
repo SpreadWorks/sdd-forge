@@ -2,8 +2,7 @@
  * src/lib/dispatcher.js
  *
  * Unified command dispatcher for all domains (flow / docs / check / metrics).
- * Replaces the per-domain ad-hoc runners (flow.js::runEntry, runModuleMain)
- * with one path:
+ * Replaces the per-domain ad-hoc runners with one path:
  *
  *   parseArgs(argv, entry.args)         — consistent CLI parsing
  *   → entry.pre?(ctx)                   — lifecycle pre

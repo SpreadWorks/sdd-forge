@@ -17,8 +17,9 @@ import { runCmdAsync } from "../../lib/process.js";
 import { populateFromAnalysis } from "./data.js";
 import { textFillFromAnalysis } from "./text.js";
 import { mapWithConcurrency } from "../lib/concurrency.js";
-import { PKG_DIR, repoRoot, parseArgs } from "../../lib/cli.js";
-import { loadConfig, resolveConcurrency } from "../../lib/config.js";
+import { PKG_DIR, parseArgs } from "../../lib/cli.js";
+import { resolveConcurrency } from "../../lib/config.js";
+import { Command } from "../../lib/command.js";
 import { loadFullAnalysis, loadAnalysisData, getChapterFiles, readText } from "../lib/command-context.js";
 import { createResolver } from "../lib/resolver-factory.js";
 import { container } from "../../lib/container.js";
@@ -187,15 +188,15 @@ async function runPerFile({ agent, targetFiles, systemPrompt, lang, round, maxRu
   });
 }
 
-async function main() {
-  const cli = parseCliOptions(process.argv.slice(2));
+async function runForge(rawArgs, container) {
+  const cli = parseCliOptions(rawArgs);
   if (cli.help) {
     printHelp();
     return;
   }
 
-  const root = repoRoot();
-  const config = loadConfig(root);
+  const root = container.get("root");
+  const config = container.get("config");
   const type = config.type || "";
   const lang = config.docs.defaultLanguage;
   const t = translate();
@@ -431,5 +432,12 @@ async function main() {
   throw new Error("forge: max runs reached but review still failing.");
 }
 
-export { main, estimateRelevantFiles };
+export { estimateRelevantFiles };
+
+export default class DocsForgeCommand extends Command {
+  static outputMode = "raw";
+  async execute(ctx) {
+    return runForge(ctx._rawArgs || [], this.container);
+  }
+}
 

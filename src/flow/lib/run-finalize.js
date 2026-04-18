@@ -315,8 +315,8 @@ export class RunFinalizeCommand extends FlowCommand {
         results.merge = { status: "dry-run", strategy: mergeStrategy };
       } else {
         results.merge = await runSubStep("merge", async () => {
-          const { main: mergeMain } = await import("../commands/merge.js");
-          const mergeResult = mergeMain({
+          const { runMerge } = await import("../commands/merge.js");
+          const mergeResult = runMerge({
             root,
             flowState: state,
             worktreePath,

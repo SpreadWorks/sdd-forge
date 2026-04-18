@@ -9,25 +9,19 @@
  * An entry shape:
  *
  *   {
- *     help: string,
+ *     help?: string,
  *     args?: { flags?, options?, positional? },
  *     command: () => Promise<{ default: typeof Command }>,
  *     outputMode: "envelope" | "raw",
+ *     passthroughArgs?: boolean,
  *     pre?, post?, onError?,
  *   }
- *
- * During spec 188 migration, legacy docs / check / metrics commands are
- * wrapped on the fly via `legacyMainToCommand(...)` until each is rewritten
- * as a Command subclass.
  */
 
 import { FLOW_COMMANDS } from "../flow/registry.js";
-import { legacyMainToCommand } from "./command-adapter.js";
 
 // ---------------------------------------------------------------------------
-// flow subtree — re-use the existing FLOW_COMMANDS tree and attach
-// outputMode: "envelope" to every leaf entry. All flow commands emit
-// JSON envelopes.
+// flow subtree — re-use FLOW_COMMANDS and attach outputMode: "envelope".
 // ---------------------------------------------------------------------------
 
 function decorateFlowEntry(entry) {
@@ -45,33 +39,36 @@ function decorateFlowEntry(entry) {
 export const flowCommands = decorateFlowEntry(FLOW_COMMANDS);
 
 // ---------------------------------------------------------------------------
-// docs subtree
+// Helpers for raw-output commands. Each command's args are parsed internally
+// by the command (via `parseArgs(ctx._rawArgs, ...)`), so the registry
+// declares `passthroughArgs: true` rather than a full `args` spec.
 // ---------------------------------------------------------------------------
 
-const rawMode = "raw";
-
-function legacyEntry(modulePath, outputMode) {
+function rawEntry(modulePath) {
   return {
-    command: () => legacyMainToCommand(() => import(modulePath), outputMode),
-    outputMode,
-    // Legacy commands parse their own argv internally; the dispatcher forwards
-    // raw args untouched via process.argv in command-adapter.js.
+    command: () => import(modulePath),
+    outputMode: "raw",
     passthroughArgs: true,
   };
 }
 
+// ---------------------------------------------------------------------------
+// docs subtree
+// ---------------------------------------------------------------------------
+
 export const docsCommands = {
-  scan:      legacyEntry("../docs/commands/scan.js", rawMode),
-  enrich:    legacyEntry("../docs/commands/enrich.js", rawMode),
-  init:      legacyEntry("../docs/commands/init.js", rawMode),
-  data:      legacyEntry("../docs/commands/data.js", rawMode),
-  text:      legacyEntry("../docs/commands/text.js", rawMode),
-  readme:    legacyEntry("../docs/commands/readme.js", rawMode),
-  forge:     legacyEntry("../docs/commands/forge.js", rawMode),
-  review:    legacyEntry("../docs/commands/review.js", rawMode),
-  changelog: legacyEntry("../docs/commands/changelog.js", rawMode),
-  agents:    legacyEntry("../docs/commands/agents.js", rawMode),
-  translate: legacyEntry("../docs/commands/translate.js", rawMode),
+  build:     rawEntry("../docs/commands/build.js"),
+  scan:      rawEntry("../docs/commands/scan.js"),
+  enrich:    rawEntry("../docs/commands/enrich.js"),
+  init:      rawEntry("../docs/commands/init.js"),
+  data:      rawEntry("../docs/commands/data.js"),
+  text:      rawEntry("../docs/commands/text.js"),
+  readme:    rawEntry("../docs/commands/readme.js"),
+  forge:     rawEntry("../docs/commands/forge.js"),
+  review:    rawEntry("../docs/commands/review.js"),
+  changelog: rawEntry("../docs/commands/changelog.js"),
+  agents:    rawEntry("../docs/commands/agents.js"),
+  translate: rawEntry("../docs/commands/translate.js"),
 };
 
 // ---------------------------------------------------------------------------
@@ -79,9 +76,9 @@ export const docsCommands = {
 // ---------------------------------------------------------------------------
 
 export const checkCommands = {
-  config:    legacyEntry("../check/commands/config.js", rawMode),
-  freshness: legacyEntry("../check/commands/freshness.js", rawMode),
-  scan:      legacyEntry("../check/commands/scan.js", rawMode),
+  config:    rawEntry("../check/commands/config.js"),
+  freshness: rawEntry("../check/commands/freshness.js"),
+  scan:      rawEntry("../check/commands/scan.js"),
 };
 
 // ---------------------------------------------------------------------------
@@ -89,7 +86,7 @@ export const checkCommands = {
 // ---------------------------------------------------------------------------
 
 export const metricsCommands = {
-  token: legacyEntry("../metrics/commands/token.js", rawMode),
+  token: rawEntry("../metrics/commands/token.js"),
 };
 
 // ---------------------------------------------------------------------------

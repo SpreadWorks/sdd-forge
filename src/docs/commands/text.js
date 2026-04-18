@@ -26,8 +26,9 @@ import {
   buildBatchPrompt,
   formatLimitRule,
 } from "../lib/text-prompts.js";
-import { repoRoot, parseArgs } from "../../lib/cli.js";
-import { loadConfig, resolveConcurrency, DEFAULT_CONCURRENCY } from "../../lib/config.js";
+import { parseArgs } from "../../lib/cli.js";
+import { resolveConcurrency, DEFAULT_CONCURRENCY } from "../../lib/config.js";
+import { Command } from "../../lib/command.js";
 import { createLogger } from "../../lib/progress.js";
 import { translate } from "../../lib/i18n.js";
 import { getChapterFiles, loadFullAnalysis } from "../lib/command-context.js";
@@ -473,7 +474,7 @@ function allTextDirectivesFilled(text) {
 export async function textFillFromAnalysis(root, analysis, commandId, srcRoot, opts) {
   if (!analysis) return { filled: 0, skipped: 0, files: [] };
 
-  const cfg = loadConfig(root);
+  const cfg = container.get("config");
   const agent = container.get("agent");
   if (!agent.resolve(commandId || "docs.text")) {
     throw new Error("No agent configured. Set 'agent.default' in config.json or run 'sdd-forge setup'.");
@@ -586,10 +587,10 @@ function detectChangedChapters(analysis, srcRoot) {
 // ---------------------------------------------------------------------------
 // CLI メイン
 // ---------------------------------------------------------------------------
-async function main(ctx) {
+async function runText(ctx, rawArgs) {
   // CLI モード
   if (!ctx) {
-    const cli = parseArgs(process.argv.slice(2), {
+    const cli = parseArgs(rawArgs, {
       flags: ["--dry-run", "--per-directive", "--force"],
       options: ["--id", "--lang", "--docs-dir", "--files"],
       defaults: { dryRun: false, perDirective: false, force: false, id: "", lang: "", docsDir: "", files: "" },
@@ -763,5 +764,12 @@ async function main(ctx) {
   return { errors };
 }
 
-export { main, stripFillContent, countFilledInBatch, processTemplateFileBatch, processTemplate, allTextDirectivesFilled, validateBatchResult, parseBatchJsonResponse, applyBatchJsonToFile, detectChangedChapters };
+export { stripFillContent, countFilledInBatch, processTemplateFileBatch, processTemplate, allTextDirectivesFilled, validateBatchResult, parseBatchJsonResponse, applyBatchJsonToFile, detectChangedChapters };
+
+export default class DocsTextCommand extends Command {
+  static outputMode = "raw";
+  async execute(ctx) {
+    return runText(ctx.docsCtx, ctx._rawArgs || []);
+  }
+}
 

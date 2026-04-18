@@ -26,6 +26,7 @@ import { repairJson } from "../../lib/json-parse.js";
 import { ANALYSIS_META_KEYS } from "../lib/analysis-entry.js";
 import { container } from "../../lib/container.js";
 import { resolveDocsContext } from "../lib/docs-context.js";
+import { Command } from "../../lib/command.js";
 
 const logger = createLogger("enrich");
 const DEFAULT_BATCH_TOKEN_LIMIT = 10000;
@@ -332,9 +333,9 @@ function saveAnalysis(root, analysis) {
 // メイン
 // ---------------------------------------------------------------------------
 
-async function main(ctx) {
+async function runEnrich(ctx, rawArgs) {
   if (!ctx) {
-    const cli = parseArgs(process.argv.slice(2), {
+    const cli = parseArgs(rawArgs, {
       flags: ["--stdout", "--dry-run"],
       defaults: { stdout: false, dryRun: false },
     });
@@ -509,7 +510,6 @@ async function main(ctx) {
 }
 
 export {
-  main,
   buildEnrichPrompt,
   parseEnrichResponse,
   mergeEnrichment,
@@ -518,4 +518,11 @@ export {
   splitIntoBatches,
   DEFAULT_BATCH_TOKEN_LIMIT,
 };
+
+export default class DocsEnrichCommand extends Command {
+  static outputMode = "raw";
+  async execute(ctx) {
+    return runEnrich(ctx.docsCtx, ctx._rawArgs || []);
+  }
+}
 

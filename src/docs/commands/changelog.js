@@ -8,9 +8,10 @@
 
 import fs from "fs";
 import path from "path";
-import { sourceRoot, repoRoot, parseArgs, formatUTCTimestamp } from "../../lib/cli.js";
-import { loadConfig, DEFAULT_LANG } from "../../lib/config.js";
+import { sourceRoot, parseArgs, formatUTCTimestamp } from "../../lib/cli.js";
+import { DEFAULT_LANG } from "../../lib/config.js";
 import { translate } from "../../lib/i18n.js";
+import { Command } from "../../lib/command.js";
 
 /**
  * パイプ文字をエスケープし、空白を正規化する。
@@ -110,8 +111,8 @@ function parseDirName(dirName) {
   return null;
 }
 
-function main() {
-  const args = process.argv.slice(2);
+function runChangelog(rawArgs, container) {
+  const args = rawArgs;
   const opts = parseArgs(args, { flags: ["--dry-run"], options: [], defaults: { dryRun: false } });
 
   if (opts.help) {
@@ -122,7 +123,7 @@ function main() {
     return;
   }
 
-  const root = repoRoot();
+  const root = container.get("root");
   const srcRoot = sourceRoot();
   const specsDir = path.join(srcRoot, "specs");
   const outFileArg = args.find((a) => !a.startsWith("-"));
@@ -130,9 +131,15 @@ function main() {
 
   let lang = DEFAULT_LANG;
   try {
-    const cfgData = loadConfig(root);
+    const cfgData = container.get("config");
     lang = cfgData.docs?.defaultLanguage || cfgData.lang || DEFAULT_LANG;
-  } catch (err) { if (err.code !== "ENOENT") console.error(err); }
+  } catch (err) {
+    if (err.code === "ENOENT") {
+      process.stderr.write("sdd-forge docs changelog: config missing, using default language\n");
+    } else {
+      console.error(err);
+    }
+  }
   const t = translate();
 
   // Ensure output directory exists
@@ -236,5 +243,10 @@ function main() {
   }
 }
 
-export { main };
+export default class DocsChangelogCommand extends Command {
+  static outputMode = "raw";
+  async execute(ctx) {
+    return runChangelog(ctx._rawArgs || [], this.container);
+  }
+}
 

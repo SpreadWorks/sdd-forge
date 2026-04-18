@@ -19,6 +19,7 @@ import { parseDirectives, replaceBlockDirective, resolveDataDirectives } from ".
 import { loadFullAnalysis, getChapterFiles, readText } from "../lib/command-context.js";
 import { loadSddTemplate } from "../../lib/agents-md.js";
 import { resolveDocsContext } from "../lib/docs-context.js";
+import { Command } from "../../lib/command.js";
 
 const logger = createLogger("agents");
 
@@ -126,9 +127,9 @@ function replaceProjectContent(text, refined) {
 // Main
 // ---------------------------------------------------------------------------
 
-async function main(ctx) {
+async function runAgents(ctx, rawArgs) {
   if (!ctx) {
-    const cli = parseArgs(process.argv.slice(2), {
+    const cli = parseArgs(rawArgs, {
       flags: ["--dry-run"],
       options: [],
       defaults: { dryRun: false },
@@ -226,5 +227,11 @@ async function main(ctx) {
   console.log(t("messages:agents.updated", { path: agentsPath }));
 }
 
-export { main };
+export { runAgents };
 
+export default class DocsAgentsCommand extends Command {
+  static outputMode = "raw";
+  async execute(ctx) {
+    return runAgents(ctx.docsCtx, ctx._rawArgs || []);
+  }
+}

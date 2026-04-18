@@ -14,7 +14,7 @@ import fs from "fs";
 import path from "path";
 import { resolveDataDirectives } from "../lib/directive-parser.js";
 import { createResolver } from "../lib/resolver-factory.js";
-import { repoRoot, parseArgs } from "../../lib/cli.js";
+import { parseArgs } from "../../lib/cli.js";
 import { sddOutputDir } from "../../lib/config.js";
 import { createLogger } from "../../lib/progress.js";
 import { translate } from "../../lib/i18n.js";
@@ -22,6 +22,7 @@ import { getChapterFiles } from "../lib/command-context.js";
 import { filterAnalysisByDocsExclude } from "../lib/analysis-filter.js";
 import { container } from "../../lib/container.js";
 import { resolveDocsContext } from "../lib/docs-context.js";
+import { Command } from "../../lib/command.js";
 
 const logger = createLogger("data");
 
@@ -96,10 +97,10 @@ export function populateFromAnalysis(root, analysis, resolveFn, opts) {
 // ---------------------------------------------------------------------------
 // CLI メイン
 // ---------------------------------------------------------------------------
-async function main(ctx) {
+async function runData(ctx, rawArgs) {
   // CLI モード: 引数をパースしてコンテキストを構築
   if (!ctx) {
-    const cli = parseArgs(process.argv.slice(2), {
+    const cli = parseArgs(rawArgs, {
       flags: ["--dry-run", "--stdout"],
       options: ["--docs-dir"],
       defaults: { dryRun: false, stdout: false, docsDir: "" },
@@ -189,5 +190,10 @@ async function main(ctx) {
   logger.log(t("messages:data.done", { count: changedFiles.size, verb, replaced: totalReplaced, skipped: totalSkipped }));
 }
 
-export { main };
+export default class DocsDataCommand extends Command {
+  static outputMode = "raw";
+  async execute(ctx) {
+    return runData(ctx.docsCtx, ctx._rawArgs || []);
+  }
+}
 

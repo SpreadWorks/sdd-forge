@@ -20,7 +20,8 @@ import fs from "fs";
 import path from "path";
 import crypto from "crypto";
 import { fileURLToPath } from "url";
-import { repoRoot, parseArgs } from "../../lib/cli.js";
+import { parseArgs } from "../../lib/cli.js";
+import { Command } from "../../lib/command.js";
 import { sddOutputDir } from "../../lib/config.js";
 import { collectFiles } from "../lib/scanner.js";
 import { loadDataSources } from "../lib/data-source-loader.js";
@@ -142,8 +143,7 @@ function resolveEntryId(idIndex, category, entry) {
  *
  * @returns {{ cli: Object, reset: string|null, hasReset: boolean }}
  */
-function parseScanArgs() {
-  const rawArgs = process.argv.slice(2);
+function parseScanArgs(rawArgs) {
   const resetIdx = rawArgs.indexOf("--reset");
   let reset = null;
   let hasReset = false;
@@ -222,9 +222,9 @@ function resetCategories(root, resetValue) {
 // Main
 // ---------------------------------------------------------------------------
 
-async function main(ctx) {
+async function runScan(ctx, rawArgs) {
   if (!ctx) {
-    const { cli, reset, hasReset } = parseScanArgs();
+    const { cli, reset, hasReset } = parseScanArgs(rawArgs);
     if (cli.help) {
       printHelp();
       return;
@@ -477,5 +477,10 @@ async function main(ctx) {
   }
 }
 
-export { main };
+export default class DocsScanCommand extends Command {
+  static outputMode = "raw";
+  async execute(ctx) {
+    return runScan(ctx.docsCtx, ctx._rawArgs || []);
+  }
+}
 

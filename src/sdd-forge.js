@@ -21,7 +21,6 @@ import { PKG_DIR } from "./lib/cli.js";
 import { runCmd } from "./lib/process.js";
 import { EXIT_ERROR } from "./lib/constants.js";
 import { initContainer } from "./lib/container.js";
-import { runModuleMain } from "./lib/command-runner.js";
 
 // Register module loader hook so external presets can use
 //   `import 'sdd-forge/api'`                        (public API)
@@ -103,7 +102,18 @@ if (NAMESPACE_SCRIPTS[subCmd]) {
   await import(dispatcherPath);
 } else if (INDEPENDENT[subCmd]) {
   const scriptPath = path.join(PKG_DIR, `${INDEPENDENT[subCmd]}.js`);
-  await runModuleMain(scriptPath, rest);
+  process.argv = [process.argv[0], scriptPath, ...rest];
+  const mod = await import(scriptPath);
+  if (typeof mod.main !== "function") {
+    console.error(`sdd-forge: command module does not export main(): ${scriptPath}`);
+    process.exit(EXIT_ERROR);
+  }
+  try {
+    await mod.main();
+  } catch (err) {
+    console.error(err?.stack || String(err));
+    process.exit(EXIT_ERROR);
+  }
 } else {
   console.error(`sdd-forge: unknown command '${subCmd}'`);
   console.error("Run: sdd-forge help");

@@ -15,7 +15,8 @@
 
 import fs from "fs";
 import path from "path";
-import { repoRoot, sourceRoot, parseArgs } from "../../lib/cli.js";
+import { sourceRoot, parseArgs } from "../../lib/cli.js";
+import { Command } from "../../lib/command.js";
 import { EXIT_ERROR } from "../../lib/constants.js";
 
 const FILE_LIMIT = 10_000;
@@ -155,8 +156,8 @@ async function checkFreshness(workRoot, srcRoot) {
   return { result, srcNewest, docsNewest };
 }
 
-async function main() {
-  const cli = parseArgs(process.argv.slice(2), {
+async function runFreshnessCheck(rawArgs, container) {
+  const cli = parseArgs(rawArgs, {
     options: ["--format"],
     defaults: { format: "text" },
   });
@@ -172,7 +173,7 @@ async function main() {
     process.exit(EXIT_ERROR);
   }
 
-  const workRoot = repoRoot();
+  const workRoot = container.get("root");
   const srcRoot = sourceRoot();
   const { result, srcNewest, docsNewest } = await checkFreshness(workRoot, srcRoot);
 
@@ -200,4 +201,11 @@ async function main() {
   }
 }
 
-export { main, checkFreshness };
+export { checkFreshness };
+
+export default class CheckFreshnessCommand extends Command {
+  static outputMode = "raw";
+  async execute(ctx) {
+    return runFreshnessCheck(ctx._rawArgs || [], ctx.container);
+  }
+}

@@ -10,10 +10,11 @@
 
 import fs from "fs";
 import path from "path";
-import { repoRoot, sourceRoot, parseArgs } from "../../lib/cli.js";
-import { loadConfig, sddOutputDir } from "../../lib/config.js";
+import { sourceRoot, parseArgs } from "../../lib/cli.js";
+import { sddOutputDir } from "../../lib/config.js";
 import { globToRegex } from "../../docs/lib/scanner.js";
 import { pushSection, DIVIDER } from "../../lib/formatter.js";
+import { Command } from "../../lib/command.js";
 import { EXIT_ERROR } from "../../lib/constants.js";
 
 const DEFAULT_MAX_FILES = 10;
@@ -208,8 +209,8 @@ function formatMarkdown(data, showAll) {
   return lines.join("\n");
 }
 
-async function main() {
-  const cli = parseArgs(process.argv.slice(2), {
+async function runCheckScan(rawArgs, container) {
+  const cli = parseArgs(rawArgs, {
     flags: ["--list"],
     options: ["--format"],
     defaults: { list: false, format: "text" },
@@ -226,14 +227,12 @@ async function main() {
     process.exit(EXIT_ERROR);
   }
 
-  const root = repoRoot();
+  const root = container.get("root");
   const src = sourceRoot();
 
-  let cfg;
-  try {
-    cfg = loadConfig(root);
-  } catch (err) {
-    process.stderr.write(`sdd-forge check scan: failed to load config: ${err.message}\n`);
+  const cfg = container.get("config");
+  if (!cfg || Object.keys(cfg).length === 0) {
+    process.stderr.write(`sdd-forge check scan: config is not available\n`);
     process.exit(EXIT_ERROR);
   }
 
@@ -268,4 +267,11 @@ async function main() {
   }
 }
 
-export { main, groupByExtension, computeCoverage, formatText };
+export { groupByExtension, computeCoverage, formatText };
+
+export default class CheckScanCommand extends Command {
+  static outputMode = "raw";
+  async execute(ctx) {
+    return runCheckScan(ctx._rawArgs || [], ctx.container);
+  }
+}

@@ -11,9 +11,10 @@
  */
 
 import fs from "fs";
-import { repoRoot, parseArgs } from "../../lib/cli.js";
+import { parseArgs } from "../../lib/cli.js";
 import { sddConfigPath, validate } from "../../lib/config.js";
 import { PRESETS } from "../../lib/presets.js";
+import { Command } from "../../lib/command.js";
 import { EXIT_ERROR } from "../../lib/constants.js";
 
 const MAX_SCHEMA_ERRORS = 50;
@@ -92,8 +93,8 @@ function runChecks(root) {
   return checks;
 }
 
-async function main() {
-  const cli = parseArgs(process.argv.slice(2), {
+async function runConfigCheck(rawArgs, container) {
+  const cli = parseArgs(rawArgs, {
     options: ["--format"],
     defaults: { format: "text" },
   });
@@ -109,7 +110,7 @@ async function main() {
     process.exit(EXIT_ERROR);
   }
 
-  const root = repoRoot();
+  const root = container.get("root");
   const checks = runChecks(root);
   const ok = checks.every((c) => c.result === "pass");
 
@@ -134,4 +135,9 @@ async function main() {
   }
 }
 
-export { main };
+export default class CheckConfigCommand extends Command {
+  static outputMode = "raw";
+  async execute(ctx) {
+    return runConfigCheck(ctx._rawArgs || [], ctx.container);
+  }
+}

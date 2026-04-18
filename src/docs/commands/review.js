@@ -8,8 +8,9 @@
 
 import fs from "fs";
 import path from "path";
-import { repoRoot, parseArgs } from "../../lib/cli.js";
-import { loadConfig, sddOutputDir } from "../../lib/config.js";
+import { parseArgs } from "../../lib/cli.js";
+import { sddOutputDir } from "../../lib/config.js";
+import { Command } from "../../lib/command.js";
 import { translate } from "../../lib/i18n.js";
 import { resolveOutputConfig } from "../../lib/types.js";
 import { getChapterFiles } from "../lib/command-context.js";
@@ -84,8 +85,8 @@ function checkOutputIntegrity(content) {
 // Main
 // ---------------------------------------------------------------------------
 
-function main() {
-  const args = process.argv.slice(2);
+function runReview(rawArgs, container) {
+  const args = rawArgs;
   const opts = parseArgs(args, { flags: [], options: [] });
 
   if (opts.help) {
@@ -98,10 +99,10 @@ function main() {
     return;
   }
 
-  const root = repoRoot();
+  const root = container.get("root");
   const t = translate();
   const targetDir = args.find((a) => !a.startsWith("-")) || path.join(root, "docs");
-  const config = loadConfig(root);
+  const config = container.get("config");
   const type = config.type || "";
 
   let fail = 0;
@@ -303,5 +304,10 @@ function main() {
   console.log(t("messages:review.passed"));
 }
 
-export { main };
+export default class DocsReviewCommand extends Command {
+  static outputMode = "raw";
+  async execute(ctx) {
+    return runReview(ctx._rawArgs || [], this.container);
+  }
+}
 

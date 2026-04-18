@@ -19,6 +19,7 @@ import { getChapterFiles, stripResponsePreamble } from "../lib/command-context.j
 import { mapWithConcurrency } from "../lib/concurrency.js";
 import { container } from "../../lib/container.js";
 import { resolveDocsContext } from "../lib/docs-context.js";
+import { Command } from "../../lib/command.js";
 
 const logger = createLogger("translate");
 
@@ -126,9 +127,9 @@ function buildTranslationTasks({ sourceFiles, targetLangs, docsDir, readmePath, 
   return tasks;
 }
 
-async function main(ctx) {
+async function runTranslate(ctx, rawArgs) {
   if (!ctx) {
-    const cli = parseArgs(process.argv.slice(2), {
+    const cli = parseArgs(rawArgs, {
       flags: ["--dry-run", "--force"],
       options: ["--lang"],
       defaults: { dryRun: false, force: false, lang: "" },
@@ -223,5 +224,12 @@ async function main(ctx) {
   logger.log(`Done. ${totalTranslated} file(s) translated, ${totalSkipped} skipped${totalErrors ? `, ${totalErrors} error(s)` : ""}.`);
 }
 
-export { main, buildTranslationTasks };
+export { buildTranslationTasks };
+
+export default class DocsTranslateCommand extends Command {
+  static outputMode = "raw";
+  async execute(ctx) {
+    return runTranslate(ctx.docsCtx, ctx._rawArgs || []);
+  }
+}
 

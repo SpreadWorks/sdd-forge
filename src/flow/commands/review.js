@@ -11,10 +11,10 @@
 
 import fs from "fs";
 import path from "path";
-import { repoRoot, parseArgs } from "../../lib/cli.js";
-import { loadConfig } from "../../lib/config.js";
+import { parseArgs } from "../../lib/cli.js";
 import { getSpecName } from "../../lib/flow-helpers.js";
-import { container } from "../../lib/container.js";
+import { container, initContainer } from "../../lib/container.js";
+import { Command } from "../../lib/command.js";
 
 /**
  * Local helper for review-phase agent invocations. The Agent service handles
@@ -808,9 +808,9 @@ async function runSpecReview(root, flow, config, dryRun) {
   }
 }
 
-async function main() {
-  const root = repoRoot();
-  const cli = parseArgs(process.argv.slice(2), {
+async function runReview(rawArgs) {
+  const root = container.get("root");
+  const cli = parseArgs(rawArgs, {
     flags: ["--dry-run", "--skip-confirm"],
     options: ["--phase"],
     defaults: { dryRun: false, skipConfirm: false, phase: null },
@@ -841,10 +841,8 @@ async function main() {
     process.exit(EXIT_ERROR);
   }
 
-  let config;
-  try {
-    config = loadConfig(root);
-  } catch (_) {
+  const config = container.get("config");
+  if (!config || Object.keys(config).length === 0) {
     console.error("Error: failed to load config.json");
     process.exit(EXIT_ERROR);
   }
@@ -972,10 +970,27 @@ function isValidSpecOutput(text) {
 }
 
 export {
-  main, parseProposals, mergeVerdicts, formatReviewMd, resolveReviewTarget,
+  parseProposals, mergeVerdicts, formatReviewMd, resolveReviewTarget,
   MAX_REVIEW_RETRIES, REVIEW_PHASES, extractRequirements, collectTestFiles, parseGaps,
   applyTestFixes, formatTestReviewMd, runReviewLoop,
   extractGoalAndScope, buildSpecReviewPrompt, formatSpecReviewMd,
   isValidSpecOutput, stripPreamble, buildTestFixPrompt,
 };
 
+export default class FlowReviewCommand extends Command {
+  static outputMode = "raw";
+  async execute(ctx) {
+    return runReview(ctx._rawArgs || []);
+  }
+}
+
+// Direct-invocation entrypoint: `node src/flow/commands/review.js ...args`.
+// Used by RunReviewCommand (src/flow/lib/run-review.js) as a subprocess so
+// AI review can run with its own timeout.
+if (import.meta.url === `file://${process.argv[1]}`) {
+  initContainer();
+  runReview(process.argv.slice(2)).catch((err) => {
+    console.error(err?.stack || String(err));
+    process.exit(1);
+  });
+}

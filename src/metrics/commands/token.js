@@ -8,7 +8,8 @@
 
 import fs from "node:fs/promises";
 import path from "node:path";
-import { parseArgs, repoRoot } from "../../lib/cli.js";
+import { parseArgs } from "../../lib/cli.js";
+import { Command } from "../../lib/command.js";
 import { EXIT_ERROR, EXIT_SUCCESS } from "../../lib/constants.js";
 
 const DEFAULT_FORMAT = "text";
@@ -180,8 +181,10 @@ async function isCacheFresh(cachePath, maxFinalizedAt) {
   try {
     text = await fs.readFile(cachePath, "utf8");
   } catch (err) {
-    // ENOENT is expected on first run; anything else is a genuine error.
-    if (err.code !== "ENOENT") {
+    if (err.code === "ENOENT") {
+      // Cache miss on first run is expected; rebuild silently-but-visibly.
+      process.stderr.write(`sdd-forge metrics token: cache miss (first run), rebuilding\n`);
+    } else {
       process.stderr.write(`sdd-forge metrics token: cache read failed (${err.code || err.message}), rebuilding\n`);
     }
     return false;
@@ -385,10 +388,10 @@ function render(rows, format) {
   return formatText(rows);
 }
 
-async function main() {
+async function runToken(rawArgs, container) {
   let opts;
   try {
-    opts = parseArgs(process.argv.slice(2), {
+    opts = parseArgs(rawArgs, {
       options: ["--format"],
       defaults: { format: DEFAULT_FORMAT },
     });
@@ -405,7 +408,7 @@ async function main() {
     usageError(`Unknown format: ${format}`);
   }
 
-  const root = repoRoot();
+  const root = container.get("root");
   const specsDir = path.join(root, "specs");
   const cachePath = path.join(root, ".sdd-forge", "output", "metrics.json");
 
@@ -442,4 +445,9 @@ async function main() {
   process.stdout.write(`${render(rows, format)}\n`);
 }
 
-export { main };
+export default class TokenCommand extends Command {
+  static outputMode = "raw";
+  async execute(ctx) {
+    return runToken(ctx._rawArgs || [], ctx.container);
+  }
+}

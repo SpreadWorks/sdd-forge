@@ -19,9 +19,10 @@ import { createLogger } from "../../lib/progress.js";
 import { loadFullAnalysis } from "../lib/command-context.js";
 import { processTemplate } from "./text.js";
 import { buildTextSystemPrompt } from "../lib/text-prompts.js";
-import { loadConfig, resolveConcurrency } from "../../lib/config.js";
+import { resolveConcurrency } from "../../lib/config.js";
 import { container } from "../../lib/container.js";
 import { resolveDocsContext } from "../lib/docs-context.js";
+import { Command } from "../../lib/command.js";
 
 const logger = createLogger("readme");
 
@@ -39,10 +40,10 @@ const logger = createLogger("readme");
 // main
 // ---------------------------------------------------------------------------
 
-async function main(ctx) {
+async function runReadme(ctx, rawArgs) {
   // CLI モード: 引数をパースしてコンテキストを構築
   if (!ctx) {
-    const cli = parseArgs(process.argv.slice(2), {
+    const cli = parseArgs(rawArgs, {
       flags: ["--dry-run"],
       options: ["--lang", "--output"],
       defaults: { lang: "", output: "" },
@@ -143,7 +144,7 @@ async function main(ctx) {
   const textDirectives = parseDirectives(resolved).filter((d) => d.type === "text");
   if (textDirectives.length > 0 && !ctx.dryRun) {
     try {
-      const cfg = loadConfig(root);
+      const cfg = container.get("config");
       const agent = ctx.agent;
       if (!agent || !agent.resolve("docs.readme")) {
         throw new Error("No agent configured. Set 'agent.default' in config.json or run 'sdd-forge setup'.");
@@ -187,5 +188,10 @@ async function main(ctx) {
   logger.log(t("messages:readme.updated"));
 }
 
-export { main };
+export default class DocsReadmeCommand extends Command {
+  static outputMode = "raw";
+  async execute(ctx) {
+    return runReadme(ctx.docsCtx, ctx._rawArgs || []);
+  }
+}
 

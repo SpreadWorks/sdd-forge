@@ -1,0 +1,194 @@
+{
+  "spec": "specs/189-unify-command-classes/spec.md",
+  "baseBranch": "main",
+  "featureBranch": "feature/189-unify-command-classes",
+  "runId": "1a85dac3-459e-4792-84a3-9d20d45937e5",
+  "lifecycle": "active",
+  "steps": [
+    {
+      "id": "branch",
+      "status": "done"
+    },
+    {
+      "id": "prepare-spec",
+      "status": "pending"
+    },
+    {
+      "id": "draft",
+      "status": "done"
+    },
+    {
+      "id": "gate-draft",
+      "status": "done"
+    },
+    {
+      "id": "spec",
+      "status": "done"
+    },
+    {
+      "id": "gate",
+      "status": "done"
+    },
+    {
+      "id": "approval",
+      "status": "done"
+    },
+    {
+      "id": "test",
+      "status": "done"
+    },
+    {
+      "id": "implement",
+      "status": "done"
+    },
+    {
+      "id": "gate-impl",
+      "status": "skipped"
+    },
+    {
+      "id": "review",
+      "status": "skipped"
+    },
+    {
+      "id": "finalize",
+      "status": "pending"
+    },
+    {
+      "id": "commit",
+      "status": "pending"
+    },
+    {
+      "id": "push",
+      "status": "pending"
+    },
+    {
+      "id": "merge",
+      "status": "pending"
+    },
+    {
+      "id": "pr-create",
+      "status": "pending"
+    },
+    {
+      "id": "branch-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "pr-merge",
+      "status": "pending"
+    },
+    {
+      "id": "sync-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "docs-update",
+      "status": "pending"
+    },
+    {
+      "id": "docs-review",
+      "status": "pending"
+    },
+    {
+      "id": "docs-commit",
+      "status": "pending"
+    }
+  ],
+  "requirements": [
+    {
+      "desc": "R1: コマンド実装の標準形化",
+      "status": "done"
+    },
+    {
+      "desc": "R2: 橋渡しコードの除去",
+      "status": "done"
+    },
+    {
+      "desc": "R3: ディスパッチャ内専用経路の共通契約化",
+      "status": "done"
+    },
+    {
+      "desc": "R4: 外部互換の維持",
+      "status": "done"
+    },
+    {
+      "desc": "R5: 終了コード契約",
+      "status": "done"
+    },
+    {
+      "desc": "R6: エラーの可視化",
+      "status": "done"
+    },
+    {
+      "desc": "R7: 静的検査テストの追加",
+      "status": "done"
+    },
+    {
+      "desc": "R8: 既存テストの維持",
+      "status": "done"
+    },
+    {
+      "desc": "R9: リソース境界の維持",
+      "status": "done"
+    }
+  ],
+  "issue": 168,
+  "request": "#168 issue をflow-planで進める",
+  "worktree": true,
+  "metrics": {
+    "plan": {
+      "docsRead": 1
+    },
+    "draft": {
+      "question": 1
+    },
+    "gate-draft": {
+      "tokens": {
+        "input": 22480,
+        "output": 3697,
+        "cacheRead": 74752,
+        "cacheCreation": 0
+      },
+      "callCount": 4,
+      "responseChars": 5191
+    },
+    "gate": {
+      "tokens": {
+        "input": 21217,
+        "output": 1171,
+        "cacheRead": 5504,
+        "cacheCreation": 0
+      },
+      "callCount": 1,
+      "responseChars": 1270
+    },
+    "impl": {
+      "srcRead": 1,
+      "issueLog": 2
+    },
+    "gate-impl": {
+      "tokens": {
+        "input": 1698991,
+        "output": 20050,
+        "cacheRead": 123008,
+        "cacheCreation": 0
+      },
+      "callCount": 15,
+      "responseChars": 16489
+    }
+  },
+  "notes": [
+    "Q1: intent approved - Phase D follow-up: 15 cmd migration + docs build + adapter/runner removal"
+  ],
+  "test": {
+    "summary": {
+      "unit": 1439,
+      "integration": 257,
+      "acceptance": 3
+    }
+  },
+  "autoApprove": true,
+  "state": {
+    "finalizedAt": "2026-04-18T20:35:27.827Z"
+  }
+}
