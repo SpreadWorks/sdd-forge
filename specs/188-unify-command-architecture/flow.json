@@ -177,8 +177,8 @@
       "issueLog": 2
     },
     "gate-impl": {
-      "callCount": 1,
-      "responseChars": 1269
+      "callCount": 2,
+      "responseChars": 10928
     }
   },
   "test": {
