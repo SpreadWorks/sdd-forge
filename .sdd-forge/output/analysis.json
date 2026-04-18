@@ -1,5 +1,5 @@
 {
-  "analyzedAt": "2026-04-18T07:51:12.124Z",
+  "analyzedAt": "2026-04-18T09:19:46.250Z",
   "package": {
     "entries": [
       {
@@ -97,8 +97,21 @@
         "usedBy": null,
         "id": "cfca7dd3",
         "enrich": {
-          "attempts": 1
-        }
+          "processedAt": "2026-04-18T09:20:37.714Z",
+          "attempts": 2
+        },
+        "summary": "This file is the CLI entrypoint for the check command group. It initializes the container, resolves a subcommand from the registry, and dispatches execution.",
+        "detail": "It reads command-line arguments from `process.argv` and determines whether a valid subcommand is present. When no subcommand is provided, it exits with an error-oriented status path. It relies on shared dependency wiring through `initContainer` and the global `container` instance. Actual command execution is delegated to the centralized dispatcher with `{ container, entry, argv }`, keeping argument parsing and execution flow consistent across command groups.",
+        "chapter": "cli_commands",
+        "role": "cli",
+        "keywords": [
+          "cli entrypoint",
+          "subcommand dispatch",
+          "exit code",
+          "argument parsing",
+          "command registry",
+          "check command"
+        ]
       },
       {
         "file": "src/check/commands/config.js",
@@ -271,8 +284,22 @@
         "usedBy": null,
         "id": "086d52a1",
         "enrich": {
-          "attempts": 1
-        }
+          "processedAt": "2026-04-18T09:20:37.714Z",
+          "attempts": 2
+        },
+        "summary": "This file is the main CLI entrypoint for docs-related operations and orchestration workflows. It routes docs subcommands and coordinates scan, enrich, init, data, readme, agents, and translate flows.",
+        "detail": "The implementation combines static imports for shared runtime utilities with dynamic imports for command modules located under the package directory. It assembles a base docs context, applies output and language options, and executes command stages in sequence for full documentation generation. It includes filesystem checks for docs directories and markdown files to decide conditional behavior for localized outputs. Error handling and normal completion are expressed through explicit process exits and centralized dispatch fallback paths, aligning with the broader command architecture.",
+        "chapter": "cli_commands",
+        "role": "cli",
+        "keywords": [
+          "documentation pipeline",
+          "dynamic import",
+          "localization",
+          "docs generation",
+          "command orchestration",
+          "markdown outputs",
+          "cli workflow"
+        ]
       },
       {
         "file": "src/docs/commands/agents.js",
@@ -2187,8 +2214,21 @@
         "usedBy": null,
         "id": "1ab08f2b",
         "enrich": {
-          "attempts": 1
-        }
+          "processedAt": "2026-04-18T09:20:37.714Z",
+          "attempts": 2
+        },
+        "summary": "This file is the CLI entrypoint and dispatcher wrapper for flow commands. It maps grouped flow actions to command entries and controls envelope-aware execution.",
+        "detail": "It parses argv, validates command group and command keys, and exits early when required selectors are missing. A local `run` function wraps dispatcher calls with envelope metadata such as type and key, enabling structured output for flow automation. `dispatchFlow` routes known operations like resume and prepare to registry-backed entries and propagates failure through exit codes. The design keeps flow-specific routing logic in one place while reusing shared container initialization and dispatch infrastructure.",
+        "chapter": "cli_commands",
+        "role": "cli",
+        "keywords": [
+          "flow command",
+          "envelope output",
+          "command routing",
+          "process exit",
+          "dispatch wrapper",
+          "workflow automation"
+        ]
       },
       {
         "file": "src/flow/commands/merge.js",
@@ -2426,8 +2466,21 @@
         ],
         "id": "83f60bd3",
         "enrich": {
-          "attempts": 1
-        }
+          "processedAt": "2026-04-18T09:20:37.714Z",
+          "attempts": 2
+        },
+        "summary": "This class defines a flow-specific command base type built on the generic command abstraction. It enforces active flow context resolution before executing subclass logic.",
+        "detail": "The class extends `Command` and centralizes preconditions common to flow commands. It resolves flow context and throws when no active flow exists, preventing invalid runtime states from reaching command implementations. Subclasses implement `execute(ctx)` for behavior while inheriting guardrails and invocation shape. This pattern provides a clear template method style that standardizes flow command lifecycle and error semantics.",
+        "chapter": "internal_design",
+        "role": "model",
+        "keywords": [
+          "base class",
+          "template method",
+          "flow context",
+          "command abstraction",
+          "invariant enforcement",
+          "runtime guard"
+        ]
       },
       {
         "file": "src/flow/lib/flow-context.js",
@@ -3809,15 +3862,14 @@
       },
       {
         "file": "src/lib/agent.js",
-        "hash": "18fe74127214d6b7c61e9d6e1bd84ec9",
-        "lines": 399,
-        "mtime": "2026-04-17T14:28:53.268Z",
+        "hash": "8cdc1f962b3155da035f1862614affb1",
+        "lines": 386,
+        "mtime": "2026-04-18T09:19:45.911Z",
         "className": "agent",
         "methods": [
           "matchProfilePrefix",
           "substitutePromptToken",
           "stripPromptArgs",
-          "injectJsonFlag",
           "injectWorkDirFlag",
           "ensureWorkDir",
           "tryParseProvider",
@@ -3840,21 +3892,22 @@
           "src/lib/container.js"
         ],
         "id": "13ddf392",
-        "summary": "This file defines the AI agent runtime abstraction used by flow commands. It resolves profile-based invocation settings, executes subprocess calls, and wraps request logging/metrics.",
-        "detail": "The `Agent` class merges default and profile-specific command options, supports prompt token substitution, and handles large prompt delivery via stdin fallback logic. It implements retry behavior with configurable backoff and parses provider-specific output formats through `ProviderRegistry`. Command invocation is wrapped by structured logging that records request IDs, prompt/output statistics, and flow metrics. The design keeps provider quirks localized while exposing a single high-level `call` interface to command modules.",
+        "summary": "This module implements the agent runtime that invokes external LLM providers with retry, parsing, and logging support. It resolves profiles, builds invocations, and normalizes execution behavior across providers.",
+        "detail": "The `Agent` class reads provider/profile settings from configuration and environment, then constructs command arguments and process environment for each call. It supports prompt token substitution, stdin fallback thresholds, work directory injection, and provider-specific flags such as system prompt and cwd flags. Execution includes retry strategy with configurable delay and count, plus parse attempts through provider adapters that interpret raw stdout into structured text and usage metadata. The module also integrates request-scoped logging hooks, flow metric accumulation, and robust error propagation, making it a core orchestration layer for AI-backed operations.",
         "chapter": "configuration",
         "role": "lib",
         "enrich": {
-          "processedAt": "2026-04-17T14:30:33.210Z",
+          "processedAt": "2026-04-18T09:20:37.714Z",
           "attempts": 1
         },
         "keywords": [
           "agent runtime",
-          "profile resolution",
-          "subprocess invocation",
-          "retry logic",
-          "provider parsing",
-          "prompt logging"
+          "provider integration",
+          "retry policy",
+          "process spawn",
+          "prompt substitution",
+          "metrics logging",
+          "llm invocation"
         ]
       },
       {
@@ -3986,8 +4039,21 @@
         ],
         "id": "e93412f7",
         "enrich": {
-          "attempts": 1
-        }
+          "processedAt": "2026-04-18T09:20:37.714Z",
+          "attempts": 2
+        },
+        "summary": "This module adapts legacy `main`-style command modules into the modern `Command` interface. It preserves compatibility while keeping dispatch unified.",
+        "detail": "The exported factory loads a target module and checks whether it exposes a callable `main` or default function. It defines a `LegacyAdapter` subclass that temporarily rewrites `process.argv` so old handlers receive expected CLI arguments. Invocation is wrapped in `try/finally` to restore original argv and avoid global state leaks between commands. The adapter returns a `Command`-compatible class with selected output mode, allowing old and new command implementations to coexist under one dispatcher.",
+        "chapter": "internal_design",
+        "role": "middleware",
+        "keywords": [
+          "compatibility layer",
+          "legacy adapter",
+          "command interface",
+          "argv shim",
+          "migration path",
+          "dispatch integration"
+        ]
       },
       {
         "file": "src/lib/command-registry.js",
@@ -4019,8 +4085,21 @@
         ],
         "id": "0d680f4f",
         "enrich": {
-          "attempts": 1
-        }
+          "processedAt": "2026-04-18T09:20:37.714Z",
+          "attempts": 2
+        },
+        "summary": "This module is the central registry that exports command entry maps for flow, docs, check, and metrics command families. It also decorates entries with output-mode behavior.",
+        "detail": "Flow entries are transformed so they default to envelope output, aligning with workflow-oriented machine-readable responses. Legacy command modules are wrapped through `legacyMainToCommand`, producing standardized importer-driven entries with explicit output modes. The registry exposes grouped maps (`flowCommands`, `docsCommands`, `checkCommands`, `metricsCommands`) and an aggregate export for broad lookup. This creates a single source of truth for command discovery and keeps top-level CLI files thin and consistent.",
+        "chapter": "project_structure",
+        "role": "lib",
+        "keywords": [
+          "command registry",
+          "entry map",
+          "output mode",
+          "flow commands",
+          "legacy bridging",
+          "command discovery"
+        ]
       },
       {
         "file": "src/lib/command-runner.js",
@@ -4082,14 +4161,27 @@
         ],
         "id": "3c33b4ce",
         "enrich": {
-          "attempts": 1
-        }
+          "processedAt": "2026-04-18T09:20:37.714Z",
+          "attempts": 2
+        },
+        "summary": "This file defines the base `Command` abstraction and validates command output modes. It standardizes invocation and context shaping for all command implementations.",
+        "detail": "It constrains output mode to known values (`envelope` or `raw`) and throws on invalid modes for early failure. The class provides an `invoke` flow that prepares input and delegates to `execute`, which subclasses must implement. A default input resolver injects the container and spreads caller-provided data into a predictable execution context. By codifying this contract in one place, the module enforces consistent command behavior across the codebase.",
+        "chapter": "internal_design",
+        "role": "model",
+        "keywords": [
+          "command base class",
+          "output validation",
+          "execution contract",
+          "input normalization",
+          "abstraction",
+          "interface pattern"
+        ]
       },
       {
         "file": "src/lib/config.js",
-        "hash": "cf1db86c79ccdf1fa6f9244ac62f2bb3",
-        "lines": 345,
-        "mtime": "2026-04-17T10:27:42.798Z",
+        "hash": "839a8d863e9cebc8b7fe4ae80341f619",
+        "lines": 344,
+        "mtime": "2026-04-18T09:19:45.911Z",
         "className": "config",
         "methods": [
           "resolveConcurrency",
@@ -4125,37 +4217,36 @@
         ],
         "extends": null,
         "usedBy": [
+          "src/lib/active-flow-registry.js",
           "src/lib/container.js",
-          "src/lib/flow-state.js",
+          "src/lib/flow-store.js",
           "src/lib/guardrail.js",
           "src/lib/i18n.js",
-          "src/lib/log.js",
+          "src/lib/preparing-flow-store.js",
           "src/presets/base/tests/acceptance/fixtures/src/index.js",
           "src/presets/cli/tests/acceptance/fixtures/src/cli.js",
           "src/presets/js-webapp/tests/acceptance/fixtures/src/index.js",
           "src/presets/node-cli/tests/acceptance/fixtures/src/cli.js",
           "src/setup.js",
-          "src/upgrade.js",
-          "src/lib/active-flow-registry.js",
-          "src/lib/flow-store.js",
-          "src/lib/preparing-flow-store.js"
+          "src/upgrade.js"
         ],
         "id": "dff6e5b4",
-        "enrich": {
-          "processedAt": "2026-04-17T10:41:52.427Z",
-          "attempts": 2
-        },
-        "summary": "Handles configuration loading, defaults, schema validation, and directory resolution. It defines the central config contract used by runtime components.",
-        "detail": "The module provides helpers to read JSON files safely, load package fields, and resolve language and concurrency defaults. It defines `.sdd-forge` path conventions and resolves work directories with environment override support. A schema object is used with `validateSchema` to validate config shape and raise readable validation errors. It also integrates provider profile schema support through `ProviderRegistry` so provider definitions remain consistent with runtime expectations.",
+        "summary": "This module manages configuration loading, validation, and path resolution for runtime settings. It provides defaults for concurrency, language, and workspace directories.",
+        "detail": "It reads JSON files from disk, handles missing or invalid files, and extracts package-level fields where needed. Config values are validated against a schema and normalized into expected runtime types. The module defines canonical paths under `.sdd-forge` including config and output directories, plus work directory resolution with environment overrides. It also exposes helper functions for language fallback and concurrency defaults, making it the primary configuration utility layer.",
         "chapter": "configuration",
         "role": "config",
+        "enrich": {
+          "processedAt": "2026-04-18T09:20:37.714Z",
+          "attempts": 1
+        },
         "keywords": [
           "config loader",
           "schema validation",
-          "defaults",
-          "work directory",
-          "language setting",
-          "provider config"
+          "default values",
+          "path resolution",
+          "workspace settings",
+          "language config",
+          "concurrency"
         ]
       },
       {
@@ -4295,8 +4386,22 @@
         ],
         "id": "18d5f63b",
         "enrich": {
-          "attempts": 1
-        }
+          "processedAt": "2026-04-18T09:20:37.714Z",
+          "attempts": 2
+        },
+        "summary": "This module implements argument parsing and the central dispatch pipeline for command execution. It handles output formatting, lifecycle hooks, and failure emission.",
+        "detail": "It parses entry-defined flags and options, separates positional and non-positional tokens, and throws on unexpected arguments. During dispatch, it prepares output writers and exit-code setters, then invokes command hooks (`pre`, command run, `post`) in order. It supports both raw and envelope output modes and emits structured JSON for successful and failed runs when envelope mode is active. Error handling funnels through shared failure logic and optional `onError` hooks, ensuring consistent behavior across CLI families.",
+        "chapter": "internal_design",
+        "role": "controller",
+        "keywords": [
+          "dispatcher",
+          "argument parsing",
+          "lifecycle hooks",
+          "envelope mode",
+          "error handling",
+          "exit code control",
+          "command execution"
+        ]
       },
       {
         "file": "src/lib/flow-envelope.js",
@@ -5064,9 +5169,9 @@
       },
       {
         "file": "src/lib/provider.js",
-        "hash": "29c41974d93ff7aa2b8fbc91d859931d",
-        "lines": 210,
-        "mtime": "2026-04-17T10:27:42.798Z",
+        "hash": "2943c6854054edc3268116a60ef130a8",
+        "lines": 195,
+        "mtime": "2026-04-18T09:19:45.911Z",
         "className": "provider",
         "methods": [],
         "imports": [],
@@ -5083,21 +5188,21 @@
           "src/lib/container.js"
         ],
         "id": "0e966da6",
-        "enrich": {
-          "processedAt": "2026-04-17T10:41:52.427Z",
-          "attempts": 2
-        },
-        "summary": "Defines provider abstraction and concrete provider adapters for Claude, Codex, and user-defined commands. It standardizes parsing and CLI flag behaviors across providers.",
-        "detail": "A base `Provider` class declares parse and invocation extension points, while subclasses implement provider-specific output extraction and flags. `ClaudeProvider` parses JSON response payloads and exposes JSON/system prompt options; `CodexProvider` handles event-stream style lines. `UserProvider` supports profile-defined argument parsing and optional flags for custom commands. `ProviderRegistry` resolves merged profiles and returns provider-profile pairs for agent execution.",
+        "summary": "This module defines provider abstractions and concrete parsers for supported agent backends. It also includes a registry for resolving provider/profile combinations.",
+        "detail": "The base `Provider` class defines overridable parse and flag methods, while concrete classes like Claude and Codex implement backend-specific output parsing and CLI flag behavior. Parsing logic translates streamed or structured stdout formats into normalized `{ text, usage }` objects. `ProviderRegistry` merges built-in and user profiles, resolves named profiles, and exposes lookup helpers for runtime invocation. This isolates provider differences behind a stable interface used by the agent layer.",
         "chapter": "configuration",
-        "role": "lib",
+        "role": "model",
+        "enrich": {
+          "processedAt": "2026-04-18T09:20:37.714Z",
+          "attempts": 1
+        },
         "keywords": [
           "provider abstraction",
-          "Claude adapter",
-          "Codex adapter",
-          "custom provider",
-          "output parsing",
-          "profile registry"
+          "claude provider",
+          "codex provider",
+          "output parser",
+          "profile registry",
+          "backend adapter"
         ]
       },
       {
@@ -5189,9 +5294,9 @@
       },
       {
         "file": "src/lib/types.js",
-        "hash": "9c1d5280897e498ddd6677a8803e491f",
-        "lines": 106,
-        "mtime": "2026-04-17T03:48:03.043Z",
+        "hash": "5cd15801de1bad4e00114860ae5c0bbf",
+        "lines": 105,
+        "mtime": "2026-04-18T09:19:45.912Z",
         "className": "types",
         "methods": [
           "resolveOutputConfig"
@@ -5205,20 +5310,21 @@
           "src/docs.js"
         ],
         "id": "69d5afb4",
-        "enrich": {
-          "processedAt": "2026-04-17T10:41:52.427Z",
-          "attempts": 8
-        },
-        "summary": "Contains type-related runtime helpers for output configuration resolution. It normalizes output settings into a stable object shape.",
-        "detail": "The module exports `resolveOutputConfig`, which derives effective output behavior from a config input. It applies defaults and ensures caller code receives predictable fields. The implementation is intentionally small and focused to keep output policy centralized. This reduces scattered conditional logic in command handlers.",
+        "summary": "This utility resolves output-related settings from configuration into a normalized object. It serves as a lightweight type-shaping helper for docs and command execution.",
+        "detail": "The function reads output config fields and returns a consistent structure expected by downstream consumers. It centralizes defaults and field mapping so command modules do not duplicate normalization logic. Because it is small and focused, it acts as a stable boundary between raw config and runtime behavior. This pattern improves consistency and reduces scattered option-handling code.",
         "chapter": "configuration",
-        "role": "config",
+        "role": "lib",
+        "enrich": {
+          "processedAt": "2026-04-18T09:20:37.714Z",
+          "attempts": 1
+        },
         "keywords": [
           "output config",
           "normalization",
-          "runtime types",
-          "default resolution",
-          "settings helper"
+          "settings mapping",
+          "config utility",
+          "default handling",
+          "type shaping"
         ]
       },
       {
@@ -5284,8 +5390,21 @@
         "usedBy": null,
         "id": "0230d610",
         "enrich": {
-          "attempts": 1
-        }
+          "processedAt": "2026-04-18T09:20:37.714Z",
+          "attempts": 2
+        },
+        "summary": "This file is the CLI entrypoint for metrics command execution. It parses subcommands, handles exit conditions, and delegates runtime work to the shared dispatcher.",
+        "detail": "It reads argument vectors, resolves a metrics subcommand from the registry, and exits with configured error status when resolution fails. Container initialization is performed before dispatch to provide dependencies to command handlers. Execution itself is delegated to the common dispatch module, preserving consistent parsing and output mechanics across command groups. The design mirrors other top-level entrypoints to keep command-family CLIs uniform.",
+        "chapter": "cli_commands",
+        "role": "cli",
+        "keywords": [
+          "metrics cli",
+          "subcommand resolver",
+          "container init",
+          "shared dispatcher",
+          "exit status",
+          "command entrypoint"
+        ]
       },
       {
         "file": "src/metrics/commands/token.js",
@@ -8472,9 +8591,9 @@
     ],
     "summary": {
       "total": 249,
-      "totalMethods": 772
+      "totalMethods": 771
     },
     "dataSourceHash": "7d725e75d5031be445119323e4947c91"
   },
-  "enrichedAt": "2026-04-18T07:51:59.079Z"
+  "enrichedAt": "2026-04-18T09:20:37.714Z"
 }
