@@ -1,5 +1,5 @@
 {
-  "analyzedAt": "2026-04-17T16:45:07.038Z",
+  "analyzedAt": "2026-04-18T07:51:12.124Z",
   "package": {
     "entries": [
       {
@@ -81,38 +81,24 @@
       },
       {
         "file": "src/check.js",
-        "hash": "969a7e374d19d6084a9efc069b0c28fd",
-        "lines": 44,
-        "mtime": "2026-04-17T09:02:28.838Z",
+        "hash": "9c58335dbbaeb2f7fa7d42170cd86d8c",
+        "lines": 35,
+        "mtime": "2026-04-18T07:51:11.766Z",
         "className": "check",
         "methods": [],
         "imports": [
-          "path",
-          "./lib/cli.js",
           "./lib/constants.js",
           "./lib/container.js",
-          "./lib/command-runner.js"
+          "./lib/command-registry.js",
+          "./lib/dispatcher.js"
         ],
         "exports": [],
         "extends": null,
         "usedBy": null,
         "id": "cfca7dd3",
-        "summary": "This file is the entrypoint for the `sdd-forge check` command group and dispatches subcommands to dedicated scripts. It validates arguments, initializes runtime context, and forwards execution.",
-        "detail": "The module defines a static map from subcommand names to script paths, then reads CLI args from `process.argv`. It initializes the dependency container before running any selected subcommand, ensuring shared services are available. Subcommand execution is delegated through `runModuleMain`, which keeps command loading modular. It exits with success or error codes depending on command presence and runtime failures.",
-        "chapter": "cli_commands",
-        "role": "cli",
         "enrich": {
-          "processedAt": "2026-04-17T09:03:42.668Z",
           "attempts": 1
-        },
-        "keywords": [
-          "cli dispatcher",
-          "subcommand routing",
-          "entrypoint",
-          "process argv",
-          "exit codes",
-          "command runner"
-        ]
+        }
       },
       {
         "file": "src/check/commands/config.js",
@@ -264,9 +250,9 @@
       },
       {
         "file": "src/docs.js",
-        "hash": "5213e663f28bbce969c19f38df8aed61",
-        "lines": 242,
-        "mtime": "2026-04-17T14:28:53.268Z",
+        "hash": "bd3eeed96d482aa21da1716af725d567",
+        "lines": 227,
+        "mtime": "2026-04-18T07:51:11.766Z",
         "className": "docs",
         "methods": [],
         "imports": [
@@ -275,7 +261,8 @@
           "./lib/cli.js",
           "./lib/container.js",
           "./docs/lib/docs-context.js",
-          "./lib/command-runner.js",
+          "./lib/command-registry.js",
+          "./lib/dispatcher.js",
           "./lib/types.js",
           "./lib/constants.js"
         ],
@@ -283,22 +270,9 @@
         "extends": null,
         "usedBy": null,
         "id": "086d52a1",
-        "summary": "This module is the top-level entrypoint for `sdd-forge docs` subcommands and script dispatching. It resolves runtime context and routes each docs action to dynamically imported command modules.",
-        "detail": "It initializes shared dependencies through the container and computes docs output settings before command execution. The file uses lazy `import()` calls to load command handlers only when needed, keeping startup overhead lower. It supports scan, enrich, init, data, text, readme, agents, and translation flows, including language-specific docs directories. It also handles argument parsing, dry-run/force flags, and explicit process exit codes for success and failure paths.",
-        "chapter": "cli_commands",
-        "role": "cli",
         "enrich": {
-          "processedAt": "2026-04-17T14:30:33.210Z",
           "attempts": 1
-        },
-        "keywords": [
-          "docs command",
-          "subcommand dispatcher",
-          "dynamic import",
-          "CLI entrypoint",
-          "translation flow",
-          "exit codes"
-        ]
+        }
       },
       {
         "file": "src/docs/commands/agents.js",
@@ -2192,48 +2166,29 @@
       },
       {
         "file": "src/flow.js",
-        "hash": "5869c909ea1ae0eca8db07f06405a7fa",
-        "lines": 266,
-        "mtime": "2026-04-17T16:45:06.727Z",
+        "hash": "e3984124197d15b9dc074bea1ebdc0f5",
+        "lines": 102,
+        "mtime": "2026-04-18T07:51:11.766Z",
         "className": "flow",
         "methods": [
-          "throwUnexpectedArgs",
-          "assignPositionalArgs",
-          "parseNoArgEntry",
-          "splitArgsBySpec",
-          "parseEntryArgs",
-          "helpCommandFor",
-          "runEntry",
-          "dispatch"
+          "run",
+          "dispatchFlow"
         ],
         "imports": [
-          "./lib/cli.js",
           "./lib/flow-envelope.js",
-          "./flow/registry.js",
           "./lib/constants.js",
           "./lib/container.js",
-          "./flow/lib/flow-context.js"
+          "./flow/lib/flow-context.js",
+          "./lib/command-registry.js",
+          "./lib/dispatcher.js"
         ],
         "exports": [],
         "extends": null,
         "usedBy": null,
         "id": "1ab08f2b",
-        "summary": "This file is the main CLI dispatcher for `sdd-forge flow`. It parses argv, resolves command groups, and executes matched entries with standardized success or error handling.",
-        "detail": "The module splits raw arguments into positional values, flags, and options using entry specs, then validates unknown or extra arguments early. It provides reusable helpers for mapping positional args onto the runtime flow context and generating command-specific help usage. `runEntry` wraps execution in a consistent envelope lifecycle, including pre/post hooks and error hooks, while preserving non-zero exit behavior. The top-level `dispatch` function routes shortcuts and normal group/command paths, then terminates with explicit exit codes for invalid input or failures. This keeps flow subcommands centralized while allowing each command entry to implement its own business logic.",
-        "chapter": "cli_commands",
-        "role": "cli",
         "enrich": {
-          "processedAt": "2026-04-17T16:45:44.055Z",
           "attempts": 1
-        },
-        "keywords": [
-          "CLI dispatcher",
-          "argument parsing",
-          "subcommand routing",
-          "exit codes",
-          "command envelope",
-          "flow command runner"
-        ]
+        }
       },
       {
         "file": "src/flow/commands/merge.js",
@@ -2420,20 +2375,21 @@
       },
       {
         "file": "src/flow/lib/base-command.js",
-        "hash": "48e28fd12ff95110cc29aeb59c45afc5",
-        "lines": 54,
-        "mtime": "2026-04-17T16:45:06.727Z",
+        "hash": "3cf5c0f9028fece30da879e6fc81f06f",
+        "lines": 59,
+        "mtime": "2026-04-18T07:51:11.766Z",
         "className": "base-command",
         "methods": [
           "FlowCommand"
         ],
         "imports": [
+          "../../lib/command.js",
           "./flow-context.js"
         ],
         "exports": [
           "FlowCommand"
         ],
-        "extends": null,
+        "extends": "Command",
         "usedBy": [
           "src/flow/lib/get-check.js",
           "src/flow/lib/get-context.js",
@@ -2464,25 +2420,14 @@
           "src/flow/lib/set-request.js",
           "src/flow/lib/set-step.js",
           "src/flow/lib/set-summary.js",
-          "src/flow/lib/set-test-summary.js"
+          "src/flow/lib/set-test-summary.js",
+          "src/lib/command-adapter.js",
+          "src/lib/dispatcher.js"
         ],
         "id": "83f60bd3",
-        "summary": "This file defines the abstract base class for flow commands. It standardizes context resolution and enforces an `execute()` contract for subclasses.",
-        "detail": "The class resolves the active flow context before any command logic runs, so subclasses operate on a consistent runtime state. It throws a clear error when no active flow exists, treating missing `flow.json` as a hard precondition failure. The `run` method acts as the stable template method that delegates to subclass implementations. `execute` is intentionally abstract and throws by default to prevent accidental direct use. This pattern keeps command lifecycle behavior centralized and implementation-specific logic isolated.",
-        "chapter": "internal_design",
-        "role": "lib",
         "enrich": {
-          "processedAt": "2026-04-17T16:45:44.055Z",
           "attempts": 1
-        },
-        "keywords": [
-          "base class",
-          "template method",
-          "command abstraction",
-          "flow context",
-          "runtime contract",
-          "subclass execute"
-        ]
+        }
       },
       {
         "file": "src/flow/lib/flow-context.js",
@@ -3996,7 +3941,8 @@
           "src/sdd-forge.js",
           "src/setup.js",
           "src/upgrade.js",
-          "src/lib/container.js"
+          "src/lib/container.js",
+          "src/lib/dispatcher.js"
         ],
         "id": "f351ecc4",
         "enrich": {
@@ -4015,6 +3961,66 @@
           "CLI utilities",
           "path resolution"
         ]
+      },
+      {
+        "file": "src/lib/command-adapter.js",
+        "hash": "6ad888253dee30aa8f0d810054215dba",
+        "lines": 54,
+        "mtime": "2026-04-18T07:51:11.766Z",
+        "className": "command-adapter",
+        "methods": [
+          "main",
+          "legacyMainToCommand"
+        ],
+        "imports": [
+          "./command.js"
+        ],
+        "exports": [
+          "main",
+          "legacyMainToCommand",
+          "default"
+        ],
+        "extends": "Command",
+        "usedBy": [
+          "src/lib/command-registry.js"
+        ],
+        "id": "e93412f7",
+        "enrich": {
+          "attempts": 1
+        }
+      },
+      {
+        "file": "src/lib/command-registry.js",
+        "hash": "6409ab84e1f31f62cd185eb88422bc11",
+        "lines": 105,
+        "mtime": "2026-04-18T07:51:11.766Z",
+        "className": "command-registry",
+        "methods": [
+          "decorateFlowEntry",
+          "legacyEntry"
+        ],
+        "imports": [
+          "../flow/registry.js",
+          "./command-adapter.js"
+        ],
+        "exports": [
+          "flowCommands",
+          "docsCommands",
+          "checkCommands",
+          "metricsCommands",
+          "allCommands"
+        ],
+        "extends": null,
+        "usedBy": [
+          "src/check.js",
+          "src/docs.js",
+          "src/flow.js",
+          "src/metrics.js"
+        ],
+        "id": "0d680f4f",
+        "enrich": {
+          "attempts": 1
+        }
       },
       {
         "file": "src/lib/command-runner.js",
@@ -4055,6 +4061,29 @@
           "CLI bootstrap",
           "command wrapper"
         ]
+      },
+      {
+        "file": "src/lib/command.js",
+        "hash": "2f8f9dbc639309ec51fef8374fe43696",
+        "lines": 75,
+        "mtime": "2026-04-18T07:51:11.766Z",
+        "className": "command",
+        "methods": [
+          "Command"
+        ],
+        "imports": [],
+        "exports": [
+          "Command"
+        ],
+        "extends": "Command",
+        "usedBy": [
+          "src/lib/command-adapter.js",
+          "src/lib/dispatcher.js"
+        ],
+        "id": "3c33b4ce",
+        "enrich": {
+          "attempts": 1
+        }
       },
       {
         "file": "src/lib/config.js",
@@ -4235,6 +4264,41 @@
         ]
       },
       {
+        "file": "src/lib/dispatcher.js",
+        "hash": "8b9cecc1ccbb63649da9bde8617c22f6",
+        "lines": 261,
+        "mtime": "2026-04-18T07:51:11.766Z",
+        "className": "dispatcher",
+        "methods": [
+          "parseEntryInput",
+          "dispatch",
+          "throwUnexpected",
+          "splitArgsBySpec",
+          "resolveOutputMode",
+          "emitFailure"
+        ],
+        "imports": [
+          "./cli.js",
+          "./command.js",
+          "./flow-envelope.js"
+        ],
+        "exports": [
+          "parseEntryInput",
+          "dispatch"
+        ],
+        "extends": null,
+        "usedBy": [
+          "src/check.js",
+          "src/docs.js",
+          "src/flow.js",
+          "src/metrics.js"
+        ],
+        "id": "18d5f63b",
+        "enrich": {
+          "attempts": 1
+        }
+      },
+      {
         "file": "src/lib/flow-envelope.js",
         "hash": "68324e349b9b748964f1b9bf858d0d8c",
         "lines": 84,
@@ -4249,7 +4313,8 @@
         ],
         "extends": null,
         "usedBy": [
-          "src/flow.js"
+          "src/flow.js",
+          "src/lib/dispatcher.js"
         ],
         "id": "4f01cb50",
         "summary": "This file defines the envelope model used to normalize flow command outputs. It provides a consistent JSON schema for success, failure, and exception results with exit-code side effects.",
@@ -5203,38 +5268,24 @@
       },
       {
         "file": "src/metrics.js",
-        "hash": "bf3e1bfc428d5faa447491ebdcdfc2cb",
-        "lines": 42,
-        "mtime": "2026-04-17T09:02:28.841Z",
+        "hash": "64637179f9d916dce1c06fc3755968ca",
+        "lines": 35,
+        "mtime": "2026-04-18T07:51:11.766Z",
         "className": "metrics",
         "methods": [],
         "imports": [
-          "path",
-          "./lib/cli.js",
           "./lib/constants.js",
           "./lib/container.js",
-          "./lib/command-runner.js"
+          "./lib/command-registry.js",
+          "./lib/dispatcher.js"
         ],
         "exports": [],
         "extends": null,
         "usedBy": null,
         "id": "0230d610",
         "enrich": {
-          "processedAt": "2026-04-17T10:41:52.427Z",
-          "attempts": 6
-        },
-        "summary": "Acts as the metrics namespace dispatcher for subcommands. It initializes container context and forwards execution to command modules.",
-        "detail": "The script maps subcommand names to script paths and validates incoming arguments. It handles missing or unknown subcommands with consistent error exits. For valid commands, it resolves script paths from package root and executes them via `runModuleMain`. This keeps metrics command surface extensible while preserving uniform CLI behavior.",
-        "chapter": "cli_commands",
-        "role": "cli",
-        "keywords": [
-          "metrics CLI",
-          "subcommand dispatcher",
-          "namespace command",
-          "module forwarding",
-          "argument routing",
-          "error exit"
-        ]
+          "attempts": 1
+        }
       },
       {
         "file": "src/metrics/commands/token.js",
@@ -5987,7 +6038,8 @@
           "src/lib/i18n.js",
           "src/lib/log.js",
           "src/lib/skills.js",
-          "src/lib/container.js"
+          "src/lib/container.js",
+          "src/lib/dispatcher.js"
         ],
         "id": "1c8c8717"
       },
@@ -7403,7 +7455,8 @@
           "src/lib/i18n.js",
           "src/lib/log.js",
           "src/lib/skills.js",
-          "src/lib/container.js"
+          "src/lib/container.js",
+          "src/lib/dispatcher.js"
         ],
         "id": "0c4cfb73"
       },
@@ -8418,10 +8471,10 @@
       }
     ],
     "summary": {
-      "total": 245,
-      "totalMethods": 767
+      "total": 249,
+      "totalMethods": 772
     },
     "dataSourceHash": "7d725e75d5031be445119323e4947c91"
   },
-  "enrichedAt": "2026-04-17T16:45:44.055Z"
+  "enrichedAt": "2026-04-18T07:51:59.079Z"
 }
