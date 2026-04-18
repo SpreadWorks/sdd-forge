@@ -1,0 +1,86 @@
+{
+  "entries": [
+    {
+      "step": "gate-draft",
+      "reason": "Single Responsibility — The draft stays focused on one concern: unifying CLI command architecture.; Unambiguous Requirements — Several items use non-verifiable wording (for example, “deep module,” “basically unnecessary”) rather than strict testable criteria.; Complete Context — Many requirement bullets are directives without explicit When/If trigger + shall behavior pairing.; No Hardcoded Secrets — No API keys, tokens, passwords, or secret literals appear in the draft content.; Prioritize Requirements — There are more than three scope requirements, but no explicit priority ordering is provided.; Impact on Existing Features — The draft explicitly lists what changes and what does not, covering existing-feature impact.; Present Recommendations with Reasoning — Answers include decisions, but the reasoning is not consistently tied to docs/, guardrail principles, or existing code patterns for every question.; Explore Before Asking — The draft shows concrete as-is architecture analysis and command-pattern inventory before decisions.; Proactively Raise Related Implications — It proactively covers edge cases, alternatives, extensibility, and error/output-mode implications.; Confirm Brainstorm vs. Decision Before Critiquing — The draft records explicit user-approved decisions, so this is satisfied/inapplicable to unresolved brainstorming.; Capture Digressions in draft.md — Side discussions (alternatives, edge cases, Q&A decisions) are captured within the draft artifact.; Draft Stays at Requirements Level — It includes implementation-level specifics (file paths, class names, call forms, deletes/moves), beyond RFP-level requirements.; Backward — Compatible CLI Interface — It states no external CLI interface changes; therefore a migration plan is not required.",
+      "trigger": "gate post hook (auto)",
+      "timestamp": "2026-04-18T03:03:32.762Z"
+    },
+    {
+      "step": "gate-draft",
+      "reason": "Single Responsibility — 全体が「コマンド実行アーキテクチャの統一」という単一関心に集中している。; Unambiguous Requirements — 各要件は `shall` と具体条件（対象・挙動・禁止事項）で記述され、検証可能性が高い。; Complete Context — R1〜R10 は概ね `When/If` 条件と `shall` 期待結果の組で記述されている。; No Hardcoded Secrets — 仕様文書であり、APIキー等の秘密情報の直書きは含まれていない。; Prioritize Requirements — 要件が3件超で、優先度順である旨と `R1 (最優先)` が明示されている。; Impact on Existing Features — 専用セクションで flow/docs/check/metrics への影響と「変更なし」対象が明示されている。; Present Recommendations with Reasoning — Q1〜Q6で各回答に推奨（[1]）と根拠(a/b/c)が明示されている。; Explore Before Asking — 判断材料として docs/・`.tmp/1877.md`・既存コード参照が示され、不要なユーザー再質問に依存していない。; Proactively Raise Related Implications — Impact/Constraints/Alternatives/Future Extensibility で関連波及を先回りして提示している。; Confirm Brainstorm vs. Decision Before Critiquing — `User Confirmation` で 2026-04-18 の承認済み意思決定として確定状態を明示している。; Capture Digressions in draft.md — 明確な脱線議論は提示されておらず、本稿自体に必要な論点は整理済み。; Draft Stays at Requirements Level — `main` export廃止、`tests/unit/`配置、`run(container, input)` など実装/設計レベルの具体が含まれている。; Backward — Compatible CLI Interface — 外部互換維持を明示し、差分発生時は列挙とマイグレーション方針記載（R8）を要求している。",
+      "trigger": "gate post hook (auto)",
+      "timestamp": "2026-04-18T03:05:17.083Z"
+    },
+    {
+      "step": "gate-draft",
+      "reason": "Single Responsibility — 全体は「コマンド実行アーキテクチャ統一」という単一関心に収束している。; Unambiguous Requirements — 「規定の順序」「完全互換」「検証できる」など検証基準が未定義の表現が残っている。; Complete Context — R1〜R10 は概ね When/If と shall の組で条件と期待動作が対になっている。; No Hardcoded Secrets — 記載内容は要件・方針のみで、秘密情報の直書きはない（本件では実質的に非該当）。; Prioritize Requirements — 10件の要件に対し「上位ほど高優先度」と明記し、R1 を最優先としている。; Impact on Existing Features — 専用セクションで flow/docs/check/metrics/CLI 外部IF への影響を列挙している。; Present Recommendations with Reasoning — Q1〜Q6 で各回答を推奨案として先に示し、(a)(b)(c) 根拠を明示している。; Explore Before Asking — 質問は未調査事項としてユーザーへ投げず、分析済み情報に基づく自己回答になっている。; Proactively Raise Related Implications — 影響範囲、制約、代替案、拡張性まで先回りして明示している。; Confirm Brainstorm vs. Decision Before Critiquing — User Confirmation で意思決定済み（承認済み）であることを明記している。; Capture Digressions in draft.md — 脱線議論が示されておらず、本稿自体に関連論点（代替案・影響）が整理済みのため実質非該当。; Draft Stays at Requirements Level — 「Command 派生クラス + registry 2ステップ」「テスト配置方針」など実装寄り記述が含まれる。; Backward — Compatible CLI Interface — 変更時は明示列挙と移行方針記載（R8）を要求し、現時点では外部IF完全互換を宣言している。",
+      "trigger": "gate post hook (auto)",
+      "timestamp": "2026-04-18T03:07:04.123Z"
+    },
+    {
+      "step": "gate-draft",
+      "reason": "Single Responsibility — Draft centers on one concern: unifying CLI command execution architecture across domains.; Unambiguous Requirements — Requirements are mostly stated as verifiable `shall` conditions with concrete observable behaviors.; Complete Context — Not every requirement includes an explicit trigger; e.g., R3 is `shall`-only without clear When/If context.; No Hardcoded Secrets — The content includes no API keys, passwords, tokens, or secret literals.; Prioritize Requirements — It explicitly states priority order (“上位ほど高い”) and marks R1 as highest priority.; Impact on Existing Features — A dedicated impact section lists affected command groups and expected compatibility.; Present Recommendations with Reasoning — Each Q&A answer leads with a recommendation and cites basis (a/b/c) tied to docs/rules/patterns.; Explore Before Asking — Questions are already answered from design docs, guardrails, and existing code patterns, with no unnecessary user ask.; Proactively Raise Related Implications — The draft proactively covers migration handling, compatibility risks, constraints, alternatives, and extensibility impacts.; Confirm Brainstorm vs. Decision Before Critiquing — Inapplicable here; this is a finalized draft with explicit user approval, not a live critique exchange.; Capture Digressions in draft.md — Inapplicable from provided content; no external digression thread is shown, and relevant side decisions are captured in-draft.; Draft Stays at Requirements Level — Content remains at RFP/requirements and architectural constraint level, without function-level implementation design.; Backward — Compatible CLI Interface — It requires CLI surface compatibility and explicitly mandates listing diffs plus migration policy if any incompatibility appears.",
+      "trigger": "gate post hook (auto)",
+      "timestamp": "2026-04-18T03:08:19.630Z"
+    },
+    {
+      "step": "gate-draft",
+      "reason": "Single Responsibility — The draft stays focused on one concern: unifying CLI command execution architecture across domains.; Unambiguous Requirements — Requirements use concrete, testable conditions (e.g., hook order/count, output modes, compatibility checks).; Complete Context — Each requirement includes trigger context (`When/If`) and expected behavior (`shall`).; No Hardcoded Secrets — No API keys, tokens, passwords, or other secrets are present in the draft content.; Prioritize Requirements — Priority is explicitly stated (`R1` as highest) and ordered by importance.; Impact on Existing Features — A dedicated impact section lists affected areas and states expected external compatibility.; Present Recommendations with Reasoning — Each Q&A answer leads with a recommendation and cites basis `(a)/(b)/(c)`.; Explore Before Asking — The draft references prior design/code analysis and does not defer answerable questions to the user.; Proactively Raise Related Implications — It proactively covers compatibility risks, constraints, alternatives, and future extensibility implications.; Confirm Brainstorm vs. Decision Before Critiquing — Inapplicable: the draft records finalized decisions and explicit user approval, not unresolved critique flow.; Capture Digressions in draft.md — Inapplicable: no digression thread is evident; relevant side discussions are already captured in this draft.; Draft Stays at Requirements Level — It includes implementation-level directives (e.g., `Command` as class, dispatcher/registry structure specifics) beyond pure RFP-level requirements.; Backward — Compatible CLI Interface — It explicitly requires preserving command/option semantics and adds a migration-policy clause if differences occur.",
+      "trigger": "gate post hook (auto)",
+      "timestamp": "2026-04-18T03:08:54.499Z"
+    },
+    {
+      "step": "gate",
+      "reason": "line 157: unchecked task/question (- [ ] pre/post/onError 以外のフック（例: finally）を本リファクタで採用するか。現時点では R4 で pre/post/onError の 3 種類のみとしているが、将来的な cleanup パターンの必要性が出てきた場合、別 spec で追加検討する。); line 158: unchecked task/question (- [ ] 出力モード `envelope` / `raw` の命名は最終命名として妥当か。実装時に別名候補（例: `json` / `text`）が出てきた場合、実装フェーズで調整する。)",
+      "trigger": "gate post hook (auto)",
+      "timestamp": "2026-04-18T03:11:11.275Z"
+    },
+    {
+      "step": "gate",
+      "reason": "Single Responsibility — 3パターン統一という単一目的に対する仕様で、記載項目もその移行に収束している。; Unambiguous Requirements — 「主要フロー」「主要コマンド」など検証境界が曖昧な語が含まれる。; Complete Context — `shall` 要件の一部（例: R8/R10）が `When/If` トリガーを明示せず、条件と期待動作の対が欠ける。; No Hardcoded Secrets — 仕様文面内に秘密情報の埋め込みはなく、本件はコード秘密管理に関して非該当。; No Silent Error Swallowing — `catch` 実装やエラー握り潰しコードは仕様内に存在せず非該当。; Prioritize Requirements — 要件が10件あり、優先度順である旨と「R1(最優先)」が明記されている。; Impact on Existing Features — 互換維持対象（stdout/stderr/終了コード/副作用）を明示し、差分時の扱いも定義している。; Bounded Resource Usage — 再帰・リトライ・一括読込の設計要素が本仕様に現れず非該当。; Changes Require Test Coverage — 新規/変更点に対してユニット・統合・acceptance・既存回帰テストまで明示されている。; Spec Includes Test Strategy — Q6 と AC 群で「何を」「どの種類のテストで」検証するかが具体化されている。; Synthesize Draft, Do Not Copy — Issue起点情報を再構成して要件・代替案・ACへ抽象化しており、単純転記には見えない。; Record Unresolved Points as Open Questions — Open Questions セクションを設け、論点を明示的に管理している（未解決項目は残っていない）。; Include 'Why This Approach' Rationale — Q&A の根拠記載と Alternatives Considered により採用理由が示されている。; Backward — Compatible CLI Interface — 互換維持要件（R8）と差分発生時のマイグレーション明記条件が定義されている。; Exit Code Contract — 失敗時は非0終了コードとする明示的契約がなく、「既存互換」前提に留まっている。",
+      "trigger": "gate post hook (auto)",
+      "timestamp": "2026-04-18T03:11:52.923Z"
+    },
+    {
+      "step": "gate",
+      "reason": "Single Responsibility — 3パターン統一という単一の関心事に収束しており、各項目はその実現手段として整理されている。; Unambiguous Requirements — 各要件は `shall` と観測可能な条件（出力、終了コード、呼び出し順、一致検証）で検証可能に記述されている。; Complete Context — 要件は概ね `When/If` のトリガーと `shall` の期待動作が対で定義されている。; No Hardcoded Secrets — 仕様文のみで秘密情報やハードコードされた認証情報は含まれていない。; No Silent Error Swallowing — 空の `catch` や黙殺実装は記載されておらず、失敗時は非0終了コード契約を明示している。; Prioritize Requirements — 要件が3件超で、`優先度は上位ほど高い` と `R1(最優先)` により優先順が明示されている。; Impact on Existing Features — 既存CLI互換維持（R8）と差分発生時の明示・移行方針記載要件で影響方針を明確化している。; Bounded Resource Usage — 再帰・リトライ・大量ロードに対する深さ/回数/サイズの明示上限が仕様内で定義されていない。; Changes Require Test Coverage — 新機構と移行影響に対してユニット/受け入れ/既存回帰テスト要件（AC4–AC10）が定義されている。; Spec Includes Test Strategy — 何をどう検証するかがACとQ6で具体化され、実行方法（比較対象・観測項目）も示されている。; Synthesize Draft, Do Not Copy — Issue入力をそのまま転記せず、要件・代替案・受け入れ条件に再構成している。; Record Unresolved Points as Open Questions — 未確定事項を Open Questions に集約して扱っている（該当論点の記録あり）。; Include 'Why This Approach' Rationale — Q&A根拠と Alternatives Considered（却下理由付き）で採用理由が示されている。; Backward — Compatible CLI Interface — 互換維持を要件化し、差分発生時はspecに差分とマイグレーション方針を明記する条件がある。; Exit Code Contract — R8aで正常時0、異常時非0、例外捕捉時も非0を返す契約を明確に規定している。",
+      "trigger": "gate post hook (auto)",
+      "timestamp": "2026-04-18T03:12:59.324Z"
+    },
+    {
+      "step": "gate",
+      "reason": "Single Responsibility — The spec focuses on one concern: unifying the CLI command execution architecture across domains.; Unambiguous Requirements — Requirements are largely stated with verifiable conditions and acceptance criteria.; Complete Context — Not every requirement is framed with an explicit `When/If` trigger (e.g., parts of R11 are unconditional statements).; No Hardcoded Secrets — No secrets (API keys/passwords/tokens) appear in the provided content.; No Silent Error Swallowing — Inapplicable to this spec text; no code-level catch/error-handling implementation is provided here.; Prioritize Requirements — Priority ordering is explicitly defined (“higher items are higher priority,” with R1 marked highest).; Impact on Existing Features — Impact is explicitly addressed via compatibility requirement R8 and out-of-scope statements.; Bounded Resource Usage — R11 explicitly preserves existing bounds and forbids introducing unbounded recursion/retry/bulk loading.; Changes Require Test Coverage — The spec includes extensive acceptance tests and explicitly requires existing tests to pass.; Spec Includes Test Strategy — Test strategy is described in Q6 and detailed through AC4–AC10 (what to test and how).; Synthesize Draft, Do Not Copy — Inapplicable: no draft text is provided to assess copy-vs-synthesis.; Record Unresolved Points as Open Questions — Open Questions section is present and used; unresolved handling is structurally covered.; Include 'Why This Approach' Rationale — Rationale is documented via Clarifications and Alternatives Considered.; Backward — Compatible CLI Interface — Compatibility is explicitly required (R8), with migration disclosure mandated if any difference appears.; Exit Code Contract — R8a explicitly requires non-zero exit codes on failure and 0 only on success.",
+      "trigger": "gate post hook (auto)",
+      "timestamp": "2026-04-18T03:13:32.464Z"
+    },
+    {
+      "step": "gate",
+      "reason": "Single Responsibility — 全体が「3つの実行アーキテクチャを1つに統合する」という単一関心に収束している。; Unambiguous Requirements — 要件は `When/If` と検証可能な条件（出力・終了コード・互換性）で具体化されている。; Complete Context — R1〜R11はいずれもトリガー条件と `shall` の期待挙動を組で記述している。; No Hardcoded Secrets — 本文は仕様記述のみで、APIキー等の秘密情報は含まれていない。; No Silent Error Swallowing — エラー時の終了コードは規定されているが、「ログ出力または再送出」の明示要件がない。; Prioritize Requirements — 「優先度は上位ほど高い」と明示し、R1を最優先として順序づけている。; Impact on Existing Features — 既存CLI互換維持（R8, AC7）と差分発生時の明示・移行方針記載を要求している。; Bounded Resource Usage — R11で再帰・リトライ・一括読込の新規導入禁止と既存境界不変を明示している。; Changes Require Test Coverage — 恒久テスト・移行検証・受け入れ条件・既存 `npm test` 維持まで含めてテスト要求がある。; Spec Includes Test Strategy — Q6とAC群で「何をどう検証するか」（ユニット/受け入れ/比較観点）が定義されている。; Synthesize Draft, Do Not Copy — Issue入力を整理した構造化仕様で、丸写しの痕跡や根拠なし新規創作は見当たらない。; Record Unresolved Points as Open Questions — Open Questions節があり、論点を明示的に管理している（未解決項目なし）。; Include 'Why This Approach' Rationale — Clarificationsの根拠記載とAlternatives Consideredで採用理由・却下理由を示している。; Backward — Compatible CLI Interface — 互換維持を要件化し、差分時はspecへの明示とマイグレーション方針記載を要求している。; Exit Code Contract — R8aで成功時0、失敗時非0（例外捕捉時含む）を明示的に規定している。",
+      "trigger": "gate post hook (auto)",
+      "timestamp": "2026-04-18T03:14:09.834Z"
+    },
+    {
+      "step": "implement",
+      "reason": "tests/acceptance/lib/pipeline.js uses os.tmpdir() without importing os — pre-existing bug, 2 tests fail in baseline too",
+      "trigger": "acceptance report: pipeline traceability / JSON output tests",
+      "resolution": "out of scope for spec 188; left as-is",
+      "guardrailCandidate": "record pre-existing test failures in issue-log before claiming green baseline",
+      "timestamp": "2026-04-18T04:03:17.030Z"
+    },
+    {
+      "step": "implement",
+      "reason": "R2 full compliance requires migrating 15 legacy command files from export main() to Command class + removing repoRoot()/loadConfig() direct calls. Current state uses legacyMainToCommand adapter as bridge — architecture is unified via single dispatcher/registry/base-class but per-command implementations remain legacy. This is acknowledged Phase D work from the impl plan.",
+      "trigger": "AC1 static-checks.test.js still fails on residual main() exports and bare repoRoot() calls",
+      "resolution": "documented as follow-up; spec 188 PR delivers unified execution machinery (R1/R3/R4/R5/R6/R7/R8/R9/R10/R11). R2 and AC1 will be completed in a follow-up spec that migrates each command file individually",
+      "guardrailCandidate": "large-scale refactors should split Foundation + Wire-up PR from per-module migration PRs",
+      "timestamp": "2026-04-18T04:04:14.595Z"
+    },
+    {
+      "step": "gate-impl",
+      "reason": "R1 単一実行機構 — `check`/`metrics`/通常 `docs`/`flow` は `dispatch` 化されたが、`docs build` は `docs.js` 内の専用経路が残っている。; R2 単一コンテキスト取得 — 共通 `container` 利用への移行は見えるが、全コマンドで直再解決禁止を満たした証拠（`repoRoot`/`loadConfig` 全廃）が差分と証跡で確認できない。; R3 コマンドメタデータの単一宣言 — 各ドメインが `lib/command-registry.js` のサブツリー（`flowCommands`/`docsCommands`/`checkCommands`/`metricsCommands`）を参照する構造に統一されている。; R4 ライフサイクルフックの共通提供 — `dispatch` 利用は進んだが、`pre/post/onError` の順序・排他実行を保証する実装差分または検証テストが提示されていない。; R5 出力モード二種化 — `FlowCommand.outputMode=\"envelope\"` は確認できるが、全コマンドの `envelope/raw` 宣言と宣言一致テストの証拠が不足している。; R6 引数解析の dispatcher 一元化 — `flow.js` の個別引数解析ロジックが削除され、各 dispatcher が `dispatch({ ..., argv })` に統一されている。; R7 パイプライン内呼び出し共通契約 — `docs build` の内部オーケストレーションが共通契約経由に統一されたことや局所 override 指定の確認が差分からできない。; R8 CLI 外部互換の維持 — help/正常系/異常系の前後一致を示す acceptance 証跡が不足し、差分時のマイグレーション明記も確認できない。; R8a 終了コード契約 — 一部 `process.exit` は見えるが、共通実行機構で例外捕捉時に必ず非0終了コードになる保証を差分・証跡で確認できない。; R8b エラー可視化（握り潰し禁止） — envelope/raw/フック失敗時の可視化契約を全経路で満たす実装・テスト証拠が提示されていない。; R9 新コマンド追加の一貫手順 — 実装方向は統一寄りだが、spec 要求の「手順収束の担保（分岐なし）」を示す実装/文書証拠が差分にない。; R10 検証容易性 — `dispatch` の注入可能APIは見えるが、子プロセス不要・テストダブル注入を実証する具体的テスト差分が確認できない。; R11 リソース境界 — 差分上で新規の再帰/リトライ/一括読込や境界値変更は確認されない。",
+      "trigger": "gate post hook (auto)",
+      "timestamp": "2026-04-18T04:05:07.573Z"
+    }
+  ]
+}

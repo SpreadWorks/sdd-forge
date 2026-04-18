@@ -1,0 +1,193 @@
+{
+  "spec": "specs/188-unify-command-architecture/spec.md",
+  "baseBranch": "main",
+  "featureBranch": "feature/188-unify-command-architecture",
+  "runId": "da0a3200-8c15-4310-b051-c806aa13ec0e",
+  "lifecycle": "active",
+  "steps": [
+    {
+      "id": "branch",
+      "status": "done"
+    },
+    {
+      "id": "prepare-spec",
+      "status": "pending"
+    },
+    {
+      "id": "draft",
+      "status": "done"
+    },
+    {
+      "id": "gate-draft",
+      "status": "done"
+    },
+    {
+      "id": "spec",
+      "status": "done"
+    },
+    {
+      "id": "gate",
+      "status": "done"
+    },
+    {
+      "id": "approval",
+      "status": "done"
+    },
+    {
+      "id": "test",
+      "status": "done"
+    },
+    {
+      "id": "implement",
+      "status": "done"
+    },
+    {
+      "id": "gate-impl",
+      "status": "in_progress"
+    },
+    {
+      "id": "review",
+      "status": "pending"
+    },
+    {
+      "id": "finalize",
+      "status": "pending"
+    },
+    {
+      "id": "commit",
+      "status": "pending"
+    },
+    {
+      "id": "push",
+      "status": "pending"
+    },
+    {
+      "id": "merge",
+      "status": "pending"
+    },
+    {
+      "id": "pr-create",
+      "status": "pending"
+    },
+    {
+      "id": "branch-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "pr-merge",
+      "status": "pending"
+    },
+    {
+      "id": "sync-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "docs-update",
+      "status": "pending"
+    },
+    {
+      "id": "docs-review",
+      "status": "pending"
+    },
+    {
+      "id": "docs-commit",
+      "status": "pending"
+    }
+  ],
+  "requirements": [
+    {
+      "desc": "R1: 単一実行機構",
+      "status": "done"
+    },
+    {
+      "desc": "R2: 単一コンテキスト取得",
+      "status": "pending"
+    },
+    {
+      "desc": "R3: コマンドメタデータの単一宣言",
+      "status": "done"
+    },
+    {
+      "desc": "R4: ライフサイクルフックの共通提供",
+      "status": "done"
+    },
+    {
+      "desc": "R5: 出力モードの二種化",
+      "status": "done"
+    },
+    {
+      "desc": "R6: 引数解析の dispatcher 一元化",
+      "status": "done"
+    },
+    {
+      "desc": "R7: パイプライン内の呼び出し互換",
+      "status": "done"
+    },
+    {
+      "desc": "R8: CLI 外部互換の維持",
+      "status": "done"
+    },
+    {
+      "desc": "R8a: 終了コード契約",
+      "status": "done"
+    },
+    {
+      "desc": "R8b: エラーの可視化（握り潰し禁止）",
+      "status": "done"
+    },
+    {
+      "desc": "R9: 新コマンド追加の一貫手順",
+      "status": "done"
+    },
+    {
+      "desc": "R10: 検証容易性",
+      "status": "done"
+    },
+    {
+      "desc": "R11: リソース境界",
+      "status": "done"
+    }
+  ],
+  "issue": 167,
+  "worktree": true,
+  "request": "Issue #167: flow/docs/check/metrics の3種類のアーキテクチャパターン(flow型/docs型/bare型)を統一。(1)docs系を共通ライフサイクルに統一、(2)check/metrics をContainer経由に移行、(3)最終的に1パターンへ統合。",
+  "notes": [
+    "Q1: Issue #167 意図承認 ([1])",
+    "Q2: scope=3タスクまとめて実施 ([1])",
+    "Q3: 統合方針=共通基底+registry+dispatcher、出力はEnvelope/rawの2種 ([1])",
+    "Q4: container=共有singleton / input=CLI引数+override ([1])",
+    "Q5-registry: 単一 registry + tree 構造で部分 import 可能 ([1])",
+    "Q6-test: 共通 unit test を tests/unit/ に + spec 固有は specs/188/tests/ ([1])",
+    "impl: 段階実行方針 Phase A(基盤)→B(flow)→C(docs/check/metrics)→D(旧削除+テスト更新)"
+  ],
+  "metrics": {
+    "draft": {
+      "srcRead": 1,
+      "question": 5
+    },
+    "gate-draft": {
+      "callCount": 6,
+      "responseChars": 9512
+    },
+    "gate": {
+      "callCount": 5,
+      "responseChars": 7528
+    },
+    "impl": {
+      "issueLog": 2
+    },
+    "gate-impl": {
+      "callCount": 1,
+      "responseChars": 1269
+    }
+  },
+  "test": {
+    "summary": {
+      "unit": 3,
+      "integration": 1
+    }
+  },
+  "state": {
+    "finalizedAt": "2026-04-18T07:51:10.413Z"
+  }
+}

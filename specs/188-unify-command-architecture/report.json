@@ -1,0 +1,40 @@
+{
+  "data": {
+    "implementation": {
+      "diffStat": ".sdd-forge/output/metrics.json                     |  28 +--\n specs/188-unify-command-architecture/draft.md      | 129 ++++++++++\n specs/188-unify-command-architecture/flow.json     | 193 +++++++++++++++\n .../188-unify-command-architecture/issue-log.json  |  86 +++++++\n specs/188-unify-command-architecture/qa.md         |   9 +\n specs/188-unify-command-architecture/spec.md       | 172 ++++++++++++++\n .../188-unify-command-architecture/tests/README.md |  55 +++++\n .../tests/static-checks.test.js                    |  80 +++++++\n src/check.js                                       |  25 +-\n src/docs.js                                        |  29 +--\n src/flow.js                                        | 226 +++---------------\n src/flow/lib/base-command.js                       |   7 +-\n src/lib/command-adapter.js                         |  53 +++++\n src/lib/command-registry.js                        | 104 +++++++++\n src/lib/command.js                                 |  74 ++++++\n src/lib/dispatcher.js                              | 260 +++++++++++++++++++++\n src/metrics.js                                     |  23 +-\n tests/unit/lib/command-registry.test.js            |  55 +++++\n tests/unit/lib/command.test.js                     |  51 ++++\n tests/unit/lib/dispatcher.test.js                  | 176 ++++++++++++++\n 20 files changed, 1571 insertions(+), 264 deletions(-)",
+      "commits": [
+        "feat: feature/188-unify-command-architecture"
+      ]
+    },
+    "retro": null,
+    "issueLog": {
+      "count": 0,
+      "entries": []
+    },
+    "metrics": {
+      "docsRead": 0,
+      "srcRead": 1,
+      "question": 5,
+      "issueLog": 2
+    },
+    "tokenMetrics": {
+      "input": 0,
+      "output": 0,
+      "cacheRead": 0,
+      "cacheCreation": 0,
+      "cost": null,
+      "callCount": 12
+    },
+    "tests": {
+      "unit": 3,
+      "integration": 1,
+      "acceptance": 0,
+      "total": 4
+    },
+    "sync": {
+      "status": "skipped",
+      "reason": "sync was skipped"
+    }
+  },
+  "text": "  Report\n\n  Implementation\n  ────────────────────────────────────────────────\n    feat: feature/188-unify-command-architecture\n    20 files changed, 1571 insertions(+), 264 deletions(-)\n\n  Retro\n  ────────────────────────────────────────────────\n    -\n\n  Metrics\n  ────────────────────────────────────────────────\n    docs read ................... 0\n    src read .................... 1\n    Q&A ......................... 5\n    issue-log ................... 2\n    agent calls ................. 12\n    input tokens ................ 0\n    output tokens ............... 0\n    cache-read tokens ........... 0\n    cache-create tokens ......... 0\n    cost ........................ N/A\n\n  Tests\n  ────────────────────────────────────────────────\n    unit 3  integration 1  acceptance 0  total 4"
+}

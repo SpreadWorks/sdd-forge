@@ -13,14 +13,19 @@
  *     the dispatcher for re-resolution.
  */
 
+import { Command } from "../../lib/command.js";
 import { resolveFlowContext } from "./flow-context.js";
 
-export class FlowCommand {
+export class FlowCommand extends Command {
+  /** All flow commands emit JSON envelopes. */
+  static outputMode = "envelope";
+
   /**
    * @param {Object} [options]
    * @param {boolean} [options.requiresFlow=true] - Whether this command requires an active flow
    */
   constructor({ requiresFlow = true } = {}) {
+    super();
     this.requiresFlow = requiresFlow;
   }
 

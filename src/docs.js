@@ -10,26 +10,12 @@ import path from "path";
 import { PKG_DIR } from "./lib/cli.js";
 import { container, initContainer } from "./lib/container.js";
 import { resolveDocsContext } from "./docs/lib/docs-context.js";
-import { runModuleMain } from "./lib/command-runner.js";
+import { docsCommands } from "./lib/command-registry.js";
+import { dispatch } from "./lib/dispatcher.js";
 
 initContainer();
 import { resolveOutputConfig } from "./lib/types.js";
 import { EXIT_ERROR } from "./lib/constants.js";
-
-/** Subcommand → script mapping */
-const SCRIPTS = {
-  scan:       "docs/commands/scan.js",
-  enrich:     "docs/commands/enrich.js",
-  init:       "docs/commands/init.js",
-  data:       "docs/commands/data.js",
-  text:       "docs/commands/text.js",
-  readme:     "docs/commands/readme.js",
-  forge:      "docs/commands/forge.js",
-  review:     "docs/commands/review.js",
-  changelog:  "docs/commands/changelog.js",
-  agents:     "docs/commands/agents.js",
-  translate:  "docs/commands/translate.js",
-};
 
 // Extract subcommand from argv (set by sdd-forge.js)
 const args = process.argv.slice(2);
@@ -38,7 +24,7 @@ const rest = args.slice(1);
 
 // No subcommand → show available subcommands
 if (!subCmd || subCmd === "-h" || subCmd === "--help") {
-  const cmds = ["build", ...Object.keys(SCRIPTS)];
+  const cmds = ["build", ...Object.keys(docsCommands)];
   console.error("Usage: sdd-forge docs <command>\n");
   console.error("Available commands:");
   for (const c of cmds) console.error(`  ${c}`);
@@ -229,13 +215,12 @@ if (subCmd === "build") {
   process.exit(0);
 }
 
-// Regular subcommand dispatch
-const scriptRelPath = SCRIPTS[subCmd];
-if (!scriptRelPath) {
+// Regular subcommand dispatch via unified dispatcher
+const entry = docsCommands[subCmd];
+if (!entry) {
   console.error(`sdd-forge docs: unknown command '${subCmd}'`);
   console.error("Run: sdd-forge help");
   process.exit(EXIT_ERROR);
 }
 
-const scriptPath = path.join(PKG_DIR, scriptRelPath);
-await runModuleMain(scriptPath, rest);
+await dispatch({ container, entry, argv: rest });
