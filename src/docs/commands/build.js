@@ -203,7 +203,7 @@ async function runBuild(rawArgs, container) {
       await runStep(DocsDataCommand, { ...baseCtx, dryRun: isDryRun });
       for (const lang of nonDefaultLangs) {
         const langDocsDir = path.join(docsDir, lang);
-        if (fs.existsSync(langDocsDir)) {
+        if (await dirExists(langDocsDir)) {
           await runStep(DocsDataCommand, { ...baseCtx, docsDir: langDocsDir, dryRun: isDryRun });
         }
       }
