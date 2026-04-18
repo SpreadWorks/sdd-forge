@@ -1,0 +1,40 @@
+{
+  "data": {
+    "implementation": {
+      "diffStat": "specs/190-fix-pipeline-os-import/draft.md        |  82 +++++++++++\n specs/190-fix-pipeline-os-import/flow.json       | 166 +++++++++++++++++++++++\n specs/190-fix-pipeline-os-import/issue-log.json  |  30 ++++\n specs/190-fix-pipeline-os-import/qa.md           |   9 ++\n specs/190-fix-pipeline-os-import/spec.md         |  60 ++++++++\n specs/190-fix-pipeline-os-import/tests/README.md |  39 ++++++\n tests/acceptance/lib/pipeline.js                 |   1 +\n 7 files changed, 387 insertions(+)",
+      "commits": [
+        "feat: feature/190-fix-pipeline-os-import"
+      ]
+    },
+    "retro": null,
+    "issueLog": {
+      "count": 0,
+      "entries": []
+    },
+    "metrics": {
+      "docsRead": 0,
+      "srcRead": 0,
+      "question": 1,
+      "issueLog": 1
+    },
+    "tokenMetrics": {
+      "input": 186454,
+      "output": 4506,
+      "cacheRead": 75520,
+      "cacheCreation": 0,
+      "cost": null,
+      "callCount": 6
+    },
+    "tests": {
+      "unit": 0,
+      "integration": 0,
+      "acceptance": 2,
+      "total": 2
+    },
+    "sync": {
+      "status": "skipped",
+      "reason": "sync was skipped"
+    }
+  },
+  "text": "  Report\n\n  Implementation\n  ────────────────────────────────────────────────\n    feat: feature/190-fix-pipeline-os-import\n    7 files changed, 387 insertions(+)\n\n  Retro\n  ────────────────────────────────────────────────\n    -\n\n  Metrics\n  ────────────────────────────────────────────────\n    docs read ................... 0\n    src read .................... 0\n    Q&A ......................... 1\n    issue-log ................... 1\n    agent calls ................. 6\n    input tokens ................ 186,454\n    output tokens ............... 4,506\n    cache-read tokens ........... 75,520\n    cache-create tokens ......... 0\n    cost ........................ N/A\n\n  Tests\n  ────────────────────────────────────────────────\n    unit 0  integration 0  acceptance 2  total 2"
+}

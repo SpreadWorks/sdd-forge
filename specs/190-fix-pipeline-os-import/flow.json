@@ -1,0 +1,166 @@
+{
+  "spec": "specs/190-fix-pipeline-os-import/spec.md",
+  "baseBranch": "main",
+  "featureBranch": "feature/190-fix-pipeline-os-import",
+  "runId": "96795686-11ed-4d19-8999-c0b223c51006",
+  "lifecycle": "active",
+  "steps": [
+    {
+      "id": "branch",
+      "status": "done"
+    },
+    {
+      "id": "prepare-spec",
+      "status": "pending"
+    },
+    {
+      "id": "draft",
+      "status": "done"
+    },
+    {
+      "id": "gate-draft",
+      "status": "done"
+    },
+    {
+      "id": "spec",
+      "status": "done"
+    },
+    {
+      "id": "gate",
+      "status": "done"
+    },
+    {
+      "id": "approval",
+      "status": "done"
+    },
+    {
+      "id": "test",
+      "status": "done"
+    },
+    {
+      "id": "implement",
+      "status": "done"
+    },
+    {
+      "id": "gate-impl",
+      "status": "done"
+    },
+    {
+      "id": "review",
+      "status": "done"
+    },
+    {
+      "id": "finalize",
+      "status": "pending"
+    },
+    {
+      "id": "commit",
+      "status": "pending"
+    },
+    {
+      "id": "push",
+      "status": "pending"
+    },
+    {
+      "id": "merge",
+      "status": "pending"
+    },
+    {
+      "id": "pr-create",
+      "status": "pending"
+    },
+    {
+      "id": "branch-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "pr-merge",
+      "status": "pending"
+    },
+    {
+      "id": "sync-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "docs-update",
+      "status": "pending"
+    },
+    {
+      "id": "docs-review",
+      "status": "pending"
+    },
+    {
+      "id": "docs-commit",
+      "status": "pending"
+    }
+  ],
+  "requirements": [
+    {
+      "desc": "R1: pipeline.js の Node.js 標準 module import 不備を解消",
+      "status": "done"
+    },
+    {
+      "desc": "R2: 対象 2 受け入れテスト (pipeline traceability / JSON output) を PASS させる",
+      "status": "done"
+    },
+    {
+      "desc": "R3: src/ 配下の差分は 0 に保つ",
+      "status": "done"
+    }
+  ],
+  "issue": 170,
+  "request": "#170 tests/acceptance/lib/pipeline.js の os import 漏れ修正",
+  "worktree": true,
+  "notes": [
+    "draft Q1: Issue #170 意図確認 [1]承認",
+    "draft Q2: 検証方法=[1]該当2テストのみ",
+    "test: 既存受け入れテスト2件を検証に使用、新規テストなし",
+    "finalize.mode: [1] all"
+  ],
+  "metrics": {
+    "draft": {
+      "question": 1
+    },
+    "gate-draft": {
+      "tokens": {
+        "input": 11340,
+        "output": 1646,
+        "cacheRead": 37120,
+        "cacheCreation": 0
+      },
+      "callCount": 2,
+      "responseChars": 3458
+    },
+    "gate": {
+      "tokens": {
+        "input": 28215,
+        "output": 1941,
+        "cacheRead": 20224,
+        "cacheCreation": 0
+      },
+      "callCount": 2,
+      "responseChars": 2360
+    },
+    "impl": {
+      "issueLog": 1
+    },
+    "gate-impl": {
+      "tokens": {
+        "input": 146899,
+        "output": 919,
+        "cacheRead": 18176,
+        "cacheCreation": 0
+      },
+      "callCount": 2,
+      "responseChars": 1341
+    }
+  },
+  "test": {
+    "summary": {
+      "acceptance": 2
+    }
+  },
+  "state": {
+    "finalizedAt": "2026-04-18T16:48:49.872Z"
+  }
+}

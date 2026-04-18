@@ -6,6 +6,7 @@
  */
 
 import fs from "fs";
+import os from "node:os";
 import path from "path";
 import { createTmpDir, removeTmpDir } from "../../helpers/tmp-dir.js";
 import { validate, loadJsonFile } from "../../../src/lib/config.js";
