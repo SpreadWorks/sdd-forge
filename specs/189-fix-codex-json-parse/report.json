@@ -1,0 +1,40 @@
+{
+  "data": {
+    "implementation": {
+      "diffStat": ".sdd-forge/config.json                            |  16 +-\n CHANGELOG.md                                      |  12 ++\n specs/189-fix-codex-json-parse/draft.md           | 134 +++++++++++++++++\n specs/189-fix-codex-json-parse/flow.json          | 175 ++++++++++++++++++++++\n specs/189-fix-codex-json-parse/issue-log.json     |  70 +++++++++\n specs/189-fix-codex-json-parse/qa.md              |   9 ++\n specs/189-fix-codex-json-parse/spec.md            |  95 ++++++++++++\n specs/189-fix-codex-json-parse/tests/README.md    |  31 ++++\n specs/189-fix-codex-json-parse/tests/spec.test.js | 174 +++++++++++++++++++++\n src/AGENTS.md                                     |  10 ++\n src/lib/agent.js                                  |  21 +--\n src/lib/config.js                                 |   1 -\n src/lib/provider.js                               |  33 ++--\n src/lib/types.js                                  |   1 -\n tests/unit/lib/provider.test.js                   |  26 +++-\n 15 files changed, 748 insertions(+), 60 deletions(-)",
+      "commits": [
+        "feat: feature/189-fix-codex-json-parse"
+      ]
+    },
+    "retro": null,
+    "issueLog": {
+      "count": 0,
+      "entries": []
+    },
+    "metrics": {
+      "docsRead": 1,
+      "srcRead": 1,
+      "question": 2,
+      "issueLog": 0
+    },
+    "tokenMetrics": {
+      "input": 362333,
+      "output": 6314,
+      "cacheRead": 70400,
+      "cacheCreation": 0,
+      "cost": null,
+      "callCount": 15
+    },
+    "tests": {
+      "unit": 1449,
+      "integration": 0,
+      "acceptance": 0,
+      "total": 1449
+    },
+    "sync": {
+      "status": "skipped",
+      "reason": "sync was skipped"
+    }
+  },
+  "text": "  Report\n\n  Implementation\n  ────────────────────────────────────────────────\n    feat: feature/189-fix-codex-json-parse\n    15 files changed, 748 insertions(+), 60 deletions(-)\n\n  Retro\n  ────────────────────────────────────────────────\n    -\n\n  Metrics\n  ────────────────────────────────────────────────\n    docs read ................... 1\n    src read .................... 1\n    Q&A ......................... 2\n    issue-log ................... 0\n    agent calls ................. 15\n    input tokens ................ 362,333\n    output tokens ............... 6,314\n    cache-read tokens ........... 70,400\n    cache-create tokens ......... 0\n    cost ........................ N/A\n\n  Tests\n  ────────────────────────────────────────────────\n    unit 1449  integration 0  acceptance 0  total 1449"
+}

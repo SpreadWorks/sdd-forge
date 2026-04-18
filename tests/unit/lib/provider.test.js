@@ -6,10 +6,10 @@ describe("Provider (abstract base)", () => {
   it("exposes the expected method surface", () => {
     const p = new Provider();
     assert.equal(typeof p.parse, "function");
-    assert.equal(typeof p.jsonFlag, "function");
     assert.equal(typeof p.systemPromptFlag, "function");
     assert.equal(typeof p.workDirFlag, "function");
     assert.equal(typeof p.builtinProfiles, "function");
+    assert.equal(typeof p.jsonFlag, "undefined");
   });
 
   it("parse() on the base class throws (abstract)", () => {
@@ -17,9 +17,8 @@ describe("Provider (abstract base)", () => {
     assert.throws(() => p.parse("ignored"));
   });
 
-  it("default jsonFlag/systemPromptFlag/workDirFlag/builtinProfiles return empty values", () => {
+  it("default systemPromptFlag/workDirFlag/builtinProfiles return empty values", () => {
     const p = new Provider();
-    assert.deepEqual(p.jsonFlag(), []);
     assert.equal(p.systemPromptFlag(), null);
     assert.equal(p.workDirFlag(), null);
     assert.deepEqual(p.builtinProfiles(), {});
@@ -41,10 +40,13 @@ describe("ClaudeProvider", () => {
     assert.equal(provider.workDirFlag(), null);
   });
 
-  it("jsonFlag returns a non-empty array for JSON output", () => {
-    const flag = provider.jsonFlag();
-    assert.ok(Array.isArray(flag));
-    assert.ok(flag.length > 0);
+  it("builtin profiles include '--output-format json' literally in args", () => {
+    const profiles = provider.builtinProfiles();
+    for (const [key, profile] of Object.entries(profiles)) {
+      const idx = profile.args.indexOf("--output-format");
+      assert.notEqual(idx, -1, `${key} must include '--output-format' in args`);
+      assert.equal(profile.args[idx + 1], "json");
+    }
   });
 
   it("parse() extracts text and usage from claude JSON envelope", () => {
@@ -106,6 +108,16 @@ describe("CodexProvider", () => {
       const args = profile.args || [];
       const cIdx = args.indexOf("-C");
       assert.equal(cIdx, -1, `profile must not bake in '-C' workdir flag: got ${JSON.stringify(args)}`);
+    }
+  });
+
+  it("builtin profiles include '--json' literally in args", () => {
+    const profiles = provider.builtinProfiles();
+    for (const [key, profile] of Object.entries(profiles)) {
+      assert.ok(
+        profile.args.includes("--json"),
+        `${key} must include '--json' in args: got ${JSON.stringify(profile.args)}`,
+      );
     }
   });
 });

@@ -149,13 +149,11 @@ class Agent {
       : prompt;
 
     const promptedArgs = substitutePromptToken(baseArgs, effectivePrompt);
-    const jsonFlag = provider.jsonFlag();
-    const jsonInjected = injectJsonFlag(jsonFlag, promptedArgs);
 
     const workDirFlag = provider.workDirFlag();
     const workDirInjected = workDirFlag
-      ? injectWorkDirFlag(workDirFlag, this._paths.agentWorkDir, jsonInjected)
-      : jsonInjected;
+      ? injectWorkDirFlag(workDirFlag, this._paths.agentWorkDir, promptedArgs)
+      : promptedArgs;
 
     const finalArgs = [...prefix, ...workDirInjected];
     const env = { ...process.env };
@@ -169,10 +167,9 @@ class Agent {
 
     // Stdin fallback: route the prompt via stdin instead of CLI args.
     const strippedArgs = stripPromptArgs(baseArgs);
-    const strippedJson = injectJsonFlag(jsonFlag, strippedArgs);
     const strippedFinal = workDirFlag
-      ? injectWorkDirFlag(workDirFlag, this._paths.agentWorkDir, strippedJson)
-      : strippedJson;
+      ? injectWorkDirFlag(workDirFlag, this._paths.agentWorkDir, strippedArgs)
+      : strippedArgs;
     return {
       finalArgs: [...prefix, ...strippedFinal],
       env,
@@ -299,16 +296,6 @@ function stripPromptArgs(args) {
     result.push(args[i]);
   }
   return result;
-}
-
-function injectJsonFlag(flagParts, args) {
-  if (!Array.isArray(flagParts) || flagParts.length === 0) return args;
-  const idx = args.findIndex((_, i) => flagParts.every((part, j) => args[i + j] === part));
-  if (idx !== -1) return args;
-  if (args.length > 0 && !args[0].startsWith("-")) {
-    return [args[0], ...flagParts, ...args.slice(1)];
-  }
-  return [...flagParts, ...args];
 }
 
 function injectWorkDirFlag(flag, workDir, args) {

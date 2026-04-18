@@ -4,10 +4,11 @@
  * Provider abstraction for AI agent CLIs.
  * Each Provider class encapsulates the per-CLI knowledge:
  *   - parse(stdout): output format parsing (JSON / NDJSON)
- *   - jsonFlag(): CLI flag(s) that request structured JSON output
  *   - systemPromptFlag(): CLI flag for system prompt (or null to inline)
  *   - workDirFlag(): CLI flag for working directory (or null if unsupported)
- *   - builtinProfiles(): profile dictionary owned by this provider
+ *   - builtinProfiles(): profile dictionary owned by this provider (args are
+ *                        used literally; callers must include any required
+ *                        CLI flags such as --json here)
  *
  * The ProviderRegistry composes built-in providers with user-defined
  * profiles and exposes lookup APIs for the Agent service.
@@ -18,10 +19,6 @@ class Provider {
 
   parse(_stdout) {
     throw new Error("Provider.parse() must be implemented by a subclass.");
-  }
-
-  jsonFlag() {
-    return [];
   }
 
   systemPromptFlag() {
@@ -54,10 +51,6 @@ class ClaudeProvider extends Provider {
     };
   }
 
-  jsonFlag() {
-    return ["--output-format", "json"];
-  }
-
   systemPromptFlag() {
     return "--system-prompt";
   }
@@ -70,11 +63,11 @@ class ClaudeProvider extends Provider {
     return {
       "claude/opus": {
         command: "claude",
-        args: ["-p", "{{PROMPT}}", "--model", "opus"],
+        args: ["-p", "{{PROMPT}}", "--model", "opus", "--output-format", "json"],
       },
       "claude/sonnet": {
         command: "claude",
-        args: ["-p", "{{PROMPT}}", "--model", "sonnet"],
+        args: ["-p", "{{PROMPT}}", "--model", "sonnet", "--output-format", "json"],
       },
     };
   }
@@ -108,10 +101,6 @@ class CodexProvider extends Provider {
     };
   }
 
-  jsonFlag() {
-    return [];
-  }
-
   systemPromptFlag() {
     return null;
   }
@@ -124,11 +113,11 @@ class CodexProvider extends Provider {
     return {
       "codex/gpt-5.4": {
         command: "codex",
-        args: ["exec", "-m", "gpt-5.4", "--full-auto", "{{PROMPT}}"],
+        args: ["exec", "--json", "-m", "gpt-5.4", "--full-auto", "{{PROMPT}}"],
       },
       "codex/gpt-5.3": {
         command: "codex",
-        args: ["exec", "-m", "gpt-5.3-codex", "--full-auto", "{{PROMPT}}"],
+        args: ["exec", "--json", "-m", "gpt-5.3-codex", "--full-auto", "{{PROMPT}}"],
       },
     };
   }
@@ -141,10 +130,6 @@ class UserProvider extends Provider {
   }
   parse(stdout) {
     return { text: stdout, usage: null };
-  }
-  jsonFlag() {
-    const v = this._profile.jsonOutputFlag;
-    return typeof v === "string" && v.length > 0 ? v.trim().split(/\s+/) : [];
   }
   systemPromptFlag() {
     return this._profile.systemPromptFlag || null;
@@ -189,8 +174,8 @@ class ProviderRegistry {
    * instance. Returns null when the profile key itself is unknown.
    *
    * When a profile references an unrecognized command, a generic
-   * `UserProvider` reads any provider hints (`systemPromptFlag`,
-   * `jsonOutputFlag`) directly from the profile entry.
+   * `UserProvider` reads any provider hints (`systemPromptFlag`) directly
+   * from the profile entry.
    */
   resolveProfile(profileKey) {
     if (!profileKey) return null;

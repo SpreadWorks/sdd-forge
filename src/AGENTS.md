@@ -501,6 +501,16 @@ const child = spawn("claude", args, {
 });
 ```
 
+### Provider の builtin profile: CLI フラグは args に literal 記述
+
+**Provider クラスの `builtinProfiles()` が返す `args` 配列には、必要な CLI フラグを literal に含めること。** `Agent._buildInvocation` はユーザー config の profile を literal に解釈し、JSON 出力フラグ等の暗黙注入は一切行わない。
+
+- JSON 出力フラグ（例: `--output-format json` for claude, `--json` for codex）は builtin profile の args に直接書く
+- ランタイムで値が決まるフラグ（例: workDir の `-C <path>`）のみ `Agent._buildInvocation` が自動注入する（`provider.workDirFlag()` + `paths.agentWorkDir`）
+- CLI フラグ名が将来変更されても、ユーザーは config.agent.providers で独自 profile を定義すれば対応可能
+
+**禁止:** Provider に `jsonFlag()` 相当のメソッドを追加し、それを Agent 側で自動注入する設計。config で上書きできない隠し動作となり、CLI フラグ名変更時に code 修正が必須となる。
+
 ---
 
 ## テスト

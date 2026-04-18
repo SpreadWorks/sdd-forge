@@ -4,6 +4,18 @@
 
 ### Breaking Changes
 
+#### Agent provider `jsonOutputFlag` removed; builtin profiles embed JSON flag literally
+
+The implicit JSON flag injection mechanism has been removed. `config.agent.providers.<key>.jsonOutputFlag` is no longer recognized and its auto-injection behavior is gone.
+
+**What changed:**
+
+- `ClaudeProvider` builtin profiles (`claude/opus`, `claude/sonnet`) now include `--output-format json` directly in `args`.
+- `CodexProvider` builtin profiles (`codex/gpt-5.4`, `codex/gpt-5.3`) now include `--json` directly in `args`. This fixes `agent output parse failed (CodexProvider): Unexpected token 'P'...` warnings and restores usage metrics recording for codex-backed agent calls.
+- `Provider.jsonFlag()` / subclass overrides and the `injectJsonFlag` helper in `Agent._buildInvocation` have been removed.
+
+**Migration:** If your `.sdd-forge/config.json` had a custom profile relying on `jsonOutputFlag`, add the corresponding CLI flag directly to that profile's `args` array instead. If you referenced the builtin profiles only, no change is needed — the flag is now already in the args.
+
 #### Agent command ID renamed to phase-based hierarchy
 
 Agent profile command IDs have been systematically renamed along phase-based axes.

@@ -1,0 +1,175 @@
+{
+  "spec": "specs/189-fix-codex-json-parse/spec.md",
+  "baseBranch": "main",
+  "featureBranch": "feature/189-fix-codex-json-parse",
+  "runId": "ad5a1860-90c9-4f1b-ae10-d101806c3446",
+  "lifecycle": "active",
+  "steps": [
+    {
+      "id": "branch",
+      "status": "done"
+    },
+    {
+      "id": "prepare-spec",
+      "status": "pending"
+    },
+    {
+      "id": "draft",
+      "status": "done"
+    },
+    {
+      "id": "gate-draft",
+      "status": "done"
+    },
+    {
+      "id": "spec",
+      "status": "done"
+    },
+    {
+      "id": "gate",
+      "status": "done"
+    },
+    {
+      "id": "approval",
+      "status": "done"
+    },
+    {
+      "id": "test",
+      "status": "done"
+    },
+    {
+      "id": "implement",
+      "status": "done"
+    },
+    {
+      "id": "gate-impl",
+      "status": "done"
+    },
+    {
+      "id": "review",
+      "status": "done"
+    },
+    {
+      "id": "finalize",
+      "status": "pending"
+    },
+    {
+      "id": "commit",
+      "status": "pending"
+    },
+    {
+      "id": "push",
+      "status": "pending"
+    },
+    {
+      "id": "merge",
+      "status": "pending"
+    },
+    {
+      "id": "pr-create",
+      "status": "pending"
+    },
+    {
+      "id": "branch-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "pr-merge",
+      "status": "pending"
+    },
+    {
+      "id": "sync-cleanup",
+      "status": "pending"
+    },
+    {
+      "id": "docs-update",
+      "status": "pending"
+    },
+    {
+      "id": "docs-review",
+      "status": "pending"
+    },
+    {
+      "id": "docs-commit",
+      "status": "pending"
+    }
+  ],
+  "requirements": [
+    {
+      "desc": "R1.1 codex/claude builtin profile で parse 成功",
+      "status": "done"
+    },
+    {
+      "desc": "R1.2 usage metrics が flow.json に記録される",
+      "status": "done"
+    },
+    {
+      "desc": "R1.3 stderr parse 失敗警告が出ない",
+      "status": "done"
+    },
+    {
+      "desc": "R2.1 config profile args が CLI に literal で渡る",
+      "status": "done"
+    },
+    {
+      "desc": "R2.2 CLI フラグ変更は config のみで対応可能",
+      "status": "done"
+    },
+    {
+      "desc": "R2.3 Provider 抽象からフラグ返却メソッド廃止",
+      "status": "done"
+    },
+    {
+      "desc": "R3.1 builtin args literal 記述規約を docs/AGENTS に明記",
+      "status": "done"
+    },
+    {
+      "desc": "R4.1 CHANGELOG に breaking change 記載",
+      "status": "done"
+    }
+  ],
+  "issue": 169,
+  "request": "#169 CodexProvider JSON parse 失敗の修正",
+  "worktree": true,
+  "notes": [
+    "Q1: CodexProvider の NDJSON parse 失敗への対応として解釈を確認、ユーザー承認",
+    "Q2: 対応方針は [a] CodexProvider.parse に非JSON行フォールバックを追加",
+    "Q3 (final): --json は builtinProfiles の args に直接含める。injectJsonFlag/jsonFlag/UserProvider.jsonOutputFlag は削除。config 側 profile は literal 使用。",
+    "implement: 方針確認済み（ユーザー指示「後は頼む」）。builtin args literal 記述 + injectJsonFlag/jsonFlag 削除 + CHANGELOG 更新。"
+  ],
+  "metrics": {
+    "plan": {
+      "docsRead": 1
+    },
+    "draft": {
+      "srcRead": 1,
+      "question": 2
+    },
+    "gate-draft": {
+      "callCount": 4,
+      "responseChars": 4426
+    },
+    "gate": {
+      "callCount": 1,
+      "responseChars": 1248
+    },
+    "gate-impl": {
+      "callCount": 10,
+      "responseChars": 13456,
+      "tokens": {
+        "input": 362333,
+        "output": 6314,
+        "cacheRead": 70400,
+        "cacheCreation": 0
+      }
+    }
+  },
+  "test": {
+    "summary": {
+      "unit": 1449
+    }
+  },
+  "state": {
+    "finalizedAt": "2026-04-18T09:19:44.679Z"
+  }
+}
