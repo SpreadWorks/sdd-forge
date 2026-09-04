@@ -92,12 +92,18 @@ import {
   CanonicalGatePromotion,
   CanonicalGatePublishedResultRecovery,
   canonicalGateNodeId,
+  taskGateSettlementIssueLogId,
 } from "./canonical-gate-artifacts.js";
+import {
+  attachedCanonicalCommandResultArtifact,
+  CanonicalCommandAttemptArtifactHistory,
+} from "./canonical-command-result.js";
 import { isCanonicalFlowState } from "./canonical-test-artifacts.js";
 import { readCurrentGateTransitionFacts } from "./gate-transition-facts.js";
 import { checkSpecGateReadiness } from "./spec-gate-readiness.js";
 import { CanonicalTaskContext } from "./task-canonical-context.js";
 import { captureCurrentTaskSource } from "./task-mutation-lineage.js";
+import { TaskGateSettlementAdmission } from "./canonical-flow-manager-store.js";
 
 export { resolveGateStepId };
 
@@ -1431,7 +1437,12 @@ async function checkGuardrail(root, targetText, phase, role, previouslyPassedIds
 // Read-only Gate observation support
 // ---------------------------------------------------------------------------
 
-import { gateReportPrescription, resolveGatePublicationRecovery, resolveGateTransition } from "../definition.js";
+import {
+  gateReportPrescription,
+  resolveGatePublicationRecovery,
+  resolveGateTransition,
+  resolveTaskGateSettlementRecovery,
+} from "../definition.js";
 
 const GATE_OBSERVATION_PHASES = VALID_GATE_PHASES;
 
@@ -3244,10 +3255,15 @@ export class RunGateCommand extends FlowCommand {
       phase,
     });
     if (existingFacts !== null) {
-      const recovery = resolveGatePublicationRecovery(existingFacts);
+      // Task settlement is considered before the generic publication
+      // recovery so a saved Task Gate result is reconciled without invoking
+      // its worker again.
+      const taskSettlementRecovery = resolveTaskGateSettlementRecovery(existingFacts);
+      const recovery = taskSettlementRecovery ?? resolveGatePublicationRecovery(existingFacts);
       if (recovery !== null) {
         const selected = state.nextAction();
-        if (selected?.operation !== "resume" || selected.action?.action !== "run-gate") {
+        if (taskSettlementRecovery === null
+          && (selected?.operation !== "resume" || selected.action?.action !== "run-gate")) {
           throw new Error(
             `canonical Gate publication recovery rejected; state selected ${selected?.operation ?? "no action"}`,
           );
@@ -3259,6 +3275,7 @@ export class RunGateCommand extends FlowCommand {
           nodeId,
           activeTaskId,
           facts: existingFacts,
+          recoveryDecision: recovery,
         }).rehydrate();
       }
       const decision = resolveGateTransition(existingFacts);
@@ -3672,11 +3689,44 @@ export class GateIssueLogEntry {
     if (result?.result !== "pass" && result?.result !== "fail") {
       throw new Error("gate issue-log entry requires a pass or fail result");
     }
-    const phase = result?.artifacts?.phase || ctx.phase;
+    let canonicalResult = result;
+    let taskFacts = null;
+    const taskDecision = ctx.gateTransitionDecision?.facts?.scope === "task"
+      ? ctx.gateTransitionDecision
+      : null;
+    if (taskDecision !== null) {
+      taskFacts = readCurrentGateTransitionFacts({
+        flowManager: ctx.flowManager,
+        flowState: ctx.flowManager.loadReadOnly(ctx.flowState.specId),
+        phase: "task-impl",
+      });
+      if (taskFacts === null || taskFacts.target.taskId !== taskDecision.facts.target.taskId) {
+        throw new Error("Task Gate issue-log entry requires current canonical Gate facts");
+      }
+      const source = ctx.flowManager.readProducerArtifact({
+        specId: taskFacts.target.specId,
+        nodeId: taskFacts.target.stepId,
+        logicalKey: "task.gate",
+        parameters: { taskId: taskFacts.target.taskId },
+      });
+      const history = CanonicalCommandAttemptArtifactHistory.fromBytes({
+        logicalKey: "task.gate", bytes: source.bytes,
+      });
+      const attached = attachedCanonicalCommandResultArtifact(result);
+      if (source.descriptor.hash !== taskFacts.catalogPublication.fingerprint
+        || source.descriptor.activityId !== taskFacts.catalogPublication.producerActivityId
+        || history.current.attempt !== taskFacts.currentAttempt.sequence
+        || attached?.logicalKey !== "task.gate"
+        || JSON.stringify(attached.payload) !== JSON.stringify(history.current.payload)) {
+        throw new Error("Task Gate issue-log result is not the current canonical result");
+      }
+      canonicalResult = attached.payload;
+    }
+    const phase = canonicalResult?.artifacts?.phase || ctx.phase;
     if (!phase) throw new Error("gate issue-log phase is unavailable");
-    const observations = result?.artifacts?.nextAction?.diagnosis?.observations || [];
-    const needsProgressIdentity = result.result === "fail"
-      && (result?.artifacts?.failureKind === "ai_semantic_fail" || observations.length > 0);
+    const observations = canonicalResult?.artifacts?.nextAction?.diagnosis?.observations || [];
+    const needsProgressIdentity = canonicalResult.result === "fail"
+      && (canonicalResult?.artifacts?.failureKind === "ai_semantic_fail" || observations.length > 0);
     const gitState = ctx.gitState || (needsProgressIdentity && GATE_OBSERVATION_PHASES.includes(phase)
       ? computeGateEvidenceState({
           executionRoot: ctx.executionRoot || ctx.root,
@@ -3685,44 +3735,46 @@ export class GateIssueLogEntry {
           phase,
         })
       : null);
-    const reasons = result?.artifacts?.issues?.length
-      ? result.artifacts.issues.join("; ")
+    const reasons = canonicalResult?.artifacts?.issues?.length
+      ? canonicalResult.artifacts.issues.join("; ")
       : observations.map((observation) => observation.observed).join("; ")
-        || (result?.artifacts?.reasons || []).map((reason) => reason.detail || reason).join("; ");
-    const taskGateStepId = phase === "task-impl" && result?.artifacts?.taskId
-      ? `${result.artifacts.taskId}-gate`
+        || (canonicalResult?.artifacts?.reasons || []).map((reason) => reason.detail || reason).join("; ");
+    const taskGateStepId = phase === "task-impl" && canonicalResult?.artifacts?.taskId
+      ? `${canonicalResult.artifacts.taskId}-gate`
       : null;
     const entry = {
       step: taskGateStepId || resolveGateStepId(phase),
-      level: result?.artifacts?.level,
+      level: canonicalResult?.artifacts?.level,
       phase,
-      reason: reasons || "gate FAIL (no details)",
+      reason: reasons || `gate ${canonicalResult.result.toUpperCase()} (no details)`,
       trigger: "gate post hook (auto)",
       timestamp: new Date().toISOString(),
-      passedGuardrails: buildPassedGuardrails(result?.artifacts?.evaluations),
+      passedGuardrails: buildPassedGuardrails(canonicalResult?.artifacts?.evaluations),
     };
     if (taskGateStepId !== null) {
-      const facts = readCurrentGateTransitionFacts({
-        flowManager: ctx.flowManager,
-        flowState: ctx.flowManager.loadReadOnly(ctx.flowState.specId),
-        phase,
-      });
-      if (facts === null || facts.target.taskId !== result.artifacts.taskId) {
+      if (taskFacts === null || taskFacts.target.taskId !== canonicalResult.artifacts.taskId) {
         throw new Error("Task Gate issue-log entry requires current canonical Gate facts");
       }
-      entry.taskId = facts.target.taskId;
+      entry.taskId = taskFacts.target.taskId;
       entry.gateReceipt = {
-        attempt: facts.currentAttempt.toJSON(),
-        catalogFingerprint: facts.catalogPublication.fingerprint,
-        lineage: facts.lineage.toJSON(),
+        attempt: taskFacts.currentAttempt.toJSON(),
+        catalogFingerprint: taskFacts.catalogPublication.fingerprint,
+        lineage: taskFacts.lineage.toJSON(),
       };
+      entry.issueLogId = taskGateSettlementIssueLogId({
+        runId: taskFacts.target.runId,
+        nodeId: taskFacts.target.stepId,
+        attempt: taskFacts.currentAttempt,
+        publicationActivityId: taskFacts.catalogPublication.producerActivityId,
+        catalogFingerprint: taskFacts.catalogPublication.fingerprint,
+      });
     }
     if (gitState && GATE_OBSERVATION_PHASES.includes(phase)) {
       entry.headSha = gitState.headSha;
       entry.worktreeHash = gitState.worktreeHash;
     }
     if (observations.length > 0) entry.observations = observations;
-    const failedEvaluations = buildFailedEvaluations(result?.artifacts?.evaluations);
+    const failedEvaluations = buildFailedEvaluations(canonicalResult?.artifacts?.evaluations);
     if (failedEvaluations.length > 0) entry.failedEvaluations = failedEvaluations;
     this.value = Object.freeze(entry);
     Object.freeze(this);
@@ -3735,10 +3787,19 @@ export class GateIssueLogEntry {
 
 export function appendIssueLogFromGateResult(ctx, result) {
   if (result?.result !== "pass" && result?.result !== "fail") return;
+  const decision = ctx.gateTransitionDecision;
+  const taskGate = (result?.artifacts?.phase || ctx.phase) === "task-impl"
+    && typeof result?.artifacts?.taskId === "string";
+  if (taskGate && decision?.facts?.scope !== "task") {
+    throw new Error("Task Gate issue-log settlement requires its Definition decision");
+  }
+  const entry = new GateIssueLogEntry({ ctx, result }).toJSON();
   appendCanonicalIssueLogEntry(
     ctx.flowManager,
     ctx.flowState,
-    new GateIssueLogEntry({ ctx, result }).toJSON(),
+    entry,
+    null,
+    decision?.facts?.scope === "task" ? new TaskGateSettlementAdmission(decision, "issue-log", entry) : undefined,
   );
 }
 

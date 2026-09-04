@@ -78,7 +78,7 @@ export function loadCanonicalIssueLog(flowManager, state, { consumerNodeId = sta
  * transaction.  No normal command may reconstruct `issue-log.json` from a
  * spec path or use the retired independent writer.
  */
-export function appendCanonicalIssueLogEntry(flowManager, state, entry, idempotencyKey = null) {
+export function appendCanonicalIssueLogEntry(flowManager, state, entry, idempotencyKey = null, admission = undefined) {
   if (state?.schemaRevision !== 3 || typeof state?.specId !== "string") {
     throw new Error("canonical issue-log append requires a Version-1 Flow state");
   }
@@ -90,6 +90,7 @@ export function appendCanonicalIssueLogEntry(flowManager, state, entry, idempote
     entry,
     idempotencyKey: idempotencyKey || entry?.issueLogId || entry?.grantId
       || canonicalIssueLogIdempotencyKey(state, entry),
+    admission,
   });
 }
 

@@ -104,6 +104,47 @@ export function canonicalGateRevision(state, nodeId) {
     .digest("hex");
 }
 
+/** Stable issue-log id for one published Task Gate result. */
+export function taskGateSettlementIssueLogId({ runId, nodeId, attempt, publicationActivityId, catalogFingerprint } = {}) {
+  const attemptId = requiredText(attempt?.id, "Task Gate issue-log Attempt id");
+  const sequence = Number.isSafeInteger(attempt?.sequence) && attempt.sequence > 0
+    ? attempt.sequence
+    : (() => { throw new Error("Task Gate issue-log Attempt sequence is invalid"); })();
+  return `task-gate-${crypto.createHash("sha256").update(JSON.stringify({
+    runId: requiredText(runId, "Task Gate issue-log runId"),
+    nodeId: requiredText(nodeId, "Task Gate issue-log nodeId"),
+    attemptId,
+    sequence,
+    publicationActivityId: requiredText(publicationActivityId, "Task Gate issue-log publication Activity id"),
+    catalogFingerprint: requiredText(catalogFingerprint, "Task Gate issue-log catalog fingerprint"),
+  })).digest("hex")}`;
+}
+
+/** Stable publisher Activity id for the one issue-log effect of a Task Gate result. */
+export function taskGateSettlementIssueLogActivityId({ issueLogId } = {}) {
+  return `task-gate-issue-log-${crypto.createHash("sha256")
+    .update(requiredText(issueLogId, "Task Gate issue-log id"))
+    .digest("hex")}`;
+}
+
+/** Stable Activity id for one Task Gate result's reset or increment metric. */
+export function taskGateSettlementMetricActivityId({ publicationActivityId, nodeId, attempt, operation } = {}) {
+  const attemptId = requiredText(attempt?.id, "Task Gate metric Attempt id");
+  const sequence = Number.isSafeInteger(attempt?.sequence) && attempt.sequence > 0
+    ? attempt.sequence
+    : (() => { throw new Error("Task Gate metric Attempt sequence is invalid"); })();
+  if (operation !== "increment" && operation !== "reset") {
+    throw new Error("Task Gate metric operation is invalid");
+  }
+  const digest = crypto.createHash("sha256").update(JSON.stringify({
+    publicationActivityId: requiredText(publicationActivityId, "Task Gate metric publication Activity id"),
+    nodeId: requiredText(nodeId, "Task Gate metric nodeId"),
+    attempt: { id: attemptId, sequence },
+    operation,
+  })).digest("hex");
+  return `task-gate-metric-${digest}`;
+}
+
 /**
  * Catalog-only reader for V1 gate inputs.  Gate consumers obtain opaque
  * bytes from FlowManager; only this boundary parses the established JSON
@@ -251,7 +292,7 @@ export class CanonicalGatePromotion {
  * Gate a second time.
  */
 export class CanonicalGatePublishedResultRecovery {
-  constructor({ flowManager, state, phase, nodeId = null, activeTaskId = null, facts } = {}) {
+  constructor({ flowManager, state, phase, nodeId = null, activeTaskId = null, facts, recoveryDecision = null } = {}) {
     if (!flowManager || typeof flowManager.readProducerArtifact !== "function") {
       throw new Error("canonical Gate publication recovery requires FlowManager producer reads");
     }
@@ -266,8 +307,15 @@ export class CanonicalGatePublishedResultRecovery {
     if (this.state.current?.at(-1) !== this.nodeId || this.state.attempt?.nodeId !== this.nodeId) {
       throw new Error("canonical Gate publication recovery requires the active producer Attempt");
     }
-    if (!(facts instanceof GateTransitionFacts) || !facts.postPublication.requiresReconciliation) {
-      throw new Error("canonical Gate publication recovery requires an unclassified current Gate result");
+    if (!(facts instanceof GateTransitionFacts)) {
+      throw new Error("canonical Gate publication recovery requires a current recoverable Gate result");
+    }
+    if (facts.scope === "task") {
+      if (recoveryDecision?.facts !== facts || recoveryDecision?.disposition?.operation !== "reconcile") {
+        throw new Error("Task Gate settlement recovery requires its exact Definition reconciliation decision");
+      }
+    } else if (!facts.postPublication.requiresReconciliation) {
+      throw new Error("canonical Gate publication recovery requires a current recoverable Gate result");
     }
     if (facts.phase !== this.phase || facts.target.stepId !== this.nodeId
       || facts.target.taskId !== this.taskId

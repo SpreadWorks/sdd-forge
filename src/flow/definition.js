@@ -62,6 +62,7 @@ import {
   GateProducerOwnership,
   GateTargetBinding,
   GateTaskLifecycle,
+  TaskGateSettlementProgress,
   GateTransitionFacts,
 } from "./lib/gate-transition.js";
 import {
@@ -105,6 +106,7 @@ export {
   GateProducerOwnership,
   GateTargetBinding,
   GateTaskLifecycle,
+  TaskGateSettlementProgress,
   GateTransitionFacts,
   NonGateAttemptIdentity,
   NonGateCatalogPublication,
@@ -748,10 +750,31 @@ export function resolveGatePublicationRecovery(facts) {
   if (!(facts instanceof GateTransitionFacts)) {
     throw new Error("resolveGatePublicationRecovery requires GateTransitionFacts");
   }
-  if (!facts.postPublication.requiresReconciliation || facts.integrityFailure !== null) return null;
+  if (facts.integrityFailure !== null) return null;
+  // Non-Task Gates retain their original publication-only recovery path:
+  // no classification is needed until the normal transition reducer runs.
+  if (facts.scope !== "task") {
+    return facts.postPublication.requiresReconciliation
+      ? gateDecision(facts, new GateReconcilePublicationDisposition(GATE_TRANSITION_TOKEN), { updates: [] })
+      : null;
+  }
+  const classified = resolveGateClassification(facts);
+  const taskSettlementIncomplete = facts.taskSettlementProgress.requiresReconciliation({
+    classificationRequired: facts.result === "fail",
+    metricEffect: classified.plan.retryMetric,
+    issueLogRequired: facts.result === "pass" || facts.result === "fail",
+    terminalLifecycleRequired: classified.plan.updates.some((update) => update.status === "done"),
+  });
+  if (!facts.postPublication.requiresReconciliation && !taskSettlementIncomplete) return null;
   return gateDecision(facts, new GateReconcilePublicationDisposition(GATE_TRANSITION_TOKEN), {
     updates: [],
   });
+}
+
+/** Task Gate-only alias that keeps post-publication settlement policy in Definition. */
+export function resolveTaskGateSettlementRecovery(facts) {
+  if (!(facts instanceof GateTransitionFacts) || facts.scope !== "task") return null;
+  return resolveGatePublicationRecovery(facts);
 }
 
 // Non-Gate transition policy is intentionally independent from the Gate
@@ -2652,6 +2675,22 @@ function resolveGateLifecycle(input) {
   }
 
   const decision = input.gateTransitionDecision;
+  if (decision.facts.scope === "task") {
+    const progress = decision.facts.taskSettlementProgress;
+    if (decision.plan.retryMetric !== null && !progress.hasMetric(decision.plan.retryMetric)) {
+      return [new IncrementMetric({
+        phase: decision.plan.retryMetric.phase,
+        counter: "gateRetry",
+      })];
+    }
+    if ((decision.facts.result === "pass" || decision.facts.result === "fail") && !progress.issueLogRecorded) {
+      return [new AppendIssueLog({ source: "gate-result" })];
+    }
+    return decision.plan.updates.map((update) => new SetStepStatus({
+      step: update.stepId,
+      status: update.status,
+    }));
+  }
   const actions = decision.plan.updates.map((update) => new SetStepStatus({
     step: update.stepId,
     status: update.status,

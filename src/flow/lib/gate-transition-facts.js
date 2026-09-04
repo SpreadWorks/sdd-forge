@@ -6,9 +6,15 @@
  * definition.js.  Commands must not reconstruct any of these identities
  * from their invocation arguments or process-local state.
  */
-import { GateFailureCategory, GateTaskBudget, GateTaskLifecycle, GateTransitionFacts } from "./gate-transition.js";
+import { GateFailureCategory, GateTaskBudget, GateTaskLifecycle, GateTransitionFacts, TaskGateSettlementProgress } from "./gate-transition.js";
 import { CanonicalCommandAttemptArtifactHistory } from "./canonical-command-result.js";
-import { canonicalGateNodeId, canonicalGateRevision } from "./canonical-gate-artifacts.js";
+import {
+  canonicalGateNodeId,
+  taskGateSettlementIssueLogActivityId,
+  canonicalGateRevision,
+  taskGateSettlementIssueLogId,
+  taskGateSettlementMetricActivityId,
+} from "./canonical-gate-artifacts.js";
 import { inspectCanonicalPlanGateRepair } from "./plan-gate-repair.js";
 import { evaluateReviewFindingGateReadiness } from "./review-finding-gate-readiness.js";
 import { captureCurrentTaskSource } from "./task-mutation-lineage.js";
@@ -208,8 +214,8 @@ function resultFailure(payload, attempt) {
   return (artifact ?? attemptFailure).toJSON();
 }
 
-function currentGateActivity({ flowManager, state, nodeId, attempt }) {
-  const matches = flowManager.activityLedger(state.specId).filter((activity) => (
+function currentGateActivity({ activities, nodeId, attempt }) {
+  const matches = activities.filter((activity) => (
     activity.nodeId === nodeId
     && activity.attemptId === attempt.id
     && activity.sequence === attempt.sequence
@@ -218,6 +224,108 @@ function currentGateActivity({ flowManager, state, nodeId, attempt }) {
   // Attempt may have a start Activity too, so select the catalog-associated
   // activity below rather than relying on chronology.
   return matches;
+}
+
+function taskGateSettlementProgress({ flowManager, state, nodeId, taskId, attempt, publication, catalogFingerprint, lineage, activities, producerActivities, failure, classificationRecorded }) {
+  const orderedActivities = activities.map((activity) => {
+    if (!Number.isSafeInteger(activity.confirmationOrder)) {
+      throw new Error("Task Gate settlement Activity ordering is unavailable");
+    }
+    return activity;
+  });
+  let classificationOrder = publication.confirmationOrder;
+  if (failure !== null) {
+    const classifications = producerActivities.filter((activity) => (
+      activity.transition?.operation === "fail_attempt"
+      && activity.confirmationOrder >= publication.confirmationOrder
+    ));
+    if (classifications.length > 1) {
+      throw new Error("Task Gate settlement has duplicate semantic classification effects");
+    }
+    const classification = classifications[0] ?? null;
+    if (classificationRecorded !== (classification !== null)) {
+      throw new Error("Task Gate settlement classification evidence is inconsistent");
+    }
+    if (classification !== null && (classification.failure?.category !== failure.category
+      || classification.failure?.code !== failure.code)) {
+      throw new Error("Task Gate settlement classification does not match its canonical result");
+    }
+    classificationOrder = classification?.confirmationOrder ?? null;
+  }
+  const metricOperations = ["increment", "reset"].filter((operation) => {
+    const id = taskGateSettlementMetricActivityId({
+      publicationActivityId: publication.id, nodeId, attempt, operation,
+    });
+    const matching = orderedActivities.filter((candidate) => candidate.id === id);
+    if (matching.length > 1) throw new Error("Task Gate settlement has duplicate metric Activities");
+    const activity = matching[0] ?? null;
+    if (activity === null) return false;
+    if (activity.confirmationOrder <= publication.confirmationOrder
+      || (classificationOrder !== null && activity.confirmationOrder <= classificationOrder)) {
+      throw new Error("Task Gate settlement metric Activity was recorded before its prerequisite");
+    }
+    if (activity.transition?.operation !== "record_metric"
+      || activity.nodeId !== taskId
+      || activity.metric?.phase !== "task-impl"
+      || activity.metric?.counter !== "gateRetry"
+      || (activity.metric.reset === true ? "reset" : "increment") !== operation) {
+      throw new Error("Task Gate settlement metric Activity does not match its stable identity");
+    }
+    return true;
+  });
+  if (new Set(metricOperations).size !== metricOperations.length) {
+    throw new Error("Task Gate settlement has duplicate metric effects");
+  }
+  const issueLog = flowManager.readArtifact({
+    specId: state.specId, logicalKey: "issue.log", consumerNodeId: nodeId, optional: true,
+  });
+  let issueLogRecorded = false;
+  if (issueLog !== null) {
+    const document = JSON.parse(issueLog.bytes.toString("utf8"));
+    const issueLogId = taskGateSettlementIssueLogId({
+      runId: state.runId, nodeId, attempt: state.attempt,
+      publicationActivityId: publication.id, catalogFingerprint,
+    });
+    const matching = (document?.entries || []).filter((entry) => (
+      entry?.issueLogId === issueLogId
+    ));
+    if (matching.length > 1) throw new Error("Task Gate settlement has duplicate issue-log effects");
+    if (matching.length === 1) {
+      const entry = matching[0];
+      const matchingActivities = orderedActivities.filter((candidate) => candidate.id === taskGateSettlementIssueLogActivityId({ issueLogId }));
+      if (matchingActivities.length !== 1) {
+        throw new Error("Task Gate settlement issue-log Activity is unavailable");
+      }
+      const activity = matchingActivities[0];
+      const metricOrders = metricOperations.map((operation) => (
+        orderedActivities.find((candidate) => candidate.id === taskGateSettlementMetricActivityId({
+          publicationActivityId: publication.id, nodeId, attempt, operation,
+        }))?.confirmationOrder
+      ));
+      if (activity.transition?.operation !== "publish_artifacts"
+        || activity.nodeId !== nodeId
+        || activity.attemptId !== attempt.id
+        || activity.sequence !== attempt.sequence
+        || activity.confirmationOrder <= publication.confirmationOrder
+        || (classificationOrder !== null && activity.confirmationOrder <= classificationOrder)
+        || metricOrders.some((order) => order === undefined || activity.confirmationOrder <= order)
+        || entry?.taskId !== taskId
+        || entry?.step !== nodeId
+        || entry?.gateReceipt?.attempt?.id !== attempt.id
+        || entry?.gateReceipt?.attempt?.sequence !== attempt.sequence
+        || entry?.gateReceipt?.catalogFingerprint !== catalogFingerprint
+        || JSON.stringify(entry?.gateReceipt?.lineage) !== JSON.stringify(lineage)) {
+        throw new Error("Task Gate settlement issue-log effect is out of order or not bound to its canonical result");
+      }
+    }
+    issueLogRecorded = matching.length === 1;
+  }
+  return new TaskGateSettlementProgress({
+    classificationRecorded,
+    metricOperations,
+    issueLogRecorded,
+    terminalLifecycleRecorded: false,
+  });
 }
 
 /**
@@ -235,12 +343,18 @@ export function readCurrentGateTransitionFacts({ flowManager, flowState, phase, 
   }
   const specId = required(flowState?.specId, "gate Flow specId");
   const currentView = flowManager.loadReadOnly(specId);
-  const state = flowManager.canonicalState(specId);
+  const taskId = currentView.currentTaskId ?? null;
+  const snapshot = taskId === null ? null : flowManager.readCanonicalTransitionSnapshot?.(specId) ?? null;
+  if (taskId !== null && snapshot === null) {
+    throw new Error("Task Gate transition facts require a canonical transition snapshot");
+  }
+  const state = taskId === null
+    ? flowManager.canonicalState(specId)
+    : snapshot?.state ?? null;
   if (state === null || state.current === null || state.attempt === null) return null;
   if (currentView?.runId !== state.runId || currentView?.specId !== state.specId) {
     throw new Error("canonical Gate projected state does not match its persisted identity");
   }
-  const taskId = currentView.currentTaskId ?? null;
   const nodeId = canonicalGateNodeId({ phase: required(phase, "gate phase"), taskId });
   if (state.current.at(-1) !== nodeId || state.attempt.nodeId !== nodeId) return null;
   const attempt = state.attempt;
@@ -291,8 +405,9 @@ export function readCurrentGateTransitionFacts({ flowManager, flowState, phase, 
       }
     }
   }
-  const activities = currentGateActivity({ flowManager, state, nodeId, attempt });
-  const publication = activities.find((activity) => activity.id === resultSource.descriptor.activityId) ?? null;
+  const activities = flowManager.activityLedger(state.specId);
+  const producerActivities = currentGateActivity({ activities, nodeId, attempt });
+  const publication = producerActivities.find((activity) => activity.id === resultSource.descriptor.activityId) ?? null;
   if (publication === null) throw new Error("gate catalog publication is not owned by the current Attempt");
   if (publication.transition?.operation !== "publish_artifacts"
     && publication.transition?.operation !== "fail_attempt"
@@ -319,7 +434,7 @@ export function readCurrentGateTransitionFacts({ flowManager, flowState, phase, 
       throw new Error("canonical semantic Gate failure requires source evidence");
     }
     if (source !== null) {
-    const sourceActivity = activities.find((activity) => activity.id === source.descriptor.activityId) ?? null;
+    const sourceActivity = producerActivities.find((activity) => activity.id === source.descriptor.activityId) ?? null;
     if (sourceActivity === null) throw new Error("gate source publication is not owned by the current Attempt");
     const sourcePayload = JSON.parse(source.bytes.toString("utf8"));
     if (sourcePayload?.phase !== persistedPhase || sourcePayload?.result !== "fail") {
@@ -363,9 +478,18 @@ export function readCurrentGateTransitionFacts({ flowManager, flowState, phase, 
   const repairEvidence = payload.result === "fail" && failureCategory === "semantic"
     ? inspectCanonicalPlanGateRepair({ flowManager, state })
     : null;
+  const lineage = {
+    sourceAttempt: { id: attempt.id, sequence: attempt.sequence },
+    canonicalAttempt: { id: attempt.id, sequence: attempt.sequence },
+    sourceFingerprint,
+    canonicalFingerprint: resultSource.descriptor.hash,
+    sourceRevisionFingerprint,
+    canonicalRevisionFingerprint,
+  };
   return new GateTransitionFacts({
     phase: persistedPhase,
     scope: scopeFor(persistedPhase, taskId),
+    snapshotRevision: snapshot?.revision ?? null,
     producer: {
       runId: state.runId, specId: state.specId, activityId: publication.id, phase: persistedPhase,
       scope: scopeFor(persistedPhase, taskId), taskId, stepId: nodeId,
@@ -383,14 +507,7 @@ export function readCurrentGateTransitionFacts({ flowManager, flowState, phase, 
     taskBudget: taskId === null ? null : new GateTaskBudget({
       round: flowManager.taskMutationLineages({ specId: state.specId, taskId }).at(-1)?.budget.round,
     }),
-    lineage: {
-      sourceAttempt: { id: attempt.id, sequence: attempt.sequence },
-      canonicalAttempt: { id: attempt.id, sequence: attempt.sequence },
-      sourceFingerprint,
-      canonicalFingerprint: resultSource.descriptor.hash,
-      sourceRevisionFingerprint,
-      canonicalRevisionFingerprint,
-    },
+    lineage,
     recoveryEvidence: payload.result === "recovered"
       ? { kind: "recovered", attempt: { id: attempt.id, sequence: attempt.sequence }, fingerprint: resultSource.descriptor.hash }
       : repairEvidence !== null
@@ -401,5 +518,11 @@ export function readCurrentGateTransitionFacts({ flowManager, flowState, phase, 
       ? integrationReviewReadiness({ flowManager, state })
       : null,
     taskLifecycle: taskLifecycleFor(state, taskId),
+    taskSettlementProgress: taskId === null ? null : taskGateSettlementProgress({
+      flowManager, state, nodeId, taskId, attempt, publication, activities, producerActivities, failure,
+      catalogFingerprint: resultSource.descriptor.hash,
+      lineage,
+      classificationRecorded: payload.result !== "fail" || attempt.failure !== null,
+    }),
   });
 }

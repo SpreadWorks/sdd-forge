@@ -11,6 +11,8 @@
 
 import { CurrentAttemptIdentity } from "./current-flow-state.js";
 import { DefinitionFailureOwnership } from "./definition-failure-ownership.js";
+import { CanonicalCommandAttemptArtifactHistory } from "./canonical-command-result.js";
+import { TaskStepIdentity } from "./task-step-identity.js";
 
 function nonEmptyText(value, field) {
   if (typeof value !== "string" || value.trim() === "") {
@@ -54,6 +56,28 @@ function failureFacts(error, fallbackCode) {
   };
 }
 
+function hasPublishedCurrentTaskGateResult(flowManager, state, expectedAttempt) {
+  const nodeId = state.current?.at(-1) ?? null;
+  const taskStep = TaskStepIdentity.fromStateNode(
+    flowManager.loadReadOnly(state.specId),
+    nodeId,
+  );
+  if (taskStep?.definitionId !== "task-gate" || !expectedAttempt.matches(state)) return false;
+  const source = flowManager.readProducerArtifact({
+    specId: state.specId,
+    nodeId,
+    logicalKey: "task.gate",
+    parameters: { taskId: taskStep.taskId },
+    optional: true,
+  });
+  if (source === null) return false;
+  const history = CanonicalCommandAttemptArtifactHistory.fromBytes({
+    logicalKey: "task.gate",
+    bytes: source.bytes,
+  });
+  return history.current.attempt === expectedAttempt.sequence;
+}
+
 /** One exact definition-owned command attempt, captured before pre hooks. */
 export class DefinitionLifecycleAttemptBinding {
   constructor({ specId, runId, commandName, attempt, state, flowManager } = {}) {
@@ -95,9 +119,18 @@ export class DefinitionLifecycleAttemptBinding {
 
   toolingFailure(error, fallbackCode) {
     const facts = failureFacts(error, fallbackCode);
-    const state = this.state;
+    const state = this.flowManager.canonicalState(this.specId);
+    if (state === null || state.runId !== this.runId || !this.attempt.matches(state)) return false;
+    // A published Task Gate result has crossed the producer boundary. Its
+    // Definition-owned settlement must resume from catalog evidence; a
+    // dispatcher fallback may not overwrite it as a tooling failure.
+    if (hasPublishedCurrentTaskGateResult(this.flowManager, state, this.attempt)) return false;
     const action = lifecycleActionFor(state);
     if (action === null || action.nodeId !== this.attempt.nodeId) return false;
+    const taskStep = TaskStepIdentity.fromStateNode(
+      this.flowManager.loadReadOnly(this.specId),
+      action.nodeId,
+    );
     const contract = state.definition.contractFor(this.attempt.nodeId, state.root);
     const retryable = action.action.failurePolicy.value === "retry"
       && contract.remainingRetries(state.attempt.consumption, "tooling") > 0;
@@ -118,6 +151,12 @@ export class DefinitionLifecycleAttemptBinding {
         confirmedAt: new Date().toISOString(),
         artifactRefs: [],
       },
+      ...(taskStep?.definitionId === "task-gate" ? {
+          taskGateFallback: {
+            nodeId: action.nodeId,
+            taskId: taskStep.taskId,
+          },
+        } : {}),
     });
   }
 

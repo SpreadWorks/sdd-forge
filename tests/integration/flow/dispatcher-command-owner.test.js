@@ -516,19 +516,20 @@ test("dispatcher executes materialized task review and gate commands through the
           async execute() { return { result: "ok" }; }
         }
         let postCalls = 0;
+        let postCompleted = false;
         flowCommands.run[scenario.command] = {
           requiresFlow: true,
           args: { flags: ["--expect-no-issue"], options: ["--phase", "--expect-run-id", "--expect-spec", "--expect-issue", "--expect-binding"] },
           command: async () => ({ default: TaskCommandStub }),
           async post() {
             postCalls += 1;
-            flow.settle(`T-1-${scenario.command === "review" ? "review" : "gate"}`);
+            postCompleted = true;
           },
         };
         const action = taskReviewAction("T-1", scenario.step, scenario.action, scenario.key);
         let workerCalls = 0;
         const dispatcher = new RunDispatchCommand({
-          nextAction: { async run() { return flow.state().currentNodeId === `T-1-${scenario.command === "review" ? "review" : "gate"}` ? structuredClone(action) : completedAction(); } },
+          nextAction: { async run() { return postCompleted ? completedAction() : structuredClone(action); } },
           agent: { async call() { workerCalls += 1; } },
           repositoryFingerprint: () => `dispatcher-task-${scenario.command}-fingerprint`,
           leaseFactory: () => ({ acquire() {}, release() {} }),

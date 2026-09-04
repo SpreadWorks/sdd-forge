@@ -664,6 +664,13 @@ class RegistryLifecycleAdapter {
       if (effect === null || effect === undefined || effect.phase !== phase) {
         throw new Error("gate retry metric requires the Definition-selected Gate retry plan");
       }
+      if (decision.facts.scope === "task") {
+        this.ctx.flowManager.recordTaskGateSettlementMetric({
+          specId: this.ctx.specId ?? this.ctx.flowState.specId,
+          decision,
+        });
+        return;
+      }
       this.ctx.flowManager.appendMetric({
         phase,
         counter: "gateRetry",
@@ -877,9 +884,67 @@ class RegistryLifecycleAdapter {
   }
 }
 
+/** Applies one Definition-selected Task Gate settlement effect per canonical iteration. */
+export class TaskGateSettlementCoordinator {
+  constructor({ ctx, input, result, err } = {}) {
+    if (ctx?.gateTransitionDecision?.facts.scope !== "task") {
+      throw new Error("Task Gate settlement coordinator requires a Task Gate decision");
+    }
+    this.ctx = ctx;
+    this.input = input;
+    this.result = result;
+    this.err = err;
+    Object.freeze(this);
+  }
+
+  async apply() {
+    // Every effect is a separate canonical mutation.  Refresh facts and the
+    // Definition decision after each one so a reload/fault resumes at the
+    // first missing effect without repeating prior metrics or issue records.
+    for (;;) {
+      this.ctx.flowState = this.ctx.flowManager.loadReadOnly(this.ctx.specId ?? this.ctx.flowState.specId);
+      const facts = readCurrentGateTransitionFacts({
+        flowManager: this.ctx.flowManager,
+        flowState: this.ctx.flowState,
+        phase: this.ctx.gateTransitionDecision.facts.phase,
+      });
+      if (facts === null) return;
+      this.ctx.gateTransitionDecision = resolveGateTransition(facts);
+      if (facts.result === "fail" && !facts.taskSettlementProgress.classificationRecorded) {
+        const stepAttempt = this.ctx.flowManager.recordGateObservationDecision({
+          specId: this.ctx.specId ?? this.ctx.flowState.specId,
+          decision: this.ctx.gateTransitionDecision,
+        });
+        if (stepAttempt !== null) this.result.stepAttempt = stepAttempt.toJSON();
+        continue;
+      }
+      const plan = resolveLifecyclePlan({
+        ...this.input,
+        gateTransitionDecision: this.ctx.gateTransitionDecision,
+        result: this.result,
+        error: this.err,
+        flowState: this.ctx.flowState,
+      });
+      const adapter = new RegistryLifecycleAdapter(this.ctx, this.result, this.err, { plan, input: this.input });
+      const action = adapter.actions[0] ?? null;
+      if (action === null) return;
+      // Retry/repair/defer routing remains owned by the ordinary Definition
+      // continuation after post effects are durable.  The coordinator only
+      // performs the terminal PASS lifecycle transition here.
+      if (action instanceof SetStepStatus && action.status !== "done") return;
+      await action.apply(adapter);
+      adapter.refreshFlowState();
+      if (action instanceof SetStepStatus && action.status === "done") return;
+    }
+  }
+}
+
 async function applyLifecycleActionsFromRegistry(ctx, input, result = null, err = null) {
   if (err?.code === "FINALIZATION_OUTBOX_RECOVERY_REQUIRED") return;
   const attempt = result?.stepAttempt ? StepAttempt.fromStored(result.stepAttempt) : null;
+  if (input?.event === "gate:post" && ctx.gateTransitionDecision?.facts.scope === "task") {
+    await new TaskGateSettlementCoordinator({ ctx, input, result, err }).apply();
+  } else {
   const plan = resolveLifecyclePlan({
     ...input,
     result,
@@ -888,9 +953,10 @@ async function applyLifecycleActionsFromRegistry(ctx, input, result = null, err 
     settleInProgressAsDone: attempt?.outcome instanceof DecisionOutcome,
   });
   const adapter = new RegistryLifecycleAdapter(ctx, result, err, { plan, input });
-  for (const action of adapter.actions) {
-    await action.apply(adapter);
-    if (action instanceof SetStepStatus) adapter.refreshFlowState();
+    for (const action of adapter.actions) {
+      await action.apply(adapter);
+      if (action instanceof SetStepStatus) adapter.refreshFlowState();
+    }
   }
   if (input?.pluginLifecycleHandled === true) return;
   const command = input?.command || input?.runtimeCommand || input?.key || result?.artifacts?.command;
@@ -1567,15 +1633,13 @@ export const FLOW_COMMANDS = {
               throw new Error("Definition-owned Gate recovery operation is unsupported");
             }
           }
-          if (ctx.gateTransitionDecision.facts.result === "fail") {
+          if (ctx.gateTransitionDecision.facts.scope !== "task"
+            && ctx.gateTransitionDecision.facts.result === "fail") {
             const stepAttempt = ctx.flowManager.recordGateObservationDecision({
               specId,
               decision: ctx.gateTransitionDecision,
             });
             if (stepAttempt !== null) result.stepAttempt = stepAttempt.toJSON();
-            // Failure recording changes only the persisted observation
-            // envelope. Re-read it so repair evidence is visible to the
-            // Definition reducer; registry still chooses no route.
             ctx.flowState = ctx.flowManager.loadReadOnly(specId);
             ctx.gateTransitionDecision = resolvePersistedPlanGateDecision(ctx, result);
           }

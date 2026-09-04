@@ -6,8 +6,13 @@ import { flowCommands } from "../../../src/lib/command-registry.js";
 import { dispatch } from "../../../src/lib/dispatcher.js";
 import { Envelope } from "../../../src/lib/flow-envelope.js";
 import { FlowManager } from "../../../src/lib/flow-manager.js";
-import { buildCurrentFlowDefinition, DEFINITION_FAILURE_OWNERS } from "../../../src/flow/definition.js";
-import { CanonicalFlowFixture } from "../../support/infrastructure/flow-setup.js";
+import { buildCurrentFlowDefinition, DEFINITION_FAILURE_OWNERS, resolveGateTransition } from "../../../src/flow/definition.js";
+import RunGateCommand, { appendIssueLogFromGateResult } from "../../../src/flow/lib/run-gate.js";
+import GetNextActionCommand from "../../../src/flow/lib/get-next-action.js";
+import { CanonicalGatePromotion } from "../../../src/flow/lib/canonical-gate-artifacts.js";
+import { readCurrentGateTransitionFacts } from "../../../src/flow/lib/gate-transition-facts.js";
+import { captureCurrentTaskSource } from "../../../src/flow/lib/task-mutation-lineage.js";
+import { CanonicalFlowFixture, TaskLifecycleFixture } from "../../support/infrastructure/flow-setup.js";
 import { createTmpDir, removeTmpDir } from "../../support/builders/tmp-dir.js";
 
 function commandContainer({ root, manager }) {
@@ -74,6 +79,120 @@ async function dispatchRegistryCommand({ root, manager, specId, commandName, Com
 
 async function dispatchRegistryFailure(input) {
   return dispatchRegistryCommand(input);
+}
+
+class RecoveryOnlyGateCommand extends RunGateCommand {
+  static workerCalls = 0;
+
+  async executeCanonicalTaskGate(input) {
+    RecoveryOnlyGateCommand.workerCalls += 1;
+    return super.executeCanonicalTaskGate(input);
+  }
+}
+
+function taskGateFixture({ root, specId, result: gateResult, publish = true }) {
+  const manager = new FlowManager({ root, mainRoot: root, inWorktree: false, specId });
+  new TaskLifecycleFixture({
+    flowManager: manager,
+    specId,
+    runId: `run-${specId}`,
+    request: "Resume every durable Task Gate settlement boundary.",
+    taskDocuments: [
+      { id: "T-1", title: "First", goal: "Settle the first Task Gate", parent: null, origin: "plan", added_round: 0, status: "pending" },
+      { id: "T-2", title: "Second", goal: "Receive the successor", parent: null, origin: "plan", added_round: 0, status: "pending" },
+    ],
+    taskId: "T-1",
+    targetStep: "task-gate",
+  }).create();
+  const sourceFingerprint = captureCurrentTaskSource({
+    root,
+    flowManager: manager,
+    state: manager.loadReadOnly(specId),
+    taskId: "T-1",
+  }).fingerprint;
+  const artifacts = gateResult === "pass"
+    ? { sourceFingerprint }
+    : {
+      failureKind: "ai_semantic_fail",
+      failureCode: "TASK_GATE_REJECTED",
+      sourceFingerprint,
+      nextAction: { diagnosis: { observations: [] } },
+    };
+  const result = new CanonicalGatePromotion({
+    state: manager.canonicalState(specId), phase: "task-impl", nodeId: "T-1-gate", activeTaskId: "T-1",
+  }).promote({ result: gateResult, artifacts });
+  if (publish) manager.publishCurrentAttemptResult({ specId, commandResult: result });
+  return { manager, result };
+}
+
+function taskGateDecision(manager, specId) {
+  return resolveGateTransition(readCurrentGateTransitionFacts({
+    flowManager: manager,
+    flowState: manager.loadReadOnly(specId),
+    phase: "task-impl",
+  }));
+}
+
+function taskGateAttemptHistorySize(manager, specId) {
+  const source = manager.readArtifact({
+    specId, logicalKey: "task.gate", parameters: { taskId: "T-1" }, consumerNodeId: "T-1-impl",
+  });
+  return JSON.parse(source.bytes.toString("utf8")).attempts.length;
+}
+
+function taskGateIssueEntries(manager, specId) {
+  const source = manager.readArtifact({
+    specId, logicalKey: "issue.log", consumerNodeId: "T-1-gate", optional: true,
+  });
+  if (source === null) return [];
+  return JSON.parse(source.bytes.toString("utf8")).entries.filter((entry) => (
+    entry.phase === "task-impl" && entry.taskId === "T-1"
+  ));
+}
+
+function applyTaskGateSettlementStage({ manager, root, specId, result, gateResult, stage }) {
+  let decision = taskGateDecision(manager, specId);
+  if (gateResult === "fail" && ["classification", "metric", "issue-log"].includes(stage)) {
+    const stepAttempt = manager.recordGateObservationDecision({ specId, decision });
+    if (stepAttempt !== null) result.stepAttempt = stepAttempt.toJSON();
+    decision = taskGateDecision(manager, specId);
+  }
+  if (["metric", "issue-log"].includes(stage)) {
+    manager.recordTaskGateSettlementMetric({ specId, decision });
+    decision = taskGateDecision(manager, specId);
+  }
+  if (stage === "issue-log") {
+    appendIssueLogFromGateResult({
+      root, mainRoot: root, executionRoot: root,
+      specId, flowManager: manager, flowState: manager.loadReadOnly(specId), phase: "task-impl",
+      gateTransitionDecision: decision,
+      gitState: { headSha: "a".repeat(40), worktreeHash: "b".repeat(64) },
+    }, result);
+  }
+}
+
+async function resumeTaskGateSettlement({ root, specId }) {
+  const manager = new FlowManager({ root, mainRoot: root, inWorktree: false, specId });
+  const attemptBefore = manager.canonicalState(specId).attempt;
+  const historyBefore = taskGateAttemptHistorySize(manager, specId);
+  const ctx = {
+    ...hookContext({ root, manager, specId }),
+    config: {},
+    phase: "task-impl",
+    gitState: { headSha: "a".repeat(40), worktreeHash: "b".repeat(64) },
+  };
+  RecoveryOnlyGateCommand.workerCalls = 0;
+  const result = await new RecoveryOnlyGateCommand().execute(ctx);
+  await flowCommands.run.gate.post(ctx, result);
+  assert.equal(RecoveryOnlyGateCommand.workerCalls, 0, "recovery must not invoke the Task Gate worker");
+  assert.equal(taskGateAttemptHistorySize(manager, specId), historyBefore, "recovery must not append a Gate result Attempt");
+  const matchingAttemptActivities = manager.activityLedger(specId).filter((activity) => (
+    activity.nodeId === "T-1-gate"
+    && activity.attemptId === attemptBefore.id
+    && activity.sequence === attemptBefore.sequence
+  ));
+  assert.ok(matchingAttemptActivities.length > 0);
+  return { manager, result, attemptBefore };
 }
 
 test("definition-owned registry command failures settle their exact active Attempt", async (t) => {
@@ -319,6 +438,244 @@ test("review and gate registry post failures settle the bound Attempt", async (t
         removeTmpDir(root);
       }
     });
+  }
+});
+
+test("published Task Gate post failure preserves the result and direct recovery settles without a worker", async () => {
+  const root = createTmpDir("definition-lifecycle-task-gate-publication-");
+  const entry = flowCommands.run.gate;
+  const originalCommand = entry.command;
+  const originalPost = entry.post;
+  try {
+    const specId = "907-task-gate-publication";
+    const manager = new FlowManager({ root, mainRoot: root, inWorktree: false, specId });
+    new TaskLifecycleFixture({
+      flowManager: manager,
+      specId,
+      runId: "run-task-gate-publication",
+      request: "Recover a published Task Gate result.",
+      taskDocuments: [{ id: "T-1", title: "Task", goal: "Exercise settlement", parent: null, origin: "plan", added_round: 0, status: "pending" }],
+      taskId: "T-1",
+      targetStep: "task-gate",
+    }).create();
+    const source = captureCurrentTaskSource({
+      root,
+      flowManager: manager,
+      state: manager.loadReadOnly(specId),
+      taskId: "T-1",
+    });
+    const published = new CanonicalGatePromotion({
+      state: manager.canonicalState(specId), phase: "task-impl", nodeId: "T-1-gate", activeTaskId: "T-1",
+    }).promote({ result: "pass", artifacts: { sourceFingerprint: source.fingerprint } });
+    class PublishedGateCommand extends Command {
+      static outputMode = "envelope";
+      execute() { return published; }
+    }
+    entry.command = async () => ({ default: PublishedGateCommand });
+    entry.post = (ctx, result) => {
+      ctx.flowManager.publishCurrentAttemptResult({ specId, commandResult: result });
+      throw Object.assign(new Error("Task Gate post failed after publication"), { code: "TASK_GATE_POST_AFTER_PUBLICATION" });
+    };
+    await dispatchRegistryCommand({ root, manager, specId, commandName: "gate", CommandClass: PublishedGateCommand });
+    assert.equal(manager.canonicalState(specId).attempt.failure, null, "fallback must not overwrite the published Task Gate result");
+    entry.post = originalPost;
+    const ctx = {
+      ...hookContext({ root, manager, specId }),
+      config: {},
+      phase: "task-impl",
+    };
+    const result = await new RunGateCommand().execute(ctx);
+    await entry.post(ctx, result);
+    assert.equal(manager.canonicalState(specId).findNode("T-1-gate").status, "done");
+    assert.equal(manager.activityLedger(specId).filter((activity) => activity.transition.operation === "record_metric").length, 1);
+  } finally {
+    entry.command = originalCommand;
+    entry.post = originalPost;
+    removeTmpDir(root);
+  }
+});
+
+test("Task Gate fallback admission rejects a result published after its initial read", async () => {
+  const root = createTmpDir("task-gate-fallback-publication-race-");
+  try {
+    const specId = "907-task-gate-fallback-race";
+    const { manager, result } = taskGateFixture({ root, specId, result: "pass", publish: false });
+    const failCurrentAttemptIfCurrent = manager.failCurrentAttemptIfCurrent.bind(manager);
+    let raced = false;
+    manager.failCurrentAttemptIfCurrent = (input) => {
+      raced = true;
+      manager.publishCurrentAttemptResult({ specId, commandResult: result });
+      return failCurrentAttemptIfCurrent(input);
+    };
+    const envelope = await dispatchRegistryFailure({
+      root, manager, specId, commandName: "gate", CommandClass: ThrowingCommand,
+    });
+    assert.equal(raced, true);
+    assert.equal(envelope.errors[0].code, "REGISTRY_COMMAND_FIXTURE_FAILED");
+    assert.equal(manager.canonicalState(specId).attempt.failure, null);
+    assert.equal(taskGateAttemptHistorySize(manager, specId), 1);
+    assert.equal(manager.activityLedger(specId).some((activity) => (
+      activity.nodeId === "T-1-gate"
+      && activity.transition.operation === "fail_attempt"
+      && activity.failure?.category === "tooling"
+    )), false);
+  } finally {
+    removeTmpDir(root);
+  }
+});
+
+test("Task Gate fallback records tooling failure when no result was published", async () => {
+  const root = createTmpDir("task-gate-fallback-unpublished-");
+  try {
+    const specId = "907-task-gate-fallback-unpublished";
+    const { manager } = taskGateFixture({ root, specId, result: "pass", publish: false });
+    const before = manager.canonicalState(specId).attempt;
+    const envelope = await dispatchRegistryFailure({
+      root, manager, specId, commandName: "gate", CommandClass: ThrowingCommand,
+    });
+    const state = manager.canonicalState(specId);
+    assert.equal(envelope.errors[0].code, "REGISTRY_COMMAND_FIXTURE_FAILED");
+    assert.equal(state.attempt.id, before.id, "fallback must settle the original Task Gate Attempt");
+    assert.equal(state.attempt.sequence, before.sequence);
+    assert.equal(state.attempt.failure.category, "tooling");
+    assert.equal(state.attempt.failure.code, "REGISTRY_COMMAND_FIXTURE_FAILED");
+    assert.equal(state.attempt.consumption.semantic, 0, "tooling fallback must not consume semantic retry budget");
+    assert.equal(manager.readProducerArtifact({
+      specId, nodeId: "T-1-gate", logicalKey: "task.gate", parameters: { taskId: "T-1" }, optional: true,
+    }), null, "unpublished fallback must not invent a Task Gate result");
+    assert.equal(state.findNode("T-1").status, "in_progress");
+    assert.equal(state.findNode("T-1-gate").status, "in_progress");
+  } finally {
+    removeTmpDir(root);
+  }
+});
+
+test("Task Gate PASS settlement resumes after every durable pre-terminal boundary", async (t) => {
+  for (const stage of ["publication", "metric", "issue-log"]) {
+    await t.test(stage, async () => {
+      const root = createTmpDir(`task-gate-pass-settlement-${stage}-`);
+      try {
+        const specId = `908-task-gate-pass-${stage}`;
+        const { manager, result } = taskGateFixture({ root, specId, result: "pass" });
+        applyTaskGateSettlementStage({ manager, root, specId, result, gateResult: "pass", stage });
+        const resumed = await resumeTaskGateSettlement({ root, specId });
+        const state = resumed.manager.canonicalState(specId);
+        assert.equal(state.findNode("T-1-gate").status, "done");
+        assert.equal(state.nextAction().nodeId, "T-2-impl");
+        const activities = resumed.manager.activityLedger(specId);
+        const publication = activities.find((activity) => (
+          activity.nodeId === "T-1-gate" && activity.transition.operation === "publish_artifacts"
+        ));
+        const metric = activities.filter((activity) => (
+          activity.transition.operation === "record_metric"
+          && activity.metric?.phase === "task-impl"
+          && activity.metric?.counter === "gateRetry"
+        ));
+        const issues = taskGateIssueEntries(resumed.manager, specId);
+        const issueDescriptor = resumed.manager.artifactCatalog(specId).artifacts.find((artifact) => (
+          artifact.logicalKey === "issue.log"
+        ));
+        const issueActivity = activities.find((activity) => activity.id === issueDescriptor.activityId);
+        const terminal = activities.find((activity) => (
+          activity.nodeId === "T-1-gate" && activity.transition.operation === "confirm_attempt"
+        ));
+        assert.equal(metric.length, 1, "PASS reset metric must be recorded once");
+        assert.equal(metric[0].metric.reset, true);
+        assert.equal(issues.length, 1, "PASS issue-log entry must be recorded once");
+        assert.ok(publication.confirmationOrder < metric[0].confirmationOrder);
+        assert.ok(metric[0].confirmationOrder < issueActivity.confirmationOrder);
+        assert.ok(issueActivity.confirmationOrder < terminal.confirmationOrder, "terminal lifecycle must be last");
+      } finally {
+        removeTmpDir(root);
+      }
+    });
+  }
+});
+
+test("Task Gate semantic settlement resumes after classification, metric, and issue-log boundaries", async (t) => {
+  for (const stage of ["publication", "classification", "metric", "issue-log"]) {
+    await t.test(stage, async () => {
+      const root = createTmpDir(`task-gate-fail-settlement-${stage}-`);
+      try {
+        const specId = `909-task-gate-fail-${stage}`;
+        const { manager, result } = taskGateFixture({ root, specId, result: "fail" });
+        applyTaskGateSettlementStage({ manager, root, specId, result, gateResult: "fail", stage });
+        const resumed = stage === "issue-log"
+          ? await (async () => {
+            const reloaded = new FlowManager({ root, mainRoot: root, inWorktree: false, specId });
+            const attemptBefore = reloaded.canonicalState(specId).attempt;
+            const historyBefore = taskGateAttemptHistorySize(reloaded, specId);
+            RecoveryOnlyGateCommand.workerCalls = 0;
+            const next = await new GetNextActionCommand().execute({
+              ...hookContext({ root, manager: reloaded, specId }), phase: "task-impl",
+            });
+            assert.equal(next.directive.actionId, "CLAIM_GATE_RETRY");
+            assert.equal(RecoveryOnlyGateCommand.workerCalls, 0);
+            assert.equal(taskGateAttemptHistorySize(reloaded, specId), historyBefore);
+            return { manager: reloaded, attemptBefore };
+          })()
+          : await resumeTaskGateSettlement({ root, specId });
+        const state = resumed.manager.canonicalState(specId);
+        assert.equal(state.current.at(-1), "T-1-gate");
+        assert.equal(state.attempt.id, resumed.attemptBefore.id);
+        assert.equal(state.attempt.sequence, resumed.attemptBefore.sequence);
+        assert.equal(state.attempt.failure.code, "TASK_GATE_REJECTED");
+        const next = await new GetNextActionCommand().execute({
+          ...hookContext({ root, manager: resumed.manager, specId }), phase: "task-impl",
+        });
+        assert.equal(next.directive.actionId, "CLAIM_GATE_RETRY");
+        const activities = resumed.manager.activityLedger(specId);
+        const publication = activities.find((activity) => (
+          activity.nodeId === "T-1-gate" && activity.transition.operation === "publish_artifacts"
+        ));
+        const classification = activities.filter((activity) => (
+          activity.nodeId === "T-1-gate" && activity.transition.operation === "fail_attempt"
+        ));
+        const metric = activities.filter((activity) => (
+          activity.transition.operation === "record_metric"
+          && activity.metric?.phase === "task-impl"
+          && activity.metric?.counter === "gateRetry"
+        ));
+        const issues = taskGateIssueEntries(resumed.manager, specId);
+        const issueDescriptor = resumed.manager.artifactCatalog(specId).artifacts.find((artifact) => (
+          artifact.logicalKey === "issue.log"
+        ));
+        const issueActivity = activities.find((activity) => activity.id === issueDescriptor.activityId);
+        assert.equal(classification.length, 1, "semantic classification must be recorded once");
+        assert.equal(metric.length, 1, "semantic retry metric must be recorded once");
+        assert.equal(metric[0].metric.reset, false);
+        assert.equal(issues.length, 1, "semantic issue-log entry must be recorded once");
+        assert.ok(publication.confirmationOrder < classification[0].confirmationOrder);
+        assert.ok(classification[0].confirmationOrder < metric[0].confirmationOrder);
+        assert.ok(metric[0].confirmationOrder < issueActivity.confirmationOrder);
+      } finally {
+        removeTmpDir(root);
+      }
+    });
+  }
+});
+
+test("Task Gate settlement rejects a stale decision after the canonical revision advances", () => {
+  const root = createTmpDir("task-gate-stale-settlement-");
+  try {
+    const specId = "910-task-gate-stale-settlement";
+    const { manager } = taskGateFixture({ root, specId, result: "pass" });
+    const decision = taskGateDecision(manager, specId);
+    manager.addNote("Concurrent canonical observation.", { specId });
+    const before = {
+      state: manager.canonicalState(specId).toJSON(),
+      activities: manager.activityLedger(specId),
+      catalog: manager.artifactCatalog(specId).toJSON(),
+    };
+    assert.throws(
+      () => manager.recordTaskGateSettlementMetric({ specId, decision }),
+      /stale|snapshot changed/,
+    );
+    assert.deepEqual(manager.canonicalState(specId).toJSON(), before.state);
+    assert.deepEqual(manager.activityLedger(specId), before.activities);
+    assert.deepEqual(manager.artifactCatalog(specId).toJSON(), before.catalog);
+  } finally {
+    removeTmpDir(root);
   }
 });
 

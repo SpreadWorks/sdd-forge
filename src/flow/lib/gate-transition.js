@@ -365,11 +365,62 @@ export class GateTaskBudget {
   toJSON() { return { round: this.round, maximumRounds: this.maximumRounds, finalRound: this.finalRound }; }
 }
 
+/** Read-only progress of the durable effects that follow a Task Gate result. */
+export class TaskGateSettlementProgress {
+  constructor({ classificationRecorded, metricOperations, issueLogRecorded, terminalLifecycleRecorded } = {}) {
+    if (typeof classificationRecorded !== "boolean" || typeof terminalLifecycleRecorded !== "boolean") {
+      throw new Error("Task Gate settlement lifecycle progress must be boolean");
+    }
+    if (!Array.isArray(metricOperations)
+      || metricOperations.some((operation) => !["increment", "reset"].includes(operation))) {
+      throw new Error("Task Gate settlement metric operations are invalid");
+    }
+    if (new Set(metricOperations).size !== metricOperations.length) {
+      throw new Error("Task Gate settlement metric operations must be unique");
+    }
+    if (metricOperations.length > 1) {
+      throw new Error("Task Gate settlement cannot record conflicting metric operations");
+    }
+    if (typeof issueLogRecorded !== "boolean") {
+      throw new Error("Task Gate settlement issue-log progress must be boolean");
+    }
+    if (terminalLifecycleRecorded && !issueLogRecorded) {
+      throw new Error("Task Gate terminal lifecycle requires its issue-log effect");
+    }
+    this.classificationRecorded = classificationRecorded;
+    this.metricOperations = Object.freeze([...metricOperations].sort());
+    this.issueLogRecorded = issueLogRecorded;
+    this.terminalLifecycleRecorded = terminalLifecycleRecorded;
+    Object.freeze(this);
+  }
+
+  hasMetric(effect) {
+    return effect !== null && this.metricOperations.includes(effect.operation);
+  }
+
+  requiresReconciliation({ classificationRequired = false, metricEffect = null, issueLogRequired = false, terminalLifecycleRequired = false } = {}) {
+    return (classificationRequired && !this.classificationRecorded)
+      || (metricEffect !== null && !this.hasMetric(metricEffect))
+      || (issueLogRequired && !this.issueLogRecorded)
+      || (terminalLifecycleRequired && !this.terminalLifecycleRecorded);
+  }
+
+  toJSON() {
+    return {
+      classificationRecorded: this.classificationRecorded,
+      metricOperations: [...this.metricOperations],
+      issueLogRecorded: this.issueLogRecorded,
+      terminalLifecycleRecorded: this.terminalLifecycleRecorded,
+    };
+  }
+}
+
 /** Complete input contract for a definition-owned Gate decision. */
 export class GateTransitionFacts {
   constructor({
     phase,
     scope = "flow",
+    snapshotRevision,
     producer,
     target,
     currentAttempt,
@@ -384,11 +435,15 @@ export class GateTransitionFacts {
     reviewReadiness = null,
     taskLifecycle = null,
     taskBudget = null,
+    taskSettlementProgress = null,
   } = {}) {
     this.phase = requiredText(phase, "gate phase");
     if (!GATE_PHASES.has(this.phase)) throw new Error("gate phase is invalid");
     this.scope = requiredText(scope, "gate scope");
     if (!GATE_SCOPES.has(this.scope)) throw new Error("gate scope is invalid");
+    this.snapshotRevision = snapshotRevision === null || snapshotRevision === undefined
+      ? null
+      : requiredText(snapshotRevision, "gate snapshot revision");
     this.producer = producer instanceof GateProducerOwnership ? producer : new GateProducerOwnership(producer);
     this.currentAttempt = currentAttempt instanceof GateAttemptIdentity ? currentAttempt : new GateAttemptIdentity(currentAttempt);
     this.target = target instanceof GateTargetBinding ? target : new GateTargetBinding(target);
@@ -425,6 +480,17 @@ export class GateTransitionFacts {
     }
     this.taskBudget = taskBudget === null ? null : (taskBudget instanceof GateTaskBudget ? taskBudget : new GateTaskBudget(taskBudget));
     if ((this.scope === "task") !== (this.taskBudget !== null)) throw new Error("gate Task budget must exist exactly for task scope");
+    this.taskSettlementProgress = taskSettlementProgress === null
+      ? null
+      : (taskSettlementProgress instanceof TaskGateSettlementProgress
+        ? taskSettlementProgress
+        : new TaskGateSettlementProgress(taskSettlementProgress));
+    if ((this.scope === "task") !== (this.taskSettlementProgress !== null)) {
+      throw new Error("gate Task settlement progress must exist exactly for task scope");
+    }
+    if ((this.scope === "task") !== (this.snapshotRevision !== null)) {
+      throw new Error("gate snapshot revision is required exactly for Task settlement scope");
+    }
     if ((this.result === "recovered") !== (this.recoveryEvidence.kind === "recovered")) {
       throw new Error("recovered gate result requires matching recovery evidence");
     }
@@ -470,7 +536,9 @@ export class GateTransitionFacts {
 
   toJSON() {
     return {
-      phase: this.phase, scope: this.scope, producer: this.producer.toJSON(), target: this.target.toJSON(),
+      phase: this.phase, scope: this.scope,
+      ...(this.snapshotRevision === null ? {} : { snapshotRevision: this.snapshotRevision }),
+      producer: this.producer.toJSON(), target: this.target.toJSON(),
       currentAttempt: this.currentAttempt.toJSON(), catalogPublication: this.catalogPublication.toJSON(),
       result: this.result, failure: this.failure?.toJSON() ?? null, retry: this.retry.toJSON(),
       lineage: this.lineage.toJSON(), recoveryEvidence: this.recoveryEvidence.toJSON(),
@@ -479,6 +547,7 @@ export class GateTransitionFacts {
       reviewReadiness: this.reviewReadiness?.toJSON() ?? null,
       taskLifecycle: this.taskLifecycle?.toJSON() ?? null,
       taskBudget: this.taskBudget?.toJSON() ?? null,
+      ...(this.scope === "task" ? { taskSettlementProgress: this.taskSettlementProgress.toJSON() } : {}),
     };
   }
 }

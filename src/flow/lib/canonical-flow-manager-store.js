@@ -121,6 +121,11 @@ import {
   RetryRecoveryReceipt,
 } from "./retry-recovery.js";
 import { validateUpgradeResultArtifact } from "./upgrade-result-artifact.js";
+import {
+  taskGateSettlementIssueLogActivityId,
+  taskGateSettlementIssueLogId,
+  taskGateSettlementMetricActivityId,
+} from "./canonical-gate-artifacts.js";
 import { TestReviewRepairWorkerTimeout } from "./test-review-repair-timeout.js";
 import {
   MissingProducerArtifactRecoveryAdmission,
@@ -335,6 +340,145 @@ class TestChainPlanAdmission {
       throw new CurrentFlowStateConflictError("Definition plan changed before test-chain settlement");
     }
   }
+}
+
+/** Reject dispatcher fallback if its Task Gate producer has published a result. */
+class TaskGateFallbackFailureAdmission {
+  constructor({ specId, runId, attempt, nodeId, taskId } = {}) {
+    this.specId = canonicalSpecId(specId);
+    this.runId = requiredText(runId, "Task Gate fallback runId");
+    this.attempt = CurrentAttemptIdentity.from(attempt);
+    this.nodeId = requiredText(nodeId, "Task Gate fallback nodeId");
+    this.taskId = requiredText(taskId, "Task Gate fallback taskId");
+    if (this.nodeId !== `${this.taskId}-gate`) {
+      throw new CurrentFlowStateInvariantError("Task Gate fallback node does not match its Task");
+    }
+    Object.freeze(this);
+  }
+
+  assert(view) {
+    const { state, catalog } = view;
+    const descriptors = Array.isArray(catalog) ? catalog : catalog.artifacts;
+    if (state.specId !== this.specId || state.runId !== this.runId
+      || state.current?.at(-1) !== this.nodeId || !this.attempt.matches(state)) {
+      throw new CurrentFlowStateConflictError("dispatcher Task Gate fallback Attempt changed before failure recording");
+    }
+    const resultPath = FLOW_ARTIFACT_CONTRACTS.resolve("task.gate", { taskId: this.taskId }).relativePath;
+    const descriptor = descriptors.find((candidate) => candidate.relativePath === resultPath) ?? null;
+    if (descriptor === null) return;
+    const bytes = view.readCatalogedArtifact(descriptor);
+    const history = CanonicalCommandAttemptArtifactHistory.fromBytes({
+      logicalKey: "task.gate",
+      bytes,
+    });
+    if (history.current.attempt >= this.attempt.sequence) {
+      throw new CurrentFlowStateConflictError("dispatcher Task Gate fallback cannot overwrite a published result");
+    }
+  }
+}
+
+/** Re-admits one Task Gate metric against the exact published producer view. */
+export class TaskGateSettlementAdmission {
+  constructor(decision, effect, issueEntry = null) {
+    if (!(decision instanceof GateTransitionDecision) || decision.facts.scope !== "task") {
+      throw new CurrentFlowStateInvariantError("Task Gate settlement admission requires a Task Gate decision");
+    }
+    if (typeof decision.facts.snapshotRevision !== "string" || decision.facts.snapshotRevision === "") {
+      throw new CurrentFlowStateInvariantError("Task Gate settlement admission requires a canonical snapshot revision");
+    }
+    this.decision = decision;
+    this.facts = decision.facts;
+    this.effect = requiredText(effect, "Task Gate settlement effect");
+    if (!["classification", "metric", "issue-log", "terminal", "continuation"].includes(this.effect)) {
+      throw new CurrentFlowStateInvariantError("Task Gate settlement effect is invalid");
+    }
+    this.issueEntry = issueEntry === null ? null : structuredClone(issueEntry);
+    if (this.effect === "issue-log" && this.issueEntry === null) {
+      throw new CurrentFlowStateInvariantError("Task Gate issue-log settlement requires its canonical entry");
+    }
+    if (this.effect !== "issue-log" && this.issueEntry !== null) {
+      throw new CurrentFlowStateInvariantError("only Task Gate issue-log settlement accepts an issue entry");
+    }
+    Object.freeze(this);
+  }
+
+  assert(view) {
+    const { state, catalog, activities } = view;
+    if (view.revision !== this.facts.snapshotRevision) {
+      throw new CurrentFlowStateConflictError("Task Gate settlement snapshot changed before effect recording");
+    }
+    const descriptors = Array.isArray(catalog) ? catalog : catalog.artifacts;
+    if (state.runId !== this.facts.target.runId || state.specId !== this.facts.target.specId
+      || state.current?.at(-1) !== this.facts.target.stepId
+      || state.attempt?.id !== this.facts.currentAttempt.id
+      || state.attempt?.sequence !== this.facts.currentAttempt.sequence) {
+      throw new CurrentFlowStateConflictError("Task Gate settlement Attempt changed before effect recording");
+    }
+    const publication = this.facts.catalogPublication;
+    const descriptor = descriptors.find((candidate) => candidate.relativePath === publication.artifactId) ?? null;
+    const activity = activities.find((candidate) => candidate.id === publication.producerActivityId) ?? null;
+    if (descriptor === null || descriptor.hash !== publication.fingerprint
+      || descriptor.activityId !== publication.producerActivityId
+      || activity === null || activity.nodeId !== this.facts.target.stepId
+      || activity.attemptId !== this.facts.currentAttempt.id
+      || activity.sequence !== this.facts.currentAttempt.sequence) {
+      throw new CurrentFlowStateConflictError("Task Gate settlement publication changed before effect recording");
+    }
+    const history = CanonicalCommandAttemptArtifactHistory.fromBytes({
+      logicalKey: "task.gate",
+      bytes: view.readCatalogedArtifact(descriptor),
+    });
+    if (history.current.attempt !== this.facts.currentAttempt.sequence
+      || !resolveGateTransition(this.facts).plan.action.identity.matches(this.decision.plan.action.identity)) {
+      throw new CurrentFlowStateConflictError("Task Gate settlement decision changed before effect recording");
+    }
+    const progress = this.facts.taskSettlementProgress;
+    const metric = this.decision.plan.retryMetric;
+    const classificationComplete = this.facts.result !== "fail" || progress.classificationRecorded;
+    const metricComplete = metric === null || progress.hasMetric(metric);
+    const expected = this.effect === "classification"
+      ? this.facts.result === "fail" && !progress.classificationRecorded
+        && progress.metricOperations.length === 0 && !progress.issueLogRecorded
+      : this.effect === "metric"
+        ? classificationComplete && metric !== null && !progress.hasMetric(metric)
+          && progress.metricOperations.length === 0 && !progress.issueLogRecorded
+        : this.effect === "issue-log"
+          ? classificationComplete && metricComplete && !progress.issueLogRecorded
+          : classificationComplete && metricComplete && progress.issueLogRecorded
+            && (this.effect === "continuation" || (
+              !progress.terminalLifecycleRecorded
+              && this.decision.plan.updates.some((update) => update.status === "done")
+            ));
+    if (!expected) throw new CurrentFlowStateConflictError("Task Gate settlement effect is already complete or does not match its decision");
+    if (this.effect !== "issue-log") return;
+    const issueLogId = taskGateSettlementIssueLogId({
+      runId: this.facts.target.runId,
+      nodeId: this.facts.target.stepId,
+      attempt: this.facts.currentAttempt,
+      publicationActivityId: this.facts.catalogPublication.producerActivityId,
+      catalogFingerprint: this.facts.catalogPublication.fingerprint,
+    });
+    const receipt = this.issueEntry.gateReceipt;
+    if (this.issueEntry.issueLogId !== issueLogId
+      || this.issueEntry.taskId !== this.facts.target.taskId
+      || this.issueEntry.step !== this.facts.target.stepId
+      || receipt?.catalogFingerprint !== this.facts.catalogPublication.fingerprint
+      || receipt?.attempt?.id !== this.facts.currentAttempt.id
+      || receipt?.attempt?.sequence !== this.facts.currentAttempt.sequence
+      || JSON.stringify(receipt?.lineage) !== JSON.stringify(this.facts.lineage.toJSON())) {
+      throw new CurrentFlowStateConflictError("Task Gate issue-log entry is not bound to the canonical result");
+    }
+  }
+
+  issueLogActivityId() {
+    if (this.effect !== "issue-log") return null;
+    return taskGateSettlementIssueLogActivityId({ issueLogId: this.issueEntry.issueLogId });
+  }
+}
+
+class CombinedAdmission {
+  constructor(...admissions) { this.admissions = admissions.filter(Boolean); Object.freeze(this.admissions); Object.freeze(this); }
+  assert(view) { for (const admission of this.admissions) admission.assert(view); }
 }
 
 const TEST_CHAIN_TRANSITION_DEFINITIONS = Object.freeze({
@@ -1099,6 +1243,11 @@ export class CanonicalFlowManagerStore {
     });
   }
 
+  /** Store-local counterpart used by Gate facts during lock re-admission. */
+  readCanonicalTransitionSnapshot(specId) {
+    return this.transitionSnapshot(specId);
+  }
+
   /** Read one lock-scoped canonical view for a Definition fact adapter. */
   readCanonicalTransitionView({ specId = null, read } = {}) {
     const resolved = this.#resolveSpecId(specId);
@@ -1328,7 +1477,10 @@ export class CanonicalFlowManagerStore {
       result: resultFor(requestedStatus, nodeId),
       artifactWrites,
       gateTaskLifecycle,
-      ...(requestedStatus === "done" && { admission: this.#producerCompletionAdmission(nodeId, artifactWrites) }),
+      ...(requestedStatus === "done" && { admission: new CombinedAdmission(
+        this.#producerCompletionAdmission(nodeId, artifactWrites),
+        gateTaskLifecycle === null ? null : new TaskGateSettlementAdmission(opts.gateTransitionDecision, "terminal"),
+      ) }),
     });
   }
 
@@ -1465,10 +1617,45 @@ export class CanonicalFlowManagerStore {
     const resolved = this.#resolveSpecId(specId);
     if (resolved === null) throw new CurrentFlowStateInvariantError("no canonical active Flow");
     const state = this.runtime.load(resolved);
-    this.#admitGateDecision(state, decision, "retry");
+    const current = this.#admitGateDecision(state, decision, "retry");
     return this.runtime.retryGateAttempt({
       specId: resolved, activityId: activityId("gate-retry"), attempt: gateRetryAttempt(state),
       references: { evaluations: [], findings: [], repairs: [], artifacts: [] },
+      admission: current.facts.scope === "task"
+        ? new TaskGateSettlementAdmission(current, "continuation")
+        : undefined,
+    });
+  }
+
+  /** Persist one Definition-selected Task Gate metric at most once per result. */
+  recordTaskGateSettlementMetric({ specId = null, decision } = {}) {
+    const resolved = this.#resolveSpecId(specId);
+    if (resolved === null) throw new CurrentFlowStateInvariantError("no canonical active Flow");
+    const state = this.runtime.load(resolved);
+    const current = this.#admitGateDecision(state, decision, decision.disposition.operation);
+    if (current.facts.scope !== "task" || current.plan.retryMetric === null) {
+      throw new CurrentFlowStateInvariantError("Task Gate settlement metric requires the Definition-selected metric effect");
+    }
+    if (current.facts.taskSettlementProgress.hasMetric(current.plan.retryMetric)) return state;
+    const effect = current.plan.retryMetric;
+    return this.runtime.recordMetric({
+      specId: resolved,
+      activityId: taskGateSettlementMetricActivityId({
+        publicationActivityId: current.facts.catalogPublication.producerActivityId,
+        nodeId: current.facts.target.stepId,
+        attempt: current.facts.currentAttempt.toJSON(),
+        operation: effect.operation,
+      }),
+      // Flow-wide task observations are anchored to the stable Task identity;
+      // the Gate leaf remains part of the deterministic effect identity.
+      nodeId: current.facts.target.taskId,
+      metric: canonicalMetric({
+        phase: effect.phase,
+        counter: "gateRetry",
+        delta: effect.operation === "increment" ? 1 : 0,
+        ...(effect.operation === "reset" ? { reset: true } : {}),
+      }),
+      admission: new TaskGateSettlementAdmission(current, "metric"),
     });
   }
 
@@ -1494,6 +1681,9 @@ export class CanonicalFlowManagerStore {
         outcome: "failed", summary: "Gate rejected the current Attempt.",
         confirmedAt: new Date().toISOString(), artifactRefs: [],
       },
+      admission: current.facts.scope === "task"
+        ? new TaskGateSettlementAdmission(current, "classification")
+        : undefined,
     });
     // The failure above is the sole canonical state mutation. Return a typed
     // process-boundary view without recording another observation or
@@ -1526,6 +1716,9 @@ export class CanonicalFlowManagerStore {
       result: { outcome: "passed", summary: "Gate findings deferred after semantic retry exhaustion", confirmedAt: new Date().toISOString(), artifactRefs: [] },
       findingsPublication: findings,
       gateTaskLifecycle: current.plan.taskLifecycle?.toJSON?.() ?? null,
+      admission: current.facts.scope === "task"
+        ? new TaskGateSettlementAdmission(current, "continuation")
+        : undefined,
     });
   }
 
@@ -1576,9 +1769,9 @@ export class CanonicalFlowManagerStore {
     const activeTaskGate = TaskStepIdentity.fromStateNode(
       this.loadReadOnly(resolved), state.current?.at(-1),
     )?.definitionId === "task-gate";
-    if (new Set(["draft-gate", "spec-gate"]).has(state.current?.at(-1)) || activeTaskGate) {
-      this.#admitGateDecision(state, decision, "repair");
-    }
+    const gateDecision = (new Set(["draft-gate", "spec-gate"]).has(state.current?.at(-1)) || activeTaskGate)
+      ? this.#admitGateDecision(state, decision, "repair")
+      : null;
     if (repair.phase === "task-impl") {
       const effect = decision?.plan?.taskLifecycle ?? null;
       if (effect?.operation !== "repair-task-impl"
@@ -1614,10 +1807,15 @@ export class CanonicalFlowManagerStore {
         mediaType: "application/json",
         bytes: Buffer.from(`${JSON.stringify(nextIssueLog, null, 2)}\n`, "utf8"),
       }],
-      admission: this.#replacementConsumerAdmission(state, {
-        route: "repair-plan-gate",
-        targetNodeId: target,
-      }),
+      admission: new CombinedAdmission(
+        this.#replacementConsumerAdmission(state, {
+          route: "repair-plan-gate",
+          targetNodeId: target,
+        }),
+        gateDecision?.facts.scope === "task"
+          ? new TaskGateSettlementAdmission(gateDecision, "continuation")
+          : null,
+      ),
       gateTaskLifecycle: decision?.plan?.taskLifecycle?.toJSON?.() ?? null,
     });
   }
@@ -2033,7 +2231,7 @@ export class CanonicalFlowManagerStore {
    * a definition leaf; the Store derives the catalog claim and Activity
    * identity from that leaf instead of accepting a path or an authority.
    */
-  publishArtifacts({ specId = null, nodeId, artifactWrites, artifactRemovals = undefined, artifactBaselines = undefined, testSourceBaseline = undefined } = {}) {
+  publishArtifacts({ specId = null, nodeId, artifactWrites, artifactRemovals = undefined, artifactBaselines = undefined, testSourceBaseline = undefined, admission = undefined, publicationActivityId = null } = {}) {
     const resolved = this.#resolveSpecId(specId);
     if (resolved === null) throw new CurrentFlowStateInvariantError("no canonical active Flow");
     const state = this.runtime.load(resolved);
@@ -2043,18 +2241,28 @@ export class CanonicalFlowManagerStore {
       );
     }
     const producerNodeId = requiredText(nodeId, "canonical artifact publication nodeId");
+    if (publicationActivityId !== null && (
+      !(admission instanceof TaskGateSettlementAdmission)
+      || admission.effect !== "issue-log"
+      || publicationActivityId !== admission.issueLogActivityId()
+    )) {
+      throw new CurrentFlowStateInvariantError("canonical artifact publication Activity id is reserved for Task Gate issue-log settlement");
+    }
     this.#assertDraftPublication(producerNodeId, artifactWrites);
     const expectedAttempt = state.current?.at(-1) === producerNodeId && state.attempt !== null
       ? CurrentAttemptIdentity.from(state.attempt)
       : null;
     return this.runtime.publishArtifacts({
       specId: resolved,
-      activityId: activityId("artifacts-published"),
+      activityId: publicationActivityId === null
+        ? activityId("artifacts-published")
+        : requiredText(publicationActivityId, "canonical artifact publication Activity id"),
       nodeId: producerNodeId,
       artifactWrites,
       artifactRemovals,
       artifactBaselines,
       testSourceBaseline,
+      admission,
       ...(expectedAttempt === null ? {} : { expectedAttempt }),
     });
   }
@@ -2311,7 +2519,7 @@ export class CanonicalFlowManagerStore {
    * runtime paths: the catalog descriptor and its append-only publication
    * Activity are now committed by this same Version Store boundary.
    */
-  appendIssueLog({ specId = null, entry, idempotencyKey } = {}) {
+  appendIssueLog({ specId = null, entry, idempotencyKey, admission = undefined } = {}) {
     const resolved = this.#resolveSpecId(specId);
     if (resolved === null) throw new CurrentFlowStateInvariantError("no canonical active Flow");
     const state = this.runtime.load(resolved);
@@ -2336,6 +2544,11 @@ export class CanonicalFlowManagerStore {
     if (!appended.appended) {
       return Object.freeze({ ...appended, total: document.entries.length });
     }
+    const taskSettlement = admission instanceof TaskGateSettlementAdmission
+      && admission.effect === "issue-log";
+    if (taskSettlement && key !== entry?.issueLogId) {
+      throw new CurrentFlowStateInvariantError("Task Gate issue-log settlement requires its stable idempotency key");
+    }
     this.publishArtifacts({
       specId: resolved,
       nodeId,
@@ -2344,6 +2557,8 @@ export class CanonicalFlowManagerStore {
         mediaType: "application/json",
         bytes: Buffer.from(`${JSON.stringify(document.toJSON(), null, 2)}\n`, "utf8"),
       }],
+      admission,
+      publicationActivityId: taskSettlement ? admission.issueLogActivityId() : null,
     });
     return Object.freeze({ ...appended, total: document.entries.length });
   }
@@ -2611,7 +2826,10 @@ export class CanonicalFlowManagerStore {
       artifactBaselines,
       testSourceBaseline,
       gateTaskLifecycle: sealedTaskLifecycle,
-      ...(status === "done" && { admission: this.#producerCompletionAdmission(nodeId, artifactWrites) }),
+      ...(status === "done" && { admission: new CombinedAdmission(
+        this.#producerCompletionAdmission(nodeId, artifactWrites),
+        sealedTaskLifecycle === null ? null : new TaskGateSettlementAdmission(gateTransitionDecision, "terminal"),
+      ) }),
     });
   }
 
@@ -3125,7 +3343,7 @@ export class CanonicalFlowManagerStore {
    * error counterpart to `confirmCurrentAttempt`; callers never mutate a
    * status blob or write a retry artifact beside flow.json.
    */
-  failCurrentAttempt({ specId = null, failure, result, commandResult = undefined } = {}) {
+  failCurrentAttempt({ specId = null, failure, result, commandResult = undefined, admission = undefined } = {}) {
     const resolved = this.#resolveSpecId(specId);
     if (resolved === null) throw new CurrentFlowStateInvariantError("no canonical active Flow");
     const state = this.runtime.load(resolved);
@@ -3160,6 +3378,7 @@ export class CanonicalFlowManagerStore {
       failure,
       result: failureResult,
       artifactWrites,
+      admission,
     });
   }
 
@@ -3286,7 +3505,7 @@ export class CanonicalFlowManagerStore {
    * confirmed, failed, retried, or replaced that Attempt while lifecycle
    * hooks were running; in all of those cases this is deliberately a no-op.
    */
-  failCurrentAttemptIfCurrent({ specId = null, expectedRunId, expectedAttempt, failure, result, commandResult = undefined } = {}) {
+  failCurrentAttemptIfCurrent({ specId = null, expectedRunId, expectedAttempt, failure, result, commandResult = undefined, taskGateFallback = null } = {}) {
     const resolved = this.#resolveSpecId(specId);
     if (resolved === null) throw new CurrentFlowStateInvariantError("no canonical active Flow");
     const expected = CurrentAttemptIdentity.from(expectedAttempt);
@@ -3312,6 +3531,15 @@ export class CanonicalFlowManagerStore {
           }),
           ...this.#commandPublicationWrites(commandResult),
         ];
+    const admission = taskGateFallback === null
+      ? undefined
+      : new TaskGateFallbackFailureAdmission({
+        specId: resolved,
+        runId: expectedRunId,
+        attempt: expected,
+        nodeId: taskGateFallback.nodeId,
+        taskId: taskGateFallback.taskId,
+      });
     const recorded = this.runtime.failAttempt({
       specId: resolved,
       activityId: activityId("attempt-tooling-failed"),
@@ -3319,6 +3547,7 @@ export class CanonicalFlowManagerStore {
       result: failureResult,
       artifactWrites,
       expectedAttempt: expected,
+      admission,
     });
     return recorded !== null;
   }

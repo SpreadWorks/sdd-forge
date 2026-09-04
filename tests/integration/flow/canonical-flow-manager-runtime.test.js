@@ -41,7 +41,7 @@ import { attachedCanonicalReviewWorkUnit } from "../../../src/flow/lib/canonical
 import SetReviewEvidenceCommand from "../../../src/flow/lib/set-review-evidence.js";
 import RunRecoverReviewPassCommand from "../../../src/flow/lib/run-recover-review-pass.js";
 import RunUpdateOverviewCommand from "../../../src/flow/lib/run-update-overview.js";
-import RunGateCommand, { appendIssueLogFromGateResult } from "../../../src/flow/lib/run-gate.js";
+import RunGateCommand, { appendIssueLogFromGateResult, GateIssueLogEntry } from "../../../src/flow/lib/run-gate.js";
 import { computeGitState } from "../../../src/lib/git-state.js";
 import { CanonicalGatePromotion, canonicalGateRevision } from "../../../src/flow/lib/canonical-gate-artifacts.js";
 import { readCurrentGateTransitionFacts } from "../../../src/flow/lib/gate-transition-facts.js";
@@ -5901,10 +5901,22 @@ describe("FlowManager canonical Version-1 runtime", () => {
       activeTaskId: "T-1",
     }).promote({ result: "pass", artifacts: { sourceFingerprint: currentTaskSourceFingerprint(manager, created.specId) } });
     manager.publishCurrentAttemptResult({ specId: created.specId, commandResult: gateResult });
-    const gateDecision = resolveGateTransition(readCurrentGateTransitionFacts({
+    let gateDecision = resolveGateTransition(readCurrentGateTransitionFacts({
       flowManager: manager,
       flowState: manager.load(created.specId),
       phase: "task-impl",
+    }));
+    manager.recordTaskGateSettlementMetric({ specId: created.specId, decision: gateDecision });
+    gateDecision = resolveGateTransition(readCurrentGateTransitionFacts({
+      flowManager: manager, flowState: manager.load(created.specId), phase: "task-impl",
+    }));
+    appendIssueLogFromGateResult({
+      root: repository, mainRoot: repository, executionRoot: repository,
+      specId: created.specId, flowManager: manager, flowState: manager.load(created.specId),
+      phase: "task-impl", gateTransitionDecision: gateDecision,
+    }, gateResult);
+    gateDecision = resolveGateTransition(readCurrentGateTransitionFacts({
+      flowManager: manager, flowState: manager.load(created.specId), phase: "task-impl",
     }));
     manager.updateStepStatus({ stepId: "T-1-gate", requestedStatus: "done" }, {
       specId: created.specId,
@@ -6652,7 +6664,7 @@ describe("FlowManager canonical Version-1 runtime", () => {
       },
     });
     fixture.manager.publishCurrentAttemptResult({ specId: fixture.specId, commandResult: recovered });
-    const decision = resolveGateTransition(readCurrentGateTransitionFacts({
+    let decision = resolveGateTransition(readCurrentGateTransitionFacts({
       flowManager: fixture.manager, flowState: fixture.manager.load(fixture.specId), phase: "integration",
     }));
     assert.equal(decision.disposition.operation, "recovery");
@@ -6916,7 +6928,7 @@ describe("FlowManager canonical Version-1 runtime", () => {
       state: manager.canonicalState(specId), phase: "task-impl", nodeId: "T-1-gate", activeTaskId: "T-1",
     }).promote({ result: "pass", artifacts: { sourceFingerprint: currentTaskSourceFingerprint(manager, specId) } });
     manager.publishCurrentAttemptResult({ specId, commandResult: result });
-    const decision = resolveGateTransition(readCurrentGateTransitionFacts({
+    let decision = resolveGateTransition(readCurrentGateTransitionFacts({
       flowManager: manager, flowState: manager.load(specId), phase: "task-impl",
     }));
     assert.equal(decision.disposition.operation, "pass");
@@ -6941,6 +6953,21 @@ describe("FlowManager canonical Version-1 runtime", () => {
     assert.deepEqual(manager.canonicalState(specId).toJSON(), bypassBefore.state);
     assert.deepEqual(manager.activityLedger(specId), bypassBefore.activities);
     assert.deepEqual(manager.artifactCatalog(specId).toJSON(), bypassBefore.catalog);
+    assert.throws(() => manager.confirmCurrentAttempt({
+      specId, status: "done", gateTransitionDecision: decision,
+    }), /settlement effect/);
+    manager.recordTaskGateSettlementMetric({ specId, decision });
+    decision = resolveGateTransition(readCurrentGateTransitionFacts({
+      flowManager: manager, flowState: manager.load(specId), phase: "task-impl",
+    }));
+    appendIssueLogFromGateResult({
+      root: repository, mainRoot: repository, executionRoot: repository,
+      specId, flowManager: manager, flowState: manager.load(specId), phase: "task-impl",
+      gateTransitionDecision: decision,
+    }, result);
+    decision = resolveGateTransition(readCurrentGateTransitionFacts({
+      flowManager: manager, flowState: manager.load(specId), phase: "task-impl",
+    }));
     manager.confirmCurrentAttempt({ specId, status: "done", gateTransitionDecision: decision });
     const reloaded = manager.canonicalState(specId);
     assert.equal(reloaded.findNode("T-1").status, "done");
@@ -6990,14 +7017,130 @@ describe("FlowManager canonical Version-1 runtime", () => {
       state: manager.canonicalState(specId), phase: "task-impl", nodeId: "T-1-gate", activeTaskId: "T-1",
     }).promote({ result: "pass", artifacts: { sourceFingerprint: currentTaskSourceFingerprint(manager, specId) } });
     manager.publishCurrentAttemptResult({ specId, commandResult: result });
-    const decision = resolveGateTransition(readCurrentGateTransitionFacts({
+    let decision = resolveGateTransition(readCurrentGateTransitionFacts({
       flowManager: manager, flowState: manager.load(specId), phase: "task-impl",
     }));
     assert.equal(decision.disposition.operation, "pass");
+    manager.recordTaskGateSettlementMetric({ specId, decision });
+    decision = resolveGateTransition(readCurrentGateTransitionFacts({
+      flowManager: manager, flowState: manager.load(specId), phase: "task-impl",
+    }));
+    appendIssueLogFromGateResult({
+      root: repository, mainRoot: repository, executionRoot: repository,
+      specId, flowManager: manager, flowState: manager.load(specId), phase: "task-impl",
+      gateTransitionDecision: decision,
+    }, result);
+    decision = resolveGateTransition(readCurrentGateTransitionFacts({
+      flowManager: manager, flowState: manager.load(specId), phase: "task-impl",
+    }));
     manager.updateStepStatus({ stepId: "T-1-gate", requestedStatus: "done" }, { specId, gateTransitionDecision: decision });
     const reloaded = manager.canonicalState(specId);
     assert.equal(reloaded.findNode("T-1").status, "done");
     assert.equal(reloaded.nextAction().nodeId, "test-execute");
+  });
+
+  it("binds Task Gate issue settlement to its attached canonical result and admits it only after the metric", () => {
+    const repository = root();
+    const manager = new FlowManager({ root: repository, mainRoot: repository, inWorktree: false });
+    const specId = "001-task-gate-settlement-entry-bound";
+    new TaskLifecycleFixture({
+      flowManager: manager, specId, runId: "run-task-gate-settlement-entry-bound",
+      request: "Bind Task Gate settlement to canonical producer evidence.",
+      taskDocuments: [{ id: "T-1", title: "only", goal: "prove durable settlement order", parent: null, origin: "plan", added_round: 0, status: "pending" }],
+      taskId: "T-1", targetStep: "task-gate",
+    }).create();
+    const result = new CanonicalGatePromotion({
+      state: manager.canonicalState(specId), phase: "task-impl", nodeId: "T-1-gate", activeTaskId: "T-1",
+    }).promote({ result: "pass", artifacts: { sourceFingerprint: currentTaskSourceFingerprint(manager, specId) } });
+    manager.publishCurrentAttemptResult({ specId, commandResult: result });
+    let decision = resolveGateTransition(readCurrentGateTransitionFacts({
+      flowManager: manager, flowState: manager.load(specId), phase: "task-impl",
+    }));
+    const context = {
+      root: repository, mainRoot: repository, executionRoot: repository,
+      specId, flowManager: manager, flowState: manager.load(specId), phase: "task-impl",
+      gateTransitionDecision: decision,
+    };
+    const before = manager.activityLedger(specId);
+    const forged = structuredClone(result);
+    forged.result = "fail";
+    assert.throws(() => appendIssueLogFromGateResult(context, forged), /canonical result/);
+    assert.throws(() => appendIssueLogFromGateResult(context, result), /settlement effect/);
+    assert.deepEqual(manager.activityLedger(specId), before, "rejected Task settlement inputs must not publish an issue entry");
+
+    manager.recordTaskGateSettlementMetric({ specId, decision });
+    decision = resolveGateTransition(readCurrentGateTransitionFacts({
+      flowManager: manager, flowState: manager.load(specId), phase: "task-impl",
+    }));
+    appendIssueLogFromGateResult({ ...context, flowState: manager.load(specId), gateTransitionDecision: decision }, result);
+    const facts = readCurrentGateTransitionFacts({ flowManager: manager, flowState: manager.load(specId), phase: "task-impl" });
+    assert.equal(facts.taskSettlementProgress.issueLogRecorded, true);
+    assert.equal(manager.activityLedger(specId).at(-1).id.startsWith("task-gate-issue-log-"), true);
+  });
+
+  it("rejects direct Task Gate retry while its canonical settlement is incomplete", () => {
+    const repository = root();
+    const manager = new FlowManager({ root: repository, mainRoot: repository, inWorktree: false });
+    const specId = "001-task-gate-retry-settlement-required";
+    new TaskLifecycleFixture({
+      flowManager: manager, specId, runId: "run-task-gate-retry-settlement-required",
+      request: "Keep Task retries behind durable settlement.",
+      taskDocuments: [{ id: "T-1", title: "only", goal: "do not lose gate effects", parent: null, origin: "plan", added_round: 0, status: "pending" }],
+      taskId: "T-1", targetStep: "task-gate",
+    }).create();
+    const result = new CanonicalGatePromotion({
+      state: manager.canonicalState(specId), phase: "task-impl", nodeId: "T-1-gate", activeTaskId: "T-1",
+    }).promote({
+      result: "fail",
+      artifacts: {
+        failureKind: "ai_semantic_fail", failureCode: "TASK_GATE_REJECTED",
+        sourceFingerprint: currentTaskSourceFingerprint(manager, specId),
+      },
+    });
+    manager.failCurrentAttempt({
+      specId,
+      failure: { category: "semantic", code: "TASK_GATE_REJECTED", message: "settle before retry", retryable: true, retryKind: "semantic" },
+      commandResult: result,
+    });
+    const decision = resolveGateTransition(readCurrentGateTransitionFacts({
+      flowManager: manager, flowState: manager.load(specId), phase: "task-impl",
+    }));
+    const before = { state: manager.canonicalState(specId).toJSON(), activities: manager.activityLedger(specId) };
+    assert.throws(() => manager.retryGateTransition({ specId, decision }), /settlement effect/);
+    assert.deepEqual(manager.canonicalState(specId).toJSON(), before.state);
+    assert.deepEqual(manager.activityLedger(specId), before.activities);
+  });
+
+  it("safe-blocks matching Task issue ids recorded by an unbound or out-of-order Activity", () => {
+    const repository = root();
+    const manager = new FlowManager({ root: repository, mainRoot: repository, inWorktree: false });
+    const specId = "001-task-gate-issue-order-evidence";
+    new TaskLifecycleFixture({
+      flowManager: manager, specId, runId: "run-task-gate-issue-order-evidence",
+      request: "Keep issue settlement provenance ordered.",
+      taskDocuments: [{ id: "T-1", title: "only", goal: "reject unbound issue evidence", parent: null, origin: "plan", added_round: 0, status: "pending" }],
+      taskId: "T-1", targetStep: "task-gate",
+    }).create();
+    const result = new CanonicalGatePromotion({
+      state: manager.canonicalState(specId), phase: "task-impl", nodeId: "T-1-gate", activeTaskId: "T-1",
+    }).promote({ result: "pass", artifacts: { sourceFingerprint: currentTaskSourceFingerprint(manager, specId) } });
+    manager.publishCurrentAttemptResult({ specId, commandResult: result });
+    const decision = resolveGateTransition(readCurrentGateTransitionFacts({
+      flowManager: manager, flowState: manager.load(specId), phase: "task-impl",
+    }));
+    const entry = new GateIssueLogEntry({
+      ctx: {
+        root: repository, mainRoot: repository, executionRoot: repository,
+        specId, flowManager: manager, flowState: manager.load(specId), phase: "task-impl",
+        gateTransitionDecision: decision,
+      },
+      result,
+    }).toJSON();
+    entry.gateReceipt.lineage.canonicalFingerprint = "f".repeat(64);
+    manager.appendIssueLog({ specId, entry, idempotencyKey: entry.issueLogId });
+    assert.throws(() => readCurrentGateTransitionFacts({
+      flowManager: manager, flowState: manager.load(specId), phase: "task-impl",
+    }), /issue-log (Activity is unavailable|effect is out of order or not bound)/);
   });
 
   it("rejects a Task Gate decision when allow-listed source changes after result publication", () => {
@@ -7090,26 +7233,33 @@ describe("FlowManager canonical Version-1 runtime", () => {
         },
         commandResult,
       });
-      const facts = readCurrentGateTransitionFacts({ flowManager: manager, flowState: manager.load(specId), phase: "task-impl" });
+      let facts = readCurrentGateTransitionFacts({ flowManager: manager, flowState: manager.load(specId), phase: "task-impl" });
       if (evaluation === 1) {
         const firstHistory = FlowArtifactAttemptHistory.fromJSON(JSON.parse(manager.readProducerArtifact({
           specId, nodeId: "T-1-gate", logicalKey: "task.gate", parameters: { taskId: "T-1" },
         }).bytes.toString("utf8")));
         firstFailedTaskGateRecord = firstHistory.current.toJSON();
       }
-      const decision = resolveGateTransition(facts);
+      let decision = resolveGateTransition(facts);
+      if (decision.plan.retryMetric !== null) {
+        manager.recordTaskGateSettlementMetric({ specId, decision });
+      }
+      facts = readCurrentGateTransitionFacts({ flowManager: manager, flowState: manager.load(specId), phase: "task-impl" });
+      decision = resolveGateTransition(facts);
+      appendIssueLogFromGateResult({
+        root: repository, mainRoot: repository, executionRoot: repository,
+        specId, flowManager: manager, flowState: manager.load(specId), phase: "task-impl",
+        gateTransitionDecision: decision,
+        gitState: { headSha: "a".repeat(40), worktreeHash: "b".repeat(64) },
+      }, commandResult);
+      decision = resolveGateTransition(readCurrentGateTransitionFacts({
+        flowManager: manager, flowState: manager.load(specId), phase: "task-impl",
+      }));
       if (evaluation < 5) {
         assert.equal(decision.disposition.operation, "retry");
         manager.retryGateTransition({ specId, decision });
       } else {
-        appendIssueLogFromGateResult({
-          root: repository, mainRoot: repository, executionRoot: repository,
-          specId, flowManager: manager, flowState: manager.load(specId), phase: "task-impl",
-          gitState: { headSha: "a".repeat(40), worktreeHash: "b".repeat(64) },
-        }, commandResult);
-        exhaustion = resolveGateTransition(readCurrentGateTransitionFacts({
-          flowManager: manager, flowState: manager.load(specId), phase: "task-impl",
-        }));
+        exhaustion = decision;
       }
     }
     assert.equal(exhaustion.disposition.operation, "repair");
@@ -7186,15 +7336,29 @@ describe("FlowManager canonical Version-1 runtime", () => {
           phase: "task-impl",
         }));
         manager.recordGateObservationDecision({ specId, decision: publishedDecision });
+        let decision = resolveGateTransition(readCurrentGateTransitionFacts({
+          flowManager: manager,
+          flowState: manager.load(specId),
+          phase: "task-impl",
+        }));
+        if (decision.plan.retryMetric !== null) {
+          manager.recordTaskGateSettlementMetric({ specId, decision });
+        }
+        decision = resolveGateTransition(readCurrentGateTransitionFacts({
+          flowManager: manager,
+          flowState: manager.load(specId),
+          phase: "task-impl",
+        }));
         // Production gate:post publishes a matching issue-log receipt after
         // every failed evaluation, including retries. That receipt must not
         // bypass the Task Gate semantic retry budget.
         appendIssueLogFromGateResult({
           ...context(),
           phase: "task-impl",
+          gateTransitionDecision: decision,
           gitState: computeGitState(repository),
         }, commandResult);
-        let decision = resolveGateTransition(readCurrentGateTransitionFacts({
+        decision = resolveGateTransition(readCurrentGateTransitionFacts({
           flowManager: manager,
           flowState: manager.load(specId),
           phase: "task-impl",
@@ -7464,7 +7628,7 @@ describe("FlowManager canonical Version-1 runtime", () => {
     assert.equal(next.taskId, "T-2");
   });
 
-  it("rejects a direct persistent Task Gate command after Definition selects retry without starting evaluation", async () => {
+  it("rehydrates a classified Task Gate with unfinished settlement without starting evaluation", async () => {
     const repository = root();
     const manager = new FlowManager({ root: repository, mainRoot: repository, inWorktree: false });
     new TaskLifecycleFixture({
@@ -7522,19 +7686,17 @@ describe("FlowManager canonical Version-1 runtime", () => {
     const beforeCatalog = manager.artifactCatalog(specId).toJSON();
     const beforeFiles = snapshotFiles();
 
-    await assert.rejects(
-      new RunGateCommand().execute({
-        root: repository,
-        mainRoot: repository,
-        executionRoot: repository,
-        specId,
-        phase: "task-impl",
-        config: {},
-        flowManager: manager,
-        flowState: manager.load(specId),
-      }),
-      /canonical gate admission rejected evaluation; definition selected retry/,
-    );
+    const recovered = await new RunGateCommand().execute({
+      root: repository,
+      mainRoot: repository,
+      executionRoot: repository,
+      specId,
+      phase: "task-impl",
+      config: {},
+      flowManager: manager,
+      flowState: manager.load(specId),
+    });
+    assert.equal(recovered.result, "fail");
 
     assert.equal(agentCalls, 0);
     assert.deepEqual(manager.canonicalState(specId).toJSON(), beforeState);
@@ -7789,13 +7951,19 @@ describe("FlowManager canonical Version-1 runtime", () => {
     assert.equal(resolveGateTransition(staleReceiptFacts).disposition.operation, "retry");
     assert.deepEqual(manager.canonicalState(specId).toJSON(), beforeReceiptRepair.state);
     assert.deepEqual(manager.activityLedger(specId), beforeReceiptRepair.activities);
+    let decision = resolveGateTransition(staleReceiptFacts);
+    manager.recordTaskGateSettlementMetric({ specId, decision });
+    decision = resolveGateTransition(readCurrentGateTransitionFacts({
+      flowManager: manager, flowState: manager.load(specId), phase: "task-impl",
+    }));
     appendIssueLogFromGateResult({
       root: repository, mainRoot: repository, executionRoot: repository,
       specId, flowManager: manager, flowState: manager.load(specId), phase: "task-impl",
+      gateTransitionDecision: decision,
       gitState: { headSha: "a".repeat(40), worktreeHash: "b".repeat(64) },
     }, result);
     let facts = readCurrentGateTransitionFacts({ flowManager: manager, flowState: manager.load(specId), phase: "task-impl" });
-    let decision = resolveGateTransition(facts);
+    decision = resolveGateTransition(facts);
     assert.equal(decision.disposition.operation, "retry");
     // A valid receipt is generated after every Task Gate evaluation. It must
     // not turn the first failure into an implementation repair; repair is
@@ -7821,9 +7989,19 @@ describe("FlowManager canonical Version-1 runtime", () => {
         },
         commandResult: retryResult,
       });
+      decision = resolveGateTransition(readCurrentGateTransitionFacts({
+        flowManager: manager, flowState: manager.load(specId), phase: "task-impl",
+      }));
+      if (decision.plan.retryMetric !== null) {
+        manager.recordTaskGateSettlementMetric({ specId, decision });
+      }
+      decision = resolveGateTransition(readCurrentGateTransitionFacts({
+        flowManager: manager, flowState: manager.load(specId), phase: "task-impl",
+      }));
       appendIssueLogFromGateResult({
         root: repository, mainRoot: repository, executionRoot: repository,
         specId, flowManager: manager, flowState: manager.load(specId), phase: "task-impl",
+        gateTransitionDecision: decision,
         gitState: { headSha: "a".repeat(40), worktreeHash: "b".repeat(64) },
       }, retryResult);
       facts = readCurrentGateTransitionFacts({ flowManager: manager, flowState: manager.load(specId), phase: "task-impl" });

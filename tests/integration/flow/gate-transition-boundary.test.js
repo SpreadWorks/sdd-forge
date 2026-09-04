@@ -14,6 +14,7 @@ import {
   GateProducerOwnership,
   GateTargetBinding,
   GateTransitionDecision,
+  TaskGateSettlementProgress,
   GateStepUpdate,
   AppendIssueLog,
   IncrementMetric,
@@ -31,6 +32,8 @@ import {
   applyGateTransitionDecision,
   projectGateTransitionDecision,
 } from "../../../src/flow/lib/gate-transition-application.js";
+import { TaskGateSettlementAdmission } from "../../../src/flow/lib/canonical-flow-manager-store.js";
+import { CurrentFlowStateConflictError } from "../../../src/flow/lib/current-flow-state.js";
 
 const phases = ["draft", "spec", "task-spec", "task-impl", "integration"];
 
@@ -56,6 +59,7 @@ function facts(overrides = {}) {
   return new GateTransitionFacts({
     phase,
     scope,
+    ...(scope === "task" ? { snapshotRevision: "snapshot-7" } : {}),
     currentAttempt: attempt,
     producer: {
       runId: "run-7",
@@ -93,6 +97,14 @@ function facts(overrides = {}) {
       ? { taskId, nextTaskId: null, integrationStepId: "test-execute" }
       : null,
     taskBudget: scope === "task" ? { round: 1, maximumRounds: 2 } : null,
+    taskSettlementProgress: scope === "task"
+      ? new TaskGateSettlementProgress({
+        classificationRecorded: true,
+        metricOperations: [(overrides.result ?? "pass") === "pass" ? "reset" : "increment"],
+        issueLogRecorded: true,
+        terminalLifecycleRecorded: false,
+      })
+      : null,
     ...overrides,
   });
 }
@@ -102,6 +114,23 @@ function reload(value) {
 }
 
 describe("definition-owned Gate transition boundary", () => {
+  it("requires a snapshot revision exactly for Task settlement facts", () => {
+    assert.throws(
+      () => facts({ phase: "task-impl", snapshotRevision: null }),
+      /snapshot revision is required exactly for Task settlement scope/,
+    );
+    assert.throws(
+      () => facts({ phase: "spec", snapshotRevision: "snapshot-7" }),
+      /snapshot revision is required exactly for Task settlement scope/,
+    );
+  });
+
+  it("rejects Task Gate settlement when the lock snapshot revision changed", () => {
+    const decision = resolveGateTransition(facts({ phase: "task-impl" }));
+    const admission = new TaskGateSettlementAdmission(decision, "metric");
+    assert.throws(() => admission.assert({ revision: "snapshot-8" }), CurrentFlowStateConflictError);
+  });
+
   it("represents every Gate phase with persisted typed facts", () => {
     for (const phase of phases) {
       const decision = resolveGateTransition(facts({ phase }));
@@ -123,7 +152,7 @@ describe("definition-owned Gate transition boundary", () => {
     assert.deepEqual(resolveGateTransition(reload(stored)).toJSON(), resolveGateTransition(original).toJSON());
   });
 
-  it("projects one stable reconciliation action only for an unclassified current publication", () => {
+  it("projects one stable reconciliation action for unclassified or unfinished Task Gate publication", () => {
     for (const phase of phases) {
       const original = facts({ phase, postPublication: { status: "unclassified" } });
       const recovery = resolveGatePublicationRecovery(original);
@@ -132,7 +161,9 @@ describe("definition-owned Gate transition boundary", () => {
       assert.equal(recovery.plan.updates.length, 0);
       assert.equal(recovery.plan.action.identity.matches(reloaded.plan.action.identity), true);
       assert.equal(resolveGateTransition(original).disposition.operation, "pass");
-      assert.equal(resolveGatePublicationRecovery(facts({ phase })), null);
+      const classified = resolveGatePublicationRecovery(facts({ phase }));
+      if (phase === "task-impl") assert.equal(classified.disposition.operation, "reconcile");
+      else assert.equal(classified, null);
     }
   });
 

@@ -10,6 +10,7 @@ import { createLifecycleStepTransition } from "../../../src/flow/lib/lifecycle-s
 import { NormalStepTransition } from "../../../src/flow/lib/step-transition-policy.js";
 import {
   CanonicalCommandResultPublication,
+  CanonicalCommandAttemptArtifactHistory,
   attachCanonicalCommandResultArtifact,
   attachCanonicalCommandResultPublications,
 } from "../../../src/flow/lib/canonical-command-result.js";
@@ -23,6 +24,7 @@ import { resolveGateTransition } from "../../../src/flow/definition.js";
 import { ReviewFindingFingerprint } from "../../../src/flow/lib/finding-disposition-policy.js";
 import { SourceMutationManifest, SourceWorkerEffect } from "../../../src/flow/lib/worker-artifact-handoff.js";
 import { captureCurrentTaskSource } from "../../../src/flow/lib/task-mutation-lineage.js";
+import { appendIssueLogFromGateResult } from "../../../src/flow/lib/run-gate.js";
 
 /**
  * Build a fresh Container instance with `flowManager` registered for a test
@@ -141,13 +143,14 @@ export function confirmCanonicalFixtureStep(flowManager, specId, nodeId, status 
     ? (task?.steps.at(-1)?.id === nodeId ? "task-impl" : nodeId === "impl-gate" ? "integration" : null)
     : null;
   if (gatePhase !== null) {
+    let commandResult = null;
     let facts = readCurrentGateTransitionFacts({
       flowManager,
       flowState: current,
       phase: gatePhase,
     });
     if (facts === null) {
-      const commandResult = new CanonicalGatePromotion({
+      commandResult = new CanonicalGatePromotion({
         state: flowManager.canonicalState(resolvedSpecId),
         phase: gatePhase,
         nodeId,
@@ -175,7 +178,42 @@ export function confirmCanonicalFixtureStep(flowManager, specId, nodeId, status 
         phase: gatePhase,
       });
     }
-    const gateTransitionDecision = resolveGateTransition(facts);
+    let gateTransitionDecision = resolveGateTransition(facts);
+    if (task !== null) {
+      if (commandResult === null) {
+        const source = flowManager.readProducerArtifact({
+          specId: resolvedSpecId,
+          nodeId,
+          logicalKey: "task.gate",
+          parameters: { taskId: task.id },
+        });
+        commandResult = CanonicalCommandAttemptArtifactHistory.fromBytes({
+          logicalKey: "task.gate",
+          bytes: source.bytes,
+        }).current.payload;
+      }
+      flowManager.recordTaskGateSettlementMetric({ specId: resolvedSpecId, decision: gateTransitionDecision });
+      gateTransitionDecision = resolveGateTransition(readCurrentGateTransitionFacts({
+        flowManager,
+        flowState: flowManager.loadReadOnly(resolvedSpecId),
+        phase: gatePhase,
+      }));
+      appendIssueLogFromGateResult({
+        root: flowManager.executionRoot(),
+        mainRoot: flowManager.executionRoot(),
+        executionRoot: flowManager.executionRoot(),
+        specId: resolvedSpecId,
+        flowManager,
+        flowState: flowManager.loadReadOnly(resolvedSpecId),
+        phase: gatePhase,
+        gateTransitionDecision,
+      }, commandResult);
+      gateTransitionDecision = resolveGateTransition(readCurrentGateTransitionFacts({
+        flowManager,
+        flowState: flowManager.loadReadOnly(resolvedSpecId),
+        phase: gatePhase,
+      }));
+    }
     return flowManager.updateStepStatus(
       { stepId: nodeId, requestedStatus: status },
       { specId: resolvedSpecId, gateTransitionDecision },

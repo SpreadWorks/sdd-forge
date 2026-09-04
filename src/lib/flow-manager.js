@@ -791,6 +791,12 @@ export class FlowManager {
     return this._store.incrementMetric(phase, counter, withSpecIdDefault(opts, this._boundSpecId));
   }
   appendMetric(payload, opts) { return this._store.appendMetric(payload, withSpecIdDefault(opts, this._boundSpecId)); }
+  recordTaskGateSettlementMetric(input = {}) {
+    return this._store.recordTaskGateSettlementMetric({
+      ...input,
+      specId: input.specId ?? this._boundSpecId,
+    });
+  }
   /** @param {import("./flow-options.js").AgentMetricOptions} [options] */
   accumulateAgentMetrics(phase, options) {
     return this._store.accumulateAgentMetrics(phase, withSpecIdDefault(options, this._boundSpecId));

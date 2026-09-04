@@ -324,11 +324,11 @@ export class CanonicalFlowRuntime {
     });
   }
 
-  retryGateAttempt({ specId, activityId, attempt, references } = {}) {
+  retryGateAttempt({ specId, activityId, attempt, references, admission = undefined } = {}) {
     const state = this.#state(specId);
     return this.#applyAttemptTransition(specId, state, {
       id: activityId, nodeId: this.#currentNodeId(state), operation: "retry_gate_attempt",
-      attempt: requiredAttempt(attempt, "retryGateAttempt"), references,
+      attempt: requiredAttempt(attempt, "retryGateAttempt"), references, admission,
     });
   }
 
@@ -787,7 +787,7 @@ export class CanonicalFlowRuntime {
    * The Version Store atomically appends this Activity, writes the bytes, and
    * replaces their catalog descriptors under the active leaf's ownership.
    */
-  publishArtifacts({ specId, activityId, nodeId, artifactWrites, artifactRemovals = undefined, artifactBaselines = undefined, testSourceBaseline = undefined, expectedAttempt = null, references = undefined } = {}) {
+  publishArtifacts({ specId, activityId, nodeId, artifactWrites, artifactRemovals = undefined, artifactBaselines = undefined, testSourceBaseline = undefined, expectedAttempt = null, references = undefined, admission = undefined } = {}) {
     const state = this.#state(specId);
     const target = requiredText(nodeId, "artifact publication nodeId");
     const expected = expectedAttempt === null ? null : CurrentAttemptIdentity.from(expectedAttempt);
@@ -814,7 +814,7 @@ export class CanonicalFlowRuntime {
         status: null,
         nonblocking: null,
       },
-    }), { artifactWrites, artifactRemovals, artifactBaselines, testSourceBaseline });
+    }), { artifactWrites, artifactRemovals, artifactBaselines, testSourceBaseline, admission });
   }
 
   /**
@@ -957,8 +957,8 @@ export class CanonicalFlowRuntime {
   }
 
   /** Persist a non-state-changing observation in the authoritative ledger. */
-  recordMetric({ specId, activityId, nodeId = null, metric, timing = null } = {}) {
-    return this.#recordObservation(specId, activityId, "record_metric", { nodeId, metric, timing });
+  recordMetric({ specId, activityId, nodeId = null, metric, timing = null, admission = undefined } = {}) {
+    return this.#recordObservation(specId, activityId, "record_metric", { nodeId, metric, timing, admission });
   }
 
   /** Persist a human note in the same ledger and recovery order as metrics. */
@@ -1044,7 +1044,7 @@ export class CanonicalFlowRuntime {
     if (Object.hasOwn(input, "artifactWrites") || Object.hasOwn(input, "artifactBaselines")) {
       throw new CurrentFlowStateInvariantError("canonical Gate settlement accepts only its deferred flow.findings publication");
     }
-    const { specId, activityId, nodeId, attempt, result, findingsPublication, gateTaskLifecycle = null } = input;
+    const { specId, activityId, nodeId, attempt, result, findingsPublication, gateTaskLifecycle = null, admission = undefined } = input;
     if (!(findingsPublication instanceof DeferredFlowFindingsPublication)) {
       throw new CurrentFlowStateInvariantError("canonical Gate settlement requires a deferred flow.findings publication");
     }
@@ -1052,7 +1052,7 @@ export class CanonicalFlowRuntime {
     const state = this.#state(specId);
     return this.#applyAttemptTransition(specId, state, {
       id: activityId, nodeId, operation: "defer_failed_gate",
-      attempt: requiredAttempt(attempt, "Gate deferral settlement"), result, artifactWrites, artifactBaselines, gateTaskLifecycle,
+      attempt: requiredAttempt(attempt, "Gate deferral settlement"), result, artifactWrites, artifactBaselines, gateTaskLifecycle, admission,
     });
   }
 
@@ -1136,7 +1136,7 @@ export class CanonicalFlowRuntime {
     }));
   }
 
-  #recordObservation(specId, activityId, operation, { nodeId = null, metric = null, note = null, timing = null } = {}) {
+  #recordObservation(specId, activityId, operation, { nodeId = null, metric = null, note = null, timing = null, admission = undefined } = {}) {
     const state = this.#state(specId);
     const now = new Date().toISOString();
     const target = nodeId === null ? state.root.id : requiredText(nodeId, "observation nodeId");
@@ -1154,7 +1154,7 @@ export class CanonicalFlowRuntime {
         status: null,
         nonblocking: null,
       },
-    }));
+    }), { admission });
   }
 
   #applyAttemptTransition(specId, state, {

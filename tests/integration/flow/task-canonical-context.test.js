@@ -517,13 +517,18 @@ describe("canonical Task context", () => {
           flowState: manager.loadReadOnly(specId),
           phase: "task-impl",
         }));
-        if (evaluation < 5) {
-          manager.retryGateTransition({ specId, decision });
-          continue;
+        if (decision.plan.retryMetric !== null) {
+          manager.recordTaskGateSettlementMetric({ specId, decision });
         }
+        decision = resolveGateTransition(readCurrentGateTransitionFacts({
+          flowManager: manager,
+          flowState: manager.loadReadOnly(specId),
+          phase: "task-impl",
+        }));
         appendIssueLogFromGateResult({
           ...ctx(),
           phase: "task-impl",
+          gateTransitionDecision: decision,
           gitState: { headSha: "a".repeat(40), worktreeHash: "b".repeat(64) },
         }, commandResult);
         decision = resolveGateTransition(readCurrentGateTransitionFacts({
@@ -531,6 +536,10 @@ describe("canonical Task context", () => {
           flowState: manager.loadReadOnly(specId),
           phase: "task-impl",
         }));
+        if (evaluation < 5) {
+          manager.retryGateTransition({ specId, decision });
+          continue;
+        }
         assert.equal(decision.disposition.operation, "repair");
       }
       const repaired = new RunRepairPlanGateCommand().execute(ctx());
@@ -593,7 +602,17 @@ describe("canonical Task context", () => {
         root, flowManager: manager, state: manager.loadReadOnly(specId), taskId: "T-1",
       }).fingerprint } });
       manager.publishCurrentAttemptResult({ specId, commandResult: pass });
-      const gateDecision = resolveGateTransition(readCurrentGateTransitionFacts({
+      let gateDecision = resolveGateTransition(readCurrentGateTransitionFacts({
+        flowManager: manager, flowState: manager.loadReadOnly(specId), phase: "task-impl",
+      }));
+      manager.recordTaskGateSettlementMetric({ specId, decision: gateDecision });
+      gateDecision = resolveGateTransition(readCurrentGateTransitionFacts({
+        flowManager: manager, flowState: manager.loadReadOnly(specId), phase: "task-impl",
+      }));
+      appendIssueLogFromGateResult({
+        ...ctx(), phase: "task-impl", gateTransitionDecision: gateDecision,
+      }, pass);
+      gateDecision = resolveGateTransition(readCurrentGateTransitionFacts({
         flowManager: manager, flowState: manager.loadReadOnly(specId), phase: "task-impl",
       }));
       manager.confirmCurrentAttempt({ specId, status: "done", gateTransitionDecision: gateDecision });
@@ -754,7 +773,23 @@ describe("canonical Task context", () => {
       },
     });
     manager.publishCurrentAttemptResult({ specId, commandResult: taskAGate });
-    const taskAGateDecision = resolveGateTransition(readCurrentGateTransitionFacts({
+    let taskAGateDecision = resolveGateTransition(readCurrentGateTransitionFacts({
+      flowManager: manager,
+      flowState: manager.loadReadOnly(specId),
+      phase: "task-impl",
+    }));
+    manager.recordTaskGateSettlementMetric({ specId, decision: taskAGateDecision });
+    taskAGateDecision = resolveGateTransition(readCurrentGateTransitionFacts({
+      flowManager: manager,
+      flowState: manager.loadReadOnly(specId),
+      phase: "task-impl",
+    }));
+    appendIssueLogFromGateResult({
+      ...context(),
+      phase: "task-impl",
+      gateTransitionDecision: taskAGateDecision,
+    }, taskAGate);
+    taskAGateDecision = resolveGateTransition(readCurrentGateTransitionFacts({
       flowManager: manager,
       flowState: manager.loadReadOnly(specId),
       phase: "task-impl",
