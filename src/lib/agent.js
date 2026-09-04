@@ -23,7 +23,10 @@ import { generateRequestId } from "./log.js";
 import { ProviderRegistry } from "./provider.js";
 import { formatPreview } from "./error-preview.js";
 import { defaultAgentProfiles } from "./agent-defaults.js";
-import { persistAgentInvocationMetric } from "./agent-invocation-metric.js";
+import {
+  persistAgentInvocationMetric,
+  persistPromptCacheHitMetric,
+} from "./agent-invocation-metric.js";
 import { AgentTimeout, AgentTimeoutDiagnostic, DEFAULT_AGENT_PROCESS_TREE_GRACE_MS } from "./agent-timeout.js";
 import { LinuxProcessStat } from "./process-identity.js";
 import { PRODUCT } from "./product.js";
@@ -194,13 +197,13 @@ class Agent {
         providerCalled: false,
         fresh: false,
       });
-      await recordPromptCacheHit({
+      await persistPromptCacheHitMetric({
         flowManager: this._flowManager,
         context: promptCache.context,
         provider: resolved.providerKey,
         profileKey: resolved.profileKey,
-        text: hit,
-      });
+        responseChars: textStats(hit).chars,
+      }, opts.deferredMetric ?? null);
       return hit;
     }
 
@@ -1107,28 +1110,6 @@ function resolvePromptCacheContext(flowManager) {
     return context;
   } catch (_) {
     return null;
-  }
-}
-
-async function recordPromptCacheHit({ flowManager, context, provider, profileKey, text }) {
-  if (!flowManager || !context?.flowPhase) return;
-  try {
-    const metric = {
-      phase: context.flowPhase,
-      kind: "agent-cache",
-      provider,
-      profileKey,
-      callCount: 0,
-      cachedResponse: true,
-      responseChars: textStats(text).chars,
-    };
-    if (shouldPersistFinalizeMetricToSidecar(flowManager, context)) {
-      await persistFinalizeMetricToSidecar(flowManager, context, metric);
-      return;
-    }
-    flowManager.appendMetric(metric, { specId: context.specId, taskId: context.taskId ?? null });
-  } catch (err) {
-    process.stderr.write(`[sennel] agent: cache-hit metric failed: ${err.message}\n`);
   }
 }
 

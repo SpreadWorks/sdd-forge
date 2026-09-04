@@ -7,7 +7,7 @@
  */
 
 import crypto from "node:crypto";
-import { GateFailureCategory } from "./gate-transition.js";
+import { GateFailureCategory, GateTransitionFacts } from "./gate-transition.js";
 import {
   CanonicalCommandAttemptArtifactHistory,
   CanonicalCommandResultArtifact,
@@ -239,6 +239,64 @@ export class CanonicalGatePromotion {
         payload: sourcePayload(result, this.phase, this.taskId, lineage),
       })]);
     }
+    return result;
+  }
+}
+
+/**
+ * Rehydrates the exact result of a current Gate Attempt when publication
+ * completed but its registry post hook did not.  This has deliberately
+ * narrower authority than CanonicalGatePromotion: it attaches the immutable
+ * result-history payload only, never recreates source evidence or evaluates a
+ * Gate a second time.
+ */
+export class CanonicalGatePublishedResultRecovery {
+  constructor({ flowManager, state, phase, nodeId = null, activeTaskId = null, facts } = {}) {
+    if (!flowManager || typeof flowManager.readProducerArtifact !== "function") {
+      throw new Error("canonical Gate publication recovery requires FlowManager producer reads");
+    }
+    this.flowManager = flowManager;
+    this.state = canonicalState(state);
+    this.phase = canonicalPhase(phase);
+    this.taskId = taskId(activeTaskId);
+    this.nodeId = nodeId == null ? gateNodeId(this.phase, this.taskId) : requiredText(nodeId, "canonical Gate recovery nodeId");
+    if (gateNodeId(this.phase, this.taskId) !== this.nodeId) {
+      throw new Error("canonical Gate publication recovery phase and Task scope do not own the producer node");
+    }
+    if (this.state.current?.at(-1) !== this.nodeId || this.state.attempt?.nodeId !== this.nodeId) {
+      throw new Error("canonical Gate publication recovery requires the active producer Attempt");
+    }
+    if (!(facts instanceof GateTransitionFacts) || !facts.postPublication.requiresReconciliation) {
+      throw new Error("canonical Gate publication recovery requires an unclassified current Gate result");
+    }
+    if (facts.phase !== this.phase || facts.target.stepId !== this.nodeId
+      || facts.target.taskId !== this.taskId
+      || facts.currentAttempt.id !== this.state.attempt.id
+      || facts.currentAttempt.sequence !== this.state.attempt.sequence) {
+      throw new Error("canonical Gate publication recovery facts do not match the active Attempt");
+    }
+    this.keys = gateLogicalKeys(this.phase, this.taskId);
+    this.facts = facts;
+    Object.freeze(this);
+  }
+
+  rehydrate() {
+    const input = new CanonicalGateInputStore({
+      flowManager: this.flowManager,
+      state: this.state,
+      nodeId: this.nodeId,
+    }).activeAttemptResult(this.keys.result, { parameters: this.keys.parameters });
+    if (input.attempt !== this.facts.currentAttempt.sequence
+      || input.descriptor.hash !== this.facts.catalogPublication.fingerprint
+      || input.descriptor.activityId !== this.facts.catalogPublication.producerActivityId
+      || input.relativePath !== this.facts.catalogPublication.artifactId) {
+      throw new Error("canonical Gate publication recovery result does not match the selected catalog publication");
+    }
+    const result = structuredClone(input.payload);
+    attachCanonicalCommandResultArtifact(result, new CanonicalCommandResultArtifact({
+      logicalKey: this.keys.result,
+      payload: result,
+    }));
     return result;
   }
 }

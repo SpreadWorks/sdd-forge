@@ -8,6 +8,7 @@ const GATE_RESULTS = new Set(["pass", "fail", "recovered"]);
 const FAILURE_CATEGORIES = new Set(["semantic", "local", "tooling"]);
 const LOCAL_FAILURE_KINDS = new Set(["mechanical", "mechanical_guardrail_fail"]);
 const RECOVERY_KINDS = new Set(["none", "repair", "defer", "recovered"]);
+const POST_PUBLICATION_STATES = new Set(["unclassified", "classified"]);
 
 function requiredText(value, field) {
   if (typeof value !== "string" || value.trim() === "") throw new Error(`${field} is required`);
@@ -186,6 +187,27 @@ export class GateRecoveryEvidence {
 }
 
 /**
+ * The canonical result publication deliberately precedes Gate classification.
+ * This fact records whether that published result still needs its one
+ * Definition-owned post-publication classification.  It is not a retry or a
+ * route: it only prevents a crashed post hook from being mistaken for a fresh
+ * evaluator admission.
+ */
+export class GatePostPublicationState {
+  constructor({ status } = {}) {
+    this.status = requiredText(status, "gate post-publication status");
+    if (!POST_PUBLICATION_STATES.has(this.status)) {
+      throw new Error("gate post-publication status is invalid");
+    }
+    Object.freeze(this);
+  }
+
+  get requiresReconciliation() { return this.status === "unclassified"; }
+
+  toJSON() { return { status: this.status }; }
+}
+
+/**
  * Canonical review/triage/repair readiness bound to an integration Gate.
  * The reader supplies it; Definition only consumes its explicit passability.
  */
@@ -357,6 +379,7 @@ export class GateTransitionFacts {
     retry,
     lineage,
     recoveryEvidence = {},
+    postPublication = { status: "classified" },
     nonblocking = false,
     reviewReadiness = null,
     taskLifecycle = null,
@@ -383,6 +406,9 @@ export class GateTransitionFacts {
     this.recoveryEvidence = recoveryEvidence instanceof GateRecoveryEvidence
       ? recoveryEvidence
       : new GateRecoveryEvidence(recoveryEvidence);
+    this.postPublication = postPublication instanceof GatePostPublicationState
+      ? postPublication
+      : new GatePostPublicationState(postPublication);
     if (typeof nonblocking !== "boolean") throw new Error("gate nonblocking fact must be boolean");
     this.nonblocking = nonblocking;
     this.reviewReadiness = reviewReadiness === null
@@ -448,6 +474,7 @@ export class GateTransitionFacts {
       currentAttempt: this.currentAttempt.toJSON(), catalogPublication: this.catalogPublication.toJSON(),
       result: this.result, failure: this.failure?.toJSON() ?? null, retry: this.retry.toJSON(),
       lineage: this.lineage.toJSON(), recoveryEvidence: this.recoveryEvidence.toJSON(),
+      postPublication: this.postPublication.toJSON(),
       nonblocking: this.nonblocking,
       reviewReadiness: this.reviewReadiness?.toJSON() ?? null,
       taskLifecycle: this.taskLifecycle?.toJSON() ?? null,

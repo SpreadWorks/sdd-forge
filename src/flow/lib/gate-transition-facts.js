@@ -300,6 +300,14 @@ export function readCurrentGateTransitionFacts({ flowManager, flowState, phase, 
     throw new Error("gate catalog publication has an invalid producer Activity");
   }
   const failure = resultFailure(payload, attempt);
+  // Result publication is intentionally separate from the post hook that
+  // records a failed Attempt or advances a passing one.  The canonical
+  // Attempt is the only durable marker for a failed result having crossed
+  // that classification boundary; pass and recovered results remain
+  // unclassified while their producer Attempt is still current.
+  const postPublication = {
+    status: payload.result === "fail" && attempt.failure !== null ? "classified" : "unclassified",
+  };
   let sourceFingerprint = resultSource.descriptor.hash;
   let sourceRevisionFingerprint = null;
   let canonicalRevisionFingerprint = null;
@@ -370,6 +378,7 @@ export function readCurrentGateTransitionFacts({ flowManager, flowState, phase, 
     },
     result: payload.result,
     failure,
+    postPublication,
     retry,
     taskBudget: taskId === null ? null : new GateTaskBudget({
       round: flowManager.taskMutationLineages({ specId: state.specId, taskId }).at(-1)?.budget.round,

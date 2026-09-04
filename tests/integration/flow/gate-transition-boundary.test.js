@@ -22,6 +22,7 @@ import {
   projectGatePublicOutcome,
   resolveLifecycle,
   resolveLifecyclePlan,
+  resolveGatePublicationRecovery,
   resolveGateTransition,
 } from "../../../src/flow/definition.js";
 import {
@@ -120,6 +121,19 @@ describe("definition-owned Gate transition boundary", () => {
     });
     const stored = JSON.parse(JSON.stringify(original.toJSON()));
     assert.deepEqual(resolveGateTransition(reload(stored)).toJSON(), resolveGateTransition(original).toJSON());
+  });
+
+  it("projects one stable reconciliation action only for an unclassified current publication", () => {
+    for (const phase of phases) {
+      const original = facts({ phase, postPublication: { status: "unclassified" } });
+      const recovery = resolveGatePublicationRecovery(original);
+      const reloaded = resolveGatePublicationRecovery(reload(JSON.parse(JSON.stringify(original.toJSON()))));
+      assert.equal(recovery.disposition.operation, "reconcile");
+      assert.equal(recovery.plan.updates.length, 0);
+      assert.equal(recovery.plan.action.identity.matches(reloaded.plan.action.identity), true);
+      assert.equal(resolveGateTransition(original).disposition.operation, "pass");
+      assert.equal(resolveGatePublicationRecovery(facts({ phase })), null);
+    }
   });
 
   it("separates semantic retry, local input defects, and external provider failures", () => {

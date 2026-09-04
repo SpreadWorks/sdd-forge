@@ -164,6 +164,39 @@ describe("Agent.call() — metric accumulation (spec 186 R3)", () => {
     await assert.rejects(deferredMetric.flush(), /already flushed/);
   });
 
+  it("defers prompt-cache metrics with the parent Flow attribution", async () => {
+    const appendCalls = [];
+    let phase = "draft";
+    const flowManager = {
+      resolveCurrentContext: () => ({ specId: "501-dispatch-handoff", taskId: "T-1", flowPhase: phase }),
+      loadActiveFlows: () => [{ specId: "501-dispatch-handoff" }],
+      accumulateAgentMetrics() {},
+      appendMetric: (...args) => { appendCalls.push(args); },
+    };
+    const agent = makeAgentService(
+      { command: "echo", args: ["{{PROMPT}}"] },
+      tmpDir,
+      { logger, flowManager },
+    );
+
+    assert.equal(await agent.call("cached", { commandId: "test" }), "cached");
+    const deferredMetric = new DeferredAgentInvocationMetric({ flowManager });
+    assert.equal(await agent.call("cached", { commandId: "test", deferredMetric }), "cached");
+    assert.equal(appendCalls.length, 0, "the worker mutation window must not contain the cache metric write");
+
+    phase = "impl";
+    assert.equal(await deferredMetric.flush(), true);
+    assert.deepEqual(appendCalls, [[{
+      phase: "draft",
+      kind: "agent-cache",
+      provider: "user",
+      profileKey: "test/exec",
+      callCount: 0,
+      cachedResponse: true,
+      responseChars: "cached".length,
+    }, { specId: "501-dispatch-handoff", taskId: "T-1" }]]);
+  });
+
   it("binds deferred metric attribution before the worker can mutate Flow context", async () => {
     const calls = [];
     let phase = "draft";

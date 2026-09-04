@@ -738,12 +738,13 @@ describe("Agent.call() — prompt cache policy", () => {
     ].join("");
     const specId = "cache";
     const decisions = [];
+    const cacheMetrics = [];
     const flowManager = {
       resolveCurrentContext() {
         return { specId, taskId: null, flowPhase: "impl" };
       },
       loadActiveFlows() { return [{ specId }]; },
-      appendMetric() {},
+      appendMetric(...args) { cacheMetrics.push(args); },
       accumulateAgentMetrics() {},
     };
     const agent = makeAgent(
@@ -774,6 +775,15 @@ describe("Agent.call() — prompt cache policy", () => {
     assert.equal(bypassed, "provider-2");
     assert.equal(normalAgain, "provider-1");
     assert.deepEqual(decisions.map((entry) => entry.cacheOutcome), ["miss", "hit", "bypass"]);
+    assert.deepEqual(cacheMetrics, [0, 1].map(() => [{
+      phase: "impl",
+      kind: "agent-cache",
+      provider: "user",
+      profileKey: "test/exec",
+      callCount: 0,
+      cachedResponse: true,
+      responseChars: "provider-1".length,
+    }, { specId, taskId: null }]));
   });
 });
 

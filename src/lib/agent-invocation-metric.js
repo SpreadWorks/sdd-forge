@@ -4,11 +4,17 @@ function requireFlowManager(value) {
   if (
     !value
     || typeof value.resolveCurrentContext !== "function"
-    || typeof value.accumulateAgentMetrics !== "function"
   ) {
     throw new Error("agent invocation metric requires a Flow manager");
   }
   return value;
+}
+
+function requireFlowMetricCapability(flowManager, method) {
+  if (typeof flowManager[method] !== "function") {
+    throw new Error(`agent invocation metric requires FlowManager.${method}()`);
+  }
+  return flowManager;
 }
 
 function requireDuration(value) {
@@ -59,10 +65,25 @@ async function persistFinalizeMetricToSidecar(flowManager, context, metric) {
   });
 }
 
-export class AgentInvocationMetric {
-  constructor({ flowManager, context, provider, profileKey, usage, responseChars, model, durationMs }) {
+class FlowAgentMetric {
+  constructor({ flowManager, context }) {
     this.flowManager = requireFlowManager(flowManager);
     this.context = Object.freeze({ ...context });
+  }
+
+  async persist() {
+    if (shouldPersistFinalizeMetricToSidecar(this.flowManager, this.context)) {
+      await persistFinalizeMetricToSidecar(this.flowManager, this.context, this.entry);
+      return;
+    }
+    this.persistToFlow();
+  }
+}
+
+export class AgentInvocationMetric extends FlowAgentMetric {
+  constructor({ flowManager, context, provider, profileKey, usage, responseChars, model, durationMs }) {
+    super({ flowManager, context });
+    requireFlowMetricCapability(flowManager, "accumulateAgentMetrics");
     this.phase = String(context.flowPhase);
     this.options = Object.freeze({
       provider,
@@ -83,12 +104,47 @@ export class AgentInvocationMetric {
     return new AgentInvocationMetric({ flowManager: manager, context, ...options });
   }
 
-  async persist() {
-    if (shouldPersistFinalizeMetricToSidecar(this.flowManager, this.context)) {
-      await persistFinalizeMetricToSidecar(this.flowManager, this.context, this.entry);
-      return;
-    }
+  bind(flowManager, context) {
+    return new AgentInvocationMetric({ flowManager, context, ...this.options });
+  }
+
+  persistToFlow() {
     this.flowManager.accumulateAgentMetrics(this.phase, this.options);
+  }
+}
+
+class PromptCacheHitMetric extends FlowAgentMetric {
+  constructor({ flowManager, context, provider, profileKey, responseChars }) {
+    super({ flowManager, context });
+    requireFlowMetricCapability(flowManager, "appendMetric");
+    this.options = Object.freeze({ provider, profileKey, responseChars });
+    this.entry = Object.freeze({
+      phase: String(context.flowPhase),
+      kind: "agent-cache",
+      provider: normalizeAgentMetricDimension(provider),
+      profileKey: normalizeAgentMetricDimension(profileKey),
+      callCount: 0,
+      cachedResponse: true,
+      responseChars,
+    });
+    Object.freeze(this);
+  }
+
+  static capture({ flowManager, context, ...options }) {
+    const manager = requireFlowManager(flowManager);
+    if (!context?.flowPhase) return null;
+    return new PromptCacheHitMetric({ flowManager: manager, context, ...options });
+  }
+
+  bind(flowManager, context) {
+    return new PromptCacheHitMetric({ flowManager, context, ...this.options });
+  }
+
+  persistToFlow() {
+    this.flowManager.appendMetric(this.entry, {
+      specId: this.context.specId,
+      taskId: this.context.taskId ?? null,
+    });
   }
 }
 
@@ -109,17 +165,13 @@ export class DeferredAgentInvocationMetric {
   }
 
   capture(metric) {
-    if (!(metric instanceof AgentInvocationMetric)) {
-      throw new Error("deferred agent invocation metric requires an AgentInvocationMetric");
+    if (!(metric instanceof FlowAgentMetric)) {
+      throw new Error("deferred agent invocation metric requires a FlowAgentMetric");
     }
     if (this.#captured) throw new Error("agent invocation metric was already captured");
     if (this.#flushed) throw new Error("agent invocation metric was already flushed");
     this.#metric = this.#flowManager && this.#context?.flowPhase
-      ? new AgentInvocationMetric({
-          flowManager: this.#flowManager,
-          context: this.#context,
-          ...metric.options,
-        })
+      ? metric.bind(this.#flowManager, this.#context)
       : metric;
     this.#captured = true;
   }
@@ -157,9 +209,9 @@ export class DeferredAgentInvocationMetric {
   }
 }
 
-export async function persistAgentInvocationMetric(options, deferred = null) {
+async function persistCapturedMetric({ capture, options, deferred, failureMessage }) {
   try {
-    const metric = AgentInvocationMetric.capture(options);
+    const metric = capture(options);
     if (!metric) return false;
     if (deferred != null) {
       if (!(deferred instanceof DeferredAgentInvocationMetric)) {
@@ -171,7 +223,25 @@ export async function persistAgentInvocationMetric(options, deferred = null) {
     await metric.persist();
     return true;
   } catch (error) {
-    process.stderr.write(`[sennel] agent: metric accumulation failed: ${error.message}\n`);
+    process.stderr.write(`[sennel] agent: ${failureMessage}: ${error.message}\n`);
     return false;
   }
+}
+
+export async function persistAgentInvocationMetric(options, deferred = null) {
+  return persistCapturedMetric({
+    capture: (input) => AgentInvocationMetric.capture(input),
+    options,
+    deferred,
+    failureMessage: "metric accumulation failed",
+  });
+}
+
+export async function persistPromptCacheHitMetric(options, deferred = null) {
+  return persistCapturedMetric({
+    capture: (input) => PromptCacheHitMetric.capture(input),
+    options,
+    deferred,
+    failureMessage: "cache-hit metric failed",
+  });
 }

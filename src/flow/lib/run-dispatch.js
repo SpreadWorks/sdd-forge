@@ -96,6 +96,7 @@ const DISPATCHER_OWNED_RECOVERY_COMMANDS = new Set([
   "recover-task-execution-overrun",
   "settle-gate-transition",
   "settle-review-transition",
+  "gate",
 ]);
 const NON_REPLAYABLE_HANDOFF_ERROR_CODES = new Set([
   "FLOW_ARTIFACT_HANDOFF_AUTHORITY_VIOLATION",
@@ -1087,6 +1088,12 @@ export default class RunDispatchCommand extends FlowCommand {
     const match = /^sennel flow run ([a-z][a-z0-9-]*)(?:\s|$)/.exec(action.directive.nextAction);
     const commandName = match?.[1] || null;
     if (!DISPATCHER_OWNED_RECOVERY_COMMANDS.has(commandName)) return null;
+    // `gate` is normally a worker-producing command and must never become a
+    // broad dispatcher-owned capability.  Definition projects this command
+    // here only for the catalog-bound publication reconciliation action; the
+    // Gate command independently verifies that exact condition before it can
+    // rehydrate anything.
+    if (commandName === "gate" && action.directive.actionId !== "RECONCILE_GATE_PUBLICATION") return null;
     return this.runRegisteredFlowCommand(ctx, target, commandName, []);
   }
 

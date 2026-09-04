@@ -316,6 +316,12 @@ function definitionOwnedGateDirective(selection, { state, binding }) {
     throw new Error("Gate next-action requires a Definition Action projection");
   }
   const { operation, reason, phase, nonblockingHandoff } = action;
+  if (operation === "reconcile") return new ExecuteCommandDirective({
+    actionId: "RECONCILE_GATE_PUBLICATION",
+    nextAction: guardedCommand("sennel flow run gate", state, binding),
+    instruction: "Reconcile the exact cataloged Gate result through its post-publication classification; do not evaluate the Gate again.",
+    reason: "A current Gate result was published before its canonical post hook completed.",
+  });
   if (operation === "external-blocked") {
     return new BlockedDirective({
       code: "GATE_EXTERNAL_BLOCKED",

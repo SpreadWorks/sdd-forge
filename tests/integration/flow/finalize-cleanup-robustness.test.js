@@ -16,6 +16,7 @@ import { findStepById } from "../../../src/flow/lib/step-tree.js";
 import { ProcessIdentitySource } from "../../../src/lib/process-identity.js";
 import { ProcessOwnedLock, RealDirectoryAuthority } from "../../../src/lib/process-owned-lock.js";
 import { FlowManager } from "../../../src/lib/flow-manager.js";
+import { persistPromptCacheHitMetric } from "../../../src/lib/agent-invocation-metric.js";
 import {
   WorktreeFlowBindingStore,
   WorktreeFlowIdentity,
@@ -131,6 +132,38 @@ describe("finalize-cleanup robustness", () => {
       () => record({ id: "metric-3" }),
       /canonical finalize-cleanup finalize\.cleanup\.agent-metrics is invalid|does not match the catalog/,
     );
+  });
+
+  it("routes prompt-cache metrics through the finalize sidecar in a worktree Flow", async () => {
+    tmp = createTmpDir("sennel-finalize-cache-metric-");
+    const state = setupFinalizeCleanupFlow(tmp, { worktree: true });
+    const flowManager = makeFlowManager(tmp);
+
+    assert.equal(await persistPromptCacheHitMetric({
+      flowManager,
+      context: flowManager.resolveCurrentContext(),
+      provider: "test-provider",
+      profileKey: "flow-finalize",
+      responseChars: 24,
+    }), true);
+
+    const artifact = flowManager.readArtifact({
+      specId: state.specId,
+      logicalKey: "finalize.cleanup.agent-metrics",
+      consumerNodeId: "finalize-cleanup",
+    });
+    assert.deepEqual(JSON.parse(artifact.bytes.toString("utf8")), {
+      version: 1,
+      entries: [{
+        phase: "finalize-cleanup",
+        kind: "agent-cache",
+        provider: "test-provider",
+        profileKey: "flow-finalize",
+        callCount: 0,
+        cachedResponse: true,
+        responseChars: 24,
+      }],
+    });
   });
 
   it("registry post hooks switch ctx.flowManager to main repo authority", async () => {

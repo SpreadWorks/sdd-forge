@@ -55,6 +55,7 @@ import {
   GateCatalogPublication,
   GateFailureCategory,
   GateLineage,
+  GatePostPublicationState,
   GateRecoveryEvidence,
   GateReviewFindingReadiness,
   GateRetryMetrics,
@@ -97,6 +98,7 @@ export {
   GateCatalogPublication,
   GateFailureCategory,
   GateLineage,
+  GatePostPublicationState,
   GateRecoveryEvidence,
   GateReviewFindingReadiness,
   GateRetryMetrics,
@@ -205,7 +207,7 @@ function requireStepList(value, field) {
 }
 
 const GATE_DISPOSITIONS = new Set([
-  "pass", "retry", "repair", "defer", "external-blocked", "blocked", "recovery", "nonblocking", "advance",
+  "pass", "retry", "repair", "defer", "external-blocked", "blocked", "recovery", "reconcile", "nonblocking", "advance",
 ]);
 const GATE_TRANSITION_TOKEN = Symbol("definition-gate-transition");
 const DRAFT_COVERAGE_REPAIR_COMPLETION_TOKEN = Symbol("definition-draft-coverage-repair-completion");
@@ -295,6 +297,9 @@ export class GateBlockedDisposition extends GateDisposition {
 }
 export class GateRecoveryDisposition extends GateDisposition {
   constructor(token) { super(token, "recovery"); }
+}
+export class GateReconcilePublicationDisposition extends GateDisposition {
+  constructor(token) { super(token, "reconcile"); }
 }
 export class GateNonblockingDisposition extends GateDisposition {
   constructor(token) { super(token, "nonblocking"); }
@@ -652,7 +657,7 @@ function gateDecision(facts, disposition, options = {}) {
  * The definition's phase-neutral Gate policy. Phase migrations may add their
  * own facts, but execution and projection layers cannot choose a disposition.
  */
-export function resolveGateTransition(facts) {
+function resolveGateClassification(facts) {
   if (!(facts instanceof GateTransitionFacts)) {
     throw new Error("resolveGateTransition requires GateTransitionFacts");
   }
@@ -724,6 +729,29 @@ export function resolveGateTransition(facts) {
   // The failed Attempt remains current until the canonical settlement command
   // records its finding.  `defer` therefore has no premature status advance.
   return gateDecision(facts, new GateDeferDisposition(GATE_TRANSITION_TOKEN));
+}
+
+export function resolveGateTransition(facts) {
+  if (!(facts instanceof GateTransitionFacts)) {
+    throw new Error("resolveGateTransition requires GateTransitionFacts");
+  }
+  return resolveGateClassification(facts);
+}
+
+/**
+ * Select the one recovery action that is available after result publication
+ * and before the post hook has classified that result.  This is intentionally
+ * separate from the semantic Gate decision: the post hook still receives the
+ * same Definition-owned pass/fail plan it would have selected uninterrupted.
+ */
+export function resolveGatePublicationRecovery(facts) {
+  if (!(facts instanceof GateTransitionFacts)) {
+    throw new Error("resolveGatePublicationRecovery requires GateTransitionFacts");
+  }
+  if (!facts.postPublication.requiresReconciliation || facts.integrityFailure !== null) return null;
+  return gateDecision(facts, new GateReconcilePublicationDisposition(GATE_TRANSITION_TOKEN), {
+    updates: [],
+  });
 }
 
 // Non-Gate transition policy is intentionally independent from the Gate

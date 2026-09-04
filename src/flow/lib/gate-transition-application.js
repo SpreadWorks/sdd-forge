@@ -9,6 +9,7 @@ import {
   GatePublicOutcomeProjection,
   GateTransitionDecision,
   projectGatePublicOutcome,
+  resolveGatePublicationRecovery,
   resolveGateTransition,
 } from "../definition.js";
 import { GateTransitionFacts } from "./gate-transition.js";
@@ -124,7 +125,7 @@ export function resolveGateNextAction({ flowManager, flowState, phase, validateR
   const facts = readCurrentGateTransitionFacts({ flowManager, flowState, phase });
   if (facts === null) return null;
   if (!(facts instanceof GateTransitionFacts)) throw new Error("Gate next-action facts must be typed");
-  const decision = resolveGateTransition(facts);
+  const decision = resolveGatePublicationRecovery(facts) ?? resolveGateTransition(facts);
   validateRoute(decision.plan, decision);
   return Object.freeze({ decision, action: projectGateTransitionDecision(decision) });
 }

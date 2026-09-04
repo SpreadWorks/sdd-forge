@@ -90,6 +90,7 @@ import {
 import {
   CanonicalGateInputStore,
   CanonicalGatePromotion,
+  CanonicalGatePublishedResultRecovery,
   canonicalGateNodeId,
 } from "./canonical-gate-artifacts.js";
 import { isCanonicalFlowState } from "./canonical-test-artifacts.js";
@@ -1430,7 +1431,7 @@ async function checkGuardrail(root, targetText, phase, role, previouslyPassedIds
 // Read-only Gate observation support
 // ---------------------------------------------------------------------------
 
-import { gateReportPrescription, resolveGateTransition } from "../definition.js";
+import { gateReportPrescription, resolveGatePublicationRecovery, resolveGateTransition } from "../definition.js";
 
 const GATE_OBSERVATION_PHASES = VALID_GATE_PHASES;
 
@@ -3243,6 +3244,23 @@ export class RunGateCommand extends FlowCommand {
       phase,
     });
     if (existingFacts !== null) {
+      const recovery = resolveGatePublicationRecovery(existingFacts);
+      if (recovery !== null) {
+        const selected = state.nextAction();
+        if (selected?.operation !== "resume" || selected.action?.action !== "run-gate") {
+          throw new Error(
+            `canonical Gate publication recovery rejected; state selected ${selected?.operation ?? "no action"}`,
+          );
+        }
+        return new CanonicalGatePublishedResultRecovery({
+          flowManager,
+          state,
+          phase,
+          nodeId,
+          activeTaskId,
+          facts: existingFacts,
+        }).rehydrate();
+      }
       const decision = resolveGateTransition(existingFacts);
       throw new Error(
         `canonical gate admission rejected evaluation; definition selected ${decision.disposition.operation}`,
