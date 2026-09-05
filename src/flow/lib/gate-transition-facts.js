@@ -6,7 +6,14 @@
  * definition.js.  Commands must not reconstruct any of these identities
  * from their invocation arguments or process-local state.
  */
-import { GateFailureCategory, GateTaskBudget, GateTaskLifecycle, GateTransitionFacts, TaskGateSettlementProgress } from "./gate-transition.js";
+import {
+  GateFailureCategory,
+  GateTaskBudget,
+  GateTaskLifecycle,
+  GateTransitionFacts,
+  TaskGateClassificationRecoveryProgress,
+  TaskGateSettlementProgress,
+} from "./gate-transition.js";
 import { CanonicalCommandAttemptArtifactHistory } from "./canonical-command-result.js";
 import {
   canonicalGateNodeId,
@@ -18,6 +25,10 @@ import {
 import { inspectCanonicalPlanGateRepair } from "./plan-gate-repair.js";
 import { evaluateReviewFindingGateReadiness } from "./review-finding-gate-readiness.js";
 import { captureCurrentTaskSource } from "./task-mutation-lineage.js";
+import {
+  TASK_GATE_CLASSIFICATION_RECOVERY_OPERATION,
+  TaskGateClassificationRecoveryIdentity,
+} from "./task-gate-classification-recovery.js";
 
 const SHA256 = /^[a-f0-9]{64}$/;
 
@@ -191,8 +202,25 @@ function integrationReviewReadiness({ flowManager, state }) {
   }).toJSON();
 }
 
-function resultFailure(payload, attempt) {
-  if (payload?.result !== "fail") return null;
+class GateFailureResolution {
+  constructor({ failure = null, classificationMismatch = false } = {}) {
+    if (failure !== null && !(failure instanceof GateFailureCategory)) {
+      throw new Error("Gate failure resolution requires a typed failure");
+    }
+    if (typeof classificationMismatch !== "boolean") {
+      throw new Error("Gate failure resolution mismatch flag must be boolean");
+    }
+    if (classificationMismatch && failure === null) {
+      throw new Error("Gate failure resolution mismatch requires an authoritative failure");
+    }
+    this.failure = failure;
+    this.classificationMismatch = classificationMismatch;
+    Object.freeze(this);
+  }
+}
+
+function resultFailure(payload, attempt, { taskScope = false } = {}) {
+  if (payload?.result !== "fail") return new GateFailureResolution();
   const artifactCategory = payload?.artifacts?.gateTransitionFailureCategory ?? null;
   const attemptCategory = attempt?.failure === null || attempt?.failure === undefined
     ? null
@@ -207,11 +235,15 @@ function resultFailure(payload, attempt) {
   }
   const artifact = artifactCategory === null ? null : new GateFailureCategory(artifactCategory);
   const attemptFailure = attemptCategory === null ? null : new GateFailureCategory(attemptCategory);
-  if (artifact !== null && attemptFailure !== null
-    && (artifact.category !== attemptFailure.category || artifact.code !== attemptFailure.code)) {
+  const classificationMismatch = artifact !== null && attemptFailure !== null
+    && (artifact.category !== attemptFailure.category || artifact.code !== attemptFailure.code);
+  if (classificationMismatch && !taskScope) {
     throw new Error("canonical Gate result and current Attempt failure classification disagree");
   }
-  return (artifact ?? attemptFailure).toJSON();
+  return new GateFailureResolution({
+    failure: artifact ?? attemptFailure,
+    classificationMismatch,
+  });
 }
 
 function currentGateActivity({ activities, nodeId, attempt }) {
@@ -226,7 +258,86 @@ function currentGateActivity({ activities, nodeId, attempt }) {
   return matches;
 }
 
-function taskGateSettlementProgress({ flowManager, state, nodeId, taskId, attempt, publication, catalogFingerprint, lineage, activities, producerActivities, failure, classificationRecorded }) {
+function sameFailure(left, right) {
+  return left?.category === right?.category && left?.code === right?.code;
+}
+
+class TaskGateClassificationRecoveryObservation {
+  constructor({ progress, classifications }) {
+    if (!(progress instanceof TaskGateClassificationRecoveryProgress)) {
+      throw new Error("Task Gate classification recovery observation requires typed progress");
+    }
+    if (!Array.isArray(classifications)) {
+      throw new Error("Task Gate classification recovery observation requires classification Activities");
+    }
+    this.progress = progress;
+    this.classifications = Object.freeze([...classifications]);
+    Object.freeze(this);
+  }
+}
+
+function taskGateClassificationRecovery({ attempt, publication, producerActivities, failure, classificationMismatch }) {
+  const failures = producerActivities.filter((activity) => (
+    activity.transition?.operation === "fail_attempt"
+    && activity.confirmationOrder >= publication.confirmationOrder
+  ));
+  const recoveries = producerActivities.filter((activity) => (
+    activity.transition?.operation === TASK_GATE_CLASSIFICATION_RECOVERY_OPERATION
+  ));
+  if (recoveries.length > 1) {
+    throw new Error("Task Gate settlement has duplicate classification recovery effects");
+  }
+  const recovery = recoveries[0] ?? null;
+  if (recovery === null) {
+    if (!classificationMismatch) {
+      return new TaskGateClassificationRecoveryObservation({
+        progress: new TaskGateClassificationRecoveryProgress(),
+        classifications: failures,
+      });
+    }
+    if (attempt.failure?.category !== "tooling" || failures.length !== 1
+      || failures[0].confirmationOrder <= publication.confirmationOrder
+      || !sameFailure(failures[0].failure, attempt.failure)) {
+      throw new Error("canonical Gate result and current Attempt failure classification disagree");
+    }
+    return new TaskGateClassificationRecoveryObservation({
+      progress: new TaskGateClassificationRecoveryProgress({
+        status: "required",
+        failedActivityId: failures[0].id,
+      }),
+      classifications: [],
+    });
+  }
+  const superseded = failures.filter((activity) => activity.confirmationOrder < recovery.confirmationOrder);
+  if (superseded.length !== 1 || superseded[0].failure?.category !== "tooling"
+    || superseded[0].confirmationOrder <= publication.confirmationOrder
+    || sameFailure(superseded[0].failure, failure)) {
+    throw new Error("Task Gate classification recovery does not identify one conflicting tooling failure");
+  }
+  const identity = new TaskGateClassificationRecoveryIdentity({
+    publicationActivityId: publication.id,
+    failedActivityId: superseded[0].id,
+    attempt,
+  });
+  if (recovery.id !== identity.activityId
+    || recovery.attemptId !== attempt.id
+    || recovery.sequence !== attempt.sequence
+    || recovery.transition?.attempt?.id !== attempt.id
+    || recovery.transition?.attempt?.sequence !== attempt.sequence
+    || recovery.transition?.attempt?.failure !== null) {
+    throw new Error("Task Gate classification recovery is not bound to its canonical Attempt history");
+  }
+  return new TaskGateClassificationRecoveryObservation({
+    progress: new TaskGateClassificationRecoveryProgress({
+      status: "recorded",
+      failedActivityId: superseded[0].id,
+      recoveryActivityId: recovery.id,
+    }),
+    classifications: failures.filter((activity) => activity.confirmationOrder > recovery.confirmationOrder),
+  });
+}
+
+function taskGateSettlementProgress({ flowManager, state, nodeId, taskId, attempt, publication, catalogFingerprint, lineage, activities, producerActivities, failure, classificationRecorded, classificationMismatch }) {
   const orderedActivities = activities.map((activity) => {
     if (!Number.isSafeInteger(activity.confirmationOrder)) {
       throw new Error("Task Gate settlement Activity ordering is unavailable");
@@ -234,11 +345,12 @@ function taskGateSettlementProgress({ flowManager, state, nodeId, taskId, attemp
     return activity;
   });
   let classificationOrder = publication.confirmationOrder;
+  let classificationRecovery = new TaskGateClassificationRecoveryProgress();
   if (failure !== null) {
-    const classifications = producerActivities.filter((activity) => (
-      activity.transition?.operation === "fail_attempt"
-      && activity.confirmationOrder >= publication.confirmationOrder
-    ));
+    const recovery = taskGateClassificationRecovery({
+      attempt, publication, producerActivities, failure, classificationMismatch,
+    });
+    const classifications = recovery.classifications;
     if (classifications.length > 1) {
       throw new Error("Task Gate settlement has duplicate semantic classification effects");
     }
@@ -251,6 +363,7 @@ function taskGateSettlementProgress({ flowManager, state, nodeId, taskId, attemp
       throw new Error("Task Gate settlement classification does not match its canonical result");
     }
     classificationOrder = classification?.confirmationOrder ?? null;
+    classificationRecovery = recovery.progress;
   }
   const metricOperations = ["increment", "reset"].filter((operation) => {
     const id = taskGateSettlementMetricActivityId({
@@ -322,6 +435,7 @@ function taskGateSettlementProgress({ flowManager, state, nodeId, taskId, attemp
   }
   return new TaskGateSettlementProgress({
     classificationRecorded,
+    classificationRecovery,
     metricOperations,
     issueLogRecorded,
     terminalLifecycleRecorded: false,
@@ -414,14 +528,17 @@ export function readCurrentGateTransitionFacts({ flowManager, flowState, phase, 
     && publication.transition?.operation !== "confirm_attempt") {
     throw new Error("gate catalog publication has an invalid producer Activity");
   }
-  const failure = resultFailure(payload, attempt);
+  const failureResolution = resultFailure(payload, attempt, { taskScope: taskId !== null });
+  const failure = failureResolution.failure;
   // Result publication is intentionally separate from the post hook that
   // records a failed Attempt or advances a passing one.  The canonical
   // Attempt is the only durable marker for a failed result having crossed
   // that classification boundary; pass and recovered results remain
   // unclassified while their producer Attempt is still current.
+  const classificationRecorded = payload.result !== "fail"
+    || (attempt.failure !== null && !failureResolution.classificationMismatch);
   const postPublication = {
-    status: payload.result === "fail" && attempt.failure !== null ? "classified" : "unclassified",
+    status: payload.result === "fail" && classificationRecorded ? "classified" : "unclassified",
   };
   let sourceFingerprint = resultSource.descriptor.hash;
   let sourceRevisionFingerprint = null;
@@ -522,7 +639,8 @@ export function readCurrentGateTransitionFacts({ flowManager, flowState, phase, 
       flowManager, state, nodeId, taskId, attempt, publication, activities, producerActivities, failure,
       catalogFingerprint: resultSource.descriptor.hash,
       lineage,
-      classificationRecorded: payload.result !== "fail" || attempt.failure !== null,
+      classificationRecorded,
+      classificationMismatch: failureResolution.classificationMismatch,
     }),
   });
 }

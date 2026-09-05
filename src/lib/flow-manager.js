@@ -700,6 +700,9 @@ export class FlowManager {
   recordGateObservationDecision(input = {}) {
     return this._store.recordGateObservationDecision({ ...input, specId: input.specId ?? this._boundSpecId });
   }
+  recoverTaskGateClassification(input = {}) {
+    return this._store.recoverTaskGateClassification({ ...input, specId: input.specId ?? this._boundSpecId });
+  }
   retryGateTransition(input = {}) {
     return this._store.retryGateTransition({ ...input, specId: input.specId ?? this._boundSpecId });
   }

@@ -367,7 +367,13 @@ export class GateTaskBudget {
 
 /** Read-only progress of the durable effects that follow a Task Gate result. */
 export class TaskGateSettlementProgress {
-  constructor({ classificationRecorded, metricOperations, issueLogRecorded, terminalLifecycleRecorded } = {}) {
+  constructor({
+    classificationRecorded,
+    classificationRecovery = { status: "not-required" },
+    metricOperations,
+    issueLogRecorded,
+    terminalLifecycleRecorded,
+  } = {}) {
     if (typeof classificationRecorded !== "boolean" || typeof terminalLifecycleRecorded !== "boolean") {
       throw new Error("Task Gate settlement lifecycle progress must be boolean");
     }
@@ -388,6 +394,12 @@ export class TaskGateSettlementProgress {
       throw new Error("Task Gate terminal lifecycle requires its issue-log effect");
     }
     this.classificationRecorded = classificationRecorded;
+    this.classificationRecovery = classificationRecovery instanceof TaskGateClassificationRecoveryProgress
+      ? classificationRecovery
+      : new TaskGateClassificationRecoveryProgress(classificationRecovery);
+    if (this.classificationRecovery.required && this.classificationRecorded) {
+      throw new Error("Task Gate classification recovery cannot coexist with a completed classification");
+    }
     this.metricOperations = Object.freeze([...metricOperations].sort());
     this.issueLogRecorded = issueLogRecorded;
     this.terminalLifecycleRecorded = terminalLifecycleRecorded;
@@ -399,7 +411,8 @@ export class TaskGateSettlementProgress {
   }
 
   requiresReconciliation({ classificationRequired = false, metricEffect = null, issueLogRequired = false, terminalLifecycleRequired = false } = {}) {
-    return (classificationRequired && !this.classificationRecorded)
+    return this.classificationRecovery.required
+      || (classificationRequired && !this.classificationRecorded)
       || (metricEffect !== null && !this.hasMetric(metricEffect))
       || (issueLogRequired && !this.issueLogRecorded)
       || (terminalLifecycleRequired && !this.terminalLifecycleRecorded);
@@ -408,9 +421,42 @@ export class TaskGateSettlementProgress {
   toJSON() {
     return {
       classificationRecorded: this.classificationRecorded,
+      classificationRecovery: this.classificationRecovery.toJSON(),
       metricOperations: [...this.metricOperations],
       issueLogRecorded: this.issueLogRecorded,
       terminalLifecycleRecorded: this.terminalLifecycleRecorded,
+    };
+  }
+}
+
+/** Read-only status of an audited correction for a legacy post-publication tooling classification. */
+export class TaskGateClassificationRecoveryProgress {
+  constructor({ status = "not-required", failedActivityId = null, recoveryActivityId = null } = {}) {
+    this.status = requiredText(status, "Task Gate classification recovery status");
+    if (!new Set(["not-required", "required", "recorded"]).has(this.status)) {
+      throw new Error("Task Gate classification recovery status is invalid");
+    }
+    this.failedActivityId = optionalText(failedActivityId, "Task Gate classification recovery failed Activity id");
+    this.recoveryActivityId = optionalText(recoveryActivityId, "Task Gate classification recovery Activity id");
+    if (this.status === "not-required" && (this.failedActivityId !== null || this.recoveryActivityId !== null)) {
+      throw new Error("Task Gate classification recovery absence cannot carry Activity identities");
+    }
+    if (this.status === "required" && (this.failedActivityId === null || this.recoveryActivityId !== null)) {
+      throw new Error("required Task Gate classification recovery must identify only the failed Activity");
+    }
+    if (this.status === "recorded" && (this.failedActivityId === null || this.recoveryActivityId === null)) {
+      throw new Error("recorded Task Gate classification recovery requires both Activity identities");
+    }
+    Object.freeze(this);
+  }
+
+  get required() { return this.status === "required"; }
+
+  toJSON() {
+    return {
+      status: this.status,
+      failedActivityId: this.failedActivityId,
+      recoveryActivityId: this.recoveryActivityId,
     };
   }
 }

@@ -29,6 +29,10 @@ import { DefinitionFailureOwnership } from "./definition-failure-ownership.js";
 import { validateUpgradeResultArtifact } from "./upgrade-result-artifact.js";
 import { StepConnectionReceipt as DraftStepConnectionReceipt } from "./draft-completion-connector.js";
 import { TestReviewRepairWorkerTimeout } from "./test-review-repair-timeout.js";
+import {
+  TASK_GATE_CLASSIFICATION_RECOVERY_OPERATION,
+  TaskGateClassificationRecoveryIdentity,
+} from "./task-gate-classification-recovery.js";
 
 /**
  * The production Flow Version 1 record.  This is deliberately independent
@@ -83,6 +87,7 @@ const TRANSITION_ATTEMPT_OPERATIONS = new Set([
   "retry_gate_attempt",
   "retry_recovery_attempt",
   "update_attempt",
+  TASK_GATE_CLASSIFICATION_RECOVERY_OPERATION,
   "rewind",
   "rewind_test_evidence",
   "repair_test_review",
@@ -4027,6 +4032,46 @@ export class CurrentFlowState {
     return this.#replaceRoot(this.root, this.current, replacement);
   }
 
+  recoverTaskGateClassification({ attempt, priorActivities, activityId }) {
+    this.#assertExecutionActive();
+    if (this.current == null || this.attempt == null || this.attempt.failure?.category !== "tooling") {
+      throw new CurrentFlowStateInvariantError("Task Gate classification recovery requires a tooling-failed active Attempt");
+    }
+    const leaf = nodeAtPath(this.root, this.current);
+    const taskId = this.current.at(-2) ?? null;
+    const task = taskId === null ? null : this.findNode(taskId);
+    if (task?.kind !== "task" || leaf.id !== `${task.id}-gate`) {
+      throw new CurrentFlowStateInvariantError("Task Gate classification recovery requires the active Task Gate");
+    }
+    const replacement = attempt instanceof CurrentAttempt ? attempt : new CurrentAttempt(attempt);
+    const expectedReplacement = { ...this.attempt.toJSON(), failure: null };
+    if (!isDeepStrictEqual(replacement.toJSON(), expectedReplacement)) {
+      throw new CurrentFlowStateInvariantError("Task Gate classification recovery must preserve the exact Attempt except its tooling failure");
+    }
+    const history = priorActivities.filter((activity) => (
+      activity.nodeId === leaf.id
+      && activity.attemptId === this.attempt.id
+      && activity.sequence === this.attempt.sequence
+    ));
+    const publications = history.filter((activity) => activity.transition.operation === "publish_artifacts");
+    const failures = history.filter((activity) => activity.transition.operation === "fail_attempt");
+    const recoveries = history.filter((activity) => activity.transition.operation === TASK_GATE_CLASSIFICATION_RECOVERY_OPERATION);
+    if (publications.length !== 1 || failures.length !== 1 || recoveries.length !== 0
+      || publications[0].confirmationOrder >= failures[0].confirmationOrder
+      || !isDeepStrictEqual(failures[0].failure?.toJSON?.() ?? failures[0].failure, this.attempt.failure.toJSON())) {
+      throw new CurrentFlowStateInvariantError("Task Gate classification recovery requires one published result followed by its tooling failure");
+    }
+    const identity = new TaskGateClassificationRecoveryIdentity({
+      publicationActivityId: publications[0].id,
+      failedActivityId: failures[0].id,
+      attempt: this.attempt,
+    });
+    if (activityId !== identity.activityId) {
+      throw new CurrentFlowStateInvariantError("Task Gate classification recovery Activity identity is invalid");
+    }
+    return this.#replaceRoot(this.root, this.current, replacement);
+  }
+
   /** Start the single audited reevaluation granted by a durable receipt. */
   retryExhaustedAttempt({ attempt }) {
     this.#assertExecutionActive();
@@ -5749,7 +5794,7 @@ export class ActivityTransition {
       : value;
     requireExactFields(normalized, ACTIVITY_TRANSITION_FIELDS, "activity.transition");
     const { operation, nodeId, task, attempt, status, policy, outbox, approval, nonblocking, finalizeSteps, gateTaskLifecycle, stepConnectionReceipt } = normalized;
-    if (![FLOW_CREATION_TRANSITION_OPERATION, DRAFT_COMPLETION_TRANSITION_OPERATION, "add_task", "add_approval_task", "start_attempt", "retry_attempt", "retry_gate_attempt", "retry_recovery_attempt", "update_attempt", "fail_attempt", "record_failure", "confirm_attempt", "complete_acceptance_decision_noop", "rewind", "rewind_test_evidence", "repair_test_review", "settle_test_review_repair_timeout", "repair_task_no_change_review", "repair_scenario_validity", "repair_implementation", "triage_implementation_for_repair", "triage_implementation_no_repair", "repair_acceptance_review", "preimplementation_bootstrap", "recover_existing_implementation", "reopen_draft_preimplementation", "reopen_draft_task_addition", "reopen_draft_spec_correction", "plan_gate_repair", "recover_attempt", "recover_missing_producer_artifact", "recover_task_execution_overrun", "accept_final_regression_failure", "defer_failed_review", "defer_failed_gate", INTERRUPTED_FINALIZE_SYNC_OPERATION, ...LIFECYCLE_TRANSITION_OPERATIONS, ...POLICY_TRANSITION_OPERATIONS, ...OUTBOX_TRANSITION_OPERATIONS, ...ARTIFACT_PUBLICATION_TRANSITION_OPERATIONS, ...DISPATCH_APPROVAL_TRANSITION_OPERATIONS, ...OBSERVATION_TRANSITION_OPERATIONS, ...NONBLOCKING_TRANSITION_OPERATIONS, ...FINALIZE_DOWNSTREAM_TRANSITION_OPERATIONS].includes(operation)) {
+    if (![FLOW_CREATION_TRANSITION_OPERATION, DRAFT_COMPLETION_TRANSITION_OPERATION, "add_task", "add_approval_task", "start_attempt", "retry_attempt", "retry_gate_attempt", "retry_recovery_attempt", "update_attempt", TASK_GATE_CLASSIFICATION_RECOVERY_OPERATION, "fail_attempt", "record_failure", "confirm_attempt", "complete_acceptance_decision_noop", "rewind", "rewind_test_evidence", "repair_test_review", "settle_test_review_repair_timeout", "repair_task_no_change_review", "repair_scenario_validity", "repair_implementation", "triage_implementation_for_repair", "triage_implementation_no_repair", "repair_acceptance_review", "preimplementation_bootstrap", "recover_existing_implementation", "reopen_draft_preimplementation", "reopen_draft_task_addition", "reopen_draft_spec_correction", "plan_gate_repair", "recover_attempt", "recover_missing_producer_artifact", "recover_task_execution_overrun", "accept_final_regression_failure", "defer_failed_review", "defer_failed_gate", INTERRUPTED_FINALIZE_SYNC_OPERATION, ...LIFECYCLE_TRANSITION_OPERATIONS, ...POLICY_TRANSITION_OPERATIONS, ...OUTBOX_TRANSITION_OPERATIONS, ...ARTIFACT_PUBLICATION_TRANSITION_OPERATIONS, ...DISPATCH_APPROVAL_TRANSITION_OPERATIONS, ...OBSERVATION_TRANSITION_OPERATIONS, ...NONBLOCKING_TRANSITION_OPERATIONS, ...FINALIZE_DOWNSTREAM_TRANSITION_OPERATIONS].includes(operation)) {
       throw new CurrentFlowStateInvariantError(`activity.transition.operation is invalid: ${operation}`);
     }
     this.operation = operation;
@@ -6148,6 +6193,13 @@ export class ActivityTransition {
       }
       return state.replaceCurrentAttempt({ attempt: this.attempt });
     }
+    if (this.operation === TASK_GATE_CLASSIFICATION_RECOVERY_OPERATION) {
+      return state.recoverTaskGateClassification({
+        attempt: this.attempt,
+        priorActivities,
+        activityId: activity.id,
+      });
+    }
     if (this.operation === "fail_attempt") {
       if (state.current == null || state.current.at(-1) !== targetId) {
         throw new CurrentFlowStateInvariantError("fail_attempt Activity must target the active current leaf");
@@ -6244,6 +6296,7 @@ export class FlowActivity {
       retry_gate_attempt: "attempt_retried",
       retry_recovery_attempt: "attempt_recovered",
       update_attempt: "attempt_updated",
+      [TASK_GATE_CLASSIFICATION_RECOVERY_OPERATION]: "recovery",
       fail_attempt: "attempt_failed",
       record_failure: "failure_recorded",
       confirm_attempt: "result_confirmed",
@@ -6346,12 +6399,12 @@ export class FlowActivity {
         throw new CurrentFlowStateInvariantError("Activity transition Attempt nodeId must match the Activity nodeId");
       }
     }
-    if (this.transition.operation === "update_attempt") {
+    if (["update_attempt", TASK_GATE_CLASSIFICATION_RECOVERY_OPERATION].includes(this.transition.operation)) {
       if (this.attemptId !== this.transition.attempt.id || this.sequence !== this.transition.attempt.sequence) {
-        throw new CurrentFlowStateInvariantError("update_attempt Activity attemptId/sequence must match its replacement Attempt");
+        throw new CurrentFlowStateInvariantError("Attempt replacement Activity identity must match its replacement Attempt");
       }
       if (this.transition.attempt.nodeId !== this.nodeId) {
-        throw new CurrentFlowStateInvariantError("update_attempt replacement Attempt nodeId must match the Activity nodeId");
+        throw new CurrentFlowStateInvariantError("replacement Attempt nodeId must match the Activity nodeId");
       }
     }
     this.timing = timing == null ? null : new ActivityTiming(timing);
@@ -6727,7 +6780,7 @@ function assertJournalAttemptIdentities(entries) {
       }
       registerIdentity(entry.attemptId, entry.sequence, known.nodeId);
     }
-    if (entry.transition.operation === "update_attempt") {
+    if (["update_attempt", TASK_GATE_CLASSIFICATION_RECOVERY_OPERATION].includes(entry.transition.operation)) {
       if (entry.transition.attempt.nodeId !== entry.nodeId) {
         throw new CurrentFlowStateInvariantError("updated Attempt nodeId must match its Activity nodeId");
       }

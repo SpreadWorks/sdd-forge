@@ -910,6 +910,13 @@ export class TaskGateSettlementCoordinator {
       });
       if (facts === null) return;
       this.ctx.gateTransitionDecision = resolveGateTransition(facts);
+      if (facts.taskSettlementProgress.classificationRecovery.required) {
+        this.ctx.flowManager.recoverTaskGateClassification({
+          specId: this.ctx.specId ?? this.ctx.flowState.specId,
+          decision: this.ctx.gateTransitionDecision,
+        });
+        continue;
+      }
       if (facts.result === "fail" && !facts.taskSettlementProgress.classificationRecorded) {
         const stepAttempt = this.ctx.flowManager.recordGateObservationDecision({
           specId: this.ctx.specId ?? this.ctx.flowState.specId,

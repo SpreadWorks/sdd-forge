@@ -127,6 +127,7 @@ import {
   taskGateSettlementMetricActivityId,
 } from "./canonical-gate-artifacts.js";
 import { TestReviewRepairWorkerTimeout } from "./test-review-repair-timeout.js";
+import { TaskGateClassificationRecoveryIdentity } from "./task-gate-classification-recovery.js";
 import {
   MissingProducerArtifactRecoveryAdmission,
   MissingProducerArtifactRoute,
@@ -389,7 +390,7 @@ export class TaskGateSettlementAdmission {
     this.decision = decision;
     this.facts = decision.facts;
     this.effect = requiredText(effect, "Task Gate settlement effect");
-    if (!["classification", "metric", "issue-log", "terminal", "continuation"].includes(this.effect)) {
+    if (!["classification-recovery", "classification", "metric", "issue-log", "terminal", "continuation"].includes(this.effect)) {
       throw new CurrentFlowStateInvariantError("Task Gate settlement effect is invalid");
     }
     this.issueEntry = issueEntry === null ? null : structuredClone(issueEntry);
@@ -436,8 +437,13 @@ export class TaskGateSettlementAdmission {
     const metric = this.decision.plan.retryMetric;
     const classificationComplete = this.facts.result !== "fail" || progress.classificationRecorded;
     const metricComplete = metric === null || progress.hasMetric(metric);
-    const expected = this.effect === "classification"
-      ? this.facts.result === "fail" && !progress.classificationRecorded
+    const expected = this.effect === "classification-recovery"
+      ? progress.classificationRecovery.required
+        && !progress.classificationRecorded
+        && progress.metricOperations.length === 0 && !progress.issueLogRecorded
+      : this.effect === "classification"
+      ? !progress.classificationRecovery.required
+        && this.facts.result === "fail" && !progress.classificationRecorded
         && progress.metricOperations.length === 0 && !progress.issueLogRecorded
       : this.effect === "metric"
         ? classificationComplete && metric !== null && !progress.hasMetric(metric)
@@ -1656,6 +1662,30 @@ export class CanonicalFlowManagerStore {
         ...(effect.operation === "reset" ? { reset: true } : {}),
       }),
       admission: new TaskGateSettlementAdmission(current, "metric"),
+    });
+  }
+
+  /** Supersede one legacy post-publication tooling classification without deleting its audit record. */
+  recoverTaskGateClassification({ specId = null, decision } = {}) {
+    const resolved = this.#resolveSpecId(specId);
+    if (resolved === null) throw new CurrentFlowStateInvariantError("no canonical active Flow");
+    const state = this.runtime.load(resolved);
+    const current = this.#admitGateDecision(state, decision, decision.disposition.operation);
+    const progress = current.facts.taskSettlementProgress?.classificationRecovery;
+    if (current.facts.scope !== "task" || progress?.required !== true || state.attempt?.failure?.category !== "tooling") {
+      throw new CurrentFlowStateInvariantError("Task Gate classification recovery requires one Definition-selected tooling conflict");
+    }
+    const identity = new TaskGateClassificationRecoveryIdentity({
+      publicationActivityId: current.facts.catalogPublication.producerActivityId,
+      failedActivityId: progress.failedActivityId,
+      attempt: current.facts.currentAttempt,
+    });
+    return this.runtime.recoverTaskGateClassification({
+      specId: resolved,
+      activityId: identity.activityId,
+      attempt: new CurrentAttempt({ ...state.attempt.toJSON(), failure: null }),
+      references: { evaluations: [], findings: [], repairs: [], artifacts: [] },
+      admission: new TaskGateSettlementAdmission(current, "classification-recovery"),
     });
   }
 

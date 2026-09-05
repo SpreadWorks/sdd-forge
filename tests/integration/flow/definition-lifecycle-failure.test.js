@@ -12,6 +12,7 @@ import GetNextActionCommand from "../../../src/flow/lib/get-next-action.js";
 import { CanonicalGatePromotion } from "../../../src/flow/lib/canonical-gate-artifacts.js";
 import { readCurrentGateTransitionFacts } from "../../../src/flow/lib/gate-transition-facts.js";
 import { captureCurrentTaskSource } from "../../../src/flow/lib/task-mutation-lineage.js";
+import { TASK_GATE_CLASSIFICATION_RECOVERY_OPERATION } from "../../../src/flow/lib/task-gate-classification-recovery.js";
 import { CanonicalFlowFixture, TaskLifecycleFixture } from "../../support/infrastructure/flow-setup.js";
 import { createTmpDir, removeTmpDir } from "../../support/builders/tmp-dir.js";
 
@@ -652,6 +653,75 @@ test("Task Gate semantic settlement resumes after classification, metric, and is
         removeTmpDir(root);
       }
     });
+  }
+});
+
+test("Task Gate settlement audibly supersedes a legacy post-publication tooling classification", async () => {
+  const root = createTmpDir("task-gate-classification-recovery-");
+  try {
+    const specId = "910-task-gate-classification-recovery";
+    const { manager } = taskGateFixture({ root, specId, result: "fail" });
+    const stateBefore = manager.canonicalState(specId);
+    assert.equal(manager.failCurrentAttemptIfCurrent({
+      specId,
+      expectedRunId: stateBefore.runId,
+      expectedAttempt: stateBefore.attempt,
+      failure: {
+        category: "tooling",
+        code: "POST_HOOK_FAILED",
+        message: "legacy post hook failed after Gate publication",
+        retryable: false,
+        retryKind: null,
+      },
+    }), true);
+
+    const conflictedFacts = readCurrentGateTransitionFacts({
+      flowManager: manager,
+      flowState: manager.loadReadOnly(specId),
+      phase: "task-impl",
+    });
+    assert.equal(conflictedFacts.failure.category, "semantic");
+    assert.equal(conflictedFacts.taskSettlementProgress.classificationRecorded, false);
+    assert.equal(conflictedFacts.taskSettlementProgress.classificationRecovery.status, "required");
+    const recoveryDecision = resolveGateTransition(conflictedFacts);
+
+    const resumed = await resumeTaskGateSettlement({ root, specId });
+    const settled = resumed.manager.canonicalState(specId);
+    assert.equal(settled.attempt.failure.category, "semantic");
+    assert.equal(settled.attempt.failure.code, "TASK_GATE_REJECTED");
+    const activities = resumed.manager.activityLedger(specId).filter((activity) => (
+      activity.nodeId === "T-1-gate"
+      && activity.attemptId === settled.attempt.id
+      && activity.sequence === settled.attempt.sequence
+    ));
+    const toolingFailure = activities.find((activity) => activity.failure?.category === "tooling");
+    const recovery = activities.find((activity) => (
+      activity.transition.operation === TASK_GATE_CLASSIFICATION_RECOVERY_OPERATION
+    ));
+    const semanticFailure = activities.find((activity) => activity.failure?.category === "semantic");
+    assert.ok(toolingFailure, "the superseded tooling failure must remain in the audit ledger");
+    assert.ok(recovery, "the classification correction must be an explicit recovery Activity");
+    assert.ok(semanticFailure, "normal Task Gate settlement must record the authoritative semantic failure");
+    assert.ok(toolingFailure.confirmationOrder < recovery.confirmationOrder);
+    assert.ok(recovery.confirmationOrder < semanticFailure.confirmationOrder);
+
+    const settledFacts = readCurrentGateTransitionFacts({
+      flowManager: resumed.manager,
+      flowState: resumed.manager.loadReadOnly(specId),
+      phase: "task-impl",
+    });
+    assert.equal(settledFacts.taskSettlementProgress.classificationRecovery.status, "recorded");
+    assert.equal(settledFacts.taskSettlementProgress.classificationRecorded, true);
+    assert.throws(
+      () => resumed.manager.recoverTaskGateClassification({ specId, decision: recoveryDecision }),
+      /changed|already complete|does not match|stale|requires one Definition-selected tooling conflict/,
+    );
+    const next = await new GetNextActionCommand().execute({
+      ...hookContext({ root, manager: resumed.manager, specId }), phase: "task-impl",
+    });
+    assert.equal(next.directive.actionId, "CLAIM_GATE_RETRY");
+  } finally {
+    removeTmpDir(root);
   }
 });
 

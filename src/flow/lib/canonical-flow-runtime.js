@@ -22,6 +22,7 @@ import {
   RetryRecoveryArtifactPublication,
 } from "./retry-recovery.js";
 import { DeferredFlowFindingsPublication } from "./flow-findings.js";
+import { TASK_GATE_CLASSIFICATION_RECOVERY_OPERATION } from "./task-gate-classification-recovery.js";
 
 const TYPE_FOR_OPERATION = Object.freeze({
   add_task: "task_added",
@@ -31,6 +32,7 @@ const TYPE_FOR_OPERATION = Object.freeze({
   retry_gate_attempt: "attempt_retried",
   retry_recovery_attempt: "attempt_recovered",
   update_attempt: "attempt_updated",
+  [TASK_GATE_CLASSIFICATION_RECOVERY_OPERATION]: "recovery",
   fail_attempt: "attempt_failed",
   record_failure: "failure_recorded",
   confirm_attempt: "result_confirmed",
@@ -356,6 +358,18 @@ export class CanonicalFlowRuntime {
       effort,
       usage,
       references,
+    });
+  }
+
+  recoverTaskGateClassification({ specId, activityId, attempt, references, admission } = {}) {
+    const state = this.#state(specId);
+    return this.#applyAttemptTransition(specId, state, {
+      id: activityId,
+      nodeId: this.#currentNodeId(state),
+      operation: TASK_GATE_CLASSIFICATION_RECOVERY_OPERATION,
+      attempt: requiredAttempt(attempt, "recoverTaskGateClassification"),
+      references,
+      admission,
     });
   }
 
@@ -1186,7 +1200,7 @@ export class CanonicalFlowRuntime {
     const target = requiredText(nodeId, "transition nodeId");
     const node = state.findNode(target);
     if (node === null) throw new CurrentFlowStateInvariantError(`transition node is not part of this Flow: ${target}`);
-    const transitionAttempt = ["start_attempt", "rewind", "rewind_test_evidence", "repair_test_review", "settle_test_review_repair_timeout", "repair_task_no_change_review", "repair_scenario_validity", "repair_implementation", "triage_implementation_for_repair", "triage_implementation_no_repair", "repair_acceptance_review", "preimplementation_bootstrap", "recover_existing_implementation", "reopen_draft_preimplementation", "reopen_draft_task_addition", "reopen_draft_spec_correction", "plan_gate_repair", "recover_attempt", "recover_missing_producer_artifact", "recover_task_execution_overrun", "retry_attempt", "retry_gate_attempt", "retry_recovery_attempt", "update_attempt", "accept_final_regression_failure", "defer_failed_review", "defer_failed_gate"].includes(operation)
+    const transitionAttempt = ["start_attempt", "rewind", "rewind_test_evidence", "repair_test_review", "settle_test_review_repair_timeout", "repair_task_no_change_review", "repair_scenario_validity", "repair_implementation", "triage_implementation_for_repair", "triage_implementation_no_repair", "repair_acceptance_review", "preimplementation_bootstrap", "recover_existing_implementation", "reopen_draft_preimplementation", "reopen_draft_task_addition", "reopen_draft_spec_correction", "plan_gate_repair", "recover_attempt", "recover_missing_producer_artifact", "recover_task_execution_overrun", "retry_attempt", "retry_gate_attempt", "retry_recovery_attempt", "update_attempt", TASK_GATE_CLASSIFICATION_RECOVERY_OPERATION, "accept_final_regression_failure", "defer_failed_review", "defer_failed_gate"].includes(operation)
       ? attempt
       : null;
     const activityAttempt = operation === "complete_draft_completion"
