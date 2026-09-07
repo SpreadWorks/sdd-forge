@@ -453,6 +453,23 @@ export class ReviewWorkUnit {
     return worker;
   }
 
+  /**
+   * Return an active unsealed worker surface without deleting it.  Task
+   * Review uses this only to fail closed after an interrupted provider call;
+   * reconciliation remains the owner of later cleanup.
+   */
+  recoverUnsealed() {
+    const hasManifest = fs.existsSync(this.manifestPath);
+    const hasSeal = fs.existsSync(this.sealPath);
+    if (!hasManifest && !hasSeal) return null;
+    if (!hasManifest) throw new Error("review work unit seal exists without its manifest");
+    if (hasSeal) return null;
+    return ReviewWorkUnit.fromEnvironment(
+      { [REVIEW_WORK_UNIT_MANIFEST_ENV]: this.manifestPath },
+      { expectedManifest: this.manifest(), expectedDirectory: this.root },
+    );
+  }
+
   cleanup() {
     if (!fs.existsSync(this.root)) return false;
     const stat = fs.lstatSync(this.root);
@@ -628,6 +645,112 @@ function confirmedReviewReceipt(flowManager, specId, workUnit, sealed) {
     }));
 }
 
+function reviewWorkUnitNamespace({ executionRoot, specId, runId }) {
+  return path.join(
+    path.resolve(requiredText(executionRoot, "review work unit executionRoot")),
+    REVIEW_WORK_UNIT_ROOT,
+    digest(requiredText(specId, "review work unit specId")).slice(0, 24),
+    digest(requiredText(runId, "review work unit runId")).slice(0, 24),
+  );
+}
+
+function assertTaskReviewWorkUnitIdentity({ worker, directory, runId, specId, taskId, nodeId, acceptedAttemptIds }) {
+  const manifest = worker.manifestDocument;
+  if (
+    manifest.runId !== runId
+    || manifest.specId !== specId
+    || manifest.phase !== "impl"
+    || manifest.taskId !== taskId
+    || manifest.nodeId !== nodeId
+    || !(acceptedAttemptIds instanceof Set)
+    || !acceptedAttemptIds.has(manifest.attemptId)
+    || path.basename(directory) !== digest(`${manifest.nodeId}:${manifest.attemptId}`).slice(0, 32)
+    || !manifest.output.equals(ReviewWorkUnitOutput.forReview({ phase: "impl", taskId }))
+  ) {
+    throw new Error("Task Review unsealed work unit identity does not match its execution namespace");
+  }
+  return worker;
+}
+
+/** All retained unsealed Task Review surfaces for one current task/node identity. */
+export class TaskReviewUnsealedWorkUnitSet {
+  constructor({ runId, specId, taskId, nodeId, acceptedAttemptIds, workUnits = [] } = {}) {
+    this.runId = requiredText(runId, "Task Review unsealed work unit runId");
+    this.specId = requiredText(specId, "Task Review unsealed work unit specId");
+    this.taskId = requiredText(taskId, "Task Review unsealed work unit taskId");
+    this.nodeId = requiredText(nodeId, "Task Review unsealed work unit nodeId");
+    if (!(acceptedAttemptIds instanceof Set) || acceptedAttemptIds.size === 0) {
+      throw new Error("Task Review unsealed work unit set requires canonical Attempt identities");
+    }
+    this.acceptedAttemptIds = new Set(acceptedAttemptIds);
+    if (!Array.isArray(workUnits) || workUnits.some((worker) => !(worker instanceof ReviewWorkUnit))) {
+      throw new Error("Task Review unsealed work unit set requires recovered work units");
+    }
+    for (const worker of workUnits) {
+      assertTaskReviewWorkUnitIdentity({
+        worker,
+        directory: worker.root,
+        runId: this.runId,
+        specId: this.specId,
+        taskId: this.taskId,
+        nodeId: this.nodeId,
+        acceptedAttemptIds: this.acceptedAttemptIds,
+      });
+    }
+    this.workUnits = Object.freeze([...workUnits]);
+    Object.freeze(this);
+  }
+
+  static recover({ executionRoot, runId, specId, taskId, nodeId, acceptedAttemptIds } = {}) {
+    const namespace = reviewWorkUnitNamespace({ executionRoot, runId, specId });
+    if (!fs.existsSync(namespace)) {
+      return new TaskReviewUnsealedWorkUnitSet({ runId, specId, taskId, nodeId, acceptedAttemptIds });
+    }
+    const recovered = [];
+    for (const directory of safeDirectoryEntries(namespace)) {
+      const manifestPath = path.join(directory, "manifest.json");
+      const sealPath = path.join(directory, "seal.json");
+      if (!fs.existsSync(manifestPath) || fs.existsSync(sealPath)) continue;
+      const worker = ReviewWorkUnit.fromEnvironment(
+        { [REVIEW_WORK_UNIT_MANIFEST_ENV]: manifestPath },
+        { expectedDirectory: directory },
+      );
+      const manifest = worker.manifestDocument;
+      if (manifest.phase !== "impl" || manifest.taskId !== taskId) continue;
+      recovered.push(assertTaskReviewWorkUnitIdentity({
+        worker,
+        directory,
+        runId,
+        specId,
+        taskId,
+        nodeId,
+        acceptedAttemptIds,
+      }));
+    }
+    return new TaskReviewUnsealedWorkUnitSet({
+      runId,
+      specId,
+      taskId,
+      nodeId,
+      acceptedAttemptIds,
+      workUnits: recovered,
+    });
+  }
+}
+
+function canonicalTaskReviewAttemptIds({ flowManager, specId, state, nodeId }) {
+  const attemptIds = new Set();
+  if (state.attempt?.nodeId === nodeId && typeof state.attempt.id === "string" && state.attempt.id !== "") {
+    attemptIds.add(state.attempt.id);
+  }
+  for (const activity of flowManager.activityLedger(specId)) {
+    if (activity?.nodeId === nodeId && typeof activity.attemptId === "string" && activity.attemptId !== "") {
+      attemptIds.add(activity.attemptId);
+    }
+  }
+  return attemptIds;
+}
+
 /**
  * Dispatcher-start reconciliation for a process crash after Store confirmation
  * but before local cleanup. The worker manifest chooses no authority here: it
@@ -639,18 +762,34 @@ export function reconcileCompletedReviewWorkUnits({ flowManager, specId, executi
   }
   const state = flowManager.canonicalState(specId);
   if (state === null) throw new Error("review work unit reconciliation requires a Version-1 Flow state");
-  const root = path.join(
-    path.resolve(requiredText(executionRoot, "review reconciliation executionRoot")),
-    REVIEW_WORK_UNIT_ROOT,
-    digest(requiredText(specId, "review reconciliation specId")).slice(0, 24),
-    digest(requiredText(state.runId, "review reconciliation runId")).slice(0, 24),
-  );
+  const root = reviewWorkUnitNamespace({ executionRoot, specId, runId: state.runId });
   if (!fs.existsSync(root)) return 0;
   let cleaned = 0;
   for (const directory of safeDirectoryEntries(root)) {
     const manifestPath = path.join(directory, "manifest.json");
     const sealPath = path.join(directory, "seal.json");
     if (!fs.existsSync(manifestPath) || !fs.existsSync(sealPath)) {
+      if (fs.existsSync(manifestPath) && !fs.existsSync(sealPath)) {
+        const worker = ReviewWorkUnit.fromEnvironment({ [REVIEW_WORK_UNIT_MANIFEST_ENV]: manifestPath }, { expectedDirectory: directory });
+        const manifest = worker.manifestDocument;
+        if (manifest.phase === "impl" && manifest.taskId !== null) {
+          assertTaskReviewWorkUnitIdentity({
+            worker,
+            directory,
+            runId: state.runId,
+            specId,
+            taskId: manifest.taskId,
+            nodeId: expectedNodeForManifest(manifest),
+            acceptedAttemptIds: canonicalTaskReviewAttemptIds({
+              flowManager,
+              specId,
+              state,
+              nodeId: expectedNodeForManifest(manifest),
+            }),
+          });
+          continue;
+        }
+      }
       const stat = fs.lstatSync(directory);
       if (!stat.isDirectory() || stat.isSymbolicLink() || fs.realpathSync(directory) !== directory) {
         throw new Error("unsealed review work unit cleanup target is invalid");

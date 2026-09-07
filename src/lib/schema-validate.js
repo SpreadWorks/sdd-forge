@@ -18,13 +18,13 @@
 export function validateSchema(value, schema, path = "") {
   const errors = [];
 
-  // oneOf — try each sub-schema, pass if exactly one matches
+  // oneOf — exactly one alternative must match. JSON Schema keywords are
+  // conjunctive, so a matching alternative does not skip sibling keywords.
   if (schema.oneOf) {
     const matching = schema.oneOf.filter((sub) => validateSchema(value, sub, path).length === 0);
-    if (matching.length === 0) {
-      errors.push(`${path || "(root)"}: must match oneOf — no schema matched`);
+    if (matching.length !== 1) {
+      errors.push(`${path || "(root)"}: must match exactly one schema in oneOf — ${matching.length} schemas matched`);
     }
-    return errors;
   }
 
   // deprecated — report error if value is present (caller handles presence check)

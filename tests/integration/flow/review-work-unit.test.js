@@ -14,15 +14,22 @@ import {
   REVIEW_WORK_UNIT_MANIFEST_ENV,
   ReviewWorkUnit,
   ReviewWorkUnitOutput,
+  TaskReviewUnsealedWorkUnitSet,
+  reconcileCompletedReviewWorkUnits,
 } from "../../../src/flow/lib/review-work-unit.js";
 import { createTmpDir, removeTmpDir } from "../../support/builders/tmp-dir.js";
-import { initGitRepo } from "../../support/infrastructure/git-repo.js";
+import { commitAll, initGitRepo } from "../../support/infrastructure/git-repo.js";
 import {
   parseImplReviewOutput,
   parseProposalReviewOutput,
   parseSpecReviewOutput,
   parseTestReviewOutput,
+  taskReviewRecoveryIgnoredDirectories,
 } from "../../../src/flow/lib/run-review.js";
+import {
+  SourceMutationBaseline,
+  SourceMutationManifest,
+} from "../../../src/flow/lib/worker-artifact-handoff.js";
 import { parseTestReviewFindings } from "../../../src/flow/commands/review.js";
 import {
   TestReviewRepairFinding,
@@ -231,6 +238,134 @@ describe("ReviewWorkUnit", () => {
         [REVIEW_WORK_UNIT_MANIFEST_ENV]: oversizedInputSurface.manifestPath,
       }).seal(),
       /review work unit input draft is unavailable or invalid:.*up to 3 bytes/,
+    );
+  });
+
+  it("exposes an exact unsealed Attempt surface for Task Review recovery before cleanup", () => {
+    const executionRoot = root();
+    const writer = createWorkUnit(executionRoot, {
+      phase: "impl",
+      taskId: "task-1",
+      nodeId: "task-1-review",
+      attemptId: "task-review-interrupted",
+      output: ReviewWorkUnitOutput.forReview({ phase: "impl", taskId: "task-1" }),
+    });
+    writer.writeInput({
+      logicalKey: "task.source",
+      logicalPath: "task-source.json",
+      bytes: Buffer.from('{"fingerprint":"checkpoint"}\n', "utf8"),
+      mediaType: "application/json",
+    });
+    const surface = writer.finalize();
+    const recovered = createWorkUnit(executionRoot, {
+      phase: "impl",
+      taskId: "task-1",
+      nodeId: "task-1-review",
+      attemptId: "task-review-interrupted",
+      output: ReviewWorkUnitOutput.forReview({ phase: "impl", taskId: "task-1" }),
+    });
+    recovered.declareInput({
+      logicalKey: "task.source",
+      logicalPath: "task-source.json",
+      bytes: Buffer.from('{"fingerprint":"checkpoint"}\n', "utf8"),
+      mediaType: "application/json",
+    });
+    const partial = recovered.recoverUnsealed();
+    assert.ok(partial instanceof ReviewWorkUnit);
+    assert.equal(partial.manifestDocument.attemptId, "task-review-interrupted");
+    assert.equal(fs.existsSync(surface.directory), true, "recovery owns the unsealed evidence until it has made a disposition");
+  });
+
+  it("retains unsealed Task Review evidence during dispatcher reconciliation and enumerates a prior Attempt", () => {
+    const executionRoot = root();
+    const writer = createWorkUnit(executionRoot, {
+      phase: "impl",
+      taskId: "task-1",
+      nodeId: "task-1-review",
+      attemptId: "task-review-prior-attempt",
+      output: ReviewWorkUnitOutput.forReview({ phase: "impl", taskId: "task-1" }),
+    });
+    const surface = writer.finalize();
+    const flowManager = {
+      canonicalState() {
+        return {
+          runId: "review-run",
+          currentNodeId: "task-1-review",
+          attempt: { id: "task-review-current-attempt", nodeId: "task-1-review" },
+        };
+      },
+      activityLedger() {
+        return [{ nodeId: "task-1-review", attemptId: "task-review-prior-attempt" }];
+      },
+      artifactCatalog() { return { artifacts: [] }; },
+    };
+    assert.equal(reconcileCompletedReviewWorkUnits({
+      flowManager,
+      specId: "001-review-work-unit",
+      executionRoot,
+    }), 0, "dispatcher preserves task-scoped unsealed evidence");
+    assert.equal(fs.existsSync(surface.directory), true);
+    const recovered = TaskReviewUnsealedWorkUnitSet.recover({
+      executionRoot,
+      runId: "review-run",
+      specId: "001-review-work-unit",
+      taskId: "task-1",
+      nodeId: "task-1-review",
+      acceptedAttemptIds: new Set(["task-review-current-attempt", "task-review-prior-attempt"]),
+    });
+    assert.deepEqual(recovered.workUnits.map((unit) => unit.manifestDocument.attemptId), ["task-review-prior-attempt"]);
+  });
+
+  it("keeps read-only phase unsealed cleanup behavior during reconciliation", () => {
+    const executionRoot = root();
+    const surface = createWorkUnit(executionRoot).finalize();
+    const flowManager = {
+      canonicalState() { return { runId: "review-run", currentNodeId: "draft-questions-review", attempt: null }; },
+      activityLedger() { return []; },
+      artifactCatalog() { return { artifacts: [] }; },
+    };
+    assert.equal(reconcileCompletedReviewWorkUnits({
+      flowManager,
+      specId: "001-review-work-unit",
+      executionRoot,
+    }), 1);
+    assert.equal(fs.existsSync(surface.directory), false);
+  });
+
+  it("re-entry baseline ignores only direct-mode parent receipts and detects other canonical spec changes", () => {
+    const executionRoot = root();
+    initGitRepo(executionRoot);
+    fs.mkdirSync(path.join(executionRoot, "src"), { recursive: true });
+    fs.writeFileSync(path.join(executionRoot, "src", "task.js"), "export const task = true;\n");
+    commitAll(executionRoot, "baseline");
+    const versionDirectory = path.join(executionRoot, "specs", "001-review-work-unit", "001");
+    const reviewDirectory = path.join(executionRoot, ".sennel", "review-work-units", "task-attempt");
+    fs.mkdirSync(reviewDirectory, { recursive: true });
+    const ignoredDirectories = taskReviewRecoveryIgnoredDirectories(executionRoot, {
+      workUnit: { directory: reviewDirectory },
+      flowManager: { specLocation: () => ({ directory: versionDirectory }) },
+      state: { specId: "001-review-work-unit" },
+    });
+    const baseline = SourceMutationBaseline.capture({
+      root: executionRoot,
+      attempt: { id: "task-review-attempt", nodeId: "task-1-review", sequence: 1 },
+      ignoredDirectories,
+    });
+    fs.mkdirSync(versionDirectory, { recursive: true });
+    fs.writeFileSync(path.join(versionDirectory, "flow.json"), "{\"failure\":true}\n");
+    fs.writeFileSync(path.join(versionDirectory, "activities.jsonl"), "{\"failure\":true}\n");
+    fs.writeFileSync(path.join(versionDirectory, "artifact-catalog.json"), "{\"failure\":true}\n");
+    assert.equal(SourceMutationManifest.capture({ baseline }).mutations.length, 0);
+    fs.writeFileSync(path.join(versionDirectory, "provider-edited-evidence.json"), "{\"changed\":true}\n");
+    assert.deepEqual(
+      SourceMutationManifest.capture({ baseline }).mutations.map((entry) => entry.path),
+      ["specs/001-review-work-unit/001/provider-edited-evidence.json"],
+    );
+    fs.rmSync(path.join(versionDirectory, "provider-edited-evidence.json"));
+    fs.writeFileSync(path.join(executionRoot, "src", "outside-task-allow-list.js"), "export const changed = true;\n");
+    assert.deepEqual(
+      SourceMutationManifest.capture({ baseline }).mutations.map((entry) => entry.path),
+      ["src/outside-task-allow-list.js"],
     );
   });
 

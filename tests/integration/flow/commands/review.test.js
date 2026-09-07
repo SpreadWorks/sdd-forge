@@ -29,6 +29,7 @@ import {
 import { ReviewFindingCycle } from "../../../../src/flow/lib/finding-disposition-policy.js";
 import { Agent } from "../../../../src/lib/agent.js";
 import { ProviderRegistry } from "../../../../src/lib/provider.js";
+import { adaptJsonSchemaForProvider } from "../../../../src/lib/provider-schema.js";
 import { Logger } from "../../../../src/lib/log.js";
 import { AgentAuthenticationFailure } from "../../../../src/lib/agent-failure.js";
 import { FLOW_COMMANDS } from "../../../../src/flow/registry.js";
@@ -40,7 +41,9 @@ import { ImplReviewProposal } from "../../../../src/flow/lib/impl-review-proposa
 import {
   canonicalReviewArtifactFindings,
   reviewArtifactFindingLists,
+  runCmdWithRetry,
 } from "../../../../src/flow/lib/run-review.js";
+import { ReviewFailure } from "../../../../src/flow/lib/review-failure.js";
 import {
   artifactPhaseMatchesReviewTarget,
   buildReviewHandoffFindings,
@@ -2305,6 +2308,28 @@ describe("impl review structured artifact helpers", () => {
     }
   });
 
+  it("rejects a partial Task Review recurrence pair after schema validation", () => {
+    assert.throws(
+      () => parseImplReviewFindings(JSON.stringify({
+        blockingFindings: [{
+          findingKey: "partial-recurrence",
+          title: "Partial recurrence evidence",
+          failureMode: "missing_acceptance_requirement",
+          file: null,
+          requirementId: "R4",
+          issue: "The response supplied only one side of the recurrence evidence.",
+          suggestion: "Supply both recurrence values or neither.",
+          disposition: "must-fix",
+          rationale: "Task recurrence evidence must be exact and paired.",
+          priorRepairInsufficiency: null,
+          repairStrategy: "Use a distinct repair path.",
+        }],
+        nonBlockingImprovements: [],
+      }), { requirementIds: new Set(["R4"]) }),
+      /must match exactly one schema in oneOf/,
+    );
+  });
+
   it("parses JSON findings and rejects legacy proposal markdown", () => {
     const parsed = parseImplReviewFindings(JSON.stringify({
       blockingFindings: [{
@@ -2528,6 +2553,15 @@ describe("impl review structured artifact helpers", () => {
     assert.deepEqual(itemSchema.properties.requirementId.type, ["string", "null"]);
     assert.deepEqual(itemSchema.properties.requirementId.enum, ["R1", null]);
     assert.deepEqual(itemSchema.properties.disposition.enum, ["must-fix", "deferred", "informational"]);
+    assert.equal(itemSchema.oneOf.length, 2);
+    assert.equal(itemSchema.oneOf[0].properties.priorRepairInsufficiency.type, "null");
+    assert.equal(itemSchema.oneOf[0].properties.repairStrategy.type, "null");
+    assert.equal(itemSchema.oneOf[1].properties.priorRepairInsufficiency.minLength, 1);
+    assert.equal(itemSchema.oneOf[1].properties.repairStrategy.minLength, 1);
+    const codexSchema = adaptJsonSchemaForProvider("codex", prompt.jsonSchema);
+    const codexItemSchema = codexSchema.properties.blockingFindings.items;
+    assert.equal(codexItemSchema.oneOf, undefined);
+    assert.equal(codexItemSchema.anyOf.length, 2);
   });
 
   it("assigns a stable findingKey to loop review proposals", () => {
@@ -2752,5 +2786,27 @@ describe("resolveAgent for flow.review.test", () => {
     };
     const testAgent = resolveAgent(cfg, "flow.review.test");
     assert.equal(testAgent.command, "claude");
+  });
+});
+
+describe("Task Review outer subprocess retry boundary", () => {
+  it("does not add a second child execution for a schema marker when Task protocol owns retries", async () => {
+    const failure = ReviewFailure.schemaFailure({
+      phase: "impl",
+      targetReview: "Task Review",
+      validationError: "recurrence explanation and repair strategy must be supplied together",
+    });
+    let calls = 0;
+    const result = await runCmdWithRetry(() => {
+      calls += 1;
+      return { ok: false, status: 1, stdout: "", stderr: failure.toMarkerLine(), signal: null, killed: false };
+    }, {
+      phase: "impl",
+      retryCount: 0,
+      retryDelayMs: 0,
+      retrySchema: false,
+    });
+    assert.equal(calls, 1);
+    assert.equal(ReviewFailure.fromSubprocessResult({ phase: "impl", result }).classification, "schema_failure");
   });
 });

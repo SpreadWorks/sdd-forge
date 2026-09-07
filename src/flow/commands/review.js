@@ -19,6 +19,8 @@ import {
   AgentFailure,
   AgentPermissionConfigurationFailure,
 } from "../../lib/agent-failure.js";
+import { DeferredAgentInvocationMetric } from "../../lib/agent-invocation-metric.js";
+import { AgentRuntimeDirectorySet } from "../../lib/agent.js";
 import { getSpecName } from "../../lib/flow-helpers.js";
 import { relativeFlowSpecFile } from "../../lib/flow-workspace.js";
 import { FLOW_ARTIFACT_CONTRACTS } from "../../lib/flow-artifact-contract.js";
@@ -74,7 +76,11 @@ import {
   contractFromTestReviewArtifact,
 } from "../lib/flow-judgment-contract.js";
 import { CanonicalCommandAttemptArtifactHistory } from "../lib/canonical-command-result.js";
-import { TaskReviewConvergenceEvidence } from "../lib/review-recurrence.js";
+import {
+  ReviewRecurrenceHistory,
+  TaskReviewConvergenceEvidence,
+  TaskReviewRecurrenceContract,
+} from "../lib/review-recurrence.js";
 import {
   FindingDispositionPolicy,
   MustFixDisposition,
@@ -88,13 +94,25 @@ import {
 import { RepairArtifactRegistry } from "../lib/repair-state-identity.js";
 import { ReviewToolingOutcome } from "../lib/review-convergence.js";
 import { collectUntrackedDiff } from "../lib/run-gate.js";
+import {
+  SourceMutationBaseline,
+} from "../lib/worker-artifact-handoff.js";
+import {
+  ReviewProtocolContract,
+  ReviewProtocolController,
+  ReviewProtocolEffectEvidence,
+  ReviewProtocolFailure,
+  ReviewProtocolRetryPolicy,
+  ReviewProtocolAttemptSettlement,
+  ReviewProtocolTransportRetryPolicy,
+} from "../lib/review-protocol.js";
 
 /**
  * Local helper for review-phase agent invocations. The Agent service handles
  * timeout and cwd internally; callers only provide the system prompt and
  * (optionally) commandId.
  */
-const callReviewAgent = (agent, prompt, commandId, systemPrompt) => {
+const callReviewAgent = (agent, prompt, commandId, systemPrompt, protocolOptions = {}) => {
   const executionOptions = {
     // Review is diagnostic and runs against the actual execution checkout.
     // The parent binds its result to the before/after source fingerprint and
@@ -111,11 +129,102 @@ const callReviewAgent = (agent, prompt, commandId, systemPrompt) => {
       systemPrompt: prompt.systemPrompt ?? systemPrompt,
       jsonSchema: prompt.jsonSchema ?? null,
       fmtFallback: prompt.fmtFallback ?? null,
+      ...protocolOptions,
       ...executionOptions,
     });
   }
-  return agent.call(prompt, { commandId, systemPrompt, ...executionOptions });
+  return agent.call(prompt, { commandId, systemPrompt, ...protocolOptions, ...executionOptions });
 };
+
+class TaskReviewSourceObservation {
+  constructor({ protocolAttempt, baseline } = {}) {
+    this.protocolAttempt = protocolAttempt;
+    if (!(baseline instanceof SourceMutationBaseline)) throw new Error("Task Review source observation requires a source baseline");
+    this.baseline = baseline;
+    Object.freeze(this);
+  }
+}
+
+class TaskReviewSourceEffectDetail {
+  constructor({ before, after } = {}) {
+    if (!(before instanceof TaskReviewSourceObservation) || !(after instanceof TaskReviewSourceObservation)) {
+      throw new Error("Task Review source effect detail requires source observations");
+    }
+    this.protocolAttempt = before.protocolAttempt.number;
+    this.baselineDigest = before.baseline.digest;
+    this.currentDigest = after.baseline.digest;
+    this.changedPaths = Object.freeze(before.baseline.snapshot.allChangedPaths(after.baseline.snapshot).slice(0, 20));
+    Object.freeze(this);
+  }
+}
+
+export class TaskReviewSourceEffectObserver {
+  constructor({ root, flow, flowManager, agent = null } = {}) {
+    this.root = path.resolve(root);
+    this.attempt = flow?.attempt;
+    this.ignoredDirectories = taskReviewProtocolIgnoredDirectories({ root: this.root, flow, flowManager, agent });
+    Object.freeze(this);
+  }
+
+  capture(protocolAttempt) {
+    return new TaskReviewSourceObservation({
+      protocolAttempt,
+      baseline: SourceMutationBaseline.capture({
+        root: this.root,
+        attempt: this.attempt,
+        ignoredDirectories: this.ignoredDirectories,
+      }),
+    });
+  }
+
+  hasEffect(before, after) {
+    return before.baseline.snapshot.allChangedPaths(after.baseline.snapshot).length > 0;
+  }
+
+  describe(before, after) {
+    return new ReviewProtocolEffectEvidence({
+      observer: "task-review-source",
+      detail: new TaskReviewSourceEffectDetail({ before, after }),
+    });
+  }
+}
+
+function taskReviewProtocolIgnoredDirectories({ root, agent }) {
+  // The provider's only expected runtime outputs live in its work-unit. The
+  // two shared runtime stores can be written concurrently by Agent/leases and
+  // must not become false source effects in a filesystem-snapshot fallback.
+  // Do not exclude the whole managed directory: canonical/spec changes are
+  // provider effects and must remain observable.
+  const candidates = [
+    reviewOutputDirectory(),
+    path.join(root, PRODUCT.managedDirName, "agent-cache"),
+    path.join(root, PRODUCT.managedDirName, "review-execution-locks"),
+    ...taskReviewAgentRuntimeDirectories({ root, agent }),
+  ];
+  const directories = candidates.map((candidate) => {
+    const relative = path.relative(root, candidate).split(path.sep).join("/");
+    if (relative === "" || relative.startsWith("../") || path.posix.isAbsolute(relative)) {
+      throw new Error("Task Review source-effect observer directory escapes its execution checkout");
+    }
+    return relative;
+  });
+  return [...new Set(directories)];
+}
+
+function taskReviewAgentRuntimeDirectories({ root, agent }) {
+  const runtimeDirectories = agent?.runtimeDirectories?.();
+  if (runtimeDirectories == null) return [];
+  if (!(runtimeDirectories instanceof AgentRuntimeDirectorySet)) {
+    throw new Error("Task Review agent runtime directories must use AgentRuntimeDirectorySet");
+  }
+  return runtimeDirectories.toArray().filter((candidate) => {
+    if (typeof candidate !== "string" || !path.isAbsolute(candidate)) {
+      throw new Error("Task Review agent runtime directory must be absolute");
+    }
+    const relative = path.relative(root, candidate);
+    return relative !== "" && !relative.startsWith(`..${path.sep}`) && !path.isAbsolute(relative);
+  });
+}
 
 function ensureAgent(commandId) {
   const agent = container.get("agent");
@@ -915,6 +1024,21 @@ function buildImplReviewResponseSchema(requirementIds) {
       priorRepairInsufficiency: { type: ["string", "null"] },
       repairStrategy: { type: ["string", "null"] },
     },
+    oneOf: [{
+      type: "object",
+      required: ["priorRepairInsufficiency", "repairStrategy"],
+      properties: {
+        priorRepairInsufficiency: { type: "null" },
+        repairStrategy: { type: "null" },
+      },
+    }, {
+      type: "object",
+      required: ["priorRepairInsufficiency", "repairStrategy"],
+      properties: {
+        priorRepairInsufficiency: { type: "string", minLength: 1 },
+        repairStrategy: { type: "string", minLength: 1 },
+      },
+    }],
   };
   return {
     type: "object",
@@ -2242,6 +2366,92 @@ async function runReviewWithDependencies(options) {
   return result;
 }
 
+async function runTaskReviewProtocol({
+  root,
+  flow,
+  flowManager,
+  requirementIds,
+  recurrenceHistory,
+  agent,
+  prompt,
+  systemPrompt,
+}) {
+  const recurrenceContract = new TaskReviewRecurrenceContract({
+    history: new ReviewRecurrenceHistory({ scope: "task", entries: recurrenceHistory }),
+  });
+  const contract = new ReviewProtocolContract({
+    phase: "task-review",
+    parse: (rawResponse) => {
+      const parsed = parseImplReviewFindings(rawResponse, { requirementIds });
+      recurrenceContract.validate([...parsed.blockingFindings, ...parsed.nonBlockingImprovements]);
+      return parsed;
+    },
+  });
+  const transportRetryPolicy = taskReviewTransportRetryPolicy(agent);
+  const controller = new ReviewProtocolController({
+    contract,
+    retryPolicy: new ReviewProtocolRetryPolicy({ maxAttempts: 2 }),
+    transportRetryPolicy,
+  });
+  const observer = new TaskReviewSourceEffectObserver({ root, flow, flowManager, agent });
+  const deferredMetrics = new Map();
+  const metricSettlement = new ReviewProtocolAttemptSettlement({
+    settle: async (attempt) => {
+      const deferred = deferredMetrics.get(attempt) ?? null;
+      if (deferred === null) return;
+      deferredMetrics.delete(attempt);
+      await deferred.flush();
+    },
+  });
+  let latestTransportAttempt = null;
+  let execution;
+  try {
+    execution = await controller.execute({
+      observer,
+      onAttempt: (attempt) => { latestTransportAttempt = attempt; },
+      settlement: metricSettlement,
+      callAgent: (attempt) => {
+        const deferredMetric = new DeferredAgentInvocationMetric({ flowManager });
+        deferredMetrics.set(attempt, deferredMetric);
+        return callReviewAgent(
+          agent,
+          prompt,
+          "flow.impl.review.propose",
+          systemPrompt,
+          {
+            cacheMode: attempt.cacheMode,
+            // Source-effect observation encloses exactly one provider execution.
+            retryCount: 0,
+            deferredMetric,
+            validateResponseForCache: (rawResponse) => {
+              contract.accept(rawResponse);
+              return true;
+            },
+          },
+        );
+      },
+    });
+  } catch (cause) {
+    if (cause instanceof AgentFailure && latestTransportAttempt !== null) {
+      cause.recordAttempts(
+        latestTransportAttempt.transportNumber,
+        transportRetryPolicy.retryCount + 1,
+      );
+    }
+    throw cause;
+  }
+  return execution.rawResponse;
+}
+
+function taskReviewTransportRetryPolicy(agent) {
+  const configured = agent.providerRetryPolicy();
+  return new ReviewProtocolTransportRetryPolicy({
+    retryCount: configured.retryCount,
+    retryDelayMs: configured.retryDelayMs,
+    backoffFactor: configured.backoffFactor,
+  });
+}
+
 async function runLoopReview(executionRoot, flow, spec, mergeBase, fileMap, touchedFiles, guardrails, config = {}) {
   const requirementIds = new Set((spec.requirements || []).map((requirement) => requirement.id).filter(Boolean));
   const proposalContract = new ImplReviewProposalContract(requirementIds);
@@ -3044,6 +3254,32 @@ async function runTestReviewWithDependencies({
 }
 
 function classifyReviewCommandError(err, phase) {
+  if (err instanceof ReviewProtocolFailure) {
+    const resolvedPhase = phase || "impl";
+    const sourceEffect = err.kind === "effect_observed" || err.kind === "observation_unavailable";
+    const detail = typeof err.cause?.message === "string" && err.cause.message.trim() !== ""
+      ? ` ${err.cause.message.trim()}`
+      : "";
+    return ReviewFailure.providerFailure({
+      phase: resolvedPhase,
+      reason: sourceEffect
+        ? `Task Review observed source effects before a complete response was accepted at protocol attempt ${err.attempt.number}/${err.maxAttempts}.${detail}`
+        : `Task Review provider output did not satisfy its complete phase contract after protocol attempt ${err.attempt.number}/${err.maxAttempts}.${detail}`,
+      recoveryHint: sourceEffect
+        ? "Do not retry Review until the definition-selected recovery route has verified the source."
+        : "The provider returned invalid review output; follow the definition-selected tooling recovery route.",
+      recoveryCommand: resolvedPhase === "impl"
+        ? "sennel flow run review"
+        : `sennel flow run review --phase ${resolvedPhase}`,
+      failureCode: sourceEffect
+        ? "TASK_REVIEW_SOURCE_EFFECT_OBSERVED"
+        : "TASK_REVIEW_PROTOCOL_INVALID_RESPONSE",
+      retryable: false,
+      agentFailureKind: "review_protocol",
+      attemptCount: err.attempt.number,
+      maxAttempts: err.maxAttempts,
+    });
+  }
   if (err instanceof AgentFailure) {
     const resolvedPhase = phase || "impl";
     return ReviewFailure.fromAgentFailure({
@@ -4560,14 +4796,27 @@ async function runReview(rawArgs) {
         taskReviewRecurrenceHistory: taskReviewRecurrences,
       });
       const reviewAgent = ensureAgent("flow.impl.review.propose");
+      const systemPrompt = buildDraftSystemPrompt(
+        reviewGuardrails,
+        buildReviewAcknowledgedRationale(spec, reviewGuardrails),
+      );
+      if (taskSpec) {
+        return runTaskReviewProtocol({
+          root,
+          flow,
+          flowManager,
+          requirementIds,
+          recurrenceHistory: taskReviewRecurrences,
+          agent: reviewAgent,
+          prompt: reviewPrompt,
+          systemPrompt,
+        });
+      }
       return callReviewAgent(
         reviewAgent,
         reviewPrompt,
         "flow.impl.review.propose",
-        buildDraftSystemPrompt(
-          reviewGuardrails,
-          buildReviewAcknowledgedRationale(spec, reviewGuardrails),
-        ),
+        systemPrompt,
       );
     },
     persistImplReview: (reviewOutput, persistenceStrategy) => persistenceStrategy.persist({
@@ -4672,6 +4921,7 @@ export {
   createLoopReviewChunks, runLoopReviewWithDependencies,
   runActiveImplReviewWithDependencies, runReviewWithDependencies,
   runSingleShotImplReviewWithDependencies, runNonImplReviewWithDependencies,
+  runTaskReviewProtocol,
   loopProposalsToImplReviewJson,
   classifyReviewCommandError,
   LOOP_REVIEW_THRESHOLD, MAX_LOOP_CALLS,

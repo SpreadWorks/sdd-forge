@@ -256,6 +256,92 @@ export class ReviewRecurrenceHistory {
   }
 }
 
+/** One candidate finding bound to the recurrence fields that its phase owns. */
+export class TaskReviewRecurrenceCandidate {
+  constructor(finding = {}) {
+    if (finding === null || typeof finding !== "object" || Array.isArray(finding)) {
+      throw new Error("Task Review recurrence candidate must be an object");
+    }
+    if (!isFingerprint(finding.fingerprint)) {
+      throw new Error("Task Review recurrence candidate fingerprint is invalid");
+    }
+    this.fingerprint = finding.fingerprint;
+    this.findingKey = requiredText(finding.findingKey, "Task Review recurrence candidate findingKey");
+    this.priorRepairInsufficiency = this.#optionalExplanation(
+      finding.priorRepairInsufficiency,
+      "priorRepairInsufficiency",
+    );
+    this.repairStrategy = this.#optionalExplanation(finding.repairStrategy, "repairStrategy");
+    if ((this.priorRepairInsufficiency === null) !== (this.repairStrategy === null)) {
+      throw new Error("Task Review recurrence explanation and repair strategy must be supplied together");
+    }
+    Object.freeze(this);
+  }
+
+  explanation() {
+    return this.priorRepairInsufficiency !== null;
+  }
+
+  #optionalExplanation(value, name) {
+    if (value == null) return null;
+    return requiredText(value, `Task Review recurrence candidate ${name}`);
+  }
+}
+
+/** Successful validation of candidate findings against frozen canonical recurrence history. */
+export class TaskReviewRecurrenceValidation {
+  constructor({ history, candidates } = {}) {
+    if (!(history instanceof ReviewRecurrenceHistory) || history.scope !== "task") {
+      throw new Error("Task Review recurrence validation requires task recurrence history");
+    }
+    if (!Array.isArray(candidates) || candidates.some((candidate) => !(candidate instanceof TaskReviewRecurrenceCandidate))) {
+      throw new Error("Task Review recurrence validation requires typed candidates");
+    }
+    this.history = history;
+    this.candidates = Object.freeze([...candidates]);
+    Object.freeze(this);
+  }
+}
+
+/**
+ * Phase-owned recurrence contract. Its history is immutable canonical input;
+ * callers may use it before cache acceptance as well as before promotion.
+ */
+export class TaskReviewRecurrenceContract {
+  #entriesByFingerprint;
+
+  constructor({ history } = {}) {
+    if (!(history instanceof ReviewRecurrenceHistory) || history.scope !== "task") {
+      throw new Error("Task Review recurrence contract requires task recurrence history");
+    }
+    this.history = history;
+    this.#entriesByFingerprint = new Map(history.entries.map((entry) => [entry.fingerprint, entry]));
+    Object.freeze(this);
+  }
+
+  validate(findings = []) {
+    if (!Array.isArray(findings)) throw new Error("Task Review recurrence candidates must be an array");
+    const candidates = findings.map((finding) => new TaskReviewRecurrenceCandidate(finding));
+    for (const candidate of candidates) {
+      const prior = this.#entriesByFingerprint.get(candidate.fingerprint) ?? null;
+      const hasExplanation = candidate.explanation();
+      if (prior === null) {
+        if (hasExplanation) {
+          throw new Error("Task Review recurrence explanation has no exact canonical prior finding");
+        }
+        continue;
+      }
+      if (candidate.findingKey !== prior.findingKey) {
+        throw new Error("Task Review recurring findingKey does not match its exact canonical fingerprint");
+      }
+      if (!hasExplanation) {
+        throw new Error("recurring Task Review finding requires an exact prior insufficiency and repair strategy");
+      }
+    }
+    return new TaskReviewRecurrenceValidation({ history: this.history, candidates });
+  }
+}
+
 class TaskReviewEvidenceRecord {
   constructor({ taskId, history, lineages }) {
     this.taskId = requiredText(taskId, "Task Review evidence taskId");

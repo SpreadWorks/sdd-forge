@@ -4,7 +4,8 @@ import path from "path";
 import fs from "fs";
 import os from "os";
 import { EventEmitter } from "events";
-import { fileURLToPath } from "url";
+import { spawn } from "child_process";
+import { fileURLToPath, pathToFileURL } from "url";
 import { Agent, ChildProcessSupervisor } from "../../../src/lib/agent.js";
 import {
   AgentAuthenticationFailure,
@@ -69,6 +70,33 @@ async function waitForProcessExit(pid, timeoutMs = 1_000) {
     if (Date.now() >= deadline) throw new Error(`provider descendant ${pid} remained alive after timeout cleanup`);
     await new Promise((resolve) => setTimeout(resolve, 10));
   }
+}
+
+async function waitForLineCount(filePath, count, timeoutMs = 5_000) {
+  const deadline = Date.now() + timeoutMs;
+  while (true) {
+    const lines = fs.existsSync(filePath)
+      ? fs.readFileSync(filePath, "utf8").split("\n").filter(Boolean)
+      : [];
+    if (lines.length >= count) return;
+    if (Date.now() >= deadline) throw new Error(`timed out waiting for ${count} provider admissions`);
+    await new Promise((resolve) => setTimeout(resolve, 10));
+  }
+}
+
+function runModuleProcess(source, args) {
+  return new Promise((resolve, reject) => {
+    const child = spawn(process.execPath, ["--input-type=module", "-e", source, ...args], {
+      stdio: ["ignore", "ignore", "pipe"],
+    });
+    let stderr = "";
+    child.stderr.on("data", (chunk) => { stderr += String(chunk); });
+    child.once("error", reject);
+    child.once("close", (code) => {
+      if (code === 0) resolve();
+      else reject(new Error(`concurrent cache writer exited ${code}: ${stderr}`));
+    });
+  });
 }
 
 function successfulSpawnRecorder(record) {
@@ -784,6 +812,159 @@ describe("Agent.call() — prompt cache policy", () => {
       cachedResponse: true,
       responseChars: "provider-1".length,
     }, { specId, taskId: null }]));
+  });
+
+  it("refreshes without reading and stores only an accepted replacement", async (t) => {
+    const root = tmpDir();
+    t.after(() => fs.rmSync(root, { recursive: true, force: true }));
+    const countFile = path.join(root, "count.txt");
+    const script = [
+      "const fs=require('fs');",
+      "const file=process.argv[1];",
+      "const n=(fs.existsSync(file)?Number(fs.readFileSync(file,'utf8')):0)+1;",
+      "fs.writeFileSync(file,String(n));process.stdout.write('provider-'+n);",
+    ].join("");
+    const specId = "cache-refresh";
+    const flowManager = {
+      resolveCurrentContext() { return { specId, taskId: null, flowPhase: "impl" }; },
+      loadActiveFlows() { return [{ specId }]; },
+      appendMetric() {},
+      accumulateAgentMetrics() {},
+    };
+    const agent = makeAgent(
+      { command: "node", args: ["-e", script, countFile, "{{PROMPT}}"] },
+      { paths: { root, agentWorkDir: path.join(root, ".tmp") }, flowManager },
+    );
+    const first = await agent.call("same", { commandId: "test" });
+    const decisions = [];
+    const refreshed = await agent.call("same", {
+      commandId: "test",
+      cacheMode: "refresh",
+      validateResponseForCache: (value) => value === "provider-2",
+      onCacheDecision: (decision) => decisions.push(decision),
+    });
+    const cached = await agent.call("same", {
+      commandId: "test",
+      validateResponseForCache: (value) => value === "provider-2",
+    });
+    assert.equal(first, "provider-1");
+    assert.equal(refreshed, "provider-2");
+    assert.equal(cached, "provider-2");
+    assert.equal(fs.readFileSync(countFile, "utf8"), "2");
+    assert.deepEqual(decisions, [{ cacheOutcome: "refresh", providerCalled: true, fresh: true }]);
+  });
+
+  it("treats an invalid cached response as a miss and replaces it only with a valid response", async (t) => {
+    const root = tmpDir();
+    t.after(() => fs.rmSync(root, { recursive: true, force: true }));
+    const countFile = path.join(root, "count.txt");
+    const script = [
+      "const fs=require('fs');",
+      "const file=process.argv[1];",
+      "let count=fs.existsSync(file)?Number(fs.readFileSync(file,'utf8')):0;",
+      "count+=1;fs.writeFileSync(file,String(count));",
+      "process.stdout.write(count===1?'partial':'valid');",
+    ].join("");
+    const specId = "cache-contract";
+    const flowManager = {
+      resolveCurrentContext() { return { specId, taskId: null, flowPhase: "impl" }; },
+      loadActiveFlows() { return [{ specId }]; },
+      appendMetric() {},
+      accumulateAgentMetrics() {},
+    };
+    const agent = makeAgent(
+      { command: "node", args: ["-e", script, countFile, "{{PROMPT}}"] },
+      { paths: { root, agentWorkDir: path.join(root, ".tmp") }, flowManager },
+    );
+    await agent.call("same", { commandId: "test" });
+    const decisions = [];
+    const valid = await agent.call("same", {
+      commandId: "test",
+      validateResponseForCache: (text) => text === "valid",
+      onCacheDecision: (decision) => decisions.push(decision),
+    });
+    const cached = await agent.call("same", {
+      commandId: "test",
+      validateResponseForCache: (text) => text === "valid",
+      onCacheDecision: (decision) => decisions.push(decision),
+    });
+
+    assert.equal(valid, "valid");
+    assert.equal(cached, "valid");
+    assert.equal(fs.readFileSync(countFile, "utf8"), "2");
+    assert.deepEqual(decisions.map((decision) => decision.cacheOutcome), ["invalid_hit", "hit"]);
+    assert.deepEqual(decisions[0], {
+      cacheOutcome: "invalid_hit",
+      providerCalled: true,
+      fresh: true,
+    });
+  });
+
+  it("does not cache a fresh response rejected by the caller contract", async (t) => {
+    const root = tmpDir();
+    t.after(() => fs.rmSync(root, { recursive: true, force: true }));
+    const countFile = path.join(root, "count.txt");
+    const script = [
+      "const fs=require('fs');",
+      "const file=process.argv[1];",
+      "let count=fs.existsSync(file)?Number(fs.readFileSync(file,'utf8')):0;",
+      "count+=1;fs.writeFileSync(file,String(count));",
+      "process.stdout.write('partial');",
+    ].join("");
+    const specId = "cache-fresh-contract";
+    const flowManager = {
+      resolveCurrentContext() { return { specId, taskId: null, flowPhase: "impl" }; },
+      loadActiveFlows() { return [{ specId }]; },
+      appendMetric() {},
+      accumulateAgentMetrics() {},
+    };
+    const agent = makeAgent(
+      { command: "node", args: ["-e", script, countFile, "{{PROMPT}}"] },
+      { paths: { root, agentWorkDir: path.join(root, ".tmp") }, flowManager },
+    );
+    const options = { commandId: "test", validateResponseForCache: () => false };
+    await agent.call("same", options);
+    await agent.call("same", options);
+    assert.equal(fs.readFileSync(countFile, "utf8"), "2");
+  });
+
+  it("serializes concurrent writers for one spec cache without losing accepted entries", async (t) => {
+    const root = tmpDir();
+    t.after(() => fs.rmSync(root, { recursive: true, force: true }));
+    const specId = "concurrent";
+    const cacheDirectory = path.join(root, ".sennel", "agent-cache");
+    fs.mkdirSync(cacheDirectory, { recursive: true });
+    // The large pre-existing v1 store keeps the legacy read-modify-write
+    // windows overlapping after the barrier releases all providers.
+    const entries = Object.fromEntries(Array.from({ length: 400 }, (_, index) => [
+      `existing-${index}`,
+      { text: "x".repeat(4_096), storedAt: "2026-09-03T00:00:00.000Z" },
+    ]));
+    fs.writeFileSync(path.join(cacheDirectory, `${specId}.json`), `${JSON.stringify({ version: 1, entries })}\n`);
+    const ready = path.join(root, "providers-ready.txt");
+    const release = path.join(root, "release-providers");
+    const module = [
+      `import { Agent } from ${JSON.stringify(pathToFileURL(path.resolve("src/lib/agent.js")).href)};`,
+      `import { ProviderRegistry } from ${JSON.stringify(pathToFileURL(path.resolve("src/lib/provider.js")).href)};`,
+      `import { Logger } from ${JSON.stringify(pathToFileURL(path.resolve("src/lib/log.js")).href)};`,
+      "import path from 'node:path';",
+      "const [root, ready, release, prompt] = process.argv.slice(1);",
+      "const provider = `const fs=require('fs');const [ready,release,text]=process.argv.slice(1);fs.appendFileSync(ready,text+'\\\\n');const wait=()=>fs.existsSync(release)?process.stdout.write(text):setTimeout(wait,5);wait();`;",
+      "const profile = { command: process.execPath, args: ['-e', provider, ready, release, '{{PROMPT}}'] };",
+      "const config = { agent: { default: 'test/exec', providers: { 'test/exec': profile }, timeout: 10 } };",
+      "const flowManager = { resolveCurrentContext() { return { specId: 'concurrent', taskId: null, flowPhase: 'impl' }; }, loadActiveFlows() { return [{ specId: 'concurrent' }]; }, appendMetric() {}, accumulateAgentMetrics() {} };",
+      "const agent = new Agent({ config, paths: { root, agentWorkDir: path.join(root, '.tmp') }, registry: new ProviderRegistry(config.agent.providers), logger: new Logger({ logDir: root, enabled: false }), flowManager });",
+      "await agent.call(prompt, { commandId: 'test', retryCount: 0 });",
+    ].join("\n");
+    const prompts = ["one", "two", "three", "four"];
+    const writers = prompts.map((prompt) => runModuleProcess(module, [root, ready, release, prompt]));
+    await waitForLineCount(ready, prompts.length);
+    fs.writeFileSync(release, "go\n");
+    await Promise.all(writers);
+
+    const stored = JSON.parse(fs.readFileSync(path.join(cacheDirectory, `${specId}.json`), "utf8"));
+    const responses = Object.values(stored.entries).map((entry) => entry.text);
+    for (const prompt of prompts) assert.ok(responses.includes(prompt), `cache lost concurrent response ${prompt}`);
   });
 });
 

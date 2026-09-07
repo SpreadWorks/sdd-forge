@@ -8,6 +8,7 @@ import {
   ImplementationReviewRepairRecurrence,
   ImplementationReviewRecurrenceStatus,
   TaskReviewConvergenceEvidence,
+  TaskReviewRecurrenceContract,
 } from "../../../src/flow/lib/review-recurrence.js";
 import {
   TaskExecutionBudget,
@@ -255,7 +256,8 @@ describe("review recurrence projections", () => {
     });
 
     assert.deepEqual(convergence.recurrenceHistory("T-1").toJSON(), []);
-    const t2History = convergence.recurrenceHistory("T-2").toJSON();
+    const taskHistory = convergence.recurrenceHistory("T-2");
+    const t2History = taskHistory.toJSON();
     assert.equal(t2History.length, 2, "a different target remains a distinct fingerprint");
     assert.equal(t2History.find((entry) => entry.fingerprint === FINGERPRINT_TWO).recurrenceCount, 3);
     assert.equal(t2History.find((entry) => entry.fingerprint === FINGERPRINT_THREE).recurrenceCount, 1);
@@ -263,6 +265,41 @@ describe("review recurrence projections", () => {
       t2History.find((entry) => entry.fingerprint === FINGERPRINT_TWO).previous[1].finding.repairStrategy,
       "Repair the shared caller and verify both branch paths.",
       "the next Task Review receives the persisted prior strategy from canonical review history",
+    );
+    const workerRecurrence = new TaskReviewRecurrenceContract({ history: taskHistory });
+    assert.doesNotThrow(() => workerRecurrence.validate([finding({
+      fingerprint: FINGERPRINT_TWO,
+      file: "src/two.js",
+      priorRepairInsufficiency: "The direct branch was repaired but its shared caller remained uncovered.",
+      repairStrategy: "Repair the shared caller and verify both branch paths.",
+    })]));
+    assert.throws(
+      () => workerRecurrence.validate([finding({
+        fingerprint: FINGERPRINT_TWO,
+        findingKey: "wrong-key",
+        file: "src/two.js",
+        priorRepairInsufficiency: "The direct branch was repaired but its shared caller remained uncovered.",
+        repairStrategy: "Repair the shared caller and verify both branch paths.",
+      })]),
+      /findingKey does not match its exact canonical fingerprint/,
+      "the worker-side contract rejects recurrence claims before cache acceptance",
+    );
+    assert.throws(
+      () => workerRecurrence.validate([finding({
+        fingerprint: FINGERPRINT_THREE,
+        file: "src/other.js",
+      })]),
+      /requires an exact prior insufficiency and repair strategy/,
+      "history known to the Task Review requires both recurrence explanations",
+    );
+    assert.throws(
+      () => workerRecurrence.validate([{
+        ...finding({ fingerprint: FINGERPRINT_THREE, file: "src/other.js" }),
+        priorRepairInsufficiency: 1,
+        repairStrategy: 2,
+      }]),
+      /priorRepairInsufficiency must be a non-empty string/,
+      "the typed recurrence value rejects non-string declarations instead of treating them as absent",
     );
 
     const handoffs = convergence.handoffs().map((handoff) => handoff.toJSON());

@@ -206,6 +206,32 @@ describe("validateSchema", () => {
       assert.equal(errors.length, 1);
       assert.match(errors[0], /oneOf/i);
     });
+
+    it("continues to validate sibling object constraints after one alternative matches", () => {
+      const schema = {
+        type: "object",
+        required: ["kind", "value"],
+        properties: {
+          kind: { type: "string" },
+          value: { type: ["string", "null"] },
+        },
+        oneOf: [
+          { type: "object", properties: { value: { type: "null" } } },
+          { type: "object", properties: { value: { type: "string", minLength: 1 } } },
+        ],
+      };
+      const errors = validateSchema({ value: null }, schema);
+      assert.equal(errors.length, 1);
+      assert.match(errors[0], /kind: required field is missing/);
+    });
+
+    it("fails when more than one oneOf alternative matches", () => {
+      const errors = validateSchema("value", {
+        oneOf: [{ type: "string" }, { type: "string", minLength: 1 }],
+      });
+      assert.equal(errors.length, 1);
+      assert.match(errors[0], /2 schemas matched/);
+    });
   });
 
   describe("items", () => {

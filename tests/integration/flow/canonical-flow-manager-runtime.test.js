@@ -30,12 +30,15 @@ import {
 } from "../../../src/flow/lib/dispatch-invocation.js";
 import RunFinalRegressionCommand from "../../../src/flow/lib/run-final-regression.js";
 import RunReportCommand from "../../../src/flow/lib/run-report.js";
-import RunReviewCommand from "../../../src/flow/lib/run-review.js";
+import RunReviewCommand, {
+  taskReviewRecoveryIgnoredDirectories,
+} from "../../../src/flow/lib/run-review.js";
 import GetStatusCommand from "../../../src/flow/lib/get-status.js";
 import FlowReviewCommand from "../../../src/flow/commands/review.js";
 import {
   reconcileCompletedReviewWorkUnits,
   ReviewWorkUnit,
+  ReviewWorkUnitOutput,
 } from "../../../src/flow/lib/review-work-unit.js";
 import { attachedCanonicalReviewWorkUnit } from "../../../src/flow/lib/canonical-review-artifacts.js";
 import SetReviewEvidenceCommand from "../../../src/flow/lib/set-review-evidence.js";
@@ -82,6 +85,7 @@ import {
   WorkerArtifactSemanticInputRevision,
   SourceMutationBaseline,
   SourceMutationManifest,
+  WORKER_ARTIFACT_HANDOFF_REQUEST_ENV,
   SourceWorkerEffect,
   captureSourceMutationManifestForParent,
   sealParentMaterializedSourceWorkerEffect,
@@ -215,6 +219,25 @@ function initializeReviewSource(rootPath) {
   fs.writeFileSync(path.join(rootPath, "README.md"), "review checkout fixture\n");
   initGitRepo(rootPath);
   commitAll(rootPath, "review source");
+}
+
+function canonicalTaskReviewFinding(finding) {
+  const fingerprint = ReviewFindingFingerprint.fromFinding({
+    ...finding,
+    category: finding.failureMode,
+    failureMode: finding.failureMode,
+    requirementId: finding.requirementId,
+    ...(finding.guardrailId ? { guardrailId: finding.guardrailId } : {}),
+    file: finding.file || null,
+    title: finding.title,
+    issue: finding.issue,
+  }).value;
+  return {
+    ...finding,
+    findingId: fingerprint,
+    fingerprint,
+    repeatCount: Number.isSafeInteger(finding.repeatCount) ? finding.repeatCount : 1,
+  };
 }
 
 function writeSpecReviewDeltaOutput(options, findings = []) {
@@ -727,6 +750,33 @@ afterEach(() => {
 });
 
 describe("FlowManager canonical Version-1 runtime", () => {
+  it("does not record context-read metrics from a managed handoff worker", () => {
+    const previous = process.env[WORKER_ARTIFACT_HANDOFF_REQUEST_ENV];
+    const recorded = [];
+    const ctx = {
+      flowManager: {
+        load() {
+          return { steps: [{ id: "implement", status: "in_progress" }] };
+        },
+        incrementMetric(phase, counter) {
+          recorded.push({ phase, counter });
+        },
+      },
+    };
+    try {
+      process.env[WORKER_ARTIFACT_HANDOFF_REQUEST_ENV] = "/tmp/managed-handoff/request.json";
+      FLOW_COMMANDS.get.context.post(ctx, { total: 1, entries: [{}] });
+      assert.deepEqual(recorded, []);
+
+      delete process.env[WORKER_ARTIFACT_HANDOFF_REQUEST_ENV];
+      FLOW_COMMANDS.get.context.post(ctx, { total: 1, entries: [{}] });
+      assert.deepEqual(recorded, [{ phase: "impl", counter: "docsRead" }]);
+    } finally {
+      if (previous === undefined) delete process.env[WORKER_ARTIFACT_HANDOFF_REQUEST_ENV];
+      else process.env[WORKER_ARTIFACT_HANDOFF_REQUEST_ENV] = previous;
+    }
+  });
+
   it("resolves requirement, GLOBAL, locators, and invalid repair targets to safe spec-test surfaces", () => {
     const finding = (target) => new TestReviewRepairFinding({ findingId: `scope-${target}`, fingerprint: crypto.createHash("sha256").update(target).digest("hex"), target, requiredChange: "Repair the smallest test premise." });
     const uncovered = new TestReviewRepairScope({ finding: finding("R1"), testPaths: ["z.test.js", "a.test.js"] }).toJSON();
@@ -8435,7 +8485,7 @@ describe("FlowManager canonical Version-1 runtime", () => {
           generatedAt: "2026-09-03T00:00:00.000Z",
           verdict: "REJECTED",
           summary: { blocking: 1, nonBlocking: 0, total: 1 },
-          blockingFindings: [{
+          blockingFindings: [canonicalTaskReviewFinding({
             findingKey: "missing-mapped-behavior",
             title: "Mapped behavior is absent",
             failureMode: "missing_acceptance_requirement",
@@ -8445,7 +8495,7 @@ describe("FlowManager canonical Version-1 runtime", () => {
             suggestion: "Implement R-1 in the Task implementation round.",
             disposition: "must-fix",
             rationale: "R-1 is mapped to this Task and remains absent.",
-          }],
+          })],
           nonBlockingImprovements: [],
           excluded: { missingFile: 0, outOfScope: 0 },
         })}\n`);
@@ -8557,7 +8607,7 @@ describe("FlowManager canonical Version-1 runtime", () => {
           generatedAt: "2026-09-03T00:00:00.000Z",
           verdict: "REJECTED",
           summary: { blocking: 1, nonBlocking: 0, total: 1 },
-          blockingFindings: [{
+          blockingFindings: [canonicalTaskReviewFinding({
             findingKey: "stale-repair",
             title: "Repair current source",
             failureMode: "spec_behavior_contradiction",
@@ -8567,7 +8617,7 @@ describe("FlowManager canonical Version-1 runtime", () => {
             suggestion: "Repair the Task source.",
             disposition: "must-fix",
             rationale: "R-1 requires the repair.",
-          }],
+          })],
           nonBlockingImprovements: [],
           excluded: { missingFile: 0, outOfScope: 0 },
         })}\n`);
@@ -8625,7 +8675,7 @@ describe("FlowManager canonical Version-1 runtime", () => {
           generatedAt: "2026-09-03T00:00:00.000Z",
           verdict: "REJECTED",
           summary: { blocking: 1, nonBlocking: 0, total: 1 },
-          blockingFindings: [{
+          blockingFindings: [canonicalTaskReviewFinding({
             findingKey: "missing-task-behavior",
             title: "Task behavior remains incomplete",
             failureMode: "spec_behavior_contradiction",
@@ -8635,7 +8685,7 @@ describe("FlowManager canonical Version-1 runtime", () => {
             suggestion: "Implement the mapped Requirement.",
             disposition: "must-fix",
             rationale: "R-1 requires the missing behavior.",
-          }],
+          })],
           nonBlockingImprovements: [],
           excluded: { missingFile: 0, outOfScope: 0 },
         })}\n`);
@@ -8763,7 +8813,7 @@ describe("FlowManager canonical Version-1 runtime", () => {
           generatedAt: "2026-09-03T00:00:00.000Z",
           verdict: "REJECTED",
           summary: { blocking: 1, nonBlocking: 0, total: 1 },
-          blockingFindings: [{
+          blockingFindings: [canonicalTaskReviewFinding({
             findingKey: `repair-${invocation}`,
             title: "Repair the current Task source",
             failureMode: "spec_behavior_contradiction",
@@ -8773,7 +8823,7 @@ describe("FlowManager canonical Version-1 runtime", () => {
             suggestion: "Apply the correction before re-review.",
             disposition: "must-fix",
             rationale: "R-1 requires the corrected behavior.",
-          }],
+          })],
           nonBlockingImprovements: [],
           excluded: { missingFile: 0, outOfScope: 0 },
         })}\n`);
@@ -8837,7 +8887,17 @@ describe("FlowManager canonical Version-1 runtime", () => {
         fs.writeFileSync(path.join(options.env.SENNEL_REVIEW_OUTPUT_DIR, "impl-review.json"), `${JSON.stringify({
           version: 1, phase: "impl", generatedAt: "2026-09-03T00:00:00.000Z", verdict: "REJECTED",
           summary: { blocking: 1, nonBlocking: 0, total: 1 },
-          blockingFindings: [{ findingKey: "same-finding", title: "Repair Task", failureMode: "spec_behavior_contradiction", file: "README.md", requirementId: "R-1", issue: "Repair is required.", suggestion: "Repair the Task.", disposition: "must-fix", rationale: "R-1 requires it." }],
+          blockingFindings: [canonicalTaskReviewFinding({
+            findingKey: "same-finding",
+            title: "Repair Task",
+            failureMode: "spec_behavior_contradiction",
+            file: "README.md",
+            requirementId: "R-1",
+            issue: "Repair is required.",
+            suggestion: "Repair the Task.",
+            disposition: "must-fix",
+            rationale: "R-1 requires it.",
+          })],
           nonBlockingImprovements: [], excluded: { missingFile: 0, outOfScope: 0 },
         })}\n`);
         ReviewWorkUnit.fromEnvironment(options.env).seal();
@@ -8848,6 +8908,7 @@ describe("FlowManager canonical Version-1 runtime", () => {
     for (let attempt = 1; attempt <= 4; attempt += 1) {
       ctx.flowState = manager.load(specId);
       const result = await review.execute(ctx);
+      assert.equal(result.result, "ok", `Review ${attempt}: ${JSON.stringify(result)}`);
       if (attempt < 4) {
         await FLOW_COMMANDS.run.review.post(ctx, result);
         manager.retryCurrentAttempt({ specId });
@@ -8869,5 +8930,218 @@ describe("FlowManager canonical Version-1 runtime", () => {
     const repeated = new RunSettleReviewTransitionCommand().execute({ ...ctx, flowState: after });
     assert.equal(repeated.ok, false);
     assert.deepEqual(manager.load(specId), afterSnapshot);
+  });
+
+  it("recovers a sealed Task Review repair without rerunning the provider", async () => {
+    const repository = root();
+    initializeReviewSource(repository);
+    const manager = new FlowManager({ root: repository, mainRoot: repository, inWorktree: false });
+    const specId = "001-task-review-sealed-repair-recovery";
+    new TaskLifecycleFixture({
+      flowManager: manager,
+      specId,
+      runId: "run-task-review-sealed-repair-recovery",
+      request: "Recover a sealed Task Review repair after the parent process is interrupted.",
+      specRecord: {
+        requirements: [{ id: "R-1", desc: "Retain a completed Review repair across recovery.", task_ids: ["T-1"] }],
+        overview: { modules: [], data_flow: [], decisions: [] },
+      },
+      taskDocuments: [{ id: "T-1", title: "Recover repair", goal: "Retain the sealed Review repair.", parent: null, origin: "plan", added_round: 0, status: "pending" }],
+      taskId: "T-1",
+      targetStep: "task-impl",
+    }).create();
+    confirmTaskImplementationMutation({
+      repository,
+      manager,
+      specId,
+      content: "implemented Task behavior\n",
+    });
+
+    let providerCalls = 0;
+    let treeReads = 0;
+    const review = new RunReviewCommand({
+      resolveTreeSha() {
+        treeReads += 1;
+        if (treeReads === 2) throw new Error("fixture parent interruption after worker seal");
+        return "a".repeat(40);
+      },
+      resolveTargetStateDigest: () => "b".repeat(64),
+      runCommand(_command, _args, options) {
+        providerCalls += 1;
+        fs.appendFileSync(path.join(repository, "README.md"), "sealed review repair\n");
+        const outputDirectory = options.env.SENNEL_REVIEW_OUTPUT_DIR;
+        fs.writeFileSync(path.join(outputDirectory, "impl-review.json"), `${JSON.stringify({
+          version: 1,
+          phase: "impl",
+          generatedAt: "2026-09-07T00:00:00.000Z",
+          verdict: "REJECTED",
+          summary: { blocking: 1, nonBlocking: 0, total: 1 },
+          blockingFindings: [canonicalTaskReviewFinding({
+            findingKey: "sealed-repair",
+            title: "Repair the current Task source",
+            failureMode: "spec_behavior_contradiction",
+            file: "README.md",
+            requirementId: "R-1",
+            issue: "The current Task source required one bounded correction.",
+            suggestion: "Keep the completed correction.",
+            disposition: "must-fix",
+            rationale: "R-1 requires the corrected behavior.",
+          })],
+          nonBlockingImprovements: [],
+          excluded: { missingFile: 0, outOfScope: 0 },
+        })}\n`);
+        ReviewWorkUnit.fromEnvironment(options.env).seal();
+        return { ok: true, status: 0, stdout: "", stderr: "", signal: null, killed: false };
+      },
+    });
+    const ctx = {
+      root: repository,
+      mainRoot: repository,
+      executionRoot: repository,
+      specId,
+      flowManager: manager,
+      flowState: manager.load(specId),
+      config: {},
+    };
+
+    await assert.rejects(
+      () => review.execute(ctx),
+      /fixture parent interruption after worker seal/,
+    );
+    const recovered = await review.execute(ctx);
+
+    assert.equal(recovered.result, "ok", JSON.stringify(recovered));
+    assert.equal(providerCalls, 1, "sealed recovery must not invoke the provider again");
+    assert.equal(recovered.artifacts.noChange, false);
+    assert.match(fs.readFileSync(path.join(repository, "README.md"), "utf8"), /sealed review repair/);
+  });
+
+  it("fails closed across prior unsealed Task Review Attempts before launching another provider", async () => {
+    function setup(name) {
+      const repository = root();
+      initializeReviewSource(repository);
+      const manager = new FlowManager({ root: repository, mainRoot: repository, inWorktree: false });
+      const specId = `001-task-review-unsealed-${name}`;
+      new TaskLifecycleFixture({
+        flowManager: manager,
+        specId,
+        runId: `run-task-review-unsealed-${name}`,
+        request: "Recover interrupted Task Review evidence before another provider call.",
+        specRecord: {
+          requirements: [{ id: "R-1", desc: "Recover Task Review evidence.", task_ids: ["T-1"] }],
+          overview: { modules: [], data_flow: [], decisions: [] },
+        },
+        taskDocuments: [{ id: "T-1", title: "Recover review", goal: "Protect source after an interrupted review.", parent: null, origin: "plan", added_round: 0, status: "pending" }],
+        taskId: "T-1",
+        targetStep: "task-impl",
+      }).create();
+      confirmTaskImplementationMutation({ repository, manager, specId, content: "implemented Task behavior\n" });
+
+      const previousAttempt = manager.canonicalState(specId).attempt;
+      manager.failCurrentAttempt({
+        specId,
+        failure: {
+          category: "tooling",
+          code: "FIXTURE_INTERRUPTED_TASK_REVIEW",
+          message: "The fixture advances to a later Task Review Attempt.",
+          retryable: true,
+          retryKind: "tooling",
+        },
+      });
+      manager.retryCurrentAttempt({ specId });
+      const state = manager.load(specId);
+      assert.notEqual(manager.canonicalState(specId).attempt.id, previousAttempt.id);
+
+      const stale = new ReviewWorkUnit({
+        executionRoot: repository,
+        runId: state.runId,
+        specId,
+        phase: "impl",
+        taskId: "T-1",
+        nodeId: "T-1-review",
+        attemptId: previousAttempt.id,
+        target: { treeSha: "a".repeat(40), targetStateDigest: "b".repeat(64) },
+        output: ReviewWorkUnitOutput.forReview({ phase: "impl", taskId: "T-1" }),
+      });
+      const taskSource = captureCurrentTaskSource({
+        root: repository,
+        flowManager: manager,
+        state,
+        taskId: "T-1",
+      });
+      const recoveryBaseline = SourceMutationBaseline.capture({
+        root: repository,
+        attempt: previousAttempt,
+        ignoredDirectories: taskReviewRecoveryIgnoredDirectories(repository, {
+          workUnit: stale,
+          flowManager: manager,
+          state,
+        }),
+      });
+      stale.writeInput({
+        logicalKey: "task.source",
+        logicalPath: "task-source.json",
+        bytes: Buffer.from(`${JSON.stringify(taskSource.toJSON(), null, 2)}\n`, "utf8"),
+        mediaType: "application/json",
+      });
+      stale.writeInput({
+        logicalKey: "task.source-effect-baseline",
+        logicalPath: "task-source-effect-baseline.json",
+        bytes: Buffer.from(`${JSON.stringify(recoveryBaseline.toJSON(), null, 2)}\n`, "utf8"),
+        mediaType: "application/json",
+      });
+      stale.finalize();
+      const ctx = {
+        root: repository,
+        mainRoot: repository,
+        executionRoot: repository,
+        specId,
+        flowManager: manager,
+        flowState: manager.load(specId),
+        config: {},
+      };
+      return { repository, manager, specId, stale, ctx };
+    }
+
+    for (const [name, mutate] of [
+      ["task-source", ({ repository }) => fs.appendFileSync(path.join(repository, "README.md"), "interrupted Task mutation\n")],
+      ["ordinary-source", ({ repository }) => fs.writeFileSync(path.join(repository, "ordinary-provider-side-effect.txt"), "unexpected source effect\n")],
+    ]) {
+      const fixture = setup(name);
+      mutate(fixture);
+      let providerCalls = 0;
+      const review = new RunReviewCommand({
+        resolveTreeSha: () => "a".repeat(40),
+        resolveTargetStateDigest: () => "b".repeat(64),
+        runCommand() {
+          providerCalls += 1;
+          throw new Error("the provider must not run after partial source effects");
+        },
+      });
+      const result = await review.execute(fixture.ctx);
+      assert.equal(providerCalls, 0, `${name} must block before provider execution`);
+      assert.equal(result.errors[0].code, "REVIEW_TOOLING_ERROR");
+      assert.deepEqual(result.data.failureCode, "TASK_REVIEW_PARTIAL_EFFECT");
+      assert.equal(result.data.retryable, false);
+      assert.match(result.data.workUnit, /^\.sennel\/review-work-units\//);
+      assert.equal(fixture.manager.canonicalState(fixture.specId).attempt.failure.code, "TASK_REVIEW_PARTIAL_EFFECT");
+      assert.equal(fs.existsSync(fixture.stale.directory), true, "partial-effect evidence must remain for definition-owned recovery");
+    }
+
+    const safe = setup("unchanged");
+    let providerCalls = 0;
+    const review = new RunReviewCommand({
+      resolveTreeSha: () => "a".repeat(40),
+      resolveTargetStateDigest: () => "b".repeat(64),
+      runCommand() {
+        providerCalls += 1;
+        return { ok: false, status: 1, stdout: "", stderr: "fixture provider stop", signal: null, killed: false };
+      },
+    });
+    const result = await review.execute(safe.ctx);
+    assert.equal(providerCalls, 1, `unchanged prior evidence must be cleaned before the current provider runs: ${JSON.stringify(result)}`);
+    assert.equal(fs.existsSync(safe.stale.directory), false);
+    assert.equal(result.errors[0].code, "REVIEW_TOOLING_ERROR");
+    assert.notEqual(safe.manager.canonicalState(safe.specId).attempt.failure.code, "TASK_REVIEW_PARTIAL_EFFECT");
   });
 });

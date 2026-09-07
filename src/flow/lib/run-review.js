@@ -9,6 +9,7 @@ import { PKG_DIR } from "../../lib/cli.js";
 import { runCmd } from "../../lib/process.js";
 import { VALID_REVIEW_PHASES } from "../../lib/constants.js";
 import { AgentTimeout } from "../../lib/agent-timeout.js";
+import { AgentRuntimeDirectorySet } from "../../lib/agent.js";
 import { FlowCommand } from "./base-command.js";
 import { Envelope } from "../../lib/flow-envelope.js";
 import {
@@ -20,6 +21,7 @@ import fs from "fs";
 import crypto from "node:crypto";
 import { runGit } from "../../lib/git-helpers.js";
 import { PRODUCT } from "../../lib/product.js";
+import { FLOW_ARTIFACT_CONTRACTS } from "../../lib/flow-artifact-contract.js";
 import {
   REVIEW_FAILURE_MARKER_PREFIX,
   ReviewFailure,
@@ -43,6 +45,7 @@ import {
 import {
   REVIEW_WORK_UNIT_MANIFEST_ENV,
   ReviewWorkUnit,
+  TaskReviewUnsealedWorkUnitSet,
 } from "./review-work-unit.js";
 import { isCanonicalFlowState } from "./canonical-test-artifacts.js";
 import { ReviewExecutionLease } from "./review-execution-lease.js";
@@ -58,7 +61,10 @@ import {
 } from "./worker-artifact-handoff.js";
 import { CanonicalTaskContext } from "./task-canonical-context.js";
 import { ReviewFindingCycle } from "./finding-disposition-policy.js";
-import { TaskReviewConvergenceEvidence } from "./review-recurrence.js";
+import {
+  TaskReviewConvergenceEvidence,
+  TaskReviewRecurrenceContract,
+} from "./review-recurrence.js";
 
 const IMPL_REVIEW_PHASE = "impl";
 const REVIEW_VERDICT_VALUES = Object.freeze(["PASS", "ADVISORY", "REJECTED"]);
@@ -88,23 +94,10 @@ function assertTaskReviewRecurrenceExplanation({ artifact, flowManager, state, t
   });
   const recurrence = new TaskReviewConvergenceEvidence({ flowManager, state, cycle })
     .recurrenceHistory(taskId);
-  const expected = new Map(recurrence.entries.map((entry) => [entry.fingerprint, entry]));
-  for (const finding of [
+  new TaskReviewRecurrenceContract({ history: recurrence }).validate([
     ...(artifact.blockingFindings || []),
     ...(artifact.nonBlockingImprovements || []),
-  ]) {
-    const hasInsufficiency = typeof finding?.priorRepairInsufficiency === "string";
-    const hasStrategy = typeof finding?.repairStrategy === "string";
-    const prior = expected.get(finding?.fingerprint) ?? null;
-    if (prior === null && (hasInsufficiency || hasStrategy)) {
-      throw new Error("Task Review recurrence explanation has no exact canonical prior finding");
-    }
-    if (prior !== null && (!hasInsufficiency || !hasStrategy
-      || finding.priorRepairInsufficiency.trim() === "" || finding.repairStrategy.trim() === ""
-      || finding.findingKey !== prior.findingKey)) {
-      throw new Error("recurring Task Review finding requires an exact prior insufficiency and repair strategy");
-    }
-  }
+  ]);
 }
 
 function persistedPhaseKey(ctxPhase) {
@@ -347,11 +340,13 @@ export function normalizeReviewSubprocessRetryDelayMs(value) {
  * @param {Object} [opts]
  * @param {number} [opts.retryCount=2] - Number of retries for ordinary subprocess failures (schema failures are capped at two total attempts)
  * @param {number} [opts.retryDelayMs=3000] - Delay between retries in milliseconds
+ * @param {boolean} [opts.retrySchema=true] - Whether this caller delegates schema retries to the outer subprocess boundary
  * @returns {Promise<{ ok: boolean, status: number, stdout: string, stderr: string, signal: string|null, killed: boolean }>}
  */
 export async function runCmdWithRetry(cmdFn, opts = {}) {
   const retryCount = normalizeReviewSubprocessRetryCount(opts.retryCount);
   const retryDelayMs = normalizeReviewSubprocessRetryDelayMs(opts.retryDelayMs);
+  const retrySchema = opts.retrySchema !== false;
 
   let lastRes;
   for (let attempt = 0; ; attempt++) {
@@ -361,7 +356,7 @@ export async function runCmdWithRetry(cmdFn, opts = {}) {
       phase: opts.phase || "impl",
       result: lastRes,
     });
-    const maximumAttempts = failure.classification === "schema_failure"
+    const maximumAttempts = failure.classification === "schema_failure" && retrySchema
       ? 2
       : retryCount + 1;
     const failureForAttempt = failure.withAttempts({
@@ -602,15 +597,337 @@ function taskReviewTransientDirectories(executionRoot, workUnit) {
   if (reviewDirectory === "" || reviewDirectory.startsWith("../") || path.posix.isAbsolute(reviewDirectory)) {
     throw new Error("Task Review work unit is outside its execution checkout");
   }
-  const directories = [reviewDirectory];
+  // Child output is contractually confined to its work unit. Canonical spec
+  // and task evidence remain source effects even in direct execution mode.
+  return [reviewDirectory];
+}
+
+function taskReviewAgentRuntimeDirectories(executionRoot, agent = null) {
+  const runtimeDirectories = agent?.runtimeDirectories?.();
+  if (runtimeDirectories == null) return [];
+  if (!(runtimeDirectories instanceof AgentRuntimeDirectorySet)) {
+    throw new Error("Task Review agent runtime directories must use AgentRuntimeDirectorySet");
+  }
+  return runtimeDirectories.toArray().map((candidate) => {
+    if (typeof candidate !== "string" || !path.isAbsolute(candidate)) {
+      throw new Error("Task Review agent runtime directory must be absolute");
+    }
+    const relative = path.relative(executionRoot, candidate).split(path.sep).join("/");
+    if (relative === "" || relative.startsWith("../") || path.posix.isAbsolute(relative)) {
+      throw new Error("Task Review agent runtime directory escapes its execution checkout");
+    }
+    return relative;
+  });
+}
+
+function taskReviewMetricMetadataPaths(executionRoot, workUnit) {
+  const versionDirectory = path.relative(
+    executionRoot,
+    workUnit.flowManager.specLocation(workUnit.state.specId).directory,
+  ).split(path.sep).join("/");
+  if (versionDirectory === "" || versionDirectory.startsWith("../") || path.posix.isAbsolute(versionDirectory)) {
+    return [];
+  }
+  // Deferred Agent metrics become canonical observations after child source
+  // comparison. They append only this ledger file; excluding the exact path
+  // prevents that parent-owned write from becoming a Task repair mutation.
+  return [path.posix.join(
+    versionDirectory,
+    FLOW_ARTIFACT_CONTRACTS.resolve("flow.activities").relativePath,
+  )];
+}
+
+/** Parent-side source surface for a Task Review provider invocation. */
+export function taskReviewRepairIgnoredDirectories(executionRoot, workUnit, agent = null) {
+  return [...new Set([
+    ...taskReviewTransientDirectories(executionRoot, workUnit),
+    path.posix.join(PRODUCT.managedDirName, "agent-cache"),
+    path.posix.join(PRODUCT.managedDirName, "review-execution-locks"),
+    ...taskReviewAgentRuntimeDirectories(executionRoot, agent),
+    ...taskReviewMetricMetadataPaths(executionRoot, workUnit),
+  ])];
+}
+
+/**
+ * Re-entry comparison excludes only the three files written by the parent's
+ * fail-attempt transaction in direct mode.  The snapshot utility accepts
+ * exact path entries as well as subtree entries, so this must never broaden
+ * to the enclosing canonical Version directory: provider changes to spec or
+ * evidence artifacts remain observable across Attempts.
+ */
+export function taskReviewRecoveryIgnoredDirectories(executionRoot, workUnit, agent = null) {
+  const directories = [
+    ...taskReviewRepairIgnoredDirectories(executionRoot, workUnit, agent),
+  ];
   const versionDirectory = path.relative(
     executionRoot,
     workUnit.flowManager.specLocation(workUnit.state.specId).directory,
   ).split(path.sep).join("/");
   if (versionDirectory !== "" && !versionDirectory.startsWith("../") && !path.posix.isAbsolute(versionDirectory)) {
-    directories.push(versionDirectory);
+    for (const logicalKey of ["flow.state", "flow.activities", "artifact.catalog"]) {
+      directories.push(path.posix.join(
+        versionDirectory,
+        FLOW_ARTIFACT_CONTRACTS.resolve(logicalKey).relativePath,
+      ));
+    }
   }
-  return directories;
+  return [...new Set(directories)];
+}
+
+/** Restored parent-owned source checkpoint from a sealed or unsealed unit. */
+class TaskReviewPersistedSourceBaseline {
+  constructor({ workUnit, executionRoot, logicalKey } = {}) {
+    if (!(workUnit instanceof ReviewWorkUnit)) throw new Error("Task Review persisted baseline requires a work unit");
+    if (!path.isAbsolute(executionRoot)) throw new Error("Task Review persisted baseline requires an absolute execution root");
+    const key = typeof logicalKey === "string" && logicalKey !== "" ? logicalKey : null;
+    if (key === null) throw new Error("Task Review persisted baseline requires a logical key");
+    const input = workUnit.manifestDocument.inputs.find((entry) => entry.logicalKey === key) ?? null;
+    if (input === null) throw new Error(`Task Review work unit is missing its ${key} baseline`);
+    let bytes;
+    try {
+      bytes = input.assertSnapshot(workUnit.root).bytes;
+      this.baseline = SourceMutationBaseline.fromStored(
+        JSON.parse(bytes.toString("utf8")),
+        { root: executionRoot },
+      );
+    } catch (cause) {
+      throw new Error(`Task Review ${key} baseline is unreadable: ${cause.message}`);
+    }
+    if (this.baseline.attempt.id !== workUnit.manifestDocument.attemptId
+      || this.baseline.attempt.nodeId !== workUnit.manifestDocument.nodeId) {
+      throw new Error(`Task Review ${key} baseline does not bind its manifest Attempt`);
+    }
+    this.logicalKey = key;
+    this.logicalPath = input.logicalPath;
+    this.bytes = Buffer.from(bytes);
+    Object.freeze(this);
+  }
+}
+
+function taskReviewBaselineInput(checkpoint) {
+  if (!(checkpoint instanceof TaskReviewPersistedSourceBaseline)) {
+    throw new Error("Task Review baseline input requires a persisted checkpoint");
+  }
+  return {
+    logicalKey: checkpoint.logicalKey,
+    logicalPath: checkpoint.logicalPath,
+    bytes: checkpoint.bytes,
+    mediaType: "application/json",
+  };
+}
+
+function newTaskReviewBaselineInput({ logicalKey, logicalPath, baseline }) {
+  if (!(baseline instanceof SourceMutationBaseline)) throw new Error("Task Review baseline input requires a source baseline");
+  return {
+    logicalKey,
+    logicalPath,
+    bytes: Buffer.from(`${JSON.stringify(baseline.toJSON(), null, 2)}\n`, "utf8"),
+    mediaType: "application/json",
+  };
+}
+
+/** Typed restoration of the immutable Task source supplied to one worker. */
+class TaskReviewPersistedSourceSnapshot {
+  constructor({ workUnit, lineageSet, executionRoot } = {}) {
+    if (!(workUnit instanceof ReviewWorkUnit)) throw new Error("Task Review source checkpoint requires a recovered work unit");
+    if (!(lineageSet instanceof TaskMutationLineageSet)) throw new Error("Task Review source checkpoint requires canonical lineage");
+    if (!path.isAbsolute(executionRoot)) throw new Error("Task Review source checkpoint requires an absolute execution root");
+    const input = workUnit.manifestDocument.inputs.find((entry) => entry.logicalKey === "task.source") ?? null;
+    if (input === null) throw new Error("unsealed Task Review work unit is missing its task source checkpoint");
+    let document;
+    try {
+      document = JSON.parse(input.assertSnapshot(workUnit.root).bytes.toString("utf8"));
+    } catch (cause) {
+      throw new Error(`unsealed Task Review source checkpoint is unreadable: ${cause.message}`);
+    }
+    try {
+      this.snapshot = new CurrentTaskSourceSnapshot({ lineageSet, entries: document.entries });
+    } catch (cause) {
+      throw new Error(`unsealed Task Review source checkpoint cannot be restored against canonical lineage: ${cause.message}`);
+    }
+    if (
+      document.fingerprint !== this.snapshot.fingerprint
+      || document.runId !== this.snapshot.runId
+      || document.specId !== this.snapshot.specId
+      || document.taskId !== this.snapshot.taskId
+      || JSON.stringify(document.lineageFingerprints) !== JSON.stringify(this.snapshot.lineageFingerprints)
+    ) {
+      throw new Error("unsealed Task Review source checkpoint does not match canonical lineage");
+    }
+    this.workUnit = workUnit;
+    Object.freeze(this);
+  }
+}
+
+/** Typed restoration of one retained, unsealed Task Review checkpoint. */
+class TaskReviewUnsealedSourceCheckpoint {
+  constructor({ workUnit, lineageSet, executionRoot } = {}) {
+    const persisted = new TaskReviewPersistedSourceSnapshot({ workUnit, lineageSet, executionRoot });
+    this.workUnit = persisted.workUnit;
+    this.snapshot = persisted.snapshot;
+    this.baseline = new TaskReviewPersistedSourceBaseline({
+      workUnit,
+      executionRoot,
+      logicalKey: "task.source-effect-baseline",
+    }).baseline;
+    Object.freeze(this);
+  }
+
+  differsFrom(current) {
+    if (!(current instanceof CurrentTaskSourceSnapshot)) throw new Error("Task Review source checkpoint comparison requires current source");
+    return current.fingerprint !== this.snapshot.fingerprint;
+  }
+
+  observedSourceEffect() {
+    const manifest = SourceMutationManifest.capture({ baseline: this.baseline });
+    return manifest.mutations.length > 0;
+  }
+}
+
+/** Safe diagnostic facts from a retained, partially-effected Task Review unit. */
+class TaskReviewPartialEffectEvidence {
+  constructor({ workUnit = null, checkpointSourceFingerprint = null, currentSourceFingerprint = null } = {}) {
+    if (workUnit !== null && (typeof workUnit !== "string" || !path.isAbsolute(workUnit))) {
+      throw new Error("Task Review partial-effect work unit must be an absolute path or null");
+    }
+    for (const [name, value] of [
+      ["checkpoint source fingerprint", checkpointSourceFingerprint],
+      ["current source fingerprint", currentSourceFingerprint],
+    ]) {
+      if (value !== null && (typeof value !== "string" || !/^[a-f0-9]{64}$/.test(value))) {
+        throw new Error(`Task Review partial-effect ${name} is invalid`);
+      }
+    }
+    this.workUnit = workUnit;
+    this.checkpointSourceFingerprint = checkpointSourceFingerprint;
+    this.currentSourceFingerprint = currentSourceFingerprint;
+    Object.freeze(this);
+  }
+}
+
+/** Failure-only projection; success artifact contracts remain untouched. */
+class ReviewExecutionFailureEnvelopeData {
+  constructor({ error, executionRoot } = {}) {
+    this.failureCode = typeof error?.code === "string" && error.code !== ""
+      ? error.code
+      : "REVIEW_EXECUTION_FAILED";
+    this.retryable = error?.retryable ?? true;
+    const evidence = error?.data instanceof TaskReviewPartialEffectEvidence ? error.data : null;
+    const root = typeof executionRoot === "string" && path.isAbsolute(executionRoot)
+      ? path.resolve(executionRoot)
+      : null;
+    const relativeWorkUnit = evidence?.workUnit === null || evidence === null || root === null
+      ? null
+      : path.relative(root, evidence.workUnit).split(path.sep).join("/");
+    this.workUnit = relativeWorkUnit !== null
+      && relativeWorkUnit !== ""
+      && !relativeWorkUnit.startsWith("../")
+      && !path.posix.isAbsolute(relativeWorkUnit)
+      ? relativeWorkUnit
+      : null;
+    this.checkpointSourceFingerprint = evidence?.checkpointSourceFingerprint ?? null;
+    this.currentSourceFingerprint = evidence?.currentSourceFingerprint ?? null;
+    Object.freeze(this);
+  }
+
+  toJSON() {
+    return {
+      failureCode: this.failureCode,
+      retryable: this.retryable,
+      workUnit: this.workUnit,
+      checkpointSourceFingerprint: this.checkpointSourceFingerprint,
+      currentSourceFingerprint: this.currentSourceFingerprint,
+    };
+  }
+}
+
+function partialTaskReviewEffectFailure({ message, workUnit = null, checkpoint = null, current = null, cause = null } = {}) {
+  const error = new Error(message);
+  error.code = "TASK_REVIEW_PARTIAL_EFFECT";
+  error.retryable = false;
+  error.data = new TaskReviewPartialEffectEvidence({
+    workUnit: workUnit?.root ?? null,
+    checkpointSourceFingerprint: checkpoint?.snapshot?.fingerprint ?? null,
+    currentSourceFingerprint: current?.fingerprint ?? null,
+  });
+  if (cause !== null) error.cause = cause;
+  return error;
+}
+
+function reconcileUnsealedTaskReviewSources({ workUnit, state, flowManager, taskId, executionRoot, expectedNodeId }) {
+  const lineageSet = new TaskMutationLineageSet({
+    runId: state.runId,
+    specId: state.specId,
+    taskId,
+    lineages: flowManager.taskMutationLineages({ specId: state.specId, taskId }),
+  });
+  let retained;
+  const acceptedAttemptIds = new Set();
+  if (state.attempt?.nodeId === expectedNodeId && typeof state.attempt.id === "string" && state.attempt.id !== "") {
+    acceptedAttemptIds.add(state.attempt.id);
+  }
+  for (const activity of flowManager.activityLedger(state.specId)) {
+    if (activity?.nodeId === expectedNodeId && typeof activity.attemptId === "string" && activity.attemptId !== "") {
+      acceptedAttemptIds.add(activity.attemptId);
+    }
+  }
+  try {
+    retained = TaskReviewUnsealedWorkUnitSet.recover({
+      executionRoot,
+      runId: state.runId,
+      specId: state.specId,
+      taskId,
+      nodeId: expectedNodeId,
+      acceptedAttemptIds,
+    });
+  } catch (cause) {
+    throw partialTaskReviewEffectFailure({
+      message: `unsealed Task Review evidence cannot be identity-verified: ${cause.message}`,
+      cause,
+    });
+  }
+  for (const recovered of retained.workUnits) {
+    let checkpoint;
+    let current;
+    try {
+      checkpoint = new TaskReviewUnsealedSourceCheckpoint({ workUnit: recovered, lineageSet, executionRoot });
+      current = workUnit.captureCurrentTaskSource();
+    } catch (cause) {
+      throw partialTaskReviewEffectFailure({
+        message: `unsealed Task Review evidence cannot be restored: ${cause.message}`,
+        workUnit: recovered,
+        cause,
+      });
+    }
+    if (checkpoint.differsFrom(current)) {
+      throw partialTaskReviewEffectFailure({
+        message: "unsealed Task Review work unit has source effects after an interrupted provider call",
+        workUnit: recovered,
+        checkpoint,
+        current,
+      });
+    }
+    try {
+      if (checkpoint.observedSourceEffect()) {
+        throw partialTaskReviewEffectFailure({
+          message: "unsealed Task Review work unit has repository effects after an interrupted provider call",
+          workUnit: recovered,
+          checkpoint,
+          current,
+        });
+      }
+    } catch (cause) {
+      if (cause?.code === "TASK_REVIEW_PARTIAL_EFFECT") throw cause;
+      throw partialTaskReviewEffectFailure({
+        message: `unsealed Task Review source-effect baseline cannot be compared: ${cause.message}`,
+        workUnit: recovered,
+        checkpoint,
+        current,
+        cause,
+      });
+    }
+    recovered.cleanup();
+  }
 }
 
 export class RunReviewCommand extends FlowCommand {
@@ -690,17 +1007,94 @@ export class RunReviewCommand extends FlowCommand {
       targetStateDigest,
     });
     let taskRepairBaseline = null;
+    let taskRecoveryBaseline = null;
+    const taskReviewAgent = taskId === null || !this.container?.has?.("agent")
+      ? null
+      : this.container.get("agent");
+    let taskRepairBaselineInput = null;
+    let taskRecoveryBaselineInput = null;
     let sealedWorkUnit;
     try {
       // Reconstruct the parent-owned input contract before inspecting any
       // worker state. A recovered manifest must match this exact declaration.
+      const existing = taskId !== null && fs.existsSync(workUnit.workUnit.manifestPath)
+        ? ReviewWorkUnit.fromEnvironment(
+          { [REVIEW_WORK_UNIT_MANIFEST_ENV]: workUnit.workUnit.manifestPath },
+          { expectedDirectory: workUnit.workUnit.directory },
+        )
+        : null;
+      if (existing !== null) {
+        const persistedSource = new TaskReviewPersistedSourceSnapshot({
+          workUnit: existing,
+          executionRoot,
+          lineageSet: new TaskMutationLineageSet({
+            runId: state.runId,
+            specId: state.specId,
+            taskId,
+            lineages: ctx.flowManager.taskMutationLineages({ specId: state.specId, taskId }),
+          }),
+        });
+        workUnit.restoreTaskWorkerProjection(persistedSource.snapshot);
+        const repairCheckpoint = new TaskReviewPersistedSourceBaseline({
+          workUnit: existing,
+          executionRoot,
+          logicalKey: "task.source-repair-baseline",
+        });
+        const recoveryCheckpoint = new TaskReviewPersistedSourceBaseline({
+          workUnit: existing,
+          executionRoot,
+          logicalKey: "task.source-effect-baseline",
+        });
+        taskRepairBaseline = repairCheckpoint.baseline;
+        taskRecoveryBaseline = recoveryCheckpoint.baseline;
+        taskRepairBaselineInput = taskReviewBaselineInput(repairCheckpoint);
+        taskRecoveryBaselineInput = taskReviewBaselineInput(recoveryCheckpoint);
+      }
       workUnit.declareCanonicalInputs();
+      if (taskId !== null) {
+        if (existing === null) {
+          taskRepairBaseline = SourceMutationBaseline.capture({
+            root: executionRoot,
+            attempt: state.attempt,
+            ignoredDirectories: taskReviewRepairIgnoredDirectories(executionRoot, workUnit, taskReviewAgent),
+          });
+          taskRecoveryBaseline = SourceMutationBaseline.capture({
+            root: executionRoot,
+            attempt: state.attempt,
+            ignoredDirectories: taskReviewRecoveryIgnoredDirectories(executionRoot, workUnit, taskReviewAgent),
+          });
+          taskRepairBaselineInput = newTaskReviewBaselineInput({
+            logicalKey: "task.source-repair-baseline",
+            logicalPath: "task-source-repair-baseline.json",
+            baseline: taskRepairBaseline,
+          });
+          taskRecoveryBaselineInput = newTaskReviewBaselineInput({
+            logicalKey: "task.source-effect-baseline",
+            logicalPath: "task-source-effect-baseline.json",
+            baseline: taskRecoveryBaseline,
+          });
+        }
+        workUnit.workUnit.declareInput(taskRepairBaselineInput);
+        workUnit.workUnit.declareInput(taskRecoveryBaselineInput);
+        reconcileUnsealedTaskReviewSources({
+          workUnit,
+          state,
+          flowManager: ctx.flowManager,
+          taskId,
+          executionRoot,
+          expectedNodeId,
+        });
+      }
       sealedWorkUnit = workUnit.workUnit.recoverSealed();
     } catch (error) {
       return this.#canonicalFailure(ctx, persistedPhase, error);
     }
     if (sealedWorkUnit === null) {
       const prepared = workUnit.prepare();
+      if (taskId !== null) {
+        workUnit.workUnit.writeInput(taskRepairBaselineInput);
+        workUnit.workUnit.writeInput(taskRecoveryBaselineInput);
+      }
       const specSource = workUnit.materializeSpecRecord();
       const specReviewInput = workUnit.materializeSpecReview();
       const fileMapSource = workUnit.materializeFileMap();
@@ -709,13 +1103,6 @@ export class RunReviewCommand extends FlowCommand {
       const taskSpec = workUnit.materializeTaskSpec();
       const taskInputs = workUnit.materializeTaskContextAndSource();
       const surface = workUnit.finalize();
-      if (taskId !== null) {
-        taskRepairBaseline = SourceMutationBaseline.capture({
-          root: executionRoot,
-          attempt: state.attempt,
-          ignoredDirectories: taskReviewTransientDirectories(executionRoot, workUnit),
-        });
-      }
       const scriptPath = path.join(PKG_DIR, "flow", "commands", "review.js");
       const args = [];
       if (phase && phase !== IMPL_REVIEW_PHASE) args.push("--phase", phase);
@@ -758,14 +1145,23 @@ export class RunReviewCommand extends FlowCommand {
       try {
         res = await runCmdWithRetry(
           () => this.runCommand("node", [scriptPath, ...args], { cwd: executionRoot, timeout: timeoutMs, env }),
-          { phase: persistedPhase, retryCount: 0 },
+          {
+            phase: persistedPhase,
+            retryCount: 0,
+            // Task Review's protocol boundary owns the only safe retry
+            // decision because it observes provider source effects.
+            retrySchema: taskId === null,
+          },
         );
       } catch (error) {
         return this.#canonicalFailure(ctx, persistedPhase, error);
       }
       if (!res.ok) {
-        const reason = [res.stderr, res.stdout].filter(Boolean).join("\n") || "review subprocess failed";
-        return this.#canonicalFailure(ctx, persistedPhase, new Error(reason));
+        const failure = ReviewFailure.fromSubprocessResult({ phase: persistedPhase, result: res });
+        const error = new Error(failure.reason || "review subprocess failed");
+        error.code = failure.toEnvelopeCode();
+        error.retryable = failure.retryable;
+        return this.#canonicalFailure(ctx, persistedPhase, error);
       }
       try {
         sealedWorkUnit = ReviewWorkUnit.fromEnvironment(
@@ -781,7 +1177,7 @@ export class RunReviewCommand extends FlowCommand {
       taskRepairBaseline = SourceMutationBaseline.capture({
         root: executionRoot,
         attempt: state.attempt,
-        ignoredDirectories: taskReviewTransientDirectories(executionRoot, workUnit),
+        ignoredDirectories: taskReviewRepairIgnoredDirectories(executionRoot, workUnit, taskReviewAgent),
       });
     }
     let promotion;
@@ -885,14 +1281,18 @@ export class RunReviewCommand extends FlowCommand {
 
   #canonicalFailure(ctx, phase, error) {
     const message = String(error?.message || error);
+    const failureData = new ReviewExecutionFailureEnvelopeData({
+      error,
+      executionRoot: ctx.executionRoot || ctx.root,
+    });
     try {
       ctx.flowManager.failCurrentAttempt({
         specId: ctx.specId ?? ctx.flowState.specId,
         failure: {
           category: "tooling",
-          code: "REVIEW_EXECUTION_FAILED",
+          code: error?.code || "REVIEW_EXECUTION_FAILED",
           message,
-          retryable: true,
+          retryable: error?.retryable ?? true,
           retryKind: "tooling",
         },
         result: {
@@ -915,6 +1315,7 @@ export class RunReviewCommand extends FlowCommand {
       "review",
       "REVIEW_TOOLING_ERROR",
       `review tooling error for ${phase}: ${message}`,
+      failureData.toJSON(),
     );
   }
 

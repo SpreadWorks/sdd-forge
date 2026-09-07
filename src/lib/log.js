@@ -148,6 +148,10 @@ export class Logger {
     return this.#enabled;
   }
 
+  runtimeDirectories() {
+    return [this.#logDir];
+  }
+
   /** Wait until all in-flight log writes settle. */
   async flush() {
     while (this.#pending.size > 0) {

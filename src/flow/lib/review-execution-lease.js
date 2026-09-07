@@ -25,11 +25,20 @@ export class ReviewExecutionLease {
     const rootPath = requiredText(mainRoot, "review execution lease mainRoot");
     const identity = [runId, nodeId, attemptId].map((value, index) => requiredText(value, `review execution lease identity[${index}]`)).join("\0");
     const root = new RealDirectoryAuthority(rootPath, { errorFactory: leaseError });
-    const directory = new RealDirectoryAuthority(path.join(rootPath, PRODUCT.managedDirName), {
+    const managedDirectory = new RealDirectoryAuthority(path.join(rootPath, PRODUCT.managedDirName), {
       create: true,
       parentAuthority: root,
       errorFactory: leaseError,
     });
+    // Keep process-only admission state in its own directory. Source-effect
+    // baselines may safely exclude this narrow runtime surface without hiding
+    // canonical receipts or provider-written repository files.
+    const directory = new RealDirectoryAuthority(path.join(managedDirectory.directory, "review-execution-locks"), {
+      create: true,
+      parentAuthority: managedDirectory,
+      errorFactory: leaseError,
+    });
+    this.managedDirectory = managedDirectory;
     this.lock = new ProcessOwnedLock({
       directoryAuthority: directory,
       fileName: `.review-execution-${crypto.createHash("sha256").update(identity).digest("hex").slice(0, 24)}.lock`,
@@ -42,6 +51,9 @@ export class ReviewExecutionLease {
 
   // ProcessOwnedLock only reclaims locks when the recorded owner identity is
   // conclusively stale. A live or indeterminate owner remains exclusive.
-  acquire() { return this.lock.acquire({ claimStale: true }); }
+  acquire() {
+    this.managedDirectory.ensure();
+    return this.lock.acquire({ claimStale: true });
+  }
   release() { this.lock.release(); }
 }

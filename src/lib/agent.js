@@ -10,9 +10,10 @@
  *   - bounded retry (max 5 attempts)
  *   - Logger.agent start/end events
  *
- * The class is the only public export of this module. Callers must NOT
- * import from this module directly except via the container; the registry
- * and Provider classes live in src/lib/provider.js.
+ * Agent is consumed through the container. AgentProviderRetryPolicy and
+ * AgentRuntimeDirectorySet are exported for protocol adapters that must own
+ * an effect-observed retry loop; the registry and Provider classes live in
+ * src/lib/provider.js.
  */
 
 import fs from "fs";
@@ -30,6 +31,8 @@ import {
 import { AgentTimeout, AgentTimeoutDiagnostic, DEFAULT_AGENT_PROCESS_TREE_GRACE_MS } from "./agent-timeout.js";
 import { LinuxProcessStat } from "./process-identity.js";
 import { PRODUCT } from "./product.js";
+import { AtomicFile } from "./atomic-file.js";
+import { ProcessOwnedLock, RealDirectoryAuthority } from "./process-owned-lock.js";
 import { FlowAttributionPolicy } from "./flow-attribution.js";
 import {
   AgentFailure,
@@ -47,6 +50,8 @@ const MAX_RETRY = 5;
 const DEFAULT_RETRY_COUNT = 2;
 const DEFAULT_RETRY_DELAY_MS = 3000;
 const RETRY_BACKOFF_FACTOR = 2;
+const PROMPT_CACHE_LOCK_MAX_ATTEMPTS = 100;
+const PROMPT_CACHE_LOCK_RETRY_MS = 10;
 const DEFAULT_PROVIDER_FAMILY_ALIASES = Object.freeze({
   codex: "codex/gpt-5.6-terra-medium",
   claude: "claude/sonnet",
@@ -87,6 +92,78 @@ class AgentExecutionContext {
     this.providerWorkDir = providerWorkDir;
     this.spawnCwd = spawnCwd;
     Object.freeze(this);
+  }
+}
+
+/**
+ * Normalized, bounded provider retry configuration.  It is intentionally a
+ * value object so a caller which needs to own the retry loop (for example an
+ * effect-observing protocol) can reuse the configured policy without reaching
+ * into Agent's test seams.
+ */
+export class AgentProviderRetryPolicy {
+  constructor({ retryCount, retryDelayMs, backoffFactor = RETRY_BACKOFF_FACTOR } = {}) {
+    if (!Number.isSafeInteger(retryCount) || retryCount < 0 || retryCount > MAX_RETRY) {
+      throw new Error("agent provider retryCount must be a bounded non-negative integer");
+    }
+    if (!Number.isSafeInteger(retryDelayMs) || retryDelayMs <= 0) {
+      throw new Error("agent provider retryDelayMs must be a positive integer");
+    }
+    if (!Number.isFinite(backoffFactor) || backoffFactor < 1) {
+      throw new Error("agent provider retry backoffFactor must be at least one");
+    }
+    this.retryCount = retryCount;
+    this.retryDelayMs = retryDelayMs;
+    this.backoffFactor = backoffFactor;
+    Object.freeze(this);
+  }
+
+  static from({ agentSection = {}, options = {} } = {}) {
+    const rawCount = Number(options.retryCount ?? agentSection.retryCount ?? DEFAULT_RETRY_COUNT);
+    const rawDelay = Number(options.retryDelayMs ?? DEFAULT_RETRY_DELAY_MS);
+    return new AgentProviderRetryPolicy({
+      retryCount: Number.isFinite(rawCount) && rawCount > 0
+        ? Math.min(Math.floor(rawCount), MAX_RETRY)
+        : 0,
+      retryDelayMs: Number.isFinite(rawDelay) && rawDelay > 0
+        ? Math.floor(rawDelay)
+        : DEFAULT_RETRY_DELAY_MS,
+    });
+  }
+
+  delayBeforeRetry(completedAttempts) {
+    if (!Number.isSafeInteger(completedAttempts) || completedAttempts < 1 || completedAttempts > this.retryCount) {
+      throw new Error("agent provider retry delay is outside its bounded policy");
+    }
+    return this.retryDelayMs * Math.pow(this.backoffFactor, completedAttempts - 1);
+  }
+
+  toJSON() {
+    return { retryCount: this.retryCount, retryDelayMs: this.retryDelayMs };
+  }
+}
+
+/** Explicit, repository-relative runtime write surface owned by Agent. */
+export class AgentRuntimeDirectorySet {
+  constructor({ root, directories = [] } = {}) {
+    if (!path.isAbsolute(root)) throw new Error("agent runtime directory root must be absolute");
+    const normalizedRoot = path.resolve(root);
+    const normalized = directories.map((directory) => {
+      if (typeof directory !== "string" || !path.isAbsolute(directory)) {
+        throw new Error("agent runtime directory must be absolute");
+      }
+      return path.resolve(directory);
+    }).filter((directory) => {
+      const relative = path.relative(normalizedRoot, directory);
+      return relative !== "" && !relative.startsWith(`..${path.sep}`) && !path.isAbsolute(relative);
+    });
+    this.root = normalizedRoot;
+    this.directories = Object.freeze([...new Set(normalized)]);
+    Object.freeze(this);
+  }
+
+  toArray() {
+    return [...this.directories];
   }
 }
 
@@ -185,13 +262,14 @@ class Agent {
       throw AgentFailure.from(error).recordAttempts(1, 1);
     }
 
-    const retry = this._normalizeRetryOptionsForTest(opts);
+    const retry = this.providerRetryPolicy(opts);
     const cachePolicy = new PromptCachePolicy(opts.cacheMode);
-    const promptCache = flowAttribution.usesFlowState && cachePolicy.readsCache
+    const promptCache = flowAttribution.usesFlowState && (cachePolicy.readsCache || cachePolicy.writesCache)
       ? this._resolvePromptCache(resolved, prompt, opts)
       : null;
-    const hit = promptCache?.cache.get(promptCache.key);
-    if (hit != null) {
+    const hit = cachePolicy.readsCache ? promptCache?.cache.get(promptCache.key) : null;
+    const acceptedHit = hit != null && this._isCacheableResponse(hit, null, opts);
+    if (acceptedHit) {
       opts.onCacheDecision?.({
         cacheOutcome: "hit",
         providerCalled: false,
@@ -206,12 +284,18 @@ class Agent {
       }, opts.deferredMetric ?? null);
       return hit;
     }
-
+    if (hit != null) {
+      // Do not let a known-invalid value survive a failed fresh call. The
+      // conditional removal cannot erase a concurrent writer's replacement.
+      await promptCache.cache.removeIfMatches(promptCache.key, hit);
+    }
     let cacheCandidate = null;
     opts.onCacheDecision?.({
-      cacheOutcome: cachePolicy.mode === "bypass" ? "bypass" : "miss",
+      cacheOutcome: hit != null
+        ? "invalid_hit"
+        : (cachePolicy.mode === "refresh" ? "refresh" : (cachePolicy.mode === "bypass" ? "bypass" : "miss")),
       providerCalled: true,
-      fresh: cachePolicy.mode === "bypass",
+      fresh: hit != null || cachePolicy.mode !== "default",
     });
     const text = await runWithLogging({
       logger: this._logger,
@@ -238,7 +322,7 @@ class Agent {
       },
     });
     if (cachePolicy.writesCache && promptCache && text && this._isCacheableResponse(text, cacheCandidate, opts)) {
-      promptCache.cache.set(promptCache.key, text);
+      await promptCache.cache.set(promptCache.key, text);
     }
     return text;
   }
@@ -283,17 +367,25 @@ class Agent {
   }
 
   _normalizeRetryOptionsForTest(options = {}) {
-    const configuredCount = this._config.agent?.retryCount;
-    const baseCount = options.retryCount ?? configuredCount ?? DEFAULT_RETRY_COUNT;
-    const rawCount = Number(baseCount);
-    const rawDelay = Number(options.retryDelayMs ?? DEFAULT_RETRY_DELAY_MS);
-    const retryCount = Number.isFinite(rawCount) && rawCount > 0
-      ? Math.min(Math.floor(rawCount), MAX_RETRY)
-      : 0;
-    const retryDelayMs = Number.isFinite(rawDelay) && rawDelay > 0
-      ? Math.floor(rawDelay)
-      : DEFAULT_RETRY_DELAY_MS;
-    return { retryCount, retryDelayMs };
+    return this.providerRetryPolicy(options).toJSON();
+  }
+
+  providerRetryPolicy(options = {}) {
+    return AgentProviderRetryPolicy.from({
+      agentSection: this._config.agent || {},
+      options,
+    });
+  }
+
+  runtimeDirectories() {
+    return new AgentRuntimeDirectorySet({
+      root: path.resolve(this._paths.root || process.cwd()),
+      directories: [
+        this._paths.agentWorkDir,
+        this._paths.logDir,
+        ...(this._logger?.runtimeDirectories?.() ?? []),
+      ].filter((directory) => typeof directory === "string"),
+    });
   }
 
   _isCacheableResponse(text, cacheCandidate, options = {}) {
@@ -412,7 +504,9 @@ class Agent {
       }
       if (!lastFailure.retryable) throw lastFailure;
       if (attempt < retry.retryCount) {
-        const delayMs = retry.retryDelayMs * Math.pow(RETRY_BACKOFF_FACTOR, attempt);
+        const delayMs = retry instanceof AgentProviderRetryPolicy
+          ? retry.delayBeforeRetry(attempt + 1)
+          : retry.retryDelayMs * Math.pow(RETRY_BACKOFF_FACTOR, attempt);
         await sleep(delayMs);
       }
     }
@@ -967,12 +1061,12 @@ function runWindowsTaskkill(args) {
 class PromptCachePolicy {
   constructor(mode = "default") {
     const normalized = mode ?? "default";
-    if (normalized !== "default" && normalized !== "bypass") {
+    if (!new Set(["default", "bypass", "refresh"]).has(normalized)) {
       throw new Error(`invalid cacheMode: ${normalized}`);
     }
     this.mode = normalized;
     this.readsCache = normalized === "default";
-    this.writesCache = normalized === "default";
+    this.writesCache = normalized === "default" || normalized === "refresh";
     Object.freeze(this);
   }
 }
@@ -1054,9 +1148,26 @@ class PromptCacheInvocation {
 
 class AgentPromptCache {
   constructor({ root, specId }) {
-    this.root = root;
-    this.specId = specId;
-    this.filePath = path.join(root, PRODUCT.managedPath("agent-cache", `${cacheFileName(specId)}.json`));
+    this.root = path.resolve(root);
+    this.specId = String(specId);
+    const rootAuthority = new RealDirectoryAuthority(this.root);
+    this.managedDirectory = new RealDirectoryAuthority(path.join(this.root, PRODUCT.managedDirName), {
+      create: true,
+      parentAuthority: rootAuthority,
+    });
+    this.directory = new RealDirectoryAuthority(path.join(this.managedDirectory.directory, "agent-cache"), {
+      create: true,
+      parentAuthority: this.managedDirectory,
+    });
+    const fileName = `${cacheFileName(specId)}.json`;
+    this.filePath = path.join(this.directory.directory, fileName);
+    this.lock = new ProcessOwnedLock({
+      directoryAuthority: this.directory,
+      fileName: `.${fileName}.lock`,
+      kind: "agent-prompt-cache",
+      authority: { specId: this.specId },
+    });
+    Object.freeze(this);
   }
 
   get(key) {
@@ -1066,13 +1177,53 @@ class AgentPromptCache {
     return entry.text;
   }
 
-  set(key, text) {
-    const store = this.read();
-    store.entries[key] = {
-      text: String(text),
-      storedAt: new Date().toISOString(),
-    };
-    this.write(store);
+  async set(key, text) {
+    await this.mutate((store) => {
+      store.entries[key] = {
+        text: String(text),
+        storedAt: new Date().toISOString(),
+      };
+      return true;
+    });
+  }
+
+  async removeIfMatches(key, text) {
+    await this.mutate((store) => {
+      const entry = store.entries[key];
+      if (!entry || entry.text !== text) return false;
+      delete store.entries[key];
+      return true;
+    });
+  }
+
+  async mutate(change) {
+    if (typeof change !== "function") throw new Error("agent prompt cache mutation requires a function");
+    this.managedDirectory.ensure();
+    this.directory.ensure();
+    await this.acquireWriteLock();
+    try {
+      // Read after exclusive admission: two provider processes can complete
+      // concurrently without one plain read-modify-write discarding the
+      // other's response for the same spec cache.
+      const store = this.read();
+      if (change(store) === true) this.write(store);
+    } finally {
+      this.lock.release();
+    }
+  }
+
+  async acquireWriteLock() {
+    for (let attempt = 1; attempt <= PROMPT_CACHE_LOCK_MAX_ATTEMPTS; attempt += 1) {
+      try {
+        this.lock.acquire({ claimStale: true });
+        return;
+      } catch (cause) {
+        if (cause?.code !== "PROCESS_OWNED_LOCK_LIVE" || attempt === PROMPT_CACHE_LOCK_MAX_ATTEMPTS) {
+          throw cause;
+        }
+        await new Promise((resolve) => setTimeout(resolve, PROMPT_CACHE_LOCK_RETRY_MS));
+      }
+    }
   }
 
   read() {
@@ -1089,8 +1240,9 @@ class AgentPromptCache {
   }
 
   write(store) {
-    fs.mkdirSync(path.dirname(this.filePath), { recursive: true });
-    fs.writeFileSync(this.filePath, JSON.stringify(store, null, 2) + "\n", "utf8");
+    this.directory.ensure();
+    new AtomicFile(this.filePath, { phaseNamespace: "agent-prompt-cache" })
+      .write(Buffer.from(`${JSON.stringify(store, null, 2)}\n`, "utf8"));
   }
 
   emptyStore() {

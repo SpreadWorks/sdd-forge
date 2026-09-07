@@ -39,7 +39,7 @@ import {
   mergeSpecReviewDelta,
 } from "./spec-review-artifacts.js";
 import { CanonicalTaskContext } from "./task-canonical-context.js";
-import { captureCurrentTaskSource } from "./task-mutation-lineage.js";
+import { CurrentTaskSourceSnapshot, captureCurrentTaskSource } from "./task-mutation-lineage.js";
 
 const PHASES = new Set(["draft-questions", "draft-coverage", "spec", "test", "impl"]);
 const ATTACHED_REVIEW_WORK_UNIT = Symbol("canonical-review-work-unit");
@@ -662,6 +662,25 @@ export class CanonicalReviewWorkUnit {
     return projection;
   }
 
+  /** Restore the immutable Task input used by a retained worker Attempt. */
+  restoreTaskWorkerProjection(source) {
+    if (this.taskId === null || !(source instanceof CurrentTaskSourceSnapshot)) {
+      throw new Error("canonical Task review recovery requires its persisted source snapshot");
+    }
+    const context = CanonicalTaskContext.capture({
+      root: this.workUnit.executionRoot,
+      flowManager: this.flowManager,
+      state: this.state,
+      taskId: this.taskId,
+      source,
+    });
+    const projection = context.projectWorkerContext({ stepId: "task-review", source });
+    this.taskContext = context;
+    this.taskSource = source;
+    this.taskWorkerProjection = projection;
+    return projection;
+  }
+
   captureCurrentTaskSource() {
     if (this.taskId === null) return null;
     return captureCurrentTaskSource({
@@ -736,7 +755,7 @@ export class CanonicalReviewWorkUnit {
       topology: CanonicalSpecTestTopology.fromWorkerTestTree({
         flowManager: this.flowManager,
         specId: this.state.specId,
-        repositoryRoot: this.workUnit.executionRoot,
+        repositoryRoot: this.flowManager.specLocation(this.state.specId).repositoryRoot,
       }),
     });
   }
