@@ -38,16 +38,10 @@ function contract() {
   });
 }
 
-function taskReviewExecution({
-  taskId = "T-1",
-  attemptId = "task-review-attempt",
-  sequence = 1,
-  reviewAttempt = 1,
-} = {}) {
+function taskReviewExecution({ taskId = "T-1", attemptId = "task-review-attempt", sequence = 1 } = {}) {
   return new TaskReviewExecutionIdentity({
     taskId,
     attempt: { id: attemptId, nodeId: `${taskId}-review`, sequence },
-    reviewAttempt,
   });
 }
 
@@ -68,19 +62,13 @@ class SourceObserver {
 
 describe("Task Review protocol", () => {
   it("round-trips the parent-issued Task Review execution identity", () => {
-    const identity = taskReviewExecution({
-      taskId: "T-1",
-      attemptId: "canonical-attempt",
-      sequence: 2,
-      reviewAttempt: 2,
-    });
+    const identity = taskReviewExecution({ taskId: "T-1", attemptId: "canonical-attempt", sequence: 2 });
     const restored = TaskReviewExecutionIdentity.fromJSON(identity.toJSON());
 
     assert.notEqual(restored, identity);
     assert.deepEqual(restored.toJSON(), {
       taskId: "T-1",
       attempt: { id: "canonical-attempt", nodeId: "T-1-review", sequence: 2 },
-      reviewAttempt: 2,
     });
   });
 
@@ -89,7 +77,6 @@ describe("Task Review protocol", () => {
       () => TaskReviewExecutionIdentity.fromJSON({
         taskId: "T-1",
         attempt: { id: "attempt", nodeId: "T-2-review", sequence: 1 },
-        reviewAttempt: 1,
       }),
       /does not match its Task/,
     );
@@ -97,7 +84,6 @@ describe("Task Review protocol", () => {
       () => TaskReviewExecutionIdentity.fromJSON({
         taskId: "T-1",
         attempt: { id: "attempt", nodeId: "T-1-review", sequence: 1, stale: true },
-        reviewAttempt: 1,
       }),
       /Task Review execution Attempt has invalid fields/,
     );
@@ -105,17 +91,8 @@ describe("Task Review protocol", () => {
       () => TaskReviewExecutionIdentity.fromJSON({
         taskId: "T-1",
         attempt: { id: "attempt", nodeId: "T-1-review" },
-        reviewAttempt: 1,
       }),
       /Task Review execution Attempt has invalid fields/,
-    );
-    assert.throws(
-      () => TaskReviewExecutionIdentity.fromJSON({
-        taskId: "T-1",
-        attempt: { id: "attempt", nodeId: "T-1-review", sequence: 1 },
-        reviewAttempt: 0,
-      }),
-      /reviewAttempt is invalid/,
     );
   });
 
