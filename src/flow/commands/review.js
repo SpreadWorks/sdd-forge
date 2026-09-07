@@ -81,7 +81,6 @@ import {
   TaskReviewConvergenceEvidence,
   TaskReviewRecurrenceContract,
 } from "../lib/review-recurrence.js";
-import { currentTaskReviewAttemptCount } from "../lib/task-review-attempt-accounting.js";
 import {
   FindingDispositionPolicy,
   MustFixDisposition,
@@ -1539,7 +1538,13 @@ function buildImplReviewPrompt({ requirementFileMap = {}, requirementIds, diff =
 function canonicalTaskReviewAttempt({ flowManager, flow, taskId }) {
   const lineage = flowManager.taskMutationLineages({ specId: flow.specId, taskId }).at(-1) ?? null;
   if (lineage === null) throw new Error("Task Review requires a current Task execution budget");
-  return currentTaskReviewAttemptCount({ attempt: flow.attempt, includesCurrentResult: true });
+  const task = flow.tasks?.find((candidate) => candidate.id === taskId) ?? null;
+  const review = task?.steps?.find((candidate) => candidate.id === `${taskId}-review`) ?? null;
+  const attempt = review?.attemptSequence - lineage.budget.reviewAttemptSequenceAtStart;
+  if (!Number.isSafeInteger(attempt) || attempt < 1 || attempt > 4) {
+    throw new Error("Task Review Attempt is outside its current execution round");
+  }
+  return attempt;
 }
 
 function resolveRequirementIds(spec) {

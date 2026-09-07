@@ -3,10 +3,6 @@ import crypto from "node:crypto";
 import { CanonicalCommandAttemptArtifactHistory } from "./canonical-command-result.js";
 import { ReviewFindingCycle } from "./finding-disposition-policy.js";
 import { TaskReviewAcceptanceHandoff } from "./task-mutation-lineage.js";
-import {
-  completedTaskReviewAttemptCount,
-  taskReviewAttemptNumber,
-} from "./task-review-attempt-accounting.js";
 
 const SHA256 = /^[a-f0-9]{64}$/;
 
@@ -365,11 +361,7 @@ class TaskReviewEvidenceRecord {
   }
 
   localAttempt(review, repair) {
-    return taskReviewAttemptNumber({
-      history: this.history,
-      budget: repair.budget,
-      attemptSequence: review.attempt,
-    });
+    return review.attempt - repair.budget.reviewAttemptSequenceAtStart;
   }
 }
 
@@ -512,10 +504,9 @@ export class TaskReviewConvergenceEvidence {
       const review = record.history.current;
       const reviewAttempts = record.currentBudget === null
         ? null
-        : completedTaskReviewAttemptCount({ history: record.history, budget: record.currentBudget });
+        : review.attempt - record.currentBudget.reviewAttemptSequenceAtStart;
       const currentReview = reviewAttempts !== null
         && reviewAttempts > 0
-        && review.attempt > record.currentBudget.reviewAttemptSequenceAtStart
         && this.cycle.matchesArtifact(review.payload);
       const recurrence = this.recurrenceHistory(record.taskId);
       const fourthRepairUnreviewed = fourthHandoffs.some((handoff) => (
