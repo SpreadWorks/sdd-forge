@@ -31,11 +31,13 @@ import {
 import RunFinalRegressionCommand from "../../../src/flow/lib/run-final-regression.js";
 import RunReportCommand from "../../../src/flow/lib/run-report.js";
 import RunReviewCommand, {
+  TaskReviewCanonicalObservationBoundary,
   taskReviewRecoveryIgnoredDirectories,
 } from "../../../src/flow/lib/run-review.js";
 import GetStatusCommand from "../../../src/flow/lib/get-status.js";
 import FlowReviewCommand from "../../../src/flow/commands/review.js";
 import {
+  REVIEW_WORK_UNIT_MANIFEST_ENV,
   reconcileCompletedReviewWorkUnits,
   ReviewWorkUnit,
   ReviewWorkUnitOutput,
@@ -8392,7 +8394,7 @@ describe("FlowManager canonical Version-1 runtime", () => {
     assert.deepEqual(reloaded.taskMutationLineages({ specId, taskId: "T-1" }).map((entry) => entry.toJSON()), before);
   });
 
-  it("publishes a Task Review repair lineage with its canonical result", async () => {
+  it("accepts the deferred Task Review metric and publishes its canonical result", async () => {
     const repository = root();
     initializeReviewSource(repository);
     const manager = new FlowManager({ root: repository, mainRoot: repository, inWorktree: false });
@@ -8410,10 +8412,12 @@ describe("FlowManager canonical Version-1 runtime", () => {
       taskId: "T-1",
       targetStep: "task-review",
     }).create();
+    let executionIdentity = null;
     const review = new RunReviewCommand({
       resolveTreeSha: () => "a".repeat(40),
       resolveTargetStateDigest: () => "b".repeat(64),
       runCommand(_command, _args, options) {
+        executionIdentity = JSON.parse(options.env.SENNEL_REVIEW_TASK_EXECUTION_IDENTITY);
         const outputDirectory = options.env.SENNEL_REVIEW_OUTPUT_DIR;
         fs.writeFileSync(path.join(outputDirectory, "impl-review.json"), `${JSON.stringify({
           version: 1,
@@ -8426,6 +8430,10 @@ describe("FlowManager canonical Version-1 runtime", () => {
           excluded: { missingFile: 0, outOfScope: 0 },
         })}\n`);
         ReviewWorkUnit.fromEnvironment(options.env).seal();
+        // This is the child protocol's post-observation metric settlement.
+        // It rewrites flow.json, activities.jsonl, and artifact-catalog.json
+        // before the parent captures the Task repair manifest.
+        manager.appendMetric({ phase: "impl", counter: "taskReview", delta: 1 }, { specId, taskId: "T-1" });
         return { ok: true, status: 0, stdout: "", stderr: "", signal: null, killed: false };
       },
     });
@@ -8438,15 +8446,111 @@ describe("FlowManager canonical Version-1 runtime", () => {
       flowState: manager.load(specId),
       config: {},
     };
+    assert.equal(Object.hasOwn(ctx.flowState, "attempt"), false, "dispatcher receives the projected Flow view");
+    const canonicalAttempt = manager.canonicalState(specId).attempt;
     const result = await review.execute(ctx);
     assert.equal(result.result, "ok", JSON.stringify(result));
     assert.equal(result.artifacts.noChange, true);
+    assert.deepEqual(executionIdentity, {
+      taskId: "T-1",
+      attempt: { id: canonicalAttempt.id, nodeId: canonicalAttempt.nodeId, sequence: canonicalAttempt.sequence },
+    });
     await FLOW_COMMANDS.run.review.post(ctx, result);
     const lineages = manager.taskMutationLineages({ specId, taskId: "T-1" });
     assert.deepEqual(lineages.map((lineage) => lineage.role), ["implementation", "review-repair"]);
     assert.equal(lineages[1].budget.round, 1);
     assert.equal(leaves(manager.load(specId).steps).find((step) => step.id === "T-1-review").status, "done");
     assert.equal(leaves(manager.load(specId).steps).find((step) => step.id === "T-1-gate").status, "skipped");
+  });
+
+  it("permits only an append-only metric settlement in Task Review canonical metadata", () => {
+    const repository = root();
+    const manager = new FlowManager({ root: repository, mainRoot: repository, inWorktree: false });
+    const specId = "001-task-review-canonical-observation";
+    const created = manager.createFresh(request(specId));
+    manager.addActiveFlow(created.specId, "direct");
+
+    const metricBoundary = TaskReviewCanonicalObservationBoundary.capture({ flowManager: manager, specId });
+    manager.appendMetric({ phase: "impl", counter: "taskReview", delta: 1 }, { specId, taskId: null });
+    assert.doesNotThrow(() => metricBoundary.assertMetricSettlementOnly());
+
+    const providerMutationBoundary = TaskReviewCanonicalObservationBoundary.capture({ flowManager: manager, specId });
+    manager.addNote("a Task Review provider must not mutate canonical state", { specId });
+    assert.throws(
+      () => providerMutationBoundary.assertMetricSettlementOnly(),
+      (error) => error.code === "FLOW_SOURCE_HANDOFF_CANONICAL_MUTATION_INVALID"
+        && /record_metric Activities/.test(error.message),
+    );
+  });
+
+  it("rejects stale projected Task Review scope before creating a worker", async () => {
+    const repository = root();
+    initializeReviewSource(repository);
+    const manager = new FlowManager({ root: repository, mainRoot: repository, inWorktree: false });
+    const specId = "001-task-review-stale-projection";
+    new TaskLifecycleFixture({
+      flowManager: manager,
+      specId,
+      runId: "run-task-review-stale-projection",
+      request: "do not execute a stale Task Review",
+      taskDocuments: [{ id: "T-1", title: "Stale scope", goal: "Reject stale scope.", parent: null, origin: "plan", added_round: 0, status: "pending" }],
+      taskId: "T-1",
+      targetStep: "task-review",
+    }).create();
+    let workerCalls = 0;
+    const review = new RunReviewCommand({
+      runCommand() {
+        workerCalls += 1;
+        throw new Error("stale projected scope must not start a Task Review worker");
+      },
+    });
+    const projected = manager.load(specId);
+    await assert.rejects(
+      () => review.execute({
+        root: repository,
+        mainRoot: repository,
+        executionRoot: repository,
+        specId,
+        flowManager: manager,
+        flowState: { ...projected, currentTaskId: "T-2" },
+        config: {},
+      }),
+      /canonical review requires active T-2-review, found T-1-review/,
+    );
+    assert.equal(workerCalls, 0);
+  });
+
+  it("retains a sealed active Task Review work unit using canonical current state", () => {
+    const repository = root();
+    const manager = new FlowManager({ root: repository, mainRoot: repository, inWorktree: false });
+    const specId = "001-task-review-sealed-active";
+    new TaskLifecycleFixture({
+      flowManager: manager,
+      specId,
+      runId: "run-task-review-sealed-active",
+      request: "retain active Task Review recovery evidence",
+      taskDocuments: [{ id: "T-1", title: "Recovery", goal: "Preserve active worker evidence.", parent: null, origin: "plan", added_round: 0, status: "pending" }],
+      taskId: "T-1",
+      targetStep: "task-review",
+    }).create();
+    const state = manager.canonicalState(specId);
+    const worker = new ReviewWorkUnit({
+      executionRoot: repository,
+      runId: state.runId,
+      specId,
+      phase: "impl",
+      taskId: "T-1",
+      nodeId: "T-1-review",
+      attemptId: state.attempt.id,
+      target: { treeSha: "a".repeat(40), targetStateDigest: "b".repeat(64) },
+      output: ReviewWorkUnitOutput.forReview({ phase: "impl", taskId: "T-1" }),
+    });
+    const surface = worker.finalize();
+    fs.writeFileSync(surface.outputPath, '{"verdict":"PASS","blockingFindings":[],"nonBlockingImprovements":[]}\n');
+    ReviewWorkUnit.fromEnvironment({ [REVIEW_WORK_UNIT_MANIFEST_ENV]: surface.manifestPath }).seal();
+
+    assert.equal(reconcileCompletedReviewWorkUnits({ flowManager: manager, specId, executionRoot: repository }), 0);
+    assert.equal(fs.existsSync(surface.directory), true);
   });
 
   it("reviews a no-change Task source and atomically starts its bounded implementation correction", async () => {

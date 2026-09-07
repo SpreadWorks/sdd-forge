@@ -15,6 +15,7 @@ import {
   runTaskReviewProtocol,
   TaskReviewSourceEffectObserver,
 } from "../../../src/flow/commands/review.js";
+import { TaskReviewExecutionIdentity } from "../../../src/flow/lib/task-review-execution-identity.js";
 import { Agent, AgentRuntimeDirectorySet } from "../../../src/lib/agent.js";
 import { TemporaryRateLimitFailure } from "../../../src/lib/agent-failure.js";
 import { container } from "../../../src/lib/container.js";
@@ -37,6 +38,13 @@ function contract() {
   });
 }
 
+function taskReviewExecution({ taskId = "T-1", attemptId = "task-review-attempt", sequence = 1 } = {}) {
+  return new TaskReviewExecutionIdentity({
+    taskId,
+    attempt: { id: attemptId, nodeId: `${taskId}-review`, sequence },
+  });
+}
+
 class SourceObserver {
   constructor() {
     this.generation = 0;
@@ -53,6 +61,41 @@ class SourceObserver {
 }
 
 describe("Task Review protocol", () => {
+  it("round-trips the parent-issued Task Review execution identity", () => {
+    const identity = taskReviewExecution({ taskId: "T-1", attemptId: "canonical-attempt", sequence: 2 });
+    const restored = TaskReviewExecutionIdentity.fromJSON(identity.toJSON());
+
+    assert.notEqual(restored, identity);
+    assert.deepEqual(restored.toJSON(), {
+      taskId: "T-1",
+      attempt: { id: "canonical-attempt", nodeId: "T-1-review", sequence: 2 },
+    });
+  });
+
+  it("rejects malformed or mismatched Task Review execution identity input", () => {
+    assert.throws(
+      () => TaskReviewExecutionIdentity.fromJSON({
+        taskId: "T-1",
+        attempt: { id: "attempt", nodeId: "T-2-review", sequence: 1 },
+      }),
+      /does not match its Task/,
+    );
+    assert.throws(
+      () => TaskReviewExecutionIdentity.fromJSON({
+        taskId: "T-1",
+        attempt: { id: "attempt", nodeId: "T-1-review", sequence: 1, stale: true },
+      }),
+      /Task Review execution Attempt has invalid fields/,
+    );
+    assert.throws(
+      () => TaskReviewExecutionIdentity.fromJSON({
+        taskId: "T-1",
+        attempt: { id: "attempt", nodeId: "T-1-review" },
+      }),
+      /Task Review execution Attempt has invalid fields/,
+    );
+  });
+
   it("replaces the original partial-pair cache through the Task adapter and reuses the accepted response", async () => {
     const root = createTmpDir("task-review-invalid-cache-");
     const outputDirectory = path.join(root, ".sennel", "review-work-unit-fixture");
@@ -120,7 +163,7 @@ describe("Task Review protocol", () => {
       });
       const options = {
         root,
-        flow: { attempt: { id: "task-review-attempt", nodeId: "T-1-review", sequence: 1 } },
+        executionIdentity: taskReviewExecution(),
         flowManager,
         requirementIds: new Set(["R1"]),
         recurrenceHistory: [],
@@ -191,7 +234,7 @@ describe("Task Review protocol", () => {
       });
       assert.equal(await runTaskReviewProtocol({
         root,
-        flow: { attempt: { id: "task-review-attempt", nodeId: "T-1-review", sequence: 1 } },
+        executionIdentity: taskReviewExecution(),
         flowManager,
         requirementIds: new Set(["R1"]),
         recurrenceHistory: [],
@@ -250,7 +293,7 @@ describe("Task Review protocol", () => {
       await assert.rejects(
         runTaskReviewProtocol({
           root,
-          flow: { attempt: { id: "task-review-attempt", nodeId: "task-1-review", sequence: 1 } },
+          executionIdentity: taskReviewExecution({ taskId: "task-1" }),
           flowManager: {
             resolveCurrentContext() { return { specId: "task-review-transport", taskId: "T-1", flowPhase: "impl" }; },
             accumulateAgentMetrics() {},
@@ -499,7 +542,7 @@ describe("Task Review protocol", () => {
       process.env[outputVariable] = outputDirectory;
       const observer = new TaskReviewSourceEffectObserver({
         root,
-        flow: { attempt: { id: "task-review-attempt", nodeId: "task-1-review", sequence: 1 } },
+        executionIdentity: taskReviewExecution({ taskId: "task-1" }),
       });
       const before = observer.capture({ number: 1 });
       fs.mkdirSync(path.join(root, "specs", "task-1"), { recursive: true });
@@ -530,7 +573,7 @@ describe("Task Review protocol", () => {
         process.env[outputVariable] = outputDirectory;
         const observer = new TaskReviewSourceEffectObserver({
           root,
-          flow: { attempt: { id: "task-review-attempt", nodeId: "task-1-review", sequence: 1 } },
+          executionIdentity: taskReviewExecution({ taskId: "task-1" }),
           agent: {
             runtimeDirectories: () => new AgentRuntimeDirectorySet({
               root,

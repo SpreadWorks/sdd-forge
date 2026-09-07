@@ -814,7 +814,7 @@ export function reconcileCompletedReviewWorkUnits({ flowManager, specId, executi
       continue;
     }
     const activeAttempt = flowManager.canonicalState(specId)?.attempt ?? null;
-    if (state.currentNodeId === manifest.nodeId && activeAttempt?.id === manifest.attemptId) continue;
+    if (state.current?.at(-1) === manifest.nodeId && activeAttempt?.id === manifest.attemptId) continue;
     throw new Error("sealed review work unit has no canonical confirmation receipt or active Attempt");
   }
   return cleaned;

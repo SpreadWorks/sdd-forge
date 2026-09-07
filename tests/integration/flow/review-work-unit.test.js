@@ -22,6 +22,7 @@ import { commitAll, initGitRepo } from "../../support/infrastructure/git-repo.js
 import {
   parseImplReviewOutput,
   parseProposalReviewOutput,
+  taskReviewRepairIgnoredDirectories,
   parseSpecReviewOutput,
   parseTestReviewOutput,
   taskReviewRecoveryIgnoredDirectories,
@@ -346,6 +347,15 @@ describe("ReviewWorkUnit", () => {
       flowManager: { specLocation: () => ({ directory: versionDirectory }) },
       state: { specId: "001-review-work-unit" },
     });
+    const repairBaseline = SourceMutationBaseline.capture({
+      root: executionRoot,
+      attempt: { id: "task-review-attempt", nodeId: "task-1-review", sequence: 1 },
+      ignoredDirectories: taskReviewRepairIgnoredDirectories(executionRoot, {
+        workUnit: { directory: reviewDirectory },
+        flowManager: { specLocation: () => ({ directory: versionDirectory }) },
+        state: { specId: "001-review-work-unit" },
+      }),
+    });
     const baseline = SourceMutationBaseline.capture({
       root: executionRoot,
       attempt: { id: "task-review-attempt", nodeId: "task-1-review", sequence: 1 },
@@ -355,8 +365,13 @@ describe("ReviewWorkUnit", () => {
     fs.writeFileSync(path.join(versionDirectory, "flow.json"), "{\"failure\":true}\n");
     fs.writeFileSync(path.join(versionDirectory, "activities.jsonl"), "{\"failure\":true}\n");
     fs.writeFileSync(path.join(versionDirectory, "artifact-catalog.json"), "{\"failure\":true}\n");
+    assert.equal(SourceMutationManifest.capture({ baseline: repairBaseline }).mutations.length, 0);
     assert.equal(SourceMutationManifest.capture({ baseline }).mutations.length, 0);
     fs.writeFileSync(path.join(versionDirectory, "provider-edited-evidence.json"), "{\"changed\":true}\n");
+    assert.deepEqual(
+      SourceMutationManifest.capture({ baseline: repairBaseline }).mutations.map((entry) => entry.path),
+      ["specs/001-review-work-unit/001/provider-edited-evidence.json"],
+    );
     assert.deepEqual(
       SourceMutationManifest.capture({ baseline }).mutations.map((entry) => entry.path),
       ["specs/001-review-work-unit/001/provider-edited-evidence.json"],

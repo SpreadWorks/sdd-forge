@@ -58,6 +58,8 @@ import {
 import {
   SourceMutationBaseline,
   SourceMutationManifest,
+  SourceWorkerCanonicalObservationAdvance,
+  WorkerArtifactRepositoryMutationSnapshot,
 } from "./worker-artifact-handoff.js";
 import { CanonicalTaskContext } from "./task-canonical-context.js";
 import { ReviewFindingCycle } from "./finding-disposition-policy.js";
@@ -65,6 +67,7 @@ import {
   TaskReviewConvergenceEvidence,
   TaskReviewRecurrenceContract,
 } from "./review-recurrence.js";
+import { TaskReviewExecutionIdentity } from "./task-review-execution-identity.js";
 
 const IMPL_REVIEW_PHASE = "impl";
 const REVIEW_VERDICT_VALUES = Object.freeze(["PASS", "ADVISORY", "REJECTED"]);
@@ -620,7 +623,7 @@ function taskReviewAgentRuntimeDirectories(executionRoot, agent = null) {
   });
 }
 
-function taskReviewMetricMetadataPaths(executionRoot, workUnit) {
+function taskReviewValidatedMetricMetadataPaths(executionRoot, workUnit) {
   const versionDirectory = path.relative(
     executionRoot,
     workUnit.flowManager.specLocation(workUnit.state.specId).directory,
@@ -628,13 +631,75 @@ function taskReviewMetricMetadataPaths(executionRoot, workUnit) {
   if (versionDirectory === "" || versionDirectory.startsWith("../") || path.posix.isAbsolute(versionDirectory)) {
     return [];
   }
-  // Deferred Agent metrics become canonical observations after child source
-  // comparison. They append only this ledger file; excluding the exact path
-  // prevents that parent-owned write from becoming a Task repair mutation.
-  return [path.posix.join(
-    versionDirectory,
-    FLOW_ARTIFACT_CONTRACTS.resolve("flow.activities").relativePath,
-  )];
+  // Deferred Agent metrics settle only after child source comparison. The
+  // Store records that one observation atomically, rewriting its state,
+  // ledger, and catalog metadata together. Callers must pair this narrow
+  // exclusion with TaskReviewCanonicalObservationBoundary: it proves the
+  // complete advance is an append-only record_metric transaction, so this
+  // list can never turn a provider's direct canonical mutation into a repair.
+  return ["flow.state", "flow.activities", "artifact.catalog"].map((logicalKey) => (
+    path.posix.join(
+      versionDirectory,
+      FLOW_ARTIFACT_CONTRACTS.resolve(logicalKey).relativePath,
+    )
+  ));
+}
+
+/**
+ * Parent-owned proof for the one canonical advance permitted while a Task
+ * Review child is running.  The child settles its deferred Agent metric only
+ * after its own before/after source observation.  That settlement rewrites
+ * the Version's three root metadata files.  We validate the Store-level
+ * transaction before excluding those exact paths from the Task repair
+ * manifest; all other canonical source remains subject to the repair policy.
+ */
+export class TaskReviewCanonicalObservationBoundary {
+  constructor({ flowManager, specId, observationAdvance, canonicalSnapshot } = {}) {
+    if (flowManager === null || typeof flowManager !== "object"
+      || typeof flowManager.specLocation !== "function"
+      || typeof flowManager.load !== "function"
+      || typeof flowManager.activityLedger !== "function") {
+      throw new Error("Task Review canonical observation boundary requires a FlowManager");
+    }
+    if (typeof specId !== "string" || specId.trim() === "") {
+      throw new Error("Task Review canonical observation boundary requires a specId");
+    }
+    if (!(observationAdvance instanceof SourceWorkerCanonicalObservationAdvance)) {
+      throw new Error("Task Review canonical observation boundary requires an observation advance");
+    }
+    if (!(canonicalSnapshot instanceof WorkerArtifactRepositoryMutationSnapshot)) {
+      throw new Error("Task Review canonical observation boundary requires a canonical snapshot");
+    }
+    this.flowManager = flowManager;
+    this.specId = specId.trim();
+    this.observationAdvance = observationAdvance;
+    this.canonicalSnapshot = canonicalSnapshot;
+    Object.freeze(this);
+  }
+
+  static capture({ flowManager, specId } = {}) {
+    const location = flowManager?.specLocation?.(specId);
+    if (location === null || typeof location?.directory !== "string" || location.directory === "") {
+      throw new Error("Task Review canonical observation boundary cannot locate the Version");
+    }
+    return new TaskReviewCanonicalObservationBoundary({
+      flowManager,
+      specId,
+      observationAdvance: SourceWorkerCanonicalObservationAdvance.capture({ flowManager, specId }),
+      canonicalSnapshot: WorkerArtifactRepositoryMutationSnapshot.capture({
+        root: location.directory,
+        authorities: ["canonical"],
+      }),
+    });
+  }
+
+  assertMetricSettlementOnly() {
+    return this.observationAdvance.assertAllowed({
+      flowManager: this.flowManager,
+      specId: this.specId,
+      canonicalSnapshot: this.canonicalSnapshot,
+    });
+  }
 }
 
 /** Parent-side source surface for a Task Review provider invocation. */
@@ -644,7 +709,7 @@ export function taskReviewRepairIgnoredDirectories(executionRoot, workUnit, agen
     path.posix.join(PRODUCT.managedDirName, "agent-cache"),
     path.posix.join(PRODUCT.managedDirName, "review-execution-locks"),
     ...taskReviewAgentRuntimeDirectories(executionRoot, agent),
-    ...taskReviewMetricMetadataPaths(executionRoot, workUnit),
+    ...taskReviewValidatedMetricMetadataPaths(executionRoot, workUnit),
   ])];
 }
 
@@ -659,18 +724,6 @@ export function taskReviewRecoveryIgnoredDirectories(executionRoot, workUnit, ag
   const directories = [
     ...taskReviewRepairIgnoredDirectories(executionRoot, workUnit, agent),
   ];
-  const versionDirectory = path.relative(
-    executionRoot,
-    workUnit.flowManager.specLocation(workUnit.state.specId).directory,
-  ).split(path.sep).join("/");
-  if (versionDirectory !== "" && !versionDirectory.startsWith("../") && !path.posix.isAbsolute(versionDirectory)) {
-    for (const logicalKey of ["flow.state", "flow.activities", "artifact.catalog"]) {
-      directories.push(path.posix.join(
-        versionDirectory,
-        FLOW_ARTIFACT_CONTRACTS.resolve(logicalKey).relativePath,
-      ));
-    }
-  }
   return [...new Set(directories)];
 }
 
@@ -982,6 +1035,9 @@ export class RunReviewCommand extends FlowCommand {
         },
       );
     }
+    const taskReviewExecution = taskId === null
+      ? null
+      : TaskReviewExecutionIdentity.fromCanonicalState({ state, taskId });
     if (!admissionChecked) {
       const admissionFailure = reviewExecutionAdmission(ctx, { persistedPhase, executionRoot });
       if (admissionFailure !== null) return admissionFailure;
@@ -999,7 +1055,7 @@ export class RunReviewCommand extends FlowCommand {
     const targetStateDigest = this.resolveTargetStateDigest(ctx, persistedPhase);
     const workUnit = new CanonicalReviewWorkUnit({
       flowManager: ctx.flowManager,
-      state: ctx.flowState,
+      state,
       phase: persistedPhase,
       taskId,
       executionRoot,
@@ -1055,12 +1111,12 @@ export class RunReviewCommand extends FlowCommand {
         if (existing === null) {
           taskRepairBaseline = SourceMutationBaseline.capture({
             root: executionRoot,
-            attempt: state.attempt,
+            attempt: taskReviewExecution.attempt,
             ignoredDirectories: taskReviewRepairIgnoredDirectories(executionRoot, workUnit, taskReviewAgent),
           });
           taskRecoveryBaseline = SourceMutationBaseline.capture({
             root: executionRoot,
-            attempt: state.attempt,
+            attempt: taskReviewExecution.attempt,
             ignoredDirectories: taskReviewRecoveryIgnoredDirectories(executionRoot, workUnit, taskReviewAgent),
           });
           taskRepairBaselineInput = newTaskReviewBaselineInput({
@@ -1138,9 +1194,16 @@ export class RunReviewCommand extends FlowCommand {
           }),
           [PRODUCT.env("REVIEW_TASK_CONTEXT_SOURCE")]: JSON.stringify(taskInputs.context),
           [PRODUCT.env("REVIEW_TASK_CURRENT_SOURCE")]: JSON.stringify(taskInputs.source),
+          [PRODUCT.env("REVIEW_TASK_EXECUTION_IDENTITY")]: JSON.stringify(taskReviewExecution.toJSON()),
         }),
       };
 
+      const canonicalObservationBoundary = taskId === null
+        ? null
+        : TaskReviewCanonicalObservationBoundary.capture({
+            flowManager: ctx.flowManager,
+            specId: state.specId,
+          });
       let res;
       try {
         res = await runCmdWithRetry(
@@ -1153,6 +1216,16 @@ export class RunReviewCommand extends FlowCommand {
             retrySchema: taskId === null,
           },
         );
+      } catch (error) {
+        try {
+          canonicalObservationBoundary?.assertMetricSettlementOnly();
+        } catch (observationError) {
+          return this.#canonicalFailure(ctx, persistedPhase, observationError);
+        }
+        return this.#canonicalFailure(ctx, persistedPhase, error);
+      }
+      try {
+        canonicalObservationBoundary?.assertMetricSettlementOnly();
       } catch (error) {
         return this.#canonicalFailure(ctx, persistedPhase, error);
       }
@@ -1176,7 +1249,7 @@ export class RunReviewCommand extends FlowCommand {
     if (taskId !== null && taskRepairBaseline === null) {
       taskRepairBaseline = SourceMutationBaseline.capture({
         root: executionRoot,
-        attempt: state.attempt,
+        attempt: taskReviewExecution.attempt,
         ignoredDirectories: taskReviewRepairIgnoredDirectories(executionRoot, workUnit, taskReviewAgent),
       });
     }

@@ -45,6 +45,10 @@ import {
 } from "../../../../src/flow/lib/run-review.js";
 import { ReviewFailure } from "../../../../src/flow/lib/review-failure.js";
 import {
+  ReviewProtocolAttempt,
+  ReviewProtocolFailure,
+} from "../../../../src/flow/lib/review-protocol.js";
+import {
   artifactPhaseMatchesReviewTarget,
   buildReviewHandoffFindings,
   ReviewConvergenceState,
@@ -153,6 +157,27 @@ describe("review command error classification", () => {
     error.stack = `${error.message}\n    at runReview (src/flow/commands/review.js:4295:3)`;
 
     assert.equal(classifyReviewCommandError(error, "spec"), null);
+  });
+
+  it("distinguishes unavailable source observation from an observed source effect", () => {
+    const attempt = new ReviewProtocolAttempt({ number: 1, cacheMode: "default" });
+    const unavailable = classifyReviewCommandError(new ReviewProtocolFailure({
+      kind: "observation_unavailable",
+      attempt,
+      maxAttempts: 2,
+      cause: new Error("snapshot unavailable"),
+    }), "impl");
+    const effect = classifyReviewCommandError(new ReviewProtocolFailure({
+      kind: "effect_observed",
+      attempt,
+      maxAttempts: 2,
+      cause: new Error("provider changed source"),
+    }), "impl");
+
+    assert.equal(unavailable.failureCode, "TASK_REVIEW_SOURCE_OBSERVATION_UNAVAILABLE");
+    assert.match(unavailable.reason, /could not verify whether the provider changed source/);
+    assert.equal(effect.failureCode, "TASK_REVIEW_SOURCE_EFFECT_OBSERVED");
+    assert.match(effect.reason, /observed source effects/);
   });
 });
 

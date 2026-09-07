@@ -97,6 +97,7 @@ import { collectUntrackedDiff } from "../lib/run-gate.js";
 import {
   SourceMutationBaseline,
 } from "../lib/worker-artifact-handoff.js";
+import { TaskReviewExecutionIdentity } from "../lib/task-review-execution-identity.js";
 import {
   ReviewProtocolContract,
   ReviewProtocolController,
@@ -159,10 +160,13 @@ class TaskReviewSourceEffectDetail {
 }
 
 export class TaskReviewSourceEffectObserver {
-  constructor({ root, flow, flowManager, agent = null } = {}) {
+  constructor({ root, executionIdentity, agent = null } = {}) {
     this.root = path.resolve(root);
-    this.attempt = flow?.attempt;
-    this.ignoredDirectories = taskReviewProtocolIgnoredDirectories({ root: this.root, flow, flowManager, agent });
+    if (!(executionIdentity instanceof TaskReviewExecutionIdentity)) {
+      throw new Error("Task Review source observation requires its typed execution identity");
+    }
+    this.executionIdentity = executionIdentity;
+    this.ignoredDirectories = taskReviewProtocolIgnoredDirectories({ root: this.root, agent });
     Object.freeze(this);
   }
 
@@ -171,7 +175,7 @@ export class TaskReviewSourceEffectObserver {
       protocolAttempt,
       baseline: SourceMutationBaseline.capture({
         root: this.root,
-        attempt: this.attempt,
+        attempt: this.executionIdentity.attempt,
         ignoredDirectories: this.ignoredDirectories,
       }),
     });
@@ -274,6 +278,7 @@ const REVIEW_TEST_TOPOLOGY_ENV = PRODUCT.env("REVIEW_TEST_TOPOLOGY");
 const REVIEW_TASK_SPEC_SOURCE_ENV = PRODUCT.env("REVIEW_TASK_SPEC_SOURCE");
 const REVIEW_TASK_CONTEXT_SOURCE_ENV = PRODUCT.env("REVIEW_TASK_CONTEXT_SOURCE");
 const REVIEW_TASK_CURRENT_SOURCE_ENV = PRODUCT.env("REVIEW_TASK_CURRENT_SOURCE");
+const REVIEW_TASK_EXECUTION_IDENTITY_ENV = PRODUCT.env("REVIEW_TASK_EXECUTION_IDENTITY");
 const REVIEW_DRAFT_SOURCE_ENV = PRODUCT.env("REVIEW_DRAFT_SOURCE");
 const REVIEW_SPEC_SOURCE_ENV = PRODUCT.env("REVIEW_SPEC_SOURCE");
 const REVIEW_SPEC_REVIEW_SOURCE_ENV = PRODUCT.env("REVIEW_SPEC_REVIEW_SOURCE");
@@ -492,6 +497,22 @@ function canonicalTaskReviewInputs() {
     throw new Error("canonical Task Review context or source is invalid");
   }
   return Object.freeze({ context, source });
+}
+
+function taskReviewExecutionIdentity(taskId) {
+  const serialized = process.env[REVIEW_TASK_EXECUTION_IDENTITY_ENV];
+  if (serialized == null || serialized.trim() === "") {
+    throw new Error(`${REVIEW_TASK_EXECUTION_IDENTITY_ENV} is required with --task-spec`);
+  }
+  let document;
+  try {
+    document = JSON.parse(serialized);
+  } catch (error) {
+    throw new Error(`${REVIEW_TASK_EXECUTION_IDENTITY_ENV} must be JSON: ${error.message}`);
+  }
+  const identity = TaskReviewExecutionIdentity.fromJSON(document);
+  identity.assertTask(taskId);
+  return identity;
 }
 
 function getReviewMaxAttempts(phase, attemptContext) {
@@ -2368,7 +2389,7 @@ async function runReviewWithDependencies(options) {
 
 async function runTaskReviewProtocol({
   root,
-  flow,
+  executionIdentity,
   flowManager,
   requirementIds,
   recurrenceHistory,
@@ -2393,7 +2414,10 @@ async function runTaskReviewProtocol({
     retryPolicy: new ReviewProtocolRetryPolicy({ maxAttempts: 2 }),
     transportRetryPolicy,
   });
-  const observer = new TaskReviewSourceEffectObserver({ root, flow, flowManager, agent });
+  if (!(executionIdentity instanceof TaskReviewExecutionIdentity)) {
+    throw new Error("Task Review protocol requires its typed execution identity");
+  }
+  const observer = new TaskReviewSourceEffectObserver({ root, executionIdentity, agent });
   const deferredMetrics = new Map();
   const metricSettlement = new ReviewProtocolAttemptSettlement({
     settle: async (attempt) => {
@@ -3256,7 +3280,8 @@ async function runTestReviewWithDependencies({
 function classifyReviewCommandError(err, phase) {
   if (err instanceof ReviewProtocolFailure) {
     const resolvedPhase = phase || "impl";
-    const sourceEffect = err.kind === "effect_observed" || err.kind === "observation_unavailable";
+    const sourceEffect = err.kind === "effect_observed";
+    const observationUnavailable = err.kind === "observation_unavailable";
     const detail = typeof err.cause?.message === "string" && err.cause.message.trim() !== ""
       ? ` ${err.cause.message.trim()}`
       : "";
@@ -3264,15 +3289,21 @@ function classifyReviewCommandError(err, phase) {
       phase: resolvedPhase,
       reason: sourceEffect
         ? `Task Review observed source effects before a complete response was accepted at protocol attempt ${err.attempt.number}/${err.maxAttempts}.${detail}`
+        : observationUnavailable
+          ? `Task Review could not verify whether the provider changed source at protocol attempt ${err.attempt.number}/${err.maxAttempts}.${detail}`
         : `Task Review provider output did not satisfy its complete phase contract after protocol attempt ${err.attempt.number}/${err.maxAttempts}.${detail}`,
       recoveryHint: sourceEffect
         ? "Do not retry Review until the definition-selected recovery route has verified the source."
+        : observationUnavailable
+          ? "Do not retry Review until the definition-selected tooling recovery route restores source observation."
         : "The provider returned invalid review output; follow the definition-selected tooling recovery route.",
       recoveryCommand: resolvedPhase === "impl"
         ? "sennel flow run review"
         : `sennel flow run review --phase ${resolvedPhase}`,
       failureCode: sourceEffect
         ? "TASK_REVIEW_SOURCE_EFFECT_OBSERVED"
+        : observationUnavailable
+          ? "TASK_REVIEW_SOURCE_OBSERVATION_UNAVAILABLE"
         : "TASK_REVIEW_PROTOCOL_INVALID_RESPONSE",
       retryable: false,
       agentFailureKind: "review_protocol",
@@ -4707,6 +4738,7 @@ async function runReview(rawArgs) {
     excludeMatcher: reviewExcludeMatcher,
   });
   const taskSpec = resolveTaskReviewSpec(cli.taskSpec);
+  const taskReviewExecution = taskSpec === null ? null : taskReviewExecutionIdentity(taskSpec.task.id);
   // Task Review consumes the parent-materialized current source allow-list.
   // Only flow-level Review resolves a repository-wide merge base and diff.
   const mergeBase = taskSpec ? null : resolveMergeBase(root, flow.baseBranch);
@@ -4803,7 +4835,7 @@ async function runReview(rawArgs) {
       if (taskSpec) {
         return runTaskReviewProtocol({
           root,
-          flow,
+          executionIdentity: taskReviewExecution,
           flowManager,
           requirementIds,
           recurrenceHistory: taskReviewRecurrences,
